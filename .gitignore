@@ -11,12 +11,32 @@ cache/
 tmp/
 temp/
 
-# 업로드된 파일 (용량이 클 수 있음)
-uploads/*.jpg
-uploads/*.jpeg
-uploads/*.png
-uploads/*.pdf
-uploads/*.zip
+# 업로드된 파일 (용량이 클 수 있음) - 모든 업로드 파일 제외
+uploads/
+ImgFolder/
+
+# 이미지 파일 전면 제외 (시스템 필수 이미지는 별도 관리)
+*.jpg
+*.jpeg
+*.png
+*.gif
+*.bmp
+*.webp
+*.svg
+*.ico
+*.tiff
+*.tif
+
+# 예외: 시스템 필수 이미지
+!system-images/**
+!css/images/**
+!images/icons/**
+
+# 고해상도/대용량 파일
+*.psd
+*.ai
+*.eps
+*.raw
 
 # 시스템 파일
 .DS_Store
