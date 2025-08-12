@@ -32,3 +32,42 @@ Thumbs.db
 
 # PHP 세션 파일
 sessions/
+
+# 데이터베이스 설정 파일 (민감한 정보)
+db.php
+db_*.php
+config.php
+*config*.php
+
+# API 키 및 비밀번호
+*.key
+*.pem
+*secret*
+*password*
+
+# 개인 정보 파일
+customer_data/
+private/
+
+# 대용량 업로드 파일
+uploads/**/*.mp4
+uploads/**/*.avi
+uploads/**/*.mov
+uploads/**/*.psd
+uploads/**/*.ai
+
+# 백업 스크립트 (개인 경로 포함)
+backup.bat
+
+# 개발 도구 설정
+.gemini/
+.kiro/
+mcp.json
+playwright.config.ts
+package*.json
+node_modules/
+
+# 테스트 파일
+test*/
+*test*
+playwright-report/
