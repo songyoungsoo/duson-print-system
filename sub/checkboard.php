@@ -1,461 +1,451 @@
-<?php
-session_start();
+<?php 
+session_start(); 
+$session_id = session_id();
 
-/*
-// 보안 시스템 임시 비활성화 - 필요시 주석 해제
-// Check authentication
-if (!isset($_SESSION['checkboard_authenticated']) || $_SESSION['checkboard_authenticated'] !== true) {
-    header('Location: checkboard_auth.php');
-    exit;
+// 데이터베이스 연결
+include "../db.php";
+$connect = $db;
+
+// 페이지 설정
+$page_title = '🔍 두손기획인쇄 - 교정사항 확인';
+$current_page = 'checkboard';
+
+// UTF-8 설정
+if ($connect) {
+    mysqli_set_charset($connect, "utf8");
+} 
+
+// 공통 함수 및 설정
+if (file_exists("../includes/functions.php")) {
+    include "../includes/functions.php";
 }
 
-// Check session timeout (8 hours)
-if (isset($_SESSION['auth_timestamp']) && (time() - $_SESSION['auth_timestamp']) > 28800) {
-    session_destroy();
-    header('Location: checkboard_auth.php?timeout=1');
-    exit;
+// 세션 및 기본 설정
+if (function_exists('check_session')) {
+    check_session();
+}
+if (function_exists('check_db_connection')) {
+    check_db_connection($db);
 }
 
-// Handle logout
-if (isset($_GET['logout'])) {
-    session_destroy();
-    header('Location: checkboard_auth.php?logout=1');
-    exit;
+// 로그 정보 생성
+if (function_exists('generateLogInfo')) {
+    $log_info = generateLogInfo();
 }
 
-// Update last activity timestamp
-$_SESSION['auth_timestamp'] = time();
-*/
-?>
-<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
-<html>
-<head>
-  <title>두손기획 - 기획에서 인쇄까지 원스톱으로 해결해 드립니다.</title>
-  <meta http-equiv="Content-Type" content="text/html; ">
-  <meta charset="utf-8">
-  <style type="text/css">
-    table {
-      font-size: 12px;
-      color: #666;
-    }
-
-    a:link {
-      color: #333333;
-      text-decoration: none;
-    }
-
-    a:hover {
-      color: #666666;
-      text-decoration: none;
-    }
-
-    a:visited {
-      color: #666666;
-      text-decoration: none;
-    }
-  </style>
-  <script language="JavaScript" type="text/JavaScript">
-function MM_preloadImages() { //v3.0
-  var d=document; if(d.images){ if(!d.MM_p) d.MM_p=new Array();
-    var i,j=d.MM_p.length,a=MM_preloadImages.arguments; for(i=0; i<a.length; i++)
-    if (a[i].indexOf("#")!=0){ d.MM_p[j]=new Image; d.MM_p[j++].src=a[i];}}
+// 공통 인증 처리 포함
+if (file_exists("../includes/auth.php")) {
+    include "../includes/auth.php";
 }
 
-function MM_swapImgRestore() { //v3.0
-  var i,x,a=document.MM_sr; for(i=0;a&&i<a.length&&(x=a[i])&&x.oSrc;i++) x.src=x.oSrc;
-}
+// 캐시 방지 헤더
+header("Cache-Control: no-cache, no-store, must-revalidate");
+header("Pragma: no-cache");
+header("Expires: 0");
 
-function MM_findObj(n, d) { //v4.01
-  var p,i,x;  if(!d) d=document; if((p=n.indexOf("?"))>0&&parent.frames.length) {
-    d=parent.frames[n.substring(p+1)].document; n=n.substring(0,p);}
-  if(!(x=d[n])&&d.all) x=d.all[n]; for (i=0;!x&&i<d.forms.length;i++) x=d.forms[i][n];
-  for(i=0;!x&&d.layers&&i<d.layers.length;i++) x=MM_findObj(n,d.layers[i].document);
-  if(!x && d.getElementById) x=d.getElementById(n); return x;
-}
+// 전화번호 인증 처리
+$phone_auth_success = false;
+$auth_error = '';
+$user_orders = [];
 
-function MM_swapImage() { //v3.0
-  var i,j=0,x,a=MM_swapImage.arguments; document.MM_sr=new Array; for(i=0;i<(a.length-2);i+=3)
-   if ((x=MM_findObj(a[i]))!=null){document.MM_sr[j++]=x; if(!x.oSrc) x.oSrc=x.src; x.src=a[i+2];}
-}
-  </script>
-</head>
-
-<body background="/img/bg.gif" leftmargin="0" topmargin="0" marginwidth="0" marginheight="0" onLoad="MM_preloadImages('../img/main_m1a.jpg','../img/main_m2a.jpg','../img/main_m3a.jpg','../img/main_m5a.jpg','../img/main_m6a.jpg','../img/main_m7a.jpg','../img/main_m8a.jpg','../img/main_m10a.jpg','../img/main_m11a.jpg')">
-  <table width="990" border="0" align="center" cellpadding="0" cellspacing="0">
-    <tr background="/img/bg.gif">
-      <td width="990" valign="top">
-        <!--메인 이미지 로고 시작 -->
-        <?php include $_SERVER['DOCUMENT_ROOT'] . "/top5.php" ?>
-        <!-- 메인 이미지 로고  끝 -->
-      </td>
-    </tr>
-    <tr>
-      <td height="10"></td>
-    </tr>
-  </table>
-
-  <!-- <map name="Map2">
-    <area shape="rect" coords="4,7,162,127" href="#">
-    <area shape="rect" coords="165,7,323,127" href="#">
-    <area shape="rect" coords="4,133,162,253" href="#">
-    <area shape="rect" coords="165,133,323,253" href="#">
-    <area shape="rect" coords="326,7,484,127" href="#">
-    <area shape="rect" coords="325,132,484,253" href="#">
-    <area shape="rect" coords="487,7,645,127" href="#">
-    <area shape="rect" coords="487,133,645,253" href="#">
-  </map> -->
-  <table width="990" border="0" align="center" cellpadding="0" cellspacing="0">
-    <tr>
-      <td width="160" height="1" valign="top">
-        <p>
-          <!--왼쪽 배너 메뉴  시작-->
-          <?php include $_SERVER['DOCUMENT_ROOT'] . "/left.htm" ?>
-          <!-- 왼쪽 배너 메뉴 끝 -->
-        </p>
-      </td>
-      <td width="9"><img src="/img/space.gif" width="9" height="9"></td>
-      <td valign="top">
-        <!--본문 내용 시작-->
-        <table border="0" cellpadding="0" cellspacing="0" align="center">
-          <tr>
-            <td width="692" valign="top">
-              <table width="692" border="0" align="center" cellspacing="0" cellpadding="0">
-                <tr>
-                  <td><a href="leaflet.php" onMouseOut="MM_swapImgRestore()" onMouseOver="MM_swapImage('Image22','','../img/main_m10a.jpg',1)"><img src="../img/main_m10.jpg" name="Image22" width="77" height="32" border="0"></a></td>
-                  <td><a href="sticker.php" onMouseOut="MM_swapImgRestore()" onMouseOver="MM_swapImage('Image25','','../img/main_m7a.jpg',1)"><img src="../img/main_m7.jpg" name="Image25" width="77" height="32" border="0"></a></td>
-                  <td><a href="catalog.php" onMouseOut="MM_swapImgRestore()" onMouseOver="MM_swapImage('Image20','','../img/main_m2a.jpg',1)"><img src="../img/main_m2.jpg" name="Image20" width="77" height="32" border="0"></a></td>
-                  <td><a href="brochure.php" onMouseOut="MM_swapImgRestore()" onMouseOver="MM_swapImage('Image21','','../img/main_m3a.jpg',1)"><img src="../img/main_m3.jpg" name="Image21" width="77" height="32" border="0"></a></td>
-                  <td><a href="bookdesign.php" onMouseOut="MM_swapImgRestore()" onMouseOver="MM_swapImage('Image26','','../img/main_m8a.jpg',1)"><img src="../img/main_m8.jpg" name="Image26" width="77" height="32" border="0"></a></td>
-                  <td><a href="poster.php" onMouseOut="MM_swapImgRestore()" onMouseOver="MM_swapImage('Image27','','../img/main_m11a.jpg',1)"><img src="../img/main_m11.jpg" name="Image27" width="76" height="32" border="0"></a></td>
-                  <td><a href="namecard.php" onMouseOut="MM_swapImgRestore()" onMouseOver="MM_swapImage('Image23','','../img/main_m5a.jpg',1)"><img src="../img/main_m5.jpg" name="Image23" width="77" height="32" border="0"></a></td>
-                  <td><a href="envelope.php" onMouseOut="MM_swapImgRestore()" onMouseOver="MM_swapImage('Image24','','../img/main_m6a.jpg',1)"><img src="../img/main_m6.jpg" name="Image24" width="77" height="32" border="0"></a></td>
-                  <td><a href="seosig.php" onMouseOut="MM_swapImgRestore()" onMouseOver="MM_swapImage('Image19','','../img/main_m1a.jpg',1)"><img src="../img/main_m1.jpg" name="Image19" width="77" height="32" border="0"></a></td>
-                </tr>
-              </table>
-            </td>
-          </tr>
-          <tr>
-            <td height="1" valign="top" bgcolor="#D2D2D2"></td>
-          </tr>
-          <tr>
-            <td valign="top">&nbsp;</td>
-          </tr>
-          <tr>
-            <td valign="top"> <img src="../img/main_tt_checkboard.jpg" width="692" height="59"></td>
-          </tr>
-          <!--
-          <tr>
-            <td valign="top">
-              <!-- Security Header (임시 비활성화) -->
-              <div style="background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); padding: 10px; border-radius: 8px; margin: 10px 0; color: white; font-family: 'Noto Sans KR', sans-serif;">
-                <div style="display: flex; justify-content: space-between; align-items: center;">
-                  <div style="font-size: 14px; font-weight: 600;">
-                    🔒 인증된 접근 | 세션 활성화 시간: <?= date('Y-m-d H:i:s', $_SESSION['auth_timestamp']) ?>
-                  </div>
-                  <div>
-                    <a href="?logout=1" style="background: rgba(255,255,255,0.2); color: white; text-decoration: none; padding: 5px 15px; border-radius: 5px; font-size: 12px; font-weight: 500; transition: background 0.3s;" onmouseover="this.style.background='rgba(255,255,255,0.3)'" onmouseout="this.style.background='rgba(255,255,255,0.2)'">
-                      🚪 로그아웃
-                    </a>
-                  </div>
-                </div>
-              </div>
-            </td>
-          </tr>
-          -->
-          <tr>
-            <td>&nbsp;</td>
-          </tr>
-        </table>
-        <table border=0 align=center width=100% cellpadding=0 cellspacing=0>
-          <table border=0 align=center width=100% cellpadding=0 cellspacing=0>
-            <tr>
-              <td>
-              <?php
-              $HomeDir = "..";
-              include "$HomeDir/db.php";
-              ?>
-                <table border=0 align=center width=100% cellpadding=0 cellspacing=0>
-                  <tr>
-                    <td><img src='/img/12345.gif' width=1 height=5></td>
-                  </tr>
-                </table>
-                <table border=0 align=center width=100% cellpadding=0 cellspacing=0>
-                  <tr>
-                    <!-------------- 내용 시작 --------------------------->
-                    <td width=100% valign=top><table border=0 align=center width=100% cellpadding='8' cellspacing='3' background='/img/sian_top_line_back.jpg'>
-                      <tr>
-                        <td align=left><table border=0 cellpadding=2 cellspacing=0 width=100%>
-                          <tr>
-                            <form method='post' name='TDsearch' onSubmit='javascript:return TDsearchCheckField()' action='<?= $_SERVER["PHP_SELF"] ?>'>
-                              <td align=left>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; <b>주문자명 or 업종별:</b>
-                                <input type='hidden' name='TDsearch2' value='name'>
-                                <input type='text' name='TDsearchValue' size='20'>
-                                <input type='submit' value=' 검 색 '></td>
-                            </form>
-                            <td align=right><script>
-              function MM_88jumpMenu(targ, selObj, restore) {
-                eval(targ + ".location='" + selObj.options[selObj.selectedIndex].value + "'");
-                if (restore) selObj.selectedIndex = 0;
-              }
-            </script>
-                              <select name="select" onChange="MM_88jumpMenu('parent',this,0)">
-                                <option value='<?php echo $_SERVER["PHP_SELF"]; ?>'>:::종류별로자료보기:::</option>
-                                <?php
-              include "../MlangPrintAuto/ConDb.php";
-              if ($ConDb_A) {
-                $OrderCate_LIST_script = explode(":", $ConDb_A);
-                $k = 0;
-                while ($k < sizeof($OrderCate_LIST_script)) {
-
-                  if ($OrderCate == "$OrderCate_LIST_script[$k]") {
-                    echo "<option value='" . $_SERVER["PHP_SELF"] . "?OrderCate=$OrderCate_LIST_script[$k]' selected style='background-color:#000000; color:#FFFFFF;'>$OrderCate_LIST_script[$k]</option>";
-                  } else {
-                    echo "<option value='" . $_SERVER["PHP_SELF"] . "?OrderCate=$OrderCate_LIST_script[$k]'>$OrderCate_LIST_script[$k]</option>";
-                  }
-
-                  $k++;
-                }
-              }
-              ?>
-                                <option value='<?php echo $_SERVER["PHP_SELF"]; ?>'>== 전체 자료보기 ==</option>
-                              </select></td>
-                          </tr>
-                        </table></td>
-                      </tr>
-                    </table>
-                      <br>
-                      <!------------------------------------------- 리스트 시작----------------------------------------->
-                      <table border=0 align=center width=100% cellpadding='0' cellspacing='0' style='word-break:break-all;'>
-                        <tr>
-                          <td align=center><img src='/img/box/A1_TopLeft.gif' width=15 height=31></td>
-                          <td align=center background='/img/box/A1_TopBack.gif' width=70 valign=bottom><font style='font:bold; color:#3399FF;'>등록번호</font></td>
-                          <td align=center background='/img/box/A1_TopBack.gif' width=139 valign=bottom><font style='font:bold; color:#3399FF;'>분류</font></td>
-                          <td align=center background='/img/box/A1_TopBack.gif' width=200 valign=bottom><font style='font:bold; color:#3399FF;'>주문인성함</font></td>
-                          <td align=center background='/img/box/A1_TopBack.gif' width=90 valign=bottom><font style='font:bold; color:#3399FF;'>담당자</font></td>
-                          <td align=center background='/img/box/A1_TopBack.gif' width=100 valign=bottom><font style='font:bold; color:#3399FF;'>주문날짜</font></td>
-                          <td align=center background='/img/box/A1_TopBack.gif' width=100 valign=bottom><font style='font:bold; color:#3399FF;'>처리</font></td>
-                          <td align=center background='/img/box/A1_TopBack.gif' width=120 valign=bottom><font style='font:bold; color:#3399FF;'>시안</font></td>
-                          <td align=center><img src='/img/box/A1_TopRight.gif' width=16 height=31></td>
-                        </tr>
-                        <tr>
-                          <td background='/img/box/A1_CenterLeft.gif'></td>
-                          <td bgcolor='#FFFFFF' height=8 colspan=7></td>
-                          <td background='/img/box/A1_CenterRight.gif'></td>
-                        </tr>
-                        <tr>
-                          <td background='/img/box/A1_CenterLeft.gif'></td>
-                          <td bgcolor='#C6C6C6' height=2 colspan=7></td>
-                          <td background='/img/box/A1_CenterRight.gif'></td>
-                        </tr>
-                        <?php
-  include "../db.php";
-  $table = "MlangOrder_PrintAuto";
-  $TDsearch = isset($_POST['TDsearch']) ? $_POST['TDsearch'] : null;
-$OrderCate = isset($_GET['OrderCate']) ? $_GET['OrderCate'] : null;
-$OrderStyleYU9OK = isset($_GET['OrderStyleYU9OK']) ? $_GET['OrderStyleYU9OK'] : null;
-$offset = isset($_GET['offset']) ? $_GET['offset'] : 0;
-$CountWW = isset($CountWW) ? $CountWW : null;
-$TDsearchValue = isset($_POST['TDsearchValue']) ? $_POST['TDsearchValue'] : null;
-
-  if ($TDsearch) { //검색모드일때
-    $Mlang_query = "select * from $table where $TDsearch like '%$TDsearchValue%'";
-  } else if ($OrderCate) {
-    $ToTitle = "$OrderCate";
-    include "../MlangPrintAuto/ConDb.php";
-    $ThingNoOkp = "$View_TtableB";
-    $Mlang_query = "select * from $table where Type='$ThingNoOkp' or Type='$OrderCate'";  //두가지 타입을 모두 검색
-
-  } else if ($OrderStyleYU9OK) {
-    $Mlang_query = "select * from $table where OrderStyle='$OrderStyleYU9OK'";
-  } else { // 일반모드 일때
-    $Mlang_query = "select * from $table";
-  }
-
-  //echo $Mlang_query;
-
-  $query = mysqli_query($db, $Mlang_query);
-  $recordsu = mysqli_num_rows($query);
-  $total = mysqli_affected_rows($db);
-
-  $listcut = 15;  // 한 페이지당 보여줄 목록 게시물 수.
-  if (!$offset) $offset = 0;
-
-  if ($CountWW) {
-    $result = mysqli_query($db, "$Mlang_query ORDER BY $CountWW $s LIMIT $offset, $listcut");
-  } else {
-    $result = mysqli_query($db, "$Mlang_query ORDER BY NO DESC LIMIT $offset, $listcut");
-  }
-
-  $rows = mysqli_num_rows($result);
-  if ($rows) {
-    while ($row = mysqli_fetch_array($result)) {
-  ?>
-                        <tr bgcolor='#FFFFFF'>
-                          <td background='/img/box/A1_CenterLeft.gif'></td>
-                          <td background='/img/box/A1_CenterBack.gif' height=32 align=center><?= $row['no'] ?></td>
-                          <td background='/img/box/A1_CenterBack.gif' align=center><?php if ($row['Type'] == "inserted") { ?>
-                            전단지
-                            <?php } else if ($row['Type'] == "sticker") { ?>
-                            스티카
-                            <?php } else if ($row['Type'] == "NameCard") { ?>
-                            명함
-                            <?php } else if ($row['Type'] == "MerchandiseBond") { ?>
-                            상품권
-                            <?php } else if ($row['Type'] == "envelope") { ?>
-                            봉투
-                            <?php } else if ($row['Type'] == "NcrFlambeau") { ?>
-                            양식지
-                            <?php } else if ($row['Type'] == "cadarok") { ?>
-                            카다로그
-                            <?php } else if ($row['Type'] == "LittlePrint") { ?>
-                            소량인쇄
-                            <?php } else {
-          echo ($row['Type']);
-        } ?></td>
-                          <td background='/img/box/A1_CenterBack.gif' align=center><font style='color:#38409B; font-size:10pt;'>
-                            <?= htmlspecialchars($row['name']); ?>
-                          </font></td>
-                          <td background='/img/box/A1_CenterBack.gif' align=center><font style='color:#38409B; font-size:10pt;'>
-                            <?= $row['Designer']; ?>
-                          </font></td>
-                          <td background='/img/box/A1_CenterBack.gif' align=center><?= substr($row['date'], 0, 10); ?></td>
-                          <td background='/img/box/A1_CenterBack.gif' align=center><?php if ($row['OrderStyle'] == "2") { ?>
-                            접수중..
-                            <?php } ?>
-                            <?php if ($row['OrderStyle'] == "3") { ?>
-                            접수완료
-                            <?php } ?>
-                            <?php if ($row['OrderStyle'] == "4") { ?>
-                            입금대기
-                            <?php } ?>
-                            <?php if ($row['OrderStyle'] == "5") { ?>
-                            시안제작중
-                            <?php } ?>
-                            <?php if ($row['OrderStyle'] == "6") { ?>
-                            시안
-                            <?php } ?>
-                            <?php if ($row['OrderStyle'] == "7") { ?>
-                            교정
-                            <?php } ?>
-                            <?php if ($row['OrderStyle'] == "8") { ?>
-                            작업완료
-                            <?php } ?>
-                            <?php if ($row['OrderStyle'] == "9") { ?>
-                            작업중
-                            <?php } ?>
-                            <?php if ($row['OrderStyle'] == "10") { ?>
-                            교정작업중
-                            <?php } ?></td>
-                          <td background='/img/box/A1_CenterBack.gif' align=center><a href='#' onClick="javascript:popup=window.open('/MlangOrder_PrintAuto/WindowSian.php?mode=OrderView&no=<?= $row['no'] ?>', 'MViertWasd','width=900,height=400,top=0,left=0,menubar=no,resizable=yes,statusbar=no,scrollbars=yes,toolbar=no'); popup.focus();"><img src='/img/button/sian.gif' border=0 align='absmiddle'></a></td>
-                          <td background='/img/box/A1_CenterRight.gif'></td>
-                        </tr>
-                        <tr>
-                          <td background='/img/box/A1_CenterLeft.gif'></td>
-                          <td height=1 bgcolor='#A4D1FF' background='/img/left_menu_back_134ko.gif' colspan=7></td>
-                          <td background='/img/box/A1_CenterRight.gif'></td>
-                        </tr>
-                        <?php
-    }
-  }
-  ?>
-                        <?php
-$i = 1;
-if ($rows) {
-    while ($i < $rows) {
-        $i = $i + 1;
-    }
-} else {
-    if ($TDsearchValue) { // 회원 간단검색 TDsearch //  TDsearchValue
-        echo "<tr><td colspan=10><p align=center><BR><BR>$TDsearch 로 검색되는 $TDsearchValue - 관련 검색 자료없음</p></td></tr>";
-    } else if ($OrderCate) {
-        echo "<tr><td colspan=10><p align=center><BR><BR>" . $OrderCate . "(으)로 검색되는 - 관련 검색 자료없음</p></td></tr>";
-    } else {
-        echo "<tr><td colspan=10><p align=center><BR><BR>등록 자료없음</p></td></tr>";
-    }
-}
-?>
-                        <tr>
-                          <td align=center><img src='/img/box/A1_DownLeft.gif' width=15 height=12></td>
-                          <td background='/img/box/A1_DownBack.gif' colspan=7></td>
-                          <td align=center><img src='/img/box/A1_DownRight.gif' width=16 height=12></td>
-                        </tr>
-                      </table>
-                      <p align='center'>
-                        <?php
-// Initialize $TDsearchValue if it's not set
-$TDsearchValue = isset($_POST['TDsearchValue']) ? $_POST['TDsearchValue'] : null;
-
-// Use $_SERVER['PHP_SELF'] instead of $PHP_SELF
-$PHP_SELF = isset($_SERVER['PHP_SELF']) ? htmlspecialchars($_SERVER['PHP_SELF']) : '';
-
-// Initialize $mlang_pagego with appropriate parameters
-$mlang_pagego = ''; // Initialize it with an empty string or null
-if ($TDsearchValue) {
-    $mlang_pagego = "TDsearch=$TDsearch&TDsearchValue=$TDsearchValue";
-} elseif ($OrderStyleYU9OK) {
-    $mlang_pagego = "OrderStyleYU9OK=$OrderStyleYU9OK";
-} elseif ($OrderCate) {
-    $mlang_pagego = "OrderCate=$OrderCate";
-}
-
-if ($rows) {
-    if ($TDsearchValue) {
-        $mlang_pagego = "TDsearch=$TDsearch&TDsearchValue=$TDsearchValue"; // 필드속성들 전달값
-    } else if ($OrderStyleYU9OK) {
-        $mlang_pagego = "OrderStyleYU9OK=$OrderStyleYU9OK"; // 필드속성들 전달값
-    } else if ($OrderCate) {
-        $mlang_pagego = "OrderCate=$OrderCate"; // 필드속성들 전달값
-    } else {
-    }
-
-    $pagecut = 7;  //한 장당 보여줄 페이지수 
-    $one_bbs = $listcut * $pagecut;  //한 장당 실을 수 있는 목록(게시물)수 
-    $start_offset = intval($offset / $one_bbs) * $one_bbs;  //각 장에 처음 페이지의 $offset값. 
-    $end_offset = intval($recordsu / $one_bbs) * $one_bbs;  //마지막 장의 첫페이지의 $offset값. 
-    $start_page = intval($start_offset / $listcut) + 1; //각 장에 처음 페이지의 값. 
-    $end_page = ($recordsu % $listcut > 0) ? intval($recordsu / $listcut) + 1 : intval($recordsu / $listcut);
-
-    if ($start_offset != 0) {
-        $apoffset = $start_offset - $one_bbs;
-        echo "<a href='$PHP_SELF?offset=$apoffset&$mlang_pagego'>◀</a>";
-    }
-
-    for ($i = $start_page; $i < $start_page + $pagecut; $i++) {
-        $newoffset = ($i - 1) * $listcut;
-
-        if ($offset != $newoffset) {
-            echo "<a href='$PHP_SELF?offset=$newoffset&$mlang_pagego'>[$i]</a>";
-        } else {
-            echo ("<font style='font:bold; color:green;'>[$i]</font>");
-        }
-
-        if ($i == $end_page) break;
-    }
-
-    if ($start_offset != $end_offset) {
-        $nextoffset = $start_offset + $one_bbs;
-        echo "&nbsp;<a href='$PHP_SELF?offset=$nextoffset&$mlang_pagego'>▶</a>";
-    }
-    echo " 총페이지  : $end_page 개";
-}
-
-mysqli_close($db);
-?>
-                      </p>
-                      <!------------------------------------------- 리스트 끝-----------------------------------------></td>
-                    <!-------------- 내용 끄읕 --------------------------->
-                  </tr>
-                </table></td>
-              <td width="9">&nbsp;</td>
-              <td width="120" valign="top"><!-- 오른쪽 배너 시작 -->
-                <?php include $_SERVER['DOCUMENT_ROOT'] . "/right.htm" ?>
-                <!-- 오른쪽 배너 끝 --></td>
-            </tr>
-          </table>
+if ($_POST && isset($_POST['phone_last4'])) {
+    $phone_last4 = preg_replace('/[^0-9]/', '', $_POST['phone_last4']);
+    
+    if (strlen($phone_last4) === 4) {
+        // 전화번호 뒷자리로 주문 내역 검색
+        $query = "SELECT * FROM MlangOrder_PrintAuto WHERE phone LIKE '%{$phone_last4}' ORDER BY NO DESC";
+        $result = mysqli_query($connect, $query);
         
-      </table>
-      <!-- 하단부분 시작 -->
-<?php include $_SERVER['DOCUMENT_ROOT'] . "/bottom.htm" ?>
-<!-- 하단부분 끝 -->
-</body>
-</html>
+        if ($result && mysqli_num_rows($result) > 0) {
+            $phone_auth_success = true;
+            while ($row = mysqli_fetch_array($result)) {
+                $user_orders[] = $row;
+            }
+        } else {
+            $auth_error = '해당 전화번호로 등록된 주문 내역이 없습니다.';
+        }
+    } else {
+        $auth_error = '전화번호 끝 4자리를 정확히 입력해주세요.';
+    }
+}
+
+// 공통 헤더 포함
+if (file_exists("../includes/header.php")) {
+    include "../includes/header.php";
+} else {
+    // 기본 HTML 헤더
+    echo '<!DOCTYPE html><html lang="ko"><head><meta charset="UTF-8"><title>' . $page_title . '</title></head><body>';
+}
+
+if (file_exists("../includes/nav.php")) {
+    include "../includes/nav.php";
+}
+
+// 세션 ID를 JavaScript에서 사용할 수 있도록 메타 태그 추가
+echo '<meta name="session-id" content="' . htmlspecialchars($session_id) . '">';
+?>
+
+<style>
+/* 교정사항 확인 페이지 전용 스타일 */
+.checkboard-container {
+    max-width: 1200px;
+    margin: 0 auto;
+    padding: 20px;
+    background: white;
+    border-radius: 12px;
+    box-shadow: 0 4px 20px rgba(0,0,0,0.1);
+}
+
+.auth-section {
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    padding: 30px;
+    border-radius: 12px;
+    margin-bottom: 30px;
+    color: white;
+    text-align: center;
+}
+
+.auth-form {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    gap: 15px;
+    margin-top: 20px;
+    flex-wrap: wrap;
+}
+
+.auth-input {
+    padding: 12px 20px;
+    border: none;
+    border-radius: 8px;
+    font-size: 16px;
+    width: 200px;
+    text-align: center;
+}
+
+.auth-btn {
+    background: rgba(255,255,255,0.2);
+    color: white;
+    border: 2px solid rgba(255,255,255,0.3);
+    padding: 12px 30px;
+    border-radius: 8px;
+    font-size: 16px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.3s ease;
+}
+
+.auth-btn:hover {
+    background: rgba(255,255,255,0.3);
+    border-color: rgba(255,255,255,0.5);
+}
+
+.error-message {
+    background: #ff6b6b;
+    color: white;
+    padding: 15px;
+    border-radius: 8px;
+    margin: 20px 0;
+    text-align: center;
+}
+
+.orders-grid {
+    display: grid;
+    gap: 20px;
+}
+
+.order-card {
+    background: white;
+    border: 1px solid #e1e5e9;
+    border-radius: 12px;
+    padding: 25px;
+    box-shadow: 0 2px 10px rgba(0,0,0,0.05);
+    transition: all 0.3s ease;
+}
+
+.order-card:hover {
+    box-shadow: 0 4px 20px rgba(0,0,0,0.1);
+    transform: translateY(-2px);
+}
+
+.order-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 20px;
+    padding-bottom: 15px;
+    border-bottom: 2px solid #f8f9fa;
+}
+
+.order-number {
+    font-size: 24px;
+    font-weight: 700;
+    color: #2c3e50;
+}
+
+.order-status {
+    padding: 8px 16px;
+    border-radius: 20px;
+    font-size: 14px;
+    font-weight: 600;
+    color: white;
+}
+
+.status-6, .status-7 { background: #3498db; } /* 시안, 교정 */
+.status-8 { background: #27ae60; } /* 작업완료 */
+.status-5 { background: #f39c12; } /* 시안제작중 */
+.status-9, .status-10 { background: #e74c3c; } /* 작업중, 교정작업중 */
+
+.order-info {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+    gap: 15px;
+    margin-bottom: 20px;
+}
+
+.info-item {
+    background: #f8f9fa;
+    padding: 12px;
+    border-radius: 8px;
+}
+
+.info-label {
+    font-size: 12px;
+    color: #666;
+    font-weight: 600;
+    display: block;
+    margin-bottom: 5px;
+}
+
+.info-value {
+    font-size: 16px;
+    color: #2c3e50;
+    font-weight: 500;
+}
+
+.view-details-btn {
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    color: white;
+    border: none;
+    padding: 12px 25px;
+    border-radius: 8px;
+    font-size: 14px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    width: 100%;
+}
+
+.view-details-btn:hover {
+    transform: translateY(-1px);
+    box-shadow: 0 4px 15px rgba(102, 126, 234, 0.4);
+}
+
+.no-orders {
+    text-align: center;
+    padding: 60px 20px;
+    color: #666;
+}
+
+.page-title {
+    text-align: center;
+    margin-bottom: 30px;
+    color: #2c3e50;
+}
+
+@media (max-width: 768px) {
+    .auth-form {
+        flex-direction: column;
+    }
+    
+    .auth-input {
+        width: 100%;
+        max-width: 300px;
+    }
+    
+    .order-header {
+        flex-direction: column;
+        gap: 10px;
+        text-align: center;
+    }
+    
+    .order-info {
+        grid-template-columns: 1fr;
+    }
+}
+</style>
+
+<!-- 메인 컨테이너 -->
+<div class="checkboard-container">
+    <!-- 페이지 타이틀 -->
+    <h1 class="page-title">🔍 교정사항 확인</h1>
+    
+    <!-- 전화번호 인증 섹션 -->
+    <div class="auth-section">
+        <h2 style="margin: 0 0 10px 0; font-size: 28px;">📱 본인 확인</h2>
+        <p style="margin: 0 0 20px 0; opacity: 0.9; font-size: 16px;">주문 시 입력하신 전화번호의 끝 4자리를 입력하세요</p>
+        
+        <form method="POST" class="auth-form">
+            <input type="text" 
+                   name="phone_last4" 
+                   class="auth-input" 
+                   placeholder="전화번호 끝 4자리" 
+                   maxlength="4" 
+                   pattern="[0-9]{4}" 
+                   required 
+                   value="<?php echo isset($_POST['phone_last4']) ? htmlspecialchars($_POST['phone_last4']) : ''; ?>">
+            <button type="submit" class="auth-btn">🔍 주문내역 확인</button>
+        </form>
+        
+        <?php if ($auth_error): ?>
+            <div class="error-message">
+                ❌ <?php echo htmlspecialchars($auth_error); ?>
+            </div>
+        <?php endif; ?>
+    </div>
+
+    <!-- 주문 내역 섹션 -->
+    <?php if ($phone_auth_success && !empty($user_orders)): ?>
+        <div class="orders-grid">
+            <?php foreach ($user_orders as $order): ?>
+                <div class="order-card">
+                    <div class="order-header">
+                        <div class="order-number">주문번호 #<?php echo $order['no']; ?></div>
+                        <div class="order-status status-<?php echo $order['OrderStyle']; ?>">
+                            <?php 
+                            $status_map = [
+                                '2' => '접수중',
+                                '3' => '접수완료', 
+                                '4' => '입금대기',
+                                '5' => '시안제작중',
+                                '6' => '시안완료',
+                                '7' => '교정중',
+                                '8' => '작업완료',
+                                '9' => '작업중',
+                                '10' => '교정작업중'
+                            ];
+                            echo isset($status_map[$order['OrderStyle']]) ? $status_map[$order['OrderStyle']] : '상태미정';
+                            ?>
+                        </div>
+                    </div>
+                    
+                    <div class="order-info">
+                        <div class="info-item">
+                            <span class="info-label">주문 분류</span>
+                            <div class="info-value">
+                                <?php 
+                                $type_map = [
+                                    'inserted' => '📄 전단지',
+                                    'sticker' => '🏷️ 스티커', 
+                                    'NameCard' => '💼 명함',
+                                    'MerchandiseBond' => '🎫 상품권',
+                                    'envelope' => '✉️ 봉투',
+                                    'NcrFlambeau' => '📋 양식지',
+                                    'cadarok' => '📖 카탈로그',
+                                    'LittlePrint' => '🖨️ 소량인쇄'
+                                ];
+                                echo isset($type_map[$order['Type']]) ? $type_map[$order['Type']] : $order['Type'];
+                                ?>
+                            </div>
+                        </div>
+                        
+                        <div class="info-item">
+                            <span class="info-label">주문자명</span>
+                            <div class="info-value"><?php echo htmlspecialchars($order['name']); ?></div>
+                        </div>
+                        
+                        <div class="info-item">
+                            <span class="info-label">담당자</span>
+                            <div class="info-value"><?php echo htmlspecialchars($order['Designer'] ?: '미배정'); ?></div>
+                        </div>
+                        
+                        <div class="info-item">
+                            <span class="info-label">주문일시</span>
+                            <div class="info-value"><?php echo date('Y-m-d H:i', strtotime($order['date'])); ?></div>
+                        </div>
+                        
+                        <div class="info-item">
+                            <span class="info-label">연락처</span>
+                            <div class="info-value"><?php echo htmlspecialchars($order['phone']); ?></div>
+                        </div>
+                        
+                        <div class="info-item">
+                            <span class="info-label">이메일</span>
+                            <div class="info-value"><?php echo htmlspecialchars($order['email'] ?: '미입력'); ?></div>
+                        </div>
+                    </div>
+                    
+                    <?php if (in_array($order['OrderStyle'], ['6', '7', '8'])): ?>
+                        <button class="view-details-btn" 
+                                onclick="viewOrderDetails(<?php echo $order['no']; ?>)">
+                            📋 교정사항 및 상세내용 보기
+                        </button>
+                    <?php else: ?>
+                        <div style="background: #f8f9fa; padding: 15px; border-radius: 8px; text-align: center; color: #666;">
+                            📝 아직 교정사항이 준비되지 않았습니다.<br>
+                            <small>시안 완료 후 확인 가능합니다.</small>
+                        </div>
+                    <?php endif; ?>
+                </div>
+            <?php endforeach; ?>
+        </div>
+    
+    <?php elseif ($phone_auth_success && empty($user_orders)): ?>
+        <div class="no-orders">
+            <h3>📋 주문 내역이 없습니다</h3>
+            <p>입력하신 전화번호로 등록된 주문이 없습니다.</p>
+        </div>
+    
+    <?php elseif (!$phone_auth_success && $_POST): ?>
+        <!-- 인증 실패 메시지는 위에 표시됨 -->
+    
+    <?php else: ?>
+        <div style="background: #f8f9fa; padding: 30px; border-radius: 12px; text-align: center; color: #666;">
+            <h3>👆 위에서 전화번호 끝 4자리를 입력해주세요</h3>
+            <p>주문하실 때 입력하신 전화번호의 마지막 4자리 숫자를 입력하시면<br>해당 번호로 주문하신 내역과 교정사항을 확인하실 수 있습니다.</p>
+            
+            <div style="margin-top: 20px; padding: 15px; background: white; border-radius: 8px; border-left: 4px solid #667eea;">
+                <strong>💡 이용 안내</strong><br>
+                <small>• 전화번호 끝 4자리만 입력하시면 됩니다 (예: 1234)<br>
+                • 시안이 완료된 주문만 교정사항을 확인할 수 있습니다<br>
+                • 문의사항이 있으시면 1688-2384로 연락해주세요</small>
+            </div>
+        </div>
+    <?php endif; ?>
+</div>
+
+<script>
+function viewOrderDetails(orderNo) {
+    // 주문 상세 정보를 팝업으로 표시
+    const popup = window.open(
+        '/MlangOrder_PrintAuto/WindowSian.php?mode=OrderView&no=' + orderNo, 
+        'OrderDetails',
+        'width=1000,height=600,top=50,left=50,menubar=no,resizable=yes,statusbar=no,scrollbars=yes,toolbar=no'
+    );
+    popup.focus();
+}
+
+// 전화번호 입력 필드에 숫자만 입력되도록 제한
+document.addEventListener('DOMContentLoaded', function() {
+    const phoneInput = document.querySelector('input[name="phone_last4"]');
+    if (phoneInput) {
+        phoneInput.addEventListener('input', function(e) {
+            this.value = this.value.replace(/[^0-9]/g, '');
+        });
+    }
+});
+</script>
+
+<?php
+// 공통 푸터 포함
+if (file_exists("../includes/footer.php")) {
+    include "../includes/footer.php";
+} else {
+    echo '</body></html>';
+}
+
+// 데이터베이스 연결 종료
+if (isset($connect) && $connect) {
+    mysqli_close($connect);
+}
+?>
