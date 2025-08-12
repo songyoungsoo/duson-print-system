@@ -1,0 +1,336 @@
+--- common.lib.php (original)
++++ common.lib.php (modified)
+@@ -96,11 +96,11 @@
+         ?>
+ <!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+     "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+-<html xmlns="http://www.w3.org/1999/xhtml" xml:lang="<?php echo $available_languages[$lang][2]; ?>" lang="<?php echo $available_languages[$lang][2]; ?>" dir="<?php echo $text_dir; ?>">
++<html xmlns="http://www.w3.org/1999/xhtml" xml:lang="<?php echo  $available_languages[$lang][2] ?>" lang="<?php echo  $available_languages[$lang][2] ?>" dir="<?php echo  $text_dir ?>">
+ 
+ <head>
+ <title>phpMyAdmin</title>
+-<meta http-equiv="Content-Type" content="text/html; charset=<?php echo $charset; ?>" />
++<meta http-equiv="Content-Type" content="text/html; charset=<?php echo  $charset ?>" />
+ <style type="text/css">
+ <!--
+ body  {font-family: sans-serif; font-size: small; color: #000000; background-color: #F5F5F5}
+@@ -111,9 +111,9 @@
+ 
+ 
+ <body bgcolor="#ffffff">
+-<h1>phpMyAdmin - <?php echo $strError; ?></h1>
++<h1>phpMyAdmin - <?php echo  $strError ?></h1>
+ <p>
+-    <?php echo $strConfigFileError; ?><br /><br />
++    <?php echo  $strConfigFileError ?><br /><br />
+     <a href="config.inc.php" target="_blank">config.inc.php</a>
+ </p>
+ </body>
+@@ -144,7 +144,7 @@
+     /**
+      * Include MySQL wrappers.
+      */
+-    include('./libraries/mysql_wrappers.lib.php');
++    include('./libraries/mysqli_wrappers.lib.php');
+ 
+     /**
+      * Gets constants that defines the PHP version number.
+@@ -345,7 +345,7 @@
+         } // end if
+         if (!empty($error_message)) {
+             $error_message = htmlspecialchars($error_message);
+-            $error_message = ereg_replace("((\015\012)|(\015)|(\012)){3,}", "\n\n", $error_message);
++            $error_message = preg_replace("((\015\012)|(\015)|(\012)){3,}", "\n\n", $error_message);
+         }
+         echo '<p>' . "\n"
+              . '    ' . $GLOBALS['strMySQLSaid'] . '<br />' . "\n"
+@@ -508,9 +508,9 @@
+ 
+ 
+     /**
+-     * Use mysql_connect() or mysql_pconnect()?
+-     */
+-    $connect_func = ($cfg['PersistentConnections']) ? 'mysql_pconnect' : 'mysql_connect';
++     * Use mysqli_connect() or mysqli_pconnect()?
++     */
++    $connect_func = ($cfg['PersistentConnections']) ? 'mysqli_pconnect' : 'mysqli_connect';
+     $dblist       = array();
+ 
+ 
+@@ -699,12 +699,12 @@
+             $true_dblist  = array();
+             $is_show_dbs  = TRUE;
+             for ($i = 0; $i < $dblist_cnt; $i++) {
+-                if ($is_show_dbs && ereg('(^|[^\])(_|%)', $dblist[$i])) {
++                if ($is_show_dbs && preg_match('(^|[^\])(_|%)', $dblist[$i])) {
+                     $local_query = 'SHOW DATABASES LIKE \'' . $dblist[$i] . '\'';
+                     $rs          = PMA_mysql_query($local_query, $dbh);
+                     // "SHOW DATABASES" statement is disabled
+                     if ($i == 0
+-                        && (PMA_mysql_error() && mysql_errno() == 1045)) {
++                        && (PMA_mysql_error() && mysqli_errno() == 1045)) {
+                         $true_dblist[] = str_replace('\\_', '_', str_replace('\\%', '%', $dblist[$i]));
+                         $is_show_dbs   = FALSE;
+                     }
+@@ -716,7 +716,7 @@
+                         $true_dblist[] = $row[0];
+                     } // end while
+                     if ($rs) {
+-                        mysql_free_result($rs);
++                        mysqli_free_result($rs);
+                     }
+                 } else {
+                     $true_dblist[]     = str_replace('\\_', '_', str_replace('\\%', '%', $dblist[$i]));
+@@ -737,13 +737,13 @@
+ 
+                 // ... and if on, try to get the available dbs list
+                 if ($is_safe_show_dbs && strtoupper($is_safe_show_dbs) != 'OFF') {
+-                    $uva_alldbs   = mysql_list_dbs($userlink);
++                    $uva_alldbs   = mysqli_list_dbs($userlink);
+                     while ($uva_row = PMA_mysql_fetch_array($uva_alldbs)) {
+                         $dblist[] = $uva_row[0];
+                     } // end while
+                     $dblist_cnt   = count($dblist);
+                     unset($uva_alldbs);
+-                    mysql_free_result($rs);
++                    mysqli_free_result($rs);
+                 } // end if ($is_safe_show_dbs)
+             } //end if (PMA_MYSQL_INT_VERSION)
+ 
+@@ -759,9 +759,9 @@
+         // Access to "mysql" db allowed and dblist still empty -> gets the
+         // usable db list
+         if (!$dblist_cnt
+-            && ($rs && @mysql_numrows($rs))) {
++            && ($rs && @mysqli_numrows($rs))) {
+             $row = PMA_mysql_fetch_array($rs);
+-            mysql_free_result($rs);
++            mysqli_free_result($rs);
+             // Correction uva 19991215
+             // Previous code assumed database "mysql" admin table "db" column
+             // "db" contains literal name of user database, and works if so.
+@@ -778,7 +778,7 @@
+                 // lem9: User can be blank (anonymous user)
+                 $local_query = 'SELECT DISTINCT Db FROM mysql.db WHERE Select_priv = \'Y\' AND (User = \'' . PMA_sqlAddslashes($cfg['Server']['user']) . '\' OR User = \'\')';
+                 $rs          = PMA_mysql_query($local_query, $dbh); // Debug: or PMA_mysqlDie('', $local_query, FALSE);
+-                if ($rs && @mysql_numrows($rs)) {
++                if ($rs && @mysqli_numrows($rs)) {
+                     // Will use as associative array of the following 2 code
+                     // lines:
+                     //   the 1st is the only line intact from before
+@@ -800,8 +800,8 @@
+                             $uva_mydbs[$row['Db']] = 1;
+                         }
+                     } // end while
+-                    mysql_free_result($rs);
+-                    $uva_alldbs = mysql_list_dbs($dbh);
++                    mysqli_free_result($rs);
++                    $uva_alldbs = mysqli_list_dbs($dbh);
+                     // loic1: all databases cases - part 2
+                     if (isset($uva_mydbs['%'])) {
+                         while ($uva_row = PMA_mysql_fetch_array($uva_alldbs)) {
+@@ -821,10 +821,10 @@
+                                     // TODO: db names may contain characters
+                                     //       that are regexp instructions
+                                     $re        = '(^|(\\\\\\\\)+|[^\])';
+-                                    $uva_regex = ereg_replace($re . '%', '\\1.*', ereg_replace($re . '_', '\\1.{1}', $uva_matchpattern));
++                                    $uva_regex = preg_replace($re . '%', '\\1.*', preg_replace($re . '_', '\\1.{1}', $uva_matchpattern));
+                                     // Fixed db name matching
+                                     // 2000-08-28 -- Benjamin Gandon
+-                                    if (ereg('^' . $uva_regex . '$', $uva_db)) {
++                                    if (preg_match('^' . $uva_regex . '$', $uva_db)) {
+                                         $dblist[] = $uva_db;
+                                         break;
+                                     }
+@@ -832,20 +832,20 @@
+                             } // end if ... else if....
+                         } // end while
+                     } // end else
+-                    mysql_free_result($uva_alldbs);
++                    mysqli_free_result($uva_alldbs);
+                     unset($uva_mydbs);
+                 } // end if
+ 
+                 // 2. get allowed dbs from the "mysql.tables_priv" table
+                 $local_query = 'SELECT DISTINCT Db FROM mysql.tables_priv WHERE Table_priv LIKE \'%Select%\' AND User = \'' . PMA_sqlAddslashes($cfg['Server']['user']) . '\'';
+                 $rs          = PMA_mysql_query($local_query, $dbh); // Debug: or PMA_mysqlDie('', $local_query, FALSE);
+-                if ($rs && @mysql_numrows($rs)) {
++                if ($rs && @mysqli_numrows($rs)) {
+                     while ($row = PMA_mysql_fetch_array($rs)) {
+                         if (PMA_isInto($row['Db'], $dblist) == -1) {
+                             $dblist[] = $row['Db'];
+                         }
+                     } // end while
+-                    mysql_free_result($rs);
++                    mysqli_free_result($rs);
+                 } // end if
+             } // end if
+         } // end building available dbs from the "mysql" db
+@@ -896,8 +896,8 @@
+         // 2. Allowed database list is empty -> gets the list of all databases
+         //    on the server
+         else {
+-            $dbs          = mysql_list_dbs() or PMA_mysqlDie('', 'mysql_list_dbs()', FALSE, $error_url);
+-            $num_dbs      = ($dbs) ? @mysql_num_rows($dbs) : 0;
++            $dbs          = mysqli_list_dbs() or PMA_mysqlDie('', 'mysqli_list_dbs()', FALSE, $error_url);
++            $num_dbs      = ($dbs) ? @mysqli_num_rows($dbs) : 0;
+             $real_num_dbs = 0;
+             for ($i = 0; $i < $num_dbs; $i++) {
+                 $db_name_tmp = PMA_mysql_dbname($dbs, $i);
+@@ -907,7 +907,7 @@
+                     $real_num_dbs++;
+                 }
+             } // end for
+-            mysql_free_result($dbs);
++            mysqli_free_result($dbs);
+             $num_dbs = $real_num_dbs;
+         } // end else
+ 
+@@ -1031,7 +1031,7 @@
+     {
+         $result = PMA_mysql_query('SELECT COUNT(*) AS num FROM ' . PMA_backquote($db) . '.' . PMA_backquote($table));
+         $num    = ($result) ? PMA_mysql_result($result, 0, 'num') : 0;
+-        mysql_free_result($result);
++        mysqli_free_result($result);
+         if ($ret) {
+             return $num;
+         } else {
+@@ -1067,7 +1067,7 @@
+ <!--
+ if (typeof(window.parent) != 'undefined'
+     && typeof(window.parent.frames['nav']) != 'undefined') {
+-    window.parent.frames['nav'].location.replace('<?php echo $reload_url; ?>');
++    window.parent.frames['nav'].location.replace('<?php echo  $reload_url ?>');
+ }
+ //-->
+ </script>
+@@ -1083,7 +1083,7 @@
+                             ? ''
+                             : $tbl_status['Comment'] . ' ';
+                 $tooltip .= '(' . $tbl_status['Rows'] . ' ' . $GLOBALS['strRows'] . ')';
+-                mysql_free_result($result);
++                mysqli_free_result($result);
+                 $md5_tbl = md5($GLOBALS['table']);
+                 echo "\n";
+                 ?>
+@@ -1092,9 +1092,9 @@
+ if (typeof(document.getElementById) != 'undefined'
+     && typeof(window.parent.frames['nav']) != 'undefined'
+     && typeof(window.parent.frames['nav'].document) != 'undefined' && typeof(window.parent.frames['nav'].document) != 'unknown'
+-    && typeof(window.parent.frames['nav'].document.getElementById('<?php echo 'tbl_' . $md5_tbl; ?>')) != 'undefined'
+-    && typeof(window.parent.frames['nav'].document.getElementById('<?php echo 'tbl_' . $md5_tbl; ?>').title) == 'string') {
+-    window.parent.frames['nav'].document.getElementById('<?php echo 'tbl_' . $md5_tbl; ?>').title = '<?php echo PMA_jsFormat($tooltip, FALSE); ?>';
++    && typeof(window.parent.frames['nav'].document.getElementById('<?php echo  'tbl_' . $md5_tbl ?>')) != 'undefined'
++    && typeof(window.parent.frames['nav'].document.getElementById('<?php echo  'tbl_' . $md5_tbl ?>').title) == 'string') {
++    window.parent.frames['nav'].document.getElementById('<?php echo  'tbl_' . $md5_tbl ?>').title = '<?php echo  PMA_jsFormat($tooltip, FALSE) ?>';
+ }
+ //-->
+ </script>
+@@ -1110,7 +1110,7 @@
+                 $result = @PMA_mysql_query('SHOW TABLE STATUS FROM ' . PMA_backquote($GLOBALS['db']) . ' LIKE \'' . PMA_sqlAddslashes($GLOBALS['table'], TRUE) . '\'');
+                 if ($result) {
+                     $tbl_status = PMA_mysql_fetch_array($result, MYSQL_ASSOC);
+-                    mysql_free_result($result);
++                    mysqli_free_result($result);
+                 }
+             }
+             if (isset($tbl_status) && (int) $tbl_status['Index_length'] > 1024) {
+@@ -1121,11 +1121,11 @@
+ 
+         echo "\n";
+         ?>
+-<div align="<?php echo $GLOBALS['cell_align_left']; ?>">
+-    <table border="<?php echo $cfg['Border']; ?>" cellpadding="5">
++<div align="<?php echo  $GLOBALS['cell_align_left'] ?>">
++    <table border="<?php echo  $cfg['Border'] ?>" cellpadding="5">
+     <tr>
+-        <td bgcolor="<?php echo $cfg['ThBgcolor']; ?>">
+-            <b><?php echo (get_magic_quotes_gpc()) ? stripslashes($message) : $message; ?></b><br />
++        <td bgcolor="<?php echo  $cfg['ThBgcolor'] ?>">
++            <b><?php echo  (get_magic_quotes_gpc()) ? stripslashes($message) : $message ?></b><br />
+         </td>
+     </tr>
+         <?php
+@@ -1140,7 +1140,7 @@
+             echo "\n";
+             ?>
+     <tr>
+-        <td bgcolor="<?php echo $cfg['BgcolorOne']; ?>">
++        <td bgcolor="<?php echo  $cfg['BgcolorOne'] ?>">
+             <?php
+             echo "\n";
+             // Html format the query to be displayed
+@@ -1156,7 +1156,7 @@
+                  /* SQL-Parser-Analyzer */
+                 $query_base = htmlspecialchars($GLOBALS['sql_query']);
+                  /* SQL-Parser-Analyzer */
+-                $query_base = ereg_replace("((\015\012)|(\015)|(\012))+", $new_line, $query_base);
++                $query_base = preg_replace("((\015\012)|(\015)|(\012))+", $new_line, $query_base);
+             } else {
+                 $query_base = $GLOBALS['sql_query'];
+             }
+@@ -1210,9 +1210,9 @@
+                               . $explain_link_validate
+                               . '&amp;sql_query=';
+ 
+-                if (eregi('^SELECT[[:space:]]+', $GLOBALS['sql_query'])) {
++                if (preg_match('^SELECT[[:space:]]+', $GLOBALS['sql_query'])) {
+                     $explain_link .= urlencode('EXPLAIN ' . $GLOBALS['sql_query']) . '">' . $GLOBALS['strExplain'];
+-                } else if (eregi('^EXPLAIN[[:space:]]+SELECT[[:space:]]+', $GLOBALS['sql_query'])) {
++                } else if (preg_match('^EXPLAIN[[:space:]]+SELECT[[:space:]]+', $GLOBALS['sql_query'])) {
+                     $explain_link .= substr($GLOBALS['sql_query'], 8) . '">' . $GLOBALS['strNoExplain'];
+                 } else {
+                     $explain_link = '';
+@@ -1316,26 +1316,26 @@
+             if (!empty($GLOBALS['cfg']['MySQLManualType'])) {
+                 switch ($GLOBALS['cfg']['MySQLManualType']) {
+                     case 'old':
+-                        return '[<a href="' . $GLOBALS['cfg']['MySQLManualBase'] . '/' . $link[0] . '/' . $link[1] . '/' . $link . '.php" target="mysql_doc">' . $GLOBALS['strDocu'] . '</a>]';
++                        return '[<a href="' . $GLOBALS['cfg']['MySQLManualBase'] . '/' . $link[0] . '/' . $link[1] . '/' . $link . '.php" target="mysqli_doc">' . $GLOBALS['strDocu'] . '</a>]';
+                     case 'chapters':
+-                        return '[<a href="' . $GLOBALS['cfg']['MySQLManualBase'] . '/manual_' . $chapter . '.php#' . $link . '" target="mysql_doc">' . $GLOBALS['strDocu'] . '</a>]';
++                        return '[<a href="' . $GLOBALS['cfg']['MySQLManualBase'] . '/manual_' . $chapter . '.php#' . $link . '" target="mysqli_doc">' . $GLOBALS['strDocu'] . '</a>]';
+                     case 'big':
+-                        return '[<a href="' . $GLOBALS['cfg']['MySQLManualBase'] . '#' . $link . '" target="mysql_doc">' . $GLOBALS['strDocu'] . '</a>]';
++                        return '[<a href="' . $GLOBALS['cfg']['MySQLManualBase'] . '#' . $link . '" target="mysqli_doc">' . $GLOBALS['strDocu'] . '</a>]';
+                     case 'none':
+                         return '';
+                     case 'searchable':
+                     default:
+-                        return '[<a href="' . $GLOBALS['cfg']['MySQLManualBase'] . '/' . $link . '.php" target="mysql_doc">' . $GLOBALS['strDocu'] . '</a>]';
++                        return '[<a href="' . $GLOBALS['cfg']['MySQLManualBase'] . '/' . $link . '.php" target="mysqli_doc">' . $GLOBALS['strDocu'] . '</a>]';
+                 }
+             } else {
+                 // no Type defined, show the old one
+-                return '[<a href="' . $GLOBALS['cfg']['MySQLManualBase'] . '/' . $link[0] . '/' . $link[1] . '/' . $link . '.php" target="mysql_doc">' . $GLOBALS['strDocu'] . '</a>]';
++                return '[<a href="' . $GLOBALS['cfg']['MySQLManualBase'] . '/' . $link[0] . '/' . $link[1] . '/' . $link . '.php" target="mysqli_doc">' . $GLOBALS['strDocu'] . '</a>]';
+             }
+         } else {
+             // no URL defined
+             if (!empty($GLOBALS['cfg']['ManualBaseShort'])) {
+                 // the old configuration
+-                return '[<a href="' . $GLOBALS['cfg']['MySQLManualBase'] . '/' . $link[0] . '/' . $link[1] . '/' . $link . '.php" target="mysql_doc">' . $GLOBALS['strDocu'] . '</a>]';
++                return '[<a href="' . $GLOBALS['cfg']['MySQLManualBase'] . '/' . $link[0] . '/' . $link[1] . '/' . $link . '.php" target="mysqli_doc">' . $GLOBALS['strDocu'] . '</a>]';
+             } else {
+                 return '';
+             }
+@@ -1399,7 +1399,7 @@
+     {
+         // The name contains caracters <> a-z, A-Z and "_" -> not a reserved
+         // word
+-        if (!ereg('^[a-zA-Z_]+$', $the_name)) {
++        if (!preg_match('^[a-zA-Z_]+$', $the_name)) {
+             return TRUE;
+         }
+ 
+@@ -1440,8 +1440,8 @@
+             $timestamp = time();
+         }
+ 
+-        $date = ereg_replace('%[aA]', $day_of_week[(int)strftime('%w', $timestamp)], $datefmt);
+-        $date = ereg_replace('%[bB]', $month[(int)strftime('%m', $timestamp)-1], $date);
++        $date = preg_replace('%[aA]', $day_of_week[(int)strftime('%w', $timestamp)], $datefmt);
++        $date = preg_replace('%[bB]', $month[(int)strftime('%m', $timestamp)-1], $date);
+ 
+         return strftime($date, $timestamp);
+     } // end of the 'PMA_localisedDate()' function

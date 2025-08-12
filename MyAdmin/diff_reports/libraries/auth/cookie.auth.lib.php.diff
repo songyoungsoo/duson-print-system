@@ -1,0 +1,115 @@
+--- cookie.auth.lib.php (original)
++++ cookie.auth.lib.php (modified)
+@@ -91,28 +91,28 @@
+         ?>
+ <!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+     "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+-<html xmlns="http://www.w3.org/1999/xhtml" xml:lang="<?php echo $GLOBALS['available_languages'][$GLOBALS['lang']][2]; ?>" lang="<?php echo $GLOBALS['available_languages'][$GLOBALS['lang']][2]; ?>" dir="<?php echo $GLOBALS['text_dir']; ?>">
++<html xmlns="http://www.w3.org/1999/xhtml" xml:lang="<?php echo  $GLOBALS['available_languages'][$GLOBALS['lang']][2] ?>" lang="<?php echo  $GLOBALS['available_languages'][$GLOBALS['lang']][2] ?>" dir="<?php echo  $GLOBALS['text_dir'] ?>">
+ 
+ <head>
+-<title>phpMyAdmin <?php echo PMA_VERSION; ?></title>
+-<meta http-equiv="Content-Type" content="text/html; charset=<?php echo $GLOBALS['charset']; ?>" />
+-<base href="<?php echo $cfg['PmaAbsoluteUri']; ?>" />
++<title>phpMyAdmin <?php echo  PMA_VERSION ?></title>
++<meta http-equiv="Content-Type" content="text/html; charset=<?php echo  $GLOBALS['charset'] ?>" />
++<base href="<?php echo  $cfg['PmaAbsoluteUri'] ?>" />
+ <style type="text/css">
+ <!--
+-body            {font-family: <?php echo $right_font_family; ?>; font-size: <?php echo $font_size; ?>; color: #000000}
+-td              {font-family: <?php echo $right_font_family; ?>; font-size: <?php echo $font_size; ?>; color: #000000}
+-h1              {font-family: <?php echo $right_font_family; ?>; font-size: <?php echo $font_bigger; ?>; font-weight: bold}
+-select          {font-family: <?php echo $right_font_family; ?>; font-size: <?php echo $font_size; ?>; background-color:#ffffff; color:#000000}
+-input.textfield {font-family: <?php echo $right_font_family; ?>; font-size: <?php echo $font_size; ?>; background-color:#ffffff; color:#000000}
+-.warning        {font-family: <?php echo $right_font_family; ?>; font-size: <?php echo $font_size; ?>; font-weight: bold; color: #FF0000}
++body            {font-family: <?php echo  $right_font_family ?>; font-size: <?php echo  $font_size ?>; color: #000000}
++td              {font-family: <?php echo  $right_font_family ?>; font-size: <?php echo  $font_size ?>; color: #000000}
++h1              {font-family: <?php echo  $right_font_family ?>; font-size: <?php echo  $font_bigger ?>; font-weight: bold}
++select          {font-family: <?php echo  $right_font_family ?>; font-size: <?php echo  $font_size ?>; background-color:#ffffff; color:#000000}
++input.textfield {font-family: <?php echo  $right_font_family ?>; font-size: <?php echo  $font_size ?>; background-color:#ffffff; color:#000000}
++.warning        {font-family: <?php echo  $right_font_family ?>; font-size: <?php echo  $font_size ?>; font-weight: bold; color: #FF0000}
+ //-->
+ </style>
+ </head>
+ 
+-<body bgcolor="<?php echo $cfg['RightBgColor']; ?>">
++<body bgcolor="<?php echo  $cfg['RightBgColor'] ?>">
+ <center>
+ <a href="http://www.phpmyadmin.net" target="_blank"><img name="imLogo" id="imLogo" src="images/pma_logo.png" border="0" width="88" height="31" alt="phpMyAdmin" /></a>
+-<h1><?php echo sprintf($GLOBALS['strWelcome'], ' phpMyAdmin ' . PMA_VERSION . ' - ' . $GLOBALS['strLogin']); ?></h1>
++<h1><?php echo  sprintf($GLOBALS['strWelcome'], ' phpMyAdmin ' . PMA_VERSION . ' - ' . $GLOBALS['strLogin']) ?></h1>
+ <br />
+ 
+         <?php
+@@ -122,7 +122,7 @@
+             ?>
+ <!-- Language selection -->
+ <form method="post" action="index.php">
+-    <input type="hidden" name="server" value="<?php echo $server; ?>" />
++    <input type="hidden" name="server" value="<?php echo  $server ?>" />
+     <b>Language:&nbsp;</b>
+     <select name="lang" dir="ltr" onchange="this.form.submit();">
+             <?php
+@@ -142,7 +142,7 @@
+             } // end while
+             ?>
+     </select>
+-    <input type="submit" value="<?php echo $GLOBALS['strGo']; ?>" />
++    <input type="submit" value="<?php echo  $GLOBALS['strGo'] ?>" />
+ </form>
+ <br />
+             <?php
+@@ -151,22 +151,22 @@
+ 
+         // Displays the warning message and the login form
+         ?>
+-<p class="warning"><?php echo $GLOBALS['strCookiesRequired']; ?></p>
++<p class="warning"><?php echo  $GLOBALS['strCookiesRequired'] ?></p>
+ <br />
+ 
+ 
+ <!-- Login form -->
+-<form method="post" action="index.php" name="login_form"<?php echo $autocomplete; ?>>
++<form method="post" action="index.php" name="login_form"<?php echo  $autocomplete ?>>
+     <table cellpadding="5">
+     <tr>
+-        <td align="<?php echo $cell_align; ?>"><b><?php echo $GLOBALS['strLogUsername']; ?>&nbsp;</b></td>
+-        <td align="<?php echo $cell_align; ?>">
+-            <input type="text" name="pma_username" value="<?php echo (isset($default_user) ? $default_user : ''); ?>" size="24" class="textfield" onfocus="this.select()" />
++        <td align="<?php echo  $cell_align ?>"><b><?php echo  $GLOBALS['strLogUsername'] ?>&nbsp;</b></td>
++        <td align="<?php echo  $cell_align ?>">
++            <input type="text" name="pma_username" value="<?php echo  (isset($default_user) ? $default_user : '') ?>" size="24" class="textfield" onfocus="this.select()" />
+         </td>
+     </tr>
+     <tr>
+-        <td align="<?php echo $cell_align; ?>"><b><?php echo $GLOBALS['strLogPassword']; ?>&nbsp;</b></td>
+-        <td align="<?php echo $cell_align; ?>">
++        <td align="<?php echo  $cell_align ?>"><b><?php echo  $GLOBALS['strLogPassword'] ?>&nbsp;</b></td>
++        <td align="<?php echo  $cell_align ?>">
+             <input type="password" name="pma_password" value="" size="24" class="textfield" onfocus="this.select()" />
+         </td>
+     </tr>
+@@ -175,8 +175,8 @@
+             echo "\n";
+             ?>
+     <tr>
+-        <td align="<?php echo $cell_align; ?>"><b><?php echo $GLOBALS['strServerChoice']; ?>&nbsp;:&nbsp;</b></td>
+-        <td align="<?php echo $cell_align; ?>">
++        <td align="<?php echo  $cell_align ?>"><b><?php echo  $GLOBALS['strServerChoice'] ?>&nbsp;:&nbsp;</b></td>
++        <td align="<?php echo  $cell_align ?>">
+             <select name="server">
+             <?php
+             echo "\n";
+@@ -230,9 +230,9 @@
+         }
+         echo "\n";
+         ?>
+-            <input type="hidden" name="lang" value="<?php echo $lang; ?>" />
+-            <input type="hidden" name="convcharset" value="<?php echo $convcharset; ?>" />
+-            <input type="submit" value="<?php echo $GLOBALS['strLogin']; ?>" />
++            <input type="hidden" name="lang" value="<?php echo  $lang ?>" />
++            <input type="hidden" name="convcharset" value="<?php echo  $convcharset ?>" />
++            <input type="submit" value="<?php echo  $GLOBALS['strLogin'] ?>" />
+         </td>
+     </tr>
+     </table>

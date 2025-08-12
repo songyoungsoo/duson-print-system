@@ -1,0 +1,168 @@
+MlangWebOffice(1.0) 프로그램 개발안
+
+/MlangWebOffice //최상의 디렉토리
+
+customer.php //파일-거래처현황(정보입력,관리)
+customer //폴더-거래처현황
+
+///////////////////////////////// 테이블구조 //////////////////////////////////////
+MlangWebOffice_customer
+
+CREATE TABLE WebOffice_customer (
+  no mediumint(12) unsigned NOT NULL auto_increment,
+  bizname varchar(250) default NULL,
+  ceoname varchar(250) default NULL,
+  tel_1 varchar(50) default NULL,
+  tel_2 varchar(50) default NULL,
+  tel_3 varchar(50) default NULL,
+  fax_1 varchar(50) default NULL,
+  fax_2 varchar(50) default NULL,
+  fax_3 varchar(50) default NULL,
+  zip varchar(250) default NULL,
+  zip1 varchar(250) default NULL,
+  zip2 varchar(250) default NULL,
+  offtel_1 varchar(50) default NULL,
+  offtel_2 varchar(50) default NULL,
+  offtel_3 varchar(50) default NULL,
+  offfax_1 varchar(50) default NULL,
+  offfax_2 varchar(50) default NULL,
+  offfax_3 varchar(50) default NULL,
+  offmap varchar(250) default NULL,
+  cont text,
+  PRIMARY KEY  (no)
+) TYPE=MyISAM;
+///////////////////////////////////////////////////////////////////////////////////
+
+
+//-----------------------------------------------------------------------------------------------------------//
+
+호출 파일 폴더명: job
+관리자 실행파일명: job.php
+
+///////////////////////////////// 테이블구조 //////////////////////////////////////
+MlangWebOffice_job
+
+CREATE TABLE MlangWebOffice_job (
+  no mediumint(11) unsigned NOT NULL auto_increment,
+  page int(10) NOT NULL default '',
+  subject varchar(250) default NULL,
+  company_name varchar(250) default NULL,
+  m_name varchar(250) default NULL,
+  tel_1 varchar(10) default NULL,
+  tel_2 varchar(10) default NULL,
+  tel_3 varchar(10) default NULL,
+  hp_1 varchar(10) default NULL,
+  hp_2 varchar(10) default NULL,
+  hp_3 varchar(10) default NULL,
+  email varchar(250) default NULL,
+  local varchar(100) default NULL,
+  grade varchar(100) default NULL,
+  pay varchar(100) default NULL,
+  exp varchar(100) default NULL,
+  age varchar(100) default NULL,
+  end_date1 varchar(100) default NULL,
+  end_date2 varchar(100) default NULL,
+  end_date3 varchar(100) default NULL,
+  sex varchar(100) default NULL,
+  part varchar(250) default NULL,
+  main_work text,
+  require text,
+  company_address text,
+  method text,
+  document text,
+  AddDate date NOT NULL default '0000-00-00',
+  PageCount int(12) NOT NULL default '',
+  PRIMARY KEY  (no)
+) TYPE=MyISAM;
+
+///////////////////////////////////////
+
+MlangWebOffice_job_Admin 
+
+CREATE TABLE MlangWebOffice_job_Admin (
+  no mediumint(11) unsigned NOT NULL auto_increment,
+  recnum int(10) NOT NULL default '20',
+  lnum int(10) NOT NULL default '7',
+  New_Article int(10) NOT NULL default '1',
+  cutlen int(10) NOT NULL default '20',
+  PRIMARY KEY  (no)
+) TYPE=MyISAM;
+
+///////////////////////////////////////////////////////////////////////////////////
+
+//-----------------------------------------------------------------------------------------------------------//
+
+거래내역서 
+
+관련파일 폴더명: Biz_particulars
+실행 파일명: Biz_particulars.php
+
+Biz_particulars
+
+///////////////////////////////// 테이블구조 //////////////////////////////////////
+Biz_particulars_admin // 제출처 현장명 담당자 연락처 를 저장 하기위한 공간 (차후에 업체정보와 연동하기위한 ID 테이블 미리만들어둔다.)
+
+CREATE TABLE MlangWebOffice_Biz_particulars_admin (
+  no mediumint(12) unsigned NOT NULL auto_increment,
+  id int(12) NOT NULL default '',
+  biz_name varchar(250) default NULL,
+  a_name varchar(250) default NULL,
+  b_name varchar(250) default NULL,
+  tel_1 varchar(10) default NULL,
+  tel_2 varchar(10) default NULL,
+  tel_3 varchar(10) default NULL,
+  PRIMARY KEY  (no)
+) TYPE=MyISAM;
+
+///////////////////////////////////////
+
+Biz_particulars // Biz_particulars_admin 에 대한 자료를 저장하기위한 공간
+
+CREATE TABLE MlangWebOffice_Biz_particulars (
+  no mediumint(12) unsigned NOT NULL auto_increment,
+  admin_no int(12) NOT NULL default '',
+  biz_date varchar(250) default NULL,
+  kinds varchar(250) default NULL,
+  fitting_no varchar(250) default NULL,
+  engineer_name varchar(250) default NULL,
+  money varchar(100) default NULL,
+  remark varchar(250) default NULL,
+  PRIMARY KEY  (no)
+) TYPE=MyISAM;
+
+////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+
+
+중기 거래처 현황
+
+heavy_customer.php //파일-거래처현황(정보입력,관리)
+heavy_customer //폴더-거래처현황
+
+///////////////////////////////// 테이블구조 //////////////////////////////////////
+MlangWebOffice_heavy_customer
+
+CREATE TABLE MlangWebOffice_heavy_customer (
+  no mediumint(12) unsigned NOT NULL auto_increment,
+  bizname varchar(250) default NULL,
+  ceoname varchar(250) default NULL,
+  a_name varchar(250) default NULL,
+  ceo_hp_1 varchar(50) default NULL,
+  ceo_hp_2 varchar(50) default NULL,
+  ceo_hp_3 varchar(50) default NULL,
+  a_hp_1 varchar(50) default NULL,
+  a_hp_2 varchar(50) default NULL,
+  a_hp_3 varchar(50) default NULL,
+  tel text,
+  fax text,
+  zip varchar(250) default NULL,
+  zip1 varchar(250) default NULL,
+  zip2 varchar(250) default NULL,
+  offmap varchar(250) default NULL,
+  cont text,
+  memo text,
+  PRIMARY KEY  (no)
+) TYPE=MyISAM;
+///////////////////////////////////////////////////////////////////////////////////
+
+
+//-----------------------------------------------------------------------------------------------------------//

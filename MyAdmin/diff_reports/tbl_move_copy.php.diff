@@ -1,0 +1,20 @@
+--- tbl_move_copy.php (original)
++++ tbl_move_copy.php (modified)
+@@ -17,7 +17,7 @@
+     global $db, $table, $target;
+     global $sql_insert_data;
+ 
+-    $sql_insert = eregi_replace('INSERT INTO (`?)' . $table . '(`?)', 'INSERT INTO ' . $target, $sql_insert);
++    $sql_insert = preg_replace('INSERT INTO (`?)' . $table . '(`?)', 'INSERT INTO ' . $target, $sql_insert);
+     $result     = PMA_mysql_query($sql_insert) or PMA_mysqlDie('', $sql_insert, '', $GLOBALS['err_url']);
+ 
+     $sql_insert_data .= $sql_insert . ';' . "\n";
+@@ -85,7 +85,7 @@
+     $parsed_sql[2]['data'] = $target;
+     $sql_structure = PMA_SQP_formatHtml($parsed_sql, 'query_only'); 
+ 
+-//    $sql_structure = eregi_replace('^CREATE TABLE (`?)' . $table . '(`?)', 'CREATE TABLE ' . $target, $sql_structure);
++//    $sql_structure = preg_replace('^CREATE TABLE (`?)' . $table . '(`?)', 'CREATE TABLE ' . $target, $sql_structure);
+ 
+     $result        = @PMA_mysql_query($sql_structure);
+     if (PMA_mysql_error()) {

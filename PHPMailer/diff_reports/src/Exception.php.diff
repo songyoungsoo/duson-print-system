@@ -1,0 +1,7 @@
+--- Exception.php (original)
++++ Exception.php (modified)
+@@ -38,3 +38,4 @@
+         return '<strong>' . htmlspecialchars($this->getMessage(), ENT_COMPAT | ENT_HTML401) . "</strong><br />\n";
+     }
+ }
++?>

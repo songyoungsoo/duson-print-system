@@ -1,0 +1,61 @@
+<?php
+include"../db.php";
+$result= mysql_query("select * from member where no='$no'",$db);
+$row= mysql_fetch_array($result);
+if($row){
+$MlangMember_id = htmlspecialchars($row[id]);
+$MlangMember_pass1 = htmlspecialchars($row[pass]);  
+$MlangMember_name = htmlspecialchars($row[name]); 
+$MlangMember_phone1 = htmlspecialchars($row[phone1]); 
+$MlangMember_phone2 = htmlspecialchars($row[phone2]);
+$MlangMember_phone3 = htmlspecialchars($row[phone3]);
+$MlangMember_hendphone1 = htmlspecialchars($row[hendphone1]);
+$MlangMember_hendphone2 = htmlspecialchars($row[hendphone2]);
+$MlangMember_hendphone3 = htmlspecialchars($row[hendphone3]);
+$MlangMember_email = htmlspecialchars($row[email]);   
+$MlangMember_sample6_postcode = htmlspecialchars($row[sample6_postcode]);
+$MlangMember_sample6_address = htmlspecialchars($row[sample6_address]);
+//$MlangMember_sample6_jibunAddress = htmlspecialchars($row[sample6_jibunAddress]);////
+$MlangMember_sample6_detailAddress = htmlspecialchars($row[sample6_detailAddress]);
+$MlangMember_sample6_extraAddress = htmlspecialchars($row[sample6_extraAddress]);
+$MlangMember_po1 = htmlspecialchars($row[po1]); 
+$MlangMember_po2 = htmlspecialchars($row[po2]); 
+$MlangMember_po3 = htmlspecialchars($row[po3]); 
+$MlangMember_po4 = htmlspecialchars($row[po4]); 
+$MlangMember_po5 = htmlspecialchars($row[po5]); 
+$MlangMember_po6 = htmlspecialchars($row[po6]); 
+$MlangMember_po7 = htmlspecialchars($row[po7]);
+
+        $CONTENT=$row[connent];
+		$CONTENT = eregi_replace("<", "&lt;", $CONTENT);
+		$CONTENT = eregi_replace(">", "&gt;", $CONTENT);
+		$CONTENT = eregi_replace("\"", "&quot;", $CONTENT);
+		$CONTENT = eregi_replace("\|", "&#124;", $CONTENT);
+		$CONTENT = eregi_replace("\r\n\r\n", "<P>", $CONTENT);
+		$CONTENT = eregi_replace("\r\n", "<BR>", $CONTENT);
+        $MlangMember_connent=$CONTENT;
+
+$MlangMember_date = htmlspecialchars($row[date]); 
+$MlangMember_level = htmlspecialchars($row[level]); 
+}else{
+
+if($op=="back"){
+echo ("<script language=javascript>
+window.alert('��û�Ͻ� ������ ���� ���� �ʽ��ϴ�.\\n\\n�̹� ���� �Ǿ��� �����ϼ� �ֽ��ϴ�.');
+history.go(-1);
+</script>
+");
+exit;
+}
+if($op=="pop"){
+echo ("<script language=javascript>
+window.alert('��û�Ͻ� ������ ���� ���� �ʽ��ϴ�.\\n\\n�̹� ���� �Ǿ��� �����ϼ� �ֽ��ϴ�.');
+window.self.close();
+</script>
+");
+exit;
+}
+
+}
+mysql_close($db);
+?>

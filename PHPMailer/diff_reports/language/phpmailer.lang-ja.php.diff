@@ -1,0 +1,7 @@
+--- phpmailer.lang-ja.php (original)
++++ phpmailer.lang-ja.php (modified)
+@@ -27,3 +27,4 @@
+ $PHPMAILER_LANG['smtp_error']           = 'SMTPサーバーエラー: ';
+ $PHPMAILER_LANG['variable_set']         = '変数が存在しません: ';
+ $PHPMAILER_LANG['extension_missing']    = '拡張機能が見つかりません: ';
++?>

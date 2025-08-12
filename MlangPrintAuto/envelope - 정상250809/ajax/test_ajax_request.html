@@ -1,0 +1,142 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Envelope 가격 계산 Ajax 테스트</title>
+    <style>
+        body { font-family: Arial, sans-serif; margin: 20px; }
+        .test-section { margin: 20px 0; padding: 15px; border: 1px solid #ddd; }
+        .result { margin: 10px 0; padding: 10px; background-color: #f9f9f9; }
+        .success { background-color: #e8f5e8; }
+        .error { background-color: #ffe8e8; }
+        button { padding: 10px 15px; margin: 5px; cursor: pointer; }
+        pre { white-space: pre-wrap; }
+    </style>
+</head>
+<body>
+    <h1>Envelope 가격 계산 Ajax 테스트</h1>
+    
+    <div class="test-section">
+        <h3>테스트 1: 정상 케이스 - 소봉투 전체 주문</h3>
+        <button onclick="testCase1()">테스트 실행</button>
+        <div id="result1" class="result"></div>
+    </div>
+    
+    <div class="test-section">
+        <h3>테스트 2: 정상 케이스 - 인쇄만</h3>
+        <button onclick="testCase2()">테스트 실행</button>
+        <div id="result2" class="result"></div>
+    </div>
+    
+    <div class="test-section">
+        <h3>테스트 3: 에러 케이스 - 필수 파라미터 누락</h3>
+        <button onclick="testCase3()">테스트 실행</button>
+        <div id="result3" class="result"></div>
+    </div>
+    
+    <div class="test-section">
+        <h3>테스트 4: FormData 방식 테스트</h3>
+        <button onclick="testCase4()">테스트 실행</button>
+        <div id="result4" class="result"></div>
+    </div>
+
+    <script>
+        // 공통 Ajax 요청 함수
+        function makeAjaxRequest(data, resultElementId, useFormData = false) {
+            const resultElement = document.getElementById(resultElementId);
+            resultElement.innerHTML = '<p>요청 중...</p>';
+            resultElement.className = 'result';
+            
+            const xhr = new XMLHttpRequest();
+            xhr.open('POST', 'calculate_envelope_price.php', true);
+            
+            let requestData;
+            if (useFormData) {
+                // FormData 방식
+                const formData = new FormData();
+                for (const key in data) {
+                    formData.append(key, data[key]);
+                }
+                requestData = formData;
+            } else {
+                // JSON 방식
+                xhr.setRequestHeader('Content-Type', 'application/json');
+                requestData = JSON.stringify(data);
+            }
+            
+            xhr.onreadystatechange = function() {
+                if (xhr.readyState === 4) {
+                    let response;
+                    try {
+                        response = JSON.parse(xhr.responseText);
+                    } catch (e) {
+                        response = { success: false, error: { message: 'JSON 파싱 에러: ' + xhr.responseText } };
+                    }
+                    
+                    if (response.success) {
+                        resultElement.className = 'result success';
+                        resultElement.innerHTML = '<h4>성공:</h4><pre>' + JSON.stringify(response, null, 2) + '</pre>';
+                    } else {
+                        resultElement.className = 'result error';
+                        resultElement.innerHTML = '<h4>에러:</h4><pre>' + JSON.stringify(response, null, 2) + '</pre>';
+                    }
+                }
+            };
+            
+            xhr.onerror = function() {
+                resultElement.className = 'result error';
+                resultElement.innerHTML = '<h4>네트워크 에러:</h4><p>요청을 처리할 수 없습니다.</p>';
+            };
+            
+            xhr.send(requestData);
+        }
+        
+        // 테스트 케이스 1: 정상 케이스 - 소봉투 전체 주문
+        function testCase1() {
+            const data = {
+                MY_type: '282',
+                PN_type: '283',
+                MY_amount: '1000',
+                POtype: '1',
+                ordertype: 'total'
+            };
+            makeAjaxRequest(data, 'result1');
+        }
+        
+        // 테스트 케이스 2: 정상 케이스 - 인쇄만
+        function testCase2() {
+            const data = {
+                MY_type: '282',
+                PN_type: '283',
+                MY_amount: '2000',
+                POtype: '2',
+                ordertype: 'print'
+            };
+            makeAjaxRequest(data, 'result2');
+        }
+        
+        // 테스트 케이스 3: 에러 케이스 - 필수 파라미터 누락
+        function testCase3() {
+            const data = {
+                MY_type: '282',
+                PN_type: '283'
+                // MY_amount, POtype, ordertype 누락
+            };
+            makeAjaxRequest(data, 'result3');
+        }
+        
+        // 테스트 케이스 4: FormData 방식
+        function testCase4() {
+            const data = {
+                MY_type: '466',
+                PN_type: '473',
+                MY_amount: '1000',
+                POtype: '3',
+                ordertype: 'total'
+            };
+            makeAjaxRequest(data, 'result4', true);
+        }
+    </script>
+</body>
+</html>

@@ -1,0 +1,55 @@
+
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+  <meta charset="UTF-8">
+  <title>컬러스티커 상품 페이지</title>
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+
+<div class="product-display">
+  <div class="image-gallery">
+    <div class="main-image-container">
+      <img src="img/img1.jpg" class="main-image" id="mainImage">
+      <div class="zoom-mask" id="zoomMask"></div>
+      <div class="zoom-view" id="zoomView"></div>
+    </div>
+    <div class="thumbnails">
+      <img src="img/img1.jpg" class="thumb" data-big="img/img1.jpg">
+      <img src="img/img2.jpg" class="thumb" data-big="img/img2.jpg">
+      <img src="img/img3.jpg" class="thumb" data-big="img/img3.jpg">
+      <img src="img/img4.jpg" class="thumb" data-big="img/img4.jpg">
+    </div>
+  </div>
+
+  <div class="product-options">
+    <h2>컬러스티커</h2>
+    <label>용지:
+      <select>
+        <option>아트스티커-90g</option>
+      </select>
+    </label>
+    <label>인쇄도수:
+      <select>
+        <option>단면4도</option>
+      </select>
+    </label>
+    <label>사이즈 (mm):</label>
+    <div class="size-input">
+      <input type="number" placeholder="가로"> x <input type="number" placeholder="세로">
+    </div>
+    <label>수량:
+      <select>
+        <option>500매</option>
+        <option>1000매</option>
+      </select>
+    </label>
+    <p>제품금액: <strong>4,950원</strong></p>
+    <button>주문하기</button>
+  </div>
+</div>
+
+<script src="script.js"></script>
+</body>
+</html>

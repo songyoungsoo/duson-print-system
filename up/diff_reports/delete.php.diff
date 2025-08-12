@@ -1,0 +1,7 @@
+--- delete.php (original)
++++ delete.php (modified)
+@@ -33,3 +33,4 @@
+ ?>
+ </body>
+ </html>
++?>

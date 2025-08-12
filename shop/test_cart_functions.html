@@ -1,0 +1,261 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>🧪 장바구니 기능 테스트</title>
+    <link rel="stylesheet" href="../css/modern-style.css">
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>🧪 장바구니 기능 테스트</h1>
+            <p>삭제 기능과 가격 계산 일치 여부를 테스트합니다</p>
+        </div>
+        
+        <!-- 1. 상품 추가 테스트 -->
+        <div class="card">
+            <div class="card-header">
+                <h3 class="card-title">1. 상품 추가 테스트</h3>
+            </div>
+            
+            <form id="testForm">
+                <div class="form-group">
+                    <label class="form-label">재질</label>
+                    <select name="jong" class="form-control">
+                        <option value="jil 아트유광코팅">jil 아트유광코팅</option>
+                    </select>
+                </div>
+                
+                <div class="form-group">
+                    <label class="form-label">가로 (mm)</label>
+                    <input type="number" name="garo" class="form-control" value="100">
+                </div>
+                
+                <div class="form-group">
+                    <label class="form-label">세로 (mm)</label>
+                    <input type="number" name="sero" class="form-control" value="150">
+                </div>
+                
+                <div class="form-group">
+                    <label class="form-label">수량</label>
+                    <select name="mesu" class="form-control">
+                        <option value="1000">1000매</option>
+                    </select>
+                </div>
+                
+                <div class="form-group">
+                    <label class="form-label">편집</label>
+                    <select name="uhyung" class="form-control">
+                        <option value="0">인쇄만</option>
+                    </select>
+                </div>
+                
+                <div class="form-group">
+                    <label class="form-label">도무송</label>
+                    <select name="domusong" class="form-control">
+                        <option value="08000 원형">08000 원형</option>
+                    </select>
+                </div>
+                
+                <div class="text-center">
+                    <button type="button" onclick="testCalculatePrice()" class="btn btn-info">💰 가격 계산</button>
+                    <button type="button" onclick="testAddToBasket()" class="btn btn-primary">🛒 장바구니 추가</button>
+                </div>
+            </form>
+            
+            <div id="priceResult" class="alert alert-info" style="display: none; margin-top: 1rem;">
+                <h4>가격 계산 결과:</h4>
+                <div id="priceDisplay"></div>
+            </div>
+        </div>
+        
+        <!-- 2. 장바구니 목록 -->
+        <div class="card">
+            <div class="card-header">
+                <h3 class="card-title">2. 장바구니 목록</h3>
+                <button onclick="loadBasketItems()" class="btn btn-secondary">🔄 새로고침</button>
+            </div>
+            
+            <div id="basketContent">
+                <p>장바구니를 로드하려면 새로고침 버튼을 클릭하세요.</p>
+            </div>
+        </div>
+        
+        <!-- 3. 결과 로그 -->
+        <div class="card">
+            <div class="card-header">
+                <h3 class="card-title">3. 테스트 로그</h3>
+                <button onclick="clearLog()" class="btn btn-danger">🗑️ 로그 지우기</button>
+            </div>
+            
+            <div id="testLog" style="background: #f8f9fa; padding: 1rem; border-radius: 8px; font-family: monospace; white-space: pre-wrap; max-height: 400px; overflow-y: auto;">
+                테스트 로그가 여기에 표시됩니다...
+            </div>
+        </div>
+    </div>
+
+    <script>
+    function log(message) {
+        const logDiv = document.getElementById('testLog');
+        const timestamp = new Date().toLocaleTimeString();
+        logDiv.textContent += `[${timestamp}] ${message}\n`;
+        logDiv.scrollTop = logDiv.scrollHeight;
+    }
+    
+    function clearLog() {
+        document.getElementById('testLog').textContent = '테스트 로그가 여기에 표시됩니다...\n';
+    }
+    
+    // 가격 계산 테스트
+    function testCalculatePrice() {
+        log('🧮 가격 계산 테스트 시작...');
+        
+        const form = document.getElementById('testForm');
+        const formData = new FormData(form);
+        formData.set('action', 'calculate');
+        
+        fetch('calculate_price.php', {
+            method: 'POST',
+            body: formData
+        })
+        .then(response => response.json())
+        .then(data => {
+            if (data.success) {
+                log(`✅ 가격 계산 성공: ${data.price}원 (VAT: ${data.price_vat}원)`);
+                document.getElementById('priceDisplay').innerHTML = 
+                    `<strong>가격:</strong> ${data.price}원<br><strong>VAT 포함:</strong> ${data.price_vat}원`;
+                document.getElementById('priceResult').style.display = 'block';
+            } else {
+                log(`❌ 가격 계산 실패: ${data.message}`);
+            }
+        })
+        .catch(error => {
+            log(`❌ 가격 계산 오류: ${error.message}`);
+        });
+    }
+    
+    // 장바구니 추가 테스트
+    function testAddToBasket() {
+        log('🛒 장바구니 추가 테스트 시작...');
+        
+        const form = document.getElementById('testForm');
+        const formData = new FormData(form);
+        formData.set('action', 'add_to_basket');
+        formData.set('no', '');
+        
+        fetch('add_to_basket_safe.php', {
+            method: 'POST',
+            body: formData
+        })
+        .then(response => response.json())
+        .then(data => {
+            if (data.success) {
+                log(`✅ 장바구니 추가 성공: ${data.price}원 (VAT: ${data.price_vat}원)`);
+                loadBasketItems();
+            } else {
+                log(`❌ 장바구니 추가 실패: ${data.message}`);
+            }
+        })
+        .catch(error => {
+            log(`❌ 장바구니 추가 오류: ${error.message}`);
+        });
+    }
+    
+    // 장바구니 목록 로드
+    function loadBasketItems() {
+        log('📋 장바구니 목록 로드 중...');
+        
+        fetch('get_basket_items.php')
+        .then(response => response.json())
+        .then(data => {
+            if (data.success) {
+                log(`✅ 장바구니 로드 성공: ${data.items.length}개 아이템`);
+                displayBasketItems(data.items, data.total, data.total_vat);
+            } else {
+                log(`❌ 장바구니 로드 실패: ${data.message}`);
+                document.getElementById('basketContent').innerHTML = 
+                    '<div class="alert alert-warning">장바구니가 비어있습니다.</div>';
+            }
+        })
+        .catch(error => {
+            log(`❌ 장바구니 로드 오류: ${error.message}`);
+        });
+    }
+    
+    // 장바구니 아이템 표시
+    function displayBasketItems(items, total, totalVat) {
+        if (items.length === 0) {
+            document.getElementById('basketContent').innerHTML = 
+                '<div class="alert alert-info">장바구니가 비어있습니다.</div>';
+            return;
+        }
+        
+        let html = '<table class="modern-table">';
+        html += '<thead><tr>';
+        html += '<th>NO</th><th>재질</th><th>크기</th><th>수량</th><th>도무송</th>';
+        html += '<th>가격</th><th>VAT포함</th><th>삭제</th>';
+        html += '</tr></thead><tbody>';
+        
+        items.forEach(item => {
+            html += '<tr>';
+            html += `<td>${item.no}</td>`;
+            html += `<td>${item.jong_short}</td>`;
+            html += `<td>${item.garo}×${item.sero}mm</td>`;
+            html += `<td>${item.mesu}매</td>`;
+            html += `<td>${item.domusong_short}</td>`;
+            html += `<td><strong>${item.st_price}원</strong></td>`;
+            html += `<td><strong>${item.st_price_vat}원</strong></td>`;
+            html += `<td><button onclick="testRemoveItem(${item.no})" class="btn btn-danger" style="padding: 5px 10px; font-size: 12px;">삭제</button></td>`;
+            html += '</tr>';
+        });
+        
+        html += '<tr class="total-row">';
+        html += `<td colspan="5"><strong>합계</strong></td>`;
+        html += `<td><strong>￦${total}</strong></td>`;
+        html += `<td><strong>￦${totalVat}</strong></td>`;
+        html += '<td></td>';
+        html += '</tr>';
+        html += '</tbody></table>';
+        
+        document.getElementById('basketContent').innerHTML = html;
+    }
+    
+    // 아이템 삭제 테스트
+    function testRemoveItem(itemNo) {
+        log(`🗑️ 아이템 삭제 테스트 시작 (NO: ${itemNo})...`);
+        
+        if (!confirm('이 상품을 삭제하시겠습니까?')) {
+            log('❌ 사용자가 삭제를 취소했습니다.');
+            return;
+        }
+        
+        fetch('remove_from_basket.php', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/x-www-form-urlencoded',
+            },
+            body: 'no=' + itemNo
+        })
+        .then(response => response.json())
+        .then(data => {
+            if (data.success) {
+                log(`✅ 아이템 삭제 성공: ${data.message}`);
+                loadBasketItems(); // 목록 새로고침
+            } else {
+                log(`❌ 아이템 삭제 실패: ${data.message}`);
+            }
+        })
+        .catch(error => {
+            log(`❌ 아이템 삭제 오류: ${error.message}`);
+        });
+    }
+    
+    // 페이지 로드 시 장바구니 로드
+    document.addEventListener('DOMContentLoaded', function() {
+        loadBasketItems();
+        log('🚀 테스트 페이지가 로드되었습니다.');
+    });
+    </script>
+</body>
+</html>

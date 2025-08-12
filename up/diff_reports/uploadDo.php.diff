@@ -1,0 +1,7 @@
+--- uploadDo.php (original)
++++ uploadDo.php (modified)
+@@ -30,3 +30,4 @@
+ ?>
+ </body>
+ </html>
++?>

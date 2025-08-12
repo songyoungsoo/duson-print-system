@@ -1,0 +1,7 @@
+--- phpmailer.lang-ro.php (original)
++++ phpmailer.lang-ro.php (modified)
+@@ -31,3 +31,4 @@
+ $PHPMAILER_LANG['smtp_detail']          = 'Detalii SMTP: ';
+ $PHPMAILER_LANG['smtp_error']           = 'Eroare server SMTP: ';
+ $PHPMAILER_LANG['variable_set']         = 'Nu se poate seta/reseta variabila. ';
++?>

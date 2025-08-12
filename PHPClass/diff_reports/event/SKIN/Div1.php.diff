@@ -1,0 +1,9 @@
+--- Div1.php (original)
++++ Div1.php (modified)
+@@ -248,4 +248,5 @@
+ 
+ </BODY>
+ 
+-</HTML> 
++</HTML>
++?>

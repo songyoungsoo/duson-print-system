@@ -1,0 +1,259 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>두손기획 메뉴</title>
+  <style>
+    body {
+      font-family: 'Noto Sans KR', sans-serif;
+      margin: 0;
+      padding: 10px;
+      background-color: #f8f9fa;
+    }
+    
+    .menu-container {
+      width: 160px;
+      margin: 0 auto;
+      border-radius: 8px;
+      overflow: hidden;
+      box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+    }
+    
+    .menu-button {
+      display: block;
+      width: 100%;
+      padding: 12px 0;
+      text-align: center;
+      text-decoration: none;
+      font-weight: 600;
+      font-size: 14px;
+      border: none;
+      transition: all 0.3s ease;
+      margin-bottom: 1px;
+      position: relative;
+    }
+    
+    .kakao-button {
+      background-color: #FEE500;
+      color: #3A1D1D;
+      padding: 15px 0;
+    }
+    
+    .kakao-button:hover {
+      background-color: #F6D800;
+    }
+    
+    .kakao-title {
+      font-size: 16px;
+      font-weight: bold;
+      display: block;
+      margin-bottom: 5px;
+    }
+    
+    .kakao-icon {
+      display: inline-block;
+      width: 30px;
+      height: 30px;
+      background-color: #3A1D1D;
+      color: #FEE500;
+      border-radius: 50%;
+      line-height: 30px;
+      margin-bottom: 5px;
+    }
+    
+    .contact-info {
+      background-color: #F1F8FF;
+      padding: 12px;
+      text-align: center;
+      border-bottom: 1px solid #E3F2FD;
+    }
+    
+    .contact-title {
+      color: #3498db;
+      font-size: 16px;
+      font-weight: bold;
+      margin: 0 0 5px 0;
+    }
+    
+    .contact-number {
+      color: #FF6B00;
+      font-size: 18px;
+      font-weight: bold;
+      margin: 5px 0;
+    }
+    
+    .contact-detail {
+      margin: 3px 0;
+      color: #333;
+      font-size: 12px;
+    }
+    
+    .contact-detail strong {
+      display: inline-block;
+      width: 30px;
+      text-align: right;
+      margin-right: 5px;
+    }
+    
+    .orange-button {
+      background-color: #FF9F00;
+      color: white;
+    }
+    
+    .orange-button:hover {
+      background-color: #F39200;
+    }
+    
+    .blue-button {
+      background-color: #3498db;
+      color: white;
+    }
+    
+    .blue-button:hover {
+      background-color: #2980b9;
+    }
+    
+    .webhard-section {
+      background-color: #F5F5F5;
+      padding: 10px;
+      text-align: center;
+      border-bottom: 1px solid #E0E0E0;
+    }
+    
+    .webhard-title {
+      color: #3498db;
+      font-weight: bold;
+      margin-bottom: 5px;
+    }
+    
+    .webhard-info {
+      font-size: 12px;
+      color: #333;
+      margin: 3px 0;
+    }
+    
+    .bank-section {
+      background-color: #F1F8FF;
+      padding: 10px;
+      text-align: center;
+    }
+    
+    .bank-title {
+      color: #3498db;
+      font-weight: bold;
+      margin-bottom: 5px;
+    }
+    
+    .bank-info {
+      font-size: 12px;
+      color: #333;
+      margin: 5px 0;
+      text-align: left;
+      padding-left: 15px;
+    }
+    
+    .bank-icon {
+      display: inline-block;
+      width: 16px;
+      height: 16px;
+      margin-right: 5px;
+      vertical-align: middle;
+      background-color: #3498db;
+      border-radius: 3px;
+    }
+    
+    .card-section {
+      background-color: #3498db;
+      color: white;
+      padding: 10px;
+      text-align: center;
+    }
+    
+    .card-title {
+      font-weight: bold;
+      margin-bottom: 5px;
+    }
+    
+    .card-info {
+      font-size: 14px;
+    }
+  </style>
+  <script>
+    function addfavorites() {
+      var favoriteurl = "http://localhost";
+      var favoritetitle = "두손기획";
+      if (document.all)
+        window.external.AddFavorite(favoriteurl, favoritetitle);
+    }
+
+    function WEBSILDESIGNWINDOW(a, b, c, d) {
+      window.open(a, "pop_mlang66", "width=" + b + ",height=" + c + ",top=0,left=100,statusbar=no,scrollbars=" + d + ",toolbar=no'");
+    }
+  </script>
+</head>
+<body>
+  <div class="menu-container">
+    <!-- 카카오톡 채널 버튼 -->
+    <a href="http://pf.kakao.com/_pEGhj/chat" target="_blank" class="menu-button kakao-button">
+      <span class="kakao-icon">톡</span>
+      <span class="kakao-title">카톡 인쇄상담</span>
+    </a>
+    
+    <!-- 연락처 정보 -->
+    <div class="contact-info">
+      <div class="contact-title">인쇄상담</div>
+      <div class="contact-number">1688-2384</div>
+      <div class="contact-detail"><strong>TEL</strong> 02)2632-1830</div>
+      <div class="contact-detail"><strong>교정</strong> 02)2671-1830</div>
+      <div class="contact-detail"><strong>FAX</strong> 02)2632-1829</div>
+      <div class="contact-detail"><strong>야간</strong> 010-3712-1830</div>
+    </div>
+    
+    <!-- 가격안내 주문하기 버튼 -->
+    <a href="http://dsp114.com/shop/view.php" class="menu-button orange-button">
+      가격안내 주문하기
+    </a>
+    
+    <!-- 메일 버튼 -->
+    <a href="mailto:dsp1830@naver.com" class="menu-button blue-button">
+      메일<br>
+      <span style="font-size: 12px; font-weight: normal;">dsp1830@naver.com</span>
+    </a>
+    
+    <!-- 웹하드 정보 -->
+    <div class="webhard-section">
+      <div class="webhard-title">웹하드</div>
+      <div class="webhard-info">홈페이지/전용폴더에</div>
+      <div class="webhard-info"><strong>ID</strong> : duson1830</div>
+      <div class="webhard-info"><strong>PW</strong> : 1830</div>
+    </div>
+    
+    <!-- 입금안내 -->
+    <div class="bank-section">
+      <div class="bank-title">입금안내</div>
+      <div class="bank-info">
+        <span class="bank-icon"></span>
+        국민 두손기획 차정선<br>
+        <span style="margin-left: 21px;">999-1688-2384</span>
+      </div>
+      <div class="bank-info">
+        <span class="bank-icon"></span>
+        신한 차정선 두손기획<br>
+        <span style="margin-left: 21px;">110-342-543507</span>
+      </div>
+      <div class="bank-info">
+        <span class="bank-icon"></span>
+        농협 차정선 두손기획<br>
+        <span style="margin-left: 21px;">301-2632-1830-11</span>
+      </div>
+    </div>
+    
+    <!-- 카드 정보 -->
+    <div class="card-section">
+      <div class="card-title">카드 이용가능</div>
+      <div class="card-info">전화 1688-2384</div>
+    </div>
+  </div>
+</body>
+</html>

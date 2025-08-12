@@ -1,0 +1,52 @@
+{
+    "version": 1,
+    "tools": [
+      {
+        "name": "local-shell",
+        "type": "shell",
+        "command": "powershell.exe",
+        "args": ["-NoProfile", "-ExecutionPolicy", "Bypass", "-Command"]
+      },
+      {
+        "name": "file-search",
+        "type": "file_search",
+        "root": "C:/xampp/htdocs",
+        "include": ["**/*.php", "**/*.js", "**/*.ts", "**/*.tsx", "**/*.css", "**/*.scss", "**/*.html", "**/*.md", "**/*.sql", "**/*.json", "**/*.yml", "**/*.yaml"],
+        "exclude": ["node_modules/**", "vendor/**", "playwright-report/**", "test-results/**", ".git/**"]
+      },
+      {
+        "name": "playwright-runner",
+        "type": "shell",
+        "command": "powershell.exe",
+        "args": ["-NoProfile", "-ExecutionPolicy", "Bypass", "-Command", "cd C:/xampp/htdocs; npx playwright test --reporter=html; npx playwright show-report"]
+      }
+    ],
+    "sources": [
+      {
+        "name": "htdocs",
+        "type": "folder",
+        "path": "C:/xampp/htdocs"
+      }
+    ],
+    "env": {
+      "NODE_ENV": "development"
+    }
+  }
+  {
+    "mcpServers": {
+      "supabase": {
+        "command": "cmd",
+        "args": [
+          "/c",
+          "npx",
+          "-y",
+          "@supabase/mcp-server-supabase@latest",
+          "--read-only",
+          "--project-ref=<project-ref>"
+        ],
+        "env": {
+          "SUPABASE_ACCESS_TOKEN": "<personal-access-token>"
+        }
+      }
+    }
+  }

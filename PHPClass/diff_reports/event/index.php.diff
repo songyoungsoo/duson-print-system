@@ -1,0 +1,26 @@
+--- index.php (original)
++++ index.php (modified)
+@@ -31,12 +31,12 @@
+ 
+ if($style=="br"){
+         $CONTENT=$txt;
+-		$CONTENT = eregi_replace("<", "&lt;", $CONTENT);
+-		$CONTENT = eregi_replace(">", "&gt;", $CONTENT);
+-		$CONTENT = eregi_replace("\"", "&quot;", $CONTENT);
+-		$CONTENT = eregi_replace("\|", "&#124;", $CONTENT);
+-		$CONTENT = eregi_replace("\r\n\r\n", "<P>", $CONTENT);
+-		$CONTENT = eregi_replace("\r\n", "<BR>", $CONTENT);
++		$CONTENT = preg_replace("<", "&lt;", $CONTENT);
++		$CONTENT = preg_replace(">", "&gt;", $CONTENT);
++		$CONTENT = preg_replace("\"", "&quot;", $CONTENT);
++		$CONTENT = preg_replace("\|", "&#124;", $CONTENT);
++		$CONTENT = preg_replace("\r\n\r\n", "<P>", $CONTENT);
++		$CONTENT = preg_replace("\r\n", "<BR>", $CONTENT);
+ 		$connent_text=$CONTENT;
+ }
+ if($style=="html"){$connent_text="$txt";}
+@@ -47,3 +47,4 @@
+ </body>
+ 
+ </html>
++?>

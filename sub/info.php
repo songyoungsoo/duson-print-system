@@ -1,0 +1,208 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
+<html>
+<head>
+<title>▒ 두손기획 - 기획에서 인쇄까지 원스톱으로 해결해 드립니다.</title>
+<meta http-equiv="Content-Type" content="text/html; charset=euc-kr">
+<style type="text/css">
+<!--
+table {
+	font-size: 12px;
+}
+a:link {
+	color: #333333;
+	text-decoration: none;
+}
+a:hover {
+	color: #666666;
+	text-decoration: none;
+}
+a:visited {
+	color: #666666;
+	text-decoration: none;
+}
+
+</style>
+
+
+<script language="JavaScript" type="text/JavaScript">
+
+function MM_preloadImages() { //v3.0
+  var d=document; if(d.images){ if(!d.MM_p) d.MM_p=new Array();
+    var i,j=d.MM_p.length,a=MM_preloadImages.arguments; for(i=0; i<a.length; i++)
+    if (a[i].indexOf("#")!=0){ d.MM_p[j]=new Image; d.MM_p[j++].src=a[i];}}
+}
+
+function MM_swapImgRestore() { //v3.0
+  var i,x,a=document.MM_sr; for(i=0;a&&i<a.length&&(x=a[i])&&x.oSrc;i++) x.src=x.oSrc;
+}
+
+function MM_findObj(n, d) { //v4.01
+  var p,i,x;  if(!d) d=document; if((p=n.indexOf("?"))>0&&parent.frames.length) {
+    d=parent.frames[n.substring(p+1)].document; n=n.substring(0,p);}
+  if(!(x=d[n])&&d.all) x=d.all[n]; for (i=0;!x&&i<d.forms.length;i++) x=d.forms[i][n];
+  for(i=0;!x&&d.layers&&i<d.layers.length;i++) x=MM_findObj(n,d.layers[i].document);
+  if(!x && d.getElementById) x=d.getElementById(n); return x;
+}
+
+function MM_swapImage() { //v3.0
+  var i,j=0,x,a=MM_swapImage.arguments; document.MM_sr=new Array; for(i=0;i<(a.length-2);i+=3)
+   if ((x=MM_findObj(a[i]))!=null){document.MM_sr[j++]=x; if(!x.oSrc) x.oSrc=x.src; x.src=a[i+2];}
+}
+
+</script>
+</head>
+
+<body background="/img/bg.gif" leftmargin="0" topmargin="0" marginwidth="0" marginheight="0" onLoad="MM_preloadImages('../img/main_m1a.jpg','../img/main_m2a.jpg','../img/main_m3a.jpg','../img/main_m5a.jpg','../img/main_m6a.jpg','../img/main_m7a.jpg','../img/main_m8a.jpg','../img/main_m10a.jpg','../img/main_m11a.jpg')">
+<table width="990" border="0" align="center" cellpadding="0" cellspacing="0">
+		<tr style="background-image: url('http://dsp114.com/img/top231205.gif');
+		background-repeat: no-repeat;
+		background-size: cover;
+		width: 990px;
+		height: 52px;">
+  <td align="center" border="0" colspan="2">
+      <!--메인 이미지 로고 시작 -->
+      <?php include $_SERVER['DOCUMENT_ROOT'] . "/session/index.php"; ?>
+      <a href="http://localhost/index.php" style="font-weight: bold;">HOME</a>|
+      <a href="/sub/info.php" style="font-weight: bold;">회사소개</a>|
+      <a href="/sub/leaflet.php" style="font-weight: bold;">포트폴리오</a>|
+      <a href="/sub/estimate_auto.php" style="font-weight: bold;">자동견적</a>|
+      <a href="/sub/checkboard.php" style="font-weight: bold;color: white; background-color: orange; padding: 7px;">교정보기</a>|
+      <a href="/bbs/qna.php" style="font-weight: bold;">고객문의</a>|
+      </td>
+      <!-- 메인 이미지 로고  끝 -->
+    </td>
+  </tr>
+  <tr> 
+    <td width="400" height="150"><img src="/img/11.jpg" width="400" height="150" /></td>
+    <td width="590" height="150"><img src="/WEBSILDESIGN/swf/WEBSILDESIGN.gif" width="590" height="150" /></td>
+  </tr>
+  <tr> 
+  <td height="10" colspan="2"></td>
+  </tr>
+</table>
+
+  <!-- <map name="Map2">
+    <area shape="rect" coords="4,7,162,127" href="#">
+    <area shape="rect" coords="165,7,323,127" href="#">
+    <area shape="rect" coords="4,133,162,253" href="#">
+    <area shape="rect" coords="165,133,323,253" href="#">
+    <area shape="rect" coords="326,7,484,127" href="#">
+    <area shape="rect" coords="325,132,484,253" href="#">
+    <area shape="rect" coords="487,7,645,127" href="#">
+    <area shape="rect" coords="487,133,645,253" href="#">
+  </map> -->
+<table width="990" border="0" align="center" cellpadding="0" cellspacing="0">
+  <tr> 
+    <td width="160" height="1" valign="top"> <p> 
+        <!--왼쪽 배너 메뉴  시작-->
+        <?php include $_SERVER['DOCUMENT_ROOT'] ."/left.htm" ?>
+        <!-- 왼쪽 배너 메뉴 끝 -->
+      </p></td>
+    <td width="9"><img src="../img/space.gif" width="9" height="9"></td>
+	<td> 
+      <!--본문 내용 시작-->
+      <table width="692" border="0" cellspacing="0" cellpadding="0">
+        <tr> 
+          <td><a href="leaflet.htm" onMouseOut="MM_swapImgRestore()" onMouseOver="MM_swapImage('Image22','','../img/main_m10a.jpg',1)"><img src="../img/main_m10.jpg" name="Image22" width="77" height="32" border="0"></a></td>
+                <td><a href="sticker.htm" onMouseOut="MM_swapImgRestore()" onMouseOver="MM_swapImage('Image25','','../img/main_m7a.jpg',1)"><img src="../img/main_m7.jpg" name="Image25" width="77" height="32" border="0"></a></td>
+                <td><a href="catalog.htm" onMouseOut="MM_swapImgRestore()" onMouseOver="MM_swapImage('Image20','','../img/main_m2a.jpg',1)"><img src="../img/main_m2.jpg" name="Image20" width="77" height="32" border="0"></a></td>
+                <td><a href="brochure.htm" onMouseOut="MM_swapImgRestore()" onMouseOver="MM_swapImage('Image21','','../img/main_m3a.jpg',1)"><img src="../img/main_m3.jpg" name="Image21" width="77" height="32" border="0"></a></td>
+               <td><a href="bookdesign.htm" onMouseOut="MM_swapImgRestore()" onMouseOver="MM_swapImage('Image26','','../img/main_m8a.jpg',1)"><img src="../img/main_m8.jpg" name="Image26" width="77" height="32" border="0"></a></td>
+               <td><a href="poster.htm" onMouseOut="MM_swapImgRestore()" onMouseOver="MM_swapImage('Image27','','../img/main_m11a.jpg',1)"><img src="../img/main_m11.jpg" name="Image27" width="76" height="32" border="0"></a></td>
+               <td><a href="namecard.htm" onMouseOut="MM_swapImgRestore()" onMouseOver="MM_swapImage('Image23','','../img/main_m5a.jpg',1)"><img src="../img/main_m5.jpg" name="Image23" width="77" height="32" border="0"></a></td>
+               <td><a href="envelope.htm" onMouseOut="MM_swapImgRestore()" onMouseOver="MM_swapImage('Image24','','../img/main_m6a.jpg',1)"><img src="../img/main_m6.jpg" name="Image24" width="77" height="32" border="0"></a></td>              
+               <td><a href="seosig.htm" onMouseOut="MM_swapImgRestore()" onMouseOver="MM_swapImage('Image19','','../img/main_m1a.jpg',1)"><img src="../img/main_m1.jpg" name="Image19" width="77" height="32" border="0"></a></td>       </tr>
+      </table>
+      <table width="692" border="0" cellspacing="0" cellpadding="0">
+        <tr> 
+          <td valign="top">&nbsp;</td>
+        </tr>
+        <tr> 
+          <td valign="top"><img src="../img/t_info.gif" width="692" height="31"> 
+            <br> <br> 
+            <table width="620" border="0" align="center" cellpadding="0" cellspacing="0">
+              <tr> 
+                <td width="207" valign="top"><img src="../img/info_img1.jpg" width="171" height="203"></td>
+                <td width="413" valign="top"><p><img src="../img/info_t1.gif" width="67" height="14"><br>
+                    <br>
+                    <img src="../img/info_img2.jpg" width="305" height="16"><br>
+                    <br>
+                    <font color="#666666">안녕하십니까?<br>
+                    두손기획인쇄 홈페이지를 방문하여 주셔서 감사드립니다.<br>
+                    <br>
+                    <font color="#339900"><strong>&quot;시간약속은 생명같이 디자인은 최고&quot;</strong></font> 
+                    라는 사훈을 내걸고 16년째<br>
+                    전문 기획인쇄업체로 성장해 왔습니다.<br>
+                    <br>
+                    광고의 효과를 최대한 발휘하기위해 확실한 디자인을 찾습니까?<br>
+                    두손기획인쇄는 기획에서 인쇄까지 모든 시스템을 일괄처리하여 신속하고,<br>
+                    창조적인 디자인 컨셉을 바탕으로 카달로그, 브로슈어, 전단지, 로고 심벌 등<br>
+                    작은것 하나에도 정성을 다하여 제품을 작품으로 인쇄물과 디자인에 있어<br>
+                    고객에게 최고의 기쁨과 만족을 드리기 위해 최선을 다 하겠습니다.<br>
+                    <br>
+                    <img src="../img/info_img3.jpg" width="400" height="60"> </font></p></td>
+              </tr>
+              <tr> 
+                <td valign="top">&nbsp;</td>
+                <td valign="top">&nbsp;</td>
+              </tr>
+              <tr> 
+                <td valign="top">&nbsp;</td>
+                <td valign="top">&nbsp;</td>
+              </tr>
+              <tr> 
+                <td valign="top"><font color="#666666"><img src="../img/info_t2.gif" width="81" height="14"></font></td>
+                <td valign="top">&nbsp;</td>
+              </tr>
+              <tr> 
+                <td colspan="2" valign="top"><font color="#996600"><strong><br>
+                  - 기획ㆍ인쇄 전문</strong></font></td>
+              </tr>
+              <tr> 
+                <td colspan="2" valign="top"><font color="#996600">&nbsp;</font></td>
+              </tr>
+              <tr> 
+                <td colspan="2" valign="top"><font color="#996600"><strong>- 심벌 
+                  로고, 카달로그, 브로슈어, 팜플렛, 리플렛, 전단지, 포스타, 명함, 봉투, 쿠폰, 스티카, 라벨, <br>
+                  &nbsp;&nbsp;북디자인, 칼라박스디자인, 메뉴얼, 판촉물, 기타인쇄</strong></font></td>
+              </tr>
+              <tr> 
+                <td valign="top">&nbsp;</td>
+                <td valign="top">&nbsp;</td>
+              </tr>
+              <tr> 
+                <td valign="top">&nbsp;</td>
+                <td valign="top">&nbsp;</td>
+              </tr>
+              <tr> 
+                <td valign="top"><img src="../img/info_t3.gif" width="118" height="14"></td>
+                <td valign="top">&nbsp;</td>
+              </tr>
+              <tr> 
+                <td valign="top">&nbsp;</td>
+                <td valign="top">&nbsp;</td>
+              </tr>
+              <tr> 
+                <td colspan="2" valign="top"><div align="center"><img src="../img/map.jpg" width="600" height="375"></div></td>
+              </tr>
+            </table>
+            
+            </td>
+        </tr>
+      </table>
+      <p> 
+        <!--본문 내용 끝 -->
+      </p></td>
+    <td width="9">&nbsp;</td>
+    <td width="120" valign="top"> 
+      <!-- 오른쪽 배너 시작 -->
+      <?php include $_SERVER['DOCUMENT_ROOT'] ."/right.htm" ?>
+      <!-- 오른쪽 배너 끝 -->
+    </td>
+  </tr>
+</table>
+<!-- 하단부분 시작 -->
+<?php include $_SERVER['DOCUMENT_ROOT'] ."/bottom.htm" ?>
+<!-- 하단부분 끝 -->
+</body>
+</html>

@@ -1,0 +1,113 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+  <meta charset="UTF-8">
+  <!-- <link
+  href="https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@400;500;700;900&display=swap"
+  rel="stylesheet"
+> -->
+  <style>
+    @import url('https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@400;500;700;900&display=swap');
+    body { font-family: 'Noto Sans KR', sans-serif; }
+
+    .sidebar {
+      width: 160px;
+      margin: 0 auto;
+      padding: 0;
+      list-style: none;
+      border: 1px solid #ddd;
+      border-radius: 4px;
+      overflow: hidden;
+      background: #fff;
+      font-size: 14px;
+    }
+    .sidebar li { border-bottom: 1px solid #eee; }
+    .sidebar li:last-child { border-bottom: none; }
+
+    .sidebar .title {
+      background: #000000;
+      color: #fff;
+      text-align: center;
+      font-weight: 700;
+      padding: 8px 0;
+      cursor: default;
+    }
+    .sidebar a {
+      display: block;
+      padding: 12px;
+      text-decoration: none;
+      color: #333;
+      transition: background 0.2s, color 0.2s, transform 0.2s;
+    }
+    .sidebar a:hover {
+      transform: translateX(4px);
+    }
+
+    /* 카톡 상담하기 */
+    .sidebar a.kakao {
+      background: #FEE100;
+      color: #3C1E1E;
+    }
+    .sidebar a.kakao:hover {
+      background: #E6C800;
+      color: #000;
+    }
+
+    /* 견적안내 주문하기 */
+    .sidebar a.estimate {
+      background: #FF8C00;
+      color: #fff;
+    }
+    .sidebar a.estimate:hover {
+      background: #E07B00;
+    }
+
+    /* 기타 도시적 톤 */
+    .sidebar a.default-1 { background: #ffffff; }
+    .sidebar a.default-1:hover { background: #CFD8DC; }
+
+    .sidebar a.default-2 { background: #ffffff; }
+    .sidebar a.default-2:hover { background: #B0BEC5; }
+
+    .sidebar a.default-3 { background: #ffffff; }
+    .sidebar a.default-3:hover { background: #CFD8DC; }
+  </style>
+</head>
+<body>
+
+<ul class="sidebar">
+  <li class="title">고객 센터</li>
+  <li><a href="http://pf.kakao.com/_pEGhj/chat" target="_blank" class="kakao">카톡 상담하기</a></li>
+  <li><a href="javascript:addfavorites()" class="default-1">즐겨찾기 추가</a></li>
+  <li><a href="tel:16882384" class="default-1">인쇄 상담<br>1688-2384<br>Tel:02)2632-1830<br>FAX:02)2632-1829<br>야간:010-3712-1830</a></li>
+
+  <li class="title">주문 안내</li>
+  <li><a href="http://localhost/shop/view.php" class="estimate">견적안내/주문하기</a></li>
+    <li class="title">메일/웹하드</li>
+  <li><a href="mailto:dsp1830@naver.com" class="default-2">메일 상담<br>dsp1830@naver.com</a></li>
+  <li><a href="http://www.webhard.co.kr/" target="_blank" class="default-2">웹하드 접속<br>ID:duson1830<br>PW: 1830</a></li>
+
+  <li class="title">입금 안내</li>
+    <li><a href="https://www.kbstar.com" target='_blank'   class="default-3">예금주:<br>두손기획인쇄차경선 </a></li>
+  <li><a href="https://www.kbstar.com" target='_blank'   class="default-3">국민은행 999-1688-2384</a></li>
+  <li><a href="https://www.shinhan.com/" target='_blank' class="default-3">신한은행 110-342-543507</a></li>
+  <li><a href="https://www.nonghyup.com" target='_blank' class="default-3">농협 301-2632-1829</a></li>
+
+  <li class="title">카드결제</li>
+  <li><a href="#" class="default-1">카드 결제 가능</a></li>
+</ul>
+
+<script>
+  function addfavorites() {
+    var url = window.location.href;
+    var title = document.title;
+    if (window.external && window.external.AddFavorite) {
+      window.external.AddFavorite(url, title);
+    } else {
+      alert('Ctrl+D를 눌러 즐겨찾기에 추가하세요.');
+    }
+  }
+</script>
+
+</body>
+</html>

@@ -1,0 +1,7 @@
+--- phpmailer.lang-bg.php (original)
++++ phpmailer.lang-bg.php (modified)
+@@ -25,3 +25,4 @@
+ $PHPMAILER_LANG['smtp_error']           = 'SMTP сървърна грешка: ';
+ $PHPMAILER_LANG['variable_set']         = 'Не може да се установи или възстанови променлива: ';
+ $PHPMAILER_LANG['extension_missing']    = 'Липсва разширение: ';
++?>

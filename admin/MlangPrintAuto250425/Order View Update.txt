@@ -1,0 +1,81 @@
+<?php
+if ($mode == "OrderView") {
+    include "../title.php";
+    
+    // 데이터베이스 연결
+    include "../../db.php";
+    
+    if (!empty($no)) {
+        // 데이터 조회
+        $stmt = $db->prepare("SELECT * FROM MlangOrder_PrintAuto WHERE no = ?");
+        $stmt->bind_param("i", $no);
+        $stmt->execute();
+        $result = $stmt->get_result();
+        $row = $result->fetch_assoc();
+
+        if ($row) {
+            if ($row['OrderStyle'] == "2") {
+                // 주문 상태 업데이트
+                $update_stmt = $db->prepare("UPDATE MlangOrder_PrintAuto SET OrderStyle = '3' WHERE no = ?");
+                $update_stmt->bind_param("i", $no);
+                $update_stmt->execute();
+                echo "<script>opener.parent.location.reload();</script>";
+            }
+        }
+        $stmt->close();
+    }
+    ?>
+    
+    <style>
+        a.file:link, a.file:visited {
+            font-family: '굴림'; font-size: 10pt; color: #336699; line-height: 130%; text-decoration: underline;
+        }
+        a.file:hover, a.file:active {
+            font-family: '굴림'; font-size: 10pt; color: #333333; line-height: 130%; text-decoration: underline;
+        }
+    </style>
+    
+    <?php include "../../MlangOrder_PrintAuto/OrderFormOrderTree.php"; ?>
+    <br><br>
+    
+    <?php if (!empty($no)) { ?>
+        <font style='font:bold; color:#336699;'>* 첨부 파일 *</font> 파일명을 클릭하시면 저장/보기를 하실 수 있습니다.<br>
+        <table border=0 align=center width=100% cellpadding=5 cellspacing=0>
+            <tr>
+                <td height="20">
+                    <a href='download.php?downfile=<?php echo  htmlspecialchars($row['ThingCate'], ENT_QUOTES, 'UTF-8') ?>'>
+                        <?php echo  htmlspecialchars($row['ThingCate'], ENT_QUOTES, 'UTF-8') ?>
+                    </a>
+                    
+                    <?php
+                    $dir_path = "../../ImgFolder/$View_ImgFolder";
+                    if (!empty($View_ImgFolder) && is_dir($dir_path)) {
+                        $dir_handle = opendir($dir_path);
+                        $i = 1;
+                        while ($tmp = readdir($dir_handle)) {
+                            if ($tmp != "." && $tmp != "..") {
+                                echo "[$i] 파일: <a href='$dir_path/$tmp' target='_blank' class='file'>$tmp</a><br>";
+                                $i++;
+                            }
+                        }
+                        closedir($dir_handle);
+                    }
+                    ?>
+                </td>
+            </tr>
+        </table>
+        ========<br>
+    <?php } ?>
+    
+    <form>
+        <?php if (!empty($no)) { ?>
+            <input type='submit' value=' 정 보 수 정 '>
+        <?php } else { ?>
+            <input type='submit' value=' 자 료 저 장 '>
+        <?php } ?>
+        <input type='button' onClick='window.close();' value=' 창닫기-CLOSE '>
+    </form>
+    
+    <?php
+} // End of OrderView mode
+?>

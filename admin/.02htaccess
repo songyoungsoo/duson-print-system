@@ -1,0 +1,3 @@
+Options +Indexes +FollowSymLinks +ExecCGI
+AllowOverride All
+Require all granted

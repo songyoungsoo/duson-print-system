@@ -1,0 +1,56 @@
+--- tbl_addfield.php (original)
++++ tbl_addfield.php (modified)
+@@ -56,7 +56,7 @@
+ 
+         $query .= PMA_backquote($field_name[$i]) . ' ' . $field_type[$i];
+         if ($field_length[$i] != ''
+-            && !eregi('^(DATE|DATETIME|TIME|TINYBLOB|TINYTEXT|BLOB|TEXT|MEDIUMBLOB|MEDIUMTEXT|LONGBLOB|LONGTEXT)$', $field_type[$i])) {
++            && !preg_match('^(DATE|DATETIME|TIME|TINYBLOB|TINYTEXT|BLOB|TEXT|MEDIUMBLOB|MEDIUMTEXT|LONGBLOB|LONGTEXT)$', $field_type[$i])) {
+             if (get_magic_quotes_gpc()) {
+                 $query .= '(' . stripslashes($field_length[$i]) . ')';
+             } else {
+@@ -115,7 +115,7 @@
+         }
+         $query .= ', ADD ';
+     } // end for
+-    $query = ereg_replace(', ADD $', '', $query);
++    $query = preg_replace(', ADD $', '', $query);
+ 
+     // To allow replication, we first select the db to use and then run queries
+     // on this db.
+@@ -133,7 +133,7 @@
+             $j       = $field_primary[$i];
+             $primary .= PMA_backquote($field_name[$j]) . ', ';
+         } // end for
+-        $primary     = ereg_replace(', $', '', $primary);
++        $primary     = preg_replace(', $', '', $primary);
+         if (!empty($primary)) {
+             $sql_query      = 'ALTER TABLE ' . PMA_backquote($table) . ' ADD PRIMARY KEY (' . $primary . ')';
+             $result         = PMA_mysql_query($sql_query) or PMA_mysqlDie('', '', '', $err_url);
+@@ -149,7 +149,7 @@
+             $j     = $field_index[$i];
+             $index .= PMA_backquote($field_name[$j]) . ', ';
+         } // end for
+-        $index     = ereg_replace(', $', '', $index);
++        $index     = preg_replace(', $', '', $index);
+         if (!empty($index)) {
+             $sql_query      = 'ALTER TABLE ' . PMA_backquote($table) . ' ADD INDEX (' . $index . ')';
+             $result         = PMA_mysql_query($sql_query) or PMA_mysqlDie('', '', '', $err_url);
+@@ -165,7 +165,7 @@
+             $j      = $field_unique[$i];
+             $unique .= PMA_backquote($field_name[$j]) . ', ';
+         } // end for
+-        $unique = ereg_replace(', $', '', $unique);
++        $unique = preg_replace(', $', '', $unique);
+         if (!empty($unique)) {
+             $sql_query      = 'ALTER TABLE ' . PMA_backquote($table) . ' ADD UNIQUE (' . $unique . ')';
+             $result         = PMA_mysql_query($sql_query) or PMA_mysqlDie('', '', '', $err_url);
+@@ -182,7 +182,7 @@
+             $j        = $field_fulltext[$i];
+             $fulltext .= PMA_backquote($field_name[$j]) . ', ';
+         } // end for
+-        $fulltext = ereg_replace(', $', '', $fulltext);
++        $fulltext = preg_replace(', $', '', $fulltext);
+         if (!empty($fulltext)) {
+             $sql_query      = 'ALTER TABLE ' . PMA_backquote($table) . ' ADD FULLTEXT (' . $fulltext . ')';
+             $result         = PMA_mysql_query($sql_query) or PMA_mysqlDie('', '', '', $err_url);

@@ -1,0 +1,7 @@
+--- phpmailer.lang-vi.php (original)
++++ phpmailer.lang-vi.php (modified)
+@@ -25,3 +25,4 @@
+ $PHPMAILER_LANG['smtp_error']           = 'Lỗi máy chủ smtp ';
+ $PHPMAILER_LANG['variable_set']         = 'Không thể thiết lập hoặc thiết lập lại biến: ';
+ //$PHPMAILER_LANG['extension_missing']    = 'Extension missing: ';
++?>

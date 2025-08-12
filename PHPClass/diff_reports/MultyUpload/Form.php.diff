@@ -1,0 +1,14 @@
+--- Form.php (original)
++++ Form.php (modified)
+@@ -1,5 +1,5 @@
+ <?php
+-$log_url=eregi_replace("/", "_", $PHP_SELF);
++$log_url=preg_replace("/", "_", $PHP_SELF);
+ $log_y=date("Y");                  // 연도
+ $log_md=date("md");            //월일
+ $log_ip="$REMOTE_ADDR";  // 접속 ip
+@@ -95,3 +95,4 @@
+ 		 </td>
+        </tr>
+      </table>
++?>

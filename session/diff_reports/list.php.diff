@@ -1,0 +1,15 @@
+--- list.php (original)
++++ list.php (modified)
+@@ -1,4 +1,7 @@
+ <?php
++if (session_status() === PHP_SESSION_NONE) {
++    session_start();
++}
+ include "lib.php";
+  
+ $isLogin = $_SESSION['isLogin'];
+@@ -35,3 +38,4 @@
+     <li> 박문수 <?php echo  $i ?> </li> 
+ <?php } ?>     
+ </ul>
++?>

@@ -1,0 +1,205 @@
+--- tbl_indexes.php (original)
++++ tbl_indexes.php (modified)
+@@ -48,11 +48,11 @@
+         $is_table = @PMA_mysql_query('SHOW TABLES LIKE \'' . PMA_sqlAddslashes($table, TRUE) . '\'');
+     }
+     if (empty($table)
+-        || !($is_table && @mysql_numrows($is_table))) {
++        || !($is_table && @mysqli_numrows($is_table))) {
+         header('Location: ' . $cfg['PmaAbsoluteUri'] . $cfg['DefaultTabDatabase'] . '?lang=' . $lang . '&convcharset=' . $convcharset . '&server=' . $server .'&db=' . urlencode($db) . (isset($message) ? '&message=' . urlencode($message) : '') . '&reload=1');
+         exit();
+     } else if (isset($is_table)) {
+-        mysql_free_result($is_table);
++        mysqli_free_result($is_table);
+     }
+ 
+     // Displays headers (if needed)
+@@ -83,7 +83,7 @@
+ } else {
+     $local_query = 'SHOW KEYS FROM ' . PMA_backquote($table);
+     $result      = PMA_mysql_query($local_query) or PMA_mysqlDie('', $local_query, '', $err_url_0);
+-    $idx_cnt     = mysql_num_rows($result);
++    $idx_cnt     = mysqli_num_rows($result);
+ }
+ 
+ for ($i = 0; $i < $idx_cnt; $i++) {
+@@ -116,17 +116,17 @@
+ if (defined('PMA_IDX_INCLUDED')) {
+     unset($ret_keys);
+ } else if ($result) {
+-    mysql_free_result($result);
++    mysqli_free_result($result);
+ }
+ 
+ // Get fields and stores their name/type
+ // fields had already been grabbed in "tbl_properties.php"
+ if (defined('PMA_IDX_INCLUDED')) {
+-    mysql_data_seek($fields_rs, 0);
++    mysqli_data_seek($fields_rs, 0);
+ } else {
+     $local_query = 'SHOW FIELDS FROM ' . PMA_backquote($table);
+     $fields_rs   = PMA_mysql_query($local_query) or PMA_mysqlDie('', $local_query, '', $err_url_0);
+-    $fields_cnt  = mysql_num_rows($fields_rs);
++    $fields_cnt  = mysqli_num_rows($fields_rs);
+ }
+ 
+ $fields_names           = array();
+@@ -134,8 +134,8 @@
+ while ($row = PMA_mysql_fetch_array($fields_rs)) {
+     $fields_names[]     = $row['Field'];
+     // loic1: set or enum types: slashes single quotes inside options
+-    if (eregi('^(set|enum)\((.+)\)$', $row['Type'], $tmp)) {
+-        $tmp[2]         = substr(ereg_replace('([^,])\'\'', '\\1\\\'', ',' . $tmp[2]), 1);
++    if (preg_match('^(set|enum)\((.+)\)$', $row['Type'], $tmp)) {
++        $tmp[2]         = substr(preg_replace('([^,])\'\'', '\\1\\\'', ',' . $tmp[2]), 1);
+         $fields_types[] = $tmp[1] . '(' . str_replace(',', ', ', $tmp[2]) . ')';
+     } else {
+         $fields_types[] = $row['Type'];
+@@ -143,7 +143,7 @@
+ } // end while
+ 
+ if ($fields_rs) {
+-    mysql_free_result($fields_rs);
++    mysqli_free_result($fields_rs);
+ }
+ 
+ 
+@@ -306,31 +306,31 @@
+ <!-- Build index form -->
+ <form action="tbl_indexes.php" method="post" name="index_frm"
+     onsubmit="if (typeof(this.elements['index'].disabled) != 'undefined') {this.elements['index'].disabled = false}">
+-    <input type="hidden" name="lang" value="<?php echo $lang; ?>" />
+-    <input type="hidden" name="convcharset" value="<?php echo $convcharset; ?>" />
+-    <input type="hidden" name="server" value="<?php echo $server; ?>" />
+-    <input type="hidden" name="db" value="<?php echo htmlspecialchars($db); ?>" />
+-    <input type="hidden" name="table" value="<?php echo htmlspecialchars($table); ?>" />
++    <input type="hidden" name="lang" value="<?php echo  $lang ?>" />
++    <input type="hidden" name="convcharset" value="<?php echo  $convcharset ?>" />
++    <input type="hidden" name="server" value="<?php echo  $server ?>" />
++    <input type="hidden" name="db" value="<?php echo  htmlspecialchars($db) ?>" />
++    <input type="hidden" name="table" value="<?php echo  htmlspecialchars($table) ?>" />
+     <?php
+     if (isset($create_index)) {
+         echo '<input type="hidden" name="create_index" value="1" />';
+     }
+     echo "\n";
+     ?>
+-    <input type="hidden" name="old_index" value="<?php echo (isset($create_index) ? '' : $old_index); ?>" />
+-    <b><?php echo '------ ' . (isset($create_index) ? $strCreateIndexTopic : $strModifyIndexTopic) . ' ------'; ?></b>
++    <input type="hidden" name="old_index" value="<?php echo  (isset($create_index) ? '' : $old_index) ?>" />
++    <b><?php echo  '------ ' . (isset($create_index) ? $strCreateIndexTopic : $strModifyIndexTopic) . ' ------' ?></b>
+     <br /><br />
+ 
+     <table border="0">
+     <tr>
+-        <td><?php echo $strIndexName; ?>&nbsp;</td>
++        <td><?php echo  $strIndexName ?>&nbsp;</td>
+         <td>
+-            <input type="text" name="index" value="<?php echo htmlspecialchars($index); ?>" class="textfield" onfocus="this.select()" />
+-            &nbsp;<?php echo $strPrimaryKeyWarning . "\n"; ?>
++            <input type="text" name="index" value="<?php echo  htmlspecialchars($index) ?>" class="textfield" onfocus="this.select()" />
++            &nbsp;<?php echo  $strPrimaryKeyWarning . "\n" ?>
+         </td>
+     </tr>
+     <tr>
+-        <td><?php echo $strIndexType; ?>&nbsp;</td>
++        <td><?php echo  $strIndexType ?>&nbsp;</td>
+         <td>
+             <select name="index_type" onchange="return checkIndexName()">
+     <?php
+@@ -351,15 +351,15 @@
+     } // end for
+     ?>
+             </select>&nbsp;
+-            <?php echo PMA_showMySQLDocu('Reference', 'ALTER_TABLE') . "\n"; ?>
++            <?php echo  PMA_showMySQLDocu('Reference', 'ALTER_TABLE') . "\n" ?>
+         </td>
+     </tr>
+     </table><br />
+ 
+-    <table border="<?php echo $cfg['Border']; ?>" cellpadding="5">
++    <table border="<?php echo  $cfg['Border'] ?>" cellpadding="5">
+     <tr>
+-        <th><?php echo $strField; ?></th>
+-        <th><?php echo $strSize; ?></th>
++        <th><?php echo  $strField ?></th>
++        <th><?php echo  $strSize ?></th>
+     </tr>
+     <?php
+     while (list($row_no, $seq_index) = each($edited_index_info['Sequences'])) {
+@@ -374,15 +374,15 @@
+         echo "\n";
+         ?>
+     <tr>
+-        <td bgcolor="<?php echo $bgcolor; ?>">
++        <td bgcolor="<?php echo  $bgcolor ?>">
+             <select name="column[]">
+                 <option value="--ignore--"<?php if ('--ignore--' == $selected) echo ' selected="selected"'; ?>>
+-                    -- <?php echo $strIgnore; ?> --</option>
++                    -- <?php echo  $strIgnore ?> --</option>
+         <?php
+         reset($fields_names);
+         while (list($key, $val) = each($fields_names)) {
+             if ($index_type != 'FULLTEXT'
+-                || eregi('^(varchar|text|tinytext|mediumtext|longtext)', $fields_types[$key])) {
++                || preg_match('^(varchar|text|tinytext|mediumtext|longtext)', $fields_types[$key])) {
+                 echo "\n" . '                '
+                      . '<option value="' . htmlspecialchars($val) . '"' . (($val == $selected) ? ' selected="selected"' : '') . '>'
+                      . htmlspecialchars($val) . (($add_type) ? ' [' . $fields_types[$key] . ']' : '' ) . '</option>' . "\n";
+@@ -392,8 +392,8 @@
+         ?>
+             </select>
+         </td>
+-        <td bgcolor="<?php echo $bgcolor; ?>">
+-            <input type="text" size="5" name="sub_part[]"<?php echo $sub_part; ?> onfocus="this.select()" />
++        <td bgcolor="<?php echo  $bgcolor ?>">
++            <input type="text" size="5" name="sub_part[]"<?php echo  $sub_part ?> onfocus="this.select()" />
+         </td>
+     </tr>
+         <?php
+@@ -403,7 +403,7 @@
+     ?>
+     </table><br />
+ 
+-    <input type="submit" name="do_save_data" value="<?php echo $strSave; ?>" /><br />
++    <input type="submit" name="do_save_data" value="<?php echo  $strSave ?>" /><br />
+ 
+     <?php
+     echo "\n";
+@@ -424,11 +424,11 @@
+     ?>
+     <!-- Indexes form -->
+     <form action="tbl_indexes.php" method="post">
+-        <input type="hidden" name="lang" value="<?php echo $lang; ?>" />
+-        <input type="hidden" name="convcharset" value="<?php echo $convcharset; ?>" />
+-        <input type="hidden" name="server" value="<?php echo $server; ?>" />
+-        <input type="hidden" name="db" value="<?php echo htmlspecialchars($db); ?>" />
+-        <input type="hidden" name="table" value="<?php echo htmlspecialchars($table); ?>" />
++        <input type="hidden" name="lang" value="<?php echo  $lang ?>" />
++        <input type="hidden" name="convcharset" value="<?php echo  $convcharset ?>" />
++        <input type="hidden" name="server" value="<?php echo  $server ?>" />
++        <input type="hidden" name="db" value="<?php echo  htmlspecialchars($db) ?>" />
++        <input type="hidden" name="table" value="<?php echo  htmlspecialchars($table) ?>" />
+     <?php
+     echo "\n";
+     echo '        ' . $strIndexes . '&nbsp;:' . "\n";
+@@ -436,13 +436,13 @@
+ 
+     if ($idx_cnt > 0) {
+         ?>
+-        <table border="<?php echo $cfg['Border']; ?>">
++        <table border="<?php echo  $cfg['Border'] ?>">
+         <tr>
+-            <th><?php echo $strKeyname; ?></th>
+-            <th><?php echo $strType; ?></th>
+-            <th><?php echo $strCardinality; ?></th>
+-            <th colspan="2"><?php echo $strAction; ?></th>
+-            <th colspan="2"><?php echo $strField; ?></th>
++            <th><?php echo  $strKeyname ?></th>
++            <th><?php echo  $strType ?></th>
++            <th><?php echo  $strCardinality ?></th>
++            <th colspan="2"><?php echo  $strAction ?></th>
++            <th colspan="2"><?php echo  $strField ?></th>
+         </tr>
+         <?php
+         echo "\n";

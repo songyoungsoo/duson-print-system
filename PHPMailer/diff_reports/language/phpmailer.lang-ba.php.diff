@@ -1,0 +1,7 @@
+--- phpmailer.lang-ba.php (original)
++++ phpmailer.lang-ba.php (modified)
+@@ -25,3 +25,4 @@
+ $PHPMAILER_LANG['smtp_error']           = 'SMTP greška: ';
+ $PHPMAILER_LANG['variable_set']         = 'Nije moguće postaviti varijablu ili je vratiti nazad: ';
+ $PHPMAILER_LANG['extension_missing']    = 'Nedostaje ekstenzija: ';
++?>

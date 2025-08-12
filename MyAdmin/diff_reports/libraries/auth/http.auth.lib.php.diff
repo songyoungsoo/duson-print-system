@@ -1,0 +1,63 @@
+--- http.auth.lib.php (original)
++++ http.auth.lib.php (modified)
+@@ -35,26 +35,26 @@
+         ?>
+ <!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+     "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+-<html xmlns="http://www.w3.org/1999/xhtml" xml:lang="<?php echo $GLOBALS['available_languages'][$GLOBALS['lang']][2]; ?>" lang="<?php echo $GLOBALS['available_languages'][$GLOBALS['lang']][2]; ?>" dir="<?php echo $GLOBALS['text_dir']; ?>">
++<html xmlns="http://www.w3.org/1999/xhtml" xml:lang="<?php echo  $GLOBALS['available_languages'][$GLOBALS['lang']][2] ?>" lang="<?php echo  $GLOBALS['available_languages'][$GLOBALS['lang']][2] ?>" dir="<?php echo  $GLOBALS['text_dir'] ?>">
+ 
+ <head>
+-<title><?php echo $GLOBALS['strAccessDenied']; ?></title>
+-<meta http-equiv="Content-Type" content="text/html; charset=<?php echo $GLOBALS['charset']; ?>" />
++<title><?php echo  $GLOBALS['strAccessDenied'] ?></title>
++<meta http-equiv="Content-Type" content="text/html; charset=<?php echo  $GLOBALS['charset'] ?>" />
+ <style type="text/css">
+ <!--
+-body     {font-family: <?php echo $right_font_family; ?>; font-size: <?php echo $font_size; ?>; color: #000000}
+-h1       {font-family: <?php echo $right_font_family; ?>; font-size: <?php echo $font_bigger; ?>; font-weight: bold}
++body     {font-family: <?php echo  $right_font_family ?>; font-size: <?php echo  $font_size ?>; color: #000000}
++h1       {font-family: <?php echo  $right_font_family ?>; font-size: <?php echo  $font_bigger ?>; font-weight: bold}
+ //-->
+ </style>
+ </head>
+ 
+-<body bgcolor="<?php echo $GLOBALS['cfg']['RightBgColor']; ?>">
++<body bgcolor="<?php echo  $GLOBALS['cfg']['RightBgColor'] ?>">
+ <br /><br />
+ <center>
+-    <h1><?php echo sprintf($GLOBALS['strWelcome'], ' phpMyAdmin ' . PMA_VERSION); ?></h1>
++    <h1><?php echo  sprintf($GLOBALS['strWelcome'], ' phpMyAdmin ' . PMA_VERSION) ?></h1>
+ </center>
+ <br />
+-<p><?php echo $GLOBALS['strWrongUser']; ?></p>
++<p><?php echo  $GLOBALS['strWrongUser'] ?></p>
+ </body>
+ 
+ </html>
+@@ -169,21 +169,21 @@
+         if (empty($PHP_AUTH_USER) && empty($PHP_AUTH_PW)
+             && function_exists('base64_decode')) {
+             if (!empty($HTTP_AUTHORIZATION)
+-                && ereg('^Basic ', $HTTP_AUTHORIZATION)) {
++                && preg_match('^Basic ', $HTTP_AUTHORIZATION)) {
+                 list($PHP_AUTH_USER, $PHP_AUTH_PW) = explode(':', base64_decode(substr($HTTP_AUTHORIZATION, 6)));
+             }
+             else if (!empty($_ENV)
+                  && isset($_ENV['HTTP_AUTHORIZATION'])
+-                 && ereg('^Basic ', $_ENV['HTTP_AUTHORIZATION'])) {
++                 && preg_match('^Basic ', $_ENV['HTTP_AUTHORIZATION'])) {
+                 list($PHP_AUTH_USER, $PHP_AUTH_PW) = explode(':', base64_decode(substr($_ENV['HTTP_AUTHORIZATION'], 6)));
+             }
+             else if (!empty($HTTP_ENV_VARS)
+                      && isset($HTTP_ENV_VARS['HTTP_AUTHORIZATION'])
+-                     && ereg('^Basic ', $HTTP_ENV_VARS['HTTP_AUTHORIZATION'])) {
++                     && preg_match('^Basic ', $HTTP_ENV_VARS['HTTP_AUTHORIZATION'])) {
+                 list($PHP_AUTH_USER, $PHP_AUTH_PW) = explode(':', base64_decode(substr($HTTP_ENV_VARS['HTTP_AUTHORIZATION'], 6)));
+             }
+             else if (@getenv('HTTP_AUTHORIZATION')
+-                     && ereg('^Basic ', getenv('HTTP_AUTHORIZATION'))) {
++                     && preg_match('^Basic ', getenv('HTTP_AUTHORIZATION'))) {
+                 list($PHP_AUTH_USER, $PHP_AUTH_PW) = explode(':', base64_decode(substr(getenv('HTTP_AUTHORIZATION'), 6)));
+             }
+         } // end IIS

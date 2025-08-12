@@ -1,0 +1,7 @@
+--- phpmailer.lang-be.php (original)
++++ phpmailer.lang-be.php (modified)
+@@ -25,3 +25,4 @@
+ $PHPMAILER_LANG['smtp_error']           = 'Памылка SMTP: ';
+ $PHPMAILER_LANG['variable_set']         = 'Нельга ўстанавіць або перамяніць значэнне пераменнай: ';
+ //$PHPMAILER_LANG['extension_missing']    = 'Extension missing: ';
++?>

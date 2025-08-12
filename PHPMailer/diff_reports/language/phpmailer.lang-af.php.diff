@@ -1,0 +1,7 @@
+--- phpmailer.lang-af.php (original)
++++ phpmailer.lang-af.php (modified)
+@@ -24,3 +24,4 @@
+ $PHPMAILER_LANG['smtp_error']           = 'SMTP-bediener fout: ';
+ $PHPMAILER_LANG['variable_set']         = 'Kan nie veranderlike instel of herstel nie: ';
+ $PHPMAILER_LANG['extension_missing']    = 'Uitbreiding ontbreek: ';
++?>

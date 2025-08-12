@@ -1,0 +1,153 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>스티커 AJAX 테스트</title>
+</head>
+<body>
+    <h2>스티커 가격 계산 AJAX 테스트</h2>
+    
+    <form id="testForm">
+        <table border="1">
+            <tr>
+                <td>재질:</td>
+                <td>
+                    <select name="jong">
+                        <option value="jil 아트유광코팅">아트지유광코팅(90g)</option>
+                        <option value="jil 아트무광코팅">아트지무광코팅(90g)</option>
+                        <option value="jsp 투명스티커">투명스티커(25g)</option>
+                    </select>
+                </td>
+            </tr>
+            <tr>
+                <td>가로:</td>
+                <td><input type="number" name="garo" value="100"> mm</td>
+            </tr>
+            <tr>
+                <td>세로:</td>
+                <td><input type="number" name="sero" value="100"> mm</td>
+            </tr>
+            <tr>
+                <td>매수:</td>
+                <td>
+                    <select name="mesu">
+                        <option value="500">500매</option>
+                        <option value="1000" selected>1000매</option>
+                        <option value="2000">2000매</option>
+                    </select>
+                </td>
+            </tr>
+            <tr>
+                <td>편집:</td>
+                <td>
+                    <select name="uhyung">
+                        <option value="10000">디자인+인쇄</option>
+                        <option value="0" selected>인쇄만</option>
+                    </select>
+                </td>
+            </tr>
+            <tr>
+                <td>모양:</td>
+                <td>
+                    <select name="domusong">
+                        <option value="00000 사각" selected>기본사각형</option>
+                        <option value="08000 원형">원형</option>
+                        <option value="19000 복잡">모양도무송</option>
+                    </select>
+                </td>
+            </tr>
+        </table>
+        
+        <br>
+        <button type="button" onclick="testCalculate()">가격 계산 테스트</button>
+        <button type="button" onclick="testOriginalCalculate()">원본 함수 테스트</button>
+    </form>
+    
+    <div id="result" style="margin-top: 20px; padding: 10px; border: 1px solid #ccc;">
+        <h3>결과:</h3>
+        <div id="resultContent">여기에 결과가 표시됩니다.</div>
+    </div>
+    
+    <div id="debug" style="margin-top: 20px; padding: 10px; border: 1px solid #red; background: #f0f0f0;">
+        <h3>디버그 정보:</h3>
+        <div id="debugContent"></div>
+    </div>
+
+    <script>
+    function testCalculate() {
+        const form = document.getElementById('testForm');
+        const formData = new FormData(form);
+        formData.append('action', 'calculate');
+        
+        document.getElementById('debugContent').innerHTML = '요청 시작...';
+        
+        fetch('calculate_price.php', {
+            method: 'POST',
+            body: formData
+        })
+        .then(response => {
+            document.getElementById('debugContent').innerHTML += '<br>응답 상태: ' + response.status;
+            return response.text();
+        })
+        .then(text => {
+            document.getElementById('debugContent').innerHTML += '<br>응답 텍스트: ' + text;
+            
+            try {
+                const data = JSON.parse(text);
+                if (data.success) {
+                    document.getElementById('resultContent').innerHTML = 
+                        '총 금액: ' + data.price + '원<br>' +
+                        '부가세 포함: ' + data.price_vat + '원';
+                } else {
+                    document.getElementById('resultContent').innerHTML = 
+                        '오류: ' + data.message;
+                }
+            } catch (e) {
+                document.getElementById('resultContent').innerHTML = 
+                    'JSON 파싱 오류: ' + e.message;
+            }
+        })
+        .catch(error => {
+            document.getElementById('debugContent').innerHTML += '<br>네트워크 오류: ' + error;
+            document.getElementById('resultContent').innerHTML = '요청 실패: ' + error;
+        });
+    }
+    
+    // 원본 함수 복사
+    function testOriginalCalculate() {
+        const form = document.getElementById('testForm');
+        const formData = new FormData(form);
+        formData.append('action', 'calculate');
+        
+        // 필수 입력값 체크
+        if (!formData.get('garo') || !formData.get('sero')) {
+            alert('가로, 세로 크기를 입력해주세요.');
+            return;
+        }
+        
+        document.getElementById('debugContent').innerHTML = '원본 함수 테스트 시작...';
+        
+        // AJAX로 가격 계산 요청
+        fetch('calculate_price.php', {
+            method: 'POST',
+            body: formData
+        }).then(response => response.json())
+        .then(data => {
+            if (data.success) {
+                document.getElementById('resultContent').innerHTML = 
+                    '총 금액: ' + data.price + '원<br>' +
+                    '부가세 포함: ' + data.price_vat + '원';
+                document.getElementById('debugContent').innerHTML += '<br>✅ 성공!';
+            } else {
+                document.getElementById('resultContent').innerHTML = 
+                    '가격 계산 중 오류가 발생했습니다: ' + data.message;
+                document.getElementById('debugContent').innerHTML += '<br>❌ 실패: ' + data.message;
+            }
+        }).catch(error => {
+            console.error('Error:', error);
+            document.getElementById('resultContent').innerHTML = '가격 계산 중 오류가 발생했습니다.';
+            document.getElementById('debugContent').innerHTML += '<br>❌ 네트워크 오류: ' + error;
+        });
+    }
+    </script>
+</body>
+</html>

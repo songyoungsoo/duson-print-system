@@ -1,0 +1,7 @@
+--- phpmailer.lang-sv.php (original)
++++ phpmailer.lang-sv.php (modified)
+@@ -25,3 +25,4 @@
+ $PHPMAILER_LANG['smtp_error']           = 'SMTP serverfel: ';
+ $PHPMAILER_LANG['variable_set']         = 'Kunde inte definiera eller återställa variabel: ';
+ $PHPMAILER_LANG['extension_missing']    = 'Tillägg ej tillgängligt: ';
++?>

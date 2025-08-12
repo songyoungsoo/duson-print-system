@@ -1,0 +1,7 @@
+--- phpmailer.lang-sr_latn.php (original)
++++ phpmailer.lang-sr_latn.php (modified)
+@@ -26,3 +26,4 @@
+ $PHPMAILER_LANG['smtp_error']           = 'Greška SMTP servera: ';
+ $PHPMAILER_LANG['variable_set']         = 'Nije moguće zadati niti resetovati promenljivu: ';
+ $PHPMAILER_LANG['extension_missing']    = 'Nedostaje proširenje: ';
++?>

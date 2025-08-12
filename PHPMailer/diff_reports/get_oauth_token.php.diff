@@ -1,0 +1,7 @@
+--- get_oauth_token.php (original)
++++ get_oauth_token.php (modified)
+@@ -144,3 +144,4 @@
+     //Use this to get a new access token if the old one expires
+     echo 'Refresh Token: ', $token->getRefreshToken();
+ }
++?>

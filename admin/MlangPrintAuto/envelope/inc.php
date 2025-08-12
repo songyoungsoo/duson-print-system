@@ -1,0 +1,13 @@
+<?php
+$DesignMoney="0";
+$SectionOne="";
+$SectionTwo="";
+$SectionTree="";
+$SectionFour="";
+$SectionFive="";
+$ImgOne="";
+$ImgTwo="";
+$ImgTree="";
+$ImgFour="";
+$ImgFive="";
+?>

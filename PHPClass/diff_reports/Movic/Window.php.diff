@@ -1,0 +1,75 @@
+--- Window.php (original)
++++ Window.php (modified)
+@@ -4,13 +4,13 @@
+ if($PCode){
+ 
+ include "$HomePageMovicDir/db.php";
+-   $result= mysql_query("select * from MlangHomePage_Movic WHERE no='$PCode'",$db);
+-   $row= mysql_fetch_array($result);
+-		  $PCodeTile="$row[title]";
+-          $PCodeFile="$row[upfile]";
+-		  $PCodeCont="$row[cont]";
+-          $PCodeLink="$row[uplink]";
+-mysql_close($db); 
++   $result= mysqli_query("select * from MlangHomePage_Movic WHERE no='$PCode'",$db);
++   $row= mysqli_fetch_array($result);
++		  $PCodeTile="$row['title']";
++          $PCodeFile="$row['upfile']";
++		  $PCodeCont="$row['cont']";
++          $PCodeLink="$row['uplink']";
++mysqli_close($db); 
+ }
+ ?>   
+ 
+@@ -67,20 +67,20 @@
+ <select onChange="Movic55_jumpMenu('parent',this,0)">
+ <?php
+ include "$HomePageMovicDir/db.php";
+-$result= mysql_query("select * from MlangHomePage_Movic order by no desc",$db);
+-$rows=mysql_num_rows($result);
++$result= mysqli_query("select * from MlangHomePage_Movic order by no desc",$db);
++$rows=mysqli_num_rows($result);
+ if($rows){
+-while($row= mysql_fetch_array($result)) 
++while($row= mysqli_fetch_array($result)) 
+ { 
+-									 if($PCode=="$row['no']"){
+-									 echo("<option value='$PHP_SELF?PCode=$row['no']&page=$page' style='font-size:10pt; background-color:#429EB2; color:#FFFFFF;' selected>$row[title]</option>");
++									 if($PCode=="$row['no']"){
++									 echo("<option value='$PHP_SELF?PCode=$row['no']&page=$page' style='font-size:10pt; background-color:#429EB2; color:#FFFFFF;' selected>$row['title']</option>");
+ 									 }else{
+-									   echo("<option value='$PHP_SELF?PCode=$row['no']&page=$page'>$row[title]</option>");
++									   echo("<option value='$PHP_SELF?PCode=$row['no']&page=$page'>$row['title']</option>");
+ 									 }
+ }
+ }else{echo("<option>등록 자료없음<option>");}
+ 
+-mysql_close($db); 
++mysqli_close($db); 
+ ?>
+ </select>
+ 
+@@ -239,12 +239,12 @@
+ if($PCode){$OkV_Cont="$PCodeCont";}else{$OkV_Cont="$TopBasicCont";}
+ 
+         $CONTENT=$OkV_Cont;
+-		$CONTENT = eregi_replace("<", "&lt;", $CONTENT);
+-		$CONTENT = eregi_replace(">", "&gt;", $CONTENT);
+-		$CONTENT = eregi_replace("\"", "&quot;", $CONTENT);
+-		$CONTENT = eregi_replace("\|", "&#124;", $CONTENT);
+-		$CONTENT = eregi_replace("\r\n\r\n", "<P>", $CONTENT);
+-		$CONTENT = eregi_replace("\r\n", "<BR>", $CONTENT);
++		$CONTENT = preg_replace("<", "&lt;", $CONTENT);
++		$CONTENT = preg_replace(">", "&gt;", $CONTENT);
++		$CONTENT = preg_replace("\"", "&quot;", $CONTENT);
++		$CONTENT = preg_replace("\|", "&#124;", $CONTENT);
++		$CONTENT = preg_replace("\r\n\r\n", "<P>", $CONTENT);
++		$CONTENT = preg_replace("\r\n", "<BR>", $CONTENT);
+ 		$connent_text=$CONTENT;
+ echo("$connent_text");
+ ?>";
+@@ -279,3 +279,4 @@
+ </body>
+ 
+ </html>
++?>

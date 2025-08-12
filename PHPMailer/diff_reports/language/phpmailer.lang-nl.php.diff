@@ -1,0 +1,7 @@
+--- phpmailer.lang-nl.php (original)
++++ phpmailer.lang-nl.php (modified)
+@@ -32,3 +32,4 @@
+ $PHPMAILER_LANG['smtp_detail']          = 'Detail: ';
+ $PHPMAILER_LANG['smtp_error']           = 'SMTP-serverfout: ';
+ $PHPMAILER_LANG['variable_set']         = 'Kan de volgende variabele niet instellen of resetten: ';
++?>

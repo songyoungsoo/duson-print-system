@@ -1,0 +1,25 @@
+--- sqlparser.lib.php (original)
++++ sqlparser.lib.php (modified)
+@@ -1200,7 +1200,7 @@
+                         && ($typearr[1] != 'punct_level_plus')
+                         && (!PMA_STR_binarySearchInArr($arr[$i]['data'], $keywords_no_newline, $keywords_no_newline_cnt))) {
+                         // do not put a space before the first token, because
+-                        // we use a lot of eregi() checking for the first
++                        // we use a lot of preg_match() checking for the first
+                         // reserved word at beginning of query
+                         if ($i > 0) {
+                             $before    .= $space_alpha_reserved_word;
+@@ -1360,7 +1360,7 @@
+     function PMA_SQP_formatNone($arr)
+     {
+         $formatted_sql = htmlspecialchars($arr['raw']);
+-        $formatted_sql = ereg_replace("((\015\012)|(\015)|(\012)){3,}", "\n\n", $formatted_sql);
++        $formatted_sql = preg_replace("((\015\012)|(\015)|(\012)){3,}", "\n\n", $formatted_sql);
+ 
+         return $formatted_sql;
+     } // end of the "PMA_SQP_formatNone()" function
+@@ -1384,3 +1384,4 @@
+     } // end of the "PMA_SQP_formatText()" function
+ 
+ } // $__PMA_SQP_LIB__
++?>

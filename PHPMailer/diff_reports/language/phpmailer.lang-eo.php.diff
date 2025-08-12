@@ -1,0 +1,7 @@
+--- phpmailer.lang-eo.php (original)
++++ phpmailer.lang-eo.php (modified)
+@@ -24,3 +24,4 @@
+ $PHPMAILER_LANG['smtp_error']           = 'Eraro de servilo SMTP : ';
+ $PHPMAILER_LANG['variable_set']         = 'Variablo ne pravalorizeblas aŭ ne repravalorizeblas: ';
+ $PHPMAILER_LANG['extension_missing']    = 'Mankas etendo: ';
++?>

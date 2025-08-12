@@ -1,0 +1,11 @@
+<? 
+$MlangZ="2";    // �޴��� ����
+$MlangV="s";   //������ �̸� ������ s01.gif �� s01_1.gif �� ssss�� �Է��ϸ� �ڵ��ν��Ѵ�
+$MlangX="Leftmenu/page1";     // /images������ ������
+for ($i=1; $i<$MlangZ+1; $i++) { ?>
+<?php if ($page=="$i"){?>
+<a href='<?php echo $PHP_SELF?>?page=<?php echo $i?>' onmouseover='Mlang<?php echo $i?>.src="/images/<?php echo $MlangX?>/<?php echo $MlangV?>0<?php echo $i?>.gif"' onmouseout='Mlang<?php echo $i?>.src="/images/<?php echo $MlangX?>/<?php echo $MlangV?>0<?php echo $i?>_1.gif"'><img src='/images/<?php echo $MlangX?>/<?php echo $MlangV?>0<?php echo $i?>_1.gif' name='Mlang<?php echo $i?>' border=0></a><BR><BR>
+<?}else{?>
+<a href='<?php echo $PHP_SELF?>?page=<?php echo $i?>' onmouseover='Mlang<?php echo $i?>.src="/images/<?php echo $MlangX?>/<?php echo $MlangV?>0<?php echo $i?>_1.gif"' onmouseout='Mlang<?php echo $i?>.src="/images/<?php echo $MlangX?>/<?php echo $MlangV?>0<?php echo $i?>.gif"'><img src='/images/<?php echo $MlangX?>/<?php echo $MlangV?>0<?php echo $i?>.gif' name='Mlang<?php echo $i?>' border=0></a><BR><BR>
+<?php } ?>
+<? } ?>

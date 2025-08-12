@@ -1,0 +1,11 @@
+--- ldi_check.php (original)
++++ ldi_check.php (modified)
+@@ -82,7 +82,7 @@
+     if (strlen($column_name) > 0) {
+         if (PMA_MYSQL_INT_VERSION >= 32306) {
+             $query .= ' (';
+-            $tmp   = split(',( ?)', $column_name);
++            $tmp   = explode(',( ?)', $column_name);
+             for ($i = 0; $i < count($tmp); $i++) {
+                 if ($i > 0) {
+                     $query .= ', ';

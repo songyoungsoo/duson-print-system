@@ -1,0 +1,11 @@
+--- upload.php (original)
++++ upload.php (modified)
+@@ -38,7 +38,7 @@
+         }
+ }
+ 	$sql2 = "SELECT *FROM upload WHERE nickname='".$_POST['nickname']."' AND starttime='".$_POST['time']."'";
+-	$res2 = mysqli_query($sql2, $conn);
++	$res2 = mysqli_query($conn, $sql2);
+ 	while($row=mysqli_fetch_array($res2)) {
+ 	echo "<div><a href='download.php?filepath=".$row['changename']."&filename=".$row['realname']."'>".$row['realname']."</a><a style='float:right' href='delete.php?filename=".$row['changename']."&time=".$row['starttime']."'>삭제</a></div><br>";
+ 	}

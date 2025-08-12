@@ -1,0 +1,7 @@
+--- phpmailer.lang-it.php (original)
++++ phpmailer.lang-it.php (modified)
+@@ -26,3 +26,4 @@
+ $PHPMAILER_LANG['smtp_error']           = 'Errore del server SMTP: ';
+ $PHPMAILER_LANG['variable_set']         = 'Impossibile impostare o resettare la variabile: ';
+ $PHPMAILER_LANG['extension_missing']    = 'Estensione mancante: ';
++?>

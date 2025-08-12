@@ -1,0 +1,40 @@
+/* style.css: 공통 CSS + 중앙정렬 + 풀폭 헤더 & 네비게이션 + 패널 제어 */
+
+/* 1. 구글 Noto Sans KR 폰트 임포트 */
+@import url('https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@400;500;700;900&display=swap');
+
+/* 2. 리셋 및 전역 기본 스타일 */
+* { margin: 0; padding: 0; box-sizing: border-box; }
+html, body { width: 100%; height: 100%; font-family: 'Noto Sans KR', sans-serif; background: #F4F4F4; color: #333; line-height: 1.6; }
+/* 3. 중앙정렬 컨테이너 (전체 너비 100%에서 최대폭 1350px) */
+.wrapper { max-width: 1350px; width: 100%; margin: 0 auto; }
+
+/* 4. 풀폭 헤더 */
+header.full-header { width: 100%; background-color: #005f73; }
+header.full-header .wrapper { padding: 20px 0; text-align: center; }
+header.full-header h1 { margin: 0; font-size: 36px; font-weight: 900; color: #FFFFFF; }
+header.full-header a { color: inherit; text-decoration: none; }
+
+/* 5. 풀폭 네비게이션 */
+nav.full-nav { width: 100%; background-color: #0a9396; }
+nav.full-nav .wrapper { padding: 10px 0; text-align: center; }
+nav.full-nav a { display: inline-block; margin: 0 15px; font-size: 18px; color: #f4f4f4; font-weight: 700; text-decoration: none; transition: color 0.3s; }
+nav.full-nav a:hover { color: #ee9b00; }
+
+/* 6. 메인 콘텐츠 및 레이아웃 */
+main.content { background: #FFFFFF; padding: 20px; }
+.container { display: flex; max-width: 1350px; width: 100%; margin: 20px auto; align-items: flex-start; justify-content: space-between; }
+.container > .sidebar { width: 160px; flex-shrink: 0; }
+.container > .main-content { flex: 1; margin: 0 20px; }
+.container > .customer-center { width: 200px; flex-shrink: 0; }
+
+/* 7. 사이드바 및 메뉴 */
+.sidebar, .vertical-menu { list-style: none; padding: 0; }
+.sidebar a, .vertical-menu a { display: block; padding: 10px 14px; background: #fff; border: 1px solid #ccc; border-radius: 3px; color: #333; text-align: center; font-size: 14px; font-weight: 500; transition: background 0.2s, color 0.2s; }
+.sidebar a:hover, .vertical-menu a:hover, .sidebar a.active, .vertical-menu a.active { background: #429EB2; color: #fff; }
+
+/* 8. 기타 공통 요소 */
+a:link, a:visited { color: #333; text-decoration: none; }
+a:hover, a:active { color: #666; }
+span.font12blue { color: #0066FF; font-size: 12px; }
+table { width: 100%; border-collapse: collapse; font-size: 12px; }

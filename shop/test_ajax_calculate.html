@@ -1,0 +1,108 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="UTF-8">
+    <title>AJAX 가격 계산 테스트</title>
+    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+</head>
+<body>
+    <h2>🧪 AJAX 가격 계산 테스트</h2>
+    
+    <form id="testForm">
+        <table border="1" style="border-collapse: collapse;">
+            <tr>
+                <td>재질:</td>
+                <td>
+                    <select name="jong" id="jong">
+                        <option value="jil 아트유광코팅">jil 아트유광코팅</option>
+                        <option value="jil 아트무광코팅">jil 아트무광코팅</option>
+                        <option value="jka 강접아트유광코팅">jka 강접아트유광코팅</option>
+                        <option value="jsp 투명스티커">jsp 투명스티커</option>
+                    </select>
+                </td>
+            </tr>
+            <tr>
+                <td>가로(mm):</td>
+                <td><input type="number" name="garo" id="garo" value="100"></td>
+            </tr>
+            <tr>
+                <td>세로(mm):</td>
+                <td><input type="number" name="sero" id="sero" value="150"></td>
+            </tr>
+            <tr>
+                <td>수량:</td>
+                <td><input type="number" name="mesu" id="mesu" value="1000"></td>
+            </tr>
+            <tr>
+                <td>유형:</td>
+                <td><input type="number" name="uhyung" id="uhyung" value="0"></td>
+            </tr>
+            <tr>
+                <td>도무송:</td>
+                <td>
+                    <select name="domusong" id="domusong">
+                        <option value="00000 사각">00000 사각</option>
+                        <option value="08000 원형">08000 원형</option>
+                        <option value="12000 타원형">12000 타원형</option>
+                    </select>
+                </td>
+            </tr>
+        </table>
+        <br>
+        <button type="button" onclick="calculatePrice()">가격 계산</button>
+    </form>
+    
+    <div id="result" style="margin-top: 20px; padding: 10px; background: #f0f0f0; border-radius: 5px; display: none;">
+        <h3>계산 결과:</h3>
+        <div id="price-display"></div>
+    </div>
+    
+    <div id="error" style="margin-top: 20px; padding: 10px; background: #ffebee; border-radius: 5px; color: red; display: none;">
+        <h3>오류:</h3>
+        <div id="error-message"></div>
+    </div>
+
+    <script>
+    function calculatePrice() {
+        const formData = new FormData();
+        formData.append('action', 'calculate');
+        formData.append('jong', document.getElementById('jong').value);
+        formData.append('garo', document.getElementById('garo').value);
+        formData.append('sero', document.getElementById('sero').value);
+        formData.append('mesu', document.getElementById('mesu').value);
+        formData.append('uhyung', document.getElementById('uhyung').value);
+        formData.append('domusong', document.getElementById('domusong').value);
+        
+        console.log('전송 데이터:', Object.fromEntries(formData));
+        
+        fetch('calculate_price.php', {
+            method: 'POST',
+            body: formData
+        })
+        .then(response => response.json())
+        .then(data => {
+            console.log('응답 데이터:', data);
+            
+            document.getElementById('error').style.display = 'none';
+            
+            if (data.success) {
+                document.getElementById('price-display').innerHTML = 
+                    '<strong>가격: ' + data.price + '원</strong><br>' +
+                    '<strong>VAT 포함: ' + data.price_vat + '원</strong>';
+                document.getElementById('result').style.display = 'block';
+            } else {
+                document.getElementById('error-message').textContent = data.message;
+                document.getElementById('error').style.display = 'block';
+                document.getElementById('result').style.display = 'none';
+            }
+        })
+        .catch(error => {
+            console.error('Error:', error);
+            document.getElementById('error-message').textContent = '서버 오류가 발생했습니다.';
+            document.getElementById('error').style.display = 'block';
+            document.getElementById('result').style.display = 'none';
+        });
+    }
+    </script>
+</body>
+</html>

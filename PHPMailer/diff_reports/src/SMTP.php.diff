@@ -1,0 +1,7 @@
+--- SMTP.php (original)
++++ SMTP.php (modified)
+@@ -1323,3 +1323,4 @@
+         return $this->last_smtp_transaction_id;
+     }
+ }
++?>

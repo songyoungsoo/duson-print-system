@@ -1,0 +1,50 @@
+--- order_post.php (original)
++++ order_post.php (modified)
+@@ -56,7 +56,7 @@
+   $hphone = "$hphone1-$hphone2-$hphone3"; 
+ 
+   $query = "select * from shop_temp where session_id='$session_id' ";  //가져오구
+-  $result =mysqli_query($connect, $query); 
++  $result =mysqli_query($query, $connect); 
+   $data = mysqli_fetch_array($result); 
+   $total = $data[0];
+   $Folder = "../shop/data/".$img_name;
+@@ -70,17 +70,17 @@
+   $query = "insert into shop_list(order_id, name, address1, address2, 
+             phone, hphone, delivery, bank, ipkeum, memo, st_price, regdate, email, password, zip, img) 
+             values('$order_id','$name','$address1','$address2','$phone','$hphone','$delivery','$bank','$ipkeum','$memo','$data['st_price']','$regdate','$email','$password','$zip','$img_name') "; 
+-     mysqli_query($connect, $query);
++     mysqli_query($query, $connect);
+    $query = "insert into MlangOrder_PrintAuto(Type,ImgFolder,Type_1, name,zip1 ,zip2, 
+             phone, hendphone, delivery, bank, bankname, cont, money_2, money_4, money_5, date, OrderStyle, email, pass, zip, ThingCate) 
+             values('$type','$Folder','$Type_1','$name','$address1','$address2','$phone','$hphone', '$delivery','$bank','$ipkeum','$memo', '$data['uhyung']', '$data['st_price']','$data['st_price_vat']','$order_id','$OrderStyle','$email','$password','$zip','$img_name') ";
+  
+-      mysqli_query($connect, $query);   
++      mysqli_query($query, $connect);   
+    	 
+    
+   $body2 = "<table width=600 border=1>"; 
+   $query = "select * from shop_temp where session_id='$session_id' ";
+-  $result = mysqli_query($connect, $query); 
++  $result = mysqli_query($query, $connect); 
+    while($data = mysqli_fetch_array($result)){ 
+         $q = "insert into shop_order(order_id,parent,jong,garo,sero,mesu,domusong,uhyung,st_price,st_price_vat,regdate,img) 
+               values('$order_id','$data['no']','$data['jong']','$data['garo']','$data['sero']','$data['mesu']','$data['domusong']','$data['uhyung']',
+@@ -94,7 +94,7 @@
+                       <td>합계: $data['st_price'] VAT별도 
+                   "; 
+ 
+-         mysqli_query($connect, $q); 
++         mysqli_query($q, $connect); 
+    } 
+   $body2 .= "</table> "; 
+ 
+@@ -126,7 +126,7 @@
+ 
+    mail($email,"$name 님 제품 구매를 감사드립니다.",$body, $header); 
+    $query  = "delete from shop_temp where session_id='$session_id' "; 
+-   mysqli_query($connect, $query); 
++   mysqli_query($query, $connect); 
+    mysqli_close($connect);
+ 
+ ?> 

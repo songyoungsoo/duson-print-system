@@ -1,0 +1,7 @@
+--- POP3.php (original)
++++ POP3.php (modified)
+@@ -460,3 +460,4 @@
+         );
+     }
+ }
++?>

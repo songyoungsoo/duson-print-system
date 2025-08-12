@@ -1,0 +1,22 @@
+--- defines_php.lib.php (original)
++++ defines_php.lib.php (modified)
+@@ -18,8 +18,8 @@
+ 
+ // php version
+ if (!defined('PMA_PHP_INT_VERSION')) {
+-    if (!ereg('([0-9]{1,2}).([0-9]{1,2}).([0-9]{1,2})', phpversion(), $match)) {
+-        $result = ereg('([0-9]{1,2}).([0-9]{1,2})', phpversion(), $match);
++    if (!preg_match('([0-9]{1,2}).([0-9]{1,2}).([0-9]{1,2})', phpversion(), $match)) {
++        $result = preg_match('([0-9]{1,2}).([0-9]{1,2})', phpversion(), $match);
+     }
+     if (isset($match) && !empty($match[1])) {
+         if (!isset($match[2])) {
+@@ -38,7 +38,7 @@
+ 
+ // Whether the os php is running on is windows or not
+ if (!defined('PMA_IS_WINDOWS')) {
+-    if (defined('PHP_OS') && eregi('win', PHP_OS)) {
++    if (defined('PHP_OS') && preg_match('win', PHP_OS)) {
+         define('PMA_IS_WINDOWS', 1);
+     } else {
+         define('PMA_IS_WINDOWS', 0);

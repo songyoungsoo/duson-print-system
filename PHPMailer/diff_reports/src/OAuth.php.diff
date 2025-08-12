@@ -1,0 +1,7 @@
+--- OAuth.php (original)
++++ OAuth.php (modified)
+@@ -137,3 +137,4 @@
+         );
+     }
+ }
++?>

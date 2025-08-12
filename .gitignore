@@ -1,0 +1,34 @@
+# 임시 파일
+*.tmp
+*.temp
+*~
+
+# 로그 파일
+*.log
+
+# 캐시 파일
+cache/
+tmp/
+temp/
+
+# 업로드된 파일 (용량이 클 수 있음)
+uploads/*.jpg
+uploads/*.jpeg
+uploads/*.png
+uploads/*.pdf
+uploads/*.zip
+
+# 시스템 파일
+.DS_Store
+Thumbs.db
+
+# IDE 파일
+.vscode/
+.idea/
+
+# 백업 파일
+*.bak
+*.backup
+
+# PHP 세션 파일
+sessions/

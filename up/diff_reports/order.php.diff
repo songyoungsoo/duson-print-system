@@ -1,0 +1,19 @@
+--- order.php (original)
++++ order.php (modified)
+@@ -134,13 +134,13 @@
+     <td bgcolor="#E1E1FF"> 자료올리기 
+     <td bgcolor="#FFFFFF"> 
+ 		<input type="file" name="file[]" multiple="multiple" onchange="this.form.submit()">
+-<input type="hidden" name="nickname" value="<?php echo $_SESSION['nickname']; ?>">
+-<input type="hidden" name="time" value="<?php echo $_GET['starttime']; ?>">
++<input type="hidden" name="nickname" value="<?php echo  $_SESSION['nickname'] ?>">
++<input type="hidden" name="time" value="<?php echo  $_GET['starttime'] ?>">
+ </form>
+ <iframe name="test"></iframe>
+     2M이상의 큰파일은 웹하드나 메일을 이용해주세요
+   <tr>     
+-    <td  height="50" width="150" align="center"  bgcolor="#E1E1FF"><strong> <a href="http://localhost/sub/pri_info.php" target="_blank">개인정보수집및이용</a></strong></td>
++    <td  height="50" width="150" align="center"  bgcolor="#E1E1FF"><strong> <a href="http://localhost/sub/pri_info.php" target="_blank">개인정보수집및이용</a></strong></td>
+     <td width=" " align="left" bgcolor="#FFFFFF"><p><input type=radio name=priv value='1' checked="checked"> 
+       동의합니다.
+           <input type=radio name=priv value='' >

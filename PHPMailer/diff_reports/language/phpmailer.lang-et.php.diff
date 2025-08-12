@@ -1,0 +1,7 @@
+--- phpmailer.lang-et.php (original)
++++ phpmailer.lang-et.php (modified)
+@@ -26,3 +26,4 @@
+ $PHPMAILER_LANG['smtp_error']           = 'SMTP serveri viga: ';
+ $PHPMAILER_LANG['variable_set']         = 'Ei õnnestunud määrata või lähtestada muutujat: ';
+ $PHPMAILER_LANG['extension_missing']    = 'Nõutud laiendus on puudu: ';
++?>

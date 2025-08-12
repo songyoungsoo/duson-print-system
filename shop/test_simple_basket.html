@@ -1,0 +1,109 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="UTF-8">
+    <title>간단한 장바구니 테스트</title>
+</head>
+<body>
+    <h2>🧪 간단한 장바구니 추가 테스트</h2>
+    
+    <form id="testForm">
+        <table border="1" style="border-collapse: collapse;">
+            <tr>
+                <td>재질:</td>
+                <td>
+                    <select name="jong">
+                        <option value="jil 아트유광코팅">jil 아트유광코팅</option>
+                    </select>
+                </td>
+            </tr>
+            <tr>
+                <td>가로(mm):</td>
+                <td><input type="number" name="garo" value="100"></td>
+            </tr>
+            <tr>
+                <td>세로(mm):</td>
+                <td><input type="number" name="sero" value="150"></td>
+            </tr>
+            <tr>
+                <td>수량:</td>
+                <td><input type="number" name="mesu" value="1000"></td>
+            </tr>
+            <tr>
+                <td>유형:</td>
+                <td><input type="number" name="uhyung" value="0"></td>
+            </tr>
+            <tr>
+                <td>도무송:</td>
+                <td>
+                    <select name="domusong">
+                        <option value="08000 원형">08000 원형</option>
+                    </select>
+                </td>
+            </tr>
+        </table>
+        <br>
+        <button type="button" onclick="testAddToBasket()">장바구니에 추가</button>
+    </form>
+    
+    <div id="result" style="margin-top: 20px; padding: 10px; background: #e8f5e8; border-radius: 5px; display: none;">
+        <h3>성공!</h3>
+        <div id="result-content"></div>
+    </div>
+    
+    <div id="error" style="margin-top: 20px; padding: 10px; background: #ffebee; border-radius: 5px; color: red; display: none;">
+        <h3>오류!</h3>
+        <div id="error-content"></div>
+    </div>
+
+    <script>
+    function testAddToBasket() {
+        const form = document.getElementById('testForm');
+        const formData = new FormData(form);
+        
+        // action 파라미터 추가
+        formData.set('action', 'add_to_basket');
+        formData.set('no', '');
+        
+        console.log('전송 데이터:');
+        for (let [key, value] of formData.entries()) {
+            console.log(key + ': ' + value);
+        }
+        
+        fetch('add_to_basket_simple.php', {
+            method: 'POST',
+            body: formData
+        })
+        .then(response => response.text())
+        .then(text => {
+            console.log('서버 응답:', text);
+            
+            try {
+                const data = JSON.parse(text);
+                
+                document.getElementById('error').style.display = 'none';
+                document.getElementById('result').style.display = 'none';
+                
+                if (data.success) {
+                    document.getElementById('result-content').innerHTML = 
+                        data.message + '<br>가격: ' + data.price + '원<br>VAT 포함: ' + data.price_vat + '원';
+                    document.getElementById('result').style.display = 'block';
+                } else {
+                    document.getElementById('error-content').innerHTML = data.message;
+                    document.getElementById('error').style.display = 'block';
+                }
+            } catch (e) {
+                document.getElementById('error-content').innerHTML = 
+                    'JSON 파싱 오류<br>서버 응답: ' + text;
+                document.getElementById('error').style.display = 'block';
+            }
+        })
+        .catch(error => {
+            console.error('오류:', error);
+            document.getElementById('error-content').innerHTML = '네트워크 오류: ' + error.message;
+            document.getElementById('error').style.display = 'block';
+        });
+    }
+    </script>
+</body>
+</html>

@@ -1,0 +1,10 @@
+{
+  "language": "ko",
+  "locale": "ko_KR",
+  "displayLanguage": "korean",
+  "ui": {
+    "language": "ko",
+    "dateFormat": "YYYY-MM-DD",
+    "timeFormat": "HH:mm:ss"
+  }
+}

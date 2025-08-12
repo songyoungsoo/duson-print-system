@@ -1,0 +1,11 @@
+--- kanji-encoding.lib.php (original)
++++ kanji-encoding.lib.php (modified)
+@@ -50,7 +50,7 @@
+     function PMA_change_enc_order() {
+         global $enc_list;
+ 
+-        $p            = split(',', $enc_list);
++        $p            = explode(',', $enc_list);
+         if ($p[1] == 'EUC-JP') {
+             $enc_list = 'ASCII,SJIS,EUC-JP,JIS';
+         } else {

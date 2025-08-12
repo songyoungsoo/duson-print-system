@@ -1,0 +1,7 @@
+--- upload1.php (original)
++++ upload1.php (modified)
+@@ -43,3 +43,4 @@
+ ?>
+ </body>
+ </html>
++?>

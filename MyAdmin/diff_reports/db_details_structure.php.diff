@@ -1,0 +1,414 @@
+--- db_details_structure.php (original)
++++ db_details_structure.php (modified)
+@@ -50,18 +50,18 @@
+ else if (PMA_MYSQL_INT_VERSION >= 32303) {
+     ?>
+ <form method="post" action="db_details_structure.php" name="tablesForm">
+-    <input type="hidden" name="lang" value="<?php echo $lang; ?>" />
+-    <input type="hidden" name="convcharset" value="<?php echo $convcharset; ?>" />
+-    <input type="hidden" name="server" value="<?php echo $server; ?>" />
+-    <input type="hidden" name="db" value="<?php echo htmlspecialchars($db); ?>" />
+-
+-<table border="<?php echo $cfg['Border']; ?>">
++    <input type="hidden" name="lang" value="<?php echo  $lang ?>" />
++    <input type="hidden" name="convcharset" value="<?php echo  $convcharset ?>" />
++    <input type="hidden" name="server" value="<?php echo  $server ?>" />
++    <input type="hidden" name="db" value="<?php echo  htmlspecialchars($db) ?>" />
++
++<table border="<?php echo  $cfg['Border'] ?>">
+ <tr>
+     <td></td>
+-    <th>&nbsp;<?php echo $strTable; ?>&nbsp;</th>
+-    <th colspan="6"><?php echo $strAction; ?></th>
+-    <th><?php echo $strRecords; ?></th>
+-    <th><?php echo $strType; ?></th>
++    <th>&nbsp;<?php echo  $strTable ?>&nbsp;</th>
++    <th colspan="6"><?php echo  $strAction ?></th>
++    <th><?php echo  $strRecords ?></th>
++    <th><?php echo  $strType ?></th>
+     <?php
+     if ($cfg['ShowStats']) {
+         echo '<th>' . $strSize . '</th>';
+@@ -84,13 +84,13 @@
+         echo "\n";
+         ?>
+ <tr>
+-    <td align="center" bgcolor="<?php echo $bgcolor; ?>">
+-        <input type="checkbox" name="selected_tbl[]" value="<?php echo $table_encoded; ?>" id="checkbox_tbl_<?php echo $i; ?>"<?php echo $checked; ?> />
+-    </td>
+-    <td bgcolor="<?php echo $bgcolor; ?>" nowrap="nowrap">
+-        &nbsp;<b><label for="checkbox_tbl_<?php echo $i; ?>"><?php echo $table_name; ?></label>&nbsp;</b>&nbsp;
+-    </td>
+-    <td bgcolor="<?php echo $bgcolor; ?>">
++    <td align="center" bgcolor="<?php echo  $bgcolor ?>">
++        <input type="checkbox" name="selected_tbl[]" value="<?php echo  $table_encoded ?>" id="checkbox_tbl_<?php echo  $i ?>"<?php echo  $checked ?> />
++    </td>
++    <td bgcolor="<?php echo  $bgcolor ?>" nowrap="nowrap">
++        &nbsp;<b><label for="checkbox_tbl_<?php echo  $i ?>"><?php echo  $table_name ?></label>&nbsp;</b>&nbsp;
++    </td>
++    <td bgcolor="<?php echo  $bgcolor ?>">
+         <?php
+         if (!empty($sts_data['Rows'])) {
+             echo '<a href="sql.php?' . $tbl_url_query . '&amp;sql_query='
+@@ -101,7 +101,7 @@
+         }
+         ?>
+     </td>
+-    <td bgcolor="<?php echo $bgcolor; ?>">
++    <td bgcolor="<?php echo  $bgcolor ?>">
+         <?php
+         if (!empty($sts_data['Rows'])) {
+             echo '<a href="tbl_select.php?' . $tbl_url_query . '">'
+@@ -111,20 +111,20 @@
+         }
+         ?>
+     </td>
+-    <td bgcolor="<?php echo $bgcolor; ?>">
+-        <a href="tbl_change.php?<?php echo $tbl_url_query; ?>">
+-            <?php echo $strInsert; ?></a>
+-    </td>
+-    <td bgcolor="<?php echo $bgcolor; ?>">
+-        <a href="tbl_properties_structure.php?<?php echo $tbl_url_query; ?>">
+-            <?php echo $strProperties; ?></a>
+-    </td>
+-    <td bgcolor="<?php echo $bgcolor; ?>">
+-        <a href="sql.php?<?php echo $tbl_url_query; ?>&amp;reload=1&amp;sql_query=<?php echo urlencode('DROP TABLE ' . PMA_backquote($table)); ?>&amp;zero_rows=<?php echo urlencode(sprintf($strTableHasBeenDropped, htmlspecialchars($table))); ?>"
+-            onclick="return confirmLink(this, 'DROP TABLE <?php echo PMA_jsFormat($table); ?>')">
+-            <?php echo $strDrop; ?></a>
+-    </td>
+-    <td bgcolor="<?php echo $bgcolor; ?>">
++    <td bgcolor="<?php echo  $bgcolor ?>">
++        <a href="tbl_change.php?<?php echo  $tbl_url_query ?>">
++            <?php echo  $strInsert ?></a>
++    </td>
++    <td bgcolor="<?php echo  $bgcolor ?>">
++        <a href="tbl_properties_structure.php?<?php echo  $tbl_url_query ?>">
++            <?php echo  $strProperties ?></a>
++    </td>
++    <td bgcolor="<?php echo  $bgcolor ?>">
++        <a href="sql.php?<?php echo  $tbl_url_query ?>&amp;reload=1&amp;sql_query=<?php echo  urlencode('DROP TABLE ' . PMA_backquote($table)) ?>&amp;zero_rows=<?php echo  urlencode(sprintf($strTableHasBeenDropped, htmlspecialchars($table))) ?>"
++            onclick="return confirmLink(this, 'DROP TABLE <?php echo  PMA_jsFormat($table) ?>')">
++            <?php echo  $strDrop ?></a>
++    </td>
++    <td bgcolor="<?php echo  $bgcolor ?>">
+         <?php
+         if (!empty($sts_data['Rows'])) {
+             echo '<a href="sql.php?' . $tbl_url_query
+@@ -154,7 +154,7 @@
+         if (isset($sts_data['Rows'])) {
+             // MyISAM, ISAM or Heap table: Row count, data size and index size
+             // is accurate.
+-            if (isset($sts_data['Type']) && ereg('^(MyISAM|ISAM|HEAP)$', $sts_data['Type'])) {
++            if (isset($sts_data['Type']) && preg_match('^(MyISAM|ISAM|HEAP)$', $sts_data['Type'])) {
+                 if ($cfg['ShowStats']) {
+                     $tblsize                    =  doubleval($sts_data['Data_length']) + doubleval($sts_data['Index_length']);
+                     $sum_size                   += $tblsize;
+@@ -185,7 +185,7 @@
+             }
+ 
+             // Merge or BerkleyDB table: Only row count is accurate.
+-            else if (isset($sts_data['Type']) && ereg('^(MRG_MyISAM|BerkeleyDB)$', $sts_data['Type'])) {
++            else if (isset($sts_data['Type']) && preg_match('^(MRG_MyISAM|BerkeleyDB)$', $sts_data['Type'])) {
+                 if ($cfg['ShowStats']) {
+                     $formated_size              =  '&nbsp;-&nbsp;';
+                     $unit                       =  '';
+@@ -203,29 +203,27 @@
+                 $display_rows                   =  'unknown';
+             }
+             ?>
+-    <td align="right" bgcolor="<?php echo $bgcolor; ?>">
+-            <?php
+-            echo "\n" . '        ' . $display_rows . "\n";
+-            ?>
+-    </td>
+-    <td bgcolor="<?php echo $bgcolor; ?>" nowrap="nowrap">
+-        &nbsp;<?php echo (isset($sts_data['Type']) ? $sts_data['Type'] : '&nbsp;'); ?>&nbsp;
++    <td align="right" bgcolor="<?php echo  $bgcolor ?>">
++            <?php echo  "\n" . '        ' . $display_rows . "\n" ?>
++    </td>
++    <td bgcolor="<?php echo  $bgcolor ?>" nowrap="nowrap">
++        &nbsp;<?php echo  (isset($sts_data['Type']) ? $sts_data['Type'] : '&nbsp;') ?>&nbsp;
+     </td>
+             <?php
+             if ($cfg['ShowStats']) {
+                 echo "\n";
+                 ?>
+-    <td align="right" bgcolor="<?php echo $bgcolor; ?>" nowrap="nowrap">
++    <td align="right" bgcolor="<?php echo  $bgcolor ?>" nowrap="nowrap">
+         &nbsp;&nbsp;
+-        <a href="tbl_properties_structure.php?<?php echo $tbl_url_query; ?>#showusage"><?php echo $formated_size . ' ' . $unit; ?></a>
++        <a href="tbl_properties_structure.php?<?php echo  $tbl_url_query ?>#showusage"><?php echo  $formated_size . ' ' . $unit ?></a>
+     </td>
+                 <?php
+                 echo "\n";
+             } // end if
+         } else {
+             ?>
+-    <td colspan="3" align="center" bgcolor="<?php echo $bgcolor; ?>">
+-        <?php echo $strInUse . "\n"; ?>
++    <td colspan="3" align="center" bgcolor="<?php echo  $bgcolor ?>">
++        <?php echo  $strInUse . "\n" ?>
+     </td>
+             <?php
+         }
+@@ -243,13 +241,13 @@
+ <tr>
+     <td></td>
+     <th align="center" nowrap="nowrap">
+-        &nbsp;<b><?php echo sprintf($strTables, number_format($num_tables, 0, $number_decimal_separator, $number_thousands_separator)); ?></b>&nbsp;
++        &nbsp;<b><?php echo  sprintf($strTables, number_format($num_tables, 0, $number_decimal_separator, $number_thousands_separator)) ?></b>&nbsp;
+     </th>
+     <th colspan="6" align="center">
+-        <b><?php echo $strSum; ?></b>
++        <b><?php echo  $strSum ?></b>
+     </th>
+     <th align="right" nowrap="nowrap">
+-        <b><?php echo number_format($sum_entries, 0, $number_decimal_separator, $number_thousands_separator); ?></b>
++        <b><?php echo  number_format($sum_entries, 0, $number_decimal_separator, $number_thousands_separator) ?></b>
+     </th>
+     <th align="center">
+         <b>--</b>
+@@ -260,7 +258,7 @@
+         ?>
+     <th align="right" nowrap="nowrap">
+         &nbsp;
+-        <b><?php echo $sum_formated . ' ' . $unit; ?></b>
++        <b><?php echo  $sum_formated . ' ' . $unit ?></b>
+     </th>
+         <?php
+     }
+@@ -278,13 +276,13 @@
+     echo "\n";
+     ?>
+ <tr>
+-    <td colspan="<?php echo (($cfg['ShowStats']) ? '11' : '10'); ?>" valign="bottom">
+-        <img src="./images/arrow_<?php echo $text_dir; ?>.gif" border="0" width="38" height="22" alt="<?php echo $strWithChecked; ?>" />
+-        <a href="<?php echo $checkall_url; ?>&amp;checkall=1" onclick="setCheckboxes('tablesForm', true); return false;">
+-            <?php echo $strCheckAll; ?></a>
++    <td colspan="<?php echo  (($cfg['ShowStats']) ? '11' : '10') ?>" valign="bottom">
++        <img src="./images/arrow_<?php echo  $text_dir ?>.gif" border="0" width="38" height="22" alt="<?php echo  $strWithChecked ?>" />
++        <a href="<?php echo  $checkall_url ?>&amp;checkall=1" onclick="setCheckboxes('tablesForm', true); return false;">
++            <?php echo  $strCheckAll ?></a>
+         &nbsp;/&nbsp;
+-        <a href="<?php echo $checkall_url; ?>" onclick="setCheckboxes('tablesForm', false); return false;">
+-            <?php echo $strUncheckAll; ?></a>
++        <a href="<?php echo  $checkall_url ?>" onclick="setCheckboxes('tablesForm', false); return false;">
++            <?php echo  $strUncheckAll ?></a>
+         &nbsp;&nbsp;&nbsp;
+         <img src="./images/spacer.gif" border="0" width="38" height="1" alt="" />
+         <select name="submit_mult" dir="ltr" onchange="this.form.submit();">
+@@ -310,7 +308,7 @@
+         //-->
+         </script>
+         <noscript>
+-            <input type="submit" value="<?php echo $strGo; ?>" />
++            <input type="submit" value="<?php echo  $strGo ?>" />
+         </noscript>
+     </td>
+ </tr>
+@@ -326,17 +324,17 @@
+     echo "\n";
+     ?>
+ <form action="db_details_structure.php">
+-    <input type="hidden" name="lang" value="<?php echo $lang; ?>" />
+-    <input type="hidden" name="convcharset" value="<?php echo $convcharset; ?>" />
+-    <input type="hidden" name="server" value="<?php echo $server; ?>" />
+-    <input type="hidden" name="db" value="<?php echo htmlspecialchars($db); ?>" />
+-
+-<table border="<?php echo $cfg['Border']; ?>">
++    <input type="hidden" name="lang" value="<?php echo  $lang ?>" />
++    <input type="hidden" name="convcharset" value="<?php echo  $convcharset ?>" />
++    <input type="hidden" name="server" value="<?php echo  $server ?>" />
++    <input type="hidden" name="db" value="<?php echo  htmlspecialchars($db) ?>" />
++
++<table border="<?php echo  $cfg['Border'] ?>">
+ <tr>
+     <td></td>
+-    <th>&nbsp;<?php echo $strTable; ?>&nbsp;</th>
+-    <th colspan="6"><?php echo $strAction; ?></th>
+-    <th><?php echo $strRecords; ?></th>
++    <th>&nbsp;<?php echo  $strTable ?>&nbsp;</th>
++    <th colspan="6"><?php echo  $strAction ?></th>
++    <th><?php echo  $strRecords ?></th>
+ </tr>
+     <?php
+     $checked = (!empty($checkall) ? ' checked="checked"' : '');
+@@ -351,31 +349,31 @@
+         echo "\n";
+         ?>
+ <tr>
+-    <td align="center" bgcolor="<?php echo $bgcolor; ?>">
+-        <input type="checkbox" name="selected_tbl[]" value="<?php echo $table_encoded; ?>" id="checkbox_tbl_<?php echo $i; ?>"<?php echo $checked; ?> />
+-    </td>
+-    <td bgcolor="<?php echo $bgcolor; ?>" class="data">
+-        <b>&nbsp;<label for="checkbox_tbl_<?php echo $i; ?>"><?php echo $table_name; ?></label>&nbsp;</b>
+-    </td>
+-    <td bgcolor="<?php echo $bgcolor; ?>">
+-        <a href="sql.php?<?php echo $tbl_url_query; ?>&amp;sql_query=<?php echo urlencode('SELECT * FROM ' . PMA_backquote($table)); ?>&amp;pos=0"><?php echo $strBrowse; ?></a>
+-    </td>
+-    <td bgcolor="<?php echo $bgcolor; ?>">
+-        <a href="tbl_select.php?<?php echo $tbl_url_query; ?>"><?php echo $strSelect; ?></a>
+-    </td>
+-    <td bgcolor="<?php echo $bgcolor; ?>">
+-        <a href="tbl_change.php?<?php echo $tbl_url_query; ?>"><?php echo $strInsert; ?></a>
+-    </td>
+-    <td bgcolor="<?php echo $bgcolor; ?>">
+-        <a href="tbl_properties.php?<?php echo $tbl_url_query; ?>"><?php echo $strProperties; ?></a>
+-    </td>
+-    <td bgcolor="<?php echo $bgcolor; ?>">
+-        <a href="sql.php?<?php echo $tbl_url_query; ?>&amp;reload=1&amp;sql_query=<?php echo urlencode('DROP TABLE ' . PMA_backquote($table)); ?>&amp;zero_rows=<?php echo urlencode(sprintf($strTableHasBeenDropped, $table_name)); ?>"><?php echo $strDrop; ?></a>
+-    </td>
+-    <td bgcolor="<?php echo $bgcolor; ?>">
+-        <a href="sql.php?<?php echo $tbl_url_query; ?>&amp;sql_query=<?php echo urlencode('DELETE FROM ' . PMA_backquote($table)); ?>&amp;zero_rows=<?php echo urlencode(sprintf($strTableHasBeenEmptied, $table_name)); ?>"><?php echo $strEmpty; ?></a>
+-    </td>
+-    <td align="right" bgcolor="<?php echo $bgcolor; ?>">
++    <td align="center" bgcolor="<?php echo  $bgcolor ?>">
++        <input type="checkbox" name="selected_tbl[]" value="<?php echo  $table_encoded ?>" id="checkbox_tbl_<?php echo  $i ?>"<?php echo  $checked ?> />
++    </td>
++    <td bgcolor="<?php echo  $bgcolor ?>" class="data">
++        <b>&nbsp;<label for="checkbox_tbl_<?php echo  $i ?>"><?php echo  $table_name ?></label>&nbsp;</b>
++    </td>
++    <td bgcolor="<?php echo  $bgcolor ?>">
++        <a href="sql.php?<?php echo  $tbl_url_query ?>&amp;sql_query=<?php echo  urlencode('SELECT * FROM ' . PMA_backquote($table)) ?>&amp;pos=0"><?php echo  $strBrowse ?></a>
++    </td>
++    <td bgcolor="<?php echo  $bgcolor ?>">
++        <a href="tbl_select.php?<?php echo  $tbl_url_query ?>"><?php echo  $strSelect ?></a>
++    </td>
++    <td bgcolor="<?php echo  $bgcolor ?>">
++        <a href="tbl_change.php?<?php echo  $tbl_url_query ?>"><?php echo  $strInsert ?></a>
++    </td>
++    <td bgcolor="<?php echo  $bgcolor ?>">
++        <a href="tbl_properties.php?<?php echo  $tbl_url_query ?>"><?php echo  $strProperties ?></a>
++    </td>
++    <td bgcolor="<?php echo  $bgcolor ?>">
++        <a href="sql.php?<?php echo  $tbl_url_query ?>&amp;reload=1&amp;sql_query=<?php echo  urlencode('DROP TABLE ' . PMA_backquote($table)) ?>&amp;zero_rows=<?php echo  urlencode(sprintf($strTableHasBeenDropped, $table_name)) ?>"><?php echo  $strDrop ?></a>
++    </td>
++    <td bgcolor="<?php echo  $bgcolor ?>">
++        <a href="sql.php?<?php echo  $tbl_url_query ?>&amp;sql_query=<?php echo  urlencode('DELETE FROM ' . PMA_backquote($table)) ?>&amp;zero_rows=<?php echo  urlencode(sprintf($strTableHasBeenEmptied, $table_name)) ?>"><?php echo  $strEmpty ?></a>
++    </td>
++    <td align="right" bgcolor="<?php echo  $bgcolor ?>">
+         <?php PMA_countRecords($db, $table); echo "\n"; ?>
+     </td>
+ </tr>
+@@ -393,22 +391,22 @@
+     ?>
+ <tr>
+     <td colspan="9">
+-        <img src="./images/arrow_<?php echo $text_dir; ?>.gif" border="0" width="38" height="22" alt="<?php echo $strWithChecked; ?>" />
+-        <a href="<?php echo $checkall_url; ?>&amp;checkall=1" onclick="setCheckboxes('tablesForm', true); return false;">
+-            <?php echo $strCheckAll; ?></a>
++        <img src="./images/arrow_<?php echo  $text_dir ?>.gif" border="0" width="38" height="22" alt="<?php echo  $strWithChecked ?>" />
++        <a href="<?php echo  $checkall_url ?>&amp;checkall=1" onclick="setCheckboxes('tablesForm', true); return false;">
++            <?php echo  $strCheckAll ?></a>
+         &nbsp;/&nbsp;
+-        <a href="<?php echo $checkall_url; ?>" onclick="setCheckboxes('tablesForm', false); return false;">
+-            <?php echo $strUncheckAll; ?></a>
++        <a href="<?php echo  $checkall_url ?>" onclick="setCheckboxes('tablesForm', false); return false;">
++            <?php echo  $strUncheckAll ?></a>
+     </td>
+ </tr>
+ 
+ <tr>
+     <td colspan="9">
+         <img src="./images/spacer.gif" border="0" width="38" height="1" alt="" />
+-        <i><?php echo $strWithChecked; ?></i>&nbsp;&nbsp;
+-        <input type="submit" name="submit_mult" value="<?php echo $strDrop; ?>" />
++        <i><?php echo  $strWithChecked ?></i>&nbsp;&nbsp;
++        <input type="submit" name="submit_mult" value="<?php echo  $strDrop ?>" />
+         &nbsp;<?php $strOr . "\n"; ?>&nbsp;
+-        <input type="submit" name="submit_mult" value="<?php echo $strEmpty; ?>" />
++        <input type="submit" name="submit_mult" value="<?php echo  $strEmpty ?>" />
+     </td>
+ </tr>
+ </table>
+@@ -435,10 +433,10 @@
+     ?>
+     <!-- Printable view of a table -->
+     <li>
+-        <div style="margin-bottom: 10px"><a href="db_printview.php?<?php echo $url_query; ?>"><?php echo $strPrintView; ?></a></div>
++        <div style="margin-bottom: 10px"><a href="db_printview.php?<?php echo  $url_query ?>"><?php echo  $strPrintView ?></a></div>
+     </li>
+     <li>
+-         <div style="margin-bottom: 10px"><a href="./db_datadict.php?<?php echo $url_query; ?>"><?php echo $strDataDict; ?></a></div>
++         <div style="margin-bottom: 10px"><a href="./db_datadict.php?<?php echo  $url_query ?>"><?php echo  $strDataDict ?></a></div>
+     </li>
+     <?php
+ } // end if
+@@ -448,10 +446,10 @@
+     <li>
+         <form method="post" action="tbl_create.php"
+             onsubmit="return (emptyFormElements(this, 'table') && checkFormElementInRange(this, 'num_fields', 1))">
+-        <input type="hidden" name="server" value="<?php echo $server; ?>" />
+-        <input type="hidden" name="lang" value="<?php echo $lang; ?>" />
+-        <input type="hidden" name="convcharset" value="<?php echo $convcharset; ?>" />
+-        <input type="hidden" name="db" value="<?php echo htmlspecialchars($db); ?>" />
++        <input type="hidden" name="server" value="<?php echo  $server ?>" />
++        <input type="hidden" name="lang" value="<?php echo  $lang ?>" />
++        <input type="hidden" name="convcharset" value="<?php echo  $convcharset ?>" />
++        <input type="hidden" name="db" value="<?php echo  htmlspecialchars($db) ?>" />
+ <?php
+ echo '        ' . sprintf($strCreateNewTable, htmlspecialchars($db)) . '&nbsp;:<br />' . "\n";
+ echo '        ' . $strName . '&nbsp;:&nbsp;' . "\n";
+@@ -482,7 +480,7 @@
+     ?>
+     <!-- Work on PDF Pages -->
+     <li>
+-        <div style="margin-bottom: 10px"><a href="pdf_pages.php?<?php echo $takeaway; ?>"><?php echo $strEditPDFPages; ?></a></div>
++        <div style="margin-bottom: 10px"><a href="pdf_pages.php?<?php echo  $takeaway ?>"><?php echo  $strEditPDFPages ?></a></div>
+     </li>
+ 
+     <!-- PDF schema -->
+@@ -491,17 +489,17 @@
+     $test_query = 'SELECT * FROM ' . PMA_backquote($cfgRelation['pdf_pages'])
+                 . ' WHERE db_name = \'' . PMA_sqlAddslashes($db) . '\'';
+     $test_rs    = PMA_query_as_cu($test_query);
+-    if ($test_rs && mysql_num_rows($test_rs) > 0) {
++    if ($test_rs && mysqli_num_rows($test_rs) > 0) {
+         echo "\n";
+         ?>
+     <li>
+         <form method="post" action="pdf_schema.php">
+-            <input type="hidden" name="server" value="<?php echo $server; ?>" />
+-            <input type="hidden" name="lang" value="<?php echo $lang; ?>" />
+-            <input type="hidden" name="convcharset" value="<?php echo $convcharset; ?>" />
+-            <input type="hidden" name="db" value="<?php echo htmlspecialchars($db); ?>" />
+-            <?php echo $strDisplayPDF; ?>&nbsp;:<br />
+-            <?php echo $strPageNumber; ?>&nbsp;
++            <input type="hidden" name="server" value="<?php echo  $server ?>" />
++            <input type="hidden" name="lang" value="<?php echo  $lang ?>" />
++            <input type="hidden" name="convcharset" value="<?php echo  $convcharset ?>" />
++            <input type="hidden" name="db" value="<?php echo  htmlspecialchars($db) ?>" />
++            <?php echo  $strDisplayPDF ?>&nbsp;:<br />
++            <?php echo  $strPageNumber ?>&nbsp;
+             <select name="pdf_page_number">
+         <?php
+         while ($pages = @PMA_mysql_fetch_array($test_rs)) {
+@@ -512,14 +510,14 @@
+         ?>
+             </select><br />
+             <input type="checkbox" name="show_grid" id="show_grid_opt" />
+-            <label for="show_grid_opt"><?php echo $strShowGrid; ?></label><br />
++            <label for="show_grid_opt"><?php echo  $strShowGrid ?></label><br />
+             <input type="checkbox" name="show_color" id="show_color_opt" checked="checked" />
+-            <label for="show_color_opt"><?php echo $strShowColor; ?></label><br />
++            <label for="show_color_opt"><?php echo  $strShowColor ?></label><br />
+             <input type="checkbox" name="show_table_dimension" id="show_table_dim_opt" />
+-            <label for="show_table_dim_opt"><?php echo $strShowTableDimension; ?></label><br />
++            <label for="show_table_dim_opt"><?php echo  $strShowTableDimension ?></label><br />
+             <input type="checkbox" name="all_tab_same_wide" id="all_tab_same_wide" />
+-            <label for="all_tab_same_wide"><?php echo $strAllTableSameWidth; ?></label>
+-            &nbsp;&nbsp;<input type="submit" value="<?php echo $strGo; ?>" />
++            <label for="all_tab_same_wide"><?php echo  $strAllTableSameWidth ?></label>
++            &nbsp;&nbsp;<input type="submit" value="<?php echo  $strGo ?>" />
+         </form>
+     </li>
+         <?php
+@@ -531,7 +529,7 @@
+     ?>
+     <!-- import docSQL files -->
+     <li>
+-        <div style="margin-bottom: 10px"><a href="db_details_importdocsql.php?<?php echo $takeaway . '">' . $strImportDocSQL; ?></a></div>
++        <div style="margin-bottom: 10px"><a href="db_details_importdocsql.php?<?php echo  $takeaway . '">' . $strImportDocSQL ?></a></div>
+     </li>
+     <?php
+ }

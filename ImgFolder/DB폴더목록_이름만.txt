@@ -1,0 +1,53 @@
+Composer-Setup.exe
+db폴더목록.txt
+DB폴더목록_이름만.txt
+member //회원목록
+mlangorder_printauto //주문내용, 이미지 , 주문시 택배주소
+mlangprintauto_cadarok //카다록 (종이종류, 사이즈,매수, 가격)
+mlangprintauto_envelope //봉투 ((대,소봉투), 종이종류, 매수, 가격)
+mlangprintauto_inserted //전단지 (종이종류, 크기, (단면,양면), 매수, 가격)
+mlangprintauto_littleprint //포스터 (사이즈, 종이종류, 가격)
+mlangprintauto_merchandisebond //쿠폰 (사이즈, 매수, 가격)
+mlangprintauto_msticker //종이자석,전체자석 (사이즈, 매수, 가격)
+mlangprintauto_namecard //명함 (재질, (단면,양면), 매수, 가격)
+mlangprintauto_ncrflambeau //양식지 (종류, 사이즈, 권수, 가격)
+mlangprintauto_sticker //스티커 (가로X세로, 재질, 매수, 가격)
+mlangprintauto_transactioncate //품목별로 선택하고 숫자를 이름으로
+이 DB안에 있는 테이블과 연결 localhost, db명 duson1830 user:duson1830 pw:du1830
+
+Mlang_board_bbs.sql
+Mlang_board_bbs_coment.sql
+Mlang_correct_bbs.sql
+Mlang_correct_bbs_coment.sql
+Mlang_file_bbs.sql
+Mlang_file_bbs_coment.sql
+Mlang_menu_bbs.sql
+Mlang_menu_bbs_coment.sql
+mlang_portfolio_bbs.sql
+Mlang_portfolio_bbs_coment.sql
+Mlang_websildesign_bbs.sql
+Mlang_websildesign_bbs_coment.sql
+Mlnag_BBS_Admin.sql
+print_shop
+print_shop.zip
+project_final
+project_final.zip
+project_localhost
+project_localhost.zip
+qna.sql
+shop_d1.sql
+shop_d2.sql
+shop_d3.sql
+shop_d4.sql
+shop_data.sql
+shop_data1.sql
+shop_data2.sql
+shop_data3.sql
+shop_list.sql
+shop_order.sql
+shop_temp (1).sql
+shop_temp.sql
+upload.sql
+users.sql
+가상호스트.txt
+파일목목.txt

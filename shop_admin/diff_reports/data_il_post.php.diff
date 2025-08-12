@@ -1,0 +1,11 @@
+--- data_il_post.php (original)
++++ data_il_post.php (modified)
+@@ -10,7 +10,7 @@
+   
+    $query = "insert into shop_data1(s1,s2,s3,s4,s5,s6,s7)
+          values('$s1','$s2','$s3','$s4','$s5','$s6','$s7')";
+-   mysqli_query($query, $connect);
++   mysqli_query($connect, $query);
+    	 
+ ?>
+ <script>

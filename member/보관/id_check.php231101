@@ -1,0 +1,61 @@
+<?include "../db.php";?>
+
+<html>
+<head>
+<title><?=$admin_name?></title>
+<STYLE>
+<!--
+p,br,body,td,input,select,submit {color:black; font-size:10pt; FONT-FAMILY:����;}
+b {color:black; font-size:10pt; FONT-FAMILY:����;}
+-->
+</STYLE>
+<link rel="stylesheet" type="text/css" href="http://www.script.ne.kr/script.css">
+</head>
+
+<body bgcolor='#FFFFFF' LEFTMARGIN='0' TOPMARGIN='0' MARGINWIDTH='0' MARGINHEIGHT='0'>
+
+<table border=0 width=100% align=center cellpadding='0' cellspacing='0'>
+<tr><td  height=5 align=left bgcolor='#000000' width=100%></td></tr>
+<tr><td  height=25 align=left bgcolor='#43B5C9' width=100%>
+&nbsp;&nbsp;<b><font color=#FFFFFF>�� <?=$admin_name?> ���̵� �ߺ��˻�</font></b>
+</td></tr>
+<tr><td  height=80 align=center bgcolor='#FFFFFF' width=100%>
+<img src='img/loding.gif'>
+<BR><BR>
+&nbsp;&nbsp;
+<b>
+��밡���� ���̵� �˻��߿� �ֽ��ϴ�..
+</b>
+</td></tr>
+</table>
+</body>
+</html>
+<?php
+// ���� üũ�� ����� db�������� ��Ų��...
+$query ="select id from member where id='$id'";
+$result = mysql_query($query,$db);
+$rows=mysql_num_rows($result);
+if($rows)
+    {
+
+		echo ("
+		<script language=javascript>
+		alert('\\n$id �� �̹� ��� �Ǿ��� �ִ� ID �Դϴ�.\\n\\n----- $admin_name -----\\n');
+		window.close();
+		</script>
+		");
+		exit;
+	}
+    else
+    {
+		echo ("
+		<script language=javascript>
+		alert('\\n$id (��)�� ����ϽǼ� �ֽ��ϴ�. \\n\\n----- $admin_name -----\\n');
+		window.close();
+		</script>
+		");
+		exit;
+
+	}
+
+?>

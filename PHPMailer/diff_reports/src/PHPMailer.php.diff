@@ -1,0 +1,7 @@
+--- PHPMailer.php (original)
++++ PHPMailer.php (modified)
+@@ -4431,3 +4431,4 @@
+         $this->oauth = $oauth;
+     }
+ }
++?>

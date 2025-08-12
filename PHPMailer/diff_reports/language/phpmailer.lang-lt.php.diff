@@ -1,0 +1,7 @@
+--- phpmailer.lang-lt.php (original)
++++ phpmailer.lang-lt.php (modified)
+@@ -25,3 +25,4 @@
+ $PHPMAILER_LANG['smtp_error']           = 'SMTP stoties klaida: ';
+ $PHPMAILER_LANG['variable_set']         = 'Nepavyko priskirti reikšmės kintamajam: ';
+ //$PHPMAILER_LANG['extension_missing']    = 'Extension missing: ';
++?>
