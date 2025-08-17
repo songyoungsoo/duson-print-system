@@ -8,7 +8,7 @@
             <a href="/MlangPrintAuto/NameCard/index.php" class="nav-link <?php echo ($current_page == 'namecard') ? 'active' : ''; ?>">📇 명함</a>
             <a href="/MlangPrintAuto/MerchandiseBond/index.php" class="nav-link <?php echo ($current_page == 'merchandisebond') ? 'active' : ''; ?>">🎫 상품권</a>
             <a href="/MlangPrintAuto/envelope/index.php" class="nav-link <?php echo ($current_page == 'envelope') ? 'active' : ''; ?>">✉️ 봉투</a>
-            <a href="/MlangPrintAuto/LittlePrint/index.php" class="nav-link <?php echo ($current_page == 'poster') ? 'active' : ''; ?>">🎨 포스터</a>
+            <a href="/MlangPrintAuto/LittlePrint/index_compact.php" class="nav-link <?php echo ($current_page == 'poster') ? 'active' : ''; ?>">🎨 포스터</a>
         </div>
     </div>
 </div>

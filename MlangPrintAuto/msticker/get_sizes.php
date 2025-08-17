@@ -9,7 +9,7 @@ mysqli_set_charset($db, "utf8");
 
 $CV_no = $_GET['CV_no'] ?? '';
 $page = $_GET['page'] ?? 'msticker';
-$GGTABLE = "MlangPrintAuto_transactionCate";
+$GGTABLE = "mlangprintauto_transactioncate";
 
 if (empty($CV_no)) {
     error_response('카테고리 번호가 필요합니다.');

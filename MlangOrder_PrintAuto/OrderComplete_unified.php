@@ -89,53 +89,53 @@ include "../includes/header.php";
 include "../includes/nav.php";
 ?>
 
-<div class="container">
-    <!-- 주문 완료 성공 메시지 -->
-    <div style="background: linear-gradient(135deg, #27ae60 0%, #2ecc71 100%); color: white; padding: 1.5rem; border-radius: 20px; text-align: center; margin-bottom: 2rem; box-shadow: 0 15px 35px rgba(39, 174, 96, 0.3);">
-        <h1 style="font-size: 2.5rem; font-weight: 800; margin-bottom: 0.5rem; text-shadow: 0 2px 4px rgba(0,0,0,0.1); display: flex; align-items: center; justify-content: center; gap: 15px;">
-            <span style="font-size: 2.5rem; animation: bounce 2s infinite;">🎉</span>
-            주문이 완료되었습니다!
+<div class="container" style="max-width: 1200px; padding: 0 1rem;">
+    <!-- 주문 완료 성공 메시지 (컴팩트) -->
+    <div style="background: linear-gradient(135deg, #27ae60 0%, #2ecc71 100%); color: white; padding: 1rem; border-radius: 12px; text-align: center; margin-bottom: 1rem; box-shadow: 0 8px 20px rgba(39, 174, 96, 0.3);">
+        <h1 style="font-size: 1.8rem; font-weight: 700; margin-bottom: 0.3rem; display: flex; align-items: center; justify-content: center; gap: 10px;">
+            <span style="font-size: 1.8rem; animation: bounce 2s infinite;">🎉</span>
+            주문 완료!
         </h1>
-        <p style="font-size: 1.3rem; opacity: 0.95; margin-bottom: 0.5rem;"><?php echo htmlspecialchars($name); ?> 고객님, 주문해 주셔서 감사합니다.</p>
-        <div style="background: rgba(255,255,255,0.2); padding: 0.8rem; border-radius: 10px; margin-top: 1rem; display: inline-block;">
-            <p style="margin: 0; font-size: 1.1rem;">📧 주문 확인 메일이 발송되었습니다</p>
+        <p style="font-size: 1rem; opacity: 0.95; margin-bottom: 0.3rem;"><?php echo htmlspecialchars($name); ?> 고객님, 감사합니다.</p>
+        <div style="background: rgba(255,255,255,0.2); padding: 0.5rem; border-radius: 8px; margin-top: 0.5rem; display: inline-block;">
+            <p style="margin: 0; font-size: 0.9rem;">📧 확인 메일 발송완료</p>
         </div>
     </div>
 
-    <!-- 주문 요약 정보 -->
-    <div style="background: #f8f9fa; padding: 2rem; border-radius: 15px; margin-bottom: 2rem; border-left: 5px solid #3498db;">
-        <h2 style="color: #2c3e50; margin-bottom: 1.5rem; display: flex; align-items: center; gap: 10px;">
+    <!-- 주문 요약 정보 (컴팩트) -->
+    <div style="background: #f8f9fa; padding: 1rem; border-radius: 10px; margin-bottom: 1rem; border-left: 4px solid #3498db;">
+        <h2 style="color: #2c3e50; margin-bottom: 0.8rem; display: flex; align-items: center; gap: 8px; font-size: 1.4rem;">
             📊 주문 요약
         </h2>
-        <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 1.5rem;">
-            <div style="text-align: center; background: white; padding: 1.5rem; border-radius: 12px; box-shadow: 0 4px 15px rgba(0,0,0,0.1);">
-                <div style="font-size: 2rem; font-weight: bold; color: #3498db; margin-bottom: 0.5rem;"><?php echo count($order_list); ?>개</div>
-                <div style="color: #666; font-weight: 600;">주문 건수</div>
+        <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(180px, 1fr)); gap: 1rem;">
+            <div style="text-align: center; background: white; padding: 1rem; border-radius: 8px; box-shadow: 0 2px 8px rgba(0,0,0,0.1);">
+                <div style="font-size: 1.6rem; font-weight: bold; color: #3498db; margin-bottom: 0.3rem;"><?php echo count($order_list); ?>개</div>
+                <div style="color: #666; font-weight: 600; font-size: 0.9rem;">주문 건수</div>
             </div>
-            <div style="text-align: center; background: white; padding: 1.5rem; border-radius: 12px; box-shadow: 0 4px 15px rgba(0,0,0,0.1);">
-                <div style="font-size: 2rem; font-weight: bold; color: #27ae60; margin-bottom: 0.5rem;"><?php echo number_format($total_amount); ?>원</div>
-                <div style="color: #666; font-weight: 600;">총 주문금액</div>
+            <div style="text-align: center; background: white; padding: 1rem; border-radius: 8px; box-shadow: 0 2px 8px rgba(0,0,0,0.1);">
+                <div style="font-size: 1.6rem; font-weight: bold; color: #27ae60; margin-bottom: 0.3rem;"><?php echo number_format($total_amount); ?>원</div>
+                <div style="color: #666; font-weight: 600; font-size: 0.9rem;">총 주문금액</div>
             </div>
-            <div style="text-align: center; background: white; padding: 1.5rem; border-radius: 12px; box-shadow: 0 4px 15px rgba(0,0,0,0.1);">
-                <div style="font-size: 2rem; font-weight: bold; color: #e74c3c; margin-bottom: 0.5rem;"><?php echo number_format($total_amount_vat); ?>원</div>
-                <div style="color: #666; font-weight: 600;">VAT 포함 총액</div>
+            <div style="text-align: center; background: white; padding: 1rem; border-radius: 8px; box-shadow: 0 2px 8px rgba(0,0,0,0.1);">
+                <div style="font-size: 1.6rem; font-weight: bold; color: #e74c3c; margin-bottom: 0.3rem;"><?php echo number_format($total_amount_vat); ?>원</div>
+                <div style="color: #666; font-weight: 600; font-size: 0.9rem;">VAT 포함 총액</div>
             </div>
         </div>
     </div>
 
-    <!-- 주문 상세 내역 -->
-    <div class="card" style="margin-bottom: 2rem;">
-        <div class="card-header" style="background: linear-gradient(135deg, #3498db 0%, #2980b9 100%); color: white; padding: 1.5rem;">
-            <h2 style="margin: 0; font-size: 1.8rem; display: flex; align-items: center; gap: 10px;">
+    <!-- 주문 상세 내역 (컴팩트) -->
+    <div class="card" style="margin-bottom: 1rem;">
+        <div class="card-header" style="background: linear-gradient(135deg, #3498db 0%, #2980b9 100%); color: white; padding: 1rem;">
+            <h2 style="margin: 0; font-size: 1.5rem; display: flex; align-items: center; gap: 8px;">
                 📋 주문 상세 내역
             </h2>
         </div>
         <div style="padding: 0;">
             <?php foreach ($order_list as $index => $order): ?>
-            <div style="padding: 2rem; border-bottom: <?php echo $index < count($order_list) - 1 ? '1px solid #eee' : 'none'; ?>; <?php echo $index % 2 == 0 ? 'background: #f9f9f9;' : 'background: white;'; ?>">
-                <div style="display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 1rem;">
+            <div style="padding: 1.2rem; border-bottom: <?php echo $index < count($order_list) - 1 ? '1px solid #eee' : 'none'; ?>; <?php echo $index % 2 == 0 ? 'background: #f9f9f9;' : 'background: white;'; ?>">
+                <div style="display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 0.8rem;">
                     <div style="flex: 1;">
-                        <div style="display: flex; align-items: center; gap: 10px; margin-bottom: 1rem;">
+                        <div style="display: flex; align-items: center; gap: 8px; margin-bottom: 0.8rem;">
                             <span style="background: #3498db; color: white; padding: 0.3rem 0.8rem; border-radius: 20px; font-size: 0.9rem; font-weight: bold;">
                                 주문 #<?php echo htmlspecialchars($order['no']); ?>
                             </span>
@@ -144,13 +144,13 @@ include "../includes/nav.php";
                             </span>
                         </div>
                         
-                        <h3 style="color: #2c3e50; margin-bottom: 1rem; font-size: 1.3rem;">
+                        <h3 style="color: #2c3e50; margin-bottom: 0.6rem; font-size: 1.2rem;">
                             <?php echo htmlspecialchars($order['Type']); ?>
                         </h3>
                         
                         <?php if (!empty($order['Type_1'])): ?>
-                        <div style="background: #e8f4fd; padding: 1rem; border-radius: 8px; margin-bottom: 1rem;">
-                            <h4 style="color: #2c3e50; margin-bottom: 0.5rem; font-size: 1rem;">📝 상품 상세 정보</h4>
+                        <div style="background: #e8f4fd; padding: 0.8rem; border-radius: 6px; margin-bottom: 0.8rem;">
+                            <h4 style="color: #2c3e50; margin-bottom: 0.4rem; font-size: 0.95rem;">📝 상품 상세 정보</h4>
                             <div style="color: #495057; line-height: 1.6;">
                                 <?php 
                                 // JSON 데이터인지 확인하고 파싱
@@ -306,27 +306,27 @@ include "../includes/nav.php";
         </div>
     </div>
 
-    <!-- 고객 정보 -->
-    <div class="card" style="margin-bottom: 2rem;">
-        <div class="card-header" style="background: linear-gradient(135deg, #9b59b6 0%, #8e44ad 100%); color: white; padding: 1.5rem;">
-            <h2 style="margin: 0; font-size: 1.8rem;">👤 고객 정보</h2>
+    <!-- 고객 정보 (컴팩트) -->
+    <div class="card" style="margin-bottom: 1rem;">
+        <div class="card-header" style="background: linear-gradient(135deg, #9b59b6 0%, #8e44ad 100%); color: white; padding: 1rem;">
+            <h2 style="margin: 0; font-size: 1.5rem;">👤 고객 정보</h2>
         </div>
-        <div style="padding: 2rem;">
-            <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); gap: 2rem;">
+        <div style="padding: 1.2rem;">
+            <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); gap: 1.5rem;">
                 <div>
-                    <div style="margin-bottom: 1rem;">
-                        <label style="font-weight: bold; color: #2c3e50; display: block; margin-bottom: 0.3rem;">👤 성명</label>
-                        <div style="color: #495057; font-size: 1.1rem;"><?php echo htmlspecialchars($first_order['name']); ?></div>
+                    <div style="margin-bottom: 0.8rem;">
+                        <label style="font-weight: bold; color: #2c3e50; display: block; margin-bottom: 0.2rem; font-size: 0.9rem;">👤 성명</label>
+                        <div style="color: #495057; font-size: 1rem;"><?php echo htmlspecialchars($first_order['name']); ?></div>
                     </div>
-                    <div style="margin-bottom: 1rem;">
-                        <label style="font-weight: bold; color: #2c3e50; display: block; margin-bottom: 0.3rem;">📧 이메일</label>
-                        <div style="color: #495057; font-size: 1.1rem;"><?php echo htmlspecialchars($first_order['email']); ?></div>
+                    <div style="margin-bottom: 0.8rem;">
+                        <label style="font-weight: bold; color: #2c3e50; display: block; margin-bottom: 0.2rem; font-size: 0.9rem;">📧 이메일</label>
+                        <div style="color: #495057; font-size: 1rem;"><?php echo htmlspecialchars($first_order['email']); ?></div>
                     </div>
                 </div>
                 <div>
-                    <div style="margin-bottom: 1rem;">
-                        <label style="font-weight: bold; color: #2c3e50; display: block; margin-bottom: 0.3rem;">📞 연락처</label>
-                        <div style="color: #495057; font-size: 1.1rem;">
+                    <div style="margin-bottom: 0.8rem;">
+                        <label style="font-weight: bold; color: #2c3e50; display: block; margin-bottom: 0.2rem; font-size: 0.9rem;">📞 연락처</label>
+                        <div style="color: #495057; font-size: 1rem;">
                             <?php if(!empty($first_order['phone'])): ?>
                                 전화: <?php echo htmlspecialchars($first_order['phone']); ?>
                             <?php endif; ?>
@@ -338,9 +338,9 @@ include "../includes/nav.php";
                             <?php endif; ?>
                         </div>
                     </div>
-                    <div style="margin-bottom: 1rem;">
-                        <label style="font-weight: bold; color: #2c3e50; display: block; margin-bottom: 0.3rem;">🏠 주소</label>
-                        <div style="color: #495057; font-size: 1.1rem;">
+                    <div style="margin-bottom: 0.8rem;">
+                        <label style="font-weight: bold; color: #2c3e50; display: block; margin-bottom: 0.2rem; font-size: 0.9rem;">🏠 주소</label>
+                        <div style="color: #495057; font-size: 1rem;">
                             <?php if(!empty($first_order['zip'])): ?>
                                 (<?php echo htmlspecialchars($first_order['zip']); ?>)
                             <?php endif; ?>
@@ -352,38 +352,38 @@ include "../includes/nav.php";
         </div>
     </div>
 
-    <!-- 입금 안내 -->
-    <div class="card" style="margin-bottom: 2rem;">
-        <div class="card-header" style="background: linear-gradient(135deg, #f39c12 0%, #e67e22 100%); color: white; padding: 1.5rem;">
-            <h2 style="margin: 0; font-size: 1.8rem;">💳 입금 안내</h2>
+    <!-- 입금 안내 (컴팩트) -->
+    <div class="card" style="margin-bottom: 1rem;">
+        <div class="card-header" style="background: linear-gradient(135deg, #f39c12 0%, #e67e22 100%); color: white; padding: 0.6rem 1rem;">
+            <h2 style="margin: 0; font-size: 1.2rem;">💳 입금 안내</h2>
         </div>
-        <div style="padding: 2rem;">
-            <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); gap: 2rem;">
+        <div style="padding: 1.2rem;">
+            <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); gap: 1.5rem;">
                 <div>
-                    <div style="margin-bottom: 1rem;">
-                        <label style="font-weight: bold; color: #2c3e50; display: block; margin-bottom: 0.3rem;">👤 예금주</label>
-                        <div style="color: #495057; font-size: 1.1rem;">두손기획인쇄 차경선</div>
+                    <div style="margin-bottom: 0.8rem;">
+                        <label style="font-weight: bold; color: #2c3e50; display: block; margin-bottom: 0.2rem; font-size: 0.9rem;">👤 예금주</label>
+                        <div style="color: #495057; font-size: 1rem;">두손기획인쇄 차경선</div>
                     </div>
-                    <div style="margin-bottom: 1rem;">
-                        <label style="font-weight: bold; color: #2c3e50; display: block; margin-bottom: 0.3rem;">🏦 국민은행</label>
-                        <div style="color: #495057; font-size: 1.1rem;">999-1688-2384</div>
+                    <div style="margin-bottom: 0.8rem;">
+                        <label style="font-weight: bold; color: #2c3e50; display: block; margin-bottom: 0.2rem; font-size: 0.9rem;">🏦 국민은행</label>
+                        <div style="color: #495057; font-size: 1rem;">999-1688-2384</div>
                     </div>
-                    <div style="margin-bottom: 1rem;">
-                        <label style="font-weight: bold; color: #2c3e50; display: block; margin-bottom: 0.3rem;">🏦 신한은행</label>
-                        <div style="color: #495057; font-size: 1.1rem;">110-342-543507</div>
+                    <div style="margin-bottom: 0.8rem;">
+                        <label style="font-weight: bold; color: #2c3e50; display: block; margin-bottom: 0.2rem; font-size: 0.9rem;">🏦 신한은행</label>
+                        <div style="color: #495057; font-size: 1rem;">110-342-543507</div>
                     </div>
                 </div>
                 <div>
-                    <div style="margin-bottom: 1rem;">
-                        <label style="font-weight: bold; color: #2c3e50; display: block; margin-bottom: 0.3rem;">🏦 농협</label>
-                        <div style="color: #495057; font-size: 1.1rem;">301-2632-1829</div>
+                    <div style="margin-bottom: 0.8rem;">
+                        <label style="font-weight: bold; color: #2c3e50; display: block; margin-bottom: 0.2rem; font-size: 0.9rem;">🏦 농협</label>
+                        <div style="color: #495057; font-size: 1rem;">301-2632-1829</div>
                     </div>
-                    <div style="margin-bottom: 1rem;">
-                        <label style="font-weight: bold; color: #2c3e50; display: block; margin-bottom: 0.3rem;">💳 카드 결제</label>
-                        <div style="color: #495057; font-size: 1.1rem;">1688-2384로 전화주세요</div>
+                    <div style="margin-bottom: 0.8rem;">
+                        <label style="font-weight: bold; color: #2c3e50; display: block; margin-bottom: 0.2rem; font-size: 0.9rem;">💳 카드 결제</label>
+                        <div style="color: #495057; font-size: 1rem;">1688-2384로 전화주세요</div>
                     </div>
-                    <div style="margin-bottom: 1rem; padding: 1rem; background: #fff3cd; border-radius: 8px; border-left: 4px solid #ffc107;">
-                        <div style="color: #856404; font-size: 0.95rem; font-weight: 600;">
+                    <div style="margin-bottom: 0.8rem; padding: 0.8rem; background: #fff3cd; border-radius: 6px; border-left: 3px solid #ffc107;">
+                        <div style="color: #856404; font-size: 0.9rem; font-weight: 600; line-height: 1.4;">
                             ⚠️ 입금 확인 후 작업이 시작됩니다.<br>
                             입금자명을 주문자명과 동일하게 해주세요.
                         </div>
@@ -393,38 +393,15 @@ include "../includes/nav.php";
         </div>
     </div>
 
-    <!-- 액션 버튼들 -->
-    <div style="text-align: center; margin: 3rem 0;">
+    <!-- 액션 버튼들 (컴팩트) -->
+    <div style="text-align: center; margin: 1.5rem 0 0.5rem 0;">
         <a href="../MlangPrintAuto/cadarok/index.php" 
-           style="display: inline-block; background: linear-gradient(135deg, #27ae60 0%, #2ecc71 100%); color: white; padding: 18px 35px; border-radius: 30px; text-decoration: none; font-weight: 700; box-shadow: 0 8px 25px rgba(39, 174, 96, 0.4); font-size: 1.1rem; transition: all 0.3s ease;">
+           style="display: inline-block; background: linear-gradient(135deg, #27ae60 0%, #2ecc71 100%); color: white; padding: 14px 28px; border-radius: 25px; text-decoration: none; font-weight: 700; box-shadow: 0 6px 20px rgba(39, 174, 96, 0.4); font-size: 1rem; transition: all 0.3s ease;">
             📋 새 주문하기
         </a>
     </div>
 </div>
 
-<!-- 하단 연락처 정보 -->
-<div style="background: linear-gradient(135deg, #34495e 0%, #2c3e50 100%); color: white; padding: 3rem 0; margin-top: 3rem;">
-    <div class="container">
-        <h2 style="text-align: center; margin-bottom: 2rem; font-size: 2rem;">📞 문의 안내</h2>
-        <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); gap: 2rem; text-align: center;">
-            <div style="background: rgba(255,255,255,0.1); padding: 2rem; border-radius: 15px;">
-                <div style="font-size: 2rem; margin-bottom: 1rem;">📞</div>
-                <div style="font-weight: 700; margin-bottom: 0.5rem; font-size: 1.2rem;">고객센터</div>
-                <div style="font-size: 1.1rem;">02-2632-1830</div>
-            </div>
-            <div style="background: rgba(255,255,255,0.1); padding: 2rem; border-radius: 15px;">
-                <div style="font-size: 2rem; margin-bottom: 1rem;">🏢</div>
-                <div style="font-weight: 700; margin-bottom: 0.5rem; font-size: 1.2rem;">주소</div>
-                <div style="font-size: 1.1rem;">서울 영등포구 영등포로36길 9<br>송호빌딩 1층 두손기획인쇄</div>
-            </div>
-            <div style="background: rgba(255,255,255,0.1); padding: 2rem; border-radius: 15px;">
-                <div style="font-size: 2rem; margin-bottom: 1rem;">🌐</div>
-                <div style="font-weight: 700; margin-bottom: 0.5rem; font-size: 1.2rem;">홈페이지</div>
-                <div style="font-size: 1.1rem;">www.dsp114.com</div>
-            </div>
-        </div>
-    </div>
-</div>
 
 <style>
 @keyframes bounce {
@@ -447,7 +424,7 @@ a:hover {
 
 <?php
 // 메일 발송 기능 추가
-if ($processed_orders && !empty($email)) {
+if (!empty($order_list) && !empty($email)) {
     try {
         include "mailer.lib.php";
         
@@ -456,7 +433,7 @@ if ($processed_orders && !empty($email)) {
         $mail_content .= "<h2 style='color: #2c3e50; text-align: center; border-bottom: 2px solid #3498db; padding-bottom: 10px;'>주문 확인서</h2>";
         
         // 고객 정보
-        $first_order = $processed_orders[0];
+        $first_order = $order_list[0];
         $mail_content .= "<div style='background: #f8f9fa; padding: 20px; border-radius: 8px; margin: 20px 0;'>";
         $mail_content .= "<h3 style='color: #495057; margin-bottom: 15px;'>👤 주문자 정보</h3>";
         $mail_content .= "<p><strong>성명:</strong> " . htmlspecialchars($first_order['name']) . "</p>";
@@ -470,7 +447,7 @@ if ($processed_orders && !empty($email)) {
         $mail_content .= "<h3 style='color: #495057; padding: 15px; margin: 0; background: #e9ecef; border-radius: 8px 8px 0 0;'>📦 주문 상품</h3>";
         
         $total_amount = 0;
-        foreach ($processed_orders as $order) {
+        foreach ($order_list as $order) {
             $mail_content .= "<div style='padding: 15px; border-bottom: 1px solid #eee;'>";
             $mail_content .= "<div style='display: flex; justify-content: space-between; align-items: center;'>";
             $mail_content .= "<div>";
@@ -510,16 +487,18 @@ if ($processed_orders && !empty($email)) {
         
         $mail_content .= "</div>";
         
-        // 메일 발송
+        // 메일 발송 (출력 숨김 처리)
         $mail_subject = "[두손기획인쇄] 주문이 접수되었습니다 - " . htmlspecialchars($first_order['name']) . "님";
         $from_name = "두손기획인쇄";
         $from_email = "dsp1830@naver.com";
         
+        ob_start(); // 출력 버퍼 시작
         mailer($from_name, $from_email, $email, $mail_subject, $mail_content, 1, "");
         
         // 관리자에게도 메일 발송
         $admin_subject = "[주문알림] " . htmlspecialchars($first_order['name']) . "님 주문 접수";
         mailer($from_name, $from_email, "dsp1830@naver.com", $admin_subject, $mail_content, 1, "");
+        ob_end_clean(); // 출력 버퍼 내용 삭제
         
     } catch (Exception $e) {
         error_log("메일 발송 오류: " . $e->getMessage());

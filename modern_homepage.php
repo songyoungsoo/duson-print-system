@@ -359,7 +359,7 @@
                     <li><a href="/">홈</a></li>
                     <li><a href="/sub/info.php">회사소개</a></li>
                     <li><a href="/sub/leaflet.php">포트폴리오</a></li>
-                    <li><a href="/sub/estimate_auto.php">자동견적</a></li>
+                    <li><a href="/sub/estimate_auto.php">견적안내</a></li>
                     <li><a href="/sub/checkboard.php" class="checkboard-btn">교정보기</a></li>
                     <li><a href="/bbs/qna.php">고객문의</a></li>
                 </ul>
@@ -585,7 +585,7 @@
                 </div>
                 <div class="footer-section">
                     <h3>고객 서비스</h3>
-                    <p><a href="/sub/estimate_auto.php">자동견적</a></p>
+                    <p><a href="/sub/estimate_auto.php">견적안내</a></p>
                     <p><a href="/sub/checkboard.php">교정보기</a></p>
                     <p><a href="/bbs/qna.php">고객문의</a></p>
                     <p><a href="/sub/info.php">회사소개</a></p>

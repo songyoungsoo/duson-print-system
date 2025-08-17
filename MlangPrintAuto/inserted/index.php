@@ -2,6 +2,10 @@
 session_start(); 
 $session_id = session_id();
 
+// 컴팩트 버전으로 항상 리다이렉션
+header("Location: index_compact.php");
+exit;
+
 // 데이터베이스 연결
 include "../../db.php";
 $connect = $db;
@@ -115,6 +119,13 @@ echo '<script src="../../includes/js/UniversalFileUpload.js"></script>';
 ?>
 
             <div class="container">
+                <!-- 컴팩트 버전 링크 -->
+                <div style="text-align: center; margin-bottom: 20px;">
+                    <a href="index_compact.php" class="btn" style="background: linear-gradient(135deg, #28a745 0%, #20c997 100%); color: white; padding: 12px 24px; border-radius: 8px; text-decoration: none; font-weight: 600; box-shadow: 0 4px 15px rgba(40, 167, 69, 0.3);">
+                        🖼️ 갤러리 + 컴팩트 버전으로 보기
+                    </a>
+                </div>
+                
                 <!-- 주문 폼 -->
                 <div class="card">
                     <div class="card-header">

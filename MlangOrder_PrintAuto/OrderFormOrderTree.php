@@ -486,7 +486,7 @@ textarea:focus {
 
     .print-table td,
     .print-table th {
-        border: 0.3pt solid #666;
+        border: 0.1pt solid #808080;
         padding: 1mm 2mm;
         text-align: left;
         vertical-align: top;
@@ -505,7 +505,7 @@ textarea:focus {
 
     .print-order-details {
         background: #fafafa;
-        border: 0.3pt solid #666;
+        border: 0.1pt solid #808080;
         padding: 3mm;
         margin-bottom: 2mm;
         min-height: 15mm;
@@ -526,11 +526,12 @@ textarea:focus {
     }
 
     .print-price-table td {
-        border: 0.3pt solid #666;
+        border: 0.1pt solid #808080;
         padding: 2mm 3mm;
         text-align: right;
         line-height: 1.4;
         font-weight: 600;
+        font-size: 15pt;
     }
 
     .print-price-table .label {
@@ -544,9 +545,13 @@ textarea:focus {
     .print-price-table .total {
         background: #ffe6e6;
         font-weight: bold;
-        font-size: 12pt;
+        font-size: 15pt;
         color: #dc3545;
-        border: 0.5pt solid #dc3545;
+        border: 0.1pt solid #808080;
+    }
+    
+    .print-price-table .total td:last-child {
+        font-size: 15pt;
     }
 
     .print-footer {
@@ -594,7 +599,7 @@ textarea:focus {
                     <span style="color: #000;">주문번호: <?=$View_No?></span>
                 </div>
                 <div style="flex: 1;">
-                    <span style="color: #000;">날짜시간: <?=htmlspecialchars($View_date)?></span>
+                    <span style="color: #000;">일시: <?=htmlspecialchars($View_date)?></span>
                 </div>
                 <div style="flex: 1;">
                     <span style="color: #000;">주문자: <?=htmlspecialchars($View_name)?></span>
@@ -605,25 +610,6 @@ textarea:focus {
             </div>
         </div>
         
-        <!-- 상품정보와 가격정보를 한 줄로 배치 -->
-        <div style="display: flex; gap: 3mm; margin-bottom: 2mm;">
-            <div style="flex: 1;">
-                <div class="print-info-title">상품정보</div>
-                <table class="print-table">
-                    <tr><th>상품유형</th><td><?=htmlspecialchars($View_Type)?></td></tr>
-                    <tr><th>수량</th><td><?=$View_Gensu?>개</td></tr>
-                </table>
-            </div>
-            <div style="flex: 1;">
-                <div class="print-info-title">가격정보</div>
-                <table class="print-price-table">
-                    <tr><td class="label">인쇄비</td><td><?=number_format($View_money_4)?></td></tr>
-                    <tr><td class="label">디자인비</td><td><?=number_format($View_money_2)?></td></tr>
-                    <tr class="total"><td class="label">합계</td><td><?=number_format($View_money_5)?></td></tr>
-                </table>
-            </div>
-        </div>
-
         <!-- 주문 상세 -->
         <div class="print-info-section">
             <div class="print-info-title">주문상세</div>
@@ -647,6 +633,10 @@ textarea:focus {
                     echo "주문 상세 정보가 없습니다.";
                 }
                 ?>
+            </div>
+            <!-- 가격 정보를 주문상세 바로 아래에 한 줄로 표시 -->
+            <div style="margin-top: 2mm; padding-top: 2mm; border-top: 0.1pt solid #808080; font-size: 11pt; font-weight: bold;">
+                인쇄비 <?=number_format($View_money_4)?> / 디자인비 <?=number_format($View_money_2)?> / 합계 <?=number_format($View_money_5)?>
             </div>
         </div>
 
@@ -689,7 +679,7 @@ textarea:focus {
                     <span style="color: #000;">주문번호: <?=$View_No?></span>
                 </div>
                 <div style="flex: 1;">
-                    <span style="color: #000;">날짜시간: <?=htmlspecialchars($View_date)?></span>
+                    <span style="color: #000;">일시: <?=htmlspecialchars($View_date)?></span>
                 </div>
                 <div style="flex: 1;">
                     <span style="color: #000;">주문자: <?=htmlspecialchars($View_name)?></span>
@@ -700,26 +690,6 @@ textarea:focus {
             </div>
         </div>
         
-        <!-- 기본정보와 주문상세를 한 줄로 배치 -->
-        <div style="display: flex; gap: 3mm; margin-bottom: 2mm;">
-            <div style="flex: 1;">
-                <div class="print-info-title">기본정보</div>
-                <table class="print-table">
-                    <tr><th>주문번호</th><td><?=$View_No?></td></tr>
-                    <tr><th>상품유형</th><td><?=htmlspecialchars($View_Type)?></td></tr>
-                    <tr><th>수량</th><td><?=$View_Gensu?>개</td></tr>
-                </table>
-            </div>
-            <div style="flex: 1;">
-                <div class="print-info-title">가격정보</div>
-                <table class="print-price-table">
-                    <tr><td class="label">인쇄비</td><td><?=number_format($View_money_4)?></td></tr>
-                    <tr><td class="label">디자인비</td><td><?=number_format($View_money_2)?></td></tr>
-                    <tr class="total"><td class="label">합계</td><td><?=number_format($View_money_5)?></td></tr>
-                </table>
-            </div>
-        </div>
-
         <!-- 주문 상세 -->
         <div class="print-info-section">
             <div class="print-info-title">주문상세</div>
@@ -743,6 +713,10 @@ textarea:focus {
                     echo "주문 상세 정보가 없습니다.";
                 }
                 ?>
+            </div>
+            <!-- 가격 정보를 주문상세 바로 아래에 한 줄로 표시 -->
+            <div style="margin-top: 2mm; padding-top: 2mm; border-top: 0.1pt solid #808080; font-size: 11pt; font-weight: bold;">
+                인쇄비 <?=number_format($View_money_4)?> / 디자인비 <?=number_format($View_money_2)?> / 합계 <?=number_format($View_money_5)?>
             </div>
         </div>
 
@@ -1038,7 +1012,7 @@ textarea:focus {
         <div class="btn-group" style="margin-top: 15px;">
             <?php if ($no) { ?>
                 <button type="submit" class="btn btn-primary" style="padding: 8px 20px; font-size: 0.9rem; margin-right: 10px;">💾 정보 수정</button>
-                <button type="button" onclick="printOrder();" class="btn btn-success" style="padding: 8px 20px; font-size: 0.9rem; margin-right: 10px; background: linear-gradient(135deg, #28a745 0%, #1e7e34 100%);">🖨️ 주문서 출력</button>
+                <button type="button" onclick="printOrder();" class="btn btn-success" style="padding: 8px 20px; font-size: 0.9rem; margin-right: 10px; background: linear-gradient(135deg, #28a745 0%, #1e7e34 100%); color: white;">🖨️ 주문서 출력</button>
             <?php } ?>
             <button type="button" onclick="window.close();" class="btn btn-secondary" style="padding: 8px 16px; font-size: 0.9rem;">✖️ 창 닫기</button>
         </div>

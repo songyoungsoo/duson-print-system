@@ -1,7 +1,7 @@
 <!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
 <html>
 <head>
-<title>▒ 두손기획인쇄 - <?php echo isset($pageTitle) ? $pageTitle : '전단지/리플렛 자동견적'; ?></title>
+<title>▒ 두손기획인쇄 - <?php echo isset($pageTitle) ? $pageTitle : '전단지/리플렛 견적안내'; ?></title>
 <meta http-equiv="Content-Type" content="text/html; charset=utf-8">
 <META NAME='KEYWORDS' CONTENT='두손기획인쇄, 전단지, 리플렛, 명함, 스티커, 봉투, 인쇄'>
 <meta name='author' content='Mlang'>

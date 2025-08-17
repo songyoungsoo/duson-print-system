@@ -1,4 +1,7 @@
 <?php
+// 세션 시작
+session_start();
+
 // 공통 함수 포함
 include "../../includes/functions.php";
 include "../../db.php";
@@ -10,41 +13,53 @@ mysqli_set_charset($db, "utf8");
 // POST 데이터 받기
 $action = $_POST['action'] ?? '';
 $MY_type = $_POST['MY_type'] ?? '';
-$PN_type = $_POST['PN_type'] ?? '';     // Section 역할
+$Section = $_POST['Section'] ?? ''; // 자석스티커 규격
+$POtype = $_POST['POtype'] ?? '';
 $MY_amount = $_POST['MY_amount'] ?? '';
 $ordertype = $_POST['ordertype'] ?? '';
 $price = $_POST['price'] ?? 0;
 $vat_price = $_POST['vat_price'] ?? 0;
 $product_type = $_POST['product_type'] ?? 'msticker';
+$selected_options = $_POST['selected_options'] ?? '';
+$work_memo = $_POST['work_memo'] ?? '';
+$upload_method = $_POST['upload_method'] ?? '';
 
 // 입력값 검증
 if ($action !== 'add_to_basket') {
     error_response('잘못된 액션입니다.');
 }
 
-if (empty($MY_type) || empty($PN_type) || empty($MY_amount) || empty($ordertype)) {
-    error_response('필수 정보가 누락되었습니다.');
+// 디버그: 받은 데이터 로그
+error_log("자석스티커 장바구니 추가 - 받은 데이터: " . print_r($_POST, true));
+
+if (empty($MY_type) || empty($Section) || empty($POtype) || empty($MY_amount) || empty($ordertype)) {
+    $missing_fields = [];
+    if (empty($MY_type)) $missing_fields[] = 'MY_type';
+    if (empty($Section)) $missing_fields[] = 'Section';
+    if (empty($POtype)) $missing_fields[] = 'POtype';
+    if (empty($MY_amount)) $missing_fields[] = 'MY_amount';
+    if (empty($ordertype)) $missing_fields[] = 'ordertype';
+    
+    error_response('필수 정보가 누락되었습니다: ' . implode(', ', $missing_fields));
 }
 
-// 세션 ID 생성
+// 세션 ID 가져오기
 $session_id = session_id();
-if (empty($session_id)) {
-    session_start();
-    $session_id = session_id();
-}
 
 // 필요한 컬럼이 있는지 확인하고 없으면 추가
 $required_columns = [
     'session_id' => 'VARCHAR(255)',
     'product_type' => 'VARCHAR(50)',
     'MY_type' => 'VARCHAR(50)',
-    'TreeSelect' => 'VARCHAR(50)',
-    'PN_type' => 'VARCHAR(50)',
-    'MY_amount' => 'VARCHAR(50)',
+    'Section' => 'VARCHAR(50)',
     'POtype' => 'VARCHAR(50)',
+    'MY_amount' => 'VARCHAR(50)',
     'ordertype' => 'VARCHAR(50)',
     'st_price' => 'INT(11)',
-    'st_price_vat' => 'INT(11)'
+    'st_price_vat' => 'INT(11)',
+    'selected_options' => 'TEXT',
+    'work_memo' => 'TEXT',
+    'upload_method' => 'VARCHAR(50)'
 ];
 
 foreach ($required_columns as $column_name => $column_definition) {
@@ -58,13 +73,13 @@ foreach ($required_columns as $column_name => $column_definition) {
     }
 }
 
-// 장바구니에 추가 (msticker는 TreeSelect가 없으므로 빈 문자열로 설정)
-$insert_query = "INSERT INTO shop_temp (session_id, product_type, MY_type, TreeSelect, PN_type, MY_amount, POtype, ordertype, st_price, st_price_vat) 
-                VALUES (?, 'msticker', ?, '', ?, ?, '', ?, ?, ?)";
+// 장바구니에 추가
+$insert_query = "INSERT INTO shop_temp (session_id, product_type, MY_type, Section, POtype, MY_amount, ordertype, st_price, st_price_vat, selected_options, work_memo, upload_method) 
+                VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)";
 
 $stmt = mysqli_prepare($db, $insert_query);
 if ($stmt) {
-    mysqli_stmt_bind_param($stmt, "sssssii", $session_id, $MY_type, $PN_type, $MY_amount, $ordertype, $price, $vat_price);
+    mysqli_stmt_bind_param($stmt, "sssssssiisss", $session_id, $product_type, $MY_type, $Section, $POtype, $MY_amount, $ordertype, $price, $vat_price, $selected_options, $work_memo, $upload_method);
     
     if (mysqli_stmt_execute($stmt)) {
         success_response(null, '장바구니에 추가되었습니다.');

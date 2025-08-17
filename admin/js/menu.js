@@ -45,7 +45,7 @@ document.addEventListener('DOMContentLoaded', function() {
             title: "인쇄업무프로그램",
             items: [
                 {
-                    label: "자동견적프로그램",
+                    label: "견적안내프로그램",
                     items: [
                         { label: "전단지 관리", url: "/admin/MlangPrintAuto/inserted_List.php" },
                         { label: "스티카 관리", url: "/admin/MlangPrintAuto/sticker_List.php" },
@@ -56,9 +56,9 @@ document.addEventListener('DOMContentLoaded', function() {
                         { label: "카다로그 관리", url: "/admin/MlangPrintAuto/cadarok_List.php" },
                         // { label: "카다로그 관리", url: "/admin/MlangPrintAuto/cadarokTwo_List.php" }, // 필요시 주석 해제
                         { label: "소량인쇄 관리", url: "/admin/MlangPrintAuto/LittlePrint_List.php" },
-                        { label: "자동견적 주문", url: "/admin/MlangPrintAuto/OrderList.php" },
+                        { label: "견적안내 주문", url: "/admin/MlangPrintAuto/OrderList.php" },
                         { label: "시안직접올리기", url: "/admin/MlangPrintAuto/admin.php?mode=AdminMlangOrdert", target: "Mlang" },
-                        { label: "자동견적 통합관리", url: "/admin/MlangPrintAuto/admin.php?mode=BankForm&code=Text", target: "Mlang" }
+                        { label: "견적안내 통합관리", url: "/admin/MlangPrintAuto/admin.php?mode=BankForm&code=Text", target: "Mlang" }
                     ]
                 },
                 {

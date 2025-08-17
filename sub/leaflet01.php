@@ -225,7 +225,7 @@ width=3 height=3></TD>
                 </TR>
                 <TR>
                   <TD height=15></TD>
-                  <TD height=15>* 모조견적은 자동견적에서 해주세요.</TD>
+                  <TD height=15>* 모조견적은 견적안내에서 해주세요.</TD>
                 </TR>
                 <TR>
                   <TD height=15></TD>

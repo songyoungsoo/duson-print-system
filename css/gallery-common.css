@@ -1,0 +1,107 @@
+/* ===== 공통 갤러리 스타일 ===== */
+
+/* 갤러리 컨테이너 */
+.image-gallery-section {
+    margin-top: 30px;
+}
+
+.image-gallery-section h4 {
+    margin: 0 0 20px 0;
+    color: #495057;
+    font-size: 1.1rem;
+    font-weight: 600;
+    text-align: center;
+}
+
+.gallery-container {
+    width: 100%;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+}
+
+/* 메인 확대 이미지 영역 */
+.zoom-box {
+    width: 500px;
+    height: 500px;
+    border: 1px solid #ddd;
+    border-radius: 8px;
+    background-repeat: no-repeat;
+    background-position: center center;
+    background-size: contain;
+    transition: background-size 0.2s ease, background-position 0.2s ease;
+    cursor: crosshair;
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+}
+
+/* 썸네일 그리드 */
+.thumbnail-grid {
+    margin-top: 16px;
+    display: flex;
+    gap: 8px;
+    justify-content: center;
+    flex-wrap: wrap;
+}
+
+.thumbnail-grid img {
+    width: 100px;
+    height: 100px;
+    object-fit: cover;
+    cursor: pointer;
+    border: 2px solid transparent;
+    border-radius: 4px;
+    transition: all 0.2s ease;
+}
+
+.thumbnail-grid img:hover {
+    border-color: #e74c3c;
+    transform: translateY(-2px);
+    box-shadow: 0 4px 12px rgba(231, 76, 60, 0.2);
+}
+
+.thumbnail-grid img.active {
+    border-color: #e74c3c;
+    transform: translateY(-2px);
+    box-shadow: 0 4px 12px rgba(231, 76, 60, 0.2);
+}
+
+/* 갤러리 상태 메시지 */
+.gallery-loading, .gallery-error {
+    text-align: center;
+    padding: 40px 20px;
+    color: #6c757d;
+    font-style: italic;
+}
+
+.gallery-error {
+    color: #dc3545;
+}
+
+/* 모바일 대응 */
+@media (max-width: 768px) {
+    .zoom-box {
+        width: 300px;
+        height: 300px;
+    }
+    
+    .thumbnail-grid img {
+        width: 60px;
+        height: 60px;
+    }
+    
+    .thumbnail-grid {
+        gap: 6px;
+    }
+}
+
+@media (max-width: 480px) {
+    .zoom-box {
+        width: 250px;
+        height: 250px;
+    }
+    
+    .thumbnail-grid img {
+        width: 50px;
+        height: 50px;
+    }
+}

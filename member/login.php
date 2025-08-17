@@ -98,7 +98,7 @@ include __DIR__ . "/db.php";
 
 <script src="/js/login.js" type="text/javascript"></script>
 
-<form name='FrmUserInfo' method='post' onsubmit='return MemberCheckField();' action='member_login_ok.php'>
+<form name='FrmUserInfo' method='post' onsubmit='return MemberCheckField();' action='login_unified.php'>
     <input type='hidden' name='selfurl' value='<?php echo htmlspecialchars($pageselfurl ?? $LoginChickBoxUrl); ?>'>
     <input type='hidden' name='mode' value='member_login'>
 

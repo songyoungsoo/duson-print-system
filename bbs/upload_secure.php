@@ -116,10 +116,13 @@ function processContentUpload($table) {
 /**
  * 상세 이미지 업로드 처리
  */
-function processDetailUpload($table) {
+function processDetailUpload($table, $required = false) {
     global $max_file_size, $allowed_extensions, $upload_base_dir;
     
     if (!isset($_FILES['upfile']) || $_FILES['upfile']['error'] !== UPLOAD_ERR_OK) {
+        if ($required) {
+            return ['success' => false, 'error' => '포트폴리오 이미지를 업로드해주세요.'];
+        }
         return ['success' => true, 'filename' => '']; // 선택사항이므로 성공으로 처리
     }
     
@@ -169,6 +172,112 @@ function processDetailUpload($table) {
 }
 
 /**
+ * 썸네일 이미지 자동 생성
+ * @param string $source_filename 원본 이미지 파일명
+ * @param string $table 테이블명 (폴더명)
+ * @param string $bbs_dir BBS 디렉토리 경로
+ * @return string 생성된 썸네일 파일명
+ */
+function createThumbnail($source_filename, $table, $bbs_dir = '.') {
+    global $upload_base_dir;
+    
+    if (empty($source_filename)) {
+        return '';
+    }
+    
+    $source_path = $upload_base_dir . $table . '/' . $source_filename;
+    
+    // 원본 파일이 존재하지 않으면 빈 문자열 반환
+    if (!file_exists($source_path)) {
+        return '';
+    }
+    
+    // 썸네일 파일명 생성 (thumb_ 접두사 추가)
+    $path_info = pathinfo($source_filename);
+    $thumbnail_filename = 'thumb_' . $path_info['filename'] . '.jpg'; // 썸네일은 항상 JPG로 저장
+    $thumbnail_path = $upload_base_dir . $table . '/' . $thumbnail_filename;
+    
+    // 이미지 정보 가져오기
+    $image_info = getimagesize($source_path);
+    if ($image_info === false) {
+        return '';
+    }
+    
+    list($source_width, $source_height, $image_type) = $image_info;
+    
+    // 썸네일 크기 설정 (최대 200x200, 비율 유지)
+    $max_width = 200;
+    $max_height = 200;
+    
+    // 비율 계산
+    $ratio = min($max_width / $source_width, $max_height / $source_height);
+    $thumb_width = round($source_width * $ratio);
+    $thumb_height = round($source_height * $ratio);
+    
+    // 원본 이미지 리소스 생성
+    $source_image = null;
+    switch ($image_type) {
+        case IMAGETYPE_JPEG:
+            $source_image = imagecreatefromjpeg($source_path);
+            break;
+        case IMAGETYPE_PNG:
+            $source_image = imagecreatefrompng($source_path);
+            break;
+        case IMAGETYPE_GIF:
+            $source_image = imagecreatefromgif($source_path);
+            break;
+        case IMAGETYPE_BMP:
+            // BMP는 PHP 7.2+ 에서 지원
+            if (function_exists('imagecreatefrombmp')) {
+                $source_image = imagecreatefrombmp($source_path);
+            }
+            break;
+    }
+    
+    if (!$source_image) {
+        return '';
+    }
+    
+    // 썸네일 이미지 리소스 생성
+    $thumbnail_image = imagecreatetruecolor($thumb_width, $thumb_height);
+    
+    // PNG 투명도 처리
+    if ($image_type == IMAGETYPE_PNG) {
+        imagealphablending($thumbnail_image, false);
+        imagesavealpha($thumbnail_image, true);
+        $transparent = imagecolorallocatealpha($thumbnail_image, 255, 255, 255, 127);
+        imagefill($thumbnail_image, 0, 0, $transparent);
+    } else {
+        // 흰색 배경
+        $white = imagecolorallocate($thumbnail_image, 255, 255, 255);
+        imagefill($thumbnail_image, 0, 0, $white);
+    }
+    
+    // 이미지 리샘플링
+    imagecopyresampled(
+        $thumbnail_image, $source_image,
+        0, 0, 0, 0,
+        $thumb_width, $thumb_height,
+        $source_width, $source_height
+    );
+    
+    // 썸네일 저장 (JPG 품질 85)
+    $success = imagejpeg($thumbnail_image, $thumbnail_path, 85);
+    
+    // 메모리 해제
+    imagedestroy($source_image);
+    imagedestroy($thumbnail_image);
+    
+    if ($success) {
+        // 파일 권한 설정
+        chmod($thumbnail_path, 0644);
+        return $thumbnail_filename;
+    }
+    
+    return '';
+}
+
+/**
  * 기존 파일 삭제
  */
 function deleteOldFile($table, $filename) {
@@ -200,20 +309,23 @@ $table = isset($_POST['table']) ? $_POST['table'] : '';
 if (empty($table)) {
     $upload_errors[] = '테이블명이 지정되지 않았습니다.';
 } else {
-    // 썸네일 이미지 업로드 처리
-    $content_result = processContentUpload($table);
-    if ($content_result['success']) {
-        $CONTENTNAME = $content_result['filename'];
-        $FILE_CONTENTSIZE = $content_result['size'] ?? 0;
-    } else {
-        $upload_errors[] = $content_result['error'];
-    }
+    // 포트폴리오 이미지 업로드 처리 (단일 업로드)
+    // POST mode 확인하여 새 글 작성시에는 이미지 필수로 처리
+    $mode = isset($_POST['mode']) ? $_POST['mode'] : '';
+    $is_new_post = ($mode === 'write_ok');
     
-    // 상세 이미지 업로드 처리 (선택사항)
-    $detail_result = processDetailUpload($table);
+    $detail_result = processDetailUpload($table, $is_new_post);
     if ($detail_result['success']) {
         $UPFILENAME = $detail_result['filename'] ?? '';
         $FILESIZE = $detail_result['size'] ?? 0;
+        
+        // 썸네일 자동 생성 (업로드가 성공한 경우에만)
+        if (!empty($UPFILENAME)) {
+            $CONTENTNAME = createThumbnail($UPFILENAME, $table);
+            if (empty($CONTENTNAME)) {
+                $CONTENTNAME = $UPFILENAME; // 썸네일 생성 실패시 원본 사용
+            }
+        }
     } else {
         $upload_errors[] = $detail_result['error'];
     }

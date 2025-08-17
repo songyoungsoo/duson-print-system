@@ -37,7 +37,7 @@ $paper_options = getOptions($db, $page, $initial_type);
 <html lang="ko">
 <head>
   <meta charset="UTF-8">
-  <title>카다록 자동견적</title>
+  <title>카다록 견적안내</title>
   <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@400;500;700&display=swap" rel="stylesheet">
   <style>
     body, table, input, select, textarea {

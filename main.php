@@ -878,7 +878,7 @@ include "db.php";
         <a href="/">HOME</a>|
         <a href="/sub/info.php">회사소개</a>|
         <a href="/sub/leaflet.php">포트폴리오</a>|
-        <a href="/sub/estimate_auto.php">자동견적</a>|
+        <a href="/sub/estimate_auto.php">견적안내</a>|
         <a href="/sub/checkboard.php" class="checkboard-btn">교정보기</a>|
         <a href="/bbs/qna.php">고객문의</a>
     </div>

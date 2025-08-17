@@ -1,4 +1,25 @@
 <?php if($pp=="form"){ 
+// 변수 초기화
+$tt = isset($_GET['tt']) ? $_GET['tt'] : (isset($_POST['tt']) ? $_POST['tt'] : '');
+$table = isset($table) ? $table : '';
+$page = isset($page) ? $page : '';
+$offset = isset($offset) ? $offset : '';
+$no = isset($no) ? $no : '';
+$WebtingMemberLogin_id = isset($WebtingMemberLogin_id) ? $WebtingMemberLogin_id : '';
+$BBS_ADMIN_write_select = isset($BBS_ADMIN_write_select) ? $BBS_ADMIN_write_select : 'guest';
+$BBS_ADMIN_cate = isset($BBS_ADMIN_cate) ? $BBS_ADMIN_cate : '';
+$BBS_ADMIN_secret_select = isset($BBS_ADMIN_secret_select) ? $BBS_ADMIN_secret_select : 'yes';
+$BBS_ADMIN_file_select = isset($BBS_ADMIN_file_select) ? $BBS_ADMIN_file_select : 'yes';
+$BBS_ADMIN_link_select = isset($BBS_ADMIN_link_select) ? $BBS_ADMIN_link_select : 'yes';
+
+// 수정 시 기존 데이터 변수들 초기화
+$BbsViewMlang_bbs_member = isset($BbsViewMlang_bbs_member) ? $BbsViewMlang_bbs_member : '';
+$BbsViewMlang_bbs_title = isset($BbsViewMlang_bbs_title) ? $BbsViewMlang_bbs_title : '';
+$BbsViewMlang_bbs_connent = isset($BbsViewMlang_bbs_connent) ? $BbsViewMlang_bbs_connent : '';
+$BbsViewMlang_bbs_file = isset($BbsViewMlang_bbs_file) ? $BbsViewMlang_bbs_file : '';
+$BbsViewMlang_bbs_link = isset($BbsViewMlang_bbs_link) ? $BbsViewMlang_bbs_link : '';
+$BbsViewMlang_bbs_secret = isset($BbsViewMlang_bbs_secret) ? $BbsViewMlang_bbs_secret : 'yes';
+
 $Write_Style1="style='padding:8px; border:1px solid #ddd; border-radius:4px; font-size:14px; width:100%; box-sizing:border-box;'";	
 
   $end=2547;
@@ -77,6 +98,97 @@ body {
 .form-control-file:hover {
     border-color: #4a6da7;
     background-color: #f0f4f8;
+}
+
+.drag-drop-area {
+    min-height: 120px;
+    border: 2px dashed #ddd;
+    border-radius: 8px;
+    background-color: #fafafa;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    text-align: center;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    position: relative;
+    overflow: hidden;
+}
+
+.drag-drop-area:hover {
+    border-color: #4a6da7;
+    background-color: #f0f4f8;
+}
+
+.drag-drop-area.dragover {
+    border-color: #4a6da7;
+    background-color: #e3f2fd;
+    transform: scale(1.02);
+}
+
+.drag-drop-area .upload-icon {
+    font-size: 24px;
+    color: #666;
+    margin-bottom: 8px;
+}
+
+.drag-drop-area .upload-text {
+    color: #666;
+    font-size: 14px;
+    margin-bottom: 4px;
+}
+
+.drag-drop-area .upload-hint {
+    color: #999;
+    font-size: 12px;
+}
+
+.drag-drop-area input[type="file"] {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    opacity: 0;
+    cursor: pointer;
+}
+
+.image-preview-container {
+    margin-top: 15px;
+    text-align: center;
+}
+
+.image-preview-container img {
+    max-width: 300px;
+    max-height: 200px;
+    border: 1px solid #ddd;
+    border-radius: 4px;
+    box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+}
+
+.file-info {
+    margin-top: 10px;
+    padding: 10px;
+    background-color: #f8f9fa;
+    border-radius: 4px;
+    font-size: 12px;
+    color: #666;
+}
+
+.remove-image-btn {
+    margin-top: 10px;
+    padding: 5px 10px;
+    background-color: #dc3545;
+    color: white;
+    border: none;
+    border-radius: 4px;
+    cursor: pointer;
+    font-size: 12px;
+}
+
+.remove-image-btn:hover {
+    background-color: #c82333;
 }
 
 .form-help {
@@ -247,19 +359,21 @@ function board_writeCheckField() {
     }
     <?php endif; ?>
     
-    // 썸네일 이미지 확인
-    if (!f.CONTENT.value && f.CONTENT.files && f.CONTENT.files.length === 0) {
-        alert("포트폴리오에 표시될 썸네일 이미지를 선택해주세요.");
-        f.CONTENT.focus();
+    // 포트폴리오 이미지 확인 (수정시에는 선택사항)
+    <?php if($tt !== "modify"): ?>
+    if (!f.upfile.value && f.upfile.files && f.upfile.files.length === 0) {
+        alert("포트폴리오에 표시될 이미지를 선택해주세요.");
+        f.upfile.focus();
         return false;
     }
+    <?php endif; ?>
     
     // 파일 형식 확인
-    if (f.CONTENT.value) {
+    if (f.upfile.value) {
         var allowedTypes = /(\.jpg|\.jpeg|\.png|\.gif|\.bmp)$/i;
-        if (!allowedTypes.exec(f.CONTENT.value)) {
+        if (!allowedTypes.exec(f.upfile.value)) {
             alert("이미지 파일만 업로드 가능합니다. (jpg, jpeg, png, gif, bmp)");
-            f.CONTENT.focus();
+            f.upfile.focus();
             return false;
         }
     }
@@ -280,39 +394,277 @@ function board_writeCheckField() {
     return true;
 }
 
-// 파일 선택시 미리보기 기능
-function previewImage(input) {
-    if (input.files && input.files[0]) {
-        var reader = new FileReader();
-        reader.onload = function(e) {
-            var preview = document.getElementById('image-preview');
-            if (!preview) {
-                preview = document.createElement('div');
-                preview.id = 'image-preview';
-                preview.style.marginTop = '10px';
-                input.parentNode.appendChild(preview);
+// 드래그 앤 드롭 이벤트 처리
+function initializeDragDrop() {
+    var dragArea = document.getElementById('drag-drop-area');
+    var fileInput = document.getElementById('upfile');
+    
+    if (!dragArea || !fileInput) return;
+    
+    // 드래그 오버 이벤트
+    dragArea.addEventListener('dragover', function(e) {
+        e.preventDefault();
+        e.stopPropagation();
+        dragArea.classList.add('dragover');
+    });
+    
+    // 드래그 나가기 이벤트
+    dragArea.addEventListener('dragleave', function(e) {
+        e.preventDefault();
+        e.stopPropagation();
+        dragArea.classList.remove('dragover');
+    });
+    
+    // 드롭 이벤트
+    dragArea.addEventListener('drop', function(e) {
+        e.preventDefault();
+        e.stopPropagation();
+        dragArea.classList.remove('dragover');
+        
+        var files = e.dataTransfer.files;
+        if (files.length > 0) {
+            var file = files[0];
+            
+            // 이미지 파일인지 확인
+            if (file.type.startsWith('image/')) {
+                // DataTransfer 객체 생성하여 파일 입력 필드에 설정
+                var dataTransfer = new DataTransfer();
+                dataTransfer.items.add(file);
+                fileInput.files = dataTransfer.files;
+                
+                // 파일 처리
+                handleFileSelection(file, fileInput);
+            } else {
+                alert('이미지 파일만 업로드 가능합니다.');
             }
-            preview.innerHTML = '<img src="' + e.target.result + '" style="max-width:200px; max-height:200px; border:1px solid #ddd; border-radius:4px;">';
         }
-        reader.readAsDataURL(input.files[0]);
+    });
+    
+    // 클릭 이벤트
+    dragArea.addEventListener('click', function(e) {
+        if (e.target.tagName !== 'BUTTON') {
+            fileInput.click();
+        }
+    });
+}
+
+// 파일 선택 처리 함수
+function handleFileSelection(file, input) {
+    // 파일 크기 확인
+    var maxSize = 5 * 1024 * 1024; // 5MB
+    if (file.size > maxSize) {
+        alert("파일 크기가 너무 큽니다. 5MB 이하의 파일을 선택해주세요.");
+        input.value = '';
+        clearImagePreview();
+        return false;
+    }
+    
+    // 파일 형식 확인
+    var allowedTypes = /^image\/(jpeg|jpg|png|gif|bmp)$/i;
+    if (!allowedTypes.test(file.type)) {
+        alert("이미지 파일만 업로드 가능합니다. (jpg, jpeg, png, gif, bmp)");
+        input.value = '';
+        clearImagePreview();
+        return false;
+    }
+    
+    // 미리보기 생성
+    createImagePreview(file);
+    
+    // 파일명을 제목에 자동 입력 (확장자 제거)
+    autoFillTitle(file.name);
+    
+    return true;
+}
+
+// 파일명으로 제목 자동 입력
+function autoFillTitle(filename) {
+    var titleInput = document.querySelector('input[name="title"]');
+    if (titleInput && !titleInput.value.trim()) {
+        // 확장자 제거
+        var nameWithoutExt = filename.replace(/\.[^/.]+$/, "");
+        // 특수문자를 공백으로 변경
+        var cleanName = nameWithoutExt.replace(/[_\-]/g, ' ');
+        
+        // 제목 입력에 시각적 효과 추가
+        titleInput.style.transition = 'all 0.3s ease';
+        titleInput.style.backgroundColor = '#e8f5e8';
+        titleInput.style.borderColor = '#28a745';
+        titleInput.value = cleanName;
+        
+        // 자동 입력 알림
+        showAutoFillNotification(cleanName);
+        
+        // 3초 후 원래 스타일로 복원
+        setTimeout(function() {
+            titleInput.style.backgroundColor = '';
+            titleInput.style.borderColor = '';
+        }, 3000);
     }
 }
 
-// 파일 크기 확인
+// 자동 입력 알림 표시
+function showAutoFillNotification(title) {
+    // 기존 알림 제거
+    var existingNotification = document.getElementById('auto-fill-notification');
+    if (existingNotification) {
+        existingNotification.remove();
+    }
+    
+    // 새 알림 생성
+    var notification = document.createElement('div');
+    notification.id = 'auto-fill-notification';
+    notification.style.cssText = `
+        position: fixed;
+        top: 20px;
+        right: 20px;
+        background-color: #d4edda;
+        color: #155724;
+        border: 1px solid #c3e6cb;
+        border-radius: 4px;
+        padding: 12px 16px;
+        font-size: 14px;
+        box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+        z-index: 1000;
+        max-width: 300px;
+        animation: slideIn 0.3s ease;
+    `;
+    notification.innerHTML = `
+        <strong>✅ 제목 자동 입력됨</strong><br>
+        "${title}"<br>
+        <small>필요시 직접 수정 가능합니다</small>
+    `;
+    
+    document.body.appendChild(notification);
+    
+    // 5초 후 자동 제거
+    setTimeout(function() {
+        if (notification && notification.parentNode) {
+            notification.style.animation = 'slideOut 0.3s ease';
+            setTimeout(function() {
+                if (notification && notification.parentNode) {
+                    notification.remove();
+                }
+            }, 300);
+        }
+    }, 5000);
+}
+
+// CSS 애니메이션 추가
+if (!document.getElementById('auto-fill-styles')) {
+    var style = document.createElement('style');
+    style.id = 'auto-fill-styles';
+    style.textContent = `
+        @keyframes slideIn {
+            from {
+                transform: translateX(100%);
+                opacity: 0;
+            }
+            to {
+                transform: translateX(0);
+                opacity: 1;
+            }
+        }
+        @keyframes slideOut {
+            from {
+                transform: translateX(0);
+                opacity: 1;
+            }
+            to {
+                transform: translateX(100%);
+                opacity: 0;
+            }
+        }
+    `;
+    document.head.appendChild(style);
+}
+
+// 이미지 미리보기 생성
+function createImagePreview(file) {
+    var reader = new FileReader();
+    reader.onload = function(e) {
+        var previewContainer = document.getElementById('image-preview-container');
+        if (!previewContainer) {
+            previewContainer = document.createElement('div');
+            previewContainer.id = 'image-preview-container';
+            previewContainer.className = 'image-preview-container';
+            
+            var dragArea = document.getElementById('drag-drop-area');
+            dragArea.parentNode.insertBefore(previewContainer, dragArea.nextSibling);
+        }
+        
+        var fileInfo = formatFileSize(file.size);
+        
+        previewContainer.innerHTML = 
+            '<img src="' + e.target.result + '" alt="미리보기">' +
+            '<div class="file-info">' +
+                '<strong>파일명:</strong> ' + file.name + '<br>' +
+                '<strong>크기:</strong> ' + fileInfo + '<br>' +
+                '<strong>형식:</strong> ' + file.type +
+            '</div>' +
+            '<button type="button" class="remove-image-btn" onclick="removeImage()">이미지 제거</button>';
+        
+        // 드래그 영역 숨기기
+        document.getElementById('drag-drop-area').style.display = 'none';
+    };
+    reader.readAsDataURL(file);
+}
+
+// 파일 크기 포맷팅
+function formatFileSize(bytes) {
+    if (bytes === 0) return '0 Bytes';
+    var k = 1024;
+    var sizes = ['Bytes', 'KB', 'MB', 'GB'];
+    var i = Math.floor(Math.log(bytes) / Math.log(k));
+    return parseFloat((bytes / Math.pow(k, i)).toFixed(2)) + ' ' + sizes[i];
+}
+
+// 이미지 제거
+function removeImage() {
+    var fileInput = document.getElementById('upfile');
+    var previewContainer = document.getElementById('image-preview-container');
+    var dragArea = document.getElementById('drag-drop-area');
+    
+    fileInput.value = '';
+    if (previewContainer) {
+        previewContainer.remove();
+    }
+    if (dragArea) {
+        dragArea.style.display = 'flex';
+    }
+}
+
+// 미리보기 초기화
+function clearImagePreview() {
+    var previewContainer = document.getElementById('image-preview-container');
+    var dragArea = document.getElementById('drag-drop-area');
+    
+    if (previewContainer) {
+        previewContainer.remove();
+    }
+    if (dragArea) {
+        dragArea.style.display = 'flex';
+    }
+}
+
+// 기존 함수들 (호환성 유지)
+function previewImage(input) {
+    if (input.files && input.files[0]) {
+        handleFileSelection(input.files[0], input);
+    }
+}
+
 function checkFileSize(input) {
     if (input.files && input.files[0]) {
-        var fileSize = input.files[0].size; // 바이트 단위
-        var maxSize = 5 * 1024 * 1024; // 5MB
-        
-        if (fileSize > maxSize) {
-            alert("파일 크기가 너무 큽니다. 5MB 이하의 파일을 선택해주세요.");
-            input.value = '';
-            document.getElementById('image-preview').innerHTML = '';
-            return false;
-        }
+        return handleFileSelection(input.files[0], input);
     }
     return true;
 }
+
+// 페이지 로드시 초기화
+document.addEventListener('DOMContentLoaded', function() {
+    initializeDragDrop();
+});
 </script>
 </head>
 
@@ -328,14 +680,14 @@ function checkFileSize(input) {
         ?>
     </h1>
     
-    <form name='board_write' method='post' enctype='multipart/form-data' onsubmit='return board_writeCheckField()' action='<?php echo htmlspecialchars($_SERVER["PHP_SELF"]) ?>'>
+    <form name='board_write' method='post' enctype='multipart/form-data' onsubmit='return board_writeCheckField()' action='<?php echo $BbsDir ?>/bbs.php'>
         <input type='hidden' name='table' value='<?php echo $table?>'>
         <input type='hidden' name='page' value='<?php echo $page?>'>
         <input type='hidden' name='offset' value='<?php echo $offset?>'>
 
         <?php
-        $GGtime=date("H, i, s, d, m, Y"); 
-        $GGHtime=mktime($GGtime);
+        // 현재 시간을 timestamp로 가져오기
+        $GGHtime = time();
         ?>
         <input type='hidden' name='WriteTime' value='<?php echo $GGHtime+20?>'>
 
@@ -397,6 +749,7 @@ function checkFileSize(input) {
                 <option value="leaflet">리플렛</option>
                 <option value="namecard">명함</option>
                 <option value="sticker">스티커</option>
+                <option value="msticker">자석스티커</option>
                 <option value="envelope">봉투</option>
                 <option value="form">양식지</option>
                 <option value="catalog">카달로그</option>
@@ -429,25 +782,10 @@ function checkFileSize(input) {
         </div>
         <?php endif; ?>
 
-        <!-- 썸네일 이미지 (필수) -->
-        <div class="form-group">
-            <label class="form-label" for="CONTENT">썸네일 이미지 *</label>
-            <?php if($tt=="modify"): ?>
-                <div class="form-help" style="margin-bottom: 10px;">
-                    <input type='checkbox' name='uploadModify_CONTENT' value='yes' id="change_content"> 
-                    <label for="change_content">파일을 변경하려면 체크해주세요</label>
-                    <br><strong>현재 파일:</strong> <?php echo htmlspecialchars($BbsViewMlang_bbs_connent); ?>
-                </div>
-            <?php endif; ?>
-            <input type='file' name='CONTENT' class="form-control form-control-file" 
-                   accept="image/*" onchange="previewImage(this); checkFileSize(this);">
-            <div class="form-help">포트폴리오 목록에 표시될 썸네일 이미지입니다. (JPG, PNG, GIF 등 | 최대 5MB)</div>
-        </div>
-
         <?php if($BBS_ADMIN_file_select=="yes"): ?>
-        <!-- 상세 이미지 (선택사항) -->
+        <!-- 포트폴리오 이미지 (필수) -->
         <div class="form-group">
-            <label class="form-label" for="upfile">상세 이미지 (선택사항)</label>
+            <label class="form-label" for="upfile">포트폴리오 이미지 *</label>
             <?php if($tt=="modify"): ?>
                 <div class="form-help" style="margin-bottom: 10px;">
                     <input type='checkbox' name='uploadModify' value='yes' id="change_upfile"> 
@@ -455,9 +793,22 @@ function checkFileSize(input) {
                     <br><strong>현재 파일:</strong> <?php echo htmlspecialchars($BbsViewMlang_bbs_file); ?>
                 </div>
             <?php endif; ?>
-            <input type='file' name='upfile' class="form-control form-control-file" 
-                   accept="image/*" onchange="checkFileSize(this);">
-            <div class="form-help">클릭시 확대되어 보여질 고해상도 이미지입니다.</div>
+            
+            <!-- 드래그 앤 드롭 영역 -->
+            <div id="drag-drop-area" class="drag-drop-area">
+                <div class="upload-icon">📁</div>
+                <div class="upload-text">이미지를 드래그해서 놓거나 클릭하여 선택하세요</div>
+                <div class="upload-hint">JPG, PNG, GIF, BMP 파일 지원 (최대 5MB)</div>
+                <input type='file' name='upfile' id='upfile' 
+                       accept="image/*" onchange="previewImage(this);">
+            </div>
+            
+            <div class="form-help">
+                📌 <strong>자동 기능:</strong><br>
+                • 이미지를 선택하면 파일명이 제목에 자동으로 입력됩니다<br>
+                • 제목은 직접 수정할 수 있습니다<br>
+                • 썸네일은 자동으로 생성됩니다
+            </div>
         </div>
         <?php endif; ?>
 
@@ -514,6 +865,17 @@ function checkFileSize(input) {
 <?php } ?>
 
 <?php if($pp=="modify_ok"){  // 글을 수정 처리한다.. /////////////////////////////////////////////////////////////////////////////////////////
+
+// POST 변수 초기화
+$name = isset($_POST['name']) ? $_POST['name'] : '';
+$title = isset($_POST['title']) ? $_POST['title'] : '';
+$link = isset($_POST['link']) ? $_POST['link'] : '';
+$secret = isset($_POST['secret']) ? $_POST['secret'] : 'yes';
+$TX_cate = isset($_POST['TX_cate']) ? $_POST['TX_cate'] : '';
+$pass = isset($_POST['pass']) ? $_POST['pass'] : '';
+$no = isset($_POST['no']) ? $_POST['no'] : '';
+$table = isset($_POST['table']) ? $_POST['table'] : '';
+$page = isset($_POST['page']) ? $_POST['page'] : '';
 
 // 기본 유효성 검사
 if (empty($name) || empty($title)) {
@@ -579,31 +941,29 @@ $old_detail_file = $row_pass['Mlang_bbs_file'];
 $new_content_file = $old_content_file;
 $new_detail_file = $old_detail_file;
 
-// 썸네일 이미지 변경 처리
-if (isset($_POST['uploadModify_CONTENT']) && $_POST['uploadModify_CONTENT'] == "yes" && isset($_FILES['CONTENT'])) {
+// 포트폴리오 이미지 변경 처리 (단일 업로드)
+if (isset($_POST['uploadModify']) && $_POST['uploadModify'] == "yes" && isset($_FILES['upfile'])) {
     include "$BbsDir/upload_secure.php";
     
-    if (!empty($CONTENTNAME)) {
-        // 기존 파일 삭제
-        if ($old_content_file && file_exists("$BbsDir/upload/$table/$old_content_file")) {
-            unlink("$BbsDir/upload/$table/$old_content_file");
-        }
-        $new_content_file = $CONTENTNAME;
-    }
-}
-
-// 상세 이미지 변경 처리
-if (isset($_POST['uploadModify']) && $_POST['uploadModify'] == "yes" && isset($_FILES['upfile'])) {
-    if (!isset($UPFILENAME)) {
-        include "$BbsDir/upload_secure.php";
-    }
-    
     if (!empty($UPFILENAME)) {
-        // 기존 파일 삭제
+        // 기존 상세 이미지 파일 삭제
         if ($old_detail_file && file_exists("$BbsDir/upload/$table/$old_detail_file")) {
             unlink("$BbsDir/upload/$table/$old_detail_file");
         }
+        
+        // 기존 썸네일 파일 삭제
+        if ($old_content_file && file_exists("$BbsDir/upload/$table/$old_content_file")) {
+            unlink("$BbsDir/upload/$table/$old_content_file");
+        }
+        
+        // 새 파일 설정
         $new_detail_file = $UPFILENAME;
+        
+        // 썸네일 자동 생성
+        $new_content_file = createThumbnail($UPFILENAME, $table, $BbsDir);
+        if (empty($new_content_file)) {
+            $new_content_file = $UPFILENAME; // 썸네일 생성 실패시 원본 사용
+        }
     }
 }
 
@@ -647,6 +1007,18 @@ exit;
 
 <?php if ($pp == "form_ok") {  // 글을 입력 처리한다.. /////////////////////////////////////////////////////////////////////////////////////////
 
+// POST 변수 초기화
+$name = isset($_POST['name']) ? $_POST['name'] : '';
+$title = isset($_POST['title']) ? $_POST['title'] : '';
+$link = isset($_POST['link']) ? $_POST['link'] : '';
+$secret = isset($_POST['secret']) ? $_POST['secret'] : 'yes';
+$TX_cate = isset($_POST['TX_cate']) ? $_POST['TX_cate'] : '';
+$pass = isset($_POST['pass']) ? $_POST['pass'] : '';
+$table = isset($_POST['table']) ? $_POST['table'] : '';
+$page = isset($_POST['page']) ? $_POST['page'] : '';
+$num = isset($_POST['num']) ? $_POST['num'] : '';
+$check_num = isset($_POST['check_num']) ? $_POST['check_num'] : '';
+
 // 보안 코드 검증
 if ($num != $check_num) {
     echo "<script>
@@ -678,13 +1050,19 @@ include "$DbDir/db.php";
 // 보안이 강화된 업로드 처리
 include "$BbsDir/upload_secure.php";
 
-// 썸네일 이미지는 필수
-if (empty($CONTENTNAME)) {
+// 상세 이미지는 필수
+if (empty($UPFILENAME)) {
     echo "<script>
-        alert('썸네일 이미지를 업로드해주세요.');
+        alert('포트폴리오 이미지를 업로드해주세요.');
         history.go(-1);
     </script>";
     exit;
+}
+
+// 썸네일 자동 생성
+$CONTENTNAME = '';
+if (!empty($UPFILENAME)) {
+    $CONTENTNAME = createThumbnail($UPFILENAME, $table, $BbsDir);
 }
 
 // 다음 게시글 번호 조회
@@ -711,7 +1089,7 @@ $pass = mysqli_real_escape_string($db, $pass ?? '');
 // 현재 시간
 $date = date("Y-m-d H:i:s");
 
-// 게시글 삽입
+// 게시글 삽입 (실제 테이블 구조에 맞게 수정)
 $query = "INSERT INTO Mlang_{$table}_bbs (
     Mlang_bbs_no,
     Mlang_bbs_member,
@@ -722,17 +1100,17 @@ $query = "INSERT INTO Mlang_{$table}_bbs (
     Mlang_bbs_file,
     Mlang_bbs_pass,
     Mlang_bbs_count,
-    Mlang_bbs_recommendation,
+    Mlang_bbs_rec,
     Mlang_bbs_secret,
     Mlang_bbs_reply,
-    Mlang_bbs_date,
+    Mlang_date,
     CATEGORY,
-    Mlang_bbs_coment
+    NoticeSelect
 ) VALUES (
     '$new_no',
     '$name',
     '$title',
-    '',
+    'br',
     '$CONTENTNAME',
     '$link',
     '$UPFILENAME',
@@ -743,7 +1121,7 @@ $query = "INSERT INTO Mlang_{$table}_bbs (
     '0',
     '$date',
     '$TX_cate',
-    ''
+    'no'
 )";
 
 $result_insert = mysqli_query($db, $query);
@@ -764,11 +1142,11 @@ if (!$result_insert) {
     exit;
 }
 
-// 포인트 적립 (기존 시스템)
-$Point_TT_mode = "BoardPointWrite";
-if (file_exists("$BbsDir/PointChick.php")) {
-    include "$BbsDir/PointChick.php";
-}
+// 포트폴리오는 포인트 적립 제외 (무료 서비스)
+// $Point_TT_mode = "BoardPointWrite";
+// if (file_exists("$BbsDir/PointChick.php")) {
+//     include "$BbsDir/PointChick.php";
+// }
 
 // 성공 메시지 및 리다이렉션
 echo "<script>

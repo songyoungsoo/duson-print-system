@@ -7,7 +7,7 @@ include "../../db.php";
 $connect = $db;
 
 // 페이지 설정
-$page_title = '📋 두손기획인쇄 - 양식지(NCR) 자동견적';
+$page_title = '📋 두손기획인쇄 - 양식지(NCR) 견적안내';
 $current_page = 'ncrflambeau';
 
 // UTF-8 설정
@@ -95,6 +95,45 @@ echo '<script src="../../includes/js/UniversalFileUpload.js"></script>';
             margin: 0;
             font-size: 2.5rem;
             font-weight: 700;
+        }
+        
+        /* 컴팩트 버전 알림 스타일 */
+        .compact-notice {
+            background: linear-gradient(135deg, #28a745 0%, #20c997 100%);
+            color: white;
+            padding: 15px 20px;
+            border-radius: 10px;
+            margin-bottom: 20px;
+            text-align: center;
+            box-shadow: 0 4px 15px rgba(40, 167, 69, 0.3);
+        }
+        
+        .compact-notice h3 {
+            margin: 0 0 10px 0;
+            font-size: 1.2rem;
+        }
+        
+        .compact-notice p {
+            margin: 0 0 15px 0;
+            opacity: 0.9;
+        }
+        
+        .btn-compact {
+            background: white;
+            color: #28a745;
+            border: none;
+            padding: 10px 20px;
+            border-radius: 6px;
+            font-weight: 600;
+            text-decoration: none;
+            display: inline-block;
+            transition: all 0.3s ease;
+        }
+        
+        .btn-compact:hover {
+            background: #f8f9fa;
+            transform: translateY(-2px);
+            box-shadow: 0 4px 10px rgba(0,0,0,0.2);
         }
         
         .page-header p {
@@ -469,10 +508,17 @@ echo '<script src="../../includes/js/UniversalFileUpload.js"></script>';
 </style>
 
             <div class="container">
+                <!-- 컴팩트 버전 알림 -->
+                <div class="compact-notice">
+                    <h3>🚀 새로운 컴팩트 버전 출시!</h3>
+                    <p>더 빠르고 편리한 양식지 주문 시스템을 경험해보세요. 갤러리와 견적이 한 화면에!</p>
+                    <a href="index_compact.php" class="btn-compact">✨ 컴팩트 버전 체험하기</a>
+                </div>
+                
                 <!-- 주문 폼 -->
                 <div class="card">
                     <div class="card-header">
-                        <h2 class="card-title">📋 양식지(NCR) 자동견적</h2>
+                        <h2 class="card-title">📋 양식지(NCR) 견적안내</h2>
                         <p class="card-subtitle">양식지와 NCR 복사용지의 정확한 견적을 확인하세요</p>
                     </div>
                     

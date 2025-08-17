@@ -75,6 +75,20 @@ uploads/**/*.avi
 uploads/**/*.mov
 uploads/**/*.psd
 uploads/**/*.ai
+uploads/**/*.zip
+uploads/**/*.pdf
+
+# BBS 업로드 폴더 (1.1GB 차지)
+bbs/upload/
+upDesign/
+
+# 대용량 파일들
+*.zip
+*.pdf
+*.PDF
+*.ai
+*.psd
+*.eps
 
 # 백업 스크립트 (개인 경로 포함)
 backup.bat

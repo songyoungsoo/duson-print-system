@@ -1,26 +1,55 @@
 <?php
-// 공통 함수 포함
+// 명함 성공 패턴 적용 - 안전한 JSON 응답 처리
+ob_start();
+error_reporting(E_ALL & ~E_NOTICE & ~E_WARNING);
+ini_set('display_errors', 0);
+
 include "../../includes/functions.php";
 include "../../db.php";
 
-// 데이터베이스 연결 체크
 check_db_connection($db);
 mysqli_set_charset($db, "utf8");
 
-$CV_no = $_GET['CV_no'] ?? '';
-$page = $_GET['page'] ?? 'NcrFlambeau';
-$GGTABLE = "MlangPrintAuto_transactionCate";
-
-if (empty($CV_no)) {
-    error_response('카테고리 번호가 필요합니다.');
+// 안전한 JSON 응답 함수 (명함 패턴)
+function safe_json_response($success = true, $data = null, $message = '') {
+    ob_clean(); // 이전 출력 완전 정리
+    
+    $response = array(
+        'success' => $success,
+        'message' => $message
+    );
+    
+    if ($data !== null) {
+        $response['data'] = $data;
+    }
+    
+    if (!headers_sent()) {
+        header('Content-Type: application/json; charset=utf-8');
+    }
+    
+    echo json_encode($response, JSON_UNESCAPED_UNICODE);
+    exit;
 }
 
-// 규격 조회 (BigNo 기준)
-$options = getDropdownOptions($db, $GGTABLE, [
-    'Ttable' => $page,
-    'BigNo' => $CV_no
-]);
+$style = $_GET['style'] ?? '';
+if (empty($style)) {
+    safe_json_response(false, null, '구분을 선택해주세요.');
+}
+
+try {
+    $options = getDropdownOptions($db, 'MlangPrintAuto_transactionCate', [
+        'Ttable' => 'NcrFlambeau',
+        'BigNo' => $style
+    ], 'no ASC');
+    
+    error_log("NcrFlambeau 규격 옵션 조회: style=$style, 결과=" . count($options) . "개");
+    
+    safe_json_response(true, $options, '규격 옵션 조회 완료');
+    
+} catch (Exception $e) {
+    error_log("NcrFlambeau 규격 옵션 조회 오류: " . $e->getMessage());
+    safe_json_response(false, null, '규격 옵션 조회 중 오류가 발생했습니다.');
+}
 
 mysqli_close($db);
-success_response($options);
 ?>

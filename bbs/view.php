@@ -34,7 +34,8 @@ $BbsDir = isset($BbsDir) ? $BbsDir : '.';
 $DbDir = isset($DbDir) ? $DbDir : '..';
 
 if(!$DbDir){$DbDir="..";}
-if($HTTP_REFERER){$Point_TT_mode="chick";include "$BbsDir/PointChick.php";}
+// 포트폴리오는 포인트 체크 제외 (무료 조회)
+if($HTTP_REFERER && $table !== 'portfolio'){$Point_TT_mode="chick";include "$BbsDir/PointChick.php";}
 ?>
 
 <head>

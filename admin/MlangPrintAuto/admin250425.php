@@ -132,7 +132,7 @@ function MemberXCheckField() {
 <td bgcolor='#<?php echo  $Bgcolor1 ?>' class='Left1' align=right>계좌번호&nbsp;&nbsp;</td>
 <td><input type="text" name="BankNo" size=40 maxlength='200' value='<?php echo  $View_BankNo ?>'></td>
 </tr>
-<tr><td colspan=2 bgcolor='#484848'><font color=white><b>&nbsp;&nbsp;▒ 자동견적 하단 TEXT 내용 수정 ▒▒▒▒▒</b><br>&nbsp;&nbsp;&nbsp;&nbsp;*주의사항 ' 와 " 쌍따옴표 입력 불가</font></td></tr>
+<tr><td colspan=2 bgcolor='#484848'><font color=white><b>&nbsp;&nbsp;▒ 견적안내 하단 TEXT 내용 수정 ▒▒▒▒▒</b><br>&nbsp;&nbsp;&nbsp;&nbsp;*주의사항 ' 와 " 쌍따옴표 입력 불가</font></td></tr>
 <?php
 if ($ConDb_A) {
     $Si_LIST_script = explode(":", $ConDb_A);

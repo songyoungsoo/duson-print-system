@@ -8,14 +8,28 @@ session_start();
 include "../db.php";
 include "../includes/functions.php";
 
-// 로그인 체크
-if (!isset($_SESSION['user_id'])) {
+// 통합 로그인 체크 (세션 + 쿠키 호환)
+$is_logged_in = isset($_SESSION['user_id']) || isset($_SESSION['id_login_ok']) || isset($_COOKIE['id_login_ok']);
+
+if (!$is_logged_in) {
     header('Location: /member/login.php?redirect=' . urlencode($_SERVER['REQUEST_URI']));
     exit;
 }
 
-$user_id = $_SESSION['user_id'];
-$user_name = $_SESSION['user_name'] ?? '';
+// 사용자 정보 설정
+if (isset($_SESSION['user_id'])) {
+    // 신규 시스템
+    $user_id = $_SESSION['user_id'];
+    $user_name = $_SESSION['user_name'] ?? '';
+} elseif (isset($_SESSION['id_login_ok'])) {
+    // 기존 시스템 세션
+    $user_name = $_SESSION['id_login_ok']['id'] ?? '';
+    $user_id = $user_name; // 기존 시스템에서는 ID를 사용
+} elseif (isset($_COOKIE['id_login_ok'])) {
+    // 기존 시스템 쿠키
+    $user_name = $_COOKIE['id_login_ok'];
+    $user_id = $user_name; // 기존 시스템에서는 ID를 사용
+}
 
 // 페이지 설정
 $page_title = '내 주문 내역 - 두손기획인쇄';
@@ -348,9 +362,9 @@ $status_badges = [
                     <span class="text-4xl">📦</span>
                 </div>
                 <h3 class="text-xl font-semibold text-slate-900 mb-2">아직 주문이 없습니다</h3>
-                <p class="text-slate-600 mb-6">원하시는 상품을 선택해 자동견적으로 빠르게 주문해 보세요.</p>
+                <p class="text-slate-600 mb-6">원하시는 상품을 선택해 견적안내으로 빠르게 주문해 보세요.</p>
                 <a href="/MlangPrintAuto/cadarok/index.php" class="btn-primary px-6 py-3 text-white rounded-md hover:opacity-90 focus:ring-2 focus:ring-sky-500">
-                    자동견적 시작
+                    견적안내 시작
                 </a>
             </div>
             <?php else: ?>

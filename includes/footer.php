@@ -89,25 +89,25 @@
                                 <h3 class="footer-card-title">서비스</h3>
                             </div>
                             <div class="footer-card-content">
-                                <div class="service-links">
-                                    <a href="/MlangPrintAuto/inserted/" class="service-link">
-                                        <span class="link-icon">📄</span>
+                                <div class="service-links-simple">
+                                    <a href="/MlangPrintAuto/inserted/" class="service-link-simple">
+                                        <span class="service-icon-simple">📄</span>
                                         <span>전단지/리플릿</span>
                                     </a>
-                                    <a href="/MlangPrintAuto/NameCard/" class="service-link">
-                                        <span class="link-icon">💼</span>
+                                    <a href="/MlangPrintAuto/NameCard/" class="service-link-simple">
+                                        <span class="service-icon-simple">💼</span>
                                         <span>명함</span>
                                     </a>
-                                    <a href="/MlangPrintAuto/shop/view_modern.php" class="service-link">
-                                        <span class="link-icon">🏷️</span>
+                                    <a href="/MlangPrintAuto/shop/view_modern.php" class="service-link-simple">
+                                        <span class="service-icon-simple">🏷️</span>
                                         <span>일반스티커</span>
                                     </a>
-                                    <a href="/MlangPrintAuto/msticker/" class="service-link">
-                                        <span class="link-icon">🧲</span>
+                                    <a href="/MlangPrintAuto/msticker/" class="service-link-simple">
+                                        <span class="service-icon-simple">🧲</span>
                                         <span>자석스티커</span>
                                     </a>
-                                    <a href="/bbs/" class="service-link">
-                                        <span class="link-icon">💬</span>
+                                    <a href="/bbs/" class="service-link-simple">
+                                        <span class="service-icon-simple">💬</span>
                                         <span>문의게시판</span>
                                     </a>
                                 </div>
@@ -268,34 +268,31 @@
             font-size: 16px;
         }
 
-        .service-links {
+        .service-links-simple {
             display: flex;
             flex-direction: column;
-            gap: 6px;
+            gap: 8px;
         }
 
-        .service-link {
+        .service-link-simple {
             display: flex;
             align-items: center;
-            padding: 10px 12px;
+            padding: 6px 0;
             color: rgba(255, 255, 255, 0.8);
             text-decoration: none;
-            border-radius: 8px;
             transition: all 0.3s ease;
             font-size: 14px;
-            border: 1px solid transparent;
         }
 
-        .service-link:hover {
-            background: rgba(255, 255, 255, 0.1);
+        .service-link-simple:hover {
             color: #3498db;
             transform: translateX(5px);
-            border-color: rgba(52, 152, 219, 0.3);
         }
 
-        .link-icon {
+        .service-icon-simple {
             margin-right: 10px;
             font-size: 16px;
+            min-width: 20px;
         }
 
         .footer-bottom {

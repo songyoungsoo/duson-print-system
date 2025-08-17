@@ -204,7 +204,7 @@ return false;
 
 <tr>
 <td colspan=2 bgcolor='#484848'>
-<font color=white><b>&nbsp;&nbsp;▒ 자동견적 하단 TEXT 내용 수정 ▒▒▒▒▒</b><BR>
+<font color=white><b>&nbsp;&nbsp;▒ 견적안내 하단 TEXT 내용 수정 ▒▒▒▒▒</b><BR>
 &nbsp;&nbsp;&nbsp;&nbsp;*주의사항 <big><b>'</b></big> 외 따옴표 와  <big><b>"</b></big> 쌍 따옴표 입력 불가</font>
 </td>
 </tr>

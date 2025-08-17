@@ -6,6 +6,9 @@
 
 session_start();
 
+// 기존 시스템 쿠키 삭제 (호환성)
+setcookie("id_login_ok", '', time() - 3600, "/");
+
 // 세션 데이터 완전 삭제
 $_SESSION = array();
 

@@ -15,116 +15,53 @@ $firstImage = $recent[0] ?? '';
 <head>
   <meta charset="UTF-8">
   <title>부드러운 확대 갤러리</title>
+  <link rel="stylesheet" href="../css/gallery-common.css">
   <style>
     .gallery {
       width: 580px;
       margin: 40px auto;
-      display: flex;
-      flex-direction: column;
-      align-items: center;
-    }
-    /* 확대 박스: CSS 트랜지션 대신 will-change + JS 애니메이션으로 부드럽게 */
-    .zoom-box {
-      width: 580px;
-      height: 580px;
-      border: 1px solid #ccc;
-      background-repeat: no-repeat;
-      background-position: center center;
-      background-size: 100%;
-      will-change: background-position, background-size;
-      cursor: crosshair;
-    }
-    /* 썸네일 */
-    .thumbnails {
-      margin-top: 16px;
-      display: flex;
-      gap: 8px;
-    }
-    .thumbnails img {
-      width: 100px;
-      height: 100px;
-      object-fit: cover;
-      cursor: pointer;
-      border: 2px solid transparent;
-      transition: border .2s;
-    }
-    .thumbnails img.active,
-    .thumbnails img:hover {
-      border-color: #0078D7;
     }
   </style>
+  <script src="../includes/js/GalleryLightbox.js"></script>
 </head>
 <body>
 
 <div class="gallery">
-  <!-- 확대 박스: 초기 배경 이미지 -->
-  <div class="zoom-box" id="zoomBox"
-       style="background-image: url('img/<?= htmlspecialchars($firstImage) ?>');">
-  </div>
-
-  <!-- 썸네일 -->
-  <div class="thumbnails">
-    <?php foreach ($recent as $idx => $img): ?>
-      <img
-        src="img/<?= htmlspecialchars($img) ?>"
-        data-src="img/<?= htmlspecialchars($img) ?>"
-        class="<?= $idx === 0 ? 'active' : '' ?>"
-        alt="thumb<?= $idx ?>">
-    <?php endforeach; ?>
+  <div class="image-gallery-section">
+    <h4>🖼️ 이미지 갤러리</h4>
+    <div id="galleryContainer"></div>
   </div>
 </div>
 
 <script>
-  const zoomBox = document.getElementById('zoomBox');
-  const thumbs  = document.querySelectorAll('.thumbnails img');
+  // PHP에서 가져온 이미지 데이터를 JavaScript 배열로 변환
+  const phpImages = [
+    <?php foreach ($recent as $idx => $img): ?>
+      {
+        id: <?= $idx ?>,
+        title: '<?= htmlspecialchars($img) ?>',
+        path: 'img/<?= htmlspecialchars($img) ?>',
+        thumbnail: 'img/<?= htmlspecialchars($img) ?>'
+      }<?= $idx < count($recent) - 1 ? ',' : '' ?>
+    <?php endforeach; ?>
+  ];
 
-  // 썸네일 클릭 → 확대 박스의 이미지 변경
-  thumbs.forEach(thumb => {
-    thumb.addEventListener('click', () => {
-      thumbs.forEach(t => t.classList.remove('active'));
-      thumb.classList.add('active');
-      zoomBox.style.backgroundImage = `url('${thumb.dataset.src}')`;
-      // 타겟 상태 초기화
-      targetSize = 100;
-      targetX = 50; targetY = 50;
+  // 갤러리 초기화
+  document.addEventListener('DOMContentLoaded', function() {
+    const gallery = new GalleryLightbox('galleryContainer', {
+      productType: 'local_gallery',
+      autoLoad: false,
+      zoomEnabled: true
     });
+    
+    gallery.init();
+    gallery.setImages(phpImages);
+    
+    // 로딩 상태 숨기기
+    gallery.showLoading(false);
+    
+    console.log('로컬 갤러리 초기화 완료:', phpImages.length + '개 이미지');
   });
-
-  // 애니메이션용 상태 변수
-  let targetX = 50, targetY = 50;
-  let currentX = 50, currentY = 50;
-  let targetSize = 100, currentSize = 100;
-
-  // mousemove → 목표 포지션 & 사이즈 설정
-  zoomBox.addEventListener('mousemove', e => {
-    const { width, height, left, top } = zoomBox.getBoundingClientRect();
-    const xPct = (e.clientX - left) / width  * 100;
-    const yPct = (e.clientY - top)  / height * 100;
-    targetX = xPct;
-    targetY = yPct;
-    targetSize = 200; // 2배
-  });
-
-  // mouseleave → 원상태로 복원 목표값 설정
-  zoomBox.addEventListener('mouseleave', () => {
-    targetX = 50;
-    targetY = 50;
-    targetSize = 100;
-  });
-
-  // 부드러운 인터폴레이션 애니메이션 루프
-  function animate() {
-    // lerp 계수: 0.15 → 부드러운 추적
-    currentX += (targetX - currentX) * 0.15;
-    currentY += (targetY - currentY) * 0.15;
-    currentSize += (targetSize - currentSize) * 0.15;
-
-    zoomBox.style.backgroundPosition = `${currentX}% ${currentY}%`;
-    zoomBox.style.backgroundSize     = `${currentSize}%`;
-
-    requestAnimationFrame(animate);
-  }
-  animate();
 </script>
 
 </body>

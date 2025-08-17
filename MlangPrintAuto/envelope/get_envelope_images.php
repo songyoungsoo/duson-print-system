@@ -37,40 +37,11 @@ try {
                 'id' => $row['Mlang_bbs_no'],
                 'title' => $image_title,
                 'path' => $image_path,
-                'thumbnail' => $image_path // 썸네일도 같은 이미지 사용 (CSS로 크기 조정)
+                'thumbnail' => $image_path, // 썸네일도 같은 이미지 사용 (CSS로 크기 조정)
+                'url' => $image_path, // GalleryLightbox 호환성을 위해 추가
+                'thumb' => $image_path // GalleryLightbox 호환성을 위해 추가
             ];
         }
-    }
-    
-    // 봉투 이미지가 없는 경우 기본 샘플 이미지 제공
-    if (empty($images)) {
-        $default_images = [
-            [
-                'id' => 'default1',
-                'title' => '일반형 봉투 샘플',
-                'path' => '/images/envelope/sample1.jpg',
-                'thumbnail' => '/images/envelope/sample1.jpg'
-            ],
-            [
-                'id' => 'default2', 
-                'title' => '자켓형 봉투 샘플',
-                'path' => '/images/envelope/sample2.jpg',
-                'thumbnail' => '/images/envelope/sample2.jpg'
-            ],
-            [
-                'id' => 'default3',
-                'title' => '창봉투 샘플',
-                'path' => '/images/envelope/sample3.jpg', 
-                'thumbnail' => '/images/envelope/sample3.jpg'
-            ],
-            [
-                'id' => 'default4',
-                'title' => '특수봉투 샘플',
-                'path' => '/images/envelope/sample4.jpg',
-                'thumbnail' => '/images/envelope/sample4.jpg'
-            ]
-        ];
-        $images = $default_images;
     }
     
     // JSON 응답

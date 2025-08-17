@@ -172,7 +172,7 @@ include "../includes/nav.php";
                 <h4>📋 주문시 유의사항</h4>
                 <ul class="notice-list">
                     <li>인쇄시 정매에서 약간의 로스분이 발생할 수 있습니다</li>
-                    <li>모조견적은 자동견적 시스템을 이용해주세요</li>
+                    <li>모조견적은 견적안내 시스템을 이용해주세요</li>
                     <li>이메일이나 웹하드 업로드시 연락처를 반드시 남겨주세요</li>
                     <li><a href="/sub/attention.htm" target="_blank" class="notice-link">📝 작업시 유의사항</a>을 꼭 확인해주세요</li>
                 </ul>

@@ -9,7 +9,7 @@ if (session_status() == PHP_SESSION_NONE) {
 @header("Cache-Control: no-cache, must-revalidate");
 @header("Pragma: no-cache");
 
-$HomeTitle="두손기획인쇄-자동견적프로그램";
+$HomeTitle="두손기획인쇄-견적안내프로그램";
 ?>
 
 <html>
@@ -205,7 +205,7 @@ $SoftUrl="/MlangPrintAuto";
         <a href="http://www.dsp114.com/index.htm">HOME</a>
         <a href="/sub/info.htm">회사소개</a>
         <a href="/sub/leaflet.php">포트폴리오</a>
-        <a href="/sub/estimate_auto.htm" class="active">자동견적</a>
+        <a href="/sub/estimate_auto.htm" class="active">견적안내</a>
         <a href="/sub/checkboard.php">교정보기</a>
         <a href="/bbs/qna.php">고객문의</a>
       </div>
@@ -254,7 +254,7 @@ $SoftUrl="/MlangPrintAuto";
               <a href="/sub/seosig.htm">서식류</a>
             </div>
             
-            <div class="section-title">자동견적 프로그램</div>
+            <div class="section-title">견적안내 프로그램</div>
             
             <!-- 제품 네비게이션 -->
             <div class="product-nav">

@@ -242,7 +242,7 @@ if ($result_CV_One) {
               <td width="2%" align="left" valign="top">&nbsp;</td>
               <td width="98%" align="left" valign="top">
                 옆의 항목을 선택 하시면 고객님께서 원하는 방식으로<br>
-                자동견적 금액을 보실수 있습니다.<br><br>
+                견적안내 금액을 보실수 있습니다.<br><br>
                 <b>바로 주문을 하시려면 주문하기를 클릭하세요.</b><br><br>
                 두손기획-고객센터: 02-2632-1830
               </td>

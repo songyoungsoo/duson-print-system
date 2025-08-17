@@ -246,63 +246,63 @@ include "../includes/nav.php";
         </div>
         
         <div style="padding: 2rem;">
-            <!-- 주문 요약 -->
-            <div style="background: #f8f9fa; padding: 1.5rem; border-radius: 10px; margin-bottom: 2rem;">
-                <h3 style="color: #2c3e50; margin-bottom: 1rem;">📦 주문 요약</h3>
-                <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 1rem;">
-                    <div style="text-align: center; padding: 1rem; background: white; border-radius: 8px;">
-                        <div style="font-size: 1.5rem; font-weight: bold; color: #3498db;"><?php echo $total_info['count']; ?>개</div>
-                        <div style="color: #666;">총 상품수</div>
+            <!-- 컴팩트 주문 요약 -->
+            <div style="background: #f8f9fa; padding: 0.8rem; border-radius: 6px; margin-bottom: 1rem;">
+                <h3 style="color: #2c3e50; margin-bottom: 0.6rem; font-size: 1rem;">📦 주문 요약</h3>
+                <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(160px, 1fr)); gap: 0.6rem;">
+                    <div style="text-align: center; padding: 0.6rem; background: white; border-radius: 4px;">
+                        <div style="font-size: 1.1rem; font-weight: bold; color: #3498db;"><?php echo $total_info['count']; ?>개</div>
+                        <div style="color: #666; font-size: 0.8rem;">총 상품수</div>
                     </div>
-                    <div style="text-align: center; padding: 1rem; background: white; border-radius: 8px;">
-                        <div style="font-size: 1.5rem; font-weight: bold; color: #27ae60;"><?php echo number_format($total_info['total']); ?>원</div>
-                        <div style="color: #666;">총 인쇄비</div>
+                    <div style="text-align: center; padding: 0.6rem; background: white; border-radius: 4px;">
+                        <div style="font-size: 1.1rem; font-weight: bold; color: #27ae60;"><?php echo number_format($total_info['total']); ?>원</div>
+                        <div style="color: #666; font-size: 0.8rem;">총 인쇄비</div>
                     </div>
-                    <div style="text-align: center; padding: 1rem; background: white; border-radius: 8px;">
-                        <div style="font-size: 1.5rem; font-weight: bold; color: #e74c3c;"><?php echo number_format($total_info['total_vat'] - $total_info['total']); ?>원</div>
-                        <div style="color: #666;">부가세</div>
+                    <div style="text-align: center; padding: 0.6rem; background: white; border-radius: 4px;">
+                        <div style="font-size: 1.1rem; font-weight: bold; color: #e74c3c;"><?php echo number_format($total_info['total_vat'] - $total_info['total']); ?>원</div>
+                        <div style="color: #666; font-size: 0.8rem;">부가세</div>
                     </div>
-                    <div style="text-align: center; padding: 1rem; background: white; border-radius: 8px;">
-                        <div style="font-size: 1.8rem; font-weight: bold; color: #e74c3c;"><?php echo number_format($total_info['total_vat']); ?>원</div>
-                        <div style="color: #666;">총 결제금액</div>
+                    <div style="text-align: center; padding: 0.6rem; background: white; border-radius: 4px;">
+                        <div style="font-size: 1.2rem; font-weight: bold; color: #e74c3c;"><?php echo number_format($total_info['total_vat']); ?>원</div>
+                        <div style="color: #666; font-size: 0.8rem;">총 결제금액</div>
                     </div>
                 </div>
             </div>
             
-            <!-- 주문 상품 목록 -->
-            <div style="margin-bottom: 2rem;">
-                <h3 style="color: #2c3e50; margin-bottom: 1rem;">🛍️ 주문 상품 목록</h3>
-                <div style="background: white; border: 1px solid #ddd; border-radius: 10px; overflow: hidden;">
+            <!-- 컴팩트 주문 상품 목록 -->
+            <div style="margin-bottom: 1rem;">
+                <h3 style="color: #2c3e50; margin-bottom: 0.6rem; font-size: 1rem;">🛍️ 주문 상품 목록</h3>
+                <div style="background: white; border: 1px solid #ddd; border-radius: 6px; overflow: hidden;">
                     <?php foreach ($cart_items as $index => $item): ?>
-                    <div style="padding: 1rem; border-bottom: 1px solid #eee; <?php echo $index % 2 == 0 ? 'background: #f9f9f9;' : ''; ?>">
+                    <div style="padding: 0.8rem; border-bottom: 1px solid #eee; <?php echo $index % 2 == 0 ? 'background: #f9f9f9;' : ''; ?>">
                         <div style="display: flex; justify-content: space-between; align-items: center;">
                             <div>
                                 <?php if ($is_direct_order): ?>
                                     <?php if ($item['product_type'] == 'envelope'): ?>
-                                        <strong style="color: #2c3e50; font-size: 1.1rem;">✉️ 봉투</strong>
-                                        <div style="margin-top: 0.5rem;">
-                                            <span style="display: inline-block; margin-right: 1rem; color: #666; font-size: 0.9rem;">
+                                        <strong style="color: #2c3e50; font-size: 0.95rem;">✉️ 봉투</strong>
+                                        <div style="margin-top: 0.3rem;">
+                                            <span style="display: inline-block; margin-right: 0.8rem; color: #666; font-size: 0.8rem;">
                                                 <strong>종류:</strong> <?php echo htmlspecialchars($item['type_text']); ?>
                                             </span>
-                                            <span style="display: inline-block; margin-right: 1rem; color: #666; font-size: 0.9rem;">
+                                            <span style="display: inline-block; margin-right: 0.8rem; color: #666; font-size: 0.8rem;">
                                                 <strong>규격:</strong> <?php echo htmlspecialchars($item['size_text']); ?>
                                             </span>
-                                            <span style="display: inline-block; margin-right: 1rem; color: #666; font-size: 0.9rem;">
+                                            <span style="display: inline-block; margin-right: 0.8rem; color: #666; font-size: 0.8rem;">
                                                 <strong>수량:</strong> <?php echo htmlspecialchars($item['quantity_text']); ?>
                                             </span>
-                                            <span style="display: inline-block; margin-right: 1rem; color: #666; font-size: 0.9rem;">
+                                            <span style="display: inline-block; margin-right: 0.8rem; color: #666; font-size: 0.8rem;">
                                                 <strong>디자인:</strong> <?php echo htmlspecialchars($item['design_text']); ?>
                                             </span>
                                             <?php if (!empty($item['MY_comment'])): ?>
-                                                <div style="margin-top: 0.5rem; padding: 0.5rem; background: #fff3cd; border-radius: 4px; font-size: 0.9rem;">
+                                                <div style="margin-top: 0.3rem; padding: 0.4rem; background: #fff3cd; border-radius: 3px; font-size: 0.8rem;">
                                                     <strong>요청사항:</strong> <?php echo htmlspecialchars($item['MY_comment']); ?>
                                                 </div>
                                             <?php endif; ?>
                                         </div>
                                     <?php elseif ($item['product_type'] == 'merchandisebond'): ?>
-                                        <strong style="color: #2c3e50; font-size: 1.1rem;">🎫 상품권</strong>
-                                        <div style="margin-top: 0.5rem;">
-                                            <span style="display: inline-block; margin-right: 1rem; color: #666; font-size: 0.9rem;">
+                                        <strong style="color: #2c3e50; font-size: 0.95rem;">🎫 상품권</strong>
+                                        <div style="margin-top: 0.3rem;">
+                                            <span style="display: inline-block; margin-right: 0.8rem; color: #666; font-size: 0.8rem;">
                                                 <strong>종류:</strong> <?php echo htmlspecialchars($item['type_text']); ?>
                                             </span>
                                             <span style="display: inline-block; margin-right: 1rem; color: #666; font-size: 0.9rem;">
@@ -455,205 +455,205 @@ include "../includes/nav.php";
                     <input type="hidden" name="address_option" value="different">
                 <?php endif; ?>
                 
-                <h3 style="color: #2c3e50; margin-bottom: 1.5rem;">👤 신청자 정보</h3>
+                <h3 style="color: #2c3e50; margin-bottom: 0.8rem;">👤 신청자 정보</h3>
                 <?php if ($is_logged_in): ?>
-                    <div style="background: #e8f5e8; padding: 1rem; border-radius: 8px; margin-bottom: 1.5rem; border-left: 4px solid #27ae60;">
-                        <p style="margin: 0; color: #27ae60; font-weight: bold;">✅ 로그인된 회원 정보가 자동으로 입력됩니다</p>
-                        <p style="margin: 0.5rem 0 0 0; color: #666; font-size: 0.9rem;">정보가 변경된 경우 직접 수정해주세요</p>
+                    <div style="background: #e8f5e8; padding: 0.8rem; border-radius: 6px; margin-bottom: 0.8rem; border-left: 3px solid #27ae60;">
+                        <p style="margin: 0; color: #27ae60; font-weight: bold; font-size: 0.9rem;">✅ 로그인된 회원 정보가 자동으로 입력됩니다</p>
+                        <p style="margin: 0.3rem 0 0 0; color: #666; font-size: 0.85rem;">정보가 변경된 경우 직접 수정해주세요</p>
                     </div>
                 <?php else: ?>
-                    <p style="color: #666; margin-bottom: 2rem;">* 신청자 정보를 정확히 입력 바랍니다.</p>
+                    <p style="color: #666; margin-bottom: 0.8rem; font-size: 0.9rem;">* 신청자 정보를 정확히 입력 바랍니다.</p>
                 <?php endif; ?>
                 
-                <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 2rem; margin-bottom: 2rem;">
+                <!-- 초컴팩트 신청자 정보 입력 (2x2 그리드) -->
+                <div class="compact-info-grid" style="display: grid; grid-template-columns: 1fr 1fr; gap: 0.8rem; margin-bottom: 1rem; align-items: end;">
+                    <!-- 첫 번째 줄: 성명/상호, 이메일 -->
                     <div>
-                        <label style="display: block; margin-bottom: 0.5rem; font-weight: bold; color: #2c3e50;">
+                        <label style="display: block; margin-bottom: 0.2rem; font-weight: bold; color: #2c3e50; font-size: 0.85rem;">
                             👤 성명/상호 *
                         </label>
                         <input type="text" name="username" required 
                                value="<?php echo $is_logged_in ? htmlspecialchars($user_info['name'] ?? '') : ''; ?>"
-                               style="width: 100%; padding: 12px; border: 1px solid #ddd; border-radius: 5px; font-size: 1rem;"
-                               placeholder="성명 또는 상호명을 입력하세요">
+                               style="width: 100%; padding: 8px 10px; border: 1px solid #ddd; border-radius: 4px; font-size: 0.9rem;"
+                               placeholder="성명 또는 상호명">
                     </div>
                     <div>
-                        <label style="display: block; margin-bottom: 0.5rem; font-weight: bold; color: #2c3e50;">
+                        <label style="display: block; margin-bottom: 0.2rem; font-weight: bold; color: #2c3e50; font-size: 0.85rem;">
                             📧 이메일 *
                         </label>
                         <input type="email" name="email" required 
                                value="<?php echo $is_logged_in ? htmlspecialchars($user_info['email'] ?? '') : ''; ?>"
-                               style="width: 100%; padding: 12px; border: 1px solid #ddd; border-radius: 5px; font-size: 1rem;"
-                               placeholder="이메일 주소를 입력하세요">
+                               style="width: 100%; padding: 8px 10px; border: 1px solid #ddd; border-radius: 4px; font-size: 0.9rem;"
+                               placeholder="이메일 주소">
                     </div>
                 </div>
-                
-                <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 2rem; margin-bottom: 2rem;">
+                <div class="compact-info-grid" style="display: grid; grid-template-columns: 1fr 1fr; gap: 0.8rem; margin-bottom: 1rem; align-items: end;">
+                    <!-- 두 번째 줄: 전화번호, 핸드폰 -->
                     <div>
-                        <label style="display: block; margin-bottom: 0.5rem; font-weight: bold; color: #2c3e50;">
+                        <label style="display: block; margin-bottom: 0.2rem; font-weight: bold; color: #2c3e50; font-size: 0.85rem;">
                             📞 전화번호 *
                         </label>
                         <input type="tel" name="phone" required 
                                value="<?php echo $is_logged_in ? htmlspecialchars($user_info['phone'] ?? '') : ''; ?>"
-                               style="width: 100%; padding: 12px; border: 1px solid #ddd; border-radius: 5px;"
-                               placeholder="전화번호를 입력하세요">
+                               style="width: 100%; padding: 8px 10px; border: 1px solid #ddd; border-radius: 4px; font-size: 0.9rem;"
+                               placeholder="전화번호">
                     </div>
                     <div>
-                        <label style="display: block; margin-bottom: 0.5rem; font-weight: bold; color: #2c3e50;">
+                        <label style="display: block; margin-bottom: 0.2rem; font-weight: bold; color: #2c3e50; font-size: 0.85rem;">
                             📱 핸드폰
                         </label>
                         <input type="tel" name="Hendphone" 
-                               style="width: 100%; padding: 12px; border: 1px solid #ddd; border-radius: 5px;"
-                               placeholder="핸드폰 번호를 입력하세요">
+                               style="width: 100%; padding: 8px 10px; border: 1px solid #ddd; border-radius: 4px; font-size: 0.9rem;"
+                               placeholder="핸드폰 번호">
                     </div>
                 </div>
                 
                 <!-- 수령지 정보 섹션 -->
-                <h3 style="color: #2c3e50; margin-bottom: 1.5rem;">🏠 우편물 수령지</h3>
+                <h3 style="color: #2c3e50; margin-bottom: 0.8rem;">🏠 우편물 수령지</h3>
                 
                 <?php if ($is_logged_in): ?>
-                    <div style="margin-bottom: 1.5rem;">
-                        <div style="display: flex; align-items: center; margin-bottom: 1rem;">
+                    <div style="margin-bottom: 0.8rem;">
+                        <div style="display: flex; align-items: center; margin-bottom: 0.5rem;">
                             <input type="radio" id="use_member_address" name="address_option" value="member" checked onchange="toggleAddressInput()" 
-                                   style="margin-right: 0.5rem; transform: scale(1.2);">
-                            <label for="use_member_address" style="font-weight: bold; color: #2c3e50; cursor: pointer;">
+                                   style="margin-right: 0.5rem; transform: scale(1.1);">
+                            <label for="use_member_address" style="font-weight: bold; color: #2c3e50; cursor: pointer; font-size: 0.9rem;">
                                 회원 정보 주소 사용
                             </label>
                         </div>
-                        <div style="display: flex; align-items: center; margin-bottom: 1rem;">
+                        <div style="display: flex; align-items: center; margin-bottom: 0.5rem;">
                             <input type="radio" id="use_different_address" name="address_option" value="different" onchange="toggleAddressInput()" 
-                                   style="margin-right: 0.5rem; transform: scale(1.2);">
-                            <label for="use_different_address" style="font-weight: bold; color: #2c3e50; cursor: pointer;">
+                                   style="margin-right: 0.5rem; transform: scale(1.1);">
+                            <label for="use_different_address" style="font-weight: bold; color: #2c3e50; cursor: pointer; font-size: 0.9rem;">
                                 다른 수령지 사용
                             </label>
                         </div>
                     </div>
                 <?php endif; ?>
                 
-                <div id="address_section" style="margin-bottom: 2rem;">
-                    <div style="display: flex; gap: 1rem; margin-bottom: 1rem;">
+                <div id="address_section" style="margin-bottom: 1rem;">
+                    <div style="display: flex; gap: 0.8rem; margin-bottom: 0.6rem;">
                         <input type="text" id="sample6_postcode" name="sample6_postcode" placeholder="우편번호" readonly
-                               style="width: 150px; padding: 12px; border: 1px solid #ddd; border-radius: 5px;">
+                               style="width: 140px; padding: 8px 10px; border: 1px solid #ddd; border-radius: 4px; font-size: 0.9rem;">
                         <button type="button" onclick="sample6_execDaumPostcode()" 
-                                style="padding: 12px 20px; background: #3498db; color: white; border: none; border-radius: 5px; cursor: pointer;">
+                                style="padding: 8px 16px; background: #3498db; color: white; border: none; border-radius: 4px; cursor: pointer; font-size: 0.9rem;">
                             우편번호 찾기
                         </button>
                     </div>
                     <input type="text" id="sample6_address" name="sample6_address" placeholder="주소" readonly required
-                           style="width: 100%; padding: 12px; border: 1px solid #ddd; border-radius: 5px; margin-bottom: 1rem;">
-                    <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 1rem;">
+                           style="width: 100%; padding: 8px 10px; border: 1px solid #ddd; border-radius: 4px; margin-bottom: 0.6rem; font-size: 0.9rem;">
+                    <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 0.8rem;">
                         <input type="text" id="sample6_detailAddress" name="sample6_detailAddress" placeholder="상세주소"
-                               style="padding: 12px; border: 1px solid #ddd; border-radius: 5px;">
+                               style="padding: 8px 10px; border: 1px solid #ddd; border-radius: 4px; font-size: 0.9rem;">
                         <input type="text" id="sample6_extraAddress" name="sample6_extraAddress" placeholder="참고항목"
-                               style="padding: 12px; border: 1px solid #ddd; border-radius: 5px;">
+                               style="padding: 8px 10px; border: 1px solid #ddd; border-radius: 4px; font-size: 0.9rem;">
                     </div>
                 </div>
                 
-                <div style="margin-bottom: 2rem;">
-                    <label style="display: block; margin-bottom: 0.5rem; font-weight: bold; color: #2c3e50;">
+                <div style="margin-bottom: 1rem;">
+                    <label style="display: block; margin-bottom: 0.3rem; font-weight: bold; color: #2c3e50; font-size: 0.9rem;">
                         💳 입금 정보
                     </label>
-                    <div style="background: #e8f4fd; padding: 1rem; border-radius: 5px; margin-bottom: 1rem;">
-                        <p style="margin: 0; color: #2c3e50;"><strong>계좌번호:</strong> 국민 999-1688-2384(두손기획인쇄 차경선)</p>
-                        <p style="margin: 0.5rem 0 0 0; color: #666; font-size: 0.9rem;">주문 확인 후 입금해주세요. 입금 확인 후 작업이 시작됩니다.</p>
+                    <div style="background: #e8f4fd; padding: 0.8rem; border-radius: 4px; margin-bottom: 0.6rem;">
+                        <p style="margin: 0; color: #2c3e50; font-size: 0.9rem;"><strong>계좌번호:</strong> 국민 999-1688-2384(두손기획인쇄 차경선)</p>
+                        <p style="margin: 0.3rem 0 0 0; color: #666; font-size: 0.85rem;">주문 확인 후 입금해주세요. 입금 확인 후 작업이 시작됩니다.</p>
                     </div>
                 </div>
                 
-                <div style="margin-bottom: 2rem;">
-                    <label style="display: block; margin-bottom: 0.5rem; font-weight: bold; color: #2c3e50;">
+                <div style="margin-bottom: 1rem;">
+                    <label style="display: block; margin-bottom: 0.3rem; font-weight: bold; color: #2c3e50; font-size: 0.9rem;">
                         💬 요청사항
                     </label>
-                    <div style="background: #ffebee; border: 1px solid #f8bbd9; border-radius: 8px; padding: 1rem; margin-bottom: 1rem;">
-                        <p style="margin: 0; color: #d32f2f; font-size: 1.1rem; font-weight: bold; line-height: 1.4;">
+                    <div style="background: #ffebee; border: 1px solid #f8bbd9; border-radius: 6px; padding: 0.8rem; margin-bottom: 0.6rem;">
+                        <p style="margin: 0; color: #d32f2f; font-size: 0.95rem; font-weight: bold; line-height: 1.3;">
                             🚚 퀵이나 다마스로 받거나 방문수령 시 아래 요청사항에 적어주세요
                         </p>
                     </div>
-                    <textarea name="cont" rows="4" 
-                              style="width: 100%; padding: 12px; border: 1px solid #ddd; border-radius: 5px; resize: vertical;"
+                    <textarea name="cont" rows="3" 
+                              style="width: 100%; padding: 8px 10px; border: 1px solid #ddd; border-radius: 4px; resize: vertical; font-size: 0.9rem;"
                               placeholder="추가 요청사항이 있으시면 입력해주세요 (퀵/다마스 배송, 방문수령 희망 시 반드시 기재해 주세요)"></textarea>
                 </div>
                 
                 <!-- 사업자 정보 섹션 -->
-                <div style="margin-bottom: 2rem; border: 1px solid #e0e0e0; border-radius: 10px; padding: 1.5rem; background: #f8f9fa;">
-                    <div style="display: flex; align-items: center; margin-bottom: 1rem;">
+                <div style="margin-bottom: 1rem; border: 1px solid #e0e0e0; border-radius: 6px; padding: 1rem; background: #f8f9fa;">
+                    <div style="display: flex; align-items: center; margin-bottom: 0.6rem;">
                         <input type="checkbox" id="is_business" name="is_business" value="1" onchange="toggleBusinessInfo()" 
-                               style="margin-right: 0.5rem; transform: scale(1.2);">
-                        <label for="is_business" style="font-weight: bold; color: #2c3e50; cursor: pointer;">
+                               style="margin-right: 0.5rem; transform: scale(1.1);">
+                        <label for="is_business" style="font-weight: bold; color: #2c3e50; cursor: pointer; font-size: 0.9rem;">
                             🏢 사업자 주문 (세금계산서 발행 필요시 체크)
                         </label>
                     </div>
                     
                     <div id="business_info" style="display: none;">
-                        <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 1rem; margin-bottom: 1rem;">
+                        <!-- 컴팩트한 사업자 정보 입력 (4열 그리드) -->
+                        <div class="compact-info-grid" style="display: grid; grid-template-columns: repeat(4, 1fr); gap: 1rem; margin-bottom: 1rem; align-items: end;">
                             <div>
-                                <label style="display: block; margin-bottom: 0.5rem; font-weight: bold; color: #2c3e50;">
+                                <label style="display: block; margin-bottom: 0.3rem; font-weight: bold; color: #2c3e50; font-size: 0.9rem;">
                                     🏢 사업자등록번호
                                 </label>
                                 <input type="text" name="business_number" 
-                                       style="width: 100%; padding: 12px; border: 1px solid #ddd; border-radius: 5px;"
+                                       style="width: 100%; padding: 10px 12px; border: 1px solid #ddd; border-radius: 5px; font-size: 0.95rem;"
                                        placeholder="000-00-00000" maxlength="12">
                             </div>
                             <div>
-                                <label style="display: block; margin-bottom: 0.5rem; font-weight: bold; color: #2c3e50;">
+                                <label style="display: block; margin-bottom: 0.3rem; font-weight: bold; color: #2c3e50; font-size: 0.9rem;">
                                     👤 대표자명
                                 </label>
                                 <input type="text" name="business_owner" 
-                                       style="width: 100%; padding: 12px; border: 1px solid #ddd; border-radius: 5px;"
-                                       placeholder="대표자 성명을 입력하세요">
+                                       style="width: 100%; padding: 10px 12px; border: 1px solid #ddd; border-radius: 5px; font-size: 0.95rem;"
+                                       placeholder="대표자 성명">
                             </div>
-                        </div>
-                        
-                        <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 1rem; margin-bottom: 1rem;">
                             <div>
-                                <label style="display: block; margin-bottom: 0.5rem; font-weight: bold; color: #2c3e50;">
+                                <label style="display: block; margin-bottom: 0.3rem; font-weight: bold; color: #2c3e50; font-size: 0.9rem;">
                                     🏭 업태
                                 </label>
                                 <input type="text" name="business_type" 
-                                       style="width: 100%; padding: 12px; border: 1px solid #ddd; border-radius: 5px;"
-                                       placeholder="예: 제조업, 서비스업">
+                                       style="width: 100%; padding: 10px 12px; border: 1px solid #ddd; border-radius: 5px; font-size: 0.95rem;"
+                                       placeholder="제조업, 서비스업">
                             </div>
                             <div>
-                                <label style="display: block; margin-bottom: 0.5rem; font-weight: bold; color: #2c3e50;">
+                                <label style="display: block; margin-bottom: 0.3rem; font-weight: bold; color: #2c3e50; font-size: 0.9rem;">
                                     📋 종목
                                 </label>
                                 <input type="text" name="business_item" 
-                                       style="width: 100%; padding: 12px; border: 1px solid #ddd; border-radius: 5px;"
-                                       placeholder="예: 인쇄업, 광고업">
+                                       style="width: 100%; padding: 10px 12px; border: 1px solid #ddd; border-radius: 5px; font-size: 0.95rem;"
+                                       placeholder="인쇄업, 광고업">
                             </div>
                         </div>
                         
-                        <div style="margin-bottom: 1rem;">
-                            <label style="display: block; margin-bottom: 0.5rem; font-weight: bold; color: #2c3e50;">
+                        <div style="margin-bottom: 0.8rem;">
+                            <label style="display: block; margin-bottom: 0.3rem; font-weight: bold; color: #2c3e50; font-size: 0.85rem;">
                                 🏢 사업장 주소
                             </label>
                             <textarea name="business_address" rows="2" 
-                                      style="width: 100%; padding: 12px; border: 1px solid #ddd; border-radius: 5px; resize: vertical;"
+                                      style="width: 100%; padding: 8px 10px; border: 1px solid #ddd; border-radius: 4px; resize: vertical; font-size: 0.9rem;"
                                       placeholder="사업자등록증상의 사업장 주소를 입력하세요"></textarea>
                         </div>
                         
-                        <div style="margin-bottom: 1rem;">
-                            <label style="display: block; margin-bottom: 0.5rem; font-weight: bold; color: #2c3e50;">
+                        <div style="margin-bottom: 0.8rem;">
+                            <label style="display: block; margin-bottom: 0.3rem; font-weight: bold; color: #2c3e50; font-size: 0.85rem;">
                                 📧 세금계산서 발행용 이메일 *
                             </label>
                             <input type="email" name="tax_invoice_email" 
-                                   style="width: 100%; padding: 12px; border: 1px solid #ddd; border-radius: 5px;"
+                                   style="width: 100%; padding: 8px 10px; border: 1px solid #ddd; border-radius: 4px; font-size: 0.9rem;"
                                    placeholder="세금계산서를 받을 이메일 주소를 입력하세요">
-                            <div style="font-size: 0.85rem; color: #666; margin-top: 0.3rem;">
+                            <div style="font-size: 0.8rem; color: #666; margin-top: 0.2rem;">
                                 * 일반 연락용 이메일과 다른 경우 별도로 입력해주세요
                             </div>
                         </div>
                         
-                        <div style="background: #e8f4fd; padding: 1rem; border-radius: 5px; font-size: 0.9rem; color: #2c3e50;">
+                        <div style="background: #e8f4fd; padding: 0.8rem; border-radius: 4px; font-size: 0.85rem; color: #2c3e50;">
                             <p style="margin: 0;"><strong>📌 안내사항:</strong></p>
-                            <p style="margin: 0.5rem 0 0 0;">• 세금계산서 발행을 원하시면 정확한 사업자 정보를 입력해주세요</p>
-                            <p style="margin: 0.3rem 0 0 0;">• 사업자등록번호는 하이픈(-) 포함하여 입력해주세요</p>
-                            <p style="margin: 0.3rem 0 0 0;">• 세금계산서 발행용 이메일은 필수 입력 항목입니다</p>
-                            <p style="margin: 0.3rem 0 0 0;">• 입력하신 정보는 세금계산서 발행 시에만 사용됩니다</p>
+                            <p style="margin: 0.3rem 0 0 0;">• 세금계산서 발행을 원하시면 정확한 사업자 정보를 입력해주세요</p>
+                            <p style="margin: 0.2rem 0 0 0;">• 사업자등록번호는 하이픈(-) 포함하여 입력해주세요</p>
+                            <p style="margin: 0.2rem 0 0 0;">• 세금계산서 발행용 이메일은 필수 입력 항목입니다</p>
+                            <p style="margin: 0.2rem 0 0 0;">• 입력하신 정보는 세금계산서 발행 시에만 사용됩니다</p>
                         </div>
                     </div>
                 </div>
                 
-                <div style="text-align: center; margin-top: 3rem;">
+                <div style="text-align: center; margin-top: 1.5rem;">
                     <button type="submit" 
-                            style="background: linear-gradient(135deg, #e74c3c 0%, #c0392b 100%); color: white; border: none; padding: 20px 50px; border-radius: 50px; font-size: 1.2rem; font-weight: bold; cursor: pointer; box-shadow: 0 8px 25px rgba(231, 76, 60, 0.3);">
+                            style="background: linear-gradient(135deg, #e74c3c 0%, #c0392b 100%); color: white; border: none; padding: 16px 40px; border-radius: 25px; font-size: 1.1rem; font-weight: bold; cursor: pointer; box-shadow: 0 6px 20px rgba(231, 76, 60, 0.3);">
                         🚀 주문 완료하기
                     </button>
                 </div>
@@ -661,6 +661,55 @@ include "../includes/nav.php";
         </div>
     </div>
 </div>
+
+<!-- 컴팩트 레이아웃을 위한 반응형 스타일 -->
+<style>
+/* 초컴팩트 레이아웃을 위한 반응형 처리 */
+@media (max-width: 768px) {
+    .compact-info-grid {
+        grid-template-columns: 1fr 1fr !important;
+        gap: 0.6rem !important;
+    }
+    
+    .compact-info-grid label {
+        font-size: 0.8rem !important;
+        margin-bottom: 0.15rem !important;
+    }
+    
+    .compact-info-grid input {
+        padding: 6px 8px !important;
+        font-size: 0.85rem !important;
+    }
+    
+    /* 모바일에서 전체 마진 더 줄이기 */
+    h3 {
+        margin-bottom: 0.5rem !important;
+        font-size: 1rem !important;
+    }
+    
+    .container > div {
+        padding: 1rem !important;
+    }
+}
+
+@media (max-width: 480px) {
+    .compact-info-grid {
+        grid-template-columns: 1fr !important;
+        gap: 0.4rem !important;
+    }
+    
+    /* 매우 작은 화면에서 더 컴팩트하게 */
+    .compact-info-grid label {
+        font-size: 0.75rem !important;
+        margin-bottom: 0.1rem !important;
+    }
+    
+    .compact-info-grid input {
+        padding: 5px 6px !important;
+        font-size: 0.8rem !important;
+    }
+}
+</style>
 
 <!-- 다음 우편번호 서비스 -->
 <script src="//t1.daumcdn.net/mapjsapi/bundle/postcode/prod/postcode.v2.js"></script>

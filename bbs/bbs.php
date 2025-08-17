@@ -1,5 +1,12 @@
 <?php
-$mode = isset($_GET['mode']) ? $_GET['mode'] : '';
+// 변수 초기화
+$mode = isset($_GET['mode']) ? $_GET['mode'] : (isset($_POST['mode']) ? $_POST['mode'] : '');
+$table = isset($_GET['table']) ? $_GET['table'] : (isset($_POST['table']) ? $_POST['table'] : '');
+$no = isset($_GET['no']) ? $_GET['no'] : (isset($_POST['no']) ? $_POST['no'] : '');
+$page = isset($_GET['page']) ? $_GET['page'] : (isset($_POST['page']) ? $_POST['page'] : '');
+$category = isset($_GET['category']) ? $_GET['category'] : (isset($_POST['category']) ? $_POST['category'] : '');
+$offset = isset($_GET['offset']) ? $_GET['offset'] : (isset($_POST['offset']) ? $_POST['offset'] : '');
+
 $BbsDir = isset($BbsDir) ? $BbsDir : ".";
 
 // 스킨 설정 저장
@@ -85,9 +92,15 @@ if($mode=="write") {
 if($mode=="write_ok") { 
     include "$BbsDir/write_select.php"; 
 
+    // POST 데이터 초기화
+    $name = isset($_POST['name']) ? $_POST['name'] : '';
+    $title = isset($_POST['title']) ? $_POST['title'] : '';
+
+    // 디버그 정보 제거 (정상 작동 확인됨)
+
     if ( !$name || !$title  ) {
         echo ("<script language=javascript>
-        window.alert('회원가입후 이용하실 수 있습니다....\\n\\n현 글자가 나온다면 이상한 접근일수도 있더염..\\n\\n*^^*');
+        window.alert('작성자와 제목을 모두 입력해주세요.');
         history.go(-1);
         </script>
         ");
@@ -107,9 +120,13 @@ if($mode=="write_ok") {
 if($mode=="modify_ok") { 
     include "$BbsDir/write_select.php"; 
 
+    // POST 데이터 초기화
+    $name = isset($_POST['name']) ? $_POST['name'] : '';
+    $title = isset($_POST['title']) ? $_POST['title'] : '';
+
     if ( !$name || !$title ) {
         echo ("<script language=javascript>
-        window.alert('회원가입 후 이용하실 수 있습니다....\\n\\n현 글자가 나온다면 이상한 접근일수도 있더염..\\n\\n.....*^^*');
+        window.alert('작성자와 제목을 모두 입력해주세요.');
         history.go(-1);
         </script>
         ");

@@ -1,7 +1,7 @@
 <?php
 include "../db.php";
 
-$action = "register.php";
+$action = "register_unified.php";
 $MdoifyMode = $_GET['mode'] ?? '';
 ?>
 

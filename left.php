@@ -296,14 +296,14 @@ function isActive($page_path, $current_page) {
   </li>
   
   <li>
-    <a href="/MlangPrintAuto/cadarok/index_modern.php" 
+    <a href="/MlangPrintAuto/cadarok/index.php" 
        class="catalog <?php echo isActive('/MlangPrintAuto/cadarok/', $current_page); ?>">
        📖 카다록
     </a>
   </li>
   
   <li>
-    <a href="/MlangPrintAuto/LittlePrint/index.php?page=LittlePrint" 
+    <a href="/MlangPrintAuto/LittlePrint/index_compact.php?page=LittlePrint" 
        class="poster <?php echo isActive('/MlangPrintAuto/LittlePrint/', $current_page); ?>">
        🎨 포스터
     </a>

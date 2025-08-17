@@ -1,59 +1,106 @@
 <?php
-// 공통 함수 포함
+// 명함 성공 패턴 적용 - 안전한 JSON 응답 처리
+ob_start();
+error_reporting(E_ALL & ~E_NOTICE & ~E_WARNING);
+ini_set('display_errors', 0);
+
 include "../../includes/functions.php";
 include "../../db.php";
 
-// 데이터베이스 연결 체크
 check_db_connection($db);
 mysqli_set_charset($db, "utf8");
 
-// GET 파라미터 받기
-$MY_type = $_GET['MY_type'] ?? '';      // 구분
-$MY_Fsd = $_GET['MY_Fsd'] ?? '';        // 규격
-$PN_type = $_GET['PN_type'] ?? '';      // 색상
-$MY_amount = $_GET['MY_amount'] ?? '';  // 수량
-$ordertype = $_GET['ordertype'] ?? 'total'; // 편집디자인
-
-$TABLE = "MlangPrintAuto_ncrflambeau";
-
-// 입력값 검증
-if (empty($MY_type) || empty($MY_Fsd) || empty($PN_type) || empty($MY_amount)) {
-    error_response('필수 파라미터가 누락되었습니다.');
-}
-
-// 가격 계산을 위한 조건 설정
-$conditions = [
-    'style' => $MY_type,
-    'Section' => $MY_Fsd,
-    'TreeSelect' => $PN_type,
-    'quantity' => $MY_amount
-];
-
-// 공통함수를 사용한 가격 계산
-$price_result = calculateProductPrice($db, $TABLE, $conditions, $ordertype);
-
-if ($price_result) {
-    // 응답 데이터 구성
-    $response_data = [
-        'base_price' => $price_result['base_price'],
-        'design_price' => $price_result['design_price'],
-        'total_price' => $price_result['total_price'],
-        'vat' => $price_result['vat'],
-        'total_with_vat' => $price_result['total_with_vat'],
-        'formatted' => $price_result['formatted'],
-        
-        // 기존 호환성을 위한 필드들
-        'Price' => $price_result['base_price'],
-        'DS_Price' => $price_result['design_price'],
-        'Order_Price' => $price_result['total_price'],
-        'Order_PriceForm' => $price_result['base_price'],
-        'Total_PriceForm' => $price_result['total_with_vat']
-    ];
+// 안전한 JSON 응답 함수 (명함 패턴)
+function safe_json_response($success = true, $data = null, $message = '') {
+    ob_clean(); // 이전 출력 완전 정리
     
-    mysqli_close($db);
-    success_response($response_data);
-} else {
-    mysqli_close($db);
-    error_response('해당 조건의 가격 정보를 찾을 수 없습니다.');
+    $response = array(
+        'success' => $success,
+        'message' => $message
+    );
+    
+    if ($data !== null) {
+        $response['data'] = $data;
+    }
+    
+    if (!headers_sent()) {
+        header('Content-Type: application/json; charset=utf-8');
+    }
+    
+    echo json_encode($response, JSON_UNESCAPED_UNICODE);
+    exit;
 }
+
+// 파라미터 받기
+$MY_type = $_POST['MY_type'] ?? '';
+$MY_Fsd = $_POST['MY_Fsd'] ?? '';
+$PN_type = $_POST['PN_type'] ?? '';
+$MY_amount = $_POST['MY_amount'] ?? '';
+$ordertype = $_POST['ordertype'] ?? '';
+
+// 필수 파라미터 검증
+if (empty($MY_type) || empty($MY_Fsd) || empty($PN_type) || empty($MY_amount) || empty($ordertype)) {
+    safe_json_response(false, null, '모든 옵션을 선택해주세요.');
+}
+
+// 디버그 로그
+error_log("NcrFlambeau 가격 계산 요청: MY_type=$MY_type, MY_Fsd=$MY_Fsd, PN_type=$PN_type, MY_amount=$MY_amount, ordertype=$ordertype");
+
+try {
+    // 가격 계산 쿼리
+    $query = "SELECT * FROM MlangPrintAuto_ncrflambeau 
+              WHERE style = ? AND Section = ? AND TreeSelect = ? AND quantity = ?";
+    
+    $stmt = mysqli_prepare($db, $query);
+    if (!$stmt) {
+        throw new Exception('쿼리 준비 실패: ' . mysqli_error($db));
+    }
+    
+    mysqli_stmt_bind_param($stmt, "ssss", $MY_type, $MY_Fsd, $PN_type, $MY_amount);
+    
+    if (!mysqli_stmt_execute($stmt)) {
+        throw new Exception('쿼리 실행 실패: ' . mysqli_stmt_error($stmt));
+    }
+    
+    $result = mysqli_stmt_get_result($stmt);
+    
+    if ($row = mysqli_fetch_assoc($result)) {
+        // 가격 계산
+        $base_price = intval($row['money']);
+        $design_price = ($ordertype === 'total') ? intval($row['DesignMoney']) : 0;
+        $total_price = $base_price + $design_price;
+        $vat_price = intval($total_price * 1.1);
+        
+        $price_data = [
+            'base_price' => $base_price,
+            'design_price' => $design_price,
+            'total_price' => $total_price,
+            'vat_price' => $vat_price,
+            'formatted' => [
+                'base_price' => number_format($base_price) . '원',
+                'design_price' => number_format($design_price) . '원',
+                'total_price' => number_format($total_price) . '원',
+                'vat_price' => number_format($vat_price) . '원'
+            ]
+        ];
+        
+        // 성공 로그
+        error_log("NcrFlambeau 가격 계산 성공: " . json_encode($price_data));
+        
+        safe_json_response(true, $price_data, '가격 계산 완료');
+        
+    } else {
+        // 데이터 없음
+        error_log("NcrFlambeau 가격 데이터 없음: style=$MY_type, section=$MY_Fsd, treeselect=$PN_type, quantity=$MY_amount");
+        safe_json_response(false, null, '해당 조건의 가격 정보를 찾을 수 없습니다.');
+    }
+    
+    mysqli_stmt_close($stmt);
+    
+} catch (Exception $e) {
+    error_log("NcrFlambeau 가격 계산 오류: " . $e->getMessage());
+    safe_json_response(false, null, '가격 계산 중 오류가 발생했습니다: ' . $e->getMessage());
+}
+
+mysqli_close($db);
 ?>

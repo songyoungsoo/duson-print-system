@@ -1,6 +1,6 @@
 <?php 
 if (!isset($page_title)) {
-    $page_title = "두손기획인쇄 - 자동견적";
+    $page_title = "두손기획인쇄 - 견적안내";
 }
 ?>
 <!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
@@ -115,7 +115,7 @@ function WEBSILDESIGNWINDOW(theURL, width, height, scrollbars) {
       <a href="http://localhost" style="font-weight: bold;">HOME</a>|
       <a href="/sub/info.php" style="font-weight: bold;">회사소개</a>|
       <a href="/sub/leaflet.php" style="font-weight: bold;">포트폴리오</a>|
-      <a href="/sub/estimate_auto.php" style="font-weight: bold;">자동견적</a>|
+      <a href="/sub/estimate_auto.php" style="font-weight: bold;">견적안내</a>|
       <a href="/sub/checkboard.php" style="font-weight: bold;color: white; background-color: orange; padding: 7px;">교정보기</a>|
       <a href="/bbs/qna.php" style="font-weight: bold;">고객문의</a>|
     </td>

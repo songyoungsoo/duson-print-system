@@ -9,9 +9,23 @@ if (session_status() == PHP_SESSION_NONE) {
     session_start();
 }
 
-// 로그인 상태 확인
-$is_logged_in = isset($_SESSION['user_id']);
-$user_name = $is_logged_in ? $_SESSION['user_name'] : '';
+// 통합 로그인 상태 확인 (세션 + 쿠키 호환)
+$is_logged_in = isset($_SESSION['user_id']) || isset($_SESSION['id_login_ok']) || isset($_COOKIE['id_login_ok']);
+
+if (isset($_SESSION['user_id'])) {
+    // 신규 시스템
+    $user_name = $_SESSION['user_name'] ?? '';
+} elseif (isset($_SESSION['id_login_ok'])) {
+    // 기존 시스템 세션
+    $user_name = $_SESSION['id_login_ok']['id'] ?? '';
+} elseif (isset($_COOKIE['id_login_ok'])) {
+    // 기존 시스템 쿠키 (fallback)
+    $user_name = $_COOKIE['id_login_ok'];
+    $is_logged_in = true;
+} else {
+    $user_name = '';
+    $is_logged_in = false;
+}
 ?>
 <!DOCTYPE html>
 <html lang="ko">
@@ -42,11 +56,13 @@ $user_name = $is_logged_in ? $_SESSION['user_name'] : '';
                     </div>
                     <div class="contact-info">
                         <div class="contact-card">
-                            <div class="label">📞 고객센터</div>
-                            <div class="value">1688-2384</div>
+                            <a href="tel:1688-2384" class="contact-text">고객센터</a>
                         </div>
-                        <div class="contact-card cart-card">
-                            <a href="/MlangPrintAuto/shop/cart.php" class="cart-btn">🛒 장바구니</a>
+                        <div class="contact-card">
+                            <a href="/sub/checkboard.php" class="contact-text">교정보기</a>
+                        </div>
+                        <div class="contact-card">
+                            <a href="/MlangPrintAuto/shop/cart.php" class="contact-text">장바구니</a>
                         </div>
                         <?php if ($is_logged_in): ?>
                         <div class="contact-card user-menu">
@@ -76,8 +92,8 @@ $user_name = $is_logged_in ? $_SESSION['user_name'] : '';
                             </div>
                         </div>
                         <?php else: ?>
-                        <div class="contact-card login-card">
-                            <button onclick="showLoginModal()" class="login-btn">🔐 로그인</button>
+                        <div class="contact-card">
+                            <button onclick="showLoginModal()" class="contact-text login-text">로그인</button>
                         </div>
                         <?php endif; ?>
                     </div>

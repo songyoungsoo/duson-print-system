@@ -59,7 +59,7 @@ $menu_items = [
         'title' => '인쇄업무프로그램',
         'submenu' => [
             [
-                'title' => '자동견적프로그램',
+                'title' => '견적안내프로그램',
                 'submenu' => [
                     ['title' => '전단지 관리', 'url' => $base_url . '/admin/MlangPrintAuto/inserted_List.php'],
                     ['title' => '스티카 관리', 'url' => $base_url . '/admin/MlangPrintAuto/sticker_List.php'],
@@ -69,9 +69,9 @@ $menu_items = [
                     ['title' => '양식지 관리', 'url' => $base_url . '/admin/MlangPrintAuto/NcrFlambeau_List.php'],
                     ['title' => '카다로그 관리', 'url' => $base_url . '/admin/MlangPrintAuto/cadarok_List.php'],
                     ['title' => '소량인쇄 관리', 'url' => $base_url . '/admin/MlangPrintAuto/LittlePrint_List.php'],
-                    ['title' => '자동견적 주문', 'url' => $base_url . '/admin/MlangPrintAuto/OrderList.php'],
+                    ['title' => '견적안내 주문', 'url' => $base_url . '/admin/MlangPrintAuto/OrderList.php'],
                     ['title' => '시안직접올리기', 'url' => $base_url . '/admin/MlangPrintAuto/admin.php?mode=AdminMlangOrdert', 'target' => 'Mlang'],
-                    ['title' => '자동견적 통합관리', 'url' => $base_url . '/admin/MlangPrintAuto/admin.php?mode=BankForm&code=Text', 'target' => 'Mlang']
+                    ['title' => '견적안내 통합관리', 'url' => $base_url . '/admin/MlangPrintAuto/admin.php?mode=BankForm&code=Text', 'target' => 'Mlang']
                 ]
             ],
             [

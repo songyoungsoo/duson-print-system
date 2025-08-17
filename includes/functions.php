@@ -51,9 +51,9 @@ function format_price($price) {
 }
 
 // 페이지 제목 생성
-function generate_page_title($product_name = '', $default_title = '두손기획인쇄 - 자동견적') {
+function generate_page_title($product_name = '', $default_title = '두손기획인쇄 - 견적안내') {
     if (!empty($product_name)) {
-        return "두손기획인쇄 - {$product_name} 자동견적";
+        return "두손기획인쇄 - {$product_name} 견적안내";
     }
     return $default_title;
 }

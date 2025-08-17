@@ -1,57 +1,57 @@
 <?php
-// 공통 함수 포함
 include "../../includes/functions.php";
 include "../../db.php";
 
-// 데이터베이스 연결 체크
 check_db_connection($db);
 mysqli_set_charset($db, "utf8");
 
-// GET 파라미터 받기
-$MY_type = $_GET['MY_type'] ?? '';      // 종류
-$PN_type = $_GET['PN_type'] ?? '';      // 규격
-$MY_amount = $_GET['MY_amount'] ?? '';  // 수량
-$ordertype = $_GET['ordertype'] ?? 'total'; // 편집디자인
+// 파라미터 받기 (자석스티커는 Section 필드 사용)
+$MY_type = $_GET['MY_type'] ?? '';
+$Section = $_GET['Section'] ?? '';
+$POtype = $_GET['POtype'] ?? '';
+$MY_amount = $_GET['MY_amount'] ?? '';
+$ordertype = $_GET['ordertype'] ?? '';
+
+if (empty($MY_type) || empty($Section) || empty($POtype) || empty($MY_amount) || empty($ordertype)) {
+    error_response('모든 옵션을 선택해주세요.');
+}
 
 $TABLE = "MlangPrintAuto_msticker";
 
-// 입력값 검증
-if (empty($MY_type) || empty($PN_type) || empty($MY_amount)) {
-    error_response('필수 파라미터가 누락되었습니다.');
-}
+// 데이터베이스에서 가격 정보 조회
+$query = "SELECT money, DesignMoney 
+          FROM $TABLE 
+          WHERE style='" . mysqli_real_escape_string($db, $MY_type) . "' 
+          AND Section='" . mysqli_real_escape_string($db, $Section) . "' 
+          AND quantity='" . mysqli_real_escape_string($db, $MY_amount) . "'";
 
-// 가격 계산을 위한 조건 설정
-$conditions = [
-    'style' => $MY_type,
-    'Section' => $PN_type,
-    'quantity' => $MY_amount
-];
+$result = mysqli_query($db, $query);
 
-// 공통함수를 사용한 가격 계산
-$price_result = calculateProductPrice($db, $TABLE, $conditions, $ordertype);
+if ($result && mysqli_num_rows($result) > 0) {
+    $row = mysqli_fetch_assoc($result);
+    
+    // 자석스티커 가격 구조 (money, DesignMoney 컬럼 사용)
+    $base_price = (int)$row['money'];
+    $design_price_db = (int)$row['DesignMoney'];
+    
+    // 편집비 적용 (ordertype이 'total'일 때만)
+    $design_price = ($ordertype === 'total') ? $design_price_db : 0;
+    
+    $total_price = $base_price + $design_price;
+    $total_with_vat = $total_price * 1.1;
 
-if ($price_result) {
-    // 응답 데이터 구성
     $response_data = [
-        'base_price' => $price_result['base_price'],
-        'design_price' => $price_result['design_price'],
-        'total_price' => $price_result['total_price'],
-        'vat' => $price_result['vat'],
-        'total_with_vat' => $price_result['total_with_vat'],
-        'formatted' => $price_result['formatted'],
-        
-        // 기존 호환성을 위한 필드들
-        'Price' => $price_result['base_price'],
-        'DS_Price' => $price_result['design_price'],
-        'Order_Price' => $price_result['total_price'],
-        'Order_PriceForm' => $price_result['base_price'],
-        'Total_PriceForm' => $price_result['total_with_vat']
+        'base_price' => $base_price,
+        'design_price' => $design_price,
+        'total_price' => $total_price,
+        'total_with_vat' => (int)$total_with_vat
     ];
     
-    mysqli_close($db);
-    success_response($response_data);
+    success_response($response_data, '가격 계산 완료');
+
 } else {
-    mysqli_close($db);
-    error_response('해당 조건의 가격 정보를 찾을 수 없습니다.');
+    error_response('해당 조건의 가격 정보를 찾을 수 없습니다. (종류: ' . $MY_type . ', 규격: ' . $Section . ', 수량: ' . $MY_amount . ')');
 }
+
+mysqli_close($db);
 ?>

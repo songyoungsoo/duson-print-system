@@ -366,7 +366,7 @@
         </div>
         
         <!-- Posters -->
-        <div class="card-shadow bg-white rounded-2xl p-6 group cursor-pointer" onclick="window.location.href='/MlangPrintAuto/LittlePrint/index.php'">
+        <div class="card-shadow bg-white rounded-2xl p-6 group cursor-pointer" onclick="window.location.href='/MlangPrintAuto/LittlePrint/index_compact.php'">
           <div class="w-16 h-16 bg-gradient-to-br from-pink-100 to-pink-200 rounded-2xl flex items-center justify-center text-2xl mb-4 group-hover:scale-110 transition">🖼️</div>
           <h3 class="text-xl font-bold text-slate-800 mb-2">포스터</h3>
           <p class="text-slate-600 mb-4">행사, 전시, 인테리어용 대형 인쇄물. 고화질 출력으로 선명한 품질</p>

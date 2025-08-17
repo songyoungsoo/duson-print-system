@@ -25,7 +25,7 @@ if ($_POST['login_action'] ?? '' === 'login') {
 }
 
 // 페이지 제목 설정
-$page_title = generate_page_title("자석스티커 자동견적");
+$page_title = generate_page_title("자석스티커 견적안내");
 ?>
 
 <!DOCTYPE html>
@@ -435,7 +435,7 @@ $page_title = generate_page_title("자석스티커 자동견적");
 
     <div class="main-content-wrapper">
         <div class="page-header">
-            <h1>🧲 자석스티커 자동견적</h1>
+            <h1>🧲 자석스티커 견적안내</h1>
             <p>종이자석과 전체자석 스티커의 정확한 견적을 확인하세요</p>
         </div>
 
