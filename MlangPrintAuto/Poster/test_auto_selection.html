@@ -1,0 +1,190 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <title>자동 선택 테스트</title>
+    <style>
+        body { font-family: Arial, sans-serif; margin: 20px; }
+        .test-area { margin: 20px 0; padding: 15px; border: 1px solid #ddd; }
+        select { padding: 5px; margin: 5px; width: 200px; }
+        .log { background: #f5f5f5; padding: 10px; height: 300px; overflow-y: auto; margin-top: 10px; }
+        .success { color: green; }
+        .error { color: red; }
+        .info { color: blue; }
+    </style>
+</head>
+<body>
+    <h1>🔍 LittlePrint 자동 선택 테스트</h1>
+    
+    <div class="test-area">
+        <h3>드롭다운 테스트</h3>
+        
+        <label>포스터 종류:</label>
+        <select id="MY_type">
+            <option value="">선택해주세요</option>
+            <option value="590" selected>소량포스터</option>
+        </select><br>
+        
+        <label>용지 재질:</label>
+        <select id="Section">
+            <option value="">먼저 종류를 선택해주세요</option>
+        </select><br>
+        
+        <label>인쇄면:</label>
+        <select id="POtype">
+            <option value="">선택해주세요</option>
+            <option value="1">단면</option>
+            <option value="2">양면</option>
+        </select><br>
+        
+        <label>수량:</label>
+        <select id="MY_amount">
+            <option value="">먼저 재질을 선택해주세요</option>
+        </select><br>
+        
+        <button onclick="startAutoSelection()">자동 선택 시작</button>
+        <button onclick="clearLog()">로그 지우기</button>
+    </div>
+    
+    <div class="test-area">
+        <h3>실시간 로그</h3>
+        <div id="log" class="log"></div>
+    </div>
+
+    <script>
+        function log(message, type = 'info') {
+            const logDiv = document.getElementById('log');
+            const time = new Date().toLocaleTimeString();
+            const className = type;
+            logDiv.innerHTML += `<div class="${className}">[${time}] ${message}</div>`;
+            logDiv.scrollTop = logDiv.scrollHeight;
+            console.log(message);
+        }
+
+        function clearLog() {
+            document.getElementById('log').innerHTML = '';
+        }
+
+        function startAutoSelection() {
+            log('🚀 자동 선택 테스트 시작', 'info');
+            
+            const typeSelect = document.getElementById('MY_type');
+            if (typeSelect.value) {
+                log(`📝 포스터 종류 감지: ${typeSelect.value}`, 'success');
+                loadPaperTypes(typeSelect.value);
+            } else {
+                log('❌ 포스터 종류가 선택되지 않음', 'error');
+            }
+        }
+
+        function loadPaperTypes(style) {
+            log(`🔄 용지 재질 로드 시작: style=${style}`, 'info');
+            
+            fetch(`get_paper_types.php?style=${style}`)
+                .then(response => response.json())
+                .then(data => {
+                    log(`📊 용지 재질 데이터: ${JSON.stringify(data)}`, 'info');
+                    
+                    if (data.success) {
+                        const paperSelect = document.getElementById('Section');
+                        paperSelect.innerHTML = '<option value="">용지 재질을 선택해주세요</option>';
+                        
+                        data.data.forEach(option => {
+                            const optionElement = document.createElement('option');
+                            optionElement.value = option.no;
+                            optionElement.textContent = option.title;
+                            paperSelect.appendChild(optionElement);
+                        });
+                        
+                        log(`✅ 용지 재질 옵션 ${data.data.length}개 로드됨`, 'success');
+                        
+                        // 첫 번째 용지 재질 자동 선택
+                        if (data.data.length > 0) {
+                            const firstOption = data.data[0];
+                            paperSelect.value = firstOption.no;
+                            log(`🎯 첫 번째 용지 재질 자동 선택: ${firstOption.title}`, 'success');
+                            
+                            // 인쇄면도 자동 선택 (단면 기본값)
+                            const sideSelect = document.getElementById('POtype');
+                            if (sideSelect && !sideSelect.value) {
+                                sideSelect.value = '1'; // 단면
+                                log('🎯 인쇄면 자동 선택: 단면', 'success');
+                            }
+                            
+                            // 모든 필수 옵션이 선택된 후 수량 로드
+                            setTimeout(() => loadQuantities(), 500);
+                        }
+                    } else {
+                        log(`❌ 용지 재질 로드 실패: ${data.message}`, 'error');
+                    }
+                })
+                .catch(error => {
+                    log(`💥 용지 재질 로드 오류: ${error.message}`, 'error');
+                });
+        }
+
+        function loadQuantities() {
+            const typeSelect = document.getElementById('MY_type');
+            const paperSelect = document.getElementById('Section');
+            const sideSelect = document.getElementById('POtype');
+            const quantitySelect = document.getElementById('MY_amount');
+
+            const style = typeSelect.value;
+            const section = paperSelect.value;
+            const potype = sideSelect.value;
+
+            log(`🔄 수량 로드 시작: style=${style}, section=${section}, potype=${potype}`, 'info');
+
+            if (!style || !section || !potype) {
+                log('⚠️ 필수 값이 누락됨 - 수량 로드 중단', 'error');
+                return;
+            }
+
+            const url = `get_quantities.php?style=${style}&section=${section}&potype=${potype}`;
+            log(`📡 수량 API 호출: ${url}`, 'info');
+
+            fetch(url)
+                .then(response => response.json())
+                .then(data => {
+                    log(`📊 수량 데이터: ${JSON.stringify(data)}`, 'info');
+                    
+                    if (data.success) {
+                        quantitySelect.innerHTML = '<option value="">수량을 선택해주세요</option>';
+                        
+                        data.data.forEach(option => {
+                            const optionElement = document.createElement('option');
+                            optionElement.value = option.value;
+                            optionElement.textContent = option.text;
+                            quantitySelect.appendChild(optionElement);
+                        });
+                        
+                        log(`✅ 수량 옵션 ${data.data.length}개 로드됨`, 'success');
+                        
+                        // 10매 자동 선택
+                        const option10 = data.data.find(opt => opt.value === '10');
+                        if (option10) {
+                            quantitySelect.value = '10';
+                            log('🎯 기본값으로 10매 자동 선택', 'success');
+                        } else if (data.data.length > 0) {
+                            quantitySelect.value = data.data[0].value;
+                            log(`🎯 기본값으로 첫 번째 옵션 자동 선택: ${data.data[0].text}`, 'success');
+                        }
+                        
+                        log('🎉 모든 자동 선택 완료!', 'success');
+                    } else {
+                        log(`❌ 수량 로드 실패: ${data.message}`, 'error');
+                    }
+                })
+                .catch(error => {
+                    log(`💥 수량 로드 오류: ${error.message}`, 'error');
+                });
+        }
+
+        // 페이지 로드 시 자동 시작
+        window.addEventListener('DOMContentLoaded', function() {
+            log('✅ 페이지 로드 완료', 'success');
+            startAutoSelection();
+        });
+    </script>
+</body>
+</html>

@@ -1,0 +1,78 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="UTF-8">
+    <title>드롭다운 테스트</title>
+</head>
+<body>
+    <h2>드롭다운 테스트</h2>
+    
+    <form name="testForm">
+        <div>
+            <label>1. 구분:</label>
+            <select id="MY_type" name="MY_type" onchange="updatePaperTypes()">
+                <option value="">구분을 선택하세요</option>
+                <option value="590">소량포스터</option>
+            </select>
+        </div>
+        
+        <div>
+            <label>2. 종이종류:</label>
+            <select id="TreeSelect" name="TreeSelect">
+                <option value="">먼저 구분을 선택하세요</option>
+            </select>
+        </div>
+    </form>
+    
+    <div id="debug"></div>
+    
+    <script>
+        function updatePaperTypes() {
+            var form = document.forms["testForm"];
+            var categorySelect = form.MY_type;
+            var paperTypeSelect = form.TreeSelect;
+            var debugDiv = document.getElementById('debug');
+            
+            debugDiv.innerHTML = "구분 선택됨: " + categorySelect.value;
+            
+            if (!categorySelect.value) {
+                return;
+            }
+            
+            paperTypeSelect.options.length = 0;
+            paperTypeSelect.options[0] = new Option("로딩중...", "");
+            
+            var xhr = new XMLHttpRequest();
+            xhr.onreadystatechange = function () {
+                debugDiv.innerHTML += "<br>readyState: " + xhr.readyState + ", status: " + xhr.status;
+                
+                if (xhr.readyState === 4 && xhr.status === 200) {
+                    try {
+                        debugDiv.innerHTML += "<br>응답: " + xhr.responseText;
+                        var options = JSON.parse(xhr.responseText);
+                        paperTypeSelect.options.length = 0;
+                        paperTypeSelect.options[0] = new Option("종이종류를 선택하세요", "");
+                        for (var i = 0; i < options.length; i++) {
+                            paperTypeSelect.options[paperTypeSelect.options.length] = new Option(options[i].title, options[i].no);
+                        }
+                        debugDiv.innerHTML += "<br>옵션 " + options.length + "개 추가됨";
+                    } catch (e) {
+                        debugDiv.innerHTML += "<br>파싱 오류: " + e.message;
+                        paperTypeSelect.options.length = 0;
+                        paperTypeSelect.options[0] = new Option("종이종류를 선택하세요", "");
+                    }
+                } else if (xhr.readyState === 4) {
+                    debugDiv.innerHTML += "<br>AJAX 요청 실패: " + xhr.status + " " + xhr.statusText;
+                    paperTypeSelect.options.length = 0;
+                    paperTypeSelect.options[0] = new Option("종이종류를 선택하세요", "");
+                }
+            };
+            
+            var url = "get_paper_types.php?category_no=" + categorySelect.value;
+            debugDiv.innerHTML += "<br>요청 URL: " + url;
+            xhr.open("GET", url, true);
+            xhr.send();
+        }
+    </script>
+</body>
+</html>

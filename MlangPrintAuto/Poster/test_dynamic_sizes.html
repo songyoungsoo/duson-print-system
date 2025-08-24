@@ -1,0 +1,168 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <title>동적 규격 테스트</title>
+    <style>
+        body { font-family: Arial, sans-serif; margin: 20px; }
+        .test-area { margin: 20px 0; padding: 15px; border: 1px solid #ddd; }
+        select { padding: 5px; margin: 5px; width: 300px; }
+        button { padding: 10px 20px; margin: 5px; }
+        .log { background: #f5f5f5; padding: 10px; height: 400px; overflow-y: auto; margin-top: 10px; }
+        .success { color: green; }
+        .error { color: red; }
+        .info { color: blue; }
+        .highlight { background: yellow; font-weight: bold; }
+    </style>
+</head>
+<body>
+    <h1>🔍 인쇄업계 표준 규격 시스템 테스트</h1>
+    <p style="color: #666;">📐 규격: 국2절, 국전, 4절, 2절 (인쇄업계 표준)</p>
+    
+    <div class="test-area">
+        <h3>재질별 동적 규격 테스트</h3>
+        
+        <label>포스터 종류:</label>
+        <select id="MY_type">
+            <option value="590" selected>소량포스터</option>
+        </select><br>
+        
+        <label>용지 재질:</label>
+        <select id="Section">
+            <option value="">재질을 선택해주세요</option>
+            <option value="604">120아트/스노우</option>
+            <option value="605">150아트/스노우</option>
+            <option value="609">300아트/스노우</option>
+            <option value="679">80모조</option>
+            <option value="958">200g아트/스노우지</option>
+        </select><br>
+        
+        <label>규격 (동적):</label>
+        <select id="PN_type">
+            <option value="">먼저 재질을 선택해주세요</option>
+        </select><br>
+        
+        <label>인쇄면:</label>
+        <select id="POtype">
+            <option value="">선택해주세요</option>
+            <option value="1">단면</option>
+            <option value="2">양면</option>
+        </select><br>
+        
+        <label>수량:</label>
+        <select id="MY_amount">
+            <option value="">모든 옵션 선택 후 자동 로드</option>
+        </select><br><br>
+        
+        <button onclick="testAllMaterials()">🧪 모든 재질별 규격 테스트</button>
+        <button onclick="clearLog()">로그 지우기</button>
+    </div>
+    
+    <div class="test-area">
+        <h3>실시간 로그</h3>
+        <div id="log" class="log"></div>
+    </div>
+
+    <script>
+        function log(message, type = 'info') {
+            const logDiv = document.getElementById('log');
+            const time = new Date().toLocaleTimeString();
+            const className = type;
+            logDiv.innerHTML += `<div class="${className}">[${time}] ${message}</div>`;
+            logDiv.scrollTop = logDiv.scrollHeight;
+            console.log(message);
+        }
+
+        function clearLog() {
+            document.getElementById('log').innerHTML = '';
+        }
+
+        // 재질 선택 시 동적 규격 로드
+        document.getElementById('Section').addEventListener('change', function() {
+            const section = this.value;
+            const sizeSelect = document.getElementById('PN_type');
+            
+            if (!section) {
+                sizeSelect.innerHTML = '<option value="">먼저 재질을 선택해주세요</option>';
+                return;
+            }
+            
+            log(`🔄 재질 변경: ${this.options[this.selectedIndex].text} (${section})`, 'highlight');
+            log(`📡 규격 API 호출 시작...`, 'info');
+            
+            fetch(`get_paper_sizes.php?section=${section}`)
+                .then(response => response.json())
+                .then(data => {
+                    log(`📊 규격 데이터: ${JSON.stringify(data)}`, 'info');
+                    
+                    if (data.success) {
+                        sizeSelect.innerHTML = '<option value="">규격을 선택해주세요</option>';
+                        
+                        data.data.forEach(size => {
+                            const option = document.createElement('option');
+                            option.value = size.no;
+                            option.textContent = size.title;
+                            sizeSelect.appendChild(option);
+                        });
+                        
+                        log(`✅ ${data.data.length}개의 동적 규격 로드 완료!`, 'success');
+                        
+                        // 첫 번째 규격 자동 선택
+                        if (data.data.length > 0) {
+                            sizeSelect.value = data.data[0].no;
+                            log(`🎯 첫 번째 규격 자동 선택: ${data.data[0].title}`, 'success');
+                        }
+                    } else {
+                        log(`❌ 규격 로드 실패: ${data.message}`, 'error');
+                    }
+                })
+                .catch(error => {
+                    log(`💥 규격 로드 오류: ${error.message}`, 'error');
+                });
+        });
+
+        async function testAllMaterials() {
+            log('🚀 모든 재질별 규격 테스트 시작', 'highlight');
+            
+            const materials = [
+                {value: '604', name: '120아트/스노우'},
+                {value: '605', name: '150아트/스노우'},
+                {value: '609', name: '300아트/스노우'},
+                {value: '679', name: '80모조'},
+                {value: '958', name: '200g아트/스노우지'}
+            ];
+            
+            for (const material of materials) {
+                log(`\n📋 ${material.name} (${material.value}) 테스트 중...`, 'info');
+                
+                try {
+                    const response = await fetch(`get_paper_sizes.php?section=${material.value}`);
+                    const data = await response.json();
+                    
+                    if (data.success) {
+                        log(`  ✅ 성공: ${data.data.length}개 규격`, 'success');
+                        data.data.forEach((size, index) => {
+                            log(`    ${index + 1}. ${size.title} (${size.no})`, 'success');
+                        });
+                    } else {
+                        log(`  ❌ 실패: ${data.message}`, 'error');
+                    }
+                } catch (error) {
+                    log(`  💥 오류: ${error.message}`, 'error');
+                }
+                
+                // 각 테스트 간격
+                await new Promise(resolve => setTimeout(resolve, 500));
+            }
+            
+            log('\n🎉 모든 재질별 규격 테스트 완료!', 'highlight');
+        }
+
+        // 페이지 로드 시 자동 테스트
+        window.addEventListener('DOMContentLoaded', function() {
+            log('✅ 동적 규격 테스트 페이지 로드 완료', 'success');
+            log('💡 재질을 선택하면 동적으로 규격이 변경됩니다!', 'info');
+        });
+    </script>
+</body>
+</html>
