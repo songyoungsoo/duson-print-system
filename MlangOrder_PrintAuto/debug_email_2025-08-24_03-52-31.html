@@ -1,0 +1,311 @@
+
+    <!DOCTYPE html>
+    <html lang="ko">
+    <head>
+        <meta charset="UTF-8">
+        <meta name="viewport" content="width=device-width, initial-scale=1.0">
+        <title>주문 완료 안내</title>
+        <style>
+            body {
+                font-family: "Noto Sans KR", "Malgun Gothic", sans-serif;
+                line-height: 1.6;
+                color: #333;
+                margin: 0;
+                padding: 20px;
+                background-color: #f8f9fa;
+            }
+            .email-container {
+                max-width: 800px;
+                margin: 0 auto;
+                background: white;
+                border-radius: 8px;
+                overflow: hidden;
+                box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+            }
+            .email-header {
+                background: linear-gradient(135deg, #E6F3FF 0%, #F0E6FF 100%);
+                padding: 30px 20px;
+                text-align: center;
+                border-bottom: 1px solid #e1e8ed;
+            }
+            .email-header h1 {
+                margin: 0 0 10px 0;
+                font-size: 1.8rem;
+                color: #2c3e50;
+                font-weight: 700;
+            }
+            .email-header p {
+                margin: 0;
+                font-size: 1.1rem;
+                color: #566a7e;
+            }
+            .summary-section {
+                padding: 20px;
+                background: #f8f9fa;
+                border-bottom: 1px solid #e1e8ed;
+            }
+            .summary-stats {
+                display: flex;
+                justify-content: space-around;
+                text-align: center;
+                flex-wrap: wrap;
+                gap: 20px;
+            }
+            .summary-stat {
+                flex: 1;
+                min-width: 120px;
+            }
+            .summary-stat .value {
+                font-size: 1.5rem;
+                font-weight: 700;
+                color: #2c3e50;
+                margin-bottom: 5px;
+            }
+            .summary-stat .label {
+                font-size: 0.9rem;
+                color: #566a7e;
+            }
+            .order-table {
+                width: 100%;
+                border-collapse: collapse;
+                margin: 0;
+            }
+            .order-table thead th {
+                background: linear-gradient(135deg, #E6F3FF 0%, #E6FFF0 100%);
+                color: #2c3e50;
+                font-weight: 700;
+                padding: 12px 8px;
+                font-size: 0.9rem;
+                text-align: center;
+                border-bottom: 2px solid #e1e8ed;
+            }
+            .order-table tbody tr:nth-child(even) {
+                background: #FFFCE6;
+            }
+            .order-table tbody tr:nth-child(odd) {
+                background: #E6FFF0;
+            }
+            .order-table td {
+                padding: 12px 8px;
+                border-bottom: 1px solid #e1e8ed;
+                font-size: 0.85rem;
+                vertical-align: top;
+            }
+            .col-order-no {
+                width: 10%;
+                text-align: center;
+                font-weight: 600;
+                color: #667eea;
+            }
+            .col-product {
+                width: 25%;
+                font-weight: 600;
+            }
+            .col-details {
+                width: 35%;
+                line-height: 1.4;
+            }
+            .col-quantity {
+                width: 10%;
+                text-align: center;
+            }
+            .col-price {
+                width: 15%;
+                text-align: right;
+                font-weight: 600;
+                color: #e74c3c;
+            }
+            .col-date {
+                width: 15%;
+                text-align: center;
+                font-size: 0.8rem;
+            }
+            .product-options {
+                margin-top: 5px;
+                padding: 8px;
+                background: rgba(255,255,255,0.7);
+                border-radius: 4px;
+                font-size: 0.75rem;
+                line-height: 1.3;
+            }
+            .option-item {
+                display: inline-block;
+                margin-right: 10px;
+                margin-bottom: 3px;
+                padding: 2px 6px;
+                background: rgba(102, 126, 234, 0.1);
+                border-radius: 3px;
+                color: #566a7e;
+            }
+            .request-note {
+                margin-top: 5px;
+                padding: 6px;
+                background: #FFFCE6;
+                border-left: 3px solid #ffc107;
+                border-radius: 3px;
+                font-size: 0.75rem;
+                color: #856404;
+            }
+            .info-section {
+                padding: 20px;
+                display: flex;
+                gap: 40px;
+                background: #f8f9fa;
+                border-top: 1px solid #e1e8ed;
+            }
+            .info-column {
+                flex: 1;
+            }
+            .info-column h3 {
+                margin: 0 0 15px 0;
+                font-size: 1.1rem;
+                color: #2c3e50;
+                font-weight: 600;
+            }
+            .info-row {
+                display: flex;
+                margin-bottom: 8px;
+                font-size: 0.9rem;
+            }
+            .info-label {
+                width: 80px;
+                font-weight: 600;
+                color: #566a7e;
+            }
+            .info-value {
+                flex: 1;
+                color: #2c3e50;
+            }
+            .footer-section {
+                padding: 20px;
+                text-align: center;
+                background: linear-gradient(135deg, #E6F3FF 0%, #F0E6FF 100%);
+                color: #566a7e;
+                font-size: 0.85rem;
+                line-height: 1.5;
+            }
+            .company-info {
+                margin-top: 15px;
+                padding-top: 15px;
+                border-top: 1px solid #e1e8ed;
+            }
+            @media (max-width: 600px) {
+                .summary-stats {
+                    flex-direction: column;
+                }
+                .info-section {
+                    flex-direction: column;
+                    gap: 20px;
+                }
+                .order-table {
+                    font-size: 0.75rem;
+                }
+                .order-table td {
+                    padding: 8px 4px;
+                }
+            }
+        </style>
+    </head>
+    <body>
+        <div class="email-container">
+            <!-- 헤더 -->
+            <div class="email-header">
+                <h1>🎉 주문이 완료되었습니다!</h1>
+                <p>관리자 고객님, 소중한 주문 감사합니다.</p>
+            </div>
+            
+            <!-- 요약 섹션 -->
+            <div class="summary-section">
+                <div class="summary-stats">
+                    <div class="summary-stat">
+                        <div class="value">1건</div>
+                        <div class="label">주문 건수</div>
+                    </div>
+                    <div class="summary-stat">
+                        <div class="value">49,000원</div>
+                        <div class="label">총 주문금액</div>
+                    </div>
+                    <div class="summary-stat">
+                        <div class="value">53,900원</div>
+                        <div class="label">VAT 포함 총액</div>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- 주문 상세 테이블 -->
+            <table class="order-table">
+                <thead>
+                    <tr>
+                        <th class="col-order-no">주문번호</th>
+                        <th class="col-product">상품명</th>
+                        <th class="col-details">상세 옵션</th>
+                        <th class="col-quantity">수량</th>
+                        <th class="col-price">금액(VAT포함)</th>
+                        <th class="col-date">주문일시</th>
+                    </tr>
+                </thead>
+                <tbody><tr><td class="col-order-no">#90006</td><td class="col-product">전단지</td><td class="col-details"><div class="product-options"><span class="option-item">인쇄색상: 칼라인쇄(CMYK)</span><span class="option-item">종이종류: 100g아트지(90g~95g A/T(합판인쇄)</span><span class="option-item">종이규격: A4 (210x297)</span><span class="option-item">인쇄면: 단면</span><span class="option-item">수량: 0.5매</span></div></td><td class="col-quantity">1</td><td class="col-price">53,900원</td><td class="col-date">08/24 03:52</td></tr></tbody>
+            </table>
+            
+            <!-- 고객정보 및 입금안내 -->
+            <div class="info-section">
+                <div class="info-column">
+                    <h3>👤 고객 정보</h3>
+                    <div class="info-row">
+                        <div class="info-label">성명:</div>
+                        <div class="info-value">관리자</div>
+                    </div>
+                    <div class="info-row">
+                        <div class="info-label">이메일:</div>
+                        <div class="info-value">ysungx@naver.com</div>
+                    </div>
+                    <div class="info-row">
+                        <div class="info-label">연락처:</div>
+                        <div class="info-value">01052943021</div>
+                    </div>
+                    <div class="info-row">
+                        <div class="info-label">주소:</div>
+                        <div class="info-value">(07301) 서울 영등포구 영등포로36길 9   (영등포동4가)</div>
+                    </div>
+                </div>
+                
+                <div class="info-column">
+                    <h3>💳 입금 안내</h3>
+                    <div class="info-row">
+                        <div class="info-label">예금주:</div>
+                        <div class="info-value">두손기획인쇄 차경선</div>
+                    </div>
+                    <div class="info-row">
+                        <div class="info-label">국민은행:</div>
+                        <div class="info-value">999-1688-2384</div>
+                    </div>
+                    <div class="info-row">
+                        <div class="info-label">신한은행:</div>
+                        <div class="info-value">110-342-543507</div>
+                    </div>
+                    <div class="info-row">
+                        <div class="info-label">농협:</div>
+                        <div class="info-value">301-2632-1829</div>
+                    </div>
+                    <div class="info-row">
+                        <div class="info-label">카드결제:</div>
+                        <div class="info-value">1688-2384 전화</div>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- 푸터 -->
+            <div class="footer-section">
+                <p><strong>⚠️ 입금 확인 후 작업이 시작됩니다.</strong></p>
+                <p>입금자명을 주문자명과 동일하게 해주세요.</p>
+                
+                <div class="company-info">
+                    <p><strong>두손기획인쇄</strong></p>
+                    <p>📞 02-2632-1830, 1688-2384</p>
+                    <p>📍 서울 영등포구 영등포로 36길 9, 송호빌딩 1F</p>
+                    <p>🌐 www.dsp114.com</p>
+                </div>
+            </div>
+        </div>
+    </body>
+    </html>

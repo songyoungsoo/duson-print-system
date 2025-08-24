@@ -1,0 +1,27 @@
+# 두손기획인쇄 robots.txt
+# Created: 2025-08-23
+
+User-agent: *
+Allow: /
+
+# 크롤링 차단할 디렉토리
+Disallow: /admin/
+Disallow: /includes/
+Disallow: /uploads/
+Disallow: /.git/
+Disallow: /.kiro/
+Disallow: /bbs/upload/
+Disallow: /MlangOrder_PrintAuto/upload/
+
+# 검색엔진별 크롤러 허용
+User-agent: Googlebot
+Allow: /
+
+User-agent: Yeti
+Allow: /
+
+User-agent: Bingbot
+Allow: /
+
+# 사이트맵 위치
+Sitemap: https://www.dsp114.com/sitemap.xml

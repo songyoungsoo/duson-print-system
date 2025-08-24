@@ -1,5 +1,5 @@
-<?php
-header("Content-Type:text/html; charset=UTF-8"); 
+<?
+header("Content-Type:text/html; charset=euc-kr"); 
    session_start(); 
    $session_id = session_id(); 
      function assa($msg){
@@ -42,8 +42,8 @@ header("Content-Type:text/html; charset=UTF-8");
    }	
 	if(10000<$mesu) mesu('1만매 이상은 할인가 적용-전화주시기바랍니다');
 		
-include "../lib/func.php"; 
-   $connect = dbconn();
+include "../db.php"; 
+   $connect = $db;
    $regdate = time();
    $ab=$mesu;
    $gase=$garo*$sero;
@@ -68,23 +68,26 @@ echo $j1;
 	if($j=='금박스티커') assa2('금박스티커는 전화 또는 메일로 견적 문의하세요');
 	if($j=='롤형스티커') assa2('롤스티커는 전화 또는 메일로 견적 문의하세요');		
 	// if($j=='크라프트지') assa2('크라프트스티커는 전화 또는 메일로 견적 문의하세요');
-if ($j1 == 'jil') {   
-    $query  = "SELECT * FROM shop_d1"; 
-    $result = mysqli_query($connect, $query); 
-    $data = mysqli_fetch_array($result); 
-} else if ($j1 == 'jka') {   
-    $query  = "SELECT * FROM shop_d2"; 
-    $result = mysqli_query($connect, $query); 
-    $data = mysqli_fetch_array($result); 
-} else if ($j1 == 'jsp') {   
-    $query  = "SELECT * FROM shop_d3"; 
-    $result = mysqli_query($connect, $query); 
-    $data = mysqli_fetch_array($result); 
-} else if ($j1 == 'cka') {   
-    $query  = "SELECT * FROM shop_d4"; 
-    $result = mysqli_query($connect, $query); 
-    $data = mysqli_fetch_array($result); 
-}
+if($j1==jil){   
+   $query  = "select * from shop_d1"; 
+   $result =mysql_query($query, $connect); 
+   $data = mysql_fetch_array($result); 
+    }
+	else if($j1==jka){   
+   $query  = "select * from shop_d2"; 
+   $result =mysql_query($query, $connect); 
+   $data = mysql_fetch_array($result); 
+    }
+	else if($j1==jsp){   
+   $query  = "select * from shop_d3"; 
+   $result =mysql_query($query, $connect); 
+   $data = mysql_fetch_array($result); 
+    }
+	else if($j1==cka){   
+	$query  = "select * from shop_d4"; 
+	$result =mysql_query($query, $connect); 
+	$data = mysql_fetch_array($result); 
+	}
 
 
     if($ab<=1000){
@@ -114,32 +117,7 @@ if ($j1 == 'jil') {
 	if($ab>50000){
 	   $yoyo=$data[6];
 	   $mg=5000;//0.11_yoyo는 요율
-	   }
-
-//	 if($garo<=49 || $sero<=49){//가로나 세로 사이즈 50mm이하는 톰슨비7000원추가
-//	    $add=8000;//이전은5000이었음
-//	    }
-
-	// if (($garo < 50 || $sero < 60) && ($garo < 60 || $sero < 50)){ //사이즈에 따른 강제 도무송비용
-	// 	$add = 8000; 
-	// }
-//	if(($garo%5)==0 and ($sero%5)==0){//나눈 몫의 나머지가 0으로 떨어지지 않으면
-//	   $add1=0;
-//	   }
-//	   
-//	if(($garo%5)>0 || ($sero%5)>0){
-//	   $add1=8000;//이전은5000이었음
-//	   }   
-	   
-	   
-    // if($d1>0){//도무송이 있으면 귀돌이 면제
-	//    $add=0;
-    //    $add1=0;
-	//    }
-
-//	if(($add1+$add)==16000){//50mm이하와 5mm이하가 중복이면 한번만 추가하도록하기위해서...
-//	   $add1=0;	   
-//	  } 	
+	   }	
 	   
 	if($j1=='jsp' || $j1=='jka' ||  $j1=='cka'){//재질이 특수지나 강접이나 초강접 인경우 톰슨비용추가
 	   $ts=14;//이전은6이었음
@@ -187,24 +165,7 @@ if ($add > 0 && $mesu == 500) {
 } else {
     $add = 0;
 }
-//   if($add>0){
-//	  $add = ($add+($d2*20))*$mesu/1000+($mesu*$ts);
-//   }else{
-//	   $add = 0;
-//   }
-//톰슨칼+톰슨비용-5mm이하일때(치수가 5단위 이하일때)
-//if ($add1 > 0 && $mesu == 1000) {
-//    $add1 = (($add1 + ($d2 * 20)) * $mesu / 1000) + ($mesu * $ts);
-//} elseif ($add1 > 0 && $mesu > 1000) {
-//    $add1 = (($add1 + ($d2 * 20)) * $mesu / 1000) + ($mesu * ($ts / 9));
-//} else {
-//    $add1 = 0;
-//}
-//  if($add1>0){
-//	  $add1 = ($add1+($d2*20))*$mesu/1000+($mesu*$ts);
-//   }else{
-//	   $add1 = 0;
-//   }
+
 //특수용지기본비용   
 
    if($j1=='jsp' && $mesu == 500 ){
@@ -251,8 +212,8 @@ echo "
 	
    $query = "insert into shop_temp(session_id,parent,jong,garo,sero,mesu,domusong,uhyung,st_price,st_price_vat,regdate)
          values('$session_id','$no','$jong','$garo','$sero','$mesu','$domusong','$uhyung','$st_price','$st_price_vat','$regdate')";
-   mysqli_query($connect, $query);
-   mysqli_close($connect);  
+   mysql_query($query,$connect);
+   mysql_close($connect);  
   
   ?> 
 <script>
