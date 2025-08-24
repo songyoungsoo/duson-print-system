@@ -1,0 +1,54 @@
+<?php
+	include("$DOCUMENT_ROOT/sub/dbConn.inc");
+
+	$sql = " select * from design where no='$no'";
+	$result=mysql_query("$sql");
+	$row = mysql_fetch_array($result);
+	
+	$kind = $row["kind"];
+	$atch1 = $row["file1"];
+	$atch2 = $row["file2"];	
+	$atch3 = $row["file3"];
+	$atch4 = $row["file4"];
+	$atch5 = $row["file5"];
+
+?>
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.0 Transitional//EN">
+<HTML>
+<HEAD>
+<TITLE> New Document </TITLE>
+<META NAME="Generator" CONTENT="EditPlus">
+<META NAME="Author" CONTENT="">
+<META NAME="Keywords" CONTENT="">
+<META NAME="Description" CONTENT="">
+<style type="text/css">
+<!--
+body {
+	font-size: 12px;
+}
+</style>
+</HEAD>
+
+<BODY>
+<?php
+	$upDir = "/upDesign/$kind/";	
+	for ($i=1;$i<=5;$i++){
+		echo("<br>");
+		$file = "atch".$i;
+		$url = "$upDir".$$file;
+		if($$file != ""){
+			if(strtolower(trim(substr($$file,-3)))=="gif" || strtolower(trim(substr($$file,-3)))=="jpg" || strtolower(trim(substr($$file,-3)))=="bmp"){
+				echo ("&nbsp;&nbsp;������ $i<br>&nbsp;
+					<img src='$url'><br>");
+			}
+			else{
+				echo "&nbsp;&nbsp;������ $i : <a href=$upDir".$$file." target='_blank'>".$$file."</a>";
+			}
+		}
+		else {
+			break;
+		}
+	}
+	?>
+</BODY>
+</HTML>
