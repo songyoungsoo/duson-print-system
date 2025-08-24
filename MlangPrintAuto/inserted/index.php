@@ -42,7 +42,7 @@ check_db_connection($db);
 $log_info = generateLogInfo();
 
 // 공통 인증 시스템 사용
-include "../../includes/auth.php";
+include "../includes/auth.php";
 $is_logged_in = isLoggedIn() || isset($_SESSION['id_login_ok']) || isset($_COOKIE['id_login_ok']);
 
 // 사용자 정보 설정

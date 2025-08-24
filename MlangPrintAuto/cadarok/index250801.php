@@ -25,7 +25,7 @@ if (!$db) {
 }
 
 // 공통 인증 시스템
-include "../../includes/auth.php";
+include "../includes/auth.php";
 
 // 로그인 상태 확인
 $is_logged_in = isLoggedIn();

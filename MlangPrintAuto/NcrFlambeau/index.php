@@ -38,7 +38,7 @@ $login_message = '';
 $is_logged_in = isset($_SESSION['user_id']) || isset($_SESSION['id_login_ok']) || isset($_COOKIE['id_login_ok']);
 
 // 공통 인증 시스템 사용
-include "../../includes/auth.php";
+include "../includes/auth.php";
 
 // 사용자 정보 설정
 if (isset($_SESSION['user_id'])) {
