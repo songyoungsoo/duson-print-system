@@ -104,3 +104,9 @@ node_modules/
 test*/
 *test*
 playwright-report/
+uploads/
+*.jpg
+*.png
+*.gif
+MlangOrder_PrintAuto/upload/
+MlangOrder_PrintAuto/img/

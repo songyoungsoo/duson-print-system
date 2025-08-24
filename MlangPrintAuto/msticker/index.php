@@ -3,6 +3,9 @@
 include "../../includes/functions.php";
 include "../../db.php";
 
+// 공통 인증 시스템
+include "../../includes/auth.php";
+
 // 파일 업로드 컴포넌트 포함
 include "../../includes/FileUploadComponent.php";
 
@@ -13,19 +16,6 @@ mysqli_set_charset($db, "utf8");
 
 // 로그 정보 생성
 $log_info = generateLogInfo();
-
-// 로그인 처리
-$login_message = '';
-if ($_POST['login_action'] ?? '' === 'login') {
-    $username = $_POST['username'] ?? '';
-    $password = $_POST['password'] ?? '';
-    
-    if (!empty($username) && !empty($password)) {
-        $login_message = '로그인 성공! 환영합니다.';
-    } else {
-        $login_message = '아이디와 비밀번호를 입력해주세요.';
-    }
-}
 
 // 페이지 제목 설정
 $page_title = generate_page_title("자석스티커 견적안내");
