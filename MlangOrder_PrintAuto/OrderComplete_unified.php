@@ -1,13 +1,14 @@
 <?php
 /**
- * 통합 장바구니 주문 완료 페이지 (리다이렉트)
- * 새로운 사무용 표형태 페이지로 자동 리다이렉트
+ * 통합 OrderComplete 시스템 - Universal Version
+ * 모든 상품 타입에 대해 스마트 "계속 쇼핑하기" 기능 제공
+ * 마지막 주문 상품 페이지로 이동하는 공통 시스템
  * 경로: MlangOrder_PrintAuto/OrderComplete_unified.php
  */
 
-// 새로운 사무용 표형태 페이지로 리다이렉트
+// 새로운 universal 시스템으로 리다이렉트
 $query_string = $_SERVER['QUERY_STRING'];
-$redirect_url = 'OrderComplete_office_table.php';
+$redirect_url = 'OrderComplete_universal.php';
 if (!empty($query_string)) {
     $redirect_url .= '?' . $query_string;
 }

@@ -1,5 +1,11 @@
 <?php
-require 'PHPMailer/PHPMailerAutoload.php';
+require 'PHPMailer/PHPMailer.php';
+require 'PHPMailer/SMTP.php';
+require 'PHPMailer/Exception.php';
+
+use PHPMailer\PHPMailer\PHPMailer;
+use PHPMailer\PHPMailer\SMTP;
+use PHPMailer\PHPMailer\Exception;
 
 function mailer($fname, $fmail, $to, $subject, $content, $type = 1, $file = [], $cc = "", $bcc = "")
 {
@@ -7,35 +13,66 @@ function mailer($fname, $fmail, $to, $subject, $content, $type = 1, $file = [], 
         $content = nl2br($content);
     }
 
-    $mail = new PHPMailer();
-    $mail->isSMTP();
-    $mail->SMTPDebug = 0;
-    $mail->SMTPSecure = "ssl";
-    $mail->SMTPAuth = true;
-    $mail->Host = "smtp.naver.com";
-    $mail->Port = 465;
-    $mail->Username = "dsp1830";
-    $mail->Password = "asd741010*";
+    try {
+        $mail = new PHPMailer(true); // 예외 활성화
+        
+        // 서버 설정
+        $mail->isSMTP();
+        $mail->SMTPDebug = 0;
+        $mail->Host = "smtp.naver.com";
+        $mail->SMTPAuth = true;
+        $mail->Username = "dsp1830";
+        $mail->Password = "asd741010*";
+        $mail->SMTPSecure = "ssl";
+        $mail->Port = 465;
+        
+        // 타임아웃 설정
+        $mail->Timeout = 30;
+        $mail->SMTPOptions = array(
+            'ssl' => array(
+                'verify_peer' => false,
+                'verify_peer_name' => false,
+                'allow_self_signed' => true
+            )
+        );
 
-    $mail->CharSet = "UTF-8";
-    $mail->setFrom($fmail, $fname);
-    $mail->Subject = $subject;
-    $mail->msgHTML($content);
-    $mail->addAddress($to);
+        // 발신자 설정
+        $mail->CharSet = "UTF-8";
+        $mail->setFrom($fmail, $fname);
+        
+        // 수신자 설정
+        $mail->addAddress($to);
+        
+        if (!empty($cc)) {
+            $mail->addCC($cc);
+        }
 
-    if (!empty($cc)) {
-        $mail->addCC($cc);
+        if (!empty($bcc)) {
+            $mail->addBCC($bcc);
+        }
+        
+        // 메일 내용
+        $mail->isHTML(true);
+        $mail->Subject = $subject;
+        $mail->Body = $content;
+
+        // 첨부파일
+        if (is_array($file)) {
+            foreach ($file as $f) {
+                if (isset($f['path']) && isset($f['name'])) {
+                    $mail->addAttachment($f['path'], $f['name']);
+                }
+            }
+        }
+
+        $result = $mail->send();
+        return $result;
+        
+    } catch (Exception $e) {
+        // 로그에 에러 기록 (실제 서비스에서는 로그 파일에 기록)
+        error_log("Mailer Error: " . $e->getMessage());
+        return false;
     }
-
-    if (!empty($bcc)) {
-        $mail->addBCC($bcc);
-    }
-
-    foreach ($file as $f) {
-        $mail->addAttachment($f['path'], $f['name']);
-    }
-
-    return $mail->send();
 }
 
 function attach_file($filename, $tmp_name)
