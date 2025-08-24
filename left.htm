@@ -1,0 +1,120 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+  <meta charset="UTF-8">
+  <title>세로 네모형 메뉴 (Active 유지)</title>
+<style>
+  /* 8. 좌측 메뉴(.vertical-menu) 통합 */
+.vertical-menu {
+  list-style:none; padding:0; width:160px;
+}
+.vertical-menu li { margin-bottom:2px; }
+.vertical-menu a {
+  display:block; padding:14px; background:#fff;
+  border:1px solid #ccc; border-radius:3px;
+  color:#333; text-align:center;
+  font-size:16px; font-weight:700;
+  transition: background .2s, transform .2s;
+}
+.vertical-menu a:hover { transform: translateX(6px); }
+.vertical-menu .order-btn { background:#000; color:#fff; font-size:20px; }
+.vertical-menu .order-btn:hover { background:#B71C1C; }
+/* 카테고리별 호버 색상 */
+.vertical-menu a.sticker:hover   { background:#4CAF50; color:#fff; }
+.vertical-menu a.leaflet:hover   { background:#FF9800; color:#fff; }
+.vertical-menu a.magnet:hover    { background:#03A9F4; color:#fff; }
+.vertical-menu a.business:hover  { background:#9C27B0; color:#fff; }
+.vertical-menu a.coupon:hover    { background:#E91E63; color:#fff; }
+.vertical-menu a.envelope:hover  { background:#795548; color:#fff; }
+.vertical-menu a.form:hover      { background:#607D8B; color:#fff; }
+.vertical-menu a.catalog:hover   { background:#8BC34A; color:#fff; }
+.vertical-menu a.poster:hover    { background:#FF5722; color:#fff; }
+/* Active 상태 */
+.vertical-menu a.active { color:#fff; transform:none; }
+.vertical-menu a.active.sticker   { background:#4CAF50; }
+.vertical-menu a.active.leaflet   { background:#FF9800; }
+.vertical-menu a.active.magnet    { background:#03A9F4; }
+.vertical-menu a.active.business  { background:#9C27B0; }
+.vertical-menu a.active.coupon    { background:#E91E63; }
+.vertical-menu a.active.envelope  { background:#795548; }
+.vertical-menu a.active.form      { background:#607D8B; }
+.vertical-menu a.active.catalog   { background:#8BC34A; }
+.vertical-menu a.active.poster    { background:#FF5722; }
+</style>
+</head>
+<body>
+
+<!-- <ul class="vertical-menu">
+  <li><a href="/MlangPrintAuto/inserted/index.php" class="order-btn">견적주문</a></li>
+  <li><a href="/shop/view.php"      class="sticker">스티커</a></li>
+  <li><a href="/MlangPrintAuto/inserted/index.php" class="leaflet">전단지<br>리플렛</a></li>
+  <li><a href="/MlangPrintAuto/sticker/index.php"  class="magnet">종이자석<br>전체자석</a></li>
+  <li><a href="/MlangPrintAuto/NameCard/index.php" class="business">명함</a></li>
+  <li><a href="/MlangPrintAuto/MerchandiseBond/index.php" class="coupon">쿠폰</a></li>
+  <li><a href="/MlangPrintAuto/envelope/index.php" class="envelope">봉투</a></li>
+  <li><a href="/MlangPrintAuto/NcrFlambeau/index.php"  class="form">양식지</a></li>
+  <li><a href="/MlangPrintAuto/cadarok/index.php" class="catalog">카다록</a></li>
+  <li><a href="/MlangPrintAuto/LittlePrint/index.php" class="poster">포스터</a></li>
+</ul> -->
+<!-- /MlangPrintAuto/left.htm -->
+<ul class="vertical-menu">
+    <li><a href="/MlangPrintAuto/inserted/index.php" class="order-btn">견적주문</a></li>
+  <li>
+    <!-- 전단지·리플렛 계산기를 기본(default)으로 사용하고 싶다면
+         ?page=inserted 로 지정하거나, 아예 파라미터 없이 index.php만 사용해도 됩니다. -->
+    <a href="/MlangPrintAuto/inserted/index.php?page=inserted" class="leaflet">
+      전단지<br>리플렛
+    </a>
+  </li>
+  <li>
+    <a href="/shop/view.php"" class="sticker">
+      스티커
+    </a>
+  </li>
+  <li>
+    <a href="/main_layout.php?page=NameCard" class="business">
+      명함
+    </a>
+  </li>
+  <li>
+    <a href="/MlangPrintAuto/MerchandiseBond/index.php?page=MerchandiseBond" class="coupon">
+      쿠폰
+    </a>
+  </li>
+  <li>
+    <a href="/MlangPrintAuto/envelope/index.php?page=envelope" class="envelope">
+      봉투
+    </a>
+  </li>
+  <li>
+    <a href="/MlangPrintAuto/NcrFlambeau/index.php?page=NcrFlambeau" class="form">
+      양식지
+    </a>
+  </li>
+  <li>
+    <a href="/MlangPrintAuto/cadarok/index.php?page=cadarok" class="catalog">
+      카다록
+    </a>
+  </li>
+  <li>
+    <a href="/MlangPrintAuto/LittlePrint/index.php?page=LittlePrint" class="poster">
+      포스터
+    </a>
+  </li>
+</ul>
+
+<script>
+  // 현재 페이지 URL과 일치하는 메뉴에 active 클래스 추가
+  document.addEventListener('DOMContentLoaded', function() {
+    const links = document.querySelectorAll('.vertical-menu a');
+    const currentPath = window.location.pathname;
+    links.forEach(link => {
+      if (link.getAttribute('href') === currentPath) {
+        link.classList.add('active');
+      }
+    });
+  });
+</script>
+
+</body>
+</html>
