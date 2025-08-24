@@ -37,65 +37,11 @@ check_db_connection($db);
 // 로그 정보 생성
 $log_info = generateLogInfo();
 
-// 로그인 처리 (auth.php 대신 로컬 처리 - NCR 패턴)
-$login_message = '';
-$is_logged_in = isset($_SESSION['user_id']) || isset($_SESSION['id_login_ok']) || isset($_COOKIE['id_login_ok']);
+// 공통 인증 시스템
+include "../../includes/auth.php";
 
-// POST 요청 처리 (로그인)
-if ($_SERVER['REQUEST_METHOD'] == 'POST' && isset($_POST['login_action'])) {
-    $username = trim($_POST['username'] ?? '');
-    $password = trim($_POST['password'] ?? '');
-    
-    if (!empty($username) && !empty($password)) {
-        // 신규 users 테이블에서 확인
-        $query = "SELECT * FROM users WHERE username = ? OR member_id = ?";
-        $stmt = mysqli_prepare($connect, $query);
-        mysqli_stmt_bind_param($stmt, "ss", $username, $username);
-        mysqli_stmt_execute($stmt);
-        $result = mysqli_stmt_get_result($stmt);
-        
-        if ($user = mysqli_fetch_assoc($result)) {
-            $login_success = false;
-            
-            // 해시된 비밀번호 확인
-            if (password_verify($password, $user['password'])) {
-                $login_success = true;
-            }
-            // 기존 평문 비밀번호 확인 (호환성)
-            elseif (!empty($user['old_password']) && $password === $user['old_password']) {
-                $login_success = true;
-            }
-            
-            if ($login_success) {
-                // 세션 설정
-                $_SESSION['user_id'] = $user['id'];
-                $_SESSION['username'] = $user['username'];
-                $_SESSION['user_name'] = $user['name'];
-                $_SESSION['id_login_ok'] = array('id' => $user['username'], 'pass' => $password);
-                setcookie("id_login_ok", $user['username'], 0, "/");
-                
-                // 페이지 리다이렉트 (새로고침 대신)
-                header("Location: " . $_SERVER['REQUEST_URI']);
-                exit;
-            }
-        }
-        
-        $login_message = '아이디 또는 비밀번호가 올바르지 않습니다.';
-    } else {
-        $login_message = '아이디와 비밀번호를 입력해주세요.';
-    }
-}
-
-// 사용자 정보 설정
-if (isset($_SESSION['user_id'])) {
-    $user_name = $_SESSION['user_name'] ?? '';
-} elseif (isset($_SESSION['id_login_ok'])) {
-    $user_name = $_SESSION['id_login_ok']['id'] ?? '';
-} elseif (isset($_COOKIE['id_login_ok'])) {
-    $user_name = $_COOKIE['id_login_ok'];
-} else {
-    $user_name = '';
-}
+// 로그인 상태 확인
+$is_logged_in = isLoggedIn();
 
 // 드롭다운 옵션을 가져오는 함수들 (컴팩트 전용 - 함수명 변경으로 충돌 방지)
 function getLeafletColorOptions($connect, $GGTABLE, $page) {
