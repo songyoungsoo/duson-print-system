@@ -9,6 +9,7 @@ $connect = $db;
 // 페이지 설정
 $page_title = '🔍 두손기획인쇄 - 교정사항 확인';
 $current_page = 'checkboard';
+$additional_css = ['/css/checkboard.css'];
 
 // UTF-8 설정
 if ($connect) {
@@ -33,10 +34,20 @@ if (function_exists('generateLogInfo')) {
     $log_info = generateLogInfo();
 }
 
-// 공통 인증 처리는 필요시에만 포함 (비회원 접근 허용)
-// if (file_exists("../includes/auth.php")) {
-//     include "../includes/auth.php";
-// }
+// 공통 인증 처리 포함 (통합 로그인 시스템)
+if (file_exists("../includes/auth.php")) {
+    include "../includes/auth.php";
+}
+
+// 관리자 로그인 체크
+$is_admin = false;
+if (isset($_SESSION['user_level']) && $_SESSION['user_level'] == '1') {
+    $is_admin = true;
+} elseif (isset($_SESSION['username']) && $_SESSION['username'] == 'admin') {
+    $is_admin = true;
+} elseif (isset($_SESSION['level']) && $_SESSION['level'] == '1') {
+    $is_admin = true;
+}
 
 // 캐시 방지 헤더
 header("Cache-Control: no-cache, no-store, must-revalidate");
@@ -93,8 +104,8 @@ if (!empty($params)) {
 $total_orders = mysqli_fetch_array($count_result)['total'];
 $total_pages = ceil($total_orders / $limit);
 
-// 주문 목록 조회
-$query = "SELECT * FROM MlangOrder_PrintAuto {$where_clause} ORDER BY no DESC LIMIT ? OFFSET ?";
+// 주문 목록 조회 (교정확정 정보 포함)
+$query = "SELECT *, IFNULL(proofreading_confirmed, 0) as proofreading_confirmed FROM MlangOrder_PrintAuto {$where_clause} ORDER BY no DESC LIMIT ? OFFSET ?";
 $final_params = array_merge($params, [$limit, $offset]);
 $final_param_types = $param_types . 'ii';
 
@@ -110,17 +121,9 @@ while ($row = mysqli_fetch_array($result)) {
     $all_orders[] = $row;
 }
 
-// 공통 헤더 포함
-if (file_exists("../includes/header.php")) {
-    include "../includes/header.php";
-} else {
-    // 기본 HTML 헤더
-    echo '<!DOCTYPE html><html lang="ko"><head><meta charset="UTF-8"><title>' . $page_title . '</title></head><body>';
-}
-
-if (file_exists("../includes/nav.php")) {
-    include "../includes/nav.php";
-}
+// 통합 헤더 시스템 사용
+include "../includes/header.php";
+include "../includes/nav.php";
 
 // 로그인 모달 포함
 if (file_exists("../includes/login_modal.php")) {
@@ -131,462 +134,8 @@ if (file_exists("../includes/login_modal.php")) {
 echo '<meta name="session-id" content="' . htmlspecialchars($session_id) . '">';
 ?>
 
-<style>
-/* 교정사항 확인 페이지 전용 스타일 */
-.checkboard-container {
-    max-width: 1200px;
-    margin: 0 auto;
-    padding: 15px;
-    background: white;
-    border-radius: 8px;
-    box-shadow: 0 2px 12px rgba(0,0,0,0.08);
-    width: calc(100% - 30px);
-}
-
-.auth-section {
-    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-    padding: 30px;
-    border-radius: 12px;
-    margin-bottom: 30px;
-    color: white;
-    text-align: center;
-}
-
-.auth-form {
-    display: flex;
-    justify-content: center;
-    align-items: center;
-    gap: 15px;
-    margin-top: 20px;
-    flex-wrap: wrap;
-}
-
-.auth-input {
-    padding: 12px 20px;
-    border: none;
-    border-radius: 8px;
-    font-size: 16px;
-    width: 200px;
-    text-align: center;
-}
-
-.auth-btn {
-    background: rgba(255,255,255,0.2);
-    color: white;
-    border: 2px solid rgba(255,255,255,0.3);
-    padding: 12px 30px;
-    border-radius: 8px;
-    font-size: 16px;
-    font-weight: 600;
-    cursor: pointer;
-    transition: all 0.3s ease;
-}
-
-.auth-btn:hover {
-    background: rgba(255,255,255,0.3);
-    border-color: rgba(255,255,255,0.5);
-}
-
-.error-message {
-    background: #ff6b6b;
-    color: white;
-    padding: 15px;
-    border-radius: 8px;
-    margin: 20px 0;
-    text-align: center;
-}
-
-/* 검색 섹션 스타일 */
-.search-section {
-    background: #f8f9fa;
-    border-radius: 6px;
-    padding: 15px;
-    margin-bottom: 15px;
-    box-shadow: 0 1px 4px rgba(0,0,0,0.04);
-    border: 1px solid #e9ecef;
-}
-
-.search-form {
-    margin-bottom: 15px;
-}
-
-.search-row {
-    display: grid;
-    grid-template-columns: 1fr 1fr 1fr auto;
-    gap: 12px;
-    align-items: end;
-}
-
-.search-field {
-    display: flex;
-    flex-direction: column;
-}
-
-.search-field label {
-    font-weight: 600;
-    color: #2c3e50;
-    margin-bottom: 5px;
-    font-size: 0.9rem;
-}
-
-.search-field input,
-.search-field select {
-    padding: 8px;
-    border: 1px solid #ddd;
-    border-radius: 4px;
-    font-size: 0.9rem;
-}
-
-.search-buttons {
-    display: flex;
-    gap: 10px;
-}
-
-.search-btn,
-.reset-btn {
-    padding: 10px 20px;
-    border-radius: 6px;
-    font-size: 0.9rem;
-    font-weight: 600;
-    text-decoration: none;
-    cursor: pointer;
-    transition: all 0.3s ease;
-}
-
-.search-btn {
-    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-    color: white;
-    border: none;
-}
-
-.search-btn:hover {
-    opacity: 0.9;
-    transform: translateY(-1px);
-}
-
-.reset-btn {
-    background: #f8f9fa;
-    color: #666;
-    border: 1px solid #ddd;
-}
-
-.reset-btn:hover {
-    background: #e9ecef;
-}
-
-.result-info {
-    color: #666;
-    font-size: 0.85rem;
-    text-align: center;
-    padding: 8px;
-    background: #e9ecef;
-    border-radius: 4px;
-    margin-top: 10px;
-}
-
-/* 페이지네이션 스타일 */
-.pagination {
-    display: flex;
-    justify-content: center;
-    align-items: center;
-    gap: 3px;
-    margin: 20px 0 15px;
-    flex-wrap: wrap;
-}
-
-.page-btn {
-    padding: 6px 10px;
-    border: 1px solid #ddd;
-    background: white;
-    color: #333;
-    text-decoration: none;
-    border-radius: 3px;
-    font-size: 0.85rem;
-    transition: all 0.3s ease;
-}
-
-.page-btn:hover {
-    background: #f8f9ff;
-    border-color: #667eea;
-    color: #667eea;
-}
-
-.page-btn.current {
-    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-    color: white;
-    border-color: transparent;
-}
-
-.page-btn.prev-btn,
-.page-btn.next-btn {
-    font-weight: 600;
-}
-
-.page-dots {
-    padding: 8px 4px;
-    color: #999;
-}
-
-/* 리스트 형식 스타일 */
-.orders-list-container {
-    background: white;
-    border-radius: 6px;
-    width: 100%;
-    border: 1px solid #e9ecef;
-}
-
-
-.orders-table {
-    background: white;
-    border-radius: 0;
-    overflow: hidden;
-    box-shadow: none;
-    margin-bottom: 15px;
-    width: 100%;
-    border: 1px solid #dee2e6;
-    border-top: none;
-}
-
-.table-header {
-    display: grid;
-    grid-template-columns: 1fr 1.2fr 1fr 1.2fr 1fr 1fr;
-    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-    color: white;
-    font-weight: 600;
-    font-size: 0.85rem;
-    padding: 0;
-    width: 100%;
-}
-
-.table-header > div {
-    padding: 0 15px;
-    text-align: center;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    min-height: 40px;
-    color: white !important;
-    border-right: 1px solid rgba(255,255,255,0.2);
-}
-
-.table-header > div:last-child {
-    border-right: none;
-}
-
-.table-body {
-    background: white;
-}
-
-.table-row {
-    display: grid;
-    grid-template-columns: 1fr 1.2fr 1fr 1.2fr 1fr 1fr;
-    border-bottom: 1px solid #f0f0f0;
-    transition: all 0.2s ease;
-    padding: 0;
-    align-items: center;
-    width: 100%;
-}
-
-.table-row:last-child {
-    border-bottom: none;
-}
-
-.table-row.clickable {
-    cursor: pointer;
-}
-
-.table-row.clickable:hover {
-    background: #f8f9ff;
-    transform: none;
-    box-shadow: none;
-}
-
-.table-row.disabled {
-    opacity: 0.6;
-    cursor: not-allowed;
-}
-
-.table-row > div {
-    padding: 0 15px;
-    text-align: center;
-    font-size: 0.85rem;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    min-height: 45px;
-    border-right: 1px solid #f0f0f0;
-}
-
-.table-row > div:last-child {
-    border-right: none;
-}
-
-.col-order .order-number {
-    font-weight: 700;
-    color: #2c3e50;
-    font-size: 0.9rem;
-}
-
-.col-type {
-    font-size: 0.8rem;
-}
-
-.col-name {
-    font-weight: 600;
-    color: #2c3e50;
-    font-size: 0.85rem;
-}
-
-.col-status {
-    position: relative;
-}
-
-.status-badge {
-    display: inline-block;
-    padding: 3px 8px;
-    border-radius: 12px;
-    font-size: 0.75rem;
-    font-weight: 600;
-    color: white;
-    margin-bottom: 2px;
-}
-
-.status-badge.status-6, .status-badge.status-7 { background: #3498db; }
-.status-badge.status-8 { background: #27ae60; }
-.status-badge.status-5 { background: #f39c12; }
-.status-badge.status-9, .status-badge.status-10 { background: #e74c3c; }
-.status-badge.status-2, .status-badge.status-3, .status-badge.status-4 { background: #95a5a6; }
-
-.clickable-icon {
-    font-size: 1.2rem;
-    animation: bounce 2s infinite;
-}
-
-@keyframes bounce {
-    0%, 20%, 50%, 80%, 100% { transform: translateY(0); }
-    40% { transform: translateY(-5px); }
-    60% { transform: translateY(-3px); }
-}
-
-.col-date {
-    color: #666;
-    font-size: 0.8rem;
-}
-
-.col-designer {
-    color: #666;
-    font-size: 0.8rem;
-}
-
-.list-info {
-    margin-top: 15px;
-    padding: 15px;
-}
-
-.info-box {
-    background: #f8f9fa;
-    padding: 15px;
-    border-radius: 6px;
-    border-left: 3px solid #667eea;
-}
-
-.info-box h4 {
-    color: #2c3e50;
-    margin-bottom: 15px;
-    font-size: 1.1rem;
-}
-
-.info-box ul {
-    list-style: none;
-    padding: 0;
-    margin: 0;
-}
-
-.info-box li {
-    padding: 8px 0;
-    color: #666;
-    font-size: 0.9rem;
-    border-bottom: 1px solid #e9ecef;
-}
-
-.info-box li:last-child {
-    border-bottom: none;
-}
-
-.no-orders {
-    text-align: center;
-    padding: 60px 20px;
-    color: #666;
-}
-
-
-/* 반응형 디자인 */
-@media (max-width: 768px) {
-    .search-row {
-        grid-template-columns: 1fr;
-        gap: 15px;
-    }
-    
-    .search-buttons {
-        justify-content: center;
-    }
-    
-    .table-header,
-    .table-row {
-        grid-template-columns: 1fr;
-        text-align: left;
-    }
-    
-    .table-header {
-        display: none;
-    }
-    
-    .table-row {
-        display: block;
-        padding: 20px;
-        margin-bottom: 15px;
-        border-radius: 8px;
-        border: 1px solid #e0e0e0;
-    }
-    
-    .table-row > div {
-        display: flex;
-        justify-content: space-between;
-        align-items: center;
-        padding: 8px 0;
-        border-bottom: 1px solid #f0f0f0;
-    }
-    
-    .table-row > div:last-child {
-        border-bottom: none;
-    }
-    
-    .table-row > div:before {
-        content: attr(data-label);
-        font-weight: 600;
-        color: #666;
-        font-size: 0.8rem;
-    }
-    
-    .col-order:before { content: '주문번호'; }
-    .col-type:before { content: '상품유형'; }
-    .col-name:before { content: '주문자'; }
-    .col-status:before { content: '진행상태'; }
-    .col-date:before { content: '주문일시'; }
-    .col-designer:before { content: '담당자'; }
-    
-    .pagination {
-        justify-content: center;
-        gap: 3px;
-    }
-    
-    .page-btn {
-        padding: 6px 8px;
-        font-size: 0.8rem;
-    }
-}
-</style>
-
+<!-- 콘텐츠 영역 시작 -->
+<div class="content-area">
 <!-- 메인 컨테이너 -->
 <div class="checkboard-container">
     <!-- 검색 및 필터 섹션 -->
@@ -656,6 +205,7 @@ echo '<meta name="session-id" content="' . htmlspecialchars($session_id) . '">';
                     <div class="col-status">진행상태</div>
                     <div class="col-date">주문일시</div>
                     <div class="col-designer">담당자</div>
+                    <div class="col-proofreading">교정확정</div>
                 </div>
                 
                 <div class="table-body">
@@ -704,7 +254,6 @@ echo '<meta name="session-id" content="' . htmlspecialchars($session_id) . '">';
                                     echo isset($status_map[$order['OrderStyle']]) ? $status_map[$order['OrderStyle']] : '상태미정';
                                     ?>
                                 </span>
-                                <span class="clickable-icon">👆</span>
                             </div>
                             
                             <div class="col-date">
@@ -714,14 +263,23 @@ echo '<meta name="session-id" content="' . htmlspecialchars($session_id) . '">';
                             <div class="col-designer">
                                 <?php echo htmlspecialchars($order['Designer'] ?: '미배정'); ?>
                             </div>
+                            
+                            <div class="col-proofreading">
+                                <?php if ($order['proofreading_confirmed'] == 1): ?>
+                                    <span class="proofreading-status confirmed">인쇄진행</span>
+                                <?php else: ?>
+                                    <span class="proofreading-status pending">-</span>
+                                <?php endif; ?>
+                            </div>
                         </div>
                     <?php endforeach; ?>
                 </div>
             </div>
             
             
-            <!-- 페이지네이션 -->
-            <?php if ($total_pages > 1): ?>
+            <!-- 페이지네이션 (테스트용으로 항상 표시) -->
+            <?php if (true): ?>
+                <!-- DEBUG: 총 주문수: <?php echo $total_orders; ?>, 총 페이지수: <?php echo $total_pages; ?>, 현재 페이지: <?php echo $page; ?> -->
                 <div class="pagination">
                     <?php
                     $current_url = $_SERVER['PHP_SELF'];
@@ -809,7 +367,7 @@ echo '<meta name="session-id" content="' . htmlspecialchars($session_id) . '">';
 </div>
 
 <!-- 비밀번호 인증 모달 -->
-<div id="passwordModal" class="password-modal" style="display: none;">
+<div id="passwordModal" class="password-modal">
     <div class="modal-overlay" onclick="closePasswordModal()"></div>
     <div class="modal-content">
         <div class="modal-header">
@@ -818,11 +376,11 @@ echo '<meta name="session-id" content="' . htmlspecialchars($session_id) . '">';
         </div>
         <div class="modal-body">
             <p id="modalMessage">교정사항을 확인하시려면 <strong>전화번호 뒷자리 4자리</strong>를 입력해주세요.</p>
-            <div id="modalHint" style="margin: 15px 0; padding: 10px; background: #f8f9fa; border-radius: 6px; font-size: 0.9rem;">
+            <div id="modalHint" class="modal-hint">
                 <!-- 동적으로 주문자명이 표시됩니다 -->
             </div>
-            <input type="text" id="passwordInput" placeholder="전화번호 뒷자리 4자리" maxlength="4" style="width: 100%; padding: 12px; border: 1px solid #ddd; border-radius: 6px; margin: 10px 0; font-size: 16px;">
-            <div id="passwordError" style="color: #e74c3c; margin-top: 10px; display: none;"></div>
+            <input type="text" id="passwordInput" placeholder="전화번호 뒷자리 4자리" maxlength="4" class="modal-input">
+            <div id="passwordError" class="password-error"></div>
         </div>
         <div class="modal-footer">
             <button onclick="closePasswordModal()" class="btn-cancel">취소</button>
@@ -831,245 +389,11 @@ echo '<meta name="session-id" content="' . htmlspecialchars($session_id) . '">';
     </div>
 </div>
 
-<style>
-.password-modal {
-    position: fixed;
-    top: 0;
-    left: 0;
-    width: 100%;
-    height: 100%;
-    z-index: 9999;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-}
-
-.modal-overlay {
-    position: absolute;
-    top: 0;
-    left: 0;
-    width: 100%;
-    height: 100%;
-    background: rgba(0,0,0,0.5);
-}
-
-.modal-content {
-    background: white;
-    border-radius: 12px;
-    max-width: 400px;
-    width: 90%;
-    position: relative;
-    box-shadow: 0 10px 30px rgba(0,0,0,0.3);
-}
-
-.modal-header {
-    padding: 20px 20px 0;
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-}
-
-.modal-header h3 {
-    margin: 0;
-    color: #2c3e50;
-}
-
-.modal-close {
-    background: none;
-    border: none;
-    font-size: 24px;
-    cursor: pointer;
-    color: #666;
-}
-
-.modal-body {
-    padding: 20px;
-}
-
-.modal-footer {
-    padding: 0 20px 20px;
-    display: flex;
-    gap: 10px;
-    justify-content: flex-end;
-}
-
-.btn-cancel, .btn-verify {
-    padding: 10px 20px;
-    border: none;
-    border-radius: 6px;
-    cursor: pointer;
-    font-weight: 600;
-}
-
-.btn-cancel {
-    background: #f8f9fa;
-    color: #666;
-}
-
-.btn-verify {
-    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-    color: white;
-}
-
-.btn-verify:hover {
-    opacity: 0.9;
-}
-
-/* 로그인 모달 스타일 */
-.login-modal {
-    display: none;
-    position: fixed;
-    z-index: 10000;
-    left: 0;
-    top: 0;
-    width: 100%;
-    height: 100%;
-    background-color: rgba(0,0,0,0.5);
-}
-
-.login-modal-content {
-    position: relative;
-    background-color: white;
-    margin: 5% auto;
-    padding: 0;
-    border-radius: 12px;
-    box-shadow: 0 10px 30px rgba(0,0,0,0.3);
-    width: 90%;
-    max-width: 400px;
-    animation: modalSlideIn 0.3s ease-out;
-}
-
-@keyframes modalSlideIn {
-    from { opacity: 0; transform: translateY(-50px); }
-    to { opacity: 1; transform: translateY(0); }
-}
-
-.login-modal-header {
-    padding: 20px 20px 0;
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    border-bottom: 1px solid #eee;
-    margin-bottom: 20px;
-}
-
-.login-modal-header h2 {
-    margin: 0;
-    color: #2c3e50;
-    font-size: 1.3rem;
-}
-
-.close-modal {
-    font-size: 28px;
-    font-weight: bold;
-    cursor: pointer;
-    color: #aaa;
-    line-height: 1;
-}
-
-.close-modal:hover {
-    color: #000;
-}
-
-.login-modal-body {
-    padding: 0 20px 20px;
-}
-
-.login-tabs {
-    display: flex;
-    margin-bottom: 20px;
-    border-bottom: 1px solid #eee;
-}
-
-.login-tab {
-    flex: 1;
-    padding: 10px;
-    border: none;
-    background: none;
-    cursor: pointer;
-    font-size: 14px;
-    color: #666;
-    border-bottom: 2px solid transparent;
-}
-
-.login-tab.active {
-    color: #667eea;
-    border-bottom-color: #667eea;
-}
-
-.login-form {
-    display: none;
-}
-
-.login-form.active {
-    display: block;
-}
-
-.form-group {
-    margin-bottom: 15px;
-}
-
-.form-group label {
-    display: block;
-    margin-bottom: 5px;
-    font-weight: 600;
-    color: #2c3e50;
-    font-size: 14px;
-}
-
-.form-group input {
-    width: 100%;
-    padding: 10px;
-    border: 1px solid #ddd;
-    border-radius: 6px;
-    font-size: 14px;
-    box-sizing: border-box;
-}
-
-.form-group input:focus {
-    outline: none;
-    border-color: #667eea;
-    box-shadow: 0 0 0 2px rgba(102, 126, 234, 0.2);
-}
-
-.form-submit {
-    width: 100%;
-    padding: 12px;
-    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-    color: white;
-    border: none;
-    border-radius: 6px;
-    font-size: 16px;
-    font-weight: 600;
-    cursor: pointer;
-    transition: opacity 0.3s ease;
-}
-
-.form-submit:hover {
-    opacity: 0.9;
-}
-
-.login-message {
-    padding: 10px;
-    border-radius: 6px;
-    margin-bottom: 15px;
-    font-size: 14px;
-}
-
-.login-message.success {
-    background: #d4edda;
-    color: #155724;
-    border: 1px solid #c3e6cb;
-}
-
-.login-message.error {
-    background: #f8d7da;
-    color: #721c24;
-    border: 1px solid #f5c6cb;
-}
-</style>
 
 <script>
+// PHP에서 관리자 상태 전달
+const isAdmin = <?php echo $is_admin ? 'true' : 'false'; ?>;
+
 let currentOrderNo = null;
 let currentOrderName = '';
 let currentOrderPhone = '';
@@ -1078,6 +402,13 @@ function showPasswordModal(orderNo, orderName, orderPhone) {
     currentOrderNo = orderNo;
     currentOrderName = orderName;
     currentOrderPhone = orderPhone;
+    
+    // 관리자는 비밀번호 입력 없이 바로 팝업 열기
+    if (isAdmin) {
+        openOrderDetails(orderNo);
+        return;
+    }
+    
     document.getElementById('passwordModal').style.display = 'flex';
     document.getElementById('passwordInput').focus();
     document.getElementById('passwordError').style.display = 'none';
@@ -1093,6 +424,34 @@ function closePasswordModal() {
     currentOrderNo = null;
     currentOrderName = '';
     currentOrderPhone = '';
+}
+
+function openOrderDetails(orderNo) {
+    // 관리자용 직접 팝업 열기 (비밀번호 확인 건너뛰기)
+    fetch('/sub/verify_popup.php', {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/x-www-form-urlencoded',
+        },
+        body: 'order_no=' + orderNo + '&password=' // 빈 password로 전송 (관리자는 서버에서 체크)
+    })
+    .then(response => response.json())
+    .then(data => {
+        if (data.success) {
+            // 새 창으로 교정사항 보기
+            const popup = window.open(
+                data.redirect_url,
+                'OrderDetails',
+                'width=1000,height=600,top=50,left=50,menubar=no,resizable=yes,statusbar=no,scrollbars=yes,toolbar=no'
+            );
+            popup.focus();
+        } else {
+            alert('오류: ' + data.message);
+        }
+    })
+    .catch(error => {
+        alert('확인 중 오류가 발생했습니다.');
+    });
 }
 
 function verifyPassword() {
@@ -1155,14 +514,11 @@ document.addEventListener('DOMContentLoaded', function() {
     }
 });
 </script>
+</div> <!-- content-area 끝 -->
 
 <?php
 // 공통 푸터 포함
-if (file_exists("../includes/footer.php")) {
-    include "../includes/footer.php";
-} else {
-    echo '</body></html>';
-}
+include "../includes/footer.php";
 
 // 데이터베이스 연결 종료
 if (isset($connect) && $connect) {
