@@ -53,11 +53,10 @@ Thumbs.db
 # PHP 세션 파일
 sessions/
 
-# 데이터베이스 설정 파일 (민감한 정보)
-db.php
-db_*.php
-config.php
-*config*.php
+# 데이터베이스 설정 파일 (민감한 정보) - 메인 db.php는 포함
+# db.php  <- 주석처리: 시스템 필수 파일
+db_secret*.php
+*secret*config*.php
 
 # API 키 및 비밀번호
 *.key
