@@ -1,0 +1,240 @@
+/* ===== 공통 갤러리 스타일 ===== */
+
+/* 갤러리 컨테이너 */
+.image-gallery-section {
+    margin-top: 30px;
+}
+
+.image-gallery-section h4 {
+    margin: 0 0 20px 0;
+    color: #495057;
+    font-size: 1.1rem;
+    font-weight: 600;
+    text-align: center;
+}
+
+.gallery-container {
+    width: 100%;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+}
+
+/* 메인 확대 이미지 영역 */
+.zoom-box {
+    width: 450px;
+    height: 450px;
+    border: 1px solid #ddd;
+    border-radius: 8px;
+    background-repeat: no-repeat;
+    background-position: center center;
+    background-size: contain;
+    transition: background-size 0.2s ease, background-position 0.2s ease;
+    cursor: crosshair;
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+}
+
+/* 썸네일 그리드 */
+.thumbnail-grid {
+    margin-top: 16px;
+    display: flex;
+    gap: 8px;
+    justify-content: center;
+    flex-wrap: wrap;
+}
+
+.thumbnail-grid img {
+    width: 100px;
+    height: 100px;
+    object-fit: cover;
+    cursor: pointer;
+    border: 2px solid transparent;
+    border-radius: 8px;
+    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
+    position: relative;
+}
+
+.thumbnail-grid img:hover {
+    border-color: #667eea;
+    transform: translateY(-3px) scale(1.05);
+    box-shadow: 0 8px 25px rgba(102, 126, 234, 0.25);
+}
+
+.thumbnail-grid img.active {
+    border-color: #667eea;
+    transform: translateY(-2px);
+    box-shadow: 0 8px 25px rgba(102, 126, 234, 0.3);
+}
+
+/* 썸네일 호버 효과 */
+.thumbnail-grid img::before {
+    content: '🔍';
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    font-size: 1.5rem;
+    opacity: 0;
+    transition: opacity 0.3s ease;
+    background: rgba(0, 0, 0, 0.7);
+    color: white;
+    width: 40px;
+    height: 40px;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.thumbnail-grid img:hover::before {
+    opacity: 1;
+}
+
+/* 갤러리 상태 메시지 */
+.gallery-loading, .gallery-error {
+    text-align: center;
+    padding: 40px 20px;
+    color: #6c757d;
+    font-style: italic;
+}
+
+.gallery-error {
+    color: #dc3545;
+}
+
+/* 모바일 대응 */
+@media (max-width: 1024px) {
+    .gallery-container {
+        padding: 15px;
+    }
+    
+    .zoom-box {
+        width: 380px;
+        height: 380px;
+    }
+    
+    .thumbnail-grid {
+        gap: 10px;
+        margin-top: 20px;
+    }
+    
+    .thumbnail-grid img {
+        width: 80px;
+        height: 80px;
+    }
+}
+
+@media (max-width: 768px) {
+    .gallery-container {
+        padding: 10px;
+    }
+    
+    .zoom-box {
+        width: 320px;
+        height: 320px;
+        cursor: pointer;
+    }
+    
+    .thumbnail-grid img {
+        width: 70px;
+        height: 70px;
+    }
+    
+    .thumbnail-grid {
+        gap: 8px;
+        margin-top: 15px;
+    }
+    
+    /* 모바일에서 호버 효과 조정 */
+    .thumbnail-grid img::before {
+        font-size: 1.2rem;
+        width: 35px;
+        height: 35px;
+    }
+}
+
+@media (max-width: 480px) {
+    .gallery-container {
+        padding: 8px;
+    }
+    
+    .zoom-box {
+        width: 280px;
+        height: 280px;
+    }
+    
+    .thumbnail-grid img {
+        width: 60px;
+        height: 60px;
+        border-radius: 6px;
+    }
+    
+    .thumbnail-grid {
+        gap: 6px;
+        margin-top: 12px;
+    }
+    
+    .thumbnail-grid img::before {
+        font-size: 1rem;
+        width: 30px;
+        height: 30px;
+    }
+    
+    /* 작은 화면에서 터치 영역 확대 */
+    .thumbnail-grid img {
+        min-height: 60px;
+        min-width: 60px;
+    }
+}
+
+@media (max-width: 360px) {
+    .zoom-box {
+        width: 260px;
+        height: 260px;
+    }
+    
+    .thumbnail-grid img {
+        width: 55px;
+        height: 55px;
+    }
+    
+    .thumbnail-grid {
+        gap: 4px;
+    }
+}
+
+/* 터치 디바이스 최적화 */
+@media (hover: none) and (pointer: coarse) {
+    .thumbnail-grid img:hover {
+        transform: none;
+    }
+    
+    .thumbnail-grid img:active {
+        transform: scale(0.95);
+        transition: transform 0.1s ease;
+    }
+    
+    .thumbnail-grid img::before {
+        opacity: 0.8;
+        background: rgba(0, 0, 0, 0.5);
+    }
+}
+
+/* 고해상도 디스플레이 대응 */
+@media only screen and (-webkit-min-device-pixel-ratio: 2),
+       only screen and (min--moz-device-pixel-ratio: 2),
+       only screen and (-o-min-device-pixel-ratio: 2/1),
+       only screen and (min-device-pixel-ratio: 2),
+       only screen and (min-resolution: 192dpi),
+       only screen and (min-resolution: 2dppx) {
+    .zoom-box {
+        image-rendering: -webkit-optimize-contrast;
+        image-rendering: crisp-edges;
+    }
+    
+    .thumbnail-grid img {
+        image-rendering: -webkit-optimize-contrast;
+        image-rendering: crisp-edges;
+    }
+}
