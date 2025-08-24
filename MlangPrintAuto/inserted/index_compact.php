@@ -429,6 +429,279 @@ echo '<script src="../../includes/js/UniversalFileUpload.js"></script>';
     });
     <?php endif; ?>
     </script>
+
+    <!-- 전단지 전용 컴팩트 디자인 적용 (Frontend-Compact-Design-Guide.md 기반) -->
+    <style>
+    /* =================================================================== */
+    /* 1단계: Page-title 컴팩트화 (1/2 높이 축소) */
+    /* =================================================================== */
+    .page-title {
+        padding: 12px 0 !important;          /* 1/2 축소 */
+        margin-bottom: 15px !important;      /* 1/2 축소 */
+        border-radius: 10px !important;      /* 2/3 축소 */
+        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%) !important;
+        color: white !important;
+    }
+
+    .page-title h1 {
+        font-size: 1.6rem !important;        /* 27% 축소 */
+        line-height: 1.2 !important;         /* 타이트 */
+        margin: 0 !important;
+        color: white !important;
+        text-shadow: 0 2px 4px rgba(0,0,0,0.3) !important;
+    }
+
+    .page-title p {
+        margin: 4px 0 0 0 !important;        /* 1/2 축소 */
+        font-size: 0.85rem !important;       /* 15% 축소 */
+        line-height: 1.3 !important;
+        color: white !important;
+        opacity: 0.9 !important;
+    }
+
+    /* =================================================================== */
+    /* 2단계: Calculator-header 컴팩트화 (gallery-title과 완전히 동일한 디자인) */
+    /* =================================================================== */
+    .calculator-header {
+        background: linear-gradient(135deg, #4caf50 0%, #2e7d32 100%) !important;
+        color: white !important;
+        padding: 18px 20px !important;
+        margin: -25px -25px 20px -25px !important;
+        border-radius: 15px 15px 0 0 !important;
+        font-size: 1.1rem !important;
+        font-weight: 600 !important;
+        text-align: center !important;
+        box-shadow: 0 2px 10px rgba(76, 175, 80, 0.3) !important;
+        line-height: 1.2 !important;
+    }
+
+    /* leaflet-calculator 섹션에 갤러리와 동일한 배경 적용 */
+    .leaflet-calculator {
+        background: linear-gradient(135deg, #f8f9fa 0%, #e9ecef 100%) !important;
+        border-radius: 15px !important;
+        padding: 25px !important;
+        box-shadow: 0 8px 25px rgba(0, 0, 0, 0.08) !important;
+        border: 1px solid rgba(255, 255, 255, 0.8) !important;
+        position: relative !important; /* 헤더 오버플로우를 위한 설정 */
+    }
+
+    .calculator-header h3 {
+        font-size: 1.2rem !important;        /* 14% 축소 */
+        line-height: 1.2 !important;
+        margin: 0 !important;
+        color: white !important;
+        font-weight: 600 !important;
+    }
+
+    .calculator-subtitle {
+        font-size: 0.85rem !important;
+        margin: 0 !important;
+        opacity: 0.9 !important;
+    }
+
+    /* =================================================================== */
+    /* 3단계: Price-display 컴팩트화 (2/3 높이 축소) */
+    /* =================================================================== */
+    .price-display {
+        padding: 8px 5px !important;         /* 상하 패딩 최적화 */
+        border-radius: 8px !important;       /* 2/3 축소 */
+        margin-bottom: 5px !important;
+    }
+
+    .price-display .price-label {
+        font-size: 0.85rem !important;       /* 15% 축소 */
+        margin-bottom: 4px !important;       /* 1/2 축소 */
+        line-height: 1.2 !important;
+    }
+
+    .price-display .price-amount {
+        font-size: 1.4rem !important;        /* 22% 축소 */
+        margin-bottom: 6px !important;       /* 40% 축소 */
+        line-height: 1.1 !important;
+    }
+
+    .price-display .price-details {
+        font-size: 0.75rem !important;       /* 12% 축소 */
+        line-height: 1.3 !important;
+        margin: 0 !important;
+    }
+
+    .price-display.calculated {
+        transform: scale(1.01) !important;   /* 애니메이션 절제 */
+        box-shadow: 0 4px 12px rgba(76, 175, 80, 0.15) !important;
+    }
+
+    /* =================================================================== */
+    /* 4단계: Form 요소 컴팩트화 (패딩 1/2 축소) */
+    /* =================================================================== */
+    .option-select, select, input[type="text"], input[type="email"], textarea {
+        padding: 6px 15px !important;        /* 상하 패딩 1/2 */
+    }
+
+    .option-group {
+        margin-bottom: 8px !important;       /* 33% 축소 */
+    }
+
+    /* =================================================================== */
+    /* 5단계: 기타 요소들 컴팩트화 */
+    /* =================================================================== */
+    .calculator-section {
+        padding: 0px 25px !important;        /* 더 타이트하게 */
+        min-height: 400px !important;
+    }
+
+    .options-grid {
+        gap: 12px !important;                /* 25% 축소 */
+    }
+
+    .upload-order-button {
+        margin-top: 8px !important;          /* 20% 축소 */
+    }
+
+    /* =================================================================== */
+    /* 6단계: 갤러리 섹션 스타일 (전단지 브랜드 컬러 - 그린) */
+    /* =================================================================== */
+    .gallery-section {
+        background: linear-gradient(135deg, #f8f9fa 0%, #e9ecef 100%);
+        border-radius: 15px;
+        padding: 25px;
+        box-shadow: 0 8px 25px rgba(0, 0, 0, 0.08);
+        border: 1px solid rgba(255, 255, 255, 0.8);
+    }
+    
+    .gallery-title {
+        background: linear-gradient(135deg, #4caf50 0%, #2e7d32 100%);
+        color: white;
+        padding: 15px 20px;
+        margin: -25px -25px 20px -25px;
+        border-radius: 15px 15px 0 0;
+        font-size: 1.1rem;
+        font-weight: 600;
+        text-align: center;
+        box-shadow: 0 2px 10px rgba(76, 175, 80, 0.3);
+    }
+
+    /* 라이트박스 뷰어 스타일 */
+    .lightbox-viewer {
+        width: 100%;
+        height: 300px;
+        background-color: #fff;
+        border-radius: 12px;
+        box-shadow: 0 5px 20px rgba(0, 0, 0, 0.1);
+        margin-bottom: 15px;
+        cursor: zoom-in;
+        transition: all 0.3s ease;
+        border: 2px solid #e9ecef;
+        position: relative;
+        overflow: hidden;
+    }
+    
+    .lightbox-viewer:hover {
+        border-color: #4caf50;
+        box-shadow: 0 8px 30px rgba(76, 175, 80, 0.15);
+        transform: translateY(-2px);
+    }
+    
+    /* 썸네일 스트립 스타일 */
+    .thumbnail-strip {
+        display: grid;
+        grid-template-columns: repeat(4, 1fr);
+        gap: 10px;
+        padding: 10px;
+        background: white;
+        border-radius: 8px;
+        box-shadow: 0 2px 10px rgba(0, 0, 0, 0.05);
+    }
+    
+    .thumbnail-strip img {
+        width: 100%;
+        height: 80px;
+        object-fit: cover;
+        border-radius: 6px;
+        cursor: pointer;
+        transition: all 0.3s ease;
+        border: 2px solid transparent;
+        opacity: 0.7;
+    }
+    
+    .thumbnail-strip img:hover {
+        opacity: 1;
+        transform: translateY(-2px);
+        box-shadow: 0 4px 15px rgba(0, 0, 0, 0.15);
+        border-color: #4caf50;
+    }
+    
+    .thumbnail-strip img.active {
+        opacity: 1;
+        border-color: #4caf50;
+        box-shadow: 0 4px 15px rgba(76, 175, 80, 0.3);
+    }
+    
+    /* 갤러리 로딩 상태 */
+    .leafletGallery .loading {
+        text-align: center;
+        padding: 60px 20px;
+        color: #6c757d;
+        font-size: 1.1rem;
+        background: white;
+        border-radius: 12px;
+        animation: pulse 2s infinite;
+    }
+    
+    /* 갤러리 에러 상태 */
+    .leafletGallery .error {
+        text-align: center;
+        padding: 40px 20px;
+        color: #dc3545;
+        background: #fff5f5;
+        border: 1px solid #ffdddd;
+        border-radius: 12px;
+        font-size: 0.95rem;
+    }
+    
+    @keyframes pulse {
+        0%, 100% { opacity: 1; }
+        50% { opacity: 0.6; }
+    }
+
+    /* =================================================================== */
+    /* 7단계: 반응형 최적화 */
+    /* =================================================================== */
+    @media (max-width: 768px) {
+        /* 모바일에서는 축소 정도 완화 */
+        .page-title { 
+            padding: 15px 0 !important;       /* 데스크톱보다 약간 여유 */
+        }
+        
+        .page-title h1 {
+            font-size: 1.4rem !important;     /* 가독성 고려 */
+        }
+        
+        .calculator-header { 
+            padding: 15px 20px !important;    /* 터치 친화적 */
+        }
+        
+        .price-display .price-amount {
+            font-size: 1.5rem !important;     /* 모바일 가독성 */
+        }
+        
+        .option-select, select, input[type="text"], input[type="email"], textarea {
+            padding: 10px 15px !important;    /* 터치 영역 확보 */
+        }
+
+        .gallery-section {
+            padding: 20px;
+            margin: 0 -10px;
+            border-radius: 10px;
+        }
+        
+        .gallery-title {
+            margin: -20px -20px 15px -20px;
+            padding: 12px 15px;
+            font-size: 1rem;
+        }
+    }
+    </style>
 </body>
 </html>
 

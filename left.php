@@ -217,6 +217,11 @@ function isActive($page_path, $current_page) {
         margin-bottom: 0;
     }
     
+    .vertical-menu li.dropdown {
+        flex: 1;
+        min-width: calc(100% - 2px); /* 드롭다운은 전체 너비 */
+    }
+    
     .vertical-menu a {
         font-size: 11px;
         padding: 6px 8px;
@@ -229,11 +234,100 @@ function isActive($page_path, $current_page) {
         font-size: 12px;
         margin-bottom: 4px;
     }
+    
+    .dropdown-content {
+        position: static;
+        display: none;
+        box-shadow: none;
+        border: 1px solid #e0e0e0;
+        border-top: none;
+        border-radius: 0 0 8px 8px;
+        margin-top: 0;
+    }
+    
+    .dropdown:hover .dropdown-content {
+        display: block;
+    }
 }
 
 /* 메뉴 제목 제거 */
 .menu-title {
     display: none;
+}
+
+/* 드롭다운 메뉴 스타일 */
+.dropdown {
+    position: relative;
+    display: inline-block;
+    width: 100%;
+}
+
+.dropdown-content {
+    display: none;
+    position: absolute;
+    background-color: white;
+    min-width: 150px;
+    box-shadow: 0 8px 16px rgba(0,0,0,0.2);
+    border-radius: 8px;
+    z-index: 1000;
+    top: 100%;
+    left: 0;
+    border: 1px solid rgba(44, 62, 80, 0.15);
+    overflow: hidden;
+}
+
+.dropdown-content a {
+    color: #2c3e50 !important;
+    padding: 8px 12px !important;
+    text-decoration: none;
+    display: block !important;
+    font-size: 12px !important;
+    font-weight: 500 !important;
+    border-radius: 0 !important;
+    border: none !important;
+    box-shadow: none !important;
+    margin: 0 !important;
+    min-width: auto !important;
+    max-width: none !important;
+    width: 100% !important;
+    text-align: left !important;
+    background: white !important;
+    transition: background-color 0.2s ease !important;
+}
+
+.dropdown-content a:hover {
+    background-color: #f8f9fa !important;
+    transform: none !important;
+    box-shadow: none !important;
+    border-color: transparent !important;
+}
+
+.dropdown-content a.sticker-general:hover {
+    background: linear-gradient(135deg, #4CAF50 0%, #45a049 100%) !important;
+    color: white !important;
+}
+
+.dropdown-content a.sticker-magnetic:hover {
+    background: linear-gradient(135deg, #2196F3 0%, #1976d2 100%) !important;
+    color: white !important;
+}
+
+.dropdown:hover .dropdown-content {
+    display: block;
+}
+
+.dropdown-main {
+    position: relative;
+}
+
+.dropdown-arrow {
+    font-size: 10px;
+    margin-left: 4px;
+    transition: transform 0.2s ease;
+}
+
+.dropdown:hover .dropdown-arrow {
+    transform: rotate(180deg);
 }
 </style>
 
@@ -260,15 +354,23 @@ function isActive($page_path, $current_page) {
     </a>
   </li>
   
-  <li>
-    <a href="/shop/view_modern.php" 
-       class="sticker <?php echo isActive('/shop/view', $current_page); ?>">
-       🏷️ 스티커
+  <li class="dropdown">
+    <a href="javascript:void(0)" 
+       class="sticker dropdown-main <?php echo (isActive('/shop/view', $current_page) || isActive('/MlangPrintAuto/msticker/', $current_page)) ? 'active' : ''; ?>">
+       🏷️ 스티커 <span class="dropdown-arrow">▼</span>
     </a>
+    <div class="dropdown-content">
+      <a href="/shop/view_modern.php" class="sticker-general">
+        🏷️ 일반스티커
+      </a>
+      <a href="/MlangPrintAuto/msticker/index.php" class="sticker-magnetic">
+        🧲 자석스티커
+      </a>
+    </div>
   </li>
   
   <li>
-    <a href="/MlangPrintAuto/NameCard/index_modern.php" 
+    <a href="/MlangPrintAuto/NameCard/index.php" 
        class="business <?php echo isActive('/MlangPrintAuto/NameCard/', $current_page); ?>">
        📇 명함
     </a>

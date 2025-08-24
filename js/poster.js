@@ -55,6 +55,12 @@ function initializeGallery() {
         });
         
         gallery.init();
+        
+        // GalleryLightbox 초기화 완료 후 더보기 버튼 확인
+        setTimeout(() => {
+            checkMoreButtonForLightbox();
+        }, 1000);
+        
         console.log('GalleryLightbox 시스템으로 포스터 갤러리 초기화 완료');
     } else {
         // 폴백: 기본 갤러리 시스템
@@ -121,6 +127,9 @@ function renderGallery(images, container) {
     
     // 고급 확대 기능 초기화
     initializeAdvancedZoom(zoomBox);
+    
+    // 더보기 버튼 표시 확인 (4개 이상인 경우)
+    checkMoreButtonVisibility(images.length);
 }
 
 function loadImageToZoomBox(imagePath, zoomBox) {
@@ -215,6 +224,28 @@ function startSmoothAnimation() {
     }
     
     animate();
+}
+
+function checkMoreButtonVisibility(imageCount) {
+    const moreButton = document.querySelector('.gallery-more-button');
+    if (moreButton) {
+        // 항상 더보기 버튼 표시 (사용자 요청에 따라)
+        moreButton.style.display = 'block';
+    }
+}
+
+function checkMoreButtonForLightbox() {
+    // GalleryLightbox 사용 시 더보기 버튼 표시 확인
+    fetch('get_poster_images.php?all=true')
+        .then(response => response.json())
+        .then(data => {
+            if (data.success && data.data) {
+                checkMoreButtonVisibility(data.data.length);
+            }
+        })
+        .catch(error => {
+            console.error('더보기 버튼 확인 오류:', error);
+        });
 }
 
 // ============================================================================
@@ -574,15 +605,18 @@ function updatePriceDisplay(priceData) {
     const priceDetails = document.getElementById('priceDetails');
     const uploadOrderButton = document.getElementById('uploadOrderButton');
     
+    // 인쇄비 + 디자인비 합계를 큰 금액으로 표시 (VAT 제외)
     if (priceAmount) {
-        priceAmount.textContent = formatNumber(Math.round(priceData.total_with_vat)) + '원';
+        const supplyPrice = priceData.total_price || (priceData.base_price + priceData.design_price);
+        priceAmount.textContent = formatNumber(supplyPrice) + '원';
+        console.log('💰 큰 금액 표시 (인쇄비+디자인비):', supplyPrice + '원');
     }
     
     if (priceDetails) {
         priceDetails.innerHTML = `
             인쇄비: ${formatNumber(priceData.base_price)}원<br>
             디자인비: ${formatNumber(priceData.design_price)}원<br>
-            합계(VAT포함): ${formatNumber(Math.round(priceData.total_with_vat))}원
+            <strong>부가세 포함: ${formatNumber(Math.round(priceData.total_with_vat))}원</strong>
         `;
     }
     

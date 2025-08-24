@@ -136,6 +136,9 @@ echo '<script src="../../includes/js/UniversalFileUpload.js"></script>';
     <!-- 컴팩트 전용 CSS -->
     <link rel="stylesheet" href="css/ncrflambeau-compact.css">
     
+    <!-- 통합 갤러리 CSS -->
+    <link rel="stylesheet" href="../../css/unified-gallery.css">
+    
     <!-- 노토 폰트 -->
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -153,26 +156,8 @@ echo '<script src="../../includes/js/UniversalFileUpload.js"></script>';
         <div class="ncr-grid">
             <!-- 좌측: 갤러리 섹션 (50%) -->
             <section class="ncr-gallery" aria-label="양식지 샘플 갤러리">
-                <div class="gallery-title">📋 양식지 샘플 갤러리</div>
-                
-                <!-- 메인 이미지 표시 영역 -->
-                <div class="lightbox-viewer" id="zoomBox">
-                    <!-- 배경 이미지로 표시됩니다 -->
-                </div>
-                
-                <!-- 썸네일 이미지들 -->
-                <div class="thumbnail-strip" id="thumbnailStrip">
-                    <!-- 썸네일들이 여기에 동적으로 로드됩니다 -->
-                </div>
-                
-                <!-- 로딩 상태 -->
-                <div id="galleryLoading" class="gallery-loading">
-                    <p>이미지를 불러오는 중...</p>
-                </div>
-                
-                <!-- 에러 상태 -->
-                <div id="galleryError" class="gallery-error" style="display: none;">
-                    <p>이미지를 불러올 수 없습니다.</p>
+                <div id="gallery-section">
+                    <!-- UnifiedGallery 컴포넌트가 여기에 렌더링됩니다 -->
                 </div>
             </section>
             
@@ -337,7 +322,214 @@ echo '<script src="../../includes/js/UniversalFileUpload.js"></script>';
     include "../../includes/footer.php";
     ?>
 
+    <!-- 양식지(NCR) 전용 컴팩트 디자인 적용 (Frontend-Compact-Design-Guide.md 기반) -->
+    <style>
+    /* =================================================================== */
+    /* 1단계: Page-title 컴팩트화 (1/2 높이 축소) */
+    /* =================================================================== */
+    .page-title {
+        padding: 12px 0 !important;          /* 1/2 축소 */
+        margin-bottom: 15px !important;      /* 1/2 축소 */
+        border-radius: 10px !important;      /* 2/3 축소 */
+        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%) !important;
+        color: white !important;
+    }
+
+    .page-title h1 {
+        font-size: 1.6rem !important;        /* 27% 축소 */
+        line-height: 1.2 !important;         /* 타이트 */
+        margin: 0 !important;
+        color: white !important;
+        text-shadow: 0 2px 4px rgba(0,0,0,0.3) !important;
+    }
+
+    .page-title p {
+        margin: 4px 0 0 0 !important;        /* 1/2 축소 */
+        font-size: 0.85rem !important;       /* 15% 축소 */
+        line-height: 1.3 !important;
+        color: white !important;
+        opacity: 0.9 !important;
+    }
+
+    /* =================================================================== */
+    /* 2단계: Calculator-header 컴팩트화 (gallery-title과 완전히 동일한 디자인) */
+    /* =================================================================== */
+    .calculator-header, .price-section h3, .price-calculator h3 {
+        background: linear-gradient(135deg, #1565c0 0%, #0d47a1 100%) !important;
+        color: white !important;
+        padding: 18px 20px !important;
+        margin: -25px -25px 20px -25px !important;
+        border-radius: 15px 15px 0 0 !important;
+        font-size: 1.1rem !important;
+        font-weight: 600 !important;
+        text-align: center !important;
+        box-shadow: 0 2px 10px rgba(21, 101, 192, 0.3) !important;
+        line-height: 1.2 !important;
+    }
+
+    /* ncr-calculator 섹션에 갤러리와 동일한 배경 적용 */
+    .ncr-calculator {
+        background: linear-gradient(135deg, #f8f9fa 0%, #e9ecef 100%) !important;
+        border-radius: 15px !important;
+        padding: 25px !important;
+        box-shadow: 0 10px 35px rgba(0, 0, 0, 0.12), 0 4px 15px rgba(0, 0, 0, 0.08) !important;
+        border: 1px solid rgba(255, 255, 255, 0.9) !important;
+        position: relative !important; /* 헤더 오버플로우를 위한 설정 */
+    }
+
+    .calculator-header h3 {
+        font-size: 1.1rem !important;        /* gallery-title과 동일 */
+        line-height: 1.2 !important;
+        margin: 0 !important;
+        color: white !important;
+        font-weight: 600 !important;
+    }
+
+    .calculator-subtitle {
+        font-size: 0.85rem !important;
+        margin: 0 !important;
+        opacity: 0.9 !important;
+    }
+
+    /* =================================================================== */
+    /* 3단계: Price-display 컴팩트화 (2/3 높이 축소) */
+    /* =================================================================== */
+    .price-display {
+        padding: 8px 5px !important;         /* 상하 패딩 최적화 */
+        border-radius: 8px !important;       /* 2/3 축소 */
+        margin-bottom: 5px !important;
+    }
+
+    .price-display .price-label {
+        font-size: 0.85rem !important;       /* 15% 축소 */
+        margin-bottom: 4px !important;       /* 1/2 축소 */
+        line-height: 1.2 !important;
+    }
+
+    .price-display .price-amount {
+        font-size: 1.4rem !important;        /* 22% 축소 */
+        margin-bottom: 6px !important;       /* 40% 축소 */
+        line-height: 1.1 !important;
+    }
+
+    .price-display .price-details {
+        font-size: 0.75rem !important;       /* 12% 축소 */
+        line-height: 1.3 !important;
+        margin: 0 !important;
+    }
+
+    .price-display.calculated {
+        transform: scale(1.01) !important;   /* 애니메이션 절제 */
+        box-shadow: 0 4px 12px rgba(21, 101, 192, 0.15) !important;
+    }
+
+    /* =================================================================== */
+    /* 4단계: Form 요소 컴팩트화 (패딩 1/2 축소) */
+    /* =================================================================== */
+    .option-select, select, input[type="text"], input[type="email"], textarea {
+        padding: 6px 15px !important;        /* 상하 패딩 1/2 */
+    }
+
+    .option-group {
+        margin-bottom: 8px !important;       /* 33% 축소 */
+    }
+
+    /* =================================================================== */
+    /* 5단계: 기타 요소들 컴팩트화 */
+    /* =================================================================== */
+    .calculator-section {
+        padding: 0px 25px !important;        /* 더 타이트하게 */
+        min-height: 400px !important;
+    }
+
+    .options-grid {
+        gap: 12px !important;                /* 25% 축소 */
+    }
+
+    .upload-order-button {
+        margin-top: 8px !important;          /* 20% 축소 */
+    }
+
+    /* =================================================================== */
+    /* 6단계: 갤러리 섹션 스타일 (양식지 브랜드 컬러 - 네이비 블루) */
+    /* =================================================================== */
+    .ncr-gallery {
+        background: linear-gradient(135deg, #f8f9fa 0%, #e9ecef 100%);
+        border-radius: 15px;
+        padding: 25px;
+        box-shadow: 0 10px 35px rgba(0, 0, 0, 0.12), 0 4px 15px rgba(0, 0, 0, 0.08) !important;
+        border: 1px solid rgba(255, 255, 255, 0.9);
+    }
+    
+    /* 통합 갤러리 제목 색상 조정 (양식지 브랜드 컬러) */
+    .ncr-gallery .gallery-title {
+        background: linear-gradient(135deg, #1565c0 0%, #0d47a1 100%) !important;
+        color: white !important;
+    }
+
+    /* =================================================================== */
+    /* 7단계: 반응형 최적화 */
+    /* =================================================================== */
+    @media (max-width: 768px) {
+        /* 모바일에서는 축소 정도 완화 */
+        .page-title { 
+            padding: 15px 0 !important;       /* 데스크톱보다 약간 여유 */
+        }
+        
+        .page-title h1 {
+            font-size: 1.4rem !important;     /* 가독성 고려 */
+        }
+        
+        .calculator-header { 
+            padding: 15px 20px !important;    /* 터치 친화적 */
+        }
+        
+        .price-display .price-amount {
+            font-size: 1.5rem !important;     /* 모바일 가독성 */
+        }
+        
+        .option-select, select, input[type="text"], input[type="email"], textarea {
+            padding: 10px 15px !important;    /* 터치 영역 확보 */
+        }
+
+        .gallery-section {
+            padding: 20px;
+            margin: 0 -10px;
+            border-radius: 10px;
+        }
+        
+        .gallery-title {
+            margin: -20px -20px 15px -20px;
+            padding: 12px 15px;
+            font-size: 1rem;
+        }
+    }
+    </style>
+
+    <!-- 통합 갤러리 JavaScript -->
+    <script src="../../includes/js/UnifiedGallery.js"></script>
+    
     <!-- JavaScript 파일 포함 -->
     <script src="js/ncrflambeau-compact.js"></script>
+    
+    <!-- 양식지 갤러리 초기화 -->
+    <script>
+    document.addEventListener('DOMContentLoaded', function() {
+        console.log('양식지 갤러리 초기화 시작');
+        
+        if (typeof UnifiedGallery !== 'undefined') {
+            const gallery = new UnifiedGallery({
+                container: '#gallery-section',
+                category: 'ncrflambeau',
+                categoryLabel: '양식지',
+                apiUrl: '/api/get_portfolio_images.php'
+            });
+            
+            console.log('양식지 갤러리 초기화 완료');
+        } else {
+            console.error('UnifiedGallery 클래스를 찾을 수 없습니다.');
+        }
+    });
+    </script>
 </body>
 </html>

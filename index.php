@@ -6,10 +6,11 @@
   <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate">
   <meta http-equiv="Pragma" content="no-cache">
   <meta http-equiv="Expires" content="0">
-  <title>두손기획인쇄 — 사무용이지만 세련된 전문 인쇄 서비스</title>
-  <meta name="description" content="명함, 전단지, 스티커, 봉투, 카다록 등 사무용 인쇄물 전문 제작. 실시간 견적과 빠른 주문 시스템으로 세련된 비즈니스 인쇄물을 만나보세요." />
-  <meta property="og:title" content="두손기획인쇄 — 사무용이지만 세련된 전문 인쇄 서비스" />
-  <meta property="og:description" content="명함, 전단지, 스티커, 봉투, 카다록 등 사무용 인쇄물 전문 제작. 실시간 견적과 빠른 주문 시스템." />
+  <title>두손기획인쇄 - 명함 스티커 전단지 봉투 카다록 포스터 라벨 인쇄 전문</title>
+  <meta name="description" content="명함인쇄, 스티커제작, 전단지인쇄, 봉투인쇄, 카다록제작, 포스터, 라벨스티커, 자석스티커, 상품권, NCR용지 등 모든 인쇄물 전문. 영등포 인쇄소 1688-2384" />
+  <meta name="keywords" content="명함인쇄, 스티커인쇄, 스티커제작, 전단지인쇄, 라벨인쇄, 라벨스티커, 봉투인쇄, 카다록인쇄, 포스터인쇄, 자석스티커, 상품권인쇄, NCR용지, 영등포인쇄, 영등포인쇄소, 두손기획인쇄, 인쇄소, 인쇄업체, 온라인인쇄" />
+  <meta property="og:title" content="두손기획인쇄 - 명함 스티커 전단지 라벨 봉투 인쇄 전문" />
+  <meta property="og:description" content="명함인쇄, 스티커제작, 전단지인쇄, 라벨스티커, 봉투인쇄, 카다록제작, 포스터인쇄, 자석스티커, 상품권인쇄 전문. 영등포구 인쇄소 ☎1688-2384" />
   <meta property="og:image" content="http://localhost/slide/slide_inserted.gif" />
   <meta property="og:type" content="website" />
   <meta property="og:url" content="http://localhost/" />
@@ -37,6 +38,7 @@
       }
     }
   </script>
+  <?php include 'includes/schema_markup.php'; ?>
   <style>
     :root { 
       --primary: #0ea5e9;
@@ -262,12 +264,10 @@
       
       <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8 mb-12">
         <!-- Stickers -->
-        <div class="card-shadow bg-white rounded-2xl overflow-hidden group cursor-pointer" onclick="window.location.href='/MlangPrintAuto/shop/view_modern.php'">
-          <div class="h-48 bg-gradient-to-br from-green-400 to-emerald-500 relative overflow-hidden">
-            <img src="/slide/slide__Sticker.gif?refresh=<?=microtime(true).rand(10000,99999)?>" alt="스티커 제작 서비스" class="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500" loading="lazy">
-            <div class="absolute inset-0 bg-gradient-to-t from-black/50 to-transparent"></div>
-            <div class="absolute bottom-4 left-4 text-white">
-              <div class="w-10 h-10 bg-white/20 rounded-xl flex items-center justify-center text-xl mb-2">🏷️</div>
+        <div class="card-shadow bg-white rounded-2xl overflow-hidden group cursor-pointer" onclick="window.location.href='/MlangPrintAuto/sticker_new/index.php'">
+          <div class="h-24 bg-gradient-to-br from-green-400 to-emerald-500 relative overflow-hidden">
+            <div class="absolute inset-0 flex items-center justify-center">
+              <h2 class="text-white text-3xl font-bold tracking-wide">스티커</h2>
             </div>
           </div>
           <div class="p-6">
@@ -281,11 +281,9 @@
         
         <!-- Flyers -->
         <div class="card-shadow bg-white rounded-2xl overflow-hidden group cursor-pointer" onclick="window.location.href='/MlangPrintAuto/inserted/index.php'">
-          <div class="h-48 bg-gradient-to-br from-blue-400 to-sky-500 relative overflow-hidden">
-            <img src="/slide/slide_inserted.gif?refresh=<?=microtime(true).rand(10000,99999)?>" alt="전단지 제작 서비스" class="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500" loading="lazy">
-            <div class="absolute inset-0 bg-gradient-to-t from-black/50 to-transparent"></div>
-            <div class="absolute bottom-4 left-4 text-white">
-              <div class="w-10 h-10 bg-white/20 rounded-xl flex items-center justify-center text-xl mb-2">📄</div>
+          <div class="h-24 bg-gradient-to-br from-blue-400 to-sky-500 relative overflow-hidden">
+            <div class="absolute inset-0 flex items-center justify-center">
+              <h2 class="text-white text-3xl font-bold tracking-wide">전단지</h2>
             </div>
           </div>
           <div class="p-6">
@@ -298,62 +296,90 @@
         </div>
         
         <!-- Magnetic Stickers -->
-        <div class="card-shadow bg-white rounded-2xl p-6 group cursor-pointer" onclick="window.location.href='/MlangPrintAuto/msticker/index.php'">
-          <div class="w-16 h-16 bg-gradient-to-br from-green-100 to-green-200 rounded-2xl flex items-center justify-center text-2xl mb-4 group-hover:scale-110 transition">🧲</div>
-          <h3 class="text-xl font-bold text-slate-800 mb-2">종이자석</h3>
-          <p class="text-slate-600 mb-4">냉장고나 철제 표면에 부착 가능. 생활 밀착형 광고 매체</p>
-          <div class="text-sky-600 font-semibold flex items-center gap-2">
-            견적받기 <span class="group-hover:translate-x-1 transition">→</span>
+        <div class="card-shadow bg-white rounded-2xl overflow-hidden group cursor-pointer" onclick="window.location.href='/MlangPrintAuto/msticker/index.php'">
+          <div class="h-24 bg-gradient-to-br from-blue-500 to-indigo-600 relative overflow-hidden">
+            <div class="absolute inset-0 flex items-center justify-center">
+              <h2 class="text-white text-3xl font-bold tracking-wide">자석스티커</h2>
+            </div>
+          </div>
+          <div class="p-6">
+            <h3 class="text-xl font-bold text-slate-800 mb-2">자석스티커</h3>
+            <p class="text-slate-600 mb-4">냉장고나 철제 표면에 부착 가능. 생활 밀착형 광고 매체</p>
+            <div class="text-sky-600 font-semibold flex items-center gap-2">
+              견적받기 <span class="group-hover:translate-x-1 transition">→</span>
+            </div>
           </div>
         </div>
         
         <!-- Business Cards -->
-        <div class="card-shadow bg-white rounded-2xl p-6 group cursor-pointer" onclick="window.location.href='/MlangPrintAuto/NameCard/index.php'">
-          <div class="w-16 h-16 bg-gradient-to-br from-purple-100 to-purple-200 rounded-2xl flex items-center justify-center text-2xl mb-4 group-hover:scale-110 transition">💼</div>
-          <h3 class="text-xl font-bold text-slate-800 mb-2">명함</h3>
-          <p class="text-slate-600 mb-4">비즈니스 첫인상을 좌우하는 필수 아이템. 프리미엄 용지와 후가공</p>
-          <div class="text-sky-600 font-semibold flex items-center gap-2">
-            견적받기 <span class="group-hover:translate-x-1 transition">→</span>
+        <div class="card-shadow bg-white rounded-2xl overflow-hidden group cursor-pointer" onclick="window.location.href='/MlangPrintAuto/NameCard/index.php'">
+          <div class="h-24 bg-gradient-to-br from-purple-500 to-violet-600 relative overflow-hidden">
+            <div class="absolute inset-0 flex items-center justify-center">
+              <h2 class="text-white text-3xl font-bold tracking-wide">명함</h2>
+            </div>
+          </div>
+          <div class="p-6">
+            <h3 class="text-xl font-bold text-slate-800 mb-2">명함</h3>
+            <p class="text-slate-600 mb-4">비즈니스 첫인상을 좌우하는 필수 아이템. 프리미엄 용지와 후가공</p>
+            <div class="text-sky-600 font-semibold flex items-center gap-2">
+              견적받기 <span class="group-hover:translate-x-1 transition">→</span>
+            </div>
           </div>
         </div>
         
         <!-- Coupons -->
-        <div class="card-shadow bg-white rounded-2xl p-6 group cursor-pointer" onclick="window.location.href='/MlangPrintAuto/MerchandiseBond/index.php'">
-          <div class="w-16 h-16 bg-gradient-to-br from-yellow-100 to-yellow-200 rounded-2xl flex items-center justify-center text-2xl mb-4 group-hover:scale-110 transition">🎟️</div>
-          <h3 class="text-xl font-bold text-slate-800 mb-2">쿠폰</h3>
-          <p class="text-slate-600 mb-4">고객 충성도 프로그램과 프로모션용. 넘버링과 미싱 옵션 제공</p>
-          <div class="text-sky-600 font-semibold flex items-center gap-2">
-            견적받기 <span class="group-hover:translate-x-1 transition">→</span>
+        <div class="card-shadow bg-white rounded-2xl overflow-hidden group cursor-pointer" onclick="window.location.href='/MlangPrintAuto/MerchandiseBond/index.php?page=MerchandiseBond'">
+          <div class="h-24 bg-gradient-to-br from-pink-500 to-red-500 relative overflow-hidden">
+            <div class="absolute inset-0 flex items-center justify-center">
+              <h2 class="text-white text-3xl font-bold tracking-wide">상품권</h2>
+            </div>
+          </div>
+          <div class="p-6">
+            <h3 class="text-xl font-bold text-slate-800 mb-2">상품권</h3>
+            <p class="text-slate-600 mb-4">고객 충성도 프로그램과 프로모션용. 넘버링과 미싱 옵션 제공</p>
+            <div class="text-sky-600 font-semibold flex items-center gap-2">
+              견적받기 <span class="group-hover:translate-x-1 transition">→</span>
+            </div>
           </div>
         </div>
         
         <!-- Envelopes -->
-        <div class="card-shadow bg-white rounded-2xl p-6 group cursor-pointer" onclick="window.location.href='/MlangPrintAuto/envelope/index.php'">
-          <div class="w-16 h-16 bg-gradient-to-br from-indigo-100 to-indigo-200 rounded-2xl flex items-center justify-center text-2xl mb-4 group-hover:scale-110 transition">✉️</div>
-          <h3 class="text-xl font-bold text-slate-800 mb-2">봉투</h3>
-          <p class="text-slate-600 mb-4">공식 문서와 우편물 발송용. 다양한 크기와 용지 옵션</p>
-          <div class="text-sky-600 font-semibold flex items-center gap-2">
-            견적받기 <span class="group-hover:translate-x-1 transition">→</span>
+        <div class="card-shadow bg-white rounded-2xl overflow-hidden group cursor-pointer" onclick="window.location.href='/MlangPrintAuto/envelope/index.php?page=envelope'">
+          <div class="h-24 bg-gradient-to-br from-amber-500 to-orange-500 relative overflow-hidden">
+            <div class="absolute inset-0 flex items-center justify-center">
+              <h2 class="text-white text-3xl font-bold tracking-wide">봉투</h2>
+            </div>
+          </div>
+          <div class="p-6">
+            <h3 class="text-xl font-bold text-slate-800 mb-2">봉투</h3>
+            <p class="text-slate-600 mb-4">공식 문서와 우편물 발송용. 다양한 크기와 용지 옵션</p>
+            <div class="text-sky-600 font-semibold flex items-center gap-2">
+              견적받기 <span class="group-hover:translate-x-1 transition">→</span>
+            </div>
           </div>
         </div>
         
         <!-- Forms -->
-        <div class="card-shadow bg-white rounded-2xl p-6 group cursor-pointer" onclick="window.location.href='/MlangPrintAuto/NcrFlambeau/index.php'">
-          <div class="w-16 h-16 bg-gradient-to-br from-teal-100 to-teal-200 rounded-2xl flex items-center justify-center text-2xl mb-4 group-hover:scale-110 transition">📋</div>
-          <h3 class="text-xl font-bold text-slate-800 mb-2">양식지</h3>
-          <p class="text-slate-600 mb-4">전표, 영수증, 거래명세서 등. NCR 복사지와 넘버링 지원</p>
-          <div class="text-sky-600 font-semibold flex items-center gap-2">
-            견적받기 <span class="group-hover:translate-x-1 transition">→</span>
+        <div class="card-shadow bg-white rounded-2xl overflow-hidden group cursor-pointer" onclick="window.location.href='/MlangPrintAuto/NcrFlambeau/index.php?page=NcrFlambeau'">
+          <div class="h-24 bg-gradient-to-br from-slate-500 to-gray-600 relative overflow-hidden">
+            <div class="absolute inset-0 flex items-center justify-center">
+              <h2 class="text-white text-3xl font-bold tracking-wide">양식지</h2>
+            </div>
+          </div>
+          <div class="p-6">
+            <h3 class="text-xl font-bold text-slate-800 mb-2">양식지</h3>
+            <p class="text-slate-600 mb-4">전표, 영수증, 거래명세서 등. NCR 복사지와 넘버링 지원</p>
+            <div class="text-sky-600 font-semibold flex items-center gap-2">
+              견적받기 <span class="group-hover:translate-x-1 transition">→</span>
+            </div>
           </div>
         </div>
         
         <!-- Catalogs -->
         <div class="card-shadow bg-white rounded-2xl overflow-hidden group cursor-pointer" onclick="window.location.href='/MlangPrintAuto/cadarok/index.php'">
-          <div class="h-48 bg-gradient-to-br from-slate-500 to-cyan-500 relative overflow-hidden">
-            <img src="/slide/slide_cadarok.gif?refresh=<?=microtime(true).rand(10000,99999)?>" alt="카다록 제작 서비스" class="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500" loading="lazy">
-            <div class="absolute inset-0 bg-gradient-to-t from-black/50 to-transparent"></div>
-            <div class="absolute bottom-4 left-4 text-white">
-              <div class="w-10 h-10 bg-white/20 rounded-xl flex items-center justify-center text-xl mb-2">📚</div>
+          <div class="h-24 bg-gradient-to-br from-emerald-500 to-teal-600 relative overflow-hidden">
+            <div class="absolute inset-0 flex items-center justify-center">
+              <h2 class="text-white text-3xl font-bold tracking-wide">카다록</h2>
             </div>
           </div>
           <div class="p-6">
@@ -366,12 +392,18 @@
         </div>
         
         <!-- Posters -->
-        <div class="card-shadow bg-white rounded-2xl p-6 group cursor-pointer" onclick="window.location.href='/MlangPrintAuto/LittlePrint/index_compact.php'">
-          <div class="w-16 h-16 bg-gradient-to-br from-pink-100 to-pink-200 rounded-2xl flex items-center justify-center text-2xl mb-4 group-hover:scale-110 transition">🖼️</div>
-          <h3 class="text-xl font-bold text-slate-800 mb-2">포스터</h3>
-          <p class="text-slate-600 mb-4">행사, 전시, 인테리어용 대형 인쇄물. 고화질 출력으로 선명한 품질</p>
-          <div class="text-sky-600 font-semibold flex items-center gap-2">
-            견적받기 <span class="group-hover:translate-x-1 transition">→</span>
+        <div class="card-shadow bg-white rounded-2xl overflow-hidden group cursor-pointer" onclick="window.location.href='/MlangPrintAuto/LittlePrint/index_compact.php?page=LittlePrint'">
+          <div class="h-24 bg-gradient-to-br from-red-500 to-pink-600 relative overflow-hidden">
+            <div class="absolute inset-0 flex items-center justify-center">
+              <h2 class="text-white text-3xl font-bold tracking-wide">포스터</h2>
+            </div>
+          </div>
+          <div class="p-6">
+            <h3 class="text-xl font-bold text-slate-800 mb-2">포스터</h3>
+            <p class="text-slate-600 mb-4">행사, 전시, 인테리어용 대형 인쇄물. 고화질 출력으로 선명한 품질</p>
+            <div class="text-sky-600 font-semibold flex items-center gap-2">
+              견적받기 <span class="group-hover:translate-x-1 transition">→</span>
+            </div>
           </div>
         </div>
       </div>

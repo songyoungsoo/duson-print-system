@@ -39,25 +39,18 @@ document.addEventListener('DOMContentLoaded', function() {
 // ============================================================================
 
 function initializeGallery() {
-    const galleryContainer = document.getElementById('envelopeGallery');
-    if (!galleryContainer) return;
-    
-    // GalleryLightbox 클래스 사용
-    if (typeof GalleryLightbox !== 'undefined') {
-        // 고급 갤러리 라이트박스 시스템 초기화
-        const gallery = new GalleryLightbox('envelopeGallery', {
-            dataSource: 'get_envelope_images.php',
-            productType: 'envelope',
-            autoLoad: true,
-            zoomEnabled: true,
-            animationSpeed: 0.15
+    // UnifiedGallery 시스템 초기화
+    if (typeof UnifiedGallery !== 'undefined') {
+        const gallery = new UnifiedGallery({
+            container: '#gallery-section',
+            category: 'envelope',
+            categoryLabel: '봉투',
+            apiUrl: '/api/get_real_orders_portfolio.php'
         });
         
-        gallery.init();
-        console.log('GalleryLightbox 시스템으로 명함 갤러리 초기화 완료');
+        console.log('봉투 갤러리 초기화 완료');
     } else {
-        // 폴백: 기본 갤러리 시스템
-        loadNamecardImages();
+        console.error('UnifiedGallery 클래스를 찾을 수 없습니다.');
     }
 }
 
@@ -428,15 +421,18 @@ function updatePriceDisplay(priceData) {
     const priceDetails = document.getElementById('priceDetails');
     const uploadOrderButton = document.getElementById('uploadOrderButton');
     
+    // 인쇄비 + 디자인비 합계를 큰 금액으로 표시 (VAT 제외)
     if (priceAmount) {
-        priceAmount.textContent = formatNumber(Math.round(priceData.total_with_vat)) + '원';
+        const supplyPrice = priceData.total_price || (priceData.base_price + priceData.design_price);
+        priceAmount.textContent = formatNumber(supplyPrice) + '원';
+        console.log('💰 큰 금액 표시 (인쇄비+디자인비):', supplyPrice + '원');
     }
     
     if (priceDetails) {
         priceDetails.innerHTML = `
             인쇄비: ${formatNumber(priceData.base_price)}원<br>
             디자인비: ${formatNumber(priceData.design_price)}원<br>
-            합계(VAT포함): ${formatNumber(Math.round(priceData.total_with_vat))}원
+            <strong>부가세 포함: ${formatNumber(Math.round(priceData.total_with_vat))}원</strong>
         `;
     }
     

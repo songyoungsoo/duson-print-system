@@ -35,10 +35,10 @@ function escapeHtml(text) {
 document.addEventListener('DOMContentLoaded', function() {
     console.log('🚀 전단지 컴팩트 페이지 초기화 시작');
     
-    // 이미지 갤러리 초기화
-    loadImageGallery();
-    initGalleryZoom();
-    animate();
+    // 통합 갤러리 시스템이 이미지를 처리하므로 기존 갤러리 코드 비활성화
+    // loadImageGallery();
+    // initGalleryZoom();
+    // animate();
     
     // 드롭다운 이벤트 리스너 추가
     initDropdownEvents();
@@ -393,19 +393,26 @@ function updatePriceDisplay(priceData) {
         priceDisplay.classList.add('calculated');
     }
     
+    // 인쇄비 + 디자인비 합계를 큰 금액으로 표시 (VAT 제외)
     if (priceAmount) {
-        priceAmount.textContent = priceData.Order_Price + '원';
+        const printCost = Math.round(priceData.PriceForm);         // 인쇄비만
+        const designCost = Math.round(priceData.DS_PriceForm);     // 디자인비만
+        const supplyPrice = printCost + designCost;               // 공급가 (VAT 제외)
+        
+        priceAmount.textContent = supplyPrice.toLocaleString() + '원';
+        console.log('💰 큰 금액 표시 (인쇄비+디자인비):', supplyPrice + '원');
     }
     
     if (priceDetails) {
         const printCost = Math.round(priceData.PriceForm);         // 인쇄비만
         const designCost = Math.round(priceData.DS_PriceForm);     // 디자인비만
+        const supplyPrice = printCost + designCost;               // 공급가 (VAT 제외)
         const total = Math.round(priceData.Total_PriceForm);       // VAT 포함 총합계
         
         priceDetails.innerHTML = `
             인쇄비: ${printCost.toLocaleString()}원<br>
             디자인비: ${designCost.toLocaleString()}원<br>
-            합계(VAT포함): ${total.toLocaleString()}원
+            <strong>부가세 포함: ${total.toLocaleString()}원</strong>
         `;
     }
     
@@ -453,7 +460,8 @@ function updateSelectedOptions() {
 function loadImageGallery() {
     console.log('🖼️ 갤러리 이미지 로드 시작');
     
-    fetch('get_leaflet_images.php')
+    // 먼저 실제 데이터를 시도하고, 실패하면 샘플 데이터 사용
+    fetch('/api/get_real_orders_portfolio.php?category=inserted')
         .then(response => {
             console.log('🖼️ 갤러리 응답 상태:', response.status);
             if (!response.ok) {
@@ -473,17 +481,39 @@ function loadImageGallery() {
                     hideGalleryLoading();
                     console.log('✅ 갤러리 로드 성공:', galleryImages.length, '개 이미지');
                 } else {
-                    console.warn('⚠️ 갤러리 데이터 없음:', response.message);
-                    showGalleryError('갤러리 이미지가 없습니다.');
+                    console.warn('⚠️ 실제 이미지 없음, 샘플 데이터 로드 시도');
+                    loadSampleGallery();
                 }
             } catch (parseError) {
                 console.error('JSON 파싱 오류:', parseError);
                 console.error('원시 응답:', text);
-                showGalleryError('갤러리 데이터 처리 중 오류가 발생했습니다.');
+                loadSampleGallery();
             }
         })
         .catch(error => {
             console.error('갤러리 로드 네트워크 오류:', error);
+            loadSampleGallery();
+        });
+}
+
+// 샘플 갤러리 로드 함수
+function loadSampleGallery() {
+    console.log('📋 샘플 갤러리 로드 시작');
+    
+    fetch('/api/get_leaflet_samples.php')
+        .then(response => response.json())
+        .then(response => {
+            if (response.success && response.data && response.data.length > 0) {
+                galleryImages = response.data;
+                renderGallery();
+                hideGalleryLoading();
+                console.log('✅ 샘플 갤러리 로드 성공:', galleryImages.length, '개 샘플');
+            } else {
+                showGalleryError('갤러리를 불러올 수 없습니다.');
+            }
+        })
+        .catch(error => {
+            console.error('샘플 갤러리 로드 오류:', error);
             showGalleryError('갤러리를 불러올 수 없습니다.');
         });
 }

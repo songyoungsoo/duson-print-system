@@ -46,8 +46,23 @@ document.addEventListener('DOMContentLoaded', function() {
     // 초기 옵션 로드
     const categorySelect = document.querySelector('select[name="MY_type"]');
     if (categorySelect && categorySelect.value) {
+        console.log('🎯 페이지 로드 시 기본 카테고리:', categorySelect.value);
         loadSizes(categorySelect.value);
+    } else if (categorySelect) {
+        // 양식(100매철)이 기본 선택되도록 설정
+        const defaultOption = categorySelect.querySelector('option[value="475"]');
+        if (defaultOption) {
+            categorySelect.value = '475';
+            console.log('🎯 양식(100매철) 기본 선택 설정');
+            loadSizes('475');
+        }
     }
+    
+    // 페이지 로드 시 초기 가격 계산 (기본값으로)
+    setTimeout(() => {
+        console.log('💰 초기 가격 계산 시작 (기본값 적용)');
+        calculateInitialPrice();
+    }, 500); // DOM 로딩 완료 후 0.5초 대기
     
     console.log('✅ 페이지 초기화 완료');
 });
@@ -152,10 +167,22 @@ function loadSizes(categoryId) {
             if (sizeSelect) {
                 sizeSelect.innerHTML = '<option value="">규격을 선택해주세요</option>';
                 
-                response.data.forEach(option => {
+                response.data.forEach((option, index) => {
                     const optionElement = document.createElement('option');
                     optionElement.value = option.no || option.value;
                     optionElement.textContent = option.title || option.text;
+                    
+                    // 양식(100매철) 선택 시 첫 번째 옵션 자동 선택
+                    if (categoryId === '475' && index === 0) {
+                        optionElement.selected = true;
+                        console.log('🎯 양식(100매철) 첫 번째 규격 자동 선택:', option.title);
+                        
+                        // 자동 선택 후 후속 옵션도 로드
+                        setTimeout(() => {
+                            loadColors(categoryId, optionElement.value);
+                        }, 100);
+                    }
+                    
                     sizeSelect.appendChild(optionElement);
                 });
                 
@@ -184,10 +211,22 @@ function loadColors(categoryId, sizeId) {
             if (colorSelect) {
                 colorSelect.innerHTML = '<option value="">색상을 선택해주세요</option>';
                 
-                response.data.forEach(option => {
+                response.data.forEach((option, index) => {
                     const optionElement = document.createElement('option');
                     optionElement.value = option.no || option.value;
                     optionElement.textContent = option.title || option.text;
+                    
+                    // 첫 번째 색상 옵션 자동 선택
+                    if (index === 0) {
+                        optionElement.selected = true;
+                        console.log('🎯 첫 번째 색상 자동 선택:', option.title);
+                        
+                        // 자동 선택 후 수량 옵션도 로드
+                        setTimeout(() => {
+                            loadQuantities(categoryId, sizeId, optionElement.value);
+                        }, 100);
+                    }
+                    
                     colorSelect.appendChild(optionElement);
                 });
                 
@@ -216,10 +255,22 @@ function loadQuantities(categoryId, sizeId, colorId) {
             if (quantitySelect) {
                 quantitySelect.innerHTML = '<option value="">수량을 선택해주세요</option>';
                 
-                response.data.forEach(option => {
+                response.data.forEach((option, index) => {
                     const optionElement = document.createElement('option');
                     optionElement.value = option.value;
                     optionElement.textContent = option.text;
+                    
+                    // 첫 번째 수량 옵션 자동 선택
+                    if (index === 0) {
+                        optionElement.selected = true;
+                        console.log('🎯 첫 번째 수량 자동 선택:', option.text);
+                        
+                        // 자동 선택 후 가격 계산
+                        setTimeout(() => {
+                            autoCalculatePrice();
+                        }, 100);
+                    }
+                    
                     quantitySelect.appendChild(optionElement);
                 });
                 
@@ -342,13 +393,18 @@ function updatePriceDisplay(priceData) {
         priceDisplay.classList.add('calculated');
     }
     
+    // 인쇄비 + 디자인비 합계를 큰 금액으로 표시
     if (priceAmount) {
-        priceAmount.textContent = priceData.formatted.vat_price;
+        // API에서 이미 계산된 total_price 사용
+        const totalPrice = priceData.total_price || 0;
+        
+        priceAmount.textContent = formatNumber(totalPrice) + '원';
+        console.log('💰 큰 금액 표시 (인쇄비+디자인비):', totalPrice + '원');
     }
     
     if (priceDetails) {
         priceDetails.innerHTML = `
-            인쇄비: ${priceData.formatted.base_price}<br>
+            인쇄만: ${priceData.formatted.base_price}<br>
             디자인비: ${priceData.formatted.design_price}<br>
             <strong>부가세 포함: ${priceData.formatted.vat_price}</strong>
         `;
@@ -955,6 +1011,107 @@ function directOrder() {
 document.addEventListener('DOMContentLoaded', function() {
     // 로그인 관련 처리는 공통 시스템에서 처리
 });
+
+// ============================================================================
+// 초기 가격 계산 (페이지 로드 시 기본값으로 계산)
+// ============================================================================
+
+function calculateInitialPrice() {
+    console.log('🎯 초기 가격 계산 함수 시작');
+    
+    const form = document.getElementById('ncr-quote-form');
+    if (!form) {
+        console.error('❌ 폼을 찾을 수 없습니다');
+        return;
+    }
+    
+    // 현재 선택된 기본값들 확인
+    const formData = new FormData(form);
+    const categoryValue = formData.get('MY_type') || '';
+    const sizeValue = formData.get('Section') || '';
+    const colorValue = formData.get('POtype') || '';
+    const quantityValue = formData.get('MY_amount') || '';
+    const designValue = formData.get('ordertype') || '';
+    
+    console.log('📋 기본값 확인:', {
+        category: categoryValue,
+        size: sizeValue,
+        color: colorValue,
+        quantity: quantityValue,
+        design: designValue
+    });
+    
+    // 필수 필드가 모두 선택되었는지 확인
+    if (!categoryValue || !sizeValue || !colorValue || !quantityValue || !designValue) {
+        console.log('⚠️ 기본값이 완전하지 않음 - 계산 생략');
+        return;
+    }
+    
+    // 실제 가격 계산 수행
+    console.log('💰 기본값으로 가격 계산 수행');
+    performInitialCalculation(formData);
+}
+
+function performInitialCalculation(formData) {
+    // 로딩 상태 표시
+    const priceAmount = document.getElementById('priceAmount');
+    const priceDetails = document.getElementById('priceDetails');
+    
+    if (priceAmount) {
+        priceAmount.textContent = '계산중...';
+    }
+    if (priceDetails) {
+        priceDetails.innerHTML = '기본 옵션으로<br>가격을 계산하고 있습니다';
+    }
+    
+    // AJAX로 실제 가격 계산
+    fetch('calculate_price_ajax.php', {
+        method: 'POST',
+        body: formData
+    })
+    .then(response => {
+        console.log('💰 초기 가격 계산 응답 상태:', response.status);
+        return response.json();
+    })
+    .then(response => {
+        console.log('💰 초기 가격 계산 응답:', response);
+        
+        if (response.success && response.data) {
+            console.log('✅ 초기 가격 계산 성공');
+            updatePriceDisplay(response.data);
+            updateHiddenPriceFields(response.data);
+            currentPriceData = response.data;
+            
+            // 초기 계산에서도 큰 금액 수정 (인쇄비 + 디자인비)
+            if (priceAmount) {
+                const totalPrice = response.data.total_price || 0;
+                priceAmount.textContent = formatNumber(totalPrice) + '원';
+                console.log('💰 초기 큰 금액 표시 (인쇄비+디자인비):', totalPrice + '원');
+            }
+        } else {
+            console.warn('⚠️ 초기 가격 계산 실패:', response.message);
+            
+            // 실패 시 기본 상태로 복원
+            if (priceAmount) {
+                priceAmount.textContent = '0원';
+            }
+            if (priceDetails) {
+                priceDetails.innerHTML = '옵션을 선택하시면<br>실시간으로 가격이 계산됩니다';
+            }
+        }
+    })
+    .catch(error => {
+        console.error('❌ 초기 가격 계산 네트워크 오류:', error);
+        
+        // 오류 시 기본 상태로 복원
+        if (priceAmount) {
+            priceAmount.textContent = '0원';
+        }
+        if (priceDetails) {
+            priceDetails.innerHTML = '옵션을 선택하시면<br>실시간으로 가격이 계산됩니다';
+        }
+    });
+}
 
 // 에러 처리 및 디버깅
 window.addEventListener('error', function(e) {

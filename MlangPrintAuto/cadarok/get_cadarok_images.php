@@ -44,12 +44,29 @@ try {
         throw new Exception("Portfolio table does not exist");
     }
     
-    // 카다록/리플렛 카테고리 포트폴리오에서 최신 이미지 4개 가져오기
+    // URL 파라미터 처리
+    $showAll = isset($_GET['all']) && $_GET['all'] === 'true';
+    $page = isset($_GET['page']) ? max(1, intval($_GET['page'])) : 1;
+    $perPage = isset($_GET['per_page']) ? max(1, min(50, intval($_GET['per_page']))) : ($showAll ? 12 : 4);
+    $offset = ($page - 1) * $perPage;
+    
+    // 총 개수 조회
+    $countQuery = "SELECT COUNT(*) as total 
+                   FROM Mlang_portfolio_bbs 
+                   WHERE Mlang_bbs_reply='0' AND (CATEGORY='카달로그' OR CATEGORY='리플렛' OR CATEGORY='카다록/리플렛' OR CATEGORY='cadarok')";
+    $countResult = @mysqli_query($db, $countQuery);
+    $totalCount = 0;
+    if ($countResult) {
+        $countRow = mysqli_fetch_assoc($countResult);
+        $totalCount = $countRow['total'];
+    }
+    
+    // 페이지네이션된 데이터 조회
     $query = "SELECT Mlang_bbs_no, Mlang_bbs_title, Mlang_bbs_connent, Mlang_bbs_link 
               FROM Mlang_portfolio_bbs 
-              WHERE Mlang_bbs_reply='0' AND (CATEGORY='카달로그' OR CATEGORY='리플렛' OR CATEGORY='카다록/리플렛')
-              ORDER BY CASE WHEN CATEGORY='카달로그' THEN 1 WHEN CATEGORY='리플렛' THEN 2 WHEN CATEGORY='카다록/리플렛' THEN 3 ELSE 4 END, Mlang_bbs_no DESC 
-              LIMIT 4";
+              WHERE Mlang_bbs_reply='0' AND (CATEGORY='카달로그' OR CATEGORY='리플렛' OR CATEGORY='카다록/리플렛' OR CATEGORY='cadarok')
+              ORDER BY CASE WHEN CATEGORY='카달로그' THEN 1 WHEN CATEGORY='리플렛' THEN 2 WHEN CATEGORY='카다록/리플렛' THEN 3 WHEN CATEGORY='cadarok' THEN 4 ELSE 5 END, Mlang_bbs_no DESC 
+              LIMIT $perPage OFFSET $offset";
     
     $result = @mysqli_query($db, $query);
     
@@ -82,6 +99,11 @@ try {
         }
     }
     
+    // 페이지네이션 정보 계산
+    $totalPages = $totalCount > 0 ? ceil($totalCount / $perPage) : 1;
+    $hasNext = $page < $totalPages;
+    $hasPrev = $page > 1;
+    
     // 완전히 깨끗한 출력을 위해 버퍼 정리
     ob_end_clean();
     
@@ -89,6 +111,16 @@ try {
     echo json_encode([
         'success' => true,
         'data' => $images,
+        'pagination' => [
+            'current_page' => $page,
+            'per_page' => $perPage,
+            'total_count' => $totalCount,
+            'total_pages' => $totalPages,
+            'has_next' => $hasNext,
+            'has_prev' => $hasPrev,
+            'next_page' => $hasNext ? $page + 1 : null,
+            'prev_page' => $hasPrev ? $page - 1 : null
+        ],
         'count' => count($images)
     ], JSON_UNESCAPED_UNICODE);
 

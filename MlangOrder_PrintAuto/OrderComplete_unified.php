@@ -1,9 +1,22 @@
 <?php
 /**
- * 통합 장바구니 주문 완료 페이지
+ * 통합 장바구니 주문 완료 페이지 (리다이렉트)
+ * 새로운 사무용 표형태 페이지로 자동 리다이렉트
  * 경로: MlangOrder_PrintAuto/OrderComplete_unified.php
  */
 
+// 새로운 사무용 표형태 페이지로 리다이렉트
+$query_string = $_SERVER['QUERY_STRING'];
+$redirect_url = 'OrderComplete_office_table.php';
+if (!empty($query_string)) {
+    $redirect_url .= '?' . $query_string;
+}
+
+header('Location: ' . $redirect_url);
+exit;
+
+// 아래는 이전 코드 (백업용)
+/*
 session_start();
 
 // 데이터베이스 연결

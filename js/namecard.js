@@ -10,20 +10,11 @@ let uploadedFiles = [];
 let selectedUploadMethod = 'upload';
 let modalFileUploadInitialized = false; // 모달 파일 업로드 초기화 상태
 
-// 갤러리 관련 변수들
-let currentX = 50;
-let currentY = 50;
-let currentSize = 100;
-let targetX = 50;
-let targetY = 50; 
-let targetSize = 100;
-let originalBackgroundSize = 'contain';
-let currentImageType = 'large'; // 'small' or 'large'
-let animationId = null;
+// 통합 갤러리 시스템 사용 (갤러리 관련 변수들 제거됨)
 
 // 페이지 로드 시 초기화
 document.addEventListener('DOMContentLoaded', function() {
-    initializeGallery();
+    // 통합 갤러리 시스템 사용 (include_product_gallery에서 자동 처리)
     initializeCalculator();
     initializeFileUpload();
     
@@ -35,186 +26,13 @@ document.addEventListener('DOMContentLoaded', function() {
 });
 
 // ============================================================================
-// 고급 이미지 갤러리 시스템 (적응형 이미지 분석 및 부드러운 애니메이션)
+// 통합 갤러리 시스템 사용 중 (include_product_gallery에서 자동 처리)
+// 기존 인라인 갤러리 코드 제거됨 - 공통 갤러리 시스템으로 통합
 // ============================================================================
 
-function initializeGallery() {
-    const galleryContainer = document.getElementById('namecardGallery');
-    if (!galleryContainer) return;
-    
-    // GalleryLightbox 클래스 사용
-    if (typeof GalleryLightbox !== 'undefined') {
-        // 고급 갤러리 라이트박스 시스템 초기화
-        const gallery = new GalleryLightbox('namecardGallery', {
-            dataSource: 'get_namecard_images.php',
-            productType: 'namecard',
-            autoLoad: true,
-            zoomEnabled: true,
-            animationSpeed: 0.15
-        });
-        
-        gallery.init();
-        console.log('GalleryLightbox 시스템으로 명함 갤러리 초기화 완료');
-    } else {
-        // 폴백: 기본 갤러리 시스템
-        loadNamecardImages();
-    }
-}
+// 통합 갤러리 시스템으로 대체됨 (include_product_gallery 사용)
 
-function loadNamecardImages() {
-    const galleryContainer = document.getElementById('namecardGallery');
-    if (!galleryContainer) return;
-    
-    galleryContainer.innerHTML = '<div class="loading">🖼️ 갤러리 로딩 중...</div>';
-    
-    fetch('get_namecard_images.php')
-        .then(response => response.json())
-        .then(data => {
-            if (data.success && data.data && data.data.length > 0) {
-                renderGallery(data.data, galleryContainer);
-            } else {
-                galleryContainer.innerHTML = '<div class="error">갤러리 이미지를 불러올 수 없습니다.</div>';
-            }
-        })
-        .catch(error => {
-            console.error('갤러리 로딩 오류:', error);
-            galleryContainer.innerHTML = '<div class="error">갤러리 로딩 중 오류가 발생했습니다.</div>';
-        });
-}
-
-function renderGallery(images, container) {
-    const galleryHTML = `
-        <div class="lightbox-viewer" id="zoomBox"></div>
-        <div class="thumbnail-strip" id="thumbnailStrip"></div>
-    `;
-    
-    container.innerHTML = galleryHTML;
-    
-    const zoomBox = document.getElementById('zoomBox');
-    const thumbnailStrip = document.getElementById('thumbnailStrip');
-    
-    // 썸네일 생성
-    images.forEach((image, index) => {
-        const thumbnail = document.createElement('img');
-        thumbnail.src = image.thumbnail || image.path;
-        thumbnail.alt = image.title || `명함 샘플 ${index + 1}`;
-        thumbnail.className = 'thumbnail';
-        thumbnail.dataset.fullImage = image.path;
-        
-        if (index === 0) {
-            thumbnail.classList.add('active');
-            loadImageToZoomBox(image.path, zoomBox);
-        }
-        
-        thumbnail.addEventListener('click', function() {
-            // 활성 썸네일 변경
-            document.querySelectorAll('.thumbnail').forEach(t => t.classList.remove('active'));
-            this.classList.add('active');
-            
-            // 메인 이미지 변경
-            loadImageToZoomBox(this.dataset.fullImage, zoomBox);
-        });
-        
-        thumbnailStrip.appendChild(thumbnail);
-    });
-    
-    // 고급 확대 기능 초기화
-    initializeAdvancedZoom(zoomBox);
-}
-
-function loadImageToZoomBox(imagePath, zoomBox) {
-    // 이미지 크기 분석 및 적응형 표시
-    analyzeImageSize(imagePath, function(backgroundSize) {
-        zoomBox.style.backgroundImage = `url('${imagePath}')`;
-        zoomBox.style.backgroundSize = backgroundSize;
-        zoomBox.style.backgroundPosition = '50% 50%';
-        
-        // 초기값 리셋
-        currentX = targetX = 50;
-        currentY = targetY = 50;
-        currentSize = targetSize = 100;
-        originalBackgroundSize = backgroundSize;
-    });
-}
-
-function analyzeImageSize(imagePath, callback) {
-    const img = new Image();
-    img.onload = function() {
-        const containerHeight = 350;
-        const containerWidth = document.getElementById('zoomBox').getBoundingClientRect().width;
-        
-        let backgroundSize;
-        
-        if (this.naturalHeight <= containerHeight && this.naturalWidth <= containerWidth) {
-            // 1:1 크기 표시 (작은 이미지)
-            backgroundSize = `${this.naturalWidth}px ${this.naturalHeight}px`;
-            currentImageType = 'small';
-        } else {
-            // contain 모드 (큰 이미지)
-            backgroundSize = 'contain';
-            currentImageType = 'large';
-        }
-        
-        callback(backgroundSize);
-    };
-    img.src = imagePath;
-}
-
-function initializeAdvancedZoom(zoomBox) {
-    // 마우스 움직임 추적
-    zoomBox.addEventListener('mousemove', function(e) {
-        const rect = this.getBoundingClientRect();
-        const x = ((e.clientX - rect.left) / rect.width) * 100;
-        const y = ((e.clientY - rect.top) / rect.height) * 100;
-        
-        targetX = x;
-        targetY = y;
-        
-        // 이미지 타입에 따른 확대 배율 조정
-        if (currentImageType === 'small') {
-            targetSize = 140; // 작은 이미지는 1.4배 확대
-        } else {
-            targetSize = 160; // 큰 이미지는 1.6배 확대
-        }
-    });
-    
-    zoomBox.addEventListener('mouseleave', function() {
-        targetX = 50;
-        targetY = 50;
-        targetSize = 100;
-    });
-    
-    // 부드러운 애니메이션 시작
-    startSmoothAnimation();
-}
-
-function startSmoothAnimation() {
-    if (animationId) {
-        cancelAnimationFrame(animationId);
-    }
-    
-    function animate() {
-        const zoomBox = document.getElementById('zoomBox');
-        if (!zoomBox) return;
-        
-        // 매우 부드러운 추적 (0.08 lerp 계수)
-        currentX += (targetX - currentX) * 0.08;
-        currentY += (targetY - currentY) * 0.08;
-        currentSize += (targetSize - currentSize) * 0.08;
-        
-        zoomBox.style.backgroundPosition = `${currentX}% ${currentY}%`;
-        
-        if (currentSize > 100.1) {
-            zoomBox.style.backgroundSize = `${currentSize}%`;
-        } else {
-            zoomBox.style.backgroundSize = originalBackgroundSize;
-        }
-        
-        animationId = requestAnimationFrame(animate);
-    }
-    
-    animate();
-}
+// 포스터 방식 호버링으로 변경 - 복잡한 애니메이션 함수 제거됨
 
 // ============================================================================
 // 실시간 가격 계산 시스템 (동적 옵션 로딩 및 자동 계산)
@@ -234,7 +52,7 @@ function initializeCalculator() {
         const style = this.value;
         resetSelectWithText(paperSelect, '명함 재질을 선택해주세요');
         resetSelectWithText(quantitySelect, '수량을 선택해주세요');
-        resetPrice();
+        // resetPrice() 제거 - autoCalculatePrice()에서 처리
 
         if (style) {
             loadPaperTypes(style);
@@ -317,7 +135,7 @@ function loadQuantities() {
     const potype = sideSelect.value;
 
     resetSelectWithText(quantitySelect, '수량을 선택해주세요');
-    resetPrice();
+    // resetPrice() 제거 - autoCalculatePrice()에서 처리
 
     if (!style || !section || !potype) return;
 
@@ -370,7 +188,9 @@ function autoCalculatePrice() {
     if (!formData.get('MY_type') || !formData.get('Section') || 
         !formData.get('POtype') || !formData.get('MY_amount') || 
         !formData.get('ordertype')) {
-        return; // 아직 모든 옵션이 선택되지 않음
+        // 옵션이 부족할 때만 가격 초기화
+        resetPrice();
+        return;
     }
     
     // 실시간 계산 실행
@@ -428,15 +248,18 @@ function updatePriceDisplay(priceData) {
     const priceDetails = document.getElementById('priceDetails');
     const uploadOrderButton = document.getElementById('uploadOrderButton');
     
+    // 인쇄비 + 디자인비 합계를 큰 금액으로 표시 (VAT 제외)
     if (priceAmount) {
-        priceAmount.textContent = formatNumber(Math.round(priceData.total_with_vat)) + '원';
+        const supplyPrice = priceData.total_price || (priceData.base_price + priceData.design_price);
+        priceAmount.textContent = formatNumber(supplyPrice) + '원';
+        console.log('💰 큰 금액 표시 (인쇄비+디자인비):', supplyPrice + '원');
     }
     
     if (priceDetails) {
         priceDetails.innerHTML = `
             인쇄비: ${formatNumber(priceData.base_price)}원<br>
             디자인비: ${formatNumber(priceData.design_price)}원<br>
-            합계(VAT포함): ${formatNumber(Math.round(priceData.total_with_vat))}원
+            <strong>부가세 포함: ${formatNumber(Math.round(priceData.total_with_vat))}원</strong>
         `;
     }
     

@@ -69,8 +69,11 @@ if ($type_result && ($type_row = mysqli_fetch_assoc($type_result))) {
     <!-- 명함 컴팩트 페이지 전용 CSS -->
     <link rel="stylesheet" href="../../css/namecard-compact.css">
     
-    <!-- 갤러리 라이트박스 컴포넌트 -->
-    <script src="../../includes/js/GalleryLightbox.js"></script>
+    <!-- 통합 갤러리 CSS -->
+    <link rel="stylesheet" href="../../css/unified-gallery.css">
+    
+    <!-- 통합 갤러리 JavaScript -->
+    <script src="../../includes/js/UnifiedGallery.js"></script>
     
     <!-- 세션 ID를 JavaScript에서 사용할 수 있도록 메타 태그 추가 -->
     <meta name="session-id" content="<?php echo htmlspecialchars(session_id()); ?>">
@@ -85,12 +88,11 @@ if ($type_result && ($type_row = mysqli_fetch_assoc($type_result))) {
         </div>
 
         <div class="main-content">
-            <!-- 좌측: 갤러리 라이트박스 -->
+            <!-- 좌측: 포스터 기술 통합 갤러리 -->
             <div class="gallery-section">
-                <div class="gallery-title">🖼️ 명함 샘플 갤러리</div>
-                
-                <!-- 갤러리 라이트박스 컴포넌트 -->
-                <div id="namecardGallery"></div>
+                <div id="gallery-section">
+                    <!-- UnifiedGallery 컴포넌트가 여기에 렌더링됩니다 -->
+                </div>
             </div>
 
             <!-- 우측: 동적 계산기 -->
@@ -239,6 +241,190 @@ if ($type_result && ($type_row = mysqli_fetch_assoc($type_result))) {
     <?php include "../../includes/login_modal.php"; ?>
     <?php include "../../includes/footer.php"; ?>
 
+    <!-- 명함 갤러리 컴팩트 디자인 적용 (Frontend-Compact-Design-Guide.md 기반) -->
+    <style>
+    /* =================================================================== */
+    /* 1단계: Page-title 컴팩트화 (1/2 높이 축소) */
+    /* =================================================================== */
+    .page-title {
+        padding: 12px 0 !important;          /* 1/2 축소 */
+        margin-bottom: 15px !important;      /* 1/2 축소 */
+        border-radius: 10px !important;      /* 2/3 축소 */
+        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%) !important;
+        color: white !important;
+    }
+
+    .page-title h1 {
+        font-size: 1.6rem !important;        /* 27% 축소 */
+        line-height: 1.2 !important;         /* 타이트 */
+        margin: 0 !important;
+        color: white !important;
+        text-shadow: 0 2px 4px rgba(0,0,0,0.3) !important;
+    }
+
+    .page-title p {
+        margin: 4px 0 0 0 !important;        /* 1/2 축소 */
+        font-size: 0.85rem !important;       /* 15% 축소 */
+        line-height: 1.3 !important;
+        color: white !important;
+        opacity: 0.9 !important;
+    }
+
+    /* =================================================================== */
+    /* 2단계: Calculator-header 컴팩트화 (gallery-title과 완전히 동일한 디자인) */
+    /* =================================================================== */
+    .calculator-header {
+        background: linear-gradient(135deg, #e91e63 0%, #ad1457 100%) !important;
+        color: white !important;
+        padding: 15px 20px !important;       /* gallery-title과 동일 */
+        margin: 0px -25px 20px -25px !important; /* 좌우 -25px로 섹션 너비에 맞춤 */
+        border-radius: 15px 15px 0 0 !important;  /* gallery-title과 동일한 라운딩 */
+        font-size: 1.1rem !important;        /* gallery-title과 동일 */
+        font-weight: 600 !important;
+        text-align: center !important;
+        box-shadow: 0 2px 10px rgba(233, 30, 99, 0.3) !important;
+        line-height: 1.2 !important;
+    }
+
+    /* calculator-section에 갤러리와 동일한 배경 적용 */
+    .calculator-section {
+        background: linear-gradient(135deg, #f8f9fa 0%, #e9ecef 100%) !important;
+        border-radius: 15px !important;
+        padding: 25px !important;
+        box-shadow: 0 10px 35px rgba(0, 0, 0, 0.12), 0 4px 15px rgba(0, 0, 0, 0.08) !important;
+        border: 1px solid rgba(255, 255, 255, 0.9) !important;
+        position: relative !important; /* 헤더 오버플로우를 위한 설정 */
+    }
+
+    .calculator-header h3 {
+        font-size: 1.2rem !important;        /* 14% 축소 */
+        line-height: 1.2 !important;
+        margin: 0 !important;
+        color: white !important;
+        font-weight: 600 !important;
+    }
+
+    .calculator-subtitle {
+        font-size: 0.85rem !important;
+        margin: 0 !important;
+        opacity: 0.9 !important;
+    }
+
+    /* =================================================================== */
+    /* 3단계: Price-display 컴팩트화 (2/3 높이 축소) */
+    /* =================================================================== */
+    .price-display {
+        padding: 8px 5px !important;         /* 상하 패딩 최적화 */
+        border-radius: 8px !important;       /* 2/3 축소 */
+        margin-bottom: 5px !important;
+    }
+
+    .price-display .price-label {
+        font-size: 0.85rem !important;       /* 15% 축소 */
+        margin-bottom: 4px !important;       /* 1/2 축소 */
+        line-height: 1.2 !important;
+    }
+
+    .price-display .price-amount {
+        font-size: 1.4rem !important;        /* 22% 축소 */
+        margin-bottom: 6px !important;       /* 40% 축소 */
+        line-height: 1.1 !important;
+    }
+
+    .price-display .price-details {
+        font-size: 0.75rem !important;       /* 12% 축소 */
+        line-height: 1.3 !important;
+        margin: 0 !important;
+    }
+
+    .price-display.calculated {
+        transform: scale(1.01) !important;   /* 애니메이션 절제 */
+        box-shadow: 0 4px 12px rgba(233, 30, 99, 0.15) !important;
+    }
+
+    /* =================================================================== */
+    /* 4단계: Form 요소 컴팩트화 (패딩 1/2 축소) */
+    /* =================================================================== */
+    .option-select {
+        padding: 6px 15px !important;        /* 상하 패딩 1/2 */
+    }
+
+    /* =================================================================== */
+    /* 5단계: 기타 요소들 컴팩트화 */
+    /* =================================================================== */
+    .calculator-section {
+        padding: 0px 25px !important;        /* 더 타이트하게 */
+        min-height: 400px !important;
+    }
+
+    .options-grid {
+        gap: 12px !important;                /* 25% 축소 */
+    }
+
+    .option-group {
+        margin-bottom: 8px !important;       /* 33% 축소 */
+    }
+
+    .upload-order-button {
+        margin-top: 8px !important;          /* 20% 축소 */
+    }
+
+    /* =================================================================== */
+    /* 6단계: 갤러리 섹션 스타일 (명함 브랜드 컸러 - 핀크-마젠타) */
+    /* =================================================================== */
+    .gallery-section {
+        background: linear-gradient(135deg, #f8f9fa 0%, #e9ecef 100%);
+        border-radius: 15px;
+        padding: 25px;
+        box-shadow: 0 10px 35px rgba(0, 0, 0, 0.12), 0 4px 15px rgba(0, 0, 0, 0.08) !important;
+        border: 1px solid rgba(255, 255, 255, 0.9);
+    }
+    
+    /* 통합 갤러리 제목 색상 조정 (명함 브랜드 컸러) */
+    .gallery-section .gallery-title {
+        background: linear-gradient(135deg, #e91e63 0%, #ad1457 100%) !important;
+        color: white !important;
+    }
+
+    /* =================================================================== */
+    /* 7단계: 반응형 최적화 */
+    /* =================================================================== */
+    @media (max-width: 768px) {
+        /* 모바일에서는 축소 정도 완화 */
+        .page-title { 
+            padding: 15px 0 !important;       /* 데스크톱보다 약간 여유 */
+        }
+        
+        .page-title h1 {
+            font-size: 1.4rem !important;     /* 가독성 고려 */
+        }
+        
+        .calculator-header { 
+            padding: 15px 20px !important;    /* 터치 친화적 */
+        }
+        
+        .price-display .price-amount {
+            font-size: 1.5rem !important;     /* 모바일 가독성 */
+        }
+        
+        .option-select {
+            padding: 10px 15px !important;    /* 터치 영역 확보 */
+        }
+
+        .gallery-section {
+            padding: 20px;
+            margin: 0 -10px;
+            border-radius: 10px;
+        }
+        
+        .gallery-title {
+            margin: -20px -20px 15px -20px;
+            padding: 12px 15px;
+            font-size: 1rem;
+        }
+    }
+    </style>
+
     <script>
         // PHP 변수를 JavaScript로 전달
         var phpVars = {
@@ -259,15 +445,23 @@ if ($type_result && ($type_row = mysqli_fetch_assoc($type_result))) {
 
         // 페이지 로드 시 초기화
         document.addEventListener('DOMContentLoaded', function() {
-            // 갤러리 라이트박스 초기화
-            namecardGallery = new GalleryLightbox('namecardGallery', {
-                dataSource: 'get_namecard_images.php',
-                productType: 'namecard',
-                autoLoad: true,
-                zoomEnabled: true
-            });
-            namecardGallery.init();
+            console.log('명함 갤러리 초기화 시작');
             
+            // 포스터 갤러리 기술이 통합된 UnifiedGallery 초기화
+            if (typeof UnifiedGallery !== 'undefined') {
+                const gallery = new UnifiedGallery({
+                    container: '#gallery-section',
+                    category: 'namecard',
+                    categoryLabel: '명함',
+                    apiUrl: '/api/get_portfolio_images.php'
+                });
+                
+                console.log('명함 갤러리 초기화 완료');
+            } else {
+                console.error('UnifiedGallery 클래스를 찾을 수 없습니다.');
+            }
+            
+            // 명함 계산기 초기화
             initializeCalculator();
             initializeFileUpload();
             
@@ -748,6 +942,19 @@ if ($type_result && ($type_row = mysqli_fetch_assoc($type_result))) {
         function format_number(number) {
             return number.toString().replace(/\B(?=(\d{3})+(?!\d))/g, ",");
         }
+        
+        
+        // === 구식 갤러리 시스템 제거됨 ===
+        // UnifiedGallery 컴포넌트로 모든 기능이 통합되었습니다.
+        // - 4개 썸네일 표시
+        // - "더 많은 샘플 보기" 팝업
+        // - 라이트박스 확대 보기
+        // - 포스터 갤러리의 고급 줌 기술
+        // - 페이지네이션 지원
+        // 모든 기능이 하나의 컴포넌트에서 제공됩니다.
+        
+        // 초기화 다음에 계산기 설정
+        
     </script>
 
     <?php

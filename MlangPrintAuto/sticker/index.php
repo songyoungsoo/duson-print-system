@@ -1,493 +1,282 @@
 <?php
-$HomeDir = "../..";
-$PageCode = "PrintAuto";
-$MultyUploadDir = "../../PHPClass/MultyUpload";
+/**
+ * 명함 견적안내 컴팩트 시스템 - PROJECT_SUCCESS_REPORT.md 스펙 구현
+ * Features: 적응형 이미지 분석, 부드러운 애니메이션, 실시간 가격 계산
+ * Created: 2025년 8월 (AI Assistant - Frontend Persona)
+ */
 
-include "$HomeDir/db.php";
-$page = isset($page) ? $page : "msticker";
-include "../MlangPrintAutoTop.php";
+// 공통 인증 및 설정
+include "../../includes/auth.php";
 
-$Ttable = "$page";
-include "../ConDb.php";
-include "inc.php";
-
-$log_url = preg_replace("/\//", "_", htmlspecialchars($_SERVER['PHP_SELF']));
-$log_y = date("Y"); // 연도
-$log_md = date("md"); // 월일
-$log_ip = isset($_SERVER['REMOTE_ADDR']) ? $_SERVER['REMOTE_ADDR'] : 'Unknown'; // 접속 ip
-$log_time = time(); // 접속 로그타임
-?>
-<head>
-<script language="JavaScript" type="text/JavaScript">
-function MM_reloadPage(init) { 
-  if (init==true) with (navigator) {if ((appName=="Netscape")&&(parseInt(appVersion)==4)) {
-    document.MM_pgW=innerWidth; document.MM_pgH=innerHeight; onresize=MM_reloadPage; }}
-  else if (innerWidth!=document.MM_pgW || innerHeight!=document.MM_pgH) location.reload();
-}
-MM_reloadPage(true);
-
-function MM_findObj(n, d) {
-  var p,i,x;  if(!d) d=document; if((p=n.indexOf("?"))>0&&parent.frames.length) {
-    d=parent.frames[n.substring(p+1)].document; n=n.substring(0,p);}
-  if(!(x=d[n])&&d.all) x=d.all[n]; for (i=0;!x&&i<d.forms.length;i++) x=d.forms[i][n];
-  for(i=0;!x&&d.layers&&i<d.layers.length;i++) x=MM_findObj(n,d.layers[i].document);
-  if(!x && d.getElementById) x=d.getElementById(n); return x;
-}
-
-function MM_showHideLayers() { 
-  var i,p,v,obj,args=MM_showHideLayers.arguments;
-  for (i=0; i<(args.length-2); i+=3) if ((obj=MM_findObj(args[i]))!=null) { v=args[i+2];
-    if (obj.style) { obj=obj.style; v=(v=='show')?'visible':(v=='hide')?'hidden':v; }
-    obj.visibility=v; }
-}
-</script>
-
-<STYLE>
-.input {font-size:10pt; background-color:#FFFFFF; color:#336699; line-height:130%;}
-.inputOk {font-size:10pt; background-color:#FFFFFF; color:#429EB2; border-style:solid; height:22px; border:0; solid #FFFFFF; font:bold;}
-.Td1{font-size:9pt; background-color:#EBEBEB; color:#336699;}
-.Td2{font-size:9pt; color:#232323;}
-</STYLE>
-
-</head>
-
-<script>
-function CheckTotal(mode){
-  var f = document.forms['choiceForm']; // 폼을 정확하게 참조
-    // 드롭다운에서 선택된 값을 hidden 필드에 복사
-// 종류 선택값 복사
-f.StyleForm.value = f.MY_type.value;
-
-// 규격 선택값 복사
-f.SectionForm.value = f.PN_type.value;
-
-// 수량 선택값 복사
-f.QuantityForm.value = f.MY_amount.value;
-
-// 편집비 선택값 복사
-f.DesignForm.value = f.ordertype.value;
-
-
-// 필수 필드 검증
-if (f.StyleForm.value == "") {
-    alert("주문/견적문의를 실행하기 위하여 오류가 있습니다.\n\n다시 실행시켜 주십시오...!!");
-    return false;
-}
-if (f.SectionForm.value == "") {
-    alert("주문/견적문의를 실행하기 위하여 오류가 있습니다.\n\n다시 실행시켜 주십시오...!!");
-    return false;
-}
-
-if (f.Order_PriceForm.value == "") {
-    alert("주문/견적문의를 실행하기 위하여 오류가 있습니다.\n\n다시 실행시켜 주십시오...!!");
-    return false;
-}
-
-if (f.Total_PriceForm.value == "") {
-    alert("주문/견적문의를 실행하기 위하여 오류가 있습니다.\n\n다시 실행시켜 주십시오...!!");
-    return false;
-}
-
-// 모든 필드가 올바르면 폼을 제출
-f.action = "/MlangOrder_PrintAuto/OnlineOrder.php?SubmitMode=" + mode;
-f.submit();
-
-}
-
-///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-
-							function calc(){
-						       asd=document.forms["choiceForm"];
-cal.document.location.href='price_cal.php?MY_type='+asd.MY_type.value+'&PN_type='+asd.PN_type.value+'&MY_amount='+asd.MY_amount.value+'&ordertype='+asd.ordertype.value;
-							} // END function
-
-							function calc_ok()
-								{
-							asd=document.forms["choiceForm"];				
-cal.document.location.href='price_cal.php?MY_type='+asd.MY_type.value+'&PN_type='+asd.PN_type.value+'&MY_amount='+asd.MY_amount.value+'&ordertype='+asd.ordertype.value;
-							} // END function
-						</script>
-
-<?PHP include "DbZip.php"; ?>
-						
-<iframe name=Tcal frameborder=0 width=0 height=0></iframe>
-<iframe name=cal frameborder=0 width=0 height=0></iframe>
-<!----------------- 박스 시작 -------------------->
-<table width="692"   bgcolor="#CCCCCC" border="0" bordercolor="#CCCCCC" align="center" cellpadding="10" cellspacing="1">
-<tr>
-<td bgcolor="#FFFFFF">
-<table width="100%"  border="0" align="center" cellpadding="0" cellspacing="0">
-
- <form name='choiceForm' method='post'>
-
-  <tr><!--1-->
-    <td height="5" align="center"> </td>
-  </tr>
-  <tr><!--2-->
-    <td align="center" valign="top">
-	<!------------------------------------------select메누----------------------------------------->
-	<table width="100%" border="0" cellpadding="0" cellspacing="0">
-      <tr>
-        <td width="43%" align="left" valign="top"><table width="100%"  border="0" align="center" cellpadding="1" cellspacing="1">
-          <tr onMouseOver="MM_showHideLayers('print01','','show','print02','','hide','print03','','hide','print04','','hide','print05','','hide')">
-            <td align="left" class='LeftText'><li><B>종류</B></td>
-            <td bgcolor="#FFFFFF">
-              <select class="input" name='MY_type' onchange='change_Field(this.value)'>
-            <?php
+// 공통 함수 및 데이터베이스
+include "../../includes/functions.php";
 include "../../db.php";
 
-// Prepare statement for Cate_result
-$Cate_stmt = $db->prepare("SELECT * FROM $GGTABLE WHERE Ttable = ? AND BigNo = '0' ORDER BY no DESC");
-$Cate_stmt->bind_param('s', $page);
-$Cate_stmt->execute();
-$Cate_result = $Cate_stmt->get_result();
-$Cate_rows = $Cate_result->num_rows;
+// 데이터베이스 연결 및 설정
+check_db_connection($db);
+mysqli_set_charset($db, "utf8");
 
-if ($Cate_rows) {
-    while ($Cate_row = $Cate_result->fetch_assoc()) {
-        ?>
-        <option value="<?= htmlspecialchars($Cate_row['no']) ?>" selected="selected">
-            <?= htmlspecialchars($Cate_row['title']) ?>
-        </option>
-        <?php
-    }
-}
-?>
-</select></td>
-</tr>
+// 로그 정보 및 페이지 설정
+$log_info = generateLogInfo();
+$page_title = generate_page_title("명함 견적안내 컴팩트 - 프리미엄");
 
-<?php
-// Prepare statement for result_CV
-$CV_stmt = $db->prepare("SELECT * FROM $GGTABLE WHERE Ttable = ? AND BigNo = '0' ORDER BY no ASC LIMIT 0, 1");
-$CV_stmt->bind_param('s', $page);
-$CV_stmt->execute();
-$result_CV = $CV_stmt->get_result();
-$row_CV = $result_CV->fetch_assoc();
+// 기본값 설정 (데이터베이스에서 가져오기) - PROJECT_SUCCESS_REPORT.md 스펙
+$default_values = [
+    'MY_type' => '',
+    'Section' => '',
+    'POtype' => '1', // 기본값: 단면
+    'MY_amount' => '',
+    'ordertype' => 'print' // 기본값: 인쇄만
+];
 
-$CV_no = htmlspecialchars($row_CV['no']);
-$CV_Ttable = htmlspecialchars($row_CV['Ttable']);
-$CV_BigNo = htmlspecialchars($row_CV['BigNo']);
-$CV_title = htmlspecialchars($row_CV['title']);
-$CV_TreeNo = htmlspecialchars($row_CV['TreeNo']);
-?>
-
-<tr onMouseOver="MM_showHideLayers('print01','','hide','print02','','show','print03','','hide','print04','','hide','print05','','hide')">
-    <td align="left" class='LeftText'><li><B>규격</B></td>
-    <td bgcolor="#FFFFFF">
-        <select name="PN_type" onChange="calc_re();">
-<?php
-// Prepare statement for result_CV_Two
-$CV_Two_stmt = $db->prepare("SELECT * FROM $GGTABLE WHERE BigNo = ? ORDER BY no ASC");
-$CV_Two_stmt->bind_param('s', $CV_no);
-$CV_Two_stmt->execute();
-$result_CV_Two = $CV_Two_stmt->get_result();
-$rows_CV_Two = $result_CV_Two->num_rows;
-
-if ($rows_CV_Two) {
-    while ($row_CV_Two = $result_CV_Two->fetch_assoc()) {
-        echo "<option value='" . htmlspecialchars($row_CV_Two['no']) . "'>" . htmlspecialchars($row_CV_Two['title']) . "</option>";
-    }
-}
-?>
-        </select>
-    </td>
-</tr>
-
-<tr onMouseOver="MM_showHideLayers('print01','','hide','print02','','hide','print03','','show','print04','','hide','print05','','hide')">
-    <td align="left" class='LeftText'><li><B>수량</B></td>
-    <td bgcolor="#FFFFFF">
-        <select name="MY_amount" onchange="calc_ok();">
-            <option value='1000'>1000매</option>
-            <option value='2000'>2000매</option>
-            <option value='3000'>3000매</option>
-            <option value='4000'>4000매</option>
-            <option value='5000'>5000매</option>
-            <option value='6000'>6000매</option>
-            <option value='7000'>7000매</option>
-            <option value='8000'>8000매</option>
-            <option value='9000'>9000매</option>
-            <option value='10000'>10000매</option>
-        </select>
-    </td>
-</tr>
-
-<?php
-$db->close();
-?>
-
-          </tr>
-          <tr onMouseOver="MM_showHideLayers('print01','','hide','print02','','hide','print03','','hide','print04','','show','print05','','hide')">
-            <td align="left" class='LeftText'><li><B>편집비</B></td>
-            <td bgcolor="#FFFFFF">
-								  <select name="ordertype" onChange="calc_ok();">
-										<option value='total'>디자인+인쇄</option>
-										<option value='print'>인쇄만 의뢰</option>
-										</select>            </td>
-          </tr>
-        </table>          
-        <!------------------------------------------select메뉴끝-----------------------------------------></td>
-        <td width="60%" align="left" valign="top">
-            <table width="100%"  border="0" cellpadding="3" cellspacing="0">
-             <tr>
-              <td width="7%" align="left" valign="top">&nbsp;</td>
-              <td width="93%" align="left" valign="top">
-			옆의 항목을 선택 하시면 고객님께서 원하는 방식으로<BR>
-			자동견적 금액을 보실수 있습니다.<BR><BR>
-			<b>바로 주문을 하시려면 주문하기를 클릭하세요.</b><BR><BR>
-			두손기획-고객센터: 02-2632-1830
-			  </td>
-             </tr>
-            </table>
-		<!-----------------------------------------제품설명공간------------------------------------------------>
-		<!-----------------------------------------제품설명공간------------------------------------------------></td>
-      </tr>
-    </table></td>
-  </tr>
-    <tr><!--3-->
-    <td height="15" align="center"> </td>
-  </tr>
-  <tr><!--4-->
-        <td height="1" colspan="3" background="../../images/dot2.gif"></td>
-  </tr>
-  <tr><!--5-->
-    <td height="10" align="center"> </td>
-  </tr>
-  <tr><!--6-->
-    <td>
-    <table width="100%"  border="0" cellpadding="0" cellspacing="0" bgcolor="#e4e4e4">
-      <tr>
-        <td width="305" align="left" valign="top" bgcolor="#FFFFFF">
-        <table width="100%"  border="0" cellspacing="0" cellpadding="3">
-          <tr>
-            <td width="172" align="center"><a href=javascript:calc();><img src="/images/estimate.gif" width="99" height="31" border=0></a></td>
-          </tr>
-		            <tr>
-            <td height="5" align="center"> </td>
-          </tr>
-										
-
-<!--form2 start-->
-<head>
-<script language="JavaScript">
-
-function small_window(myurl) {
-var newWindow;
-var props = 'scrollBars=yes,resizable=yes,toolbar=no,menubar=no,location=no,directories=no,width=400,height=200';
-newWindow = window.open("<?=$MultyUploadDir?>/"+myurl+"&Mode=tt", "Add_from_Src_to_Dest", props);
-}
-
-
-function addToParentList(sourceList) {
-destinationList = window.document.forms[0].parentList;
-for(var count = destinationList.options.length - 1; count >= 0; count--) {
-destinationList.options[count] = null;
-}
-for(var i = 0; i < sourceList.options.length; i++) {
-if (sourceList.options[i] != null)
-destinationList.options[i] = new Option(sourceList.options[i].text, sourceList.options[i].value );
-   }
-}
-
-
-function selectList(sourceList) {
-sourceList = window.document.forms[0].parentList;
-for(var i = 0; i < sourceList.options.length; i++) {
-if (sourceList.options[i] != null)
-sourceList.options[i].selected = true;
-}
-return true;
-}
-
-
-function deleteSelectedItemsFromList(sourceList) {
-var maxCnt = sourceList.options.length;
-for(var i = maxCnt - 1; i >= 0; i--) { 
-
-if ((sourceList.options[i] != null) && (sourceList.options[i].selected == true)) {
-window.open('<?=$MultyUploadDir?>/FileDelete.php?FileDelete=ok&Turi=<?=$log_url?>&Ty=<?=$log_y?>&Tmd=<?=$log_md?>&Tip=<?=$log_ip?>&Ttime=<?=$log_time?>&FileName='+sourceList.options[i].text,'','scrollbars=no,resizable=no,width=100,height=100,top=2000,left=2000');
-sourceList.options[i] = null;
-      }
-   }
-
-
-}
-
-function FormCheckField()
-{
-var f=document.choiceForm;
-var winopts = "width=780,height=590,toolbar=no,location=no,directories=no,status=yes,menubar=no,status=yes,menubar=no,scrollbars=no,resizable=yes";
-var popup = window.open('','MlangMulty<?=$log_y?><?=$log_md?><?=$log_time?>', winopts);
-popup.focus();
-}
-
-function MlangWinExit() {
-if(document.choiceForm.OnunloadChick.value == "on") {
-window.open("<?=$MultyUploadDir?>/FileDelete.php?DirDelete=ok&Turi=<?=$log_url?>&Ty=<?=$log_y?>&Tmd=<?=$log_md?>&Tip=<?=$log_ip?>&Ttime=<?=$log_time?>","MlangWinExitsdf","width=100,height=100,top=2000,left=2000,toolbar=no,location=no,directories=no,status=yes,menubar=no,status=yes,menubar=no,scrollbars=no,resizable=yes");
-}
-}
-window.onunload = MlangWinExit;
-
-</script>
-
-
-<input type="hidden" name="OnunloadChick" value="on">
-<input type="hidden" name='Turi' value='<?= htmlspecialchars($log_url) ?>'>
-<input type="hidden" name='Ty' value='<?= htmlspecialchars($log_y) ?>'>
-<input type="hidden" name='Tmd' value='<?= htmlspecialchars($log_md) ?>'>
-<input type="hidden" name='Tip' value='<?= htmlspecialchars($log_ip) ?>'>
-<input type="hidden" name='Ttime' value='<?= htmlspecialchars($log_time) ?>'>
-<input type="hidden" name="ImgFolder" value="<?= htmlspecialchars($log_url) ?>/<?= htmlspecialchars($log_y) ?>/<?= htmlspecialchars($log_md) ?>/<?= htmlspecialchars($log_ip) ?>/<?= htmlspecialchars($log_time) ?>">
-   
-
-										<input type='hidden' name=OrderSytle value='<?=$View_TtableC?>'>   
-                    <input type='hidden' name=StyleForm>                              
-                    <input type='hidden' name=SectionForm>       
-                    <input type='hidden' name=QuantityForm>    
-                    <input type='hidden' name=DesignForm>
-										<input type='hidden' name=PriceForm>
-										<input type='hidden' name=DS_PriceForm>
-                    <input type='hidden' name=Order_PriceForm>
-                    <input type='hidden' name=VAT_PriceForm>
-                    <input type='hidden' name=Total_PriceForm>
-										<input type='hidden' name='page' value='<?=$page?>'>						
-
-          <tr>
-            <td align="center">
-		      <!------   결과값 보여주기 시작 -------------->
-                                       <table border="0" cellspacing="1" cellpadding="2" align=center width=100%>  
-									   
-                                        <tr> 
-                                          <td class='MlangAutoTd44'><li><B>인쇄비</B></td>
-										     <td class='MlangAutoTd44'>
-                                            <input type="text" size="10" name='Price' readonly style='height:18; font:bold; text-align:center;'>원
-											</td>
-                                        </tr>
-                                        <tr> 
-                                        <td class='MlangAutoTd44'><li><B>디자인</B></td>
-										     <td class='MlangAutoTd44'>
-                                            <input type="text" size="10" name='DS_Price' readonly style='height:18; font:bold; text-align:center;'>원
-											</td>
-                                        </tr>
-                                        <tr>
-                                            <td class='MlangAutoTd44'><li><B>금액</B></td>
-										     <td class='MlangAutoTd44'>
-                                            <input type="text" size="10" name='Order_Price' readonly style='height:18; font:bold; text-align:center;'>원
-											</td>
-                                        </tr>
-                                       <!------ <tr> 
-                                          <td>* 부가세
-                                            <input type="text" class="inputOk" size="16"  name='VAT_Price' readonly value=''>원
-											</td>
-                                        </tr>
-                                        <tr> 
-                                          <td>* <font color="#FF0000"><b>총액</b></font>
-                                            <input name="Total_Price" type="text" class="inputOk" size="16"  readonly value=''>원
-											</td>
-                                        </tr>----->
-						               </table>
-              <!------   결과값 보여주기 끄읕 -------------->
-             </td>
-          </tr>
-          <tr>
-            <td align="center" class="radi">세금별도. 배송비는 착불입니다. </td>
-          </tr>
-          <tr>
-            <td align="center" class="radicolor">
-            <?php
-$Ttable = isset($page) ? $page : ''; // Initialize variable
-include "../ConDb.php";
-include "../../admin/MlangPrintAuto/int/info.php";
-
-$View_ContText_ = isset($View_ContText_) ? $View_ContText_ : '';
-$View_temp = "View_ContText_" . $View_TtableA; 
-$CONTENT_OK = $$View_temp;
-
-include "../../MlangOrder_PrintAuto/OrderDownText.php";
-?>
-			</td>
-          </tr>
-        </table>          
-		<!-----------------------------------------주문금액보기폼------------------------------------------------>
-      
-        </td>
+// 첫 번째 명함 종류 가져오기 (일반명함(쿠폰) 우선)
+$type_query = "SELECT no, title FROM MlangPrintAuto_transactionCate 
+               WHERE Ttable='NameCard' AND BigNo='0' 
+               ORDER BY CASE WHEN title LIKE '%일반명함%' THEN 1 ELSE 2 END, no ASC 
+               LIMIT 1";
+$type_result = mysqli_query($db, $type_query);
+if ($type_result && ($type_row = mysqli_fetch_assoc($type_result))) {
+    $default_values['MY_type'] = $type_row['no'];
+    
+    // 해당 명함 종류의 첫 번째 재질 가져오기
+    $section_query = "SELECT no, title FROM MlangPrintAuto_transactionCate 
+                      WHERE Ttable='NameCard' AND BigNo='" . $type_row['no'] . "' 
+                      ORDER BY no ASC LIMIT 1";
+    $section_result = mysqli_query($db, $section_query);
+    if ($section_result && ($section_row = mysqli_fetch_assoc($section_result))) {
+        $default_values['Section'] = $section_row['no'];
         
-        <td width="458" align="left" valign="top" bgcolor="#FFFFFF">
-          <!-----------------------------------------파일첨부폼 시작 ------------------------------------------------>
-     <!------------------------- 파일 올리기 -------------------------------->
+        // 해당 조합의 기본 수량 가져오기 (500매 우선)
+        $quantity_query = "SELECT DISTINCT quantity FROM MlangPrintAuto_namecard 
+                          WHERE style='" . $type_row['no'] . "' AND Section='" . $section_row['no'] . "' 
+                          ORDER BY CASE WHEN quantity='500' THEN 1 ELSE 2 END, CAST(quantity AS UNSIGNED) ASC 
+                          LIMIT 1";
+        $quantity_result = mysqli_query($db, $quantity_query);
+        if ($quantity_result && ($quantity_row = mysqli_fetch_assoc($quantity_result))) {
+            $default_values['MY_amount'] = $quantity_row['quantity'];
+        }
+    }
+}
+?>
 
-     <table border=0 align=center width=300 cellpadding=2 cellspacing=0>
-	   <tr>
-          <td colspan=2><img src="/images/sub3_img_10.gif" width="262" height="24"></td>
-		</tr>
-       <tr>
-         <td width=100%>
-		    <select size='3' style="width:245; font-size:10pt; color:#336666; font:bold;" name='parentList' multiple>
-		    </select>
-		  </td>
-		 <td width=30%>
-<input type='button' onClick="javascript:small_window('FileUp.php?Turi=<?= htmlspecialchars($log_url) ?>&Ty=<?= htmlspecialchars($log_y) ?>&Tmd=<?= htmlspecialchars($log_md) ?>&Tip=<?= htmlspecialchars($log_ip) ?>&Ttime=<?= htmlspecialchars($log_time) ?>');" value=' 파일올리기 ' style="width:80; height:25;"><BR>
-<input type='button' onclick="javascript:deleteSelectedItemsFromList(parentList);" value=' 삭 제 ' style="width:80; height:25;">
-		 </td>
-       </tr>
-     </table>
-	 <!------------------------- 파일 올리기 -------------------------------->
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title><?php echo safe_html($page_title); ?></title>
+    
+    <!-- 공통 헤더 포함 -->
+    <?php include "../../includes/header.php"; ?>
+    
+    <!-- 명함 컴팩트 페이지 전용 CSS (PROJECT_SUCCESS_REPORT.md 스펙) -->
+    <link rel="stylesheet" href="../../css/namecard-compact.css">
+    <link rel="stylesheet" href="../../css/gallery-common.css">
+    
+    <!-- 고급 JavaScript 라이브러리 (적응형 이미지 분석 및 실시간 계산) -->
+    <script src="../../includes/js/GalleryLightbox.js"></script>
+    <script src="../../js/namecard.js" defer></script>
+    
+    <!-- 세션 ID 및 설정값 메타 태그 -->
+    <meta name="session-id" content="<?php echo htmlspecialchars(session_id()); ?>">
+    <meta name="default-section" content="<?php echo htmlspecialchars($default_values['Section']); ?>">
+    <meta name="default-quantity" content="<?php echo htmlspecialchars($default_values['MY_amount']); ?>">
+</head>
+<body>
+    <?php include "../../includes/nav.php"; ?>
+
+    <div class="compact-container">
+        <div class="page-title">
+            <h1>💳 명함 견적안내</h1>
+            <p>컴팩트 프리미엄 - PROJECT_SUCCESS_REPORT.md 스펙 구현</p>
+        </div>
+
+        <!-- 컴팩트 2단 그리드 레이아웃 (500px 갤러리 + 나머지 계산기) -->
+        <div class="main-content">
+            <!-- 좌측: 고급 이미지 갤러리 (적응형 이미지 분석 및 스마트 확대) -->
+            <div class="gallery-section">
+                <div class="gallery-title">🖼️ 명함 샘플 갤러리</div>
+                
+                <!-- 고급 갤러리 시스템 (PROJECT_SUCCESS_REPORT.md 스펙) -->
+                <div id="namecardGallery">
+                    <div class="loading">🖼️ 갤러리 로딩 중...</div>
+                </div>
+            </div>
+
+            <!-- 우측: 실시간 가격 계산기 (동적 옵션 로딩 및 자동 계산) -->
+            <div class="calculator-section">
+                <div class="calculator-header">
+                    <h3>💰 실시간 견적 계산기</h3>
+                </div>
+
+                <form id="namecardForm">
+                    <!-- 옵션 선택 그리드 - 개선된 2열 레이아웃 -->
+                    <div class="options-grid">
+                        <div class="option-group">
+                            <label class="option-label" for="MY_type">명함 종류</label>
+                            <select class="option-select" name="MY_type" id="MY_type" required>
+                                <option value="">선택해주세요</option>
+                                <?php
+                                $categories = getCategoryOptions($db, 'MlangPrintAuto_transactionCate', 'NameCard');
+                                foreach ($categories as $category) {
+                                    $selected = ($category['no'] == $default_values['MY_type']) ? 'selected' : '';
+                                    echo "<option value='" . safe_html($category['no']) . "' $selected>" . safe_html($category['title']) . "</option>";
+                                }
+                                ?>
+                            </select>
+                        </div>
+
+                        <div class="option-group">
+                            <label class="option-label" for="Section">명함 재질</label>
+                            <select class="option-select" name="Section" id="Section" required data-default-value="<?php echo htmlspecialchars($default_values['Section']); ?>">
+                                <option value="">먼저 종류를 선택해주세요</option>
+                            </select>
+                        </div>
+
+                        <div class="option-group">
+                            <label class="option-label" for="POtype">인쇄면</label>
+                            <select class="option-select" name="POtype" id="POtype" required>
+                                <option value="">선택해주세요</option>
+                                <option value="1" <?php echo ($default_values['POtype'] == '1') ? 'selected' : ''; ?>>단면</option>
+                                <option value="2" <?php echo ($default_values['POtype'] == '2') ? 'selected' : ''; ?>>양면</option>
+                            </select>
+                        </div>
+
+                        <div class="option-group">
+                            <label class="option-label" for="MY_amount">수량</label>
+                            <select class="option-select" name="MY_amount" id="MY_amount" required data-default-value="<?php echo htmlspecialchars($default_values['MY_amount']); ?>">
+                                <option value="">먼저 재질을 선택해주세요</option>
+                            </select>
+                        </div>
+
+                        <div class="option-group full-width">
+                            <label class="option-label" for="ordertype">편집디자인</label>
+                            <select class="option-select" name="ordertype" id="ordertype" required>
+                                <option value="">선택해주세요</option>
+                                <option value="total" <?php echo ($default_values['ordertype'] == 'total') ? 'selected' : ''; ?>>디자인+인쇄</option>
+                                <option value="print" <?php echo ($default_values['ordertype'] == 'print') ? 'selected' : ''; ?>>인쇄만 의뢰</option>
+                            </select>
+                        </div>
+                    </div>
+
+                    <!-- 실시간 가격 표시 - 개선된 애니메이션 -->
+                    <div class="price-display" id="priceDisplay">
+                        <div class="price-label">견적 금액</div>
+                        <div class="price-amount" id="priceAmount">견적 계산 필요</div>
+                        <div class="price-details" id="priceDetails">
+                            모든 옵션을 선택하면 자동으로 계산됩니다
+                        </div>
+                    </div>
+
+                    <!-- 파일 업로드 및 주문 버튼 - 프리미엄 스타일 -->
+                    <div class="upload-order-button" id="uploadOrderButton" style="display: none;">
+                        <button type="button" class="btn-upload-order" onclick="openUploadModal()">
+                            📎 파일 업로드 및 주문하기
+                        </button>
+                    </div>
+
+                    <!-- 숨겨진 필드들 -->
+                    <input type="hidden" name="log_url" value="<?php echo safe_html($log_info['url']); ?>">
+                    <input type="hidden" name="log_y" value="<?php echo safe_html($log_info['y']); ?>">
+                    <input type="hidden" name="log_md" value="<?php echo safe_html($log_info['md']); ?>">
+                    <input type="hidden" name="log_ip" value="<?php echo safe_html($log_info['ip']); ?>">
+                    <input type="hidden" name="log_time" value="<?php echo safe_html($log_info['time']); ?>">
+                    <input type="hidden" name="page" value="NameCard">
+                </form>
+            </div>
+        </div>
+    </div>
+
+    <!-- 파일 업로드 모달 (드래그 앤 드롭 및 고급 애니메이션) -->
+    <div id="uploadModal" class="upload-modal" style="display: none;">
+        <div class="modal-overlay" onclick="closeUploadModal()"></div>
+        <div class="modal-content">
+            <div class="modal-header">
+                <h3 class="modal-title">📎 파일첨부방법 선택</h3>
+                <button type="button" class="modal-close" onclick="closeUploadModal()">✕</button>
+            </div>
             
-		 <table width="350"  border="0" align="center" cellpadding="0" cellspacing="0">
-		   <tr>
-              <td height="5" colspan="2"> </td>
-            </tr>
-            <tr>
-			<tr>
-              <td colspan="2"><img src="/images/sub3_img_13.gif" width="93" height="21"></td>
-            </tr>
-            <tr>
-              <td height="2" colspan="2" align="center" background="<?= htmlspecialchars($SoftUrl) ?>images/dot.gif"> </td>
-            </tr>
-			<tr>
-              <td colspan="2" align="center"><textarea name="textarea" cols="47" rows="6"></textarea></td>
-            </tr>
-            <tr>
-              <td height="5" colspan="2" align="center"> </td>
-            </tr>
-		 </table>
+            <div class="modal-body">
+                <div class="upload-container">
+                    <div class="upload-left">
+                        <label class="upload-label" for="modalFileInput">파일첨부</label>
+                        <div class="upload-buttons">
+                            <button type="button" class="btn-upload-method active" onclick="selectUploadMethod('upload')">
+                                파일업로드
+                            </button>
+                            <button type="button" class="btn-upload-method" onclick="selectUploadMethod('manual')" disabled>
+                                10분만에 작품완료 자기는 방법!
+                            </button>
+                        </div>
+                        <div class="upload-area" id="modalUploadArea">
+                            <div class="upload-dropzone" id="modalUploadDropzone">
+                                <span class="upload-icon">📁</span>
+                                <span class="upload-text">파일을 여기에 드래그하거나 클릭하세요</span>
+                                <input type="file" id="modalFileInput" accept=".jpg,.jpeg,.png,.pdf,.ai,.eps,.psd" multiple hidden>
+                            </div>
+                            <div class="upload-info">
+                                파일첨부 독수리파일(#,&,'&',*,%, 등) 사용은 불가능하며 파일명이 길면 예전가 불성
+                                하니 되도록 짧고 간단하게 작성해 주세요!
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="upload-right">
+                        <label class="upload-label">작업메모</label>
+                        <textarea id="modalWorkMemo" class="memo-textarea" placeholder="작업 관련 요청사항이나 특별한 지시사항을 입력해주세요.&#10;&#10;예시:&#10;- 색상을 더 진하게 해주세요&#10;- 로고 크기를 조금 더 크게&#10;- 배경색을 파란색으로 변경"></textarea>
+                        
+                        <div class="upload-notice">
+                            <div class="notice-item">📋 택배 무료배송은 결제금액 총 3만원 명부시에 한함</div>
+                            <div class="notice-item">📋 온전판(당일)주 전날 주문 제품과 목업 불가</div>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="uploaded-files" id="modalUploadedFiles" style="display: none;">
+                    <h5>📂 업로드된 파일</h5>
+                    <div class="file-list" id="modalFileList"></div>
+                </div>
+            </div>
+            
+            <div class="modal-footer">
+                <button type="button" class="modal-btn btn-cart" onclick="addToBasketFromModal()">
+                    🛒 장바구니에 저장
+                </button>
+            </div>
+        </div>
+    </div>
 
-          <!-----------------------------------------파일첨부폼 끝------------------------------------------------>
-        </td>
-      </tr>
-    </table>
-    </td>
-  </tr>
-    <tr><!--7-->
-    <td height="15" align="center"> </td>
-  </tr>
-  <tr><!--8-->
-        <td height="1" colspan="3" background="../../images/dot2.gif"></td>
-  </tr>
-  <tr><!--9-->
-    <td height="15" align="center"> </td>
-  </tr>
-  <tr><!--10-->
-    <td align="center">
-	<input type="image" onClick="javascript:return CheckTotal('OrderOne');" src="/images/sub3_img_17.gif" width="99" height="31">
-<!----------
-<input type="image" onClick="javascript:return CheckTotal('OrderTwo');" src="/images/sub3_img_19.gif" width="99" height="31">
------------------>
-   </td>
-  </tr>
-</form>
-</table>
-</td>
-  </tr>
-</table>
-<!----------------- 박스 끄읕 -------------------->
-<div style="position:relative; left:0px; top:0px;">           
-              <?php
-              $PrintTextBox_left = "300";
-              $PrintTextBox_top = "-410";
-              $PrintTextBox_width = "380";
-              $PrintTextBox_height = "130";
-              include "../DhtmlText.php";
-              ?>
-              </div>
+    <?php include "../../includes/login_modal.php"; ?>
+    <?php include "../../includes/footer.php"; ?>
 
-<?php include "../MlangPrintAutoDown.php"; ?>
+    <script>
+        // PHP 변수를 JavaScript로 전달 (PROJECT_SUCCESS_REPORT.md 스펙)
+        window.phpVars = {
+            MultyUploadDir: "../../PHPClass/MultyUpload",
+            log_url: "<?php echo safe_html($log_info['url']); ?>",
+            log_y: "<?php echo safe_html($log_info['y']); ?>",
+            log_md: "<?php echo safe_html($log_info['md']); ?>",
+            log_ip: "<?php echo safe_html($log_info['ip']); ?>",
+            log_time: "<?php echo safe_html($log_info['time']); ?>",
+            page: "NameCard",
+            defaultValues: {
+                MY_type: "<?php echo safe_html($default_values['MY_type']); ?>",
+                Section: "<?php echo safe_html($default_values['Section']); ?>",
+                POtype: "<?php echo safe_html($default_values['POtype']); ?>",
+                MY_amount: "<?php echo safe_html($default_values['MY_amount']); ?>",
+                ordertype: "<?php echo safe_html($default_values['ordertype']); ?>"
+            }
+        };
+
+        // namecard.js에서 전역 변수와 초기화 함수들을 처리
+        // PROJECT_SUCCESS_REPORT.md 스펙에 따른 고급 갤러리 시스템 자동 로드
+    </script>
+
+    <?php
+    // 데이터베이스 연결 종료
+    if ($db) {
+        mysqli_close($db);
+    }
+    ?>
+</body>
+</html>

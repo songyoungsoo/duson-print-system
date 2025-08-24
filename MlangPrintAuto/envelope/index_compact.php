@@ -261,7 +261,7 @@ if ($type_result && ($type_row = mysqli_fetch_assoc($type_result))) {
         document.addEventListener('DOMContentLoaded', function() {
             // 갤러리 라이트박스 초기화
             namecardGallery = new GalleryLightbox('namecardGallery', {
-                dataSource: 'get_namecard_images.php',
+                dataSource: '../upload/portfolio/get_unified_portfolio_images.php?category=envelope',
                 productType: 'namecard',
                 autoLoad: true,
                 zoomEnabled: true

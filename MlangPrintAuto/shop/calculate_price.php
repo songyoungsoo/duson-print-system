@@ -40,8 +40,8 @@ try {
     if ($mesu <= 0) throw new Exception('수량을 입력하세요');
     
     // 범위 검증
-    if ($garo > 590) throw new Exception('가로사이즈를 590mm이하만 입력할 수 있습니다');
-    if ($sero > 590) throw new Exception('세로사이즈를 590mm이하만 입력할 수 있습니다');
+    if ($garo > 560) throw new Exception('가로사이즈를 560mm이하만 입력할 수 있습니다');
+    if ($sero > 560) throw new Exception('세로사이즈를 560mm이하만 입력할 수 있습니다');
     if (($garo * $sero) > 250000 && $mesu > 5000) {
         throw new Exception('500mm이상 대형사이즈를 5000매이상 주문은 전화요청바랍니다');
     }

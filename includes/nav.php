@@ -15,7 +15,7 @@ $current_page = isset($current_page) ? $current_page : '';
                class="nav-link <?php echo ($current_page == 'leaflet') ? 'active' : ''; ?>">
                📄 전단지
             </a>
-            <a href="/MlangPrintAuto/shop/view_modern.php" 
+            <a href="/MlangPrintAuto/sticker_new/index.php" 
                class="nav-link <?php echo ($current_page == 'sticker') ? 'active' : ''; ?>">
                🏷️ 스티커
             </a>
@@ -35,7 +35,7 @@ $current_page = isset($current_page) ? $current_page : '';
                class="nav-link <?php echo ($current_page == 'envelope') ? 'active' : ''; ?>">
                ✉️ 봉투
             </a>
-            <a href="/MlangPrintAuto/LittlePrint/index_compact.php" 
+            <a href="/MlangPrintAuto/LittlePrint/index.php" 
                class="nav-link <?php echo ($current_page == 'littleprint') ? 'active' : ''; ?>">
                🎨 포스터
             </a>
@@ -43,7 +43,7 @@ $current_page = isset($current_page) ? $current_page : '';
                class="nav-link <?php echo ($current_page == 'msticker') ? 'active' : ''; ?>">
                🧲 자석스티커
             </a>
-            <a href="/MlangPrintAuto/NcrFlambeau/index_compact.php" 
+            <a href="/MlangPrintAuto/NcrFlambeau/index.php" 
                class="nav-link <?php echo ($current_page == 'ncrflambeau') ? 'active' : ''; ?>">
                📋 양식지 <span style="font-size: 0.7em; color: #28a745;">✨NEW</span>
             </a>

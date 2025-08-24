@@ -3,16 +3,35 @@ ini_set('display_errors', 1);
 ini_set('display_startup_errors', 1);
 error_reporting(E_ALL);
 
-$host = "localhost";
-$user = "duson1830";
-$password = "du1830";
-$dataname = "duson1830";
+// 멀티 DB 서버 연결 시스템
+$db_configs = [
+    // 설정 1: 로컬 XAMPP (root 계정)
+    ['host' => 'localhost', 'user' => 'root', 'password' => '', 'db' => 'duson1830', 'port' => 3306],
+    
+    // 설정 2: 로컬 XAMPP (duson1830 계정)
+    ['host' => 'localhost', 'user' => 'duson1830', 'password' => 'du1830', 'db' => 'duson1830', 'port' => 3306],
+    
+    // 설정 3: 네트워크 서버
+    ['host' => '192.168.0.250', 'user' => 'duson1830', 'password' => 'du1830', 'db' => 'duson1830', 'port' => 3306],
+    
+    // 설정 4: 외부 서버
+    ['host' => 'sknas205.ipdisk.co.kr', 'user' => 'duson1830', 'password' => 'du1830', 'db' => 'duson1830', 'port' => 3306],
+];
 
-$db = mysqli_connect($host, $user, $password, $dataname);
-if (!$db) {
-    die("데이터베이스 연결에 실패했습니다: " . mysqli_connect_error());
+$db = null;
+foreach ($db_configs as $config) {
+    $host_port = $config['host'] . (($config['port'] != 3306) ? ':' . $config['port'] : '');
+    $db = @mysqli_connect($config['host'], $config['user'], $config['password'], $config['db'], $config['port']);
+    
+    if ($db) {
+        mysqli_query($db, "SET NAMES 'utf8'");
+        break;
+    }
 }
-mysqli_query($db, "SET NAMES 'utf8'");
+
+if (!$db) {
+    die("모든 데이터베이스 서버 연결에 실패했습니다: " . mysqli_connect_error());
+}
 
 $admin_email = "dsp1830@naver.com";
 $admin_name = "두손기획";
