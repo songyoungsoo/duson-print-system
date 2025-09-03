@@ -77,8 +77,8 @@ if ($row = mysqli_fetch_assoc($result)) {
             'Order_PriceForm' => $order_price,
             'VAT_PriceForm' => $vat_price,
             'Total_PriceForm' => $total_price,
-            'StyleForm' => $get_title($MY_type, 'NcrFlambeau'),
-            'SectionForm' => $get_title($Section, 'NcrFlambeau'),
+            'StyleForm' => $get_title($MY_type, 'ncrflambeau'),
+            'SectionForm' => $get_title($Section, 'ncrflambeau'),
             'QuantityForm' => $quantity . "권",
             'DesignForm' => $ordertype === 'total' ? '디자인+인쇄' : '인쇄만 의뢰',
         ]

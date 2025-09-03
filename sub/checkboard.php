@@ -90,7 +90,7 @@ if (!empty($search_status)) {
 $where_clause = !empty($where_conditions) ? 'WHERE ' . implode(' AND ', $where_conditions) : '';
 
 // 전체 주문 수 조회
-$count_query = "SELECT COUNT(*) as total FROM MlangOrder_PrintAuto {$where_clause}";
+$count_query = "SELECT COUNT(*) as total FROM mlangorder_printauto {$where_clause}";
 if (!empty($params)) {
     $count_stmt = mysqli_prepare($connect, $count_query);
     if (!empty($param_types)) {
@@ -105,7 +105,7 @@ $total_orders = mysqli_fetch_array($count_result)['total'];
 $total_pages = ceil($total_orders / $limit);
 
 // 주문 목록 조회 (교정확정 정보 포함)
-$query = "SELECT *, IFNULL(proofreading_confirmed, 0) as proofreading_confirmed FROM MlangOrder_PrintAuto {$where_clause} ORDER BY no DESC LIMIT ? OFFSET ?";
+$query = "SELECT *, IFNULL(proofreading_confirmed, 0) as proofreading_confirmed FROM mlangorder_printauto {$where_clause} ORDER BY no DESC LIMIT ? OFFSET ?";
 $final_params = array_merge($params, [$limit, $offset]);
 $final_param_types = $param_types . 'ii';
 

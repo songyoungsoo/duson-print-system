@@ -1,6 +1,6 @@
 <?php
 include "../../db.php";
-$TIO_CODE = "NcrFlambeau";
+$TIO_CODE = "ncrflambeau";
 $table = "MlangPrintAuto_{$TIO_CODE}";
 $code            = $_GET['code']         ?? $_POST['code']         ?? '';
 

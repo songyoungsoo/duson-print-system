@@ -23,7 +23,7 @@ let animationId = null;
 
 // 페이지 로드 시 초기화
 document.addEventListener('DOMContentLoaded', function() {
-    initializeGallery();
+    // initializeGallery(); // 제거: 공통 갤러리 시스템 사용
     initializeCalculator();
     initializeFileUpload();
     

@@ -19,13 +19,13 @@ if (empty($MY_type)) {
 }
 
 // 1. 명함 재질(papers) 조회
-$papers = getDropdownOptions($db, 'MlangPrintAuto_transactionCate', [
+$papers = getDropdownOptions($db, "mlangprintauto_transactioncate", [
     'BigNo' => $MY_type,
     'Ttable' => 'NameCard'
 ], 'no ASC');
 
 // 2. 수량(quantities) 조회
-$TABLE_N = "MlangPrintAuto_namecard";
+$TABLE = "mlangprintauto_namecard";
 $query = "SELECT DISTINCT quantity FROM {$TABLE_N} WHERE style = ? AND quantity IS NOT NULL ORDER BY CAST(quantity AS UNSIGNED) ASC";
 
 $stmt = mysqli_prepare($db, $query);

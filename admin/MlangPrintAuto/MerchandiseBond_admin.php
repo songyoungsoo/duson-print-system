@@ -14,7 +14,7 @@ $quantity = isset($_POST['quantity']) ? $_POST['quantity'] : '';
 
 
 $T_DirUrl = "../../MlangPrintAuto";
-$T_TABLE = "MerchandiseBond";
+$T_TABLE = "merchandisebond";
 
 include "$T_DirUrl/ConDb.php";
 $T_DirFole = "$T_DirUrl/$T_TABLE/inc.php";

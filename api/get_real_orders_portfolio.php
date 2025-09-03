@@ -33,14 +33,14 @@ try {
     
     // 카테고리별 타입 매핑 (실제 데이터베이스의 Type 필드값)
     $typeMapping = [
-        'namecard' => ['명함', 'NameCard'],  // 명함은 한글로 저장됨
+        'namecard' => ['명함', 'namecard'],  // 명함은 한글로 저장됨
         'sticker' => ['스티커', 'sticker'],  // 한글과 영문, 인코딩 차이 고려
         'envelope' => ['봉투', 'envelope'],
-        'littleprint' => ['포스터', 'LittlePrint'],
+        'littleprint' => ['포스터', 'littleprint'],
         'cadarok' => ['카탈로그', 'cadarok'],
-        'merchandisebond' => ['상품권', 'MerchandiseBond'],
+        'merchandisebond' => ['상품권', 'merchandisebond'],
         'msticker' => ['자석스티커', 'msticker'],
-        'ncrflambeau' => ['양식지', 'NcrFlambeau'],
+        'ncrflambeau' => ['양식지', 'ncrflambeau'],
         'inserted' => ['전단지']  // 실제 데이터베이스에는 '전단지'로 저장됨
     ];
     
@@ -63,15 +63,15 @@ try {
     if ($category === 'inserted') {
         $whereClause .= " AND Type = '전단지'";
     } elseif ($category === 'namecard') {
-        $whereClause .= " AND (Type = '명함' OR Type = 'NameCard')";
+        $whereClause .= " AND (Type = '명함' OR Type = 'namecard')";
     } elseif ($category === 'sticker') {
         $whereClause .= " AND Type = '스티커'";
     } elseif ($category === 'ncrflambeau') {
-        $whereClause .= " AND (Type = '양식지' OR Type = 'NcrFlambeau')";
+        $whereClause .= " AND (Type = '양식지' OR Type = 'ncrflambeau')";
     } elseif ($category === 'envelope') {
         $whereClause .= " AND Type = '봉투'";
     } elseif ($category === 'littleprint') {
-        $whereClause .= " AND (Type = '포스터' OR Type = 'LittlePrint')";
+        $whereClause .= " AND (Type = '포스터' OR Type = 'littleprint')";
     } elseif ($category === 'cadarok') {
         $whereClause .= " AND Type = '카탈로그'";
     } elseif ($category === 'merchandisebond') {
@@ -160,7 +160,7 @@ try {
                 "$uploadBasePath/MlangOrder_PrintAuto/upload/$orderNo/$imageFile",
                 "$uploadBasePath/upload/$orderNo/$imageFile",
                 "$uploadBasePath/uploads/$orderNo/$imageFile",
-                "$uploadBasePath/MlangPrintAuto/upload/$orderNo/$imageFile"
+                "$uploadBasePath/mlangprintauto/upload/$orderNo/$imageFile"
             ];
             
             foreach ($possiblePaths as $path) {
@@ -195,21 +195,21 @@ try {
             
             // 제품타입별 한글명 변환 (한글 저장된 데이터도 고려)
             $typeNames = [
-                'NameCard' => '명함',
+                'namecard' => '명함',
                 '명함' => '명함',
                 'sticker' => '스티커',
                 '스티커' => '스티커',
                 'envelope' => '봉투',
                 '봉투' => '봉투',
-                'LittlePrint' => '포스터',
+                'littleprint' => '포스터',
                 '포스터' => '포스터',
                 'cadarok' => '카탈로그',
                 '카탈로그' => '카탈로그',
-                'MerchandiseBond' => '상품권',
+                'merchandisebond' => '상품권',
                 '상품권' => '상품권',
                 'msticker' => '자석스티커',
                 '자석스티커' => '자석스티커',
-                'NcrFlambeau' => '양식지',
+                'ncrflambeau' => '양식지',
                 '양식지' => '양식지',
                 'inserted' => '전단지',
                 '전단지' => '전단지',

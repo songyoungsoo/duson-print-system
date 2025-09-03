@@ -13,7 +13,7 @@ if (!$db) {
     echo "<script>console.log('DB 연결 실패: " . mysqli_connect_error() . "');</script>";
     exit;
 }
-$TABLE="MlangPrintAuto_LittlePrint";
+$TABLE = "mlangprintauto_littleprint";
 include "../ConDb.php";
 
 // MY_type         명함종류  style

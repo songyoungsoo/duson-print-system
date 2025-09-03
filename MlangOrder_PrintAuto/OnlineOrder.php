@@ -27,7 +27,7 @@ if (isset($_GET['SubmitMode']) && $_GET['SubmitMode'] === 'OrderOne') {
     
     if (mysqli_num_rows($cart_result) > 0) {
         // 새 주문 번호 생성
-        $Table_result = mysqli_query($db, "SELECT MAX(no) FROM MlangOrder_PrintAuto");
+        $Table_result = mysqli_query($db, "SELECT MAX(no) FROM mlangorder_printauto");
         if (!$Table_result) {
             echo "<script>alert('DB 접속 에러입니다!'); history.go(-1);</script>";
             exit;
@@ -68,7 +68,7 @@ if (isset($_GET['SubmitMode']) && $_GET['SubmitMode'] === 'OrderOne') {
             $pntype_result = mysqli_stmt_get_result($pntype_stmt);
             $pntype_name = ($pntype_row = mysqli_fetch_assoc($pntype_result)) ? $pntype_row['name'] : $item['PN_type'];
             
-            $insert_query = "INSERT INTO MlangOrder_PrintAuto 
+            $insert_query = "INSERT INTO mlangorder_printauto 
                            (no, Type, Type_1, money_1, money_2, money_3, money_4,
                             OrderStyle, ThingCate, date) 
                            VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, NOW())";
@@ -204,7 +204,7 @@ if (isset($_POST['mode']) && $_POST['mode'] == "SubmitOk") {
     $Type_combined = implode('|', [$Type_1, $Type_2, $Type_3, $Type_4, $Type_5, $Type_6]);
 
     $date = date("Y-m-d H:i:s");
-    $dbinsert = "INSERT INTO MlangOrder_PrintAuto (
+    $dbinsert = "INSERT INTO mlangorder_printauto (
         no, Type, ImgFolder, Type_1, money_1, money_2, money_3, money_4, money_5, 
         name, email, zip, zip1, zip2, phone, Hendphone, delivery, bizname, bank, bankname, cont, 
         date, OrderStyle, ThingCate, pass, Gensu, Designer

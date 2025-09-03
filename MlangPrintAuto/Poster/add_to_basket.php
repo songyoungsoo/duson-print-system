@@ -16,13 +16,8 @@ if (empty($session_id)) {
     exit;
 }
 
-// 데이터베이스 연결
-$host = "localhost";
-$user = "root";
-$password = "";
-$dataname = "duson1830";
-
-$db = mysqli_connect($host, $user, $password, $dataname);
+// 공통 데이터베이스 연결 사용
+include "../../db.php";
 if (!$db) {
     http_response_code(500);
     echo json_encode(["success" => false, "message" => "데이터베이스 연결 실패"]);

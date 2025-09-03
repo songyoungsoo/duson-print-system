@@ -46,7 +46,7 @@ if ($mode == "ModifyOk") { /////////////////////////////////////////////////////
     $db->set_charset("utf8");
 
     // SQL UPDATE 문 준비
-    $stmt = $db->prepare("UPDATE MlangOrder_PrintAuto 
+    $stmt = $db->prepare("UPDATE mlangorder_printauto 
         SET Type_1 = ?, name = ?, email = ?, zip = ?, zip1 = ?, zip2 = ?, phone = ?, Hendphone = ?, bizname = ?, 
             bank = ?, bankname = ?, cont = ?, Gensu = ? 
         WHERE no = ?");
@@ -88,7 +88,7 @@ if ($mode == "SubmitOk") { /////////////////////////////////////////////////////
     $db->set_charset("utf8");
 
     // 새로운 주문번호 생성
-    $Table_result = $db->query("SELECT MAX(no) FROM MlangOrder_PrintAuto");
+    $Table_result = $db->query("SELECT MAX(no) FROM mlangorder_printauto");
     if (!$Table_result) {
         echo "<script>alert('DB 접속 에러입니다!'); history.go(-1);</script>";
         exit;
@@ -108,7 +108,7 @@ if ($mode == "SubmitOk") { /////////////////////////////////////////////////////
     $date = date("Y-m-d H:i:s");
 
     // 데이터 삽입
-    $stmt = $db->prepare("INSERT INTO MlangOrder_PrintAuto 
+    $stmt = $db->prepare("INSERT INTO mlangorder_printauto 
         (no, Type, ImgFolder, TypeOne, money_1, money_2, money_3, money_4, money_5, name, email, zip, zip1, zip2, phone, Hendphone, bizname, bank, bankname, cont, date, orderStyle, ThingCate, Designer, pass, Gensu) 
         VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)");
 
@@ -318,7 +318,7 @@ if ($mode == "OrderView") {
     
     if (!empty($no)) {
         // ✅ 주문 정보 조회
-        $stmt = $db->prepare("SELECT * FROM MlangOrder_PrintAuto WHERE no = ?");
+        $stmt = $db->prepare("SELECT * FROM mlangorder_printauto WHERE no = ?");
         $stmt->bind_param("i", $no);
         $stmt->execute();
         $result = $stmt->get_result();
@@ -327,7 +327,7 @@ if ($mode == "OrderView") {
         
         // ✅ 주문 상태 업데이트 (OrderStyle이 "2"일 경우만)
         if ($row && $row['OrderStyle'] == "2") {
-            $update_stmt = $db->prepare("UPDATE MlangOrder_PrintAuto SET OrderStyle = '3' WHERE no = ?");
+            $update_stmt = $db->prepare("UPDATE mlangorder_printauto SET OrderStyle = '3' WHERE no = ?");
             $update_stmt->bind_param("i", $no);
             if ($update_stmt->execute()) {
                 echo "<script>opener.parent.location.reload();</script>";
@@ -364,7 +364,7 @@ if ($mode == "OrderView") {
                         include "../../db.php";
                      if ($row) {
                         // ✅ 파일명(ThingCate) 조회
-                        $stmt_file = $db->prepare("SELECT ThingCate FROM MlangOrder_PrintAuto WHERE no = ?");
+                        $stmt_file = $db->prepare("SELECT ThingCate FROM mlangorder_printauto WHERE no = ?");
                         $stmt_file->bind_param("i", $no);
                         $stmt_file->execute();
                         $stmt_file->bind_result($ThingCate);
@@ -505,7 +505,7 @@ if ($mode == "SinForm") { //////////////////////////////////////////////////////
                 }
                 $db->set_charset("utf8");
 
-                $stmt = $db->prepare("SELECT pass FROM MlangOrder_PrintAuto WHERE no = ?");
+                $stmt = $db->prepare("SELECT pass FROM mlangorder_printauto WHERE no = ?");
                 $stmt->bind_param("i", $no);
                 $stmt->execute();
                 $stmt->bind_result($ViewSignTy_pass);
@@ -555,8 +555,8 @@ if ($mode == "SinFormModifyOk") { //////////////////////////////////////////////
     }
     $db->set_charset("utf8");
 
-    // `MlangOrder_PrintAuto` 테이블에서 기존 파일명 가져오기
-    $stmt = $db->prepare("SELECT ThingCate FROM MlangOrder_PrintAuto WHERE no = ?");
+    // `mlangorder_printauto` 테이블에서 기존 파일명 가져오기
+    $stmt = $db->prepare("SELECT ThingCate FROM mlangorder_printauto WHERE no = ?");
     $stmt->bind_param("i", $ModifyCode);
     $stmt->execute();
     $stmt->bind_result($GF_upfile);
@@ -610,7 +610,7 @@ if ($mode == "SinFormModifyOk") { //////////////////////////////////////////////
     }
 
     // DB 업데이트
-    $stmt = $db->prepare("UPDATE MlangOrder_PrintAuto SET OrderStyle=?, ThingCate=?, pass=? WHERE no=?");
+    $stmt = $db->prepare("UPDATE mlangorder_printauto SET OrderStyle=?, ThingCate=?, pass=? WHERE no=?");
     $stmt->bind_param("sssi", $TOrderStyle, $photofileNAME, $pass, $no);
     
     if (!$stmt->execute()) {
@@ -811,13 +811,13 @@ if ($mode == "AdminMlangOrdertOk") { ///////////////////////////////////////////
     $db->set_charset("utf8");
 
     $ToTitle = $_POST['ThingNo'] ?? '';
-    include "../../MlangPrintAuto/ConDb.php";
+    include "../../mlangprintauto/ConDb.php";
 
     $ThingNoOkp = empty($_POST['ThingNoOkp']) ? $ToTitle : $_POST['View_TtableB'];
     // if(!$ThingNoOkp){$ThingNoOkp="$ThingNo";}else{$ThingNoOkp="$View_TtableB";}
 
     // 새로운 주문번호 생성
-    $Table_result = $db->query("SELECT MAX(no) FROM MlangOrder_PrintAuto");
+    $Table_result = $db->query("SELECT MAX(no) FROM mlangorder_printauto");
     if (!$Table_result) {
         echo "<script>alert('DB 접속 에러입니다!'); history.go(-1);</script>";
         exit;
@@ -870,7 +870,7 @@ if ($mode == "AdminMlangOrdertOk") { ///////////////////////////////////////////
 
     $date = !empty($date) ? $date : date("Y-m-d H:i:s");   
 // `INSERT INTO` SQL 실행
-$stmt = $db->prepare("INSERT INTO MlangOrder_PrintAuto 
+$stmt = $db->prepare("INSERT INTO mlangorder_printauto 
     (no, Type, ImgFolder, Type_1, money_1, money_2, money_3, money_4, money_5, 
     name, email, zip, zip1, zip2, phone, Hendphone, delivery, bizname, bank, bankname, 
     cont, date, OrderStyle, ThingCate, pass, Gensu, Designer) 
@@ -925,7 +925,7 @@ echo "<script>
 // <script>
 //     alert('정보를 정상적으로 저장하였습니다.');
 //     if (window.opener && !window.opener.closed) {
-//         window.opener.location.href = '/admin/MlangPrintAuto/OrderList.php'; // 부모 창 이동
+//         window.opener.location.href = '/admin/mlangprintauto/OrderList.php'; // 부모 창 이동
 //         window.opener.focus(); // 부모 창 활성화
 //     }
 //     window.close(); // 현재 창 닫기

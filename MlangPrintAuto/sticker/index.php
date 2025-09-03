@@ -1,6 +1,6 @@
 <?php
 /**
- * 명함 견적안내 컴팩트 시스템 - PROJECT_SUCCESS_REPORT.md 스펙 구현
+ * 스티커 견적안내 컴팩트 시스템 - PROJECT_SUCCESS_REPORT.md 스펙 구현
  * Features: 적응형 이미지 분석, 부드러운 애니메이션, 실시간 가격 계산
  * Created: 2025년 8월 (AI Assistant - Frontend Persona)
  */
@@ -18,7 +18,7 @@ mysqli_set_charset($db, "utf8");
 
 // 로그 정보 및 페이지 설정
 $log_info = generateLogInfo();
-$page_title = generate_page_title("명함 견적안내 컴팩트 - 프리미엄");
+$page_title = generate_page_title("스티커 견적안내 컴팩트 - 프리미엄");
 
 // 기본값 설정 (데이터베이스에서 가져오기) - PROJECT_SUCCESS_REPORT.md 스펙
 $default_values = [
@@ -29,25 +29,25 @@ $default_values = [
     'ordertype' => 'print' // 기본값: 인쇄만
 ];
 
-// 첫 번째 명함 종류 가져오기 (일반명함(쿠폰) 우선)
-$type_query = "SELECT no, title FROM MlangPrintAuto_transactionCate 
-               WHERE Ttable='NameCard' AND BigNo='0' 
-               ORDER BY CASE WHEN title LIKE '%일반명함%' THEN 1 ELSE 2 END, no ASC 
+// 첫 번째 스티커 종류 가져오기
+$type_query = "SELECT no, title FROM mlangprintauto_transactioncate 
+               WHERE Ttable='Sticker' AND BigNo='0' 
+               ORDER BY no ASC 
                LIMIT 1";
 $type_result = mysqli_query($db, $type_query);
 if ($type_result && ($type_row = mysqli_fetch_assoc($type_result))) {
     $default_values['MY_type'] = $type_row['no'];
     
     // 해당 명함 종류의 첫 번째 재질 가져오기
-    $section_query = "SELECT no, title FROM MlangPrintAuto_transactionCate 
-                      WHERE Ttable='NameCard' AND BigNo='" . $type_row['no'] . "' 
+    $section_query = "SELECT no, title FROM mlangprintauto_transactioncate 
+                      WHERE Ttable='Sticker' AND BigNo='" . $type_row['no'] . "' 
                       ORDER BY no ASC LIMIT 1";
     $section_result = mysqli_query($db, $section_query);
     if ($section_result && ($section_row = mysqli_fetch_assoc($section_result))) {
         $default_values['Section'] = $section_row['no'];
         
         // 해당 조합의 기본 수량 가져오기 (500매 우선)
-        $quantity_query = "SELECT DISTINCT quantity FROM MlangPrintAuto_namecard 
+        $quantity_query = "SELECT DISTINCT quantity FROM mlangprintauto_sticker 
                           WHERE style='" . $type_row['no'] . "' AND Section='" . $section_row['no'] . "' 
                           ORDER BY CASE WHEN quantity='500' THEN 1 ELSE 2 END, CAST(quantity AS UNSIGNED) ASC 
                           LIMIT 1";
@@ -88,7 +88,7 @@ if ($type_result && ($type_row = mysqli_fetch_assoc($type_result))) {
     <div class="compact-container">
         <div class="page-title">
             <h1>💳 명함 견적안내</h1>
-            <p>컴팩트 프리미엄 - PROJECT_SUCCESS_REPORT.md 스펙 구현</p>
+            <p><!--  컴팩트 프리미엄 - PROJECT_SUCCESS_REPORT.md 스펙 구현  --></p>
         </div>
 
         <!-- 컴팩트 2단 그리드 레이아웃 (500px 갤러리 + 나머지 계산기) -->
@@ -106,7 +106,7 @@ if ($type_result && ($type_row = mysqli_fetch_assoc($type_result))) {
             <!-- 우측: 실시간 가격 계산기 (동적 옵션 로딩 및 자동 계산) -->
             <div class="calculator-section">
                 <div class="calculator-header">
-                    <h3>💰 실시간 견적 계산기</h3>
+                    <h3>💰견적 안내</h3>
                 </div>
 
                 <form id="namecardForm">
@@ -117,7 +117,7 @@ if ($type_result && ($type_row = mysqli_fetch_assoc($type_result))) {
                             <select class="option-select" name="MY_type" id="MY_type" required>
                                 <option value="">선택해주세요</option>
                                 <?php
-                                $categories = getCategoryOptions($db, 'MlangPrintAuto_transactionCate', 'NameCard');
+                                $categories = getCategoryOptions($db, "mlangprintauto_transactioncate", 'Sticker');
                                 foreach ($categories as $category) {
                                     $selected = ($category['no'] == $default_values['MY_type']) ? 'selected' : '';
                                     echo "<option value='" . safe_html($category['no']) . "' $selected>" . safe_html($category['title']) . "</option>";

@@ -120,7 +120,7 @@ $default_values['ordertype'] = 'print'; // 인쇄만
     <div class="compact-container">
         <div class="page-title">
             <h1>📄 포스터/리플렛 견적안내</h1>
-            <p>컴팩트 프리미엄 - PROJECT_SUCCESS_REPORT.md 스펙 구현</p>
+            <p><!--  컴팩트 프리미엄 - PROJECT_SUCCESS_REPORT.md 스펙 구현  --></p>
         </div>
 
         <!-- 컴팩트 2단 그리드 레이아웃 (500px 갤러리 + 나머지 계산기) -->
@@ -475,6 +475,9 @@ $default_values['ordertype'] = 'print'; // 인쇄만
         padding: 25px;
         box-shadow: 0 10px 35px rgba(0, 0, 0, 0.12), 0 4px 15px rgba(0, 0, 0, 0.08) !important;
         border: 1px solid rgba(255, 255, 255, 0.9);
+        height: 450px !important;
+        min-height: 450px !important;
+        overflow: auto !important;
     }
     
     .gallery-title {

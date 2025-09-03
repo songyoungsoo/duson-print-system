@@ -15,7 +15,7 @@
 }
 
 /* ===========================
-   메인 이미지: 500×400px (업그레이드)
+   메인 이미지: 500×300px
    =========================== */
 .gallery-main {
     position: relative;
@@ -29,7 +29,7 @@
 .gallery-main-img {
     width: 100%;
     height: 100%;
-    object-fit: cover;
+    object-fit: contain;  /* cover -> contain으로 변경: 전체 이미지를 300px 높이에 맞게 표시 */
     cursor: pointer;
     display: block;
     /* CSS 애니메이션 제거 - JavaScript로 부드러운 애니메이션 처리 */
@@ -42,11 +42,11 @@
 }
 
 /* ===========================
-   썸네일: 80×80px × 4개
+   썸네일: 80×80px × 5개
    =========================== */
 .gallery-thumbs {
     display: grid;
-    grid-template-columns: repeat(4, 80px);
+    grid-template-columns: repeat(5, 80px);
     gap: 5px;
     margin-bottom: 10px;
     justify-content: center;
@@ -84,6 +84,22 @@
     height: 100%;
     object-fit: cover;
     display: block;
+}
+
+/* 5번째 썸네일: 더보기 버튼 스타일 */
+.gallery-more-thumb {
+    border-color: #28a745 !important;
+    background: linear-gradient(135deg, #28a745 0%, #20c997 100%);
+}
+
+.gallery-more-thumb:hover {
+    border-color: #20c997 !important;
+    transform: translateY(-3px);
+    box-shadow: 0 4px 8px rgba(40, 167, 69, 0.3);
+}
+
+.gallery-more-thumb img {
+    object-fit: contain;
 }
 
 /* ===========================

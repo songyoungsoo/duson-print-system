@@ -461,7 +461,7 @@ if ($mode == "ModifyOk") {
             var ThingNoVal;
             if (f.MlangFriendSiteInfoS[0].checked) {
                 ThingNoVal = "<select name='Thing' OnChange='inThing(this.value)'>";
-                <?php include "../../MlangPrintAuto/ConDb.php";
+                <?php include "../../mlangprintauto/ConDb.php";
                 if ($ConDb_A) {
                     $OrderCate_LIST_script = explode(":", $ConDb_A);
                     foreach ($OrderCate_LIST_script as $cate) {
@@ -571,7 +571,7 @@ if ($mode == "ModifyOk") {
 <?php
 } elseif ($mode == "AdminMlangOrdertOk") {
     $ToTitle = $ThingNo;
-    include "../../MlangPrintAuto/ConDb.php";
+    include "../../mlangprintauto/ConDb.php";
 
     if (!$ThingNoOkp) {
         $ThingNoOkp = $ThingNo;

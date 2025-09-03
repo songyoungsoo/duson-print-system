@@ -1,6 +1,6 @@
 <?php
 echo "<h1>🧲 자석스티커 데이터 설정 (기존 테이블 활용)</h1>";
-echo "<p>기존 MlangPrintAuto_transactionCate 및 MlangPrintAuto_namecard 테이블에 자석스티커 데이터를 추가합니다.</p>";
+echo "<p>기존 MlangPrintAuto_transactionCate 및 MlangPrintAuto_NameCard 테이블에 자석스티커 데이터를 추가합니다.</p>";
 
 // 데이터베이스 연결
 $host = "localhost";
@@ -84,7 +84,7 @@ if (mysqli_query($db, $insert_sections_query)) {
     $error_count++;
 }
 
-// 2. 자석스티커 가격 데이터 추가 (MlangPrintAuto_namecard 테이블 활용)
+// 2. 자석스티커 가격 데이터 추가 (MlangPrintAuto_NameCard 테이블 활용)
 echo "<h2>💰 2. 자석스티커 가격 데이터 삽입</h2>";
 
 $msticker_prices = [
@@ -171,7 +171,7 @@ $msticker_prices = [
     "('mst_outdoor', 'mst_out_s', '100', 152000, '', 30000, '2', '', '')"
 ];
 
-$insert_prices_query = "INSERT IGNORE INTO MlangPrintAuto_namecard (style, Section, quantity, money, TreeSelect, DesignMoney, POtype, quantityTwo, no) VALUES " . implode(', ', $msticker_prices);
+$insert_prices_query = "INSERT IGNORE INTO MlangPrintAuto_NameCard (style, Section, quantity, money, TreeSelect, DesignMoney, POtype, quantityTwo, no) VALUES " . implode(', ', $msticker_prices);
 
 if (mysqli_query($db, $insert_prices_query)) {
     $affected = mysqli_affected_rows($db);
@@ -188,8 +188,8 @@ echo "<h2>📊 최종 설정 상태 확인</h2>";
 $final_queries = [
     "자석스티커 종류" => "SELECT COUNT(*) as count FROM MlangPrintAuto_transactionCate WHERE Ttable='NameCard' AND BigNo='0' AND no LIKE 'mst_%'",
     "자석스티커 규격" => "SELECT COUNT(*) as count FROM MlangPrintAuto_transactionCate WHERE Ttable='NameCard' AND BigNo LIKE 'mst_%' AND BigNo!='0'",
-    "자석스티커 가격 데이터" => "SELECT COUNT(*) as count FROM MlangPrintAuto_namecard WHERE style LIKE 'mst_%'",
-    "차량용 가격 데이터" => "SELECT COUNT(*) as count FROM MlangPrintAuto_namecard WHERE style='mst_car'"
+    "자석스티커 가격 데이터" => "SELECT COUNT(*) as count FROM MlangPrintAuto_NameCard WHERE style LIKE 'mst_%'",
+    "차량용 가격 데이터" => "SELECT COUNT(*) as count FROM MlangPrintAuto_NameCard WHERE style='mst_car'"
 ];
 
 echo "<table border='1' cellpadding='5' style='border-collapse:collapse;'>";

@@ -1,0 +1,491 @@
+--- db_details_qbe.php (original)
++++ db_details_qbe.php (modified)
+@@ -21,7 +21,7 @@
+ /**
+  * A query has been submitted -> execute it, else display the headers
+  */
+-if (isset($submit_sql) && eregi('^SELECT', $encoded_sql_query)) {
++if (isset($submit_sql) && preg_match('^SELECT', $encoded_sql_query)) {
+     $goto      = 'db_details.php';
+     $zero_rows = htmlspecialchars($strSuccess);
+     $sql_query = urldecode($encoded_sql_query);
+@@ -37,7 +37,7 @@
+     include('./db_details_db_info.php');
+ }
+ 
+-if (isset($submit_sql) && !eregi('^SELECT', $encoded_sql_query)) {
++if (isset($submit_sql) && !preg_match('^SELECT', $encoded_sql_query)) {
+     echo '<p class="warning">' . $strHaveToShow . '</p>';
+ }
+ 
+@@ -118,7 +118,7 @@
+  * Prepares the form
+  */
+ $tbl_result     = PMA_mysql_list_tables($db);
+-$tbl_result_cnt = mysql_num_rows($tbl_result);
++$tbl_result_cnt = mysqli_num_rows($tbl_result);
+ $i              = 0;
+ $k              = 0;
+ 
+@@ -133,7 +133,7 @@
+ while ($i < $tbl_result_cnt) {
+     $tbl             = PMA_mysql_tablename($tbl_result, $i);
+     $fld_results     = @PMA_mysql_list_fields($db, $tbl) or PMA_mysqlDie(PMA_mysql_error(), 'PMA_mysql_list_fields(' . $db . ', ' . $tbl . ')', FALSE, $err_url);
+-    $fld_results_cnt = ($fld_results) ? mysql_num_fields($fld_results) : 0;
++    $fld_results_cnt = ($fld_results) ? mysqli_num_fields($fld_results) : 0;
+     $j               = 0;
+ 
+     if (empty($tbl_names[$tbl]) && !empty($TableList)) {
+@@ -159,12 +159,12 @@
+         } // end while
+     } // end if
+     if ($fld_results) {
+-        mysql_free_result($fld_results);
++        mysqli_free_result($fld_results);
+     }
+ 
+     $i++;
+ } // end if
+-mysql_free_result($tbl_result);
++mysqli_free_result($tbl_result);
+ 
+ // largest width found
+ $realwidth = $wid . 'ex';
+@@ -177,20 +177,20 @@
+ 
+ <!-- Query by example form -->
+ <form action="db_details_qbe.php" method="post">
+-    <table border="<?php echo $cfg['Border']; ?>">
++    <table border="<?php echo  $cfg['Border'] ?>">
+ 
+     <!-- Fields row -->
+     <tr>
+-        <td align="<?php echo $cell_align_right; ?>" bgcolor="<?php echo $cfg['ThBgcolor']; ?>">
+-            <b><?php echo $strField; ?>&nbsp;:&nbsp;</b>
++        <td align="<?php echo  $cell_align_right ?>" bgcolor="<?php echo  $cfg['ThBgcolor'] ?>">
++            <b><?php echo  $strField ?>&nbsp;:&nbsp;</b>
+         </td>
+ <?php
+ $z = 0;
+ for ($x = 0; $x < $col; $x++) {
+     if (!empty($InsCol) && isset($InsCol[$x]) && $InsCol[$x] == 'on') {
+         ?>
+-        <td align="center" bgcolor="<?php echo $cfg['BgcolorOne']; ?>">
+-            <select style="width: <?php echo $realwidth; ?>" name="Field[<?php echo $z; ?>]" size="1">
++        <td align="center" bgcolor="<?php echo  $cfg['BgcolorOne'] ?>">
++            <select style="width: <?php echo  $realwidth ?>" name="Field[<?php echo  $z ?>]" size="1">
+                 <option value=""></option>
+         <?php
+         echo "\n";
+@@ -215,8 +215,8 @@
+         continue;
+     }
+     ?>
+-        <td align="center" bgcolor="<?php echo $cfg['BgcolorOne']; ?>">
+-            <select style="width: <?php echo $realwidth; ?>" name="Field[<?php echo $z; ?>]" size="1">
++        <td align="center" bgcolor="<?php echo  $cfg['BgcolorOne'] ?>">
++            <select style="width: <?php echo  $realwidth ?>" name="Field[<?php echo  $z ?>]" size="1">
+                 <option value=""></option>
+     <?php
+     echo "\n";
+@@ -242,19 +242,19 @@
+ 
+     <!-- Sort row -->
+     <tr>
+-        <td align="<?php echo $cell_align_right; ?>" bgcolor="<?php echo $cfg['ThBgcolor']; ?>">
+-            <b><?php echo $strSort; ?>&nbsp;:&nbsp;</b>
++        <td align="<?php echo  $cell_align_right ?>" bgcolor="<?php echo  $cfg['ThBgcolor'] ?>">
++            <b><?php echo  $strSort ?>&nbsp;:&nbsp;</b>
+         </td>
+ <?php
+ $z = 0;
+ for ($x = 0; $x < $col; $x++) {
+     if (!empty($InsCol) && isset($InsCol[$x]) && $InsCol[$x] == 'on') {
+         ?>
+-        <td align="center" bgcolor="<?php echo $cfg['BgcolorTwo']; ?>">
+-            <select style="width: <?php echo $realwidth; ?>" name="Sort[<?php echo $z; ?>]" size="1">
++        <td align="center" bgcolor="<?php echo  $cfg['BgcolorTwo'] ?>">
++            <select style="width: <?php echo  $realwidth ?>" name="Sort[<?php echo  $z ?>]" size="1">
+                 <option value=""></option>
+-                <option value="ASC"><?php echo $strAscending; ?></option>
+-                <option value="DESC"><?php echo $strDescending; ?></option>
++                <option value="ASC"><?php echo  $strAscending ?></option>
++                <option value="DESC"><?php echo  $strDescending ?></option>
+             </select>
+         </td>
+         <?php
+@@ -266,8 +266,8 @@
+         continue;
+     }
+     ?>
+-        <td align="center" bgcolor="<?php echo $cfg['BgcolorTwo']; ?>">
+-            <select style="width: <?php echo $realwidth; ?>" name="Sort[<?php echo $z; ?>]" size="1">
++        <td align="center" bgcolor="<?php echo  $cfg['BgcolorTwo'] ?>">
++            <select style="width: <?php echo  $realwidth ?>" name="Sort[<?php echo  $z ?>]" size="1">
+                 <option value=""></option>
+     <?php
+     echo "\n";
+@@ -307,16 +307,16 @@
+ 
+     <!-- Show row -->
+     <tr>
+-        <td align="<?php echo $cell_align_right; ?>" bgcolor="<?php echo $cfg['ThBgcolor']; ?>">
+-            <b><?php echo $strShow; ?>&nbsp;:&nbsp;</b>
++        <td align="<?php echo  $cell_align_right ?>" bgcolor="<?php echo  $cfg['ThBgcolor'] ?>">
++            <b><?php echo  $strShow ?>&nbsp;:&nbsp;</b>
+         </td>
+ <?php
+ $z = 0;
+ for ($x = 0; $x < $col; $x++) {
+     if (!empty($InsCol) && isset($InsCol[$x]) && $InsCol[$x] == 'on') {
+         ?>
+-        <td align="center" bgcolor="<?php echo $cfg['BgcolorOne']; ?>">
+-            <input type="checkbox" name="Show[<?php echo $z; ?>]" />
++        <td align="center" bgcolor="<?php echo  $cfg['BgcolorOne'] ?>">
++            <input type="checkbox" name="Show[<?php echo  $z ?>]" />
+         </td>
+         <?php
+         $z++;
+@@ -333,8 +333,8 @@
+         $checked     =  '';
+     }
+     ?>
+-        <td align="center" bgcolor="<?php echo $cfg['BgcolorOne']; ?>">
+-            <input type="checkbox" name="Show[<?php echo $z; ?>]"<?php echo $checked; ?> />
++        <td align="center" bgcolor="<?php echo  $cfg['BgcolorOne'] ?>">
++            <input type="checkbox" name="Show[<?php echo  $z ?>]"<?php echo  $checked ?> />
+         </td>
+     <?php
+     $z++;
+@@ -345,16 +345,16 @@
+ 
+     <!-- Criteria row -->
+     <tr>
+-        <td align="<?php echo $cell_align_right; ?>" bgcolor="<?php echo $cfg['ThBgcolor']; ?>">
+-            <b><?php echo $strCriteria; ?>&nbsp;:&nbsp;</b>
++        <td align="<?php echo  $cell_align_right ?>" bgcolor="<?php echo  $cfg['ThBgcolor'] ?>">
++            <b><?php echo  $strCriteria ?>&nbsp;:&nbsp;</b>
+         </td>
+ <?php
+ $z = 0;
+ for ($x = 0; $x < $col; $x++) {
+     if (!empty($InsCol) && isset($InsCol[$x]) && $InsCol[$x] == 'on') {
+         ?>
+-        <td align="center" bgcolor="<?php echo $cfg['BgcolorTwo']; ?>">
+-            <input type="text" name="Criteria[<?php echo $z; ?>]" value="" class="textfield" style="width: <?php echo $realwidth; ?>" size="20" />
++        <td align="center" bgcolor="<?php echo  $cfg['BgcolorTwo'] ?>">
++            <input type="text" name="Criteria[<?php echo  $z ?>]" value="" class="textfield" style="width: <?php echo  $realwidth ?>" size="20" />
+         </td>
+         <?php
+         $z++;
+@@ -380,9 +380,9 @@
+         $encoded_Criteria  = $prev_Criteria[$x];
+     }
+     ?>
+-        <td align="center" bgcolor="<?php echo $cfg['BgcolorTwo']; ?>">
+-            <input type="hidden" name="prev_Criteria[<?php echo $z; ?>]" value="<?php echo $encoded_Criteria; ?>" />
+-            <input type="text" name="Criteria[<?php echo $z; ?>]" value="<?php echo htmlspecialchars($stripped_Criteria); ?>" class="textfield" style="width: <?php echo $realwidth; ?>" size="20" />
++        <td align="center" bgcolor="<?php echo  $cfg['BgcolorTwo'] ?>">
++            <input type="hidden" name="prev_Criteria[<?php echo  $z ?>]" value="<?php echo  $encoded_Criteria ?>" />
++            <input type="text" name="Criteria[<?php echo  $z ?>]" value="<?php echo  htmlspecialchars($stripped_Criteria) ?>" class="textfield" style="width: <?php echo  $realwidth ?>" size="20" />
+         </td>
+     <?php
+     $z++;
+@@ -401,32 +401,32 @@
+         $chk['and'] = '';
+         ?>
+     <tr>
+-        <td align="<?php echo $cell_align_right; ?>" bgcolor="<?php echo $bgcolor; ?>" nowrap="nowrap">
++        <td align="<?php echo  $cell_align_right ?>" bgcolor="<?php echo  $bgcolor ?>" nowrap="nowrap">
+             <!-- Row controls -->
+-            <table bgcolor="<?php echo $bgcolor; ?>">
++            <table bgcolor="<?php echo  $bgcolor ?>">
+             <tr>
+-                <td align="<?php echo $cell_align_right; ?>" nowrap="nowrap">
+-                    <small><?php echo $strQBEIns; ?>&nbsp;:</small>
+-                    <input type="checkbox" name="InsRow[<?php echo $w; ?>]" />
+-                </td>
+-                <td align="<?php echo $cell_align_right; ?>">
+-                    <b><?php echo $strAnd; ?>&nbsp;:</b>
++                <td align="<?php echo  $cell_align_right ?>" nowrap="nowrap">
++                    <small><?php echo  $strQBEIns ?>&nbsp;:</small>
++                    <input type="checkbox" name="InsRow[<?php echo  $w ?>]" />
++                </td>
++                <td align="<?php echo  $cell_align_right ?>">
++                    <b><?php echo  $strAnd ?>&nbsp;:</b>
+                 </td>
+                 <td>
+-                    <input type="radio" name="AndOrRow[<?php echo $w; ?>]" value="and"<?php echo $chk['and']; ?> />
++                    <input type="radio" name="AndOrRow[<?php echo  $w ?>]" value="and"<?php echo  $chk['and'] ?> />
+                     &nbsp;
+                 </td>
+             </tr>
+             <tr>
+-                <td align="<?php echo $cell_align_right; ?>" nowrap="nowrap">
+-                    <small><?php echo $strQBEDel; ?>&nbsp;:</small>
+-                    <input type="checkbox" name="DelRow[<?php echo $w; ?>]" />
+-                </td>
+-                <td align="<?php echo $cell_align_right; ?>">
+-                    <b><?php echo $strOr; ?>&nbsp;:</b>
++                <td align="<?php echo  $cell_align_right ?>" nowrap="nowrap">
++                    <small><?php echo  $strQBEDel ?>&nbsp;:</small>
++                    <input type="checkbox" name="DelRow[<?php echo  $w ?>]" />
++                </td>
++                <td align="<?php echo  $cell_align_right ?>">
++                    <b><?php echo  $strOr ?>&nbsp;:</b>
+                 </td>
+                 <td>
+-                    <input type="radio" name="AndOrRow[<?php echo $w; ?>]" value="or"<?php echo $chk['or']; ?> />
++                    <input type="radio" name="AndOrRow[<?php echo  $w ?>]" value="or"<?php echo  $chk['or'] ?> />
+                     &nbsp;
+                 </td>
+             </tr>
+@@ -439,8 +439,8 @@
+                 echo "\n";
+                 $or = 'Or' . $w . '[' . $z . ']';
+                 ?>
+-        <td align="center" bgcolor="<?php echo $bgcolor; ?>">
+-            <textarea cols="20" rows="2" style="width: <?php echo $realwidth; ?>" name="<?php echo $or; ?>" dir="<?php echo $text_dir; ?>"></textarea>
++        <td align="center" bgcolor="<?php echo  $bgcolor ?>">
++            <textarea cols="20" rows="2" style="width: <?php echo  $realwidth ?>" name="<?php echo  $or ?>" dir="<?php echo  $text_dir ?>"></textarea>
+         </td>
+                 <?php
+                 $z++;
+@@ -452,8 +452,8 @@
+             echo "\n";
+             $or = 'Or' . $w . '[' . $z . ']';
+             ?>
+-        <td align="center" bgcolor="<?php echo $bgcolor; ?>">
+-            <textarea cols="20" rows="2" style="width: <?php echo $realwidth; ?>" name="<?php echo $or; ?>" dir="<?php echo $text_dir; ?>"></textarea>
++        <td align="center" bgcolor="<?php echo  $bgcolor ?>">
++            <textarea cols="20" rows="2" style="width: <?php echo  $realwidth ?>" name="<?php echo  $or ?>" dir="<?php echo  $text_dir ?>"></textarea>
+         </td>
+             <?php
+             $z++;
+@@ -482,31 +482,31 @@
+     echo "\n";
+     ?>
+     <tr>
+-        <td align="<?php echo $cell_align_right; ?>" nowrap="nowrap">
++        <td align="<?php echo  $cell_align_right ?>" nowrap="nowrap">
+             <!-- Row controls -->
+-            <table bgcolor="<?php echo $bgcolor; ?>">
++            <table bgcolor="<?php echo  $bgcolor ?>">
+             <tr>
+-                <td align="<?php echo $cell_align_right; ?>" nowrap="nowrap">
+-                    <small><?php echo $strQBEIns; ?>&nbsp;:</small>
+-                    <input type="checkbox" name="InsRow[<?php echo $w; ?>]" />
+-                </td>
+-                <td align="<?php echo $cell_align_right; ?>">
+-                    <b><?php echo $strAnd; ?>&nbsp;:</b>
++                <td align="<?php echo  $cell_align_right ?>" nowrap="nowrap">
++                    <small><?php echo  $strQBEIns ?>&nbsp;:</small>
++                    <input type="checkbox" name="InsRow[<?php echo  $w ?>]" />
++                </td>
++                <td align="<?php echo  $cell_align_right ?>">
++                    <b><?php echo  $strAnd ?>&nbsp;:</b>
+                 </td>
+                 <td>
+-                    <input type="radio" name="AndOrRow[<?php echo $w; ?>]" value="and"<?php echo $chk['and']; ?> />
++                    <input type="radio" name="AndOrRow[<?php echo  $w ?>]" value="and"<?php echo  $chk['and'] ?> />
+                 </td>
+             </tr>
+             <tr>
+-                <td align="<?php echo $cell_align_right; ?>" nowrap="nowrap">
+-                    <small><?php echo $strQBEDel; ?>&nbsp;:</small>
+-                    <input type="checkbox" name="DelRow[<?php echo $w; ?>]" />
+-                </td>
+-                <td align="<?php echo $cell_align_right; ?>">
+-                    <b><?php echo $strOr; ?>&nbsp;:</b>
++                <td align="<?php echo  $cell_align_right ?>" nowrap="nowrap">
++                    <small><?php echo  $strQBEDel ?>&nbsp;:</small>
++                    <input type="checkbox" name="DelRow[<?php echo  $w ?>]" />
++                </td>
++                <td align="<?php echo  $cell_align_right ?>">
++                    <b><?php echo  $strOr ?>&nbsp;:</b>
+                 </td>
+                 <td>
+-                    <input type="radio" name="AndOrRow[<?php echo $w; ?>]" value="or"<?php echo $chk['or']; ?> />
++                    <input type="radio" name="AndOrRow[<?php echo  $w ?>]" value="or"<?php echo  $chk['or'] ?> />
+                 </td>
+             </tr>
+             </table>
+@@ -518,8 +518,8 @@
+             echo "\n";
+             $or = 'Or' . $w . '[' . $z . ']';
+             ?>
+-        <td align="center" bgcolor="<?php echo $bgcolor; ?>">
+-            <textarea cols="20" rows="2" style="width: <?php echo $realwidth; ?>" name="<?php echo $or; ?>" dir="<?php echo $text_dir; ?>"></textarea>
++        <td align="center" bgcolor="<?php echo  $bgcolor ?>">
++            <textarea cols="20" rows="2" style="width: <?php echo  $realwidth ?>" name="<?php echo  $or ?>" dir="<?php echo  $text_dir ?>"></textarea>
+         </td>
+             <?php
+             $z++;
+@@ -543,8 +543,8 @@
+             $stripped_or     = '';
+         }
+         ?>
+-        <td align="center" bgcolor="<?php echo $bgcolor; ?>">
+-            <textarea cols="20" rows="2" style="width: <?php echo $realwidth; ?>" name="Or<?php echo $w . '[' . $z . ']'; ?>" dir="<?php echo $text_dir; ?>"><?php echo htmlspecialchars($stripped_or); ?></textarea>
++        <td align="center" bgcolor="<?php echo  $bgcolor ?>">
++            <textarea cols="20" rows="2" style="width: <?php echo  $realwidth ?>" name="Or<?php echo  $w . '[' . $z . ']' ?>" dir="<?php echo  $text_dir ?>"><?php echo  htmlspecialchars($stripped_or) ?></textarea>
+         </td>
+         <?php
+         if (!empty(${$or}) && isset(${$or}[$x])) {
+@@ -563,8 +563,8 @@
+ 
+     <!-- Modify columns -->
+     <tr>
+-        <td align="<?php echo $cell_align_right; ?>" bgcolor="<?php echo $cfg['ThBgcolor']; ?>">
+-            <b><?php echo $strModify; ?>&nbsp;:&nbsp;</b>
++        <td align="<?php echo  $cell_align_right ?>" bgcolor="<?php echo  $cfg['ThBgcolor'] ?>">
++            <b><?php echo  $strModify ?>&nbsp;:&nbsp;</b>
+         </td>
+ <?php
+ $z = 0;
+@@ -579,16 +579,16 @@
+             $chk['or']  = '';
+         }
+         ?>
+-        <td align="center" bgcolor="<?php echo $cfg['BgcolorTwo']; ?>">
+-            <b><?php echo $strOr; ?>&nbsp;:</b>
+-            <input type="radio" name="AndOrCol[<?php echo $z; ?>]" value="or"<?php echo $chk['or']; ?> />
+-            &nbsp;&nbsp;<b><?php echo $strAnd; ?>&nbsp;:</b>
+-            <input type="radio" name="AndOrCol[<?php echo $z; ?>]" value="and"<?php echo $chk['and']; ?> />
++        <td align="center" bgcolor="<?php echo  $cfg['BgcolorTwo'] ?>">
++            <b><?php echo  $strOr ?>&nbsp;:</b>
++            <input type="radio" name="AndOrCol[<?php echo  $z ?>]" value="or"<?php echo  $chk['or'] ?> />
++            &nbsp;&nbsp;<b><?php echo  $strAnd ?>&nbsp;:</b>
++            <input type="radio" name="AndOrCol[<?php echo  $z ?>]" value="and"<?php echo  $chk['and'] ?> />
+             <br />
+-            <?php echo $strQBEIns . "\n"; ?>
+-            <input type="checkbox" name="InsCol[<?php echo $z; ?>]" />
+-            &nbsp;&nbsp;<?php echo $strQBEDel . "\n"; ?>
+-            <input type="checkbox" name="DelCol[<?php echo $z; ?>]" />
++            <?php echo  $strQBEIns . "\n" ?>
++            <input type="checkbox" name="InsCol[<?php echo  $z ?>]" />
++            &nbsp;&nbsp;<?php echo  $strQBEDel . "\n" ?>
++            <input type="checkbox" name="DelCol[<?php echo  $z ?>]" />
+         </td>
+         <?php
+         $z++;
+@@ -610,16 +610,16 @@
+         $chk['or']  = '';
+     }
+     ?>
+-        <td align="center" bgcolor="<?php echo $cfg['BgcolorTwo']; ?>">
+-            <b><?php echo $strOr; ?>&nbsp;:</b>
+-            <input type="radio" name="AndOrCol[<?php echo $z; ?>]" value="or"<?php echo $chk['or']; ?> />
+-            &nbsp;&nbsp;<b><?php echo $strAnd; ?>&nbsp;:</b>
+-            <input type="radio" name="AndOrCol[<?php echo $z; ?>]" value="and"<?php echo $chk['and']; ?> />
++        <td align="center" bgcolor="<?php echo  $cfg['BgcolorTwo'] ?>">
++            <b><?php echo  $strOr ?>&nbsp;:</b>
++            <input type="radio" name="AndOrCol[<?php echo  $z ?>]" value="or"<?php echo  $chk['or'] ?> />
++            &nbsp;&nbsp;<b><?php echo  $strAnd ?>&nbsp;:</b>
++            <input type="radio" name="AndOrCol[<?php echo  $z ?>]" value="and"<?php echo  $chk['and'] ?> />
+             <br />
+-            <?php echo $strQBEIns . "\n"; ?>
+-            <input type="checkbox" name="InsCol[<?php echo $z; ?>]" />
+-            &nbsp;&nbsp;<?php echo $strQBEDel . "\n"; ?>
+-            <input type="checkbox" name="DelCol[<?php echo $z; ?>]" />
++            <?php echo  $strQBEIns . "\n" ?>
++            <input type="checkbox" name="InsCol[<?php echo  $z ?>]" />
++            &nbsp;&nbsp;<?php echo  $strQBEDel . "\n" ?>
++            <input type="checkbox" name="DelCol[<?php echo  $z ?>]" />
+         </td>
+     <?php
+     $z++;
+@@ -634,10 +634,10 @@
+     <table border="0">
+     <tr>
+         <td valign="top">
+-            <table border="0" align="<?php echo $cell_align_left; ?>">
++            <table border="0" align="<?php echo  $cell_align_left ?>">
+             <tr>
+                 <td rowspan="4" valign="top">
+-                    <?php echo $strUseTables; ?>&nbsp;:
++                    <?php echo  $strUseTables ?>&nbsp;:
+                     <br />
+                     <select name="TableList[]" size="7" multiple="multiple">
+ <?php
+@@ -648,14 +648,14 @@
+ ?>
+                     </select>
+                 </td>
+-                <td align="<?php echo $cell_align_right; ?>" valign="bottom">
+-                    <input type="hidden" value="<?php echo htmlspecialchars($db); ?>" name="db" />
+-                    <input type="hidden" value="<?php echo $z; ?>" name="Columns" />
++                <td align="<?php echo  $cell_align_right ?>" valign="bottom">
++                    <input type="hidden" value="<?php echo  htmlspecialchars($db) ?>" name="db" />
++                    <input type="hidden" value="<?php echo  $z ?>" name="Columns" />
+ <?php
+ $w--;
+ ?>
+-                    <input type="hidden" value="<?php echo $w; ?>" name="Rows" />
+-                    <?php echo $strAddDeleteRow; ?>&nbsp;:
++                    <input type="hidden" value="<?php echo  $w ?>" name="Rows" />
++                    <?php echo  $strAddDeleteRow ?>&nbsp;:
+                     <select size="1" name="Add_Row">
+                         <option value="-3">-3</option>
+                         <option value="-2">-2</option>
+@@ -668,8 +668,8 @@
+                 </td>
+             </tr>
+             <tr>
+-                <td align="<?php echo $cell_align_right; ?>" valign="bottom">
+-                    <?php echo $strAddDeleteColumn; ?>&nbsp;:
++                <td align="<?php echo  $cell_align_right ?>" valign="bottom">
++                    <?php echo  $strAddDeleteColumn ?>&nbsp;:
+                     <select size="1" name="Add_Col">
+                         <option value="-3">-3</option>
+                         <option value="-2">-2</option>
+@@ -684,24 +684,24 @@
+             <!-- Generates a query -->
+             <tr align="center" valign="top">
+                 <td>
+-                    <input type="submit" name="modify" value="<?php echo $strUpdateQuery; ?>" />
+-                    <input type="hidden" name="server" value="<?php echo $server; ?>" />
+-                    <input type="hidden" name="lang" value="<?php echo $lang; ?>" />
+-                    <input type="hidden" name="convcharset" value="<?php echo $convcharset; ?>" />
++                    <input type="submit" name="modify" value="<?php echo  $strUpdateQuery ?>" />
++                    <input type="hidden" name="server" value="<?php echo  $server ?>" />
++                    <input type="hidden" name="lang" value="<?php echo  $lang ?>" />
++                    <input type="hidden" name="convcharset" value="<?php echo  $convcharset ?>" />
+                 </td>
+             </tr>
+             <!-- Executes a query -->
+             <tr align="center" valign="top">
+                 <td>
+-                    <input type="submit" name="submit_sql" value="<?php echo $strRunQuery; ?>" />
++                    <input type="submit" name="submit_sql" value="<?php echo  $strRunQuery ?>" />
+                 </td>
+             </tr>
+             </table>
+         </td>
+         <td>
+             <!-- Displays the current query -->
+-            <?php echo sprintf($strQueryOnDb, htmlspecialchars($db)); ?><br />
+-<textarea cols="30" rows="7" name="sql_query" dir="<?php echo $text_dir; ?>">
++            <?php echo  sprintf($strQueryOnDb, htmlspecialchars($db)) ?><br />
++<textarea cols="30" rows="7" name="sql_query" dir="<?php echo  $text_dir ?>">
+ <?php
+ // 1. SELECT
+ $last_select = 0;
+@@ -776,7 +776,7 @@
+                 // Now we know that our array has the same numbers as $Criteria
+                 // we can check which of our columns has a where clause
+                 if (!empty($Criteria[$x])) {
+-                    if (substr($Criteria[$x], 0, 1) == '=' || eregi('is', $Criteria[$x])) {
++                    if (substr($Criteria[$x], 0, 1) == '=' || preg_match('is', $Criteria[$x])) {
+                         $col_where[$col] = $col1;
+                         $tab_wher[$tab]  = $tab;
+ // echo 'new where clause: ' . $tab_wher[$tab] . "||\n";
+@@ -1094,7 +1094,7 @@
+ }
+ ?>
+ </textarea>
+-            <input type="hidden" name="encoded_sql_query" value="<?php echo $encoded_qry; ?>" />
++            <input type="hidden" name="encoded_sql_query" value="<?php echo  $encoded_qry ?>" />
+         </td>
+     </tr>
+     </table>

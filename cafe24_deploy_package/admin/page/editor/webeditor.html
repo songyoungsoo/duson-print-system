@@ -1,0 +1,133 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <meta http-equiv="Cache-Control" content="no-cache">
+    <meta http-equiv="Pragma" content="no-cache">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>WebEditor</title>
+    <style>
+        body {
+            background-color: white;
+            font-family: 'Verdana', 'Helvetica', 'Arial', 'Sans-serif';
+        }
+
+        table {
+            width: 550px;
+            margin: 0 auto;
+            border-collapse: collapse;
+        }
+
+        td {
+            padding: 10px;
+        }
+
+        input[type="text"], input[type="email"] {
+            width: 100%;
+            padding: 5px;
+        }
+
+        .form-title {
+            background-color: #336699;
+            color: #fff;
+            text-align: right;
+            font-size: 14px;
+            font-weight: bold;
+        }
+
+        .form-input {
+            background-color: #EEEEEE;
+        }
+
+        .editor-frame {
+            border: 1px solid #ccc;
+            margin-top: 10px;
+        }
+
+        .btn-group {
+            text-align: center;
+            margin-top: 20px;
+        }
+
+        .btn-group input {
+            margin: 5px;
+            padding: 10px 20px;
+            font-size: 14px;
+        }
+    </style>
+    <script src="/editor/editor.js" defer></script>
+    <script>
+        function jsSubmit() {
+            // Content 가져오기 및 제출 로직
+            const form = document.forms['mailsendform'];
+            form.CONTENT.value = window.frames['editor'].document.body.innerHTML;
+            form.submit();
+        }
+
+        function jsPreview() {
+            const content = window.frames['editor'].document.body.innerHTML;
+            const previewWindow = window.open('', 'Preview', 'width=800,height=600');
+            previewWindow.document.write(content);
+            previewWindow.document.close();
+        }
+    </script>
+</head>
+<body oncontextmenu="return false">
+
+    <center>
+        <form name="mailsendform" method="POST" enctype="multipart/form-data">
+            <input type="hidden" name="image_url" value="/files/queenka/queenka357.jpg">
+            <input type="hidden" name="return_url" value="/photo-bin/view2.php?id=1948&code=gallery&kind=queenka&start=0&next_time=">
+            <input type="hidden" name="CONTENT" value="">
+
+            <table>
+                <tr><td colspan="2" bgcolor="#333333"></td></tr>
+
+                <tr>
+                    <td class="form-title">받는사람 이름:</td>
+                    <td class="form-input"><input type="text" name="TO_NAME" maxlength="15"></td>
+                </tr>
+
+                <tr>
+                    <td class="form-title">받는사람 이메일:</td>
+                    <td class="form-input"><input type="email" name="TO_EMAIL" maxlength="80"></td>
+                </tr>
+
+                <tr><td colspan="2" bgcolor="#333333"></td></tr>
+
+                <tr>
+                    <td class="form-title">보내는사람 이름:</td>
+                    <td class="form-input"><input type="text" name="FROM_NAME" maxlength="15"></td>
+                </tr>
+
+                <tr>
+                    <td class="form-title">보내는사람 이메일:</td>
+                    <td class="form-input"><input type="email" name="FROM_EMAIL" maxlength="80"></td>
+                </tr>
+
+                <tr><td colspan="2" bgcolor="#333333"></td></tr>
+
+                <tr>
+                    <td class="form-title">제목:</td>
+                    <td class="form-input"><input type="text" name="SUBJECT" maxlength="80"></td>
+                </tr>
+
+                <tr><td colspan="2" bgcolor="#333333"></td></tr>
+
+                <tr>
+                    <td colspan="2" class="editor-frame">
+                        <iframe name="editor" src="/editor/editor.html" frameborder="0" width="100%" height="300" scrolling="yes"></iframe>
+                    </td>
+                </tr>
+            </table>
+
+            <div class="btn-group">
+                <input type="button" value="메일 보내기" onclick="jsSubmit()">
+                <input type="button" value="미리보기" onclick="jsPreview()">
+                <input type="button" value="돌아가기" onclick="history.back()">
+            </div>
+        </form>
+    </center>
+
+</body>
+</html>

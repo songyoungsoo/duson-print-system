@@ -1,4 +1,5 @@
 <?php
+include "../../includes/auth.php";
 // 게시판의 필드들.... Mlang_${table}_bbs //////////////////////////////////////////////////////////////////////////////////////
 //Mlang_bbs_no mediumint(12) unsigned NOT NULL auto_increment, // 게시글 번호
 //Mlang_bbs_member varchar(100) NOT NULL default '',                     // 등록인
@@ -41,12 +42,10 @@
 //////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 ?>
 <?php
-// $db = new mysqli("host", "user", "password", "dataname");
-$db = mysqli_connect($host, $user, $password, $dataname);
-if ($db->connect_errno) {
-    die("DB 연결 실패: " . $db->connect_error);
-}
-$db->set_charset("utf8");
+// DB 접근 허용 상수 정의
+define('DB_ACCESS_ALLOWED', true);
+include "../../db.php";
+// $db 변수는 db.php에서 이미 연결되어 제공됨
 
 $PHP_SELF = htmlspecialchars($_SERVER["PHP_SELF"]);
 ?>

@@ -18,7 +18,7 @@ function render_product_gallery($product, $options = []) {
         'modalPerPage' => 12,
         'enableModal' => true,
         'randomize' => true,
-        'mainSize' => [500, 400],  // 450×300에서 500×400으로 업그레이드
+        'mainSize' => [500, 300],  // 500×300으로 설정
         'thumbSize' => [80, 80],
         'thumbCols' => 4
     ];
@@ -69,55 +69,55 @@ function get_product_gallery_config($product) {
         'inserted' => [
             'thumbCount' => 4,
             'modalPerPage' => 12,
-            'mainSize' => [500, 400],  // 업그레이드된 크기
+            'mainSize' => [500, 300],  // 500×300으로 변경
             'thumbSize' => [80, 80]
         ],
         'namecard' => [
             'thumbCount' => 4,
             'modalPerPage' => 12,
-            'mainSize' => [500, 400],  // 업그레이드된 크기
+            'mainSize' => [500, 300],  // 500×300으로 변경
             'thumbSize' => [80, 80]
         ],
         'littleprint' => [
             'thumbCount' => 4,
             'modalPerPage' => 16,  // 포스터는 더 많이 표시
-            'mainSize' => [500, 400],  // 업그레이드된 크기
+            'mainSize' => [500, 300],  // 500×300으로 변경
             'thumbSize' => [80, 80]
         ],
         'merchandisebond' => [
             'thumbCount' => 4,
             'modalPerPage' => 12,
-            'mainSize' => [500, 400],  // 업그레이드된 크기
+            'mainSize' => [500, 300],  // 500×300으로 변경
             'thumbSize' => [80, 80]
         ],
         'envelope' => [
             'thumbCount' => 4,
             'modalPerPage' => 12,
-            'mainSize' => [500, 400],  // 업그레이드된 크기
+            'mainSize' => [500, 300],  // 500×300으로 변경
             'thumbSize' => [80, 80]
         ],
         'cadarok' => [
             'thumbCount' => 4,
             'modalPerPage' => 12,
-            'mainSize' => [500, 400],  // 업그레이드된 크기
+            'mainSize' => [500, 300],  // 500×300으로 변경
             'thumbSize' => [80, 80]
         ],
         'ncrflambeau' => [
             'thumbCount' => 4,
             'modalPerPage' => 12,
-            'mainSize' => [500, 400],  // 업그레이드된 크기
+            'mainSize' => [500, 300],  // 500×300으로 변경
             'thumbSize' => [80, 80]
         ],
         'msticker' => [
             'thumbCount' => 4,
             'modalPerPage' => 12,
-            'mainSize' => [500, 400],  // 업그레이드된 크기
+            'mainSize' => [500, 300],  // 500×300으로 변경
             'thumbSize' => [80, 80]
         ],
         'sticker' => [
             'thumbCount' => 4,
             'modalPerPage' => 12,  // 팝업에서 4×3 그리드
-            'mainSize' => [500, 400],  // 업그레이드된 크기
+            'mainSize' => [500, 300],  // 500×300으로 변경
             'thumbSize' => [80, 80]
         ]
     ];
@@ -168,8 +168,16 @@ function include_gallery_assets() {
     
     if ($included) return;
     
-    echo '<link rel="stylesheet" href="/assets/css/gallery.css">' . "\n";
-    echo '<script src="/assets/js/gallery.js" defer></script>' . "\n";
+    // 현재 위치를 기준으로 상대 경로 계산
+    $assetsPath = '../../assets';
+    if (strpos($_SERVER['REQUEST_URI'], '/MlangPrintAuto/') !== false) {
+        $assetsPath = '../../assets';
+    } elseif (strpos($_SERVER['REQUEST_URI'], '/includes/') !== false) {
+        $assetsPath = '../assets';
+    }
+    
+    echo '<link rel="stylesheet" href="' . $assetsPath . '/css/gallery.css">' . "\n";
+    echo '<script src="' . $assetsPath . '/js/gallery.js" defer></script>' . "\n";
     
     $included = true;
 }

@@ -1,6 +1,6 @@
 <?php
 include"../title.php";
-include"../../MlangPrintAuto/ConDb.php";
+include"../../mlangprintauto/ConDb.php";
 include"../../db.php";
 
 $Mlang_query = "";

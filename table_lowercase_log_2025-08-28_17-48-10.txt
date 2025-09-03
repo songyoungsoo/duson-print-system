@@ -1,0 +1,28 @@
+[2025-08-28 17:48:10][info] === 안전성 검사 시작 ===
+[2025-08-28 17:48:10][success] ✅ 모든 안전성 검사 통과
+[2025-08-28 17:48:10][success] 백업 디렉토리 생성 완료: C:\xampp\htdocs/backup_lowercase_2025-08-28_17-48-10
+[2025-08-28 17:48:10][info] 파일 처리 시작...
+[2025-08-28 17:48:10][warning] 유효하지 않은 PHP 파일: C:\xampp\htdocs/MlangPrintAuto/FormSemple.php
+[2025-08-28 17:48:10][warning] 유효하지 않은 PHP 파일: C:\xampp\htdocs/MlangPrintAuto/FormSemple_utf8.php
+[2025-08-28 17:48:10][warning] 유효하지 않은 PHP 파일: C:\xampp\htdocs/MlangPrintAuto/LittlePrint/price_cal_simple.php
+[2025-08-28 17:48:10][info] 제외됨: /MlangPrintAuto/LittlePrint사용안함
+[2025-08-28 17:48:10][info] 제외됨: /MlangPrintAuto/MerchandiseBond/index_backup.php
+[2025-08-28 17:48:10][info] 제외됨: /MlangPrintAuto/NameCard/index_backup.php
+[2025-08-28 17:48:10][warning] 유효하지 않은 PHP 파일: C:\xampp\htdocs/MlangPrintAuto/OfferOrder/Form.php
+[2025-08-28 17:48:10][warning] 유효하지 않은 PHP 파일: C:\xampp\htdocs/MlangPrintAuto/Poster/price_cal_simple.php
+[2025-08-28 17:48:10][info] 제외됨: /MlangPrintAuto/_backup
+[2025-08-28 17:48:10][info] 제외됨: /MlangPrintAuto/cadarok/index_backup.php
+[2025-08-28 17:48:10][info] 제외됨: /MlangPrintAuto/db.php.member_backup
+[2025-08-28 17:48:10][warning] 유효하지 않은 PHP 파일: C:\xampp\htdocs/MlangPrintAuto/envelope/explane05.php
+[2025-08-28 17:48:10][info] 제외됨: /MlangPrintAuto/envelope/index.php.backup_20250120
+[2025-08-28 17:48:10][info] 제외됨: /MlangPrintAuto/envelope/index_backup.php
+[2025-08-28 17:48:10][warning] 유효하지 않은 PHP 파일: C:\xampp\htdocs/MlangPrintAuto/footer.php
+[2025-08-28 17:48:11][warning] 유효하지 않은 PHP 파일: C:\xampp\htdocs/MlangPrintAuto/includes/footer.php
+[2025-08-28 17:48:11][warning] 유효하지 않은 PHP 파일: C:\xampp\htdocs/MlangPrintAuto/inserted/footer.php
+[2025-08-28 17:48:11][warning] 유효하지 않은 PHP 파일: C:\xampp\htdocs/MlangPrintAuto/inserted/left.php
+[2025-08-28 17:48:11][info] 제외됨: /MlangPrintAuto/shop/view_modern_backup.php
+[2025-08-28 17:48:11][info] 제외됨: /MlangPrintAuto/sticker/index_backup.php
+[2025-08-28 17:48:11][info] 제외됨: /MlangPrintAuto/sticker_new/get_sticker_images_backup.php
+[2025-08-28 17:48:11][info] 제외됨: /MlangPrintAuto/sticker_new/index_backup.php
+[2025-08-28 17:48:11][info] 롤백 스크립트 생성: rollback_lowercase_changes.php
+[2025-08-28 17:48:11][success] 모든 작업이 완료되었습니다.

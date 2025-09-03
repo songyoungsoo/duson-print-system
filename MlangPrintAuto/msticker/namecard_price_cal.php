@@ -6,8 +6,8 @@ if (session_status() == PHP_SESSION_NONE) {
 
 include "db_ajax.php";
 
-$TABLE = "MlangPrintAuto_NameCard";
-$GGTABLE = "MlangPrintAuto_transactionCate";
+$TABLE = "mlangprintauto_namecard";
+$GGTABLE = "mlangprintauto_transactioncate";
 
 // 명함 옵션 매핑
 // NC_type         명함 종류    style

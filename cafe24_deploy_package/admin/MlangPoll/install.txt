@@ -1,0 +1,37 @@
+TABLE //////////////////////////////////////////////////////////////
+
+CREATE TABLE poll ( 
+    pollid INT(11) DEFAULT '0' NOT NULL auto_increment, 
+    question TINYTEXT NOT NULL,
+	lastip TEXT,
+    active VARCHAR(3) DEFAULT 'no' NOT NULL, PRIMARY KEY (pollid)); 
+
+CREATE TABLE poll_answers ( 
+    answerid INT(11) DEFAULT '0' NOT NULL auto_increment, 
+    pollid INT(11), 
+	answers VARCHAR(20) NOT NULL,
+	votes INT(11) DEFAULT '0',
+	result INT(11) DEFAULT '0', PRIMARY KEY (answerid));
+
+CREATE TABLE poll_admin ( 
+    username VARCHAR(20) NOT NULL, 
+    password VARCHAR(20) NOT NULL);
+
+INSERT INTO poll_admin (username,password)
+				VALUES ('admin','0000')
+
+
+-[db.inc.php]-[START]-----------------------------------------------------------------
+
+<?php
+$db_server = "localhost";
+$db_name = "polldb";
+$db_uname  = "morgan";
+$db_pass   = "123456";
+?>
+
+
+// ������ �α��� /admin/MlangPoll/login.php
+
+//��ǥ ȣ��
+<? include "./MlangPoll/poll.php"; ?> 

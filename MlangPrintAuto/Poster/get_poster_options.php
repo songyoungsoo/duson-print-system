@@ -16,8 +16,8 @@ if ($style_no && $db) {
     // 1. Papers (종이종류)
     $paper_query = "
         SELECT DISTINCT lp.TreeSelect, tc.title 
-        FROM MlangPrintAuto_LittlePrint lp
-        JOIN MlangPrintAuto_transactionCate tc ON lp.TreeSelect = tc.no
+        FROM mlangprintauto_littleprint lp
+        JOIN mlangprintauto_transactioncate tc ON lp.TreeSelect = tc.no
         WHERE lp.style = ? AND tc.Ttable = ?
         ORDER BY tc.no
     ";
@@ -32,8 +32,8 @@ if ($style_no && $db) {
     // 2. Sections (종이규격)
     $section_query = "
         SELECT DISTINCT lp.Section, tc.title 
-        FROM MlangPrintAuto_LittlePrint lp
-        JOIN MlangPrintAuto_transactionCate tc ON lp.Section = tc.no
+        FROM mlangprintauto_littleprint lp
+        JOIN mlangprintauto_transactioncate tc ON lp.Section = tc.no
         WHERE lp.style = ? AND tc.Ttable = ?
         ORDER BY tc.no
     ";
@@ -48,7 +48,7 @@ if ($style_no && $db) {
     // 3. Quantities (수량)
     $quantity_query = "
         SELECT DISTINCT quantity 
-        FROM MlangPrintAuto_LittlePrint 
+        FROM mlangprintauto_littleprint 
         WHERE style = ? 
         ORDER BY CAST(quantity AS UNSIGNED)
     ";
@@ -63,8 +63,8 @@ if ($style_no && $db) {
     // 4. POtypes (인쇄면)
     $potype_query = "
         SELECT DISTINCT lp.POtype, tc.title 
-        FROM MlangPrintAuto_LittlePrint lp
-        JOIN MlangPrintAuto_transactionCate tc ON lp.POtype = tc.no
+        FROM mlangprintauto_littleprint lp
+        JOIN mlangprintauto_transactioncate tc ON lp.POtype = tc.no
         WHERE lp.style = ? AND tc.Ttable = ?
         ORDER BY tc.no
     ";

@@ -21,8 +21,8 @@ function isActive($page_path, $current_page) {
 }
 
 .vertical-menu li {
-    margin-bottom: 4px;
-    border-radius: 8px;
+    margin-bottom: 1px; /* 2px에서 1px로 추가 축소 */
+    border-radius: 6px; /* 8px에서 6px로 축소 */
     overflow: hidden;
 }
 
@@ -30,24 +30,24 @@ function isActive($page_path, $current_page) {
     display: flex;
     align-items: center;
     justify-content: center;
-    padding: 8px 12px;
+    padding: 2px 4px; /* 4px 6px에서 2px 4px로 추가 축소 */
     text-decoration: none;
     color: #2c3e50;
     background: white;
     border: 1px solid rgba(44, 62, 80, 0.15);
-    border-radius: 8px;
+    border-radius: 6px; /* 8px에서 6px로 축소 */
     transition: all 0.3s ease;
     font-family: 'Inter', sans-serif !important;
     font-weight: 600;
-    font-size: 13px;
-    line-height: 1.3;
+    font-size: 12px; /* 13px에서 12px로 축소 */
+    line-height: 1.1; /* 1.2에서 1.1로 축소 */
     text-align: center;
     position: relative;
-    box-shadow: 0 2px 8px rgba(0,0,0,0.08);
-    min-height: 25px;
+    box-shadow: 0 1px 4px rgba(0,0,0,0.06); /* 그림자 축소 */
+    min-height: 18px; /* 22px에서 18px로 축소 */
     width: fit-content;
-    min-width: 120px;
-    max-width: 140px;
+    min-width: 110px; /* 120px에서 110px로 축소 */
+    max-width: 130px; /* 140px에서 130px로 축소 */
 }
 
 .vertical-menu a::before {
@@ -77,10 +77,10 @@ function isActive($page_path, $current_page) {
     background: linear-gradient(135deg, #2c3e50 0%, #34495e 100%);
     color: white;
     font-weight: 700;
-    font-size: 14px;
-    margin-bottom: 8px;
-    box-shadow: 0 3px 10px rgba(44, 62, 80, 0.3);
-    min-width: 130px;
+    font-size: 13px; /* 14px에서 13px로 축소 */
+    margin-bottom: 2px; /* 4px에서 2px로 추가 축소 */
+    box-shadow: 0 2px 6px rgba(44, 62, 80, 0.25); /* 그림자 축소 */
+    min-width: 120px; /* 130px에서 120px로 축소 */
     border: 1px solid #2c3e50;
 }
 
@@ -223,16 +223,16 @@ function isActive($page_path, $current_page) {
     }
     
     .vertical-menu a {
-        font-size: 11px;
-        padding: 6px 8px;
-        min-height: 20px;
+        font-size: 10px; /* 11px에서 10px로 축소 */
+        padding: 1px 2px; /* 3px 4px에서 1px 2px로 추가 축소 */
+        min-height: 16px; /* 18px에서 16px로 축소 */
         min-width: auto;
     }
     
     .vertical-menu a.order-btn {
         flex: 100%;
-        font-size: 12px;
-        margin-bottom: 4px;
+        font-size: 11px; /* 12px에서 11px로 축소 */
+        margin-bottom: 1px; /* 2px에서 1px로 추가 축소 */
     }
     
     .dropdown-content {
@@ -278,10 +278,10 @@ function isActive($page_path, $current_page) {
 
 .dropdown-content a {
     color: #2c3e50 !important;
-    padding: 8px 12px !important;
+    padding: 2px 4px !important; /* 4px 6px에서 2px 4px로 추가 축소 */
     text-decoration: none;
     display: block !important;
-    font-size: 12px !important;
+    font-size: 11px !important; /* 12px에서 11px로 축소 */
     font-weight: 500 !important;
     border-radius: 0 !important;
     border: none !important;
@@ -334,79 +334,79 @@ function isActive($page_path, $current_page) {
 <!-- 컴팩트 네비게이션 메뉴 -->
 <ul class="vertical-menu">
   <li>
-    <a href="/MlangPrintAuto/inserted/index.php" 
-       class="order-btn <?php echo isActive('/MlangPrintAuto/inserted/', $current_page); ?> leaflet">
+    <a href="/mlangprintauto/inserted/index.php" 
+       class="order-btn <?php echo isActive('/mlangprintauto/inserted/', $current_page); ?> leaflet">
        🚀 견적주문
     </a>
   </li>
   
   <li>
     <a href="/shop/cart.php" 
-       class="order-btn" style="background: linear-gradient(135deg, #27ae60 0%, #2ecc71 100%); margin-bottom: 8px; box-shadow: 0 3px 10px rgba(39, 174, 96, 0.3); border-color: #27ae60;">
+       class="order-btn" style="background: linear-gradient(135deg, #27ae60 0%, #2ecc71 100%); margin-bottom: 4px; box-shadow: 0 3px 10px rgba(39, 174, 96, 0.3); border-color: #27ae60;">
        🛒 장바구니
     </a>
   </li>
   
   <li>
-    <a href="/MlangPrintAuto/inserted/index.php?page=inserted" 
-       class="leaflet <?php echo isActive('/MlangPrintAuto/inserted/', $current_page); ?>">
+    <a href="/mlangprintauto/inserted/index.php?page=inserted" 
+       class="leaflet <?php echo isActive('/mlangprintauto/inserted/', $current_page); ?>">
        📄 전단지·리플렛
     </a>
   </li>
   
   <li class="dropdown">
     <a href="javascript:void(0)" 
-       class="sticker dropdown-main <?php echo (isActive('/shop/view', $current_page) || isActive('/MlangPrintAuto/msticker/', $current_page)) ? 'active' : ''; ?>">
+       class="sticker dropdown-main <?php echo (isActive('/shop/view', $current_page) || isActive('/mlangprintauto/msticker/', $current_page)) ? 'active' : ''; ?>">
        🏷️ 스티커 <span class="dropdown-arrow">▼</span>
     </a>
     <div class="dropdown-content">
       <a href="/shop/view_modern.php" class="sticker-general">
         🏷️ 일반스티커
       </a>
-      <a href="/MlangPrintAuto/msticker/index.php" class="sticker-magnetic">
+      <a href="/mlangprintauto/msticker/index.php" class="sticker-magnetic">
         🧲 자석스티커
       </a>
     </div>
   </li>
   
   <li>
-    <a href="/MlangPrintAuto/NameCard/index.php" 
-       class="business <?php echo isActive('/MlangPrintAuto/NameCard/', $current_page); ?>">
+    <a href="/mlangprintauto/namecard/index.php" 
+       class="business <?php echo isActive('/mlangprintauto/namecard/', $current_page); ?>">
        📇 명함
     </a>
   </li>
   
   <li>
-    <a href="/MlangPrintAuto/MerchandiseBond/index.php?page=MerchandiseBond" 
-       class="coupon <?php echo isActive('/MlangPrintAuto/MerchandiseBond/', $current_page); ?>">
+    <a href="/mlangprintauto/merchandisebond/index.php?page=MerchandiseBond" 
+       class="coupon <?php echo isActive('/mlangprintauto/merchandisebond/', $current_page); ?>">
        🎫 상품권
     </a>
   </li>
   
   <li>
-    <a href="/MlangPrintAuto/envelope/index.php?page=envelope" 
-       class="envelope <?php echo isActive('/MlangPrintAuto/envelope/', $current_page); ?>">
+    <a href="/mlangprintauto/envelope/index.php?page=envelope" 
+       class="envelope <?php echo isActive('/mlangprintauto/envelope/', $current_page); ?>">
        ✉️ 봉투
     </a>
   </li>
   
   <li>
-    <a href="/MlangPrintAuto/NcrFlambeau/index.php?page=NcrFlambeau" 
-       class="form <?php echo isActive('/MlangPrintAuto/NcrFlambeau/', $current_page); ?>">
+    <a href="/mlangprintauto/ncrflambeau/index.php?page=ncrflambeau" 
+       class="form <?php echo isActive('/mlangprintauto/ncrflambeau/', $current_page); ?>">
        📋 양식지
     </a>
   </li>
   
   <li>
-    <a href="/MlangPrintAuto/cadarok/index.php" 
-       class="catalog <?php echo isActive('/MlangPrintAuto/cadarok/', $current_page); ?>">
+    <a href="/mlangprintauto/cadarok/index.php" 
+       class="catalog <?php echo isActive('/mlangprintauto/cadarok/', $current_page); ?>">
        📖 카다록
     </a>
   </li>
   
   <li>
-    <a href="/MlangPrintAuto/LittlePrint/index_compact.php?page=LittlePrint" 
-       class="poster <?php echo isActive('/MlangPrintAuto/LittlePrint/', $current_page); ?>">
+    <a href="/mlangprintauto/littleprint/index_compact.php?page=LittlePrint" 
+       class="poster <?php echo isActive('/mlangprintauto/littleprint/', $current_page); ?>">
        🎨 포스터
     </a>
   </li>

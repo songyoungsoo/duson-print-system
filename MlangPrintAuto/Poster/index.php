@@ -20,7 +20,7 @@ $log_info = generateLogInfo();
 
 // 포스터 관련 설정
 $page = "LittlePrint";
-$GGTABLE = "MlangPrintAuto_transactionCate";
+$TABLE = "mlangprintauto_transactioncate";
 
 // 공통함수를 사용하여 초기 데이터 로드
 

@@ -22,9 +22,9 @@ error_log("Parsed parameters - style: $style, section: $section, pn_type: $pn_ty
 // 테이블 우선순위 확인 (littleprint 전용 테이블이 없으면 namecard 테이블 사용)
 $possible_tables = [
     "mlangprintauto_littleprint",
-    "MlangPrintAuto_littleprint", 
+    "mlangprintauto_littleprint", 
     "mlangprintauto_namecard",
-    "MlangPrintAuto_namecard"
+    "mlangprintauto_namecard"
 ];
 
 $TABLE = null;

@@ -1,155 +1,165 @@
 <?php
 /**
- * 통합 갤러리 시스템 - BBS 포트폴리오 이미지 API
- * 명함 기준 개발 후 다른 제품에 적용
+ * 명함 포트폴리오 이미지 API - ImgFolder 갤러리 통합 버전
+ * ImgFolder/namecard/gallery/ 경로에서 이미지를 가져옴
  */
 
 header('Content-Type: application/json; charset=utf-8');
-header('Access-Control-Allow-Origin: *');
-header('Access-Control-Allow-Methods: GET, POST, OPTIONS');
-header('Access-Control-Allow-Headers: Content-Type');
+header('Cache-Control: no-cache, must-revalidate');
 
-// 데이터베이스 연결
+mb_internal_encoding('UTF-8');
+mb_http_output('UTF-8');
+
 include "../../db.php";
 
-// 입력 매개변수
-$category = isset($_GET['category']) ? $_GET['category'] : 'namecard';
-$page = isset($_GET['page']) ? (int)$_GET['page'] : 1;
-$limit = isset($_GET['limit']) ? (int)$_GET['limit'] : 4;
-$mode = isset($_GET['mode']) ? $_GET['mode'] : 'thumbnail'; // thumbnail, popup
-
-// 카테고리 매핑
-$categoryMapping = [
-    'namecard' => '명함',
-    'envelope' => '봉투', 
-    'sticker' => '스티커',
-    'leaflet' => '전단지',
-    'poster' => '포스터',
-    'cadarok' => '카다록',
-    'merchandisebond' => '상품권',
-    'msticker' => '자석스티커',
-    'ncrflambeau' => '양식지'
-];
-
-$dbCategory = isset($categoryMapping[$category]) ? $categoryMapping[$category] : '명함';
+if (!$db) {
+    die(json_encode(['success' => false, 'message' => 'Database connection failed']));
+}
+mysqli_set_charset($db, "utf8mb4");
 
 try {
-    // UTF-8 설정
-    mysqli_set_charset($db, "utf8");
+    $category = isset($_GET['category']) ? $_GET['category'] : 'namecard';
+    $showAll = isset($_GET['all']) && $_GET['all'] === 'true';
+    $page = isset($_GET['page']) ? max(1, intval($_GET['page'])) : 1;
+    $perPage = isset($_GET['per_page']) ? max(1, min(100, intval($_GET['per_page']))) : ($showAll ? 12 : 4);
+    $offset = ($page - 1) * $perPage;
+    $mode = isset($_GET['mode']) ? $_GET['mode'] : 'thumbnail';
+    $limit = isset($_GET['limit']) ? (int)$_GET['limit'] : $perPage;
     
-    // 전체 개수 조회
-    $countQuery = "SELECT COUNT(*) as total 
-                   FROM mlang_portfolio_bbs 
-                   WHERE CATEGORY LIKE '%$dbCategory%' 
-                   AND Mlang_bbs_file IS NOT NULL 
-                   AND Mlang_bbs_file != ''";
+    // ImgFolder 갤러리 경로 (스티커와 동일한 구조)
+    $galleryPath = $_SERVER['DOCUMENT_ROOT'] . '/ImgFolder/namecard/gallery/';
+    $webPath = '/ImgFolder/namecard/gallery/';
     
-    $countResult = mysqli_query($db, $countQuery);
-    $totalItems = 0;
-    
-    if ($countResult && $countRow = mysqli_fetch_assoc($countResult)) {
-        $totalItems = (int)$countRow['total'];
-    }
-    
-    // 페이지네이션 계산
-    $offset = ($page - 1) * $limit;
-    $totalPages = ceil($totalItems / $limit);
-    
-    // 이미지 데이터 조회
-    $query = "SELECT Mlang_bbs_no, Mlang_bbs_title, Mlang_bbs_file, CATEGORY, Mlang_date
-              FROM mlang_portfolio_bbs 
-              WHERE CATEGORY LIKE '%$dbCategory%' 
-              AND Mlang_bbs_file IS NOT NULL 
-              AND Mlang_bbs_file != ''
-              ORDER BY Mlang_bbs_no DESC 
-              LIMIT $limit OFFSET $offset";
-    
-    $result = mysqli_query($db, $query);
     $images = [];
     
-    if ($result) {
-        while ($row = mysqli_fetch_assoc($result)) {
-            // 파일 정보 파싱 (여러 파일이 | 로 구분되어 있을 수 있음)
-            $files = explode('|', $row['Mlang_bbs_file']);
-            
-            foreach ($files as $file) {
-                $file = trim($file);
-                if (!empty($file)) {
-                    // 파일 확장자 체크
-                    $ext = strtolower(pathinfo($file, PATHINFO_EXTENSION));
-                    if (in_array($ext, ['jpg', 'jpeg', 'png', 'gif', 'bmp', 'webp'])) {
-                        $images[] = [
-                            'id' => $row['Mlang_bbs_no'],
-                            'title' => $row['Mlang_bbs_title'],
-                            'filename' => $file,
-                            'path' => "/bbs/upload/portfolio/" . $file,
-                            'thumb_path' => "/bbs/upload/portfolio/" . $file, // 썸네일은 원본 사용
-                            'category' => $row['CATEGORY'],
-                            'date' => $row['Mlang_date']
-                        ];
-                        
-                        // 썸네일 모드면 4개만, 팝업 모드면 limit만큼
-                        if ($mode === 'thumbnail' && count($images) >= 4) {
-                            break 2; // 이중 루프 탈출
-                        }
-                    }
+    // 갤러리 폴더에서 이미지 파일 검색
+    if (is_dir($galleryPath)) {
+        $files = scandir($galleryPath);
+        $imageFiles = [];
+        
+        foreach ($files as $file) {
+            if ($file !== '.' && $file !== '..') {
+                $ext = strtolower(pathinfo($file, PATHINFO_EXTENSION));
+                if (in_array($ext, ['jpg', 'jpeg', 'png', 'gif', 'webp'])) {
+                    $imageFiles[] = $file;
                 }
             }
         }
+        
+        // 파일명 기준 정렬
+        sort($imageFiles);
+        
+        // 페이지네이션 적용
+        $totalCount = count($imageFiles);
+        $totalPages = ceil($totalCount / $perPage);
+        $pagedFiles = array_slice($imageFiles, $offset, $perPage);
+        
+        foreach ($pagedFiles as $index => $file) {
+            $images[] = [
+                'id' => 'gallery_' . ($offset + $index + 1),
+                'title' => pathinfo($file, PATHINFO_FILENAME),
+                'filename' => $file,
+                'path' => $webPath . $file,
+                'image_path' => $webPath . $file,
+                'thumbnail' => $webPath . $file,
+                'thumbnail_path' => $webPath . $file,
+                'thumb_path' => $webPath . $file,
+                'url' => $webPath . $file,
+                'thumb' => $webPath . $file,
+                'category' => '명함',
+                'type' => '명함',
+                'type_name' => '명함',
+                'order_no' => null,
+                'source' => 'gallery',
+                'description' => '명함 갤러리 이미지',
+                'date' => filemtime($galleryPath . $file) ? date('Y-m-d', filemtime($galleryPath . $file)) : '',
+                'file_exists' => true,
+                'customer_masked' => '',
+                'is_real_work' => true,
+                'work_completed' => true
+            ];
+        }
     }
     
-    // 이미지가 부족한 경우 기본 이미지 추가
-    if ($mode === 'thumbnail') {
-        while (count($images) < 4) {
+    // 이미지가 없으면 기본 샘플 이미지 4개 제공
+    if (empty($images)) {
+        $totalCount = 4;
+        $totalPages = 1;
+        
+        for ($i = 1; $i <= 4; $i++) {
             $images[] = [
-                'id' => 'default',
-                'title' => '샘플 이미지',
-                'filename' => 'default-' . $category . '.jpg',
-                'path' => "/images/samples/default-" . $category . ".jpg",
-                'thumb_path' => "/images/samples/default-" . $category . ".jpg",
-                'category' => $dbCategory,
-                'date' => date('Y-m-d H:i:s'),
+                'id' => 'sample_' . $i,
+                'title' => '명함 샘플 ' . $i,
+                'filename' => 'sample_' . $i . '.jpg',
+                'path' => '/images/samples/namecard_sample_' . $i . '.jpg',
+                'image_path' => '/images/samples/namecard_sample_' . $i . '.jpg',
+                'thumbnail' => '/images/samples/namecard_sample_' . $i . '.jpg',
+                'thumbnail_path' => '/images/samples/namecard_sample_' . $i . '.jpg',
+                'thumb_path' => '/images/samples/namecard_sample_' . $i . '.jpg',
+                'url' => '/images/samples/namecard_sample_' . $i . '.jpg',
+                'thumb' => '/images/samples/namecard_sample_' . $i . '.jpg',
+                'category' => '명함',
                 'is_default' => true
             ];
         }
-        
-        // 썸네일 모드는 정확히 4개만
-        $images = array_slice($images, 0, 4);
+    } else {
+        $totalCount = count($imageFiles);
+        $totalPages = ceil($totalCount / $perPage);
     }
     
-    // 응답 데이터 구성
+    $hasNext = $page < $totalPages;
+    $hasPrev = $page > 1;
+    
     $response = [
         'success' => true,
         'category' => $category,
-        'db_category' => $dbCategory,
+        'db_category' => '명함',
         'mode' => $mode,
         'page' => $page,
         'limit' => $limit,
-        'total_items' => $totalItems,
+        'total_items' => $totalCount,
         'total_pages' => $totalPages,
-        'has_next' => $page < $totalPages,
-        'has_prev' => $page > 1,
+        'has_next' => $hasNext,
+        'has_prev' => $hasPrev,
         'images' => $images,
-        'count' => count($images)
+        'data' => $images,
+        'count' => count($images),
+        'source' => 'gallery',
+        'version' => '3.0',
+        'description' => '명함 갤러리 이미지',
+        'gallery_path' => $webPath,
+        'pagination' => [
+            'current_page' => $page,
+            'per_page' => $perPage,
+            'total_count' => $totalCount,
+            'total_pages' => $totalPages,
+            'has_next' => $hasNext,
+            'has_prev' => $hasPrev,
+            'next_page' => $hasNext ? $page + 1 : null,
+            'prev_page' => $hasPrev ? $page - 1 : null
+        ]
     ];
     
     echo json_encode($response, JSON_UNESCAPED_UNICODE | JSON_PRETTY_PRINT);
     
 } catch (Exception $e) {
-    // 에러 응답
     $response = [
         'success' => false,
         'error' => $e->getMessage(),
-        'category' => $category,
-        'images' => []
+        'message' => $e->getMessage(),
+        'category' => $category ?? 'namecard',
+        'images' => [],
+        'data' => [],
+        'source' => 'gallery',
+        'version' => '3.0'
     ];
     
     http_response_code(500);
     echo json_encode($response, JSON_UNESCAPED_UNICODE | JSON_PRETTY_PRINT);
-}
-
-// 데이터베이스 연결 종료
-if ($db) {
-    mysqli_close($db);
+    
+} finally {
+    if (isset($db) && $db) {
+        mysqli_close($db);
+    }
 }
 ?>

@@ -43,7 +43,7 @@ try {
     if ($category === 'inserted') {
         $whereClause .= " AND (Type = '전단지' OR Type LIKE '%전단%' OR Type = 'inserted' OR Type LIKE '%leaflet%')";
     } elseif ($category === 'namecard') {
-        $whereClause .= " AND (Type = '명함' OR Type = 'NameCard' OR Type LIKE '%명함%' OR Type LIKE '%card%')";
+        $whereClause .= " AND (Type = '명함' OR Type = 'namecard' OR Type LIKE '%명함%' OR Type LIKE '%card%')";
     }
     
     // 데이터 조회 (많은 양을 가져와서 파일 체크)
@@ -72,7 +72,7 @@ try {
                 "/MlangOrder_PrintAuto/upload/$orderNo/$imageFile",
                 "/upload/$orderNo/$imageFile",
                 "/uploads/$orderNo/$imageFile",
-                "/MlangPrintAuto/upload/$orderNo/$imageFile"
+                "/mlangprintauto/upload/$orderNo/$imageFile"
             ];
             
             $foundPath = null;

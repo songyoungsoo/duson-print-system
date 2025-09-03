@@ -2,8 +2,8 @@
 $DhtmlTopFos = "430";
 $DhtmlLeftFos = "180";
 
-$GGTABLE = "MlangPrintAuto_transactionCate";
-$GGTABLESu = "MlangPrintAuto_SuCate";
+$GGTABLE = "mlangprintauto_transactioncate";
+$GGTABLESu = "mlangprintauto_sucate";
 
 $ConDb_A = "전단지:스티카:명함:상품권:봉투:양식지:리플렛:소량인쇄:카다로그:학원:음식:기업체:의류:상업:교회:비영리:기타";
 
@@ -26,14 +26,14 @@ if ($ListXTtable == "1" || $Ttable == "msticker" || $ToTitle == "스티카") {
     $View_TtableB = "msticker";
     $View_TtableC = "스티카";
 }
-if ($ListXTtable == "2" || $Ttable == "NameCard" || $ToTitle == "명함") {
+if ($ListXTtable == "2" || $Ttable == "namecard" || $ToTitle == "명함") {
     $View_TtableA = "2";
-    $View_TtableB = "NameCard";
+    $View_TtableB = "namecard";
     $View_TtableC = "명함";
 }
-if ($ListXTtable == "3" || $Ttable == "MerchandiseBond" || $ToTitle == "상품권") {
+if ($ListXTtable == "3" || $Ttable == "merchandisebond" || $ToTitle == "상품권") {
     $View_TtableA = "3";
-    $View_TtableB = "MerchandiseBond";
+    $View_TtableB = "merchandisebond";
     $View_TtableC = "상품권";
 }
 if ($ListXTtable == "4" || $Ttable == "envelope" || $ToTitle == "봉투") {
@@ -41,9 +41,9 @@ if ($ListXTtable == "4" || $Ttable == "envelope" || $ToTitle == "봉투") {
     $View_TtableB = "envelope";
     $View_TtableC = "봉투";
 }
-if ($ListXTtable == "5" || $Ttable == "NcrFlambeau" || $ToTitle == "양식지") {
+if ($ListXTtable == "5" || $Ttable == "ncrflambeau" || $ToTitle == "양식지") {
     $View_TtableA = "5";
-    $View_TtableB = "NcrFlambeau";
+    $View_TtableB = "ncrflambeau";
     $View_TtableC = "양식지";
 }
 if ($ListXTtable == "6" || $Ttable == "cadarok" || $ToTitle == "리플렛") {
@@ -51,9 +51,9 @@ if ($ListXTtable == "6" || $Ttable == "cadarok" || $ToTitle == "리플렛") {
     $View_TtableB = "cadarok";
     $View_TtableC = "리플렛";
 }
-if ($ListXTtable == "7" || $Ttable == "LittlePrint" || $ToTitle == "소량인쇄") {
+if ($ListXTtable == "7" || $Ttable == "littleprint" || $ToTitle == "소량인쇄") {
     $View_TtableA = "7";
-    $View_TtableB = "LittlePrint";
+    $View_TtableB = "littleprint";
     $View_TtableC = "소량인쇄";
 }
 if ($ListXTtable == "8" || $Ttable == "cadarokTwo" || $ToTitle == "카다로그") {
@@ -103,5 +103,5 @@ if ($ListXTtable == "16" || $Ttable == "etc" || $ToTitle == "기타") {
 }
 
 $MAXFSIZE = "999999";
-$upload_dir = "../../MlangPrintAuto/" . ($Ttable ?? '') . "/upload";
+$upload_dir = "../../mlangprintauto/" . ($Ttable ?? '') . "/upload";
 ?>

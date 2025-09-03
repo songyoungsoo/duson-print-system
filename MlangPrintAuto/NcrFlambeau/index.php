@@ -1,4 +1,4 @@
-<?php 
+6+<?php 
 session_start(); 
 $session_id = session_id();
 
@@ -7,7 +7,7 @@ ob_start();
 error_reporting(E_ALL & ~E_NOTICE & ~E_WARNING);
 ini_set('display_errors', 0);
 
-// 데이터베이스 연결
+// 보안 상수 정의 후 데이터베이스 연결
 include "../../db.php";
 $connect = $db;
 
@@ -38,7 +38,7 @@ $login_message = '';
 $is_logged_in = isset($_SESSION['user_id']) || isset($_SESSION['id_login_ok']) || isset($_COOKIE['id_login_ok']);
 
 // 공통 인증 시스템 사용
-include "../includes/auth.php";
+include "../../includes/auth.php";
 
 // 사용자 정보 설정
 if (isset($_SESSION['user_id'])) {
@@ -92,15 +92,43 @@ echo '<script src="../../includes/js/UniversalFileUpload.js"></script>';
     <!-- 통합 갤러리 CSS -->
     <link rel="stylesheet" href="../../css/unified-gallery.css">
     <link rel="stylesheet" href="../../css/btn-primary.css">
+    <!-- 컴팩트 폼 그리드 CSS (모든 품목 공통) -->
+    <link rel="stylesheet" href="../../css/compact-form.css">
     
     <!-- 노토 폰트 -->
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@300;400;500;700&display=swap" rel="stylesheet">
+    
+    <!-- 통합 가격 표시 시스템 CSS -->
+    <link rel="stylesheet" href="../../css/unified-price-display.css">
 </head>
 
 <body>
     <div class="ncr-card">
+    
+    <style>
+    /* 양식지를 명함과 동일한 크기로 조정 */
+    .ncr-card {
+        max-width: 1200px !important;
+        margin: 0 auto !important;
+        padding: 10px 20px 20px 20px !important;
+        background: white !important;
+        border-radius: 15px !important;
+        box-shadow: 0 10px 40px rgba(0,0,0,0.1) !important;
+        overflow: hidden !important;
+    }
+    
+    .ncr-grid {
+        display: grid !important;
+        grid-template-columns: 1fr 1fr !important;
+        gap: 30px !important;
+        min-height: 450px !important;
+        max-width: 1200px !important;
+        margin: 0 auto !important;
+        align-items: start !important;
+    }
+    </style>
         <!-- 페이지 타이틀 -->
         <div class="page-title">
             <h1>📋 양식지(NCR) 자동견적</h1>
@@ -111,9 +139,9 @@ echo '<script src="../../includes/js/UniversalFileUpload.js"></script>';
             <!-- 좌측: 통합 갤러리 시스템 -->
             <section class="ncrflambeau-gallery" aria-label="양식지 샘플 갤러리">
                 <?php
-                // 통합 갤러리 시스템 사용 (3줄로 완전 간소화)
-                include_once "../../includes/gallery_helper.php";
-                include_product_gallery('ncrflambeau', ['mainSize' => [500, 400]]);
+                // 공통 갤러리 시스템 사용 (500×300px 기본값)
+                if (file_exists('../../includes/gallery_helper.php')) { if (file_exists('../../includes/gallery_helper.php')) { include_once '../../includes/gallery_helper.php'; } }
+                if (function_exists("include_product_gallery")) { include_product_gallery('ncrflambeau'); }
                 ?>
             </section>
             
@@ -124,14 +152,14 @@ echo '<script src="../../includes/js/UniversalFileUpload.js"></script>';
                 </div>
                 
                 <form id="ncr-quote-form" method="post">
-                    <div class="options-grid">
+                    <div class="options-grid form-grid-compact calc-form-2col-lock">
                         <!-- 구분 -->
-                        <div class="option-group">
-                            <label class="option-label" for="MY_type">양식 구분</label>
+                        <div class="option-group form-field">
+                            <label class="option-label" for="MY_type">구분</label>
                             <select name="MY_type" id="MY_type" class="option-select" required>
                                 <option value="">구분을 선택해주세요</option>
                                 <?php
-                                $categories = getCategoryOptions($db, 'MlangPrintAuto_transactionCate', 'NcrFlambeau');
+                                $categories = getCategoryOptions($db, "mlangprintauto_transactioncate", "NcrFlambeau");
                                 foreach ($categories as $category) {
                                     $selected = ($category['no'] == $default_values['MY_type']) ? 'selected' : '';
                                     echo "<option value='" . safe_html($category['no']) . "' $selected>" . safe_html($category['title']) . "</option>";
@@ -141,7 +169,7 @@ echo '<script src="../../includes/js/UniversalFileUpload.js"></script>';
                         </div>
                         
                         <!-- 규격 -->
-                        <div class="option-group">
+                        <div class="option-group form-field">
                             <label class="option-label" for="MY_Fsd">규격</label>
                             <select name="MY_Fsd" id="MY_Fsd" class="option-select" required>
                                 <option value="">먼저 구분을 선택해주세요</option>
@@ -149,7 +177,7 @@ echo '<script src="../../includes/js/UniversalFileUpload.js"></script>';
                         </div>
                         
                         <!-- 색상 -->
-                        <div class="option-group">
+                        <div class="option-group form-field">
                             <label class="option-label" for="PN_type">색상</label>
                             <select name="PN_type" id="PN_type" class="option-select" required>
                                 <option value="">먼저 구분을 선택해주세요</option>
@@ -157,7 +185,7 @@ echo '<script src="../../includes/js/UniversalFileUpload.js"></script>';
                         </div>
                         
                         <!-- 수량 -->
-                        <div class="option-group">
+                        <div class="option-group form-field">
                             <label class="option-label" for="MY_amount">수량</label>
                             <select name="MY_amount" id="MY_amount" class="option-select" required>
                                 <option value="">수량을 선택해주세요</option>
@@ -165,7 +193,7 @@ echo '<script src="../../includes/js/UniversalFileUpload.js"></script>';
                         </div>
                         
                         <!-- 편집디자인 -->
-                        <div class="option-group full-width">
+                        <div class="option-group form-field full-width">
                             <label class="option-label" for="ordertype">편집디자인</label>
                             <select name="ordertype" id="ordertype" class="option-select" required>
                                 <option value="">편집 방식을 선택해주세요</option>
@@ -175,12 +203,12 @@ echo '<script src="../../includes/js/UniversalFileUpload.js"></script>';
                         </div>
                     </div>
                     
-                    <!-- 실시간 가격 표시 -->
+                    <!-- 스티커 방식의 실시간 가격 표시 -->
                     <div class="price-display" id="priceDisplay">
                         <div class="price-label">견적 금액</div>
-                        <div class="price-amount" id="priceAmount">0원</div>
+                        <div class="price-amount" id="priceAmount">견적 계산 필요</div>
                         <div class="price-details" id="priceDetails">
-                            옵션을 선택하시면<br>실시간으로 가격이 계산됩니다
+                            모든 옵션을 선택하면 자동으로 계산됩니다
                         </div>
                     </div>
                     
@@ -197,7 +225,7 @@ echo '<script src="../../includes/js/UniversalFileUpload.js"></script>';
                     <input type="hidden" name="log_md" value="<?php echo safe_html($log_info['md']); ?>">
                     <input type="hidden" name="log_ip" value="<?php echo safe_html($log_info['ip']); ?>">
                     <input type="hidden" name="log_time" value="<?php echo safe_html($log_info['time']); ?>">
-                    <input type="hidden" name="page" value="NcrFlambeau">
+                    <input type="hidden" name="page" value="ncrflambeau">
                     
                     <!-- 가격 정보 저장용 -->
                     <input type="hidden" name="calculated_price" id="calculated_price" value="">
@@ -247,7 +275,7 @@ echo '<script src="../../includes/js/UniversalFileUpload.js"></script>';
                             <textarea id="modalWorkMemo" class="memo-textarea" placeholder="작업 관련 요청사항이나 특별한 지시사항을 입력해주세요.&#10;&#10;예시:&#10;- 색상을 더 진하게 해주세요&#10;- 글자 크기를 조금 더 크게&#10;- 배경색을 파란색으로 변경"></textarea>
                             
                             <div class="upload-notice">
-                                <div class="notice-item">📋 택배 무료배송은 결제금액 총 3만원 이상시에 한함</div>
+                                <div class="notice-item">📦 택배는 기본이 착불 원칙입니다</div>
                                 <div class="notice-item">📋 당일(익일)주문 전날 주문 제품과 동일 불가</div>
                             </div>
                         </div>
@@ -331,6 +359,11 @@ echo '<script src="../../includes/js/UniversalFileUpload.js"></script>';
         box-shadow: 0 10px 35px rgba(0, 0, 0, 0.12), 0 4px 15px rgba(0, 0, 0, 0.08) !important;
         border: 1px solid rgba(255, 255, 255, 0.9) !important;
         position: relative !important; /* 헤더 오버플로우를 위한 설정 */
+        min-height: 450px !important;        /* 갤러리와 동일한 높이 */
+        height: 450px !important;
+        overflow: auto !important;           /* 내용이 많을 경우 스크롤 */
+        display: flex !important;
+        flex-direction: column !important;
     }
 
     .calculator-header h3 {
@@ -347,55 +380,7 @@ echo '<script src="../../includes/js/UniversalFileUpload.js"></script>';
         opacity: 0.9 !important;
     }
 
-    /* =================================================================== */
-    /* 3단계: 통일된 가격 표시 - 녹색 큰 글씨 (인쇄비+편집비=공급가) */
-    /* =================================================================== */
-    .price-display {
-        background: linear-gradient(145deg, #f8f9fa 0%, #e9ecef 100%) !important;
-        border: 2px solid #28a745 !important;
-        border-radius: 12px !important;
-        padding: 15px 20px !important;
-        text-align: center !important;
-        margin: 20px 0 !important;
-        transition: all 0.3s ease !important;
-        box-shadow: 0 4px 12px rgba(40, 167, 69, 0.1) !important;
-    }
-
-    .price-display.calculated {
-        background: linear-gradient(145deg, #d4edda 0%, #c3e6cb 100%) !important;
-        transform: translateY(-2px) !important;
-        box-shadow: 0 8px 20px rgba(40, 167, 69, 0.2) !important;
-        border-color: #20c997 !important;
-    }
-
-    .price-display .price-label {
-        font-size: 0.9rem !important;
-        color: #495057 !important;
-        margin-bottom: 8px !important;
-        font-weight: 500 !important;
-    }
-
-    .price-display .price-amount {
-        font-size: 2.2rem !important;
-        font-weight: 700 !important;
-        color: #28a745 !important;
-        margin: 10px 0 !important;
-        line-height: 1.2 !important;
-        text-shadow: 0 2px 4px rgba(40, 167, 69, 0.3) !important;
-        letter-spacing: -0.5px !important;
-    }
-
-    .price-display .price-details {
-        font-size: 0.8rem !important;
-        color: #6c757d !important;
-        line-height: 1.4 !important;
-        margin-top: 8px !important;
-    }
-
-    .price-display:hover {
-        transform: translateY(-1px) !important;
-        box-shadow: 0 6px 16px rgba(40, 167, 69, 0.15) !important;
-    }
+    /* 가격 표시는 공통 CSS (../../css/unified-price-display.css) 사용 */
 
     /* =================================================================== */
     /* 4단계: Form 요소 컴팩트화 (패딩 1/2 축소) */
@@ -407,13 +392,52 @@ echo '<script src="../../includes/js/UniversalFileUpload.js"></script>';
     .option-group {
         margin-bottom: 8px !important;       /* 33% 축소 */
     }
+    
+    /* 포스터처럼 2열 그리드 레이아웃 적용 */
+    .calc-form-2col-lock {
+        display: grid !important;
+        grid-template-columns: 1fr 1fr !important;
+        gap: 15px 20px !important;
+        align-items: center !important;
+    }
+    
+    /* 전체 너비 항목 (편집디자인) */
+    .calc-form-2col-lock .full-width {
+        grid-column: 1 / -1 !important;
+    }
+    
+    /* 각 필드를 가로 배치 (레이블 + 입력필드) */
+    .calc-form-2col-lock .form-field {
+        display: grid !important;
+        grid-template-columns: 60px 1fr !important;  /* 레이블 60px, 입력필드 나머지 */
+        gap: 10px !important;
+        align-items: center !important;
+    }
+    
+    .calc-form-2col-lock .option-label {
+        font-size: 0.9rem !important;
+        font-weight: 600 !important;
+        color: #333 !important;
+        margin: 0 !important;
+        white-space: nowrap !important;
+    }
+    
+    .calc-form-2col-lock .option-select {
+        width: 100% !important;
+        min-height: 36px !important;
+    }
+    
+    /* 전체 너비 항목은 레이블도 더 넓게 */
+    .calc-form-2col-lock .full-width.form-field {
+        grid-template-columns: 80px 1fr !important;
+    }
 
     /* =================================================================== */
     /* 5단계: 기타 요소들 컴팩트화 */
     /* =================================================================== */
     .calculator-section {
         padding: 0px 25px !important;        /* 더 타이트하게 */
-        min-height: 400px !important;
+        min-height: 450px !important;        /* 갤러리와 동일한 높이로 조정 */
     }
 
     .options-grid {
@@ -433,6 +457,11 @@ echo '<script src="../../includes/js/UniversalFileUpload.js"></script>';
         padding: 25px;
         box-shadow: 0 10px 35px rgba(0, 0, 0, 0.12), 0 4px 15px rgba(0, 0, 0, 0.08) !important;
         border: 1px solid rgba(255, 255, 255, 0.9);
+        min-height: 450px !important;        /* 계산기와 동일한 높이로 균형 맞춤 */
+        height: 450px !important;
+        overflow: hidden !important;         /* 콘텐츠가 넘치지 않도록 */
+        display: flex !important;
+        flex-direction: column !important;
     }
     
     /* 통합 갤러리 제목 색상 조정 (양식지 브랜드 컬러) - 견적계산기와 동일하게 */
@@ -467,9 +496,7 @@ echo '<script src="../../includes/js/UniversalFileUpload.js"></script>';
             padding: 15px 20px !important;    /* 터치 친화적 */
         }
         
-        .price-display .price-amount {
-            font-size: 1.5rem !important;     /* 모바일 가독성 */
-        }
+        /* 가격 표시는 공통 CSS에서 모바일 반응형도 처리됨 */
         
         .option-select, select, input[type="text"], input[type="email"], textarea {
             padding: 10px 15px !important;    /* 터치 영역 확보 */
@@ -489,6 +516,8 @@ echo '<script src="../../includes/js/UniversalFileUpload.js"></script>';
     }
     </style>
 
+    <!-- 공통 가격 표시 시스템 -->
+    <script src="../../js/common-price-display.js" defer></script>
     <!-- JavaScript 파일 포함 -->
     <script src="js/ncrflambeau-compact.js"></script>
     

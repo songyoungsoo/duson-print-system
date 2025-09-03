@@ -23,7 +23,7 @@ $current_page = 'cadarok';
 
 // 카다록 관련 설정
 $page = "cadarok";
-$GGTABLE = "MlangPrintAuto_transactionCate";
+$TABLE = "mlangprintauto_transactioncate";
 
 // 드롭다운 옵션을 가져오는 함수
 function getOptions($connect, $GGTABLE, $page, $BigNo) {

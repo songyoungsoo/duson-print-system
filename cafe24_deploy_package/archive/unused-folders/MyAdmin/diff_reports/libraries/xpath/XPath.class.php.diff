@@ -1,0 +1,38 @@
+--- XPath.class.php (original)
++++ XPath.class.php (modified)
+@@ -2610,7 +2610,7 @@
+         break $parseBlock;
+       }
+       
+-      if (eregi('\]$', $step)) {
++      if (preg_match('\]$', $step)) {
+         // Use the child axis and select a position.
+         $axis['axis']      = 'child';
+         $axis['node-test'] = substr($step, strpos($step, '['));
+@@ -4155,7 +4155,7 @@
+     $second = $this->_evaluatePredicate($node, $second, $nodeTest);
+       
+     // Check whether the first string starts with the second one.
+-    if (ereg('^'.$second, $first)) {
++    if (preg_match('^'.$second, $first)) {
+       // Return TRUE.
+       return TRUE;
+     } else {
+@@ -4512,7 +4512,7 @@
+         // Check whether there's a language definition.
+         if (!empty($this->nodes[$node]['attributes']['xml:lang'])) {
+           // Check whether it's the language, the user asks for.
+-          if (eregi('^'.$arguments, $this->nodes[$node]['attributes']['xml:lang'])) {
++          if (preg_match('^'.$arguments, $this->nodes[$node]['attributes']['xml:lang'])) {
+             // Return TRUE.
+             return TRUE;
+           } else {
+@@ -4526,7 +4526,7 @@
+       return FALSE;
+     } else {
+       // Check whether it's the language, the user asks for.
+-      if (eregi('^'.$arguments, $this->nodes[$node]['attributes']['xml:lang'])) {
++      if (preg_match('^'.$arguments, $this->nodes[$node]['attributes']['xml:lang'])) {
+         // Return TRUE.
+         return TRUE;
+       } else {

@@ -11,6 +11,9 @@ $session_id = session_id();
 include "../db.php";
 $connect = $db;
 
+// 통합 인증 시스템 로드
+include "../includes/auth.php";
+
 // 헬퍼 함수 포함
 include "../MlangPrintAuto/shop_temp_helper.php";
 
@@ -210,73 +213,126 @@ if ($is_post_order) {
     }
 }
 
-// 로그인 상태 확인 및 회원 정보 가져오기
+// 로그인 상태는 이미 auth.php에서 처리됨
+// 회원 정보 가져오기 (로그인되어 있을 때만)
 $user_info = null;
-$is_logged_in = false;
+$debug_info = [];
 
-if (isset($_SESSION['user_id']) && !empty($_SESSION['user_id'])) {
+if ($is_logged_in && isset($_SESSION['user_id']) && !empty($_SESSION['user_id'])) {
     $user_id = $_SESSION['user_id'];
-    $user_query = "SELECT * FROM users WHERE id = ?";
-    $stmt = mysqli_prepare($connect, $user_query);
+    $debug_info[] = "Loading user info for user_id: " . $user_id;
     
-    if ($stmt) {
-        mysqli_stmt_bind_param($stmt, 'i', $user_id);
-        mysqli_stmt_execute($stmt);
-        $result = mysqli_stmt_get_result($stmt);
+    if (!$connect) {
+        $debug_info[] = "ERROR: No database connection";
+    } else {
+        // 테이블명 매핑 적용된 쿼리 사용
+        $user_query = "SELECT * FROM users WHERE id = ?";
+        $stmt = safe_mysqli_prepare($connect, $user_query);
         
-        if ($result && mysqli_num_rows($result) > 0) {
-            $user_info = mysqli_fetch_assoc($result);
-            $is_logged_in = true;
+        if ($stmt) {
+            mysqli_stmt_bind_param($stmt, 'i', $user_id);
+            mysqli_stmt_execute($stmt);
+            $result = mysqli_stmt_get_result($stmt);
+            
+            if ($result && mysqli_num_rows($result) > 0) {
+                $user_info = mysqli_fetch_assoc($result);
+                $debug_info[] = "User info loaded successfully";
+                $debug_info[] = "Available fields: " . implode(', ', array_keys($user_info));
+                $debug_info[] = "Name: " . ($user_info['name'] ?? 'none');
+                $debug_info[] = "Address fields: zip=" . ($user_info['zip'] ?? 'none') . 
+                               ", zip1=" . ($user_info['zip1'] ?? 'none') . 
+                               ", zip2=" . ($user_info['zip2'] ?? 'none') .
+                               ", address=" . ($user_info['address'] ?? 'none') . 
+                               ", postcode=" . ($user_info['postcode'] ?? 'none');
+            } else {
+                $debug_info[] = "ERROR: No user found with id: " . $user_id;
+                // 테이블 존재 여부 확인
+                $table_check = mysqli_query($connect, "SHOW TABLES LIKE 'users'");
+                if ($table_check && mysqli_num_rows($table_check) > 0) {
+                    $debug_info[] = "Table 'users' exists";
+                    // 전체 사용자 수 확인
+                    $count_result = mysqli_query($connect, "SELECT COUNT(*) as total FROM users");
+                    if ($count_result) {
+                        $count_row = mysqli_fetch_assoc($count_result);
+                        $debug_info[] = "Total users in table: " . $count_row['total'];
+                    }
+                } else {
+                    $debug_info[] = "ERROR: Table 'users' does not exist";
+                }
+            }
+            mysqli_stmt_close($stmt);
+        } else {
+            $debug_info[] = "ERROR: Failed to prepare user query: " . mysqli_error($connect);
         }
-        mysqli_stmt_close($stmt);
     }
+} else {
+    $debug_info[] = "Not logged in or missing session data";
+    $debug_info[] = "is_logged_in: " . ($is_logged_in ? 'true' : 'false');
+    $debug_info[] = "SESSION user_id: " . ($_SESSION['user_id'] ?? 'not set');
+}
+
+// 디버깅을 위해 로그 출력
+foreach ($debug_info as $info) {
+    error_log("UserInfo Debug: " . $info);
 }
 
 // 공통 헤더 포함
 include "../includes/header.php";
 include "../includes/nav.php";
+
+// 디버깅 정보 임시 표시 (개발용)
+if (!empty($debug_info) && (strpos($_SERVER['HTTP_HOST'], 'localhost') !== false || strpos($_SERVER['HTTP_HOST'], 'dsp1830.shop') !== false)) {
+    echo "<div style='position: fixed; top: 10px; right: 10px; background: #fff3cd; border: 1px solid #ffeaa7; padding: 10px; border-radius: 5px; font-size: 11px; z-index: 9999; max-width: 300px;'>";
+    echo "<strong>🔍 회원정보 디버깅:</strong><br>";
+    foreach ($debug_info as $info) {
+        echo "• " . htmlspecialchars($info) . "<br>";
+    }
+    echo "</div>";
+}
 ?>
 
-<div class="container">
+<div class="container" style="padding: 0.5rem 1rem; margin-top: -1rem;">
     <!-- 주문 정보 입력 폼 -->
-    <div class="card">
-        <div class="card-header" style="background: linear-gradient(135deg, #3498db 0%, #2980b9 100%); color: white; text-align: center; padding: 2rem;">
-            <h2 style="margin: 0; font-size: 2rem;">📋 주문 정보 입력</h2>
-            <p style="margin: 0.5rem 0 0 0; opacity: 0.9;">정확한 정보를 입력해 주세요</p>
+    <div class="card" style="margin-bottom: 1rem;">
+        <div class="card-header" style="background: linear-gradient(135deg, #3498db 0%, #2980b9 100%); color: white; text-align: center; padding: 0.5rem;">
+            <h2 style="margin: 0; font-size: 1rem;">📋 주문 정보 입력</h2>
+            <p style="margin: 0.2rem 0 0 0; opacity: 0.9; font-size: 0.75rem;">정확한 정보를 입력해 주세요</p>
         </div>
         
-        <div style="padding: 2rem;">
-            <!-- 컴팩트 주문 요약 -->
-            <div style="background: #f8f9fa; padding: 0.8rem; border-radius: 6px; margin-bottom: 1rem;">
-                <h3 style="color: #2c3e50; margin-bottom: 0.6rem; font-size: 1rem;">📦 주문 요약</h3>
-                <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(160px, 1fr)); gap: 0.6rem;">
-                    <div style="text-align: center; padding: 0.6rem; background: white; border-radius: 4px;">
-                        <div style="font-size: 1.1rem; font-weight: bold; color: #3498db;"><?php echo $total_info['count']; ?>개</div>
-                        <div style="color: #666; font-size: 0.8rem;">총 상품수</div>
+        <div class="centered-form" style="padding: 0.8rem;">
+            <!-- 주문 요약 (장바구니 스타일) -->
+            <div style="background: linear-gradient(135deg, #f7faff 0%, #fdf2f8 100%); border-radius: 8px; padding: 20px; border: 1px solid #e2e8f0; margin-bottom: 1.5rem;">
+                <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 16px;">
+                    <div style="color: #4a5568; font-weight: 600; font-size: 16px;">📋 주문 요약</div>
+                    <div style="color: #718096; font-size: 13px;">총 <?php echo $total_info['count']; ?>개 상품</div>
+                </div>
+                
+                <div style="display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 16px;">
+                    <div style="text-align: center; padding: 12px; background: white; border-radius: 6px; border: 1px solid #e2e8f0;">
+                        <div style="color: #718096; font-size: 12px; margin-bottom: 4px;">상품금액</div>
+                        <div style="color: #2d3748; font-weight: 600; font-size: 15px;"><?php echo number_format($total_info['total']); ?>원</div>
                     </div>
-                    <div style="text-align: center; padding: 0.6rem; background: white; border-radius: 4px;">
-                        <div style="font-size: 1.1rem; font-weight: bold; color: #27ae60;"><?php echo number_format($total_info['total']); ?>원</div>
-                        <div style="color: #666; font-size: 0.8rem;">총 인쇄비</div>
+                    <div style="text-align: center; padding: 12px; background: white; border-radius: 6px; border: 1px solid #e2e8f0;">
+                        <div style="color: #718096; font-size: 12px; margin-bottom: 4px;">부가세</div>
+                        <div style="color: #2d3748; font-weight: 600; font-size: 15px;"><?php echo number_format($total_info['total_vat'] - $total_info['total']); ?>원</div>
                     </div>
-                    <div style="text-align: center; padding: 0.6rem; background: white; border-radius: 4px;">
-                        <div style="font-size: 1.1rem; font-weight: bold; color: #e74c3c;"><?php echo number_format($total_info['total_vat'] - $total_info['total']); ?>원</div>
-                        <div style="color: #666; font-size: 0.8rem;">부가세</div>
-                    </div>
-                    <div style="text-align: center; padding: 0.6rem; background: white; border-radius: 4px;">
-                        <div style="font-size: 1.2rem; font-weight: bold; color: #e74c3c;"><?php echo number_format($total_info['total_vat']); ?>원</div>
-                        <div style="color: #666; font-size: 0.8rem;">총 결제금액</div>
+                    <div style="text-align: center; padding: 12px; background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); border-radius: 6px; color: white;">
+                        <div style="opacity: 0.9; font-size: 12px; margin-bottom: 4px;">총 결제금액</div>
+                        <div style="font-weight: 700; font-size: 18px;"><?php echo number_format($total_info['total_vat']); ?>원</div>
                     </div>
                 </div>
             </div>
             
-            <!-- 컴팩트 주문 상품 목록 -->
-            <div style="margin-bottom: 1rem;">
-                <h3 style="color: #2c3e50; margin-bottom: 0.6rem; font-size: 1rem;">🛍️ 주문 상품 목록</h3>
-                <div style="background: white; border: 1px solid #ddd; border-radius: 6px; overflow: hidden;">
-                    <?php foreach ($cart_items as $index => $item): ?>
-                    <div style="padding: 0.8rem; border-bottom: 1px solid #eee; <?php echo $index % 2 == 0 ? 'background: #f9f9f9;' : ''; ?>">
+            <!-- 주문 상품 목록 (장바구니 테이블 스타일) -->
+            <div style="margin-bottom: 1.5rem;">
+                <h3 style="color: #4a5568; font-weight: 600; font-size: 16px; margin-bottom: 1rem;">🛍️ 주문 상품 목록</h3>
+                <div style="background: linear-gradient(135deg, #fafbff 0%, #fff9f9 100%); border-radius: 8px; overflow: hidden; border: 1px solid #e8eaed;">
+                    <?php foreach ($cart_items as $index => $item): 
+                        $row_bg = $index % 2 == 0 ? '#fdfdfd' : '#f9f9fb';
+                    ?>
+                    <div style="padding: 16px; background: <?php echo $row_bg; ?>; border-bottom: 1px solid #e8eaed; transition: background-color 0.2s ease;" onmouseover="this.style.background='#f0f4ff'" onmouseout="this.style.background='<?php echo $row_bg; ?>'">
                         <div style="display: flex; justify-content: space-between; align-items: center;">
-                            <div>
+                            <div style="flex: 1;">
                                 <?php if ($is_direct_order): ?>
                                     <?php if ($item['product_type'] == 'envelope'): ?>
                                         <strong style="color: #2c3e50; font-size: 0.95rem;">✉️ 봉투</strong>
@@ -410,11 +466,11 @@ include "../includes/nav.php";
                                     <?php endif; ?>
                                 <?php endif; ?>
                             </div>
-                            <div style="text-align: right;">
-                                <div style="font-size: 1.2rem; font-weight: bold; color: #e74c3c;">
+                            <div style="text-align: right; min-width: 120px;">
+                                <div style="color: #4a5568; font-size: 13px; margin-bottom: 2px;">부가세포함</div>
+                                <div style="font-weight: 700; color: #e53e3e; font-size: 16px;">
                                     <?php echo number_format($is_direct_order ? $item['vat_price'] : $item['st_price_vat']); ?>원
                                 </div>
-                                <div style="font-size: 0.9rem; color: #666;">VAT 포함</div>
                             </div>
                         </div>
                     </div>
@@ -462,12 +518,21 @@ include "../includes/nav.php";
                         <p style="margin: 0.3rem 0 0 0; color: #666; font-size: 0.85rem;">정보가 변경된 경우 직접 수정해주세요</p>
                     </div>
                 <?php else: ?>
+                    <div style="background: #e3f2fd; padding: 0.8rem; border-radius: 6px; margin-bottom: 0.8rem; border-left: 3px solid #2196f3;">
+                        <p style="margin: 0; color: #1976d2; font-weight: bold; font-size: 0.9rem;">
+                            👋 회원이신가요? 
+                            <button onclick="showLoginModal()" style="background: #2196f3; color: white; border: none; padding: 0.3rem 0.8rem; border-radius: 15px; font-size: 0.8rem; margin-left: 0.5rem; cursor: pointer;">
+                                로그인하기
+                            </button>
+                        </p>
+                        <p style="margin: 0.3rem 0 0 0; color: #666; font-size: 0.8rem;">로그인하시면 회원 정보가 자동으로 입력됩니다</p>
+                    </div>
                     <p style="color: #666; margin-bottom: 0.8rem; font-size: 0.9rem;">* 신청자 정보를 정확히 입력 바랍니다.</p>
                 <?php endif; ?>
                 
-                <!-- 초컴팩트 신청자 정보 입력 (2x2 그리드) -->
-                <div class="compact-info-grid" style="display: grid; grid-template-columns: 1fr 1fr; gap: 0.8rem; margin-bottom: 1rem; align-items: end;">
-                    <!-- 첫 번째 줄: 성명/상호, 이메일 -->
+                <!-- 컴팩트 신청자 정보 입력 (1행 4칸) -->
+                <div class="single-row-grid">
+                    <!-- 성명/상호 -->
                     <div>
                         <label style="display: block; margin-bottom: 0.2rem; font-weight: bold; color: #2c3e50; font-size: 0.85rem;">
                             👤 성명/상호 *
@@ -477,6 +542,7 @@ include "../includes/nav.php";
                                style="width: 100%; padding: 8px 10px; border: 1px solid #ddd; border-radius: 4px; font-size: 0.9rem;"
                                placeholder="성명 또는 상호명">
                     </div>
+                    <!-- 이메일 -->
                     <div>
                         <label style="display: block; margin-bottom: 0.2rem; font-weight: bold; color: #2c3e50; font-size: 0.85rem;">
                             📧 이메일 *
@@ -486,9 +552,7 @@ include "../includes/nav.php";
                                style="width: 100%; padding: 8px 10px; border: 1px solid #ddd; border-radius: 4px; font-size: 0.9rem;"
                                placeholder="이메일 주소">
                     </div>
-                </div>
-                <div class="compact-info-grid" style="display: grid; grid-template-columns: 1fr 1fr; gap: 0.8rem; margin-bottom: 1rem; align-items: end;">
-                    <!-- 두 번째 줄: 전화번호, 핸드폰 -->
+                    <!-- 전화번호 -->
                     <div>
                         <label style="display: block; margin-bottom: 0.2rem; font-weight: bold; color: #2c3e50; font-size: 0.85rem;">
                             📞 전화번호 *
@@ -498,6 +562,7 @@ include "../includes/nav.php";
                                style="width: 100%; padding: 8px 10px; border: 1px solid #ddd; border-radius: 4px; font-size: 0.9rem;"
                                placeholder="전화번호">
                     </div>
+                    <!-- 핸드폰 -->
                     <div>
                         <label style="display: block; margin-bottom: 0.2rem; font-weight: bold; color: #2c3e50; font-size: 0.85rem;">
                             📱 핸드폰
@@ -540,120 +605,118 @@ include "../includes/nav.php";
                         </button>
                     </div>
                     <input type="text" id="sample6_address" name="sample6_address" placeholder="주소" readonly required
-                           style="width: 100%; padding: 8px 10px; border: 1px solid #ddd; border-radius: 4px; margin-bottom: 0.6rem; font-size: 0.9rem;">
-                    <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 0.8rem;">
+                           style="width: 100%; padding: 5px 8px; border: 1px solid #ddd; border-radius: 3px; margin-bottom: 0.3rem; font-size: 0.8rem;">
+                    <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 0.4rem;">
                         <input type="text" id="sample6_detailAddress" name="sample6_detailAddress" placeholder="상세주소"
-                               style="padding: 8px 10px; border: 1px solid #ddd; border-radius: 4px; font-size: 0.9rem;">
+                               style="padding: 5px 8px; border: 1px solid #ddd; border-radius: 3px; font-size: 0.8rem;">
                         <input type="text" id="sample6_extraAddress" name="sample6_extraAddress" placeholder="참고항목"
-                               style="padding: 8px 10px; border: 1px solid #ddd; border-radius: 4px; font-size: 0.9rem;">
+                               style="padding: 5px 8px; border: 1px solid #ddd; border-radius: 3px; font-size: 0.8rem;">
                     </div>
                 </div>
                 
-                <div style="margin-bottom: 1rem;">
-                    <label style="display: block; margin-bottom: 0.3rem; font-weight: bold; color: #2c3e50; font-size: 0.9rem;">
+                <div style="margin-bottom: 0.5rem;">
+                    <label style="display: block; margin-bottom: 0.2rem; font-weight: bold; color: #2c3e50; font-size: 0.8rem;">
                         💳 입금 정보
                     </label>
-                    <div style="background: #e8f4fd; padding: 0.8rem; border-radius: 4px; margin-bottom: 0.6rem;">
-                        <p style="margin: 0; color: #2c3e50; font-size: 0.9rem;"><strong>계좌번호:</strong> 국민 999-1688-2384(두손기획인쇄 차경선)</p>
-                        <p style="margin: 0.3rem 0 0 0; color: #666; font-size: 0.85rem;">주문 확인 후 입금해주세요. 입금 확인 후 작업이 시작됩니다.</p>
+                    <div style="background: #e8f4fd; padding: 0.4rem 0.5rem; border-radius: 3px; margin-bottom: 0.3rem;">
+                        <p style="margin: 0; color: #2c3e50; font-size: 0.75rem;"><strong>계좌번호:</strong> 국민 999-1688-2384(두손기획인쇄 차경선)</p>
+                        <p style="margin: 0.2rem 0 0 0; color: #666; font-size: 0.7rem;">주문 확인 후 입금해주세요. 입금 확인 후 작업이 시작됩니다.</p>
                     </div>
                 </div>
                 
-                <div style="margin-bottom: 1rem;">
-                    <label style="display: block; margin-bottom: 0.3rem; font-weight: bold; color: #2c3e50; font-size: 0.9rem;">
+                <div style="margin-bottom: 0.5rem;">
+                    <label style="display: block; margin-bottom: 0.2rem; font-weight: bold; color: #2c3e50; font-size: 0.8rem;">
                         💬 요청사항
                     </label>
-                    <div style="background: #ffebee; border: 1px solid #f8bbd9; border-radius: 6px; padding: 0.8rem; margin-bottom: 0.6rem;">
-                        <p style="margin: 0; color: #d32f2f; font-size: 0.95rem; font-weight: bold; line-height: 1.3;">
+                    <div style="background: #ffebee; border: 1px solid #f8bbd9; border-radius: 3px; padding: 0.3rem 0.4rem; margin-bottom: 0.3rem;">
+                        <p style="margin: 0; color: #d32f2f; font-size: 0.75rem; font-weight: bold; line-height: 1.2;">
                             🚚 퀵이나 다마스로 받거나 방문수령 시 아래 요청사항에 적어주세요
                         </p>
                     </div>
-                    <textarea name="cont" rows="3" 
-                              style="width: 100%; padding: 8px 10px; border: 1px solid #ddd; border-radius: 4px; resize: vertical; font-size: 0.9rem;"
+                    <textarea name="cont" rows="2" 
+                              style="width: 100%; padding: 5px 8px; border: 1px solid #ddd; border-radius: 3px; resize: vertical; font-size: 0.8rem;"
                               placeholder="추가 요청사항이 있으시면 입력해주세요 (퀵/다마스 배송, 방문수령 희망 시 반드시 기재해 주세요)"></textarea>
                 </div>
                 
                 <!-- 사업자 정보 섹션 -->
-                <div style="margin-bottom: 1rem; border: 1px solid #e0e0e0; border-radius: 6px; padding: 1rem; background: #f8f9fa;">
-                    <div style="display: flex; align-items: center; margin-bottom: 0.6rem;">
+                <div style="margin-bottom: 0.5rem; border: 1px solid #e0e0e0; border-radius: 3px; padding: 0.5rem; background: #f8f9fa;">
+                    <div style="display: flex; align-items: center; margin-bottom: 0.3rem;">
                         <input type="checkbox" id="is_business" name="is_business" value="1" onchange="toggleBusinessInfo()" 
-                               style="margin-right: 0.5rem; transform: scale(1.1);">
-                        <label for="is_business" style="font-weight: bold; color: #2c3e50; cursor: pointer; font-size: 0.9rem;">
+                               style="margin-right: 0.4rem; transform: scale(1);">
+                        <label for="is_business" style="font-weight: bold; color: #2c3e50; cursor: pointer; font-size: 0.8rem;">
                             🏢 사업자 주문 (세금계산서 발행 필요시 체크)
                         </label>
                     </div>
                     
                     <div id="business_info" style="display: none;">
-                        <!-- 컴팩트한 사업자 정보 입력 (4열 그리드) -->
-                        <div class="compact-info-grid" style="display: grid; grid-template-columns: repeat(4, 1fr); gap: 1rem; margin-bottom: 1rem; align-items: end;">
+                        <!-- 6열 그리드 사업자 정보 입력 -->
+                        <div class="compact-info-grid business-grid">
                             <div>
-                                <label style="display: block; margin-bottom: 0.3rem; font-weight: bold; color: #2c3e50; font-size: 0.9rem;">
+                                <label style="display: block; margin-bottom: 0.1rem; font-weight: bold; color: #2c3e50; font-size: 0.7rem;">
                                     🏢 사업자등록번호
                                 </label>
                                 <input type="text" name="business_number" 
-                                       style="width: 100%; padding: 10px 12px; border: 1px solid #ddd; border-radius: 5px; font-size: 0.95rem;"
+                                       style="width: 100%; padding: 4px 6px; border: 1px solid #ddd; border-radius: 3px; font-size: 0.75rem;"
                                        placeholder="000-00-00000" maxlength="12">
                             </div>
                             <div>
-                                <label style="display: block; margin-bottom: 0.3rem; font-weight: bold; color: #2c3e50; font-size: 0.9rem;">
+                                <label style="display: block; margin-bottom: 0.1rem; font-weight: bold; color: #2c3e50; font-size: 0.7rem;">
                                     👤 대표자명
                                 </label>
                                 <input type="text" name="business_owner" 
-                                       style="width: 100%; padding: 10px 12px; border: 1px solid #ddd; border-radius: 5px; font-size: 0.95rem;"
+                                       style="width: 100%; padding: 4px 6px; border: 1px solid #ddd; border-radius: 3px; font-size: 0.75rem;"
                                        placeholder="대표자 성명">
                             </div>
                             <div>
-                                <label style="display: block; margin-bottom: 0.3rem; font-weight: bold; color: #2c3e50; font-size: 0.9rem;">
+                                <label style="display: block; margin-bottom: 0.1rem; font-weight: bold; color: #2c3e50; font-size: 0.7rem;">
                                     🏭 업태
                                 </label>
                                 <input type="text" name="business_type" 
-                                       style="width: 100%; padding: 10px 12px; border: 1px solid #ddd; border-radius: 5px; font-size: 0.95rem;"
+                                       style="width: 100%; padding: 4px 6px; border: 1px solid #ddd; border-radius: 3px; font-size: 0.75rem;"
                                        placeholder="제조업, 서비스업">
                             </div>
                             <div>
-                                <label style="display: block; margin-bottom: 0.3rem; font-weight: bold; color: #2c3e50; font-size: 0.9rem;">
+                                <label style="display: block; margin-bottom: 0.1rem; font-weight: bold; color: #2c3e50; font-size: 0.7rem;">
                                     📋 종목
                                 </label>
                                 <input type="text" name="business_item" 
-                                       style="width: 100%; padding: 10px 12px; border: 1px solid #ddd; border-radius: 5px; font-size: 0.95rem;"
+                                       style="width: 100%; padding: 4px 6px; border: 1px solid #ddd; border-radius: 3px; font-size: 0.75rem;"
                                        placeholder="인쇄업, 광고업">
                             </div>
                         </div>
                         
-                        <div style="margin-bottom: 0.8rem;">
-                            <label style="display: block; margin-bottom: 0.3rem; font-weight: bold; color: #2c3e50; font-size: 0.85rem;">
+                        <div style="margin-bottom: 0.3rem;">
+                            <label style="display: block; margin-bottom: 0.1rem; font-weight: bold; color: #2c3e50; font-size: 0.7rem;">
                                 🏢 사업장 주소
                             </label>
-                            <textarea name="business_address" rows="2" 
-                                      style="width: 100%; padding: 8px 10px; border: 1px solid #ddd; border-radius: 4px; resize: vertical; font-size: 0.9rem;"
+                            <textarea name="business_address" rows="1" 
+                                      style="width: 100%; padding: 4px 6px; border: 1px solid #ddd; border-radius: 3px; resize: vertical; font-size: 0.75rem;"
                                       placeholder="사업자등록증상의 사업장 주소를 입력하세요"></textarea>
                         </div>
                         
-                        <div style="margin-bottom: 0.8rem;">
-                            <label style="display: block; margin-bottom: 0.3rem; font-weight: bold; color: #2c3e50; font-size: 0.85rem;">
+                        <div style="margin-bottom: 0.3rem;">
+                            <label style="display: block; margin-bottom: 0.1rem; font-weight: bold; color: #2c3e50; font-size: 0.7rem;">
                                 📧 세금계산서 발행용 이메일 *
                             </label>
                             <input type="email" name="tax_invoice_email" 
-                                   style="width: 100%; padding: 8px 10px; border: 1px solid #ddd; border-radius: 4px; font-size: 0.9rem;"
+                                   style="width: 100%; padding: 4px 6px; border: 1px solid #ddd; border-radius: 3px; font-size: 0.75rem;"
                                    placeholder="세금계산서를 받을 이메일 주소를 입력하세요">
-                            <div style="font-size: 0.8rem; color: #666; margin-top: 0.2rem;">
+                            <div style="font-size: 0.65rem; color: #666; margin-top: 0.1rem;">
                                 * 일반 연락용 이메일과 다른 경우 별도로 입력해주세요
                             </div>
                         </div>
                         
-                        <div style="background: #e8f4fd; padding: 0.8rem; border-radius: 4px; font-size: 0.85rem; color: #2c3e50;">
-                            <p style="margin: 0;"><strong>📌 안내사항:</strong></p>
-                            <p style="margin: 0.3rem 0 0 0;">• 세금계산서 발행을 원하시면 정확한 사업자 정보를 입력해주세요</p>
-                            <p style="margin: 0.2rem 0 0 0;">• 사업자등록번호는 하이픈(-) 포함하여 입력해주세요</p>
-                            <p style="margin: 0.2rem 0 0 0;">• 세금계산서 발행용 이메일은 필수 입력 항목입니다</p>
-                            <p style="margin: 0.2rem 0 0 0;">• 입력하신 정보는 세금계산서 발행 시에만 사용됩니다</p>
+                        <div style="background: #e8f4fd; padding: 0.3rem 0.4rem; border-radius: 3px; font-size: 0.65rem; color: #2c3e50;">
+                            <p style="margin: 0;"><strong>📌 안내:</strong></p>
+                            <p style="margin: 0.1rem 0 0 0;">• 세금계산서 발행을 원하시면 정확한 사업자 정보를 입력해주세요</p>
+                            <p style="margin: 0.1rem 0 0 0;">• 사업자등록번호는 하이픈(-) 포함하여 입력해주세요</p>
                         </div>
                     </div>
                 </div>
                 
-                <div style="text-align: center; margin-top: 1.5rem;">
+                <div style="text-align: center; margin-top: 0.8rem;">
                     <button type="submit" 
-                            style="background: linear-gradient(135deg, #e74c3c 0%, #c0392b 100%); color: white; border: none; padding: 16px 40px; border-radius: 25px; font-size: 1.1rem; font-weight: bold; cursor: pointer; box-shadow: 0 6px 20px rgba(231, 76, 60, 0.3);">
+                            style="background: linear-gradient(135deg, #e74c3c 0%, #c0392b 100%); color: white; border: none; padding: 10px 30px; border-radius: 20px; font-size: 0.95rem; font-weight: bold; cursor: pointer; box-shadow: 0 4px 15px rgba(231, 76, 60, 0.25);">
                         🚀 주문 완료하기
                     </button>
                 </div>
@@ -662,29 +725,179 @@ include "../includes/nav.php";
     </div>
 </div>
 
-<!-- 컴팩트 레이아웃을 위한 반응형 스타일 -->
+<!-- 초컴팩트 레이아웃을 위한 반응형 스타일 -->
 <style>
-/* 초컴팩트 레이아웃을 위한 반응형 처리 */
+/* 전체 페이지 높이 최적화 */
+body {
+    margin: 0;
+    padding: 0;
+    line-height: 1.2 !important;
+}
+
+.container {
+    max-width: 1200px;
+    margin: 0 auto !important;
+    padding: 0.3rem 0.8rem !important;
+}
+
+.card {
+    margin-bottom: 0.5rem !important;
+    border-radius: 4px !important;
+    box-shadow: 0 1px 3px rgba(0,0,0,0.1) !important;
+}
+
+.card-header {
+    padding: 0.4rem !important;
+}
+
+.card-header h2 {
+    font-size: 0.9rem !important;
+    margin: 0 !important;
+}
+
+.card-header p {
+    font-size: 0.7rem !important;
+    margin: 0.1rem 0 0 0 !important;
+}
+
+/* 컴팩트한 섹션 간격 */
+h3 {
+    margin: 0.3rem 0 0.2rem 0 !important;
+    font-size: 0.85rem !important;
+    line-height: 1.1 !important;
+}
+
+/* 입력 요소들 컴팩트화 */
+input, textarea, select {
+    line-height: 1.1 !important;
+    border-radius: 2px !important;
+}
+
+/* 버튼 컴팩트화 */
+button {
+    line-height: 1.2 !important;
+    border-radius: 3px !important;
+}
+
+/* 6열 그리드 시스템 */
+.flex-grid-6 {
+    display: grid !important;
+    grid-template-columns: repeat(6, 1fr) !important;
+    gap: 0.4rem !important;
+    align-items: end !important;
+    margin-bottom: 0.5rem !important;
+}
+
+.flex-grid-6 .col-1 { grid-column: span 1; }
+.flex-grid-6 .col-2 { grid-column: span 2; }
+.flex-grid-6 .col-3 { grid-column: span 3; }
+.flex-grid-6 .col-4 { grid-column: span 4; }
+.flex-grid-6 .col-5 { grid-column: span 5; }
+.flex-grid-6 .col-6 { grid-column: span 6; }
+
+/* 중앙 집중형 레이아웃 */
+.centered-form {
+    max-width: 900px;
+    margin: 0 auto;
+    padding: 0 1rem;
+}
+
+/* 1행 4칸 그리드 레이아웃 */
+.single-row-grid {
+    display: grid !important;
+    grid-template-columns: repeat(4, 1fr) !important;
+    gap: 0.5rem !important;
+    align-items: end !important;
+    margin-bottom: 0.8rem !important;
+}
+
+.single-row-grid > div {
+    min-width: 0; /* 그리드 오버플로우 방지 */
+}
+
+/* 컴팩트 그리드를 6열로 강제 변경 (기존 사업자 정보용) */
+.compact-info-grid {
+    display: grid !important;
+    grid-template-columns: repeat(6, 1fr) !important;
+    gap: 0.4rem !important;
+    align-items: end !important;
+    margin-bottom: 0.5rem !important;
+    justify-content: center !important;
+}
+
+/* 기본 span 설정 - 자동으로 2칸씩 차지 */
+.compact-info-grid > div {
+    grid-column: span 2;
+}
+
+/* 이메일 필드는 더 넓게 (3칸) */
+.compact-info-grid > div:has(input[type="email"]) {
+    grid-column: span 3 !important;
+}
+
+/* 빈 공간 생성 */
+.grid-spacer {
+    grid-column: span 1;
+}
+
+/* 1행 4칸 그리드 반응형 처리 */
+@media (max-width: 1024px) {
+    .single-row-grid {
+        grid-template-columns: repeat(2, 1fr) !important;
+        gap: 0.4rem !important;
+    }
+}
+
+@media (max-width: 480px) {
+    .single-row-grid {
+        grid-template-columns: 1fr !important;
+        gap: 0.3rem !important;
+    }
+    
+    .single-row-grid label {
+        font-size: 0.8rem !important;
+        margin-bottom: 0.1rem !important;
+    }
+    
+    .single-row-grid input {
+        padding: 6px 8px !important;
+        font-size: 0.85rem !important;
+    }
+}
+
+/* 초컴팩트 레이아웃을 위한 반응형 처리 (기존 사업자 정보용) */
+@media (max-width: 1024px) {
+    .compact-info-grid {
+        grid-template-columns: repeat(4, 1fr) !important;
+    }
+    .compact-info-grid > div {
+        grid-column: span 2 !important;
+    }
+}
+
 @media (max-width: 768px) {
     .compact-info-grid {
-        grid-template-columns: 1fr 1fr !important;
-        gap: 0.6rem !important;
+        grid-template-columns: repeat(2, 1fr) !important;
+    }
+    
+    .compact-info-grid > div {
+        grid-column: span 1 !important;
     }
     
     .compact-info-grid label {
-        font-size: 0.8rem !important;
-        margin-bottom: 0.15rem !important;
+        font-size: 0.7rem !important;
+        margin-bottom: 0.1rem !important;
     }
     
     .compact-info-grid input {
-        padding: 6px 8px !important;
-        font-size: 0.85rem !important;
+        padding: 4px 6px !important;
+        font-size: 0.75rem !important;
     }
     
     /* 모바일에서 전체 마진 더 줄이기 */
     h3 {
-        margin-bottom: 0.5rem !important;
-        font-size: 1rem !important;
+        margin-bottom: 0.3rem !important;
+        font-size: 0.85rem !important;
     }
     
     .container > div {
@@ -708,6 +921,217 @@ include "../includes/nav.php";
         padding: 5px 6px !important;
         font-size: 0.8rem !important;
     }
+}
+</style>
+
+<!-- 로그인 모달 포함 -->
+<div id="loginModal" class="modal" style="display: none;">
+    <div class="modal-content">
+        <div class="modal-header">
+            <h3 style="margin: 0; color: #2c3e50;">🔐 로그인</h3>
+            <span class="close" onclick="hideLoginModal()">&times;</span>
+        </div>
+        
+        <?php if (!empty($login_message)): ?>
+            <div class="login-message <?php echo strpos($login_message, '성공') !== false ? 'success' : 'error'; ?>">
+                <?php echo htmlspecialchars($login_message); ?>
+            </div>
+        <?php endif; ?>
+        
+        <div class="modal-tabs">
+            <button class="tab-btn active" onclick="switchTab('login')" id="loginTab">로그인</button>
+            <button class="tab-btn" onclick="switchTab('register')" id="registerTab">회원가입</button>
+        </div>
+        
+        <!-- 로그인 폼 -->
+        <div id="loginForm" class="tab-content active">
+            <form method="POST" action="">
+                <input type="hidden" name="login_action" value="1">
+                <div class="form-group">
+                    <label>아이디</label>
+                    <input type="text" name="username" required placeholder="아이디를 입력하세요">
+                </div>
+                <div class="form-group">
+                    <label>비밀번호</label>
+                    <input type="password" name="password" required placeholder="비밀번호를 입력하세요">
+                </div>
+                <button type="submit" class="btn-primary">로그인</button>
+            </form>
+        </div>
+        
+        <!-- 회원가입 폼 -->
+        <div id="registerForm" class="tab-content">
+            <form method="POST" action="">
+                <input type="hidden" name="register_action" value="1">
+                <div class="form-group">
+                    <label>아이디 *</label>
+                    <input type="text" name="reg_username" required placeholder="아이디를 입력하세요">
+                </div>
+                <div class="form-group">
+                    <label>비밀번호 * (6자 이상)</label>
+                    <input type="password" name="reg_password" required placeholder="비밀번호를 입력하세요">
+                </div>
+                <div class="form-group">
+                    <label>비밀번호 확인 *</label>
+                    <input type="password" name="reg_confirm_password" required placeholder="비밀번호를 다시 입력하세요">
+                </div>
+                <div class="form-group">
+                    <label>이름 *</label>
+                    <input type="text" name="reg_name" required placeholder="이름을 입력하세요">
+                </div>
+                <div class="form-group">
+                    <label>이메일</label>
+                    <input type="email" name="reg_email" placeholder="이메일을 입력하세요">
+                </div>
+                <div class="form-group">
+                    <label>전화번호</label>
+                    <input type="tel" name="reg_phone" placeholder="전화번호를 입력하세요">
+                </div>
+                <button type="submit" class="btn-primary">회원가입</button>
+            </form>
+        </div>
+    </div>
+</div>
+
+<!-- 로그인 모달 스타일 -->
+<style>
+.modal {
+    position: fixed;
+    z-index: 9999;
+    left: 0;
+    top: 0;
+    width: 100%;
+    height: 100%;
+    background-color: rgba(0,0,0,0.5);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.modal-content {
+    background: white;
+    padding: 0;
+    border-radius: 8px;
+    width: 90%;
+    max-width: 400px;
+    box-shadow: 0 4px 20px rgba(0,0,0,0.15);
+    overflow: hidden;
+}
+
+.modal-header {
+    background: linear-gradient(135deg, #3498db 0%, #2980b9 100%);
+    color: white;
+    padding: 1rem;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+
+.close {
+    font-size: 1.5rem;
+    font-weight: bold;
+    cursor: pointer;
+    background: none;
+    border: none;
+    color: white;
+}
+
+.close:hover {
+    opacity: 0.7;
+}
+
+.modal-tabs {
+    display: flex;
+    background: #f8f9fa;
+    border-bottom: 1px solid #e9ecef;
+}
+
+.tab-btn {
+    flex: 1;
+    padding: 0.75rem;
+    background: none;
+    border: none;
+    cursor: pointer;
+    font-weight: 500;
+    transition: all 0.2s;
+}
+
+.tab-btn.active {
+    background: white;
+    border-bottom: 2px solid #3498db;
+    color: #3498db;
+}
+
+.tab-content {
+    display: none;
+    padding: 1.5rem;
+}
+
+.tab-content.active {
+    display: block;
+}
+
+.form-group {
+    margin-bottom: 1rem;
+}
+
+.form-group label {
+    display: block;
+    margin-bottom: 0.25rem;
+    font-weight: 500;
+    color: #2c3e50;
+}
+
+.form-group input {
+    width: 100%;
+    padding: 0.75rem;
+    border: 1px solid #ddd;
+    border-radius: 4px;
+    font-size: 0.9rem;
+    box-sizing: border-box;
+}
+
+.form-group input:focus {
+    border-color: #3498db;
+    outline: none;
+    box-shadow: 0 0 0 2px rgba(52, 152, 219, 0.2);
+}
+
+.btn-primary {
+    width: 100%;
+    padding: 0.75rem;
+    background: linear-gradient(135deg, #3498db 0%, #2980b9 100%);
+    color: white;
+    border: none;
+    border-radius: 4px;
+    font-size: 1rem;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.2s;
+}
+
+.btn-primary:hover {
+    transform: translateY(-1px);
+    box-shadow: 0 4px 12px rgba(52, 152, 219, 0.3);
+}
+
+.login-message {
+    padding: 0.75rem;
+    margin: 1rem;
+    border-radius: 4px;
+    font-size: 0.9rem;
+}
+
+.login-message.success {
+    background: #d4edda;
+    color: #155724;
+    border: 1px solid #c3e6cb;
+}
+
+.login-message.error {
+    background: #f8d7da;
+    color: #721c24;
+    border: 1px solid #f5c6cb;
 }
 </style>
 
@@ -773,6 +1197,41 @@ function toggleBusinessInfo() {
     }
 }
 
+// 회원 주소 정보 로드 함수
+function loadMemberAddress() {
+    console.log('loadMemberAddress() called');
+    
+    if (!memberInfo) {
+        console.log('No member info available');
+        return;
+    }
+    
+    console.log('Loading member address...', memberInfo);
+    
+    // 주소 필드에 회원 정보 입력
+    if (memberInfo.postcode) {
+        const postcodeField = document.getElementById('sample6_postcode');
+        if (postcodeField) postcodeField.value = memberInfo.postcode;
+    }
+    
+    if (memberInfo.address) {
+        const addressField = document.getElementById('sample6_address');
+        if (addressField) addressField.value = memberInfo.address;
+    }
+    
+    if (memberInfo.detailAddress) {
+        const detailField = document.getElementById('sample6_detailAddress');
+        if (detailField) detailField.value = memberInfo.detailAddress;
+    }
+    
+    if (memberInfo.extraAddress) {
+        const extraField = document.getElementById('sample6_extraAddress');
+        if (extraField) extraField.value = memberInfo.extraAddress;
+    }
+    
+    console.log('Member address loaded successfully');
+}
+
 // 주소 입력 방식 토글 함수
 function toggleAddressInput() {
     const memberAddressRadio = document.getElementById('use_member_address');
@@ -781,18 +1240,12 @@ function toggleAddressInput() {
     
     if (memberAddressRadio && memberAddressRadio.checked) {
         // 회원 주소 사용 - 필드 비활성화 및 회원 정보로 채우기
+        console.log('Using member address - loading member info...');
         addressSection.style.opacity = '0.6';
         addressSection.style.pointerEvents = 'none';
         
-        // 회원 주소 정보가 있다면 자동 입력
-        <?php if ($is_logged_in && isset($user_info)): ?>
-            <?php if (!empty($user_info['address'])): ?>
-                document.getElementById('sample6_postcode').value = '<?php echo htmlspecialchars($user_info['postcode'] ?? ''); ?>';
-                document.getElementById('sample6_address').value = '<?php echo htmlspecialchars($user_info['address'] ?? ''); ?>';
-                document.getElementById('sample6_detailAddress').value = '<?php echo htmlspecialchars($user_info['detail_address'] ?? ''); ?>';
-                document.getElementById('sample6_extraAddress').value = '<?php echo htmlspecialchars($user_info['extra_address'] ?? ''); ?>';
-            <?php endif; ?>
-        <?php endif; ?>
+        // 회원 정보로 주소 필드 채우기
+        loadMemberAddress();
         
         addressFields.forEach(fieldId => {
             const field = document.getElementById(fieldId);
@@ -815,11 +1268,87 @@ function toggleAddressInput() {
     }
 }
 
-// 사업자등록번호 자동 하이픈 추가
+// 로그인 모달 관련 함수들
+function showLoginModal() {
+    document.getElementById('loginModal').style.display = 'flex';
+    document.body.style.overflow = 'hidden'; // 배경 스크롤 방지
+}
+
+function hideLoginModal() {
+    document.getElementById('loginModal').style.display = 'none';
+    document.body.style.overflow = 'auto'; // 스크롤 복원
+}
+
+function switchTab(tab) {
+    // 모든 탭 버튼과 콘텐츠 비활성화
+    document.querySelectorAll('.tab-btn').forEach(btn => btn.classList.remove('active'));
+    document.querySelectorAll('.tab-content').forEach(content => content.classList.remove('active'));
+    
+    // 선택된 탭 활성화
+    if (tab === 'login') {
+        document.getElementById('loginTab').classList.add('active');
+        document.getElementById('loginForm').classList.add('active');
+    } else if (tab === 'register') {
+        document.getElementById('registerTab').classList.add('active');
+        document.getElementById('registerForm').classList.add('active');
+    }
+}
+
+// 모달 외부 클릭 시 닫기
+document.addEventListener('click', function(event) {
+    const modal = document.getElementById('loginModal');
+    if (event.target === modal) {
+        hideLoginModal();
+    }
+});
+
+// ESC 키로 모달 닫기
+document.addEventListener('keydown', function(event) {
+    if (event.key === 'Escape') {
+        hideLoginModal();
+    }
+});
+
+<?php if (!empty($login_message) && (strpos($login_message, '성공') !== false)): ?>
+    // 로그인 성공 시 페이지 새로고침
+    setTimeout(function() {
+        location.reload();
+    }, 1500);
+<?php elseif (!empty($login_message)): ?>
+    // 로그인 시도 후 메시지가 있으면 모달 표시
+    document.addEventListener('DOMContentLoaded', function() {
+        showLoginModal();
+    });
+<?php endif; ?>
+
+// 회원 정보를 JavaScript 변수로 전달
+<?php if ($is_logged_in && $user_info): ?>
+var memberInfo = {
+    postcode: '<?php echo htmlspecialchars($user_info['postcode'] ?? $user_info['zip'] ?? ''); ?>',
+    address: '<?php echo htmlspecialchars($user_info['address'] ?? $user_info['zip1'] ?? ''); ?>',
+    detailAddress: '<?php echo htmlspecialchars($user_info['detail_address'] ?? $user_info['zip2'] ?? ''); ?>',
+    extraAddress: '<?php echo htmlspecialchars($user_info['extra_address'] ?? ''); ?>',
+    name: '<?php echo htmlspecialchars($user_info['name'] ?? ''); ?>',
+    email: '<?php echo htmlspecialchars($user_info['email'] ?? ''); ?>',
+    phone: '<?php echo htmlspecialchars($user_info['phone'] ?? ''); ?>'
+};
+console.log('Member info loaded:', memberInfo);
+<?php else: ?>
+var memberInfo = null;
+console.log('No member info available');
+<?php endif; ?>
+
+// 페이지 로드 시 실행
 document.addEventListener('DOMContentLoaded', function() {
+    // 회원 정보 자동 입력 먼저 실행
+    <?php if ($is_logged_in && $user_info): ?>
+        console.log('Loading member address on page load...');
+        loadMemberAddress();
+    <?php endif; ?>
+    
     // 페이지 로드 시 주소 입력 방식 초기화
     <?php if ($is_logged_in): ?>
-        toggleAddressInput();
+        setTimeout(() => toggleAddressInput(), 100); // 약간의 지연 후 실행
     <?php endif; ?>
     
     const businessNumberInput = document.querySelector('input[name="business_number"]');

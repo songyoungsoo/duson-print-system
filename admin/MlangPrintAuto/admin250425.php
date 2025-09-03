@@ -22,7 +22,7 @@ if ($db->connect_error) {
 }
 
 if ($mode == "ModifyOk") {
-    $stmt = $db->prepare("UPDATE MlangOrder_PrintAuto SET Type_1=?, name=?, email=?, zip=?, zip1=?, zip2=?, phone=?, Hendphone=?, delivery=?, bizname=?, bank=?, bankname=?, cont=?, Gensu=? WHERE no=?");
+    $stmt = $db->prepare("UPDATE mlangorder_printauto SET Type_1=?, name=?, email=?, zip=?, zip1=?, zip2=?, phone=?, Hendphone=?, delivery=?, bizname=?, bank=?, bankname=?, cont=?, Gensu=? WHERE no=?");
     $stmt->bind_param("ssssssssssssssi", $TypeOne, $name, $email, $zip, $zip1, $zip2, $phone, $Hendphone, $delivery, $bizname, $bank, $bankname, $cont, $Gensu, $no);
 
     if (!$stmt->execute()) {
@@ -36,7 +36,7 @@ if ($mode == "ModifyOk") {
 }
 
 if ($mode == "SubmitOk") {
-    $Table_result = $db->query("SELECT MAX(no) FROM MlangOrder_PrintAuto");
+    $Table_result = $db->query("SELECT MAX(no) FROM mlangorder_printauto");
     if (!$Table_result) {
         echo "<script>alert('DB 접속 에러입니다!'); history.go(-1);</script>";
         exit;
@@ -53,7 +53,7 @@ if ($mode == "SubmitOk") {
     }
 
     $date = date("Y-m-d H:i:s");
-    $stmt = $db->prepare("INSERT INTO MlangOrder_PrintAuto (no, Type, ImgFolder, Type_1, money_1, money_2, money_3, money_4, money_5, name, email, zip, zip1, zip2, phone, Hendphone, delivery, bizname, bank, bankname, cont, regdate, state, memo, phone2, Gensu) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)");
+    $stmt = $db->prepare("INSERT INTO mlangorder_printauto (no, Type, ImgFolder, Type_1, money_1, money_2, money_3, money_4, money_5, name, email, zip, zip1, zip2, phone, Hendphone, delivery, bizname, bank, bankname, cont, regdate, state, memo, phone2, Gensu) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)");
 
     $stmt->bind_param("issssssssssssssssssssssss", $new_no, $Type, $ImgFolder, $TypeOne, $money_1, $money_2, $money_3, $money_4, $money_5, $name, $email, $zip, $zip1, $zip2, $phone, $Hendphone, $delivery, $bizname, $bank, $bankname, $cont, $date, $state = '3', $memo = '', $phone, $Gensu);
 
@@ -173,14 +173,14 @@ if ($ConDb_A) {
 } elseif ($mode === "OrderView") {
     include "../title.php";
     $db = new mysqli($host, $user, $password, $dataname);
-    $stmt = $db->prepare("SELECT * FROM MlangOrder_PrintAuto WHERE no = ?");
+    $stmt = $db->prepare("SELECT * FROM mlangorder_printauto WHERE no = ?");
     $stmt->bind_param("i", $no);
     $stmt->execute();
     $result = $stmt->get_result();
     $row = $result->fetch_assoc();
 
     if ($row && $row['OrderStyle'] == "2") {
-        $updateStmt = $db->prepare("UPDATE MlangOrder_PrintAuto SET OrderStyle='3' WHERE no=?");
+        $updateStmt = $db->prepare("UPDATE mlangorder_printauto SET OrderStyle='3' WHERE no=?");
         $updateStmt->bind_param("i", $no);
         $updateStmt->execute();
         echo "<script>opener.parent.location.reload();</script>";
@@ -245,7 +245,7 @@ if ($mode == "SinForm") {
                 <input type="file" size=45 name="photofile" onchange="Mlamg_image(this.value)">
             </td></tr>
             <?php if ($View_SignMMk == "yes") {
-                $stmt = $db->prepare("SELECT pass FROM MlangOrder_PrintAuto WHERE no=?");
+                $stmt = $db->prepare("SELECT pass FROM mlangorder_printauto WHERE no=?");
                 $stmt->bind_param("i", $no);
                 $stmt->execute();
                 $res = $stmt->get_result()->fetch_assoc();
@@ -265,7 +265,7 @@ if ($mode == "SinForm") {
     $TOrderStyle = ($ModifyCode == "ok") ? "7" : "6";
     $ModifyCode = $no;
 
-    $stmt = $db->prepare("SELECT ThingCate FROM MlangOrder_PrintAuto WHERE no = ?");
+    $stmt = $db->prepare("SELECT ThingCate FROM mlangorder_printauto WHERE no = ?");
     $stmt->bind_param("i", $ModifyCode);
     $stmt->execute();
     $stmt->bind_result($GF_upfile);
@@ -289,7 +289,7 @@ if ($mode == "SinForm") {
         $photofileNAME = $GF_upfile;
     }
 
-    $stmt = $db->prepare("UPDATE MlangOrder_PrintAuto SET OrderStyle=?, ThingCate=?, pass=? WHERE no=?");
+    $stmt = $db->prepare("UPDATE mlangorder_printauto SET OrderStyle=?, ThingCate=?, pass=? WHERE no=?");
     $stmt->bind_param("sssi", $TOrderStyle, $photofileNAME, $pass, $no);
     if (!$stmt->execute()) {
         echo "<script>alert('DB 접속 에러입니다!'); history.go(-1);</script>";
@@ -373,7 +373,7 @@ function MlangFriendSiteInfocheck() {
     if (f.MlangFriendSiteInfoS[0].checked) {
         html = "<select name='Thing' onchange='inThing(this.value)'>";
         <?php
-        include "../../MlangPrintAuto/ConDb.php";
+        include "../../mlangprintauto/ConDb.php";
         if ($ConDb_A) {
             $OrderCate_LIST_script = explode(":", $ConDb_A);
             foreach ($OrderCate_LIST_script as $cate) {
@@ -466,7 +466,7 @@ function inThing(value) {
 <?php
 if ($mode == "AdminMlangOrdertOk") {
     $ToTitle = $ThingNo;
-    include "../../MlangPrintAuto/ConDb.php";
+    include "../../mlangprintauto/ConDb.php";
 
     $ThingNoOkp = $ThingNoOkp ?: $ThingNo;
 
@@ -475,7 +475,7 @@ if ($mode == "AdminMlangOrdertOk") {
         die("<script>alert('DB 접속 오류'); history.go(-1);</script>");
     }
 
-    $result = $db->query("SELECT MAX(no) FROM MlangOrder_PrintAuto");
+    $result = $db->query("SELECT MAX(no) FROM mlangorder_printauto");
     if (!$result) {
         echo "<script>alert('DB 접속 에러입니다!'); history.go(-1);</script>";
         exit;
@@ -497,7 +497,7 @@ if ($mode == "AdminMlangOrdertOk") {
     }
 
     $TypeAll = trim("$Type_1\n$Type_2\n$Type_3\n$Type_4\n$Type_5\n$Type_6");
-    $stmt = $db->prepare("INSERT INTO MlangOrder_PrintAuto (no, Type, ImgFolder, Type_1, money_1, money_2, money_3, money_4, money_5, name, email, zip, zip1, zip2, phone, Hendphone, delivery, bizname, bank, bankname, cont, regdate, state, ThingCate, pass, memo, Designer) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)");
+    $stmt = $db->prepare("INSERT INTO mlangorder_printauto (no, Type, ImgFolder, Type_1, money_1, money_2, money_3, money_4, money_5, name, email, zip, zip1, zip2, phone, Hendphone, delivery, bizname, bank, bankname, cont, regdate, state, ThingCate, pass, memo, Designer) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)");
 
     $stmt->bind_param(
         "issssssssssssssssssssssssss",

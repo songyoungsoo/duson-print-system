@@ -372,7 +372,7 @@ window.onunload = MlangWinExit;
 <?
 $Ttable="$page";
 include"../ConDb.php";
-include"../../admin/MlangPrintAuto/int/info.php";
+include"../../admin/mlangprintauto/int/info.php";
 
 $View_temp = "View_ContText_".$View_TtableA ; 
 $CONTENT_OK=$$View_temp;

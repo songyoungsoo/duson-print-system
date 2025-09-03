@@ -31,7 +31,7 @@ $default_values = [
 
 // 첫 번째 상품권/쿠폰 종류 가져오기
 $type_query = "SELECT no, title FROM MlangPrintAuto_transactionCate 
-               WHERE Ttable='MerchandiseBond' AND BigNo='0' 
+               WHERE Ttable='merchandisebond' AND BigNo='0' 
                ORDER BY no ASC 
                LIMIT 1";
 $type_result = mysqli_query($db, $type_query);
@@ -40,7 +40,7 @@ if ($type_result && ($type_row = mysqli_fetch_assoc($type_result))) {
     
     // 해당 상품권/쿠폰 종류의 첫 번째 재질 가져오기
     $section_query = "SELECT no, title FROM MlangPrintAuto_transactionCate 
-                      WHERE Ttable='MerchandiseBond' AND BigNo='" . $type_row['no'] . "' 
+                      WHERE Ttable='merchandisebond' AND BigNo='" . $type_row['no'] . "' 
                       ORDER BY no ASC LIMIT 1";
     $section_result = mysqli_query($db, $section_query);
     if ($section_result && ($section_row = mysqli_fetch_assoc($section_result))) {
@@ -141,7 +141,7 @@ if ($type_result && ($type_row = mysqli_fetch_assoc($type_result))) {
                             <select class="option-select" name="MY_type" id="MY_type" required>
                                 <option value="">선택해주세요</option>
                                 <?php
-                                $categories = getCategoryOptions($db, 'MlangPrintAuto_transactionCate', 'MerchandiseBond');
+                                $categories = getCategoryOptions($db, 'MlangPrintAuto_transactionCate', 'merchandisebond');
                                 foreach ($categories as $category) {
                                     $selected = ($category['no'] == $default_values['MY_type']) ? 'selected' : '';
                                     echo "<option value='" . safe_html($category['no']) . "' $selected>" . safe_html($category['title']) . "</option>";
@@ -205,7 +205,7 @@ if ($type_result && ($type_row = mysqli_fetch_assoc($type_result))) {
                     <input type="hidden" name="log_md" value="<?php echo safe_html($log_info['md']); ?>">
                     <input type="hidden" name="log_ip" value="<?php echo safe_html($log_info['ip']); ?>">
                     <input type="hidden" name="log_time" value="<?php echo safe_html($log_info['time']); ?>">
-                    <input type="hidden" name="page" value="MerchandiseBond">
+                    <input type="hidden" name="page" value="merchandisebond">
                 </form>
             </div>
         </div>
@@ -838,7 +838,7 @@ if ($type_result && ($type_row = mysqli_fetch_assoc($type_result))) {
             log_md: "<?php echo safe_html($log_info['md']); ?>",
             log_ip: "<?php echo safe_html($log_info['ip']); ?>",
             log_time: "<?php echo safe_html($log_info['time']); ?>",
-            page: "MerchandiseBond",
+            page: "merchandisebond",
             defaultValues: {
                 MY_type: "<?php echo safe_html($default_values['MY_type']); ?>",
                 Section: "<?php echo safe_html($default_values['Section']); ?>",

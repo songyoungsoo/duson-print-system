@@ -1,183 +1,227 @@
 <?php
-declare(strict_types=1);
-error_reporting(E_ALL);
-ini_set("display_errors", "1");
-
+// DB 접근 허용 상수 정의
+define('DB_ACCESS_ALLOWED', true);
 include "../../db.php";
-$TIO_CODE = "NameCard";
-$table = "MlangPrintAuto_{$TIO_CODE}";
+// $db 변수는 db.php에서 이미 연결되어 제공됨
+// 변수 초기화 (방지용)
+$cate       = $_GET['cate'] ?? $_POST['cate'] ?? '';
+$title_search = $_GET['title_search'] ?? $_POST['title_search'] ?? '';
+$PHP_SELF   = $_SERVER['PHP_SELF'];
+$TIO_CODE="namecard";
+$table="MlangPrintAuto_{$TIO_CODE}";
+$mode       = $_GET['mode'] ?? $_POST['mode'] ?? '';
+$no         = isset($_GET['no']) ? (int)$_GET['no'] : 0;
+$search     = $_GET['search'] ?? $_POST['search'] ?? '';
+$RadOne     = $_GET['RadOne'] ?? $_POST['RadOne'] ?? '';
+$myList     = $_GET['myList'] ?? $_POST['myList'] ?? '';
+$myListTreeSelect = $_GET['myListTreeSelect'] ?? $_POST['myListTreeSelect'] ?? '';
+$offset     = isset($_GET['offset']) ? (int)$_GET['offset'] : 0;
+$listcut = 20; // 기본값 지정
 
-$mode = $_GET['mode'] ?? $_POST['mode'] ?? '';
-$no = $_GET['no'] ?? $_POST['no'] ?? '';
-$search = $_GET['search'] ?? $_POST['search'] ?? '';
-$RadOne = $_GET['RadOne'] ?? $_POST['RadOne'] ?? '';
-$myList = $_GET['myList'] ?? $_POST['myList'] ?? '';
-$offset = isset($_GET['offset']) ? (int)$_GET['offset'] : (isset($_POST['offset']) ? (int)$_POST['offset'] : 0);
-$mlang_pagego = '';
-$PHP_SELF = htmlspecialchars($_SERVER['PHP_SELF']);
+if($mode=="delete"){
 
-if ($mode == "delete" && $no) {
-    $stmt = mysqli_prepare($db, "DELETE FROM $table WHERE no = ?");
-    mysqli_stmt_bind_param($stmt, "i", $no);
-    mysqli_stmt_execute($stmt);
-    mysqli_stmt_close($stmt);
-    mysqli_close($db);
+$result = mysqli_query($db, "DELETE FROM $table WHERE no='$no'");
 
-    echo ("<script language='javascript'>
-        window.alert('테이블명: $table - $no 번 자료 삭제 완료');
-        opener.parent.location.reload();
-        window.self.close();
-    </script>");
-    exit;
-}
+echo ("<script language=javascript>
+window.alert('테이블명: $table - $no 번 자료 삭제 완료');
+opener.parent.location.reload();
+window.close();
+</script>
+");
+exit;
 
-// include "../top.php";
-// include "../../MlangPrintAuto/ConDb.php";
+} ///////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+
 $M123 = "..";
-include "$M123/top.php";
-$T_DirUrl = "../../MlangPrintAuto";
+include "../top.php"; 
+
+$T_DirUrl="../../MlangPrintAuto";
 include "$T_DirUrl/ConDb.php";
-$db = mysqli_connect($host, $user, $password, $dataname);
-$Mlang_query = "";
-if ($search === "yes" && $RadOne && $myList) {
-    $Mlang_query = "SELECT * FROM $table WHERE style='" . mysqli_real_escape_string($db, $RadOne) . "' AND Section='" . mysqli_real_escape_string($db, $myList) . "'";
-} else {
-    $Mlang_query = "SELECT * FROM $table";
-}
-
-$query = mysqli_query($db, $Mlang_query);
-$recordsu = $query ? mysqli_num_rows($query) : 0;
-$total = $recordsu;
-
-$listcut = 15;
-if (!$offset) $offset = 0;
-
 ?>
-<html>
+
 <head>
-    <script>
-    function clearField(field) {
-        if (field.value === field.defaultValue) {
-            field.value = "";
-        }
-    }
+<script>
+function clearField(field)
+{
+	if (field.value == field.defaultValue) {
+		field.value = "";
+	}
+}
+function checkField(field)
+{
+	if (!field.value) {
+		field.value = field.defaultValue;
+	}
+}
+///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+function WomanMember_Admin_Del(no){
+	if (confirm(+no+'번 자료을 삭제 처리 하시겠습니까..?\n\n한번 삭제한 자료는 복구 되지 않으니 신중을 기해주세요.............!!')) {
+		str='<?php echo $PHP_SELF?>?no='+no+'&mode=delete';
+        popup = window.open("","","scrollbars=no,resizable=yes,width=400,height=50,top=2000,left=2000");
+        popup.document.location.href=str;
+        popup.focus();
+	}
+}
+//////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+</script>
 
-    function checkField(field) {
-        if (!field.value) {
-            field.value = field.defaultValue;
-        }
-    }
-
-    function WomanMember_Admin_Del(no) {
-        if (confirm(no + '번 자료를 삭제 처리 하시겠습니까..?\n\n한번 삭제한 자료는 복구 되지 않으니 신중을 기해주세요.............!!')) {
-            let str = '<?php echo  $PHP_SELF ?>?no=' + no + '&mode=delete';
-            let popup = window.open("", "", "scrollbars=no,resizable=yes,width=400,height=50,top=2000,left=2000");
-            popup.document.location.href = str;
-            popup.focus();
-        }
-    }
-    </script>
 </head>
-<body>
+
 <table border=0 align=center width=100% cellpadding='8' cellspacing='3' class='coolBar'>
 <tr>
 <td align=left>
-<?php include "ListSearchBox.php"; ?>
+<?php include "ListSearchBox.php";?>
 </td>
+
+<?php
+include "../../db.php";
+
+if($search=="yes"){ //검색모드일때
+ $Mlang_query="select * from $table where style='$RadOne' and Section='$myList'";
+}else{ // 일반모드 일때
+$Mlang_query="select * from $table";
+}
+
+$query = mysqli_query($db, $Mlang_query);
+$recordsu = mysqli_num_rows($query);
+$total = mysqli_num_rows($query);
+
+$listcut= 15;  //한 페이지당 보여줄 목록 게시물수. 
+if(!$offset) $offset=0; 
+?>
+
+
 <td align=right>
-<input type='button' onclick="window.open('CateList.php?Ttable=<?php echo  $TIO_CODE ?>&TreeSelect=ok')" value=' 구분 관리 '>
-<input type='button' onclick="window.open('<?php echo  $TIO_CODE ?>_admin.php?mode=IncForm')" value=' 가격/설명 관리 '>
-<input type='button' onclick="window.open('<?php echo  $TIO_CODE ?>_admin.php?mode=form&Ttable=<?php echo  $TIO_CODE ?>')" value=' 신 자료 입력 '>
-<br><br>
-전체자료수-<b style='color:blue;'><?php echo  $total ?></b>개
+<input type='button' onClick="javascript:popup=window.open('CateList.php?Ttable=<?php echo $TIO_CODE?>&TreeSelect=ok', '<?php echo $table?>_FormCate','width=600,height=650,top=0,left=0,menubar=no,resizable=yes,statusbar=no,scrollbars=yes,toolbar=no'); popup.focus();" value=' 구분 관리 '>
+<input type='button' onClick="javascript:window.open('<?php echo $TIO_CODE?>_admin.php?mode=IncForm', '<?php echo $table?>_Form1','width=820,height=600,top=0,left=0,menubar=no,resizable=no,statusbar=no,scrollbars=yes,toolbar=no');" value=' 가격/설명 관리 '>
+<input type='button' onClick="javascript:popup=window.open('<?php echo $TIO_CODE?>_admin.php?mode=form&Ttable=<?php echo $TIO_CODE?>', '<?php echo $table?>_Form2','width=300,height=250,top=0,left=0,menubar=no,resizable=no,statusbar=no,scrollbars=yes,toolbar=no'); popup.focus();" value=' 신 자료 입력 '>
+<BR><BR>
+전체자료수-<font style='color:blue;'><b><?php echo $total?></b></font>&nbsp;개&nbsp;&nbsp;
 </td>
 </tr>
 </table>
-
+<!------------------------------------------- 리스트 시작----------------------------------------->
 <table border=0 align=center width=100% cellpadding='5' cellspacing='1' class='coolBar'>
 <tr>
-<th>등록번호</th>
-<th>명함종류</th>
-<th>명함재질</th>
-<th>인쇄면</th>
-<th>수량</th>
-<th>가격</th>
-<th>디자인비</th>
-<th>관리기능</th>
+<td align=center>등록번호</td>
+<td align=center>명함종류</td>
+<td align=center>명함재질</td>
+<td align=center>인쇄면</td>
+<td align=center>수량</td>
+<td align=center>가격</td>
+<td align=center>디자인비</td>
+<td align=center>관리기능</td>
 </tr>
 
 <?php
-$db = mysqli_connect($host, $user, $password, $dataname);
-$result = mysqli_query($db, $Mlang_query . " ORDER BY NO DESC LIMIT $offset, $listcut");
-if ($result && mysqli_num_rows($result)) {
-    while ($row = mysqli_fetch_assoc($result)) {
-        echo "<tr bgcolor='#575757'>";
-        echo "<td align=center><font color=white>{$row['no']}</font></td>";
+$result = mysqli_query($db, $Mlang_query . " order by NO desc limit $offset, $listcut");
+$rows = mysqli_num_rows($result);
+if($rows){
 
-        $styleTitle = '';
-        $resStyle = mysqli_query($db, "SELECT title FROM $GGTABLE WHERE no='{$row['style']}'");
-        if ($resStyle && $r = mysqli_fetch_assoc($resStyle)) {
-            $styleTitle = $r['title'];
-        }
 
-        $sectionTitle = '';
-        $resSection = mysqli_query($db, "SELECT title FROM $GGTABLE WHERE no='{$row['Section']}'");
-        if ($resSection && $r = mysqli_fetch_assoc($resSection)) {
-            $sectionTitle = $r['title'];
-        }
+while($row= mysqli_fetch_array($result)) 
+{ 
+?>
 
-        $poType = $row['POtype'] == "2" ? "양면" : "단면";
-        $money = number_format((int)$row['money']);
-        $designMoney = number_format((int)$row['DesignMoney']);
+<tr bgcolor='#575757'>
+<td align=center><font color=white><?php echo $row['no']?></font></td>
+<td align=center><font color=white>
+<?php 
+$result_FGTwo=mysqli_query($db, "select * from $GGTABLE where no='$row[style]'");
+$row_FGTwo= mysqli_fetch_array($result_FGTwo);
+if($row_FGTwo){ echo("$row_FGTwo[title]"); }
+?>
+</font></td>
+<td align=center><font color=white>
+<?php 
+$result_FGFree=mysqli_query($db, "select * from $GGTABLE where no='$row[Section]'");
+$row_FGFree= mysqli_fetch_array($result_FGFree);
+if($row_FGFree){ echo("$row_FGFree[title]"); }
+?>
+</font></td> 
+<td align=center><font color=white>
+<?php if($row['POtype']=="1"){echo("단면");}?>
+<?php if($row['POtype']=="2"){echo("양면");}?>
+</font></td>
+<td align=center><font color=white><?php echo $row['quantity']?>매</font></td>
+<td align=center><font color=white>
+<?php $sum = "$row[money]"; $sum = number_format($sum);  echo("$sum"); $sum = str_replace(",","",$sum); ?>원
+</font></td>
+<td align=center><font color=white>
+<?php $sumr = "$row[DesignMoney]"; $sumr = number_format($sumr);  echo("$sumr"); $sumr = str_replace(",","",$sumr); ?>원
+</font></td>
+<td align=center>
+<input type='button' onClick="javascript:popup=window.open('<?php echo $TIO_CODE?>_admin.php?mode=form&code=Modify&no=<?php echo $row['no']?>&Ttable=<?php echo $TIO_CODE?>', '<?php echo $table?>_Form2Modify','width=300,height=250,top=0,left=0,menubar=no,resizable=no,statusbar=no,scrollbars=yes,toolbar=no'); popup.focus();" value=' 수정 '>
+<input type='button' onClick="javascript:WomanMember_Admin_Del('<?php echo $row['no']?>');" value=' 삭제 '>
+</td>
+</tr>
 
-        echo "<td align=center><font color=white>{$styleTitle}</font></td>";
-        echo "<td align=center><font color=white>{$sectionTitle}</font></td>";
-        echo "<td align=center><font color=white>{$poType}</font></td>";
-        echo "<td align=center><font color=white>{$row['quantity']}매</font></td>";
-        echo "<td align=center><font color=white>{$money}원</font></td>";
-        echo "<td align=center><font color=white>{$designMoney}원</font></td>";
-        echo "<td align=center>";
-        echo "<input type='button' value=' 수정 ' onclick=\"window.open('{$TIO_CODE}_admin.php?mode=form&code=Modify&no={$row['no']}&Ttable={$TIO_CODE}')\">";
-        echo "<input type='button' value=' 삭제 ' onclick=\"WomanMember_Admin_Del('{$row['no']}')\">";
-        echo "</td></tr>";
-    }
-} else {
-    echo "<tr><td colspan=10 align=center><br><br>등록 자료없음</td></tr>";
+<?php
+$i=0;
+		$i=$i+1;
+} 
+
+
+}else{
+
+if($search){
+echo"<tr><td colspan=10><p align=center><BR><BR>관련 검색 자료없음</p></td></tr>";
+}else{
+echo"<tr><td colspan=10><p align=center><BR><BR>등록 자료없음</p></td></tr>";
+}
 }
 ?>
 </table>
 
-<p align="center">
+<p align='center'>
+
 <?php
-$pagecut = 7;
-$one_bbs = $listcut * $pagecut;
-$start_offset = intval($offset / $one_bbs) * $one_bbs;
-$end_offset = intval($recordsu / $one_bbs) * $one_bbs;
-$start_page = intval($start_offset / $listcut) + 1;
-$end_page = ($recordsu % $listcut > 0) ? intval($recordsu / $listcut) + 1 : intval($recordsu / $listcut);
+if($rows){
 
-if ($start_offset != 0) {
-    echo "<a href='" . htmlspecialchars($_SERVER['PHP_SELF']) . "?offset=" . ($start_offset - $one_bbs) . "&$mlang_pagego'>...[이전]</a>&nbsp;";
+if($search=="yes"){ $mlang_pagego="search=$search&cate=$cate&title_search=$title_search&RadOne=$RadOne&myListTreeSelect=$myListTreeSelect&myList=$myList";
+}else{
+  $mlang_pagego="cate=$cate&title_search=$title_search"; // 필드속성들 전달값
 }
 
-for ($i = $start_page; $i < $start_page + $pagecut; $i++) {
-    $newoffset = ($i - 1) * $listcut;
-    if ($offset != $newoffset) {
-        echo "<a href='" . htmlspecialchars($_SERVER['PHP_SELF']) . "?offset=$newoffset&$mlang_pagego'>($i)</a>&nbsp;";
-    } else {
-        echo "<font style='font:bold; color:green;'>($i)</font>&nbsp;";
-    }
-    if ($i == $end_page) break;
+$pagecut= 7;  //한 장당 보여줄 페이지수 
+$one_bbs= $listcut*$pagecut;  //한 장당 실을 수 있는 목록(게시물)수 
+$start_offset= intval($offset/$one_bbs)*$one_bbs;  //각 장에 처음 페이지의 $offset값. 
+$end_offset= intval($recordsu/$one_bbs)*$one_bbs;  //마지막 장의 첫페이지의 $offset값. 
+$start_page= intval($start_offset/$listcut)+1; //각 장에 처음 페이지의 값. 
+$end_page= ($recordsu%$listcut>0)? intval($recordsu/$listcut)+1: intval($recordsu/$listcut); 
+//마지막 장의 끝 페이지. 
+if($start_offset!= 0) 
+{ 
+  $apoffset= $start_offset- $one_bbs; 
+  echo "<a href='$PHP_SELF?offset=$apoffset&$mlang_pagego'>...[이전]</a>&nbsp;"; 
+} 
+
+for($i= $start_page; $i< $start_page+$pagecut; $i++) 
+{ 
+$newoffset= ($i-1)*$listcut; 
+
+if($offset!= $newoffset){
+  echo "&nbsp;<a href='$PHP_SELF?offset=$newoffset&$mlang_pagego'>($i)</a>&nbsp;"; 
+}else{echo("&nbsp;<font style='font:bold; color:green;'>($i)</font>&nbsp;"); } 
+
+if($i==$end_page) break; 
+} 
+
+if($start_offset!= $end_offset) 
+{ 
+  $nextoffset= $start_offset+ $one_bbs; 
+  echo "&nbsp;<a href='$PHP_SELF?offset=$nextoffset&$mlang_pagego'>[다음]...</a>"; 
+} 
+echo "총목록갯수: $end_page 개"; 
+
+
 }
 
-if ($start_offset != $end_offset) {
-    echo "<a href='" . htmlspecialchars($_SERVER['PHP_SELF']) . "?offset=" . ($start_offset + $one_bbs) . "&$mlang_pagego'>[다음]...</a>";
-}
-echo "총목록갯수: $end_page 개";
+?> 
 
-$db->close();
-?>
 </p>
 <!------------------------------------------- 리스트 끝----------------------------------------->
 
-<?php include "../down.php"; ?>
+<?php
+include "../down.php";
+?>

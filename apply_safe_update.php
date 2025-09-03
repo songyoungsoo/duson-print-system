@@ -152,7 +152,7 @@ echo "</div>";
 echo "<h2>🎯 다음 단계</h2>";
 echo "<div style='background:#fff3e0; padding:15px; border:1px solid #ff9800;'>";
 echo "<p><strong>1. 포스터 페이지 테스트:</strong></p>";
-echo "<a href='MlangPrintAuto/Poster/index_compact.php' target='_blank' style='color:#0066cc;'>📋 포스터 시스템 테스트하기</a><br><br>";
+echo "<a href='mlangprintauto/poster/index_compact.php' target='_blank' style='color:#0066cc;'>📋 포스터 시스템 테스트하기</a><br><br>";
 
 echo "<p><strong>2. 데이터 확인:</strong></p>";
 echo "• 재질 선택 시 규격이 동적으로 로딩되는지 확인<br>";

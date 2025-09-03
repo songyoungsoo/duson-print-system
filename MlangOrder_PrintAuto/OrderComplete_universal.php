@@ -13,9 +13,12 @@
 
 session_start();
 
-// 데이터베이스 연결
+// 데이터베이스 연결 및 통합 인증 시스템
 include "../db.php";
 $connect = $db;
+
+// 통합 인증 시스템 로드
+include "../includes/auth.php";
 
 // ===========================================
 // 🔧 공통 함수들
@@ -108,7 +111,7 @@ function detectProductType($product_type) {
  */
 function getProductUrlMapping() {
     return [
-        'sticker' => '../MlangPrintAuto/shop/view_modern.php',
+        'sticker' => '../MlangPrintAuto/sticker_new/index.php',
         'namecard' => '../MlangPrintAuto/NameCard/index.php',
         'envelope' => '../MlangPrintAuto/envelope/index.php',
         'littleprint' => '../MlangPrintAuto/LittlePrint/index.php',
@@ -265,7 +268,7 @@ $total_amount_vat = 0;
 foreach ($order_numbers as $order_no) {
     $order_no = trim($order_no);
     if (!empty($order_no)) {
-        $query = "SELECT * FROM MlangOrder_PrintAuto WHERE no = ? LIMIT 1";
+        $query = "SELECT * FROM mlangorder_printauto WHERE no = ? LIMIT 1";
         $stmt = mysqli_prepare($connect, $query);
         if ($stmt) {
             mysqli_stmt_bind_param($stmt, 's', $order_no);
@@ -347,7 +350,7 @@ include "../includes/nav.php";
     background: linear-gradient(135deg, var(--primary-blue) 0%, var(--primary-purple) 100%);
     color: white;
     font-weight: 600;
-    padding: 15px 12px;
+    padding: 8px 12px;
     text-align: center;
     font-size: 0.9rem;
 }
@@ -492,7 +495,7 @@ include "../includes/nav.php";
 
 .info-row {
     display: flex;
-    margin-bottom: 10px;
+    margin-bottom: 5px;
     align-items: center;
 }
 
@@ -727,11 +730,11 @@ include "../includes/nav.php";
     display: inline-flex;
     align-items: center;
     gap: 8px;
-    padding: 15px 30px;
+    padding: 8px 15px;
     border-radius: 25px;
     text-decoration: none;
     font-weight: 600;
-    font-size: 1rem;
+    font-size: 0.8rem;
     transition: all 0.3s ease;
     position: relative;
     border: none;
@@ -1319,15 +1322,15 @@ include "../includes/nav.php";
         <!-- 고객 정보 -->
         <div class="info-card">
             <h3>👤 고객 정보</h3>
-            <div class="info-row">
+            <div class="info-row" style="margin-bottom: 5px;">
                 <div class="info-label">성명:</div>
                 <div class="info-value"><?php echo htmlspecialchars($name ?: $first_order['name'] ?: '정보없음'); ?></div>
             </div>
-            <div class="info-row">
+            <div class="info-row" style="margin-bottom: 5px;">
                 <div class="info-label">이메일:</div>
                 <div class="info-value"><?php echo htmlspecialchars($email ?: $first_order['email'] ?: '정보없음'); ?></div>
             </div>
-            <div class="info-row">
+            <div class="info-row" style="margin-bottom: 5px;">
                 <div class="info-label">연락처:</div>
                 <div class="info-value">
                     <?php 
@@ -1344,7 +1347,7 @@ include "../includes/nav.php";
                     ?>
                 </div>
             </div>
-            <div class="info-row">
+            <div class="info-row" style="margin-bottom: 5px;">
                 <div class="info-label">주소:</div>
                 <div class="info-value">
                     <?php 
@@ -1372,23 +1375,23 @@ include "../includes/nav.php";
         <!-- 입금 안내 -->
         <div class="info-card">
             <h3>💳 입금 안내</h3>
-            <div class="info-row">
+            <div class="info-row" style="margin-bottom: 5px;">
                 <div class="info-label">예금주:</div>
                 <div class="info-value">두손기획인쇄 차경선</div>
             </div>
-            <div class="info-row">
+            <div class="info-row" style="margin-bottom: 5px;">
                 <div class="info-label">국민은행:</div>
                 <div class="info-value">999-1688-2384</div>
             </div>
-            <div class="info-row">
+            <div class="info-row" style="margin-bottom: 5px;">
                 <div class="info-label">신한은행:</div>
                 <div class="info-value">110-342-543507</div>
             </div>
-            <div class="info-row">
+            <div class="info-row" style="margin-bottom: 5px;">
                 <div class="info-label">농협:</div>
                 <div class="info-value">301-2632-1829</div>
             </div>
-            <div class="info-row">
+            <div class="info-row" style="margin-bottom: 5px;">
                 <div class="info-label">카드결제:</div>
                 <div class="info-value">📞 1688-2384</div>
             </div>

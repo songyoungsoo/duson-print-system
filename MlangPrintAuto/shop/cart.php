@@ -22,13 +22,21 @@ function getKoreanName($connect, $id) {
         return $id; // 연결이 없거나 ID가 없으면 원본 반환
     }
     
-    $query = "SELECT title FROM MlangPrintAuto_transactionCate WHERE no = ? LIMIT 1";
-    $stmt = mysqli_prepare($connect, $query);
-    if (!$stmt) {
+    // ID가 이미 한글이면 그대로 반환
+    if (preg_match('/[가-힣]/u', $id)) {
         return $id;
     }
     
-    mysqli_stmt_bind_param($stmt, 's', $id);
+    // 숫자와 문자열 모두 처리
+    $query = "SELECT title FROM mlangprintauto_transactioncate WHERE no = ? OR title = ? LIMIT 1";
+    $stmt = mysqli_prepare($connect, $query);
+    if (!$stmt) {
+        // 쿼리 실패시 로그
+        error_log("getKoreanName prepare failed: " . mysqli_error($connect));
+        return $id;
+    }
+    
+    mysqli_stmt_bind_param($stmt, 'ss', $id, $id);
     mysqli_stmt_execute($stmt);
     $result = mysqli_stmt_get_result($stmt);
     
@@ -38,6 +46,9 @@ function getKoreanName($connect, $id) {
     }
     
     mysqli_stmt_close($stmt);
+    
+    // 못 찾으면 로그 남기고 원본 반환
+    error_log("getKoreanName: No match found for ID: " . $id);
     return $id; // 찾지 못하면 원본 ID 반환
 }
 
@@ -136,99 +147,30 @@ if ($cart_result === false) {
     <link rel="stylesheet" href="../../css/style250801.css">
 </head>
 <body>
-    <div class="container">
+    <div class="container" style="font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif; line-height: 1.6; box-sizing: border-box; max-width: 1200px; margin: 0 auto; padding: 15px 20px 0px 20px;">
         <!-- 헤더 섹션 -->
-        <div class="hero-section" style="background: linear-gradient(135deg, #2c3e50 0%, #34495e 100%); color: white; padding: 2rem 0; text-align: center; margin-bottom: 2rem; border-radius: 15px;">
-            <h1 style="font-size: 2.5rem; font-weight: 700; margin-bottom: 1rem;">🛒 통합 장바구니</h1>
-            <p style="font-size: 1.2rem; opacity: 0.9;">모든 인쇄 상품을 한 번에 주문하세요</p>
+        <div class="hero-section" style="background: linear-gradient(135deg, #2c3e50 0%, #34495e 100%); color: white; padding: 0.5rem 0; text-align: center; margin-bottom: 5px; border-radius: 10px;">
+            <h1 style="font-size: 2rem; font-weight: 700; margin-bottom: 0.5rem;">🛒 통합 장바구니</h1>
+            <p style="font-size: 1rem; opacity: 0.9;">모든 인쇄 상품을 한 번에 주문하세요</p>
         </div>
         
-        <!-- 네비게이션 바 - 장바구니 상태에 따라 다른 내용 표시 -->
+        <!-- 통합 네비게이션 사용 -->
         <?php if (!empty($cart_items)): ?>
         <!-- 장바구니에 상품이 있을 때 -->
-        <div style="margin-bottom: 2rem; padding: 1.5rem; background: white; border-radius: 15px; box-shadow: 0 4px 15px rgba(0,0,0,0.1);">
-            <!-- 품목 버튼들 -->
-            <div style="display: flex; flex-wrap: wrap; gap: 10px; margin-bottom: 1rem; justify-content: center;">
-                <a href="../inserted/index.php" style="display: inline-block; padding: 10px 20px; background: #6c757d; color: white; text-decoration: none; border-radius: 8px; font-size: 14px; font-weight: 500; transition: all 0.3s ease; box-shadow: 0 2px 8px rgba(0,0,0,0.15);" onmouseover="this.style.background='#5a6268'; this.style.transform='translateY(-1px)'; this.style.boxShadow='0 4px 12px rgba(0,0,0,0.2)'" onmouseout="this.style.background='#6c757d'; this.style.transform='translateY(0px)'; this.style.boxShadow='0 2px 8px rgba(0,0,0,0.15)'">📄 전단지</a>
-                
-                <a href="../cadarok/index.php" style="display: inline-block; padding: 10px 20px; background: #6c757d; color: white; text-decoration: none; border-radius: 8px; font-size: 14px; font-weight: 500; transition: all 0.3s ease; box-shadow: 0 2px 8px rgba(0,0,0,0.15);" onmouseover="this.style.background='#5a6268'; this.style.transform='translateY(-1px)'; this.style.boxShadow='0 4px 12px rgba(0,0,0,0.2)'" onmouseout="this.style.background='#6c757d'; this.style.transform='translateY(0px)'; this.style.boxShadow='0 2px 8px rgba(0,0,0,0.15)'">📖 카다록</a>
-                
-                <a href="../NameCard/index.php" style="display: inline-block; padding: 10px 20px; background: #6c757d; color: white; text-decoration: none; border-radius: 8px; font-size: 14px; font-weight: 500; transition: all 0.3s ease; box-shadow: 0 2px 8px rgba(0,0,0,0.15);" onmouseover="this.style.background='#5a6268'; this.style.transform='translateY(-1px)'; this.style.boxShadow='0 4px 12px rgba(0,0,0,0.2)'" onmouseout="this.style.background='#6c757d'; this.style.transform='translateY(0px)'; this.style.boxShadow='0 2px 8px rgba(0,0,0,0.15)'">📇 명함</a>
-                
-                <a href="view_modern.php" style="display: inline-block; padding: 10px 20px; background: #6c757d; color: white; text-decoration: none; border-radius: 8px; font-size: 14px; font-weight: 500; transition: all 0.3s ease; box-shadow: 0 2px 8px rgba(0,0,0,0.15);" onmouseover="this.style.background='#5a6268'; this.style.transform='translateY(-1px)'; this.style.boxShadow='0 4px 12px rgba(0,0,0,0.2)'" onmouseout="this.style.background='#6c757d'; this.style.transform='translateY(0px)'; this.style.boxShadow='0 2px 8px rgba(0,0,0,0.15)'">🏷️ 스티커</a>
-                
-                <a href="../msticker/index.php" style="display: inline-block; padding: 10px 20px; background: #6c757d; color: white; text-decoration: none; border-radius: 8px; font-size: 14px; font-weight: 500; transition: all 0.3s ease; box-shadow: 0 2px 8px rgba(0,0,0,0.15);" onmouseover="this.style.background='#5a6268'; this.style.transform='translateY(-1px)'; this.style.boxShadow='0 4px 12px rgba(0,0,0,0.2)'" onmouseout="this.style.background='#6c757d'; this.style.transform='translateY(0px)'; this.style.boxShadow='0 2px 8px rgba(0,0,0,0.15)'">🧲 자석스티커</a>
-                
-                <a href="../envelope/index.php" style="display: inline-block; padding: 10px 20px; background: #6c757d; color: white; text-decoration: none; border-radius: 8px; font-size: 14px; font-weight: 500; transition: all 0.3s ease; box-shadow: 0 2px 8px rgba(0,0,0,0.15);" onmouseover="this.style.background='#5a6268'; this.style.transform='translateY(-1px)'; this.style.boxShadow='0 4px 12px rgba(0,0,0,0.2)'" onmouseout="this.style.background='#6c757d'; this.style.transform='translateY(0px)'; this.style.boxShadow='0 2px 8px rgba(0,0,0,0.15)'">✉️ 봉투</a>
-                
-                <a href="../LittlePrint/index.php" style="display: inline-block; padding: 10px 20px; background: #6c757d; color: white; text-decoration: none; border-radius: 8px; font-size: 14px; font-weight: 500; transition: all 0.3s ease; box-shadow: 0 2px 8px rgba(0,0,0,0.15);" onmouseover="this.style.background='#5a6268'; this.style.transform='translateY(-1px)'; this.style.boxShadow='0 4px 12px rgba(0,0,0,0.2)'" onmouseout="this.style.background='#6c757d'; this.style.transform='translateY(0px)'; this.style.boxShadow='0 2px 8px rgba(0,0,0,0.15)'">🎨 포스터</a>
-                
-                <a href="../MerchandiseBond/index.php" style="display: inline-block; padding: 10px 20px; background: #6c757d; color: white; text-decoration: none; border-radius: 8px; font-size: 14px; font-weight: 500; transition: all 0.3s ease; box-shadow: 0 2px 8px rgba(0,0,0,0.15);" onmouseover="this.style.background='#5a6268'; this.style.transform='translateY(-1px)'; this.style.boxShadow='0 4px 12px rgba(0,0,0,0.2)'" onmouseout="this.style.background='#6c757d'; this.style.transform='translateY(0px)'; this.style.boxShadow='0 2px 8px rgba(0,0,0,0.15)'">🎫 상품권</a>
-                
-                <a href="../NcrFlambeau/index.php" style="display: inline-block; padding: 10px 20px; background: #6c757d; color: white; text-decoration: none; border-radius: 8px; font-size: 14px; font-weight: 500; transition: all 0.3s ease; box-shadow: 0 2px 8px rgba(0,0,0,0.15);" onmouseover="this.style.background='#5a6268'; this.style.transform='translateY(-1px)'; this.style.boxShadow='0 4px 12px rgba(0,0,0,0.2)'" onmouseout="this.style.background='#6c757d'; this.style.transform='translateY(0px)'; this.style.boxShadow='0 2px 8px rgba(0,0,0,0.15)'">📋 양식지</a>
-            </div>
-            
-            <!-- 액션 버튼들 -->
-            <div style="display: flex; gap: 15px; justify-content: center; margin-top: 1.5rem;">
-                <button onclick="continueShopping()" style="padding: 12px 25px; background: linear-gradient(135deg, #28a745 0%, #20c997 100%); color: white; border: none; border-radius: 25px; font-size: 15px; font-weight: 600; cursor: pointer; transition: all 0.3s ease; box-shadow: 0 3px 10px rgba(0,0,0,0.2);" onmouseover="this.style.transform='translateY(-2px)'; this.style.boxShadow='0 5px 15px rgba(0,0,0,0.3)'" onmouseout="this.style.transform='translateY(0px)'; this.style.boxShadow='0 3px 10px rgba(0,0,0,0.2)'">🛍️ 계속 쇼핑</button>
-                
-                <button onclick="clearCart()" style="padding: 12px 25px; background: linear-gradient(135deg, #dc3545 0%, #c82333 100%); color: white; border: none; border-radius: 25px; font-size: 15px; font-weight: 600; cursor: pointer; transition: all 0.3s ease; box-shadow: 0 3px 10px rgba(0,0,0,0.2);" onmouseover="this.style.transform='translateY(-2px)'; this.style.boxShadow='0 5px 15px rgba(0,0,0,0.3)'" onmouseout="this.style.transform='translateY(0px)'; this.style.boxShadow='0 3px 10px rgba(0,0,0,0.2)'">🗑️ 전체 삭제</button>
-            </div>
+        <div style="font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif; line-height: 1.6; margin: 0; box-sizing: border-box; margin-bottom: 0.3rem; padding: 5px 10px; background: white; border-radius: 8px; box-shadow: 0 1px 4px rgba(0,0,0,0.06); display: flex; align-items: center; justify-content: center; min-height: auto;">
+            <?php include "../../includes/nav.php"; ?>
+        </div>
         </div>
         <?php else: ?>
         <!-- 빈 장바구니일 때 - 더 유용한 정보와 기능 제공 -->
-        <div style="margin-bottom: 2rem; padding: 2rem; background: linear-gradient(135deg, #f8f9fa 0%, #e9ecef 100%); border-radius: 15px; box-shadow: 0 4px 15px rgba(0,0,0,0.1); border: 2px dashed #dee2e6;">
-            <div style="text-align: center; margin-bottom: 1.5rem;">
-                <h3 style="color: #6c757d; margin-bottom: 0.5rem; font-size: 1.3rem;">🎯 인쇄 서비스 둘러보기</h3>
-                <p style="color: #868e96; margin: 0; font-size: 1rem;">원하시는 인쇄물을 선택해서 주문을 시작해보세요</p>
-            </div>
-            
-            <!-- 인기 상품 추천 -->
-            <div style="background: white; padding: 1.5rem; border-radius: 12px; margin-bottom: 1.5rem; box-shadow: 0 2px 10px rgba(0,0,0,0.08);">
-                <h4 style="color: #495057; margin-bottom: 1rem; font-size: 1.1rem; display: flex; align-items: center;"><span style="margin-right: 8px;">⭐</span>인기 추천 상품</h4>
-                <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 12px;">
-                    <a href="../NameCard/index.php" style="display: block; padding: 15px; background: linear-gradient(135deg, #007bff 0%, #0056b3 100%); color: white; text-decoration: none; border-radius: 10px; text-align: center; transition: all 0.3s ease; box-shadow: 0 3px 12px rgba(0,123,255,0.3);" onmouseover="this.style.transform='translateY(-3px)'; this.style.boxShadow='0 6px 20px rgba(0,123,255,0.4)'" onmouseout="this.style.transform='translateY(0px)'; this.style.boxShadow='0 3px 12px rgba(0,123,255,0.3)'">
-                        <div style="font-size: 2rem; margin-bottom: 8px;">📇</div>
-                        <div style="font-weight: 600;">명함</div>
-                        <div style="font-size: 0.9rem; opacity: 0.9;">비즈니스 필수템</div>
-                    </a>
-                    
-                    <a href="view_modern.php" style="display: block; padding: 15px; background: linear-gradient(135deg, #28a745 0%, #1e7e34 100%); color: white; text-decoration: none; border-radius: 10px; text-align: center; transition: all 0.3s ease; box-shadow: 0 3px 12px rgba(40,167,69,0.3);" onmouseover="this.style.transform='translateY(-3px)'; this.style.boxShadow='0 6px 20px rgba(40,167,69,0.4)'" onmouseout="this.style.transform='translateY(0px)'; this.style.boxShadow='0 3px 12px rgba(40,167,69,0.3)'">
-                        <div style="font-size: 2rem; margin-bottom: 8px;">🏷️</div>
-                        <div style="font-weight: 600;">스티커</div>
-                        <div style="font-size: 0.9rem; opacity: 0.9;">맞춤 제작</div>
-                    </a>
-                    
-                    <a href="../inserted/index.php" style="display: block; padding: 15px; background: linear-gradient(135deg, #fd7e14 0%, #e55100 100%); color: white; text-decoration: none; border-radius: 10px; text-align: center; transition: all 0.3s ease; box-shadow: 0 3px 12px rgba(253,126,20,0.3);" onmouseover="this.style.transform='translateY(-3px)'; this.style.boxShadow='0 6px 20px rgba(253,126,20,0.4)'" onmouseout="this.style.transform='translateY(0px)'; this.style.boxShadow='0 3px 12px rgba(253,126,20,0.3)'">
-                        <div style="font-size: 2rem; margin-bottom: 8px;">📄</div>
-                        <div style="font-weight: 600;">전단지</div>
-                        <div style="font-size: 0.9rem; opacity: 0.9;">홍보 마케팅</div>
-                    </a>
-                </div>
-            </div>
-            
-            <!-- 전체 카테고리 -->
-            <div style="background: white; padding: 1.5rem; border-radius: 12px; box-shadow: 0 2px 10px rgba(0,0,0,0.08);">
-                <h4 style="color: #495057; margin-bottom: 1rem; font-size: 1.1rem; display: flex; align-items: center;"><span style="margin-right: 8px;">📋</span>전체 인쇄 서비스</h4>
-                <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(160px, 1fr)); gap: 8px;">
-                    <a href="../cadarok/index.php" style="display: inline-block; padding: 12px 18px; background: #f8f9fa; color: #495057; text-decoration: none; border-radius: 8px; font-size: 14px; font-weight: 500; transition: all 0.3s ease; border: 1px solid #dee2e6; text-align: center;" onmouseover="this.style.background='#e9ecef'; this.style.color='#343a40'; this.style.transform='translateY(-1px)'" onmouseout="this.style.background='#f8f9fa'; this.style.color='#495057'; this.style.transform='translateY(0px)'">📖 카다록</a>
-                    
-                    <a href="../msticker/index.php" style="display: inline-block; padding: 12px 18px; background: #f8f9fa; color: #495057; text-decoration: none; border-radius: 8px; font-size: 14px; font-weight: 500; transition: all 0.3s ease; border: 1px solid #dee2e6; text-align: center;" onmouseover="this.style.background='#e9ecef'; this.style.color='#343a40'; this.style.transform='translateY(-1px)'" onmouseout="this.style.background='#f8f9fa'; this.style.color='#495057'; this.style.transform='translateY(0px)'">🧲 자석스티커</a>
-                    
-                    <a href="../envelope/index.php" style="display: inline-block; padding: 12px 18px; background: #f8f9fa; color: #495057; text-decoration: none; border-radius: 8px; font-size: 14px; font-weight: 500; transition: all 0.3s ease; border: 1px solid #dee2e6; text-align: center;" onmouseover="this.style.background='#e9ecef'; this.style.color='#343a40'; this.style.transform='translateY(-1px)'" onmouseout="this.style.background='#f8f9fa'; this.style.color='#495057'; this.style.transform='translateY(0px)'">✉️ 봉투</a>
-                    
-                    <a href="../LittlePrint/index.php" style="display: inline-block; padding: 12px 18px; background: #f8f9fa; color: #495057; text-decoration: none; border-radius: 8px; font-size: 14px; font-weight: 500; transition: all 0.3s ease; border: 1px solid #dee2e6; text-align: center;" onmouseover="this.style.background='#e9ecef'; this.style.color='#343a40'; this.style.transform='translateY(-1px)'" onmouseout="this.style.background='#f8f9fa'; this.style.color='#495057'; this.style.transform='translateY(0px)'">🎨 포스터</a>
-                    
-                    <a href="../MerchandiseBond/index.php" style="display: inline-block; padding: 12px 18px; background: #f8f9fa; color: #495057; text-decoration: none; border-radius: 8px; font-size: 14px; font-weight: 500; transition: all 0.3s ease; border: 1px solid #dee2e6; text-align: center;" onmouseover="this.style.background='#e9ecef'; this.style.color='#343a40'; this.style.transform='translateY(-1px)'" onmouseout="this.style.background='#f8f9fa'; this.style.color='#495057'; this.style.transform='translateY(0px)'">🎫 상품권</a>
-                    
-                    <a href="../NcrFlambeau/index.php" style="display: inline-block; padding: 12px 18px; background: #f8f9fa; color: #495057; text-decoration: none; border-radius: 8px; font-size: 14px; font-weight: 500; transition: all 0.3s ease; border: 1px solid #dee2e6; text-align: center;" onmouseover="this.style.background='#e9ecef'; this.style.color='#343a40'; this.style.transform='translateY(-1px)'" onmouseout="this.style.background='#f8f9fa'; this.style.color='#495057'; this.style.transform='translateY(0px)'">📋 양식지</a>
-                </div>
-            </div>
-        </div>
+        <!-- 품목 네비게이션 -->
+        <?php include '../../includes/nav.php'; ?>
+        
+        <div style="margin-bottom: 5px;"></div>
         <?php endif; ?>
 
         <!-- 장바구니 메인 콘텐츠 -->
-        <div id="cartContent" style="background: #fdfdfd; border-radius: 12px; padding: 1.5rem; box-shadow: 0 4px 20px rgba(0,0,0,0.08); margin-bottom: 2rem; border: 1px solid #f0f0f0;">
+        <div id="cartContent" style="font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif; line-height: 1.6; box-sizing: border-box; max-width: 1145px; margin: 0 auto; background: #fdfdfd; border-radius: 8px; padding: 1rem; box-shadow: 0 2px 10px rgba(0,0,0,0.05); margin-bottom: 1rem; border: 1px solid #f0f0f0; width: 1150px;">
             <?php if (!empty($cart_items)): ?>
                 <form method="post" action="../../MlangOrder_PrintAuto/OnlineOrder_unified.php" id="orderForm">
                     <input type="hidden" name="SubmitMode" value="OrderOne">
@@ -239,16 +181,16 @@ if ($cart_result === false) {
                     ?>
                     
                     <!-- 파스텔 표 형식 장바구니 -->
-                    <div style="background: linear-gradient(135deg, #fafbff 0%, #fff9f9 100%); border-radius: 8px; overflow: hidden; border: 1px solid #e8eaed;">
+                    <div style="background: linear-gradient(135deg, #fafbff 0%, #fff9f9 100%); border-radius: 8px; overflow: hidden; border: 1px solid #e8eaed; max-width: 1100px; margin: 0 auto;">
                         <table style="width: 100%; border-collapse: collapse; font-size: 14px;">
                             <thead>
                                 <tr style="background: linear-gradient(135deg, #f8f4ff 0%, #fff0f5 100%); border-bottom: 2px solid #e1d5e7;">
-                                    <th style="padding: 12px 16px; text-align: left; font-weight: 600; color: #4a5568; border-right: 1px solid #e8eaed;">상품정보</th>
-                                    <th style="padding: 12px 16px; text-align: center; font-weight: 600; color: #4a5568; border-right: 1px solid #e8eaed; min-width: 120px;">규격/옵션</th>
-                                    <th style="padding: 12px 16px; text-align: center; font-weight: 600; color: #4a5568; border-right: 1px solid #e8eaed; min-width: 80px;">수량</th>
-                                    <th style="padding: 12px 16px; text-align: right; font-weight: 600; color: #4a5568; border-right: 1px solid #e8eaed; min-width: 100px;">단가</th>
-                                    <th style="padding: 12px 16px; text-align: right; font-weight: 600; color: #4a5568; border-right: 1px solid #e8eaed; min-width: 120px;">총액</th>
-                                    <th style="padding: 12px 16px; text-align: center; font-weight: 600; color: #4a5568; min-width: 60px;">관리</th>
+                                    <th style="padding: 8px 12px; text-align: left; font-weight: 600; color: #4a5568; border-right: 1px solid #e8eaed; font-size: 13px;">상품정보</th>
+                                    <th style="padding: 8px 12px; text-align: center; font-weight: 600; color: #4a5568; border-right: 1px solid #e8eaed; min-width: 120px; font-size: 13px;">규격/옵션</th>
+                                    <th style="padding: 8px 12px; text-align: center; font-weight: 600; color: #4a5568; border-right: 1px solid #e8eaed; min-width: 80px; font-size: 13px;">수량</th>
+                                    <th style="padding: 8px 12px; text-align: right; font-weight: 600; color: #4a5568; border-right: 1px solid #e8eaed; min-width: 100px; font-size: 13px;">단가</th>
+                                    <th style="padding: 8px 12px; text-align: right; font-weight: 600; color: #4a5568; border-right: 1px solid #e8eaed; min-width: 120px; font-size: 13px;">총액</th>
+                                    <th style="padding: 8px 12px; text-align: center; font-weight: 600; color: #4a5568; min-width: 60px; font-size: 13px;">관리</th>
                                 </tr>
                             </thead>
                             <tbody>
@@ -274,7 +216,7 @@ if ($cart_result === false) {
                                 ?>
                                 <tr style="background: <?php echo $row_bg; ?>; border-bottom: 1px solid #e8eaed; transition: background-color 0.2s ease;" onmouseover="this.style.background='#f0f4ff'" onmouseout="this.style.background='<?php echo $row_bg; ?>'">
                                     <!-- 상품정보 -->
-                                    <td style="padding: 16px; border-right: 1px solid #e8eaed; vertical-align: top;">
+                                    <td style="padding: 12px; border-right: 1px solid #e8eaed; vertical-align: top;">
                                         <div style="display: flex; align-items: flex-start; gap: 12px;">
                                             <div style="background: <?php echo $product['color']; ?>; padding: 8px; border-radius: 6px; font-size: 18px; line-height: 1; min-width: 36px; text-align: center;">
                                                 <?php echo $product['icon']; ?>
@@ -287,7 +229,7 @@ if ($cart_result === false) {
                                     </td>
 
                                     <!-- 규격/옵션 -->
-                                    <td style="padding: 16px; border-right: 1px solid #e8eaed; vertical-align: top; text-align: center;">
+                                    <td style="padding: 12px; border-right: 1px solid #e8eaed; vertical-align: top; text-align: center;">
                                         <div style="font-size: 13px; line-height: 1.4;">
                                             <?php if ($item['product_type'] == 'sticker'): ?>
                                                 <?php if (!empty($item['jong'])): ?>
@@ -314,30 +256,36 @@ if ($cart_result === false) {
                                                 <?php endif; ?>
                                             <?php elseif ($item['product_type'] == 'namecard'): ?>
                                                 <?php if (!empty($item['MY_type'])): ?>
-                                                    <div style="margin-bottom: 6px; color: #4a5568;"><span style="color: #d69e2e; font-weight: 500;">타입:</span> <?php echo htmlspecialchars($item['MY_type']); ?></div>
+                                                    <div style="margin-bottom: 6px; color: #4a5568;"><span style="color: #d69e2e; font-weight: 500;">타입:</span> <?php echo htmlspecialchars(getKoreanName($connect, $item['MY_type'])); ?></div>
                                                 <?php endif; ?>
                                                 <?php if (!empty($item['Section'])): ?>
-                                                    <div style="margin-bottom: 6px; color: #4a5568;"><span style="color: #d69e2e; font-weight: 500;">재질:</span> <?php echo htmlspecialchars($item['Section']); ?></div>
+                                                    <div style="margin-bottom: 6px; color: #4a5568;"><span style="color: #d69e2e; font-weight: 500;">재질:</span> <?php echo htmlspecialchars(getKoreanName($connect, $item['Section'])); ?></div>
                                                 <?php endif; ?>
                                                 <?php if (!empty($item['POtype'])): ?>
                                                     <div style="color: #4a5568;"><span style="color: #d69e2e; font-weight: 500;">인쇄:</span> <?php echo $item['POtype'] == '1' ? '단면' : '양면'; ?></div>
                                                 <?php endif; ?>
                                             <?php else: ?>
                                                 <?php if (!empty($item['MY_type'])): ?>
-                                                    <div style="margin-bottom: 6px; color: #4a5568;"><span style="color: #3182ce; font-weight: 500;">종류:</span> <?php echo htmlspecialchars($item['MY_type']); ?></div>
+                                                    <div style="margin-bottom: 6px; color: #4a5568;"><span style="color: #3182ce; font-weight: 500;">종류:</span> <?php echo htmlspecialchars(getKoreanName($connect, $item['MY_type'])); ?></div>
                                                 <?php endif; ?>
                                                 <?php if (!empty($item['PN_type'])): ?>
-                                                    <div style="margin-bottom: 6px; color: #4a5568;"><span style="color: #3182ce; font-weight: 500;">규격:</span> <?php echo htmlspecialchars($item['PN_type']); ?></div>
+                                                    <div style="margin-bottom: 6px; color: #4a5568;"><span style="color: #3182ce; font-weight: 500;">규격:</span> <?php echo htmlspecialchars(getKoreanName($connect, $item['PN_type'])); ?></div>
+                                                <?php endif; ?>
+                                                <?php if (!empty($item['Section'])): ?>
+                                                    <div style="margin-bottom: 6px; color: #4a5568;"><span style="color: #3182ce; font-weight: 500;">재질:</span> <?php echo htmlspecialchars(getKoreanName($connect, $item['Section'])); ?></div>
+                                                <?php endif; ?>
+                                                <?php if (!empty($item['POtype'])): ?>
+                                                    <div style="margin-bottom: 6px; color: #4a5568;"><span style="color: #3182ce; font-weight: 500;">인쇄:</span> <?php echo $item['POtype'] == '1' ? '단면' : '양면'; ?></div>
                                                 <?php endif; ?>
                                                 <?php if (!empty($item['ordertype'])): ?>
-                                                    <div style="color: #4a5568;"><span style="color: #3182ce; font-weight: 500;">타입:</span> <?php echo htmlspecialchars($item['ordertype']); ?></div>
+                                                    <div style="color: #4a5568;"><span style="color: #3182ce; font-weight: 500;">타입:</span> <?php echo $item['ordertype'] == 'total' ? '디자인+인쇄' : ($item['ordertype'] == 'print' ? '인쇄만' : htmlspecialchars($item['ordertype'])); ?></div>
                                                 <?php endif; ?>
                                             <?php endif; ?>
                                         </div>
                                     </td>
                                     
                                     <!-- 수량 -->
-                                    <td style="padding: 16px; border-right: 1px solid #e8eaed; vertical-align: middle; text-align: center;">
+                                    <td style="padding: 12px; border-right: 1px solid #e8eaed; vertical-align: middle; text-align: center;">
                                         <div style="font-weight: 600; color: #2d3748; font-size: 15px;">
                                             <?php 
                                             if (!empty($item['mesu'])) {
@@ -352,19 +300,19 @@ if ($cart_result === false) {
                                     </td>
                                     
                                     <!-- 단가 -->
-                                    <td style="padding: 16px; border-right: 1px solid #e8eaed; vertical-align: middle; text-align: right;">
+                                    <td style="padding: 12px; border-right: 1px solid #e8eaed; vertical-align: middle; text-align: right;">
                                         <div style="color: #4a5568; font-size: 13px; margin-bottom: 2px;">부가세별도</div>
                                         <div style="font-weight: 600; color: #2d3748; font-size: 14px;"><?php echo number_format($item['st_price']); ?>원</div>
                                     </td>
                                     
                                     <!-- 총액 -->
-                                    <td style="padding: 16px; border-right: 1px solid #e8eaed; vertical-align: middle; text-align: right;">
+                                    <td style="padding: 12px; border-right: 1px solid #e8eaed; vertical-align: middle; text-align: right;">
                                         <div style="color: #4a5568; font-size: 13px; margin-bottom: 2px;">부가세포함</div>
                                         <div style="font-weight: 700; color: #e53e3e; font-size: 16px;"><?php echo number_format($item['st_price_vat']); ?>원</div>
                                     </td>
                                     
                                     <!-- 관리 -->
-                                    <td style="padding: 16px; vertical-align: middle; text-align: center;">
+                                    <td style="padding: 12px; vertical-align: middle; text-align: center;">
                                         <a href="?delete=<?php echo $item['no']; ?>" 
                                            onclick="return confirm('이 상품을 삭제하시겠습니까?')"
                                            style="display: inline-flex; align-items: center; justify-content: center; width: 32px; height: 32px; background: #fed7d7; color: #e53e3e; text-decoration: none; border-radius: 6px; font-size: 14px; transition: all 0.2s ease; border: 1px solid #feb2b2;"
@@ -455,7 +403,7 @@ if ($cart_result === false) {
                                     <span style="margin-right: 8px;">🚚</span>빠른 배송
                                 </h5>
                                 <ul style="margin: 0; padding-left: 1.2rem; color: #555; font-size: 0.9rem; line-height: 1.6;">
-                                    <li>당일 출고 (오후 2시 이전 주문)</li>
+                                    <li>당일 출고 (품목에 따라 오전 11시 이전 주문)</li>
                                     <li>전국 택배 배송</li>
                                     <li>방문 수령 가능</li>
                                 </ul>

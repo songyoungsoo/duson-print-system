@@ -638,7 +638,7 @@ function MlangFriendSiteInfocheck()
 	f=document.MlangFriendSiteInfo;
 	if (f.MlangFriendSiteInfoS[0].checked==true){
 		ThingNoVal="<select name='Thing' OnChange='inThing(this.value)'><?php
-		include"../../MlangPrintAuto/ConDb.php";
+		include"../../mlangprintauto/ConDb.php";
 		if ( $ConDb_A) {
 			$OrderCate_LIST_script = split(":", $ConDb_A);
 			$k = 0;
@@ -781,7 +781,7 @@ if($View_SignMMk=="yes"){  // �߰��� �����þ� ��� ��
 if($mode=="AdminMlangOrdertOk"){
 
 $ToTitle="$ThingNo";
-include"../../MlangPrintAuto/ConDb.php";
+include"../../mlangprintauto/ConDb.php";
 
 if(!$ThingNoOkp){$ThingNoOkp="$ThingNo";}else{$ThingNoOkp="$View_TtableB";}
 

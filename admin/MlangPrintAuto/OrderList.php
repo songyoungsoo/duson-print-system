@@ -1,10 +1,12 @@
 <?php
+// 보안 상수 정의 후 데이터베이스 연결
+include "../../includes/db_constants.php";
 include "../../db.php";
 
-// mysqli 객체 생성
-$mysqli = new mysqli($host, $user, $password, $dataname);
-if ($mysqli->connect_error) {
-    die("Connection failed: " . $mysqli->connect_error);
+// db.php에서 생성된 $db 연결을 사용
+$mysqli = $db;
+if (!$mysqli) {
+    die("Connection failed: Database connection not established");
 }
 
 $mode = $_POST['mode'] ?? $_GET['mode'] ?? null;
@@ -35,7 +37,7 @@ if ($mode === "ChickBoxAll") {
 
     foreach ($check as $id) {
         $id = intval($id);
-        $stmt = $mysqli->prepare("DELETE FROM MlangOrder_PrintAuto WHERE no = ?");
+        $stmt = $mysqli->prepare("DELETE FROM mlangorder_printauto WHERE no = ?");
         $stmt->bind_param("i", $id);
         $stmt->execute();
         $stmt->close();
@@ -76,9 +78,9 @@ if ($mode === "sendback") {
         <input type='hidden' name='no' value='<?php echo  $no ?>'>
         <table align='center' cellpadding='10' cellspacing='5' width='100%'>
             <tr><td bgcolor='#336699'>
-                <font style='font-size:10pt; color:#fff;'>
+                <font style='font-size:11pt; color:#fff;'>
                     반송 이유(송장번호 등)를 입력해 주세요.<br>
-                    <span style='font-size:8pt; color:red;'>* 반송 처리 시 회원 적립금에서 자동 차감됩니다.</span>
+                    <span style='font-size:9pt; color:red;'>* 반송 처리 시 회원 적립금에서 자동 차감됩니다.</span>
                 </font>
             </td></tr>
             <tr><td>
@@ -105,7 +107,7 @@ if ($mode === "sendback_ok") {
     }
 
     // 주문 정보 확인
-    $stmt = $mysqli->prepare("SELECT PMmember FROM MlangOrder_PrintAuto WHERE no = ?");
+    $stmt = $mysqli->prepare("SELECT PMmember FROM mlangorder_printauto WHERE no = ?");
     $stmt->bind_param("i", $no);
     $stmt->execute();
     $result = $stmt->get_result();
@@ -146,7 +148,7 @@ if ($mode === "sendback_ok") {
     $stmt->close();
 
     // 주문 반송 처리
-    $stmt = $mysqli->prepare("UPDATE MlangOrder_PrintAuto SET OrderStyle = 6 WHERE no = ?");
+    $stmt = $mysqli->prepare("UPDATE mlangorder_printauto SET OrderStyle = 6 WHERE no = ?");
     $stmt->bind_param("i", $no);
     $stmt->execute();
     $stmt->close();
@@ -177,7 +179,7 @@ include "../../db.php";
 
 if ($mode === "delete") {
     $no = intval($no);
-    $stmt = $mysqli->prepare("DELETE FROM MlangOrder_PrintAuto WHERE no = ?");
+    $stmt = $mysqli->prepare("DELETE FROM mlangorder_printauto WHERE no = ?");
     $stmt->bind_param("i", $no);
     $stmt->execute();
     $stmt->close();
@@ -187,7 +189,7 @@ if ($mode === "delete") {
 
 if ($mode === "OrderStyleModify") {
     $no = intval($no);
-    $stmt = $mysqli->prepare("UPDATE MlangOrder_PrintAuto SET OrderStyle=? WHERE no=?");
+    $stmt = $mysqli->prepare("UPDATE mlangorder_printauto SET OrderStyle=? WHERE no=?");
     $stmt->bind_param("si", $JK, $no);
     $stmt->execute();
     $stmt->close();
@@ -257,7 +259,7 @@ function DelGCheckField() {
 </tr>
 <tr>
 <td align=left colspan=2>
-<?php $CateFF = "style='font-size:10pt; background-color:#429EB2; color:#FFFFFF;' selected"; ?>
+<?php $CateFF = "style='font-size:11pt; background-color:#429EB2; color:#FFFFFF;' selected"; ?>
 <table border=0 cellpadding=2 cellspacing=0 width=100%>
 <tr>
 <form method='post' name='TDsearch' onsubmit='return TDsearchCheckField()' action='<?php echo  $PHP_SELF ?>'>
@@ -266,13 +268,13 @@ function DelGCheckField() {
 <option value='total'>전체</option>
 <option value='inserted' <?php echo  $Type == "inserted" ? $CateFF : "" ?>>전단지</option>
 <option value='sticker' <?php echo  $Type == "sticker" ? $CateFF : "" ?>>스티카</option>
-<option value='NameCard' <?php echo  $Type == "NameCard" ? $CateFF : "" ?>>명함</option>
-<option value='MerchandiseBond' <?php echo  $Type == "MerchandiseBond" ? $CateFF : "" ?>>상품권</option>
+<option value='namecard' <?php echo  $Type == "namecard" ? $CateFF : "" ?>>명함</option>
+<option value='merchandisebond' <?php echo  $Type == "merchandisebond" ? $CateFF : "" ?>>상품권</option>
 <option value='envelope' <?php echo  $Type == "envelope" ? $CateFF : "" ?>>봉투</option>
-<option value='NcrFlambeau' <?php echo  $Type == "NcrFlambeau" ? $CateFF : "" ?>>양식지</option>
+<option value='ncrflambeau' <?php echo  $Type == "ncrflambeau" ? $CateFF : "" ?>>양식지</option>
 <option value='cadarok' <?php echo  $Type == "cadarok" ? $CateFF : "" ?>>리플렛</option>
 <option value='cadarokTwo' <?php echo  $Type == "cadarokTwo" ? $CateFF : "" ?>>카다로그</option>
-<option value='LittlePrint' <?php echo  $Type == "LittlePrint" ? $CateFF : "" ?>>소량인쇄</option>
+<option value='littleprint' <?php echo  $Type == "littleprint" ? $CateFF : "" ?>>소량인쇄</option>
 </select>
 <select name='Cate'>
 <option value='name' <?php echo  $Cate == "name" ? $CateFF : "" ?>>상호/성명</option>
@@ -328,7 +330,7 @@ function Error($msg) {
 <?php
 $offset = $_GET['offset'] ?? $_POST['offset'] ?? 0;	
 include "../../db.php";
-$table = "MlangOrder_PrintAuto";
+$table = "mlangorder_printauto";
 
 if ($Type) {
   if ($YearOne && !$YearTwo) {
@@ -384,13 +386,13 @@ if ($rows) {
 switch ($row["Type"]) {
   case "inserted": echo "전단지"; break;
   case "sticker": echo "스티카"; break;
-  case "NameCard": echo "명함"; break;
-  case "MerchandiseBond": echo "상품권"; break;
+  case "namecard": echo "명함"; break;
+  case "merchandisebond": echo "상품권"; break;
   case "envelope": echo "봉투"; break;
-  case "NcrFlambeau": echo "양식지"; break;
+  case "ncrflambeau": echo "양식지"; break;
   case "cadarok": echo "리플렛"; break;
   case "cadarokTwo": echo "카다로그"; break;
-  case "LittlePrint": echo "소량인쇄"; break;
+  case "littleprint": echo "소량인쇄"; break;
   default: echo $row["Type"];
 }
 ?>
@@ -412,7 +414,7 @@ $orderStyles = [
   9 => "작업중", 10 => "교정작업중"
 ];
 foreach ($orderStyles as $key => $label) {
-  $selected = ($row["OrderStyle"] == $key) ? "selected style='font-size:10pt; background-color:#6600FF; color:#FFFFFF;'" : "";
+  $selected = ($row["OrderStyle"] == $key) ? "selected style='font-size:11pt; background-color:#6600FF; color:#FFFFFF;'" : "";
   echo "<option value='$PHP_SELF?mode=OrderStyleModify&JK=$key&no={$row['no']}' $selected>$label</option>";
 }
 ?>

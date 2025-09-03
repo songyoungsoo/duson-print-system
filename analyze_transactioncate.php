@@ -42,7 +42,7 @@ echo "<h2>🎯 포스터 관련 데이터 분석</h2>";
 // LittlePrint 페이지 관련 데이터 조회
 $poster_query = "SELECT no, Ttable, BigNo, title, TreeNo 
                  FROM mlangprintauto_transactioncate 
-                 WHERE Ttable = 'LittlePrint' OR Ttable LIKE '%poster%' OR Ttable LIKE '%little%'
+                 WHERE Ttable = 'littleprint' OR Ttable LIKE '%poster%' OR Ttable LIKE '%little%'
                  ORDER BY no";
 
 $poster_result = mysqli_query($db, $poster_query);

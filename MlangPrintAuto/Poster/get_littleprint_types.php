@@ -20,7 +20,7 @@ if (empty($CV_no)) {
 }
 
 // 포스터 규격 옵션 조회
-$query = "SELECT * FROM MlangPrintAuto_transactionCate WHERE BigNo = ? AND Ttable = 'LittlePrint' ORDER BY no ASC";
+$query = "SELECT * FROM mlangprintauto_transactioncate WHERE BigNo = ? AND Ttable = 'LittlePrint' ORDER BY no ASC";
 $stmt = mysqli_prepare($connect, $query);
 
 if ($stmt) {

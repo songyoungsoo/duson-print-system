@@ -67,7 +67,7 @@ $total_amount_vat = 0;
 foreach ($order_numbers as $order_no) {
     $order_no = trim($order_no);
     if (!empty($order_no)) {
-        $query = "SELECT * FROM MlangOrder_PrintAuto WHERE no = ?";
+        $query = "SELECT * FROM mlangorder_printauto WHERE no = ?";
         $stmt = mysqli_prepare($connect, $query);
         
         if ($stmt) {

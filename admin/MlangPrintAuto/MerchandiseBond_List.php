@@ -1,9 +1,10 @@
 <?php
 // PHP 7.4+ Safe Version of MerchandiseBond List Page
 
+define('DB_ACCESS_ALLOWED', true);
 include "../../db.php";
 
-$TIO_CODE = "MerchandiseBond";
+$TIO_CODE = "merchandisebond";
 $table = "MlangPrintAuto_{$TIO_CODE}";
 
 $mode = $_GET['mode'] ?? $_POST['mode'] ?? '';
@@ -54,7 +55,8 @@ function WomanMember_Admin_Del(no){
 <td align="left"><?php include "ListSearchBox.php"; ?></td>
 
 <?php
-$db = mysqli_connect($host, $user, $password, $dataname);
+include "../../db.php";
+// $db 연결 재설정 (top.php 이후)
 $Mlang_query = $search === "yes"
     ? "SELECT * FROM $table WHERE style='" . mysqli_real_escape_string($db, $RadOne) . "' AND Section='" . mysqli_real_escape_string($db, $myList) . "'"
     : "SELECT * FROM $table";

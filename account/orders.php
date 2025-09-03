@@ -84,7 +84,7 @@ if (!empty($date_to)) {
 $where_clause = implode(' AND ', $where_conditions);
 
 // 총 레코드 수 조회
-$count_query = "SELECT COUNT(*) as total FROM MlangOrder_PrintAuto WHERE $where_clause";
+$count_query = "SELECT COUNT(*) as total FROM mlangorder_printauto WHERE $where_clause";
 $count_stmt = mysqli_prepare($db, $count_query);
 if ($count_stmt && !empty($params)) {
     mysqli_stmt_bind_param($count_stmt, $param_types, ...$params);
@@ -106,7 +106,7 @@ $query = "SELECT
     status,
     created_at,
     recv_name
-FROM MlangOrder_PrintAuto 
+FROM mlangorder_printauto 
 WHERE $where_clause 
 ORDER BY created_at DESC 
 LIMIT ? OFFSET ?";
@@ -363,7 +363,7 @@ $status_badges = [
                 </div>
                 <h3 class="text-xl font-semibold text-slate-900 mb-2">아직 주문이 없습니다</h3>
                 <p class="text-slate-600 mb-6">원하시는 상품을 선택해 견적안내으로 빠르게 주문해 보세요.</p>
-                <a href="/MlangPrintAuto/cadarok/index.php" class="btn-primary px-6 py-3 text-white rounded-md hover:opacity-90 focus:ring-2 focus:ring-sky-500">
+                <a href="/mlangprintauto/cadarok/index.php" class="btn-primary px-6 py-3 text-white rounded-md hover:opacity-90 focus:ring-2 focus:ring-sky-500">
                     견적안내 시작
                 </a>
             </div>
@@ -503,7 +503,7 @@ $status_badges = [
                 .then(data => {
                     if (data.success) {
                         alert('재주문이 장바구니에 추가되었습니다.');
-                        window.location.href = '/MlangPrintAuto/shop/cart.php';
+                        window.location.href = '/mlangprintauto/shop/cart.php';
                     } else {
                         alert('재주문 중 오류가 발생했습니다: ' + data.message);
                     }

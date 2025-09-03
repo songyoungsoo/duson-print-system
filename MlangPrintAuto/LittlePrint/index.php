@@ -5,7 +5,7 @@
  * Created: 2025년 8월 (AI Assistant - Frontend Persona)
  */
 
-// 공통 인증 및 설정
+// 보안 상수 정의 후 공통 인증 및 설정
 include "../../includes/auth.php";
 
 // 공통 함수 및 데이터베이스
@@ -105,7 +105,13 @@ $default_values['ordertype'] = 'print'; // 인쇄만
     <link rel="stylesheet" href="../../css/namecard-compact.css">
     <!-- 공통 버튼 스타일 CSS -->
     <link rel="stylesheet" href="../../css/btn-primary.css">
+    <!-- 컴팩트 폼 그리드 CSS (모든 품목 공통) -->
+    <link rel="stylesheet" href="../../css/compact-form.css">
+    <!-- 통합 가격 표시 시스템 -->
+    <link rel="stylesheet" href="../../css/unified-price-display.css">
     
+    <!-- 공통 가격 표시 시스템 -->
+    <script src="../../js/common-price-display.js" defer></script>
     <!-- 공통 갤러리 시스템 (helper가 자동으로 필요한 에셋 로드) -->
     <script src="../../js/poster.js" defer></script>
     
@@ -120,7 +126,7 @@ $default_values['ordertype'] = 'print'; // 인쇄만
     <div class="compact-container">
         <div class="page-title">
             <h1>📄 포스터/리플렛 견적안내</h1>
-            <p>컴팩트 프리미엄 - PROJECT_SUCCESS_REPORT.md 스펙 구현</p>
+            <p><!--  컴팩트 프리미엄 - PROJECT_SUCCESS_REPORT.md 스펙 구현  --></p>
         </div>
 
         <!-- 컴팩트 2단 그리드 레이아웃 (500px 갤러리 + 나머지 계산기) -->
@@ -130,9 +136,9 @@ $default_values['ordertype'] = 'print'; // 인쇄만
                 <div class="gallery-title">🖼️ 포스터 샘플 갤러리</div>
                 
                 <?php 
-                // 공통 갤러리 시스템 사용 (3줄로 완전 간소화)
-                include_once "../../includes/gallery_helper.php";
-                include_product_gallery('littleprint', ['mainSize' => [500, 400]]);
+                // 공통 갤러리 시스템 사용 (500×300px 기본값)
+                if (file_exists('../../includes/gallery_helper.php')) { if (file_exists('../../includes/gallery_helper.php')) { include_once '../../includes/gallery_helper.php'; } }
+                if (function_exists("include_product_gallery")) { include_product_gallery('littleprint'); }
                 ?>
             </div>
 
@@ -144,8 +150,8 @@ $default_values['ordertype'] = 'print'; // 인쇄만
 
                 <form id="posterForm">
                     <!-- 옵션 선택 그리드 - 개선된 2열 레이아웃 -->
-                    <div class="options-grid">
-                        <div class="option-group">
+                    <div class="options-grid form-grid-compact">
+                        <div class="option-group form-field">
                             <label class="option-label" for="MY_type">포스터 종류</label>
                             <select class="option-select" name="MY_type" id="MY_type" required>
                                 <option value="">선택해주세요</option>
@@ -165,21 +171,21 @@ $default_values['ordertype'] = 'print'; // 인쇄만
                             </select>
                         </div>
 
-                        <div class="option-group">
+                        <div class="option-group form-field">
                             <label class="option-label" for="Section">용지 재질</label>
                             <select class="option-select" name="Section" id="Section" required data-default-value="<?php echo htmlspecialchars($default_values['Section']); ?>">
                                 <option value="">먼저 종류를 선택해주세요</option>
                             </select>
                         </div>
 
-                        <div class="option-group">
+                        <div class="option-group form-field">
                             <label class="option-label" for="PN_type">규격</label>
                             <select class="option-select" name="PN_type" id="PN_type" required>
                                 <option value="">먼저 재질을 선택해주세요</option>
                             </select>
                         </div>
 
-                        <div class="option-group">
+                        <div class="option-group form-field">
                             <label class="option-label" for="POtype">인쇄면</label>
                             <select class="option-select" name="POtype" id="POtype" required>
                                 <option value="">선택해주세요</option>
@@ -200,7 +206,7 @@ $default_values['ordertype'] = 'print'; // 인쇄만
                             </select>
                         </div>
 
-                        <div class="option-group">
+                        <div class="option-group form-field">
                             <label class="option-label" for="MY_amount">수량</label>
                             <select class="option-select" name="MY_amount" id="MY_amount" required data-default-value="<?php echo htmlspecialchars($default_values['MY_amount']); ?>">
                                 <option value="">먼저 재질을 선택해주세요</option>
@@ -226,7 +232,7 @@ $default_values['ordertype'] = 'print'; // 인쇄만
                         </div>
                     </div>
 
-                    <!-- 실시간 가격 표시 - 개선된 애니메이션 -->
+                    <!-- 스티커 방식의 실시간 가격 표시 -->
                     <div class="price-display" id="priceDisplay">
                         <div class="price-label">견적 금액</div>
                         <div class="price-amount" id="priceAmount">견적 계산 필요</div>
@@ -313,7 +319,6 @@ $default_values['ordertype'] = 'print'; // 인쇄만
         </div>
     </div>
 
-
     <?php include "../../includes/login_modal.php"; ?>
     <?php include "../../includes/footer.php"; ?>
 
@@ -394,6 +399,9 @@ $default_values['ordertype'] = 'print'; // 인쇄만
         box-shadow: 0 10px 35px rgba(0, 0, 0, 0.12), 0 4px 15px rgba(0, 0, 0, 0.08) !important;
         border: 1px solid rgba(255, 255, 255, 0.9) !important;
         position: relative !important; /* 헤더 오버플로우를 위한 설정 */
+        height: 450px !important;
+        min-height: 450px !important;
+        overflow: auto !important;
     }
 
     .calculator-header h3 {
@@ -411,54 +419,8 @@ $default_values['ordertype'] = 'print'; // 인쇄만
     }
 
     /* =================================================================== */
-    /* 3단계: 통일된 가격 표시 - 녹색 큰 글씨 (인쇄비+편집비=공급가) */
+    /* 가격 표시는 공통 CSS (../../css/unified-price-display.css) 사용 */
     /* =================================================================== */
-    .price-display {
-        background: linear-gradient(145deg, #f8f9fa 0%, #e9ecef 100%) !important;
-        border: 2px solid #28a745 !important;
-        border-radius: 12px !important;
-        padding: 15px 20px !important;
-        text-align: center !important;
-        margin: 20px 0 !important;
-        transition: all 0.3s ease !important;
-        box-shadow: 0 4px 12px rgba(40, 167, 69, 0.1) !important;
-    }
-
-    .price-display.calculated {
-        background: linear-gradient(145deg, #d4edda 0%, #c3e6cb 100%) !important;
-        transform: translateY(-2px) !important;
-        box-shadow: 0 8px 20px rgba(40, 167, 69, 0.2) !important;
-        border-color: #20c997 !important;
-    }
-
-    .price-display .price-label {
-        font-size: 0.9rem !important;
-        color: #495057 !important;
-        margin-bottom: 8px !important;
-        font-weight: 500 !important;
-    }
-
-    .price-display .price-amount {
-        font-size: 2.2rem !important;
-        font-weight: 700 !important;
-        color: #28a745 !important;
-        margin: 10px 0 !important;
-        line-height: 1.2 !important;
-        text-shadow: 0 2px 4px rgba(40, 167, 69, 0.3) !important;
-        letter-spacing: -0.5px !important;
-    }
-
-    .price-display .price-details {
-        font-size: 0.8rem !important;
-        color: #6c757d !important;
-        line-height: 1.4 !important;
-        margin-top: 8px !important;
-    }
-
-    .price-display:hover {
-        transform: translateY(-1px) !important;
-        box-shadow: 0 6px 16px rgba(40, 167, 69, 0.15) !important;
-    }
 
     /* =================================================================== */
     /* 4단계: Form 요소 컴팩트화 (패딩 1/2 축소) */
@@ -496,6 +458,9 @@ $default_values['ordertype'] = 'print'; // 인쇄만
         padding: 25px;
         box-shadow: 0 10px 35px rgba(0, 0, 0, 0.12), 0 4px 15px rgba(0, 0, 0, 0.08) !important;
         border: 1px solid rgba(255, 255, 255, 0.9);
+        height: 450px !important;
+        min-height: 450px !important;
+        overflow: auto !important;
     }
     
     .gallery-title {
@@ -518,7 +483,6 @@ $default_values['ordertype'] = 'print'; // 인쇄만
         border-radius: 0 !important;
     }
 
-
     /* =================================================================== */
     /* 7단계: 반응형 최적화 */
     /* =================================================================== */
@@ -537,7 +501,7 @@ $default_values['ordertype'] = 'print'; // 인쇄만
         }
         
         .price-display .price-amount {
-            font-size: 1.5rem !important;     /* 모바일 가독성 */
+            font-size: 0.98rem !important;     /* 모바일도 동일 크기 */
         }
         
         .option-select {
@@ -555,6 +519,34 @@ $default_values['ordertype'] = 'print'; // 인쇄만
             padding: 12px 15px;
             font-size: 1rem;
         }
+    }
+    
+    /* 포스터 페이지 전용 - 한 줄 레이아웃 강제 */
+    #priceDisplay .price-details,
+    .price-display .price-details {
+        /* 한 줄 표시 강제 - 최고 우선순위 */
+        display: flex !important;
+        justify-content: center !important;
+        align-items: center !important;
+        gap: 15px !important;
+        flex-wrap: nowrap !important;
+        white-space: nowrap !important;
+        overflow-x: auto !important;
+        flex-direction: row !important;
+    }
+    
+    /* 부가세 포함 금액을 견적 금액과 완전히 동일하게 - 포스터 전용 */
+    #priceDisplay .price-details .vat-amount,
+    .price-display .price-details .vat-amount {
+        color: #dc3545 !important;  /* 빨간색 */
+        font-size: 0.98rem !important;  /* 견적 금액과 동일한 크기 */
+        font-weight: 700 !important;  /* 견적 금액과 동일한 굵기 */
+        font-style: normal !important;
+        text-decoration: none !important;
+        line-height: 1.2 !important;  /* 견적 금액과 동일한 라인 높이 */
+        letter-spacing: -0.5px !important;  /* 견적 금액과 동일한 글자 간격 */
+        font-family: inherit !important;
+        text-shadow: 0 2px 4px rgba(220, 53, 69, 0.3) !important;  /* 빨간색 그림자 */
     }
     </style>
 

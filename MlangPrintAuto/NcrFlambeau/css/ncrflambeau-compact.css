@@ -795,6 +795,60 @@ body {
     }
 }
 
+/* ===== Lock: 2-column compact form ===== */
+.calculator-section .calc-form-2col-lock{
+  display:grid;
+  grid-template-columns: 1fr 1fr;   /* 데스크톱 2열 고정 */
+  gap: 10px 12px;
+  padding-top: 10px;
+  padding-bottom: 12px;
+}
+@media (max-width: 767.98px){
+  .calculator-section .calc-form-2col-lock{
+    grid-template-columns: 1fr;     /* 모바일 1열 */
+  }
+}
+
+/* 각 필드: 라벨 왼쪽, 셀렉터 오른쪽 (가로 배치) */
+.calculator-section .calc-form-2col-lock .form-field{
+  display:flex; flex-direction:row; align-items:center; gap:6px;
+  margin:0; padding:0;
+}
+.calculator-section .calc-form-2col-lock .form-field label{
+  font-size:13px; line-height:1.2; margin:0; padding:0;
+  min-width:60px; flex-shrink:0; white-space:nowrap;
+}
+.calculator-section select,
+.calculator-section input[type="text"],
+.calculator-section input[type="number"]{
+  height:38px; line-height:1.2; padding:6px 10px;
+  flex:1; min-width:0;
+}
+
+/* 편집디자인 필드는 2열 전체 span */
+.calculator-section .calc-form-2col-lock .field--design{
+  grid-column: 1 / -1;
+}
+
+/* 폼-가격 박스 사이 간격 축소 */
+.calculator-section .form-to-price-gap{ margin:10px 0; }
+
+/* ===== Lock: price box compact ===== */
+.price-display.calculated.price-compact-lock{
+  padding:16px 18px; border-radius:10px; min-height:auto;
+}
+.price-display.calculated.price-compact-lock .price-title{
+  font-size:14px; line-height:1.2; margin-bottom:8px;
+}
+.price-display.calculated.price-compact-lock .price-amount{
+  font-size:28px; line-height:1.1; margin:4px 0 6px 0;
+}
+.price-display.calculated.price-compact-lock .price-meta{
+  font-size:13px; line-height:1.25; margin-top:6px;
+}
+/* 내부 항목 간 여백 최소화 */
+.price-display.calculated .meta-row{ margin:2px 0; }
+
 /* ============================================================================ */
 /* 성능 최적화 및 GPU 가속 */
 /* ============================================================================ */

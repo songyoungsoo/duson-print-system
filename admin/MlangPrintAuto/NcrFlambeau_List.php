@@ -1,14 +1,19 @@
 <?php
 // PHP 7.4+ Updated - NcrFlambeau_List
-require_once "../../db.php";
-$db = mysqli_connect($host, $user, $password, $dataname);
+define('DB_ACCESS_ALLOWED', true);
+// 직접 데이터베이스 연결 - 중복 포함 방지
+$db = mysqli_connect("localhost", "duson1830", "du1830", "duson1830");
 if (!$db) {
-    die("DB 연결 실패: " . mysqli_connect_error());
+    $db = mysqli_connect("localhost", "root", "", "duson1830");
+    if (!$db) {
+        die("DB 연결 실패: " . mysqli_connect_error());
+    }
 }
+mysqli_set_charset($db, "utf8");
 $cate       = $_GET['cate'] ?? $_POST['cate'] ?? '';
 $title_search = $_GET['title_search'] ?? $_POST['title_search'] ?? '';
 $PHP_SELF = $_SERVER['PHP_SELF'] ?? '';
-$TIO_CODE = "NcrFlambeau";
+$TIO_CODE = "ncrflambeau";
 $table = "MlangPrintAuto_{$TIO_CODE}";
 $mode = $_GET['mode'] ?? $_POST['mode'] ?? '';
 $no         = isset($_GET['no']) ? (int)$_GET['no'] : 0;
@@ -26,11 +31,10 @@ $offset     = isset($_GET['offset']) ? (int)$_GET['offset'] : 0;
 // }
 
 if ($mode === "delete" && $no) {
-    $stmt = $db->prepare("DELETE FROM {$table} WHERE no=?");
-    $stmt->bind_param("i", $no);
-    $stmt->execute();
-    $stmt->close();
-    $db->close();
+    $stmt = mysqli_prepare($db, "DELETE FROM {$table} WHERE no=?");
+    mysqli_stmt_bind_param($stmt, "i", $no);
+    mysqli_stmt_execute($stmt);
+    mysqli_stmt_close($stmt);
     echo "<script>
         alert('테이블명: {$table} - {$no} 번 자료 삭제 완료');
         opener.parent.location.reload();
@@ -44,12 +48,12 @@ include "$M123/top.php";
 $T_DirUrl = "../../MlangPrintAuto";
 include "$T_DirUrl/ConDb.php";
 
-$db = mysqli_connect($host, $user, $password, $dataname);
+// $db 연결은 이미 상단에서 완료됨
 $Mlang_query = $search === "yes"
-    ? "SELECT * FROM {$table} WHERE style='{$db->real_escape_string($RadOne)}' AND TreeSelect='{$db->real_escape_string($myListTreeSelect)}' AND Section='{$db->real_escape_string($myList)}'"
+    ? "SELECT * FROM {$table} WHERE style='" . mysqli_real_escape_string($db, $RadOne) . "' AND TreeSelect='" . mysqli_real_escape_string($db, $myListTreeSelect) . "' AND Section='" . mysqli_real_escape_string($db, $myList) . "'"
     : "SELECT * FROM {$table}";
-$query = $db->query($Mlang_query);
-$recordsu = $query ? $query->num_rows : 0;
+$query = mysqli_query($db, $Mlang_query);
+$recordsu = $query ? mysqli_num_rows($query) : 0;
 $total = $recordsu;
 $listcut = 15;
 $pagecut = 7;
@@ -101,7 +105,7 @@ if($search=="yes"){ //검색모드일때
 }else{ // 일반모드 일때
 $Mlang_query="select * from $table";
 }
-$db = mysqli_connect($host, $user, $password, $dataname);
+// $db 연결은 이미 상단에서 db.php로 완료됨
 $query = "SELECT * FROM $table ORDER BY no DESC LIMIT $offset, $listcut";
 $result = mysqli_query($db, $query);
 if (!$result) {
@@ -140,13 +144,18 @@ if(!$offset) $offset=0;
 </tr>
 
 <?php
-$db = mysqli_connect($host, $user, $password, $dataname);
-$result = $db->query("$Mlang_query ORDER BY no DESC LIMIT $offset, $listcut");
-if ($result && $result->num_rows > 0) {
-    while ($row = $result->fetch_assoc()) {
-        $style_title = $db->query("SELECT title FROM $GGTABLE WHERE no='{$row['style']}'")->fetch_assoc()['title'] ?? '';
-        $section_title = $db->query("SELECT title FROM $GGTABLE WHERE no='{$row['Section']}'")->fetch_assoc()['title'] ?? '';
-        $tree_title = $db->query("SELECT title FROM $GGTABLE WHERE no='{$row['TreeSelect']}'")->fetch_assoc()['title'] ?? '';
+// $db 연결은 이미 상단에서 완료됨
+$result = mysqli_query($db, "$Mlang_query ORDER BY no DESC LIMIT $offset, $listcut");
+if ($result && mysqli_num_rows($result) > 0) {
+    while ($row = mysqli_fetch_assoc($result)) {
+        $style_result = mysqli_query($db, "SELECT title FROM $GGTABLE WHERE no='{$row['style']}'");
+        $style_title = ($style_result && $style_row = mysqli_fetch_assoc($style_result)) ? $style_row['title'] : '';
+        
+        $section_result = mysqli_query($db, "SELECT title FROM $GGTABLE WHERE no='{$row['Section']}'");
+        $section_title = ($section_result && $section_row = mysqli_fetch_assoc($section_result)) ? $section_row['title'] : '';
+        
+        $tree_result = mysqli_query($db, "SELECT title FROM $GGTABLE WHERE no='{$row['TreeSelect']}'");
+        $tree_title = ($tree_result && $tree_row = mysqli_fetch_assoc($tree_result)) ? $tree_row['title'] : '';
         $po_type = $row['POtype'] === "1" ? "단면" : ($row['POtype'] === "2" ? "양면" : "");
         $money_display = number_format((int)$row['money']) . "원";
         $design_display = number_format((int)$row['DesignMoney']) . "원";
@@ -170,7 +179,6 @@ if ($result && $result->num_rows > 0) {
 } else {
     echo "<tr><td colspan='10' align='center'><br><br>등록 자료없음</td></tr>";
 }
-$db->close();
 ?>
 </table>
 <p align="center">

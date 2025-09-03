@@ -38,7 +38,7 @@ if (empty($style)) {
 
 try {
     $options = getDropdownOptions($db, 'MlangPrintAuto_transactionCate', [
-        'Ttable' => 'NcrFlambeau',
+        'Ttable' => 'ncrflambeau',
         'BigNo' => $style
     ], 'no ASC');
     

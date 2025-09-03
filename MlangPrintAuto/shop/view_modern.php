@@ -7,7 +7,7 @@
 session_start(); 
 $session_id = session_id();
 
-// 데이터베이스 연결
+// 보안 상수 정의 후 데이터베이스 연결
 include "../../db.php";
 $connect = $db;
 
@@ -381,7 +381,7 @@ echo '<style>
 <div class="container">
     <!-- 스티커 샘플 갤러리 (통합 갤러리 시스템) -->
     <?php
-    include_product_gallery('sticker', ['mainSize' => [500, 400]]);
+    if (function_exists("include_product_gallery")) { include_product_gallery('sticker', ['mainSize' => [500, 400]]);
     ?>
 
     <!-- 주문 폼 -->

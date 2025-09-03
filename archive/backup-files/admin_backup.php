@@ -612,7 +612,7 @@ function Mlamg_image(image) {
 function MlangFriendSiteInfocheck() {
     if (MlangFriendSiteInfo(2).checked==true){
         Mlang_go.innerHTML="<select name='ThingNo'><?php
-        include"../../MlangPrintAuto/ConDb.php";
+        include"../../mlangprintauto/ConDb.php";
         if ($ConDb_A) {
             $OrderCate_LIST_script = explode(":", $ConDb_A);
             $k = 0;
@@ -741,7 +741,7 @@ if ($View_SignMMk == "yes") {  // 사용 여부가 "yes"인 경우
 if ($mode == "AdminMlangOrdertOk") {
 
     $ToTitle = $ThingNo;
-    include "../../MlangPrintAuto/ConDb.php";
+    include "../../mlangprintauto/ConDb.php";
 
     if (!$ThingNoOkp) {
         $ThingNoOkp = $ThingNo;

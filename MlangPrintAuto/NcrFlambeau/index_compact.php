@@ -55,7 +55,7 @@ $default_values = [
 
 // 초기 구분값 가져오기
 $initial_type = "";
-$type_result = mysqli_query($connect, "SELECT no, title FROM MlangPrintAuto_transactionCate WHERE Ttable='NcrFlambeau' AND BigNo='0' ORDER BY no ASC LIMIT 1");
+$type_result = mysqli_query($connect, "SELECT no, title FROM mlangprintauto_transactioncate WHERE Ttable='NcrFlambeau' AND BigNo='0' ORDER BY no ASC LIMIT 1");
 if ($type_row = mysqli_fetch_assoc($type_result)) {
     $initial_type = $type_row['no'];
     $default_values['MY_type'] = $initial_type;
@@ -110,7 +110,7 @@ echo '<script src="../../includes/js/UniversalFileUpload.js"></script>';
             <!-- 우측: 계산기 섹션 (50%) -->
             <aside class="ncr-calculator" aria-label="실시간 견적 계산기">
                 <div class="calculator-header">
-                    <h3>🏠 실시간 견적 계산기</h3>
+                    <h3>🏠견적 안내</h3>
                 </div>
                 
                 <form id="ncr-quote-form" method="post">
@@ -121,7 +121,7 @@ echo '<script src="../../includes/js/UniversalFileUpload.js"></script>';
                             <select name="MY_type" id="MY_type" class="option-select" required>
                                 <option value="">구분을 선택해주세요</option>
                                 <?php
-                                $categories = getCategoryOptions($db, 'MlangPrintAuto_transactionCate', 'NcrFlambeau');
+                                $categories = getCategoryOptions($db, "mlangprintauto_transactioncate", 'NcrFlambeau');
                                 foreach ($categories as $category) {
                                     $selected = ($category['no'] == $default_values['MY_type']) ? 'selected' : '';
                                     echo "<option value='" . safe_html($category['no']) . "' $selected>" . safe_html($category['title']) . "</option>";

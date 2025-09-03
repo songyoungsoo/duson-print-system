@@ -9,8 +9,20 @@ if (session_status() == PHP_SESSION_NONE) {
     session_start();
 }
 
+// 공통 인증 함수 로드 (존재할 때만)
+if (file_exists(__DIR__ . '/auth_functions.php')) {
+    include_once __DIR__ . '/auth_functions.php';
+}
+
 // 데이터베이스 연결 (각 페이지에서 이미 연결되어 있다고 가정)
-// $connect 변수가 설정되어 있어야 함
+// $db 변수가 있다면 $connect로 할당 (새로운 연결 생성하지 않음)
+if (isset($db) && $db) {
+    $connect = $db;
+} else {
+    // 기본값 설정 (연결 시도하지 않음)
+    $connect = null;
+}
+
 
 $login_message = '';
 $is_logged_in = isset($_SESSION['user_id']);
@@ -29,64 +41,26 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
             if (!$connect) {
                 $login_message = '데이터베이스 연결에 실패했습니다.';
             } else {
-                // 로그인용 users 테이블 설정
-                $setup_success = false;
+                // 테이블 존재 및 상태 확인
+                $table_check = mysqli_query($connect, "SELECT 1 FROM users LIMIT 1");
                 
-                // 기존 users 테이블 구조 확인
-                $table_exists = mysqli_query($connect, "SHOW TABLES LIKE 'users'");
-                
-                if (mysqli_num_rows($table_exists) > 0) {
-                    // 테이블이 존재하면 필요한 컬럼들이 있는지 확인
-                    $required_columns = ['id', 'username', 'password', 'name'];
-                    $all_columns_exist = true;
+                if (!$table_check) {
+                    $error = mysqli_error($connect);
                     
-                    foreach ($required_columns as $column) {
-                        $check_column = mysqli_query($connect, "SHOW COLUMNS FROM users LIKE '$column'");
-                        if (mysqli_num_rows($check_column) == 0) {
-                            $all_columns_exist = false;
-                            break;
-                        }
+                    // 테이블스페이스 관련 오류인 경우 강제 정리
+                    if (strpos($error, 'Tablespace') !== false || strpos($error, 'exists') !== false) {
+                        // 강제로 테이블 정리
+                        mysqli_query($connect, "DROP TABLE IF EXISTS users");
+                        
+                        // 캐시 정리
+                        mysqli_query($connect, "RESET QUERY CACHE");
+                        mysqli_query($connect, "FLUSH TABLES");
+                        
+                        // 잠시 대기 후 테이블 재생성
+                        usleep(100000); // 0.1초 대기
                     }
                     
-                    if (!$all_columns_exist) {
-                        // 기존 테이블을 백업하고 새로 생성
-                        $backup_table = "users_backup_" . date('YmdHis');
-                        mysqli_query($connect, "CREATE TABLE $backup_table AS SELECT * FROM users");
-                        mysqli_query($connect, "DROP TABLE users");
-                        
-                        // 새 테이블 생성
-                        $create_table_query = "CREATE TABLE users (
-                            id INT AUTO_INCREMENT PRIMARY KEY,
-                            username VARCHAR(50) UNIQUE NOT NULL,
-                            password VARCHAR(255) NOT NULL,
-                            name VARCHAR(100) NOT NULL,
-                            email VARCHAR(100) DEFAULT NULL,
-                            phone VARCHAR(20) DEFAULT NULL,
-                            created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
-                        )";
-                        
-                        if (mysqli_query($connect, $create_table_query)) {
-                            $setup_success = true;
-                        } else {
-                            $login_message = '테이블 재생성 중 오류: ' . mysqli_error($connect);
-                        }
-                    } else {
-                        // 필요한 컬럼들이 모두 있으면 추가 컬럼만 확인
-                        $optional_columns = ['email', 'phone'];
-                        foreach ($optional_columns as $column) {
-                            $check_column = mysqli_query($connect, "SHOW COLUMNS FROM users LIKE '$column'");
-                            if (mysqli_num_rows($check_column) == 0) {
-                                if ($column == 'email') {
-                                    mysqli_query($connect, "ALTER TABLE users ADD COLUMN email VARCHAR(100) DEFAULT NULL");
-                                } elseif ($column == 'phone') {
-                                    mysqli_query($connect, "ALTER TABLE users ADD COLUMN phone VARCHAR(20) DEFAULT NULL");
-                                }
-                            }
-                        }
-                        $setup_success = true;
-                    }
-                } else {
-                    // 테이블이 없으면 새로 생성
+                    // 새 테이블 생성
                     $create_table_query = "CREATE TABLE users (
                         id INT AUTO_INCREMENT PRIMARY KEY,
                         username VARCHAR(50) UNIQUE NOT NULL,
@@ -95,22 +69,36 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
                         email VARCHAR(100) DEFAULT NULL,
                         phone VARCHAR(20) DEFAULT NULL,
                         created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
-                    )";
+                    ) ENGINE=InnoDB DEFAULT CHARSET=utf8";
                     
-                    if (mysqli_query($connect, $create_table_query)) {
-                        $setup_success = true;
-                    } else {
-                        $login_message = '테이블 생성 중 오류: ' . mysqli_error($connect);
+                    if (!mysqli_query($connect, $create_table_query)) {
+                        // 여전히 실패하면 다른 테이블명 사용
+                        $alt_table = "user_auth_" . date('YmdHis');
+                        $create_alt_query = "CREATE TABLE $alt_table (
+                            id INT AUTO_INCREMENT PRIMARY KEY,
+                            username VARCHAR(50) UNIQUE NOT NULL,
+                            password VARCHAR(255) NOT NULL,
+                            name VARCHAR(100) NOT NULL,
+                            email VARCHAR(100) DEFAULT NULL,
+                            phone VARCHAR(20) DEFAULT NULL,
+                            created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+                        ) ENGINE=InnoDB DEFAULT CHARSET=utf8";
+                        
+                        if (mysqli_query($connect, $create_alt_query)) {
+                            // 대체 테이블 생성 성공, users로 리네임
+                            mysqli_query($connect, "RENAME TABLE $alt_table TO users");
+                        } else {
+                            $login_message = '테이블 생성 중 오류: ' . mysqli_error($connect);
+                        }
                     }
                 }
                 
-                // 테이블 설정이 성공한 경우에만 관리자 계정 생성
-                if ($setup_success && empty($login_message)) {
-                    // 관리자 계정 확인 및 생성
+                // 테이블이 정상적으로 존재하는 경우에만 관리자 계정 처리
+                if (empty($login_message)) {
                     $admin_check = mysqli_query($connect, "SELECT id FROM users WHERE username = 'admin'");
                     if ($admin_check && mysqli_num_rows($admin_check) == 0) {
                         $admin_password = password_hash('admin123', PASSWORD_DEFAULT);
-                        $admin_insert = mysqli_query($connect, "INSERT INTO users (username, password, name, email) VALUES ('admin', '$admin_password', '관리자', 'admin@dusong.co.kr')");
+                        $admin_insert = mysqli_query($connect, "INSERT INTO users (username, password, name, email) VALUES ('admin', '$admin_password', '관리자', 'admin@duson.co.kr')");
                         if (!$admin_insert) {
                             $login_message = '관리자 계정 생성 중 오류: ' . mysqli_error($connect);
                         }
@@ -135,7 +123,10 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
                             $_SESSION['user_name'] = $user['name'];
                             $is_logged_in = true;
                             $user_name = $user['name'];
-                            $login_message = '로그인 성공!';
+                            
+                            // 로그인 성공 시 POST 상태 정리를 위해 리다이렉트
+                            header("Location: " . $_SERVER['PHP_SELF']);
+                            exit;
                         } else {
                             $login_message = '비밀번호가 올바르지 않습니다.';
                         }

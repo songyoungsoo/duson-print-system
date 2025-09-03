@@ -1,6 +1,7 @@
 <?php
 include "db_ajax.php";
-$GGTABLE = "MlangPrintAuto_transactionCate";
+$TABLE = "mlangprintauto_transactioncate";
+$GGTABLE = "mlangprintauto_transactioncate";
 
 // CV_no 파라미터 받기 (명함 종류)
 $CV_no = $_GET['CV_no'] ?? '';

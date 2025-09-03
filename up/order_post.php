@@ -71,7 +71,7 @@ VALUES ('".$_POST['nickname']."','".$_POST['time']."','".$filename.".$ext"."','$
             phone, hphone, delivery, bank, ipkeum, memo, st_price, regdate, email, password, zip, img) 
             values('$order_id','$name','$address1','$address2','$phone','$hphone','$delivery','$bank','$ipkeum','$memo','$data['st_price']','$regdate','$email','$password','$zip','$img_name') "; 
      mysqli_query($query, $connect);
-   $query = "insert into MlangOrder_PrintAuto(Type,ImgFolder,Type_1, name,zip1 ,zip2, 
+   $query = "insert into mlangorder_printauto(Type,ImgFolder,Type_1, name,zip1 ,zip2, 
             phone, hendphone, delivery, bank, bankname, cont, money_2, money_4, money_5, date, OrderStyle, email, pass, zip, ThingCate) 
             values('$type','$Folder','$Type_1','$name','$address1','$address2','$phone','$hphone', '$delivery','$bank','$ipkeum','$memo', '$data['uhyung']', '$data['st_price']','$data['st_price_vat']','$order_id','$OrderStyle','$email','$password','$zip','$img_name') ";
  

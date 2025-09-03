@@ -1,0 +1,460 @@
+/* 
+ * 전단지 인라인 스타일 분리 파일
+ * index.php에서 분리된 인라인 CSS
+ * Created: 2025-09-02
+ */
+
+/* ============================================================================ */
+/* 전역 기본 스타일 */
+/* ============================================================================ */
+body.leaflet-page {
+    margin: 0 !important;
+    padding: 0 !important;
+}
+
+/* ============================================================================ */
+/* 메인 컨테이너 스타일 */
+/* ============================================================================ */
+.leaflet-card {
+    max-width: 1200px !important;
+    margin: 0 auto !important;
+    padding: 10px 20px 20px 20px !important;
+    background: white !important;
+    border-radius: 15px !important;
+    box-shadow: 0 10px 40px rgba(0,0,0,0.1) !important;
+    overflow: hidden !important;
+    margin-bottom: 0 !important;
+}
+
+.leaflet-grid {
+    display: grid !important;
+    grid-template-columns: 1fr 1fr !important;
+    gap: 30px !important;
+    min-height: 450px !important;
+    max-width: 1200px !important;
+    margin: 0 auto !important;
+    align-items: start !important;
+}
+
+/* ============================================================================ */
+/* 갤러리 섹션 스타일 */
+/* ============================================================================ */
+.leaflet-gallery {
+    background: linear-gradient(135deg, #f8f9fa 0%, #e9ecef 100%);
+    border-radius: 15px;
+    padding: 25px;
+    box-shadow: 0 10px 35px rgba(0, 0, 0, 0.12), 0 4px 15px rgba(0, 0, 0, 0.08) !important;
+    border: 1px solid rgba(255, 255, 255, 0.9);
+    height: 440px !important;
+    min-height: 440px !important;
+    overflow: auto !important;
+}
+
+.leaflet-gallery .gallery-title {
+    background: linear-gradient(135deg, #4caf50 0%, #2e7d32 100%) !important;
+    color: white !important;
+}
+
+/* ============================================================================ */
+/* 메인 뷰어 스타일 */
+/* ============================================================================ */
+.main-viewer {
+    width: 100%;
+    height: 240px;
+    background-color: #fff;
+    border-radius: 12px;
+    box-shadow: 0 5px 20px rgba(0, 0, 0, 0.1);
+    margin-bottom: 15px;
+    position: relative;
+    overflow: hidden;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    border: 2px solid #e9ecef;
+}
+
+.main-viewer:hover {
+    border-color: #4caf50;
+    box-shadow: 0 8px 30px rgba(76, 175, 80, 0.15);
+    transform: translateY(-2px);
+}
+
+.main-viewer img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    transition: transform 0.3s ease;
+}
+
+.main-viewer:hover img {
+    transform: scale(1.05);
+}
+
+.viewer-overlay {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: rgba(0, 0, 0, 0.3);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    opacity: 0;
+    transition: opacity 0.3s ease;
+}
+
+.main-viewer:hover .viewer-overlay {
+    opacity: 1;
+}
+
+.zoom-icon {
+    font-size: 2rem;
+    color: white;
+    background: rgba(76, 175, 80, 0.8);
+    padding: 15px;
+    border-radius: 50%;
+    border: 2px solid white;
+}
+
+/* ============================================================================ */
+/* 썸네일 스트립 스타일 */
+/* ============================================================================ */
+.thumbnail-strip {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 8px;
+    padding: 8px;
+    background: white;
+    border-radius: 8px;
+    box-shadow: 0 2px 10px rgba(0, 0, 0, 0.05);
+    margin-bottom: 10px;
+}
+
+.thumbnail-item {
+    width: 100%;
+    height: 65px;
+    border-radius: 6px;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    border: 2px solid transparent;
+    overflow: hidden;
+    position: relative;
+}
+
+.thumbnail-item img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    opacity: 0.7;
+    transition: all 0.3s ease;
+}
+
+.thumbnail-item:hover img,
+.thumbnail-item.active img {
+    opacity: 1;
+}
+
+.thumbnail-item:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 4px 15px rgba(0, 0, 0, 0.15);
+    border-color: #4caf50;
+}
+
+.thumbnail-item.active {
+    border-color: #4caf50;
+    box-shadow: 0 4px 15px rgba(76, 175, 80, 0.3);
+}
+
+/* 로딩 상태 */
+.thumbnail-item.loading {
+    background: #f8f9fa;
+}
+
+.loading-shimmer {
+    width: 100%;
+    height: 100%;
+    background: linear-gradient(90deg, #f0f0f0 25%, #e0e0e0 50%, #f0f0f0 75%);
+    background-size: 200% 100%;
+    animation: shimmer 1.5s infinite;
+}
+
+@keyframes shimmer {
+    0% { background-position: -200% 0; }
+    100% { background-position: 200% 0; }
+}
+
+/* ============================================================================ */
+/* 더보기 버튼 */
+/* ============================================================================ */
+.btn-view-more {
+    width: 100%;
+    padding: 12px;
+    background: linear-gradient(135deg, #4caf50 0%, #2e7d32 100%);
+    color: white;
+    border: none;
+    border-radius: 8px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    font-size: 0.95rem;
+}
+
+.btn-view-more:hover {
+    background: linear-gradient(135deg, #2e7d32 0%, #1b5e20 100%);
+    transform: translateY(-2px);
+    box-shadow: 0 4px 15px rgba(76, 175, 80, 0.3);
+}
+
+/* ============================================================================ */
+/* 팝업 갤러리 스타일 */
+/* ============================================================================ */
+.leaflet-gallery .gallery-popup {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: rgba(0, 0, 0, 0.8);
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    z-index: 2000;
+}
+
+.leaflet-gallery .popup-overlay {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+}
+
+.leaflet-gallery .popup-content {
+    position: relative;
+    background: white;
+    width: 90%;
+    max-width: 1200px;
+    height: 80vh;
+    border-radius: 15px;
+    overflow: hidden;
+    display: flex;
+    flex-direction: column;
+}
+
+.popup-header {
+    background: linear-gradient(135deg, #4caf50 0%, #2e7d32 100%);
+    color: white;
+    padding: 20px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+
+.popup-header h3 {
+    margin: 0;
+    font-size: 1.3rem;
+}
+
+.btn-close {
+    background: none;
+    border: none;
+    color: white;
+    font-size: 1.5rem;
+    cursor: pointer;
+    padding: 5px;
+    border-radius: 50%;
+    width: 35px;
+    height: 35px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: background 0.2s ease;
+}
+
+.btn-close:hover {
+    background: rgba(255, 255, 255, 0.2);
+}
+
+.popup-body {
+    flex: 1;
+    overflow-y: auto;
+    padding: 20px;
+}
+
+.image-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+    gap: 15px;
+    margin-bottom: 20px;
+}
+
+.image-grid img {
+    width: 100%;
+    height: 150px;
+    object-fit: cover;
+    border-radius: 8px;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    border: 2px solid transparent;
+}
+
+.image-grid img:hover {
+    transform: scale(1.05);
+    border-color: #4caf50;
+    box-shadow: 0 5px 20px rgba(76, 175, 80, 0.3);
+}
+
+/* ============================================================================ */
+/* 제품 설명 카드 스타일 */
+/* ============================================================================ */
+.product-info-section {
+    margin-top: 5px;
+    margin-bottom: 0.2rem;
+}
+
+.product-info-grid {
+    max-width: 1200px;
+    margin: 0 auto;
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 0.5rem;
+}
+
+.product-card {
+    background: white;
+    border-radius: 15px;
+    overflow: hidden;
+    box-shadow: 0 8px 25px rgba(0,0,0,0.1);
+    border: 1px solid #e9ecef;
+}
+
+.product-card-header {
+    padding: 20px;
+    text-align: center;
+    color: white;
+}
+
+.product-card-header.primary {
+    background: #4caf50;
+}
+
+.product-card-header.secondary {
+    background: #2196f3;
+}
+
+.product-card-header h3 {
+    margin: 0;
+    font-size: 1.3rem;
+    font-weight: 700;
+}
+
+.product-card-divider {
+    height: 2px;
+}
+
+.product-card-divider.primary {
+    background: linear-gradient(90deg, transparent, #4caf50, transparent);
+}
+
+.product-card-divider.secondary {
+    background: linear-gradient(90deg, transparent, #2196f3, transparent);
+}
+
+.product-card-body {
+    padding: 25px;
+    line-height: 1.6;
+}
+
+.product-card-body p {
+    margin-bottom: 1.5rem;
+    color: #495057;
+    font-weight: 500;
+}
+
+.product-info-box {
+    background: #f8f9fa;
+    padding: 15px;
+    border-radius: 8px;
+    margin-bottom: 1rem;
+}
+
+.product-info-box h4 {
+    margin-bottom: 10px;
+    font-size: 1rem;
+}
+
+.product-info-box.primary h4 {
+    color: #4caf50;
+}
+
+.product-info-box.secondary h4 {
+    color: #2196f3;
+}
+
+.product-info-box ul {
+    margin: 0;
+    padding-left: 1.2rem;
+    color: #555;
+    font-size: 0.9rem;
+}
+
+.product-info-box p {
+    margin-top: 10px;
+    color: #666;
+    font-size: 0.85rem;
+}
+
+.product-tip-box {
+    padding: 12px;
+    border-radius: 8px;
+}
+
+.product-tip-box.primary {
+    background: #e8f5e8;
+    border-left: 4px solid #4caf50;
+}
+
+.product-tip-box p {
+    margin: 0;
+    color: #2e7d32;
+    font-size: 0.9rem;
+    font-weight: 500;
+}
+
+/* ============================================================================ */
+/* 업로드 모달 스타일 */
+/* ============================================================================ */
+.upload-order-button {
+    display: none;
+}
+
+.upload-modal {
+    display: none;
+}
+
+/* ============================================================================ */
+/* 반응형 디자인 */
+/* ============================================================================ */
+@media (max-width: 768px) {
+    .leaflet-gallery {
+        padding: 20px;
+        margin: 0 -10px;
+        border-radius: 10px;
+    }
+    
+    .gallery-title {
+        margin: -20px -20px 15px -20px;
+        padding: 12px 15px;
+        font-size: 1rem;
+    }
+    
+    .leaflet-grid {
+        grid-template-columns: 1fr !important;
+        gap: 20px !important;
+    }
+    
+    .product-info-grid {
+        grid-template-columns: 1fr;
+        gap: 1rem;
+    }
+}

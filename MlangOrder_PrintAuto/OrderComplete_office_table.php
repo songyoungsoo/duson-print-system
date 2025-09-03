@@ -113,7 +113,7 @@ $total_amount_vat = 0;
 foreach ($order_numbers as $order_no) {
     $order_no = trim($order_no);
     if (!empty($order_no)) {
-        $query = "SELECT * FROM MlangOrder_PrintAuto WHERE no = ? LIMIT 1";
+        $query = "SELECT * FROM mlangorder_printauto WHERE no = ? LIMIT 1";
         $stmt = mysqli_prepare($connect, $query);
         if ($stmt) {
             mysqli_stmt_bind_param($stmt, 's', $order_no);

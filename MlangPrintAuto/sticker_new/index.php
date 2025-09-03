@@ -5,7 +5,7 @@
  * Created: 2025년 12월 (AI Assistant - Frontend Persona)
  */
 
-// 공통 인증 및 설정
+// 보안 상수 정의 후 공통 인증 및 설정
 include "../../includes/auth.php";
 
 // 공통 함수 및 데이터베이스
@@ -13,8 +13,8 @@ include "../../includes/functions.php";
 include "../../db.php";
 
 // 통합 갤러리 시스템 초기화
-include "../../includes/gallery_helper.php";
-init_gallery_system('sticker');
+if (file_exists('../../includes/gallery_helper.php')) { if (file_exists('../../includes/gallery_helper.php')) { include_once '../../includes/gallery_helper.php'; } }
+if (function_exists("init_gallery_system")) { init_gallery_system("sticker"); }
 
 // 데이터베이스 연결 및 설정
 check_db_connection($db);
@@ -51,9 +51,67 @@ $default_values = [
     <link rel="stylesheet" href="../../css/namecard-compact.css">
     <!-- 통합 갤러리 CSS -->
     <link rel="stylesheet" href="../../assets/css/gallery.css">
+    <!-- 컴팩트 폼 그리드 CSS (모든 품목 공통) -->
+    <link rel="stylesheet" href="../../css/compact-form.css">
     
     <!-- 스티커 전용 JavaScript -->
     <script src="../../js/sticker.js" defer></script>
+    
+    <!-- 스티커 가로/세로 input 전용 스타일 -->
+    <style>
+        /* 가로/세로 input에만 적용 */
+        input#garo, input#sero {
+            width: 80px !important;
+            font-size: 1rem !important;
+            color: #333 !important;
+            height: auto !important;
+            padding: 10px 8px !important;
+            border: 2px solid #e9ecef !important;
+            border-radius: 2px !important;
+            box-sizing: border-box !important;
+            font-weight: 500 !important;
+            background: white !important;
+            transition: all 0.3s ease !important;
+        }
+        
+        input#garo:focus, input#sero:focus {
+            outline: none !important;
+            border-color: #3498db !important;
+            box-shadow: 0 0 0 4px rgba(52, 152, 219, 0.1) !important;
+        }
+        
+        input#garo::placeholder, input#sero::placeholder {
+            color: #ffc107 !important;
+            opacity: 0.9 !important;
+            font-weight: 400 !important;
+            font-family: 'Noto Sans KR', sans-serif !important;
+            font-size: 12px !important;
+        }
+        
+        input#garo::-webkit-input-placeholder, input#sero::-webkit-input-placeholder {
+            color: #ffc107 !important;
+            opacity: 0.9 !important;
+            font-weight: 400 !important;
+            font-family: 'Noto Sans KR', sans-serif !important;
+            font-size: 12px !important;
+        }
+        
+        input#garo::-moz-placeholder, input#sero::-moz-placeholder {
+            color: #ffc107 !important;
+            opacity: 0.9 !important;
+            font-weight: 400 !important;
+            font-family: 'Noto Sans KR', sans-serif !important;
+            font-size: 12px !important;
+        }
+        
+        input#garo:-ms-input-placeholder, input#sero:-ms-input-placeholder {
+            color: #ffc107 !important;
+            opacity: 0.9 !important;
+            font-weight: 400 !important;
+            font-family: 'Noto Sans KR', sans-serif !important;
+            font-size: 12px !important;
+        }
+    </style>
     
     <!-- 세션 ID 및 스티커 기본값 메타 태그 -->
     <meta name="session-id" content="<?php echo htmlspecialchars(session_id()); ?>">
@@ -66,9 +124,265 @@ $default_values = [
     <?php include "../../includes/nav.php"; ?>
 
     <div class="compact-container">
+    
+    <style>
+    /* 스티커를 명함과 동일한 크기로 조정 + 스크롤 방지 */
+    .compact-container {
+        max-width: 1200px !important;
+        margin: 0 auto !important;
+        padding: 10px 20px 20px 20px !important;
+        background: white !important;
+        border-radius: 15px !important;
+        box-shadow: 0 10px 40px rgba(0,0,0,0.1) !important;
+        overflow: hidden !important;
+    }
+    
+    .main-content {
+        display: grid !important;
+        grid-template-columns: 1fr 1fr !important;
+        gap: 30px !important;
+        min-height: 450px !important;
+        max-width: 1200px !important;
+        margin: 0 auto !important;
+        align-items: start !important;
+    }
+    
+    /* 계산기 섹션 스크롤 방지 조정 */
+    .calculator-section {
+        height: 450px !important;
+        max-height: 450px !important;
+        overflow: hidden !important;
+        display: flex !important;
+        flex-direction: column !important;
+    }
+    
+    
+    /* 테이블 전체 높이 조정 */
+    .order-form-table {
+        width: 100% !important;
+        border-collapse: collapse !important;
+        flex-grow: 1 !important;
+        margin-bottom: 8px !important;
+    }
+    
+    /* 테이블 행 높이 최소화 */
+    .order-form-table tr {
+        height: auto !important;
+        min-height: 35px !important;
+    }
+    
+    /* 셀 패딩 더 축소 */
+    .label-cell, .input-cell {
+        padding: 4px 8px !important;
+        vertical-align: top !important;
+    }
+    
+    /* 아이콘 라벨 컴팩트화 */
+    .icon-label {
+        font-size: 0.85rem !important;
+        line-height: 1.2 !important;
+        display: flex !important;
+        align-items: center !important;
+        gap: 5px !important;
+    }
+    
+    .icon-label .icon {
+        font-size: 0.9rem !important;
+    }
+    
+    /* 폼 컨트롤 높이 축소 */
+    .form-control-modern {
+        padding: 4px 8px !important;
+        font-size: 0.85rem !important;
+        height: 32px !important;
+        border-radius: 4px !important;
+    }
+    
+    /* 크기 입력 필드 컴팩트화 */
+    .size-inputs {
+        margin: 0 !important;
+    }
+    
+    input#garo, input#sero {
+        width: 60px !important;
+        height: 28px !important;
+        padding: 4px 6px !important;
+        font-size: 0.8rem !important;
+    }
+    
+    .size-label {
+        font-size: 0.8rem !important;
+    }
+    
+    /* help-text 완전 제거 또는 최소화 */
+    .help-text {
+        font-size: 0.7rem !important;
+        margin: 2px 0 0 0 !important;
+        line-height: 1.1 !important;
+    }
+    
+    /* 가격 표시 영역 컴팩트화 */
+    .price-display {
+        margin: 8px 0 !important;
+        padding: 8px !important;
+        flex-shrink: 0 !important;
+    }
+    
+    .price-label {
+        font-size: 0.8rem !important;
+        margin-bottom: 4px !important;
+    }
+    
+    .price-amount {
+        font-size: 1rem !important;
+        margin: 4px 0 !important;
+    }
+    
+    .price-details {
+        font-size: 0.7rem !important;
+        margin-top: 4px !important;
+    }
+    
+    /* 업로드 버튼 컴팩트화 */
+    .upload-order-button {
+        margin-top: 4px !important;
+        margin-bottom: 0 !important;
+        flex-shrink: 0 !important;
+    }
+    
+    .btn-upload-order {
+        padding: 8px 16px !important;
+        font-size: 0.85rem !important;
+    }
+    
+    /* 파일 업로드 모달 타이트 스타일 조정 */
+    .upload-modal {
+        position: fixed;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+        background: rgba(0, 0, 0, 0.7);
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        z-index: 2000;
+    }
+    
+    .modal-content {
+        background: white;
+        border-radius: 12px;
+        width: 90%;
+        max-width: 700px !important;  /* 기존보다 축소 */
+        max-height: 80vh;
+        overflow: hidden;
+        box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
+    }
+    
+    .modal-header {
+        background: linear-gradient(135deg, #4caf50 0%, #2e7d32 100%);  /* 녹색으로 변경 */
+        color: white;
+        padding: 12px 16px !important;  /* 패딩 축소 */
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+    }
+    
+    .modal-title {
+        margin: 0;
+        font-size: 1.1rem !important;  /* 폰트 크기 축소 */
+        font-weight: 600;
+    }
+    
+    .modal-body {
+        padding: 16px !important;  /* 패딩 축소 (기존 20px) */
+        max-height: 60vh;
+        overflow-y: auto;
+    }
+    
+    .upload-container {
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        gap: 16px !important;  /* 갭 축소 */
+        margin-bottom: 16px !important;  /* 마진 축소 */
+    }
+    
+    .upload-left, .upload-right {
+        padding: 12px !important;  /* 패딩 축소 */
+    }
+    
+    .upload-area {
+        margin-bottom: 12px !important;  /* 마진 축소 */
+    }
+    
+    .upload-dropzone {
+        border: 2px dashed #4caf50;  /* 녹색 테두리 */
+        border-radius: 8px;
+        padding: 20px !important;  /* 패딩 축소 */
+        text-align: center;
+        cursor: pointer;
+        transition: all 0.3s ease;
+        background: #f8f9fa;
+    }
+    
+    .upload-dropzone:hover {
+        background: #e8f5e9;  /* 녹색 호버 */
+        border-color: #2e7d32;
+    }
+    
+    .memo-textarea {
+        width: 100%;
+        height: 80px !important;  /* 높이 축소 */
+        padding: 8px !important;  /* 패딩 축소 */
+        border: 1px solid #ddd;
+        border-radius: 6px;
+        resize: none;
+        font-size: 0.85rem !important;  /* 폰트 크기 축소 */
+    }
+    
+    .upload-notice {
+        margin-top: 12px !important;  /* 마진 축소 */
+    }
+    
+    .notice-item {
+        font-size: 0.8rem !important;  /* 폰트 크기 축소 */
+        margin-bottom: 6px !important;  /* 마진 축소 */
+        color: #666;
+        line-height: 1.3;
+    }
+    
+    .modal-footer {
+        padding: 12px 16px !important;  /* 패딩 축소 */
+        border-top: 1px solid #eee;
+        background: #f8f9fa;
+        display: flex;
+        justify-content: center;
+    }
+    
+    /* 장바구니 버튼 크기 50% 축소 */
+    .modal-btn.btn-cart {
+        background: linear-gradient(135deg, #4caf50 0%, #2e7d32 100%) !important;  /* 녹색으로 변경 */
+        color: white !important;
+        border: none !important;
+        padding: 8px 16px !important;  /* 패딩 50% 축소 (기존 16px 32px) */
+        font-size: 0.85rem !important;  /* 폰트 크기 축소 */
+        border-radius: 6px !important;
+        cursor: pointer !important;
+        transition: all 0.3s ease !important;
+        font-weight: 600 !important;
+        min-width: 120px !important;  /* 최소 너비 설정 */
+    }
+    
+    .modal-btn.btn-cart:hover {
+        background: linear-gradient(135deg, #2e7d32 0%, #1b5e20 100%) !important;
+        transform: translateY(-1px) !important;
+        box-shadow: 0 4px 12px rgba(76, 175, 80, 0.3) !important;
+    }
+    </style>
+    
         <div class="page-title">
             <h1>🏷️ 스티커 견적안내</h1>
-            <p>프리미엄 스티커 제작 - 포트폴리오 갤러리 & 실시간 계산</p>
+            <p><!-- 프리미엄 스티커 제작 - 포트폴리오 갤러리 & 실시간 계산  --></p>
         </div>
 
         <!-- 컴팩트 2단 그리드 레이아웃 (500px 갤러리 + 나머지 계산기) -->
@@ -77,32 +391,27 @@ $default_values = [
             <section class="sticker-gallery" aria-label="스티커 샘플 갤러리">
                 <?php
                 // 원클릭 갤러리 포함 (공통 헬퍼 사용)
-                include_product_gallery('sticker');
+                if (function_exists("include_product_gallery")) { include_product_gallery('sticker'); }
                 ?>
             </section>
 
             <!-- 우측: view_modern.php 통합 계산기 시스템 -->
             <div class="calculator-section">
-                <div class="calculator-header">
-                    <h3>📝 스티커 주문 옵션 선택</h3>
-                    <p class="calculator-subtitle">아래 옵션들을 선택하신 후 가격을 확인해보세요</p>
-                </div>
-
                 <form id="stickerForm" method="post">
                     <input type="hidden" name="no" value="">
                     <input type="hidden" name="action" value="calculate">
                     
                     <!-- view_modern.php 테이블 기반 구조 적용 -->
                     <table class="order-form-table">
-                        <tbody>
+                        <tbody style="vertical-align: top;">
                             <tr>
-                                <td class="label-cell">
+                                <td class="label-cell" style="padding: 8px 12px;">
                                     <div class="icon-label">
                                         <span class="icon">📄</span>
                                         <span>1. 재질 선택</span>
                                     </div>
                                 </td>
-                                <td class="input-cell" style="padding-bottom: 0px; padding-top: 0px;">
+                                <td class="input-cell compact-cell" style="padding: 8px 12px;">
                                     <select name="jong" id="jong" class="form-control-modern">
                                         <option value="jil 아트유광코팅">아트지유광코팅(90g)</option>
                                         <option value="jil 아트무광코팅">아트지무광코팅(90g)</option>
@@ -119,45 +428,38 @@ $default_values = [
                                         <option value="jsp 금박스티커">금박스티커-전화문의</option>
                                         <option value="jsp 롤형스티커">롤스티커-전화문의</option>
                                     </select>
-                                    <small class="help-text">재질에 따라 스티커의 느낌과 내구성이 달라집니다</small>
                                 </td>
                             </tr>
                             
                             <tr>
-                                <td class="label-cell">
+                                <td class="label-cell" style="padding: 8px 12px;">
                                     <div class="icon-label">
                                         <span class="icon">📏</span>
                                         <span>2. 크기 설정</span>
                                     </div>
                                 </td>
-                                <td class="input-cell" style="padding-bottom: 0px; padding-top: 0px;">
-                                    <div class="size-inputs" style="display: flex; align-items: center; gap: 1rem;">
-                                        <div class="size-input-inline">
-                                            <label class="size-label" style="display: block; margin-bottom: 0.5rem; font-weight: bold;">가로 (mm):</label>
-                                            <input type="number" name="garo" id="garo" class="form-control-inline" placeholder="예: 100" max="560" value="100" required 
-                                                   style="width: 120px; padding: 12px; font-size: 1.1rem; border: 2px solid #ddd; border-radius: 8px; text-align: center; font-weight: 600;"
-                                                   onblur="validateSize(this, '가로')">
-                                        </div>
-                                        <span class="size-multiply" style="font-size: 1.5rem; font-weight: bold; color: #666; margin: 0 0.5rem;">×</span>
-                                        <div class="size-input-inline">
-                                            <label class="size-label" style="display: block; margin-bottom: 0.5rem; font-weight: bold;">세로 (mm):</label>
-                                            <input type="number" name="sero" id="sero" class="form-control-inline" placeholder="예: 100" max="560" value="100" required 
-                                                   style="width: 120px; padding: 12px; font-size: 1.1rem; border: 2px solid #ddd; border-radius: 8px; text-align: center; font-weight: 600;"
-                                                   onblur="validateSize(this, '세로')">
-                                        </div>
+                                <td class="input-cell compact-cell" style="padding: 8px 12px;">
+                                    <div class="size-inputs" style="display: flex; align-items: center; gap: 8px; font-size: 13px;">
+                                        <span class="size-label" style="font-size: 13px; display: flex; align-items: center; height: 100%;">가로(mm)</span>
+                                        <input type="number" name="garo" id="garo" class="form-control-inline size-input-field" placeholder="숫자입력" max="560" required
+                                               onblur="validateSize(this, '가로')">
+                                        <span class="size-multiply" style="font-size: 14px; font-weight: bold; display: flex; align-items: center; height: 100%;">×</span>
+                                        <span class="size-label" style="font-size: 13px; display: flex; align-items: center; height: 100%;">세로(mm)</span>
+                                        <input type="number" name="sero" id="sero" class="form-control-inline size-input-field" placeholder="숫자입력" max="560" required
+                                               onblur="validateSize(this, '세로')">
                                     </div>
-                                    <small class="help-text" style="color: #6c757d; font-weight: 500;">최대 560mm까지 제작 가능합니다</small>
+                                    <small class="help-text" style="color: #dc3545;">가로 세로에 mm 단위로 필요한 크기를 입력하세요</small>
                                 </td>
                             </tr>
                             
                             <tr>
-                                <td class="label-cell">
+                                <td class="label-cell" style="padding: 8px 12px;">
                                     <div class="icon-label">
                                         <span class="icon">📦</span>
                                         <span>3. 수량 선택</span>
                                     </div>
                                 </td>
-                                <td class="input-cell" style="padding-bottom: 0px; padding-top: 0px;">
+                                <td class="input-cell compact-cell" style="padding: 8px 12px;">
                                     <select name="mesu" id="mesu" class="form-control-modern">
                                         <option value="500">500매</option>
                                         <option value="1000">1000매</option>
@@ -180,18 +482,17 @@ $default_values = [
                                         <option value="90000">90000매</option>
                                         <option value="100000">100000매</option>
                                     </select>
-                                    <small class="help-text">수량이 많을수록 단가가 저렴해집니다</small>
                                 </td>
                             </tr>
                             
                             <tr>
-                                <td class="label-cell">
+                                <td class="label-cell" style="padding: 8px 12px;">
                                     <div class="icon-label">
                                         <span class="icon">✏️</span>
                                         <span>4. 편집비</span>
                                     </div>
                                 </td>
-                                <td class="input-cell" style="padding-bottom: 0px; padding-top: 0px;">
+                                <td class="input-cell compact-cell" style="padding: 8px 12px;">
                                     <select name="uhyung" id="uhyung" class="form-control-modern">
                                         <option value="0" selected>인쇄만 (파일 준비완료)</option>
                                         <option value="10000">기본 편집 (+10,000원)</option>
@@ -202,13 +503,13 @@ $default_values = [
                             </tr>
                             
                             <tr>
-                                <td class="label-cell">
+                                <td class="label-cell" style="padding: 8px 12px;">
                                     <div class="icon-label">
                                         <span class="icon">🔲</span>
                                         <span>5. 모양 선택</span>
                                     </div>
                                 </td>
-                                <td class="input-cell" style="padding-bottom: 0px; padding-top: 0px;">
+                                <td class="input-cell compact-cell" style="padding: 8px 12px;">
                                     <select name="domusong" id="domusong" class="form-control-modern">
                                         <option value="00000 사각" selected>기본사각형</option>
                                         <option value="08000 사각도무송" style="color: #dc3545; font-weight: bold; font-size: 1.1em;">사각도무송(50~60mm미만)</option>
@@ -226,7 +527,7 @@ $default_values = [
                     <!-- 명함 방식의 실시간 가격 표시 -->
                     <div class="price-display" id="priceDisplay">
                         <div class="price-label">견적 금액</div>
-                        <div class="price-amount" id="priceAmount" style="margin: 0 0.2rem 0 0;">견적 계산 필요</div>
+                        <div class="price-amount" id="priceAmount">견적 계산 필요</div>
                         <div class="price-details" id="priceDetails">
                             모든 옵션을 선택하면 자동으로 계산됩니다
                         </div>
@@ -289,7 +590,7 @@ $default_values = [
                         <textarea id="modalWorkMemo" class="memo-textarea" placeholder="스티커 제작 관련 요청사항을 입력해주세요.&#10;&#10;예시:&#10;- 색상을 더 선명하게 해주세요&#10;- 로고를 중앙에 배치&#10;- 배경을 투명하게 처리&#10;- 테두리 추가 요청"></textarea>
                         
                         <div class="upload-notice">
-                            <div class="notice-item">📋 택배 무료배송은 결제금액 총 3만원 이상시에 한함</div>
+                            <div class="notice-item">📦 택배는 기본이 착불 원칙입니다</div>
                             <div class="notice-item">📋 당일 제작 시 전날 주문 완료 필요</div>
                         </div>
                     </div>
@@ -313,9 +614,6 @@ $default_values = [
     
     <!-- 통일된 갤러리 팝업은 JavaScript로 동적 생성됩니다 -->
 
-    <?php 
-    include "../../includes/footer.php"; 
-    ?>
 
     <!-- 스티커 전용 추가 스타일 (카다록 색상 적용) -->
     <style>
@@ -384,7 +682,9 @@ $default_values = [
         position: relative !important;
         margin-top: 0 !important;
         align-self: start !important;
-        min-height: 400px !important;
+        height: 450px !important;
+        min-height: 450px !important;
+        overflow: auto !important;
     }
     
     /* calculator-header 통일된 헤더 디자인 (다른 페이지와 동일) */
@@ -415,6 +715,46 @@ $default_values = [
         opacity: 0.9 !important;
     }
     
+    /* 인라인 스타일 분리 */
+    .compact-cell {
+        padding-top: 0px !important;
+        padding-bottom: 0px !important;
+    }
+    
+    .size-inputs {
+        display: flex;
+        align-items: center;
+        gap: 1rem;
+    }
+    
+    .size-label {
+        display: block;
+        margin-bottom: 0.5rem;
+        font-weight: bold;
+    }
+    
+    .size-input-field {
+        width: 120px;
+        padding: 12px;
+        font-size: 1.1rem;
+        border: 2px solid #ddd;
+        border-radius: 8px;
+        text-align: center;
+        font-weight: 600;
+    }
+    
+    .size-multiply {
+        font-size: 1.5rem;
+        font-weight: bold;
+        color: #666;
+        margin: 0 0.5rem;
+    }
+    
+    .help-text {
+        color: #6c757d;
+        font-weight: 500;
+    }
+    
     /* 전체 요소들을 더 타이트하게 */
     .order-form-table {
         margin: 0.5rem 0 !important;
@@ -436,7 +776,7 @@ $default_values = [
     }
     
     .price-display .price-amount {
-        font-size: 2.2rem !important;
+        font-size: 0.98rem !important;
         color: #28a745 !important;
         font-weight: 700 !important;
         margin-bottom: 6px !important;
@@ -592,6 +932,9 @@ $default_values = [
         border: 1px solid rgba(255, 255, 255, 0.9);
         margin-top: 0 !important;
         align-self: start !important;
+        height: 450px !important;
+        min-height: 450px !important;
+        overflow: auto !important;
     }
     
     .gallery-title {
@@ -1177,13 +1520,13 @@ $default_values = [
                 priceAmount.textContent = priceData.price + '원';
                 console.log('Large display price (Supply price without VAT):', priceData.price + '원');
                 
-                // 상세 내역 표시 - VAT 포함가격은 작게
+                // 상세 내역 표시 - 한 행으로 표시, VAT는 적색과 큰 글씨, 중앙정렬
                 priceDetails.innerHTML = `
-                    <div style="font-size: 0.8rem; margin-top: 6px; line-height: 1.4; color: #6c757d;">
-                        <div style="margin-bottom: 3px;">인쇄비: ${new Intl.NumberFormat('ko-KR').format(printPrice)}원</div>
-                        ${editFee > 0 ? `<div style="margin-bottom: 3px;">편집비: ${new Intl.NumberFormat('ko-KR').format(editFee)}원</div>` : ''}
-                        <div style="margin-bottom: 8px; padding-top: 4px; border-top: 1px solid #dee2e6;">공급가격: ${priceData.price}원</div>
-                        <div style="font-size: 0.75rem; color: #6c757d;">부가세 포함: ${priceData.price_vat}원</div>
+                    <div style="font-size: 0.8rem; margin-top: 6px; line-height: 1.4; color: #6c757d; display: flex; gap: 15px; align-items: center; flex-wrap: wrap; justify-content: center;">
+                        <span>인쇄비: ${new Intl.NumberFormat('ko-KR').format(printPrice)}원</span>
+                        ${editFee > 0 ? `<span>편집비: ${new Intl.NumberFormat('ko-KR').format(editFee)}원</span>` : ''}
+                        <span>공급가격: ${priceData.price}원</span>
+                        <span>부가세 포함: <span style="color: #dc3545; font-size: 1rem;">${priceData.price_vat}원</span></span>
                     </div>
                 `;
                 
@@ -1476,7 +1819,7 @@ $default_values = [
                         
                         // 장바구니 페이지로 이동
                         setTimeout(() => {
-                            window.location.href = '/MlangPrintAuto/shop/cart.php';
+                            window.location.href = '/mlangprintauto/shop/cart.php';
                         }, 1000);
                         
                     } else {
@@ -2283,13 +2626,13 @@ $default_values = [
 
     <?php
     // 갤러리 에셋 자동 포함
-    if (defined('GALLERY_ASSETS_NEEDED')) {
-        include_gallery_assets();
+    if (defined("GALLERY_ASSETS_NEEDED") && function_exists("include_gallery_assets")) {
+        if (function_exists("include_gallery_assets")) { include_gallery_assets(); }
     }
     ?>
 
     <?php
-    // 갤러리 모달과 JavaScript는 include_product_gallery()에서 자동 포함됨
+    // 갤러리 모달과 JavaScript는 if (function_exists("include_product_gallery")) { include_product_gallery()에서 자동 포함됨
     ?>
     
     <?php include "../../includes/footer.php"; ?>

@@ -61,6 +61,16 @@
         const container = thumb.closest('.gallery-container');
         if (!container) return;
         
+        // "샘플 더보기" 썸네일 버튼 클릭 처리
+        if (thumb.classList.contains('gallery-more-thumb')) {
+            const product = thumb.dataset.product;
+            if (product) {
+                console.log('샘플 더보기 썸네일 클릭:', product);
+                openModal(product);
+                return;
+            }
+        }
+        
         const mainImg = container.querySelector('.gallery-main-img');
         if (!mainImg) return;
         
@@ -86,13 +96,15 @@
             }, 150);
         }
         
-        // active 클래스 업데이트
-        container.querySelectorAll('.gallery-thumb').forEach(function(t) {
-            t.classList.remove('active');
-            t.setAttribute('aria-selected', 'false');
-        });
-        thumb.classList.add('active');
-        thumb.setAttribute('aria-selected', 'true');
+        // active 클래스 업데이트 (샘플 더보기 버튼은 제외)
+        if (!thumb.classList.contains('gallery-more-thumb')) {
+            container.querySelectorAll('.gallery-thumb:not(.gallery-more-thumb)').forEach(function(t) {
+                t.classList.remove('active');
+                t.setAttribute('aria-selected', 'false');
+            });
+            thumb.classList.add('active');
+            thumb.setAttribute('aria-selected', 'true');
+        }
     }
     
     /**
@@ -126,7 +138,7 @@
         
         // 모달 내 이미지 클릭 시 라이트박스 열기
         document.addEventListener('click', function(e) {
-            if (e.target.parentElement && e.target.parentElement.id === 'modal-gallery-grid' && e.target.tagName === 'IMG') {
+            if (e.target.parentElement && e.target.parentElement.id === 'unifiedGalleryGrid' && e.target.tagName === 'IMG') {
                 e.preventDefault();
                 openLightbox(e.target.src, e.target.alt);
             }
@@ -185,7 +197,7 @@
      * 모달 열기
      */
     function openModal(product) {
-        const modal = document.getElementById('gallery-modal');
+        const modal = document.getElementById('unifiedGalleryModal');
         if (!modal) {
             console.error('갤러리 모달 요소를 찾을 수 없습니다.');
             return;
@@ -231,7 +243,7 @@
      * 모달 닫기
      */
     function closeModal() {
-        const modal = document.getElementById('gallery-modal');
+        const modal = document.getElementById('unifiedGalleryModal');
         if (!modal) return;
         
         isModalOpen = false;
@@ -257,7 +269,7 @@
         if (isLoading) return;
         isLoading = true;
         
-        const grid = document.getElementById('modal-gallery-grid');
+        const grid = document.getElementById('unifiedGalleryGrid');
         if (!grid) {
             isLoading = false;
             return;
@@ -266,8 +278,8 @@
         // 로딩 표시
         grid.innerHTML = '<div class="gallery-loading">이미지를 불러오는 중...</div>';
         
-        // AJAX 요청
-        fetch('/api/gallery_items.php?product=' + encodeURIComponent(product) + 
+        // AJAX 요청 (상대 경로 사용)
+        fetch('../../api/gallery_items.php?product=' + encodeURIComponent(product) + 
               '&page=' + page + '&per_page=12')
             .then(function(response) {
                 if (!response.ok) {
@@ -562,9 +574,9 @@
         
         console.log('Background 모드 변환:', imgSrc); // 디버그 로그
         
-        // background 스타일 설정
+        // background 스타일 설정 - contain으로 전체 이미지 표시
         img.style.backgroundImage = `url('${imgSrc}')`;
-        img.style.backgroundSize = 'cover';
+        img.style.backgroundSize = 'contain';  // cover -> contain으로 변경: 전체 이미지 표시
         img.style.backgroundPosition = '50% 50%';
         img.style.backgroundRepeat = 'no-repeat';
         
@@ -619,7 +631,7 @@
                     if (data.currentSize > 100.1) {
                         img.style.backgroundSize = `${data.currentSize}%`;
                     } else {
-                        img.style.backgroundSize = 'cover';
+                        img.style.backgroundSize = 'contain';  // cover -> contain으로 변경: 원본 상태에서도 전체 이미지 표시
                     }
                 }
                 

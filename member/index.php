@@ -4,6 +4,7 @@ $Color2="4C90D6";
 $Color3="BBD5F0";
 $PageCode="member";
 include"../db.php";
+include"../includes/auth.php";
 include"../top.php";
 ?><head>
 <SCRIPT language=JavaScript>

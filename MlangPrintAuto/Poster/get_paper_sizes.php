@@ -36,7 +36,7 @@ if ($result) {
             $section_ids[] = $row['Section'];
         }
     }
-    error_log("mlangprintauto_littleprint에서 발견된 Section IDs: " . implode(', ', $section_ids));
+    error_log("MlangPrintAuto_LittlePrint에서 발견된 Section IDs: " . implode(', ', $section_ids));
 }
 
 // 규격 데이터가 없으면 모든 사용 가능한 규격 찾기

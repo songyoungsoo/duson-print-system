@@ -1,7 +1,8 @@
 <?php
 // PHP 7.4+ Updated - LittlePrint_List
+define('DB_ACCESS_ALLOWED', true);
 require_once "../../db.php";
-$TIO_CODE = "LittlePrint";
+$TIO_CODE = "littleprint";
 $table = "MlangPrintAuto_{$TIO_CODE}";
 $mode = $_GET['mode'] ?? $_POST['mode'] ?? '';
 $no = $_GET['no'] ?? $_POST['no'] ?? '';
@@ -12,7 +13,7 @@ $myListTreeSelect = $_GET['myListTreeSelect'] ?? $_POST['myListTreeSelect'] ?? '
 $myList = $_GET['myList'] ?? $_POST['myList'] ?? '';
 $PHP_SELF = $_SERVER['PHP_SELF'] ?? '';
 
-$db = new mysqli($host, $user, $password, $dataname);
+// $db는 이미 ../../db.php에서 생성됨
 if ($db->connect_error) {
     die("DB 연결 오류: " . $db->connect_error);
 }
@@ -22,7 +23,7 @@ if ($mode === "delete" && $no) {
     $stmt->bind_param("i", $no);
     $stmt->execute();
     $stmt->close();
-    $db->close();
+    mysqli_close($db);
     echo "<script>
         alert('테이블명: {$table} - {$no} 번 자료 삭제 완료');
         opener.parent.location.reload();
@@ -36,7 +37,7 @@ include "$M123/top.php";
 $T_DirUrl = "../../MlangPrintAuto";
 include "$T_DirUrl/ConDb.php";
 
-$db = mysqli_connect($host, $user, $password, $dataname);
+// $db 연결은 이미 상단에서 db.php로 완료됨
 $Mlang_query = $search === "yes"
     ? "SELECT * FROM {$table} WHERE style='{$db->real_escape_string($RadOne)}' AND TreeSelect='{$db->real_escape_string($myListTreeSelect)}' AND Section='{$db->real_escape_string($myList)}'"
     : "SELECT * FROM {$table}";
@@ -90,7 +91,7 @@ function WomanMember_Admin_Del(no){
 </tr>
 
 <?php
-$db = mysqli_connect($host, $user, $password, $dataname);
+// $db 연결은 이미 상단에서 db.php로 완료됨
 $result = $db->query("$Mlang_query ORDER BY no DESC LIMIT $offset, $listcut");
 if ($result && $result->num_rows > 0) {
     while ($row = $result->fetch_assoc()) {
@@ -120,7 +121,7 @@ if ($result && $result->num_rows > 0) {
 } else {
     echo "<tr><td colspan='10' align='center'><br><br>등록 자료없음</td></tr>";
 }
-$db->close();
+mysqli_close($db);
 ?>
 </table>
 <p align="center">

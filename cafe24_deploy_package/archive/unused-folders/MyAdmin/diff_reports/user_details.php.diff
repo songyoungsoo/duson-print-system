@@ -1,0 +1,752 @@
+--- user_details.php (original)
++++ user_details.php (modified)
+@@ -46,7 +46,7 @@
+     ?>
+ 
+ <!-- Table of grants -->
+-<table border="<?php echo $GLOBALS['cfg']['Border']; ?>">
++<table border="<?php echo  $GLOBALS['cfg']['Border'] ?>">
+ <tr>
+     <?php
+     // 1. Table headers
+@@ -77,27 +77,27 @@
+     while ($row = (is_array($host_db_result) ? $host_db_result : PMA_mysql_fetch_array($host_db_result))) {
+         $local_query = 'SHOW GRANTS FOR \'' . $row['User'] . '\'@\'' . $row['Host'] . '\'';
+         $result      = PMA_mysql_query($local_query);
+-        $grants_cnt  = ($result) ? @mysql_num_rows($result) : 0;
++        $grants_cnt  = ($result) ? @mysqli_num_rows($result) : 0;
+ 
+         if ($grants_cnt) {
+             $i = 0;
+             while ($usr_row = PMA_mysql_fetch_row($result)) {
+-                if (eregi('GRANT (.*) ON ([^.]+).([^.]+) TO .*$', $usr_row[0], $parts)) {
++                if (preg_match('GRANT (.*) ON ([^.]+).([^.]+) TO .*$', $usr_row[0], $parts)) {
+                     if ($parts[1] == 'USAGE') {
+                         $priv = '';
+                     } else {
+                         // loic1: bug #487673 - revoke 'reference'
+-                        $priv = ereg_replace('REFERENCE([^S]|$)', 'REFERENCES\\1', trim($parts[1]));
++                        $priv = preg_replace('REFERENCE([^S]|$)', 'REFERENCES\\1', trim($parts[1]));
+                         // loic1: bug #576896 - No "FILE" privileges on a
+                         //        database if neither "INSERT" nor "UPDATE" one
+                         if (strpos(' ' . $priv, 'FILE')
+                             && !(strpos(' ' . $priv, 'INSERT') || strpos(' ' . $priv, 'UPDATE'))) {
+-                            $priv = ereg_replace('(^FILE(, )?)|(, FILE)', '', $priv);
++                            $priv = preg_replace('(^FILE(, )?)|(, FILE)', '', $priv);
+                         }
+                     }
+                     $db       = $parts[2];
+                     $table    = trim($parts[3]);
+-                    $grantopt = eregi('WITH GRANT OPTION$', $usr_row[0]);
++                    $grantopt = preg_match('WITH GRANT OPTION$', $usr_row[0]);
+                 } else {
+                     $priv     = '';
+                     $db       = '&nbsp;';
+@@ -117,8 +117,8 @@
+                     // TODO: db names may contain characters that are regexp
+                     //       instructions
+                     $re        = '(^|(\\\\\\\\)+|[^\])';
+-                    $db_regex  = ereg_replace($re . '%', '\\1.*', ereg_replace($re . '_', '\\1.{1}', $db));
+-                    if (!eregi('^' . $db_regex . '$', $dbcheck)) {
++                    $db_regex  = preg_replace($re . '%', '\\1.*', preg_replace($re . '_', '\\1.{1}', $db));
++                    if (!preg_match('^' . $db_regex . '$', $dbcheck)) {
+                         continue;
+                     }
+                 } // end if
+@@ -143,18 +143,18 @@
+                     if ($priv) {
+                         echo "\n";
+                         ?>
+-    <td<?php if (!$grantopt) echo ' colspan="2"'; ?> bgcolor="<?php echo $bgcolor; ?>">
+-        <a href="<?php echo $revoke_url; ?>">
+-            <?php echo $GLOBALS['strRevokePriv']; ?></a>
++    <td<?php if (!$grantopt) echo ' colspan="2"'; ?> bgcolor="<?php echo  $bgcolor ?>">
++        <a href="<?php echo  $revoke_url ?>">
++            <?php echo  $GLOBALS['strRevokePriv'] ?></a>
+     </td>
+                         <?php
+                     }
+                     if ($grantopt) {
+                         echo "\n";
+                         ?>
+-    <td<?php if (!$priv) echo ' colspan="2"'; ?> bgcolor="<?php echo $bgcolor; ?>">
+-        <a href="<?php echo $revoke_grant_url; ?>">
+-            <?php echo $GLOBALS['strRevokeGrant']; ?></a>
++    <td<?php if (!$priv) echo ' colspan="2"'; ?> bgcolor="<?php echo  $bgcolor ?>">
++        <a href="<?php echo  $revoke_grant_url ?>">
++            <?php echo  $GLOBALS['strRevokeGrant'] ?></a>
+     </td>
+                         <?php
+                     }
+@@ -162,38 +162,38 @@
+                     if ($priv) {
+                         echo "\n";
+                         ?>
+-    <td bgcolor="<?php echo $bgcolor; ?>">
+-        <a href="<?php echo $revoke_url; ?>">
+-            <?php echo $GLOBALS['strRevoke']; ?></a>
++    <td bgcolor="<?php echo  $bgcolor ?>">
++        <a href="<?php echo  $revoke_url ?>">
++            <?php echo  $GLOBALS['strRevoke'] ?></a>
+     </td>
+                         <?php
+                     } else {
+                         echo "\n";
+                         ?>
+-    <td bgcolor="<?php echo $bgcolor; ?>">&nbsp;</td>
++    <td bgcolor="<?php echo  $bgcolor ?>">&nbsp;</td>
+                         <?php
+                     }
+                     echo "\n";
+                     ?>
+-    <td bgcolor="<?php echo $bgcolor; ?>"><?php echo $row['Host']; ?></td>
+-    <td bgcolor="<?php echo $bgcolor; ?>"><?php echo ($row['User']) ? $row['User'] : '<span style="color: #FF0000">' . $GLOBALS['strAny'] . '</span>'; ?></td>
++    <td bgcolor="<?php echo  $bgcolor ?>"><?php echo  $row['Host'] ?></td>
++    <td bgcolor="<?php echo  $bgcolor ?>"><?php echo  ($row['User']) ? $row['User'] : '<span style="color: #FF0000">' . $GLOBALS['strAny'] . '</span>' ?></td>
+                     <?php
+                 }
+                 echo "\n";
+                 ?>
+-    <td bgcolor="<?php echo $bgcolor; ?>"><?php echo ($db == '*') ? '<span style="color: #002E80">' . $GLOBALS['strAll'] . '</span>' : $db; ?></td>
+-    <td bgcolor="<?php echo $bgcolor; ?>"><?php echo ($table == '*') ? '<span style="color: #002E80">' . $GLOBALS['strAll'] . '</span>' : $table; ?></td>
+-    <td bgcolor="<?php echo $bgcolor; ?>"><?php echo ($priv != '') ? $priv : '<span style="color: #002E80">' . $GLOBALS['strNoPrivileges'] . '</span>'; ?></td>
++    <td bgcolor="<?php echo  $bgcolor ?>"><?php echo  ($db == '*') ? '<span style="color: #002E80">' . $GLOBALS['strAll'] . '</span>' : $db ?></td>
++    <td bgcolor="<?php echo  $bgcolor ?>"><?php echo  ($table == '*') ? '<span style="color: #002E80">' . $GLOBALS['strAll'] . '</span>' : $table ?></td>
++    <td bgcolor="<?php echo  $bgcolor ?>"><?php echo  ($priv != '') ? $priv : '<span style="color: #002E80">' . $GLOBALS['strNoPrivileges'] . '</span>' ?></td>
+                 <?php
+                 if (!$dbcheck) {
+                     echo "\n";
+                     ?>
+-    <td bgcolor="<?php echo $bgcolor; ?>"><?php echo ($grantopt) ? $GLOBALS['strYes'] : $GLOBALS['strNo']; ?></td>
++    <td bgcolor="<?php echo  $bgcolor ?>"><?php echo  ($grantopt) ? $GLOBALS['strYes'] : $GLOBALS['strNo'] ?></td>
+                     <?php
+                 }
+                 echo "\n";
+                 ?>
+-    <!-- Debug <td bgcolor="<?php echo $bgcolor; ?>"><?php echo $usr_row[0] ?></td> Debug -->
++    <!-- Debug <td bgcolor="<?php echo  $bgcolor ?>"><?php echo  $usr_row[0] ?></td> Debug -->
+ </tr>
+                 <?php
+                 $i++;
+@@ -230,7 +230,7 @@
+ {
+     $local_query  = 'SELECT Host, User FROM mysql.user ORDER BY Host, User';
+     $result       = PMA_mysql_query($local_query);
+-    $host_usr_cnt = ($result) ? @mysql_num_rows($result) : 0;
++    $host_usr_cnt = ($result) ? @mysqli_num_rows($result) : 0;
+ 
+     if (!$host_usr_cnt) {
+         return FALSE;
+@@ -308,13 +308,13 @@
+             <table>
+             <tr>
+                 <td>
+-                    <a href="<?php echo $checkpriv_url; ?>checkpriv=all" onclick="checkForm('<?php echo $form; ?>', true); return false">
+-                        <?php echo $GLOBALS['strCheckAll']; ?></a>
++                    <a href="<?php echo  $checkpriv_url ?>checkpriv=all" onclick="checkForm('<?php echo  $form ?>', true); return false">
++                        <?php echo  $GLOBALS['strCheckAll'] ?></a>
+                 </td>
+                 <td>&nbsp;</td>
+                 <td>
+-                    <a href="<?php echo $checkpriv_url; ?>checkpriv=none" onclick="checkForm('<?php echo $form; ?>', false); return false">
+-                        <?php echo $GLOBALS['strUncheckAll']; ?></a>
++                    <a href="<?php echo  $checkpriv_url ?>checkpriv=none" onclick="checkForm('<?php echo  $form ?>', false); return false">
++                        <?php echo  $GLOBALS['strUncheckAll'] ?></a>
+                 </td>
+             </tr>
+             </table>
+@@ -346,24 +346,24 @@
+ 
+     <li>
+         <div style="margin-bottom: 10px">
+-        <a href="user_details.php?lang=<?php echo $lang; ?>&amp;convcharset=<?php echo $convcharset; ?>&amp;server=<?php echo $server; ?>&amp;db=mysql&amp;table=user&amp;mode=reload">
+-            <?php echo $GLOBALS['strReloadMySQL']; ?></a>&nbsp;
+-        <?php echo PMA_showMySQLDocu('MySQL_Database_Administration.', 'FLUSH') . "\n"; ?>
++        <a href="user_details.php?lang=<?php echo  $lang ?>&amp;convcharset=<?php echo  $convcharset ?>&amp;server=<?php echo  $server ?>&amp;db=mysql&amp;table=user&amp;mode=reload">
++            <?php echo  $GLOBALS['strReloadMySQL'] ?></a>&nbsp;
++        <?php echo  PMA_showMySQLDocu('MySQL_Database_Administration.', 'FLUSH') . "\n" ?>
+         </div>
+     </li>
+ 
+     <li>
+         <form name="dbPrivForm" action="user_details.php" method="post">
+-            <?php echo $GLOBALS['strCheckDbPriv'] . "\n"; ?>
++            <?php echo  $GLOBALS['strCheckDbPriv'] . "\n" ?>
+             <table>
+             <tr>
+                 <td>
+-                    <?php echo $GLOBALS['strDatabase']; ?>&nbsp;:&nbsp;
++                    <?php echo  $GLOBALS['strDatabase'] ?>&nbsp;:&nbsp;
+                     <select name="db">
+     <?php
+     echo "\n";
+     $result = PMA_mysql_query('SHOW DATABASES');
+-    if ($result && @mysql_num_rows($result)) {
++    if ($result && @mysqli_num_rows($result)) {
+         while ($row = PMA_mysql_fetch_row($result)) {
+             echo '                        ';
+             echo '<option value="' . str_replace('"', '&quot;', $row[0]) . '">' . htmlspecialchars($row[0]) . '</option>' . "\n";
+@@ -371,11 +371,11 @@
+     } // end if
+     ?>
+                     </select>
+-                    <input type="hidden" name="lang" value="<?php echo $lang; ?>" />
+-                    <input type="hidden" name="convcharset" value="<?php echo $convcharset; ?>" />
+-                    <input type="hidden" name="server" value="<?php echo $server; ?>" />
++                    <input type="hidden" name="lang" value="<?php echo  $lang ?>" />
++                    <input type="hidden" name="convcharset" value="<?php echo  $convcharset ?>" />
++                    <input type="hidden" name="server" value="<?php echo  $server ?>" />
+                     <input type="hidden" name="check" value="1" />
+-                    <input type="submit" value="<?php echo $GLOBALS['strGo']; ?>" />
++                    <input type="submit" value="<?php echo  $GLOBALS['strGo'] ?>" />
+                 </td>
+             </tr>
+             </table>
+@@ -384,57 +384,57 @@
+ 
+     <li>
+         <form action="user_details.php" method="post" name="addUserForm" onsubmit="return checkAddUser()">
+-            <?php echo $GLOBALS['strAddUser'] . "\n"; ?>
++            <?php echo  $GLOBALS['strAddUser'] . "\n" ?>
+             <table>
+             <tr>
+                 <td>
+                     <input type="radio" name="anyhost" id="radio_anyhost0" checked="checked" />
+-                    <label for="radio_anyhost0"><?php echo $GLOBALS['strAnyHost']; ?></label>
++                    <label for="radio_anyhost0"><?php echo  $GLOBALS['strAnyHost'] ?></label>
+                 </td>
+                 <td>&nbsp;</td>
+                 <td>
+                     <input type="radio" name="anyhost" id="radio_anyhost1" />
+-                    <label for="radio_anyhost1"><?php echo $GLOBALS['strHost']; ?></label>&nbsp;:&nbsp;
+-                </td>
+-                <td>
+-                    <input type="text" name="host" size="10" class="textfield" <?php echo $GLOBALS['chg_evt_handler']; ?>="this.form.anyhost[1].checked = true" />
++                    <label for="radio_anyhost1"><?php echo  $GLOBALS['strHost'] ?></label>&nbsp;:&nbsp;
++                </td>
++                <td>
++                    <input type="text" name="host" size="10" class="textfield" <?php echo  $GLOBALS['chg_evt_handler'] ?>="this.form.anyhost[1].checked = true" />
+                 </td>
+             </tr>
+             <tr>
+                 <td>
+                     <input type="radio" name="anyuser" value="1" id="radio_anyuser1" />
+-                    <label for="radio_anyuser1"><?php echo $GLOBALS['strAnyUser']; ?></label>
++                    <label for="radio_anyuser1"><?php echo  $GLOBALS['strAnyUser'] ?></label>
+                 </td>
+                 <td>&nbsp;</td>
+                 <td>
+                     <input type="radio" name="anyuser" value="0" id="radio_anyuser0" checked="checked" />
+-                    <label for="radio_anyuser0"><?php echo $GLOBALS['strUserName']; ?></label>&nbsp;:&nbsp;
+-                </td>
+-                <td>
+-                    <input type="text" name="pma_user" size="10" class="textfield" <?php echo $GLOBALS['chg_evt_handler']; ?>="this.form.anyuser[1].checked = true" />
++                    <label for="radio_anyuser0"><?php echo  $GLOBALS['strUserName'] ?></label>&nbsp;:&nbsp;
++                </td>
++                <td>
++                    <input type="text" name="pma_user" size="10" class="textfield" <?php echo  $GLOBALS['chg_evt_handler'] ?>="this.form.anyuser[1].checked = true" />
+                 </td>
+             </tr>
+             <tr>
+                 <td>
+                     <input type="radio" name="nopass" value="1" id="radio_nopass1" onclick="pma_pw.value = ''; pma_pw2.value = ''; this.checked = true" />
+-                    <label for="radio_nopass1"><?php echo $GLOBALS['strNoPassword']; ?></label>
++                    <label for="radio_nopass1"><?php echo  $GLOBALS['strNoPassword'] ?></label>
+                 </td>
+                 <td>&nbsp;</td>
+                 <td>
+                     <input type="radio" name="nopass" value="0" id="radio_nopass0" checked="checked" />
+-                    <label for="radio_nopass0"><?php echo $GLOBALS['strPassword']; ?></label>&nbsp;:&nbsp;
+-                </td>
+-                <td>
+-                    <input type="password" name="pma_pw" size="10" class="textfield" <?php echo $GLOBALS['chg_evt_handler']; ?>="nopass[1].checked = true" />
++                    <label for="radio_nopass0"><?php echo  $GLOBALS['strPassword'] ?></label>&nbsp;:&nbsp;
++                </td>
++                <td>
++                    <input type="password" name="pma_pw" size="10" class="textfield" <?php echo  $GLOBALS['chg_evt_handler'] ?>="nopass[1].checked = true" />
+                     &nbsp;&nbsp;
+-                    <?php echo $GLOBALS['strReType']; ?>&nbsp;:&nbsp;
+-                    <input type="password" name="pma_pw2" size="10" class="textfield" <?php echo $GLOBALS['chg_evt_handler']; ?>="nopass[1].checked = true" />
++                    <?php echo  $GLOBALS['strReType'] ?>&nbsp;:&nbsp;
++                    <input type="password" name="pma_pw2" size="10" class="textfield" <?php echo  $GLOBALS['chg_evt_handler'] ?>="nopass[1].checked = true" />
+                 </td>
+             </tr>
+             <tr>
+                 <td colspan="4">
+                     <br />
+-                    <?php echo $GLOBALS['strPrivileges']; ?>&nbsp;:
++                    <?php echo  $GLOBALS['strPrivileges'] ?>&nbsp;:
+                     <br />
+                 </td>
+             </tr>
+@@ -443,10 +443,10 @@
+     echo "\n";
+     PMA_tablePrivileges('addUserForm');
+     ?>
+-            <input type="hidden" name="lang" value="<?php echo $lang; ?>" />
+-            <input type="hidden" name="convcharset" value="<?php echo $convcharset; ?>" />
+-            <input type="hidden" name="server" value="<?php echo $server; ?>" />
+-            <input type="submit" name="submit_addUser" value="<?php echo $GLOBALS['strGo']; ?>" />
++            <input type="hidden" name="lang" value="<?php echo  $lang ?>" />
++            <input type="hidden" name="convcharset" value="<?php echo  $convcharset ?>" />
++            <input type="hidden" name="server" value="<?php echo  $server ?>" />
++            <input type="submit" name="submit_addUser" value="<?php echo  $GLOBALS['strGo'] ?>" />
+         </form>
+     </li>
+ 
+@@ -485,31 +485,31 @@
+ 
+     <li>
+         <div style="margin-bottom: 10px">
+-        <a href="user_details.php?lang=<?php echo $lang; ?>&amp;convcharset=<?php echo $convcharset; ?>&amp;server=<?php echo $server; ?>&amp;db=mysql&amp;table=user">
+-            <?php echo $GLOBALS['strBack']; ?></a>
++        <a href="user_details.php?lang=<?php echo  $lang ?>&amp;convcharset=<?php echo  $convcharset ?>&amp;server=<?php echo  $server ?>&amp;db=mysql&amp;table=user">
++            <?php echo  $GLOBALS['strBack'] ?></a>
+         </div>
+     </li>
+ 
+     <li>
+         <form action="user_details.php" method="post" name="userGrants">
+-            <input type="hidden" name="lang" value="<?php echo $lang; ?>" />
+-            <input type="hidden" name="convcharset" value="<?php echo $convcharset; ?>" />
+-            <input type="hidden" name="server" value="<?php echo $server; ?>" />
++            <input type="hidden" name="lang" value="<?php echo  $lang ?>" />
++            <input type="hidden" name="convcharset" value="<?php echo  $convcharset ?>" />
++            <input type="hidden" name="server" value="<?php echo  $server ?>" />
+             <input type="hidden" name="grants" value="1" />
+-            <input type="hidden" name="host" value="<?php echo str_replace('"', '&quot;', $host); ?>" />
+-            <input type="hidden" name="pma_user" value="<?php echo str_replace('"', '&quot;', $pma_user); ?>" />
+-
+-            <?php echo $GLOBALS['strAddPriv'] . "\n"; ?>
++            <input type="hidden" name="host" value="<?php echo  str_replace('"', '&quot;', $host) ?>" />
++            <input type="hidden" name="pma_user" value="<?php echo  str_replace('"', '&quot;', $pma_user) ?>" />
++
++            <?php echo  $GLOBALS['strAddPriv'] . "\n" ?>
+             <table>
+             <tr>
+                 <td>
+-                    <input type="radio" name="anydb" value="1" id="radio_anydb1"<?php echo ($dbgrant) ? '' : ' checked="checked"'; ?> />
+-                    <label for="radio_anydb1"><?php echo $GLOBALS['strAnyDatabase']; ?></label>
++                    <input type="radio" name="anydb" value="1" id="radio_anydb1"<?php echo  ($dbgrant) ? '' : ' checked="checked"' ?> />
++                    <label for="radio_anydb1"><?php echo  $GLOBALS['strAnyDatabase'] ?></label>
+                 </td>
+                 <td>&nbsp;&nbsp;&nbsp;</td>
+                 <td>
+-                    <input type="radio" name="anydb" value="0" id="radio_anydb0"<?php echo ($dbgrant) ? ' checked="checked"' : ''; ?> />
+-                    <label for="radio_anydb0"><?php echo $GLOBALS['strDatabase']; ?></label><a href="./Documentation.php#underscore" target="documentation" title="<?php echo $GLOBALS['strDocu']; ?>">(*)</a>&nbsp;:&nbsp;
++                    <input type="radio" name="anydb" value="0" id="radio_anydb0"<?php echo  ($dbgrant) ? ' checked="checked"' : '' ?> />
++                    <label for="radio_anydb0"><?php echo  $GLOBALS['strDatabase'] ?></label><a href="./Documentation.php#underscore" target="documentation" title="<?php echo  $GLOBALS['strDocu'] ?>">(*)</a>&nbsp;:&nbsp;
+                 </td>
+                 <td>
+                     <select name="dbgrant" onchange="change(this)">
+@@ -522,7 +522,7 @@
+ //    }
+     $is_selected_db = FALSE;
+     $result         = PMA_mysql_query('SHOW DATABASES');
+-    if ($result && @mysql_num_rows($result)) {
++    if ($result && @mysqli_num_rows($result)) {
+         while ($row = PMA_mysql_fetch_row($result)) {
+             $selected           = (($row[0] == $dbgrant) ? ' selected="selected"' : '');
+             if (!empty($selected)) {
+@@ -537,18 +537,18 @@
+                 </td>
+                 <td>
+                     &nbsp;
+-                    <input type="submit" value="<?php echo $GLOBALS['strShowTables']; ?>" />
++                    <input type="submit" value="<?php echo  $GLOBALS['strShowTables'] ?>" />
+                 </td>
+             </tr>
+             <tr>
+                 <td>
+-                    <input type="radio" name="anytable" value="1" id="radio_anytable1"<?php echo ($tablegrant) ? '' : ' checked="checked"'; ?> />
+-                    <label for="radio_anytable1"><?php echo $GLOBALS['strAnyTable']; ?></label>
++                    <input type="radio" name="anytable" value="1" id="radio_anytable1"<?php echo  ($tablegrant) ? '' : ' checked="checked"' ?> />
++                    <label for="radio_anytable1"><?php echo  $GLOBALS['strAnyTable'] ?></label>
+                 </td>
+                 <td>&nbsp;&nbsp;&nbsp;</td>
+                 <td>
+-                    <input type="radio" name="anytable" value="0" id="radio_anytable0"<?php echo ($tablegrant) ? ' checked="checked"' : ''; ?> />
+-                    <label for="radio_anytable0"><?php echo $GLOBALS['strTable']; ?></label>&nbsp;:&nbsp;
++                    <input type="radio" name="anytable" value="0" id="radio_anytable0"<?php echo  ($tablegrant) ? ' checked="checked"' : '' ?> />
++                    <label for="radio_anytable0"><?php echo  $GLOBALS['strTable'] ?></label>&nbsp;:&nbsp;
+                 </td>
+                 <td>
+                     <select name="tablegrant" onchange="change(this)">
+@@ -561,7 +561,7 @@
+ //    }
+     if (isset($dbgrant)) {
+         $result = PMA_mysql_query('SHOW TABLES FROM ' . PMA_backquote($dbgrant));
+-        if ($result && @mysql_num_rows($result)) {
++        if ($result && @mysqli_num_rows($result)) {
+             while ($row = PMA_mysql_fetch_row($result)) {
+                 $selected = ((isset($tablegrant) && $row[0] == $tablegrant) ? ' selected="selected"' : '');
+                 echo '                        ';
+@@ -574,18 +574,18 @@
+                 </td>
+                 <td>
+                     &nbsp;
+-                    <input type="submit" value="<?php echo $GLOBALS['strShowCols']; ?>" />
++                    <input type="submit" value="<?php echo  $GLOBALS['strShowCols'] ?>" />
+                 </td>
+             </tr>
+             <tr>
+                 <td valign="top">
+                     <input type="radio" name="anycolumn" value="1" id="radio_anycolumn1" checked="checked" />
+-                    <label for="radio_anycolumn1"><?php echo $GLOBALS['strAnyColumn']; ?></label>
++                    <label for="radio_anycolumn1"><?php echo  $GLOBALS['strAnyColumn'] ?></label>
+                 </td>
+                 <td>&nbsp;&nbsp;&nbsp;</td>
+                 <td valign="top">
+                     <input type="radio" name="anycolumn" value="0" id="radio_anycolumn0" />
+-                    <label for="radio_anycolumn0"><?php echo $GLOBALS['strColumn']; ?></label>&nbsp;:&nbsp;
++                    <label for="radio_anycolumn0"><?php echo  $GLOBALS['strColumn'] ?></label>&nbsp;:&nbsp;
+                 </td>
+                 <td>
+     <?php
+@@ -597,7 +597,7 @@
+     }
+     else {
+         $result = PMA_mysql_query('SHOW COLUMNS FROM ' . PMA_backquote($tablegrant) . ' FROM ' . PMA_backquote($dbgrant));
+-        if ($result && @mysql_num_rows($result)) {
++        if ($result && @mysqli_num_rows($result)) {
+             echo '                    '
+                  . '<select name="colgrant[]" multiple="multiple" onchange="anycolumn[1].checked = true">' . "\n";
+             while ($row = PMA_mysql_fetch_row($result)) {
+@@ -617,13 +617,13 @@
+             </tr>
+             <tr>
+                 <td colspan="5">
+-                    <i><?php echo $GLOBALS['strOr']; ?></i>
++                    <i><?php echo  $GLOBALS['strOr'] ?></i>
+                 </td>
+             </tr>
+             <tr>
+                 <td colspan="5">
+-                    <?php echo $GLOBALS['strDatabaseWildcard'] . "\n"; ?>&nbsp;
+-                    <input type="text" name="newdb" value="<?php echo ((!$is_selected_db && !empty($pma_user)) ? $pma_user . '%' : ''); ?>" class="textfield" <?php echo $GLOBALS['chg_evt_handler']; ?>="change(this)" />
++                    <?php echo  $GLOBALS['strDatabaseWildcard'] . "\n" ?>&nbsp;
++                    <input type="text" name="newdb" value="<?php echo  ((!$is_selected_db && !empty($pma_user)) ? $pma_user . '%' : '') ?>" class="textfield" <?php echo  $GLOBALS['chg_evt_handler'] ?>="change(this)" />
+                 </td>
+             <tr>
+             </table>
+@@ -632,7 +632,7 @@
+             <tr>
+                 <td>
+                     <br />
+-                    <?php echo $GLOBALS['strPrivileges']; ?>&nbsp;:&nbsp;
++                    <?php echo  $GLOBALS['strPrivileges'] ?>&nbsp;:&nbsp;
+                     <br />
+                 </td>
+             </tr>
+@@ -641,7 +641,7 @@
+     echo "\n";
+     PMA_tablePrivileges('userGrants', $grants);
+     ?>
+-            <input type="submit" name="upd_grants" value="<?php echo $GLOBALS['strGo']; ?>" />
++            <input type="submit" name="upd_grants" value="<?php echo  $GLOBALS['strGo'] ?>" />
+         </form>
+     </li>
+ 
+@@ -673,7 +673,7 @@
+     global $lang, $convcharset, $server;
+ 
+     $result = PMA_mysql_query('SELECT * FROM mysql.user WHERE User = \'' . PMA_sqlAddslashes($user) . '\' AND Host = \'' . PMA_sqlAddslashes($host) . '\'');
+-    $rows   = ($result) ? @mysql_num_rows($result) : 0;
++    $rows   = ($result) ? @mysqli_num_rows($result) : 0;
+ 
+     if (!$rows) {
+         return FALSE;
+@@ -686,93 +686,93 @@
+ 
+     <li>
+         <div style="margin-bottom: 10px">
+-        <a href="user_details.php?lang=<?php echo $lang; ?>&amp;convcharset=<?php echo $convcharset; ?>&amp;server=<?php echo $server; ?>&amp;db=mysql&amp;table=user">
+-            <?php echo $GLOBALS['strBack']; ?></a>
++        <a href="user_details.php?lang=<?php echo  $lang ?>&amp;convcharset=<?php echo  $convcharset ?>&amp;server=<?php echo  $server ?>&amp;db=mysql&amp;table=user">
++            <?php echo  $GLOBALS['strBack'] ?></a>
+         </div>
+     </li>
+ 
+     <li>
+         <form action="user_details.php" method="post" name="updUserForm" onsubmit="return checkUpdProfile()">
+-            <?php echo $GLOBALS['strUpdateProfile'] . "\n"; ?>
++            <?php echo  $GLOBALS['strUpdateProfile'] . "\n" ?>
+             <table>
+             <tr>
+                 <td>
+                     <input type="radio" value="1" name="anyhost" id="radio_anyhost1"<?php if ($host == '' || $host == '%') echo ' checked="checked"'; ?> />
+-                    <label for="radio_anyhost1"><?php echo $GLOBALS['strAnyHost']; ?></label>
++                    <label for="radio_anyhost1"><?php echo  $GLOBALS['strAnyHost'] ?></label>
+                 </td>
+                 <td>&nbsp;</td>
+                 <td>
+                     <input type="radio" value="0" name="anyhost" id="radio_anyhost0"<?php if ($host != '' && $host != '%') echo ' checked="checked"'; ?> />
+-                    <label for="radio_anyhost0"><?php echo $GLOBALS['strHost']; ?></label>&nbsp;:&nbsp;
+-                </td>
+-                <td>
+-                    <input type="text" name="new_server" size="10" value="<?php echo str_replace('"', '&quot;', $host); ?>" class="textfield" <?php echo $GLOBALS['chg_evt_handler']; ?>="this.form.anyhost[1].checked = true" />
++                    <label for="radio_anyhost0"><?php echo  $GLOBALS['strHost'] ?></label>&nbsp;:&nbsp;
++                </td>
++                <td>
++                    <input type="text" name="new_server" size="10" value="<?php echo  str_replace('"', '&quot;', $host) ?>" class="textfield" <?php echo  $GLOBALS['chg_evt_handler'] ?>="this.form.anyhost[1].checked = true" />
+                 </td>
+             </tr>
+             <tr>
+                 <td>
+                     <input type="radio" value="1" name="anyuser" id="radio_anyuser1"<?php if ($user == '') echo ' checked="checked"'; ?> />
+-                    <label for="radio_anyuser1"><?php echo $GLOBALS['strAnyUser']; ?></label>
++                    <label for="radio_anyuser1"><?php echo  $GLOBALS['strAnyUser'] ?></label>
+                 </td>
+                 <td>&nbsp;</td>
+                 <td>
+                     <input type="radio" value="0" name="anyuser" id="radio_anyuser0"<?php if ($user != '') echo ' checked="checked"'; ?> />
+-                    <label for="radio_anyuser0"><?php echo $GLOBALS['strUserName']; ?></label>&nbsp;:&nbsp;
+-                </td>
+-                <td>
+-                    <input type="text" name="new_user" size="10" value="<?php echo str_replace('"', '&quot;', $user); ?>" class="textfield" <?php echo $GLOBALS['chg_evt_handler']; ?>="this.form.anyuser[1].checked = true" />
++                    <label for="radio_anyuser0"><?php echo  $GLOBALS['strUserName'] ?></label>&nbsp;:&nbsp;
++                </td>
++                <td>
++                    <input type="text" name="new_user" size="10" value="<?php echo  str_replace('"', '&quot;', $user) ?>" class="textfield" <?php echo  $GLOBALS['chg_evt_handler'] ?>="this.form.anyuser[1].checked = true" />
+                 </td>
+             </tr>
+             <tr>
+                 <td>
+                     <input type="radio" name="nopass" value="-1" id="radio_nopass-1" checked="checked" onclick="new_pw.value = ''; new_pw2.value = ''; this.checked = true" />
+-                    <label for="radio_nopass-1"><?php echo $GLOBALS['strKeepPass']; ?></label>
++                    <label for="radio_nopass-1"><?php echo  $GLOBALS['strKeepPass'] ?></label>
+                 </td>
+                 <td colspan="3">&nbsp;</td>
+             </tr>
+             <tr>
+-                <td colspan="4" align="<?php echo $GLOBALS['cell_align_left']; ?>">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<?php echo $GLOBALS['strOr']; ?></td>
++                <td colspan="4" align="<?php echo  $GLOBALS['cell_align_left'] ?>">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<?php echo  $GLOBALS['strOr'] ?></td>
+             </tr>
+             <tr>
+                 <td>
+                     <input type="radio" name="nopass" value="1" id="radio_nopass1" onclick="new_pw.value = ''; new_pw2.value = ''; this.checked = true" />
+-                    <label for="radio_nopass1"><?php echo $GLOBALS['strNoPassword']; ?></label>
++                    <label for="radio_nopass1"><?php echo  $GLOBALS['strNoPassword'] ?></label>
+                 </td>
+                 <td>&nbsp;</td>
+                 <td>
+                     <input type="radio" name="nopass" value="0" id="radio_nopass0" />
+-                    <label for="radio_nopass0"><?php echo $GLOBALS['strPassword']; ?></label>&nbsp;:&nbsp;
+-                </td>
+-                <td>
+-                    <input type="password" name="new_pw" size="10" <?php echo $GLOBALS['chg_evt_handler']; ?>="nopass[2].checked = true" />
++                    <label for="radio_nopass0"><?php echo  $GLOBALS['strPassword'] ?></label>&nbsp;:&nbsp;
++                </td>
++                <td>
++                    <input type="password" name="new_pw" size="10" <?php echo  $GLOBALS['chg_evt_handler'] ?>="nopass[2].checked = true" />
+                     &nbsp;&nbsp;
+-                    <?php echo $GLOBALS['strReType']; ?>&nbsp;:&nbsp;
+-                    <input type="password" name="new_pw2" size="10" <?php echo $GLOBALS['chg_evt_handler']; ?>="nopass[2].checked = true" />
++                    <?php echo  $GLOBALS['strReType'] ?>&nbsp;:&nbsp;
++                    <input type="password" name="new_pw2" size="10" <?php echo  $GLOBALS['chg_evt_handler'] ?>="nopass[2].checked = true" />
+                 </td>
+             </tr>
+             </table>
+-            <input type="hidden" name="lang" value="<?php echo $lang; ?>" />
+-            <input type="hidden" name="convcharset" value="<?php echo $convcharset; ?>" />
+-            <input type="hidden" name="server" value="<?php echo $server; ?>" />
+-            <input type="hidden" name="host" value="<?php echo str_replace('"', '&quot;', $host); ?>" />
+-            <input type="hidden" name="pma_user" value="<?php echo str_replace('"', '&quot;', $user); ?>" />
+-            <input type="submit" name="submit_updProfile" value="<?php echo $GLOBALS['strGo']; ?>" />
++            <input type="hidden" name="lang" value="<?php echo  $lang ?>" />
++            <input type="hidden" name="convcharset" value="<?php echo  $convcharset ?>" />
++            <input type="hidden" name="server" value="<?php echo  $server ?>" />
++            <input type="hidden" name="host" value="<?php echo  str_replace('"', '&quot;', $host) ?>" />
++            <input type="hidden" name="pma_user" value="<?php echo  str_replace('"', '&quot;', $user) ?>" />
++            <input type="submit" name="submit_updProfile" value="<?php echo  $GLOBALS['strGo'] ?>" />
+         </form>
+     </li>
+ 
+     <li>
+         <form action="user_details.php" method="post" name="privForm">
+-            <?php echo $GLOBALS['strEditPrivileges'] . "\n"; ?>
++            <?php echo  $GLOBALS['strEditPrivileges'] . "\n" ?>
+     <?php
+     PMA_tablePrivileges('privForm', $row);
+     echo "\n";
+     ?>
+-            <input type="hidden" name="lang" value="<?php echo $lang; ?>" />
+-            <input type="hidden" name="convcharset" value="<?php echo $convcharset; ?>" />
+-            <input type="hidden" name="server" value="<?php echo $server; ?>" />
+-            <input type="hidden" name="host" value="<?php echo str_replace('"', '&quot;', $host); ?>" />
+-            <input type="hidden" name="pma_user" value="<?php echo str_replace('"', '&quot;', $user); ?>" />
+-            <input type="submit" name="submit_chgPriv" value="<?php echo $GLOBALS['strGo']; ?>" />
++            <input type="hidden" name="lang" value="<?php echo  $lang ?>" />
++            <input type="hidden" name="convcharset" value="<?php echo  $convcharset ?>" />
++            <input type="hidden" name="server" value="<?php echo  $server ?>" />
++            <input type="hidden" name="host" value="<?php echo  str_replace('"', '&quot;', $host) ?>" />
++            <input type="hidden" name="pma_user" value="<?php echo  str_replace('"', '&quot;', $user) ?>" />
++            <input type="submit" name="submit_chgPriv" value="<?php echo  $GLOBALS['strGo'] ?>" />
+         </form>
+     </li>
+ 
+@@ -811,7 +811,7 @@
+     }
+     $local_query     .= ' ORDER BY Host, User';
+     $result          = PMA_mysql_query($local_query);
+-    $rows            = ($result) ? @mysql_num_rows($result) : 0;
++    $rows            = ($result) ? @mysqli_num_rows($result) : 0;
+ 
+     if (!$rows) {
+         return FALSE;
+@@ -898,39 +898,39 @@
+         if (!$user) {
+             echo "\n";
+             ?>
+-    <td bgcolor="<?php echo $bgcolor;?>">
+-        <a href="<?php echo $edit_url; ?>">
+-            <?php echo $GLOBALS['strEdit']; ?></a>
++    <td bgcolor="<?php echo  $bgcolor ?>">
++        <a href="<?php echo  $edit_url ?>">
++            <?php echo  $GLOBALS['strEdit'] ?></a>
+     </td>
+             <?php
+         }
+         echo "\n";
+         ?>
+-    <td bgcolor="<?php echo $bgcolor;?>">
+-        <a href="<?php echo $delete_url; ?>">
+-            <?php echo $GLOBALS['strDelete']; ?></a>
++    <td bgcolor="<?php echo  $bgcolor ?>">
++        <a href="<?php echo  $delete_url ?>">
++            <?php echo  $GLOBALS['strDelete'] ?></a>
+     </td>
+-    <td bgcolor="<?php echo $bgcolor;?>">
+-        <a href="<?php echo $check_url; ?>">
+-            <?php echo $GLOBALS['strGrants']; ?></a>
++    <td bgcolor="<?php echo  $bgcolor ?>">
++        <a href="<?php echo  $check_url ?>">
++            <?php echo  $GLOBALS['strGrants'] ?></a>
+     </td>
+ <!--
+-    <td bgcolor="<?php echo $bgcolor;?>">
+-        <a href="<?php echo (($check_url != '') ? $check_url : '#'); ?>">
+-            <?php echo $GLOBALS['strGrants']; ?></a>
++    <td bgcolor="<?php echo  $bgcolor ?>">
++        <a href="<?php echo  (($check_url != '') ? $check_url : '#') ?>">
++            <?php echo  $GLOBALS['strGrants'] ?></a>
+     </td>
+ //-->
+-    <td bgcolor="<?php echo $bgcolor;?>">
+-        <?php echo $row['Host'] . "\n"; ?>
++    <td bgcolor="<?php echo  $bgcolor ?>">
++        <?php echo  $row['Host'] . "\n" ?>
+     </td>
+-    <td bgcolor="<?php echo $bgcolor;?>">
+-        <?php echo (($row['User']) ? '<b>' . $row['User'] . '</b>' : '<span style="color: #FF0000">' . $GLOBALS['strAny'] . '</span>') . "\n"; ?>
++    <td bgcolor="<?php echo  $bgcolor ?>">
++        <?php echo  (($row['User']) ? '<b>' . $row['User'] . '</b>' : '<span style="color: #FF0000">' . $GLOBALS['strAny'] . '</span>') . "\n" ?>
+     </td>
+-    <td bgcolor="<?php echo $bgcolor;?>">
+-        <?php echo (($row[$GLOBALS['password_field']]) ? $GLOBALS['strYes'] : '<span style="color: #FF0000">' . $GLOBALS['strNo'] . '</span>') . "\n"; ?>
++    <td bgcolor="<?php echo  $bgcolor ?>">
++        <?php echo  (($row[$GLOBALS['password_field']]) ? $GLOBALS['strYes'] : '<span style="color: #FF0000">' . $GLOBALS['strNo'] . '</span>') . "\n" ?>
+     </td>
+-    <td bgcolor="<?php echo $bgcolor;?>">
+-        <?php echo $strPriv . "\n"; ?>
++    <td bgcolor="<?php echo  $bgcolor ?>">
++        <?php echo  $strPriv . "\n" ?>
+     </td>
+ </tr>
+         <?php
+@@ -972,16 +972,16 @@
+     echo 'DELETE FROM mysql.user WHERE Host = \'' . $the_host . '\' AND User = \'' . $the_user . '\'' . '<br />' . "\n";
+     ?>
+ <form action="user_details.php" method="post">
+-    <input type="hidden" name="lang" value="<?php echo $lang; ?>" />
+-    <input type="hidden" name="convcharset" value="<?php echo $convcharset; ?>" />
+-    <input type="hidden" name="server" value="<?php echo $server; ?>" />
++    <input type="hidden" name="lang" value="<?php echo  $lang ?>" />
++    <input type="hidden" name="convcharset" value="<?php echo  $convcharset ?>" />
++    <input type="hidden" name="server" value="<?php echo  $server ?>" />
+     <input type="hidden" name="db" value="mysql" />
+     <input type="hidden" name="table" value="user" />
+     <input type="hidden" name="delete" value="<?php echo(isset($GLOBALS['delete']) ? '1' : '0'); ?>" />
+-    <input type="hidden" name="delete_host" value="<?php echo str_replace('"', '&quot;', $the_host); ?>" />
+-    <input type="hidden" name="delete_user" value="<?php echo str_replace('"', '&quot;', $the_user); ?>" />
+-    <input type="submit" name="btnConfirm" value="<?php echo $GLOBALS['strYes']; ?>" />
+-    <input type="submit" name="btnConfirm" value="<?php echo $GLOBALS['strNo']; ?>" />
++    <input type="hidden" name="delete_host" value="<?php echo  str_replace('"', '&quot;', $the_host) ?>" />
++    <input type="hidden" name="delete_user" value="<?php echo  str_replace('"', '&quot;', $the_user) ?>" />
++    <input type="submit" name="btnConfirm" value="<?php echo  $GLOBALS['strYes'] ?>" />
++    <input type="submit" name="btnConfirm" value="<?php echo  $GLOBALS['strNo'] ?>" />
+ </form>
+     <?php
+     echo "\n";
+@@ -1176,7 +1176,7 @@
+                       . 'SET Host = \'' . PMA_sqlAddslashes($host) . '\', User = \'' . PMA_sqlAddslashes($pma_user) . '\', ' . $password_field . ' = ' . (($pma_pw == '') ? '\'\'' : 'PASSWORD(\'' . PMA_sqlAddslashes($pma_pw) . '\')')
+                       . ', ' . $sql_query;
+         $sql_query    = 'INSERT INTO mysql.user '
+-                      . 'SET Host = \'' . PMA_sqlAddslashes($host) . '\', User = \'' . PMA_sqlAddslashes($pma_user) . '\', ' . $password_field . ' = ' . (($pma_pw == '') ? '\'\'' : 'PASSWORD(\'' . ereg_replace('.', '*', $pma_pw) . '\')')
++                      . 'SET Host = \'' . PMA_sqlAddslashes($host) . '\', User = \'' . PMA_sqlAddslashes($pma_user) . '\', ' . $password_field . ' = ' . (($pma_pw == '') ? '\'\'' : 'PASSWORD(\'' . preg_replace('.', '*', $pma_pw) . '\')')
+                       . ', ' . $sql_query;
+         $result       = @PMA_mysql_query($local_query) or PMA_mysqlDie('', '', FALSE, $err_url);
+         unset($host);
+@@ -1246,7 +1246,7 @@
+     }
+     else {
+         $sql_query   = (empty($common_upd) ? '' : $common_upd . ', ')
+-                     . $password_field . ' = ' . (($new_pw == '') ? '\'\'' : 'PASSWORD(\'' . ereg_replace('.', '*', $new_pw) . '\')');
++                     . $password_field . ' = ' . (($new_pw == '') ? '\'\'' : 'PASSWORD(\'' . preg_replace('.', '*', $new_pw) . '\')');
+         $local_query = (empty($common_upd) ? '' : $common_upd . ', ')
+                      . $password_field . ' = ' . (($new_pw == '') ? '\'\'' : 'PASSWORD(\'' . PMA_sqlAddslashes($new_pw) . '\')');
+     }
+@@ -1380,7 +1380,7 @@
+         // Escape wilcard characters if required
+         if (isset($dbgrant) && !$anydb && !$newdb) {
+             $re      = '(^|(\\\\\\\\)+|[^\])(_|%)'; // non-escaped wildcards
+-            $dbgrant = ereg_replace($re, '\\1\\\\3', $dbgrant);
++            $dbgrant = preg_replace($re, '\\1\\\\3', $dbgrant);
+         }
+ 
+         if (!$newdb) {
+@@ -1438,7 +1438,7 @@
+                 $list_priv_new[]       = $priv;
+             }
+         } // end while
+-        mysql_free_result($result);
++        mysqli_free_result($result);
+         $list_priv     = $list_priv_new;
+         unset($list_priv_new);
+         $list_priv_new = array();
+@@ -1460,7 +1460,7 @@
+                     $list_priv_new[]       = $priv;
+                 }
+             } // end while
+-            mysql_free_result($result);
++            mysqli_free_result($result);
+             $list_priv     = $list_priv_new;
+             unset($list_priv_new);
+             $list_priv_new = array();
+@@ -1477,13 +1477,13 @@
+         if ($row && $row['Table_priv']) {
+             while (list(,$priv) = each($list_priv)) {
+                 $priv_priv = $priv . '_priv';
+-                if (eregi('(^|,)' . $priv . '(,|$)', $row['Table_priv'])) {
++                if (preg_match('(^|,)' . $priv . '(,|$)', $row['Table_priv'])) {
+                     $user_priv[$priv_priv] = 'Y';
+                 } else {
+                     $list_priv_new[]       = $priv;
+                 }
+             } // end while
+-            mysql_free_result($result);
++            mysqli_free_result($result);
+             $list_priv     = $list_priv_new;
+             unset($list_priv_new);
+             $list_priv_new = array();
+@@ -1501,8 +1501,8 @@
+     ?>
+ <ul>
+     <li>
+-        <a href="user_details.php?lang=<?php echo $lang;?>&amp;convcharset=<?php echo $convcharset; ?>&amp;server=<?php echo $server; ?>&amp;db=mysql&amp;table=user">
+-            <?php echo $strBack; ?></a>
++        <a href="user_details.php?lang=<?php echo  $lang ?>&amp;convcharset=<?php echo  $convcharset ?>&amp;server=<?php echo  $server ?>&amp;db=mysql&amp;table=user">
++            <?php echo  $strBack ?></a>
+     </li>
+ </ul>
+     <?php

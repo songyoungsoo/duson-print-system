@@ -30,7 +30,6 @@ $WebSoftCopyright = "
   </a> Corp All rights reserved.
 </p>";
 
-
 $WebSoftCopyright2 = "
 <p align=center>
   Copyright ⓒ 2005 MlangWebProgram<br>

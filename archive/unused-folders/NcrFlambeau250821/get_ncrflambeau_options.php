@@ -3,7 +3,7 @@ header('Content-Type: application/json; charset=utf-8');
 include "../../db.php";
 
 $style_no = $_GET['style'] ?? '';
-$page = 'NcrFlambeau';
+$page = 'ncrflambeau';
 
 $response = [
     'my_fsd_options' => [], // 규격

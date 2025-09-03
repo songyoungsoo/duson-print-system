@@ -20,7 +20,7 @@ $order_list = [];
 
 if (!empty($order_numbers)) {
     $order_numbers_str = implode(',', array_map('intval', $order_numbers));
-    $query = "SELECT * FROM MlangOrder_PrintAuto WHERE no IN ($order_numbers_str) ORDER BY no DESC";
+    $query = "SELECT * FROM mlangorder_printauto WHERE no IN ($order_numbers_str) ORDER BY no DESC";
     $result = mysqli_query($db, $query);
     
     if ($result) {

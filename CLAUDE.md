@@ -7,6 +7,10 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 ## 🏢 Project Overview
 **Duson Planning Print** (두손기획인쇄) - A comprehensive web-based printing service management system built in PHP for a Korean printing company. The system handles print ordering, price calculation, file uploads, member management, and business transactions.
 
+**Production URL**: www.dsp114.com  
+**Development Environment**: XAMPP on Windows (C:\xampp\htdocs)  
+**Current Branch**: auth-system-fix
+
 ## 🛠 Technology Stack
 - **Backend**: PHP 7+ with MySQL database
 - **Frontend**: HTML, CSS (Noto Sans KR fonts), JavaScript (ES5)  
@@ -15,6 +19,58 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 - **File Uploads**: Multi-file support with organized directory structure
 - **Session Management**: PHP sessions for user authentication
 - **Email**: PHPMailer for order notifications
+
+## 🗄️ Database Naming Convention (Critical)
+
+### ⚠️ XAMPP to Web Server Migration Rule
+
+**Database Tables: ALWAYS LOWERCASE**
+```sql
+-- ✅ CORRECT (Web Server Compatible)
+mlangprintauto_littleprint
+mlangprintauto_transactioncate  
+mlangprintauto_merchandisebond
+shop_temp
+mlangorder_printauto
+
+-- ❌ INCORRECT (XAMPP Only)
+MlangPrintAuto_littleprint
+MlangPrintAuto_transactionCate
+MlangPrintAuto_MerchandiseBond
+```
+
+**File/Directory Names: PRESERVE CASE**
+```bash
+# ✅ MAINTAIN ORIGINAL CASE
+MlangPrintAuto/inserted/
+MlangPrintAuto/NameCard/
+MlangOrder_PrintAuto/
+
+# ❌ DO NOT CHANGE FILE PATHS
+mlangprintauto/inserted/  # This breaks includes!
+```
+
+**PHP Code Database References**
+```php
+// ✅ Always use lowercase in SQL queries
+$query = "SELECT * FROM mlangprintauto_littleprint WHERE category = ?";
+
+// ✅ But maintain case in file includes
+include "MlangPrintAuto/inserted/index.php";
+```
+
+**Migration Checklist**
+- [ ] All database table names converted to lowercase
+- [ ] All SQL queries updated to use lowercase table names  
+- [ ] File paths and directory names preserved as-is
+- [ ] Include statements maintain original case sensitivity
+- [ ] Test all file includes work on case-sensitive systems
+
+**🚨 Critical Warning**
+NEVER change directory/file names to match database convention:
+- Database: `mlangprintauto_*` (lowercase)  
+- Files: `MlangPrintAuto/` (original case)
+- This prevents broken includes and 404 errors
 
 ## 📁 Core Directory Structure
 
@@ -33,7 +89,7 @@ C:\xampp\htdocs\
 ├── MlangPrintAuto/            # Main product ordering system
 │   ├── inserted/              # Leaflet/Flyer ordering
 │   ├── NameCard/              # Business card ordering
-│   ├── sticker/               # General sticker ordering (수식 기반 계산)
+│   ├── sticker/               # General sticker ordering (수식기반 계산)
 │   ├── msticker/              # Magnetic sticker ordering
 │   ├── envelope/              # Envelope ordering  
 │   ├── LittlePrint/           # Poster ordering
@@ -54,22 +110,131 @@ C:\xampp\htdocs\
 └── uploads/                   # File upload storage
 ```
 
-## 🔧 Key Development Commands
+## 🛠 Backend Management System
 
-### Database Operations
+### Admin Panel Structure:
+```
+admin/
+├── dashboard.php              # 관리자 대시보드
+├── member_management/         # 회원 관리
+│   ├── member_list.php           # 회원 목록
+│   ├── member_edit.php           # 회원 정보 수정
+│   ├── member_stats.php          # 회원 통계
+│   └── business_members.php      # 사업자 회원 관리
+├── order_management/          # 주문 관리  
+│   ├── order_list.php            # 주문 목록
+│   ├── order_detail.php          # 주문 상세보기
+│   ├── order_status.php          # 주문 상태 관리
+│   ├── order_export.php          # 주문 내역 출력
+│   └── proof_management.php      # 교정 관리
+├── product_management/        # 품목별 관리
+│   ├── price_management.php      # 가격 관리
+│   ├── category_management.php   # 카테고리 관리
+│   ├── product_add_edit.php      # 제품 추가/수정
+│   └── gallery_management.php    # 제품 갤러리 관리
+├── file_management/           # 파일 관리
+│   ├── uploaded_files.php        # 업로드된 파일 관리
+│   ├── file_cleanup.php          # 파일 정리
+│   └── storage_stats.php         # 용량 통계
+├── database_management/       # DB 관리
+│   ├── backup.php                # DB 백업
+│   ├── optimize.php              # DB 최적화
+│   └── migration.php             # 스키마 업데이트
+├── payment_shipping/          # 결제/배송 관리
+│   ├── payment_methods.php       # 결제 수단 관리
+│   ├── shipping_management.php   # 배송 관리
+│   └── invoice_management.php    # 세금계산서 관리
+├── email_management/          # 이메일 관리
+│   ├── email_templates.php       # 템플릿 관리
+│   ├── email_logs.php            # 발송 내역
+│   └── email_settings.php        # SMTP 설정
+├── system_settings/           # 시스템 설정
+│   ├── site_settings.php         # 사이트 설정
+│   ├── user_permissions.php      # 권한 관리
+│   └── system_logs.php           # 시스템 로그
+└── statistics/                # 통계 및 리포트
+    ├── sales_report.php          # 매출 통계
+    ├── product_stats.php         # 제품별 통계
+    └── customer_analysis.php     # 고객 분석
+```
+
+### Key Admin Functions:
+
+#### **Order Processing Workflow**:
+1. **주문 접수**: 자동 주문 알림, 관리자 확인
+2. **제작 지시**: 제작팀에 작업 할당
+3. **교정 관리**: 시안 업로드 → 고객 확인 → 승인/수정
+4. **제작 완료**: 완료 확인 및 배송 준비
+5. **배송 관리**: 택배 발송, 송장 번호 등록
+6. **완료 처리**: 고객 확인, 피드백 수집
+
+#### **Price Management System**:
+- 품목별 가격 테이블 실시간 수정
+- 수량별 할인율 설정
+- 시즌별/이벤트 가격 적용
+- 가격 변경 히스토리 관리
+
+#### **File Management System**:
+- 업로드된 파일 분류/정리
+- 용량 관리 및 자동 정리
+- 파일 다운로드 통계
+- 백업 및 복원 기능
+
+#### **Email Template Management**:
+- 주문확인 이메일 템플릿
+- 교정 발송 이메일
+- 배송 알림 이메일  
+- 완료 확인 이메일
+
+#### **Statistics & Reports**:
+- 일/월/년 매출 통계
+- 제품별 주문 현황
+- 고객 분석 리포트
+- 재방문율 분석
+
+### Missing Admin Components (구현 필요):
+1. **교정 관리 시스템**: 시안 업로드, 승인 워크플로우
+2. **실시간 알림**: 신규 주문, 교정 승인 등
+3. **고객 소통 관리**: 문의 답변, 교정 커뮤니케이션
+4. **재고 관리**: 용지/자재 재고 추적
+5. **API 연동**: 결제사, 택배사, 회계 프로그램
+
+## 🔧 Development Setup & Commands
+
+### Local Development
 ```bash
-# View database connection details in db.php
-# No build commands - direct PHP execution
-# Access via: http://localhost/ (XAMPP required)
+# Start XAMPP services
+xampp-control.exe  # Start Apache and MySQL
+
+# Access development site
+http://localhost/
+
+# Database access (phpMyAdmin)
+http://localhost/phpmyadmin/
+```
+
+### Testing & Validation
+```bash
+# Test database connection
+php db.php
+
+# Check PHP configuration
+php -m  # List installed modules
+php -v  # PHP version
+
+# Validate syntax
+php -l filename.php
 ```
 
 ### Common File Locations
-- **Main config**: `db.php` (database: duson1830)
+- **Main config**: `db.php` (database: dsp1830)
 - **Price calculation**: Each product has individual calculation logic
 - **File uploads**: Organized by date/IP in `uploads/` directory
 - **Common functions**: `includes/functions.php`
+- **Authentication**: `includes/auth.php`, `includes/auth_functions.php`
+- **Session handling**: PHP native sessions with enhanced cleanup
 
-## 🏪 Product Systems
+## 🪙 Product Systems
 
 ### 1. **Leaflet/Flyer System** (`MlangPrintAuto/inserted/`)
 - Dynamic price calculation based on paper type, size, quantity
@@ -81,13 +246,13 @@ C:\xampp\htdocs\
 - Design options and file upload support
 - Real-time price updates
 
-### 3. **General Stickers** (`MlangPrintAuto/shop/view_modern.php`)
-- **Complex formula-based pricing** calculation (수식 계산, not table-based)
-- **Material options**: 아트지유광, 아트지무광코팅, 투명스티커, 홀로그램, 크라프트지 등
-- **Custom sizing**: 가로(garo) x 세로(sero) 직접 입력 (10mm~1000mm)
-- **Quantity tiers**: 500매~30,000매 with bulk pricing (mesu)
+### 3. **General Stickers** (`MlangPrintAuto/sticker_new/index.php`)
+- **Complex formula-based pricing** calculation (수식계산, not table-based)
+- **Material options**: 아트지유광, 아트지무광코팅, 아트지비코팅, 투명스티커, 강접아트유광코팅(90g), 초강접아트유광코팅, 초강접아트비코팅, 유포지(80g), 은데드롱(25g),투명스티커(25g),모조지비코팅(80g), 크라프트스티커(57g),금지스티커-전화문의, 금박스티커-전화문의,롤스티커-전화문의 등
+- **Custom sizing**: 가로(garo) x 세로(sero) 직접 입력 (10mm~560mm)
+- **Quantity tiers**: 500매~100,000매 with bulk pricing (mesu)
 - **Design fees**: 편집비 선택 (인쇄만/기본편집+10,000원/고급편집+30,000원)
-- **Shape options**: 사각형, 원형, 타원형, 별모양, 하트, 다각형 (domusong)
+- **Shape options**: 기본사각형, 사각도무송, 귀둘이(라운드),원형, 타원형, 모양도무송 (domusong)
 - **Modern interface**: AJAX price calculation, drag-drop file upload
 - **Integration**: Common header/footer applied, shop_temp cart system
 
@@ -99,7 +264,7 @@ C:\xampp\htdocs\
 
 ### 5. **Coupon/Voucher System** (`MlangPrintAuto/MerchandiseBond/`)
 - **상품권/쿠폰 시스템**: Dynamic transaction categories
-- **Database tables**: `MlangPrintAuto_transactionCate`, `MlangPrintAuto_MerchandiseBond`
+- **Database tables**: `mlangprintauto_transactioncate`, `mlangprintauto_merchandisebond`
 - **Dynamic dropdowns**: 구분(MY_type) → 종류(PN_type) → 후가공 → 수량/인쇄면
 - **Recently integrated** (August 2025): Common file structure applied
 - **Button system**: 🛒 장바구니에 담기 + 📋 바로 주문하기
@@ -123,6 +288,76 @@ C:\xampp\htdocs\
 - Quote logging in `quote_log` and `quote_items` tables
 - Supports wkhtmltopdf for professional PDF output
 - Admin notification system for quote requests
+
+## 🎨 Frontend Architecture & UI/UX
+
+### Global Layout Structure:
+```
+전체 레이아웃
+├── 공통 CSS/헤더/네비게이션 (header.php, css/styles.css)
+├── 메인 콘텐츠 영역
+│   ├── 좌측: 제품 갤러리 (이미지 슬라이더, 더보기 팝업)
+│   └── 우측: 계산 시스템 (실시간 가격계산)
+├── 제품별 설명 및 유의사항
+├── 하단 푸터 (footer.php)
+└── 사이드바 요소
+    ├── 카카오톡 상담 위젯
+    ├── TocPlus 상담창
+    └── 고정 액션 버튼들
+```
+
+### Common Frontend Components:
+- **Gallery Component**: 제품 이미지 갤러리 시스템
+  - 이미지 슬라이더 with 썸네일 네비게이션
+  - 더보기 팝업 갤러리 (라이트박스 효과)
+  - 반응형 디자인 (모바일 최적화)
+  
+- **Calculator Component**: 실시간 가격 계산기
+  - AJAX 기반 동적 계산
+  - 수량/옵션 변경 시 즉시 업데이트
+  - VAT 포함/불포함 토글
+  
+- **File Upload Component**: 다중 파일 업로드
+  - Drag & Drop 지원
+  - 파일 타입 검증 (PDF, AI, PSD, JPG, PNG)
+  - 업로드 진행률 표시
+  - 파일 미리보기 기능
+  
+- **Chat Integration**: 실시간 상담 시스템
+  - 카카오톡 플러스친구 연동
+  - TocPlus 상담창 위젯
+  - 고정 위치 상담 버튼
+  
+- **Modal System**: 팝업 관리
+  - 갤러리 확대보기
+  - 교정보기 팝업
+  - 주문완료 확인창
+  - 로그인 모달 (login_modal.php)
+
+### Missing Frontend Components (구현 필요):
+- **교정보기 시스템**: 주문 후 시안 확인 프로세스
+- **교정확인창**: 고객 승인/수정 요청 인터페이스  
+- **진행상황 트래커**: 주문 진행 단계 표시
+- **알림 시스템**: 실시간 주문 상태 알림
+
+### UI/UX Design System:
+- **Noto Sans KR** font throughout
+- Responsive grid layouts  
+- Color-coded product categories
+- Hover animations and transitions
+- Mobile-friendly design
+- Accessibility considerations (contrast, semantic markup)
+
+### Left Navigation Menu:
+- Product-specific active states
+- Color-coded hover effects per product type
+- Order button prominence
+
+### File Upload Components:
+- Drag-and-drop support in modern browsers
+- Multiple file selection
+- File type validation
+- Progress indicators
 
 ## 💳 Order Processing Flow
 
@@ -176,8 +411,8 @@ ALTER TABLE users ADD COLUMN address VARCHAR(255);
 ### Price Calculation Logic:
 
 #### **Table-based Calculation** (Most products):
-- **Leaflets/Posters**: `MlangPrintAuto_littleprint` table lookup
-- **Coupons**: `MlangPrintAuto_MerchandiseBond` table lookup
+- **Leaflets/Posters**: `mlangprintauto_littleprint` table lookup
+- **Coupons**: `mlangprintauto_merchandisebond` table lookup
 - **Base Price + Design Fee + VAT (10%)**
 
 #### **Formula-based Calculation** (Stickers only):
@@ -210,45 +445,39 @@ format_number($number)  // Thousand separators
 - Configured in individual mailer implementations
 - Uses company email: dsp1830@naver.com
 
-## 🎨 UI/UX Features
-
-### Common Design System:
-- **Noto Sans KR** font throughout
-- Responsive grid layouts
-- Color-coded product categories
-- Hover animations and transitions
-- Mobile-friendly design
-
-### Left Navigation Menu:
-- Product-specific active states
-- Color-coded hover effects per product type
-- Order button prominence
-
-### File Upload Components:
-- Drag-and-drop support in modern browsers
-- Multiple file selection
-- File type validation
-- Progress indicators
-
 ## 🗄 Database Configuration
 
 ### Connection Details:
 ```php
+// Primary database connection (db.php)
 $host = "localhost";
-$user = "duson1830"; 
-$password = "du1830";
-$dataname = "duson1830";
+$user = "dsp1830"; 
+$password = "ds701018";
+$dataname = "dsp1830";
+$db = mysqli_connect($host, $user, $password, $dataname);
+mysqli_set_charset($db, "utf8");
+```
+
+### Connection Patterns:
+```php
+// Standard connection check
+if (!$db) {
+    die("데이터베이스 연결에 실패했습니다: " . mysqli_connect_error());
+}
+
+// Admin panel connection (admin/ConDb.php)
+$connect = mysqli_connect($host, $user, $password, $dataname);
 ```
 
 ### Key Tables:
 - `users` - Member information with business fields
-- `MlangPrintAuto_*` - Product-specific pricing tables
-  - `MlangPrintAuto_littleprint` - Poster/leaflet pricing
-  - `MlangPrintAuto_transactionCate` - Coupon categories
-  - `MlangPrintAuto_MerchandiseBond` - Coupon pricing
+- `mlangprintauto_*` - Product-specific pricing tables
+  - `mlangprintauto_littleprint` - Poster/leaflet pricing
+  - `mlangprintauto_transactioncate` - Coupon categories
+  - `mlangprintauto_merchandisebond` - Coupon pricing
   - `shop_d1`, `shop_d2`, `shop_d3`, `shop_d4` - Sticker calculation tables
 - `shop_temp` - Shopping cart storage with product-specific fields
-- `MlangOrder_PrintAuto` - Unified order storage
+- `mlangorder_printauto` - Unified order storage
 - `quote_log` - Quote generation history and customer details
 - `quote_items` - Detailed quote item specifications
 - `page` - CMS content management
@@ -256,16 +485,18 @@ $dataname = "duson1830";
 ## 🚀 Development Workflow
 
 ### Local Development Setup:
-1. Install XAMPP
-2. Place code in `C:\xampp\htdocs\`
-3. Start Apache and MySQL services
-4. Access: `http://localhost/`
+1. Install XAMPP (Apache + MySQL + PHP)
+2. Clone repository to `C:\xampp\htdocs\`
+3. Import database: `dsp1830.sql` via phpMyAdmin
+4. Start Apache and MySQL services
+5. Access: `http://localhost/`
 
 ### File Organization:
 - **Common files**: Root level (header.php, footer.php, etc.)
-- **Product-specific**: Individual subdirectories
+- **Product-specific**: Individual subdirectories under `MlangPrintAuto/`
 - **Shared resources**: `/css/`, `/js/`, `/includes/`
-- **Uploads**: Organized by URL/date/IP/timestamp
+- **Uploads**: Organized by URL/date/IP/timestamp in `uploads/`
+- **Admin panel**: `admin/` directory with separate authentication
 
 ### Key Development Patterns:
 ```php
@@ -277,6 +508,26 @@ include "../../includes/header.php";
 include "../../includes/footer.php";
 ```
 
+### AJAX Endpoints Pattern:
+```php
+// Standard AJAX response
+header('Content-Type: application/json; charset=utf-8');
+echo json_encode([
+    'success' => true,
+    'data' => $result,
+    'message' => '성공'
+]);
+```
+
+### Error Handling:
+```php
+// Database error handling
+if (!$result) {
+    error_log("Query failed: " . mysqli_error($db));
+    die("오류가 발생했습니다.");
+}
+```
+
 ## 📞 Company Information
 
 ### Business Details:
@@ -286,7 +537,7 @@ include "../../includes/footer.php";
 - **Website**: www.dsp114.com
 
 ### Payment Information:
-- **Account Holder**: 두손기획인쇄 차경선
+- **Account Holder**: 두손기획인쇄 차경선 
 - **Banks**: 국민은행(999-1688-2384), 신한은행(110-342-543507), 농협(301-2632-1829)
 - **Card Payment**: Call 1688-2384
 
@@ -308,13 +559,13 @@ include "../../includes/footer.php";
 - **File management**: ImgFolder for upload paths, ThingCate for main image
 
 ### Current Status (August 2025):
-- ✅ **General stickers**: Fully functional at `/shop/view_modern.php` - NameCard 디자인 통합 완료
+- ✅ **General stickers**: Fully functional at `/sticker_new/index.php` - NameCard 디자인 통합 완료
 - ✅ **Magnetic stickers**: Available at `/msticker/index.php` - NameCard 디자인 기본 적용
 - ✅ **Design Integration**: CSS-Only 오버레이로 수식 계산 100% 보존하며 통합 완료
 - ✅ **Performance Optimized**: CSS 압축 및 프로덕션 배포 완료
 - 📋 **Future Enhancement**: Navigation dropdown, unified cart integration for better UX
 
-## 🔍 Recent Major Updates
+## 📝 Recent Major Updates
 
 ### Completed Enhancements (August 2025):
 - ✅ **Common File Architecture**: Centralized header/footer/CSS
@@ -326,7 +577,7 @@ include "../../includes/footer.php";
 - ✅ **Payment System**: Multi-bank payment options
 
 ### MlangPrintAuto 통합 디자인 시스템 완료 (August 2025):
-- ✅ **스티커 시스템 통합**: CSS-Only 오버레이로 NameCard 디자인 적용 (`shop/view_modern.php`)
+- ✅ **스티커 시스템 통합**: CSS-Only 오버레이로 NameCard 디자인 적용 (`sticker_new/index.php`)
 - ✅ **수식 계산 로직 100% 보존**: 기존 JavaScript/PHP 로직 변경 없이 디자인만 통합
 - ✅ **성능 최적화**: CSS 압축 적용 (`unified-sticker-overlay.min.css`)
 - ✅ **전체 품목 통합**: 11개 품목 모두 NameCard 디자인으로 통일
@@ -337,57 +588,146 @@ include "../../includes/footer.php";
 **🎉 FULLY OPERATIONAL** - All systems tested and production-ready
 **🎨 DESIGN UNIFIED** - All 11 products with consistent NameCard design system
 
-## 🛠 Troubleshooting Common Issues
+## 🔒 Enhanced Security & Performance
 
-### API Error Debugging:
-When encountering API errors like "model: http://localhost/..." with 404 not_found_error:
-- This indicates a URL is being incorrectly passed as a model parameter to an AI API
-- Check browser Network tab in Developer Tools to identify the source request
-- Look for JavaScript fetch/XMLHttpRequest calls that may be misconfigured
-- Common cause: Frontend code incorrectly formatting API requests
+### Security Hardening:
 
-### Database Connection:
+#### **File Upload Security**:
 ```php
-// Check connection in db.php
-if (!$db) {
-    die("데이터베이스 연결에 실패했습니다: " . mysqli_connect_error());
+// Enhanced file validation
+function validateUploadFile($file) {
+    $allowedTypes = ['pdf', 'ai', 'psd', 'jpg', 'jpeg', 'png', 'gif'];
+    $allowedMimeTypes = [
+        'application/pdf',
+        'application/postscript', 
+        'image/jpeg', 
+        'image/png'
+    ];
+    
+    $fileExt = strtolower(pathinfo($file['name'], PATHINFO_EXTENSION));
+    $fileMime = mime_content_type($file['tmp_name']);
+    
+    return in_array($fileExt, $allowedTypes) && 
+           in_array($fileMime, $allowedMimeTypes) &&
+           $file['size'] <= 50 * 1024 * 1024; // 50MB limit
 }
 ```
 
-### Session Issues:
+#### **CSRF Protection**:
 ```php
-// Debug session status
-if (session_status() == PHP_SESSION_NONE) {
-    session_start();
+// Generate CSRF token for forms
+function generateCSRFToken() {
+    if (!isset($_SESSION['csrf_token'])) {
+        $_SESSION['csrf_token'] = bin2hex(random_bytes(32));
+    }
+    return $_SESSION['csrf_token'];
+}
+
+// Validate CSRF token
+function validateCSRFToken($token) {
+    return isset($_SESSION['csrf_token']) && 
+           hash_equals($_SESSION['csrf_token'], $token);
 }
 ```
 
-### File Upload Problems:
-- Check directory permissions (0755)
-- Verify `uploads/` directory exists
-- Check PHP `upload_max_filesize` setting
-- FileUploadComponent requires proper initialization
+#### **Rate Limiting**:
+```php
+// API call rate limiting for price calculations
+function checkRateLimit($ip, $endpoint) {
+    $key = "rate_limit:{$endpoint}:{$ip}";
+    $requests = $_SESSION[$key] ?? 0;
+    
+    if ($requests > 100) { // 100 requests per session
+        http_response_code(429);
+        die('Rate limit exceeded');
+    }
+    
+    $_SESSION[$key] = $requests + 1;
+}
+```
 
-### Price Calculation Issues:
-- **Table-based products**: Verify database table structure matches expected fields
-- **Stickers (formula-based)**: Check JavaScript calculation functions in `view_modern.php`
-- **AJAX endpoints**: Validate response format and error handling
-- **Common error**: Missing `jong`, `garo`, `sero`, `mesu` parameters for stickers
+#### **Admin Access Control**:
+- IP 화이트리스트 설정
+- 2단계 인증 (2FA) 도입
+- 관리자 세션 타임아웃 단축
+- 로그인 시도 제한
 
-### Sticker-Specific Issues:
-- **Formula calculation**: Located in `MlangPrintAuto/shop/view_modern.php` JavaScript
-- **Cart integration**: Requires sticker fields in `shop_temp` table
-- **Price display**: Uses `st_price` and `st_price_vat` fields
-- **Material codes**: Must match predefined jong values (e.g., "jil 아트유광")
+### Performance Optimization:
 
-## 📋 Development Notes
+#### **Database Indexing**:
+```sql
+-- 주문 조회 성능 향상
+CREATE INDEX idx_order_date ON mlangorder_printauto(order_date);
+CREATE INDEX idx_member_orders ON mlangorder_printauto(member_id, order_date);
+CREATE INDEX idx_product_type ON mlangorder_printauto(product_type);
 
-### Code Standards:
-- PHP 7+ compatible
-- UTF-8 encoding throughout
-- MySQL prepared statements for security
-- Responsive design principles
-- Korean language support optimized
+-- 가격 계산 성능 향상  
+CREATE INDEX idx_price_lookup ON mlangprintauto_littleprint(paper_type, size, quantity);
+CREATE INDEX idx_sticker_calc ON shop_d1(jong, mesu);
+```
+
+#### **Image Optimization**:
+```php
+// Auto image compression on upload
+function compressImage($source, $destination, $quality = 80) {
+    $info = getimagesize($source);
+    
+    switch ($info['mime']) {
+        case 'image/jpeg':
+            $image = imagecreatefromjpeg($source);
+            imagejpeg($image, $destination, $quality);
+            break;
+        case 'image/png':
+            $image = imagecreatefrompng($source);
+            imagepng($image, $destination, 8);
+            break;
+    }
+    imagedestroy($image);
+}
+```
+
+#### **Cache Strategy**:
+```php
+// Price calculation result caching
+function getCachedPrice($cacheKey, $callback) {
+    if (isset($_SESSION['price_cache'][$cacheKey])) {
+        return $_SESSION['price_cache'][$cacheKey];
+    }
+    
+    $result = $callback();
+    $_SESSION['price_cache'][$cacheKey] = $result;
+    return $result;
+}
+```
+
+#### **CDN Integration**:
+- 정적 파일 (CSS, JS, 이미지) CDN 배포
+- 제품 갤러리 이미지 최적화
+- 브라우저 캐싱 헤더 설정
+
+#### **Database Connection Pooling**:
+```php
+// Connection pool management
+class DatabasePool {
+    private static $connections = [];
+    private static $maxConnections = 10;
+    
+    public static function getConnection() {
+        if (count(self::$connections) < self::$maxConnections) {
+            $conn = new mysqli($host, $user, $pass, $db);
+            self::$connections[] = $conn;
+            return $conn;
+        }
+        return array_pop(self::$connections);
+    }
+}
+```
+
+### Code Quality Standards:
+- **PHP Version**: Target PHP 7.4+ compatibility
+- **Error Reporting**: Enable in development, disable in production
+- **Logging**: Use `error_log()` for debugging
+- **Comments**: Write in Korean for business logic, English for technical notes
 
 ### Performance Considerations:
 - File caching for common resources
@@ -495,7 +835,7 @@ function printOrder() {
 
 **After**:
 ```
-📝 상품 상세 정보
+📄 상품 상세 정보
 ✉️ 봉투 주문
 • 타입: 중봉투
 • 용지: 모조지  
@@ -537,9 +877,299 @@ function printOrder() {
 - Backward compatibility preserved
 - Common file architecture maintained
 
+## 🛠 Troubleshooting Common Issues
+
+### API Error Debugging:
+When encountering API errors like "model: http://localhost/..." with 404 not_found_error:
+- This indicates a URL is being incorrectly passed as a model parameter to an AI API
+- Check browser Network tab in Developer Tools to identify the source request
+- Look for JavaScript fetch/XMLHttpRequest calls that may be misconfigured
+- Common cause: Frontend code incorrectly formatting API requests
+
+### Database Connection:
+```php
+// Check connection in db.php
+if (!$db) {
+    die("데이터베이스 연결에 실패했습니다: " . mysqli_connect_error());
+}
+```
+
+### Session Issues:
+```php
+// Debug session status
+if (session_status() == PHP_SESSION_NONE) {
+    session_start();
+}
+```
+
+### File Upload Problems:
+- Check directory permissions (0755)
+- Verify `uploads/` directory exists
+- Check PHP `upload_max_filesize` setting
+- FileUploadComponent requires proper initialization
+
+### Price Calculation Issues:
+- **Table-based products**: Verify database table structure matches expected fields
+- **Stickers (formula-based)**: Check JavaScript calculation functions in `view_modern.php`
+- **AJAX endpoints**: Validate response format and error handling
+- **Common error**: Missing `jong`, `garo`, `sero`, `mesu` parameters for stickers
+
+### Sticker-Specific Issues:
+- **Formula calculation**: Located in `MlangPrintAuto/sticker_new/index.php` JavaScript
+- **Cart integration**: Requires sticker fields in `shop_temp` table
+- **Price display**: Uses `st_price` and `st_price_vat` fields
+- **Material codes**: Must match predefined jong values (e.g., "jil 아트유광")
+
+## 📊 Database Migration Notes
+
+### When Working with Database:
+- Always backup before structural changes
+- Test migrations on development first
+- Use lowercase table names for cross-platform compatibility
+- Maintain referential integrity
+
+### Common SQL Patterns:
+```sql
+-- Check if table exists
+SHOW TABLES LIKE 'table_name';
+
+-- Safe column addition
+ALTER TABLE table_name ADD COLUMN IF NOT EXISTS column_name VARCHAR(255);
+
+-- Index creation for performance
+CREATE INDEX idx_name ON table_name(column_name);
+```
+
+## 📋 Missing System Components & Implementation Plan
+
+### 🚨 Critical Missing Components:
+
+#### **Frontend Components (구현 필요)**:
+1. **교정보기 시스템**
+   - Location: `proof_viewer/`
+   - 주문 후 시안 확인 프로세스
+   - 고객 승인/수정 요청 워크플로우
+
+2. **교정확인창**  
+   - Modal popup for proof approval
+   - 수정 요청 코멘트 기능
+   - 승인/거부 버튼 액션
+
+3. **TocPlus 상담 연동**
+   - 실시간 상담 위젯 integration
+   - 카카오톡과 통합 상담 인터페이스
+
+4. **반응형 갤러리**
+   - 제품 이미지 뷰어 고도화
+   - 라이트박스 효과
+   - 썸네일 네비게이션
+
+5. **진행상황 트래커**
+   - 주문 진행 단계 시각화
+   - 실시간 상태 업데이트
+   - 예상 완료일 표시
+
+#### **Backend Management (구현 필요)**:
+1. **교정 관리 시스템**
+   - 시안 파일 업로드/관리
+   - 승인 상태 추적
+   - 고객 피드백 관리
+
+2. **파일 관리자**
+   - 업로드된 파일 정리/삭제
+   - 용량 모니터링
+   - 자동 백업 시스템
+
+3. **통계 대시보드**
+   - 실시간 매출 현황
+   - 제품별 주문 통계
+   - 고객 행동 분석
+
+4. **고객 소통 관리**
+   - 문의 관리 시스템
+   - 이메일 자동 발송
+   - SMS 알림 기능
+
+5. **배송 추적 연동**
+   - 택배사 API 연동
+   - 송장 번호 자동 등록
+   - 배송 상태 알림
+
+#### **Integration Points (연동 필요)**:
+1. **결제 모듈 다양화**
+   - 카드결제 PG 연동
+   - 실시간 계좌이체
+   - 간편결제 (카카오페이, 네이버페이)
+
+2. **SMS 알림 서비스**
+   - 주문 접수 알림
+   - 교정 발송 알림  
+   - 배송 완료 알림
+
+3. **재고 관리 시스템**
+   - 용지/자재 재고 추적
+   - 자동 발주 알림
+   - 재고 부족 경고
+
+4. **회계 연동**
+   - 세금계산서 자동 발행
+   - 매출 데이터 연동
+   - 부가세 신고 데이터
+
+### 🎯 Implementation Priority:
+
+#### **Phase 1: Core Missing Features (1-2개월)**
+- [ ] 교정보기/확인 시스템 구현
+- [ ] 백엔드 주문 관리 패널 완성
+- [ ] 파일 관리 시스템 구축
+- [ ] 기본 통계 대시보드
+
+#### **Phase 2: User Experience Enhancement (2-3개월)**
+- [ ] 갤러리 시스템 고도화
+- [ ] 실시간 상담 연동 (TocPlus)
+- [ ] 주문 진행 상황 추적
+- [ ] 모바일 최적화
+
+#### **Phase 3: System Stabilization (3-4개월)**
+- [ ] 보안 강화 (CSRF, Rate Limiting)
+- [ ] 성능 최적화 (캐싱, DB 인덱싱)
+- [ ] 모니터링 시스템 도입
+- [ ] 자동화 백업 시스템
+
+#### **Phase 4: Business Expansion (4-6개월)**
+- [ ] 결제 모듈 다양화
+- [ ] SMS/이메일 자동화
+- [ ] 재고 관리 시스템
+- [ ] 모바일 앱 개발
+- [ ] API 외부 제공
+
+### 📊 Success Metrics:
+- 주문 처리 시간 50% 단축
+- 고객 문의 응답 시간 24시간 → 2시간
+- 교정 승인 프로세스 자동화 90%
+- 모바일 주문 비율 40% 달성
+- 관리자 업무 효율성 70% 향상
+
+## 🗂 Critical Architecture Notes
+
+### Character Encoding:
+- **Database**: UTF-8 charset throughout
+- **PHP Files**: Must be saved as UTF-8 without BOM
+- **HTML Meta**: `<meta charset="UTF-8">`
+- **MySQL Connection**: Always set `mysqli_set_charset($db, "utf8")`
+
+### Session Management:
+- Sessions stored in PHP default location
+- Session ID used for cart management (`shop_temp` table)
+- Enhanced logout with complete session cleanup
+- Member login state checked via `$_SESSION['duson_member_id']`
+
+### File Upload Architecture:
+- Base directory: `uploads/`
+- Structure: `uploads/[URL]/[DATE]/[IP]/[TIMESTAMP]/`
+- Supported formats: PDF, JPG, PNG, GIF, AI, PSD
+- Max file size: Configured in PHP.ini
+- Multiple file support via FileUploadComponent
+
+### Price Calculation Architecture:
+1. **Database-driven** (Most products):
+   - Query pricing tables with conditions
+   - Apply quantity discounts
+   - Add design fees if applicable
+   
+2. **Formula-driven** (Stickers only):
+   - JavaScript calculations in frontend
+   - Complex mathematical formulas
+   - Real-time AJAX updates
+
+### Cart System Architecture:
+- Table: `shop_temp`
+- Session-based cart management
+- Product-specific fields stored as JSON in `Type_1`
+- Multi-step checkout process
+- Direct order bypass available
+
+## 🔧 Recent Updates (September 2025)
+
+### Leaflet System Refactoring & UI Improvements (September 2, 2025)
+
+#### **1. Code Structure Optimization**
+**Issue**: 전단지 시스템에 1000+줄의 인라인 CSS와 중복 코드 존재
+**Location**: `C:\xampp\htdocs\MlangPrintAuto\inserted\`
+
+**Solutions Applied**:
+- **인라인 CSS 분리**: `css/leaflet-inline.css` 생성 (322줄 → 별도 파일)
+- **설정 파일 생성**: `config/leaflet.config.php` (중앙화된 설정)
+- **공통 함수 라이브러리**: `includes/leaflet_functions.php` (재사용 가능한 함수들)
+- **파일 크기 감소**: 1500줄 → 475줄로 대폭 축소
+
+#### **2. UI Layout Improvements**
+**Issue**: 페이지 타이틀과 헤더가 너무 크고 여백이 과도함
+**Location**: `css/leaflet-compact.css`
+
+**Changes Applied**:
+```css
+/* 페이지 타이틀 크기 50% 축소 */
+.page-title {
+    padding: 25px → 12px;
+    margin-bottom: 30px → 10px;
+}
+.page-title h1 { font-size: 2.2rem → 1.1rem; }
+.page-title p { font-size: 1rem → 0.5rem; }
+
+/* Calculator-header 디자인 변경 */
+.calculator-header {
+    padding: 18px → 9px (상하 패딩 50% 축소);
+    margin-bottom: 25px → 12px;
+    background: 화려한 그라데이션 → rgba(204, 204, 204, 0.5);
+    color: white → #333;
+}
+
+/* 그리드 여백 1/3로 축소 */
+.leaflet-grid { margin: 30px → 10px; }
+```
+
+#### **3. Dropdown Auto-Selection Fix**
+**Issue**: 드롭다운에서 "선택해주세요" 상태로 남아있어 사용자가 수동으로 선택해야 함
+**Location**: `index.php`, `js/leaflet-compact.js`
+
+**Solutions Applied**:
+- **PHP 기본값 강화**: 첫 번째 옵션 자동 `selected` 설정
+- **JavaScript 자동 선택**: 빈 값 감지 시 첫 번째 실제 값 자동 선택
+- **이벤트 연동**: `change` 이벤트 자동 발생으로 후속 동작 실행
+- **타이밍 최적화**: 1.5초 대기 후 실행으로 안정성 확보
+
+```javascript
+// 자동 선택 로직
+const selects = ['MY_Fsd', 'PN_type', 'POtype'];
+selects.forEach(selectName => {
+    const selectElement = document.querySelector(`select[name="${selectName}"]`);
+    const firstValidIndex = selectElement.options[0].value === '' ? 1 : 0;
+    selectElement.selectedIndex = firstValidIndex;
+    selectElement.dispatchEvent(new Event('change'));
+});
+```
+
+### Files Created/Modified:
+- ✅ **신규 생성**: `css/leaflet-inline.css` (인라인 CSS 분리)
+- ✅ **신규 생성**: `config/leaflet.config.php` (설정 중앙화)
+- ✅ **신규 생성**: `includes/leaflet_functions.php` (공통 함수)
+- ✅ **수정**: `index.php` (인라인 코드 제거, 드롭다운 개선)
+- ✅ **수정**: `css/leaflet-compact.css` (UI 레이아웃 최적화)
+- ✅ **수정**: `js/leaflet-compact.js` (자동 선택 로직 추가)
+
+### Impact:
+- **유지보수성 향상**: 모듈화된 구조로 코드 관리 용이
+- **사용자 경험 개선**: 자동 드롭다운 선택으로 편의성 증대
+- **디자인 최적화**: 컴팩트한 레이아웃으로 공간 효율성 증가
+- **재사용성 증가**: 공통 함수를 다른 제품 페이지에서도 활용 가능
+
 ---
 
-*Last Updated: December 2025*
+*Last Updated: September 2025*
 *System Status: Production Ready*  
-*Developer: AI Assistant (Claude)*
-*Recent Updates: Cart Fix, Print Enhancements, Senior-Friendly UI, JSON Display Fix*
+*Development Environment: Windows XAMPP*
+*Git Branch: auth-system-fix*
+*Implementation Status: Phase 1 - Leaflet System Optimized*
+*Next Review: October 2025*
+특히 admin 관련부분은 수정할려면 반드시 사전계획을 세우고 물어보고 수정 할것

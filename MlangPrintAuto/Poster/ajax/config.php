@@ -16,8 +16,8 @@ define('DB_PASSWORD', 'du1830');
 define('DB_NAME', 'duson1830');
 
 // LittlePrint 전용 테이블 설정
-define('CATEGORY_TABLE', 'MlangPrintAuto_transactionCate');
-define('PRICE_TABLE', 'MlangPrintAuto_LittlePrint');
+define('CATEGORY_TABLE', "mlangprintauto_transactioncate");
+define('PRICE_TABLE', "mlangprintauto_littleprint");
 define('PAGE_NAME', 'LittlePrint');
 
 // Ajax 응답 관련 설정

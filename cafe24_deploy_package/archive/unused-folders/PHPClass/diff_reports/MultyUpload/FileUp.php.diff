@@ -1,0 +1,7 @@
+--- FileUp.php (original)
++++ FileUp.php (modified)
+@@ -143,3 +143,4 @@
+ </body>
+ 
+ </html>
++?>

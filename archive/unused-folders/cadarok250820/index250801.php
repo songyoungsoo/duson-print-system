@@ -918,13 +918,13 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
             <div class="nav-menu">
                 <div class="nav-content">
                     <div class="nav-links">
-                        <a href="/MlangPrintAuto/inserted/index.php" class="nav-link">📄 전단지</a>
+                        <a href="/mlangprintauto/inserted/index.php" class="nav-link">📄 전단지</a>
                         <a href="/shop/view_modern.php" class="nav-link">🏷️ 스티커</a>
-                        <a href="/MlangPrintAuto/cadarok/index.php" class="nav-link active">📖 카다록</a>
-                        <a href="/MlangPrintAuto/NameCard/index.php" class="nav-link">📇 명함</a>
-                        <a href="/MlangPrintAuto/MerchandiseBond/index.php" class="nav-link">🎫 상품권</a>
-                        <a href="/MlangPrintAuto/envelope/index.php" class="nav-link">✉️ 봉투</a>
-                        <a href="/MlangPrintAuto/LittlePrint/index.php" class="nav-link">🎨 포스터</a>
+                        <a href="/mlangprintauto/cadarok/index.php" class="nav-link active">📖 카다록</a>
+                        <a href="/mlangprintauto/namecard/index.php" class="nav-link">📇 명함</a>
+                        <a href="/mlangprintauto/merchandisebond/index.php" class="nav-link">🎫 상품권</a>
+                        <a href="/mlangprintauto/envelope/index.php" class="nav-link">✉️ 봉투</a>
+                        <a href="/mlangprintauto/littleprint/index.php" class="nav-link">🎨 포스터</a>
                         <a href="/shop/cart.php" class="nav-link cart">🛒 장바구니</a>
                     </div>
                 </div>

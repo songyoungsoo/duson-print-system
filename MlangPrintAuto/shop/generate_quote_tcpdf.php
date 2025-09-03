@@ -35,7 +35,7 @@ function getKoreanName($connect, $id) {
         return $id;
     }
     
-    $query = "SELECT title FROM MlangPrintAuto_transactionCate WHERE no = ? LIMIT 1";
+    $query = "SELECT title FROM mlangprintauto_transactioncate WHERE no = ? LIMIT 1";
     $stmt = mysqli_prepare($connect, $query);
     if (!$stmt) {
         return $id;

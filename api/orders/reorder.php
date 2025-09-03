@@ -170,7 +170,7 @@ try {
     echo json_encode([
         'success' => true,
         'message' => $message,
-        'redirect_url' => '/MlangPrintAuto/shop/cart.php'
+        'redirect_url' => '/mlangprintauto/shop/cart.php'
     ]);
     
 } catch (Exception $e) {

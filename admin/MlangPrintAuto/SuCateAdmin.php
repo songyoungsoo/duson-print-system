@@ -1,7 +1,7 @@
 <?php
 include "../../db.php";
 include "../../config.php";
-include "../../MlangPrintAuto/ConDb.php";
+include "../../mlangprintauto/ConDb.php";
 ?>
 
 <?php

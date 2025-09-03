@@ -1,3 +1,27 @@
+<style>
+.file-icon {
+    display: inline-block;
+    padding: 8px 12px;
+    border-radius: 6px;
+    font-weight: bold;
+    font-size: 11px;
+    color: white;
+    text-align: center;
+    min-width: 30px;
+    margin: 2px;
+}
+.file-icon.ai { background: #ff6b35; }
+.file-icon.eps { background: #ff6b35; }
+.file-icon.cdr { background: #4caf50; }
+.file-icon.jpg { background: #2196f3; }
+.file-icon.pdf { background: #f44336; }
+.file-info-icon {
+    display: inline-block;
+    margin-right: 8px;
+    font-size: 16px;
+}
+</style>
+
 <div class="prodcutDetail_title">
     <h2>옵셋봉투</h2>
     <p>자사의 옵셋봉투는 일반용지부터 최고급 수입지 까지 30가지의 다양한 용지로<br>제작이 가능하며, 다양한 후가공으로 나만의 특별한 봉투 제작이 가능합니다.</p>
@@ -17,9 +41,9 @@
                 </div>
             </div>
         
-        <div class='product_detail_innerW'><div class='product_detail_innerL'><h4>용지설명 안내</h4></div><div class='product_detail_innerR'><div class='paper_kind_img'><img src='/Content/images/product/detail/paper_kind_img2.png'/></div><div class='paper_kind_list'><ul class='paper_kind_ul'><li><p name='MATLEZCW-110'><i class='fas fa-caret-right'></i>레쟈크체크백색 110g</p></li><li><p name='MATLEZLW-110'><i class='fas fa-caret-right'></i>레쟈크줄백색 100g</p></li><li><p name='MATMOJ-120'><i class='fas fa-caret-right'></i>모조지 120g / 150g</p></li><li><p name='MATFIL-120'><i class='fas fa-caret-right'></i>화일지 120g</p></li><li><p name='MATSTP-120'><i class='fas fa-caret-right'></i>스타펄 120g</p></li></ul></div><div class='paper_kind_list'><ul class='paper_kind_ul'><li><p name='MATCRA-98'><i class='fas fa-caret-right'></i>크라프트 98g</p></li><li><p name='MATRD-120'><i class='fas fa-caret-right'></i>레이드지 120g</p></li><li><p name='MATTT-120'><i class='fas fa-caret-right'></i>탄트지 120g</p></li><li><p name='MATMK-120'><i class='fas fa-caret-right'></i>밍크지 120g</p></li><li><p name='MATMOJ-120'><i class='fas fa-caret-right'></i>모조지창봉투 100g</p></li></ul></div></div></div>
+        <div class='product_detail_innerW'><div class='product_detail_innerL'><h4>용지설명 안내</h4></div><div class='product_detail_innerR'><div class='paper_kind_img'><!-- 용지 이미지는 텍스트로 대체 --></div><div class='paper_kind_list'><ul class='paper_kind_ul'><li><p name='MATLEZCW-110'><i class='fas fa-caret-right'></i>레쟈크체크백색 110g</p></li><li><p name='MATLEZLW-110'><i class='fas fa-caret-right'></i>레쟈크줄백색 100g</p></li><li><p name='MATMOJ-120'><i class='fas fa-caret-right'></i>모조지 120g / 150g</p></li><li><p name='MATFIL-120'><i class='fas fa-caret-right'></i>화일지 120g</p></li><li><p name='MATSTP-120'><i class='fas fa-caret-right'></i>스타펄 120g</p></li></ul></div><div class='paper_kind_list'><ul class='paper_kind_ul'><li><p name='MATCRA-98'><i class='fas fa-caret-right'></i>크라프트 98g</p></li><li><p name='MATRD-120'><i class='fas fa-caret-right'></i>레이드지 120g</p></li><li><p name='MATTT-120'><i class='fas fa-caret-right'></i>탄트지 120g</p></li><li><p name='MATMK-120'><i class='fas fa-caret-right'></i>밍크지 120g</p></li><li><p name='MATMOJ-120'><i class='fas fa-caret-right'></i>모조지창봉투 100g</p></li></ul></div></div></div>
 
-        <div class='product_detail_innerW'><div class='product_detail_innerL'><h4>봉투종류</h4></div><div class='product_detail_innerR'><div class='product_kind_item'><img src='/Content/images/product/detail/envel_kind_img1.png' /></div></div></div>
+        <div class='product_detail_innerW'><div class='product_detail_innerL'><h4>봉투종류</h4></div><div class='product_detail_innerR'><div class='product_kind_item'><!-- 봉투 종류 이미지는 텍스트로 대체 --></div></div></div>
         
 
         <div class='product_detail_innerW'><div class='product_detail_innerL'><h4>접수 출고안내</h4></div><div class='product_detail_innerR'><p class='pd-text-md'>제품별 출고일을 확인해 보세요.</p><table class='table turnaround_table'><tr align='center'><th width='200'>제품</th><th width='300' class='turnaround_table_bg'>용지</th><th width='600' class='turnaround_table_bg'>출고일</th></tr><tr><td width='200' rowspan='13' align='center'>옵셋봉투</td><td width='300' align='center'>레자크줄무늬백 110g</td><td width='200' rowspan='13' align='center'><span class='red'>2~3일</span></td></tr><tr><td width='300' align='center'>레자크체크백 110</td></tr><tr><td width='300' align='center'>레자크 120g</td></tr><tr><td width='300' align='center'>레이드 10g</td></tr><tr><td width='300' align='center'>탄트 120g</td></tr><tr><td width='300' align='center'>모조 120g</td></tr><tr><td width='300' align='center'>모조 150g</td></tr><tr><td width='300' align='center'>스타펄 120g</td></tr><tr><td width='300' align='center'>모조 150g</td></tr><tr><td width='300' align='center'>스타펄 120g</td></tr><tr><td width='300' align='center'>화일지 120g</td></tr><tr><td width='300' align='center'>크라프트 98g</td></tr><tr><td width='300' align='center'>누브지 105g</td></tr></table><p class='pd-text-md'> </p></div></div>
@@ -31,29 +55,29 @@
                     <div class="product_detail_files">
                         <ul>
                             <li>
-                                <img src="/Content/images/product/detail/filetype_icon_ai.png" />
+                                <div class="file-icon ai">AI</div>
                                 <p>
                                     Adobe<br />illustrator
                                 </p>
                             </li>
                             <li>
-                                <img src="/Content/images/product/detail/filetype_icon_eps.png" />
+                                <div class="file-icon eps">EPS</div>
                                 <p>
                                     Adobe<br />illustrator
                                 </p>
                             </li>
                             <li>
-                                <img src="/Content/images/product/detail/filetype_icon_cdr.png" />
+                                <div class="file-icon cdr">CDR</div>
                                 <p>CorelDRAW</p>
                             </li>
                             <li>
-                                <img src="/Content/images/product/detail/filetype_icon_jpg.png" />
+                                <div class="file-icon jpg">JPG</div>
                                 <p>
                                     디지털 사진 및<br />디지털 그래픽툴 공용
                                 </p>
                             </li>
                             <li>
-                                <img src="/Content/images/product/detail/filetype_icon_pdf.png" />
+                                <div class="file-icon pdf">PDF</div>
                                 <p>디지털 그래픽툴 공용</p>
                             </li>
                         </ul>
@@ -74,7 +98,7 @@
     <div class="fileNotice_title">
         <h2>작업 시 유의사항</h2>
         <div class="fileNotice_subtitle">
-            <img src="/Content/images/product/detail/dt_alert_i.png" />
+            <i class="fas fa-exclamation-triangle" style="color: #ff6b35;"></i>
             <p>
                 반드시 <span class="red">작업 유의사항을 숙지하시고 주문</span>해주시기 바랍니다. <span class="red">당사가 편집, 수정 작업을 할 수 없으며</span><br />
                 작업 유의사항에 맞지 않은 데이터의 오류는 사고처리가 불가하십니다.
@@ -103,12 +127,12 @@
                     <h4>작업 주의사항</h4>
                 </div>
                 <div class="fileNotice_innerR">
-                    <img src="/Content/images/product/detail/dt_file_info01.png" />
+                    <div class="file-info-icon">📄</div>
                     <p>
                         · 파일 업로드 시 돔보선은 넣지 마시고 안전선 / 재단선 / 작업선은 삭제가아닌
                         꼭 안 보이는 <span class="bold">선색 없음으로 설정</span>하셔야 합니다.
                     </p>
-                    <img src='/Content/images/product/detail/dt_file_info02_ev.png'>
+                    <div class="file-info-icon">📋</div>
                     <p>
                         · 글씨나 배경 색상 작업 시, CMYK가 섞인 먹색은 더블톤으로 나올 수 있으니
                         <span class="bold">먹(K100)으로만 작업</span>하셔야 선명하게 인쇄됩니다.

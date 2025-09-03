@@ -2,7 +2,7 @@
 $DhtmlTopFos = "430";
 $DhtmlLeftFos = "180";
 
-$GGTABLE = "MlangPrintAuto_transactionCate";
+$TABLE = "mlangprintauto_transactioncate";
 $GGTABLESu = "MlangPrintAuto_SuCate";
 
 $ConDb_A = "전단지:스티카:명함:상품권:봉투:양식지:리플렛:소량인쇄:카다로그:학원:음식:기업체:의류:상업:교회:비영리:기타";

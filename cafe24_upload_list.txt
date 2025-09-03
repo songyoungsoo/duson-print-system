@@ -1,0 +1,110 @@
+========================================
+카페24 FTP 업로드 파일 목록
+테이블명 대소문자 수정 버전
+작성일: 2025년 12월
+========================================
+
+[필수 업로드 파일/폴더]
+
+1. /MlangPrintAuto/ 폴더 전체
+   - 특히 아래 하위 폴더들의 PHP 파일들:
+   
+   📁 /MlangPrintAuto/NameCard/
+      ✅ index.php
+      ✅ calculate_price_ajax.php
+      ✅ get_paper_types.php
+      ✅ get_quantities.php
+      ✅ get_portfolio_images.php
+   
+   📁 /MlangPrintAuto/envelope/
+      ✅ index.php
+      ✅ calculate_price_ajax.php
+      ✅ get_paper_types.php
+      ✅ get_quantities.php
+   
+   📁 /MlangPrintAuto/LittlePrint/
+      ✅ index.php
+      ✅ calculate_price_ajax.php
+      ✅ get_paper_types.php
+      ✅ get_paper_sizes.php
+      ✅ get_quantities.php
+      ✅ littleprint_price_ajax.php
+      ✅ price_cal.php
+   
+   📁 /MlangPrintAuto/MerchandiseBond/
+      ✅ index.php
+      ✅ calculate_price_ajax.php
+      ✅ get_paper_types.php
+      ✅ get_quantities.php
+   
+   📁 /MlangPrintAuto/NcrFlambeau/
+      ✅ index.php
+      ✅ calculate_price_ajax.php
+      ✅ get_colors.php
+      ✅ get_quantities.php
+      ✅ get_sizes.php
+   
+   📁 /MlangPrintAuto/cadarok/
+      ✅ index.php
+      ✅ calculate_price_ajax.php
+      ✅ get_paper_types.php
+      ✅ get_quantities.php
+      ✅ get_sizes.php
+      ✅ price_cal.php
+      ✅ price_cal_new.php
+   
+   📁 /MlangPrintAuto/msticker/
+      ✅ index.php
+      ✅ get_paper_types.php
+      ✅ get_sizes.php
+      ✅ price_cal_ajax.php
+      ✅ setup_msticker_data.php
+   
+   📁 /MlangPrintAuto/sticker/
+      ✅ index.php
+      ✅ calculate_price_ajax.php
+      ✅ get_paper_types.php
+      ✅ get_quantities.php
+   
+   📁 /MlangPrintAuto/sticker_new/
+      ✅ index.php (이미 수정됨)
+      ✅ get_paper_types.php
+      ✅ get_quantities.php
+   
+   📁 /MlangPrintAuto/inserted/
+      ✅ 모든 PHP 파일
+
+2. /MlangPrintAuto/shop/ 폴더
+   ✅ shop_temp_helper.php
+
+========================================
+[업로드 방법]
+
+1. FTP 클라이언트 (FileZilla 등) 사용
+2. 카페24 FTP 접속 정보로 로그인
+3. 백업 먼저 진행 (중요!)
+4. 위 파일들을 동일한 경로에 덮어쓰기
+
+========================================
+[주의사항]
+
+⚠️ 업로드 전 반드시 현재 파일 백업
+⚠️ 한 폴더씩 순차적으로 업로드 권장
+⚠️ 업로드 후 각 제품별로 테스트 필수
+
+========================================
+[테스트 순서]
+
+1. 명함 (/MlangPrintAuto/NameCard/)
+2. 봉투 (/MlangPrintAuto/envelope/)
+3. 포스터 (/MlangPrintAuto/LittlePrint/)
+4. 상품권 (/MlangPrintAuto/MerchandiseBond/)
+5. NCR용지 (/MlangPrintAuto/NcrFlambeau/)
+6. 카다로그 (/MlangPrintAuto/cadarok/)
+7. 자석스티커 (/MlangPrintAuto/msticker/)
+8. 일반스티커 (/MlangPrintAuto/sticker_new/)
+
+각 제품에서 옵션 선택 후 자동 가격 계산이 
+정상 작동하는지 확인
+
+========================================

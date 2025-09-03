@@ -6,7 +6,8 @@
 
 session_start();
 
-// 데이터베이스 연결
+// 보안 상수 정의 후 데이터베이스 연결
+include "../includes/db_constants.php";
 include "../db.php";
 $connect = $db;
 
@@ -119,7 +120,7 @@ try {
     
     foreach ($cart_items as $item) {
         // 새 주문 번호 생성
-        $max_result = mysqli_query($connect, "SELECT MAX(no) as max_no FROM MlangOrder_PrintAuto");
+        $max_result = mysqli_query($connect, "SELECT MAX(no) as max_no FROM mlangorder_printauto");
         $max_row = mysqli_fetch_assoc($max_result);
         $new_no = ($max_row['max_no'] ?? 0) + 1;
         
@@ -269,8 +270,8 @@ try {
             $final_cont .= $business_info_text;
         }
         
-        // MlangOrder_PrintAuto 테이블에 삽입
-        $insert_query = "INSERT INTO MlangOrder_PrintAuto (
+        // mlangorder_printauto 테이블에 삽입
+        $insert_query = "INSERT INTO mlangorder_printauto (
             no, Type, Type_1, money_4, money_5, name, email, zip, zip1, zip2, 
             phone, Hendphone, cont, date, OrderStyle, ThingCate
         ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)";
@@ -410,7 +411,7 @@ try {
             
             // 3. ThingCate 필드 업데이트 (첫 번째 파일로)
             if (!empty($first_file_name)) {
-                $update_query = "UPDATE MlangOrder_PrintAuto SET ThingCate = ? WHERE no = ?";
+                $update_query = "UPDATE mlangorder_printauto SET ThingCate = ? WHERE no = ?";
                 $update_stmt = mysqli_prepare($connect, $update_query);
                 if ($update_stmt) {
                     mysqli_stmt_bind_param($update_stmt, 'si', $first_file_name, $new_no);

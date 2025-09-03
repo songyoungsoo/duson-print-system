@@ -30,7 +30,7 @@ $page_title = '주문 상세 - ' . $order_no . ' - 두손기획인쇄';
 
 try {
     // 주문 상세 정보 조회 (본인 주문인지 확인)
-    $query = "SELECT * FROM MlangOrder_PrintAuto WHERE order_no = ? AND customer_name = ?";
+    $query = "SELECT * FROM mlangorder_printauto WHERE order_no = ? AND customer_name = ?";
     $stmt = mysqli_prepare($db, $query);
     mysqli_stmt_bind_param($stmt, "ss", $order_no, $user_name);
     mysqli_stmt_execute($stmt);
@@ -457,7 +457,7 @@ function displayProductOptions($product_code, $options) {
                     if (data.success) {
                         alert('재주문이 장바구니에 추가되었습니다.');
                         if (confirm('장바구니로 이동하시겠습니까?')) {
-                            window.location.href = '/MlangPrintAuto/shop/cart.php';
+                            window.location.href = '/mlangprintauto/shop/cart.php';
                         }
                     } else {
                         alert('재주문 중 오류가 발생했습니다: ' + data.message);

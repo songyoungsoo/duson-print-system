@@ -6,10 +6,10 @@ $PageCode = "PrintAuto";
 include "$HomeDir/db.php";
 // include $_SERVER['DOCUMENT_ROOT'] . "/MlangPrintAuto/MlangPrintAutoTop.php";
 
-// 데이터베이스 연결
-$db = new mysqli($host, $user, $password, $dataname);
-if ($db->connect_error) {
-    die("Connection failed: " . $db->connect_error);
+// 데이터베이스 연결은 이미 db.php에서 완료됨
+// $db 변수가 이미 설정되어 있음
+if (!$db) {
+    die("Connection failed: Database connection not established");
 }
 $db->set_charset("utf8");
 
@@ -17,7 +17,7 @@ $db->set_charset("utf8");
 $no = isset($_REQUEST['no']) ? intval($_REQUEST['no']) : 0;
 
 if ($no > 0) {
-    $stmt = $db->prepare("SELECT * FROM MlangOrder_PrintAuto WHERE no = ?");
+    $stmt = $db->prepare("SELECT * FROM mlangorder_printauto WHERE no = ?");
     $stmt->bind_param("i", $no);
     $stmt->execute();
     $result = $stmt->get_result();
@@ -57,7 +57,7 @@ if ($no > 0) {
     }
     $stmt->close();
 }
-$db->close();
+// $db->close(); // 연결 유지 - admin.php에서 계속 사용
 ?>
 
 <!DOCTYPE html>

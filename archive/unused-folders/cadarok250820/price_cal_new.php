@@ -1,7 +1,7 @@
 <?php
 /**
  * 카다록 가격 계산 API (통합 장바구니 호환 버전)
- * 경로: MlangPrintAuto/cadarok/price_cal_new.php
+ * 경로: mlangprintauto/cadarok/price_cal_new.php
  */
 
 header('Content-Type: application/json; charset=utf-8');

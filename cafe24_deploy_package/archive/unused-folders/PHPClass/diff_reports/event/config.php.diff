@@ -1,0 +1,7 @@
+--- config.php (original)
++++ config.php (modified)
+@@ -1,3 +1,4 @@
++<?php
+ <?php
+ $title="팝업창프로그램 테스트";
+ $pop="Div1";

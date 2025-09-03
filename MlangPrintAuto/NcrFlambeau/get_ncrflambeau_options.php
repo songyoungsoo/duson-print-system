@@ -16,8 +16,8 @@ if ($style_no && $db) {
     // 1. MY_Fsd (규격) - Section 컬럼에서 가져오기
     $my_fsd_query = "
         SELECT DISTINCT lp.Section, tc.title 
-        FROM MlangPrintAuto_NcrFlambeau lp
-        JOIN MlangPrintAuto_transactionCate tc ON lp.Section = tc.no
+        FROM mlangprintauto_ncrflambeau lp
+        JOIN mlangprintauto_transactioncate tc ON lp.Section = tc.no
         WHERE lp.style = ? AND tc.Ttable = ?
         ORDER BY tc.no
     ";
@@ -32,8 +32,8 @@ if ($style_no && $db) {
     // 2. PN_type (색상 및 재질) - TreeSelect 컬럼에서 가져오기
     $pn_type_query = "
         SELECT DISTINCT lp.TreeSelect, tc.title 
-        FROM MlangPrintAuto_NcrFlambeau lp
-        JOIN MlangPrintAuto_transactionCate tc ON lp.TreeSelect = tc.no
+        FROM mlangprintauto_ncrflambeau lp
+        JOIN mlangprintauto_transactioncate tc ON lp.TreeSelect = tc.no
         WHERE lp.style = ? AND tc.Ttable = ?
         ORDER BY tc.no
     ";
@@ -48,7 +48,7 @@ if ($style_no && $db) {
     // 3. Quantities (수량) - quantity 컬럼에서 가져오기
     $quantity_query = "
         SELECT DISTINCT quantity 
-        FROM MlangPrintAuto_NcrFlambeau 
+        FROM mlangprintauto_ncrflambeau 
         WHERE style = ? 
         ORDER BY CAST(quantity AS UNSIGNED)
     ";

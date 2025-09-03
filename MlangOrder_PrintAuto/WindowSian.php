@@ -30,7 +30,7 @@ include "../db.php";
 
 $no = $_GET['no'] ?? '';
 
-$result = $db->query("SELECT * FROM MlangOrder_PrintAuto WHERE no='$no'");
+$result = $db->query("SELECT * FROM mlangorder_printauto WHERE no='$no'");
 $row = $result->fetch_assoc();
 
 if ($row) {
@@ -111,7 +111,7 @@ body {
 .container {
     max-width: 1000px;
     margin: 0 auto;
-    padding: 12px;
+    padding: 8px;
     min-height: 100vh;
 }
 
@@ -177,10 +177,10 @@ body {
 /* Order Info Card */
 .order-card {
     background: white;
-    border-radius: 16px;
-    padding: 32px;
-    margin-bottom: 24px;
-    box-shadow: 0 4px 24px rgba(0,0,0,0.08);
+    border-radius: 12px;
+    padding: 16px;
+    margin-bottom: 12px;
+    box-shadow: 0 2px 12px rgba(0,0,0,0.06);
     border: 1px solid #e2e8f0;
 }
 
@@ -284,8 +284,8 @@ body {
 .image-section {
     background: white;
     border-radius: 12px;
-    padding: 16px;
-    box-shadow: 0 4px 24px rgba(0,0,0,0.08);
+    padding: 12px;
+    box-shadow: 0 2px 12px rgba(0,0,0,0.06);
     border: 1px solid #e2e8f0;
     text-align: center;
 }
@@ -441,6 +441,63 @@ body {
     0% { transform: rotate(0deg); }
     100% { transform: rotate(360deg); }
 }
+
+/* 교정확정 버튼 스타일 */
+.proofreading-confirm-btn {
+    background: linear-gradient(135deg, #16a34a 0%, #15803d 100%);
+    color: white;
+    border: none;
+    border-radius: 8px;
+    padding: 10px 20px;
+    font-size: 14px;
+    font-weight: 600;
+    cursor: pointer;
+    box-shadow: 0 2px 10px rgba(22, 163, 74, 0.3);
+    transition: all 0.3s ease;
+    min-width: 120px;
+}
+
+.proofreading-confirm-btn:hover {
+    background: linear-gradient(135deg, #15803d 0%, #166534 100%);
+    transform: translateY(-2px);
+    box-shadow: 0 6px 20px rgba(22, 163, 74, 0.4);
+}
+
+.proofreading-confirm-btn:disabled {
+    background: #9ca3af;
+    cursor: not-allowed;
+    transform: none;
+    box-shadow: none;
+}
+
+.order-details {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+    gap: 16px;
+    margin-bottom: 20px;
+}
+
+.detail-item {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+}
+
+.detail-label {
+    font-weight: 600;
+    color: #374151;
+    min-width: 80px;
+}
+
+.detail-label::after {
+    content: ':';
+    margin-left: 4px;
+}
+
+.detail-value {
+    color: #1e293b;
+    font-weight: 500;
+}
 </style>
 </head>
 
@@ -461,11 +518,11 @@ body {
     <?php } ?>
 
     <!-- Minimal Header -->
-    <div style="background: #1e293b; padding: 12px 0; margin-bottom: 16px; border-radius: 8px;">
-        <div style="text-align: center; color: white; font-size: 18px; font-weight: 600;">
+    <div style="background: #1e293b; padding: 8px 0; margin-bottom: 8px; border-radius: 6px;">
+        <div style="text-align: center; color: white; font-size: 16px; font-weight: 600;">
             두손기획인쇄
         </div>
-        <div style="text-align: center; color: #cbd5e1; font-size: 11px; margin-top: 4px; line-height: 1.4;">
+        <div style="text-align: center; color: #cbd5e1; font-size: 10px; margin-top: 2px; line-height: 1.3;">
             이미지는 RGB 표시 / 인쇄 시 CMYK 출력으로 색상차이 있음<br>
             오탈자 및 전체 상태를 확인하여 전반적인 수정사항을 요청하셔야 합니다<br>
             <span style="color: #fbbf24;">수정은 2회 가능합니다</span>
@@ -567,11 +624,23 @@ if ($View_SignMMk == "yes") {
 }
 ?>
 
-
     <!-- Image Section -->
     <div class="image-section">
         <div style="margin-bottom: 16px; text-align: center;">
-            <h3 style="font-size: 16px; color: #374151; margin: 0;">업로드된 파일</h3>
+            <div class="order-details" style="display: grid; grid-template-columns: repeat(3, 1fr); gap: 16px; margin-bottom: 16px; text-align: left;">
+                <div class="detail-item">
+                    <span class="detail-label">주문번호</span>
+                    <span class="detail-value"><?= htmlspecialchars($no) ?></span>
+                </div>
+                <div class="detail-item">
+                    <span class="detail-label">담당자</span>
+                    <span class="detail-value"><?= htmlspecialchars($view_designer ?: '미배정') ?></span>
+                </div>
+                <div class="detail-item">
+                    <span class="detail-label">주문자</span>
+                    <span class="detail-value"><?= htmlspecialchars($View_OrderName) ?></span>
+                </div>
+            </div>
         </div>
         
         <?php if (!empty($ImgFile) && file_exists("./upload/$no/$ImgFile")) { ?>
@@ -592,7 +661,100 @@ if ($View_SignMMk == "yes") {
         <?php } ?>
     </div>
 
+    <!-- 교정확정 섹션 (이미지 하단) -->
+    <div class="proofreading-section" style="margin-top: 12px; padding: 12px; background: white; border-radius: 6px; box-shadow: 0 1px 6px rgba(0,0,0,0.06);">
+        <div id="proofreadingStatus" style="text-align: center;">
+            <div id="proofreadingButton">
+                <button onclick="confirmProofreading()" class="proofreading-confirm-btn" id="confirmBtn">
+                    📝 교정확정
+                </button>
+                <p style="font-size: 11px; color: #64748b; margin: 6px 0 0 0; line-height: 1.3;">
+                    오탈자 및 전체를 잘 확인 후 클릭해주세요
+                </p>
+            </div>
+            <div id="proofreadingCompleted" style="display: none; color: #dc2626; font-weight: 600; font-size: 14px;">
+                ✅ 인쇄진행
+            </div>
+        </div>
+    </div>
+
 </div> <!-- Close container -->
+
+<script>
+// 페이지 로드 시 교정확정 상태 확인
+document.addEventListener('DOMContentLoaded', function() {
+    checkProofreadingStatus();
+});
+
+// 교정확정 상태 확인 함수
+function checkProofreadingStatus() {
+    const orderNo = '<?= $no ?>';
+    
+    fetch('/MlangOrder_PrintAuto/check_proofreading_status.php', {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/x-www-form-urlencoded',
+        },
+        body: 'order_no=' + encodeURIComponent(orderNo)
+    })
+    .then(response => response.json())
+    .then(data => {
+        if (data.confirmed) {
+            showProofreadingCompleted();
+        }
+    })
+    .catch(error => {
+        console.log('교정확정 상태 확인 중 오류:', error);
+    });
+}
+
+// 교정확정 함수
+function confirmProofreading() {
+    if (!confirm('오탈자 및 전체를 잘 확인 했습니다.\n인쇄진행해주세요.\n\n인쇄 진행 후에는 더이상 수정할 수 없습니다.\n\n교정확정 하시겠습니까?')) {
+        return;
+    }
+    
+    const orderNo = '<?= $no ?>';
+    const button = document.getElementById('confirmBtn');
+    
+    // 버튼 비활성화 및 로딩 표시
+    button.disabled = true;
+    button.innerHTML = '<div class="loading"></div> 처리중...';
+    
+    fetch('/MlangOrder_PrintAuto/confirm_proofreading.php', {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/x-www-form-urlencoded',
+        },
+        body: 'order_no=' + encodeURIComponent(orderNo)
+    })
+    .then(response => response.json())
+    .then(data => {
+        if (data.success) {
+            alert('교정확정이 완료되었습니다.\n인쇄 진행됩니다.');
+            showProofreadingCompleted();
+        } else {
+            alert('교정확정 처리 중 오류가 발생했습니다: ' + (data.message || '알 수 없는 오류'));
+            // 버튼 복원
+            button.disabled = false;
+            button.innerHTML = '📝 교정확정';
+        }
+    })
+    .catch(error => {
+        console.error('교정확정 처리 중 오류:', error);
+        alert('교정확정 처리 중 오류가 발생했습니다.');
+        // 버튼 복원
+        button.disabled = false;
+        button.innerHTML = '📝 교정확정';
+    });
+}
+
+// 교정확정 완료 상태 표시
+function showProofreadingCompleted() {
+    document.getElementById('proofreadingButton').style.display = 'none';
+    document.getElementById('proofreadingCompleted').style.display = 'block';
+}
+</script>
 
 </body>
 </html>

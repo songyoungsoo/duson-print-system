@@ -40,7 +40,7 @@ if (empty($style)) {
 
 try {
     // NcrFlambeau의 색상 옵션은 TreeNo 기준으로 조회
-    $options = getDropdownOptions($db, 'MlangPrintAuto_transactionCate', [
+    $options = getDropdownOptions($db, "mlangprintauto_transactioncate", [
         'Ttable' => 'NcrFlambeau',
         'TreeNo' => $style
     ], 'no ASC');

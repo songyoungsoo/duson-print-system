@@ -1,5 +1,12 @@
 <?php
 include "../../db.php";
+include "../../includes/auth.php";
+
+// 디버깅: $db 변수 확인
+if (!isset($db) || !$db) {
+    die("ERROR: Database connection not established from db.php");
+}
+
 include "../config.php";
 
 $T_DirUrl = "../../MlangPrintAuto";
@@ -39,7 +46,7 @@ $ThingNo= isset($_POST['ThingNo']) ? $_POST['ThingNo'] : 0;
 
 if ($mode == "ModifyOk") { ////////////////////////////////////////////////////////////////////////////
     // 데이터베이스 연결
-    $db = new mysqli($host, $user, $password, $dataname);
+    // $db는 이미 ../../db.php에서 생성됨
     if ($db->connect_error) {
         die("Database connection failed: " . $db->connect_error);
     }
@@ -62,7 +69,7 @@ if ($mode == "ModifyOk") { /////////////////////////////////////////////////////
     $delivery = isset($_POST['delivery']) ? $_POST['delivery'] : '';
 
     // SQL UPDATE 문 준비
-    $stmt = $db->prepare("UPDATE MlangOrder_PrintAuto 
+    $stmt = $db->prepare("UPDATE mlangorder_printauto 
         SET name = ?, email = ?, zip = ?, zip1 = ?, zip2 = ?, phone = ?, Hendphone = ?, bizname = ?, 
             bank = ?, bankname = ?, cont = ?, Gensu = ?, delivery = ?
         WHERE no = ?");
@@ -90,21 +97,21 @@ if ($mode == "ModifyOk") { /////////////////////////////////////////////////////
     exit;
 
     $stmt->close();
-    $db->close();
+    // // $db->close(); // 스크립트 끝에서 자동으로 닫힘 // 연결 유지
 }
 ?>
 
 <?php
 if ($mode == "SubmitOk") { ////////////////////////////////////////////////////////////////////////////
     // 데이터베이스 연결
-    $db = new mysqli($host, $user, $password, $dataname);
+    // $db는 이미 ../../db.php에서 생성됨
     if ($db->connect_error) {
         die("Database connection failed: " . $db->connect_error);
     }
     $db->set_charset("utf8");
 
     // 새로운 주문번호 생성
-    $Table_result = $db->query("SELECT MAX(no) FROM MlangOrder_PrintAuto");
+    $Table_result = $db->query("SELECT MAX(no) FROM mlangorder_printauto");
     if (!$Table_result) {
         echo "<script>alert('DB 접속 에러입니다!'); history.go(-1);</script>";
         exit;
@@ -124,7 +131,7 @@ if ($mode == "SubmitOk") { /////////////////////////////////////////////////////
     $date = date("Y-m-d H:i:s");
 
     // 데이터 삽입
-    $stmt = $db->prepare("INSERT INTO MlangOrder_PrintAuto 
+    $stmt = $db->prepare("INSERT INTO mlangorder_printauto 
         (no, Type, ImgFolder, TypeOne, money_1, money_2, money_3, money_4, money_5, name, email, zip, zip1, zip2, phone, Hendphone, bizname, bank, bankname, cont, date, orderStyle, ThingCate, Designer, pass, Gensu) 
         VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)");
 
@@ -150,7 +157,7 @@ if ($mode == "SubmitOk") { /////////////////////////////////////////////////////
           </script>";
 
     $stmt->close();
-    $db->close();
+    // // $db->close(); // 스크립트 끝에서 자동으로 닫힘 // 연결 유지
     exit;
 }
 ?>
@@ -329,12 +336,11 @@ if ($mode == "BankModifyOk") { /////////////////////////////////////////////////
 if ($mode == "OrderView") {
     include "../title.php";
     
-    // ✅ 데이터베이스 연결
-    include "../../db.php";
+    // 데이터베이스 연결은 이미 파일 상단에서 완료됨
     
     if (!empty($no)) {
         // ✅ 주문 정보 조회
-        $stmt = $db->prepare("SELECT * FROM MlangOrder_PrintAuto WHERE no = ?");
+        $stmt = $db->prepare("SELECT * FROM mlangorder_printauto WHERE no = ?");
         $stmt->bind_param("i", $no);
         $stmt->execute();
         $result = $stmt->get_result();
@@ -343,7 +349,7 @@ if ($mode == "OrderView") {
         
         // ✅ 주문 상태 업데이트 (OrderStyle이 "2"일 경우만)
         if ($row && $row['OrderStyle'] == "2") {
-            $update_stmt = $db->prepare("UPDATE MlangOrder_PrintAuto SET OrderStyle = '3' WHERE no = ?");
+            $update_stmt = $db->prepare("UPDATE mlangorder_printauto SET OrderStyle = '3' WHERE no = ?");
             $update_stmt->bind_param("i", $no);
             if ($update_stmt->execute()) {
                 echo "<script>opener.parent.location.reload();</script>";
@@ -780,19 +786,19 @@ if ($mode == "SinForm") { //////////////////////////////////////////////////////
 
             <?php
             if ($View_SignMMk == "yes") {  // 추가된 교정시안 비번 입력 기능
-                $db = new mysqli($host, $user, $password, $dataname);
+                // $db는 이미 ../../db.php에서 생성됨
                 if ($db->connect_error) {
                     die("Database connection failed: " . $db->connect_error);
                 }
                 $db->set_charset("utf8");
 
-                $stmt = $db->prepare("SELECT pass FROM MlangOrder_PrintAuto WHERE no = ?");
+                $stmt = $db->prepare("SELECT pass FROM mlangorder_printauto WHERE no = ?");
                 $stmt->bind_param("i", $no);
                 $stmt->execute();
                 $stmt->bind_result($ViewSignTy_pass);
                 $stmt->fetch();
                 $stmt->close();
-                $db->close();
+                // // $db->close(); // 스크립트 끝에서 자동으로 닫힘 // 데이터베이스 연결은 계속 필요하므로 닫지 않음
             ?>
                 <tr>
                     <td align=right>사용 비밀번호:&nbsp;</td>
@@ -830,14 +836,14 @@ if ($mode == "SinFormModifyOk") { //////////////////////////////////////////////
     $ModifyCode = intval($no); // 보안 강화를 위해 정수형 변환
 
     // 데이터베이스 연결 (mysqli)
-    $db = new mysqli($host, $user, $password, $dataname);
+    // $db는 이미 ../../db.php에서 생성됨
     if ($db->connect_error) {
         die("Database connection failed: " . $db->connect_error);
     }
     $db->set_charset("utf8");
 
-    // `MlangOrder_PrintAuto` 테이블에서 기존 파일명 가져오기
-    $stmt = $db->prepare("SELECT ThingCate FROM MlangOrder_PrintAuto WHERE no = ?");
+    // `mlangorder_printauto` 테이블에서 기존 파일명 가져오기
+    $stmt = $db->prepare("SELECT ThingCate FROM mlangorder_printauto WHERE no = ?");
     $stmt->bind_param("i", $ModifyCode);
     $stmt->execute();
     $stmt->bind_result($GF_upfile);
@@ -891,7 +897,7 @@ if ($mode == "SinFormModifyOk") { //////////////////////////////////////////////
     }
 
     // DB 업데이트
-    $stmt = $db->prepare("UPDATE MlangOrder_PrintAuto SET OrderStyle=?, ThingCate=?, pass=? WHERE no=?");
+    $stmt = $db->prepare("UPDATE mlangorder_printauto SET OrderStyle=?, ThingCate=?, pass=? WHERE no=?");
     $stmt->bind_param("sssi", $TOrderStyle, $photofileNAME, $pass, $no);
     
     if (!$stmt->execute()) {
@@ -909,7 +915,7 @@ if ($mode == "SinFormModifyOk") { //////////////////////////////////////////////
           </script>";
 
     $stmt->close();
-    $db->close();
+    // // $db->close(); // 스크립트 끝에서 자동으로 닫힘 // 연결 유지
     exit;
 }
 
@@ -1085,20 +1091,20 @@ if ($mode == "AdminMlangOrdertOk") { ///////////////////////////////////////////
     // echo "</pre>";
     // exit();
     // 데이터베이스 연결
-    $db = new mysqli($host, $user, $password, $dataname);
+    // $db는 이미 ../../db.php에서 생성됨
     if ($db->connect_error) {
         die("Database connection failed: " . $db->connect_error);
     }
     $db->set_charset("utf8");
 
     $ToTitle = $_POST['ThingNo'] ?? '';
-    include "../../MlangPrintAuto/ConDb.php";
+    include "../../mlangprintauto/ConDb.php";
 
     $ThingNoOkp = empty($_POST['ThingNoOkp']) ? $ToTitle : $_POST['View_TtableB'];
     // if(!$ThingNoOkp){$ThingNoOkp="$ThingNo";}else{$ThingNoOkp="$View_TtableB";}
 
     // 새로운 주문번호 생성
-    $Table_result = $db->query("SELECT MAX(no) FROM MlangOrder_PrintAuto");
+    $Table_result = $db->query("SELECT MAX(no) FROM mlangorder_printauto");
     if (!$Table_result) {
         echo "<script>alert('DB 접속 에러입니다!'); history.go(-1);</script>";
         exit;
@@ -1151,7 +1157,7 @@ if ($mode == "AdminMlangOrdertOk") { ///////////////////////////////////////////
 
     $date = !empty($date) ? $date : date("Y-m-d H:i:s");   
 // `INSERT INTO` SQL 실행
-$stmt = $db->prepare("INSERT INTO MlangOrder_PrintAuto 
+$stmt = $db->prepare("INSERT INTO mlangorder_printauto 
     (no, Type, ImgFolder, Type_1, money_1, money_2, money_3, money_4, money_5, 
     name, email, zip, zip1, zip2, phone, Hendphone, delivery, bizname, bank, bankname, 
     cont, date, OrderStyle, ThingCate, pass, Gensu, Designer) 
@@ -1206,14 +1212,14 @@ echo "<script>
 // <script>
 //     alert('정보를 정상적으로 저장하였습니다.');
 //     if (window.opener && !window.opener.closed) {
-//         window.opener.location.href = '/admin/MlangPrintAuto/OrderList.php'; // 부모 창 이동
+//         window.opener.location.href = '/admin/mlangprintauto/OrderList.php'; // 부모 창 이동
 //         window.opener.focus(); // 부모 창 활성화
 //     }
 //     window.close(); // 현재 창 닫기
 // </script>
 
 $stmt->close();
-$db->close();
+// $db->close(); // 스크립트 끝에서 자동으로 닫힘
 exit;
 }
 ?>

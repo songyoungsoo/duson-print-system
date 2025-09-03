@@ -30,7 +30,7 @@ $default_values = [
 ];
 
 // 첫 번째 카다록 종류 가져오기
-$type_query = "SELECT no, title FROM MlangPrintAuto_transactionCate 
+$type_query = "SELECT no, title FROM mlangprintauto_transactioncate 
                WHERE Ttable='cadarok' AND BigNo='0' 
                ORDER BY no ASC 
                LIMIT 1";
@@ -39,7 +39,7 @@ if ($type_result && ($type_row = mysqli_fetch_assoc($type_result))) {
     $default_values['MY_type'] = $type_row['no'];
     
     // 해당 카다록 종류의 첫 번째 재질 가져오기
-    $section_query = "SELECT no, title FROM MlangPrintAuto_transactionCate 
+    $section_query = "SELECT no, title FROM mlangprintauto_transactioncate 
                       WHERE Ttable='cadarok' AND BigNo='" . $type_row['no'] . "' 
                       ORDER BY no ASC LIMIT 1";
     $section_result = mysqli_query($db, $section_query);
@@ -47,7 +47,7 @@ if ($type_result && ($type_row = mysqli_fetch_assoc($type_result))) {
         $default_values['Section'] = $section_row['no'];
         
         // 해당 조합의 기본 수량 가져오기 (500매 우선)
-        $quantity_query = "SELECT DISTINCT quantity FROM MlangPrintAuto_cadarok 
+        $quantity_query = "SELECT DISTINCT quantity FROM mlangprintauto_cadarok 
                           WHERE style='" . $type_row['no'] . "' AND Section='" . $section_row['no'] . "' 
                           ORDER BY CASE WHEN quantity='500' THEN 1 ELSE 2 END, CAST(quantity AS UNSIGNED) ASC 
                           LIMIT 1";
@@ -73,10 +73,14 @@ if ($type_result && ($type_row = mysqli_fetch_assoc($type_result))) {
     <link rel="stylesheet" href="../../css/cadarok-compact.css">
     <link rel="stylesheet" href="../../css/gallery-common.css">
     <link rel="stylesheet" href="../../css/btn-primary.css">
+    <!-- 컴팩트 폼 그리드 CSS (모든 품목 공통) -->
+    <link rel="stylesheet" href="../../css/compact-form.css">
+    <!-- 통합 가격 표시 시스템 -->
+    <link rel="stylesheet" href="../../css/unified-price-display.css">
     
     <!-- 고급 JavaScript 라이브러리 (적응형 이미지 분석 및 실시간 계산) -->
     <script src="../../includes/js/GalleryLightbox.js"></script>
-    <script src="../../js/cadarok.js" defer></script>
+    <script src="js/cadarok.js" defer></script>
     
     <!-- 세션 ID 및 설정값 메타 태그 -->
     <meta name="session-id" content="<?php echo htmlspecialchars(session_id()); ?>">
@@ -87,9 +91,32 @@ if ($type_result && ($type_row = mysqli_fetch_assoc($type_result))) {
     <?php include "../../includes/nav.php"; ?>
 
     <div class="compact-container">
+    
+    <style>
+    /* 카다록을 명함과 동일한 크기로 조정 */
+    .compact-container {
+        max-width: 1200px !important;
+        margin: 0 auto !important;
+        padding: 10px 20px 20px 20px !important;
+        background: white !important;
+        border-radius: 15px !important;
+        box-shadow: 0 10px 40px rgba(0,0,0,0.1) !important;
+        overflow: hidden !important;
+    }
+    
+    .main-content {
+        display: grid !important;
+        grid-template-columns: 1fr 1fr !important;
+        gap: 30px !important;
+        min-height: 450px !important;
+        max-width: 1200px !important;
+        margin: 0 auto !important;
+        align-items: start !important;
+    }
+    </style>
         <div class="page-title">
             <h1>📝 카다록/리플렛 견적안내</h1>
-            <p>컴팩트 프리미엄 - PROJECT_SUCCESS_REPORT.md 스펙 구현</p>
+            <p><!--  컴팩트 프리미엄 - PROJECT_SUCCESS_REPORT.md 스펙 구현  --></p>
         </div>
 
         <!-- 컴팩트 2단 그리드 레이아웃 (500px 갤러리 + 나머지 계산기) -->
@@ -98,8 +125,12 @@ if ($type_result && ($type_row = mysqli_fetch_assoc($type_result))) {
             <section class="cadarok-gallery" aria-label="카다록/리플렛 샘플 갤러리">
                 <?php
                 // 통합 갤러리 시스템 사용 (3줄로 완전 간소화)
-                include_once "../../includes/gallery_helper.php";
-                include_product_gallery('cadarok', ['mainSize' => [500, 400]]);
+                if (file_exists('../../includes/gallery_helper.php')) { 
+                    include_once '../../includes/gallery_helper.php'; 
+                }
+                if (function_exists("include_product_gallery")) { 
+                    include_product_gallery('cadarok'); 
+                }
                 ?>
             </section>
 
@@ -111,13 +142,13 @@ if ($type_result && ($type_row = mysqli_fetch_assoc($type_result))) {
 
                 <form id="cadarokForm">
                     <!-- 옵션 선택 그리드 - 개선된 2열 레이아웃 -->
-                    <div class="options-grid">
-                        <div class="option-group">
-                            <label class="option-label" for="MY_type">카다록 종류</label>
+                    <div class="options-grid form-grid-compact">
+                        <div class="option-group form-field">
+                            <label class="option-label" for="MY_type">종류</label>
                             <select class="option-select" name="MY_type" id="MY_type" required>
                                 <option value="">선택해주세요</option>
                                 <?php
-                                $categories = getCategoryOptions($db, 'MlangPrintAuto_transactionCate', 'cadarok');
+                                $categories = getCategoryOptions($db, "mlangprintauto_transactioncate", "cadarok");
                                 foreach ($categories as $category) {
                                     $selected = ($category['no'] == $default_values['MY_type']) ? 'selected' : '';
                                     echo "<option value='" . safe_html($category['no']) . "' $selected>" . safe_html($category['title']) . "</option>";
@@ -126,14 +157,14 @@ if ($type_result && ($type_row = mysqli_fetch_assoc($type_result))) {
                             </select>
                         </div>
 
-                        <div class="option-group">
-                            <label class="option-label" for="Section">용지 재질</label>
+                        <div class="option-group form-field">
+                            <label class="option-label" for="Section">재질</label>
                             <select class="option-select" name="Section" id="Section" required data-default-value="<?php echo htmlspecialchars($default_values['Section']); ?>">
                                 <option value="">먼저 종류를 선택해주세요</option>
                             </select>
                         </div>
 
-                        <div class="option-group">
+                        <div class="option-group form-field">
                             <label class="option-label" for="POtype">인쇄면</label>
                             <select class="option-select" name="POtype" id="POtype" required>
                                 <option value="">선택해주세요</option>
@@ -142,7 +173,7 @@ if ($type_result && ($type_row = mysqli_fetch_assoc($type_result))) {
                             </select>
                         </div>
 
-                        <div class="option-group">
+                        <div class="option-group form-field">
                             <label class="option-label" for="MY_amount">수량</label>
                             <select class="option-select" name="MY_amount" id="MY_amount" required data-default-value="<?php echo htmlspecialchars($default_values['MY_amount']); ?>">
                                 <option value="">먼저 재질을 선택해주세요</option>
@@ -160,6 +191,7 @@ if ($type_result && ($type_row = mysqli_fetch_assoc($type_result))) {
                     </div>
 
                     <!-- 실시간 가격 표시 - 개선된 애니메이션 -->
+                    <!-- 스티커 방식의 실시간 가격 표시 -->
                     <div class="price-display" id="priceDisplay">
                         <div class="price-label">견적 금액</div>
                         <div class="price-amount" id="priceAmount">견적 계산 필요</div>
@@ -226,7 +258,7 @@ if ($type_result && ($type_row = mysqli_fetch_assoc($type_result))) {
                         <textarea id="modalWorkMemo" class="memo-textarea" placeholder="작업 관련 요청사항이나 특별한 지시사항을 입력해주세요.&#10;&#10;예시:&#10;- 색상을 더 진하게 해주세요&#10;- 로고 크기를 조금 더 크게&#10;- 배경색을 파란색으로 변경"></textarea>
                         
                         <div class="upload-notice">
-                            <div class="notice-item">📋 택배 무료배송은 결제금액 총 3만원 명부시에 한함</div>
+                            <div class="notice-item">📦 택배는 기본이 착불 원칙입니다</div>
                             <div class="notice-item">📋 온전판(당일)주 전날 주문 제품과 목업 불가</div>
                         </div>
                     </div>
@@ -338,7 +370,9 @@ if ($type_result && ($type_row = mysqli_fetch_assoc($type_result))) {
         position: relative !important; /* 헤더 오버플로우를 위한 설정 */
         margin-top: 0 !important;
         align-self: start !important;
-        min-height: 400px !important;
+        height: 450px !important;
+        min-height: 450px !important;
+        overflow: auto !important;
     }
 
     .calculator-header h3 {
@@ -356,54 +390,8 @@ if ($type_result && ($type_row = mysqli_fetch_assoc($type_result))) {
     }
 
     /* =================================================================== */
-    /* 3단계: 통일된 가격 표시 - 녹색 큰 글씨 (인쇄비+편집비=공급가) */
+    /* 가격 표시는 공통 CSS (../../css/unified-price-display.css) 사용 */
     /* =================================================================== */
-    .price-display {
-        background: linear-gradient(145deg, #f8f9fa 0%, #e9ecef 100%) !important;
-        border: 2px solid #28a745 !important;
-        border-radius: 12px !important;
-        padding: 15px 20px !important;
-        text-align: center !important;
-        margin: 20px 0 !important;
-        transition: all 0.3s ease !important;
-        box-shadow: 0 4px 12px rgba(40, 167, 69, 0.1) !important;
-    }
-
-    .price-display.calculated {
-        background: linear-gradient(145deg, #d4edda 0%, #c3e6cb 100%) !important;
-        transform: translateY(-2px) !important;
-        box-shadow: 0 8px 20px rgba(40, 167, 69, 0.2) !important;
-        border-color: #20c997 !important;
-    }
-
-    .price-display .price-label {
-        font-size: 0.9rem !important;
-        color: #495057 !important;
-        margin-bottom: 8px !important;
-        font-weight: 500 !important;
-    }
-
-    .price-display .price-amount {
-        font-size: 2.2rem !important;
-        font-weight: 700 !important;
-        color: #28a745 !important;
-        margin: 10px 0 !important;
-        line-height: 1.2 !important;
-        text-shadow: 0 2px 4px rgba(40, 167, 69, 0.3) !important;
-        letter-spacing: -0.5px !important;
-    }
-
-    .price-display .price-details {
-        font-size: 0.8rem !important;
-        color: #6c757d !important;
-        line-height: 1.4 !important;
-        margin-top: 8px !important;
-    }
-
-    .price-display:hover {
-        transform: translateY(-1px) !important;
-        box-shadow: 0 6px 16px rgba(40, 167, 69, 0.15) !important;
-    }
 
     /* =================================================================== */
     /* 4단계: Form 요소 컴팩트화 (패딩 1/2 축소) */
@@ -446,6 +434,9 @@ if ($type_result && ($type_row = mysqli_fetch_assoc($type_result))) {
         position: relative !important;
         margin-top: 0 !important;
         align-self: start !important;
+        height: 450px !important;
+        min-height: 450px !important;
+        overflow: auto !important;
     }
     
     .gallery-title {

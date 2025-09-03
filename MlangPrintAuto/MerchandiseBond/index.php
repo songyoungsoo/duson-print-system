@@ -5,7 +5,7 @@
  * Created: 2025년 12월 (AI Assistant - Frontend Persona)
  */
 
-// 공통 인증 및 설정
+// 보안 상수 정의 후 공통 인증 및 설정
 include "../../includes/auth.php";
 
 // 공통 함수 및 데이터베이스
@@ -30,7 +30,7 @@ $default_values = [
 ];
 
 // 첫 번째 상품권/쿠폰 종류 가져오기
-$type_query = "SELECT no, title FROM MlangPrintAuto_transactionCate 
+$type_query = "SELECT no, title FROM mlangprintauto_transactioncate 
                WHERE Ttable='MerchandiseBond' AND BigNo='0' 
                ORDER BY no ASC 
                LIMIT 1";
@@ -39,7 +39,7 @@ if ($type_result && ($type_row = mysqli_fetch_assoc($type_result))) {
     $default_values['MY_type'] = $type_row['no'];
     
     // 해당 상품권/쿠폰 종류의 첫 번째 재질 가져오기
-    $section_query = "SELECT no, title FROM MlangPrintAuto_transactionCate 
+    $section_query = "SELECT no, title FROM mlangprintauto_transactioncate 
                       WHERE Ttable='MerchandiseBond' AND BigNo='" . $type_row['no'] . "' 
                       ORDER BY no ASC LIMIT 1";
     $section_result = mysqli_query($db, $section_query);
@@ -47,7 +47,7 @@ if ($type_result && ($type_row = mysqli_fetch_assoc($type_result))) {
         $default_values['Section'] = $section_row['no'];
         
         // 해당 조합의 기본 수량 가져오기 (100매 우선)
-        $quantity_query = "SELECT DISTINCT quantity FROM MlangPrintAuto_MerchandiseBond 
+        $quantity_query = "SELECT DISTINCT quantity FROM mlangprintauto_merchandisebond 
                           WHERE style='" . $type_row['no'] . "' AND Section='" . $section_row['no'] . "' 
                           ORDER BY CASE WHEN quantity='100' THEN 1 ELSE 2 END, CAST(quantity AS UNSIGNED) ASC 
                           LIMIT 1";
@@ -73,6 +73,11 @@ if ($type_result && ($type_row = mysqli_fetch_assoc($type_result))) {
     <link rel="stylesheet" href="../../css/namecard-compact.css">
     <link rel="stylesheet" href="../../css/gallery-common.css">
     <link rel="stylesheet" href="../../css/btn-primary.css">
+    <!-- 컴팩트 폼 그리드 CSS (모든 품목 공통) -->
+    <link rel="stylesheet" href="../../css/compact-form.css">
+    
+    <!-- 통합 가격 표시 시스템 CSS -->
+    <link rel="stylesheet" href="../../css/unified-price-display.css">
     
     <!-- 고급 JavaScript 라이브러리 (적응형 이미지 분석 및 실시간 계산) -->
     <script src="../../includes/js/GalleryLightbox.js"></script>
@@ -89,7 +94,7 @@ if ($type_result && ($type_row = mysqli_fetch_assoc($type_result))) {
     <div class="compact-container">
         <div class="page-title">
             <h1>🎁 상품권/쿠폰 견적안내</h1>
-            <p>컴팩트 프리미엄 - NameCard 시스템 구조 적용</p>
+            <!-- <p>컴팩트 프리미엄 - NameCard 시스템 구조 적용</p> -->
         </div>
 
         <!-- 컴팩트 2단 그리드 레이아웃 (500px 갤러리 + 나머지 계산기) -->
@@ -97,9 +102,9 @@ if ($type_result && ($type_row = mysqli_fetch_assoc($type_result))) {
             <!-- 좌측: 통합 갤러리 시스템 -->
             <section class="merchandisebond-gallery" aria-label="상품권/쿠폰 샘플 갤러리">
                 <?php
-                // 통합 갤러리 시스템 사용 (3줄로 완전 간소화)
-                include_once "../../includes/gallery_helper.php";
-                include_product_gallery('merchandisebond', ['mainSize' => [500, 400]]);
+                // 공통 갤러리 시스템 사용 (500×300px 기본값)
+                if (file_exists('../../includes/gallery_helper.php')) { if (file_exists('../../includes/gallery_helper.php')) { include_once '../../includes/gallery_helper.php'; } }
+                if (function_exists("include_product_gallery")) { include_product_gallery('merchandisebond'); }
                 ?>
             </section>
 
@@ -111,13 +116,13 @@ if ($type_result && ($type_row = mysqli_fetch_assoc($type_result))) {
 
                 <form id="merchandisebondForm">
                     <!-- 옵션 선택 그리드 - 개선된 2열 레이아웃 -->
-                    <div class="options-grid">
-                        <div class="option-group">
-                            <label class="option-label" for="MY_type">상품권 종류</label>
+                    <div class="options-grid form-grid-compact">
+                        <div class="option-group form-field">
+                            <label class="option-label" for="MY_type">종류</label>
                             <select class="option-select" name="MY_type" id="MY_type" required>
                                 <option value="">선택해주세요</option>
                                 <?php
-                                $categories = getCategoryOptions($db, 'MlangPrintAuto_transactionCate', 'MerchandiseBond');
+                                $categories = getCategoryOptions($db, "mlangprintauto_transactioncate", 'MerchandiseBond');
                                 foreach ($categories as $category) {
                                     $selected = ($category['no'] == $default_values['MY_type']) ? 'selected' : '';
                                     echo "<option value='" . safe_html($category['no']) . "' $selected>" . safe_html($category['title']) . "</option>";
@@ -126,14 +131,14 @@ if ($type_result && ($type_row = mysqli_fetch_assoc($type_result))) {
                             </select>
                         </div>
 
-                        <div class="option-group">
-                            <label class="option-label" for="Section">상품권 재질</label>
+                        <div class="option-group form-field">
+                            <label class="option-label" for="Section">재질</label>
                             <select class="option-select" name="Section" id="Section" required data-default-value="<?php echo htmlspecialchars($default_values['Section']); ?>">
                                 <option value="">먼저 종류를 선택해주세요</option>
                             </select>
                         </div>
 
-                        <div class="option-group">
+                        <div class="option-group form-field">
                             <label class="option-label" for="POtype">인쇄면</label>
                             <select class="option-select" name="POtype" id="POtype" required>
                                 <option value="">선택해주세요</option>
@@ -142,7 +147,7 @@ if ($type_result && ($type_row = mysqli_fetch_assoc($type_result))) {
                             </select>
                         </div>
 
-                        <div class="option-group">
+                        <div class="option-group form-field">
                             <label class="option-label" for="MY_amount">수량</label>
                             <select class="option-select" name="MY_amount" id="MY_amount" required data-default-value="<?php echo htmlspecialchars($default_values['MY_amount']); ?>">
                                 <option value="">먼저 재질을 선택해주세요</option>
@@ -160,11 +165,12 @@ if ($type_result && ($type_row = mysqli_fetch_assoc($type_result))) {
                     </div>
 
                     <!-- 실시간 가격 표시 - 개선된 애니메이션 -->
+                    <!-- 스티커 방식의 실시간 가격 표시 -->
                     <div class="price-display" id="priceDisplay">
                         <div class="price-label">견적 금액</div>
                         <div class="price-amount" id="priceAmount">견적 계산 필요</div>
                         <div class="price-details" id="priceDetails">
-                            모든 옵션을 선택하면 자동으로 계산됩니다
+                            <span>모든 옵션을 선택하면 자동으로 계산됩니다</span>
                         </div>
                     </div>
 
@@ -266,8 +272,8 @@ if ($type_result && ($type_row = mysqli_fetch_assoc($type_result))) {
 
     <?php
     // 갤러리 에셋 자동 포함
-    if (defined('GALLERY_ASSETS_NEEDED')) {
-        include_gallery_assets();
+    if (defined("GALLERY_ASSETS_NEEDED") && function_exists("include_gallery_assets")) {
+        if (function_exists("include_gallery_assets")) { include_gallery_assets(); }
     }
     ?>
     
@@ -305,7 +311,7 @@ if ($type_result && ($type_row = mysqli_fetch_assoc($type_result))) {
     </style>
 
     <?php
-    // 갤러리 모달과 JavaScript는 include_product_gallery()에서 자동 포함됨
+    // 갤러리 모달과 JavaScript는 if (function_exists("include_product_gallery")) { include_product_gallery()에서 자동 포함됨
     ?>
 
     <?php include "../../includes/login_modal.php"; ?>
@@ -369,55 +375,7 @@ if ($type_result && ($type_row = mysqli_fetch_assoc($type_result))) {
         opacity: 0.9 !important;
     }
 
-    /* =================================================================== */
-    /* 3단계: 통일된 가격 표시 - 녹색 큰 글씨 (인쇄비+편집비=공급가) */
-    /* =================================================================== */
-    .price-display {
-        background: linear-gradient(145deg, #f8f9fa 0%, #e9ecef 100%) !important;
-        border: 2px solid #28a745 !important;
-        border-radius: 12px !important;
-        padding: 15px 20px !important;
-        text-align: center !important;
-        margin: 20px 0 !important;
-        transition: all 0.3s ease !important;
-        box-shadow: 0 4px 12px rgba(40, 167, 69, 0.1) !important;
-    }
-
-    .price-display.calculated {
-        background: linear-gradient(145deg, #d4edda 0%, #c3e6cb 100%) !important;
-        transform: translateY(-2px) !important;
-        box-shadow: 0 8px 20px rgba(40, 167, 69, 0.2) !important;
-        border-color: #20c997 !important;
-    }
-
-    .price-display .price-label {
-        font-size: 0.9rem !important;
-        color: #495057 !important;
-        margin-bottom: 8px !important;
-        font-weight: 500 !important;
-    }
-
-    .price-display .price-amount {
-        font-size: 2.2rem !important;
-        font-weight: 700 !important;
-        color: #28a745 !important;
-        margin: 10px 0 !important;
-        line-height: 1.2 !important;
-        text-shadow: 0 2px 4px rgba(40, 167, 69, 0.3) !important;
-        letter-spacing: -0.5px !important;
-    }
-
-    .price-display .price-details {
-        font-size: 0.8rem !important;
-        color: #6c757d !important;
-        line-height: 1.4 !important;
-        margin-top: 8px !important;
-    }
-
-    .price-display:hover {
-        transform: translateY(-1px) !important;
-        box-shadow: 0 6px 16px rgba(40, 167, 69, 0.15) !important;
-    }
+    /* 가격 표시는 공통 CSS (../../css/unified-price-display.css) 사용 */
 
     /* =================================================================== */
     /* 4단계: Form 요소 컴팩트화 (패딩 1/2 축소) */
@@ -431,7 +389,9 @@ if ($type_result && ($type_row = mysqli_fetch_assoc($type_result))) {
     /* =================================================================== */
     .calculator-section {
         padding: 0px 25px !important;        /* 더 타이트하게 */
-        min-height: 400px !important;
+        height: 450px !important;
+        min-height: 450px !important;
+        overflow: auto !important;
     }
 
     .options-grid {
@@ -455,6 +415,9 @@ if ($type_result && ($type_row = mysqli_fetch_assoc($type_result))) {
         padding: 25px;
         box-shadow: 0 8px 25px rgba(0, 0, 0, 0.08);
         border: 1px solid rgba(255, 255, 255, 0.8);
+        height: 450px !important;
+        min-height: 450px !important;
+        overflow: auto !important;
     }
     
     .gallery-title {
@@ -833,9 +796,7 @@ if ($type_result && ($type_row = mysqli_fetch_assoc($type_result))) {
             padding: 15px 20px !important;    /* 터치 친화적 */
         }
         
-        .price-display .price-amount {
-            font-size: 1.5rem !important;     /* 모바일 가독성 */
-        }
+        /* price-display는 공통 CSS (unified-price-display.css) 사용 */
         
         .option-select {
             padding: 10px 15px !important;    /* 터치 영역 확보 */

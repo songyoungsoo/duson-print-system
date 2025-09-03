@@ -1,0 +1,86 @@
+📋 서버에 업로드해야 할 파일 목록 (데이터베이스 설정 수정)
+===============================================
+
+✅ 이미 수정 완료된 파일들:
+-----------------------------------------
+1. MlangPrintAuto/inserted/calculate_price_ajax.php
+2. MlangPrintAuto/inserted/get_paper_types.php  
+3. MlangPrintAuto/inserted/get_paper_sizes.php
+4. MlangPrintAuto/inserted/get_quantities.php
+
+⚠️ 추가로 수정이 필요한 주요 파일들:
+-----------------------------------------
+
+📁 카다록 (카다로그):
+- MlangPrintAuto/cadarok/price_cal.php
+- MlangPrintAuto/cadarok/calculate_price_ajax.php (있는 경우)
+- MlangPrintAuto/cadarok/get_paper_types.php
+- MlangPrintAuto/cadarok/get_sizes.php
+- MlangPrintAuto/cadarok/get_quantities.php
+
+📁 명함 (NameCard):
+- MlangPrintAuto/NameCard/calculate_price_ajax.php
+- MlangPrintAuto/NameCard/get_paper_types.php
+- MlangPrintAuto/NameCard/get_quantities.php
+- MlangPrintAuto/NameCard/get_namecard_images.php
+
+📁 봉투 (Envelope):
+- MlangPrintAuto/envelope/calculate_price_ajax.php
+- MlangPrintAuto/envelope/get_paper_types.php
+- MlangPrintAuto/envelope/get_quantities.php
+
+📁 스티커 (Sticker):
+- MlangPrintAuto/sticker/calculate_price_ajax.php
+- MlangPrintAuto/sticker/get_paper_types.php
+- MlangPrintAuto/sticker/get_quantities.php
+- MlangPrintAuto/sticker_new/get_paper_types.php
+- MlangPrintAuto/sticker_new/get_quantities.php
+
+📁 자석스티커 (msticker):
+- MlangPrintAuto/msticker/price_cal.php
+- MlangPrintAuto/msticker/price_cal_ajax.php
+- MlangPrintAuto/msticker/get_paper_types.php
+- MlangPrintAuto/msticker/get_sizes.php
+
+📁 포스터 (LittlePrint/Poster):
+- MlangPrintAuto/LittlePrint/calculate_price_ajax.php
+- MlangPrintAuto/LittlePrint/littleprint_price_ajax.php
+- MlangPrintAuto/LittlePrint/get_paper_types.php
+- MlangPrintAuto/LittlePrint/get_paper_sizes.php
+- MlangPrintAuto/LittlePrint/get_quantities.php
+- MlangPrintAuto/Poster/calculate_price_ajax.php
+- MlangPrintAuto/Poster/get_paper_types.php
+- MlangPrintAuto/Poster/get_paper_sizes.php
+
+📁 상품권 (MerchandiseBond):
+- MlangPrintAuto/MerchandiseBond/calculate_price_ajax.php
+- MlangPrintAuto/MerchandiseBond/get_paper_types.php
+- MlangPrintAuto/MerchandiseBond/get_quantities.php
+
+📁 NCR/전표 (NcrFlambeau):
+- MlangPrintAuto/NcrFlambeau/calculate_price_ajax.php
+- MlangPrintAuto/NcrFlambeau/get_colors.php
+- MlangPrintAuto/NcrFlambeau/get_quantities.php
+- MlangPrintAuto/NcrFlambeau/get_sizes.php
+
+===============================================
+
+💡 참고사항:
+1. 모든 파일에서 아래 설정으로 통일해야 합니다:
+   $host = "localhost";
+   $user = "dsp1830";
+   $password = "ds701018";
+   $dataname = "dsp1830";
+
+2. db.php 파일 (루트 디렉토리)도 동일한 설정으로 확인 필요
+
+3. 업로드 시 주의사항:
+   - FTP로 업로드 시 ASCII 모드 사용
+   - 권한 설정: 644 (파일) / 755 (디렉토리)
+   - 백업 필수
+
+4. 테스트 순서:
+   1) 각 제품 페이지 접속
+   2) 옵션 선택 및 가격 계산 테스트
+   3) 장바구니 담기 테스트
+   4) 주문 프로세스 테스트

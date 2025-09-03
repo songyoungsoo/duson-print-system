@@ -27,7 +27,7 @@ $default_values = [
 ];
 
 // 첫 번째 명함 종류 가져오기 (일반명함(쿠폰) 우선)
-$type_query = "SELECT no, title FROM MlangPrintAuto_transactionCate 
+$type_query = "SELECT no, title FROM mlangprintauto_transactioncate 
                WHERE Ttable='NameCard' AND BigNo='0' 
                ORDER BY CASE WHEN title LIKE '%일반명함%' THEN 1 ELSE 2 END, no ASC 
                LIMIT 1";
@@ -36,7 +36,7 @@ if ($type_result && ($type_row = mysqli_fetch_assoc($type_result))) {
     $default_values['MY_type'] = $type_row['no'];
     
     // 해당 명함 종류의 첫 번째 재질 가져오기
-    $section_query = "SELECT no, title FROM MlangPrintAuto_transactionCate 
+    $section_query = "SELECT no, title FROM mlangprintauto_transactioncate 
                       WHERE Ttable='NameCard' AND BigNo='" . $type_row['no'] . "' 
                       ORDER BY no ASC LIMIT 1";
     $section_result = mysqli_query($db, $section_query);
@@ -44,7 +44,7 @@ if ($type_result && ($type_row = mysqli_fetch_assoc($type_result))) {
         $default_values['Section'] = $section_row['no'];
         
         // 해당 조합의 기본 수량 가져오기 (500매 우선)
-        $quantity_query = "SELECT DISTINCT quantity FROM MlangPrintAuto_namecard 
+        $quantity_query = "SELECT DISTINCT quantity FROM mlangprintauto_namecard 
                           WHERE style='" . $type_row['no'] . "' AND Section='" . $section_row['no'] . "' 
                           ORDER BY CASE WHEN quantity='500' THEN 1 ELSE 2 END, CAST(quantity AS UNSIGNED) ASC 
                           LIMIT 1";
@@ -98,7 +98,7 @@ if ($type_result && ($type_row = mysqli_fetch_assoc($type_result))) {
             <!-- 우측: 동적 계산기 -->
             <div class="calculator-section">
                 <div class="calculator-header">
-                    <h3>💰 실시간 견적 계산기</h3>
+                    <h3>💰견적 안내</h3>
                 </div>
 
                 <form id="namecardForm">
@@ -109,7 +109,7 @@ if ($type_result && ($type_row = mysqli_fetch_assoc($type_result))) {
                             <select class="option-select" name="MY_type" id="MY_type" required>
                                 <option value="">선택해주세요</option>
                                 <?php
-                                $categories = getCategoryOptions($db, 'MlangPrintAuto_transactionCate', 'NameCard');
+                                $categories = getCategoryOptions($db, "mlangprintauto_transactioncate", 'NameCard');
                                 foreach ($categories as $category) {
                                     $selected = ($category['no'] == $default_values['MY_type']) ? 'selected' : '';
                                     echo "<option value='" . safe_html($category['no']) . "' $selected>" . safe_html($category['title']) . "</option>";

@@ -28,15 +28,15 @@ try {
     
     // 제품별 API 매핑
     $productApiMap = [
-        'inserted' => '/MlangPrintAuto/inserted/get_leaflet_images.php',
-        'namecard' => '/MlangPrintAuto/NameCard/get_portfolio_images.php',
-        'littleprint' => '/MlangPrintAuto/LittlePrint/get_poster_images.php',
-        'merchandisebond' => '/MlangPrintAuto/MerchandiseBond/get_merchandisebond_images.php',
-        'envelope' => '/MlangPrintAuto/envelope/get_envelope_images.php',
-        'cadarok' => '/MlangPrintAuto/cadarok/get_cadarok_images.php',
-        'ncrflambeau' => '/MlangPrintAuto/NcrFlambeau/get_ncrflambeau_images.php',
-        'msticker' => '/MlangPrintAuto/msticker/get_msticker_images.php',
-        'sticker' => '/MlangPrintAuto/sticker_new/get_sticker_images.php'
+        'inserted' => '/mlangprintauto/inserted/get_leaflet_images.php',
+        'namecard' => '/mlangprintauto/namecard/get_portfolio_images.php',
+        'littleprint' => '/mlangprintauto/littleprint/get_poster_images.php',
+        'merchandisebond' => '/mlangprintauto/merchandisebond/get_merchandisebond_images.php',
+        'envelope' => '/mlangprintauto/envelope/get_envelope_images.php',
+        'cadarok' => '/mlangprintauto/cadarok/get_cadarok_images.php',
+        'ncrflambeau' => '/mlangprintauto/ncrflambeau/get_ncrflambeau_images.php',
+        'msticker' => '/mlangprintauto/msticker/get_msticker_images.php',
+        'sticker' => '/mlangprintauto/sticker_new/get_sticker_images.php'
     ];
     
     // 제품별 API 경로 확인

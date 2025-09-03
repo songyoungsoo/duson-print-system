@@ -23,7 +23,7 @@ let animationId = null;
 
 // 페이지 로드 시 초기화
 document.addEventListener('DOMContentLoaded', function() {
-    initializeGallery();
+    // initializeGallery(); // 제거: 공통 갤러리 시스템 사용
     initializeCalculator();
     initializeFileUpload();
     
@@ -262,7 +262,7 @@ function resetPrice() {
     const uploadOrderButton = document.getElementById('uploadOrderButton');
     
     if (priceAmount) priceAmount.textContent = '견적 계산 필요';
-    if (priceDetails) priceDetails.textContent = '모든 옵션을 선택하면 자동으로 계산됩니다';
+    if (priceDetails) priceDetails.innerHTML = '<span>모든 옵션을 선택하면 자동으로 계산됩니다</span>';
     if (priceDisplay) priceDisplay.classList.remove('calculated');
     if (uploadOrderButton) uploadOrderButton.style.display = 'none';
     
@@ -430,9 +430,9 @@ function updatePriceDisplay(priceData) {
     
     if (priceDetails) {
         priceDetails.innerHTML = `
-            인쇄비: ${formatNumber(priceData.base_price)}원<br>
-            디자인비: ${formatNumber(priceData.design_price)}원<br>
-            <strong>부가세 포함: ${formatNumber(Math.round(priceData.total_with_vat))}원</strong>
+            <span>인쇄비: ${formatNumber(priceData.base_price)}원</span>
+            <span>디자인비: ${formatNumber(priceData.design_price)}원</span>
+            <span>부가세 포함: <span class="vat-amount">${formatNumber(Math.round(priceData.total_with_vat))}원</span></span>
         `;
     }
     

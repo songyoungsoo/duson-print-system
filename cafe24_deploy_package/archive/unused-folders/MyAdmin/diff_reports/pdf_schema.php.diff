@@ -1,0 +1,47 @@
+--- pdf_schema.php (original)
++++ pdf_schema.php (modified)
+@@ -902,7 +902,7 @@
+ 
+         $result           = PMA_mysql_query($sql);
+ 
+-        if (!$result || !mysql_num_rows($result)) {
++        if (!$result || !mysqli_num_rows($result)) {
+ 
+             $pdf->PMA_PDF_die(sprintf($GLOBALS['strPdfInvalidTblName'], $table_name));
+ 
+@@ -948,7 +948,7 @@
+ 
+ 
+ 
+-        if (!$result || !mysql_num_rows($result)) {
++        if (!$result || !mysqli_num_rows($result)) {
+ 
+             $pdf->PMA_PDF_die(sprintf($GLOBALS['strConfigureTableCoord'], $table_name));
+ 
+@@ -974,7 +974,7 @@
+ 
+         $result = PMA_mysql_query($sql);
+ 
+-        if ($result && mysql_num_rows($result) > 0) {
++        if ($result && mysqli_num_rows($result) > 0) {
+ 
+             while ($row = PMA_mysql_fetch_array($result)) {
+ 
+@@ -1710,7 +1710,7 @@
+ 
+         $tab_rs   = PMA_query_as_cu($tab_sql);
+ 
+-        if (!$tab_rs || !mysql_num_rows($tab_rs) > 0) {
++        if (!$tab_rs || !mysqli_num_rows($tab_rs) > 0) {
+ 
+             $pdf->PMA_PDF_die($GLOBALS['strPdfNoTables']);
+ 
+@@ -1746,7 +1746,7 @@
+ 
+         $norelations     = TRUE;
+ 
+-        if ($result && mysql_num_rows($result) > 0) {
++        if ($result && mysqli_num_rows($result) > 0) {
+ 
+             $norelations = FALSE;
+ 

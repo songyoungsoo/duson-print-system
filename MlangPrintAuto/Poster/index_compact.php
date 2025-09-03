@@ -140,7 +140,7 @@ $default_values['ordertype'] = 'print'; // 인쇄만
             <!-- 우측: 실시간 가격 계산기 (동적 옵션 로딩 및 자동 계산) -->
             <div class="calculator-section">
                 <div class="calculator-header">
-                    <h3>💰 실시간 견적 계산기</h3>
+                    <h3>💰견적 안내</h3>
                 </div>
 
                 <form id="posterForm">

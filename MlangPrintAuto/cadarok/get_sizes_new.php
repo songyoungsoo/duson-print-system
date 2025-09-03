@@ -18,7 +18,7 @@ try {
     }
 
     $page = "cadarok";
-    $GGTABLE = "MlangPrintAuto_transactionCate";
+    $TABLE = "mlangprintauto_transactioncate";
     
     // 선택된 구분에 따른 규격 옵션 조회
     $stmt = mysqli_prepare($connect, "SELECT no, title FROM $GGTABLE WHERE Ttable = ? AND BigNo = ? ORDER BY no ASC");

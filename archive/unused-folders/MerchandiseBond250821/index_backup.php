@@ -41,7 +41,7 @@ $default_values = [
 
 // 첫 번째 명함 종류 가져오기 (일반명함(쿠폰) 우선)
 $type_query = "SELECT no, title FROM MlangPrintAuto_transactionCate 
-               WHERE Ttable='NameCard' AND BigNo='0' 
+               WHERE Ttable='namecard' AND BigNo='0' 
                ORDER BY CASE WHEN title LIKE '%일반명함%' THEN 1 ELSE 2 END, no ASC 
                LIMIT 1";
 $type_result = mysqli_query($db, $type_query);
@@ -50,7 +50,7 @@ if ($type_result && ($type_row = mysqli_fetch_assoc($type_result))) {
     
     // 해당 명함 종류의 첫 번째 재질 가져오기
     $section_query = "SELECT no, title FROM MlangPrintAuto_transactionCate 
-                      WHERE Ttable='NameCard' AND BigNo='" . $type_row['no'] . "' 
+                      WHERE Ttable='namecard' AND BigNo='" . $type_row['no'] . "' 
                       ORDER BY no ASC LIMIT 1";
     $section_result = mysqli_query($db, $section_query);
     if ($section_result && ($section_row = mysqli_fetch_assoc($section_result))) {
@@ -595,7 +595,7 @@ if ($type_result && ($type_row = mysqli_fetch_assoc($type_result))) {
                         <select name="MY_type" id="MY_type" required>
                             <option value="">명함 종류를 선택해주세요</option>
                             <?php
-                            $categories = getCategoryOptions($db, 'MlangPrintAuto_transactionCate', 'NameCard');
+                            $categories = getCategoryOptions($db, 'MlangPrintAuto_transactionCate', 'namecard');
                             foreach ($categories as $category) {
                                 $selected = ($category['no'] == $default_values['MY_type']) ? 'selected' : '';
                                 echo "<option value='" . safe_html($category['no']) . "' $selected>" . safe_html($category['title']) . "</option>";
@@ -804,7 +804,7 @@ if ($type_result && ($type_row = mysqli_fetch_assoc($type_result))) {
             <input type="hidden" name="log_md" value="<?php echo safe_html($log_info['md']); ?>">
             <input type="hidden" name="log_ip" value="<?php echo safe_html($log_info['ip']); ?>">
             <input type="hidden" name="log_time" value="<?php echo safe_html($log_info['time']); ?>">
-            <input type="hidden" name="page" value="NameCard">
+            <input type="hidden" name="page" value="namecard">
         </form>
     </div> <!-- main-content-wrapper 끝 -->   
      
@@ -827,7 +827,7 @@ include "../../includes/footer.php";
         log_md: "<?php echo safe_html($log_info['md']); ?>",
         log_ip: "<?php echo safe_html($log_info['ip']); ?>",
         log_time: "<?php echo safe_html($log_info['time']); ?>",
-        page: "NameCard"
+        page: "namecard"
     };
 
     // 이미지 갤러리 관련 변수들
@@ -995,7 +995,7 @@ include "../../includes/footer.php";
             if (response.success) {
                 alert('장바구니에 추가되었습니다! 🛒');
                 if (confirm('장바구니를 확인하시겠습니까?')) {
-                    window.location.href = '/MlangPrintAuto/shop/cart.php';
+                    window.location.href = '/mlangprintauto/shop/cart.php';
                 } else {
                     form.reset();
                     document.getElementById('priceSection').style.display = 'none';

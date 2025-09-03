@@ -12,6 +12,10 @@ include "../../includes/auth.php";
 include "../../includes/functions.php";
 include "../../db.php";
 
+// 통합 갤러리 시스템 초기화
+if (file_exists('../../includes/gallery_helper.php')) { if (file_exists('../../includes/gallery_helper.php')) { include_once '../../includes/gallery_helper.php'; } }
+if (function_exists("init_gallery_system")) { init_gallery_system("envelope"); }
+
 // 데이터베이스 연결 및 설정
 check_db_connection($db);
 mysqli_set_charset($db, "utf8");
@@ -30,7 +34,7 @@ $default_values = [
 ];
 
 // 첫 번째 봉투 종류 가져오기
-$type_query = "SELECT no, title FROM MlangPrintAuto_transactionCate 
+$type_query = "SELECT no, title FROM mlangprintauto_transactioncate 
                WHERE Ttable='Envelope' AND BigNo='0' 
                ORDER BY no ASC 
                LIMIT 1";
@@ -39,7 +43,7 @@ if ($type_result && ($type_row = mysqli_fetch_assoc($type_result))) {
     $default_values['MY_type'] = $type_row['no'];
     
     // 해당 봉투 종류의 첫 번째 재질 가져오기
-    $section_query = "SELECT no, title FROM MlangPrintAuto_transactionCate 
+    $section_query = "SELECT no, title FROM mlangprintauto_transactioncate 
                       WHERE Ttable='Envelope' AND BigNo='" . $type_row['no'] . "' 
                       ORDER BY no ASC LIMIT 1";
     $section_result = mysqli_query($db, $section_query);
@@ -47,7 +51,7 @@ if ($type_result && ($type_row = mysqli_fetch_assoc($type_result))) {
         $default_values['Section'] = $section_row['no'];
         
         // 해당 조합의 기본 수량 가져오기 (1000매 우선)
-        $quantity_query = "SELECT DISTINCT quantity FROM MlangPrintAuto_envelope 
+        $quantity_query = "SELECT DISTINCT quantity FROM mlangprintauto_envelope 
                           WHERE style='" . $type_row['no'] . "' AND Section='" . $section_row['no'] . "' 
                           ORDER BY CASE WHEN quantity='1000' THEN 1 ELSE 2 END, CAST(quantity AS UNSIGNED) ASC 
                           LIMIT 1";
@@ -71,11 +75,28 @@ if ($type_result && ($type_row = mysqli_fetch_assoc($type_result))) {
     
     <!-- 봉투 컴팩트 페이지 전용 CSS -->
     <link rel="stylesheet" href="../../css/namecard-compact.css">
+    <!-- 통합 가격 표시 시스템 CSS -->
+    <link rel="stylesheet" href="../../css/unified-price-display.css">
+    
+    <!-- 노토 폰트 -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@300;400;500;700&display=swap" rel="stylesheet">
     <!-- 공통 버튼 스타일 CSS -->
     <link rel="stylesheet" href="../../css/btn-primary.css">
+    <!-- 통합 갤러리 CSS -->
+    <link rel="stylesheet" href="../../assets/css/gallery.css">
+    <!-- 컴팩트 폼 그리드 CSS (모든 품목 공통) -->
+    <link rel="stylesheet" href="../../css/compact-form.css">
     
-    <!-- 고급 JavaScript 라이브러리 -->
-    <script src="../../includes/js/GalleryLightbox.js"></script>
+    <!-- jQuery 라이브러리 -->
+    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+    
+    <!-- 통합 갤러리 JavaScript 라이브러리 -->
+    <script src="../NameCard/js/unified-gallery.js"></script>
+    <script src="../../js/unified-gallery-popup.js"></script>
+    
+    <!-- 봉투 전용 JavaScript -->
     <script src="../../js/envelope.js" defer></script>
     
     
@@ -83,6 +104,13 @@ if ($type_result && ($type_row = mysqli_fetch_assoc($type_result))) {
     <meta name="session-id" content="<?php echo htmlspecialchars(session_id()); ?>">
     <meta name="default-section" content="<?php echo htmlspecialchars($default_values['Section']); ?>">
     <meta name="default-quantity" content="<?php echo htmlspecialchars($default_values['MY_amount']); ?>">
+    
+    <?php
+    // 갤러리 에셋 자동 포함
+    if (defined("GALLERY_ASSETS_NEEDED") && function_exists("include_gallery_assets")) {
+        if (function_exists("include_gallery_assets")) { include_gallery_assets(); }
+    }
+    ?>
 </head>
 <body>
     <?php include "../../includes/nav.php"; ?>
@@ -90,7 +118,7 @@ if ($type_result && ($type_row = mysqli_fetch_assoc($type_result))) {
     <div class="compact-container">
         <div class="page-title">
             <h1>✉️ 봉투 견적안내</h1>
-            <p>컴팩트 프리미엄 - NameCard 시스템 구조 적용</p>
+            <!-- <p>컴팩트 프리미엄 - NameCard 시스템 구조 적용</p> -->
         </div>
 
         <!-- 컴팩트 2단 그리드 레이아웃 (500px 갤러리 + 나머지 계산기) -->
@@ -99,26 +127,26 @@ if ($type_result && ($type_row = mysqli_fetch_assoc($type_result))) {
             <section class="envelope-gallery" aria-label="봉투 샘플 갤러리">
                 <?php
                 // 통합 갤러리 시스템 사용 (3줄로 완전 간소화)
-                include_once "../../includes/gallery_helper.php";
-                include_product_gallery('envelope', ['mainSize' => [500, 400]]);
+                if (file_exists('../../includes/gallery_helper.php')) { if (file_exists('../../includes/gallery_helper.php')) { include_once '../../includes/gallery_helper.php'; } }
+                if (function_exists("include_product_gallery")) { include_product_gallery('envelope'); }
                 ?>
             </section>
 
             <!-- 우측: 실시간 가격 계산기 (동적 옵션 로딩 및 자동 계산) -->
             <div class="calculator-section">
                 <div class="calculator-header">
-                    <h3>💰 실시간 견적 계산기</h3>
+                    <h3>💰견적 안내</h3>
                 </div>
 
                 <form id="envelopeForm">
-                    <!-- 옵션 선택 그리드 - 개선된 2열 레이아웃 -->
-                    <div class="options-grid">
-                        <div class="option-group">
-                            <label class="option-label" for="MY_type">봉투 종류</label>
+                    <!-- 옵션 선택 그리드 - 개선된 4열 레이아웃 -->
+                    <div class="options-grid form-grid-compact">
+                        <div class="option-group form-field">
+                            <label class="option-label" for="MY_type">봉투종류</label>
                             <select class="option-select" name="MY_type" id="MY_type" required>
                                 <option value="">선택해주세요</option>
                                 <?php
-                                $categories = getCategoryOptions($db, 'MlangPrintAuto_transactionCate', 'Envelope');
+                                $categories = getCategoryOptions($db, "mlangprintauto_transactioncate", "Envelope");
                                 foreach ($categories as $category) {
                                     $selected = ($category['no'] == $default_values['MY_type']) ? 'selected' : '';
                                     echo "<option value='" . safe_html($category['no']) . "' $selected>" . safe_html($category['title']) . "</option>";
@@ -127,14 +155,14 @@ if ($type_result && ($type_row = mysqli_fetch_assoc($type_result))) {
                             </select>
                         </div>
 
-                        <div class="option-group">
-                            <label class="option-label" for="Section">봉투 재질</label>
+                        <div class="option-group form-field">
+                            <label class="option-label" for="Section">봉투재질</label>
                             <select class="option-select" name="Section" id="Section" required data-default-value="<?php echo htmlspecialchars($default_values['Section']); ?>">
                                 <option value="">먼저 종류를 선택해주세요</option>
                             </select>
                         </div>
 
-                        <div class="option-group">
+                        <div class="option-group form-field">
                             <label class="option-label" for="POtype">인쇄면</label>
                             <select class="option-select" name="POtype" id="POtype" required>
                                 <option value="">선택해주세요</option>
@@ -143,14 +171,14 @@ if ($type_result && ($type_row = mysqli_fetch_assoc($type_result))) {
                             </select>
                         </div>
 
-                        <div class="option-group">
+                        <div class="option-group form-field">
                             <label class="option-label" for="MY_amount">수량</label>
                             <select class="option-select" name="MY_amount" id="MY_amount" required data-default-value="<?php echo htmlspecialchars($default_values['MY_amount']); ?>">
                                 <option value="">먼저 재질을 선택해주세요</option>
                             </select>
                         </div>
 
-                        <div class="option-group full-width">
+                        <div class="option-group form-field full-width">
                             <label class="option-label" for="ordertype">편집디자인</label>
                             <select class="option-select" name="ordertype" id="ordertype" required>
                                 <option value="">선택해주세요</option>
@@ -160,7 +188,7 @@ if ($type_result && ($type_row = mysqli_fetch_assoc($type_result))) {
                         </div>
                     </div>
 
-                    <!-- 실시간 가격 표시 - 개선된 애니메이션 -->
+                    <!-- 스티커 방식의 실시간 가격 표시 -->
                     <div class="price-display" id="priceDisplay">
                         <div class="price-label">견적 금액</div>
                         <div class="price-amount" id="priceAmount">견적 계산 필요</div>
@@ -227,7 +255,7 @@ if ($type_result && ($type_row = mysqli_fetch_assoc($type_result))) {
                         <textarea id="modalWorkMemo" class="memo-textarea" placeholder="작업 관련 요청사항이나 특별한 지시사항을 입력해주세요.&#10;&#10;예시:&#10;- 색상을 더 진하게 해주세요&#10;- 로고 크기를 조금 더 크게&#10;- 배경색을 파란색으로 변경"></textarea>
                         
                         <div class="upload-notice">
-                            <div class="notice-item">📋 택배 무료배송은 결제금액 총 3만원 명부시에 한함</div>
+                            <div class="notice-item">📦 택배는 기본이 착불 원칙입니다</div>
                             <div class="notice-item">📋 온전판(당일)주 전날 주문 제품과 목업 불가</div>
                         </div>
                     </div>
@@ -308,6 +336,9 @@ if ($type_result && ($type_row = mysqli_fetch_assoc($type_result))) {
         position: relative !important; /* 헤더 오버플로우를 위한 설정 */
         margin-top: 0 !important; /* 상단 여백 제거 */
         align-self: start !important; /* 상단 정렬 */
+        height: 450px !important;
+        min-height: 450px !important;
+        overflow: auto !important;
     }
 
     .calculator-header h3 {
@@ -328,12 +359,12 @@ if ($type_result && ($type_row = mysqli_fetch_assoc($type_result))) {
     /* 3단계: 통일된 가격 표시 - 녹색 큰 글씨 (인쇄비+편집비=공급가) */
     /* =================================================================== */
     .price-display {
+        margin-bottom: 5px !important;
+        padding: 8px 5px !important;
+        border-radius: 8px !important;
         background: linear-gradient(145deg, #f8f9fa 0%, #e9ecef 100%) !important;
         border: 2px solid #28a745 !important;
-        border-radius: 12px !important;
-        padding: 15px 20px !important;
         text-align: center !important;
-        margin: 20px 0 !important;
         transition: all 0.3s ease !important;
         box-shadow: 0 4px 12px rgba(40, 167, 69, 0.1) !important;
     }
@@ -353,7 +384,7 @@ if ($type_result && ($type_row = mysqli_fetch_assoc($type_result))) {
     }
 
     .price-display .price-amount {
-        font-size: 2.2rem !important;
+        font-size: 0.98rem !important;
         font-weight: 700 !important;
         color: #28a745 !important;
         margin: 10px 0 !important;
@@ -367,6 +398,29 @@ if ($type_result && ($type_row = mysqli_fetch_assoc($type_result))) {
         color: #6c757d !important;
         line-height: 1.4 !important;
         margin-top: 8px !important;
+        
+        /* 한 줄 표시 강제 - msticker와 동일 */
+        display: flex !important;
+        justify-content: center !important;
+        align-items: center !important;
+        gap: 15px !important;
+        flex-wrap: nowrap !important;
+        white-space: nowrap !important;
+        overflow-x: auto !important;
+    }
+    
+    /* 부가세 포함 금액을 견적 금액과 완전히 동일하게 - 봉투 전용 */
+    #priceDisplay .price-details .vat-amount,
+    .price-display .price-details .vat-amount {
+        color: #dc3545 !important;  /* 빨간색 */
+        font-size: 0.98rem !important;  /* 견적 금액과 동일한 크기 */
+        font-weight: 700 !important;  /* 견적 금액과 동일한 굵기 */
+        font-style: normal !important;
+        text-decoration: none !important;
+        line-height: 1.2 !important;  /* 견적 금액과 동일한 라인 높이 */
+        letter-spacing: -0.5px !important;  /* 견적 금액과 동일한 글자 간격 */
+        font-family: inherit !important;
+        text-shadow: 0 2px 4px rgba(220, 53, 69, 0.3) !important;  /* 빨간색 그림자 */
     }
 
     .price-display:hover {
@@ -419,6 +473,9 @@ if ($type_result && ($type_row = mysqli_fetch_assoc($type_result))) {
         border: 1px solid rgba(255, 255, 255, 0.9);
         margin-top: 0 !important; /* 상단 여백 제거 */
         align-self: start !important; /* 상단 정렬 */
+        height: 450px !important;
+        min-height: 450px !important;
+        overflow: auto !important;
     }
     
     .gallery-title {
@@ -534,7 +591,7 @@ if ($type_result && ($type_row = mysqli_fetch_assoc($type_result))) {
         }
         
         .price-display .price-amount {
-            font-size: 1.5rem !important;     /* 모바일 가독성 */
+            font-size: 0.98rem !important;     /* 모바일도 동일 크기 */
         }
         
         .option-select {

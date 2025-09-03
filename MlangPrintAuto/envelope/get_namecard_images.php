@@ -8,7 +8,7 @@ include "../../db.php";
 try {
     // 명함 카테고리 포트폴리오에서 최신 이미지 4개 가져오기
     $query = "SELECT Mlang_bbs_no, Mlang_bbs_title, Mlang_bbs_connent, Mlang_bbs_link 
-              FROM Mlang_portfolio_bbs 
+              FROM mlang_portfolio_bbs 
               WHERE Mlang_bbs_reply='0' AND CATEGORY='명함'
               ORDER BY Mlang_bbs_no DESC 
               LIMIT 4";

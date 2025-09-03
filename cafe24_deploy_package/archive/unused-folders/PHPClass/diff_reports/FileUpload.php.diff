@@ -1,0 +1,19 @@
+--- FileUpload.php (original)
++++ FileUpload.php (modified)
+@@ -1,13 +1,14 @@
++<?php
+ <?php
+ //$upload_dir="./upload";
+ //$MAXFSIZE="2000000"; // 이미지의 용량
+ 
+ if(is_uploaded_file($user_file)) {
+ 
+-	$full_filename = split("\.", $user_file_name);
++	$full_filename = explode("\.", $user_file_name);
+ 	$file_extention = $full_filename[sizeof($user_file_name)];
+ 
+-	if (eregi($file_extention, "html|php3|phtml|inc|asp")) {
++	if (preg_match($file_extention, "html|php3|phtml|inc|asp")) {
+ 		$msg = "\\nphp / asp 관련파일은 직접 업로드 하실 수 없습니다.\\n\\n파일의 확장자를 변경하여 올려 주세요.\\n";
+ 		echo ("<script language=javascript>
+                      window.alert('$msg');

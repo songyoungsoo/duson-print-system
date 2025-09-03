@@ -10,7 +10,7 @@ body {
 .compact-container {
     max-width: 1200px;
     margin: 0 auto;
-    padding: 20px;
+    padding: 10px 20px 20px 20px;
     background: white;
     border-radius: 15px;
     box-shadow: 0 10px 40px rgba(0,0,0,0.1);
@@ -62,9 +62,10 @@ body {
     display: grid;
     grid-template-columns: 1fr 1fr;
     gap: 30px;
-    min-height: 600px;
+    min-height: 450px;    /* 카드 높이와 동일하게 조정 */
     max-width: 1200px;
     margin: 0 auto;
+    align-items: start;   /* 상단 정렬 */
 }
 
 /* ============================================================================ */
@@ -275,6 +276,15 @@ body {
     font-size: 0.85rem;
     color: #6c757d;
     line-height: 1.5;
+    
+    /* 한 줄 표시 강제 - 모든 제품에서 통일 */
+    display: flex !important;
+    justify-content: center !important;
+    align-items: center !important;
+    gap: 15px !important;
+    flex-wrap: nowrap !important;
+    white-space: nowrap !important;
+    overflow-x: auto !important;
 }
 
 /* 업로드 주문 버튼 - 프리미엄 스타일 */

@@ -240,7 +240,7 @@ $strQBEDel = 'Del';
 $strQBEIns = 'Ins';
 $strQueryOnDb = 'SQL-forespørgsel til database <b>%s</b>:';
 
-$strRecords = 'Poster';
+$strRecords = 'poster';
 $strReferentialIntegrity = 'Check reference integriteten';
 $strReloadFailed = 'Genstart af MySQL fejlede.';
 $strReloadMySQL = 'Genstart MySQL';

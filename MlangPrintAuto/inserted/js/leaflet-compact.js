@@ -54,16 +54,28 @@ document.addEventListener('DOMContentLoaded', function() {
     setTimeout(() => {
         console.log('🔄 초기 기본값 설정 및 자동 계산 시작');
         
-        // 종이종류를 첫 번째 옵션으로 자동 선택
-        const paperTypeSelect = document.querySelector('select[name="MY_Fsd"]');
-        if (paperTypeSelect && paperTypeSelect.options.length > 1) {
-            paperTypeSelect.selectedIndex = 1; // 두 번째 옵션 (첫 번째는 "선택해주세요")
-            console.log('📄 종이종류 자동 선택:', paperTypeSelect.value, paperTypeSelect.options[paperTypeSelect.selectedIndex].text);
-        }
+        // 모든 드롭다운의 첫 번째 실제 옵션을 자동 선택
+        const selects = ['MY_Fsd', 'PN_type', 'POtype'];
+        selects.forEach(selectName => {
+            const selectElement = document.querySelector(`select[name="${selectName}"]`);
+            if (selectElement && selectElement.options.length > 0) {
+                // 첫 번째 옵션이 "선택해주세요" 같은 경우 두 번째 옵션 선택
+                const firstValidIndex = selectElement.options[0].value === '' ? 1 : 0;
+                if (selectElement.options.length > firstValidIndex) {
+                    selectElement.selectedIndex = firstValidIndex;
+                    console.log(`📄 ${selectName} 자동 선택:`, selectElement.value, selectElement.options[selectElement.selectedIndex].text);
+                    
+                    // change 이벤트 강제 발생
+                    selectElement.dispatchEvent(new Event('change'));
+                }
+            }
+        });
         
         // 수량 및 가격 자동 계산
-        updateQuantities();
-    }, 1000); // 다른 드롭다운들이 로드된 후 실행
+        setTimeout(() => {
+            updateQuantities();
+        }, 500);
+    }, 1500); // 더 긴 대기 시간으로 변경
     
     console.log('✅ 페이지 초기화 완료');
 });
@@ -410,9 +422,9 @@ function updatePriceDisplay(priceData) {
         const total = Math.round(priceData.Total_PriceForm);       // VAT 포함 총합계
         
         priceDetails.innerHTML = `
-            인쇄비: ${printCost.toLocaleString()}원<br>
-            디자인비: ${designCost.toLocaleString()}원<br>
-            <strong>부가세 포함: ${total.toLocaleString()}원</strong>
+            <span>인쇄비: ${printCost.toLocaleString()}원</span>
+            <span>디자인비: ${designCost.toLocaleString()}원</span>
+            <span>부가세 포함: <span class="vat-amount">${total.toLocaleString()}원</span></span>
         `;
     }
     
@@ -761,7 +773,7 @@ function addToBasket() {
             
             // 장바구니 확인 여부 묻기
             if (confirm('장바구니를 확인하시겠습니까?')) {
-                window.location.href = '/MlangPrintAuto/shop/cart.php';
+                window.location.href = '/mlangprintauto/shop/cart.php';
             } else {
                 // 폼 초기화하고 계속 쇼핑
                 resetForm();
@@ -1090,7 +1102,7 @@ function addToBasketFromModal() {
                 
                 // 장바구니 확인 여부 묻기
                 if (confirm('장바구니를 확인하시겠습니까?')) {
-                    window.location.href = '/MlangPrintAuto/shop/cart.php';
+                    window.location.href = '/mlangprintauto/shop/cart.php';
                 } else {
                     // 폼 초기화하고 계속 쇼핑
                     resetForm();

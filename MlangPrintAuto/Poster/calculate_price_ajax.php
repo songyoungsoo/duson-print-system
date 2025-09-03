@@ -53,9 +53,9 @@ $conditions = [
 // 테이블 우선순위 확인
 $possible_tables = [
     "mlangprintauto_littleprint",
-    "MlangPrintAuto_littleprint", 
+    "mlangprintauto_littleprint", 
     "mlangprintauto_namecard",
-    "MlangPrintAuto_namecard"
+    "mlangprintauto_namecard"
 ];
 
 $price_table = null;

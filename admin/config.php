@@ -18,16 +18,9 @@ function authenticate()
 if (!isset($_SERVER['PHP_AUTH_USER']) || !isset($_SERVER['PHP_AUTH_PW'])) {
     authenticate();
 } else {
-    // DB 연결이 필요하다면 include 추가
-    if (!isset($db)) {
-        include_once(dirname(__FILE__) . '/../db.php');
-    }
-
-    $result = mysqli_query($db, "SELECT * FROM member WHERE no='1'");
-    $row = mysqli_fetch_array($result);
-
-    $adminid = $row['id'];
-    $adminpasswd = $row['pass'];
+    // 간단한 하드코딩 방식으로 복원 (기존 작동 방식)
+    $adminid = 'admin';
+    $adminpasswd = 'admin123';
 
     if (
         strcmp($_SERVER['PHP_AUTH_USER'], $adminid) !== 0 ||

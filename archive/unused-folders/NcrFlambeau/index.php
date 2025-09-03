@@ -109,7 +109,7 @@ $default_values = [
 
 // 초기 구분값 가져오기
 $initial_type = "";
-$type_result = mysqli_query($connect, "SELECT no, title FROM MlangPrintAuto_transactionCate WHERE Ttable='NcrFlambeau' AND BigNo='0' ORDER BY no ASC LIMIT 1");
+$type_result = mysqli_query($connect, "SELECT no, title FROM MlangPrintAuto_transactionCate WHERE Ttable='ncrflambeau' AND BigNo='0' ORDER BY no ASC LIMIT 1");
 if ($type_row = mysqli_fetch_assoc($type_result)) {
     $initial_type = $type_row['no'];
     $default_values['MY_type'] = $initial_type;
@@ -175,7 +175,7 @@ echo '<script src="../../includes/js/UniversalFileUpload.js"></script>';
                             <select name="MY_type" id="MY_type" class="option-select" required>
                                 <option value="">구분을 선택해주세요</option>
                                 <?php
-                                $categories = getCategoryOptions($db, 'MlangPrintAuto_transactionCate', 'NcrFlambeau');
+                                $categories = getCategoryOptions($db, 'MlangPrintAuto_transactionCate', 'ncrflambeau');
                                 foreach ($categories as $category) {
                                     $selected = ($category['no'] == $default_values['MY_type']) ? 'selected' : '';
                                     echo "<option value='" . safe_html($category['no']) . "' $selected>" . safe_html($category['title']) . "</option>";
@@ -241,7 +241,7 @@ echo '<script src="../../includes/js/UniversalFileUpload.js"></script>';
                     <input type="hidden" name="log_md" value="<?php echo safe_html($log_info['md']); ?>">
                     <input type="hidden" name="log_ip" value="<?php echo safe_html($log_info['ip']); ?>">
                     <input type="hidden" name="log_time" value="<?php echo safe_html($log_info['time']); ?>">
-                    <input type="hidden" name="page" value="NcrFlambeau">
+                    <input type="hidden" name="page" value="ncrflambeau">
                     
                     <!-- 가격 정보 저장용 -->
                     <input type="hidden" name="calculated_price" id="calculated_price" value="">

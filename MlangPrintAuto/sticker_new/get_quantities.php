@@ -13,7 +13,7 @@ if (empty($style) || empty($section) || empty($potype)) {
     error_response('필수 파라미터가 누락되었습니다. (style, section, potype)');
 }
 
-$TABLE = "mlangprintauto_namecard";
+$TABLE = "mlangprintauto_sticker";
 
 $query = "SELECT DISTINCT quantity 
           FROM $TABLE 

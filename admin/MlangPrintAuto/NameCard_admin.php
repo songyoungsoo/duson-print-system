@@ -25,7 +25,7 @@ $MlangPrintAutoFildView_Section = '';
 $View_TtableC = '';
 
 $T_DirUrl = "../../MlangPrintAuto";
-$T_TABLE = "NameCard";
+$T_TABLE = "namecard";
 
 include "$T_DirUrl/ConDb.php";
 $T_DirFole = "$T_DirUrl/$T_TABLE/inc.php";

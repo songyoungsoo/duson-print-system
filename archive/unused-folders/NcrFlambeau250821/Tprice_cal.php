@@ -12,7 +12,7 @@ if ($TRYCobe == "ok") {
         ERROR(); 
     }
 
-    $Ttable = "NcrFlambeau";
+    $Ttable = "ncrflambeau";
     include "../../db.php";
     
     // 쿼리 실행

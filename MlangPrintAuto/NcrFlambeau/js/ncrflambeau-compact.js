@@ -35,10 +35,10 @@ function escapeHtml(text) {
 document.addEventListener('DOMContentLoaded', function() {
     console.log('🚀 NcrFlambeau 컴팩트 페이지 초기화 시작');
     
-    // 이미지 갤러리 초기화
-    loadImageGallery();
-    initGalleryZoom();
-    animate();
+    // 이미지 갤러리 초기화 제거: 공통 갤러리 시스템 사용
+    // loadImageGallery();
+    // initGalleryZoom();
+    // animate();
     
     // 드롭다운 이벤트 리스너 추가
     initDropdownEvents();
@@ -404,9 +404,10 @@ function updatePriceDisplay(priceData) {
     
     if (priceDetails) {
         priceDetails.innerHTML = `
-            인쇄만: ${priceData.formatted.base_price}<br>
-            디자인비: ${priceData.formatted.design_price}<br>
-            <strong>부가세 포함: ${priceData.formatted.vat_price}</strong>
+            <span>인쇄비: ${priceData.formatted.base_price}</span>
+            <span>디자인비: ${priceData.formatted.design_price}</span>
+            <span>공급가격: ${formatNumber(priceData.base_price + priceData.design_price)}원</span>
+            <span>부가세 포함: <span class="vat-amount">${priceData.formatted.vat_price}</span></span>
         `;
     }
     
@@ -963,7 +964,7 @@ function addToBasketFromModal() {
                 
                 // 장바구니 페이지로 이동
                 setTimeout(() => {
-                    window.location.href = '/MlangPrintAuto/shop/cart.php';
+                    window.location.href = '/mlangprintauto/shop/cart.php';
                 }, 1000);
                 
             } else {

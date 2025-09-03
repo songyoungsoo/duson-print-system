@@ -1,0 +1,9 @@
+--- Div2.php (original)
++++ Div2.php (modified)
+@@ -56,4 +56,5 @@
+ <div align="center"><a href="javascript:dismissbox()">(창닫기)</a></div>
+ </div>
+ 
+-</body> 
++</body>
++?>

@@ -4,7 +4,7 @@ include "../../db.php";
 include "../config.php";
 
 $T_DirUrl = "../../MlangPrintAuto";
-$T_TABLE = "NcrFlambeau";
+$T_TABLE = "ncrflambeau";
 
 include "$T_DirUrl/ConDb.php";
 $T_DirFole = "$T_DirUrl/$T_TABLE/inc.php";

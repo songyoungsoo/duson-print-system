@@ -74,10 +74,6 @@
                                         <span class="service-icon">🚚</span>
                                         <span>당일 주문 시 익일 출고</span>
                                     </div>
-                                    <div class="service-item highlight">
-                                        <span class="service-icon">🎁</span>
-                                        <span>3만원 이상 배송비 무료</span>
-                                    </div>
                                 </div>
                             </div>
                         </div>
@@ -90,19 +86,19 @@
                             </div>
                             <div class="footer-card-content">
                                 <div class="service-links-simple">
-                                    <a href="/MlangPrintAuto/inserted/" class="service-link-simple">
+                                    <a href="/mlangprintauto/inserted/" class="service-link-simple">
                                         <span class="service-icon-simple">📄</span>
                                         <span>전단지/리플릿</span>
                                     </a>
-                                    <a href="/MlangPrintAuto/NameCard/" class="service-link-simple">
+                                    <a href="/mlangprintauto/namecard/" class="service-link-simple">
                                         <span class="service-icon-simple">💼</span>
                                         <span>명함</span>
                                     </a>
-                                    <a href="/MlangPrintAuto/shop/view_modern.php" class="service-link-simple">
+                                    <a href="/mlangprintauto/sticker_new/" class="service-link-simple">
                                         <span class="service-icon-simple">🏷️</span>
                                         <span>일반스티커</span>
                                     </a>
-                                    <a href="/MlangPrintAuto/msticker/" class="service-link-simple">
+                                    <a href="/mlangprintauto/msticker/" class="service-link-simple">
                                         <span class="service-icon-simple">🧲</span>
                                         <span>자석스티커</span>
                                     </a>
@@ -138,173 +134,168 @@
         .footer-container {
             max-width: 1200px;
             margin: 0 auto;
-            padding: 40px 20px 20px;
+            padding: 15px 20px 10px; /* 기존 40px 20px 20px에서 1/3로 축소 */
         }
 
         .footer-grid {
             display: grid;
             grid-template-columns: repeat(4, 1fr);
-            gap: 20px;
-            margin-bottom: 30px;
+            gap: 10px; /* 기존 20px에서 축소 */
+            margin-bottom: 10px; /* 기존 30px에서 1/3로 축소 */
         }
 
         .footer-card {
-            background: rgba(255, 255, 255, 0.1);
-            border-radius: 12px;
-            padding: 20px;
-            backdrop-filter: blur(10px);
-            border: 1px solid rgba(255, 255, 255, 0.1);
-            transition: all 0.3s ease;
+            background: transparent; /* 배경 장식 제거 */
+            border-radius: 0; /* 장식 제거 */
+            padding: 8px; /* 기존 20px에서 크게 축소 */
+            backdrop-filter: none; /* 장식 제거 */
+            border: none; /* 테두리 제거 */
+            transition: none; /* 애니메이션 제거 */
         }
 
         .footer-card:hover {
-            background: rgba(255, 255, 255, 0.15);
-            transform: translateY(-3px);
-            box-shadow: 0 8px 25px rgba(0,0,0,0.2);
+            background: transparent; /* 호버 효과 제거 */
+            transform: none; /* 변환 효과 제거 */
+            box-shadow: none; /* 그림자 제거 */
         }
 
         .footer-card-header {
             display: flex;
             align-items: center;
-            margin-bottom: 15px;
-            padding-bottom: 10px;
-            border-bottom: 2px solid rgba(255, 255, 255, 0.2);
+            margin-bottom: 5px; /* 기존 15px에서 1/3로 축소 */
+            padding-bottom: 3px; /* 기존 10px에서 1/3로 축소 */
+            border-bottom: 1px solid rgba(255, 255, 255, 0.3); /* 얇은 선으로 변경 */
         }
 
         .footer-icon {
-            font-size: 20px;
-            margin-right: 10px;
-            background: linear-gradient(135deg, #3498db 0%, #2ecc71 100%);
-            -webkit-background-clip: text;
-            -webkit-text-fill-color: transparent;
-            background-clip: text;
+            display: none; /* 이모지 아이콘 제거 */
         }
 
         .footer-card-title {
-            color: white;
-            font-size: 16px;
-            font-weight: 600;
+            color: #ffffff; /* 더 선명한 흰색으로 가독성 향상 */
+            font-size: 14px; /* 기존 16px에서 축소 */
+            font-weight: 700; /* 더 굵게 해서 가독성 향상 */
             margin: 0;
         }
 
         .footer-card-content {
-            color: rgba(255, 255, 255, 0.9);
-            line-height: 1.6;
+            color: #ffffff; /* 가독성을 위해 더 선명한 흰색 */
+            line-height: 1.3; /* 기존 1.6에서 축소 */
         }
 
         .info-item {
             display: flex;
-            margin-bottom: 8px;
+            margin-bottom: 3px; /* 기존 8px에서 1/3로 축소 */
             align-items: flex-start;
         }
 
         .info-label {
-            font-weight: 600;
-            min-width: 50px;
-            color: rgba(255, 255, 255, 0.8);
-            margin-right: 10px;
+            font-weight: 700; /* 더 굵게 해서 가독성 향상 */
+            min-width: 40px; /* 기존 50px에서 축소 */
+            color: #ffffff; /* 가독성을 위해 더 선명한 흰색 */
+            margin-right: 8px; /* 기존 10px에서 축소 */
+            font-size: 12px; /* 크기 축소 */
         }
 
         .info-value {
             flex: 1;
-            font-size: 14px;
-            color: rgba(255, 255, 255, 0.9);
+            font-size: 12px; /* 기존 14px에서 축소 */
+            color: #ffffff; /* 가독성을 위해 더 선명한 흰색 */
         }
 
         .account-holder {
-            font-weight: 600;
-            color: rgba(255, 255, 255, 0.9);
-            margin-bottom: 10px;
+            font-weight: 700; /* 가독성을 위해 더 굵게 */
+            color: #ffffff; /* 가독성을 위해 더 선명한 흰색 */
+            margin-bottom: 3px; /* 기존 10px에서 1/3로 축소 */
+            font-size: 12px; /* 크기 축소 */
         }
 
         .account-list {
             display: flex;
             flex-direction: column;
-            gap: 6px;
+            gap: 2px; /* 기존 6px에서 1/3로 축소 */
         }
 
         .account-item {
-            padding: 8px 12px;
-            background: rgba(255, 255, 255, 0.1);
-            border-radius: 8px;
-            font-size: 13px;
-            border-left: 3px solid rgba(255, 255, 255, 0.3);
-            transition: all 0.2s ease;
+            padding: 3px 6px; /* 기존 8px 12px에서 1/3로 축소 */
+            background: transparent; /* 배경 제거 */
+            border-radius: 0; /* 장식 제거 */
+            font-size: 11px; /* 기존 13px에서 축소 */
+            border-left: none; /* 장식 제거 */
+            transition: none; /* 애니메이션 제거 */
+            color: #ffffff; /* 가독성을 위해 더 선명한 흰색 */
         }
 
         .account-item:hover {
-            background: rgba(255, 255, 255, 0.15);
+            background: transparent; /* 호버 효과 제거 */
         }
 
         .account-item.highlight {
-            background: linear-gradient(135deg, #3498db, #2980b9);
-            color: white;
-            font-weight: 600;
-            border-left-color: #f39c12;
-            box-shadow: 0 2px 10px rgba(52, 152, 219, 0.3);
+            background: transparent; /* 배경 제거 */
+            color: #ffeb3b; /* 더 선명한 노란색으로 강조 */
+            font-weight: 700; /* 더 굵게 */
+            border-left: none; /* 장식 제거 */
+            box-shadow: none; /* 그림자 제거 */
         }
 
         .service-list {
             display: flex;
             flex-direction: column;
-            gap: 8px;
+            gap: 2px; /* 기존 8px에서 2px로 축소 - 입금계좌와 동일 */
         }
 
         .service-item {
             display: flex;
             align-items: center;
-            padding: 8px 0;
-            font-size: 14px;
-            color: rgba(255, 255, 255, 0.9);
+            padding: 3px 0; /* 기존 8px에서 3px로 축소 - 입금계좌와 동일 */
+            font-size: 12px; /* 기존 14px에서 축소 */
+            color: #ffffff; /* 가독성을 위해 더 선명한 흰색 */
         }
 
         .service-item.highlight {
-            color: #3498db;
-            font-weight: 600;
+            color: #ffeb3b; /* 더 선명한 노란색으로 강조 - 입금계좌와 동일 */
+            font-weight: 700; /* 더 굵게 */
         }
 
         .service-icon {
-            margin-right: 8px;
-            font-size: 16px;
+            display: none; /* 이모지 제거 */
         }
 
         .service-links-simple {
             display: flex;
             flex-direction: column;
-            gap: 8px;
+            gap: 2px; /* 기존 8px에서 2px로 축소 - 입금계좌와 동일 */
         }
 
         .service-link-simple {
             display: flex;
             align-items: center;
-            padding: 6px 0;
-            color: rgba(255, 255, 255, 0.8);
+            padding: 3px 0; /* 기존 6px에서 3px로 축소 - 입금계좌와 동일 */
+            color: #ffffff; /* 가독성을 위해 더 선명한 흰색 */
             text-decoration: none;
-            transition: all 0.3s ease;
-            font-size: 14px;
+            transition: none; /* 애니메이션 제거 */
+            font-size: 12px; /* 기존 14px에서 축소 */
         }
 
         .service-link-simple:hover {
-            color: #3498db;
-            transform: translateX(5px);
+            color: #ffeb3b; /* 더 선명한 노란색으로 강조 */
+            transform: none; /* 변환 효과 제거 */
         }
 
         .service-icon-simple {
-            margin-right: 10px;
-            font-size: 16px;
-            min-width: 20px;
+            display: none; /* 이모지 제거 */
         }
 
         .footer-bottom {
-            border-top: 1px solid rgba(255, 255, 255, 0.2);
-            padding-top: 20px;
+            border-top: 1px solid rgba(255, 255, 255, 0.3);
+            padding-top: 8px; /* 기존 20px에서 1/3로 축소 */
             text-align: center;
         }
 
         .footer-copyright {
-            color: rgba(255, 255, 255, 0.7);
-            font-size: 12px;
-            line-height: 1.6;
+            color: #ffffff; /* 가독성을 위해 더 선명한 흰색 */
+            font-size: 10px; /* 기존 12px에서 축소 */
+            line-height: 1.3; /* 기존 1.6에서 축소 */
         }
 
         .footer-copyright p {
@@ -336,10 +327,99 @@
         </style>
     </div> <!-- page-wrapper 끝 -->
 
+    <?php 
+    // 로그인 모달 포함 (로그인하지 않은 사용자에게만 표시)
+    if (!$is_logged_in) {
+        include_once __DIR__ . '/login_modal.php';
+    }
+    ?>
+
     <?php if (isset($additional_js)): ?>
         <?php foreach ($additional_js as $js): ?>
             <script src="<?php echo $js; ?>"></script>
         <?php endforeach; ?>
     <?php endif; ?>
+<!-- 카카오톡 인쇄상담 플로팅 버튼 -->
+<div id="kakao-talk-floating" style="
+    position: fixed;
+    top: 180px;
+    right: 30px;
+    width: 90px;
+    height: 50px;
+    background: #FEE500;
+    border-radius: 12px;
+    box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+    cursor: pointer;
+    z-index: 9999;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: all 0.3s ease;
+">
+    <a href="https://center-pf.kakao.com/_pEGhj/chats" target="_blank" style="
+        width: 100%;
+        height: 100%;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        text-decoration: none;
+        gap: 5px;
+    ">
+        <div style="
+            background: #3C1E1E;
+            border-radius: 8px;
+            width: 32px;
+            height: 28px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            position: relative;
+        ">
+            <span style="
+                color: #FEE500;
+                font-weight: bold;
+                font-size: 11px;
+                font-family: 'Noto Sans KR', sans-serif;
+            ">TALK</span>
+            <!-- 말풍선 꼬리 -->
+            <div style="
+                position: absolute;
+                bottom: -4px;
+                left: 8px;
+                width: 0;
+                height: 0;
+                border-left: 5px solid transparent;
+                border-right: 5px solid transparent;
+                border-top: 5px solid #3C1E1E;
+                transform: rotate(-30deg);
+            "></div>
+        </div>
+        <span style="
+            color: #3C1E1E;
+            font-size: 11px;
+            font-weight: bold;
+            font-family: 'Noto Sans KR', sans-serif;
+            line-height: 1.3;
+        ">카톡<br>상담</span>
+    </a>
+</div>
+
+<style>
+#kakao-talk-floating:hover {
+    transform: scale(1.05);
+    box-shadow: 0 6px 20px rgba(0,0,0,0.25);
+}
+
+/* 모바일 반응형 */
+@media (max-width: 768px) {
+    #kakao-talk-floating {
+        top: 140px;
+        right: 20px;
+        width: 80px;
+        height: 45px;
+    }
+}
+</style>
+
 </body>
 </html>

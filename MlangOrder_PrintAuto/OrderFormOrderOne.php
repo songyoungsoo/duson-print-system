@@ -18,7 +18,7 @@ if ($mode == "SubmitOk") {
     include "../db.php";
 
     // 데이터베이스에서 최대 no 값을 가져오기
-    $stmt = $db->prepare("SELECT MAX(no) FROM MlangOrder_PrintAuto");
+    $stmt = $db->prepare("SELECT MAX(no) FROM mlangorder_printauto");
     $stmt->execute();
     $stmt->bind_result($row);
     $stmt->fetch();
@@ -44,7 +44,7 @@ if ($mode == "SubmitOk") {
     $PageSSOk = ($page == "OrderOne") ? "2" : "1";
 
     $date = date("Y-m-d H:i:s");
-    $dbinsert = $db->prepare("INSERT INTO MlangOrder_PrintAuto 
+    $dbinsert = $db->prepare("INSERT INTO mlangorder_printauto 
         (no, Type, ImgFolder, Type_1, Type_2, Type_3, Type_4, Type_5, Type_6, money_1, money_2, money_3, money_4, money_5, name, email, zip, zip1, zip2, phone, Hendphone, delivery, bizname, bank, bankname, cont, date, PageSSOk, pass, Gensu) 
         VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)");
 

@@ -23,7 +23,7 @@ let animationId = null;
 
 // 페이지 로드 시 초기화
 document.addEventListener('DOMContentLoaded', function() {
-    initializeGallery();
+    // initializeGallery(); // 제거: 공통 갤러리 시스템 사용
     initializeCalculator();
     initializeFileUpload();
     
@@ -150,7 +150,7 @@ function loadImageToZoomBox(imagePath, zoomBox) {
 function analyzeImageSize(imagePath, callback) {
     const img = new Image();
     img.onload = function() {
-        const containerHeight = 350;
+        const containerHeight = 300;  // 350 -> 300px로 변경
         const containerWidth = document.getElementById('zoomBox').getBoundingClientRect().width;
         
         let backgroundSize;
@@ -316,7 +316,18 @@ function resetPrice() {
     const uploadOrderButton = document.getElementById('uploadOrderButton');
     
     if (priceAmount) priceAmount.textContent = '견적 계산 필요';
-    if (priceDetails) priceDetails.textContent = '모든 옵션을 선택하면 자동으로 계산됩니다';
+    if (priceDetails) {
+        priceDetails.innerHTML = '<span>모든 옵션을 선택하면 자동으로 계산됩니다</span>';
+        
+        // 초기 상태에서도 flex 레이아웃 강제 적용
+        priceDetails.style.display = 'flex';
+        priceDetails.style.justifyContent = 'center';
+        priceDetails.style.alignItems = 'center';
+        priceDetails.style.gap = '15px';
+        priceDetails.style.flexWrap = 'nowrap';
+        priceDetails.style.whiteSpace = 'nowrap';
+        priceDetails.style.flexDirection = 'row';
+    }
     if (priceDisplay) priceDisplay.classList.remove('calculated');
     if (uploadOrderButton) uploadOrderButton.style.display = 'none';
     
@@ -612,12 +623,27 @@ function updatePriceDisplay(priceData) {
         console.log('💰 큰 금액 표시 (인쇄비+디자인비):', supplyPrice + '원');
     }
     
-    if (priceDetails) {
-        priceDetails.innerHTML = `
-            인쇄비: ${formatNumber(priceData.base_price)}원<br>
-            디자인비: ${formatNumber(priceData.design_price)}원<br>
-            <strong>부가세 포함: ${formatNumber(Math.round(priceData.total_with_vat))}원</strong>
-        `;
+    // 공통 가격 표시 함수 사용
+    if (typeof updatePosterPriceDetails === 'function') {
+        updatePosterPriceDetails(priceData);
+    } else {
+        // fallback - 공통 함수가 없을 때
+        if (priceDetails) {
+            priceDetails.innerHTML = `
+                <span>인쇄비: ${formatNumber(priceData.base_price)}원</span>
+                <span>디자인비: ${formatNumber(priceData.design_price)}원</span>
+                <span>부가세 포함: <span class="vat-amount">${formatNumber(Math.round(priceData.total_with_vat))}원</span></span>
+            `;
+            
+            // 강제로 한 줄 레이아웃 스타일 적용 - 모든 CSS 규칙 무시
+            priceDetails.style.display = 'flex';
+            priceDetails.style.justifyContent = 'center';
+            priceDetails.style.alignItems = 'center';
+            priceDetails.style.gap = '15px';
+            priceDetails.style.flexWrap = 'nowrap';
+            priceDetails.style.whiteSpace = 'nowrap';
+            priceDetails.style.flexDirection = 'row';
+        }
     }
     
     if (priceDisplay) {

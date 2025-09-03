@@ -13,7 +13,7 @@ function render_gallery($id, $items, $options = []) {
     $defaults = [
         'product' => '',
         'thumbCols' => 4,
-        'mainSize' => [450, 300],
+        'mainSize' => [500, 300],
         'thumbSize' => [80, 80],
         'enableModal' => true,
         'randomize' => true
@@ -30,15 +30,15 @@ function render_gallery($id, $items, $options = []) {
         shuffle($items);
     }
     
-    // 썸네일 4개만 선택
+    // 썸네일 4개만 선택 (5번째는 더보기 버튼용)
     $thumbnails = array_slice($items, 0, 4);
     
     // SVG 플레이스홀더 생성
     $placeholderSvg = 'data:image/svg+xml;base64,' . base64_encode('
-        <svg xmlns="http://www.w3.org/2000/svg" width="450" height="300" viewBox="0 0 450 300">
-            <rect width="450" height="300" fill="#f5f5f5" stroke="#ddd" stroke-width="2"/>
-            <text x="225" y="140" font-family="Arial" font-size="16" fill="#999" text-anchor="middle">이미지 준비중</text>
-            <text x="225" y="165" font-family="Arial" font-size="12" fill="#bbb" text-anchor="middle">Image Loading...</text>
+        <svg xmlns="http://www.w3.org/2000/svg" width="500" height="300" viewBox="0 0 500 300">
+            <rect width="500" height="300" fill="#f5f5f5" stroke="#ddd" stroke-width="2"/>
+            <text x="250" y="140" font-family="Arial" font-size="16" fill="#999" text-anchor="middle">이미지 준비중</text>
+            <text x="250" y="165" font-family="Arial" font-size="12" fill="#bbb" text-anchor="middle">Image Loading...</text>
         </svg>
     ');
     
@@ -46,6 +46,18 @@ function render_gallery($id, $items, $options = []) {
         <svg xmlns="http://www.w3.org/2000/svg" width="80" height="80" viewBox="0 0 80 80">
             <rect width="80" height="80" fill="#f5f5f5" stroke="#ddd" stroke-width="1"/>
             <text x="40" y="45" font-family="Arial" font-size="10" fill="#999" text-anchor="middle">준비중</text>
+        </svg>
+    ');
+    
+    // 더보기 버튼용 SVG
+    $moreBtnSvg = 'data:image/svg+xml;base64,' . base64_encode('
+        <svg xmlns="http://www.w3.org/2000/svg" width="80" height="80" viewBox="0 0 80 80">
+            <rect width="80" height="80" fill="#28a745" stroke="#20c997" stroke-width="2" rx="8"/>
+            <text x="40" y="28" font-family="Arial" font-size="14" fill="white" text-anchor="middle" font-weight="bold">샘플</text>
+            <text x="40" y="48" font-family="Arial" font-size="14" fill="white" text-anchor="middle" font-weight="bold">더보기</text>
+            <circle cx="40" cy="65" r="3" fill="white"/>
+            <circle cx="32" cy="65" r="2" fill="rgba(255,255,255,0.7)"/>
+            <circle cx="48" cy="65" r="2" fill="rgba(255,255,255,0.7)"/>
         </svg>
     ');
     
@@ -59,7 +71,7 @@ function render_gallery($id, $items, $options = []) {
     ob_start();
     ?>
     <div id="<?php echo htmlspecialchars($id); ?>" class="gallery-container" data-product="<?php echo htmlspecialchars($opts['product']); ?>">
-        <!-- 메인 이미지 영역: 450×300px -->
+        <!-- 메인 이미지 영역: 500×300px -->
         <div class="gallery-main" style="width: <?php echo $opts['mainSize'][0]; ?>px; height: <?php echo $opts['mainSize'][1]; ?>px;">
             <img src="<?php echo htmlspecialchars($mainImage['src']); ?>" 
                  alt="<?php echo htmlspecialchars($mainImage['alt']); ?>"
@@ -69,7 +81,7 @@ function render_gallery($id, $items, $options = []) {
                  aria-label="메인 이미지: <?php echo htmlspecialchars($mainImage['alt']); ?>">
         </div>
         
-        <!-- 썸네일 그리드: 80×80px × 4개 -->
+        <!-- 썸네일 그리드: 80×80px × 5개 (4개 썸네일 + 1개 더보기 버튼) -->
         <div class="gallery-thumbs" role="list" aria-label="썸네일 목록">
             <?php foreach ($thumbnails as $index => $thumb): ?>
             <button class="gallery-thumb <?php echo $index === 0 ? 'active' : ''; ?>" 
@@ -83,17 +95,21 @@ function render_gallery($id, $items, $options = []) {
                      alt="<?php echo htmlspecialchars($thumb['alt']); ?>">
             </button>
             <?php endforeach; ?>
+            
+            <?php if ($opts['enableModal']): ?>
+            <!-- 5번째 썸네일: 샘플 더보기 버튼 -->
+            <button class="gallery-thumb gallery-more-thumb" 
+                    data-gallery-id="<?php echo htmlspecialchars($id); ?>"
+                    data-product="<?php echo htmlspecialchars($opts['product']); ?>"
+                    style="width: <?php echo $opts['thumbSize'][0]; ?>px; height: <?php echo $opts['thumbSize'][1]; ?>px;"
+                    role="listitem"
+                    aria-label="샘플 더보기"
+                    tabindex="0">
+                <img src="<?php echo $moreBtnSvg; ?>" 
+                     alt="샘플 더보기">
+            </button>
+            <?php endif; ?>
         </div>
-        
-        <?php if ($opts['enableModal']): ?>
-        <!-- 더 많은 샘플 보기 버튼 -->
-        <button class="gallery-more-btn" 
-                data-gallery-id="<?php echo htmlspecialchars($id); ?>"
-                data-product="<?php echo htmlspecialchars($opts['product']); ?>"
-                aria-label="더 많은 샘플 보기">
-            더 많은 샘플 보기
-        </button>
-        <?php endif; ?>
     </div>
     <?php
     return ob_get_clean();
@@ -101,39 +117,16 @@ function render_gallery($id, $items, $options = []) {
 
 /**
  * 갤러리 모달 렌더링 함수
- * 1200×800px 정중앙 팝업
+ * 통합 갤러리 모달 포함
  */
 function render_gallery_modal() {
     if (!defined('GALLERY_UNIFIED') || GALLERY_UNIFIED !== true) {
         return '';
     }
     
+    // 통합 갤러리 모달 파일 포함
     ob_start();
-    ?>
-    <div id="gallery-modal" class="gallery-modal" style="display: none;">
-        <div class="gallery-modal-backdrop"></div>
-        <div class="gallery-modal-content" style="width: 1200px; height: 800px;">
-            <div class="gallery-modal-header">
-                <h2 id="gallery-modal-title">갤러리</h2>
-                <button class="gallery-modal-close" aria-label="닫기">&times;</button>
-            </div>
-            <div class="gallery-modal-body">
-                <div class="gallery-modal-grid" id="modal-gallery-grid">
-                    <!-- AJAX로 동적 로드 -->
-                </div>
-            </div>
-            <div class="gallery-modal-footer">
-                <div class="gallery-pagination">
-                    <button class="pagination-prev" aria-label="이전 페이지">&laquo;</button>
-                    <span class="pagination-info">
-                        <span class="current-page">1</span> / <span class="total-pages">1</span>
-                    </span>
-                    <button class="pagination-next" aria-label="다음 페이지">&raquo;</button>
-                </div>
-            </div>
-        </div>
-    </div>
-    <?php
+    include __DIR__ . '/unified_gallery_modal.php';
     return ob_get_clean();
 }
 ?>

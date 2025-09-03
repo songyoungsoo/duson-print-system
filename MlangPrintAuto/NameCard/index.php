@@ -5,7 +5,7 @@
  * Created: 2025년 8월 (AI Assistant - Frontend Persona)
  */
 
-// 공통 인증 및 설정
+// 보안 상수 정의 후 공통 인증 및 설정
 include "../../includes/auth.php";
 
 // 공통 함수 및 데이터베이스
@@ -13,8 +13,8 @@ include "../../includes/functions.php";
 include "../../db.php";
 
 // 통합 갤러리 시스템 초기화
-include "../../includes/gallery_helper.php";
-init_gallery_system('namecard');
+if (file_exists('../../includes/gallery_helper.php')) { if (file_exists('../../includes/gallery_helper.php')) { include_once '../../includes/gallery_helper.php'; } }
+if (function_exists("init_gallery_system")) { init_gallery_system("namecard"); }
 
 // 데이터베이스 연결 및 설정
 check_db_connection($db);
@@ -34,7 +34,7 @@ $default_values = [
 ];
 
 // 첫 번째 명함 종류 가져오기 (일반명함(쿠폰) 우선)
-$type_query = "SELECT no, title FROM MlangPrintAuto_transactionCate 
+$type_query = "SELECT no, title FROM mlangprintauto_transactioncate 
                WHERE Ttable='NameCard' AND BigNo='0' 
                ORDER BY CASE WHEN title LIKE '%일반명함%' THEN 1 ELSE 2 END, no ASC 
                LIMIT 1";
@@ -43,7 +43,7 @@ if ($type_result && ($type_row = mysqli_fetch_assoc($type_result))) {
     $default_values['MY_type'] = $type_row['no'];
     
     // 해당 명함 종류의 첫 번째 재질 가져오기
-    $section_query = "SELECT no, title FROM MlangPrintAuto_transactionCate 
+    $section_query = "SELECT no, title FROM mlangprintauto_transactioncate 
                       WHERE Ttable='NameCard' AND BigNo='" . $type_row['no'] . "' 
                       ORDER BY no ASC LIMIT 1";
     $section_result = mysqli_query($db, $section_query);
@@ -51,7 +51,7 @@ if ($type_result && ($type_row = mysqli_fetch_assoc($type_result))) {
         $default_values['Section'] = $section_row['no'];
         
         // 해당 조합의 기본 수량 가져오기 (500매 우선)
-        $quantity_query = "SELECT DISTINCT quantity FROM MlangPrintAuto_namecard 
+        $quantity_query = "SELECT DISTINCT quantity FROM mlangprintauto_namecard 
                           WHERE style='" . $type_row['no'] . "' AND Section='" . $section_row['no'] . "' 
                           ORDER BY CASE WHEN quantity='500' THEN 1 ELSE 2 END, CAST(quantity AS UNSIGNED) ASC 
                           LIMIT 1";
@@ -79,7 +79,12 @@ if ($type_result && ($type_row = mysqli_fetch_assoc($type_result))) {
     <link rel="stylesheet" href="../../css/btn-primary.css">
     <!-- 통합 갤러리 CSS -->
     <link rel="stylesheet" href="../../assets/css/gallery.css">
+    <!-- 컴팩트 폼 그리드 CSS (모든 품목 공통) -->
+    <link rel="stylesheet" href="../../css/compact-form.css">
+    <link rel="stylesheet" href="../../css/unified-price-display.css">
     
+    <!-- 공통 가격 표시 시스템 -->
+    <script src="../../js/common-price-display.js" defer></script>
     <!-- 명함 전용 JavaScript -->
     <script src="../../js/namecard.js" defer></script>
     
@@ -90,8 +95,8 @@ if ($type_result && ($type_row = mysqli_fetch_assoc($type_result))) {
     
     <?php
     // 갤러리 에셋 자동 포함
-    if (defined('GALLERY_ASSETS_NEEDED')) {
-        include_gallery_assets();
+    if (defined("GALLERY_ASSETS_NEEDED") && function_exists("include_gallery_assets")) {
+        if (function_exists("include_gallery_assets")) { include_gallery_assets(); }
     }
     ?>
 </head>
@@ -101,7 +106,7 @@ if ($type_result && ($type_row = mysqli_fetch_assoc($type_result))) {
     <div class="compact-container">
         <div class="page-title">
             <h1>💳 명함 견적안내</h1>
-            <p>컴팩트 프리미엄 - PROJECT_SUCCESS_REPORT.md 스펙 구현</p>
+            <p><!--  컴팩트 프리미엄 - PROJECT_SUCCESS_REPORT.md 스펙 구현  --></p>
         </div>
 
         <!-- 컴팩트 2단 그리드 레이아웃 (500px 갤러리 + 나머지 계산기) -->
@@ -110,25 +115,25 @@ if ($type_result && ($type_row = mysqli_fetch_assoc($type_result))) {
             <section class="namecard-gallery namecard-privacy-protection" aria-label="명함 샘플 갤러리">
                 <?php
                 // 원클릭 갤러리 포함 (공통 헬퍼 사용)
-                include_product_gallery('namecard');
+                if (function_exists("include_product_gallery")) { include_product_gallery('namecard'); }
                 ?>
             </section>
 
             <!-- 우측: 실시간 가격 계산기 (동적 옵션 로딩 및 자동 계산) -->
             <div class="calculator-section">
                 <div class="calculator-header">
-                    <h3>💰 실시간 견적 계산기</h3>
+                    <h3>💰견적 안내</h3>
                 </div>
 
                 <form id="namecardForm">
                     <!-- 옵션 선택 그리드 - 개선된 2열 레이아웃 -->
-                    <div class="options-grid">
-                        <div class="option-group">
-                            <label class="option-label" for="MY_type">명함 종류</label>
+                    <div class="options-grid form-grid-compact">
+                        <div class="option-group form-field">
+                            <label class="option-label" for="MY_type">종류</label>
                             <select class="option-select" name="MY_type" id="MY_type" required>
                                 <option value="">선택해주세요</option>
                                 <?php
-                                $categories = getCategoryOptions($db, 'MlangPrintAuto_transactionCate', 'NameCard');
+                                $categories = getCategoryOptions($db, "mlangprintauto_transactioncate", 'NameCard');
                                 foreach ($categories as $category) {
                                     $selected = ($category['no'] == $default_values['MY_type']) ? 'selected' : '';
                                     echo "<option value='" . safe_html($category['no']) . "' $selected>" . safe_html($category['title']) . "</option>";
@@ -137,14 +142,14 @@ if ($type_result && ($type_row = mysqli_fetch_assoc($type_result))) {
                             </select>
                         </div>
 
-                        <div class="option-group">
-                            <label class="option-label" for="Section">명함 재질</label>
+                        <div class="option-group form-field">
+                            <label class="option-label" for="Section">재질</label>
                             <select class="option-select" name="Section" id="Section" required data-default-value="<?php echo htmlspecialchars($default_values['Section']); ?>">
                                 <option value="">먼저 종류를 선택해주세요</option>
                             </select>
                         </div>
 
-                        <div class="option-group">
+                        <div class="option-group form-field">
                             <label class="option-label" for="POtype">인쇄면</label>
                             <select class="option-select" name="POtype" id="POtype" required>
                                 <option value="">선택해주세요</option>
@@ -153,7 +158,7 @@ if ($type_result && ($type_row = mysqli_fetch_assoc($type_result))) {
                             </select>
                         </div>
 
-                        <div class="option-group">
+                        <div class="option-group form-field">
                             <label class="option-label" for="MY_amount">수량</label>
                             <select class="option-select" name="MY_amount" id="MY_amount" required data-default-value="<?php echo htmlspecialchars($default_values['MY_amount']); ?>">
                                 <option value="">먼저 재질을 선택해주세요</option>
@@ -170,7 +175,7 @@ if ($type_result && ($type_row = mysqli_fetch_assoc($type_result))) {
                         </div>
                     </div>
 
-                    <!-- 실시간 가격 표시 - 개선된 애니메이션 -->
+                    <!-- 스티커 방식의 실시간 가격 표시 -->
                     <div class="price-display" id="priceDisplay">
                         <div class="price-label">견적 금액</div>
                         <div class="price-amount" id="priceAmount">견적 계산 필요</div>
@@ -237,7 +242,7 @@ if ($type_result && ($type_row = mysqli_fetch_assoc($type_result))) {
                         <textarea id="modalWorkMemo" class="memo-textarea" placeholder="작업 관련 요청사항이나 특별한 지시사항을 입력해주세요.&#10;&#10;예시:&#10;- 색상을 더 진하게 해주세요&#10;- 로고 크기를 조금 더 크게&#10;- 배경색을 파란색으로 변경"></textarea>
                         
                         <div class="upload-notice">
-                            <div class="notice-item">📋 택배 무료배송은 결제금액 총 3만원 명부시에 한함</div>
+                            <div class="notice-item">📦 택배는 기본이 착불 원칙입니다</div>
                             <div class="notice-item">📋 온전판(당일)주 전날 주문 제품과 목업 불가</div>
                         </div>
                     </div>
@@ -301,7 +306,7 @@ if ($type_result && ($type_row = mysqli_fetch_assoc($type_result))) {
     <?php include "../../includes/login_modal.php"; ?>
     
     <?php
-    // 갤러리 모달과 JavaScript는 include_product_gallery()에서 자동 포함됨
+    // 갤러리 모달과 JavaScript는 if (function_exists("include_product_gallery")) { include_product_gallery()에서 자동 포함됨
     ?>
     
     <?php include "../../includes/footer.php"; ?>
@@ -366,15 +371,15 @@ if ($type_result && ($type_row = mysqli_fetch_assoc($type_result))) {
     }
 
     /* =================================================================== */
-    /* 3단계: 통일된 가격 표시 - 녹색 큰 글씨 (인쇄비+편집비=공급가) */
+    /* 3단계: 컴팩트 가격 표시 - 스티커 스타일 적용 */
     /* =================================================================== */
     .price-display {
+        margin-bottom: 5px !important;
+        padding: 8px 5px !important;
+        border-radius: 8px !important;
         background: linear-gradient(145deg, #f8f9fa 0%, #e9ecef 100%) !important;
         border: 2px solid #28a745 !important;
-        border-radius: 12px !important;
-        padding: 15px 20px !important;
         text-align: center !important;
-        margin: 20px 0 !important;
         transition: all 0.3s ease !important;
         box-shadow: 0 4px 12px rgba(40, 167, 69, 0.1) !important;
     }
@@ -394,7 +399,7 @@ if ($type_result && ($type_row = mysqli_fetch_assoc($type_result))) {
     }
 
     .price-display .price-amount {
-        font-size: 2.2rem !important;
+        font-size: 0.98rem !important;
         font-weight: 700 !important;
         color: #28a745 !important;
         margin: 10px 0 !important;
@@ -403,11 +408,37 @@ if ($type_result && ($type_row = mysqli_fetch_assoc($type_result))) {
         letter-spacing: -0.5px !important;
     }
 
+    /* 명함 페이지 전용 - 최고 우선순위로 flex 레이아웃 강제 */
+    #priceDisplay .price-details,
     .price-display .price-details {
         font-size: 0.8rem !important;
         color: #6c757d !important;
         line-height: 1.4 !important;
         margin-top: 8px !important;
+        
+        /* 한 줄 표시 강제 - 최고 우선순위 */
+        display: flex !important;
+        justify-content: center !important;
+        align-items: center !important;
+        gap: 15px !important;
+        flex-wrap: nowrap !important;
+        white-space: nowrap !important;
+        overflow-x: auto !important;
+        flex-direction: row !important;
+    }
+    
+    /* 부가세 포함 금액을 견적 금액과 완전히 동일하게 - 명함 전용 */
+    #priceDisplay .price-details .vat-amount,
+    .price-display .price-details .vat-amount {
+        color: #dc3545 !important;  /* 빨간색 */
+        font-size: 0.98rem !important;  /* 견적 금액과 동일한 크기 */
+        font-weight: 700 !important;  /* 견적 금액과 동일한 굵기 */
+        font-style: normal !important;
+        text-decoration: none !important;
+        line-height: 1.2 !important;  /* 견적 금액과 동일한 라인 높이 */
+        letter-spacing: -0.5px !important;  /* 견적 금액과 동일한 글자 간격 */
+        font-family: inherit !important;
+        text-shadow: 0 2px 4px rgba(220, 53, 69, 0.3) !important;  /* 빨간색 그림자 */
     }
 
     .price-display:hover {
@@ -464,6 +495,9 @@ if ($type_result && ($type_row = mysqli_fetch_assoc($type_result))) {
         position: relative !important;
         margin-top: 0 !important;
         align-self: start !important;
+        height: 450px !important;
+        min-height: 450px !important;
+        overflow: auto !important;
     }
 
     /* calculator-section에 갤러리와 동일한 배경 적용 */
@@ -476,7 +510,9 @@ if ($type_result && ($type_row = mysqli_fetch_assoc($type_result))) {
         position: relative !important; /* 헤더 오버플로우를 위한 설정 */
         margin-top: 0 !important;
         align-self: start !important;
-        min-height: 400px !important;
+        height: 450px !important;
+        min-height: 450px !important;
+        overflow: auto !important;
     }
     
     .gallery-title {
@@ -1057,7 +1093,7 @@ if ($type_result && ($type_row = mysqli_fetch_assoc($type_result))) {
         }
         
         .price-display .price-amount {
-            font-size: 1.5rem !important;     /* 모바일 가독성 */
+            font-size: 0.98rem !important;     /* 모바일도 동일 크기 */
         }
         
         .option-select {
@@ -1167,6 +1203,147 @@ if ($type_result && ($type_row = mysqli_fetch_assoc($type_result))) {
                 transparent 8px
             );
         }
+    }
+    
+    /* =================================================================== */
+    /* 파일업로드 모달 스타일 - 스티커 페이지와 통일 */
+    /* =================================================================== */
+    .upload-modal {
+        position: fixed;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+        background: rgba(0, 0, 0, 0.7);
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        z-index: 2000;
+    }
+    
+    .modal-content {
+        background: white;
+        border-radius: 12px;
+        width: 90%;
+        max-width: 700px !important;  /* 기존보다 축소 */
+        max-height: 80vh;
+        overflow: hidden;
+        box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
+    }
+    
+    .modal-header {
+        background: linear-gradient(135deg, #4caf50 0%, #2e7d32 100%);  /* 녹색으로 변경 */
+        color: white;
+        padding: 12px 16px !important;  /* 패딩 축소 */
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+    }
+    
+    .modal-title {
+        margin: 0;
+        font-size: 1.1rem !important;  /* 폰트 크기 축소 */
+        font-weight: 600;
+    }
+    
+    .modal-body {
+        padding: 16px !important;  /* 패딩 축소 (기존 20px) */
+        max-height: 60vh;
+        overflow-y: auto;
+    }
+    
+    .upload-container {
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        gap: 16px !important;  /* 갭 축소 */
+        margin-bottom: 16px !important;  /* 마진 축소 */
+    }
+    
+    .upload-left, .upload-right {
+        padding: 12px !important;  /* 패딩 축소 */
+    }
+    
+    .upload-area {
+        margin-bottom: 12px !important;  /* 마진 축소 */
+    }
+    
+    .upload-dropzone {
+        border: 2px dashed #4caf50;  /* 녹색 테두리 */
+        border-radius: 8px;
+        padding: 20px !important;  /* 패딩 축소 */
+        text-align: center;
+        cursor: pointer;
+        transition: all 0.3s ease;
+        background: #f8f9fa;
+    }
+    
+    .upload-dropzone:hover {
+        background: #e8f5e9;  /* 녹색 호버 */
+        border-color: #2e7d32;
+    }
+    
+    .memo-textarea {
+        width: 100%;
+        height: 80px !important;  /* 높이 축소 */
+        padding: 8px !important;  /* 패딩 축소 */
+        border: 1px solid #ddd;
+        border-radius: 6px;
+        resize: none;
+        font-size: 0.85rem !important;  /* 폰트 크기 축소 */
+    }
+    
+    .upload-notice {
+        margin-top: 12px !important;  /* 마진 축소 */
+    }
+    
+    .notice-item {
+        font-size: 0.8rem !important;  /* 폰트 크기 축소 */
+        margin-bottom: 6px !important;  /* 마진 축소 */
+        color: #666;
+        line-height: 1.3;
+    }
+    
+    .modal-footer {
+        padding: 12px 16px !important;  /* 패딩 축소 */
+        border-top: 1px solid #eee;
+        background: #f8f9fa;
+        display: flex;
+        justify-content: center;
+    }
+    
+    /* 장바구니 버튼 크기 50% 축소 */
+    .modal-btn.btn-cart {
+        background: linear-gradient(135deg, #4caf50 0%, #2e7d32 100%) !important;  /* 녹색으로 변경 */
+        color: white !important;
+        border: none !important;
+        padding: 8px 16px !important;  /* 패딩 50% 축소 (기존 16px 32px) */
+        font-size: 0.85rem !important;  /* 폰트 크기 축소 */
+        border-radius: 6px !important;
+        cursor: pointer !important;
+        transition: all 0.3s ease !important;
+        font-weight: 600 !important;
+        min-width: 120px !important;  /* 최소 너비 설정 */
+    }
+    
+    .modal-btn.btn-cart:hover {
+        background: linear-gradient(135deg, #2e7d32 0%, #1b5e20 100%) !important;
+        transform: translateY(-1px) !important;
+        box-shadow: 0 4px 12px rgba(76, 175, 80, 0.3) !important;
+    }
+    
+    .modal-close {
+        background: none !important;
+        border: none !important;
+        color: white !important;
+        font-size: 1.2rem !important;
+        cursor: pointer !important;
+        padding: 4px 8px !important;
+        border-radius: 4px !important;
+        transition: background 0.3s ease !important;
+    }
+    
+    .modal-close:hover {
+        background: rgba(255, 255, 255, 0.2) !important;
     }
     </style>
 

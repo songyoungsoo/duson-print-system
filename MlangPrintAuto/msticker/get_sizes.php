@@ -9,6 +9,7 @@ mysqli_set_charset($db, "utf8");
 
 $CV_no = $_GET['CV_no'] ?? '';
 $page = $_GET['page'] ?? 'msticker';
+$TABLE = "mlangprintauto_transactioncate";
 $GGTABLE = "mlangprintauto_transactioncate";
 
 if (empty($CV_no)) {

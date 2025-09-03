@@ -148,7 +148,7 @@ echo "</table>";
 echo "<h2>🎯 다음 단계</h2>";
 echo "<div style='background:#fff3e0; padding:15px; border:1px solid #ff9800;'>";
 echo "<p><strong>1. 포스터 페이지 테스트:</strong></p>";
-echo "<a href='MlangPrintAuto/Poster/index_compact.php' target='_blank' style='color:#0066cc;'>📋 포스터 페이지에서 동작 확인하기</a><br><br>";
+echo "<a href='mlangprintauto/poster/index_compact.php' target='_blank' style='color:#0066cc;'>📋 포스터 페이지에서 동작 확인하기</a><br><br>";
 
 echo "<p><strong>2. db.php 설정 업데이트:</strong></p>";
 echo "<code>C:\\xampp\\htdocs\\db.php</code> 파일에서:<br>";

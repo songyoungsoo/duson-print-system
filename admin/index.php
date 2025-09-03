@@ -1,6 +1,7 @@
 <?php
 include "top.php";
 include "../db.php";
+include "../includes/auth.php";
 
 // 데이터베이스 연결
 $db = new mysqli($host, $user, $password, $dataname);

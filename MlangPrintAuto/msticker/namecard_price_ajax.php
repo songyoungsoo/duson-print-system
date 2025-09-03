@@ -3,8 +3,8 @@ header('Content-Type: application/json; charset=utf-8');
 
 include "db_ajax.php";
 
-$TABLE = "MlangPrintAuto_NameCard";
-$GGTABLE = "MlangPrintAuto_transactionCate";
+$TABLE = "mlangprintauto_namecard";
+$GGTABLE = "mlangprintauto_transactioncate";
 
 $NC_type = $_GET['NC_type'] ?? '';
 $NC_paper = $_GET['NC_paper'] ?? '';

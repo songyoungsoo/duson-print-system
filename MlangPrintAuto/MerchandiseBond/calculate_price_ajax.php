@@ -43,7 +43,11 @@ if ($result && mysqli_num_rows($result) > 0) {
         'base_price' => $base_price,
         'design_price' => $design_price,
         'total_price' => $total_price,
-        'total_with_vat' => $total_with_vat
+        'total_with_vat' => $total_with_vat,
+        // JavaScript 호환성을 위한 필드 추가
+        'PriceForm' => $base_price,
+        'DS_PriceForm' => $design_price,
+        'Total_PriceForm' => $total_with_vat
     ];
     
     success_response($response_data, '가격 계산 완료');
@@ -73,7 +77,11 @@ if ($result && mysqli_num_rows($result) > 0) {
             'base_price' => $base_price,
             'design_price' => $design_price,
             'total_price' => $total_price,
-            'total_with_vat' => $total_with_vat
+            'total_with_vat' => $total_with_vat,
+            // JavaScript 호환성을 위한 필드 추가
+            'PriceForm' => $base_price,
+            'DS_PriceForm' => $design_price,
+            'Total_PriceForm' => $total_with_vat
         ];
         
         success_response($response_data, '가격 계산 완료 (fallback)');

@@ -1,36 +1,42 @@
 <?php
-ini_set('display_errors', 1);
-ini_set('display_startup_errors', 1);
-error_reporting(E_ALL);
+// 간단하고 안정적인 데이터베이스 연결 파일 (원본 방식 복원)
+$host = "localhost";
+$user = "dsp1830"; 
+$password = "ds701018";
+$dataname = "dsp1830";
 
-// 멀티 DB 서버 연결 시스템
-$db_configs = [
-    // 설정 1: 로컬 XAMPP (root 계정)
-    ['host' => 'localhost', 'user' => 'root', 'password' => '', 'db' => 'duson1830', 'port' => 3306],
-    
-    // 설정 2: 로컬 XAMPP (duson1830 계정)
-    ['host' => 'localhost', 'user' => 'duson1830', 'password' => 'du1830', 'db' => 'duson1830', 'port' => 3306],
-    
-    // 설정 3: 네트워크 서버
-    ['host' => '192.168.0.250', 'user' => 'duson1830', 'password' => 'du1830', 'db' => 'duson1830', 'port' => 3306],
-    
-    // 설정 4: 외부 서버
-    ['host' => 'sknas205.ipdisk.co.kr', 'user' => 'duson1830', 'password' => 'du1830', 'db' => 'duson1830', 'port' => 3306],
-];
-
-$db = null;
-foreach ($db_configs as $config) {
-    $host_port = $config['host'] . (($config['port'] != 3306) ? ':' . $config['port'] : '');
-    $db = @mysqli_connect($config['host'], $config['user'], $config['password'], $config['db'], $config['port']);
-    
-    if ($db) {
-        mysqli_query($db, "SET NAMES 'utf8'");
-        break;
-    }
-}
-
+$db = mysqli_connect($host, $user, $password, $dataname);
 if (!$db) {
-    die("모든 데이터베이스 서버 연결에 실패했습니다: " . mysqli_connect_error());
+    die("데이터베이스 연결에 실패했습니다: " . mysqli_connect_error());
+}
+mysqli_set_charset($db, "utf8mb4");
+
+// 테이블명 자동 매핑 시스템 - 필요할 때만 로드
+if (!function_exists('map_table_names')) {
+    function load_table_mapper() {
+        if (!function_exists('map_table_names')) {
+            include_once(__DIR__ . "/includes/table_mapper.php");
+        }
+    }
+    
+    // 조건부 래퍼 함수들 - 기본적으로는 일반 mysqli 함수 사용
+    function safe_mysqli_query($connection, $query) {
+        // 대문자 테이블명이 있을 때만 매핑 적용
+        if (preg_match('/\b(Member|Shop_Temp|MlangOrder_PrintAuto|MlangPrintAuto_[A-Z])\b/', $query)) {
+            load_table_mapper();
+            $query = map_table_names($query);
+        }
+        return mysqli_query($connection, $query);
+    }
+    
+    function safe_mysqli_prepare($connection, $query) {
+        // 대문자 테이블명이 있을 때만 매핑 적용
+        if (preg_match('/\b(Member|Shop_Temp|MlangOrder_PrintAuto|MlangPrintAuto_[A-Z])\b/', $query)) {
+            load_table_mapper();
+            $query = map_table_names($query);
+        }
+        return mysqli_prepare($connection, $query);
+    }
 }
 
 $admin_email = "dsp1830@naver.com";
@@ -40,36 +46,8 @@ $SiteTitle = $admin_name;
 $admin_Tname = "Mlang";
 $admin_url = "http://localhost";
 $Homedir = $admin_url;
-$admin_table = "member"; // 관리자 테이블
+$admin_table = "users"; // 관리자 테이블
 $page_big_table = "page_menu_big"; // 주메뉴 테이블
 $page_table = "page"; // 페이지 내용 테이블
 $home_cookie_url = ".dsp114.com"; // 홈 쿠키 url
 
-$WebSoftCopyright = "
-<p align=center>
-  Copyright ⓒ 2005 MlangWebProgram - WEBSOFT 제공:
-  <a href='http://www.websil.net' target='_blank'>
-    <font style='color:#408080; text-decoration:none'><b>WEBSIL</b>.net</font>
-  </a> Corp All rights reserved.
-</p>";
-
-
-$WebSoftCopyright2 = "
-<p align=center>
-  Copyright ⓒ 2005 MlangWebProgram<br>
-  WEBSOFT 제공:
-  <a href='http://www.websil.net' target='_blank'>
-    <font style='color:#408080; text-decoration:none'><b>WEBSIL</b>.net</font>
-  </a> Corp All rights reserved.
-</p>";
-
-$WebSoftCopyright3 = "
-<p align=center>
-  <font style='font-family:돋음; color:#B2B2B2; font-size:8pt;'>
-    Copyright ⓒ 2005 MlangWebProgram - WEBSOFT 제공:
-    <a href='http://www.websil.net' target='_blank'>
-      <font style='color:#8C8C8C; text-decoration:none'><u><b>WEBSIL</b>.net</u></font>
-    </a> Corp All rights reserved.
-  </font>
-</p>";
-?>

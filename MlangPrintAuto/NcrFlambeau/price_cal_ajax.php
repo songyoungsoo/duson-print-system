@@ -33,7 +33,7 @@ if (!$db) {
 
 $query = "
     SELECT money, DesignMoney 
-    FROM MlangPrintAuto_NcrFlambeau 
+    FROM mlangprintauto_ncrflambeau 
     WHERE style = ? AND Section = ? AND TreeSelect = ? AND quantity = ?
 ";
 
@@ -56,7 +56,7 @@ if ($row = mysqli_fetch_assoc($result)) {
     $total_price = $order_price + $vat_price;
 
     $get_title = function($no, $table_name) use ($db) {
-        $q = "SELECT title FROM MlangPrintAuto_transactionCate WHERE no = ? AND Ttable = ? LIMIT 1";
+        $q = "SELECT title FROM mlangprintauto_transactioncate WHERE no = ? AND Ttable = ? LIMIT 1";
         $s = mysqli_prepare($db, $q);
         mysqli_stmt_bind_param($s, 'ss', $no, $table_name);
         mysqli_stmt_execute($s);

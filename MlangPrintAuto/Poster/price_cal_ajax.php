@@ -35,7 +35,7 @@ if (!$db) {
 
 $query = "
     SELECT money, DesignMoney 
-    FROM MlangPrintAuto_LittlePrint 
+    FROM mlangprintauto_littleprint 
     WHERE style = ? AND TreeSelect = ? AND Section = ? AND quantity = ? AND POtype = ?
 ";
 
@@ -58,7 +58,7 @@ if ($row = mysqli_fetch_assoc($result)) {
     $total_price = $order_price + $vat_price;
 
     $get_title = function($no) use ($db) {
-        $q = "SELECT title FROM MlangPrintAuto_transactionCate WHERE no = ? AND Ttable = 'LittlePrint' LIMIT 1";
+        $q = "SELECT title FROM mlangprintauto_transactioncate WHERE no = ? AND Ttable = 'LittlePrint' LIMIT 1";
         $s = mysqli_prepare($db, $q);
         mysqli_stmt_bind_param($s, 's', $no);
         mysqli_stmt_execute($s);

@@ -2,13 +2,9 @@
 session_start();
 $session_id = session_id();
 
-// 데이터베이스 연결
-$host = "localhost";
-$user = "duson1830";
-$dataname = "duson1830";
-$password = "du1830";
-
-$connect = mysqli_connect($host, $user, $password, $dataname);
+// 공통 데이터베이스 연결 사용
+include "../../db.php";
+$connect = $db;
 if (!$connect) {
     echo json_encode(['success' => false, 'message' => '데이터베이스 연결에 실패했습니다.']);
     exit;

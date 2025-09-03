@@ -467,7 +467,7 @@ class SmartFieldComponent {
                 ]
             ],
             'namecard' => [
-                'table' => 'mlangprintauto_namecard',  // 명함 테이블
+                'table' => 'MlangPrintAuto_NameCard',  // 명함 테이블
                 'fields' => [
                     'MY_type' => ['column' => 'style'],         // 실제 필드: style
                     'PN_type' => ['column' => 'Section'],       // 실제 필드: Section (명함재질)

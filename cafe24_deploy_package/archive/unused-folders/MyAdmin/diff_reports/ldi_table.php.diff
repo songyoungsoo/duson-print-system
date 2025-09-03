@@ -1,0 +1,92 @@
+--- ldi_table.php (original)
++++ ldi_table.php (modified)
+@@ -24,7 +24,7 @@
+ <form action="ldi_check.php" method="post" enctype="multipart/form-data">
+     <table cellpadding="5" border="2">
+     <tr>
+-        <td><?php echo $strLocationTextfile; ?></td>
++        <td><?php echo  $strLocationTextfile ?></td>
+         <td colspan="2"><input type="file" name="textfile" /></td>
+     </tr>
+ <?php
+@@ -53,38 +53,38 @@
+ echo "\n";
+ ?>
+     <tr>
+-        <td><?php echo $strReplaceTable; ?></td>
+-        <td><input type="checkbox" name="replace" value="REPLACE" id="checkbox_replace" /><?php echo $strReplace; ?></td>
+-        <td><label for="checkbox_replace"><?php echo $strTheContents; ?></label></td>
++        <td><?php echo  $strReplaceTable ?></td>
++        <td><input type="checkbox" name="replace" value="REPLACE" id="checkbox_replace" /><?php echo  $strReplace ?></td>
++        <td><label for="checkbox_replace"><?php echo  $strTheContents ?></label></td>
+     </tr>
+     <tr>
+-        <td><?php echo $strFieldsTerminatedBy; ?></td>
++        <td><?php echo  $strFieldsTerminatedBy ?></td>
+         <td><input type="text" name="field_terminater" size="2" maxlength="2" value=";" /></td>
+-        <td><?php echo $strTheTerminator; ?></td>
++        <td><?php echo  $strTheTerminator ?></td>
+     </tr>
+     <tr>
+-        <td><?php echo $strFieldsEnclosedBy; ?></td>
++        <td><?php echo  $strFieldsEnclosedBy ?></td>
+         <td>
+             <input type="text" name="enclosed" size="1" maxlength="1" value="&quot;" />
+             <input type="checkbox" name="enclose_option" value="OPTIONALLY" id="checkbox_enclose_option" />
+-            <label for="checkbox_enclose_option"><?php echo $strOptionally; ?></label>
++            <label for="checkbox_enclose_option"><?php echo  $strOptionally ?></label>
+         </td>
+-        <td><?php echo $strOftenQuotation; ?></td>
++        <td><?php echo  $strOftenQuotation ?></td>
+     </tr>
+     <tr>
+-        <td><?php echo $strFieldsEscapedBy; ?></td>
++        <td><?php echo  $strFieldsEscapedBy ?></td>
+         <td><input type="text" name="escaped" size="2" maxlength="2" value="\" /></td>
+-        <td><?php echo $strOptionalControls; ?></td>
++        <td><?php echo  $strOptionalControls ?></td>
+     </tr>
+     <tr>
+-        <td><?php echo $strLinesTerminatedBy; ?></td>
+-        <td><input type="text" name="line_terminator" size="8" maxlength="8" value="<?php echo ((PMA_whichCrlf() == "\n") ? '\n' : '\r\n'); ?>" /></td>
+-        <td><?php echo $strCarriage; ?><br /><?php echo $strLineFeed; ?></td>
++        <td><?php echo  $strLinesTerminatedBy ?></td>
++        <td><input type="text" name="line_terminator" size="8" maxlength="8" value="<?php echo  ((PMA_whichCrlf() == "\n") ? '\n' : '\r\n') ?>" /></td>
++        <td><?php echo  $strCarriage ?><br /><?php echo  $strLineFeed ?></td>
+     </tr>
+     <tr>
+-        <td><?php echo $strColumnNames; ?></td>
++        <td><?php echo  $strColumnNames ?></td>
+         <td><input type="text" name="column_name" /></td>
+-        <td><?php echo $strIfYouWish; ?></td>
++        <td><?php echo  $strIfYouWish ?></td>
+     </tr>
+ <?php
+ // 2002/2/22 appended by Y.Kawada: Kanji encoding convert controls
+@@ -102,17 +102,17 @@
+     </tr>
+     <tr>
+         <td colspan="3" align="center">
+-            <input type="hidden" name="lang" value="<?php echo $lang; ?>" />
+-            <input type="hidden" name="convcharset" value="<?php echo $convcharset; ?>" />
+-            <input type="hidden" name="server" value="<?php echo $server; ?>" />
+-            <input type="hidden" name="db" value="<?php echo htmlspecialchars($db); ?>" />
+-            <input type="hidden" name="table" value="<?php echo htmlspecialchars($table); ?>" />
+-            <input type="hidden" name="zero_rows" value="<?php echo $strTheContent; ?>" />
++            <input type="hidden" name="lang" value="<?php echo  $lang ?>" />
++            <input type="hidden" name="convcharset" value="<?php echo  $convcharset ?>" />
++            <input type="hidden" name="server" value="<?php echo  $server ?>" />
++            <input type="hidden" name="db" value="<?php echo  htmlspecialchars($db) ?>" />
++            <input type="hidden" name="table" value="<?php echo  htmlspecialchars($table) ?>" />
++            <input type="hidden" name="zero_rows" value="<?php echo  $strTheContent ?>" />
+             <input type="hidden" name="goto" value="tbl_properties.php" />
+             <input type="hidden" name="back" value="ldi_table.php" />
+-            <input type="hidden" name="into_table" value="<?php echo htmlspecialchars($table); ?>" />
+-            <input type="submit" name="btnLDI" value="<?php echo $strSubmit; ?>" />&nbsp;&nbsp;
+-            <input type="reset" value="<?php echo $strReset; ?>" />
++            <input type="hidden" name="into_table" value="<?php echo  htmlspecialchars($table) ?>" />
++            <input type="submit" name="btnLDI" value="<?php echo  $strSubmit ?>" />&nbsp;&nbsp;
++            <input type="reset" value="<?php echo  $strReset ?>" />
+         </td>
+     </tr>
+ </table>

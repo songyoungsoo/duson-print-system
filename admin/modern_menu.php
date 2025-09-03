@@ -61,29 +61,29 @@ $menu_items = [
             [
                 'title' => '견적안내프로그램',
                 'submenu' => [
-                    ['title' => '전단지 관리', 'url' => $base_url . '/admin/MlangPrintAuto/inserted_List.php'],
-                    ['title' => '스티카 관리', 'url' => $base_url . '/admin/MlangPrintAuto/sticker_List.php'],
-                    ['title' => '명함 관리', 'url' => $base_url . '/admin/MlangPrintAuto/NameCard_List.php'],
-                    ['title' => '상품권 관리', 'url' => $base_url . '/admin/MlangPrintAuto/MerchandiseBond_List.php'],
-                    ['title' => '봉투 관리', 'url' => $base_url . '/admin/MlangPrintAuto/envelope_List.php'],
-                    ['title' => '양식지 관리', 'url' => $base_url . '/admin/MlangPrintAuto/NcrFlambeau_List.php'],
-                    ['title' => '카다로그 관리', 'url' => $base_url . '/admin/MlangPrintAuto/cadarok_List.php'],
-                    ['title' => '소량인쇄 관리', 'url' => $base_url . '/admin/MlangPrintAuto/LittlePrint_List.php'],
-                    ['title' => '견적안내 주문', 'url' => $base_url . '/admin/MlangPrintAuto/OrderList.php'],
-                    ['title' => '시안직접올리기', 'url' => $base_url . '/admin/MlangPrintAuto/admin.php?mode=AdminMlangOrdert', 'target' => 'Mlang'],
-                    ['title' => '견적안내 통합관리', 'url' => $base_url . '/admin/MlangPrintAuto/admin.php?mode=BankForm&code=Text', 'target' => 'Mlang']
+                    ['title' => '전단지 관리', 'url' => $base_url . '/admin/mlangprintauto/inserted_List.php'],
+                    ['title' => '스티카 관리', 'url' => $base_url . '/admin/mlangprintauto/sticker_List.php'],
+                    ['title' => '명함 관리', 'url' => $base_url . '/admin/mlangprintauto/NameCard_List.php'],
+                    ['title' => '상품권 관리', 'url' => $base_url . '/admin/mlangprintauto/MerchandiseBond_List.php'],
+                    ['title' => '봉투 관리', 'url' => $base_url . '/admin/mlangprintauto/envelope_List.php'],
+                    ['title' => '양식지 관리', 'url' => $base_url . '/admin/mlangprintauto/NcrFlambeau_List.php'],
+                    ['title' => '카다로그 관리', 'url' => $base_url . '/admin/mlangprintauto/cadarok_List.php'],
+                    ['title' => '소량인쇄 관리', 'url' => $base_url . '/admin/mlangprintauto/LittlePrint_List.php'],
+                    ['title' => '견적안내 주문', 'url' => $base_url . '/admin/mlangprintauto/OrderList.php'],
+                    ['title' => '시안직접올리기', 'url' => $base_url . '/admin/mlangprintauto/admin.php?mode=AdminMlangOrdert', 'target' => 'Mlang'],
+                    ['title' => '견적안내 통합관리', 'url' => $base_url . '/admin/mlangprintauto/admin.php?mode=BankForm&code=Text', 'target' => 'Mlang']
                 ]
             ],
             [
                 'title' => '수동견적프로그램',
                 'submenu' => [
-                    ['title' => '수동견적 주문', 'url' => $base_url . '/admin/MlangPrintAuto/OfferOrder.php']
+                    ['title' => '수동견적 주문', 'url' => $base_url . '/admin/mlangprintauto/OfferOrder.php']
                 ]
             ],
             [
                 'title' => '인쇄관련 업무',
                 'submenu' => [
-                    ['title' => '주문자 접수일보', 'url' => $base_url . '/admin/MlangPrintAuto/MemberOrderOfficeList.php']
+                    ['title' => '주문자 접수일보', 'url' => $base_url . '/admin/mlangprintauto/MemberOrderOfficeList.php']
                 ]
             ]
         ]

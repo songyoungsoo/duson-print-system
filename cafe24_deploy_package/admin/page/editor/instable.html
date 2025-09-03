@@ -1,0 +1,47 @@
+<HTML>
+<HEAD>
+<TITLE>테이블 만들기</TITLE>
+<STYLE TYPE="text/css">
+ BODY   {margin-left:10; font-family:Verdana; font-size:12; background:menu}
+ BUTTON {width:5em}
+ TABLE  {font-family:Verdana; font-size:12}
+ P      {text-align:center}
+</STYLE>
+<SCRIPT LANGUAGE=JavaScript>
+function IsDigit()
+{
+	return ((event.keyCode >= 48) && (event.keyCode <= 57))
+}
+</SCRIPT>
+<SCRIPT LANGUAGE=JavaScript FOR=Ok EVENT=onclick>
+<!--
+  var arr = new Array();
+  arr["NumRows"] = NumRows.value;
+  arr["NumCols"] = NumCols.value;
+  arr["TableAttrs"] = "width=" + TableAttrs.value + " border=1  bordercolorlight=#000000 cellspacing=0 cellpadding=1 bordercolordark=#FFFFFF ";
+  arr["CellAttrs"] = " style=\"font:10pt Arial\" ";
+  arr["Caption"] = "";
+  window.returnValue = arr;
+  window.close();
+// -->
+</SCRIPT>
+</HEAD>
+
+<BODY>
+<P>
+<TABLE CELLSPACING=5>
+ <TR>
+  <TD>행:
+  <TD><INPUT ID=NumRows TYPE=TEXT SIZE=10 maxlength=3 NAME=NumRows value="3" ONKEYPRESS="event.returnValue=IsDigit();">
+ <TR>
+  <TD>열:
+  <TD><INPUT ID=NumCols TYPE=TEXT SIZE=10 maxlength=3 NAME=NumCols value="3" ONKEYPRESS="event.returnValue=IsDigit();">
+ <TR>
+  <TD>넓이(pixel):
+  <TD><INPUT TYPE=TEXT SIZE=10 NAME=TableAttrs value="300" ONKEYPRESS="event.returnValue=IsDigit();">
+</TABLE>
+<P>
+<BUTTON ID=Ok TYPE=SUBMIT>확인</BUTTON>&nbsp;&nbsp;&nbsp;
+<BUTTON ONCLICK="window.close();">취소</BUTTON>
+</BODY>
+</HTML>

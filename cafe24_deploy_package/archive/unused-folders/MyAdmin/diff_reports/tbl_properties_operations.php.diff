@@ -1,0 +1,245 @@
+--- tbl_properties_operations.php (original)
++++ tbl_properties_operations.php (modified)
+@@ -43,7 +43,7 @@
+ for ($i = 0; $row = PMA_mysql_fetch_array($result); $i++) {
+         $columns[$i] = $row['Field'];
+ }
+-mysql_free_result($result);
++mysqli_free_result($result);
+ 
+ 
+ /**
+@@ -58,12 +58,12 @@
+     <!-- Order the table -->
+     <li>
+         <form method="post" action="tbl_properties_operations.php">
+-            <input type="hidden" name="server" value="<?php echo $server; ?>" />
+-            <input type="hidden" name="lang" value="<?php echo $lang; ?>" />
+-            <input type="hidden" name="convcharset" value="<?php echo $convcharset; ?>" />
+-            <input type="hidden" name="db" value="<?php echo htmlspecialchars($db); ?>" />
+-            <input type="hidden" name="table" value="<?php echo htmlspecialchars($table); ?>" />
+-            <?php echo $strAlterOrderBy; ?>&nbsp;:
++            <input type="hidden" name="server" value="<?php echo  $server ?>" />
++            <input type="hidden" name="lang" value="<?php echo  $lang ?>" />
++            <input type="hidden" name="convcharset" value="<?php echo  $convcharset ?>" />
++            <input type="hidden" name="db" value="<?php echo  htmlspecialchars($db) ?>" />
++            <input type="hidden" name="table" value="<?php echo  htmlspecialchars($table) ?>" />
++            <?php echo  $strAlterOrderBy ?>&nbsp;:
+             <select name="order_field" style="vertical-align: middle">
+     <?php
+     echo "\n";
+@@ -74,8 +74,8 @@
+     unset($columns);
+     ?>
+             </select>
+-            <input type="submit" name="submitorderby" value="<?php echo $strGo; ?>" style="vertical-align: middle" />
+-            &nbsp;<?php echo $strSingly . "\n"; ?>
++            <input type="submit" name="submitorderby" value="<?php echo  $strGo ?>" style="vertical-align: middle" />
++            &nbsp;<?php echo  $strSingly . "\n" ?>
+         </form>
+     </li>
+     <?php
+@@ -88,15 +88,15 @@
+         <div style="margin-bottom: 10px">
+             <form method="post" action="tbl_rename.php"
+                 onsubmit="return emptyFormElements(this, 'new_name')">
+-                <input type="hidden" name="server" value="<?php echo $server; ?>" />
+-                <input type="hidden" name="lang" value="<?php echo $lang; ?>" />
+-                <input type="hidden" name="convcharset" value="<?php echo $convcharset; ?>" />
+-                <input type="hidden" name="db" value="<?php echo htmlspecialchars($db); ?>" />
+-                <input type="hidden" name="table" value="<?php echo htmlspecialchars($table); ?>" />
++                <input type="hidden" name="server" value="<?php echo  $server ?>" />
++                <input type="hidden" name="lang" value="<?php echo  $lang ?>" />
++                <input type="hidden" name="convcharset" value="<?php echo  $convcharset ?>" />
++                <input type="hidden" name="db" value="<?php echo  htmlspecialchars($db) ?>" />
++                <input type="hidden" name="table" value="<?php echo  htmlspecialchars($table) ?>" />
+                 <input type="hidden" name="reload" value="1" />
+-                <?php echo $strRenameTable; ?>&nbsp;:
+-                <input type="text" size="20" name="new_name" value="<?php echo htmlspecialchars($table); ?>" class="textfield" onfocus="this.select()" />&nbsp;
+-                <input type="submit" value="<?php echo $strGo; ?>" />
++                <?php echo  $strRenameTable ?>&nbsp;:
++                <input type="text" size="20" name="new_name" value="<?php echo  htmlspecialchars($table) ?>" class="textfield" onfocus="this.select()" />&nbsp;
++                <input type="submit" value="<?php echo  $strGo ?>" />
+             </form>
+         </div>
+     </li>
+@@ -109,17 +109,17 @@
+             <td valign="top">
+             <form method="post" action="tbl_move_copy.php"
+                 onsubmit="return emptyFormElements(this, 'new_name')">
+-                <input type="hidden" name="server" value="<?php echo $server; ?>" />
+-                <input type="hidden" name="lang" value="<?php echo $lang; ?>" />
+-                <input type="hidden" name="convcharset" value="<?php echo $convcharset; ?>" />
+-                <input type="hidden" name="db" value="<?php echo htmlspecialchars($db); ?>" />
+-                <input type="hidden" name="table" value="<?php echo htmlspecialchars($table); ?>" />
++                <input type="hidden" name="server" value="<?php echo  $server ?>" />
++                <input type="hidden" name="lang" value="<?php echo  $lang ?>" />
++                <input type="hidden" name="convcharset" value="<?php echo  $convcharset ?>" />
++                <input type="hidden" name="db" value="<?php echo  htmlspecialchars($db) ?>" />
++                <input type="hidden" name="table" value="<?php echo  htmlspecialchars($table) ?>" />
+                 <input type="hidden" name="reload" value="1" />
+                 <input type="hidden" name="what" value="data" />
+                 <table border="0" cellspacing="0" cellpadding="0">
+                 <tr>
+                     <td nowrap="nowrap">
+-                        <?php echo $strMoveTable . "\n"; ?>
++                        <?php echo  $strMoveTable . "\n" ?>
+                     </td>
+                 </tr>
+                 <tr>
+@@ -137,12 +137,12 @@
+ ?>
+                         </select>
+                         &nbsp;<b>.</b>&nbsp;
+-                        <input type="text" size="20" name="new_name" value="<?php echo $table; ?>" class="textfield" onfocus="this.select()" />
+-                    </td>
+-                </tr>
+-                <tr>
+-                    <td align="<?php echo $cell_align_right; ?>" valign="top">
+-                        <input type="submit" name="submit_move" value="<?php echo $strGo; ?>" />
++                        <input type="text" size="20" name="new_name" value="<?php echo  $table ?>" class="textfield" onfocus="this.select()" />
++                    </td>
++                </tr>
++                <tr>
++                    <td align="<?php echo  $cell_align_right ?>" valign="top">
++                        <input type="submit" name="submit_move" value="<?php echo  $strGo ?>" />
+                     </td>
+                 </tr>
+                 </table>
+@@ -152,16 +152,16 @@
+             <td valign="top">
+             <form method="post" action="tbl_move_copy.php"
+                 onsubmit="return emptyFormElements(this, 'new_name')">
+-                <input type="hidden" name="server" value="<?php echo $server; ?>" />
+-                <input type="hidden" name="lang" value="<?php echo $lang; ?>" />
+-                <input type="hidden" name="convcharset" value="<?php echo $convcharset; ?>" />
+-                <input type="hidden" name="db" value="<?php echo htmlspecialchars($db); ?>" />
+-                <input type="hidden" name="table" value="<?php echo htmlspecialchars($table); ?>" />
++                <input type="hidden" name="server" value="<?php echo  $server ?>" />
++                <input type="hidden" name="lang" value="<?php echo  $lang ?>" />
++                <input type="hidden" name="convcharset" value="<?php echo  $convcharset ?>" />
++                <input type="hidden" name="db" value="<?php echo  htmlspecialchars($db) ?>" />
++                <input type="hidden" name="table" value="<?php echo  htmlspecialchars($table) ?>" />
+                 <input type="hidden" name="reload" value="1" />
+                 <table border="0" cellspacing="0" cellpadding="0">
+                 <tr>
+                     <td colspan="2" nowrap="nowrap">
+-                        <?php echo $strCopyTable . "\n"; ?>
++                        <?php echo  $strCopyTable . "\n" ?>
+                     </td>
+                 </tr>
+                 <tr>
+@@ -186,12 +186,12 @@
+                 <tr>
+                     <td nowrap="nowrap">
+                         <input type="radio" name="what" value="structure" id="radio_copy_structure" checked="checked" />
+-                        <label for="radio_copy_structure"><?php echo $strStrucOnly; ?></label>&nbsp;&nbsp;<br />
++                        <label for="radio_copy_structure"><?php echo  $strStrucOnly ?></label>&nbsp;&nbsp;<br />
+                         <input type="radio" name="what" value="data" id="radio_copy_data" />
+-                        <label for="radio_copy_data"><?php echo $strStrucData; ?></label>&nbsp;&nbsp;
+-                    </td>
+-                    <td align="<?php echo $cell_align_right; ?>" valign="top">
+-                        <input type="submit" name="submit_copy" value="<?php echo $strGo; ?>" />
++                        <label for="radio_copy_data"><?php echo  $strStrucData ?></label>&nbsp;&nbsp;
++                    </td>
++                    <td align="<?php echo  $cell_align_right ?>" valign="top">
++                        <input type="submit" name="submit_copy" value="<?php echo  $strGo ?>" />
+                     </td>
+                 </tr>
+                 </table>
+@@ -211,15 +211,15 @@
+         <div style="margin-bottom: 10px">
+         <table border="0" cellspacing="0" cellpadding="0" style="vertical-align: top">
+         <tr>
+-            <td><?php echo $strTableMaintenance; ?>&nbsp;:&nbsp;</td>
++            <td><?php echo  $strTableMaintenance ?>&nbsp;:&nbsp;</td>
+         <?php
+         echo "\n";
+         if ($tbl_type == 'MYISAM') {
+             ?>
+             <td>
+-                <a href="sql.php?<?php echo $url_query; ?>&amp;sql_query=<?php echo urlencode('CHECK TABLE ' . PMA_backquote($table)); ?>">
+-                    <?php echo $strCheckTable; ?></a>&nbsp;
+-                <?php echo PMA_showMySQLDocu('MySQL_Database_Administration', 'CHECK_TABLE') . "\n"; ?>
++                <a href="sql.php?<?php echo  $url_query ?>&amp;sql_query=<?php echo  urlencode('CHECK TABLE ' . PMA_backquote($table)) ?>">
++                    <?php echo  $strCheckTable ?></a>&nbsp;
++                <?php echo  PMA_showMySQLDocu('MySQL_Database_Administration', 'CHECK_TABLE') . "\n" ?>
+             </td>
+             <td>&nbsp;-&nbsp;</td>
+             <?php
+@@ -228,9 +228,9 @@
+         if ($tbl_type == 'MYISAM' || $tbl_type == 'BDB') {
+             ?>
+             <td>
+-                <a href="sql.php?<?php echo $url_query; ?>&amp;sql_query=<?php echo urlencode('ANALYZE TABLE ' . PMA_backquote($table)); ?>">
+-                    <?php echo $strAnalyzeTable; ?></a>&nbsp;
+-                <?php echo PMA_showMySQLDocu('MySQL_Database_Administration', 'ANALYZE_TABLE') . "\n";?>
++                <a href="sql.php?<?php echo  $url_query ?>&amp;sql_query=<?php echo  urlencode('ANALYZE TABLE ' . PMA_backquote($table)) ?>">
++                    <?php echo  $strAnalyzeTable ?></a>&nbsp;
++                <?php echo  PMA_showMySQLDocu('MySQL_Database_Administration', 'ANALYZE_TABLE') . "\n" ?>
+             </td>
+             <?php
+         }
+@@ -244,9 +244,9 @@
+         if ($tbl_type == 'MYISAM') {
+             ?>
+             <td>
+-                <a href="sql.php?<?php echo $url_query; ?>&amp;sql_query=<?php echo urlencode('REPAIR TABLE ' . PMA_backquote($table)); ?>">
+-                    <?php echo $strRepairTable; ?></a>&nbsp;
+-                <?php echo PMA_showMySQLDocu('MySQL_Database_Administration', 'REPAIR_TABLE') . "\n"; ?>
++                <a href="sql.php?<?php echo  $url_query ?>&amp;sql_query=<?php echo  urlencode('REPAIR TABLE ' . PMA_backquote($table)) ?>">
++                    <?php echo  $strRepairTable ?></a>&nbsp;
++                <?php echo  PMA_showMySQLDocu('MySQL_Database_Administration', 'REPAIR_TABLE') . "\n" ?>
+             </td>
+             <td>&nbsp;-&nbsp;</td>
+             <?php
+@@ -255,9 +255,9 @@
+         if ($tbl_type == 'MYISAM' || $tbl_type == 'BDB') {
+             ?>
+             <td>
+-                <a href="sql.php?<?php echo $url_query; ?>&amp;sql_query=<?php echo urlencode('OPTIMIZE TABLE ' . PMA_backquote($table)); ?>">
+-                    <?php echo $strOptimizeTable; ?></a>&nbsp;
+-                <?php echo PMA_showMySQLDocu('MySQL_Database_Administration', 'OPTIMIZE_TABLE') . "\n"; ?>
++                <a href="sql.php?<?php echo  $url_query ?>&amp;sql_query=<?php echo  urlencode('OPTIMIZE TABLE ' . PMA_backquote($table)) ?>">
++                    <?php echo  $strOptimizeTable ?></a>&nbsp;
++                <?php echo  PMA_showMySQLDocu('MySQL_Database_Administration', 'OPTIMIZE_TABLE') . "\n" ?>
+             </td>
+             <?php
+         }
+@@ -280,10 +280,10 @@
+     <!-- Table maintenance -->
+     <li style="vertical-align: top">
+         <div style="margin-bottom: 10px">
+-        <?php echo $strTableMaintenance; ?>&nbsp;:&nbsp;
+-        <a href="sql.php?<?php echo $url_query; ?>&amp;sql_query=<?php echo urlencode('OPTIMIZE TABLE ' . PMA_backquote($table)); ?>">
+-            <?php echo $strOptimizeTable; ?></a>&nbsp;
+-        <?php echo PMA_showMySQLDocu('MySQL_Database_Administration', 'OPTIMIZE_TABLE') . "\n"; ?>
++        <?php echo  $strTableMaintenance ?>&nbsp;:&nbsp;
++        <a href="sql.php?<?php echo  $url_query ?>&amp;sql_query=<?php echo  urlencode('OPTIMIZE TABLE ' . PMA_backquote($table)) ?>">
++            <?php echo  $strOptimizeTable ?></a>&nbsp;
++        <?php echo  PMA_showMySQLDocu('MySQL_Database_Administration', 'OPTIMIZE_TABLE') . "\n" ?>
+         </div>
+     </li>
+     <?php
+@@ -304,7 +304,7 @@
+     <!-- Referential integrity check -->
+     <li style="vertical-align: top">
+         <div style="margin-bottom: 10px">
+-        <?php echo $strReferentialIntegrity; ?><br />
++        <?php echo  $strReferentialIntegrity ?><br />
+         <?php
+         echo "\n";
+         while (list($master, $arr) = each($foreign)){
+@@ -346,9 +346,9 @@
+ 
+     <!-- Flushes the table -->
+     <li>
+-        <a href="sql.php?<?php echo $url_query; ?>&amp;sql_query=<?php echo urlencode('FLUSH TABLE ' . PMA_backquote($table)); ?>&amp;zero_rows=<?php echo urlencode(sprintf($strTableHasBeenFlushed, htmlspecialchars($table))); if ($cfg['ShowTooltip']) echo '&amp;reload=1'; ?>">
+-            <?php echo $strFlushTable; ?></a>&nbsp;
+-            <?php echo PMA_showMySQLDocu('MySQL_Database_Administration', 'FLUSH') . "\n"; ?>
++        <a href="sql.php?<?php echo  $url_query ?>&amp;sql_query=<?php echo  urlencode('FLUSH TABLE ' . PMA_backquote($table)) ?>&amp;zero_rows=<?php echo  urlencode(sprintf($strTableHasBeenFlushed, htmlspecialchars($table))); if ($cfg['ShowTooltip']) echo '&amp;reload=1' ?>">
++            <?php echo  $strFlushTable ?></a>&nbsp;
++            <?php echo  PMA_showMySQLDocu('MySQL_Database_Administration', 'FLUSH') . "\n" ?>
+         <br /><br />
+     </li>
+ 

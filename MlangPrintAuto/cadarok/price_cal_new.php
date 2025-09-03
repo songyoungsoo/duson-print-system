@@ -27,7 +27,7 @@ try {
     $design_price = 0;
     
     // mlangprintauto_cadarok 테이블에서 가격 조회
-    $table_check = mysqli_query($connect, "SHOW TABLES LIKE 'mlangprintauto_cadarok'");
+    $table_check = mysqli_query($connect, "SHOW TABLES LIKE "mlangprintauto_cadarok"");
     
     if (mysqli_num_rows($table_check) > 0) {
         $stmt = mysqli_prepare($connect, "SELECT money, DesignMoney FROM mlangprintauto_cadarok WHERE style = ? AND Section = ? AND TreeSelect = ? AND quantity = ? LIMIT 1");

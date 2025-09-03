@@ -82,7 +82,7 @@ function check_session() {
 // 데이터베이스 연결 체크
 function check_db_connection($db) {
     if (!$db) {
-        die("Database connection error: " . mysqli_connect_error());
+        die("데이터베이스 연결에 실패했습니다: " . mysqli_connect_error());
     }
     return true;
 }

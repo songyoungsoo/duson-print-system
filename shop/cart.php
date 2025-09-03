@@ -4,6 +4,7 @@ $session_id = session_id();
 
 $HomeDir = "../../";
 include "../lib/func.php";
+include "../includes/auth.php";
 
 error_log("Attempting to connect to database");
 $connect = dbconn();
@@ -22,7 +23,7 @@ function getKoreanName($connect, $id) {
         return $id; // 연결이 없거나 ID가 없으면 원본 반환
     }
     
-    $query = "SELECT title FROM MlangPrintAuto_transactionCate WHERE no = ? LIMIT 1";
+    $query = "SELECT title FROM mlangprintauto_transactioncate WHERE no = ? LIMIT 1";
     $stmt = mysqli_prepare($connect, $query);
     if (!$stmt) {
         return $id;
@@ -278,11 +279,15 @@ if ($cart_result === false) {
                                 <?php endif; ?>
                                 
                                 <?php if (!empty($item['MY_type'])): ?>
-                                    <p><strong>인쇄색상:</strong> <?php echo htmlspecialchars(getKoreanName($connect, $item['MY_type'])); ?></p>
+                                    <p><strong>종류:</strong> <?php echo htmlspecialchars(getKoreanName($connect, $item['MY_type'])); ?></p>
                                 <?php endif; ?>
                                 
                                 <?php if (!empty($item['PN_type'])): ?>
                                     <p><strong>규격:</strong> <?php echo htmlspecialchars(getKoreanName($connect, $item['PN_type'])); ?></p>
+                                <?php endif; ?>
+                                
+                                <?php if (!empty($item['ordertype'])): ?>
+                                    <p><strong>타입:</strong> <?php echo htmlspecialchars(getKoreanName($connect, $item['ordertype'])); ?></p>
                                 <?php endif; ?>
                                 
                                 <?php if (!empty($item['MY_amount'])): ?>
@@ -359,7 +364,7 @@ if ($cart_result === false) {
             <h3 style="margin-bottom: 1rem;">📋 주문 안내</h3>
             <div style="display: flex; justify-content: space-around; flex-wrap: wrap; gap: 1rem;">
                 <div>💰 모든 작업은 입금 후 진행</div>
-                <div>📦 택배비는 착불</div>
+                <div>📦 택배 무료배송은 결제금액 총 3만원 이상시에 한함 미만은 택배는 기본이 착불입니다 선불시 요청해주세요</div>
                 <div>📁 주문 후 파일 업로드</div>
             </div>
         </div>
