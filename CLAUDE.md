@@ -1164,6 +1164,43 @@ selects.forEach(selectName => {
 - **디자인 최적화**: 컴팩트한 레이아웃으로 공간 효율성 증가
 - **재사용성 증가**: 공통 함수를 다른 제품 페이지에서도 활용 가능
 
+### Leaflet System Architecture Documentation (September 3, 2025)
+
+#### **완성된 모듈화 구조**:
+```php
+MlangPrintAuto/inserted/
+├── index.php              # 메인 페이지 (475줄로 최적화, 1500줄→475줄 70% 감소)
+├── css/
+│   ├── leaflet-compact.css    # 컴팩트 레이아웃 스타일
+│   └── leaflet-inline.css     # 분리된 인라인 CSS (322줄)
+├── config/
+│   └── leaflet.config.php     # 중앙화된 설정 (87줄)
+├── includes/
+│   └── leaflet_functions.php  # 공통 함수 라이브러리 (226줄)
+└── js/
+    └── leaflet-compact.js     # 자동 선택 로직 포함
+```
+
+#### **주요 기술적 개선사항**:
+- **코드 분리**: 1500줄 단일 파일 → 4개 모듈로 분리
+- **함수 라이브러리**: 재사용 가능한 공통 함수 집중화
+- **설정 중앙화**: 페이지 설정 및 상수를 config 파일로 통합
+- **자동화**: 드롭다운 자동 선택 기능으로 UX 향상
+- **UI 최적화**: 페이지 타이틀 50% 축소, 여백 최적화
+
+#### **검증된 기능**:
+- ✅ **Database Integration**: mlangprintauto_transactioncate 테이블 연동
+- ✅ **Dynamic Options**: 실시간 드롭다운 옵션 로딩
+- ✅ **Auto Selection**: 첫 번째 유효 옵션 자동 선택
+- ✅ **Price Calculation**: AJAX 기반 실시간 가격 계산
+- ✅ **File Upload**: 다중 파일 업로드 지원
+- ✅ **Shopping Cart**: 장바구니 시스템 통합
+- ✅ **Gallery System**: 통합 갤러리 컴포넌트
+- ✅ **Mobile Responsive**: 반응형 디자인 완성
+
+#### **Production Ready Status**:
+모든 기능 테스트 완료 및 실서버 배포 준비 상태
+
 ## 🔧 Recent Updates (September 3, 2025)
 
 ### Git Repository Setup & Synchronization
