@@ -1164,12 +1164,45 @@ selects.forEach(selectName => {
 - **디자인 최적화**: 컴팩트한 레이아웃으로 공간 효율성 증가
 - **재사용성 증가**: 공통 함수를 다른 제품 페이지에서도 활용 가능
 
+## 🔧 Recent Updates (September 3, 2025)
+
+### Git Repository Setup & Synchronization
+**Location**: GitHub - https://github.com/songyoungsoo/duson-print-system.git
+**Branch**: auth-system-fix
+
+#### **1. Repository Cleanup**
+- **Large Files Removed**: SQL dumps, ZIP files, uploaded images excluded from Git
+- **Git History Cleaned**: Used git filter-branch to remove large files from history
+- **.gitignore Enhanced**: Added patterns for SQL, ZIP, backup folders, and large files
+
+#### **2. Synchronization Setup**
+- **GitHub Repository**: Successfully pushed to remote repository
+- **Code Only**: Only PHP code and configuration files are tracked
+- **Images/Uploads**: Excluded from version control (managed locally)
+
+#### **3. Work Synchronization Commands**
+```bash
+# At home - first time
+git clone https://github.com/songyoungsoo/duson-print-system.git
+cd duson-print-system
+git checkout auth-system-fix
+
+# At home - update existing
+git fetch origin
+git pull origin auth-system-fix
+
+# After making changes
+git add .
+git commit -m "description"
+git push origin auth-system-fix
+```
+
 ---
 
-*Last Updated: September 2025*
+*Last Updated: September 3, 2025*
 *System Status: Production Ready*  
 *Development Environment: Windows XAMPP*
 *Git Branch: auth-system-fix*
-*Implementation Status: Phase 1 - Leaflet System Optimized*
+*Implementation Status: Phase 1 - Leaflet System Optimized & Git Synchronized*
 *Next Review: October 2025*
 특히 admin 관련부분은 수정할려면 반드시 사전계획을 세우고 물어보고 수정 할것
