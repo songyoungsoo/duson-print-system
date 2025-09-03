@@ -1,8 +1,0 @@
---- db_details_links.php (original)
-+++ db_details_links.php (modified)
-@@ -83,4 +83,4 @@
-     </tr>
- </table>
- <br />
--
-+?>

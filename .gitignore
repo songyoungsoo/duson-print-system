@@ -114,3 +114,25 @@ uploads/
 *.gif
 MlangOrder_PrintAuto/upload/
 MlangOrder_PrintAuto/img/
+
+# SQL 덤프 파일 (대용량)
+*.sql
+duson1830*.sql
+
+# ZIP 파일 (대용량)
+cafe24_essential_files.zip*
+*.zip.00bc20e3
+
+# 백업 폴더들
+MlangPrintAuto_cafe24_final_*/
+MlangPrintAuto_fixed_*/
+backup_lowercase_*/
+cafe24_deploy_package/
+deployment/
+migration/
+audit_out/
+automation/
+
+# 기타 대용량 파일
+bbs/upload/**/*.pdf
+bbs/upload/**/*.zip

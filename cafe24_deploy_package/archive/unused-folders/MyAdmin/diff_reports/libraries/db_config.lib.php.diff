@@ -1,7 +1,0 @@
---- db_config.lib.php (original)
-+++ db_config.lib.php (modified)
-@@ -93,3 +93,4 @@
-     );
- 
- } // $__PMA_DB_CONFIG_LIB__
-+?>

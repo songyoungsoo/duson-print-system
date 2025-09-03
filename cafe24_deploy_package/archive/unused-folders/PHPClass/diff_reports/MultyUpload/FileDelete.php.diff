@@ -1,7 +1,0 @@
---- FileDelete.php (original)
-+++ FileDelete.php (modified)
-@@ -1,3 +1,4 @@
-+<?php
- <?php
- if($FileDelete=="ok"){
- unlink("../../ImgFolder/$Turi/$Ty/$Tmd/$Tip/$Ttime/$FileName"); 
