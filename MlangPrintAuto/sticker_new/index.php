@@ -1819,7 +1819,7 @@ $default_values = [
                         
                         // 장바구니 페이지로 이동
                         setTimeout(() => {
-                            window.location.href = '/mlangprintauto/shop/cart.php';
+                            window.location.href = '/MlangPrintAuto/shop/cart.php';
                         }, 1000);
                         
                     } else {

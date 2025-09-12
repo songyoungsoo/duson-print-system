@@ -1,11 +1,11 @@
 <?php
 /**
- * 카다록/리플렛 견적안내 컴팩트 시스템 - PROJECT_SUCCESS_REPORT.md 스펙 구현
+ * 상품권/쿠폰 견적안내 컴팩트 시스템 - NameCard 시스템 구조 적용
  * Features: 적응형 이미지 분석, 부드러운 애니메이션, 실시간 가격 계산
- * Created: 2025년 8월 (AI Assistant - Frontend Persona)
+ * Created: 2025년 12월 (AI Assistant - Frontend Persona)
  */
 
-// 공통 인증 및 설정
+// 보안 상수 정의 후 공통 인증 및 설정
 include "../../includes/auth.php";
 
 // 공통 함수 및 데이터베이스
@@ -18,7 +18,7 @@ mysqli_set_charset($db, "utf8");
 
 // 로그 정보 및 페이지 설정
 $log_info = generateLogInfo();
-$page_title = generate_page_title("카다록/리플렛 견적안내 컴팩트 - 프리미엄");
+$page_title = generate_page_title("상품권/쿠폰 견적안내 컴팩트 - 프리미엄");
 
 // 기본값 설정 (데이터베이스에서 가져오기) - PROJECT_SUCCESS_REPORT.md 스펙
 $default_values = [
@@ -29,27 +29,27 @@ $default_values = [
     'ordertype' => 'print' // 기본값: 인쇄만
 ];
 
-// 첫 번째 카다록 종류 가져오기
+// 첫 번째 상품권/쿠폰 종류 가져오기
 $type_query = "SELECT no, title FROM mlangprintauto_transactioncate 
-               WHERE Ttable='cadarok' AND BigNo='0' 
+               WHERE Ttable='MerchandiseBond' AND BigNo='0' 
                ORDER BY no ASC 
                LIMIT 1";
 $type_result = mysqli_query($db, $type_query);
 if ($type_result && ($type_row = mysqli_fetch_assoc($type_result))) {
     $default_values['MY_type'] = $type_row['no'];
     
-    // 해당 카다록 종류의 첫 번째 재질 가져오기
+    // 해당 상품권/쿠폰 종류의 첫 번째 재질 가져오기
     $section_query = "SELECT no, title FROM mlangprintauto_transactioncate 
-                      WHERE Ttable='cadarok' AND BigNo='" . $type_row['no'] . "' 
+                      WHERE Ttable='MerchandiseBond' AND BigNo='" . $type_row['no'] . "' 
                       ORDER BY no ASC LIMIT 1";
     $section_result = mysqli_query($db, $section_query);
     if ($section_result && ($section_row = mysqli_fetch_assoc($section_result))) {
         $default_values['Section'] = $section_row['no'];
         
-        // 해당 조합의 기본 수량 가져오기 (500매 우선)
-        $quantity_query = "SELECT DISTINCT quantity FROM mlangprintauto_cadarok 
+        // 해당 조합의 기본 수량 가져오기 (100매 우선)
+        $quantity_query = "SELECT DISTINCT quantity FROM mlangprintauto_merchandisebond 
                           WHERE style='" . $type_row['no'] . "' AND Section='" . $section_row['no'] . "' 
-                          ORDER BY CASE WHEN quantity='500' THEN 1 ELSE 2 END, CAST(quantity AS UNSIGNED) ASC 
+                          ORDER BY CASE WHEN quantity='100' THEN 1 ELSE 2 END, CAST(quantity AS UNSIGNED) ASC 
                           LIMIT 1";
         $quantity_result = mysqli_query($db, $quantity_query);
         if ($quantity_result && ($quantity_row = mysqli_fetch_assoc($quantity_result))) {
@@ -69,18 +69,21 @@ if ($type_result && ($type_row = mysqli_fetch_assoc($type_result))) {
     <!-- 공통 헤더 포함 -->
     <?php include "../../includes/header.php"; ?>
     
-    <!-- 카다록 컴팩트 페이지 전용 CSS (PROJECT_SUCCESS_REPORT.md 스펙) -->
-    <link rel="stylesheet" href="../../css/cadarok-compact.css">
+    <!-- 상품권/쿠폰 컴팩트 페이지 전용 CSS -->
+    <link rel="stylesheet" href="../../css/merchandisebond-compact.css">
     <link rel="stylesheet" href="../../css/gallery-common.css">
     <link rel="stylesheet" href="../../css/btn-primary.css">
     <!-- 컴팩트 폼 그리드 CSS (모든 품목 공통) -->
     <link rel="stylesheet" href="../../css/compact-form.css">
-    <!-- 통합 가격 표시 시스템 -->
+    <!-- 공통 스타일 (플렉스 레이아웃 포함) -->
+    <link rel="stylesheet" href="../../css/common-styles.css">
+    
+    <!-- 통합 가격 표시 시스템 CSS -->
     <link rel="stylesheet" href="../../css/unified-price-display.css">
     
     <!-- 고급 JavaScript 라이브러리 (적응형 이미지 분석 및 실시간 계산) -->
     <script src="../../includes/js/GalleryLightbox.js"></script>
-    <script src="js/cadarok.js" defer></script>
+    <script src="../../js/merchandisebond.js" defer></script>
     
     <!-- 세션 ID 및 설정값 메타 태그 -->
     <meta name="session-id" content="<?php echo htmlspecialchars(session_id()); ?>">
@@ -91,46 +94,19 @@ if ($type_result && ($type_row = mysqli_fetch_assoc($type_result))) {
     <?php include "../../includes/nav.php"; ?>
 
     <div class="compact-container">
-    
-    <style>
-    /* 카다록을 명함과 동일한 크기로 조정 */
-    .compact-container {
-        max-width: 1200px !important;
-        margin: 0 auto !important;
-        padding: 10px 20px 20px 20px !important;
-        background: white !important;
-        border-radius: 15px !important;
-        box-shadow: 0 10px 40px rgba(0,0,0,0.1) !important;
-        overflow: hidden !important;
-    }
-    
-    .main-content {
-        display: grid !important;
-        grid-template-columns: 1fr 1fr !important;
-        gap: 30px !important;
-        min-height: 450px !important;
-        max-width: 1200px !important;
-        margin: 0 auto !important;
-        align-items: start !important;
-    }
-    </style>
         <div class="page-title">
-            <h1>📝 카다록/리플렛 견적안내</h1>
-            <p><!--  컴팩트 프리미엄 - PROJECT_SUCCESS_REPORT.md 스펙 구현  --></p>
+            <h1>🎁 상품권/쿠폰 견적안내</h1>
+            <!-- <p>컴팩트 프리미엄 - NameCard 시스템 구조 적용</p> -->
         </div>
 
         <!-- 컴팩트 2단 그리드 레이아웃 (500px 갤러리 + 나머지 계산기) -->
         <div class="main-content">
             <!-- 좌측: 통합 갤러리 시스템 -->
-            <section class="cadarok-gallery" aria-label="카다록/리플렛 샘플 갤러리">
+            <section class="merchandisebond-gallery" aria-label="상품권/쿠폰 샘플 갤러리">
                 <?php
-                // 통합 갤러리 시스템 사용 (3줄로 완전 간소화)
-                if (file_exists('../../includes/gallery_helper.php')) { 
-                    include_once '../../includes/gallery_helper.php'; 
-                }
-                if (function_exists("include_product_gallery")) { 
-                    include_product_gallery('cadarok'); 
-                }
+                // 공통 갤러리 시스템 사용 (500×300px 기본값)
+                if (file_exists('../../includes/gallery_helper.php')) { if (file_exists('../../includes/gallery_helper.php')) { include_once '../../includes/gallery_helper.php'; } }
+                if (function_exists("include_product_gallery")) { include_product_gallery('merchandisebond'); }
                 ?>
             </section>
 
@@ -140,7 +116,7 @@ if ($type_result && ($type_row = mysqli_fetch_assoc($type_result))) {
                     <h3>💰 실시간 견적 계산기</h3>
                 </div>
 
-                <form id="cadarokForm">
+                <form id="merchandisebondForm">
                     <!-- 옵션 선택 그리드 - 개선된 2열 레이아웃 -->
                     <div class="options-grid form-grid-compact">
                         <div class="option-group form-field">
@@ -148,7 +124,7 @@ if ($type_result && ($type_row = mysqli_fetch_assoc($type_result))) {
                             <select class="option-select" name="MY_type" id="MY_type" required>
                                 <option value="">선택해주세요</option>
                                 <?php
-                                $categories = getCategoryOptions($db, "mlangprintauto_transactioncate", "cadarok");
+                                $categories = getCategoryOptions($db, "mlangprintauto_transactioncate", 'MerchandiseBond');
                                 foreach ($categories as $category) {
                                     $selected = ($category['no'] == $default_values['MY_type']) ? 'selected' : '';
                                     echo "<option value='" . safe_html($category['no']) . "' $selected>" . safe_html($category['title']) . "</option>";
@@ -180,13 +156,16 @@ if ($type_result && ($type_row = mysqli_fetch_assoc($type_result))) {
                             </select>
                         </div>
 
-                        <div class="option-group full-width">
+                        <!-- 편집디자인 - 플렉스 레이아웃 수평 정렬 -->
+                        <div class="option-group form-field design-flex-layout">
                             <label class="option-label" for="ordertype">편집디자인</label>
-                            <select class="option-select" name="ordertype" id="ordertype" required>
-                                <option value="">선택해주세요</option>
-                                <option value="total" <?php echo ($default_values['ordertype'] == 'total') ? 'selected' : ''; ?>>디자인+인쇄</option>
-                                <option value="print" <?php echo ($default_values['ordertype'] == 'print') ? 'selected' : ''; ?>>인쇄만 의뢰</option>
-                            </select>
+                            <div class="design-options-container">
+                                <select class="option-select" name="ordertype" id="ordertype" required>
+                                    <option value="">선택해주세요</option>
+                                    <option value="total" <?php echo ($default_values['ordertype'] == 'total') ? 'selected' : ''; ?>>디자인+인쇄</option>
+                                    <option value="print" <?php echo ($default_values['ordertype'] == 'print') ? 'selected' : ''; ?>>인쇄만 의뢰</option>
+                                </select>
+                            </div>
                         </div>
                     </div>
 
@@ -196,7 +175,7 @@ if ($type_result && ($type_row = mysqli_fetch_assoc($type_result))) {
                         <div class="price-label">견적 금액</div>
                         <div class="price-amount" id="priceAmount">견적 계산 필요</div>
                         <div class="price-details" id="priceDetails">
-                            모든 옵션을 선택하면 자동으로 계산됩니다
+                            <span>모든 옵션을 선택하면 자동으로 계산됩니다</span>
                         </div>
                     </div>
 
@@ -213,61 +192,139 @@ if ($type_result && ($type_row = mysqli_fetch_assoc($type_result))) {
                     <input type="hidden" name="log_md" value="<?php echo safe_html($log_info['md']); ?>">
                     <input type="hidden" name="log_ip" value="<?php echo safe_html($log_info['ip']); ?>">
                     <input type="hidden" name="log_time" value="<?php echo safe_html($log_info['time']); ?>">
-                    <input type="hidden" name="page" value="cadarok">
+                    <input type="hidden" name="page" value="MerchandiseBond">
                 </form>
             </div>
         </div>
     </div>
 
-    <?php
-    // 공통 업로드 모달 설정 (통일된 명명 규칙)
-    $modalProductName = '카다록';
-    $modalProductIcon = '📖';
-    
-    // 공통 업로드 모달 포함
-    include "../../includes/upload_modal.php";
-    ?>
-    
-    <!-- 기존 모달 제거됨 - 공통 모달 사용 -->
-
-    <!-- 갤러리 더보기 모달 -->
-    <div id="cadarokGalleryModal" class="gallery-modal" style="display: none;">
-        <div class="gallery-modal-overlay" onclick="closeCadarokGalleryModal()"></div>
-        <div class="gallery-modal-content">
-            <div class="gallery-modal-header">
-                <h3>🖼️ 카다록/리플렛 갤러리 (전체)</h3>
-                <button type="button" class="gallery-modal-close" onclick="closeCadarokGalleryModal()">✕</button>
+    <!-- 파일 업로드 모달 (드래그 앤 드롭 및 고급 애니메이션) -->
+    <div id="uploadModal" class="upload-modal" style="display: none;">
+        <div class="modal-overlay" onclick="closeUploadModal()"></div>
+        <div class="modal-content">
+            <div class="modal-header">
+                <h3 class="modal-title">📎 파일첨부방법 선택</h3>
+                <button type="button" class="modal-close" onclick="closeUploadModal()">✕</button>
             </div>
-            <div class="gallery-modal-body">
-                <div id="cadarokGalleryModalGrid" class="gallery-grid">
-                    <!-- JavaScript로 동적 로드됨 -->
+            
+            <div class="modal-body">
+                <div class="upload-container">
+                    <div class="upload-left">
+                        <label class="upload-label" for="modalFileInput">파일첨부</label>
+                        <div class="upload-buttons">
+                            <button type="button" class="btn-upload-method active" onclick="selectUploadMethod('upload')">
+                                파일업로드
+                            </button>
+                            <button type="button" class="btn-upload-method" onclick="selectUploadMethod('manual')" disabled>
+                                10분만에 작품완료 자기는 방법!
+                            </button>
+                        </div>
+                        <div class="upload-area" id="modalUploadArea">
+                            <div class="upload-dropzone" id="modalUploadDropzone">
+                                <span class="upload-icon">📁</span>
+                                <span class="upload-text">파일을 여기에 드래그하거나 클릭하세요</span>
+                                <input type="file" id="modalFileInput" accept=".jpg,.jpeg,.png,.pdf,.ai,.eps,.psd" multiple hidden>
+                            </div>
+                            <div class="upload-info">
+                                파일첨부 독수리파일(#,&,'&',*,%, 등) 사용은 불가능하며 파일명이 길면 예전가 불성
+                                하니 되도록 짧고 간단하게 작성해 주세요!
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="upload-right">
+                        <label class="upload-label">작업메모</label>
+                        <textarea id="modalWorkMemo" class="memo-textarea" placeholder="작업 관련 요청사항이나 특별한 지시사항을 입력해주세요.&#10;&#10;예시:&#10;- 색상을 더 진하게 해주세요&#10;- 로고 크기를 조금 더 크게&#10;- 배경색을 파란색으로 변경"></textarea>
+                        
+                        <div class="upload-notice">
+                            <div class="notice-item">📋 택배 무료배송은 결제금액 총 3만원 명부시에 한함</div>
+                            <div class="notice-item">📋 온전판(당일)주 전날 주문 제품과 목업 불가</div>
+                        </div>
+                    </div>
                 </div>
                 
-                <!-- 페이지네이션 UI -->
-                <div class="gallery-pagination" id="cadarokPagination" style="display: none;">
-                    <div class="pagination-info">
-                        <span id="cadarokPageInfo">페이지 1 / 1 (총 0개)</span>
-                    </div>
-                    <div class="pagination-controls">
-                        <button id="cadarokPrevBtn" class="pagination-btn" onclick="loadCadarokPage('prev')" disabled>
-                            ← 이전
-                        </button>
-                        <div class="pagination-numbers" id="cadarokPageNumbers"></div>
-                        <button id="cadarokNextBtn" class="pagination-btn" onclick="loadCadarokPage('next')" disabled>
-                            다음 →
-                        </button>
-                    </div>
+                <div class="uploaded-files" id="modalUploadedFiles" style="display: none;">
+                    <h5>📂 업로드된 파일</h5>
+                    <div class="file-list" id="modalFileList"></div>
                 </div>
+            </div>
+            
+            <div class="modal-footer">
+                <button type="button" class="modal-btn btn-cart" onclick="addToBasketFromModal()">
+                    🛒 장바구니에 저장
+                </button>
             </div>
         </div>
     </div>
+
+    <!-- 상품권 통합 갤러리 모달 색상 설정 -->
+    <style>
+    /* 통합 갤러리 모달 헤더 색상 (상품권 브랜드 색상 - 핑크색) */
+    .gallery-modal-header {
+        background: linear-gradient(135deg, #e91e63 0%, #ad1457 100%) !important;
+        color: white !important;
+    }
+    
+    .gallery-modal-close {
+        color: white !important;
+    }
+    
+    .gallery-modal-close:hover {
+        background: rgba(255, 255, 255, 0.2) !important;
+        color: white !important;
+    }
+    </style>
+
+    <?php
+    // 갤러리 에셋 자동 포함
+    if (defined("GALLERY_ASSETS_NEEDED") && function_exists("include_gallery_assets")) {
+        if (function_exists("include_gallery_assets")) { include_gallery_assets(); }
+    }
+    ?>
+    
+    <!-- 상품권 브랜드 컬러 적용 (핑크 계열) -->
+    <style>
+        /* 상품권 갤러리 모달 브랜드 컬러 */
+        [data-product="merchandisebond"] .gallery-modal-header {
+            background: linear-gradient(135deg, #ff6b9d, #ffc1e3);
+            color: white;
+        }
+        
+        [data-product="merchandisebond"] .gallery-modal-header h2 {
+            color: white;
+        }
+        
+        [data-product="merchandisebond"] .gallery-more-btn {
+            background: linear-gradient(135deg, #ff6b9d, #ffc1e3);
+            border: none;
+        }
+        
+        [data-product="merchandisebond"] .gallery-more-btn:hover {
+            background: linear-gradient(135deg, #ff4585, #ff9ad6);
+            transform: translateY(-1px);
+        }
+        
+        /* 상품권 썸네일 활성 상태 */
+        [data-product="merchandisebond"] .gallery-thumb.active {
+            border-color: #ff6b9d;
+            box-shadow: 0 0 0 1px rgba(255, 107, 157, 0.25);
+        }
+        
+        [data-product="merchandisebond"] .gallery-thumb:hover {
+            border-color: #ff4585;
+        }
+    </style>
+
+    <?php
+    // 갤러리 모달과 JavaScript는 if (function_exists("include_product_gallery")) { include_product_gallery()에서 자동 포함됨
+    ?>
 
     <?php include "../../includes/login_modal.php"; ?>
     <?php 
     include "../../includes/footer.php"; 
     ?>
 
-    <!-- 카다록 전용 컴팩트 디자인 적용 (Frontend-Compact-Design-Guide.md 기반) -->
+    <!-- 상품권/쿠폰 전용 컴팩트 디자인 적용 (Frontend-Compact-Design-Guide.md 기반) -->
     <style>
     /* =================================================================== */
     /* 1단계: Page-title 컴팩트화 (1/2 높이 축소) */
@@ -297,38 +354,20 @@ if ($type_result && ($type_row = mysqli_fetch_assoc($type_result))) {
     }
 
     /* =================================================================== */
-    /* 2단계: Calculator-header 컴팩트화 (gallery-title과 완전히 동일한 디자인) */
+    /* 2단계: Calculator-header 컴팩트화 (2/3 높이 축소) */
     /* =================================================================== */
     .calculator-header {
-        background: linear-gradient(135deg, #6f42c1 0%, #5a3a9a 100%) !important;
+        padding: 12px 25px !important;       /* 2/3 축소 */
+        margin: 0 !important;                /* 마진 제거 */
+        background: linear-gradient(135deg, #e91e63 0%, #ad1457 100%) !important;
         color: white !important;
-        padding: 18px 20px !important;
-        margin: -25px -25px 5px -25px !important;
-        border-radius: 15px 15px 0 0 !important;
-        font-size: 1.1rem !important;
-        font-weight: 600 !important;
+        border-radius: 12px !important;
         text-align: center !important;
-        box-shadow: 0 2px 10px rgba(111, 66, 193, 0.3) !important;
-        line-height: 1.2 !important;
-    }
-
-    /* calculator-section에 갤러리와 동일한 배경 적용 */
-    .calculator-section {
-        background: linear-gradient(135deg, #f8f9fa 0%, #e9ecef 100%) !important;
-        border-radius: 15px !important;
-        padding: 25px !important;
-        box-shadow: 0 10px 35px rgba(0, 0, 0, 0.12), 0 4px 15px rgba(0, 0, 0, 0.08) !important;
-        border: 1px solid rgba(255, 255, 255, 0.9) !important;
-        position: relative !important; /* 헤더 오버플로우를 위한 설정 */
-        margin-top: 0 !important;
-        align-self: start !important;
-        height: 450px !important;
-        min-height: 450px !important;
-        overflow: auto !important;
+        box-shadow: 0 4px 15px rgba(233, 30, 99, 0.3) !important;
     }
 
     .calculator-header h3 {
-        font-size: 1.1rem !important;        /* gallery-title과 동일 */
+        font-size: 1.2rem !important;        /* 14% 축소 */
         line-height: 1.2 !important;
         margin: 0 !important;
         color: white !important;
@@ -341,33 +380,31 @@ if ($type_result && ($type_row = mysqli_fetch_assoc($type_result))) {
         opacity: 0.9 !important;
     }
 
-    /* =================================================================== */
     /* 가격 표시는 공통 CSS (../../css/unified-price-display.css) 사용 */
-    /* =================================================================== */
 
     /* =================================================================== */
     /* 4단계: Form 요소 컴팩트화 (패딩 1/2 축소) */
     /* =================================================================== */
-    .option-select, select, input[type="text"], input[type="email"], textarea {
+    .option-select {
         padding: 6px 15px !important;        /* 상하 패딩 1/2 */
     }
 
-    .option-group {
-        margin-bottom: 8px !important;       /* 33% 축소 */
-    }
-
     /* =================================================================== */
-    /* 5단계: 그리드 레이아웃 최적화 */
+    /* 5단계: 기타 요소들 컴팩트화 */
     /* =================================================================== */
-    .main-content {
-        display: grid !important;
-        grid-template-columns: 1fr 1fr !important;
-        gap: 20px !important;
-        align-items: start !important; /* 그리드 아이템들을 상단 정렬 */
+    .calculator-section {
+        padding: 0px 25px !important;        /* 더 타이트하게 */
+        height: 450px !important;
+        min-height: 450px !important;
+        overflow: auto !important;
     }
 
     .options-grid {
         gap: 12px !important;                /* 25% 축소 */
+    }
+
+    .option-group {
+        margin-bottom: 8px !important;       /* 33% 축소 */
     }
 
     .upload-order-button {
@@ -375,24 +412,21 @@ if ($type_result && ($type_row = mysqli_fetch_assoc($type_result))) {
     }
 
     /* =================================================================== */
-    /* 6단계: 섹션 그림자 효과 (강화된 시각적 구분) */
+    /* 6단계: 갤러리 섹션 스타일 (상품권 브랜드 컬러) */
     /* =================================================================== */
     .gallery-section {
-        background: linear-gradient(135deg, #f8f9fa 0%, #e9ecef 100%) !important;
-        border-radius: 15px !important;
-        padding: 25px !important;
-        box-shadow: 0 10px 35px rgba(0, 0, 0, 0.12), 0 4px 15px rgba(0, 0, 0, 0.08) !important;
-        border: 1px solid rgba(255, 255, 255, 0.9) !important;
-        position: relative !important;
-        margin-top: 0 !important;
-        align-self: start !important;
+        background: linear-gradient(135deg, #f8f9fa 0%, #e9ecef 100%);
+        border-radius: 15px;
+        padding: 25px;
+        box-shadow: 0 8px 25px rgba(0, 0, 0, 0.08);
+        border: 1px solid rgba(255, 255, 255, 0.8);
         height: 450px !important;
         min-height: 450px !important;
         overflow: auto !important;
     }
     
     .gallery-title {
-        background: linear-gradient(135deg, #6f42c1 0%, #5a3a9a 100%);
+        background: linear-gradient(135deg, #e91e63 0%, #ad1457 100%);
         color: white;
         padding: 15px 20px;
         margin: -25px -25px 20px -25px;
@@ -400,7 +434,7 @@ if ($type_result && ($type_row = mysqli_fetch_assoc($type_result))) {
         font-size: 1.1rem;
         font-weight: 600;
         text-align: center;
-        box-shadow: 0 2px 10px rgba(111, 66, 193, 0.3);
+        box-shadow: 0 2px 10px rgba(233, 30, 99, 0.3);
     }
 
     /* 라이트박스 뷰어 스타일 */
@@ -419,8 +453,8 @@ if ($type_result && ($type_row = mysqli_fetch_assoc($type_result))) {
     }
     
     .lightbox-viewer:hover {
-        border-color: #6f42c1;
-        box-shadow: 0 8px 30px rgba(111, 66, 193, 0.15);
+        border-color: #e91e63;
+        box-shadow: 0 8px 30px rgba(233, 30, 99, 0.15);
         transform: translateY(-2px);
     }
     
@@ -450,17 +484,17 @@ if ($type_result && ($type_row = mysqli_fetch_assoc($type_result))) {
         opacity: 1;
         transform: translateY(-2px);
         box-shadow: 0 4px 15px rgba(0, 0, 0, 0.15);
-        border-color: #6f42c1;
+        border-color: #e91e63;
     }
     
     .thumbnail-strip img.active {
         opacity: 1;
-        border-color: #6f42c1;
-        box-shadow: 0 4px 15px rgba(111, 66, 193, 0.3);
+        border-color: #e91e63;
+        box-shadow: 0 4px 15px rgba(233, 30, 99, 0.3);
     }
     
     /* 갤러리 로딩 상태 */
-    #cadarokGallery .loading {
+    #merchandisebondGallery .loading {
         text-align: center;
         padding: 60px 20px;
         color: #6c757d;
@@ -471,7 +505,7 @@ if ($type_result && ($type_row = mysqli_fetch_assoc($type_result))) {
     }
     
     /* 갤러리 에러 상태 */
-    #cadarokGallery .error {
+    #merchandisebondGallery .error {
         text-align: center;
         padding: 40px 20px;
         color: #dc3545;
@@ -495,7 +529,7 @@ if ($type_result && ($type_row = mysqli_fetch_assoc($type_result))) {
     }
     
     .btn-more-gallery {
-        background: linear-gradient(135deg, #6f42c1 0%, #5a3a9a 100%);
+        background: linear-gradient(135deg, #e91e63 0%, #ad1457 100%);
         color: white;
         border: none;
         padding: 12px 24px;
@@ -504,20 +538,20 @@ if ($type_result && ($type_row = mysqli_fetch_assoc($type_result))) {
         font-weight: 600;
         cursor: pointer;
         transition: all 0.3s ease;
-        box-shadow: 0 3px 12px rgba(111, 66, 193, 0.3);
+        box-shadow: 0 3px 12px rgba(233, 30, 99, 0.3);
         text-decoration: none;
         display: inline-block;
     }
     
     .btn-more-gallery:hover {
-        background: linear-gradient(135deg, #5a3a9a 0%, #4e2d87 100%);
+        background: linear-gradient(135deg, #ad1457 0%, #8e0038 100%);
         transform: translateY(-2px);
-        box-shadow: 0 5px 20px rgba(111, 66, 193, 0.4);
+        box-shadow: 0 5px 20px rgba(233, 30, 99, 0.4);
     }
     
     .btn-more-gallery:active {
         transform: translateY(0);
-        box-shadow: 0 2px 8px rgba(111, 66, 193, 0.3);
+        box-shadow: 0 2px 8px rgba(233, 30, 99, 0.3);
     }
     
     /* =================================================================== */
@@ -573,7 +607,7 @@ if ($type_result && ($type_row = mysqli_fetch_assoc($type_result))) {
     }
     
     .gallery-modal-header {
-        background: linear-gradient(135deg, #6f42c1 0%, #5a3a9a 100%);
+        background: linear-gradient(135deg, #e91e63 0%, #ad1457 100%);
         color: white;
         padding: 20px 25px;
         display: flex;
@@ -647,7 +681,7 @@ if ($type_result && ($type_row = mysqli_fetch_assoc($type_result))) {
     }
 
     .pagination-btn {
-        background: linear-gradient(135deg, #6f42c1 0%, #5a3a9a 100%);
+        background: linear-gradient(135deg, #e91e63 0%, #ad1457 100%);
         color: white;
         border: none;
         padding: 8px 16px;
@@ -659,7 +693,7 @@ if ($type_result && ($type_row = mysqli_fetch_assoc($type_result))) {
     }
 
     .pagination-btn:hover:not(:disabled) {
-        background: linear-gradient(135deg, #5e3899 0%, #4a2c79 100%);
+        background: linear-gradient(135deg, #d81b60 0%, #a0124e 100%);
         transform: translateY(-2px);
     }
 
@@ -677,8 +711,8 @@ if ($type_result && ($type_row = mysqli_fetch_assoc($type_result))) {
 
     .pagination-number {
         background: white;
-        color: #6f42c1;
-        border: 2px solid #6f42c1;
+        color: #e91e63;
+        border: 2px solid #e91e63;
         padding: 8px 12px;
         border-radius: 6px;
         font-size: 0.9rem;
@@ -688,13 +722,13 @@ if ($type_result && ($type_row = mysqli_fetch_assoc($type_result))) {
     }
 
     .pagination-number:hover {
-        background: #6f42c1;
+        background: #e91e63;
         color: white;
         transform: translateY(-2px);
     }
 
     .pagination-number.active {
-        background: #6f42c1;
+        background: #e91e63;
         color: white;
         font-weight: bold;
     }
@@ -712,7 +746,7 @@ if ($type_result && ($type_row = mysqli_fetch_assoc($type_result))) {
     .gallery-item:hover {
         transform: translateY(-5px);
         box-shadow: 0 10px 30px rgba(0, 0, 0, 0.15);
-        border-color: #6f42c1;
+        border-color: #e91e63;
     }
     
     .gallery-item img {
@@ -767,11 +801,9 @@ if ($type_result && ($type_row = mysqli_fetch_assoc($type_result))) {
             padding: 15px 20px !important;    /* 터치 친화적 */
         }
         
-        .price-display .price-amount {
-            font-size: 1.5rem !important;     /* 모바일 가독성 */
-        }
+        /* price-display는 공통 CSS (unified-price-display.css) 사용 */
         
-        .option-select, select, input[type="text"], input[type="email"], textarea {
+        .option-select {
             padding: 10px 15px !important;    /* 터치 영역 확보 */
         }
 
@@ -798,7 +830,7 @@ if ($type_result && ($type_row = mysqli_fetch_assoc($type_result))) {
             log_md: "<?php echo safe_html($log_info['md']); ?>",
             log_ip: "<?php echo safe_html($log_info['ip']); ?>",
             log_time: "<?php echo safe_html($log_info['time']); ?>",
-            page: "cadarok",
+            page: "MerchandiseBond",
             defaultValues: {
                 MY_type: "<?php echo safe_html($default_values['MY_type']); ?>",
                 Section: "<?php echo safe_html($default_values['Section']); ?>",
@@ -808,25 +840,12 @@ if ($type_result && ($type_row = mysqli_fetch_assoc($type_result))) {
             }
         };
 
-        // cadarok.js에서 전역 변수와 초기화 함수들을 처리
-        // PROJECT_SUCCESS_REPORT.md 스펙에 따른 고급 갤러리 시스템 자동 로드
-        
-        // 카다록 페이지 초기화 및 첫 화면 자동 계산
-        document.addEventListener('DOMContentLoaded', function() {
-            console.log('카다록 페이지 초기화 완료');
-            
-            // 기본값이 설정되어 있으면 첫 화면에서 자동 계산 실행
-            setTimeout(function() {
-                if (typeof autoCalculatePrice === 'function') {
-                    autoCalculatePrice();
-                    console.log('카다록: 첫 화면 자동 계산 실행');
-                }
-            }, 500); // cadarok.js 로드 대기
-        });
+        // merchandisebond.js에서 전역 변수와 초기화 함수들을 처리
+        // 고급 갤러리 시스템 자동 로드
         
         // 갤러리 모달 제어 함수들 (페이지네이션 지원)
-        let cadarokCurrentPage = 1;
-        let cadarokTotalPages = 1;
+        let merchandiseBondCurrentPage = 1;
+        let merchandiseBondTotalPages = 1;
         
         // 통일된 팝업 열기 함수 (전단지와 동일한 시스템)
         function openProofPopup(category) {
@@ -841,141 +860,10 @@ if ($type_result && ($type_row = mysqli_fetch_assoc($type_result))) {
             }
         }
         
-        function openCadarokGalleryModal() {
-            const modal = document.getElementById('cadarokGalleryModal');
-            if (modal) {
-                modal.style.display = 'flex';
-                document.body.style.overflow = 'hidden';
-                // 첫 페이지 로드
-                loadCadarokPage(1);
-            }
-        }
+        // 독립 모달 함수들 제거됨 - 통합 갤러리 시스템 사용
         
-        function closeCadarokGalleryModal() {
-            const modal = document.getElementById('cadarokGalleryModal');
-            if (modal) {
-                modal.style.display = 'none';
-                document.body.style.overflow = 'auto';
-            }
-        }
-        
-        // 카다록 갤러리 페이지 로드 함수
-        function loadCadarokPage(page) {
-            if (typeof page === 'string') {
-                if (page === 'prev') {
-                    page = Math.max(1, cadarokCurrentPage - 1);
-                } else if (page === 'next') {
-                    page = Math.min(cadarokTotalPages, cadarokCurrentPage + 1);
-                } else {
-                    page = parseInt(page);
-                }
-            }
-            
-            if (page === cadarokCurrentPage) return;
-            
-            const gallery = document.getElementById('cadarokGalleryModalGrid');
-            if (!gallery) return;
-            
-            // 로딩 표시
-            gallery.innerHTML = '<div style="text-align: center; padding: 2rem; color: #666;"><div style="font-size: 1.5rem;">⏳</div><p>이미지를 불러오는 중...</p></div>';
-            
-            // API 호출
-            fetch(`/api/get_real_orders_portfolio.php?category=cadarok&all=true&page=${page}&per_page=12`)
-                .then(response => response.json())
-                .then(data => {
-                    if (data.success && data.data) {
-                        // 갤러리 업데이트
-                        renderCadarokFullGallery(data.data, gallery);
-                        
-                        // 페이지네이션 정보 업데이트
-                        cadarokCurrentPage = data.pagination.current_page;
-                        cadarokTotalPages = data.pagination.total_pages;
-                        
-                        // 페이지네이션 UI 업데이트
-                        updateCadarokPagination(data.pagination);
-                    } else {
-                        gallery.innerHTML = '<div style="text-align: center; padding: 2rem; color: #666;"><p>이미지를 불러올 수 없습니다.</p></div>';
-                    }
-                })
-                .catch(error => {
-                    console.error('카다록 이미지 로드 오류:', error);
-                    gallery.innerHTML = '<div style="text-align: center; padding: 2rem; color: #666;"><p>이미지 로드 중 오류가 발생했습니다.</p></div>';
-                });
-        }
-        
-        // 페이지네이션 UI 업데이트
-        function updateCadarokPagination(pagination) {
-            // 페이지 정보 업데이트
-            const pageInfo = document.getElementById('cadarokPageInfo');
-            if (pageInfo) {
-                pageInfo.textContent = `페이지 ${pagination.current_page} / ${pagination.total_pages} (총 ${pagination.total_count}개)`;
-            }
-            
-            // 버튼 상태 업데이트
-            const prevBtn = document.getElementById('cadarokPrevBtn');
-            const nextBtn = document.getElementById('cadarokNextBtn');
-            
-            if (prevBtn) {
-                prevBtn.disabled = !pagination.has_prev;
-            }
-            if (nextBtn) {
-                nextBtn.disabled = !pagination.has_next;
-            }
-            
-            // 페이지 번호 버튼 생성
-            const pageNumbers = document.getElementById('cadarokPageNumbers');
-            if (pageNumbers) {
-                pageNumbers.innerHTML = '';
-                
-                const startPage = Math.max(1, pagination.current_page - 2);
-                const endPage = Math.min(pagination.total_pages, pagination.current_page + 2);
-                
-                for (let i = startPage; i <= endPage; i++) {
-                    const pageBtn = document.createElement('button');
-                    pageBtn.className = 'pagination-number' + (i === pagination.current_page ? ' active' : '');
-                    pageBtn.textContent = i;
-                    pageBtn.onclick = () => loadCadarokPage(i);
-                    pageNumbers.appendChild(pageBtn);
-                }
-            }
-            
-            // 페이지네이션 섹션 표시
-            const paginationSection = document.getElementById('cadarokPagination');
-            if (paginationSection) {
-                paginationSection.style.display = pagination.total_pages > 1 ? 'block' : 'none';
-            }
-        }
-        
-        function renderCadarokFullGallery(images, container) {
-            let html = '';
-            images.forEach((image, index) => {
-                html += `
-                    <div class="gallery-item" onclick="openLightbox('${image.path}', '${image.title}')">
-                        <img src="${image.path}" alt="${image.title}" loading="lazy" 
-                             onerror="this.parentElement.style.display='none'">
-                        <div class="gallery-item-title">${image.title}</div>
-                    </div>
-                `;
-            });
-            container.innerHTML = html;
-        }
-        
-        function openLightbox(imagePath, title) {
-            // 기존 GalleryLightbox 시스템과 연동
-            if (window.lightboxViewer && window.lightboxViewer.showLightbox) {
-                window.lightboxViewer.showLightbox(imagePath, title);
-            } else {
-                // 기본 동작: 새 창으로 이미지 열기
-                window.open(imagePath, '_blank');
-            }
-        }
+        // 독립 갤러리 함수들 제거됨 - 통합 갤러리 시스템에서 모든 기능 처리
     </script>
-
-    <!-- 공통 업로드 모달 JavaScript -->
-    <script src="../../includes/upload_modal.js"></script>
-    
-    <!-- 카다록 전용 스크립트 -->
-    <script src="js/cadarok-compact.js"></script>
 
     <?php
     // 데이터베이스 연결 종료

@@ -7,25 +7,25 @@ body {
     line-height: 1.6;
 }
 
-/* 메인 카드 */
+/* 메인 카드 - 패딩 축소로 스크롤 방지 */
 .leaflet-card {
     max-width: 1200px;
     margin: 0 auto;
-    padding: 15px 20px 40px 20px;
+    padding: 10px 15px 30px 15px; /* 패딩 축소 */
     background: white;
     border-radius: 15px;
     box-shadow: 0 10px 40px rgba(0,0,0,0.1);
     overflow: hidden;
 }
 
-/* 페이지 타이틀 */
+/* 페이지 타이틀 - 고급스러운 진청색 배경 */
 .page-title {
     text-align: center;
-    padding: 12px 0;
-    background: linear-gradient(135deg, #28a745 0%, #20c997 100%);
+    padding: 20px 0; /* 25px에서 20px로 축소 */
+    background: linear-gradient(135deg, #1e3c72 0%, #2a5298 100%); /* 고급스러운 진청색 그라데이션 */
     color: white;
     border-radius: 15px;
-    margin-bottom: 10px;
+    margin-bottom: 20px; /* 30px에서 20px로 축소 */
     position: relative;
     overflow: hidden;
 }
@@ -47,26 +47,26 @@ body {
 }
 
 .page-title h1 {
-    font-size: 1.1rem;
+    font-size: 2.2rem;
     font-weight: 700;
     margin: 0;
     text-shadow: 0 2px 4px rgba(0,0,0,0.3);
 }
 
 .page-title p {
-    margin: 4px 0 0 0;
-    font-size: 0.5rem;
+    margin: 8px 0 0 0;
+    font-size: 1rem;
     opacity: 0.9;
 }
 
-/* 그리드 레이아웃 (50:50 분할) */
+/* 그리드 레이아웃 (50:50 분할) - 갭 축소로 스크롤 방지 */
 .leaflet-grid {
     display: grid;
     grid-template-columns: 1fr 1fr;
-    gap: 30px;
+    gap: 15px; /* 30px에서 15px로 축소 */
     min-height: 600px;
     max-width: 1160px;
-    margin: 10px auto 0 auto;
+    margin: 20px auto 0 auto; /* 상단 마진도 축소 */
 }
 
 /* ============================================================================ */
@@ -74,12 +74,13 @@ body {
 /* ============================================================================ */
 
 .leaflet-gallery {
-    background: transparent;
+    background: white; /* 흰색 배경으로 변경 */
     border-radius: 0;
-    padding: 0;
+    padding: 0px !important; /* 0px로 변경 */
     border: none;
     height: fit-content;
     box-shadow: none;
+    overflow: hidden !important; /* 스크롤바 완전 숨김 */
 }
 
 /* 통합 갤러리 자식 요소들을 부모에 맞춤 */
@@ -89,13 +90,20 @@ body {
     line-height: 1.6;
     margin: 0;
     box-sizing: border-box;
-    display: block;
-    padding: 0;
-    background: transparent;
-    border-radius: 0;
-    box-shadow: none;
-    width: 100%;
+    background: white; /* 흰색 배경으로 변경 */
+    border-radius: 15px;
+    padding: 10px;
+    box-shadow: 0 10px 35px rgba(0, 0, 0, 0.12), 0 4px 15px rgba(0, 0, 0, 0.08) !important;
+    border: 1px solid #e9ecef; /* 테두리 색상도 조정 */
+    height: 420px !important; /* 높이를 약간 줄여서 스크롤바 방지 */
+    min-height: 420px !important;
+    max-height: 420px !important; /* 최대 높이 제한 추가 */
+    overflow: hidden !important; /* 스크롤바 완전 제거 */
+    padding-top: 0px;
+    padding-bottom: 0px;
 }
+
+/* 스크롤바는 overflow: hidden으로 완전히 제거됨 */
 
 .gallery-title {
     display: none;
@@ -129,34 +137,24 @@ body {
     min-height: 500px;
     background: #f8f9fa;
     border-radius: 15px;
-    padding: 25px;
+    padding: 20px; /* 25px에서 20px로 축소 */
     border: 1px solid #e9ecef;
     box-shadow: 0 4px 20px rgba(0,0,0,0.05);
 }
 
-.calculator-header {
-    background: rgba(204, 204, 204, 0.5);
-    color: #333;
-    padding: 9px 25px;
-    border-radius: 12px;
-    margin-bottom: 12px;
-    text-align: center;
-    margin-top: 0;
-    box-shadow: 0 2px 10px rgba(204, 204, 204, 0.2);
-}
-
-.calculator-header h3 {
-    font-size: 1.4rem;
-    font-weight: 600;
-    margin: 0;
-}
+/* calculator-header 제거됨 - 깔끔한 디자인 */
 
 /* 옵션 선택 영역 - 개선된 그리드 레이아웃 */
 .options-grid {
     display: grid;
     grid-template-columns: 1fr 1fr;
     gap: 15px;
-    margin-bottom: 25px;
+    margin-bottom: 10px; /* 25px → 10px로 변경 */
+}
+
+/* form-grid-compact 클래스 추가 정의 */
+.form-grid-compact {
+    margin: 10px 0; /* 상하 마진 10px */
 }
 
 .option-group {
@@ -543,7 +541,7 @@ body {
 }
 
 .btn-upload-order {
-    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    background: linear-gradient(135deg, #1e3c72 0%, #2a5298 100%); /* 헤더와 동일한 고급스러운 진청색 */
     color: white;
     border: none;
     padding: 15px 30px;
@@ -552,7 +550,7 @@ body {
     border-radius: 12px;
     cursor: pointer;
     transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
-    box-shadow: 0 6px 20px rgba(102, 126, 234, 0.3);
+    box-shadow: 0 6px 20px rgba(30, 60, 114, 0.3); /* 진청색에 맞게 그림자 조정 */
     width: 100%;
     position: relative;
     overflow: hidden;
@@ -576,7 +574,7 @@ body {
 
 .btn-upload-order:hover {
     transform: translateY(-3px);
-    box-shadow: 0 10px 30px rgba(102, 126, 234, 0.4);
+    box-shadow: 0 10px 30px rgba(30, 60, 114, 0.4); /* 진청색 호버 그림자 */
 }
 
 .btn-upload-order:active {

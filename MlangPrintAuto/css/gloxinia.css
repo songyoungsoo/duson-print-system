@@ -1,6 +1,6 @@
 body,select,th,td, div, center, option, pre, blockquote 
 {
-font-size:12px; font-family:µ∏øÚ;font-color:#cccccc;color:#666666;
+font-size:12px; font-family:ÎèãÏõÄ;font-color:#cccccc;color:#666666;
 
 }
 body{
@@ -12,29 +12,29 @@ body{
 th{line-height:120%;}
 input
 {
-font-family:verdana,±º∏≤;font-size:11px;height:18px;background-color:#ffffff;
+font-family:verdana,Íµ¥Î¶º;font-size:11px;height:18px;background-color:#ffffff;
 border:1 solid silver;cursor:hand;line-height:150%;color:black;
 }
 .inputs
 {
-font-family:verdana,±º∏≤;font-size:11px;height:18px;background-color:#ffffff;
+font-family:verdana,Íµ¥Î¶º;font-size:11px;height:18px;background-color:#ffffff;
 border:1 solid silver;cursor:hand;line-height:150%;color:black;
 }
 
-.style2 {	font-family: "µ∏øÚ";
+.style2 {	font-family: "ÎèãÏõÄ";
 	font-size: 11px;
 }
 .smalldate
 {
-font-family:±º∏≤;font-size:10px;color:#3399cc;
+font-family:Íµ¥Î¶º;font-size:10px;color:#3399cc;
 }
 textarea
 {
-font-size:9pt;font-family:verdana,±º∏≤;background-color:#ffffff;
+font-size:9pt;font-family:verdana,Íµ¥Î¶º;background-color:#ffffff;
 border:1 solid silver;line-height:170%;color:black;
 }
 
-.b {font-size:9pt; font-family:µ∏øÚ;font-color:#cccccc;color:#666666;}
+.b {font-size:9pt; font-family:ÎèãÏõÄ;font-color:#cccccc;color:#666666;}
 
 BODY {
     SCROLLBAR-FACE-COLOR: #ffffff;
@@ -137,7 +137,7 @@ BODY {
 	}	
 	.radi
 	{
-		font-family:verdana,±º∏≤;font-size:11px;height:18px;background-color:#ffffff;
+		font-family:verdana,Íµ¥Î¶º;font-size:11px;height:18px;background-color:#ffffff;
 		border:0 solid silver;
 	}
 	.pastview
@@ -160,7 +160,7 @@ A:link, A:visited
 		color:#666666;
 		text-decoration:none;
 		font-size:11px;
-		font-family:verdana,±º∏≤;
+		font-family:verdana,Íµ¥Î¶º;
 	}
 	
 A:hover, A:active
@@ -175,7 +175,7 @@ A.ljn2:link, A.ljn2:visited
 		color:#666666;
 		text-decoration:none;
 		font-size:7pt;
-		font-family:verdana,±º∏≤;
+		font-family:verdana,Íµ¥Î¶º;
 		font-weight:bold;
 	}
 	

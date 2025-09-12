@@ -88,6 +88,8 @@ if ($type_result && ($type_row = mysqli_fetch_assoc($type_result))) {
     <link rel="stylesheet" href="../../assets/css/gallery.css">
     <!-- 컴팩트 폼 그리드 CSS (모든 품목 공통) -->
     <link rel="stylesheet" href="../../css/compact-form.css">
+    <!-- 갤러리-계산기 높이 동기화 시스템 -->
+    <link rel="stylesheet" href="../../css/envelope-gallery-calculator-sync.css">
     
     <!-- jQuery 라이브러리 -->
     <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
@@ -99,6 +101,8 @@ if ($type_result && ($type_row = mysqli_fetch_assoc($type_result))) {
     <!-- 봉투 전용 JavaScript -->
     <script src="../../js/envelope.js" defer></script>
     
+    <!-- 공통 업로드 모달 JavaScript -->
+    <script src="../../includes/upload_modal.js"></script>
     
     <!-- 세션 ID 및 설정값 메타 태그 -->
     <meta name="session-id" content="<?php echo htmlspecialchars(session_id()); ?>">
@@ -125,19 +129,17 @@ if ($type_result && ($type_row = mysqli_fetch_assoc($type_result))) {
         <div class="main-content">
             <!-- 좌측: 통합 갤러리 시스템 -->
             <section class="envelope-gallery" aria-label="봉투 샘플 갤러리">
-                <?php
-                // 통합 갤러리 시스템 사용 (3줄로 완전 간소화)
-                if (file_exists('../../includes/gallery_helper.php')) { if (file_exists('../../includes/gallery_helper.php')) { include_once '../../includes/gallery_helper.php'; } }
-                if (function_exists("include_product_gallery")) { include_product_gallery('envelope'); }
-                ?>
+                <div id="envelopeGallery">
+                    <?php
+                    // 통합 갤러리 시스템 사용 (3줄로 완전 간소화)
+                    if (file_exists('../../includes/gallery_helper.php')) { if (file_exists('../../includes/gallery_helper.php')) { include_once '../../includes/gallery_helper.php'; } }
+                    if (function_exists("include_product_gallery")) { include_product_gallery('envelope'); }
+                    ?>
+                </div>
             </section>
 
             <!-- 우측: 실시간 가격 계산기 (동적 옵션 로딩 및 자동 계산) -->
             <div class="calculator-section">
-                <div class="calculator-header">
-                    <h3>💰견적 안내</h3>
-                </div>
-
                 <form id="envelopeForm">
                     <!-- 옵션 선택 그리드 - 개선된 4열 레이아웃 -->
                     <div class="options-grid form-grid-compact">
@@ -216,64 +218,12 @@ if ($type_result && ($type_row = mysqli_fetch_assoc($type_result))) {
         </div>
     </div>
 
-    <!-- 파일 업로드 모달 (드래그 앤 드롭 및 고급 애니메이션) -->
-    <div id="uploadModal" class="upload-modal" style="display: none;">
-        <div class="modal-overlay" onclick="closeUploadModal()"></div>
-        <div class="modal-content">
-            <div class="modal-header">
-                <h3 class="modal-title">📎 파일첨부방법 선택</h3>
-                <button type="button" class="modal-close" onclick="closeUploadModal()">✕</button>
-            </div>
-            
-            <div class="modal-body">
-                <div class="upload-container">
-                    <div class="upload-left">
-                        <label class="upload-label" for="modalFileInput">파일첨부</label>
-                        <div class="upload-buttons">
-                            <button type="button" class="btn-upload-method active" onclick="selectUploadMethod('upload')">
-                                파일업로드
-                            </button>
-                            <button type="button" class="btn-upload-method" onclick="selectUploadMethod('manual')" disabled>
-                                10분만에 작품완료 자기는 방법!
-                            </button>
-                        </div>
-                        <div class="upload-area" id="modalUploadArea">
-                            <div class="upload-dropzone" id="modalUploadDropzone">
-                                <span class="upload-icon">📁</span>
-                                <span class="upload-text">파일을 여기에 드래그하거나 클릭하세요</span>
-                                <input type="file" id="modalFileInput" accept=".jpg,.jpeg,.png,.pdf,.ai,.eps,.psd" multiple hidden>
-                            </div>
-                            <div class="upload-info">
-                                파일첨부 독수리파일(#,&,'&',*,%, 등) 사용은 불가능하며 파일명이 길면 예전가 불성
-                                하니 되도록 짧고 간단하게 작성해 주세요!
-                            </div>
-                        </div>
-                    </div>
-                    
-                    <div class="upload-right">
-                        <label class="upload-label">작업메모</label>
-                        <textarea id="modalWorkMemo" class="memo-textarea" placeholder="작업 관련 요청사항이나 특별한 지시사항을 입력해주세요.&#10;&#10;예시:&#10;- 색상을 더 진하게 해주세요&#10;- 로고 크기를 조금 더 크게&#10;- 배경색을 파란색으로 변경"></textarea>
-                        
-                        <div class="upload-notice">
-                            <div class="notice-item">📦 택배는 기본이 착불 원칙입니다</div>
-                            <div class="notice-item">📋 온전판(당일)주 전날 주문 제품과 목업 불가</div>
-                        </div>
-                    </div>
-                </div>
-                
-                <div class="uploaded-files" id="modalUploadedFiles" style="display: none;">
-                    <h5>📂 업로드된 파일</h5>
-                    <div class="file-list" id="modalFileList"></div>
-                </div>
-            </div>
-            
-            <div class="modal-footer">
-                <button type="button" class="modal-btn btn-cart" onclick="addToBasketFromModal()">
-                    🛒 장바구니에 저장
-                </button>
-            </div>
-        </div>
-    </div>
+    <?php 
+    // 봉투 모달 설정
+    $modalProductName = '봉투';
+    $modalProductIcon = '📩';
+    include '../../includes/upload_modal.php'; 
+    ?>
 
     <?php include "../../includes/login_modal.php"; ?>
     <?php include "explane05.php"; ?>
@@ -326,19 +276,11 @@ if ($type_result && ($type_row = mysqli_fetch_assoc($type_result))) {
         line-height: 1.2 !important;
     }
 
-    /* calculator-section 갤러리와 동일한 배경 및 패딩 */
+    /* calculator-section 갤러리와 동일한 배경 및 패딩 - 높이는 sync CSS에서 관리 */
     .calculator-section {
-        background: linear-gradient(135deg, #f8f9fa 0%, #e9ecef 100%) !important;
-        border-radius: 15px !important;
-        padding: 25px !important;
-        box-shadow: 0 10px 35px rgba(0, 0, 0, 0.12), 0 4px 15px rgba(0, 0, 0, 0.08) !important;
-        border: 1px solid rgba(255, 255, 255, 0.9) !important;
         position: relative !important; /* 헤더 오버플로우를 위한 설정 */
         margin-top: 0 !important; /* 상단 여백 제거 */
         align-self: start !important; /* 상단 정렬 */
-        height: 450px !important;
-        min-height: 450px !important;
-        overflow: auto !important;
     }
 
     .calculator-header h3 {
@@ -438,17 +380,9 @@ if ($type_result && ($type_row = mysqli_fetch_assoc($type_result))) {
     /* =================================================================== */
     /* 5단계: 기타 요소들 컴팩트화 */
     /* =================================================================== */
-    .main-content {
-        display: grid !important;
-        grid-template-columns: 1fr 1fr !important;
-        gap: 20px !important;
-        align-items: start !important; /* 그리드 아이템들을 상단 정렬 */
-    }
+    /* main-content 그리드는 envelope-gallery-calculator-sync.css에서 관리 */
     
-    .calculator-section {
-        padding: 0px 25px !important;        /* 더 타이트하게 */
-        min-height: 400px !important;
-    }
+    /* calculator-section의 패딩과 높이는 envelope-gallery-calculator-sync.css에서 관리 */
 
     .options-grid {
         gap: 12px !important;                /* 25% 축소 */
@@ -465,51 +399,11 @@ if ($type_result && ($type_row = mysqli_fetch_assoc($type_result))) {
     /* =================================================================== */
     /* 6단계: 갤러리 섹션 스타일 (봉투 브랜드 컬러 - 오렌지) */
     /* =================================================================== */
-    .gallery-section {
-        background: linear-gradient(135deg, #f8f9fa 0%, #e9ecef 100%);
-        border-radius: 15px;
-        padding: 25px;
-        box-shadow: 0 10px 35px rgba(0, 0, 0, 0.12), 0 4px 15px rgba(0, 0, 0, 0.08) !important;
-        border: 1px solid rgba(255, 255, 255, 0.9);
-        margin-top: 0 !important; /* 상단 여백 제거 */
-        align-self: start !important; /* 상단 정렬 */
-        height: 450px !important;
-        min-height: 450px !important;
-        overflow: auto !important;
-    }
+    /* gallery-section 스타일은 envelope-gallery-calculator-sync.css에서 관리 */
     
-    .gallery-title {
-        background: linear-gradient(135deg, #ff9800 0%, #f57c00 100%);
-        color: white;
-        padding: 15px 20px;
-        margin: -25px -25px 20px -25px;
-        border-radius: 15px 15px 0 0;
-        font-size: 1.1rem;
-        font-weight: 600;
-        text-align: center;
-        box-shadow: 0 2px 10px rgba(255, 152, 0, 0.3);
-    }
+    /* gallery-title 스타일은 envelope-gallery-calculator-sync.css에서 관리 */
 
-    /* 라이트박스 뷰어 스타일 */
-    .lightbox-viewer {
-        width: 100%;
-        height: 300px;
-        background-color: #fff;
-        border-radius: 12px;
-        box-shadow: 0 5px 20px rgba(0, 0, 0, 0.1);
-        margin-bottom: 15px;
-        cursor: zoom-in;
-        transition: all 0.3s ease;
-        border: 2px solid #e9ecef;
-        position: relative;
-        overflow: hidden;
-    }
-    
-    .lightbox-viewer:hover {
-        border-color: #ff9800;
-        box-shadow: 0 8px 30px rgba(255, 152, 0, 0.15);
-        transform: translateY(-2px);
-    }
+    /* 라이트박스 뷰어 스타일은 envelope-gallery-calculator-sync.css에서 관리 */
     
     /* 썸네일 스트립 스타일 */
     .thumbnail-strip {
@@ -763,6 +657,40 @@ if ($type_result && ($type_row = mysqli_fetch_assoc($type_result))) {
                     openFullScreenImage(imagePath, title);
                 }
             });
+        }
+        
+        // 공통 모달 JavaScript는 이미 HTML에서 정적으로 로드됨
+        
+        // 봉투 전용 장바구니 추가 함수
+        function handleModalBasketAdd(uploadedFiles, onSuccess, onError) {
+            console.log('봉투 handleModalBasketAdd 호출');
+            
+            try {
+                // 기본 장바구니 추가 함수 호출
+                if (typeof addToBasket === 'function') {
+                    addToBasket();
+                    
+                    // 성공으로 가정 (실제 봉투 addToBasket은 동기적으로 처리됨)
+                    console.log('봉투 장바구니 저장 성공');
+                    if (typeof onSuccess === 'function') {
+                        onSuccess();
+                    }
+                } else {
+                    console.error('봉투: addToBasket 함수를 찾을 수 없습니다.');
+                    if (typeof onError === 'function') {
+                        onError('봉투 장바구니 함수를 찾을 수 없습니다.');
+                    } else {
+                        alert('죄송합니다. 잠시 후 다시 시도해주세요.');
+                    }
+                }
+            } catch (error) {
+                console.error('봉투 장바구니 추가 오류:', error);
+                if (typeof onError === 'function') {
+                    onError(error.message || '장바구니 저장 중 오류가 발생했습니다.');
+                } else {
+                    alert('장바구니 저장 중 오류가 발생했습니다.');
+                }
+            }
         }
         
         // 통일된 갤러리 팝업 열기 (전단지와 동일한 시스템)

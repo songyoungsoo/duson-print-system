@@ -15,7 +15,7 @@ mysqli_set_charset($db, "utf8");
 
 // 로그 정보 및 페이지 설정
 $log_info = generateLogInfo();
-$page_title = generate_page_title("봉투 견적안내 - 컴팩트");
+$page_title = generate_page_title("명함 견적안내 - 컴팩트");
 
 // 기본값 설정 (데이터베이스에서 가져오기)
 $default_values = [
@@ -26,25 +26,25 @@ $default_values = [
     'ordertype' => 'print' // 기본값: 인쇄만
 ];
 
-// 첫 번째 봉투 종류 가져오기
+// 첫 번째 명함 종류 가져오기 (일반명함(쿠폰) 우선)
 $type_query = "SELECT no, title FROM mlangprintauto_transactioncate 
-               WHERE Ttable='Envelope' AND BigNo='0' 
-               ORDER BY no ASC 
+               WHERE Ttable='NameCard' AND BigNo='0' 
+               ORDER BY CASE WHEN title LIKE '%일반명함%' THEN 1 ELSE 2 END, no ASC 
                LIMIT 1";
 $type_result = mysqli_query($db, $type_query);
 if ($type_result && ($type_row = mysqli_fetch_assoc($type_result))) {
     $default_values['MY_type'] = $type_row['no'];
     
-    // 해당 봉투 종류의 첫 번째 재질 가져오기
+    // 해당 명함 종류의 첫 번째 재질 가져오기
     $section_query = "SELECT no, title FROM mlangprintauto_transactioncate 
-                      WHERE Ttable='Envelope' AND BigNo='" . $type_row['no'] . "' 
+                      WHERE Ttable='NameCard' AND BigNo='" . $type_row['no'] . "' 
                       ORDER BY no ASC LIMIT 1";
     $section_result = mysqli_query($db, $section_query);
     if ($section_result && ($section_row = mysqli_fetch_assoc($section_result))) {
         $default_values['Section'] = $section_row['no'];
         
         // 해당 조합의 기본 수량 가져오기 (500매 우선)
-        $quantity_query = "SELECT DISTINCT quantity FROM mlangprintauto_envelope 
+        $quantity_query = "SELECT DISTINCT quantity FROM mlangprintauto_namecard 
                           WHERE style='" . $type_row['no'] . "' AND Section='" . $section_row['no'] . "' 
                           ORDER BY CASE WHEN quantity='500' THEN 1 ELSE 2 END, CAST(quantity AS UNSIGNED) ASC 
                           LIMIT 1";
@@ -71,9 +71,6 @@ if ($type_result && ($type_row = mysqli_fetch_assoc($type_result))) {
     
     <!-- 갤러리 라이트박스 컴포넌트 -->
     <script src="../../includes/js/GalleryLightbox.js"></script>
-    
-    <!-- 공통 업로드 모달 JavaScript -->
-    <script src="../../includes/upload_modal.js"></script>
     
     <!-- 세션 ID를 JavaScript에서 사용할 수 있도록 메타 태그 추가 -->
     <meta name="session-id" content="<?php echo htmlspecialchars(session_id()); ?>">
@@ -110,7 +107,7 @@ if ($type_result && ($type_row = mysqli_fetch_assoc($type_result))) {
                             <select class="option-select" name="MY_type" id="MY_type" required>
                                 <option value="">선택해주세요</option>
                                 <?php
-                                $categories = getCategoryOptions($db, "mlangprintauto_transactioncate", 'Envelope');
+                                $categories = getCategoryOptions($db, "mlangprintauto_transactioncate", 'NameCard');
                                 foreach ($categories as $category) {
                                     $selected = ($category['no'] == $default_values['MY_type']) ? 'selected' : '';
                                     echo "<option value='" . safe_html($category['no']) . "' $selected>" . safe_html($category['title']) . "</option>";
@@ -264,7 +261,7 @@ if ($type_result && ($type_row = mysqli_fetch_assoc($type_result))) {
         document.addEventListener('DOMContentLoaded', function() {
             // 갤러리 라이트박스 초기화
             namecardGallery = new GalleryLightbox('namecardGallery', {
-                dataSource: '../upload/portfolio/get_unified_portfolio_images.php?category=envelope',
+                dataSource: 'get_namecard_images.php',
                 productType: 'namecard',
                 autoLoad: true,
                 zoomEnabled: true
@@ -735,43 +732,9 @@ if ($type_result && ($type_row = mysqli_fetch_assoc($type_result))) {
             });
         }
         
-        // 기본 장바구니 함수 - 전단지와 동일한 구조로 구현
+        // 호환성을 위한 기본 장바구니 함수 (사용하지 않음)
         function addToBasket() {
-            // 가격 계산이 먼저 되었는지 확인
-            if (!currentPriceData) {
-                alert('먼저 가격을 계산해주세요.');
-                return;
-            }
-            
-            const form = document.getElementById('orderForm');
-            const formData = new FormData(form);
-            
-            // 가격 정보 추가
-            formData.set('action', 'add_to_basket');
-            formData.set('price', Math.round(currentPriceData.total_price));
-            formData.set('vat_price', Math.round(currentPriceData.total_with_vat));
-            formData.set('product_type', 'envelope');
-            
-            console.log('📩 봉투 장바구니 추가 - 가격:', currentPriceData);
-            
-            // AJAX 요청으로 장바구니에 추가
-            fetch('add_to_basket.php', {
-                method: 'POST',
-                body: formData
-            })
-            .then(response => response.json())
-            .then(response => {
-                if (response.success) {
-                    // 업로드 모달 열기
-                    openUploadModal();
-                } else {
-                    alert('장바구니 추가 실패: ' + (response.message || '알 수 없는 오류'));
-                }
-            })
-            .catch(error => {
-                console.error('장바구니 추가 오류:', error);
-                alert('장바구니 추가 중 오류가 발생했습니다.');
-            });
+            openUploadModal();
         }
         
         

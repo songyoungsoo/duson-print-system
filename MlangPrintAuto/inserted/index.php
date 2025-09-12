@@ -109,7 +109,7 @@ $firstColorNo = !empty($colorOptions) ? $colorOptions[0]['no'] : '1';
 $paperTypeOptions = getLeafletPaperTypes($connect, $GGTABLE, $firstColorNo);
 $paperSizeOptions = getLeafletPaperSizes($connect, $GGTABLE, $firstColorNo);
 
-// 기본값 설정 - 첫 번째 옵션을 자동 선택
+// 기본값 설정
 $default_values = [
     'MY_type' => $firstColorNo,
     'MY_Fsd' => !empty($paperTypeOptions) ? $paperTypeOptions[0]['no'] : '',
@@ -118,13 +118,6 @@ $default_values = [
     'MY_amount' => '',
     'ordertype' => 'print' // 인쇄만 기본
 ];
-
-// 디버그: 기본값 확인
-echo "<!-- Debug: paperTypeOptions count: " . count($paperTypeOptions) . " -->";
-echo "<!-- Debug: default MY_Fsd: " . $default_values['MY_Fsd'] . " -->";
-if (!empty($paperTypeOptions)) {
-    echo "<!-- Debug: first paperType: " . $paperTypeOptions[0]['title'] . " -->";
-}
 
 // 캐시 방지 헤더
 header("Cache-Control: no-cache, no-store, must-revalidate");
@@ -149,20 +142,17 @@ echo '<script src="../../includes/js/UniversalFileUpload.js"></script>';
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title><?php echo safe_html($page_title); ?></title>
     
-    <!-- 컴팩트 전용 CSS -->
-    <link rel="stylesheet" href="css/leaflet-compact.css">
-    <!-- 인라인 스타일 분리 CSS -->
-    <link rel="stylesheet" href="css/leaflet-inline.css">
-    <!-- 공통 버튼 스타일 CSS -->
-    <link rel="stylesheet" href="../../css/btn-primary.css">
+    <!-- 전단지 전용 컴팩트 레이아웃 CSS - 테스트용 비활성화 -->
+    <!-- <link rel="stylesheet" href="css/leaflet-compact.css"> -->
     
-    <!-- 통합 갤러리 CSS -->
+    <!-- 갤러리 시스템 CSS -->
     <link rel="stylesheet" href="../../assets/css/gallery.css">
-    <!-- 컴팩트 폼 그리드 CSS (모든 품목 공통) -->
-    <link rel="stylesheet" href="../../css/compact-form.css">
     
-    <!-- 통합 가격 표시 시스템 CSS -->
-    <link rel="stylesheet" href="../../css/unified-price-display.css">
+    <!-- 🎯 통합 공통 스타일 CSS (최종 로딩으로 최우선권 확보) -->
+    <link rel="stylesheet" href="../../css/common-styles.css">
+    
+    <!-- 추가 옵션 시스템 전용 CSS -->
+    <link rel="stylesheet" href="../../css/additional-options.css">
     
     <!-- 노토 폰트 -->
     <link rel="preconnect" href="https://fonts.googleapis.com">
@@ -177,7 +167,7 @@ echo '<script src="../../includes/js/UniversalFileUpload.js"></script>';
     ?>
 </head>
 
-<body class="leaflet-page">
+<body>
     <div class="leaflet-card">
         <!-- 페이지 타이틀 -->
         <div class="page-title">
@@ -196,14 +186,10 @@ echo '<script src="../../includes/js/UniversalFileUpload.js"></script>';
             
             <!-- 우측: 계산기 섹션 (50%) -->
             <aside class="calculator-section leaflet-style" aria-label="실시간 견적 계산기">
-                <div class="calculator-header">
-                    <h3>💰견적 안내</h3>
-                </div>
-                
                 <form id="orderForm" method="post">
                     <div class="options-grid form-grid-compact">
                         <!-- 인쇄색상 -->
-                        <div class="option-group form-field">
+                        <div class="form-group-horizontal">
                             <label class="option-label" for="MY_type">인쇄색상</label>
                             <select name="MY_type" id="MY_type" class="option-select" required>
                                 <?php foreach ($colorOptions as $option): ?>
@@ -216,24 +202,20 @@ echo '<script src="../../includes/js/UniversalFileUpload.js"></script>';
                         </div>
                         
                         <!-- 종이종류 -->
-                        <div class="option-group form-field">
+                        <div class="form-group-horizontal">
                             <label class="option-label" for="MY_Fsd">종이종류</label>
                             <select name="MY_Fsd" id="MY_Fsd" class="option-select" required>
-                                <?php if (empty($paperTypeOptions)): ?>
-                                <option value="">종이종류를 선택해주세요</option>
-                                <?php else: ?>
-                                <?php foreach ($paperTypeOptions as $index => $option): ?>
+                                <?php foreach ($paperTypeOptions as $option): ?>
                                 <option value="<?php echo htmlspecialchars($option['no']); ?>" 
-                                    <?php echo ($index === 0 || $option['no'] == $default_values['MY_Fsd']) ? 'selected' : ''; ?>>
+                                    <?php echo ($option['no'] == $default_values['MY_Fsd']) ? 'selected' : ''; ?>>
                                     <?php echo htmlspecialchars($option['title']); ?>
                                 </option>
                                 <?php endforeach; ?>
-                                <?php endif; ?>
                             </select>
                         </div>
                         
                         <!-- 종이규격 -->
-                        <div class="option-group form-field">
+                        <div class="form-group-horizontal">
                             <label class="option-label" for="PN_type">종이규격</label>
                             <select name="PN_type" id="PN_type" class="option-select" required>
                                 <?php 
@@ -255,7 +237,7 @@ echo '<script src="../../includes/js/UniversalFileUpload.js"></script>';
                         </div>
                         
                         <!-- 인쇄면 -->
-                        <div class="option-group form-field">
+                        <div class="form-group-horizontal">
                             <label class="option-label" for="POtype">인쇄면</label>
                             <select name="POtype" id="POtype" class="option-select" required>
                                 <option value="1" selected>단면 (앞면만)</option>
@@ -264,7 +246,7 @@ echo '<script src="../../includes/js/UniversalFileUpload.js"></script>';
                         </div>
                         
                         <!-- 수량 -->
-                        <div class="option-group form-field">
+                        <div class="form-group-horizontal">
                             <label class="option-label" for="MY_amount">수량</label>
                             <select name="MY_amount" id="MY_amount" class="option-select" required>
                                 <option value="">수량을 선택해주세요</option>
@@ -272,26 +254,48 @@ echo '<script src="../../includes/js/UniversalFileUpload.js"></script>';
                         </div>
                         
                         <!-- 편집디자인 -->
-                        <div class="option-group form-field full-width">
+                        <div class="form-group-horizontal">
                             <label class="option-label" for="ordertype">편집디자인</label>
                             <select name="ordertype" id="ordertype" class="option-select" required>
-                                <option value="total">디자인+인쇄 (전체 의뢰)</option>
-                                <option value="print" selected>인쇄만 의뢰 (파일 준비완료)</option>
+                                <option value="total">디자인+인쇄</option>
+                                <option value="print" selected>인쇄만 의뢰</option>
                             </select>
                         </div>
                     </div>
                     
-                    <!-- 스티커 방식의 실시간 가격 표시 -->
+                    <?php
+                    // 추가 옵션 시스템 포함
+                    include_once "../../includes/AdditionalOptions.php";
+                    $additionalOptions = getAdditionalOptions($connect);
+                    echo $additionalOptions->generateOptionsHtml('inserted');
+                    ?>
+                    
+                    <!-- 실시간 가격 표시 -->
                     <div class="price-display" id="priceDisplay">
-                        <div class="price-label">견적 금액</div>
                         <div class="price-amount" id="priceAmount">견적 계산 필요</div>
                         <div class="price-details" id="priceDetails">
-                            모든 옵션을 선택하면 자동으로 계산됩니다
+                            <!-- 인라인 가격 표시 (예시) -->
+                            <div class="price-breakdown">
+                                <div class="price-item">
+                                    <span class="price-item-label">인쇄비:</span>
+                                    <span class="price-item-value">계산 중</span>
+                                </div>
+                                <div class="price-divider"></div>
+                                <div class="price-item">
+                                    <span class="price-item-label">디자인비:</span>
+                                    <span class="price-item-value">계산 중</span>
+                                </div>
+                                <div class="price-divider"></div>
+                                <div class="price-item final">
+                                    <span class="price-item-label">부가세 포함:</span>
+                                    <span class="price-item-value">계산 중</span>
+                                </div>
+                            </div>
                         </div>
                     </div>
 
                     <!-- 파일 업로드 및 주문 버튼 -->
-                    <div class="upload-order-button" id="uploadOrderButton">
+                    <div class="upload-order-button" id="uploadOrderButton" style="display: none;">
                         <button type="button" class="btn-upload-order" onclick="openUploadModal()">
                             📎 파일 업로드 및 주문하기
                         </button>
@@ -312,71 +316,21 @@ echo '<script src="../../includes/js/UniversalFileUpload.js"></script>';
                     <input type="hidden" name="page" value="inserted">
                     
                     <!-- 가격 정보 저장용 -->
-                    <input type="hidden" name="calculated_price" id="calculated_price" value="">
-                    <input type="hidden" name="calculated_vat_price" id="calculated_vat_price" value="">
+                    <input type="hidden" name="price" id="calculated_price" value="">
+                    <input type="hidden" name="vat_price" id="calculated_vat_price" value="">
                 </form>
             </aside>
         </div>
     </div>
 
-    <!-- 파일 업로드 모달 (명함 스타일 적용) -->
-    <div id="uploadModal" class="upload-modal">
-        <div class="modal-overlay" onclick="closeUploadModal()"></div>
-        <div class="modal-content">
-            <div class="modal-header">
-                <h3 class="modal-title">📎 전단지 디자인 파일 업로드 및 주문하기</h3>
-                <button type="button" class="modal-close" onclick="closeUploadModal()">✕</button>
-            </div>
-            
-            <div class="modal-body">
-                <div class="upload-container">
-                    <div class="upload-left">
-                        <label class="upload-label" for="modalFileInput">파일첨부</label>
-                        <div class="upload-buttons">
-                            <button type="button" class="btn-upload-method active" onclick="selectUploadMethod('upload')">
-                                파일업로드
-                            </button>
-                            <button type="button" class="btn-upload-method" onclick="selectUploadMethod('manual')" disabled>
-                                디자인 의뢰 (별도 문의)
-                            </button>
-                        </div>
-                        <div class="upload-area" id="modalUploadArea">
-                            <div class="upload-dropzone" id="modalUploadDropzone">
-                                <span class="upload-icon">📁</span>
-                                <span class="upload-text">파일을 여기에 드래그하거나 클릭하세요</span>
-                                <input type="file" id="modalFileInput" accept=".jpg,.jpeg,.png,.pdf,.ai,.eps,.psd,.zip" multiple hidden>
-                            </div>
-                            <div class="upload-info">
-                                파일첨부 시 특수문자(#,&,'&',*,%, 등) 사용은 불가능하며 파일명이 길면 오류가 발생할 수 있습니다.<br>
-                                되도록 짧고 간단한 파일명으로 작성해 주세요!
-                            </div>
-                        </div>
-                    </div>
-                    
-                    <div class="upload-right">
-                        <label class="upload-label">작업메모</label>
-                        <textarea id="modalWorkMemo" class="memo-textarea" placeholder="특별한 요청사항이 있으시면 입력해주세요...&#10;&#10;예: 색상 조정, 크기 변경, 레이아웃 수정 등"></textarea>
-                        
-                        <div class="upload-notice">
-                            <div class="notice-item">🖨️ 인쇄 품질 향상을 위해 고해상도 파일을 권장합니다</div>
-                            <div class="notice-item">📐 재단선이 있는 경우 3mm 여백을 추가해 주세요</div>
-                        </div>
-                    </div>
-                </div>
-                
-                <div class="uploaded-files" id="modalUploadedFiles">
-                    <h5>📂 업로드된 파일</h5>
-                    <div class="file-list" id="modalFileList"></div>
-                </div>
-            </div>
-            
-            <div class="modal-footer">
-                <button type="button" class="modal-btn btn-cart" onclick="addToBasketFromModal()">
-                    🛒 장바구니에 저장
-                </button>
-            </div>
-        </div>
-    </div>
+    <?php
+    // 전단지 모달 설정
+    $modalProductName = '전단지';
+    $modalProductIcon = '📎';
+    
+    // 공통 업로드 모달 포함
+    include "../../includes/upload_modal.php";
+    ?>
 
     <!-- 갤러리 모달은 include_product_gallery()에서 자동 포함됨 -->
 
@@ -391,25 +345,25 @@ echo '<script src="../../includes/js/UniversalFileUpload.js"></script>';
 
 
     <!-- 전단지 안내 섹션 -->
-    <section style="margin-top: 5px; margin-bottom: 0.2rem;">
-        <div style="max-width: 1200px; margin: 0 auto; display: grid; grid-template-columns: 1fr 1fr; gap: 0.5rem;">
+    <section class="flyer-info-section">
+        <div class="flyer-info-grid">
             <!-- 합판 전단지 카드 -->
-            <div style="background: white; border-radius: 15px; overflow: hidden; box-shadow: 0 8px 25px rgba(0,0,0,0.1); border: 1px solid #e9ecef;">
+            <div class="flyer-card">
                 <!-- 제목 (네모 박스 반전글) -->
-                <div style="background: #4caf50; color: white; padding: 20px; text-align: center;">
-                    <h3 style="margin: 0; font-size: 1.3rem; font-weight: 700;">📄 합판 전단지</h3>
+                <div class="hapan-title">
+                    <h3>📄 합판 전단지</h3>
                 </div>
                 
                 <!-- 헤어라인 -->
-                <div style="height: 2px; background: linear-gradient(90deg, transparent, #4caf50, transparent);"></div>
+                <div class="flyer-hairline"></div>
                 
                 <!-- 내용 -->
-                <div style="padding: 25px; line-height: 1.6;">
-                    <p style="margin-bottom: 1.5rem; color: #495057; font-weight: 500;">일정량의 고객 인쇄물을 한판에 모아서 인쇄 제작하는 상품으로 저렴한 가격과 빠른 제작시간이 특징인 상품입니다. 일반 길거리 대량 배포용 전단지를 제작하실 때 선택하시면 됩니다.</p>
+                <div class="flyer-content">
+                    <p>일정량의 고객 인쇄물을 한판에 모아서 인쇄 제작하는 상품으로 저렴한 가격과 빠른 제작시간이 특징인 상품입니다. 일반 길거리 대량 배포용 전단지를 제작하실 때 선택하시면 됩니다.</p>
                     
-                    <div style="background: #f8f9fa; padding: 15px; border-radius: 8px; margin-bottom: 1rem;">
-                        <h4 style="color: #4caf50; margin-bottom: 10px; font-size: 1rem;">📏 제작 가능 사이즈</h4>
-                        <ul style="margin: 0; padding-left: 1.2rem; color: #555; font-size: 0.9rem;">
+                    <div class="flyer-specs">
+                        <h4>📏 제작 가능 사이즈</h4>
+                        <ul>
                             <li>A2 (420 x 594 mm)</li>
                             <li>A3 (297 x 420 mm)</li>
                             <li>A4 (210 x 297 mm)</li>
@@ -417,32 +371,32 @@ echo '<script src="../../includes/js/UniversalFileUpload.js"></script>';
                             <li>8절 (257 x 367 mm)</li>
                             <li>16절 (182 x 257 mm)</li>
                         </ul>
-                        <p style="margin-top: 10px; color: #666; font-size: 0.85rem;"><strong>작업사이즈:</strong> 재단사이즈에서 사방 1.5mm씩 여분</p>
+                        <p><strong>작업사이즈:</strong> 재단사이즈에서 사방 1.5mm씩 여분</p>
                     </div>
                     
-                    <div style="background: #e8f5e8; padding: 12px; border-radius: 8px; border-left: 4px solid #4caf50;">
-                        <p style="margin: 0; color: #2e7d32; font-size: 0.9rem; font-weight: 500;">💡 TIP! 작업 템플릿을 다운 받아 사용하시면 더욱 정확하고 편리하게 작업하실 수 있습니다!</p>
+                    <div class="flyer-tip">
+                        <p>💡 TIP! 작업 템플릿을 다운 받아 사용하시면 더욱 정확하고 편리하게 작업하실 수 있습니다!</p>
                     </div>
                 </div>
             </div>
             
             <!-- 독판 전단지 카드 -->
-            <div style="background: white; border-radius: 15px; overflow: hidden; box-shadow: 0 8px 25px rgba(0,0,0,0.1); border: 1px solid #e9ecef;">
+            <div class="flyer-card">
                 <!-- 제목 (네모 박스 반전글) -->
-                <div style="background: #2196f3; color: white; padding: 20px; text-align: center;">
-                    <h3 style="margin: 0; font-size: 1.3rem; font-weight: 700;">📋 독판 전단지</h3>
+                <div class="dokpan-title">
+                    <h3>📋 독판 전단지</h3>
                 </div>
                 
                 <!-- 헤어라인 -->
-                <div style="height: 2px; background: linear-gradient(90deg, transparent, #2196f3, transparent);"></div>
+                <div class="flyer-hairline"></div>
                 
                 <!-- 내용 -->
-                <div style="padding: 25px; line-height: 1.6;">
-                    <p style="margin-bottom: 1.5rem; color: #495057; font-weight: 500;">나만의 인쇄물을 단독으로 인쇄할 수 있는 상품으로 고급 인쇄물 제작을 원할 때 선택하시면 됩니다. 다양한 용지 선택과 후가공 선택이 가능한 상품입니다.</p>
+                <div class="flyer-content">
+                    <p>나만의 인쇄물을 단독으로 인쇄할 수 있는 상품으로 고급 인쇄물 제작을 원할 때 선택하시면 됩니다. 다양한 용지 선택과 후가공 선택이 가능한 상품입니다.</p>
                     
-                    <div style="background: #f8f9fa; padding: 15px; border-radius: 8px; margin-bottom: 1rem;">
-                        <h4 style="color: #2196f3; margin-bottom: 10px; font-size: 1rem;">⚙️ 상세 정보</h4>
-                        <ul style="margin: 0; padding-left: 1.2rem; color: #555; font-size: 0.9rem;">
+                    <div class="flyer-specs">
+                        <h4>⚙️ 상세 정보</h4>
+                        <ul>
                             <li><strong>작업사이즈:</strong> 재단사이즈에서 사방 1.5mm씩 여분</li>
                             <li><strong>인쇄유형:</strong> 옵셋인쇄</li>
                             <li><strong>출고:</strong> 매일 출고</li>
@@ -460,8 +414,14 @@ echo '<script src="../../includes/js/UniversalFileUpload.js"></script>';
     include "../../includes/footer.php";
     ?>
 
+    <!-- 공통 업로드 모달 JavaScript -->
+    <script src="../../includes/upload_modal.js"></script>
+    
     <!-- 전단지 전용 스크립트 -->
     <script src="js/leaflet-compact.js"></script>
+    
+    <!-- 추가 옵션 시스템 스크립트 -->
+    <script src="js/additional-options.js"></script>
     
     <script>
     document.addEventListener('DOMContentLoaded', function() {
@@ -476,6 +436,9 @@ echo '<script src="../../includes/js/UniversalFileUpload.js"></script>';
         <?php endif; ?>
     });
     </script>
+
+    <!-- 전단지 전용 컴팩트 디자인 적용 (Frontend-Compact-Design-Guide.md 기반) -->
+    <!-- 모든 스타일은 common-styles.css에서 통합 관리됨 -->
 </body>
 </html>
 

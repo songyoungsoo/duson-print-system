@@ -46,7 +46,7 @@ function initializeGallery() {
     if (typeof GalleryLightbox !== 'undefined') {
         // 고급 갤러리 라이트박스 시스템 초기화
         const gallery = new GalleryLightbox('cadarokGallery', {
-            dataSource: '/mlangprintauto/cadarok/get_cadarok_images.php',
+            dataSource: '/MlangPrintAuto/cadarok/get_cadarok_images.php',
             productType: 'cadarok',
             autoLoad: true,
             zoomEnabled: true,
@@ -73,7 +73,7 @@ function loadCadarokImages() {
     
     galleryContainer.innerHTML = '<div class="loading">🖼️ 갤러리 로딩 중...</div>';
     
-    fetch('/mlangprintauto/cadarok/get_cadarok_images.php')
+    fetch('/MlangPrintAuto/cadarok/get_cadarok_images.php')
         .then(response => {
             if (!response.ok) {
                 throw new Error(`HTTP error! status: ${response.status}`);
@@ -252,7 +252,7 @@ function checkMoreButtonVisibility(imageCount) {
 
 function checkMoreButtonForLightbox() {
     // GalleryLightbox 사용 시 더보기 버튼 표시 확인
-    fetch('/mlangprintauto/cadarok/get_cadarok_images.php?all=true')
+    fetch('/MlangPrintAuto/cadarok/get_cadarok_images.php?all=true')
         .then(response => response.json())
         .then(data => {
             if (data.success && data.data) {
@@ -327,7 +327,7 @@ function resetPrice() {
 function loadPaperTypes(style) {
     if (!style) return;
 
-    fetch(`/mlangprintauto/cadarok/get_paper_types.php?style=${style}`)
+    fetch(`/MlangPrintAuto/cadarok/get_paper_types.php?style=${style}`)
         .then(response => response.json())
         .then(data => {
             if (data.success) {
@@ -369,7 +369,7 @@ function loadQuantities() {
 
     if (!style || !section || !potype) return;
 
-    fetch(`/mlangprintauto/cadarok/get_quantities.php?style=${style}&section=${section}&potype=${potype}`)
+    fetch(`/MlangPrintAuto/cadarok/get_quantities.php?style=${style}&section=${section}&potype=${potype}`)
         .then(response => response.json())
         .then(data => {
             if (data.success) {
@@ -440,7 +440,7 @@ function calculatePrice(isAuto = true) {
     
     const params = new URLSearchParams(formData);
     
-    fetch('/mlangprintauto/cadarok/calculate_price_ajax.php?' + params.toString())
+    fetch('/MlangPrintAuto/cadarok/calculate_price_ajax.php?' + params.toString())
     .then(response => {
         if (!response.ok) {
             throw new Error(`HTTP error! status: ${response.status}`);
@@ -754,7 +754,7 @@ function addToBasketFromModal() {
     }));
     formData.set('uploaded_files_info', JSON.stringify(fileInfoArray));
     
-    fetch('/mlangprintauto/cadarok/add_to_basket.php', {
+    fetch('/MlangPrintAuto/cadarok/add_to_basket.php', {
         method: 'POST',
         body: formData
     })
@@ -783,7 +783,7 @@ function addToBasketFromModal() {
                 
                 // 장바구니 페이지로 이동
                 setTimeout(() => {
-                    window.location.href = '/mlangprintauto/shop/cart.php';
+                    window.location.href = '/MlangPrintAuto/shop/cart.php';
                 }, 1000);
                 
             } else {

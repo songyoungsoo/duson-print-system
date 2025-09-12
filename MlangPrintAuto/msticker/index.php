@@ -203,64 +203,12 @@ if ($type_row = mysqli_fetch_assoc($type_result)) {
         </div> <!-- main-content 끝 -->
     </div> <!-- compact-container 끝 -->
 
-    <!-- 파일 업로드 모달 (드래그 앤 드롭 및 고급 애니메이션) -->
-    <div id="uploadModal" class="upload-modal" style="display: none;">
-        <div class="modal-overlay" onclick="closeUploadModal()"></div>
-        <div class="modal-content">
-            <div class="modal-header">
-                <h3 class="modal-title">📎 파일첨부방법 선택</h3>
-                <button type="button" class="modal-close" onclick="closeUploadModal()">✕</button>
-            </div>
-            
-            <div class="modal-body">
-                <div class="upload-container">
-                    <div class="upload-left">
-                        <label class="upload-label" for="modalFileInput">파일첨부</label>
-                        <div class="upload-buttons">
-                            <button type="button" class="btn-upload-method active" onclick="selectUploadMethod('upload')">
-                                파일업로드
-                            </button>
-                            <button type="button" class="btn-upload-method" onclick="selectUploadMethod('manual')" disabled>
-                                10분만에 작품완료 자기는 방법!
-                            </button>
-                        </div>
-                        <div class="upload-area" id="modalUploadArea">
-                            <div class="upload-dropzone" id="modalUploadDropzone">
-                                <span class="upload-icon">📁</span>
-                                <span class="upload-text">파일을 여기에 드래그하거나 클릭하세요</span>
-                                <input type="file" id="modalFileInput" accept=".jpg,.jpeg,.png,.pdf,.ai,.eps,.psd" multiple hidden>
-                            </div>
-                            <div class="upload-info">
-                                파일첨부 독수리파일(#,&,'&',*,%, 등) 사용은 불가능하며 파일명이 길면 예전가 불성
-                                하니 되도록 짧고 간단하게 작성해 주세요!
-                            </div>
-                        </div>
-                    </div>
-                    
-                    <div class="upload-right">
-                        <label class="upload-label">작업메모</label>
-                        <textarea id="modalWorkMemo" class="memo-textarea" placeholder="작업 관련 요청사항이나 특별한 지시사항을 입력해주세요.&#10;&#10;예시:&#10;- 색상을 더 진하게 해주세요&#10;- 로고 크기를 조금 더 크게&#10;- 배경색을 파란색으로 변경"></textarea>
-                        
-                        <div class="upload-notice">
-                            <div class="notice-item">📋 택배 무료배송은 결제금액 총 3만원 명부시에 한함</div>
-                            <div class="notice-item">📋 온전판(당일)주 전날 주문 제품과 목업 불가</div>
-                        </div>
-                    </div>
-                </div>
-                
-                <div class="uploaded-files" id="modalUploadedFiles" style="display: none;">
-                    <h5>📂 업로드된 파일</h5>
-                    <div class="file-list" id="modalFileList"></div>
-                </div>
-            </div>
-            
-            <div class="modal-footer">
-                <button type="button" class="modal-btn btn-cart" onclick="addToBasketFromModal()">
-                    🛒 장바구니에 저장
-                </button>
-            </div>
-        </div>
-    </div>
+    <?php 
+    // 자석스티커 모달 설정
+    $modalProductName = '자석스티커';
+    $modalProductIcon = '🏷️';
+    include '../../includes/upload_modal.php'; 
+    ?>
 
     <?php include "../../includes/login_modal.php"; ?>
 
@@ -792,6 +740,24 @@ include "../../includes/footer.php";
             }
         };
 
+        // 공통 모달 JavaScript 로드
+        const modalScript = document.createElement('script');
+        modalScript.src = '../../includes/upload_modal.js';
+        document.head.appendChild(modalScript);
+        
+        // 자석스티커 전용 장바구니 추가 함수
+        function handleModalBasketAdd() {
+            console.log('자석스티커 handleModalBasketAdd 호출');
+            
+            // 기본 장바구니 추가 함수 호출
+            if (typeof addToBasket === 'function') {
+                addToBasket();
+            } else {
+                console.error('자석스티커: addToBasket 함수를 찾을 수 없습니다.');
+                alert('죄송합니다. 잠시 후 다시 시도해주세요.');
+            }
+        }
+        
         // 자석스티커 전용 msticker.js가 모든 기능을 처리합니다
         
         // 통일된 갤러리 팝업 초기화

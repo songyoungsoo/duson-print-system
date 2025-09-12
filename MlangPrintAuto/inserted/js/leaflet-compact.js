@@ -8,6 +8,165 @@ let currentPriceData = null;
 let galleryImages = [];
 let currentImageIndex = 0;
 
+/**
+ * 공통 모달 연동 함수 - 장바구니 추가 처리
+ */
+function handleModalBasketAdd(uploadedFiles, onSuccess, onError) {
+    if (!currentPriceData) {
+        alert('먼저 가격을 계산해주세요.');
+        return;
+    }
+    
+    // 로딩 상태 표시
+    const cartButton = document.querySelector('.btn-cart');
+    const originalText = cartButton.innerHTML;
+    cartButton.innerHTML = '🔄 저장 중...';
+    cartButton.disabled = true;
+    cartButton.style.opacity = '0.7';
+    
+    const form = document.getElementById('orderForm');
+    const workMemo = document.getElementById('modalWorkMemo').value;
+    
+    const formData = new FormData(form);
+    
+    // 기본 주문 정보
+    formData.set('action', 'add_to_basket');
+    formData.set('price', Math.round(currentPriceData.Order_PriceForm));
+    formData.set('vat_price', Math.round(currentPriceData.Total_PriceForm));
+    formData.set('product_type', 'leaflet');
+    
+    // 추가 정보
+    formData.set('work_memo', workMemo);
+    formData.set('upload_method', selectedUploadMethod || 'upload');
+    
+    // 추가 옵션 데이터 수집 (개선된 로직)
+    console.log('🔧 추가 옵션 데이터 수집 시작');
+    
+    // 코팅 옵션
+    const coatingEnabled = document.querySelector('input[name="coating_enabled"]:checked');
+    const coatingEnabledValue = coatingEnabled ? coatingEnabled.value : '0';
+    formData.set('coating_enabled', coatingEnabledValue);
+    console.log('코팅 활성화:', coatingEnabledValue);
+    
+    if (coatingEnabledValue === '1') {
+        const coatingType = document.querySelector('select[name="coating_type"]')?.value || '';
+        const coatingPriceElement = document.getElementById('coating_price');
+        const coatingPrice = coatingPriceElement ? coatingPriceElement.value : '0';
+        formData.set('coating_type', coatingType);
+        formData.set('coating_price', coatingPrice);
+        console.log('코팅 타입:', coatingType, '가격:', coatingPrice);
+    } else {
+        formData.set('coating_type', '');
+        formData.set('coating_price', '0');
+    }
+
+    // 접지 옵션
+    const foldingEnabled = document.querySelector('input[name="folding_enabled"]:checked');
+    const foldingEnabledValue = foldingEnabled ? foldingEnabled.value : '0';
+    formData.set('folding_enabled', foldingEnabledValue);
+    console.log('접지 활성화:', foldingEnabledValue);
+    
+    if (foldingEnabledValue === '1') {
+        const foldingType = document.querySelector('select[name="folding_type"]')?.value || '';
+        const foldingPriceElement = document.getElementById('folding_price');
+        const foldingPrice = foldingPriceElement ? foldingPriceElement.value : '0';
+        formData.set('folding_type', foldingType);
+        formData.set('folding_price', foldingPrice);
+        console.log('접지 타입:', foldingType, '가격:', foldingPrice);
+    } else {
+        formData.set('folding_type', '');
+        formData.set('folding_price', '0');
+    }
+
+    // 오시 옵션
+    const creasingEnabled = document.querySelector('input[name="creasing_enabled"]:checked');
+    const creasingEnabledValue = creasingEnabled ? creasingEnabled.value : '0';
+    formData.set('creasing_enabled', creasingEnabledValue);
+    console.log('오시 활성화:', creasingEnabledValue);
+    
+    if (creasingEnabledValue === '1') {
+        const creasingLines = document.querySelector('select[name="creasing_lines"]')?.value || '';
+        const creasingPriceElement = document.getElementById('creasing_price');
+        const creasingPrice = creasingPriceElement ? creasingPriceElement.value : '0';
+        formData.set('creasing_lines', creasingLines);
+        formData.set('creasing_price', creasingPrice);
+        console.log('오시 줄 수:', creasingLines, '가격:', creasingPrice);
+    } else {
+        formData.set('creasing_lines', '');
+        formData.set('creasing_price', '0');
+    }
+
+    // 추가 옵션 총합
+    const additionalOptionsTotalElement = document.getElementById('additional_options_total');
+    const additionalOptionsTotal = additionalOptionsTotalElement ? additionalOptionsTotalElement.value : '0';
+    formData.set('additional_options_total', additionalOptionsTotal);
+    console.log('추가 옵션 총합:', additionalOptionsTotal);
+    
+    // FormData 내용 디버깅 출력
+    console.log('🔍 FormData에 추가된 옵션 데이터:');
+    for (let pair of formData.entries()) {
+        if (pair[0].includes('coating') || pair[0].includes('folding') || pair[0].includes('creasing') || pair[0].includes('additional')) {
+            console.log(pair[0] + ':', pair[1]);
+        }
+    }
+    
+    // 업로드된 파일들 추가
+    uploadedFiles.forEach((fileObj, index) => {
+        formData.append('uploaded_files[]', fileObj.file);
+    });
+    
+    // 파일 정보 JSON
+    const fileInfoArray = uploadedFiles.map(fileObj => ({
+        name: fileObj.name,
+        size: fileObj.size,
+        type: fileObj.type
+    }));
+    formData.set('uploaded_files_info', JSON.stringify(fileInfoArray));
+    
+    // 전송 전 최종 확인
+    console.log('🚀 서버로 전송할 데이터:');
+    console.log('- 기본가격:', Math.round(currentPriceData.Order_PriceForm));
+    console.log('- VAT포함가격:', Math.round(currentPriceData.Total_PriceForm));
+    console.log('- 작업메모:', workMemo);
+    console.log('- 업로드파일수:', uploadedFiles.length);
+    
+    // 장바구니에 추가
+    fetch('add_to_basket.php', {
+        method: 'POST',
+        body: formData
+    })
+    .then(response => response.json())
+    .then(data => {
+        if (data.success) {
+            console.log('전단지 장바구니 저장 성공');
+            if (typeof closeUploadModal === 'function') {
+                closeUploadModal();
+            }
+            // 성공 콜백 호출
+            if (typeof onSuccess === 'function') {
+                onSuccess();
+            }
+        } else {
+            console.error('전단지 장바구니 저장 실패:', data.message);
+            // 실패 콜백 호출
+            if (typeof onError === 'function') {
+                onError(data.message || '장바구니 저장에 실패했습니다.');
+            } else {
+                alert('❌ 장바구니 추가 실패: ' + (data.message || '알 수 없는 오류'));
+            }
+        }
+    })
+    .catch(error => {
+        console.error('장바구니 추가 오류:', error);
+        // 에러 콜백 호출
+        if (typeof onError === 'function') {
+            onError('네트워크 오류가 발생했습니다.');
+        } else {
+            alert('❌ 장바구니 추가 중 오류가 발생했습니다.');
+        }
+    });
+}
+
 // 갤러리 줌 기능 초기화 - 적응형 이미지 표시 및 확대
 let targetX = 50, targetY = 50;
 let currentX = 50, currentY = 50;
@@ -54,28 +213,16 @@ document.addEventListener('DOMContentLoaded', function() {
     setTimeout(() => {
         console.log('🔄 초기 기본값 설정 및 자동 계산 시작');
         
-        // 모든 드롭다운의 첫 번째 실제 옵션을 자동 선택
-        const selects = ['MY_Fsd', 'PN_type', 'POtype'];
-        selects.forEach(selectName => {
-            const selectElement = document.querySelector(`select[name="${selectName}"]`);
-            if (selectElement && selectElement.options.length > 0) {
-                // 첫 번째 옵션이 "선택해주세요" 같은 경우 두 번째 옵션 선택
-                const firstValidIndex = selectElement.options[0].value === '' ? 1 : 0;
-                if (selectElement.options.length > firstValidIndex) {
-                    selectElement.selectedIndex = firstValidIndex;
-                    console.log(`📄 ${selectName} 자동 선택:`, selectElement.value, selectElement.options[selectElement.selectedIndex].text);
-                    
-                    // change 이벤트 강제 발생
-                    selectElement.dispatchEvent(new Event('change'));
-                }
-            }
-        });
+        // 종이종류를 첫 번째 옵션으로 자동 선택
+        const paperTypeSelect = document.querySelector('select[name="MY_Fsd"]');
+        if (paperTypeSelect && paperTypeSelect.options.length > 1) {
+            paperTypeSelect.selectedIndex = 1; // 두 번째 옵션 (첫 번째는 "선택해주세요")
+            console.log('📄 종이종류 자동 선택:', paperTypeSelect.value, paperTypeSelect.options[paperTypeSelect.selectedIndex].text);
+        }
         
         // 수량 및 가격 자동 계산
-        setTimeout(() => {
-            updateQuantities();
-        }, 500);
-    }, 1500); // 더 긴 대기 시간으로 변경
+        updateQuantities();
+    }, 1000); // 다른 드롭다운들이 로드된 후 실행
     
     console.log('✅ 페이지 초기화 완료');
 });
@@ -134,7 +281,27 @@ function initDropdownEvents() {
     
     // 수량 변경 시 자동 계산
     if (quantitySelect) {
-        quantitySelect.addEventListener('change', autoCalculatePrice);
+        quantitySelect.addEventListener('change', function() {
+            // 추가 옵션 수량 업데이트
+            if (typeof updateAdditionalOptionsQuantity === 'function') {
+                updateAdditionalOptionsQuantity(this.value);
+            }
+            
+            // 자동 계산 (조건 확인 후 수행)
+            const form = document.getElementById('orderForm');
+            if (form) {
+                const formData = new FormData(form);
+                // 필수 필드가 모두 채워졌을 때만 자동 계산 실행
+                if (formData.get('MY_type') && formData.get('MY_Fsd') && 
+                    formData.get('PN_type') && formData.get('MY_amount') && 
+                    formData.get('ordertype')) {
+                    console.log('📊 수량 변경 → 자동 가격 계산 실행');
+                    calculatePrice(true); // isAuto = true로 alert 방지
+                } else {
+                    console.log('📊 수량 변경 → 필수 필드 미완성으로 계산 대기');
+                }
+            }
+        });
     }
     
     // 편집디자인 변경 시 자동 계산
@@ -299,14 +466,16 @@ function autoCalculatePrice() {
     
     const formData = new FormData(form);
     
-    // 모든 필수 옵션 선택 확인
-    if (!formData.get('MY_type') || !formData.get('MY_Fsd') || 
-        !formData.get('PN_type') || !formData.get('MY_amount') || 
-        !formData.get('ordertype')) {
+    // 모든 필수 옵션 선택 확인 (디버깅 추가)
+    const requiredFields = ['MY_type', 'MY_Fsd', 'PN_type', 'MY_amount', 'ordertype'];
+    const missingFields = requiredFields.filter(field => !formData.get(field));
+    
+    if (missingFields.length > 0) {
+        console.log('📋 자동 계산 대기 - 미완성 필드:', missingFields);
         return;
     }
     
-    console.log('💰 자동 가격 계산 시작');
+    console.log('💰 자동 가격 계산 시작 (모든 필수 필드 완성)');
     calculatePrice(true);
 }
 
@@ -332,8 +501,12 @@ function calculatePrice(isAuto = false) {
     });
     
     if (missingFields.length > 0) {
+        console.log('📋 미완성 필드:', missingFields, '| 자동모드:', isAuto);
         if (!isAuto) {
+            console.warn('⚠️ ALERT 표시 예정: 모든 옵션을 선택해주세요');
             alert('모든 옵션을 선택해주세요.');
+        } else {
+            console.log('✅ 자동모드: alert 생략');
         }
         return;
     }
@@ -348,6 +521,10 @@ function calculatePrice(isAuto = false) {
         button.disabled = true;
     }
     
+    // 추가 옵션 가격 포함
+    const additionalOptionsTotal = getAdditionalOptionsTotal ? getAdditionalOptionsTotal() : 0;
+    console.log('🔧 추가 옵션 총액:', additionalOptionsTotal);
+    
     // AJAX로 실제 가격 계산 (기존 전단지 패턴 사용)
     const params = new URLSearchParams({
         MY_type: formData.get('MY_type'),
@@ -355,7 +532,8 @@ function calculatePrice(isAuto = false) {
         MY_Fsd: formData.get('MY_Fsd'),
         MY_amount: formData.get('MY_amount'),
         ordertype: formData.get('ordertype'),
-        POtype: formData.get('POtype') || '1'
+        POtype: formData.get('POtype') || '1',
+        additional_options_total: additionalOptionsTotal
     });
     
     fetch('calculate_price_ajax.php?' + params.toString())
@@ -405,27 +583,91 @@ function updatePriceDisplay(priceData) {
         priceDisplay.classList.add('calculated');
     }
     
-    // 인쇄비 + 디자인비 합계를 큰 금액으로 표시 (VAT 제외)
+    // 추가 옵션 가격 가져오기
+    let additionalOptionsPrice = 0;
+    const additionalOptionsTotalInput = document.getElementById('additional_options_total');
+    if (additionalOptionsTotalInput) {
+        additionalOptionsPrice = parseInt(additionalOptionsTotalInput.value) || 0;
+    }
+    
+    // 인쇄비 + 디자인비 + 추가옵션 합계를 큰 금액으로 표시 (VAT 제외)
     if (priceAmount) {
         const printCost = Math.round(priceData.PriceForm);         // 인쇄비만
         const designCost = Math.round(priceData.DS_PriceForm);     // 디자인비만
-        const supplyPrice = printCost + designCost;               // 공급가 (VAT 제외)
+        const supplyPrice = printCost + designCost + additionalOptionsPrice;  // 공급가 + 옵션 (VAT 제외)
         
         priceAmount.textContent = supplyPrice.toLocaleString() + '원';
-        console.log('💰 큰 금액 표시 (인쇄비+디자인비):', supplyPrice + '원');
+        console.log('💰 큰 금액 표시 (인쇄비+디자인비+옵션):', supplyPrice + '원');
+        console.log('   - 인쇄비:', printCost + '원');
+        console.log('   - 디자인비:', designCost + '원');
+        console.log('   - 추가옵션:', additionalOptionsPrice + '원');
     }
     
     if (priceDetails) {
         const printCost = Math.round(priceData.PriceForm);         // 인쇄비만
         const designCost = Math.round(priceData.DS_PriceForm);     // 디자인비만
-        const supplyPrice = printCost + designCost;               // 공급가 (VAT 제외)
-        const total = Math.round(priceData.Total_PriceForm);       // VAT 포함 총합계
+        const supplyPrice = printCost + designCost + additionalOptionsPrice;  // 공급가 + 옵션 (VAT 제외)
+        const total = Math.round(supplyPrice * 1.1);  // 전체 공급가에 VAT 적용
+        
+        let optionHtml = '';
+        if (additionalOptionsPrice > 0) {
+            optionHtml = `
+                <div class="price-divider"></div>
+                <div class="price-item">
+                    <span class="price-item-label">추가옵션:</span>
+                    <span class="price-item-value">${additionalOptionsPrice.toLocaleString()}원</span>
+                </div>`;
+        }
         
         priceDetails.innerHTML = `
-            <span>인쇄비: ${printCost.toLocaleString()}원</span>
-            <span>디자인비: ${designCost.toLocaleString()}원</span>
-            <span>부가세 포함: <span class="vat-amount">${total.toLocaleString()}원</span></span>
+            <div class="price-breakdown">
+                <div class="price-item">
+                    <span class="price-item-label">인쇄비:</span>
+                    <span class="price-item-value">${printCost.toLocaleString()}원</span>
+                </div>
+                <div class="price-divider"></div>
+                <div class="price-item">
+                    <span class="price-item-label">디자인비:</span>
+                    <span class="price-item-value">${designCost.toLocaleString()}원</span>
+                </div>
+                ${optionHtml}
+                <div class="price-divider"></div>
+                <div class="price-item final">
+                    <span class="price-item-label">부가세 포함:</span>
+                    <span class="price-item-value">${total.toLocaleString()}원</span>
+                </div>
+            </div>
         `;
+        console.log('💰 상세 가격 정보 표시:', {인쇄비: printCost, 디자인비: designCost, 추가옵션: additionalOptionsPrice, 공급가: supplyPrice, 부가세포함: total});
+    }
+    
+    // VAT 포함 가격 표시 (추가 옵션 포함)
+    const priceVat = document.getElementById('priceVat');
+    if (priceVat) {
+        const printCost = Math.round(priceData.PriceForm);
+        const designCost = Math.round(priceData.DS_PriceForm);
+        const totalSupply = printCost + designCost + additionalOptionsPrice;  // 전체 공급가
+        const totalWithVat = Math.round(totalSupply * 1.1);  // VAT 적용
+        priceVat.innerHTML = `<strong>부가세 포함: ${totalWithVat.toLocaleString()}원</strong>`;
+        console.log('💰 부가세 포함 가격 계산:', {
+            인쇄비: printCost,
+            디자인비: designCost,
+            추가옵션: additionalOptionsPrice,
+            공급가합계: totalSupply,
+            부가세포함: totalWithVat
+        });
+        
+        // hidden input에 가격 정보 저장 (추가 옵션 포함)
+        const priceInput = document.getElementById('calculated_price');
+        const vatPriceInput = document.getElementById('calculated_vat_price');
+        if (priceInput) {
+            priceInput.value = totalSupply;  // 공급가 (인쇄비 + 디자인비 + 추가옵션)
+            console.log('💰 Hidden input price 설정:', totalSupply);
+        }
+        if (vatPriceInput) {
+            vatPriceInput.value = totalWithVat;  // VAT 포함
+            console.log('💰 Hidden input vat_price 설정:', totalWithVat);
+        }
     }
     
     // 파일 업로드 버튼 표시
@@ -752,6 +994,72 @@ function addToBasket() {
     formData.set('vat_price', Math.round(currentPriceData.Total_PriceForm));
     formData.set('product_type', 'leaflet');
     
+    // 📎 추가 옵션 데이터 명시적으로 추가
+    console.log('📎 추가 옵션 데이터 수집 중...');
+    
+    // 코팅 옵션
+    const coatingEnabled = document.querySelector('input[name="coating_enabled"]:checked');
+    if (coatingEnabled && coatingEnabled.value === '1') {
+        formData.set('coating_enabled', '1');
+        const coatingType = document.querySelector('select[name="coating_type"]')?.value || '';
+        const coatingPrice = document.querySelector('input[name="coating_price"]')?.value || '0';
+        formData.set('coating_type', coatingType);
+        formData.set('coating_price', coatingPrice);
+        console.log('📎 코팅 옵션 추가:', coatingType, coatingPrice + '원');
+    } else {
+        formData.set('coating_enabled', '0');
+        formData.set('coating_type', '');
+        formData.set('coating_price', '0');
+    }
+    
+    // 접기 옵션
+    const foldingEnabled = document.querySelector('input[name="folding_enabled"]:checked');
+    if (foldingEnabled && foldingEnabled.value === '1') {
+        formData.set('folding_enabled', '1');
+        const foldingType = document.querySelector('select[name="folding_type"]')?.value || '';
+        const foldingPrice = document.querySelector('input[name="folding_price"]')?.value || '0';
+        formData.set('folding_type', foldingType);
+        formData.set('folding_price', foldingPrice);
+        console.log('📎 접기 옵션 추가:', foldingType, foldingPrice + '원');
+    } else {
+        formData.set('folding_enabled', '0');
+        formData.set('folding_type', '');
+        formData.set('folding_price', '0');
+    }
+    
+    // 크리징 옵션
+    const creasingEnabled = document.querySelector('input[name="creasing_enabled"]:checked');
+    if (creasingEnabled && creasingEnabled.value === '1') {
+        formData.set('creasing_enabled', '1');
+        const creasingLines = document.querySelector('select[name="creasing_lines"]')?.value || '';
+        const creasingPrice = document.querySelector('input[name="creasing_price"]')?.value || '0';
+        formData.set('creasing_lines', creasingLines);
+        formData.set('creasing_price', creasingPrice);
+        console.log('📎 크리징 옵션 추가:', creasingLines, creasingPrice + '원');
+    } else {
+        formData.set('creasing_enabled', '0');
+        formData.set('creasing_lines', '');
+        formData.set('creasing_price', '0');
+    }
+    
+    // 추가 옵션 총액
+    const additionalOptionsTotal = (parseInt(formData.get('coating_price') || '0') + 
+                                  parseInt(formData.get('folding_price') || '0') + 
+                                  parseInt(formData.get('creasing_price') || '0'));
+    formData.set('additional_options_total', additionalOptionsTotal.toString());
+    
+    console.log('📎 총 추가 옵션 금액:', additionalOptionsTotal + '원');
+    
+    // 기존 방식도 유지 (호환성)
+    if (typeof additionalOptionsManager !== 'undefined' && additionalOptionsManager) {
+        const options = additionalOptionsManager.getCurrentOptions();
+        for (const key in options) {
+            if (!formData.has(key)) { // 이미 설정되지 않은 경우에만
+                formData.set(key, options[key]);
+            }
+        }
+    }
+    
     // 로딩 표시
     const button = event.target;
     const originalText = button.innerHTML;
@@ -773,7 +1081,7 @@ function addToBasket() {
             
             // 장바구니 확인 여부 묻기
             if (confirm('장바구니를 확인하시겠습니까?')) {
-                window.location.href = '/mlangprintauto/shop/cart.php';
+                window.location.href = '/MlangPrintAuto/shop/cart.php';
             } else {
                 // 폼 초기화하고 계속 쇼핑
                 resetForm();
@@ -854,178 +1162,12 @@ function resetForm() {
 }
 
 // ============================================================================
-// 파일 업로드 모달 시스템 (명함 패턴 적용)
+// 공통 모달 연동 시스템
 // ============================================================================
 
-let uploadedFiles = [];
-let selectedUploadMethod = 'upload';
-
-function openUploadModal() {
-    if (!currentPriceData) {
-        alert('먼저 가격을 계산해주세요.');
-        return;
-    }
-    
-    const modal = document.getElementById('uploadModal');
-    modal.style.display = 'flex';
-    document.body.style.overflow = 'hidden';
-    
-    // 모달 내 파일 업로드 초기화
-    initializeModalFileUpload();
-    
-    // 가격 정보 업데이트
-    updateModalPrice();
-}
-
-function closeUploadModal() {
-    const modal = document.getElementById('uploadModal');
-    modal.style.display = 'none';
-    document.body.style.overflow = 'auto';
-    
-    // 업로드된 파일 초기화
-    uploadedFiles = [];
-    updateModalFileList();
-    document.getElementById('modalWorkMemo').value = '';
-}
-
-function selectUploadMethod(method) {
-    selectedUploadMethod = method;
-    const buttons = document.querySelectorAll('.btn-upload-method');
-    buttons.forEach(btn => btn.classList.remove('active'));
-    event.target.classList.add('active');
-}
-
-function initializeModalFileUpload() {
-    const dropzone = document.getElementById('modalUploadDropzone');
-    const fileInput = document.getElementById('modalFileInput');
-    
-    if (!dropzone || !fileInput) return;
-    
-    // 드래그 앤 드롭 이벤트
-    dropzone.addEventListener('dragover', function(e) {
-        e.preventDefault();
-        dropzone.classList.add('drag-over');
-    });
-    
-    dropzone.addEventListener('dragleave', function(e) {
-        e.preventDefault();
-        dropzone.classList.remove('drag-over');
-    });
-    
-    dropzone.addEventListener('drop', function(e) {
-        e.preventDefault();
-        dropzone.classList.remove('drag-over');
-        
-        const files = Array.from(e.dataTransfer.files);
-        processFiles(files);
-    });
-    
-    // 클릭으로 파일 선택
-    dropzone.addEventListener('click', function() {
-        fileInput.click();
-    });
-    
-    fileInput.addEventListener('change', function(e) {
-        const files = Array.from(e.target.files);
-        processFiles(files);
-    });
-}
-
-function processFiles(files) {
-    files.forEach(file => {
-        // 파일 크기 체크 (15MB)
-        if (file.size > 15 * 1024 * 1024) {
-            alert(`파일 "${file.name}"이 너무 큽니다. 15MB 이하의 파일을 선택해주세요.`);
-            return;
-        }
-        
-        // 허용된 파일 형식 체크
-        const allowedTypes = ['.jpg', '.jpeg', '.png', '.pdf', '.ai', '.eps', '.psd', '.zip'];
-        const fileExtension = '.' + file.name.split('.').pop().toLowerCase();
-        
-        if (!allowedTypes.includes(fileExtension)) {
-            alert(`파일 "${file.name}"은 지원하지 않는 형식입니다. JPG, PNG, PDF, AI, EPS, PSD, ZIP 파일만 업로드 가능합니다.`);
-            return;
-        }
-        
-        // 중복 체크
-        const existingFile = uploadedFiles.find(f => f.name === file.name && f.size === file.size);
-        if (existingFile) {
-            alert(`파일 "${file.name}"은 이미 업로드되었습니다.`);
-            return;
-        }
-        
-        // 파일 객체 생성
-        const fileObj = {
-            id: Date.now() + '_' + Math.random().toString(36).substr(2, 9),
-            file: file,
-            name: file.name,
-            size: formatFileSize(file.size),
-            type: fileExtension
-        };
-        
-        uploadedFiles.push(fileObj);
-    });
-    
-    updateModalFileList();
-}
-
-function updateModalFileList() {
-    const fileList = document.getElementById('modalFileList');
-    const uploadedFilesContainer = document.getElementById('modalUploadedFiles');
-    
-    if (uploadedFiles.length === 0) {
-        uploadedFilesContainer.style.display = 'none';
-        return;
-    }
-    
-    uploadedFilesContainer.style.display = 'block';
-    fileList.innerHTML = '';
-    
-    uploadedFiles.forEach(fileObj => {
-        const fileItem = document.createElement('div');
-        fileItem.className = 'file-item';
-        fileItem.innerHTML = `
-            <div class="file-info">
-                <span class="file-icon">${getFileIcon(fileObj.type)}</span>
-                <div class="file-details">
-                    <div class="file-name">${escapeHtml(fileObj.name)}</div>
-                    <div class="file-size">${fileObj.size}</div>
-                </div>
-            </div>
-            <button class="file-remove" onclick="removeFile('${fileObj.id}')">삭제</button>
-        `;
-        fileList.appendChild(fileItem);
-    });
-}
-
-function getFileIcon(extension) {
-    switch(extension.toLowerCase()) {
-        case '.jpg':
-        case '.jpeg':
-        case '.png': return '🖼️';
-        case '.pdf': return '📄';
-        case '.ai':
-        case '.eps':
-        case '.psd': return '🎨';
-        case '.zip': return '📦';
-        default: return '📁';
-    }
-}
-
-function removeFile(fileId) {
-    uploadedFiles = uploadedFiles.filter(f => f.id !== fileId);
-    updateModalFileList();
-}
-
-function formatFileSize(bytes) {
-    if (bytes === 0) return '0 Bytes';
-    const k = 1024;
-    const sizes = ['Bytes', 'KB', 'MB', 'GB'];
-    const i = Math.floor(Math.log(bytes) / Math.log(k));
-    return parseFloat((bytes / Math.pow(k, i)).toFixed(2)) + ' ' + sizes[i];
-}
-
+/**
+ * 공통 모달 업데이트 함수 - 가격 정보 전달
+ */
 function updateModalPrice() {
     const priceElement = document.getElementById('modalPriceAmount');
     if (priceElement && currentPriceData) {
@@ -1033,106 +1175,44 @@ function updateModalPrice() {
     }
 }
 
-function addToBasketFromModal() {
+/**
+ * 로그인 상태 체크 (공통 모달용)
+ */
+function checkLoginStatus() {
+    // 세션 체크 또는 로그인 상태 확인 로직
+    return document.cookie.includes('PHPSESSID');
+}
+
+/**
+ * 업로드 모달 열기 전 사전 체크
+ */
+function openUploadModal() {
     if (!currentPriceData) {
         alert('먼저 가격을 계산해주세요.');
         return;
     }
     
-    // 로딩 상태 표시
-    const cartButton = document.querySelector('.btn-cart');
-    const originalText = cartButton.innerHTML;
-    cartButton.innerHTML = '🔄 저장 중...';
-    cartButton.disabled = true;
-    cartButton.style.opacity = '0.7';
-    
-    const form = document.getElementById('orderForm');
-    const workMemo = document.getElementById('modalWorkMemo').value;
-    
-    const formData = new FormData(form);
-    
-    // 기본 주문 정보
-    formData.set('action', 'add_to_basket');
-    formData.set('price', Math.round(currentPriceData.Order_PriceForm));
-    formData.set('vat_price', Math.round(currentPriceData.Total_PriceForm));
-    formData.set('product_type', 'leaflet');
-    
-    // 추가 정보
-    formData.set('work_memo', workMemo);
-    formData.set('upload_method', selectedUploadMethod);
-    
-    // 업로드된 파일들 추가
-    uploadedFiles.forEach((fileObj, index) => {
-        formData.append('uploaded_files[]', fileObj.file);
-    });
-    
-    // 파일 정보 JSON
-    const fileInfoArray = uploadedFiles.map(fileObj => ({
-        name: fileObj.name,
-        size: fileObj.size,
-        type: fileObj.type
-    }));
-    formData.set('uploaded_files_info', JSON.stringify(fileInfoArray));
-    
-    fetch('add_to_basket.php', {
-        method: 'POST',
-        body: formData
-    })
-    .then(response => {
-        if (!response.ok) {
-            throw new Error(`HTTP error! status: ${response.status}`);
-        }
-        return response.text();
-    })
-    .then(text => {
-        try {
-            const response = JSON.parse(text);
+    // 공통 모달의 openUploadModal 호출
+    if (typeof window.openUploadModal_Common === 'function') {
+        window.openUploadModal_Common();
+    } else {
+        // 직접 모달 열기 (폴백)
+        const modal = document.getElementById('uploadModal');
+        if (modal) {
+            modal.style.display = 'flex';
+            document.body.style.overflow = 'hidden';
             
-            // 버튼 상태 복원
-            cartButton.innerHTML = originalText;
-            cartButton.disabled = false;
-            cartButton.style.opacity = '1';
-            
-            if (response.success) {
-                // 모달 닫기
-                closeUploadModal();
-                
-                // 서버에서 받은 메시지 사용 (파일 개수 포함)
-                alert(response.message + ' 🛒');
-                
-                // 장바구니 확인 여부 묻기
-                if (confirm('장바구니를 확인하시겠습니까?')) {
-                    window.location.href = '/mlangprintauto/shop/cart.php';
-                } else {
-                    // 폼 초기화하고 계속 쇼핑
-                    resetForm();
-                }
-            } else {
-                alert('장바구니 추가 중 오류가 발생했습니다: ' + response.message);
+            // 파일 업로드 초기화
+            if (typeof initializeModalFileUpload === 'function') {
+                initializeModalFileUpload();
             }
-        } catch (parseError) {
-            console.error('JSON 파싱 오류:', parseError);
-            console.error('원시 응답:', text);
             
-            // 버튼 상태 복원
-            cartButton.innerHTML = originalText;
-            cartButton.disabled = false;
-            cartButton.style.opacity = '1';
-            
-            alert('장바구니 추가 중 오류가 발생했습니다.');
+            updateModalPrice();
         }
-    })
-    .catch(error => {
-        console.error('Error:', error);
-        
-        // 버튼 상태 복원
-        cartButton.innerHTML = originalText;
-        cartButton.disabled = false;
-        cartButton.style.opacity = '1';
-        
-        alert('장바구니 추가 중 오류가 발생했습니다.');
-    });
+    }
 }
+
+// 중복 함수 제거됨 - handleModalBasketAdd 사용
 
 // ============================================================================
 // 유틸리티 함수들
