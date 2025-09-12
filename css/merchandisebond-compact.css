@@ -23,13 +23,95 @@ body {
     min-height: calc(100vh - 140px);
 }
 
+/* ============================================================================ */
+/* 플렉스 레이아웃 - 수평 정렬 옵션 */
+/* ============================================================================ */
+
+/* 2열 그리드를 플렉스로 변경 가능 */
+.options-grid.form-grid-compact {
+    display: flex !important;
+    flex-direction: column !important;
+    gap: 12px !important;
+}
+
+/* 각 옵션 그룹 수평 정렬 */
+.option-group.form-field {
+    display: flex !important;
+    align-items: center !important;
+    gap: 15px !important;
+    width: 100% !important;
+}
+
+/* 라벨 스타일 - 고정 너비 */
+.option-group .option-label {
+    flex: 0 0 100px !important;
+    font-weight: 600 !important;
+    color: #2d3748 !important;
+    font-size: 0.95rem !important;
+    text-align: left !important;
+}
+
+/* 셀렉트 박스 스타일 - 유연한 너비 */
+.option-group .option-select {
+    flex: 1 !important;
+    min-width: 200px !important;
+    padding: 8px 12px !important;
+    border: 1px solid #cbd5e0 !important;
+    border-radius: 6px !important;
+    font-size: 0.95rem !important;
+    background-color: white !important;
+    transition: all 0.2s ease !important;
+}
+
+.option-group .option-select:hover {
+    border-color: #667eea !important;
+}
+
+.option-group .option-select:focus {
+    outline: none !important;
+    border-color: #667eea !important;
+    box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.1) !important;
+}
+
+/* 편집디자인 특별 레이아웃 */
+.design-flex-layout {
+    display: flex !important;
+    align-items: center !important;
+    gap: 15px !important;
+    width: 100% !important;
+    padding: 12px !important;
+    background: linear-gradient(135deg, #f7fafc 0%, #edf2f7 100%) !important;
+    border-radius: 8px !important;
+    border: 1px solid #e2e8f0 !important;
+}
+
+.design-flex-layout .option-label {
+    flex: 0 0 100px !important;
+    font-weight: 700 !important;
+    color: #1a202c !important;
+}
+
+.design-flex-layout .design-options-container {
+    flex: 1 !important;
+    display: flex !important;
+    align-items: center !important;
+    gap: 10px !important;
+}
+
+.design-flex-layout .option-select {
+    flex: 1 !important;
+    background: white !important;
+    border: 2px solid #cbd5e0 !important;
+    font-weight: 500 !important;
+}
+
 /* 페이지 타이틀 */
 .page-title {
     text-align: center;
     margin-bottom: 30px;
     padding: 25px 0;
-    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-    color: white;
+    background: linear-gradient(135deg, #e0e0e0 0%, #d0d0d0 100%);
+    color: #333;
     border-radius: 15px;
     box-shadow: 0 8px 32px rgba(102, 126, 234, 0.3);
 }
@@ -155,20 +237,11 @@ body {
 }
 
 .calculator-header {
-    background: linear-gradient(135deg, #ff7043 0%, #ffa726 100%);
-    color: white;
-    padding: 18px 25px;
-    border-radius: 12px;
-    margin-bottom: 25px;
-    text-align: center;
-    margin-top: 0;
-    box-shadow: 0 4px 15px rgba(255, 112, 67, 0.3);
+    display: none !important;
 }
 
 .calculator-header h3 {
-    font-size: 1.4rem;
-    font-weight: 600;
-    margin: 0;
+    display: none !important;
 }
 
 /* 옵션 선택 영역 - 개선된 그리드 레이아웃 */
@@ -267,7 +340,7 @@ body {
 
 .btn-upload-order {
     background: linear-gradient(135deg, #ffa726 0%, #ff7043 100%);
-    color: white;
+    color: #333;
     border: none;
     padding: 15px 30px;
     font-size: 1.1rem;
@@ -397,7 +470,7 @@ body {
 
 .modal-close:hover {
     background: #ffa726;
-    color: white;
+    color: #333;
     transform: rotate(90deg);
 }
 
@@ -469,7 +542,7 @@ body {
 
 .btn-upload-method.active {
     background: #ffa726;
-    color: white;
+    color: #333;
     box-shadow: 0 4px 15px rgba(255, 167, 38, 0.3);
 }
 
@@ -654,7 +727,7 @@ body {
 
 .file-remove {
     background: #ffa726;
-    color: white;
+    color: #333;
     border: none;
     border-radius: 6px;
     padding: 6px 12px;
@@ -672,7 +745,7 @@ body {
 /* 주문 버튼들 */
 .btn-cart {
     background: linear-gradient(135deg, #ffa726 0%, #ff7043 100%);
-    color: white;
+    color: #333;
     position: relative;
     overflow: hidden;
 }

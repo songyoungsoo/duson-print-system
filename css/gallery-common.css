@@ -56,13 +56,13 @@
 }
 
 .thumbnail-grid img:hover {
-    border-color: #667eea;
+    border-color: #4a5568;
     transform: translateY(-3px) scale(1.05);
     box-shadow: 0 8px 25px rgba(102, 126, 234, 0.25);
 }
 
 .thumbnail-grid img.active {
-    border-color: #667eea;
+    border-color: #4a5568;
     transform: translateY(-2px);
     box-shadow: 0 8px 25px rgba(102, 126, 234, 0.3);
 }

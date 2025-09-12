@@ -1,0 +1,126 @@
+/* 
+ * 전단지 디자인 강제 적용 CSS
+ * 기존 스타일을 모두 덮어씌움 (!important 사용)
+ * 계산 로직은 전혀 건드리지 않음
+ */
+
+/* 헤더를 전단지 스타일로 강제 변경 */
+.customer-header, .calculator-header, h1, h2, h3 {
+    background: linear-gradient(135deg, #4CAF50, #66BB6A) !important;
+    color: white !important;
+    padding: 15px 20px !important;
+    border-radius: 16px 16px 0 0 !important;
+    text-align: center !important;
+    margin: 0 !important;
+}
+
+/* calculator-header 숨김 처리 */
+.calculator-header {
+    display: none !important;
+}
+
+/* 모든 셀렉트 박스를 전단지 스타일로 */
+.form-select, select {
+    height: 48px !important;
+    border: 1px solid #E0E0E0 !important;
+    border-radius: 8px !important;
+    background: #F5F5F5 !important;
+    padding: 0 12px !important;
+    font-size: 14px !important;
+    transition: all 0.3s ease !important;
+    width: 100% !important;
+}
+
+.form-select:hover, select:hover {
+    border-color: #4CAF50 !important;
+    background: white !important;
+}
+
+.form-select:focus, select:focus {
+    outline: none !important;
+    border-color: #4CAF50 !important;
+    box-shadow: 0 0 0 2px rgba(76, 175, 80, 0.2) !important;
+}
+
+/* 버튼을 전단지 스타일로 */
+.btn, .btn-primary, button[type="button"], button[onclick] {
+    background: linear-gradient(135deg, #7B68EE, #6A5ACD) !important;
+    color: white !important;
+    height: 56px !important;
+    border: none !important;
+    border-radius: 8px !important;
+    font-size: 16px !important;
+    font-weight: bold !important;
+    cursor: pointer !important;
+    transition: all 0.3s ease !important;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.2) !important;
+    width: 100% !important;
+    margin: 10px 0 !important;
+}
+
+.btn:hover, .btn-primary:hover, button[type="button"]:hover {
+    transform: translateY(-2px) !important;
+    box-shadow: 0 4px 12px rgba(123, 104, 238, 0.3) !important;
+}
+
+/* 가격 표시 영역 */
+.price-display, .price-amount, #priceAmount {
+    background: #E8F5E8 !important;
+    border: 2px solid #333 !important;
+    border-radius: 8px !important;
+    padding: 20px !important;
+    margin: 20px 0 !important;
+}
+
+.price-amount, #priceAmount {
+    font-size: 24px !important;
+    font-weight: bold !important;
+    color: #4CAF50 !important;
+    text-align: center !important;
+}
+
+/* 카드 컨테이너 */
+.calculator-pane, .gallery-pane, .customer-container > div {
+    border-radius: 16px !important;
+    box-shadow: 0 4px 12px rgba(0,0,0,0.15) !important;
+    overflow: hidden !important;
+    background: white !important;
+}
+
+/* 레이블 스타일 */
+.form-label, label {
+    font-size: 14px !important;
+    color: #333 !important;
+    font-weight: 500 !important;
+    margin-bottom: 8px !important;
+    display: block !important;
+}
+
+/* 파일 업로드 버튼 차별화 */
+button[onclick*="Upload"], button[onclick*="upload"] {
+    background: linear-gradient(135deg, #FF9800, #F57C00) !important;
+}
+
+/* 폼 그리드 레이아웃 */
+.form-grid {
+    display: grid !important;
+    grid-template-columns: 1fr 1fr !important;
+    gap: 20px !important;
+    padding: 24px !important;
+    background: white !important;
+}
+
+.form-field.full-width {
+    grid-column: span 2 !important;
+}
+
+/* 반응형 처리 */
+@media (max-width: 768px) {
+    .form-grid {
+        grid-template-columns: 1fr !important;
+    }
+    
+    .form-field.full-width {
+        grid-column: span 1 !important;
+    }
+}

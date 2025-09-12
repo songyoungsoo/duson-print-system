@@ -1,0 +1,181 @@
+/* ===================================================================== */
+/* 🧮 통합 계산기 레이아웃 - 라벨과 셀렉트 수평 정렬 시스템 */
+/* ⚠️ 중요: 계산 로직 완전 보존, 스타일링만 적용 */
+/* ===================================================================== */
+
+/* 🎯 메인 폼 그리드 - 라벨과 드롭다운을 가로로 나란히 배치 (컴팩트 디자인) */
+.form-grid {
+    display: grid !important;
+    grid-template-columns: 1fr 1fr !important;
+    gap: 5px !important;
+    margin-bottom: 5px !important;
+    padding: 0 !important;
+}
+
+/* 📝 개별 필드 컨테이너 - 라벨과 셀렉트를 한 줄에 배치 (초컴팩트) */
+.form-field {
+    display: flex !important;
+    flex-direction: row !important;
+    align-items: center !important;
+    gap: 3px !important;
+    padding: 0 !important;
+    margin: 0 !important;
+    min-height: 28px !important;
+}
+
+/* 🏷️ 라벨 스타일 - 수평 정렬용 고정 너비 (초컴팩트) */
+.form-label {
+    flex: 0 0 65px !important;
+    font-size: 0.8rem !important;
+    font-weight: 500 !important;
+    color: #4a5568 !important;
+    text-align: left !important;
+    margin: 0 !important;
+    padding: 0 !important;
+    white-space: nowrap !important;
+}
+
+/* 🎛️ 셀렉트 박스 - 나머지 공간 활용 (초컴팩트) */
+.form-select {
+    flex: 1 !important;
+    min-width: 0 !important;
+    height: 26px !important;
+    padding: 2px 4px !important;
+    border: 1px solid #e2e8f0 !important;
+    border-radius: 2px !important;
+    background: #ffffff !important;
+    font-size: 0.8rem !important;
+    color: #2d3748 !important;
+    transition: border-color 0.15s ease-in-out !important;
+}
+
+.form-select:focus {
+    border-color: #4299e1 !important;
+    outline: none !important;
+    box-shadow: none !important;
+}
+
+/* 📐 편집디자인 필드를 인라인으로 - 플렉스 레이아웃 (초컴팩트) */
+.form-field.full-width {
+    grid-column: 1 / -1 !important;
+    display: flex !important;
+    flex-direction: row !important;
+    align-items: center !important;
+    gap: 3px !important;
+}
+
+.form-field.full-width .form-label {
+    flex: 0 0 75px !important;
+}
+
+.form-field.full-width .form-select {
+    flex: 1 !important;
+    max-width: 150px !important;
+}
+
+/* 📱 반응형 디자인 - 모바일에서도 수평 유지 (초컴팩트) */
+@media (max-width: 768px) {
+    .form-grid {
+        grid-template-columns: 1fr !important;
+        gap: 3px !important;
+    }
+    
+    .form-field {
+        gap: 2px !important;
+        min-height: 24px !important;
+    }
+    
+    .form-label {
+        flex: 0 0 55px !important;
+        font-size: 0.75rem !important;
+    }
+    
+    .form-select {
+        height: 22px !important;
+        padding: 1px 3px !important;
+        font-size: 0.75rem !important;
+    }
+    
+    .form-field.full-width .form-label {
+        flex: 0 0 60px !important;
+    }
+}
+
+@media (max-width: 480px) {
+    .form-field {
+        gap: 2px !important;
+        min-height: 22px !important;
+    }
+    
+    .form-label {
+        flex: 0 0 50px !important;
+        font-size: 0.7rem !important;
+    }
+    
+    .form-select {
+        height: 20px !important;
+        padding: 1px 2px !important;
+        font-size: 0.7rem !important;
+    }
+    
+    .form-field.full-width .form-label {
+        flex: 0 0 55px !important;
+    }
+    
+    .form-field.full-width .form-select {
+        max-width: 120px !important;
+    }
+}
+
+/* 🎨 Wall Street 프로페셔널 스타일링 */
+.form-field:hover .form-label {
+    color: #2d3748 !important;
+}
+
+.form-select:hover {
+    border-color: #cbd5e0 !important;
+}
+
+/* 🔧 기존 CSS와의 호환성 보장 (초컴팩트) */
+/* 기존 클래스명들도 지원 */
+.calculator-pane .form-grid,
+.unified-calculator .form-grid,
+#mstickerForm .form-grid,
+#cadarokForm .form-grid,
+#namecardForm .form-grid {
+    display: grid !important;
+    grid-template-columns: 1fr 1fr !important;
+    gap: 5px !important;
+}
+
+/* ⚡ 성능 최적화 */
+.form-field,
+.form-label,
+.form-select {
+    box-sizing: border-box !important;
+}
+
+/* 🛡️ 계산 로직 보존을 위한 안전장치 */
+/* form의 name, id, value 속성은 절대 변경하지 않음 */
+/* JavaScript 이벤트 핸들러도 그대로 유지 */
+/* AJAX 요청 관련 속성들 모두 보존 */
+
+/* 💡 사용 방법 주석 */
+/*
+HTML에서 사용법:
+<div class="form-grid">
+    <div class="form-field">
+        <label class="form-label" for="MY_type">종류</label>
+        <select class="form-select" name="MY_type" id="MY_type" required>
+            <!-- 기존 옵션들 그대로 유지 -->
+        </select>
+    </div>
+    
+    <div class="form-field full-width">
+        <label class="form-label" for="ordertype">편집디자인</label>
+        <select class="form-select" name="ordertype" id="ordertype" required>
+            <!-- 기존 옵션들 그대로 유지 -->
+        </select>
+    </div>
+</div>
+*/

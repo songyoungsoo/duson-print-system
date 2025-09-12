@@ -1,0 +1,64 @@
+/* ===================================================================== */
+/* 합판전단지 & 독판전단지 제목 배경색 - 연회색으로 변경 */
+/* ===================================================================== */
+
+/* 합판전단지 제목 스타일 */
+.합판전단지-title,
+.hapan-title,
+.flyer-title-hapan {
+    background: #e0e0e0 !important; /* 연회색 배경 */
+    color: #333333 !important; /* 어두운 회색 텍스트로 가독성 확보 */
+    padding: 20px !important;
+    text-align: center !important;
+    border-radius: 8px; /* 부드러운 모서리 추가 */
+    box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1); /* 은은한 그림자 */
+}
+
+/* 독판전단지 제목 스타일 */
+.독판전단지-title,
+.dokpan-title,
+.flyer-title-dokpan {
+    background: #e0e0e0 !important; /* 연회색 배경 */
+    color: #333333 !important; /* 어두운 회색 텍스트로 가독성 확보 */
+    padding: 20px !important;
+    text-align: center !important;
+    border-radius: 8px; /* 부드러운 모서리 추가 */
+    box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1); /* 은은한 그림자 */
+}
+
+/* 공통 전단지 제목 스타일 (모든 전단지 제목에 적용) */
+.flyer-section-title {
+    background: #e0e0e0 !important; /* 연회색 배경 */
+    color: #333333 !important; /* 어두운 회색 텍스트 */
+    padding: 20px !important;
+    text-align: center !important;
+    border-radius: 8px;
+    box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+    font-weight: 600;
+    font-size: 1.2rem;
+}
+
+/* 기존 녹색 배경 오버라이드 */
+[style*="background: #4caf50"] {
+    background: #e0e0e0 !important; /* 연회색으로 강제 변경 */
+    color: #333333 !important; /* 텍스트 색상도 조정 */
+}
+
+/* 인라인 스타일 오버라이드를 위한 더 강력한 선택자 */
+div[style*="#4caf50"],
+section[style*="#4caf50"],
+header[style*="#4caf50"],
+h1[style*="#4caf50"],
+h2[style*="#4caf50"],
+h3[style*="#4caf50"] {
+    background: #e0e0e0 !important;
+    color: #333333 !important;
+}
+
+/* 호버 효과 (선택사항) */
+.합판전단지-title:hover,
+.독판전단지-title:hover,
+.flyer-section-title:hover {
+    background: #d0d0d0 !important; /* 호버시 약간 더 진한 회색 */
+    transition: background 0.3s ease;
+}

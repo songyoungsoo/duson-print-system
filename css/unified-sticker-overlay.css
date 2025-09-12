@@ -27,7 +27,7 @@
     color: #2c3e50 !important;
     margin-bottom: 1rem !important;
     padding: 1rem !important;
-    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%) !important;
+    background: linear-gradient(135deg, #4a5568 0%, #2d3748 100%) !important;
     color: white !important;
     border-radius: 15px !important;
 }
@@ -48,7 +48,7 @@
 
 /* 갤러리 헤더 - NameCard 스타일 */
 .container .card:first-of-type .card-header {
-    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%) !important;
+    background: linear-gradient(135deg, #4a5568 0%, #2d3748 100%) !important;
     color: white !important;
     padding: 15px 20px !important;
     border-radius: 0 !important;
@@ -195,7 +195,7 @@
     padding: 15px 40px !important;
     border: none !important;
     border-radius: 50px !important;
-    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%) !important;
+    background: linear-gradient(135deg, #4a5568 0%, #2d3748 100%) !important;
     color: white !important;
     font-size: 1.1rem !important;
     font-weight: 600 !important;
@@ -246,7 +246,7 @@
 }
 
 .quote-table thead th {
-    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%) !important;
+    background: linear-gradient(135deg, #4a5568 0%, #2d3748 100%) !important;
     color: white !important;
     padding: 1rem !important;
     font-weight: 600 !important;

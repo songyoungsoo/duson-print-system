@@ -50,7 +50,7 @@
     display: flex !important;
     justify-content: center !important;
     align-items: center !important;
-    gap: 15px !important;
+    gap: 8px !important;
     flex-wrap: nowrap !important;
     white-space: nowrap !important;
     overflow-x: auto !important;
@@ -83,7 +83,7 @@
     }
     
     .price-display .price-details {
-        gap: 10px !important;              /* 모바일에서 간격 줄임 */
+        gap: 6px !important;              /* 모바일에서 간격 줄임 */
         font-size: 0.75rem !important;     /* 모바일에서 약간 작게 */
         overflow-x: auto !important;       /* 가로 스크롤 허용 */
         -webkit-overflow-scrolling: touch !important;

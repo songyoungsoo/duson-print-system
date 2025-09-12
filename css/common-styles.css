@@ -1,0 +1,1870 @@
+/* ===================================================================== */
+/* 🎨 MlangPrintAuto 공통 스타일 시트 */
+/* Wall Street 프로페셔널 디자인 - 정숙한 사무실 분위기 */
+/* ===================================================================== */
+
+/* =================================================================== */
+/* 1. 페이지 타이틀 공통 스타일 */
+/* =================================================================== */
+.page-title {
+    padding: 12px 0 !important;
+    margin-bottom: 7px !important;
+    border-radius: 10px !important;
+    background: linear-gradient(135deg, #1e3c72 0%, #2a5298 100%) !important; /* 고급스러운 진청색 */
+    color: white !important;
+    text-align: center;
+    position: relative;
+    overflow: hidden;
+}
+
+.page-title h1 {
+    font-size: 1.6rem !important;
+    line-height: 1.2 !important;
+    margin: 0 !important;
+    color: white !important;
+    text-shadow: 0 2px 4px rgba(0,0,0,0.3) !important;
+}
+
+.page-title p {
+    margin: 4px 0 0 0 !important;
+    font-size: 0.85rem !important;
+    line-height: 1.3 !important;
+    color: white !important;
+    opacity: 0.9 !important;
+}
+
+/* =================================================================== */
+/* 2. 플렉스 레이아웃 - 편집디자인 수평 정렬 */
+/* =================================================================== */
+
+/* 편집디자인 플렉스 레이아웃 - 모든 품목 공통 */
+.design-flex-layout {
+    display: flex !important;
+    align-items: center !important;
+    gap: 10px !important;
+    width: 100% !important;
+}
+
+.design-flex-layout .option-label {
+    flex-shrink: 0 !important;
+    min-width: 80px !important;
+    margin-right: 10px !important;
+    font-weight: 600 !important;
+    color: #2d3748 !important;
+}
+
+.design-flex-layout .design-options-container {
+    flex: 1 !important;
+    display: flex !important;
+    align-items: center !important;
+    gap: 10px !important;
+}
+
+.design-flex-layout .option-select {
+    flex: 1 !important;
+    min-width: 150px !important;
+}
+
+/* 모든 옵션 그룹의 수평 정렬 개선 */
+.option-group.form-field {
+    display: flex !important;
+    align-items: center !important;
+    gap: 10px !important;
+    margin-bottom: 10px !important;
+}
+
+.option-group.form-field .option-label {
+    flex-shrink: 0 !important;
+    min-width: 80px !important;
+    margin: 0 !important;
+    font-weight: 600 !important;
+    color: #2d3748 !important;
+    font-size: 0.95rem !important;
+}
+
+.option-group.form-field .option-select {
+    flex: 1 !important;
+    padding: 6px 10px !important;
+    border: 1px solid #cbd5e0 !important;
+    border-radius: 4px !important;
+    font-size: 0.95rem !important;
+    background-color: white !important;
+    transition: border-color 0.2s !important;
+}
+
+.option-group.form-field .option-select:focus {
+    outline: none !important;
+    border-color: #667eea !important;
+    box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.1) !important;
+}
+
+/* 갤러리 스타일 - 하단 통합 섹션 참조 */
+
+/* =================================================================== */
+/* 3. 계산기 섹션 - 하단 통합 섹션 참조 */
+/* =================================================================== */
+
+.calculator-header {
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    color: white;
+    padding: 15px 20px;
+    margin: -25px -25px 20px -25px;
+    border-radius: 15px 15px 0 0;
+    font-size: 1.1rem;
+    font-weight: 600;
+    text-align: center;
+    box-shadow: 0 2px 10px rgba(102, 126, 234, 0.3);
+}
+
+.calculator-header h3 {
+    font-size: 1.2rem !important;
+    line-height: 1.2 !important;
+    margin: 0 !important;
+    color: white !important;
+    font-weight: 600 !important;
+}
+
+/* =================================================================== */
+/* 4. 가격 표시 - 하단 통합 섹션 참조 */
+/* =================================================================== */
+
+/* 완전 수평 가격 정렬 시스템 - 깔끔한 텍스트만 */
+.price-breakdown {
+    display: flex !important;
+    justify-content: center !important;
+    align-items: center !important;
+    width: 100% !important;
+    padding: 0 !important; /* 패딩 제거 */
+    background: none !important; /* 배경 제거 */
+    border: none !important; /* 테두리 제거 */
+    margin: 8px 0 !important;
+    font-size: 0.85rem !important;
+    gap: 8px !important; /* 항목 간 간격 - 옵션 추가시 폭 확장 방지 */
+    flex-wrap: nowrap !important; /* 한 줄 유지 */
+    white-space: nowrap !important;
+}
+
+/* 개별 가격 항목 - 컴팩트 스타일 */
+.price-item {
+    display: inline-flex !important;
+    align-items: center !important;
+    gap: 3px !important;
+    white-space: nowrap !important;
+}
+
+.price-item-label {
+    color: #495057 !important;
+    font-weight: 500 !important;
+    font-size: 0.85rem !important;
+}
+
+.price-item-value {
+    color: #28a745 !important;
+    font-weight: 600 !important;
+    font-size: 0.85rem !important;
+}
+
+/* 구분선 */
+.price-divider {
+    width: 1px !important;
+    height: 18px !important;
+    background: #dee2e6 !important;
+    flex-shrink: 0 !important;
+}
+
+/* 최종 금액 강조 (텍스트만) */
+.price-item.final {
+    background: none !important; /* 배경 제거 */
+    padding: 0 !important; /* 패딩 제거 */
+    border: none !important; /* 테두리 제거 */
+}
+
+.price-item.final .price-item-label {
+    color: #495057 !important; /* 다른 라벨과 동일한 색상 */
+    font-weight: 500 !important; /* 다른 라벨과 동일한 굵기 */
+    font-size: 0.85rem !important; /* 다른 라벨과 동일한 크기 */
+}
+
+.price-item.final .price-item-value {
+    color: #dc3545 !important; /* 적색 - 금액만 강조 */
+    font-weight: 700 !important;
+    font-size: 1.05rem !important; /* 2pt 크게 */
+}
+
+/* 모바일 대응 */
+@media (max-width: 768px) {
+    .price-breakdown {
+        flex-direction: column !important;
+        gap: 8px !important;
+        align-items: stretch !important;
+    }
+    
+    .price-item {
+        justify-content: space-between !important;
+        padding: 4px 0 !important;
+    }
+    
+    .price-divider {
+        display: none !important; /* 모바일에서 구분선 숨김 */
+    }
+}
+
+/* 기존 price-vat, price-note 제거됨 - price-breakdown 시스템 사용 */
+
+/* =================================================================== */
+/* 5. CTA 버튼 공통 스타일 */
+/* =================================================================== */
+.btn-upload-order {
+    background: #1a202c !important; /* 더 짙은 회색으로 변경 */
+    color: white;
+    border: none;
+    padding: 15px 30px;
+    font-size: 1.1rem;
+    font-weight: 600;
+    border-radius: 12px;
+    cursor: pointer;
+    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    box-shadow: none !important; /* 그림자 완전 제거 */
+    width: 100%;
+    position: relative;
+    overflow: hidden;
+    will-change: transform, box-shadow;
+}
+
+.btn-upload-order:hover {
+    background: #171923 !important; /* hover 시 가장 짙은 회색 */
+    transform: none !important; /* hover 이동 효과 제거 */
+    box-shadow: none !important; /* hover 그림자 제거 */
+}
+
+.btn-upload-order:active {
+    background: #0d1117 !important; /* active 시 거의 검은색 */
+    transform: none !important; /* active 이동 효과 제거 */
+}
+
+/* =================================================================== */
+/* 6. 폼 요소 - 하단 통합 섹션 참조 */
+/* =================================================================== */
+
+/* 라벨 스타일 - 하단 통합 섹션 참조 */
+
+/* =================================================================== */
+/* 6-2. 수평 폼 레이아웃 시스템 (라벨-셀렉트 한 줄 배치) */
+/* =================================================================== */
+
+/* 수평 폼 그룹 - 하단 통합 섹션 참조 */
+
+/* 2열 수평 레이아웃 */
+.form-row {
+    display: grid !important;
+    grid-template-columns: 1fr 1fr !important;
+    gap: 20px !important;
+    margin-bottom: 12px !important;
+}
+
+/* 3열 수평 레이아웃 */
+.form-row-3 {
+    display: grid !important;
+    grid-template-columns: 1fr 1fr 1fr !important;
+    gap: 15px !important;
+    margin-bottom: 12px !important;
+}
+
+/* design-inline 클래스 제거됨 - form-group-horizontal 사용 */
+
+/* 컴팩트 폼 (초소형) */
+.form-compact .form-group-horizontal,
+.form-compact .option-group-horizontal {
+    gap: 8px !important;
+    margin-bottom: 6px !important;
+}
+
+.form-compact .option-label {
+    min-width: 60px !important;
+    font-size: 0.8rem !important;
+}
+
+.form-compact .option-select,
+.form-compact select {
+    padding: 4px 10px !important;
+    font-size: 0.85rem !important;
+}
+
+/* =================================================================== */
+/* 7. 반응형 디자인 */
+/* =================================================================== */
+@media (max-width: 768px) {
+    .page-title { 
+        padding: 15px 0 !important;
+    }
+    
+    .page-title h1 {
+        font-size: 1.4rem !important;
+    }
+    
+    .calculator-header { 
+        padding: 15px 20px !important;
+    }
+    
+    .price-display .price-amount {
+        font-size: 1.5rem !important;
+    }
+    
+    .option-select, select, input[type="text"], input[type="email"], textarea {
+        padding: 10px 15px !important;
+    }
+    
+    .gallery-section,
+    .calculator-section {
+        padding: 20px !important;
+        margin: 0 -10px;
+        border-radius: 10px;
+        height: auto !important; /* 자동 높이 */
+    }
+    
+    /* === 모바일 인라인 레이아웃 조정 === */
+    
+    /* 모바일에서 인라인 폼 조정 */
+    .form-group-horizontal {
+        flex-direction: column !important; /* 세로 배치 */
+        align-items: stretch !important;
+        gap: 4px !important;
+        padding: 12px 0 !important;
+    }
+    
+    /* 모바일 라벨 */
+    .form-group-horizontal .option-label {
+        min-width: auto !important;
+        text-align: left !important;
+        font-size: 0.85rem !important;
+        margin-bottom: 4px !important;
+    }
+    
+    /* 모바일 드롭다운 */
+    .form-group-horizontal .option-select {
+        max-width: none !important;
+        width: 100% !important;
+    }
+    
+    .gallery-title {
+        margin: -20px -20px 15px -20px !important;
+        padding: 12px 15px !important;
+        font-size: 1rem !important;
+    }
+}
+
+/* =================================================================== */
+/* 8. 색상 변수 정의 (Wall Street 프로페셔널) */
+/* =================================================================== */
+:root {
+    --primary-blue: #1e3c72;
+    --primary-blue-light: #2a5298;
+    --background-light: #f7fafc;
+    --background-gray: #edf2f7;
+    --text-dark: #2d3748;
+    --border-light: #e9ecef;
+    --success-green: #28a745;
+    --white: #ffffff;
+    
+    /* === 초컴팩트 레이아웃 전용 변수 (사용자 요청 최종 확정값) === */
+    --form-row-margin: 2px 0; /* 행간격 최소화 */
+    --form-row-padding: 3px 0; /* 패딩 최소화 */
+    --form-row-gap: 8px; /* 라벨-드롭다운 간격 */
+    --label-min-width: 80px; /* 라벨 고정 폭 */
+}
+
+/* =================================================================== */
+/* 9. 유틸리티 클래스 */
+/* =================================================================== */
+.text-center { text-align: center !important; }
+.mb-0 { margin-bottom: 0 !important; }
+.mb-1 { margin-bottom: 0.25rem !important; }
+.mb-2 { margin-bottom: 0.5rem !important; }
+.mb-3 { margin-bottom: 1rem !important; }
+.p-0 { padding: 0 !important; }
+.p-1 { padding: 0.25rem !important; }
+.p-2 { padding: 0.5rem !important; }
+.p-3 { padding: 1rem !important; }
+.rounded { border-radius: 0.25rem !important; }
+.shadow { box-shadow: 0 0.125rem 0.25rem rgba(0,0,0,0.075) !important; }
+.shadow-lg { box-shadow: 0 1rem 3rem rgba(0,0,0,0.175) !important; }
+
+/* =================================================================== */
+/* 10. 전단지 정보 섹션 공통 스타일 */
+/* =================================================================== */
+.flyer-info-section {
+    margin-top: 5px !important;
+    margin-bottom: 0.2rem !important;
+}
+
+.flyer-info-grid {
+    max-width: 1200px !important;
+    margin: 0 auto !important;
+    display: grid !important;
+    grid-template-columns: 1fr 1fr !important;
+    gap: 0.5rem !important;
+}
+
+.flyer-card {
+    background: white !important;
+    border-radius: 15px !important;
+    overflow: hidden !important;
+    box-shadow: 0 8px 25px rgba(0,0,0,0.1) !important;
+    border: 1px solid #e9ecef !important;
+}
+
+.hapan-title, .합판전단지-title, .flyer-title-hapan {
+    background: #e0e0e0 !important;
+    color: #333333 !important;
+    padding: 20px !important;
+    text-align: center !important;
+    border-radius: 0 !important;
+    margin: 0 !important;
+}
+
+.dokpan-title, .독판전단지-title, .flyer-title-dokpan {
+    background: #e0e0e0 !important;
+    color: #333333 !important;
+    padding: 20px !important;
+    text-align: center !important;
+    border-radius: 0 !important;
+    margin: 0 !important;
+}
+
+.hapan-title h3, .dokpan-title h3 {
+    margin: 0 !important;
+    font-size: 1.3rem !important;
+    font-weight: 700 !important;
+}
+
+.flyer-hairline {
+    height: 2px !important;
+    background: linear-gradient(90deg, transparent, #ccc, transparent) !important;
+}
+
+.flyer-content {
+    padding: 25px !important;
+    line-height: 1.6 !important;
+}
+
+.flyer-content p {
+    margin-bottom: 1.5rem !important;
+    color: #495057 !important;
+    font-weight: 500 !important;
+}
+
+.flyer-specs {
+    background: #f8f9fa !important;
+    padding: 15px !important;
+    border-radius: 8px !important;
+    margin-bottom: 1rem !important;
+}
+
+.flyer-specs h4 {
+    color: #666 !important;
+    margin-bottom: 10px !important;
+    font-size: 1rem !important;
+}
+
+.flyer-specs ul {
+    margin: 0 !important;
+    padding-left: 1.2rem !important;
+    color: #555 !important;
+    font-size: 0.9rem !important;
+}
+
+.flyer-specs p {
+    margin-top: 10px !important;
+    color: #666 !important;
+    font-size: 0.85rem !important;
+}
+
+.flyer-tip {
+    background: #e8f5e8 !important;
+    padding: 12px !important;
+    border-radius: 8px !important;
+    border-left: 4px solid #4caf50 !important;
+}
+
+.flyer-tip p {
+    margin: 0 !important;
+    color: #2e7d32 !important;
+    font-size: 0.9rem !important;
+    font-weight: 500 !important;
+}
+
+/* =================================================================== */
+/* 11. 갤러리 모달 공통 스타일 */
+/* =================================================================== */
+.gallery-modal {
+    position: fixed !important;
+    top: 0 !important;
+    left: 0 !important;
+    width: 100% !important;
+    height: 100% !important;
+    z-index: 2000 !important;
+    display: flex !important;
+    align-items: center !important;
+    justify-content: center !important;
+}
+
+.gallery-modal-overlay {
+    position: absolute !important;
+    top: 0 !important;
+    left: 0 !important;
+    width: 100% !important;
+    height: 100% !important;
+    background: rgba(0, 0, 0, 0.7) !important;
+    backdrop-filter: blur(3px) !important;
+}
+
+.gallery-modal-content {
+    position: relative !important;
+    background: white !important;
+    border-radius: 15px !important;
+    width: 90% !important;
+    max-width: 1000px !important;
+    max-height: 80vh !important;
+    overflow: hidden !important;
+    box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3) !important;
+    animation: modalSlideUp 0.3s ease-out !important;
+}
+
+.gallery-modal-header {
+    background: linear-gradient(135deg, #1e3c72 0%, #2a5298 100%) !important;
+    color: white !important;
+    padding: 15px 20px !important;
+    display: flex !important;
+    justify-content: space-between !important;
+    align-items: center !important;
+}
+
+.gallery-modal-title {
+    margin: 0 !important;
+    font-size: 1.1rem !important;
+    font-weight: 600 !important;
+}
+
+.gallery-modal-close {
+    background: none !important;
+    border: none !important;
+    color: white !important;
+    font-size: 1.5rem !important;
+    cursor: pointer !important;
+    padding: 5px !important;
+    border-radius: 50% !important;
+    width: 35px !important;
+    height: 35px !important;
+    display: flex !important;
+    align-items: center !important;
+    justify-content: center !important;
+    transition: background 0.2s ease !important;
+}
+
+.gallery-modal-close:hover {
+    background: rgba(255, 255, 255, 0.2) !important;
+}
+
+.gallery-modal-body {
+    padding: 20px !important;
+    max-height: 60vh !important;
+    overflow-y: auto !important;
+}
+
+.gallery-grid {
+    display: grid !important;
+    grid-template-columns: repeat(auto-fill, minmax(200px, 1fr)) !important;
+    gap: 15px !important;
+}
+
+.gallery-grid img {
+    width: 100% !important;
+    height: 150px !important;
+    object-fit: cover !important;
+    border-radius: 8px !important;
+    cursor: pointer !important;
+    transition: all 0.3s ease !important;
+    border: 2px solid transparent !important;
+}
+
+.gallery-grid img:hover {
+    transform: translateY(-3px) !important;
+    box-shadow: 0 8px 25px rgba(0, 0, 0, 0.15) !important;
+    border-color: #1e3c72 !important;
+}
+
+/* =================================================================== */
+/* 12. 갤러리 공통 스타일 */
+/* =================================================================== */
+.gallery-section {
+    background: white !important;
+    border-radius: 15px !important;
+    padding: 25px !important;
+    box-shadow: 0 8px 25px rgba(0, 0, 0, 0.08) !important;
+    border: 1px solid #e9ecef !important;
+}
+
+.lightbox-viewer {
+    width: 100% !important;
+    height: 240px !important;
+    background-color: #f9f9f9 !important;
+    border-radius: 12px !important;
+    box-shadow: 0 5px 20px rgba(0, 0, 0, 0.1) !important;
+    margin-bottom: 15px !important;
+    cursor: zoom-in !important;
+    transition: border-color 0.3s ease !important;
+    border: 2px solid #e9ecef !important;
+    position: relative !important;
+    overflow: hidden !important;
+    background-size: contain !important;
+    background-repeat: no-repeat !important;
+    background-position: 50% 50% !important;
+}
+
+.lightbox-viewer:hover {
+    border-color: #1e3c72 !important;
+}
+
+.thumbnail-strip {
+    display: grid !important;
+    grid-template-columns: repeat(4, 1fr) !important;
+    gap: 8px !important;
+    padding: 8px !important;
+    background: white !important;
+    border-radius: 8px !important;
+    box-shadow: 0 2px 10px rgba(0, 0, 0, 0.05) !important;
+}
+
+.thumbnail-strip img {
+    width: 100% !important;
+    height: 65px !important;
+    object-fit: cover !important;
+    border-radius: 6px !important;
+    cursor: pointer !important;
+    transition: all 0.3s ease !important;
+    border: 2px solid transparent !important;
+    opacity: 0.7 !important;
+}
+
+.thumbnail-strip img:hover {
+    opacity: 1 !important;
+    transform: translateY(-2px) !important;
+    box-shadow: 0 4px 15px rgba(0, 0, 0, 0.15) !important;
+    border-color: #1e3c72 !important;
+}
+
+.thumbnail-strip img.active {
+    opacity: 1 !important;
+    border-color: #1e3c72 !important;
+    box-shadow: 0 4px 15px rgba(30, 60, 114, 0.3) !important;
+}
+
+.proof-gallery {
+    display: flex !important;
+    flex-direction: column !important;
+    gap: 16px !important;
+    width: 100% !important;
+}
+
+.proof-large {
+    width: 100% !important;
+    height: 240px !important;
+}
+
+.proof-large .viewport {
+    width: 100% !important;
+    height: 100% !important;
+    border-radius: 16px !important;
+    overflow: hidden !important;
+    border: 1px solid #ddd !important;
+    background: #f9f9f9 !important;
+    position: relative !important;
+}
+
+.proof-large img {
+    width: 100% !important;
+    height: 100% !important;
+    object-fit: contain !important;
+    transition: transform 220ms ease !important;
+    transform-origin: center center !important;
+}
+
+.proof-large .viewport.zoom-active img {
+    transform: scale(1.35) !important;
+}
+
+.proof-thumbs {
+    display: grid !important;
+    grid-template-columns: repeat(4, 1fr) !important;
+    gap: 10px !important;
+    width: 100% !important;
+}
+
+.proof-thumbs .thumb {
+    width: 100% !important;
+    height: 65px !important;
+    border-radius: 12px !important;
+    overflow: hidden !important;
+    border: 2px solid #ddd !important;
+    cursor: pointer !important;
+    background: #f7f7f7 !important;
+    display: flex !important;
+    align-items: center !important;
+    justify-content: center !important;
+    transition: border-color 0.3s ease, transform 0.2s ease !important;
+}
+
+.proof-thumbs .thumb:hover {
+    border-color: #1e3c72 !important;
+    transform: translateY(-2px) !important;
+}
+
+.proof-thumbs .thumb.active {
+    border-color: #1e3c72 !important;
+    box-shadow: 0 4px 8px rgba(30, 60, 114, 0.2) !important;
+}
+
+.proof-thumbs .thumb img {
+    max-width: 100% !important;
+    max-height: 100% !important;
+    object-fit: contain !important;
+    display: block !important;
+}
+
+.leafletGallery .loading {
+    text-align: center !important;
+    padding: 60px 20px !important;
+    color: #6c757d !important;
+    font-size: 1.1rem !important;
+    background: white !important;
+    border-radius: 12px !important;
+    animation: pulse 2s infinite !important;
+}
+
+.leafletGallery .error {
+    text-align: center !important;
+    padding: 40px 20px !important;
+    color: #dc3545 !important;
+    background: #fff5f5 !important;
+    border: 1px solid #ffdddd !important;
+    border-radius: 12px !important;
+    font-size: 0.95rem !important;
+}
+
+@keyframes pulse {
+    0%, 100% { opacity: 1; }
+    50% { opacity: 0.6; }
+}
+
+/* 갤러리 페이지네이션 공통 스타일 */
+.leafletGallery .gallery-pagination,
+.gallery-pagination {
+    display: flex !important;
+    justify-content: space-between !important;
+    align-items: center !important;
+    padding: 20px !important;
+    border-top: 1px solid #e9ecef !important;
+    background: #fafafa !important;
+    border-radius: 0 0 15px 15px !important;
+}
+
+.leafletGallery .pagination-info,
+.pagination-info {
+    color: #666 !important;
+    font-size: 0.9rem !important;
+    font-weight: 500 !important;
+}
+
+.leafletGallery .pagination-controls,
+.pagination-controls {
+    display: flex !important;
+    align-items: center !important;
+    gap: 8px !important;
+}
+
+.leafletGallery .pagination-btn,
+.pagination-btn {
+    background: linear-gradient(135deg, #1e3c72 0%, #2a5298 100%) !important;
+    color: white !important;
+    border: none !important;
+    padding: 8px 15px !important;
+    border-radius: 6px !important;
+    font-size: 0.85rem !important;
+    font-weight: 500 !important;
+    cursor: pointer !important;
+    transition: all 0.3s ease !important;
+    min-width: 70px !important;
+    box-shadow: 0 2px 6px rgba(30, 60, 114, 0.2) !important;
+}
+
+.leafletGallery .pagination-btn:hover:not(:disabled),
+.pagination-btn:hover:not(:disabled) {
+    background: linear-gradient(135deg, #2a5298 0%, #1e3c72 100%) !important;
+    transform: translateY(-1px) !important;
+    box-shadow: 0 4px 12px rgba(30, 60, 114, 0.3) !important;
+}
+
+.leafletGallery .pagination-btn:disabled,
+.pagination-btn:disabled {
+    background: #ddd !important;
+    color: #999 !important;
+    cursor: not-allowed !important;
+    transform: none !important;
+    box-shadow: none !important;
+}
+
+.leafletGallery .pagination-numbers,
+.pagination-numbers {
+    display: flex !important;
+    align-items: center !important;
+    gap: 4px !important;
+    margin: 0 10px !important;
+}
+
+.leafletGallery .pagination-number,
+.pagination-number {
+    background: white !important;
+    color: #1e3c72 !important;
+    border: 1px solid #1e3c72 !important;
+    padding: 6px 10px !important;
+    border-radius: 4px !important;
+    font-size: 0.8rem !important;
+    cursor: pointer !important;
+    transition: all 0.3s ease !important;
+    min-width: 32px !important;
+    text-align: center !important;
+}
+
+.leafletGallery .pagination-number:hover,
+.pagination-number:hover {
+    background: #1e3c72 !important;
+    color: white !important;
+    transform: scale(1.05) !important;
+}
+
+.leafletGallery .pagination-number.active,
+.pagination-number.active {
+    background: #1e3c72 !important;
+    color: white !important;
+    font-weight: 600 !important;
+    box-shadow: 0 2px 6px rgba(30, 60, 114, 0.3) !important;
+}
+
+/* =================================================================== */
+/* 13. 애니메이션 */
+/* =================================================================== */
+@keyframes shimmer {
+    0% { left: -100%; }
+    100% { left: 100%; }
+}
+
+@keyframes fadeIn {
+    from { opacity: 0; transform: translateY(10px); }
+    to { opacity: 1; transform: translateY(0); }
+}
+
+@keyframes modalSlideUp {
+    from {
+        opacity: 0;
+        transform: translateY(50px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+/* 반짝임 효과 제거됨 - 정숙한 사무실 분위기 유지 */
+
+/* =================================================================== */
+/* 11. 통합 계산기 & 가격 시스템 (전체 공통) */
+/* =================================================================== */
+
+/* === 계산기 컨테이너 === */
+
+/* 계산기 섹션 - 자연스러운 높이 조정 */
+.calculator-section,
+.calculator-section.leaflet-style,
+.leaflet-calculator,
+aside.calculator-section,
+aside.calculator-section.leaflet-style {
+    display: flex !important;
+    flex-direction: column !important;
+    height: auto !important; /* 자동 높이 */
+    min-height: fit-content !important; /* 내용에 맞춤 */
+    background: #f8f9fa !important;
+    border-radius: 15px !important;
+    padding: 5px !important;
+    border: 1px solid #e9ecef !important;
+    box-shadow: 0 4px 20px rgba(0,0,0,0.05) !important;
+}
+
+/* 계산기 섹션 내부 모든 요소들 타이트하게 */
+.calculator-section * {
+    margin: 2px 0 !important;
+    padding: 2px !important;
+}
+
+/* === 입력 폼 요소들 === */
+
+/* 옵션 그리드 - 타이트한 간격 */
+.options-grid {
+    display: grid !important;
+    grid-template-columns: 1fr 1fr !important;
+    gap: 5px !important;
+    margin: 5px 0 !important;
+    padding: 0 !important;
+}
+
+.form-grid-compact {
+    margin: 3px 0 !important;
+    padding: 0 !important;
+}
+
+/* ========================================================================== */
+/* === 초컴팩트 인라인 레이아웃 디자인 시스템 === */
+/* ⚠️ 중요: 아래 값들은 사용자 요청에 따른 최종 확정값입니다 */
+/* 🚫 변경 금지: margin, padding, gap 값은 수정하지 마세요 */
+/* ========================================================================== */
+
+/* 
+디자인 원칙 (Design Principles):
+- 행간격 최소화: margin: 2px 0
+- 패딩 최소화: padding: 3px 0  
+- 한 줄 표현: 라벨과 드롭다운 수평 배치
+- 초컴팩트: 모든 여백을 최소한으로 유지
+*/
+
+/* 수평 폼 그룹 - 초컴팩트 인라인 레이아웃 (CSS 변수 기반) */
+.form-group-horizontal {
+    display: flex !important;
+    align-items: center !important;
+    justify-content: space-between !important;
+    gap: var(--form-row-gap) !important; /* CSS 변수 사용 */
+    margin: var(--form-row-margin) !important; /* CSS 변수 사용 */
+    padding: var(--form-row-padding) !important; /* CSS 변수 사용 */
+    border-bottom: 1px solid rgba(233, 236, 239, 0.2) !important; /* 연한 구분선 */
+    transition: all 0.2s ease !important;
+}
+
+/* 마지막 요소는 구분선 제거 */
+.form-group-horizontal:last-child {
+    border-bottom: none !important;
+    margin-bottom: 0 !important;
+}
+
+.option-group {
+    margin: 0 !important;
+    padding: 0 !important;
+}
+
+.option-group.full-width {
+    grid-column: 1 / -1 !important;
+    margin: 0 !important;
+}
+
+/* === 인라인 레이블 디자인 === */
+
+/* 라벨 - 인라인 레이아웃 최적화 (CSS 변수 기반) */
+.form-group-horizontal .option-label {
+    display: inline-block !important;
+    margin: 0 !important;
+    padding: 0 !important;
+    font-weight: 600 !important;
+    color: var(--text-dark) !important; /* CSS 변수 사용 */
+    font-size: 0.9rem !important;
+    line-height: 1.1 !important; /* 줄높이 축소 */
+    min-width: var(--label-min-width) !important; /* CSS 변수 사용 */
+    text-align: left !important;
+    flex-shrink: 0 !important; /* 라벨 축소 방지 */
+    white-space: nowrap !important; /* 줄바꿈 방지 */
+}
+
+/* 라벨 호버 효과 */
+.form-group-horizontal .option-label:hover {
+    color: #1a202c !important;
+}
+
+/* === 인라인 드롭다운 디자인 === */
+
+/* 셀렉트 박스 - 인라인 레이아웃 최적화 */
+.form-group-horizontal .option-select {
+    flex: 1 !important; /* 남은 공간 모두 사용 */
+    max-width: 200px !important; /* 최대 폭 제한 */
+    padding: 8px 12px !important; /* 패딩 증가 */
+    margin: 0 !important;
+    border: 1px solid #d1d5db !important; /* 얇은 테두리 */
+    border-radius: 6px !important;
+    font-size: 0.9rem !important; /* 폰트 크기 통일 */
+    background: white !important;
+    background-image: url("data:image/svg+xml,%3csvg xmlns='http://www.w3.org/2000/svg' fill='none' viewBox='0 0 20 20'%3e%3cpath stroke='%236b7280' stroke-linecap='round' stroke-linejoin='round' stroke-width='1.5' d='m6 8 4 4 4-4'/%3e%3c/svg%3e") !important;
+    background-position: right 8px center !important;
+    background-repeat: no-repeat !important;
+    background-size: 16px !important;
+    padding-right: 35px !important; /* 화살표 공간 */
+    transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1) !important;
+    font-family: inherit !important;
+    appearance: none !important; /* 기본 화살표 제거 */
+    cursor: pointer !important;
+    height: auto !important;
+    min-height: 36px !important; /* 클릭 영역 확보 */
+}
+
+/* === 인라인 드롭다운 상태 효과 === */
+
+/* 포커스 상태 - 브랜드 컬러 */
+.form-group-horizontal .option-select:focus {
+    outline: none !important;
+    border-color: #3b82f6 !important; /* 블루 포커스 */
+    box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.1) !important;
+    background-color: #f8fafc !important; /* 연한 배경 */
+}
+
+/* 호버 상태 */
+.form-group-horizontal .option-select:hover {
+    border-color: #9ca3af !important;
+    background-color: #f9fafb !important;
+}
+
+/* 액티브 상태 - 움직임 제거 */
+.form-group-horizontal .option-select:active {
+    /* transform 제거 - 움직임 없음 */
+}
+
+/* 전체 행 호버 효과 - 움직임 제거 */
+.form-group-horizontal:hover {
+    background-color: rgba(248, 250, 252, 0.5) !important;
+    border-radius: 6px !important;
+    /* margin, padding 변경 제거 - 위치 고정 */
+}
+
+/* === 가격 표시 시스템 === */
+
+/* 가격 표시 영역 - 타이트하게 */
+.price-display {
+    background: linear-gradient(135deg, #f8f9fa 0%, #e9ecef 100%) !important;
+    border: 2px solid #e9ecef !important;
+    border-radius: 8px !important;
+    padding: 8px !important;
+    margin: 5px 0 !important;
+    text-align: center !important;
+    transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1) !important;
+    transform: translateZ(0) !important;
+    will-change: background, border-color, transform !important;
+}
+
+.price-display.calculated {
+    border-color: #28a745 !important;
+    background: linear-gradient(135deg, #d4edda 0%, #c3e6cb 100%) !important;
+    transform: scale(1.02) !important;
+    box-shadow: 0 6px 20px rgba(40, 167, 69, 0.2) !important;
+    padding: 3px !important;
+    margin: 2px 0 !important;
+    height: auto !important;
+    min-height: 60px !important;
+    max-height: 80px !important;
+}
+
+.price-label {
+    font-size: 0.75rem !important;
+    color: #6c757d !important;
+    margin: 0 0 1px 0 !important;
+    padding: 0 !important;
+    font-weight: 500 !important;
+    line-height: 1.1 !important;
+}
+
+.price-amount {
+    font-size: 1.1rem !important;
+    font-weight: 700 !important;
+    color: #28a745 !important;
+    margin: 0 0 1px 0 !important;
+    padding: 0 !important;
+    text-shadow: 0 1px 2px rgba(0,0,0,0.1) !important;
+    line-height: 1.2 !important;
+}
+
+.price-details {
+    font-size: 0.7rem !important;
+    color: #6c757d !important;
+    line-height: 1.1 !important;
+    margin: 0 !important;
+    padding: 0 !important;
+}
+
+/* === 계산 액션 버튼들 === */
+
+/* 액션 버튼들 - 타이트하게 */
+.action-buttons {
+    display: grid !important;
+    grid-template-columns: 1fr 1fr !important;
+    gap: 5px !important;
+    margin: 5px 0 !important;
+    padding: 0 !important;
+}
+
+.btn-action {
+    padding: 8px 12px !important;
+    margin: 0 !important;
+    border: none !important;
+    border-radius: 6px !important;
+    font-size: 0.9rem !important;
+    font-weight: 600 !important;
+    cursor: pointer !important;
+    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1) !important;
+    position: relative !important;
+    overflow: hidden !important;
+    will-change: transform, box-shadow !important;
+}
+
+/* 계산 버튼 */
+.btn-calculate {
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%) !important;
+    color: white !important;
+    border: none !important;
+    padding: 8px 15px !important;
+    margin: 0 !important;
+    font-size: 0.9rem !important;
+    font-weight: 600 !important;
+    border-radius: 6px !important;
+    cursor: pointer !important;
+    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1) !important;
+    box-shadow: 0 6px 20px rgba(102, 126, 234, 0.3) !important;
+    position: relative !important;
+    overflow: hidden !important;
+    will-change: transform, box-shadow !important;
+}
+
+/* === 레이아웃 컨테이너 === */
+
+/*
+ * 📋 통합 계산기 시스템 CSS 가이드
+ * ================================
+ * 
+ * 이 섹션은 MlangPrintAuto의 모든 제품 계산기에서 공통으로 사용되는
+ * 타이트한 레이아웃 시스템입니다.
+ * 
+ * 🎯 주요 특징:
+ * - 5px 패딩으로 극도로 컴팩트한 레이아웃
+ * - 모든 내부 요소 margin/padding 최소화 (2px)
+ * - 수평 폼 그룹 지원 (.form-group-horizontal)
+ * - 인라인 가격 표시 시스템 (.price-breakdown)
+ * - 타이트한 버튼 스타일링
+ * 
+ * 🔧 사용법:
+ * - .calculator-section 클래스를 계산기 컨테이너에 적용
+ * - .price-display.calculated 로 가격 표시 활성화
+ * - .btn-calculate 로 계산 버튼 스타일링
+ * 
+ * 📝 적용 제품: 전단지, 명함, 스티커, 봉투, 포스터, 상품권, NCR양식 등 전체
+ */
+
+/* 메인 카드 컨테이너 */
+.leaflet-card {
+    max-width: 1200px !important;
+    margin: 0 auto !important;
+    padding: 10px 15px 30px 15px !important;
+    background: white !important;
+    border-radius: 15px !important;
+    box-shadow: 0 10px 40px rgba(0,0,0,0.1) !important;
+    overflow: hidden !important;
+}
+
+/* 그리드 레이아웃 (50:50 분할) - 갤러리 높이에 맞춤 */
+.leaflet-grid {
+    display: grid !important;
+    grid-template-columns: 1fr 1fr !important;
+    gap: 15px !important;
+    min-height: auto !important; /* 자동 높이로 변경 */
+    max-width: 1160px !important;
+    margin: 20px auto 0 auto !important;
+    align-items: start !important; /* 상단 정렬로 갤러리와 계산기 독립적 크기 */
+}
+
+/* 갤러리 섹션 */
+.leaflet-gallery {
+    background: white !important;
+    border-radius: 0 !important;
+    padding: 0px !important;
+    border: none !important;
+    height: fit-content !important;
+    box-shadow: none !important;
+    overflow: hidden !important;
+}
+
+.leaflet-gallery .gallery-container {
+    font-family: 'Noto Sans KR', sans-serif !important;
+    color: #333 !important;
+    line-height: 1.6 !important;
+    margin: 0 !important;
+    box-sizing: border-box !important;
+    background: white !important;
+    border-radius: 15px !important;
+    padding: 10px !important;
+    box-shadow: none !important;
+    border: 1px solid #e9ecef !important;
+    height: auto !important; /* 자동 높이 */
+    min-height: fit-content !important; /* 내용에 맞춤 */
+    overflow: visible !important;
+    padding-top: 0px !important;
+    padding-bottom: 0px !important;
+}
+
+.gallery-title {
+    display: none !important;
+}
+
+.lightbox-viewer {
+    display: none !important;
+}
+
+.thumbnail-strip, .thumbnail {
+    display: none !important;
+}
+
+.gallery-loading, .gallery-error {
+    display: none !important;
+}
+
+/* === 중복 섹션 제거됨 - 위쪽 통합 계산기 섹션 사용 === */
+
+/* 파일 업로드 및 주문 버튼 - 타이트하게 */
+.upload-order-button {
+    margin: 5px 0 !important;
+    padding: 0 !important;
+    text-align: center !important;
+}
+
+.btn-upload-order {
+    background: #1a202c !important; /* 더 짙은 회색으로 변경 */
+    color: white !important;
+    border: none !important;
+    padding: 10px 15px !important;
+    margin: 0 !important;
+    font-size: 0.95rem !important;
+    font-weight: 600 !important;
+    border-radius: 6px !important;
+    cursor: pointer !important;
+    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1) !important;
+    box-shadow: none !important; /* 그림자 완전 제거 */
+    width: 100% !important;
+    position: relative !important;
+    overflow: hidden !important;
+    will-change: transform, box-shadow !important;
+}
+
+.btn-upload-order::before {
+    content: '' !important;
+    position: absolute !important;
+    top: 0 !important;
+    left: -100% !important;
+    width: 100% !important;
+    height: 100% !important;
+    background: linear-gradient(90deg, transparent, rgba(255,255,255,0.2), transparent) !important;
+    transition: left 0.5s !important;
+}
+
+.btn-upload-order:hover::before {
+    left: 100% !important;
+}
+
+.btn-upload-order:hover {
+    background: #171923 !important; /* hover 시 가장 짙은 회색 */
+    transform: none !important; /* hover 이동 효과 제거 */
+    box-shadow: none !important; /* hover 그림자 제거 */
+}
+
+.btn-upload-order:active {
+    background: #0d1117 !important; /* active 시 거의 검은색 */
+    transform: none !important; /* active 이동 효과 제거 */
+}
+
+/* 파일 업로드 모달 */
+.upload-modal {
+    position: fixed !important;
+    top: 0 !important;
+    left: 0 !important;
+    right: 0 !important;
+    bottom: 0 !important;
+    z-index: 10000 !important;
+    align-items: center !important;
+    justify-content: center !important;
+    padding: 20px !important;
+}
+
+.upload-modal[style*="display: none"] {
+    display: none !important;
+}
+
+.upload-modal:not([style*="display: none"]) {
+    display: flex !important;
+}
+
+.modal-overlay {
+    position: absolute !important;
+    top: 0 !important;
+    left: 0 !important;
+    right: 0 !important;
+    bottom: 0 !important;
+    background: rgba(0, 0, 0, 0.7) !important;
+    backdrop-filter: blur(4px) !important;
+}
+
+.modal-content {
+    position: relative !important;
+    background: white !important;
+    border-radius: 12px !important;
+    box-shadow: 0 20px 40px rgba(0, 0, 0, 0.2) !important;
+    max-width: 900px !important;
+    width: 100% !important;
+    max-height: 90vh !important;
+    overflow: hidden !important;
+    display: flex !important;
+    flex-direction: column !important;
+}
+
+.modal-header {
+    display: flex !important;
+    justify-content: space-between !important;
+    align-items: center !important;
+    padding: 20px 24px !important;
+    border-bottom: 1px solid #e9ecef !important;
+    background: #f8f9fa !important;
+}
+
+.modal-title {
+    font-size: 1.3rem !important;
+    font-weight: 600 !important;
+    color: #28a745 !important;
+    margin: 0 !important;
+}
+
+.modal-close {
+    background: none !important;
+    border: none !important;
+    font-size: 1.5rem !important;
+    color: #6c757d !important;
+    cursor: pointer !important;
+    padding: 5px !important;
+    border-radius: 4px !important;
+    transition: all 0.2s ease !important;
+}
+
+.modal-close:hover {
+    background: #f8f9fa !important;
+    color: #dc3545 !important;
+}
+
+.modal-body {
+    flex: 1 !important;
+    padding: 24px !important;
+    overflow-y: auto !important;
+}
+
+.upload-container {
+    display: grid !important;
+    grid-template-columns: 1fr 1fr !important;
+    gap: 24px !important;
+}
+
+.upload-left, .upload-right {
+    display: flex !important;
+    flex-direction: column !important;
+}
+
+.upload-label {
+    font-size: 1rem !important;
+    font-weight: 600 !important;
+    color: #495057 !important;
+    margin-bottom: 12px !important;
+}
+
+.upload-area {
+    margin-bottom: 20px !important;
+}
+
+.upload-dropzone {
+    border: 2px dashed #28a745 !important;
+    border-radius: 8px !important;
+    padding: 40px 20px !important;
+    text-align: center !important;
+    cursor: pointer !important;
+    transition: all 0.3s ease !important;
+    background: #f8fff9 !important;
+}
+
+.upload-dropzone:hover {
+    border-color: #20c997 !important;
+    background: #e8f5e8 !important;
+}
+
+.upload-dropzone.dragover {
+    border-color: #20c997 !important;
+    background: #e8f5e8 !important;
+    transform: scale(1.02) !important;
+}
+
+.upload-icon {
+    font-size: 3rem !important;
+    margin-bottom: 12px !important;
+}
+
+.upload-dropzone p {
+    font-size: 1.1rem !important;
+    font-weight: 600 !important;
+    color: #28a745 !important;
+    margin: 0 0 8px 0 !important;
+}
+
+.upload-formats {
+    font-size: 0.9rem !important;
+    color: #6c757d !important;
+}
+
+.memo-textarea {
+    width: 100% !important;
+    height: 120px !important;
+    padding: 12px !important;
+    border: 2px solid #e9ecef !important;
+    border-radius: 8px !important;
+    font-size: 0.9rem !important;
+    resize: vertical !important;
+    font-family: inherit !important;
+}
+
+.memo-textarea:focus {
+    outline: none !important;
+    border-color: #28a745 !important;
+    box-shadow: 0 0 0 3px rgba(40, 167, 69, 0.1) !important;
+}
+
+.uploaded-files {
+    margin-top: 16px !important;
+}
+
+.file-list {
+    margin-top: 16px !important;
+}
+
+.file-item {
+    display: flex !important;
+    justify-content: space-between !important;
+    align-items: center !important;
+    padding: 12px !important;
+    background: #f8f9fa !important;
+    border-radius: 6px !important;
+    margin-bottom: 8px !important;
+}
+
+.file-name {
+    font-weight: 500 !important;
+    color: #495057 !important;
+}
+
+.modal-footer {
+    display: flex !important;
+    justify-content: center !important;
+    gap: 12px !important;
+    padding: 20px 24px !important;
+    border-top: 1px solid #e9ecef !important;
+    background: #f8f9fa !important;
+}
+
+.modal-btn {
+    padding: 12px 24px !important;
+    border: none !important;
+    border-radius: 8px !important;
+    font-size: 1rem !important;
+    font-weight: 600 !important;
+    cursor: pointer !important;
+    transition: all 0.3s ease !important;
+}
+
+.btn-cart {
+    background: #28a745 !important;
+    color: white !important;
+}
+
+.btn-cart:hover {
+    background: #20c997 !important;
+    transform: translateY(-2px) !important;
+}
+
+/* GPU 가속 및 성능 최적화 */
+.lightbox-viewer,
+.thumbnail,
+.btn-action,
+.btn-calculate,
+.option-select,
+.price-display {
+    transform: translateZ(0) !important;
+    backface-visibility: hidden !important;
+    perspective: 1000px !important;
+}
+
+/* 애니메이션 접근성 */
+@media (prefers-reduced-motion: reduce) {
+    * {
+        animation-duration: 0.01ms !important;
+        animation-iteration-count: 1 !important;
+        transition-duration: 0.01ms !important;
+    }
+}
+
+/* =================================================================== */
+/* 12. 인쇄 스타일 */
+/* =================================================================== */
+@media print {
+    .no-print { display: none !important; }
+    .page-title { background: white !important; color: black !important; }
+    .btn-upload-order { display: none !important; }
+}
+
+/* =================================================================== */
+/* 13. 자연스러운 레이아웃 (내용에 맞는 크기) */
+/* =================================================================== */
+
+/* 갤러리와 계산기가 내용에 따라 자연스럽게 크기 조정 */
+.leaflet-gallery,
+.calculator-section {
+    height: auto !important;
+    min-height: fit-content !important;
+}
+
+/* =================================================================== */
+/* 14. 파일 업로드 모달 스타일 */
+/* =================================================================== */
+
+/* 모달 오버레이 */
+.upload-modal {
+    position: fixed !important;
+    top: 0 !important;
+    left: 0 !important;
+    width: 100% !important;
+    height: 100% !important;
+    background: rgba(0, 0, 0, 0.6) !important;
+    z-index: 10000 !important;
+    display: flex !important;
+    align-items: center !important;
+    justify-content: center !important;
+    padding: 20px !important;
+}
+
+/* 모달 오버레이 배경 */
+.modal-overlay {
+    position: absolute !important;
+    top: 0 !important;
+    left: 0 !important;
+    width: 100% !important;
+    height: 100% !important;
+    background: transparent !important;
+    cursor: pointer !important;
+}
+
+/* 모달 컨텐츠 */
+.modal-content {
+    position: relative !important;
+    background: white !important;
+    border-radius: 15px !important;
+    max-width: 800px !important;
+    width: 90% !important;
+    max-height: 90vh !important;
+    overflow-y: auto !important;
+    box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3) !important;
+    z-index: 10001 !important;
+}
+
+/* 모달 헤더 */
+.modal-header {
+    display: flex !important;
+    justify-content: space-between !important;
+    align-items: center !important;
+    padding: 20px 25px !important;
+    background: linear-gradient(135deg, #1e3c72 0%, #2a5298 100%) !important;
+    color: white !important;
+    border-radius: 15px 15px 0 0 !important;
+}
+
+.modal-title {
+    font-size: 1.3rem !important;
+    font-weight: 600 !important;
+    margin: 0 !important;
+    color: white !important;
+}
+
+.modal-close {
+    background: none !important;
+    border: none !important;
+    color: white !important;
+    font-size: 1.8rem !important;
+    cursor: pointer !important;
+    padding: 0 !important;
+    width: 35px !important;
+    height: 35px !important;
+    border-radius: 50% !important;
+    display: flex !important;
+    align-items: center !important;
+    justify-content: center !important;
+    transition: background 0.2s ease !important;
+}
+
+.modal-close:hover {
+    background: rgba(255, 255, 255, 0.2) !important;
+}
+
+/* 모달 바디 */
+.modal-body {
+    padding: 25px !important;
+}
+
+/* 업로드 컨테이너 */
+.upload-container {
+    display: grid !important;
+    grid-template-columns: 1fr 300px !important;
+    gap: 25px !important;
+    margin-bottom: 20px !important;
+}
+
+@media (max-width: 768px) {
+    .upload-container {
+        grid-template-columns: 1fr !important;
+        gap: 20px !important;
+    }
+}
+
+/* 업로드 라벨 */
+.upload-label {
+    display: block !important;
+    font-weight: 600 !important;
+    color: #2d3748 !important;
+    margin-bottom: 12px !important;
+    font-size: 1rem !important;
+}
+
+/* 업로드 방법 선택 버튼 */
+.upload-buttons {
+    display: flex !important;
+    gap: 8px !important;
+    margin-bottom: 15px !important;
+}
+
+.btn-upload-method {
+    flex: 1 !important;
+    padding: 10px 15px !important;
+    border: 2px solid #e2e8f0 !important;
+    background: white !important;
+    color: #64748b !important;
+    border-radius: 8px !important;
+    cursor: pointer !important;
+    transition: all 0.2s ease !important;
+    font-size: 0.9rem !important;
+    font-weight: 500 !important;
+}
+
+.btn-upload-method:hover {
+    border-color: #3b82f6 !important;
+    background: #f8fafc !important;
+}
+
+.btn-upload-method.active {
+    border-color: #3b82f6 !important;
+    background: #3b82f6 !important;
+    color: white !important;
+}
+
+.btn-upload-method:disabled {
+    opacity: 0.5 !important;
+    cursor: not-allowed !important;
+}
+
+/* 업로드 영역 */
+.upload-area {
+    margin-bottom: 15px !important;
+}
+
+/* 드롭존 */
+.upload-dropzone {
+    border: 2px dashed #cbd5e0 !important;
+    border-radius: 12px !important;
+    padding: 40px 20px !important;
+    text-align: center !important;
+    background: #f8fafc !important;
+    cursor: pointer !important;
+    transition: all 0.2s ease !important;
+    min-height: 150px !important;
+    display: flex !important;
+    flex-direction: column !important;
+    align-items: center !important;
+    justify-content: center !important;
+}
+
+.upload-dropzone:hover {
+    border-color: #3b82f6 !important;
+    background: #eff6ff !important;
+}
+
+.upload-dropzone.dragover {
+    border-color: #3b82f6 !important;
+    background: #eff6ff !important;
+    transform: scale(1.02) !important;
+}
+
+.upload-icon {
+    font-size: 2.5rem !important;
+    margin-bottom: 15px !important;
+    color: #6b7280 !important;
+}
+
+.upload-text {
+    color: #6b7280 !important;
+    font-size: 1rem !important;
+    font-weight: 500 !important;
+}
+
+/* 업로드 정보 */
+.upload-info {
+    font-size: 0.85rem !important;
+    color: #6b7280 !important;
+    margin-top: 12px !important;
+    line-height: 1.5 !important;
+    padding: 10px !important;
+    background: #f1f5f9 !important;
+    border-radius: 6px !important;
+}
+
+/* 작업 메모 텍스트에리어 */
+.memo-textarea {
+    width: 100% !important;
+    height: 120px !important;
+    padding: 12px !important;
+    border: 1px solid #d1d5db !important;
+    border-radius: 8px !important;
+    font-size: 0.9rem !important;
+    color: #374151 !important;
+    background: white !important;
+    resize: vertical !important;
+    font-family: inherit !important;
+    line-height: 1.5 !important;
+}
+
+.memo-textarea:focus {
+    outline: none !important;
+    border-color: #3b82f6 !important;
+    box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.1) !important;
+}
+
+/* 업로드 주의사항 */
+.upload-notice {
+    margin-top: 15px !important;
+    padding: 12px !important;
+    background: #fef3cd !important;
+    border: 1px solid #f6e05e !important;
+    border-radius: 6px !important;
+}
+
+.notice-item {
+    font-size: 0.85rem !important;
+    color: #92400e !important;
+    margin-bottom: 6px !important;
+    line-height: 1.4 !important;
+}
+
+.notice-item:last-child {
+    margin-bottom: 0 !important;
+}
+
+/* 업로드된 파일 목록 */
+.uploaded-files {
+    margin-top: 20px !important;
+    padding: 15px !important;
+    background: #f8fafc !important;
+    border-radius: 8px !important;
+    border: 1px solid #e2e8f0 !important;
+}
+
+.uploaded-files h5 {
+    margin: 0 0 15px 0 !important;
+    font-size: 1rem !important;
+    font-weight: 600 !important;
+    color: #2d3748 !important;
+}
+
+/* 파일 아이템 */
+.file-item {
+    display: flex !important;
+    justify-content: space-between !important;
+    align-items: center !important;
+    padding: 12px 15px !important;
+    background: white !important;
+    border: 1px solid #e2e8f0 !important;
+    border-radius: 6px !important;
+    margin-bottom: 8px !important;
+}
+
+.file-item:last-child {
+    margin-bottom: 0 !important;
+}
+
+.file-info {
+    flex: 1 !important;
+}
+
+.file-name {
+    font-weight: 500 !important;
+    color: #2d3748 !important;
+    font-size: 0.9rem !important;
+    margin-bottom: 2px !important;
+}
+
+.file-size {
+    font-size: 0.8rem !important;
+    color: #6b7280 !important;
+}
+
+/* 파일 삭제 버튼 */
+.btn-remove-file {
+    padding: 6px 12px !important;
+    background: #ef4444 !important;
+    color: white !important;
+    border: none !important;
+    border-radius: 4px !important;
+    font-size: 0.8rem !important;
+    cursor: pointer !important;
+    transition: background 0.2s ease !important;
+}
+
+.btn-remove-file:hover {
+    background: #dc2626 !important;
+}
+
+/* 모달 푸터 */
+.modal-footer {
+    padding: 20px 25px !important;
+    border-top: 1px solid #e2e8f0 !important;
+    background: #f8fafc !important;
+    border-radius: 0 0 15px 15px !important;
+    text-align: center !important;
+}
+
+/* 모달 버튼 */
+.modal-btn {
+    padding: 12px 30px !important;
+    border: none !important;
+    border-radius: 8px !important;
+    font-size: 1rem !important;
+    font-weight: 600 !important;
+    cursor: pointer !important;
+    transition: all 0.2s ease !important;
+    margin: 0 5px !important;
+}
+
+.btn-cart {
+    background: linear-gradient(135deg, #059669 0%, #10b981 100%) !important;
+    color: white !important;
+    box-shadow: 0 4px 12px rgba(16, 185, 129, 0.3) !important;
+}
+
+.btn-cart:hover {
+    transform: translateY(-2px) !important;
+    box-shadow: 0 6px 20px rgba(16, 185, 129, 0.4) !important;
+}

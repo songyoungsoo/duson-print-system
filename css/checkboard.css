@@ -15,7 +15,7 @@
 }
 
 .auth-section {
-    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    background: linear-gradient(135deg, #4a5568 0%, #2d3748 100%);
     padding: 30px;
     border-radius: 12px;
     margin-bottom: 30px;
@@ -125,7 +125,7 @@
 }
 
 .search-btn {
-    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    background: linear-gradient(135deg, #4a5568 0%, #2d3748 100%);
     color: white;
     border: none;
 }
@@ -182,9 +182,9 @@
 }
 
 .pagination .current {
-    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    background: linear-gradient(135deg, #4a5568 0%, #2d3748 100%);
     color: white;
-    border-color: #667eea;
+    border-color: #4a5568;
 }
 
 .pagination .disabled {
@@ -211,7 +211,7 @@
 }
 
 .table-header {
-    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    background: linear-gradient(135deg, #4a5568 0%, #2d3748 100%);
     color: white !important;
     display: grid;
     grid-template-columns: 1fr 1fr 1fr 1fr 1fr 1fr 1fr;
@@ -264,7 +264,7 @@
 }
 
 .order-number {
-    color: #667eea;
+    color: #4a5568;
     font-weight: bold;
 }
 
@@ -422,7 +422,7 @@
 }
 
 .modal-input:focus {
-    border-color: #667eea;
+    border-color: #4a5568;
     outline: none;
 }
 
@@ -443,7 +443,7 @@
 }
 
 .btn-confirm {
-    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    background: linear-gradient(135deg, #4a5568 0%, #2d3748 100%);
     color: white;
 }
 
@@ -553,15 +553,15 @@
 }
 
 .page-btn.current {
-    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    background: linear-gradient(135deg, #4a5568 0%, #2d3748 100%);
     color: white;
-    border-color: #667eea;
+    border-color: #4a5568;
 }
 
 .page-btn.prev-btn,
 .page-btn.next-btn {
     font-weight: 600;
-    color: #667eea;
+    color: #4a5568;
 }
 
 .page-dots {
@@ -619,7 +619,7 @@
 
 .info-box li:before {
     content: "•";
-    color: #667eea;
+    color: #4a5568;
     font-weight: bold;
     position: absolute;
     left: 0;

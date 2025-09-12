@@ -1,0 +1,479 @@
+/* ===================================================================== */
+/* 표준 갤러리 시스템 - msticker 디자인 기준 */
+/* 모든 mlangprintauto 품목에서 일관된 갤러리 UI/UX 제공 */
+/* ===================================================================== */
+
+/* 갤러리 메인 영역 스타일 - 은은한 짙은 녹색 */
+.gallery-main {
+    background: linear-gradient(135deg, #2d5016 0%, #4a6741 100%) !important;
+    border-radius: 15px !important;
+    padding: 0 !important;
+    box-shadow: 0 8px 25px rgba(45, 80, 22, 0.3), 0 4px 12px rgba(74, 103, 65, 0.2) !important;
+    border: 1px solid rgba(255, 255, 255, 0.1) !important;
+    margin: 0 !important;
+    color: #f8f9fa !important;
+    height: 100% !important;
+    display: flex !important;
+    flex-direction: column !important;
+    overflow: hidden !important;
+}
+
+.gallery-main h3,
+.gallery-main h4,
+.gallery-main p,
+.gallery-main span {
+    color: #f8f9fa !important;
+    text-shadow: 0 1px 2px rgba(0, 0, 0, 0.3) !important;
+}
+
+.gallery-main .btn {
+    background: rgba(255, 255, 255, 0.15) !important;
+    border: 1px solid rgba(255, 255, 255, 0.3) !important;
+    color: white !important;
+    transition: all 0.3s ease !important;
+}
+
+.gallery-main .btn:hover {
+    background: rgba(255, 255, 255, 0.25) !important;
+    border-color: rgba(255, 255, 255, 0.5) !important;
+    transform: translateY(-1px) !important;
+}
+
+/* 메인 갤러리 컨테이너 스타일 */
+.product-gallery-standard {
+    height: 450px !important;
+    min-height: 450px !important;
+    max-height: 450px !important;
+    background: linear-gradient(135deg, #f8f9fa 0%, #e9ecef 100%) !important;
+    border-radius: 15px !important;
+    padding: 0 !important;
+    box-shadow: 0 10px 35px rgba(0, 0, 0, 0.12), 0 4px 15px rgba(0, 0, 0, 0.08) !important;
+    border: 1px solid rgba(255, 255, 255, 0.9) !important;
+    overflow: auto !important;
+    display: flex !important;
+    flex-direction: column !important;
+}
+
+/* 계산기 섹션도 같은 크기로 통일 */
+.calculator-section {
+    height: 450px !important;
+    min-height: 450px !important;
+    max-height: 450px !important;
+}
+
+/* 라이트박스 뷰어 스타일 - 여백 없이 최적화 */
+.product-gallery-standard .lightbox-viewer,
+.lightbox-viewer,
+.product-gallery-standard .gallery-main,
+.gallery-main {
+    width: 100%;
+    height: 330px;
+    background-color: #fff;
+    border-radius: 15px 15px 0 0;
+    box-shadow: none;
+    margin: 0;
+    cursor: zoom-in;
+    transition: all 0.3s ease;
+    border: none;
+    position: relative;
+    overflow: hidden;
+    flex-shrink: 0;
+}
+
+.product-gallery-standard .lightbox-viewer:hover,
+.lightbox-viewer:hover {
+    border-color: #6c757d;
+    box-shadow: 0 8px 30px rgba(108, 117, 125, 0.15);
+    transform: translateY(-2px);
+}
+
+/* 썸네일 스트립 스타일 - 여백 완전 제거 */
+.product-gallery-standard .thumbnail-strip,
+.thumbnail-strip,
+.product-gallery-standard .gallery-thumbs,
+.gallery-thumbs {
+    display: grid;
+    grid-template-columns: repeat(5, 1fr);
+    gap: 8px;
+    padding: 10px;
+    background: white;
+    border-radius: 0 0 15px 15px;
+    box-shadow: none;
+    margin: 0;
+    height: 100px;
+    flex-shrink: 0;
+}
+
+.product-gallery-standard .thumbnail-strip img,
+.thumbnail-strip img,
+.product-gallery-standard .gallery-thumbs .gallery-thumb img,
+.gallery-thumbs .gallery-thumb img {
+    width: 100%;
+    height: 70px;
+    object-fit: cover;
+    background: linear-gradient(135deg, #3d2817 0%, #5a3f2b 100%);
+    border-radius: 4px;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    border: 2px solid transparent;
+    opacity: 0.9;
+    padding: 2px;
+    image-rendering: -webkit-optimize-contrast;
+    image-rendering: crisp-edges;
+    -ms-interpolation-mode: nearest-neighbor;
+}
+
+.product-gallery-standard .thumbnail-strip img:hover,
+.thumbnail-strip img:hover,
+.product-gallery-standard .gallery-thumbs .gallery-thumb:hover img,
+.gallery-thumbs .gallery-thumb:hover img {
+    opacity: 1;
+    transform: translateY(-2px);
+    box-shadow: 0 4px 15px rgba(0, 0, 0, 0.15);
+    border-color: #6c757d;
+}
+
+.product-gallery-standard .thumbnail-strip img.active,
+.thumbnail-strip img.active,
+.product-gallery-standard .gallery-thumbs .gallery-thumb.active img,
+.gallery-thumbs .gallery-thumb.active img {
+    opacity: 1;
+    border-color: #6c757d;
+    box-shadow: 0 4px 15px rgba(108, 117, 125, 0.3);
+}
+
+/* 썸네일 버튼 스타일 - 갤러리 헬퍼용 */
+.product-gallery-standard .gallery-thumbs .gallery-thumb,
+.gallery-thumbs .gallery-thumb {
+    background: linear-gradient(135deg, #3d2817 0%, #5a3f2b 100%);
+    border: none;
+    padding: 0;
+    border-radius: 4px;
+    overflow: hidden;
+    cursor: pointer;
+    transition: all 0.3s ease;
+}
+
+.product-gallery-standard .gallery-thumbs .gallery-more-thumb,
+.gallery-thumbs .gallery-more-thumb {
+    background: linear-gradient(135deg, #3d2817 0%, #5a3f2b 100%);
+    border: none;
+    padding: 0;
+    border-radius: 4px;
+    overflow: hidden;
+    cursor: pointer;
+    transition: all 0.3s ease;
+}
+
+/* 더보기 버튼 스타일 - msticker 회색 톤 */
+.product-gallery-standard .btn-more-gallery,
+.gallery-more-button .btn-more-gallery {
+    background: linear-gradient(135deg, #6c757d 0%, #495057 100%) !important;
+    color: white;
+    border: none;
+    padding: 10px 20px;
+    border-radius: 8px;
+    font-size: 0.9rem;
+    font-weight: 500;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    box-shadow: 0 2px 8px rgba(108, 117, 125, 0.2);
+    text-align: center;
+    display: inline-block;
+    text-decoration: none;
+}
+
+.product-gallery-standard .btn-more-gallery:hover,
+.gallery-more-button .btn-more-gallery:hover {
+    background: linear-gradient(135deg, #495057 0%, #343a40 100%) !important;
+    box-shadow: 0 4px 15px rgba(108, 117, 125, 0.3);
+    transform: translateY(-2px);
+}
+
+.gallery-more-button {
+    text-align: center;
+    margin-top: 15px;
+}
+
+/* 로딩 상태 스타일 */
+.product-gallery-standard .loading,
+.gallery-container .loading {
+    text-align: center;
+    padding: 60px 20px;
+    color: #6c757d;
+    font-size: 1.1rem;
+    background: white;
+    border-radius: 12px;
+    animation: pulse 2s infinite;
+}
+
+/* 에러 상태 스타일 */
+.product-gallery-standard .error,
+.gallery-container .error {
+    text-align: center;
+    padding: 40px 20px;
+    color: #dc3545;
+    background: #fff5f5;
+    border: 1px solid #ffdddd;
+    border-radius: 12px;
+    font-size: 0.95rem;
+}
+
+@keyframes pulse {
+    0%, 100% { opacity: 1; }
+    50% { opacity: 0.6; }
+}
+
+/* 갤러리 모달 스타일 - msticker 기준 회색 헤더 */
+.gallery-modal {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    z-index: 2000;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.gallery-modal-overlay {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: rgba(0, 0, 0, 0.7);
+    backdrop-filter: blur(3px);
+}
+
+.gallery-modal-content {
+    position: relative;
+    background: white;
+    border-radius: 15px;
+    width: 90%;
+    max-width: 1000px;
+    max-height: 80vh;
+    overflow: hidden;
+    box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
+    animation: modalSlideUp 0.3s ease-out;
+}
+
+.gallery-modal-header {
+    background: rgba(204, 204, 204, 0.8) !important;
+    color: #333 !important;
+    padding: 15px 20px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+
+.gallery-modal-title {
+    margin: 0;
+    font-size: 1.1rem;
+    font-weight: 600;
+    color: #333 !important;
+}
+
+.gallery-modal-close {
+    background: none;
+    border: none;
+    color: #333 !important;
+    font-size: 1.5rem;
+    cursor: pointer;
+    padding: 5px;
+    border-radius: 50%;
+    width: 35px;
+    height: 35px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: background 0.2s ease;
+}
+
+.gallery-modal-close:hover {
+    background: rgba(0, 0, 0, 0.1);
+}
+
+.gallery-modal-body {
+    padding: 20px;
+    max-height: 60vh;
+    overflow-y: auto;
+}
+
+.gallery-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+    gap: 15px;
+}
+
+.gallery-grid img {
+    width: 100%;
+    height: 150px;
+    object-fit: cover;
+    border-radius: 8px;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    border: 2px solid transparent;
+}
+
+.gallery-grid img:hover {
+    transform: translateY(-3px);
+    box-shadow: 0 8px 25px rgba(0, 0, 0, 0.15);
+    border-color: #6c757d;
+}
+
+@keyframes modalSlideUp {
+    from {
+        opacity: 0;
+        transform: translateY(50px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+/* 페이지네이션 스타일 - msticker 회색 톤 */
+.gallery-pagination {
+    margin-top: 20px;
+    padding-top: 20px;
+    border-top: 1px solid #e9ecef;
+}
+
+.pagination-info {
+    text-align: center;
+    margin-bottom: 15px;
+    color: #6c757d;
+    font-size: 0.9rem;
+}
+
+.pagination-controls {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    gap: 10px;
+    flex-wrap: wrap;
+}
+
+.pagination-btn {
+    background: linear-gradient(135deg, #6c757d 0%, #495057 100%) !important;
+    color: white;
+    border: none;
+    padding: 8px 16px;
+    border-radius: 6px;
+    cursor: pointer;
+    font-size: 0.85rem;
+    transition: all 0.3s ease;
+    min-width: 80px;
+}
+
+.pagination-btn:hover:not(:disabled) {
+    background: linear-gradient(135deg, #495057 0%, #343a40 100%) !important;
+    transform: translateY(-1px);
+}
+
+.pagination-btn:disabled {
+    background: #dee2e6;
+    color: #6c757d;
+    cursor: not-allowed;
+    transform: none;
+}
+
+.pagination-numbers {
+    display: flex;
+    gap: 5px;
+    align-items: center;
+}
+
+.pagination-number {
+    background: white;
+    color: #6c757d !important;
+    border: 1px solid #6c757d !important;
+    padding: 6px 12px;
+    border-radius: 4px;
+    cursor: pointer;
+    font-size: 0.85rem;
+    transition: all 0.3s ease;
+    min-width: 35px;
+    text-align: center;
+}
+
+.pagination-number:hover {
+    background: #6c757d !important;
+    color: white !important;
+}
+
+.pagination-number.active {
+    background: #6c757d !important;
+    color: white !important;
+    font-weight: bold;
+}
+
+.pagination-ellipsis {
+    color: #6c757d;
+    padding: 6px 4px;
+    font-size: 0.85rem;
+}
+
+/* 반응형 디자인 */
+@media (max-width: 768px) {
+    .product-gallery-standard {
+        padding: 20px !important;
+        margin: 0 -10px;
+        border-radius: 10px !important;
+        height: 400px !important;
+        min-height: 400px !important;
+        max-height: 400px !important;
+    }
+    
+    .product-gallery-standard .lightbox-viewer,
+    .lightbox-viewer {
+        height: 250px;
+    }
+    
+    .product-gallery-standard .thumbnail-strip img,
+    .thumbnail-strip img {
+        height: 60px;
+    }
+    
+    .pagination-controls {
+        gap: 5px;
+    }
+    
+    .pagination-btn {
+        padding: 6px 12px;
+        font-size: 0.8rem;
+        min-width: 60px;
+    }
+    
+    .pagination-number {
+        padding: 5px 10px;
+        font-size: 0.8rem;
+        min-width: 30px;
+    }
+}
+
+@media (max-width: 480px) {
+    .product-gallery-standard {
+        padding: 15px !important;
+        border-radius: 8px !important;
+    }
+    
+    .product-gallery-standard .lightbox-viewer,
+    .lightbox-viewer {
+        height: 200px;
+        border-radius: 8px;
+    }
+    
+    .product-gallery-standard .thumbnail-strip img,
+    .thumbnail-strip img {
+        height: 50px;
+        border-radius: 4px;
+    }
+    
+    .gallery-modal-content {
+        width: 95%;
+        border-radius: 10px;
+    }
+}

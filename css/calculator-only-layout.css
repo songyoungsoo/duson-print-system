@@ -1,0 +1,70 @@
+/* ===================================================================== */
+/* 🧮 계산기 전용 레이아웃 - 갤러리 제거된 풀 너비 계산기 */
+/* ⚠️ 중요: 계산 로직 완전 보존, 레이아웃만 변경 */
+/* ===================================================================== */
+
+/* 🎯 계산기 전용 컨테이너 - 풀 너비 활용 */
+.calculator-only-layout {
+    width: 100% !important;
+    max-width: 100% !important;
+    padding: 0 !important;
+    margin: 0 !important;
+}
+
+/* 🧮 계산기 패널 - 풀 너비 확장 */
+.calculator-only-layout .calculator-pane {
+    width: 100% !important;
+    max-width: 800px !important;
+    margin: 0 auto !important;
+    padding: 15px !important;
+    background: #ffffff !important;
+    border-radius: 8px !important;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1) !important;
+}
+
+/* 🎯 계산기 헤더 스타일 - 헤더 숨김 처리 */
+.calculator-only-layout .calculator-header {
+    display: none !important;
+}
+
+.calculator-only-layout .calculator-header h3 {
+    display: none !important;
+}
+
+/* 📱 반응형 디자인 */
+@media (max-width: 768px) {
+    .calculator-only-layout .calculator-pane {
+        max-width: 100% !important;
+        padding: 12px !important;
+        border-radius: 6px !important;
+    }
+    
+    .calculator-only-layout .calculator-header h3 {
+        display: none !important;
+    }
+}
+
+@media (max-width: 480px) {
+    .calculator-only-layout .calculator-pane {
+        padding: 10px !important;
+        border-radius: 4px !important;
+    }
+    
+    .calculator-only-layout .calculator-header h3 {
+        display: none !important;
+    }
+}
+
+/* 🔧 기존 dual-pane 스타일 무효화 */
+.calculator-only-layout .dual-pane-layout {
+    display: none !important;
+}
+
+/* ⚡ 성능 최적화 */
+.calculator-only-layout {
+    box-sizing: border-box !important;
+}
+
+.calculator-only-layout * {
+    box-sizing: border-box !important;
+}
