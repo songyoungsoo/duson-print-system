@@ -2,6 +2,11 @@
 include "../../db.php";
 include "../../includes/auth.php";
 
+// 추가 옵션 표시 시스템 포함
+if (file_exists('../../includes/AdditionalOptionsDisplay.php')) {
+    include_once '../../includes/AdditionalOptionsDisplay.php';
+}
+
 // 디버깅: $db 변수 확인
 if (!isset($db) || !$db) {
     die("ERROR: Database connection not established from db.php");
@@ -690,6 +695,8 @@ if ($mode == "OrderView") {
                     ?>
             </div>
         </div>
+        
+        <!-- 추가 옵션은 이제 주문 상세정보(OrderFormOrderTree.php)에 통합되어 표시됩니다 -->
     <?php } ?>
     
     

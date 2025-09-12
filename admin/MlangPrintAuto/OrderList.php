@@ -3,6 +3,11 @@
 include "../../includes/db_constants.php";
 include "../../db.php";
 
+// 추가 옵션 표시 시스템 포함
+if (file_exists('../../includes/AdditionalOptionsDisplay.php')) {
+    include_once '../../includes/AdditionalOptionsDisplay.php';
+}
+
 // db.php에서 생성된 $db 연결을 사용
 $mysqli = $db;
 if (!$mysqli) {
@@ -306,6 +311,7 @@ function DelGCheckField() {
 <td align=center>분야</td>
 <td align=center>주문인성함</td>
 <td align=center>주문날짜</td>
+<td align=center>추가옵션</td>
 <td align=center>결과처리</td>
 <td align=center>시안</td>
 <td align=center>주문자정보</td>
@@ -399,6 +405,37 @@ switch ($row["Type"]) {
 </font></td>
 <td align=center><font color=white><?php echo  htmlspecialchars($row["name"]) ?></font></td>
 <td align=center><font color=white><?php echo  htmlspecialchars($row["date"]) ?></font></td>
+<td align=center>
+<?php
+// 추가 옵션 표시
+if (class_exists('AdditionalOptionsDisplay')) {
+    $optionsDisplay = new AdditionalOptionsDisplay($db);
+    
+    // 주문 데이터에서 옵션 필드 추출
+    $optionData = [
+        'coating_enabled' => $row['coating_enabled'] ?? 0,
+        'coating_type' => $row['coating_type'] ?? '',
+        'coating_price' => $row['coating_price'] ?? 0,
+        'folding_enabled' => $row['folding_enabled'] ?? 0,
+        'folding_type' => $row['folding_type'] ?? '',
+        'folding_price' => $row['folding_price'] ?? 0,
+        'creasing_enabled' => $row['creasing_enabled'] ?? 0,
+        'creasing_lines' => $row['creasing_lines'] ?? '',
+        'creasing_price' => $row['creasing_price'] ?? 0,
+        'additional_options_total' => $row['additional_options_total'] ?? 0
+    ];
+    
+    $summary = $optionsDisplay->getCartSummary($optionData);
+    if ($summary === '옵션 없음') {
+        echo "<font color='#cccccc'>옵션없음</font>";
+    } else {
+        echo "<font color='#90EE90'>" . htmlspecialchars($summary) . "</font>";
+    }
+} else {
+    echo "<font color='#cccccc'>-</font>";
+}
+?>
+</td>
 <td align=center>
 <script>
 function MM_jumpMenuYY_<?php echo  $row["no"] ?>G(targ,selObj,restore){

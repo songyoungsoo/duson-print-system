@@ -3,7 +3,7 @@
 define('DB_ACCESS_ALLOWED', true);
 require_once "../../db.php";
 $TIO_CODE = "littleprint";
-$table = "MlangPrintAuto_{$TIO_CODE}";
+$table = "mlangprintauto_{$TIO_CODE}";
 $mode = $_GET['mode'] ?? $_POST['mode'] ?? '';
 $no = $_GET['no'] ?? $_POST['no'] ?? '';
 $offset = isset($_GET['offset']) ? (int)$_GET['offset'] : (isset($_POST['offset']) ? (int)$_POST['offset'] : 0);
@@ -36,6 +36,9 @@ $M123 = "..";
 include "$M123/top.php";
 $T_DirUrl = "../../MlangPrintAuto";
 include "$T_DirUrl/ConDb.php";
+
+// Define GGTABLE from ConDb.php's $TABLE variable
+$GGTABLE = $TABLE; // This is "mlangprintauto_transactioncate"
 
 // $db 연결은 이미 상단에서 db.php로 완료됨
 $Mlang_query = $search === "yes"

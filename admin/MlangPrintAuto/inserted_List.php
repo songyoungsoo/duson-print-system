@@ -1,14 +1,13 @@
 <?php
 // DB 접근 허용 상수 정의
 define('DB_ACCESS_ALLOWED', true);
-include "../../db.php";
-// $db 변수는 db.php에서 이미 연결되어 제공됨
+
 // 변수 초기화 (방지용)
 $cate       = $_GET['cate'] ?? $_POST['cate'] ?? '';
 $title_search = $_GET['title_search'] ?? $_POST['title_search'] ?? '';
 $PHP_SELF   = $_SERVER['PHP_SELF'];
 $TIO_CODE="inserted";
-$table="MlangPrintAuto_{$TIO_CODE}";
+$table="mlangprintauto_{$TIO_CODE}";
 $mode       = $_GET['mode'] ?? $_POST['mode'] ?? '';
 $no         = isset($_GET['no']) ? (int)$_GET['no'] : 0;
 $search     = $_GET['search'] ?? $_POST['search'] ?? '';
@@ -18,9 +17,26 @@ $myListTreeSelect = $_GET['myListTreeSelect'] ?? $_POST['myListTreeSelect'] ?? '
 $offset     = isset($_GET['offset']) ? (int)$_GET['offset'] : 0;
 $listcut = 20; // 기본값 지정
 
-if($mode=="delete"){
+$M123 = "..";
+include "../top.php";
 
-$result = mysqli_query($db, "DELETE FROM $table WHERE no='$no'");
+// 데이터베이스 연결 함수 정의 (전역에서 사용)
+function ensure_db_connection() {
+    // 공통 db.php 설정 사용
+    global $db;
+    if (!isset($db) || !$db) {
+        include_once "../../db.php";
+    }
+    return $db;
+}
+
+// 안전한 DB 연결 확보
+$db = ensure_db_connection();
+
+// Delete 모드 처리
+if($mode=="delete"){
+    $db = ensure_db_connection();
+    $result = mysqli_query($db, "DELETE FROM $table WHERE no='$no'");
 
 echo ("<script language=javascript>
 window.alert('테이블명: $table - $no 번 자료 삭제 완료');
@@ -30,13 +46,13 @@ window.close();
 ");
 exit;
 
-} ///////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-
-$M123 = "..";
-include "../top.php"; 
+} ////////////////////////////////////////////////////////////////////////////////////////////////////////////////// 
 
 $T_DirUrl="../../MlangPrintAuto";
 include "$T_DirUrl/ConDb.php";
+
+// Define GGTABLE from ConDb.php's $TABLE variable
+$GGTABLE = $TABLE; // This is "mlangprintauto_transactioncate"
 ?>
 
 <head>
@@ -74,7 +90,29 @@ function WomanMember_Admin_Del(no){
 </td>
 
 <?php
-include "../../db.php";
+// 데이터베이스 연결 확인 - top.php에서 이미 포함되었어야 하지만 안전하게 재확인
+global $db;
+if (!isset($db) || !$db) {
+    // DB_ACCESS_ALLOWED가 이미 정의되어 있는지 확인
+    if (!defined('DB_ACCESS_ALLOWED')) {
+        define('DB_ACCESS_ALLOWED', true);
+    }
+    include_once "../../db.php";
+}
+
+// ensure_db_connection() 함수는 이미 위에서 정의됨
+
+// 안전한 DB 연결 확보
+$db = ensure_db_connection();
+
+// ConDb.php의 변수들도 다시 확인
+if (!isset($TABLE)) {
+    $T_DirUrl="../../MlangPrintAuto";
+    include_once "$T_DirUrl/ConDb.php";
+}
+
+// GGTABLE 변수 정의
+$GGTABLE = isset($TABLE) ? $TABLE : "mlangprintauto_transactioncate";
 
 if($search=="yes"){ //검색모드일때
  $Mlang_query="select * from $table where style='$RadOne' and TreeSelect='$myListTreeSelect' and Section='$myList'";
@@ -82,9 +120,23 @@ if($search=="yes"){ //검색모드일때
 $Mlang_query="select * from $table";
 }
 
+// 연결 재확인 후 쿼리 실행
+$db = ensure_db_connection();
 $query = mysqli_query($db, $Mlang_query);
-$recordsu = mysqli_num_rows($query);
-$total = mysqli_num_rows($query);
+if($query) {
+    $recordsu = mysqli_num_rows($query);
+    $total = mysqli_num_rows($query);
+} else {
+    $recordsu = 0;
+    $total = 0;
+    // 디버깅용 - 실제 오류 확인
+    if($db && mysqli_ping($db)) {
+        $error_msg = mysqli_error($db);
+        if ($error_msg) {
+            echo "<!-- DB Query Error: " . htmlspecialchars($error_msg) . " -->";
+        }
+    }
+}
 
 $listcut= 15;  //한 페이지당 보여줄 목록 게시물수. 
 if(!$offset) $offset=0; 
@@ -115,8 +167,25 @@ if(!$offset) $offset=0;
 </tr>
 
 <?php
-$result = mysqli_query($db, $Mlang_query . " order by NO desc limit $offset, $listcut");
-$rows = mysqli_num_rows($result);
+// 안전한 데이터베이스 연결 재확인
+$db = ensure_db_connection();
+
+// 쿼리 실행
+$query_string = $Mlang_query . " order by NO desc limit $offset, $listcut";
+$result = mysqli_query($db, $query_string);
+if($result) {
+    $rows = mysqli_num_rows($result);
+} else {
+    $rows = 0;
+    // 디버깅용 - 실제 오류 확인
+    if($db && mysqli_ping($db)) {
+        $error_msg = mysqli_error($db);
+        if ($error_msg) {
+            echo "<!-- Query Error on line " . __LINE__ . ": " . htmlspecialchars($error_msg) . " -->";
+        }
+    }
+}
+
 if($rows){
 
 
@@ -129,22 +198,28 @@ while($row= mysqli_fetch_array($result))
 <td align=center><font color=white>
 <?php 
 $result_FGTwo=mysqli_query($db, "select * from $GGTABLE where no='$row[style]'");
-$row_FGTwo= mysqli_fetch_array($result_FGTwo);
+if($result_FGTwo) {
+    $row_FGTwo= mysqli_fetch_array($result_FGTwo);
 if($row_FGTwo){ echo("$row_FGTwo[title]"); }
+}
 ?>
 </font></td>
 <td align=center><font color=white>
 <?php 
 $result_FGFree=mysqli_query($db, "select * from $GGTABLE where no='$row[TreeSelect]'");
-$row_FGFree= mysqli_fetch_array($result_FGFree);
-if($row_FGFree){ echo("$row_FGFree[title]"); }
+if($result_FGFree) {
+    $row_FGFree= mysqli_fetch_array($result_FGFree);
+    if($row_FGFree){ echo("$row_FGFree[title]"); }
+}
 ?>
 </font></td> 
 <td align=center><font color=white>
 <?php 
 $result_FGOne=mysqli_query($db, "select * from $GGTABLE where no='$row[Section]'");
-$row_FGOne= mysqli_fetch_array($result_FGOne);
-if($row_FGOne){ echo("$row_FGOne[title]"); }
+if($result_FGOne) {
+    $row_FGOne= mysqli_fetch_array($result_FGOne);
+    if($row_FGOne){ echo("$row_FGOne[title]"); }
+}
 ?>
 </font></td> 
 <td align=center><font color=white>

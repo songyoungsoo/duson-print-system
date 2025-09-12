@@ -5,7 +5,7 @@ define('DB_ACCESS_ALLOWED', true);
 include "../../db.php";
 
 $TIO_CODE = "merchandisebond";
-$table = "MlangPrintAuto_{$TIO_CODE}";
+$table = "mlangprintauto_{$TIO_CODE}";
 
 $mode = $_GET['mode'] ?? $_POST['mode'] ?? '';
 $no = (int)($_GET['no'] ?? $_POST['no'] ?? 0);
@@ -31,10 +31,27 @@ if ($mode === "delete" && $no > 0) {
 
 $M123 = "..";
 include "$M123/top.php";
+
+
+// 데이터베이스 연결 함수 정의 (전역에서 사용)
+function ensure_db_connection() {
+    // 공통 db.php 설정 사용
+    global $db;
+    if (!$db) {
+        include "../../db.php";
+    }
+    return $db;
+}
+
+// 안전한 DB 연결 확보
+$db = ensure_db_connection();
 $T_DirUrl = "../../MlangPrintAuto";
 include "$T_DirUrl/ConDb.php";
 
 ?>
+
+// Define GGTABLE from ConDb.php's $TABLE variable
+$GGTABLE = $TABLE; // This is "mlangprintauto_transactioncate"
 <head>
 <script>
 function clearField(field){ if (field.value == field.defaultValue) field.value = ""; }
@@ -61,6 +78,7 @@ $Mlang_query = $search === "yes"
     ? "SELECT * FROM $table WHERE style='" . mysqli_real_escape_string($db, $RadOne) . "' AND Section='" . mysqli_real_escape_string($db, $myList) . "'"
     : "SELECT * FROM $table";
 
+$db = ensure_db_connection(); 
 $query = mysqli_query($db, $Mlang_query);
 $recordsu = mysqli_num_rows($query);
 $listcut = 15;
@@ -88,6 +106,7 @@ $listcut = 15;
 <td align="center">관리기능</td>
 </tr>
 <?php
+$db = ensure_db_connection(); 
 $result = mysqli_query($db, "$Mlang_query ORDER BY no DESC LIMIT $offset, $listcut");
 $rows = mysqli_num_rows($result);
 
@@ -98,7 +117,7 @@ if ($rows) {
 <td align="center"><font color="white"><?php echo  $row['no'] ?></font></td>
 <td align="center"><font color="white">
 <?php
-$res = mysqli_query($db, "SELECT title FROM $GGTABLE WHERE no='" . $row['style'] . "'");
+ensure_db_connection(); $res = mysqli_query($db, "SELECT title FROM $GGTABLE WHERE no='" . $row['style'] . "'");
 $titleRow = mysqli_fetch_assoc($res);
 echo $titleRow['title'] ?? '';
 ?>
@@ -107,7 +126,7 @@ echo $titleRow['title'] ?? '';
 <td align="center"><font color="white"><?php echo  $row['POtype'] == "1" ? "단면" : ($row['POtype'] == "2" ? "양면" : '') ?></font></td>
 <td align="center"><font color="white">
 <?php
-$res2 = mysqli_query($db, "SELECT title FROM $GGTABLE WHERE no='" . $row['Section'] . "'");
+ensure_db_connection(); $res2 = mysqli_query($db, "SELECT title FROM $GGTABLE WHERE no='" . $row['Section'] . "'");
 $subTitleRow = mysqli_fetch_assoc($res2);
 echo $subTitleRow['title'] ?? '';
 ?>

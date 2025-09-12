@@ -59,19 +59,39 @@ if ($mode == "form") {
 
 <?php
 if ($mode == "delete") {
-    $result = mysqli_query($db, "SELECT * FROM $GGTABLESu WHERE no='$no'");
+    include "../secure_db.php";
+    
+    // Secure SELECT with prepared statement
+    $stmt = mysqli_prepare($db, "SELECT BigNo FROM $GGTABLESu WHERE no = ?");
+    mysqli_stmt_bind_param($stmt, "i", $no);
+    mysqli_stmt_execute($stmt);
+    $result = mysqli_stmt_get_result($stmt);
     $row = mysqli_fetch_array($result);
+    mysqli_stmt_close($stmt);
 
-    if ($row['BigNo'] == "0") {
-        mysqli_query($db, "DELETE FROM $GGTABLESu WHERE BigNo='$no'");
-        mysqli_query($db, "DELETE FROM $GGTABLESu WHERE no='$no'");
+    if ($row && $row['BigNo'] == "0") {
+        // Delete child records first
+        $stmt1 = mysqli_prepare($db, "DELETE FROM $GGTABLESu WHERE BigNo = ?");
+        mysqli_stmt_bind_param($stmt1, "i", $no);
+        mysqli_stmt_execute($stmt1);
+        mysqli_stmt_close($stmt1);
+        
+        // Delete parent record
+        $stmt2 = mysqli_prepare($db, "DELETE FROM $GGTABLESu WHERE no = ?");
+        mysqli_stmt_bind_param($stmt2, "i", $no);
+        mysqli_stmt_execute($stmt2);
+        mysqli_stmt_close($stmt2);
     } else {
-        mysqli_query($db, "DELETE FROM $GGTABLESu WHERE no='$no'");
+        // Delete single record
+        $stmt = mysqli_prepare($db, "DELETE FROM $GGTABLESu WHERE no = ?");
+        mysqli_stmt_bind_param($stmt, "i", $no);
+        mysqli_stmt_execute($stmt);
+        mysqli_stmt_close($stmt);
     }
 
     mysqli_close($db);
     echo ("<script>
-        alert('$no 번 자료를 삭제 처리 하였습니다.');
+        alert('" . SecurityHelper::escape($no) . " 번 자료를 삭제 처리 하였습니다.');
         opener.parent.location.reload();
         window.self.close();
     </script>");
@@ -81,22 +101,32 @@ if ($mode == "delete") {
 
 <?php
 if ($mode == "form_ok") {
-    $dbinsert = "INSERT INTO $GGTABLESu (Ttable, BigNo, title) VALUES ('$Ttable', '$BigNo', '$title')";
-    $result_insert = mysqli_query($db, $dbinsert);
+    include "../secure_db.php";
+    
+    // Secure INSERT with prepared statement
+    $stmt = mysqli_prepare($db, "INSERT INTO $GGTABLESu (Ttable, BigNo, title) VALUES (?, ?, ?)");
+    mysqli_stmt_bind_param($stmt, "sis", $Ttable, $BigNo, $title);
+    $result_insert = mysqli_stmt_execute($stmt);
+    mysqli_stmt_close($stmt);
 
     echo ("<script>
-        alert('CATEGORY [$View_TtableC] 자료를 정상적으로 저장하였습니다.');
+        alert('CATEGORY [" . SecurityHelper::escape($View_TtableC) . "] 자료를 정상적으로 저장하였습니다.');
         opener.parent.location.reload();
     </script>
-    <meta http-equiv='Refresh' content='0; URL=$PHP_SELF?mode=form&Ttable=$Ttable'>");
+    <meta http-equiv='Refresh' content='0; URL=" . SecurityHelper::escape($PHP_SELF) . "?mode=form&Ttable=" . SecurityHelper::escape_url($Ttable) . "'>");
     exit;
 }
 ?>
 
 <?php
 if ($mode == "modify_ok") {
-    $query = "UPDATE $GGTABLESu SET BigNo='$BigNo', title='$title' WHERE no='$no'";
-    $result = mysqli_query($db, $query);
+    include "../secure_db.php";
+    
+    // Secure UPDATE with prepared statement
+    $stmt = mysqli_prepare($db, "UPDATE $GGTABLESu SET BigNo = ?, title = ? WHERE no = ?");
+    mysqli_stmt_bind_param($stmt, "isi", $BigNo, $title, $no);
+    $result = mysqli_stmt_execute($stmt);
+    mysqli_stmt_close($stmt);
 
     if (!$result) {
         echo "<script>alert('DB 접속 에러입니다!'); history.go(-1);</script>";

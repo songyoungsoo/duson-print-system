@@ -1,7 +1,7 @@
 <?php
 include $_SERVER['DOCUMENT_ROOT'] . '/db.php';  // 절대 경로로 변경
 $TIO_CODE = "cadarokTwo";
-$table = "MlangPrintAuto_$TIO_CODE";
+$table = "mlangprintauto_$TIO_CODE";
 
 if (isset($_GET['mode']) && $_GET['mode'] == "delete") {
     $no = intval($_GET['no']);
@@ -24,6 +24,9 @@ include "../top.php";
 $T_DirUrl = "../../MlangPrintAuto";
 include "$T_DirUrl/ConDb.php";
 ?>
+
+// Define GGTABLE from ConDb.php's $TABLE variable
+$GGTABLE = $TABLE; // This is "mlangprintauto_transactioncate"
 
 <!DOCTYPE html>
 <html lang="ko">

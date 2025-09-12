@@ -45,7 +45,7 @@ function getTtableTitle($code) {
 
 include "../title.php";
 include "../../mlangprintauto/ConDb.php";
-
+$GGTABLE = $TABLE; // This is "mlangprintauto_transactioncate"
 
 $View_TtableB = $Ttable;
 $View_TtableC = getTtableTitle($Ttable);
@@ -78,6 +78,7 @@ if (isset($TtableTitles[$Ttable])) {
 include "../../db.php";
 include "../config.php";
 include "../../mlangprintauto/ConDb.php";
+$GGTABLE = $TABLE; // This is "mlangprintauto_transactioncate"
 include "CateAdmin_title.php";
 
 if ($mode === "form") {

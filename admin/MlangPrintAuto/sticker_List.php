@@ -8,7 +8,7 @@ $cate       = $_GET['cate'] ?? $_POST['cate'] ?? '';
 $title_search = $_GET['title_search'] ?? $_POST['title_search'] ?? '';
 $PHP_SELF   = $_SERVER['PHP_SELF'];
 $TIO_CODE="sticker";
-$table="MlangPrintAuto_{$TIO_CODE}";
+$table="mlangprintauto_{$TIO_CODE}";
 $mode       = $_GET['mode'] ?? $_POST['mode'] ?? '';
 $no         = isset($_GET['no']) ? (int)$_GET['no'] : 0;
 $search     = $_GET['search'] ?? $_POST['search'] ?? '';
@@ -20,6 +20,7 @@ $listcut = 20; // 기본값 지정
 
 if($mode=="delete"){
 
+$db = ensure_db_connection(); 
 $result = mysqli_query($db, "DELETE FROM $table WHERE no='$no'");
 mysqli_close($db);
 
@@ -36,8 +37,25 @@ exit;
 $M123 = "..";
 include "../top.php"; 
 
+
+
+// 데이터베이스 연결 함수 정의 (전역에서 사용)
+function ensure_db_connection() {
+    // 공통 db.php 설정 사용
+    global $db;
+    if (!$db) {
+        include "../../db.php";
+    }
+    return $db;
+}
+
+// 안전한 DB 연결 확보
+$db = ensure_db_connection();
 $T_DirUrl="../../MlangPrintAuto";
 include "$T_DirUrl/ConDb.php";
+
+// Define GGTABLE from ConDb.php's $TABLE variable
+$GGTABLE = $TABLE; // This is "mlangprintauto_transactioncate"
 ?>
 
 <head>
@@ -81,6 +99,7 @@ if($search=="yes"){ //검색모드일때
 }else{ // 일반모드 일때
 $Mlang_query="select * from $table";
 }
+$db = ensure_db_connection(); 
 $query = mysqli_query($db, $Mlang_query);
 $recordsu = mysqli_num_rows($query);
 $total = mysqli_num_rows($query);
@@ -115,6 +134,7 @@ if(!$offset) $offset=0;
 </tr>
 
 <?php
+$db = ensure_db_connection(); 
 $result = mysqli_query($db, $Mlang_query . " order by NO desc limit $offset, $listcut");
 $rows = mysqli_num_rows($result);
 if($rows){
@@ -128,9 +148,12 @@ while($row= mysqli_fetch_array($result))
 <td align=center><font color=white><?php echo $row['no']?></font></td>
 <td align=center><font color=white>
 <?php 
+$db = ensure_db_connection(); 
 $result_FGTwo=mysqli_query($db, "select * from $GGTABLE where no='$row[style]'");
-$row_FGTwo= mysqli_fetch_array($result_FGTwo);
-if($row_FGTwo){ echo("$row_FGTwo[title]"); }
+if($result_FGTwo) {
+    $row_FGTwo= mysqli_fetch_array($result_FGTwo);
+    if($row_FGTwo){ echo("$row_FGTwo[title]"); }
+}
 ?>
 </font></td>
 <td align=center><font color=white>
@@ -138,9 +161,12 @@ if($row_FGTwo){ echo("$row_FGTwo[title]"); }
 </font></td> 
 <td align=center><font color=white>
 <?php 
+$db = ensure_db_connection(); 
 $result_FGOne=mysqli_query($db, "select * from $GGTABLE where no='$row[Section]'");
-$row_FGOne= mysqli_fetch_array($result_FGOne);
-if($row_FGOne){ echo("$row_FGOne[title]"); }
+if($result_FGOne) {
+    $row_FGOne= mysqli_fetch_array($result_FGOne);
+    if($row_FGOne){ echo("$row_FGOne[title]"); }
+}
 ?>
 </font></td> 
 <td align=center><font color=white>

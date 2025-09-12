@@ -25,6 +25,7 @@ function getTtableTitle($code) {
 
 include "../title.php";
 include "../../mlangprintauto/ConDb.php";
+$GGTABLE = $TABLE; // This is "mlangprintauto_transactioncate"
 
 // $ToTitle == "전단지" ? $View_TtableC = "전단지" : $View_TtableC = $ToTitle;
 // $TtableTitles = [

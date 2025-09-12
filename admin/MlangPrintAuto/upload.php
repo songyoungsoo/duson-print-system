@@ -1,6 +1,9 @@
 <?php
 // 제작자: http://www.websil.co.kr, http://www.script.ne.kr - Mlang
 
+// 통합 업로드 설정 포함
+include "../../includes/upload_config.php";
+
 if (!isset($BBS_ADMIN_MAXFSIZE)) {
     $BBS_ADMIN_MAXFSIZE = 2000000; // 2MB 제한
 }
@@ -8,7 +11,16 @@ if (!isset($BBS_ADMIN_MAXFSIZE)) {
 $MlangFF_end = 181;
 $MlangFF_num = rand(0, $MlangFF_end);
 
-$upfile_path = $upload_dir; // 업로드 디렉토리 (권한 707 필요)
+// 새로운 통합 업로드 시스템 사용
+// $TIO_CODE 변수가 있다면 해당 제품의 admin 경로 사용, 없다면 일반 admin 경로
+$product_type = isset($TIO_CODE) ? $TIO_CODE : 'general';
+$upfile_path = getAdminProductPath($product_type);
+
+// 디렉토리가 없으면 생성
+if (!createUploadDirectory($upfile_path)) {
+    echo "<script>alert('업로드 디렉토리 생성에 실패했습니다.'); history.go(-1);</script>";
+    exit;
+}
 
 $tmp_file = $_FILES['photofile']['tmp_name']; // 임시 파일 경로
 $filename = $_FILES['photofile']['name'];     // 원본 파일명
@@ -23,10 +35,26 @@ if ($MlangFile_size > $BBS_ADMIN_MAXFSIZE) {
 
 // 확장자 추출 및 보안 검사
 $extension = strtolower(pathinfo($filename, PATHINFO_EXTENSION));
-$blocked_extensions = ['php', 'php3', 'phtml', 'inc', 'asp', 'html'];
+$blocked_extensions = ['php', 'php3', 'phtml', 'inc', 'asp', 'html', 'js', 'jsp', 'exe', 'bat', 'cmd'];
 
 if (in_array($extension, $blocked_extensions)) {
-    $msg = "\\nERROR: 보안상 php / asp / html 관련 확장자는 업로드할 수 없습니다.\\n\\n확장자를 변경하여 업로드해주세요.";
+    $msg = "\\nERROR: 보안상 실행 가능한 파일 형식은 업로드할 수 없습니다.\\n\\n이미지 파일만 업로드해주세요.";
+    echo "<script>alert('$msg'); history.go(-1);</script>";
+    exit;
+}
+
+// MIME 타입 검증 (더 강력한 보안)
+$allowed_mime_types = [
+    'image/jpeg', 'image/jpg', 'image/png', 'image/gif', 
+    'application/pdf', 'text/plain'
+];
+
+$finfo = finfo_open(FILEINFO_MIME_TYPE);
+$detected_mime = finfo_file($finfo, $tmp_file);
+finfo_close($finfo);
+
+if (!in_array($detected_mime, $allowed_mime_types)) {
+    $msg = "\\nERROR: 허용되지 않는 파일 형식입니다.\\n\\nMIME 타입: $detected_mime\\n\\n이미지나 PDF 파일만 업로드해주세요.";
     echo "<script>alert('$msg'); history.go(-1);</script>";
     exit;
 }

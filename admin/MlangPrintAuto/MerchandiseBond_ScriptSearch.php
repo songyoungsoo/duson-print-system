@@ -14,29 +14,33 @@
 
         <?php
         include "../../db.php";
-
+        
+        // 데이터베이스 연결 확인 및 변수 설정
+        if (!$db) {
+            die("데이터베이스 연결 실패");
+        }
+        
+        // GGTABLE 설정
+        $GGTABLE = "mlangprintauto_transactioncate";
+        
         // 상위 항목 가져오기
-        $stmt = $db->prepare("SELECT no, title FROM $GGTABLE WHERE Ttable = ? AND BigNo = '0' ORDER BY no ASC");
-        $stmt->bind_param("s", $Ttable);
-        $stmt->execute();
-        $result = $stmt->get_result();
+        $result = mysqli_query($db, "SELECT no, title FROM $GGTABLE WHERE Ttable = '$Ttable' AND BigNo = '0' ORDER BY no ASC");
 
-        if ($result->num_rows > 0) {
+        if (mysqli_num_rows($result) > 0) {
             $g = 0;
-            while ($row = $result->fetch_assoc()) {
+            while ($row = mysqli_fetch_array($result)) {
                 echo "acts[$g] = new Activity('" . addslashes($row['no']) . "', [";
                 
                 // 하위 항목 가져오기
-                $stmt_two = $db->prepare("SELECT title, no FROM $GGTABLE WHERE BigNo = ? ORDER BY no ASC");
-                $stmt_two->bind_param("s", $row['no']);
-                $stmt_two->execute();
-                $result_two = $stmt_two->get_result();
+                $result_two = mysqli_query($db, "SELECT title, no FROM $GGTABLE WHERE BigNo = '{$row['no']}' ORDER BY no ASC");
                 
                 $titles = [];
                 $ids = [];
-                while ($row_two = $result_two->fetch_assoc()) {
-                    $titles[] = "'" . addslashes($row_two['title']) . "'";
-                    $ids[] = "'" . addslashes($row_two['no']) . "'";
+                if ($result_two && mysqli_num_rows($result_two) > 0) {
+                    while ($row_two = mysqli_fetch_array($result_two)) {
+                        $titles[] = "'" . addslashes($row_two['title']) . "'";
+                        $ids[] = "'" . addslashes($row_two['no']) . "'";
+                    }
                 }
 
                 echo implode(", ", $titles) . "]);\n";
@@ -46,9 +50,6 @@
         } else {
             echo "document.write('<option>등록된 자료가 없습니다.</option>');";
         }
-
-        $stmt->close();
-        $db->close();
         ?>
 
         function updateList(selectedValue) {

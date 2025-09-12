@@ -2,7 +2,7 @@
 // envelope_List.php (Updated for PHP 7.4+ with mysqli)
 
 $TIO_CODE = "envelope";
-$table = "MlangPrintAuto_{$TIO_CODE}";
+$table = "mlangprintauto_{$TIO_CODE}";
 $mode = $_GET['mode'] ?? $_POST['mode'] ?? '';
 $no = $_GET['no'] ?? $_POST['no'] ?? 0;
 $offset = isset($_GET['offset']) ? (int)$_GET['offset'] : (isset($_POST['offset']) ? (int)$_POST['offset'] : 0);
@@ -15,6 +15,20 @@ $PHP_SELF = $_SERVER['PHP_SELF'] ?? '';
 $M123 = "..";
 include "$M123/top.php";
 
+
+
+// 데이터베이스 연결 함수 정의 (전역에서 사용)
+function ensure_db_connection() {
+    // 공통 db.php 설정 사용
+    global $db;
+    if (!$db) {
+        include "../../db.php";
+    }
+    return $db;
+}
+
+// 안전한 DB 연결 확보
+$db = ensure_db_connection();
 if ($mode == "delete") {
     $stmt = mysqli_prepare($db, "DELETE FROM {$table} WHERE no=?");
     mysqli_stmt_bind_param($stmt, "i", $no);
@@ -30,6 +44,9 @@ if ($mode == "delete") {
 }
 $T_DirUrl = "../../MlangPrintAuto";
 include "$T_DirUrl/ConDb.php";
+
+// Define GGTABLE from ConDb.php's $TABLE variable
+$GGTABLE = $TABLE; // This is "mlangprintauto_transactioncate"
 
 // DB 연결 상태 확인 및 재연결 필요시 처리
 if (!$db || mysqli_connect_errno()) {
@@ -81,6 +98,7 @@ $Mlang_query = $search === "yes"
     ? "SELECT * FROM {$table} WHERE style='" . mysqli_real_escape_string($db, $RadOne) . "' AND Section='" . mysqli_real_escape_string($db, $myList) . "'"
     : "SELECT * FROM {$table}";
 
+$db = ensure_db_connection(); 
 $query = mysqli_query($db, $Mlang_query);
 $recordsu = $query ? mysqli_num_rows($query) : 0;
 $listcut = 15;
@@ -119,14 +137,15 @@ $end_page = ($recordsu % $listcut > 0) ? intval($recordsu / $listcut) + 1 : intv
 
 <?php
 // $db 연결은 이미 상단에서 db.php로 완료됨
+$db = ensure_db_connection(); 
 $result = mysqli_query($db, "$Mlang_query ORDER BY NO DESC LIMIT $offset, $listcut");
 if ($result && mysqli_num_rows($result) > 0) {
     while ($row = mysqli_fetch_assoc($result)) {
         $style_title = '';
         $section_title = '';
-        $FGTwo = mysqli_query($db, "SELECT title FROM $GGTABLE WHERE no='{$row['style']}'");
+        ensure_db_connection(); $FGTwo = mysqli_query($db, "SELECT title FROM $GGTABLE WHERE no='{$row['style']}'");
         if ($FGTwo && $r = mysqli_fetch_assoc($FGTwo)) $style_title = $r['title'];
-        $FGOne = mysqli_query($db, "SELECT title FROM $GGTABLE WHERE no='{$row['Section']}'");
+        ensure_db_connection(); $FGOne = mysqli_query($db, "SELECT title FROM $GGTABLE WHERE no='{$row['Section']}'");
         if ($FGOne && $r = mysqli_fetch_assoc($FGOne)) $section_title = $r['title'];
 
         echo "<tr bgcolor='#575757'>

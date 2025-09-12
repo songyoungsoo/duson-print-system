@@ -11,6 +11,8 @@ function Activity(name, list) {
 var acts = [];
 <?php
 include "../../db.php";
+include "../../mlangprintauto/ConDb.php";
+$GGTABLE = $TABLE; // This is "mlangprintauto_transactioncate"
 $result = mysqli_query($db, "SELECT * FROM {$GGTABLE} WHERE Ttable='{$Ttable}' AND BigNo='0' ORDER BY no ASC");
 $rows = mysqli_num_rows($result);
 if ($rows) {
@@ -39,6 +41,8 @@ mysqli_close($db);
 var VL = [];
 <?php
 include "../../db.php";
+include "../../mlangprintauto/ConDb.php";
+$GGTABLE = $TABLE;
 $result = mysqli_query($db, "SELECT * FROM {$GGTABLE} WHERE Ttable='{$Ttable}' AND BigNo='0' ORDER BY no ASC");
 $rows = mysqli_num_rows($result);
 if ($rows) {
@@ -67,6 +71,8 @@ mysqli_close($db);
 var actsmyListTreeSelect = [];
 <?php
 include "../../db.php";
+include "../../mlangprintauto/ConDb.php";
+$GGTABLE = $TABLE;
 $result = mysqli_query($db, "SELECT * FROM {$GGTABLE} WHERE Ttable='{$Ttable}' AND BigNo='0' ORDER BY no ASC");
 $rows = mysqli_num_rows($result);
 if ($rows) {
@@ -95,6 +101,8 @@ mysqli_close($db);
 var VLmyListTreeSelect = [];
 <?php
 include "../../db.php";
+include "../../mlangprintauto/ConDb.php";
+$GGTABLE = $TABLE;
 $result = mysqli_query($db, "SELECT * FROM {$GGTABLE} WHERE Ttable='{$Ttable}' AND BigNo='0' ORDER BY no ASC");
 $rows = mysqli_num_rows($result);
 if ($rows) {
@@ -169,6 +177,8 @@ function updateList(str) {
             <option value="#">:::::: 선택하세요 ::::::</option>
             <?php
             include "../../db.php";
+            include "../../mlangprintauto/ConDb.php";
+            $GGTABLE = $TABLE;
             $result = mysqli_query($db, "SELECT * FROM {$GGTABLE} WHERE Ttable='{$Ttable}' AND BigNo='0' ORDER BY no ASC");
             $rows = mysqli_num_rows($result);
             if ($rows) {
@@ -195,6 +205,8 @@ function updateList(str) {
             <option value="<?php echo htmlspecialchars($MlangPrintAutoFildView_TreeSelect)?>" selected style="font-size:10pt; background-color:#429EB2; color:#FFFFFF;">
                 <?php
                 include "../../db.php";
+                include "../../mlangprintauto/ConDb.php";
+                $GGTABLE = $TABLE;
                 $result = mysqli_query($db, "SELECT * FROM {$GGTABLE} WHERE no='{$MlangPrintAutoFildView_TreeSelect}'");
                 $row = mysqli_fetch_array($result);
                 if ($row) { echo htmlspecialchars($row['title']); }
@@ -215,6 +227,8 @@ function updateList(str) {
             <option value="<?php echo htmlspecialchars($MlangPrintAutoFildView_Section)?>" selected style="font-size:10pt; background-color:#429EB2; color:#FFFFFF;">
                 <?php
                 include "../../db.php";
+                include "../../mlangprintauto/ConDb.php";
+                $GGTABLE = $TABLE;
                 $result = mysqli_query($db, "SELECT * FROM {$GGTABLE} WHERE no='{$MlangPrintAutoFildView_Section}'");
                 $row = mysqli_fetch_array($result);
                 if ($row) { echo htmlspecialchars($row['title']); }

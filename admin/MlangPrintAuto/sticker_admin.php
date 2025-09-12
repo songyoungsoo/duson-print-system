@@ -4,8 +4,8 @@ include "../../db.php";
 include "../config.php";
 
 // 변수 초기화
-$T_DirUrl = "../../MlangPrintAuto";
-$T_TABLE = "sticker";
+$T_DirUrl = "../../mlangprintauto";
+$T_TABLE = "msticker";
 
 // ${} 대신 {$} 사용
 include "{$T_DirUrl}/ConDb.php";  
@@ -42,7 +42,7 @@ if ($mode === "form") {
     include "$T_DirFole";
     $Bgcolor1 = "408080";
   
-    if ($code === "Modify") include "./${T_TABLE}_NoFild.php";
+    if ($code === "Modify") include "./sticker_NoFild.php";
   ?>
 
 <head>
@@ -127,7 +127,7 @@ if ($mode === "form") {
 <form name="myForm" method="post" onsubmit="return MemberXCheckField()" action="<?php echo $_SERVER['PHP_SELF']; ?>">
     <input type="hidden" name="mode" value="<?php echo $code === 'Modify' ? 'Modify_ok' : 'form_ok'; ?>">
     <input type="hidden" name="Ttable" value="<?php echo htmlspecialchars($Ttable); ?>">
-<?php include "{$T_TABLE}_Script.php"; ?>
+<?php include "sticker_Script.php"; ?>
 
 <tr>
 <td bgcolor='#<?php echo $Bgcolor1?>' width=100 class='Left1' align=right>인쇄면&nbsp;&nbsp;</td>
