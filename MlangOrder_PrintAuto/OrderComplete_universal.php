@@ -20,6 +20,10 @@ $connect = $db;
 // 통합 인증 시스템 로드
 include "../includes/auth.php";
 
+// 추가 옵션 표시 클래스 포함
+include "../includes/AdditionalOptionsDisplay.php";
+$optionsDisplay = new AdditionalOptionsDisplay($connect);
+
 // ===========================================
 // 🔧 공통 함수들
 // ===========================================
@@ -127,6 +131,8 @@ function getProductUrlMapping() {
  * 제품 상세 정보 표시
  */
 function displayProductDetails($connect, $order) {
+    global $optionsDisplay; // 전역 변수로 접근
+    
     if (empty($order['Type_1'])) return '';
     
     $type_data = $order['Type_1'];
@@ -207,6 +213,41 @@ function displayProductDetails($connect, $order) {
     }
     
     $html .= '</div>';
+    
+    // 추가 옵션 표시 (주문 데이터에서 추출)
+    if ($optionsDisplay && !empty($order)) {
+        // 주문 데이터에서 추가 옵션 정보 추출
+        $optionData = [
+            'coating_enabled' => $order['coating_enabled'] ?? 0,
+            'coating_type' => $order['coating_type'] ?? '',
+            'coating_price' => $order['coating_price'] ?? 0,
+            'folding_enabled' => $order['folding_enabled'] ?? 0,
+            'folding_type' => $order['folding_type'] ?? '',
+            'folding_price' => $order['folding_price'] ?? 0,
+            'creasing_enabled' => $order['creasing_enabled'] ?? 0,
+            'creasing_lines' => $order['creasing_lines'] ?? 0,
+            'creasing_price' => $order['creasing_price'] ?? 0,
+            'additional_options_total' => $order['additional_options_total'] ?? 0
+        ];
+        
+        $optionDetails = $optionsDisplay->getOrderDetails($optionData);
+        if ($optionDetails['has_options']) {
+            $html .= '<div style="margin-top: 8px; padding: 10px 10px 5px 10px; background: #e8f5e9; border-radius: 8px; border-left: 3px solid #4caf50;">';
+            $html .= '<strong style="color: #2e7d32;">📎 추가 옵션:</strong> ';
+            
+            foreach ($optionDetails['options'] as $option) {
+                $html .= '<span class="option-item" style="background: linear-gradient(135deg, #c8e6c9 0%, #a5d6a7 100%); color: #1b5e20; margin: 0 5px;">';
+                $html .= $option['category'] . '(' . $option['name'] . ') ';
+                $html .= '<strong>' . $option['formatted_price'] . '</strong>';
+                $html .= '</span>';
+            }
+            
+            $html .= '<div style="margin-top: 2.5px; font-size: 0.85rem; color: #2e7d32;">';
+            $html .= '추가옵션 소계: <strong>' . number_format($optionDetails['total_price']) . '원</strong>';
+            $html .= '</div>';
+            $html .= '</div>';
+        }
+    }
     
     // 요청사항 표시
     if (!empty($order['cont'])) {

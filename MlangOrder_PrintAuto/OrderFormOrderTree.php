@@ -772,7 +772,7 @@ textarea:focus {
             <?php if ($no) { ?>
             <div class="info-grid">
                 <div class="info-card">
-                    <h3>📦 주문 상세 정보</h3>
+                    <div style='font-size: 0.8rem; font-weight: 600; color: #2c3e50; margin-bottom: 15px; border-bottom: 1px solid #e0e0e0; padding-bottom: 8px;'>📦 주문 상세 정보</div>
                     <div>
                         <?php 
                         // Type_1 필드에서 주문 정보 파싱 및 표시
@@ -791,27 +791,27 @@ textarea:focus {
                                     default: $product_icon = '📦';
                                 }
                                 
-                                echo "<div style='background: #e8f5e8; padding: 12px; border-radius: 8px; border-left: 4px solid #28a745; margin-bottom: 10px;'>";
-                                echo "<strong>$product_icon " . htmlspecialchars($product_type) . " 주문 상세</strong>";
+                                echo "<div style='background: #e8f5e8; padding: 15px; border-radius: 8px; border-left: 4px solid #28a745; margin-bottom: 15px;'>";
+                                echo "<span style='font-size: 0.8rem; font-weight: 600; color: #155724;'>$product_icon " . htmlspecialchars($product_type) . " 주문 상세</span>";
                                 echo "</div>";
                                 
-                                echo "<div style='background: white; padding: 15px; border-radius: 8px; border: 1px solid #e0e0e0; font-family: \"Noto Sans KR\", sans-serif; font-size: 1.3rem; font-weight: 600; line-height: 1.6;'>";
+                                echo "<div style='background: white; padding: 15px; border-radius: 8px; border: 1px solid #e0e0e0; font-family: \"Noto Sans KR\", sans-serif; font-size: 0.8rem; line-height: 1.6; color: #495057;'>";
                                 echo nl2br(htmlspecialchars($json_data['formatted_display']));
                                 echo "</div>";
                                 
                                 // 주문 시간 표시
                                 if (isset($json_data['created_at'])) {
-                                    echo "<div style='margin-top: 10px; color: #6c757d; font-size: 0.9em;'>";
+                                    echo "<div style='margin-top: 10px; color: #6c757d; font-size: 0.8rem;'>"; 
                                     echo "📅 주문 처리 시간: " . htmlspecialchars($json_data['created_at']);
                                     echo "</div>";
                                 }
                             } elseif ($json_data && isset($json_data['order_details'])) {
                                 // JSON 데이터가 있지만 formatted_display가 없는 경우
-                                echo "<div style='background: #fff3cd; padding: 12px; border-radius: 8px; border-left: 4px solid #ffc107; margin-bottom: 10px;'>";
-                                echo "<strong>📦 주문 정보 (구조화된 데이터)</strong>";
+                                echo "<div style='background: #fff3cd; padding: 15px; border-radius: 8px; border-left: 4px solid #ffc107; margin-bottom: 15px;'>";
+                                echo "<span style='font-size: 0.8rem; font-weight: 600; color: #856404;'>📦 주문 정보 (구조화된 데이터)</span>";
                                 echo "</div>";
                                 
-                                echo "<div style='background: white; padding: 15px; border-radius: 8px; border: 1px solid #e0e0e0; font-family: \"Noto Sans KR\", sans-serif; font-size: 1.3rem; font-weight: 600; line-height: 1.6;'>";
+                                echo "<div style='background: white; padding: 15px; border-radius: 8px; border: 1px solid #e0e0e0; font-family: \"Noto Sans KR\", sans-serif; font-size: 0.8rem; line-height: 1.6; color: #495057;'>";
                                 foreach ($json_data['order_details'] as $key => $value) {
                                     if (!empty($value)) {
                                         echo "<strong>" . htmlspecialchars($key) . ":</strong> " . htmlspecialchars($value) . "<br>";
@@ -823,20 +823,61 @@ textarea:focus {
                                 $content = trim($View_Type_1);
                                 if ($content === '\n\n\n\n\n' || empty($content)) {
                                     echo "<div style='color: #dc3545; font-weight: bold;'>⚠️ 주문 상세 정보가 올바르게 저장되지 않았습니다.</div>";
-                                    echo "<div style='color: #6c757d; font-size: 0.9em; margin-top: 10px;'>";
+                                    echo "<div style='color: #6c757d; font-size: 0.8rem; margin-top: 15px;'>";
                                     echo "주문번호: " . htmlspecialchars($View_No) . "<br>";
                                     echo "상품유형: " . htmlspecialchars($View_Type) . "<br>";
                                     echo "주문일시: " . htmlspecialchars($View_date) . "<br>";
                                     echo "</div>";
                                 } else {
-                                    echo "<div style='font-family: \"Noto Sans KR\", sans-serif; font-size: 1.1rem; font-weight: 600; line-height: 1.6;'>";
+                                    // 주문 상세 정보와 추가옵션 정보를 분리하여 표시
+                                    $mainContent = $content;
+                                    $additionalOptionsFound = [];
+                                    
+                                    // 추가옵션 정보 추출
+                                    $optionPatterns = [
+                                        '코팅' => '/코팅[:：\s]*([^\n\r]+)/u',
+                                        '접지' => '/(접지|접기|2절|3절|4절|Z절)[:：\s]*([^\n\r]*)/u',
+                                        '오시' => '/오시[:：\s]*([^\n\r]+)/u',
+                                        '후가공' => '/후가공[:：\s]*([^\n\r]+)/u'
+                                    ];
+                                    
+                                    foreach ($optionPatterns as $optionName => $pattern) {
+                                        if (preg_match($pattern, $content, $matches)) {
+                                            $optionValue = trim($matches[1] ?? $matches[0]);
+                                            if ($optionValue && $optionValue !== '없음' && $optionValue !== 'X' && $optionValue !== '') {
+                                                $additionalOptionsFound[$optionName] = $optionValue;
+                                            }
+                                        }
+                                    }
+                                    
+                                    echo "<div style='font-family: \"Noto Sans KR\", sans-serif; font-size: 0.8rem; line-height: 1.6; color: #495057;'>";
                                     echo nl2br(htmlspecialchars($content));
                                     echo "</div>";
+                                    
+                                    // 추가옵션이 발견되면 별도 박스로 강조 표시
+                                    if (!empty($additionalOptionsFound)) {
+                                        echo "<div style='margin-top: 15px; padding: 15px; background: #e8f5e8; border-radius: 8px; border-left: 4px solid #28a745;'>";
+                                        echo "<div style='font-size: 0.8rem; font-weight: 600; color: #155724; margin-bottom: 10px;'>🔧 발견된 추가옵션:</div>";
+                                        
+                                        foreach ($additionalOptionsFound as $optionName => $optionValue) {
+                                            $icon = '🔧';
+                                            switch ($optionName) {
+                                                case '코팅': $icon = '📄'; break;
+                                                case '접지': $icon = '📁'; break;
+                                                case '오시': $icon = '📐'; break;
+                                                case '후가공': $icon = '⚙️'; break;
+                                            }
+                                            echo "<div style='font-size: 0.8rem; color: #155724; margin-bottom: 6px;'>";
+                                            echo "• $icon $optionName: " . htmlspecialchars($optionValue);
+                                            echo "</div>";
+                                        }
+                                        echo "</div>";
+                                    }
                                 }
                             }
                         } else {
                             echo "<div style='color: #dc3545; font-weight: bold;'>❌ 주문 상세 정보가 없습니다.</div>";
-                            echo "<div style='color: #6c757d; font-size: 0.9em; margin-top: 10px;'>";
+                            echo "<div style='color: #6c757d; font-size: 0.8rem; margin-top: 15px;'>";
                             echo "이 주문의 상세 정보가 저장되지 않았습니다.<br>";
                             echo "주문번호: " . htmlspecialchars($View_No) . "<br>";
                             echo "상품유형: " . htmlspecialchars($View_Type) . "<br>";
@@ -846,54 +887,349 @@ textarea:focus {
                         </div>
                     </td>
                     <td>
-                        <div style='background: #f0f8ff; padding: 12px; border-radius: 8px; border-left: 4px solid #007bff; margin-bottom: 10px;'>
-                            <strong>💰 가격 정보</strong>
+                        <div style='background: #f0f8ff; padding: 15px; border-radius: 8px; border-left: 4px solid #007bff; margin-bottom: 15px;'>
+                            <span style='font-size: 0.8rem; font-weight: 600; color: #2c3e50;'>💰 가격 정보</span>
                         </div>
                         
-                        <div style='background: white; padding: 12px; border-radius: 6px; border: 1px solid #e0e0e0;'>
-                            <table style='width: 100%; border-collapse: collapse; font-size: 0.85rem;'>
+                        <div style='background: white; padding: 15px; border-radius: 8px; border: 1px solid #e0e0e0;'>
+                            <table style='width: 100%; border-collapse: collapse; font-size: 0.8rem;'>
                                 <tr style='border-bottom: 1px solid #eee;'>
-                                    <td style='padding: 4px 0; font-weight: bold; color: #495057; font-size: 1.3rem;'>인쇄비</td>
-                                    <td style='padding: 4px 0; text-align: right; color: #007bff; font-weight: 600; font-size: 1.3rem;'>
+                                    <td style='padding: 10px 0; font-weight: bold; color: #495057; font-size: 0.8rem;'>인쇄비</td>
+                                    <td style='padding: 10px 0; text-align: right; color: #007bff; font-weight: 600; font-size: 0.8rem;'>
                                         <?=number_format($View_money_4)?> 원
                                     </td>
                                 </tr>
                                 <tr style='border-bottom: 1px solid #eee;'>
-                                    <td style='padding: 8px 0; font-weight: bold; color: #495057; font-size: 1.3rem;'>디자인비</td>
-                                    <td style='padding: 8px 0; text-align: right; color: #17a2b8; font-weight: 600; font-size: 1.3rem;'>
+                                    <td style='padding: 10px 0; font-weight: bold; color: #495057; font-size: 0.8rem;'>디자인비</td>
+                                    <td style='padding: 10px 0; text-align: right; color: #17a2b8; font-weight: 600; font-size: 0.8rem;'>
                                         <?=number_format($View_money_2)?> 원
                                     </td>
                                 </tr>
+                                
+                                <?php 
+                                // 추가옵션 정보 파싱 및 표시
+                                $additionalOptionsTotal = 0;
+                                $additionalOptionsHTML = '';
+                                
+                                if (!empty($View_Type_1)) {
+                                    // JSON 데이터인지 확인
+                                    $typeData = json_decode($View_Type_1, true);
+                                    if (json_last_error() === JSON_ERROR_NONE && is_array($typeData)) {
+                                        // JSON 형태의 추가옵션 처리
+                                        
+                                        // 1. 표준 additional_options 필드 처리
+                                        if (isset($typeData['additional_options'])) {
+                                            $options = $typeData['additional_options'];
+                                            
+                                            // 코팅 옵션
+                                            if (isset($options['coating']) && $options['coating']['enabled']) {
+                                                $price = intval($options['coating']['price'] ?? 0);
+                                                $type = htmlspecialchars($options['coating']['type'] ?? '');
+                                                $additionalOptionsTotal += $price;
+                                                $additionalOptionsHTML .= "
+                                                <tr style='border-bottom: 1px solid #eee; background: #f8f9fa;'>
+                                                    <td style='padding: 8px 0; color: #6c757d; font-size: 0.8rem; padding-left: 15px;'>└ 코팅 ($type)</td>
+                                                    <td style='padding: 8px 0; text-align: right; color: #28a745; font-weight: 500; font-size: 0.8rem;'>
+                                                        +" . number_format($price) . " 원
+                                                    </td>
+                                                </tr>";
+                                            }
+                                            
+                                            // 접지 옵션
+                                            if (isset($options['folding']) && $options['folding']['enabled']) {
+                                                $price = intval($options['folding']['price'] ?? 0);
+                                                $type = htmlspecialchars($options['folding']['type'] ?? '');
+                                                $additionalOptionsTotal += $price;
+                                                $additionalOptionsHTML .= "
+                                                <tr style='border-bottom: 1px solid #eee; background: #f8f9fa;'>
+                                                    <td style='padding: 8px 0; color: #6c757d; font-size: 0.8rem; padding-left: 15px;'>└ 접지 ($type)</td>
+                                                    <td style='padding: 8px 0; text-align: right; color: #28a745; font-weight: 500; font-size: 0.8rem;'>
+                                                        +" . number_format($price) . " 원
+                                                    </td>
+                                                </tr>";
+                                            }
+                                            
+                                            // 오시 옵션
+                                            if (isset($options['creasing']) && $options['creasing']['enabled']) {
+                                                $price = intval($options['creasing']['price'] ?? 0);
+                                                $lines = htmlspecialchars($options['creasing']['lines'] ?? '');
+                                                $additionalOptionsTotal += $price;
+                                                $additionalOptionsHTML .= "
+                                                <tr style='border-bottom: 1px solid #eee; background: #f8f9fa;'>
+                                                    <td style='padding: 8px 0; color: #6c757d; font-size: 0.8rem; padding-left: 15px;'>└ 오시 ($lines)</td>
+                                                    <td style='padding: 8px 0; text-align: right; color: #28a745; font-weight: 500; font-size: 0.8rem;'>
+                                                        +" . number_format($price) . " 원
+                                                    </td>
+                                                </tr>";
+                                            }
+                                        }
+                                        
+                                        // 2. JSON의 order_details에서 코팅 정보 감지 (jong 필드 등)
+                                        if (isset($typeData['order_details'])) {
+                                            $orderDetails = $typeData['order_details'];
+                                            
+                                            // jong 필드에서 코팅 키워드 검색 (명함 제외)
+                                            if ($View_Type !== 'NameCard' && isset($orderDetails['jong'])) {
+                                                $jong = $orderDetails['jong'];
+                                                if (strpos($jong, '코팅') !== false) {
+                                                    $additionalOptionsHTML .= "
+                                                    <tr style='border-bottom: 1px solid #eee; background: #f8f9fa;'>
+                                                        <td style='padding: 8px 0; color: #6c757d; font-size: 0.8rem; padding-left: 15px;'>└ 재질코팅 (" . htmlspecialchars($jong) . ")</td>
+                                                        <td style='padding: 8px 0; text-align: right; color: #28a745; font-weight: 500; font-size: 0.8rem;'>
+                                                            포함됨
+                                                        </td>
+                                                    </tr>";
+                                                }
+                                            }
+                                        }
+                                        
+                                        // 3. JSON의 formatted_display에서도 검색 (명함 제외)
+                                        if ($View_Type !== 'NameCard' && isset($typeData['formatted_display'])) {
+                                            $formattedContent = $typeData['formatted_display'];
+                                            if (strpos($formattedContent, '코팅') !== false && empty($additionalOptionsHTML)) {
+                                                $additionalOptionsHTML .= "
+                                                <tr style='border-bottom: 1px solid #eee; background: #f8f9fa;'>
+                                                    <td style='padding: 8px 0; color: #6c757d; font-size: 0.8rem; padding-left: 15px;'>└ 코팅 (상세정보 참조)</td>
+                                                    <td style='padding: 8px 0; text-align: right; color: #28a745; font-weight: 500; font-size: 0.8rem;'>
+                                                        포함됨
+                                                    </td>
+                                                </tr>";
+                                            }
+                                        }
+                                    } else {
+                                        // 일반 텍스트에서 추가옵션 정보 추출 (상세한 키워드 검색)
+                                        if (!empty($View_Type_1)) {
+                                            $content = $View_Type_1;
+                                            
+                                            // 코팅 옵션 검색 (명함 제외)
+                                            if ($View_Type !== 'NameCard' && preg_match('/(.*?)코팅(:?[:：\s]*([^\n\r]+))?/u', $content, $matches)) {
+                                                $coating_prefix = trim($matches[1]); // "칼라", "유광", "무광" 등
+                                                $coating_suffix = isset($matches[3]) ? trim($matches[3]) : '';
+                                                
+                                                // 코팅 정보 구성
+                                                $coating_parts = array_filter([$coating_prefix, '코팅', $coating_suffix]);
+                                                $coating_info = implode(' ', $coating_parts);
+                                                
+                                                if ($coating_info && $coating_info !== '없음' && $coating_info !== 'X') {
+                                                    $additionalOptionsHTML .= "
+                                                    <tr style='border-bottom: 1px solid #eee; background: #f8f9fa;'>
+                                                        <td style='padding: 8px 0; color: #6c757d; font-size: 0.8rem; padding-left: 15px;'>└ 코팅 (" . htmlspecialchars($coating_info) . ")</td>
+                                                        <td style='padding: 8px 0; text-align: right; color: #28a745; font-weight: 500; font-size: 0.8rem;'>
+                                                            포함됨
+                                                        </td>
+                                                    </tr>";
+                                                }
+                                            }
+                                            
+                                            // 접지 옵션 검색
+                                            if (preg_match('/(접지|접기|2절|3절|4절|Z절)[:：\s]*([^\n\r]*)/u', $content, $matches)) {
+                                                $folding_info = trim($matches[0]);
+                                                if ($folding_info && $folding_info !== '없음' && $folding_info !== 'X') {
+                                                    $additionalOptionsHTML .= "
+                                                    <tr style='border-bottom: 1px solid #eee; background: #f8f9fa;'>
+                                                        <td style='padding: 8px 0; color: #6c757d; font-size: 0.8rem; padding-left: 15px;'>└ 접지 (" . htmlspecialchars($folding_info) . ")</td>
+                                                        <td style='padding: 8px 0; text-align: right; color: #28a745; font-weight: 500; font-size: 0.8rem;'>
+                                                            포함됨
+                                                        </td>
+                                                    </tr>";
+                                                }
+                                            }
+                                            
+                                            // 오시 옵션 검색
+                                            if (preg_match('/오시[:：\s]*([^\n\r]+)/u', $content, $matches)) {
+                                                $creasing_info = trim($matches[1]);
+                                                if ($creasing_info && $creasing_info !== '없음' && $creasing_info !== 'X') {
+                                                    $additionalOptionsHTML .= "
+                                                    <tr style='border-bottom: 1px solid #eee; background: #f8f9fa;'>
+                                                        <td style='padding: 8px 0; color: #6c757d; font-size: 0.8rem; padding-left: 15px;'>└ 오시 (" . htmlspecialchars($creasing_info) . ")</td>
+                                                        <td style='padding: 8px 0; text-align: right; color: #28a745; font-weight: 500; font-size: 0.8rem;'>
+                                                            포함됨
+                                                        </td>
+                                                    </tr>";
+                                                }
+                                            }
+                                            
+                                            // 후가공 키워드 처리 (개선된 버전) (명함 제외)
+                                            if ($View_Type !== 'NameCard' && (strpos($content, '후가공') !== false || 
+                                                strpos($content, '가공') !== false || 
+                                                strpos($content, '라미네이팅') !== false)) {
+                                                
+                                                // 후가공 정보 추출
+                                                if (preg_match('/후가공[:：\s]*([^\n\r]*)/u', $content, $matches)) {
+                                                    $processing_info = trim($matches[1]);
+                                                    if (empty($processing_info)) {
+                                                        $processing_info = '별도 문의';
+                                                    }
+                                                } else {
+                                                    $processing_info = '포함됨';
+                                                }
+                                                
+                                                $additionalOptionsHTML .= "
+                                                <tr style='border-bottom: 1px solid #eee; background: #f8f9fa;'>
+                                                    <td style='padding: 8px 0; color: #6c757d; font-size: 0.8rem; padding-left: 15px;'>└ 후가공 ($processing_info)</td>
+                                                    <td style='padding: 8px 0; text-align: right; color: #28a745; font-weight: 500; font-size: 0.8rem;'>
+                                                        포함됨
+                                                    </td>
+                                                </tr>";
+                                            }
+                                        }
+                                    }
+                                }
+                                
+                                // 추가옵션이 있으면 표시
+                                echo $additionalOptionsHTML;
+                                ?>
+                                
                                 <tr style='border-bottom: 2px solid #007bff;'>
-                                    <td style='padding: 8px 0; font-weight: bold; color: #495057; font-size: 1.3rem;'>소계</td>
-                                    <td style='padding: 8px 0; text-align: right; color: #495057; font-weight: 600; font-size: 1.3rem;'>
-                                        <?=number_format($View_money_4 + $View_money_2)?> 원
+                                    <td style='padding: 10px 0; font-weight: bold; color: #495057; font-size: 0.8rem;'>소계</td>
+                                    <td style='padding: 10px 0; text-align: right; color: #495057; font-weight: 600; font-size: 0.8rem;'>
+                                        <?=number_format($View_money_4 + $View_money_2 + $additionalOptionsTotal)?> 원
                                     </td>
                                 </tr>
                                 <tr style='border-bottom: 1px solid #eee;'>
-                                    <td style='padding: 8px 0; font-weight: bold; color: #495057; font-size: 1.3rem;'>부가세 (10%)</td>
-                                    <td style='padding: 8px 0; text-align: right; color: #ffc107; font-weight: 600; font-size: 1.3rem;'>
+                                    <td style='padding: 10px 0; font-weight: bold; color: #495057; font-size: 0.8rem;'>부가세 (10%)</td>
+                                    <td style='padding: 10px 0; text-align: right; color: #ffc107; font-weight: 600; font-size: 0.8rem;'>
                                         <?=number_format($View_money_3)?> 원
                                     </td>
                                 </tr>
                                 <tr style='background: #ffe6e6; border: 2px solid #dc3545;'>
-                                    <td style='padding: 12px 8px; font-weight: bold; font-size: 1.3rem; color: #dc3545;'>총 합계</td>
-                                    <td style='padding: 12px 8px; text-align: right; color: #dc3545; font-weight: bold; font-size: 1.4rem;'>
+                                    <td style='padding: 12px 0; font-weight: bold; font-size: 0.8rem; color: #dc3545;'>총 합계</td>
+                                    <td style='padding: 12px 0; text-align: right; color: #dc3545; font-weight: bold; font-size: 0.8rem;'>
                                         <?=number_format($View_money_5)?> 원
                                     </td>
                                 </tr>
                             </table>
                         </div>
                         
-                        <div style='margin-top: 15px; background: #f8f9fa; padding: 12px; border-radius: 8px; border: 1px solid #dee2e6;'>
-                            <div style='margin-bottom: 8px;'>
-                                <strong>📦 상품 유형:</strong> 
-                                <span style='background: #e3f2fd; padding: 4px 8px; border-radius: 4px; color: #1976d2; font-weight: 600;'>
+                        <!-- 추가옵션 상세 정보 섹션 -->
+                        <?php 
+                        // 추가옵션이 있는지 더 광범위하게 체크
+                        $showAdditionalOptionsSection = !empty($additionalOptionsHTML);
+                        if (!$showAdditionalOptionsSection && !empty($View_Type_1)) {
+                            // 텍스트에서 추가옵션 키워드가 있는지 확인
+                            $content = $View_Type_1;
+                            $showAdditionalOptionsSection = (
+                                ($View_Type !== 'NameCard' && strpos($content, '코팅') !== false) ||
+                                strpos($content, '접지') !== false ||
+                                strpos($content, '접기') !== false ||
+                                strpos($content, '오시') !== false ||
+                                ($View_Type !== 'NameCard' && strpos($content, '후가공') !== false) ||
+                                strpos($content, '2절') !== false ||
+                                strpos($content, '3절') !== false ||
+                                strpos($content, '4절') !== false ||
+                                strpos($content, 'Z절') !== false ||
+                                strpos($content, '라미네이팅') !== false
+                            );
+                        }
+                        
+                        if ($showAdditionalOptionsSection): ?>
+                        <div style='margin-top: 15px; background: #e8f5e8; padding: 15px; border-radius: 8px; border: 1px solid #c3e6c3; border-left: 4px solid #28a745;'>
+                            <div style='margin-bottom: 12px;'>
+                                <span style='font-size: 0.8rem; font-weight: 600; color: #155724;'>🔧 추가옵션 (후가공)</span>
+                            </div>
+                            <div style='background: white; padding: 12px; border-radius: 6px; font-size: 0.8rem;'>
+                                <?php
+                                // 선택된 추가옵션들을 텍스트로 표시
+                                $optionsList = [];
+                                if (!empty($View_Type_1)) {
+                                    $typeData = json_decode($View_Type_1, true);
+                                    if (json_last_error() === JSON_ERROR_NONE && is_array($typeData) && isset($typeData['additional_options'])) {
+                                        $options = $typeData['additional_options'];
+                                        
+                                        if (isset($options['coating']['enabled']) && $options['coating']['enabled']) {
+                                            $optionsList[] = "📄 코팅: " . htmlspecialchars($options['coating']['type'] ?? '') . " (+".number_format($options['coating']['price'] ?? 0)."원)";
+                                        }
+                                        
+                                        if (isset($options['folding']['enabled']) && $options['folding']['enabled']) {
+                                            $optionsList[] = "📁 접지: " . htmlspecialchars($options['folding']['type'] ?? '') . " (+".number_format($options['folding']['price'] ?? 0)."원)";
+                                        }
+                                        
+                                        if (isset($options['creasing']['enabled']) && $options['creasing']['enabled']) {
+                                            $optionsList[] = "📐 오시: " . htmlspecialchars($options['creasing']['lines'] ?? '') . " (+".number_format($options['creasing']['price'] ?? 0)."원)";
+                                        }
+                                    }
+                                }
+                                
+                                if (!empty($optionsList)) {
+                                    foreach ($optionsList as $option) {
+                                        echo "<div style='margin-bottom: 4px; color: #155724; font-weight: 500;'>• $option</div>";
+                                    }
+                                    echo "<div style='margin-top: 8px; padding-top: 8px; border-top: 1px solid #c3e6c3; font-weight: 600; color: #155724;'>";
+                                    echo "💰 추가옵션 총액: <span style='color: #28a745;'>" . number_format($additionalOptionsTotal) . "원</span>";
+                                    echo "</div>";
+                                } else {
+                                    // JSON에서 추가옵션을 찾을 수 없는 경우, 데이터베이스에서 직접 확인
+                                    $hasAdditionalOptions = false;
+                                    $optionsInfo = [];
+                                    
+                                    // Type_1 필드에서 코팅, 접지, 오시 키워드 검색
+                                    if (!empty($View_Type_1)) {
+                                        $content = $View_Type_1;
+                                        
+                                        // 코팅 관련 키워드 검색 (명함 제외)
+                                        if ($View_Type !== 'NameCard' && (preg_match('/코팅[:：]\s*([^\n\r]+)/u', $content, $matches) || 
+                                            preg_match('/코팅\s*([^\n\r]+)/u', $content, $matches))) {
+                                            $coating_info = trim($matches[1]);
+                                            if ($coating_info && $coating_info !== '없음' && $coating_info !== 'X') {
+                                                $optionsInfo[] = "📄 코팅: " . htmlspecialchars($coating_info);
+                                                $hasAdditionalOptions = true;
+                                            }
+                                        }
+                                        
+                                        // 접지 관련 키워드 검색
+                                        if (preg_match('/접지[:：]\s*([^\n\r]+)/u', $content, $matches) || 
+                                            preg_match('/접기[:：]\s*([^\n\r]+)/u', $content, $matches) ||
+                                            preg_match('/(2절|3절|4절|Z절|접지)/u', $content, $matches)) {
+                                            $folding_info = trim($matches[1] ?? $matches[0]);
+                                            if ($folding_info && $folding_info !== '없음' && $folding_info !== 'X') {
+                                                $optionsInfo[] = "📁 접지: " . htmlspecialchars($folding_info);
+                                                $hasAdditionalOptions = true;
+                                            }
+                                        }
+                                        
+                                        // 오시 관련 키워드 검색
+                                        if (preg_match('/오시[:：]\s*([^\n\r]+)/u', $content, $matches) || 
+                                            preg_match('/(?:오시|골[선선])\s*([^\n\r]+)/u', $content, $matches)) {
+                                            $creasing_info = trim($matches[1]);
+                                            if ($creasing_info && $creasing_info !== '없음' && $creasing_info !== 'X') {
+                                                $optionsInfo[] = "📐 오시: " . htmlspecialchars($creasing_info);
+                                                $hasAdditionalOptions = true;
+                                            }
+                                        }
+                                        
+                                        // 후가공 일반 키워드 검색 (명함 제외)
+                                        if ($View_Type !== 'NameCard' && !$hasAdditionalOptions && 
+                                            (strpos($content, '후가공') !== false || 
+                                             strpos($content, '가공') !== false ||
+                                             strpos($content, '코팅') !== false ||
+                                             strpos($content, '라미네이팅') !== false)) {
+                                            $optionsInfo[] = "🔧 후가공: 포함됨";
+                                            $hasAdditionalOptions = true;
+                                        }
+                                    }
+                                    
+                                    if ($hasAdditionalOptions) {
+                                        foreach ($optionsInfo as $option) {
+                                            echo "<div style='margin-bottom: 6px; color: #155724; font-weight: 500;'>• $option</div>";
+                                        }
+                                    } else {
+                                        echo "<div style='color: #6c757d; font-style: italic;'>선택된 추가옵션이 없습니다.</div>";
+                                    }
+                                }
+                                ?>
+                            </div>
+                        </div>
+                        <?php endif; ?>
+
+                        <div style='margin-top: 15px; background: #f8f9fa; padding: 15px; border-radius: 8px; border: 1px solid #dee2e6;'>
+                            <div style='margin-bottom: 12px; font-size: 0.8rem;'>
+                                <span style='font-weight: 600; color: #495057;'>📦 상품 유형:</span> 
+                                <span style='background: #e3f2fd; padding: 6px 12px; border-radius: 4px; color: #1976d2; font-weight: 600; margin-left: 8px;'>
                                     <?=htmlspecialchars($View_Type)?>
                                 </span>
                             </div>
-                            <div>
-                                <strong>📋 주문 상태:</strong> 
+                            <div style='font-size: 0.8rem;'>
+                                <span style='font-weight: 600; color: #495057;'>📋 주문 상태:</span> 
                                 <span style='background: <?php 
                                     switch($View_OrderStyle) {
                                         case '1': echo '#fff3cd; color: #856404;'; break; // 주문접수
@@ -903,7 +1239,7 @@ textarea:focus {
                                         case '7': echo '#e2e3e5; color: #383d41;'; break; // 교정
                                         default: echo '#f8f9fa; color: #6c757d;'; // 상태미정
                                     }
-                                ?> padding: 4px 8px; border-radius: 4px; font-weight: 600;'>
+                                ?> padding: 6px 12px; border-radius: 4px; font-weight: 600; margin-left: 8px;'>
                                     <?php 
                                     switch($View_OrderStyle) {
                                         case '1': echo '📥 주문접수'; break;

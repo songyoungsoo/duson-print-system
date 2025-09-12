@@ -17,6 +17,10 @@ include "../includes/auth.php";
 // 헬퍼 함수 포함
 include "../MlangPrintAuto/shop_temp_helper.php";
 
+// 추가 옵션 표시 클래스 포함
+include "../includes/AdditionalOptionsDisplay.php";
+$optionsDisplay = new AdditionalOptionsDisplay($connect);
+
 // 페이지 설정
 $page_title = '📋 주문 정보 입력';
 $current_page = 'order';
@@ -459,6 +463,24 @@ if (!empty($debug_info) && (strpos($_SERVER['HTTP_HOST'], 'localhost') !== false
                                             </span>
                                         <?php endforeach; ?>
                                     </div>
+                                    <?php 
+                                    // 추가 옵션 표시
+                                    $optionDetails = $optionsDisplay->getOrderDetails($item);
+                                    if ($optionDetails['has_options']): 
+                                    ?>
+                                        <div style="margin-top: 0.5rem; padding: 0.5rem 0.5rem 0.25rem 0.5rem; background: #e8f5e9; border-radius: 4px; border-left: 3px solid #4caf50;">
+                                            <strong style="color: #2e7d32; font-size: 0.85rem;">📎 추가 옵션:</strong>
+                                            <?php foreach ($optionDetails['options'] as $option): ?>
+                                                <span style="display: inline-block; margin: 0.2rem 0.5rem 0.2rem 0; padding: 2px 8px; background: #fff; border-radius: 12px; font-size: 0.8rem; color: #1b5e20;">
+                                                    <?php echo $option['category']; ?>(<?php echo $option['name']; ?>) 
+                                                    <strong><?php echo $option['formatted_price']; ?></strong>
+                                                </span>
+                                            <?php endforeach; ?>
+                                            <div style="margin-top: 0.15rem; font-size: 0.8rem; color: #2e7d32;">
+                                                추가옵션 소계: <strong><?php echo number_format($optionDetails['total_price']); ?>원</strong>
+                                            </div>
+                                        </div>
+                                    <?php endif; ?>
                                     <?php if ($item['MY_comment']): ?>
                                         <div style="margin-top: 0.5rem; padding: 0.5rem; background: #fff3cd; border-radius: 4px; font-size: 0.9rem;">
                                             <strong>요청사항:</strong> <?php echo htmlspecialchars($item['MY_comment']); ?>

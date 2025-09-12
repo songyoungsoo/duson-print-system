@@ -13,6 +13,7 @@ $connect = $db;
 
 // 헬퍼 함수 포함
 include "../MlangPrintAuto/shop_temp_helper.php";
+include "../includes/upload_config.php";
 
 try {
     // POST 데이터 받기
@@ -270,11 +271,15 @@ try {
             $final_cont .= $business_info_text;
         }
         
-        // mlangorder_printauto 테이블에 삽입
+        // mlangorder_printauto 테이블에 삽입 (추가 옵션 필드 포함)
         $insert_query = "INSERT INTO mlangorder_printauto (
             no, Type, Type_1, money_4, money_5, name, email, zip, zip1, zip2, 
-            phone, Hendphone, cont, date, OrderStyle, ThingCate
-        ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)";
+            phone, Hendphone, cont, date, OrderStyle, ThingCate,
+            coating_enabled, coating_type, coating_price,
+            folding_enabled, folding_type, folding_price,
+            creasing_enabled, creasing_lines, creasing_price,
+            additional_options_total
+        ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)";
         
         $stmt = mysqli_prepare($connect, $insert_query);
         if (!$stmt) {
@@ -306,20 +311,35 @@ try {
         }
         $full_address = $detail_address . ' ' . $extra_address; // 주소 문자열 연결을 변수에 저장
         
-        mysqli_stmt_bind_param($stmt, 'issiisssssssssss',
+        // 추가 옵션 데이터 가져오기
+        $coating_enabled = $item['coating_enabled'] ?? 0;
+        $coating_type = $item['coating_type'] ?? '';
+        $coating_price = $item['coating_price'] ?? 0;
+        $folding_enabled = $item['folding_enabled'] ?? 0;
+        $folding_type = $item['folding_type'] ?? '';
+        $folding_price = $item['folding_price'] ?? 0;
+        $creasing_enabled = $item['creasing_enabled'] ?? 0;
+        $creasing_lines = $item['creasing_lines'] ?? 0;
+        $creasing_price = $item['creasing_price'] ?? 0;
+        $additional_options_total = $item['additional_options_total'] ?? 0;
+        
+        mysqli_stmt_bind_param($stmt, 'issiisssssssssssisissiiiii',
             $new_no, $product_type_name, $product_info, $item['st_price'], $item['st_price_vat'],
             $username, $email, $postcode, $address, $full_address,
-            $phone, $hendphone, $final_cont, $date, $order_style, $thing_cate
+            $phone, $hendphone, $final_cont, $date, $order_style, $thing_cate,
+            $coating_enabled, $coating_type, $coating_price,
+            $folding_enabled, $folding_type, $folding_price,
+            $creasing_enabled, $creasing_lines, $creasing_price,
+            $additional_options_total
         );
         
         if (mysqli_stmt_execute($stmt)) {
             $order_numbers[] = $new_no;
             
-            // 업로드된 파일들을 주문 번호 폴더로 이동 (중복 방지 개선)
-            $final_upload_dir = "../MlangOrder_PrintAuto/upload/" . $new_no;
-            if (!is_dir($final_upload_dir)) {
-                mkdir($final_upload_dir, 0755, true);
-                chmod($final_upload_dir, 0777);
+            // 새로운 통합 업로드 시스템 사용 - 임시 파일을 주문 폴더로 이동
+            $final_upload_dir = getOrderUploadPath($new_no);
+            if (!createUploadDirectory($final_upload_dir)) {
+                throw new Exception('주문 파일 디렉토리 생성에 실패했습니다.');
             }
             
             $moved_files = [];
@@ -335,8 +355,8 @@ try {
                 $move_result = mysqli_stmt_get_result($move_stmt);
                 
                 while ($file_row = mysqli_fetch_assoc($move_result)) {
-                    $temp_file_path = "../MlangOrder_PrintAuto/upload/temp/" . $session_id . "/" . $file_row['file_name'];
-                    $final_file_path = $final_upload_dir . "/" . $file_row['file_name'];
+                    $temp_file_path = getTempUploadPath($session_id) . $file_row['file_name'];
+                    $final_file_path = $final_upload_dir . $file_row['file_name'];
                     
                     // 파일 존재 확인 및 이동
                     if (file_exists($temp_file_path)) {

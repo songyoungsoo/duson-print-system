@@ -366,7 +366,18 @@ function formatCartItemForDisplay($connect, $item) {
         'st_price' => $item['st_price'],
         'st_price_vat' => $item['st_price_vat'],
         'uhyung' => $item['uhyung'],
-        'MY_comment' => $item['MY_comment'] ?? ''
+        'MY_comment' => $item['MY_comment'] ?? '',
+        // 추가 옵션 데이터 포함
+        'coating_enabled' => $item['coating_enabled'] ?? 0,
+        'coating_type' => $item['coating_type'] ?? '',
+        'coating_price' => $item['coating_price'] ?? 0,
+        'folding_enabled' => $item['folding_enabled'] ?? 0,
+        'folding_type' => $item['folding_type'] ?? '',
+        'folding_price' => $item['folding_price'] ?? 0,
+        'creasing_enabled' => $item['creasing_enabled'] ?? 0,
+        'creasing_lines' => $item['creasing_lines'] ?? 0,
+        'creasing_price' => $item['creasing_price'] ?? 0,
+        'additional_options_total' => $item['additional_options_total'] ?? 0
     ];
     
     switch ($item['product_type']) {

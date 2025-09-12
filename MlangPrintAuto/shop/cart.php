@@ -4,6 +4,7 @@ $session_id = session_id();
 
 // 경로 수정: MlangPrintAuto/shop/에서 루트의 db.php 접근
 include "../../db.php";
+include "../../includes/AdditionalOptionsDisplay.php";
 $connect = $db; // db.php에서 $db 변수 사용
 
 error_log("Attempting to connect to database");
@@ -122,6 +123,7 @@ error_log("Starting to get cart items for session: " . $session_id);
 
 $cart_result = getCartItems($connect, $session_id);
 $cart_items = [];
+$optionsDisplay = getAdditionalOptionsDisplay($connect);
 
 if ($cart_result === false) {
     $error_message = "장바구니 정보를 불러오는데 실패했습니다. ";
@@ -195,8 +197,14 @@ if ($cart_result === false) {
                             </thead>
                             <tbody>
                                 <?php foreach ($cart_items as $index => $item):
-                                    $total_price += $item['st_price'];
-                                    $total_vat += $item['st_price_vat'];
+                                    // 추가 옵션 가격 계산
+                                    $base_price = intval($item['st_price']);
+                                    $price_with_options = $optionsDisplay->calculateTotalWithOptions($base_price, $item);
+                                    $final_price = $price_with_options['total_price'];
+                                    $final_price_vat = $price_with_options['total_vat'];
+                                    
+                                    $total_price += $final_price;
+                                    $total_vat += $final_price_vat;
                                     $items_data[] = $item;
                                     
                                     // 상품명 매핑
@@ -281,6 +289,23 @@ if ($cart_result === false) {
                                                     <div style="color: #4a5568;"><span style="color: #3182ce; font-weight: 500;">타입:</span> <?php echo $item['ordertype'] == 'total' ? '디자인+인쇄' : ($item['ordertype'] == 'print' ? '인쇄만' : htmlspecialchars($item['ordertype'])); ?></div>
                                                 <?php endif; ?>
                                             <?php endif; ?>
+                                            
+                                            <!-- 📎 추가 옵션 정보 표시 -->
+                                            <?php 
+                                            $options_details = $optionsDisplay->getOrderDetails($item);
+                                            if (!empty($options_details['options'])): 
+                                            ?>
+                                                <div style="margin-top: 8px; padding-top: 8px; border-top: 1px solid #e2e8f0;">
+                                                    <div style="color: #e53e3e; font-weight: 600; font-size: 12px; margin-bottom: 4px;">📎 추가옵션</div>
+                                                    <?php foreach ($options_details['options'] as $option): ?>
+                                                        <div style="color: #2d3748; font-size: 11px; margin-bottom: 2px;">
+                                                            <span style="color: #e53e3e; font-weight: 500;"><?php echo $option['category']; ?>:</span>
+                                                            <?php echo $option['name']; ?> 
+                                                            <span style="color: #38a169; font-weight: 600;">(+<?php echo $option['formatted_price']; ?>)</span>
+                                                        </div>
+                                                    <?php endforeach; ?>
+                                                </div>
+                                            <?php endif; ?>
                                         </div>
                                     </td>
                                     
@@ -302,13 +327,13 @@ if ($cart_result === false) {
                                     <!-- 단가 -->
                                     <td style="padding: 12px; border-right: 1px solid #e8eaed; vertical-align: middle; text-align: right;">
                                         <div style="color: #4a5568; font-size: 13px; margin-bottom: 2px;">부가세별도</div>
-                                        <div style="font-weight: 600; color: #2d3748; font-size: 14px;"><?php echo number_format($item['st_price']); ?>원</div>
+                                        <div style="font-weight: 600; color: #2d3748; font-size: 14px;"><?php echo number_format($final_price); ?>원</div>
                                     </td>
                                     
                                     <!-- 총액 -->
                                     <td style="padding: 12px; border-right: 1px solid #e8eaed; vertical-align: middle; text-align: right;">
                                         <div style="color: #4a5568; font-size: 13px; margin-bottom: 2px;">부가세포함</div>
-                                        <div style="font-weight: 700; color: #e53e3e; font-size: 16px;"><?php echo number_format($item['st_price_vat']); ?>원</div>
+                                        <div style="font-weight: 700; color: #e53e3e; font-size: 16px;"><?php echo number_format($final_price_vat); ?>원</div>
                                     </td>
                                     
                                     <!-- 관리 -->
@@ -365,12 +390,163 @@ if ($cart_result === false) {
                             <button type="button" onclick="continueShopping()" class="btn-continue" style="padding: 10px 20px; background: linear-gradient(135deg, #48bb78 0%, #38a169 100%); color: white; border: none; border-radius: 6px; font-size: 14px; font-weight: 500; cursor: pointer; transition: all 0.2s ease; box-shadow: 0 2px 4px rgba(72,187,120,0.3);" onmouseover="this.style.transform='translateY(-1px)'; this.style.boxShadow='0 4px 8px rgba(72,187,120,0.4)'" onmouseout="this.style.transform='translateY(0px)'; this.style.boxShadow='0 2px 4px rgba(72,187,120,0.3)'">
                                 🛍️ 계속 쇼핑
                             </button>
-                            <button type="button" onclick="generateQuotePDF()" class="btn-quote" style="padding: 10px 20px; background: linear-gradient(135deg, #4299e1 0%, #3182ce 100%); color: white; border: none; border-radius: 6px; font-size: 14px; font-weight: 500; cursor: pointer; transition: all 0.2s ease; box-shadow: 0 2px 4px rgba(66,153,225,0.3);" onmouseover="this.style.transform='translateY(-1px)'; this.style.boxShadow='0 4px 8px rgba(66,153,225,0.4)'" onmouseout="this.style.transform='translateY(0px)'; this.style.boxShadow='0 2px 4px rgba(66,153,225,0.3)'">
+                            <button type="button" onclick="showQuotation()" class="btn-quote" style="padding: 10px 20px; background: linear-gradient(135deg, #4299e1 0%, #3182ce 100%); color: white; border: none; border-radius: 6px; font-size: 14px; font-weight: 500; cursor: pointer; transition: all 0.2s ease; box-shadow: 0 2px 4px rgba(66,153,225,0.3);" onmouseover="this.style.transform='translateY(-1px)'; this.style.boxShadow='0 4px 8px rgba(66,153,225,0.4)'" onmouseout="this.style.transform='translateY(0px)'; this.style.boxShadow='0 2px 4px rgba(66,153,225,0.3)'">
                                 📄 견적서 받기
                             </button>
                             <button type="submit" class="btn-order" style="padding: 12px 32px; background: linear-gradient(135deg, #f56565 0%, #e53e3e 100%); color: white; border: none; border-radius: 6px; font-size: 15px; font-weight: 600; cursor: pointer; transition: all 0.2s ease; box-shadow: 0 3px 6px rgba(245,101,101,0.4);" onmouseover="this.style.transform='translateY(-2px)'; this.style.boxShadow='0 6px 12px rgba(245,101,101,0.5)'" onmouseout="this.style.transform='translateY(0px)'; this.style.boxShadow='0 3px 6px rgba(245,101,101,0.4)'">
                                 📋 주문하기
                             </button>
+                        </div>
+                    </div>
+                    
+                    <!-- 🔍 실용적 디버깅 섹션 (test_basket_data.php 스타일) -->
+                    <div style="margin-top: 30px; background: linear-gradient(135deg, #f0f8ff 0%, #e8f4fd 100%); border-radius: 8px; padding: 20px; border: 2px solid #4169e1;">
+                        <h3 style="color: #4169e1; margin-top: 0; display: flex; align-items: center; gap: 8px;">
+                            🔍 <span>실시간 데이터베이스 확인</span>
+                            <small style="color: #666; font-size: 12px; font-weight: normal;">(개발자용 - 옵션 가격 문제 진단)</small>
+                        </h3>
+                        
+                        <div style="background: white; border-radius: 6px; padding: 15px; overflow-x: auto; border: 1px solid #d1ecf1;">
+                            <table border="1" cellpadding="8" cellspacing="0" style="font-size: 11px; width: 100%; border-collapse: collapse;">
+                                <tr style="background: #f0f0f0;">
+                                    <th style="min-width: 40px;">NO</th>
+                                    <th style="min-width: 80px;">상품타입</th>
+                                    <th style="min-width: 80px;">인쇄비</th>
+                                    <th style="min-width: 80px;">부가세포함</th>
+                                    <th style="background: #ffffcc; min-width: 70px;">코팅활성</th>
+                                    <th style="background: #ffffcc; min-width: 70px;">코팅가격</th>
+                                    <th style="background: #ffe0cc; min-width: 70px;">접기활성</th>
+                                    <th style="background: #ffe0cc; min-width: 70px;">접기가격</th>
+                                    <th style="background: #e0ffcc; min-width: 70px;">크리징활성</th>
+                                    <th style="background: #e0ffcc; min-width: 70px;">크리징가격</th>
+                                    <th style="background: #e0e0ff; min-width: 80px;">옵션총액</th>
+                                    <th style="min-width: 60px;">상태</th>
+                                </tr>
+                                <?php foreach ($cart_items as $debug_item): 
+                                    // 문제 진단
+                                    $has_option_data = isset($debug_item['coating_price']) || isset($debug_item['folding_price']) || isset($debug_item['creasing_price']);
+                                    $total_option_price = (intval($debug_item['coating_price'] ?? 0) + intval($debug_item['folding_price'] ?? 0) + intval($debug_item['creasing_price'] ?? 0));
+                                    
+                                    $status = '';
+                                    $row_color = '';
+                                    if (!$has_option_data) {
+                                        $status = '❌ 옵션없음';
+                                        $row_color = '#ffe6e6';
+                                    } elseif ($total_option_price == 0) {
+                                        $status = '⚠️ 가격0원';
+                                        $row_color = '#fff3cd';
+                                    } else {
+                                        $status = '✅ 정상';
+                                        $row_color = '#d4edda';
+                                    }
+                                ?>
+                                <tr style="background: <?php echo $row_color; ?>;">
+                                    <td style="text-align: center; font-weight: bold;"><?php echo $debug_item['no']; ?></td>
+                                    <td style="text-align: center;"><?php echo $debug_item['product_type'] ?? 'NULL'; ?></td>
+                                    <td style="text-align: right; font-weight: bold;"><?php echo number_format($debug_item['st_price'] ?? 0); ?>원</td>
+                                    <td style="text-align: right; font-weight: bold;"><?php echo number_format($debug_item['st_price_vat'] ?? 0); ?>원</td>
+                                    
+                                    <!-- 코팅 옵션 -->
+                                    <td style="background: #ffffcc; text-align: center;">
+                                        <?php echo ($debug_item['coating_enabled'] ?? 'NULL'); ?>
+                                    </td>
+                                    <td style="background: #ffffcc; text-align: right; font-weight: bold;">
+                                        <?php 
+                                        $coating_price = $debug_item['coating_price'] ?? 'NULL';
+                                        if ($coating_price !== 'NULL') {
+                                            echo number_format($coating_price) . '원';
+                                        } else {
+                                            echo '<span style="color: #999;">NULL</span>';
+                                        }
+                                        ?>
+                                    </td>
+                                    
+                                    <!-- 접기 옵션 -->
+                                    <td style="background: #ffe0cc; text-align: center;">
+                                        <?php echo ($debug_item['folding_enabled'] ?? 'NULL'); ?>
+                                    </td>
+                                    <td style="background: #ffe0cc; text-align: right; font-weight: bold;">
+                                        <?php 
+                                        $folding_price = $debug_item['folding_price'] ?? 'NULL';
+                                        if ($folding_price !== 'NULL') {
+                                            echo number_format($folding_price) . '원';
+                                        } else {
+                                            echo '<span style="color: #999;">NULL</span>';
+                                        }
+                                        ?>
+                                    </td>
+                                    
+                                    <!-- 크리징 옵션 -->
+                                    <td style="background: #e0ffcc; text-align: center;">
+                                        <?php echo ($debug_item['creasing_enabled'] ?? 'NULL'); ?>
+                                    </td>
+                                    <td style="background: #e0ffcc; text-align: right; font-weight: bold;">
+                                        <?php 
+                                        $creasing_price = $debug_item['creasing_price'] ?? 'NULL';
+                                        if ($creasing_price !== 'NULL') {
+                                            echo number_format($creasing_price) . '원';
+                                        } else {
+                                            echo '<span style="color: #999;">NULL</span>';
+                                        }
+                                        ?>
+                                    </td>
+                                    
+                                    <!-- 옵션 총액 -->
+                                    <td style="background: #e0e0ff; text-align: right; font-weight: bold; font-size: 12px;">
+                                        <?php 
+                                        $additional_total = $debug_item['additional_options_total'] ?? 'NULL';
+                                        if ($additional_total !== 'NULL') {
+                                            echo number_format($additional_total) . '원';
+                                        } else {
+                                            echo '<span style="color: #999;">NULL</span>';
+                                        }
+                                        ?>
+                                    </td>
+                                    
+                                    <!-- 상태 -->
+                                    <td style="text-align: center; font-weight: bold; font-size: 12px;">
+                                        <?php echo $status; ?>
+                                    </td>
+                                </tr>
+                                <?php endforeach; ?>
+                            </table>
+                        </div>
+                        
+                        <!-- 진단 결과 요약 -->
+                        <div style="margin-top: 15px; padding: 12px; background: #f8f9fa; border-radius: 5px; border-left: 4px solid #007bff;">
+                            <h4 style="margin: 0 0 8px 0; color: #007bff; font-size: 14px;">📊 진단 결과:</h4>
+                            <div style="font-size: 12px; line-height: 1.5;">
+                                <?php
+                                $total_items = count($cart_items);
+                                $normal_items = 0;
+                                $zero_price_items = 0;
+                                $no_option_items = 0;
+                                
+                                foreach ($cart_items as $item) {
+                                    $has_option = isset($item['coating_price']) || isset($item['folding_price']) || isset($item['creasing_price']);
+                                    $total_option = (intval($item['coating_price'] ?? 0) + intval($item['folding_price'] ?? 0) + intval($item['creasing_price'] ?? 0));
+                                    
+                                    if (!$has_option) {
+                                        $no_option_items++;
+                                    } elseif ($total_option == 0) {
+                                        $zero_price_items++;
+                                    } else {
+                                        $normal_items++;
+                                    }
+                                }
+                                ?>
+                                <div><strong>전체 아이템:</strong> <?php echo $total_items; ?>개</div>
+                                <div><span style="color: #28a745;">✅ 정상 처리:</span> <?php echo $normal_items; ?>개</div>
+                                <div><span style="color: #ffc107;">⚠️ 옵션 가격 0원:</span> <?php echo $zero_price_items; ?>개</div>
+                                <div><span style="color: #dc3545;">❌ 옵션 데이터 없음:</span> <?php echo $no_option_items; ?>개</div>
+                                
+                                <?php if ($zero_price_items > 0 || $no_option_items > 0): ?>
+                                <div style="margin-top: 8px; padding: 8px; background: #fff3cd; border-radius: 4px;">
+                                    <strong style="color: #856404;">🔧 문제 해결이 필요합니다!</strong><br>
+                                    JavaScript에서 옵션 가격이 계산되지만 FormData에 추가되지 않고 있습니다.
+                                </div>
+                                <?php endif; ?>
+                            </div>
                         </div>
                     </div>
                 </form>
@@ -452,9 +628,260 @@ if ($cart_result === false) {
                 </div>
             <?php endif; ?>
         </div>
+        
+        <!-- 📄 견적서 섹션 (기본적으로 숨겨짐) -->
+        <div id="quotationSection" style="display: none; font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif; line-height: 1.6; box-sizing: border-box; max-width: 800px; margin: 0 auto; background: white; border-radius: 8px; padding: 2rem; box-shadow: 0 4px 20px rgba(0,0,0,0.1); margin-bottom: 1rem;">
+            
+            <!-- 견적서 헤더 -->
+            <div style="text-align: center; border-bottom: 3px solid #2c3e50; padding-bottom: 20px; margin-bottom: 30px;">
+                <h1 style="font-size: 36px; margin: 0; color: #2c3e50; font-weight: 700;">견 적 서</h1>
+                <div style="margin-top: 10px; font-size: 14px; color: #666;">
+                    두손기획인쇄 | 사업자등록번호: 201-10-69847<br>
+                    TEL: 02-2632-1830 | FAX: 02-2632-1831
+                </div>
+            </div>
+            
+            <!-- 견적일자 -->
+            <div style="text-align: right; margin-bottom: 20px; font-size: 14px;">
+                <strong>견적일자:</strong> <?php echo date('Y년 m월 d일'); ?>
+            </div>
+            
+            <!-- 고객 인사말 -->
+            <div style="background: #f8f9fa; padding: 15px; border-radius: 5px; margin-bottom: 30px;">
+                <h3 style="margin-top: 0; color: #2c3e50;">고객님께</h3>
+                <p>아래와 같이 견적을 제출합니다.</p>
+            </div>
+            
+            <?php if (!empty($cart_items)): ?>
+            <!-- 견적서 테이블 -->
+            <table style="width: 100%; border-collapse: collapse; margin-bottom: 30px; font-size: 13px;">
+                <thead>
+                    <tr style="background: #34495e; color: white;">
+                        <th style="padding: 12px; text-align: center; font-weight: normal; border: 1px solid #2c3e50;">NO</th>
+                        <th style="padding: 12px; text-align: center; font-weight: normal; border: 1px solid #2c3e50;">상품명</th>
+                        <th style="padding: 12px; text-align: center; font-weight: normal; border: 1px solid #2c3e50;">규격/옵션</th>
+                        <th style="padding: 12px; text-align: center; font-weight: normal; border: 1px solid #2c3e50;">수량</th>
+                        <th style="padding: 12px; text-align: center; font-weight: normal; border: 1px solid #2c3e50;">단가</th>
+                        <th style="padding: 12px; text-align: center; font-weight: normal; border: 1px solid #2c3e50;">부가세포함</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <?php 
+                    $quote_total = 0;
+                    $quote_total_vat = 0;
+                    foreach ($cart_items as $index => $item):
+                        // 가격 계산 (장바구니와 동일한 로직)
+                        $base_price = intval($item['st_price']);
+                        $has_additional_options = isset($item['coating_price']) || isset($item['folding_price']) || isset($item['creasing_price']);
+                        
+                        if ($has_additional_options) {
+                            $price_with_options = $optionsDisplay->calculateTotalWithOptions($base_price, $item);
+                            $final_price = $price_with_options['total_price'];
+                            $final_price_vat = $price_with_options['total_vat'];
+                        } else {
+                            $final_price = $base_price;
+                            $final_price_vat = intval($item['st_price_vat']);
+                        }
+                        
+                        $quote_total += $final_price;
+                        $quote_total_vat += $final_price_vat;
+                        
+                        $product_info = [
+                            'cadarok' => '카달로그', 'sticker' => '스티커', 'msticker' => '자석스티커',
+                            'leaflet' => '전단지', 'namecard' => '명함', 'envelope' => '봉투',
+                            'merchandisebond' => '상품권', 'littleprint' => '포스터'
+                        ];
+                        $product_name = $product_info[$item['product_type']] ?? '인쇄상품';
+                    ?>
+                    <tr style="border-bottom: 1px solid #ddd;">
+                        <td style="padding: 8px; border: 1px solid #ddd; text-align: center;"><?php echo $index + 1; ?></td>
+                        <td style="padding: 8px; border: 1px solid #ddd; text-align: center;"><?php echo $product_name; ?></td>
+                        <td style="padding: 8px; border: 1px solid #ddd; text-align: left; font-size: 11px;">
+                            <?php if (!empty($item['MY_type'])): ?>
+                                <div><strong>종류:</strong> <?php echo htmlspecialchars(getKoreanName($connect, $item['MY_type'])); ?></div>
+                            <?php endif; ?>
+                            <?php if (!empty($item['PN_type'])): ?>
+                                <div><strong>규격:</strong> <?php echo htmlspecialchars(getKoreanName($connect, $item['PN_type'])); ?></div>
+                            <?php endif; ?>
+                            <?php if (!empty($item['Section'])): ?>
+                                <div><strong>재질:</strong> <?php echo htmlspecialchars(getKoreanName($connect, $item['Section'])); ?></div>
+                            <?php endif; ?>
+                            <?php if (!empty($item['POtype'])): ?>
+                                <div><strong>인쇄:</strong> <?php echo $item['POtype'] == '1' ? '단면' : '양면'; ?></div>
+                            <?php endif; ?>
+                            
+                            <!-- 추가 옵션 정보 표시 -->
+                            <?php if ($has_additional_options): ?>
+                                <div style="margin-top: 8px; padding-top: 8px; border-top: 1px solid #e2e8f0;">
+                                    <strong style="color: #e53e3e;">추가옵션:</strong><br>
+                                    <?php echo $optionsDisplay->getCartColumnHtml($item); ?>
+                                </div>
+                            <?php endif; ?>
+                        </td>
+                        <td style="padding: 8px; border: 1px solid #ddd; text-align: center;">
+                            <?php 
+                            if (!empty($item['mesu'])) {
+                                echo number_format($item['mesu']) . '매';
+                            } elseif (!empty($item['MY_amount'])) {
+                                echo htmlspecialchars($item['MY_amount']) . '매';
+                            } else {
+                                echo '1매';
+                            }
+                            ?>
+                        </td>
+                        <td style="padding: 8px; border: 1px solid #ddd; text-align: right;">
+                            <strong><?php echo number_format($final_price); ?>원</strong>
+                        </td>
+                        <td style="padding: 8px; border: 1px solid #ddd; text-align: right;">
+                            <strong><?php echo number_format($final_price_vat); ?>원</strong>
+                        </td>
+                    </tr>
+                    <?php endforeach; ?>
+                </tbody>
+            </table>
+            
+            <!-- 합계 정보 -->
+            <div style="background: #ecf0f1; padding: 20px; border-radius: 5px; margin-bottom: 30px;">
+                <div style="display: flex; justify-content: space-between; margin-bottom: 10px; font-size: 16px;">
+                    <span>공급가액 (VAT 제외):</span>
+                    <span><?php echo number_format($quote_total); ?>원</span>
+                </div>
+                <div style="display: flex; justify-content: space-between; margin-bottom: 10px; font-size: 16px;">
+                    <span>부가세(10%):</span>
+                    <span><?php echo number_format($quote_total_vat - $quote_total); ?>원</span>
+                </div>
+                <div style="display: flex; justify-content: space-between; font-size: 20px; font-weight: bold; color: #2c3e50; border-top: 2px solid #34495e; padding-top: 10px; margin-top: 10px;">
+                    <span>총 합계금액 (VAT 포함):</span>
+                    <span><?php echo number_format($quote_total_vat); ?>원</span>
+                </div>
+            </div>
+            <?php endif; ?>
+            
+            <!-- 회사 정보 -->
+            <div style="border-top: 2px solid #34495e; padding-top: 20px; color: #666; font-size: 14px;">
+                <div>
+                    <strong>두손기획인쇄</strong><br>
+                    서울특별시 영등포구 영등포로 36길 9 송호빌딩 1층<br>
+                    전화: 02-2632-1830 | 팩스: 02-2632-1831<br>
+                    이메일: dsp1830@naver.com
+                </div>
+                
+                <div style="background: #f8f9fa; padding: 10px; border-radius: 5px; margin-top: 15px;">
+                    <strong>입금계좌 안내</strong><br>
+                    국민은행: 123-456-789012 (예금주: 두손기획인쇄)<br>
+                    신한은행: 987-654-321098 (예금주: 두손기획인쇄)
+                </div>
+                
+                <p style="margin-top: 20px; font-size: 12px; color: #999;">
+                    ※ 본 견적서의 유효기간은 발행일로부터 30일입니다.<br>
+                    ※ 상기 금액은 부가세가 포함된 금액입니다.<br>
+                    ※ 디자인 수정 및 추가 작업 시 별도 비용이 발생할 수 있습니다.
+                </p>
+            </div>
+            
+            <!-- 견적서 전용 버튼 -->
+            <div style="text-align: center; margin-top: 30px; display: flex; gap: 15px; justify-content: center;">
+                <button onclick="printQuotation()" style="padding: 12px 30px; background: linear-gradient(135deg, #3498db 0%, #2980b9 100%); color: white; border: none; border-radius: 6px; font-size: 16px; font-weight: 600; cursor: pointer; transition: all 0.2s ease; box-shadow: 0 3px 10px rgba(52,152,219,0.3);" onmouseover="this.style.transform='translateY(-2px)'; this.style.boxShadow='0 6px 15px rgba(52,152,219,0.4)'" onmouseout="this.style.transform='translateY(0px)'; this.style.boxShadow='0 3px 10px rgba(52,152,219,0.3)'">
+                    🖨️ 견적서 인쇄
+                </button>
+                <button onclick="hideQuotation()" style="padding: 12px 30px; background: linear-gradient(135deg, #95a5a6 0%, #7f8c8d 100%); color: white; border: none; border-radius: 6px; font-size: 16px; font-weight: 600; cursor: pointer; transition: all 0.2s ease; box-shadow: 0 3px 10px rgba(149,165,166,0.3);" onmouseover="this.style.transform='translateY(-2px)'; this.style.boxShadow='0 6px 15px rgba(149,165,166,0.4)'" onmouseout="this.style.transform='translateY(0px)'; this.style.boxShadow='0 3px 10px rgba(149,165,166,0.3)'">
+                    ⬅️ 장바구니로 돌아가기
+                </button>
+            </div>
+        </div>
     </div>
 
     <script>
+    // 📄 견적서 표시 함수
+    function showQuotation() {
+        // 장바구니 내용 숨기기
+        document.getElementById('cartContent').style.display = 'none';
+        
+        // 견적서 표시
+        document.getElementById('quotationSection').style.display = 'block';
+        
+        // 부드러운 스크롤 효과로 견적서 위치로 이동
+        document.getElementById('quotationSection').scrollIntoView({
+            behavior: 'smooth',
+            block: 'start'
+        });
+        
+        // 페이지 제목 변경
+        document.title = '📄 견적서 - 두손기획인쇄';
+    }
+    
+    // 🛒 장바구니로 돌아가기 함수
+    function hideQuotation() {
+        // 견적서 숨기기
+        document.getElementById('quotationSection').style.display = 'none';
+        
+        // 장바구니 내용 표시
+        document.getElementById('cartContent').style.display = 'block';
+        
+        // 부드러운 스크롤 효과로 장바구니 위치로 이동
+        document.getElementById('cartContent').scrollIntoView({
+            behavior: 'smooth',
+            block: 'start'
+        });
+        
+        // 페이지 제목 복원
+        document.title = '🛒 통합 장바구니 - 두손기획인쇄';
+    }
+    
+    // 🖨️ 견적서 인쇄 함수
+    function printQuotation() {
+        // 견적서만 인쇄하기 위한 새 창 열기
+        const quotationContent = document.getElementById('quotationSection').innerHTML;
+        const printWindow = window.open('', '_blank');
+        
+        printWindow.document.write(`
+            <!DOCTYPE html>
+            <html lang="ko">
+            <head>
+                <meta charset="UTF-8">
+                <title>견적서 - 두손기획인쇄</title>
+                <style>
+                    @media print {
+                        body { margin: 0; font-family: 'Malgun Gothic', Arial, sans-serif; }
+                        .no-print { display: none !important; }
+                    }
+                    body {
+                        font-family: 'Malgun Gothic', Arial, sans-serif;
+                        line-height: 1.6;
+                        color: #333;
+                        max-width: 800px;
+                        margin: 0 auto;
+                        padding: 20px;
+                    }
+                    table { border-collapse: collapse; width: 100%; }
+                    th, td { border: 1px solid #ddd; padding: 8px; text-align: center; }
+                    th { background: #f8f9fa; font-weight: bold; }
+                    .no-print { display: none; }
+                </style>
+            </head>
+            <body>
+                ${quotationContent.replace(/onclick="[^"]*"/g, '').replace(/onmouseover="[^"]*"/g, '').replace(/onmouseout="[^"]*"/g, '')}
+                <style>.no-print { display: none; }</style>
+                <script>
+                    // 버튼들 숨기기
+                    const buttons = document.querySelectorAll('button');
+                    buttons.forEach(btn => btn.style.display = 'none');
+                    
+                    // 자동 인쇄 실행
+                    window.onload = function() {
+                        setTimeout(() => {
+                            window.print();
+                            window.close();
+                        }, 500);
+                    };
+                </script>
+            </body>
+            </html>
+        `);
+        
+        printWindow.document.close();
+    }
+    
     // 장바구니 비우기
     function clearCart() {
         if (confirm('장바구니를 비우시겠습니까?')) {
