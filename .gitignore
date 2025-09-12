@@ -136,3 +136,6 @@ automation/
 # 기타 대용량 파일
 bbs/upload/**/*.pdf
 bbs/upload/**/*.zip
+
+# Windows 특수 파일 (nul 장치명과 충돌)
+nul
