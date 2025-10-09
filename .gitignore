@@ -1,0 +1,45 @@
+# 환경 설정 파일
+.env
+config.local.php
+
+# 업로드 파일 및 데이터
+uploads/
+DataBackup/
+session/
+
+# 로그 파일
+*.log
+error_log
+
+# 임시 파일
+*.tmp
+*.swp
+*~
+.DS_Store
+
+# IDE 설정
+.vscode/
+.idea/
+
+# 테스트 파일
+test-*.html
+test-*.js
+test-*.php
+
+# 백업 파일
+*.bak
+*_backup_*
+
+# Node modules (있을 경우)
+node_modules/
+
+# Composer (있을 경우)
+vendor/
+
+# 캐시
+cache/
+*.cache
+
+# 민감한 정보
+credentials.json
+secrets.php
