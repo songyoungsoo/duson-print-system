@@ -37,7 +37,7 @@
     position: relative;
     width: 500px;
     height: 400px;
-    background: #f8f9fa;
+    background: rgba(30, 78, 121, 0.4);
     border-radius: 8px;
     overflow: hidden;
     transition: all 0.3s ease;
@@ -148,7 +148,7 @@
     align-items: center;
     gap: 0.5rem;
     padding: 0.75rem 1.5rem;
-    background: linear-gradient(135deg, #007bff, #0056b3);
+    background: rgba(30, 78, 121, 0.8);
     color: white;
     border: none;
     border-radius: 25px;
@@ -160,9 +160,9 @@
 }
 
 .btn-more-gallery:hover {
-    background: linear-gradient(135deg, #0056b3, #004085);
+    background: rgba(30, 78, 121, 1);
     transform: translateY(-2px);
-    box-shadow: 0 6px 20px rgba(0, 123, 255, 0.3);
+    box-shadow: 0 6px 20px rgba(30, 78, 121, 0.4);
 }
 
 .btn-more-gallery .icon-gallery {

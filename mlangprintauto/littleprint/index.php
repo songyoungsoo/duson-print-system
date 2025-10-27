@@ -94,6 +94,8 @@ $default_values['ordertype'] = 'print'; // 인쇄만
 <!DOCTYPE html>
 <html lang="ko">
 <head>
+    <!-- 🎨 통합 컬러 시스템 -->
+    <link rel="stylesheet" href="../../css/color-system-unified.css">
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title><?php echo safe_html($page_title); ?></title>
@@ -113,7 +115,9 @@ $default_values['ordertype'] = 'print'; // 인쇄만
     <link rel="stylesheet" href="../../css/unified-price-display.css">
     <!-- 통합 인라인 폼 스타일 시스템 -->
     <link rel="stylesheet" href="../../css/unified-inline-form.css">
-    
+    <!-- 추가 옵션 시스템 CSS -->
+    <link rel="stylesheet" href="../../css/additional-options.css">
+
     <!-- 공통 가격 표시 시스템 -->
     <script src="../../js/common-price-display.js" defer></script>
     <!-- 공통 갤러리 시스템 (helper가 자동으로 필요한 에셋 로드) -->
@@ -132,13 +136,13 @@ $default_values['ordertype'] = 'print'; // 인쇄만
     <link rel="stylesheet" href="../../css/common-styles.css?v=1759615861">
     <link rel="stylesheet" href="../../css/upload-modal-common.css">
 </head>
-<body>
+<body class="littleprint-page">
     <?php include "../../includes/header-ui.php"; ?>
     <?php include "../../includes/nav.php"; ?>
 
     <div class="product-container">
         <div class="page-title">
-            <h1>📄 포스터</h1>
+            <h1>📄 포스터 견적 안내</h1>
         </div>
 
         <!-- 컴팩트 2단 그리드 레이아웃 (500px 갤러리 + 나머지 계산기) -->
@@ -163,7 +167,7 @@ $default_values['ordertype'] = 'print'; // 인쇄만
                     <!-- 통일 인라인 폼 시스템 - 리틀프린트 페이지 -->
                     <div class="inline-form-container">
                         <div class="inline-form-row">
-                            <span class="inline-label">종류</span>
+                            <label class="inline-label" for="MY_type">종류</label>
                             <select class="inline-select" name="MY_type" id="MY_type" required onchange="calculatePrice()">
                                 <option value="">선택해주세요</option>
                                 <?php
@@ -184,7 +188,7 @@ $default_values['ordertype'] = 'print'; // 인쇄만
                         </div>
 
                         <div class="inline-form-row">
-                            <span class="inline-label">지류</span>
+                            <label class="inline-label" for="Section">지류</label>
                             <select class="inline-select" name="Section" id="Section" required data-default-value="<?php echo htmlspecialchars($default_values['Section']); ?>" onchange="calculatePrice()">
                                 <option value="">먼저 종류를 선택해주세요</option>
                             </select>
@@ -192,7 +196,7 @@ $default_values['ordertype'] = 'print'; // 인쇄만
                         </div>
 
                         <div class="inline-form-row">
-                            <span class="inline-label">규격</span>
+                            <label class="inline-label" for="PN_type">규격</label>
                             <select class="inline-select" name="PN_type" id="PN_type" required onchange="calculatePrice()">
                                 <option value="">먼저 지류를 선택해주세요</option>
                             </select>
@@ -200,7 +204,7 @@ $default_values['ordertype'] = 'print'; // 인쇄만
                         </div>
 
                         <div class="inline-form-row">
-                            <span class="inline-label">인쇄면</span>
+                            <label class="inline-label" for="POtype">인쇄면</label>
                             <select class="inline-select" name="POtype" id="POtype" required onchange="calculatePrice()">
                                 <option value="">선택해주세요</option>
                                 <?php
@@ -222,7 +226,7 @@ $default_values['ordertype'] = 'print'; // 인쇄만
                         </div>
 
                         <div class="inline-form-row">
-                            <span class="inline-label">수량</span>
+                            <label class="inline-label" for="MY_amount">수량</label>
                             <select class="inline-select" name="MY_amount" id="MY_amount" required data-default-value="<?php echo htmlspecialchars($default_values['MY_amount']); ?>" onchange="calculatePrice()">
                                 <option value="">먼저 규격을 선택해주세요</option>
                             </select>
@@ -230,7 +234,7 @@ $default_values['ordertype'] = 'print'; // 인쇄만
                         </div>
 
                         <div class="inline-form-row">
-                            <span class="inline-label">편집비</span>
+                            <label class="inline-label" for="ordertype">편집비</label>
                             <select class="inline-select" name="ordertype" id="ordertype" required onchange="calculatePrice()">
                                 <option value="">선택해주세요</option>
                                 <?php
@@ -317,21 +321,21 @@ $default_values['ordertype'] = 'print'; // 인쇄만
                         </div>
                     </div>
 
+                    <!-- 파일 업로드 및 주문 버튼 -->
+                    <div class="upload-order-button" id="uploadOrderButton">
+                        <button type="button" class="btn-upload-order" onclick="openUploadModal()">
+                            파일 업로드 및 주문하기
+                        </button>
+                    </div>
+
                     <!-- 숨겨진 필드들 -->
                     <input type="hidden" name="log_url" value="<?php echo safe_html($log_info['url']); ?>">
                     <input type="hidden" name="log_y" value="<?php echo safe_html($log_info['y']); ?>">
                     <input type="hidden" name="log_md" value="<?php echo safe_html($log_info['md']); ?>">
                     <input type="hidden" name="log_ip" value="<?php echo safe_html($log_info['ip']); ?>">
                     <input type="hidden" name="log_time" value="<?php echo safe_html($log_info['time']); ?>">
-                    <input type="hidden" name="page" value="NameCard">
+                    <input type="hidden" name="page" value="LittlePrint">
                 </form>
-            </div>
-
-            <!-- 파일 업로드 및 주문 버튼 - product-content 내부, form 외부 -->
-            <div class="product-action-buttons">
-                <button type="button" class="btn-upload-order" onclick="openUploadModal()">
-                    📎 파일 업로드 및 주문하기
-                </button>
             </div>
         </div>
     </div>
