@@ -58,22 +58,9 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 - Session-based authentication via `includes/auth.php`
 - Session data stored in `session/` directory
 - Cart uses PHP sessions via `$_SESSION['session_id']`
-- No session regeneration across domains (single-site)
 
-## 🏗️ Architecture Overview
 
-### System Pattern
-```
-Frontend (HTML/CSS/JS/jQuery)
-    ↓
-Product Modules (mlangprintauto/[product]/)
-    ↓
-Shared Services (includes/)
-    ↓
-Database Layer (MySQLi with prepared statements)
-    ↓
-MySQL 5.7+ (utf8mb4)
-```
+
 
 ### Environment Detection
 - **Automatic**: `config.env.php` auto-detects local vs production

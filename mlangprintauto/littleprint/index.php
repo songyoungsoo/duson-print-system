@@ -147,13 +147,14 @@ $default_values['ordertype'] = 'print'; // 인쇄만
 
         <!-- 컴팩트 2단 그리드 레이아웃 (500px 갤러리 + 나머지 계산기) -->
         <div class="product-content">
-            <!-- 좌측: 포스터 갤러리 (공통 시스템) -->
+            <!-- 좌측: 포스터 갤러리 (통합 갤러리 시스템 500×400) -->
             <div class="product-gallery">
-                
-                <?php 
-                // 공통 갤러리 시스템 사용 (500×300px 기본값)
-                if (file_exists('../../includes/gallery_helper.php')) { if (file_exists('../../includes/gallery_helper.php')) { include_once '../../includes/gallery_helper.php'; } }
-                if (function_exists("include_product_gallery")) { include_product_gallery('littleprint'); }
+                <?php
+                // 통합 갤러리 시스템 (500×400 마우스 호버 줌)
+                $gallery_product = 'littleprint';
+                if (file_exists('../../includes/simple_gallery_include.php')) {
+                    include '../../includes/simple_gallery_include.php';
+                }
                 ?>
             </div>
 

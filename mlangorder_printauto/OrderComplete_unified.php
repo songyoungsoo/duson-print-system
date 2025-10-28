@@ -3,7 +3,7 @@
  * 통합 OrderComplete 시스템 - Universal Version
  * 모든 상품 타입에 대해 스마트 "계속 쇼핑하기" 기능 제공
  * 마지막 주문 상품 페이지로 이동하는 공통 시스템
- * 경로: MlangOrder_PrintAuto/OrderComplete_unified.php
+ * 경로: mlangorder_printauto/OrderComplete_unified.php
  */
 
 // 새로운 universal 시스템으로 리다이렉트
@@ -28,7 +28,7 @@ $connect = $db;
 function getCategoryName($connect, $category_no) {
     if (!$category_no) return '';
     
-    $query = "SELECT title FROM MlangPrintAuto_transactionCate WHERE no = ? LIMIT 1";
+    $query = "SELECT title FROM mlangprintauto_transactionCate WHERE no = ? LIMIT 1";
     $stmt = mysqli_prepare($connect, $query);
     if (!$stmt) {
         return $category_no;
@@ -53,7 +53,7 @@ $email = $_GET['email'] ?? '';
 $name = $_GET['name'] ?? '';
 
 if (empty($orders)) {
-    echo "<script>alert('잘못된 접근입니다.'); location.href='../MlangPrintAuto/shop/cart.php';</script>";
+    echo "<script>alert('잘못된 접근입니다.'); location.href='../mlangprintauto/shop/cart.php';</script>";
     exit;
 }
 
@@ -87,7 +87,7 @@ foreach ($order_numbers as $order_no) {
 }
 
 if (empty($order_list)) {
-    echo "<script>alert('주문 정보를 찾을 수 없습니다.'); location.href='../MlangPrintAuto/shop/cart.php';</script>";
+    echo "<script>alert('주문 정보를 찾을 수 없습니다.'); location.href='../mlangprintauto/shop/cart.php';</script>";
     exit;
 }
 
@@ -409,7 +409,7 @@ include "../includes/nav.php";
 
     <!-- 액션 버튼들 (컴팩트) -->
     <div style="text-align: center; margin: 1.5rem 0 0.5rem 0;">
-        <a href="../MlangPrintAuto/cadarok/index.php" 
+        <a href="../mlangprintauto/cadarok/index.php" 
            style="display: inline-block; background: linear-gradient(135deg, #27ae60 0%, #2ecc71 100%); color: white; padding: 14px 28px; border-radius: 25px; text-decoration: none; font-weight: 700; box-shadow: 0 6px 20px rgba(39, 174, 96, 0.4); font-size: 1rem; transition: all 0.3s ease;">
             📋 새 주문하기
         </a>

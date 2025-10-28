@@ -2,7 +2,7 @@
 /**
  * 사무용 표형태 주문 완료 페이지
  * 파스텔 톤의 세련된 사무용 디자인
- * 경로: MlangOrder_PrintAuto/OrderComplete_office_table.php
+ * 경로: mlangorder_printauto/OrderComplete_office_table.php
  */
 
 session_start();
@@ -15,7 +15,7 @@ $connect = $db;
 function getCategoryName($connect, $category_no) {
     if (!$category_no) return '';
     
-    $query = "SELECT title FROM MlangPrintAuto_transactionCate WHERE no = ? LIMIT 1";
+    $query = "SELECT title FROM mlangprintauto_transactionCate WHERE no = ? LIMIT 1";
     $stmt = mysqli_prepare($connect, $query);
     if (!$stmt) {
         return $category_no;
@@ -37,7 +37,7 @@ function getCategoryName($connect, $category_no) {
 // 마지막 주문 품목 페이지 URL 생성 함수
 function getLastOrderProductUrl($order_list) {
     if (empty($order_list)) {
-        return '../MlangPrintAuto/shop/cart.php'; // 기본값: 장바구니
+        return '../mlangprintauto/shop/cart.php'; // 기본값: 장바구니
     }
     
     // 가장 최근 주문 (첫 번째 주문)
@@ -79,18 +79,18 @@ function getLastOrderProductUrl($order_list) {
     
     // 상품 타입별 URL 매핑
     $product_urls = [
-        'sticker' => '../MlangPrintAuto/shop/view_modern.php',
-        'namecard' => '../MlangPrintAuto/NameCard/index.php',
-        'envelope' => '../MlangPrintAuto/envelope/index.php',
-        'littleprint' => '../MlangPrintAuto/LittlePrint/index.php',
-        'inserted' => '../MlangPrintAuto/inserted/index.php',
-        'cadarok' => '../MlangPrintAuto/cadarok/index.php',
-        'merchandisebond' => '../MlangPrintAuto/MerchandiseBond/index.php',
-        'ncrflambeau' => '../MlangPrintAuto/NcrFlambeau/index.php',
-        'msticker' => '../MlangPrintAuto/msticker/index.php'
+        'sticker' => '../mlangprintauto/shop/view_modern.php',
+        'namecard' => '../mlangprintauto/NameCard/index.php',
+        'envelope' => '../mlangprintauto/envelope/index.php',
+        'littleprint' => '../mlangprintauto/LittlePrint/index.php',
+        'inserted' => '../mlangprintauto/inserted/index.php',
+        'cadarok' => '../mlangprintauto/cadarok/index.php',
+        'merchandisebond' => '../mlangprintauto/MerchandiseBond/index.php',
+        'ncrflambeau' => '../mlangprintauto/NcrFlambeau/index.php',
+        'msticker' => '../mlangprintauto/msticker/index.php'
     ];
     
-    return $product_urls[$product_type_key] ?? '../MlangPrintAuto/shop/cart.php';
+    return $product_urls[$product_type_key] ?? '../mlangprintauto/shop/cart.php';
 }
 
 // GET 파라미터에서 데이터 가져오기
@@ -99,7 +99,7 @@ $email = $_GET['email'] ?? '';
 $name = $_GET['name'] ?? '';
 
 if (empty($orders)) {
-    echo "<script>alert('잘못된 접근입니다.'); location.href='../MlangPrintAuto/shop/cart.php';</script>";
+    echo "<script>alert('잘못된 접근입니다.'); location.href='../mlangprintauto/shop/cart.php';</script>";
     exit;
 }
 
@@ -131,7 +131,7 @@ foreach ($order_numbers as $order_no) {
 }
 
 if (empty($order_list)) {
-    echo "<script>alert('주문 정보를 찾을 수 없습니다.'); location.href='../MlangPrintAuto/shop/cart.php';</script>";
+    echo "<script>alert('주문 정보를 찾을 수 없습니다.'); location.href='../mlangprintauto/shop/cart.php';</script>";
     exit;
 }
 
@@ -618,7 +618,9 @@ include "../includes/nav.php";
                                     if (isset($details['garo']) && isset($details['sero'])) {
                                         echo '<span class="option-item">크기: ' . htmlspecialchars($details['garo']) . '×' . htmlspecialchars($details['sero']) . 'mm</span>';
                                     }
-                                    if (isset($details['mesu'])) echo '<span class="option-item">수량: ' . number_format($details['mesu']) . '매</span>';
+                                    // 양식지(ncrflambeau)는 "권" 단위 사용
+                                    $unit = ($product_type == 'ncrflambeau') ? '권' : '매';
+                                    if (isset($details['mesu'])) echo '<span class="option-item">수량: ' . number_format($details['mesu']) . $unit . '</span>';
                                     if (isset($details['uhyung'])) echo '<span class="option-item">편집: ' . htmlspecialchars($details['uhyung']) . '</span>';
                                     if (isset($details['domusong'])) echo '<span class="option-item">모양: ' . htmlspecialchars($details['domusong']) . '</span>';
                                     break;
@@ -626,21 +628,27 @@ include "../includes/nav.php";
                                 case 'envelope':
                                     if (isset($json_data['MY_type'])) echo '<span class="option-item">타입: ' . getCategoryName($connect, $json_data['MY_type']) . '</span>';
                                     if (isset($json_data['MY_Fsd'])) echo '<span class="option-item">용지: ' . getCategoryName($connect, $json_data['MY_Fsd']) . '</span>';
-                                    if (isset($json_data['MY_amount'])) echo '<span class="option-item">수량: ' . number_format($json_data['MY_amount']) . '매</span>';
+                                    // 양식지(ncrflambeau)는 "권" 단위 사용
+                                    $unit = ($product_type == 'ncrflambeau') ? '권' : '매';
+                                    if (isset($json_data['MY_amount'])) echo '<span class="option-item">수량: ' . number_format($json_data['MY_amount']) . $unit . '</span>';
                                     if (isset($json_data['POtype'])) echo '<span class="option-item">인쇄: ' . ($json_data['POtype'] == '1' ? '단면' : '양면') . '</span>';
                                     break;
                                     
                                 case 'namecard':
                                     if (isset($json_data['MY_type'])) echo '<span class="option-item">타입: ' . getCategoryName($connect, $json_data['MY_type']) . '</span>';
                                     if (isset($json_data['Section'])) echo '<span class="option-item">용지: ' . getCategoryName($connect, $json_data['Section']) . '</span>';
-                                    if (isset($json_data['MY_amount'])) echo '<span class="option-item">수량: ' . number_format($json_data['MY_amount']) . '매</span>';
+                                    // 양식지(ncrflambeau)는 "권" 단위 사용
+                                    $unit = ($product_type == 'ncrflambeau') ? '권' : '매';
+                                    if (isset($json_data['MY_amount'])) echo '<span class="option-item">수량: ' . number_format($json_data['MY_amount']) . $unit . '</span>';
                                     if (isset($json_data['POtype'])) echo '<span class="option-item">인쇄: ' . ($json_data['POtype'] == '1' ? '단면' : '양면') . '</span>';
                                     break;
                                     
                                 case 'merchandisebond':
                                     if (isset($json_data['MY_type'])) echo '<span class="option-item">구분: ' . getCategoryName($connect, $json_data['MY_type']) . '</span>';
                                     if (isset($json_data['MY_Fsd'])) echo '<span class="option-item">종류: ' . getCategoryName($connect, $json_data['MY_Fsd']) . '</span>';
-                                    if (isset($json_data['MY_amount'])) echo '<span class="option-item">수량: ' . number_format($json_data['MY_amount']) . '매</span>';
+                                    // 양식지(ncrflambeau)는 "권" 단위 사용
+                                    $unit = ($product_type == 'ncrflambeau') ? '권' : '매';
+                                    if (isset($json_data['MY_amount'])) echo '<span class="option-item">수량: ' . number_format($json_data['MY_amount']) . $unit . '</span>';
                                     break;
                                     
                                 case 'cadarok':
