@@ -112,16 +112,27 @@ if ($placeholder_count === $type_count && $type_count === $var_count) {
 9. **빌드 결과물**: dist/, build/
 10. **프로젝트 특수**: duson_*.tar.gz, session/, logs/
 
-### ✅ Git 커밋 전 체크리스트
+### 🤖 Claude 자동 Git 규칙 (필수!)
+
+**⚠️ 모든 코딩 작업 완료 시 자동 수행:**
+```bash
+git add .
+```
+
+- **작업 끝나면 무조건** `git add .` 실행
+- .gitignore가 대용량 파일을 자동 제외하므로 안전
+- 사용자 확인 없이 자동 스테이징 (커밋은 사용자 결정)
+
+### ✅ Git 워크플로우
 
 ```bash
-# 1. 상태 확인 (대용량 파일 없는지)
+# 1. [자동] 작업 완료 후 스테이징 (Claude가 항상 수행)
+git add .
+
+# 2. 상태 확인
 git status
 
-# 2. 추가될 파일 확인
-git diff --cached --stat
-
-# 3. 커밋
+# 3. 커밋 (사용자 요청 시)
 git commit -m "설명"
 
 # 4. 푸시 (빠르게 완료되어야 함 - 수초 이내)
