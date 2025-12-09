@@ -200,7 +200,7 @@ try {
             // ss = custom_product_name, custom_specification (2) = 20
             // dssi = quantity, unit, order_group_id, order_group_seq (4) = 24
             $stmt->bind_param(
-                "ssiiiissssssssissssdsssi",
+                "ssiiiisssssssssisissdssi",
                 $type, $type1Json,
                 $money2, $money3, $money4, $money5,
                 $customerName, $customerEmail, $customerCompany, $customerPhone, $customerPhone,
