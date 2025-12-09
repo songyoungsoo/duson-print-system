@@ -1,0 +1,12 @@
+FTP 서버 정보
+================
+
+Host: ftp://dsp1830.shop
+Username: dsp1830
+Password: ds701018
+
+업로드 경로: /public_html/
+
+주의사항:
+- 이 파일은 .gitignore에 포함되어 있어 git에 업로드되지 않습니다
+- 백업 후 파일 업로드를 권장합니다

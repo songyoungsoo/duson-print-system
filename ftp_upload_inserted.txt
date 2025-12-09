@@ -1,0 +1,7 @@
+open sknas205.ipdisk.co.kr
+sknas205
+dsp1830/ds701018
+cd /dsp1830/www/mlangprintauto/inserted
+binary
+put mlangprintauto/inserted/index.php index.php
+bye

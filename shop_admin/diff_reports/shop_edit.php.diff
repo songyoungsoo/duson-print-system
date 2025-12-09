@@ -1,0 +1,11 @@
+--- shop_edit.php (original)
++++ shop_edit.php (modified)
+@@ -3,7 +3,7 @@
+    $connect = dbconn(); 
+ 
+   $query = "select * from shop_data where no='$no' "; 
+-  $result = mysqli_query($query, $connect); 
++  $result = mysqli_query($connect, $query); 
+   if(!$result) die(mysqli_error($connect)); 
+   $data = mysqli_fetch_array($result); 
+ ?> 

@@ -1,0 +1,11 @@
+--- loginProc.php (original)
++++ loginProc.php (modified)
+@@ -11,7 +11,7 @@
+ $pass = mysqli_real_escape_string($pass);
+ 
+ $query = "SELECT * FROM member WHERE id='$id' AND pass='$pass'";
+-$result = mysqli_query($db, $query);
++$result = mysqli_query($query, $db);
+ 
+ if (!$result) {
+     die("쿼리 실행에 실패했습니다: " . mysqli_error());

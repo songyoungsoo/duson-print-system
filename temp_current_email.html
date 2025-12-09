@@ -1,0 +1,100 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <title>수정된 주문확인 이메일 미리보기</title>
+    <style>
+        body { font-family: 'Malgun Gothic', sans-serif; background: #eee; padding: 20px; }
+        .info { background: #d4edda; padding: 15px; margin-bottom: 20px; border-radius: 8px; text-align: center; }
+        .info h2 { margin: 0 0 10px; color: #155724; }
+        .info p { margin: 5px 0; color: #155724; }
+        .added { background: #cce5ff; padding: 3px 8px; border-radius: 4px; font-size: 0.8em; color: #004085; }
+    </style>
+</head>
+<body>
+    <div class="info">
+        <h2>✅ 수정된 주문확인 이메일</h2>
+        <p>추가된 내용: <span class="added">배송지 정보</span> <span class="added">전달사항</span> <span class="added">입금계좌 3개</span></p>
+        <p>발송 시점: 주문 완료 시 <strong>1회만</strong> 발송</p>
+    </div>
+
+    <!-- 실제 이메일 내용 -->
+    <div style='font-family: Noto Sans KR, sans-serif; max-width: 600px; margin: 0 auto; background: white; padding: 20px; border-radius: 8px;'>
+        <h2 style='color: #2c3e50; text-align: center; border-bottom: 2px solid #3498db; padding-bottom: 10px;'>주문 확인서</h2>
+
+        <!-- 고객 정보 -->
+        <div style='background: #f8f9fa; padding: 20px; border-radius: 8px; margin: 20px 0;'>
+            <h3 style='color: #495057; margin-bottom: 15px;'>👤 주문자 정보</h3>
+            <p><strong>성명:</strong> 홍길동</p>
+            <p><strong>이메일:</strong> hong@example.com</p>
+            <p><strong>연락처:</strong> 010-1234-5678</p>
+            <p><strong>주문일시:</strong> 2025-12-07 18:30:00</p>
+        </div>
+
+        <!-- 배송지 정보 (NEW!) -->
+        <div style='background: #e8f4fd; padding: 20px; border-radius: 8px; margin: 20px 0; border-left: 4px solid #3498db;'>
+            <h3 style='color: #495057; margin-bottom: 15px;'>🚚 배송지 정보 <span style="background: #28a745; color: white; padding: 2px 8px; border-radius: 4px; font-size: 0.7em;">NEW</span></h3>
+            <p><strong>우편번호:</strong> 07204</p>
+            <p><strong>주소:</strong> 서울시 영등포구 영등포로 36길 9 송호빌딩 1층</p>
+            <p><strong>전달사항:</strong> 문 앞에 놓아주세요</p>
+        </div>
+
+        <!-- 주문 상품 정보 -->
+        <div style='background: white; border: 1px solid #dee2e6; border-radius: 8px; margin: 20px 0;'>
+            <h3 style='color: #495057; padding: 15px; margin: 0; background: #e9ecef; border-radius: 8px 8px 0 0;'>📦 주문 상품</h3>
+
+            <!-- 상품 1 -->
+            <div style='padding: 15px; border-bottom: 1px solid #eee;'>
+                <div style='display: flex; justify-content: space-between; align-items: center;'>
+                    <div>
+                        <strong>주문번호:</strong> 103850<br>
+                        <div style='margin-top: 10px; font-size: 0.9em; color: #6c757d;'>
+                            90g아트지 A4 1연 양면인쇄
+                        </div>
+                    </div>
+                    <div style='text-align: right; font-weight: bold; color: #007bff;'>
+                        55,000원
+                    </div>
+                </div>
+            </div>
+
+            <!-- 상품 2 -->
+            <div style='padding: 15px; border-bottom: 1px solid #eee;'>
+                <div style='display: flex; justify-content: space-between; align-items: center;'>
+                    <div>
+                        <strong>주문번호:</strong> 103851<br>
+                        <div style='margin-top: 10px; font-size: 0.9em; color: #6c757d;'>
+                            일반명함 250매 양면컬러
+                        </div>
+                    </div>
+                    <div style='text-align: right; font-weight: bold; color: #007bff;'>
+                        22,000원
+                    </div>
+                </div>
+            </div>
+
+            <!-- 총 금액 -->
+            <div style='padding: 15px; background: #f8f9fa; border-radius: 0 0 8px 8px; text-align: right;'>
+                <h4 style='margin: 0; color: #dc3545;'>총 주문금액: 77,000원</h4>
+            </div>
+        </div>
+
+        <!-- 입금계좌 정보 (NEW!) -->
+        <div style='background: #fff3cd; padding: 20px; border-radius: 8px; margin: 20px 0; border-left: 4px solid #ffc107;'>
+            <h3 style='color: #856404; margin-bottom: 15px;'>💳 입금계좌 안내 <span style="background: #28a745; color: white; padding: 2px 8px; border-radius: 4px; font-size: 0.7em;">NEW</span></h3>
+            <p style='margin: 8px 0;'><strong>국민은행:</strong> 999-1688-2384 (예금주: 차경선 두손기획인쇄)</p>
+            <p style='margin: 8px 0;'><strong>신한은행:</strong> 110-342-543507 (예금주: 차경선 두손기획인쇄)</p>
+            <p style='margin: 8px 0;'><strong>농협:</strong> 301-2632-1830-11 (예금주: 차경선 두손기획인쇄)</p>
+            <p style='margin-top: 15px; font-size: 0.9em; color: #856404;'>※ 입금 확인 후 제작이 시작됩니다.</p>
+        </div>
+
+        <!-- 회사 정보 -->
+        <div style='background: #2c3e50; color: white; padding: 20px; border-radius: 8px; margin: 20px 0; text-align: center;'>
+            <h3 style='color: white; margin-bottom: 15px;'>두손기획인쇄</h3>
+            <p>📞 대표전화: 1688-2384, 02-2632-1830</p>
+            <p>🏢 서울 영등포구 영등포로36길 9, 송호빌딩 1층</p>
+            <p>🌐 www.dsp114.com</p>
+        </div>
+    </div>
+</body>
+</html>

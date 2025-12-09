@@ -1,0 +1,29 @@
+--- edit_profile.php (original)
++++ edit_profile.php (modified)
+@@ -15,7 +15,7 @@
+ // MySQLi 문법으로 수정 (mysql_* → mysqli_*)
+ 
+ $query = "SELECT * FROM member WHERE id = ?";
+-$stmt = mysqli_prepare($db, $query);
++$stmt = mysqli_prepare($query, $db);
+ mysqli_stmt_bind_param($stmt, "s", $userid);
+ mysqli_stmt_execute($stmt);
+ $result = mysqli_stmt_get_result($stmt);
+@@ -48,7 +48,7 @@
+   $po7 = mysqli_real_escape_string($db, $_POST['po7']);
+ 
+   $update_query = "UPDATE member SET pass=?, name=?, sample6_postcode=?, sample6_address=?, sample6_detailAddress=?, email=?, phone1=?, phone2=?, phone3=?, hendphone1=?, hendphone2=?, hendphone3=?, po1=?, po2=?, po3=?, po4=?, po5=?, po6=?, po7=? WHERE id=?";
+-  $stmt = mysqli_prepare($db, $update_query);
++  $stmt = mysqli_prepare($update_query, $db);
+   mysqli_stmt_bind_param($stmt, "ssssssssssssssssssss", $pass, $name, $sample6_postcode, $sample6_address, $sample6_detailAddress, $email, $phone1, $phone2, $phone3, $hendphone1, $hendphone2, $hendphone3, $po1, $po2, $po3, $po4, $po5, $po6, $po7, $userid);
+   $update_result = mysqli_stmt_execute($stmt);
+ 
+@@ -58,7 +58,7 @@
+ 
+   // 업데이트가 성공적으로 이루어지면 다시 회원 정보를 불러옵니다.
+   $query = "SELECT * FROM member WHERE id = ?";
+-  $stmt = mysqli_prepare($db, $query);
++  $stmt = mysqli_prepare($query, $db);
+   mysqli_stmt_bind_param($stmt, "s", $userid);
+   mysqli_stmt_execute($stmt);
+   $result = mysqli_stmt_get_result($stmt);

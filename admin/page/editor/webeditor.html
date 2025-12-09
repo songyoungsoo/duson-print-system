@@ -1,0 +1,96 @@
+<html>
+<head>
+<meta http-equiv="content-type" content="text/html; charset=euc-kr">
+<meta http-equiv="Cache-Control" content="no-cache">
+<meta http-equiv="Pragma" content="no-cache">
+<title>::: WebEditor :::</title>
+</head>
+
+<body bgcolor=white oncontextmenu="return false">
+
+<br><br>
+<center>
+
+<script language=javascript src=/editor/editor.js></script>
+
+<Form Name=mailsendform Method=POST enctype='multipart/form-data'>
+<input type=hidden name=image_url value='/files/queenka/queenka357.jpg'>
+<input type=hidden name=return_url value='/photo-bin/view2.php?id=1948&code=gallery&kind=queenka&start=0&next_time='>
+<input type=hidden name=CONTENT value=''>
+<table border="0" cellpadding="0" cellspacing="0" width="550">
+<tr>
+<td bgcolor="#EEEEEE">
+<table border="0" cellpadding="4" cellspacing="1" width="100%">
+
+<tr><td colspan=2 bgcolor="#333333"></td></tr>
+
+<tr>
+<td bgcolor="#336699" width=100 align=right><font face='Verdana,Helvetica,Arial,Sans-serif' size=2 color=#FFFFFF>받는분이름 :
+</td>
+<td bgcolor="#EEEEEE" width=450><input type=text name=TO_NAME size=10 Maxlength=15>
+</td>
+</tr>
+
+<tr>
+<td bgcolor="#336699" align=right><font face='Verdana,Helvetica,Arial,Sans-serif' size=2 color=#FFFFFF>받는분메일 :
+</td>
+<td bgcolor="#EEEEEE"><input type=text name=TO_EMAIL size=35 Maxlength=80>
+</td>
+</tr>
+
+<tr><td colspan=2 bgcolor="#333333"></td></tr>
+
+<tr>
+<td bgcolor="#336699" align=right><font face='Verdana,Helvetica,Arial,Sans-serif' size=2 color=#FFFFFF>보내는분이름 :
+</td>
+<td bgcolor="#EEEEEE"><input type=text name=FROM_NAME size=10 Maxlength=15>
+</td>
+</tr>
+
+<tr>
+<td bgcolor="#336699" align=right><font face='Verdana,Helvetica,Arial,Sans-serif' size=2 color=#FFFFFF>보내는분메일 :
+</td>
+<td bgcolor="#EEEEEE"><input type=text name=FROM_EMAIL size=35 Maxlength=80>
+</td>
+</tr>
+
+<tr><td colspan=2 bgcolor="#333333"></td></tr>
+
+<tr>
+<td bgcolor="#336699" align=right><font face='Verdana,Helvetica,Arial,Sans-serif' size=2 color=#FFFFFF>제 목 :
+</td>
+<td bgcolor="#EEEEEE"><input type=text name=SUBJECT size=45 Maxlength=80>
+</td>
+</tr>
+
+<!--
+<tr><td colspan=2 bgcolor="#333333"></td></tr>
+
+<tr>
+<td colspan=2 bgcolor="#EEEEEE"><center><img src='/files/queenka/queenka357.jpg'>
+</td>
+</tr>
+-->
+
+<tr><td colspan=2 bgcolor="#333333"></td></tr>
+
+<tr>
+<td bgcolor="#dedfdf" colspan=2 align=center>
+<iframe name="editor" src="/editor/editor.html" marginheight="0" marginwidth="0" frameborder="0" width="100%" height="300" scrolling="yes"></iframe>
+</td>
+</tr>
+
+</table>
+</td>
+</tr>
+</table>
+<br>
+
+<input type=button value='메일전송' onClick="javascript:return jsSubmit('');">
+<input type=button value='미리보기' onClick="javascript:return jsPreview()">
+<input type=button value='이전화면' onClick='javascript:history.back()'>
+
+</form>
+
+</body>
+</html>

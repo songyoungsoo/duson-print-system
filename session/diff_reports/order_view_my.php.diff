@@ -1,0 +1,20 @@
+--- order_view_my.php (original)
++++ order_view_my.php (modified)
+@@ -12,7 +12,7 @@
+ $userEmail = $_SESSION['id_login_ok']['email'];
+ 
+ $query = "SELECT * FROM MlangOrder_PrintAuto WHERE email='" . mysqli_real_escape_string($userEmail) . "'";
+-$result = mysqli_query($db, $query);
++$result = mysqli_query($query, $db);
+ 
+ if (!$result) {
+   die("쿼리 실행에 실패했습니다: " . mysqli_error());
+@@ -51,7 +51,7 @@
+ 
+   <?php
+   $query = "SELECT * FROM MlangOrder_PrintAuto WHERE no='$no'";
+-  $result = mysqli_query($db, $query);
++  $result = mysqli_query($query, $db);
+   $data = mysqli_fetch_array($result);
+ 
+   $no =  $data['no'];

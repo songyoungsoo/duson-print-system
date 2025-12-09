@@ -1,0 +1,56 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<svg xmlns="http://www.w3.org/2000/svg"
+     width="213mm"
+     height="300mm"
+     viewBox="0 0 213 300"
+     version="1.1">
+
+  <title>재단 가이드 템플릿 (210×297mm + 재단여유 1.5mm)</title>
+
+  <defs>
+    <style>
+      .trim-line { fill: none; stroke: #FF0000; stroke-width: 0.5; }
+      .safe-line { fill: none; stroke: #0000FF; stroke-width: 0.5; }
+      .label { font-family: Arial, sans-serif; font-size: 3px; fill: #333; }
+    </style>
+  </defs>
+
+  <!-- 외곽 박스 (빨간색) - 213mm × 300mm -->
+  <rect x="0" y="0" width="213" height="300"
+        class="trim-line"
+        id="trim-box"/>
+
+  <!-- 내부 박스 (파란색) - 210mm × 297mm -->
+  <rect x="1.5" y="1.5" width="210" height="297"
+        class="safe-line"
+        id="safe-box"/>
+
+  <!-- 코너 재단선 마크 (외곽) -->
+  <!-- 좌상단 -->
+  <line x1="0" y1="10" x2="0" y2="0" stroke="#FF0000" stroke-width="0.3"/>
+  <line x1="0" y1="0" x2="10" y2="0" stroke="#FF0000" stroke-width="0.3"/>
+
+  <!-- 우상단 -->
+  <line x1="203" y1="0" x2="213" y2="0" stroke="#FF0000" stroke-width="0.3"/>
+  <line x1="213" y1="0" x2="213" y2="10" stroke="#FF0000" stroke-width="0.3"/>
+
+  <!-- 좌하단 -->
+  <line x1="0" y1="290" x2="0" y2="300" stroke="#FF0000" stroke-width="0.3"/>
+  <line x1="0" y1="300" x2="10" y2="300" stroke="#FF0000" stroke-width="0.3"/>
+
+  <!-- 우하단 -->
+  <line x1="203" y1="300" x2="213" y2="300" stroke="#FF0000" stroke-width="0.3"/>
+  <line x1="213" y1="290" x2="213" y2="300" stroke="#FF0000" stroke-width="0.3"/>
+
+  <!-- 라벨 텍스트 -->
+  <text x="5" y="8" class="label">재단선 (Trim: 213×300mm)</text>
+  <text x="5" y="295" class="label">안전영역 (Safe: 210×297mm / A4)</text>
+  <text x="5" y="298" class="label">재단여유 (Bleed: 1.5mm)</text>
+
+  <!-- 중앙 십자선 -->
+  <line x1="106.5" y1="0" x2="106.5" y2="300"
+        stroke="#999999" stroke-width="0.2" stroke-dasharray="2,2" opacity="0.5"/>
+  <line x1="0" y1="150" x2="213" y2="150"
+        stroke="#999999" stroke-width="0.2" stroke-dasharray="2,2" opacity="0.5"/>
+
+</svg>

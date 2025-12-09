@@ -1,0 +1,70 @@
+# 대용량 파일 제외
+*.sql
+*.SQL
+*.zip
+*.ZIP
+*.tar
+*.tar.gz
+*.rar
+*.pdf
+*.PDF
+
+# 이미지 파일 제외
+*.jpg
+*.jpeg
+*.JPG
+*.JPEG
+*.png
+*.PNG
+*.gif
+*.GIF
+*.bmp
+*.BMP
+*.tiff
+*.TIFF
+*.webp
+*.psd
+*.ai
+*.eps
+
+# 업로드 폴더 제외
+bbs/upload/
+ImgFolder/
+mlangorder_printauto/upload/
+uploads/
+chat_uploads/
+
+# 백업 파일
+*.backup
+*.bak
+*_backup*
+backup/
+windows_path_artifacts/
+
+# 시스템 파일
+.DS_Store
+Thumbs.db
+*.log
+*.tmp
+*Zone.Identifier
+
+# IDE
+.idea/
+.vscode/
+*.swp
+*.swo
+
+# 환경 설정 (민감 정보)
+.env
+config.local.php
+
+# Composer
+vendor/
+composer.lock
+
+# Node
+node_modules/
+
+# 기타 대용량
+*.phar
+duson_*.tar.gz

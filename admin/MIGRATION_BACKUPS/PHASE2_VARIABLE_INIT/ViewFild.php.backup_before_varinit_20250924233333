@@ -1,0 +1,19 @@
+<?php
+declare(strict_types=1);
+$result= mysqli_query($db, "select * from $table where no='$ModifyCode'",$db);
+$rows=mysql_num_rows($result);
+if($rows){
+
+while($row= mysqli_fetch_array($result)) 
+{  
+$GF_title="$row[title]";    
+$GF_cont="$row[cont]";  
+$GF_url="$row[url]";  
+$GF_cate="$row[cate]";  
+$GF_upfile="$row[upfile]";  
+$GF_count="$row[count]";  
+$GF_date="$row[date]";  
+}
+
+}else{echo("<p align=center><b>DB 에 $ModifyCode 의 등록 자료가 없음.</b></p>"); exit;}
+?>

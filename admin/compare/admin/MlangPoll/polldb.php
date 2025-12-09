@@ -1,0 +1,8 @@
+<?
+include "db.inc.php";
+	
+	$db = mysql_connect($db_server,$db_uname,$db_pass);
+	if (!$db) die("데이터베이스 에러");
+	mysql_select_db($db_name,$db) or die ("Could'nt open $db: ".mysql_error() );
+
+?>

@@ -1,0 +1,38 @@
+--- data_edit_post.php (original)
++++ data_edit_post.php (modified)
+@@ -16,7 +16,7 @@
+             il4='$il4', 
+             il5='$il5', 
+             il6='$il6'"; 					
+-  mysqli_query($query, $connect); 
++  mysqli_query($connect, $query); 
+   $query = "update shop_d2 set 
+             ka0='$ka0', 
+             ka1='$ka1', 
+@@ -25,7 +25,7 @@
+             ka4='$ka4', 
+             ka5='$ka5', 
+             ka6='$ka6'"; 					
+-  mysqli_query($query, $connect); 
++  mysqli_query($connect, $query); 
+   $query = "update shop_d3 set 
+             sp0='$sp0', 
+             sp1='$sp1', 
+@@ -34,7 +34,7 @@
+             sp4='$sp4', 
+             sp5='$sp5', 
+             sp6='$sp6'"; 					
+-  mysqli_query($query, $connect); 
++  mysqli_query($connect, $query); 
+   $query = "update shop_d4 set 
+   ck0='$ck0', 
+   ck1='$ck1', 
+@@ -43,7 +43,7 @@
+   ck4='$ck4', 
+   ck5='$ck5', 
+   ck6='$ck6'"; 	
+-  mysqli_query($query, $connect); 		  
++  mysqli_query($connect, $query); 		  
+ ?> 
+ <script> 
+     location.href = 'data_edit.php'; 

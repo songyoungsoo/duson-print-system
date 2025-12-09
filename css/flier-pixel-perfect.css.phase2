@@ -1,0 +1,327 @@
+/**
+ * 전단지 픽셀 퍼펙트 디자인 시스템
+ * 전단지 이미지의 정확한 측정값 기반
+ * 계산 로직은 전혀 건드리지 않음
+ */
+
+/* =========================================
+   색상 팔레트 (전단지 기반 추출)
+   ========================================= */
+:root {
+  /* 메인 색상 */
+  --flier-green-primary: #4CAF50;    /* 헤더 메인 녹색 */
+  --flier-green-light: #66BB6A;      /* 헤더 그라데이션 끝 */
+  --flier-green-dark: #388E3C;       /* 헤더 텍스트 그림자 */
+  
+  --flier-purple: #7E57C2;            /* 버튼 메인 보라색 */
+  --flier-purple-light: #9575CD;     /* 버튼 호버 */
+  --flier-purple-dark: #673AB7;      /* 버튼 액티브 */
+  
+  --flier-mint-bg: #E8F5E9;          /* 결과박스 배경 */
+  --flier-mint-border: #43A047;      /* 결과박스 테두리 */
+  
+  --flier-gray-light: #FAFAFA;       /* 셀렉터 배경 */
+  --flier-gray-border: #E0E0E0;      /* 셀렉터 테두리 */
+  --flier-text-primary: #212121;     /* 메인 텍스트 */
+  --flier-text-secondary: #757575;   /* 보조 텍스트 */
+  
+  /* 그림자 */
+  --flier-shadow-card: 0 2px 8px rgba(0,0,0,0.12);
+  --flier-shadow-hover: 0 4px 16px rgba(0,0,0,0.16);
+  --flier-shadow-button: 0 2px 4px rgba(0,0,0,0.2);
+  
+  /* 픽셀 단위 측정값 */
+  --header-height: 64px;
+  --header-padding-v: 18px;
+  --header-padding-h: 24px;
+  
+  --grid-gap-h: 16px;
+  --grid-gap-v: 20px;
+  --form-padding: 24px;
+  
+  --field-height: 44px;
+  --field-padding-h: 14px;
+  --field-border-width: 1px;
+  --field-border-radius: 6px;
+  
+  --button-height: 52px;
+  --button-padding-h: 32px;
+  --button-border-radius: 8px;
+  
+  --result-padding: 20px;
+  --result-border-width: 2px;
+  --result-border-radius: 8px;
+  
+  --card-border-radius: 12px;
+  --card-padding: 0;
+}
+
+/* =========================================
+   카드 컨테이너 (전체 감싸기)
+   ========================================= */
+.flier-perfect-card {
+  border-radius: var(--card-border-radius);
+  box-shadow: var(--flier-shadow-card);
+  overflow: hidden;
+  background: white;
+  margin-bottom: 24px;
+}
+
+/* =========================================
+   헤더 스타일 (픽셀 퍼펙트)
+   ========================================= */
+.flier-perfect-header {
+  background: linear-gradient(135deg, var(--flier-green-primary), var(--flier-green-light));
+  height: var(--header-height);
+  padding: var(--header-padding-v) var(--header-padding-h);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  position: relative;
+  box-sizing: border-box;
+}
+
+.flier-perfect-header h1,
+.flier-perfect-header h2,
+.flier-perfect-header h3,
+.flier-perfect-header .title {
+  color: white !important;
+  font-size: 22px !important;
+  font-weight: 700 !important;
+  margin: 0 !important;
+  padding: 0 !important;
+  text-shadow: 1px 1px 2px rgba(0,0,0,0.2);
+  letter-spacing: -0.5px;
+  background: none !important;
+}
+
+/* =========================================
+   계산기 본문 (2x3 그리드)
+   ========================================= */
+.flier-perfect-body {
+  padding: var(--form-padding);
+  background: white;
+}
+
+.flier-perfect-grid {
+  display: grid;
+  grid-template-columns: calc(50% - var(--grid-gap-h)/2) calc(50% - var(--grid-gap-h)/2);
+  column-gap: var(--grid-gap-h);
+  row-gap: var(--grid-gap-v);
+}
+
+/* =========================================
+   필드 그룹 (라벨 + 셀렉터)
+   ========================================= */
+.flier-perfect-field {
+  display: flex;
+  flex-direction: column;
+}
+
+.flier-perfect-label {
+  font-size: 13px !important;
+  color: var(--flier-text-primary) !important;
+  font-weight: 500 !important;
+  margin-bottom: 6px !important;
+  letter-spacing: -0.2px;
+}
+
+.flier-perfect-select {
+  height: var(--field-height) !important;
+  padding: 0 var(--field-padding-h) !important;
+  border: var(--field-border-width) solid var(--flier-gray-border) !important;
+  border-radius: var(--field-border-radius) !important;
+  background: var(--flier-gray-light) !important;
+  font-size: 14px !important;
+  color: var(--flier-text-primary) !important;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  -webkit-appearance: none;
+  -moz-appearance: none;
+  appearance: none;
+  background-image: url("data:image/svg+xml;charset=UTF-8,%3csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='currentColor' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3e%3cpolyline points='6 9 12 15 18 9'%3e%3c/polyline%3e%3c/svg%3e");
+  background-repeat: no-repeat;
+  background-position: right 12px center;
+  background-size: 20px;
+  padding-right: 40px !important;
+}
+
+.flier-perfect-select:hover {
+  border-color: var(--flier-green-primary) !important;
+  background-color: white !important;
+}
+
+.flier-perfect-select:focus {
+  outline: none !important;
+  border-color: var(--flier-green-primary) !important;
+  box-shadow: 0 0 0 3px rgba(76, 175, 80, 0.1) !important;
+  background-color: white !important;
+}
+
+/* =========================================
+   결과 박스 (민트색)
+   ========================================= */
+.flier-perfect-result {
+  grid-column: 1 / -1;
+  background: var(--flier-mint-bg) !important;
+  border: var(--result-border-width) solid var(--flier-mint-border) !important;
+  border-radius: var(--result-border-radius) !important;
+  padding: var(--result-padding) !important;
+  margin-top: 8px;
+  margin-bottom: 8px;
+}
+
+.flier-perfect-result-title {
+  font-size: 14px !important;
+  font-weight: 600 !important;
+  color: var(--flier-text-secondary) !important;
+  margin-bottom: 8px !important;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+
+.flier-perfect-result-value {
+  font-size: 28px !important;
+  font-weight: 700 !important;
+  color: var(--flier-green-primary) !important;
+  margin: 0 !important;
+  letter-spacing: -0.5px;
+}
+
+.flier-perfect-result-note {
+  font-size: 12px !important;
+  color: var(--flier-text-secondary) !important;
+  margin-top: 6px !important;
+}
+
+/* =========================================
+   액션 버튼 (보라색)
+   ========================================= */
+.flier-perfect-button {
+  grid-column: 1 / -1;
+  height: var(--button-height) !important;
+  padding: 0 var(--button-padding-h) !important;
+  border: none !important;
+  border-radius: var(--button-border-radius) !important;
+  background: linear-gradient(135deg, var(--flier-purple), var(--flier-purple-light)) !important;
+  color: white !important;
+  font-size: 16px !important;
+  font-weight: 600 !important;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  box-shadow: var(--flier-shadow-button);
+  text-transform: none;
+  letter-spacing: -0.2px;
+  margin-top: 4px;
+  width: 100%;
+}
+
+.flier-perfect-button:hover {
+  background: linear-gradient(135deg, var(--flier-purple-dark), var(--flier-purple)) !important;
+  transform: translateY(-2px);
+  box-shadow: 0 4px 12px rgba(126, 87, 194, 0.3);
+}
+
+.flier-perfect-button:active {
+  transform: translateY(0);
+  box-shadow: 0 1px 3px rgba(0,0,0,0.2);
+}
+
+/* 파일 업로드 버튼 변형 */
+.flier-perfect-button.upload {
+  background: linear-gradient(135deg, #FF6F00, #FF9100) !important;
+}
+
+.flier-perfect-button.upload:hover {
+  background: linear-gradient(135deg, #E65100, #FF6F00) !important;
+  box-shadow: 0 4px 12px rgba(255, 111, 0, 0.3);
+}
+
+/* =========================================
+   기존 요소 오버라이드 (강제 적용)
+   ========================================= */
+/* 헤더 오버라이드 */
+.customer-header,
+.calculator-header,
+.gallery-pane h3,
+.calculator-pane h3 {
+  background: linear-gradient(135deg, var(--flier-green-primary), var(--flier-green-light)) !important;
+  height: var(--header-height) !important;
+  padding: var(--header-padding-v) var(--header-padding-h) !important;
+  margin: 0 !important;
+  border-radius: var(--card-border-radius) var(--card-border-radius) 0 0 !important;
+  color: white !important;
+  display: flex !important;
+}
+
+/* calculator-header 숨김 처리 */
+.calculator-header {
+  display: none !important;
+}
+  align-items: center !important;
+  justify-content: center !important;
+}
+
+/* 셀렉트 박스 오버라이드 */
+.form-select,
+select[name*="MY_"],
+select[name*="Section"],
+select[name*="POtype"],
+select[name*="ordertype"] {
+  height: var(--field-height) !important;
+  border: var(--field-border-width) solid var(--flier-gray-border) !important;
+  border-radius: var(--field-border-radius) !important;
+  background-color: var(--flier-gray-light) !important;
+  padding: 0 40px 0 var(--field-padding-h) !important;
+}
+
+/* 가격 표시 오버라이드 */
+.price-display,
+#priceDisplay {
+  background: var(--flier-mint-bg) !important;
+  border: var(--result-border-width) solid var(--flier-mint-border) !important;
+  border-radius: var(--result-border-radius) !important;
+  padding: var(--result-padding) !important;
+}
+
+.price-amount,
+#priceAmount {
+  font-size: 28px !important;
+  font-weight: 700 !important;
+  color: var(--flier-green-primary) !important;
+}
+
+/* 버튼 오버라이드 */
+.btn-primary,
+.btn-large,
+button[onclick*="upload"],
+button[onclick*="Upload"],
+button[onclick*="order"],
+button[onclick*="Order"] {
+  height: var(--button-height) !important;
+  padding: 0 var(--button-padding-h) !important;
+  border-radius: var(--button-border-radius) !important;
+  background: linear-gradient(135deg, var(--flier-purple), var(--flier-purple-light)) !important;
+  font-size: 16px !important;
+  font-weight: 600 !important;
+  width: 100% !important;
+}
+
+/* =========================================
+   반응형 디자인
+   ========================================= */
+@media (max-width: 768px) {
+  .flier-perfect-grid {
+    grid-template-columns: 1fr;
+  }
+  
+  .flier-perfect-header h1,
+  .flier-perfect-header h2,
+  .flier-perfect-header h3 {
+    font-size: 18px !important;
+  }
+  
+  .flier-perfect-result-value {
+    font-size: 24px !important;
+  }
+}

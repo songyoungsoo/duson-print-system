@@ -1,0 +1,188 @@
+<?php
+declare(strict_types=1);
+
+
+// ⚠️  XSS 보호 권장: echo 시 htmlspecialchars() 사용을 고려하세요
+// ✅ PHP 7.4 호환: 입력 변수 초기화
+$mode = $_GET['mode'] ?? $_POST['mode'] ?? '';
+$no = $_GET['no'] ?? $_POST['no'] ?? '';
+$search = $_GET['search'] ?? $_POST['search'] ?? '';
+$id = $_GET['id'] ?? $_POST['id'] ?? '';
+$name = $_GET['name'] ?? $_POST['name'] ?? '';
+$code = $_GET['code'] ?? $_POST['code'] ?? '';
+$page = $_GET['page'] ?? $_POST['page'] ?? '';
+
+$M123="..";
+include"../top.php"; 
+
+$PageCode="Movic";
+?>
+
+<head>
+<script>
+function clearField(field)
+{
+	if (field.value == field.defaultValue) {
+		field.value = "";
+	}
+}
+function checkField(field)
+{
+	if (!field.value) {
+		field.value = field.defaultValue;
+	}
+}
+///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+function WebOffice_customer_Del(no){
+	if (confirm(+no+'번 자료를 삭제 하시겠습니까..?\n\n최상위 일경우 하위항목까지 삭제가 됩니다.\n\n한번 삭제한 자료는 복구 되지 않으니 신중을 기해주세요.............!!')) {
+		str='./<?=$PageCode?>/CateAdmin.php?no='+no+'&mode=delete';
+        popup = window.open("","","scrollbars=no,resizable=yes,width=400,height=50,top=2000,left=2000");
+        popup.document.location.href=str;
+        popup.focus();
+	}
+}
+//////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+</script>
+
+</head>
+
+<?php 
+include"../../db.php";
+$table="MlangHomePage_Movic";
+
+if($HomePage_YearCate){ // 검색
+$Mlang_query="select * from $table where BigNo='$HomePage_YearCate'";
+}else{ // 일반모드 일때
+$Mlang_query="select * from $table";
+}
+
+$query= mysqli_query($db, "$Mlang_query");
+// ⚠️  에러 처리 권장: mysqli_error() 사용을 고려하세요
+
+$recordsu= mysqli_num_rows($query);
+$total = mysqli_affected_rows($db);
+
+$listcut= 30;  //한 페이지당 보여줄 목록 게시물수. 
+if(!$offset) $offset=0; 
+?>
+
+
+<table border=0 align=center width=100% cellpadding='5' cellspacing='3' class='coolBar'>
+<tr>
+<td align=left colspan=2>
+&nbsp;
+</td>
+</tr>
+<tr>
+<td align=right valign=bottom>
+<input type='button' onClick="javascript:popup=window.open('./<?=$PageCode?>/CateAdmin.php?mode=form', 'WebOffice_<?=$PageCode?>Form','width=680,height=400,top=0,left=0,menubar=no,resizable=no,statusbar=no,scrollbars=yes,toolbar=no'); popup.focus();" value=' 동영상 정보 입력하기 '>
+</td>
+</tr>
+</table>
+
+
+<!------------------------------------------- 리스트 시작----------------------------------------->
+<table border=0 align=center width=100% cellpadding='5' cellspacing='1' class='coolBar'>
+<tr>
+<td align=center>등록NO</td>
+<td align=center>파일명</td>
+<td align=center>제목</td>
+<td align=center>관리기능</td>
+</tr>
+
+<?php 
+$result= mysqli_query($db, "$Mlang_query order by NO desc limit $offset,$listcut");
+$rows=mysqli_num_rows($result);
+if($rows){
+
+
+while($row= mysqli_fetch_array($result)) 
+{ 
+?>
+
+<tr bgcolor='#575757'>
+<td align=center><font color=white><?=$row[no]?></font></td>
+<td>&nbsp;&nbsp<a href='./Movic/upload/<?=$row[upfile]?>' target='_blank'><font color=white><?=$row[upfile]?></font></a>&nbsp;&nbsp</td>
+<td>&nbsp;&nbsp;<font color=white><?=$row[title]?></font>&nbsp;&nbsp;</td>
+<td align=center>
+<input type='button' onClick="javascript:popup=window.open('./<?=$PageCode?>/CateAdmin.php?mode=form&code=modify&no=<?=$row[no]?>', 'WebOffice_<?=$PageCode?>Modify','width=680,height=400,top=0,left=0,menubar=no,resizable=no,statusbar=no,scrollbars=yes,toolbar=no'); popup.focus();" value=' 수정 '>
+<input type='button' onClick="javascript:WebOffice_customer_Del('<?=$row[no]?>');" value=' 삭제 '>
+</td>
+<tr>
+
+<?php 
+		$i=$i+1;
+} 
+
+
+}else{
+
+if($HomePage_YearCate){
+echo"<tr><td colspan=10><p align=center><b>$HomePage_YearCate</b> 연도<BR><BR> 검색 자료없음</p></td></tr>";
+}else{
+echo"<tr><td colspan=10><p align=center><BR><BR>등록 자료없음</p></td></tr>";
+}
+
+}
+
+?>
+
+
+</table>
+
+
+
+<p align='center'>
+
+<?php 
+if($rows){
+
+if($HomePage_YearCate){
+       $mlang_pagego="HomePage_YearCate=$HomePage_YearCate&offset=$offset"; // 필드속성들 전달값
+}else{
+     $mlang_pagego="offset=$offset"; // 필드속성들 전달값
+}
+
+$pagecut= 7;  //한 장당 보여줄 페이지수 
+$one_bbs= $listcut*$pagecut;  //한 장당 실을 수 있는 목록(게시물)수 
+$start_offset= intval($offset/$one_bbs)*$one_bbs;  //각 장에 처음 페이지의 $offset값. 
+$end_offset= intval($recordsu/$one_bbs)*$one_bbs;  //마지막 장의 첫페이지의 $offset값. 
+$start_page= intval($start_offset/$listcut)+1; //각 장에 처음 페이지의 값. 
+$end_page= ($recordsu%$listcut>0)? intval($recordsu/$listcut)+1: intval($recordsu/$listcut); 
+//마지막 장의 끝 페이지. 
+if($start_offset!= 0) 
+{ 
+  $apoffset= $start_offset- $one_bbs; 
+  echo "<a href='$PHP_SELF?offset=$apoffset&$mlang_pagego'>...[이전]</a>&nbsp;"; 
+} 
+
+for($i= $start_page; $i< $start_page+$pagecut; $i++) 
+{ 
+$newoffset= ($i-1)*$listcut; 
+
+if($offset!= $newoffset){
+  echo "&nbsp;<a href='$PHP_SELF?offset=$newoffset&$mlang_pagego'>($i)</a>&nbsp;"; 
+}else{echo("&nbsp;<font style='font:bold; color:green;'>($i)</font>&nbsp;"); } 
+
+if($i==$end_page) break; 
+} 
+
+if($start_offset!= $end_offset) 
+{ 
+  $nextoffset= $start_offset+ $one_bbs; 
+  echo "&nbsp;<a href='$PHP_SELF?offset=$nextoffset&$mlang_pagego'>[다음]...</a>"; 
+} 
+echo "총목록갯수: $end_page 개"; 
+
+
+}
+
+mysqli_close($db); 
+?> 
+
+</p>
+<!------------------------------------------- 리스트 끝----------------------------------------->
+
+<?php 
+include"../down.php";
+?>

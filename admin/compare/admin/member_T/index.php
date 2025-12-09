@@ -1,0 +1,174 @@
+<?
+$M123="..";
+include"../top.php"; 
+?>
+
+<head>
+<script>
+function clearField(field)
+{
+	if (field.value == field.defaultValue) {
+		field.value = "";
+	}
+}
+function checkField(field)
+{
+	if (!field.value) {
+		field.value = field.defaultValue;
+	}
+}
+///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+function WomanMember_Admin_Del(no){
+	if (confirm(+no+'번 회원을 탈퇴처리 하시겠습니까..?\n\n한번 삭제한 자료는 복구 되지 않으니 신중을 기해주세요.............!!')) {
+		str='admin.php?no='+no+'&mode=delete';
+        popup = window.open("","","scrollbars=no,resizable=yes,width=400,height=50,top=2000,left=2000");
+        popup.document.location.href=str;
+        popup.focus();
+	}
+}
+//////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+</script>
+
+</head>
+
+<?
+include"../../db.php";
+$table="member_T";
+
+if($search=="yes"){ //검색모드일때
+}else{ // 일반모드 일때
+$Mlang_query="select * from $table";
+}
+
+$query= mysql_query("$Mlang_query",$db);
+$recordsu= mysql_num_rows($query);
+$total = mysql_affected_rows();
+
+$listcut= 12;  //한 페이지당 보여줄 목록 게시물수. 
+if(!$offset) $offset=0; 
+?>
+
+
+<table border=0 align=center width=100% cellpadding='8' cellspacing='3' class='coolBar'>
+<tr>
+<td align=left>
+<font color=red>*</font> 현재페이지의 남성회원자료는 임이적인 것이며 처음페이지에 호출됩니다.<BR>
+<font color=red>*</font> 사진의 크기는 105 X 130 에 맞추어 주시기 바랍니다.<BR>
+<font color=red>*</font> 회원정보를 변경하고자 할경우 수정을 이용하여 주십시요.<BR>
+</td>
+<td align=right>
+
+등록자료수-<font style='color:blue;'><b><?=$total?></b></font>&nbsp;명
+<?if($total < 10){?>
+<input type='button' onClick="javascript:popup=window.open('admin.php?mode=form', 'Member_T','width=400,height=220,top=50,left=50,menubar=no,resizable=no,statusbar=no,scrollbars=yes,toolbar=no'); popup.focus();" value=' 남성회원정보 입력하기 '>
+<?}else{?><BR><font color=#FF0099>10명이상 입력불가</font><?}?>
+</td>
+</tr>
+</table>
+
+
+<!------------------------------------------- 리스트 시작----------------------------------------->
+<table border=0 align=center width=100% cellpadding='5' cellspacing='1' class='coolBar'>
+<tr>
+<td align=center>사진</td>
+<td align=center>이름</td>
+<td align=center>나이</td>
+<td align=center>지역</td>
+<td align=center>직업</td>
+<td align=center>관리기능</td>
+</tr>
+
+<?
+$result= mysql_query("$Mlang_query order by NO desc limit $offset,$listcut",$db);
+$rows=mysql_num_rows($result);
+if($rows){
+
+
+while($row= mysql_fetch_array($result)) 
+{ 
+?>
+
+<tr bgcolor='#575757'>
+<td align=center><img src='../../IndexSoft/member_T/upload/<?=$row[photo]?>' width=50></td>
+<td align=center><font color=white><?=$row[name]?></font></td>
+<td align=center><font color=white><?=$row[year]?> 년생</font></td>
+<td align=center><font color=white><?=$row[map]?></font></td>
+<td align=center><font color=white><?=$row[job]?></font></td>
+<td align=center>
+<input type='button' onClick="javascript:popup=window.open('admin.php?mode=form&code=modify&no=<?=$row[no]?>', 'Member_T_Modify','width=400,height=220,top=50,left=50,menubar=no,resizable=no,statusbar=no,scrollbars=yes,toolbar=no'); popup.focus();" value=' 수정 '>
+<input type='button' onClick="javascript:WomanMember_Admin_Del('<?=$row[no]?>');" value=' 삭제 '>
+</td>
+<tr>
+
+<?
+		$i=$i+1;
+} 
+
+
+}else{
+
+if($search){
+echo"<tr><td colspan=10><p align=center><BR><BR>관련 검색 자료없음</p></td></tr>";
+}else{
+echo"<tr><td colspan=10><p align=center><BR><BR>등록 자료없음</p></td></tr>";
+}
+
+}
+
+?>
+
+
+</table>
+
+
+
+<p align='center'>
+
+<?
+if($rows){
+
+$mlang_pagego="cate=$cate$title_search=$title_search"; // 필드속성들 전달값
+
+$pagecut= 7;  //한 장당 보여줄 페이지수 
+$one_bbs= $listcut*$pagecut;  //한 장당 실을 수 있는 목록(게시물)수 
+$start_offset= intval($offset/$one_bbs)*$one_bbs;  //각 장에 처음 페이지의 $offset값. 
+$end_offset= intval($recordsu/$one_bbs)*$one_bbs;  //마지막 장의 첫페이지의 $offset값. 
+$start_page= intval($start_offset/$listcut)+1; //각 장에 처음 페이지의 값. 
+$end_page= ($recordsu%$listcut>0)? intval($recordsu/$listcut)+1: intval($recordsu/$listcut); 
+//마지막 장의 끝 페이지. 
+if($start_offset!= 0) 
+{ 
+  $apoffset= $start_offset- $one_bbs; 
+  echo "<a href='$PHP_SELF?offset=$apoffset&$mlang_pagego'>...[이전]</a>&nbsp;"; 
+} 
+
+for($i= $start_page; $i< $start_page+$pagecut; $i++) 
+{ 
+$newoffset= ($i-1)*$listcut; 
+
+if($offset!= $newoffset){
+  echo "&nbsp;<a href='$PHP_SELF?offset=$newoffset&$mlang_pagego'>($i)</a>&nbsp;"; 
+}else{echo("&nbsp;<font style='font:bold; color:green;'>($i)</font>&nbsp;"); } 
+
+if($i==$end_page) break; 
+} 
+
+if($start_offset!= $end_offset) 
+{ 
+  $nextoffset= $start_offset+ $one_bbs; 
+  echo "&nbsp;<a href='$PHP_SELF?offset=$nextoffset&$mlang_pagego'>[다음]...</a>"; 
+} 
+echo "총목록갯수: $end_page 개"; 
+
+
+}
+
+mysql_close($db); 
+?> 
+
+</p>
+<!------------------------------------------- 리스트 끝----------------------------------------->
+
+<?
+include"../down.php";
+?>

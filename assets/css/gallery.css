@@ -1,0 +1,633 @@
+/**
+ * 갤러리 시스템 공통 CSS v1.1
+ * 픽셀 단위 정확한 스타일링 + 라이트박스 시스템
+ */
+
+/* ===========================
+   갤러리 컨테이너
+   =========================== */
+.gallery-container {
+    display: inline-block;
+    padding: 10px;
+    border-radius: 8px;
+}
+
+/* ===========================
+   메인 이미지: 500×300px with hover zoom
+   =========================== */
+.gallery-main {
+    position: relative;
+    overflow: hidden;
+    margin-bottom: 10px;
+    border: 1px solid #ddd;
+    border-radius: 4px;
+    background: #f5f5f5;
+    cursor: pointer;
+}
+
+.gallery-main-img {
+    width: 100%;
+    height: 100%;
+    object-fit: contain;
+    cursor: pointer;
+    display: block;
+    transition: transform 0.3s ease;
+    transform-origin: center center;
+}
+
+/* 호버 시 박스 내에서 1.2배 확대 */
+.gallery-main:hover .gallery-main-img {
+    transform: scale(1.2);
+}
+
+/* 마우스 아웃 시 원래 크기로 복원 */
+.gallery-main-img {
+    transform: scale(1);
+}
+
+/* 포커스 아웃라인 */
+.gallery-main-img:focus {
+    outline: 3px solid #007bff;
+    outline-offset: -3px;
+}
+
+/* ===========================
+   썸네일: 80×80px × 5개
+   =========================== */
+.gallery-thumbs {
+    display: grid;
+    grid-template-columns: repeat(5, 80px);
+    gap: 5px;
+    margin-bottom: 10px;
+    justify-content: center;
+}
+
+.gallery-thumb {
+    border: 2px solid transparent;
+    padding: 0;
+    cursor: pointer;
+    overflow: hidden;
+    border-radius: 4px;
+    background: #f5f5f5;
+    transition: all 0.2s ease;
+    position: relative;
+}
+
+.gallery-thumb:hover {
+    border-color: #0056b3;
+    transform: translateY(-2px);
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.15);
+}
+
+.gallery-thumb.active {
+    border-color: #007bff;
+    box-shadow: 0 0 0 1px rgba(0, 123, 255, 0.25);
+}
+
+.gallery-thumb:focus {
+    outline: 2px solid #007bff;
+    outline-offset: 2px;
+}
+
+.gallery-thumb img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    display: block;
+}
+
+/* 5번째 썸네일: 더보기 버튼 스타일 */
+.gallery-more-thumb {
+    border-color: #28a745 !important;
+    background: linear-gradient(135deg, #28a745 0%, #20c997 100%);
+}
+
+.gallery-more-thumb:hover {
+    border-color: #20c997 !important;
+    transform: translateY(-3px);
+    box-shadow: 0 4px 8px rgba(40, 167, 69, 0.3);
+}
+
+.gallery-more-thumb img {
+    object-fit: contain;
+}
+
+/* ===========================
+   더보기 버튼
+   =========================== */
+.gallery-more-btn {
+    display: block;
+    width: 100%;
+    padding: 10px 20px;
+    background: #007bff;
+    color: white;
+    border: none;
+    border-radius: 4px;
+    font-size: 14px;
+    font-weight: 500;
+    cursor: pointer;
+    transition: all 0.2s ease;
+}
+
+.gallery-more-btn:hover {
+    background: #0056b3;
+    transform: translateY(-1px);
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
+}
+
+.gallery-more-btn:active {
+    transform: translateY(0);
+}
+
+.gallery-more-btn:focus {
+    outline: 2px solid #0056b3;
+    outline-offset: 2px;
+}
+
+/* ===========================
+   모달: 1200×800px 정중앙 (메인 이미지 500×400px와 조화)
+   =========================== */
+.gallery-modal {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    z-index: 9999;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    animation: fadeIn 0.3s ease;
+}
+
+@keyframes fadeIn {
+    from { opacity: 0; }
+    to { opacity: 1; }
+}
+
+.gallery-modal-backdrop {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: rgba(0, 0, 0, 0.7);
+    cursor: pointer;
+}
+
+.gallery-modal-content {
+    position: relative;
+    background: white;
+    border-radius: 8px;
+    box-shadow: 0 10px 40px rgba(0, 0, 0, 0.3);
+    display: flex;
+    flex-direction: column;
+    animation: slideUp 0.3s ease;
+}
+
+@keyframes slideUp {
+    from {
+        transform: translateY(20px);
+        opacity: 0;
+    }
+    to {
+        transform: translateY(0);
+        opacity: 1;
+    }
+}
+
+.gallery-modal-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 20px;
+    border-bottom: 1px solid #e9ecef;
+    border-radius: 8px 8px 0 0;  /* 상단 모서리만 둥글게 - content와 동일한 radius */
+}
+
+.gallery-modal-header h2 {
+    margin: 0;
+    font-size: 20px;
+    font-weight: 600;
+    color: #212529;
+}
+
+.gallery-modal-close {
+    background: none;
+    border: none;
+    font-size: 28px;
+    line-height: 1;
+    color: #6c757d;
+    cursor: pointer;
+    padding: 0;
+    width: 32px;
+    height: 32px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border-radius: 4px;
+    transition: all 0.2s ease;
+}
+
+.gallery-modal-close:hover {
+    background: #f8f9fa;
+    color: #212529;
+}
+
+.gallery-modal-close:focus {
+    outline: 2px solid #007bff;
+    outline-offset: 2px;
+}
+
+.gallery-modal-body {
+    flex: 1;
+    padding: 20px;
+    overflow-y: auto;
+    background: #f8f9fa;
+}
+
+/* 모달 그리드: 6×3 = 18개 */
+.gallery-modal-grid {
+    display: grid;
+    grid-template-columns: repeat(6, 1fr);
+    gap: 15px;
+    min-height: 400px;
+    width: 1200px;
+    max-width: 95vw;
+}
+
+.gallery-modal-grid img {
+    width: 100%;
+    height: 180px;
+    object-fit: cover;
+    border-radius: 4px;
+    cursor: pointer;
+    transition: all 0.2s ease;
+    background: white;
+    border: 1px solid #dee2e6;
+}
+
+/* 라이트박스: 이미지 클릭 시 닫기 */
+.gallery-modal-grid img:hover {
+    transform: scale(1.05);
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+    border-color: #007bff;
+}
+
+.gallery-modal-footer {
+    padding: 15px 20px;
+    border-top: 1px solid #e9ecef;
+    background: white;
+    border-radius: 0 0 8px 8px;
+}
+
+/* ===========================
+   페이지네이션
+   =========================== */
+.gallery-pagination {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    gap: 20px;
+}
+
+.pagination-prev,
+.pagination-next {
+    padding: 8px 16px;
+    background: #007bff;
+    color: white;
+    border: none;
+    border-radius: 4px;
+    font-size: 16px;
+    cursor: pointer;
+    transition: all 0.2s ease;
+    min-width: 60px;
+}
+
+.pagination-prev:hover:not(:disabled),
+.pagination-next:hover:not(:disabled) {
+    background: #0056b3;
+}
+
+.pagination-prev:disabled,
+.pagination-next:disabled {
+    background: #6c757d;
+    cursor: not-allowed;
+    opacity: 0.5;
+}
+
+.pagination-prev:focus,
+.pagination-next:focus {
+    outline: 2px solid #0056b3;
+    outline-offset: 2px;
+}
+
+.pagination-info {
+    font-size: 14px;
+    color: #495057;
+    font-weight: 500;
+}
+
+.current-page {
+    font-weight: 700;
+    color: #007bff;
+}
+
+/* ===========================
+   로딩 상태
+   =========================== */
+.gallery-loading {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    min-height: 200px;
+    color: #6c757d;
+}
+
+.gallery-loading::after {
+    content: '';
+    display: inline-block;
+    width: 24px;
+    height: 24px;
+    margin-left: 10px;
+    border: 3px solid #dee2e6;
+    border-top-color: #007bff;
+    border-radius: 50%;
+    animation: spin 1s linear infinite;
+}
+
+@keyframes spin {
+    to { transform: rotate(360deg); }
+}
+
+/* ===========================
+   에러 상태
+   =========================== */
+.gallery-error {
+    padding: 20px;
+    background: #f8d7da;
+    color: #721c24;
+    border: 1px solid #f5c6cb;
+    border-radius: 4px;
+    text-align: center;
+}
+
+/* ===========================
+   플레이스홀더
+   =========================== */
+.gallery-placeholder {
+    background: #e9ecef;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: #6c757d;
+    font-size: 14px;
+}
+
+/* ===========================
+   반응형 (태블릿)
+   =========================== */
+@media (max-width: 768px) {
+    .gallery-modal-content {
+        width: 95% !important;
+        height: 90% !important;
+        max-width: 600px;
+        max-height: 600px;
+    }
+    
+    .gallery-modal-grid {
+        grid-template-columns: repeat(3, 1fr);
+        gap: 10px;
+    }
+    
+    .gallery-modal-grid img {
+        height: 120px;
+    }
+}
+
+/* ===========================
+   반응형 (모바일)
+   =========================== */
+@media (max-width: 480px) {
+    .gallery-container {
+        width: 100%;
+        padding: 5px;
+    }
+    
+    .gallery-main {
+        width: 100% !important;
+        height: 240px !important;  /* 500×400 비율에 맞춰 증가 (200px → 240px) */
+    }
+    
+    .gallery-thumbs {
+        grid-template-columns: repeat(4, 70px);
+        gap: 3px;
+    }
+    
+    .gallery-thumb {
+        width: 70px !important;
+        height: 70px !important;
+    }
+    
+    .gallery-modal-grid {
+        grid-template-columns: repeat(2, 1fr);
+        gap: 8px;
+    }
+    
+    .gallery-modal-grid img {
+        height: 100px;
+    }
+}
+
+/* ===========================
+   접근성 개선
+   =========================== */
+@media (prefers-reduced-motion: reduce) {
+    .gallery-main-img,
+    .gallery-thumb,
+    .gallery-more-btn,
+    .gallery-modal,
+    .gallery-modal-content,
+    .gallery-modal-grid img {
+        transition: none !important;
+        animation: none !important;
+    }
+}
+
+/* 고대비 모드 */
+@media (prefers-contrast: high) {
+    .gallery-thumb.active {
+        border-width: 3px;
+    }
+    
+    .gallery-main-img:focus,
+    .gallery-thumb:focus,
+    .gallery-more-btn:focus {
+        outline-width: 3px;
+    }
+}
+
+/* 다크 모드 지원 (선택사항) */
+@media (prefers-color-scheme: dark) {
+    .gallery-container {
+        background: #212529;
+        color: #f8f9fa;
+    }
+    
+    .gallery-main,
+    .gallery-thumb {
+        border-color: #495057;
+        background: #343a40;
+    }
+    
+    .gallery-modal-content {
+        background: #212529;
+        color: #f8f9fa;
+    }
+    
+    .gallery-modal-header,
+    .gallery-modal-footer {
+        border-color: #495057;
+    }
+    
+    .gallery-modal-body {
+        background: #343a40;
+    }
+    
+    .gallery-modal-close {
+        color: #adb5bd;
+    }
+    
+    .gallery-modal-close:hover {
+        background: #343a40;
+        color: #f8f9fa;
+    }
+}
+
+/* ===========================
+   라이트박스 시스템
+   =========================== */
+.gallery-lightbox {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: rgba(0, 0, 0, 0.9);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    z-index: 10000;
+    animation: gallery-fadeIn 0.3s ease;
+}
+
+.gallery-lightbox-backdrop {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    cursor: pointer;
+}
+
+.gallery-lightbox-content {
+    position: relative;
+    max-width: 90vw;
+    max-height: 90vh;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+}
+
+.gallery-lightbox-image {
+    max-width: 100%;
+    max-height: 80vh;
+    object-fit: contain;
+    border-radius: 8px;
+    box-shadow: 0 4px 20px rgba(0, 0, 0, 0.5);
+    cursor: pointer;
+    transition: transform 0.2s ease;
+}
+
+.gallery-lightbox-image:hover {
+    transform: scale(1.02);
+}
+
+.gallery-lightbox-close {
+    position: absolute;
+    top: -40px;
+    right: -40px;
+    background: rgba(255, 255, 255, 0.9);
+    border: none;
+    border-radius: 50%;
+    width: 40px;
+    height: 40px;
+    font-size: 24px;
+    font-weight: bold;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: all 0.2s;
+    z-index: 1;
+}
+
+.gallery-lightbox-close:hover {
+    background: white;
+    transform: scale(1.1);
+}
+
+.gallery-lightbox-info {
+    margin-top: 20px;
+    text-align: center;
+    color: white;
+    background: rgba(0, 0, 0, 0.7);
+    padding: 10px 20px;
+    border-radius: 20px;
+    max-width: 400px;
+}
+
+.gallery-lightbox-info p {
+    margin: 0;
+    font-size: 14px;
+    line-height: 1.4;
+}
+
+/* 모달 그리드 이미지 호버 효과 */
+#modal-gallery-grid img {
+    transition: all 0.2s ease;
+    border-radius: 8px;
+    cursor: zoom-in;
+}
+
+#modal-gallery-grid img:hover {
+    transform: scale(1.05);
+    box-shadow: 0 4px 15px rgba(0, 0, 0, 0.3);
+    z-index: 1;
+    position: relative;
+}
+
+/* 애니메이션 */
+@keyframes gallery-fadeIn {
+    from { opacity: 0; }
+    to { opacity: 1; }
+}
+
+/* 반응형 라이트박스 */
+@media (max-width: 768px) {
+    .gallery-lightbox-close {
+        top: 10px;
+        right: 10px;
+        background: rgba(255, 255, 255, 0.8);
+    }
+    
+    .gallery-lightbox-image {
+        max-height: 70vh;
+    }
+    
+    .gallery-lightbox-info {
+        margin-top: 15px;
+        padding: 8px 16px;
+        font-size: 12px;
+    }
+}

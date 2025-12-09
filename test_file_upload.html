@@ -1,0 +1,67 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <title>파일 업로드 테스트</title>
+</head>
+<body>
+    <h1>파일 업로드 테스트</h1>
+
+    <div>
+        <input type="file" id="testFile" multiple>
+        <button onclick="uploadTest()">테스트 업로드</button>
+    </div>
+
+    <div id="result"></div>
+
+    <script>
+        function uploadTest() {
+            const fileInput = document.getElementById('testFile');
+            const files = fileInput.files;
+
+            console.log('선택된 파일:', files);
+
+            if (files.length === 0) {
+                alert('파일을 선택해주세요');
+                return;
+            }
+
+            const formData = new FormData();
+
+            // 파일 추가
+            for (let i = 0; i < files.length; i++) {
+                console.log('파일 추가:', files[i].name, files[i].size, 'bytes');
+                formData.append('uploaded_files[]', files[i]);
+            }
+
+            // 테스트 데이터 추가
+            formData.append('test', 'hello');
+            formData.append('MY_type', '123');
+
+            // FormData 내용 확인
+            console.log('FormData entries:');
+            for (let [key, value] of formData.entries()) {
+                if (value instanceof File) {
+                    console.log(`  ${key}:`, {name: value.name, size: value.size});
+                } else {
+                    console.log(`  ${key}:`, value);
+                }
+            }
+
+            fetch('test_file_upload_receiver.php', {
+                method: 'POST',
+                body: formData
+            })
+            .then(response => response.text())
+            .then(text => {
+                console.log('서버 응답:', text);
+                document.getElementById('result').innerHTML = '<pre>' + text + '</pre>';
+            })
+            .catch(error => {
+                console.error('에러:', error);
+                document.getElementById('result').innerHTML = '<pre>에러: ' + error + '</pre>';
+            });
+        }
+    </script>
+</body>
+</html>

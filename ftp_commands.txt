@@ -1,0 +1,4 @@
+put
+mlangprintauto\namecard\add_to_basket.php
+mlangprintauto/namecard/add_to_basket.php
+quit

@@ -1,0 +1,147 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <title>파일 래퍼 객체 테스트</title>
+    <style>
+        body { font-family: Arial, sans-serif; padding: 20px; }
+        .test-section { margin: 20px 0; padding: 15px; border: 1px solid #ccc; }
+        .success { color: green; }
+        .error { color: red; }
+        pre { background: #f5f5f5; padding: 10px; overflow-x: auto; }
+    </style>
+</head>
+<body>
+    <h1>파일 래퍼 객체 수정 테스트</h1>
+
+    <div class="test-section">
+        <h2>1. 파일 선택</h2>
+        <input type="file" id="testFile" multiple>
+        <button onclick="testUpload()">업로드 테스트</button>
+    </div>
+
+    <div class="test-section">
+        <h2>2. 테스트 결과</h2>
+        <div id="testResults"></div>
+    </div>
+
+    <script>
+        // upload_modal.js와 동일한 구조로 파일 저장
+        window.uploadedFiles = [];
+
+        function processFiles(files) {
+            window.uploadedFiles = [];
+
+            files.forEach(file => {
+                // upload_modal.js와 동일한 래퍼 객체 생성
+                const fileObj = {
+                    id: Date.now() + '_' + Math.random().toString(36).substr(2, 9),
+                    file: file,  // ← 실제 File 객체
+                    name: file.name,
+                    size: formatFileSize(file.size),
+                    type: '.' + file.name.split('.').pop().toLowerCase()
+                };
+
+                window.uploadedFiles.push(fileObj);
+            });
+
+            console.log('📦 uploadedFiles:', window.uploadedFiles);
+        }
+
+        function testUpload() {
+            const fileInput = document.getElementById('testFile');
+            const files = Array.from(fileInput.files);
+
+            if (files.length === 0) {
+                alert('파일을 선택해주세요');
+                return;
+            }
+
+            // 파일 처리 (upload_modal.js 패턴)
+            processFiles(files);
+
+            // FormData 생성 (inserted/index.php 패턴)
+            const formData = new FormData();
+            formData.append('test', 'hello');
+            formData.append('MY_type', '123');
+
+            let results = '<h3>테스트 시나리오:</h3>';
+
+            // ❌ 잘못된 방법 (수정 전)
+            results += '<h4 class="error">❌ 수정 전 (fileObj 전체 전송):</h4>';
+            const wrongFormData = new FormData();
+            wrongFormData.append('test', 'hello');
+            window.uploadedFiles.forEach((fileObj, index) => {
+                wrongFormData.append('uploaded_files[]', fileObj);  // 래퍼 객체 전체
+            });
+
+            results += '<pre>';
+            results += '코드: formData.append("uploaded_files[]", fileObj);\n\n';
+            results += 'FormData entries:\n';
+            for (let [key, value] of wrongFormData.entries()) {
+                if (value instanceof File) {
+                    results += `  ${key}: [File] ${value.name} (${value.size} bytes)\n`;
+                } else if (typeof value === 'object') {
+                    results += `  ${key}: [Object] ${JSON.stringify(value)}\n`;
+                } else {
+                    results += `  ${key}: ${value}\n`;
+                }
+            }
+            results += '</pre>';
+
+            // ✅ 올바른 방법 (수정 후)
+            results += '<h4 class="success">✅ 수정 후 (fileObj.file 전송):</h4>';
+            const correctFormData = new FormData();
+            correctFormData.append('test', 'hello');
+            window.uploadedFiles.forEach((fileObj, index) => {
+                correctFormData.append('uploaded_files[]', fileObj.file);  // 실제 File 객체
+            });
+
+            results += '<pre>';
+            results += '코드: formData.append("uploaded_files[]", fileObj.file);\n\n';
+            results += 'FormData entries:\n';
+            for (let [key, value] of correctFormData.entries()) {
+                if (value instanceof File) {
+                    results += `  ${key}: [File] ${value.name} (${value.size} bytes) ✅\n`;
+                } else if (typeof value === 'object') {
+                    results += `  ${key}: [Object] ${JSON.stringify(value)}\n`;
+                } else {
+                    results += `  ${key}: ${value}\n`;
+                }
+            }
+            results += '</pre>';
+
+            // 실제 전송 테스트
+            results += '<h4>🚀 실제 전송 테스트:</h4>';
+            results += '<p>test_file_upload_receiver.php로 전송 중...</p>';
+
+            document.getElementById('testResults').innerHTML = results;
+
+            // 수정된 FormData로 실제 전송
+            fetch('test_file_upload_receiver.php', {
+                method: 'POST',
+                body: correctFormData
+            })
+            .then(response => response.text())
+            .then(text => {
+                results += '<h4 class="success">✅ 서버 응답:</h4>';
+                results += '<pre>' + text + '</pre>';
+                document.getElementById('testResults').innerHTML = results;
+            })
+            .catch(error => {
+                results += '<h4 class="error">❌ 전송 실패:</h4>';
+                results += '<pre>' + error + '</pre>';
+                document.getElementById('testResults').innerHTML = results;
+            });
+        }
+
+        function formatFileSize(bytes) {
+            if (bytes === 0) return '0 Bytes';
+            const k = 1024;
+            const sizes = ['Bytes', 'KB', 'MB', 'GB'];
+            const i = Math.floor(Math.log(bytes) / Math.log(k));
+            return parseFloat((bytes / Math.pow(k, i)).toFixed(2)) + ' ' + sizes[i];
+        }
+    </script>
+</body>
+</html>
