@@ -81,6 +81,62 @@ if ($placeholder_count === $type_count && $type_count === $var_count) {
 
 ---
 
+## 📦 Git 저장소 규칙 (2025-12-10 확정)
+
+### 🔴 핵심 원칙: 코드만 저장!
+
+**GitHub 저장소**: https://github.com/songyoungsoo/duson-print-system
+
+| 항목 | 포함 여부 | 이유 |
+|-----|---------|-----|
+| **PHP 소스 코드** | ✅ 포함 | 핵심 코드 |
+| **JavaScript/CSS** | ✅ 포함 | 프론트엔드 코드 |
+| **설정 파일** | ✅ 포함 | 시스템 설정 |
+| **문서 (md)** | ✅ 포함 | 개발 문서 |
+| **이미지 (jpg, png, gif)** | ❌ 제외 | 대용량, 별도 관리 |
+| **업로드 폴더** | ❌ 제외 | 사용자 데이터 |
+| **SQL 덤프** | ❌ 제외 | 민감 정보/대용량 |
+| **PDF 파일** | ❌ 제외 | 대용량 |
+| **백업 파일** | ❌ 제외 | 불필요한 중복 |
+
+### 📁 .gitignore 카테고리 (10개)
+
+1. **대용량 파일**: sql, zip, tar.gz, pdf, phar
+2. **이미지 파일**: jpg, png, gif, webp, svg, psd, ai, eps
+3. **업로드 폴더**: bbs/upload/, ImgFolder/, mlangorder_printauto/upload/
+4. **백업 파일**: *.backup, *.bak, backup/
+5. **시스템 파일**: .DS_Store, *.log, *Zone.Identifier
+6. **IDE 설정**: .idea/, .vscode/
+7. **환경 설정**: .env, config.local.php (민감 정보)
+8. **의존성 패키지**: vendor/, node_modules/
+9. **빌드 결과물**: dist/, build/
+10. **프로젝트 특수**: duson_*.tar.gz, session/, logs/
+
+### ✅ Git 커밋 전 체크리스트
+
+```bash
+# 1. 상태 확인 (대용량 파일 없는지)
+git status
+
+# 2. 추가될 파일 확인
+git diff --cached --stat
+
+# 3. 커밋
+git commit -m "설명"
+
+# 4. 푸시 (빠르게 완료되어야 함 - 수초 이내)
+git push origin main
+```
+
+### ⚠️ 주의사항
+
+- **푸시가 오래 걸리면**: 대용량 파일이 포함된 것 → .gitignore 확인
+- **저장소 크기 목표**: 50MB 이하 유지
+- **이미지/업로드 파일**: FTP로 별도 관리 (Git에 절대 커밋 금지)
+- **.gitignore 수정 시**: 반드시 이 문서도 함께 업데이트
+
+---
+
 ## 🏢 Project Context
 
 **Duson Planning Print System (두손기획인쇄)** - Enterprise printing service management system built in PHP for comprehensive print order processing, automated pricing, and business operations.
