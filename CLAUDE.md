@@ -87,6 +87,17 @@ if ($placeholder_count === $type_count && $type_count === $var_count) {
 
 **GitHub 저장소**: https://github.com/songyoungsoo/duson-print-system
 
+### 👤 Git 계정 정보 (2025-12-10 수정)
+
+| 항목 | 값 |
+|------|-----|
+| **GitHub 저장소** | `git@github.com:songyoungsoo/duson-print-system.git` |
+| **사용자명** | `songyoungsoo` |
+| **이메일** | `yeongsu32@gmail.com` ✅ (정식 이메일) |
+| **설정 파일** | `/var/www/html/.git/config` |
+
+**⚠️ 주의**: 이전에 `songyoungsoo@gmail.com`(잘못된 이메일)이 사용되었으나, 2025-12-10에 `yeongsu32@gmail.com`으로 수정됨
+
 | 항목 | 포함 여부 | 이유 |
 |-----|---------|-----|
 | **PHP 소스 코드** | ✅ 포함 | 핵심 코드 |
