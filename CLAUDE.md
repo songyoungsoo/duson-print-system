@@ -1416,6 +1416,63 @@ $date_filter = "date >= '2023-01-01' AND date <= '2024-12-31'";
 $date_filter = "date >= DATE_SUB(NOW(), INTERVAL 1 YEAR)";
 ```
 
+## 🔄 Recent Critical Fixes (2025-12-11)
+
+### 세션 8시간 연장 및 자동 로그인(Remember Me) 기능 추가 ✅ COMPLETED
+**날짜**: 2025-12-11
+**목적**: "좀비 로그인" 문제 해결 - 브라우저는 로그인 상태인데 서버 세션 만료되는 현상
+
+**변경 사항**:
+
+| 항목 | 이전 | 변경 후 |
+|------|------|---------|
+| **세션 유효 시간** | 24분 | **8시간** (28800초) |
+| **자동 로그인** | 없음 | **30일** 토큰 기반 |
+| **체크박스 UI** | 없음 | 로그인 폼에 추가 |
+
+**수정된 파일 (3개)**:
+
+| 파일 | 변경 내용 |
+|------|----------|
+| `includes/auth.php` | 세션 설정 8시간, 토큰 관리 함수 추가 |
+| `includes/login_modal.php` | "자동 로그인 (30일간 유지)" 체크박스 UI |
+| `member/login_unified.php` | 로그인 시 토큰 생성 로직 |
+
+**새로 추가된 함수** (`includes/auth.php`):
+- `ensureRememberTokenTable()` - remember_tokens 테이블 자동 생성
+- `createRememberToken()` - 30일 토큰 생성 및 DB 저장
+- `validateRememberToken()` - 토큰 검증 및 자동 로그인
+- `deleteRememberToken()` - 로그아웃 시 토큰 삭제
+- `setRememberMeCookie()` / `clearRememberMeCookie()` - 쿠키 관리
+- `refreshSessionActivity()` - 세션 활동 시간 갱신
+
+**데이터베이스 테이블** (`remember_tokens` - 자동 생성):
+```sql
+CREATE TABLE remember_tokens (
+    id INT AUTO_INCREMENT PRIMARY KEY,
+    user_id INT NOT NULL,
+    token VARCHAR(64) NOT NULL UNIQUE,
+    expires_at DATETIME NOT NULL,
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    INDEX idx_token (token),
+    INDEX idx_user_id (user_id),
+    INDEX idx_expires (expires_at)
+);
+```
+
+**동작 방식**:
+1. **일반 로그인**: 8시간 세션 유지 (이전 24분)
+2. **자동 로그인 체크 시**: 30일간 쿠키 토큰으로 자동 재인증
+3. **세션 만료 + 토큰 유효**: 자동으로 세션 복원
+
+**테스트 결과**:
+- ✅ 로그인 성공 시 토큰 DB 저장
+- ✅ remember_token 쿠키 설정 (30일 만료)
+- ✅ PHPSESSID 쿠키 8시간 유효
+- ✅ 세션 만료 후 자동 로그인 작동
+
+---
+
 ## 🔄 Recent Critical Fixes (2025-12-10)
 
 ### 주문 완료 페이지 unit 필드 적용 ✅ COMPLETED
