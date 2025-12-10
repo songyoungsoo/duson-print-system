@@ -2,12 +2,40 @@
 /**
  * 공통 인증 처리 파일
  * 경로: includes/auth.php
+ *
+ * 기능:
+ * - 세션 유효 시간: 8시간 (28800초)
+ * - 자동 로그인 (Remember Me): 30일
+ * - 활동 시 세션 자동 갱신
  */
 
-// 세션이 시작되지 않았다면 시작
+// ============================================
+// 1. 세션 설정 (세션 시작 전에 설정해야 함)
+// ============================================
+$session_lifetime = 28800; // 8시간 = 28800초
+
 if (session_status() == PHP_SESSION_NONE) {
+    // 세션 유효 시간 설정
+    ini_set('session.gc_maxlifetime', $session_lifetime);
+
+    // 세션 쿠키 설정 (브라우저 닫아도 8시간 유지)
+    session_set_cookie_params([
+        'lifetime' => $session_lifetime,
+        'path' => '/',
+        'domain' => '',
+        'secure' => false,  // HTTPS 사용 시 true로 변경
+        'httponly' => true,
+        'samesite' => 'Lax'
+    ]);
+
     session_start();
 }
+
+// ============================================
+// 2. 자동 로그인 설정
+// ============================================
+define('REMEMBER_ME_DAYS', 30);  // 자동 로그인 유지 기간 (일)
+define('REMEMBER_ME_COOKIE', 'remember_token');
 
 // 공통 인증 함수 로드 (존재할 때만)
 if (file_exists(__DIR__ . '/auth_functions.php')) {
@@ -15,25 +43,199 @@ if (file_exists(__DIR__ . '/auth_functions.php')) {
 }
 
 // 데이터베이스 연결 (각 페이지에서 이미 연결되어 있다고 가정)
-// $db 변수가 있다면 $connect로 할당 (새로운 연결 생성하지 않음)
 if (isset($db) && $db) {
     $connect = $db;
 } else {
-    // 기본값 설정 (연결 시도하지 않음)
     $connect = null;
 }
 
+// ============================================
+// 3. 자동 로그인 토큰 테이블 확인/생성
+// ============================================
+function ensureRememberTokenTable($connect) {
+    if (!$connect) return false;
 
+    $check = mysqli_query($connect, "SHOW TABLES LIKE 'remember_tokens'");
+    if (mysqli_num_rows($check) == 0) {
+        $create_sql = "CREATE TABLE remember_tokens (
+            id INT AUTO_INCREMENT PRIMARY KEY,
+            user_id INT NOT NULL,
+            token VARCHAR(64) NOT NULL UNIQUE,
+            expires_at DATETIME NOT NULL,
+            created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+            INDEX idx_token (token),
+            INDEX idx_user_id (user_id),
+            INDEX idx_expires (expires_at)
+        ) ENGINE=InnoDB DEFAULT CHARSET=utf8";
+        mysqli_query($connect, $create_sql);
+    }
+    return true;
+}
+
+// ============================================
+// 4. 자동 로그인 토큰 생성
+// ============================================
+function createRememberToken($connect, $user_id) {
+    if (!$connect) return null;
+
+    ensureRememberTokenTable($connect);
+
+    // 안전한 랜덤 토큰 생성
+    $token = bin2hex(random_bytes(32));
+    $expires_at = date('Y-m-d H:i:s', time() + (REMEMBER_ME_DAYS * 24 * 60 * 60));
+
+    // 기존 토큰 삭제 (한 사용자당 하나의 토큰만)
+    $delete_stmt = mysqli_prepare($connect, "DELETE FROM remember_tokens WHERE user_id = ?");
+    if ($delete_stmt) {
+        mysqli_stmt_bind_param($delete_stmt, "i", $user_id);
+        mysqli_stmt_execute($delete_stmt);
+        mysqli_stmt_close($delete_stmt);
+    }
+
+    // 새 토큰 저장
+    $insert_stmt = mysqli_prepare($connect, "INSERT INTO remember_tokens (user_id, token, expires_at) VALUES (?, ?, ?)");
+    if ($insert_stmt) {
+        mysqli_stmt_bind_param($insert_stmt, "iss", $user_id, $token, $expires_at);
+        if (mysqli_stmt_execute($insert_stmt)) {
+            mysqli_stmt_close($insert_stmt);
+            return $token;
+        }
+        mysqli_stmt_close($insert_stmt);
+    }
+
+    return null;
+}
+
+// ============================================
+// 5. 자동 로그인 토큰 검증
+// ============================================
+function validateRememberToken($connect, $token) {
+    if (!$connect || empty($token)) return null;
+
+    ensureRememberTokenTable($connect);
+
+    // 만료된 토큰 정리
+    mysqli_query($connect, "DELETE FROM remember_tokens WHERE expires_at < NOW()");
+
+    // 토큰 검증
+    $stmt = mysqli_prepare($connect, "
+        SELECT rt.user_id, u.id, u.username, u.name
+        FROM remember_tokens rt
+        JOIN users u ON rt.user_id = u.id
+        WHERE rt.token = ? AND rt.expires_at > NOW()
+    ");
+
+    if ($stmt) {
+        mysqli_stmt_bind_param($stmt, "s", $token);
+        mysqli_stmt_execute($stmt);
+        $result = mysqli_stmt_get_result($stmt);
+        $user = mysqli_fetch_assoc($result);
+        mysqli_stmt_close($stmt);
+        return $user;
+    }
+
+    return null;
+}
+
+// ============================================
+// 6. 자동 로그인 토큰 삭제
+// ============================================
+function deleteRememberToken($connect, $user_id) {
+    if (!$connect) return;
+
+    $stmt = mysqli_prepare($connect, "DELETE FROM remember_tokens WHERE user_id = ?");
+    if ($stmt) {
+        mysqli_stmt_bind_param($stmt, "i", $user_id);
+        mysqli_stmt_execute($stmt);
+        mysqli_stmt_close($stmt);
+    }
+}
+
+// ============================================
+// 7. Remember Me 쿠키 설정
+// ============================================
+function setRememberMeCookie($token) {
+    $expires = time() + (REMEMBER_ME_DAYS * 24 * 60 * 60);
+    setcookie(REMEMBER_ME_COOKIE, $token, [
+        'expires' => $expires,
+        'path' => '/',
+        'domain' => '',
+        'secure' => false,  // HTTPS 사용 시 true로 변경
+        'httponly' => true,
+        'samesite' => 'Lax'
+    ]);
+}
+
+// ============================================
+// 8. Remember Me 쿠키 삭제
+// ============================================
+function clearRememberMeCookie() {
+    setcookie(REMEMBER_ME_COOKIE, '', [
+        'expires' => time() - 3600,
+        'path' => '/',
+        'domain' => '',
+        'secure' => false,
+        'httponly' => true,
+        'samesite' => 'Lax'
+    ]);
+}
+
+// ============================================
+// 9. 세션 활동 시간 갱신 (자동 연장)
+// ============================================
+function refreshSessionActivity() {
+    $_SESSION['last_activity'] = time();
+}
+
+// ============================================
+// 10. 자동 로그인 시도 (세션 없을 때)
+// ============================================
 $login_message = '';
 $is_logged_in = isset($_SESSION['user_id']);
-$user_name = $is_logged_in ? $_SESSION['user_name'] : '';
+$user_name = $is_logged_in ? ($_SESSION['user_name'] ?? '') : '';
 
-// POST 요청 처리
+// 세션에 로그인 정보가 없지만 Remember Me 쿠키가 있는 경우
+if (!$is_logged_in && isset($_COOKIE[REMEMBER_ME_COOKIE]) && $connect) {
+    $user = validateRememberToken($connect, $_COOKIE[REMEMBER_ME_COOKIE]);
+
+    if ($user) {
+        // 자동 로그인 성공
+        $_SESSION['user_id'] = $user['id'];
+        $_SESSION['username'] = $user['username'];
+        $_SESSION['user_name'] = $user['name'];
+        $_SESSION['auto_login'] = true;  // 자동 로그인 표시
+
+        $is_logged_in = true;
+        $user_name = $user['name'];
+
+        // 토큰 갱신 (보안 강화)
+        $new_token = createRememberToken($connect, $user['id']);
+        if ($new_token) {
+            setRememberMeCookie($new_token);
+        }
+
+        refreshSessionActivity();
+        error_log("자동 로그인 성공: user_id=" . $user['id']);
+    } else {
+        // 유효하지 않은 토큰 - 쿠키 삭제
+        clearRememberMeCookie();
+    }
+}
+
+// 로그인 상태이면 활동 시간 갱신
+if ($is_logged_in) {
+    refreshSessionActivity();
+}
+
+// ============================================
+// 11. POST 요청 처리
+// ============================================
 if ($_SERVER['REQUEST_METHOD'] == 'POST') {
     if (isset($_POST['login_action'])) {
         $username = trim($_POST['username']);
         $password = trim($_POST['password']);
-        
+        $remember_me = isset($_POST['remember_me']) && $_POST['remember_me'] == '1';
+
         if (empty($username) || empty($password)) {
             $login_message = '아이디와 비밀번호를 입력해주세요.';
         } else {
@@ -43,23 +245,18 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
             } else {
                 // 테이블 존재 및 상태 확인
                 $table_check = mysqli_query($connect, "SELECT 1 FROM users LIMIT 1");
-                
+
                 if (!$table_check) {
                     $error = mysqli_error($connect);
-                    
+
                     // 테이블스페이스 관련 오류인 경우 강제 정리
                     if (strpos($error, 'Tablespace') !== false || strpos($error, 'exists') !== false) {
-                        // 강제로 테이블 정리
                         mysqli_query($connect, "DROP TABLE IF EXISTS users");
-                        
-                        // 캐시 정리
                         mysqli_query($connect, "RESET QUERY CACHE");
                         mysqli_query($connect, "FLUSH TABLES");
-                        
-                        // 잠시 대기 후 테이블 재생성
-                        usleep(100000); // 0.1초 대기
+                        usleep(100000);
                     }
-                    
+
                     // 새 테이블 생성
                     $create_table_query = "CREATE TABLE users (
                         id INT AUTO_INCREMENT PRIMARY KEY,
@@ -70,9 +267,8 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
                         phone VARCHAR(20) DEFAULT NULL,
                         created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
                     ) ENGINE=InnoDB DEFAULT CHARSET=utf8";
-                    
+
                     if (!mysqli_query($connect, $create_table_query)) {
-                        // 여전히 실패하면 다른 테이블명 사용
                         $alt_table = "user_auth_" . date('YmdHis');
                         $create_alt_query = "CREATE TABLE $alt_table (
                             id INT AUTO_INCREMENT PRIMARY KEY,
@@ -83,17 +279,16 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
                             phone VARCHAR(20) DEFAULT NULL,
                             created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
                         ) ENGINE=InnoDB DEFAULT CHARSET=utf8";
-                        
+
                         if (mysqli_query($connect, $create_alt_query)) {
-                            // 대체 테이블 생성 성공, users로 리네임
                             mysqli_query($connect, "RENAME TABLE $alt_table TO users");
                         } else {
                             $login_message = '테이블 생성 중 오류: ' . mysqli_error($connect);
                         }
                     }
                 }
-                
-                // 테이블이 정상적으로 존재하는 경우에만 관리자 계정 처리
+
+                // 관리자 계정 확인/생성
                 if (empty($login_message)) {
                     $admin_check = mysqli_query($connect, "SELECT id FROM users WHERE username = 'admin'");
                     if ($admin_check && mysqli_num_rows($admin_check) == 0) {
@@ -105,26 +300,40 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
                     }
                 }
             }
-            
-            // 로그인 확인 (테이블 구조가 올바른 경우에만)
+
+            // 로그인 확인
             if (empty($login_message)) {
                 $query = "SELECT id, username, password, name FROM users WHERE username = ?";
                 $stmt = mysqli_prepare($connect, $query);
-                
+
                 if ($stmt) {
                     mysqli_stmt_bind_param($stmt, "s", $username);
                     mysqli_stmt_execute($stmt);
                     $result = mysqli_stmt_get_result($stmt);
-                    
+
                     if ($user = mysqli_fetch_assoc($result)) {
                         if (password_verify($password, $user['password'])) {
+                            // 로그인 성공
                             $_SESSION['user_id'] = $user['id'];
                             $_SESSION['username'] = $user['username'];
                             $_SESSION['user_name'] = $user['name'];
+                            $_SESSION['auto_login'] = false;
+
                             $is_logged_in = true;
                             $user_name = $user['name'];
-                            
-                            // 로그인 성공 시 POST 상태 정리를 위해 리다이렉트
+
+                            refreshSessionActivity();
+
+                            // 자동 로그인 체크 시 토큰 생성
+                            if ($remember_me) {
+                                $token = createRememberToken($connect, $user['id']);
+                                if ($token) {
+                                    setRememberMeCookie($token);
+                                    error_log("자동 로그인 토큰 생성: user_id=" . $user['id']);
+                                }
+                            }
+
+                            // 리다이렉트
                             header("Location: " . $_SERVER['PHP_SELF']);
                             exit;
                         } else {
@@ -146,7 +355,7 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
         $name = trim($_POST['reg_name']);
         $email = trim($_POST['reg_email']);
         $phone = trim($_POST['reg_phone']);
-        
+
         if (empty($username) || empty($password) || empty($name)) {
             $login_message = '필수 항목을 모두 입력해주세요.';
         } elseif ($password !== $confirm_password) {
@@ -159,23 +368,22 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
             // 중복 확인
             $check_query = "SELECT id FROM users WHERE username = ?";
             $stmt = mysqli_prepare($connect, $check_query);
-            
+
             if ($stmt) {
                 mysqli_stmt_bind_param($stmt, "s", $username);
                 mysqli_stmt_execute($stmt);
                 $result = mysqli_stmt_get_result($stmt);
-                
+
                 if (mysqli_num_rows($result) > 0) {
                     $login_message = '이미 존재하는 아이디입니다.';
                 } else {
-                    // 회원가입
                     $hashed_password = password_hash($password, PASSWORD_DEFAULT);
                     $insert_query = "INSERT INTO users (username, password, name, email, phone) VALUES (?, ?, ?, ?, ?)";
                     $insert_stmt = mysqli_prepare($connect, $insert_query);
-                    
+
                     if ($insert_stmt) {
                         mysqli_stmt_bind_param($insert_stmt, "sssss", $username, $hashed_password, $name, $email, $phone);
-                        
+
                         if (mysqli_stmt_execute($insert_stmt)) {
                             $login_message = '회원가입이 완료되었습니다. 로그인해주세요.';
                         } else {
@@ -192,9 +400,17 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
             }
         }
     } elseif (isset($_POST['logout_action'])) {
+        // 자동 로그인 토큰 삭제
+        if (isset($_SESSION['user_id']) && $connect) {
+            deleteRememberToken($connect, $_SESSION['user_id']);
+        }
+
+        // Remember Me 쿠키 삭제
+        clearRememberMeCookie();
+
         // 세션 변수 모두 제거
         $_SESSION = array();
-        
+
         // 세션 쿠키 삭제
         if (ini_get("session.use_cookies")) {
             $params = session_get_cookie_params();
@@ -203,13 +419,13 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
                 $params["secure"], $params["httponly"]
             );
         }
-        
+
         // 세션 파괴
         session_destroy();
-        
-        // 새 세션 시작 (깨끗한 상태로)
+
+        // 새 세션 시작
         session_start();
-        
+
         // 리다이렉트
         header("Location: " . $_SERVER['PHP_SELF']);
         exit;

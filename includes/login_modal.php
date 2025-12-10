@@ -26,6 +26,13 @@
                     <label for="password">비밀번호</label>
                     <input type="password" id="password" name="password" required>
                 </div>
+                <div class="form-group remember-me-group">
+                    <label class="remember-me-label">
+                        <input type="checkbox" name="remember_me" value="1" id="remember_me">
+                        <span class="checkmark"></span>
+                        <span class="remember-text">자동 로그인 (30일간 유지)</span>
+                    </label>
+                </div>
                 <button type="submit" class="form-submit">로그인</button>
             </form>
             
@@ -223,6 +230,33 @@
     color: #58151c !important; /* 더 어둡고 선명한 빨간색 */
     border: 2px solid #f5c6cb; /* 더 진한 테두리 */
     font-weight: 700 !important;
+}
+
+/* 자동 로그인 체크박스 스타일 */
+.remember-me-group {
+    margin-bottom: 20px;
+}
+
+.remember-me-label {
+    display: flex !important;
+    align-items: center;
+    cursor: pointer;
+    font-size: 14px !important;
+    color: #2c3e50 !important;
+    font-weight: 500 !important;
+}
+
+.remember-me-label input[type="checkbox"] {
+    width: 18px !important;
+    height: 18px !important;
+    margin-right: 10px !important;
+    cursor: pointer;
+    accent-color: #2c3e50;
+}
+
+.remember-text {
+    color: #2c3e50 !important;
+    font-weight: 500 !important;
 }
 </style>
 
