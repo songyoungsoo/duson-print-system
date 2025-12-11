@@ -1,0 +1,322 @@
+/**
+ * 추가 옵션 시스템 전용 CSS
+ * 
+ * Wall Street 프로페셔널 스타일 기반
+ * 정숙한 사무실 분위기의 기품있는 디자인
+ * 
+ * @version 1.0
+ * @date 2025-01-08
+ */
+
+/* ================================
+   옵션 섹션 기본 스타일 (초컴팩트 테이블형)
+   ================================ */
+
+/* ================================
+   2x2+1 그리드 레이아웃 시스템
+   ================================ */
+
+.form-row {
+    display: flex !important;
+    gap: 10px !important; /* 4개 옵션이므로 간격을 좁게 */
+    margin-bottom: 8px !important;
+    align-items: center !important;
+}
+
+.form-row .option-group {
+    flex: 1 !important;
+    min-width: 0 !important; /* 텍스트 오버플로우 방지 */
+}
+
+/* 4그리드 레이아웃 전용 스타일 */
+.form-row.four-grid {
+    gap: 8px !important; /* 4개가 들어가므로 더 좁은 간격 */
+}
+
+.form-row.four-grid .option-group {
+    flex: 1 !important;
+    min-width: 120px !important; /* 최소 너비 보장 */
+}
+
+.form-row.four-grid .option-label {
+    font-size: 13px !important; /* 4그리드에서는 라벨을 약간 작게 */
+    min-width: 45px !important; /* 라벨 너비를 줄여서 공간 확보 */
+}
+
+.form-row.four-grid .option-select {
+    font-size: 13px !important; /* 4그리드에서는 셀렉트도 약간 작게 */
+    padding: 3px 6px !important; /* 패딩도 줄여서 공간 확보 */
+}
+
+/* 마지막 줄 (편집디자인)은 전체 너비 사용 */
+.form-row.full-width .option-group {
+    flex: none !important;
+    width: 100% !important;
+}
+
+/* 2x2 그리드 내에서의 라벨-셀렉트 정렬 */
+.form-row .form-group-horizontal {
+    display: flex !important;
+    align-items: center !important;
+    gap: 8px !important;
+    margin: 0 !important;
+}
+
+.form-row .option-label {
+    flex-shrink: 0 !important;
+    min-width: 60px !important;
+    font-size: 14px !important;
+    font-weight: 500 !important;
+    color: #2d3748 !important;
+}
+
+.form-row .option-select {
+    flex: 1 !important;
+    min-width: 120px !important;
+    padding: 4px 8px !important;
+    border: 1px solid #cbd5e0 !important;
+    border-radius: 3px !important;
+    font-size: 14px !important;
+}
+
+.additional-options-section {
+    background: #f7fafc !important;
+    border: 1px solid #e2e8f0 !important;
+    border-radius: 4px !important;
+    padding: 3px 6px !important;
+    margin: 3px 0 !important;
+    box-shadow: none !important;
+}
+
+/* 한 줄 체크박스 헤더 (테이블형) */
+.option-headers-row {
+    display: flex !important;
+    align-items: center !important;
+    justify-content: space-between !important;
+    flex-wrap: nowrap !important;
+    gap: 8px !important;
+    margin-bottom: 2px !important;
+    padding: 1px 0 !important;
+}
+
+.option-checkbox-group {
+    display: flex !important;
+    align-items: center !important;
+    gap: 3px !important;
+    min-width: auto !important;
+}
+
+.option-price-display {
+    margin-left: auto !important;
+    flex-shrink: 0 !important;
+}
+
+.option-price-total {
+    color: #38a169 !important;
+    font-weight: 500 !important;
+    font-size: 14px !important;
+}
+
+/* ================================
+   체크박스 및 라벨 스타일 (컴팩트)
+   ================================ */
+
+/* ================================
+   체크박스 스타일 (정숙한 사무실 분위기)
+   ================================ */
+
+.option-toggle {
+    width: 14px !important;
+    height: 14px !important;
+    accent-color: #4299e1 !important;
+    cursor: pointer !important;
+    margin: 0 !important;
+}
+
+.toggle-label {
+    color: #2d3748 !important;
+    font-weight: 500 !important;
+    font-size: 14px !important;
+    cursor: pointer !important;
+    user-select: none !important;
+    margin: 0 !important;
+    padding: 0 !important;
+    line-height: 1.1 !important;
+}
+
+.toggle-label:hover {
+    color: #4299e1 !important;
+}
+
+/* ================================
+   옵션 세부 선택 영역 (컴팩트)
+   ================================ */
+
+.option-details {
+    background: transparent !important;
+    border: none !important;
+    border-radius: 0 !important;
+    padding: 2px 0 !important;
+    margin: 1px 0 !important;
+    transition: all 0.2s ease !important;
+}
+
+.option-details.show {
+    display: block !important;
+    animation: slideDown 0.2s ease-out !important;
+}
+
+.option-details.hide {
+    display: none !important;
+}
+
+@keyframes slideDown {
+    from {
+        opacity: 0;
+        max-height: 0;
+        padding: 0 10px;
+    }
+    to {
+        opacity: 1;
+        max-height: 100px;
+        padding: 10px;
+    }
+}
+
+/* ================================
+   셀렉트 박스 스타일
+   ================================ */
+
+.option-details .option-select {
+    width: 100% !important;
+    padding: 3px 6px !important;
+    border: 1px solid #cbd5e0 !important;
+    border-radius: 3px !important;
+    background: #ffffff !important;
+    color: #2d3748 !important;
+    font-size: 14px !important;
+    font-weight: 400 !important;
+    cursor: pointer !important;
+    line-height: 1.1 !important;
+    margin: 0 !important;
+}
+
+.option-details .option-select:focus {
+    outline: none !important;
+    border-color: #4299e1 !important;
+    box-shadow: 0 0 0 3px rgba(66, 153, 225, 0.1) !important;
+}
+
+.option-details .option-select:hover {
+    border-color: #a0aec0 !important;
+}
+
+/* ================================
+   가격 표시 통합 스타일
+   ================================ */
+
+.price-display.has-options {
+    border-top: 2px solid #e2e8f0 !important;
+    padding-top: 15px !important;
+}
+
+.price-breakdown .additional-options-row {
+    background: #f0fff4 !important;
+    border: 1px solid #c6f6d5 !important;
+    border-radius: 4px !important;
+    padding: 8px !important;
+    margin: 5px 0 !important;
+}
+
+.additional-options-row .price-item-label {
+    color: #38a169 !important;
+    font-weight: 500 !important;
+}
+
+.additional-options-row .price-item-value {
+    color: #38a169 !important;
+    font-weight: 500 !important;
+}
+
+/* ================================
+   반응형 디자인 (모바일 대응)
+   ================================ */
+
+@media (max-width: 768px) {
+    .option-headers-row {
+        flex-direction: column !important;
+        align-items: flex-start !important;
+        gap: 10px !important;
+    }
+    
+    .option-checkbox-group {
+        justify-content: flex-start !important;
+    }
+    
+    .option-price-display {
+        margin-left: 0 !important;
+        align-self: flex-end !important;
+    }
+    
+    .option-details {
+        margin: 5px 0 !important;
+        padding: 6px !important;
+    }
+    
+    .option-toggle {
+        width: 16px !important;
+        height: 16px !important;
+    }
+    
+    .toggle-label {
+        font-size: 14px !important;
+    }
+}
+
+/* ================================
+   로딩 상태 스타일
+   ================================ */
+
+.option-details.loading {
+    opacity: 0.6 !important;
+    pointer-events: none !important;
+}
+
+.option-details.loading::after {
+    content: "계산 중..." !important;
+    position: absolute !important;
+    top: 50% !important;
+    left: 50% !important;
+    transform: translate(-50%, -50%) !important;
+    background: rgba(255, 255, 255, 0.9) !important;
+    padding: 5px 10px !important;
+    border-radius: 4px !important;
+    font-size: 14px !important;
+    color: #4a5568 !important;
+}
+
+/* ================================
+   오류 상태 스타일
+   ================================ */
+
+.option-group.error .option-details {
+    border: none !important;
+    background: transparent !important;
+}
+
+.option-group.error .option-select {
+    border-color: #fc8181 !important;
+    background: #fff5f5 !important;
+}
+
+.option-group.error .toggle-label {
+    color: #e53e3e !important;
+}
+
+.option-error-message {
+    color: #e53e3e !important;
+    font-size: 14px !important;
+    margin-top: 5px !important;
+    margin-left: 28px !important;
+    font-style: italic !important;
+}

@@ -1,0 +1,166 @@
+# 임시 파일
+*.tmp
+*.temp
+*~
+
+# 로그 파일
+*.log
+
+# 캐시 파일
+cache/
+tmp/
+temp/
+
+# 업로드된 파일 (용량이 클 수 있음) - 모든 업로드 파일 제외
+uploads/
+ImgFolder/
+
+# 이미지 파일 전면 제외 (시스템 필수 이미지는 별도 관리)
+*.jpg
+*.jpeg
+*.png
+*.gif
+*.bmp
+*.webp
+*.svg
+*.ico
+*.tiff
+*.tif
+
+# 예외: 시스템 필수 이미지
+!system-images/**
+!css/images/**
+!images/icons/**
+
+# 고해상도/대용량 파일
+*.psd
+*.ai
+*.eps
+*.raw
+
+# 시스템 파일
+.DS_Store
+Thumbs.db
+
+# IDE 파일
+.vscode/
+.idea/
+
+# 백업 파일
+*.bak
+*.backup
+
+# PHP 세션 파일
+sessions/
+
+# 데이터베이스 설정 파일 (민감한 정보)
+.env
+.env.*
+config/db_config.php
+db_secret*.php
+*secret*config*.php
+*.env
+env.*
+
+# API 키 및 비밀번호
+*.key
+*.pem
+*secret*
+*password*
+
+# 개인 정보 파일
+customer_data/
+private/
+
+# 대용량 업로드 파일
+uploads/**/*.mp4
+uploads/**/*.avi
+uploads/**/*.mov
+uploads/**/*.psd
+uploads/**/*.ai
+uploads/**/*.zip
+uploads/**/*.pdf
+
+# BBS 업로드 폴더 (1.1GB 차지)
+bbs/upload/
+upDesign/
+
+# 대용량 파일들
+*.zip
+*.pdf
+*.PDF
+*.ai
+*.psd
+*.eps
+
+# 백업 스크립트 (개인 경로 포함)
+backup.bat
+
+# 개발 도구 설정
+.gemini/
+.kiro/
+mcp.json
+playwright.config.ts
+package*.json
+node_modules/
+
+# 테스트 파일
+test*/
+*test*
+playwright-report/
+uploads/
+*.jpg
+*.png
+*.gif
+MlangOrder_PrintAuto/upload/
+MlangOrder_PrintAuto/img/
+
+# SQL 덤프 파일 (대용량)
+*.sql
+duson1830*.sql
+
+# ZIP 파일 (대용량)
+cafe24_essential_files.zip*
+*.zip.00bc20e3
+
+# 백업 폴더들
+MlangPrintAuto_cafe24_final_*/
+MlangPrintAuto_fixed_*/
+backup_lowercase_*/
+cafe24_deploy_package/
+deployment/
+migration/
+audit_out/
+automation/
+
+# 기타 대용량 파일
+bbs/upload/**/*.pdf
+bbs/upload/**/*.zip
+
+# Windows Zone.Identifier
+*:Zone.Identifier
+
+# 압축 파일
+*.tar.gz
+*.rar
+
+# Serena MCP
+.serena/
+
+# 백업 디렉토리 (날짜 포함)
+*251121/
+*251208/
+*251210/
+*251014/
+backup_dsp114_*/
+
+# 새 폴더 (한글)
+새 폴더/
+
+# Chat 관련
+chat_5.2/
+chat_5.2.tar.gz
+chat_uploads/
+
+# 코드 워크스페이스
+*.code-workspace

@@ -1,0 +1,273 @@
+/**
+ * 전단지 구조적 문제 해결 CSS
+ * 1. 인라인 스타일 오버라이드
+ * 2. 그리드 및 필드 구조 정확한 이해 기반 수정
+ * 3. 계산 로직 100% 보존
+ */
+
+/* =========================================
+   인라인 스타일 강제 오버라이드
+   ========================================= */
+
+/* display: none 인라인 스타일 대응 */
+#uploadOrderButton[style*="display: none"] {
+    display: block;
+}
+
+.upload-modal[style*="display: none"],
+.gallery-popup[style*="display: none"],
+.lightbox[style*="display: none"] {
+    display: none; /* 모달은 숨김 유지 */
+}
+
+/* =========================================
+   정확한 그리드 구조 이해 기반 수정
+   ========================================= */
+
+/* 명함: .form-grid > .form-field > .form-select */
+.dual-pane-layout .calculator-pane .form-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 16px;
+    padding: 24px;
+    margin: 0;
+    background: transparent;
+}
+
+.dual-pane-layout .calculator-pane .form-field {
+    display: flex;
+    flex-direction: column;
+    width: 100%;
+}
+
+.dual-pane-layout .calculator-pane .form-label {
+    font-size: 13px;
+    color: #333;
+    font-weight: 500;
+    margin-bottom: 6px;
+    display: block;
+}
+
+.dual-pane-layout .calculator-pane .form-select {
+    height: 44px;
+    padding: 0 40px 0 12px;
+    border: 1px solid #E0E0E0;
+    border-radius: 6px;
+    background-color: #FAFAFA;
+    font-size: 14px;
+    color: #333;
+    cursor: pointer;
+    appearance: none;
+    background-image: url("data:image/svg+xml;charset=UTF-8,%3csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 12 12'%3e%3cpath fill='%23666' d='M6 9L1 4h10z'/%3e%3c/svg%3e");
+    background-repeat: no-repeat;
+    background-position: right 12px center;
+    background-size: 12px;
+}
+
+/* 포스터/소량인쇄: .options-grid > .option-group > .option-select */
+.container .card .options-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 16px;
+    padding: 24px;
+    margin: 0;
+}
+
+.container .card .option-group {
+    display: flex;
+    flex-direction: column;
+    width: 100%;
+}
+
+.container .card .option-label {
+    font-size: 13px;
+    color: #333;
+    font-weight: 500;
+    margin-bottom: 6px;
+    display: block;
+}
+
+.container .card .option-select {
+    height: 44px;
+    padding: 0 40px 0 12px;
+    border: 1px solid #E0E0E0;
+    border-radius: 6px;
+    background-color: #FAFAFA;
+    font-size: 14px;
+    color: #333;
+    cursor: pointer;
+    appearance: none;
+    background-image: url("data:image/svg+xml;charset=UTF-8,%3csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 12 12'%3e%3cpath fill='%23666' d='M6 9L1 4h10z'/%3e%3c/svg%3e");
+    background-repeat: no-repeat;
+    background-position: right 12px center;
+    background-size: 12px;
+}
+
+/* =========================================
+   전체너비 필드 처리
+   ========================================= */
+.form-field.full-width,
+.option-group.full-width {
+    grid-column: 1 / -1;
+}
+
+/* =========================================
+   가격 표시 영역 통일
+   ========================================= */
+.price-display,
+.price-container,
+.total-price,
+.result-display,
+#priceDisplay,
+#totalPrice,
+#resultDisplay {
+    background: #E8F5E9;
+    border: 2px solid #4CAF50;
+    border-radius: 8px;
+    padding: 16px;
+    margin: 12px 0;
+    text-align: center;
+    grid-column: 1 / -1;
+}
+
+.price-amount,
+.price-value,
+.total-amount,
+#priceAmount,
+#totalAmount {
+    font-size: 22px;
+    font-weight: bold;
+    color: #4CAF50;
+    margin: 6px 0;
+    display: block;
+}
+
+/* =========================================
+   버튼 스타일 통일
+   ========================================= */
+.btn,
+.btn-primary,
+.btn-large,
+.btn-block,
+.order-button,
+.upload-button,
+button[onclick*="upload"],
+button[onclick*="Upload"],
+button[onclick*="order"],
+button[onclick*="Order"],
+button[type="button"],
+input[type="submit"] {
+    height: 52px;
+    padding: 0 24px;
+    border: none;
+    border-radius: 8px;
+    background: linear-gradient(135deg, #7C4DFF, #9575CD);
+    color: white;
+    font-size: 16px;
+    font-weight: bold;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    box-shadow: 0 3px 8px rgba(124, 77, 255, 0.3);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    margin: 8px 0;
+    width: 100%;
+    grid-column: 1 / -1;
+}
+
+.btn:hover,
+.btn-primary:hover,
+button[onclick*="upload"]:hover,
+button[onclick*="order"]:hover {
+    background: linear-gradient(135deg, #6A3DE8, #7C4DFF);
+    transform: translateY(-2px);
+    box-shadow: 0 5px 12px rgba(124, 77, 255, 0.4);
+}
+
+/* 파일 업로드 버튼 차별화 */
+button[onclick*="upload"],
+button[onclick*="Upload"],
+.upload-button {
+    background: linear-gradient(135deg, #FF6F00, #FF9100);
+    box-shadow: 0 3px 8px rgba(255, 111, 0, 0.3);
+}
+
+button[onclick*="upload"]:hover,
+button[onclick*="Upload"]:hover {
+    background: linear-gradient(135deg, #E65100, #FF6F00);
+    box-shadow: 0 5px 12px rgba(255, 111, 0, 0.4);
+}
+
+/* =========================================
+   카드 및 헤더 통일
+   ========================================= */
+.card,
+.calculator-pane,
+.gallery-pane {
+    background: white;
+    border-radius: 12px;
+    box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+    overflow: hidden;
+}
+
+.card-header,
+.calculator-header,
+.gallery-pane h3,
+.card-title {
+    background: linear-gradient(135deg, #4CAF50, #66BB6A);
+    color: white;
+    padding: 15px 20px;
+    margin: 0;
+    font-size: 18px;
+    font-weight: bold;
+    text-align: center;
+}
+
+/* calculator-header 숨김 처리 */
+.calculator-header {
+    display: none;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.card-subtitle {
+    color: rgba(255,255,255,0.9);
+    font-size: 14px;
+    margin-top: 8px;
+    text-align: center;
+}
+
+/* =========================================
+   반응형 처리
+   ========================================= */
+@media (max-width: 768px) {
+    .dual-pane-layout {
+        grid-template-columns: 1fr;
+    }
+    
+    .form-grid,
+    .options-grid {
+        grid-template-columns: 1fr;
+    }
+    
+    .price-amount,
+    #priceAmount {
+        font-size: 18px;
+    }
+}
+
+/* =========================================
+   모든 기존 스타일 오버라이드
+   ========================================= */
+* {
+    box-sizing: border-box;
+}
+
+/* 기존 애니메이션 제거 */
+.animate-slide-in,
+.animate-fade-in,
+.animate-pulse {
+    animation: none;
+}

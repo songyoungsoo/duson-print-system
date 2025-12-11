@@ -1,0 +1,11 @@
+--- lib.php (original)
++++ lib.php (modified)
+@@ -13,7 +13,7 @@
+     echo mysqli_error();
+ }
+ 
+-mysqli_select_db($connect, $db_name); // DB 선택
++mysqli_select_db($db_name, $connect); // DB 선택
+ 
+ // 데이터베이스 연결 및 선택 완료
+ ?>

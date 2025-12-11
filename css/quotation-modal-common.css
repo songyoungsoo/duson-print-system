@@ -1,0 +1,185 @@
+/* Quotation Modal Mode - Common Styles for All Products
+ * Applied when body has 'quotation-modal-mode' class
+ * Used by: inserted, namecard, envelope, sticker_new, msticker, cadarok,
+ *          littleprint, merchandisebond, ncrflambeau (9개 품목)
+ * Created: 2025-11-30
+ * Updated: 2025-12-01 - inserted 인라인 스타일 통합 (전 품목 공통)
+ */
+
+/* ==========================================
+   1. 기본 배경 및 레이아웃
+   ========================================== */
+
+/* 모달 모드: 바디 배경 */
+.quotation-modal-mode {
+    background: #f5f7fa !important;
+}
+
+/* Container optimization for modal view */
+.quotation-modal-mode .product-container {
+    max-width: 100% !important;
+    padding: 15px !important;
+    margin: 0 !important;
+}
+
+/* Convert 2-column layout to 1-column */
+.quotation-modal-mode .product-content {
+    grid-template-columns: 1fr !important;
+    gap: 0 !important;
+    padding: 0 !important;
+}
+
+/* Calculator section optimization */
+.quotation-modal-mode .product-calculator {
+    width: 100% !important;
+    max-width: 100% !important;
+    padding: 10px !important;
+    margin: 0 !important;
+    box-shadow: none !important;
+}
+
+/* ==========================================
+   2. 숨김 처리 (헤더, 네비, 푸터, 갤러리)
+   ========================================== */
+
+/* Hide unnecessary elements in modal */
+.quotation-modal-mode .page-title,
+.quotation-modal-mode .product-gallery,
+.quotation-modal-mode .footer,
+.quotation-modal-mode header,
+.quotation-modal-mode nav,
+.quotation-modal-mode .product-description,
+.quotation-modal-mode .explane-section,
+.quotation-modal-mode .top-header,
+.quotation-modal-mode .site-header,
+.quotation-modal-mode .main-nav {
+    display: none !important;
+}
+
+/* 갤러리 팝업 및 모달 숨김 (모든 품목 공통) */
+.quotation-modal-mode .unified-gallery-popup,
+.quotation-modal-mode .gallery-modal,
+.quotation-modal-mode .gallery-lightbox,
+.quotation-modal-mode [id*="GalleryModal"],
+.quotation-modal-mode [class*="gallery-popup"],
+.quotation-modal-mode .unified-popup-container {
+    display: none !important;
+}
+
+/* ==========================================
+   3. 인라인 폼 시스템 최적화
+   ========================================== */
+
+/* 모달 모드: 폼 컨테이너 패딩 축소 */
+.quotation-modal-mode .inline-form-container {
+    padding: 8px !important;
+}
+
+/* 모달 모드: 안내 문구 숨김 (컴팩트 표시) */
+.quotation-modal-mode .inline-note {
+    display: none !important;
+}
+
+/* 모달 모드: 폼 행 간격 조정 */
+.quotation-modal-mode .inline-form-row {
+    margin-bottom: 6px !important;
+}
+
+/* Compact form layout */
+.quotation-modal-mode .options-grid {
+    gap: 8px !important;
+}
+
+.quotation-modal-mode .form-group {
+    margin-bottom: 8px !important;
+}
+
+/* ==========================================
+   4. 가격 표시 스타일 (그라디언트 강조)
+   ========================================== */
+
+/* 모달 모드: 가격 표시 강조 */
+.quotation-modal-mode .price-display {
+    margin-top: 10px !important;
+    padding: 12px !important;
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%) !important;
+    color: white !important;
+    border-radius: 10px !important;
+}
+
+.quotation-modal-mode .price-amount {
+    font-size: 28px !important;
+    font-weight: 700 !important;
+    color: white !important;
+}
+
+.quotation-modal-mode .price-breakdown {
+    color: rgba(255, 255, 255, 0.9) !important;
+}
+
+.quotation-modal-mode .price-item-label,
+.quotation-modal-mode .price-item-value,
+.quotation-modal-mode .price-details {
+    color: white !important;
+}
+
+/* ==========================================
+   5. 버튼 및 업로드 섹션
+   ========================================== */
+
+/* Button section */
+.quotation-modal-mode .quotation-button-section {
+    margin-top: 15px !important;
+    padding: 10px !important;
+}
+
+/* 모달 모드: 업로드 버튼 스타일 */
+.quotation-modal-mode .upload-order-button {
+    margin-top: 10px !important;
+}
+
+.quotation-modal-mode .btn-upload-order {
+    width: 100% !important;
+    padding: 12px !important;
+    font-size: 16px !important;
+    font-weight: 700 !important;
+    background: linear-gradient(135deg, #11998e 0%, #38ef7d 100%) !important;
+    box-shadow: 0 4px 15px rgba(17, 153, 142, 0.3) !important;
+}
+
+/* ==========================================
+   6. 추가 옵션 섹션 최적화
+   ========================================== */
+
+/* Optimize premium options sections */
+.quotation-modal-mode .premium-options-section,
+.quotation-modal-mode .leaflet-premium-options-section,
+.quotation-modal-mode .namecard-premium-options-section {
+    padding: 10px !important;
+    margin-top: 10px !important;
+}
+
+/* ==========================================
+   7. 폼 컨트롤 공통 스타일
+   ========================================== */
+
+/* Ensure calculator controls are visible and functional */
+.quotation-modal-mode select,
+.quotation-modal-mode input,
+.quotation-modal-mode button {
+    font-size: 14px !important;
+}
+
+/* ==========================================
+   8. 계산기 헤더 간소화
+   ========================================== */
+
+.quotation-modal-mode .calculator-header {
+    padding: 8px 10px !important;
+    margin-bottom: 5px !important;
+}
+
+.quotation-modal-mode .calculator-header h3 {
+    font-size: 16px !important;
+    margin: 0 !important;
+}

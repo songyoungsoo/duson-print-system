@@ -1,0 +1,598 @@
+[2025-09-24 23:33:07] 🚀 변수 초기화 마이그레이션 시작: C:\xampp\htdocs\admin
+[2025-09-24 23:33:07] 🏷️  PHP 태그 수정 (C:\xampp\htdocs\admin\AdminConfig.php): 중간 짧은 PHP 태그 변환
+[2025-09-24 23:33:07] 🔧 변수 초기화 (C:\xampp\htdocs\admin\AdminConfig.php): 주요 변수 초기화 코드 추가
+[2025-09-24 23:33:07] 🔍 [DRY RUN] 변수 초기화 마이그레이션 예정: C:\xampp\htdocs\admin\AdminConfig.php
+[2025-09-24 23:33:07] ⏭️  변경사항 없음: C:\xampp\htdocs\admin\admin_menu.php
+[2025-09-24 23:33:07] 🏷️  PHP 태그 수정 (C:\xampp\htdocs\admin\bbs\AdminModify.php): 중간 짧은 PHP 태그 변환
+[2025-09-24 23:33:07] 🔧 변수 초기화 (C:\xampp\htdocs\admin\bbs\AdminModify.php): 주요 변수 초기화 코드 추가
+[2025-09-24 23:33:07] 🔍 [DRY RUN] 변수 초기화 마이그레이션 예정: C:\xampp\htdocs\admin\bbs\AdminModify.php
+[2025-09-24 23:33:07] 🔧 변수 초기화 (C:\xampp\htdocs\admin\bbs\BbsAdminCate.php): 주요 변수 초기화 코드 추가
+[2025-09-24 23:33:07] 🛡️  보안 강화 (C:\xampp\htdocs\admin\bbs\BbsAdminCate.php): XSS 보호 권장사항 주석 추가
+[2025-09-24 23:33:07] 🔍 [DRY RUN] 변수 초기화 마이그레이션 예정: C:\xampp\htdocs\admin\bbs\BbsAdminCate.php
+[2025-09-24 23:33:07] 🔧 변수 초기화 (C:\xampp\htdocs\admin\bbs\delete.php): 주요 변수 초기화 코드 추가
+[2025-09-24 23:33:07] 🔍 [DRY RUN] 변수 초기화 마이그레이션 예정: C:\xampp\htdocs\admin\bbs\delete.php
+[2025-09-24 23:33:07] 🔧 변수 초기화 (C:\xampp\htdocs\admin\bbs\dump.php): 주요 변수 초기화 코드 추가
+[2025-09-24 23:33:07] 🛡️  보안 강화 (C:\xampp\htdocs\admin\bbs\dump.php): XSS 보호 권장사항 주석 추가
+[2025-09-24 23:33:07] 🔍 [DRY RUN] 변수 초기화 마이그레이션 예정: C:\xampp\htdocs\admin\bbs\dump.php
+[2025-09-24 23:33:07] 🏷️  PHP 태그 수정 (C:\xampp\htdocs\admin\bbs\list.php): 중간 짧은 PHP 태그 변환
+[2025-09-24 23:33:07] 🔧 변수 초기화 (C:\xampp\htdocs\admin\bbs\list.php): 주요 변수 초기화 코드 추가
+[2025-09-24 23:33:07] 🛡️  보안 강화 (C:\xampp\htdocs\admin\bbs\list.php): XSS 보호 권장사항 주석 추가
+[2025-09-24 23:33:07] 🔍 [DRY RUN] 변수 초기화 마이그레이션 예정: C:\xampp\htdocs\admin\bbs\list.php
+[2025-09-24 23:33:07] 🔧 변수 초기화 (C:\xampp\htdocs\admin\bbs\submit.php): 주요 변수 초기화 코드 추가
+[2025-09-24 23:33:07] 🔍 [DRY RUN] 변수 초기화 마이그레이션 예정: C:\xampp\htdocs\admin\bbs\submit.php
+[2025-09-24 23:33:07] 🏷️  PHP 태그 수정 (C:\xampp\htdocs\admin\BBSSinGo\index.php): 중간 짧은 PHP 태그 변환
+[2025-09-24 23:33:07] 🔧 변수 초기화 (C:\xampp\htdocs\admin\BBSSinGo\index.php): 주요 변수 초기화 코드 추가
+[2025-09-24 23:33:07] 🔍 [DRY RUN] 변수 초기화 마이그레이션 예정: C:\xampp\htdocs\admin\BBSSinGo\index.php
+[2025-09-24 23:33:07] 🔧 변수 초기화 (C:\xampp\htdocs\admin\bbs_admin.php): 주요 변수 초기화 코드 추가
+[2025-09-24 23:33:07] 🔍 [DRY RUN] 변수 초기화 마이그레이션 예정: C:\xampp\htdocs\admin\bbs_admin.php
+[2025-09-24 23:33:07] 🏷️  PHP 태그 수정 (C:\xampp\htdocs\admin\BizMap\admin.php): 중간 짧은 PHP 태그 변환
+[2025-09-24 23:33:07] 🛡️  보안 강화 (C:\xampp\htdocs\admin\BizMap\admin.php): XSS 보호 권장사항 주석 추가
+[2025-09-24 23:33:07] 🔍 [DRY RUN] 변수 초기화 마이그레이션 예정: C:\xampp\htdocs\admin\BizMap\admin.php
+[2025-09-24 23:33:07] 🔧 변수 초기화 (C:\xampp\htdocs\admin\BizMap\db.php): 주요 변수 초기화 코드 추가
+[2025-09-24 23:33:07] 🔍 [DRY RUN] 변수 초기화 마이그레이션 예정: C:\xampp\htdocs\admin\BizMap\db.php
+[2025-09-24 23:33:07] 🔧 변수 초기화 (C:\xampp\htdocs\admin\BizMap\upload.php): 주요 변수 초기화 코드 추가
+[2025-09-24 23:33:07] 🔍 [DRY RUN] 변수 초기화 마이그레이션 예정: C:\xampp\htdocs\admin\BizMap\upload.php
+[2025-09-24 23:33:07] 🔧 변수 초기화 (C:\xampp\htdocs\admin\BizMap\upload_1.php): 주요 변수 초기화 코드 추가
+[2025-09-24 23:33:07] 🔍 [DRY RUN] 변수 초기화 마이그레이션 예정: C:\xampp\htdocs\admin\BizMap\upload_1.php
+[2025-09-24 23:33:07] 🔧 변수 초기화 (C:\xampp\htdocs\admin\BizMap\upload_2.php): 주요 변수 초기화 코드 추가
+[2025-09-24 23:33:07] 🔍 [DRY RUN] 변수 초기화 마이그레이션 예정: C:\xampp\htdocs\admin\BizMap\upload_2.php
+[2025-09-24 23:33:07] 🔧 변수 초기화 (C:\xampp\htdocs\admin\BizMap\upload_3.php): 주요 변수 초기화 코드 추가
+[2025-09-24 23:33:07] 🔍 [DRY RUN] 변수 초기화 마이그레이션 예정: C:\xampp\htdocs\admin\BizMap\upload_3.php
+[2025-09-24 23:33:07] 🔧 변수 초기화 (C:\xampp\htdocs\admin\BizMap\ViewFild.php): 주요 변수 초기화 코드 추가
+[2025-09-24 23:33:07] 🛡️  보안 강화 (C:\xampp\htdocs\admin\BizMap\ViewFild.php): XSS 보호 권장사항 주석 추가
+[2025-09-24 23:33:07] 🔍 [DRY RUN] 변수 초기화 마이그레이션 예정: C:\xampp\htdocs\admin\BizMap\ViewFild.php
+[2025-09-24 23:33:07] 🔧 변수 초기화 (C:\xampp\htdocs\admin\config.php): 주요 변수 초기화 코드 추가
+[2025-09-24 23:33:07] 🔍 [DRY RUN] 변수 초기화 마이그레이션 예정: C:\xampp\htdocs\admin\config.php
+[2025-09-24 23:33:07] ⏭️  변경사항 없음: C:\xampp\htdocs\admin\down.php
+[2025-09-24 23:33:07] 🛡️  보안 강화 (C:\xampp\htdocs\admin\encoding_converter.php): XSS 보호 권장사항 주석 추가
+[2025-09-24 23:33:07] ⏭️  변경사항 없음: C:\xampp\htdocs\admin\encoding_converter.php
+[2025-09-24 23:33:07] 🔧 변수 초기화 (C:\xampp\htdocs\admin\func.php): 주요 변수 초기화 코드 추가
+[2025-09-24 23:33:07] 🔍 [DRY RUN] 변수 초기화 마이그레이션 예정: C:\xampp\htdocs\admin\func.php
+[2025-09-24 23:33:07] 🏷️  PHP 태그 수정 (C:\xampp\htdocs\admin\HomePage\Customer\CateAdmin.php): 중간 짧은 PHP 태그 변환
+[2025-09-24 23:33:07] 🔧 변수 초기화 (C:\xampp\htdocs\admin\HomePage\Customer\CateAdmin.php): 주요 변수 초기화 코드 추가
+[2025-09-24 23:33:07] 🛡️  보안 강화 (C:\xampp\htdocs\admin\HomePage\Customer\CateAdmin.php): XSS 보호 권장사항 주석 추가
+[2025-09-24 23:33:07] 🔍 [DRY RUN] 변수 초기화 마이그레이션 예정: C:\xampp\htdocs\admin\HomePage\Customer\CateAdmin.php
+[2025-09-24 23:33:07] 🔧 변수 초기화 (C:\xampp\htdocs\admin\HomePage\Customer\CateView.php): 주요 변수 초기화 코드 추가
+[2025-09-24 23:33:07] 🔍 [DRY RUN] 변수 초기화 마이그레이션 예정: C:\xampp\htdocs\admin\HomePage\Customer\CateView.php
+[2025-09-24 23:33:07] 🏷️  PHP 태그 수정 (C:\xampp\htdocs\admin\HomePage\Customer\Year.php): 중간 짧은 PHP 태그 변환
+[2025-09-24 23:33:07] 🔧 변수 초기화 (C:\xampp\htdocs\admin\HomePage\Customer\Year.php): 주요 변수 초기화 코드 추가
+[2025-09-24 23:33:07] 🔍 [DRY RUN] 변수 초기화 마이그레이션 예정: C:\xampp\htdocs\admin\HomePage\Customer\Year.php
+[2025-09-24 23:33:07] 🏷️  PHP 태그 수정 (C:\xampp\htdocs\admin\HomePage\Customer.php): 중간 짧은 PHP 태그 변환
+[2025-09-24 23:33:07] 🔧 변수 초기화 (C:\xampp\htdocs\admin\HomePage\Customer.php): 주요 변수 초기화 코드 추가
+[2025-09-24 23:33:07] 🛡️  보안 강화 (C:\xampp\htdocs\admin\HomePage\Customer.php): XSS 보호 권장사항 주석 추가
+[2025-09-24 23:33:07] 🔍 [DRY RUN] 변수 초기화 마이그레이션 예정: C:\xampp\htdocs\admin\HomePage\Customer.php
+[2025-09-24 23:33:07] 🏷️  PHP 태그 수정 (C:\xampp\htdocs\admin\HomePage\Movic\CateAdmin.php): 중간 짧은 PHP 태그 변환
+[2025-09-24 23:33:07] 🔧 변수 초기화 (C:\xampp\htdocs\admin\HomePage\Movic\CateAdmin.php): 주요 변수 초기화 코드 추가
+[2025-09-24 23:33:07] 🛡️  보안 강화 (C:\xampp\htdocs\admin\HomePage\Movic\CateAdmin.php): XSS 보호 권장사항 주석 추가
+[2025-09-24 23:33:07] 🔍 [DRY RUN] 변수 초기화 마이그레이션 예정: C:\xampp\htdocs\admin\HomePage\Movic\CateAdmin.php
+[2025-09-24 23:33:07] 🔧 변수 초기화 (C:\xampp\htdocs\admin\HomePage\Movic\CateView.php): 주요 변수 초기화 코드 추가
+[2025-09-24 23:33:07] 🔍 [DRY RUN] 변수 초기화 마이그레이션 예정: C:\xampp\htdocs\admin\HomePage\Movic\CateView.php
+[2025-09-24 23:33:07] 🔧 변수 초기화 (C:\xampp\htdocs\admin\HomePage\Movic\upload.php): 주요 변수 초기화 코드 추가
+[2025-09-24 23:33:07] 🔍 [DRY RUN] 변수 초기화 마이그레이션 예정: C:\xampp\htdocs\admin\HomePage\Movic\upload.php
+[2025-09-24 23:33:07] 🏷️  PHP 태그 수정 (C:\xampp\htdocs\admin\HomePage\Movic.php): 중간 짧은 PHP 태그 변환
+[2025-09-24 23:33:07] 🔧 변수 초기화 (C:\xampp\htdocs\admin\HomePage\Movic.php): 주요 변수 초기화 코드 추가
+[2025-09-24 23:33:07] 🛡️  보안 강화 (C:\xampp\htdocs\admin\HomePage\Movic.php): XSS 보호 권장사항 주석 추가
+[2025-09-24 23:33:07] 🔍 [DRY RUN] 변수 초기화 마이그레이션 예정: C:\xampp\htdocs\admin\HomePage\Movic.php
+[2025-09-24 23:33:07] 🏷️  PHP 태그 수정 (C:\xampp\htdocs\admin\index.php): 중간 짧은 PHP 태그 변환
+[2025-09-24 23:33:07] 🔧 변수 초기화 (C:\xampp\htdocs\admin\index.php): 주요 변수 초기화 코드 추가
+[2025-09-24 23:33:07] 🔍 [DRY RUN] 변수 초기화 마이그레이션 예정: C:\xampp\htdocs\admin\index.php
+[2025-09-24 23:33:07] 🏷️  PHP 태그 수정 (C:\xampp\htdocs\admin\int\delete.php): 중간 짧은 PHP 태그 변환
+[2025-09-24 23:33:07] 🔧 변수 초기화 (C:\xampp\htdocs\admin\int\delete.php): 주요 변수 초기화 코드 추가
+[2025-09-24 23:33:07] 🔍 [DRY RUN] 변수 초기화 마이그레이션 예정: C:\xampp\htdocs\admin\int\delete.php
+[2025-09-24 23:33:07] 🔧 변수 초기화 (C:\xampp\htdocs\admin\int\upload.php): 주요 변수 초기화 코드 추가
+[2025-09-24 23:33:07] 🔍 [DRY RUN] 변수 초기화 마이그레이션 예정: C:\xampp\htdocs\admin\int\upload.php
+[2025-09-24 23:33:07] 🔧 변수 초기화 (C:\xampp\htdocs\admin\int\uploadTwo.php): 주요 변수 초기화 코드 추가
+[2025-09-24 23:33:07] 🔍 [DRY RUN] 변수 초기화 마이그레이션 예정: C:\xampp\htdocs\admin\int\uploadTwo.php
+[2025-09-24 23:33:07] 🔧 변수 초기화 (C:\xampp\htdocs\admin\int\upload_ok.php): 주요 변수 초기화 코드 추가
+[2025-09-24 23:33:07] 🔍 [DRY RUN] 변수 초기화 마이그레이션 예정: C:\xampp\htdocs\admin\int\upload_ok.php
+[2025-09-24 23:33:07] 🏷️  PHP 태그 수정 (C:\xampp\htdocs\admin\int\zip.php): 중간 짧은 PHP 태그 변환
+[2025-09-24 23:33:07] 🔧 변수 초기화 (C:\xampp\htdocs\admin\int\zip.php): 주요 변수 초기화 코드 추가
+[2025-09-24 23:33:07] 🛡️  보안 강화 (C:\xampp\htdocs\admin\int\zip.php): XSS 보호 권장사항 주석 추가
+[2025-09-24 23:33:07] 🔍 [DRY RUN] 변수 초기화 마이그레이션 예정: C:\xampp\htdocs\admin\int\zip.php
+[2025-09-24 23:33:07] 🏷️  PHP 태그 수정 (C:\xampp\htdocs\admin\js\MlangMenu.php): 중간 짧은 PHP 태그 변환
+[2025-09-24 23:33:07] 🔍 [DRY RUN] 변수 초기화 마이그레이션 예정: C:\xampp\htdocs\admin\js\MlangMenu.php
+[2025-09-24 23:33:07] 🏷️  PHP 태그 수정 (C:\xampp\htdocs\admin\mailing\form.php): 중간 짧은 PHP 태그 변환
+[2025-09-24 23:33:07] 🔧 변수 초기화 (C:\xampp\htdocs\admin\mailing\form.php): 주요 변수 초기화 코드 추가
+[2025-09-24 23:33:07] 🛡️  보안 강화 (C:\xampp\htdocs\admin\mailing\form.php): XSS 보호 권장사항 주석 추가
+[2025-09-24 23:33:07] 🔍 [DRY RUN] 변수 초기화 마이그레이션 예정: C:\xampp\htdocs\admin\mailing\form.php
+[2025-09-24 23:33:07] 🔧 변수 초기화 (C:\xampp\htdocs\admin\mailing\lib.inc.php): 주요 변수 초기화 코드 추가
+[2025-09-24 23:33:07] 🔍 [DRY RUN] 변수 초기화 마이그레이션 예정: C:\xampp\htdocs\admin\mailing\lib.inc.php
+[2025-09-24 23:33:07] 🔧 변수 초기화 (C:\xampp\htdocs\admin\mailing\mailling.php): 주요 변수 초기화 코드 추가
+[2025-09-24 23:33:07] 🛡️  보안 강화 (C:\xampp\htdocs\admin\mailing\mailling.php): XSS 보호 권장사항 주석 추가
+[2025-09-24 23:33:07] 🔍 [DRY RUN] 변수 초기화 마이그레이션 예정: C:\xampp\htdocs\admin\mailing\mailling.php
+[2025-09-24 23:33:07] ⏭️  변경사항 없음: C:\xampp\htdocs\admin\member\admin.php
+[2025-09-24 23:33:07] 🔧 변수 초기화 (C:\xampp\htdocs\admin\member\admin201224.php): 주요 변수 초기화 코드 추가
+[2025-09-24 23:33:07] 🔍 [DRY RUN] 변수 초기화 마이그레이션 예정: C:\xampp\htdocs\admin\member\admin201224.php
+[2025-09-24 23:33:07] 🔧 변수 초기화 (C:\xampp\htdocs\admin\member\admin210112.php): 주요 변수 초기화 코드 추가
+[2025-09-24 23:33:07] 🔍 [DRY RUN] 변수 초기화 마이그레이션 예정: C:\xampp\htdocs\admin\member\admin210112.php
+[2025-09-24 23:33:07] 🔧 변수 초기화 (C:\xampp\htdocs\admin\member\admin240111.php): 주요 변수 초기화 코드 추가
+[2025-09-24 23:33:07] 🔍 [DRY RUN] 변수 초기화 마이그레이션 예정: C:\xampp\htdocs\admin\member\admin240111.php
+[2025-09-24 23:33:07] 🏷️  PHP 태그 수정 (C:\xampp\htdocs\admin\member\Free_index.php): 중간 짧은 PHP 태그 변환
+[2025-09-24 23:33:07] 🔧 변수 초기화 (C:\xampp\htdocs\admin\member\Free_index.php): 주요 변수 초기화 코드 추가
+[2025-09-24 23:33:07] 🔍 [DRY RUN] 변수 초기화 마이그레이션 예정: C:\xampp\htdocs\admin\member\Free_index.php
+[2025-09-24 23:33:07] 🏷️  PHP 태그 수정 (C:\xampp\htdocs\admin\member\index.php): 중간 짧은 PHP 태그 변환
+[2025-09-24 23:33:07] 🔧 변수 초기화 (C:\xampp\htdocs\admin\member\index.php): 주요 변수 초기화 코드 추가
+[2025-09-24 23:33:07] 🔍 [DRY RUN] 변수 초기화 마이그레이션 예정: C:\xampp\htdocs\admin\member\index.php
+[2025-09-24 23:33:07] 🏷️  PHP 태그 수정 (C:\xampp\htdocs\admin\member\JoinAdmin.php): 중간 짧은 PHP 태그 변환
+[2025-09-24 23:33:07] 🔧 변수 초기화 (C:\xampp\htdocs\admin\member\JoinAdmin.php): 주요 변수 초기화 코드 추가
+[2025-09-24 23:33:07] 🔍 [DRY RUN] 변수 초기화 마이그레이션 예정: C:\xampp\htdocs\admin\member\JoinAdmin.php
+[2025-09-24 23:33:07] 🔧 변수 초기화 (C:\xampp\htdocs\admin\member\JoinAdminInfo.php): 주요 변수 초기화 코드 추가
+[2025-09-24 23:33:07] 🔍 [DRY RUN] 변수 초기화 마이그레이션 예정: C:\xampp\htdocs\admin\member\JoinAdminInfo.php
+[2025-09-24 23:33:07] 🔧 변수 초기화 (C:\xampp\htdocs\admin\member\JoinAdminInfo1234.php): 주요 변수 초기화 코드 추가
+[2025-09-24 23:33:07] 🔍 [DRY RUN] 변수 초기화 마이그레이션 예정: C:\xampp\htdocs\admin\member\JoinAdminInfo1234.php
+[2025-09-24 23:33:07] 🏷️  PHP 태그 수정 (C:\xampp\htdocs\admin\member\JoinAdmin_231215.php): 중간 짧은 PHP 태그 변환
+[2025-09-24 23:33:07] 🛡️  보안 강화 (C:\xampp\htdocs\admin\member\JoinAdmin_231215.php): XSS 보호 권장사항 주석 추가
+[2025-09-24 23:33:07] 🔍 [DRY RUN] 변수 초기화 마이그레이션 예정: C:\xampp\htdocs\admin\member\JoinAdmin_231215.php
+[2025-09-24 23:33:07] 🏷️  PHP 태그 수정 (C:\xampp\htdocs\admin\member\JoinAdmin_org.php): 중간 짧은 PHP 태그 변환
+[2025-09-24 23:33:07] 🔧 변수 초기화 (C:\xampp\htdocs\admin\member\JoinAdmin_org.php): 주요 변수 초기화 코드 추가
+[2025-09-24 23:33:07] 🔍 [DRY RUN] 변수 초기화 마이그레이션 예정: C:\xampp\htdocs\admin\member\JoinAdmin_org.php
+[2025-09-24 23:33:07] 🏷️  PHP 태그 수정 (C:\xampp\htdocs\admin\member\MaillingJoinAdmin.php): 중간 짧은 PHP 태그 변환
+[2025-09-24 23:33:07] 🔧 변수 초기화 (C:\xampp\htdocs\admin\member\MaillingJoinAdmin.php): 주요 변수 초기화 코드 추가
+[2025-09-24 23:33:07] 🔍 [DRY RUN] 변수 초기화 마이그레이션 예정: C:\xampp\htdocs\admin\member\MaillingJoinAdmin.php
+[2025-09-24 23:33:07] 🔧 변수 초기화 (C:\xampp\htdocs\admin\member\MaillingJoinAdminInfo.php): 주요 변수 초기화 코드 추가
+[2025-09-24 23:33:07] 🔍 [DRY RUN] 변수 초기화 마이그레이션 예정: C:\xampp\htdocs\admin\member\MaillingJoinAdminInfo.php
+[2025-09-24 23:33:07] 🏷️  PHP 태그 수정 (C:\xampp\htdocs\admin\member\MemberImail.php): 중간 짧은 PHP 태그 변환
+[2025-09-24 23:33:07] 🔧 변수 초기화 (C:\xampp\htdocs\admin\member\MemberImail.php): 주요 변수 초기화 코드 추가
+[2025-09-24 23:33:07] 🛡️  보안 강화 (C:\xampp\htdocs\admin\member\MemberImail.php): XSS 보호 권장사항 주석 추가
+[2025-09-24 23:33:07] 🔍 [DRY RUN] 변수 초기화 마이그레이션 예정: C:\xampp\htdocs\admin\member\MemberImail.php
+[2025-09-24 23:33:07] 🏷️  PHP 태그 수정 (C:\xampp\htdocs\admin\member\MemberMailling.php): 중간 짧은 PHP 태그 변환
+[2025-09-24 23:33:07] 🔧 변수 초기화 (C:\xampp\htdocs\admin\member\MemberMailling.php): 주요 변수 초기화 코드 추가
+[2025-09-24 23:33:07] 🛡️  보안 강화 (C:\xampp\htdocs\admin\member\MemberMailling.php): XSS 보호 권장사항 주석 추가
+[2025-09-24 23:33:07] 🔍 [DRY RUN] 변수 초기화 마이그레이션 예정: C:\xampp\htdocs\admin\member\MemberMailling.php
+[2025-09-24 23:33:07] 🏷️  PHP 태그 수정 (C:\xampp\htdocs\admin\member\stipulation.php): 중간 짧은 PHP 태그 변환
+[2025-09-24 23:33:07] 🔧 변수 초기화 (C:\xampp\htdocs\admin\member\stipulation.php): 주요 변수 초기화 코드 추가
+[2025-09-24 23:33:07] 🛡️  보안 강화 (C:\xampp\htdocs\admin\member\stipulation.php): XSS 보호 권장사항 주석 추가
+[2025-09-24 23:33:07] 🔍 [DRY RUN] 변수 초기화 마이그레이션 예정: C:\xampp\htdocs\admin\member\stipulation.php
+[2025-09-24 23:33:07] 🏷️  PHP 태그 수정 (C:\xampp\htdocs\admin\member_T\admin.php): 중간 짧은 PHP 태그 변환
+[2025-09-24 23:33:07] 🔧 변수 초기화 (C:\xampp\htdocs\admin\member_T\admin.php): 주요 변수 초기화 코드 추가
+[2025-09-24 23:33:07] 🛡️  보안 강화 (C:\xampp\htdocs\admin\member_T\admin.php): XSS 보호 권장사항 주석 추가
+[2025-09-24 23:33:07] 🔍 [DRY RUN] 변수 초기화 마이그레이션 예정: C:\xampp\htdocs\admin\member_T\admin.php
+[2025-09-24 23:33:07] 🏷️  PHP 태그 수정 (C:\xampp\htdocs\admin\member_T\index.php): 중간 짧은 PHP 태그 변환
+[2025-09-24 23:33:07] 🔧 변수 초기화 (C:\xampp\htdocs\admin\member_T\index.php): 주요 변수 초기화 코드 추가
+[2025-09-24 23:33:07] 🛡️  보안 강화 (C:\xampp\htdocs\admin\member_T\index.php): XSS 보호 권장사항 주석 추가
+[2025-09-24 23:33:07] 🔍 [DRY RUN] 변수 초기화 마이그레이션 예정: C:\xampp\htdocs\admin\member_T\index.php
+[2025-09-24 23:33:07] 🔧 변수 초기화 (C:\xampp\htdocs\admin\member_T\upload.php): 주요 변수 초기화 코드 추가
+[2025-09-24 23:33:07] 🔍 [DRY RUN] 변수 초기화 마이그레이션 예정: C:\xampp\htdocs\admin\member_T\upload.php
+[2025-09-24 23:33:07] 🏷️  PHP 태그 수정 (C:\xampp\htdocs\admin\member_X\admin.php): 중간 짧은 PHP 태그 변환
+[2025-09-24 23:33:07] 🔧 변수 초기화 (C:\xampp\htdocs\admin\member_X\admin.php): 주요 변수 초기화 코드 추가
+[2025-09-24 23:33:07] 🛡️  보안 강화 (C:\xampp\htdocs\admin\member_X\admin.php): XSS 보호 권장사항 주석 추가
+[2025-09-24 23:33:07] 🔍 [DRY RUN] 변수 초기화 마이그레이션 예정: C:\xampp\htdocs\admin\member_X\admin.php
+[2025-09-24 23:33:07] 🏷️  PHP 태그 수정 (C:\xampp\htdocs\admin\member_X\index.php): 중간 짧은 PHP 태그 변환
+[2025-09-24 23:33:07] 🔧 변수 초기화 (C:\xampp\htdocs\admin\member_X\index.php): 주요 변수 초기화 코드 추가
+[2025-09-24 23:33:07] 🛡️  보안 강화 (C:\xampp\htdocs\admin\member_X\index.php): XSS 보호 권장사항 주석 추가
+[2025-09-24 23:33:07] 🔍 [DRY RUN] 변수 초기화 마이그레이션 예정: C:\xampp\htdocs\admin\member_X\index.php
+[2025-09-24 23:33:07] 🏷️  PHP 태그 수정 (C:\xampp\htdocs\admin\MlangFriendSite\admin.php): 중간 짧은 PHP 태그 변환
+[2025-09-24 23:33:07] 🛡️  보안 강화 (C:\xampp\htdocs\admin\MlangFriendSite\admin.php): XSS 보호 권장사항 주석 추가
+[2025-09-24 23:33:07] 🔍 [DRY RUN] 변수 초기화 마이그레이션 예정: C:\xampp\htdocs\admin\MlangFriendSite\admin.php
+[2025-09-24 23:33:07] 🔧 변수 초기화 (C:\xampp\htdocs\admin\MlangFriendSite\db.php): 주요 변수 초기화 코드 추가
+[2025-09-24 23:33:07] 🔍 [DRY RUN] 변수 초기화 마이그레이션 예정: C:\xampp\htdocs\admin\MlangFriendSite\db.php
+[2025-09-24 23:33:07] 🔧 변수 초기화 (C:\xampp\htdocs\admin\MlangFriendSite\upload.php): 주요 변수 초기화 코드 추가
+[2025-09-24 23:33:07] 🔍 [DRY RUN] 변수 초기화 마이그레이션 예정: C:\xampp\htdocs\admin\MlangFriendSite\upload.php
+[2025-09-24 23:33:07] 🔧 변수 초기화 (C:\xampp\htdocs\admin\MlangFriendSite\ViewFild.php): 주요 변수 초기화 코드 추가
+[2025-09-24 23:33:07] 🛡️  보안 강화 (C:\xampp\htdocs\admin\MlangFriendSite\ViewFild.php): XSS 보호 권장사항 주석 추가
+[2025-09-24 23:33:07] 🔍 [DRY RUN] 변수 초기화 마이그레이션 예정: C:\xampp\htdocs\admin\MlangFriendSite\ViewFild.php
+[2025-09-24 23:33:07] 🏷️  PHP 태그 수정 (C:\xampp\htdocs\admin\MlangOrder\OnlineOrder_LoveStry103.php): 중간 짧은 PHP 태그 변환
+[2025-09-24 23:33:07] 🔧 변수 초기화 (C:\xampp\htdocs\admin\MlangOrder\OnlineOrder_LoveStry103.php): 주요 변수 초기화 코드 추가
+[2025-09-24 23:33:07] 🔍 [DRY RUN] 변수 초기화 마이그레이션 예정: C:\xampp\htdocs\admin\MlangOrder\OnlineOrder_LoveStry103.php
+[2025-09-24 23:33:07] 🏷️  PHP 태그 수정 (C:\xampp\htdocs\admin\MlangOrder\OnlineOrder_LoveStry104.php): 중간 짧은 PHP 태그 변환
+[2025-09-24 23:33:07] 🔧 변수 초기화 (C:\xampp\htdocs\admin\MlangOrder\OnlineOrder_LoveStry104.php): 주요 변수 초기화 코드 추가
+[2025-09-24 23:33:07] 🛡️  보안 강화 (C:\xampp\htdocs\admin\MlangOrder\OnlineOrder_LoveStry104.php): XSS 보호 권장사항 주석 추가
+[2025-09-24 23:33:07] 🔍 [DRY RUN] 변수 초기화 마이그레이션 예정: C:\xampp\htdocs\admin\MlangOrder\OnlineOrder_LoveStry104.php
+[2025-09-24 23:33:07] 🏷️  PHP 태그 수정 (C:\xampp\htdocs\admin\MlangOrder_PrintAuto\OnlineOrder.php): 중간 짧은 PHP 태그 변환
+[2025-09-24 23:33:07] 🔧 변수 초기화 (C:\xampp\htdocs\admin\MlangOrder_PrintAuto\OnlineOrder.php): 주요 변수 초기화 코드 추가
+[2025-09-24 23:33:07] 🛡️  보안 강화 (C:\xampp\htdocs\admin\MlangOrder_PrintAuto\OnlineOrder.php): XSS 보호 권장사항 주석 추가
+[2025-09-24 23:33:07] 🔍 [DRY RUN] 변수 초기화 마이그레이션 예정: C:\xampp\htdocs\admin\MlangOrder_PrintAuto\OnlineOrder.php
+[2025-09-24 23:33:07] 🏷️  PHP 태그 수정 (C:\xampp\htdocs\admin\MlangPoll\admin.php): 중간 짧은 PHP 태그 변환
+[2025-09-24 23:33:07] 🛡️  보안 강화 (C:\xampp\htdocs\admin\MlangPoll\admin.php): XSS 보호 권장사항 주석 추가
+[2025-09-24 23:33:07] 🔍 [DRY RUN] 변수 초기화 마이그레이션 예정: C:\xampp\htdocs\admin\MlangPoll\admin.php
+[2025-09-24 23:33:07] 🔧 변수 초기화 (C:\xampp\htdocs\admin\MlangPoll\db.inc.php): 주요 변수 초기화 코드 추가
+[2025-09-24 23:33:07] 🔍 [DRY RUN] 변수 초기화 마이그레이션 예정: C:\xampp\htdocs\admin\MlangPoll\db.inc.php
+[2025-09-24 23:33:07] 🔧 변수 초기화 (C:\xampp\htdocs\admin\MlangPoll\login.php): 주요 변수 초기화 코드 추가
+[2025-09-24 23:33:07] 🔍 [DRY RUN] 변수 초기화 마이그레이션 예정: C:\xampp\htdocs\admin\MlangPoll\login.php
+[2025-09-24 23:33:07] 🔧 변수 초기화 (C:\xampp\htdocs\admin\MlangPoll\pollconfig.php): 주요 변수 초기화 코드 추가
+[2025-09-24 23:33:07] 🔍 [DRY RUN] 변수 초기화 마이그레이션 예정: C:\xampp\htdocs\admin\MlangPoll\pollconfig.php
+[2025-09-24 23:33:07] 🔧 변수 초기화 (C:\xampp\htdocs\admin\MlangPoll\polldb.php): 주요 변수 초기화 코드 추가
+[2025-09-24 23:33:07] 🔍 [DRY RUN] 변수 초기화 마이그레이션 예정: C:\xampp\htdocs\admin\MlangPoll\polldb.php
+[2025-09-24 23:33:07] 🔧 변수 초기화 (C:\xampp\htdocs\admin\MlangPoll\pollfunctions.php): 주요 변수 초기화 코드 추가
+[2025-09-24 23:33:07] 🛡️  보안 강화 (C:\xampp\htdocs\admin\MlangPoll\pollfunctions.php): XSS 보호 권장사항 주석 추가
+[2025-09-24 23:33:07] 🔍 [DRY RUN] 변수 초기화 마이그레이션 예정: C:\xampp\htdocs\admin\MlangPoll\pollfunctions.php
+[2025-09-24 23:33:07] 🏷️  PHP 태그 수정 (C:\xampp\htdocs\admin\MlangPrintAuto\admin.php): 중간 짧은 PHP 태그 변환
+[2025-09-24 23:33:07] 🔧 변수 초기화 (C:\xampp\htdocs\admin\MlangPrintAuto\admin.php): 주요 변수 초기화 코드 추가
+[2025-09-24 23:33:07] 🛡️  보안 강화 (C:\xampp\htdocs\admin\MlangPrintAuto\admin.php): XSS 보호 권장사항 주석 추가
+[2025-09-24 23:33:07] 🔍 [DRY RUN] 변수 초기화 마이그레이션 예정: C:\xampp\htdocs\admin\MlangPrintAuto\admin.php
+[2025-09-24 23:33:07] 🏷️  PHP 태그 수정 (C:\xampp\htdocs\admin\MlangPrintAuto\cadarokTwo_admin.php): 중간 짧은 PHP 태그 변환
+[2025-09-24 23:33:07] 🔧 변수 초기화 (C:\xampp\htdocs\admin\MlangPrintAuto\cadarokTwo_admin.php): 주요 변수 초기화 코드 추가
+[2025-09-24 23:33:07] 🛡️  보안 강화 (C:\xampp\htdocs\admin\MlangPrintAuto\cadarokTwo_admin.php): XSS 보호 권장사항 주석 추가
+[2025-09-24 23:33:07] 🔍 [DRY RUN] 변수 초기화 마이그레이션 예정: C:\xampp\htdocs\admin\MlangPrintAuto\cadarokTwo_admin.php
+[2025-09-24 23:33:07] 🏷️  PHP 태그 수정 (C:\xampp\htdocs\admin\MlangPrintAuto\cadarokTwo_List.php): 중간 짧은 PHP 태그 변환
+[2025-09-24 23:33:07] 🔧 변수 초기화 (C:\xampp\htdocs\admin\MlangPrintAuto\cadarokTwo_List.php): 주요 변수 초기화 코드 추가
+[2025-09-24 23:33:07] 🛡️  보안 강화 (C:\xampp\htdocs\admin\MlangPrintAuto\cadarokTwo_List.php): XSS 보호 권장사항 주석 추가
+[2025-09-24 23:33:07] 🔍 [DRY RUN] 변수 초기화 마이그레이션 예정: C:\xampp\htdocs\admin\MlangPrintAuto\cadarokTwo_List.php
+[2025-09-24 23:33:07] 🔧 변수 초기화 (C:\xampp\htdocs\admin\MlangPrintAuto\cadarokTwo_NoFild.php): 주요 변수 초기화 코드 추가
+[2025-09-24 23:33:07] 🔍 [DRY RUN] 변수 초기화 마이그레이션 예정: C:\xampp\htdocs\admin\MlangPrintAuto\cadarokTwo_NoFild.php
+[2025-09-24 23:33:07] 🏷️  PHP 태그 수정 (C:\xampp\htdocs\admin\MlangPrintAuto\cadarokTwo_Script.php): 중간 짧은 PHP 태그 변환
+[2025-09-24 23:33:07] 🛡️  보안 강화 (C:\xampp\htdocs\admin\MlangPrintAuto\cadarokTwo_Script.php): XSS 보호 권장사항 주석 추가
+[2025-09-24 23:33:07] 🔍 [DRY RUN] 변수 초기화 마이그레이션 예정: C:\xampp\htdocs\admin\MlangPrintAuto\cadarokTwo_Script.php
+[2025-09-24 23:33:07] 🏷️  PHP 태그 수정 (C:\xampp\htdocs\admin\MlangPrintAuto\cadarokTwo_ScriptSearch.php): 중간 짧은 PHP 태그 변환
+[2025-09-24 23:33:07] 🛡️  보안 강화 (C:\xampp\htdocs\admin\MlangPrintAuto\cadarokTwo_ScriptSearch.php): XSS 보호 권장사항 주석 추가
+[2025-09-24 23:33:07] 🔍 [DRY RUN] 변수 초기화 마이그레이션 예정: C:\xampp\htdocs\admin\MlangPrintAuto\cadarokTwo_ScriptSearch.php
+[2025-09-24 23:33:07] 🏷️  PHP 태그 수정 (C:\xampp\htdocs\admin\MlangPrintAuto\cadarok_admin.php): 중간 짧은 PHP 태그 변환
+[2025-09-24 23:33:07] 🔧 변수 초기화 (C:\xampp\htdocs\admin\MlangPrintAuto\cadarok_admin.php): 주요 변수 초기화 코드 추가
+[2025-09-24 23:33:07] 🛡️  보안 강화 (C:\xampp\htdocs\admin\MlangPrintAuto\cadarok_admin.php): XSS 보호 권장사항 주석 추가
+[2025-09-24 23:33:07] 🔍 [DRY RUN] 변수 초기화 마이그레이션 예정: C:\xampp\htdocs\admin\MlangPrintAuto\cadarok_admin.php
+[2025-09-24 23:33:07] 🏷️  PHP 태그 수정 (C:\xampp\htdocs\admin\MlangPrintAuto\cadarok_List.php): 중간 짧은 PHP 태그 변환
+[2025-09-24 23:33:07] 🔧 변수 초기화 (C:\xampp\htdocs\admin\MlangPrintAuto\cadarok_List.php): 주요 변수 초기화 코드 추가
+[2025-09-24 23:33:07] 🛡️  보안 강화 (C:\xampp\htdocs\admin\MlangPrintAuto\cadarok_List.php): XSS 보호 권장사항 주석 추가
+[2025-09-24 23:33:07] 🔍 [DRY RUN] 변수 초기화 마이그레이션 예정: C:\xampp\htdocs\admin\MlangPrintAuto\cadarok_List.php
+[2025-09-24 23:33:07] 🔧 변수 초기화 (C:\xampp\htdocs\admin\MlangPrintAuto\cadarok_NoFild.php): 주요 변수 초기화 코드 추가
+[2025-09-24 23:33:07] 🔍 [DRY RUN] 변수 초기화 마이그레이션 예정: C:\xampp\htdocs\admin\MlangPrintAuto\cadarok_NoFild.php
+[2025-09-24 23:33:07] 🏷️  PHP 태그 수정 (C:\xampp\htdocs\admin\MlangPrintAuto\cadarok_Script.php): 중간 짧은 PHP 태그 변환
+[2025-09-24 23:33:07] 🛡️  보안 강화 (C:\xampp\htdocs\admin\MlangPrintAuto\cadarok_Script.php): XSS 보호 권장사항 주석 추가
+[2025-09-24 23:33:07] 🔍 [DRY RUN] 변수 초기화 마이그레이션 예정: C:\xampp\htdocs\admin\MlangPrintAuto\cadarok_Script.php
+[2025-09-24 23:33:07] 🏷️  PHP 태그 수정 (C:\xampp\htdocs\admin\MlangPrintAuto\cadarok_ScriptSearch.php): 중간 짧은 PHP 태그 변환
+[2025-09-24 23:33:07] 🛡️  보안 강화 (C:\xampp\htdocs\admin\MlangPrintAuto\cadarok_ScriptSearch.php): XSS 보호 권장사항 주석 추가
+[2025-09-24 23:33:07] 🔍 [DRY RUN] 변수 초기화 마이그레이션 예정: C:\xampp\htdocs\admin\MlangPrintAuto\cadarok_ScriptSearch.php
+[2025-09-24 23:33:07] 🏷️  PHP 태그 수정 (C:\xampp\htdocs\admin\MlangPrintAuto\CateAdmin.php): 중간 짧은 PHP 태그 변환
+[2025-09-24 23:33:07] 🔧 변수 초기화 (C:\xampp\htdocs\admin\MlangPrintAuto\CateAdmin.php): 주요 변수 초기화 코드 추가
+[2025-09-24 23:33:07] 🛡️  보안 강화 (C:\xampp\htdocs\admin\MlangPrintAuto\CateAdmin.php): XSS 보호 권장사항 주석 추가
+[2025-09-24 23:33:07] 🔍 [DRY RUN] 변수 초기화 마이그레이션 예정: C:\xampp\htdocs\admin\MlangPrintAuto\CateAdmin.php
+[2025-09-24 23:33:07] 🔧 변수 초기화 (C:\xampp\htdocs\admin\MlangPrintAuto\CateAdmin_title.php): 주요 변수 초기화 코드 추가
+[2025-09-24 23:33:07] 🔍 [DRY RUN] 변수 초기화 마이그레이션 예정: C:\xampp\htdocs\admin\MlangPrintAuto\CateAdmin_title.php
+[2025-09-24 23:33:07] 🏷️  PHP 태그 수정 (C:\xampp\htdocs\admin\MlangPrintAuto\CateList.php): 중간 짧은 PHP 태그 변환
+[2025-09-24 23:33:07] 🔧 변수 초기화 (C:\xampp\htdocs\admin\MlangPrintAuto\CateList.php): 주요 변수 초기화 코드 추가
+[2025-09-24 23:33:07] 🛡️  보안 강화 (C:\xampp\htdocs\admin\MlangPrintAuto\CateList.php): XSS 보호 권장사항 주석 추가
+[2025-09-24 23:33:07] 🔍 [DRY RUN] 변수 초기화 마이그레이션 예정: C:\xampp\htdocs\admin\MlangPrintAuto\CateList.php
+[2025-09-24 23:33:07] 🏷️  PHP 태그 수정 (C:\xampp\htdocs\admin\MlangPrintAuto\CateList_Title.php): 중간 짧은 PHP 태그 변환
+[2025-09-24 23:33:07] 🔧 변수 초기화 (C:\xampp\htdocs\admin\MlangPrintAuto\CateList_Title.php): 주요 변수 초기화 코드 추가
+[2025-09-24 23:33:07] 🛡️  보안 강화 (C:\xampp\htdocs\admin\MlangPrintAuto\CateList_Title.php): XSS 보호 권장사항 주석 추가
+[2025-09-24 23:33:07] 🔍 [DRY RUN] 변수 초기화 마이그레이션 예정: C:\xampp\htdocs\admin\MlangPrintAuto\CateList_Title.php
+[2025-09-24 23:33:07] 🔧 변수 초기화 (C:\xampp\htdocs\admin\MlangPrintAuto\CateView.php): 주요 변수 초기화 코드 추가
+[2025-09-24 23:33:07] 🔍 [DRY RUN] 변수 초기화 마이그레이션 예정: C:\xampp\htdocs\admin\MlangPrintAuto\CateView.php
+[2025-09-24 23:33:07] 🏷️  PHP 태그 수정 (C:\xampp\htdocs\admin\MlangPrintAuto\download.php): 중간 짧은 PHP 태그 변환
+[2025-09-24 23:33:07] 🛡️  보안 강화 (C:\xampp\htdocs\admin\MlangPrintAuto\download.php): XSS 보호 권장사항 주석 추가
+[2025-09-24 23:33:07] 🔍 [DRY RUN] 변수 초기화 마이그레이션 예정: C:\xampp\htdocs\admin\MlangPrintAuto\download.php
+[2025-09-24 23:33:07] 🏷️  PHP 태그 수정 (C:\xampp\htdocs\admin\MlangPrintAuto\envelope_admin.php): 중간 짧은 PHP 태그 변환
+[2025-09-24 23:33:07] 🔧 변수 초기화 (C:\xampp\htdocs\admin\MlangPrintAuto\envelope_admin.php): 주요 변수 초기화 코드 추가
+[2025-09-24 23:33:07] 🛡️  보안 강화 (C:\xampp\htdocs\admin\MlangPrintAuto\envelope_admin.php): XSS 보호 권장사항 주석 추가
+[2025-09-24 23:33:07] 🔍 [DRY RUN] 변수 초기화 마이그레이션 예정: C:\xampp\htdocs\admin\MlangPrintAuto\envelope_admin.php
+[2025-09-24 23:33:07] 🏷️  PHP 태그 수정 (C:\xampp\htdocs\admin\MlangPrintAuto\envelope_List.php): 중간 짧은 PHP 태그 변환
+[2025-09-24 23:33:07] 🔧 변수 초기화 (C:\xampp\htdocs\admin\MlangPrintAuto\envelope_List.php): 주요 변수 초기화 코드 추가
+[2025-09-24 23:33:07] 🛡️  보안 강화 (C:\xampp\htdocs\admin\MlangPrintAuto\envelope_List.php): XSS 보호 권장사항 주석 추가
+[2025-09-24 23:33:07] 🔍 [DRY RUN] 변수 초기화 마이그레이션 예정: C:\xampp\htdocs\admin\MlangPrintAuto\envelope_List.php
+[2025-09-24 23:33:07] 🔧 변수 초기화 (C:\xampp\htdocs\admin\MlangPrintAuto\envelope_NoFild.php): 주요 변수 초기화 코드 추가
+[2025-09-24 23:33:07] 🔍 [DRY RUN] 변수 초기화 마이그레이션 예정: C:\xampp\htdocs\admin\MlangPrintAuto\envelope_NoFild.php
+[2025-09-24 23:33:07] 🏷️  PHP 태그 수정 (C:\xampp\htdocs\admin\MlangPrintAuto\envelope_Script.php): 중간 짧은 PHP 태그 변환
+[2025-09-24 23:33:07] 🛡️  보안 강화 (C:\xampp\htdocs\admin\MlangPrintAuto\envelope_Script.php): XSS 보호 권장사항 주석 추가
+[2025-09-24 23:33:07] 🔍 [DRY RUN] 변수 초기화 마이그레이션 예정: C:\xampp\htdocs\admin\MlangPrintAuto\envelope_Script.php
+[2025-09-24 23:33:07] 🏷️  PHP 태그 수정 (C:\xampp\htdocs\admin\MlangPrintAuto\envelope_ScriptSearch.php): 중간 짧은 PHP 태그 변환
+[2025-09-24 23:33:07] 🛡️  보안 강화 (C:\xampp\htdocs\admin\MlangPrintAuto\envelope_ScriptSearch.php): XSS 보호 권장사항 주석 추가
+[2025-09-24 23:33:07] 🔍 [DRY RUN] 변수 초기화 마이그레이션 예정: C:\xampp\htdocs\admin\MlangPrintAuto\envelope_ScriptSearch.php
+[2025-09-24 23:33:07] 🏷️  PHP 태그 수정 (C:\xampp\htdocs\admin\MlangPrintAuto\inserted_admin.php): 중간 짧은 PHP 태그 변환
+[2025-09-24 23:33:07] 🔧 변수 초기화 (C:\xampp\htdocs\admin\MlangPrintAuto\inserted_admin.php): 주요 변수 초기화 코드 추가
+[2025-09-24 23:33:07] 🛡️  보안 강화 (C:\xampp\htdocs\admin\MlangPrintAuto\inserted_admin.php): XSS 보호 권장사항 주석 추가
+[2025-09-24 23:33:07] 🔍 [DRY RUN] 변수 초기화 마이그레이션 예정: C:\xampp\htdocs\admin\MlangPrintAuto\inserted_admin.php
+[2025-09-24 23:33:07] 🏷️  PHP 태그 수정 (C:\xampp\htdocs\admin\MlangPrintAuto\inserted_List.php): 중간 짧은 PHP 태그 변환
+[2025-09-24 23:33:07] 🔧 변수 초기화 (C:\xampp\htdocs\admin\MlangPrintAuto\inserted_List.php): 주요 변수 초기화 코드 추가
+[2025-09-24 23:33:07] 🛡️  보안 강화 (C:\xampp\htdocs\admin\MlangPrintAuto\inserted_List.php): XSS 보호 권장사항 주석 추가
+[2025-09-24 23:33:07] 🔍 [DRY RUN] 변수 초기화 마이그레이션 예정: C:\xampp\htdocs\admin\MlangPrintAuto\inserted_List.php
+[2025-09-24 23:33:07] 🔧 변수 초기화 (C:\xampp\htdocs\admin\MlangPrintAuto\inserted_NoFild.php): 주요 변수 초기화 코드 추가
+[2025-09-24 23:33:07] 🔍 [DRY RUN] 변수 초기화 마이그레이션 예정: C:\xampp\htdocs\admin\MlangPrintAuto\inserted_NoFild.php
+[2025-09-24 23:33:07] 🏷️  PHP 태그 수정 (C:\xampp\htdocs\admin\MlangPrintAuto\inserted_Script.php): 중간 짧은 PHP 태그 변환
+[2025-09-24 23:33:07] 🛡️  보안 강화 (C:\xampp\htdocs\admin\MlangPrintAuto\inserted_Script.php): XSS 보호 권장사항 주석 추가
+[2025-09-24 23:33:07] 🔍 [DRY RUN] 변수 초기화 마이그레이션 예정: C:\xampp\htdocs\admin\MlangPrintAuto\inserted_Script.php
+[2025-09-24 23:33:07] 🏷️  PHP 태그 수정 (C:\xampp\htdocs\admin\MlangPrintAuto\inserted_ScriptSearch.php): 중간 짧은 PHP 태그 변환
+[2025-09-24 23:33:07] 🛡️  보안 강화 (C:\xampp\htdocs\admin\MlangPrintAuto\inserted_ScriptSearch.php): XSS 보호 권장사항 주석 추가
+[2025-09-24 23:33:07] 🔍 [DRY RUN] 변수 초기화 마이그레이션 예정: C:\xampp\htdocs\admin\MlangPrintAuto\inserted_ScriptSearch.php
+[2025-09-24 23:33:07] 🔧 변수 초기화 (C:\xampp\htdocs\admin\MlangPrintAuto\int\info.php): 주요 변수 초기화 코드 추가
+[2025-09-24 23:33:07] 🔍 [DRY RUN] 변수 초기화 마이그레이션 예정: C:\xampp\htdocs\admin\MlangPrintAuto\int\info.php
+[2025-09-24 23:33:07] 🔧 변수 초기화 (C:\xampp\htdocs\admin\MlangPrintAuto\int\info13.php): 주요 변수 초기화 코드 추가
+[2025-09-24 23:33:07] 🔍 [DRY RUN] 변수 초기화 마이그레이션 예정: C:\xampp\htdocs\admin\MlangPrintAuto\int\info13.php
+[2025-09-24 23:33:07] 🏷️  PHP 태그 수정 (C:\xampp\htdocs\admin\MlangPrintAuto\ListSearchBox.php): 중간 짧은 PHP 태그 변환
+[2025-09-24 23:33:07] 🔍 [DRY RUN] 변수 초기화 마이그레이션 예정: C:\xampp\htdocs\admin\MlangPrintAuto\ListSearchBox.php
+[2025-09-24 23:33:07] 🏷️  PHP 태그 수정 (C:\xampp\htdocs\admin\MlangPrintAuto\LittlePrint_admin.php): 중간 짧은 PHP 태그 변환
+[2025-09-24 23:33:07] 🔧 변수 초기화 (C:\xampp\htdocs\admin\MlangPrintAuto\LittlePrint_admin.php): 주요 변수 초기화 코드 추가
+[2025-09-24 23:33:07] 🛡️  보안 강화 (C:\xampp\htdocs\admin\MlangPrintAuto\LittlePrint_admin.php): XSS 보호 권장사항 주석 추가
+[2025-09-24 23:33:07] 🔍 [DRY RUN] 변수 초기화 마이그레이션 예정: C:\xampp\htdocs\admin\MlangPrintAuto\LittlePrint_admin.php
+[2025-09-24 23:33:07] 🏷️  PHP 태그 수정 (C:\xampp\htdocs\admin\MlangPrintAuto\LittlePrint_List.php): 중간 짧은 PHP 태그 변환
+[2025-09-24 23:33:07] 🔧 변수 초기화 (C:\xampp\htdocs\admin\MlangPrintAuto\LittlePrint_List.php): 주요 변수 초기화 코드 추가
+[2025-09-24 23:33:07] 🛡️  보안 강화 (C:\xampp\htdocs\admin\MlangPrintAuto\LittlePrint_List.php): XSS 보호 권장사항 주석 추가
+[2025-09-24 23:33:07] 🔍 [DRY RUN] 변수 초기화 마이그레이션 예정: C:\xampp\htdocs\admin\MlangPrintAuto\LittlePrint_List.php
+[2025-09-24 23:33:07] 🔧 변수 초기화 (C:\xampp\htdocs\admin\MlangPrintAuto\LittlePrint_NoFild.php): 주요 변수 초기화 코드 추가
+[2025-09-24 23:33:07] 🔍 [DRY RUN] 변수 초기화 마이그레이션 예정: C:\xampp\htdocs\admin\MlangPrintAuto\LittlePrint_NoFild.php
+[2025-09-24 23:33:07] 🏷️  PHP 태그 수정 (C:\xampp\htdocs\admin\MlangPrintAuto\LittlePrint_Script.php): 중간 짧은 PHP 태그 변환
+[2025-09-24 23:33:07] 🛡️  보안 강화 (C:\xampp\htdocs\admin\MlangPrintAuto\LittlePrint_Script.php): XSS 보호 권장사항 주석 추가
+[2025-09-24 23:33:07] 🔍 [DRY RUN] 변수 초기화 마이그레이션 예정: C:\xampp\htdocs\admin\MlangPrintAuto\LittlePrint_Script.php
+[2025-09-24 23:33:07] 🏷️  PHP 태그 수정 (C:\xampp\htdocs\admin\MlangPrintAuto\LittlePrint_ScriptSearch.php): 중간 짧은 PHP 태그 변환
+[2025-09-24 23:33:07] 🛡️  보안 강화 (C:\xampp\htdocs\admin\MlangPrintAuto\LittlePrint_ScriptSearch.php): XSS 보호 권장사항 주석 추가
+[2025-09-24 23:33:07] 🔍 [DRY RUN] 변수 초기화 마이그레이션 예정: C:\xampp\htdocs\admin\MlangPrintAuto\LittlePrint_ScriptSearch.php
+[2025-09-24 23:33:07] 🏷️  PHP 태그 수정 (C:\xampp\htdocs\admin\MlangPrintAuto\MemberOrderOffice\admin.php): 중간 짧은 PHP 태그 변환
+[2025-09-24 23:33:07] 🔧 변수 초기화 (C:\xampp\htdocs\admin\MlangPrintAuto\MemberOrderOffice\admin.php): 주요 변수 초기화 코드 추가
+[2025-09-24 23:33:07] 🛡️  보안 강화 (C:\xampp\htdocs\admin\MlangPrintAuto\MemberOrderOffice\admin.php): XSS 보호 권장사항 주석 추가
+[2025-09-24 23:33:07] 🔍 [DRY RUN] 변수 초기화 마이그레이션 예정: C:\xampp\htdocs\admin\MlangPrintAuto\MemberOrderOffice\admin.php
+[2025-09-24 23:33:07] 🔧 변수 초기화 (C:\xampp\htdocs\admin\MlangPrintAuto\MemberOrderOffice\BizInfoView.php): 주요 변수 초기화 코드 추가
+[2025-09-24 23:33:07] 🔍 [DRY RUN] 변수 초기화 마이그레이션 예정: C:\xampp\htdocs\admin\MlangPrintAuto\MemberOrderOffice\BizInfoView.php
+[2025-09-24 23:33:07] 🏷️  PHP 태그 수정 (C:\xampp\htdocs\admin\MlangPrintAuto\MemberOrderOffice\int.php): 중간 짧은 PHP 태그 변환
+[2025-09-24 23:33:07] 🔧 변수 초기화 (C:\xampp\htdocs\admin\MlangPrintAuto\MemberOrderOffice\int.php): 주요 변수 초기화 코드 추가
+[2025-09-24 23:33:07] 🛡️  보안 강화 (C:\xampp\htdocs\admin\MlangPrintAuto\MemberOrderOffice\int.php): XSS 보호 권장사항 주석 추가
+[2025-09-24 23:33:07] 🔍 [DRY RUN] 변수 초기화 마이그레이션 예정: C:\xampp\htdocs\admin\MlangPrintAuto\MemberOrderOffice\int.php
+[2025-09-24 23:33:07] 🔧 변수 초기화 (C:\xampp\htdocs\admin\MlangPrintAuto\MemberOrderOffice\upload_1.php): 주요 변수 초기화 코드 추가
+[2025-09-24 23:33:07] 🔍 [DRY RUN] 변수 초기화 마이그레이션 예정: C:\xampp\htdocs\admin\MlangPrintAuto\MemberOrderOffice\upload_1.php
+[2025-09-24 23:33:07] 🔧 변수 초기화 (C:\xampp\htdocs\admin\MlangPrintAuto\MemberOrderOffice\upload_2.php): 주요 변수 초기화 코드 추가
+[2025-09-24 23:33:07] 🔍 [DRY RUN] 변수 초기화 마이그레이션 예정: C:\xampp\htdocs\admin\MlangPrintAuto\MemberOrderOffice\upload_2.php
+[2025-09-24 23:33:07] 🔧 변수 초기화 (C:\xampp\htdocs\admin\MlangPrintAuto\MemberOrderOffice\upload_3.php): 주요 변수 초기화 코드 추가
+[2025-09-24 23:33:07] 🔍 [DRY RUN] 변수 초기화 마이그레이션 예정: C:\xampp\htdocs\admin\MlangPrintAuto\MemberOrderOffice\upload_3.php
+[2025-09-24 23:33:07] 🔧 변수 초기화 (C:\xampp\htdocs\admin\MlangPrintAuto\MemberOrderOffice\upload_4.php): 주요 변수 초기화 코드 추가
+[2025-09-24 23:33:07] 🔍 [DRY RUN] 변수 초기화 마이그레이션 예정: C:\xampp\htdocs\admin\MlangPrintAuto\MemberOrderOffice\upload_4.php
+[2025-09-24 23:33:07] 🔧 변수 초기화 (C:\xampp\htdocs\admin\MlangPrintAuto\MemberOrderOffice\View.php): 주요 변수 초기화 코드 추가
+[2025-09-24 23:33:07] 🔍 [DRY RUN] 변수 초기화 마이그레이션 예정: C:\xampp\htdocs\admin\MlangPrintAuto\MemberOrderOffice\View.php
+[2025-09-24 23:33:07] 🔧 변수 초기화 (C:\xampp\htdocs\admin\MlangPrintAuto\MemberOrderOffice\View230315.php): 주요 변수 초기화 코드 추가
+[2025-09-24 23:33:07] 🔍 [DRY RUN] 변수 초기화 마이그레이션 예정: C:\xampp\htdocs\admin\MlangPrintAuto\MemberOrderOffice\View230315.php
+[2025-09-24 23:33:07] 🏷️  PHP 태그 수정 (C:\xampp\htdocs\admin\MlangPrintAuto\MemberOrderOfficeList.php): 중간 짧은 PHP 태그 변환
+[2025-09-24 23:33:07] 🔧 변수 초기화 (C:\xampp\htdocs\admin\MlangPrintAuto\MemberOrderOfficeList.php): 주요 변수 초기화 코드 추가
+[2025-09-24 23:33:07] 🔍 [DRY RUN] 변수 초기화 마이그레이션 예정: C:\xampp\htdocs\admin\MlangPrintAuto\MemberOrderOfficeList.php
+[2025-09-24 23:33:07] 🏷️  PHP 태그 수정 (C:\xampp\htdocs\admin\MlangPrintAuto\MemberOrderOfficeList01.php): 중간 짧은 PHP 태그 변환
+[2025-09-24 23:33:07] 🔧 변수 초기화 (C:\xampp\htdocs\admin\MlangPrintAuto\MemberOrderOfficeList01.php): 주요 변수 초기화 코드 추가
+[2025-09-24 23:33:07] 🔍 [DRY RUN] 변수 초기화 마이그레이션 예정: C:\xampp\htdocs\admin\MlangPrintAuto\MemberOrderOfficeList01.php
+[2025-09-24 23:33:07] 🏷️  PHP 태그 수정 (C:\xampp\htdocs\admin\MlangPrintAuto\MemberOrderOfficeList201231.php): 중간 짧은 PHP 태그 변환
+[2025-09-24 23:33:07] 🔧 변수 초기화 (C:\xampp\htdocs\admin\MlangPrintAuto\MemberOrderOfficeList201231.php): 주요 변수 초기화 코드 추가
+[2025-09-24 23:33:07] 🔍 [DRY RUN] 변수 초기화 마이그레이션 예정: C:\xampp\htdocs\admin\MlangPrintAuto\MemberOrderOfficeList201231.php
+[2025-09-24 23:33:07] 🏷️  PHP 태그 수정 (C:\xampp\htdocs\admin\MlangPrintAuto\MerchandiseBond_admin.php): 중간 짧은 PHP 태그 변환
+[2025-09-24 23:33:07] 🔧 변수 초기화 (C:\xampp\htdocs\admin\MlangPrintAuto\MerchandiseBond_admin.php): 주요 변수 초기화 코드 추가
+[2025-09-24 23:33:07] 🛡️  보안 강화 (C:\xampp\htdocs\admin\MlangPrintAuto\MerchandiseBond_admin.php): XSS 보호 권장사항 주석 추가
+[2025-09-24 23:33:07] 🔍 [DRY RUN] 변수 초기화 마이그레이션 예정: C:\xampp\htdocs\admin\MlangPrintAuto\MerchandiseBond_admin.php
+[2025-09-24 23:33:07] 🏷️  PHP 태그 수정 (C:\xampp\htdocs\admin\MlangPrintAuto\MerchandiseBond_List.php): 중간 짧은 PHP 태그 변환
+[2025-09-24 23:33:07] 🔧 변수 초기화 (C:\xampp\htdocs\admin\MlangPrintAuto\MerchandiseBond_List.php): 주요 변수 초기화 코드 추가
+[2025-09-24 23:33:07] 🛡️  보안 강화 (C:\xampp\htdocs\admin\MlangPrintAuto\MerchandiseBond_List.php): XSS 보호 권장사항 주석 추가
+[2025-09-24 23:33:07] 🔍 [DRY RUN] 변수 초기화 마이그레이션 예정: C:\xampp\htdocs\admin\MlangPrintAuto\MerchandiseBond_List.php
+[2025-09-24 23:33:07] 🔧 변수 초기화 (C:\xampp\htdocs\admin\MlangPrintAuto\MerchandiseBond_NoFild.php): 주요 변수 초기화 코드 추가
+[2025-09-24 23:33:07] 🔍 [DRY RUN] 변수 초기화 마이그레이션 예정: C:\xampp\htdocs\admin\MlangPrintAuto\MerchandiseBond_NoFild.php
+[2025-09-24 23:33:07] 🏷️  PHP 태그 수정 (C:\xampp\htdocs\admin\MlangPrintAuto\MerchandiseBond_Script.php): 중간 짧은 PHP 태그 변환
+[2025-09-24 23:33:07] 🛡️  보안 강화 (C:\xampp\htdocs\admin\MlangPrintAuto\MerchandiseBond_Script.php): XSS 보호 권장사항 주석 추가
+[2025-09-24 23:33:07] 🔍 [DRY RUN] 변수 초기화 마이그레이션 예정: C:\xampp\htdocs\admin\MlangPrintAuto\MerchandiseBond_Script.php
+[2025-09-24 23:33:07] 🏷️  PHP 태그 수정 (C:\xampp\htdocs\admin\MlangPrintAuto\MerchandiseBond_ScriptSearch.php): 중간 짧은 PHP 태그 변환
+[2025-09-24 23:33:07] 🛡️  보안 강화 (C:\xampp\htdocs\admin\MlangPrintAuto\MerchandiseBond_ScriptSearch.php): XSS 보호 권장사항 주석 추가
+[2025-09-24 23:33:07] 🔍 [DRY RUN] 변수 초기화 마이그레이션 예정: C:\xampp\htdocs\admin\MlangPrintAuto\MerchandiseBond_ScriptSearch.php
+[2025-09-24 23:33:07] 🏷️  PHP 태그 수정 (C:\xampp\htdocs\admin\MlangPrintAuto\NameCard_admin.php): 중간 짧은 PHP 태그 변환
+[2025-09-24 23:33:07] 🔧 변수 초기화 (C:\xampp\htdocs\admin\MlangPrintAuto\NameCard_admin.php): 주요 변수 초기화 코드 추가
+[2025-09-24 23:33:07] 🛡️  보안 강화 (C:\xampp\htdocs\admin\MlangPrintAuto\NameCard_admin.php): XSS 보호 권장사항 주석 추가
+[2025-09-24 23:33:07] 🔍 [DRY RUN] 변수 초기화 마이그레이션 예정: C:\xampp\htdocs\admin\MlangPrintAuto\NameCard_admin.php
+[2025-09-24 23:33:07] 🏷️  PHP 태그 수정 (C:\xampp\htdocs\admin\MlangPrintAuto\NameCard_List.php): 중간 짧은 PHP 태그 변환
+[2025-09-24 23:33:07] 🔧 변수 초기화 (C:\xampp\htdocs\admin\MlangPrintAuto\NameCard_List.php): 주요 변수 초기화 코드 추가
+[2025-09-24 23:33:07] 🛡️  보안 강화 (C:\xampp\htdocs\admin\MlangPrintAuto\NameCard_List.php): XSS 보호 권장사항 주석 추가
+[2025-09-24 23:33:07] 🔍 [DRY RUN] 변수 초기화 마이그레이션 예정: C:\xampp\htdocs\admin\MlangPrintAuto\NameCard_List.php
+[2025-09-24 23:33:07] 🔧 변수 초기화 (C:\xampp\htdocs\admin\MlangPrintAuto\NameCard_NoFild.php): 주요 변수 초기화 코드 추가
+[2025-09-24 23:33:07] 🔍 [DRY RUN] 변수 초기화 마이그레이션 예정: C:\xampp\htdocs\admin\MlangPrintAuto\NameCard_NoFild.php
+[2025-09-24 23:33:07] 🏷️  PHP 태그 수정 (C:\xampp\htdocs\admin\MlangPrintAuto\NameCard_Script.php): 중간 짧은 PHP 태그 변환
+[2025-09-24 23:33:07] 🛡️  보안 강화 (C:\xampp\htdocs\admin\MlangPrintAuto\NameCard_Script.php): XSS 보호 권장사항 주석 추가
+[2025-09-24 23:33:07] 🔍 [DRY RUN] 변수 초기화 마이그레이션 예정: C:\xampp\htdocs\admin\MlangPrintAuto\NameCard_Script.php
+[2025-09-24 23:33:07] 🏷️  PHP 태그 수정 (C:\xampp\htdocs\admin\MlangPrintAuto\NameCard_ScriptSearch.php): 중간 짧은 PHP 태그 변환
+[2025-09-24 23:33:07] 🛡️  보안 강화 (C:\xampp\htdocs\admin\MlangPrintAuto\NameCard_ScriptSearch.php): XSS 보호 권장사항 주석 추가
+[2025-09-24 23:33:07] 🔍 [DRY RUN] 변수 초기화 마이그레이션 예정: C:\xampp\htdocs\admin\MlangPrintAuto\NameCard_ScriptSearch.php
+[2025-09-24 23:33:07] 🏷️  PHP 태그 수정 (C:\xampp\htdocs\admin\MlangPrintAuto\NcrFlambeau_admin.php): 중간 짧은 PHP 태그 변환
+[2025-09-24 23:33:07] 🔧 변수 초기화 (C:\xampp\htdocs\admin\MlangPrintAuto\NcrFlambeau_admin.php): 주요 변수 초기화 코드 추가
+[2025-09-24 23:33:07] 🛡️  보안 강화 (C:\xampp\htdocs\admin\MlangPrintAuto\NcrFlambeau_admin.php): XSS 보호 권장사항 주석 추가
+[2025-09-24 23:33:07] 🔍 [DRY RUN] 변수 초기화 마이그레이션 예정: C:\xampp\htdocs\admin\MlangPrintAuto\NcrFlambeau_admin.php
+[2025-09-24 23:33:07] 🏷️  PHP 태그 수정 (C:\xampp\htdocs\admin\MlangPrintAuto\NcrFlambeau_List.php): 중간 짧은 PHP 태그 변환
+[2025-09-24 23:33:07] 🔧 변수 초기화 (C:\xampp\htdocs\admin\MlangPrintAuto\NcrFlambeau_List.php): 주요 변수 초기화 코드 추가
+[2025-09-24 23:33:07] 🛡️  보안 강화 (C:\xampp\htdocs\admin\MlangPrintAuto\NcrFlambeau_List.php): XSS 보호 권장사항 주석 추가
+[2025-09-24 23:33:07] 🔍 [DRY RUN] 변수 초기화 마이그레이션 예정: C:\xampp\htdocs\admin\MlangPrintAuto\NcrFlambeau_List.php
+[2025-09-24 23:33:07] 🔧 변수 초기화 (C:\xampp\htdocs\admin\MlangPrintAuto\NcrFlambeau_NoFild.php): 주요 변수 초기화 코드 추가
+[2025-09-24 23:33:07] 🔍 [DRY RUN] 변수 초기화 마이그레이션 예정: C:\xampp\htdocs\admin\MlangPrintAuto\NcrFlambeau_NoFild.php
+[2025-09-24 23:33:07] 🏷️  PHP 태그 수정 (C:\xampp\htdocs\admin\MlangPrintAuto\NcrFlambeau_Script.php): 중간 짧은 PHP 태그 변환
+[2025-09-24 23:33:07] 🛡️  보안 강화 (C:\xampp\htdocs\admin\MlangPrintAuto\NcrFlambeau_Script.php): XSS 보호 권장사항 주석 추가
+[2025-09-24 23:33:07] 🔍 [DRY RUN] 변수 초기화 마이그레이션 예정: C:\xampp\htdocs\admin\MlangPrintAuto\NcrFlambeau_Script.php
+[2025-09-24 23:33:07] 🏷️  PHP 태그 수정 (C:\xampp\htdocs\admin\MlangPrintAuto\NcrFlambeau_ScriptSearch.php): 중간 짧은 PHP 태그 변환
+[2025-09-24 23:33:07] 🛡️  보안 강화 (C:\xampp\htdocs\admin\MlangPrintAuto\NcrFlambeau_ScriptSearch.php): XSS 보호 권장사항 주석 추가
+[2025-09-24 23:33:07] 🔍 [DRY RUN] 변수 초기화 마이그레이션 예정: C:\xampp\htdocs\admin\MlangPrintAuto\NcrFlambeau_ScriptSearch.php
+[2025-09-24 23:33:07] 🏷️  PHP 태그 수정 (C:\xampp\htdocs\admin\MlangPrintAuto\OfferOrder.php): 중간 짧은 PHP 태그 변환
+[2025-09-24 23:33:07] 🔧 변수 초기화 (C:\xampp\htdocs\admin\MlangPrintAuto\OfferOrder.php): 주요 변수 초기화 코드 추가
+[2025-09-24 23:33:07] 🛡️  보안 강화 (C:\xampp\htdocs\admin\MlangPrintAuto\OfferOrder.php): XSS 보호 권장사항 주석 추가
+[2025-09-24 23:33:07] 🔍 [DRY RUN] 변수 초기화 마이그레이션 예정: C:\xampp\htdocs\admin\MlangPrintAuto\OfferOrder.php
+[2025-09-24 23:33:07] 🏷️  PHP 태그 수정 (C:\xampp\htdocs\admin\MlangPrintAuto\OrderList.php): 중간 짧은 PHP 태그 변환
+[2025-09-24 23:33:07] 🔧 변수 초기화 (C:\xampp\htdocs\admin\MlangPrintAuto\OrderList.php): 주요 변수 초기화 코드 추가
+[2025-09-24 23:33:07] 🔍 [DRY RUN] 변수 초기화 마이그레이션 예정: C:\xampp\htdocs\admin\MlangPrintAuto\OrderList.php
+[2025-09-24 23:33:07] 🏷️  PHP 태그 수정 (C:\xampp\htdocs\admin\MlangPrintAuto\OrderList0501.php): 중간 짧은 PHP 태그 변환
+[2025-09-24 23:33:07] 🔧 변수 초기화 (C:\xampp\htdocs\admin\MlangPrintAuto\OrderList0501.php): 주요 변수 초기화 코드 추가
+[2025-09-24 23:33:07] 🔍 [DRY RUN] 변수 초기화 마이그레이션 예정: C:\xampp\htdocs\admin\MlangPrintAuto\OrderList0501.php
+[2025-09-24 23:33:07] 🏷️  PHP 태그 수정 (C:\xampp\htdocs\admin\MlangPrintAuto\OrderList181102.php): 중간 짧은 PHP 태그 변환
+[2025-09-24 23:33:07] 🔧 변수 초기화 (C:\xampp\htdocs\admin\MlangPrintAuto\OrderList181102.php): 주요 변수 초기화 코드 추가
+[2025-09-24 23:33:07] 🔍 [DRY RUN] 변수 초기화 마이그레이션 예정: C:\xampp\htdocs\admin\MlangPrintAuto\OrderList181102.php
+[2025-09-24 23:33:07] 🏷️  PHP 태그 수정 (C:\xampp\htdocs\admin\MlangPrintAuto\sticker_admin.php): 중간 짧은 PHP 태그 변환
+[2025-09-24 23:33:07] 🔧 변수 초기화 (C:\xampp\htdocs\admin\MlangPrintAuto\sticker_admin.php): 주요 변수 초기화 코드 추가
+[2025-09-24 23:33:07] 🛡️  보안 강화 (C:\xampp\htdocs\admin\MlangPrintAuto\sticker_admin.php): XSS 보호 권장사항 주석 추가
+[2025-09-24 23:33:07] 🔍 [DRY RUN] 변수 초기화 마이그레이션 예정: C:\xampp\htdocs\admin\MlangPrintAuto\sticker_admin.php
+[2025-09-24 23:33:07] 🏷️  PHP 태그 수정 (C:\xampp\htdocs\admin\MlangPrintAuto\sticker_List.php): 중간 짧은 PHP 태그 변환
+[2025-09-24 23:33:07] 🔧 변수 초기화 (C:\xampp\htdocs\admin\MlangPrintAuto\sticker_List.php): 주요 변수 초기화 코드 추가
+[2025-09-24 23:33:07] 🛡️  보안 강화 (C:\xampp\htdocs\admin\MlangPrintAuto\sticker_List.php): XSS 보호 권장사항 주석 추가
+[2025-09-24 23:33:07] 🔍 [DRY RUN] 변수 초기화 마이그레이션 예정: C:\xampp\htdocs\admin\MlangPrintAuto\sticker_List.php
+[2025-09-24 23:33:07] 🔧 변수 초기화 (C:\xampp\htdocs\admin\MlangPrintAuto\sticker_NoFild.php): 주요 변수 초기화 코드 추가
+[2025-09-24 23:33:07] 🔍 [DRY RUN] 변수 초기화 마이그레이션 예정: C:\xampp\htdocs\admin\MlangPrintAuto\sticker_NoFild.php
+[2025-09-24 23:33:07] 🏷️  PHP 태그 수정 (C:\xampp\htdocs\admin\MlangPrintAuto\sticker_Script.php): 중간 짧은 PHP 태그 변환
+[2025-09-24 23:33:07] 🛡️  보안 강화 (C:\xampp\htdocs\admin\MlangPrintAuto\sticker_Script.php): XSS 보호 권장사항 주석 추가
+[2025-09-24 23:33:07] 🔍 [DRY RUN] 변수 초기화 마이그레이션 예정: C:\xampp\htdocs\admin\MlangPrintAuto\sticker_Script.php
+[2025-09-24 23:33:07] 🏷️  PHP 태그 수정 (C:\xampp\htdocs\admin\MlangPrintAuto\sticker_ScriptSearch.php): 중간 짧은 PHP 태그 변환
+[2025-09-24 23:33:07] 🛡️  보안 강화 (C:\xampp\htdocs\admin\MlangPrintAuto\sticker_ScriptSearch.php): XSS 보호 권장사항 주석 추가
+[2025-09-24 23:33:07] 🔍 [DRY RUN] 변수 초기화 마이그레이션 예정: C:\xampp\htdocs\admin\MlangPrintAuto\sticker_ScriptSearch.php
+[2025-09-24 23:33:07] 🏷️  PHP 태그 수정 (C:\xampp\htdocs\admin\MlangPrintAuto\SuCateAdmin.php): 중간 짧은 PHP 태그 변환
+[2025-09-24 23:33:07] 🔧 변수 초기화 (C:\xampp\htdocs\admin\MlangPrintAuto\SuCateAdmin.php): 주요 변수 초기화 코드 추가
+[2025-09-24 23:33:07] 🛡️  보안 강화 (C:\xampp\htdocs\admin\MlangPrintAuto\SuCateAdmin.php): XSS 보호 권장사항 주석 추가
+[2025-09-24 23:33:07] 🔍 [DRY RUN] 변수 초기화 마이그레이션 예정: C:\xampp\htdocs\admin\MlangPrintAuto\SuCateAdmin.php
+[2025-09-24 23:33:07] 🏷️  PHP 태그 수정 (C:\xampp\htdocs\admin\MlangPrintAuto\SuCateList.php): 중간 짧은 PHP 태그 변환
+[2025-09-24 23:33:07] 🔧 변수 초기화 (C:\xampp\htdocs\admin\MlangPrintAuto\SuCateList.php): 주요 변수 초기화 코드 추가
+[2025-09-24 23:33:07] 🛡️  보안 강화 (C:\xampp\htdocs\admin\MlangPrintAuto\SuCateList.php): XSS 보호 권장사항 주석 추가
+[2025-09-24 23:33:07] 🔍 [DRY RUN] 변수 초기화 마이그레이션 예정: C:\xampp\htdocs\admin\MlangPrintAuto\SuCateList.php
+[2025-09-24 23:33:07] 🔧 변수 초기화 (C:\xampp\htdocs\admin\MlangPrintAuto\SuCateView.php): 주요 변수 초기화 코드 추가
+[2025-09-24 23:33:07] 🔍 [DRY RUN] 변수 초기화 마이그레이션 예정: C:\xampp\htdocs\admin\MlangPrintAuto\SuCateView.php
+[2025-09-24 23:33:07] 🔧 변수 초기화 (C:\xampp\htdocs\admin\MlangPrintAuto\upload.php): 주요 변수 초기화 코드 추가
+[2025-09-24 23:33:07] 🔍 [DRY RUN] 변수 초기화 마이그레이션 예정: C:\xampp\htdocs\admin\MlangPrintAuto\upload.php
+[2025-09-24 23:33:07] 🏷️  PHP 태그 수정 (C:\xampp\htdocs\admin\MlangWebOffice\Biz_particulars\admin.php): 중간 짧은 PHP 태그 변환
+[2025-09-24 23:33:07] 🔧 변수 초기화 (C:\xampp\htdocs\admin\MlangWebOffice\Biz_particulars\admin.php): 주요 변수 초기화 코드 추가
+[2025-09-24 23:33:07] 🛡️  보안 강화 (C:\xampp\htdocs\admin\MlangWebOffice\Biz_particulars\admin.php): XSS 보호 권장사항 주석 추가
+[2025-09-24 23:33:07] 🔍 [DRY RUN] 변수 초기화 마이그레이션 예정: C:\xampp\htdocs\admin\MlangWebOffice\Biz_particulars\admin.php
+[2025-09-24 23:33:07] 🏷️  PHP 태그 수정 (C:\xampp\htdocs\admin\MlangWebOffice\Biz_particulars\SoList.php): 중간 짧은 PHP 태그 변환
+[2025-09-24 23:33:07] 🔧 변수 초기화 (C:\xampp\htdocs\admin\MlangWebOffice\Biz_particulars\SoList.php): 주요 변수 초기화 코드 추가
+[2025-09-24 23:33:07] 🛡️  보안 강화 (C:\xampp\htdocs\admin\MlangWebOffice\Biz_particulars\SoList.php): XSS 보호 권장사항 주석 추가
+[2025-09-24 23:33:07] 🔍 [DRY RUN] 변수 초기화 마이그레이션 예정: C:\xampp\htdocs\admin\MlangWebOffice\Biz_particulars\SoList.php
+[2025-09-24 23:33:07] 🔧 변수 초기화 (C:\xampp\htdocs\admin\MlangWebOffice\Biz_particulars\view_admin.php): 주요 변수 초기화 코드 추가
+[2025-09-24 23:33:07] 🔍 [DRY RUN] 변수 초기화 마이그레이션 예정: C:\xampp\htdocs\admin\MlangWebOffice\Biz_particulars\view_admin.php
+[2025-09-24 23:33:07] 🏷️  PHP 태그 수정 (C:\xampp\htdocs\admin\MlangWebOffice\Biz_particulars\view_list.php): 중간 짧은 PHP 태그 변환
+[2025-09-24 23:33:07] 🔧 변수 초기화 (C:\xampp\htdocs\admin\MlangWebOffice\Biz_particulars\view_list.php): 주요 변수 초기화 코드 추가
+[2025-09-24 23:33:07] 🛡️  보안 강화 (C:\xampp\htdocs\admin\MlangWebOffice\Biz_particulars\view_list.php): XSS 보호 권장사항 주석 추가
+[2025-09-24 23:33:07] 🔍 [DRY RUN] 변수 초기화 마이그레이션 예정: C:\xampp\htdocs\admin\MlangWebOffice\Biz_particulars\view_list.php
+[2025-09-24 23:33:07] 🏷️  PHP 태그 수정 (C:\xampp\htdocs\admin\MlangWebOffice\Biz_particulars.php): 중간 짧은 PHP 태그 변환
+[2025-09-24 23:33:07] 🔧 변수 초기화 (C:\xampp\htdocs\admin\MlangWebOffice\Biz_particulars.php): 주요 변수 초기화 코드 추가
+[2025-09-24 23:33:07] 🛡️  보안 강화 (C:\xampp\htdocs\admin\MlangWebOffice\Biz_particulars.php): XSS 보호 권장사항 주석 추가
+[2025-09-24 23:33:07] 🔍 [DRY RUN] 변수 초기화 마이그레이션 예정: C:\xampp\htdocs\admin\MlangWebOffice\Biz_particulars.php
+[2025-09-24 23:33:07] 🏷️  PHP 태그 수정 (C:\xampp\htdocs\admin\MlangWebOffice\customer\admin.php): 중간 짧은 PHP 태그 변환
+[2025-09-24 23:33:07] 🔧 변수 초기화 (C:\xampp\htdocs\admin\MlangWebOffice\customer\admin.php): 주요 변수 초기화 코드 추가
+[2025-09-24 23:33:07] 🛡️  보안 강화 (C:\xampp\htdocs\admin\MlangWebOffice\customer\admin.php): XSS 보호 권장사항 주석 추가
+[2025-09-24 23:33:07] 🔍 [DRY RUN] 변수 초기화 마이그레이션 예정: C:\xampp\htdocs\admin\MlangWebOffice\customer\admin.php
+[2025-09-24 23:33:07] 🔧 변수 초기화 (C:\xampp\htdocs\admin\MlangWebOffice\customer\upload.php): 주요 변수 초기화 코드 추가
+[2025-09-24 23:33:07] 🔍 [DRY RUN] 변수 초기화 마이그레이션 예정: C:\xampp\htdocs\admin\MlangWebOffice\customer\upload.php
+[2025-09-24 23:33:07] 🔧 변수 초기화 (C:\xampp\htdocs\admin\MlangWebOffice\customer\view.php): 주요 변수 초기화 코드 추가
+[2025-09-24 23:33:07] 🔍 [DRY RUN] 변수 초기화 마이그레이션 예정: C:\xampp\htdocs\admin\MlangWebOffice\customer\view.php
+[2025-09-24 23:33:07] 🔧 변수 초기화 (C:\xampp\htdocs\admin\MlangWebOffice\customer\view_staff.php): 주요 변수 초기화 코드 추가
+[2025-09-24 23:33:07] 🔍 [DRY RUN] 변수 초기화 마이그레이션 예정: C:\xampp\htdocs\admin\MlangWebOffice\customer\view_staff.php
+[2025-09-24 23:33:07] 🏷️  PHP 태그 수정 (C:\xampp\htdocs\admin\MlangWebOffice\customer.php): 중간 짧은 PHP 태그 변환
+[2025-09-24 23:33:07] 🔧 변수 초기화 (C:\xampp\htdocs\admin\MlangWebOffice\customer.php): 주요 변수 초기화 코드 추가
+[2025-09-24 23:33:07] 🛡️  보안 강화 (C:\xampp\htdocs\admin\MlangWebOffice\customer.php): XSS 보호 권장사항 주석 추가
+[2025-09-24 23:33:07] 🔍 [DRY RUN] 변수 초기화 마이그레이션 예정: C:\xampp\htdocs\admin\MlangWebOffice\customer.php
+[2025-09-24 23:33:07] 🏷️  PHP 태그 수정 (C:\xampp\htdocs\admin\MlangWebOffice\heavy_customer\admin.php): 중간 짧은 PHP 태그 변환
+[2025-09-24 23:33:07] 🔧 변수 초기화 (C:\xampp\htdocs\admin\MlangWebOffice\heavy_customer\admin.php): 주요 변수 초기화 코드 추가
+[2025-09-24 23:33:07] 🛡️  보안 강화 (C:\xampp\htdocs\admin\MlangWebOffice\heavy_customer\admin.php): XSS 보호 권장사항 주석 추가
+[2025-09-24 23:33:07] 🔍 [DRY RUN] 변수 초기화 마이그레이션 예정: C:\xampp\htdocs\admin\MlangWebOffice\heavy_customer\admin.php
+[2025-09-24 23:33:07] 🔧 변수 초기화 (C:\xampp\htdocs\admin\MlangWebOffice\heavy_customer\upload.php): 주요 변수 초기화 코드 추가
+[2025-09-24 23:33:07] 🔍 [DRY RUN] 변수 초기화 마이그레이션 예정: C:\xampp\htdocs\admin\MlangWebOffice\heavy_customer\upload.php
+[2025-09-24 23:33:07] 🔧 변수 초기화 (C:\xampp\htdocs\admin\MlangWebOffice\heavy_customer\view.php): 주요 변수 초기화 코드 추가
+[2025-09-24 23:33:07] 🔍 [DRY RUN] 변수 초기화 마이그레이션 예정: C:\xampp\htdocs\admin\MlangWebOffice\heavy_customer\view.php
+[2025-09-24 23:33:07] 🏷️  PHP 태그 수정 (C:\xampp\htdocs\admin\MlangWebOffice\heavy_customer.php): 중간 짧은 PHP 태그 변환
+[2025-09-24 23:33:07] 🔧 변수 초기화 (C:\xampp\htdocs\admin\MlangWebOffice\heavy_customer.php): 주요 변수 초기화 코드 추가
+[2025-09-24 23:33:07] 🛡️  보안 강화 (C:\xampp\htdocs\admin\MlangWebOffice\heavy_customer.php): XSS 보호 권장사항 주석 추가
+[2025-09-24 23:33:07] 🔍 [DRY RUN] 변수 초기화 마이그레이션 예정: C:\xampp\htdocs\admin\MlangWebOffice\heavy_customer.php
+[2025-09-24 23:33:07] ⏭️  변경사항 없음: C:\xampp\htdocs\admin\MlangWebOffice\job\admin.php
+[2025-09-24 23:33:07] 🏷️  PHP 태그 수정 (C:\xampp\htdocs\admin\MlangWebOffice\job.php): 중간 짧은 PHP 태그 변환
+[2025-09-24 23:33:07] 🔧 변수 초기화 (C:\xampp\htdocs\admin\MlangWebOffice\job.php): 주요 변수 초기화 코드 추가
+[2025-09-24 23:33:07] 🔍 [DRY RUN] 변수 초기화 마이그레이션 예정: C:\xampp\htdocs\admin\MlangWebOffice\job.php
+[2025-09-24 23:33:07] 🏷️  PHP 태그 수정 (C:\xampp\htdocs\admin\page\editor\submit_ok.php): 중간 짧은 PHP 태그 변환
+[2025-09-24 23:33:07] 🔧 변수 초기화 (C:\xampp\htdocs\admin\page\editor\submit_ok.php): 주요 변수 초기화 코드 추가
+[2025-09-24 23:33:07] 🛡️  보안 강화 (C:\xampp\htdocs\admin\page\editor\submit_ok.php): XSS 보호 권장사항 주석 추가
+[2025-09-24 23:33:07] 🔍 [DRY RUN] 변수 초기화 마이그레이션 예정: C:\xampp\htdocs\admin\page\editor\submit_ok.php
+[2025-09-24 23:33:07] 🏷️  PHP 태그 수정 (C:\xampp\htdocs\admin\page\html_edit.php): 중간 짧은 PHP 태그 변환
+[2025-09-24 23:33:07] 🔧 변수 초기화 (C:\xampp\htdocs\admin\page\html_edit.php): 주요 변수 초기화 코드 추가
+[2025-09-24 23:33:07] 🛡️  보안 강화 (C:\xampp\htdocs\admin\page\html_edit.php): XSS 보호 권장사항 주석 추가
+[2025-09-24 23:33:07] 🔍 [DRY RUN] 변수 초기화 마이그레이션 예정: C:\xampp\htdocs\admin\page\html_edit.php
+[2025-09-24 23:33:07] 🏷️  PHP 태그 수정 (C:\xampp\htdocs\admin\page\html_edit_modify_br.php): 중간 짧은 PHP 태그 변환
+[2025-09-24 23:33:07] 🛡️  보안 강화 (C:\xampp\htdocs\admin\page\html_edit_modify_br.php): XSS 보호 권장사항 주석 추가
+[2025-09-24 23:33:07] 🔍 [DRY RUN] 변수 초기화 마이그레이션 예정: C:\xampp\htdocs\admin\page\html_edit_modify_br.php
+[2025-09-24 23:33:07] 🏷️  PHP 태그 수정 (C:\xampp\htdocs\admin\page\html_edit_modify_edit.php): 중간 짧은 PHP 태그 변환
+[2025-09-24 23:33:07] 🔧 변수 초기화 (C:\xampp\htdocs\admin\page\html_edit_modify_edit.php): 주요 변수 초기화 코드 추가
+[2025-09-24 23:33:07] 🛡️  보안 강화 (C:\xampp\htdocs\admin\page\html_edit_modify_edit.php): XSS 보호 권장사항 주석 추가
+[2025-09-24 23:33:07] 🔍 [DRY RUN] 변수 초기화 마이그레이션 예정: C:\xampp\htdocs\admin\page\html_edit_modify_edit.php
+[2025-09-24 23:33:07] 🏷️  PHP 태그 수정 (C:\xampp\htdocs\admin\page\html_edit_modify_file.php): 중간 짧은 PHP 태그 변환
+[2025-09-24 23:33:07] 🛡️  보안 강화 (C:\xampp\htdocs\admin\page\html_edit_modify_file.php): XSS 보호 권장사항 주석 추가
+[2025-09-24 23:33:07] 🔍 [DRY RUN] 변수 초기화 마이그레이션 예정: C:\xampp\htdocs\admin\page\html_edit_modify_file.php
+[2025-09-24 23:33:07] 🏷️  PHP 태그 수정 (C:\xampp\htdocs\admin\page\html_edit_modify_html.php): 중간 짧은 PHP 태그 변환
+[2025-09-24 23:33:07] 🛡️  보안 강화 (C:\xampp\htdocs\admin\page\html_edit_modify_html.php): XSS 보호 권장사항 주석 추가
+[2025-09-24 23:33:07] 🔍 [DRY RUN] 변수 초기화 마이그레이션 예정: C:\xampp\htdocs\admin\page\html_edit_modify_html.php
+[2025-09-24 23:33:07] 🏷️  PHP 태그 수정 (C:\xampp\htdocs\admin\page\page_admin.php): 중간 짧은 PHP 태그 변환
+[2025-09-24 23:33:07] 🔧 변수 초기화 (C:\xampp\htdocs\admin\page\page_admin.php): 주요 변수 초기화 코드 추가
+[2025-09-24 23:33:07] 🔍 [DRY RUN] 변수 초기화 마이그레이션 예정: C:\xampp\htdocs\admin\page\page_admin.php
+[2025-09-24 23:33:07] 🏷️  PHP 태그 수정 (C:\xampp\htdocs\admin\page\page_menu_admin.php): 중간 짧은 PHP 태그 변환
+[2025-09-24 23:33:07] 🔧 변수 초기화 (C:\xampp\htdocs\admin\page\page_menu_admin.php): 주요 변수 초기화 코드 추가
+[2025-09-24 23:33:07] 🛡️  보안 강화 (C:\xampp\htdocs\admin\page\page_menu_admin.php): XSS 보호 권장사항 주석 추가
+[2025-09-24 23:33:07] 🔍 [DRY RUN] 변수 초기화 마이그레이션 예정: C:\xampp\htdocs\admin\page\page_menu_admin.php
+[2025-09-24 23:33:07] 🏷️  PHP 태그 수정 (C:\xampp\htdocs\admin\page\page_menu_list.php): 중간 짧은 PHP 태그 변환
+[2025-09-24 23:33:07] 🔧 변수 초기화 (C:\xampp\htdocs\admin\page\page_menu_list.php): 주요 변수 초기화 코드 추가
+[2025-09-24 23:33:07] 🛡️  보안 강화 (C:\xampp\htdocs\admin\page\page_menu_list.php): XSS 보호 권장사항 주석 추가
+[2025-09-24 23:33:07] 🔍 [DRY RUN] 변수 초기화 마이그레이션 예정: C:\xampp\htdocs\admin\page\page_menu_list.php
+[2025-09-24 23:33:07] 🏷️  PHP 태그 수정 (C:\xampp\htdocs\admin\page\page_menu_submit.php): 중간 짧은 PHP 태그 변환
+[2025-09-24 23:33:07] 🔧 변수 초기화 (C:\xampp\htdocs\admin\page\page_menu_submit.php): 주요 변수 초기화 코드 추가
+[2025-09-24 23:33:07] 🛡️  보안 강화 (C:\xampp\htdocs\admin\page\page_menu_submit.php): XSS 보호 권장사항 주석 추가
+[2025-09-24 23:33:07] 🔍 [DRY RUN] 변수 초기화 마이그레이션 예정: C:\xampp\htdocs\admin\page\page_menu_submit.php
+[2025-09-24 23:33:07] 🏷️  PHP 태그 수정 (C:\xampp\htdocs\admin\page\page_page_list.php): 중간 짧은 PHP 태그 변환
+[2025-09-24 23:33:07] 🔧 변수 초기화 (C:\xampp\htdocs\admin\page\page_page_list.php): 주요 변수 초기화 코드 추가
+[2025-09-24 23:33:07] 🛡️  보안 강화 (C:\xampp\htdocs\admin\page\page_page_list.php): XSS 보호 권장사항 주석 추가
+[2025-09-24 23:33:07] 🔍 [DRY RUN] 변수 초기화 마이그레이션 예정: C:\xampp\htdocs\admin\page\page_page_list.php
+[2025-09-24 23:33:07] 🏷️  PHP 태그 수정 (C:\xampp\htdocs\admin\page\page_submit.php): 중간 짧은 PHP 태그 변환
+[2025-09-24 23:33:07] 🔧 변수 초기화 (C:\xampp\htdocs\admin\page\page_submit.php): 주요 변수 초기화 코드 추가
+[2025-09-24 23:33:07] 🔍 [DRY RUN] 변수 초기화 마이그레이션 예정: C:\xampp\htdocs\admin\page\page_submit.php
+[2025-09-24 23:33:07] 🔧 변수 초기화 (C:\xampp\htdocs\admin\page\upload\data.php): 주요 변수 초기화 코드 추가
+[2025-09-24 23:33:07] 🔍 [DRY RUN] 변수 초기화 마이그레이션 예정: C:\xampp\htdocs\admin\page\upload\data.php
+[2025-09-24 23:33:07] 🔧 변수 초기화 (C:\xampp\htdocs\admin\page\upload\img.php): 주요 변수 초기화 코드 추가
+[2025-09-24 23:33:07] 🔍 [DRY RUN] 변수 초기화 마이그레이션 예정: C:\xampp\htdocs\admin\page\upload\img.php
+[2025-09-24 23:33:07] 🛡️  보안 강화 (C:\xampp\htdocs\admin\php74_migration_script.php): XSS 보호 권장사항 주석 추가
+[2025-09-24 23:33:07] ⏭️  변경사항 없음: C:\xampp\htdocs\admin\php74_migration_script.php
+[2025-09-24 23:33:07] 🔧 변수 초기화 (C:\xampp\htdocs\admin\results\admin.php): 주요 변수 초기화 코드 추가
+[2025-09-24 23:33:07] 🛡️  보안 강화 (C:\xampp\htdocs\admin\results\admin.php): XSS 보호 권장사항 주석 추가
+[2025-09-24 23:33:07] 🔍 [DRY RUN] 변수 초기화 마이그레이션 예정: C:\xampp\htdocs\admin\results\admin.php
+[2025-09-24 23:33:07] 🔧 변수 초기화 (C:\xampp\htdocs\admin\results\admin_public.php): 주요 변수 초기화 코드 추가
+[2025-09-24 23:33:07] 🔍 [DRY RUN] 변수 초기화 마이그레이션 예정: C:\xampp\htdocs\admin\results\admin_public.php
+[2025-09-24 23:33:07] 🔧 변수 초기화 (C:\xampp\htdocs\admin\results\admin_submit.php): 주요 변수 초기화 코드 추가
+[2025-09-24 23:33:07] 🔍 [DRY RUN] 변수 초기화 마이그레이션 예정: C:\xampp\htdocs\admin\results\admin_submit.php
+[2025-09-24 23:33:07] 🔧 변수 초기화 (C:\xampp\htdocs\admin\results\data.php): 주요 변수 초기화 코드 추가
+[2025-09-24 23:33:07] 🛡️  보안 강화 (C:\xampp\htdocs\admin\results\data.php): XSS 보호 권장사항 주석 추가
+[2025-09-24 23:33:07] 🔍 [DRY RUN] 변수 초기화 마이그레이션 예정: C:\xampp\htdocs\admin\results\data.php
+[2025-09-24 23:33:07] 🔧 변수 초기화 (C:\xampp\htdocs\admin\results\data_admin_fild.php): 주요 변수 초기화 코드 추가
+[2025-09-24 23:33:07] 🔍 [DRY RUN] 변수 초기화 마이그레이션 예정: C:\xampp\htdocs\admin\results\data_admin_fild.php
+[2025-09-24 23:33:07] 🏷️  PHP 태그 수정 (C:\xampp\htdocs\admin\results\data_list.php): 중간 짧은 PHP 태그 변환
+[2025-09-24 23:33:07] 🛡️  보안 강화 (C:\xampp\htdocs\admin\results\data_list.php): XSS 보호 권장사항 주석 추가
+[2025-09-24 23:33:07] 🔍 [DRY RUN] 변수 초기화 마이그레이션 예정: C:\xampp\htdocs\admin\results\data_list.php
+[2025-09-24 23:33:07] 🏷️  PHP 태그 수정 (C:\xampp\htdocs\admin\results\data_submit.php): 중간 짧은 PHP 태그 변환
+[2025-09-24 23:33:07] 🛡️  보안 강화 (C:\xampp\htdocs\admin\results\data_submit.php): XSS 보호 권장사항 주석 추가
+[2025-09-24 23:33:07] 🔍 [DRY RUN] 변수 초기화 마이그레이션 예정: C:\xampp\htdocs\admin\results\data_submit.php
+[2025-09-24 23:33:07] 🏷️  PHP 태그 수정 (C:\xampp\htdocs\admin\results\list.php): 중간 짧은 PHP 태그 변환
+[2025-09-24 23:33:07] 🔧 변수 초기화 (C:\xampp\htdocs\admin\results\list.php): 주요 변수 초기화 코드 추가
+[2025-09-24 23:33:07] 🛡️  보안 강화 (C:\xampp\htdocs\admin\results\list.php): XSS 보호 권장사항 주석 추가
+[2025-09-24 23:33:07] 🔍 [DRY RUN] 변수 초기화 마이그레이션 예정: C:\xampp\htdocs\admin\results\list.php
+[2025-09-24 23:33:07] 🏷️  PHP 태그 수정 (C:\xampp\htdocs\admin\results\results_item.php): 중간 짧은 PHP 태그 변환
+[2025-09-24 23:33:07] 🔧 변수 초기화 (C:\xampp\htdocs\admin\results\results_item.php): 주요 변수 초기화 코드 추가
+[2025-09-24 23:33:07] 🔍 [DRY RUN] 변수 초기화 마이그레이션 예정: C:\xampp\htdocs\admin\results\results_item.php
+[2025-09-24 23:33:07] 🔧 변수 초기화 (C:\xampp\htdocs\admin\results2\admin.php): 주요 변수 초기화 코드 추가
+[2025-09-24 23:33:07] 🛡️  보안 강화 (C:\xampp\htdocs\admin\results2\admin.php): XSS 보호 권장사항 주석 추가
+[2025-09-24 23:33:07] 🔍 [DRY RUN] 변수 초기화 마이그레이션 예정: C:\xampp\htdocs\admin\results2\admin.php
+[2025-09-24 23:33:07] 🔧 변수 초기화 (C:\xampp\htdocs\admin\results2\admin_public.php): 주요 변수 초기화 코드 추가
+[2025-09-24 23:33:07] 🔍 [DRY RUN] 변수 초기화 마이그레이션 예정: C:\xampp\htdocs\admin\results2\admin_public.php
+[2025-09-24 23:33:07] 🔧 변수 초기화 (C:\xampp\htdocs\admin\results2\admin_submit.php): 주요 변수 초기화 코드 추가
+[2025-09-24 23:33:07] 🔍 [DRY RUN] 변수 초기화 마이그레이션 예정: C:\xampp\htdocs\admin\results2\admin_submit.php
+[2025-09-24 23:33:07] 🔧 변수 초기화 (C:\xampp\htdocs\admin\results2\data.php): 주요 변수 초기화 코드 추가
+[2025-09-24 23:33:07] 🛡️  보안 강화 (C:\xampp\htdocs\admin\results2\data.php): XSS 보호 권장사항 주석 추가
+[2025-09-24 23:33:07] 🔍 [DRY RUN] 변수 초기화 마이그레이션 예정: C:\xampp\htdocs\admin\results2\data.php
+[2025-09-24 23:33:07] 🔧 변수 초기화 (C:\xampp\htdocs\admin\results2\data_admin_fild.php): 주요 변수 초기화 코드 추가
+[2025-09-24 23:33:07] 🔍 [DRY RUN] 변수 초기화 마이그레이션 예정: C:\xampp\htdocs\admin\results2\data_admin_fild.php
+[2025-09-24 23:33:07] 🏷️  PHP 태그 수정 (C:\xampp\htdocs\admin\results2\data_list.php): 중간 짧은 PHP 태그 변환
+[2025-09-24 23:33:07] 🛡️  보안 강화 (C:\xampp\htdocs\admin\results2\data_list.php): XSS 보호 권장사항 주석 추가
+[2025-09-24 23:33:07] 🔍 [DRY RUN] 변수 초기화 마이그레이션 예정: C:\xampp\htdocs\admin\results2\data_list.php
+[2025-09-24 23:33:07] 🏷️  PHP 태그 수정 (C:\xampp\htdocs\admin\results2\data_submit.php): 중간 짧은 PHP 태그 변환
+[2025-09-24 23:33:07] 🛡️  보안 강화 (C:\xampp\htdocs\admin\results2\data_submit.php): XSS 보호 권장사항 주석 추가
+[2025-09-24 23:33:07] 🔍 [DRY RUN] 변수 초기화 마이그레이션 예정: C:\xampp\htdocs\admin\results2\data_submit.php
+[2025-09-24 23:33:07] 🏷️  PHP 태그 수정 (C:\xampp\htdocs\admin\results2\list.php): 중간 짧은 PHP 태그 변환
+[2025-09-24 23:33:07] 🔧 변수 초기화 (C:\xampp\htdocs\admin\results2\list.php): 주요 변수 초기화 코드 추가
+[2025-09-24 23:33:07] 🛡️  보안 강화 (C:\xampp\htdocs\admin\results2\list.php): XSS 보호 권장사항 주석 추가
+[2025-09-24 23:33:07] 🔍 [DRY RUN] 변수 초기화 마이그레이션 예정: C:\xampp\htdocs\admin\results2\list.php
+[2025-09-24 23:33:07] 🔧 변수 초기화 (C:\xampp\htdocs\admin\results2\Mlang_bbs_cateTr.php): 주요 변수 초기화 코드 추가
+[2025-09-24 23:33:07] 🔍 [DRY RUN] 변수 초기화 마이그레이션 예정: C:\xampp\htdocs\admin\results2\Mlang_bbs_cateTr.php
+[2025-09-24 23:33:07] 🏷️  PHP 태그 수정 (C:\xampp\htdocs\admin\results2\results_item.php): 중간 짧은 PHP 태그 변환
+[2025-09-24 23:33:07] 🔧 변수 초기화 (C:\xampp\htdocs\admin\results2\results_item.php): 주요 변수 초기화 코드 추가
+[2025-09-24 23:33:07] 🔍 [DRY RUN] 변수 초기화 마이그레이션 예정: C:\xampp\htdocs\admin\results2\results_item.php
+[2025-09-24 23:33:07] ⏭️  변경사항 없음: C:\xampp\htdocs\admin\title.php
+[2025-09-24 23:33:07] 🔧 변수 초기화 (C:\xampp\htdocs\admin\top.php): 주요 변수 초기화 코드 추가
+[2025-09-24 23:33:07] 🔍 [DRY RUN] 변수 초기화 마이그레이션 예정: C:\xampp\htdocs\admin\top.php
+[2025-09-24 23:33:07] ⏭️  변경사항 없음: C:\xampp\htdocs\admin\variable_initialization_migrator.php
+[2025-09-24 23:33:07] 🔧 변수 초기화 (C:\xampp\htdocs\admin\WomanMember\admin.php): 주요 변수 초기화 코드 추가
+[2025-09-24 23:33:07] 🔍 [DRY RUN] 변수 초기화 마이그레이션 예정: C:\xampp\htdocs\admin\WomanMember\admin.php
+[2025-09-24 23:33:07] 🏷️  PHP 태그 수정 (C:\xampp\htdocs\admin\WomanMember\form.php): 중간 짧은 PHP 태그 변환
+[2025-09-24 23:33:08] 🛡️  보안 강화 (C:\xampp\htdocs\admin\WomanMember\form.php): XSS 보호 권장사항 주석 추가
+[2025-09-24 23:33:08] 🔍 [DRY RUN] 변수 초기화 마이그레이션 예정: C:\xampp\htdocs\admin\WomanMember\form.php
+[2025-09-24 23:33:08] 🏷️  PHP 태그 수정 (C:\xampp\htdocs\admin\WomanMember\index.php): 중간 짧은 PHP 태그 변환
+[2025-09-24 23:33:08] 🔧 변수 초기화 (C:\xampp\htdocs\admin\WomanMember\index.php): 주요 변수 초기화 코드 추가
+[2025-09-24 23:33:08] 🛡️  보안 강화 (C:\xampp\htdocs\admin\WomanMember\index.php): XSS 보호 권장사항 주석 추가
+[2025-09-24 23:33:08] 🔍 [DRY RUN] 변수 초기화 마이그레이션 예정: C:\xampp\htdocs\admin\WomanMember\index.php
+[2025-09-24 23:33:08] 🔧 변수 초기화 (C:\xampp\htdocs\admin\WomanMember\UploadBig.php): 주요 변수 초기화 코드 추가
+[2025-09-24 23:33:08] 🔍 [DRY RUN] 변수 초기화 마이그레이션 예정: C:\xampp\htdocs\admin\WomanMember\UploadBig.php
+[2025-09-24 23:33:08] 🔧 변수 초기화 (C:\xampp\htdocs\admin\WomanMember\UploadSo.php): 주요 변수 초기화 코드 추가
+[2025-09-24 23:33:08] 🔍 [DRY RUN] 변수 초기화 마이그레이션 예정: C:\xampp\htdocs\admin\WomanMember\UploadSo.php
+[2025-09-24 23:33:08] === 변수 초기화 마이그레이션 완료 요약 ===
+[2025-09-24 23:33:08] 총 파일 수: 206
+[2025-09-24 23:33:08] 마이그레이션된 파일: 198
+[2025-09-24 23:33:08] 변경사항 없는 파일: 8
+[2025-09-24 23:33:08] 에러 발생: 0

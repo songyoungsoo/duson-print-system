@@ -1,0 +1,56 @@
+# 프로덕션 배포 파일 목록
+# 2025-10-10 포스터 추가 옵션 시스템 배포
+
+# ============================================================================
+# 포스터 (littleprint) 관련 파일
+# ============================================================================
+mlangprintauto/littleprint/index.php
+mlangprintauto/littleprint/calculate_price_ajax.php
+mlangprintauto/littleprint/add_to_basket.php
+mlangprintauto/littleprint/calculator.js
+mlangprintauto/littleprint/js/littleprint-premium-options.js
+mlangprintauto/littleprint/css/
+
+# ============================================================================
+# 주문 처리 시스템
+# ============================================================================
+mlangorder_printauto/OrderComplete_universal.php
+mlangorder_printauto/OnlineOrder_unified.php
+mlangorder_printauto/OrderFormOrderTree.php
+
+# ============================================================================
+# 공통 컴포넌트
+# ============================================================================
+includes/AdditionalOptionsDisplay.php
+includes/upload_modal.js
+includes/gallery_data_adapter.php
+
+# ============================================================================
+# 관리자 페이지
+# ============================================================================
+admin/MlangPrintAuto/admin.php
+admin/MlangPrintAuto/ProductManager.php
+admin/MlangPrintAuto/includes/ProductConfig.php
+
+# ============================================================================
+# CSS 파일
+# ============================================================================
+css/product-layout.css
+css/common-styles.css
+css/unified-price-display.css
+css/compact-form.css
+css/unified-gallery.css
+css/btn-primary.css
+assets/css/gallery.css
+
+# ============================================================================
+# 심볼릭 링크 (SSH로 생성 필요)
+# ============================================================================
+# cd /home/hosting_id/public_html/admin
+# ln -s MlangPrintAuto mlangprintauto
+
+# ============================================================================
+# 환경 설정 파일 (업데이트 주의)
+# ============================================================================
+db.php
+config.env.php

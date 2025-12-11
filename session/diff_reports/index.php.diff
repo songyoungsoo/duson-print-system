@@ -1,0 +1,20 @@
+--- index.php (original)
++++ index.php (modified)
+@@ -3,7 +3,7 @@
+ 
+ $userid = isset($_SESSION['id_login_ok']) ? $_SESSION['id_login_ok']['id'] : false;
+ $query = "SELECT * FROM member WHERE id ='" . mysqli_real_escape_string($userid) . "'";
+-$result = mysqli_query($db, $query);
++$result = mysqli_query($query, $db);
+ 
+ if (!$result) {
+   die("쿼리 실행에 실패했습니다: " . mysqli_error());
+@@ -30,7 +30,7 @@
+ <div align="right">  
+   <?php
+   $query = "SELECT * FROM member WHERE id='$userid'";
+-  $result = mysqli_query($db, $query);
++  $result = mysqli_query($query, $db);
+   $data = mysqli_fetch_array($result);
+   $name = $data['name'];
+ 

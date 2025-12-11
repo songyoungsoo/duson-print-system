@@ -1,0 +1,619 @@
+<?php
+declare(strict_types=1);
+
+
+// ⚠️  XSS 보호 권장: echo 시 htmlspecialchars() 사용을 고려하세요
+// ✅ PHP 7.4 호환: 입력 변수 초기화
+$mode = $_GET['mode'] ?? $_POST['mode'] ?? '';
+$no = $_GET['no'] ?? $_POST['no'] ?? '';
+$search = $_GET['search'] ?? $_POST['search'] ?? '';
+$id = $_GET['id'] ?? $_POST['id'] ?? '';
+$name = $_GET['name'] ?? $_POST['name'] ?? '';
+$code = $_GET['code'] ?? $_POST['code'] ?? '';
+$page = $_GET['page'] ?? $_POST['page'] ?? '';
+
+////////////////// 관리자 로그인 ////////////////////
+include"../../../db.php";
+include"../../config.php";
+////////////////////////////////////////////////////
+?>
+
+<?php 
+if($mode=="form"){ ///////////////////////////////////////////////////////////////////////////////////////////////////////////
+
+include"../../title.php";
+$Bgcolor1="408080";
+
+if($code=="modify"){include"view.php";}
+?>
+
+<head>
+<style>
+.Left1 {font-size:10pt; color:#FFFFFF; font:bold;}
+</style>
+<script language=javascript>
+var NUM = "0123456789"; 
+var SALPHA = "abcdefghijklmnopqrstuvwxyz";
+var ALPHA = "ABCDEFGHIJKLMNOPQRSTUVWXYZ"+SALPHA;
+
+////////////////////////////////////////////////////////////////////////////////
+function TypeCheck (s, spc) {
+var i;
+
+for(i=0; i< s.length; i++) {
+if (spc.indexOf(s.substring(i, i+1)) < 0) {
+return false;
+}
+}        
+return true;
+}
+
+/////////////////////////////////////////////////////////////////////////////////
+
+function MemberXCheckField()
+{
+var f=document.FrmUserXInfo;
+
+if (f.bizname.value == "") {
+alert("상호을 입력하여주세요!!");
+f.bizname.focus();
+return false;
+}
+
+if (f.ceoname.value == "") {
+alert("대표을 입력하여주세요!!");
+f.ceoname.focus();
+return false;
+}
+
+if ((f.ceo_hp_1.value.length < 2) || (f.ceo_hp_1.value.length > 4)) {
+alert("대표 HP 의 앞자리는 2자리 이상 4자리 이하를 입력하셔야 합니다.");
+f.ceo_hp_1.focus();
+return false;
+}
+if (!TypeCheck(f.ceo_hp_1.value, NUM)) {
+alert("대표 HP 의 앞자리는 숫자로만 사용할 수 있습니다.");
+f.ceo_hp_1.focus();
+return false;
+}
+if ((f.ceo_hp_2.value.length < 3) || (f.ceo_hp_2.value.length > 4)) {
+alert("대표 HP 의 중간자리는 3자리 이상 4자리 이하를 입력하셔야 합니다.");
+f.ceo_hp_2.focus();
+return false;
+}
+if (!TypeCheck(f.ceo_hp_2.value, NUM)) {
+alert("대표 HP 의 중간자리는 숫자로만 사용할 수 있습니다.");
+f.ceo_hp_2.focus();
+return false;
+}
+if ((f.ceo_hp_3.value.length < 3) || (f.ceo_hp_3.value.length > 4)) {
+alert("대표 HP 의 뒷자리는 3자리 이상 4자리 이하를 입력하셔야 합니다.");
+f.ceo_hp_3.focus();
+return false;
+}
+if (!TypeCheck(f.ceo_hp_3.value, NUM)) {
+alert("대표 HP 의 뒷자리는 숫자로만 사용할 수 있습니다.");
+f.ceo_hp_3.focus();
+return false;
+}
+
+if (f.a_name.value == "") {
+alert("영업 담당을 입력하여주세요!!");
+f.a_name.focus();
+return false;
+}
+
+if ((f.a_hp_1.value.length < 2) || (f.a_hp_1.value.length > 4)) {
+alert("영업 담당 HP 의 앞자리는 2자리 이상 4자리 이하를 입력하셔야 합니다.");
+f.a_hp_1.focus();
+return false;
+}
+if (!TypeCheck(f.a_hp_1.value, NUM)) {
+alert("영업 담당 HP 의 앞자리는 숫자로만 사용할 수 있습니다.");
+f.a_hp_1.focus();
+return false;
+}
+if ((f.a_hp_2.value.length < 3) || (f.a_hp_2.value.length > 4)) {
+alert("영업 담당 HP 의 중간자리는 3자리 이상 4자리 이하를 입력하셔야 합니다.");
+f.a_hp_2.focus();
+return false;
+}
+if (!TypeCheck(f.a_hp_2.value, NUM)) {
+alert("영업 담당 HP 의 중간자리는 숫자로만 사용할 수 있습니다.");
+f.a_hp_2.focus();
+return false;
+}
+if ((f.a_hp_3.value.length < 3) || (f.a_hp_3.value.length > 4)) {
+alert("영업 담당 HP 의 뒷자리는 3자리 이상 4자리 이하를 입력하셔야 합니다.");
+f.a_hp_3.focus();
+return false;
+}
+if (!TypeCheck(f.a_hp_3.value, NUM)) {
+alert("영업 담당 HP 의 뒷자리는 숫자로만 사용할 수 있습니다.");
+f.a_hp_3.focus();
+return false;
+}
+
+if (f.zip.value == "") {
+alert("주소 를 입력하여주세요!!\n\n주소 자동검색창을 띄우겠습니다.");
+f.zip.focus();
+zipcheck();
+return false;
+}
+if (f.zip1.value == "") {
+alert("상세주소 를 입력하여주세요!!\n\n주소 자동검색창을 띄우겠습니다.");
+f.zip1.focus();
+zipcheck();
+return false;
+}
+if (f.zip2.value == "") {
+alert("나머지주소 를 입력하여주세요!!");
+f.zip2.focus();
+return false;
+}
+
+if(f.photofile.value){
+<?if($code=="modify"){}else{?>
+if((f.photofile.value.lastIndexOf(".jpg")==-1) && (f.photofile.value.lastIndexOf(".gif")==-1))
+{
+alert("사진 자료등록은 JPG 와 GIF 파일만 하실수 있습니다.");
+f.photofile.focus();
+return false
+}
+<?}?>
+}
+
+}
+//////////////// 이미지 미리보기 //////////////////////////////////
+/* 소스제작: http://www.script.ne.kr - Mlang */
+function Mlamg_image(image) {
+
+Mlangwindow = window.open("", "Image_Mlang", "toolbar=0,location=0,directories=0,status=0,menubar=0,scrollbars=1,resizable=1,copyhistory=0,width=600,height=400,top=0,left=0");
+Mlangwindow.document.open();
+Mlangwindow.document.write("<html><head><title>이미지 미리보기</title></head>");
+Mlangwindow.document.write("<body>");
+Mlangwindow.document.write("<p align=center><a href=\"#\" onClick=\"javascript:window.close();\"><img src=\"" + image + "\" border=\"0\"></a></p>");
+Mlangwindow.document.write("<p align=center><INPUT TYPE='button' VALUE='윈도우 닫기' " + "onClick='window.close()'></p>");
+Mlangwindow.document.write("</body></html>");
+Mlangwindow.document.close();
+  
+}
+///////////////// 주소검색창을 뛰운다. ////////////////////////////////////////////////////////////////
+
+function zipcheck()
+{
+window.open("../../int/zip.php?mode=search&formname=FrmUserXInfo&DbDir=../../","zip","scrollbars=yes,resizable=yes,width=550,height=510,top=10,left=50");
+}
+</script>
+<script src="../../js/coolbar.js" type="text/javascript"></script>
+</head>
+
+<body LEFTMARGIN='0' TOPMARGIN='0' MARGINWIDTH='0' MARGINHEIGHT='0' class='coolBar'>
+
+<table border=0 align=center width=100% cellpadding=0 cellspacing=5>
+<form name='FrmUserXInfo' enctype='multipart/form-data' method='post' OnSubmit='javascript:return MemberXCheckField()' action='<?=$PHP_SELF?>'>
+<INPUT TYPE="hidden" name='mode' value='<?if($code=="modify"){?>modify_ok<?}else{?>form_ok<?}?>'>
+<?if($code=="modify"){?><INPUT TYPE="hidden" name='no' value='<?=$no?>'><?}?>
+
+<tr>
+<td class='coolBar' colspan=4 height=25>
+<b>&nbsp;&nbsp;중기 거래처정보 <?if($code=="modify"){?>수정<?}else{?>입력<?}?></b><BR>
+</td>
+</tr>
+
+<tr>
+<td bgcolor='#<?=$Bgcolor1?>' width=100 class='Left1' align=right>상호&nbsp;&nbsp;</td>
+<td colspan=3><INPUT TYPE="text" NAME="bizname" size=50 maxLength='80' value='<?if($code=="modify"){echo("$Viewbizname");}?>'></td>
+</tr>
+
+<tr>
+<td bgcolor='#<?=$Bgcolor1?>' width=100 class='Left1' align=right>대표&nbsp;&nbsp;</td>
+<td><INPUT TYPE="text" NAME="ceoname" size=20 maxLength='20' value='<?if($code=="modify"){echo("$Viewceoname");}?>'></td>
+<td bgcolor='#<?=$Bgcolor1?>' width=100 class='Left1' align=right>대표(HP)&nbsp;&nbsp;</td>
+<td>
+<INPUT TYPE="text" NAME="ceo_hp_1" size=7 maxLength='5' value='<?if($code=="modify"){echo("$Viewceo_hp_1");}?>'>
+-
+<INPUT TYPE="text" NAME="ceo_hp_2" size=7 maxLength='5' value='<?if($code=="modify"){echo("$Viewceo_hp_2");}?>'>
+-
+<INPUT TYPE="text" NAME="ceo_hp_3" size=7 maxLength='5' value='<?if($code=="modify"){echo("$Viewceo_hp_3");}?>'>
+</td>
+</tr>
+
+<tr>
+<td bgcolor='#<?=$Bgcolor1?>' width=100 class='Left1' align=right>영업담당&nbsp;&nbsp;</td>
+<td><INPUT TYPE="text" NAME="a_name" size=20 maxLength='20' value='<?if($code=="modify"){echo("$Viewa_name");}?>'></td>
+<td bgcolor='#<?=$Bgcolor1?>' width=100 class='Left1' align=right>영업담당(HP)&nbsp;&nbsp;</td>
+<td>
+<INPUT TYPE="text" NAME="a_hp_1" size=7 maxLength='5' value='<?if($code=="modify"){echo("$Viewa_hp_1");}?>'>
+-
+<INPUT TYPE="text" NAME="a_hp_2" size=7 maxLength='5' value='<?if($code=="modify"){echo("$Viewa_hp_2");}?>'>
+-
+<INPUT TYPE="text" NAME="a_hp_3" size=7 maxLength='5' value='<?if($code=="modify"){echo("$Viewa_hp_3");}?>'>
+</td>
+</tr>
+
+<tr>
+<td bgcolor='#<?=$Bgcolor1?>' width=100 class='Left1' align=right>TEL&nbsp;&nbsp;</td>
+<td><TEXTAREA NAME="tel" ROWS="2" COLS="20"><?if($code=="modify"){echo("$Viewtel");}?></TEXTAREA></td>
+<td bgcolor='#<?=$Bgcolor1?>' width=100 class='Left1' align=right>FAX&nbsp;&nbsp;</td>
+<td><TEXTAREA NAME="fax" ROWS="2" COLS="20"><?if($code=="modify"){echo("$Viewfax");}?></TEXTAREA></td>
+</tr>
+
+<tr>
+<td bgcolor='#<?=$Bgcolor1?>' width=100 class='Left1' align=right>주소&nbsp;&nbsp;</td>
+<td colspan=3>
+<table border="0" cellspacing="0" cellpadding="0">
+<tr><td align=right>&nbsp;우편번호&nbsp;</td>
+<td><input  type="text" name="zip" size="10" onClick="javascript:alert('주소를 입력하기위한 자동주소찾기창 을 뛰우겠습니다.'); zipcheck();" <?if($code=="modify"){echo("value='$Viewzip'");}?>>
+<input type='button' onClick="javascript:zipcheck();" value='주소자동입력'>
+</td>
+</tr>
+<tr><td align=right>&nbsp;상세주소&nbsp;</td>
+<td><input type="text"  name="zip1" size="50" onClick="javascript:alert('주소를 입력하기위한 자동주소찾기창 을 뛰우겠습니다.'); zipcheck();" <?if($code=="modify"){echo("value='$Viewzip1'");}?>></td></tr>
+<tr><td align=right>&nbsp;나머지주소&nbsp;</td><td><input type="text" name="zip2" size="50" <?if($code=="modify"){echo("value='$Viewzip2'");}?>></td></tr>
+</table>
+</td>
+</tr>
+
+<tr>
+<td bgcolor='#<?=$Bgcolor1?>' width=100 class='Left1' align=right>찾아가는 길&nbsp;&nbsp;</td>
+<td colspan=3>
+<?if($code=="modify"){?>
+<img src='./upload/<?=$Viewoffmap?>' width=50><BR>
+<INPUT TYPE="hidden" name='TTFileName' value='<?=$Viewoffmap?>'>
+<INPUT TYPE="checkbox" name='PhotoFileModify'> 찾아가는 길 사진을 변경하려면 체크해주세요!!<BR>
+<?}?>
+<INPUT TYPE="file" NAME="photofile" size=30 onChange="Mlamg_image(this.value)"><BR>
+</td>
+</tr>
+
+<tr>
+<td bgcolor='#<?=$Bgcolor1?>' width=100 class='Left1' align=right>보유장비&nbsp;&nbsp;</td>
+<td colspan=3>
+<TEXTAREA NAME="cont" ROWS="5" COLS="60"><?if($code=="modify"){echo("$Viewcont");}?></TEXTAREA>
+</td>
+</tr>
+
+<tr>
+<td bgcolor='#<?=$Bgcolor1?>' width=100 class='Left1' align=right>메모란&nbsp;&nbsp;</td>
+<td colspan=3>
+<TEXTAREA NAME="memo" ROWS="5" COLS="60"><?if($code=="modify"){echo("$Viewmemo");}?></TEXTAREA>
+</td>
+</tr>
+
+<tr>
+<td colspan=4 align=center>
+<input type='submit' value=' <?if($code=="modify"){?>수정<?}else{?>저장<?}?> 합니다.'>
+</td>
+</tr>
+
+</table>
+
+<?php } //////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+
+if($mode=="delete"){
+
+$resultPHpto= mysqli_query($db, "select * from MlangWebOffice_heavy_customer where no='$no'");
+// ⚠️  에러 처리 권장: mysqli_error() 사용을 고려하세요
+
+$row= mysqli_fetch_array($resultPHpto);
+$PHOToDir="./upload/$row[offmap]";
+$PHOToFile = join ('', file ("$PHOToDir"));
+if($PHOToFile){unlink("$PHOToDir");}
+mysqli_query($db, "DELETE FROM MlangWebOffice_heavy_customer WHERE no='$no'");
+mysqli_close($db);
+
+echo ("
+<html>
+<script language=javascript>
+window.alert('정상적으로 중기거래처 현황 $no번 자료을 삭제 처리 하였습니다.');
+opener.parent.location.reload();
+window.self.close();
+</script>
+</html>
+");
+exit;
+
+} /////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+
+
+if($mode=="form_ok"){
+
+	$result = mysqli_query($db, "SELECT max(no) FROM MlangWebOffice_heavy_customer");
+	if (!$result) {
+		echo "
+			<script>
+				window.alert(\"DB 접속 에러입니다!\")
+				history.go(-1)
+			</script>";
+		exit;
+	}
+	$row = mysqli_fetch_row($result);
+
+	if($row[0]) {
+	   $new_no = $row[0] + 1;
+	} else {
+	   $new_no = 1;
+	}   
+############################################
+
+$upload_dir="./upload";
+include"upload.php";
+
+$dbinsert ="insert into MlangWebOffice_heavy_customer values('$new_no',
+'$bizname',
+'$ceoname',
+'$a_name',
+'$ceo_hp_1',
+'$ceo_hp_2',
+'$ceo_hp_3',
+'$a_hp_1',
+'$a_hp_2 ',
+'$a_hp_3',
+'$tel',
+'$fax',
+'$zip',
+'$zip1',
+'$zip2',
+'$PhotofileName',
+'$cont',
+'$memo'
+)";
+$result_insert= mysqli_query($db, $dbinsert);
+
+	echo ("
+		<script language=javascript>
+		alert('\\n자료를 정상적으로 저장 하였습니다.\\n\\n자료를 새로 등록하시려면 창을 다시 여세요\\n');
+        opener.parent.location.reload();
+        window.self.close();
+		</script>
+	");
+		exit;
+
+
+} ///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+
+if($mode=="view"){ ///////////////////////////////////////////////////////////////////////////////////////
+include"../../title.php";
+$Bgcolor1="408080";
+include"view.php";
+?>
+
+<head>
+<style>
+.Left1 {font-size:10pt; color:#FFFFFF; font:bold;}
+.Left2 {font-size:9pt; color:#FFFFFF;}
+td, table{BORDER-COLOR:#000000; border-collapse:collapse; color:#000000;}
+</style>
+
+<script src="../../js/coolbar.js" type="text/javascript"></script>
+
+<script>
+///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+function WebOffice_customer_staff_Del(no){
+	if (confirm(+no+'번 직원자료를 삭제처리 하시겠습니까..?\n\n한번 삭제한 자료는 복구 되지 않으니 신중을 기해주세요.............!!')) {
+		str='<?=$PHP_SELF?>?customer_staff_no='+no+'&mode=customer_staff_delete';
+        popup = window.open("","","scrollbars=no,resizable=yes,width=100,height=50,top=2000,left=2000");
+        popup.document.location.href=str;
+        popup.focus();
+	}
+}
+//////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+</script>
+</head>
+
+<body LEFTMARGIN='0' TOPMARGIN='0' MARGINWIDTH='0' MARGINHEIGHT='0'>
+
+<table border=1 align=center width=100% cellpadding=5 cellspacing=1>
+
+<tr>
+<td class='coolBar' colspan=4 height=25>
+&nbsp;&nbsp;중기 거래처정보 - 등록번호: <b><?=$no?></b><BR>
+</td>
+</tr>
+
+<tr>
+<td bgcolor='#408080' width=100 class='Left1' align=right>상호&nbsp;&nbsp;</td>
+<td colspan=3>
+<?=$Viewbizname?>
+</td>
+</tr>
+
+<tr>
+<td bgcolor='#408080' width=100 class='Left1' align=right>대표&nbsp;&nbsp;</td>
+<td>
+<?=$Viewceoname?>
+</td>
+<td bgcolor='#408080' width=100 class='Left1' align=right>대표(HP)&nbsp;&nbsp;</td>
+<td>
+<?=$Viewceo_hp_1?>
+-
+<?=$Viewceo_hp_2?>
+-
+<?=$Viewceo_hp_3?>
+</td>
+</tr>
+
+<tr>
+<td bgcolor='#408080' width=100 class='Left1' align=right>영업담당&nbsp;&nbsp;</td>
+<td>
+<?=$Viewa_name?>
+</td>
+<td bgcolor='#408080' width=100 class='Left1' align=right>영업담당(HP)&nbsp;&nbsp;</td>
+<td>
+<?=$Viewa_hp_1?>
+-
+<?=$Viewa_hp_2?>
+-
+<?=$Viewa_hp_3?>
+</td>
+</tr>
+
+<tr>
+<td bgcolor='#408080' width=100 class='Left1' align=right>TEL&nbsp;&nbsp;</td>
+<td>
+<?php 
+        $CONTENT=$Viewtel;
+		$CONTENT = eregi_replace("<", "&lt;", $CONTENT);
+		$CONTENT = eregi_replace(">", "&gt;", $CONTENT);
+		$CONTENT = eregi_replace("\"", "&quot;", $CONTENT);
+		$CONTENT = eregi_replace("\|", "&#124;", $CONTENT);
+		$CONTENT = eregi_replace("\r\n\r\n", "<P>", $CONTENT);
+		$CONTENT = eregi_replace("\r\n", "<BR>", $CONTENT);
+		$connent_tel=$CONTENT;
+echo("$connent_tel");
+?>
+</td>
+<td bgcolor='#408080' width=100 class='Left1' align=right>FAX&nbsp;&nbsp;</td>
+<td>
+<?php 
+        $CONTENT=$Viewfax;
+		$CONTENT = eregi_replace("<", "&lt;", $CONTENT);
+		$CONTENT = eregi_replace(">", "&gt;", $CONTENT);
+		$CONTENT = eregi_replace("\"", "&quot;", $CONTENT);
+		$CONTENT = eregi_replace("\|", "&#124;", $CONTENT);
+		$CONTENT = eregi_replace("\r\n\r\n", "<P>", $CONTENT);
+		$CONTENT = eregi_replace("\r\n", "<BR>", $CONTENT);
+		$connent_fax=$CONTENT;
+echo("$connent_fax");
+?>
+</td>
+</tr>
+
+<tr>
+<td bgcolor='#408080' width=100 class='Left1' align=right>주소&nbsp;&nbsp;</td>
+<td colspan=3>
+<table border="0" cellspacing="0" cellpadding="0">
+<tr><td align=right>&nbsp;우편번호:&nbsp;</td>
+<td>
+<?=$Viewzip?>
+</td>
+</tr>
+<tr><td align=right>&nbsp;상세주소:&nbsp;</td>
+<td>
+<?=$Viewzip1?>
+</td></tr>
+<tr><td align=right>&nbsp;나머지주소:&nbsp;</td>
+<td>
+<?=$Viewzip2?>
+</td></tr>
+</table>
+</td>
+</tr>
+
+
+<tr>
+<td bgcolor='#408080' width=100 class='Left1' align=right>찾아가는 길&nbsp;&nbsp;</td>
+<td colspan=3>
+<a href='#' onClick="javascript:window.open('./upload/<?=$Viewoffmap?>', 'dasd12d1nt3wa','top=0,left=0,menubar=yes,resizable=yes,statusbar=no,scrollbars=yes,toolbar=no');"><img src='./upload/<?=$Viewoffmap?>' onload="if(this.width>500){this.width=500}" border=0></a>
+</td>
+</tr>
+
+<tr>
+<td bgcolor='#408080' width=100 class='Left1' align=right>보유장비&nbsp;&nbsp;</td>
+<td colspan=3>
+<?php 
+        $CONTENT=$Viewcont;
+		$CONTENT = eregi_replace("<", "&lt;", $CONTENT);
+		$CONTENT = eregi_replace(">", "&gt;", $CONTENT);
+		$CONTENT = eregi_replace("\"", "&quot;", $CONTENT);
+		$CONTENT = eregi_replace("\|", "&#124;", $CONTENT);
+		$CONTENT = eregi_replace("\r\n\r\n", "<P>", $CONTENT);
+		$CONTENT = eregi_replace("\r\n", "<BR>", $CONTENT);
+		$connent_cont=$CONTENT;
+echo("$connent_cont");
+?>
+</td>
+</tr>
+
+<tr>
+<td bgcolor='#408080' width=100 class='Left1' align=right>메모란&nbsp;&nbsp;</td>
+<td colspan=3>
+<?php 
+        $CONTENT=$Viewmemo;
+		$CONTENT = eregi_replace("<", "&lt;", $CONTENT);
+		$CONTENT = eregi_replace(">", "&gt;", $CONTENT);
+		$CONTENT = eregi_replace("\"", "&quot;", $CONTENT);
+		$CONTENT = eregi_replace("\|", "&#124;", $CONTENT);
+		$CONTENT = eregi_replace("\r\n\r\n", "<P>", $CONTENT);
+		$CONTENT = eregi_replace("\r\n", "<BR>", $CONTENT);
+		$connent_memo=$CONTENT;
+echo("$connent_memo");
+?>
+</td>
+</tr>
+
+<tr>
+<td colspan=4 align=center>
+<input type='button' value=' 창 닫기 ' onClick="javascript:window.self.close();">
+</td>
+</tr>
+
+</table>
+
+
+</body>
+</html>
+
+<?php exit; }?>
+
+
+<?php 
+if($mode=="modify_ok"){
+
+if($PhotoFileModify){
+$upload_dir="./upload";
+include"upload.php";
+$YYPjFile="$PhotofileName";
+if($TTFileName){unlink("$upload_dir/$TTFileName");}
+}else{
+$YYPjFile="$TTFileName";
+}
+
+$query ="UPDATE MlangWebOffice_heavy_customer SET 
+bizname='$bizname',  
+ceoname='$ceoname',
+a_name='$a_name',
+ceo_hp_1='$ceo_hp_1',
+ceo_hp_2='$ceo_hp_2',
+ceo_hp_3='$ceo_hp_3',
+a_hp_1='$a_hp_1',
+a_hp_2='$a_hp_2 ',
+a_hp_3='$a_hp_3',
+tel='$tel',
+fax='$fax',
+zip='$zip',
+zip1='$zip1',
+zip2='$zip2',
+offmap='$YYPjFile',
+cont='$cont',
+memo='$memo'
+WHERE no='$no'";
+$result= mysqli_query($db, $query);
+
+
+	if(!$result) {
+		echo "
+			<script language=javascript>
+				window.alert(\"DB 접속 에러입니다!\")
+				history.go(-1);
+			</script>";
+		exit;
+
+} else {
+	
+	echo ("
+		<script language=javascript>
+		alert('\\n정보를 정상적으로 수정하였습니다.\\n');
+		opener.parent.location.reload();
+        window.self.close();
+		</script>
+	");
+		exit;
+
+}
+mysqli_close($db);
+
+
+}
+?>

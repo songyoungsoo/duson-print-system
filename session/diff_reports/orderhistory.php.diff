@@ -1,0 +1,29 @@
+--- orderhistory.php (original)
++++ orderhistory.php (modified)
+@@ -5,7 +5,7 @@
+ include $_SERVER['DOCUMENT_ROOT'] ."/mlangprintauto/mlangprintautotop_s.php";
+ $userid = isset($_SESSION['id_login_ok']) ? $_SESSION['id_login_ok']['id'] : false;
+ $query = "SELECT * FROM member WHERE id ='" . mysqli_real_escape_string($userid) . "'";
+-$result = mysqli_query($db, $query);
++$result = mysqli_query($query, $db);
+ $data = mysqli_fetch_array($result);
+ $userEmail = $data['email'];
+ // echo $data; exit;
+@@ -27,7 +27,7 @@
+ 
+   // 전체 페이지 구하기 
+   $query = "SELECT count(*) from MlangOrder_PrintAuto WHERE email='$userEmail'";
+-  $result = mysqli_query($db, $query); 
++  $result = mysqli_query($query, $db); 
+   $data = mysqli_fetch_array($result); 
+   $total = $data[0]; 
+ 
+@@ -47,7 +47,7 @@
+   $query .= " limit $s, $pagenum "; 
+   // echo $query;?> 
+   <br>
+-  <?php $result = mysqli_query($db, $query);
++  <?php $result = mysqli_query($query, $db);
+   ?> 
+   <br>
+ <table align='center' width=680 border='0' cellspacing='1' cellpadding='2' bgcolor='#000000'> 

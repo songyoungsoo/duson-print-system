@@ -1,0 +1,20 @@
+--- my_info.php (original)
++++ my_info.php (modified)
+@@ -13,7 +13,7 @@
+ // $userpass = $_SESSION['id_login_ok']['pass'];
+ 
+ $query = "SELECT * FROM member WHERE id ='" . mysqli_real_escape_string($userid) . "'";
+-$result = mysqli_query($db, $query);
++$result = mysqli_query($query, $db);
+ 
+ if (!$result) {
+   die("데이터베이스접속에러입니다: " . mysqli_error());
+@@ -78,7 +78,7 @@
+ 
+   <?php
+   $query = "SELECT * FROM member WHERE id='$userid'";
+-  $result = mysqli_query($db, $query);
++  $result = mysqli_query($query, $db);
+   $data = mysqli_fetch_array($result);
+ 
+   $id = $data['id'];

@@ -1,0 +1,1579 @@
+/* ===================================================================== */
+/* 🌟 MlangPrintAuto 통합 디자인 시스템 */
+/* ✨ 모든 품목을 하나의 CSS로 통합 관리하는 스마트 시스템 */
+/* 🔄 한 곳에서 모든 디자인을 제어하고, 필요한 것만 선택적 적용 */
+/* ===================================================================== */
+
+/* 01. SETTINGS - CSS 변수 시스템으로 모든 값 중앙 관리 */
+:root {
+  /* 🎨 공통 색상 팔레트 */
+  --color-primary: #3498db;
+  --color-secondary: #2c3e50;
+  --color-success: #28a745;
+  --color-warning: #ffc107;
+  --color-danger: #dc3545;
+  --color-info: #17a2b8;
+  
+  /* 🎯 기본 페이지 타이틀 색상 (전단지 기준) */
+  --page-title-bg-start: #e0e0e0;
+  --page-title-bg-end: #d0d0d0;
+  --page-title-text: #333;
+  --page-title-subtext: #555;
+  --page-title-shadow: rgba(0, 0, 0, 0.1);
+  
+  /* 🏷️ 제품별 페이지 타이틀 색상 오버라이드 */
+  --namecard-title-bg-start: #f7fafc;
+  --namecard-title-bg-end: #edf2f7;
+  --namecard-title-text: #2d3748;
+  
+  --msticker-title-bg-start: #ebf8ff;
+  --msticker-title-bg-end: #bee3f8;
+  --msticker-title-text: #1e3a8a;
+  
+  --cadarok-title-bg-start: #faf5ff;
+  --cadarok-title-bg-end: #e9d8fd;
+  --cadarok-title-text: #553c9a;
+  
+  --envelope-title-bg-start: #f0fff4;
+  --envelope-title-bg-end: #c6f6d5;
+  --envelope-title-text: #2f855a;
+  
+  --sticker-title-bg-start: #fff5f5;
+  --sticker-title-bg-end: #fed7d7;
+  --sticker-title-text: #c53030;
+  
+  /* 🏷️ 품목별 브랜드 색상 */
+  --namecard-primary: #4a5568;
+  --namecard-secondary: #2d3748;
+  --namecard-accent: #667eea;
+  
+  --msticker-primary: #2c5aa0;
+  --msticker-secondary: #1e3a8a;
+  --msticker-accent: #3b82f6;
+  
+  --cadarok-primary: #805ad5;
+  --cadarok-secondary: #553c9a;
+  --cadarok-accent: #9f7aea;
+  
+  --envelope-primary: #38a169;
+  --envelope-secondary: #2f855a;
+  --envelope-accent: #48bb78;
+  
+  --merchandisebond-primary: #e91e63;
+  --merchandisebond-secondary: #ad1457;
+  --merchandisebond-accent: #f06292;
+  
+  --ncrflambeau-primary: #f56500;
+  --ncrflambeau-secondary: #ea580c;
+  --ncrflambeau-accent: #fb923c;
+  
+  --poster-primary: #7c3aed;
+  --poster-secondary: #5b21b6;
+  --poster-accent: #8b5cf6;
+  
+  --sticker-primary: #dc2626;
+  --sticker-secondary: #991b1b;
+  --sticker-accent: #ef4444;
+  
+  --leaflet-primary: #059669;
+  --leaflet-secondary: #047857;
+  --leaflet-accent: #10b981;
+  
+  /* 📏 공통 크기 시스템 */
+  --spacing-xs: 0.25rem;    /* 4px */
+  --spacing-sm: 0.5rem;     /* 8px */
+  --spacing-md: 1rem;       /* 16px */
+  --spacing-lg: 1.5rem;     /* 24px */
+  --spacing-xl: 2rem;       /* 32px */
+  --spacing-2xl: 3rem;      /* 48px */
+  
+  /* 🔤 공통 타이포그래피 */
+  --font-family-primary: 'Noto Sans KR', 'Malgun Gothic', 'Apple SD Gothic Neo', sans-serif;
+  --font-size-xs: 0.75rem;   /* 12px */
+  --font-size-sm: 0.875rem;  /* 14px */
+  --font-size-base: 1rem;    /* 16px */
+  --font-size-lg: 1.125rem;  /* 18px */
+  --font-size-xl: 1.25rem;   /* 20px */
+  --font-size-2xl: 1.5rem;   /* 24px */
+  --font-size-3xl: 2rem;     /* 32px */
+  
+  /* 📐 공통 레이아웃 */
+  --border-radius: 8px;
+  --border-radius-sm: 6px;
+  --border-radius-lg: 12px;
+  --border-radius-xl: 15px;
+  --border-radius-full: 50%;
+  
+  --box-shadow-sm: 0 2px 4px rgba(0,0,0,0.1);
+  --box-shadow-md: 0 4px 15px rgba(0,0,0,0.1);
+  --box-shadow-lg: 0 8px 25px rgba(0,0,0,0.15);
+  --box-shadow-xl: 0 10px 35px rgba(0,0,0,0.12);
+  
+  /* 🎬 애니메이션 */
+  --transition-fast: 0.15s ease;
+  --transition-base: 0.3s ease;
+  --transition-slow: 0.5s ease;
+}
+
+/* 02. BASE - 기본 HTML 요소 리셋 및 표준화 */
+* {
+  box-sizing: border-box;
+}
+
+body {
+  font-family: var(--font-family-primary);
+  line-height: 1.6;
+  color: #333;
+  background-color: #f5f5f5;
+  margin: 0;
+  padding: 0;
+}
+
+h1, h2, h3, h4, h5, h6 {
+  font-family: var(--font-family-primary);
+  font-weight: 700;
+  line-height: 1.2;
+  margin: 0 0 var(--spacing-md) 0;
+}
+
+p {
+  margin: 0 0 var(--spacing-md) 0;
+}
+
+/* 03. LAYOUT OBJECTS - 재사용 가능한 레이아웃 패턴 */
+
+/* 🏠 메인 컨테이너 */
+.mlang-container {
+  max-width: 1200px;
+  margin: 0 auto;
+  padding: var(--spacing-md);
+  background: white;
+  border-radius: var(--border-radius-xl);
+  box-shadow: var(--box-shadow-lg);
+  overflow: hidden;
+}
+
+/* 🎯 통일된 고객 컨테이너 - 1200px 표준 */
+.customer-container {
+  max-width: 1200px;
+  width: 100%;
+  margin: 0 auto;
+  padding: 20px;
+  box-sizing: border-box;
+  background: white;
+  border-radius: var(--border-radius-xl);
+  box-shadow: var(--box-shadow-lg);
+  overflow: hidden;
+}
+
+/* 📦 전단지 스타일 카드 컨테이너 */
+.leaflet-card,
+.namecard-card,
+.msticker-card,
+.cadarok-card,
+.envelope-card,
+.merchandisebond-card,
+.ncrflambeau-card,
+.poster-card,
+.sticker-card,
+[class$="-card"] {
+  max-width: 1200px;
+  margin: 0 auto;
+  padding: 15px 20px 40px 20px;
+  background: white;
+  border-radius: 15px;
+  box-shadow: 0 10px 40px rgba(0,0,0,0.1);
+  overflow: hidden;
+}
+
+/* 📊 그리드 시스템 */
+.mlang-grid {
+  display: grid;
+  gap: var(--spacing-lg);
+}
+
+.mlang-grid--two-columns {
+  grid-template-columns: 1fr 1fr;
+  align-items: start;
+}
+
+.mlang-grid--equal-height {
+  align-items: stretch;
+}
+
+/* 📱 전단지 스타일 메인 그리드 (50:50 분할) */
+.leaflet-grid,
+.namecard-grid,
+.msticker-grid,
+.cadarok-grid,
+.envelope-grid,
+.merchandisebond-grid,
+.ncrflambeau-grid,
+.poster-grid,
+.sticker-grid,
+[class$="-grid"] {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 30px;
+  min-height: 600px;
+  max-width: 1160px;
+  margin: 10px auto 0 auto;
+}
+
+/* 🖼️ 갤러리 섹션 (좌측 50%) */
+.leaflet-gallery,
+.namecard-gallery,
+.msticker-gallery,
+.cadarok-gallery,
+.envelope-gallery,
+.merchandisebond-gallery,
+.ncrflambeau-gallery,
+.poster-gallery,
+.sticker-gallery,
+[class$="-gallery"] {
+  background: transparent;
+  border-radius: 0;
+  padding: 0;
+  border: none;
+  height: fit-content;
+  box-shadow: none;
+}
+
+/* 🧮 계산기 섹션 (우측 50%) */
+.calculator-section,
+[class*="calculator"] {
+  display: flex;
+  flex-direction: column;
+  min-height: 440px;
+  background: #f8f9fa;
+  border-radius: 15px;
+  padding: 25px;
+  border: 1px solid #e9ecef;
+  box-shadow: 0 4px 20px rgba(0,0,0,0.05);
+}
+
+/* 📱 플렉스 유틸리티 */
+.mlang-flex {
+  display: flex;
+}
+
+.mlang-flex--center {
+  align-items: center;
+  justify-content: center;
+}
+
+.mlang-flex--between {
+  justify-content: space-between;
+}
+
+.mlang-flex--column {
+  flex-direction: column;
+}
+
+/* 04. PAGE TITLE SYSTEM - 모든 페이지 타이틀 통합 관리 */
+
+/* 🏆 통합 페이지 타이틀 (모든 가능한 선택자 포괄) */
+.page-title,
+.page-title-common,
+[class*="title"]:not(.gallery-title):not(.calculator-title):not(.price-title):not(.option-title),
+div[class*="page"]:not(.page-content):not(.page-wrapper) {
+  background: linear-gradient(135deg, var(--page-title-bg-start) 0%, var(--page-title-bg-end) 100%);
+  color: var(--page-title-text);
+  padding: 30px 0;
+  text-align: center;
+  margin-bottom: 30px;
+  border-radius: var(--border-radius-xl);
+  box-shadow: 0 2px 10px var(--page-title-shadow);
+  position: relative;
+  overflow: hidden;
+  font-family: var(--font-family-primary);
+}
+
+
+/* 📝 페이지 타이틀 텍스트 */
+.page-title h1,
+.page-title-common h1,
+[class*="title"]:not(.gallery-title):not(.calculator-title):not(.price-title) h1 {
+  color: var(--page-title-text);
+  font-size: var(--font-size-3xl);
+  font-weight: 700;
+  margin: 0;
+  text-shadow: 1px 1px 2px rgba(255, 255, 255, 0.5);
+  font-family: var(--font-family-primary);
+  line-height: 1.2;
+}
+
+.page-title p,
+.page-title-common p,
+[class*="title"]:not(.gallery-title):not(.calculator-title):not(.price-title) p {
+  color: var(--page-title-subtext);
+  font-size: var(--font-size-lg);
+  margin-top: 10px;
+  margin-bottom: 0;
+  font-family: var(--font-family-primary);
+  opacity: 0.9;
+}
+
+/* 05. GALLERY COMPONENT - 통합 갤러리 시스템 */
+
+/* 🖼️ 갤러리 메인 컨테이너 (450px 고정 높이) */
+.mlang-gallery,
+.gallery-main,
+.product-gallery-standard,
+[class*="gallery"]:not(.gallery-modal):not(.gallery-thumb) {
+  min-height: 450px;
+  background: linear-gradient(135deg, #f8f9fa 0%, #e9ecef 100%);
+  border-radius: var(--border-radius-xl);
+  padding: 0;
+  box-shadow: var(--box-shadow-xl), 0 4px 15px rgba(0, 0, 0, 0.08);
+  border: 1px solid rgba(255, 255, 255, 0.9);
+  overflow: visible;
+  display: flex;
+  flex-direction: column;
+}
+
+/* 🖥️ 갤러리 메인 이미지 뷰어 */
+.mlang-gallery__viewer,
+.lightbox-viewer,
+.gallery-main-img {
+  width: 100%;
+  height: 330px;
+  background: white;
+  border-radius: var(--border-radius-xl) var(--border-radius-xl) 0 0;
+  cursor: zoom-in;
+  transition: var(--transition-base);
+  border: none;
+  position: relative;
+  overflow: hidden;
+  flex-shrink: 0;
+}
+
+.mlang-gallery__viewer:hover,
+.lightbox-viewer:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 8px 30px rgba(108, 117, 125, 0.15);
+}
+
+/* 🎞️ 갤러리 썸네일 스트립 */
+.mlang-gallery__thumbnails,
+.thumbnail-strip,
+.gallery-thumbs {
+  display: grid;
+  grid-template-columns: repeat(5, 1fr);
+  gap: 8px;
+  padding: 10px;
+  background: white;
+  border-radius: 0 0 var(--border-radius-xl) var(--border-radius-xl);
+  height: 100px;
+  flex-shrink: 0;
+}
+
+/* 🔳 개별 썸네일 */
+.mlang-gallery__thumbnail,
+.thumbnail-strip img,
+.gallery-thumb img {
+  width: 100%;
+  height: 70px;
+  object-fit: cover;
+  background: linear-gradient(135deg, #3d2817 0%, #5a3f2b 100%);
+  border-radius: var(--border-radius-sm);
+  cursor: pointer;
+  transition: var(--transition-base);
+  border: 2px solid transparent;
+  opacity: 0.9;
+  padding: 2px;
+  image-rendering: -webkit-optimize-contrast;
+  image-rendering: crisp-edges;
+  image-rendering: pixelated;
+}
+
+/* 🎨 갤러리 통합 자식 요소들을 부모에 맞춤 */
+.leaflet-gallery .gallery-container,
+.namecard-gallery .gallery-container,
+.msticker-gallery .gallery-container,
+.cadarok-gallery .gallery-container,
+.envelope-gallery .gallery-container,
+.merchandisebond-gallery .gallery-container,
+.ncrflambeau-gallery .gallery-container,
+.poster-gallery .gallery-container,
+.sticker-gallery .gallery-container,
+[class$="-gallery"] .gallery-container {
+  font-family: 'Noto Sans KR', sans-serif;
+  color: #333;
+  line-height: 1.6;
+  margin: 0;
+  box-sizing: border-box;
+  display: block;
+  padding: 0;
+  background: transparent;
+  border-radius: 0;
+  box-shadow: none;
+  width: 100%;
+}
+
+/* 갤러리 제목 숨김 */
+.gallery-title {
+  display: none;
+}
+
+.mlang-gallery__thumbnail:hover,
+.thumbnail-strip img:hover,
+.gallery-thumb:hover img {
+  opacity: 1;
+  transform: translateY(-2px);
+  box-shadow: 0 4px 15px rgba(0, 0, 0, 0.15);
+  border-color: var(--color-primary);
+}
+
+.mlang-gallery__thumbnail--active,
+.thumbnail-strip img.active,
+.gallery-thumb.active img {
+  opacity: 1;
+  border-color: var(--color-primary);
+  box-shadow: 0 4px 15px rgba(52, 152, 219, 0.3);
+}
+
+/* 06. CALCULATOR COMPONENT - 통합 계산기 시스템 */
+
+/* 🧮 계산기 메인 컨테이너 (갤러리와 동일한 450px 높이) */
+.mlang-calculator,
+.calculator-section,
+[class*="calculator"]:not(.calculator-header):not(.calculator-subtitle) {
+  min-height: 450px;
+  background: linear-gradient(135deg, #f8f9fa 0%, #e9ecef 100%);
+  border-radius: var(--border-radius-xl);
+  padding: 25px;
+  box-shadow: var(--box-shadow-xl), 0 4px 15px rgba(0, 0, 0, 0.08);
+  border: 1px solid rgba(255, 255, 255, 0.9);
+  overflow: visible;
+  display: flex;
+  flex-direction: column;
+}
+
+/* 📊 계산기 헤더 - 숨김 처리 */
+.mlang-calculator__header,
+.calculator-header,
+.price-section h3,
+.price-calculator h3 {
+  display: none;
+  box-shadow: 0 2px 10px rgba(204, 204, 204, 0.2);
+  font-size: var(--font-size-lg);
+  font-weight: 600;
+}
+
+/* 🎛️ 계산기 옵션 그리드 */
+.mlang-calculator__options,
+.options-grid,
+.form-grid-compact {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: var(--spacing-md);
+  margin-bottom: var(--spacing-lg);
+}
+
+/* 📝 개별 옵션 필드 */
+.mlang-calculator__field,
+.option-group,
+.form-field {
+  display: flex;
+  flex-direction: column;
+  gap: var(--spacing-sm);
+}
+
+/* 🏷️ 옵션 라벨 */
+.mlang-calculator__label,
+.option-label {
+  font-weight: 600;
+  color: #495057;
+  font-size: var(--font-size-sm);
+  margin-bottom: 4px;
+}
+
+/* 🎚️ 옵션 셀렉트박스 */
+.mlang-calculator__select,
+.option-select,
+select {
+  padding: 0.75rem;
+  border: 2px solid #e9ecef;
+  border-radius: var(--border-radius);
+  background: white;
+  transition: var(--transition-base);
+  font-family: var(--font-family-primary);
+  font-size: var(--font-size-base);
+}
+
+.mlang-calculator__select:focus,
+.option-select:focus,
+select:focus {
+  outline: none;
+  border-color: var(--color-primary);
+  box-shadow: 0 0 0 3px rgba(52, 152, 219, 0.1);
+}
+
+/* 07. PRICE DISPLAY COMPONENT - 통합 가격 표시 */
+
+/* 💰 가격 표시 컨테이너 */
+.mlang-price,
+.price-display,
+.unified-price {
+  background: linear-gradient(135deg, #f8f9fa 0%, #e9ecef 100%);
+  border: 2px solid #e9ecef;
+  border-radius: var(--border-radius);
+  padding: var(--spacing-lg);
+  text-align: center;
+  margin: var(--spacing-md) 0;
+  transition: var(--transition-base);
+}
+
+.mlang-price--calculated,
+.price-display.calculated,
+.unified-price.calculated {
+  border-color: var(--color-success);
+  background: linear-gradient(135deg, #d4edda 0%, #c3e6cb 100%);
+  transform: scale(1.02);
+  box-shadow: var(--box-shadow-md);
+}
+
+/* 🏷️ 가격 라벨 */
+.mlang-price__label,
+.price-label {
+  font-size: var(--font-size-base);
+  color: #6c757d;
+  margin-bottom: var(--spacing-sm);
+  font-weight: 500;
+}
+
+/* 💵 가격 금액 */
+.mlang-price__amount,
+.price-amount {
+  font-size: var(--font-size-2xl);
+  font-weight: 700;
+  color: var(--color-success);
+  margin-bottom: var(--spacing-sm);
+  text-shadow: 1px 1px 2px rgba(40, 167, 69, 0.2);
+}
+
+/* 📋 가격 세부사항 */
+.mlang-price__details,
+.price-details {
+  font-size: var(--font-size-sm);
+  color: #6c757d;
+  opacity: 0.8;
+}
+
+/* 08. BUTTON SYSTEM - 통합 버튼 시스템 */
+
+/* 🔘 기본 버튼 */
+.mlang-btn,
+.btn {
+  padding: 0.875rem 1.5rem;
+  border: none;
+  border-radius: var(--border-radius);
+  font-weight: 600;
+  cursor: pointer;
+  transition: var(--transition-base);
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: var(--spacing-sm);
+  text-decoration: none;
+  font-family: var(--font-family-primary);
+  font-size: var(--font-size-base);
+}
+
+/* 🔵 프라이머리 버튼 */
+.mlang-btn--primary,
+.btn-primary {
+  background: linear-gradient(135deg, var(--color-primary) 0%, #2980b9 100%);
+  color: white;
+  box-shadow: var(--box-shadow-sm);
+}
+
+.mlang-btn--primary:hover,
+.btn-primary:hover {
+  transform: translateY(-2px);
+  box-shadow: var(--box-shadow-md);
+}
+
+/* 🟢 성공 버튼 */
+.mlang-btn--success,
+.btn-success {
+  background: linear-gradient(135deg, var(--color-success) 0%, #1e7e34 100%);
+  color: white;
+}
+
+/* ⚠️ 경고 버튼 */
+.mlang-btn--warning,
+.btn-warning {
+  background: linear-gradient(135deg, var(--color-warning) 0%, #e0a800 100%);
+  color: #212529;
+}
+
+/* 🔴 위험 버튼 */
+.mlang-btn--danger,
+.btn-danger {
+  background: linear-gradient(135deg, var(--color-danger) 0%, #c82333 100%);
+  color: white;
+}
+
+/* 09. FORM COMPONENTS - 통합 폼 시스템 */
+
+/* 📝 입력 필드 */
+.mlang-input,
+input[type="text"],
+input[type="email"],
+input[type="number"],
+textarea {
+  padding: 0.75rem;
+  border: 2px solid #e9ecef;
+  border-radius: var(--border-radius);
+  background: white;
+  transition: var(--transition-base);
+  font-family: var(--font-family-primary);
+  font-size: var(--font-size-base);
+  width: 100%;
+}
+
+.mlang-input:focus,
+input[type="text"]:focus,
+input[type="email"]:focus,
+input[type="number"]:focus,
+textarea:focus {
+  outline: none;
+  border-color: var(--color-primary);
+  box-shadow: 0 0 0 3px rgba(52, 152, 219, 0.1);
+}
+
+/* ============================================================================ */
+/* 09.5. ENHANCED FORM SYSTEM - 전단지 스타일 추가 폼 시스템 */
+/* ============================================================================ */
+
+/* 📝 옵션 선택 영역 - 개선된 그리드 레이아웃 */
+.options-grid,
+.form-grid-compact {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 15px;
+  margin-bottom: 25px;
+}
+
+.option-group,
+.form-field {
+  margin-bottom: 0;
+}
+
+.option-group.full-width,
+.form-field.full-width {
+  grid-column: 1 / -1;
+}
+
+.option-label {
+  display: block;
+  margin-bottom: 8px;
+  font-weight: 600;
+  color: #495057;
+  font-size: 0.95rem;
+}
+
+.option-select {
+  width: 100%;
+  padding: 12px 15px;
+  border: 2px solid #e9ecef;
+  border-radius: 8px;
+  font-size: 0.9rem;
+  background: white;
+  transition: all 0.3s ease;
+  font-family: inherit;
+  will-change: border-color, box-shadow;
+}
+
+.option-select:focus {
+  outline: none;
+  border-color: #28a745;
+  box-shadow: 0 0 0 3px rgba(40, 167, 69, 0.1);
+  transform: translateY(-1px);
+}
+
+.option-select:hover {
+  border-color: #ced4da;
+}
+
+/* 💰 실시간 가격 표시 - 개선된 애니메이션 */
+.price-display {
+  background: linear-gradient(135deg, #f8f9fa 0%, #e9ecef 100%);
+  border: 2px solid #e9ecef;
+  border-radius: 12px;
+  padding: 20px;
+  margin-bottom: 20px;
+  text-align: center;
+  transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+  transform: translateZ(0);
+  will-change: background, border-color, transform;
+}
+
+.price-display.calculated {
+  border-color: #28a745;
+  background: linear-gradient(135deg, #d4edda 0%, #c3e6cb 100%);
+  transform: scale(1.02);
+  box-shadow: 0 6px 20px rgba(40, 167, 69, 0.2);
+}
+
+.price-label {
+  font-size: 1rem;
+  color: #6c757d;
+  margin-bottom: 8px;
+  font-weight: 500;
+}
+
+.price-amount {
+  font-size: 1.8rem;
+  font-weight: 700;
+  color: #28a745;
+  margin-bottom: 10px;
+  text-shadow: 0 1px 2px rgba(0,0,0,0.1);
+}
+
+.price-details {
+  font-size: 0.85rem;
+  color: #6c757d;
+  line-height: 1.5;
+}
+
+/* ============================================================================ */
+/* 09.7. UPLOAD MODAL SYSTEM - 파일 업로드 모달 시스템 */
+/* ============================================================================ */
+
+/* 📎 파일 업로드 및 주문 버튼 */
+.upload-order-button {
+  margin-top: 20px;
+  text-align: center;
+}
+
+.btn-upload-order {
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  color: white;
+  border: none;
+  padding: 15px 30px;
+  font-size: 1.1rem;
+  font-weight: 600;
+  border-radius: 12px;
+  cursor: pointer;
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  box-shadow: 0 6px 20px rgba(102, 126, 234, 0.3);
+  width: 100%;
+  position: relative;
+  overflow: hidden;
+  will-change: transform, box-shadow;
+}
+
+.btn-upload-order::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: -100%;
+  width: 100%;
+  height: 100%;
+  background: linear-gradient(90deg, transparent, rgba(255,255,255,0.2), transparent);
+  transition: left 0.5s;
+}
+
+.btn-upload-order:hover::before {
+  left: 100%;
+}
+
+.btn-upload-order:hover {
+  transform: translateY(-3px);
+  box-shadow: 0 10px 30px rgba(102, 126, 234, 0.4);
+}
+
+.btn-upload-order:active {
+  transform: translateY(-1px);
+}
+
+/* 📱 파일 업로드 모달 */
+.upload-modal {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  z-index: 10000;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 20px;
+}
+
+.upload-modal .modal-overlay {
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: rgba(0, 0, 0, 0.7);
+  backdrop-filter: blur(4px);
+}
+
+.upload-modal .modal-content {
+  position: relative;
+  background: white;
+  border-radius: 12px;
+  box-shadow: 0 20px 40px rgba(0, 0, 0, 0.2);
+  min-width: 1000px;
+  width: 100%;
+  max-height: 90vh;
+  overflow: hidden;
+  display: flex;
+  flex-direction: column;
+}
+
+.upload-modal .modal-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 20px 24px;
+  border-bottom: 1px solid #e9ecef;
+  background: #f8f9fa;
+}
+
+.upload-modal .modal-title {
+  font-size: 1.3rem;
+  font-weight: 600;
+  color: #28a745;
+  margin: 0;
+}
+
+.upload-modal .modal-close {
+  background: none;
+  border: none;
+  font-size: 1.5rem;
+  color: #6c757d;
+  cursor: pointer;
+  padding: 5px;
+  border-radius: 4px;
+  transition: all 0.2s ease;
+}
+
+.upload-modal .modal-close:hover {
+  background: #f8f9fa;
+  color: #dc3545;
+}
+
+.upload-modal .modal-body {
+  flex: 1;
+  padding: 24px;
+  overflow-y: auto;
+}
+
+.upload-container {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 24px;
+}
+
+.upload-left,
+.upload-right {
+  display: flex;
+  flex-direction: column;
+}
+
+.upload-label {
+  font-size: 1rem;
+  font-weight: 600;
+  color: #495057;
+  margin-bottom: 12px;
+}
+
+.upload-dropzone {
+  border: 2px dashed #28a745;
+  border-radius: 8px;
+  padding: 40px 20px;
+  text-align: center;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  background: #f8fff9;
+}
+
+.upload-dropzone:hover,
+.upload-dropzone.dragover {
+  border-color: #20c997;
+  background: #e8f5e8;
+  transform: scale(1.02);
+}
+
+.upload-icon {
+  font-size: 3rem;
+  margin-bottom: 12px;
+}
+
+.upload-text {
+  font-size: 1.1rem;
+  font-weight: 600;
+  color: #28a745;
+  margin: 0 0 8px 0;
+}
+
+.memo-textarea {
+  width: 100%;
+  height: 120px;
+  padding: 12px;
+  border: 2px solid #dee2e6;
+  border-radius: 6px;
+  font-family: inherit;
+  font-size: 0.9rem;
+  resize: vertical;
+  transition: border-color 0.3s ease;
+}
+
+.memo-textarea:focus {
+  outline: none;
+  border-color: #28a745;
+}
+
+.upload-modal .modal-footer {
+  padding: 20px 24px;
+  border-top: 1px solid #e9ecef;
+  background: #f8f9fa;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+}
+
+.modal-btn.btn-cart {
+  background: linear-gradient(135deg, #28a745 0%, #20c997 100%);
+  color: white;
+  padding: 14px 28px;
+  border: none;
+  border-radius: 8px;
+  font-size: 1.1rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  width: 100%;
+  text-align: center;
+}
+
+.modal-btn.btn-cart:hover {
+  background: linear-gradient(135deg, #218838 0%, #1ba085 100%);
+  transform: translateY(-1px);
+}
+
+/* 10. MODAL SYSTEM - 통합 모달 시스템 */
+
+/* 🪟 모달 오버레이 */
+.mlang-modal,
+.gallery-modal {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  z-index: 10000;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  backdrop-filter: blur(5px);
+  background: rgba(0, 0, 0, 0.5);
+}
+
+/* 📦 모달 컨텐츠 */
+.mlang-modal__content,
+.gallery-modal-content {
+  background: white;
+  border-radius: var(--border-radius-xl);
+  max-width: 800px;
+  width: 90%;
+  max-height: 90vh;
+  overflow: hidden;
+  box-shadow: 0 25px 50px rgba(0, 0, 0, 0.25);
+  position: relative;
+  animation: modalSlideIn 0.3s ease-out;
+}
+
+/* 📋 모달 헤더 */
+.mlang-modal__header,
+.gallery-modal-header {
+  background: rgba(204, 204, 204, 0.8);
+  color: #333;
+  padding: 15px 20px;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+/* ❌ 모달 닫기 버튼 */
+.mlang-modal__close,
+.gallery-modal-close {
+  background: none;
+  border: none;
+  color: #333;
+  font-size: 1.5rem;
+  cursor: pointer;
+  padding: 5px;
+  border-radius: var(--border-radius-full);
+  width: 35px;
+  height: 35px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: var(--transition-fast);
+}
+
+.mlang-modal__close:hover,
+.gallery-modal-close:hover {
+  background: rgba(0, 0, 0, 0.1);
+}
+
+/* 11. THEME SYSTEM - 품목별 테마 */
+
+/* 🎨 테마 적용을 위한 데이터 속성 선택자 */
+[data-theme="namecard"] {
+  --theme-primary: var(--namecard-primary);
+  --theme-secondary: var(--namecard-secondary);
+  --theme-accent: var(--namecard-accent);
+  --theme-gradient: linear-gradient(135deg, var(--namecard-primary) 0%, var(--namecard-secondary) 100%);
+}
+
+[data-theme="msticker"] {
+  --theme-primary: var(--msticker-primary);
+  --theme-secondary: var(--msticker-secondary);
+  --theme-accent: var(--msticker-accent);
+  --theme-gradient: linear-gradient(135deg, var(--msticker-primary) 0%, var(--msticker-secondary) 100%);
+}
+
+[data-theme="cadarok"] {
+  --theme-primary: var(--cadarok-primary);
+  --theme-secondary: var(--cadarok-secondary);
+  --theme-accent: var(--cadarok-accent);
+  --theme-gradient: linear-gradient(135deg, var(--cadarok-primary) 0%, var(--cadarok-secondary) 100%);
+}
+
+[data-theme="envelope"] {
+  --theme-primary: var(--envelope-primary);
+  --theme-secondary: var(--envelope-secondary);
+  --theme-accent: var(--envelope-accent);
+  --theme-gradient: linear-gradient(135deg, var(--envelope-primary) 0%, var(--envelope-secondary) 100%);
+}
+
+[data-theme="merchandisebond"] {
+  --theme-primary: var(--merchandisebond-primary);
+  --theme-secondary: var(--merchandisebond-secondary);
+  --theme-accent: var(--merchandisebond-accent);
+  --theme-gradient: linear-gradient(135deg, var(--merchandisebond-primary) 0%, var(--merchandisebond-secondary) 100%);
+}
+
+[data-theme="ncrflambeau"] {
+  --theme-primary: var(--ncrflambeau-primary);
+  --theme-secondary: var(--ncrflambeau-secondary);
+  --theme-accent: var(--ncrflambeau-accent);
+  --theme-gradient: linear-gradient(135deg, var(--ncrflambeau-primary) 0%, var(--ncrflambeau-secondary) 100%);
+}
+
+[data-theme="poster"] {
+  --theme-primary: var(--poster-primary);
+  --theme-secondary: var(--poster-secondary);
+  --theme-accent: var(--poster-accent);
+  --theme-gradient: linear-gradient(135deg, var(--poster-primary) 0%, var(--poster-secondary) 100%);
+}
+
+[data-theme="sticker"] {
+  --theme-primary: var(--sticker-primary);
+  --theme-secondary: var(--sticker-secondary);
+  --theme-accent: var(--sticker-accent);
+  --theme-gradient: linear-gradient(135deg, var(--sticker-primary) 0%, var(--sticker-secondary) 100%);
+}
+
+[data-theme="leaflet"] {
+  --theme-primary: var(--leaflet-primary);
+  --theme-secondary: var(--leaflet-secondary);
+  --theme-accent: var(--leaflet-accent);
+  --theme-gradient: linear-gradient(135deg, var(--leaflet-primary) 0%, var(--leaflet-secondary) 100%);
+}
+
+/* 🎯 테마 기반 스타일 오버라이드 */
+[data-theme] .mlang-calculator__header,
+[data-theme] .calculator-header {
+  display: none;
+}
+
+[data-theme] .mlang-btn--primary,
+[data-theme] .btn-primary {
+  background: var(--theme-gradient);
+}
+
+[data-theme] .mlang-gallery__thumbnail--active,
+[data-theme] .gallery-thumb.active img,
+[data-theme] .thumbnail-strip img.active {
+  border-color: var(--theme-primary);
+}
+
+[data-theme] .mlang-price--calculated,
+[data-theme] .price-display.calculated {
+  border-color: var(--theme-primary);
+}
+
+/* 12. RESPONSIVE DESIGN - 반응형 디자인 */
+
+/* 📱 태블릿 (768px 이하) */
+@media (max-width: 1024px) {
+  .mlang-grid--two-columns {
+    grid-template-columns: 1fr;
+    gap: var(--spacing-md);
+  }
+  
+  .mlang-calculator__options,
+  .options-grid,
+  .form-grid-compact {
+    grid-template-columns: 1fr;
+  }
+}
+
+@media (max-width: 768px) {
+  .mlang-container {
+    padding: var(--spacing-sm);
+    margin: 0 -10px;
+    border-radius: 10px;
+  }
+  
+  /* 📱 갤러리 모바일 최적화 */
+  .mlang-gallery,
+  .gallery-main,
+  .product-gallery-standard {
+    height: 400px;
+    min-height: 400px;
+    max-height: 400px;
+  }
+  
+  .mlang-gallery__viewer,
+  .lightbox-viewer {
+    height: 250px;
+  }
+  
+  .mlang-gallery__thumbnail,
+  .thumbnail-strip img {
+    height: 60px;
+  }
+  
+  /* 📱 계산기 모바일 최적화 */
+  .mlang-calculator,
+  .calculator-section {
+    height: 400px;
+    min-height: 400px;
+    max-height: 400px;
+    padding: var(--spacing-md);
+  }
+  
+  /* 📱 페이지 타이틀 모바일 */
+  .page-title,
+  .page-title-common,
+  [class*="title"]:not(.gallery-title):not(.calculator-title):not(.price-title) {
+    padding: 20px 0;
+    margin-bottom: 20px;
+    border-radius: 10px;
+  }
+  
+  .page-title h1,
+  .page-title-common h1 {
+    font-size: var(--font-size-2xl);
+  }
+  
+  .page-title p,
+  .page-title-common p {
+    font-size: var(--font-size-base);
+  }
+}
+
+/* 📲 모바일 (480px 이하) */
+@media (max-width: 480px) {
+  .mlang-container {
+    padding: var(--spacing-xs);
+    border-radius: 8px;
+  }
+  
+  .mlang-gallery__viewer,
+  .lightbox-viewer {
+    height: 200px;
+    border-radius: 8px;
+  }
+  
+  .mlang-gallery__thumbnail,
+  .thumbnail-strip img {
+    height: 50px;
+    border-radius: 4px;
+  }
+  
+  .page-title h1,
+  .page-title-common h1 {
+    font-size: var(--font-size-xl);
+  }
+  
+  .page-title p,
+  .page-title-common p {
+    font-size: var(--font-size-sm);
+  }
+}
+
+/* 13. ANIMATIONS - 애니메이션 */
+
+@keyframes modalSlideIn {
+  from {
+    opacity: 0;
+    transform: scale(0.9) translateY(-20px);
+  }
+  to {
+    opacity: 1;
+    transform: scale(1) translateY(0);
+  }
+}
+
+@keyframes fadeInUp {
+  from {
+    opacity: 0;
+    transform: translateY(20px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@keyframes pulse {
+  0%, 100% { opacity: 1; }
+  50% { opacity: 0.6; }
+}
+
+/* 14. ACCESSIBILITY - 접근성 */
+
+/* 🦽 접근성 지원 */
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms;
+    animation-iteration-count: 1;
+    transition-duration: 0.01ms;
+  }
+}
+
+/* 🎯 포커스 표시 개선 */
+*:focus {
+  outline: 2px solid var(--color-primary);
+  outline-offset: 2px;
+}
+
+/* 15. PERFORMANCE OPTIMIZATIONS - 성능 최적화 */
+
+/* 🚀 GPU 가속 */
+.mlang-gallery__viewer,
+.mlang-gallery__thumbnail,
+.mlang-btn,
+.mlang-modal__content {
+  transform: translateZ(0);
+  backface-visibility: hidden;
+  will-change: transform;
+}
+
+/* 16. UTILITIES - 유틸리티 클래스 */
+
+/* 🔧 간격 유틸리티 */
+.mlang-mt-0 { margin-top: 0; }
+.mlang-mt-1 { margin-top: var(--spacing-xs); }
+.mlang-mt-2 { margin-top: var(--spacing-sm); }
+.mlang-mt-3 { margin-top: var(--spacing-md); }
+.mlang-mt-4 { margin-top: var(--spacing-lg); }
+.mlang-mt-5 { margin-top: var(--spacing-xl); }
+
+.mlang-mb-0 { margin-bottom: 0; }
+.mlang-mb-1 { margin-bottom: var(--spacing-xs); }
+.mlang-mb-2 { margin-bottom: var(--spacing-sm); }
+.mlang-mb-3 { margin-bottom: var(--spacing-md); }
+.mlang-mb-4 { margin-bottom: var(--spacing-lg); }
+.mlang-mb-5 { margin-bottom: var(--spacing-xl); }
+
+/* 📝 텍스트 유틸리티 */
+.mlang-text-center { text-align: center; }
+.mlang-text-left { text-align: left; }
+.mlang-text-right { text-align: right; }
+
+.mlang-text-primary { color: var(--color-primary); }
+.mlang-text-success { color: var(--color-success); }
+.mlang-text-warning { color: var(--color-warning); }
+.mlang-text-danger { color: var(--color-danger); }
+
+/* 🎨 배경 유틸리티 */
+.mlang-bg-primary { background-color: var(--color-primary); }
+.mlang-bg-success { background-color: var(--color-success); }
+.mlang-bg-warning { background-color: var(--color-warning); }
+.mlang-bg-danger { background-color: var(--color-danger); }
+
+/* 👁️ 표시/숨김 유틸리티 */
+.mlang-hidden { display: none; }
+.mlang-visible { display: block; }
+
+/* 17. DEBUG & DEVELOPMENT - 디버그 및 개발용 */
+
+/* 🔧 디버그 클래스 - 개발 시에만 사용 */
+.mlang-debug {
+  border: 2px solid red;
+  background: rgba(255, 0, 0, 0.1);
+}
+
+.mlang-debug-grid {
+  background-image: 
+    linear-gradient(rgba(255, 0, 0, 0.1) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(255, 0, 0, 0.1) 1px, transparent 1px);
+  background-size: 20px 20px;
+}
+
+/* ✅ 성공적으로 로드됨을 표시하는 마커 */
+.mlang-design-system-loaded::after {
+  content: "✅ MlangPrintAuto Design System Loaded";
+  position: fixed;
+  bottom: 10px;
+  right: 10px;
+  background: var(--color-success);
+  color: white;
+  padding: 4px 8px;
+  font-size: 10px;
+  border-radius: 4px;
+  z-index: 9999;
+  opacity: 0.8;
+  display: none; /* 필요시 display: block으로 변경 */
+}
+
+/* ============================================================================ */
+/* 18. RESPONSIVE DESIGN - 전단지 스타일 반응형 디자인 */
+/* ============================================================================ */
+
+@media (max-width: 1024px) {
+    .leaflet-grid,
+    .namecard-grid,
+    .msticker-grid,
+    .cadarok-grid,
+    .envelope-grid,
+    .merchandisebond-grid,
+    .ncrflambeau-grid,
+    .poster-grid,
+    .sticker-grid,
+    [class$="-grid"] {
+        grid-template-columns: 1fr;
+        gap: 25px;
+        max-width: 100%;
+    }
+    
+    .options-grid,
+    .form-grid-compact {
+        grid-template-columns: 1fr;
+        gap: 12px;
+    }
+}
+
+@media (max-width: 768px) {
+    .leaflet-card,
+    .namecard-card,
+    .msticker-card,
+    .cadarok-card,
+    .envelope-card,
+    .merchandisebond-card,
+    .ncrflambeau-card,
+    .poster-card,
+    .sticker-card,
+    [class$="-card"] {
+        padding: 15px;
+        border-radius: 10px;
+    }
+    
+    .leaflet-gallery,
+    .namecard-gallery,
+    .msticker-gallery,
+    .cadarok-gallery,
+    .envelope-gallery,
+    .merchandisebond-gallery,
+    .ncrflambeau-gallery,
+    .poster-gallery,
+    .sticker-gallery,
+    [class$="-gallery"],
+    .calculator-section {
+        padding: 20px;
+        border-radius: 10px;
+    }
+    
+    .price-amount {
+        font-size: 1.6rem;
+    }
+    
+    .upload-container {
+        grid-template-columns: 1fr;
+        gap: 16px;
+    }
+    
+    .modal-content {
+        margin: 10px;
+        max-width: calc(100vw - 20px);
+    }
+    
+    .modal-footer {
+        flex-direction: column;
+        gap: 16px;
+        align-items: stretch;
+    }
+}
+
+@media (max-width: 480px) {
+    .leaflet-grid,
+    [class$="-grid"] {
+        gap: 20px;
+    }
+    
+    .options-grid,
+    .form-grid-compact {
+        gap: 10px;
+    }
+    
+    .option-select {
+        padding: 10px 12px;
+        font-size: 0.85rem;
+    }
+    
+    .price-display {
+        padding: 15px;
+    }
+    
+    .btn-upload-order {
+        padding: 12px 20px;
+        font-size: 1rem;
+    }
+}
+
+/* ===================================================================== */
+/* 🎨 제품별 차별화 테마 시스템 */
+/* 각 제품의 고유한 브랜딩과 사용자 경험을 위한 맞춤 스타일 */
+/* ===================================================================== */
+
+/* 📇 명함 페이지 - 프리미엄 & 전문성 강조 */
+body.namecard-page .page-title {
+    background: linear-gradient(135deg, var(--namecard-title-bg-start) 0%, var(--namecard-title-bg-end) 100%);
+    color: var(--namecard-title-text);
+    border-left: 4px solid var(--namecard-primary);
+}
+
+body.namecard-page .page-title h1 {
+    color: var(--namecard-title-text);
+}
+
+body.namecard-page .btn-upload-order,
+body.namecard-page .modal-btn {
+    background: linear-gradient(135deg, var(--namecard-primary) 0%, var(--namecard-secondary) 100%);
+}
+
+body.namecard-page .price-display {
+    border-left: 3px solid var(--namecard-accent);
+}
+
+/* 🧲 자석스티커 페이지 - 실용성 & 강력함 강조 */
+body.msticker-page .page-title {
+    background: linear-gradient(135deg, var(--msticker-title-bg-start) 0%, var(--msticker-title-bg-end) 100%);
+    color: var(--msticker-title-text);
+    border-left: 4px solid var(--msticker-primary);
+}
+
+body.msticker-page .page-title h1 {
+    color: var(--msticker-title-text);
+}
+
+body.msticker-page .btn-upload-order,
+body.msticker-page .modal-btn {
+    background: linear-gradient(135deg, var(--msticker-primary) 0%, var(--msticker-secondary) 100%);
+}
+
+body.msticker-page .price-display {
+    border-left: 3px solid var(--msticker-accent);
+}
+
+/* 📖 카다록 페이지 - 품격 & 전문성 강조 */
+body.cadarok-page .page-title {
+    background: linear-gradient(135deg, var(--cadarok-title-bg-start) 0%, var(--cadarok-title-bg-end) 100%);
+    color: var(--cadarok-title-text);
+    border-left: 4px solid var(--cadarok-primary);
+}
+
+body.cadarok-page .page-title h1 {
+    color: var(--cadarok-title-text);
+}
+
+body.cadarok-page .btn-upload-order,
+body.cadarok-page .modal-btn {
+    background: linear-gradient(135deg, var(--cadarok-primary) 0%, var(--cadarok-secondary) 100%);
+}
+
+body.cadarok-page .price-display {
+    border-left: 3px solid var(--cadarok-accent);
+}
+
+/* ✉️ 봉투 페이지 - 신뢰성 & 안정감 강조 */
+body.envelope-page .page-title {
+    background: linear-gradient(135deg, var(--envelope-title-bg-start) 0%, var(--envelope-title-bg-end) 100%);
+    color: var(--envelope-title-text);
+    border-left: 4px solid var(--envelope-primary);
+}
+
+body.envelope-page .page-title h1 {
+    color: var(--envelope-title-text);
+}
+
+body.envelope-page .btn-upload-order,
+body.envelope-page .modal-btn {
+    background: linear-gradient(135deg, var(--envelope-primary) 0%, var(--envelope-secondary) 100%);
+}
+
+body.envelope-page .price-display {
+    border-left: 3px solid var(--envelope-accent);
+}
+
+/* 🏷️ 스티커 페이지 - 창의성 & 다양성 강조 */
+body.sticker-page .page-title {
+    background: linear-gradient(135deg, var(--sticker-title-bg-start) 0%, var(--sticker-title-bg-end) 100%);
+    color: var(--sticker-title-text);
+    border-left: 4px solid #e53e3e;
+}
+
+body.sticker-page .page-title h1 {
+    color: var(--sticker-title-text);
+}
+
+body.sticker-page .btn-upload-order,
+body.sticker-page .modal-btn {
+    background: linear-gradient(135deg, #e53e3e 0%, #c53030 100%);
+}
+
+body.sticker-page .price-display {
+    border-left: 3px solid #f56565;
+}
+
+/* 📄 전단지 페이지 - 기본 스타일 유지 (실용성 & 합리성) */
+body.leaflet-page .page-title {
+    background: linear-gradient(135deg, var(--page-title-bg-start) 0%, var(--page-title-bg-end) 100%);
+    color: var(--page-title-text);
+    /* 전단지는 차별화 없이 기본 스타일 유지 */
+}
+
+/* 🎨 공통 제품별 차별화 요소 */
+[class*="-page"] .leaflet-card {
+    transition: all 0.3s ease;
+}
+
+[class*="-page"] .page-title::before {
+    animation-duration: 4s; /* 제품별로 다른 애니메이션 속도 */
+}
+
+/* 🏆 프리미엄 페이지들 (명함, 카다록) 추가 스타일링 */
+body.namecard-page .leaflet-card,
+body.cadarok-page .leaflet-card {
+    box-shadow: 0 15px 50px rgba(0,0,0,0.12);
+    border-top: 2px solid transparent;
+    border-image: linear-gradient(90deg, #667eea, #764ba2) 1;
+}
+
+/* 🎉 통합 시스템 + 차별화 완성! */
+/* 이제 모든 품목이 하나의 CSS로 통합 관리되면서도 각각의 고유한 브랜딩을 가집니다 */
+/* 변경사항은 이 파일 하나만 수정하면 모든 페이지에 자동 적용됩니다 */

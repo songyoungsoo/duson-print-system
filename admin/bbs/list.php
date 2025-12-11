@@ -1,0 +1,328 @@
+<?php
+declare(strict_types=1);
+
+
+// ⚠️  XSS 보호 권장: echo 시 htmlspecialchars() 사용을 고려하세요
+// ✅ PHP 7.4 호환: 입력 변수 초기화
+$mode = $_GET['mode'] ?? $_POST['mode'] ?? '';
+$no = $_GET['no'] ?? $_POST['no'] ?? '';
+$search = $_GET['search'] ?? $_POST['search'] ?? '';
+$id = $_GET['id'] ?? $_POST['id'] ?? '';
+$name = $_GET['name'] ?? $_POST['name'] ?? '';
+$code = $_GET['code'] ?? $_POST['code'] ?? '';
+$page = $_GET['page'] ?? $_POST['page'] ?? '';
+$offset = $_GET["offset"] ?? $_POST["offset"] ?? 0;
+
+// ✅ 게시판 테이블명 설정
+$table = "mlang_bbs";
+$bbs_cate = "bbs_title"; // 검색 필드
+
+// 게시판의 필드들.... Mlang_${table}_bbs //////////////////////////////////////////////////////////////////////////////////////
+//Mlang_bbs_no mediumint(12) unsigned NOT NULL auto_increment, // 게시글 번호
+//Mlang_bbs_member varchar(100) NOT NULL default '',                     // 등록인
+//Mlang_bbs_title text,                                                                          // 제목
+//Mlang_bbs_style varchar(100) NOT NULL default 'br',                       // 문서형식
+//Mlang_bbs_connent text,                                                                  // 내용
+//Mlang_bbs_link text,                                                                          // 링크 파일
+//Mlang_bbs_file text,                                                                           // 업로드 파일
+//Mlang_bbs_pass varchar(100) NOT NULL default '',                          // 비밀번호
+//Mlang_bbs_count int(12) NOT NULL default '0',                                  // 카운터
+//Mlang_bbs_rec int(12) NOT NULL default '0',                                     // 추천                        
+//Mlang_bbs_secret varchar(100) NOT NULL default 'yes',                  // 글의 공개, 비공개
+//Mlang_bbs_reply int(12) NOT NULL default '0',                                  // 몇번글인가 (답변글일경우) 의 여부 0 은 본글을의미           
+//Mlang_date date NOT NULL default '0000-00-00',                              // 등록날짜
+////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+
+
+// 게시판 관리 필드들. mlang_bbs_admin ////////////////////////////////////////////////////////////////////////////////////
+//  no       : 게시판 번호
+//  title      : 게시판 제목
+//  id        : 게시판 ID
+//  pass    : 게시판 비밀번호
+//  header  : 윗 html 내용
+//  footer   : 아래 html 내용
+//  header_include  : 윗 INCLUDE 파일
+//  footer_include   : 아래 INCLUDE 파일    
+//  file_select  : 파일을 받을 건가의 선택여부
+//  link_select  : 링크을 할 건가의 선택여부
+//  recnum : 한페이지당 출력수
+//  lnum    : 페이지이동 메뉴수
+//  cutlen  :  제목글자수 끊기
+//  New_Article   : 새글표시 유지기간
+//  date_select    : 등록일 출력여부
+//  name_select   : 이름 출력여부
+//  count_select   : 조회수 출력여부
+//  recommendation_select   : 추천수 출력여부
+//  secret_select   : 공개 비공개 출력여부
+//  write_select     : 쓰기 권한 - member(회원들), guest(아무나), admin(관리자만)
+//  date : 게시판을 만든날짜
+//////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+?>
+
+<head>
+<script language=javascript>
+
+var NUM = "0123456789"; 
+var SALPHA = "abcdefghijklmnopqrstuvwxyz";
+var ALPHA = "ABCDEFGHIJKLMNOPQRSTUVWXYZ"+SALPHA;
+
+////////////////////////////////////////////////////////////////////////////////
+function TypeCheck (s, spc) {
+var i;
+
+for(i=0; i< s.length; i++) {
+if (spc.indexOf(s.substring(i, i+1)) < 0) {
+return false;
+}
+}        
+return true;
+}
+
+/////////////////////////////////////////////////////////////////////////////////
+
+function BbsAdminCheckField()
+{
+var f=document.BbsAdmin;
+
+if (f.skin.value == "0") {
+alert("생성할 게시판의 SKIN을 선택 하여주세요...?");
+return false;
+}
+
+if (f.title.value == "") {
+alert("생성할 게시판의 타이틀(제목)을 입력하여주세요...?");
+return false;
+}
+
+if (f.table.value == "") {
+alert("생성할 게시판의 테이블명(영문/숫자)을 입력하여주세요...?");
+return false;
+}
+if (!TypeCheck(f.table.value, ALPHA+NUM)) {
+alert("생성할 게시판의 테이블명은 영문자 및 숫자로만 사용할 수 있습니다.");
+return false;
+}
+if ((f.table.value.length < 2) || (f.table.value.length > 20)) {
+alert("생성할 게시판의 테이블명은 2자 이상 20자 이하로 해주셔야 합니다.");
+return false;
+}
+
+if (f.pass.value == "") {
+alert("생성할 게시판의 비밀번호를 입력하여주세요...?");
+return false;
+}
+if (!TypeCheck(f.pass.value, ALPHA+NUM)) {
+alert("생성할 게시판의 비밀번호은 영문자 및 숫자로만 사용할 수 있습니다.");
+return false;
+}
+if ((f.pass.value.length < 4) || (f.pass.value.length > 20)) {
+alert("생성할 게시판의 비밀번호은 4자 이상 20자 이하로 해주셔야 합니다.");
+return false;
+}
+
+}
+
+///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+
+function clearField(field)
+{
+	if (field.value == field.defaultValue) {
+		field.value = "";
+	}
+}
+function checkField(field)
+{
+	if (!field.value) {
+		field.value = field.defaultValue;
+	}
+}
+///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+function BBS_Admin_Del(id){
+	var str;
+	if (confirm("게시판 자료를 삭제 하시겠습니까..?\n\n게시판의 관련자료들(업로드파일,DATA 등..)이 전부 삭제됩니다.\n\n한번 삭제한 자료는 복구 되지 않으니 신중을 기해주세요.............!!")) {
+		str='./bbs/delete.php?id='+id+'';
+		location.href=str;
+	}
+}
+//////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+function BbsAdminSearchCheckField()
+{
+var f=document.BbsAdminSearch;
+
+if (f.search.value == "") {
+alert("검색할 게시판의 제목이나 테이블명을 입력해주세요...!!");
+return false;
+}
+
+}
+////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+</script>
+</head>
+
+<table border=0 align=center width=100% cellpadding='8' cellspacing='3' class='coolBar'>
+<tr>
+<td align=left colspan=2>
+<font color=red>*</font> 게시판 비밀번호는 그 게시판에 대한 권환을 가지며 Admin 관리 비밀번호는 모든게시판의 권한을 가집니다.<BR>
+<font color=red>*</font> 게시판과 관리자의 비밀번호를 자주 변경해 주셔야 함을 필히 명심해 주시기 바랍니다.
+</td>
+</tr>
+<tr>
+<form name='BbsAdmin' method='post' OnSubmit='javascript:return BbsAdminCheckField()' action='<?=$PHP_SELF?>'>
+<input type='hidden' name='mode' value='submit'>
+<td align=left>
+<?$BbsAdminCateUrl=".."; include"./bbs/BbsAdminCate.php";?>
+<INPUT TYPE='TEXT' SIZE=20 maxLength='100' NAME='title' VALUE="게시판타이틀(제목)" onBlur="checkField(this);" onFocus="clearField(this);">
+<INPUT TYPE='TEXT' SIZE=20 maxLength='20' NAME='table' VALUE="테이블명(영문/숫자)" onBlur="checkField(this);" onFocus="clearField(this);">
+<INPUT TYPE='TEXT' SIZE=14 maxLength='20' NAME='pass' VALUE="게시판비밀번호" onBlur="checkField(this);" onFocus="clearField(this);">
+<INPUT TYPE=SUBMIT VALUE='새게시판 생성'>
+</td>
+</form>
+
+<form name='BbsAdminSearch' method='post' OnSubmit='javascript:return BbsAdminSearchCheckField()' action='<?=$PHP_SELF?>'>
+<input type='hidden' name='mode' value='list'>
+<td align=right>
+<select name='bbs_cate'>
+<option value='title'>타이틀(제목)</title>
+<option value='id'>테이블명</title>
+<INPUT TYPE='TEXT' SIZE=18 NAME='search' onBlur="checkField(this);" onFocus="clearField(this);">
+<INPUT TYPE=SUBMIT VALUE='검색'>
+</td>
+</form>
+</tr>
+</table>
+
+
+
+<!------------------------------------------- 리스트 시작----------------------------------------->
+<?php 
+include"../db.php";
+$table="mlang_bbs_admin";
+
+if($search){ //검색모드일때
+$Mlang_query="select * from $table where $bbs_cate like '%$search%'";}else{ // 일반모드 일때
+$Mlang_query="select * from $table";
+}
+
+$query= mysqli_query($db, "$Mlang_query");
+if (!$query) {
+    die("쿼리 실패: " . mysqli_error($db) . "<br>쿼리: " . $Mlang_query);
+}
+
+$recordsu= mysqli_num_rows($query);
+$total = $recordsu; // SELECT 쿼리는 num_rows 사용
+
+$listcut= 15;  //한 페이지당 보여줄 목록 게시물수. 
+if(!$offset) $offset=0; 
+
+$result= mysqli_query($db, "$Mlang_query order by NO desc limit $offset,$listcut");
+$rows=mysqli_num_rows($result);
+if($rows){
+
+echo("
+<table border=0 align=center width=100% cellpadding='5' cellspacing='2' class='coolBar'>
+<tr>
+<td align=center width=25%>게시판 제목</td>
+<td align=center width=12%>SKIN</td>
+<td align=center width=21%>테이블명</td>
+<td align=center width=10%>비밀번호</td>
+<td align=center width=10%>생성일</td>
+<td align=center width=10%>자료수</td>
+<td align=center width=17%>관리기능</td>		
+</tr>
+");
+
+$i=1+$offset;
+while($row= mysqli_fetch_array($result)) 
+{ 
+
+if ($search) //검색 키워드값
+{$row[title] = str_replace($search, "<b><FONT COLOR=blue>$search</FONT></b>", $row[title]);}
+if ($search) //검색 키워드값
+{$row[id] = str_replace($search, "<b><FONT COLOR=RED>$search</FONT></b>", $row[id]);}
+
+echo("
+<tr bgcolor='#575757'>
+<td>&nbsp;<a href='$Homedir/bbs/bbs.php?table=$row[id]&mode=list' target='_blank'><font color=white>$row[title]</font></a></td>
+<td>&nbsp;<font color=white>$row[skin]</font></td>	
+<td>&nbsp;<font color=white>$row[id]</font></td>	
+<td>&nbsp;<font color=white>$row[pass]</font></td>	
+<td align=center><font color=white>$row[date]</font></td>");
+
+echo("<td align=center>");
+
+
+$total_query=mysqli_query($db, "select * from Mlang_$row[id]_bbs");
+$total_bbs = $total_query ? mysqli_num_rows($total_query) : 0;
+
+echo("<font color=#CCFFFF>$total_bbs</font></td>");
+
+echo("<td align=center>");
+
+echo("<input type='button' onClick=\"javascript:popup=window.open('./bbs/AdminModify.php?code=start&no=$row[no]', 'bbs_modisy','width=650,height=600,top=0,left=0,menubar=no,resizable=yes,statusbar=no,scrollbars=yes,toolbar=no'); popup.focus();\" value='설정' style='width:40; height:20;'>");
+echo("<input type='button' onClick=\"javascript:BBS_Admin_Del('$row[id]');\" value='삭제' style='width:40; height:20;'>");
+echo("<input type='button' onClick=\"javascript:window.open('./bbs/dump.php?TableName=Mlang_$row[id]_bbs', 'bbs_dump','width=567,height=451,top=50,left=50,menubar=no,resizable=yes,statusbar=no,scrollbars=yes,toolbar=no');\" value='빽업' style='width:40; height:20;'>");
+
+echo("</td></tr>");
+
+		$i=$i+1;
+} 
+
+echo("</table>");
+
+}else{
+
+if($search){ echo"<p align=center><b>$search 에 대한 게시판 없음</b></p>";
+}else{ echo"<p align=center><b>생성된 게시판이 없습니다..</b></p>"; }
+
+}
+
+?>
+
+<p align='center'>
+
+<?php 
+if($rows){
+
+$mlang_pagego="mode=list&bbs_cate=$bbs_cate&search=$search"; // 필드속성들 전달값
+
+$pagecut= 10;  //한 장당 보여줄 페이지수 
+$one_bbs= $listcut*$pagecut;  //한 장당 실을 수 있는 목록(게시물)수 
+$start_offset= intval($offset/$one_bbs)*$one_bbs;  //각 장에 처음 페이지의 $offset값. 
+$end_offset= intval($recordsu/$one_bbs)*$one_bbs;  //마지막 장의 첫페이지의 $offset값. 
+$start_page= intval($start_offset/$listcut)+1; //각 장에 처음 페이지의 값. 
+$end_page= ($recordsu%$listcut>0)? intval($recordsu/$listcut)+1: intval($recordsu/$listcut); 
+//마지막 장의 끝 페이지. 
+if($start_offset!= 0) 
+{ 
+  $apoffset= $start_offset- $one_bbs; 
+  echo "<a href='$PHP_SELF?offset=$apoffset&$mlang_pagego'>...[이전]</a>&nbsp;"; 
+} 
+
+for($i= $start_page; $i< $start_page+$pagecut; $i++) 
+{ 
+$newoffset= ($i-1)*$listcut; 
+
+if($offset!= $newoffset) 
+  echo "&nbsp;<a href='$PHP_SELF?offset=$newoffset&$mlang_pagego'>"; 
+echo "[$i]"; 
+if($offset!= $newoffset) 
+  echo "</a>&nbsp;"; 
+
+if($i==$end_page) break; 
+} 
+
+if($start_offset!= $end_offset) 
+{ 
+  $nextoffset= $start_offset+ $one_bbs; 
+  echo "&nbsp;<a href='$PHP_SELF?offset=$nextoffset&$mlang_pagego'>[다음]...</a>"; 
+} 
+echo "총목록갯수: $end_page 개"; 
+
+
+}
+
+mysqli_close($db); 
+?> 
+
+</p>
+<!------------------------------------------- 리스트 끝----------------------------------------->

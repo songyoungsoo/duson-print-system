@@ -1,0 +1,326 @@
+/* =================================================================== */
+/* 공통 파일 업로드 모달 스타일 - Clean Version (No !important) */
+/* CSS 우선순위를 제대로 설계한 버전 */
+/* @version 3.0 - 2025-10-14 Clean 버전 */
+/* =================================================================== */
+
+/* 1. 모달 기본 구조 - 높은 특이성으로 우선순위 확보 */
+body .upload-modal.upload-modal {
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    z-index: 10000;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 20px;
+}
+
+body .upload-modal .modal-overlay {
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background: rgba(0, 0, 0, 0.7);
+    backdrop-filter: blur(4px);
+}
+
+/* 2. 모달 콘텐츠 - 더 높은 특이성 */
+body .upload-modal .modal-content.modal-content {
+    position: relative;
+    background: white;
+    border-radius: 12px;
+    box-shadow: 0 20px 40px rgba(0, 0, 0, 0.2);
+    
+    /* 크기 설정 */
+    width: auto;
+    max-width: min(1000px, 90vw);
+    min-width: min(800px, 80vw);
+    max-height: 90vh;
+    
+    /* 박스 모델 */
+    box-sizing: border-box;
+    overflow: hidden;
+    
+    /* 레이아웃 */
+    display: flex;
+    flex-direction: column;
+}
+
+/* 3. 모달 헤더 */
+body .upload-modal .modal-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 20px 24px;
+    border-bottom: 1px solid #e9ecef;
+    background: #f8f9fa;
+    flex-shrink: 0;
+}
+
+body .upload-modal .modal-title {
+    font-size: 1.3rem;
+    font-weight: 600;
+    color: #28a745;
+    margin: 0;
+}
+
+body .upload-modal .modal-close {
+    background: none;
+    border: none;
+    font-size: 1.5rem;
+    color: #6c757d;
+    cursor: pointer;
+    padding: 5px;
+    border-radius: 4px;
+    transition: all 0.2s ease;
+}
+
+body .upload-modal .modal-close:hover {
+    background: #f8f9fa;
+    color: #dc3545;
+}
+
+/* 4. 모달 바디 */
+body .upload-modal .modal-body {
+    flex: 1;
+    padding: 24px;
+    overflow-y: auto;
+    overflow-x: hidden;
+    box-sizing: border-box;
+}
+
+/* 5. 업로드 컨테이너 - 핵심 레이아웃 */
+body .upload-modal .upload-container {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 24px;
+    width: 100%;
+    box-sizing: border-box;
+}
+
+body .upload-modal .upload-left,
+body .upload-modal .upload-right {
+    display: flex;
+    flex-direction: column;
+    min-width: 0; /* 그리드 오버플로우 방지 */
+    box-sizing: border-box;
+}
+
+/* 6. 업로드 영역 */
+body .upload-modal .upload-label {
+    font-size: 1rem;
+    font-weight: 600;
+    color: #495057;
+    margin-bottom: 12px;
+}
+
+body .upload-modal .upload-dropzone {
+    border: 2px dashed #28a745;
+    border-radius: 8px;
+    padding: 40px 20px;
+    text-align: center;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    background: #f8fff9;
+    box-sizing: border-box;
+}
+
+body .upload-modal .upload-dropzone:hover {
+    border-color: #20c997;
+    background: #e8f5e8;
+}
+
+body .upload-modal .upload-dropzone.dragover {
+    border-color: #20c997;
+    background: #e8f5e8;
+    transform: scale(1.02);
+}
+
+body .upload-modal .upload-icon {
+    font-size: 3rem;
+    margin-bottom: 12px;
+}
+
+body .upload-modal .upload-dropzone p {
+    font-size: 1.1rem;
+    font-weight: 600;
+    color: #28a745;
+    margin: 0 0 8px 0;
+}
+
+body .upload-modal .upload-formats {
+    font-size: 0.9rem;
+    color: #6c757d;
+}
+
+/* 7. 파일 목록 */
+body .upload-modal .file-list {
+    margin-top: 16px;
+}
+
+body .upload-modal .file-item {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 12px;
+    background: #f8f9fa;
+    border-radius: 6px;
+    margin-bottom: 8px;
+    box-sizing: border-box;
+}
+
+body .upload-modal .file-name {
+    font-weight: 500;
+    color: #495057;
+}
+
+body .upload-modal .file-size {
+    font-size: 0.85rem;
+    color: #6c757d;
+}
+
+body .upload-modal .file-remove {
+    background: #dc3545;
+    color: white;
+    border: none;
+    border-radius: 4px;
+    padding: 4px 8px;
+    cursor: pointer;
+    font-size: 0.8rem;
+}
+
+/* 8. 작업메모 textarea - 스크롤 방지 핵심 */
+body .upload-modal .upload-right textarea {
+    flex: 1;
+    width: 100%;
+    max-width: 100%;
+    padding: 12px;
+    border: 2px solid #e9ecef;
+    border-radius: 8px;
+    font-size: 0.95rem;
+    font-family: inherit;
+    resize: vertical;
+    min-height: 200px;
+    transition: border-color 0.3s ease;
+    
+    /* 스크롤 방지 */
+    box-sizing: border-box;
+    overflow-x: hidden;
+    word-wrap: break-word;
+    white-space: pre-wrap;
+}
+
+body .upload-modal .upload-right textarea:focus {
+    outline: none;
+    border-color: #28a745;
+}
+
+/* 9. 모달 푸터 */
+body .upload-modal .modal-footer {
+    padding: 20px 24px;
+    border-top: 1px solid #e9ecef;
+    background: #f8f9fa;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    flex-shrink: 0;
+}
+
+body .upload-modal .order-info {
+    display: flex;
+    align-items: center;
+    gap: 16px;
+}
+
+body .upload-modal .order-summary {
+    font-size: 1.1rem;
+    font-weight: 600;
+    color: #495057;
+}
+
+body .upload-modal .price-highlight {
+    color: #28a745;
+    font-size: 1.3rem;
+}
+
+body .upload-modal .modal-buttons {
+    display: flex;
+    gap: 12px;
+}
+
+body .upload-modal .btn-modal-cancel,
+body .upload-modal .btn-modal-order {
+    padding: 12px 24px;
+    border: none;
+    border-radius: 6px;
+    font-size: 1rem;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.3s ease;
+}
+
+body .upload-modal .btn-modal-cancel {
+    background: #6c757d;
+    color: white;
+}
+
+body .upload-modal .btn-modal-cancel:hover {
+    background: #5a6268;
+}
+
+body .upload-modal .btn-modal-order {
+    background: linear-gradient(135deg, #28a745 0%, #20c997 100%);
+    color: white;
+}
+
+body .upload-modal .btn-modal-order:hover {
+    background: linear-gradient(135deg, #218838 0%, #1ba085 100%);
+}
+
+/* 10. 반응형 디자인 */
+@media (max-width: 900px) {
+    body .upload-modal .modal-content.modal-content {
+        min-width: min(600px, 95vw);
+    }
+    
+    body .upload-modal .upload-container {
+        grid-template-columns: 1fr;
+        gap: 16px;
+    }
+    
+    body .upload-modal .upload-right textarea {
+        min-height: 150px;
+    }
+}
+
+@media (max-width: 700px) {
+    body .upload-modal .modal-content.modal-content {
+        min-width: auto;
+        max-width: 98vw;
+        margin: 10px;
+    }
+    
+    body .upload-modal .modal-header,
+    body .upload-modal .modal-body,
+    body .upload-modal .modal-footer {
+        padding: 16px;
+    }
+}
+
+@media (max-width: 500px) {
+    body .upload-modal .modal-content.modal-content {
+        max-width: 100vw;
+        margin: 5px;
+        border-radius: 8px;
+    }
+    
+    body .upload-modal .modal-header,
+    body .upload-modal .modal-body,
+    body .upload-modal .modal-footer {
+        padding: 12px;
+    }
+}
