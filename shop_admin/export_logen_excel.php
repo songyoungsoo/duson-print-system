@@ -186,21 +186,22 @@ while ($data = mysqli_fetch_array($result)) {
     if (!empty($type1_raw) && substr(trim($type1_raw), 0, 1) === '{') {
         $json_data = json_decode($type1_raw, true);
         if ($json_data && isset($json_data['formatted_display'])) {
-            $type_1_display = $json_data['formatted_display'];
+            // 줄바꿈 제거하고 공백으로 변경 (한 줄 표시)
+            $type_1_display = str_replace(array("\r\n", "\r", "\n"), ' ', $json_data['formatted_display']);
         }
     }
 ?>
 <tr>
     <td class="data"><?php echo htmlspecialchars($data['name'] ?? ''); ?></td>
-    <td class="data"><?php echo htmlspecialchars($zip); ?></td>
+    <td class="data" style="mso-number-format:'\@';"><?php echo htmlspecialchars($zip); ?></td>
     <td class="data"><?php echo htmlspecialchars($full_address); ?></td>
-    <td class="data"><?php echo htmlspecialchars($data['phone'] ?? ''); ?></td>
-    <td class="data"><?php echo htmlspecialchars($data['Hendphone'] ?? ''); ?></td>
+    <td class="data" style="mso-number-format:'\@';"><?php echo htmlspecialchars($data['phone'] ?? ''); ?></td>
+    <td class="data" style="mso-number-format:'\@';"><?php echo htmlspecialchars($data['Hendphone'] ?? ''); ?></td>
     <td class="data center"><?php echo $r; ?></td>
     <td class="data center"><?php echo $w; ?></td>
     <td class="data center"><?php echo htmlspecialchars($fee_type); ?></td>
-    <td class="data"><?php echo nl2br(htmlspecialchars($type_1_display)); ?></td>
-    <td class="data">&nbsp;</td>
+    <td class="data"><?php echo htmlspecialchars($type_1_display); ?></td>
+    <td class="data"><?php echo htmlspecialchars($data['no'] ?? ''); ?></td>
     <td class="data"><?php echo htmlspecialchars($data['Type'] ?? ''); ?></td>
 </tr>
 <?php } ?>

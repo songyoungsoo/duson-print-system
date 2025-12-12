@@ -117,6 +117,18 @@ if ($action === 'import_waybill' && isset($_FILES['waybill_file'])) {
     $file = $_FILES['waybill_file'];
 
     if ($file['error'] === UPLOAD_ERR_OK) {
+        // 파일 확장자 확인
+        $file_ext = strtolower(pathinfo($file['name'], PATHINFO_EXTENSION));
+
+        // .xlsx 파일은 지원하지 않음
+        if ($file_ext === 'xlsx' || $file_ext === 'xls') {
+            $error = "<b>엑셀 파일(.xlsx, .xls)은 직접 업로드할 수 없습니다.</b><br><br>" .
+                     "아래 방법으로 변환 후 업로드해주세요:<br>" .
+                     "1. 엑셀 파일 열기<br>" .
+                     "2. <b>'다른 이름으로 저장'</b> 클릭<br>" .
+                     "3. 파일 형식: <b>'텍스트(탭으로 분리)(*.txt)'</b> 선택<br>" .
+                     "4. 저장된 .txt 파일 업로드";
+        } else {
         $content = file_get_contents($file['tmp_name']);
         // UTF-8 변환 (EUC-KR일 경우)
         if (!mb_check_encoding($content, 'UTF-8')) {
@@ -171,6 +183,7 @@ if ($action === 'import_waybill' && isset($_FILES['waybill_file'])) {
                 $message .= "<br><small>" . implode("<br>", $errors) . "</small>";
             }
         }
+        } // .xlsx 체크 else 블록 종료
     } else {
         $error = "파일 업로드 오류가 발생했습니다.";
     }
