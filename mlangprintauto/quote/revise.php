@@ -310,13 +310,8 @@ $typeLabel = $quote['quote_type'] === 'transaction' ? '거래명세표' : '견�
                         </select>
                     </div>
                     <div class="form-group">
-                        <label>배송비 (공급가)</label>
-                        <input type="number" name="delivery_price" id="deliveryPrice" value="<?php echo $quote['delivery_price']; ?>" min="0" onchange="calculateDeliveryVat()">
-                    </div>
-                    <div class="form-group">
-                        <label>배송비 VAT</label>
-                        <span id="deliveryVatDisplay"><?php echo number_format($quote['delivery_vat'] ?? round($quote['delivery_price'] * 0.1)); ?>원</span>
-                        <input type="hidden" name="delivery_vat" id="deliveryVat" value="<?php echo $quote['delivery_vat'] ?? round($quote['delivery_price'] * 0.1); ?>">
+                        <label>배송비</label>
+                        <input type="number" name="delivery_price" value="<?php echo $quote['delivery_price']; ?>" min="0">
                     </div>
                 </div>
                 <div class="form-group">
@@ -332,25 +327,27 @@ $typeLabel = $quote['quote_type'] === 'transaction' ? '거래명세표' : '견�
                     <thead>
                         <tr>
                             <th style="width:30px;">No</th>
-                            <th style="width:200px;">품명 *</th>
+                            <th style="width:180px;">품명 *</th>
                             <th>규격/사양</th>
-                            <th style="width:80px;">수량 *</th>
-                            <th style="width:70px;">단위</th>
-                            <th style="width:130px;">공급가 *</th>
+                            <th style="width:70px;">수량 *</th>
+                            <th style="width:60px;">단위</th>
+                            <th style="width:100px;">단가 *</th>
+                            <th style="width:120px;">공급가 *</th>
                             <th style="width:50px;">삭제</th>
                         </tr>
                     </thead>
                     <tbody id="itemsBody">
                         <?php foreach ($items as $idx => $item):
-                            $supplyPrice = intval($item['supply_price'] ?? ($item['quantity'] * $item['unit_price']));
+                            $supplyPrice = intval($item['quantity'] * $item['unit_price']);
                         ?>
                         <tr class="item-row">
                             <td><?php echo $idx + 1; ?></td>
                             <td><input type="text" name="items[<?php echo $idx; ?>][product_name]" required value="<?php echo htmlspecialchars($item['product_name']); ?>"></td>
                             <td><input type="text" name="items[<?php echo $idx; ?>][specification]" value="<?php echo htmlspecialchars($item['specification']); ?>"></td>
-                            <td><input type="number" name="items[<?php echo $idx; ?>][quantity]" class="quantity-input" required min="1" value="<?php echo $item['quantity']; ?>"></td>
+                            <td><input type="number" name="items[<?php echo $idx; ?>][quantity]" class="quantity-input" required min="1" value="<?php echo $item['quantity']; ?>" onchange="calculateSupplyPrice(this)"></td>
                             <td><input type="text" name="items[<?php echo $idx; ?>][unit]" value="<?php echo htmlspecialchars($item['unit']); ?>"></td>
-                            <td><input type="number" name="items[<?php echo $idx; ?>][supply_price]" class="supply-price-input" required min="0" value="<?php echo $supplyPrice; ?>"></td>
+                            <td><input type="number" name="items[<?php echo $idx; ?>][unit_price]" class="unit-price-input" required min="0" value="<?php echo $item['unit_price']; ?>" onchange="calculateSupplyPrice(this)"></td>
+                            <td><input type="number" name="items[<?php echo $idx; ?>][supply_price]" class="supply-price-input" required min="0" value="<?php echo $supplyPrice; ?>" onchange="calculateUnitPrice(this)"></td>
                             <td><button type="button" class="btn-remove" onclick="removeRow(this)">삭제</button></td>
                         </tr>
                         <?php endforeach; ?>
@@ -426,9 +423,10 @@ $typeLabel = $quote['quote_type'] === 'transaction' ? '거래명세표' : '견�
             <td>${itemCounter + 1}</td>
             <td><input type="text" name="items[${itemCounter}][product_name]" required></td>
             <td><input type="text" name="items[${itemCounter}][specification]"></td>
-            <td><input type="number" name="items[${itemCounter}][quantity]" class="quantity-input" required min="1" value="1"></td>
+            <td><input type="number" name="items[${itemCounter}][quantity]" class="quantity-input" required min="1" value="1" onchange="calculateSupplyPrice(this)"></td>
             <td><input type="text" name="items[${itemCounter}][unit]" value="개"></td>
-            <td><input type="number" name="items[${itemCounter}][supply_price]" class="supply-price-input" required min="0" value="0"></td>
+            <td><input type="number" name="items[${itemCounter}][unit_price]" class="unit-price-input" required min="0" value="0" onchange="calculateSupplyPrice(this)"></td>
+            <td><input type="number" name="items[${itemCounter}][supply_price]" class="supply-price-input" required min="0" value="0" onchange="calculateUnitPrice(this)"></td>
             <td><button type="button" class="btn-remove" onclick="removeRow(this)">삭제</button></td>
         `;
         tbody.appendChild(row);
@@ -451,14 +449,44 @@ $typeLabel = $quote['quote_type'] === 'transaction' ? '거래명세표' : '견�
         });
     }
 
-    // 배송비 VAT 자동 계산
-    function calculateDeliveryVat() {
-        const deliveryPrice = parseInt(document.getElementById('deliveryPrice').value) || 0;
-        const deliveryVat = Math.round(deliveryPrice * 0.1);
-        document.getElementById('deliveryVat').value = deliveryVat;
-        document.getElementById('deliveryVatDisplay').textContent = deliveryVat.toLocaleString() + '원';
+    // 공급가 자동 계산 (수량 또는 단가 변경 시)
+    function calculateSupplyPrice(element) {
+        const row = element.closest('tr');
+        const supplyPriceInput = row.querySelector('.supply-price-input');
+
+        // 공급가가 수동 수정되었으면 자동 계산 건너뜀
+        if (supplyPriceInput.dataset.manualEdit === 'true') {
+            return;
+        }
+
+        const quantityInput = row.querySelector('.quantity-input');
+        const unitPriceInput = row.querySelector('.unit-price-input');
+
+        const quantity = parseFloat(quantityInput.value) || 0;
+        const unitPrice = parseFloat(unitPriceInput.value) || 0;
+        const supplyPrice = Math.floor(quantity * unitPrice);
+
+        supplyPriceInput.value = supplyPrice;
     }
 
+    // 단가 역계산 (공급가 변경 시)
+    function calculateUnitPrice(element) {
+        const row = element.closest('tr');
+        const quantityInput = row.querySelector('.quantity-input');
+        const unitPriceInput = row.querySelector('.unit-price-input');
+        const supplyPriceInput = row.querySelector('.supply-price-input');
+
+        // 공급가가 수동으로 수정되었음을 표시
+        supplyPriceInput.dataset.manualEdit = 'true';
+
+        const quantity = parseFloat(quantityInput.value) || 0;
+        const supplyPrice = parseFloat(supplyPriceInput.value) || 0;
+
+        if (quantity > 0) {
+            const unitPrice = Math.floor(supplyPrice / quantity);
+            unitPriceInput.value = unitPrice;
+        }
+    }
 
     // 로딩 표시
     function showLoading(message) {
@@ -510,6 +538,7 @@ $typeLabel = $quote['quote_type'] === 'transaction' ? '거래명세표' : '견�
             const specification = row.querySelector('input[name*="[specification]"]')?.value || '';
             const quantity = row.querySelector('input[name*="[quantity]"]')?.value || '1';
             const unit = row.querySelector('input[name*="[unit]"]')?.value || '개';
+            const unitPrice = row.querySelector('input[name*="[unit_price]"]')?.value || '0';
             const supplyPrice = row.querySelector('input[name*="[supply_price]"]')?.value || '0';
 
             if (productName.trim()) {
@@ -518,6 +547,7 @@ $typeLabel = $quote['quote_type'] === 'transaction' ? '거래명세표' : '견�
                     specification: specification,
                     quantity: quantity,
                     unit: unit,
+                    unit_price: unitPrice,
                     supply_price: supplyPrice,
                     product_type: '',
                     source_type: 'manual'

@@ -61,7 +61,6 @@ try {
         'delivery_type' => trim($_POST['delivery_type'] ?? ''),
         'delivery_address' => trim($_POST['delivery_address'] ?? ''),
         'delivery_price' => intval($_POST['delivery_price'] ?? 0),
-        'delivery_vat' => intval($_POST['delivery_vat'] ?? round(intval($_POST['delivery_price'] ?? 0) * 0.1)),
         'discount_amount' => intval($_POST['discount_amount'] ?? 0),
         'discount_reason' => trim($_POST['discount_reason'] ?? ''),
         'payment_terms' => trim($_POST['payment_terms'] ?? '발행일로부터 7일'),
@@ -100,7 +99,7 @@ try {
 
     $data['supply_total'] = $supplyTotal;
     $data['vat_total'] = $vatTotal;
-    $data['grand_total'] = $supplyTotal + $vatTotal + $data['delivery_price'] + $data['delivery_vat'] - $data['discount_amount'];
+    $data['grand_total'] = $supplyTotal + $vatTotal - $data['discount_amount'] + $data['delivery_price'];
 
     // 개정판 생성
     $result = $manager->createRevision($originalQuoteId, $data);

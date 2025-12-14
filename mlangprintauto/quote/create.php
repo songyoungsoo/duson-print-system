@@ -274,11 +274,11 @@ $typeLabel = $quoteType === 'transaction' ? '거래명세표' : '견적서';
         .col-no { width: 35px; text-align: center; }
         .col-name { width: 110px; text-align: center; }
         .col-spec { text-align: center; }
-        .col-qty { width: 65px; text-align: center; }
+        .col-qty { width: 80px; text-align: center; }
         .col-unit { width: 33px; text-align: center; }
-        .col-price { width: 85px; text-align: center; }
-        .col-supply { width: 60px; text-align: center; font-family: 'Consolas', monospace; }
-        .col-vat { width: 50px; text-align: center; font-family: 'Consolas', monospace; }
+        .col-price { width: 55px; text-align: center; }
+        .col-supply { width: 85px; text-align: right; font-family: 'Consolas', monospace; }
+        .col-vat { width: 70px; text-align: center; font-family: 'Consolas', monospace; }
         .col-total { width: 95px; text-align: center; font-family: 'Consolas', monospace; }
         .col-action { width: 40px; text-align: center; }
 
@@ -438,8 +438,7 @@ $typeLabel = $quoteType === 'transaction' ? '거래명세표' : '견적서';
                                 <th class="col-no">NO</th>
                                 <th class="col-name">품명</th>
                                 <th class="col-spec">규격/사양</th>
-                                <th class="col-qty">수량<br><span style="font-size: 10px; font-weight: normal; color: #666;">(전단지는 연 단위)</span></th>
-                                <th class="col-unit">단위</th>
+                                <th class="col-qty">수량</th>
                                 <th class="col-price">단가</th>
                                 <th class="col-supply">공급가액</th>
                                 <th class="col-vat">VAT</th>
@@ -459,47 +458,42 @@ $typeLabel = $quoteType === 'transaction' ? '거래명세표' : '견적서';
                                     $productName = ProductSpecFormatter::getProductTypeName($productType);
                                     $spec = $formatter->format($item);
                                     $qty = ProductSpecFormatter::getQuantity($item);
+                                    $qtyDisplay = ProductSpecFormatter::getQuantityDisplay($item);  // 장바구니 형식
 
                                     $unit = ProductSpecFormatter::getUnit($item);
                                     $supply = ProductSpecFormatter::getSupplyPrice($item);
                                     $total = ProductSpecFormatter::getPrice($item);
                                     $vat = $total - $supply;
 
-                                    // 수량 표시: 소수점이 있으면 최대 2자리, 없으면 정수
-                                    $qtyDisplay = ($qty == floor($qty)) ? intval($qty) : rtrim(rtrim(number_format($qty, 2, '.', ''), '0'), '.');
-
-                                    // 전단지/리플렛: 1연당 매수 표시 (장바구니 방식)
-                                    $mesu = 0;
-                                    if (in_array($productType, ['inserted', 'leaflet'])) {
-                                        $mesu = intval($item['mesu'] ?? 0);
-                                    }
-
-                                    // 단가 계산: 전단지는 단가를 비움, 다른 품목은 공급가 ÷ 수량
+                                    // 단가 계산: 전단지 0.5연은 '-', 그 외는 공급가 ÷ 수량
                                     $unitPrice = 0;
-                                    if (!in_array($productType, ['inserted', 'leaflet'])) {
+                                    $unitPriceDisplay = '0';
+                                    if (in_array($productType, ['inserted', 'leaflet']) && $qty == 0.5) {
+                                        // 전단지 0.5연일 때만 '-' 표시
+                                        $unitPriceDisplay = '-';
+                                    } else {
+                                        // 그 외 모든 경우: 단가 계산
                                         $unitPrice = $qty > 0 ? intval($supply / $qty) : 0;
+                                        $unitPriceDisplay = $unitPrice;
                                     }
                                 ?>
                                 <tr class="item-row" data-source="cart" data-source-id="<?php echo $item['no']; ?>">
                                     <td class="col-no"><?php echo $index + 1; ?></td>
                                     <td class="col-name"><input type="text" name="items[<?php echo $index; ?>][product_name]" value="<?php echo htmlspecialchars($productName); ?>" readonly></td>
-                                    <td class="col-spec"><input type="text" name="items[<?php echo $index; ?>][specification]" value="<?php echo htmlspecialchars($spec); ?>" readonly></td>
+                                    <td class="col-spec"><span class="spec-display"><?php echo nl2br(htmlspecialchars($spec)); ?></span><input type="hidden" name="items[<?php echo $index; ?>][specification]" value="<?php echo htmlspecialchars($spec); ?>"></td>
                                     <td class="col-qty">
-                                        <input type="number" step="0.01" name="items[<?php echo $index; ?>][quantity]" value="<?php echo $qtyDisplay; ?>" class="qty-input" min="0.01">
+                                        <span class="qty-display"><?php echo nl2br(htmlspecialchars($qtyDisplay)); ?></span>
+                                        <input type="hidden" name="items[<?php echo $index; ?>][quantity]" value="<?php echo $qty; ?>">
+                                        <input type="hidden" name="items[<?php echo $index; ?>][unit]" value="<?php echo $unit; ?>">
                                     </td>
-                                    <td class="col-unit">
-                                        <input type="text" name="items[<?php echo $index; ?>][unit]" value="<?php echo $unit; ?>">
-                                        <?php if ($mesu > 0): ?>
-                                            <div style="color:#666; font-size:11px; margin-top:2px;">(<?php echo number_format($mesu); ?>매)</div>
-                                        <?php endif; ?>
-                                    </td>
-                                    <td class="col-price"><input type="number" step="0.1" name="items[<?php echo $index; ?>][unit_price]" value="<?php echo $unitPrice; ?>" class="price-input" min="0"></td>
+                                    <td class="col-price"><input type="text" name="items[<?php echo $index; ?>][unit_price]" value="<?php echo $unitPriceDisplay; ?>" class="price-input"></td>
                                     <td class="col-supply"><input type="number" name="items[<?php echo $index; ?>][supply_price]" value="<?php echo $supply; ?>" class="supply-input" min="0"></td>
                                     <td class="col-vat vat-cell"><?php echo number_format($vat); ?></td>
                                     <td class="col-total total-cell"><?php echo number_format($total); ?></td>
                                     <td class="col-action"><button type="button" class="btn btn-danger btn-sm remove-row">×</button></td>
                                     <input type="hidden" name="items[<?php echo $index; ?>][source_type]" value="cart">
                                     <input type="hidden" name="items[<?php echo $index; ?>][source_id]" value="<?php echo $item['no']; ?>">
+                                    <input type="hidden" name="items[<?php echo $index; ?>][product_type]" value="<?php echo htmlspecialchars($productType); ?>">
                                 </tr>
                                 <?php $index++; endforeach; ?>
                             <?php endif; ?>
@@ -509,52 +503,48 @@ $typeLabel = $quoteType === 'transaction' ? '거래명세표' : '견적서';
                             if (count($quoteTempItems) > 0):
                                 foreach ($quoteTempItems as $item):
                                     $productType = $item['product_type'] ?? '';
-                                    $productName = $item['product_name'] ?? '';
-                                    $spec = $item['specification'] ?? '';
+                                    $productName = $item['product_name'] ?? ProductSpecFormatter::getProductTypeName($productType);
+                                    // formatter로 규격 생성 (라벨 포함 형식)
+                                    $spec = $formatter->format($item);
 
                                     // ProductSpecFormatter 사용 (MY_amount에서 quantity 추출)
                                     $qty = ProductSpecFormatter::getQuantity($item);
+                                    $qtyDisplay = ProductSpecFormatter::getQuantityDisplay($item);  // 장바구니 형식
 
                                     $unit = ProductSpecFormatter::getUnit($item);
                                     $supply = intval($item['supply_price'] ?? 0);
                                     $vat = intval($item['vat_amount'] ?? 0);
                                     $total = intval($item['total_price'] ?? 0);
 
-                                    // 수량 표시: 소수점이 있으면 최대 2자리, 없으면 정수
-                                    $qtyDisplay = ($qty == floor($qty)) ? intval($qty) : rtrim(rtrim(number_format($qty, 2, '.', ''), '0'), '.');
-
-                                    // 전단지/리플렛: 1연당 매수 표시 (장바구니 방식)
-                                    $mesu = 0;
-                                    if (in_array($productType, ['inserted', 'leaflet'])) {
-                                        $mesu = intval($item['mesu'] ?? 0);
-                                    }
-
-                                    // 단가 계산: 전단지는 단가를 비움, 다른 품목은 공급가 ÷ 수량
+                                    // 단가 계산: 전단지 0.5연은 '-', 그 외는 공급가 ÷ 수량
                                     $unitPrice = 0;
-                                    if (!in_array($productType, ['inserted', 'leaflet'])) {
+                                    $unitPriceDisplay = '0';
+                                    if (in_array($productType, ['inserted', 'leaflet']) && $qty == 0.5) {
+                                        // 전단지 0.5연일 때만 '-' 표시
+                                        $unitPriceDisplay = '-';
+                                    } else {
+                                        // 그 외 모든 경우: 단가 계산
                                         $unitPrice = $qty > 0 ? round($supply / $qty, 1) : 0;
+                                        $unitPriceDisplay = $unitPrice;
                                     }
                                 ?>
                                 <tr class="item-row" data-source="quotation_temp" data-source-id="<?php echo $item['id']; ?>">
                                     <td class="col-no"><?php echo $index + 1; ?></td>
                                     <td class="col-name"><input type="text" name="items[<?php echo $index; ?>][product_name]" value="<?php echo htmlspecialchars($productName); ?>" readonly></td>
-                                    <td class="col-spec"><input type="text" name="items[<?php echo $index; ?>][specification]" value="<?php echo htmlspecialchars($spec); ?>" readonly></td>
+                                    <td class="col-spec"><span class="spec-display"><?php echo nl2br(htmlspecialchars($spec)); ?></span><input type="hidden" name="items[<?php echo $index; ?>][specification]" value="<?php echo htmlspecialchars($spec); ?>"></td>
                                     <td class="col-qty">
-                                        <input type="number" step="0.01" name="items[<?php echo $index; ?>][quantity]" value="<?php echo $qtyDisplay; ?>" class="qty-input" min="0.01">
+                                        <span class="qty-display"><?php echo nl2br(htmlspecialchars($qtyDisplay)); ?></span>
+                                        <input type="hidden" name="items[<?php echo $index; ?>][quantity]" value="<?php echo $qty; ?>">
+                                        <input type="hidden" name="items[<?php echo $index; ?>][unit]" value="<?php echo $unit; ?>">
                                     </td>
-                                    <td class="col-unit">
-                                        <input type="text" name="items[<?php echo $index; ?>][unit]" value="<?php echo $unit; ?>">
-                                        <?php if ($mesu > 0): ?>
-                                            <div style="color:#666; font-size:11px; margin-top:2px;">(<?php echo number_format($mesu); ?>매)</div>
-                                        <?php endif; ?>
-                                    </td>
-                                    <td class="col-price"><input type="number" step="0.1" name="items[<?php echo $index; ?>][unit_price]" value="<?php echo $unitPrice; ?>" class="price-input" min="0"></td>
+                                    <td class="col-price"><input type="text" name="items[<?php echo $index; ?>][unit_price]" value="<?php echo $unitPriceDisplay; ?>" class="price-input"></td>
                                     <td class="col-supply"><input type="number" name="items[<?php echo $index; ?>][supply_price]" value="<?php echo $supply; ?>" class="supply-input" min="0"></td>
                                     <td class="col-vat vat-cell"><?php echo number_format($vat); ?></td>
                                     <td class="col-total total-cell"><?php echo number_format($total); ?></td>
                                     <td class="col-action"><button type="button" class="btn btn-danger btn-sm remove-row">×</button></td>
                                     <input type="hidden" name="items[<?php echo $index; ?>][source_type]" value="quotation_temp">
                                     <input type="hidden" name="items[<?php echo $index; ?>][source_id]" value="<?php echo $item['id']; ?>">
+                                    <input type="hidden" name="items[<?php echo $index; ?>][product_type]" value="<?php echo htmlspecialchars($productType); ?>">
                                 </tr>
                                 <?php $index++; endforeach; ?>
                             <?php endif; ?>
@@ -587,8 +577,8 @@ $typeLabel = $quoteType === 'transaction' ? '거래명세표' : '견적서';
                                 <td class="col-spec"><input type="text" name="items[<?php echo $blankRowStartIndex + $i; ?>][specification]" placeholder="규격/사양"></td>
                                 <td class="col-qty">
                                     <input type="number" step="0.01" name="items[<?php echo $blankRowStartIndex + $i; ?>][quantity]" value="1" class="qty-input" min="0.01">
+                                    <input type="hidden" name="items[<?php echo $blankRowStartIndex + $i; ?>][unit]" value="개">
                                 </td>
-                                <td class="col-unit"><input type="text" name="items[<?php echo $blankRowStartIndex + $i; ?>][unit]" value="개"></td>
                                 <td class="col-price"><input type="number" name="items[<?php echo $blankRowStartIndex + $i; ?>][unit_price]" value="0" class="price-input" min="0"></td>
                                 <td class="col-supply"><input type="number" name="items[<?php echo $blankRowStartIndex + $i; ?>][supply_price]" value="0" class="supply-input" min="0"></td>
                                 <td class="col-vat vat-cell">0</td>
@@ -739,8 +729,8 @@ $typeLabel = $quoteType === 'transaction' ? '거래명세표' : '견적서';
             <td class="col-spec"><input type="text" name="items[${itemIndex}][specification]" placeholder="규격/사양"></td>
             <td class="col-qty">
                 <input type="number" step="0.01" name="items[${itemIndex}][quantity]" value="1" class="qty-input" min="0.01">
+                <input type="hidden" name="items[${itemIndex}][unit]" value="개">
             </td>
-            <td class="col-unit"><input type="text" name="items[${itemIndex}][unit]" value="개"></td>
             <td class="col-price"><input type="number" name="items[${itemIndex}][unit_price]" value="0" class="price-input" min="0"></td>
             <td class="col-supply"><input type="number" name="items[${itemIndex}][supply_price]" value="0" class="supply-input" min="0"></td>
             <td class="col-vat vat-cell">0</td>

@@ -4,6 +4,24 @@
  * POST 요청으로 견적서 저장
  */
 
+// 에러 핸들링 강화
+ob_start();
+error_reporting(E_ALL);
+ini_set('display_errors', 0);
+
+// 종료 시 에러 체크
+register_shutdown_function(function() {
+    $error = error_get_last();
+    if ($error && in_array($error['type'], [E_ERROR, E_PARSE, E_CORE_ERROR, E_COMPILE_ERROR])) {
+        ob_end_clean();
+        header('Content-Type: application/json; charset=utf-8');
+        echo json_encode([
+            'success' => false,
+            'message' => 'PHP 오류: ' . $error['message'] . ' in ' . $error['file'] . ':' . $error['line']
+        ], JSON_UNESCAPED_UNICODE);
+    }
+});
+
 session_start();
 header('Content-Type: application/json; charset=utf-8');
 
@@ -11,6 +29,7 @@ require_once __DIR__ . '/../../db.php';
 require_once __DIR__ . '/../includes/QuoteManager.php';
 
 function jsonResponse($success, $data = [], $message = '') {
+    ob_end_clean();
     echo json_encode(array_merge([
         'success' => $success,
         'message' => $message
@@ -32,7 +51,6 @@ try {
         'delivery_type' => trim($_POST['delivery_type'] ?? ''),
         'delivery_address' => trim($_POST['delivery_address'] ?? ''),
         'delivery_price' => intval($_POST['delivery_price'] ?? 0),
-        'delivery_vat' => intval($_POST['delivery_vat'] ?? round(intval($_POST['delivery_price'] ?? 0) * 0.1)),
         'supply_total' => intval($_POST['supply_total'] ?? 0),
         'vat_total' => intval($_POST['vat_total'] ?? 0),
         'discount_amount' => intval($_POST['discount_amount'] ?? 0),
@@ -44,17 +62,6 @@ try {
         'created_by' => intval($_SESSION['user_id'] ?? 0),
         'items' => $_POST['items'] ?? []
     ];
-
-    // 디버깅: items 배열 구조 로그
-    error_log("[save.php] Received items array:");
-    if (!empty($data['items'])) {
-        foreach ($data['items'] as $idx => $item) {
-            error_log("[save.php] Item[$idx]: source_type=" . ($item['source_type'] ?? 'N/A') .
-                      ", product_name=" . ($item['product_name'] ?? 'N/A'));
-        }
-    } else {
-        error_log("[save.php] Items array is empty!");
-    }
 
     // 필수 입력 검증
     if (empty($data['customer_name'])) {

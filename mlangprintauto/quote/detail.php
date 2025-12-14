@@ -6,7 +6,6 @@
 session_start();
 require_once __DIR__ . '/../db.php';
 require_once __DIR__ . '/includes/QuoteManager.php';
-require_once __DIR__ . '/includes/PriceHelper.php';
 
 if (!$db) {
     die('데이터베이스 연결 실패');
@@ -70,14 +69,6 @@ $publicUrl = $baseUrl . '/mlangprintauto/quote/public/view.php?token=' . $quote[
     <style>
         * { margin: 0; padding: 0; box-sizing: border-box; }
         body { font-family: 'Noto Sans KR', sans-serif; background: #f0f0f0; font-size: 13px; }
-
-        /* 한글 입력 기본 활성화 */
-        input[type="text"], textarea {
-            ime-mode: active;
-        }
-        input[type="number"] {
-            ime-mode: disabled;
-        }
 
         .container { max-width: 1400px; margin: 0 auto; padding: 12px; }
 
@@ -221,8 +212,9 @@ $publicUrl = $baseUrl . '/mlangprintauto/quote/public/view.php?token=' . $quote[
         .col-no { width: 40px; text-align: center; }
         .col-name { }
         .col-spec { }
-        .col-qty { width: 60px; text-align: center; }
+        .col-qty { width: 80px; text-align: center; }
         .col-unit { width: 50px; text-align: center; }
+        .col-price { width: 60px; text-align: right; font-family: 'Noto Sans KR', sans-serif; }
         .col-supply { width: 130px; text-align: right; font-family: 'Noto Sans KR', sans-serif; }
         .col-notes { width: 10%; text-align: left; font-size: 12px; color: #666; }
 
@@ -334,21 +326,24 @@ $publicUrl = $baseUrl . '/mlangprintauto/quote/public/view.php?token=' . $quote[
                     <a href="public/view.php?token=<?php echo $quote['public_token']; ?>" class="btn" target="_blank">미리보기</a>
                     <button class="btn btn-primary" onclick="sendEmail()">📧 메일 발송</button>
                 <?php elseif ($quote['status'] === 'sent'): ?>
-                    <!-- sent 상태: 개정판 작성 -->
+                    <!-- sent 상태: 개정판 작성 + 주문 변환 가능 -->
                     <a href="revise.php?id=<?php echo $quote['id']; ?>" class="btn btn-warning">📝 개정판 작성</a>
                     <a href="api/generate_pdf.php?id=<?php echo $quote['id']; ?>&token=<?php echo $quote['public_token']; ?>" class="btn" target="_blank">PDF</a>
                     <a href="public/view.php?token=<?php echo $quote['public_token']; ?>" class="btn" target="_blank">미리보기</a>
                     <button class="btn btn-primary" onclick="sendEmail()">📧 다시 보내기</button>
+                    <button class="btn" style="background: #198754; color: white;" onclick="convertToOrder(<?php echo $quote['id']; ?>)">🛒 주문 변환</button>
                 <?php elseif ($quote['status'] === 'accepted'): ?>
                     <!-- accepted 상태: 주문 변환 가능 -->
-                    <button class="btn btn-primary" onclick="convertToOrder()" style="background: #198754;">🛒 주문 변환</button>
                     <a href="api/generate_pdf.php?id=<?php echo $quote['id']; ?>&token=<?php echo $quote['public_token']; ?>" class="btn" target="_blank">PDF</a>
                     <a href="public/view.php?token=<?php echo $quote['public_token']; ?>" class="btn" target="_blank">미리보기</a>
+                    <button class="btn" style="background: #198754; color: white; font-weight: bold;" onclick="convertToOrder(<?php echo $quote['id']; ?>)">🛒 주문으로 변환</button>
                 <?php elseif ($quote['status'] === 'converted'): ?>
                     <!-- converted 상태: 주문 보기 -->
-                    <a href="/admin/mlangprintauto/admin.php?mode=OrderList&search=<?php echo urlencode($quote['quote_no']); ?>" class="btn btn-primary" style="background: #198754;">📋 주문 보기</a>
                     <a href="api/generate_pdf.php?id=<?php echo $quote['id']; ?>&token=<?php echo $quote['public_token']; ?>" class="btn" target="_blank">PDF</a>
                     <a href="public/view.php?token=<?php echo $quote['public_token']; ?>" class="btn" target="_blank">미리보기</a>
+                    <?php if (!empty($quote['converted_order_no'])): ?>
+                    <a href="/admin/mlangprintauto/admin.php?mode=OrderView&no=<?php echo htmlspecialchars($quote['converted_order_no']); ?>" class="btn" style="background: #198754; color: white;" target="_blank">📦 주문 보기 (#<?php echo htmlspecialchars($quote['converted_order_no']); ?>)</a>
+                    <?php endif; ?>
                 <?php else: ?>
                     <!-- 기타 상태: 조회만 가능 -->
                     <a href="api/generate_pdf.php?id=<?php echo $quote['id']; ?>&token=<?php echo $quote['public_token']; ?>" class="btn" target="_blank">PDF</a>
@@ -370,6 +365,15 @@ $publicUrl = $baseUrl . '/mlangprintauto/quote/public/view.php?token=' . $quote[
             이 견적서는 고객이 거절하였습니다.
             <?php if ($quote['responded_at']): ?>
             (<?php echo date('Y-m-d H:i', strtotime($quote['responded_at'])); ?>)
+            <?php endif; ?>
+        </div>
+        <?php elseif ($quote['status'] === 'converted'): ?>
+        <div class="alert" style="background: #d1e7dd; border-color: #badbcc; color: #0f5132;">
+            ✅ 이 견적서는 주문으로 변환되었습니다.
+            <?php if (!empty($quote['converted_order_no'])): ?>
+            <a href="/admin/mlangprintauto/admin.php?mode=OrderView&no=<?php echo htmlspecialchars($quote['converted_order_no']); ?>" target="_blank" style="color: #0d6efd; text-decoration: underline; margin-left: 10px;">
+                📦 주문 #<?php echo htmlspecialchars($quote['converted_order_no']); ?> 보기
+            </a>
             <?php endif; ?>
         </div>
         <?php elseif ($isExpired): ?>
@@ -433,6 +437,7 @@ $publicUrl = $baseUrl . '/mlangprintauto/quote/public/view.php?token=' . $quote[
                                     <th class="col-spec">규격/사양</th>
                                     <th class="col-qty">수량</th>
                                     <th class="col-unit">단위</th>
+                                    <th class="col-price">단가</th>
                                     <th class="col-supply">공급가액</th>
                                     <th class="col-notes">비고</th>
                                 </tr>
@@ -449,8 +454,9 @@ $publicUrl = $baseUrl . '/mlangprintauto/quote/public/view.php?token=' . $quote[
                                         $qtyDisplay = ($qty == intval($qty)) ? number_format($qty) : rtrim(rtrim(number_format($qty, 2), '0'), '.');
                                         echo $qtyDisplay;
 
-                                        // 전단지(inserted)인 경우 매수 표시 추가
-                                        if (($item['product_type'] ?? '') === 'inserted' && !empty($item['source_data'])) {
+                                        // 전단지(inserted/leaflet)인 경우 매수 표시 추가
+                                        $productType = $item['product_type'] ?? '';
+                                        if (in_array($productType, ['inserted', 'leaflet']) && !empty($item['source_data'])) {
                                             $sourceData = json_decode($item['source_data'], true);
                                             if (!empty($sourceData['mesu'])) {
                                                 echo '<br><span style="font-size: 10px; color: #666;">(' . number_format($sourceData['mesu']) . '매)</span>';
@@ -458,6 +464,16 @@ $publicUrl = $baseUrl . '/mlangprintauto/quote/public/view.php?token=' . $quote[
                                         }
                                     ?></td>
                                     <td class="col-unit"><?php echo htmlspecialchars($item['unit']); ?></td>
+                                    <td class="col-price"><?php
+                                        // 소수점 1자리까지 표시 (모든 품목)
+                                        $unitPrice = floatval($item['unit_price']);
+                                        // 소수점이 있으면 소수점 1자리까지, 정수면 정수로 표시
+                                        if ($unitPrice == floor($unitPrice)) {
+                                            echo number_format($unitPrice);
+                                        } else {
+                                            echo number_format($unitPrice, 1);
+                                        }
+                                    ?></td>
                                     <td class="col-supply"><?php echo number_format($item['supply_price']); ?></td>
                                     <td class="col-notes"><?php echo htmlspecialchars($item['notes'] ?? ''); ?></td>
                                 </tr>
@@ -477,12 +493,8 @@ $publicUrl = $baseUrl . '/mlangprintauto/quote/public/view.php?token=' . $quote[
                                 </tr>
                                 <?php if ($quote['delivery_price'] > 0): ?>
                                 <tr>
-                                    <th>배송비 (공급가)</th>
+                                    <th>배송비</th>
                                     <td><?php echo number_format($quote['delivery_price']); ?> 원</td>
-                                </tr>
-                                <tr>
-                                    <th>배송비 VAT</th>
-                                    <td><?php echo number_format($quote['delivery_vat'] ?? round($quote['delivery_price'] * 0.1)); ?> 원</td>
                                 </tr>
                                 <?php endif; ?>
                                 <?php if ($quote['discount_amount'] > 0): ?>
@@ -616,32 +628,45 @@ $publicUrl = $baseUrl . '/mlangprintauto/quote/public/view.php?token=' . $quote[
         });
     }
 
-    function convertToOrder() {
-        if (!confirm('이 견적서를 주문으로 전환하시겠습니까?\n\n전환 후 관리자 주문 페이지로 이동합니다.')) {
+    // 견적서 → 주문 변환 함수
+    function convertToOrder(quoteId) {
+        const itemCount = <?php echo count($items); ?>;
+
+        if (!confirm('이 견적서를 주문으로 변환하시겠습니까?\n\n' +
+                     '• ' + itemCount + '개 품목이 주문으로 생성됩니다.\n' +
+                     '• 변환 후에는 취소할 수 없습니다.')) {
             return;
         }
 
-        fetch('../shop/convert_to_order.php', {
+        // 버튼 비활성화
+        const buttons = document.querySelectorAll('button');
+        buttons.forEach(btn => btn.disabled = true);
+
+        fetch('api/convert_to_order.php', {
             method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ quote_id: <?php echo $quote['id']; ?> })
+            headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
+            body: 'quote_id=' + quoteId + '&confirm=1'
         })
         .then(res => res.json())
         .then(data => {
             if (data.success) {
-                alert('✅ ' + data.message);
-                if (data.redirect_url) {
-                    window.location.href = data.redirect_url;
-                } else {
-                    location.reload();
+                let message = '✅ ' + data.message + '\n\n';
+                message += '생성된 주문:\n';
+                if (data.orders && data.orders.length > 0) {
+                    data.orders.forEach((order, index) => {
+                        message += '  ' + (index + 1) + '. 주문 #' + order.no + ' - ' + order.product_name + '\n';
+                    });
                 }
+                alert(message);
+                location.reload();
             } else {
                 alert('❌ 오류: ' + data.message);
+                buttons.forEach(btn => btn.disabled = false);
             }
         })
         .catch(err => {
-            console.error(err);
             alert('❌ 주문 변환 중 오류가 발생했습니다.');
+            buttons.forEach(btn => btn.disabled = false);
         });
     }
 
