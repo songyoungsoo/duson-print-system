@@ -1098,13 +1098,39 @@ if ($no > 0) {
                                                     $product_name_kr = $product_type;
                                             }
 
-                                            echo "<div style='background: #e8f5e8; padding: 15px; border-radius: 8px; border-left: 4px solid #28a745; margin-bottom: 15px;'>";
-                                            echo "<span style='font-size: 0.8rem; font-weight: 600; color: #155724;'>$product_icon " . htmlspecialchars($product_name_kr) . " 주문 상세</span>";
+                                            echo "<div style='background: #e8f5e8; padding: 10px 15px; border-radius: 8px; border-left: 4px solid #28a745; margin-bottom: 15px;'>";
+                                            echo "<span style='font-size: 0.9rem; font-weight: 600; color: #155724;'>$product_icon " . htmlspecialchars($product_name_kr) . " 주문 상세</span>";
                                             echo "</div>";
 
-                                            echo "<div style='background: white; padding: 15px; border-radius: 8px; border: 1px solid #e0e0e0; font-family: \"Noto Sans KR\", sans-serif; font-size: 0.8rem; line-height: 1.6; color: #495057;'>";
-                                            echo nl2br(htmlspecialchars($json_data['formatted_display']));
-                                            echo "</div>";
+                                            // formatted_display를 파싱하여 엑셀 형태 테이블로 변환
+                                            $formatted_text = $json_data['formatted_display'];
+                                            $lines = explode("\n", $formatted_text);
+
+                                            echo "<table style='width: 100%; border-collapse: collapse; background: white; font-size: 0.85rem;'>";
+
+                                            foreach ($lines as $line) {
+                                                $line = trim($line);
+                                                if (empty($line)) continue;
+
+                                                // "라벨: 값" 형태로 분리
+                                                if (strpos($line, ':') !== false) {
+                                                    list($label, $value) = explode(':', $line, 2);
+                                                    $label = trim($label);
+                                                    $value = trim($value);
+
+                                                    echo "<tr>";
+                                                    echo "<th style='background: #f8f9fa; padding: 10px; border: 1px solid #dee2e6; text-align: left; width: 120px; font-weight: 600; color: #495057;'>" . htmlspecialchars($label) . "</th>";
+                                                    echo "<td style='padding: 10px; border: 1px solid #dee2e6; color: #212529;'>" . htmlspecialchars($value) . "</td>";
+                                                    echo "</tr>";
+                                                } else {
+                                                    // : 없는 경우 전체를 값으로 표시
+                                                    echo "<tr>";
+                                                    echo "<td colspan='2' style='padding: 10px; border: 1px solid #dee2e6; color: #212529;'>" . htmlspecialchars($line) . "</td>";
+                                                    echo "</tr>";
+                                                }
+                                            }
+
+                                            echo "</table>";
 
                                             // 주문 시간 표시
                                             if (isset($json_data['created_at'])) {
@@ -1114,17 +1140,21 @@ if ($no > 0) {
                                             }
                                         } elseif ($json_data && isset($json_data['order_details'])) {
                                             // JSON 데이터가 있지만 formatted_display가 없는 경우
-                                            echo "<div style='background: #fff3cd; padding: 15px; border-radius: 8px; border-left: 4px solid #ffc107; margin-bottom: 15px;'>";
-                                            echo "<span style='font-size: 0.8rem; font-weight: 600; color: #856404;'>📦 주문 정보 (구조화된 데이터)</span>";
+                                            echo "<div style='background: #fff3cd; padding: 10px 15px; border-radius: 8px; border-left: 4px solid #ffc107; margin-bottom: 15px;'>";
+                                            echo "<span style='font-size: 0.9rem; font-weight: 600; color: #856404;'>📦 주문 정보 (구조화된 데이터)</span>";
                                             echo "</div>";
 
-                                            echo "<div style='background: white; padding: 15px; border-radius: 8px; border: 1px solid #e0e0e0; font-family: \"Noto Sans KR\", sans-serif; font-size: 0.8rem; line-height: 1.6; color: #495057;'>";
+                                            // 엑셀 형태 테이블로 표시
+                                            echo "<table style='width: 100%; border-collapse: collapse; background: white; font-size: 0.85rem;'>";
                                             foreach ($json_data['order_details'] as $key => $value) {
                                                 if (!empty($value)) {
-                                                    echo "<strong>" . htmlspecialchars($key) . ":</strong> " . htmlspecialchars($value) . "<br>";
+                                                    echo "<tr>";
+                                                    echo "<th style='background: #f8f9fa; padding: 10px; border: 1px solid #dee2e6; text-align: left; width: 120px; font-weight: 600; color: #495057;'>" . htmlspecialchars($key) . "</th>";
+                                                    echo "<td style='padding: 10px; border: 1px solid #dee2e6; color: #212529;'>" . htmlspecialchars($value) . "</td>";
+                                                    echo "</tr>";
                                                 }
                                             }
-                                            echo "</div>";
+                                            echo "</table>";
                                         } else {
                                             // 🔧 FIX: raw JSON에서 포스터 데이터 감지 및 포맷팅
                                             $content = trim($View_Type_1);
@@ -1134,35 +1164,64 @@ if ($no > 0) {
                                             if ($rawJsonData && isset($rawJsonData['product_type']) &&
                                                 ($rawJsonData['product_type'] === 'poster' || $rawJsonData['product_type'] === 'littleprint')) {
 
-                                                echo "<div style='background: #e8f5e8; padding: 15px; border-radius: 8px; border-left: 4px solid #28a745; margin-bottom: 15px;'>";
-                                                echo "<span style='font-size: 0.8rem; font-weight: 600; color: #155724;'>🖼️ 포스터 주문 상세</span>";
+                                                echo "<div style='background: #e8f5e8; padding: 10px 15px; border-radius: 8px; border-left: 4px solid #28a745; margin-bottom: 15px;'>";
+                                                echo "<span style='font-size: 0.9rem; font-weight: 600; color: #155724;'>🖼️ 포스터 주문 상세</span>";
                                                 echo "</div>";
 
-                                                echo "<div style='background: white; padding: 15px; border-radius: 8px; border: 1px solid #e0e0e0; font-family: \"Noto Sans KR\", sans-serif; font-size: 0.8rem; line-height: 1.6; color: #495057;'>";
+                                                // 엑셀 형태의 테이블 표시
+                                                echo "<table style='width: 100%; border-collapse: collapse; background: white; font-size: 0.85rem;'>";
 
-                                                // 구분, 용지, 규격, 수량, 디자인 포맷팅
+                                                // 구분
                                                 if (!empty($rawJsonData['MY_type'])) {
-                                                    echo "<strong>구분:</strong> " . htmlspecialchars($rawJsonData['MY_type']) . "<br>";
+                                                    echo "<tr>";
+                                                    echo "<th style='background: #f8f9fa; padding: 10px; border: 1px solid #dee2e6; text-align: left; width: 120px; font-weight: 600; color: #495057;'>구분</th>";
+                                                    echo "<td style='padding: 10px; border: 1px solid #dee2e6; color: #212529;'>" . htmlspecialchars($rawJsonData['MY_type']) . "</td>";
+                                                    echo "</tr>";
                                                 }
+
+                                                // 용지
                                                 if (!empty($rawJsonData['Section'])) {
-                                                    echo "<strong>용지:</strong> " . htmlspecialchars($rawJsonData['Section']) . "<br>";
+                                                    echo "<tr>";
+                                                    echo "<th style='background: #f8f9fa; padding: 10px; border: 1px solid #dee2e6; text-align: left; width: 120px; font-weight: 600; color: #495057;'>용지</th>";
+                                                    echo "<td style='padding: 10px; border: 1px solid #dee2e6; color: #212529;'>" . htmlspecialchars($rawJsonData['Section']) . "</td>";
+                                                    echo "</tr>";
                                                 }
+
+                                                // 규격
                                                 if (!empty($rawJsonData['PN_type'])) {
-                                                    echo "<strong>규격:</strong> " . htmlspecialchars($rawJsonData['PN_type']) . "<br>";
+                                                    echo "<tr>";
+                                                    echo "<th style='background: #f8f9fa; padding: 10px; border: 1px solid #dee2e6; text-align: left; width: 120px; font-weight: 600; color: #495057;'>규격</th>";
+                                                    echo "<td style='padding: 10px; border: 1px solid #dee2e6; color: #212529;'>" . htmlspecialchars($rawJsonData['PN_type']) . "</td>";
+                                                    echo "</tr>";
                                                 }
+
+                                                // 수량
                                                 if (!empty($rawJsonData['MY_amount'])) {
-                                                    echo "<strong>수량:</strong> " . number_format($rawJsonData['MY_amount']) . "매<br>";
+                                                    echo "<tr>";
+                                                    echo "<th style='background: #f8f9fa; padding: 10px; border: 1px solid #dee2e6; text-align: left; width: 120px; font-weight: 600; color: #495057;'>수량</th>";
+                                                    echo "<td style='padding: 10px; border: 1px solid #dee2e6; color: #212529;'>" . number_format($rawJsonData['MY_amount']) . "매</td>";
+                                                    echo "</tr>";
                                                 }
+
+                                                // 인쇄면
                                                 if (!empty($rawJsonData['POtype'])) {
                                                     $sides = ($rawJsonData['POtype'] == '1') ? '단면' : '양면';
-                                                    echo "<strong>인쇄면:</strong> " . $sides . "<br>";
-                                                }
-                                                if (!empty($rawJsonData['ordertype'])) {
-                                                    $design = ($rawJsonData['ordertype'] == 'total') ? '디자인+인쇄' : '인쇄만';
-                                                    echo "<strong>디자인:</strong> " . $design;
+                                                    echo "<tr>";
+                                                    echo "<th style='background: #f8f9fa; padding: 10px; border: 1px solid #dee2e6; text-align: left; width: 120px; font-weight: 600; color: #495057;'>인쇄면</th>";
+                                                    echo "<td style='padding: 10px; border: 1px solid #dee2e6; color: #212529;'>" . $sides . "</td>";
+                                                    echo "</tr>";
                                                 }
 
-                                                echo "</div>";
+                                                // 디자인
+                                                if (!empty($rawJsonData['ordertype'])) {
+                                                    $design = ($rawJsonData['ordertype'] == 'total') ? '디자인+인쇄' : '인쇄만';
+                                                    echo "<tr>";
+                                                    echo "<th style='background: #f8f9fa; padding: 10px; border: 1px solid #dee2e6; text-align: left; width: 120px; font-weight: 600; color: #495057;'>디자인</th>";
+                                                    echo "<td style='padding: 10px; border: 1px solid #dee2e6; color: #212529;'>" . $design . "</td>";
+                                                    echo "</tr>";
+                                                }
+
+                                                echo "</table>";
 
                                             } elseif ($content === '\n\n\n\n\n' || empty($content)) {
                                                 echo "<div style='color: #dc3545; font-weight: bold;'>⚠️ 주문 상세 정보가 올바르게 저장되지 않았습니다.</div>";
@@ -1721,7 +1780,34 @@ if ($no > 0) {
                                         <div style='margin-bottom: 12px; font-size: 0.8rem;'>
                                             <span style='font-weight: 600; color: #495057;'>📦 상품 유형:</span>
                                             <span style='background: #e3f2fd; padding: 6px 12px; border-radius: 4px; color: #1976d2; font-weight: 600; margin-left: 8px;'>
-                                                <?= htmlspecialchars($View_Type) ?>
+                                                <?php
+                                                // Type이 "기타"인 경우 Type_1 JSON에서 실제 제품명 추출
+                                                $display_type = $View_Type;
+                                                if ($View_Type === '기타' && !empty($View_Type_1)) {
+                                                    $json_data = json_decode($View_Type_1, true);
+                                                    if ($json_data && isset($json_data['product_type'])) {
+                                                        // product_type을 한글 제품명으로 변환
+                                                        $product_type_map = [
+                                                            'littleprint' => '포스터',
+                                                            'poster' => '포스터',
+                                                            'namecard' => '명함',
+                                                            'inserted' => '전단지',
+                                                            'leaflet' => '리플렛',
+                                                            'envelope' => '봉투',
+                                                            'sticker' => '스티커',
+                                                            'msticker' => '자석스티커',
+                                                            'cadarok' => '카다록',
+                                                            'ncrflambeau' => 'NCR양식',
+                                                            'merchandisebond' => '상품권'
+                                                        ];
+                                                        $product_type = $json_data['product_type'];
+                                                        if (isset($product_type_map[$product_type])) {
+                                                            $display_type = $product_type_map[$product_type];
+                                                        }
+                                                    }
+                                                }
+                                                echo htmlspecialchars($display_type);
+                                                ?>
                                             </span>
                                         </div>
                                         <div style='font-size: 0.8rem;'>

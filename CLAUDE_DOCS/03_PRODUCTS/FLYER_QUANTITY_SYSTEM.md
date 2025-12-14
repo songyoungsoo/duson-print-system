@@ -1,7 +1,7 @@
 # 전단지 수량 표기 시스템 (연/매수)
 
-**작성일**: 2025-12-03
-**상태**: ✅ 검증 완료
+**작성일**: 2025-12-03 (최종 업데이트: 2025-12-14)
+**상태**: ✅ 완성 및 프로덕션 배포 완료
 
 ## 1. 개요
 
@@ -139,6 +139,87 @@ window.currentPriceData = {
 };
 ```
 
+### 3.2A 장바구니 추가 시 매수 전송 ⭐ NEW (2025-12-14)
+**핵심 원칙**: "연수에 따른 매수는 드롭다운되는 대로 매수가 정해져있어 **계산하는 것이 아니고 그대로 가져다 쓰는** 데이터" (사용자 지적)
+
+#### Frontend - 매수 데이터 전송
+**파일**: `mlangprintauto/inserted/index.php`
+
+```html
+<!-- 매수 데이터 저장용 히든 필드 (라인 397) -->
+<input type="hidden" name="MY_amountRight" id="MY_amountRight" value="">
+```
+
+```javascript
+// 장바구니 추가 시 MY_amountRight 전송 (라인 568-573)
+formData.append("calculated_price", totalPrice);
+formData.append("calculated_vat_price", vatPrice);
+
+// 매수(MY_amountRight) 데이터 전송 (quantityTwo)
+const myAmountRight = document.getElementById("MY_amountRight");
+if (myAmountRight && myAmountRight.value) {
+    formData.append("MY_amountRight", myAmountRight.value);  // "2000장"
+    console.log("📊 매수 데이터:", myAmountRight.value);
+}
+```
+
+#### Backend - 매수 파싱 및 저장
+**파일**: `mlangprintauto/inserted/add_to_basket.php`
+
+```php
+// ❌ 이전 방식: 계산 로직 (잘못된 접근)
+// $mesu = intval($sheets_per_yeon * $yeonsu);
+
+// ✅ 변경 후: 받은 데이터 그대로 사용 (라인 73-82)
+$mesu = 0;
+if (!empty($_POST['MY_amountRight'])) {
+    $my_amount_right = $_POST['MY_amountRight'];
+    // "장" 또는 다른 문자 제거, 숫자만 추출
+    $mesu = intval(preg_replace('/[^0-9]/', '', $my_amount_right));
+    error_log("전단지 매수 수신: MY_amountRight = '$my_amount_right' → mesu = $mesu");
+} else {
+    error_log("⚠️ MY_amountRight 누락 - mesu는 0으로 저장됨");
+}
+
+// INSERT 쿼리에 mesu 포함
+$sql = "INSERT INTO shop_temp (session_id, product_type, MY_type, PN_type, MY_Fsd, MY_amount, POtype, ordertype, st_price, st_price_vat, additional_options, additional_options_total, mesu, ImgFolder, ThingCate, uploaded_files)
+        VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)";
+
+// bind_param: 16개 파라미터 (라인 99)
+mysqli_stmt_bind_param($stmt, "ssssssssiiisisss",  // 16 chars
+    $session_id, $product_type, $MY_type, $PN_type, $MY_Fsd, $MY_amount, $POtype, $ordertype,
+    $price, $vat_price, $additional_options_json, $additional_options_total, $mesu,
+    $img_folder, $thing_cate, $uploaded_files_json);
+```
+
+#### 데이터베이스 저장
+**테이블**: `shop_temp`
+
+| 컬럼 | 타입 | 값 예시 | 설명 |
+|------|------|---------|------|
+| MY_amount | VARCHAR | "0.50" | 연수 (주문 단위) |
+| mesu | INT | 2000 | 매수 (실제 장수) |
+| product_type | VARCHAR | "inserted" | 제품 타입 |
+
+#### E2E 테스트 결과 (2025-12-14)
+```sql
+-- shop_temp 테이블 검증
+SELECT no, PN_type, MY_amount, mesu FROM shop_temp WHERE no IN (944, 945, 946, 947);
+
+no   | PN_type | MY_amount | mesu | 검증
+-----|---------|-----------|------|------
+944  | A4      | 0.50      | 2000 | ✅ 0.5연 = 2,000매
+945  | A4      | 1.00      | 4000 | ✅ 1연 = 4,000매
+946  | A3      | 0.50      | 1000 | ✅ 0.5연 = 1,000매
+947  | B5      | 1.00      | 8000 | ✅ 1연 = 8,000매
+```
+
+#### 프로덕션 배포 완료
+- ✅ `index.php` - FTP 업로드 (34,395 bytes)
+- ✅ `add_to_basket.php` - FTP 업로드 (5,515 bytes)
+- ✅ dsp1830.shop 웹에서 MY_amountRight 필드 확인
+- ✅ 장바구니 추가 정상 작동 (basket_id=933)
+
 ### 3.3 주문서 출력 (전단지 감지 로직)
 **파일**: `mlangorder_printauto/OrderFormOrderTree.php`
 
@@ -248,17 +329,18 @@ $type1_data = [
 
 ## 7. 관련 파일 목록
 
-| 파일 | 역할 |
-|------|------|
-| `mlangprintauto/inserted/index.php` | 전단지 제품 페이지 |
-| `mlangprintauto/inserted/calculator.js` | 가격 계산 JS |
-| `mlangprintauto/inserted/calculate_price_ajax.php` | 가격 API |
-| `mlangprintauto/shop/cart.php` | 장바구니 |
-| `mlangorder_printauto/ProcessOrder_unified.php` | 주문 처리 |
-| `mlangorder_printauto/OrderFormOrderTree.php` | 주문서 출력 |
-| `admin/mlangprintauto/orderlist.php` | 관리자 주문 목록 |
-| `mlangprintauto/quote/save_quotation.php` | 견적서 저장 |
-| `mlangprintauto/shop/convert_to_order.php` | 견적→주문 변환 |
+| 파일 | 역할 | 업데이트 |
+|------|------|----------|
+| `mlangprintauto/inserted/index.php` | 전단지 제품 페이지 | ⭐ 2025-12-14 |
+| `mlangprintauto/inserted/calculator.js` | 가격 계산 JS | - |
+| `mlangprintauto/inserted/calculate_price_ajax.php` | 가격 API (MY_amountRight 응답) | - |
+| `mlangprintauto/inserted/add_to_basket.php` | 장바구니 추가 (mesu 저장) | ⭐ 2025-12-14 |
+| `mlangprintauto/shop/cart.php` | 장바구니 | - |
+| `mlangorder_printauto/ProcessOrder_unified.php` | 주문 처리 | - |
+| `mlangorder_printauto/OrderFormOrderTree.php` | 주문서 출력 | - |
+| `admin/mlangprintauto/orderlist.php` | 관리자 주문 목록 | - |
+| `mlangprintauto/quote/save_quotation.php` | 견적서 저장 | - |
+| `mlangprintauto/shop/convert_to_order.php` | 견적→주문 변환 | - |
 
 ---
 
@@ -282,4 +364,48 @@ if (floor($qty) == $qty) {
 
 ---
 
-*Last Updated: 2025-12-03*
+## 9. 2025-12-14 업데이트: MY_amountRight 필드 추가
+
+### 🎯 목적
+관리자 페이지에서 전단지 주문 시 "0.5연 (2,000매)" 형식으로 정확한 매수 표시
+
+### 🔧 구현 내용
+
+#### 1. 핵심 원칙 확립
+- **계산하지 않음**: DB의 pre-calculated quantityTwo 값을 그대로 사용
+- **기존 인프라 활용**: shop_temp.mesu 컬럼 및 ProcessOrder_unified.php 로직 재활용
+- **DB 스키마 변경 없음**: 새 필드 추가 없이 기존 컬럼만 활용
+
+#### 2. 데이터 흐름
+```
+DB quantityTwo → API (MY_amountRight="2000장")
+  → Frontend (히든 필드)
+  → Backend (파싱: mesu=2000)
+  → shop_temp.mesu 저장
+  → ProcessOrder (Type_1.quantityTwo)
+  → OrderFormOrderTree (표시: "0.5연 (2,000매)")
+```
+
+#### 3. 수정 파일 (2개)
+- **index.php**: MY_amountRight 히든 필드, FormData 전송
+- **add_to_basket.php**: MY_amountRight 수신/파싱, bind_param 수정 (15→16 chars)
+
+#### 4. E2E 테스트
+- ✅ A4 0.5연 = 2,000매
+- ✅ A4 1.0연 = 4,000매
+- ✅ A3 0.5연 = 1,000매
+- ✅ B5 1.0연 = 8,000매
+
+#### 5. 프로덕션 배포
+- ✅ dsp1830.shop FTP 업로드
+- ✅ 웹에서 정상 작동 확인
+- ✅ 장바구니 추가 성공 (basket_id=933)
+
+### 📝 사용자 피드백
+> "연수에 따른 매수는 드롭다운되는 대로 매수가 정해져있어 **계산하는것이 아니고 그대로 가져다 쓰는** 데이터를 찾아야해"
+
+→ **완벽히 반영**: 계산 로직 제거, DB 값을 그대로 전달하는 방식으로 구현
+
+---
+
+*Last Updated: 2025-12-14*

@@ -70,9 +70,20 @@ error_log("전단지 업로드 결과: $upload_count 개 파일, 경로: $img_fo
 // uploaded_files를 JSON으로 변환 (테이블의 uploaded_files 컬럼에 저장)
 $uploaded_files_json = json_encode($uploaded_files, JSON_UNESCAPED_UNICODE);
 
-// INSERT
-$sql = "INSERT INTO shop_temp (session_id, product_type, MY_type, PN_type, MY_Fsd, MY_amount, POtype, ordertype, st_price, st_price_vat, additional_options, additional_options_total, ImgFolder, ThingCate, uploaded_files)
-        VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)";
+// 🆕 매수(mesu) 처리: MY_amountRight에서 숫자만 추출 (예: "2000장" → 2000)
+$mesu = 0;
+if (!empty($_POST['MY_amountRight'])) {
+    $my_amount_right = $_POST['MY_amountRight'];
+    // "장" 또는 다른 문자 제거, 숫자만 추출
+    $mesu = intval(preg_replace('/[^0-9]/', '', $my_amount_right));
+    error_log("전단지 매수 수신: MY_amountRight = '$my_amount_right' → mesu = $mesu");
+} else {
+    error_log("⚠️ MY_amountRight 누락 - mesu는 0으로 저장됨");
+}
+
+// INSERT (mesu 컬럼 추가)
+$sql = "INSERT INTO shop_temp (session_id, product_type, MY_type, PN_type, MY_Fsd, MY_amount, POtype, ordertype, st_price, st_price_vat, additional_options, additional_options_total, mesu, ImgFolder, ThingCate, uploaded_files)
+        VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)";
 
 $stmt = mysqli_prepare($db, $sql);
 if (!$stmt) {
@@ -81,12 +92,13 @@ if (!$stmt) {
 }
 
 // 디버깅 로그
-error_log("Inserted add_to_basket - Session: $session_id, Product: $product_type, ImgFolder: $img_folder");
+error_log("Inserted add_to_basket - Session: $session_id, Product: $product_type, ImgFolder: $img_folder, mesu: $mesu");
 error_log("Uploaded files JSON: " . $uploaded_files_json);
 
-mysqli_stmt_bind_param($stmt, "ssssssssiisisss",
+// 16개 파라미터: session_id(s) + product_type(s) + MY_type(s) + PN_type(s) + MY_Fsd(s) + MY_amount(s) + POtype(s) + ordertype(s) + st_price(i) + st_price_vat(i) + additional_options(s) + additional_options_total(i) + mesu(i) + ImgFolder(s) + ThingCate(s) + uploaded_files(s)
+mysqli_stmt_bind_param($stmt, "ssssssssiiisisss",
     $session_id, $product_type, $MY_type, $PN_type, $MY_Fsd, $MY_amount, $POtype, $ordertype,
-    $price, $vat_price, $additional_options_json, $additional_options_total,
+    $price, $vat_price, $additional_options_json, $additional_options_total, $mesu,
     $img_folder, $thing_cate, $uploaded_files_json);
 
 if (mysqli_stmt_execute($stmt)) {

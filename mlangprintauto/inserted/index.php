@@ -394,6 +394,7 @@ header("Expires: 0");
                     <!-- 가격 정보 저장용 -->
                     <input type="hidden" name="price" id="calculated_price" value="">
                     <input type="hidden" name="vat_price" id="calculated_vat_price" value="">
+                    <input type="hidden" name="MY_amountRight" id="MY_amountRight" value="">
                 </form>
             </aside>
         </div>
@@ -563,6 +564,13 @@ header("Expires: 0");
 
             formData.append("calculated_price", totalPrice);
             formData.append("calculated_vat_price", vatPrice);
+
+            // 매수(MY_amountRight) 데이터 전송 (quantityTwo)
+            const myAmountRight = document.getElementById("MY_amountRight");
+            if (myAmountRight && myAmountRight.value) {
+                formData.append("MY_amountRight", myAmountRight.value);
+                console.log("📊 매수 데이터:", myAmountRight.value);
+            }
 
             // 추가 옵션 데이터 포함 (올바른 ID 사용)
             const coatingToggle = document.getElementById("coating_enabled");

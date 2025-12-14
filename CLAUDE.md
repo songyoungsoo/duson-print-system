@@ -1416,6 +1416,104 @@ $date_filter = "date >= '2023-01-01' AND date <= '2024-12-31'";
 $date_filter = "date >= DATE_SUB(NOW(), INTERVAL 1 YEAR)";
 ```
 
+## 🔄 Recent Critical Fixes (2025-12-14)
+
+### 전단지 연수/매수 표시 시스템 완성 ✅ COMPLETED
+**날짜**: 2025-12-14
+**목적**: 전단지 주문 시 연수(ream)에 따른 매수(sheet count) 자동 표시 및 관리자 페이지에서 정확한 수량 표시
+
+**핵심 원칙**: "연수에 따른 매수는 드롭다운되는 대로 매수가 정해져있어 **계산하는 것이 아니고 그대로 가져다 쓰는** 데이터를 찾아야해" (사용자 지적)
+
+**변경 사항**:
+
+| 항목 | 이전 | 변경 후 |
+|------|------|---------|
+| **매수 데이터 소스** | 없음 (표시 안 됨) | **DB에서 가져옴** (quantityTwo) |
+| **shop_temp.mesu** | NULL | 실제 매수 저장 (2000, 4000 등) |
+| **관리자 표시** | "0.5연" | **"0.5연 (2,000매)"** |
+
+**수정된 파일 (2개)**:
+
+| 파일 | 변경 내용 |
+|------|----------|
+| `mlangprintauto/inserted/index.php` | MY_amountRight 히든 필드 추가, FormData 전송 |
+| `mlangprintauto/inserted/add_to_basket.php` | MY_amountRight 수신 및 파싱 로직, bind_param 수정 |
+
+**데이터 흐름**:
+```
+mlangprintauto_inserted.quantityTwo (DB 테이블)
+  ↓
+calculate_price_ajax.php (API 응답: MY_amountRight = "2000장")
+  ↓
+calculator.js (히든 필드 저장)
+  ↓
+handleModalBasketAdd (FormData.append("MY_amountRight", "2000장"))
+  ↓
+add_to_basket.php (파싱: "2000장" → mesu = 2000)
+  ↓
+shop_temp.mesu = 2000 (장바구니 저장)
+  ↓
+ProcessOrder_unified.php (mesu → Type_1.quantityTwo)
+  ↓
+OrderFormOrderTree.php (표시: "0.5연 (2,000매)")
+```
+
+**핵심 코드 변경**:
+
+**1. Frontend** (`index.php` 라인 397, 568-573):
+```html
+<!-- 매수 데이터 저장용 히든 필드 -->
+<input type="hidden" name="MY_amountRight" id="MY_amountRight" value="">
+```
+```javascript
+// 매수(MY_amountRight) 데이터 전송 (quantityTwo)
+const myAmountRight = document.getElementById("MY_amountRight");
+if (myAmountRight && myAmountRight.value) {
+    formData.append("MY_amountRight", myAmountRight.value);
+}
+```
+
+**2. Backend** (`add_to_basket.php` 라인 73-82, 99):
+```php
+// ❌ 이전: 계산 로직 (잘못된 접근)
+// $mesu = intval($sheets_per_yeon * $yeonsu);
+
+// ✅ 변경 후: 받은 데이터 그대로 사용
+$mesu = 0;
+if (!empty($_POST['MY_amountRight'])) {
+    $my_amount_right = $_POST['MY_amountRight'];
+    // "2000장" → 2000
+    $mesu = intval(preg_replace('/[^0-9]/', '', $my_amount_right));
+}
+
+// bind_param 수정: 15 chars → 16 chars
+mysqli_stmt_bind_param($stmt, "ssssssssiiisisss",  // 16개
+    $session_id, $product_type, $MY_type, $PN_type, $MY_Fsd, $MY_amount,
+    $POtype, $ordertype, $price, $vat_price, $additional_options_json,
+    $additional_options_total, $mesu, $img_folder, $thing_cate, $uploaded_files_json);
+```
+
+**E2E 테스트 결과**:
+
+| Basket ID | 크기 | 연수 | 매수 | 상태 |
+|-----------|------|------|------|------|
+| 944 | A4 | 0.5연 | 2,000매 | ✅ |
+| 945 | A4 | 1.0연 | 4,000매 | ✅ |
+| 946 | A3 | 0.5연 | 1,000매 | ✅ |
+| 947 | B5 | 1.0연 | 8,000매 | ✅ |
+
+**프로덕션 배포**:
+- ✅ dsp1830.shop FTP 업로드 완료
+- ✅ 웹에서 MY_amountRight 필드 확인
+- ✅ 장바구니 추가 정상 작동 (basket_id=933)
+
+**중요 사항**:
+- ❌ **새 DB 필드 생성 안 함** - 기존 shop_temp.mesu 컬럼 활용
+- ✅ **기존 인프라 활용** - ProcessOrder_unified.php 및 OrderFormOrderTree.php 이미 quantityTwo 처리 로직 존재
+- ✅ **계산 안 함** - DB의 pre-calculated 값을 그대로 전달만 함
+
+---
+
 ## 🔄 Recent Critical Fixes (2025-12-11)
 
 ### 세션 8시간 연장 및 자동 로그인(Remember Me) 기능 추가 ✅ COMPLETED
