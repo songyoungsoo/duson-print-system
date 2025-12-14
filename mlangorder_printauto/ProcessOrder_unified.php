@@ -522,7 +522,8 @@ try {
         $envelope_additional_options_total = $item['envelope_additional_options_total'] ?? 0;
 
         // 🆕 단위 정보 가져오기 (unit 필드)
-        $unit = $item['unit'] ?? '개';
+        // 기본값: '매' (sheets) - 대부분의 제품이 매수 단위 사용
+        $unit = $item['unit'] ?? '매';
 
         // 📎 Phase 3: uploaded_files JSON 데이터 가져오기 (StandardUploadHandler)
         $uploaded_files_json = $item['uploaded_files'] ?? null;
