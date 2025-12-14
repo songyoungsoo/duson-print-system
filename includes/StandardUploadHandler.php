@@ -75,6 +75,7 @@ class StandardUploadHandler {
             // 4. 파일 업로드 처리
             $uploaded_files = [];
             $upload_count = 0;
+            $used_filenames = []; // 🆕 이미 사용된 파일명 추적 (중복 방지)
 
             foreach ($normalized_files as $file_info) {
                 $file_name = $file_info['name'];
@@ -101,8 +102,23 @@ class StandardUploadHandler {
                     continue;
                 }
 
-                // 4.4 안전한 파일명 생성
+                // 4.4 안전한 파일명 생성 (중복 체크 포함)
                 $safe_filename = self::generateSafeFilename($file_name);
+
+                // 🆕 중복 파일명 처리: 같은 이름이 이미 사용되었으면 순차 번호 추가
+                $original_safe_filename = $safe_filename;
+                $counter = 1;
+                while (in_array($safe_filename, $used_filenames)) {
+                    $filename_without_ext = pathinfo($original_safe_filename, PATHINFO_FILENAME);
+                    $extension_part = pathinfo($original_safe_filename, PATHINFO_EXTENSION);
+                    $safe_filename = $filename_without_ext . '_' . $counter . '.' . $extension_part;
+                    $counter++;
+                    error_log("StandardUploadHandler: Duplicate filename detected, using: $safe_filename");
+                }
+
+                // 사용된 파일명 목록에 추가
+                $used_filenames[] = $safe_filename;
+
                 $destination = $upload_dir . '/' . $safe_filename;
 
                 // 4.5 파일 이동
