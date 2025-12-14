@@ -69,6 +69,9 @@ $where_conditions = [];
 $params = [];
 $param_types = '';
 
+// 기본 조건: 주소가 있는 주문만 표시 (배송 대상)
+$where_conditions[] = "((zip IS NOT NULL AND zip != '') OR (zip1 IS NOT NULL AND zip1 != ''))";
+
 if (!empty($search_name)) {
     $where_conditions[] = "name LIKE ?";
     $params[] = "%{$search_name}%";
@@ -87,7 +90,7 @@ if (!empty($search_status)) {
     $param_types .= 's';
 }
 
-$where_clause = !empty($where_conditions) ? 'WHERE ' . implode(' AND ', $where_conditions) : '';
+$where_clause = 'WHERE ' . implode(' AND ', $where_conditions);
 
 // 전체 주문 수 조회
 $count_query = "SELECT COUNT(*) as total FROM mlangorder_printauto {$where_clause}";
@@ -217,6 +220,7 @@ while ($row = mysqli_fetch_array($result)) {
                     <div class="col-date">주문일시</div>
                     <div class="col-designer">담당자</div>
                     <div class="col-proofreading">교정확정</div>
+                    <div class="col-waybill">운송장번호</div>
                 </div>
                 
                 <div class="table-body">
@@ -262,10 +266,10 @@ while ($row = mysqli_fetch_array($result)) {
                             
                             <div class="col-status">
                                 <span class="status-badge status-<?php echo $order['OrderStyle']; ?>">
-                                    <?php 
+                                    <?php
                                     $status_map = [
                                         '2' => '접수중',
-                                        '3' => '접수완료', 
+                                        '3' => '접수완료',
                                         '4' => '입금대기',
                                         '5' => '시안제작중',
                                         '6' => '시안완료',
@@ -278,20 +282,38 @@ while ($row = mysqli_fetch_array($result)) {
                                     ?>
                                 </span>
                             </div>
-                            
+
                             <div class="col-date">
                                 <?php echo date('Y/m/d H:i', strtotime($order['date'])); ?>
                             </div>
-                            
+
                             <div class="col-designer">
                                 <?php echo htmlspecialchars($order['Designer'] ?: '관리자'); ?>
                             </div>
-                            
+
                             <div class="col-proofreading">
                                 <?php if ($order['proofreading_confirmed'] == 1): ?>
                                     <span class="proofreading-status confirmed">인쇄진행</span>
                                 <?php else: ?>
                                     <span class="proofreading-status pending">-</span>
+                                <?php endif; ?>
+                            </div>
+
+                            <div class="col-waybill" onclick="event.stopPropagation();">
+                                <?php if (!empty($order['waybill_no'])): ?>
+                                    <a href="https://www.ilogen.com/web/personal/trace/<?php echo htmlspecialchars($order['waybill_no']); ?>"
+                                       target="_blank"
+                                       class="waybill-link"
+                                       title="택배사: <?php echo htmlspecialchars($order['delivery_company'] ?? '로젠'); ?> - 클릭하면 배송조회">
+                                        📦 <?php echo htmlspecialchars($order['waybill_no']); ?>
+                                    </a>
+                                    <?php if (!empty($order['waybill_date'])): ?>
+                                        <small style="display:block; color:#666; font-size:0.85em;">
+                                            <?php echo date('m/d H:i', strtotime($order['waybill_date'])); ?>
+                                        </small>
+                                    <?php endif; ?>
+                                <?php else: ?>
+                                    <span style="color:#999;">-</span>
                                 <?php endif; ?>
                             </div>
                         </div>

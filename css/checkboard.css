@@ -216,11 +216,11 @@
     background: linear-gradient(135deg, #4a5568 0%, #2d3748 100%);
     color: white;
     display: grid;
-    grid-template-columns: 1fr 1fr 1fr 1fr 1fr 1fr 1fr;
+    grid-template-columns: 100px 120px 120px 100px 140px 140px 100px 100px;
     gap: 1px;
     font-weight: 600;
     font-size: 13px;
-    width: 1170px;
+    width: 1020px;
 }
 
 .table-header > div {
@@ -236,12 +236,12 @@
 
 .table-row {
     display: grid;
-    grid-template-columns: 1fr 1fr 1fr 1fr 1fr 1fr 1fr;
+    grid-template-columns: 100px 120px 120px 100px 140px 140px 100px 100px;
     gap: 1px;
     background: white;
     margin-bottom: 0.5px;
     transition: all 0.2s ease;
-    width: 1170px;
+    width: 1020px;
 }
 
 .table-row.clickable:hover {
@@ -326,6 +326,33 @@
     display: flex;
     align-items: center;
     justify-content: center;
+}
+
+.col-waybill {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    font-size: 12px;
+}
+
+.waybill-link {
+    font-weight: 500;
+    color: #2563eb;
+    text-decoration: none;
+    cursor: pointer;
+    transition: all 0.2s ease;
+}
+
+.waybill-link:hover {
+    color: #1d4ed8;
+    text-decoration: underline;
+}
+
+.waybill-number {
+    font-weight: 500;
+    color: #2563eb;
+    cursor: help;
 }
 
 .proofreading-status {
