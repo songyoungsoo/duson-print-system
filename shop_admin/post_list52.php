@@ -401,7 +401,7 @@ if(preg_match("/16절/i", $type1_raw)){
       <option value="퀵">퀵</option>
     </select></td>
     <td style="padding: 3px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; max-width: 200px;"><?php echo $type1_display?></td>
-    <td style="padding: 3px;"><?php echo htmlspecialchars($data['no'] ?? '')?></td>
+    <td style="padding: 3px;">dsno<?php echo htmlspecialchars($data['no'] ?? '')?></td>
     <td style="padding: 3px;"><?php echo htmlspecialchars($data['Type'] ?? '')?></td>
   </tr>
   <?php

@@ -1,7 +1,8 @@
 <?php
 /**
- * 로젠택배 양식 엑셀 내보내기 (XLS 형식) - 전체 컬럼
+ * 로젠택배 양식 엑셀 내보내기 (XLSX 형식) - SimpleXLSXGen 사용
  * PHP 7.4 호환 버전 - UTF-8
+ * 진짜 .xlsx 파일 생성
  */
 
 include "lib.php";
@@ -10,6 +11,7 @@ $connect = $db;
 
 require_once dirname(__FILE__) . '/delivery_rules_config.php';
 require_once dirname(__FILE__) . '/delivery_calculator.php';
+require_once dirname(__FILE__) . '/SimpleXLSXGen.php';
 
 $deliveryRules = require dirname(__FILE__) . '/delivery_rules_config.php';
 
@@ -43,7 +45,7 @@ $search_no_end = isset($_GET['search_no_end']) ? trim($_GET['search_no_end']) : 
 $where_conditions = array();
 
 if ($selected_nos != '') {
-    // 선택된 항목만 내보내기 (체크박스 선택) - 기본 조건 없이 선택된 것만
+    // 선택된 항목만 내보내기
     $nos_array = explode(',', $selected_nos);
     $nos_cleaned = array();
     foreach ($nos_array as $no) {
@@ -90,53 +92,25 @@ if (!$result) {
     die("Query Error: " . mysqli_error($connect));
 }
 
-// 엑셀 파일 헤더
-$filename = "logen_" . date('Y-m-d_His') . ".xls";
-header("Content-Type: application/vnd.ms-excel; charset=UTF-8");
-header("Content-Disposition: attachment; filename=\"" . $filename . "\"");
-header("Pragma: no-cache");
-header("Expires: 0");
-?>
-<html xmlns:x="urn:schemas-microsoft-com:office:excel">
-<head>
-<meta http-equiv="Content-Type" content="application/vnd.ms-excel; charset=UTF-8">
-<!--[if gte mso 9]>
-<xml>
-<x:ExcelWorkbook>
-<x:ExcelWorksheets>
-<x:ExcelWorksheet>
-<x:Name>로젠택배</x:Name>
-<x:WorksheetOptions>
-<x:Panes></x:Panes>
-</x:WorksheetOptions>
-</x:ExcelWorksheet>
-</x:ExcelWorksheets>
-</x:ExcelWorkbook>
-</xml>
-<![endif]-->
-<style>
-td { mso-number-format:\@; }
-.header { background-color: #4472C4; color: white; font-weight: bold; text-align: center; }
-.data { border: 1px solid #D0D0D0; vertical-align: top; }
-.center { text-align: center; }
-</style>
-</head>
-<body>
-<table border="1" cellpadding="3" cellspacing="0">
-<tr>
-    <td class="header">수하인명</td>
-    <td class="header">우편번호</td>
-    <td class="header">주소</td>
-    <td class="header">전화</td>
-    <td class="header">핸드폰</td>
-    <td class="header">박스수량</td>
-    <td class="header">택배비</td>
-    <td class="header">운임구분</td>
-    <td class="header">품목명</td>
-    <td class="header">기타</td>
-    <td class="header">배송메세지</td>
-</tr>
-<?php
+// 데이터 배열 생성 (SimpleXLSXGen 형식)
+$data_array = array();
+
+// 헤더 행 추가
+$data_array[] = array(
+    '수하인명',
+    '우편번호',
+    '주소',
+    '전화',
+    '핸드폰',
+    '박스수량',
+    '택배비',
+    '운임구분',
+    '품목명',
+    '기타',
+    '배송메세지'
+);
+
+// 데이터 행 추가
 while ($data = mysqli_fetch_array($result)) {
     $order_no = $data['no'];
 
@@ -190,24 +164,31 @@ while ($data = mysqli_fetch_array($result)) {
             $type_1_display = str_replace(array("\r\n", "\r", "\n"), ' ', $json_data['formatted_display']);
         }
     }
-?>
-<tr>
-    <td class="data"><?php echo htmlspecialchars($data['name'] ?? ''); ?></td>
-    <td class="data" style="mso-number-format:'\@';"><?php echo htmlspecialchars($zip); ?></td>
-    <td class="data"><?php echo htmlspecialchars($full_address); ?></td>
-    <td class="data" style="mso-number-format:'\@';"><?php echo htmlspecialchars($data['phone'] ?? ''); ?></td>
-    <td class="data" style="mso-number-format:'\@';"><?php echo htmlspecialchars($data['Hendphone'] ?? ''); ?></td>
-    <td class="data center"><?php echo $r; ?></td>
-    <td class="data center"><?php echo $w; ?></td>
-    <td class="data center"><?php echo htmlspecialchars($fee_type); ?></td>
-    <td class="data"><?php echo htmlspecialchars($type_1_display); ?></td>
-    <td class="data"><?php echo htmlspecialchars($data['no'] ?? ''); ?></td>
-    <td class="data"><?php echo htmlspecialchars($data['Type'] ?? ''); ?></td>
-</tr>
-<?php } ?>
-</table>
-</body>
-</html>
-<?php
+
+    // 데이터 행 추가
+    $data_array[] = array(
+        $data['name'] ?? '',                    // 수하인명
+        $zip,                                   // 우편번호
+        $full_address,                          // 주소
+        $data['phone'] ?? '',                   // 전화
+        $data['Hendphone'] ?? '',               // 핸드폰
+        $r,                                     // 박스수량
+        $w,                                     // 택배비
+        $fee_type,                              // 운임구분
+        $type_1_display,                        // 품목명
+        'dsno' . ($data['no'] ?? ''),          // 기타 (dsno + 주문번호)
+        $data['Type'] ?? ''                     // 배송메세지
+    );
+}
+
 mysqli_close($connect);
+
+// SimpleXLSXGen으로 Excel 파일 생성
+$xlsx = Shuchkin\SimpleXLSXGen::fromArray($data_array);
+
+// 파일명 생성
+$filename = "logen_" . date('Y-m-d_His') . ".xlsx";
+
+// 다운로드 헤더 설정 및 출력
+$xlsx->downloadAs($filename);
 ?>

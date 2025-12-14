@@ -135,25 +135,108 @@ if ($action === 'import_waybill' && isset($_FILES['waybill_file'])) {
             $content = mb_convert_encoding($content, 'UTF-8', 'EUC-KR');
         }
 
+        // Windows 줄바꿈(\r\n)을 Unix 줄바꿈(\n)으로 통일
+        $content = str_replace("\r\n", "\n", $content);
+        $content = str_replace("\r", "\n", $content);
+
         $lines = explode("\n", $content);
         $updated = 0;
         $failed = 0;
         $errors = [];
 
-        // 첫 줄 헤더 분석
-        $header = str_getcsv(array_shift($lines), "\t");
-        $order_col = -1;
-        $waybill_col = -1;
+        // 디버그: 파일 기본 정보
+        error_log("=== 파일 디버그 ===");
+        error_log("총 라인 수: " . count($lines));
+        error_log("첫 3줄 (raw): " . print_r(array_slice($lines, 0, 3), true));
 
-        foreach ($header as $idx => $col) {
-            $col = trim($col);
-            if (preg_match('/주문번호|주문NO|OrderNo/i', $col)) $order_col = $idx;
-            if (preg_match('/운송장|송장번호|waybill/i', $col)) $waybill_col = $idx;
+        // 실제 데이터 줄 찾기 (숫자로 시작하는 첫 번째 줄)
+        $data_line_idx = -1;
+        for ($i = 0; $i < count($lines) && $i < 10; $i++) {
+            $test_row = str_getcsv($lines[$i], "\t");
+            $first_col = isset($test_row[0]) ? trim($test_row[0]) : '';
+
+            // 첫 번째 컬럼이 숫자로 시작하면 데이터 줄
+            if (preg_match('/^[0-9]+$/', $first_col)) {
+                $data_line_idx = $i;
+                break;
+            }
         }
 
-        if ($order_col === -1 || $waybill_col === -1) {
-            $error = "엑셀 파일에서 '주문번호'와 '운송장번호' 컬럼을 찾을 수 없습니다.";
+        if ($data_line_idx === -1) {
+            $error = "데이터 줄을 찾을 수 없습니다. 파일 형식을 확인해주세요.";
         } else {
+            // 데이터 줄부터 시작
+            $lines = array_slice($lines, $data_line_idx);
+
+            $order_col = -1;
+            $waybill_col = -1;
+
+            // 패턴 기반 컬럼 인식: 여러 데이터 행을 스캔해서 패턴으로 컬럼 찾기
+            // (첫 번째 행에 패턴이 없을 수 있으므로 최대 20개 행 스캔)
+            $scan_limit = min(20, count($lines));
+            for ($scan_idx = 0; $scan_idx < $scan_limit; $scan_idx++) {
+                $row = str_getcsv($lines[$scan_idx], "\t");
+
+                foreach ($row as $idx => $value) {
+                    $value = trim($value);
+
+                    // 운송장번호: 4로 시작하는 11자리 숫자 (예: 43366261260)
+                    if ($waybill_col === -1 && preg_match('/^4[0-9]{10}$/', $value)) {
+                        $waybill_col = $idx;
+                    }
+
+                    // 주문번호: dsno 포함 (예: dsno84285, 또는 더 긴 문자열에 dsno84285 포함)
+                    if ($order_col === -1 && preg_match('/dsno[0-9]+/i', $value)) {
+                        $order_col = $idx;
+                    }
+                }
+
+                // 둘 다 찾았으면 더 이상 스캔 안 함
+                if ($order_col !== -1 && $waybill_col !== -1) {
+                    break;
+                }
+            }
+
+            if ($order_col === -1 || $waybill_col === -1) {
+                // 디버그 정보 - 더 상세하게
+                $total_lines = count($lines);
+                $first_row_display = $total_lines > 0 ? str_getcsv($lines[0], "\t") : array();
+
+                // 첫 5줄의 raw 데이터 표시
+                $raw_lines_preview = array_slice($lines, 0, 5);
+
+                // 전체 컬럼을 스캔해서 패턴 매칭 여부 확인
+                $waybill_matches = [];
+                $order_matches = [];
+                foreach ($first_row_display as $idx => $value) {
+                    $value = trim($value);
+                    if (preg_match('/^4[0-9]{10}$/', $value)) {
+                        $waybill_matches[] = "[$idx] " . $value;
+                    }
+                    if (preg_match('/dsno[0-9]+/i', $value)) {
+                        $order_matches[] = "[$idx] " . $value;
+                    }
+                }
+
+                $error = "엑셀 파일에서 '주문번호'와 '운송장번호' 컬럼을 찾을 수 없습니다.<br><br>" .
+                         "<b>패턴 인식 정보:</b><br>" .
+                         "운송장번호 패턴: 4로 시작하는 11자리 숫자 (예: 43366261260)<br>" .
+                         "주문번호 패턴: dsno + 숫자 (예: dsno84285)<br><br>" .
+                         "주문번호 위치: " . ($order_col === -1 ? '찾을 수 없음' : "컬럼 " . $order_col) . "<br>" .
+                         "운송장 위치: " . ($waybill_col === -1 ? '찾을 수 없음' : "컬럼 " . $waybill_col) . "<br><br>" .
+                         "<b>전체 컬럼에서 발견된 패턴:</b><br>" .
+                         "운송장 패턴 매칭: " . (count($waybill_matches) > 0 ? implode(", ", $waybill_matches) : "없음") . "<br>" .
+                         "주문번호 패턴 매칭: " . (count($order_matches) > 0 ? implode(", ", $order_matches) : "없음") . "<br><br>" .
+                         "<b>파일 정보:</b><br>" .
+                         "데이터 시작 줄: " . ($data_line_idx + 1) . "번째 줄 (0부터 시작: " . $data_line_idx . ")<br>" .
+                         "총 데이터 라인 수: " . $total_lines . "<br>" .
+                         "첫 번째 데이터 행 컬럼 수: " . count($first_row_display) . "<br><br>" .
+                         "<b>첫 번째 데이터 행 (전체 컬럼):</b><br>" .
+                         "<small>" . implode("<br>", array_map(function($i, $c) {
+                             $len = mb_strlen($c);
+                             return "[" . $i . "] (길이:" . $len . ") " . htmlspecialchars(trim($c));
+                         }, array_keys($first_row_display), $first_row_display)) . "</small>";
+            } else {
             $stmt = mysqli_prepare($connect,
                 "UPDATE mlangorder_printauto
                  SET waybill_no = ?, waybill_date = NOW(), delivery_company = '로젠'
@@ -164,8 +247,11 @@ if ($action === 'import_waybill' && isset($_FILES['waybill_file'])) {
                 if (empty($line)) continue;
 
                 $cols = str_getcsv($line, "\t");
-                $order_no = isset($cols[$order_col]) ? trim($cols[$order_col]) : '';
+                $order_no_raw = isset($cols[$order_col]) ? trim($cols[$order_col]) : '';
                 $waybill_no = isset($cols[$waybill_col]) ? trim($cols[$waybill_col]) : '';
+
+                // "dsno" 접두사 제거 (예: dsno84285 → 84285)
+                $order_no = preg_replace('/^dsno/i', '', $order_no_raw);
 
                 if (!empty($order_no) && !empty($waybill_no) && is_numeric($order_no)) {
                     mysqli_stmt_bind_param($stmt, "si", $waybill_no, $order_no);
@@ -182,8 +268,9 @@ if ($action === 'import_waybill' && isset($_FILES['waybill_file'])) {
             if (count($errors) > 0 && count($errors) <= 5) {
                 $message .= "<br><small>" . implode("<br>", $errors) . "</small>";
             }
-        }
-        } // .xlsx 체크 else 블록 종료
+            }
+        } // if ($header === null) else 블록 종료
+        } // if ($file_ext === 'xlsx') else 블록 종료
     } else {
         $error = "파일 업로드 오류가 발생했습니다.";
     }

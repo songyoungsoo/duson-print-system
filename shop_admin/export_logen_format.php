@@ -158,10 +158,10 @@ while ($data = mysqli_fetch_array($result)) {
 
     // CSV 행 데이터 (로젠택배 iLOGEN 순서)
     $row = array(
-        isset($data['no']) ? $data['no'] : '',                              // 주문번호
+        isset($data['no']) ? 'dsno' . $data['no'] : '',                     // 주문번호
         isset($data['name']) ? $data['name'] : '',                          // 수하인명
-        isset($data['phone']) ? $data['phone'] : '',                        // 수하인전화
-        isset($data['Hendphone']) ? $data['Hendphone'] : '',                // 수하인휴대폰
+        isset($data['phone']) ? '="' . $data['phone'] . '"' : '',           // 수하인전화 (텍스트 형식)
+        isset($data['Hendphone']) ? '="' . $data['Hendphone'] . '"' : '',   // 수하인휴대폰 (텍스트 형식)
         $full_address,                                                       // 수하인주소 (우편번호 제외)
         $type_1_display,                                                     // 물품명 (JSON 처리)
         $box_count,                                                          // 수량(박스) - 자동 계산
