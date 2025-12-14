@@ -66,11 +66,12 @@ $full_path = $downfiledir . $downfile;
 
 // 6. 📋 JSON 기반 절대 경로 우선 확인 (StandardUploadHandler 표준화된 주문)
 $json_path_found = false;
+$db_img_folder = ''; // DB에서 조회한 ImgFolder 정보 저장
 if (!empty($no)) {
-    // mlangorder_printauto 테이블에서 uploaded_files JSON 조회
+    // mlangorder_printauto 테이블에서 uploaded_files와 ImgFolder 조회
     include $base_dir . "db.php";
     if (isset($db) && $db) {
-        $query = "SELECT uploaded_files FROM mlangorder_printauto WHERE no = ? LIMIT 1";
+        $query = "SELECT uploaded_files, ImgFolder FROM mlangorder_printauto WHERE no = ? LIMIT 1";
         $stmt = mysqli_prepare($db, $query);
         if ($stmt) {
             mysqli_stmt_bind_param($stmt, "i", $no);
@@ -79,22 +80,28 @@ if (!empty($no)) {
             $row = mysqli_fetch_assoc($result);
             mysqli_stmt_close($stmt);
 
-            if ($row && !empty($row['uploaded_files']) && $row['uploaded_files'] !== '0') {
-                $uploaded_files = json_decode($row['uploaded_files'], true);
-                if (is_array($uploaded_files)) {
-                    foreach ($uploaded_files as $file_info) {
-                        // saved_name과 일치하는 파일 찾기
-                        if (isset($file_info['saved_name']) && $file_info['saved_name'] === $downfile) {
-                            // 절대 경로 확인
-                            if (isset($file_info['path']) && file_exists($file_info['path'])) {
-                                // 보안: 경로가 서버 루트 아래인지 확인
-                                $real_path = realpath($file_info['path']);
-                                $document_root = realpath($_SERVER['DOCUMENT_ROOT']);
-                                if ($real_path && strpos($real_path, $document_root) === 0) {
-                                    $full_path = $real_path;
-                                    $json_path_found = true;
-                                    error_log("Download: JSON 절대 경로 사용 - $full_path");
-                                    break;
+            if ($row) {
+                // ImgFolder 정보 저장 (폴백 경로에서 사용)
+                $db_img_folder = $row['ImgFolder'] ?? '';
+
+                // uploaded_files JSON 확인
+                if (!empty($row['uploaded_files']) && $row['uploaded_files'] !== '0') {
+                    $uploaded_files = json_decode($row['uploaded_files'], true);
+                    if (is_array($uploaded_files)) {
+                        foreach ($uploaded_files as $file_info) {
+                            // saved_name과 일치하는 파일 찾기
+                            if (isset($file_info['saved_name']) && $file_info['saved_name'] === $downfile) {
+                                // 절대 경로 확인
+                                if (isset($file_info['path']) && file_exists($file_info['path'])) {
+                                    // 보안: 경로가 서버 루트 아래인지 확인
+                                    $real_path = realpath($file_info['path']);
+                                    $document_root = realpath($_SERVER['DOCUMENT_ROOT']);
+                                    if ($real_path && strpos($real_path, $document_root) === 0) {
+                                        $full_path = $real_path;
+                                        $json_path_found = true;
+                                        error_log("Download: JSON 절대 경로 사용 - $full_path");
+                                        break;
+                                    }
                                 }
                             }
                         }
@@ -110,6 +117,12 @@ if (!empty($no)) {
 if (!$json_path_found && !file_exists($full_path)) {
     // 대체 경로 시도 (여러 패턴 지원)
     $alternative_paths = [];
+
+    // Pattern 0: DB에서 조회한 ImgFolder 경로 (최우선 폴백)
+    if (!empty($db_img_folder)) {
+        $alternative_paths[] = $base_dir . "ImgFolder/" . $db_img_folder . "/";
+        error_log("Download 폴백: DB ImgFolder 경로 시도 - " . $base_dir . "ImgFolder/" . $db_img_folder . "/");
+    }
 
     // Pattern 1: 주문번호 기반 경로
     if (!empty($no)) {
@@ -157,7 +170,7 @@ if (!$json_path_found && !file_exists($full_path)) {
 }
 
 // 8. 파일 타입 검증 (추가 보안)
-$allowed_extensions = ['jpg', 'jpeg', 'png', 'gif', 'pdf', 'ai', 'psd', 'zip', 'doc', 'docx', 'xls', 'xlsx'];
+$allowed_extensions = ['jpg', 'jpeg', 'png', 'gif', 'pdf', 'ai', 'psd', 'zip', 'doc', 'docx', 'xls', 'xlsx', 'txt'];
 $file_ext = strtolower(pathinfo($downfile, PATHINFO_EXTENSION));
 if (!in_array($file_ext, $allowed_extensions)) {
     die("<script>alert('허용되지 않은 파일 형식입니다.'); history.back();</script>");

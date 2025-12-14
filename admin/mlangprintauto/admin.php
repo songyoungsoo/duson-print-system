@@ -421,26 +421,61 @@ if ($mode == "BankModifyOk") { /////////////////////////////////////////////////
 <?php
 if ($mode == "OrderView") {
     include "../title.php";
-    
+
     // 데이터베이스 연결은 이미 파일 상단에서 완료됨
-    
+
     if (!empty($no)) {
-        // ✅ 주문 정보 조회
+        // ✅ Step 1: 기준 주문 정보 조회
         $stmt = $db->prepare("SELECT * FROM mlangorder_printauto WHERE no = ?");
         $stmt->bind_param("i", $no);
         $stmt->execute();
         $result = $stmt->get_result();
         $row = $result->fetch_assoc();
-        $stmt->close();  // ✅ 쿼리 완료 후 닫기
-        
-        // ✅ 주문 상태 업데이트 (OrderStyle이 "2"일 경우만)
-        if ($row && $row['OrderStyle'] == "2") {
-            $update_stmt = $db->prepare("UPDATE mlangorder_printauto SET OrderStyle = '3' WHERE no = ?");
-            $update_stmt->bind_param("i", $no);
-            if ($update_stmt->execute()) {
-                echo "<script>if(opener && opener.parent) { opener.parent.location.href = opener.parent.location.href.split('?')[0]; }</script>";
+        $stmt->close();
+
+        if (!$row) {
+            echo "❌ 주문 정보를 찾을 수 없습니다.";
+            exit;
+        }
+
+        // ✅ Step 2: 같은 장바구니(같은 초 + 연속 주문번호)의 주문을 모두 조회
+        $base_date = $row['date'];
+        $base_no = intval($row['no']);
+
+        // 같은 초 + 주문번호 ±50 범위 조회 (장바구니 그룹핑)
+        $group_stmt = $db->prepare("
+            SELECT * FROM mlangorder_printauto
+            WHERE date = ?
+            AND no BETWEEN ? AND ?
+            ORDER BY no ASC
+        ");
+        $no_min = $base_no - 50;
+        $no_max = $base_no + 50;
+        $group_stmt->bind_param("sii", $base_date, $no_min, $no_max);
+        $group_stmt->execute();
+        $group_result = $group_stmt->get_result();
+
+        // 배열로 저장
+        $order_rows = [];
+        while ($group_row = $group_result->fetch_assoc()) {
+            $order_rows[] = $group_row;
+        }
+        $group_stmt->close();
+
+        // ✅ Step 3: 그룹 내 모든 주문의 상태를 업데이트 (OrderStyle이 "2"일 경우만)
+        foreach ($order_rows as $order_row) {
+            if ($order_row['OrderStyle'] == "2") {
+                $update_stmt = $db->prepare("UPDATE mlangorder_printauto SET OrderStyle = '3' WHERE no = ?");
+                $update_no = $order_row['no'];
+                $update_stmt->bind_param("i", $update_no);
+                $update_stmt->execute();
+                $update_stmt->close();
             }
-            $update_stmt->close();
+        }
+
+        // 페이지 새로고침 (한 번만)
+        if (count($order_rows) > 0 && $order_rows[0]['OrderStyle'] == "2") {
+            echo "<script>if(opener && opener.parent) { opener.parent.location.href = opener.parent.location.href.split('?')[0]; }</script>";
         }
     } else {
         echo "❌ 주문 번호가 제공되지 않았습니다.";
@@ -696,10 +731,16 @@ if ($mode == "OrderView") {
             box-shadow: 0 0 0 0.2rem rgba(0,123,255,.25);
         }
     </style>
-    
-    <?php include "../../mlangorder_printauto/OrderFormOrderTree.php"; ?>
+
+    <?php
+    // OrderFormOrderTree.php가 $no를 덮어쓰므로 백업
+    $original_no = $no;
+    include "../../mlangorder_printauto/OrderFormOrderTree.php";
+    // $no 복원
+    $no = $original_no;
+    ?>
     <br><br>
-    
+
     <?php if (!empty($no)) { ?>
         <div class="file-section" style="padding: 12px; margin: 10px 0;">
             <h3 style="color: #2c3e50; margin-bottom: 8px; font-size: 0.95rem;">📎 첨부 파일</h3>
@@ -826,12 +867,25 @@ if ($mode == "OrderView") {
 
                         // ✅ 결과 표시
                         if ($total_file_count == 0) {
-                            echo "<div style='margin-top: 10px; padding: 8px; background: #fff3cd; border-left: 3px solid #ffc107;'>";
-                            echo "⚠️ 업로드된 파일을 찾을 수 없습니다.<br>";
-                            if (!empty($row['ThingCate'])) {
-                                echo "<small style='color: #856404;'>대표 파일명: " . htmlspecialchars($row['ThingCate']) . "</small>";
+                            // ThingCate가 기본 패턴(제품명_타임스탬프.jpg)인지 확인
+                            $is_default_pattern = !empty($row['ThingCate']) &&
+                                                 preg_match('/^[^_]+_\d{14}\.(jpg|jpeg|png)$/i', $row['ThingCate']);
+
+                            if ($is_default_pattern) {
+                                // 파일 미업로드 주문
+                                echo "<div style='margin-top: 10px; padding: 8px; background: #e8f5e9; border-left: 3px solid #4caf50;'>";
+                                echo "📭 <strong>파일이 업로드되지 않은 주문입니다.</strong><br>";
+                                echo "<small style='color: #2e7d32;'>고객이 파일 업로드 없이 주문을 완료했습니다. 필요 시 고객에게 파일 전송을 요청하세요.</small>";
+                                echo "</div>";
+                            } else {
+                                // 파일이 있어야 하는데 찾을 수 없는 경우
+                                echo "<div style='margin-top: 10px; padding: 8px; background: #fff3cd; border-left: 3px solid #ffc107;'>";
+                                echo "⚠️ 업로드된 파일을 찾을 수 없습니다.<br>";
+                                if (!empty($row['ThingCate'])) {
+                                    echo "<small style='color: #856404;'>대표 파일명: " . htmlspecialchars($row['ThingCate']) . "</small>";
+                                }
+                                echo "</div>";
                             }
-                            echo "</div>";
                         } else {
                             echo "<div style='margin-top: 10px; padding: 8px; background: #e3f2fd; border-left: 3px solid #2196f3; font-size: 0.9em;'>";
                             echo "💡 <strong>총 {$total_file_count}개 파일</strong> | 파일명을 클릭하면 다운로드됩니다.";
