@@ -139,15 +139,18 @@ if (mysqli_num_rows($column_result) == 0) {
 // 파일 정보 JSON 변환
 $files_json = json_encode($uploaded_files, JSON_UNESCAPED_UNICODE);
 
+// 포스터 단위는 '매' (sheets)
+$unit = '매';
+
 // 장바구니에 추가 (추가 옵션 JSON 방식 + 파일 업로드)
-$insert_query = "INSERT INTO shop_temp (session_id, product_type, MY_type, Section, PN_type, MY_amount, POtype, ordertype, st_price, st_price_vat,
+$insert_query = "INSERT INTO shop_temp (session_id, product_type, MY_type, Section, PN_type, MY_amount, POtype, ordertype, unit, st_price, st_price_vat,
                 additional_options, additional_options_total, ImgFolder, ThingCate, uploaded_files)
-                VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)";
+                VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)";
 
 $stmt = mysqli_prepare($db, $insert_query);
 if ($stmt) {
-    mysqli_stmt_bind_param($stmt, "ssssssssiisisss",
-        $session_id, $product_type, $MY_type, $Section, $PN_type, $MY_amount, $POtype, $ordertype, $price, $vat_price,
+    mysqli_stmt_bind_param($stmt, "sssssssssiisisss",
+        $session_id, $product_type, $MY_type, $Section, $PN_type, $MY_amount, $POtype, $ordertype, $unit, $price, $vat_price,
         $additional_options_json, $additional_options_total, $upload_folder_db, $thing_cate, $files_json);
     
     if (mysqli_stmt_execute($stmt)) {

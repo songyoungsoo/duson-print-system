@@ -28,7 +28,7 @@ $jong = $_POST['jong'] ?? '';
 $garo = $_POST['garo'] ?? '';
 $sero = $_POST['sero'] ?? '';
 $mesu = $_POST['mesu'] ?? '';
-$uhyung = $_POST['uhyung'] ?? ''; // 새 모달에서는 문자열로 전송
+$uhyung = intval($_POST['uhyung'] ?? 0); // 🔧 DB uhyung 컬럼이 int이므로 변환 필요
 $domusong = $_POST['domusong'] ?? '';
 
 // 가격 정보 (새 모달에서는 price 필드로 전송)
@@ -178,7 +178,7 @@ if ($product_type === 'sticker') {
 
     $stmt = mysqli_prepare($connect, $insert_query);
     if ($stmt) {
-        mysqli_stmt_bind_param($stmt, "ssssssssiisssssss",
+        mysqli_stmt_bind_param($stmt, "ssssssisiisssssss",
             $session_id, $product_type, $jong, $garo, $sero, $mesu, $uhyung, $domusong, $st_price, $st_price_vat, $customer_name, $customer_phone,
             $work_memo, $upload_method, $uploaded_files_json, $thing_cate, $img_folder);
         

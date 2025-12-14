@@ -71,10 +71,10 @@ if ($type_result && ($type_row = mysqli_fetch_assoc($type_result))) {
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title><?php echo safe_html($page_title); ?></title>
 
-    
-    
+    <!-- 🏆 Competition Edition: 테이블 디자인 시스템 (최우선 로드) -->
+    <link rel="stylesheet" href="../../css/table-design-system.css">
 
-    <!-- 🎯 통합 컬러 시스템 (최우선 로드) -->
+    <!-- 🎯 통합 컬러 시스템 -->
     <link rel="stylesheet" href="../../css/color-system-unified.css">
 
     <!-- 명함 컴팩트 페이지 전용 CSS (PROJECT_SUCCESS_REPORT.md 스펙) -->
@@ -915,96 +915,6 @@ if ($type_result && ($type_row = mysqli_fetch_assoc($type_result))) {
         };
 
         // 🆕 namecard.js 대체 필수 기능들
-
-        // 페이지 로드 시 초기화
-        document.addEventListener('DOMContentLoaded', function() {
-            initializeCalculator();
-            // initializePremiumOptions(); // 프리미엄 옵션은 namecard-premium-options.js에서 자동 초기화됨
-        });
-
-        function initializeCalculator() {
-            const typeSelect = document.getElementById('MY_type');
-
-            if (typeSelect) {
-                typeSelect.addEventListener('change', function() {
-                    loadPaperTypes(this.value);
-                });
-
-                // 기본값이 설정되어 있으면 자동으로 하위 옵션들 로드
-                if (typeSelect.value) {
-                    loadPaperTypes(typeSelect.value);
-                }
-            }
-        }
-
-        // 용지 타입 로드
-        function loadPaperTypes(typeValue) {
-            const sectionSelect = document.getElementById('Section');
-            if (!sectionSelect || !typeValue) return;
-
-            fetch(`get_paper_types.php?style=${typeValue}`)
-                .then(response => response.json())
-                .then(data => {
-                    sectionSelect.innerHTML = '<option value="">선택해주세요</option>';
-                    if (data.success) {
-                        data.data.forEach(item => {
-                            const option = new Option(item.text, item.value);
-                            sectionSelect.appendChild(option);
-                        });
-
-                        // 기본값 설정
-                        const defaultValue = sectionSelect.getAttribute('data-default-value');
-                        if (defaultValue) {
-                            sectionSelect.value = defaultValue;
-                            loadQuantities(typeValue, defaultValue);
-                        }
-                    }
-                })
-                .catch(error => {
-                    console.error('용지 타입 로드 오류:', error);
-                });
-        }
-
-        // 수량 로드 (기존 함수와 동일)
-        function loadQuantities(typeValue, sectionValue) {
-            const amountSelect = document.getElementById('MY_amount');
-            if (!amountSelect || !typeValue || !sectionValue) return;
-
-            fetch(`get_quantities.php?type=${typeValue}&section=${sectionValue}`)
-                .then(response => response.json())
-                .then(data => {
-                    if (data.success) {
-                        amountSelect.innerHTML = '<option value="">선택해주세요</option>';
-                        data.data.forEach(item => {
-                            const option = new Option(item.text, item.value);
-                            amountSelect.appendChild(option);
-                        });
-
-                        // 기본값 설정
-                        const defaultValue = amountSelect.getAttribute('data-default-value');
-                        if (defaultValue) {
-                            amountSelect.value = defaultValue;
-                            calculatePrice();
-                        }
-                    }
-                })
-                .catch(error => {
-                    console.error('수량 로드 오류:', error);
-                });
-        }
-
-        // Section 변경 이벤트
-        document.addEventListener('DOMContentLoaded', function() {
-            const sectionSelect = document.getElementById('Section');
-            if (sectionSelect) {
-                sectionSelect.addEventListener('change', function() {
-                    const typeValue = document.getElementById('MY_type').value;
-                    if (typeValue && this.value) {
-                        loadQuantities(typeValue, this.value);
-                    }
-                });
-            }
-        });
     </script>
 
     <?php
