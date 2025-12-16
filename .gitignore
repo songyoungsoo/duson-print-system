@@ -112,6 +112,8 @@ Thumbs.db
 config.local.php
 *credentials*
 *secret*
+*_api_config.php
+shop_admin/logen_api_config.php
 
 # ============================================
 # 8. 의존성 패키지 (각 환경에서 설치)
@@ -153,3 +155,8 @@ smarty/templates_c/
 logs/
 error_log
 php_errors.log
+
+# Cart.php backups
+*_backup_*.php
+*.backup
+archive/
