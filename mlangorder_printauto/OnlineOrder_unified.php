@@ -994,36 +994,6 @@ button {
     grid-column: span 2;
 }
 
-/* ===== 신청자 정보 가로 배치 레이아웃 ===== */
-.applicant-info-horizontal {
-    margin-bottom: 1rem !important;
-}
-
-.applicant-info-horizontal .info-row {
-    display: grid !important;
-    grid-template-columns: repeat(2, 1fr) !important;
-    gap: 1rem !important;
-    margin-bottom: 0.8rem !important;
-}
-
-.applicant-info-horizontal .info-field {
-    display: grid !important;
-    grid-template-columns: 90px 1fr !important;
-    gap: 0.5rem !important;
-    align-items: center !important;
-}
-
-.applicant-info-horizontal .info-field label {
-    white-space: nowrap !important;
-    font-weight: 600 !important;
-    color: #2c3e50 !important;
-    margin: 0 !important;
-    text-align: left !important;
-}
-
-.applicant-info-horizontal .info-field input {
-    width: 100% !important;
-}
 
 /* ===== 사업자 정보 가로 배치 레이아웃 ===== */
 .business-info-horizontal {
