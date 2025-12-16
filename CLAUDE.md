@@ -1598,6 +1598,47 @@ if ($json_data && isset($is_flyer) && $is_flyer) {
 
 ---
 
+### 견적서 전단지 표시 형식 통일 ✅ COMPLETED
+**날짜**: 2025-12-17
+**목적**: 견적서 시스템에서도 전단지 수량 표시를 주문서와 동일하게 "X연 (Y매)" 한 줄 형식으로 통일
+
+**수정 파일 (2개)**:
+- `mlangprintauto/quote/detail.php` (관리자 견적 상세)
+- `mlangprintauto/quote/api/generate_pdf.php` (견적 PDF)
+
+**변경 내용**:
+
+| 파일 | 이전 표시 | 변경 후 |
+|------|----------|---------|
+| detail.php | "0.5<br>(2,000매)" 두 줄 | "0.5연 (2,000매)" 한 줄 |
+| generate_pdf.php | "0.5<br>(2,000매)" 두 줄 | "0.5연 (2,000매)" 한 줄 |
+
+**핵심 코드 변경**:
+```php
+// 이전 (두 줄 표시)
+echo '<br><span style="font-size: 10px; color: #666;">(' . number_format($sourceData['mesu']) . '매)</span>';
+
+// 변경 후 (한 줄 표시)
+echo '연 (' . number_format($sourceData['mesu']) . '매)';
+```
+
+**리플렛 지원 상태**:
+- detail.php: `['inserted', 'leaflet']` 체크 유지 (기존 지원 유지)
+- generate_pdf.php: `'inserted'`만 체크 (리플렛 추가 안 함)
+
+**배포 완료**:
+- ✅ 로컬 파일 수정 완료
+- ✅ 프로덕션 FTP 업로드 완료 (dsp1830.shop)
+- ✅ Git 커밋 완료 (commit c6d1949)
+- ✅ GitHub 푸시 완료
+
+**일관성 확보**:
+- 주문서: "X연 (Y매)" 한 줄 형식 ✅
+- 견적서: "X연 (Y매)" 한 줄 형식 ✅
+- 전체 시스템 통일 완료
+
+---
+
 ## 🔄 Recent Critical Fixes (2025-12-14)
 
 ### 전단지 연수/매수 표시 시스템 완성 ✅ COMPLETED
