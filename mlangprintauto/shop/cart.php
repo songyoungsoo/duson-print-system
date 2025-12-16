@@ -95,15 +95,11 @@ function getCartItems($connect, $session_id)
         mysqli_stmt_close($stmt);
     }
 
-    // 배열을 결과셋처럼 사용할 수 있도록 변환
-    if (empty($items)) {
-        return false;
-    }
-
     // 임시로 배열을 전역 변수에 저장하여 mysqli_fetch_assoc처럼 사용
     global $cart_items_array;
     $cart_items_array = $items;
 
+    // 빈 장바구니도 정상으로 처리
     return true; // 성공 표시
 }
 
@@ -166,21 +162,22 @@ if ($cart_result === false) {
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>🛒 통합 장바구니</title>
-    <link rel="stylesheet" href="../../css/style250801.css">
+    <!-- <link rel="stylesheet" href="../../css/style250801.css"> -->
+    <link rel="stylesheet" href="../../css/excel-unified-style.css">
 </head>
 
 <body>
-    <div class="container" style="font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif; line-height: 1.6; box-sizing: border-box; max-width: 1200px; margin: 0 auto; padding: 15px 20px 0px 20px;">
+    <div class="cart-container">
         <!-- 헤더 섹션 -->
-        <div class="hero-section" style="background: linear-gradient(135deg, #2c3e50 0%, #34495e 100%); color: white; padding: 0.5rem 0; text-align: center; margin-bottom: 5px; border-radius: 10px;">
-            <h1 style="font-size: 2rem; font-weight: 700; margin-bottom: 0.5rem;">🛒 통합 장바구니</h1>
-            <p style="font-size: 1rem; opacity: 0.9;">모든 인쇄 상품을 한 번에 주문하세요</p>
+        <div class="cart-hero">
+            <h1>🛒 통합 장바구니</h1>
+            <p>모든 인쇄 상품을 한 번에 주문하세요</p>
         </div>
 
         <!-- 통합 네비게이션 사용 -->
         <?php if (!empty($cart_items)): ?>
             <!-- 장바구니에 상품이 있을 때 -->
-            <div style="font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif; line-height: 1.6; margin: 0; box-sizing: border-box; margin-bottom: 0.3rem; padding: 5px 10px; background: white; border-radius: 8px; box-shadow: 0 1px 4px rgba(0,0,0,0.06); display: flex; align-items: center; justify-content: center; min-height: auto;">
+            <div class="cart-nav-wrapper">
                 <?php include "../../includes/nav.php"; ?>
             </div>
     </div>
@@ -203,17 +200,17 @@ if ($cart_result === false) {
             $items_data = array();
             ?>
 
-            <!-- 파스텔 표 형식 장바구니 -->
-            <div style="background: linear-gradient(135deg, #fafbff 0%, #fff9f9 100%); border-radius: 8px; overflow: hidden; border: 1px solid #e8eaed; max-width: 1100px; margin: 0 auto;">
-                <table style="width: 100%; border-collapse: collapse; font-size: 14px;">
+            <!-- Excel 스타일 표 형식 장바구니 -->
+            <div class="excel-cart-table-wrapper">
+                <table class="excel-cart-table">
                     <thead>
-                        <tr style="background: linear-gradient(135deg, #f8f4ff 0%, #fff0f5 100%); border-bottom: 2px solid #e1d5e7;">
-                            <th style="padding: 8px 12px; text-align: left; font-weight: 600; color: #4a5568; border-right: 1px solid #e8eaed; font-size: 13px;">상품정보</th>
-                            <th style="padding: 8px 12px; text-align: center; font-weight: 600; color: #4a5568; border-right: 1px solid #e8eaed; min-width: 120px; font-size: 13px;">규격/옵션</th>
-                            <th style="padding: 8px 12px; text-align: center; font-weight: 600; color: #4a5568; border-right: 1px solid #e8eaed; min-width: 80px; font-size: 13px;">수량</th>
-                            <th style="padding: 8px 12px; text-align: right; font-weight: 600; color: #4a5568; border-right: 1px solid #e8eaed; min-width: 100px; font-size: 13px;">단가</th>
-                            <th style="padding: 8px 12px; text-align: right; font-weight: 600; color: #4a5568; border-right: 1px solid #e8eaed; min-width: 120px; font-size: 13px;">총액</th>
-                            <th style="padding: 8px 12px; text-align: center; font-weight: 600; color: #4a5568; min-width: 60px; font-size: 13px;">관리</th>
+                        <tr>
+                            <th class="th-left">상품정보</th>
+                            <th class="th-center">규격/옵션</th>
+                            <th class="th-center">수량</th>
+                            <th class="th-right">단가</th>
+                            <th class="th-right">총액</th>
+                            <th class="th-center">관리</th>
                         </tr>
                     </thead>
                     <tbody>
@@ -242,57 +239,56 @@ if ($cart_result === false) {
                             ];
 
                             $product = $product_info[$item['product_type']] ?? ['name' => '상품', 'icon' => '📦', 'color' => '#f5f5f5'];
-                            $row_bg = $index % 2 == 0 ? '#fdfdfd' : '#f9f9fb';
                         ?>
-                            <tr style="background: <?php echo $row_bg; ?>; border-bottom: 1px solid #e8eaed; transition: background-color 0.2s ease;" onmouseover="this.style.background='#f0f4ff'" onmouseout="this.style.background='<?php echo $row_bg; ?>'">
+                            <tr>
                                 <!-- 상품정보 -->
-                                <td style="padding: 12px; border-right: 1px solid #e8eaed; vertical-align: top;">
-                                    <div style="display: flex; align-items: flex-start; gap: 12px;">
-                                        <div style="background: <?php echo $product['color']; ?>; padding: 8px; border-radius: 6px; font-size: 18px; line-height: 1; min-width: 36px; text-align: center;">
+                                <td>
+                                    <div class="product-info-cell">
+                                        <div class="product-icon <?php echo $item['product_type']; ?>">
                                             <?php echo $product['icon']; ?>
                                         </div>
                                         <div>
-                                            <div style="font-weight: 600; color: #2d3748; margin-bottom: 4px; font-size: 15px;"><?php echo $product['name']; ?></div>
-                                            <div style="color: #718096; font-size: 12px;">상품번호: #<?php echo $item['no']; ?></div>
+                                            <div class="product-name"><?php echo $product['name']; ?></div>
+                                            <div class="product-number">상품번호: #<?php echo $item['no']; ?></div>
                                         </div>
                                     </div>
                                 </td>
 
                                 <!-- 규격/옵션 -->
-                                <td style="padding: 12px; border-right: 1px solid #e8eaed; vertical-align: top; text-align: center;">
-                                    <div style="font-size: 13px; line-height: 1.4;">
+                                <td class="td-center">
+                                    <div class="specs-cell">
                                         <?php if ($item['product_type'] == 'sticker'): ?>
                                             <?php if (!empty($item['jong'])): ?>
-                                                <div style="margin-bottom: 6px; color: #4a5568;"><span style="color: #805ad5; font-weight: 500;">재질:</span> <?php echo htmlspecialchars($item['jong']); ?></div>
+                                                <div class="spec-item"><span class="spec-label sticker">재질:</span> <?php echo htmlspecialchars($item['jong']); ?></div>
                                             <?php endif; ?>
                                             <?php if (!empty($item['garo']) && !empty($item['sero'])): ?>
-                                                <div style="margin-bottom: 6px; color: #4a5568;"><span style="color: #805ad5; font-weight: 500;">크기:</span> <?php echo htmlspecialchars($item['garo']); ?>×<?php echo htmlspecialchars($item['sero']); ?>mm</div>
+                                                <div class="spec-item"><span class="spec-label sticker">크기:</span> <?php echo htmlspecialchars($item['garo']); ?>×<?php echo htmlspecialchars($item['sero']); ?>mm</div>
                                             <?php endif; ?>
                                             <?php if (!empty($item['domusong'])): ?>
-                                                <div style="color: #4a5568;"><span style="color: #805ad5; font-weight: 500;">모양:</span> <?php echo htmlspecialchars($item['domusong']); ?></div>
+                                                <div class="spec-item"><span class="spec-label sticker">모양:</span> <?php echo htmlspecialchars($item['domusong']); ?></div>
                                             <?php endif; ?>
                                         <?php elseif ($item['product_type'] == 'msticker'): ?>
                                             <?php if (!empty($item['MY_type'])): ?>
-                                                <div style="margin-bottom: 6px; color: #4a5568;"><span style="color: #38a169; font-weight: 500;">종류:</span> <?php echo htmlspecialchars(getKoreanName($connect, $item['MY_type'])); ?></div>
+                                                <div class="spec-item"><span class="spec-label msticker">종류:</span> <?php echo htmlspecialchars(getKoreanName($connect, $item['MY_type'])); ?></div>
                                             <?php endif; ?>
                                             <?php if (!empty($item['Section'])): ?>
-                                                <div style="margin-bottom: 6px; color: #4a5568;"><span style="color: #38a169; font-weight: 500;">규격:</span> <?php echo htmlspecialchars(getKoreanName($connect, $item['Section'])); ?></div>
+                                                <div class="spec-item"><span class="spec-label msticker">규격:</span> <?php echo htmlspecialchars(getKoreanName($connect, $item['Section'])); ?></div>
                                             <?php endif; ?>
                                             <?php if (!empty($item['POtype'])): ?>
-                                                <div style="margin-bottom: 6px; color: #4a5568;"><span style="color: #38a169; font-weight: 500;">인쇄:</span> <?php echo $item['POtype'] == '1' ? '단면' : '양면'; ?></div>
+                                                <div class="spec-item"><span class="spec-label msticker">인쇄:</span> <?php echo $item['POtype'] == '1' ? '단면' : '양면'; ?></div>
                                             <?php endif; ?>
                                             <?php if (!empty($item['ordertype'])): ?>
-                                                <div style="color: #4a5568;"><span style="color: #38a169; font-weight: 500;">타입:</span> <?php echo $item['ordertype'] == 'total' ? '디자인+인쇄' : '인쇄만'; ?></div>
+                                                <div class="spec-item"><span class="spec-label msticker">타입:</span> <?php echo $item['ordertype'] == 'total' ? '디자인+인쇄' : '인쇄만'; ?></div>
                                             <?php endif; ?>
                                         <?php elseif ($item['product_type'] == 'namecard'): ?>
                                             <?php if (!empty($item['MY_type'])): ?>
-                                                <div style="margin-bottom: 6px; color: #4a5568;"><span style="color: #d69e2e; font-weight: 500;">타입:</span> <?php echo htmlspecialchars(getKoreanName($connect, $item['MY_type'])); ?></div>
+                                                <div class="spec-item"><span class="spec-label namecard">타입:</span> <?php echo htmlspecialchars(getKoreanName($connect, $item['MY_type'])); ?></div>
                                             <?php endif; ?>
                                             <?php if (!empty($item['Section'])): ?>
-                                                <div style="margin-bottom: 6px; color: #4a5568;"><span style="color: #d69e2e; font-weight: 500;">재질:</span> <?php echo htmlspecialchars(getKoreanName($connect, $item['Section'])); ?></div>
+                                                <div class="spec-item"><span class="spec-label namecard">재질:</span> <?php echo htmlspecialchars(getKoreanName($connect, $item['Section'])); ?></div>
                                             <?php endif; ?>
                                             <?php if (!empty($item['POtype'])): ?>
-                                                <div style="margin-bottom: 6px; color: #4a5568;"><span style="color: #d69e2e; font-weight: 500;">인쇄:</span> <?php echo $item['POtype'] == '1' ? '단면' : '양면'; ?></div>
+                                                <div class="spec-item"><span class="spec-label namecard">인쇄:</span> <?php echo $item['POtype'] == '1' ? '단면' : '양면'; ?></div>
                                             <?php endif; ?>
 
                                             <!-- 🆕 명함 프리미엄 옵션 표시 -->
@@ -419,16 +415,16 @@ if ($cart_result === false) {
                                             <?php endif; ?>
                                         <?php elseif ($item['product_type'] == 'ncrflambeau'): ?>
                                             <?php if (!empty($item['MY_type'])): ?>
-                                                <div style="margin-bottom: 6px; color: #4a5568;"><span style="color: #9333ea; font-weight: 500;">색상:</span> <?php echo htmlspecialchars(getKoreanName($connect, $item['MY_type'])); ?></div>
+                                                <div class="spec-item"><span class="spec-label ncrflambeau">색상:</span> <?php echo htmlspecialchars(getKoreanName($connect, $item['MY_type'])); ?></div>
                                             <?php endif; ?>
                                             <?php if (!empty($item['MY_Fsd'])): ?>
-                                                <div style="margin-bottom: 6px; color: #4a5568;"><span style="color: #9333ea; font-weight: 500;">종류:</span> <?php echo htmlspecialchars(getKoreanName($connect, $item['MY_Fsd'])); ?></div>
+                                                <div class="spec-item"><span class="spec-label ncrflambeau">종류:</span> <?php echo htmlspecialchars(getKoreanName($connect, $item['MY_Fsd'])); ?></div>
                                             <?php endif; ?>
                                             <?php if (!empty($item['PN_type'])): ?>
-                                                <div style="margin-bottom: 6px; color: #4a5568;"><span style="color: #9333ea; font-weight: 500;">규격:</span> <?php echo htmlspecialchars(getKoreanName($connect, $item['PN_type'])); ?></div>
+                                                <div class="spec-item"><span class="spec-label ncrflambeau">규격:</span> <?php echo htmlspecialchars(getKoreanName($connect, $item['PN_type'])); ?></div>
                                             <?php endif; ?>
                                             <?php if (!empty($item['ordertype'])): ?>
-                                                <div style="color: #4a5568;"><span style="color: #9333ea; font-weight: 500;">타입:</span> <?php echo $item['ordertype'] == 'total' ? '디자인+인쇄' : ($item['ordertype'] == 'print' ? '인쇄만' : htmlspecialchars($item['ordertype'])); ?></div>
+                                                <div class="spec-item"><span class="spec-label ncrflambeau">타입:</span> <?php echo $item['ordertype'] == 'total' ? '디자인+인쇄' : ($item['ordertype'] == 'print' ? '인쇄만' : htmlspecialchars($item['ordertype'])); ?></div>
                                             <?php endif; ?>
 
                                             <!-- 🆕 양식지 옵션 표시 (넘버링 + 미싱) -->
@@ -475,7 +471,7 @@ if ($cart_result === false) {
                                                     if (!empty($selected_options)):
                                                 ?>
                                                         <div style="margin-top: 8px; padding-top: 8px; border-top: 1px solid #e2e8f0;">
-                                                            <div style="color: #9333ea; font-weight: 600; font-size: 12px; margin-bottom: 4px;">📎 추가옵션</div>
+                                                            <div style="font-weight: 600; font-size: 12px; margin-bottom: 4px;">📎 추가옵션</div>
                                                             <div style="color: #2d3748; font-size: 11px; line-height: 1.4;">
                                                                 <?php echo implode(', ', $selected_options); ?>
                                                             </div>
@@ -500,7 +496,7 @@ if ($cart_result === false) {
 
                                             <!-- 🆕 봉투 양면테이프 옵션 표시 -->
                                             <?php if (!empty($item['envelope_tape_enabled']) && $item['envelope_tape_enabled'] == '1'): ?>
-                                                <div style="background: linear-gradient(135deg, #e8f5e8 0%, #f0fff0 100%); padding: 8px; border-radius: 6px; margin-top: 8px; border: 1px solid #90ee90;">
+                                                <div style="background: #e8f5e9; padding: 8px; border-radius: 6px; margin-top: 8px; border: 1px solid #90ee90;">
                                                     <div style="font-weight: 600; color: #2e7d32; margin-bottom: 4px; display: flex; align-items: center; gap: 4px;">
                                                         <span>📎</span> 양면테이프 옵션
                                                     </div>
@@ -553,42 +549,62 @@ if ($cart_result === false) {
                                 </td>
 
                                 <!-- 수량 -->
-                                <td style="padding: 12px; border-right: 1px solid #e8eaed; vertical-align: middle; text-align: center;">
-                                    <div style="font-weight: 600; color: #2d3748; font-size: 15px;">
+                                <td class="td-center">
+                                    <div class="quantity-cell">
                                         <?php
-                                        // 양식지(ncrflambeau)는 "권" 단위 사용
-                                        $unit = ($item['product_type'] == 'ncrflambeau') ? '권' : '매';
-
-                                        if (!empty($item['mesu'])) {
-                                            echo number_format($item['mesu']) . $unit;
-                                        } elseif (!empty($item['MY_amount'])) {
-                                            echo htmlspecialchars($item['MY_amount']) . $unit;
+                                        // 전단지/리플렛은 "X연 (Y매)" 형식으로 표시
+                                        if (in_array($item['product_type'], ['inserted', 'leaflet'])) {
+                                            // MY_amount(연수)와 mesu(매수) 모두 있으면 "X연 (Y매)" 형식
+                                            if (!empty($item['MY_amount']) && !empty($item['mesu'])) {
+                                                $yeonsu = floatval($item['MY_amount']);
+                                                // 정수/소수 구분하여 포맷팅 (0.5연은 "0.5", 1연은 "1")
+                                                $yeonsu_display = floor($yeonsu) == $yeonsu ? number_format($yeonsu) : number_format($yeonsu, 1);
+                                                echo $yeonsu_display . '연 (' . number_format($item['mesu']) . '매)';
+                                            } elseif (!empty($item['MY_amount'])) {
+                                                // 연수만 있는 경우
+                                                $yeonsu = floatval($item['MY_amount']);
+                                                $yeonsu_display = floor($yeonsu) == $yeonsu ? number_format($yeonsu) : number_format($yeonsu, 1);
+                                                echo $yeonsu_display . '연';
+                                            } elseif (!empty($item['mesu'])) {
+                                                // 매수만 있는 경우
+                                                echo number_format($item['mesu']) . '매';
+                                            } else {
+                                                // 둘 다 없으면 기본값
+                                                echo '1연';
+                                            }
                                         } else {
-                                            echo '1' . $unit;
+                                            // 기존 로직: 양식지는 "권", 나머지는 "매"
+                                            $unit = ($item['product_type'] == 'ncrflambeau') ? '권' : '매';
+
+                                            if (!empty($item['mesu'])) {
+                                                echo number_format($item['mesu']) . $unit;
+                                            } elseif (!empty($item['MY_amount'])) {
+                                                echo htmlspecialchars($item['MY_amount']) . $unit;
+                                            } else {
+                                                echo '1' . $unit;
+                                            }
                                         }
                                         ?>
                                     </div>
                                 </td>
 
                                 <!-- 단가 -->
-                                <td style="padding: 12px; border-right: 1px solid #e8eaed; vertical-align: middle; text-align: right;">
-                                    <div style="color: #4a5568; font-size: 13px; margin-bottom: 2px;">부가세별도</div>
-                                    <div style="font-weight: 600; color: #2d3748; font-size: 14px;"><?php echo number_format($final_price); ?>원</div>
+                                <td class="td-right">
+                                    <div class="price-label">부가세별도</div>
+                                    <div class="price-value"><?php echo number_format($final_price); ?>원</div>
                                 </td>
 
                                 <!-- 총액 -->
-                                <td style="padding: 12px; border-right: 1px solid #e8eaed; vertical-align: middle; text-align: right;">
-                                    <div style="color: #4a5568; font-size: 13px; margin-bottom: 2px;">부가세포함</div>
-                                    <div style="font-weight: 700; color: #e53e3e; font-size: 16px;"><?php echo number_format($final_price_vat); ?>원</div>
+                                <td class="td-right">
+                                    <div class="price-label">부가세포함</div>
+                                    <div class="price-total"><?php echo number_format($final_price_vat); ?>원</div>
                                 </td>
 
                                 <!-- 관리 -->
-                                <td style="padding: 12px; vertical-align: middle; text-align: center;">
+                                <td class="td-center">
                                     <a href="?delete=<?php echo $item['no']; ?>"
                                         onclick="return confirm('이 상품을 삭제하시겠습니까?')"
-                                        style="display: inline-flex; align-items: center; justify-content: center; width: 32px; height: 32px; background: #fed7d7; color: #e53e3e; text-decoration: none; border-radius: 6px; font-size: 14px; transition: all 0.2s ease; border: 1px solid #feb2b2;"
-                                        onmouseover="this.style.background='#fc8181'; this.style.color='white'; this.style.transform='scale(1.1)'"
-                                        onmouseout="this.style.background='#fed7d7'; this.style.color='#e53e3e'; this.style.transform='scale(1)'">
+                                        class="delete-btn">
                                         ✕
                                     </a>
                                 </td>
@@ -599,24 +615,24 @@ if ($cart_result === false) {
             </div>
 
             <!-- 요약 정보 -->
-            <div style="margin-top: 20px; background: linear-gradient(135deg, #f7faff 0%, #fdf2f8 100%); border-radius: 8px; padding: 20px; border: 1px solid #e2e8f0;">
-                <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 16px;">
-                    <div style="color: #4a5568; font-weight: 600; font-size: 16px;">📋 주문 요약</div>
-                    <div style="color: #718096; font-size: 13px;">총 <?php echo count($cart_items); ?>개 상품</div>
+            <div class="cart-summary">
+                <div class="summary-header">
+                    <div class="summary-title">📋 주문 요약</div>
+                    <div class="summary-count">총 <?php echo count($cart_items); ?>개 상품</div>
                 </div>
 
-                <div style="display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 16px; margin-bottom: 16px;">
-                    <div style="text-align: center; padding: 12px; background: white; border-radius: 6px; border: 1px solid #e2e8f0;">
-                        <div style="color: #718096; font-size: 12px; margin-bottom: 4px;">상품금액</div>
-                        <div style="color: #2d3748; font-weight: 600; font-size: 15px;"><?php echo number_format($total_price); ?>원</div>
+                <div class="summary-grid">
+                    <div class="summary-box">
+                        <div class="summary-box-label">상품금액</div>
+                        <div class="summary-box-value"><?php echo number_format($total_price); ?>원</div>
                     </div>
-                    <div style="text-align: center; padding: 12px; background: white; border-radius: 6px; border: 1px solid #e2e8f0;">
-                        <div style="color: #718096; font-size: 12px; margin-bottom: 4px;">부가세</div>
-                        <div style="color: #2d3748; font-weight: 600; font-size: 15px;"><?php echo number_format($total_vat - $total_price); ?>원</div>
+                    <div class="summary-box">
+                        <div class="summary-box-label">부가세</div>
+                        <div class="summary-box-value"><?php echo number_format($total_vat - $total_price); ?>원</div>
                     </div>
-                    <div style="text-align: center; padding: 12px; background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); border-radius: 6px; color: white;">
-                        <div style="opacity: 0.9; font-size: 12px; margin-bottom: 4px;">총 결제금액</div>
-                        <div style="font-weight: 700; font-size: 18px;"><?php echo number_format($total_vat); ?>원</div>
+                    <div class="summary-box total">
+                        <div class="summary-box-label">총 결제금액</div>
+                        <div class="summary-box-value"><?php echo number_format($total_vat); ?>원</div>
                     </div>
                 </div>
 
@@ -632,14 +648,14 @@ if ($cart_result === false) {
                 <input type="hidden" name="items_count" value="<?php echo count($items_data); ?>">
 
                 <!-- 컴팩트 버튼 그룹 -->
-                <div style="display: flex; gap: 12px; justify-content: center;">
-                    <button type="button" onclick="continueShopping()" class="btn-continue" style="padding: 10px 20px; background: linear-gradient(135deg, #48bb78 0%, #38a169 100%); color: white; border: none; border-radius: 6px; font-size: 14px; font-weight: 500; cursor: pointer; transition: all 0.2s ease; box-shadow: 0 2px 4px rgba(72,187,120,0.3);" onmouseover="this.style.transform='translateY(-1px)'; this.style.boxShadow='0 4px 8px rgba(72,187,120,0.4)'" onmouseout="this.style.transform='translateY(0px)'; this.style.boxShadow='0 2px 4px rgba(72,187,120,0.3)'">
+                <div class="button-group">
+                    <button type="button" onclick="continueShopping()" class="btn-continue">
                         🛍️ 계속 쇼핑
                     </button>
-                    <button type="button" onclick="showQuotation()" class="btn-quote" style="padding: 10px 20px; background: linear-gradient(135deg, #4299e1 0%, #3182ce 100%); color: white; border: none; border-radius: 6px; font-size: 14px; font-weight: 500; cursor: pointer; transition: all 0.2s ease; box-shadow: 0 2px 4px rgba(66,153,225,0.3);" onmouseover="this.style.transform='translateY(-1px)'; this.style.boxShadow='0 4px 8px rgba(66,153,225,0.4)'" onmouseout="this.style.transform='translateY(0px)'; this.style.boxShadow='0 2px 4px rgba(66,153,225,0.3)'">
+                    <button type="button" onclick="showQuotation()" class="btn-quote">
                         📄 견적서 받기
                     </button>
-                    <button type="submit" class="btn-order" style="padding: 12px 32px; background: linear-gradient(135deg, #f56565 0%, #e53e3e 100%); color: white; border: none; border-radius: 6px; font-size: 15px; font-weight: 600; cursor: pointer; transition: all 0.2s ease; box-shadow: 0 3px 6px rgba(245,101,101,0.4);" onmouseover="this.style.transform='translateY(-2px)'; this.style.boxShadow='0 6px 12px rgba(245,101,101,0.5)'" onmouseout="this.style.transform='translateY(0px)'; this.style.boxShadow='0 3px 6px rgba(245,101,101,0.4)'">
+                    <button type="submit" class="btn-order">
                         📋 주문하기
                     </button>
                 </div>
@@ -647,14 +663,14 @@ if ($cart_result === false) {
         </form>
     <?php else: ?>
         <!-- 빈 장바구니 상태 - 개선된 UI -->
-        <div style="text-align: center; padding: 3rem 2rem;">
-            <div style="font-size: 5rem; margin-bottom: 1.5rem; opacity: 0.8;">📭</div>
-            <h3 style="font-size: 1.8rem; margin-bottom: 1rem; color: #495057; font-weight: 600;">장바구니가 비어있습니다</h3>
-            <p style="margin-bottom: 3rem; color: #6c757d; font-size: 1.1rem;">원하시는 인쇄물을 선택해서 주문을 시작해보세요!</p>
+        <div class="empty-cart">
+            <div class="empty-cart-icon">📭</div>
+            <h3>장바구니가 비어있습니다</h3>
+            <p>원하시는 인쇄물을 선택해서 주문을 시작해보세요!</p>
 
             <!-- 도움말 및 정보 섹션 -->
-            <div style="background: linear-gradient(135deg, #e3f2fd 0%, #f3e5f5 100%); padding: 2rem; border-radius: 15px; margin-bottom: 3rem; border: 1px solid #e1bee7;">
-                <h4 style="color: #6a1b9a; margin-bottom: 1rem; font-size: 1.2rem; display: flex; align-items: center; justify-content: center;">
+            <div style="background: #f0f4f8; padding: 2rem; border-radius: 15px; margin-bottom: 3rem; border: 1px solid #CCCCCC;">
+                <h4 style="margin-bottom: 1rem; font-size: 1.2rem; display: flex; align-items: center; justify-content: center;">
                     <span style="margin-right: 10px;">💡</span>두손기획인쇄 이용 안내
                 </h4>
                 <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(250px, 1fr)); gap: 20px; text-align: left;">
@@ -716,7 +732,7 @@ if ($cart_result === false) {
 
             <!-- 쇼핑 시작 버튼 -->
             <div style="text-align: center; margin-top: 2rem;">
-                <button onclick="continueShopping()" style="padding: 18px 40px; background: linear-gradient(135deg, #007bff 0%, #0056b3 100%); color: white; border: none; border-radius: 50px; font-size: 1.2rem; font-weight: 600; cursor: pointer; transition: all 0.3s ease; box-shadow: 0 4px 15px rgba(0,123,255,0.3); min-width: 200px;" onmouseover="this.style.transform='translateY(-3px)'; this.style.boxShadow='0 8px 25px rgba(0,123,255,0.4)'" onmouseout="this.style.transform='translateY(0px)'; this.style.boxShadow='0 4px 15px rgba(0,123,255,0.3)'">
+                <button onclick="continueShopping()" class="btn-continue" style="padding: 18px 40px; border-radius: 50px; font-size: 1.2rem; min-width: 200px;">
                     🛍️ 인쇄 주문 시작하기
                 </button>
             </div>
@@ -725,12 +741,12 @@ if ($cart_result === false) {
 </div>
 
 <!-- 📄 견적서 섹션 (기본적으로 숨겨짐) -->
-<div id="quotationSection" style="display: none; font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif; line-height: 1.6; box-sizing: border-box; max-width: 800px; margin: 0 auto; background: white; border-radius: 8px; padding: 2rem; box-shadow: 0 4px 20px rgba(0,0,0,0.1); margin-bottom: 1rem;">
+<div id="quotationSection" class="quotation-section" style="display: none;">
 
     <!-- 견적서 헤더 -->
-    <div style="text-align: center; border-bottom: 3px solid #2c3e50; padding-bottom: 20px; margin-bottom: 30px;">
-        <h1 style="font-size: 36px; margin: 0; color: #2c3e50; font-weight: 700;">견 적 서</h1>
-        <div style="margin-top: 10px; font-size: 14px; color: #666;">
+    <div class="quotation-header">
+        <h1>견 적 서</h1>
+        <div>
             두손기획인쇄 | 사업자등록번호: 201-10-69847<br>
             TEL: 02-2632-1830 | FAX: 02-2632-1831
         </div>
@@ -749,15 +765,15 @@ if ($cart_result === false) {
 
     <?php if (!empty($cart_items)): ?>
         <!-- 견적서 테이블 -->
-        <table style="width: 100%; border-collapse: collapse; margin-bottom: 30px; font-size: 13px;">
+        <table class="quote-table">
             <thead>
-                <tr style="background: #34495e; color: white;">
-                    <th style="padding: 12px; text-align: center; font-weight: normal; border: 1px solid #2c3e50;">NO</th>
-                    <th style="padding: 12px; text-align: center; font-weight: normal; border: 1px solid #2c3e50;">상품명</th>
-                    <th style="padding: 12px; text-align: center; font-weight: normal; border: 1px solid #2c3e50;">규격/옵션</th>
-                    <th style="padding: 12px; text-align: center; font-weight: normal; border: 1px solid #2c3e50;">수량</th>
-                    <th style="padding: 12px; text-align: center; font-weight: normal; border: 1px solid #2c3e50;">단가</th>
-                    <th style="padding: 12px; text-align: center; font-weight: normal; border: 1px solid #2c3e50;">부가세포함</th>
+                <tr>
+                    <th>NO</th>
+                    <th>상품명</th>
+                    <th>규격/옵션</th>
+                    <th>수량</th>
+                    <th>단가</th>
+                    <th>부가세포함</th>
                 </tr>
             </thead>
             <tbody>
@@ -795,10 +811,10 @@ if ($cart_result === false) {
                     ];
                     $product_name = $product_info[$item['product_type']] ?? '인쇄상품';
                 ?>
-                    <tr style="border-bottom: 1px solid #ddd;">
-                        <td style="padding: 8px; border: 1px solid #ddd; text-align: center;"><?php echo $index + 1; ?></td>
-                        <td style="padding: 8px; border: 1px solid #ddd; text-align: center;"><?php echo $product_name; ?></td>
-                        <td style="padding: 8px; border: 1px solid #ddd; text-align: left; font-size: 11px;">
+                    <tr>
+                        <td><?php echo $index + 1; ?></td>
+                        <td><?php echo $product_name; ?></td>
+                        <td class="text-left small-text">
                             <?php if ($item['product_type'] == 'envelope'): ?>
                                 <?php if (!empty($item['MY_type_name']) || !empty($item['MY_type'])): ?>
                                     <div><strong>종류:</strong> <?php echo htmlspecialchars($item['MY_type_name'] ?: getKoreanName($connect, $item['MY_type'])); ?></div>
@@ -866,7 +882,7 @@ if ($cart_result === false) {
                                         if (!empty($selected_options)):
                                     ?>
                                             <div style="margin-top: 8px; padding-top: 8px; border-top: 1px solid #e2e8f0;">
-                                                <strong style="color: #9333ea;">추가옵션:</strong><br>
+                                                <strong>추가옵션:</strong><br>
                                                 <?php echo implode(', ', $selected_options); ?>
                                             </div>
                                         <?php endif; ?>
@@ -895,7 +911,7 @@ if ($cart_result === false) {
                                 </div>
                             <?php endif; ?>
                         </td>
-                        <td style="padding: 8px; border: 1px solid #ddd; text-align: center;">
+                        <td>
                             <?php
                             // 양식지(ncrflambeau)는 "권" 단위 사용
                             $unit = ($item['product_type'] == 'ncrflambeau') ? '권' : '매';
@@ -909,10 +925,10 @@ if ($cart_result === false) {
                             }
                             ?>
                         </td>
-                        <td style="padding: 8px; border: 1px solid #ddd; text-align: right;">
+                        <td class="text-right">
                             <strong><?php echo number_format($final_price); ?>원</strong>
                         </td>
-                        <td style="padding: 8px; border: 1px solid #ddd; text-align: right;">
+                        <td class="text-right">
                             <strong><?php echo number_format($final_price_vat); ?>원</strong>
                         </td>
                     </tr>
@@ -922,15 +938,15 @@ if ($cart_result === false) {
 
         <!-- 합계 정보 -->
         <div style="background: #ecf0f1; padding: 20px; border-radius: 5px; margin-bottom: 30px;">
-            <div style="display: flex; justify-content: space-between; margin-bottom: 10px; font-size: 16px;">
+            <div style="display: flex; justify-content: space-between; margin-bottom: 10px;">
                 <span>공급가액 (VAT 제외):</span>
                 <span><?php echo number_format($quote_total); ?>원</span>
             </div>
-            <div style="display: flex; justify-content: space-between; margin-bottom: 10px; font-size: 16px;">
+            <div style="display: flex; justify-content: space-between; margin-bottom: 10px;">
                 <span>부가세(10%):</span>
                 <span><?php echo number_format($quote_total_vat - $quote_total); ?>원</span>
             </div>
-            <div style="display: flex; justify-content: space-between; font-size: 20px; font-weight: bold; color: #2c3e50; border-top: 2px solid #34495e; padding-top: 10px; margin-top: 10px;">
+            <div style="display: flex; justify-content: space-between; font-weight: bold; border-top: 2px solid #34495e; padding-top: 10px; margin-top: 10px;">
                 <span>총 합계금액 (VAT 포함):</span>
                 <span><?php echo number_format($quote_total_vat); ?>원</span>
             </div>
@@ -961,10 +977,10 @@ if ($cart_result === false) {
 
     <!-- 견적서 전용 버튼 -->
     <div style="text-align: center; margin-top: 30px; display: flex; gap: 15px; justify-content: center;">
-        <button onclick="printQuotation()" style="padding: 12px 30px; background: linear-gradient(135deg, #3498db 0%, #2980b9 100%); color: white; border: none; border-radius: 6px; font-size: 16px; font-weight: 600; cursor: pointer; transition: all 0.2s ease; box-shadow: 0 3px 10px rgba(52,152,219,0.3);" onmouseover="this.style.transform='translateY(-2px)'; this.style.boxShadow='0 6px 15px rgba(52,152,219,0.4)'" onmouseout="this.style.transform='translateY(0px)'; this.style.boxShadow='0 3px 10px rgba(52,152,219,0.3)'">
+        <button onclick="printQuotation()" class="btn-quote">
             🖨️ 견적서 인쇄
         </button>
-        <button onclick="hideQuotation()" style="padding: 12px 30px; background: linear-gradient(135deg, #95a5a6 0%, #7f8c8d 100%); color: white; border: none; border-radius: 6px; font-size: 16px; font-weight: 600; cursor: pointer; transition: all 0.2s ease; box-shadow: 0 3px 10px rgba(149,165,166,0.3);" onmouseover="this.style.transform='translateY(-2px)'; this.style.boxShadow='0 6px 15px rgba(149,165,166,0.4)'" onmouseout="this.style.transform='translateY(0px)'; this.style.boxShadow='0 3px 10px rgba(149,165,166,0.3)'">
+        <button onclick="hideQuotation()" style="padding: 12px 30px; background-color: #6c757d; color: white; border: none; border-radius: 6px; font-size: 16px; font-weight: 600; cursor: pointer;">
             ⬅️ 장바구니로 돌아가기
         </button>
     </div>
