@@ -205,7 +205,7 @@ function displayProductDetails($connect, $order) {
 
     $json_data = json_decode($type_data, true);
 
-    $html = '<div class="product-options">';
+    $html = '<table class="excel-cart-table" style="width: 100%; border-collapse: collapse;"><tbody>';
 
     // JSON 파싱 실패 시 키-값 쌍으로 파싱 시도 (Type_1이 일반 텍스트인 경우)
     if (!$json_data && !empty($type_data)) {
@@ -232,7 +232,17 @@ function displayProductDetails($connect, $order) {
             foreach ($formatted_lines as $line) {
                 $line = trim($line);
                 if (!empty($line)) {
-                    $html .= '<span class="option-item">' . htmlspecialchars($line) . '</span>';
+                    // 키: 값 형식을 분리하여 테이블 행으로 변환
+                    if (strpos($line, ':') !== false) {
+                        list($key, $value) = explode(':', $line, 2);
+                        $html .= '<tr>';
+                        $html .= '<th class="th-left" style="width: 30%; background: #f0f0f0; padding: 8px; font-weight: 600; text-align: left; border: 1px solid #ccc;">' . htmlspecialchars(trim($key)) . '</th>';
+                        $html .= '<td style="padding: 8px; border: 1px solid #ccc;">' . htmlspecialchars(trim($value)) . '</td>';
+                        $html .= '</tr>';
+                    } else {
+                        // 키: 없는 경우 전체를 하나의 셀로 표시
+                        $html .= '<tr><td colspan="2" style="padding: 8px; border: 1px solid #ccc;">' . htmlspecialchars($line) . '</td></tr>';
+                    }
                 }
             }
             $use_formatted = true;
@@ -262,13 +272,13 @@ function displayProductDetails($connect, $order) {
         switch($product_type) {
             case 'sticker':
                 $details = $json_data['order_details'] ?? $json_data;
-                if (isset($details['jong'])) $html .= '<span class="option-item">재질: ' . htmlspecialchars($details['jong']) . '</span>';
+                if (isset($details['jong'])) $html .= '<tr><th class="th-left" style="width: 30%; background: #f0f0f0; padding: 8px; font-weight: 600; text-align: left; border: 1px solid #ccc;">재질</th><td style="padding: 8px; border: 1px solid #ccc;">' . htmlspecialchars($details['jong']) . '</td></tr>';
                 if (isset($details['garo']) && isset($details['sero'])) {
-                    $html .= '<span class="option-item">크기: ' . htmlspecialchars($details['garo']) . '×' . htmlspecialchars($details['sero']) . 'mm</span>';
+                    $html .= '<tr><th class="th-left" style="width: 30%; background: #f0f0f0; padding: 8px; font-weight: 600; text-align: left; border: 1px solid #ccc;">크기</th><td style="padding: 8px; border: 1px solid #ccc;">' . htmlspecialchars($details['garo']) . '×' . htmlspecialchars($details['sero']) . 'mm</td></tr>';
                 }
-                if (isset($details['mesu'])) $html .= '<span class="option-item">수량: ' . number_format($details['mesu']) . '매</span>';
-                if (isset($details['uhyung'])) $html .= '<span class="option-item">편집: ' . htmlspecialchars($details['uhyung']) . '</span>';
-                if (isset($details['domusong'])) $html .= '<span class="option-item">모양: ' . htmlspecialchars($details['domusong']) . '</span>';
+                if (isset($details['mesu'])) $html .= '<tr><th class="th-left" style="width: 30%; background: #f0f0f0; padding: 8px; font-weight: 600; text-align: left; border: 1px solid #ccc;">수량</th><td style="padding: 8px; border: 1px solid #ccc;">' . number_format($details['mesu']) . '매</td></tr>';
+                if (isset($details['uhyung'])) $html .= '<tr><th class="th-left" style="width: 30%; background: #f0f0f0; padding: 8px; font-weight: 600; text-align: left; border: 1px solid #ccc;">편집</th><td style="padding: 8px; border: 1px solid #ccc;">' . htmlspecialchars($details['uhyung']) . '</td></tr>';
+                if (isset($details['domusong'])) $html .= '<tr><th class="th-left" style="width: 30%; background: #f0f0f0; padding: 8px; font-weight: 600; text-align: left; border: 1px solid #ccc;">모양</th><td style="padding: 8px; border: 1px solid #ccc;">' . htmlspecialchars($details['domusong']) . '</td></tr>';
                 break;
                 
             case 'envelope':
@@ -277,30 +287,30 @@ function displayProductDetails($connect, $order) {
                 $section_display = $json_data['Section_name'] ?? getCategoryName($connect, $json_data['Section'] ?? '');
                 $potion_display = $json_data['POtype_name'] ?? getCategoryName($connect, $json_data['POtype'] ?? '');
 
-                if (!empty($type_display)) $html .= '<span class="option-item">타입: ' . htmlspecialchars($type_display) . '</span>';
-                if (!empty($section_display)) $html .= '<span class="option-item">용지: ' . htmlspecialchars($section_display) . '</span>';
-                if (isset($json_data['MY_amount'])) $html .= '<span class="option-item">수량: ' . number_format($json_data['MY_amount']) . ($order['unit'] ?? '매') . '</span>';
-                if (!empty($potion_display)) $html .= '<span class="option-item">인쇄: ' . htmlspecialchars($potion_display) . '</span>';
-                if (isset($json_data['ordertype'])) $html .= '<span class="option-item">디자인: ' . ($json_data['ordertype'] === 'total' ? '디자인+인쇄' : '인쇄만') . '</span>';
+                if (!empty($type_display)) $html .= '<tr><th class="th-left" style="width: 30%; background: #f0f0f0; padding: 8px; font-weight: 600; text-align: left; border: 1px solid #ccc;">타입</th><td style="padding: 8px; border: 1px solid #ccc;">' . htmlspecialchars($type_display) . '</td></tr>';
+                if (!empty($section_display)) $html .= '<tr><th class="th-left" style="width: 30%; background: #f0f0f0; padding: 8px; font-weight: 600; text-align: left; border: 1px solid #ccc;">용지</th><td style="padding: 8px; border: 1px solid #ccc;">' . htmlspecialchars($section_display) . '</td></tr>';
+                if (isset($json_data['MY_amount'])) $html .= '<tr><th class="th-left" style="width: 30%; background: #f0f0f0; padding: 8px; font-weight: 600; text-align: left; border: 1px solid #ccc;">수량</th><td style="padding: 8px; border: 1px solid #ccc;">' . number_format($json_data['MY_amount']) . ($order['unit'] ?? '매') . '</td></tr>';
+                if (!empty($potion_display)) $html .= '<tr><th class="th-left" style="width: 30%; background: #f0f0f0; padding: 8px; font-weight: 600; text-align: left; border: 1px solid #ccc;">인쇄</th><td style="padding: 8px; border: 1px solid #ccc;">' . htmlspecialchars($potion_display) . '</td></tr>';
+                if (isset($json_data['ordertype'])) $html .= '<tr><th class="th-left" style="width: 30%; background: #f0f0f0; padding: 8px; font-weight: 600; text-align: left; border: 1px solid #ccc;">디자인</th><td style="padding: 8px; border: 1px solid #ccc;">' . ($json_data['ordertype'] === 'total' ? '디자인+인쇄' : '인쇄만') . '</td></tr>';
                 break;
                 
             case 'namecard':
-                if (isset($json_data['MY_type'])) $html .= '<span class="option-item">타입: ' . getCategoryName($connect, $json_data['MY_type']) . '</span>';
-                if (isset($json_data['Section'])) $html .= '<span class="option-item">용지: ' . getCategoryName($connect, $json_data['Section']) . '</span>';
-                if (isset($json_data['MY_amount'])) $html .= '<span class="option-item">수량: ' . number_format($json_data['MY_amount']) . ($order['unit'] ?? '매') . '</span>';
-                if (isset($json_data['POtype'])) $html .= '<span class="option-item">인쇄: ' . ($json_data['POtype'] == '1' ? '단면' : '양면') . '</span>';
+                if (isset($json_data['MY_type'])) $html .= '<tr><th class="th-left" style="width: 30%; background: #f0f0f0; padding: 8px; font-weight: 600; text-align: left; border: 1px solid #ccc;">타입</th><td style="padding: 8px; border: 1px solid #ccc;">' . getCategoryName($connect, $json_data['MY_type']) . '</td></tr>';
+                if (isset($json_data['Section'])) $html .= '<tr><th class="th-left" style="width: 30%; background: #f0f0f0; padding: 8px; font-weight: 600; text-align: left; border: 1px solid #ccc;">용지</th><td style="padding: 8px; border: 1px solid #ccc;">' . getCategoryName($connect, $json_data['Section']) . '</td></tr>';
+                if (isset($json_data['MY_amount'])) $html .= '<tr><th class="th-left" style="width: 30%; background: #f0f0f0; padding: 8px; font-weight: 600; text-align: left; border: 1px solid #ccc;">수량</th><td style="padding: 8px; border: 1px solid #ccc;">' . number_format($json_data['MY_amount']) . ($order['unit'] ?? '매') . '</td></tr>';
+                if (isset($json_data['POtype'])) $html .= '<tr><th class="th-left" style="width: 30%; background: #f0f0f0; padding: 8px; font-weight: 600; text-align: left; border: 1px solid #ccc;">인쇄</th><td style="padding: 8px; border: 1px solid #ccc;">' . ($json_data['POtype'] == '1' ? '단면' : '양면') . '</td></tr>';
                 break;
                 
             case 'merchandisebond':
-                if (isset($json_data['MY_type'])) $html .= '<span class="option-item">구분: ' . getCategoryName($connect, $json_data['MY_type']) . '</span>';
-                if (isset($json_data['MY_Fsd'])) $html .= '<span class="option-item">종류: ' . getCategoryName($connect, $json_data['MY_Fsd']) . '</span>';
-                if (isset($json_data['MY_amount'])) $html .= '<span class="option-item">수량: ' . number_format($json_data['MY_amount']) . ($order['unit'] ?? '매') . '</span>';
+                if (isset($json_data['MY_type'])) $html .= '<tr><th class="th-left" style="width: 30%; background: #f0f0f0; padding: 8px; font-weight: 600; text-align: left; border: 1px solid #ccc;">구분</th><td style="padding: 8px; border: 1px solid #ccc;">' . getCategoryName($connect, $json_data['MY_type']) . '</td></tr>';
+                if (isset($json_data['MY_Fsd'])) $html .= '<tr><th class="th-left" style="width: 30%; background: #f0f0f0; padding: 8px; font-weight: 600; text-align: left; border: 1px solid #ccc;">종류</th><td style="padding: 8px; border: 1px solid #ccc;">' . getCategoryName($connect, $json_data['MY_Fsd']) . '</td></tr>';
+                if (isset($json_data['MY_amount'])) $html .= '<tr><th class="th-left" style="width: 30%; background: #f0f0f0; padding: 8px; font-weight: 600; text-align: left; border: 1px solid #ccc;">수량</th><td style="padding: 8px; border: 1px solid #ccc;">' . number_format($json_data['MY_amount']) . ($order['unit'] ?? '매') . '</td></tr>';
                 break;
                 
             case 'cadarok':
-                if (isset($json_data['MY_type'])) $html .= '<span class="option-item">타입: ' . getCategoryName($connect, $json_data['MY_type']) . '</span>';
-                if (isset($json_data['MY_Fsd'])) $html .= '<span class="option-item">스타일: ' . getCategoryName($connect, $json_data['MY_Fsd']) . '</span>';
-                if (isset($json_data['MY_amount'])) $html .= '<span class="option-item">수량: ' . number_format($json_data['MY_amount']) . '</span>';
+                if (isset($json_data['MY_type'])) $html .= '<tr><th class="th-left" style="width: 30%; background: #f0f0f0; padding: 8px; font-weight: 600; text-align: left; border: 1px solid #ccc;">타입</th><td style="padding: 8px; border: 1px solid #ccc;">' . getCategoryName($connect, $json_data['MY_type']) . '</td></tr>';
+                if (isset($json_data['MY_Fsd'])) $html .= '<tr><th class="th-left" style="width: 30%; background: #f0f0f0; padding: 8px; font-weight: 600; text-align: left; border: 1px solid #ccc;">스타일</th><td style="padding: 8px; border: 1px solid #ccc;">' . getCategoryName($connect, $json_data['MY_Fsd']) . '</td></tr>';
+                if (isset($json_data['MY_amount'])) $html .= '<tr><th class="th-left" style="width: 30%; background: #f0f0f0; padding: 8px; font-weight: 600; text-align: left; border: 1px solid #ccc;">수량</th><td style="padding: 8px; border: 1px solid #ccc;">' . number_format($json_data['MY_amount']) . '</td></tr>';
                 break;
                 
             case 'poster':
@@ -313,23 +323,23 @@ function displayProductDetails($connect, $order) {
                 $potype = $json_data['POtype'] ?? $json_data['Potype'] ?? '';
                 $ordertype = $json_data['ordertype'] ?? $json_data['Ordertype'] ?? '';
 
-                if (!empty($my_type)) $html .= '<span class="option-item">종류: ' . (is_numeric($my_type) ? getCategoryName($connect, $my_type) : htmlspecialchars($my_type)) . '</span>';
-                if (!empty($section)) $html .= '<span class="option-item">지류: ' . (is_numeric($section) ? getCategoryName($connect, $section) : htmlspecialchars($section)) . '</span>';
-                if (!empty($pn_type)) $html .= '<span class="option-item">규격: ' . (is_numeric($pn_type) ? getCategoryName($connect, $pn_type) : htmlspecialchars($pn_type)) . '</span>';
-                if (!empty($my_amount)) $html .= '<span class="option-item">수량: ' . number_format($my_amount) . ($order['unit'] ?? '매') . '</span>';
-                if (!empty($potype)) $html .= '<span class="option-item">인쇄면: ' . ($potype == '1' ? '단면' : '양면') . '</span>';
-                if (!empty($ordertype)) $html .= '<span class="option-item">디자인: ' . ($ordertype == 'total' ? '디자인+인쇄' : '인쇄만') . '</span>';
+                if (!empty($my_type)) $html .= '<tr><th class="th-left" style="width: 30%; background: #f0f0f0; padding: 8px; font-weight: 600; text-align: left; border: 1px solid #ccc;">종류</th><td style="padding: 8px; border: 1px solid #ccc;">' . (is_numeric($my_type) ? getCategoryName($connect, $my_type) : htmlspecialchars($my_type)) . '</td></tr>';
+                if (!empty($section)) $html .= '<tr><th class="th-left" style="width: 30%; background: #f0f0f0; padding: 8px; font-weight: 600; text-align: left; border: 1px solid #ccc;">지류</th><td style="padding: 8px; border: 1px solid #ccc;">' . (is_numeric($section) ? getCategoryName($connect, $section) : htmlspecialchars($section)) . '</td></tr>';
+                if (!empty($pn_type)) $html .= '<tr><th class="th-left" style="width: 30%; background: #f0f0f0; padding: 8px; font-weight: 600; text-align: left; border: 1px solid #ccc;">규격</th><td style="padding: 8px; border: 1px solid #ccc;">' . (is_numeric($pn_type) ? getCategoryName($connect, $pn_type) : htmlspecialchars($pn_type)) . '</td></tr>';
+                if (!empty($my_amount)) $html .= '<tr><th class="th-left" style="width: 30%; background: #f0f0f0; padding: 8px; font-weight: 600; text-align: left; border: 1px solid #ccc;">수량</th><td style="padding: 8px; border: 1px solid #ccc;">' . number_format($my_amount) . ($order['unit'] ?? '매') . '</td></tr>';
+                if (!empty($potype)) $html .= '<tr><th class="th-left" style="width: 30%; background: #f0f0f0; padding: 8px; font-weight: 600; text-align: left; border: 1px solid #ccc;">인쇄면</th><td style="padding: 8px; border: 1px solid #ccc;">' . ($potype == '1' ? '단면' : '양면') . '</td></tr>';
+                if (!empty($ordertype)) $html .= '<tr><th class="th-left" style="width: 30%; background: #f0f0f0; padding: 8px; font-weight: 600; text-align: left; border: 1px solid #ccc;">디자인</th><td style="padding: 8px; border: 1px solid #ccc;">' . ($ordertype == 'total' ? '디자인+인쇄' : '인쇄만') . '</td></tr>';
                 break;
 
             case 'inserted':
             case 'leaflet':
                 // 전단지/리플렛
-                if (isset($json_data['MY_type'])) $html .= '<span class="option-item">인쇄색상: ' . getCategoryName($connect, $json_data['MY_type']) . '</span>';
-                if (isset($json_data['MY_Fsd'])) $html .= '<span class="option-item">용지: ' . getCategoryName($connect, $json_data['MY_Fsd']) . '</span>';
-                if (isset($json_data['PN_type'])) $html .= '<span class="option-item">규격: ' . getCategoryName($connect, $json_data['PN_type']) . '</span>';
-                if (isset($json_data['MY_amount'])) $html .= '<span class="option-item">수량: ' . number_format($json_data['MY_amount']) . ($order['unit'] ?? '연') . '</span>';
-                if (isset($json_data['POtype'])) $html .= '<span class="option-item">인쇄면: ' . ($json_data['POtype'] == '1' ? '단면' : '양면') . '</span>';
-                if (isset($json_data['ordertype'])) $html .= '<span class="option-item">디자인: ' . ($json_data['ordertype'] == 'total' ? '디자인+인쇄' : '인쇄만') . '</span>';
+                if (isset($json_data['MY_type'])) $html .= '<tr><th class="th-left" style="width: 30%; background: #f0f0f0; padding: 8px; font-weight: 600; text-align: left; border: 1px solid #ccc;">인쇄색상</th><td style="padding: 8px; border: 1px solid #ccc;">' . getCategoryName($connect, $json_data['MY_type']) . '</td></tr>';
+                if (isset($json_data['MY_Fsd'])) $html .= '<tr><th class="th-left" style="width: 30%; background: #f0f0f0; padding: 8px; font-weight: 600; text-align: left; border: 1px solid #ccc;">용지</th><td style="padding: 8px; border: 1px solid #ccc;">' . getCategoryName($connect, $json_data['MY_Fsd']) . '</td></tr>';
+                if (isset($json_data['PN_type'])) $html .= '<tr><th class="th-left" style="width: 30%; background: #f0f0f0; padding: 8px; font-weight: 600; text-align: left; border: 1px solid #ccc;">규격</th><td style="padding: 8px; border: 1px solid #ccc;">' . getCategoryName($connect, $json_data['PN_type']) . '</td></tr>';
+                if (isset($json_data['MY_amount'])) $html .= '<tr><th class="th-left" style="width: 30%; background: #f0f0f0; padding: 8px; font-weight: 600; text-align: left; border: 1px solid #ccc;">수량</th><td style="padding: 8px; border: 1px solid #ccc;">' . number_format($json_data['MY_amount']) . ($order['unit'] ?? '연') . '</td></tr>';
+                if (isset($json_data['POtype'])) $html .= '<tr><th class="th-left" style="width: 30%; background: #f0f0f0; padding: 8px; font-weight: 600; text-align: left; border: 1px solid #ccc;">인쇄면</th><td style="padding: 8px; border: 1px solid #ccc;">' . ($json_data['POtype'] == '1' ? '단면' : '양면') . '</td></tr>';
+                if (isset($json_data['ordertype'])) $html .= '<tr><th class="th-left" style="width: 30%; background: #f0f0f0; padding: 8px; font-weight: 600; text-align: left; border: 1px solid #ccc;">디자인</th><td style="padding: 8px; border: 1px solid #ccc;">' . ($json_data['ordertype'] == 'total' ? '디자인+인쇄' : '인쇄만') . '</td></tr>';
                 break;
 
             default:
@@ -356,7 +366,7 @@ function displayProductDetails($connect, $order) {
                     $display_value = is_numeric($value) && in_array($key, ['MY_type', 'MY_Fsd', 'PN_type', 'Section'])
                         ? getCategoryName($connect, $value)
                         : $value;
-                    $html .= '<span class="option-item">' . htmlspecialchars($display_key) . ': ' . htmlspecialchars($display_value) . '</span>';
+                    $html .= '<tr><th class="th-left" style="width: 30%; background: #f0f0f0; padding: 8px; font-weight: 600; text-align: left; border: 1px solid #ccc;">' . htmlspecialchars($display_key) . '</th><td style="padding: 8px; border: 1px solid #ccc;">' . htmlspecialchars($display_value) . '</td></tr>';
                 }
                 break;
         }
@@ -367,12 +377,12 @@ function displayProductDetails($connect, $order) {
         foreach ($lines as $line) {
             $line = trim($line);
             if (!empty($line)) {
-                $html .= '<span class="option-item">' . htmlspecialchars($line) . '</span>';
+                $html .= '<tr><td colspan="2" style="padding: 8px; border: 1px solid #ccc;">' . htmlspecialchars($line) . '</td></tr>';
             }
         }
     }
     
-    $html .= '</div>';
+    $html .= '</tbody></table>';
     
     // 추가 옵션 표시 (주문 데이터에서 추출)
     if ($optionsDisplay && !empty($order)) {
@@ -397,11 +407,11 @@ function displayProductDetails($connect, $order) {
 
         $optionDetails = $optionsDisplay->getOrderDetails($optionData);
         if ($optionDetails['has_options']) {
-            $html .= '<div style="margin-top: 8px; padding: 10px 10px 5px 10px; background: #e8f5e9; border-radius: 8px; border-left: 3px solid #4caf50;">';
+            $html .= '<div style="margin-top: 8px; padding: 10px 10px 5px 10px; background: #e8f5e9; border-radius: 4px; border-left: 3px solid #4caf50;">';
             $html .= '<strong style="color: #2e7d32;">📎 추가 옵션:</strong> ';
 
             foreach ($optionDetails['options'] as $option) {
-                $html .= '<span class="option-item" style="background: linear-gradient(135deg, #c8e6c9 0%, #a5d6a7 100%); color: #1b5e20; margin: 0 5px;">';
+                $html .= '<span class="option-item" style="background-color: #c8e6c9; color: #1b5e20; margin: 0 5px;">';
                 $html .= $option['category'] . '(' . $option['name'] . ') ';
                 $html .= '<strong>' . $option['formatted_price'] . '</strong>';
                 $html .= '</span>';
@@ -418,7 +428,7 @@ function displayProductDetails($connect, $order) {
     if (!empty($order['premium_options']) && !empty($order['premium_options_total'])) {
         $premium_options = json_decode($order['premium_options'], true);
         if ($premium_options && $order['premium_options_total'] > 0) {
-            $html .= '<div style="margin-top: 8px; padding: 10px 10px 5px 10px; background: #fff3e0; border-radius: 8px; border-left: 3px solid #ff9800;">';
+            $html .= '<div style="margin-top: 8px; padding: 10px 10px 5px 10px; background: #fff3e0; border-radius: 4px; border-left: 3px solid #ff9800;">';
             $html .= '<strong style="color: #e65100;">✨ 프리미엄 옵션:</strong> ';
 
             $premium_option_names = [
@@ -442,7 +452,7 @@ function displayProductDetails($connect, $order) {
                 if (!empty($premium_options[$option_key . '_enabled']) && $premium_options[$option_key . '_enabled'] == 1) {
                     $price = intval($premium_options[$option_key . '_price'] ?? 0);
                     if ($price > 0) {
-                        $html .= '<span class="option-item" style="background: linear-gradient(135deg, #ffe0b2 0%, #ffcc80 100%); color: #e65100; margin: 0 5px;">';
+                        $html .= '<span class="option-item" style="background-color: #ffe0b2; color: #e65100; margin: 0 5px;">';
                         $html .= $option_info['name'];
 
                         // 타입 표시
@@ -454,7 +464,7 @@ function displayProductDetails($connect, $order) {
                         }
 
                         $html .= ' <strong>' . number_format($price) . '원</strong>';
-                        $html .= '</span>';
+                        $html .= '</td></tr>';
                     }
                 }
             }
@@ -558,7 +568,9 @@ $current_page = 'order_complete';
 // 추가 CSS 연결
 $additional_css = [
     '/css/common-styles.css',
-    '/css/product-layout.css'
+    '/css/product-layout.css',
+    '/css/excel-unified-style.css',
+    '/css/table-design-system.css'
 ];
 
 // 공통 헤더 포함
@@ -566,25 +578,20 @@ include "../includes/header.php";
 include "../includes/nav.php";
 ?>
 
-<!-- 📱 Universal OrderComplete 스타일 -->
+<!-- 📱 Excel 스타일 OrderComplete -->
 <style>
-/* Universal Design System - 모든 제품 지원 */
+/* Excel Design System - 깔끔한 스프레드시트 스타일 */
 :root {
-    --primary-blue: #667eea;
-    --primary-purple: #764ba2;
-    --success-green: #27ae60;
+    --primary-blue: #1E90FF;
+    --dark-blue: #1873CC;
+    --success-green: #28a745;
     --warning-orange: #f39c12;
-    --error-red: #e74c3c;
-    --pastel-blue: #E6F3FF;
-    --pastel-lavender: #F0E6FF;
-    --pastel-mint: #E6FFF0;
-    --pastel-peach: #FFE6E6;
-    --pastel-yellow: #FFFCE6;
-    --text-primary: #2c3e50;
-    --text-secondary: #566a7e;
-    --border-light: #e1e8ed;
-    --shadow-light: 0 2px 8px rgba(0,0,0,0.08);
-    --shadow-medium: 0 4px 15px rgba(0,0,0,0.1);
+    --error-red: #D9534F;
+    --excel-gray: #F0F0F0;
+    --excel-border: #CCCCCC;
+    --text-primary: #333333;
+    --text-secondary: #666666;
+    --hover-blue: #E8F4FF;
 }
 
 .universal-container {
@@ -592,53 +599,49 @@ include "../includes/nav.php";
     margin: 10px auto;
     padding: 15px;
     background: white;
-    border-radius: 8px;
-    box-shadow: var(--shadow-medium);
+    border-radius: 4px;  /* Excel 스타일 */
+    box-shadow: 0 2px 4px rgba(0,0,0,0.1);
     font-family: 'Noto Sans KR', sans-serif;
 }
 
-/* 헤더 관련 CSS 제거됨 */
-
-/* 📊 주문 테이블 */
+/* 📊 Excel 스타일 주문 테이블 */
 .order-table {
     width: 100%;
     border-collapse: collapse;
     margin: 15px 0;
     background: white;
-    border-radius: 8px;
-    overflow: hidden;
-    box-shadow: var(--shadow-light);
+    border: 1px solid var(--excel-border);
 }
 
 .order-table thead th {
-    background: #E8E4F3;
-    color: #5a4a7d;
-    font-weight: 600;
+    background: var(--excel-gray);
+    color: var(--text-primary);
+    font-weight: 700;
     padding: 10px 12px;
     text-align: center;
-    font-size: 0.85rem;
-    border-bottom: 2px solid #d4c4ed;
+    font-size: 13px;
+    border: 1px solid var(--excel-border);
 }
 
 .order-table tbody tr {
-    transition: all 0.3s ease;
-    border-bottom: 1px solid var(--border-light);
+    transition: background-color 0.2s ease;
+    border-bottom: 1px solid var(--excel-border);
 }
 
 .order-table tbody tr:nth-child(even) {
-    background: var(--pastel-blue);
+    background: #F9F9F9;
 }
 
 .order-table tbody tr:hover {
-    background: var(--pastel-mint) !important;
-    transform: scale(1.01);
-    box-shadow: var(--shadow-medium);
+    background: var(--hover-blue) !important;
 }
 
 .order-table td {
-    padding: 15px 12px;
+    padding: 12px;
     vertical-align: top;
     font-size: 0.9rem;
+    border: 1px solid var(--excel-border);
+    color: var(--text-primary);
 }
 
 /* 테이블 컬럼 스타일 */
@@ -663,7 +666,7 @@ include "../includes/nav.php";
     width: 10%;
     text-align: center;
     font-weight: 600;
-    color: var(--warning-orange);
+    color: var(--text-primary);
 }
 
 .col-price {
@@ -701,38 +704,31 @@ include "../includes/nav.php";
     text-align: center;
 }
 
-/* 상품 옵션 스타일 */
-.product-options {
-    margin-top: 8px;
-    padding: 10px;
-    background: rgba(255,255,255,0.8);
-    border-radius: 8px;
-    border-left: 3px solid var(--primary-blue);
-}
 
 .option-item {
     display: inline-block;
     margin: 2px 8px 2px 0;
     padding: 4px 8px;
-    background: linear-gradient(135deg, var(--pastel-lavender) 0%, var(--pastel-blue) 100%);
-    border-radius: 15px;
+    background-color: var(--excel-gray);
+    border-radius: 4px;
     font-size: 0.8rem;
-    color: var(--text-secondary);
+    color: var(--text-primary);
     font-weight: 500;
+    border: 1px solid var(--excel-border);
 }
 
 /* 요청사항 스타일 */
 .request-note {
     margin-top: 8px;
     padding: 10px;
-    background: var(--pastel-yellow);
+    background: #FFFCE6;
     border-left: 4px solid var(--warning-orange);
-    border-radius: 8px;
+    border-radius: 4px;
     font-size: 0.85rem;
     color: #856404;
 }
 
-/* 정보 카드들 */
+/* 정보 카드들 - Excel 스타일 */
 .info-cards {
     display: grid;
     grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
@@ -741,10 +737,10 @@ include "../includes/nav.php";
 }
 
 .info-card {
-    background: #E8F4F8;
-    border-radius: 8px;
+    background: white;
+    border-radius: 4px;
     padding: 12px;
-    border: 2px solid rgba(255,255,255,0.5);
+    border: 1px solid var(--excel-border);
 }
 
 .info-card h3 {
@@ -767,16 +763,16 @@ include "../includes/nav.php";
 
 .info-value {
     flex: 1;
-    color: #2c3e50 !important;
+    color: var(--text-primary);
     font-weight: 500;
-    font-size: 0.8rem;
+    font-size: 0.9rem;
 }
 
 .info-label {
     width: 90px;
     font-weight: 600;
-    color: #2c3e50 !important;
-    font-size: 0.8rem;
+    color: var(--text-primary);
+    font-size: 0.9rem;
 }
 
 /* 📄 인쇄용 스타일 */
@@ -814,7 +810,7 @@ include "../includes/nav.php";
     .info-card {
         background: white !important;
         border: 1px solid #333 !important;
-        border-radius: 5px !important;
+        border-radius: 4px !important;
         page-break-inside: avoid;
         margin-bottom: 15px !important;
     }
@@ -972,7 +968,7 @@ include "../includes/nav.php";
 /* 🎬 액션 버튼 구역 */
 .action-section {
     background: white;
-    border-radius: 8px;
+    border-radius: 4px;  /* Excel 스타일 */
     padding: 20px;
     text-align: center;
     margin: 20px 0;
@@ -995,74 +991,65 @@ include "../includes/nav.php";
     display: inline-flex;
     align-items: center;
     gap: 8px;
-    padding: 8px 15px;
-    border-radius: 25px;
+    padding: 10px 20px;
+    border-radius: 4px;  /* Excel 스타일 sharp corners */
     text-decoration: none;
     font-weight: 600;
-    font-size: 0.8rem;
-    transition: all 0.3s ease;
-    position: relative;
+    font-size: 0.9rem;
+    transition: all 0.2s ease;
     border: none;
     cursor: pointer;
-    overflow: hidden;
 }
 
 .btn-continue {
-    background: linear-gradient(135deg, var(--success-green) 0%, #2ecc71 100%);
+    background-color: var(--success-green);
     color: white;
-    box-shadow: 0 4px 15px rgba(39, 174, 96, 0.3);
+    box-shadow: 0 2px 4px rgba(40, 167, 69, 0.3);
 }
 
 .btn-print {
-    background: linear-gradient(135deg, var(--primary-blue) 0%, var(--primary-purple) 100%);
+    background-color: var(--primary-blue);
     color: white;
-    box-shadow: 0 4px 15px rgba(102, 126, 234, 0.3);
+    box-shadow: 0 2px 4px rgba(30, 144, 255, 0.3);
 }
 
 .btn-action:hover {
-    transform: translateY(-3px);
-    box-shadow: 0 6px 25px rgba(0,0,0,0.2);
+    transform: translateY(-1px);  /* Subtle hover effect */
+    box-shadow: 0 4px 8px rgba(0,0,0,0.15);
 }
 
-.btn-action::before {
-    content: '';
-    position: absolute;
-    top: 0;
-    left: -100%;
-    width: 100%;
-    height: 100%;
-    background: linear-gradient(90deg, transparent, rgba(255,255,255,0.2), transparent);
-    transition: left 0.5s;
+.btn-continue:hover {
+    background-color: #218838;  /* Darker green on hover */
 }
 
-.btn-action:hover::before {
-    left: 100%;
+.btn-print:hover {
+    background-color: #1873CC;  /* Darker blue on hover */
 }
 
-/* 🎨 상태 배지 */
+/* 🎨 상태 배지 - Excel 스타일 */
 .status-badge {
     display: inline-block;
     padding: 6px 12px;
-    border-radius: 20px;
+    border-radius: 4px;  /* Excel 스타일 sharp corners */
     font-size: 0.8rem;
     font-weight: 600;
     text-align: center;
 }
 
 .status-pending {
-    background: var(--pastel-yellow);
+    background: #FFF3CD;  /* Light yellow */
     color: #856404;
     border: 1px solid var(--warning-orange);
 }
 
 .status-processing {
-    background: var(--pastel-blue);
+    background: #D6EBFF;  /* Light blue */
     color: var(--primary-blue);
     border: 1px solid var(--primary-blue);
 }
 
 .status-completed {
-    background: var(--pastel-mint);
+    background: #D4EDDA;  /* Light green */
     color: var(--success-green);
     border: 1px solid var(--success-green);
 }
@@ -1146,7 +1133,7 @@ include "../includes/nav.php";
         left: 0;
         right: 0;
         height: 2px;
-        background: linear-gradient(90deg, #666, #000, #666);
+        background: #333;
     }
     
     .print-company-info {
@@ -1198,7 +1185,7 @@ include "../includes/nav.php";
         padding: 15px 0;
         border: 2px solid #000;
         border-radius: 10px;
-        background: linear-gradient(135deg, #f8f9fa 0%, #e9ecef 100%) !important;
+        background-color: #f8f9fa;
         position: relative;
     }
     
@@ -1387,7 +1374,7 @@ include "../includes/nav.php";
         left: 0;
         right: 0;
         height: 1px;
-        background: linear-gradient(90deg, transparent, #000, transparent);
+        background: #333;
     }
     
     .print-payment-info {
@@ -1457,7 +1444,7 @@ include "../includes/nav.php";
         padding: 15px;
         border: 2px solid #495057;
         border-radius: 10px;
-        background: linear-gradient(135deg, #f8f9fa 0%, #e9ecef 100%) !important;
+        background-color: #f8f9fa;
         position: relative;
     }
     
@@ -1567,15 +1554,15 @@ include "../includes/nav.php";
                 <!-- 금액 -->
                 <td class="col-price">
                     <div class="price-container">
-                        <div class="price-supply">공급가: <span style="font-size: 1.5rem; font-weight: 700; color: #27ae60;"><?php echo number_format($order['money_4']); ?>원</span></div>
-                        <div class="price-total">합계금액: <span style="font-size: 1.1rem; font-weight: 600; color: #666;"><?php echo number_format($order['money_5']); ?>원</span></div>
+                        <div class="price-supply">공급가: <span style="font-size: 1.5rem; font-weight: 700; color: #27ae60;"><?php echo number_format($order['money_4']); ?>원</td></tr></div>
+                        <div class="price-total">합계금액: <span style="font-size: 1.1rem; font-weight: 600; color: #666;"><?php echo number_format($order['money_5']); ?>원</td></tr></div>
                         <div class="price-vat">(VAT <?php echo number_format($order['money_5'] - $order['money_4']); ?>원 포함)</div>
                     </div>
                 </td>
                 
                 <!-- 상태 -->
                 <td class="col-status">
-                    <span class="status-badge status-pending">입금대기</span>
+                    <span class="status-badge status-pending">입금대기</td></tr>
                 </td>
             </tr>
             <?php endforeach; ?>
@@ -1660,7 +1647,7 @@ include "../includes/nav.php";
                 <div class="info-label">카드결제:</div>
                 <div class="info-value">📞 1688-2384</div>
             </div>
-            <div style="background: #fff3cd; padding: 8px; border-radius: 5px; margin-top: 10px; font-size: 0.85rem; color: #856404;">
+            <div style="background: #fff3cd; padding: 8px; border-radius: 4px; margin-top: 10px; font-size: 0.85rem; color: #856404;">
                 ⚠️ <strong>입금자명을 주문자명(<?php echo htmlspecialchars($name ?: $first_order['name']); ?>)과 동일하게 해주세요</strong>
             </div>
         </div>
@@ -1692,7 +1679,7 @@ include "../includes/nav.php";
                     <td>999-1688-2384</td>
                     <td rowspan="3" style="text-align: center; vertical-align: middle;">
                         <strong>예금주: 두손기획인쇄 차경선</strong><br>
-                        <span style="font-size: 9pt; color: #666;">입금자명을 주문자명과 동일하게 해주세요</span>
+                        <span style="font-size: 9pt; color: #666;">입금자명을 주문자명과 동일하게 해주세요</td></tr>
                     </td>
                 </tr>
                 <tr>
