@@ -1639,6 +1639,63 @@ echo '연 (' . number_format($sourceData['mesu']) . '매)';
 
 ---
 
+### 주문서 페이지 엑셀 스타일 적용 완료 ✅ COMPLETED
+**날짜**: 2025-12-17
+**목적**: `OnlineOrder_unified.php`의 주문 상품 목록과 신청자 정보를 엑셀 테이블 형식으로 변환
+
+**현황 확인**:
+- ✅ 주문 상품 목록 (lines 400-569): 이미 Excel 테이블 형식으로 변환되어 있음
+- ✅ 신청자 정보 (lines 631-667): 이미 Excel 테이블 형식으로 변환되어 있음
+- ✅ Excel CSS 링크 (line 369): `excel-unified-style.css` 이미 연결되어 있음
+
+**클린업 작업**:
+- ❌ 미사용 CSS 발견: `.applicant-info-horizontal` 규칙 (lines 997-1026)
+- ✅ 삭제 완료: 30줄의 미사용 CSS 규칙 제거
+- ✅ 보존: `.business-info-horizontal` CSS 규칙 유지 (line 786에서 사용 중)
+
+**파일 변경사항**:
+```diff
+- 총 라인 수: 1705줄 → 1694줄 (11줄 감소)
+- 삭제된 CSS 블록:
+  /* ===== 신청자 정보 가로 배치 레이아웃 ===== */
+  .applicant-info-horizontal { ... }
+  .applicant-info-horizontal .info-row { ... }
+  .applicant-info-horizontal .info-field { ... }
+  .applicant-info-horizontal .info-field label { ... }
+  .applicant-info-horizontal .info-field input { ... }
+```
+
+**Excel 테이블 구조**:
+1. **주문 상품 목록**:
+   - Wrapper: `<div class="excel-cart-table-wrapper">`
+   - Table: `<table class="excel-cart-table">`
+   - Headers: `<th class="th-left">`, `<th class="th-right">`
+   - 2개 컬럼: 상품정보 (60%), 금액 (40%)
+
+2. **신청자 정보**:
+   - Wrapper: `<div class="excel-cart-table-wrapper">`
+   - Table: `<table class="excel-cart-table">` with `<colgroup>`
+   - 4개 컬럼: 라벨(15%), 입력(35%), 라벨(15%), 입력(35%)
+   - Rows: 성명/이메일, 전화/핸드폰
+
+**배포 완료**:
+- ✅ 로컬 파일 수정 완료
+- ✅ 프로덕션 FTP 업로드 완료 (dsp1830.shop, 81,630 bytes)
+- ✅ Git 커밋 완료 (commit 127f302)
+- ✅ GitHub 푸시 완료 (898c89c..127f302)
+
+**검증**:
+- HTTP 200: 페이지 정상 로드 확인
+- Excel CSS 링크: `<link rel="stylesheet" href="../css/excel-unified-style.css">` 확인
+- 테이블 구조: 모든 `.excel-cart-table` 클래스 적용 확인
+- 미사용 CSS: `.applicant-info-horizontal` 완전 제거 확인
+
+**참고**:
+- 사업자 정보 섹션은 기존 grid 레이아웃 유지 (`.business-info-horizontal` 사용)
+- cart.php와 동일한 Excel 스타일 공유
+
+---
+
 ## 🔄 Recent Critical Fixes (2025-12-14)
 
 ### 전단지 연수/매수 표시 시스템 완성 ✅ COMPLETED
