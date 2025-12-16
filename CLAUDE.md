@@ -1416,6 +1416,188 @@ $date_filter = "date >= '2023-01-01' AND date <= '2024-12-31'";
 $date_filter = "date >= DATE_SUB(NOW(), INTERVAL 1 YEAR)";
 ```
 
+---
+
+## 🚚 LOGEN 택배 API 통합 (2025-12-14)
+
+### ⚠️ IP 화이트리스트 필수 등록 사항
+
+**문제**: LOGEN API 서버 접속 시 Connection Timeout 발생
+**원인**: IP 화이트리스트에 등록되지 않은 IP에서 접근 시도
+
+### 📋 LOGEN API 자격증명
+
+| 항목 | 값 |
+|------|-----|
+| **고객사 코드** | `53058114` |
+| **사용자명** | `du1830` |
+| **비밀번호** | `du1830/*` |
+| **API 엔드포인트** | `https://openapi.ilogen.com/lrm02b-edi/edi/getSlipNo` |
+| **API 문서** | https://openapihome.ilogen.com/openapi/pages/api-docs/invoice-number-assign.html |
+
+### 🌐 등록 필요 IP 주소
+
+LOGEN 담당자에게 다음 IP를 화이트리스트 등록 요청:
+
+| 환경 | IP 주소 | 용도 |
+|------|---------|------|
+| **개발 환경** | `124.195.240.61` | 로컬 개발/테스트 |
+| **운영 서버** | `220.73.160.27` | dsp1830.shop 운영 서버 |
+
+### 📞 LOGEN 담당자 연락 템플릿
+
+```
+안녕하세요.
+고객사 코드 53058114(사용자명: du1830)로
+LOGEN EDI API 사용 중입니다.
+
+API 엔드포인트: https://openapi.ilogen.com/lrm02b-edi/edi/getSlipNo
+
+현재 Connection Timeout이 발생하고 있어
+다음 IP 주소들을 화이트리스트에 등록 부탁드립니다:
+
+1. 개발 환경: 124.195.240.61
+2. 운영 서버: 220.73.160.27
+
+등록 완료 후 알려주시면 테스트 진행하겠습니다.
+감사합니다.
+```
+
+### 🛠️ 구현된 시스템 파일
+
+| 파일 | 설명 |
+|------|------|
+| `shop_admin/logen_api_config.php` | API 설정 (자격증명, 엔드포인트) |
+| `shop_admin/logen_api_handler.php` | API 통신 클래스 |
+| `shop_admin/logen_auto_register.php` | AJAX 엔드포인트 (송장번호 자동 발급) |
+| `shop_admin/test_logen_api.php` | 테스트 UI 페이지 |
+| `shop_admin/get_recent_orders.php` | 송장번호 없는 주문 조회 |
+| `shop_admin/create_logen_shipment_table.php` | DB 테이블 생성 |
+| `shop_admin/test_api_direct.php` | API 직접 테스트 스크립트 |
+
+### 🔬 테스트 방법 (IP 등록 후)
+
+**1. CLI 테스트**:
+```bash
+php /var/www/html/shop_admin/test_api_direct.php
+```
+
+**2. 웹 UI 테스트**:
+```
+http://localhost/shop_admin/test_logen_api.php
+```
+- 관리자 인증: duson1830 / du1830
+- 송장번호 없는 주문 선택 후 "선택한 주문 자동 접수" 클릭
+
+### 📊 현재 상태
+
+- ✅ **시스템 구축 완료**: 모든 파일 작성 및 권한 설정 완료
+- ✅ **DB 준비 완료**: logen_shipment 테이블 생성, logs 디렉토리 생성
+- ✅ **로컬 테스트 준비**: 61,716건의 송장번호 없는 주문 대기 중
+- ⏳ **IP 등록 대기**: LOGEN 담당자 화이트리스트 등록 필요
+- ⏳ **실제 API 테스트 대기**: IP 등록 완료 후 진행 가능
+
+### 🎯 시스템 동작 흐름
+
+```
+① 관리자가 주문 선택 (테스트 UI)
+② AJAX로 logen_auto_register.php 호출
+③ LOGEN API에서 송장번호 발급 (getSlipNo)
+④ mlangorder_printauto 테이블 업데이트:
+   - logen_tracking_no = 발급된 송장번호
+   - waybill_date = 현재 시각
+   - delivery_company = '로젠택배'
+⑤ 결과를 화면에 표시
+```
+
+### ⚠️ 중요 참고사항
+
+- **Connection Timeout = IP 차단**: LOGEN API는 등록된 IP에서만 접근 가능
+- **운영/개발 모두 등록**: 로컬 개발 환경과 운영 서버 IP 모두 등록 필요
+- **HTTPS 필수**: API는 HTTPS만 지원
+- **로그 저장**: `/var/www/html/shop_admin/logs/logen_api.log`에 API 호출 기록
+
+---
+
+## 🔄 Recent Critical Fixes (2025-12-17)
+
+### 관리자 주문서 전단지 표시 형식 통일 ✅ COMPLETED
+**날짜**: 2025-12-17
+**목적**: 관리자 페이지 주문서에서 전단지 수량 표시 형식 일관성 확보
+
+**문제점**:
+- Order #103964: "0.5연 (2,000매)" ✅ 정상 표시
+- Order #103970: "0.5    연    49,000" ❌ 수량/단위 분리 표시
+- 테이블 구조: 수량과 단위가 별도 칸으로 분리되어 일관성 없음
+
+**해결 방법**:
+- **파일**: `mlangorder_printauto/OrderFormOrderTree.php`
+- **라인 934-949**: `mesu_for_display` 변수 계산 로직 추가
+  - Type_1 JSON에서 quantityTwo 또는 mesu 추출
+  - JSON 값이 0이면 DB의 mesu 컬럼 확인
+  - formatted_display에서 정규식으로 매수 추출 (폴백)
+- **라인 1059-1076**: 수량/단위 표시 조건부 로직 구현
+  - **전단지/리플렛**: 수량 칸에 "X연 (Y매)" 통합 표시, 단위 칸은 '-'
+  - **기타 제품**: 기존대로 수량/단위 분리 표시 유지
+
+**핵심 코드**:
+```php
+// 라인 937-949: 매수 계산 로직
+$mesu_for_display = 0;
+if ($json_data && isset($is_flyer) && $is_flyer) {
+    // JSON에서 추출
+    $mesu_for_display = intval($json_data['quantityTwo'] ?? $json_data['mesu'] ?? 0);
+
+    // DB 컬럼 확인
+    if ($mesu_for_display == 0 && isset($summary_item['mesu']) && $summary_item['mesu'] > 0) {
+        $mesu_for_display = intval($summary_item['mesu']);
+    }
+
+    // formatted_display 정규식 파싱 (폴백)
+    if ($mesu_for_display == 0 && !empty($full_spec) && preg_match('/[\d.]+연\s*\(([\d,]+)매\)/u', $full_spec, $mesu_matches)) {
+        $mesu_for_display = intval(str_replace(',', '', $mesu_matches[1]));
+    }
+}
+
+// 라인 1064-1076: 조건부 표시 로직
+<td style="border: 0.3pt solid #000; padding: 1.5mm; text-align: center;">
+    <?php
+    // 전단지/리플렛: "X연 (Y매)" 형식
+    if (isset($is_flyer) && $is_flyer && $mesu_for_display > 0) {
+        $yeon_display = $quantity_num ? (floor($quantity_num) == $quantity_num ? number_format($quantity_num) : number_format($quantity_num, 1)) : '0';
+        echo $yeon_display . '연 (' . number_format($mesu_for_display) . '매)';
+    } else {
+        echo $quantity_num ? (floor($quantity_num) == $quantity_num ? number_format($quantity_num) : number_format($quantity_num, 1)) : '-';
+    }
+    ?>
+</td>
+<td style="border: 0.3pt solid #000; padding: 1.5mm; text-align: center;">
+    <?php
+    // 전단지/리플렛: 단위 칸 비우기
+    if (isset($is_flyer) && $is_flyer && $mesu_for_display > 0) {
+        echo '-';
+    } else {
+        echo htmlspecialchars($unit);
+    }
+    ?>
+</td>
+```
+
+**배포 완료**:
+- ✅ 로컬 파일 수정 완료
+- ✅ 프로덕션 FTP 업로드 완료 (dsp1830.shop)
+- ✅ Git 커밋 완료 (commit 75095f0)
+- ✅ 자동 복원 메커니즘 없음 확인 (JavaScript, cron, 배포 스크립트)
+
+**테스트 대상**:
+- Order #103964, #103970에서 일관된 "X연 (Y매)" 표시 확인 필요
+
+**보호 장치**:
+- Git 커밋으로 실수로 인한 복원 방지
+- 백업 파일: `OrderFormOrderTree.php.backup_20251217_005724`
+
+---
+
 ## 🔄 Recent Critical Fixes (2025-12-14)
 
 ### 전단지 연수/매수 표시 시스템 완성 ✅ COMPLETED
