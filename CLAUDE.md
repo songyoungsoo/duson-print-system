@@ -1696,6 +1696,97 @@ echo '연 (' . number_format($sourceData['mesu']) . '매)';
 
 ---
 
+### 주문 완료 페이지 상세 정보 엑셀 형식 변환 완료 ✅ COMPLETED
+**날짜**: 2025-12-17
+**목적**: `OrderComplete_universal.php`의 "상세 정보" 섹션을 horizontal inline 레이아웃에서 Excel 테이블 형식으로 변환
+
+**문제점**:
+- 기존: `<div class="product-options">` 래퍼에 `<span class="option-item">` 인라인 요소들
+- 표시: "인쇄색상: 컬러인쇄(CMYK) 용지: 90g아트지(합판인쇄) 규격: A4 (210×297) ..." (한 줄 가로 배치)
+- Blue left border styling: `border-left: 3px solid var(--primary-blue)`
+
+**변환 내용**:
+- **파일**: `mlangorder_printauto/OrderComplete_universal.php`
+- **함수**: `displayProductDetails()` (lines 194-426)
+- **구조 변경**: div+span → table+tr+th/td
+
+**핵심 변경사항**:
+
+| 항목 | 이전 | 변경 후 |
+|------|------|---------|
+| **컨테이너** | `<div class="product-options">` | `<table class="excel-cart-table"><tbody>` |
+| **항목 표시** | `<span class="option-item">` inline | `<tr><th class="th-left">label</th><td>value</td></tr>` |
+| **닫기 태그** | `</div>` | `</tbody></table>` |
+| **스타일** | `.product-options` CSS (inline blue border) | Excel table (gray borders, alternating rows) |
+
+**구현 세부사항**:
+1. **Line 208**: 테이블 시작 태그
+   ```php
+   $html = '<table class="excel-cart-table" style="width: 100%; border-collapse: collapse;"><tbody>';
+   ```
+
+2. **Lines 236-241**: formatted_display 사용 시 테이블 행 생성
+   ```php
+   if (strpos($line, ':') !== false) {
+       list($key, $value) = explode(':', $line, 2);
+       $html .= '<tr>';
+       $html .= '<th class="th-left" style="width: 30%; background: #f0f0f0; padding: 8px; font-weight: 600; text-align: left; border: 1px solid #ccc;">' . htmlspecialchars(trim($key)) . '</th>';
+       $html .= '<td style="padding: 8px; border: 1px solid #ccc;">' . htmlspecialchars(trim($value)) . '</td>';
+       $html .= '</tr>';
+   }
+   ```
+
+3. **Lines 273-343**: 모든 제품 타입에 동일한 테이블 행 패턴 적용
+   - sticker, envelope, namecard, merchandisebond, cadarok, poster/littleprint, inserted/leaflet
+   - 각 제품별로 커스터마이징된 라벨과 값 표시
+
+4. **Line 385**: 테이블 닫기 태그
+   ```php
+   $html .= '</tbody></table>';
+   ```
+
+**버그 수정**:
+- **Line 417**: 추가 옵션 section HTML 오류 수정
+  - 이전: `$html .= '</td></tr>';` (잘못된 테이블 태그)
+  - 수정: `$html .= '</span>';` (올바른 span 닫기)
+
+**CSS 클린업**:
+- **삭제됨**: `.product-options` CSS 규칙 (lines 707-714, 8줄)
+  - 이유: 더 이상 HTML에서 사용되지 않음
+- **유지됨**: `.option-item` CSS 규칙 (lines 716-726)
+  - 이유: 추가 옵션 section에서 여전히 사용 중
+
+**Excel 테이블 구조**:
+- Wrapper: 테이블 자체가 wrapper (추가 div 없음)
+- Headers: `<th class="th-left">` - 30% width, #f0f0f0 background, left-aligned
+- Data cells: `<td>` - 70% width, white background, left-aligned
+- Borders: 1px solid #ccc on all cells
+- Styling: excel-unified-style.css 클래스 사용
+
+**배포 완료**:
+- ✅ 로컬 파일 수정 완료 (1778 lines)
+- ✅ 프로덕션 FTP 업로드 완료 (dsp1830.shop, 68,283 bytes)
+- ✅ Git 커밋 완료 (commit ece2d7a)
+- ✅ GitHub 푸시 완료 (22c6925..ece2d7a)
+
+**변환 결과**:
+- 이전: Horizontal inline layout with blue left border
+- 변경: Clean 2-column Excel table (label | value)
+- 스타일: cart.php와 동일한 Excel 디자인 패턴
+
+**검증**:
+- 모든 제품 타입 테이블 행 생성 확인 (sticker, envelope, namecard, etc.)
+- formatted_display 우선 사용 로직 유지
+- 추가 옵션 section HTML 오류 수정 확인 (span 닫기)
+- 미사용 CSS 제거 확인
+
+**참고**:
+- 추가 옵션 section은 별도 div with green background로 유지
+- 제품 상세만 Excel table로 변환
+- OrderFormOrderTree.php와는 다른 파일 (주문서 vs 주문 완료)
+
+---
+
 ## 🔄 Recent Critical Fixes (2025-12-14)
 
 ### 전단지 연수/매수 표시 시스템 완성 ✅ COMPLETED
