@@ -932,6 +932,21 @@ foreach ($order_rows as $order_item) {
                                     $full_spec = '-';
                                 }
 
+
+                                // 🆕 전단지/리플렛: 매수(mesu) 정보 표시용 변수
+                                $mesu_for_display = 0;
+                                if ($json_data && isset($is_flyer) && $is_flyer) {
+                                    // JSON에서 매수 정보 추출 (quantityTwo 또는 mesu)
+                                    $mesu_for_display = intval($json_data['quantityTwo'] ?? $json_data['mesu'] ?? 0);
+                                    // 매수가 0이면 DB의 mesu 컬럼 확인
+                                    if ($mesu_for_display == 0 && isset($summary_item['mesu']) && $summary_item['mesu'] > 0) {
+                                        $mesu_for_display = intval($summary_item['mesu']);
+                                    }
+                                    // 여전히 0이면 formatted_display에서 추출 시도: "0.5연 (2,000매)"
+                                    if ($mesu_for_display == 0 && !empty($full_spec) && preg_match('/[\d.]+연\s*\(([\d,]+)매\)/u', $full_spec, $mesu_matches)) {
+                                        $mesu_for_display = intval(str_replace(',', '', $mesu_matches[1]));
+                                    }
+                                }
                                 // 🔧 Extract options for this item
                                 $item_options = [];
 
@@ -1046,10 +1061,25 @@ foreach ($order_rows as $order_item) {
                                     <?php endif; ?>
                                 </td>
                                 <td style="border: 0.3pt solid #000; padding: 1.5mm; text-align: center;">
-                                    <?= $quantity_num ? (floor($quantity_num) == $quantity_num ? number_format($quantity_num) : number_format($quantity_num, 1)) : '-' ?>
+                                    <?php
+                                    // 🔧 전단지/리플렛: "X연 (Y매)" 형식으로 표시
+                                    if (isset($is_flyer) && $is_flyer && $mesu_for_display > 0) {
+                                        $yeon_display = $quantity_num ? (floor($quantity_num) == $quantity_num ? number_format($quantity_num) : number_format($quantity_num, 1)) : '0';
+                                        echo $yeon_display . '연 (' . number_format($mesu_for_display) . '매)';
+                                    } else {
+                                        echo $quantity_num ? (floor($quantity_num) == $quantity_num ? number_format($quantity_num) : number_format($quantity_num, 1)) : '-';
+                                    }
+                                    ?>
                                 </td>
                                 <td style="border: 0.3pt solid #000; padding: 1.5mm; text-align: center;">
-                                    <?= htmlspecialchars($unit) ?>
+                                    <?php
+                                    // 🔧 전단지/리플렛: 단위 칼럼 비우기
+                                    if (isset($is_flyer) && $is_flyer && $mesu_for_display > 0) {
+                                        echo '-';
+                                    } else {
+                                        echo htmlspecialchars($unit);
+                                    }
+                                    ?>
                                 </td>
                                 <td style="border: 0.3pt solid #000; padding: 1.5mm; text-align: right;">
                                     <?= number_format(intval($summary_item['money_4'])) ?>
