@@ -372,8 +372,7 @@ if (!empty($debug_info) && strpos($_SERVER['HTTP_HOST'], 'localhost') !== false)
     <!-- 주문 정보 입력 폼 -->
     <div class="card" style="margin-bottom: 1rem;">
         <div class="card-header" style="background-color: #1E90FF; color: black; text-align: center; padding: 0.5rem;">
-            <h2 style="margin: 0; font-size: 1rem; color: black;">📋 주문 정보 입력</h2>
-            <p style="margin: 0.2rem 0 0 0; opacity: 0.9; font-size: 0.75rem; color: black;">정확한 정보를 입력해 주세요</p>
+            <h2 style="margin: 0; font-size: 1.8rem; color: black;">📋 주문 정보 입력</h2>
         </div>
         
         <div class="centered-form" style="padding: 0.8rem;">
