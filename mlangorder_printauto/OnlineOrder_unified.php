@@ -323,7 +323,8 @@ foreach ($debug_info as $info) {
 include "../includes/header.php";
 include "../includes/nav.php";
 
-// 디버깅 정보 임시 표시 (개발용 - localhost만)
+// 디버깅 정보 임시 표시 (개발용 - localhost만) - 주석 처리
+/*
 if (!empty($debug_info) && strpos($_SERVER['HTTP_HOST'], 'localhost') !== false) {
     echo "<div style='position: fixed; top: 10px; right: 10px; background: #fff3cd; border: 1px solid #ffeaa7; padding: 10px; border-radius: 5px; font-size: 11px; z-index: 9999; max-width: 350px; max-height: 400px; overflow-y: auto;'>";
     echo "<strong>🔍 회원정보 디버깅:</strong><br>";
@@ -361,19 +362,23 @@ if (!empty($debug_info) && strpos($_SERVER['HTTP_HOST'], 'localhost') !== false)
 
     echo "</div>";
 }
+*/
 ?>
+
+<!-- 엑셀 스타일 CSS 추가 -->
+<link rel="stylesheet" href="../css/excel-unified-style.css">
 
 <div class="container" style="padding: 0.5rem 1rem; margin-top: -1rem;">
     <!-- 주문 정보 입력 폼 -->
     <div class="card" style="margin-bottom: 1rem;">
-        <div class="card-header" style="background: linear-gradient(135deg, #3498db 0%, #2980b9 100%); color: white; text-align: center; padding: 0.5rem;">
-            <h2 style="margin: 0; font-size: 1rem;">📋 주문 정보 입력</h2>
-            <p style="margin: 0.2rem 0 0 0; opacity: 0.9; font-size: 0.75rem;">정확한 정보를 입력해 주세요</p>
+        <div class="card-header" style="background-color: #1E90FF; color: black; text-align: center; padding: 0.5rem;">
+            <h2 style="margin: 0; font-size: 1rem; color: black;">📋 주문 정보 입력</h2>
+            <p style="margin: 0.2rem 0 0 0; opacity: 0.9; font-size: 0.75rem; color: black;">정확한 정보를 입력해 주세요</p>
         </div>
         
         <div class="centered-form" style="padding: 0.8rem;">
             <!-- 주문 요약 (장바구니 스타일) -->
-            <div style="background: linear-gradient(135deg, #f7faff 0%, #fdf2f8 100%); border-radius: 8px; padding: 20px; border: 1px solid #e2e8f0; margin-bottom: 1.5rem;">
+            <div style="background-color: #f8f9fa; border-radius: 8px; padding: 20px; border: 1px solid #e2e8f0; margin-bottom: 1.5rem;">
                 <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 16px;">
                     <div style="color: #4a5568; font-weight: 600; font-size: 16px;">📋 주문 요약</div>
                     <div style="color: #718096; font-size: 13px;">총 <?php echo $total_info['count']; ?>개 상품</div>
@@ -388,23 +393,28 @@ if (!empty($debug_info) && strpos($_SERVER['HTTP_HOST'], 'localhost') !== false)
                         <div style="color: #718096; font-size: 12px; margin-bottom: 4px;">부가세</div>
                         <div style="color: #2d3748; font-weight: 600; font-size: 15px;"><?php echo number_format($total_info['total_vat'] - $total_info['total']); ?>원</div>
                     </div>
-                    <div style="text-align: center; padding: 12px; background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); border-radius: 6px; color: white;">
+                    <div style="text-align: center; padding: 12px; background-color: #1E90FF; border: 1px solid #1873CC; border-radius: 6px; color: white;">
                         <div style="opacity: 0.9; font-size: 12px; margin-bottom: 4px;">총 결제금액</div>
                         <div style="font-weight: 700; font-size: 18px;"><?php echo number_format($total_info['total_vat']); ?>원</div>
                     </div>
                 </div>
             </div>
             
-            <!-- 주문 상품 목록 (장바구니 테이블 스타일) -->
+            <!-- 주문 상품 목록 (엑셀 스타일 테이블) -->
             <div style="margin-bottom: 1.5rem;">
                 <h3 style="color: #4a5568; font-weight: 600; font-size: 16px; margin-bottom: 1rem;">🛍️ 주문 상품 목록</h3>
-                <div style="background: linear-gradient(135deg, #fafbff 0%, #fff9f9 100%); border-radius: 8px; overflow: hidden; border: 1px solid #e8eaed;">
-                    <?php foreach ($cart_items as $index => $item): 
-                        $row_bg = $index % 2 == 0 ? '#fdfdfd' : '#f9f9fb';
-                    ?>
-                    <div style="padding: 16px; background: <?php echo $row_bg; ?>; border-bottom: 1px solid #e8eaed; transition: background-color 0.2s ease;" onmouseover="this.style.background='#f0f4ff'" onmouseout="this.style.background='<?php echo $row_bg; ?>'">
-                        <div style="display: flex; justify-content: space-between; align-items: center;">
-                            <div style="flex: 1;">
+                <div class="excel-cart-table-wrapper">
+                    <table class="excel-cart-table">
+                        <thead>
+                            <tr>
+                                <th class="th-left" style="width: 60%;">상품정보 / 규격옵션</th>
+                                <th class="th-right" style="width: 40%;">금액 (부가세포함)</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                    <?php foreach ($cart_items as $index => $item): ?>
+                    <tr>
+                        <td class="td-left">
                                 <?php if ($is_direct_order): ?>
                                     <?php if ($item['product_type'] == 'envelope'): ?>
                                         <strong style="color: #2c3e50; font-size: 0.95rem;">✉️ 봉투</strong>
@@ -553,16 +563,16 @@ if (!empty($debug_info) && strpos($_SERVER['HTTP_HOST'], 'localhost') !== false)
                                         </div>
                                     <?php endif; ?>
                                 <?php endif; ?>
+                        </td>
+                        <td class="td-right">
+                            <div class="price-total" style="font-size: 18px;">
+                                <?php echo number_format($is_direct_order ? $item['vat_price'] : $item['st_price_vat']); ?>원
                             </div>
-                            <div style="text-align: right; min-width: 120px;">
-                                <div style="color: #4a5568; font-size: 13px; margin-bottom: 2px;">부가세포함</div>
-                                <div style="font-weight: 700; color: #e53e3e; font-size: 16px;">
-                                    <?php echo number_format($is_direct_order ? $item['vat_price'] : $item['st_price_vat']); ?>원
-                                </div>
-                            </div>
-                        </div>
-                    </div>
+                        </td>
+                    </tr>
                     <?php endforeach; ?>
+                        </tbody>
+                    </table>
                 </div>
             </div>
             
@@ -618,50 +628,61 @@ if (!empty($debug_info) && strpos($_SERVER['HTTP_HOST'], 'localhost') !== false)
                     <p class="description-text" style="color: #666; margin-bottom: 1rem;">* 신청자 정보를 정확히 입력 바랍니다.</p>
                 <?php endif; ?>
 
-                <!-- 신청자 정보 - 가로 배치 -->
-                <div class="applicant-info-horizontal">
-                    <!-- 1줄: 성명/상호 + 이메일 -->
-                    <div class="info-row">
-                        <div class="info-field">
-                            <label>👤 성명/상호 *</label>
-                            <input type="text" name="username" required
-                                   value="<?php
-                                   if ($is_logged_in && $user_info) {
-                                       $default_name = $user_info['name'] ?? '';
-                                       if (empty($default_name) || $default_name === '0') {
-                                           $default_name = $user_info['username'] ?? '';
-                                           if (empty($default_name) && !empty($user_info['email'])) {
-                                               $email_parts = explode('@', $user_info['email']);
-                                               $default_name = $email_parts[0];
+                <!-- 신청자 정보 - 엑셀 테이블 스타일 -->
+                <div class="excel-cart-table-wrapper" style="margin-bottom: 1.5rem;">
+                    <table class="excel-cart-table">
+                        <colgroup>
+                            <col style="width: 15%;">
+                            <col style="width: 35%;">
+                            <col style="width: 15%;">
+                            <col style="width: 35%;">
+                        </colgroup>
+                        <tbody>
+                            <tr>
+                                <th class="th-left">👤 성명/상호 *</th>
+                                <td>
+                                    <input type="text" name="username" required
+                                           value="<?php
+                                           if ($is_logged_in && $user_info) {
+                                               $default_name = $user_info['name'] ?? '';
+                                               if (empty($default_name) || $default_name === '0') {
+                                                   $default_name = $user_info['username'] ?? '';
+                                                   if (empty($default_name) && !empty($user_info['email'])) {
+                                                       $email_parts = explode('@', $user_info['email']);
+                                                       $default_name = $email_parts[0];
+                                                   }
+                                               }
+                                               echo htmlspecialchars($default_name);
                                            }
-                                       }
-                                       echo htmlspecialchars($default_name);
-                                   }
-                                   ?>"
-                                   placeholder="성명 또는 상호명">
-                        </div>
-                        <div class="info-field">
-                            <label>📧 이메일 *</label>
-                            <input type="email" name="email" required
-                                   value="<?php echo $is_logged_in ? htmlspecialchars($user_info['email'] ?? '') : ''; ?>"
-                                   placeholder="이메일 주소">
-                        </div>
-                    </div>
-
-                    <!-- 2줄: 전화번호 + 핸드폰 -->
-                    <div class="info-row">
-                        <div class="info-field">
-                            <label>📞 전화번호 *</label>
-                            <input type="tel" name="phone" required
-                                   value="<?php echo $is_logged_in ? htmlspecialchars($user_info['phone'] ?? '') : ''; ?>"
-                                   placeholder="전화번호">
-                        </div>
-                        <div class="info-field">
-                            <label>📱 핸드폰</label>
-                            <input type="tel" name="Hendphone"
-                                   placeholder="핸드폰 번호">
-                        </div>
-                    </div>
+                                           ?>"
+                                           placeholder="성명 또는 상호명"
+                                           style="width: 100%; padding: 8px; border: 1px solid #ddd; border-radius: 3px;">
+                                </td>
+                                <th class="th-left">📧 이메일 *</th>
+                                <td>
+                                    <input type="email" name="email" required
+                                           value="<?php echo $is_logged_in ? htmlspecialchars($user_info['email'] ?? '') : ''; ?>"
+                                           placeholder="이메일 주소"
+                                           style="width: 100%; padding: 8px; border: 1px solid #ddd; border-radius: 3px;">
+                                </td>
+                            </tr>
+                            <tr>
+                                <th class="th-left">📞 전화번호 *</th>
+                                <td>
+                                    <input type="tel" name="phone" required
+                                           value="<?php echo $is_logged_in ? htmlspecialchars($user_info['phone'] ?? '') : ''; ?>"
+                                           placeholder="전화번호"
+                                           style="width: 100%; padding: 8px; border: 1px solid #ddd; border-radius: 3px;">
+                                </td>
+                                <th class="th-left">📱 핸드폰</th>
+                                <td>
+                                    <input type="tel" name="Hendphone"
+                                           placeholder="핸드폰 번호"
+                                           style="width: 100%; padding: 8px; border: 1px solid #ddd; border-radius: 3px;">
+                                </td>
+                            </tr>
+                        </tbody>
+                    </table>
                 </div>
                 
                 <!-- 수령지 정보 섹션 -->
@@ -832,7 +853,7 @@ if (!empty($debug_info) && strpos($_SERVER['HTTP_HOST'], 'localhost') !== false)
                 
                 <div style="text-align: center; margin-top: 1.5rem;">
                     <button type="submit"
-                            style="background: linear-gradient(135deg, #e74c3c 0%, #c0392b 100%); color: white; border: none; padding: 12px 36px; border-radius: 20px; font-weight: bold; cursor: pointer; box-shadow: 0 4px 15px rgba(231, 76, 60, 0.25);">
+                            style="background-color: #D9534F; color: white; border: none; padding: 12px 36px; border-radius: 20px; font-weight: bold; cursor: pointer; box-shadow: 0 4px 15px rgba(217, 83, 79, 0.25);">
                         🚀 주문 완료하기
                     </button>
                 </div>
@@ -1285,7 +1306,7 @@ button {
 }
 
 #loginModal .modal-header {
-    background: linear-gradient(135deg, #3498db 0%, #2980b9 100%);
+    background-color: #1E90FF;
     color: white;
     padding: 1rem;
     display: flex;
@@ -1368,7 +1389,7 @@ button {
 #loginModal .btn-primary {
     width: 100%;
     padding: 0.75rem;
-    background: linear-gradient(135deg, #3498db 0%, #2980b9 100%);
+    background-color: #1E90FF;
     color: white;
     border: none;
     border-radius: 4px;
