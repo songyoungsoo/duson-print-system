@@ -352,11 +352,11 @@ $koreanAmount = numberToKorean($quote['grand_total']);
                         $qtyDisplay = ($qty == intval($qty)) ? number_format($qty) : rtrim(rtrim(number_format($qty, 2), '0'), '.');
                         echo $qtyDisplay;
 
-                        // 전단지(inserted)인 경우 매수 표시 추가
+                        // 전단지(inserted)인 경우 매수 표시 추가 - 한 줄 형식
                         if ($item['product_type'] == 'inserted' && !empty($item['source_data'])) {
                             $sourceData = json_decode($item['source_data'], true);
                             if (!empty($sourceData['mesu'])) {
-                                echo '<br><span style="font-size: 10px; color: #666;">(' . number_format($sourceData['mesu']) . '매)</span>';
+                                echo '연 (' . number_format($sourceData['mesu']) . '매)';
                             }
                         }
                     ?></td>
