@@ -37,7 +37,9 @@ if (empty($MY_type) || empty($PN_type) || empty($MY_Fsd) || empty($MY_amount) ||
 $TABLE = "mlangprintauto_inserted";
 
 // 가격 정보 검색
-$query = "SELECT * FROM $TABLE WHERE style='$MY_type' AND Section='$PN_type' AND quantity='$MY_amount' AND TreeSelect='$MY_Fsd' AND POtype='$POtype'";
+// 🔧 quantity는 float 타입이므로 숫자로 비교 (0.50 = 0.5)
+$MY_amount_float = floatval($MY_amount);
+$query = "SELECT * FROM $TABLE WHERE style='$MY_type' AND Section='$PN_type' AND quantity = $MY_amount_float AND TreeSelect='$MY_Fsd' AND POtype='$POtype'";
 $result = mysqli_query($connect, $query);
 
 if (!$result) {
