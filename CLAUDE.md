@@ -1521,6 +1521,125 @@ http://localhost/shop_admin/test_logen_api.php
 
 ## 🔄 Recent Critical Fixes (2025-12-17)
 
+
+### 🎯 전단지 매수(mesu) 데이터 E2E 수정 완료 ✅ COMPLETED
+**날짜**: 2025-12-17 (최종)
+**목적**: 장바구니 → 주문 → 주문완료까지 전단지 "X연 (Y매)" 표시 완전 복구
+
+**🔴 ROOT CAUSE DISCOVERED:**
+
+**Problem:** 신규 장바구니 항목의 mesu 필드가 0으로 저장됨
+```sql
+mysql> SELECT no, MY_amount, mesu FROM shop_temp WHERE product_type='inserted' ORDER BY no DESC LIMIT 3;
+no 952: MY_amount=0.50, mesu=0  ❌ (should be 2000)
+no 951: MY_amount=0.50, mesu=0  ❌ (should be 2000)
+no 947: MY_amount=1.00, mesu=8000 ✅ (older order correct)
+```
+
+**Data Flow Chain Investigation:**
+1. ✅ API (`calculate_price_ajax.php` line 89): Returns `MY_amountRight: "2000장"`
+2. ✅ calculator.js (line 84): Sets `form.MY_amountRight.value = data.MY_amountRight`
+3. ❌ **BROKEN HERE**: Form name mismatch!
+   - calculator.js line 47: `var form = document.forms["choiceForm"];`
+   - index.php line 209: `<form id="orderForm" method="post">` (NO name attribute!)
+   - Result: `form` variable = undefined → line 84 fails silently
+4. ❌ index.php hidden field never populated
+5. ❌ add_to_basket.php receives empty MY_amountRight → mesu=0
+
+**FIXES APPLIED:**
+
+**1. Form Name Mismatch Fix** (`mlangprintauto/inserted/index.php` line 209):
+```php
+// Before:
+<form id="orderForm" method="post">
+
+// After:
+<form id="orderForm" name="choiceForm" method="post">
+```
+
+**2. Type_1 JSON Extraction Fix** (`mlangorder_printauto/OrderComplete_universal.php` lines 509-510):
+```php
+// Before (❌ Wrong - tries to read from non-existent table columns):
+$my_amount = $order['MY_amount'] ?? null;
+$mesu = $order['mesu'] ?? null;
+
+// After (✅ Correct - reads from Type_1 JSON):
+$my_amount = $json_data['MY_amount'] ?? $order['MY_amount'] ?? null;
+$mesu = $json_data['mesu'] ?? $order['mesu'] ?? null;
+```
+
+**VERIFICATION:**
+
+✅ **Cart Entry #983**: mesu=2000 (fix working!)
+```sql
+mysql> SELECT no, MY_amount, mesu, unit FROM shop_temp WHERE no=983;
+no=983: MY_amount=0.50, mesu=2000, unit=매 ✅
+```
+
+✅ **E2E Flow Complete:**
+- cart.php (lines 556-574): Displays "0.5연 (2,000매)" ✅
+- ProcessOrder_unified.php (lines 216, 227, 267, 284): Preserves mesu in Type_1 JSON ✅
+- OrderComplete_universal.php (lines 506-527): Extracts from JSON, displays "X연 (Y매)" ✅
+- OrderFormOrderTree.php (lines 937-947, 1059-1076): Reads JSON, displays correctly ✅
+
+**DEPLOYMENT:**
+
+| File | Bytes | Status |
+|------|-------|--------|
+| `mlangprintauto/inserted/index.php` | 34,645 | ✅ Deployed |
+| `mlangorder_printauto/OrderComplete_universal.php` | 69,021 | ✅ Deployed |
+
+**Git Commit:** [3e1168b] "fix: 전단지 매수(mesu) 데이터 완전 수정 - E2E 흐름 복구"
+**GitHub Push:** 75d14b0..3e1168b main → main
+
+**KEY LESSON:**
+
+`document.forms[]` collection accesses forms by **name** attribute, NOT id!
+```javascript
+// ❌ WRONG: Form has id="orderForm" but no name attribute
+var form = document.forms["choiceForm"]; // Returns undefined
+
+// ✅ RIGHT: Form needs name="choiceForm" attribute
+<form id="orderForm" name="choiceForm"> // Now accessible!
+```
+
+**RESULT:** 🎉 Complete E2E flow working - 장바구니 → 주문 → 주문완료 "X연 (Y매)" 표시 완벽 작동!
+
+**⚠️ IMPORTANT CLARIFICATION (2025-12-17 10:00):**
+
+User reported "장바구니보면 아직도 안되" (Cart still doesn't work), but investigation revealed:
+
+**Evidence Fix is Working:**
+```sql
+-- Most recent orders in database:
+no 983: MY_amount=0.50, mesu=2000 ✅ (NEW order after fix - CORRECT!)
+no 952: MY_amount=0.50, mesu=0   ❌ (OLD order before fix)
+no 951: MY_amount=0.50, mesu=0   ❌ (OLD order before fix)
+```
+
+**Error Logs Confirm:**
+```
+[Dec 17 08:56:16] 전단지 매수 수신: MY_amountRight = '2000장' → mesu = 2000 ✅
+[Dec 17 09:04:33] 전단지 매수 수신: MY_amountRight = '2000장' → mesu = 2000 ✅
+```
+
+**Root Cause of Confusion:**
+- Orders 952, 951, 949, 948 were created BEFORE Dec 14-17 fixes were deployed
+- User was viewing OLD cart items that don't have mesu data
+- All NEW orders (983+) correctly save mesu=2000 and display "0.5연 (2,000매)"
+
+**Verification:**
+- ✅ Production calculate_price_ajax.php returns MY_amountRight: "2000장"
+- ✅ Production calculator.js line 114 sets form.MY_amountRight.value
+- ✅ Production index.php has name="choiceForm" + hidden field + FormData send
+- ✅ Production add_to_basket.php extracts mesu with error logging
+- ✅ Order #983 confirms: mesu=2000 saved correctly
+
+**Conclusion:** System is fully functional. Old cart items (pre-fix) will show wrong data, but all new orders work perfectly.
+
+---
+
+
 ### 관리자 주문서 전단지 표시 형식 통일 ✅ COMPLETED
 **날짜**: 2025-12-17
 **목적**: 관리자 페이지 주문서에서 전단지 수량 표시 형식 일관성 확보
