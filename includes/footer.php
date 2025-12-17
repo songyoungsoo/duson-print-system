@@ -676,6 +676,11 @@
     }
     ?>
 
+    <?php
+    // 채팅 위젯 포함 (모든 페이지)
+    include_once __DIR__ . '/chat_widget.php';
+    ?>
+
     <?php if (isset($additional_js)): ?>
         <?php foreach ($additional_js as $js): ?>
             <script src="<?php echo $js; ?>"></script>

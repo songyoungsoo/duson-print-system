@@ -29,6 +29,10 @@ $log_info = generateLogInfo();
 $page_title = generate_page_title("스티커 견적안내 - 프리미엄");
 $current_page = 'sticker'; // 네비게이션 활성화를 위한 페이지 식별자
 
+// 📱 모달 모드 감지 (견적서 시스템에서 iframe으로 호출될 때)
+$is_quotation_mode = isset($_GET['mode']) && $_GET['mode'] === 'quotation';
+$body_class = $is_quotation_mode ? ' quotation-modal-mode' : '';
+
 // 스티커 기본값 설정
 $default_values = [
     'jong' => 'jil 아트유광', // 기본값: 아트지유광
@@ -75,8 +79,8 @@ $default_values = [
     }
     ?>
 
-    <!-- 스티커 전용 JavaScript -->
-    <script src="../../js/sticker.js" defer></script>
+    <!-- 스티커 전용 JavaScript - 인라인 스크립트로 대체되어 별도 파일 불필요 -->
+    <!-- <script src="../../js/sticker.js" defer></script> -->
 
     <!-- 스티커 가로/세로 input 전용 스타일 -->
     
@@ -100,6 +104,9 @@ $default_values = [
     <!-- 🎯 통합 공통 스타일 CSS (최종 로드로 최우선 적용) -->
     <link rel="stylesheet" href="../../css/common-styles.css?v=<?php echo time(); ?>">
     <link rel="stylesheet" href="../../css/upload-modal-common.css">
+
+    <!-- 📱 견적서 모달 모드 공통 CSS (전 제품 공통) -->
+    <link rel="stylesheet" href="../../css/quotation-modal-common.css">
 
     <!-- 재질보기 버튼 및 모달 스타일 -->
     <style>
@@ -127,6 +134,38 @@ $default_values = [
         .btn-material-guide:active {
             transform: translateY(0);
             box-shadow: 0 2px 4px rgba(102, 126, 234, 0.3);
+        }
+
+        /* AI 템플릿 다운로드 버튼 스타일 */
+        .btn-ai-download {
+            padding: 10px 20px;
+            background: linear-gradient(135deg, #ff6b35 0%, #f7931e 100%);
+            color: white;
+            border: none;
+            border-radius: 8px;
+            font-size: 0.9rem;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            box-shadow: 0 3px 8px rgba(255, 107, 53, 0.3);
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .btn-ai-download:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(255, 107, 53, 0.4);
+            background: linear-gradient(135deg, #f7931e 0%, #ff6b35 100%);
+        }
+
+        .btn-ai-download:active {
+            transform: translateY(0);
+            box-shadow: 0 3px 8px rgba(255, 107, 53, 0.3);
+        }
+
+        .btn-ai-download svg {
+            stroke: white;
         }
 
         /* 재질 안내 모달 스타일 */
@@ -242,20 +281,58 @@ $default_values = [
         }
     </style>
 </head>
-<body>
-    <?php include "../../includes/header-ui.php"; ?>
-    <?php include "../../includes/nav.php"; ?>
+<body class="sticker-page<?php echo $body_class; ?>">
+<?php if (!$is_quotation_mode): ?>
+<?php include "../../includes/header-ui.php"; ?>
+<?php include "../../includes/nav.php"; ?>
+<?php endif; ?>
 
     <div class="product-container">
-    
+
+<?php if (!$is_quotation_mode): ?>
         <div class="page-title">
             <h1>🏷️ 스티커 견적 안내</h1>
         </div>
+<?php endif; ?>
 
         <!-- 컴팩트 2단 그리드 레이아웃 -->
         <div class="product-content">
+<?php if (!$is_quotation_mode): ?>
             <!-- 좌측: 갤러리 (500×400 마우스 호버 줌) -->
-            <section class="product-gallery">
+            <section class="product-gallery" style="position: relative;">
+                <!-- 실시간 사이즈 미리보기 캔버스 (플로팅 오버레이) -->
+                <div id="sizePreviewContainer" style="position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%); width: 500px; height: 400px; background: rgba(255,255,255,0.98); border-radius: 8px; overflow: hidden; display: none; z-index: 100; box-shadow: 0 4px 20px rgba(0,0,0,0.08), 0 1px 3px rgba(0,0,0,0.12); border: 1px solid rgba(0,0,0,0.06);">
+                    <canvas id="sizePreviewCanvas" width="500" height="400" style="display: block;"></canvas>
+                    <div style="position: absolute; top: 8px; left: 10px; background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); color: white; padding: 6px 12px; border-radius: 6px; font-size: 11px; box-shadow: 0 2px 8px rgba(0,0,0,0.15);">
+                        <div style="font-weight: 600; margin-bottom: 2px;">📐 실시간 미리보기</div>
+                        <div id="previewDimensions" style="font-size: 10px; opacity: 0.9;">가로 × 세로를 입력하세요</div>
+                    </div>
+                    <button onclick="hideSizePreview()" style="position: absolute; top: 8px; right: 10px; background: rgba(0,0,0,0.5); color: white; border: none; width: 28px; height: 28px; border-radius: 50%; cursor: pointer; font-size: 14px; display: flex; align-items: center; justify-content: center;">✕</button>
+                </div>
+
+
+                <!-- 템플릿 다운로드 버튼 섹션 (컴팩트) -->
+                <div id="templateDownloadButtons" style="display: none; margin: 8px auto; max-width: 800px; padding: 8px 12px; background: linear-gradient(135deg, #fafbfc 0%, #f5f6f7 100%); border-radius: 6px; border: 1px solid #e1e4e8;">
+                    <div style="display: flex; align-items: center; justify-content: center; gap: 8px; flex-wrap: wrap;">
+                        <span style="font-size: 10px; color: #586069; margin-right: 4px;">📥 템플릿 다운로드</span>
+                        <button type="button" onclick="downloadSVGTemplate()" style="background: linear-gradient(135deg, #28a745 0%, #22a244 100%); color: white; padding: 5px 10px; border-radius: 4px; font-size: 10px; cursor: pointer; font-weight: 500; border: none; box-shadow: 0 1px 3px rgba(27,31,35,0.12); transition: all 0.2s;">
+                            📄 SVG
+                        </button>
+                        <button type="button" onclick="downloadAITemplateFromPreview()" style="background: linear-gradient(135deg, #f66a0a 0%, #e85d00 100%); color: white; padding: 5px 10px; border-radius: 4px; font-size: 10px; cursor: pointer; font-weight: 500; border: none; box-shadow: 0 1px 3px rgba(27,31,35,0.12); transition: all 0.2s;">
+                            🎨 AI
+                        </button>
+                        <button type="button" onclick="downloadCanvasSnapshot()" style="background: linear-gradient(135deg, #6f42c1 0%, #643ab0 100%); color: white; padding: 5px 10px; border-radius: 4px; font-size: 10px; cursor: pointer; font-weight: 500; border: none; box-shadow: 0 1px 3px rgba(27,31,35,0.12); transition: all 0.2s;">
+                            🖼️ PNG
+                        </button>
+                        <span style="font-size: 9px; color: #6a737d; margin-left: 4px;">💡 AI/SVG는 영어, PNG는 한글 참조</span>
+                    </div>
+                    <div id="downloadProgressBar" style="display: none; margin-top: 6px;">
+                        <div style="background: #e1e4e8; border-radius: 3px; height: 6px; overflow: hidden;">
+                            <div id="downloadProgress" style="background: linear-gradient(135deg, #0366d6 0%, #0256c7 100%); height: 100%; width: 0%; transition: width 0.3s ease;"></div>
+                        </div>
+                        <div style="font-size: 9px; color: #6a737d; margin-top: 4px; text-align: center;">다운로드 준비 중...</div>
+                    </div>
+                </div>
                 <?php
                 // 통합 갤러리 시스템 (500×400 마우스 호버 줌)
                 $gallery_product = 'sticker';
@@ -264,6 +341,7 @@ $default_values = [
                 }
                 ?>
             </section>
+<?php endif; ?>
 
             <!-- 우측: 계산기 -->
             <aside class="product-calculator">
@@ -301,7 +379,7 @@ $default_values = [
                             <span class="inline-label">가로</span>
                             <div class="tooltip-container">
                                 <input type="number" name="garo" id="garo" class="inline-input dimmed" placeholder="숫자입력" max="560" value=""
-                                       onblur="validateSize(this, '가로')" onchange="calculatePrice()">
+                                       onblur="validateSize(this, '가로');" onchange="calculatePrice()" oninput="updateSizePreview()">
                                 <div class="tooltip" id="garoTooltip">mm단위로 입력하세요</div>
                             </div>
                             <span class="inline-note">※5mm단위 이하 도무송</span>
@@ -312,10 +390,9 @@ $default_values = [
                             <span class="inline-label">세로</span>
                             <div class="tooltip-container">
                                 <input type="number" name="sero" id="sero" class="inline-input dimmed" placeholder="숫자입력" max="560" value=""
-                                       onblur="validateSize(this, '세로')" onchange="calculatePrice()">
-                                <div class="tooltip" id="seroTooltip">mm단위로 입력하세요</div>
+                                       onblur="validateSize(this, '세로');" onchange="calculatePrice()" oninput="updateSizePreview()">
                             </div>
-                            <span class="inline-note">※50X60mm 이하 도무송</span>
+                            <span onclick="downloadStickerTemplate()" style="display: inline-block; background: #ff9500; color: white; padding: 6px 12px; border-radius: 20px; font-size: 11px; cursor: pointer; font-weight: 600; transition: all 0.3s; box-shadow: 0 2px 4px rgba(255, 149, 0, 0.3);">📥 작업 템플릿 다운로드</span>
                         </div>
 
                         <!-- 매수 -->
@@ -337,11 +414,6 @@ $default_values = [
                                 <option value="30000">30000매</option>
                                 <option value="40000">40000매</option>
                                 <option value="50000">50000매</option>
-                                <option value="60000">60000매</option>
-                                <option value="70000">70000매</option>
-                                <option value="80000">80000매</option>
-                                <option value="90000">90000매</option>
-                                <option value="100000">100000매</option>
                             </select>
                             <span class="inline-note">10,000매이상 별도 견적 ※ 후지칼선 선택시 별도 비용</span>
                         </div>
@@ -360,7 +432,7 @@ $default_values = [
                         <!-- 모양 -->
                         <div class="inline-form-row">
                             <span class="inline-label">모양</span>
-                            <select name="domusong" id="domusong" class="inline-select" onchange="calculatePrice()">
+                            <select name="domusong" id="domusong" class="inline-select" onchange="resetShapeAndPreview();">
                                 <option value="00000 사각" selected>기본사각</option>
                                 <option value="08000 사각도무송">사각도무송</option>
                                 <option value="08000 귀돌">귀돌이(라운드)</option>
@@ -380,12 +452,21 @@ $default_values = [
                         </div>
                     </div>
 
-                    <!-- 명함 방식의 파일 업로드 및 주문 버튼 -->
-                    <div class="upload-order-button" id="uploadOrderButton" style="display: none;">
+                    <?php if ($isQuotationMode): ?>
+                    <!-- 견적서 모달 모드: 견적서에 적용 버튼 -->
+                    <div class="quotation-apply-button">
+                        <button type="button" class="btn-quotation-apply" onclick="applyToQuotation()">
+                            ✓ 견적서에 적용
+                        </button>
+                    </div>
+                    <?php else: ?>
+                    <!-- 일반 모드: 파일 업로드 및 주문하기 버튼 -->
+                    <div class="upload-order-button" id="uploadOrderButton">
                         <button type="button" class="btn-upload-order" onclick="openUploadModal()">
                             파일 업로드 및 주문하기
                         </button>
                     </div>
+                    <?php endif; ?>
 
                     <!-- 숨겨진 필드들 -->
                     <input type="hidden" name="log_url" value="<?php echo safe_html($log_info['url']); ?>">
@@ -405,10 +486,12 @@ $default_values = [
 
     <?php include "../../includes/login_modal.php"; ?>
 
+<?php if (!$is_quotation_mode): ?>
     <!-- 스티커 상세 설명 섹션 -->
     <div class="sticker-detail-combined">
         <?php include "explane_sticker.php"; ?>
     </div>
+<?php endif; ?>
 
     <!-- 통일된 갤러리 팝업은 JavaScript로 동적 생성됩니다 -->
 
@@ -447,7 +530,12 @@ $default_values = [
         // Debounce 함수 - 연속 이벤트 제어
         let calculationTimeout = null;
         let isCalculating = false;
-        
+
+        // calculatePrice alias - onchange 핸들러 호환성을 위해
+        function calculatePrice() {
+            debouncedCalculatePrice();
+        }
+
         function debouncedCalculatePrice(event) {
             console.log('Debounced calculation triggered by:', event?.target?.name || 'unknown');
             
@@ -526,6 +614,13 @@ $default_values = [
                 // 세션에 가격 정보 저장 (장바구니/주문용)
                 window.currentPriceData = priceData;
                 console.log('Price display updated successfully - Supply price focus');
+                
+                // 견적서 모드일 때 견적서 적용 버튼 표시
+                const applyBtn = document.getElementById('applyBtn');
+                if (applyBtn) {
+                    console.log('✅ 견적서 모드: 견적서 적용 버튼 표시');
+                    applyBtn.style.display = 'block';
+                }
                 
             } else {
                 console.log('Resetting price display - no valid data');
@@ -649,10 +744,10 @@ $default_values = [
                 // 49mm 초과일 때 자동으로 사각도무송에서 일반 사각형으로 되돌리기
                 if (domusongSelect.value === "08000 사각도무송") {
                     domusongSelect.value = "00000 사각";
-                    
+
                     // 적색 클래스 제거
                     domusongSelect.classList.remove('domusong-selected');
-                    
+
                     // 초기화 시각적 효과
                     domusongSelect.style.backgroundColor = '#e8f5e8';
                     domusongSelect.style.border = '2px solid #28a745';
@@ -660,6 +755,66 @@ $default_values = [
                         domusongSelect.style.backgroundColor = '';
                         domusongSelect.style.border = '';
                     }, 1500);
+                }
+            }
+
+            // 원형/타원형 선택 규칙 적용
+            updateCircleEllipseOptions();
+        }
+
+        /**
+         * 원형/타원형 선택 규칙 함수
+         * - 가로 ≠ 세로: 원형 비활성화 (타원형만 가능)
+         * - 가로 = 세로: 타원형 비활성화 (원형만 가능)
+         */
+        function updateCircleEllipseOptions() {
+            const garoInput = document.querySelector('input[name="garo"]');
+            const seroInput = document.querySelector('input[name="sero"]');
+            const domusongSelect = document.querySelector('select[name="domusong"]');
+
+            if (!garoInput || !seroInput || !domusongSelect) return;
+
+            const garo = parseFloat(garoInput.value) || 0;
+            const sero = parseFloat(seroInput.value) || 0;
+
+            // 옵션 요소들 찾기
+            const circleOption = domusongSelect.querySelector('option[value="08000 원형"]');
+            const ellipseOption = domusongSelect.querySelector('option[value="08000 타원"]');
+
+            if (!circleOption || !ellipseOption) return;
+
+            // 가로/세로가 입력되지 않은 경우 모두 활성화
+            if (garo <= 0 || sero <= 0) {
+                circleOption.disabled = false;
+                ellipseOption.disabled = false;
+                circleOption.textContent = '원형';
+                ellipseOption.textContent = '타원형';
+                return;
+            }
+
+            if (garo === sero) {
+                // 가로 = 세로: 원형만 가능, 타원형 비활성화
+                circleOption.disabled = false;
+                circleOption.textContent = '원형';
+                ellipseOption.disabled = true;
+                ellipseOption.textContent = '타원형 (가로≠세로 필요)';
+
+                // 현재 타원형 선택 중이면 원형으로 변경
+                if (domusongSelect.value === '08000 타원') {
+                    domusongSelect.value = '08000 원형';
+                    showShapeChangeToast('⚪ 가로=세로이므로 원형으로 변경되었습니다');
+                }
+            } else {
+                // 가로 ≠ 세로: 타원형만 가능, 원형 비활성화
+                circleOption.disabled = true;
+                circleOption.textContent = '원형 (가로=세로 필요)';
+                ellipseOption.disabled = false;
+                ellipseOption.textContent = '타원형';
+
+                // 현재 원형 선택 중이면 타원형으로 변경
+                if (domusongSelect.value === '08000 원형') {
+                    domusongSelect.value = '08000 타원';
+                    showShapeChangeToast('⚫ 가로≠세로이므로 타원형으로 변경되었습니다');
                 }
             }
         }
@@ -1126,9 +1281,12 @@ $default_values = [
         // 페이지 로드 시 자동 계산 및 갤러리 초기화
         document.addEventListener('DOMContentLoaded', function() {
             console.log('DOMContentLoaded - Starting initialization');
-            
+
             // 자동 계산 초기화
             initAutoCalculation();
+
+            // 원형/타원형 선택 규칙 초기화 (기본값 100×100이므로 타원형 비활성화)
+            updateCircleEllipseOptions();
         });
         
         
@@ -1566,6 +1724,9 @@ $default_values = [
         }
     </script>
 
+    <!-- jQuery 라이브러리 (폼 검증 스크립트에서 필요) -->
+    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+
     <script type="text/javascript">
     (function($) {
       $(function() {
@@ -1645,7 +1806,6 @@ $default_values = [
 
     <!-- 통합 갤러리 JavaScript 포함 -->
     <script src="../../js/common-gallery-popup.js"></script>
-    <script src="../../duson/js/gallery-system.js" defer></script>
 
     <!-- 스티커 장바구니 스크립트 -->
     <script>
@@ -1698,6 +1858,963 @@ $default_values = [
                 if (onError) onError("네트워크 오류가 발생했습니다.");
             });
         };
+
+        /**
+         * 스티커 맞춤 템플릿 다운로드 - 플로팅 미리보기 + 다운로드 버튼 표시
+         * 사용자가 입력한 가로/세로 사이즈와 도무송 선택에 따라 템플릿 미리보기
+         */
+        function downloadStickerTemplate() {
+            // 가로/세로 값 가져오기
+            const garoInput = document.getElementById('garo');
+            const seroInput = document.getElementById('sero');
+            const domusongSelect = document.getElementById('domusong');
+
+            if (!garoInput || !seroInput || !domusongSelect) {
+                alert('입력 필드를 찾을 수 없습니다.');
+                return;
+            }
+
+            const garo = parseInt(garoInput.value);
+            const sero = parseInt(seroInput.value);
+
+            // 입력값 검증
+            if (!garo || !sero || garo <= 0 || sero <= 0) {
+                alert('가로와 세로 사이즈를 먼저 입력해주세요.\n\n예시: 가로 80mm, 세로 100mm');
+                garoInput.focus();
+                return;
+            }
+
+            // 최대값 검증
+            if (garo > 560 || sero > 560) {
+                alert('가로/세로 최대 크기는 560mm입니다.');
+                return;
+            }
+
+            // 플로팅 미리보기 표시 (shape 그리기)
+            updateSizePreview();
+
+            // 다운로드 버튼 표시
+            const downloadButtons = document.getElementById('templateDownloadButtons');
+            if (downloadButtons) {
+                downloadButtons.style.display = 'block';
+            }
+
+            // 플로팅 컨테이너 표시
+            const container = document.getElementById('sizePreviewContainer');
+            if (container) {
+                container.style.display = 'block';
+            }
+
+            console.log('스티커 템플릿 미리보기:', {
+                가로: garo,
+                세로: sero
+            });
+        }
+
+        /**
+         * SVG 템플릿 다운로드 (캔버스에서 SVG 생성)
+         */
+        function downloadSVGTemplate() {
+            const garoInput = document.getElementById('garo');
+            const seroInput = document.getElementById('sero');
+            const domusongSelect = document.getElementById('domusong');
+
+            const garo = parseInt(garoInput.value) || 50;
+            const sero = parseInt(seroInput.value) || 50;
+
+            // 도무송 모양 결정
+            const domusongValue = domusongSelect ? domusongSelect.value : '';
+            let shapeType = 'rectangle';
+            let cornerRadius = 0;
+
+            if (domusongValue.includes('원형')) {
+                shapeType = 'circle';
+            } else if (domusongValue.includes('타원')) {
+                shapeType = 'ellipse';
+            } else if (domusongValue.includes('귀돌')) {
+                shapeType = 'rounded';
+                cornerRadius = Math.min(garo, sero) * 0.15;
+            }
+
+            // 로딩바 표시
+            showDownloadProgress();
+
+            // SVG 생성
+            const bleed = 3;  // 여유선 +3mm
+            const safety = 2; // 안전선 -2mm
+            const padding = 30; // 캔버스 여백 (중앙 정렬용)
+
+            const contentWidth = garo + (bleed * 2);
+            const contentHeight = sero + (bleed * 2);
+            const svgWidth = contentWidth + (padding * 2);
+            const svgHeight = contentHeight + (padding * 2) + 25; // 범례 공간
+
+            // 모양 한글명
+            const shapeNamesKo = {
+                'rectangle': '사각형',
+                'rounded': '귀돌이',
+                'circle': '원형',
+                'ellipse': '타원형'
+            };
+            const shapeNameKo = shapeNamesKo[shapeType] || '사각형';
+
+            let svgContent = '<' + '?xml version="1.0" encoding="UTF-8"?>' + `
+<svg xmlns="http://www.w3.org/2000/svg" width="${svgWidth}mm" height="${svgHeight}mm" viewBox="0 0 ${svgWidth} ${svgHeight}">
+  <title>스티커 템플릿 ${garo}x${sero}mm</title>
+  <desc>두손기획 스티커 재단선 템플릿 - 여유선(파랑), 재단선(검정 점선), 안전선(분홍)</desc>
+
+  <!-- 배경 -->
+  <rect x="0" y="0" width="${svgWidth}" height="${svgHeight}" fill="white"/>
+
+  <!-- 중앙 정렬 그룹 -->
+  <g transform="translate(${padding}, ${padding})">
+    <!-- 여유선 +${bleed}mm - 파랑 -->
+    ${generateSVGShape(shapeType, contentWidth, contentHeight, 0, 0, cornerRadius + bleed, '#00B4FF', '0.5', 'none')}
+
+    <!-- 재단선 - 검정 점선 -->
+    ${generateSVGShape(shapeType, garo, sero, bleed, bleed, cornerRadius, '#000000', '0.8', '3,2')}
+
+    <!-- 안전선 -${safety}mm - 분홍 -->
+    ${generateSVGShape(shapeType, garo - (safety * 2), sero - (safety * 2), bleed + safety, bleed + safety, Math.max(0, cornerRadius - safety), '#FF0066', '0.5', 'none')}
+
+    <!-- 중앙 치수 표시 -->
+    <g transform="translate(${contentWidth / 2}, ${contentHeight / 2})" font-family="GulimChe, Gulim, Arial, sans-serif" text-anchor="middle">
+      <text y="-5" fill="#000000" font-size="6" font-weight="bold">재단선: ${garo}mm x ${sero}mm</text>
+      <text y="7" fill="#666666" font-size="5">작업영역: ${garo + bleed * 2}mm x ${sero + bleed * 2}mm</text>
+    </g>
+  </g>
+
+  <!-- 범례 (하단 중앙) -->
+  <g transform="translate(${svgWidth / 2}, ${svgHeight - 20})" font-family="GulimChe, Gulim, Arial, sans-serif" text-anchor="middle" font-size="3.5">
+    <text y="0" fill="#333" font-weight="bold">두손기획 스티커 템플릿 ${garo}x${sero}mm (${shapeNameKo})</text>
+    <g transform="translate(-60, 10)">
+      <line x1="0" y1="0" x2="10" y2="0" stroke="#00B4FF" stroke-width="0.8"/>
+      <text x="12" y="1" fill="#666" text-anchor="start">여유선 +${bleed}mm</text>
+    </g>
+    <g transform="translate(0, 10)">
+      <line x1="0" y1="0" x2="10" y2="0" stroke="#000" stroke-width="0.8" stroke-dasharray="2,1"/>
+      <text x="12" y="1" fill="#666" text-anchor="start">재단선</text>
+    </g>
+    <g transform="translate(50, 10)">
+      <line x1="0" y1="0" x2="10" y2="0" stroke="#FF0066" stroke-width="0.8"/>
+      <text x="12" y="1" fill="#666" text-anchor="start">안전선 -${safety}mm</text>
+    </g>
+  </g>
+</svg>`;
+
+            // 다운로드
+            setTimeout(() => {
+                const blob = new Blob([svgContent], { type: 'image/svg+xml' });
+                const url = URL.createObjectURL(blob);
+                const link = document.createElement('a');
+                link.href = url;
+                link.download = `sticker_${garo}x${sero}mm_template.svg`;
+                document.body.appendChild(link);
+                link.click();
+                document.body.removeChild(link);
+                URL.revokeObjectURL(url);
+
+                hideDownloadProgress();
+            }, 500);
+        }
+
+        /**
+         * SVG 도형 생성 헬퍼
+         */
+        function generateSVGShape(type, width, height, x, y, radius, stroke, strokeWidth, dashArray) {
+            const dashAttr = dashArray !== 'none' ? ` stroke-dasharray="${dashArray}"` : '';
+
+            if (type === 'circle') {
+                const r = Math.min(width, height) / 2;
+                const cx = x + width / 2;
+                const cy = y + height / 2;
+                return `<circle cx="${cx}" cy="${cy}" r="${r}" fill="none" stroke="${stroke}" stroke-width="${strokeWidth}"${dashAttr}/>`;
+            } else if (type === 'ellipse') {
+                const rx = width / 2;
+                const ry = height / 2;
+                const cx = x + rx;
+                const cy = y + ry;
+                return `<ellipse cx="${cx}" cy="${cy}" rx="${rx}" ry="${ry}" fill="none" stroke="${stroke}" stroke-width="${strokeWidth}"${dashAttr}/>`;
+            } else if (type === 'rounded' && radius > 0) {
+                return `<rect x="${x}" y="${y}" width="${width}" height="${height}" rx="${radius}" ry="${radius}" fill="none" stroke="${stroke}" stroke-width="${strokeWidth}"${dashAttr}/>`;
+            } else {
+                return `<rect x="${x}" y="${y}" width="${width}" height="${height}" fill="none" stroke="${stroke}" stroke-width="${strokeWidth}"${dashAttr}/>`;
+            }
+        }
+
+        /**
+         * AI 템플릿 다운로드 (플로팅 미리보기에서)
+         */
+        function downloadAITemplateFromPreview() {
+            const garoInput = document.getElementById('garo');
+            const seroInput = document.getElementById('sero');
+            const domusongSelect = document.getElementById('domusong');
+
+            const garo = parseInt(garoInput.value) || 50;
+            const sero = parseInt(seroInput.value) || 50;
+
+            // 도무송 모양 결정
+            const domusongValue = domusongSelect ? domusongSelect.value : '';
+            let shapeType = 'rectangle';
+            let cornerRadius = 0;
+
+            if (domusongValue.includes('원형')) {
+                shapeType = 'circle';
+            } else if (domusongValue.includes('타원')) {
+                shapeType = 'ellipse';
+            } else if (domusongValue.includes('귀돌')) {
+                shapeType = 'rounded';
+                cornerRadius = Math.min(garo, sero) * 0.15;
+            }
+
+            // 로딩바 표시
+            showDownloadProgress();
+
+            // AI 파일 다운로드
+            const url = `download_ai.php?garo=${garo}&sero=${sero}&shape=${shapeType}&corner=${cornerRadius}`;
+
+            console.log('AI 템플릿 다운로드:', { garo, sero, shapeType, cornerRadius, url });
+
+            // <a> 태그 클릭으로 다운로드 (더 안정적인 방법)
+            setTimeout(() => {
+                const link = document.createElement('a');
+                link.href = url;
+                link.style.display = 'none';
+                document.body.appendChild(link);
+                link.click();
+
+                setTimeout(() => {
+                    document.body.removeChild(link);
+                    hideDownloadProgress();
+                }, 1000);
+            }, 300);
+        }
+
+        /**
+         * 다운로드 진행바 표시
+         */
+        function showDownloadProgress() {
+            const progressBar = document.getElementById('downloadProgressBar');
+            const progress = document.getElementById('downloadProgress');
+            if (progressBar && progress) {
+                progressBar.style.display = 'block';
+                progress.style.width = '0%';
+
+                // 애니메이션
+                setTimeout(() => progress.style.width = '30%', 100);
+                setTimeout(() => progress.style.width = '60%', 300);
+                setTimeout(() => progress.style.width = '90%', 600);
+            }
+        }
+
+        /**
+         * 다운로드 진행바 숨기기 및 버튼 숨기기
+         */
+        function hideDownloadProgress() {
+            const progressBar = document.getElementById('downloadProgressBar');
+            const progress = document.getElementById('downloadProgress');
+            const downloadButtons = document.getElementById('templateDownloadButtons');
+
+            if (progress) {
+                progress.style.width = '100%';
+            }
+
+            setTimeout(() => {
+                if (progressBar) progressBar.style.display = 'none';
+                if (downloadButtons) downloadButtons.style.display = 'none';
+                if (progress) progress.style.width = '0%';
+            }, 500);
+        }
+
+        /**
+         * 캔버스 스냅샷 다운로드 (한글 가이드 PNG)
+         * AI/SVG는 영어로 되어있어서 한글 참조용 이미지 제공
+         */
+        function downloadCanvasSnapshot() {
+            const canvas = document.getElementById('sizePreviewCanvas');
+            if (!canvas) {
+                alert('미리보기 캔버스를 찾을 수 없습니다. 먼저 가로/세로 크기를 입력해주세요.');
+                return;
+            }
+
+            // 현재 크기 값 가져오기
+            const garo = parseFloat(document.getElementById('garo')?.value) || 0;
+            const sero = parseFloat(document.getElementById('sero')?.value) || 0;
+
+            if (garo <= 0 || sero <= 0) {
+                alert('가로/세로 크기를 먼저 입력해주세요.');
+                return;
+            }
+
+            // 모양 유형 가져오기
+            const shapeType = document.getElementById('uhyung')?.value || 'rectangle';
+            const shapeNames = {
+                'rectangle': '사각형',
+                'rounded': '귀돌이',
+                'circle': '원형',
+                'ellipse': '타원형'
+            };
+            const shapeName = shapeNames[shapeType] || '사각형';
+
+            showDownloadProgress();
+
+            try {
+                // 캔버스를 PNG로 변환
+                const dataUrl = canvas.toDataURL('image/png');
+
+                // 다운로드 링크 생성
+                const link = document.createElement('a');
+                link.download = `스티커_${garo}x${sero}mm_${shapeName}_가이드.png`;
+                link.href = dataUrl;
+                link.click();
+
+                console.log('한글 가이드 PNG 다운로드:', { garo, sero, shapeName });
+            } catch (error) {
+                console.error('캔버스 스냅샷 다운로드 오류:', error);
+                alert('이미지 다운로드 중 오류가 발생했습니다.');
+            }
+
+            hideDownloadProgress();
+        }
+
+        /**
+         * 모양 자동 변경 토스트 알림
+         * @param {string} message - 표시할 메시지
+         * @param {string} type - 'warning' (기본) 또는 'info'
+         */
+        function showShapeChangeToast(message, type = 'warning') {
+            // 기존 토스트 제거
+            const existingToast = document.querySelector('.shape-change-toast');
+            if (existingToast) {
+                existingToast.remove();
+            }
+
+            // 토스트 요소 생성
+            const toast = document.createElement('div');
+            toast.className = 'shape-change-toast';
+            toast.style.cssText = `
+                position: fixed;
+                top: 20px;
+                left: 50%;
+                transform: translateX(-50%);
+                padding: 12px 24px;
+                border-radius: 8px;
+                font-size: 14px;
+                font-weight: 500;
+                z-index: 10000;
+                box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+                animation: toastSlideIn 0.3s ease-out;
+                ${type === 'info'
+                    ? 'background: #E3F2FD; color: #1565C0; border: 1px solid #90CAF9;'
+                    : 'background: #FFF3E0; color: #E65100; border: 1px solid #FFCC80;'}
+            `;
+            toast.textContent = message;
+
+            // 스타일 애니메이션 추가
+            if (!document.querySelector('#toastAnimStyle')) {
+                const style = document.createElement('style');
+                style.id = 'toastAnimStyle';
+                style.textContent = `
+                    @keyframes toastSlideIn {
+                        from { opacity: 0; transform: translateX(-50%) translateY(-20px); }
+                        to { opacity: 1; transform: translateX(-50%) translateY(0); }
+                    }
+                    @keyframes toastSlideOut {
+                        from { opacity: 1; transform: translateX(-50%) translateY(0); }
+                        to { opacity: 0; transform: translateX(-50%) translateY(-20px); }
+                    }
+                `;
+                document.head.appendChild(style);
+            }
+
+            document.body.appendChild(toast);
+
+            // 3초 후 자동 숨김
+            setTimeout(() => {
+                toast.style.animation = 'toastSlideOut 0.3s ease-out forwards';
+                setTimeout(() => toast.remove(), 300);
+            }, 3000);
+        }
+
+        /**
+         * 모양 변경 시 입력된 가로/세로 값을 유지하고 미리보기 업데이트
+         * 가로/세로 값은 그대로 두고 새로운 모양으로 미리보기만 변경
+         * 가로/세로/모양 세 가지를 하나로 인식하여 자동 트리거
+         * (updateSizePreview에서 미리보기 + 다운로드 버튼 모두 처리)
+         */
+        function resetShapeAndPreview() {
+            // 가로/세로 값은 유지 (리셋하지 않음)
+            // 가격 계산 후 미리보기 업데이트 (미리보기 + 다운로드 버튼 자동 표시)
+            calculatePrice();
+            updateSizePreview();
+        }
+
+        /**
+         * 실시간 사이즈 미리보기 업데이트
+         * 가로/세로 입력 시 갤러리 위에 플로팅 오버레이로 표시
+         */
+        function updateSizePreview() {
+            const garoInput = document.getElementById('garo');
+            const seroInput = document.getElementById('sero');
+            const canvas = document.getElementById('sizePreviewCanvas');
+            const container = document.getElementById('sizePreviewContainer');
+            const dimensionsText = document.getElementById('previewDimensions');
+
+            if (!garoInput || !seroInput || !canvas || !container) return;
+
+            let garo = parseInt(garoInput.value) || 0;
+            let sero = parseInt(seroInput.value) || 0;
+
+            // 모양 선택 값 먼저 가져오기
+            const domusongSelect = document.getElementById('domusong');
+            const domusongValue = domusongSelect ? domusongSelect.value : '00000 사각';
+
+            // 모양별 기본 크기 설정 (미리보기용 - 모양 구분이 명확하도록)
+            // 가로/세로가 없을 때 모양에 따라 기본값 설정
+            if (garo <= 0 || sero <= 0) {
+                if (domusongValue.includes('타원')) {
+                    // 타원형: 70x50mm로 명확하게 구분
+                    garo = 70;
+                    sero = 50;
+                } else if (domusongValue.includes('원형')) {
+                    // 원형: 50x50mm (정원)
+                    garo = 50;
+                    sero = 50;
+                } else {
+                    // 기본사각, 사각도무송, 귀돌이, 복잡: 50x50mm
+                    garo = 50;
+                    sero = 50;
+                }
+            }
+
+            // 가로/세로가 유효하면 항상 미리보기 표시 (모양 상관없이)
+            // "작업 템플릿 다운로드" 버튼 없이 바로 미리보기
+            if (garo > 0 && sero > 0 && garo <= 560 && sero <= 560) {
+                // 플로팅 오버레이로 캔버스 표시 (갤러리는 그대로 유지)
+                container.style.display = 'block';
+
+                // 다운로드 버튼도 함께 표시 (가로/세로/모양 하나로 인식)
+                const downloadButtons = document.getElementById('templateDownloadButtons');
+                if (downloadButtons) {
+                    downloadButtons.style.display = 'block';
+                }
+
+                console.log('미리보기 자동 표시 (작업 템플릿 버튼 생략):', {
+                    가로: garo,
+                    세로: sero,
+                    모양: domusongValue
+                });
+
+                // 캔버스 설정
+                const ctx = canvas.getContext('2d');
+                const canvasWidth = 500;
+                const canvasHeight = 400;
+
+                // 캔버스 초기화
+                ctx.clearRect(0, 0, canvasWidth, canvasHeight);
+
+                // 모양 타입 판별 (귀돌이, 원형, 타원형, 모양도무송)
+                // 주의: 원형/타원형 선택 규칙은 updateCircleEllipseOptions()에서 처리됨
+                let shapeType = 'rect'; // 기본 사각형
+                if (domusongValue.includes('귀돌')) {
+                    shapeType = 'rounded';
+                } else if (domusongValue.includes('원형')) {
+                    // 원형은 가로=세로일 때만 선택 가능 (규칙에 의해 자동 관리됨)
+                    shapeType = 'circle';
+                } else if (domusongValue.includes('타원')) {
+                    // 타원형은 가로≠세로일 때만 선택 가능 (규칙에 의해 자동 관리됨)
+                    shapeType = 'ellipse';
+                } else if (domusongValue.includes('복잡')) {
+                    shapeType = 'complex'; // 모양도무송
+                }
+
+                // 스티커 사양
+                const bleed = 3;  // 여유선 +3mm
+                const safe = 2;   // 안전선 -2mm
+
+                // 실제 크기 계산 (mm 단위)
+                const trimWidth = garo;
+                const trimHeight = sero;
+                const bleedWidth = trimWidth + (bleed * 2);
+                const bleedHeight = trimHeight + (bleed * 2);
+                const safeWidth = trimWidth - (safe * 2);
+                const safeHeight = trimHeight - (safe * 2);
+
+                // CSS 표준 변환 비율 (1mm = 3.78px)
+                const MM_TO_PX = 3.78;
+
+                // mm를 px로 변환
+                const bleedWidthPx = bleedWidth * MM_TO_PX;
+                const bleedHeightPx = bleedHeight * MM_TO_PX;
+                const trimWidthPx = trimWidth * MM_TO_PX;
+                const trimHeightPx = trimHeight * MM_TO_PX;
+                const safeWidthPx = safeWidth * MM_TO_PX;
+                const safeHeightPx = safeHeight * MM_TO_PX;
+
+                // 캔버스에 맞게 비례 스케일링 (40px 여백)
+                const padding = 40;
+                const availableWidth = canvasWidth - (padding * 2);
+                const availableHeight = canvasHeight - (padding * 2);
+                // 실제 크기가 캔버스에 맞으면 1:1 스케일 유지, 클 경우만 비례 축소
+                const scale = Math.min(1, Math.min(availableWidth / bleedWidthPx, availableHeight / bleedHeightPx));
+
+                // 스케일된 크기 (px 단위에 scale 적용)
+                const scaledBleedWidth = bleedWidthPx * scale;
+                const scaledBleedHeight = bleedHeightPx * scale;
+                const scaledTrimWidth = trimWidthPx * scale;
+                const scaledTrimHeight = trimHeightPx * scale;
+                const scaledSafeWidth = safeWidthPx * scale;
+                const scaledSafeHeight = safeHeightPx * scale;
+
+                // 중앙 배치 계산
+                const centerX = canvasWidth / 2;
+                const centerY = canvasHeight / 2;
+                const bleedX = centerX - (scaledBleedWidth / 2);
+                const bleedY = centerY - (scaledBleedHeight / 2);
+                const trimX = centerX - (scaledTrimWidth / 2);
+                const trimY = centerY - (scaledTrimHeight / 2);
+                const safeX = centerX - (scaledSafeWidth / 2);
+                const safeY = centerY - (scaledSafeHeight / 2);
+
+                // 모양별 도형 그리기 함수
+                function drawShape(ctx, x, y, width, height, type, cornerRadius = 0) {
+                    ctx.beginPath();
+                    if (type === 'rect' || type === 'rounded') {
+                        if (type === 'rounded' && cornerRadius > 0) {
+                            // 둥근 모서리 사각형
+                            const r = Math.min(cornerRadius, width / 2, height / 2);
+                            ctx.moveTo(x + r, y);
+                            ctx.lineTo(x + width - r, y);
+                            ctx.quadraticCurveTo(x + width, y, x + width, y + r);
+                            ctx.lineTo(x + width, y + height - r);
+                            ctx.quadraticCurveTo(x + width, y + height, x + width - r, y + height);
+                            ctx.lineTo(x + r, y + height);
+                            ctx.quadraticCurveTo(x, y + height, x, y + height - r);
+                            ctx.lineTo(x, y + r);
+                            ctx.quadraticCurveTo(x, y, x + r, y);
+                        } else {
+                            // 기본 사각형
+                            ctx.rect(x, y, width, height);
+                        }
+                    } else if (type === 'circle') {
+                        // 원형 (가로세로 중 작은 값 기준)
+                        const radius = Math.min(width, height) / 2;
+                        const cx = x + width / 2;
+                        const cy = y + height / 2;
+                        ctx.arc(cx, cy, radius, 0, Math.PI * 2);
+                    } else if (type === 'ellipse') {
+                        // 타원형
+                        const cx = x + width / 2;
+                        const cy = y + height / 2;
+                        ctx.ellipse(cx, cy, width / 2, height / 2, 0, 0, Math.PI * 2);
+                    } else if (type === 'complex') {
+                        // 모양도무송 - 물결선 테두리
+                        const cx = x + width / 2;
+                        const cy = y + height / 2;
+                        const waveCount = 12;
+                        const waveDepth = Math.min(width, height) * 0.08;
+                        const rx = width / 2;
+                        const ry = height / 2;
+
+                        ctx.moveTo(cx + rx, cy);
+                        for (let i = 0; i <= waveCount * 4; i++) {
+                            const angle = (i / (waveCount * 4)) * Math.PI * 2;
+                            const wave = Math.sin(angle * waveCount) * waveDepth;
+                            const px = cx + (rx + wave) * Math.cos(angle);
+                            const py = cy + (ry + wave) * Math.sin(angle);
+                            ctx.lineTo(px, py);
+                        }
+                    }
+                    ctx.closePath();
+                    ctx.stroke();
+                }
+
+                // 모양도무송(복잡) 특별 캔버스 그리기
+                function drawComplexShapePreview(ctx, centerX, centerY, width, height) {
+                    // 배경 영역 (연한 핑크)
+                    ctx.fillStyle = 'rgba(233, 30, 99, 0.05)';
+                    ctx.fillRect(centerX - width/2 - 20, centerY - height/2 - 20, width + 40, height + 40);
+
+                    // 물결선 테두리
+                    ctx.strokeStyle = '#E91E63';
+                    ctx.lineWidth = 3;
+                    ctx.setLineDash([8, 4]);
+
+                    const waveCount = 10;
+                    const waveDepth = Math.min(width, height) * 0.06;
+                    const rx = width / 2;
+                    const ry = height / 2;
+
+                    ctx.beginPath();
+                    for (let i = 0; i <= waveCount * 4; i++) {
+                        const angle = (i / (waveCount * 4)) * Math.PI * 2;
+                        const wave = Math.sin(angle * waveCount) * waveDepth;
+                        const px = centerX + (rx + wave) * Math.cos(angle);
+                        const py = centerY + (ry + wave) * Math.sin(angle);
+                        if (i === 0) ctx.moveTo(px, py);
+                        else ctx.lineTo(px, py);
+                    }
+                    ctx.closePath();
+                    ctx.stroke();
+
+                    // 고양이 얼굴 아이콘
+                    ctx.setLineDash([]);
+                    const iconSize = Math.min(width, height) * 0.4;
+                    const iconY = centerY - 15;
+
+                    // 고양이 얼굴 (원)
+                    ctx.fillStyle = '#E91E63';
+                    ctx.beginPath();
+                    ctx.arc(centerX, iconY, iconSize * 0.35, 0, Math.PI * 2);
+                    ctx.fill();
+
+                    // 귀 (삼각형)
+                    ctx.beginPath();
+                    ctx.moveTo(centerX - iconSize * 0.28, iconY - iconSize * 0.15);
+                    ctx.lineTo(centerX - iconSize * 0.15, iconY - iconSize * 0.45);
+                    ctx.lineTo(centerX - iconSize * 0.02, iconY - iconSize * 0.2);
+                    ctx.fill();
+
+                    ctx.beginPath();
+                    ctx.moveTo(centerX + iconSize * 0.28, iconY - iconSize * 0.15);
+                    ctx.lineTo(centerX + iconSize * 0.15, iconY - iconSize * 0.45);
+                    ctx.lineTo(centerX + iconSize * 0.02, iconY - iconSize * 0.2);
+                    ctx.fill();
+
+                    // 눈 (흰색 원)
+                    ctx.fillStyle = '#fff';
+                    ctx.beginPath();
+                    ctx.arc(centerX - iconSize * 0.12, iconY - iconSize * 0.05, iconSize * 0.08, 0, Math.PI * 2);
+                    ctx.arc(centerX + iconSize * 0.12, iconY - iconSize * 0.05, iconSize * 0.08, 0, Math.PI * 2);
+                    ctx.fill();
+
+                    // 코 (작은 삼각형)
+                    ctx.fillStyle = '#fff';
+                    ctx.beginPath();
+                    ctx.moveTo(centerX, iconY + iconSize * 0.05);
+                    ctx.lineTo(centerX - iconSize * 0.05, iconY + iconSize * 0.15);
+                    ctx.lineTo(centerX + iconSize * 0.05, iconY + iconSize * 0.15);
+                    ctx.fill();
+
+                    // 안내 텍스트
+                    ctx.fillStyle = '#E91E63';
+                    ctx.font = 'bold 16px "Noto Sans KR", sans-serif';
+                    ctx.textAlign = 'center';
+                    ctx.fillText('🐱 모양도무송', centerX, centerY + iconSize * 0.5 + 20);
+
+                    ctx.font = '13px "Noto Sans KR", sans-serif';
+                    ctx.fillStyle = '#666';
+                    ctx.fillText('라인 전화문의', centerX, centerY + iconSize * 0.5 + 42);
+
+                    ctx.fillStyle = '#E91E63';
+                    ctx.font = 'bold 14px "Noto Sans KR", sans-serif';
+                    ctx.fillText('📞 02-2632-1830', centerX, centerY + iconSize * 0.5 + 62);
+                }
+
+                // 귀돌이 라운드 반경 계산 (70×70mm 기준 3mm → 비례 계산)
+                const baseSize = 70; // mm 기준
+                const baseRadius = 3; // mm 기준 라운드
+                const avgSize = (garo + sero) / 2;
+                const cornerRadiusMm = (avgSize / baseSize) * baseRadius;
+                const cornerRadiusPx = cornerRadiusMm * MM_TO_PX * scale;
+
+                // 모양도무송(complex)일 때는 특별 캔버스 그리기
+                if (shapeType === 'complex') {
+                    drawComplexShapePreview(ctx, centerX, centerY, scaledTrimWidth, scaledTrimHeight);
+                } else {
+                    // 1. 여유선 (오렌지 점선, 가장 바깥)
+                    ctx.strokeStyle = '#FF8C00';
+                    ctx.lineWidth = 1;
+                    ctx.setLineDash([3, 3]);
+                    drawShape(ctx, bleedX, bleedY, scaledBleedWidth, scaledBleedHeight, shapeType, cornerRadiusPx * 1.1);
+
+                    // 2. 재단선 (검정 실선)
+                    ctx.strokeStyle = '#000000';
+                    ctx.lineWidth = 2;
+                    ctx.setLineDash([]);
+                    drawShape(ctx, trimX, trimY, scaledTrimWidth, scaledTrimHeight, shapeType, cornerRadiusPx);
+
+                    // 3. 안전선 (청색 점선, 가장 안쪽)
+                    ctx.strokeStyle = '#0000FF';
+                    ctx.lineWidth = 1;
+                    ctx.setLineDash([3, 3]);
+                    drawShape(ctx, safeX, safeY, scaledSafeWidth, scaledSafeHeight, shapeType, cornerRadiusPx * 0.9);
+
+                    // 라벨 표시
+                    ctx.setLineDash([]);
+                    ctx.font = '11px "Noto Sans KR", sans-serif';
+                    ctx.textAlign = 'center';
+
+                    // 재단선 라벨 (중앙)
+                    ctx.fillStyle = '#000000';
+                    ctx.font = 'bold 14px "Noto Sans KR", sans-serif';
+                    ctx.fillText(`재단선 ${garo}×${sero}mm`, centerX, centerY);
+
+                    // 안전선 라벨 (하단 안쪽 점선 바로 위)
+                    ctx.font = '11px "Noto Sans KR", sans-serif';
+                    ctx.fillStyle = '#0000FF';
+                    ctx.fillText(`안전선 -${safe}mm`, centerX, safeY + scaledSafeHeight - 6);
+
+                    // 여유선 라벨 (하단 바깥쪽 점선 가까이)
+                    ctx.fillStyle = '#FF8C00';
+                    ctx.fillText(`여유선 +${bleed}mm`, centerX, bleedY + scaledBleedHeight + 10);
+                }
+
+                // 모양 이름 매핑
+                const shapeNames = {
+                    'rect': '사각형',
+                    'rounded': '귀돌이',
+                    'circle': '원형',
+                    'ellipse': '타원형',
+                    'complex': '모양도무송'
+                };
+                const shapeName = shapeNames[shapeType] || '사각형';
+
+                // 모양 배지 표시 (좌상단) - 현재 선택된 모양을 명확하게 표시
+                const badgeColors = {
+                    'rect': { bg: '#333', text: '#fff' },
+                    'rounded': { bg: '#4CAF50', text: '#fff' },
+                    'circle': { bg: '#2196F3', text: '#fff' },
+                    'ellipse': { bg: '#9C27B0', text: '#fff' },
+                    'complex': { bg: '#E91E63', text: '#fff' }
+                };
+                const badgeColor = badgeColors[shapeType] || badgeColors['rect'];
+
+                ctx.font = 'bold 12px "Noto Sans KR", sans-serif';
+                const badgeText = `모양: ${shapeName}`;
+                const badgeWidth = ctx.measureText(badgeText).width + 16;
+                const badgeHeight = 24;
+                const badgeX = 10;
+                const badgeY = 10;
+
+                // 배지 배경 (roundRect 폴백 포함)
+                ctx.fillStyle = badgeColor.bg;
+                ctx.beginPath();
+                if (ctx.roundRect) {
+                    ctx.roundRect(badgeX, badgeY, badgeWidth, badgeHeight, 4);
+                } else {
+                    // 구형 브라우저 폴백
+                    const r = 4;
+                    ctx.moveTo(badgeX + r, badgeY);
+                    ctx.lineTo(badgeX + badgeWidth - r, badgeY);
+                    ctx.quadraticCurveTo(badgeX + badgeWidth, badgeY, badgeX + badgeWidth, badgeY + r);
+                    ctx.lineTo(badgeX + badgeWidth, badgeY + badgeHeight - r);
+                    ctx.quadraticCurveTo(badgeX + badgeWidth, badgeY + badgeHeight, badgeX + badgeWidth - r, badgeY + badgeHeight);
+                    ctx.lineTo(badgeX + r, badgeY + badgeHeight);
+                    ctx.quadraticCurveTo(badgeX, badgeY + badgeHeight, badgeX, badgeY + badgeHeight - r);
+                    ctx.lineTo(badgeX, badgeY + r);
+                    ctx.quadraticCurveTo(badgeX, badgeY, badgeX + r, badgeY);
+                    ctx.closePath();
+                }
+                ctx.fill();
+
+                // 배지 텍스트
+                ctx.fillStyle = badgeColor.text;
+                ctx.textAlign = 'left';
+                ctx.fillText(badgeText, badgeX + 8, badgeY + 16);
+
+                // 차원 정보 업데이트 (모양 포함)
+                if (dimensionsText) {
+                    dimensionsText.innerHTML = `<strong>${garo}×${sero}mm</strong> / ${shapeName}`;
+                }
+
+                // AI 다운로드 버튼 표시 여부 업데이트
+                updateAIDownloadVisibility();
+            } else {
+                // 입력값이 없어도 미리보기는 유지 (닫기 버튼으로만 숨김)
+                // 플로팅 미리보기가 한번 표시되면 파일 업로드/주문 전까지 계속 표시
+                // AI 다운로드 버튼만 업데이트
+                updateAIDownloadVisibility();
+            }
+        }
+
+        /**
+         * 사이즈 미리보기 숨기기 (입력 완료 시 또는 닫기 버튼 클릭 시)
+         */
+        function hideSizePreview() {
+            const container = document.getElementById('sizePreviewContainer');
+            if (container) container.style.display = 'none';
+            // 다운로드 버튼도 함께 숨기기
+            const downloadButtons = document.getElementById('templateDownloadButtons');
+            if (downloadButtons) downloadButtons.style.display = 'none';
+            // 갤러리는 항상 표시 상태 유지 (플로팅 오버레이 방식이므로 별도 처리 불필요)
+        }
+
+        /**
+         * AI 도무송 템플릿 다운로드 (Adobe Illustrator 호환)
+         */
+        function downloadAITemplate() {
+            const garoInput = document.getElementById('garo');
+            const seroInput = document.getElementById('sero');
+            const domusongSelect = document.getElementById('domusong');
+
+            if (!garoInput || !seroInput || !domusongSelect) {
+                alert('크기 입력란을 찾을 수 없습니다.');
+                return;
+            }
+
+            const garo = parseInt(garoInput.value) || 0;
+            const sero = parseInt(seroInput.value) || 0;
+            const domusongValue = domusongSelect.value;
+
+            // 크기 유효성 검사
+            if (garo < 5 || garo > 500 || sero < 5 || sero > 500) {
+                alert('가로/세로 크기를 5~500mm 범위로 입력해주세요.');
+                return;
+            }
+
+            // 모양 타입 결정
+            let shapeType = 'rectangle';
+            let cornerRadius = 0;
+
+            if (domusongValue.includes('귀돌')) {
+                shapeType = 'rounded';
+                cornerRadius = Math.min(garo, sero) * 0.1; // 기본 귀돌이 반경 10%
+            } else if (domusongValue.includes('원형')) {
+                shapeType = 'circle';
+            } else if (domusongValue.includes('타원')) {
+                shapeType = 'ellipse';
+            }
+
+            // 다운로드 URL 생성
+            const url = `download_ai.php?garo=${garo}&sero=${sero}&shape=${shapeType}&corner=${cornerRadius}`;
+
+            console.log('AI 템플릿 다운로드:', { garo, sero, shapeType, cornerRadius, url });
+
+            // 다운로드 실행
+            window.location.href = url;
+        }
+
+        /**
+         * AI 다운로드 섹션 표시/숨김 업데이트
+         * 도무송 선택 시에만 다운로드 버튼 표시
+         */
+        function updateAIDownloadVisibility() {
+            const domusongSelect = document.getElementById('domusong');
+            const aiDownloadSection = document.getElementById('aiDownloadSection');
+            const garoInput = document.getElementById('garo');
+            const seroInput = document.getElementById('sero');
+
+            if (!domusongSelect || !aiDownloadSection) return;
+
+            const domusongValue = domusongSelect.value;
+            const garo = parseInt(garoInput?.value) || 0;
+            const sero = parseInt(seroInput?.value) || 0;
+
+            // 도무송 옵션이 선택되고 크기가 입력된 경우에만 표시
+            const isDomusongSelected = domusongValue.includes('도무송') ||
+                                       domusongValue.includes('귀돌') ||
+                                       domusongValue.includes('원형') ||
+                                       domusongValue.includes('타원') ||
+                                       domusongValue.includes('복잡');
+            const hasSizeInput = garo > 0 && sero > 0;
+
+            if (isDomusongSelected && hasSizeInput) {
+                aiDownloadSection.style.display = 'block';
+            } else {
+                aiDownloadSection.style.display = 'none';
+            }
+        }
+
+        /**
+         * 견적서에 데이터 전송 (스티커 전용)
+         */
+        window.sendToQuotation = function() {
+            console.log('📤 [TUNNEL 2/5] "✅ 견적서에 적용" 버튼 클릭됨');
+
+            // window.currentPriceData 또는 로컬 currentPriceData 변수 확인
+            const priceData = window.currentPriceData || (typeof currentPriceData !== 'undefined' ? currentPriceData : null);
+            console.log('📊 가격 데이터 확인:', priceData);
+
+            // 가격 계산 확인
+            if (!priceData || !priceData.price) {
+                console.error('❌ 가격 데이터 없음');
+                alert('먼저 견적 계산을 해주세요. "견적 계산" 버튼을 눌러주세요.');
+                return;
+            }
+
+            console.log('✅ 계산된 가격 데이터:', priceData);
+
+            const btn = event.target;
+            const originalText = btn.innerHTML;
+            btn.disabled = true;
+            btn.innerHTML = '📝 견적서에 입력 중...';
+
+            try {
+                // 폼에서 제품 스펙 정보 수집 (스티커 전용)
+                const jongSelect = document.getElementById('jong');
+                const garoInput = document.getElementById('garo');
+                const seroInput = document.getElementById('sero');
+                const mesuSelect = document.getElementById('mesu');
+                const uhyungSelect = document.getElementById('uhyung');
+                const domusongSelect = document.getElementById('domusong');
+
+                // 선택된 옵션의 텍스트 추출
+                const jongText = jongSelect ? jongSelect.options[jongSelect.selectedIndex].text : '';
+                const garoValue = garoInput ? garoInput.value : '';
+                const seroValue = seroInput ? seroInput.value : '';
+                const mesuText = mesuSelect ? mesuSelect.options[mesuSelect.selectedIndex].text : '';
+                const uhyungText = uhyungSelect ? uhyungSelect.options[uhyungSelect.selectedIndex].text : '';
+                const domusongText = domusongSelect ? domusongSelect.options[domusongSelect.selectedIndex].text : '';
+
+                // 규격 문자열 생성
+                const specification = `${jongText} / ${garoValue}×${seroValue}mm / ${mesuText} / ${uhyungText} / ${domusongText}`.trim();
+
+                // 수량 값 추출
+                const quantityValue = parseInt(mesuSelect.value) || 1000;
+
+                // 가격에서 쉼표 제거하고 숫자로 변환
+                const supplyPrice = parseInt(priceData.price.replace(/,/g, '')) || 0;
+                const vatPrice = parseInt(priceData.price_vat.replace(/,/g, '')) || 0;
+
+                // 견적서 폼에 전달할 데이터 구조
+                const quotationData = {
+                    product_name: '스티커',
+                    specification: specification,
+                    quantity: quantityValue,
+                    unit: '매',
+                    supply_price: supplyPrice,
+                    vat_price: vatPrice,
+
+                    // 원본 계산 데이터도 포함 (디버깅용)
+                    _debug: {
+                        jong: jongSelect ? jongSelect.value : '',
+                        garo: garoValue,
+                        sero: seroValue,
+                        mesu: mesuSelect ? mesuSelect.value : '',
+                        uhyung: uhyungSelect ? uhyungSelect.value : '',
+                        domusong: domusongSelect ? domusongSelect.value : '',
+                        calculated_price: window.currentPriceData
+                    }
+                };
+
+                console.log('📨 [TUNNEL 3/5] 견적서 데이터 전송:', quotationData);
+
+                // 부모 창으로 데이터 전송 (calculator_modal.js의 handlePriceData가 수신)
+                window.parent.postMessage({
+                    type: 'CALCULATOR_PRICE_DATA',
+                    payload: quotationData
+                }, window.location.origin);
+
+                // 성공 피드백
+                btn.innerHTML = '✅ 견적서에 적용됨!';
+                btn.style.background = '#28a745';
+
+                console.log('✅ [TUNNEL 5/5] 견적서 폼 입력 완료 - 모달은 자동으로 닫힙니다');
+
+            } catch (error) {
+                console.error('❌ 견적서 데이터 전송 실패:', error);
+                alert('견적서 적용 중 오류가 발생했습니다: ' + error.message);
+                btn.innerHTML = originalText;
+                btn.disabled = false;
+                btn.style.background = '#217346';
+            }
+        };
+
+        // 견적서 모드일 때 가격 계산 후 2단계 버튼 표시
+        document.addEventListener('DOMContentLoaded', function() {
+            // 견적서 모드 버튼 표시는 가격 계산 성공 시 자동으로 처리됨
+        });
     </script>
 
     </div> <!-- product-container 끝 -->
@@ -1716,16 +2833,23 @@ $default_values = [
         </div>
     </div>
 
+<?php
+// 데이터베이스 연결 종료
+if ($db) {
+    mysqli_close($db);
+}
+?>
+
+    <!-- 견적서 모달 공통 JavaScript -->
+    <script src="../../js/quotation-modal-common.js"></script>
+
+<?php if (!$is_quotation_mode): ?>
     <?php
     // 공통 푸터 포함
     include "../../includes/footer.php";
     ?>
-
-    <?php
-    // 데이터베이스 연결 종료
-    if ($db) {
-        mysqli_close($db);
-    }
-    ?>
-</body>
-</html>
+<?php else: ?>
+    <!-- quotation_mode일 때만 직접 closing 태그 제공 -->
+    </body>
+    </html>
+<?php endif; ?>

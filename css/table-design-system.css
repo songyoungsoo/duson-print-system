@@ -1,0 +1,467 @@
+/* ===================================================================== */
+/* 📊 테이블/그리드 디자인 시스템 */
+/* 엑셀 스타일 레이아웃 - 깔끔하고 정돈된 테이블 형태 */
+/* Created: 2025-12-11 */
+/* ===================================================================== */
+
+/* =================================================================== */
+/* 1. 디자인 토큰 (변수 정의) */
+/* =================================================================== */
+:root {
+    /* 테이블 컬러 */
+    --table-border: #d0d7de;
+    --table-header-bg: #f6f8fa;
+    --table-header-text: #24292f;
+    --table-row-bg: #ffffff;
+    --table-row-hover: #f6f8fa;
+    --table-row-alt-bg: #f9fafb;
+
+    /* 그리드 간격 */
+    --table-padding-y: 8px;  /* 12px → 8px (세로 간격 축소) */
+    --table-padding-x: 16px;
+    --table-gap: 1px;
+
+    /* 폰트 */
+    --table-font-size: 14px;
+    --table-font-weight: 400;
+    --table-header-font-weight: 600;
+
+    /* 테두리 */
+    --table-border-width: 1px;
+    --table-border-radius: 6px;
+
+    /* 그림자 */
+    --table-shadow: 0 1px 3px rgba(0, 0, 0, 0.05);
+}
+
+/* =================================================================== */
+/* 2. 테이블 컨테이너 */
+/* =================================================================== */
+.table-container {
+    background: var(--table-row-bg);
+    border: var(--table-border-width) solid var(--table-border);
+    border-radius: var(--table-border-radius);
+    overflow: hidden;
+    box-shadow: var(--table-shadow);
+    margin-bottom: 16px;  /* 20px → 16px */
+}
+
+/* =================================================================== */
+/* 3. 테이블 헤더 */
+/* =================================================================== */
+.table-header {
+    background: var(--table-header-bg);
+    padding: 10px 16px;  /* var 대신 고정값으로 압축 */
+    border-bottom: 2px solid var(--table-border);
+    font-size: 15px;     /* 16px → 15px */
+    font-weight: var(--table-header-font-weight);
+    color: var(--table-header-text);
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+
+.table-header-icon {
+    font-size: 18px;
+}
+
+/* =================================================================== */
+/* 4. 테이블 행 (Row) */
+/* =================================================================== */
+.table-row {
+    display: grid;
+    grid-template-columns: 180px 1fr;
+    border-bottom: var(--table-border-width) solid var(--table-border);
+    background: var(--table-row-bg);
+    transition: background-color 0.15s ease;
+}
+
+.table-row:hover {
+    background: var(--table-row-hover);
+}
+
+.table-row:last-child {
+    border-bottom: none;
+}
+
+/* 교차 배경색 (옵션) */
+.table-row:nth-child(even) {
+    background: var(--table-row-alt-bg);
+}
+
+.table-row:nth-child(even):hover {
+    background: var(--table-row-hover);
+}
+
+/* =================================================================== */
+/* 5. 테이블 셀 */
+/* =================================================================== */
+.table-cell {
+    padding: var(--table-padding-y) var(--table-padding-x);
+    font-size: var(--table-font-size);
+    display: flex;
+    align-items: center;
+}
+
+/* 라벨 셀 (왼쪽) */
+.table-cell-label {
+    background: var(--table-header-bg);
+    border-right: var(--table-border-width) solid var(--table-border);
+    font-weight: var(--table-header-font-weight);
+    color: var(--table-header-text);
+}
+
+/* 값 셀 (오른쪽) */
+.table-cell-value {
+    background: inherit;
+    gap: 8px;
+}
+
+/* 필수 항목 표시 */
+.table-cell-label.required::after {
+    content: " *";
+    color: #cf222e;
+    font-weight: bold;
+}
+
+/* =================================================================== */
+/* 6. 폼 입력 요소 (테이블 스타일) */
+/* =================================================================== */
+.table-select,
+.table-input,
+.table-textarea {
+    width: 100%;
+    max-width: 400px;
+    padding: 8px 12px;
+    font-size: var(--table-font-size);
+    border: 1px solid var(--table-border);
+    border-radius: 4px;
+    background: white;
+    transition: all 0.2s ease;
+}
+
+.table-select:focus,
+.table-input:focus,
+.table-textarea:focus {
+    outline: none;
+    border-color: #0969da;
+    box-shadow: 0 0 0 3px rgba(9, 105, 218, 0.1);
+}
+
+.table-select:hover,
+.table-input:hover {
+    border-color: #6e7781;
+}
+
+/* 셀렉트 화살표 커스텀 */
+.table-select {
+    appearance: none;
+    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 12 12'%3E%3Cpath fill='%23586069' d='M6 9L1 4h10z'/%3E%3C/svg%3E");
+    background-repeat: no-repeat;
+    background-position: right 12px center;
+    padding-right: 36px;
+}
+
+/* =================================================================== */
+/* 7. 테이블 노트 (힌트 텍스트) */
+/* =================================================================== */
+.table-note {
+    font-size: 12px;
+    color: #6e7781;
+    margin-left: 8px;
+    font-style: italic;
+}
+
+/* =================================================================== */
+/* 8. 가격 표시 섹션 (테이블 스타일) */
+/* =================================================================== */
+.table-price-section {
+    background: linear-gradient(135deg, #f6f8fa 0%, #ffffff 100%);
+    border: 2px solid #0969da;
+    border-radius: var(--table-border-radius);
+    padding: 12px 16px; /* 20px → 12px 16px (압축) */
+    margin-top: 12px;   /* 20px → 12px */
+    box-shadow: 0 2px 8px rgba(9, 105, 218, 0.1);
+}
+
+.table-price-header {
+    font-size: 13px;     /* 14px → 13px */
+    font-weight: 600;
+    color: #24292f;
+    margin-bottom: 8px;  /* 12px → 8px */
+    padding-bottom: 6px; /* 8px → 6px */
+    border-bottom: 1px solid var(--table-border);
+}
+
+.table-price-amount {
+    font-size: 24px;     /* 28px → 24px */
+    font-weight: 700;
+    color: #0969da;
+    margin-bottom: 6px;  /* 8px → 6px */
+}
+
+.table-price-details {
+    font-size: 12px;     /* 13px → 12px */
+    color: #6e7781;
+    line-height: 1.5;    /* 1.6 → 1.5 */
+}
+
+/* =================================================================== */
+/* 9. 프리미엄 옵션 그리드 */
+/* =================================================================== */
+.table-premium-options {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+    gap: 8px;          /* 12px → 8px */
+    padding: 10px 16px; /* var 대신 고정값으로 압축 */
+    background: var(--table-row-alt-bg);
+    border-top: 2px solid var(--table-border);
+}
+
+.table-option-item {
+    display: flex;
+    align-items: center;
+    gap: 6px;        /* 8px → 6px */
+    padding: 6px 10px; /* 8px 12px → 6px 10px */
+    background: white;
+    border: 1px solid var(--table-border);
+    border-radius: 4px;
+    cursor: pointer;
+    transition: all 0.2s ease;
+}
+
+.table-option-item:hover {
+    border-color: #0969da;
+    background: #f6f8fa;
+}
+
+.table-option-item input[type="checkbox"] {
+    width: 18px;
+    height: 18px;
+    cursor: pointer;
+}
+
+.table-option-item label {
+    font-size: var(--table-font-size);
+    font-weight: 500;
+    cursor: pointer;
+    user-select: none;
+}
+
+/* =================================================================== */
+/* 10. 반응형 (모바일) */
+/* =================================================================== */
+@media (max-width: 768px) {
+    .table-row {
+        grid-template-columns: 1fr;
+    }
+
+    .table-cell-label {
+        border-right: none;
+        border-bottom: var(--table-border-width) solid var(--table-border);
+        background: var(--table-header-bg);
+    }
+
+    .table-select,
+    .table-input,
+    .table-textarea {
+        max-width: 100%;
+    }
+
+    .table-premium-options {
+        grid-template-columns: 1fr;
+    }
+}
+
+/* =================================================================== */
+/* 11. 액션 버튼 (테이블 하단) */
+/* =================================================================== */
+.table-actions {
+    display: flex;
+    gap: 10px;        /* 12px → 10px */
+    justify-content: flex-end;
+    padding: 12px;    /* 16px → 12px */
+    background: var(--table-header-bg);
+    border-top: 1px solid var(--table-border);
+}
+
+.table-button {
+    padding: 8px 16px;  /* 10px 20px → 8px 16px */
+    font-size: 14px;
+    font-weight: 600;
+    border: 1px solid var(--table-border);
+    border-radius: 6px;
+    cursor: pointer;
+    transition: all 0.2s ease;
+    background: white;
+    color: #24292f;
+}
+
+.table-button:hover {
+    background: var(--table-row-hover);
+    border-color: #6e7781;
+}
+
+.table-button-primary {
+    background: #0969da;
+    color: white;
+    border-color: #0969da;
+}
+
+.table-button-primary:hover {
+    background: #0550ae;
+    border-color: #0550ae;
+}
+
+/* =================================================================== */
+/* 12. 로딩 상태 */
+/* =================================================================== */
+.table-loading {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 40px;
+    color: #6e7781;
+    font-size: 14px;
+}
+
+.table-loading::before {
+    content: "";
+    display: inline-block;
+    width: 16px;
+    height: 16px;
+    margin-right: 8px;
+    border: 2px solid var(--table-border);
+    border-top-color: #0969da;
+    border-radius: 50%;
+    animation: table-spin 0.8s linear infinite;
+}
+
+@keyframes table-spin {
+    to { transform: rotate(360deg); }
+}
+
+/* =================================================================== */
+/* 13. 갤러리 테이블 스타일 */
+/* =================================================================== */
+.table-gallery-container {
+    background: var(--table-row-bg);
+    border: var(--table-border-width) solid var(--table-border);
+    border-radius: var(--table-border-radius);
+    overflow: hidden;
+    box-shadow: var(--table-shadow);
+}
+
+.table-gallery-header {
+    background: var(--table-header-bg);
+    padding: 10px 16px;  /* var 대신 고정값으로 압축 */
+    border-bottom: 2px solid var(--table-border);
+    font-size: 15px;     /* 16px → 15px */
+    font-weight: var(--table-header-font-weight);
+    color: var(--table-header-text);
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+
+.table-gallery-content {
+    padding: 12px;  /* 16px → 12px */
+}
+
+/* 메인 이미지 영역 */
+.table-gallery-main {
+    width: 100%;
+    height: 400px; /* 고정 높이 400px */
+    border: 1px solid var(--table-border);
+    border-radius: 6px;
+    overflow: hidden;
+    margin-bottom: 10px; /* 12px → 10px */
+    cursor: zoom-in;
+    transition: all 0.2s ease;
+    background: #f6f8fa;
+}
+
+.table-gallery-main:hover {
+    border-color: #0969da;
+    box-shadow: 0 4px 12px rgba(9, 105, 218, 0.15);
+}
+
+.table-gallery-main img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+}
+
+/* 섬네일 그리드 (1×4) */
+.table-gallery-thumbs {
+    display: grid;
+    grid-template-columns: repeat(4, 100px); /* 4개 컬럼, 각 100px */
+    gap: 8px;
+    margin-bottom: 10px;  /* 12px → 10px */
+}
+
+.table-gallery-thumb {
+    aspect-ratio: 1;
+    border: 1px solid var(--table-border);
+    border-radius: 4px;
+    overflow: hidden;
+    cursor: pointer;
+    transition: all 0.2s ease;
+    background: #f6f8fa;
+}
+
+.table-gallery-thumb:hover {
+    border-color: #0969da;
+    transform: scale(1.05);
+    box-shadow: 0 2px 8px rgba(9, 105, 218, 0.2);
+}
+
+.table-gallery-thumb.active {
+    border-color: #0969da;
+    border-width: 2px;
+}
+
+.table-gallery-thumb img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+}
+
+/* 샘플 더보기 버튼 */
+.table-gallery-more {
+    width: 100%;
+    padding: 10px;  /* 12px → 10px */
+    background: var(--table-header-bg);
+    border: 1px solid var(--table-border);
+    border-radius: 6px;
+    font-size: 14px;
+    font-weight: 600;
+    color: var(--table-header-text);
+    cursor: pointer;
+    transition: all 0.2s ease;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 6px;
+}
+
+.table-gallery-more:hover {
+    background: #e1e4e8;
+    border-color: #6e7781;
+}
+
+/* =================================================================== */
+/* 14. 2단 그리드 레이아웃 (갤러리 + 계산기) */
+/* =================================================================== */
+.table-product-layout {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 16px;        /* 20px → 16px */
+    margin-bottom: 16px;  /* 20px → 16px */
+}
+
+@media (max-width: 768px) {
+    .table-product-layout {
+        grid-template-columns: 1fr;
+    }
+}

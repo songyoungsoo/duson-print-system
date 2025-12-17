@@ -58,14 +58,14 @@ header("Expires: 0");
     <meta name="description" content="두손기획인쇄 - 스티커, 전단지, 명함, 봉투, 카다록, 포스터, 상품권, 양식지, 자석스티커 등 모든 인쇄물 온라인 견적 및 주문. 공장직영 신속제작, 합리적인 가격으로 기획에서 인쇄까지 원스톱 서비스">
     <meta name="keywords" content="스티커인쇄, 전단지인쇄, 명함인쇄, 봉투인쇄, 카다록인쇄, 포스터인쇄, 상품권제작, 양식지인쇄, 자석스티커, 온라인견적, 인쇄전문, 두손기획">
     <meta name="author" content="두손기획인쇄">
-    <link rel="canonical" href="https://www.dsp114.com/">
+    <link rel="canonical" href="https://www.dsp1830.shop/">
 
     <!-- Open Graph (카카오톡, 페이스북 공유용) -->
     <meta property="og:type" content="website">
     <meta property="og:title" content="두손기획인쇄 - 스티커 전단지 명함 봉투 카다록 포스터 상품권 양식지 자석스티커 인쇄 전문">
     <meta property="og:description" content="기획에서 인쇄까지 원스톱 서비스. 스티커, 전단지, 명함 등 모든 인쇄물 온라인 견적">
-    <meta property="og:image" content="https://www.dsp114.com/ImgFolder/dusonlogo1.png">
-    <meta property="og:url" content="https://www.dsp114.com/">
+    <meta property="og:image" content="https://www.dsp1830.shop/ImgFolder/dusonlogo1.png">
+    <meta property="og:url" content="https://www.dsp1830.shop/">
     <meta property="og:site_name" content="두손기획인쇄">
     <meta property="og:locale" content="ko_KR">
 
@@ -73,7 +73,7 @@ header("Expires: 0");
     <meta name="twitter:card" content="summary_large_image">
     <meta name="twitter:title" content="두손기획인쇄 - 스티커 전단지 명함 인쇄 전문">
     <meta name="twitter:description" content="기획에서 인쇄까지 원스톱 서비스. 10가지 인쇄물 온라인 견적">
-    <meta name="twitter:image" content="https://www.dsp114.com/ImgFolder/dusonlogo1.png">
+    <meta name="twitter:image" content="https://www.dsp1830.shop/ImgFolder/dusonlogo1.png">
 
     <!-- 세션 ID 메타 태그 -->
     <meta name="session-id" content="<?php echo htmlspecialchars($session_id); ?>">
@@ -669,10 +669,10 @@ header("Expires: 0");
         "@context": "https://schema.org",
         "@type": "LocalBusiness",
         "name": "두손기획인쇄",
-        "image": "https://www.dsp114.com/ImgFolder/dusonlogo1.png",
+        "image": "https://www.dsp1830.shop/ImgFolder/dusonlogo1.png",
         "description": "스티커, 전단지, 명함, 봉투, 카다록, 포스터, 상품권, 양식지, 자석스티커 인쇄 전문. 공장직영 신속제작",
-        "@id": "https://www.dsp114.com",
-        "url": "https://www.dsp114.com",
+        "@id": "https://www.dsp1830.shop",
+        "url": "https://www.dsp1830.shop",
         "telephone": "",
         "priceRange": "₩₩",
         "address": {
@@ -683,7 +683,7 @@ header("Expires: 0");
             "@type": "GeoCoordinates"
         },
         "sameAs": [
-            "https://www.dsp114.com"
+            "https://www.dsp1830.shop"
         ],
         "offers": [
             {

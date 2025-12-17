@@ -1,32 +1,28 @@
-/* 통일된 Primary 버튼 스타일 - 브랜드 가이드라인 준수 */
-/* ✨ Phase 2: 브랜드 포인트 컬러(Yellow) 적용 (2025-10-11) */
+/* 통일된 Primary 버튼 스타일 - 사이트 헤더 컬러 통일 */
+/* ✨ Phase 3: 사이트 브랜드 컬러(#005f73) 적용 (2025-12-16) */
 .btn-primary {
     display: flex;
     align-items: center;
     justify-content: center;
     gap: 8px;
     padding: 12px 24px;
-    background: linear-gradient(135deg,
-        var(--dsp-accent) 0%,
-        var(--dsp-accent-dark) 100%);
-    color: var(--dsp-gray-900);
+    background: #005f73;
+    color: white;
     border: none;
     border-radius: 8px;
     font-size: 1rem;
     font-weight: 600;
     cursor: pointer;
     transition: all 0.3s ease;
-    box-shadow: 0 4px 12px rgba(255, 213, 0, 0.3);
+    box-shadow: 0 4px 12px rgba(0, 95, 115, 0.3);
     width: 100%;
     text-decoration: none;
 }
 
 .btn-primary:hover {
-    background: linear-gradient(135deg,
-        var(--dsp-accent-dark) 0%,
-        var(--dsp-accent) 100%);
+    background: #007a94;
     transform: translateY(-2px);
-    box-shadow: 0 6px 20px rgba(255, 213, 0, 0.4);
+    box-shadow: 0 6px 20px rgba(0, 95, 115, 0.4);
 }
 
 .btn-primary:active {

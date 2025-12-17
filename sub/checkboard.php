@@ -49,6 +49,65 @@ if (isset($_SESSION['user_level']) && $_SESSION['user_level'] == '1') {
     $is_admin = true;
 }
 
+// 일반 사용자 인증 처리
+$auth_error = '';
+$authenticated_order_no = null;
+
+// 로그아웃 처리
+if (isset($_GET['logout'])) {
+    unset($_SESSION['checkboard_order_no']);
+    header("Location: checkboard.php");
+    exit;
+}
+
+// GET 파라미터로 특정 주문 인증 해제
+if (isset($_GET['clear_auth'])) {
+    unset($_SESSION['checkboard_order_no']);
+}
+
+// 세션에서 인증된 주문번호 가져오기
+if (isset($_SESSION['checkboard_order_no'])) {
+    $authenticated_order_no = $_SESSION['checkboard_order_no'];
+}
+
+// POST로 인증 시도 (AJAX)
+if (isset($_POST['auth_action']) && $_POST['auth_action'] == 'verify') {
+    $input_phone_last4 = isset($_POST['phone_last4']) ? trim($_POST['phone_last4']) : '';
+    $order_no = isset($_POST['order_no']) ? intval($_POST['order_no']) : 0;
+
+    header('Content-Type: application/json');
+
+    if (empty($input_phone_last4) || $order_no <= 0) {
+        echo json_encode(['success' => false, 'message' => '입력 정보가 올바르지 않습니다.']);
+        exit;
+    }
+
+    // 해당 주문의 전화번호 확인
+    $auth_query = "SELECT no, name FROM mlangorder_printauto
+                   WHERE no = ?
+                   AND (RIGHT(phone, 4) = ? OR RIGHT(Hendphone, 4) = ?)
+                   LIMIT 1";
+    $auth_stmt = mysqli_prepare($connect, $auth_query);
+    mysqli_stmt_bind_param($auth_stmt, "iss", $order_no, $input_phone_last4, $input_phone_last4);
+    mysqli_stmt_execute($auth_stmt);
+    $auth_result = mysqli_stmt_get_result($auth_stmt);
+
+    if ($auth_row = mysqli_fetch_assoc($auth_result)) {
+        // 인증 성공
+        $_SESSION['checkboard_order_no'] = $auth_row['no'];
+        $redirect_url = '/mlangorder_printauto/WindowSian.php?mode=OrderView&no=' . $auth_row['no'];
+        echo json_encode([
+            'success' => true,
+            'message' => '인증되었습니다.',
+            'redirect_url' => $redirect_url
+        ]);
+        exit;
+    } else {
+        echo json_encode(['success' => false, 'message' => '전화번호가 일치하지 않습니다.']);
+        exit;
+    }
+}
+
 // 캐시 방지 헤더
 header("Cache-Control: no-cache, no-store, must-revalidate");
 header("Pragma: no-cache");
@@ -72,22 +131,25 @@ $param_types = '';
 // 기본 조건: 주소가 있는 주문만 표시 (배송 대상)
 $where_conditions[] = "((zip IS NOT NULL AND zip != '') OR (zip1 IS NOT NULL AND zip1 != ''))";
 
-if (!empty($search_name)) {
-    $where_conditions[] = "name LIKE ?";
-    $params[] = "%{$search_name}%";
-    $param_types .= 's';
-}
+// 검색 필터는 관리자만 사용 가능
+if ($is_admin) {
+    if (!empty($search_name)) {
+        $where_conditions[] = "name LIKE ?";
+        $params[] = "%{$search_name}%";
+        $param_types .= 's';
+    }
 
-if (!empty($search_type)) {
-    $where_conditions[] = "Type = ?";
-    $params[] = $search_type;
-    $param_types .= 's';
-}
+    if (!empty($search_type)) {
+        $where_conditions[] = "Type = ?";
+        $params[] = $search_type;
+        $param_types .= 's';
+    }
 
-if (!empty($search_status)) {
-    $where_conditions[] = "OrderStyle = ?";
-    $params[] = $search_status;
-    $param_types .= 's';
+    if (!empty($search_status)) {
+        $where_conditions[] = "OrderStyle = ?";
+        $params[] = $search_status;
+        $param_types .= 's';
+    }
 }
 
 $where_clause = 'WHERE ' . implode(' AND ', $where_conditions);
@@ -152,7 +214,14 @@ while ($row = mysqli_fetch_array($result)) {
 <div class="content-area">
 <!-- 메인 컨테이너 -->
 <div class="checkboard-container">
-    <!-- 검색 및 필터 섹션 -->
+
+    <?php if ($is_admin): ?>
+    <!-- 관리자 표시 -->
+    <div style="text-align:right; padding:10px; color:#2563eb; font-weight:600;">
+        👤 관리자 모드 | <a href="?logout=1" style="color:#dc2626;">로그아웃</a>
+    </div>
+
+    <!-- 검색 및 필터 섹션 (관리자 전용) -->
     <div class="search-section">
         <form method="GET" class="search-form">
             <div class="search-row">
@@ -207,6 +276,8 @@ while ($row = mysqli_fetch_array($result)) {
         </div>
         -->
     </div>
+    <?php else: ?>
+    <?php endif; ?>
 
     <!-- 주문 내역 섹션 -->
     <?php if (!empty($all_orders)): ?>
@@ -224,14 +295,32 @@ while ($row = mysqli_fetch_array($result)) {
                 </div>
                 
                 <div class="table-body">
-                    <?php foreach ($all_orders as $order): ?>
-                        <div class="table-row clickable" 
-                             onclick="showPasswordModal(<?php echo $order['no']; ?>, '<?php echo htmlspecialchars($order['name']); ?>', '<?php echo htmlspecialchars($order['phone']); ?>')">
-                            
+                    <?php foreach ($all_orders as $order):
+                        // 일반 사용자이고, 인증되지 않은 주문인 경우
+                        $is_authenticated_order = ($is_admin || $order['no'] == $authenticated_order_no);
+
+                        // display_name 정의 (onclick에서 사용하기 전에 정의)
+                        $display_name = $order['name'];
+                        if (empty($display_name) || $display_name === '0' || $display_name === 0) {
+                            if (!empty($order['email'])) {
+                                $email_parts = explode('@', $order['email']);
+                                $display_name = $email_parts[0];
+                            } else {
+                                $display_name = '주문자';
+                            }
+                        }
+                    ?>
+                        <div class="table-row clickable"
+                             onclick="showPasswordModal(<?php echo $order['no']; ?>, '<?php echo htmlspecialchars($display_name); ?>', '')"
+                             style="cursor: pointer;">
+
                             <div class="col-order">
                                 <span class="order-number">#<?php echo $order['no']; ?></span>
+                                <?php if ($is_authenticated_order): ?>
+                                <span style="color:#059669; font-size:10px; display:block;">✓ 인증됨</span>
+                                <?php endif; ?>
                             </div>
-                            
+
                             <div class="col-type">
                                 <?php 
                                 $type_map = [
@@ -339,45 +428,21 @@ while ($row = mysqli_fetch_array($result)) {
                     <?php endif; ?>
                     
                     <?php
-                    // 페이지 번호 표시 로직
-                    $start_page = max(1, $page - 2);
-                    $end_page = min($total_pages, $page + 2);
-                    
-                    // 첫 페이지
-                    if ($start_page > 1):
-                        $query_params['page'] = 1;
-                        $first_url = $current_url . '?' . http_build_query($query_params);
-                    ?>
-                        <a href="<?php echo $first_url; ?>" class="page-btn">1</a>
-                        <?php if ($start_page > 2): ?>
-                            <span class="page-dots">...</span>
-                        <?php endif; ?>
-                    <?php endif; ?>
-                    
-                    <?php for ($i = $start_page; $i <= $end_page; $i++): ?>
-                        <?php if ($i == $page): ?>
+                    // 페이지 번호 표시 로직 - 좌우 5개씩 (총 11개)
+                    $start_page = max(1, $page - 5);
+                    $end_page = min($total_pages, $page + 5);
+
+                    // 페이지 번호 표시
+                    for ($i = $start_page; $i <= $end_page; $i++):
+                        if ($i == $page): ?>
                             <span class="page-btn current"><?php echo $i; ?></span>
-                        <?php else: ?>
-                            <?php
+                        <?php else:
                             $query_params['page'] = $i;
                             $page_url = $current_url . '?' . http_build_query($query_params);
-                            ?>
-                            <a href="<?php echo $page_url; ?>" class="page-btn"><?php echo $i; ?></a>
-                        <?php endif; ?>
-                    <?php endfor; ?>
-                    
-                    <?php
-                    // 마지막 페이지
-                    if ($end_page < $total_pages):
-                        if ($end_page < $total_pages - 1): ?>
-                            <span class="page-dots">...</span>
-                        <?php endif; ?>
-                        <?php
-                        $query_params['page'] = $total_pages;
-                        $last_url = $current_url . '?' . http_build_query($query_params);
                         ?>
-                        <a href="<?php echo $last_url; ?>" class="page-btn"><?php echo $total_pages; ?></a>
-                    <?php endif; ?>
+                            <a href="<?php echo $page_url; ?>" class="page-btn"><?php echo $i; ?></a>
+                        <?php endif;
+                    endfor; ?>
                     
                     <?php
                     // 다음 페이지
@@ -396,7 +461,7 @@ while ($row = mysqli_fetch_array($result)) {
                     <ul>
                         <li>모든 주문 목록을 확인할 수 있습니다</li>
                         <li>주문을 클릭하면 본인 인증 후 교정사항을 확인할 수 있습니다</li>
-                        <li>교정사항 확인 시 <strong>이름 + 전화번호 뒷자리 4자리</strong> 인증이 필요합니다</li>
+                        <li>교정사항 확인 시 <strong>전화번호 뒷자리 4자리</strong> 인증이 필요합니다</li>
                         <li>검색 기능을 이용하여 원하는 주문을 빠르게 찾을 수 있습니다</li>
                     </ul>
                 </div>
@@ -411,25 +476,31 @@ while ($row = mysqli_fetch_array($result)) {
     <?php endif; ?>
 </div>
 
-<!-- 비밀번호 인증 모달 -->
-<div id="passwordModal" class="password-modal">
-    <div class="modal-overlay" onclick="closePasswordModal()"></div>
+<!-- 전화번호 인증 모달 -->
+<div id="passwordModal" class="password-modal" onclick="if(event.target===this) closePasswordModal()">
     <div class="modal-content">
-        <div class="modal-header">
-            <h3>🔐 교정사항 확인 인증</h3>
-            <button class="modal-close" onclick="closePasswordModal()">&times;</button>
+        <button class="modal-close" onclick="closePasswordModal()">&times;</button>
+
+        <h3>📱 주문 확인</h3>
+        <p>주문번호 <strong>#<span id="modalOrderNo"></span></strong></p>
+
+        <div class="modal-hint">
+            전화번호 뒤 4자리를 입력하세요
         </div>
-        <div class="modal-body">
-            <p id="modalMessage">교정사항을 확인하시려면 <strong>전화번호 뒷자리 4자리</strong>를 입력해주세요.</p>
-            <div id="modalHint" class="modal-hint">
-                <!-- 동적으로 주문자명이 표시됩니다 -->
-            </div>
-            <input type="text" id="passwordInput" placeholder="전화번호 뒷자리 4자리" maxlength="4" class="modal-input">
-            <div id="passwordError" class="password-error"></div>
-        </div>
-        <div class="modal-footer">
-            <button onclick="closePasswordModal()" class="btn-cancel">취소</button>
-            <button onclick="verifyPassword()" class="btn-verify">확인</button>
+
+        <input type="text"
+               id="passwordInput"
+               placeholder="0000"
+               maxlength="4"
+               pattern="[0-9]{4}"
+               class="modal-input"
+               autocomplete="off">
+
+        <div id="passwordError" class="password-error" style="display:none;"></div>
+
+        <div class="modal-buttons">
+            <button onclick="closePasswordModal()" class="modal-btn btn-cancel">취소</button>
+            <button onclick="verifyPassword()" class="modal-btn btn-verify">확인</button>
         </div>
     </div>
 </div>
@@ -439,6 +510,9 @@ while ($row = mysqli_fetch_array($result)) {
 // PHP에서 관리자 상태 전달
 const isAdmin = <?php echo $is_admin ? 'true' : 'false'; ?>;
 
+// PHP에서 인증된 주문 번호 전달
+const authenticatedOrderNo = <?php echo isset($_SESSION['checkboard_order_no']) ? intval($_SESSION['checkboard_order_no']) : 'null'; ?>;
+
 let currentOrderNo = null;
 let currentOrderName = '';
 let currentOrderPhone = '';
@@ -447,21 +521,25 @@ function showPasswordModal(orderNo, orderName, orderPhone) {
     currentOrderNo = orderNo;
     currentOrderName = orderName;
     currentOrderPhone = orderPhone;
-    
-    // 관리자는 비밀번호 입력 없이 바로 팝업 열기
+
+    // 관리자는 인증 없이 바로 팝업 열기
     if (isAdmin) {
-        openOrderDetails(orderNo);
+        openProofreadingPopup(orderNo);
         return;
     }
-    
+
+    // 이미 인증된 주문이면 바로 팝업 열기
+    if (authenticatedOrderNo === orderNo) {
+        openProofreadingPopup(orderNo);
+        return;
+    }
+
+    // 인증되지 않은 주문 - 비밀번호 모달 표시
+    document.getElementById('modalOrderNo').textContent = orderNo;
     document.getElementById('passwordModal').style.display = 'flex';
     document.getElementById('passwordInput').focus();
     document.getElementById('passwordError').style.display = 'none';
     document.getElementById('passwordInput').value = '';
-    
-    // 주문자명 표시 및 힌트 업데이트 (전화번호는 마스킹)
-    const hintDiv = document.getElementById('modalHint');
-    hintDiv.innerHTML = `<strong>${orderName}</strong>님의 주문 → 전화번호 뒷자리 <strong>****</strong>를 입력하세요`;
 }
 
 function closePasswordModal() {
@@ -471,65 +549,49 @@ function closePasswordModal() {
     currentOrderPhone = '';
 }
 
-function openOrderDetails(orderNo) {
-    // 관리자용 직접 팝업 열기 (비밀번호 확인 건너뛰기)
-    fetch('/sub/verify_popup.php', {
-        method: 'POST',
-        headers: {
-            'Content-Type': 'application/x-www-form-urlencoded',
-        },
-        body: 'order_no=' + orderNo + '&password=' // 빈 password로 전송 (관리자는 서버에서 체크)
-    })
-    .then(response => response.json())
-    .then(data => {
-        if (data.success) {
-            // 새 창으로 교정사항 보기
-            const popup = window.open(
-                data.redirect_url,
-                'OrderDetails',
-                'width=1000,height=600,top=50,left=50,menubar=no,resizable=yes,statusbar=no,scrollbars=yes,toolbar=no'
-            );
-            popup.focus();
-        } else {
-            alert('오류: ' + data.message);
-        }
-    })
-    .catch(error => {
-        alert('확인 중 오류가 발생했습니다.');
-    });
-}
-
 function verifyPassword() {
-    const password = document.getElementById('passwordInput').value.trim();
+    const phone = document.getElementById('passwordInput').value.trim();
     const errorDiv = document.getElementById('passwordError');
-    
-    if (!password) {
-        errorDiv.textContent = '비밀번호를 입력해주세요.';
+
+    if (phone.length !== 4) {
+        errorDiv.textContent = '전화번호 뒤 4자리를 입력해주세요.';
         errorDiv.style.display = 'block';
         return;
     }
-    
-    // AJAX로 비밀번호 확인
-    fetch('/sub/verify_popup.php', {
+
+    // AJAX로 전화번호 확인
+    fetch('checkboard.php', {
         method: 'POST',
         headers: {
             'Content-Type': 'application/x-www-form-urlencoded',
         },
-        body: 'order_no=' + currentOrderNo + '&password=' + encodeURIComponent(password)
+        body: 'auth_action=verify&order_no=' + currentOrderNo + '&phone_last4=' + encodeURIComponent(phone)
     })
     .then(response => response.json())
     .then(data => {
         if (data.success) {
-            closePasswordModal();
-            // 새 창으로 교정사항 보기
-            const popup = window.open(
-                data.redirect_url,
-                'OrderDetails',
-                'width=1000,height=600,top=50,left=50,menubar=no,resizable=yes,statusbar=no,scrollbars=yes,toolbar=no'
-            );
-            popup.focus();
+            // 인증 성공 - 모달 닫고 팝업 열기
+            document.getElementById('passwordModal').style.display = 'none';
+            if (data.redirect_url) {
+                // 팝업 열기
+                const width = 1000;
+                const height = 600;
+                const left = (screen.width - width) / 2;
+                const top = (screen.height - height) / 2;
+                const features = `width=${width},height=${height},left=${left},top=${top},` +
+                                 `resizable=yes,scrollbars=yes,status=yes,toolbar=no,menubar=no,location=no`;
+                const popup = window.open(data.redirect_url, 'ProofreadingDetail_' + currentOrderNo, features);
+                if (popup && !popup.closed) {
+                    popup.focus();
+                } else {
+                    alert('팝업이 차단되었습니다. 팝업 차단을 해제해주세요.');
+                }
+            } else {
+                // 폴백: redirect_url이 없으면 페이지 새로고침
+                location.reload();
+            }
         } else {
-            errorDiv.textContent = data.message;
+            errorDiv.textContent = data.message || '전화번호가 일치하지 않습니다.';
             errorDiv.style.display = 'block';
         }
     })
@@ -537,6 +599,33 @@ function verifyPassword() {
         errorDiv.textContent = '확인 중 오류가 발생했습니다.';
         errorDiv.style.display = 'block';
     });
+}
+
+/**
+ * 교정사항 팝업 열기
+ * @param {number} orderNo - 주문 번호
+ */
+function openProofreadingPopup(orderNo) {
+    const url = '/mlangorder_printauto/WindowSian.php?mode=OrderView&no=' + orderNo;
+
+    // 팝업 창 크기 및 위치 계산
+    const width = 1000;
+    const height = 600;
+    const left = (screen.width - width) / 2;
+    const top = (screen.height - height) / 2;
+
+    const features = `width=${width},height=${height},left=${left},top=${top},` +
+                     `resizable=yes,scrollbars=yes,status=yes,toolbar=no,menubar=no,location=no`;
+
+    // 팝업 창 열기
+    const popup = window.open(url, 'ProofreadingDetail_' + orderNo, features);
+
+    // 팝업 포커스 (차단되지 않은 경우)
+    if (popup && !popup.closed) {
+        popup.focus();
+    } else {
+        alert('팝업이 차단되었습니다. 팝업 차단을 해제해주세요.');
+    }
 }
 
 // Enter 키로 확인
@@ -559,6 +648,7 @@ document.addEventListener('DOMContentLoaded', function() {
     }
 });
 </script>
+
 </div> <!-- content-area 끝 -->
 
 <?php

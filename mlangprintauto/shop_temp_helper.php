@@ -488,13 +488,34 @@ function formatCartItemForDisplay($connect, $item) {
 
         case 'inserted':
             $formatted['name'] = '📄 전단지';
+
+            // 수량 표시 로직 수정
+            $quantity_text = '';
+            if (!empty($item['MY_amount'])) {
+                $yeonsu = floatval($item['MY_amount']);
+                // 1.0 -> 1, 0.5 -> 0.5 와 같이 소수점 뒤 0을 제거
+                $quantity_text .= rtrim(rtrim(sprintf('%.1f', $yeonsu), '0'), '.') . '연';
+            }
+            if (!empty($item['mesu'])) {
+                // 연수 표시가 있을 때만 괄호와 함께 매수 추가
+                if (!empty($quantity_text)) {
+                    $quantity_text .= ' (' . number_format($item['mesu']) . '매)';
+                } else {
+                    $quantity_text = number_format($item['mesu']) . '매';
+                }
+            }
+            // 만약 둘 다 비어있으면 기존 MY_amount 값이라도 사용 (폴백)
+            if (empty(trim($quantity_text))) {
+                $quantity_text = $item['MY_amount'];
+            }
+
             $formatted['details'] = [
                 '색상' => getCategoryName($connect, $item['MY_type']),
                 '종류' => getCategoryName($connect, $item['MY_Fsd']),
                 '규격' => getCategoryName($connect, $item['PN_type']),
                 '인쇄' => $item['POtype'] == '1' ? '단면' : '양면',
                 '타입' => $item['ordertype'] === 'design' ? '디자인+인쇄' : '인쇄만',
-                '수량' => $item['MY_amount']
+                '수량' => $quantity_text
             ];
 
             // 🔍 디버그: 추가 옵션 데이터 확인

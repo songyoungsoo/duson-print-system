@@ -122,14 +122,16 @@ if (isset($_SESSION['user_id'])) {
         align-items: center;
     }
     .contact-card {
-        padding: 0.3rem 0.6rem;
-        background: rgba(255, 255, 255, 0.1);
+        padding: 0;
+        background: transparent;
         border: none;
-        border-radius: 4px;
-        transition: all 0.2s;
+        border-radius: 0;
+        transition: none;
+        box-shadow: none;
     }
     .contact-card:hover {
-        background: rgba(255, 255, 255, 0.2);
+        background: transparent;
+        box-shadow: none;
     }
     .contact-text, .user-menu-toggle {
         color: #ffffff !important;
@@ -137,8 +139,16 @@ if (isset($_SESSION['user_id'])) {
         font-size: 0.8rem !important;
         font-weight: 600;
         background: none;
+        background-color: transparent;
         border: none;
         cursor: pointer;
+        padding: 0;
+        margin: 0;
+    }
+    .contact-text:hover, .user-menu-toggle:hover {
+        opacity: 0.8;
+        background: transparent;
+        background-color: transparent;
     }
     .user-info-header {
         display: flex;
@@ -152,8 +162,8 @@ if (isset($_SESSION['user_id'])) {
         opacity: 0.8;
     }
     .user-info-header .value {
-        font-size: 0.75rem;
-        font-weight: 700;
+        font-size: 0.6rem;
+        font-weight: 600;
         color: #ffffff;
     }
     </style>
@@ -184,7 +194,7 @@ if (isset($_SESSION['user_id'])) {
                             </div>
                         </div>
                         <div class="contact-card">
-                            <a href="/account/orders.php" class="contact-text">내주문내역</a>
+                            <a href="/account/orders.php" class="contact-text">마이페이지</a>
                         </div>
                         <div class="contact-card">
                             <form action="/auth/logout.php" method="post" style="margin: 0;" onsubmit="return confirm('로그아웃 하시겠습니까?');">
@@ -200,7 +210,7 @@ if (isset($_SESSION['user_id'])) {
                             <button onclick="showRegisterModal()" class="contact-text">회원가입</button>
                         </div>
                         <div class="contact-card">
-                            <a href="/account/orders.php" class="contact-text">내주문내역</a>
+                            <a href="/account/orders.php" class="contact-text">마이페이지</a>
                         </div>
                         <?php endif; ?>
                         <div class="contact-card">

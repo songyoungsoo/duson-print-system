@@ -52,7 +52,8 @@
 .quotation-modal-mode .explane-section,
 .quotation-modal-mode .top-header,
 .quotation-modal-mode .site-header,
-.quotation-modal-mode .main-nav {
+.quotation-modal-mode .main-nav,
+.quotation-modal-mode [class*="-detail-combined"] {
     display: none !important;
 }
 
@@ -145,6 +146,35 @@
     font-weight: 700 !important;
     background: linear-gradient(135deg, #11998e 0%, #38ef7d 100%) !important;
     box-shadow: 0 4px 15px rgba(17, 153, 142, 0.3) !important;
+}
+
+/* 견적서 적용 버튼 스타일 */
+.quotation-apply-button {
+    margin-top: 15px !important;
+    padding: 10px !important;
+}
+
+.btn-quotation-apply {
+    width: 100% !important;
+    padding: 14px 20px !important;
+    font-size: 17px !important;
+    font-weight: 700 !important;
+    color: white !important;
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%) !important;
+    border: none !important;
+    border-radius: 8px !important;
+    cursor: pointer !important;
+    box-shadow: 0 4px 15px rgba(102, 126, 234, 0.4) !important;
+    transition: all 0.3s ease !important;
+}
+
+.btn-quotation-apply:hover {
+    transform: translateY(-2px) !important;
+    box-shadow: 0 6px 20px rgba(102, 126, 234, 0.5) !important;
+}
+
+.btn-quotation-apply:active {
+    transform: translateY(0) !important;
 }
 
 /* ==========================================

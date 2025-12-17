@@ -8,6 +8,9 @@
 // 공통 인증 및 설정
 include "../../includes/auth.php";
 
+// 견적서 모달용 간소화 모드 체크
+$isQuotationMode = isset($_GET['mode']) && $_GET['mode'] === 'quotation';
+
 // 공통 함수 및 데이터베이스
 include "../../includes/functions.php";
 include "../../db.php";
@@ -125,10 +128,12 @@ if ($type_result && ($type_row = mysqli_fetch_assoc($type_result))) {
     <!-- 🎯 통합 공통 스타일 CSS (최종 로드로 최우선 적용) -->
     <link rel="stylesheet" href="../../css/common-styles.css?v=1759615861">
     <link rel="stylesheet" href="../../css/upload-modal-common.css">
+    <!-- 견적서 모달용 공통 스타일 -->
+    <link rel="stylesheet" href="../../css/quotation-modal-common.css">
 </head>
-<body class="envelope-page">
-    <?php include "../../includes/header-ui.php"; ?>
-    <?php include "../../includes/nav.php"; ?>
+<body class="envelope-page<?php echo $isQuotationMode ? ' quotation-modal-mode' : ''; ?>">
+    <?php if (!$isQuotationMode) include "../../includes/header-ui.php"; ?>
+    <?php if (!$isQuotationMode) include "../../includes/nav.php"; ?>
 
     <div class="product-container">
         <div class="page-title">
@@ -231,12 +236,21 @@ if ($type_result && ($type_row = mysqli_fetch_assoc($type_result))) {
                         </div>
                     </div>
 
-                    <!-- 파일 업로드 및 주문 버튼 - 프리미엄 스타일 -->
+                    <?php if ($isQuotationMode): ?>
+                    <!-- 견적서 모달 모드: 견적서에 적용 버튼 -->
+                    <div class="quotation-apply-button">
+                        <button type="button" class="btn-quotation-apply" onclick="applyToQuotation()">
+                            ✓ 견적서에 적용
+                        </button>
+                    </div>
+                    <?php else: ?>
+                    <!-- 일반 모드: 파일 업로드 및 주문하기 버튼 -->
                     <div class="upload-order-button" id="uploadOrderButton">
                         <button type="button" class="btn-upload-order" onclick="openUploadModal()">
                             📎 파일 업로드 및 주문하기
                         </button>
                     </div>
+                    <?php endif; ?>
 
                     <!-- 숨겨진 필드들 -->
                     <input type="hidden" name="log_url" value="<?php echo safe_html($log_info['url']); ?>">
@@ -256,12 +270,12 @@ if ($type_result && ($type_row = mysqli_fetch_assoc($type_result))) {
 
     <?php include "../../includes/login_modal.php"; ?>
 
+    <?php if (!$isQuotationMode): ?>
     <!-- 옵셋봉투 및 작업 시 유의사항 통합 섹션 (1200px 폭) -->
     <div class="envelope-detail-combined" style="width: 1200px; max-width: 100%; margin: 30px auto; padding: 25px; background: #f8f9fa; border-radius: 12px; border: 1px solid #e0e0e0;">
         <?php include "explane05.php"; ?>
     </div>
-
-    <?php include "../../includes/footer.php"; ?>
+    <?php endif; ?>
 
     <!-- 봉투 전용 컴팩트 디자인 적용 (Frontend-Compact-Design-Guide.md 기반) -->
     
@@ -534,11 +548,14 @@ if ($type_result && ($type_row = mysqli_fetch_assoc($type_result))) {
         };
     </script>
 
+    <!-- 견적서 모달 공통 JavaScript -->
+    <script src="../../js/quotation-modal-common.js"></script>
+
     <?php
     // 데이터베이스 연결 종료
     if ($db) {
         mysqli_close($db);
     }
     ?>
-</body>
-</html>
+
+<?php if (!$isQuotationMode) include "../../includes/footer.php"; ?>

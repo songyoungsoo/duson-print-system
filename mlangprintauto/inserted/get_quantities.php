@@ -37,7 +37,7 @@ if ($result) {
     while ($row = mysqli_fetch_array($result)) {
         $quantities[] = [
             'value' => $row['quantity'],
-            'text' => $row['quantityTwo'] . '매 (' . $row['quantity'] . '연)'
+            'text' => rtrim(rtrim(sprintf('%.1f', $row['quantity']), '0'), '.') . '연 (' . number_format($row['quantityTwo']) . '매)'
         ];
     }
 }

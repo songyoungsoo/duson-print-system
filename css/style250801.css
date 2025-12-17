@@ -3,7 +3,18 @@
             padding: 0;
             box-sizing: border-box;
         }
-        
+
+        /* 링크 기본 스타일 리셋 */
+        a {
+            text-decoration: none;
+        }
+
+        a:hover,
+        a:focus,
+        a:active {
+            text-decoration: none;
+        }
+
         html {
             height: 100%;
             overflow-x: hidden;
@@ -160,8 +171,7 @@
             }
         }
 
-        /* 상단 헤더 - 통합 시스템 (common-styles.css에서 관리, 여기서는 비활성화) */
-        /*
+        /* 상단 헤더 */
         .top-header {
             background: linear-gradient(135deg, #2c3e50 0%, #34495e 100%);
             color: white;
@@ -247,17 +257,22 @@
             gap: 0.5rem;
             align-items: center;
         }
-        
-        .contact-card {
-            padding: 0.3rem 0.6rem;
-            background: rgba(255, 255, 255, 0.1);
+
+        /* 헤더 버튼 박스 스타일 완전 제거 - 명시도 높임 */
+        .top-header .contact-info .contact-card {
+            padding: 0;
+            background: transparent;
+            background-color: transparent;
             border: none;
-            border-radius: 4px;
-            transition: all 0.2s;
+            border-radius: 0;
+            transition: none;
+            box-shadow: none;
         }
-        
-        .contact-card:hover {
-            background: rgba(255, 255, 255, 0.2);
+
+        .top-header .contact-info .contact-card:hover {
+            background: transparent;
+            background-color: transparent;
+            box-shadow: none;
         }
 
         .contact-card .label {
@@ -272,19 +287,37 @@
             color: #3498db;
         }
         
-        /* 텍스트 형식 연락처 링크 */
-        .contact-text {
+        /* 텍스트 형식 연락처 링크 - 폰트 크기 조정 */
+        .top-header .contact-info .contact-card .contact-text {
             color: #ffffff;
-            text-decoration: none;
             font-size: 0.8rem;
             font-weight: 600;
             background: none;
+            background-color: transparent;
             border: none;
             cursor: pointer;
+            padding: 0;
+            margin: 0;
         }
-        
-        .contact-text:hover {
+
+        .top-header .contact-info .contact-card .contact-text:hover {
             opacity: 0.8;
+            background: transparent;
+            background-color: transparent;
+        }
+
+        .top-header .contact-info .contact-card a.contact-text {
+            background: transparent;
+            background-color: transparent;
+            padding: 0;
+            border: none;
+        }
+
+        .top-header .contact-info .contact-card button.contact-text {
+            background: transparent;
+            background-color: transparent;
+            padding: 0;
+            border: none;
         }
         
         .user-menu-toggle {
@@ -309,11 +342,11 @@
             opacity: 0.8;
         }
         
-        .user-info-header .value {
-            font-size: 0.75rem;
-            font-weight: 700;
+        .top-header .contact-info .contact-card .user-info-header .value {
+            font-size: 0.6rem;
+            font-weight: 600;
             color: #ffffff;
-        } */
+        }
 
         /* 네비게이션 메뉴 */
         .nav-menu {

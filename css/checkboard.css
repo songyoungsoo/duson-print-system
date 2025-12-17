@@ -216,11 +216,11 @@
     background: linear-gradient(135deg, #4a5568 0%, #2d3748 100%);
     color: white;
     display: grid;
-    grid-template-columns: 100px 120px 120px 100px 140px 140px 100px 100px;
+    grid-template-columns: 120px 140px 150px 120px 180px 150px 150px 160px;
     gap: 1px;
     font-weight: 600;
     font-size: 13px;
-    width: 1020px;
+    width: 1170px;
 }
 
 .table-header > div {
@@ -236,12 +236,12 @@
 
 .table-row {
     display: grid;
-    grid-template-columns: 100px 120px 120px 100px 140px 140px 100px 100px;
+    grid-template-columns: 120px 140px 150px 120px 180px 150px 150px 160px;
     gap: 1px;
     background: white;
     margin-bottom: 0.5px;
     transition: all 0.2s ease;
-    width: 1020px;
+    width: 1170px;
 }
 
 .table-row.clickable:hover {
@@ -394,7 +394,7 @@
     line-height: 1.5;
 }
 
-/* 비밀번호 모달 스타일 */
+/* 전화번호 인증 모달 스타일 */
 .password-modal {
     display: none;
     position: fixed;
@@ -402,7 +402,7 @@
     left: 0;
     width: 100%;
     height: 100%;
-    background: rgba(0,0,0,0.6);
+    background: rgba(0,0,0,0.7);
     z-index: 10000;
     justify-content: center;
     align-items: center;
@@ -410,95 +410,144 @@
 
 .modal-content {
     background: white;
-    border-radius: 8px;
-    padding: 18px;
+    border-radius: 12px;
+    padding: 30px 25px;
     width: 90%;
-    max-width: 380px;
+    max-width: 320px;
     text-align: center;
-    box-shadow: 0 10px 30px rgba(0,0,0,0.3);
-    transform: scale(0.9);
-    transition: transform 0.3s ease;
+    box-shadow: 0 10px 40px rgba(0,0,0,0.3);
+    animation: modalFadeIn 0.2s ease;
+    position: relative;
 }
 
-.password-modal[style*="flex"] .modal-content {
-    transform: scale(1);
+@keyframes modalFadeIn {
+    from { opacity: 0; transform: scale(0.95); }
+    to { opacity: 1; transform: scale(1); }
 }
 
 .modal-content h3 {
-    color: #333;
-    margin-bottom: 12px;
-    font-size: 16px;
+    color: #2d3748;
+    margin: 0 0 8px 0;
+    font-size: 20px;
+    font-weight: 700;
+}
+
+.modal-content p {
+    color: #4a5568;
+    margin: 0 0 20px 0;
+    font-size: 15px;
+    font-weight: 500;
+}
+
+.modal-content p strong {
+    color: #2563eb;
+    font-size: 18px;
 }
 
 .modal-hint {
-    background: #f8f9fa;
-    padding: 10px;
-    border-radius: 6px;
-    margin-bottom: 12px;
-    font-size: 13px;
-    color: #666;
-    line-height: 1.4;
+    background: #f0f4f8;
+    padding: 12px;
+    border-radius: 8px;
+    margin-bottom: 16px;
+    font-size: 14px;
+    color: #475569;
+    line-height: 1.5;
+    font-weight: 500;
 }
 
 .modal-input {
     width: 100%;
-    padding: 8px;
-    border: 2px solid #ddd;
-    border-radius: 6px;
-    font-size: 13px;
+    padding: 14px;
+    border: 2px solid #e2e8f0;
+    border-radius: 8px;
+    font-size: 18px;
+    font-weight: 600;
     text-align: center;
-    margin-bottom: 12px;
-    transition: border-color 0.3s ease;
+    margin-bottom: 16px;
+    transition: all 0.2s ease;
+    letter-spacing: 2px;
 }
 
 .modal-input:focus {
-    border-color: #4a5568;
+    border-color: #2563eb;
     outline: none;
+    box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.1);
 }
 
 .modal-buttons {
     display: flex;
-    gap: 8px;
+    gap: 10px;
 }
 
 .modal-btn {
     flex: 1;
-    padding: 8px;
+    padding: 12px;
     border: none;
-    border-radius: 6px;
-    font-size: 13px;
+    border-radius: 8px;
+    font-size: 15px;
     font-weight: 600;
     cursor: pointer;
-    transition: all 0.3s ease;
+    transition: all 0.2s ease;
 }
 
-.btn-confirm {
-    background: linear-gradient(135deg, #4a5568 0%, #2d3748 100%);
+.btn-confirm,
+.btn-verify {
+    background: #2563eb;
     color: white;
 }
 
-.btn-confirm:hover {
-    opacity: 0.9;
+.btn-confirm:hover,
+.btn-verify:hover {
+    background: #1d4ed8;
     transform: translateY(-1px);
+    box-shadow: 0 4px 12px rgba(37, 99, 235, 0.3);
 }
 
 .btn-cancel {
-    background: #f8f9fa;
-    color: #666;
-    border: 1px solid #ddd;
+    background: #f1f5f9;
+    color: #64748b;
+    border: 1px solid #e2e8f0;
 }
 
 .btn-cancel:hover {
-    background: #e9ecef;
+    background: #e2e8f0;
 }
 
 .password-error {
-    background: #ffebee;
-    color: #c62828;
-    padding: 6px;
-    border-radius: 4px;
-    margin-bottom: 10px;
-    font-size: 12px;
+    background: #fee;
+    color: #dc2626;
+    padding: 10px;
+    border-radius: 6px;
+    margin-bottom: 12px;
+    font-size: 13px;
+    font-weight: 500;
+}
+
+.modal-header,
+.modal-body,
+.modal-footer {
+    /* 기존 구조 제거 - 단순화 */
+}
+
+.modal-close {
+    position: absolute;
+    top: 15px;
+    right: 15px;
+    background: none;
+    border: none;
+    font-size: 24px;
+    color: #94a3b8;
+    cursor: pointer;
+    padding: 0;
+    width: 30px;
+    height: 30px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.modal-close:hover {
+    color: #64748b;
 }
 
 /* 모바일 반응형 */

@@ -114,21 +114,58 @@ try {
                 $type = PRODUCT_NAME_TO_TYPE[$item['product_name']];
             }
 
-            // Type_1 JSON 생성
+            // Type_1 JSON 생성 (11개 신규 필드 포함)
             $type1Data = [
+                // 기본 필드
                 'product_type' => $type,
                 'product_name' => $item['product_name'],
-                'formatted_display' => $item['specification'] ?? '',
+                'specification' => $item['specification'] ?? '',
+                'formatted_display' => $item['formatted_display'] ?? ($item['specification'] ?? ''),
                 'source' => 'quote',
                 'quote_no' => $quote['quote_no'],
+
+                // 수량/단위
                 'quantity' => floatval($item['quantity']),
                 'unit' => $item['unit'] ?? '개',
+
+                // 가격 정보
                 'supply_price' => intval($item['supply_price']),
                 'vat_amount' => intval($item['vat_amount']),
-                'total_price' => intval($item['total_price'])
+                'total_price' => intval($item['total_price']),
+
+                // ===== 11개 신규 필드 =====
+                // 1-4. 제품 사양 필드
+                'MY_type' => $item['MY_type'] ?? '',
+                'PN_type' => $item['PN_type'] ?? '',
+                'MY_Fsd' => $item['MY_Fsd'] ?? '',
+                'POtype' => $item['POtype'] ?? '',
+
+                // 5-6. 연수/매수 필드
+                'MY_amount' => floatval($item['MY_amount'] ?? 0),
+                'mesu' => intval($item['mesu'] ?? 0),
+
+                // 7. 인쇄 타입
+                'ordertype' => $item['ordertype'] ?? ''
             ];
 
-            // source_data가 있으면 포함
+            // 8. product_data (JSON 필드를 배열로 파싱)
+            if (!empty($item['product_data'])) {
+                $productData = json_decode($item['product_data'], true);
+                if ($productData) {
+                    $type1Data['product_data'] = $productData;
+                }
+            }
+
+            // 10-11. 추가 옵션 필드
+            if (!empty($item['additional_options'])) {
+                $additionalOptions = json_decode($item['additional_options'], true);
+                if ($additionalOptions) {
+                    $type1Data['additional_options'] = $additionalOptions;
+                }
+            }
+            $type1Data['additional_options_total'] = intval($item['additional_options_total'] ?? 0);
+
+            // source_data가 있으면 포함 (하위 호환성)
             if (!empty($item['source_data'])) {
                 $sourceData = json_decode($item['source_data'], true);
                 if ($sourceData) {

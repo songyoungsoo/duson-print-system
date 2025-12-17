@@ -10,6 +10,31 @@ let galleryImages = [];
 let currentImageIndex = 0;
 
 /**
+ * [신규] 수량 드롭다운에서 '매수'를 파싱하여 숨겨진 필드에 값을 설정하는 함수
+ */
+function updateMesuFromQuantity() {
+    const quantitySelect = document.querySelector('select[name="MY_amount"]');
+    if (!quantitySelect) return;
+
+    const selectedOption = quantitySelect.options[quantitySelect.selectedIndex];
+    const text = selectedOption ? selectedOption.textContent : '';
+    // 표준 형식 "X연 (Y매)"에서 매수를 추출하는 정규식
+    const mesuMatch = text.match(/\((\d{1,3}(,\d{3})*|\d+)매\)/);
+    const myAmountRightInput = document.getElementById('MY_amountRight');
+
+    if (myAmountRightInput) {
+        if (mesuMatch && mesuMatch[1]) {
+            const mesuValue = parseInt(mesuMatch[1].replace(/,/g, ''));
+            myAmountRightInput.value = mesuValue;
+            console.log(`[통일된 로직] 매수(MY_amountRight)가 ${mesuValue}로 설정되었습니다. 원본: "${text}"`);
+        } else {
+            myAmountRightInput.value = '';
+            console.log(`[통일된 로직] 매수를 찾지 못했습니다. 원본: "${text}"`);
+        }
+    }
+}
+
+/**
  * 공통 모달 연동 함수 - 장바구니 추가 처리
  */
 function handleModalBasketAdd(uploadedFiles, onSuccess, onError) {
@@ -303,6 +328,9 @@ function initDropdownEvents() {
     // 수량 변경 시 자동 계산
     if (quantitySelect) {
         quantitySelect.addEventListener('change', function() {
+            // [수정] 매수 파싱 함수 호출
+            updateMesuFromQuantity();
+
             // 추가 옵션 수량 업데이트
             if (typeof updateAdditionalOptionsQuantity === 'function') {
                 updateAdditionalOptionsQuantity(this.value);
@@ -468,6 +496,9 @@ function updateQuantities() {
                 });
                 
                 console.log('✅ 수량 옵션 로드 완료 (POtype ' + POtype + '):', data.length, '개');
+
+                // [수정] 수량 로드 직후 매수 파싱 함수 호출
+                updateMesuFromQuantity();
                 
                 // 첫 번째 수량이 자동 선택되면 가격 계산
                 if (data.length > 0) {

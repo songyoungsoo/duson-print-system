@@ -238,17 +238,23 @@ echo "stroke\n\n";
 echo "% Line Labels (GulimChe font)\n";
 echo "/GulimChe findfont $label_font_size scalefont setfont\n";
 
-// 여유선 라벨 (파란색, 여유선 위쪽에 밀착)
+// 여유선 라벨 (파란색, 여유선 위쪽 중앙)
 $bleed_label_y = $h + $bleed_pt + 2;  // 여유선 바로 위
+$bleed_text = "Bleed +{$bleed}mm";
+$bleed_text_width = strlen($bleed_text) * ($label_font_size * 0.5);  // 텍스트 폭 추정
+$bleed_label_x = ($w - $bleed_text_width) / 2;  // 중앙 정렬
 echo "0 0.7 1 setrgbcolor\n";  // 파란색
-echo "2 $bleed_label_y moveto\n";
-echo "(Bleed +{$bleed}mm) show\n";
+echo "$bleed_label_x $bleed_label_y moveto\n";
+echo "({$bleed_text}) show\n";
 
-// 안전선 라벨 (빨간색, 안전선 아래쪽에 밀착)
-$safety_label_y = -$safety_pt - 8;  // 안전선 바로 아래
+// 안전선 라벨 (빨간색, 안전선 안쪽 중앙)
+$safety_label_y = 5;  // 안전선 안쪽 (하단에서 5pt 위)
+$safety_text = "Safety -{$safety}mm";
+$safety_text_width = strlen($safety_text) * ($label_font_size * 0.5);  // 텍스트 폭 추정
+$safety_label_x = ($w - $safety_text_width) / 2;  // 중앙 정렬
 echo "1 0 0.3 setrgbcolor\n";  // 빨간색
-echo "2 $safety_label_y moveto\n";
-echo "(Safety -{$safety}mm) show\n";
+echo "$safety_label_x $safety_label_y moveto\n";
+echo "({$safety_text}) show\n";
 
 // ============================================
 // 중앙 치수 표시 (굴림체)
@@ -294,36 +300,36 @@ echo "(Duson Planning Sticker Die-cut Template) show\n";
 
 echo "/GulimChe findfont $legend_font_size scalefont setfont\n";
 
-// 크기 정보 (영어)
+// 크기 정보 (영어) - 행간 14pt
 echo "0.3 0.3 0.3 setrgbcolor\n";
-echo "$legend_x " . ($legend_y + 20) . " moveto\n";
+echo "$legend_x " . ($legend_y + 16) . " moveto\n";
 echo "(Size: {$garo} x {$sero} mm | Shape: {$shape_label_en}) show\n";
 
-// 여유선 범례
+// 여유선 범례 - 행간 14pt
 echo "0 0.7 1 setrgbcolor\n";
-echo "$legend_x " . ($legend_y + 12) . " moveto\n";
-echo "10 0 rlineto stroke\n";
-echo "0 0.3 0.3 0.3 setrgbcolor\n";
-echo ($legend_x + 15) . " " . ($legend_y + 10) . " moveto\n";
-echo "(Bleed Line: +{$bleed}mm \\(Extend background/images here\\)) show\n";
-
-// 도무송 범례
-echo "0 0 0 setrgbcolor\n";
-echo "[3 2] 0 setdash\n";
 echo "$legend_x " . ($legend_y + 4) . " moveto\n";
 echo "10 0 rlineto stroke\n";
+echo "0 0.3 0.3 0.3 setrgbcolor\n";
+echo ($legend_x + 15) . " " . ($legend_y + 2) . " moveto\n";
+echo "(Bleed Line: +{$bleed}mm \\(Extend background/images here\\)) show\n";
+
+// 도무송 범례 - 행간 14pt
+echo "0 0 0 setrgbcolor\n";
+echo "[3 2] 0 setdash\n";
+echo "$legend_x " . ($legend_y - 10) . " moveto\n";
+echo "10 0 rlineto stroke\n";
 echo "[] 0 setdash\n";
 echo "0.3 0.3 0.3 setrgbcolor\n";
-echo ($legend_x + 15) . " " . ($legend_y + 2) . " moveto\n";
+echo ($legend_x + 15) . " " . ($legend_y - 12) . " moveto\n";
 echo "(Die-cut Line: Actual cut line) show\n";
 
-// 안전선 범례
+// 안전선 범례 - 행간 14pt
 echo "1 0 0.3 setrgbcolor\n";
 echo "[] 0 setdash\n";
-echo "$legend_x " . ($legend_y - 4) . " moveto\n";
+echo "$legend_x " . ($legend_y - 24) . " moveto\n";
 echo "10 0 rlineto stroke\n";
 echo "0.3 0.3 0.3 setrgbcolor\n";
-echo ($legend_x + 15) . " " . ($legend_y - 6) . " moveto\n";
+echo ($legend_x + 15) . " " . ($legend_y - 26) . " moveto\n";
 echo "(Safety Line: -{$safety}mm \\(Keep text/logos inside\\)) show\n";
 
 // 마무리

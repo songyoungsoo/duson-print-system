@@ -8,6 +8,9 @@
 // 보안 상수 정의 후 공통 인증 및 설정
 include "../../includes/auth.php";
 
+// 견적서 모달용 간소화 모드 체크
+$isQuotationMode = isset($_GET['mode']) && $_GET['mode'] === 'quotation';
+
 // 공통 함수 및 데이터베이스
 include "../../includes/functions.php";
 include "../../db.php";
@@ -135,10 +138,12 @@ $default_values['ordertype'] = 'print'; // 인쇄만
     <!-- 🎯 통합 공통 스타일 CSS (최종 로드로 최우선 적용) -->
     <link rel="stylesheet" href="../../css/common-styles.css?v=1759615861">
     <link rel="stylesheet" href="../../css/upload-modal-common.css">
+    <!-- 견적서 모달용 공통 스타일 -->
+    <link rel="stylesheet" href="../../css/quotation-modal-common.css">
 </head>
-<body class="littleprint-page">
-    <?php include "../../includes/header-ui.php"; ?>
-    <?php include "../../includes/nav.php"; ?>
+<body class="littleprint-page<?php echo $isQuotationMode ? ' quotation-modal-mode' : ''; ?>">
+    <?php if (!$isQuotationMode) include "../../includes/header-ui.php"; ?>
+    <?php if (!$isQuotationMode) include "../../includes/nav.php"; ?>
 
     <div class="product-container">
         <div class="page-title">
@@ -322,12 +327,21 @@ $default_values['ordertype'] = 'print'; // 인쇄만
                         </div>
                     </div>
 
-                    <!-- 파일 업로드 및 주문 버튼 -->
+                    <?php if ($isQuotationMode): ?>
+                    <!-- 견적서 모달 모드: 견적서에 적용 버튼 -->
+                    <div class="quotation-apply-button">
+                        <button type="button" class="btn-quotation-apply" onclick="applyToQuotation()">
+                            ✓ 견적서에 적용
+                        </button>
+                    </div>
+                    <?php else: ?>
+                    <!-- 일반 모드: 파일 업로드 및 주문하기 버튼 -->
                     <div class="upload-order-button" id="uploadOrderButton">
                         <button type="button" class="btn-upload-order" onclick="openUploadModal()">
                             파일 업로드 및 주문하기
                         </button>
                     </div>
+                    <?php endif; ?>
 
                     <!-- 숨겨진 필드들 -->
                     <input type="hidden" name="log_url" value="<?php echo safe_html($log_info['url']); ?>">
@@ -347,12 +361,14 @@ $default_values['ordertype'] = 'print'; // 인쇄만
 
     <?php include "../../includes/login_modal.php"; ?>
 
+    <?php if (!$isQuotationMode): ?>
     <!-- 포스터 상세 설명 섹션 (1200px 폭) - 하단 설명방법 적용 -->
     <div class="poster-detail-combined" style="width: 1200px; max-width: 100%; margin: 7.5px auto; padding: 25px; background: #f8f9fa; border-radius: 12px; border: 1px solid #e0e0e0;">
         <?php include "explane_poster.php"; ?>
     </div>
+    <?php endif; ?>
 
-    <?php include "../../includes/footer.php"; ?>
+    <?php if (!$isQuotationMode) include "../../includes/footer.php"; ?>
 
     <script>
         // PHP 변수를 JavaScript로 전달 (PROJECT_SUCCESS_REPORT.md 스펙)
@@ -428,6 +444,9 @@ $default_values['ordertype'] = 'print'; // 인쇄만
 
     <!-- 포스터 추가 옵션 시스템 -->
     <script src="js/littleprint-premium-options.js"></script>
+
+    <!-- 견적서 모달 공통 JavaScript -->
+    <script src="../../js/quotation-modal-common.js"></script>
 
     <!-- 포스터/리플렛 전용 컴팩트 디자인 적용 (Frontend-Compact-Design-Guide.md 기반) -->
 

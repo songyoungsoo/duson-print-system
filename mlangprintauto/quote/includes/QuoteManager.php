@@ -15,6 +15,60 @@ class QuoteManager {
     }
 
     /**
+     * formatted_display 생성 헬퍼 함수
+     * 제품 정보를 주문서/견적서 표시용 텍스트로 포맷팅
+     *
+     * @param string $productType 제품 타입 (inserted, leaflet, namecard, etc.)
+     * @param array $data 제품 데이터 배열
+     * @return string 포맷팅된 표시 텍스트
+     */
+    private function generateFormattedDisplay($productType, $data) {
+        $formatted = '';
+
+        // 용지 정보
+        if (!empty($data['PN_type'])) {
+            $formatted .= "용지: " . $data['PN_type'] . "\n";
+        }
+
+        // 규격 정보
+        if (!empty($data['MY_type'])) {
+            $formatted .= "규격: " . $data['MY_type'] . "\n";
+        }
+
+        // 수량 정보 - 전단지/리플렛은 "X연 (Y매)" 형식, 나머지는 일반 형식
+        if (($productType === 'inserted' || $productType === 'leaflet')) {
+            $myAmount = floatval($data['MY_amount'] ?? 0);
+            $mesu = intval($data['mesu'] ?? 0);
+
+            if ($myAmount > 0 && $mesu > 0) {
+                // 연수 표시: 정수면 소수점 없이, 소수면 1자리
+                $yeonDisplay = floor($myAmount) == $myAmount
+                    ? number_format($myAmount)
+                    : number_format($myAmount, 1);
+                $formatted .= "수량: " . $yeonDisplay . "연 (" . number_format($mesu) . "매)\n";
+            }
+        } else {
+            // 기타 제품: 일반 수량 표시
+            $quantity = floatval($data['quantity'] ?? 0);
+            $unit = $data['unit'] ?? '매';
+
+            if ($quantity > 0) {
+                $quantityDisplay = floor($quantity) == $quantity
+                    ? number_format($quantity)
+                    : number_format($quantity, 1);
+                $formatted .= "수량: " . $quantityDisplay . " " . $unit . "\n";
+            }
+        }
+
+        // 인쇄 타입
+        if (!empty($data['ordertype'])) {
+            $formatted .= "인쇄: " . $data['ordertype'] . "\n";
+        }
+
+        return $formatted;
+    }
+
+    /**
      * 견적번호 생성
      * @param string $type 'quotation' | 'transaction'
      * @return string QT-YYYYMMDD-NNN 또는 TX-YYYYMMDD-NNN
@@ -398,7 +452,7 @@ class QuoteManager {
     }
 
     /**
-     * 장바구니 아이템을 견적 품목으로 추가
+     * 장바구니 아이템을 견적 품목으로 추가 (11개 필드 확장)
      */
     private function addItemFromCart($quoteId, $itemNo, $cartItem) {
         $productType = $cartItem['product_type'] ?? '';
@@ -408,6 +462,7 @@ class QuoteManager {
             $productType = 'sticker';
         }
 
+        // 기본 필드 추출
         $productName = ProductSpecFormatter::getProductTypeName($productType);
         $specification = $this->formatter->format($cartItem);
         $quantity = ProductSpecFormatter::getQuantity($cartItem);
@@ -416,30 +471,122 @@ class QuoteManager {
         $totalPrice = ProductSpecFormatter::getPrice($cartItem);
         $vatAmount = $totalPrice - $supplyPrice;
 
-        // 전단지는 quantityTwo(mesu)로 단가 계산 (소수점 1자리), 나머지는 quantity로 계산
+        // 전단지는 quantityTwo(mesu)로 단가 계산 (소수점 2자리), 나머지는 quantity로 계산
         if ($productType === 'inserted' && !empty($cartItem['mesu']) && intval($cartItem['mesu']) > 0) {
-            $unitPrice = round($supplyPrice / intval($cartItem['mesu']), 2);  // 소수점 2자리
+            $unitPrice = round($supplyPrice / intval($cartItem['mesu']), 2);
         } else {
-            $unitPrice = $quantity > 0 ? round($supplyPrice / $quantity, 2) : 0;  // 소수점 2자리
+            $unitPrice = $quantity > 0 ? round($supplyPrice / $quantity, 2) : 0;
         }
 
+        // ===== 11개 신규 필드 추출 =====
+
+        // 1-4. 제품 사양 필드 (MY_type, PN_type, MY_Fsd, POtype)
+        $myType = $cartItem['MY_type'] ?? '';
+        $pnType = $cartItem['PN_type'] ?? '';
+        $myFsd = $cartItem['MY_Fsd'] ?? '';
+        $poType = $cartItem['POtype'] ?? '';
+
+        // 5-6. 연수/매수 필드 (MY_amount, mesu)
+        $myAmount = floatval($cartItem['MY_amount'] ?? 0);
+        $mesu = intval($cartItem['mesu'] ?? 0);
+
+        // 7. 인쇄 타입 (ordertype)
+        $ordertype = $cartItem['ordertype'] ?? '';
+
+        // 8. product_data JSON 생성 (Type_1 JSON 호환 구조)
+        $productDataArray = [
+            'MY_type' => $myType,
+            'PN_type' => $pnType,
+            'MY_Fsd' => $myFsd,
+            'POtype' => $poType,
+            'MY_amount' => $myAmount,
+            'mesu' => $mesu,
+            'ordertype' => $ordertype,
+            'unit' => $unit,
+            'quantity' => $quantity
+        ];
+        $productData = json_encode($productDataArray, JSON_UNESCAPED_UNICODE);
+
+        // 9. formatted_display 생성 (헬퍼 함수 사용)
+        $displayData = [
+            'PN_type' => $pnType,
+            'MY_type' => $myType,
+            'MY_amount' => $myAmount,
+            'mesu' => $mesu,
+            'quantity' => $quantity,
+            'unit' => $unit,
+            'ordertype' => $ordertype
+        ];
+        $formattedDisplay = $this->generateFormattedDisplay($productType, $displayData);
+
+        // 10-11. 추가 옵션 필드 (additional_options, additional_options_total)
+        $additionalOptionsArray = [];
+        $additionalOptionsTotal = 0;
+
+        // 코팅 옵션
+        if (!empty($cartItem['coating_enabled']) || !empty($cartItem['coating_type'])) {
+            $coatingPrice = intval($cartItem['coating_price'] ?? 0);
+            $additionalOptionsArray['coating'] = [
+                'enabled' => intval($cartItem['coating_enabled'] ?? 0),
+                'type' => $cartItem['coating_type'] ?? '',
+                'price' => $coatingPrice
+            ];
+            $additionalOptionsTotal += $coatingPrice;
+        }
+
+        // 접지 옵션 (리플렛)
+        if (!empty($cartItem['folding_enabled']) || !empty($cartItem['folding_type'])) {
+            $foldingPrice = intval($cartItem['folding_price'] ?? 0);
+            $additionalOptionsArray['folding'] = [
+                'enabled' => intval($cartItem['folding_enabled'] ?? 0),
+                'type' => $cartItem['folding_type'] ?? '',
+                'price' => $foldingPrice
+            ];
+            $additionalOptionsTotal += $foldingPrice;
+        }
+
+        // 오시 옵션
+        if (!empty($cartItem['creasing_enabled']) || !empty($cartItem['creasing_lines'])) {
+            $creasingPrice = intval($cartItem['creasing_price'] ?? 0);
+            $additionalOptionsArray['creasing'] = [
+                'enabled' => intval($cartItem['creasing_enabled'] ?? 0),
+                'lines' => $cartItem['creasing_lines'] ?? '',
+                'price' => $creasingPrice
+            ];
+            $additionalOptionsTotal += $creasingPrice;
+        }
+
+        $additionalOptions = json_encode($additionalOptionsArray, JSON_UNESCAPED_UNICODE);
+
+        // ===== INSERT 쿼리 (24개 파라미터) =====
         $query = "INSERT INTO quote_items (
-            quote_id, item_no, product_type, product_name, specification,
-            quantity, unit, unit_price, supply_price, vat_amount, total_price,
-            source_type, source_id, source_data
-        ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, 'cart', ?, ?)";
+            quote_id, item_no, product_type, MY_type, PN_type, MY_Fsd, POtype, MY_amount, mesu,
+            product_name, specification,
+            quantity, unit, ordertype, unit_price, supply_price, vat_amount, total_price,
+            source_type, source_id, source_data,
+            product_data, formatted_display, additional_options, additional_options_total
+        ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, 'cart', ?, ?, ?, ?, ?, ?)";
 
         $stmt = mysqli_prepare($this->db, $query);
         $sourceData = json_encode($cartItem, JSON_UNESCAPED_UNICODE);
         $sourceId = intval($cartItem['no'] ?? 0);
 
-        mysqli_stmt_bind_param($stmt, "iisssdsdiiiis",
-            $quoteId, $itemNo, $productType, $productName, $specification,
-            $quantity, $unit, $unitPrice, $supplyPrice, $vatAmount, $totalPrice,
-            $sourceId, $sourceData
+        // bind_param 타입 문자열: 24개 파라미터
+        // i i s s s s s d i s s d s s d i i i i s s s s i
+        mysqli_stmt_bind_param($stmt, "iisssssdiisdsdiiiisssssi",
+            $quoteId, $itemNo, $productType, $myType, $pnType, $myFsd, $poType, $myAmount, $mesu,
+            $productName, $specification,
+            $quantity, $unit, $ordertype, $unitPrice, $supplyPrice, $vatAmount, $totalPrice,
+            $sourceId, $sourceData,
+            $productData, $formattedDisplay, $additionalOptions, $additionalOptionsTotal
         );
 
-        mysqli_stmt_execute($stmt);
+        if (!mysqli_stmt_execute($stmt)) {
+            $error = mysqli_stmt_error($stmt);
+            mysqli_stmt_close($stmt);
+            throw new Exception("Failed to execute addItemFromCart INSERT: " . $error);
+        }
+
         mysqli_stmt_close($stmt);
     }
 

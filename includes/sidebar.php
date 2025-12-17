@@ -127,248 +127,261 @@ $show_bank = isset($show_bank) ? $show_bank : true;
 </div>
 
 <style>
-/* 좌측 사이드바 전용 스타일 - 플로팅 방식 */
+/* Google Fonts - Noto Sans KR */
+@import url('https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@400;500;600;700&display=swap');
+
+/* 우측 사이드바 - 내용에 맞게 높이 조절 */
 .right-sidebar {
-    position: fixed !important;
-    top: 120px !important;
-    left: 20px !important;
-    width: 176px !important;
-    background: #f8f9fa !important;
-    border: 1px solid #e9ecef !important;
-    border-radius: 8px !important;
-    padding: 0.5rem !important;
-    font-size: 14px !important;
-    z-index: 1000 !important;
-    box-shadow: 0 4px 12px rgba(0,0,0,0.15) !important;
-    max-height: calc(100vh - 140px) !important;
-    overflow-y: auto !important;
+    position: fixed;
+    top: 0;
+    right: 0;
+    width: 165px;
+    background: #f8f9fa;
+    border-left: 1px solid #e9ecef;
+    padding: 5px 5px 100px 5px;
+    font-size: 13px;
+    max-height: 100vh;
+    z-index: 100;
+    box-shadow: -2px 0 8px rgba(0,0,0,0.1);
+    overflow-y: auto;
+    box-sizing: border-box;
+    font-family: 'Noto Sans KR', 'Noto Sans', sans-serif;
 }
 
 /* 카톡상담 특별 섹션 */
 .kakao-special-section {
-    margin-bottom: 0.3rem !important;
-    text-align: center !important;
+    margin-bottom: 5px;
+    text-align: center;
 }
 
 .kakao-special-link {
-    display: block !important;
-    transition: transform 0.2s ease !important;
-    border-radius: 8px !important;
-    overflow: hidden !important;
+    display: inline-block;
+    transition: transform 0.2s ease;
+    border-radius: 8px;
+    overflow: hidden;
 }
 
 .kakao-special-link:hover {
-    transform: scale(1.05) !important;
-    box-shadow: 0 4px 8px rgba(0,0,0,0.2) !important;
+    transform: scale(1.05);
+    box-shadow: 0 4px 8px rgba(0,0,0,0.2);
 }
 
 .kakao-image {
-    width: 100% !important;
-    height: auto !important;
-    display: block !important;
-    border-radius: 8px !important;
+    width: 95%;
+    height: auto;
+    display: block;
+    border-radius: 8px;
+    margin: 0 auto;
 }
 
 .sidebar-section {
-    margin-bottom: 0.4rem !important;
-    background: white !important;
-    border-radius: 8px !important;
-    padding: 0 !important;
-    box-shadow: 0 2px 8px rgba(0,0,0,0.08) !important;
-    overflow: hidden !important;
-    border: 1px solid #e9ecef !important;
+    margin-bottom: 5px;
+    background: white;
+    border-radius: 8px;
+    padding: 0;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.08);
+    overflow: hidden;
+    border: 1px solid #e9ecef;
 }
 
 .sidebar-title {
-    background: #6c757d !important;
-    color: white !important;
-    text-align: center !important;
-    padding: 4px 6px !important;
-    font-weight: 700 !important;
-    margin: 0 !important;
-    font-size: 11px !important;
-    text-shadow: 1px 1px 2px rgba(0,0,0,0.3) !important;
-    border-bottom: 1px solid rgba(255,255,255,0.2) !important;
+    background: #364052;
+    color: white;
+    text-align: center;
+    padding: 6px;
+    font-weight: 700;
+    margin: 0;
+    font-size: 12px;
+    text-shadow: 1px 1px 2px rgba(0,0,0,0.3);
+    border-bottom: 1px solid rgba(255,255,255,0.2);
 }
 
 .sidebar-contact-info, .bank-info, .time-info {
-    padding: 3px !important;
+    padding: 5px;
 }
 
 .sidebar-contact-item, .bank-item, .time-item {
-    display: flex !important;
-    justify-content: space-between !important;
-    align-items: center !important;
-    padding: 1px 0 !important;
-    border-bottom: 1px dotted #e9ecef !important;
-    font-size: 13px !important;
-    line-height: 1.1 !important;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 2px 0;
+    border-bottom: 1px dotted #e9ecef;
+    font-size: 11px;
+    line-height: 1.3;
 }
 
 .sidebar-contact-item:last-child, .bank-item:last-child, .time-item:last-child {
-    border-bottom: none !important;
+    border-bottom: none;
 }
 
-/* 사이드바 고객센터 전화번호 스타일 (입금안내와 동일) */
+/* 고객센터 전화번호 스타일 */
 .sidebar-contact-name {
-    font-weight: 600 !important;
-    color: #2d3748 !important;
-    font-size: 12px !important;
+    font-weight: 600;
+    color: #2d3748;
+    font-size: 11px;
 }
 
 .sidebar-contact-number {
-    color: #e53e3e !important;
-    font-weight: 700 !important;
-    font-size: 11px !important;
-    font-family: monospace !important;
+    color: #e53e3e;
+    font-weight: 700;
+    font-size: 11px;
+    font-family: monospace;
 }
 
 .contact-label, .time-day {
-    font-weight: 500 !important;
-    color: #4a5568 !important;
-    font-size: 12px !important;
+    font-weight: 500;
+    color: #4a5568;
+    font-size: 11px;
 }
 
-.contact-value, .bank-account, .time-hours {
-    color: #2d3748 !important;
-    font-weight: 600 !important;
-    font-size: 12px !important;
+.contact-value, .time-hours {
+    color: #2d3748;
+    font-weight: 600;
+    font-size: 11px;
 }
 
 .bank-name {
-    font-weight: 600 !important;
-    color: #2d3748 !important;
-    font-size: 12px !important;
+    font-weight: 600;
+    color: #2d3748;
+    font-size: 11px;
 }
 
 .bank-account {
-    color: #e53e3e !important;
-    font-weight: 700 !important;
-    font-size: 11px !important;
-    font-family: monospace !important;
+    color: #e53e3e;
+    font-weight: 700;
+    font-size: 11px;
+    font-family: monospace;
 }
 
 .bank-owner {
-    text-align: center !important;
-    margin-top: 4px !important;
-    padding-top: 4px !important;
-    border-top: 1px solid #e9ecef !important;
-    font-size: 11px !important;
-    color: #4a5568 !important;
-    font-weight: 500 !important;
-    line-height: 1.0 !important;
+    text-align: center;
+    margin-top: 4px;
+    padding-top: 4px;
+    border-top: 1px solid #e9ecef;
+    font-size: 10px;
+    color: #4a5568;
+    font-weight: 500;
+    line-height: 1.3;
 }
 
 .bank-owner div {
-    margin: 0 !important;
-    padding: 0 !important;
+    margin: 0;
+    padding: 0;
 }
 
 /* 파일전송 섹션 */
 .file-transfer-section {
-    padding: 3px !important;
+    padding: 6px;
+    text-align: center;
 }
 
 .file-item {
-    margin-bottom: 3px !important;
-    padding: 3px !important;
-    border-bottom: 1px dotted #e9ecef !important;
+    margin-bottom: 4px;
+    padding: 4px;
+    border-bottom: 1px dotted #e9ecef;
 }
 
 .file-item:last-child {
-    border-bottom: none !important;
-    margin-bottom: 0 !important;
+    border-bottom: none;
+    margin-bottom: 0;
 }
 
 .file-link {
-    display: block !important;
-    text-decoration: none !important;
-    color: inherit !important;
-    text-align: center !important;
-    padding: 2px !important;
-    border-radius: 4px !important;
-    transition: all 0.2s ease !important;
+    display: block;
+    text-decoration: none;
+    color: inherit;
+    text-align: center;
+    padding: 4px;
+    border-radius: 4px;
+    transition: all 0.2s ease;
 }
 
 .file-link:hover {
-    background: linear-gradient(135deg, #e6f3ff 0%, #b3d9ff 100%) !important;
-    transform: translateY(-1px) !important;
-    box-shadow: 0 2px 4px rgba(0,0,0,0.1) !important;
+    background: linear-gradient(135deg, #e6f3ff 0%, #b3d9ff 100%);
+    transform: translateY(-1px);
+    box-shadow: 0 1px 3px rgba(0,0,0,0.1);
 }
 
 .file-service {
-    font-size: 12px !important;
-    font-weight: 600 !important;
-    color: #2d3748 !important;
-    margin-bottom: 2px !important;
+    font-size: 11px;
+    font-weight: 600;
+    color: #2d3748;
+    margin-bottom: 3px;
+    text-align: center;
 }
 
 .file-credentials {
-    font-size: 12px !important;
-    color: #007bff !important;
-    font-family: monospace !important;
-    background: #f8f9fa !important;
-    padding: 2px 4px !important;
-    border-radius: 3px !important;
-    display: inline-block !important;
-    line-height: 1.2 !important;
+    font-size: 12px;
+    color: #007bff;
+    font-family: 'Noto Sans KR', 'Noto Sans', monospace;
+    font-weight: 700;
+    background: #f8f9fa;
+    padding: 3px 6px;
+    border-radius: 3px;
+    display: block;
+    line-height: 1.4;
+    text-align: center;
+    margin: 0 auto;
+    width: fit-content;
 }
 
 .file-email {
-    font-size: 11px !important;
-    color: #007bff !important;
-    font-weight: 500 !important;
+    font-size: 11px;
+    color: #007bff;
+    font-weight: 500;
+    text-align: center;
+    display: block;
 }
 
 /* 업무안내 섹션 */
 .business-menu {
-    padding: 2px !important;
+    padding: 4px;
 }
 
 .business-link {
-    display: block !important;
-    padding: 3px 4px !important;
-    color: #4a5568 !important;
-    text-decoration: none !important;
-    border-radius: 4px !important;
-    transition: all 0.2s ease !important;
-    margin-bottom: 1px !important;
-    font-size: 11px !important;
-    font-weight: 500 !important;
-    border: 1px solid transparent !important;
+    display: block;
+    padding: 5px 6px;
+    color: #4a5568;
+    text-decoration: none;
+    border-radius: 4px;
+    transition: all 0.2s ease;
+    margin-bottom: 3px;
+    font-size: 11px;
+    font-weight: 500;
+    border: 1px solid transparent;
+}
+
+.business-link:last-child {
+    margin-bottom: 0;
 }
 
 .business-link:hover {
-    background: linear-gradient(135deg, #e6f3ff 0%, #b3d9ff 100%) !important;
-    color: #2d3748 !important;
-    transform: translateX(3px) !important;
-    border-color: #87ceeb !important;
-    box-shadow: 0 2px 4px rgba(0,0,0,0.1) !important;
+    background: linear-gradient(135deg, #e6f3ff 0%, #b3d9ff 100%);
+    color: #2d3748;
+    transform: translateX(2px);
+    border-color: #87ceeb;
+    box-shadow: 0 1px 3px rgba(0,0,0,0.1);
 }
 
 .time-item.holiday {
-    opacity: 0.7 !important;
+    opacity: 0.7;
 }
 
 .time-item.holiday .time-hours {
-    color: #e53e3e !important;
+    color: #e53e3e;
 }
 
-/* 모바일 반응형 - 카카오톡 이하 모든 사이드바 숨김 */
-@media (max-width: 768px) {
+/* 창이 줄어들면 사이드바 숨김 (1124px 이하) */
+@media (max-width: 1124px) {
     .right-sidebar {
-        display: none !important;
+        display: none;
     }
 }
 
-/* 태블릿 및 데스크톱에서만 사이드바 표시 */
-@media (min-width: 769px) {
+/* 큰 화면에서 사이드바 표시 (1125px 이상) */
+@media (min-width: 1125px) {
     .right-sidebar {
-        position: fixed !important;
-        top: 120px !important;
-        left: 20px !important;
-        width: 176px !important;
-        z-index: 1000 !important;
+        display: block;
     }
 }
 </style>

@@ -1,6 +1,9 @@
-<?php 
-session_start(); 
+<?php
+session_start();
 $session_id = session_id();
+
+// 견적서 모달용 간소화 모드 체크
+$isQuotationMode = isset($_GET['mode']) && $_GET['mode'] === 'quotation';
 
 // 출력 버퍼 관리 및 에러 설정 (명함 성공 패턴)
 ob_start();
@@ -180,11 +183,14 @@ header("Expires: 0");
 
     <!-- 파일 업로드 컴포넌트 JavaScript -->
     <script src="../../includes/js/UniversalFileUpload.js"></script>
+
+    <!-- 견적서 모달용 공통 스타일 -->
+    <link rel="stylesheet" href="../../css/quotation-modal-common.css">
 </head>
 
-<body class="inserted-page">
-    <?php include "../../includes/header-ui.php"; ?>
-    <?php include "../../includes/nav.php"; ?>
+<body class="inserted-page<?php echo $isQuotationMode ? ' quotation-modal-mode' : ''; ?>">
+    <?php if (!$isQuotationMode) include "../../includes/header-ui.php"; ?>
+    <?php if (!$isQuotationMode) include "../../includes/nav.php"; ?>
 
     <div class="product-container">
         <!-- 페이지 타이틀 -->
@@ -370,12 +376,21 @@ header("Expires: 0");
                         </div>
                     </div>
 
-                    <!-- 파일 업로드 및 주문 버튼 -->
+                    <?php if ($isQuotationMode): ?>
+                    <!-- 견적서 모달 모드: 견적서에 적용 버튼 -->
+                    <div class="quotation-apply-button">
+                        <button type="button" class="btn-quotation-apply" onclick="applyToQuotation()">
+                            ✓ 견적서에 적용
+                        </button>
+                    </div>
+                    <?php else: ?>
+                    <!-- 일반 모드: 파일 업로드 및 주문하기 버튼 -->
                     <div class="upload-order-button" id="uploadOrderButton">
                         <button type="button" class="btn-upload-order" onclick="openUploadModal()">
                             파일 업로드 및 주문하기
                         </button>
                     </div>
+                    <?php endif; ?>
                     
                     <!-- 선택한 옵션 요약 영역 제거됨 -->
                     
@@ -414,6 +429,7 @@ header("Expires: 0");
     include "../../includes/login_modal.php";
     ?>
 
+    <?php if (!$isQuotationMode): ?>
     <!-- 합판 전단지 상세 설명 섹션 (하단 설명방법) -->
     <div class="inserted-detail-combined">
         <?php include "explane_inserted.php"; ?>
@@ -484,10 +500,13 @@ header("Expires: 0");
             </div>
         </div>
     </section>
+    <?php endif; ?>
 
     <?php
-    // 공통 푸터 포함
-    include "../../includes/footer.php";
+    // 공통 푸터 포함 (견적서 모달에서는 제외)
+    if (!$isQuotationMode) {
+        include "../../includes/footer.php";
+    }
     ?>
 
     <!-- 공통 업로드 모달 JavaScript -->
@@ -706,6 +725,9 @@ header("Expires: 0");
 
     <!-- 통합 갤러리 시스템 JavaScript -->
     <script src="../../js/common-gallery-popup.js"></script>
+
+    <!-- 견적서 모달 공통 JavaScript -->
+    <script src="../../js/quotation-modal-common.js"></script>
 
     <!-- 전단지 전용 컴팩트 디자인 적용 (Frontend-Compact-Design-Guide.md 기반) -->
 </body>

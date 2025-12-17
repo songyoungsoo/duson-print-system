@@ -251,7 +251,7 @@
 .btn-upload-order {
     width: 100%;
     padding: 10px;
-    background: #28a745;
+    background: #364052;
     color: white;
     border: none;
     border-radius: 6px;
@@ -260,15 +260,17 @@
     cursor: pointer;
     transition: all 0.3s ease;
     margin-top: 8px;
+    box-shadow: 0 4px 12px rgba(54, 64, 82, 0.3);
 }
 
 .btn-upload-order:hover {
-    background: #218838;
-    transform: translateY(-1px);
-    box-shadow: 0 4px 8px rgba(40, 167, 69, 0.3);
+    background: #4a5568;
+    transform: translateY(-2px);
+    box-shadow: 0 6px 20px rgba(54, 64, 82, 0.4);
 }
 
 .btn-upload-order:active {
+    background: #4a5568;
     transform: translateY(0);
 }
 
