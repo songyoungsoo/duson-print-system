@@ -32,9 +32,16 @@ $product_type = $_POST['product_type'] ?? '';
 $jong = $_POST['jong'] ?? null;
 $garo = $_POST['garo'] ?? null;
 $sero = $_POST['sero'] ?? null;
-$mesu = $_POST['mesu'] ?? null;
+$mesu = $_POST['mesu'] ?? null;  // 스티커용 매수
 $domusong = $_POST['domusong'] ?? null;
 $uhyung = intval($_POST['uhyung'] ?? 0);  // 0=인쇄만, 1=디자인+인쇄
+
+// === 2-1. 전단지/리플렛 전용 필드 ===
+// flyer_mesu: 전단지/리플렛 매수 (스티커용 mesu와 분리)
+$flyer_mesu = null;
+if (in_array($product_type, ['inserted', 'leaflet'])) {
+    $flyer_mesu = intval($_POST['flyer_mesu'] ?? $_POST['mesu'] ?? 0);
+}
 
 // === 3. 제품 스펙 필드 ===
 $MY_type = $_POST['MY_type'] ?? '';
@@ -141,10 +148,10 @@ $customer_phone = $_POST['customer_phone'] ?? null;
 // === 13. 원본 파일명 ===
 $original_filename = $_POST['original_filename'] ?? null;
 
-// === 14. DB INSERT (53개 필드 - no와 regdate 제외) ===
+// === 14. DB INSERT (54개 필드 - no와 regdate 제외, flyer_mesu 추가) ===
 $query = "INSERT INTO quotation_temp (
     session_id, order_id, parent, product_type,
-    jong, garo, sero, mesu, domusong, uhyung,
+    jong, garo, sero, mesu, flyer_mesu, domusong, uhyung,
     MY_type, MY_Fsd, PN_type, MY_amount, POtype, ordertype,
     st_price, st_price_vat,
     MY_comment, img,
@@ -163,7 +170,7 @@ $query = "INSERT INTO quotation_temp (
     regdate
 ) VALUES (
     ?, ?, ?, ?,
-    ?, ?, ?, ?, ?, ?,
+    ?, ?, ?, ?, ?, ?, ?,
     ?, ?, ?, ?, ?, ?,
     ?, ?,
     ?, ?,
@@ -186,10 +193,10 @@ $query = "INSERT INTO quotation_temp (
 // Placeholder 개수
 $placeholder_count = substr_count($query, '?');
 
-// 타입 문자열 (53개 파라미터)
+// 타입 문자열 (54개 파라미터 - flyer_mesu 추가)
 $type_string =
     "ssss" .        // session_id, order_id, parent, product_type (4)
-    "sssssi" .      // jong, garo, sero, mesu, domusong, uhyung (6)
+    "ssssisi" .     // jong, garo, sero, mesu, flyer_mesu, domusong, uhyung (7)
     "ssssss" .      // MY_type, MY_Fsd, PN_type, MY_amount, POtype, ordertype (6)
     "ii" .          // st_price, st_price_vat (2)
     "ss" .          // MY_comment, img (2)
@@ -205,7 +212,7 @@ $type_string =
     "sss" .         // MY_type_name, Section_name, POtype_name (3)
     "ss" .          // customer_name, customer_phone (2)
     "s";            // original_filename (1)
-    // Total: 53 parameters
+    // Total: 54 parameters
 
 $type_count = strlen($type_string);
 
@@ -226,10 +233,10 @@ if (!$stmt) {
     safe_json_response(false, null, 'DB 준비 실패: ' . mysqli_error($db));
 }
 
-// bind_param 실행 (53개 파라미터)
+// bind_param 실행 (54개 파라미터 - flyer_mesu 추가)
 mysqli_stmt_bind_param($stmt, $type_string,
     $session_id, $order_id, $parent, $product_type,
-    $jong, $garo, $sero, $mesu, $domusong, $uhyung,
+    $jong, $garo, $sero, $mesu, $flyer_mesu, $domusong, $uhyung,
     $MY_type, $MY_Fsd, $PN_type, $MY_amount, $POtype, $ordertype,
     $st_price, $st_price_vat,
     $MY_comment, $img,

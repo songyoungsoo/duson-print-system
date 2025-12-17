@@ -758,7 +758,6 @@ foreach ($order_rows as $order_item) {
                                 $full_spec = '';
                                 $quantity_num = '';
                                 $unit = '';
-                                $item_type_display = htmlspecialchars($summary_item['Type']); // 기본값
 
                                 // 🆕 DB의 unit 필드 우선 사용 (shop_temp에서 복사된 값)
                                 $db_unit = $summary_item['unit'] ?? '';
@@ -771,32 +770,6 @@ foreach ($order_rows as $order_item) {
 
                                     // 🔧 JSON 파싱 시도
                                     $json_data = json_decode($type_1_data, true);
-
-                                    // ✅ product_type으로 품목명 변환
-                                    if ($json_data && isset($json_data['product_type'])) {
-                                        $product_type = $json_data['product_type'];
-                                        if ($product_type === 'littleprint' || $product_type === 'poster') {
-                                            $item_type_display = '포스터';
-                                        } elseif ($product_type === 'namecard') {
-                                            $item_type_display = '명함';
-                                        } elseif ($product_type === 'inserted') {
-                                            $item_type_display = '전단지';
-                                        } elseif ($product_type === 'envelope') {
-                                            $item_type_display = '봉투';
-                                        } elseif ($product_type === 'sticker') {
-                                            $item_type_display = '스티커';
-                                        } elseif ($product_type === 'msticker') {
-                                            $item_type_display = '자석스티커';
-                                        } elseif ($product_type === 'cadarok') {
-                                            $item_type_display = '카다록';
-                                        } elseif ($product_type === 'leaflet') {
-                                            $item_type_display = '리플렛';
-                                        } elseif ($product_type === 'ncrflambeau') {
-                                            $item_type_display = 'NCR양식';
-                                        } elseif ($product_type === 'merchandisebond') {
-                                            $item_type_display = '상품권';
-                                        }
-                                    }
                                     if ($json_data && isset($json_data['formatted_display'])) {
                                         // JSON의 formatted_display 사용
                                         $full_spec = $json_data['formatted_display'];
@@ -814,15 +787,26 @@ foreach ($order_rows as $order_item) {
                                                      strpos($item_type_str, '리플렛') !== false);
 
                                         // 전단지/리플렛: quantity 또는 MY_amount 필드에서 연수 추출
+                                        // ✅ DB 컬럼 flyer_mesu 우선 → JSON flyer_mesu → JSON mesu (레거시 호환)
                                         $flyer_quantity = $json_data['quantity'] ?? $json_data['MY_amount'] ?? null;
+                                        // DB 컬럼에서 직접 읽기 (ProcessOrder_unified.php에서 저장한 값)
+                                        $db_flyer_mesu = intval($summary_item['flyer_mesu'] ?? 0);
+                                        $flyer_mesu_val = $db_flyer_mesu > 0 ? $db_flyer_mesu : intval($json_data['flyer_mesu'] ?? $json_data['mesu'] ?? 0);
                                         if ($is_flyer && $flyer_quantity !== null && floatval($flyer_quantity) > 0) {
                                             // 전단지: quantity 또는 MY_amount는 연수, 단위는 무조건 "연"
                                             $quantity_num = floatval($flyer_quantity);
                                             $unit = '연';
+                                            // flyer_mesu가 있으면 매수도 표시용으로 저장
+                                            if ($flyer_mesu_val > 0) {
+                                                $flyer_mesu_display = $flyer_mesu_val;
+                                            }
                                         } elseif ($is_flyer) {
                                             // 전단지인데 quantity/MY_amount가 없는 경우에도 연 단위 강제
                                             $quantity_num = floatval($json_data['quantityTwo'] ?? $json_data['quantity'] ?? $json_data['MY_amount'] ?? 1);
                                             $unit = '연';
+                                            if ($flyer_mesu_val > 0) {
+                                                $flyer_mesu_display = $flyer_mesu_val;
+                                            }
                                         } elseif (isset($json_data['quantityTwo']) && $json_data['quantityTwo'] > 0) {
                                             // 다른 제품: 매수(quantityTwo)가 있으면 사용
                                             $quantity_num = intval($json_data['quantityTwo']);
@@ -835,56 +819,8 @@ foreach ($order_rows as $order_item) {
                                             if (preg_match('/수량[:\s]*([\d,.]+)\s*([가-힣a-zA-Z]+)/u', $full_spec, $unit_matches)) {
                                                 $unit = trim($unit_matches[2]);
                                             } else {
-                                                // 🔧 제품 타입별 기본 단위 설정 (과거 주문 호환)
-                                                if ($product_type === 'cadarok') {
-                                                    $unit = '부';
-                                                } elseif (strpos($item_type_str, '카다록') !== false || strpos($item_type_str, '카탈로그') !== false) {
-                                                    $unit = '부';
-                                                } else {
-                                                    // 대부분의 제품: 명함/봉투/스티커/포스터/상품권/양식지 = '매'
-                                                    // 전단지/리플렛은 위에서 '연'으로 이미 처리됨
-                                                    $unit = '매';
-                                                }
+                                                $unit = '개';
                                             }
-                                        }
-                                    } elseif ($json_data && isset($json_data['product_type']) &&
-                                              ($json_data['product_type'] === 'poster' || $json_data['product_type'] === 'littleprint')) {
-                                        // ✅ raw JSON 포스터 처리
-                                        $spec_parts = [];
-
-                                        // 구분
-                                        if (!empty($json_data['MY_type'])) {
-                                            $spec_parts[] = '구분: ' . htmlspecialchars($json_data['MY_type']);
-                                        }
-
-                                        // 용지
-                                        if (!empty($json_data['Section'])) {
-                                            $spec_parts[] = '용지: ' . htmlspecialchars($json_data['Section']);
-                                        }
-
-                                        // 규격
-                                        if (!empty($json_data['PN_type'])) {
-                                            $spec_parts[] = '규격: ' . htmlspecialchars($json_data['PN_type']);
-                                        }
-
-                                        // 인쇄면
-                                        if (!empty($json_data['POtype'])) {
-                                            $sides = ($json_data['POtype'] == '1') ? '단면' : '양면';
-                                            $spec_parts[] = '인쇄면: ' . $sides;
-                                        }
-
-                                        // 디자인
-                                        if (!empty($json_data['ordertype'])) {
-                                            $design = ($json_data['ordertype'] == 'total') ? '디자인+인쇄' : '인쇄만';
-                                            $spec_parts[] = '디자인: ' . $design;
-                                        }
-
-                                        $full_spec = implode(' | ', $spec_parts);
-
-                                        // 수량
-                                        if (!empty($json_data['MY_amount'])) {
-                                            $quantity_num = floatval($json_data['MY_amount']);
-                                            $unit = '매';
                                         }
                                     } else {
                                         // 레거시 일반 텍스트 처리 (2024년 이전 주문)
@@ -932,21 +868,6 @@ foreach ($order_rows as $order_item) {
                                     $full_spec = '-';
                                 }
 
-
-                                // 🆕 전단지/리플렛: 매수(mesu) 정보 표시용 변수
-                                $mesu_for_display = 0;
-                                if ($json_data && isset($is_flyer) && $is_flyer) {
-                                    // JSON에서 매수 정보 추출 (quantityTwo 또는 mesu)
-                                    $mesu_for_display = intval($json_data['quantityTwo'] ?? $json_data['mesu'] ?? 0);
-                                    // 매수가 0이면 DB의 mesu 컬럼 확인
-                                    if ($mesu_for_display == 0 && isset($summary_item['mesu']) && $summary_item['mesu'] > 0) {
-                                        $mesu_for_display = intval($summary_item['mesu']);
-                                    }
-                                    // 여전히 0이면 formatted_display에서 추출 시도: "0.5연 (2,000매)"
-                                    if ($mesu_for_display == 0 && !empty($full_spec) && preg_match('/[\d.]+연\s*\(([\d,]+)매\)/u', $full_spec, $mesu_matches)) {
-                                        $mesu_for_display = intval(str_replace(',', '', $mesu_matches[1]));
-                                    }
-                                }
                                 // 🔧 Extract options for this item
                                 $item_options = [];
 
@@ -1053,7 +974,7 @@ foreach ($order_rows as $order_item) {
                             ?>
                             <tr>
                                 <td style="border: 0.3pt solid #000; padding: 1.5mm; text-align: center;"><?= $row_num++ ?></td>
-                                <td style="border: 0.3pt solid #000; padding: 1.5mm;"><?= $item_type_display ?></td>
+                                <td style="border: 0.3pt solid #000; padding: 1.5mm;"><?= htmlspecialchars($summary_item['Type']) ?></td>
                                 <td style="border: 0.3pt solid #000; padding: 1.5mm; font-size: 10pt; line-height: 1.2; vertical-align: top;">
                                     <?= htmlspecialchars($full_spec) ?>
                                     <?php if (!empty($item_options)): ?>
@@ -1061,25 +982,10 @@ foreach ($order_rows as $order_item) {
                                     <?php endif; ?>
                                 </td>
                                 <td style="border: 0.3pt solid #000; padding: 1.5mm; text-align: center;">
-                                    <?php
-                                    // 🔧 전단지/리플렛: "X연 (Y매)" 형식으로 표시
-                                    if (isset($is_flyer) && $is_flyer && $mesu_for_display > 0) {
-                                        $yeon_display = $quantity_num ? (floor($quantity_num) == $quantity_num ? number_format($quantity_num) : number_format($quantity_num, 1)) : '0';
-                                        echo $yeon_display . '연 (' . number_format($mesu_for_display) . '매)';
-                                    } else {
-                                        echo $quantity_num ? (floor($quantity_num) == $quantity_num ? number_format($quantity_num) : number_format($quantity_num, 1)) : '-';
-                                    }
-                                    ?>
+                                    <?= $quantity_num ? (floor($quantity_num) == $quantity_num ? number_format($quantity_num) : number_format($quantity_num, 1)) : '-' ?>
                                 </td>
                                 <td style="border: 0.3pt solid #000; padding: 1.5mm; text-align: center;">
-                                    <?php
-                                    // 🔧 전단지/리플렛: 단위 칼럼 비우기
-                                    if (isset($is_flyer) && $is_flyer && $mesu_for_display > 0) {
-                                        echo '-';
-                                    } else {
-                                        echo htmlspecialchars($unit);
-                                    }
-                                    ?>
+                                    <?= htmlspecialchars($unit) ?>
                                 </td>
                                 <td style="border: 0.3pt solid #000; padding: 1.5mm; text-align: right;">
                                     <?= number_format(intval($summary_item['money_4'])) ?>
@@ -1196,7 +1102,6 @@ foreach ($order_rows as $order_item) {
                                 $full_spec = '';
                                 $quantity_num = '';
                                 $unit = '';
-                                $item_type_display = htmlspecialchars($summary_item['Type']); // 기본값
 
                                 // 🆕 DB의 unit 필드 우선 사용 (shop_temp에서 복사된 값)
                                 $db_unit = $summary_item['unit'] ?? '';
@@ -1209,32 +1114,6 @@ foreach ($order_rows as $order_item) {
 
                                     // 🔧 JSON 파싱 시도
                                     $json_data = json_decode($type_1_data, true);
-
-                                    // ✅ product_type으로 품목명 변환
-                                    if ($json_data && isset($json_data['product_type'])) {
-                                        $product_type = $json_data['product_type'];
-                                        if ($product_type === 'littleprint' || $product_type === 'poster') {
-                                            $item_type_display = '포스터';
-                                        } elseif ($product_type === 'namecard') {
-                                            $item_type_display = '명함';
-                                        } elseif ($product_type === 'inserted') {
-                                            $item_type_display = '전단지';
-                                        } elseif ($product_type === 'envelope') {
-                                            $item_type_display = '봉투';
-                                        } elseif ($product_type === 'sticker') {
-                                            $item_type_display = '스티커';
-                                        } elseif ($product_type === 'msticker') {
-                                            $item_type_display = '자석스티커';
-                                        } elseif ($product_type === 'cadarok') {
-                                            $item_type_display = '카다록';
-                                        } elseif ($product_type === 'leaflet') {
-                                            $item_type_display = '리플렛';
-                                        } elseif ($product_type === 'ncrflambeau') {
-                                            $item_type_display = 'NCR양식';
-                                        } elseif ($product_type === 'merchandisebond') {
-                                            $item_type_display = '상품권';
-                                        }
-                                    }
                                     if ($json_data && isset($json_data['formatted_display'])) {
                                         // JSON의 formatted_display 사용
                                         $full_spec = $json_data['formatted_display'];
@@ -1252,15 +1131,26 @@ foreach ($order_rows as $order_item) {
                                                      strpos($item_type_str, '리플렛') !== false);
 
                                         // 전단지/리플렛: quantity 또는 MY_amount 필드에서 연수 추출
+                                        // ✅ DB 컬럼 flyer_mesu 우선 → JSON flyer_mesu → JSON mesu (레거시 호환)
                                         $flyer_quantity = $json_data['quantity'] ?? $json_data['MY_amount'] ?? null;
+                                        // DB 컬럼에서 직접 읽기 (ProcessOrder_unified.php에서 저장한 값)
+                                        $db_flyer_mesu = intval($summary_item['flyer_mesu'] ?? 0);
+                                        $flyer_mesu_val = $db_flyer_mesu > 0 ? $db_flyer_mesu : intval($json_data['flyer_mesu'] ?? $json_data['mesu'] ?? 0);
                                         if ($is_flyer && $flyer_quantity !== null && floatval($flyer_quantity) > 0) {
                                             // 전단지: quantity 또는 MY_amount는 연수, 단위는 무조건 "연"
                                             $quantity_num = floatval($flyer_quantity);
                                             $unit = '연';
+                                            // flyer_mesu가 있으면 매수도 표시용으로 저장
+                                            if ($flyer_mesu_val > 0) {
+                                                $flyer_mesu_display = $flyer_mesu_val;
+                                            }
                                         } elseif ($is_flyer) {
                                             // 전단지인데 quantity/MY_amount가 없는 경우에도 연 단위 강제
                                             $quantity_num = floatval($json_data['quantityTwo'] ?? $json_data['quantity'] ?? $json_data['MY_amount'] ?? 1);
                                             $unit = '연';
+                                            if ($flyer_mesu_val > 0) {
+                                                $flyer_mesu_display = $flyer_mesu_val;
+                                            }
                                         } elseif (isset($json_data['quantityTwo']) && $json_data['quantityTwo'] > 0) {
                                             // 다른 제품: 매수(quantityTwo)가 있으면 사용
                                             $quantity_num = intval($json_data['quantityTwo']);
@@ -1273,56 +1163,8 @@ foreach ($order_rows as $order_item) {
                                             if (preg_match('/수량[:\s]*([\d,.]+)\s*([가-힣a-zA-Z]+)/u', $full_spec, $unit_matches)) {
                                                 $unit = trim($unit_matches[2]);
                                             } else {
-                                                // 🔧 제품 타입별 기본 단위 설정 (과거 주문 호환)
-                                                if ($product_type === 'cadarok') {
-                                                    $unit = '부';
-                                                } elseif (strpos($item_type_str, '카다록') !== false || strpos($item_type_str, '카탈로그') !== false) {
-                                                    $unit = '부';
-                                                } else {
-                                                    // 대부분의 제품: 명함/봉투/스티커/포스터/상품권/양식지 = '매'
-                                                    // 전단지/리플렛은 위에서 '연'으로 이미 처리됨
-                                                    $unit = '매';
-                                                }
+                                                $unit = '개';
                                             }
-                                        }
-                                    } elseif ($json_data && isset($json_data['product_type']) &&
-                                              ($json_data['product_type'] === 'poster' || $json_data['product_type'] === 'littleprint')) {
-                                        // ✅ raw JSON 포스터 처리
-                                        $spec_parts = [];
-
-                                        // 구분
-                                        if (!empty($json_data['MY_type'])) {
-                                            $spec_parts[] = '구분: ' . htmlspecialchars($json_data['MY_type']);
-                                        }
-
-                                        // 용지
-                                        if (!empty($json_data['Section'])) {
-                                            $spec_parts[] = '용지: ' . htmlspecialchars($json_data['Section']);
-                                        }
-
-                                        // 규격
-                                        if (!empty($json_data['PN_type'])) {
-                                            $spec_parts[] = '규격: ' . htmlspecialchars($json_data['PN_type']);
-                                        }
-
-                                        // 인쇄면
-                                        if (!empty($json_data['POtype'])) {
-                                            $sides = ($json_data['POtype'] == '1') ? '단면' : '양면';
-                                            $spec_parts[] = '인쇄면: ' . $sides;
-                                        }
-
-                                        // 디자인
-                                        if (!empty($json_data['ordertype'])) {
-                                            $design = ($json_data['ordertype'] == 'total') ? '디자인+인쇄' : '인쇄만';
-                                            $spec_parts[] = '디자인: ' . $design;
-                                        }
-
-                                        $full_spec = implode(' | ', $spec_parts);
-
-                                        // 수량
-                                        if (!empty($json_data['MY_amount'])) {
-                                            $quantity_num = floatval($json_data['MY_amount']);
-                                            $unit = '매';
                                         }
                                     } else {
                                         // 레거시 일반 텍스트 처리 (2024년 이전 주문)
@@ -1476,7 +1318,7 @@ foreach ($order_rows as $order_item) {
                             ?>
                             <tr>
                                 <td style="border: 0.3pt solid #000; padding: 1.5mm; text-align: center;"><?= $row_num++ ?></td>
-                                <td style="border: 0.3pt solid #000; padding: 1.5mm;"><?= $item_type_display ?></td>
+                                <td style="border: 0.3pt solid #000; padding: 1.5mm;"><?= htmlspecialchars($summary_item['Type']) ?></td>
                                 <td style="border: 0.3pt solid #000; padding: 1.5mm; font-size: 10pt; line-height: 1.2; vertical-align: top;">
                                     <?= htmlspecialchars($full_spec) ?>
                                     <?php if (!empty($item_options)): ?>
@@ -1654,23 +1496,27 @@ foreach ($order_rows as $order_item) {
                                                              strpos($item_type_str, '전단지') !== false ||
                                                              strpos($item_type_str, '리플렛') !== false);
 
-                                                // 🆕 전단지/리플렛: 매수(mesu) 정보 표시용 변수
-                                                $mesu_for_display = 0;
-
                                                 // 🔧 전단지/리플렛: quantity 또는 MY_amount 필드에서 연수 추출
+                                                // ✅ DB 컬럼 flyer_mesu 우선 → JSON flyer_mesu → JSON mesu (레거시 호환)
                                                 $flyer_quantity = $type1_data['quantity'] ?? $type1_data['MY_amount'] ?? null;
+                                                // DB 컬럼에서 직접 읽기 (ProcessOrder_unified.php에서 저장한 값)
+                                                $db_flyer_mesu = intval($summary_item['flyer_mesu'] ?? 0);
+                                                $flyer_mesu_val = $db_flyer_mesu > 0 ? $db_flyer_mesu : intval($type1_data['flyer_mesu'] ?? $type1_data['mesu'] ?? 0);
                                                 if ($is_flyer && $flyer_quantity !== null && floatval($flyer_quantity) > 0) {
                                                     // 전단지: quantity 또는 MY_amount는 연수, 단위는 무조건 "연"
                                                     $quantity_num = floatval($flyer_quantity);
                                                     $unit = '연';
-                                                    // 🆕 매수 정보 추출 (quantityTwo 또는 mesu)
-                                                    $mesu_for_display = intval($type1_data['quantityTwo'] ?? $type1_data['mesu'] ?? 0);
+                                                    // flyer_mesu가 있으면 매수도 표시용으로 저장
+                                                    if ($flyer_mesu_val > 0) {
+                                                        $flyer_mesu_display = $flyer_mesu_val;
+                                                    }
                                                 } elseif ($is_flyer) {
                                                     // 전단지인데 quantity/MY_amount가 없는 경우에도 연 단위 강제
                                                     $quantity_num = floatval($type1_data['quantityTwo'] ?? $type1_data['quantity'] ?? $type1_data['MY_amount'] ?? 1);
                                                     $unit = '연';
-                                                    // 🆕 매수 정보 추출 시도
-                                                    $mesu_for_display = intval($type1_data['quantityTwo'] ?? $type1_data['mesu'] ?? 0);
+                                                    if ($flyer_mesu_val > 0) {
+                                                        $flyer_mesu_display = $flyer_mesu_val;
+                                                    }
                                                 } elseif (isset($type1_data['quantityTwo']) && $type1_data['quantityTwo'] > 0) {
                                                     // 다른 제품: 매수(quantityTwo)가 있으면 사용
                                                     $quantity_num = intval($type1_data['quantityTwo']);
@@ -1684,16 +1530,7 @@ foreach ($order_rows as $order_item) {
                                                     if (preg_match('/수량[:\s]*([\d,.]+)\s*([가-힣a-zA-Z]+)/u', $full_spec, $unit_matches)) {
                                                         $unit = trim($unit_matches[2]);
                                                     } else {
-                                                        // 🔧 제품 타입별 기본 단위 설정 (과거 주문 호환)
-                                                        if ($product_type === 'cadarok') {
-                                                            $unit = '부';
-                                                        } elseif (strpos($item_type_str, '카다록') !== false || strpos($item_type_str, '카탈로그') !== false) {
-                                                            $unit = '부';
-                                                        } else {
-                                                            // 대부분의 제품: 명함/봉투/스티커/포스터/상품권/양식지 = '매'
-                                                            // 전단지/리플렛은 위에서 '연'으로 이미 처리됨
-                                                            $unit = '매';
-                                                        }
+                                                        $unit = '개';
                                                     }
                                                 }
                                             } elseif ($type1_data && isset($type1_data['order_details'])) {
@@ -1849,12 +1686,6 @@ foreach ($order_rows as $order_item) {
                                                 $quantity_display = (floor($qty_float) == $qty_float)
                                                     ? number_format($qty_float)
                                                     : number_format($qty_float, 1);
-                                                
-                                                // 🆕 전단지인 경우 매수 정보 추가 표시: "0.5연 (2,000매)"
-                                                if ($is_flyer && !empty($mesu_for_display) && $mesu_for_display > 0) {
-                                                    $quantity_display .= $unit . ' (' . number_format($mesu_for_display) . '매)';
-                                                    $unit = ''; // 단위 셀 비우기 (수량에 이미 포함됨)
-                                                }
                                             } else {
                                                 $quantity_display = '-';
                                             }

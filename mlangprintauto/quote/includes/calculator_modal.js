@@ -225,63 +225,69 @@ class CalculatorModal {
                 console.log('✅ 제품명 설정:', this.productName);
             }
 
-            // 2. 규격 설정
+            // 2. 규격 설정 (span 표시 + hidden input)
             const specInput = row.querySelector('input[name*="[specification]"]');
-            if (specInput) {
-                specInput.value = data.specification || '';
+            const specCell = row.querySelector('.col-spec');
+            if (specInput && specCell && data.specification) {
+                // hidden input으로 변환
+                specInput.type = 'hidden';
+                specInput.value = data.specification;
+
+                // 기존 spec-display가 있으면 제거
+                const existingDisplay = specCell.querySelector('.spec-display');
+                if (existingDisplay) {
+                    existingDisplay.remove();
+                }
+
+                // 새로운 표시용 span 추가 (줄바꿈을 <br>로 변환)
+                const specDisplaySpan = document.createElement('span');
+                specDisplaySpan.className = 'spec-display';
+                specDisplaySpan.innerHTML = data.specification.replace(/\n/g, '<br>');
+                specCell.insertBefore(specDisplaySpan, specInput);
+
                 console.log('✅ 규격 설정:', data.specification);
             }
 
-            // =================== 수정된 로직 시작 ===================
-            let displayQuantity = data.quantity || 1;
-            let displayMesu = parseInt(data.mesu) || 0;
-
-            // 전단지(inserted)의 경우, 규격 문자열에서 직접 파싱하여 값을 재정의
-            if ((this.productName === '전단지' || (data.product_type && data.product_type.includes('inserted'))) && data.specification) {
-                const reamMatch = data.specification.match(/([0-9.]+)연/);
-                if (reamMatch && reamMatch[1]) {
-                    displayQuantity = parseFloat(reamMatch[1]);
-                }
-
-                const mesuMatch = data.specification.match(/\(([0-9,]+)매\)/);
-                if (mesuMatch && mesuMatch[1]) {
-                    displayMesu = parseInt(mesuMatch[1].replace(/,/g, ''));
-                }
-            }
-            // =================== 수정된 로직 끝 =====================
+            // 수량과 매수 직접 사용 (specification에서 파싱하지 않음)
+            let displayQuantity = parseFloat(data.quantity) || 1;
+            // flyer_mesu 우선 사용 (전단지/리플렛 전용), 없으면 mesu 폴백 (레거시 호환)
+            let displayMesu = parseInt(data.flyer_mesu) || parseInt(data.mesu) || 0;
+            let quantityDisplayText = data.quantity_display || '';  // "0.5연\n(2,000매)" 형식
 
             // 3. 수량 설정
             const qtyInput = row.querySelector('.qty-input');
-            if (qtyInput) {
-                // ✅ create.php와 동일한 스마트 포맷팅 적용
-                const qtyDisplay = (displayQuantity == Math.floor(displayQuantity))
-                    ? parseInt(displayQuantity)
-                    : parseFloat(displayQuantity.toFixed(2)).toString().replace(/\.?0+$/, '');
+            const qtyCell = row.querySelector('.col-qty');
+            if (qtyInput && qtyCell) {
+                // 수량 입력 필드 값 설정
+                qtyInput.value = displayQuantity;
 
-                qtyInput.value = qtyDisplay;
-                console.log('✅ 수량 설정:', qtyDisplay, data.unit === '연' ? '(연 단위)' : '');
+                // 전단지/리플렛인 경우 수량 표시 형식 변경
+                if (displayMesu > 0 && quantityDisplayText) {
+                    // 기존 입력 필드를 숨기고 표시용 span 추가
+                    qtyInput.type = 'hidden';
+
+                    // 기존 qty-display가 있으면 제거
+                    const existingDisplay = qtyCell.querySelector('.qty-display');
+                    if (existingDisplay) {
+                        existingDisplay.remove();
+                    }
+
+                    // 새로운 표시용 span 추가
+                    const qtyDisplaySpan = document.createElement('span');
+                    qtyDisplaySpan.className = 'qty-display';
+                    qtyDisplaySpan.innerHTML = quantityDisplayText.replace(/\n/g, '<br>');
+                    qtyCell.insertBefore(qtyDisplaySpan, qtyInput);
+                }
+
+                console.log('✅ 수량 설정:', displayQuantity, data.unit === '연' ? '(연 단위)' : '');
             }
 
-            // 4. 단위 설정
+            // 4. 단위 설정 (hidden)
             const unitInput = row.querySelector('input[name*="[unit]"]');
             if (unitInput) {
                 const unit = data.unit || '개';
                 unitInput.value = unit;
                 console.log('✅ 단위 설정:', unit);
-
-                const existingMesuDiv = unitInput.parentNode.querySelector('.mesu-info');
-                if (existingMesuDiv) {
-                    existingMesuDiv.remove();
-                }
-
-                if (displayMesu > 0) {
-                    const mesuDiv = document.createElement('div');
-                    mesuDiv.className = 'mesu-info';
-                    mesuDiv.style.cssText = 'color:#666; font-size:11px; margin-top:2px;';
-                    mesuDiv.textContent = '(' + displayMesu.toLocaleString() + '매)';
-                    unitInput.parentNode.appendChild(mesuDiv);
-                    console.log('✅ 매수 표시:', displayMesu);
-                }
             }
 
             // 5. 공급가 설정
@@ -319,7 +325,61 @@ class CalculatorModal {
             row.querySelector('.total-cell').textContent = total.toLocaleString();
             console.log('✅ VAT 및 총액 계산:', {vat: vat, total: total});
 
-            // 8. 전체 합계 재계산 (create.php의 calculateTotals() 함수 호출)
+            // 8. 추가 hidden 필드 설정 (flyer_mesu, mesu, product_type, source_type)
+            // 폼에 이미 있으면 업데이트, 없으면 추가
+            const itemIndex = Array.from(row.parentElement.children).indexOf(row);
+
+            // flyer_mesu hidden field (전단지/리플렛 전용 - 스티커용 mesu와 분리)
+            let flyerMesuInput = row.querySelector('input[name*="[flyer_mesu]"]');
+            if (!flyerMesuInput && displayMesu > 0) {
+                flyerMesuInput = document.createElement('input');
+                flyerMesuInput.type = 'hidden';
+                flyerMesuInput.name = `items[${itemIndex}][flyer_mesu]`;
+                row.appendChild(flyerMesuInput);
+            }
+            if (flyerMesuInput) {
+                flyerMesuInput.value = displayMesu;
+                console.log('✅ flyer_mesu hidden 필드 설정:', displayMesu);
+            }
+
+            // mesu hidden field (레거시 호환용)
+            let mesuInput = row.querySelector('input[name*="[mesu]"]');
+            if (!mesuInput && displayMesu > 0) {
+                mesuInput = document.createElement('input');
+                mesuInput.type = 'hidden';
+                mesuInput.name = `items[${itemIndex}][mesu]`;
+                row.appendChild(mesuInput);
+            }
+            if (mesuInput) {
+                mesuInput.value = displayMesu;
+                console.log('✅ mesu hidden 필드 설정 (레거시):', displayMesu);
+            }
+
+            // product_type hidden field
+            let productTypeInput = row.querySelector('input[name*="[product_type]"]');
+            if (!productTypeInput && data.product_type) {
+                productTypeInput = document.createElement('input');
+                productTypeInput.type = 'hidden';
+                productTypeInput.name = `items[${itemIndex}][product_type]`;
+                row.appendChild(productTypeInput);
+            }
+            if (productTypeInput && data.product_type) {
+                productTypeInput.value = data.product_type;
+                console.log('✅ product_type hidden 필드 설정:', data.product_type);
+            }
+
+            // source_type hidden field (calculator로 설정)
+            let sourceTypeInput = row.querySelector('input[name*="[source_type]"]');
+            if (!sourceTypeInput) {
+                sourceTypeInput = document.createElement('input');
+                sourceTypeInput.type = 'hidden';
+                sourceTypeInput.name = `items[${itemIndex}][source_type]`;
+                row.appendChild(sourceTypeInput);
+            }
+            sourceTypeInput.value = 'calculator';
+            console.log('✅ source_type hidden 필드 설정: calculator');
+
+            // 9. 전체 합계 재계산 (create.php의 calculateTotals() 함수 호출)
             if (typeof window.calculateTotals === 'function') {
                 window.calculateTotals();
                 console.log('✅ 전체 합계 재계산 완료');

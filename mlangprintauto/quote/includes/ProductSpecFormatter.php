@@ -110,13 +110,20 @@ class ProductSpecFormatter {
     private function formatEnvelope($item) {
         $parts = [];
 
+        // 종류 (MY_type) - 예: 소봉투, 대봉투
         if (!empty($item['MY_type'])) {
             $name = $this->getKoreanName($item['MY_type']);
-            if ($name) $parts[] = '종류: ' . $name;
+            if ($name) $parts[] = $name;
         }
+        // 재질+사이즈 (Section에 저장됨) - 예: 100모조(220*105)
         if (!empty($item['Section'])) {
             $name = $this->getKoreanName($item['Section']);
-            if ($name) $parts[] = '재질: ' . $name;
+            if ($name) $parts[] = $name;
+        }
+        // PN_type도 있으면 표시 (레거시 호환)
+        if (!empty($item['PN_type'])) {
+            $name = $this->getKoreanName($item['PN_type']);
+            if ($name) $parts[] = $name;
         }
 
         // 추가 옵션 (박, 넘버링, 미싱, 귀돌이, 오시)
@@ -129,42 +136,53 @@ class ProductSpecFormatter {
     }
 
     /**
-     * 전단지/리플렛 규격 포맷팅
+     * 전단지/리플렛 규격 포맷팅 (2줄 압축)
      */
     private function formatLeaflet($item) {
-        $parts = [];
+        $lines = [];
 
+        // 1줄: 색상 / 용지 / 규격
+        $line1Parts = [];
         if (!empty($item['MY_type'])) {
             $name = $this->getKoreanName($item['MY_type']);
-            if ($name) $parts[] = $name;
+            if ($name) $line1Parts[] = $name;
         }
         if (!empty($item['PN_type'])) {
             $name = $this->getKoreanName($item['PN_type']);
-            if ($name) $parts[] = $name;
+            if ($name) $line1Parts[] = $name;
         }
         if (!empty($item['MY_Fsd'])) {
             $name = $this->getKoreanName($item['MY_Fsd']);
-            if ($name) $parts[] = $name;
+            if ($name) $line1Parts[] = $name;
         }
-        if (!empty($item['POtype'])) {
-            $parts[] = $item['POtype'] == '1' ? '단면' : '양면';
+        if (!empty($line1Parts)) {
+            $lines[] = implode(' / ', $line1Parts);
         }
-        // 수량 정보는 별도 컬럼에 표시되므로 규격에서 제외
-        // if (!empty($item['MY_amount'])) {
-        //     $qtyPart = '수량: ' . $item['MY_amount'] . '연';
-        //     if (!empty($item['mesu'])) {
-        //         $qtyPart .= ' (' . number_format($item['mesu']) . '매)';
-        //     }
-        //     $parts[] = $qtyPart;
-        // }
 
+        // 2줄: 인쇄면 / 타입 + 추가옵션
+        $line2Parts = [];
+        if (!empty($item['POtype'])) {
+            $line2Parts[] = ($item['POtype'] == '1' ? '단면' : '양면');
+        }
+        if (!empty($item['ordertype'])) {
+            $orderTypeNames = [
+                'design' => '디자인 의뢰',
+                'print_only' => '인쇄만 의뢰',
+                '1' => '인쇄만 의뢰',
+                '2' => '디자인 의뢰'
+            ];
+            $line2Parts[] = $orderTypeNames[$item['ordertype']] ?? $item['ordertype'];
+        }
         // 추가 옵션 (코팅, 접지, 오시)
         $options = $this->parseAdditionalOptions($item);
         if (!empty($options)) {
-            $parts = array_merge($parts, $options);
+            $line2Parts = array_merge($line2Parts, $options);
+        }
+        if (!empty($line2Parts)) {
+            $lines[] = implode(' / ', $line2Parts);
         }
 
-        return implode(' / ', $parts);
+        return implode("\n", $lines);
     }
 
     /**
@@ -497,6 +515,32 @@ class ProductSpecFormatter {
     }
 
     /**
+     * 수량 표시 문자열 (장바구니 형식)
+     * 전단지/리플렛: "0.5연\n(2,000매)"
+     * 기타 상품: "100매" 등
+     */
+    public static function getQuantityDisplay($item) {
+        $productType = $item['product_type'] ?? '';
+
+        // 전단지/리플렛: "X연\n(X,XXX매)" 형식
+        // flyer_mesu 우선 사용 (전단지/리플렛 전용), 없으면 mesu 폴백 (레거시 호환)
+        if (in_array($productType, ['inserted', 'leaflet'])) {
+            $amount = !empty($item['MY_amount']) ? $item['MY_amount'] : '1';
+            $display = $amount . '연';
+            $flyerMesu = intval($item['flyer_mesu'] ?? $item['mesu'] ?? 0);
+            if ($flyerMesu > 0) {
+                $display .= "\n(" . number_format($flyerMesu) . '매)';
+            }
+            return $display;
+        }
+
+        // 기타 상품: 수량 + 단위
+        $qty = self::getQuantity($item);
+        $unit = self::getUnit($item);
+        return number_format($qty) . $unit;
+    }
+
+    /**
      * 수량 추출
      * 전단지/리플렛: MY_amount를 "연" 단위 그대로 반환 (0.5연)
      * 기타 상품: 정수로 변환
@@ -511,9 +555,11 @@ class ProductSpecFormatter {
             }
         }
 
-        // 스티커는 mesu 사용
-        if (!empty($item['mesu'])) {
-            return intval($item['mesu']);
+        // 스티커는 mesu 사용 (스티커 전용, flyer_mesu는 전단지/리플렛 전용)
+        if (in_array($productType, ['sticker', 'msticker', 'msticker_01'])) {
+            if (!empty($item['mesu'])) {
+                return intval($item['mesu']);
+            }
         }
 
         // 다른 상품은 MY_amount 사용

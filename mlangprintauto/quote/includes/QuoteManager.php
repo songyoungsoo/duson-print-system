@@ -15,60 +15,6 @@ class QuoteManager {
     }
 
     /**
-     * formatted_display 생성 헬퍼 함수
-     * 제품 정보를 주문서/견적서 표시용 텍스트로 포맷팅
-     *
-     * @param string $productType 제품 타입 (inserted, leaflet, namecard, etc.)
-     * @param array $data 제품 데이터 배열
-     * @return string 포맷팅된 표시 텍스트
-     */
-    private function generateFormattedDisplay($productType, $data) {
-        $formatted = '';
-
-        // 용지 정보
-        if (!empty($data['PN_type'])) {
-            $formatted .= "용지: " . $data['PN_type'] . "\n";
-        }
-
-        // 규격 정보
-        if (!empty($data['MY_type'])) {
-            $formatted .= "규격: " . $data['MY_type'] . "\n";
-        }
-
-        // 수량 정보 - 전단지/리플렛은 "X연 (Y매)" 형식, 나머지는 일반 형식
-        if (($productType === 'inserted' || $productType === 'leaflet')) {
-            $myAmount = floatval($data['MY_amount'] ?? 0);
-            $mesu = intval($data['mesu'] ?? 0);
-
-            if ($myAmount > 0 && $mesu > 0) {
-                // 연수 표시: 정수면 소수점 없이, 소수면 1자리
-                $yeonDisplay = floor($myAmount) == $myAmount
-                    ? number_format($myAmount)
-                    : number_format($myAmount, 1);
-                $formatted .= "수량: " . $yeonDisplay . "연 (" . number_format($mesu) . "매)\n";
-            }
-        } else {
-            // 기타 제품: 일반 수량 표시
-            $quantity = floatval($data['quantity'] ?? 0);
-            $unit = $data['unit'] ?? '매';
-
-            if ($quantity > 0) {
-                $quantityDisplay = floor($quantity) == $quantity
-                    ? number_format($quantity)
-                    : number_format($quantity, 1);
-                $formatted .= "수량: " . $quantityDisplay . " " . $unit . "\n";
-            }
-        }
-
-        // 인쇄 타입
-        if (!empty($data['ordertype'])) {
-            $formatted .= "인쇄: " . $data['ordertype'] . "\n";
-        }
-
-        return $formatted;
-    }
-
-    /**
      * 견적번호 생성
      * @param string $type 'quotation' | 'transaction'
      * @return string QT-YYYYMMDD-NNN 또는 TX-YYYYMMDD-NNN
@@ -141,11 +87,11 @@ class QuoteManager {
             $query = "INSERT INTO quotes (
                 quote_no, quote_type, public_token, session_id,
                 customer_name, customer_company, customer_phone, customer_email, recipient_email,
-                delivery_type, delivery_address, delivery_price, delivery_vat,
+                delivery_type, delivery_address, delivery_price,
                 supply_total, vat_total, discount_amount, discount_reason, grand_total,
                 payment_terms, valid_days, valid_until,
                 notes, status, created_by
-            ) VALUES (?, 'quotation', ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, 'draft', ?)";
+            ) VALUES (?, 'quotation', ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, 'draft', ?)";
 
             $stmt = mysqli_prepare($this->db, $query);
             if (!$stmt) {
@@ -160,7 +106,6 @@ class QuoteManager {
             $deliveryType = $data['delivery_type'] ?? '';
             $deliveryAddress = $data['delivery_address'] ?? '';
             $deliveryPrice = intval($data['delivery_price'] ?? 0);
-            $deliveryVat = intval($data['delivery_vat'] ?? round($deliveryPrice * 0.1));
             $supplyTotal = intval($data['supply_total'] ?? 0);
             $vatTotal = intval($data['vat_total'] ?? 0);
             $discountAmount = intval($data['discount_amount'] ?? 0);
@@ -171,8 +116,8 @@ class QuoteManager {
             $notes = $data['notes'] ?? '';
             $createdBy = intval($data['created_by'] ?? 0);
 
-            // 22개 파라미터: s×10 + i×5 + s×1 + i×1 + s×1 + i×1 + s×1 + s×1 + i×1 = ssssssssssiiiiisissssi
-            mysqli_stmt_bind_param($stmt, "ssssssssssiiiiisissssi",
+            // 21개 파라미터: s×10 + i×4 + s×1 + i×1 + s×1 + i×1 + s×1 + s×1 + i×1 = ssssssssssiiiisissssi
+            mysqli_stmt_bind_param($stmt, "ssssssssssiiiisissssi",
                 $quoteNo,           // 1: s
                 $publicToken,       // 2: s
                 $sessionId,         // 3: s
@@ -184,17 +129,16 @@ class QuoteManager {
                 $deliveryType,      // 9: s
                 $deliveryAddress,   // 10: s
                 $deliveryPrice,     // 11: i
-                $deliveryVat,       // 12: i (배송비 VAT)
-                $supplyTotal,       // 13: i
-                $vatTotal,          // 14: i
-                $discountAmount,    // 15: i
-                $discountReason,    // 16: s
-                $grandTotal,        // 17: i
-                $paymentTerms,      // 18: s
-                $validDays,         // 19: i
-                $validUntil,        // 20: s
-                $notes,             // 21: s
-                $createdBy          // 22: i
+                $supplyTotal,       // 12: i
+                $vatTotal,          // 13: i
+                $discountAmount,    // 14: i
+                $discountReason,    // 15: s
+                $grandTotal,        // 16: i
+                $paymentTerms,      // 17: s
+                $validDays,         // 18: i (수정: s → i)
+                $validUntil,        // 19: s (수정: i → s)
+                $notes,             // 20: s
+                $createdBy          // 21: i
             );
 
             if (!mysqli_stmt_execute($stmt)) {
@@ -228,6 +172,12 @@ class QuoteManager {
                 foreach ($data['items'] as $idx => $item) {
                     $sourceType = $item['source_type'] ?? '';
                     $productName = trim($item['product_name'] ?? '');
+
+                    // __direct__ 선택 시 직접입력 필드의 값을 확인
+                    if ($productName === '__direct__' || empty($productName)) {
+                        $productName = trim($item['product_name_custom'] ?? '');
+                    }
+
                     error_log("[QuoteManager::createFromCart] Item[$idx]: source_type='$sourceType', product_name='$productName'");
 
                     // 장바구니/quotation_temp에서 온 항목은 이미 위에서 추가했으므로 제외
@@ -284,11 +234,11 @@ class QuoteManager {
             $query = "INSERT INTO quotes (
                 quote_no, quote_type, public_token,
                 customer_name, customer_company, customer_phone, customer_email, recipient_email,
-                delivery_type, delivery_address, delivery_price, delivery_vat,
+                delivery_type, delivery_address, delivery_price,
                 supply_total, vat_total, discount_amount, discount_reason, grand_total,
                 payment_terms, valid_days, valid_until,
                 notes, status, created_by
-            ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, 'draft', ?)";
+            ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, 'draft', ?)";
 
             $stmt = mysqli_prepare($this->db, $query);
             if (!$stmt) {
@@ -304,7 +254,6 @@ class QuoteManager {
             $deliveryType = $data['delivery_type'] ?? '';
             $deliveryAddress = $data['delivery_address'] ?? '';
             $deliveryPrice = intval($data['delivery_price'] ?? 0);
-            $deliveryVat = intval($data['delivery_vat'] ?? round($deliveryPrice * 0.1));
             $supplyTotal = intval($data['supply_total'] ?? 0);
             $vatTotal = intval($data['vat_total'] ?? 0);
             $discountAmount = intval($data['discount_amount'] ?? 0);
@@ -315,8 +264,8 @@ class QuoteManager {
             $notes = $data['notes'] ?? '';
             $createdBy = intval($data['created_by'] ?? 0);
 
-            // 22개 파라미터: s×10 + i×5 + s×1 + i×1 + s×1 + i×1 + s×1 + s×1 + i×1 = ssssssssssiiiiisissssi
-            mysqli_stmt_bind_param($stmt, "ssssssssssiiiiisissssi",
+            // 21개 파라미터: s×10 + i×4 + s×1 + i×1 + s×1 + i×1 + s×1 + s×1 + i×1 = ssssssssssiiiisissssi
+            mysqli_stmt_bind_param($stmt, "ssssssssssiiiisissssi",
                 $quoteNo,           // 1: s
                 $quoteType,         // 2: s
                 $publicToken,       // 3: s
@@ -328,17 +277,16 @@ class QuoteManager {
                 $deliveryType,      // 9: s
                 $deliveryAddress,   // 10: s
                 $deliveryPrice,     // 11: i
-                $deliveryVat,       // 12: i (배송비 VAT)
-                $supplyTotal,       // 13: i
-                $vatTotal,          // 14: i
-                $discountAmount,    // 15: i
-                $discountReason,    // 16: s
-                $grandTotal,        // 17: i
-                $paymentTerms,      // 18: s
-                $validDays,         // 19: i
-                $validUntil,        // 20: s
-                $notes,             // 21: s
-                $createdBy          // 22: i
+                $supplyTotal,       // 12: i
+                $vatTotal,          // 13: i
+                $discountAmount,    // 14: i
+                $discountReason,    // 15: s
+                $grandTotal,        // 16: i
+                $paymentTerms,      // 17: s
+                $validDays,         // 18: i (수정: s → i)
+                $validUntil,        // 19: s (수정: i → s)
+                $notes,             // 20: s
+                $createdBy          // 21: i
             );
 
             if (!mysqli_stmt_execute($stmt)) {
@@ -367,6 +315,11 @@ class QuoteManager {
                 foreach ($data['items'] as $item) {
                     $sourceType = $item['source_type'] ?? '';
                     $productName = trim($item['product_name'] ?? '');
+
+                    // __direct__ 선택 시 직접입력 필드의 값을 확인
+                    if ($productName === '__direct__' || empty($productName)) {
+                        $productName = trim($item['product_name_custom'] ?? '');
+                    }
 
                     // quotation_temp에서 온 항목은 이미 위에서 추가했으므로 제외
                     if ($sourceType !== 'quotation_temp' && !empty($productName)) {
@@ -452,7 +405,7 @@ class QuoteManager {
     }
 
     /**
-     * 장바구니 아이템을 견적 품목으로 추가 (11개 필드 확장)
+     * 장바구니 아이템을 견적 품목으로 추가
      */
     private function addItemFromCart($quoteId, $itemNo, $cartItem) {
         $productType = $cartItem['product_type'] ?? '';
@@ -462,7 +415,6 @@ class QuoteManager {
             $productType = 'sticker';
         }
 
-        // 기본 필드 추출
         $productName = ProductSpecFormatter::getProductTypeName($productType);
         $specification = $this->formatter->format($cartItem);
         $quantity = ProductSpecFormatter::getQuantity($cartItem);
@@ -471,122 +423,32 @@ class QuoteManager {
         $totalPrice = ProductSpecFormatter::getPrice($cartItem);
         $vatAmount = $totalPrice - $supplyPrice;
 
-        // 전단지는 quantityTwo(mesu)로 단가 계산 (소수점 2자리), 나머지는 quantity로 계산
-        if ($productType === 'inserted' && !empty($cartItem['mesu']) && intval($cartItem['mesu']) > 0) {
-            $unitPrice = round($supplyPrice / intval($cartItem['mesu']), 2);
+        // 전단지/리플렛: flyer_mesu(매수)로 단가 계산 (소수점 1자리), 나머지는 quantity로 계산
+        // flyer_mesu 우선 사용 (전단지/리플렛 전용), 없으면 mesu 폴백 (레거시 호환)
+        $flyerMesu = intval($cartItem['flyer_mesu'] ?? $cartItem['mesu'] ?? 0);
+        if (in_array($productType, ['inserted', 'leaflet']) && $flyerMesu > 0) {
+            $unitPrice = round($supplyPrice / $flyerMesu, 1);
         } else {
-            $unitPrice = $quantity > 0 ? round($supplyPrice / $quantity, 2) : 0;
+            $unitPrice = $quantity > 0 ? intval($supplyPrice / $quantity) : 0;
         }
 
-        // ===== 11개 신규 필드 추출 =====
-
-        // 1-4. 제품 사양 필드 (MY_type, PN_type, MY_Fsd, POtype)
-        $myType = $cartItem['MY_type'] ?? '';
-        $pnType = $cartItem['PN_type'] ?? '';
-        $myFsd = $cartItem['MY_Fsd'] ?? '';
-        $poType = $cartItem['POtype'] ?? '';
-
-        // 5-6. 연수/매수 필드 (MY_amount, mesu)
-        $myAmount = floatval($cartItem['MY_amount'] ?? 0);
-        $mesu = intval($cartItem['mesu'] ?? 0);
-
-        // 7. 인쇄 타입 (ordertype)
-        $ordertype = $cartItem['ordertype'] ?? '';
-
-        // 8. product_data JSON 생성 (Type_1 JSON 호환 구조)
-        $productDataArray = [
-            'MY_type' => $myType,
-            'PN_type' => $pnType,
-            'MY_Fsd' => $myFsd,
-            'POtype' => $poType,
-            'MY_amount' => $myAmount,
-            'mesu' => $mesu,
-            'ordertype' => $ordertype,
-            'unit' => $unit,
-            'quantity' => $quantity
-        ];
-        $productData = json_encode($productDataArray, JSON_UNESCAPED_UNICODE);
-
-        // 9. formatted_display 생성 (헬퍼 함수 사용)
-        $displayData = [
-            'PN_type' => $pnType,
-            'MY_type' => $myType,
-            'MY_amount' => $myAmount,
-            'mesu' => $mesu,
-            'quantity' => $quantity,
-            'unit' => $unit,
-            'ordertype' => $ordertype
-        ];
-        $formattedDisplay = $this->generateFormattedDisplay($productType, $displayData);
-
-        // 10-11. 추가 옵션 필드 (additional_options, additional_options_total)
-        $additionalOptionsArray = [];
-        $additionalOptionsTotal = 0;
-
-        // 코팅 옵션
-        if (!empty($cartItem['coating_enabled']) || !empty($cartItem['coating_type'])) {
-            $coatingPrice = intval($cartItem['coating_price'] ?? 0);
-            $additionalOptionsArray['coating'] = [
-                'enabled' => intval($cartItem['coating_enabled'] ?? 0),
-                'type' => $cartItem['coating_type'] ?? '',
-                'price' => $coatingPrice
-            ];
-            $additionalOptionsTotal += $coatingPrice;
-        }
-
-        // 접지 옵션 (리플렛)
-        if (!empty($cartItem['folding_enabled']) || !empty($cartItem['folding_type'])) {
-            $foldingPrice = intval($cartItem['folding_price'] ?? 0);
-            $additionalOptionsArray['folding'] = [
-                'enabled' => intval($cartItem['folding_enabled'] ?? 0),
-                'type' => $cartItem['folding_type'] ?? '',
-                'price' => $foldingPrice
-            ];
-            $additionalOptionsTotal += $foldingPrice;
-        }
-
-        // 오시 옵션
-        if (!empty($cartItem['creasing_enabled']) || !empty($cartItem['creasing_lines'])) {
-            $creasingPrice = intval($cartItem['creasing_price'] ?? 0);
-            $additionalOptionsArray['creasing'] = [
-                'enabled' => intval($cartItem['creasing_enabled'] ?? 0),
-                'lines' => $cartItem['creasing_lines'] ?? '',
-                'price' => $creasingPrice
-            ];
-            $additionalOptionsTotal += $creasingPrice;
-        }
-
-        $additionalOptions = json_encode($additionalOptionsArray, JSON_UNESCAPED_UNICODE);
-
-        // ===== INSERT 쿼리 (24개 파라미터) =====
         $query = "INSERT INTO quote_items (
-            quote_id, item_no, product_type, MY_type, PN_type, MY_Fsd, POtype, MY_amount, mesu,
-            product_name, specification,
-            quantity, unit, ordertype, unit_price, supply_price, vat_amount, total_price,
-            source_type, source_id, source_data,
-            product_data, formatted_display, additional_options, additional_options_total
-        ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, 'cart', ?, ?, ?, ?, ?, ?)";
+            quote_id, item_no, product_type, product_name, specification,
+            quantity, unit, unit_price, supply_price, vat_amount, total_price,
+            source_type, source_id, source_data
+        ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, 'cart', ?, ?)";
 
         $stmt = mysqli_prepare($this->db, $query);
         $sourceData = json_encode($cartItem, JSON_UNESCAPED_UNICODE);
         $sourceId = intval($cartItem['no'] ?? 0);
 
-        // bind_param 타입 문자열: 24개 파라미터
-        // i i s s s s s d i s s d s s d i i i i s s s s i
-        mysqli_stmt_bind_param($stmt, "iisssssdiisdsdiiiisssssi",
-            $quoteId, $itemNo, $productType, $myType, $pnType, $myFsd, $poType, $myAmount, $mesu,
-            $productName, $specification,
-            $quantity, $unit, $ordertype, $unitPrice, $supplyPrice, $vatAmount, $totalPrice,
-            $sourceId, $sourceData,
-            $productData, $formattedDisplay, $additionalOptions, $additionalOptionsTotal
+        mysqli_stmt_bind_param($stmt, "iisssdsdiiiis",
+            $quoteId, $itemNo, $productType, $productName, $specification,
+            $quantity, $unit, $unitPrice, $supplyPrice, $vatAmount, $totalPrice,
+            $sourceId, $sourceData
         );
 
-        if (!mysqli_stmt_execute($stmt)) {
-            $error = mysqli_stmt_error($stmt);
-            mysqli_stmt_close($stmt);
-            throw new Exception("Failed to execute addItemFromCart INSERT: " . $error);
-        }
-
+        mysqli_stmt_execute($stmt);
         mysqli_stmt_close($stmt);
     }
 
@@ -613,11 +475,12 @@ class QuoteManager {
         $vatAmount = $totalPrice - $supplyPrice;
 
         // 4. 단가 계산
-        // 전단지/리플렛: mesu(매수)로 단가 계산, 기타: quantity로 계산
+        // 전단지/리플렛: flyer_mesu(매수)로 단가 계산, 기타: quantity로 계산
+        // flyer_mesu 우선 사용 (전단지/리플렛 전용), 없으면 mesu 폴백 (레거시 호환)
         if (in_array($productType, ['inserted', 'leaflet'])) {
-            $mesu = intval($tempItem['mesu'] ?? 0);
-            if ($mesu > 0) {
-                $unitPrice = round($supplyPrice / $mesu, 1);
+            $flyerMesu = intval($tempItem['flyer_mesu'] ?? $tempItem['mesu'] ?? 0);
+            if ($flyerMesu > 0) {
+                $unitPrice = round($supplyPrice / $flyerMesu, 1);
             } else {
                 $unitPrice = $quantity > 0 ? round($supplyPrice / $quantity, 1) : 0;
             }
@@ -628,21 +491,24 @@ class QuoteManager {
         // 5. 메모 추출
         $notes = $tempItem['MY_comment'] ?? $tempItem['work_memo'] ?? '';
 
-        // 6. DB INSERT
+        // 6. source_data JSON 생성 (mesu 등 원본 데이터 보존)
+        $sourceData = json_encode($tempItem, JSON_UNESCAPED_UNICODE);
+
+        // 7. DB INSERT (source_data 포함)
         $query = "INSERT INTO quote_items (
             quote_id, item_no, product_type, product_name, specification,
             quantity, unit, unit_price, supply_price, vat_amount, total_price,
-            source_type, source_id, notes
-        ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, 'quotation_temp', ?, ?)";
+            source_type, source_id, source_data, notes
+        ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, 'quotation_temp', ?, ?, ?)";
 
         $stmt = mysqli_prepare($this->db, $query);
         $sourceId = intval($tempItem['no'] ?? $tempItem['id'] ?? 0);
 
-        // 13개 파라미터: i i s s s d s d i i i i s
-        mysqli_stmt_bind_param($stmt, "iisssdsdiiiis",
+        // 14개 파라미터: i i s s s d s d i i i i s s
+        mysqli_stmt_bind_param($stmt, "iisssdsdiiiiss",
             $quoteId, $itemNo, $productType, $productName, $specification,
             $quantity, $unit, $unitPrice, $supplyPrice, $vatAmount, $totalPrice,
-            $sourceId, $notes
+            $sourceId, $sourceData, $notes
         );
 
         mysqli_stmt_execute($stmt);
@@ -656,23 +522,25 @@ class QuoteManager {
         // 변수 추출 (PHP bind_param은 참조만 허용)
         $productType = $item['product_type'] ?? '';
         $productName = trim($item['product_name'] ?? '');
+
+        // __direct__ 선택 시 직접입력 필드(product_name_custom)의 값을 사용
+        if ($productName === '__direct__' || empty($productName)) {
+            $productName = trim($item['product_name_custom'] ?? '');
+        }
+
         $specification = $item['specification'] ?? '';
         $unit = $item['unit'] ?? '개';
         $notes = $item['notes'] ?? '';
 
-        // ✅ __direct__ 처리: 직접입력 선택 시 product_name_custom 사용
-        if ($productName === '__direct__') {
-            $productName = trim($item['product_name_custom'] ?? '');
-            error_log("[QuoteManager] 직접입력 품목: product_name_custom='$productName' (quote_id=$quoteId)");
-        }
-
-        // 필수 필드 검증 - 품목명이 비어있거나 __direct__이면 저장하지 않음
-        if (empty($productName) || $productName === '__direct__') {
+        // 필수 필드 검증 - 품목명이 비어있으면 저장하지 않음
+        if (empty($productName)) {
             error_log("[QuoteManager] 경고: 품목명이 비어있어 저장하지 않음 (quote_id=$quoteId, item_no=$itemNo)");
             return;
         }
 
         $quantity = floatval($item['quantity'] ?? 1);
+        // flyer_mesu 우선 사용 (전단지/리플렛 전용), 없으면 mesu 폴백 (레거시 호환)
+        $flyerMesu = intval($item['flyer_mesu'] ?? $item['mesu'] ?? 0);
 
         // 수량 검증 - 0 이하 방지
         if ($quantity <= 0) {
@@ -680,31 +548,59 @@ class QuoteManager {
             $quantity = 1;
         }
 
-        // 공급가 직접 사용 (단가는 역산)
-        $supplyPrice = intval($item['supply_price'] ?? 0);
-        $unitPrice = $quantity > 0 ? round($supplyPrice / $quantity, 2) : 0;
-
-        // 공급가 0원 경고 (저장은 하되 로그 기록)
-        if ($supplyPrice === 0) {
-            error_log("[QuoteManager] 경고: 품목 '$productName'의 공급가가 0원입니다 (quote_id=$quoteId)");
+        // 공급가: 사용자가 직접 입력한 값이 있으면 그대로 사용, 없으면 계산
+        if (isset($item['supply_price']) && $item['supply_price'] !== '' && $item['supply_price'] !== null) {
+            $supplyPrice = intval($item['supply_price']);
+        } else {
+            $unitPrice = floatval($item['unit_price'] ?? 0);
+            $supplyPrice = intval($quantity * $unitPrice);
         }
-
         $vatAmount = intval(round($supplyPrice * 0.1));
         $totalPrice = $supplyPrice + $vatAmount;
 
-        $sourceType = 'manual';
+        // 단가 계산: 전단지/리플렛은 flyer_mesu로, 기타는 quantity로
+        if (in_array($productType, ['inserted', 'leaflet']) && $flyerMesu > 0) {
+            $unitPrice = round($supplyPrice / $flyerMesu, 1);
+        } else {
+            $unitPrice = floatval($item['unit_price'] ?? 0);
+            if ($unitPrice === 0 && $quantity > 0) {
+                $unitPrice = round($supplyPrice / $quantity, 1);
+            }
+        }
+
+        // 단가 0원 경고 (저장은 하되 로그 기록)
+        if ($unitPrice == 0) {
+            error_log("[QuoteManager] 경고: 품목 '$productName'의 단가가 0원입니다 (quote_id=$quoteId)");
+        }
+
+        // source_type 결정 (calculator에서 온 경우도 manual로 저장하되 source_data에 구분)
+        $sourceType = $item['source_type'] ?? 'manual';
+        if ($sourceType === 'calculator') {
+            $sourceType = 'manual';  // DB에는 manual로 저장
+        }
+
+        // source_data 생성 (flyer_mesu 등 원본 데이터 보존)
+        $sourceData = null;
+        if ($flyerMesu > 0 || !empty($item['_debug'])) {
+            $sourceDataArray = [
+                'flyer_mesu' => $flyerMesu,
+                'mesu' => $flyerMesu,  // 레거시 호환용
+                'product_type' => $productType,
+                'from_calculator' => isset($item['source_type']) && $item['source_type'] === 'calculator'
+            ];
+            $sourceData = json_encode($sourceDataArray, JSON_UNESCAPED_UNICODE);
+        }
 
         $query = "INSERT INTO quote_items (
             quote_id, item_no, product_type, product_name, specification,
             quantity, unit, unit_price, supply_price, vat_amount, total_price,
-            source_type, notes
-        ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)";
+            source_type, source_data, notes
+        ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)";
 
         $stmt = mysqli_prepare($this->db, $query);
 
-        // 타입 문자열: 13개 (i=integer, s=string, d=double)
-        // quote_id(i), item_no(i), product_type(s), product_name(s), specification(s), quantity(d), unit(s), unit_price(d), supply_price(i), vat_amount(i), total_price(i), source_type(s), notes(s)
-        mysqli_stmt_bind_param($stmt, "iisssdsdiiiss",
+        // 타입 문자열: 14개 (i=integer, s=string, d=double)
+        mysqli_stmt_bind_param($stmt, "iisssdsdiiisss",
             $quoteId, $itemNo,
             $productType,
             $productName,
@@ -713,6 +609,7 @@ class QuoteManager {
             $unit,
             $unitPrice, $supplyPrice, $vatAmount, $totalPrice,
             $sourceType,
+            $sourceData,
             $notes
         );
 
@@ -902,6 +799,29 @@ class QuoteManager {
     }
 
     /**
+     * 금액 재계산
+     */
+    public function recalculateTotals($quoteId) {
+        // 품목 합계 조회
+        $query = "SELECT SUM(supply_price) as supply, SUM(vat_amount) as vat, SUM(total_price) as total FROM quote_items WHERE quote_id = ?";
+        $stmt = mysqli_prepare($this->db, $query);
+        mysqli_stmt_bind_param($stmt, "i", $quoteId);
+        mysqli_stmt_execute($stmt);
+        $result = mysqli_stmt_get_result($stmt);
+        $totals = mysqli_fetch_assoc($result);
+        mysqli_stmt_close($stmt);
+
+        // 견적서 업데이트
+        $query = "UPDATE quotes SET supply_total = ?, vat_total = ?, grand_total = supply_total + vat_total + delivery_price - discount_amount WHERE id = ?";
+        $stmt = mysqli_prepare($this->db, $query);
+        $supplyTotal = intval($totals['supply'] ?? 0);
+        $vatTotal = intval($totals['vat'] ?? 0);
+        mysqli_stmt_bind_param($stmt, "iii", $supplyTotal, $vatTotal, $quoteId);
+        mysqli_stmt_execute($stmt);
+        mysqli_stmt_close($stmt);
+    }
+
+    /**
      * 견적서 수정 (draft 상태만)
      * @param array $data 견적서 데이터
      * @return array ['success' => bool, 'message' => string, 'public_url' => string]
@@ -931,7 +851,7 @@ class QuoteManager {
             $validDays = intval($data['valid_days'] ?? 7);
             $validUntil = date('Y-m-d', strtotime('+' . $validDays . ' days'));
 
-            // 견적서 기본 정보 업데이트 (delivery_vat 포함)
+            // 견적서 기본 정보 업데이트
             $query = "UPDATE quotes SET
                 quote_type = ?,
                 customer_name = ?,
@@ -942,7 +862,6 @@ class QuoteManager {
                 delivery_type = ?,
                 delivery_address = ?,
                 delivery_price = ?,
-                delivery_vat = ?,
                 supply_total = ?,
                 vat_total = ?,
                 discount_amount = ?,
@@ -968,7 +887,6 @@ class QuoteManager {
             $deliveryType = $data['delivery_type'] ?? '';
             $deliveryAddress = $data['delivery_address'] ?? '';
             $deliveryPrice = intval($data['delivery_price'] ?? 0);
-            $deliveryVat = intval($data['delivery_vat'] ?? round($deliveryPrice * 0.1));
             $supplyTotal = intval($data['supply_total'] ?? 0);
             $vatTotal = intval($data['vat_total'] ?? 0);
             $discountAmount = intval($data['discount_amount'] ?? 0);
@@ -977,8 +895,8 @@ class QuoteManager {
             $paymentTerms = $data['payment_terms'] ?? '발행일로부터 7일';
             $notes = $data['notes'] ?? '';
 
-            // 20개 파라미터: s×8 + i×5 + s×1 + i×1 + s×1 + i×1 + s×1 + s×1 + i×1 = ssssssssiiiiisissssi
-            mysqli_stmt_bind_param($stmt, "ssssssssiiiiisissssi",
+            // 19개 파라미터: s×8 + i×4 + s×1 + i×1 + s×1 + i×1 + s×1 + s×1 + i×1 = ssssssssiiiisissssi
+            mysqli_stmt_bind_param($stmt, "ssssssssiiiisissssi",
                 $quoteType,           // 1: s
                 $customerName,        // 2: s
                 $customerCompany,     // 3: s
@@ -988,17 +906,16 @@ class QuoteManager {
                 $deliveryType,        // 7: s
                 $deliveryAddress,     // 8: s
                 $deliveryPrice,       // 9: i
-                $deliveryVat,         // 10: i (NEW)
-                $supplyTotal,         // 11: i
-                $vatTotal,            // 12: i
-                $discountAmount,      // 13: i
-                $discountReason,      // 14: s
-                $grandTotal,          // 15: i
-                $paymentTerms,        // 16: s
-                $validDays,           // 17: i
-                $validUntil,          // 18: s
-                $notes,               // 19: s
-                $quoteId              // 20: i
+                $supplyTotal,         // 10: i
+                $vatTotal,            // 11: i
+                $discountAmount,      // 12: i
+                $discountReason,      // 13: s
+                $grandTotal,          // 14: i
+                $paymentTerms,        // 15: s
+                $validDays,           // 16: i (수정: s → i)
+                $validUntil,          // 17: s (수정: i → s)
+                $notes,               // 18: s
+                $quoteId              // 19: i
             );
 
             if (!mysqli_stmt_execute($stmt)) {
@@ -1100,16 +1017,16 @@ class QuoteManager {
             $publicToken = $this->generatePublicToken();
             $validUntil = date('Y-m-d', strtotime('+' . ($data['valid_days'] ?? 7) . ' days'));
 
-            // 개정판 견적서 INSERT (delivery_vat 포함)
+            // 개정판 견적서 INSERT
             $query = "INSERT INTO quotes (
                 quote_no, quote_type, public_token,
                 original_quote_id, version, is_latest,
                 customer_name, customer_company, customer_phone, customer_email, recipient_email,
-                delivery_type, delivery_address, delivery_price, delivery_vat,
+                delivery_type, delivery_address, delivery_price,
                 supply_total, vat_total, discount_amount, discount_reason, grand_total,
                 payment_terms, valid_days, valid_until,
                 notes, status, created_by
-            ) VALUES (?, ?, ?, ?, ?, 1, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, 'draft', ?)";
+            ) VALUES (?, ?, ?, ?, ?, 1, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, 'draft', ?)";
 
             $stmt = mysqli_prepare($this->db, $query);
             if (!$stmt) {
@@ -1125,7 +1042,6 @@ class QuoteManager {
             $deliveryType = $data['delivery_type'] ?? $original['delivery_type'];
             $deliveryAddress = $data['delivery_address'] ?? $original['delivery_address'];
             $deliveryPrice = intval($data['delivery_price'] ?? $original['delivery_price']);
-            $deliveryVat = intval($data['delivery_vat'] ?? $original['delivery_vat'] ?? round($deliveryPrice * 0.1));
             $supplyTotal = intval($data['supply_total'] ?? $original['supply_total']);
             $vatTotal = intval($data['vat_total'] ?? $original['vat_total']);
             $discountAmount = intval($data['discount_amount'] ?? $original['discount_amount']);
@@ -1136,8 +1052,8 @@ class QuoteManager {
             $notes = $data['notes'] ?? $original['notes'];
             $createdBy = intval($_SESSION['user_id'] ?? 0);
 
-            // 24개 파라미터: s×3 + i×2 + s×7 + i×5 + s×1 + i×1 + s×1 + i×1 + s×1 + s×1 + i×1 = sssiisssssssiiiiisisssi
-            mysqli_stmt_bind_param($stmt, "sssiisssssssiiiiisisssi",
+            // 23개 파라미터: s×3 + i×2 + s×7 + i×4 + s×1 + i×1 + s×1 + i×1 + s×1 + s×1 + i×1 = sssiiissssssiiiisissssi
+            mysqli_stmt_bind_param($stmt, "sssiiissssssiiiisissssi",
                 $newQuoteNo,        // 1: s
                 $quoteType,         // 2: s
                 $publicToken,       // 3: s
@@ -1151,17 +1067,16 @@ class QuoteManager {
                 $deliveryType,      // 11: s
                 $deliveryAddress,   // 12: s
                 $deliveryPrice,     // 13: i
-                $deliveryVat,       // 14: i (NEW)
-                $supplyTotal,       // 15: i
-                $vatTotal,          // 16: i
-                $discountAmount,    // 17: i
-                $discountReason,    // 18: s
-                $grandTotal,        // 19: i
-                $paymentTerms,      // 20: s
-                $validDays,         // 21: i
-                $validUntil,        // 22: s
-                $notes,             // 23: s
-                $createdBy          // 24: i
+                $supplyTotal,       // 14: i
+                $vatTotal,          // 15: i
+                $discountAmount,    // 16: i
+                $discountReason,    // 17: s
+                $grandTotal,        // 18: i
+                $paymentTerms,      // 19: s
+                $validDays,         // 20: i (수정: s → i)
+                $validUntil,        // 21: s (수정: i → s)
+                $notes,             // 22: s
+                $createdBy          // 23: i
             );
 
             if (!mysqli_stmt_execute($stmt)) {
@@ -1191,7 +1106,8 @@ class QuoteManager {
                         'specification' => $item['specification'],
                         'quantity' => $item['quantity'],
                         'unit' => $item['unit'],
-                        'supply_price' => $item['supply_price'],
+                        'unit_price' => $item['unit_price'],
+                        'supply_price' => $item['supply_price'],  // 원본 공급가 유지
                         'notes' => $item['notes']
                     ]);
                     $itemNo++;
