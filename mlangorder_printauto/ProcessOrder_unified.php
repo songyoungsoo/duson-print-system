@@ -264,7 +264,7 @@ try {
                 // ★ 전단지 수량 표시: "X연 (Y매)" 형식
                 // quantityTwo 또는 mesu에서 매수 가져오기
                 $reams = $item['MY_amount'] ?? 0;
-                $sheets = intval($item['quantityTwo'] ?? $item['mesu'] ?? 0);
+                $sheets = intval($item['quantityTwo'] ?? $item['mesu'] ?? 0); // Here's the key line!
 
                 if ($sheets > 0) {
                     $qty_display = number_format($reams, 1) . "연 (" . number_format($sheets) . "매)";
@@ -280,10 +280,10 @@ try {
                     'MY_Fsd' => $item['MY_Fsd'],
                     'PN_type' => $item['PN_type'],
                     'POtype' => $item['POtype'],
-                    'MY_amount' => $item['MY_amount'],
-                    'quantityTwo' => $sheets,  // 매수 저장
+                    'MY_amount' => $item['MY_amount'], // Ream count
+                    'mesu' => $sheets,  // Sheet count is stored as 'mesu' now! (FIXED)
                     'ordertype' => $item['ordertype'],
-                    'formatted_display' => "인쇄색상: $color_name\n" .
+                    'formatted_display' => // "인쇄색상: $color_name\n" . // REMOVED as per user request
                                           "용지: $paper_name\n" .
                                           "규격: $size_name\n" .
                                           "인쇄면: $sides\n" .

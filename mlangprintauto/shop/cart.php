@@ -552,26 +552,35 @@ if ($cart_result === false) {
                                 <td class="td-center">
                                     <div class="quantity-cell">
                                         <?php
-                                        // 전단지/리플렛은 "X연 (Y매)" 형식으로 표시
-                                        if (in_array($item['product_type'], ['inserted', 'leaflet'])) {
-                                            // MY_amount(연수)와 mesu(매수) 모두 있으면 "X연 (Y매)" 형식
-                                            if (!empty($item['MY_amount']) && !empty($item['mesu'])) {
+                                        // 전단지 판별 조건 강화: product_type 또는 unit 기준으로 확인
+                                        $is_flyer = in_array($item['product_type'], ['inserted', 'leaflet']) || (!empty($item['unit']) && $item['unit'] === '연');
+
+                                        if ($is_flyer) {
+                                            $quantity_display = '';
+                                            // MY_amount(연수)가 있는 경우
+                                            if (!empty($item['MY_amount'])) {
                                                 $yeonsu = floatval($item['MY_amount']);
-                                                // 정수/소수 구분하여 포맷팅 (0.5연은 "0.5", 1연은 "1")
-                                                $yeonsu_display = floor($yeonsu) == $yeonsu ? number_format($yeonsu) : number_format($yeonsu, 1);
-                                                echo $yeonsu_display . '연 (' . number_format($item['mesu']) . '매)';
-                                            } elseif (!empty($item['MY_amount'])) {
-                                                // 연수만 있는 경우
-                                                $yeonsu = floatval($item['MY_amount']);
-                                                $yeonsu_display = floor($yeonsu) == $yeonsu ? number_format($yeonsu) : number_format($yeonsu, 1);
-                                                echo $yeonsu_display . '연';
-                                            } elseif (!empty($item['mesu'])) {
-                                                // 매수만 있는 경우
-                                                echo number_format($item['mesu']) . '매';
-                                            } else {
-                                                // 둘 다 없으면 기본값
-                                                echo '1연';
+                                                // 소수점 .0 또는 .00 등을 제거하여 깔끔하게 표시 (e.g., 1.0 -> 1, 1.50 -> 1.5)
+                                                $yeonsu_display = rtrim(rtrim(sprintf('%.2f', $yeonsu), '0'), '.');
+                                                $quantity_display .= $yeonsu_display . '연';
                                             }
+
+                                            // mesu(매수)가 있는 경우 괄호 안에 추가
+                                            if (!empty($item['mesu'])) {
+                                                // 연수 표시가 있을 때만 괄호 추가
+                                                if ($quantity_display !== '') {
+                                                    $quantity_display .= ' (' . number_format($item['mesu']) . '매)';
+                                                } else {
+                                                    $quantity_display = number_format($item['mesu']) . '매';
+                                                }
+                                            }
+                                            
+                                            // 표시할 내용이 없으면 기본값
+                                            if ($quantity_display === '') {
+                                                $quantity_display = '1연';
+                                            }
+                                            echo $quantity_display;
+
                                         } else {
                                             // 기존 로직: 양식지는 "권", 나머지는 "매"
                                             $unit = ($item['product_type'] == 'ncrflambeau') ? '권' : '매';

@@ -3,7 +3,7 @@
  * 🌟 통합 주문완료 시스템 - Universal OrderComplete
  * 모든 제품의 주문완료를 처리하는 공통 시스템
  * 경로: mlangorder_printauto/OrderComplete_universal.php
- * 
+ *
  * 기능:
  * - 모든 제품 타입 지원 (sticker, namecard, envelope 등)
  * - 마지막 주문 제품으로 "계속 쇼핑하기" 이동
@@ -491,24 +491,56 @@ function displayProductDetails($connect, $order) {
  * 수량 추출
  */
 function extractQuantity($order) {
-    if (empty($order['Type_1'])) return '1';
-    
-    $json_data = json_decode($order['Type_1'], true);
-    if ($json_data && is_array($json_data)) {
-        // JSON 데이터에서 수량 추출
-        $details = $json_data['order_details'] ?? $json_data;
-        if (isset($details['MY_amount'])) {
-            return number_format($details['MY_amount']);
-        } elseif (isset($details['mesu'])) {
-            return number_format($details['mesu']);
+    // 상품 타입이 전단지/리플렛인지 확인
+    $is_flyer = false;
+    if (isset($order['Type_1'])) {
+        $json_data = json_decode($order['Type_1'], true);
+        if (isset($json_data['product_type']) && in_array($json_data['product_type'], ['inserted', 'leaflet'])) {
+            $is_flyer = true;
         }
-    } else {
-        // 일반 텍스트에서 수량 추출
-        if (preg_match('/수량:\s*([0-9.]+)매/', $order['Type_1'], $matches)) {
-            return number_format(floatval($matches[1]));
+    }
+    if (!$is_flyer && (strpos($order['Type'], '전단') !== false || strpos($order['Type'], '리플렛') !== false)) {
+        $is_flyer = true;
+    }
+
+    if ($is_flyer) {
+        $quantity_text = '';
+        // 주문 데이터에 MY_amount 와 mesu 필드가 있는지 확인
+        $my_amount = $order['MY_amount'] ?? null;
+        $mesu = $order['mesu'] ?? null;
+
+        if (!empty($my_amount)) {
+            $yeonsu = floatval($my_amount);
+            $quantity_text .= rtrim(rtrim(sprintf('%.1f', $yeonsu), '0'), '.') . '연';
+        }
+        if (!empty($mesu)) {
+            if (!empty($quantity_text)) {
+                 $quantity_text .= ' (' . number_format($mesu) . '매)';
+            } else {
+                 $quantity_text = number_format($mesu) . '매';
+            }
+        }
+        // 생성된 문자열이 있으면 반환
+        if (!empty(trim($quantity_text))) {
+            return htmlspecialchars($quantity_text);
+        }
+    }
+
+    // 전단지가 아니거나 위 로직이 실패한 경우, 기존 폴백 로직 실행
+    if (isset($order['Type_1'])) {
+        $json_data = json_decode($order['Type_1'], true);
+        if ($json_data && is_array($json_data)) {
+            $details = $json_data['order_details'] ?? $json_data;
+            if (isset($details['MY_amount'])) return number_format($details['MY_amount']);
+            if (isset($details['mesu'])) return number_format($details['mesu']);
+        } else {
+            if (preg_match('/수량:\s*([0-9.,]+)/', $order['Type_1'], $matches)) {
+                return htmlspecialchars($matches[1]);
+            }
         }
     }
     
+    // 최종 폴백
     return '1';
 }
 
@@ -522,7 +554,7 @@ $email = $_GET['email'] ?? '';
 $name = $_GET['name'] ?? '';
 
 if (empty($orders)) {
-    echo "<script>alert('잘못된 접근입니다.'); location.href='../mlangprintauto/shop/cart.php';</script>";
+    echo "<script>alert('잘못된 접근입니다.'); location.href='../mlangorder_printauto/shop/cart.php';</script>";
     exit;
 }
 
@@ -554,7 +586,7 @@ foreach ($order_numbers as $order_no) {
 }
 
 if (empty($order_list)) {
-    echo "<script>alert('주문 정보를 찾을 수 없습니다.'); location.href='../mlangprintauto/shop/cart.php';</script>";
+    echo "<script>alert('주문 정보를 찾을 수 없습니다.'); location.href='../mlangorder_printauto/shop/cart.php';</script>";
     exit;
 }
 
@@ -901,7 +933,6 @@ include "../includes/nav.php";
         border: 1px solid #666 !important;
         font-size: 10pt !important;
         color: black !important;
-        background: #f9f9f9 !important;
     }
     
     .customer-table strong {
@@ -942,7 +973,6 @@ include "../includes/nav.php";
         font-size: 10pt !important;
         color: black !important;
         text-align: center !important;
-        background: white !important;
     }
     
     .payment-table strong {
@@ -1516,6 +1546,14 @@ include "../includes/nav.php";
         </div>
     </div>
 
+    <?php
+        // Gemini Debug Block
+        if (!empty($order_list)) {
+            error_log("======= FIRST ORDER DATA DEBUG (pre-table) =======");
+            error_log(print_r($order_list[0], true)); // Log the first order
+            error_log("================================================");
+        }
+    ?>
     <!-- 📊 주문 테이블 -->
     <table class="order-table">
         <thead>
@@ -1529,7 +1567,10 @@ include "../includes/nav.php";
             </tr>
         </thead>
         <tbody>
-            <?php foreach ($order_list as $index => $order): ?>
+            <?php foreach ($order_list as $index => $order):
+            // 주문 상세 정보 표시 함수 호출 시 $connect 변수 전달
+            $product_details_html = displayProductDetails($connect, $order);
+            ?>
             <tr class="order-row" style="animation-delay: <?php echo $index * 0.1; ?>s">
                 <!-- 주문번호 -->
                 <td class="col-order-no">
@@ -1543,7 +1584,7 @@ include "../includes/nav.php";
                 
                 <!-- 상세 정보 -->
                 <td class="col-details">
-                    <?php echo displayProductDetails($connect, $order); ?>
+                    <?php echo $product_details_html; // 생성된 HTML 삽입 ?>
                 </td>
                 
                 <!-- 수량 -->
@@ -1554,19 +1595,32 @@ include "../includes/nav.php";
                 <!-- 금액 -->
                 <td class="col-price">
                     <div class="price-container">
-                        <div class="price-supply">공급가: <span style="font-size: 1.5rem; font-weight: 700; color: #27ae60;"><?php echo number_format($order['money_4']); ?>원</td></tr></div>
-                        <div class="price-total">합계금액: <span style="font-size: 1.1rem; font-weight: 600; color: #666;"><?php echo number_format($order['money_5']); ?>원</td></tr></div>
+                        <div class="price-supply">공급가: <span><?php echo number_format($order['money_4']); ?>원</span></div>
+                        <div class="price-total">합계금액: <span><?php echo number_format($order['money_5']); ?>원</span></div>
                         <div class="price-vat">(VAT <?php echo number_format($order['money_5'] - $order['money_4']); ?>원 포함)</div>
                     </div>
                 </td>
                 
                 <!-- 상태 -->
                 <td class="col-status">
-                    <span class="status-badge status-pending">입금대기</td></tr>
+                    <span class="status-badge status-pending">입금대기</span>
                 </td>
             </tr>
             <?php endforeach; ?>
         </tbody>
+        <tfoot>
+            <tr style="background: #f0f0f0; font-weight: bold; border-top: 2px solid #333;">
+                <td colspan="4" style="text-align: right; padding: 15px;">총 합계금액</td>
+                <td class="col-price" style="padding: 15px;">
+                    <div class="price-container">
+                        <div class="price-supply">공급가: <span><?php echo number_format($total_amount); ?>원</span></div>
+                        <div class="price-total">합계금액: <span><?php echo number_format($total_amount_vat); ?>원</span></div>
+                        <div class="price-vat">(VAT <?php echo number_format($total_amount_vat - $total_amount); ?>원 포함)</div>
+                    </div>
+                </td>
+                <td class="col-status"></td>
+            </tr>
+        </tfoot>
     </table>
 
     <!-- 📋 정보 카드들 -->
