@@ -160,3 +160,4 @@ php_errors.log
 *_backup_*.php
 *.backup
 archive/
+ARCHIVED/
