@@ -206,7 +206,7 @@ header("Expires: 0");
 
             <!-- 우측: 계산기 섹션 -->
             <aside class="product-calculator" aria-label="실시간 견적 계산기">
-                <form id="orderForm" method="post">
+                <form id="orderForm" name="choiceForm" method="post">
                     <!-- 통일 인라인 폼 시스템 - 전단지 페이지 -->
                     <div class="inline-form-container">
                         <div class="inline-form-row">
@@ -656,6 +656,10 @@ header("Expires: 0");
             } else {
                 console.log("⚠️ 업로드된 파일 없음");
             }
+
+            // 🔍 [추가된 디버그] 전송 직전 데이터 확인
+            const finalMesuValue = formData.get("MY_amountRight");
+            console.log(`[DEBUG] fetch 직전 MY_amountRight 값: ${finalMesuValue}`);
 
             // 🔍 FormData 내용 확인 (디버그)
             console.log("📦 FormData entries:");
