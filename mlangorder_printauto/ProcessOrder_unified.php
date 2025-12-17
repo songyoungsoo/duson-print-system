@@ -236,9 +236,10 @@ try {
                 $size_name = getCategoryName($connect, $item['PN_type']);
                 $sides = $item['POtype'] == '1' ? '단면' : '양면';
                 $design = ($item['ordertype'] == 'total' ? '디자인+인쇄' : '인쇄만');
-                
+
                 $quantity_val = $item['quantity'] ?? $item['MY_amount'] ?? 0;
-                $mesu_val = $item['mesu'] ?? 0;
+                // flyer_mesu 우선 사용 (전단지/리플렛 전용), 없으면 mesu 폴백 (레거시 호환)
+                $flyer_mesu_val = $item['flyer_mesu'] ?? $item['mesu'] ?? 0;
 
                 // 🔧 FIX: JSON 형식으로 저장하여 OrderComplete에서 일관되게 처리
                 $leaflet_data = [
@@ -248,14 +249,15 @@ try {
                     'PN_type' => $item['PN_type'],
                     'POtype' => $item['POtype'],
                     'quantity' => $quantity_val,
-                    'mesu' => $mesu_val,
+                    'flyer_mesu' => $flyer_mesu_val,  // 전단지/리플렛 전용
+                    'mesu' => $flyer_mesu_val,  // 레거시 호환용
                     'unit' => '연',
                     'ordertype' => $item['ordertype'],
                     'formatted_display' => "인쇄색상: $color_name\n" .
                                           "용지: $paper_name\n" .
                                           "규격: $size_name\n" .
                                           "인쇄면: $sides\n" .
-                                          "수량: {$quantity_val}연 (" . number_format($mesu_val) . "매)\n" .
+                                          "수량: {$quantity_val}연 (" . number_format($flyer_mesu_val) . "매)\n" .
                                           "디자인: $design",
                     'created_at' => date('Y-m-d H:i:s')
                 ];
@@ -374,9 +376,9 @@ try {
             $final_cont .= $business_info_text;
         }
         
-        // mlangorder_printauto 테이블에 삽입 (ImgFolder 필드 포함, mesu, quantity, unit 추가)
+        // mlangorder_printauto 테이블에 삽입 (ImgFolder 필드 포함, mesu, flyer_mesu, quantity, unit 추가)
         $insert_query = "INSERT INTO mlangorder_printauto (
-            no, Type, ImgFolder, Type_1, mesu, quantity, unit, money_4, money_5, name, email, zip, zip1, zip2,
+            no, Type, ImgFolder, Type_1, mesu, flyer_mesu, quantity, unit, money_4, money_5, name, email, zip, zip1, zip2,
             phone, Hendphone, cont, date, OrderStyle, ThingCate,
             coating_enabled, coating_type, coating_price,
             folding_enabled, folding_type, folding_price,
@@ -385,7 +387,7 @@ try {
             premium_options, premium_options_total,
             envelope_tape_enabled, envelope_tape_quantity, envelope_tape_price,
             envelope_additional_options_total
-        ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)";
+        ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)";
 
         $stmt = mysqli_prepare($connect, $insert_query);
         if (!$stmt) {
@@ -462,22 +464,32 @@ try {
         $envelope_tape_price = $item['envelope_tape_price'] ?? 0;
         $envelope_additional_options_total = $item['envelope_additional_options_total'] ?? 0;
 
-        // 🔧 전단지 장수 (mesu) - shop_temp에서 가져옴 (드롭다운 선택값)
-        $mesu = $item['mesu'] ?? '';
-        
+        // 🔧 전단지/리플렛 장수 - flyer_mesu와 mesu 분리
+        $product_type = $item['product_type'] ?? '';
+
+        // mesu: 스티커 전용 (전단지/리플렛은 0)
+        // flyer_mesu: 전단지/리플렛 전용 (스티커는 0)
+        if (in_array($product_type, ['inserted', 'leaflet'])) {
+            $mesu = '';  // 전단지/리플렛은 mesu 비움
+            $flyer_mesu = intval($item['flyer_mesu'] ?? $item['mesu'] ?? 0);
+        } else {
+            $mesu = $item['mesu'] ?? '';  // 스티커 등 다른 제품은 기존 mesu 사용
+            $flyer_mesu = 0;  // 스티커는 flyer_mesu 0
+        }
+
         // 🔧 수량 및 단위 추가
         $quantity = $item['quantity'] ?? 1.0;
         $unit = $item['unit'] ?? '개';
 
-        // 🔧 FIX: 36개 필드에 맞는 타입 문자열 (기존 34자 → 36자)
+        // 🔧 FIX: 37개 필드에 맞는 타입 문자열 (flyer_mesu 추가)
         // 1-4: i,s,s,s (no, Type, ImgFolder, Type_1)
-        // 5-7: s,d,s (mesu=문자열, quantity=실수, unit=문자열)
-        // 8-9: i,i (money_4, money_5)
-        // 10-20: 11개 s (name~ThingCate)
-        // 21-30: i,s,i,i,s,i,i,i,i,i (coating~additional_options_total)
-        // 31-36: s,i,i,i,i,i (premium_options~envelope_additional_options_total)
-        mysqli_stmt_bind_param($stmt, 'issssdsiisssssssssssisiisiiiiisiiiii',
-            $new_no, $product_type_name, $img_folder_path, $product_info, $mesu, $quantity, $unit, $item['st_price'], $item['st_price_vat'],
+        // 5-8: s,i,d,s (mesu=문자열, flyer_mesu=정수, quantity=실수, unit=문자열)
+        // 9-10: i,i (money_4, money_5)
+        // 11-21: 11개 s (name~ThingCate)
+        // 22-31: i,s,i,i,s,i,i,i,i,i (coating~additional_options_total)
+        // 32-37: s,i,i,i,i,i (premium_options~envelope_additional_options_total)
+        mysqli_stmt_bind_param($stmt, 'issssidsiisssssssssssisiisiiiiisiiiii',
+            $new_no, $product_type_name, $img_folder_path, $product_info, $mesu, $flyer_mesu, $quantity, $unit, $item['st_price'], $item['st_price_vat'],
             $username, $email, $postcode, $address, $full_address,
             $phone, $hendphone, $final_cont, $date, $order_style, $thing_cate,
             $coating_enabled, $coating_type, $coating_price,

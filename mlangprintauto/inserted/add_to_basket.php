@@ -54,7 +54,8 @@ if (empty($MY_type) || empty($PN_type) || empty($MY_Fsd) || empty($POtype) || em
 }
 
 // ✅ quantityTwo(매수) 조회 - 전단지 가격 테이블에서 실제 매수 가져오기
-$mesu = '';
+// flyer_mesu: 전단지/리플렛 전용 매수 필드 (스티커용 mesu와 분리)
+$flyer_mesu = 0;
 $qty_query = "SELECT quantityTwo FROM mlangprintauto_inserted
               WHERE style = ? AND Section = ? AND TreeSelect = ? AND POtype = ? AND quantity = ?
               LIMIT 1";
@@ -64,11 +65,11 @@ if ($qty_stmt) {
     mysqli_stmt_execute($qty_stmt);
     $qty_result = mysqli_stmt_get_result($qty_stmt);
     if ($qty_row = mysqli_fetch_assoc($qty_result)) {
-        $mesu = $qty_row['quantityTwo'];
+        $flyer_mesu = intval($qty_row['quantityTwo']);
     }
     mysqli_stmt_close($qty_stmt);
 }
-error_log("전단지 매수 조회: MY_amount=$MY_amount, mesu=$mesu");
+error_log("전단지 매수 조회: MY_amount=$MY_amount, flyer_mesu=$flyer_mesu");
 
 // ✅ 파일 업로드 처리 (StandardUploadHandler 사용)
 $upload_result = StandardUploadHandler::processUpload('inserted', $_FILES);
@@ -91,8 +92,8 @@ $uploaded_files_json = json_encode($uploaded_files, JSON_UNESCAPED_UNICODE);
 $quantity = floatval($MY_amount);  // 0.5, 1, 1.5 등
 $unit = '연';
 
-// INSERT (quantity, unit 컬럼 추가)
-$sql = "INSERT INTO shop_temp (session_id, product_type, MY_type, PN_type, MY_Fsd, MY_amount, mesu, quantity, unit, POtype, ordertype, st_price, st_price_vat, additional_options, additional_options_total, ImgFolder, ThingCate, uploaded_files)
+// INSERT (quantity, unit, flyer_mesu 컬럼 추가)
+$sql = "INSERT INTO shop_temp (session_id, product_type, MY_type, PN_type, MY_Fsd, MY_amount, flyer_mesu, quantity, unit, POtype, ordertype, st_price, st_price_vat, additional_options, additional_options_total, ImgFolder, ThingCate, uploaded_files)
         VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)";
 
 $stmt = mysqli_prepare($db, $sql);
@@ -107,13 +108,13 @@ error_log("Uploaded files JSON: " . $uploaded_files_json);
 
 // 🔧 FIX: 18개 필드에 맞는 타입 문자열
 // 1-6: s,s,s,s,s,s (session~MY_amount)
-// 7-9: s,d,s (mesu=문자열, quantity=실수, unit=문자열)
+// 7-9: i,d,s (flyer_mesu=정수, quantity=실수, unit=문자열)
 // 10-11: s,s (POtype, ordertype)
 // 12-13: i,i (price, vat_price)
 // 14-15: s,i (additional_options, additional_options_total)
 // 16-18: s,s,s (ImgFolder, ThingCate, uploaded_files)
-mysqli_stmt_bind_param($stmt, "sssssssdsssiisisss",
-    $session_id, $product_type, $MY_type, $PN_type, $MY_Fsd, $MY_amount, $mesu, $quantity, $unit, $POtype, $ordertype,
+mysqli_stmt_bind_param($stmt, "ssssssidsssiisisss",
+    $session_id, $product_type, $MY_type, $PN_type, $MY_Fsd, $MY_amount, $flyer_mesu, $quantity, $unit, $POtype, $ordertype,
     $price, $vat_price, $additional_options_json, $additional_options_total,
     $img_folder, $thing_cate, $uploaded_files_json);
 

@@ -787,15 +787,26 @@ foreach ($order_rows as $order_item) {
                                                      strpos($item_type_str, '리플렛') !== false);
 
                                         // 전단지/리플렛: quantity 또는 MY_amount 필드에서 연수 추출
+                                        // ✅ DB 컬럼 flyer_mesu 우선 → JSON flyer_mesu → JSON mesu (레거시 호환)
                                         $flyer_quantity = $json_data['quantity'] ?? $json_data['MY_amount'] ?? null;
+                                        // DB 컬럼에서 직접 읽기 (ProcessOrder_unified.php에서 저장한 값)
+                                        $db_flyer_mesu = intval($summary_item['flyer_mesu'] ?? 0);
+                                        $flyer_mesu_val = $db_flyer_mesu > 0 ? $db_flyer_mesu : intval($json_data['flyer_mesu'] ?? $json_data['mesu'] ?? 0);
                                         if ($is_flyer && $flyer_quantity !== null && floatval($flyer_quantity) > 0) {
                                             // 전단지: quantity 또는 MY_amount는 연수, 단위는 무조건 "연"
                                             $quantity_num = floatval($flyer_quantity);
                                             $unit = '연';
+                                            // flyer_mesu가 있으면 매수도 표시용으로 저장
+                                            if ($flyer_mesu_val > 0) {
+                                                $flyer_mesu_display = $flyer_mesu_val;
+                                            }
                                         } elseif ($is_flyer) {
                                             // 전단지인데 quantity/MY_amount가 없는 경우에도 연 단위 강제
                                             $quantity_num = floatval($json_data['quantityTwo'] ?? $json_data['quantity'] ?? $json_data['MY_amount'] ?? 1);
                                             $unit = '연';
+                                            if ($flyer_mesu_val > 0) {
+                                                $flyer_mesu_display = $flyer_mesu_val;
+                                            }
                                         } elseif (isset($json_data['quantityTwo']) && $json_data['quantityTwo'] > 0) {
                                             // 다른 제품: 매수(quantityTwo)가 있으면 사용
                                             $quantity_num = intval($json_data['quantityTwo']);
@@ -1120,15 +1131,26 @@ foreach ($order_rows as $order_item) {
                                                      strpos($item_type_str, '리플렛') !== false);
 
                                         // 전단지/리플렛: quantity 또는 MY_amount 필드에서 연수 추출
+                                        // ✅ DB 컬럼 flyer_mesu 우선 → JSON flyer_mesu → JSON mesu (레거시 호환)
                                         $flyer_quantity = $json_data['quantity'] ?? $json_data['MY_amount'] ?? null;
+                                        // DB 컬럼에서 직접 읽기 (ProcessOrder_unified.php에서 저장한 값)
+                                        $db_flyer_mesu = intval($summary_item['flyer_mesu'] ?? 0);
+                                        $flyer_mesu_val = $db_flyer_mesu > 0 ? $db_flyer_mesu : intval($json_data['flyer_mesu'] ?? $json_data['mesu'] ?? 0);
                                         if ($is_flyer && $flyer_quantity !== null && floatval($flyer_quantity) > 0) {
                                             // 전단지: quantity 또는 MY_amount는 연수, 단위는 무조건 "연"
                                             $quantity_num = floatval($flyer_quantity);
                                             $unit = '연';
+                                            // flyer_mesu가 있으면 매수도 표시용으로 저장
+                                            if ($flyer_mesu_val > 0) {
+                                                $flyer_mesu_display = $flyer_mesu_val;
+                                            }
                                         } elseif ($is_flyer) {
                                             // 전단지인데 quantity/MY_amount가 없는 경우에도 연 단위 강제
                                             $quantity_num = floatval($json_data['quantityTwo'] ?? $json_data['quantity'] ?? $json_data['MY_amount'] ?? 1);
                                             $unit = '연';
+                                            if ($flyer_mesu_val > 0) {
+                                                $flyer_mesu_display = $flyer_mesu_val;
+                                            }
                                         } elseif (isset($json_data['quantityTwo']) && $json_data['quantityTwo'] > 0) {
                                             // 다른 제품: 매수(quantityTwo)가 있으면 사용
                                             $quantity_num = intval($json_data['quantityTwo']);
@@ -1475,15 +1497,26 @@ foreach ($order_rows as $order_item) {
                                                              strpos($item_type_str, '리플렛') !== false);
 
                                                 // 🔧 전단지/리플렛: quantity 또는 MY_amount 필드에서 연수 추출
+                                                // ✅ DB 컬럼 flyer_mesu 우선 → JSON flyer_mesu → JSON mesu (레거시 호환)
                                                 $flyer_quantity = $type1_data['quantity'] ?? $type1_data['MY_amount'] ?? null;
+                                                // DB 컬럼에서 직접 읽기 (ProcessOrder_unified.php에서 저장한 값)
+                                                $db_flyer_mesu = intval($summary_item['flyer_mesu'] ?? 0);
+                                                $flyer_mesu_val = $db_flyer_mesu > 0 ? $db_flyer_mesu : intval($type1_data['flyer_mesu'] ?? $type1_data['mesu'] ?? 0);
                                                 if ($is_flyer && $flyer_quantity !== null && floatval($flyer_quantity) > 0) {
                                                     // 전단지: quantity 또는 MY_amount는 연수, 단위는 무조건 "연"
                                                     $quantity_num = floatval($flyer_quantity);
                                                     $unit = '연';
+                                                    // flyer_mesu가 있으면 매수도 표시용으로 저장
+                                                    if ($flyer_mesu_val > 0) {
+                                                        $flyer_mesu_display = $flyer_mesu_val;
+                                                    }
                                                 } elseif ($is_flyer) {
                                                     // 전단지인데 quantity/MY_amount가 없는 경우에도 연 단위 강제
                                                     $quantity_num = floatval($type1_data['quantityTwo'] ?? $type1_data['quantity'] ?? $type1_data['MY_amount'] ?? 1);
                                                     $unit = '연';
+                                                    if ($flyer_mesu_val > 0) {
+                                                        $flyer_mesu_display = $flyer_mesu_val;
+                                                    }
                                                 } elseif (isset($type1_data['quantityTwo']) && $type1_data['quantityTwo'] > 0) {
                                                     // 다른 제품: 매수(quantityTwo)가 있으면 사용
                                                     $quantity_num = intval($type1_data['quantityTwo']);

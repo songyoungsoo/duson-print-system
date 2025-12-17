@@ -423,9 +423,11 @@ class QuoteManager {
         $totalPrice = ProductSpecFormatter::getPrice($cartItem);
         $vatAmount = $totalPrice - $supplyPrice;
 
-        // 전단지는 quantityTwo(mesu)로 단가 계산 (소수점 1자리), 나머지는 quantity로 계산
-        if ($productType === 'inserted' && !empty($cartItem['mesu']) && intval($cartItem['mesu']) > 0) {
-            $unitPrice = round($supplyPrice / intval($cartItem['mesu']), 1);
+        // 전단지/리플렛: flyer_mesu(매수)로 단가 계산 (소수점 1자리), 나머지는 quantity로 계산
+        // flyer_mesu 우선 사용 (전단지/리플렛 전용), 없으면 mesu 폴백 (레거시 호환)
+        $flyerMesu = intval($cartItem['flyer_mesu'] ?? $cartItem['mesu'] ?? 0);
+        if (in_array($productType, ['inserted', 'leaflet']) && $flyerMesu > 0) {
+            $unitPrice = round($supplyPrice / $flyerMesu, 1);
         } else {
             $unitPrice = $quantity > 0 ? intval($supplyPrice / $quantity) : 0;
         }
@@ -473,11 +475,12 @@ class QuoteManager {
         $vatAmount = $totalPrice - $supplyPrice;
 
         // 4. 단가 계산
-        // 전단지/리플렛: mesu(매수)로 단가 계산, 기타: quantity로 계산
+        // 전단지/리플렛: flyer_mesu(매수)로 단가 계산, 기타: quantity로 계산
+        // flyer_mesu 우선 사용 (전단지/리플렛 전용), 없으면 mesu 폴백 (레거시 호환)
         if (in_array($productType, ['inserted', 'leaflet'])) {
-            $mesu = intval($tempItem['mesu'] ?? 0);
-            if ($mesu > 0) {
-                $unitPrice = round($supplyPrice / $mesu, 1);
+            $flyerMesu = intval($tempItem['flyer_mesu'] ?? $tempItem['mesu'] ?? 0);
+            if ($flyerMesu > 0) {
+                $unitPrice = round($supplyPrice / $flyerMesu, 1);
             } else {
                 $unitPrice = $quantity > 0 ? round($supplyPrice / $quantity, 1) : 0;
             }
@@ -536,7 +539,8 @@ class QuoteManager {
         }
 
         $quantity = floatval($item['quantity'] ?? 1);
-        $mesu = intval($item['mesu'] ?? 0);  // 매수 (전단지용)
+        // flyer_mesu 우선 사용 (전단지/리플렛 전용), 없으면 mesu 폴백 (레거시 호환)
+        $flyerMesu = intval($item['flyer_mesu'] ?? $item['mesu'] ?? 0);
 
         // 수량 검증 - 0 이하 방지
         if ($quantity <= 0) {
@@ -554,9 +558,9 @@ class QuoteManager {
         $vatAmount = intval(round($supplyPrice * 0.1));
         $totalPrice = $supplyPrice + $vatAmount;
 
-        // 단가 계산: 전단지는 mesu로, 기타는 quantity로
-        if (in_array($productType, ['inserted', 'leaflet']) && $mesu > 0) {
-            $unitPrice = round($supplyPrice / $mesu, 1);
+        // 단가 계산: 전단지/리플렛은 flyer_mesu로, 기타는 quantity로
+        if (in_array($productType, ['inserted', 'leaflet']) && $flyerMesu > 0) {
+            $unitPrice = round($supplyPrice / $flyerMesu, 1);
         } else {
             $unitPrice = floatval($item['unit_price'] ?? 0);
             if ($unitPrice === 0 && $quantity > 0) {
@@ -575,11 +579,12 @@ class QuoteManager {
             $sourceType = 'manual';  // DB에는 manual로 저장
         }
 
-        // source_data 생성 (mesu 등 원본 데이터 보존)
+        // source_data 생성 (flyer_mesu 등 원본 데이터 보존)
         $sourceData = null;
-        if ($mesu > 0 || !empty($item['_debug'])) {
+        if ($flyerMesu > 0 || !empty($item['_debug'])) {
             $sourceDataArray = [
-                'mesu' => $mesu,
+                'flyer_mesu' => $flyerMesu,
+                'mesu' => $flyerMesu,  // 레거시 호환용
                 'product_type' => $productType,
                 'from_calculator' => isset($item['source_type']) && $item['source_type'] === 'calculator'
             ];

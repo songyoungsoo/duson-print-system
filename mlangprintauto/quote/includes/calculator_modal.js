@@ -250,7 +250,8 @@ class CalculatorModal {
 
             // 수량과 매수 직접 사용 (specification에서 파싱하지 않음)
             let displayQuantity = parseFloat(data.quantity) || 1;
-            let displayMesu = parseInt(data.mesu) || 0;
+            // flyer_mesu 우선 사용 (전단지/리플렛 전용), 없으면 mesu 폴백 (레거시 호환)
+            let displayMesu = parseInt(data.flyer_mesu) || parseInt(data.mesu) || 0;
             let quantityDisplayText = data.quantity_display || '';  // "0.5연\n(2,000매)" 형식
 
             // 3. 수량 설정
@@ -324,11 +325,24 @@ class CalculatorModal {
             row.querySelector('.total-cell').textContent = total.toLocaleString();
             console.log('✅ VAT 및 총액 계산:', {vat: vat, total: total});
 
-            // 8. 추가 hidden 필드 설정 (mesu, product_type, source_type)
+            // 8. 추가 hidden 필드 설정 (flyer_mesu, mesu, product_type, source_type)
             // 폼에 이미 있으면 업데이트, 없으면 추가
             const itemIndex = Array.from(row.parentElement.children).indexOf(row);
 
-            // mesu hidden field
+            // flyer_mesu hidden field (전단지/리플렛 전용 - 스티커용 mesu와 분리)
+            let flyerMesuInput = row.querySelector('input[name*="[flyer_mesu]"]');
+            if (!flyerMesuInput && displayMesu > 0) {
+                flyerMesuInput = document.createElement('input');
+                flyerMesuInput.type = 'hidden';
+                flyerMesuInput.name = `items[${itemIndex}][flyer_mesu]`;
+                row.appendChild(flyerMesuInput);
+            }
+            if (flyerMesuInput) {
+                flyerMesuInput.value = displayMesu;
+                console.log('✅ flyer_mesu hidden 필드 설정:', displayMesu);
+            }
+
+            // mesu hidden field (레거시 호환용)
             let mesuInput = row.querySelector('input[name*="[mesu]"]');
             if (!mesuInput && displayMesu > 0) {
                 mesuInput = document.createElement('input');
@@ -338,7 +352,7 @@ class CalculatorModal {
             }
             if (mesuInput) {
                 mesuInput.value = displayMesu;
-                console.log('✅ mesu hidden 필드 설정:', displayMesu);
+                console.log('✅ mesu hidden 필드 설정 (레거시):', displayMesu);
             }
 
             // product_type hidden field

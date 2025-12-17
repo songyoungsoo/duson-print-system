@@ -523,11 +523,13 @@ class ProductSpecFormatter {
         $productType = $item['product_type'] ?? '';
 
         // 전단지/리플렛: "X연\n(X,XXX매)" 형식
+        // flyer_mesu 우선 사용 (전단지/리플렛 전용), 없으면 mesu 폴백 (레거시 호환)
         if (in_array($productType, ['inserted', 'leaflet'])) {
             $amount = !empty($item['MY_amount']) ? $item['MY_amount'] : '1';
             $display = $amount . '연';
-            if (!empty($item['mesu'])) {
-                $display .= "\n(" . number_format(intval($item['mesu'])) . '매)';
+            $flyerMesu = intval($item['flyer_mesu'] ?? $item['mesu'] ?? 0);
+            if ($flyerMesu > 0) {
+                $display .= "\n(" . number_format($flyerMesu) . '매)';
             }
             return $display;
         }
@@ -553,9 +555,11 @@ class ProductSpecFormatter {
             }
         }
 
-        // 스티커는 mesu 사용
-        if (!empty($item['mesu'])) {
-            return intval($item['mesu']);
+        // 스티커는 mesu 사용 (스티커 전용, flyer_mesu는 전단지/리플렛 전용)
+        if (in_array($productType, ['sticker', 'msticker', 'msticker_01'])) {
+            if (!empty($item['mesu'])) {
+                return intval($item['mesu']);
+            }
         }
 
         // 다른 상품은 MY_amount 사용
