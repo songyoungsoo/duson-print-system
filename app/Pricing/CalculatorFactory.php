@@ -14,8 +14,8 @@ class CalculatorFactory
      */
     private array $calculatorMap = [
         'flyer' => FlyerCalculator::class,
-        // 'business_card' => BusinessCardCalculator::class, // <-- 향후 품목 추가 방식
-        // 'poster' => PosterCalculator::class,
+        'business_card' => BusinessCardCalculator::class,
+        // 'poster' => PosterCalculator::class, // <-- 향후 품목 추가 방식
     ];
 
     /**
