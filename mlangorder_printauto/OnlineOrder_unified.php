@@ -519,11 +519,35 @@ if (!empty($debug_info) && strpos($_SERVER['HTTP_HOST'], 'localhost') !== false)
                                     <?php endif; ?>
                                 <?php else: ?>
                                     <!-- 장바구니에서 온 주문: details 배열로 표시 -->
-                                    <?php foreach ($item['details'] as $key => $value): ?>
-                                        <div class="spec-item">
-                                            <span style="font-weight: 500;"><?php echo htmlspecialchars($key); ?>:</span> <?php echo htmlspecialchars($value); ?>
-                                        </div>
-                                    <?php endforeach; ?>
+                                    <?php
+                                    // 전단지/리플렛: 2줄 압축 표시 (슬래시 구분)
+                                    $product_type = $item['product_type'] ?? '';
+                                    if (in_array($product_type, ['inserted', 'leaflet'])):
+                                        $details = $item['details'] ?? [];
+                                        $line1_parts = [];
+                                        $line2_parts = [];
+                                        // 1줄: 색상, 종류
+                                        if (!empty($details['색상'])) $line1_parts[] = htmlspecialchars($details['색상']);
+                                        if (!empty($details['종류'])) $line1_parts[] = htmlspecialchars($details['종류']);
+                                        // 2줄: 규격, 인쇄, 타입, 수량
+                                        if (!empty($details['규격'])) $line2_parts[] = htmlspecialchars($details['규격']);
+                                        if (!empty($details['인쇄'])) $line2_parts[] = htmlspecialchars($details['인쇄']);
+                                        if (!empty($details['타입'])) $line2_parts[] = htmlspecialchars($details['타입']);
+                                        if (!empty($details['수량'])) $line2_parts[] = htmlspecialchars($details['수량']);
+                                    ?>
+                                        <?php if (!empty($line1_parts)): ?>
+                                        <div style="color: #4a5568; margin-bottom: 2px;"><?php echo implode(' / ', $line1_parts); ?></div>
+                                        <?php endif; ?>
+                                        <?php if (!empty($line2_parts)): ?>
+                                        <div style="color: #4a5568;"><?php echo implode(' / ', $line2_parts); ?></div>
+                                        <?php endif; ?>
+                                    <?php else: ?>
+                                        <?php foreach ($item['details'] as $key => $value): ?>
+                                            <div class="spec-item">
+                                                <span style="font-weight: 500;"><?php echo htmlspecialchars($key); ?>:</span> <?php echo htmlspecialchars($value); ?>
+                                            </div>
+                                        <?php endforeach; ?>
+                                    <?php endif; ?>
                                     <?php
                                     // 📎 추가 옵션 표시 (장바구니와 동일한 스타일)
                                     $optionDetails = $optionsDisplay->getOrderDetails($item);

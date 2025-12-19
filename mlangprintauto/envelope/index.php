@@ -125,8 +125,10 @@ if ($type_result && ($type_row = mysqli_fetch_assoc($type_result))) {
 
     <!-- 인라인 CSS 추출 파일 -->
     <link rel="stylesheet" href="css/envelope-inline-extracted.css">
+    <!-- 브랜드 디자인 시스템 (헤더 스타일) -->
+    <link rel="stylesheet" href="../../css/brand-design-system.css">
     <!-- 🎯 통합 공통 스타일 CSS (최종 로드로 최우선 적용) -->
-    <link rel="stylesheet" href="../../css/common-styles.css?v=1759615861">
+    <link rel="stylesheet" href="../../css/common-styles.css?v=<?php echo time(); ?>">
     <link rel="stylesheet" href="../../css/upload-modal-common.css">
     <!-- 견적서 모달용 공통 스타일 -->
     <link rel="stylesheet" href="../../css/quotation-modal-common.css">
