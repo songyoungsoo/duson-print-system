@@ -551,7 +551,8 @@
     }
 
     .user-info-header .value {
-        font-size: 0.75rem;
+        font-size: 0.85rem;
+        color: #00D4FF;
     }
 
     /* === 나머지 모바일 스타일 === */
