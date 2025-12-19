@@ -48,9 +48,7 @@ if (isset($_SESSION['user_id'])) {
             </div>
             <?php if ($is_logged_in): ?>
             <div class="contact-card">
-                <div class="user-info-header">
-                    <div class="value"><?php echo htmlspecialchars($user_name); ?>님</div>
-                </div>
+                <span class="contact-text" style="color: #00D4FF !important; font-weight: 600;"><?php echo htmlspecialchars($user_name); ?>님</span>
             </div>
             <div class="contact-card mypage-dropdown">
                 <a href="/mypage/index.php" class="contact-text">마이페이지</a>

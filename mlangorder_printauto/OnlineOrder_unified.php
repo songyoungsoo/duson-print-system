@@ -376,7 +376,7 @@ if (!empty($debug_info) && strpos($_SERVER['HTTP_HOST'], 'localhost') !== false)
     <!-- 주문 정보 입력 폼 -->
     <div class="card" style="margin-bottom: 1rem;">
         <div class="card-header" style="background-color: #1E90FF; color: black; text-align: center; padding: 0.5rem;">
-            <h2 style="margin: 0; font-size: 2.2rem; color: black;">📋 주문 정보 입력</h2>
+            <h2 style="margin: 0; font-size: 2.5rem; color: black;">📋 주문 정보 입력</h2>
         </div>
         
         <div class="centered-form" style="padding: 0.8rem;">
@@ -411,13 +411,13 @@ if (!empty($debug_info) && strpos($_SERVER['HTTP_HOST'], 'localhost') !== false)
                         <colgroup>
                             <col style="width: 18%;"><!-- 상품정보 -->
                             <col style="width: 52%;"><!-- 규격/옵션 -->
-                            <col style="width: 30%;"><!-- 금액 -->
+                            <col style="width: 30%;"><!-- 공급가 -->
                         </colgroup>
                         <thead>
                             <tr>
                                 <th style="border: 1px solid #ccc; padding: 10px; background: #f3f3f3; text-align: center; font-weight: bold;">상품정보</th>
                                 <th style="border: 1px solid #ccc; padding: 10px; background: #f3f3f3; text-align: center; font-weight: bold;">규격/옵션</th>
-                                <th style="border: 1px solid #ccc; padding: 10px; background: #f3f3f3; text-align: center; font-weight: bold;">금액</th>
+                                <th style="border: 1px solid #ccc; padding: 10px; background: #f3f3f3; text-align: center; font-weight: bold;">공급가</th>
                             </tr>
                         </thead>
                         <tbody>
@@ -573,7 +573,7 @@ if (!empty($debug_info) && strpos($_SERVER['HTTP_HOST'], 'localhost') !== false)
                         </td>
                         <td class="td-right" style="border: 1px solid #ccc; padding: 10px; vertical-align: top; text-align: right;">
                             <div class="price-total" style="font-size: 18px;">
-                                <?php echo number_format($is_direct_order ? $item['vat_price'] : $item['st_price_vat']); ?>원
+                                <?php echo number_format($is_direct_order ? $item['price'] : $item['st_price']); ?>원
                             </div>
                         </td>
                     </tr>
