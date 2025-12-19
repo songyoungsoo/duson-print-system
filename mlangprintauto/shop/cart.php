@@ -162,6 +162,9 @@ if ($cart_result === false) {
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>🛒 통합 장바구니</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@400;500;700&display=swap" rel="stylesheet">
     <!-- <link rel="stylesheet" href="../../css/style250801.css"> -->
     <link rel="stylesheet" href="../../css/excel-unified-style.css">
 </head>
@@ -190,7 +193,7 @@ if ($cart_result === false) {
 <?php endif; ?>
 
 <!-- 장바구니 메인 콘텐츠 -->
-<div id="cartContent" style="font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif; line-height: 1.6; box-sizing: border-box; max-width: 1145px; margin: 0 auto; background: #fdfdfd; border-radius: 8px; padding: 1rem; box-shadow: 0 2px 10px rgba(0,0,0,0.05); margin-bottom: 1rem; border: 1px solid #f0f0f0; width: 1150px;">
+<div id="cartContent" style="font-family: 'Noto Sans KR', sans-serif; font-size: 13px; color: #222; line-height: 1.6; box-sizing: border-box; max-width: 1145px; margin: 0 auto; background: #fff; padding: 20px; margin-bottom: 1rem;">
     <?php if (!empty($cart_items)): ?>
         <form method="post" action="../../mlangorder_printauto/OnlineOrder_unified.php" id="orderForm">
             <input type="hidden" name="SubmitMode" value="OrderOne">
@@ -202,15 +205,23 @@ if ($cart_result === false) {
 
             <!-- Excel 스타일 표 형식 장바구니 -->
             <div class="excel-cart-table-wrapper">
-                <table class="excel-cart-table">
+                <table class="excel-cart-table" style="width: 100%; border-collapse: collapse; table-layout: fixed;">
+                    <colgroup>
+                        <col style="width: 18%;"><!-- 상품정보 -->
+                        <col style="width: 40%;"><!-- 규격/옵션 (확대) -->
+                        <col style="width: 8%;"><!-- 수량 (축소) -->
+                        <col style="width: 10%;"><!-- 단가 (축소) -->
+                        <col style="width: 14%;"><!-- 총액 -->
+                        <col style="width: 10%;"><!-- 관리 -->
+                    </colgroup>
                     <thead>
                         <tr>
-                            <th class="th-left">상품정보</th>
-                            <th class="th-center">규격/옵션</th>
-                            <th class="th-center">수량</th>
-                            <th class="th-right">단가</th>
-                            <th class="th-right">총액</th>
-                            <th class="th-center">관리</th>
+                            <th style="border: 1px solid #ccc; padding: 10px; background: #f3f3f3; text-align: center; font-weight: bold;">상품정보</th>
+                            <th style="border: 1px solid #ccc; padding: 10px; background: #f3f3f3; text-align: center; font-weight: bold;">규격/옵션</th>
+                            <th style="border: 1px solid #ccc; padding: 10px; background: #f3f3f3; text-align: center; font-weight: bold;">수량</th>
+                            <th style="border: 1px solid #ccc; padding: 10px; background: #f3f3f3; text-align: center; font-weight: bold;">단가</th>
+                            <th style="border: 1px solid #ccc; padding: 10px; background: #f3f3f3; text-align: center; font-weight: bold;">총액</th>
+                            <th style="border: 1px solid #ccc; padding: 10px; background: #f3f3f3; text-align: center; font-weight: bold;">관리</th>
                         </tr>
                     </thead>
                     <tbody>
@@ -242,7 +253,7 @@ if ($cart_result === false) {
                         ?>
                             <tr>
                                 <!-- 상품정보 -->
-                                <td>
+                                <td style="border: 1px solid #ccc; padding: 10px; vertical-align: top;">
                                     <div class="product-info-cell">
                                         <div class="product-icon <?php echo $item['product_type']; ?>">
                                             <?php echo $product['icon']; ?>
@@ -255,7 +266,7 @@ if ($cart_result === false) {
                                 </td>
 
                                 <!-- 규격/옵션 -->
-                                <td class="td-center">
+                                <td style="border: 1px solid #ccc; padding: 10px; vertical-align: top; text-align: center;">
                                     <div class="specs-cell">
                                         <?php if ($item['product_type'] == 'sticker'): ?>
                                             <?php if (!empty($item['jong'])): ?>
@@ -509,24 +520,19 @@ if ($cart_result === false) {
                                                 </div>
                                             <?php endif; ?>
                                         <?php else: ?>
-                                            <?php if (!empty($item['MY_type'])): ?>
-                                                <div style="margin-bottom: 6px; color: #4a5568;"><span style="color: #3182ce; font-weight: 500;">색상:</span> <?php echo htmlspecialchars(getKoreanName($connect, $item['MY_type'])); ?></div>
-                                            <?php endif; ?>
-                                            <?php if (!empty($item['MY_Fsd'])): ?>
-                                                <div style="margin-bottom: 6px; color: #4a5568;"><span style="color: #3182ce; font-weight: 500;">종류:</span> <?php echo htmlspecialchars(getKoreanName($connect, $item['MY_Fsd'])); ?></div>
-                                            <?php endif; ?>
-                                            <?php if (!empty($item['PN_type'])): ?>
-                                                <div style="margin-bottom: 6px; color: #4a5568;"><span style="color: #3182ce; font-weight: 500;">규격:</span> <?php echo htmlspecialchars(getKoreanName($connect, $item['PN_type'])); ?></div>
-                                            <?php endif; ?>
-                                            <?php if (!empty($item['Section'])): ?>
-                                                <div style="margin-bottom: 6px; color: #4a5568;"><span style="color: #3182ce; font-weight: 500;">재질:</span> <?php echo htmlspecialchars(getKoreanName($connect, $item['Section'])); ?></div>
-                                            <?php endif; ?>
-                                            <?php if (!empty($item['POtype'])): ?>
-                                                <div style="margin-bottom: 6px; color: #4a5568;"><span style="color: #3182ce; font-weight: 500;">인쇄:</span> <?php echo $item['POtype'] == '1' ? '단면' : '양면'; ?></div>
-                                            <?php endif; ?>
-                                            <?php if (!empty($item['ordertype'])): ?>
-                                                <div style="color: #4a5568;"><span style="color: #3182ce; font-weight: 500;">타입:</span> <?php echo $item['ordertype'] == 'total' ? '디자인+인쇄' : ($item['ordertype'] == 'print' ? '인쇄만' : htmlspecialchars($item['ordertype'])); ?></div>
-                                            <?php endif; ?>
+                                            <?php
+                                            // 전단지/리플렛: 슬래시 구분 압축 표시 (test02.html 스타일)
+                                            $line1 = [];
+                                            $line2 = [];
+                                            if (!empty($item['MY_type'])) $line1[] = htmlspecialchars(getKoreanName($connect, $item['MY_type']));
+                                            if (!empty($item['MY_Fsd'])) $line1[] = htmlspecialchars(getKoreanName($connect, $item['MY_Fsd']));
+                                            if (!empty($item['PN_type'])) $line2[] = htmlspecialchars(getKoreanName($connect, $item['PN_type']));
+                                            if (!empty($item['Section'])) $line2[] = htmlspecialchars(getKoreanName($connect, $item['Section']));
+                                            if (!empty($item['POtype'])) $line2[] = ($item['POtype'] == '1' ? '단면' : '양면');
+                                            if (!empty($item['ordertype'])) $line2[] = ($item['ordertype'] == 'total' ? '디자인+인쇄' : ($item['ordertype'] == 'print' ? '인쇄만' : htmlspecialchars($item['ordertype'])));
+                                            ?>
+                                            <?php if (!empty($line1)): ?><div style="color: #4a5568; margin-bottom: 2px;"><?php echo implode(' / ', $line1); ?></div><?php endif; ?>
+                                            <?php if (!empty($line2)): ?><div style="color: #4a5568;"><?php echo implode(' / ', $line2); ?></div><?php endif; ?>
                                         <?php endif; ?>
 
                                         <!-- 📎 추가 옵션 정보 표시 -->
@@ -549,7 +555,7 @@ if ($cart_result === false) {
                                 </td>
 
                                 <!-- 수량 -->
-                                <td class="td-center">
+                                <td style="border: 1px solid #ccc; padding: 10px; vertical-align: top; text-align: center;">
                                     <div class="quantity-cell">
                                         <?php
                                         // 전단지 판별 조건 강화: product_type 또는 unit 기준으로 확인
@@ -598,19 +604,19 @@ if ($cart_result === false) {
                                 </td>
 
                                 <!-- 단가 -->
-                                <td class="td-right">
+                                <td style="border: 1px solid #ccc; padding: 10px; vertical-align: top; text-align: right;">
                                     <div class="price-label">부가세별도</div>
                                     <div class="price-value"><?php echo number_format($final_price); ?>원</div>
                                 </td>
 
                                 <!-- 총액 -->
-                                <td class="td-right">
+                                <td style="border: 1px solid #ccc; padding: 10px; vertical-align: top; text-align: right;">
                                     <div class="price-label">부가세포함</div>
                                     <div class="price-total"><?php echo number_format($final_price_vat); ?>원</div>
                                 </td>
 
                                 <!-- 관리 -->
-                                <td class="td-center">
+                                <td style="border: 1px solid #ccc; padding: 10px; vertical-align: top; text-align: center;">
                                     <a href="?delete=<?php echo $item['no']; ?>"
                                         onclick="return confirm('이 상품을 삭제하시겠습니까?')"
                                         class="delete-btn">
@@ -670,6 +676,69 @@ if ($cart_result === false) {
                 </div>
             </div>
         </form>
+
+        <!-- 도움말 및 정보 섹션 -->
+        <div style="background: #f3f3f3; padding: 15px; border-radius: 4px; margin: 20px 0 15px 0; border: 1px solid #ccc;">
+            <h4 style="margin: 0 0 10px 0; font-size: 15px; font-weight: bold; display: flex; align-items: center; justify-content: center;">
+                <span style="margin-right: 6px;">💡</span>두손기획인쇄 이용 안내
+            </h4>
+            <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 10px; text-align: left;">
+                <div style="background: white; padding: 10px; border-radius: 4px; border: 1px solid #ccc;">
+                    <h5 style="color: #1976d2; margin: 0 0 6px 0; font-size: 14px; font-weight: bold; display: flex; align-items: center;">
+                        <span style="margin-right: 5px;">🏆</span>품질 보장
+                    </h5>
+                    <ul style="margin: 0; padding-left: 18px; color: #555; font-size: 13px; line-height: 1.4;">
+                        <li>20년 이상의 인쇄 경험</li>
+                        <li>고품질 인쇄 장비 사용</li>
+                        <li>전문 디자이너 상주</li>
+                    </ul>
+                </div>
+
+                <div style="background: white; padding: 10px; border-radius: 4px; border: 1px solid #ccc;">
+                    <h5 style="color: #388e3c; margin: 0 0 6px 0; font-size: 14px; font-weight: bold; display: flex; align-items: center;">
+                        <span style="margin-right: 5px;">🚚</span>빠른 배송
+                    </h5>
+                    <ul style="margin: 0; padding-left: 18px; color: #555; font-size: 13px; line-height: 1.4;">
+                        <li>당일 출고 (오전 11시 이전 주문)</li>
+                        <li>전국 택배 배송</li>
+                        <li>방문 수령 가능</li>
+                    </ul>
+                </div>
+
+                <div style="background: white; padding: 10px; border-radius: 4px; border: 1px solid #ccc;">
+                    <h5 style="color: #f57c00; margin: 0 0 6px 0; font-size: 14px; font-weight: bold; display: flex; align-items: center;">
+                        <span style="margin-right: 5px;">💰</span>합리적 가격
+                    </h5>
+                    <ul style="margin: 0; padding-left: 18px; color: #555; font-size: 13px; line-height: 1.4;">
+                        <li>실시간 가격 계산</li>
+                        <li>대량 주문 할인</li>
+                        <li>투명한 가격 정책</li>
+                    </ul>
+                </div>
+            </div>
+        </div>
+
+        <!-- 연락처 정보 -->
+        <div style="background: #f3f3f3; padding: 12px 15px; border-radius: 4px; margin-bottom: 15px; border: 1px solid #ccc;">
+            <h4 style="color: #0066cc; margin: 0 0 8px 0; font-size: 14px; font-weight: bold; display: flex; align-items: center; justify-content: center;">
+                <span style="margin-right: 6px;">📞</span>문의사항이 있으시면 언제든 연락하세요
+            </h4>
+            <div style="display: flex; flex-wrap: wrap; gap: 15px; justify-content: center; align-items: center; font-size: 14px;">
+                <div style="display: flex; align-items: center; color: #222;">
+                    <span style="margin-right: 5px;">☎️</span>
+                    <span style="font-weight: bold;">02-2632-1830</span>
+                </div>
+                <div style="display: flex; align-items: center; color: #222;">
+                    <span style="margin-right: 5px;">📱</span>
+                    <span style="font-weight: bold;">1688-2384</span>
+                </div>
+                <div style="display: flex; align-items: center; color: #222;">
+                    <span style="margin-right: 5px;">🕘</span>
+                    <span>평일 09:00~18:00</span>
+                </div>
+            </div>
+        </div>
+
     <?php else: ?>
         <!-- 빈 장바구니 상태 - 개선된 UI -->
         <div class="empty-cart">
@@ -678,38 +747,38 @@ if ($cart_result === false) {
             <p>원하시는 인쇄물을 선택해서 주문을 시작해보세요!</p>
 
             <!-- 도움말 및 정보 섹션 -->
-            <div style="background: #f0f4f8; padding: 2rem; border-radius: 15px; margin-bottom: 3rem; border: 1px solid #CCCCCC;">
-                <h4 style="margin-bottom: 1rem; font-size: 1.2rem; display: flex; align-items: center; justify-content: center;">
-                    <span style="margin-right: 10px;">💡</span>두손기획인쇄 이용 안내
+            <div style="background: #f3f3f3; padding: 15px; border-radius: 4px; margin-bottom: 15px; border: 1px solid #ccc;">
+                <h4 style="margin: 0 0 10px 0; font-size: 15px; font-weight: bold; display: flex; align-items: center; justify-content: center;">
+                    <span style="margin-right: 6px;">💡</span>두손기획인쇄 이용 안내
                 </h4>
-                <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(250px, 1fr)); gap: 20px; text-align: left;">
-                    <div style="background: white; padding: 1.5rem; border-radius: 10px; box-shadow: 0 2px 8px rgba(0,0,0,0.08);">
-                        <h5 style="color: #1976d2; margin-bottom: 0.8rem; font-size: 1rem; display: flex; align-items: center;">
-                            <span style="margin-right: 8px;">🏆</span>품질 보장
+                <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 10px; text-align: left;">
+                    <div style="background: white; padding: 10px; border-radius: 4px; border: 1px solid #ccc;">
+                        <h5 style="color: #1976d2; margin: 0 0 6px 0; font-size: 14px; font-weight: bold; display: flex; align-items: center;">
+                            <span style="margin-right: 5px;">🏆</span>품질 보장
                         </h5>
-                        <ul style="margin: 0; padding-left: 1.2rem; color: #555; font-size: 0.9rem; line-height: 1.6;">
+                        <ul style="margin: 0; padding-left: 18px; color: #555; font-size: 13px; line-height: 1.4;">
                             <li>20년 이상의 인쇄 경험</li>
                             <li>고품질 인쇄 장비 사용</li>
                             <li>전문 디자이너 상주</li>
                         </ul>
                     </div>
 
-                    <div style="background: white; padding: 1.5rem; border-radius: 10px; box-shadow: 0 2px 8px rgba(0,0,0,0.08);">
-                        <h5 style="color: #388e3c; margin-bottom: 0.8rem; font-size: 1rem; display: flex; align-items: center;">
-                            <span style="margin-right: 8px;">🚚</span>빠른 배송
+                    <div style="background: white; padding: 10px; border-radius: 4px; border: 1px solid #ccc;">
+                        <h5 style="color: #388e3c; margin: 0 0 6px 0; font-size: 14px; font-weight: bold; display: flex; align-items: center;">
+                            <span style="margin-right: 5px;">🚚</span>빠른 배송
                         </h5>
-                        <ul style="margin: 0; padding-left: 1.2rem; color: #555; font-size: 0.9rem; line-height: 1.6;">
-                            <li>당일 출고 (품목에 따라 오전 11시 이전 주문)</li>
+                        <ul style="margin: 0; padding-left: 18px; color: #555; font-size: 13px; line-height: 1.4;">
+                            <li>당일 출고 (오전 11시 이전 주문)</li>
                             <li>전국 택배 배송</li>
                             <li>방문 수령 가능</li>
                         </ul>
                     </div>
 
-                    <div style="background: white; padding: 1.5rem; border-radius: 10px; box-shadow: 0 2px 8px rgba(0,0,0,0.08);">
-                        <h5 style="color: #f57c00; margin-bottom: 0.8rem; font-size: 1rem; display: flex; align-items: center;">
-                            <span style="margin-right: 8px;">💰</span>합리적 가격
+                    <div style="background: white; padding: 10px; border-radius: 4px; border: 1px solid #ccc;">
+                        <h5 style="color: #f57c00; margin: 0 0 6px 0; font-size: 14px; font-weight: bold; display: flex; align-items: center;">
+                            <span style="margin-right: 5px;">💰</span>합리적 가격
                         </h5>
-                        <ul style="margin: 0; padding-left: 1.2rem; color: #555; font-size: 0.9rem; line-height: 1.6;">
+                        <ul style="margin: 0; padding-left: 18px; color: #555; font-size: 13px; line-height: 1.4;">
                             <li>실시간 가격 계산</li>
                             <li>대량 주문 할인</li>
                             <li>투명한 가격 정책</li>
@@ -719,29 +788,29 @@ if ($cart_result === false) {
             </div>
 
             <!-- 연락처 정보 -->
-            <div style="background: #f8f9fa; padding: 1.5rem; border-radius: 12px; margin-bottom: 2rem; border-left: 4px solid #007bff;">
-                <h4 style="color: #007bff; margin-bottom: 1rem; font-size: 1.1rem; display: flex; align-items: center; justify-content: center;">
-                    <span style="margin-right: 8px;">📞</span>문의사항이 있으시면 언제든 연락하세요
+            <div style="background: #f3f3f3; padding: 12px 15px; border-radius: 4px; margin-bottom: 15px; border: 1px solid #ccc;">
+                <h4 style="color: #0066cc; margin: 0 0 8px 0; font-size: 14px; font-weight: bold; display: flex; align-items: center; justify-content: center;">
+                    <span style="margin-right: 6px;">📞</span>문의사항이 있으시면 언제든 연락하세요
                 </h4>
-                <div style="display: flex; flex-wrap: wrap; gap: 20px; justify-content: center; align-items: center;">
-                    <div style="display: flex; align-items: center; color: #495057;">
-                        <span style="margin-right: 8px; font-size: 1.2rem;">☎️</span>
-                        <span style="font-weight: 600;">02-2632-1830</span>
+                <div style="display: flex; flex-wrap: wrap; gap: 15px; justify-content: center; align-items: center; font-size: 14px;">
+                    <div style="display: flex; align-items: center; color: #222;">
+                        <span style="margin-right: 5px;">☎️</span>
+                        <span style="font-weight: bold;">02-2632-1830</span>
                     </div>
-                    <div style="display: flex; align-items: center; color: #495057;">
-                        <span style="margin-right: 8px; font-size: 1.2rem;">📱</span>
-                        <span style="font-weight: 600;">1688-2384</span>
+                    <div style="display: flex; align-items: center; color: #222;">
+                        <span style="margin-right: 5px;">📱</span>
+                        <span style="font-weight: bold;">1688-2384</span>
                     </div>
-                    <div style="display: flex; align-items: center; color: #495057;">
-                        <span style="margin-right: 8px; font-size: 1.2rem;">🕘</span>
+                    <div style="display: flex; align-items: center; color: #222;">
+                        <span style="margin-right: 5px;">🕘</span>
                         <span>평일 09:00~18:00</span>
                     </div>
                 </div>
             </div>
 
             <!-- 쇼핑 시작 버튼 -->
-            <div style="text-align: center; margin-top: 2rem;">
-                <button onclick="continueShopping()" class="btn-continue" style="padding: 18px 40px; border-radius: 50px; font-size: 1.2rem; min-width: 200px;">
+            <div style="text-align: center; margin-top: 15px;">
+                <button onclick="continueShopping()" class="btn-continue" style="padding: 12px 30px; border-radius: 4px; font-size: 14px; min-width: 180px;">
                     🛍️ 인쇄 주문 시작하기
                 </button>
             </div>

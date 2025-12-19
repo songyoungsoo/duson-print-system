@@ -38,11 +38,12 @@
 /* 0.5. 상단 헤더 스타일 (header-ui.php) */
 /* =================================================================== */
 .top-header {
-    background: linear-gradient(135deg, #2c3e50 0%, #34495e 100%);
+    background: #1E4E79; /* 브랜드 네이비 - 단색 배경 */
     color: white;
-    padding: 20px 0;
-    box-shadow: 0 4px 20px rgba(0, 0, 0, 0.1);
+    padding: 15px 0;
+    box-shadow: none; /* Excel 스타일 - 그림자 제거 */
     margin-bottom: 0px;
+    border-bottom: 1px solid #153A5A;
 }
 
 .header-content {
@@ -70,7 +71,7 @@
     width: 50px;
     height: 50px;
     object-fit: contain;  /* 이미지 비율 유지 */
-    border-radius: 25px;   /* 둥근 모서리 */
+    border-radius: 0;   /* Excel 스타일 - 각진 모서리 */
 }
 
 .company-info h1 {

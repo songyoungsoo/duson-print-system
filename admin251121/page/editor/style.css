@@ -1,0 +1,112 @@
+  .bg_top{background:url(/template/image/bgimg.gif) repeat-x}
+  
+  A.blacklink:link { color : #dddddd ; font : 9pt ±¼¸² ; text-decoration : none }
+  A.blacklink:visited { color : #000000 ; font : 9pt ±¼¸² ; text-decoration : none }
+  A.blacklink:active { color : #dddddd ; font : 9pt ±¼¸² ; text-decoration : none }
+  A.blacklink:hover { color : #ffffff; text-decoration : none }
+
+  A.title:link { color : #64697E ; font : 9pt ±¼¸² ; text-decoration : none }
+  A.title:visited { color : #000000 ; font : 9pt ±¼¸² ; text-decoration : none }
+  A.title:active { color : #64697E ; font : 9pt ±¼¸² ; text-decoration : underline }
+  A.title:hover { color : #000000; text-decoration : underline }
+  
+  a.copy:link { color : #F9DCCC ; font : 9pt ±¼¸² ; text-decoration : none }
+  a.copy:visited { color : #F9DCCC ; font : 9pt ±¼¸² ; text-decoration : none }
+  a.copy:active { color : #F9DCCC ; font : 9pt ±¼¸² ; text-decoration : none }
+  a.copy:hover { color : #F9DCCC; text-decoration : none }
+
+  a.orange:link { color : #E05F16 ; font : 9pt ±¼¸² ; text-decoration : none }
+  a.orange:visited { color : #E05F16 ; font : 9pt ±¼¸² ; text-decoration : none }
+  a.orange:active { color : #E05F16 ; font : 9pt ±¼¸² ; text-decoration : none }
+  a.orange:hover { color : #E05F16; text-decoration : none }
+
+  a.orange1:link { color : #FF6600 ; font : 9pt ±¼¸² ; text-decoration : none }
+  a.orange1:visited { color : #FF6600 ; font : 9pt ±¼¸² ; text-decoration : none }
+  a.orange1:active { color : #FF6600 ; font : 9pt ±¼¸² ; text-decoration : none }
+  a.orange1:hover { color : #FF6600; text-decoration : none }
+
+  a.menu_left:link { color : #2C2E39 ; font : 9pt ±¼¸² ; text-decoration : none }
+  a.menu_left:visited { color : #2C2E39 ; font : 9pt ±¼¸² ; text-decoration : none }
+  a.menu_left:active { color : #2C2E39 ; font : 9pt ±¼¸² ; text-decoration : none }
+  a.menu_left:hover { color : #2C2E39; text-decoration : none }
+
+  a.movie:link { color : #4c4c4c ; font : 9pt ±¼¸² ; text-decoration : none }
+  a.movie:visited { color : #4c4c4c ; font : 9pt ±¼¸² ; text-decoration : none }
+  a.movie:active { color : #4c4c4c ; font : 9pt ±¼¸² ; text-decoration : none }
+  a.movie:hover { color : #4c4c4c; text-decoration : none }
+
+  a.blue:link { color : #023DAA ; font : 9pt ±¼¸² ; text-decoration : none }
+  a.blue:visited { color : #023DAA ; font : 9pt ±¼¸² ; text-decoration : none }
+  a.blue:active { color : #023DAA ; font : 9pt ±¼¸² ; text-decoration : none }
+  a.blue:hover { color : #023DAA; text-decoration : none }
+
+  a.notice:link { color : #FF0000 ; font : 9pt ±¼¸² ; text-decoration : none }
+  a.notice:visited { color : #0c0c0c ; font : 9pt ±¼¸² ; text-decoration : none }
+  a.notice:active { color : #0c0c0c ; font : 9pt ±¼¸² ; text-decoration : none }
+  a.notice:hover { color : #0c0c0c; text-decoration : none }
+
+  a.mail:link { color : #008080 ; font : 9pt ±¼¸² ; text-decoration : none }
+  a.mail:visited { color : #008080 ; font : 9pt ±¼¸² ; text-decoration : none }
+  a.mail:active { color : #008080 ; font : 9pt ±¼¸² ; text-decoration : none }
+  a.mail:hover { color : #008080; text-decoration : none }
+
+  a.today:link { color : #050505 ; font : 9pt ±¼¸² ; text-decoration : none }
+  a.today:visited { color : #050505 ; font : 9pt ±¼¸² ; text-decoration : none }
+  a.today:active { color : #050505 ; font : 9pt ±¼¸² ; text-decoration : none }
+  a.today:hover { color : #050505; text-decoration : none }
+
+  a.comm:link { color : #3A55B8 ; font : 9pt ±¼¸² ; text-decoration : none }
+  a.comm:visited { color : #3A55B8 ; font : 9pt ±¼¸² ; text-decoration : none }
+  a.comm:active { color : #3A55B8 ; font : 9pt ±¼¸² ; text-decoration : none }
+  a.comm:hover { color : #3A55B8; text-decoration : none }
+
+  a.link:link { color : #000000 ; font : 9pt ±¼¸² ; text-decoration : none }
+  a.link:visited { color : #000000 ; font : 9pt ±¼¸² ; text-decoration : none }
+  a.link:active { color : #000000 ; font : 9pt ±¼¸² ; text-decoration : underline }
+  a.link:hover { color : #000000; text-decoration : underline }
+
+  a.white:white { color : #ffffff ; font : 9pt ±¼¸² ; text-decoration : none }
+  a.white:visited { color : #ffffff ; font : 9pt ±¼¸² ; text-decoration : none }
+  a.white:active { color : #ffffff ; font : 9pt ±¼¸² ; text-decoration : underline }
+  a.white:hover { color : #ffffff; text-decoration : underline }
+  a.darkgreenlink { color : #3B5E0A ; font-family: "±¼¸²,µ¸¿ò"; font-size: 9pt; font-style: normal; line-height: 15pt; font-weight: normal; font-variant: normal; text-decoration : none}
+
+
+  .white { color : #ffffff ; font-family: "±¼¸²,µ¸¿ò"; font-size: 9pt; font-style: normal; line-height: 15pt; font-weight: normal; font-variant: normal;}
+  .black { color : #000000 ; font-family: "±¼¸²,µ¸¿ò"; font-size: 9pt; font-style: normal; font-weight: normal; font-variant: normal;}
+
+  .black1 { color : #37373B ; font-family: "±¼¸²,µ¸¿ò"; font-size: 9pt; font-style: normal; line-height: 15pt; font-weight: normal; font-variant: normal;}
+  .black2 { color : #333542 ; font-family: "±¼¸²,µ¸¿ò"; font-size: 9pt; font-style: normal; line-height: 15pt; font-weight: normal; font-variant: normal;}
+  .black3 { color : #0c0c0c ; font-family: "±¼¸²,µ¸¿ò"; font-size: 9pt; font-style: normal; line-height: 15pt; font-weight: normal; font-variant: normal;}
+  .title { color : #F9DCCC ; font-family: "±¼¸²,µ¸¿ò"; font-size: 9pt; font-style: normal; line-height: 15pt; font-weight: normal; font-variant: normal;}
+
+  .dark_blue { color : #103778 ; font-family: "±¼¸²,µ¸¿ò"; font-size: 9pt; font-style: normal; line-height: 15pt; font-weight: normal; font-variant: normal;}
+  .rightblue { color : #0977C4 ; font-family: "±¼¸²,µ¸¿ò"; font-size: 9pt; font-style: normal; line-height: 15pt; font-weight: normal; font-variant: normal;}
+
+  .green { color : #13A607 ; font-family: "±¼¸²,µ¸¿ò"; font-size: 9pt; font-style: normal; line-height: 15pt; font-weight: normal; font-variant: normal;}
+  .rightgreen { color : #D6FA37 ; font-family: "±¼¸²,µ¸¿ò"; font-size: 9pt; font-style: normal; line-height: 15pt; font-weight: normal; font-variant: normal;}
+  .darkgreen { color : #3B5E0A ; font-family: "±¼¸²,µ¸¿ò"; font-size: 9pt; font-style: normal; line-height: 15pt; font-weight: normal; font-variant: normal;}
+
+  .orange { color : #E05F16 ; font-family: "±¼¸²,µ¸¿ò"; font-size: 9pt; font-style: normal; line-height: 15pt; font-weight: normal; font-variant: normal; text-decoration : none}
+  .orange1 { color : #FF6600 ; font-family: "±¼¸²,µ¸¿ò"; font-size: 12pt; font-style: normal; line-height: 15pt; font-weight: bold; font-variant: normal;}
+  .orange2 { color : #FF6600 ; font-family: "±¼¸²,µ¸¿ò"; font-size: 9pt; font-style: normal; line-height: 15pt; font-weight: bold; font-variant: normal;}
+
+  .gray { color : #67686F ; font-family: "±¼¸²,µ¸¿ò"; font-size: 9pt; font-style: normal; line-height: 15pt; font-weight: normal; font-variant: normal;}
+  .gray1 { color : #444444 ; font-family: "±¼¸²,µ¸¿ò"; font-size: 9pt; font-style: normal; line-height: 15pt; font-weight: normal; font-variant: normal;}
+  .gray2 { color : #637B7C ; font-family: "±¼¸²,µ¸¿ò"; font-size: 9pt; font-style: normal; line-height: 15pt; font-weight: normal; font-variant: normal;}
+  .gray3 { color : #333542 ; font-family: "±¼¸²,µ¸¿ò"; font-size: 9pt; font-style: normal; line-height: 15pt; font-weight: normal; font-variant: normal;}
+  .gray4 { color : #363845 ; font-family: "±¼¸²,µ¸¿ò"; font-size: 9pt; font-style: normal; line-height: 15pt; font-weight: normal; font-variant: normal;}
+  .gray5 { color : #4c4c4c ; font-family: "±¼¸²,µ¸¿ò"; font-size: 9pt; font-style: normal; line-height: 15pt; font-weight: normal; font-variant: normal;}
+  .gray6 { color : #3f3f3f ; font-family: "±¼¸²,µ¸¿ò"; font-size: 9pt; font-style: normal; line-height: 15pt; font-weight: normal; font-variant: normal;}
+  .gray7 { color : #494949 ; font-family: "±¼¸²,µ¸¿ò"; font-size: 9pt; font-style: normal; line-height: 15pt; font-weight: normal; font-variant: normal;}
+  .gray8 { color : #646665 ; font-family: "±¼¸²,µ¸¿ò"; font-size: 9pt; font-style: normal; line-height: 15pt; font-weight: normal; font-variant: normal;}
+  .gray9 { color : #565656 ; font-family: "±¼¸²,µ¸¿ò"; font-size: 9pt; font-style: normal; line-height: 15pt; font-weight: normal; font-variant: normal;}
+
+  .red { color : #B43B50 ; font-family: "±¼¸²,µ¸¿ò"; font-size: 9pt; font-style: normal; line-height: 15pt; font-weight: normal; font-variant: normal;}
+  .red1 { color : #FF0000 ; font-family: "±¼¸²,µ¸¿ò"; font-size: 9pt; font-style: normal; line-height: 15pt; font-weight: normal; font-variant: normal;}
+  
+  .text1 { color : #4F6671 ; font-family: "±¼¸²,µ¸¿ò"; font-size: 9pt; font-style: normal; line-height: 15pt; font-weight: normal; font-variant: normal;}
+  .text2 { color : #3295B9 ; font-family: "±¼¸²,µ¸¿ò"; font-size: 9pt; font-style: normal; line-height: 15pt; font-weight: normal; font-variant: normal;}
+  .text3 { color : #A94863 ; font-family: "±¼¸²,µ¸¿ò"; font-size: 9pt; font-style: normal; line-height: 15pt; font-weight: normal; font-variant: normal;}
+  .text4 { color : #E3816C ; font-family: "±¼¸²,µ¸¿ò"; font-size: 9pt; font-style: normal; line-height: 15pt; font-weight: normal; font-variant: normal;}
+  .text5 { color : #F77564 ; font-family: "±¼¸²,µ¸¿ò"; font-size: 9pt; font-style: normal; line-height: 15pt; font-weight: normal; font-variant: normal;}

@@ -1,0 +1,135 @@
+<?php
+/**
+ * Admin 폴더 전체 인코딩 변환 스크립트
+ * EUC-KR → UTF-8 변환
+ *
+ * 사용법: php encoding_converter.php
+ */
+
+// 로그 파일 설정
+$logFile = __DIR__ . '/encoding_conversion_log_' . date('Y-m-d_H-i-s') . '.txt';
+
+function writeLog($message) {
+    global $logFile;
+    $timestamp = date('Y-m-d H:i:s');
+    $logMessage = "[$timestamp] $message" . PHP_EOL;
+    file_put_contents($logFile, $logMessage, FILE_APPEND | LOCK_EX);
+    echo $logMessage;
+}
+
+function convertFileEncoding($filePath, $dryRun = false) {
+    if (!file_exists($filePath)) {
+        writeLog("파일이 존재하지 않습니다: $filePath");
+        return false;
+    }
+
+    // 원본 파일 읽기
+    $originalContent = file_get_contents($filePath);
+
+    if ($originalContent === false) {
+        writeLog("파일 읽기 실패: $filePath");
+        return false;
+    }
+
+    // 현재 인코딩 감지
+    $currentEncoding = mb_detect_encoding($originalContent, ['UTF-8', 'EUC-KR', 'CP949'], true);
+
+    // ✅ 이미 UTF-8인 파일은 건너뛰기
+    if ($currentEncoding === 'UTF-8') {
+        // 추가로 깨진 문자 검사 (������ 같은 패턴)
+        if (strpos($originalContent, '������') === false &&
+            strpos($originalContent, '�α���') === false &&
+            strpos($originalContent, '������') === false) {
+            writeLog("⏭️  건너뜀 (이미 UTF-8): $filePath");
+            return true;
+        }
+    }
+
+    writeLog("$filePath - 감지된 인코딩: " . ($currentEncoding ?: 'UNKNOWN'));
+
+    // EUC-KR에서 UTF-8로 변환 시도
+    $convertedContent = mb_convert_encoding($originalContent, 'UTF-8', 'EUC-KR');
+
+    if ($convertedContent === false) {
+        writeLog("인코딩 변환 실패: $filePath");
+        return false;
+    }
+
+    // 변환 내용이 원본과 동일한지 확인 (이미 올바른 UTF-8인 경우)
+    if ($originalContent === $convertedContent) {
+        writeLog("⏭️  건너뜀 (변환 불필요): $filePath");
+        return true;
+    }
+
+    if (!$dryRun) {
+        // 백업 생성
+        $backupPath = $filePath . '.backup_' . date('YmdHis');
+        if (!copy($filePath, $backupPath)) {
+            writeLog("백업 생성 실패: $filePath");
+            return false;
+        }
+        writeLog("백업 생성: $backupPath");
+
+        // UTF-8로 저장
+        if (file_put_contents($filePath, $convertedContent) === false) {
+            writeLog("파일 저장 실패: $filePath");
+            return false;
+        }
+        writeLog("✅ 변환 완료: $filePath");
+    } else {
+        writeLog("🔍 [DRY RUN] 변환 예정: $filePath");
+    }
+
+    return true;
+}
+
+function scanAndConvert($directory, $dryRun = false) {
+    $iterator = new RecursiveIteratorIterator(
+        new RecursiveDirectoryIterator($directory, RecursiveDirectoryIterator::SKIP_DOTS),
+        RecursiveIteratorIterator::LEAVES_ONLY
+    );
+
+    $totalFiles = 0;
+    $convertedFiles = 0;
+
+    foreach ($iterator as $file) {
+        if ($file->isFile() && $file->getExtension() === 'php') {
+            $totalFiles++;
+            $filePath = $file->getRealPath();
+
+            if (convertFileEncoding($filePath, $dryRun)) {
+                $convertedFiles++;
+            }
+        }
+    }
+
+    writeLog("=== 변환 완료 요약 ===");
+    writeLog("총 PHP 파일 수: $totalFiles");
+    writeLog("변환된 파일 수: $convertedFiles");
+
+    return [$totalFiles, $convertedFiles];
+}
+
+// 메인 실행
+writeLog("=== Admin 폴더 인코딩 변환 시작 ===");
+writeLog("대상 디렉토리: " . __DIR__);
+
+// DRY RUN 여부 확인
+$dryRun = isset($argv[1]) && $argv[1] === '--dry-run';
+
+if ($dryRun) {
+    writeLog("🔍 DRY RUN 모드: 실제 변환하지 않고 확인만 합니다.");
+} else {
+    writeLog("⚠️  실제 변환을 시작합니다. 백업이 자동으로 생성됩니다.");
+}
+
+// 변환 실행
+$result = scanAndConvert(__DIR__, $dryRun);
+
+writeLog("=== 인코딩 변환 완료 ===");
+writeLog("로그 파일: $logFile");
+
+if (!$dryRun) {
+    writeLog("백업 파일들은 *.backup_YYYYMMDDHHMMSS 형식으로 저장되었습니다.");
+}
+?>

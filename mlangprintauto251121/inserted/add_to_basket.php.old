@@ -1,0 +1,160 @@
+<?php
+require_once __DIR__ . '/../../includes/safe_json_response.php';
+
+header('Content-Type: application/json; charset=utf-8');
+session_start();
+
+include "../../includes/functions.php";
+include "../../includes/upload_path_manager.php";
+include "../../db.php";
+
+check_db_connection($db);
+mysqli_set_charset($db, "utf8");
+
+// POST 데이터
+$session_id = session_id();
+$product_type = $_POST['product_type'] ?? 'leaflet';
+$MY_type = $_POST['MY_type'] ?? '';
+$PN_type = $_POST['PN_type'] ?? '';
+$MY_Fsd = $_POST['MY_Fsd'] ?? '';
+$POtype = $_POST['POtype'] ?? '';
+$MY_amount = $_POST['MY_amount'] ?? '';
+$ordertype = $_POST['ordertype'] ?? '';
+$price = intval($_POST['calculated_price'] ?? $_POST['price'] ?? 0);
+$vat_price = intval($_POST['calculated_vat_price'] ?? $_POST['vat_price'] ?? 0);
+$work_memo = $_POST['work_memo'] ?? '';
+$upload_method = $_POST['upload_method'] ?? 'upload';
+
+// 추가 옵션
+$additional_options = [
+    'coating_enabled' => intval($_POST['coating_enabled'] ?? 0),
+    'coating_type' => $_POST['coating_type'] ?? '',
+    'coating_price' => intval($_POST['coating_price'] ?? 0),
+    'folding_enabled' => intval($_POST['folding_enabled'] ?? 0),
+    'folding_type' => $_POST['folding_type'] ?? '',
+    'folding_price' => intval($_POST['folding_price'] ?? 0),
+    'creasing_enabled' => intval($_POST['creasing_enabled'] ?? 0),
+    'creasing_lines' => intval($_POST['creasing_lines'] ?? 0),
+    'creasing_price' => intval($_POST['creasing_price'] ?? 0)
+];
+$additional_options_json = json_encode($additional_options, JSON_UNESCAPED_UNICODE);
+$additional_options_total = intval($_POST['additional_options_total'] ?? 0);
+
+// 필수 필드 검증
+if (empty($MY_type) || empty($PN_type) || empty($MY_Fsd) || empty($POtype) || empty($MY_amount) || empty($ordertype)) {
+    safe_json_response(false, null, '필수 정보가 누락되었습니다.');
+}
+
+// 업로드 경로 생성 (스티커와 동일한 방식)
+$upload_path_info = generateUploadPath('inserted');
+$img_folder = $upload_path_info['img_folder'];
+$physical_path = $upload_path_info['physical_path'];
+
+// 업로드 디렉토리 생성
+if (!file_exists($physical_path)) {
+    if (!mkdir($physical_path, 0755, true)) {
+        error_log("Failed to create directory: {$physical_path}");
+        safe_json_response(false, null, '업로드 디렉토리 생성 실패');
+    }
+    chmod($physical_path, 0777);
+}
+
+// 파일 업로드 처리
+$uploaded_files = [];
+$original_filename_map = [];
+$upload_count = 0;
+
+// 디버깅: $_FILES 전체 구조 로그
+error_log("=== FILE UPLOAD DEBUG START ===");
+error_log("FILES array: " . print_r($_FILES, true));
+error_log("Physical path: " . $physical_path);
+error_log("Path exists: " . (file_exists($physical_path) ? 'YES' : 'NO'));
+error_log("Path writable: " . (is_writable($physical_path) ? 'YES' : 'NO'));
+
+if (!empty($_FILES['uploaded_files'])) {
+    $files = $_FILES['uploaded_files'];
+    $file_count = is_array($files['name']) ? count($files['name']) : 1;
+    error_log("File count detected: " . $file_count);
+
+    for ($i = 0; $i < $file_count; $i++) {
+        $file_name = is_array($files['name']) ? $files['name'][$i] : $files['name'];
+        $file_tmp = is_array($files['tmp_name']) ? $files['tmp_name'][$i] : $files['tmp_name'];
+        $file_error = is_array($files['error']) ? $files['error'][$i] : $files['error'];
+
+        error_log("File [$i]: name=$file_name, tmp=$file_tmp, error=$file_error");
+
+        if ($file_error === UPLOAD_ERR_OK) {
+            $timestamp = time() + $i;
+            $ext = pathinfo($file_name, PATHINFO_EXTENSION);
+            $saved_name = $timestamp . '.' . $ext;
+            $destination = $physical_path . $saved_name;
+
+            error_log("Attempting move: $file_tmp -> $destination");
+
+            if (move_uploaded_file($file_tmp, $destination)) {
+                $upload_count++;
+                $uploaded_files[] = [
+                    'original' => $file_name,
+                    'saved' => $saved_name,
+                    'path' => $img_folder . $saved_name
+                ];
+                $original_filename_map[$saved_name] = $file_name;
+                error_log("✓ File moved successfully: $saved_name");
+            } else {
+                error_log("✗ Failed to move file: $file_name (tmp: $file_tmp)");
+                error_log("Destination: $destination");
+            }
+        } else {
+            error_log("✗ File upload error code: $file_error for file: $file_name");
+        }
+    }
+} else {
+    error_log("⚠ No files in uploaded_files key");
+    error_log("Available FILES keys: " . implode(', ', array_keys($_FILES)));
+}
+
+error_log("Upload summary: $upload_count files uploaded out of " . (isset($file_count) ? $file_count : 0) . " attempted");
+error_log("=== FILE UPLOAD DEBUG END ===");
+
+$original_filename_json = json_encode($original_filename_map, JSON_UNESCAPED_UNICODE);
+$thing_cate = !empty($uploaded_files) ? $uploaded_files[0]['saved'] : '';
+
+// INSERT
+$sql = "INSERT INTO shop_temp (session_id, product_type, MY_type, PN_type, MY_Fsd, MY_amount, POtype, ordertype, st_price, st_price_vat, additional_options, additional_options_total, ImgFolder, ThingCate, original_filename)
+        VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)";
+
+$stmt = mysqli_prepare($db, $sql);
+if (!$stmt) {
+    error_log("Prepare failed: " . mysqli_error($db));
+    safe_json_response(false, null, 'SQL 준비 실패: ' . mysqli_error($db));
+}
+
+// 디버깅 로그
+error_log("Inserted add_to_basket - Session: $session_id, Product: $product_type, ImgFolder: $img_folder");
+
+mysqli_stmt_bind_param($stmt, "ssssssssiisisss",
+    $session_id, $product_type, $MY_type, $PN_type, $MY_Fsd, $MY_amount, $POtype, $ordertype,
+    $price, $vat_price, $additional_options_json, $additional_options_total,
+    $img_folder, $thing_cate, $original_filename_json);
+
+if (mysqli_stmt_execute($stmt)) {
+    $basket_id = mysqli_insert_id($db);
+    mysqli_stmt_close($stmt);
+
+    error_log("Inserted basket success - ID: $basket_id");
+
+    safe_json_response(true, [
+        'basket_id' => $basket_id,
+        'uploaded_files_count' => count($uploaded_files),
+        'upload_path' => $img_folder
+    ], '장바구니에 추가되었습니다.');
+
+} else {
+    $error = mysqli_stmt_error($stmt);
+    error_log("Inserted execute failed: " . $error);
+    mysqli_stmt_close($stmt);
+    safe_json_response(false, null, '장바구니 추가 실패: ' . $error);
+}
+
+mysqli_close($db);
+?>

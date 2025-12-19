@@ -1,0 +1,142 @@
+================================================================================
+  dsp114.com 서버 업로드 완료!
+  채팅 시스템 PHP 5.2 / MySQL 4.0 호환 버전
+================================================================================
+
+■ 업로드 완료 시각: 2025-11-25 18:20
+
+■ 업로드된 위치
+  서버: dsp114.com
+  경로: /chat_5.2/
+  전체 URL: http://dsp114.com/chat_5.2/
+
+■ 업로드된 파일 목록 (총 12개)
+
+  📖 문서 파일:
+  ✅ README.txt                    - 전체 설치 가이드 및 사용법
+  ✅ CHECKLIST.txt                 - 단계별 설치 체크리스트 (10단계)
+  ✅ MIGRATION_SUMMARY.txt         - 마이그레이션 작업 요약
+
+  🔧 PHP 핵심 파일 (PHP 5.2 호환):
+  ✅ config.php                    - 설정 파일 (1.8KB)
+  ✅ api.php                       - 채팅 API (15KB)
+  ✅ admin_floating.php            - 관리자 플로팅 인터페이스 (11KB)
+  ✅ demo.php                      - 고객 채팅 데모 페이지 (5.1KB)
+
+  📜 JavaScript / CSS:
+  ✅ admin_floating.js             - 관리자 JavaScript (8.4KB)
+  ✅ chat.js                       - 고객 채팅 JavaScript (19KB)
+  ✅ chat.css                      - 채팅 스타일시트 (11KB)
+
+  💾 데이터베이스 SQL (MySQL 4.0 호환):
+  ✅ create_chat_system_mysql40.sql    - 테이블 생성 스크립트 (4.2KB)
+  ✅ insert_sample_data_mysql40.sql    - 샘플 데이터 (7.9KB)
+
+■ 다음 단계 (중요!)
+
+  1️⃣ README.txt 읽기
+     → http://dsp114.com/chat_5.2/README.txt
+     → 브라우저에서 열거나 메모장으로 다운로드하여 확인
+
+  2️⃣ phpMyAdmin 접속
+     → dsp114.com phpMyAdmin 로그인
+     → 사용할 데이터베이스 선택 (또는 새로 생성)
+
+  3️⃣ 테이블 생성
+     → create_chat_system_mysql40.sql 파일 내용 복사
+     → phpMyAdmin SQL 탭에 붙여넣기 → 실행
+     → 5개 테이블 생성 확인
+
+  4️⃣ config.php 수정
+     → FTP로 config.php 다운로드
+     → DB 접속 정보 수정:
+        - DB 호스트 (보통 localhost)
+        - DB 사용자명: duson1830
+        - DB 비밀번호: du1830
+        - DB 이름 (사용할 데이터베이스명)
+     → mysqli_set_charset($db, 'euckr') 확인
+     → 수정 후 다시 업로드
+
+  5️⃣ 테스트
+     → 고객 페이지: http://dsp114.com/chat_5.2/demo.php
+     → 관리자 페이지: http://dsp114.com/chat_5.2/admin_floating.php
+
+■ 샘플 데이터 설치 (선택사항)
+
+  테스트를 위해 샘플 데이터를 넣으려면:
+  → insert_sample_data_mysql40.sql 실행
+  → 3개 채팅방, 3명 직원, 80+ 메시지 생성됨
+  → 관리자 페이지에서 바로 확인 가능
+
+  직원 계정:
+  - staff1 / 직원1
+  - staff2 / 직원2
+  - staff3 / 직원3
+
+■ 중요 확인 사항
+
+  ⚠️ 인코딩 문제 방지:
+  - 모든 파일이 EUC-KR로 저장되어 있음
+  - config.php 수정 시 EUC-KR 인코딩 유지 필수
+  - 메모장에서 수정 시: 저장 → 인코딩 → ANSI 선택
+
+  ⚠️ DB 접속 정보:
+  - config.php 또는 db.php에서 수정 필요
+  - mysqli_set_charset($db, 'euckr') 반드시 확인
+
+  ⚠️ 디렉토리 권한:
+  - ../chat_uploads/ 폴더 생성 필요
+  - 권한 755 또는 777 설정
+
+■ 문제 발생 시
+
+  한글 깨짐:
+  → config.php: mysqli_set_charset($db, 'euckr')
+  → 파일 인코딩 EUC-KR 확인
+
+  채팅방 목록 안 나옴:
+  → 직원 선택 (staff1, staff2, staff3)
+  → 샘플 데이터 SQL 실행
+  → chatstaff 테이블 확인
+
+  페이지 오류:
+  → config.php의 DB 접속 정보 확인
+  → PHP 에러 로그 확인
+  → phpMyAdmin에서 테이블 생성 확인
+
+■ 테스트 URL
+
+  고객 채팅 테스트:
+  http://dsp114.com/chat_5.2/demo.php
+
+  관리자 채팅 테스트:
+  http://dsp114.com/chat_5.2/admin_floating.php
+
+  문서 확인:
+  http://dsp114.com/chat_5.2/README.txt
+  http://dsp114.com/chat_5.2/CHECKLIST.txt
+  http://dsp114.com/chat_5.2/MIGRATION_SUMMARY.txt
+
+■ 참고사항
+
+  - 기존 /chat/ 폴더와 완전히 독립적
+  - UTF-8 버전과 혼동하지 않도록 주의
+  - 모든 파일 EUC-KR 인코딩
+  - PHP 5.2 / MySQL 4.0 호환
+
+■ 연락처
+
+  제작: 두손기획인쇄
+  서버: dsp114.com
+  업로드 완료: 2025-11-25
+
+================================================================================
+
+다음 단계:
+1. README.txt를 읽어보세요
+2. CHECKLIST.txt를 따라 설치하세요
+3. 문제 발생 시 해당 문서를 참고하세요
+
+설치 성공을 기원합니다! 🎉
+
+================================================================================

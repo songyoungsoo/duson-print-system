@@ -31,6 +31,7 @@ $current_page = 'sticker'; // 네비게이션 활성화를 위한 페이지 식�
 
 // 📱 모달 모드 감지 (견적서 시스템에서 iframe으로 호출될 때)
 $is_quotation_mode = isset($_GET['mode']) && $_GET['mode'] === 'quotation';
+$isQuotationMode = $is_quotation_mode; // camelCase 별칭 (호환성)
 $body_class = $is_quotation_mode ? ' quotation-modal-mode' : '';
 
 // 스티커 기본값 설정

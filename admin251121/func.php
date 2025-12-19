@@ -1,0 +1,47 @@
+<?php
+declare(strict_types=1);
+
+// ✅ PHP 7.4 호환: 입력 변수 초기화
+$mode = $_GET['mode'] ?? $_POST['mode'] ?? '';
+$no = $_GET['no'] ?? $_POST['no'] ?? '';
+$search = $_GET['search'] ?? $_POST['search'] ?? '';
+$id = $_GET['id'] ?? $_POST['id'] ?? '';
+$name = $_GET['name'] ?? $_POST['name'] ?? '';
+$code = $_GET['code'] ?? $_POST['code'] ?? '';
+$page = $_GET['page'] ?? $_POST['page'] ?? '';
+
+function dbconn(){
+    $c = mysqli_connect("localhost","duson1830","du1830");
+	mysqli_select_db($c, "duson1830");
+	mysqli_query($c, "SET NAMES euckr");
+// ⚠️  에러 처리 권장: mysqli_error() 사용을 고려하세요
+
+	return $c;
+	}
+	
+	function passwd($a){
+	   global $connect;
+	   $query = "select password('$a')";
+	   $result =mysqli_query($connect, $query);
+	   $temp = mysqli_fetch_array($result);
+	   return $temp[0];
+	  }
+	  
+	  function member(){
+	     global $connect,$sing_member;
+		 $temp = explode("//",$sing_member);
+		 $user_id = $temp[0];
+		 $pw = $temp[1];
+
+		 $query = "select * from member where user_id='user_id' ";
+		 $result =mysqli_query($connect, $query);
+     $data = mysqli_fetch_array($result);
+		 
+		 if(passwd('$data[pw]')==$pw) return $data;
+		}
+		
+		?>
+		<style>
+td,input,li,a{font-size:9pt}
+border{border-color:#CCC}
+</style>

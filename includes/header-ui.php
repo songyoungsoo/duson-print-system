@@ -113,12 +113,12 @@ if (isset($_SESSION['user_id'])) {
     top: calc(100% + 5px);
     right: 0;
     background: white;
-    border: 1px solid #e0e0e0;
-    border-radius: 6px;
-    box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+    border: 1px solid #dee2e6;
+    border-radius: 0; /* Excel 스타일 - 각진 모서리 */
+    box-shadow: 0 2px 4px rgba(0,0,0,0.1);
     min-width: 200px;
     z-index: 10000;
-    padding: 6px 0;
+    padding: 4px 0;
 }
 
 /* 드롭다운 메뉴 비활성화 */

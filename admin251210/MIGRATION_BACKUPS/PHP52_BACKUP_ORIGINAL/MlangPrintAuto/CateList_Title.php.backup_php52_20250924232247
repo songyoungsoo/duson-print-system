@@ -1,0 +1,106 @@
+<? 
+include"CateAdmin_title.php";	
+?>
+
+<?
+if($Ttable=="inserted"){//////////////////////////////////////////////////////////////////////////////////////// 
+?>
+
+<input type='button' onClick="javascript:popup=window.open('./CateAdmin.php?mode=form&Ttable=<?=$Ttable?><?if($Cate){echo("&Cate=$Cate");}?>', 'WebOffice_<?=$PageCode?>Form','width=500,height=120,top=0,left=0,menubar=no,resizable=no,statusbar=no,scrollbars=yes,toolbar=no'); popup.focus();" value=' <?=$DF_Tatle_1?> 입력 '>
+
+<input type='button' onClick="javascript:popup=window.open('./CateAdmin.php?mode=form&Ttable=<?=$Ttable?>&TreeSelect=1<?if($Cate){echo("&Cate=$Cate");}?>', 'WebOffice_Tree<?=$PageCode?>Form','width=500,height=120,top=0,left=0,menubar=no,resizable=no,statusbar=no,scrollbars=yes,toolbar=no'); popup.focus();" value=' <?=$DF_Tatle_2?> 입력 '>
+
+<input type='button' onClick="javascript:popup=window.open('./CateAdmin.php?mode=form&Ttable=<?=$Ttable?>&TreeSelect=2<?if($Cate){echo("&Cate=$Cate");}?>', 'WebOffice_Tree<?=$PageCode?>Form','width=500,height=120,top=0,left=0,menubar=no,resizable=no,statusbar=no,scrollbars=yes,toolbar=no'); popup.focus();" value=' <?=$DF_Tatle_3?> 입력 '>
+
+<? } ////////////////////////////////////////////////////////////////////////////////////////////////////////////////// ?>
+
+
+<?
+if($Ttable=="sticker"){//////////////////////////////////////////////////////////////////////////////////////// 
+?>
+
+<input type='button' onClick="javascript:popup=window.open('./CateAdmin.php?mode=form&Ttable=<?=$Ttable?><?if($Cate){echo("&Cate=$Cate");}?>', 'WebOffice_<?=$PageCode?>Form','width=500,height=120,top=0,left=0,menubar=no,resizable=no,statusbar=no,scrollbars=yes,toolbar=no'); popup.focus();" value=' <?=$DF_Tatle_1?> 입력 '>
+
+<input type='button' onClick="javascript:popup=window.open('./CateAdmin.php?mode=form&Ttable=<?=$Ttable?>&TreeSelect=1<?if($Cate){echo("&Cate=$Cate");}?>', 'WebOffice_Tree<?=$PageCode?>Form','width=500,height=120,top=0,left=0,menubar=no,resizable=no,statusbar=no,scrollbars=yes,toolbar=no'); popup.focus();" value=' <?=$DF_Tatle_2?> 입력 '>
+
+<? } ////////////////////////////////////////////////////////////////////////////////////////////////////////////////// ?>
+
+<?
+if($Ttable=="NameCard"){//////////////////////////////////////////////////////////////////////////////////////// 
+?>
+
+<input type='button' onClick="javascript:popup=window.open('./CateAdmin.php?mode=form&Ttable=<?=$Ttable?><?if($Cate){echo("&Cate=$Cate");}?>', 'WebOffice_<?=$PageCode?>Form','width=500,height=120,top=0,left=0,menubar=no,resizable=no,statusbar=no,scrollbars=yes,toolbar=no'); popup.focus();" value=' <?=$DF_Tatle_1?> 입력 '>
+
+<input type='button' onClick="javascript:popup=window.open('./CateAdmin.php?mode=form&Ttable=<?=$Ttable?>&TreeSelect=1<?if($Cate){echo("&Cate=$Cate");}?>', 'WebOffice_Tree<?=$PageCode?>Form','width=500,height=120,top=0,left=0,menubar=no,resizable=no,statusbar=no,scrollbars=yes,toolbar=no'); popup.focus();" value=' <?=$DF_Tatle_2?> 입력 '>
+
+<? } ////////////////////////////////////////////////////////////////////////////////////////////////////////////////// ?>
+
+<?
+if($Ttable=="envelope"){//////////////////////////////////////////////////////////////////////////////////////// 
+?>
+
+<input type='button' onClick="javascript:popup=window.open('./CateAdmin.php?mode=form&Ttable=<?=$Ttable?><?if($Cate){echo("&Cate=$Cate");}?>', 'WebOffice_<?=$PageCode?>Form','width=500,height=120,top=0,left=0,menubar=no,resizable=no,statusbar=no,scrollbars=yes,toolbar=no'); popup.focus();" value=' <?=$DF_Tatle_1?> 입력 '>
+
+<input type='button' onClick="javascript:popup=window.open('./CateAdmin.php?mode=form&Ttable=<?=$Ttable?>&TreeSelect=1<?if($Cate){echo("&Cate=$Cate");}?>', 'WebOffice_Tree<?=$PageCode?>Form','width=500,height=120,top=0,left=0,menubar=no,resizable=no,statusbar=no,scrollbars=yes,toolbar=no'); popup.focus();" value=' <?=$DF_Tatle_2?> 입력 '>
+
+<? } ////////////////////////////////////////////////////////////////////////////////////////////////////////////////// ?>
+
+<?
+if($Ttable=="NcrFlambeau"){//////////////////////////////////////////////////////////////////////////////////////// 
+?>
+
+<input type='button' onClick="javascript:popup=window.open('./CateAdmin.php?mode=form&Ttable=<?=$Ttable?><?if($Cate){echo("&Cate=$Cate");}?>', 'WebOffice_<?=$PageCode?>Form','width=500,height=120,top=0,left=0,menubar=no,resizable=no,statusbar=no,scrollbars=yes,toolbar=no'); popup.focus();" value=' <?=$DF_Tatle_1?> 입력 '>
+
+<input type='button' onClick="javascript:popup=window.open('./CateAdmin.php?mode=form&Ttable=<?=$Ttable?>&TreeSelect=1<?if($Cate){echo("&Cate=$Cate");}?>', 'WebOffice_Tree<?=$PageCode?>Form','width=500,height=120,top=0,left=0,menubar=no,resizable=no,statusbar=no,scrollbars=yes,toolbar=no'); popup.focus();" value=' <?=$DF_Tatle_2?> 입력 '>
+
+<input type='button' onClick="javascript:popup=window.open('./CateAdmin.php?mode=form&Ttable=<?=$Ttable?>&TreeSelect=2<?if($Cate){echo("&Cate=$Cate");}?>', 'WebOffice_Tree<?=$PageCode?>Form','width=500,height=120,top=0,left=0,menubar=no,resizable=no,statusbar=no,scrollbars=yes,toolbar=no'); popup.focus();" value=' <?=$DF_Tatle_3?> 입력 '>
+
+
+<? } ////////////////////////////////////////////////////////////////////////////////////////////////////////////////// ?>
+
+<?
+if($Ttable=="cadarok"){//////////////////////////////////////////////////////////////////////////////////////// 
+?>
+
+<input type='button' onClick="javascript:popup=window.open('./CateAdmin.php?mode=form&Ttable=<?=$Ttable?><?if($Cate){echo("&Cate=$Cate");}?>', 'WebOffice_<?=$PageCode?>Form','width=500,height=120,top=0,left=0,menubar=no,resizable=no,statusbar=no,scrollbars=yes,toolbar=no'); popup.focus();" value=' <?=$DF_Tatle_1?> 입력 '>
+
+<input type='button' onClick="javascript:popup=window.open('./CateAdmin.php?mode=form&Ttable=<?=$Ttable?>&TreeSelect=1<?if($Cate){echo("&Cate=$Cate");}?>', 'WebOffice_Tree<?=$PageCode?>Form','width=500,height=120,top=0,left=0,menubar=no,resizable=no,statusbar=no,scrollbars=yes,toolbar=no'); popup.focus();" value=' <?=$DF_Tatle_2?> 입력 '>
+
+<input type='button' onClick="javascript:popup=window.open('./CateAdmin.php?mode=form&Ttable=<?=$Ttable?>&TreeSelect=2<?if($Cate){echo("&Cate=$Cate");}?>', 'WebOffice_Tree<?=$PageCode?>Form','width=500,height=120,top=0,left=0,menubar=no,resizable=no,statusbar=no,scrollbars=yes,toolbar=no'); popup.focus();" value=' <?=$DF_Tatle_3?> 입력 '>
+
+<? } ////////////////////////////////////////////////////////////////////////////////////////////////////////////////// ?>
+
+<?
+if($Ttable=="cadarokTwo"){//////////////////////////////////////////////////////////////////////////////////////// 
+?>
+
+<input type='button' onClick="javascript:popup=window.open('./CateAdmin.php?mode=form&Ttable=<?=$Ttable?><?if($Cate){echo("&Cate=$Cate");}?>', 'WebOffice_<?=$PageCode?>Form','width=500,height=120,top=0,left=0,menubar=no,resizable=no,statusbar=no,scrollbars=yes,toolbar=no'); popup.focus();" value=' <?=$DF_Tatle_1?> 입력 '>
+
+<input type='button' onClick="javascript:popup=window.open('./CateAdmin.php?mode=form&Ttable=<?=$Ttable?>&TreeSelect=1<?if($Cate){echo("&Cate=$Cate");}?>', 'WebOffice_Tree<?=$PageCode?>Form','width=500,height=120,top=0,left=0,menubar=no,resizable=no,statusbar=no,scrollbars=yes,toolbar=no'); popup.focus();" value=' <?=$DF_Tatle_2?> 입력 '>
+
+<input type='button' onClick="javascript:popup=window.open('./CateAdmin.php?mode=form&Ttable=<?=$Ttable?>&TreeSelect=2<?if($Cate){echo("&Cate=$Cate");}?>', 'WebOffice_Tree<?=$PageCode?>Form','width=500,height=120,top=0,left=0,menubar=no,resizable=no,statusbar=no,scrollbars=yes,toolbar=no'); popup.focus();" value=' <?=$DF_Tatle_3?> 입력 '>
+
+<? } ////////////////////////////////////////////////////////////////////////////////////////////////////////////////// ?>
+
+<?
+if($Ttable=="LittlePrint"){//////////////////////////////////////////////////////////////////////////////////////// 
+?>
+
+<input type='button' onClick="javascript:popup=window.open('./CateAdmin.php?mode=form&Ttable=<?=$Ttable?><?if($Cate){echo("&Cate=$Cate");}?>', 'WebOffice_<?=$PageCode?>Form','width=500,height=120,top=0,left=0,menubar=no,resizable=no,statusbar=no,scrollbars=yes,toolbar=no'); popup.focus();" value=' <?=$DF_Tatle_1?> 입력 '>
+
+<input type='button' onClick="javascript:popup=window.open('./CateAdmin.php?mode=form&Ttable=<?=$Ttable?>&TreeSelect=1<?if($Cate){echo("&Cate=$Cate");}?>', 'WebOffice_Tree<?=$PageCode?>Form','width=500,height=120,top=0,left=0,menubar=no,resizable=no,statusbar=no,scrollbars=yes,toolbar=no'); popup.focus();" value=' <?=$DF_Tatle_2?> 입력 '>
+
+<input type='button' onClick="javascript:popup=window.open('./CateAdmin.php?mode=form&Ttable=<?=$Ttable?>&TreeSelect=2<?if($Cate){echo("&Cate=$Cate");}?>', 'WebOffice_Tree<?=$PageCode?>Form','width=500,height=120,top=0,left=0,menubar=no,resizable=no,statusbar=no,scrollbars=yes,toolbar=no'); popup.focus();" value=' <?=$DF_Tatle_3?> 입력 '>
+
+<? } ////////////////////////////////////////////////////////////////////////////////////////////////////////////////// ?>
+
+<?
+if($Ttable=="MerchandiseBond"){//////////////////////////////////////////////////////////////////////////////////////// 
+?>
+
+<input type='button' onClick="javascript:popup=window.open('./CateAdmin.php?mode=form&Ttable=<?=$Ttable?><?if($Cate){echo("&Cate=$Cate");}?>', 'WebOffice_<?=$PageCode?>Form','width=500,height=120,top=0,left=0,menubar=no,resizable=no,statusbar=no,scrollbars=yes,toolbar=no'); popup.focus();" value=' <?=$DF_Tatle_1?> 입력 '>
+
+<input type='button' onClick="javascript:popup=window.open('./CateAdmin.php?mode=form&Ttable=<?=$Ttable?>&TreeSelect=1<?if($Cate){echo("&Cate=$Cate");}?>', 'WebOffice_Tree<?=$PageCode?>Form','width=500,height=120,top=0,left=0,menubar=no,resizable=no,statusbar=no,scrollbars=yes,toolbar=no'); popup.focus();" value=' <?=$DF_Tatle_2?> 입력 '>
+
+<? } ////////////////////////////////////////////////////////////////////////////////////////////////////////////////// ?>
+

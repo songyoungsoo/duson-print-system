@@ -1,0 +1,272 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>TG 학원 전단지</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@300;400;500;700;900&display=swap" rel="stylesheet">
+    <script src="https://unpkg.com/lucide@latest"></script>
+    <style>
+        body {
+            font-family: 'Noto Sans KR', sans-serif;
+            background-color: #f3f4f6;
+        }
+        .flyer-container {
+            width: 210mm; /* A4 width */
+            min-height: 297mm; /* A4 height */
+            background: white;
+            margin: 20px auto;
+            box-shadow: 0 0 20px rgba(0,0,0,0.1);
+            position: relative;
+            overflow: hidden;
+        }
+        /* 학생 이미지 애니메이션 효과 */
+        .student-img {
+            transition: transform 0.3s ease;
+        }
+        .student-img:hover {
+            transform: scale(1.05) rotate(2deg);
+        }
+
+        @media print {
+            @page {
+                size: A4;
+                margin: 0;
+            }
+            body {
+                background: none;
+                margin: 0;
+                -webkit-print-color-adjust: exact; /* 크롬 등에서 배경색 강제 출력 */
+                print-color-adjust: exact;
+            }
+            .flyer-container {
+                width: 100%;
+                margin: 0;
+                box-shadow: none;
+                border: none;
+                min-height: 100vh;
+            }
+            .no-print {
+                display: none !important;
+            }
+        }
+        .text-shadow {
+            text-shadow: 2px 2px 4px rgba(0,0,0,0.3);
+        }
+        .gradient-bg {
+            background: linear-gradient(135deg, #1e3a8a 0%, #2563eb 100%);
+        }
+    </style>
+</head>
+<body>
+
+    <!-- 도구 모음 (인쇄 버튼) -->
+    <div class="fixed bottom-5 right-5 z-50 no-print flex flex-col gap-2 items-end">
+        <div class="bg-gray-800 text-white text-xs px-3 py-1 rounded opacity-80 mb-1">
+            💡 버튼을 누른 후 '대상'을 'PDF로 저장'으로 선택하세요.
+        </div>
+        <button onclick="window.print()" class="bg-red-600 text-white px-6 py-4 rounded-full shadow-xl hover:bg-red-700 font-bold flex items-center gap-2 transition transform hover:scale-105 border-2 border-white">
+            <i data-lucide="printer"></i> 전단지 인쇄 / PDF 저장
+        </button>
+    </div>
+
+    <!-- 전단지 메인 컨테이너 -->
+    <div class="flyer-container flex flex-col">
+        
+        <!-- 1. 헤더 영역 -->
+        <header class="gradient-bg text-white p-8 pb-12 text-center relative overflow-hidden">
+            <!-- 장식용 배경 요소 -->
+            <div class="absolute top-0 left-0 w-32 h-32 bg-white opacity-10 rounded-full -translate-x-10 -translate-y-10"></div>
+            <div class="absolute bottom-0 right-0 w-40 h-40 bg-blue-400 opacity-20 rounded-full translate-x-10 translate-y-10"></div>
+
+            <h2 class="text-xl md:text-2xl font-medium mb-2 text-blue-100 tracking-wide relative z-10">수능까지 이어지는 4과목의 힘!</h2>
+            <h1 class="text-5xl md:text-6xl font-black mb-4 text-shadow tracking-tight relative z-10">TG 학원</h1>
+            <div class="bg-white text-blue-900 inline-block px-6 py-2 rounded-full font-bold text-lg shadow-md mb-2 relative z-10">
+                초 · 중 · 고 수학 전문 / 전과목 종합
+            </div>
+        </header>
+
+        <!-- 2. 핵심 메시지 & 혜택 (이미지 배치 영역) -->
+        <section class="p-8 pt-10 text-center bg-blue-50 border-b-4 border-blue-900 relative">
+            
+            <!-- 학생 이미지 (우측 배치) -->
+            <!-- 
+                [중요] 이 HTML 파일을 저장한 곳과 같은 폴더에 
+                '여학생2엄지.jpg' 파일이 있어야 이미지가 보입니다. 
+                이미지가 없을 경우를 대비해 대체 텍스트(alt)를 넣었습니다.
+            -->
+            <img src="여학생2엄지.jpg" 
+                 alt="TG학원 추천 학생들" 
+                 class="student-img absolute right-0 bottom-0 w-48 md:w-64 z-20 hidden md:block drop-shadow-xl"
+                 onerror="this.style.display='none'"> 
+
+            <!-- 모바일용 이미지 (텍스트 사이에 작게) -->
+            <img src="여학생2엄지.jpg" 
+                 alt="TG학원 추천 학생들" 
+                 class="student-img w-32 mx-auto mb-4 md:hidden drop-shadow-md rounded-lg"
+                 onerror="this.style.display='none'">
+
+            <h3 class="text-2xl md:text-3xl font-bold text-blue-900 mb-4 relative z-10">
+                "대학을 가는 수능에서는 <br class="md:hidden"><span class="text-red-600 underline decoration-4 decoration-yellow-400">4과목</span>이 모두 필요합니다!"
+            </h3>
+            <p class="text-gray-700 text-lg mb-6 leading-relaxed font-medium relative z-10">
+                영·수 2과목 수강료와 <br class="md:hidden">
+                <span class="bg-blue-100 px-1 text-blue-800 font-bold">국·영·수·과 4과목 수강료</span>는 차이가 크지 않습니다.
+            </p>
+            
+            <div class="bg-white border-4 border-red-500 rounded-xl p-6 shadow-lg inline-block relative transform rotate-1 hover:rotate-0 transition duration-300 z-10 max-w-[80%]">
+                <div class="absolute -top-4 -left-4 bg-red-600 text-white w-16 h-16 rounded-full flex items-center justify-center font-bold shadow-md animate-bounce">
+                    Check!
+                </div>
+                <p class="text-xl font-bold text-gray-800 mb-1">지금 바로 경험해보세요!</p>
+                <h4 class="text-3xl md:text-4xl font-black text-red-600">1주일 무료 수강 <span class="text-xl md:text-2xl text-black font-medium block md:inline">후 선택하세요!</span></h4>
+            </div>
+        </section>
+
+        <!-- 3. 수강료 안내 (메인) -->
+        <section class="px-8 py-6 flex-grow">
+            <div class="flex items-center gap-2 mb-4">
+                <i data-lucide="coins" class="text-blue-900 w-8 h-8"></i>
+                <h3 class="text-2xl font-bold text-blue-900">수강료 및 모집 안내</h3>
+            </div>
+            
+            <div class="overflow-hidden rounded-lg border-2 border-blue-200 shadow-sm mb-6">
+                <table class="w-full text-center border-collapse">
+                    <thead class="bg-blue-900 text-white">
+                        <tr>
+                            <th class="py-3 px-1 w-1/5 border-r border-blue-700 text-sm md:text-base">구분</th>
+                            <th class="py-3 px-1 w-1/4 border-r border-blue-700 bg-blue-800 text-sm md:text-base">영·수 단과 <span class="text-xs font-normal block">(월)</span></th>
+                            <th class="py-3 px-1 w-1/4 border-r border-blue-700 bg-red-700 text-yellow-300 font-bold text-sm md:text-base">종합반 (4과목) <span class="text-xs font-normal block text-white">(월)</span></th>
+                            <th class="py-3 px-1 text-sm md:text-base">비고</th>
+                        </tr>
+                    </thead>
+                    <tbody class="text-gray-800 bg-white">
+                        <tr class="border-b border-gray-200 hover:bg-blue-50">
+                            <td class="py-4 font-bold bg-gray-50">초등부</td>
+                            <td class="py-4 font-medium text-lg">15만원</td>
+                            <td class="py-4 font-bold text-2xl text-red-600 bg-red-50">40만원</td>
+                            <td class="py-4 text-sm text-gray-600 break-keep">전 과목 완벽 대비</td>
+                        </tr>
+                        <tr class="border-b border-gray-200 hover:bg-blue-50">
+                            <td class="py-4 font-bold bg-gray-50">중등부</td>
+                            <td class="py-4 font-medium text-lg">20만원</td>
+                            <td class="py-4 font-bold text-2xl text-red-600 bg-red-50">50만원</td>
+                            <td class="py-4 text-sm text-gray-600 break-keep">내신 철저 관리</td>
+                        </tr>
+                        <tr class="hover:bg-blue-50">
+                            <td class="py-4 font-bold bg-gray-50">고등부</td>
+                            <td class="py-4 font-medium text-lg">30만원</td>
+                            <td class="py-4 font-bold text-2xl text-red-600 bg-red-50">60만원</td>
+                            <td class="py-4 text-sm text-gray-600 break-keep">수능 국/과/부교재</td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+
+            <!-- 특별 반 편성 박스 -->
+            <div class="bg-gray-100 rounded-lg p-4 border-l-8 border-blue-600 flex flex-col md:flex-row items-center justify-between shadow-sm gap-2">
+                <div class="text-center md:text-left">
+                    <span class="bg-blue-600 text-white text-xs px-2 py-1 rounded mb-1 inline-block">Special Class</span>
+                    <h4 class="font-bold text-lg text-blue-900">중·고등부 국어/과학 종합반</h4>
+                </div>
+                <div class="text-center md:text-right">
+                    <p class="text-2xl font-black text-blue-900">월 30만원</p>
+                </div>
+            </div>
+        </section>
+
+        <!-- 4. 시간표 -->
+        <section class="px-8 pb-6">
+            <div class="flex items-center gap-2 mb-4">
+                <i data-lucide="calendar-clock" class="text-blue-900 w-8 h-8"></i>
+                <h3 class="text-2xl font-bold text-blue-900">주간 수업 시간표</h3>
+            </div>
+            
+            <div class="grid grid-cols-6 gap-1 md:gap-2 text-center font-medium text-sm md:text-base">
+                <!-- Header -->
+                <div class="bg-gray-200 text-gray-600 rounded p-2 flex items-center justify-center font-bold">교시</div>
+                <div class="bg-blue-100 text-blue-900 rounded p-2 font-bold">월</div>
+                <div class="bg-blue-100 text-blue-900 rounded p-2 font-bold">화</div>
+                <div class="bg-blue-100 text-blue-900 rounded p-2 font-bold">수</div>
+                <div class="bg-blue-100 text-blue-900 rounded p-2 font-bold">목</div>
+                <div class="bg-blue-100 text-blue-900 rounded p-2 font-bold">금</div>
+
+                <!-- 1교시 -->
+                <div class="bg-gray-100 text-gray-700 rounded p-2 md:p-3 font-bold flex items-center justify-center">1교시</div>
+                <div class="bg-white border border-blue-100 rounded p-2 md:p-3 text-blue-800 font-bold shadow-sm">수학</div>
+                <div class="bg-white border border-green-100 rounded p-2 md:p-3 text-green-700 font-bold shadow-sm">국어</div>
+                <div class="bg-white border border-blue-100 rounded p-2 md:p-3 text-blue-800 font-bold shadow-sm">수학</div>
+                <div class="bg-white border border-green-100 rounded p-2 md:p-3 text-green-700 font-bold shadow-sm">국어</div>
+                <div class="bg-white border border-blue-100 rounded p-2 md:p-3 text-blue-800 font-bold shadow-sm">수학</div>
+
+                <!-- 2교시 -->
+                <div class="bg-gray-100 text-gray-700 rounded p-2 md:p-3 font-bold flex items-center justify-center">2교시</div>
+                <div class="bg-white border border-purple-100 rounded p-2 md:p-3 text-purple-700 font-bold shadow-sm">영어</div>
+                <div class="bg-white border border-orange-100 rounded p-2 md:p-3 text-orange-700 font-bold shadow-sm">과학</div>
+                <div class="bg-white border border-purple-100 rounded p-2 md:p-3 text-purple-700 font-bold shadow-sm">영어</div>
+                <div class="bg-white border border-orange-100 rounded p-2 md:p-3 text-orange-700 font-bold shadow-sm">과학</div>
+                <div class="bg-white border border-purple-100 rounded p-2 md:p-3 text-purple-700 font-bold shadow-sm">영어</div>
+            </div>
+        </section>
+
+        <!-- 5. 하단 (위치 및 연락처) -->
+        <footer class="bg-gray-800 text-white p-8 mt-auto flex flex-col md:flex-row gap-6 items-center justify-between print:flex-row print:gap-4 print:p-4">
+            <!-- 정보 -->
+            <div class="flex-1 space-y-3">
+                <div class="flex items-center gap-3">
+                    <div class="bg-white text-blue-900 p-2 rounded-full">
+                        <i data-lucide="phone" class="w-5 h-5"></i>
+                    </div>
+                    <div>
+                        <p class="text-sm text-gray-400">교육상담문의</p>
+                        <p class="text-2xl font-bold text-yellow-400">063) 284 - 0703</p>
+                        <p class="text-xl font-bold">010 - 3672 - 6022</p>
+                    </div>
+                </div>
+                <div class="flex items-start gap-3">
+                    <div class="bg-white text-blue-900 p-2 rounded-full mt-1">
+                        <i data-lucide="map-pin" class="w-5 h-5"></i>
+                    </div>
+                    <div>
+                        <p class="text-sm text-gray-400">오시는 길</p>
+                        <p class="font-medium text-lg leading-snug">우방 아이유쉘 상가 2층<br><span class="text-sm text-gray-400 font-normal">(제일 교차로 / E-마트 인근)</span></p>
+                    </div>
+                </div>
+            </div>
+
+            <!-- 약도 시각화 -->
+            <div class="w-full md:w-64 h-40 bg-white rounded-lg p-2 relative text-gray-800 overflow-hidden shadow-inner print:border print:border-gray-300">
+                 <!-- 도로 -->
+                 <div class="absolute top-1/2 left-0 w-full h-4 bg-gray-200 -translate-y-1/2"></div>
+                 <div class="absolute top-0 left-1/3 w-4 h-full bg-gray-200"></div>
+                 
+                 <!-- E마트 -->
+                 <div class="absolute top-4 right-4 bg-yellow-400 px-3 py-1 text-xs font-bold rounded border border-yellow-500 shadow-sm z-10">
+                    E-마트
+                 </div>
+
+                 <!-- 제일 교차로 -->
+                 <div class="absolute bottom-4 left-4 text-xs font-bold text-gray-500 bg-gray-100 px-1 rounded z-10">
+                    제일교차로
+                 </div>
+
+                 <!-- 학원 위치 -->
+                 <div class="absolute top-[40%] left-[45%] z-20 flex flex-col items-center">
+                    <div class="bg-red-600 text-white text-xs px-2 py-1 rounded shadow-lg font-bold whitespace-nowrap">
+                        TG 학원 (2층)
+                    </div>
+                    <div class="w-0 h-0 border-l-[6px] border-l-transparent border-r-[6px] border-r-transparent border-t-[8px] border-t-red-600"></div>
+                    <div class="bg-blue-100 text-[10px] text-blue-900 px-1 rounded mt-1 border border-blue-200">
+                        우방아이유쉘
+                    </div>
+                 </div>
+            </div>
+        </footer>
+    </div>
+
+    <script>
+        lucide.createIcons();
+    </script>
+</body>
+</html>

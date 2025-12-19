@@ -55,7 +55,7 @@ body .upload-modal .modal-header {
     display: flex;
     justify-content: space-between;
     align-items: center;
-    padding: 20px 24px;
+    padding: 12px 20px;
     border-bottom: 1px solid #e9ecef;
     background: #f8f9fa;
     flex-shrink: 0;
@@ -87,7 +87,7 @@ body .upload-modal .modal-close:hover {
 /* 4. 모달 바디 */
 body .upload-modal .modal-body {
     flex: 1;
-    padding: 24px;
+    padding: 16px 20px;
     overflow-y: auto;
     overflow-x: hidden;
     box-sizing: border-box;
@@ -121,7 +121,7 @@ body .upload-modal .upload-label {
 body .upload-modal .upload-dropzone {
     border: 2px dashed #1E90FF;
     border-radius: 8px;
-    padding: 40px 20px;
+    padding: 24px 16px;
     text-align: center;
     cursor: pointer;
     transition: all 0.3s ease;

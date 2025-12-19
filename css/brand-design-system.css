@@ -78,28 +78,28 @@
     --spacing-2xl: 3rem;     /* 48px */
     --spacing-3xl: 4rem;     /* 64px */
 
-    /* ===== 버튼 디자인 ===== */
+    /* ===== 버튼 디자인 (Excel 스타일 - 각진 모서리) ===== */
 
-    /* 버튼 반경 (둥근 모서리) */
-    --button-radius-sm: 4px;
-    --button-radius-md: 8px;
-    --button-radius-lg: 12px;
-    --button-radius-full: 9999px;
+    /* 버튼 반경 (각진 모서리 - Excel 스타일) */
+    --button-radius-sm: 0;
+    --button-radius-md: 0;
+    --button-radius-lg: 2px;
+    --button-radius-full: 0;
 
-    /* 버튼 그림자 */
-    --button-shadow: 0 2px 8px rgba(30, 78, 121, 0.15);
-    --button-shadow-hover: 0 4px 12px rgba(30, 78, 121, 0.25);
-    --button-shadow-active: 0 1px 4px rgba(30, 78, 121, 0.2);
+    /* 버튼 그림자 (미니멀) */
+    --button-shadow: none;
+    --button-shadow-hover: 0 1px 3px rgba(0, 0, 0, 0.1);
+    --button-shadow-active: inset 0 1px 2px rgba(0, 0, 0, 0.1);
 
     /* 버튼 패딩 */
     --button-padding-sm: 0.5rem 1rem;
     --button-padding-md: 0.75rem 1.5rem;
     --button-padding-lg: 1rem 2rem;
 
-    /* ===== 카드 & 컨테이너 ===== */
-    --card-radius: 12px;
-    --card-shadow: 0 2px 12px rgba(0, 0, 0, 0.08);
-    --card-shadow-hover: 0 4px 20px rgba(0, 0, 0, 0.12);
+    /* ===== 카드 & 컨테이너 (Excel 스타일 - 각진 모서리) ===== */
+    --card-radius: 0;
+    --card-shadow: 0 1px 3px rgba(0, 0, 0, 0.06);
+    --card-shadow-hover: 0 2px 6px rgba(0, 0, 0, 0.1);
 
     /* ===== 전환 효과 ===== */
     --transition-fast: 0.15s ease;
@@ -229,7 +229,7 @@ body {
 
 .card:hover {
     box-shadow: var(--card-shadow-hover);
-    transform: translateY(-4px);
+    transform: none; /* Excel 스타일 - 부유 효과 제거 */
 }
 
 .card-title {

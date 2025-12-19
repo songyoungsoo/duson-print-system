@@ -2,6 +2,7 @@
 /**
  * 통합 장바구니 주문 처리
  * 경로: mlangorder_printauto/OnlineOrder_unified.php
+ * 수정일: 2025-12-19 - 상품정보 컬럼 분리 (통합장바구니와 동일하게)
  */
 
 session_start();
@@ -366,9 +367,12 @@ if (!empty($debug_info) && strpos($_SERVER['HTTP_HOST'], 'localhost') !== false)
 ?>
 
 <!-- 엑셀 스타일 CSS 추가 -->
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@400;500;700&display=swap" rel="stylesheet">
 <link rel="stylesheet" href="../css/excel-unified-style.css">
 
-<div class="container" style="padding: 0.5rem 1rem; margin-top: -1rem;">
+<div class="container" style="font-family: 'Noto Sans KR', sans-serif; font-size: 14px; color: #222; line-height: 1.4; padding: 0.5rem 1rem; margin-top: -1rem;">
     <!-- 주문 정보 입력 폼 -->
     <div class="card" style="margin-bottom: 1rem;">
         <div class="card-header" style="background-color: #1E90FF; color: black; text-align: center; padding: 0.5rem;">
@@ -399,147 +403,127 @@ if (!empty($debug_info) && strpos($_SERVER['HTTP_HOST'], 'localhost') !== false)
                 </div>
             </div>
             
-            <!-- 주문 상품 목록 (엑셀 스타일 테이블) -->
+            <!-- 주문 상품 목록 (엑셀 스타일 테이블 - 통합장바구니와 동일) -->
             <div style="margin-bottom: 1.5rem;">
                 <h3 style="color: #4a5568; font-weight: 600; font-size: 16px; margin-bottom: 1rem;">🛍️ 주문 상품 목록</h3>
                 <div class="excel-cart-table-wrapper">
-                    <table class="excel-cart-table">
+                    <table class="excel-cart-table" style="width: 100%; border-collapse: collapse; table-layout: fixed;">
+                        <colgroup>
+                            <col style="width: 18%;"><!-- 상품정보 -->
+                            <col style="width: 52%;"><!-- 규격/옵션 -->
+                            <col style="width: 30%;"><!-- 금액 -->
+                        </colgroup>
                         <thead>
                             <tr>
-                                <th class="th-left" style="width: 60%;">상품정보 / 규격옵션</th>
-                                <th class="th-right" style="width: 40%;">금액 (부가세포함)</th>
+                                <th style="border: 1px solid #ccc; padding: 10px; background: #f3f3f3; text-align: center; font-weight: bold;">상품정보</th>
+                                <th style="border: 1px solid #ccc; padding: 10px; background: #f3f3f3; text-align: center; font-weight: bold;">규격/옵션</th>
+                                <th style="border: 1px solid #ccc; padding: 10px; background: #f3f3f3; text-align: center; font-weight: bold;">금액</th>
                             </tr>
                         </thead>
                         <tbody>
-                    <?php foreach ($cart_items as $index => $item): ?>
+                    <?php
+                    // 상품명 매핑 (cart.php와 동일)
+                    $product_info_map = [
+                        'cadarok' => ['name' => '카달로그', 'icon' => '📖', 'color' => '#e3f2fd'],
+                        'sticker' => ['name' => '스티커', 'icon' => '🏷️', 'color' => '#f3e5f5'],
+                        'msticker' => ['name' => '자석스티커', 'icon' => '🧲', 'color' => '#e8f5e8'],
+                        'leaflet' => ['name' => '전단지', 'icon' => '📄', 'color' => '#fff3e0'],
+                        'inserted' => ['name' => '전단지', 'icon' => '📄', 'color' => '#fff3e0'],
+                        'namecard' => ['name' => '명함', 'icon' => '💼', 'color' => '#fce4ec'],
+                        'envelope' => ['name' => '봉투', 'icon' => '✉️', 'color' => '#e0f2f1'],
+                        'merchandisebond' => ['name' => '상품권', 'icon' => '🎫', 'color' => '#f1f8e9'],
+                        'littleprint' => ['name' => '포스터', 'icon' => '🎨', 'color' => '#e8eaf6'],
+                        'ncrflambeau' => ['name' => '양식지', 'icon' => '📋', 'color' => '#e8eaf6']
+                    ];
+                    foreach ($cart_items as $index => $item):
+                        $product = $product_info_map[$item['product_type']] ?? ['name' => '상품', 'icon' => '📦', 'color' => '#f5f5f5'];
+                    ?>
                     <tr>
-                        <td class="td-left">
+                        <!-- 상품정보 -->
+                        <td style="border: 1px solid #ccc; padding: 10px; vertical-align: top;">
+                            <div class="product-info-cell">
+                                <div class="product-icon <?php echo htmlspecialchars($item['product_type']); ?>" style="background-color: <?php echo $product['color']; ?>; padding: 8px; border-radius: 6px; font-size: 18px; line-height: 1; min-width: 36px; text-align: center;">
+                                    <?php echo $product['icon']; ?>
+                                </div>
+                                <div>
+                                    <div class="product-name" style="font-weight: 600; color: #2d3748; margin-bottom: 4px; font-size: 15px;"><?php echo $product['name']; ?></div>
+                                    <div class="product-number" style="color: #718096; font-size: 12px;">상품번호: #<?php echo $is_direct_order ? '-' : $item['no']; ?></div>
+                                </div>
+                            </div>
+                        </td>
+                        <!-- 규격/옵션 -->
+                        <td style="border: 1px solid #ccc; padding: 10px; vertical-align: top;">
+                            <div class="specs-cell">
                                 <?php if ($is_direct_order): ?>
                                     <?php if ($item['product_type'] == 'envelope'): ?>
-                                        <strong style="color: #2c3e50; font-size: 0.95rem;">✉️ 봉투</strong>
-                                        <div style="margin-top: 0.3rem;">
-                                            <span style="display: inline-block; margin-right: 0.8rem; color: #666; font-size: 0.8rem;">
-                                                <strong>종류:</strong> <?php echo htmlspecialchars($item['type_text']); ?>
-                                            </span>
-                                            <span style="display: inline-block; margin-right: 0.8rem; color: #666; font-size: 0.8rem;">
-                                                <strong>규격:</strong> <?php echo htmlspecialchars($item['size_text']); ?>
-                                            </span>
-                                            <span style="display: inline-block; margin-right: 0.8rem; color: #666; font-size: 0.8rem;">
-                                                <strong>수량:</strong> <?php echo htmlspecialchars($item['quantity_text']); ?>
-                                            </span>
-                                            <span style="display: inline-block; margin-right: 0.8rem; color: #666; font-size: 0.8rem;">
-                                                <strong>디자인:</strong> <?php echo htmlspecialchars($item['design_text']); ?>
-                                            </span>
-                                            <?php if (!empty($item['MY_comment'])): ?>
-                                                <div style="margin-top: 0.3rem; padding: 0.4rem; background: #fff3cd; border-radius: 3px; font-size: 0.8rem;">
-                                                    <strong>요청사항:</strong> <?php echo htmlspecialchars($item['MY_comment']); ?>
-                                                </div>
-                                            <?php endif; ?>
-                                        </div>
+                                        <div class="spec-item"><span style="color: #00b4d8; font-weight: 500;">종류:</span> <?php echo htmlspecialchars($item['type_text']); ?></div>
+                                        <div class="spec-item"><span style="color: #00b4d8; font-weight: 500;">규격:</span> <?php echo htmlspecialchars($item['size_text']); ?></div>
+                                        <div class="spec-item"><span style="color: #00b4d8; font-weight: 500;">수량:</span> <?php echo htmlspecialchars($item['quantity_text']); ?></div>
+                                        <div class="spec-item"><span style="color: #00b4d8; font-weight: 500;">디자인:</span> <?php echo htmlspecialchars($item['design_text']); ?></div>
+                                        <?php if (!empty($item['MY_comment'])): ?>
+                                            <div style="margin-top: 0.3rem; padding: 0.4rem; background: #fff3cd; border-radius: 3px; font-size: 0.8rem;">
+                                                <strong>요청사항:</strong> <?php echo htmlspecialchars($item['MY_comment']); ?>
+                                            </div>
+                                        <?php endif; ?>
                                     <?php elseif ($item['product_type'] == 'merchandisebond'): ?>
-                                        <strong style="color: #2c3e50; font-size: 0.95rem;">🎫 상품권</strong>
-                                        <div style="margin-top: 0.3rem;">
-                                            <span style="display: inline-block; margin-right: 0.8rem; color: #666; font-size: 0.8rem;">
-                                                <strong>종류:</strong> <?php echo htmlspecialchars($item['type_text']); ?>
-                                            </span>
-                                            <span style="display: inline-block; margin-right: 1rem; color: #666; font-size: 0.9rem;">
-                                                <strong>후가공:</strong> <?php echo htmlspecialchars($item['size_text']); ?>
-                                            </span>
-                                            <span style="display: inline-block; margin-right: 1rem; color: #666; font-size: 0.9rem;">
-                                                <strong>수량:</strong> <?php echo htmlspecialchars($item['quantity_text']); ?>
-                                            </span>
-                                            <span style="display: inline-block; margin-right: 1rem; color: #666; font-size: 0.9rem;">
-                                                <strong>인쇄면:</strong> <?php echo htmlspecialchars($item['po_text']); ?>
-                                            </span>
-                                            <span style="display: inline-block; margin-right: 1rem; color: #666; font-size: 0.9rem;">
-                                                <strong>주문방법:</strong> <?php echo htmlspecialchars($item['design_text']); ?>
-                                            </span>
-                                            <?php if (!empty($item['MY_comment'])): ?>
-                                                <div style="margin-top: 0.5rem; padding: 0.5rem; background: #fff3cd; border-radius: 4px; font-size: 0.9rem;">
-                                                    <strong>요청사항:</strong> <?php echo htmlspecialchars($item['MY_comment']); ?>
-                                                </div>
-                                            <?php endif; ?>
-                                        </div>
+                                        <div class="spec-item"><span style="color: #e91e63; font-weight: 500;">종류:</span> <?php echo htmlspecialchars($item['type_text']); ?></div>
+                                        <div class="spec-item"><span style="color: #e91e63; font-weight: 500;">후가공:</span> <?php echo htmlspecialchars($item['size_text']); ?></div>
+                                        <div class="spec-item"><span style="color: #e91e63; font-weight: 500;">수량:</span> <?php echo htmlspecialchars($item['quantity_text']); ?></div>
+                                        <div class="spec-item"><span style="color: #e91e63; font-weight: 500;">인쇄면:</span> <?php echo htmlspecialchars($item['po_text']); ?></div>
+                                        <div class="spec-item"><span style="color: #e91e63; font-weight: 500;">주문방법:</span> <?php echo htmlspecialchars($item['design_text']); ?></div>
+                                        <?php if (!empty($item['MY_comment'])): ?>
+                                            <div style="margin-top: 0.5rem; padding: 0.5rem; background: #fff3cd; border-radius: 4px; font-size: 0.9rem;">
+                                                <strong>요청사항:</strong> <?php echo htmlspecialchars($item['MY_comment']); ?>
+                                            </div>
+                                        <?php endif; ?>
                                     <?php elseif ($item['product_type'] == 'namecard'): ?>
-                                        <strong style="color: #2c3e50; font-size: 1.1rem;">📇 명함</strong>
-                                        <div style="margin-top: 0.5rem;">
-                                            <span style="display: inline-block; margin-right: 1rem; color: #666; font-size: 0.9rem;">
-                                                <strong>명함종류:</strong> <?php echo htmlspecialchars($item['type_text'] ?? ''); ?>
-                                            </span>
-                                            <span style="display: inline-block; margin-right: 1rem; color: #666; font-size: 0.9rem;">
-                                                <strong>용지종류:</strong> <?php echo htmlspecialchars($item['paper_text'] ?? ''); ?>
-                                            </span>
-                                            <span style="display: inline-block; margin-right: 1rem; color: #666; font-size: 0.9rem;">
-                                                <strong>수량:</strong> <?php echo htmlspecialchars($item['quantity_text'] ?? ''); ?>
-                                            </span>
-                                            <span style="display: inline-block; margin-right: 1rem; color: #666; font-size: 0.9rem;">
-                                                <strong>인쇄면:</strong> <?php echo htmlspecialchars($item['sides_text'] ?? ''); ?>
-                                            </span>
-                                            <span style="display: inline-block; margin-right: 1rem; color: #666; font-size: 0.9rem;">
-                                                <strong>디자인:</strong> <?php echo htmlspecialchars($item['design_text'] ?? ''); ?>
-                                            </span>
-                                        </div>
+                                        <div class="spec-item"><span style="color: #d69e2e; font-weight: 500;">명함종류:</span> <?php echo htmlspecialchars($item['type_text'] ?? ''); ?></div>
+                                        <div class="spec-item"><span style="color: #d69e2e; font-weight: 500;">용지종류:</span> <?php echo htmlspecialchars($item['paper_text'] ?? ''); ?></div>
+                                        <div class="spec-item"><span style="color: #d69e2e; font-weight: 500;">수량:</span> <?php echo htmlspecialchars($item['quantity_text'] ?? ''); ?></div>
+                                        <div class="spec-item"><span style="color: #d69e2e; font-weight: 500;">인쇄면:</span> <?php echo htmlspecialchars($item['sides_text'] ?? ''); ?></div>
+                                        <div class="spec-item"><span style="color: #d69e2e; font-weight: 500;">디자인:</span> <?php echo htmlspecialchars($item['design_text'] ?? ''); ?></div>
                                         <?php if (!empty($item['NC_comment'])): ?>
                                             <div style="margin-top: 0.5rem; padding: 0.5rem; background: #fff3cd; border-radius: 4px; font-size: 0.9rem;">
                                                 <strong>요청사항:</strong> <?php echo htmlspecialchars($item['NC_comment']); ?>
                                             </div>
                                         <?php endif; ?>
                                     <?php elseif ($item['product_type'] == 'cadarok'): ?>
-                                        <strong style="color: #2c3e50; font-size: 1.1rem;">📚 카다록/리플렛</strong>
-                                        <div style="margin-top: 0.5rem;">
-                                            <span style="display: inline-block; margin-right: 1rem; color: #666; font-size: 0.9rem;">
-                                                <strong>구분:</strong> <?php echo htmlspecialchars($item['type_text'] ?? ''); ?>
-                                            </span>
-                                            <span style="display: inline-block; margin-right: 1rem; color: #666; font-size: 0.9rem;">
-                                                <strong>규격:</strong> <?php echo htmlspecialchars($item['size_text'] ?? ''); ?>
-                                            </span>
-                                            <span style="display: inline-block; margin-right: 1rem; color: #666; font-size: 0.9rem;">
-                                                <strong>종이종류:</strong> <?php echo htmlspecialchars($item['paper_text'] ?? ''); ?>
-                                            </span>
-                                            <span style="display: inline-block; margin-right: 1rem; color: #666; font-size: 0.9rem;">
-                                                <strong>수량:</strong> <?php echo htmlspecialchars($item['quantity_text'] ?? ''); ?>
-                                            </span>
-                                            <span style="display: inline-block; margin-right: 1rem; color: #666; font-size: 0.9rem;">
-                                                <strong>주문방법:</strong> <?php echo htmlspecialchars($item['design_text'] ?? ''); ?>
-                                            </span>
-                                        </div>
+                                        <div class="spec-item"><span style="color: #2196f3; font-weight: 500;">구분:</span> <?php echo htmlspecialchars($item['type_text'] ?? ''); ?></div>
+                                        <div class="spec-item"><span style="color: #2196f3; font-weight: 500;">규격:</span> <?php echo htmlspecialchars($item['size_text'] ?? ''); ?></div>
+                                        <div class="spec-item"><span style="color: #2196f3; font-weight: 500;">종이종류:</span> <?php echo htmlspecialchars($item['paper_text'] ?? ''); ?></div>
+                                        <div class="spec-item"><span style="color: #2196f3; font-weight: 500;">수량:</span> <?php echo htmlspecialchars($item['quantity_text'] ?? ''); ?></div>
+                                        <div class="spec-item"><span style="color: #2196f3; font-weight: 500;">주문방법:</span> <?php echo htmlspecialchars($item['design_text'] ?? ''); ?></div>
                                         <?php if (!empty($item['MY_comment'])): ?>
                                             <div style="margin-top: 0.5rem; padding: 0.5rem; background: #fff3cd; border-radius: 4px; font-size: 0.9rem;">
                                                 <strong>요청사항:</strong> <?php echo htmlspecialchars($item['MY_comment']); ?>
                                             </div>
                                         <?php endif; ?>
                                     <?php else: ?>
-                                        <strong style="color: #2c3e50; font-size: 1.1rem;">📄 전단지</strong>
-                                        <div style="margin-top: 0.5rem;">
-                                            <span style="display: inline-block; margin-right: 1rem; color: #666; font-size: 0.9rem;">
-                                                <strong>인쇄색상:</strong> <?php echo htmlspecialchars($item['color_text'] ?? ''); ?>
-                                            </span>
-                                            <span style="display: inline-block; margin-right: 1rem; color: #666; font-size: 0.9rem;">
-                                                <strong>종이종류:</strong> <?php echo htmlspecialchars($item['paper_type_text'] ?? ''); ?>
-                                            </span>
-                                            <span style="display: inline-block; margin-right: 1rem; color: #666; font-size: 0.9rem;">
-                                                <strong>종이규격:</strong> <?php echo htmlspecialchars($item['paper_size_text'] ?? ''); ?>
-                                            </span>
-                                            <span style="display: inline-block; margin-right: 1rem; color: #666; font-size: 0.9rem;">
-                                                <strong>인쇄면:</strong> <?php echo htmlspecialchars($item['sides_text'] ?? ''); ?>
-                                            </span>
-                                            <span style="display: inline-block; margin-right: 1rem; color: #666; font-size: 0.9rem;">
-                                                <strong>수량:</strong> <?php echo htmlspecialchars($item['quantity_text'] ?? ''); ?>
-                                            </span>
-                                            <span style="display: inline-block; margin-right: 1rem; color: #666; font-size: 0.9rem;">
-                                                <strong>디자인:</strong> <?php echo htmlspecialchars($item['design_text'] ?? ''); ?>
-                                            </span>
-                                        </div>
+                                        <?php
+                                        // 전단지: 슬래시 구분 2줄 압축 표시 (test02.html 스타일)
+                                        $line1_parts = [];
+                                        $line2_parts = [];
+                                        if (!empty($item['color_text'])) $line1_parts[] = htmlspecialchars($item['color_text']);
+                                        if (!empty($item['paper_type_text'])) $line1_parts[] = htmlspecialchars($item['paper_type_text']);
+                                        if (!empty($item['paper_size_text'])) $line2_parts[] = htmlspecialchars($item['paper_size_text']);
+                                        if (!empty($item['sides_text'])) $line2_parts[] = htmlspecialchars($item['sides_text']);
+                                        if (!empty($item['quantity_text'])) $line2_parts[] = htmlspecialchars($item['quantity_text']);
+                                        if (!empty($item['design_text'])) $line2_parts[] = htmlspecialchars($item['design_text']);
+                                        ?>
+                                        <?php if (!empty($line1_parts)): ?>
+                                        <div style="color: #4a5568; margin-bottom: 2px;"><?php echo implode(' / ', $line1_parts); ?></div>
+                                        <?php endif; ?>
+                                        <?php if (!empty($line2_parts)): ?>
+                                        <div style="color: #4a5568;"><?php echo implode(' / ', $line2_parts); ?></div>
+                                        <?php endif; ?>
                                     <?php endif; ?>
                                 <?php else: ?>
-                                    <strong style="color: #2c3e50; font-size: 1.1rem;"><?php echo htmlspecialchars($item['name']); ?></strong>
-                                    <div style="margin-top: 0.5rem;">
-                                        <?php foreach ($item['details'] as $key => $value): ?>
-                                            <span style="display: inline-block; margin-right: 1rem; color: #666; font-size: 0.9rem;">
-                                                <strong><?php echo htmlspecialchars($key); ?>:</strong> <?php echo htmlspecialchars($value); ?>
-                                            </span>
-                                        <?php endforeach; ?>
-                                    </div>
+                                    <!-- 장바구니에서 온 주문: details 배열로 표시 -->
+                                    <?php foreach ($item['details'] as $key => $value): ?>
+                                        <div class="spec-item">
+                                            <span style="font-weight: 500;"><?php echo htmlspecialchars($key); ?>:</span> <?php echo htmlspecialchars($value); ?>
+                                        </div>
+                                    <?php endforeach; ?>
                                     <?php
                                     // 📎 추가 옵션 표시 (장바구니와 동일한 스타일)
                                     $optionDetails = $optionsDisplay->getOrderDetails($item);
@@ -563,7 +547,7 @@ if (!empty($debug_info) && strpos($_SERVER['HTTP_HOST'], 'localhost') !== false)
                                     <?php endif; ?>
                                 <?php endif; ?>
                         </td>
-                        <td class="td-right">
+                        <td class="td-right" style="border: 1px solid #ccc; padding: 10px; vertical-align: top; text-align: right;">
                             <div class="price-total" style="font-size: 18px;">
                                 <?php echo number_format($is_direct_order ? $item['vat_price'] : $item['st_price_vat']); ?>원
                             </div>
@@ -638,8 +622,8 @@ if (!empty($debug_info) && strpos($_SERVER['HTTP_HOST'], 'localhost') !== false)
                         </colgroup>
                         <tbody>
                             <tr>
-                                <th class="th-left">👤 성명/상호 *</th>
-                                <td>
+                                <th class="th-left" style="border: 1px solid #ccc; padding: 10px; background: #f3f3f3; text-align: center; font-weight: bold;">👤 성명/상호 *</th>
+                                <td style="border: 1px solid #ccc; padding: 10px;">
                                     <input type="text" name="username" required
                                            value="<?php
                                            if ($is_logged_in && $user_info) {
@@ -657,8 +641,8 @@ if (!empty($debug_info) && strpos($_SERVER['HTTP_HOST'], 'localhost') !== false)
                                            placeholder="성명 또는 상호명"
                                            style="width: 100%; padding: 8px; border: 1px solid #ddd; border-radius: 3px;">
                                 </td>
-                                <th class="th-left">📧 이메일 *</th>
-                                <td>
+                                <th class="th-left" style="border: 1px solid #ccc; padding: 10px; background: #f3f3f3; text-align: center; font-weight: bold;">📧 이메일 *</th>
+                                <td style="border: 1px solid #ccc; padding: 10px;">
                                     <input type="email" name="email" required
                                            value="<?php echo $is_logged_in ? htmlspecialchars($user_info['email'] ?? '') : ''; ?>"
                                            placeholder="이메일 주소"
@@ -666,15 +650,15 @@ if (!empty($debug_info) && strpos($_SERVER['HTTP_HOST'], 'localhost') !== false)
                                 </td>
                             </tr>
                             <tr>
-                                <th class="th-left">📞 전화번호 *</th>
-                                <td>
+                                <th class="th-left" style="border: 1px solid #ccc; padding: 10px; background: #f3f3f3; text-align: center; font-weight: bold;">📞 전화번호 *</th>
+                                <td style="border: 1px solid #ccc; padding: 10px;">
                                     <input type="tel" name="phone" required
                                            value="<?php echo $is_logged_in ? htmlspecialchars($user_info['phone'] ?? '') : ''; ?>"
                                            placeholder="전화번호"
                                            style="width: 100%; padding: 8px; border: 1px solid #ddd; border-radius: 3px;">
                                 </td>
-                                <th class="th-left">📱 핸드폰</th>
-                                <td>
+                                <th class="th-left" style="border: 1px solid #ccc; padding: 10px; background: #f3f3f3; text-align: center; font-weight: bold;">📱 핸드폰</th>
+                                <td style="border: 1px solid #ccc; padding: 10px;">
                                     <input type="tel" name="Hendphone"
                                            placeholder="핸드폰 번호"
                                            style="width: 100%; padding: 8px; border: 1px solid #ddd; border-radius: 3px;">

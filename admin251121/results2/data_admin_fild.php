@@ -1,0 +1,42 @@
+<?php
+declare(strict_types=1);
+
+// ✅ PHP 7.4 호환: 입력 변수 초기화
+$mode = $_GET['mode'] ?? $_POST['mode'] ?? '';
+$no = $_GET['no'] ?? $_POST['no'] ?? '';
+$search = $_GET['search'] ?? $_POST['search'] ?? '';
+$id = $_GET['id'] ?? $_POST['id'] ?? '';
+$name = $_GET['name'] ?? $_POST['name'] ?? '';
+$code = $_GET['code'] ?? $_POST['code'] ?? '';
+$page = $_GET['page'] ?? $_POST['page'] ?? '';
+
+// 자료 호출
+include"../../db.php";
+$result= mysqli_query($db, "select * from Mlnag_Results_Admin where id='$id'");
+// ⚠️  에러 처리 권장: mysqli_error() 사용을 고려하세요
+
+$rows=mysqli_num_rows($result);
+if($rows){
+
+while($row= mysqli_fetch_array($result)) 
+{ 
+
+$DataAdminFild_item="$row[item]";  
+$DataAdminFild_title="$row[title]";  
+$DataAdminFild_id="$row[id]";   
+$DataAdminFild_celect="$row[celect]";   
+$DataAdminFild_date="$row[date]";   
+
+}
+
+}else{
+echo ("<script language=javascript>
+window.alert('$id - 테이블에 관환 자료가 없습니다.');
+history.go(-1);
+</script>
+");
+exit;
+}
+
+mysqli_close($db); 
+?>

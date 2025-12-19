@@ -1,0 +1,344 @@
+<?php
+declare(strict_types=1);
+
+// ✅ PHP 7.4 호환: 입력 변수 초기화
+$mode = $_GET['mode'] ?? $_POST['mode'] ?? '';
+$no = $_GET['no'] ?? $_POST['no'] ?? '';
+$search = $_GET['search'] ?? $_POST['search'] ?? '';
+$id = $_GET['id'] ?? $_POST['id'] ?? '';
+$name = $_GET['name'] ?? $_POST['name'] ?? '';
+$code = $_GET['code'] ?? $_POST['code'] ?? '';
+$page = $_GET['page'] ?? $_POST['page'] ?? '';
+
+if($mode=="view"){
+
+include"../title.php";
+
+include"../../db.php";
+$result= mysqli_query($db, "select * from MlangOrder_LoveStry103 where no='$no'");
+// ⚠️  에러 처리 권장: mysqli_error() 사용을 고려하세요
+
+$rows=mysqli_num_rows($result);
+if($rows){
+
+while($row= mysqli_fetch_array($result)) 
+{
+$BBAdminSelect="$row[AdminSelect]";	
+?>
+
+<style>
+.td1 {font-family:굴림; font-size: 9pt;; color:#FFFFFF; font-weight:bold; line-height: normal;}
+.td2 {font-family:굴림; font-size: 9pt;; color:#008080; font-weight:none; line-height:130%;}
+</style>
+
+</head>
+
+<BR>
+<table border=0 align=center width=90% cellpadding='0' cellspacing='1' bgcolor='#65B1B1'>
+<tr><td valign=top>
+
+<table border=0 align=center width=100% cellpadding='8' cellspacing='1' bgcolor='#FFFFFF'>
+<tr>
+<td bgcolor='#65B1B1' width=100 class='td1' align='left'>&nbsp;이벤트 구분&nbsp;</td>
+<td bgcolor='#FFFFFF'>
+<?=htmlspecialchars($row[style]);?>
+</td>
+</tr>
+
+<tr>
+<td bgcolor='#65B1B1' class='td1' align='left'>&nbsp;이 름&nbsp;</td>
+<td bgcolor='#FFFFFF' class='td2'>
+<?=htmlspecialchars($row[fild_1]);?>
+</td>
+</tr>
+
+<tr>
+<td bgcolor='#65B1B1' class='td1' align='left'>&nbsp;성 별&nbsp;</td>
+<td bgcolor='#FFFFFF' class='td2'>
+<?=htmlspecialchars($row[fild_2]);?>
+</td>
+</tr>
+
+<tr>
+<td bgcolor='#65B1B1' class='td1' align='left'>&nbsp;생년월일&nbsp;</td>
+<td bgcolor='#FFFFFF' class='td2'>
+<?=htmlspecialchars($row[fild_3]);?>년<?=htmlspecialchars($row[fild_4]);?>월<?=htmlspecialchars($row[fild_5]);?>일
+</td>
+</tr>
+
+<tr>
+<td bgcolor='#65B1B1' class='td1' align='left'>&nbsp;학 력&nbsp;</td>
+<td bgcolor='#FFFFFF' class='td2'>
+<?=htmlspecialchars($row[fild_6]);?>
+</td>
+</tr>
+
+<tr>
+<td bgcolor='#65B1B1' class='td1' align='left'>&nbsp;주 소&nbsp;</td>
+<td bgcolor='#FFFFFF' class='td2'>
+[<?=htmlspecialchars($row[fild_7]);?>]&nbsp;<?=htmlspecialchars($row[fild_8]);?>&nbsp;<?=htmlspecialchars($row[fild_9]);?>
+</td>
+</tr>
+
+<tr>
+<td bgcolor='#65B1B1' class='td1' align='left'>&nbsp;이메일&nbsp;</td>
+<td bgcolor='#FFFFFF' class='td2'>
+<?=htmlspecialchars($row[fild_10]);?>
+</td>
+</tr>
+
+<tr>
+<td bgcolor='#65B1B1' class='td1' align='left'>&nbsp;직 업&nbsp;</td>
+<td bgcolor='#FFFFFF' class='td2'>
+<?=htmlspecialchars($row[fild_11]);?>
+</td>
+</tr>
+
+<tr>
+<td bgcolor='#65B1B1' class='td1' align='left'>&nbsp;신 장&nbsp;</td>
+<td bgcolor='#FFFFFF' class='td2'>
+<?=htmlspecialchars($row[fild_12]);?> cm
+</td>
+</tr>
+
+<tr>
+<td bgcolor='#65B1B1' class='td1' align='left'>&nbsp;체 중&nbsp;</td>
+<td bgcolor='#FFFFFF' class='td2'>
+<?=htmlspecialchars($row[fild_13]);?> kg
+</td>
+</tr>
+
+<tr>
+<td bgcolor='#65B1B1' class='td1' align='left'>&nbsp;연락처&nbsp;</td>
+<td bgcolor='#FFFFFF' class='td2'>
+<?=htmlspecialchars($row[fild_14]);?>
+</td>
+</tr>
+
+<tr>
+<td bgcolor='#65B1B1' class='td1' align='left'>&nbsp;핸드폰&nbsp;</td>
+<td bgcolor='#FFFFFF' class='td2'>
+<?=htmlspecialchars($row[fild_15]);?>
+</td>
+</tr>
+
+</table>
+
+</td></tr></table>
+
+<p align=center>
+<input type='button' onClick='javascript:window.close();' value='창닫기-CLOSE' style='font-size:10pt; background-color:#429EB2; color:#FFFFFF; border-style:solid; height:24px; border:2 solid #84D0E0;'>
+</p>
+
+<?php 
+}
+
+}else{echo("<p align=center><b>등록 자료가 없음.</b></p>");}
+
+mysqli_close($db); 
+
+
+///////^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^/////////
+
+if($BBAdminSelect=="no"){
+
+include"../../db.php";
+$query ="UPDATE MlangOrder_LoveStry103 SET AdminSelect='yes' WHERE no='$no'";
+$result= mysqli_query($db, $query);
+	if(!$result) {
+		echo "
+			<script language=javascript>
+				window.alert(\"DB 접속 에러입니다!\")
+				history.go(-1);
+			</script>";
+		exit;
+
+} else {
+	
+	echo ("
+		<script language=javascript>
+         opener.parent.location.reload();
+		</script>
+	");
+		exit;
+
+}
+
+mysqli_close($db);
+}
+
+
+
+exit;
+}
+
+//////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+
+if($mode=="delete"){
+
+include"../../db.php";
+$result = mysqli_query($db, "DELETE FROM MlangOrder_LoveStry103 WHERE no='$no'");
+mysqli_close($db);
+
+	echo ("
+		<script language=javascript>
+		alert('\\n정보를 정상적으로 삭제하였습니다.\\n');
+        opener.parent.location.reload();
+        window.self.close();
+		</script>
+	");
+		exit;
+
+}
+?>
+
+
+<?php 
+$M123="..";
+include"../top.php"; 
+?>
+
+<head>
+<script>
+function Member_Admin_Del(no){
+	if (confirm(+no+'번 의 상담 자료를 삭제 하시겠습니까..?\n\n한번 삭제한 자료는 복구 되지 않으니 신중을 기해주세요.............!!')) {
+		str='<?=$PHP_SELF?>?no='+no+'&mode=delete';
+        popup = window.open("","","scrollbars=no,resizable=yes,width=400,height=50,top=2000,left=2000");
+        popup.document.location.href=str;
+        popup.focus();
+	}
+}
+</script>
+
+</head>
+
+
+<table border=0 align=center width=100% cellpadding='8' cellspacing='3' class='coolBar'>
+<tr>
+<td align=left colspan=12>
+<font color=red>*</font>관리자가 자료를 들여다 본자료는 확인으로 자동으로 갱신됩니다.<BR>
+</td>
+</tr>
+</table>
+
+<table border=0 align=center width=100% cellpadding='5' cellspacing='1' class='coolBar'>
+<tr>
+<td align=center>등록번호</font></td>
+<td align=center>성명</font></td>
+<td align=center>접수Time</td>
+<td align=center>확인여부</td>
+<td align=center>자세한정보보기</td>
+<td align=center>관리</td>
+<tr>
+
+<?php 
+include"../../db.php";
+$table="MlangOrder_LoveStry103";
+
+
+$Mlang_query="select * from $table";
+
+$query= mysqli_query($db, "$Mlang_query");
+$recordsu= mysqli_num_rows($query);
+$total = mysqli_affected_rows($db);
+
+$listcut= 12;  //한 페이지당 보여줄 목록 게시물수. 
+if(!$offset) $offset=0; 
+
+$result= mysqli_query($db, "$Mlang_query order by NO desc limit $offset,$listcut");
+$rows=mysqli_num_rows($result);
+if($rows){
+
+
+while($row= mysqli_fetch_array($result)) 
+{ 
+?>
+
+<tr bgcolor='#575757'>
+<td align=center><font color=white><?=$row[no]?></font></td>
+<td align=center><font color=white><?=$row[fild_1]?></font></td>
+<td align=center><font color=white><?=$row[date]?></font></td>
+<td align=center>
+<?php 
+if($row[AdminSelect]=="no"){echo("<b><font color=red>미확인</font></b>");}
+if($row[AdminSelect]=="yes"){echo("<font color=white>확인</font>");}
+?>
+</td>
+<td align=center><input type='button' onClick="javascript:popup=window.open('<?=$PHP_SELF?>?mode=view&no=<?=$row[no]?>', 'MlangOrder_LoveStry103','width=600,height=430,top=0,left=0,menubar=no,resizable=no,statusbar=no,scrollbars=yes,toolbar=no'); popup.focus();" value=' 자세한정보보기 '></font></td>
+<td align=center>
+<input type='button' onClick="javascript:Member_Admin_Del('<?=$row[no]?>');" value=' 삭제 '>
+</td>
+<tr>
+
+<?php 
+		$i=$i+1;
+} 
+
+
+}else{
+
+if($search){
+echo"<tr><td colspan=10><p align=center><BR><BR>관련 검색 자료없음</p></td></tr>";
+}else{
+echo"<tr><td colspan=10><p align=center><BR><BR>등록 자료없음</p></td></tr>";
+}
+
+}
+
+?>
+
+
+</table>
+
+
+
+<p align='center'>
+
+<?php 
+if($rows){
+
+$mlang_pagego="cate=$cate$title_search=$title_search"; // 필드속성들 전달값
+
+$pagecut= 7;  //한 장당 보여줄 페이지수 
+$one_bbs= $listcut*$pagecut;  //한 장당 실을 수 있는 목록(게시물)수 
+$start_offset= intval($offset/$one_bbs)*$one_bbs;  //각 장에 처음 페이지의 $offset값. 
+$end_offset= intval($recordsu/$one_bbs)*$one_bbs;  //마지막 장의 첫페이지의 $offset값. 
+$start_page= intval($start_offset/$listcut)+1; //각 장에 처음 페이지의 값. 
+$end_page= ($recordsu%$listcut>0)? intval($recordsu/$listcut)+1: intval($recordsu/$listcut); 
+//마지막 장의 끝 페이지. 
+if($start_offset!= 0) 
+{ 
+  $apoffset= $start_offset- $one_bbs; 
+  echo "<a href='$PHP_SELF?offset=$apoffset&$mlang_pagego'>...[이전]</a>&nbsp;"; 
+} 
+
+for($i= $start_page; $i< $start_page+$pagecut; $i++) 
+{ 
+$newoffset= ($i-1)*$listcut; 
+
+if($offset!= $newoffset){
+  echo "&nbsp;<a href='$PHP_SELF?offset=$newoffset&$mlang_pagego'>($i)</a>&nbsp;"; 
+}else{echo("&nbsp;<font style='font:bold; color:green;'>($i)</font>&nbsp;"); } 
+
+if($i==$end_page) break; 
+} 
+
+if($start_offset!= $end_offset) 
+{ 
+  $nextoffset= $start_offset+ $one_bbs; 
+  echo "&nbsp;<a href='$PHP_SELF?offset=$nextoffset&$mlang_pagego'>[다음]...</a>"; 
+} 
+echo "총목록갯수: $end_page 개"; 
+
+
+}
+
+mysqli_close($db); 
+?> 
+
+</p>
+<!------------------------------------------- 리스트 끝----------------------------------------->
+
+<?php 
+include"../down.php";
+?>

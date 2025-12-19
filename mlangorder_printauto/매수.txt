@@ -1,0 +1,16 @@
+
+ ▐▛███▜▌   Claude Code v2.0.64
+▝▜█████▛▘  Opus 4.5 · Claude Max
+  ▘▘ ▝▝    /var/www/html/mlangorder_printauto
+══════════════════ Conversation compacted · ctrl+o for history ═════════════════
+
+> /compact 
+  ⎿  Compacted (ctrl+o to see full summary)
+  ⎿  Read ../.gitignore (167 lines)
+  ⎿  Read ../../../../home/user/.claude/MCP_Tavily.md (285 lines)
+  ⎿  Read ../../../../home/user/.claude/MCP_Serena.md (32 lines)
+  ⎿  Read ../../../../home/user/.claude/MCP_Sequential.md (33 lines)
+  ⎿  Read ../../../../home/user/.claude/MCP_Playwright.md (32 lines)
+
+
+

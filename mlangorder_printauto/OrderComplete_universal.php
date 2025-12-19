@@ -333,13 +333,22 @@ function displayProductDetails($connect, $order) {
 
             case 'inserted':
             case 'leaflet':
-                // 전단지/리플렛
-                if (isset($json_data['MY_type'])) $html .= '<tr><th class="th-left" style="width: 30%; background: #f0f0f0; padding: 8px; font-weight: 600; text-align: left; border: 1px solid #ccc;">인쇄색상</th><td style="padding: 8px; border: 1px solid #ccc;">' . getCategoryName($connect, $json_data['MY_type']) . '</td></tr>';
-                if (isset($json_data['MY_Fsd'])) $html .= '<tr><th class="th-left" style="width: 30%; background: #f0f0f0; padding: 8px; font-weight: 600; text-align: left; border: 1px solid #ccc;">용지</th><td style="padding: 8px; border: 1px solid #ccc;">' . getCategoryName($connect, $json_data['MY_Fsd']) . '</td></tr>';
-                if (isset($json_data['PN_type'])) $html .= '<tr><th class="th-left" style="width: 30%; background: #f0f0f0; padding: 8px; font-weight: 600; text-align: left; border: 1px solid #ccc;">규격</th><td style="padding: 8px; border: 1px solid #ccc;">' . getCategoryName($connect, $json_data['PN_type']) . '</td></tr>';
-                if (isset($json_data['MY_amount'])) $html .= '<tr><th class="th-left" style="width: 30%; background: #f0f0f0; padding: 8px; font-weight: 600; text-align: left; border: 1px solid #ccc;">수량</th><td style="padding: 8px; border: 1px solid #ccc;">' . number_format($json_data['MY_amount']) . ($order['unit'] ?? '연') . '</td></tr>';
-                if (isset($json_data['POtype'])) $html .= '<tr><th class="th-left" style="width: 30%; background: #f0f0f0; padding: 8px; font-weight: 600; text-align: left; border: 1px solid #ccc;">인쇄면</th><td style="padding: 8px; border: 1px solid #ccc;">' . ($json_data['POtype'] == '1' ? '단면' : '양면') . '</td></tr>';
-                if (isset($json_data['ordertype'])) $html .= '<tr><th class="th-left" style="width: 30%; background: #f0f0f0; padding: 8px; font-weight: 600; text-align: left; border: 1px solid #ccc;">디자인</th><td style="padding: 8px; border: 1px solid #ccc;">' . ($json_data['ordertype'] == 'total' ? '디자인+인쇄' : '인쇄만') . '</td></tr>';
+                // 전단지/리플렛: 슬래시 구분 2줄 압축 표시 (test02.html 스타일)
+                $line1_parts = [];
+                $line2_parts = [];
+                if (isset($json_data['MY_type'])) $line1_parts[] = getCategoryName($connect, $json_data['MY_type']);
+                if (isset($json_data['MY_Fsd'])) $line1_parts[] = getCategoryName($connect, $json_data['MY_Fsd']);
+                if (isset($json_data['PN_type'])) $line2_parts[] = getCategoryName($connect, $json_data['PN_type']);
+                if (isset($json_data['MY_amount'])) $line2_parts[] = number_format($json_data['MY_amount']) . ($order['unit'] ?? '연');
+                if (isset($json_data['POtype'])) $line2_parts[] = ($json_data['POtype'] == '1' ? '단면' : '양면');
+                if (isset($json_data['ordertype'])) $line2_parts[] = ($json_data['ordertype'] == 'total' ? '디자인+인쇄' : '인쇄만');
+
+                if (!empty($line1_parts)) {
+                    $html .= '<tr><th class="th-left" style="width: 20%; background: #f0f0f0; padding: 8px; font-weight: 600; text-align: left; border: 1px solid #ccc;">색상/용지</th><td style="padding: 8px; border: 1px solid #ccc;">' . implode(' / ', $line1_parts) . '</td></tr>';
+                }
+                if (!empty($line2_parts)) {
+                    $html .= '<tr><th class="th-left" style="width: 20%; background: #f0f0f0; padding: 8px; font-weight: 600; text-align: left; border: 1px solid #ccc;">규격/옵션</th><td style="padding: 8px; border: 1px solid #ccc;">' . implode(' / ', $line2_parts) . '</td></tr>';
+                }
                 break;
 
             default:
@@ -610,6 +619,11 @@ include "../includes/header.php";
 include "../includes/nav.php";
 ?>
 
+<!-- Google Fonts - Noto Sans KR -->
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@400;500;700&display=swap" rel="stylesheet">
+
 <!-- 📱 Excel 스타일 OrderComplete -->
 <style>
 /* Excel Design System - 깔끔한 스프레드시트 스타일 */
@@ -629,11 +643,14 @@ include "../includes/nav.php";
 .universal-container {
     max-width: 1200px;
     margin: 10px auto;
-    padding: 15px;
+    padding: 20px;
     background: white;
-    border-radius: 4px;  /* Excel 스타일 */
+    border-radius: 4px;
     box-shadow: 0 2px 4px rgba(0,0,0,0.1);
     font-family: 'Noto Sans KR', sans-serif;
+    font-size: 14px;
+    color: #222;
+    line-height: 1.6;
 }
 
 /* 📊 Excel 스타일 주문 테이블 */
@@ -642,38 +659,40 @@ include "../includes/nav.php";
     border-collapse: collapse;
     margin: 15px 0;
     background: white;
-    border: 1px solid var(--excel-border);
+    border: 1px solid #ccc;
+    table-layout: fixed;
 }
 
 .order-table thead th {
-    background: var(--excel-gray);
-    color: var(--text-primary);
-    font-weight: 700;
-    padding: 10px 12px;
+    background: #f3f3f3;
+    color: #222;
+    font-weight: bold;
+    padding: 10px;
     text-align: center;
-    font-size: 13px;
-    border: 1px solid var(--excel-border);
+    font-size: 14px;
+    border: 1px solid #ccc;
 }
 
 .order-table tbody tr {
     transition: background-color 0.2s ease;
-    border-bottom: 1px solid var(--excel-border);
+    border-bottom: 1px solid #ccc;
 }
 
 .order-table tbody tr:nth-child(even) {
-    background: #F9F9F9;
+    background: #fafafa;
 }
 
 .order-table tbody tr:hover {
-    background: var(--hover-blue) !important;
+    background: #f5f5f5;
 }
 
 .order-table td {
-    padding: 12px;
+    padding: 10px;
     vertical-align: top;
-    font-size: 0.9rem;
-    border: 1px solid var(--excel-border);
-    color: var(--text-primary);
+    font-size: 14px;
+    border: 1px solid #ccc;
+    color: #222;
+    word-break: break-word;
 }
 
 /* 테이블 컬럼 스타일 */
@@ -771,24 +790,28 @@ include "../includes/nav.php";
 .info-card {
     background: white;
     border-radius: 4px;
-    padding: 12px;
+    padding: 8px 10px;
     border: 1px solid var(--excel-border);
+    line-height: 1.2;
 }
 
 .info-card h3 {
-    margin: 0 0 10px 0;
+    margin: 0 0 4px 0;
     font-size: 0.95rem;
     color: var(--text-primary);
     font-weight: 600;
     display: flex;
     align-items: center;
     gap: 8px;
+    line-height: 1.2;
 }
 
 .info-row {
     display: flex;
-    margin-bottom: 5px;
+    margin-bottom: 0;
     align-items: center;
+    line-height: 1.2;
+    padding: 1px 0;
 }
 
 /* 기존 중복 정의 제거됨 */
@@ -1546,6 +1569,9 @@ include "../includes/nav.php";
         </div>
     </div>
 
+    <!-- 주문완료 제목 -->
+    <h2 style="text-align: center; font-size: 22px; font-weight: bold; margin: 20px 0 30px; color: #2c3e50;">주문이 정상적으로 완료되었습니다</h2>
+
     <?php
         // Gemini Debug Block
         if (!empty($order_list)) {
@@ -1554,7 +1580,7 @@ include "../includes/nav.php";
             error_log("================================================");
         }
     ?>
-    <!-- 📊 주문 테이블 -->
+    <!-- 주문 테이블 -->
     <table class="order-table">
         <thead>
             <tr>
@@ -1707,19 +1733,18 @@ include "../includes/nav.php";
         </div>
     </div>
 
-    <!-- 🎬 액션 섹션 -->
+    <!-- 액션 섹션 -->
     <div class="action-section">
-        <h3>🛍️ 다음 단계</h3>
         <div class="action-buttons">
             <a href="<?php echo getLastOrderProductUrl($order_list); ?>" class="btn-action btn-continue">
-                🛒 계속 쇼핑하기
+                계속 쇼핑하기
             </a>
             <button onclick="openPrintWindow()" class="btn-action btn-print">
-                🖨️ 주문서 인쇄
+                주문서 인쇄
             </button>
         </div>
         <p style="margin-top: 15px; font-size: 0.9rem; color: var(--text-secondary);">
-            입금 확인 후 제작이 시작됩니다. 궁금한 사항은 <strong>📞 1688-2384</strong>로 연락주세요.
+            입금 확인 후 제작이 시작됩니다. 궁금한 사항은 <strong>1688-2384</strong>로 연락주세요.
         </p>
     </div>
     

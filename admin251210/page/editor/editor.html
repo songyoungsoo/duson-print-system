@@ -1,0 +1,851 @@
+
+
+<html>
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=euc-kr">
+<title>에디터</title>
+
+
+<!-- Styles -->
+<link REL="stylesheet" TYPE="text/css" HREF="toolbars.css">
+
+<!-- Script Functions and Event Handlers -->
+<script LANGUAGE="JavaScript" SRC="dhtmled.js"></script>
+
+
+<script ID="clientEventHandlersJS" LANGUAGE="javascript">
+<!--
+
+//
+// Constants
+//
+var MENU_SEPARATOR = ""; // Context menu separator
+
+//
+// Globals
+//
+var docComplete = false;
+var initialDocComplete = false;
+
+var QueryStatusToolbarButtons = new Array();
+var QueryStatusEditMenu = new Array();
+var QueryStatusFormatMenu = new Array();
+var QueryStatusHTMLMenu = new Array();
+var QueryStatusTableMenu = new Array();
+var QueryStatusZOrderMenu = new Array();
+var ContextMenu = new Array();
+var GeneralContextMenu = new Array();
+var TableContextMenu = new Array();
+var AbsPosContextMenu = new Array();
+
+//
+// Utility functions
+//
+
+// Constructor for custom object that represents an item on the context menu
+function ContextMenuItem(string, cmdId) {
+  this.string = string;
+  this.cmdId = cmdId;
+}
+
+// Constructor for custom object that represents a QueryStatus command and 
+// corresponding toolbar element.
+function QueryStatusItem(command, element) {
+  this.command = command;
+  this.element = element;
+}
+
+//
+// Event handlers
+//
+function window_onload() {
+
+  // Initialze QueryStatus tables. These tables associate a command id with the
+  // corresponding button object. Must be done on window load, 'cause the buttons must exist.
+  QueryStatusToolbarButtons[0] = new QueryStatusItem(DECMD_BOLD, document.body.all["DECMD_BOLD"]);
+  QueryStatusToolbarButtons[1] = new QueryStatusItem(DECMD_COPY, document.body.all["DECMD_COPY"]);
+  QueryStatusToolbarButtons[2] = new QueryStatusItem(DECMD_CUT, document.body.all["DECMD_CUT"]);
+  QueryStatusToolbarButtons[3] = new QueryStatusItem(DECMD_HYPERLINK, document.body.all["DECMD_HYPERLINK"]);
+  QueryStatusToolbarButtons[4] = new QueryStatusItem(DECMD_INDENT, document.body.all["DECMD_INDENT"]);
+  QueryStatusToolbarButtons[5] = new QueryStatusItem(DECMD_ITALIC, document.body.all["DECMD_ITALIC"]);
+  QueryStatusToolbarButtons[6] = new QueryStatusItem(DECMD_JUSTIFYLEFT, document.body.all["DECMD_JUSTIFYLEFT"]);
+  QueryStatusToolbarButtons[7] = new QueryStatusItem(DECMD_JUSTIFYCENTER, document.body.all["DECMD_JUSTIFYCENTER"]);
+  QueryStatusToolbarButtons[8] = new QueryStatusItem(DECMD_JUSTIFYRIGHT, document.body.all["DECMD_JUSTIFYRIGHT"]);
+  QueryStatusToolbarButtons[9] = new QueryStatusItem(DECMD_ORDERLIST, document.body.all["DECMD_ORDERLIST"]);
+  QueryStatusToolbarButtons[10] = new QueryStatusItem(DECMD_OUTDENT, document.body.all["DECMD_OUTDENT"]);
+  QueryStatusToolbarButtons[11] = new QueryStatusItem(DECMD_PASTE, document.body.all["DECMD_PASTE"]);
+  QueryStatusToolbarButtons[12] = new QueryStatusItem(DECMD_UNDERLINE, document.body.all["DECMD_UNDERLINE"]);
+  QueryStatusToolbarButtons[13] = new QueryStatusItem(DECMD_UNORDERLIST, document.body.all["DECMD_UNORDERLIST"]);
+  QueryStatusToolbarButtons[14] = new QueryStatusItem(DECMD_INSERTTABLE, document.body.all["DECMD_INSERTTABLE"]);
+  QueryStatusToolbarButtons[15] = new QueryStatusItem(DECMD_INSERTROW, document.body.all["DECMD_INSERTROW"]);
+  QueryStatusToolbarButtons[16] = new QueryStatusItem(DECMD_DELETEROWS, document.body.all["DECMD_DELETEROWS"]);
+  QueryStatusToolbarButtons[17] = new QueryStatusItem(DECMD_INSERTCOL, document.body.all["DECMD_INSERTCOL"]);
+  QueryStatusToolbarButtons[18] = new QueryStatusItem(DECMD_DELETECOLS, document.body.all["DECMD_DELETECOLS"]);
+  QueryStatusToolbarButtons[19] = new QueryStatusItem(DECMD_INSERTCELL, document.body.all["DECMD_INSERTCELL"]);
+  QueryStatusToolbarButtons[20] = new QueryStatusItem(DECMD_DELETECELLS, document.body.all["DECMD_DELETECELLS"]);
+  QueryStatusToolbarButtons[21] = new QueryStatusItem(DECMD_MERGECELLS, document.body.all["DECMD_MERGECELLS"]);
+  QueryStatusToolbarButtons[22] = new QueryStatusItem(DECMD_SPLITCELL, document.body.all["DECMD_SPLITCELL"]);
+  QueryStatusToolbarButtons[23] = new QueryStatusItem(DECMD_SETFORECOLOR, document.body.all["DECMD_SETFORECOLOR"]);
+  QueryStatusToolbarButtons[24] = new QueryStatusItem(DECMD_SETBACKCOLOR, document.body.all["DECMD_SETBACKCOLOR"]);
+  QueryStatusEditMenu[0] = new QueryStatusItem(DECMD_UNDO, document.body.all["EDIT_UNDO"]);
+  QueryStatusEditMenu[1] = new QueryStatusItem(DECMD_REDO, document.body.all["EDIT_REDO"]);
+  QueryStatusEditMenu[2] = new QueryStatusItem(DECMD_CUT, document.body.all["EDIT_CUT"]);
+  QueryStatusEditMenu[3] = new QueryStatusItem(DECMD_COPY, document.body.all["EDIT_COPY"]);
+  QueryStatusEditMenu[4] = new QueryStatusItem(DECMD_PASTE, document.body.all["EDIT_PASTE"]);
+  QueryStatusEditMenu[5] = new QueryStatusItem(DECMD_DELETE, document.body.all["EDIT_DELETE"]);
+  QueryStatusHTMLMenu[0] = new QueryStatusItem(DECMD_HYPERLINK, document.body.all["HTML_HYPERLINK"]);
+  QueryStatusFormatMenu[0] = new QueryStatusItem(DECMD_FONT, document.body.all["FORMAT_FONT"]);
+  QueryStatusFormatMenu[1] = new QueryStatusItem(DECMD_BOLD, document.body.all["FORMAT_BOLD"]);
+  QueryStatusFormatMenu[2] = new QueryStatusItem(DECMD_ITALIC, document.body.all["FORMAT_ITALIC"]);
+  QueryStatusFormatMenu[3] = new QueryStatusItem(DECMD_UNDERLINE, document.body.all["FORMAT_UNDERLINE"]);
+  QueryStatusFormatMenu[4] = new QueryStatusItem(DECMD_JUSTIFYLEFT, document.body.all["FORMAT_JUSTIFYLEFT"]);
+  QueryStatusFormatMenu[5] = new QueryStatusItem(DECMD_JUSTIFYCENTER, document.body.all["FORMAT_JUSTIFYCENTER"]);
+  QueryStatusFormatMenu[6] = new QueryStatusItem(DECMD_JUSTIFYRIGHT, document.body.all["FORMAT_JUSTIFYRIGHT"]);
+  QueryStatusFormatMenu[7] = new QueryStatusItem(DECMD_SETFORECOLOR, document.body.all["FORMAT_SETFORECOLOR"]);
+  QueryStatusFormatMenu[8] = new QueryStatusItem(DECMD_SETBACKCOLOR, document.body.all["FORMAT_SETBACKCOLOR"]);
+  QueryStatusTableMenu[0] = new QueryStatusItem(DECMD_INSERTTABLE, document.body.all["TABLE_INSERTTABLE"]);
+  QueryStatusTableMenu[1] = new QueryStatusItem(DECMD_INSERTROW, document.body.all["TABLE_INSERTROW"]);
+  QueryStatusTableMenu[2] = new QueryStatusItem(DECMD_DELETEROWS, document.body.all["TABLE_DELETEROW"]);
+  QueryStatusTableMenu[3] = new QueryStatusItem(DECMD_INSERTCOL, document.body.all["TABLE_INSERTCOL"]);
+  QueryStatusTableMenu[4] = new QueryStatusItem(DECMD_DELETECOLS, document.body.all["TABLE_DELETECOL"]);
+  QueryStatusTableMenu[5] = new QueryStatusItem(DECMD_INSERTCELL, document.body.all["TABLE_INSERTCELL"]);
+  QueryStatusTableMenu[6] = new QueryStatusItem(DECMD_DELETECELLS, document.body.all["TABLE_DELETECELL"]);
+  QueryStatusTableMenu[7] = new QueryStatusItem(DECMD_MERGECELLS, document.body.all["TABLE_MERGECELL"]);
+  QueryStatusTableMenu[8] = new QueryStatusItem(DECMD_SPLITCELL, document.body.all["TABLE_SPLITCELL"]);
+  QueryStatusZOrderMenu[0] = new QueryStatusItem(DECMD_SEND_TO_BACK, document.body.all["ZORDER_SENDBACK"]);
+  QueryStatusZOrderMenu[1] = new QueryStatusItem(DECMD_BRING_TO_FRONT, document.body.all["ZORDER_BRINGFRONT"]);
+  QueryStatusZOrderMenu[2] = new QueryStatusItem(DECMD_SEND_BACKWARD, document.body.all["ZORDER_SENDBACKWARD"]);
+  QueryStatusZOrderMenu[3] = new QueryStatusItem(DECMD_BRING_FORWARD, document.body.all["ZORDER_BRINGFORWARD"]);
+  QueryStatusZOrderMenu[4] = new QueryStatusItem(DECMD_SEND_BELOW_TEXT, document.body.all["ZORDER_BELOWTEXT"]);
+  QueryStatusZOrderMenu[5] = new QueryStatusItem(DECMD_BRING_ABOVE_TEXT, document.body.all["ZORDER_ABOVETEXT"]);
+  
+  // Initialize the context menu arrays.
+  GeneralContextMenu[0] = new ContextMenuItem("잘라내기", DECMD_CUT);
+  GeneralContextMenu[1] = new ContextMenuItem("복사", DECMD_COPY);
+  GeneralContextMenu[2] = new ContextMenuItem("붙여넣기", DECMD_PASTE);
+  TableContextMenu[0] = new ContextMenuItem(MENU_SEPARATOR, 0);
+  TableContextMenu[1] = new ContextMenuItem("행삽입", DECMD_INSERTROW);
+  TableContextMenu[2] = new ContextMenuItem("행삭제", DECMD_DELETEROWS);
+  TableContextMenu[3] = new ContextMenuItem(MENU_SEPARATOR, 0);
+  TableContextMenu[4] = new ContextMenuItem("열삽입", DECMD_INSERTCOL);
+  TableContextMenu[5] = new ContextMenuItem("열삭제", DECMD_DELETECOLS);
+  TableContextMenu[6] = new ContextMenuItem(MENU_SEPARATOR, 0);
+  TableContextMenu[7] = new ContextMenuItem("셀삽입", DECMD_INSERTCELL);
+  TableContextMenu[8] = new ContextMenuItem("셀삭제", DECMD_DELETECELLS);
+  TableContextMenu[9] = new ContextMenuItem("셀병합", DECMD_MERGECELLS);
+  TableContextMenu[10] = new ContextMenuItem("셀나누기", DECMD_SPLITCELL);
+  	
+}
+
+function InsertTable() {
+  var pVar = ObjTableInfo;
+  var args = new Array();
+  var arr = null;
+     
+  // Display table information dialog
+  args["NumRows"] = ObjTableInfo.NumRows;
+  args["NumCols"] = ObjTableInfo.NumCols;
+  args["TableAttrs"] = ObjTableInfo.TableAttrs;
+  args["CellAttrs"] = ObjTableInfo.CellAttrs;
+  args["Caption"] = ObjTableInfo.Caption;
+  
+  arr = null;
+    
+  arr = showModalDialog( "instable.html",
+                         args,
+                         "font-family:Verdana; font-size:12; dialogWidth:30em; dialogHeight:20em; status:0; help:0" );
+  if (arr != null) {
+  
+    // Initialize table object
+    for ( elem in arr ) {
+      if ("NumRows" == elem && arr["NumRows"] != null) {
+        ObjTableInfo.NumRows = arr["NumRows"];
+      } else if ("NumCols" == elem && arr["NumCols"] != null) {
+        ObjTableInfo.NumCols = arr["NumCols"];
+      } else if ("TableAttrs" == elem) {
+        ObjTableInfo.TableAttrs = arr["TableAttrs"];
+      } else if ("CellAttrs" == elem) {
+        ObjTableInfo.CellAttrs = arr["CellAttrs"];
+      } else if ("Caption" == elem) {
+        ObjTableInfo.Caption = arr["Caption"];
+      }
+    }
+    
+    tbContentElement.ExecCommand(DECMD_INSERTTABLE,OLECMDEXECOPT_DODEFAULT, pVar);  
+  }
+}
+
+function tbContentElement_ShowContextMenu() {
+  var menuStrings = new Array();
+  var menuStates = new Array();
+  var state;
+  var i
+  var idx = 0;
+
+  // Rebuild the context menu. 
+  ContextMenu.length = 0;
+
+  // Always show general menu
+  for (i=0; i<GeneralContextMenu.length; i++) {
+    ContextMenu[idx++] = GeneralContextMenu[i];
+  }
+
+  // Is the selection inside a table? Add table menu if so
+  if (tbContentElement.QueryStatus(DECMD_INSERTROW) != DECMDF_DISABLED) {
+    for (i=0; i<TableContextMenu.length; i++) {
+      ContextMenu[idx++] = TableContextMenu[i];
+    }
+  }
+
+  // Is the selection on an absolutely positioned element? Add z-index commands if so
+  if (tbContentElement.QueryStatus(DECMD_LOCK_ELEMENT) != DECMDF_DISABLED) {
+    for (i=0; i<AbsPosContextMenu.length; i++) {
+      ContextMenu[idx++] = AbsPosContextMenu[i];
+    }
+  }
+
+  // Set up the actual arrays that get passed to SetContextMenu
+  for (i=0; i<ContextMenu.length; i++) {
+    menuStrings[i] = ContextMenu[i].string;
+    if (menuStrings[i] != MENU_SEPARATOR) {
+      state = tbContentElement.QueryStatus(ContextMenu[i].cmdId);
+    } else {
+      state = DECMDF_ENABLED;
+    }
+    if (state == DECMDF_DISABLED || state == DECMDF_NOTSUPPORTED) {
+      menuStates[i] = OLE_TRISTATE_GRAY;
+    } else if (state == DECMDF_ENABLED || state == DECMDF_NINCHED) {
+      menuStates[i] = OLE_TRISTATE_UNCHECKED;
+    } else { // DECMDF_LATCHED
+      menuStates[i] = OLE_TRISTATE_CHECKED;
+    }
+  }
+  
+  // Set the context menu
+  tbContentElement.SetContextMenu(menuStrings, menuStates);
+}
+
+function tbContentElement_ContextMenuAction(itemIndex) {
+  
+  if (ContextMenu[itemIndex].cmdId == DECMD_INSERTTABLE) {
+    InsertTable();
+  } else {
+    tbContentElement.ExecCommand(ContextMenu[itemIndex].cmdId, OLECMDEXECOPT_DODEFAULT);
+  }
+}
+
+// DisplayChanged handler. Very time-critical routine; this is called
+// every time a character is typed. QueryStatus those toolbar buttons that need
+// to be in synch with the current state of the document and update. 
+function tbContentElement_DisplayChanged() {
+  var i, s;
+		 
+  for (i=0; i<QueryStatusToolbarButtons.length; i++) {
+	s = tbContentElement.QueryStatus(QueryStatusToolbarButtons[i].command);
+	if (s == DECMDF_DISABLED || s == DECMDF_NOTSUPPORTED) {
+      TBSetState(QueryStatusToolbarButtons[i].element, "gray"); 
+    } else if (s == DECMDF_ENABLED  || s == DECMDF_NINCHED) {
+       TBSetState(QueryStatusToolbarButtons[i].element, "unchecked"); 
+    } else { // DECMDF_LATCHED
+       TBSetState(QueryStatusToolbarButtons[i].element, "checked");
+    }
+  }
+  
+  s = tbContentElement.QueryStatus(DECMD_GETFONTNAME);
+  if (s == DECMDF_DISABLED || s == DECMDF_NOTSUPPORTED) {
+	FontName.disabled = true;
+  } else {
+	FontName.disabled = false;
+    FontName.value = tbContentElement.ExecCommand(DECMD_GETFONTNAME, OLECMDEXECOPT_DODEFAULT);
+  }
+  if (s == DECMDF_DISABLED || s == DECMDF_NOTSUPPORTED) {
+	FontSize.disabled = true;
+  } else {
+	FontSize.disabled = false;
+    FontSize.value = tbContentElement.ExecCommand(DECMD_GETFONTSIZE, OLECMDEXECOPT_DODEFAULT);
+  }
+}
+
+function tbContentElement_DocumentComplete() {
+
+    if (initialDocComplete) {
+	    if (tbContentElement.CurrentDocumentPath == "") {
+        URL_VALUE.value = "http://";
+    }
+    else {
+      URL_VALUE.value = tbContentElement.CurrentDocumentPath;
+    }
+  }
+
+  initialDocComplete = true;
+  docComplete = true;
+}
+
+
+function DECMD_UNORDERLIST_onclick() {
+  tbContentElement.ExecCommand(DECMD_UNORDERLIST,OLECMDEXECOPT_DODEFAULT);
+  tbContentElement.focus();
+}
+
+function DECMD_UNDO_onclick() {
+  tbContentElement.ExecCommand(DECMD_UNDO,OLECMDEXECOPT_DODEFAULT);
+  tbContentElement.focus();
+}
+function DECMD_REDO_onclick() {
+  tbContentElement.ExecCommand(DECMD_REDO,OLECMDEXECOPT_DODEFAULT);
+  tbContentElement.focus();
+}
+function DECMD_UNDERLINE_onclick() {
+  tbContentElement.ExecCommand(DECMD_UNDERLINE,OLECMDEXECOPT_DODEFAULT);
+  tbContentElement.focus();
+}
+
+function DECMD_SETFORECOLOR_onclick() {
+  var arr = showModalDialog( "selcolor.html",
+                             "",
+                             "font-family:Verdana; font-size:12; dialogWidth:30em; dialogHeight:30em; status:0; help:0" );
+
+  if (arr != null) {
+    tbContentElement.ExecCommand(DECMD_SETFORECOLOR,OLECMDEXECOPT_DODEFAULT, arr);
+  }
+}
+
+function DECMD_SETBACKCOLOR_onclick() {
+  var arr = showModalDialog( "selcolor.html",
+                             "",
+                             "font-family:Verdana; font-size:12; dialogWidth:30em; dialogHeight:30em; status:0; help:0" );
+
+  if (arr != null) {
+    tbContentElement.ExecCommand(DECMD_SETBACKCOLOR,OLECMDEXECOPT_DODEFAULT, arr);
+  }
+  tbContentElement.focus();
+}
+
+function DECMD_SELECTALL_onclick() {
+  tbContentElement.ExecCommand(DECMD_SELECTALL,OLECMDEXECOPT_DODEFAULT);
+  tbContentElement.focus();
+}
+
+function DECMD_PASTE_onclick() {
+  tbContentElement.ExecCommand(DECMD_PASTE,OLECMDEXECOPT_DODEFAULT);
+  tbContentElement.focus();
+}
+
+function DECMD_OUTDENT_onclick() {
+  tbContentElement.ExecCommand(DECMD_OUTDENT,OLECMDEXECOPT_DODEFAULT);
+  tbContentElement.focus();
+}
+
+function DECMD_ORDERLIST_onclick() {
+  tbContentElement.ExecCommand(DECMD_ORDERLIST,OLECMDEXECOPT_DODEFAULT);
+  tbContentElement.focus();
+}
+
+function DECMD_JUSTIFYRIGHT_onclick() {
+  tbContentElement.ExecCommand(DECMD_JUSTIFYRIGHT,OLECMDEXECOPT_DODEFAULT);
+  tbContentElement.focus();
+}
+
+function DECMD_JUSTIFYLEFT_onclick() {
+  tbContentElement.ExecCommand(DECMD_JUSTIFYLEFT,OLECMDEXECOPT_DODEFAULT);
+  tbContentElement.focus();
+}
+
+function DECMD_JUSTIFYCENTER_onclick() {
+  tbContentElement.ExecCommand(DECMD_JUSTIFYCENTER,OLECMDEXECOPT_DODEFAULT);
+  tbContentElement.focus();
+}
+
+function DECMD_ITALIC_onclick() {
+  tbContentElement.ExecCommand(DECMD_ITALIC,OLECMDEXECOPT_DODEFAULT);
+  tbContentElement.focus();
+}
+
+function DECMD_INDENT_onclick() {
+  tbContentElement.ExecCommand(DECMD_INDENT,OLECMDEXECOPT_DODEFAULT);
+  tbContentElement.focus();
+}
+
+function DECMD_IMAGE_onclick() {
+  tbContentElement.ExecCommand(DECMD_IMAGE,OLECMDEXECOPT_PROMPTUSER);
+  tbContentElement.focus();
+}
+
+function DECMD_HYPERLINK_onclick() {
+  tbContentElement.ExecCommand(DECMD_HYPERLINK,OLECMDEXECOPT_PROMPTUSER);
+  tbContentElement.focus();
+}
+
+function DECMD_FINDTEXT_onclick() {
+  tbContentElement.ExecCommand(DECMD_FINDTEXT,OLECMDEXECOPT_PROMPTUSER);
+  tbContentElement.focus();
+}
+
+function DECMD_DELETE_onclick() {
+  tbContentElement.ExecCommand(DECMD_DELETE,OLECMDEXECOPT_DODEFAULT);
+  tbContentElement.focus();
+}
+
+function DECMD_CUT_onclick() {
+  tbContentElement.ExecCommand(DECMD_CUT,OLECMDEXECOPT_DODEFAULT);
+  tbContentElement.focus();
+}
+
+function DECMD_COPY_onclick() {
+  tbContentElement.ExecCommand(DECMD_COPY,OLECMDEXECOPT_DODEFAULT);
+  tbContentElement.focus();
+}
+
+function DECMD_BOLD_onclick() {
+  tbContentElement.ExecCommand(DECMD_BOLD,OLECMDEXECOPT_DODEFAULT);
+  tbContentElement.focus();
+}
+
+function INTRINSICS_onclick(html) {
+  var selection;
+  
+  selection = tbContentElement.DOM.selection.createRange();
+  selection.pasteHTML(html);
+  tbContentElement.focus();
+}
+
+function TABLE_DELETECELL_onclick() {
+  tbContentElement.ExecCommand(DECMD_DELETECELLS,OLECMDEXECOPT_DODEFAULT);
+  tbContentElement.focus();
+}
+
+function TABLE_DELETECOL_onclick() {
+  tbContentElement.ExecCommand(DECMD_DELETECOLS,OLECMDEXECOPT_DODEFAULT);
+  tbContentElement.focus();
+}
+
+function TABLE_DELETEROW_onclick() {
+  tbContentElement.ExecCommand(DECMD_DELETEROWS,OLECMDEXECOPT_DODEFAULT);
+  tbContentElement.focus();
+}
+
+function TABLE_INSERTCELL_onclick() {
+  tbContentElement.ExecCommand(DECMD_INSERTCELL,OLECMDEXECOPT_DODEFAULT);
+  tbContentElement.focus();
+}
+
+function TABLE_INSERTCOL_onclick() {
+  tbContentElement.ExecCommand(DECMD_INSERTCOL,OLECMDEXECOPT_DODEFAULT);
+  tbContentElement.focus();
+}
+
+function TABLE_INSERTROW_onclick() {
+  tbContentElement.ExecCommand(DECMD_INSERTROW,OLECMDEXECOPT_DODEFAULT);
+  tbContentElement.focus();
+}
+
+function TABLE_INSERTTABLE_onclick() {
+  InsertTable();
+  tbContentElement.focus();
+}
+
+function TABLE_MERGECELL_onclick() {
+  tbContentElement.ExecCommand(DECMD_MERGECELLS,OLECMDEXECOPT_DODEFAULT);
+  tbContentElement.focus();
+}
+
+function TABLE_SPLITCELL_onclick() {
+  tbContentElement.ExecCommand(DECMD_SPLITCELL,OLECMDEXECOPT_DODEFAULT);
+  tbContentElement.focus();
+}
+
+function FORMAT_FONT_onclick() {
+  tbContentElement.ExecCommand(DECMD_FONT,OLECMDEXECOPT_DODEFAULT);
+  tbContentElement.focus();
+}
+
+
+function ZORDER_ABOVETEXT_onclick() {
+  tbContentElement.ExecCommand(DECMD_BRING_ABOVE_TEXT, OLECMDEXECOPT_DODEFAULT);
+  tbContentElement.focus();
+}
+
+function TOOLBARS_onclick(toolbar) {
+  if (toolbar.TBSTATE == "hidden") {
+    TBSetState(toolbar, "dockedTop");
+  } else {
+    TBSetState(toolbar, "hidden");
+  }
+  tbContentElement.focus();
+}
+
+function ParagraphStyle_onchange() {	 
+  tbContentElement.ExecCommand(DECMD_SETBLOCKFMT, OLECMDEXECOPT_DODEFAULT, ParagraphStyle.value);
+  tbContentElement.focus();
+}
+
+function FontName_onchange() {
+  tbContentElement.ExecCommand(DECMD_SETFONTNAME, OLECMDEXECOPT_DODEFAULT, FontName.value);
+  tbContentElement.focus();
+}
+
+function FontSize_onchange() {
+  tbContentElement.ExecCommand(DECMD_SETFONTSIZE, OLECMDEXECOPT_DODEFAULT, parseInt(FontSize.value));
+  tbContentElement.focus();
+}
+function MENU_FILE_OPEN_onclick() {
+  docComplete = false;
+  tbContentElement.LoadDocument("", true);
+  tbContentElement.focus();
+}
+function OnMenuShow(QueryStatusArray, menu) {
+  var i, s;
+ 
+  for (i=0; i<QueryStatusArray.length; i++) {
+	s = tbContentElement.QueryStatus(QueryStatusArray[i].command);
+	if (s == DECMDF_DISABLED || s == DECMDF_NOTSUPPORTED) {
+      TBSetState(QueryStatusArray[i].element, "gray"); 
+    } else if (s == DECMDF_ENABLED  || s == DECMDF_NINCHED) {
+       TBSetState(QueryStatusArray[i].element, "unchecked"); 
+    } else { // DECMDF_LATCHED
+       TBSetState(QueryStatusArray[i].element, "checked");
+    }
+  }
+
+  // If the menu is the HTML menu, then
+  // check if the selection type is "Control", if so,
+  // set menu item state of the Intrinsics submenu and rebuild the menu.
+  if (QueryStatusArray[0].command == DECMD_HYPERLINK) { 
+    for (i=0; i < HTML_INTRINSICS.all.length; i++) {
+      if (HTML_INTRINSICS.all[i].className == "tbMenuItem") {    
+        if (tbContentElement.DOM.selection.type == "Control") {
+            TBSetState(HTML_INTRINSICS.all[i], "gray");  
+        } else {
+            TBSetState(HTML_INTRINSICS.all[i], "unchecked");  
+        }
+      }
+    }
+  }
+
+  // rebuild the menu so that menu item states will be reflected
+  TBRebuildMenu(menu, true);
+  
+  tbContentElement.focus();
+}
+
+
+
+
+function jsSourceView()
+{
+	var idEdit = tbContentElement.DOM.parentWindow;
+	var tmp = idEdit.document.documentElement.outerHTML;
+	
+	return false;
+}
+//-->
+</script>
+
+
+
+
+<script LANGUAGE="javascript">
+<!--
+function cmd_exec(what, prompt, opt) {
+	var s = tbContentElement.QueryStatus(what);
+	
+	if (!isHTMLMode()) return;
+	if (!prompt) prompt = OLECMDEXECOPT_DODEFAULT;
+	if (!opt) opt = '';
+	
+	if (s == DECMDF_DISABLED || s == DECMDF_NOTSUPPORTED) {
+		return false;
+	}
+	else {
+		tbContentElement.ExecCommand(what, prompt, opt);
+	}
+	tbContentElement.focus();
+}
+
+function cmd_exec2(what, opt) {
+	var s = tbContentElement.DOM.selection.createRange();
+	var type = tbContentElement.DOM.selection.type;
+	var target = (type == "None" ? tbContentElement.DOM : s);
+	
+	target.execCommand(what, false, opt);
+	tbContentElement.focus();
+	tbContentElement.DOM.body.focus();
+}
+
+function FILE_NEW() {
+	var conf=confirm("현재 편집 중인 문서 내용이 모두 지워집니다.");
+	
+	if (conf) {
+		tbContentElement.NewDocument();
+		tbContentElement.DocumentHTML = ("<html>\n<head>\n<title>Mlang Html edit1.0</title>\n<meta HTTP-EQUIV=\"Content-Type\" CONTENT=\"text/html; charset=euc-kr\">\n<style>P {margin-top:2px;margin-bottom:2px;}</style>\n</head><body bgcolor=white marginwidth=3 marginheight=0 topmargin=0 leftmargin=3 style=\"font:10pt 굴림\"></body></html>");
+	}
+	
+	tbContentElement.focus();
+}
+//-->
+</script>
+
+
+
+
+<script LANGUAGE="javascript" FOR="tbContentElement" EVENT="DisplayChanged">
+<!--
+return tbContentElement_DisplayChanged()
+//-->
+</script>
+
+<script LANGUAGE="javascript" FOR="tbContentElement" EVENT="DocumentComplete()">
+<!--
+return tbContentElement_DocumentComplete()
+//-->
+</script>
+
+<script LANGUAGE="javascript" FOR="tbContentElement" EVENT="ShowContextMenu">
+<!--
+return tbContentElement_ShowContextMenu()
+//-->
+</script>
+
+<script LANGUAGE="javascript" FOR="tbContentElement" EVENT="ContextMenuAction(itemIndex)">
+<!--
+return tbContentElement_ContextMenuAction(itemIndex)
+//-->
+</script>
+
+<script FOR="tbContentElement" event="DocumentComplete()">
+	tbContentElement.ExecCommand(DECMD_SETFONTNAME, OLECMDEXECOPT_DODEFAULT, "굴림");
+	tbContentElement.ExecCommand(DECMD_SETFONTSIZE, OLECMDEXECOPT_DODEFAULT, 2);
+</script>
+
+</head>
+<body oncontextmenu="return false" LANGUAGE="javascript"  marginwidth="0" marginheight="0" topmargin="0" leftmargin="0" onload="return window_onload()">
+
+<!-- Toolbars -->
+<div class="tbToolbar" ID="FormatToolbar">
+
+  <div class="tbButton" TITLE="새 문서" LANGUAGE="javascript" onClick="FILE_NEW();">
+      <img class="tbIcon" src="img/new.gif" WIDTH="23" HEIGHT="22">
+  </div>
+
+  <div class="tbButton" TITLE="인쇄" LANGUAGE="javascript" onClick="cmd_exec2('Print');">
+      <img class="tbIcon" src="img/print.gif" WIDTH="23" HEIGHT="22">
+  </div>
+
+  <div class="tbButton" TITLE="저장" LANGUAGE="javascript" onClick="cmd_exec2('SaveAs','email.html');">
+      <img class="tbIcon" src="img/save.gif" WIDTH="23" HEIGHT="22">
+  </div>
+
+  <div class="tbButton" ID="DECMD_FINDTEXT" TITLE="문자열찾기" onclick="return DECMD_FINDTEXT_onclick()">
+    <img class="tbIcon" src="img/find.gif" WIDTH="23" HEIGHT="22">
+  </div>
+
+<div class="tbSeparator"></div>
+
+  <div class="tbButton" ID="EDIT_UNDO" LANGUAGE="javascript" onclick="return DECMD_UNDO_onclick()">
+      <img class="tbIcon" src="img/undo.gif" WIDTH="23" HEIGHT="22">
+  </div>
+  <div class="tbButton" ID="EDIT_REDO" LANGUAGE="javascript" onclick="return DECMD_REDO_onclick()">
+      <img class="tbIcon" src="img/redo.gif" WIDTH="23" HEIGHT="22">
+  </div>
+    
+  <div class="tbButton" ID="DECMD_SELECTALL" TITLE="전체선택" onClick="return DECMD_SELECTALL_onclick()">
+    <img class="tbIcon" src="img/selectall.gif" WIDTH="23" HEIGHT="22">
+  </div>
+  <div class="tbButton" ID="DECMD_CUT" TITLE="잘라내기" onclick="return DECMD_CUT_onclick()">
+    <img class="tbIcon" src="img/cut.gif" WIDTH="23" HEIGHT="22">
+  </div>
+  <div class="tbButton" ID="DECMD_COPY" TITLE="복사" onclick="return DECMD_COPY_onclick()">
+    <img class="tbIcon" src="img/copy.gif" WIDTH="23" HEIGHT="22">
+  </div>
+  <div class="tbButton" ID="DECMD_PASTE" TITLE="붙여넣기" onclick="return DECMD_PASTE_onclick()">
+    <img class="tbIcon" src="img/paste.gif" WIDTH="23" HEIGHT="22">
+  </div>
+
+  <div class="tbSeparator"></div>
+
+  <select ID="FontName" class="tbGeneral" style="width:112" TITLE="글꼴" LANGUAGE="javascript" onchange="return FontName_onchange()" style="font:9pt 굴림">
+        <option value="굴림">굴림
+        <option value="굴림체">굴림체
+        <option value="궁서">궁서
+        <option value="궁서체">궁서체
+        <option value="바탕">바탕
+        <option value="바탕체">바탕체
+        <option value="돋움">돋움
+        <option value="돋움체">돋움체
+        <option value="Arial">Arial
+        <option value="Arial Black">Arial Black
+        <option value="Arial Narrow">Arial Narrow
+        <option value="Comic Sans MS">Comic Sans MS
+        <option value="Courier New">Courier New
+        <option value="System">System
+        <option value="Tahoma">Tahoma
+        <option value="Verdana">Verdana
+        <option value="Wingdings">Wingdings
+  </select>
+  <select ID="FontSize" class="tbGeneral" style="width:50" TITLE="글씨 크기" LANGUAGE="javascript" onchange="return FontSize_onchange()" style="font:9pt Arial">
+    <option value="1">1
+    <option value="2">2
+    <option value="3">3
+    <option value="4">4
+    <option value="5">5
+    <option value="6">6
+    <option value="7">7
+  </select>
+
+  <div class="tbSeparator"></div>
+
+  <div class="tbButton" ID="DECMD_FONT" TITLE="글꼴" LANGUAGE="javascript" onclick="return FORMAT_FONT_onclick()">
+      <img class="tbIcon" src="img/font.gif" WIDTH="23" HEIGHT="22">
+  </div>
+
+  <div class="tbSeparator"></div>
+  
+  <div class="tbButton" ID="DECMD_BOLD" TITLE="굵게" TBTYPE="toggle" onclick="return DECMD_BOLD_onclick()">
+    <img class="tbIcon" src="img/bold.gif" WIDTH="23" HEIGHT="22">
+  </div>
+  <div class="tbButton" ID="DECMD_ITALIC" TITLE="이탤릭" TBTYPE="toggle" onclick="return DECMD_ITALIC_onclick()">
+    <img class="tbIcon" src="img/italic.gif" WIDTH="23" HEIGHT="22">
+  </div>
+  <div class="tbButton" ID="DECMD_UNDERLINE" TITLE="밑줄" TBTYPE="toggle" onclick="return DECMD_UNDERLINE_onclick()">
+    <img class="tbIcon" src="img/under.gif" WIDTH="23" HEIGHT="22">
+  </div>
+  
+  <div class="tbSeparator"></div>
+
+</div>	
+<!-- Toolbars -->
+<div class="tbToolbar" ID="FormatToolbar">  	
+
+  <div class="tbButton" ID="DECMD_SETFORECOLOR" TITLE="글씨색" onclick="return DECMD_SETFORECOLOR_onclick()">
+    <img class="tbIcon" src="img/fgcolor.gif" WIDTH="23" HEIGHT="22">
+  </div>
+  <div class="tbButton" ID="DECMD_SETBACKCOLOR" TITLE="배경색" onclick="return DECMD_SETBACKCOLOR_onclick()">
+    <img class="tbIcon" src="img/bgcolor.gif" WIDTH="23" HEIGHT="22">
+  </div>
+
+  <div class="tbSeparator"></div>
+
+  <div class="tbButton" ID="DECMD_JUSTIFYLEFT" TITLE="왼쪽정렬" TBTYPE="toggle" NAME="Justify" onclick="return DECMD_JUSTIFYLEFT_onclick()">
+    <img class="tbIcon" src="img/left.gif" WIDTH="23" HEIGHT="22">
+  </div>
+  <div class="tbButton" ID="DECMD_JUSTIFYCENTER" TITLE="가운데정렬" TBTYPE="toggle" NAME="Justify" onclick="return DECMD_JUSTIFYCENTER_onclick()">
+    <img class="tbIcon" src="img/center.gif" WIDTH="23" HEIGHT="22">
+  </div>
+  <div class="tbButton" ID="DECMD_JUSTIFYRIGHT" TITLE="오른쪽정렬" TBTYPE="toggle" NAME="Justify" onclick="return DECMD_JUSTIFYRIGHT_onclick()">
+    <img class="tbIcon" src="img/right.gif" WIDTH="23" HEIGHT="22">
+  </div>
+
+  <div class="tbSeparator"></div>
+
+  <div class="tbButton" ID="DECMD_ORDERLIST" TITLE="숫자 리스트" TBTYPE="toggle" onclick="return DECMD_ORDERLIST_onclick()">
+    <img class="tbIcon" src="img/numlist.gif" WIDTH="23" HEIGHT="22">
+  </div>
+  <div class="tbButton" ID="DECMD_UNORDERLIST" TITLE="불릿 리스트" TBTYPE="toggle" onclick="return DECMD_UNORDERLIST_onclick()">
+    <img class="tbIcon" src="img/bullist.gif" WIDTH="23" HEIGHT="22">
+  </div>
+
+  <div class="tbSeparator"></div>
+
+  <div class="tbButton" ID="DECMD_OUTDENT" TITLE="내어쓰기" onclick="return DECMD_OUTDENT_onclick()">
+    <img class="tbIcon" src="img/deindent.gif" WIDTH="23" HEIGHT="22">
+  </div>
+  <div class="tbButton" ID="DECMD_INDENT" TITLE="들여쓰기" onclick="return DECMD_INDENT_onclick()">
+    <img class="tbIcon" src="img/inindent.gif" WIDTH="23" HEIGHT="22">
+  </div>
+
+  <div class="tbSeparator"></div>
+
+  <div class="tbButton" ID="DECMD_HYPERLINK" TITLE="링크만들기" onclick="return DECMD_HYPERLINK_onclick()">
+    <img class="tbIcon" src="img/link.gif" WIDTH="23" HEIGHT="22">
+  </div>
+
+  <div class="tbButton" ID="DECMD_IMAGE" TITLE="그림삽입" onclick="return DECMD_IMAGE_onclick()">
+    <img class="tbIcon" src="img/image.gif" WIDTH="23" HEIGHT="22">
+  </div>
+  
+  <div class="tbSeparator"></div>
+  
+   <div class="tbButton" ID="DECMD_INSERTTABLE" TITLE="테이블삽입" onclick="return TABLE_INSERTTABLE_onclick()">
+    <img class="tbIcon" src="img/instable.gif" WIDTH="23" HEIGHT="22">
+  </div>
+
+  <div class="tbSeparator"></div>
+
+  <div class="tbButton" ID="DECMD_INSERTROW" TITLE="행삽입" onclick="return TABLE_INSERTROW_onclick()">
+    <img class="tbIcon" src="img/insrow.gif" WIDTH="23" HEIGHT="22">
+  </div>
+  <div class="tbButton" ID="DECMD_DELETEROWS" TITLE="행삭제" onclick="return TABLE_DELETEROW_onclick()">
+    <img class="tbIcon" src="img/delrow.gif" WIDTH="23" HEIGHT="22">
+  </div>
+ 
+  <div class="tbSeparator"></div>
+
+  <div class="tbButton" ID="DECMD_INSERTCOL" TITLE="열삽입" onclick="return TABLE_INSERTCOL_onclick()">
+    <img class="tbIcon" src="img/inscol.gif" WIDTH="23" HEIGHT="22">
+  </div>
+  <div class="tbButton" ID="DECMD_DELETECOLS" TITLE="열삭제" onclick="return TABLE_DELETECOL_onclick()">
+    <img class="tbIcon" src="img/delcol.gif" WIDTH="23" HEIGHT="22">
+  </div>
+  
+  <div class="tbSeparator"></div>
+
+  <div class="tbButton" ID="DECMD_INSERTCELL" TITLE="셀삽입" onclick="return TABLE_INSERTCELL_onclick()">
+    <img class="tbIcon" src="img/inscell.gif" WIDTH="23" HEIGHT="22">
+  </div>
+  <div class="tbButton" ID="DECMD_DELETECELLS" TITLE="셀삭제" onclick="return TABLE_DELETECELL_onclick()">
+    <img class="tbIcon" src="img/delcell.gif" WIDTH="23" HEIGHT="22">
+  </div>
+  <div class="tbButton" ID="DECMD_MERGECELLS" TITLE="셀병합" onclick="return TABLE_MERGECELL_onclick()">
+    <img class="tbIcon" src="img/mrgcell.gif" WIDTH="23" HEIGHT="22">
+  </div>
+  <div class="tbButton" ID="DECMD_SPLITCELL" TITLE="셀나누기" onclick="return TABLE_SPLITCELL_onclick()">
+    <img class="tbIcon" src="img/spltcell.gif" WIDTH="23" HEIGHT="22">
+  </div>
+
+  <div class="tbSeparator"></div>
+
+</div>
+
+<!-- DHTML Editing control Object. This will be the body object for the toolbars. -->
+<OBJECT class=tbContentElement id=tbContentElement style="LEFT: 0px; TOP: 0px" classid="clsid:2D360201-FFF5-11d1-8D03-00A0C959BC0A">
+	<PARAM NAME="ActivateApplets" VALUE="0">
+	<PARAM NAME="ActivateActiveXControls" VALUE="0">
+	<PARAM NAME="ActivateDTCs" VALUE="-1">
+	<PARAM NAME="ShowDetails" VALUE="0">
+	<PARAM NAME="ShowBorders" VALUE="0">
+	<PARAM NAME="Appearance" VALUE="1">
+	<PARAM NAME="Scrollbars" VALUE="-1">
+	<PARAM NAME="ScrollbarAppearance" VALUE="1">
+	<PARAM NAME="SourceCodePreservation" VALUE="-1">
+	<PARAM NAME="AbsoluteDropMode" VALUE="0">
+	<PARAM NAME="SnapToGrid" VALUE="0">
+	<PARAM NAME="SnapToGridX" VALUE="50">
+	<PARAM NAME="SnapToGridY" VALUE="50">
+	<PARAM NAME="UseDivOnCarriageReturn" VALUE="0"></OBJECT>
+
+<!-- DEInsertTableParam Object -->
+<object ID="ObjTableInfo" CLASSID="clsid:47B0DFC7-B7A3-11D1-ADC5-006008A5848C">
+</object>
+
+<!-- DEGetBlockFmtNamesParam Object -->
+<object ID="ObjBlockFormatInfo" CLASSID="clsid:8D91090E-B955-11D1-ADC5-006008A5848C">
+</object>
+
+<!-- Toolbar Code File. Note: This must always be the last thing on the page -->
+<script LANGUAGE="Javascript" SRC="toolbars.js">
+</script>
+
+</body>
+</html>
+<script LANGUAGE="Javascript">
+function initForm()
+{
+	var bHtml = "<html>\n<head>\n<title>Mlang Html Edit-1.0</title>\n<meta HTTP-EQUIV=\"Content-Type\" CONTENT=\"text/html; charset=euc-kr\">\n<style>P {margin-top:2px;margin-bottom:2px;}</style>\n</head><body bgcolor=white marginwidth=3 marginheight=0 topmargin=0 leftmargin=3 style=\"font:10pt 굴림\"></body></html>";
+	var idEdit = tbContentElement.DOM.parentWindow;
+	//tbContentElement.DocumentHTML = bHtml;
+	idEdit.document.open();
+	idEdit.document.write(bHtml);
+	idEdit.document.close();
+}
+setTimeout("initForm()",1000);
+</script>
