@@ -475,15 +475,28 @@ function openUploadModal() {
         return;
     }
 
-    // 공통 upload_modal.js의 openUploadModal 사용
-    if (typeof window.openUploadModal === 'function') {
-        window.openUploadModal();
-    } else {
-        // 폴백: 직접 모달 열기
-        const modal = document.getElementById('uploadModal');
-        if (modal) {
-            modal.style.display = 'flex';
-            document.body.style.overflow = 'hidden';
+    // 로그인 체크 (upload_modal.js의 isLoggedIn 함수 사용)
+    if (typeof isLoggedIn === 'function' && !isLoggedIn()) {
+        if (typeof openLoginModal === 'function') {
+            openLoginModal();
+        }
+        return;
+    }
+
+    // 직접 모달 열기 (window.openUploadModal 호출하지 않음 - 무한재귀 방지)
+    const modal = document.getElementById('uploadModal');
+    if (modal) {
+        modal.style.display = 'flex';
+        document.body.style.overflow = 'hidden';
+
+        // 모달 파일 업로드 초기화
+        if (typeof window.initializeModalFileUpload === 'function') {
+            window.initializeModalFileUpload();
+        }
+
+        // 가격 정보 업데이트
+        if (typeof updateModalPrice === 'function') {
+            updateModalPrice();
         }
     }
 }
