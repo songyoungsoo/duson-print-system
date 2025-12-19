@@ -49,7 +49,7 @@ if (isset($_SESSION['user_id'])) {
             <?php if ($is_logged_in): ?>
             <div class="contact-card">
                 <div class="user-info-header">
-                    <div class="value" style="color: #1E90FF; font-weight: 600;"><?php echo htmlspecialchars($user_name); ?>님</div>
+                    <div class="value"><?php echo htmlspecialchars($user_name); ?>님</div>
                 </div>
             </div>
             <div class="contact-card mypage-dropdown">
