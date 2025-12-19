@@ -701,17 +701,17 @@ include "../includes/nav.php";
 }
 
 .col-product {
-    width: 20%;
+    width: 13%;
     font-weight: 600;
     color: var(--text-primary);
 }
 
 .col-details {
-    width: 35%;
+    width: 40%;
 }
 
 .col-quantity {
-    width: 10%;
+    width: 12%;
     text-align: center;
     font-weight: 600;
     color: var(--text-primary);
@@ -1583,7 +1583,7 @@ include "../includes/nav.php";
             <tr>
                 <th class="col-order-no">주문번호</th>
                 <th class="col-product">상품명</th>
-                <th class="col-details">상세 정보</th>
+                <th class="col-details">규격/옵션</th>
                 <th class="col-quantity">수량</th>
                 <th class="col-price">금액</th>
                 <th class="col-status">상태</th>
