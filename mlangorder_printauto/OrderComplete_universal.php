@@ -193,7 +193,7 @@ function getProductUrlMapping() {
  */
 function displayProductDetails($connect, $order) {
     global $optionsDisplay; // 전역 변수로 접근
-    
+
     if (empty($order['Type_1'])) return '';
 
     $type_data = $order['Type_1'];
@@ -205,7 +205,8 @@ function displayProductDetails($connect, $order) {
 
     $json_data = json_decode($type_data, true);
 
-    $html = '<table class="excel-cart-table" style="width: 100%; border-collapse: collapse;"><tbody>';
+    // 🔧 2025-12-19: 테이블 대신 div 스타일로 변경 (OnlineOrder_unified.php 규격/옵션 스타일)
+    $html = '<div class="specs-cell" style="line-height: 1.6;">';
 
     // JSON 파싱 실패 시 키-값 쌍으로 파싱 시도 (Type_1이 일반 텍스트인 경우)
     if (!$json_data && !empty($type_data)) {
@@ -232,16 +233,12 @@ function displayProductDetails($connect, $order) {
             foreach ($formatted_lines as $line) {
                 $line = trim($line);
                 if (!empty($line)) {
-                    // 키: 값 형식을 분리하여 테이블 행으로 변환
+                    // 키: 값 형식을 분리하여 div로 표시
                     if (strpos($line, ':') !== false) {
                         list($key, $value) = explode(':', $line, 2);
-                        $html .= '<tr>';
-                        $html .= '<th class="th-left" style="width: 30%; background: #f0f0f0; padding: 8px; font-weight: 600; text-align: left; border: 1px solid #ccc;">' . htmlspecialchars(trim($key)) . '</th>';
-                        $html .= '<td style="padding: 8px; border: 1px solid #ccc;">' . htmlspecialchars(trim($value)) . '</td>';
-                        $html .= '</tr>';
+                        $html .= '<div class="spec-item"><span style="color: #666; font-weight: 500;">' . htmlspecialchars(trim($key)) . ':</span> ' . htmlspecialchars(trim($value)) . '</div>';
                     } else {
-                        // 키: 없는 경우 전체를 하나의 셀로 표시
-                        $html .= '<tr><td colspan="2" style="padding: 8px; border: 1px solid #ccc;">' . htmlspecialchars($line) . '</td></tr>';
+                        $html .= '<div class="spec-item">' . htmlspecialchars($line) . '</div>';
                     }
                 }
             }
@@ -272,13 +269,13 @@ function displayProductDetails($connect, $order) {
         switch($product_type) {
             case 'sticker':
                 $details = $json_data['order_details'] ?? $json_data;
-                if (isset($details['jong'])) $html .= '<tr><th class="th-left" style="width: 30%; background: #f0f0f0; padding: 8px; font-weight: 600; text-align: left; border: 1px solid #ccc;">재질</th><td style="padding: 8px; border: 1px solid #ccc;">' . htmlspecialchars($details['jong']) . '</td></tr>';
+                if (isset($details['jong'])) $html .= '<div class="spec-item"><span style="color: #9c27b0; font-weight: 500;">재질:</span> ' . htmlspecialchars($details['jong']) . '</div>';
                 if (isset($details['garo']) && isset($details['sero'])) {
-                    $html .= '<tr><th class="th-left" style="width: 30%; background: #f0f0f0; padding: 8px; font-weight: 600; text-align: left; border: 1px solid #ccc;">크기</th><td style="padding: 8px; border: 1px solid #ccc;">' . htmlspecialchars($details['garo']) . '×' . htmlspecialchars($details['sero']) . 'mm</td></tr>';
+                    $html .= '<div class="spec-item"><span style="color: #9c27b0; font-weight: 500;">크기:</span> ' . htmlspecialchars($details['garo']) . '×' . htmlspecialchars($details['sero']) . 'mm</div>';
                 }
-                if (isset($details['mesu'])) $html .= '<tr><th class="th-left" style="width: 30%; background: #f0f0f0; padding: 8px; font-weight: 600; text-align: left; border: 1px solid #ccc;">수량</th><td style="padding: 8px; border: 1px solid #ccc;">' . number_format($details['mesu']) . '매</td></tr>';
-                if (isset($details['uhyung'])) $html .= '<tr><th class="th-left" style="width: 30%; background: #f0f0f0; padding: 8px; font-weight: 600; text-align: left; border: 1px solid #ccc;">편집</th><td style="padding: 8px; border: 1px solid #ccc;">' . htmlspecialchars($details['uhyung']) . '</td></tr>';
-                if (isset($details['domusong'])) $html .= '<tr><th class="th-left" style="width: 30%; background: #f0f0f0; padding: 8px; font-weight: 600; text-align: left; border: 1px solid #ccc;">모양</th><td style="padding: 8px; border: 1px solid #ccc;">' . htmlspecialchars($details['domusong']) . '</td></tr>';
+                if (isset($details['mesu'])) $html .= '<div class="spec-item"><span style="color: #9c27b0; font-weight: 500;">수량:</span> ' . number_format($details['mesu']) . '매</div>';
+                if (isset($details['uhyung'])) $html .= '<div class="spec-item"><span style="color: #9c27b0; font-weight: 500;">편집:</span> ' . htmlspecialchars($details['uhyung']) . '</div>';
+                if (isset($details['domusong'])) $html .= '<div class="spec-item"><span style="color: #9c27b0; font-weight: 500;">모양:</span> ' . htmlspecialchars($details['domusong']) . '</div>';
                 break;
                 
             case 'envelope':
@@ -287,30 +284,30 @@ function displayProductDetails($connect, $order) {
                 $section_display = $json_data['Section_name'] ?? getCategoryName($connect, $json_data['Section'] ?? '');
                 $potion_display = $json_data['POtype_name'] ?? getCategoryName($connect, $json_data['POtype'] ?? '');
 
-                if (!empty($type_display)) $html .= '<tr><th class="th-left" style="width: 30%; background: #f0f0f0; padding: 8px; font-weight: 600; text-align: left; border: 1px solid #ccc;">타입</th><td style="padding: 8px; border: 1px solid #ccc;">' . htmlspecialchars($type_display) . '</td></tr>';
-                if (!empty($section_display)) $html .= '<tr><th class="th-left" style="width: 30%; background: #f0f0f0; padding: 8px; font-weight: 600; text-align: left; border: 1px solid #ccc;">용지</th><td style="padding: 8px; border: 1px solid #ccc;">' . htmlspecialchars($section_display) . '</td></tr>';
-                if (isset($json_data['MY_amount'])) $html .= '<tr><th class="th-left" style="width: 30%; background: #f0f0f0; padding: 8px; font-weight: 600; text-align: left; border: 1px solid #ccc;">수량</th><td style="padding: 8px; border: 1px solid #ccc;">' . number_format($json_data['MY_amount']) . ($order['unit'] ?? '매') . '</td></tr>';
-                if (!empty($potion_display)) $html .= '<tr><th class="th-left" style="width: 30%; background: #f0f0f0; padding: 8px; font-weight: 600; text-align: left; border: 1px solid #ccc;">인쇄</th><td style="padding: 8px; border: 1px solid #ccc;">' . htmlspecialchars($potion_display) . '</td></tr>';
-                if (isset($json_data['ordertype'])) $html .= '<tr><th class="th-left" style="width: 30%; background: #f0f0f0; padding: 8px; font-weight: 600; text-align: left; border: 1px solid #ccc;">디자인</th><td style="padding: 8px; border: 1px solid #ccc;">' . ($json_data['ordertype'] === 'total' ? '디자인+인쇄' : '인쇄만') . '</td></tr>';
+                if (!empty($type_display)) $html .= '<div class="spec-item"><span style="color: #00b4d8; font-weight: 500;">타입:</span> ' . htmlspecialchars($type_display) . '</div>';
+                if (!empty($section_display)) $html .= '<div class="spec-item"><span style="color: #00b4d8; font-weight: 500;">용지:</span> ' . htmlspecialchars($section_display) . '</div>';
+                if (isset($json_data['MY_amount'])) $html .= '<div class="spec-item"><span style="color: #00b4d8; font-weight: 500;">수량:</span> ' . number_format($json_data['MY_amount']) . ($order['unit'] ?? '매') . '</div>';
+                if (!empty($potion_display)) $html .= '<div class="spec-item"><span style="color: #00b4d8; font-weight: 500;">인쇄:</span> ' . htmlspecialchars($potion_display) . '</div>';
+                if (isset($json_data['ordertype'])) $html .= '<div class="spec-item"><span style="color: #00b4d8; font-weight: 500;">디자인:</span> ' . ($json_data['ordertype'] === 'total' ? '디자인+인쇄' : '인쇄만') . '</div>';
                 break;
                 
             case 'namecard':
-                if (isset($json_data['MY_type'])) $html .= '<tr><th class="th-left" style="width: 30%; background: #f0f0f0; padding: 8px; font-weight: 600; text-align: left; border: 1px solid #ccc;">타입</th><td style="padding: 8px; border: 1px solid #ccc;">' . getCategoryName($connect, $json_data['MY_type']) . '</td></tr>';
-                if (isset($json_data['Section'])) $html .= '<tr><th class="th-left" style="width: 30%; background: #f0f0f0; padding: 8px; font-weight: 600; text-align: left; border: 1px solid #ccc;">용지</th><td style="padding: 8px; border: 1px solid #ccc;">' . getCategoryName($connect, $json_data['Section']) . '</td></tr>';
-                if (isset($json_data['MY_amount'])) $html .= '<tr><th class="th-left" style="width: 30%; background: #f0f0f0; padding: 8px; font-weight: 600; text-align: left; border: 1px solid #ccc;">수량</th><td style="padding: 8px; border: 1px solid #ccc;">' . number_format($json_data['MY_amount']) . ($order['unit'] ?? '매') . '</td></tr>';
-                if (isset($json_data['POtype'])) $html .= '<tr><th class="th-left" style="width: 30%; background: #f0f0f0; padding: 8px; font-weight: 600; text-align: left; border: 1px solid #ccc;">인쇄</th><td style="padding: 8px; border: 1px solid #ccc;">' . ($json_data['POtype'] == '1' ? '단면' : '양면') . '</td></tr>';
+                if (isset($json_data['MY_type'])) $html .= '<div class="spec-item"><span style="color: #d69e2e; font-weight: 500;">타입:</span> ' . getCategoryName($connect, $json_data['MY_type']) . '</div>';
+                if (isset($json_data['Section'])) $html .= '<div class="spec-item"><span style="color: #d69e2e; font-weight: 500;">용지:</span> ' . getCategoryName($connect, $json_data['Section']) . '</div>';
+                if (isset($json_data['MY_amount'])) $html .= '<div class="spec-item"><span style="color: #d69e2e; font-weight: 500;">수량:</span> ' . number_format($json_data['MY_amount']) . ($order['unit'] ?? '매') . '</div>';
+                if (isset($json_data['POtype'])) $html .= '<div class="spec-item"><span style="color: #d69e2e; font-weight: 500;">인쇄:</span> ' . ($json_data['POtype'] == '1' ? '단면' : '양면') . '</div>';
                 break;
                 
             case 'merchandisebond':
-                if (isset($json_data['MY_type'])) $html .= '<tr><th class="th-left" style="width: 30%; background: #f0f0f0; padding: 8px; font-weight: 600; text-align: left; border: 1px solid #ccc;">구분</th><td style="padding: 8px; border: 1px solid #ccc;">' . getCategoryName($connect, $json_data['MY_type']) . '</td></tr>';
-                if (isset($json_data['MY_Fsd'])) $html .= '<tr><th class="th-left" style="width: 30%; background: #f0f0f0; padding: 8px; font-weight: 600; text-align: left; border: 1px solid #ccc;">종류</th><td style="padding: 8px; border: 1px solid #ccc;">' . getCategoryName($connect, $json_data['MY_Fsd']) . '</td></tr>';
-                if (isset($json_data['MY_amount'])) $html .= '<tr><th class="th-left" style="width: 30%; background: #f0f0f0; padding: 8px; font-weight: 600; text-align: left; border: 1px solid #ccc;">수량</th><td style="padding: 8px; border: 1px solid #ccc;">' . number_format($json_data['MY_amount']) . ($order['unit'] ?? '매') . '</td></tr>';
+                if (isset($json_data['MY_type'])) $html .= '<div class="spec-item"><span style="color: #e91e63; font-weight: 500;">구분:</span> ' . getCategoryName($connect, $json_data['MY_type']) . '</div>';
+                if (isset($json_data['MY_Fsd'])) $html .= '<div class="spec-item"><span style="color: #e91e63; font-weight: 500;">종류:</span> ' . getCategoryName($connect, $json_data['MY_Fsd']) . '</div>';
+                if (isset($json_data['MY_amount'])) $html .= '<div class="spec-item"><span style="color: #e91e63; font-weight: 500;">수량:</span> ' . number_format($json_data['MY_amount']) . ($order['unit'] ?? '매') . '</div>';
                 break;
                 
             case 'cadarok':
-                if (isset($json_data['MY_type'])) $html .= '<tr><th class="th-left" style="width: 30%; background: #f0f0f0; padding: 8px; font-weight: 600; text-align: left; border: 1px solid #ccc;">타입</th><td style="padding: 8px; border: 1px solid #ccc;">' . getCategoryName($connect, $json_data['MY_type']) . '</td></tr>';
-                if (isset($json_data['MY_Fsd'])) $html .= '<tr><th class="th-left" style="width: 30%; background: #f0f0f0; padding: 8px; font-weight: 600; text-align: left; border: 1px solid #ccc;">스타일</th><td style="padding: 8px; border: 1px solid #ccc;">' . getCategoryName($connect, $json_data['MY_Fsd']) . '</td></tr>';
-                if (isset($json_data['MY_amount'])) $html .= '<tr><th class="th-left" style="width: 30%; background: #f0f0f0; padding: 8px; font-weight: 600; text-align: left; border: 1px solid #ccc;">수량</th><td style="padding: 8px; border: 1px solid #ccc;">' . number_format($json_data['MY_amount']) . '</td></tr>';
+                if (isset($json_data['MY_type'])) $html .= '<div class="spec-item"><span style="color: #2196f3; font-weight: 500;">타입:</span> ' . getCategoryName($connect, $json_data['MY_type']) . '</div>';
+                if (isset($json_data['MY_Fsd'])) $html .= '<div class="spec-item"><span style="color: #2196f3; font-weight: 500;">스타일:</span> ' . getCategoryName($connect, $json_data['MY_Fsd']) . '</div>';
+                if (isset($json_data['MY_amount'])) $html .= '<div class="spec-item"><span style="color: #2196f3; font-weight: 500;">수량:</span> ' . number_format($json_data['MY_amount']) . '</div>';
                 break;
                 
             case 'poster':
@@ -323,17 +320,17 @@ function displayProductDetails($connect, $order) {
                 $potype = $json_data['POtype'] ?? $json_data['Potype'] ?? '';
                 $ordertype = $json_data['ordertype'] ?? $json_data['Ordertype'] ?? '';
 
-                if (!empty($my_type)) $html .= '<tr><th class="th-left" style="width: 30%; background: #f0f0f0; padding: 8px; font-weight: 600; text-align: left; border: 1px solid #ccc;">종류</th><td style="padding: 8px; border: 1px solid #ccc;">' . (is_numeric($my_type) ? getCategoryName($connect, $my_type) : htmlspecialchars($my_type)) . '</td></tr>';
-                if (!empty($section)) $html .= '<tr><th class="th-left" style="width: 30%; background: #f0f0f0; padding: 8px; font-weight: 600; text-align: left; border: 1px solid #ccc;">지류</th><td style="padding: 8px; border: 1px solid #ccc;">' . (is_numeric($section) ? getCategoryName($connect, $section) : htmlspecialchars($section)) . '</td></tr>';
-                if (!empty($pn_type)) $html .= '<tr><th class="th-left" style="width: 30%; background: #f0f0f0; padding: 8px; font-weight: 600; text-align: left; border: 1px solid #ccc;">규격</th><td style="padding: 8px; border: 1px solid #ccc;">' . (is_numeric($pn_type) ? getCategoryName($connect, $pn_type) : htmlspecialchars($pn_type)) . '</td></tr>';
-                if (!empty($my_amount)) $html .= '<tr><th class="th-left" style="width: 30%; background: #f0f0f0; padding: 8px; font-weight: 600; text-align: left; border: 1px solid #ccc;">수량</th><td style="padding: 8px; border: 1px solid #ccc;">' . number_format($my_amount) . ($order['unit'] ?? '매') . '</td></tr>';
-                if (!empty($potype)) $html .= '<tr><th class="th-left" style="width: 30%; background: #f0f0f0; padding: 8px; font-weight: 600; text-align: left; border: 1px solid #ccc;">인쇄면</th><td style="padding: 8px; border: 1px solid #ccc;">' . ($potype == '1' ? '단면' : '양면') . '</td></tr>';
-                if (!empty($ordertype)) $html .= '<tr><th class="th-left" style="width: 30%; background: #f0f0f0; padding: 8px; font-weight: 600; text-align: left; border: 1px solid #ccc;">디자인</th><td style="padding: 8px; border: 1px solid #ccc;">' . ($ordertype == 'total' ? '디자인+인쇄' : '인쇄만') . '</td></tr>';
+                if (!empty($my_type)) $html .= '<div class="spec-item"><span style="color: #ff5722; font-weight: 500;">종류:</span> ' . (is_numeric($my_type) ? getCategoryName($connect, $my_type) : htmlspecialchars($my_type)) . '</div>';
+                if (!empty($section)) $html .= '<div class="spec-item"><span style="color: #ff5722; font-weight: 500;">지류:</span> ' . (is_numeric($section) ? getCategoryName($connect, $section) : htmlspecialchars($section)) . '</div>';
+                if (!empty($pn_type)) $html .= '<div class="spec-item"><span style="color: #ff5722; font-weight: 500;">규격:</span> ' . (is_numeric($pn_type) ? getCategoryName($connect, $pn_type) : htmlspecialchars($pn_type)) . '</div>';
+                if (!empty($my_amount)) $html .= '<div class="spec-item"><span style="color: #ff5722; font-weight: 500;">수량:</span> ' . number_format($my_amount) . ($order['unit'] ?? '매') . '</div>';
+                if (!empty($potype)) $html .= '<div class="spec-item"><span style="color: #ff5722; font-weight: 500;">인쇄면:</span> ' . ($potype == '1' ? '단면' : '양면') . '</div>';
+                if (!empty($ordertype)) $html .= '<div class="spec-item"><span style="color: #ff5722; font-weight: 500;">디자인:</span> ' . ($ordertype == 'total' ? '디자인+인쇄' : '인쇄만') . '</div>';
                 break;
 
             case 'inserted':
             case 'leaflet':
-                // 전단지/리플렛: 슬래시 구분 2줄 압축 표시 (test02.html 스타일)
+                // 전단지/리플렛: 슬래시 구분 2줄 압축 표시 (OnlineOrder 스타일)
                 $line1_parts = [];
                 $line2_parts = [];
                 if (isset($json_data['MY_type'])) $line1_parts[] = getCategoryName($connect, $json_data['MY_type']);
@@ -344,10 +341,10 @@ function displayProductDetails($connect, $order) {
                 if (isset($json_data['ordertype'])) $line2_parts[] = ($json_data['ordertype'] == 'total' ? '디자인+인쇄' : '인쇄만');
 
                 if (!empty($line1_parts)) {
-                    $html .= '<tr><th class="th-left" style="width: 20%; background: #f0f0f0; padding: 8px; font-weight: 600; text-align: left; border: 1px solid #ccc;">색상/용지</th><td style="padding: 8px; border: 1px solid #ccc;">' . implode(' / ', $line1_parts) . '</td></tr>';
+                    $html .= '<div style="color: #4a5568; margin-bottom: 2px;">' . implode(' / ', $line1_parts) . '</div>';
                 }
                 if (!empty($line2_parts)) {
-                    $html .= '<tr><th class="th-left" style="width: 20%; background: #f0f0f0; padding: 8px; font-weight: 600; text-align: left; border: 1px solid #ccc;">규격/옵션</th><td style="padding: 8px; border: 1px solid #ccc;">' . implode(' / ', $line2_parts) . '</td></tr>';
+                    $html .= '<div style="color: #4a5568;">' . implode(' / ', $line2_parts) . '</div>';
                 }
                 break;
 
@@ -375,7 +372,7 @@ function displayProductDetails($connect, $order) {
                     $display_value = is_numeric($value) && in_array($key, ['MY_type', 'MY_Fsd', 'PN_type', 'Section'])
                         ? getCategoryName($connect, $value)
                         : $value;
-                    $html .= '<tr><th class="th-left" style="width: 30%; background: #f0f0f0; padding: 8px; font-weight: 600; text-align: left; border: 1px solid #ccc;">' . htmlspecialchars($display_key) . '</th><td style="padding: 8px; border: 1px solid #ccc;">' . htmlspecialchars($display_value) . '</td></tr>';
+                    $html .= '<div class="spec-item"><span style="color: #666; font-weight: 500;">' . htmlspecialchars($display_key) . ':</span> ' . htmlspecialchars($display_value) . '</div>';
                 }
                 break;
         }
@@ -386,12 +383,12 @@ function displayProductDetails($connect, $order) {
         foreach ($lines as $line) {
             $line = trim($line);
             if (!empty($line)) {
-                $html .= '<tr><td colspan="2" style="padding: 8px; border: 1px solid #ccc;">' . htmlspecialchars($line) . '</td></tr>';
+                $html .= '<div class="spec-item">' . htmlspecialchars($line) . '</div>';
             }
         }
     }
-    
-    $html .= '</tbody></table>';
+
+    $html .= '</div>';
     
     // 추가 옵션 표시 (주문 데이터에서 추출)
     if ($optionsDisplay && !empty($order)) {
