@@ -79,7 +79,7 @@ if (isset($_SESSION['user_id'])) {
                 <a href="/member/join.php" class="contact-text">회원가입</a>
             </div>
             <div class="contact-card">
-                <a href="/account/orders.php" class="contact-text">마이페이지</a>
+                <a href="/mypage/index.php" class="contact-text">마이페이지</a>
             </div>
             <?php endif; ?>
             <div class="contact-card">
