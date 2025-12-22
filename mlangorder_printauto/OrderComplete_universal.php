@@ -1581,12 +1581,12 @@ include "../includes/nav.php";
     <table class="order-table">
         <thead>
             <tr>
-                <th class="col-order-no">주문번호</th>
-                <th class="col-product">상품명</th>
-                <th class="col-details">규격/옵션</th>
-                <th class="col-quantity">수량</th>
-                <th class="col-price">금액</th>
-                <th class="col-status">상태</th>
+                <th class="col-order-no" style="width: 5%;">NO</th>
+                <th class="col-product" style="width: 15%;">품목</th>
+                <th class="col-details" style="width: 40%;">규격/옵션</th>
+                <th class="col-quantity" style="width: 10%;">수량</th>
+                <th class="col-unit" style="width: 8%;">단위</th>
+                <th class="col-price" style="width: 22%;">총액</th>
             </tr>
         </thead>
         <tbody>
@@ -1595,53 +1595,96 @@ include "../includes/nav.php";
             $product_details_html = displayProductDetails($connect, $order);
             ?>
             <tr class="order-row" style="animation-delay: <?php echo $index * 0.1; ?>s">
-                <!-- 주문번호 -->
-                <td class="col-order-no">
-                    #<?php echo htmlspecialchars($order['no']); ?>
+                <!-- 순번 -->
+                <td class="col-order-no" style="text-align: center; font-weight: bold;">
+                    <?php echo $index + 1; ?>
                 </td>
-                
-                <!-- 상품명 -->
+
+                <!-- 품목 -->
                 <td class="col-product">
                     <?php echo htmlspecialchars($order['Type']); ?>
                 </td>
-                
+
                 <!-- 상세 정보 -->
                 <td class="col-details">
                     <?php echo $product_details_html; // 생성된 HTML 삽입 ?>
                 </td>
-                
+
                 <!-- 수량 -->
-                <td class="col-quantity">
-                    <?php echo extractQuantity($order); ?>
+                <td class="col-quantity" style="text-align: center;">
+                    <?php
+                    // 전단지/리플렛 여부 확인
+                    $is_flyer = false;
+                    $json_data = null;
+                    if (isset($order['Type_1'])) {
+                        $json_data = json_decode($order['Type_1'], true);
+                        if (isset($json_data['product_type']) && in_array($json_data['product_type'], ['inserted', 'leaflet'])) {
+                            $is_flyer = true;
+                        }
+                    }
+                    if (!$is_flyer && (strpos($order['Type'], '전단') !== false || strpos($order['Type'], '리플렛') !== false)) {
+                        $is_flyer = true;
+                    }
+
+                    if ($is_flyer) {
+                        // 전단지: 연수 표시
+                        $my_amount = $json_data['MY_amount'] ?? $order['MY_amount'] ?? null;
+                        $mesu = $json_data['mesu'] ?? $order['mesu'] ?? null;
+
+                        if (!empty($my_amount)) {
+                            $yeonsu = floatval($my_amount);
+                            $yeonsu_display = (floor($yeonsu) == $yeonsu) ? number_format($yeonsu) : number_format($yeonsu, 1);
+                            echo $yeonsu_display;
+                        }
+                        // 매수 추가 표시
+                        if (!empty($mesu)) {
+                            echo '<br><span style="font-size: 11px; color: #666;">(' . number_format($mesu) . '매)</span>';
+                        }
+                    } else {
+                        // 기타 제품: 수량만 표시
+                        $my_amount = $json_data['MY_amount'] ?? $order['MY_amount'] ?? null;
+                        if (!empty($my_amount)) {
+                            $qty = floatval($my_amount);
+                            echo (floor($qty) == $qty) ? number_format($qty) : number_format($qty, 1);
+                        } else {
+                            echo '1';
+                        }
+                    }
+                    ?>
                 </td>
-                
-                <!-- 금액 -->
-                <td class="col-price">
-                    <div class="price-container">
-                        <div class="price-supply">공급가: <span><?php echo number_format($order['money_4']); ?>원</span></div>
-                        <div class="price-total">합계금액: <span><?php echo number_format($order['money_5']); ?>원</span></div>
-                        <div class="price-vat">(VAT <?php echo number_format($order['money_5'] - $order['money_4']); ?>원 포함)</div>
+
+                <!-- 단위 -->
+                <td class="col-unit" style="text-align: center;">
+                    <?php
+                    if ($is_flyer) {
+                        echo '연';
+                    } elseif (strpos($order['Type'], 'NCR') !== false || strpos($order['Type'], '양식') !== false) {
+                        echo '권';
+                    } elseif (strpos($order['Type'], '카다록') !== false || strpos($order['Type'], '카탈로그') !== false) {
+                        echo '부';
+                    } else {
+                        echo '매';
+                    }
+                    ?>
+                </td>
+
+                <!-- 총액 -->
+                <td class="col-price" style="text-align: right;">
+                    <div style="font-size: 18px; font-weight: 600;">
+                        <?php echo number_format($order['money_5']); ?>원
                     </div>
-                </td>
-                
-                <!-- 상태 -->
-                <td class="col-status">
-                    <span class="status-badge status-pending">입금대기</span>
                 </td>
             </tr>
             <?php endforeach; ?>
         </tbody>
         <tfoot>
             <tr style="background: #f0f0f0; font-weight: bold; border-top: 2px solid #333;">
-                <td colspan="4" style="text-align: right; padding: 15px;">총 합계금액</td>
-                <td class="col-price" style="padding: 15px;">
-                    <div class="price-container">
-                        <div class="price-supply">공급가: <span><?php echo number_format($total_amount); ?>원</span></div>
-                        <div class="price-total">합계금액: <span><?php echo number_format($total_amount_vat); ?>원</span></div>
-                        <div class="price-vat">(VAT <?php echo number_format($total_amount_vat - $total_amount); ?>원 포함)</div>
+                <td colspan="5" style="text-align: right; padding: 15px;">총 합계금액</td>
+                <td class="col-price" style="padding: 15px; text-align: right;">
+                    <div style="font-size: 18px; font-weight: 600;">
+                        <?php echo number_format($total_amount_vat); ?>원
                     </div>
                 </td>
-                <td class="col-status"></td>
             </tr>
         </tfoot>
     </table>

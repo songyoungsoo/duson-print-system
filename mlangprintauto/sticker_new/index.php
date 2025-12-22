@@ -30,8 +30,8 @@ $page_title = generate_page_title("스티커 견적안내 - 프리미엄");
 $current_page = 'sticker'; // 네비게이션 활성화를 위한 페이지 식별자
 
 // 📱 모달 모드 감지 (견적서 시스템에서 iframe으로 호출될 때)
-$isQuotationMode = isset($_GET['mode']) && $_GET['mode'] === 'quotation';
-$body_class = $isQuotationMode ? ' quotation-modal-mode' : '';
+$is_quotation_mode = isset($_GET['mode']) && $_GET['mode'] === 'quotation';
+$body_class = $is_quotation_mode ? ' quotation-modal-mode' : '';
 
 // 스티커 기본값 설정
 $default_values = [
@@ -282,14 +282,14 @@ $default_values = [
     </style>
 </head>
 <body class="sticker-page<?php echo $body_class; ?>">
-<?php if (!$isQuotationMode): ?>
+<?php if (!$is_quotation_mode): ?>
 <?php include "../../includes/header-ui.php"; ?>
 <?php include "../../includes/nav.php"; ?>
 <?php endif; ?>
 
     <div class="product-container">
 
-<?php if (!$isQuotationMode): ?>
+<?php if (!$is_quotation_mode): ?>
         <div class="page-title">
             <h1>🏷️ 스티커 견적 안내</h1>
         </div>
@@ -297,7 +297,7 @@ $default_values = [
 
         <!-- 컴팩트 2단 그리드 레이아웃 -->
         <div class="product-content">
-<?php if (!$isQuotationMode): ?>
+<?php if (!$is_quotation_mode): ?>
             <!-- 좌측: 갤러리 (500×400 마우스 호버 줌) -->
             <section class="product-gallery" style="position: relative;">
                 <!-- 실시간 사이즈 미리보기 캔버스 (플로팅 오버레이) -->
@@ -452,7 +452,7 @@ $default_values = [
                         </div>
                     </div>
 
-                    <?php if ($isQuotationMode): ?>
+                    <?php if ($is_quotation_mode): ?>
                     <!-- 견적서 모달 모드: 견적서에 적용 버튼 -->
                     <div class="quotation-apply-button">
                         <button type="button" class="btn-quotation-apply" onclick="applyToQuotation()">
@@ -486,7 +486,7 @@ $default_values = [
 
     <?php include "../../includes/login_modal.php"; ?>
 
-<?php if (!$isQuotationMode): ?>
+<?php if (!$is_quotation_mode): ?>
     <!-- 스티커 상세 설명 섹션 -->
     <div class="sticker-detail-combined">
         <?php include "explane_sticker.php"; ?>
@@ -1294,6 +1294,7 @@ $default_values = [
         
         // CommonGallery 시스템이 자동으로 갤러리 초기화 처리
 
+        // 공통 갤러리 팝업 함수 사용 (common-gallery-popup.js)
         // openGalleryPopup(category) 함수를 사용하세요
         // 하위 호환성을 위한 별칭
         const openProofPopup = window.openGalleryPopup;
@@ -1804,6 +1805,7 @@ $default_values = [
     </script>
 
     <!-- 통합 갤러리 JavaScript 포함 -->
+    <script src="../../js/common-gallery-popup.js"></script>
 
     <!-- 스티커 장바구니 스크립트 -->
     <script>
@@ -2841,7 +2843,7 @@ if ($db) {
     <!-- 견적서 모달 공통 JavaScript -->
     <script src="../../js/quotation-modal-common.js"></script>
 
-<?php if (!$isQuotationMode): ?>
+<?php if (!$is_quotation_mode): ?>
     <?php
     // 공통 푸터 포함
     include "../../includes/footer.php";

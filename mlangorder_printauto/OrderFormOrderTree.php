@@ -228,7 +228,7 @@ foreach ($order_rows as $order_item) {
                             <tr style="background-color: #f5f5f5; border: 0.3pt solid #000;">
                                 <th style="border: 0.3pt solid #000; padding: 1.5mm; text-align: center; width: 5%;">NO</th>
                                 <th style="border: 0.3pt solid #000; padding: 1.5mm; text-align: center; width: 12%;">품 목</th>
-                                <th style="border: 0.3pt solid #000; padding: 1.5mm; text-align: center; width: 47%;">규격 및 사양</th>
+                                <th style="border: 0.3pt solid #000; padding: 1.5mm; text-align: center; width: 47%;">규격/옵션</th>
                                 <th style="border: 0.3pt solid #000; padding: 1.5mm; text-align: center; width: 8%;">수량</th>
                                 <th style="border: 0.3pt solid #000; padding: 1.5mm; text-align: center; width: 5%;">단위</th>
                                 <th style="border: 0.3pt solid #000; padding: 1.5mm; text-align: right; width: 9%;">인쇄비</th>
@@ -666,7 +666,7 @@ foreach ($order_rows as $order_item) {
                             <tr style="background-color: #f5f5f5; border: 0.3pt solid #000;">
                                 <th style="border: 0.3pt solid #000; padding: 1.5mm; text-align: center; width: 5%;">NO</th>
                                 <th style="border: 0.3pt solid #000; padding: 1.5mm; text-align: center; width: 12%;">품 목</th>
-                                <th style="border: 0.3pt solid #000; padding: 1.5mm; text-align: center; width: 47%;">규격 및 사양</th>
+                                <th style="border: 0.3pt solid #000; padding: 1.5mm; text-align: center; width: 47%;">규격/옵션</th>
                                 <th style="border: 0.3pt solid #000; padding: 1.5mm; text-align: center; width: 8%;">수량</th>
                                 <th style="border: 0.3pt solid #000; padding: 1.5mm; text-align: center; width: 5%;">단위</th>
                                 <th style="border: 0.3pt solid #000; padding: 1.5mm; text-align: right; width: 9%;">인쇄비</th>
@@ -1083,7 +1083,7 @@ foreach ($order_rows as $order_item) {
                                             <tr>
                                                 <th class='excel-header-cell' style='width: 5%;'>NO</th>
                                                 <th class='excel-header-cell' style='width: 12%;'>품목</th>
-                                                <th class='excel-header-cell' style='width: 43%; text-align: left;'>규격 및 사양</th>
+                                                <th class='excel-header-cell' style='width: 43%; text-align: left;'>규격/옵션</th>
                                                 <th class='excel-header-cell' style='width: 10%;'>수량</th>
                                                 <th class='excel-header-cell' style='width: 6%;'>단위</th>
                                                 <th class='excel-header-cell' style='width: 12%; text-align: right;'>인쇄비</th>

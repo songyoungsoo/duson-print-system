@@ -1522,6 +1522,33 @@ aside.calculator-section.leaflet-style {
     display: none;
 }
 
+/* 🎨 제품 페이지에서는 갤러리 표시 (더 구체적인 선택자로 override) */
+body.sticker-page .lightbox-viewer,
+body.namecard-page .lightbox-viewer,
+body.envelope-page .lightbox-viewer,
+body.inserted-page .lightbox-viewer,
+body.cadarok-page .lightbox-viewer,
+body.littleprint-page .lightbox-viewer,
+body.merchandisebond-page .lightbox-viewer,
+body.msticker-page .lightbox-viewer,
+body.ncrflambeau-page .lightbox-viewer,
+body.leaflet-page .lightbox-viewer {
+    display: block;
+}
+
+body.sticker-page .thumbnail-strip,
+body.namecard-page .thumbnail-strip,
+body.envelope-page .thumbnail-strip,
+body.inserted-page .thumbnail-strip,
+body.cadarok-page .thumbnail-strip,
+body.littleprint-page .thumbnail-strip,
+body.merchandisebond-page .thumbnail-strip,
+body.msticker-page .thumbnail-strip,
+body.ncrflambeau-page .thumbnail-strip,
+body.leaflet-page .thumbnail-strip {
+    display: grid;
+}
+
 /* === 중복 섹션 제거됨 - 위쪽 통합 계산기 섹션 사용 === */
 
 /* 파일 업로드 및 주문 버튼 - 타이트하게 */

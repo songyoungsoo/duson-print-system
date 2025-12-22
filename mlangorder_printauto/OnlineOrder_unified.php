@@ -403,21 +403,27 @@ if (!empty($debug_info) && strpos($_SERVER['HTTP_HOST'], 'localhost') !== false)
                 </div>
             </div>
             
-            <!-- 주문 상품 목록 (엑셀 스타일 테이블 - 통합장바구니와 동일) -->
+            <!-- 주문 상품 목록 (6컬럼: 순번|품목|규격/옵션|수량|단위|총액) -->
             <div style="margin-bottom: 1.5rem;">
                 <h3 style="color: #4a5568; font-weight: 600; font-size: 16px; margin-bottom: 1rem;">🛍️ 주문 상품 목록</h3>
                 <div class="excel-cart-table-wrapper">
                     <table class="excel-cart-table" style="width: 100%; border-collapse: collapse; table-layout: fixed;">
                         <colgroup>
-                            <col style="width: 18%;"><!-- 품목 -->
-                            <col style="width: 52%;"><!-- 규격/옵션 -->
-                            <col style="width: 30%;"><!-- 공급가 -->
+                            <col style="width: 5%;"><!-- 순번 -->
+                            <col style="width: 15%;"><!-- 품목 -->
+                            <col style="width: 40%;"><!-- 규격/옵션 -->
+                            <col style="width: 10%;"><!-- 수량 -->
+                            <col style="width: 8%;"><!-- 단위 -->
+                            <col style="width: 22%;"><!-- 총액 -->
                         </colgroup>
                         <thead>
                             <tr>
+                                <th style="border: 1px solid #ccc; padding: 10px; background: #f3f3f3; text-align: center; font-weight: bold;">NO</th>
                                 <th style="border: 1px solid #ccc; padding: 10px; background: #f3f3f3; text-align: center; font-weight: bold;">품목</th>
                                 <th style="border: 1px solid #ccc; padding: 10px; background: #f3f3f3; text-align: center; font-weight: bold;">규격/옵션</th>
-                                <th style="border: 1px solid #ccc; padding: 10px; background: #f3f3f3; text-align: center; font-weight: bold;">공급가</th>
+                                <th style="border: 1px solid #ccc; padding: 10px; background: #f3f3f3; text-align: center; font-weight: bold;">수량</th>
+                                <th style="border: 1px solid #ccc; padding: 10px; background: #f3f3f3; text-align: center; font-weight: bold;">단위</th>
+                                <th style="border: 1px solid #ccc; padding: 10px; background: #f3f3f3; text-align: center; font-weight: bold;">총액</th>
                             </tr>
                         </thead>
                         <tbody>
@@ -440,7 +446,11 @@ if (!empty($debug_info) && strpos($_SERVER['HTTP_HOST'], 'localhost') !== false)
                         $product = $product_info_map[$item['product_type']] ?? ['name' => '상품', 'icon' => '📦', 'color' => '#f5f5f5'];
                     ?>
                     <tr>
-                        <!-- 상품정보 -->
+                        <!-- 순번 -->
+                        <td style="border: 1px solid #ccc; padding: 10px; vertical-align: top; text-align: center; font-weight: bold;">
+                            <?php echo $index + 1; ?>
+                        </td>
+                        <!-- 품목 -->
                         <td style="border: 1px solid #ccc; padding: 10px; vertical-align: top;">
                             <div class="product-info-cell">
                                 <div class="product-icon <?php echo htmlspecialchars($item['product_type']); ?>" style="background-color: <?php echo $product['color']; ?>; padding: 8px; border-radius: 6px; font-size: 18px; line-height: 1; min-width: 36px; text-align: center;">
@@ -448,7 +458,6 @@ if (!empty($debug_info) && strpos($_SERVER['HTTP_HOST'], 'localhost') !== false)
                                 </div>
                                 <div>
                                     <div class="product-name" style="font-weight: 600; color: #2d3748; margin-bottom: 4px; font-size: 15px;"><?php echo $product['name']; ?></div>
-                                    <div class="product-number" style="color: #718096; font-size: 12px;">상품번호: #<?php echo $is_direct_order ? '-' : $item['no']; ?></div>
                                 </div>
                             </div>
                         </td>
@@ -572,9 +581,49 @@ if (!empty($debug_info) && strpos($_SERVER['HTTP_HOST'], 'localhost') !== false)
                                     <?php endif; ?>
                                 <?php endif; ?>
                         </td>
-                        <td class="td-right" style="border: 1px solid #ccc; padding: 10px; vertical-align: top; text-align: right;">
-                            <div class="price-total" style="font-size: 18px;">
-                                <?php echo number_format($is_direct_order ? $item['price'] : $item['st_price']); ?>원
+                        <!-- 수량 -->
+                        <td style="border: 1px solid #ccc; padding: 10px; vertical-align: top; text-align: center;">
+                            <?php
+                            // 전단지/리플렛 여부 확인
+                            $is_flyer = in_array($item['product_type'], ['inserted', 'leaflet']) ||
+                                       (!empty($item['unit']) && $item['unit'] === '연');
+
+                            if ($is_flyer) {
+                                // 전단지: 연수 표시
+                                if (!empty($item['MY_amount'])) {
+                                    $yeonsu = floatval($item['MY_amount']);
+                                    $yeonsu_display = (floor($yeonsu) == $yeonsu) ? number_format($yeonsu) : number_format($yeonsu, 1);
+                                    echo $yeonsu_display;
+                                }
+                                // 매수 추가 표시
+                                if (!empty($item['mesu'])) {
+                                    echo '<br><span style="font-size: 11px; color: #666;">(' . number_format($item['mesu']) . '매)</span>';
+                                }
+                            } else {
+                                // 기타 제품: 수량만 표시
+                                $qty = floatval($item['mesu'] ?: $item['MY_amount'] ?: 1);
+                                echo (floor($qty) == $qty) ? number_format($qty) : number_format($qty, 1);
+                            }
+                            ?>
+                        </td>
+                        <!-- 단위 -->
+                        <td style="border: 1px solid #ccc; padding: 10px; vertical-align: top; text-align: center;">
+                            <?php
+                            if ($is_flyer) {
+                                echo '연';
+                            } elseif ($item['product_type'] == 'ncrflambeau') {
+                                echo '권';
+                            } elseif ($item['product_type'] == 'cadarok') {
+                                echo '부';
+                            } else {
+                                echo '매';
+                            }
+                            ?>
+                        </td>
+                        <!-- 총액 -->
+                        <td style="border: 1px solid #ccc; padding: 10px; vertical-align: top; text-align: right;">
+                            <div style="font-size: 18px; font-weight: 600;">
+                                <?php echo number_format($is_direct_order ? $item['price_vat'] : $item['st_price_vat']); ?>원
                             </div>
                         </td>
                     </tr>
