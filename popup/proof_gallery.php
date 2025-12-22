@@ -209,24 +209,24 @@ function get_image_from_thingcate($orderNo, $absBase, $urlBase, $connect){
   // 주문번호의 ThingCate 필드에서 이미지 파일명 가져오기
   $sql = "SELECT ThingCate FROM mlangorder_printauto WHERE No = ? AND ThingCate IS NOT NULL AND ThingCate != ''";
   $stmt = mysqli_prepare($connect, $sql);
-  
+
   if ($stmt) {
     mysqli_stmt_bind_param($stmt, "i", $orderNo);
     mysqli_stmt_execute($stmt);
     $result = mysqli_stmt_get_result($stmt);
     $row = mysqli_fetch_assoc($result);
     mysqli_stmt_close($stmt);
-    
+
     if ($row && isset($row['ThingCate'])) {
       $thing_cate = $row['ThingCate'];
       $file_path = $absBase . "/" . $orderNo . "/" . $thing_cate;
-      
+
       if (file_exists($file_path)) {
         return $urlBase . "/" . $orderNo . "/" . rawurlencode($thing_cate);
       }
     }
   }
-  
+
   return null;
 }
 ?>
@@ -234,31 +234,31 @@ function get_image_from_thingcate($orderNo, $absBase, $urlBase, $connect){
 <html lang="ko">
 <head>
 <meta charset="utf-8">
-<title><?= htmlspecialchars($cate) ?> 샘플 갤러리</title>
+<title>명함 샘플 갤러리</title>
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <style>
-body { 
-  margin: 0; 
+body {
+  margin: 0;
   font-family: 'Noto Sans KR', system-ui, -apple-system, Segoe UI, Roboto, Helvetica, Arial, sans-serif;
   background: #f5f5f5;
 }
 
 .header {
-  padding: 14px 18px; 
-  font-weight: 700; 
-  font-size: 18px; 
+  padding: 14px 18px;
+  font-weight: 700;
+  font-size: 18px;
   color: #fff;
   background: linear-gradient(90deg, #22d3ee, #6366f1);
-  display: flex; 
-  align-items: center; 
+  display: flex;
+  align-items: center;
   justify-content: space-between;
   box-shadow: 0 2px 4px rgba(0,0,0,0.1);
 }
 
 .grid {
-  padding: 14px; 
-  display: grid; 
-  grid-template-columns: repeat(auto-fill, minmax(150px, 1fr)); 
+  padding: 14px;
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(150px, 1fr));
   gap: 12px;
 }
 
@@ -269,14 +269,14 @@ body {
 }
 
 .card {
-  border: 1px solid #e5e7eb; 
-  border-radius: 12px; 
-  overflow: hidden; 
-  background: #fff; 
+  border: 1px solid #e5e7eb;
+  border-radius: 12px;
+  overflow: hidden;
+  background: #fff;
   cursor: pointer;
-  display: flex; 
-  align-items: center; 
-  justify-content: center; 
+  display: flex;
+  align-items: center;
+  justify-content: center;
   height: 140px;
   transition: transform 0.2s ease, box-shadow 0.2s ease;
 }
@@ -286,28 +286,28 @@ body {
   box-shadow: 0 4px 12px rgba(0,0,0,0.1);
 }
 
-.card img { 
-  max-width: 100%; 
-  max-height: 100%; 
-  object-fit: contain; 
+.card img {
+  max-width: 100%;
+  max-height: 100%;
+  object-fit: contain;
   display: block;
 }
 
-.pager { 
-  padding: 10px 14px; 
-  display: flex; 
-  gap: 6px; 
-  justify-content: center; 
+.pager {
+  padding: 10px 14px;
+  display: flex;
+  gap: 6px;
+  justify-content: center;
   align-items: center;
   flex-wrap: wrap;
 }
 
 .pager a, .pager span {
-  border: 1px solid #cbd5e1; 
-  border-radius: 8px; 
-  padding: 6px 10px; 
-  text-decoration: none; 
-  color: #334155; 
+  border: 1px solid #cbd5e1;
+  border-radius: 8px;
+  padding: 6px 10px;
+  text-decoration: none;
+  color: #334155;
   background: #fff;
   transition: background 0.2s ease;
 }
@@ -316,19 +316,19 @@ body {
   background: #f1f5f9;
 }
 
-.pager .current { 
-  background: #334155; 
-  color: #fff; 
+.pager .current {
+  background: #334155;
+  color: #fff;
   border-color: #334155;
 }
 
 .viewer {
-  position: fixed; 
-  inset: 0; 
-  background: rgba(0,0,0,.85); 
-  display: none; 
-  align-items: center; 
-  justify-content: center; 
+  position: fixed;
+  inset: 0;
+  background: rgba(0,0,0,.85);
+  display: none;
+  align-items: center;
+  justify-content: center;
   z-index: 9999;
   animation: fadeIn 0.3s ease;
 }
@@ -339,34 +339,34 @@ body {
 }
 
 .viewer .box {
-  width: 86vw; 
-  height: 86vh; 
-  max-width: 1200px; 
+  width: 86vw;
+  height: 86vh;
+  max-width: 1200px;
   max-height: 800px;
-  background: #111; 
-  border-radius: 16px; 
-  overflow: hidden; 
-  position: relative; 
+  background: #111;
+  border-radius: 16px;
+  overflow: hidden;
+  position: relative;
   border: 1px solid #374151;
   box-shadow: 0 20px 60px rgba(0,0,0,0.5);
 }
 
 .viewer img {
-  width: 100%; 
-  height: 100%; 
-  object-fit: contain; 
-  transition: transform .25s ease; 
+  width: 100%;
+  height: 100%;
+  object-fit: contain;
+  transition: transform .25s ease;
   transform-origin: center center;
 }
 
 .viewer .close {
-  position: absolute; 
-  top: 12px; 
-  right: 12px; 
-  color: #fff; 
-  background: rgba(0,0,0,0.7); 
-  padding: 8px 14px; 
-  border-radius: 8px; 
+  position: absolute;
+  top: 12px;
+  right: 12px;
+  color: #fff;
+  background: rgba(0,0,0,0.7);
+  padding: 8px 14px;
+  border-radius: 8px;
   cursor: pointer;
   border: 1px solid rgba(255,255,255,0.2);
   font-weight: 600;
@@ -424,32 +424,23 @@ body {
 
     <div class="pager">
       <?php
-      $base = "/popup/proof_gallery.php?cate=" . urlencode($cate) . "&page=";
-      
-      // 이전 버튼
+      // 페이지네이션 링크 생성
+      $cate_encoded = urlencode($cate);
+
       if ($page > 1) {
-        echo '<a href="'.$base.($page-1).'">◀ 이전</a>';
+        echo "<a href=\"/popup/proof_gallery.php?cate={$cate_encoded}&page=" . ($page - 1) . "\">◀ 이전</a>";
       }
-      
-      // 페이지 번호
-      $window = 7; // 표시 범위
-      $start = max(1, $page - floor($window/2));
-      $end   = min($pages, $start + $window - 1);
-      if ($end - $start + 1 < $window) {
-        $start = max(1, $end - $window + 1);
-      }
-      
-      for ($p = $start; $p <= $end; $p++) {
+
+      for ($p = 1; $p <= $pages; $p++) {
         if ($p == $page) {
-          echo '<span class="current">'.$p.'</span>';
+          echo "<span class=\"current\">{$p}</span>";
         } else {
-          echo '<a href="'.$base.$p.'">'.$p.'</a>';
+          echo "<a href=\"/popup/proof_gallery.php?cate={$cate_encoded}&page={$p}\">{$p}</a>";
         }
       }
-      
-      // 다음 버튼
+
       if ($page < $pages) {
-        echo '<a href="'.$base.($page+1).'">다음 ▶</a>';
+        echo "<a href=\"/popup/proof_gallery.php?cate={$cate_encoded}&page=" . ($page + 1) . "\">다음 ▶</a>";
       }
       ?>
     </div>
