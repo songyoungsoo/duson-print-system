@@ -807,6 +807,7 @@ function formatCartItemForDisplay($connect, $item) {
             break;
             
         case 'littleprint':
+        case 'poster':  // 포스터 제품 (littleprint와 poster 모두 처리)
             $formatted['name'] = '포스터';
             $qty = floatval($item['MY_amount']);
             $qty_display = (floor($qty) == $qty) ? number_format($qty) : number_format($qty, 1);
@@ -818,7 +819,7 @@ function formatCartItemForDisplay($connect, $item) {
                 '주문타입' => $item['ordertype'] === 'design' ? '디자인+인쇄' : '인쇄만'
             ];
             break;
-            
+
         default:
             $formatted['name'] = '기타 상품';
             $formatted['details'] = [];

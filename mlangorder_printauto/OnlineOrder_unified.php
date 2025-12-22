@@ -433,6 +433,7 @@ if (!empty($debug_info) && strpos($_SERVER['HTTP_HOST'], 'localhost') !== false)
                         'envelope' => ['name' => '봉투', 'icon' => '✉️', 'color' => '#e0f2f1'],
                         'merchandisebond' => ['name' => '상품권', 'icon' => '🎫', 'color' => '#f1f8e9'],
                         'littleprint' => ['name' => '포스터', 'icon' => '🎨', 'color' => '#e8eaf6'],
+                        'poster' => ['name' => '포스터', 'icon' => '🎨', 'color' => '#e8eaf6'],
                         'ncrflambeau' => ['name' => '양식지', 'icon' => '📋', 'color' => '#e8eaf6']
                     ];
                     foreach ($cart_items as $index => $item):
