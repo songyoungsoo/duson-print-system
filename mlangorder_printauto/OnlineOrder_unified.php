@@ -409,13 +409,13 @@ if (!empty($debug_info) && strpos($_SERVER['HTTP_HOST'], 'localhost') !== false)
                 <div class="excel-cart-table-wrapper">
                     <table class="excel-cart-table" style="width: 100%; border-collapse: collapse; table-layout: fixed;">
                         <colgroup>
-                            <col style="width: 18%;"><!-- 상품정보 -->
+                            <col style="width: 18%;"><!-- 품목 -->
                             <col style="width: 52%;"><!-- 규격/옵션 -->
                             <col style="width: 30%;"><!-- 공급가 -->
                         </colgroup>
                         <thead>
                             <tr>
-                                <th style="border: 1px solid #ccc; padding: 10px; background: #f3f3f3; text-align: center; font-weight: bold;">상품정보</th>
+                                <th style="border: 1px solid #ccc; padding: 10px; background: #f3f3f3; text-align: center; font-weight: bold;">품목</th>
                                 <th style="border: 1px solid #ccc; padding: 10px; background: #f3f3f3; text-align: center; font-weight: bold;">규격/옵션</th>
                                 <th style="border: 1px solid #ccc; padding: 10px; background: #f3f3f3; text-align: center; font-weight: bold;">공급가</th>
                             </tr>

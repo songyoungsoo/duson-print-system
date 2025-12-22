@@ -415,22 +415,26 @@ function formatCartItemForDisplay($connect, $item) {
             
         case 'cadarok':
             $formatted['name'] = '카다록';
+            $qty = floatval($item['MY_amount']);
+            $qty_display = (floor($qty) == $qty) ? number_format($qty) : number_format($qty, 1);
             $formatted['details'] = [
                 '타입' => getCategoryName($connect, $item['MY_type']),
-                '스타일' => getCategoryName($connect, $item['MY_Fsd']),
-                '섹션' => getCategoryName($connect, $item['PN_type']),
-                '수량' => $item['MY_amount'],
+                '스타일' => getCategoryName($connect, $item['Section']),
+                '섹션' => getCategoryName($connect, $item['POtype']),
+                '수량' => $qty_display,
                 '주문타입' => $item['ordertype'] === 'design' ? '디자인+인쇄' : '인쇄만'
             ];
             break;
             
         case 'leaflet':
             $formatted['name'] = '📄 전단지';
+            $qty = floatval($item['MY_amount']);
+            $qty_display = (floor($qty) == $qty) ? number_format($qty) : number_format($qty, 1);
             $formatted['details'] = [
                 '색상' => getCategoryName($connect, $item['MY_type']),
                 '용지' => getCategoryName($connect, $item['MY_Fsd']),
                 '사이즈' => getCategoryName($connect, $item['PN_type']),
-                '수량' => $item['MY_amount'],
+                '수량' => $qty_display,
                 '면수' => $item['POtype'] == '1' ? '단면' : '양면',
                 '주문타입' => $item['ordertype'] === 'design' ? '디자인+인쇄' : '인쇄만'
             ];
@@ -489,12 +493,13 @@ function formatCartItemForDisplay($connect, $item) {
         case 'inserted':
             $formatted['name'] = '📄 전단지';
 
-            // 수량 표시 로직 수정
+            // 수량 표시 로직 수정 (OrderFormOrderTree 방식 적용)
             $quantity_text = '';
             if (!empty($item['MY_amount'])) {
                 $yeonsu = floatval($item['MY_amount']);
-                // 1.0 -> 1, 0.5 -> 0.5 와 같이 소수점 뒤 0을 제거
-                $quantity_text .= rtrim(rtrim(sprintf('%.1f', $yeonsu), '0'), '.') . '연';
+                // ✅ OrderFormOrderTree 방식: 정수면 소수점 없이, 소수면 1자리까지
+                $yeonsu_display = (floor($yeonsu) == $yeonsu) ? number_format($yeonsu) : number_format($yeonsu, 1);
+                $quantity_text .= $yeonsu_display . '연';
             }
             if (!empty($item['mesu'])) {
                 // 연수 표시가 있을 때만 괄호와 함께 매수 추가
@@ -587,10 +592,12 @@ function formatCartItemForDisplay($connect, $item) {
 
             // 양식지(ncrflambeau)는 "권" 단위 사용
             $unit = ($item['product_type'] == 'ncrflambeau') ? '권' : '매';
+            $qty = floatval($item['MY_amount']);
+            $qty_display = (floor($qty) == $qty) ? number_format($qty) : number_format($qty, 1);
             $formatted['details'] = [
                 '명함종류' => $option_details_json['type_text'] ?? getCategoryName($connect, $item['MY_type']),
                 '용지종류' => $option_details_json['paper_text'] ?? getCategoryName($connect, $item['Section'] ?? $item['PN_type']),
-                '수량' => $option_details_json['quantity_text'] ?? ($item['MY_amount'] . $unit),
+                '수량' => $option_details_json['quantity_text'] ?? ($qty_display . $unit),
                 '인쇄면' => $option_details_json['sides_text'] ?? ($item['POtype'] == '1' ? '단면' : '양면'),
                 '디자인' => $option_details_json['design_text'] ?? ($item['ordertype'] === 'total' ? '디자인+인쇄' : ($item['ordertype'] === 'design' ? '디자인만' : '인쇄만'))
             ];
@@ -680,10 +687,12 @@ function formatCartItemForDisplay($connect, $item) {
             $formatted['name'] = '📨 봉투';
             // 양식지(ncrflambeau)는 "권" 단위 사용
             $unit = ($item['product_type'] == 'ncrflambeau') ? '권' : '매';
+            $qty = floatval($item['MY_amount']);
+            $qty_display = (floor($qty) == $qty) ? number_format($qty) : number_format($qty, 1);
             $formatted['details'] = [
                 '타입' => getCategoryName($connect, $item['MY_type']),
-                '용지' => getCategoryName($connect, $item['MY_Fsd']),
-                '수량' => $item['MY_amount'] . $unit,
+                '용지' => getCategoryName($connect, $item['Section']),
+                '수량' => $qty_display . $unit,
                 '면수' => $item['POtype'] == '1' ? '단면' : '양면',
                 '주문타입' => $item['ordertype'] === 'design' ? '디자인+인쇄' : '인쇄만'
             ];
@@ -757,10 +766,12 @@ function formatCartItemForDisplay($connect, $item) {
             $formatted['name'] = '자석스티커';
             // 양식지(ncrflambeau)는 "권" 단위 사용
             $unit = ($item['product_type'] == 'ncrflambeau') ? '권' : '매';
+            $qty = floatval($item['MY_amount']);
+            $qty_display = (floor($qty) == $qty) ? number_format($qty) : number_format($qty, 1);
             $formatted['details'] = [
                 '타입' => getCategoryName($connect, $item['MY_type']),
-                '용지' => getCategoryName($connect, $item['MY_Fsd']),
-                '수량' => $item['MY_amount'] . $unit,
+                '용지' => getCategoryName($connect, $item['Section']),
+                '수량' => $qty_display . $unit,
                 '주문타입' => $item['ordertype'] === 'design' ? '디자인+인쇄' : '인쇄만'
             ];
             break;
@@ -769,10 +780,12 @@ function formatCartItemForDisplay($connect, $item) {
             $formatted['name'] = '쿠폰';
             // 양식지(ncrflambeau)는 "권" 단위 사용
             $unit = ($item['product_type'] == 'ncrflambeau') ? '권' : '매';
+            $qty = floatval($item['MY_amount']);
+            $qty_display = (floor($qty) == $qty) ? number_format($qty) : number_format($qty, 1);
             $formatted['details'] = [
                 '타입' => getCategoryName($connect, $item['MY_type']),
-                '용지' => getCategoryName($connect, $item['MY_Fsd']),
-                '수량' => $item['MY_amount'] . $unit,
+                '용지' => getCategoryName($connect, $item['Section']),
+                '수량' => $qty_display . $unit,
                 '면수' => $item['POtype'] == '1' ? '단면' : '양면',
                 '주문타입' => $item['ordertype'] === 'design' ? '디자인+인쇄' : '인쇄만'
             ];
@@ -782,22 +795,26 @@ function formatCartItemForDisplay($connect, $item) {
             $formatted['name'] = '양식지';
             // 양식지(ncrflambeau)는 "권" 단위 사용
             $unit = '권';
+            $qty = floatval($item['MY_amount']);
+            $qty_display = (floor($qty) == $qty) ? number_format($qty) : number_format($qty, 1);
             $formatted['details'] = [
                 '타입' => getCategoryName($connect, $item['MY_type']),
                 '용지' => getCategoryName($connect, $item['MY_Fsd']),
                 '규격' => getCategoryName($connect, $item['PN_type']),
-                '수량' => $item['MY_amount'] . $unit,
+                '수량' => $qty_display . $unit,
                 '주문타입' => $item['ordertype'] === 'design' ? '디자인+인쇄' : '인쇄만'
             ];
             break;
             
         case 'littleprint':
             $formatted['name'] = '포스터';
+            $qty = floatval($item['MY_amount']);
+            $qty_display = (floor($qty) == $qty) ? number_format($qty) : number_format($qty, 1);
             $formatted['details'] = [
                 '타입' => getCategoryName($connect, $item['MY_type']),
-                '용지' => getCategoryName($connect, $item['MY_Fsd']),
+                '용지' => getCategoryName($connect, $item['Section']),
                 '규격' => getCategoryName($connect, $item['PN_type']),
-                '수량' => $item['MY_amount'],
+                '수량' => $qty_display,
                 '주문타입' => $item['ordertype'] === 'design' ? '디자인+인쇄' : '인쇄만'
             ];
             break;
