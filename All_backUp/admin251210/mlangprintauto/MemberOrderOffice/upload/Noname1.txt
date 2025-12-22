@@ -1,0 +1,11 @@
+<? 
+$MlangZ="2";    // 메뉴의 갯수
+$MlangV="s";   //파일의 이름 파일이 s01.gif 나 s01_1.gif 을 ssss만 입력하면 자동인식한다
+$MlangX="Leftmenu/page1";     // /images다음의 폴더명
+for ($i=1; $i<$MlangZ+1; $i++) { ?>
+<?if($page=="$i"){?>
+<a href='<?=$PHP_SELF?>?page=<?=$i?>' onmouseover='Mlang<?=$i?>.src="/images/<?=$MlangX?>/<?=$MlangV?>0<?=$i?>.gif"' onmouseout='Mlang<?=$i?>.src="/images/<?=$MlangX?>/<?=$MlangV?>0<?=$i?>_1.gif"'><img src='/images/<?=$MlangX?>/<?=$MlangV?>0<?=$i?>_1.gif' name='Mlang<?=$i?>' border=0></a><BR><BR>
+<?}else{?>
+<a href='<?=$PHP_SELF?>?page=<?=$i?>' onmouseover='Mlang<?=$i?>.src="/images/<?=$MlangX?>/<?=$MlangV?>0<?=$i?>_1.gif"' onmouseout='Mlang<?=$i?>.src="/images/<?=$MlangX?>/<?=$MlangV?>0<?=$i?>.gif"'><img src='/images/<?=$MlangX?>/<?=$MlangV?>0<?=$i?>.gif' name='Mlang<?=$i?>' border=0></a><BR><BR>
+<?}?>
+<? } ?>

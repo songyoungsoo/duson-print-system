@@ -1,8 +1,13 @@
 <?php
 /**
- * 주문내역 이메일 발송 API
+ * 주문내역 이메일 수동 재발송 API
+ *
+ * 용도: 관리자가 수동으로 주문 확인 이메일을 재발송할 때 사용
+ * 주의: 자동 발송은 OrderComplete_unified.php에서 처리됨 (이 파일은 수동 재발송 전용)
+ *
  * 사무용 표형태 주문완료 페이지용
  * Created: 2025년 8월 (AI Assistant)
+ * Modified: 2025-12-07 - 수동 재발송 전용으로 변경, mailer.lib.php 통일
  */
 
 // 에러 출력 제어 - JSON 응답 보장
@@ -19,8 +24,8 @@ header('Cache-Control: no-cache, must-revalidate');
 // 데이터베이스 연결
 include "../db.php";
 
-// PHPMailer 라이브러리 포함
-require 'mailer.lib250802.php';
+// PHPMailer 라이브러리 포함 (비밀번호 통일된 버전)
+require 'mailer.lib.php';
 
 try {
     // POST 데이터 받기
@@ -348,8 +353,8 @@ try {
                         if (isset($details['garo']) && isset($details['sero'])) {
                             $emailHtml .= '<span class="option-item">크기: ' . htmlspecialchars($details['garo']) . '×' . htmlspecialchars($details['sero']) . 'mm</span>';
                         }
-                        // 양식지(ncrflambeau)는 "권" 단위 사용
-                        $unit = ($product_type == 'ncrflambeau') ? '권' : '매';
+                        // DB unit 필드 사용 (2025-12-10 수정)
+                        $unit = $order['unit'] ?? '매';
                         if (isset($details['mesu'])) $emailHtml .= '<span class="option-item">수량: ' . number_format($details['mesu']) . $unit . '</span>';
                         if (isset($details['uhyung'])) $emailHtml .= '<span class="option-item">편집: ' . htmlspecialchars($details['uhyung']) . '</span>';
                         if (isset($details['domusong'])) $emailHtml .= '<span class="option-item">모양: ' . htmlspecialchars($details['domusong']) . '</span>';
@@ -358,8 +363,8 @@ try {
                     case 'envelope':
                         if (isset($json_data['MY_type'])) $emailHtml .= '<span class="option-item">타입: ' . getCategoryName($db, $json_data['MY_type']) . '</span>';
                         if (isset($json_data['MY_Fsd'])) $emailHtml .= '<span class="option-item">용지: ' . getCategoryName($db, $json_data['MY_Fsd']) . '</span>';
-                        // 양식지(ncrflambeau)는 "권" 단위 사용
-                        $unit = ($product_type == 'ncrflambeau') ? '권' : '매';
+                        // DB unit 필드 사용 (2025-12-10 수정)
+                        $unit = $order['unit'] ?? '매';
                         if (isset($json_data['MY_amount'])) $emailHtml .= '<span class="option-item">수량: ' . number_format($json_data['MY_amount']) . $unit . '</span>';
                         if (isset($json_data['POtype'])) $emailHtml .= '<span class="option-item">인쇄: ' . ($json_data['POtype'] == '1' ? '단면' : '양면') . '</span>';
                         break;
@@ -367,8 +372,8 @@ try {
                     case 'namecard':
                         if (isset($json_data['MY_type'])) $emailHtml .= '<span class="option-item">타입: ' . getCategoryName($db, $json_data['MY_type']) . '</span>';
                         if (isset($json_data['Section'])) $emailHtml .= '<span class="option-item">용지: ' . getCategoryName($db, $json_data['Section']) . '</span>';
-                        // 양식지(ncrflambeau)는 "권" 단위 사용
-                        $unit = ($product_type == 'ncrflambeau') ? '권' : '매';
+                        // DB unit 필드 사용 (2025-12-10 수정)
+                        $unit = $order['unit'] ?? '매';
                         if (isset($json_data['MY_amount'])) $emailHtml .= '<span class="option-item">수량: ' . number_format($json_data['MY_amount']) . $unit . '</span>';
                         if (isset($json_data['POtype'])) $emailHtml .= '<span class="option-item">인쇄: ' . ($json_data['POtype'] == '1' ? '단면' : '양면') . '</span>';
                         break;
@@ -519,7 +524,7 @@ try {
                     <p><strong>두손기획인쇄</strong></p>
                     <p>📞 02-2632-1830, 1688-2384</p>
                     <p>📍 서울 영등포구 영등포로 36길 9, 송호빌딩 1F</p>
-                    <p>🌐 www.dsp114.com</p>
+                    <p>🌐 www.dsp1830.shop</p>
                 </div>
             </div>
         </div>

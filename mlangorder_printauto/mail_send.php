@@ -68,7 +68,7 @@ $body3 .= "</table> <br>
 
 			주소창 검색창에 두손기획인쇄로 검색<br>
 
-			www.dsp114.com<br>   
+			www.dsp1830.shop<br>   
 
 			전단지 스티커 카달로그 각종서식 봉투 명함 각종 인쇄<br>
 

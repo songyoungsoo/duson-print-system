@@ -30,9 +30,8 @@ $page_title = generate_page_title("스티커 견적안내 - 프리미엄");
 $current_page = 'sticker'; // 네비게이션 활성화를 위한 페이지 식별자
 
 // 📱 모달 모드 감지 (견적서 시스템에서 iframe으로 호출될 때)
-$is_quotation_mode = isset($_GET['mode']) && $_GET['mode'] === 'quotation';
-$isQuotationMode = $is_quotation_mode; // camelCase 별칭 (호환성)
-$body_class = $is_quotation_mode ? ' quotation-modal-mode' : '';
+$isQuotationMode = isset($_GET['mode']) && $_GET['mode'] === 'quotation';
+$body_class = $isQuotationMode ? ' quotation-modal-mode' : '';
 
 // 스티커 기본값 설정
 $default_values = [
@@ -283,14 +282,14 @@ $default_values = [
     </style>
 </head>
 <body class="sticker-page<?php echo $body_class; ?>">
-<?php if (!$is_quotation_mode): ?>
+<?php if (!$isQuotationMode): ?>
 <?php include "../../includes/header-ui.php"; ?>
 <?php include "../../includes/nav.php"; ?>
 <?php endif; ?>
 
     <div class="product-container">
 
-<?php if (!$is_quotation_mode): ?>
+<?php if (!$isQuotationMode): ?>
         <div class="page-title">
             <h1>🏷️ 스티커 견적 안내</h1>
         </div>
@@ -298,7 +297,7 @@ $default_values = [
 
         <!-- 컴팩트 2단 그리드 레이아웃 -->
         <div class="product-content">
-<?php if (!$is_quotation_mode): ?>
+<?php if (!$isQuotationMode): ?>
             <!-- 좌측: 갤러리 (500×400 마우스 호버 줌) -->
             <section class="product-gallery" style="position: relative;">
                 <!-- 실시간 사이즈 미리보기 캔버스 (플로팅 오버레이) -->
@@ -487,7 +486,7 @@ $default_values = [
 
     <?php include "../../includes/login_modal.php"; ?>
 
-<?php if (!$is_quotation_mode): ?>
+<?php if (!$isQuotationMode): ?>
     <!-- 스티커 상세 설명 섹션 -->
     <div class="sticker-detail-combined">
         <?php include "explane_sticker.php"; ?>
@@ -1295,7 +1294,6 @@ $default_values = [
         
         // CommonGallery 시스템이 자동으로 갤러리 초기화 처리
 
-        // 공통 갤러리 팝업 함수 사용 (common-gallery-popup.js)
         // openGalleryPopup(category) 함수를 사용하세요
         // 하위 호환성을 위한 별칭
         const openProofPopup = window.openGalleryPopup;
@@ -1806,7 +1804,6 @@ $default_values = [
     </script>
 
     <!-- 통합 갤러리 JavaScript 포함 -->
-    <script src="../../js/common-gallery-popup.js"></script>
 
     <!-- 스티커 장바구니 스크립트 -->
     <script>
@@ -1822,42 +1819,19 @@ $default_values = [
 
             const formData = new FormData();
             formData.append("action", "add_to_basket");
-            formData.append("product_type", "sticker");  // "sticker_new" → "sticker" (서버 검증과 일치)
+            formData.append("product_type", "sticker_new");
+            formData.append("MY_type", document.getElementById("MY_type").value);
+            formData.append("Section", document.getElementById("Section").value);
+            formData.append("POtype", document.getElementById("POtype").value);
+            formData.append("MY_amount", document.getElementById("MY_amount").value);
+            formData.append("ordertype", document.getElementById("ordertype").value);
+            formData.append("calculated_price", Math.round(window.currentPriceData.total_price));
+            formData.append("calculated_vat_price", Math.round(window.currentPriceData.vat_price));
 
-            // 스티커 전용 필드 추가 (add_to_basket.php 필수 필드)
-            const jongSelect = document.getElementById("jong");
-            const garoInput = document.getElementById("garo");
-            const seroInput = document.getElementById("sero");
-            const mesuSelect = document.getElementById("mesu");
-            const uhyungSelect = document.getElementById("uhyung");
-            const domusongSelect = document.getElementById("domusong");
-
-            formData.append("jong", jongSelect ? jongSelect.value : "");
-            formData.append("garo", garoInput ? garoInput.value : "");
-            formData.append("sero", seroInput ? seroInput.value : "");
-            formData.append("mesu", mesuSelect ? mesuSelect.value : "");
-            formData.append("uhyung", uhyungSelect ? uhyungSelect.value : "");
-            formData.append("domusong", domusongSelect ? domusongSelect.value : "");
-
-            // 가격 정보 (add_to_basket.php 필드명과 일치)
-            formData.append("price", Math.round(window.currentPriceData.total_price));
-            formData.append("st_price_vat", Math.round(window.currentPriceData.vat_price));
-
-            // 작업 메모
             const workMemo = document.getElementById("modalWorkMemo");
-            if (workMemo) formData.append("memo", workMemo.value);
+            if (workMemo) formData.append("work_memo", workMemo.value);
 
             formData.append("upload_method", window.selectedUploadMethod || "upload");
-
-            console.log("스티커 FormData:", {
-                jong: jongSelect?.value,
-                garo: garoInput?.value,
-                sero: seroInput?.value,
-                mesu: mesuSelect?.value,
-                uhyung: uhyungSelect?.value,
-                domusong: domusongSelect?.value,
-                price: window.currentPriceData.total_price
-            });
 
             if (uploadedFiles && uploadedFiles.length > 0) {
                 uploadedFiles.forEach((file, index) => {
@@ -2867,7 +2841,7 @@ if ($db) {
     <!-- 견적서 모달 공통 JavaScript -->
     <script src="../../js/quotation-modal-common.js"></script>
 
-<?php if (!$is_quotation_mode): ?>
+<?php if (!$isQuotationMode): ?>
     <?php
     // 공통 푸터 포함
     include "../../includes/footer.php";

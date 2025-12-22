@@ -54,7 +54,7 @@ $Homedir = $admin_url;
 $admin_table = "member";
 $page_big_table = "page_menu_big";
 $page_table = "page";
-$home_cookie_url = ".dsp114.com";
+$home_cookie_url = ".dsp1830.shop";
 
 
 $WebSoftCopyright = "

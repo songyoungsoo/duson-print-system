@@ -1,0 +1,110 @@
+/* ===================================================================== */
+/* 📞 콘텐츠 메시지 스타일 - 계산기 제거 후 연락처 안내 */
+/* ⚠️ 중요: Wall Street 프로페셔널 스타일 유지 */
+/* ===================================================================== */
+
+/* 🎯 메시지 컨테이너 - 중앙 정렬 */
+.content-message {
+    width: 100% !important;
+    max-width: 600px !important;
+    margin: 20px auto !important;
+    padding: 0 15px !important;
+}
+
+/* 📞 메시지 패널 - 정숙한 사무실 스타일 */
+.content-message .message-pane {
+    background: #ffffff !important;
+    border: 1px solid #e2e8f0 !important;
+    border-radius: 8px !important;
+    padding: 20px !important;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1) !important;
+    text-align: center !important;
+}
+
+/* 🎯 메시지 헤더 */
+.content-message .message-pane h3 {
+    font-size: 1.2rem !important;
+    color: #2d3748 !important;
+    margin: 0 0 15px 0 !important;
+    font-weight: 600 !important;
+    font-family: 'Noto Sans KR', sans-serif !important;
+}
+
+/* 📝 메시지 텍스트 */
+.content-message .message-pane p {
+    font-size: 0.9rem !important;
+    color: #4a5568 !important;
+    line-height: 1.5 !important;
+    margin: 0 0 10px 0 !important;
+    font-family: 'Noto Sans KR', sans-serif !important;
+}
+
+/* 📞 연락처 정보 영역 */
+.contact-info {
+    background: #f7fafc !important;
+    border: 1px solid #edf2f7 !important;
+    border-radius: 6px !important;
+    padding: 15px !important;
+    margin-top: 15px !important;
+}
+
+.contact-info p {
+    margin: 5px 0 !important;
+    font-size: 0.85rem !important;
+    color: #2d3748 !important;
+}
+
+.contact-info strong {
+    font-weight: 600 !important;
+    color: #1a202c !important;
+}
+
+/* 📱 반응형 디자인 */
+@media (max-width: 768px) {
+    .content-message {
+        max-width: 100% !important;
+        margin: 15px auto !important;
+        padding: 0 10px !important;
+    }
+    
+    .content-message .message-pane {
+        padding: 15px !important;
+        border-radius: 6px !important;
+    }
+    
+    .content-message .message-pane h3 {
+        font-size: 1.1rem !important;
+    }
+    
+    .contact-info {
+        padding: 12px !important;
+    }
+    
+    .contact-info p {
+        font-size: 0.8rem !important;
+    }
+}
+
+@media (max-width: 480px) {
+    .content-message .message-pane {
+        padding: 12px !important;
+        border-radius: 4px !important;
+    }
+    
+    .content-message .message-pane h3 {
+        font-size: 1rem !important;
+    }
+    
+    .contact-info {
+        padding: 10px !important;
+    }
+}
+
+/* ⚡ 성능 최적화 */
+.content-message {
+    box-sizing: border-box !important;
+}
+
+.content-message * {
+    box-sizing: border-box !important;
+}

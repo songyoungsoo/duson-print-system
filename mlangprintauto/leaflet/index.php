@@ -591,9 +591,6 @@ header("Expires: 0");
         };
     </script>
 
-    <!-- 통합 갤러리 시스템 JavaScript -->
-    <script src="../../js/common-gallery-popup.js"></script>
-
     <!-- 전단지 전용 컴팩트 디자인 적용 (Frontend-Compact-Design-Guide.md 기반) -->
 </body>
 </html>

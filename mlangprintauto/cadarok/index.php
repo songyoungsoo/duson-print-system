@@ -96,7 +96,6 @@ if ($type_result && ($type_row = mysqli_fetch_assoc($type_result))) {
     <meta name="default-section" content="<?php echo htmlspecialchars($default_values['Section']); ?>">
     <meta name="default-quantity" content="<?php echo htmlspecialchars($default_values['MY_amount']); ?>">
     <!-- 공통 갤러리 팝업 함수 -->
-    <script src="../../js/common-gallery-popup.js"></script>
 
     <!-- 인라인 CSS 추출 파일 -->
     <link rel="stylesheet" href="css/cadarok-inline-extracted.css">
@@ -371,7 +370,6 @@ if ($type_result && ($type_row = mysqli_fetch_assoc($type_result))) {
         let cadarokTotalPages = 1;
         
         // 통일된 팝업 열기 함수 (전단지와 동일한 시스템)
-        // 공통 갤러리 팝업 함수 사용 (common-gallery-popup.js)
         const openProofPopup = window.openGalleryPopup;
         
         function openCadarokGalleryModal() {

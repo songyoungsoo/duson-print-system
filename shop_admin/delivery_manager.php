@@ -54,15 +54,15 @@ if ($action === 'export_logen') {
     $date_to = $_POST['date_to'] ?? date('Y-m-d');
     $status = $_POST['export_status'] ?? 'all'; // all = 전체, pending = 운송장 없는 것만
 
-    // ✅ FIX: waybill_no 컬럼이 존재하지 않음 → logen_tracking_no 사용
+    // ✅ FIX: logen_tracking_no 컬럼이 존재하지 않음 → waybill_no 사용
     $query = "SELECT no, Type, Type_1, name, email, zip, zip1, zip2, phone, Hendphone,
-                     cont, date, OrderStyle, logen_tracking_no
+                     cont, date, OrderStyle, waybill_no
               FROM mlangorder_printauto
               WHERE date >= ? AND date < DATE_ADD(?, INTERVAL 1 DAY)
               AND (zip1 IS NOT NULL AND zip1 != '' AND zip1 != '0')";
 
     if ($status === 'pending') {
-        $query .= " AND (logen_tracking_no IS NULL OR logen_tracking_no = '' OR logen_tracking_no = '0')";
+        $query .= " AND (waybill_no IS NULL OR waybill_no = '')";
     }
     $query .= " ORDER BY no DESC";
 
@@ -201,7 +201,7 @@ if ($action === 'import_waybill' && isset($_FILES['waybill_file'])) {
                         // DB 업데이트
                         $stmt = mysqli_prepare($connect,
                             "UPDATE mlangorder_printauto
-                             SET logen_tracking_no = ?, waybill_date = NOW(), delivery_company = '로젠'
+                             SET waybill_no = ?, waybill_date = NOW(), delivery_company = '로젠'
                              WHERE no = ?");
 
                         foreach ($data_rows as $row) {
@@ -353,7 +353,7 @@ if ($action === 'import_waybill' && isset($_FILES['waybill_file'])) {
             } else {
             $stmt = mysqli_prepare($connect,
                 "UPDATE mlangorder_printauto
-                 SET logen_tracking_no = ?, waybill_date = NOW(), delivery_company = '로젠'
+                 SET waybill_no = ?, waybill_date = NOW(), delivery_company = '로젠'
                  WHERE no = ?");
 
             foreach ($lines as $line) {
@@ -393,8 +393,8 @@ if ($action === 'import_waybill' && isset($_FILES['waybill_file'])) {
 // 통계 조회
 $stats_query = "SELECT
     COUNT(*) as total,
-    SUM(CASE WHEN logen_tracking_no IS NOT NULL AND logen_tracking_no != '' AND logen_tracking_no != '0' THEN 1 ELSE 0 END) as shipped,
-    SUM(CASE WHEN (logen_tracking_no IS NULL OR logen_tracking_no = '' OR logen_tracking_no = '0') AND zip1 IS NOT NULL AND zip1 != '' THEN 1 ELSE 0 END) as pending
+    SUM(CASE WHEN waybill_no IS NOT NULL AND waybill_no != '' THEN 1 ELSE 0 END) as shipped,
+    SUM(CASE WHEN (waybill_no IS NULL OR waybill_no = '') AND zip1 IS NOT NULL AND zip1 != '' THEN 1 ELSE 0 END) as pending
 FROM mlangorder_printauto
 WHERE date >= DATE_SUB(NOW(), INTERVAL 30 DAY)";
 $stats = mysqli_fetch_assoc(mysqli_query($connect, $stats_query));

@@ -1,0 +1,289 @@
+/**
+ * 체크박스 정렬 시스템 - 재사용 가능한 CSS 클래스
+ *
+ * 사용법: HTML에 클래스만 적용하면 됨
+ * 간격 조정은 CSS 변수로 쉽게 변경 가능
+ *
+ * @version 1.0
+ * @date 2025-01-28
+ */
+
+/* ================================
+   CSS 변수 정의 (간격 조정용)
+   ================================ */
+:root {
+    /* 기본 간격값 */
+    --checkbox-container-padding: 20px;
+    --checkbox-group-gap: 0px;
+    --checkbox-label-gap: 6px;
+    --checkbox-right-margin: -4px;
+
+    /* 색상 테마 */
+    --checkbox-accent-color: #4299e1;
+    --checkbox-text-color: #2d3748;
+    --checkbox-hover-color: #4299e1;
+    --checkbox-checked-color: #2b6cb0;
+
+    /* 크기 설정 */
+    --checkbox-size: 14px;
+    --checkbox-size-mobile: 18px;
+}
+
+/* ================================
+   메인 컨테이너
+   ================================ */
+.checkbox-container {
+    padding-left: var(--checkbox-container-padding) !important;
+    padding-right: var(--checkbox-container-padding) !important;
+}
+
+/* ================================
+   체크박스 행 레이아웃
+   ================================ */
+.checkbox-row {
+    display: flex !important;
+    gap: var(--checkbox-group-gap) !important;
+    align-items: center !important;
+    flex-wrap: wrap !important;
+}
+
+/* ================================
+   개별 체크박스 그룹
+   ================================ */
+.checkbox-group {
+    display: flex !important;
+    align-items: center !important;
+}
+
+/* ================================
+   체크박스 스타일
+   ================================ */
+.checkbox-input {
+    width: var(--checkbox-size) !important;
+    height: var(--checkbox-size) !important;
+    accent-color: var(--checkbox-accent-color) !important;
+    cursor: pointer !important;
+    margin: 0 !important;
+    padding: 0 !important;
+    margin-right: var(--checkbox-right-margin) !important;
+}
+
+/* ================================
+   라벨 스타일
+   ================================ */
+.checkbox-label {
+    color: var(--checkbox-text-color) !important;
+    font-weight: 500 !important;
+    font-size: 14px !important;
+    cursor: pointer !important;
+    user-select: none !important;
+    margin: 0 !important;
+    padding: 0 !important;
+    margin-left: var(--checkbox-label-gap) !important;
+    text-align: left !important;
+    line-height: 1.1 !important;
+}
+
+/* ================================
+   상호작용 효과
+   ================================ */
+
+/* 호버 효과 */
+.checkbox-group:hover .checkbox-label {
+    color: var(--checkbox-hover-color) !important;
+    transition: color 0.2s ease !important;
+}
+
+/* 선택 상태 */
+.checkbox-group .checkbox-input:checked + .checkbox-label {
+    color: var(--checkbox-checked-color) !important;
+    font-weight: 600 !important;
+}
+
+/* 포커스 스타일 (접근성) */
+.checkbox-input:focus {
+    outline: 2px solid var(--checkbox-accent-color) !important;
+    outline-offset: 2px !important;
+}
+
+/* 비활성화 상태 */
+.checkbox-input:disabled + .checkbox-label {
+    color: #a0aec0 !important;
+    cursor: not-allowed !important;
+}
+
+/* ================================
+   간격 조정 유틸리티 클래스
+   ================================ */
+
+/* 촘촘한 간격 */
+.checkbox-tight {
+    --checkbox-label-gap: 2px;
+    --checkbox-group-gap: 0px;
+}
+
+/* 표준 간격 (기본값) */
+.checkbox-standard {
+    --checkbox-label-gap: 6px;
+    --checkbox-group-gap: 0px;
+}
+
+/* 여유로운 간격 */
+.checkbox-spacious {
+    --checkbox-label-gap: 8px;
+    --checkbox-group-gap: 8px;
+}
+
+/* 매우 여유로운 간격 */
+.checkbox-loose {
+    --checkbox-label-gap: 12px;
+    --checkbox-group-gap: 12px;
+}
+
+/* ================================
+   컨테이너 패딩 유틸리티
+   ================================ */
+.checkbox-padding-sm { --checkbox-container-padding: 10px; }
+.checkbox-padding-md { --checkbox-container-padding: 20px; }
+.checkbox-padding-lg { --checkbox-container-padding: 30px; }
+.checkbox-padding-xl { --checkbox-container-padding: 40px; }
+
+/* ================================
+   반응형 디자인
+   ================================ */
+@media (max-width: 768px) {
+    /* 모바일에서 세로 배치 */
+    .checkbox-row-mobile-vertical {
+        flex-direction: column !important;
+        align-items: flex-start !important;
+        gap: 12px !important;
+    }
+
+    /* 모바일 친화적 크기 */
+    .checkbox-input {
+        width: var(--checkbox-size-mobile) !important;
+        height: var(--checkbox-size-mobile) !important;
+    }
+
+    .checkbox-label {
+        font-size: 15px !important;
+    }
+
+    /* 모바일에서 간격 조정 */
+    .checkbox-mobile-spaced {
+        --checkbox-label-gap: 8px;
+        --checkbox-group-gap: 4px;
+    }
+}
+
+/* ================================
+   색상 테마 유틸리티
+   ================================ */
+
+/* 파란색 테마 (기본) */
+.checkbox-theme-blue {
+    --checkbox-accent-color: #4299e1;
+    --checkbox-hover-color: #4299e1;
+    --checkbox-checked-color: #2b6cb0;
+}
+
+/* 녹색 테마 */
+.checkbox-theme-green {
+    --checkbox-accent-color: #38a169;
+    --checkbox-hover-color: #38a169;
+    --checkbox-checked-color: #2f855a;
+}
+
+/* 보라색 테마 */
+.checkbox-theme-purple {
+    --checkbox-accent-color: #805ad5;
+    --checkbox-hover-color: #805ad5;
+    --checkbox-checked-color: #6b46c1;
+}
+
+/* 빨간색 테마 */
+.checkbox-theme-red {
+    --checkbox-accent-color: #e53e3e;
+    --checkbox-hover-color: #e53e3e;
+    --checkbox-checked-color: #c53030;
+}
+
+/* ================================
+   프리미엄 효과
+   ================================ */
+
+/* 미묘한 그림자 효과 */
+.checkbox-shadow {
+    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1) !important;
+}
+
+/* 둥근 모서리 컨테이너 */
+.checkbox-rounded {
+    border-radius: 8px !important;
+    background: #f7fafc !important;
+    border: 1px solid #e2e8f0 !important;
+    padding: 12px !important;
+}
+
+/* 애니메이션 효과 */
+.checkbox-animated .checkbox-label {
+    transition: all 0.2s ease !important;
+}
+
+.checkbox-animated .checkbox-input {
+    transition: transform 0.1s ease !important;
+}
+
+.checkbox-animated .checkbox-input:active {
+    transform: scale(0.95) !important;
+}
+
+/* ================================
+   디버그 모드 (개발용)
+   ================================ */
+.checkbox-debug .checkbox-container {
+    border: 2px dashed #ff6b6b !important;
+}
+
+.checkbox-debug .checkbox-row {
+    border: 1px dashed #4ecdc4 !important;
+}
+
+.checkbox-debug .checkbox-group {
+    border: 1px dashed #45b7d1 !important;
+    background: rgba(69, 183, 209, 0.1) !important;
+}
+
+/* ================================
+   사용법 주석
+   ================================ */
+
+/*
+기본 사용법:
+<div class="checkbox-container checkbox-standard">
+    <div class="checkbox-row">
+        <div class="checkbox-group">
+            <input type="checkbox" id="option1" class="checkbox-input">
+            <label for="option1" class="checkbox-label">옵션1</label>
+        </div>
+        <div class="checkbox-group">
+            <input type="checkbox" id="option2" class="checkbox-input">
+            <label for="option2" class="checkbox-label">옵션2</label>
+        </div>
+    </div>
+</div>
+
+고급 사용법:
+<div class="checkbox-container checkbox-spacious checkbox-theme-green checkbox-rounded checkbox-animated">
+    <div class="checkbox-row checkbox-row-mobile-vertical">
+        <!-- 체크박스들 -->
+    </div>
+</div>
+
+CSS 변수로 커스터마이징:
+.my-custom-checkbox {
+    --checkbox-label-gap: 10px;
+    --checkbox-accent-color: #ff6b6b;
+    --checkbox-container-padding: 25px;
+}
+*/

@@ -116,7 +116,6 @@ if ($type_result && ($type_row = mysqli_fetch_assoc($type_result))) {
     }
     ?>
     <!-- 공통 갤러리 팝업 함수 -->
-    <script src="../../js/common-gallery-popup.js"></script>
 
     <!-- 명함 전용 스타일 (공통 스타일보다 먼저 로드) -->
     <link rel="stylesheet" href="../../css/namecard-inline-styles.css">

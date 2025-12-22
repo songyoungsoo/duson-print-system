@@ -1,0 +1,110 @@
+/* ===================================================================== */
+/* 📞 콘텐츠 메시지 스타일 - 계산기 제거 후 연락처 안내 */
+/* ⚠️ 중요: Wall Street 프로페셔널 스타일 유지 */
+/* ===================================================================== */
+
+/* 🎯 메시지 컨테이너 - 중앙 정렬 */
+.content-message {
+    width: 100%;
+    max-width: 600px;
+    margin: 20px auto;
+    padding: 0 15px;
+}
+
+/* 📞 메시지 패널 - 정숙한 사무실 스타일 */
+.content-message .message-pane {
+    background: #ffffff;
+    border: 1px solid #e2e8f0;
+    border-radius: 8px;
+    padding: 20px;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+    text-align: center;
+}
+
+/* 🎯 메시지 헤더 */
+.content-message .message-pane h3 {
+    font-size: 1.2rem;
+    color: #2d3748;
+    margin: 0 0 15px 0;
+    font-weight: 600;
+    font-family: 'Noto Sans KR', sans-serif;
+}
+
+/* 📝 메시지 텍스트 */
+.content-message .message-pane p {
+    font-size: 0.9rem;
+    color: #4a5568;
+    line-height: 1.5;
+    margin: 0 0 10px 0;
+    font-family: 'Noto Sans KR', sans-serif;
+}
+
+/* 📞 연락처 정보 영역 */
+.contact-info {
+    background: #f7fafc;
+    border: 1px solid #edf2f7;
+    border-radius: 6px;
+    padding: 15px;
+    margin-top: 15px;
+}
+
+.contact-info p {
+    margin: 5px 0;
+    font-size: 0.85rem;
+    color: #2d3748;
+}
+
+.contact-info strong {
+    font-weight: 600;
+    color: #1a202c;
+}
+
+/* 📱 반응형 디자인 */
+@media (max-width: 768px) {
+    .content-message {
+        max-width: 100%;
+        margin: 15px auto;
+        padding: 0 10px;
+    }
+    
+    .content-message .message-pane {
+        padding: 15px;
+        border-radius: 6px;
+    }
+    
+    .content-message .message-pane h3 {
+        font-size: 1.1rem;
+    }
+    
+    .contact-info {
+        padding: 12px;
+    }
+    
+    .contact-info p {
+        font-size: 0.8rem;
+    }
+}
+
+@media (max-width: 480px) {
+    .content-message .message-pane {
+        padding: 12px;
+        border-radius: 4px;
+    }
+    
+    .content-message .message-pane h3 {
+        font-size: 1rem;
+    }
+    
+    .contact-info {
+        padding: 10px;
+    }
+}
+
+/* ⚡ 성능 최적화 */
+.content-message {
+    box-sizing: border-box;
+}
+
+.content-message * {
+    box-sizing: border-box;
+}

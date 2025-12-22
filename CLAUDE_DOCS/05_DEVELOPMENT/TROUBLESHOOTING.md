@@ -332,8 +332,8 @@ df -h
 
 # Network Issues
 netstat -tuln
-ping dsp1830.shop
-traceroute dsp1830.shop
+ping dsp114.com
+traceroute dsp114.com
 
 # Process Management
 ps aux | grep apache
@@ -390,4 +390,4 @@ echo '<pre>'; var_dump($variable); echo '</pre>';
 ---
 *Last Updated: 2025-01-03*  
 *Version: 2.0*  
-*Emergency Contact: dev@dsp1830.shop*
+*Emergency Contact: dev@dsp114.com*

@@ -1,0 +1,42 @@
+/* 통일된 Primary 버튼 스타일 - 사이트 헤더 컬러 통일 */
+/* ✨ Phase 3: 사이트 브랜드 컬러(#005f73) 적용 (2025-12-16) */
+.btn-primary {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+    padding: 12px 24px;
+    background: #005f73;
+    color: white;
+    border: none;
+    border-radius: 8px;
+    font-size: 1rem;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    box-shadow: 0 4px 12px rgba(0, 95, 115, 0.3);
+    width: 100%;
+    text-decoration: none;
+}
+
+.btn-primary:hover {
+    background: #007a94;
+    transform: translateY(-2px);
+    box-shadow: 0 6px 20px rgba(0, 95, 115, 0.4);
+}
+
+.btn-primary:active {
+    transform: translateY(0);
+}
+
+.btn-primary:disabled {
+    opacity: 0.6;
+    cursor: not-allowed;
+}
+
+/* 버튼 컨테이너 스타일 */
+.gallery-more-button {
+    text-align: center;
+    margin-top: 20px;
+    padding: 0 10px;
+}

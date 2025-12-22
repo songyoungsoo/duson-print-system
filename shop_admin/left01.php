@@ -1,164 +1,117 @@
-<!DOCTYPE html>
-<html>
-<head>
-<meta charset="UTF-8">
+<?
+   include "lib.php";
+?>
 <style type="text/css">
-.style1 {
-	color: #0066FF;
-	font-weight: bold;
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
 }
 body {
-	margin-left: 0px;
-	background-color: #FFFFCC;
+    margin: 0;
+    padding: 10px 5px;
+    background: #1e3a5f;
+    font-family: 'Malgun Gothic', '맑은 고딕', sans-serif;
+    font-size: 14px;
+    min-height: 100vh;
 }
-.style3 {color: #A052A0; font-weight: bold; }
-td { font-size: 9pt; }
-a { text-decoration: none; color: #333; }
-a:hover { color: #0066FF; }
+.menu-container {
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+}
+.menu-section {
+    background: #fff;
+    border-radius: 8px;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.15);
+    overflow: hidden;
+}
+.menu-header {
+    background: linear-gradient(135deg, #2563eb 0%, #1d4ed8 100%);
+    color: #fff;
+    padding: 10px 12px;
+    font-weight: bold;
+    font-size: 12px;
+    text-align: center;
+    letter-spacing: 1px;
+}
+.menu-list {
+    list-style: none;
+    padding: 0;
+    margin: 0;
+}
+.menu-list li {
+    border-bottom: 1px solid #f0f0f0;
+}
+.menu-list li:last-child {
+    border-bottom: none;
+}
+.menu-list li a {
+    display: block;
+    padding: 10px 12px;
+    color: #374151;
+    text-decoration: none;
+    transition: all 0.2s ease;
+    font-size: 12px;
+}
+.menu-list li a:hover {
+    background: #dbeafe;
+    color: #1d4ed8;
+    padding-left: 16px;
+}
+.menu-list li a:before {
+    content: '›';
+    margin-right: 6px;
+    color: #2563eb;
+    font-weight: bold;
+}
 </style>
-</head>
-<body>
 
-<p>&nbsp;</p>
-<div align="center">
-  <!-- 주문관리 -->
-  <table width="102" border="0" cellpadding="0" cellspacing="1" bgcolor="#D7D7D7">
-    <tr bgcolor="#D0A4DF">
-      <td height="2"></td>
-    </tr>
-    <tr>
-      <td width="101"><div align="center"><span class="style3">주문관리</span></div></td>
-    </tr>
-    <tr>
-      <td bgcolor="#F5F5F5"><li><a href="/admin/mlangprintauto/orderlist.php" target="main">주문리스트</a></td>
-    </tr>
-    <tr>
-      <td bgcolor="#F5F5F5"><li><a href="/mlangprintauto/quote/index.php" target="_blank">견적서관리</a></td>
-    </tr>
-    <tr>
-      <td bgcolor="#F5F5F5"><li><a href="/chat/admin.php" onclick="window.open(this.href, 'chatAdmin', 'width=630,height=460,left=0,top=0,scrollbars=yes,resizable=yes'); return false;">채팅창관리</a></td>
-    </tr>
-    <tr>
-      <td bgcolor="#F5F5F5"><li><a href="delivery_manager.php" target="main">배송관리</a></td>
-    </tr>
-    <tr>
-      <td bgcolor="#F5F5F5"><li><a href="https://logis.ilogen.com/" target="_blank">로젠택배</a></td>
-    </tr>
-    <tr>
-      <td bgcolor="#FFFFFF">&nbsp;</td>
-    </tr>
-  </table>
+<div class="menu-container">
+    <div class="menu-section">
+        <div class="menu-header">주문정보</div>
+        <ul class="menu-list">
+            <li><a href="http://dsp1830.shop/admin/MlangPrintAuto/OrderList.php" target="main">자동주문접수</a></li>
+            <li><a href="http://mail.naver.com/?n=1367814236304&v=f" target="main">네이버메일</a></li>
+            <li><a href="http://dsp1830.shop/" target="_blank">dsp1830.shop</a></li>
+            <li><a href="http://dsp1830.shop/mlangprintauto/quote/index.php" target="_blank">견적서관리</a></li>
+            <li><a href="http://dsp1830.shop/chat/admin.php" onclick="window.open(this.href, 'chatAdmin', 'width=630,height=460,left=0,top=0,scrollbars=yes,resizable=yes'); return false;">채팅창관리</a></li>
+            <li><a href="http://dsp1830.shop/admin/mlangprintauto/orderlist.php" target="main">주문관리</a></li>
+            <li><a href="https://logis.ilogen.com/" target="main">로젠택배</a></li>
+        </ul>
+    </div>
 
-  <!-- 제품페이지 -->
-  <table width="102" border="0" cellpadding="0" cellspacing="1" bgcolor="#D7D7D7">
-    <tr bgcolor="#D0A4DF">
-      <td height="2"></td>
-    </tr>
-    <tr>
-      <td width="101"><div align="center"><span class="style3">제품페이지</span></div></td>
-    </tr>
-    <tr>
-      <td bgcolor="#F5F5F5"><li><a href="/mlangprintauto/inserted/index.php" target="main">전단지</a></li></td>
-    </tr>
-    <tr>
-      <td bgcolor="#F5F5F5"><li><a href="/mlangprintauto/namecard/index.php" target="main">명함</a></li></td>
-    </tr>
-    <tr>
-      <td bgcolor="#F5F5F5"><li><a href="/mlangprintauto/sticker_new/index.php" target="main">스티커</a></li></td>
-    </tr>
-    <tr>
-      <td bgcolor="#F5F5F5"><li><a href="/mlangprintauto/envelope/index.php" target="main">봉투</a></li></td>
-    </tr>
-    <tr>
-      <td bgcolor="#F5F5F5"><li><a href="/mlangprintauto/leaflet/index.php" target="main">리플렛</a></li></td>
-    </tr>
-    <tr>
-      <td bgcolor="#FFFFFF">&nbsp;</td>
-    </tr>
-  </table>
+    <div class="menu-section">
+        <div class="menu-header">견적정보</div>
+        <ul class="menu-list">
+            <li><a href="http://dsp1830.shop/MlangPrintAuto/inserted/index.php" target="main">전단지</a></li>
+            <li><a href="http://dsp1830.shop/shop/view.php" target="main">스티커</a></li>
+            <li><a href="http://dsp1830.shop/MlangPrintAuto/sticker/index.php" target="main">종이자석</a></li>
+        </ul>
+    </div>
 
-  <!-- 관리자업무 -->
-  <table width="102" border="0" cellpadding="0" cellspacing="1" bgcolor="#D7D7D7">
-    <tr bgcolor="#D0A4DF">
-      <td height="2"></td>
-    </tr>
-    <tr>
-      <td width="101"><div align="center"><span class="style3">관리자업무</span></div></td>
-    </tr>
-    <tr>
-      <td bgcolor="#F5F5F5"><li><a href="/admin/mlangprintauto/admin.php?mode=AdminMlangOrdert" target="main">시안올리기</a></li></td>
-    </tr>
-    <tr>
-      <td bgcolor="#F5F5F5"><li><a href="/sub/checkboard.htm" target="main">교정게시판</a></li></td>
-    </tr>
-    <tr>
-      <td bgcolor="#F5F5F5"><li><a href="/admin/member/index.php" target="main">회원관리</a></li></td>
-    </tr>
-    <tr>
-      <td bgcolor="#FFFFFF">&nbsp;</td>
-    </tr>
-  </table>
+    <div class="menu-section">
+        <div class="menu-header">교정파일관리</div>
+        <ul class="menu-list">
+            <li><a href="http://dsp1830.shop/admin/MlangPrintAuto/admin.php?mode=AdminMlangOrdert" target="main">파일올리기</a></li>
+            <li><a href="http://www.dsp1830.shop/sub/checkboard.htm" target="main">교정보기</a></li>
+            <li><a href="http://www.webhard.co.kr/webII/page/sms/main_sms.php" target="main">웹하드SNS</a></li>
+        </ul>
+    </div>
 
-  <!-- 스티커주문 -->
-  <table width="102" border="0" cellpadding="0" cellspacing="1" bgcolor="#D7D7D7">
-    <tr bgcolor="#D0A4DF">
-      <td height="2"></td>
-    </tr>
-    <tr>
-      <td width="101"><div align="center"><span class="style3">스티커주문</span></div></td>
-    </tr>
-    <tr>
-      <td bgcolor="#F5F5F5"><li><a href="order_list.php" target="main">스티커주문</a></li></td>
-    </tr>
-    <tr>
-      <td bgcolor="#F5F5F5"><li><a href="post_list.php" target="main">시안관리</a></li></td>
-    </tr>
-    <tr>
-      <td bgcolor="#F5F5F5"><li><a href="post_all_list.php" target="main">작업배송주소</a></li></td>
-    </tr>
-    <tr>
-      <td bgcolor="#F5F5F5"><li><a href="post_list52.php" target="main">로젠주소추출</a></li></td>
-    </tr>
-    <tr>
-      <td bgcolor="#FFFFFF">&nbsp;</td>
-    </tr>
-  </table>
+    <div class="menu-section">
+        <div class="menu-header">주문/택배관리</div>
+        <ul class="menu-list">
+            <li><a href="order_list.php" target="main">스티커주문</a></li>
+            <li><a href="post_list74.php" target="main">택배정보</a></li>
+            <li><a href="post_all_list.php" target="main">작업및주소</a></li>
+        </ul>
+    </div>
 
-  <!-- 금액관리 -->
-  <table width="102" border="0" cellpadding="0" cellspacing="1" bgcolor="#D7D7D7">
-    <tr bgcolor="#D0A4DF">
-      <td height="2"></td>
-    </tr>
-    <tr>
-      <td width="101"><div align="center"><span class="style3">금액관리</span></div></td>
-    </tr>
-    <tr>
-      <td bgcolor="#F5F5F5"><li><a href="data_edit.php" target="main">금액수정</a></li></td>
-    </tr>
-    <tr>
-      <td bgcolor="#FFFFFF">&nbsp;</td>
-    </tr>
-  </table>
-
-  <!-- 외부링크 -->
-  <table width="102" border="0" cellpadding="0" cellspacing="1" bgcolor="#D7D7D7">
-    <tr bgcolor="#D0A4DF">
-      <td height="2"></td>
-    </tr>
-    <tr>
-      <td width="101"><div align="center"><span class="style3">외부링크</span></div></td>
-    </tr>
-    <tr>
-      <td bgcolor="#F5F5F5"><li><a href="http://dsp1830.shop/" target="_blank">dsp1830.shop</a></li></td>
-    </tr>
-    <tr>
-      <td bgcolor="#F5F5F5"><li><a href="http://mail.naver.com/" target="_blank">네이버메일</a></li></td>
-    </tr>
-    <tr>
-      <td bgcolor="#FFFFFF">&nbsp;</td>
-    </tr>
-  </table>
+    <div class="menu-section">
+        <div class="menu-header">주문/금액관리</div>
+        <ul class="menu-list">
+            <li><a href="data_edit.php" target="main">금액수정</a></li>
+        </ul>
+    </div>
 </div>
-
-</body>
-</html>

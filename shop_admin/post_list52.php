@@ -26,45 +26,51 @@ $search_no_start = isset($_GET['search_no_start']) ? trim($_GET['search_no_start
 $search_no_end = isset($_GET['search_no_end']) ? trim($_GET['search_no_end']) : '';
 
 // WHERE 조건 생성
-$where_conditions = array();
-$where_conditions[] = "(zip1 like '%구%' ) or (zip2 like '%-%')";
+// 기본 조건 (괄호로 묶어서 OR 문제 해결)
+$base_condition = "((zip1 LIKE '%구%') OR (zip2 LIKE '%-%'))";
+$search_conditions = array();
 
 if($search_name != '') {
   $search_name_esc = mysqli_real_escape_string($connect, $search_name);
-  $where_conditions[] = "name like '%$search_name_esc%'";
+  $search_conditions[] = "name LIKE '%$search_name_esc%'";
 }
 
 if($search_company != '') {
   $search_company_esc = mysqli_real_escape_string($connect, $search_company);
-  $where_conditions[] = "company like '%$search_company_esc%'";
+  $search_conditions[] = "company LIKE '%$search_company_esc%'";
 }
 
 if($search_date_start != '' && $search_date_end != '') {
   $search_date_start_esc = mysqli_real_escape_string($connect, $search_date_start);
   $search_date_end_esc = mysqli_real_escape_string($connect, $search_date_end);
-  $where_conditions[] = "date >= '$search_date_start_esc' and date <= '$search_date_end_esc'";
+  $search_conditions[] = "date >= '$search_date_start_esc' AND date <= '$search_date_end_esc'";
 } else if($search_date_start != '') {
   $search_date_start_esc = mysqli_real_escape_string($connect, $search_date_start);
-  $where_conditions[] = "date >= '$search_date_start_esc'";
+  $search_conditions[] = "date >= '$search_date_start_esc'";
 } else if($search_date_end != '') {
   $search_date_end_esc = mysqli_real_escape_string($connect, $search_date_end);
-  $where_conditions[] = "date <= '$search_date_end_esc'";
+  $search_conditions[] = "date <= '$search_date_end_esc'";
 }
 
 // 주문번호 범위 검색 추가
 if($search_no_start != '' && $search_no_end != '') {
-  $search_no_start = intval($search_no_start);
-  $search_no_end = intval($search_no_end);
-  $where_conditions[] = "no >= $search_no_start and no <= $search_no_end";
+  $no_start = intval($search_no_start);
+  $no_end = intval($search_no_end);
+  $search_conditions[] = "no >= $no_start AND no <= $no_end";
 } else if($search_no_start != '') {
-  $search_no_start = intval($search_no_start);
-  $where_conditions[] = "no >= $search_no_start";
+  $no_start = intval($search_no_start);
+  $search_conditions[] = "no >= $no_start";
 } else if($search_no_end != '') {
-  $search_no_end = intval($search_no_end);
-  $where_conditions[] = "no <= $search_no_end";
+  $no_end = intval($search_no_end);
+  $search_conditions[] = "no <= $no_end";
 }
 
-$where_sql = implode(' and ', $where_conditions);
+// WHERE 절 생성: 기본조건 AND (검색조건들)
+if(count($search_conditions) > 0) {
+  $where_sql = $base_condition . ' AND (' . implode(' AND ', $search_conditions) . ')';
+} else {
+  $where_sql = $base_condition;
+}
 
 // 전체 페이지 구하기
 $query = "select count(*) from mlangorder_printauto where $where_sql";
@@ -134,7 +140,7 @@ td,input,li{font-size:9pt}
     <td style="padding: 5px;">
       이름: <input type="text" name="search_name" value="<?php echo htmlspecialchars($search_name)?>" size="6">
       회사: <input type="text" name="search_company" value="<?php echo htmlspecialchars($search_company)?>" size="6">
-      날짜: <input type="text" name="search_date_start" value="<?php echo htmlspecialchars($search_date_start)?>" size="8" placeholder="YYYY-MM-DD">~<input type="text" name="search_date_end" value="<?php echo htmlspecialchars($search_date_end)?>" size="8" placeholder="YYYY-MM-DD">
+      날짜: <input type="date" name="search_date_start" value="<?php echo htmlspecialchars($search_date_start)?>" style="font-size:9pt;">~<input type="date" name="search_date_end" value="<?php echo htmlspecialchars($search_date_end)?>" style="font-size:9pt;">
       주문번호: <input type="text" name="search_no_start" value="<?php echo htmlspecialchars($search_no_start ?? '')?>" size="5">~<input type="text" name="search_no_end" value="<?php echo htmlspecialchars($search_no_end ?? '')?>" size="5">
       <input type="submit" value="검색">
       <input type="button" value="초기화" onclick="location.href='<?php echo $PHP_SELF?>'">
@@ -147,9 +153,6 @@ td,input,li{font-size:9pt}
       <input type="button" value="로젠택배 CSV (전체)" onclick="exportAllToLogen()" class="btn-logen">
       <input type="button" value="로젠택배 엑셀 (선택)" onclick="exportSelectedToLogenExcel()" class="btn-logen" style="background-color:#1976D2;">
       <input type="button" value="로젠택배 엑셀 (전체)" onclick="exportAllToLogenExcel()" class="btn-logen" style="background-color:#1976D2;">
-      <br><br>
-      <input type="button" value="🚀 로젠 API 자동 접수 (선택)" onclick="autoRegisterLogen()" class="btn-logen" style="background-color:#28a745; color:white; font-weight:bold; padding:8px 16px;">
-      <span style="color:#666; font-size:11px; margin-left:10px;">※ 선택한 주문을 로젠택배에 자동 접수하고 송장번호를 즉시 발급받습니다</span>
     </td>
   </tr>
 </table>
@@ -330,81 +333,6 @@ function exportAllToLogenExcel() {
   form.method = originalMethod;
   form.target = originalTarget;
 }
-
-// 로젠 API 자동 배송 접수
-function autoRegisterLogen() {
-  var checkboxes = document.getElementsByName('selected_no[]');
-  var selected = [];
-
-  for(var i=0; i<checkboxes.length; i++) {
-    if(checkboxes[i].checked) {
-      selected.push(parseInt(checkboxes[i].value));
-    }
-  }
-
-  if(selected.length === 0) {
-    alert('배송 접수할 주문을 선택해주세요.');
-    return;
-  }
-
-  if(!confirm('선택한 ' + selected.length + '건을 로젠택배에 자동 접수하시겠습니까?\n\n송장번호가 즉시 발급되며, 주문 정보에 자동 저장됩니다.')) {
-    return;
-  }
-
-  // 로딩 표시
-  var loadingDiv = document.createElement('div');
-  loadingDiv.id = 'logenLoading';
-  loadingDiv.style.cssText = 'position:fixed; top:50%; left:50%; transform:translate(-50%,-50%); background:rgba(0,0,0,0.8); color:white; padding:30px 50px; border-radius:10px; z-index:9999; font-size:16px;';
-  loadingDiv.innerHTML = '🚀 로젠택배 API 처리 중...<br><br><span style="font-size:12px;">선택한 ' + selected.length + '건을 접수하고 있습니다</span>';
-  document.body.appendChild(loadingDiv);
-
-  // AJAX로 API 호출
-  fetch('logen_auto_register.php', {
-    method: 'POST',
-    headers: {
-      'Content-Type': 'application/json'
-    },
-    body: JSON.stringify({
-      order_nos: selected
-    })
-  })
-  .then(function(response) {
-    return response.json();
-  })
-  .then(function(data) {
-    // 로딩 제거
-    document.body.removeChild(loadingDiv);
-
-    if(data.success) {
-      var message = '✅ 배송 접수 완료!\n\n';
-      message += '- 성공: ' + data.registered + '건\n';
-      if(data.failed > 0) {
-        message += '- 실패: ' + data.failed + '건\n\n';
-      }
-      message += '\n송장번호가 자동 저장되었습니다.\n페이지를 새로고침합니다.';
-      alert(message);
-      location.reload();
-    } else {
-      var errorMsg = '❌ 배송 접수 실패\n\n' + data.message;
-      if(data.details && data.details.length > 0) {
-        errorMsg += '\n\n실패 상세:\n';
-        data.details.forEach(function(detail) {
-          if(!detail.success) {
-            errorMsg += '- 주문 #' + detail.order_no + ': ' + detail.message + '\n';
-          }
-        });
-      }
-      alert(errorMsg);
-    }
-  })
-  .catch(function(error) {
-    // 로딩 제거
-    if(document.getElementById('logenLoading')) {
-      document.body.removeChild(loadingDiv);
-    }
-    alert('❌ API 통신 오류: ' + error.message);
-  });
-}
 </script>
 
 <form id="listForm">
@@ -479,7 +407,7 @@ if(preg_match("/16절/i", $type1_raw)){
       <option value="퀵">퀵</option>
     </select></td>
     <td style="padding: 3px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; max-width: 200px;"><?php echo $type1_display?></td>
-    <td style="padding: 3px;">dsno<?php echo htmlspecialchars($data['no'] ?? '')?></td>
+    <td style="padding: 3px;"><?php echo htmlspecialchars($data['no'] ?? '')?></td>
     <td style="padding: 3px;"><?php echo htmlspecialchars($data['Type'] ?? '')?></td>
   </tr>
   <?php

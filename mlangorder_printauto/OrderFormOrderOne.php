@@ -380,7 +380,7 @@ if ($mode == "SubmitOk") {
                         <div style="display: flex; align-items: center; gap: 15px;">
                             <div style="min-width: 150px;">
                                 <strong style="color: #2c3e50;">
-                                    <a href="http://www.dsp114.com/sub/pri_info.html" target="_blank" style="color: #3498db; text-decoration: none;">
+                                    <a href="http://www.dsp1830.shop/sub/pri_info.html" target="_blank" style="color: #3498db; text-decoration: none;">
                                         🔒 개인정보처리방침
                                     </a>
                                 </strong>

@@ -101,7 +101,6 @@ if ($type_result && ($type_row = mysqli_fetch_assoc($type_result))) {
     <meta name="default-section" content="<?php echo htmlspecialchars($default_values['Section']); ?>">
     <meta name="default-quantity" content="<?php echo htmlspecialchars($default_values['MY_amount']); ?>">
     <!-- 공통 갤러리 팝업 함수 -->
-    <script src="../../js/common-gallery-popup.js"></script>
 
     <!-- 인라인 CSS 추출 파일 -->
     <link rel="stylesheet" href="css/merchandisebond-inline-extracted.css">
@@ -147,7 +146,7 @@ if ($type_result && ($type_row = mysqli_fetch_assoc($type_result))) {
                         <!-- 1. 종류 -->
                         <div class="inline-form-row">
                             <label class="inline-label" for="MY_type">종류</label>
-                            <select class="inline-select" name="MY_type" id="MY_type" required onchange="calculatePrice()">
+                            <select class="inline-select" name="MY_type" id="MY_type" required>
                                 <option value="">선택해주세요</option>
                                 <?php
                                 $categories = getCategoryOptions($db, "mlangprintauto_transactioncate", 'MerchandiseBond');
@@ -163,7 +162,7 @@ if ($type_result && ($type_row = mysqli_fetch_assoc($type_result))) {
                         <!-- 2. 수량 -->
                         <div class="inline-form-row">
                             <label class="inline-label" for="MY_amount">수량</label>
-                            <select class="inline-select" name="MY_amount" id="MY_amount" required data-default-value="<?php echo htmlspecialchars($default_values['MY_amount']); ?>" onchange="calculatePrice()">
+                            <select class="inline-select" name="MY_amount" id="MY_amount" required data-default-value="<?php echo htmlspecialchars($default_values['MY_amount']); ?>">
                                 <option value="">먼저 종류를 선택해주세요</option>
                             </select>
                             <span class="inline-note">원하시는 수량을 선택하세요</span>
@@ -172,7 +171,7 @@ if ($type_result && ($type_row = mysqli_fetch_assoc($type_result))) {
                         <!-- 3. 인쇄면 -->
                         <div class="inline-form-row">
                             <label class="inline-label" for="POtype">인쇄면</label>
-                            <select class="inline-select" name="POtype" id="POtype" required onchange="calculatePrice()">
+                            <select class="inline-select" name="POtype" id="POtype" required>
                                 <option value="">선택해주세요</option>
                                 <option value="1" <?php echo ($default_values['POtype'] == '1') ? 'selected' : ''; ?>>단면</option>
                                 <option value="2" <?php echo ($default_values['POtype'] == '2') ? 'selected' : ''; ?>>양면</option>
@@ -183,7 +182,7 @@ if ($type_result && ($type_row = mysqli_fetch_assoc($type_result))) {
                         <!-- 4. 후가공 (기존 재질) -->
                         <div class="inline-form-row">
                             <label class="inline-label" for="Section">후가공</label>
-                            <select class="inline-select" name="Section" id="Section" required data-default-value="<?php echo htmlspecialchars($default_values['Section']); ?>" onchange="calculatePrice()">
+                            <select class="inline-select" name="Section" id="Section" required data-default-value="<?php echo htmlspecialchars($default_values['Section']); ?>">
                                 <option value="">먼저 종류를 선택해주세요</option>
                             </select>
                             <span class="inline-note">후가공 방식을 선택하세요</span>
@@ -192,7 +191,7 @@ if ($type_result && ($type_row = mysqli_fetch_assoc($type_result))) {
                         <!-- 5. 편집비용 -->
                         <div class="inline-form-row">
                             <label class="inline-label" for="ordertype">편집비</label>
-                            <select class="inline-select" name="ordertype" id="ordertype" required onchange="calculatePrice()">
+                            <select class="inline-select" name="ordertype" id="ordertype" required>
                                 <option value="">선택해주세요</option>
                                 <option value="print" <?php echo ($default_values['ordertype'] == 'print') ? 'selected' : ''; ?>>인쇄만 의뢰</option>
                                 <option value="total" <?php echo ($default_values['ordertype'] == 'total') ? 'selected' : ''; ?>>디자인+인쇄</option>
@@ -433,7 +432,6 @@ if ($type_result && ($type_row = mysqli_fetch_assoc($type_result))) {
         let merchandiseBondTotalPages = 1;
         
         // 통일된 팝업 열기 함수 (전단지와 동일한 시스템)
-        // 공통 갤러리 팝업 함수 사용 (common-gallery-popup.js)
         const openProofPopup = window.openGalleryPopup;
         
         // 독립 모달 함수들 제거됨 - 통합 갤러리 시스템 사용

@@ -1,0 +1,157 @@
+<?php
+declare(strict_types=1);
+include"../../db.php";
+include"../config.php";
+
+if($AdminCode21=="form"){
+include"../title.php";
+$result= mysqli_query($db, "select * from $table where Mlang_bbs_no='$no'",$db);
+$rows=mysql_num_rows($result);
+if($rows){
+
+while($row= mysqli_fetch_array($result)) 
+{ 
+$BbsViewMlang_bbs_Mlang_bbs_title=htmlspecialchars($row[Mlang_bbs_title]);  
+$BbsViewMlang_bbs_count="$row[Mlang_bbs_count]";
+$BbsViewMlang_bbs_rec="$row[Mlang_bbs_rec]";
+$BbsViewMlang_bbs_Mlang_bbs_member="$row[Mlang_bbs_member]";
+$BbsViewMlang_bbs_date="$row[Mlang_date]";  
+?>
+
+<SCRIPT LANGUAGE="JavaScript">
+window.moveTo(screen.width/5, screen.height/5); 
+self.resizeTo(availWidth=600,availHeight=200);
+</SCRIPT>
+
+
+<table border=0 align=center width=100% cellpadding='5' cellspacing='1'>
+<form name='FrmUserInfo' method='post' action='<?=$PHP_SELF?>'>
+<INPUT TYPE="hidden" name='AdminCode21' value='ok'>
+<INPUT TYPE="hidden" name='tabler' value='<?=$table?>'>
+<INPUT TYPE="hidden" name='nor' value='<?=$no?>'>
+<INPUT TYPE="hidden" name='urlr' value='<?=$url?>'>
+<tr>
+<td bgcolor='#6699CC' colspan=4>제목: <font style='font:bold; color:#FFFFFF'>&nbsp;<?=$BbsViewMlang_bbs_Mlang_bbs_title?>&nbsp;</font></td>
+</tr>
+<tr>
+<td bgcolor='#6699CC'><font style='font:bold; color:#FFFFFF'>&nbsp;카운터수:&nbsp;</font></td>
+<td bgcolor='#FFFFFF'><INPUT TYPE="text" NAME="count" value="<?=$BbsViewMlang_bbs_count?>" size=10></td>
+<td bgcolor='#6699CC'><font style='font:bold; color:#FFFFFF'>&nbsp;추천수:&nbsp;</font></td>
+<td bgcolor='#FFFFFF'><INPUT TYPE="text" NAME="rec" value="<?=$BbsViewMlang_bbs_rec?>" size=10></td>
+</tr>
+<tr>
+<td bgcolor='#6699CC'><font style='font:bold; color:#FFFFFF'>&nbsp;등록인:&nbsp;</font></td>
+<td bgcolor='#FFFFFF'><INPUT TYPE="text" NAME="Mlang_bbs_member" value="<?=$BbsViewMlang_bbs_Mlang_bbs_member?>" size=10></td>
+<td bgcolor='#6699CC'><font style='font:bold; color:#FFFFFF'>&nbsp;등록날짜:&nbsp;</font></td>
+<td bgcolor='#FFFFFF'><INPUT TYPE="text" NAME="date" value="<?=$BbsViewMlang_bbs_date?>" size=20></td>
+</tr>
+<tr>
+<td align=center colspan=4>
+* 등록 날짜는 예)<?=date("Y-m-d");?> 형식인 <b>-</b> 로 구분 지어주셔야 합니다.
+<input type='submit' value='수정합니다.'>
+</td>
+</tr>
+</form>
+</table>
+
+<?
+}
+
+}else{
+	echo ("
+		<script language=javascript>
+		alert('\\n수정하려는 자료가 이미 삭제되어 있습니다.\\n\\n페이지를 자동 새로고침 하겠습니다..\\n');
+		opener.parent.location.reload();
+		window.self.close();
+		</script>
+	");
+		exit;
+}
+
+mysqli_close($db); 
+exit;
+}
+
+if($AdminCode21=="ok"){
+
+$query ="UPDATE $tabler SET Mlang_bbs_count='$count', Mlang_bbs_rec='$rec', Mlang_bbs_member='$Mlang_bbs_member', Mlang_date='$date' WHERE Mlang_bbs_no='$nor'";
+$result= mysqli_query($db, $query,$db);
+	if(!$result) {
+		echo "
+			<script language=javascript>
+				window.alert(\"DB 접속 에러입니다!\")
+				history.go(-1);
+			</script>";
+		exit;
+
+} else {
+	
+	echo ("<html>
+		<script language=javascript>
+		alert('\\n테이블명: $tabler 의 $nor 번호의 자료를 정상적으로 수정 하였습니다.\\n');");
+       
+	if($urlr){echo("
+	opener.parent.location=\"$urlr\";
+	");
+	}else{echo("
+	opener.parent.location.reload();
+	");
+	}
+        
+		echo("window.self.close();
+		</script>
+	</html>");
+		exit;
+}
+
+mysqli_close($db);
+
+
+exit;
+}
+
+
+if($file=="ok"){ // file=ok 값이 있으면 파일과 디렉토리를 삭제처리한다... 없음말고
+
+	$Mlang_DIR = opendir("../../results/upload/$id/$no"); // upload 폴더 OPEN
+	while($ufiles = readdir($Mlang_DIR)) {
+		if(($ufiles != ".") && ($ufiles != "..")) {
+			unlink("../../results/upload/$id/$no/$ufiles"); // 파일들 삭제
+		}
+	}
+	closedir($Mlang_DIR);
+
+	rmdir("../../results/upload/$id/$no");  // upload 폴더 삭제
+
+}
+
+if($bbs=="del"){$result = mysqli_query($db, "DELETE FROM $table WHERE Mlang_bbs_no='$no'");
+}else{$result = mysqli_query($db, "DELETE FROM $table WHERE no='$no'");}
+
+
+////////////// 새로 추가한 기능 BBSTOP /////////////////////////
+$BBS_TOPresult= mysqli_query($db, "select * from BBS_TOP where BBS_Table='$BBS_Table' and BBS_No='$no'",$db);
+   $BBS_TOProw= mysqli_fetch_array($BBS_TOPresult);
+     if($BBS_TOProw){
+$result = mysqli_query($db, "DELETE FROM BBS_TOP WHERE no='$BBS_TOProw[no]'");
+         }
+mysqli_close($db);
+////////////// 새로 추가한 기능 BBSTOP /////////////////////////
+
+	echo ("<html>
+		<script language=javascript>
+		alert('\\n테이블명: $table 의 $no 번호의 자료를 정상적으로 삭제 하였습니다.\\n');");
+       
+	if($url){echo("
+	opener.parent.location=\"$url\";
+	");
+	}else{echo("
+	opener.parent.location.reload();
+	");
+	}
+        
+		echo("window.self.close();
+		</script>
+	</html>");
+		exit;
+?>

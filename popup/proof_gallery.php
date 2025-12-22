@@ -21,12 +21,63 @@ $IMAGE_EXTS     = ['jpg','jpeg','png','webp','gif'];
 
 $cate   = $_GET['cate'] ?? '명함';
 $page   = max(1, intval($_GET['page'] ?? 1));
-$per    = 24; // 한 페이지 24 주문(=24개 대표이미지)
+$per    = 24; // 한 페이지 24개 이미지
 
 // 데이터베이스 연결 확인
 if (!$connect) {
     die("데이터베이스 연결 실패");
 }
+
+// ============================================
+// 듀얼 소스: 갤러리 폴더 + 2023-2024 고객 주문 이미지
+// ============================================
+$gallery_folders = [
+    '명함' => ['/ImgFolder/namecard/gallery/'],
+    '스티커' => ['/ImgFolder/sticker/gallery/'],
+    '봉투' => ['/ImgFolder/envelope/gallery/'],
+    '전단지' => ['/ImgFolder/inserted/gallery/'],
+    '포스터' => ['/ImgFolder/littleprint/gallery/'],
+    '카탈로그' => ['/ImgFolder/cadarok/gallery/', '/ImgFolder/leaflet/gallery/'], // cadarok + leaflet
+    '상품권' => ['/ImgFolder/merchandisebond/gallery/'],
+    '자석스티커' => ['/ImgFolder/msticker/gallery/'],
+    '양식지' => ['/ImgFolder/ncrflambeau/gallery/'],
+];
+
+// 통합 이미지 배열
+$all_images = [];
+
+// ============================================
+// 1단계: 갤러리 폴더 이미지 로드
+// ============================================
+if (isset($gallery_folders[$cate])) {
+    $folders = $gallery_folders[$cate];
+
+    foreach ($folders as $folder_path) {
+        $gallery_path = $_SERVER['DOCUMENT_ROOT'] . $folder_path;
+        $gallery_url = $folder_path;
+
+        if (is_dir($gallery_path)) {
+            $files = scandir($gallery_path);
+
+            foreach ($files as $file) {
+                if ($file === '.' || $file === '..' || $file === 'old') continue;
+
+                $ext = strtolower(pathinfo($file, PATHINFO_EXTENSION));
+                if (in_array($ext, $IMAGE_EXTS)) {
+                    $all_images[] = [
+                        'type' => 'gallery',
+                        'url' => $gallery_url . rawurlencode($file),
+                        'filename' => $file
+                    ];
+                }
+            }
+        }
+    }
+}
+
+// ============================================
+// 2단계: DB에서 2023-2024 고객 주문 이미지 로드
+// ============================================
 
 // 카테고리별 Type 매핑 (배열로 여러 타입 지원)
 $type_mapping = [
@@ -42,7 +93,6 @@ $type_mapping = [
 ];
 
 $db_types = $type_mapping[$cate] ?? [$cate];
-$offset = ($page - 1) * $per;
 
 // 여러 타입을 지원하는 WHERE 조건 생성
 $type_conditions = [];
@@ -66,68 +116,10 @@ if ($db_types === 'LIKE') {
     $type_where = '(' . implode(' OR ', $type_conditions) . ')';
 }
 
-// 자석스티커는 5년, 나머지는 2년
-$date_filter = ($cate === '자석스티커')
-    ? "date >= DATE_SUB(NOW(), INTERVAL 5 YEAR)"
-    : "date >= DATE_SUB(NOW(), INTERVAL 2 YEAR)";
+// 2023-2024 고정 기간 필터
+$date_filter = "date >= '2023-01-01' AND date <= '2024-12-31'";
 
-// API와 동일한 조건으로 주문 개수 구하기
-$count_sql = "SELECT COUNT(*) as total FROM mlangorder_printauto
-              WHERE OrderStyle > '0'
-              AND ThingCate IS NOT NULL
-              AND ThingCate != ''
-              AND LENGTH(ThingCate) > 3
-              AND ThingCate NOT LIKE '%test%'
-              AND ThingCate NOT LIKE '%테스트%'
-              AND " . $date_filter . "
-              AND " . $type_where;
-
-// 디버깅
-if (isset($_GET['debug'])) {
-    echo "<!-- DEBUG: Category = $cate, Type WHERE = $type_where -->\n";
-}
-
-// Count 쿼리 실행
-if ($db_types === 'LIKE') {
-    // LIKE 검색은 직접 실행
-    $count_result = mysqli_query($connect, $count_sql);
-
-    if ($count_result) {
-        $count_row = mysqli_fetch_assoc($count_result);
-        $total = $count_row ? $count_row['total'] : 0;
-    } else {
-        $total = 0;
-        if (isset($_GET['debug'])) {
-            echo "<!-- DEBUG: Query error = " . mysqli_error($connect) . " -->\n";
-        }
-    }
-} else {
-    // Prepared statement 사용
-    $count_stmt = mysqli_prepare($connect, $count_sql);
-    if ($count_stmt) {
-        if (!empty($type_params)) {
-            // 동적 바인딩
-            $types = str_repeat('s', count($type_params));
-            mysqli_stmt_bind_param($count_stmt, $types, ...$type_params);
-        }
-        mysqli_stmt_execute($count_stmt);
-        $count_result = mysqli_stmt_get_result($count_stmt);
-        $count_row = mysqli_fetch_assoc($count_result);
-        $total = $count_row ? $count_row['total'] : 0;
-        mysqli_stmt_close($count_stmt);
-    } else {
-        $total = 0;
-        if (isset($_GET['debug'])) {
-            echo "<!-- DEBUG: Prepare error = " . mysqli_error($connect) . " -->\n";
-        }
-    }
-}
-
-if (isset($_GET['debug'])) {
-    echo "<!-- DEBUG: Total found = $total -->\n";
-}
-
-// API와 동일한 조건으로 데이터 가져오기
+// DB에서 모든 주문 이미지 가져오기 (페이지네이션 전)
 $data_sql = "SELECT No, ThingCate FROM mlangorder_printauto
             WHERE OrderStyle > '0'
             AND ThingCate IS NOT NULL
@@ -144,10 +136,12 @@ $data_sql = "SELECT No, ThingCate FROM mlangorder_printauto
                   WHEN No < 82000 THEN 3
                   ELSE 4
               END,
-              No DESC
-            LIMIT {$offset}, " . ($per * 2);
+              No DESC";
 
-$orderNos = [];
+// 디버깅
+if (isset($_GET['debug'])) {
+    echo "<!-- DEBUG: Category = $cate, Type WHERE = $type_where -->\n";
+}
 
 // 데이터 쿼리 실행
 if ($db_types === 'LIKE') {
@@ -169,8 +163,7 @@ if ($db_types === 'LIKE') {
 }
 
 if ($res) {
-    $found = 0;
-    while (($row = mysqli_fetch_assoc($res)) && $found < $per) {
+    while ($row = mysqli_fetch_assoc($res)) {
         // 행 데이터가 유효한지 확인
         if (!$row || !is_array($row) || !isset($row['No']) || !isset($row['ThingCate'])) {
             continue;
@@ -182,8 +175,11 @@ if ($res) {
         // 실제 파일이 존재하는지 확인
         $file_path = $_SERVER['DOCUMENT_ROOT'] . "/mlangorder_printauto/upload/{$order_no}/{$thing_cate}";
         if (file_exists($file_path)) {
-            $orderNos[] = $order_no;
-            $found++;
+            $all_images[] = [
+                'type' => 'order',
+                'order_no' => $order_no,
+                'url' => $UPLOAD_DIR_URL . "/" . $order_no . "/" . rawurlencode($thing_cate)
+            ];
         }
     }
 
@@ -193,7 +189,21 @@ if ($res) {
     }
 }
 
+// ============================================
+// 3단계: 병합된 이미지 배열에 페이지네이션 적용
+// ============================================
+$total = count($all_images);
 $pages = max(1, ceil($total / $per));
+
+// 페이지네이션 적용
+$offset = ($page - 1) * $per;
+$paged_images = array_slice($all_images, $offset, $per);
+
+if (isset($_GET['debug'])) {
+    echo "<!-- DEBUG: Gallery images = " . count(array_filter($all_images, fn($i) => $i['type'] === 'gallery')) . " -->\n";
+    echo "<!-- DEBUG: Order images = " . count(array_filter($all_images, fn($i) => $i['type'] === 'order')) . " -->\n";
+    echo "<!-- DEBUG: Total = $total, Pages = $pages -->\n";
+}
 
 function get_image_from_thingcate($orderNo, $absBase, $urlBase, $connect){
   // 주문번호의 ThingCate 필드에서 이미지 파일명 가져오기
@@ -385,23 +395,31 @@ body {
     <div style="opacity:.9;font-weight:500"><?= number_format($total) ?>건</div>
   </div>
 
-  <?php if (empty($orderNos)): ?>
+  <?php if (empty($paged_images)): ?>
     <div class="no-data">
       <h3>아직 샘플이 준비되지 않았습니다</h3>
       <p>곧 업데이트 예정입니다.</p>
     </div>
   <?php else: ?>
     <div class="grid">
-      <?php foreach ($orderNos as $ono):
-        $img = get_image_from_thingcate($ono, $UPLOAD_DIR_ABS, $UPLOAD_DIR_URL, $connect);
-        if (!$img) {
-          $img = 'https://via.placeholder.com/300x200?text=이미지+준비중';
+      <?php
+      // 통합 이미지 배열 렌더링 (갤러리 + 주문 이미지)
+      foreach ($paged_images as $idx => $imgData):
+        $img_url = $imgData['url'];
+
+        // Alt 텍스트 생성
+        if ($imgData['type'] === 'gallery') {
+          $alt = htmlspecialchars($imgData['filename'] ?? 'gallery_' . $idx);
+        } else {
+          $alt = 'order_' . htmlspecialchars($imgData['order_no'] ?? $idx);
         }
       ?>
-        <div class="card" data-img="<?= htmlspecialchars($img) ?>">
-          <img src="<?= htmlspecialchars($img) ?>" alt="sample <?= (int)$ono ?>">
+        <div class="card" data-img="<?= htmlspecialchars($img_url) ?>">
+          <img src="<?= htmlspecialchars($img_url) ?>" alt="<?= $alt ?>">
         </div>
-      <?php endforeach; ?>
+      <?php
+      endforeach;
+      ?>
     </div>
 
     <div class="pager">

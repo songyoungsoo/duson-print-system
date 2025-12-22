@@ -223,7 +223,7 @@ document.addEventListener('DOMContentLoaded', function() {
           <td width="821" height="5"> </td>
         </tr>
         <tr>
-          <td valign="top"><a href="http://dsp114.com/shop/view.php" onMouseOut="MM_swapImgRestore()" onMouseOver="MM_swapImage('subj-01','','../img/subjk-01.jpg',1)"><img src="../img/subj-01.jpg" alt="스티커가격보기" name="subj-01" width="821" height="60" border="0"></a></td>
+          <td valign="top"><a href="http://dsp1830.shop/shop/view.php" onMouseOut="MM_swapImgRestore()" onMouseOver="MM_swapImage('subj-01','','../img/subjk-01.jpg',1)"><img src="../img/subj-01.jpg" alt="스티커가격보기" name="subj-01" width="821" height="60" border="0"></a></td>
         </tr>
         <tr> 
           <td height="5" valign="top"></td>
@@ -279,7 +279,7 @@ include "$BbsDir/skin/portfolio/list_new.php";
       </table>
       <table width="100%" border="0" cellpadding="5">
         <tr>
-          <td><p><a href="http://localhost/shop/view.php"><img src="../img/pbt.jpg" alt="가격보기로이동합니다" width="78" height="78" border="0"></a><a href="http://dsp114.com/shop/view.php"><img src="../img/obt.jpg" alt="주문하기버튼" width="78" height="78" border="0"></a></p>
+          <td><p><a href="http://localhost/shop/view.php"><img src="../img/pbt.jpg" alt="가격보기로이동합니다" width="78" height="78" border="0"></a><a href="http://dsp1830.shop/shop/view.php"><img src="../img/obt.jpg" alt="주문하기버튼" width="78" height="78" border="0"></a></p>
           <p><span class="style3">※ 이메일이나 웹하드에 자료를 올리시는경우 반드시 본인의 연락처를 남기시길 바랍니다.</span></p></td>
         </tr>
       </table>

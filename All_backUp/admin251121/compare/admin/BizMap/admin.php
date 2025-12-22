@@ -1,0 +1,707 @@
+<html>
+<head>
+<title>MlangBizMap프로그램</title>
+<meta http-equiv='Content-type' content='text/html; charset=euc-kr'>
+<META NAME='KEYWORDS' CONTENT='MlangBizMap프로그램'>
+<meta name='author' content='Mlang'>
+<meta name='classification' content='MlangBizMap프로그램'>
+<meta name='description' content='MlangBizMap프로그램'>
+<!--------------------------------------------------------------------------------
+     프로그램 제작툴-에디터플러스2
+     프로그램언어: PHP, javascript, DHTML, html
+     제작자: Mlang - 메일: webmaster@script.ne.kr
+     URL: http://www.websil.net , http://www.script.ne.kr
+----------------------------------------------------------------------------------->
+
+<style>
+body,td,input,select,submit {font-family:굴림; font-size: 9pt;; color:#000000; font-weight:none; line-height: normal;}
+.td11 {font-family:굴림; font-size: 9pt;; color:#FFFFFF; font-weight:bold; line-height: normal;}
+.td1 {font-family:굴림; font-size: 9pt;; color:#FFFFFF; font-weight:bold; line-height: normal;}
+.td2 {font-family:굴림; font-size: 9pt;; color:#008080; font-weight:none; line-height:130%;}
+</style>
+
+</head>
+
+<body LEFTMARGIN='0' TOPMARGIN='0' MARGINWIDTH='0' MARGINHEIGHT='0'>
+
+<?
+if($mode=="view"){
+
+$result= mysql_query("select * from MlangOrder where no='$no'",$db);
+$rows=mysql_num_rows($result);
+if($rows){
+
+while($row= mysql_fetch_array($result)) 
+{
+$BBAdminSelect="$row[AdminSelect]";	
+?>
+
+
+<BR>
+<table border=0 align=center width=90% cellpadding='0' cellspacing='1' bgcolor='#65B1B1'>
+<tr><td valign=top>
+
+<table border=0 align=center width=100% cellpadding='8' cellspacing='1' bgcolor='#FFFFFF'>
+<tr>
+<td bgcolor='#65B1B1' width=100 class='td1' align='left'>&nbsp;성  명&nbsp;</td>
+<td bgcolor='#FFFFFF'>
+<?=$row[name]?>
+</td>
+</tr>
+
+<tr>
+<td bgcolor='#65B1B1' class='td1' align='left'>&nbsp;나  이&nbsp;</td>
+<td bgcolor='#FFFFFF' class='td2'>
+<?=$row[nai]?>
+</td>
+</tr>
+
+<tr>
+<td bgcolor='#65B1B1' class='td1' align='left'>&nbsp;거주지역&nbsp;</td>
+<td bgcolor='#FFFFFF' class='td2'>
+<?=$row[house]?>
+</td>
+</tr>
+
+<tr>
+<td bgcolor='#65B1B1' class='td1' align='left'>&nbsp;전화번호&nbsp;</td>
+<td bgcolor='#FFFFFF' class='td2'>
+<?=$row[phone]?>
+</td>
+</tr>
+
+
+<tr>
+<td bgcolor='#65B1B1' class='td1' align='left'>&nbsp;상담가능시간&nbsp;</td>
+<td bgcolor='#FFFFFF' class='td2'>
+<?=$row[si]?>
+</td>
+</tr>
+
+
+<tr>
+<td bgcolor='#65B1B1' class='td1' align='left'>&nbsp;상담 분류&nbsp;</td>
+<td bgcolor='#FFFFFF' class='td2'>
+<?=$row[cont_1]?>
+</td>
+</tr>
+
+<tr>
+<td bgcolor='#65B1B1' class='td1' align='left'>&nbsp;상담 내용&nbsp;</td>
+<td bgcolor='#FFFFFF' class='td2'>
+<?
+        $CONTENT=$row[cont_2];
+		$CONTENT = eregi_replace("<", "&lt;", $CONTENT);
+		$CONTENT = eregi_replace(">", "&gt;", $CONTENT);
+		$CONTENT = eregi_replace("\"", "&quot;", $CONTENT);
+		$CONTENT = eregi_replace("\|", "&#124;", $CONTENT);
+		$CONTENT = eregi_replace("\r\n\r\n", "<P>", $CONTENT);
+		$CONTENT = eregi_replace("\r\n", "<BR>", $CONTENT);
+		$connent_text=$CONTENT;	
+echo("$connent_text");
+?>
+</tr>
+
+</table>
+
+</td></tr></table>
+
+<p align=center>
+<input type='button' onClick='javascript:window.close();' value='창닫기-CLOSE' style='font-size:10pt; background-color:#429EB2; color:#FFFFFF; border-style:solid; height:24px; border:2 solid #84D0E0;'>
+</p>
+
+<?
+}
+
+}else{echo("<p align=center><b>등록 자료가 없음.</b></p>");}
+
+mysql_close($db); 
+
+
+///////^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^/////////
+
+if($BBAdminSelect=="no"){
+
+include"db.php";
+$query ="UPDATE MlangOrder SET AdminSelect='yes' WHERE no='$no'";
+$result= mysql_query($query,$db);
+	if(!$result) {
+		echo "
+			<script language=javascript>
+				window.alert(\"DB 접속 에러입니다!\")
+				history.go(-1);
+			</script>";
+		exit;
+
+} else {
+	
+	echo ("
+		<script language=javascript>
+         opener.parent.location.reload();
+		</script>
+	");
+		exit;
+
+}
+
+mysql_close($db);
+}
+
+
+
+exit;
+}
+
+//////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+
+if($mode=="delete"){
+
+include"db.php";
+$result = mysql_query("DELETE FROM $table WHERE no='$no'");
+mysql_close();
+
+	echo ("
+		<script language=javascript>
+		alert('\\n정보를 정상적으로 삭제하였습니다.\\n');
+        opener.parent.location.reload();
+        window.self.close();
+		</script>
+	");
+		exit;
+
+}
+/////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+if($mode=="AdminSiteSubmit"){
+$Bgcolor_1="#FFFFFF";
+$Bgcolor_2="#65B1B1";
+$Bgcolor_3="#FFFFFF";
+$align_td1="left";
+$InputStyle="style='font-size:10pt; background-color:#DAF8F4; color:#000000; border-style:solid; border:1 solid $Bgcolor_2'";
+include"db.php";
+
+if($ModifyCode){include"ViewFild.php";}
+?>
+
+<head>
+
+<script language=javascript>
+
+var NUM = "0123456789"; 
+var SALPHA = "abcdefghijklmnopqrstuvwxyz";
+var ALPHA = "ABCDEFGHIJKLMNOPQRSTUVWXYZ"+SALPHA;
+
+////////////////////////////////////////////////////////////////////////////////
+function TypeCheck (s, spc) {
+var i;
+
+for(i=0; i< s.length; i++) {
+if (spc.indexOf(s.substring(i, i+1)) < 0) {
+return false;
+}
+}        
+return true;
+}
+
+/////////////////////////////////////////////////////////////////////////////////
+
+function MlangFriendSiteCheckField()
+{
+var f=document.MlangFriendSiteInfo;
+
+<?if ( $AdCate ) {?>
+if (f.cate.value == "0") {
+alert("사이트의 성격에 맞는 카테고리를 선택 하여 주세요.. *^^*");
+f.cate.focus();
+return false;
+}
+<?}?>
+
+if (f.bizname.value == "") {
+alert("지사명 을 입력하여 주세요 *^^*");
+f.bizname.focus();
+return false;
+}
+
+if (f.name.value == "") {
+alert("대표자 성함 을 입력하여 주세요 *^^*");
+f.name.focus();
+return false;
+}
+
+if (f.tel.value == "") {
+alert("TEL 을 입력 하여 주세요.. *^^*");
+f.tel.focus();
+return false;
+}
+
+if (f.fax.value == "") {
+alert("FAX 을 입력 하여 주세요.. *^^*");
+f.fax.focus();
+return false;
+}
+
+if (f.zip.value == "") {
+alert("지사주소 을 입력 하여 주세요.. *^^*");
+f.zip.focus();
+return false;
+}
+
+
+}
+
+//////////////// 이미지 미리보기 //////////////////////////////////
+/* 소스제작: http://www.script.ne.kr - Mlang */
+function Mlamg_image(image) {
+
+Mlangwindow = window.open("", "Image_Mlang", "toolbar=0,location=0,directories=0,status=0,menubar=0,scrollbars=1,resizable=1,copyhistory=0,width=600,height=400,top=0,left=0");
+Mlangwindow.document.open();
+Mlangwindow.document.write("<html><head><title>이미지 미리보기</title></head>");
+Mlangwindow.document.write("<body>");
+Mlangwindow.document.write("<p align=center><img src=\"" + image + "\"></p>");
+Mlangwindow.document.write("<p align=center><INPUT TYPE='button' VALUE='윈도우 닫기' " + "onClick='window.close()'></p>");
+Mlangwindow.document.write("</body></html>");
+Mlangwindow.document.close();
+  
+}
+</script>
+
+<style>
+.td1 {font-family:굴림; font-size: 9pt;; color:#FFFFFF; font-weight:bold; line-height: normal;}
+.td2 {font-family:굴림; font-size: 9pt;; color:#008080; font-weight:none; line-height:130%;}
+</style>
+
+</head>
+
+<BR>
+<table border=0 align=center width=90% cellpadding='0' cellspacing='1' bgcolor='<?=$Bgcolor_2?>'>
+<tr><td valign=top>
+
+<table border=0 align=center width=100% cellpadding='8' cellspacing='1' bgcolor='<?=$Bgcolor_1?>'>
+
+<form name='MlangFriendSiteInfo' method='post' enctype='multipart/form-data' OnSubmit='javascript:return MlangFriendSiteCheckField()' action='<?=$PHP_SELF?>'>
+<?if($ModifyCode){?>
+<INPUT TYPE="hidden" name='mode' value='FormModifyOk'>
+<INPUT TYPE="hidden" name='no' value='<?=$ModifyCode?>'>
+<?}else{?>
+<INPUT TYPE="hidden" name='mode' value='FormSubmitOk'>
+<?}?>
+
+<?if ( $AdCate ) {?>
+<tr>
+<td bgcolor='<?=$Bgcolor_2?>' width=100 class='td1' align='<?=$align_td1?>'>&nbsp;가테고리&nbsp;</td>
+<td bgcolor='<?=$Bgcolor_3?>'>
+<?
+	echo "<select name='cate' $InputStyle><OPTION VALUE='0' selected>▒선택하세요▒</OPTION>";
+	$CATEGORY_LIST_script = split(":", $AdCate);
+	$k = 0;
+	while($k < sizeof($CATEGORY_LIST_script)) {
+
+if($GF_cate=="$CATEGORY_LIST_script[$k]"){
+echo "<OPTION VALUE='$CATEGORY_LIST_script[$k]' selected style='background-color:#000000; color:#FFFFFF;'>$CATEGORY_LIST_script[$k]</OPTION>";}else{
+		echo "<OPTION VALUE='$CATEGORY_LIST_script[$k]'>$CATEGORY_LIST_script[$k]</OPTION>";
+} 
+
+		$k++;
+	} 
+	echo"</select>\n";
+?>
+</td>
+</tr>
+<?}?>
+
+<tr>
+<td bgcolor='<?=$Bgcolor_2?>' width=100 class='td1' align='<?=$align_td1?>'>&nbsp;지사명&nbsp;</td>
+<td bgcolor='<?=$Bgcolor_3?>'>
+<input type='text' name='bizname' maxLength='50' size='50' <?=$InputStyle?> <?if($ModifyCode){echo("value='$GF_bizname'");}?>>
+</td>
+</tr>
+
+<tr>
+<td bgcolor='<?=$Bgcolor_2?>' width=100 class='td1' align='<?=$align_td1?>'>&nbsp;대표자 성함&nbsp;</td>
+<td bgcolor='<?=$Bgcolor_3?>'>
+<input type='text' name='name' maxLength='100' size='20' <?=$InputStyle?> <?if($ModifyCode){echo("value='$GF_name'");}?>>
+</td>
+</tr>
+
+<tr>
+<td bgcolor='<?=$Bgcolor_2?>' width=100 class='td1' align='<?=$align_td1?>'>&nbsp;TEL&nbsp;</td>
+<td bgcolor='<?=$Bgcolor_3?>'>
+<input type='text' name='tel' maxLength='100' size='20' <?=$InputStyle?> <?if($ModifyCode){echo("value='$GF_tel'");}?>>
+</td>
+</tr>
+
+<tr>
+<td bgcolor='<?=$Bgcolor_2?>' width=100 class='td1' align='<?=$align_td1?>'>&nbsp;FAX&nbsp;</td>
+<td bgcolor='<?=$Bgcolor_3?>'>
+<input type='text' name='fax' maxLength='100' size='20' <?=$InputStyle?> <?if($ModifyCode){echo("value='$GF_fax'");}?>>
+</td>
+</tr>
+
+<tr>
+<td bgcolor='<?=$Bgcolor_2?>' width=100 class='td1' align='<?=$align_td1?>'>&nbsp;지사주소&nbsp;</td>
+<td bgcolor='<?=$Bgcolor_3?>'>
+<input type='text' name='zip' maxLength='200' size='50' <?=$InputStyle?> <?if($ModifyCode){echo("value='$GF_zip'");}?>>
+</td>
+</tr>
+
+<tr>
+<td bgcolor='<?=$Bgcolor_2?>' width=100 class='td1' align='<?=$align_td1?>'>&nbsp;지사 MAP&nbsp;</td>
+<td bgcolor='<?=$Bgcolor_3?>'>
+<?if($ModifyCode){if($GF_upfile){?>
+<INPUT TYPE="checkbox" NAME="photofileModify">파일을 수정하시려면 체크를 해주세요<BR>
+<img src='../../BizMap/upload/<?=$GF_upfile?>' width=100 height=40>
+<?} }?>
+<INPUT type="file" Size=35 name="photofile" onChange="Mlamg_image(this.value)" <?=$InputStyle?>>
+</td>
+</tr>
+
+<tr>
+<td bgcolor='<?=$Bgcolor_2?>' width=100 class='td1' align='<?=$align_td1?>'>&nbsp;왼쪽사진-1&nbsp;</td>
+<td bgcolor='<?=$Bgcolor_3?>'>
+<?if($ModifyCode){if($GF_upfile1){?>
+<INPUT TYPE="checkbox" NAME="photofileModify1">파일을 수정하시려면 체크를 해주세요<BR>
+<img src='../../BizMap/upload/<?=$GF_upfile1?>' width=100 height=40>
+<?} }?>
+<INPUT type="file" Size=35 name="photofile1" onChange="Mlamg_image(this.value)" <?=$InputStyle?>>
+<BR>이미지의크기는 width=230, height=130 에 기준하여 맞추어주세요
+<BR>(큰사진일경우 자동으로 width=230, height=130 에 맞쳐짐 - 왼쪽사진 1,2,3 동일)
+</td>
+</tr>
+
+<tr>
+<td bgcolor='<?=$Bgcolor_2?>' width=100 class='td1' align='<?=$align_td1?>'>&nbsp;왼쪽사진-2&nbsp;</td>
+<td bgcolor='<?=$Bgcolor_3?>'>
+<?if($ModifyCode){if($GF_upfile2){?>
+<INPUT TYPE="checkbox" NAME="photofileModify2">파일을 수정하시려면 체크를 해주세요<BR>
+<img src='../../BizMap/upload/<?=$GF_upfile2?>' width=100 height=40>
+<?} }?>
+<INPUT type="file" Size=35 name="photofile2" onChange="Mlamg_image(this.value)" <?=$InputStyle?>>
+</td>
+</tr>
+
+<tr>
+<td bgcolor='<?=$Bgcolor_2?>' width=100 class='td1' align='<?=$align_td1?>'>&nbsp;왼쪽사진-3&nbsp;</td>
+<td bgcolor='<?=$Bgcolor_3?>'>
+<?if($ModifyCode){if($GF_upfile3){?>
+<INPUT TYPE="checkbox" NAME="photofileModify3">파일을 수정하시려면 체크를 해주세요<BR>
+<img src='../../BizMap/upload/<?=$GF_upfile3?>' width=100 height=40>
+<?} }?>
+<INPUT type="file" Size=35 name="photofile3" onChange="Mlamg_image(this.value)" <?=$InputStyle?>>
+</td>
+</tr>
+
+<tr>
+<td bgcolor='<?=$Bgcolor_2?>' width=100 class='td1' align='<?=$align_td1?>'>&nbsp;내용문서형식&nbsp;</td>
+<td bgcolor='<?=$Bgcolor_3?>'>
+<INPUT TYPE="radio" NAME="Mstyle" value='br' <?if($GF_style=="br"){echo("checked");}?>>자동BR
+<INPUT TYPE="radio" NAME="Mstyle" value='html' <?if($GF_style=="html"){echo("checked");}?>>HTML직접입력
+</td>
+</tr>
+
+<tr>
+<td bgcolor='<?=$Bgcolor_2?>' width=100 class='td1' align='<?=$align_td1?>'>&nbsp;사이트 설명&nbsp;</td>
+<td bgcolor='<?=$Bgcolor_3?>'>
+<TEXTAREA NAME="cont" ROWS="13" COLS="60" <?=$InputStyle?>><?if($ModifyCode){echo("$GF_cont");}?></TEXTAREA>
+</td>
+</tr>
+
+</table>
+
+</td></tr></table>
+
+
+<p align=center>
+<?if($ModifyCode){?>
+<input type='submit' value='수정 합니다.' style='font-size:10pt; background-color:#429EB2; color:#FFFFFF; border-style:solid; height:24px; border:2 solid #84D0E0;'>
+<?}else{?>
+<input type='submit' value='입력 합니다.' style='font-size:10pt; background-color:#429EB2; color:#FFFFFF; border-style:solid; height:24px; border:2 solid #84D0E0;'>
+<?}?>
+</p>
+
+</form>
+
+<?
+		exit;
+}
+/////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+
+if($mode=="FormSubmitOk"){
+
+if($photofile){$upload_dir="../../BizMap/upload"; include"upload.php";}
+if($photofile1){$upload_dir="../../BizMap/upload"; include"upload_1.php";}
+if($photofile2){$upload_dir="../../BizMap/upload"; include"upload_2.php";}
+if($photofile3){$upload_dir="../../BizMap/upload"; include"upload_3.php";}
+
+include"db.php";
+	$result = mysql_query("SELECT max(no) FROM $table");
+	if (!$result) {
+		echo "
+			<script>
+				window.alert(\"DB 접속 에러입니다!\")
+				history.go(-1)
+			</script>";
+		exit;
+	}
+	$row = mysql_fetch_row($result);
+
+	if($row[0]) {
+	   $new_no = $row[0] + 1;
+	} else {
+	   $new_no = 1;
+	}   
+############################################
+$dbinsert ="insert into $table values('$new_no',
+'$cate',
+'$bizname',
+'$name',
+'$tel',
+'$fax',
+'$zip',
+'$photofileNAME',
+'$photofile1NAME',
+'$photofile2NAME',
+'$photofile3NAME',
+'$Mstyle',
+'$cont'
+)";
+$result_insert= mysql_query($dbinsert,$db);
+
+//완료 메세지를 보인후 페이지를 이동 시킨다
+echo ("
+		<script language=javascript>
+		alert('\\n정상적으로 정보가 저장 되었습니다.\\n\\n')
+		opener.parent.location.reload();
+		</script>
+<meta http-equiv='Refresh' content='0; URL=$PHP_SELF?mode=AdminSiteSubmit'>
+		");
+
+		exit;
+}
+/////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+
+if($mode=="FormModifyOk"){
+
+include"db.php";
+$ModifyCode="$no";
+include"ViewFild.php";
+
+if($GF_upfile){if($photofileModify){if($photofile){
+$upload_dir="../../BizMap/upload"; include"upload.php";
+unlink("../../BizMap/upload/$GF_upfile");
+}}else{$photofileNAME="$GF_upfile";}
+}else{if($photofile){$upload_dir="../../BizMap/upload"; include"upload.php";}}
+/////////////////////////////////////////////////////////////////////////////////////
+if($GF_upfile1){if($photofileModify1){if($photofile1){
+$upload_dir="../../BizMap/upload"; include"upload_1.php";
+unlink("../../BizMap/upload/$GF_upfile1");
+}}else{$photofile1NAME="$GF_upfile1";}
+}else{if($photofile1){$upload_dir="../../BizMap/upload"; include"upload_1.php";}}
+/////////////////////////////////////////////////////////////////////////////////////
+if($GF_upfile2){if($photofileModify2){if($photofile2){
+$upload_dir="../../BizMap/upload"; include"upload_2.php";
+unlink("../../BizMap/upload/$GF_upfile2");
+}}else{$photofile2NAME="$GF_upfile2";}
+}else{if($photofile2){$upload_dir="../../BizMap/upload"; include"upload_2.php";}}
+/////////////////////////////////////////////////////////////////////////////////////
+if($GF_upfile3){if($photofileModify3){if($photofile3){
+$upload_dir="../../BizMap/upload"; include"upload_3.php";
+unlink("../../BizMap/upload/$GF_upfile3");
+}}else{$photofile3NAME="$GF_upfile3";}
+}else{if($photofile3){$upload_dir="../../BizMap/upload"; include"upload_3.php";}}
+/////////////////////////////////////////////////////////////////////////////////////
+
+$query ="UPDATE $table SET cate='$cate',  bizname='$bizname',  name='$name',  tel='$tel',  fax='$fax', zip='$zip',  photo='$photofileNAME',  photo1='$photofile1NAME',  photo2='$photofile2NAME',  photo3='$photofile3NAME',  cont_style='$Mstyle',  cont='$cont'  WHERE no='$no'";
+$result= mysql_query($query,$db);
+	if(!$result) {
+		echo "
+			<script language=javascript>
+				window.alert(\"DB 접속 에러입니다!\")
+				history.go(-1);
+			</script>";
+		exit;
+
+} else {
+	
+	echo ("
+		<script language=javascript>
+		alert('\\n정보를 정상적으로 수정하였습니다.\\n');
+		 opener.parent.location.reload();
+		 window.self.close();
+		</script>
+	");
+
+}
+mysql_close($db);
+
+		exit;
+}
+?>
+
+<?
+$M123="..";
+include"../top.php"; 
+?>
+
+<?include"db.php";?>
+
+<head>
+<script>
+function Member_Admin_Del(no){
+	if (confirm(+no+'번 의 상담 자료를 삭제 하시겠습니까..?\n\n한번 삭제한 자료는 복구 되지 않으니 신중을 기해주세요.............!!')) {
+		str='<?=$PHP_SELF?>?no='+no+'&mode=delete';
+        popup = window.open("","","scrollbars=no,resizable=yes,width=400,height=50,top=2000,left=2000");
+        popup.document.location.href=str;
+        popup.focus();
+	}
+}
+
+function MM_jumpMenu(targ,selObj,restore){
+  eval(targ+".location='"+selObj.options[selObj.selectedIndex].value+"'");
+  if (restore) selObj.selectedIndex=0;
+}
+</script>
+
+</head>
+
+<table border=0 align=center width=100% cellpadding='8' cellspacing='0' class='coolBar'>
+<tr>
+<td align=left>
+<?
+if ( $AdCate ) {
+	echo "<select onChange=\"MM_jumpMenu('parent',this,0)\" style='background-color:#D8EBFC;'><OPTION selected>▒카테고리별로보기▒</OPTION>";
+	$CATEGORY_LIST_script = split(":", $AdCate);
+	$k = 0;
+	while($k < sizeof($CATEGORY_LIST_script)) {
+
+if($cate=="$CATEGORY_LIST_script[$k]"){
+			echo "<OPTION VALUE='$PHP_SELF?cate=$CATEGORY_LIST_script[$k]' selected style='background-color:#000000; color:#FFFFFF;'>$CATEGORY_LIST_script[$k]</OPTION>";
+}else{
+		echo "<OPTION VALUE='$PHP_SELF?cate=$CATEGORY_LIST_script[$k]'>$CATEGORY_LIST_script[$k]</OPTION>";
+}
+
+		$k++;
+	} 
+
+if($cate){echo"<option value='$PHP_SELF'>→ 전체목록보기</option></select>\n";}else{echo"</select>\n";}
+} 
+?>
+지사명을 클릭하시면 올라져 있는 페이지를 바로 보실수 있습니다..
+</td>
+<td align=right>
+<input type='button'  onClick="javascript:popup=window.open('<?=$PHP_SELF?>?mode=AdminSiteSubmit', 'MlangFriendSiteSubmit','width=680,height=680,top=0,left=0,menubar=no,resizable=no,statusbar=no,scrollbars=yes,toolbar=no'); popup.focus();" value='신규지사 자료등록하기'>
+</td>
+</tr>
+</table>
+
+<table border=0 align=center width=100% cellpadding='5' cellspacing='1' bgcolor='#6699CC'>
+<tr bgcolor='#6699CC'>
+<td align=center class='td11'>등록번호</font></td>
+<td align=center class='td11'>카테고리</font></td>
+<td align=center class='td11'>지사명</font></td>
+<td align=center class='td11'>대표자 성함</td>
+<td align=center class='td11'>TEL</td>
+<td align=center class='td11'>관리</td>
+<tr>
+
+<?
+if($cate){$Mlang_query="select * from $table  where cate='$cate'";}else{$Mlang_query="select * from $table";}
+
+$query= mysql_query("$Mlang_query",$db);
+$recordsu= mysql_num_rows($query);
+$total = mysql_affected_rows();
+
+$listcut= 15;  //한 페이지당 보여줄 목록 게시물수. 
+if(!$offset) $offset=0; 
+
+$result= mysql_query("$Mlang_query order by NO desc limit $offset,$listcut",$db);
+$rows=mysql_num_rows($result);
+if($rows){
+
+
+while($row= mysql_fetch_array($result)) 
+{ 
+?>
+
+<tr bgcolor='#FFFFFF'>
+<td align=center><?=$row[no]?></td>
+<td align=center><?=$row[cate]?></td>
+<td align=center><a href='/new/BizMap/index.php?cate=<?=$row[cate]?>&NoCode=<?=$row[no]?>' target='_blank'><?=$row[bizname]?></a></td>
+<td align=center><?=$row[name]?></td>
+<td align=center><?=$row[tel]?></td>
+<td align=center>
+<input type='button' onClick="javascript:popup=window.open('<?=$PHP_SELF?>?mode=AdminSiteSubmit&ModifyCode=<?=$row[no]?>', 'MlangFFFiteModify','width=680,height=680,top=0,left=0,menubar=no,resizable=no,statusbar=no,scrollbars=yes,toolbar=no'); popup.focus();" value=' 수정 '>
+<input type='button' onClick="javascript:Member_Admin_Del('<?=$row[no]?>');" value=' 삭제 '>
+</td>
+<tr>
+
+<?
+		$i=$i+1;
+} 
+
+
+}else{
+
+if($search){
+echo"<tr><td colspan=10 bgcolor='#FFFFFF'><p align=center><BR><BR>관련 검색 자료없음</p></td></tr>";
+}else{
+echo"<tr><td colspan=10 bgcolor='#FFFFFF'><p align=center><BR><BR>등록 자료없음</p></td></tr>";
+}
+
+}
+
+?>
+
+
+</table>
+
+
+
+<p align='center'>
+
+<?
+if($rows){
+
+if($cate){$mlang_pagego="cate=$cate";}else{$mlang_pagego="";}
+
+$pagecut= 7; 
+$one_bbs= $listcut*$pagecut; 
+$start_offset= intval($offset/$one_bbs)*$one_bbs; 
+$end_offset= intval($recordsu/$one_bbs)*$one_bbs; 
+$start_page= intval($start_offset/$listcut)+1; 
+$end_page= ($recordsu%$listcut>0)? intval($recordsu/$listcut)+1: intval($recordsu/$listcut); 
+if($start_offset!= 0) 
+{ 
+  $apoffset= $start_offset- $one_bbs; 
+  echo "<a href='$PHP_SELF?offset=$apoffset&$mlang_pagego'>...[이전]</a>&nbsp;"; 
+} 
+
+for($i= $start_page; $i< $start_page+$pagecut; $i++) 
+{ 
+$newoffset= ($i-1)*$listcut; 
+
+if($offset!= $newoffset){
+  echo "&nbsp;<a href='$PHP_SELF?offset=$newoffset&$mlang_pagego'>($i)</a>&nbsp;"; 
+}else{echo("&nbsp;<font style='font:bold; color:green;'>($i)</font>&nbsp;"); } 
+
+if($i==$end_page) break; 
+} 
+
+if($start_offset!= $end_offset) 
+{ 
+  $nextoffset= $start_offset+ $one_bbs; 
+  echo "&nbsp;<a href='$PHP_SELF?offset=$nextoffset&$mlang_pagego'>[다음]...</a>"; 
+} 
+echo "총목록갯수: $end_page 개"; 
+
+
+}
+
+mysql_close($db); 
+?> 
+
+</p>
+<!------------------------------------------- 리스트 끝----------------------------------------->
+
+<?
+include"../down.php";
+?>

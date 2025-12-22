@@ -272,32 +272,55 @@ function displayProductDetails($db, $order) {
     return implode(' | ', $details);
 }
 
-// 수량 추출 함수
+// 수량 추출 함수 - DB unit 필드 사용 (2025-12-10 수정)
 function extractQuantity($order) {
+    // DB에서 unit 필드 가져오기 (없으면 '매' 기본값)
+    $unit = $order['unit'] ?? '매';
+
     $json_data = json_decode($order['Type_1'] ?? '', true);
     if (json_last_error() === JSON_ERROR_NONE && is_array($json_data)) {
         // order_details 안에 있는 경우와 바로 있는 경우 둘 다 처리
         $order_data = $json_data['order_details'] ?? $json_data;
-        $quantity = $order_data['mesu'] ?? $order_data['quantity'] ?? 0;
+
+        // 🔧 FIX: quantityTwo (전단지 매수), mesu, quantity 순으로 확인
+        $quantity = $order_data['quantityTwo'] ?? $order_data['mesu'] ?? $order_data['quantity'] ?? 0;
         if ($quantity > 0) {
-            return number_format($quantity) . '매';
+            return number_format($quantity) . $unit;
+        }
+
+        // 🔧 FIX: MY_amount가 있으면 연수로 표시 (전단지/리플렛)
+        if (!empty($order_data['MY_amount'])) {
+            $yeonsu = floatval($order_data['MY_amount']);
+            if ($yeonsu > 0) {
+                // 정수면 정수로, 소수면 소수점 1자리로 표시
+                if (floor($yeonsu) == $yeonsu) {
+                    return number_format($yeonsu) . $unit;
+                } else {
+                    return number_format($yeonsu, 1) . $unit;
+                }
+            }
         }
     }
 
     // JSON에서 수량을 못 찾으면 텍스트에서 추출 시도
     if (!empty($order['Type_1'])) {
+        // "수량: 0.5연 (2,000매)" 패턴에서 매수 추출
+        if (preg_match('/\(([0-9,]+)매\)/u', $order['Type_1'], $matches)) {
+            $quantity = str_replace(',', '', $matches[1]);
+            return number_format($quantity) . $unit;
+        }
         // "수량: 1000" 또는 "1000매" 패턴 찾기
         if (preg_match('/수량[:\s]*([0-9,]+)/u', $order['Type_1'], $matches)) {
             $quantity = str_replace(',', '', $matches[1]);
-            return number_format($quantity) . '매';
+            return number_format($quantity) . $unit;
         }
         if (preg_match('/([0-9,]+)\s*매/u', $order['Type_1'], $matches)) {
             $quantity = str_replace(',', '', $matches[1]);
-            return number_format($quantity) . '매';
+            return number_format($quantity) . $unit;
         }
     }
 
-    return '1매';
+    return '1' . $unit;
 }
 ?>
 <!DOCTYPE html>
@@ -774,7 +797,7 @@ function extractQuantity($order) {
             <div class="company-logo">두손기획인쇄</div>
             <div class="company-details">
                 서울 영등포구 영등포로36길 9, 송호빌딩 1층<br>
-                TEL: 02-2632-1830 | FAX: 02-2632-1831 | www.dsp114.com
+                TEL: 02-2632-1830 | FAX: 02-2632-1831 | www.dsp1830.shop
             </div>
         </div>
         

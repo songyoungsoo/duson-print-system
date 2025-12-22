@@ -109,7 +109,6 @@ $default_values['MY_type'] = '475'; // 양식(100매철)
     <!-- 🎯 통합 공통 스타일 CSS (최종 로딩으로 최우선권 확보) -->
 
     <!-- 공통 갤러리 팝업 함수 -->
-    <script src="../../js/common-gallery-popup.js"></script>
     <!-- 파일 업로드 컴포넌트 JavaScript -->
     <script src="../../includes/js/UniversalFileUpload.js"></script>
     <!-- 브랜드 디자인 시스템 (헤더 스타일) -->

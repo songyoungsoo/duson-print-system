@@ -30,9 +30,15 @@
         <div class="modal-footer">
             <!-- 페이지네이션 -->
             <div class="pagination" id="unifiedPagination">
-                <button class="page-btn" onclick="loadUnifiedPage('prev')" id="prevBtn">◀ 이전</button>
+                <button class="page-btn page-first" onclick="loadUnifiedPage(1)" id="firstBtn" title="맨 처음">⏮ 맨처음</button>
+                <button class="page-btn page-prev" onclick="loadUnifiedPage('prev')" id="prevBtn" title="이전 페이지">◀ 이전</button>
                 <div class="page-numbers" id="pageNumbers"></div>
-                <button class="page-btn" onclick="loadUnifiedPage('next')" id="nextBtn">다음 ▶</button>
+                <button class="page-btn page-next" onclick="loadUnifiedPage('next')" id="nextBtn" title="다음 페이지">다음 ▶</button>
+                <button class="page-btn page-last" onclick="loadUnifiedPage('last')" id="lastBtn" title="맨 끝">맨끝 ⏭</button>
+                <div class="page-jump">
+                    <input type="number" id="pageJumpInput" min="1" placeholder="페이지" title="페이지 번호를 입력하세요">
+                    <button class="jump-btn" onclick="jumpToPage()" title="페이지로 이동">이동</button>
+                </div>
             </div>
         </div>
     </div>
@@ -153,7 +159,8 @@
 .unified-gallery-modal .gallery-item img {
     width: 100%;
     height: 140px;
-    object-fit: cover;
+    object-fit: contain;
+    background-color: #d1d5db;
     border: none;
 }
 
@@ -243,6 +250,56 @@
     background: #007bff;
     color: white;
     border-color: #007bff;
+}
+
+.unified-gallery-modal .page-ellipsis {
+    padding: 0 8px;
+    color: #6c757d;
+    font-weight: bold;
+    display: flex;
+    align-items: center;
+}
+
+.unified-gallery-modal .page-jump {
+    display: flex;
+    align-items: center;
+    gap: 5px;
+    margin-left: 15px;
+    padding-left: 15px;
+    border-left: 1px solid #dee2e6;
+}
+
+.unified-gallery-modal .page-jump input {
+    width: 60px;
+    height: 32px;
+    padding: 0 8px;
+    border: 1px solid #dee2e6;
+    border-radius: 6px;
+    text-align: center;
+    font-size: 0.9rem;
+}
+
+.unified-gallery-modal .page-jump input:focus {
+    outline: none;
+    border-color: #007bff;
+}
+
+.unified-gallery-modal .jump-btn {
+    height: 32px;
+    padding: 0 12px;
+    border: 1px solid #007bff;
+    background: #007bff;
+    color: white;
+    border-radius: 6px;
+    cursor: pointer;
+    font-size: 0.9rem;
+    font-weight: 500;
+    transition: all 0.2s ease;
+}
+
+.unified-gallery-modal .jump-btn:hover {
+    background: #0056b3;
+    border-color: #0056b3;
 }
 
 .unified-gallery-modal .loading-message {
@@ -341,6 +398,30 @@ document.addEventListener('keydown', function(e) {
     }
 });
 
+// 갤러리 더보기 버튼 이벤트 리스너
+document.addEventListener('DOMContentLoaded', function() {
+    const moreButtons = document.querySelectorAll('.gallery-more-thumb');
+    moreButtons.forEach(button => {
+        button.addEventListener('click', function() {
+            const product = this.getAttribute('data-product') || '';
+            const categoryMap = {
+                'msticker': '자석스티커',
+                'inserted': '전단지',
+                'namecard': '명함',
+                'envelope': '봉투',
+                'sticker': '스티커',
+                'littleprint': '포스터',
+                'cadarok': '카탈로그',
+                'merchandisebond': '상품권',
+                'ncrflambeau': '양식지',
+                'leaflet': '전단지'
+            };
+            const category = categoryMap[product] || product;
+            openUnifiedModal(category, '📂');
+        });
+    });
+});
+
 // 페이지 로드 함수
 async function loadUnifiedPage(page) {
     if (typeof page === 'string') {
@@ -348,6 +429,8 @@ async function loadUnifiedPage(page) {
             page = Math.max(1, unifiedCurrentPage - 1);
         } else if (page === 'next') {
             page = Math.min(unifiedTotalPages, unifiedCurrentPage + 1);
+        } else if (page === 'last') {
+            page = unifiedTotalPages;
         } else {
             page = parseInt(page);
         }
@@ -406,6 +489,11 @@ async function loadUnifiedPage(page) {
             // 갤러리 업데이트 - 이미지 + 제목 구조
             gallery.innerHTML = '';
             allImages.forEach(image => {
+                // ⚠️ 파일이 존재하지 않는 경우 렌더링하지 않음
+                if (image.file_exists === false) {
+                    return; // 건너뛰기
+                }
+
                 const galleryItem = document.createElement('div');
                 galleryItem.className = 'gallery-item';
                 galleryItem.onclick = () => viewLargeImage(image.path, image.title);
@@ -413,6 +501,14 @@ async function loadUnifiedPage(page) {
                 const img = document.createElement('img');
                 img.src = image.path;
                 img.alt = image.title;
+
+                // ⚠️ 이미지 로드 실패 시 gallery-item 자체를 DOM에서 제거
+                img.onerror = function() {
+                    console.warn('이미지 로드 실패:', image.path);
+                    if (galleryItem.parentNode) {
+                        galleryItem.parentNode.removeChild(galleryItem);
+                    }
+                };
 
                 const title = document.createElement('div');
                 title.className = 'gallery-item-title';
@@ -441,30 +537,71 @@ async function loadUnifiedPage(page) {
 
 // 페이지네이션 UI 업데이트
 function updateUnifiedPagination(pagination) {
+    const firstBtn = document.getElementById('firstBtn');
     const prevBtn = document.getElementById('prevBtn');
     const nextBtn = document.getElementById('nextBtn');
+    const lastBtn = document.getElementById('lastBtn');
     const pageNumbers = document.getElementById('pageNumbers');
-    
-    // 이전/다음 버튼 상태
+    const pageJumpInput = document.getElementById('pageJumpInput');
+
+    // 맨처음/맨끝/이전/다음 버튼 상태
+    firstBtn.disabled = pagination.current_page === 1;
     prevBtn.disabled = !pagination.has_prev;
     nextBtn.disabled = !pagination.has_next;
-    
-    // 페이지 번호 생성
+    lastBtn.disabled = pagination.current_page === pagination.total_pages;
+
+    // 페이지 점프 입력 필드 설정
+    pageJumpInput.max = pagination.total_pages;
+    pageJumpInput.placeholder = `1-${pagination.total_pages}`;
+
+    // 페이지 번호 생성 (개선된 알고리즘)
     pageNumbers.innerHTML = '';
-    const maxPages = Math.min(7, pagination.total_pages);
-    let startPage = Math.max(1, pagination.current_page - Math.floor(maxPages / 2));
-    let endPage = Math.min(pagination.total_pages, startPage + maxPages - 1);
-    
-    if (endPage - startPage + 1 < maxPages) {
-        startPage = Math.max(1, endPage - maxPages + 1);
+    const currentPage = pagination.current_page;
+    const totalPages = pagination.total_pages;
+
+    // 항상 첫 페이지 표시
+    if (totalPages > 0) {
+        addPageButton(1, currentPage === 1);
     }
-    
-    for (let i = startPage; i <= endPage; i++) {
+
+    // ... 표시 로직 (첫 페이지와 표시 범위 사이)
+    if (currentPage > 4) {
+        addEllipsis();
+    }
+
+    // 현재 페이지 주변 표시 (좌우 2개씩)
+    const rangeStart = Math.max(2, currentPage - 2);
+    const rangeEnd = Math.min(totalPages - 1, currentPage + 2);
+
+    for (let i = rangeStart; i <= rangeEnd; i++) {
+        addPageButton(i, i === currentPage);
+    }
+
+    // ... 표시 로직 (표시 범위와 마지막 페이지 사이)
+    if (currentPage < totalPages - 3) {
+        addEllipsis();
+    }
+
+    // 항상 마지막 페이지 표시 (페이지가 2개 이상일 때)
+    if (totalPages > 1) {
+        addPageButton(totalPages, currentPage === totalPages);
+    }
+
+    // 헬퍼 함수: 페이지 버튼 추가
+    function addPageButton(pageNum, isActive) {
         const pageBtn = document.createElement('button');
-        pageBtn.className = 'page-number' + (i === pagination.current_page ? ' active' : '');
-        pageBtn.textContent = i;
-        pageBtn.onclick = () => loadUnifiedPage(i);
+        pageBtn.className = 'page-number' + (isActive ? ' active' : '');
+        pageBtn.textContent = pageNum;
+        pageBtn.onclick = () => loadUnifiedPage(pageNum);
         pageNumbers.appendChild(pageBtn);
+    }
+
+    // 헬퍼 함수: ... (생략 표시) 추가
+    function addEllipsis() {
+        const ellipsis = document.createElement('span');
+        ellipsis.className = 'page-ellipsis';
+        ellipsis.textContent = '...';
+        pageNumbers.appendChild(ellipsis);
     }
 }
 
@@ -483,6 +620,33 @@ function getCategoryCode(category) {
     };
     return categoryMap[category] || category.toLowerCase();
 }
+
+// 페이지 점프 함수
+function jumpToPage() {
+    const pageJumpInput = document.getElementById('pageJumpInput');
+    const targetPage = parseInt(pageJumpInput.value);
+
+    if (!isNaN(targetPage) && targetPage >= 1 && targetPage <= unifiedTotalPages) {
+        loadUnifiedPage(targetPage);
+        pageJumpInput.value = ''; // 입력 필드 초기화
+    } else {
+        alert(`1부터 ${unifiedTotalPages} 사이의 페이지 번호를 입력하세요.`);
+        pageJumpInput.value = '';
+        pageJumpInput.focus();
+    }
+}
+
+// Enter 키로 페이지 점프
+document.addEventListener('DOMContentLoaded', function() {
+    const pageJumpInput = document.getElementById('pageJumpInput');
+    if (pageJumpInput) {
+        pageJumpInput.addEventListener('keypress', function(e) {
+            if (e.key === 'Enter') {
+                jumpToPage();
+            }
+        });
+    }
+});
 
 // 큰 이미지 보기 - 라이트박스 방식
 function viewLargeImage(imagePath, title) {

@@ -1,0 +1,198 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <title>⚡ 빠른 체크박스 테스트</title>
+    <style>
+        body { font-family: 'Malgun Gothic', sans-serif; margin: 40px; background: #ecf0f1; }
+        .container { max-width: 900px; margin: 0 auto; background: white; padding: 40px; border-radius: 10px; box-shadow: 0 4px 15px rgba(0,0,0,0.1); }
+        h1 { color: #2c3e50; text-align: center; border-bottom: 3px solid #3498db; padding-bottom: 20px; }
+        .status { padding: 20px; margin: 20px 0; border-radius: 8px; font-size: 16px; }
+        .status.pending { background: #fff3cd; border-left: 5px solid #ffc107; }
+        .status.success { background: #d4edda; border-left: 5px solid #28a745; }
+        .status.error { background: #f8d7da; border-left: 5px solid #dc3545; }
+        button { background: #3498db; color: white; border: none; padding: 15px 30px; border-radius: 5px; cursor: pointer; font-size: 16px; font-weight: bold; margin: 10px 5px; }
+        button:hover { background: #2980b9; transform: translateY(-2px); box-shadow: 0 4px 10px rgba(0,0,0,0.2); }
+        .code { background: #2d2d2d; color: #f8f8f2; padding: 15px; border-radius: 5px; font-family: 'Courier New', monospace; margin: 15px 0; white-space: pre-wrap; }
+        .step { background: #ecf0f1; padding: 15px; margin: 15px 0; border-radius: 5px; border-left: 5px solid #3498db; }
+        .step-number { background: #3498db; color: white; border-radius: 50%; width: 35px; height: 35px; display: inline-flex; align-items: center; justify-content: center; font-weight: bold; font-size: 18px; }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>⚡ 추가옵션 체크박스 빠른 테스트</h1>
+
+        <div class="status pending" id="status">
+            <strong>📋 상태:</strong> 테스트 준비됨. 아래 버튼을 클릭하여 진단을 시작하세요.
+        </div>
+
+        <div style="text-align: center; margin: 30px 0;">
+            <button onclick="runQuickTest()">🚀 빠른 진단 실행</button>
+            <button onclick="openRealPage()" style="background: #16a085;">🔗 실제 페이지 열기</button>
+            <button onclick="openDiagnosticPage()" style="background: #8e44ad;">🔍 상세 진단 페이지 열기</button>
+        </div>
+
+        <div id="results"></div>
+
+        <div class="step">
+            <span class="step-number">1</span>
+            <strong>문제 상황:</strong> 사용자가 코팅 체크박스를 선택했다고 주장하지만, 데이터베이스에는 옵션 가격이 0원으로 저장됨
+        </div>
+
+        <div class="step">
+            <span class="step-number">2</span>
+            <strong>가능한 원인:</strong>
+            <ul>
+                <li>JavaScript 초기화 실패 (DOMContentLoaded 미실행)</li>
+                <li>이벤트 리스너가 체크박스에 바인딩되지 않음</li>
+                <li>체크박스 클릭 시 이벤트가 발생하지 않음</li>
+                <li>Hidden 필드 업데이트 로직 오류</li>
+            </ul>
+        </div>
+
+        <div class="step">
+            <span class="step-number">3</span>
+            <strong>진단 방법:</strong>
+            <ol>
+                <li>"빠른 진단 실행" 버튼을 눌러 자동 진단</li>
+                <li>또는 "실제 페이지 열기"를 눌러 직접 테스트</li>
+                <li>체크박스를 클릭하고 브라우저 콘솔(F12) 확인</li>
+            </ol>
+        </div>
+
+        <div class="step">
+            <span class="step-number">4</span>
+            <strong>예상되는 콘솔 메시지:</strong>
+            <div class="code">✅ 정상 작동 시:
+🔍 DOMContentLoaded - additionalOptionsSection 존재: true
+⏰ 100ms 지연 후 초기화 시작...
+🔧 추가 옵션 시스템 초기화
+🔍 체크박스 개수: 3
+  [0] 체크박스 ID: coating_enabled name: coating_enabled
+  [1] 체크박스 ID: folding_enabled name: folding_enabled
+  [2] 체크박스 ID: creasing_enabled name: creasing_enabled
+✅ 추가 옵션 시스템 초기화 완료 (메인 시스템 이후)
+
+❌ 문제 발생 시:
+❌ additionalOptionsSection을 찾을 수 없습니다!
+또는
+🔍 체크박스 개수: 0
+❌ 추가옵션 체크박스를 찾을 수 없습니다!</div>
+        </div>
+    </div>
+
+    <script>
+        function updateStatus(message, type = 'pending') {
+            const statusEl = document.getElementById('status');
+            statusEl.className = 'status ' + type;
+            statusEl.innerHTML = '<strong>📋 상태:</strong> ' + message;
+        }
+
+        function showResults(html) {
+            document.getElementById('results').innerHTML = html;
+        }
+
+        function runQuickTest() {
+            updateStatus('테스트 실행 중...', 'pending');
+
+            // iframe으로 실제 페이지 로드
+            const iframe = document.createElement('iframe');
+            iframe.style.display = 'none';
+            iframe.src = 'index.php';
+            document.body.appendChild(iframe);
+
+            iframe.onload = function() {
+                setTimeout(() => {
+                    const doc = iframe.contentDocument || iframe.contentWindow.document;
+                    const win = iframe.contentWindow;
+
+                    let results = '<div style="margin-top: 30px;">';
+                    results += '<h2 style="color: #2c3e50; border-bottom: 2px solid #3498db; padding-bottom: 10px;">🔍 진단 결과</h2>';
+
+                    // 1. HTML 요소 확인
+                    const section = doc.getElementById('additionalOptionsSection');
+                    const checkboxes = doc.querySelectorAll('.option-toggle');
+
+                    results += '<div class="step">';
+                    results += '<strong>✅ HTML 구조:</strong><br>';
+                    results += `- additionalOptionsSection: ${section ? '✅ 존재' : '❌ 없음'}<br>`;
+                    results += `- .option-toggle 체크박스: ${checkboxes.length}개 ${checkboxes.length === 3 ? '✅' : '❌ (예상: 3개)'}<br>`;
+                    results += '</div>';
+
+                    // 2. JavaScript 함수 확인
+                    const hasInit = typeof win.initAdditionalOptions === 'function';
+                    const hasGetTotal = typeof win.getAdditionalOptionsTotal === 'function';
+                    const hasInstance = typeof win.additionalOptionsManager !== 'undefined';
+
+                    results += '<div class="step">';
+                    results += '<strong>📦 JavaScript 함수:</strong><br>';
+                    results += `- initAdditionalOptions: ${hasInit ? '✅ 존재' : '❌ 없음'}<br>`;
+                    results += `- getAdditionalOptionsTotal: ${hasGetTotal ? '✅ 존재' : '❌ 없음'}<br>`;
+                    results += `- additionalOptionsManager 인스턴스: ${hasInstance ? '✅ 생성됨' : '❌ 아직 없음'}<br>`;
+                    results += '</div>';
+
+                    // 3. 이벤트 리스너 테스트
+                    if (checkboxes.length > 0) {
+                        const coating = doc.getElementById('coating_enabled');
+                        const coatingPriceBefore = doc.getElementById('coating_price')?.value || '0';
+
+                        results += '<div class="step">';
+                        results += '<strong>🎯 이벤트 리스너 테스트:</strong><br>';
+                        results += `- 코팅 체크박스 초기 상태: ${coating?.checked ? 'checked' : 'unchecked'}<br>`;
+                        results += `- 초기 coating_price: ${coatingPriceBefore}원<br>`;
+
+                        // 체크박스 클릭 시뮬레이션
+                        if (coating) {
+                            coating.checked = true;
+                            coating.dispatchEvent(new Event('change', { bubbles: true }));
+
+                            setTimeout(() => {
+                                const coatingPriceAfter = doc.getElementById('coating_price')?.value || '0';
+                                const coatingOptions = doc.getElementById('coating_options');
+
+                                results += `- 클릭 후 coating_price: ${coatingPriceAfter}원 ${coatingPriceAfter !== '0' ? '✅' : '❌'}<br>`;
+                                results += `- 코팅 옵션 상세 표시: ${coatingOptions && coatingOptions.style.display !== 'none' ? '✅ 표시됨' : '❌ 숨겨짐'}<br>`;
+                                results += '</div>';
+
+                                // 최종 판정
+                                if (section && checkboxes.length === 3 && hasInit && hasGetTotal && coatingPriceAfter !== '0') {
+                                    updateStatus('✅ 모든 테스트 통과! 시스템이 정상 작동합니다.', 'success');
+                                    results += '<div class="status success"><strong>🎉 결론:</strong> 추가옵션 시스템이 정상적으로 작동합니다. 사용자가 체크박스를 실제로 클릭하지 않았거나, 주문 전에 체크를 해제했을 가능성이 높습니다.</div>';
+                                } else {
+                                    updateStatus('❌ 일부 테스트 실패. 문제가 감지되었습니다.', 'error');
+                                    results += '<div class="status error"><strong>⚠️ 결론:</strong> 추가옵션 시스템에 문제가 있습니다. 다음을 확인하세요:<br>';
+                                    if (!section || checkboxes.length !== 3) results += '- HTML 구조 누락<br>';
+                                    if (!hasInit || !hasGetTotal) results += '- JavaScript 로딩 실패<br>';
+                                    if (!hasInstance) results += '- 초기화 미실행 (DOMContentLoaded 문제)<br>';
+                                    if (coatingPriceAfter === '0') results += '- 이벤트 리스너 미바인딩<br>';
+                                    results += '</div>';
+                                }
+
+                                results += '</div>';
+                                showResults(results);
+
+                                // cleanup
+                                document.body.removeChild(iframe);
+                            }, 500);
+                        }
+                    } else {
+                        updateStatus('❌ 체크박스를 찾을 수 없습니다.', 'error');
+                        results += '</div>';
+                        showResults(results);
+                        document.body.removeChild(iframe);
+                    }
+
+                }, 1500); // DOMContentLoaded 대기
+            };
+        }
+
+        function openRealPage() {
+            window.open('index.php', '_blank');
+        }
+
+        function openDiagnosticPage() {
+            window.open('diagnose_events.html', '_blank');
+        }
+    </script>
+</body>
+</html>

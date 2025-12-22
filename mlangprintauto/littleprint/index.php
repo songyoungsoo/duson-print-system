@@ -131,7 +131,6 @@ $default_values['ordertype'] = 'print'; // 인쇄만
     <meta name="default-section" content="<?php echo htmlspecialchars($default_values['Section']); ?>">
     <meta name="default-quantity" content="<?php echo htmlspecialchars($default_values['MY_amount']); ?>">
     <!-- 공통 갤러리 팝업 함수 -->
-    <script src="../../js/common-gallery-popup.js"></script>
 
     <!-- 인라인 CSS 추출 파일 -->
     <link rel="stylesheet" href="css/littleprint-inline-extracted.css">
@@ -176,7 +175,7 @@ $default_values['ordertype'] = 'print'; // 인쇄만
                     <div class="inline-form-container">
                         <div class="inline-form-row">
                             <label class="inline-label" for="MY_type">종류</label>
-                            <select class="inline-select" name="MY_type" id="MY_type" required onchange="calculatePrice()">
+                            <select class="inline-select" name="MY_type" id="MY_type" required>
                                 <option value="">선택해주세요</option>
                                 <?php
                                 // mlangprintauto_transactioncate에서 동적으로 포스터 종류 가져오기
@@ -197,7 +196,7 @@ $default_values['ordertype'] = 'print'; // 인쇄만
 
                         <div class="inline-form-row">
                             <label class="inline-label" for="Section">지류</label>
-                            <select class="inline-select" name="Section" id="Section" required data-default-value="<?php echo htmlspecialchars($default_values['Section']); ?>" onchange="calculatePrice()">
+                            <select class="inline-select" name="Section" id="Section" required data-default-value="<?php echo htmlspecialchars($default_values['Section']); ?>">
                                 <option value="">먼저 종류를 선택해주세요</option>
                             </select>
                             <span class="inline-note">원하는 용지를 선택하세요</span>
@@ -205,7 +204,7 @@ $default_values['ordertype'] = 'print'; // 인쇄만
 
                         <div class="inline-form-row">
                             <label class="inline-label" for="PN_type">규격</label>
-                            <select class="inline-select" name="PN_type" id="PN_type" required onchange="calculatePrice()">
+                            <select class="inline-select" name="PN_type" id="PN_type" required>
                                 <option value="">먼저 지류를 선택해주세요</option>
                             </select>
                             <span class="inline-note">인쇄 사이즈를 선택하세요</span>
@@ -213,7 +212,7 @@ $default_values['ordertype'] = 'print'; // 인쇄만
 
                         <div class="inline-form-row">
                             <label class="inline-label" for="POtype">인쇄면</label>
-                            <select class="inline-select" name="POtype" id="POtype" required onchange="calculatePrice()">
+                            <select class="inline-select" name="POtype" id="POtype" required>
                                 <option value="">선택해주세요</option>
                                 <?php
                                 // mlangprintauto_littleprint에서 사용 가능한 인쇄면 옵션 가져오기
@@ -235,7 +234,7 @@ $default_values['ordertype'] = 'print'; // 인쇄만
 
                         <div class="inline-form-row">
                             <label class="inline-label" for="MY_amount">수량</label>
-                            <select class="inline-select" name="MY_amount" id="MY_amount" required data-default-value="<?php echo htmlspecialchars($default_values['MY_amount']); ?>" onchange="calculatePrice()">
+                            <select class="inline-select" name="MY_amount" id="MY_amount" required data-default-value="<?php echo htmlspecialchars($default_values['MY_amount']); ?>">
                                 <option value="">먼저 규격을 선택해주세요</option>
                             </select>
                             <span class="inline-note">원하시는 수량을 선택하세요</span>
@@ -243,7 +242,7 @@ $default_values['ordertype'] = 'print'; // 인쇄만
 
                         <div class="inline-form-row">
                             <label class="inline-label" for="ordertype">편집비</label>
-                            <select class="inline-select" name="ordertype" id="ordertype" required onchange="calculatePrice()">
+                            <select class="inline-select" name="ordertype" id="ordertype" required>
                                 <option value="">선택해주세요</option>
                                 <?php
                                 // 편집디자인 옵션 (이 부분은 비즈니스 로직이므로 간단한 배열 사용)

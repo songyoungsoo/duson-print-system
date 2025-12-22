@@ -1,0 +1,431 @@
+/**
+ * 통일 인라인 폼 스타일 시스템
+ * 모든 제품 페이지(명함, 스티커, 전단지, 봉투 등)에 동일하게 적용
+ *
+ * @version 3.0 - Improved Layout with Responsive Design & Accessibility
+ * @date 2025-10-11
+ * @author SuperClaude Framework
+ * @changes:
+ *   - Gap properties for consistent spacing
+ *   - Enhanced touch targets (36px desktop, 40px mobile)
+ *   - Responsive breakpoints (768px, 480px)
+ *   - Accessibility improvements (label for, focus states)
+ *   - Increased label width (50px → 60px)
+ */
+
+/* =================================================================== */
+/* 기본 인라인 폼 컨테이너 */
+/* =================================================================== */
+
+.inline-form-container,
+.options-grid {
+    background: transparent;
+    border: none;
+    border-radius: 6px;
+    padding: 12px;
+    margin: 8px 0;
+    box-shadow: none;
+}
+
+/* =================================================================== */
+/* 인라인 폼 행 레이아웃 */
+/* =================================================================== */
+
+.inline-form-row,
+.options-grid .inline-form-row {
+    display: flex;
+    flex-direction: row;
+    align-items: center;
+    gap: 12px;
+    margin-bottom: 0;
+    font-size: 0.85rem;
+    min-height: 36px;
+    transition: background-color 0.2s ease;
+}
+
+.inline-form-row:last-child,
+.options-grid .inline-form-row:last-child {
+    margin-bottom: 0;
+}
+
+.inline-form-row:hover,
+.options-grid .inline-form-row:hover {
+    background-color: transparent;
+    border-radius: 4px;
+}
+
+/* =================================================================== */
+/* 라벨 스타일 (우측 정렬) */
+/* =================================================================== */
+
+.inline-label,
+.options-grid .inline-label {
+    width: 60px;
+    text-align: right;
+    font-weight: 500;
+    color: #333;
+    flex-shrink: 0;
+    margin-right: 0;
+    font-size: 0.85rem;
+    line-height: 1.2;
+    cursor: pointer;
+}
+
+/* 특수 라벨 크기 조정 */
+.inline-label.wide,
+.options-grid .inline-label.wide {
+    width: 70px;
+}
+
+.inline-label.narrow,
+.options-grid .inline-label.narrow {
+    width: 40px;
+}
+
+/* =================================================================== */
+/* 입력 필드 공통 스타일 */
+/* =================================================================== */
+
+.inline-select,
+.inline-input,
+.options-grid .inline-select,
+.options-grid .inline-input {
+    padding: 6px 8px;
+    border: 1px solid #ced4da;
+    border-radius: 3px;
+    font-size: 0.8rem;
+    background: white;
+    margin-right: 0;
+    height: 36px;
+    box-sizing: border-box;
+    transition: all 0.2s ease;
+}
+
+/* 기본 셀렉트박스 폭 */
+.inline-select,
+.options-grid .inline-select {
+    flex: 0 0 220px;
+    width: 220px;
+}
+
+/* 넓은 셀렉트박스 (긴 옵션명용) */
+.inline-select.wide,
+.options-grid .inline-select.wide {
+    flex: 0 0 180px;
+    width: 180px;
+}
+
+/* 좁은 셀렉트박스 (짧은 옵션용) */
+.inline-select.narrow,
+.options-grid .inline-select.narrow {
+    flex: 0 0 120px;
+    width: 120px;
+}
+
+/* 인풋 필드 */
+.inline-input,
+.options-grid .inline-input {
+    flex: 0 0 130px;
+    width: 130px;
+}
+
+.inline-input.wide,
+.options-grid .inline-input.wide {
+    flex: 0 0 150px;
+    width: 150px;
+}
+
+/* =================================================================== */
+/* 포커스 및 호버 효과 */
+/* =================================================================== */
+
+.inline-select:focus,
+.inline-input:focus,
+.options-grid .inline-select:focus,
+.options-grid .inline-input:focus {
+    outline: 2px solid var(--dsp-primary, #1E4E79);
+    outline-offset: 2px;
+    border-color: var(--dsp-primary, #1E4E79);
+    box-shadow: 0 0 0 3px rgba(30, 78, 121, 0.1);
+}
+
+.inline-select:hover,
+.inline-input:hover,
+.options-grid .inline-select:hover,
+.options-grid .inline-input:hover {
+    border-color: var(--dsp-primary-light, #2D6FA8);
+}
+
+/* =================================================================== */
+/* 설명 텍스트 (오른쪽) */
+/* =================================================================== */
+
+.inline-note,
+.options-grid .inline-note {
+    color: #6c757d;
+    font-size: 0.7rem;
+    line-height: 1.2;
+    flex: 1;
+    padding-left: 5px;
+}
+
+/* 경고 스타일 설명 */
+.inline-note.warning,
+.options-grid .inline-note.warning {
+    color: #dc3545;
+    font-weight: 500;
+}
+
+/* 정보 스타일 설명 */
+.inline-note.info,
+.options-grid .inline-note.info {
+    color: #17a2b8;
+}
+
+/* =================================================================== */
+/* 가격 표시 박스 */
+/* =================================================================== */
+
+.price-display {
+    border: 1px solid #e0e0e0;
+    border-radius: 6px;
+    background: white;
+    padding: 12px;
+    margin: 10px 0;
+    text-align: center;
+    box-shadow: none;
+    transition: all 0.3s ease;
+}
+
+.price-display.calculated {
+    background: white;
+    border: 1px solid #e0e0e0;
+    transform: translateY(0);
+    box-shadow: none;
+}
+
+.price-display:hover {
+    box-shadow: none;
+}
+
+/* 메인 가격 (라벨 제거된 통일 스타일) */
+.price-amount {
+    font-size: 1.5rem;
+    font-weight: 700;
+    color: #28a745;
+    margin-bottom: 6px;
+    letter-spacing: -0.5px;
+    text-align: center;
+}
+
+/* price-label 제거됨 - 모든 페이지에서 통일된 깔끔한 표시 */
+.price-label {
+    display: none;
+}
+
+/* 가격 상세 정보 */
+.price-details {
+    font-size: 0.75rem;
+    color: #6c757d;
+    line-height: 1.2;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    gap: 12px;
+    flex-wrap: wrap;
+}
+
+.price-display .price-details .vat-amount,
+.price-display .price-details span:last-child,
+.price-details .vat-amount,
+.price-details span:last-child {
+    color: #dc3545;
+    font-weight: 600;
+    text-shadow: none;
+}
+
+/* =================================================================== */
+/* 버튼 스타일 */
+/* =================================================================== */
+
+.btn-upload-order {
+    width: 100%;
+    padding: 10px;
+    background: #364052;
+    color: white;
+    border: none;
+    border-radius: 6px;
+    font-size: 0.9rem;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    margin-top: 8px;
+    box-shadow: 0 4px 12px rgba(54, 64, 82, 0.3);
+}
+
+.btn-upload-order:hover {
+    background: #4a5568;
+    transform: translateY(-2px);
+    box-shadow: 0 6px 20px rgba(54, 64, 82, 0.4);
+}
+
+.btn-upload-order:active {
+    background: #4a5568;
+    transform: translateY(0);
+}
+
+/* =================================================================== */
+/* 반응형 디자인 */
+/* =================================================================== */
+
+@media (max-width: 768px) {
+    .inline-form-container,
+    .options-grid {
+        padding: 10px;
+        margin: 5px 0;
+    }
+
+    .inline-form-row,
+    .options-grid .inline-form-row {
+        flex-direction: column;
+        align-items: flex-start;
+        gap: 8px;
+        margin-bottom: 12px;
+    }
+
+    .inline-label,
+    .options-grid .inline-label {
+        width: 100%;
+        text-align: left;
+        margin-bottom: 0;
+        margin-right: 0;
+    }
+
+    .inline-select,
+    .inline-input,
+    .options-grid .inline-select,
+    .options-grid .inline-input {
+        width: 100%;
+        flex: 1 1 auto;
+        margin-right: 0;
+        margin-bottom: 0;
+        height: 40px;
+        font-size: 16px;
+    }
+
+    .inline-note,
+    .options-grid .inline-note {
+        padding-left: 0;
+        font-size: 0.7rem;
+        width: 100%;
+    }
+}
+
+/* 모바일 - 작은 화면 최적화 */
+@media (max-width: 480px) {
+    .inline-form-container,
+    .options-grid {
+        padding: 8px;
+    }
+
+    .inline-form-row,
+    .options-grid .inline-form-row {
+        gap: 6px;
+        min-height: 40px;
+    }
+
+    .inline-select,
+    .inline-input,
+    .options-grid .inline-select,
+    .options-grid .inline-input {
+        height: 44px;
+        font-size: 16px;
+        padding: 8px 10px;
+    }
+
+    .price-amount {
+        font-size: 1.3rem;
+    }
+}
+
+/* =================================================================== */
+/* 특수 제품별 오버라이드 */
+/* =================================================================== */
+
+/* 스티커 페이지 전용 */
+.sticker-page .inline-select {
+    flex: 0 0 130px;
+    width: 130px;
+}
+
+/* 명함 페이지 전용 */
+.namecard-page .inline-select {
+    flex: 0 0 180px;
+    width: 180px;
+}
+
+/* 봉투 페이지 전용 */
+.envelope-page .inline-select {
+    flex: 0 0 160px;
+    width: 160px;
+}
+
+/* 모든 제품 페이지 220px 통일 */
+.poster-page .inline-form-container .inline-select,
+.littleprint-page .inline-form-container .inline-select,
+.inserted-page .inline-form-container .inline-select,
+.leaflet-page .inline-form-container .inline-select,
+.namecard-page .inline-form-container .inline-select,
+.envelope-page .inline-form-container .inline-select,
+.cadarok-page .inline-form-container .inline-select,
+.ncrflambeau-page .inline-form-container .inline-select,
+.merchandisebond-page .inline-form-container .inline-select,
+.msticker-page .inline-form-container .inline-select {
+    flex: 0 0 220px !important;
+    width: 220px !important;
+    max-width: 220px !important;
+    min-width: 220px !important;
+}
+
+/* =================================================================== */
+/* 유틸리티 클래스 */
+/* =================================================================== */
+
+.form-row {
+    display: flex;
+    gap: 15px;
+    margin-bottom: 8px;
+}
+
+.form-row .inline-form-container {
+    flex: 1;
+    margin: 0;
+}
+
+/* 컴팩트 모드 */
+.compact-mode .inline-form-container,
+.compact-mode .options-grid {
+    padding: 8px;
+}
+
+.compact-mode .inline-form-row {
+    margin-bottom: 6px;
+    min-height: 28px;
+}
+
+.compact-mode .inline-select,
+.compact-mode .inline-input {
+    height: 28px;
+    font-size: 0.75rem;
+}
+
+/* 에러 상태 */
+.error .inline-select,
+.error .inline-input {
+    border-color: #dc3545;
+    background-color: #fff5f5;
+}
+
+.error .inline-label {
+    color: #dc3545;
+}

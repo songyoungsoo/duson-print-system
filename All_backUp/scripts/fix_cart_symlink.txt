@@ -1,0 +1,21 @@
+# SSH로 프로덕션 서버에 접속하여 실행
+
+ssh dsp1830@dsp1830.shop
+
+# 웹 루트로 이동
+cd ~/www
+
+# 현재 상태 확인
+ls -la | grep -i mlangprint
+
+# 심볼릭 링크 생성 (대문자 MlangPrintAuto -> 소문자 mlangprintauto)
+ln -s mlangprintauto MlangPrintAuto
+
+# 확인
+ls -la | grep -i mlangprint
+
+# 테스트
+ls MlangPrintAuto/shop/cart.php
+
+# 완료
+exit

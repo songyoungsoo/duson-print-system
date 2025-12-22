@@ -724,7 +724,6 @@ header("Expires: 0");
     </script>
 
     <!-- 통합 갤러리 시스템 JavaScript -->
-    <script src="../../js/common-gallery-popup.js"></script>
 
     <!-- 견적서 모달 공통 JavaScript -->
     <script src="../../js/quotation-modal-common.js"></script>

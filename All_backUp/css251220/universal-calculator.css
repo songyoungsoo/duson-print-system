@@ -1,0 +1,332 @@
+/**
+ * 범용 계산기 CSS - 9개 품목 통합
+ * 필드 수와 그리드에 따라 자동 조정
+ * 전단지 디자인 기준으로 확장
+ */
+
+/* =========================================
+   색상 및 기본 변수
+   ========================================= */
+:root {
+  /* 전단지 색상 팔레트 */
+  --flier-green: #4CAF50;
+  --flier-green-light: #66BB6A;
+  --flier-purple: #7C4DFF;
+  --flier-purple-light: #9575CD;
+  --flier-mint: #E8F5E9;
+  --flier-mint-border: #4CAF50;
+  --flier-gray: #FAFAFA;
+  --flier-border: #E0E0E0;
+  
+  /* 기본 크기 */
+  --header-height: 64px;
+  --field-height: 44px;
+  --button-height: 52px;
+  --border-radius: 8px;
+  --card-radius: 12px;
+  
+  /* 그리드 간격 */
+  --grid-gap: 16px;
+  --form-padding: 24px;
+}
+
+/* =========================================
+   카드 컨테이너
+   ========================================= */
+.universal-calculator-card {
+  background: white;
+  border-radius: var(--card-radius);
+  box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+  overflow: hidden;
+  margin-bottom: 20px;
+}
+
+/* =========================================
+   헤더 스타일 (전단지 기준)
+   ========================================= */
+.calc-header {
+  background: linear-gradient(135deg, var(--flier-green), var(--flier-green-light));
+  height: var(--header-height);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 0 20px;
+}
+
+.calc-header h2 {
+  color: white;
+  font-size: 20px;
+  font-weight: bold;
+  margin: 0;
+  text-shadow: 1px 1px 2px rgba(0,0,0,0.2);
+}
+
+/* =========================================
+   계산기 본문
+   ========================================= */
+.calc-body {
+  padding: var(--form-padding);
+}
+
+/* =========================================
+   그리드 시스템 - 필드 수별 자동 조정
+   ========================================= */
+.calc-grid {
+  display: grid;
+  gap: var(--grid-gap);
+  margin-bottom: 20px;
+}
+
+/* 2×3 그리드 (6필드) - 전단지, 명함, 봉투 */
+.grid-2x3 {
+  grid-template-columns: 1fr 1fr;
+}
+
+/* 2×4 그리드 (7-8필드) - 포스터, 스티커, NCR, 제본, 현수막 */
+.grid-2x4 {
+  grid-template-columns: 1fr 1fr;
+}
+
+/* 3×3 그리드 (9필드) - 카다록 */
+.grid-3x3 {
+  grid-template-columns: 1fr 1fr 1fr;
+}
+
+/* =========================================
+   필드 스타일
+   ========================================= */
+.calc-field {
+  display: flex;
+  flex-direction: column;
+}
+
+.calc-field.full-width {
+  grid-column: 1 / -1;
+}
+
+.calc-label {
+  font-size: 13px;
+  color: #333;
+  font-weight: 500;
+  margin-bottom: 6px;
+  display: block;
+}
+
+.calc-select {
+  height: var(--field-height);
+  padding: 0 40px 0 12px;
+  border: 1px solid var(--flier-border);
+  border-radius: 6px;
+  background-color: var(--flier-gray);
+  font-size: 14px;
+  color: #333;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  
+  /* 드롭다운 화살표 */
+  appearance: none;
+  background-image: url("data:image/svg+xml;charset=UTF-8,%3csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 12 12'%3e%3cpath fill='%23666' d='M6 9L1 4h10z'/%3e%3c/svg%3e");
+  background-repeat: no-repeat;
+  background-position: right 12px center;
+  background-size: 12px;
+}
+
+.calc-select:hover {
+  border-color: var(--flier-green);
+  background-color: white;
+}
+
+.calc-select:focus {
+  outline: none;
+  border-color: var(--flier-green);
+  box-shadow: 0 0 0 2px rgba(76, 175, 80, 0.1);
+  background-color: white;
+}
+
+/* =========================================
+   결과 표시 영역
+   ========================================= */
+.calc-result {
+  grid-column: 1 / -1;
+  background: var(--flier-mint);
+  border: 2px solid var(--flier-mint-border);
+  border-radius: var(--border-radius);
+  padding: 20px;
+  text-align: center;
+  margin: 10px 0;
+}
+
+.result-title {
+  font-size: 13px;
+  color: #666;
+  margin-bottom: 8px;
+  text-transform: uppercase;
+  letter-spacing: 1px;
+}
+
+.result-price {
+  font-size: 28px;
+  font-weight: bold;
+  color: var(--flier-green);
+  margin: 8px 0;
+}
+
+.result-note {
+  font-size: 12px;
+  color: #777;
+  margin-top: 8px;
+}
+
+/* =========================================
+   액션 버튼 영역
+   ========================================= */
+.calc-actions {
+  grid-column: 1 / -1;
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 12px;
+}
+
+.calc-btn {
+  height: var(--button-height);
+  border: none;
+  border-radius: var(--border-radius);
+  font-size: 16px;
+  font-weight: bold;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  text-decoration: none;
+}
+
+.calc-btn.upload {
+  background: linear-gradient(135deg, #FF6F00, #FF9100);
+  color: white;
+  box-shadow: 0 3px 8px rgba(255, 111, 0, 0.3);
+}
+
+.calc-btn.upload:hover {
+  background: linear-gradient(135deg, #E65100, #FF6F00);
+  transform: translateY(-2px);
+  box-shadow: 0 5px 12px rgba(255, 111, 0, 0.4);
+}
+
+.calc-btn.order {
+  background: linear-gradient(135deg, var(--flier-purple), var(--flier-purple-light));
+  color: white;
+  box-shadow: 0 3px 8px rgba(124, 77, 255, 0.3);
+}
+
+.calc-btn.order:hover {
+  background: linear-gradient(135deg, #6A3DE8, var(--flier-purple));
+  transform: translateY(-2px);
+  box-shadow: 0 5px 12px rgba(124, 77, 255, 0.4);
+}
+
+.calc-btn:active {
+  transform: translateY(0);
+}
+
+/* =========================================
+   필드 수별 특별 처리
+   ========================================= */
+
+/* 7필드: 마지막 하나를 전체 너비로 */
+.field-count-7 .calc-field:nth-child(7) {
+  grid-column: 1 / -1;
+}
+
+/* 8필드: 2×4 완전 그리드 */
+.field-count-8 {
+  /* 기본 2×4 그리드 사용 */
+}
+
+/* 9필드: 3×3 그리드 */
+.field-count-9 {
+  /* 기본 3×3 그리드 사용 */
+}
+
+/* =========================================
+   반응형 디자인
+   ========================================= */
+
+/* 태블릿 (768px 이하) */
+@media (max-width: 768px) {
+  .calc-grid {
+    grid-template-columns: 1fr;
+  }
+  
+  .calc-header h2 {
+    font-size: 18px;
+  }
+  
+  .result-price {
+    font-size: 24px;
+  }
+  
+  .calc-actions {
+    grid-template-columns: 1fr;
+  }
+}
+
+/* 모바일 (480px 이하) */
+@media (max-width: 480px) {
+  :root {
+    --form-padding: 16px;
+    --grid-gap: 12px;
+  }
+  
+  .calc-header h2 {
+    font-size: 16px;
+  }
+  
+  .result-price {
+    font-size: 20px;
+  }
+}
+
+/* =========================================
+   기존 스타일 오버라이드 (호환성)
+   ========================================= */
+
+/* 기존 클래스들을 새 스타일로 매핑 */
+.form-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: var(--grid-gap);
+  padding: 0;
+}
+
+.form-field {
+  display: flex;
+  flex-direction: column;
+}
+
+.form-label {
+  font-size: 13px;
+  color: #333;
+  margin-bottom: 6px;
+}
+
+.form-select {
+  height: var(--field-height);
+  border: 1px solid var(--flier-border);
+  border-radius: 6px;
+  background-color: var(--flier-gray);
+  padding: 0 40px 0 12px;
+}
+
+.price-display {
+  background: var(--flier-mint);
+  border: 2px solid var(--flier-mint-border);
+  border-radius: var(--border-radius);
+  padding: 20px;
+}
+
+.price-amount {
+  font-size: 28px;
+  font-weight: bold;
+  color: var(--flier-green);
+}

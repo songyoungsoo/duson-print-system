@@ -466,7 +466,7 @@ function getAdditionalOptions($order) {
                 <td class="label-cell">팩스</td>
                 <td class="value-cell">02-2632-1831</td>
                 <td class="label-cell">웹사이트</td>
-                <td colspan="3" class="value-cell">www.dsp114.com</td>
+                <td colspan="3" class="value-cell">www.dsp1830.shop</td>
             </tr>
 
             <!-- Row 7: 빈 행 -->

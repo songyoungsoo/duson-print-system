@@ -121,7 +121,6 @@ if ($type_result && ($type_row = mysqli_fetch_assoc($type_result))) {
     }
     ?>
     <!-- 공통 갤러리 팝업 함수 -->
-    <script src="../../js/common-gallery-popup.js"></script>
 
     <!-- 인라인 CSS 추출 파일 -->
     <link rel="stylesheet" href="css/envelope-inline-extracted.css">
@@ -437,7 +436,6 @@ if ($type_result && ($type_row = mysqli_fetch_assoc($type_result))) {
         }
         
         // 통일된 갤러리 팝업 열기 (전단지와 동일한 시스템)
-        // 공통 갤러리 팝업 함수 사용 (common-gallery-popup.js)
         const openProofPopup = window.openGalleryPopup;
         
         // 전체화면 이미지 열기

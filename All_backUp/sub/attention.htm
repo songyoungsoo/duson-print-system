@@ -1,0 +1,543 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>작업시 유의사항 - 두손기획인쇄</title>
+
+    <!-- Noto Sans KR 폰트 -->
+    <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@400;500;700;900&display=swap" rel="stylesheet">
+
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Noto Sans KR', sans-serif;
+            background: linear-gradient(135deg, #f5f7fa 0%, #c3cfe2 100%);
+            color: #2d3748;
+            line-height: 1.6;
+            min-height: 100vh;
+            font-size: 14px;
+        }
+
+        .container {
+            max-width: 990px;
+            margin: 0 auto;
+            background: white;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.1);
+            min-height: 100vh;
+        }
+
+        .header-section {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            padding: 2rem 0;
+            text-align: center;
+            color: white;
+        }
+
+        .page-title {
+            font-size: 2.2rem;
+            font-weight: 900;
+            margin-bottom: 0.5rem;
+            text-shadow: 2px 2px 4px rgba(0,0,0,0.3);
+        }
+
+        .page-subtitle {
+            font-size: 1.1rem;
+            font-weight: 400;
+            opacity: 0.9;
+        }
+
+        .main-content {
+            display: flex;
+            min-height: calc(100vh - 200px);
+        }
+
+        .left-sidebar {
+            width: 160px;
+            background: #f8f9fa;
+            border-right: 1px solid #e9ecef;
+            padding: 1rem 0.5rem;
+        }
+
+        .content-area {
+            flex: 1;
+            padding: 2rem;
+            background: white;
+        }
+
+        .right-sidebar {
+            width: 120px;
+            background: #f8f9fa;
+            border-left: 1px solid #e9ecef;
+            padding: 1rem 0.5rem;
+        }
+
+        .navigation-bar {
+            background: linear-gradient(90deg, #4facfe 0%, #00f2fe 100%);
+            display: flex;
+            justify-content: center;
+            padding: 0;
+            border-bottom: 2px solid #e9ecef;
+        }
+
+        .nav-item {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 12px 16px;
+            text-decoration: none;
+            font-weight: 600;
+            font-size: 13px;
+            border: none;
+            transition: all 0.3s ease;
+            border-right: 1px solid rgba(255,255,255,0.2);
+        }
+
+        .nav-item:hover {
+            background: linear-gradient(135deg, #764ba2 0%, #667eea 100%);
+            transform: translateY(-2px);
+            box-shadow: 0 4px 8px rgba(0,0,0,0.2);
+        }
+
+        .section-title {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 15px;
+            font-size: 1.4rem;
+            font-weight: 700;
+            text-align: center;
+            margin: 2rem 0 2rem 0;
+            border-radius: 8px;
+            text-shadow: 1px 1px 2px rgba(0,0,0,0.3);
+        }
+
+        .guideline-item {
+            display: flex;
+            align-items: flex-start;
+            margin-bottom: 1.5rem;
+            padding: 1rem;
+            background: #f8f9fa;
+            border-radius: 8px;
+            border-left: 4px solid #667eea;
+        }
+
+        .guideline-icon {
+            width: 12px;
+            height: 12px;
+            background: #38a169;
+            border-radius: 50%;
+            flex-shrink: 0;
+            margin: 4px 12px 0 0;
+        }
+
+        .guideline-text {
+            color: #4a5568;
+            font-size: 14px;
+            line-height: 1.6;
+        }
+
+        .highlight {
+            color: #e53e3e;
+            font-weight: 700;
+        }
+
+        .template-section {
+            background: #f0f8ff;
+            border: 2px solid #87ceeb;
+            border-radius: 12px;
+            padding: 2rem;
+            margin: 2rem 0;
+        }
+
+        .template-title {
+            background: linear-gradient(135deg, #87ceeb 0%, #4682b4 100%);
+            color: white;
+            text-align: center;
+            padding: 15px;
+            border-radius: 8px;
+            font-weight: 700;
+            font-size: 1.2rem;
+            margin-bottom: 1rem;
+        }
+
+        .template-grid {
+            display: grid;
+            grid-template-columns: repeat(6, 1fr);
+            gap: 1px;
+            background: #87ceeb;
+            border: 2px solid #87ceeb;
+            border-radius: 8px;
+            overflow: hidden;
+            margin: 1rem 0;
+        }
+
+        .template-header {
+            background: #e8f8ff;
+            padding: 10px 5px;
+            text-align: center;
+            font-weight: 600;
+            color: #003366;
+            font-size: 13px;
+        }
+
+        .template-cell {
+            background: white;
+            padding: 10px 5px;
+            text-align: center;
+            font-size: 13px;
+            color: #666666;
+        }
+
+        .template-cell.colored {
+            color: white;
+            font-weight: 700;
+        }
+
+        .template-cell.red { background: #ff0000; }
+        .template-cell.yellow { background: #ffcc00; color: black; }
+        .template-cell.cyan { background: #00cccc; }
+        .template-cell.blue { background: #66ccff; }
+        .template-cell.aqua { background: #00ffff; color: black; }
+
+        .template-cell a {
+            color: inherit;
+            text-decoration: none;
+            font-weight: 700;
+        }
+
+        .template-cell a:hover {
+            text-decoration: underline;
+        }
+
+        .size-reference {
+            text-align: center;
+            margin: 2rem 0;
+        }
+
+        .size-reference img {
+            max-width: 100%;
+            height: auto;
+            border: 2px solid #e2e8f0;
+            border-radius: 8px;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+        }
+
+        .photoshop-section {
+            background: #fff5f5;
+            border-left: 4px solid #e53e3e;
+            padding: 2rem;
+            margin: 2rem 0;
+            border-radius: 0 8px 8px 0;
+        }
+
+        .photoshop-title {
+            color: #c53030;
+            font-weight: 700;
+            font-size: 1.1rem;
+            margin-bottom: 1.5rem;
+        }
+
+        @media (max-width: 768px) {
+            .main-content {
+                flex-direction: column;
+            }
+
+            .left-sidebar, .right-sidebar {
+                width: 100%;
+                order: 2;
+            }
+
+            .content-area {
+                order: 1;
+                padding: 1rem;
+            }
+
+            .navigation-bar {
+                flex-wrap: wrap;
+            }
+
+            .nav-item {
+                font-size: 12px;
+                padding: 8px 12px;
+            }
+
+            .template-grid {
+                grid-template-columns: repeat(3, 1fr);
+                gap: 2px;
+            }
+
+            .page-title {
+                font-size: 1.8rem;
+            }
+        }
+    </style>
+</head>
+
+<body>
+    <div class="container">
+        <!-- 헤더 섹션 -->
+        <div class="header-section">
+            <h1 class="page-title">작업시 유의사항</h1>
+            <p class="page-subtitle">두손기획인쇄 | 고품질 인쇄서비스</p>
+        </div>
+
+        <!-- 네비게이션 바 -->
+        <div class="navigation-bar">
+            <a href="seosig.htm" class="nav-item">서식</a>
+            <a href="catalog.htm" class="nav-item">카탈로그</a>
+            <a href="brochure.htm" class="nav-item">브로슈어</a>
+            <a href="leaflet.htm" class="nav-item">전단지</a>
+            <a href="poster.htm" class="nav-item">포스터</a>
+            <a href="namecard.htm" class="nav-item">명함</a>
+            <a href="envelope.htm" class="nav-item">봉투</a>
+            <a href="sticker.htm" class="nav-item">스티커</a>
+            <a href="bookdesign.htm" class="nav-item">북디자인</a>
+        </div>
+
+        <div class="main-content">
+            <!-- 왼쪽 사이드바 -->
+            <div class="left-sidebar">
+                <!-- PHP include 영역 -->
+            </div>
+
+            <!-- 메인 콘텐츠 -->
+            <div class="content-area">
+
+                <div class="section-title">📋 작업 진행 시 필수 확인사항</div>
+
+                <!-- 기본 유의사항들 -->
+                <div class="guideline-item">
+                    <div class="guideline-icon"></div>
+                    <div class="guideline-text">
+                        반드시 <span class="highlight">완성된 원고를 접수하며 2회의 교정, 수정을 기본으로 합니다</span> (추가 협의하여 추가비용을 결정)
+                    </div>
+                </div>
+
+                <div class="guideline-item">
+                    <div class="guideline-icon"></div>
+                    <div class="guideline-text">
+                        원고 접수시 원하시는 디자인 컨셉이나 샘플을 보내주시면 작업에 참고하여 더욱 원활한 의사소통이 가능할 것입니다. <span class="highlight">단</span> 시안 완성후 다른 시안을 요구하실 때에는 추가비용이 소요됩니다
+                    </div>
+                </div>
+
+                <div class="guideline-item">
+                    <div class="guideline-icon"></div>
+                    <div class="guideline-text">
+                        디자인 최종 결정 후 <span class="highlight">인쇄작업 진행시 수정이 불가</span>하며, 오타 및 디자인에 대해서는 책임을 지지 않습니다.
+                    </div>
+                </div>
+
+                <div class="guideline-item">
+                    <div class="guideline-icon"></div>
+                    <div class="guideline-text">
+                        처음 작업 후 재주문하여 재작업에 들어간 인쇄물은 <span class="highlight">처음 인쇄물과 동일한 색상이 안나올수 있으며,</span>
+                        인쇄물에 대하여는 책임을 지지 않습니다.
+                    </div>
+                </div>
+
+                <div class="guideline-item">
+                    <div class="guideline-icon"></div>
+                    <div class="guideline-text">
+                        인쇄의 납기지연 및 인쇄사고 인하여 발생하는 모든 피해는 <span class="highlight">입금금액을 환불</span>
+                        하는 것에 한합니다.
+                    </div>
+                </div>
+
+                <div class="guideline-item">
+                    <div class="guideline-icon"></div>
+                    <div class="guideline-text">
+                        작업 완료 후 파일의 보관기간은 <span class="highlight">1년간 보관</span>을 원칙으로 합니다.
+                    </div>
+                </div>
+
+                <div class="guideline-item">
+                    <div class="guideline-icon"></div>
+                    <div class="guideline-text">
+                        실제 인쇄물과 모니터상의 이미지는 <span class="highlight">색상이 약간의 차이</span>가 있을 수 있습니다.<br>
+                        CMYK 색상과, RGB 색상과는 차이가 있기 때문입니다.
+                    </div>
+                </div>
+
+                <div class="guideline-item">
+                    <div class="guideline-icon"></div>
+                    <div class="guideline-text">
+                        작업 의뢰시 파일 첨부한 이미지의 해상도는 책임을 지지 않습니다.
+                    </div>
+                </div>
+
+                <div class="guideline-item">
+                    <div class="guideline-icon"></div>
+                    <div class="guideline-text">
+                        저희 두손은 업무 특성상 <span class="highlight">선입금 확인 후 디자인 작업에서 배송까지</span> 제품을 받아보시는 기간은 일주일 정도 소요되며, 배송은 착불을 원칙으로 합니다.
+                    </div>
+                </div>
+
+                <div class="guideline-item">
+                    <div class="guideline-icon"></div>
+                    <div class="guideline-text">
+                        인쇄시 정매에서 약간의 로스분(5~10%)이 나옵니다.
+                    </div>
+                </div>
+
+                <!-- 파일 관련 유의사항 -->
+                <div class="section-title">📁 파일 제출 관련 안내</div>
+
+                <div class="guideline-item">
+                    <div class="guideline-icon"></div>
+                    <div class="guideline-text">
+                        포토샵 파일을 보내실 경우에 가능한 <span class="highlight">JPG</span>포맷으로 저장하시거나, <span class="highlight">ZIP</span>파일로 저장하여 첨부하여 주십시요.
+                    </div>
+                </div>
+
+                <div class="guideline-item">
+                    <div class="guideline-icon"></div>
+                    <div class="guideline-text">
+                        일러스트 저장은 <span class="highlight">CS6</span>으로 저장해 주세요.
+                    </div>
+                </div>
+
+                <div class="guideline-item">
+                    <div class="guideline-icon"></div>
+                    <div class="guideline-text">
+                        일러스트 저장시 전체 선택하여 서체는 윤곽선 만들기 <span class="highlight">ctrl+shift+o</span>(영문)로 저장해 주세요.
+                    </div>
+                </div>
+
+                <div class="guideline-item">
+                    <div class="guideline-icon"></div>
+                    <div class="guideline-text">
+                        인쇄 후 디자인 작업의 원본 파일은 <span class="highlight">제공되지 않습니다</span> (본사와 비용 협의 후 제한된 범위에서 제공)
+                    </div>
+                </div>
+
+                <!-- 작업 템플릿 다운로드 섹션 -->
+                <div class="template-section">
+                    <div class="template-title">
+                        🎨 작업템플릿 다운로드<br>
+                        <span style="font-size: 0.9rem; color: #e53e3e;">※ 각 표를 클릭하시면 컴퓨터에 작업용 ai파일을 다운 받으실 수 있습니다.</span>
+                    </div>
+
+                    <div class="template-grid">
+                        <div class="template-header">규격</div>
+                        <div class="template-header">작업사이즈</div>
+                        <div class="template-header">실제사이즈</div>
+                        <div class="template-header">규격</div>
+                        <div class="template-header">작업사이즈</div>
+                        <div class="template-header">실제사이즈</div>
+
+                        <div class="template-cell colored red"><a href="./images/32size.zip">32절</a></div>
+                        <div class="template-cell">130mm×185mm</div>
+                        <div class="template-cell">127mm×182mm</div>
+                        <div class="template-cell colored red"><a href="./images/A5size.zip">A5</a></div>
+                        <div class="template-cell">150mm×213mm</div>
+                        <div class="template-cell">147mm×210mm</div>
+
+                        <div class="template-cell colored yellow"><a href="./images/16size.zip">16절</a></div>
+                        <div class="template-cell">185mm×260mm</div>
+                        <div class="template-cell">182mm×257mm</div>
+                        <div class="template-cell colored yellow"><a href="./images/A4size.zip">A4</a></div>
+                        <div class="template-cell">213mm×300mm</div>
+                        <div class="template-cell">210mm×297mm</div>
+
+                        <div class="template-cell colored cyan"><a href="./images/8size.zip">8절</a></div>
+                        <div class="template-cell">260mm×370mm</div>
+                        <div class="template-cell">257mm×367mm</div>
+                        <div class="template-cell colored blue"><a href="./images/A3size.zip">A3</a></div>
+                        <div class="template-cell">300mm×426mm</div>
+                        <div class="template-cell">297mm×423mm</div>
+
+                        <div class="template-cell">4절</div>
+                        <div class="template-cell">370mm×520mm</div>
+                        <div class="template-cell">367mm×517mm</div>
+                        <div class="template-cell">A2</div>
+                        <div class="template-cell">426mm×600mm</div>
+                        <div class="template-cell">423mm×597mm</div>
+
+                        <div class="template-cell colored aqua"><a href="./images/namesize.zip">일반명함</a></div>
+                        <div class="template-cell">88mm×54mm</div>
+                        <div class="template-cell">86mm×52mm</div>
+                        <div class="template-cell colored aqua"><a href="./images/namesize.zip">미국식명함</a></div>
+                        <div class="template-cell">91mm×52mm</div>
+                        <div class="template-cell">89mm×50mm</div>
+                    </div>
+                </div>
+
+                <!-- 사이즈 참조 이미지 -->
+                <div class="size-reference">
+                    <img src="./images/size_ex.jpg" alt="인쇄물 사이즈 참고자료" style="max-width: 615px;">
+                </div>
+
+                <!-- 포토샵 작업 가이드 -->
+                <div class="photoshop-section">
+                    <div class="photoshop-title">
+                        📸 첨부파일 및 포토샵 작업시 주의사항(Adobe Photoshop CS3이상)
+                    </div>
+
+                    <div class="guideline-item">
+                        <div class="guideline-icon"></div>
+                        <div class="guideline-text">
+                            작업시는 CMYK컬러모드로 작업합니다.<br>
+                            RGB는 화면용 색상이므로 실제시 정확한 색상이 나오지 않습니다.
+                        </div>
+                    </div>
+
+                    <div class="guideline-item">
+                        <div class="guideline-icon"></div>
+                        <div class="guideline-text">
+                            작업시 처음부터 원하시는 작업을 해주셔야 합니다. 도큐먼트를 만들때 size는 CM로 인쇄물과 1:1비율로<br>
+                            만드시고 Resolution은 300 pixel/inch로 하셔야 합니다.
+                        </div>
+                    </div>
+
+                    <div class="guideline-item">
+                        <div class="guideline-icon"></div>
+                        <div class="guideline-text">
+                            작업완료후 JPEG파일로 저장하여 보내주시기 바랍니다.
+                        </div>
+                    </div>
+
+                    <div class="guideline-item">
+                        <div class="guideline-icon"></div>
+                        <div class="guideline-text">
+                            인터넷상의 이미지를 사용할 경우, 해상도는 <span class="highlight">72dpi</span>로 되어 있으므로 깨진 이미지를 얻을 수 있습니다.<br>
+                            주의하시기 바랍니다.
+                        </div>
+                    </div>
+
+                    <div class="guideline-item">
+                        <div class="guideline-icon"></div>
+                        <div class="guideline-text">
+                            첨부파일 등 의뢰시 작업 size와 다르다면 1:1size로 작업해도 선명 이미지 화질이 떨어 집니다.<br>
+                            작업 size와 같은 크기 확인 실제시 이미지 화질이 더 좋습니다.
+                        </div>
+                    </div>
+
+                    <div class="guideline-item">
+                        <div class="guideline-icon"></div>
+                        <div class="guideline-text">
+                            디카, 캠코더 등 스캔한 이미지를 다시 일러스트에서 불러와야 합니다.
+                        </div>
+                    </div>
+
+                    <div class="guideline-item">
+                        <div class="guideline-icon"></div>
+                        <div class="guideline-text">
+                            단색타입인쇄물(단색1도인쇄:흑백,복사)에 첨부파일로 작업하실 경우 번짐 인쇄가 발생합니다.
+                        </div>
+                    </div>
+                </div>
+
+            </div>
+
+            <!-- 오른쪽 사이드바 -->
+            <div class="right-sidebar">
+                <!-- PHP include 영역 -->
+            </div>
+        </div>
+    </div>
+</body>
+</html>

@@ -191,7 +191,7 @@ notepad C:\Windows\System32\drivers\etc\hosts
 
 # 추가:
 127.0.0.1 local.dsp1830.shop
-127.0.0.1 local.dsp1830.shop
+127.0.0.1 local.dsp114.com
 
 # 브라우저에서 접근:
 # http://local.dsp1830.shop/mlangprintauto/sticker_new/

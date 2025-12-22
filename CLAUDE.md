@@ -868,48 +868,6 @@ curl -s -o /dev/null -w "%{http_code}" "http://dsp1830.shop/mlangprintauto/quote
 - Port: 21
 - Remote path: `/www/`
 
-### 🔴 Claude 배포 필수 규칙 (2025-12-19 추가)
-
-**⚠️ 파일 수정 후 Claude가 반드시 수행할 것:**
-
-#### 1. FTP 업로드 시 - 백업 후 업로드
-```bash
-# 기존 파일을 오늘 날짜로 백업 후 새 파일 업로드
-TODAY=$(date +%Y%m%d)
-# 백업: index.php → index_20251219.php
-# 업로드: 새 파일
-```
-
-#### 2. GitHub 푸시 - main 브랜치에 커밋
-```bash
-git add .
-git commit -m "변경 내용 설명"
-git push origin main
-```
-
-#### 3. 파일 목록 표시
-업로드/커밋하는 파일 목록을 사용자에게 보여줄 것
-
-**백업 및 업로드 스크립트:**
-```bash
-backup_and_upload() {
-    local LOCAL_FILE="$1"
-    local REMOTE_PATH="$2"
-    local FILENAME=$(basename "$REMOTE_PATH")
-    local REMOTE_DIR=$(dirname "$REMOTE_PATH")
-    local BACKUP_NAME="${FILENAME%.*}_${TODAY}.${FILENAME##*.}"
-
-    # 1. 백업 (이름 변경)
-    curl -s -u "dsp1830:ds701018" "ftp://dsp1830.shop" \
-        -Q "RNFR $REMOTE_PATH" \
-        -Q "RNTO ${REMOTE_DIR}/${BACKUP_NAME}" 2>/dev/null
-
-    # 2. 업로드
-    curl -s -T "$LOCAL_FILE" -u "dsp1830:ds701018" \
-        "ftp://dsp1830.shop$REMOTE_PATH" --ftp-create-dirs
-}
-```
-
 ### Testing
 ```bash
 # No formal test suite - manual testing only

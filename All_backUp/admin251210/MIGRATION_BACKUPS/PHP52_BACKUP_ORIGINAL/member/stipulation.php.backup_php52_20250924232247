@@ -1,0 +1,60 @@
+<?
+if($mode=="modify"){
+
+	$fp = fopen("../../member/int/stipulation.inc", "w");
+	fwrite($fp, "$cont");
+	fclose($fp);
+
+echo ("<script language=javascript>
+window.alert('수정을 완료 하였습니다..*^^*');
+</script>
+<meta http-equiv='Refresh' content='0; URL=$PHP_SELF'>
+");
+exit;
+
+
+}
+
+
+$M123="..";
+include"../top.php"; 
+?>
+
+<BR>
+<p align=center>
+아래에 나오는 정보는 현재 회원가입약관 페이지에 나오는 자료이며 자료를 변경하시면 됩니다.
+</p>
+
+<head>
+<script language=javascript>
+function StiCheckField(){
+var f=document.StiInfo;
+if (f.cont.value.length < 20 ) {
+alert("수정할 회원가입약관의 내용이 빠져있거나 너무적습니다...*^^*");
+return false;
+}
+}
+</script>
+
+
+<table border=0 align=center cellpadding='10' cellspacing='10' class='coolBar'>
+<form name='StiInfo' method='post' OnSubmit='javascript:return StiCheckField()' action='<?=$PHP_SELF?>'>
+<input type='hidden' name='mode' value='modify'>
+<tr><td>
+<textarea cols=80 rows=20 name='cont'>
+<?
+$CateFile = join ('', file ("../../member/int/stipulation.inc"));
+echo("$CateFile");
+?>
+</textarea>
+</td></tr>
+</table>
+
+<p align=center>
+<input type='submit' value=' 수정 합니다.'>
+</p>
+</form>
+
+<?
+include"../down.php";
+?>

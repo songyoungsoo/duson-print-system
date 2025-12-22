@@ -1,7 +1,7 @@
 <?php
 /**
  * 우측 사이드바 - 모든 페이지에서 공통 사용
- * 기존 right.php를 현대적인 디자인으로 교체
+ * 프로덕션 버전 (dsp1830.shop)
  */
 
 // 사이드바 표시 옵션 (기본값 모두 표시)
@@ -97,155 +97,166 @@ $show_bank = isset($show_bank) ? $show_bank : true;
 </div>
 
 <style>
-/* 우측 사이드바 전용 스타일 */
-.right-sidebar {
-    width: 160px !important;
-    background: #f8f9fa !important;
-    border-left: 1px solid #e9ecef !important;
-    padding: 1rem 0.5rem !important;
-    font-size: 13px !important;
-    min-height: 100vh !important;
-    font-family: 'Noto Sans KR', sans-serif !important;
+/* =====================================================
+   우측 사이드바 전용 스타일 (right-sidebar scope)
+   - !important 최소화, 높은 특이성으로 우선순위 확보
+   ===================================================== */
+
+/* 메인 컨테이너 */
+div.right-sidebar {
+    position: fixed;
+    right: 0;
+    top: 0;
+    width: 170px;
+    min-height: 100vh;
+    background: #f8f9fa;
+    border-left: 1px solid #e9ecef;
+    padding: 12px 8px;
+    font-family: 'Noto Sans KR', -apple-system, sans-serif;
+    font-size: 13px;
+    z-index: 100;
+    overflow-y: auto;
+    box-shadow: -2px 0 8px rgba(0,0,0,0.1);
+    box-sizing: border-box;
 }
 
-.sidebar-section {
-    margin-bottom: 1.2rem !important;
-    background: white !important;
-    border-radius: 8px !important;
-    padding: 0 !important;
-    box-shadow: 0 2px 8px rgba(0,0,0,0.08) !important;
-    overflow: hidden !important;
-    border: 1px solid #e9ecef !important;
+/* 섹션 박스 */
+div.right-sidebar .sidebar-section {
+    margin-bottom: 14px;
+    background: #fff;
+    border-radius: 8px;
+    border: 1px solid #e0e0e0;
+    box-shadow: 0 2px 6px rgba(0,0,0,0.06);
+    overflow: hidden;
 }
 
-.sidebar-title {
-    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%) !important;
-    color: white !important;
-    text-align: center !important;
-    padding: 10px 8px !important;
-    font-weight: 700 !important;
-    margin: 0 !important;
-    font-size: 12px !important;
-    text-shadow: 1px 1px 2px rgba(0,0,0,0.3) !important;
-    border-bottom: 1px solid rgba(255,255,255,0.2) !important;
+/* 섹션 타이틀 */
+div.right-sidebar .sidebar-title {
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    color: #fff;
+    text-align: center;
+    padding: 10px 8px;
+    font-size: 13px;
+    font-weight: 700;
+    margin: 0;
+    text-shadow: 1px 1px 2px rgba(0,0,0,0.25);
 }
 
-.contact-info, .bank-info, .time-info {
-    padding: 12px !important;
+/* 컨텐츠 영역 패딩 */
+div.right-sidebar .contact-info,
+div.right-sidebar .bank-info,
+div.right-sidebar .time-info {
+    padding: 10px 12px;
 }
 
-.contact-item, .bank-item, .time-item {
-    display: flex !important;
-    justify-content: space-between !important;
-    align-items: center !important;
-    padding: 6px 0 !important;
-    border-bottom: 1px dotted #e9ecef !important;
-    font-size: 12px !important;
+/* 아이템 행 (flex 레이아웃) */
+div.right-sidebar .contact-item,
+div.right-sidebar .bank-item,
+div.right-sidebar .time-item {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 5px 0;
+    border-bottom: 1px dotted #e9ecef;
+    font-size: 12px;
+    line-height: 1.4;
 }
 
-.contact-item:last-child, .bank-item:last-child, .time-item:last-child {
-    border-bottom: none !important;
+div.right-sidebar .contact-item:last-child,
+div.right-sidebar .bank-item:last-child,
+div.right-sidebar .time-item:last-child {
+    border-bottom: none;
 }
 
-.contact-label, .time-day {
-    font-weight: 500 !important;
-    color: #4a5568 !important;
-    font-size: 11px !important;
+/* 라벨 (왼쪽) */
+div.right-sidebar .contact-label,
+div.right-sidebar .time-day {
+    font-size: 11px;
+    font-weight: 500;
+    color: #555;
+    flex-shrink: 0;
 }
 
-.contact-value, .bank-account, .time-hours {
-    color: #2d3748 !important;
-    font-weight: 600 !important;
-    font-size: 11px !important;
+/* 값 (오른쪽) */
+div.right-sidebar .contact-value,
+div.right-sidebar .time-hours {
+    font-size: 12px;
+    font-weight: 600;
+    color: #222;
+    text-align: right;
 }
 
-.bank-name {
-    font-weight: 600 !important;
-    color: #2d3748 !important;
-    font-size: 11px !important;
+/* 은행 정보 */
+div.right-sidebar .bank-name {
+    font-size: 12px;
+    font-weight: 600;
+    color: #333;
 }
 
-.bank-account {
-    color: #e53e3e !important;
-    font-weight: 700 !important;
-    font-size: 10px !important;
-    font-family: monospace !important;
+div.right-sidebar .bank-account {
+    font-size: 11px;
+    font-weight: 700;
+    color: #d32f2f;
+    font-family: 'Consolas', 'Monaco', monospace;
+    letter-spacing: -0.3px;
 }
 
-.bank-owner {
-    text-align: center !important;
-    margin-top: 8px !important;
-    padding-top: 8px !important;
-    border-top: 1px solid #e9ecef !important;
-    font-size: 10px !important;
-    color: #4a5568 !important;
-    font-weight: 500 !important;
+div.right-sidebar .bank-owner {
+    text-align: center;
+    margin-top: 8px;
+    padding-top: 8px;
+    border-top: 1px solid #e9ecef;
+    font-size: 11px;
+    color: #555;
+    font-weight: 500;
 }
 
-.quick-menu {
-    padding: 8px !important;
+/* 빠른메뉴 */
+div.right-sidebar .quick-menu {
+    padding: 8px;
 }
 
-.menu-link {
-    display: block !important;
-    padding: 8px 10px !important;
-    color: #4a5568 !important;
-    text-decoration: none !important;
-    border-radius: 4px !important;
-    transition: all 0.2s ease !important;
-    margin-bottom: 4px !important;
-    font-size: 11px !important;
-    font-weight: 500 !important;
-    border: 1px solid transparent !important;
+div.right-sidebar .menu-link {
+    display: block;
+    padding: 8px 10px;
+    margin-bottom: 4px;
+    font-size: 12px;
+    font-weight: 500;
+    color: #444;
+    text-decoration: none;
+    border-radius: 5px;
+    border: 1px solid transparent;
+    transition: all 0.2s ease;
 }
 
-.menu-link:hover {
-    background: linear-gradient(135deg, #e6f3ff 0%, #b3d9ff 100%) !important;
-    color: #2d3748 !important;
-    transform: translateX(3px) !important;
-    border-color: #87ceeb !important;
-    box-shadow: 0 2px 4px rgba(0,0,0,0.1) !important;
+div.right-sidebar .menu-link:hover {
+    background: linear-gradient(135deg, #e3f2fd 0%, #bbdefb 100%);
+    color: #1565c0;
+    border-color: #90caf9;
+    transform: translateX(2px);
 }
 
-.menu-link.kakao-link:hover {
-    background: linear-gradient(135deg, #fff5cc 0%, #ffeb3b 100%) !important;
-    border-color: #ffc107 !important;
+div.right-sidebar .menu-link.kakao-link:hover {
+    background: linear-gradient(135deg, #fff9c4 0%, #ffee58 100%);
+    color: #795548;
+    border-color: #ffc107;
 }
 
-.time-item.holiday {
-    opacity: 0.7 !important;
+/* 휴일 표시 */
+div.right-sidebar .time-item.holiday {
+    opacity: 0.75;
 }
 
-.time-item.holiday .time-hours {
-    color: #e53e3e !important;
+div.right-sidebar .time-item.holiday .time-hours {
+    color: #d32f2f;
 }
 
-/* 모바일 반응형 */
-@media (max-width: 768px) {
-    .right-sidebar {
-        display: none !important;
-    }
-}
-
-/* 태블릿 및 데스크톱에서만 사이드바 표시 */
-@media (min-width: 769px) {
-    .right-sidebar {
-        width: 160px !important;
-        border-left: 1px solid #e9ecef !important;
-        min-height: 100vh !important;
-    }
-
-    .sidebar-section {
-        margin-bottom: 1.2rem !important;
-    }
-
-    .contact-item, .bank-item, .time-item {
-        padding: 6px 0 !important;
-    }
-
-    .menu-link {
-        padding: 8px 10px !important;
-        font-size: 11px !important;
+/* =====================================================
+   반응형: 1124px 이하에서 숨김
+   ===================================================== */
+@media (max-width: 1124px) {
+    div.right-sidebar {
+        display: none;
     }
 }
 </style>
