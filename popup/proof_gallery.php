@@ -1,230 +1,8 @@
-<?php
-/**
- * proof_gallery.php
- * - 카테고리별 교정 이미지 팝업 갤러리
- * - 페이지네이션 포함
- * - 썸네일 클릭 시 상단 라이트박스 뷰어
- */
-header("Content-Type: text/html; charset=utf-8");
-
-$HomeDir = $_SERVER['DOCUMENT_ROOT'] . "/";
-require_once $HomeDir . "db.php";
-
-// 데이터베이스 연결 변수 확인 및 설정
-if (!isset($connect) && isset($db)) {
-    $connect = $db;
-}
-
-$UPLOAD_DIR_ABS = $_SERVER['DOCUMENT_ROOT'] . "/mlangorder_printauto/upload";
-$UPLOAD_DIR_URL = "/mlangorder_printauto/upload";
-$IMAGE_EXTS     = ['jpg','jpeg','png','webp','gif'];
-
-$cate   = $_GET['cate'] ?? '명함';
-$page   = max(1, intval($_GET['page'] ?? 1));
-$per    = 24; // 한 페이지 24 주문(=24개 대표이미지)
-
-// 데이터베이스 연결 확인
-if (!$connect) {
-    die("데이터베이스 연결 실패");
-}
-
-// 카테고리별 Type 매핑 (배열로 여러 타입 지원)
-$type_mapping = [
-    '명함' => ['NameCard'],
-    '전단지' => ['전단지'],
-    '스티커' => 'LIKE', // 스티커는 LIKE 검색 사용 (투명스티커, 유포지스티커 등 모든 변형 대응)
-    '상품권' => ['쿠폰', '상품권', '금액쿠폰'],
-    '봉투' => ['봉투', '소봉투', '대봉투', '자켓봉투', '자켓소봉투', '중봉투', '창봉투'], // 주요 봉투 타입
-    '양식지' => ['NCR 양식지', '양식지', '거래명세서'],
-    '카탈로그' => ['카다록', '카다로그', 'leaflet', 'cadarok'], // 카다록/리플렛 타입
-    '포스터' => ['포스터', 'LittlePrint', 'littleprint', 'poster', 'Poster'], // 포스터 타입
-    '자석스티커' => 'LIKE' // 자석스티커는 LIKE 검색 사용 (37가지 변형 대응)
-];
-
-$db_types = $type_mapping[$cate] ?? [$cate];
-$offset = ($page - 1) * $per;
-
-// 여러 타입을 지원하는 WHERE 조건 생성
-$type_conditions = [];
-$type_params = [];
-
-// LIKE 검색이 필요한 카테고리 (자석스티커, 스티커)
-if ($db_types === 'LIKE') {
-    if ($cate === '자석스티커') {
-        $type_where = "(Type LIKE '%자석%')";
-    } elseif ($cate === '스티커') {
-        // 스티커 + 스티카 모두 포함, 자석 제외 (자석스티커는 별도 카테고리)
-        $type_where = "((Type LIKE '%스티커%' OR Type LIKE '%스티카%') AND Type NOT LIKE '%자석%')";
-    } else {
-        $type_where = "(Type LIKE '%{$cate}%')";
-    }
-} else {
-    foreach ($db_types as $type) {
-        $type_conditions[] = "Type = ?";
-        $type_params[] = $type;
-    }
-    $type_where = '(' . implode(' OR ', $type_conditions) . ')';
-}
-
-// 자석스티커는 5년, 나머지는 2년
-$date_filter = ($cate === '자석스티커')
-    ? "date >= DATE_SUB(NOW(), INTERVAL 5 YEAR)"
-    : "date >= DATE_SUB(NOW(), INTERVAL 2 YEAR)";
-
-// API와 동일한 조건으로 주문 개수 구하기
-$count_sql = "SELECT COUNT(*) as total FROM mlangorder_printauto
-              WHERE OrderStyle > '0'
-              AND ThingCate IS NOT NULL
-              AND ThingCate != ''
-              AND LENGTH(ThingCate) > 3
-              AND ThingCate NOT LIKE '%test%'
-              AND ThingCate NOT LIKE '%테스트%'
-              AND " . $date_filter . "
-              AND " . $type_where;
-
-// 디버깅
-if (isset($_GET['debug'])) {
-    echo "<!-- DEBUG: Category = $cate, Type WHERE = $type_where -->\n";
-}
-
-// Count 쿼리 실행
-if ($db_types === 'LIKE') {
-    // LIKE 검색은 직접 실행
-    $count_result = mysqli_query($connect, $count_sql);
-
-    if ($count_result) {
-        $count_row = mysqli_fetch_assoc($count_result);
-        $total = $count_row ? $count_row['total'] : 0;
-    } else {
-        $total = 0;
-        if (isset($_GET['debug'])) {
-            echo "<!-- DEBUG: Query error = " . mysqli_error($connect) . " -->\n";
-        }
-    }
-} else {
-    // Prepared statement 사용
-    $count_stmt = mysqli_prepare($connect, $count_sql);
-    if ($count_stmt) {
-        if (!empty($type_params)) {
-            // 동적 바인딩
-            $types = str_repeat('s', count($type_params));
-            mysqli_stmt_bind_param($count_stmt, $types, ...$type_params);
-        }
-        mysqli_stmt_execute($count_stmt);
-        $count_result = mysqli_stmt_get_result($count_stmt);
-        $count_row = mysqli_fetch_assoc($count_result);
-        $total = $count_row ? $count_row['total'] : 0;
-        mysqli_stmt_close($count_stmt);
-    } else {
-        $total = 0;
-        if (isset($_GET['debug'])) {
-            echo "<!-- DEBUG: Prepare error = " . mysqli_error($connect) . " -->\n";
-        }
-    }
-}
-
-if (isset($_GET['debug'])) {
-    echo "<!-- DEBUG: Total found = $total -->\n";
-}
-
-// API와 동일한 조건으로 데이터 가져오기
-$data_sql = "SELECT No, ThingCate FROM mlangorder_printauto
-            WHERE OrderStyle > '0'
-            AND ThingCate IS NOT NULL
-            AND ThingCate != ''
-            AND LENGTH(ThingCate) > 3
-            AND ThingCate NOT LIKE '%test%'
-            AND ThingCate NOT LIKE '%테스트%'
-            AND " . $date_filter . "
-            AND " . $type_where . "
-            ORDER BY
-              CASE
-                  WHEN No < 70000 THEN 1
-                  WHEN No < 80000 THEN 2
-                  WHEN No < 82000 THEN 3
-                  ELSE 4
-              END,
-              No DESC
-            LIMIT {$offset}, " . ($per * 2);
-
-$orderNos = [];
-
-// 데이터 쿼리 실행
-if ($db_types === 'LIKE') {
-    // LIKE 검색은 직접 실행
-    $res = mysqli_query($connect, $data_sql);
-} else {
-    // Prepared statement 사용
-    $data_stmt = mysqli_prepare($connect, $data_sql);
-    if ($data_stmt) {
-        if (!empty($type_params)) {
-            $types = str_repeat('s', count($type_params));
-            mysqli_stmt_bind_param($data_stmt, $types, ...$type_params);
-        }
-        mysqli_stmt_execute($data_stmt);
-        $res = mysqli_stmt_get_result($data_stmt);
-    } else {
-        $res = false;
-    }
-}
-
-if ($res) {
-    $found = 0;
-    while (($row = mysqli_fetch_assoc($res)) && $found < $per) {
-        // 행 데이터가 유효한지 확인
-        if (!$row || !is_array($row) || !isset($row['No']) || !isset($row['ThingCate'])) {
-            continue;
-        }
-
-        $order_no = $row['No'];
-        $thing_cate = $row['ThingCate'];
-
-        // 실제 파일이 존재하는지 확인
-        $file_path = $_SERVER['DOCUMENT_ROOT'] . "/mlangorder_printauto/upload/{$order_no}/{$thing_cate}";
-        if (file_exists($file_path)) {
-            $orderNos[] = $order_no;
-            $found++;
-        }
-    }
-
-    // Statement 정리
-    if (isset($data_stmt)) {
-        mysqli_stmt_close($data_stmt);
-    }
-}
-
-$pages = max(1, ceil($total / $per));
-
-function get_image_from_thingcate($orderNo, $absBase, $urlBase, $connect){
-  // 주문번호의 ThingCate 필드에서 이미지 파일명 가져오기
-  $sql = "SELECT ThingCate FROM mlangorder_printauto WHERE No = ? AND ThingCate IS NOT NULL AND ThingCate != ''";
-  $stmt = mysqli_prepare($connect, $sql);
-  
-  if ($stmt) {
-    mysqli_stmt_bind_param($stmt, "i", $orderNo);
-    mysqli_stmt_execute($stmt);
-    $result = mysqli_stmt_get_result($stmt);
-    $row = mysqli_fetch_assoc($result);
-    mysqli_stmt_close($stmt);
-    
-    if ($row && isset($row['ThingCate'])) {
-      $thing_cate = $row['ThingCate'];
-      $file_path = $absBase . "/" . $orderNo . "/" . $thing_cate;
-      
-      if (file_exists($file_path)) {
-        return $urlBase . "/" . $orderNo . "/" . rawurlencode($thing_cate);
-      }
-    }
-  }
-  
-  return null;
-}
-?>
 <!doctype html>
 <html lang="ko">
 <head>
 <meta charset="utf-8">
-<title><?= htmlspecialchars($cate) ?> 샘플 갤러리</title>
+<title>명함 샘플 갤러리</title>
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <style>
 body { 
@@ -381,62 +159,88 @@ body {
 </head>
 <body>
   <div class="header">
-    <div>📁 <?= htmlspecialchars($cate) ?> 샘플 갤러리</div>
-    <div style="opacity:.9;font-weight:500"><?= number_format($total) ?>건</div>
+    <div>📁 명함 샘플 갤러리</div>
+    <div style="opacity:.9;font-weight:500">57건</div>
   </div>
 
-  <?php if (empty($orderNos)): ?>
-    <div class="no-data">
-      <h3>아직 샘플이 준비되지 않았습니다</h3>
-      <p>곧 업데이트 예정입니다.</p>
-    </div>
-  <?php else: ?>
-    <div class="grid">
-      <?php foreach ($orderNos as $ono):
-        $img = get_image_from_thingcate($ono, $UPLOAD_DIR_ABS, $UPLOAD_DIR_URL, $connect);
-        if (!$img) {
-          $img = 'https://via.placeholder.com/300x200?text=이미지+준비중';
-        }
-      ?>
-        <div class="card" data-img="<?= htmlspecialchars($img) ?>">
-          <img src="<?= htmlspecialchars($img) ?>" alt="sample <?= (int)$ono ?>">
+      <div class="grid">
+              <div class="card" data-img="/ImgFolder/namecard/gallery/1048715.jpg">
+          <img src="/ImgFolder/namecard/gallery/1048715.jpg" alt="1048715.jpg">
         </div>
-      <?php endforeach; ?>
-    </div>
+              <div class="card" data-img="/ImgFolder/namecard/gallery/15626555.jpg">
+          <img src="/ImgFolder/namecard/gallery/15626555.jpg" alt="15626555.jpg">
+        </div>
+              <div class="card" data-img="/ImgFolder/namecard/gallery/16918119.jpg">
+          <img src="/ImgFolder/namecard/gallery/16918119.jpg" alt="16918119.jpg">
+        </div>
+              <div class="card" data-img="/ImgFolder/namecard/gallery/16918120.jpg">
+          <img src="/ImgFolder/namecard/gallery/16918120.jpg" alt="16918120.jpg">
+        </div>
+              <div class="card" data-img="/ImgFolder/namecard/gallery/16928981.jpg">
+          <img src="/ImgFolder/namecard/gallery/16928981.jpg" alt="16928981.jpg">
+        </div>
+              <div class="card" data-img="/ImgFolder/namecard/gallery/16928982.jpg">
+          <img src="/ImgFolder/namecard/gallery/16928982.jpg" alt="16928982.jpg">
+        </div>
+              <div class="card" data-img="/ImgFolder/namecard/gallery/16934160%20%EB%B3%B5%EC%82%AC.jpg">
+          <img src="/ImgFolder/namecard/gallery/16934160%20%EB%B3%B5%EC%82%AC.jpg" alt="16934160 복사.jpg">
+        </div>
+              <div class="card" data-img="/ImgFolder/namecard/gallery/16934161.jpg">
+          <img src="/ImgFolder/namecard/gallery/16934161.jpg" alt="16934161.jpg">
+        </div>
+              <div class="card" data-img="/ImgFolder/namecard/gallery/16934162%20%EB%B3%B5%EC%82%AC.jpg">
+          <img src="/ImgFolder/namecard/gallery/16934162%20%EB%B3%B5%EC%82%AC.jpg" alt="16934162 복사.jpg">
+        </div>
+              <div class="card" data-img="/ImgFolder/namecard/gallery/16941694.jpg">
+          <img src="/ImgFolder/namecard/gallery/16941694.jpg" alt="16941694.jpg">
+        </div>
+              <div class="card" data-img="/ImgFolder/namecard/gallery/16946839%20%281%29.jpg">
+          <img src="/ImgFolder/namecard/gallery/16946839%20%281%29.jpg" alt="16946839 (1).jpg">
+        </div>
+              <div class="card" data-img="/ImgFolder/namecard/gallery/16946839.jpg">
+          <img src="/ImgFolder/namecard/gallery/16946839.jpg" alt="16946839.jpg">
+        </div>
+              <div class="card" data-img="/ImgFolder/namecard/gallery/16952599.jpg">
+          <img src="/ImgFolder/namecard/gallery/16952599.jpg" alt="16952599.jpg">
+        </div>
+              <div class="card" data-img="/ImgFolder/namecard/gallery/16952602.jpg">
+          <img src="/ImgFolder/namecard/gallery/16952602.jpg" alt="16952602.jpg">
+        </div>
+              <div class="card" data-img="/ImgFolder/namecard/gallery/16953595.jpg">
+          <img src="/ImgFolder/namecard/gallery/16953595.jpg" alt="16953595.jpg">
+        </div>
+              <div class="card" data-img="/ImgFolder/namecard/gallery/16953598.jpg">
+          <img src="/ImgFolder/namecard/gallery/16953598.jpg" alt="16953598.jpg">
+        </div>
+              <div class="card" data-img="/ImgFolder/namecard/gallery/16960656.jpg">
+          <img src="/ImgFolder/namecard/gallery/16960656.jpg" alt="16960656.jpg">
+        </div>
+              <div class="card" data-img="/ImgFolder/namecard/gallery/16960657.jpg">
+          <img src="/ImgFolder/namecard/gallery/16960657.jpg" alt="16960657.jpg">
+        </div>
+              <div class="card" data-img="/ImgFolder/namecard/gallery/16960659.jpg">
+          <img src="/ImgFolder/namecard/gallery/16960659.jpg" alt="16960659.jpg">
+        </div>
+              <div class="card" data-img="/ImgFolder/namecard/gallery/16960660%20222.jpg">
+          <img src="/ImgFolder/namecard/gallery/16960660%20222.jpg" alt="16960660 222.jpg">
+        </div>
+              <div class="card" data-img="/ImgFolder/namecard/gallery/16960660.jpg">
+          <img src="/ImgFolder/namecard/gallery/16960660.jpg" alt="16960660.jpg">
+        </div>
+              <div class="card" data-img="/ImgFolder/namecard/gallery/16972761.jpg">
+          <img src="/ImgFolder/namecard/gallery/16972761.jpg" alt="16972761.jpg">
+        </div>
+              <div class="card" data-img="/ImgFolder/namecard/gallery/16972762.jpg">
+          <img src="/ImgFolder/namecard/gallery/16972762.jpg" alt="16972762.jpg">
+        </div>
+              <div class="card" data-img="/ImgFolder/namecard/gallery/16972763.jpg">
+          <img src="/ImgFolder/namecard/gallery/16972763.jpg" alt="16972763.jpg">
+        </div>
+          </div>
 
     <div class="pager">
-      <?php
-      $base = "/popup/proof_gallery.php?cate=" . urlencode($cate) . "&page=";
-      
-      // 이전 버튼
-      if ($page > 1) {
-        echo '<a href="'.$base.($page-1).'">◀ 이전</a>';
-      }
-      
-      // 페이지 번호
-      $window = 7; // 표시 범위
-      $start = max(1, $page - floor($window/2));
-      $end   = min($pages, $start + $window - 1);
-      if ($end - $start + 1 < $window) {
-        $start = max(1, $end - $window + 1);
-      }
-      
-      for ($p = $start; $p <= $end; $p++) {
-        if ($p == $page) {
-          echo '<span class="current">'.$p.'</span>';
-        } else {
-          echo '<a href="'.$base.$p.'">'.$p.'</a>';
-        }
-      }
-      
-      // 다음 버튼
-      if ($page < $pages) {
-        echo '<a href="'.$base.($page+1).'">다음 ▶</a>';
-      }
-      ?>
-    </div>
-  <?php endif; ?>
-
+      <span class="current">1</span><a href="/popup/proof_gallery.php?cate=%EB%AA%85%ED%95%A8&page=2">2</a><a href="/popup/proof_gallery.php?cate=%EB%AA%85%ED%95%A8&page=3">3</a><a href="/popup/proof_gallery.php?cate=%EB%AA%85%ED%95%A8&page=2">다음 ▶</a>    </div>
+  
   <!-- 라이트박스 뷰어 -->
   <div class="viewer" id="viewer" onclick="closeViewer(event)">
     <div class="box">
