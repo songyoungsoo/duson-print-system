@@ -792,6 +792,7 @@ function formatCartItemForDisplay($connect, $item) {
             break;
             
         case 'littleprint':
+        case 'poster':  // 레거시 호환
             $formatted['name'] = '포스터';
             $formatted['details'] = [
                 '타입' => getCategoryName($connect, $item['MY_type']),

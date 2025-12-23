@@ -1618,6 +1618,86 @@ http://localhost/shop_admin/test_logen_api.php
 
 ---
 
+## 🔄 Recent Critical Fixes (2025-12-23)
+
+### 포스터 주문 페이지 표시 문제 해결 ✅ COMPLETED
+**날짜**: 2025-12-23
+**목적**: 포스터(product_type='poster')가 OnlineOrder_unified.php 주문 페이지에 표시되지 않는 문제 해결
+
+**문제점**:
+- shop_temp에 `product_type='poster'`로 저장된 데이터가 주문 페이지에서 "기타 상품"으로 표시됨
+- `shop_temp_helper.php`의 `formatCartItemForDisplay()` 함수에서 `case 'poster':` 누락
+
+**수정 내용** (`mlangprintauto/shop_temp_helper.php` 라인 794-796):
+```php
+// 변경 전
+case 'littleprint':
+    $formatted['name'] = '포스터';
+
+// 변경 후
+case 'littleprint':
+case 'poster':  // 레거시 호환
+    $formatted['name'] = '포스터';
+```
+
+**배포**: ✅ FTP 업로드 완료 (dsp1830.shop)
+
+---
+
+### 주문 페이지 UI 스타일 개선 ✅ COMPLETED
+**날짜**: 2025-12-23
+**파일**: `mlangorder_printauto/OnlineOrder_unified.php`
+
+**변경 사항**:
+
+| 항목 | 이전 | 변경 후 |
+|------|------|---------|
+| 주문 완료하기 버튼 | border-radius: 20px | border-radius: 6px |
+| 우편번호 찾기 버튼 색상 | #3498db | #1a73e8 (더 진한 파랑) |
+| 우편번호 찾기 버튼 패딩 | 없음 | 8px 20px |
+| 주문 정보 입력 글씨 크기 | 16px | 18px |
+
+**수정 위치**:
+- 라인 379: `<h2>` 태그 font-size 16px → 18px
+- 라인 773-776, 867-870: 우편번호 버튼 스타일
+- 라인 914-917: 주문 완료하기 버튼 border-radius
+
+**배포**: ✅ FTP 업로드 완료 (dsp1830.shop)
+
+---
+
+### 포스터 수량(quantity) 필드 INSERT 추가 ✅ COMPLETED
+**날짜**: 2025-12-23
+**파일**: `mlangorder_printauto/ProcessOrder_unified.php`
+**목적**: 포스터 주문 시 수량이 기본값 1.00 대신 실제 MY_amount 값으로 저장되도록 수정
+
+**문제점**:
+- mlangorder_printauto 테이블에 quantity 컬럼이 INSERT 쿼리에 포함되지 않아 기본값 1.00 저장
+- 포스터 10매 주문해도 quantity=1.00으로 표시
+
+**수정 내용**:
+- INSERT 쿼리에 `quantity` 컬럼 추가 (35 → 36 컬럼)
+- bind_param 타입 문자열에 'd' 추가 (35 → 36 문자)
+- `$quantity` 변수 바인딩 추가
+
+```php
+// 라인 448-450: INSERT 컬럼에 quantity 추가
+envelope_additional_options_total, unit, quantity
+) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)";
+
+// 라인 608-625: 타입 문자열 및 bind_param
+$type_string = 'isssssssssssssssssisissiiiiisiiiisd';  // 36문자
+mysqli_stmt_bind_param($stmt, $type_string,
+    ...
+    $unit,      // 35번째
+    $quantity   // 36번째 (포스터=MY_amount, 전단지=연수)
+);
+```
+
+**배포**: ✅ FTP 업로드 완료 (dsp1830.shop)
+
+---
+
 ## 🔄 Recent Critical Fixes (2025-12-17)
 
 
@@ -3608,7 +3688,7 @@ claude mcp add --scope user [mcp-name] \
 
 ---
 
-*Last Updated: 2025-12-10*
+*Last Updated: 2025-12-23*
 *Environment: WSL2 Ubuntu (supports XAMPP)*
 *Working Directory: /var/www/html*
 *WSL sudo password: 3305*
