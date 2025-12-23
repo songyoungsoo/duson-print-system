@@ -771,7 +771,7 @@ if (!empty($debug_info) && strpos($_SERVER['HTTP_HOST'], 'localhost') !== false)
                         <input type="text" id="sample6_postcode" name="sample6_postcode" placeholder="우편번호" readonly
                                style="width: 140px;">
                         <button type="button" onclick="sample6_execDaumPostcode()"
-                                style="background: #3498db; color: white; border: none; cursor: pointer;">
+                                style="background: #1a73e8; color: white; border: none; padding: 8px 20px; cursor: pointer; border-radius: 6px;">
                             우편번호 찾기
                         </button>
                     </div>
@@ -865,7 +865,7 @@ if (!empty($debug_info) && strpos($_SERVER['HTTP_HOST'], 'localhost') !== false)
                                             <input type="text" id="business_postcode" placeholder="우편번호" readonly
                                                    style="width: 140px;">
                                             <button type="button" onclick="execBusinessDaumPostcode()"
-                                                    style="background: #3498db; color: white; border: none; padding: 8px 16px; cursor: pointer; border-radius: 3px; white-space: nowrap;">
+                                                    style="background: #1a73e8; color: white; border: none; padding: 8px 20px; cursor: pointer; border-radius: 6px; white-space: nowrap;">
                                                 우편번호 찾기
                                             </button>
                                         </div>
@@ -912,7 +912,7 @@ if (!empty($debug_info) && strpos($_SERVER['HTTP_HOST'], 'localhost') !== false)
                 
                 <div style="text-align: center; margin-top: 1.5rem;">
                     <button type="submit"
-                            style="background-color: #D9534F; color: white; border: none; padding: 12px 36px; border-radius: 20px; font-weight: bold; cursor: pointer; box-shadow: 0 4px 15px rgba(217, 83, 79, 0.25);">
+                            style="background-color: #D9534F; color: white; border: none; padding: 12px 36px; border-radius: 6px; font-weight: bold; cursor: pointer; box-shadow: 0 4px 15px rgba(217, 83, 79, 0.25);">
                         🚀 주문 완료하기
                     </button>
                 </div>

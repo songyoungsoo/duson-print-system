@@ -446,8 +446,8 @@ try {
             additional_options_total,
             premium_options, premium_options_total,
             envelope_tape_enabled, envelope_tape_quantity, envelope_tape_price,
-            envelope_additional_options_total, unit
-        ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)";
+            envelope_additional_options_total, unit, quantity
+        ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)";
 
         $stmt = mysqli_prepare($connect, $insert_query);
         if (!$stmt) {
@@ -605,9 +605,9 @@ try {
         // 29:premium_options(s) 30:premium_options_total(i)
         // 31:envelope_tape_enabled(i) 32:envelope_tape_quantity(i) 33:envelope_tape_price(i) 34:envelope_additional_options_total(i)
         // 35:unit(s) - 🆕 단위 필드 추가
-        // 타입: i(1)+s(17)+isi+isi+iii+i+si+iiii+s = 1+17+3+3+3+1+2+4+1 = 35
-        $type_string = 'isssssssssssssssssisissiiiiisiiiiis';
-        $type_count = strlen($type_string); // 35
+        // 타입: i(1)+s(17)+isi+isi+iii+i+si+iiii+s+d = 1+17+3+3+3+1+2+4+1+1 = 36
+        $type_string = 'isssssssssssssssssisissiiiiisiiiisd';
+        $type_count = strlen($type_string); // 36
 
         mysqli_stmt_bind_param($stmt, $type_string,
             $new_no, $product_type_name, $img_folder_path, $uploaded_files_json, $product_info, $st_price, $st_price_vat,
@@ -620,7 +620,8 @@ try {
             $premium_options, $premium_options_total,
             $envelope_tape_enabled, $envelope_tape_quantity, $envelope_tape_price,
             $envelope_additional_options_total,
-            $unit  // 🆕 35번째: 단위 필드
+            $unit,      // 35번째: 단위 필드
+            $quantity   // 36번째: 수량 필드 (포스터=MY_amount, 전단지=연수)
         );
         
         if (mysqli_stmt_execute($stmt)) {
