@@ -1618,6 +1618,28 @@ http://localhost/shop_admin/test_logen_api.php
 
 ---
 
+## 📌 다음 세션 작업 (2025-12-24 예정)
+
+### 주문완료 페이지 스타일 승계 작업
+**목적**: OnlineOrder_unified.php의 스타일을 주문완료 페이지에도 동일하게 적용
+
+**참조할 스타일**:
+- 주문 완료하기 버튼: `border-radius: 6px`
+- 우편번호 버튼 색상: `#1a73e8` (진한 파랑)
+- 우편번호 버튼 패딩: `8px 20px`
+- 제목 글씨 크기: `18px`
+
+**수정 대상 파일**:
+- `mlangorder_printauto/OrderComplete_universal.php`
+- `mlangorder_printauto/OrderComplete_unified.php`
+
+**작업 내용**:
+- 버튼 스타일 통일 (border-radius, 색상, 패딩)
+- 헤더/제목 스타일 통일
+- 전체적인 UI 일관성 확보
+
+---
+
 ## 🔄 Recent Critical Fixes (2025-12-23)
 
 ### 포스터 주문 페이지 표시 문제 해결 ✅ COMPLETED
