@@ -1,0 +1,67 @@
+/* style.css: 공통 + 중앙정렬 + 풀폭 레이아웃 + 사이드바 축소 + 메인 확장 */
+
+/* 1. 폰트 및 리셋 */
+@import url('https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@400;500;700;900&display=swap');
+* { margin: 0; padding: 0; box-sizing: border-box; }
+html, body { width: 100%; height: 100%; font-family: 'Noto Sans KR', sans-serif; font-size: 16px; background: #F4F4F4; color: #333; line-height: 1.6; }
+
+/* 2. 전체 래퍼 (최대 폭 1350px) */
+.wrapper { max-width: 1350px; width: 100%; margin: 0 auto; }
+
+/* 3. 헤더 */
+header.full-header { width: 100%; background: #005f73; }
+header.full-header .wrapper { padding: 20px 0; text-align: center; }
+header.full-header h1 { font-size: 48px; font-weight: 900; color: #fff; margin: 0; }
+header.full-header a { color: inherit; text-decoration: none; }
+
+/* 4. 세션 네비 */
+nav.session-nav .wrapper { display: flex; justify-content: flex-end; padding: 8px; }
+nav.session-nav a, nav.session-nav span { color: #fff; font-size: 14px; font-weight: 500; margin: 0 6px; text-decoration: none; }
+nav.session-nav span.divider { margin: 0 4px; }
+
+/* 5. 메인 네비 */
+nav.full-nav { width: 100%; background: #0a9396; }
+nav.full-nav .wrapper { text-align: center; padding: 10px 0; }
+nav.full-nav a { margin: 0 15px; font-size: 18px; font-weight: 700; color: #f4f4f4; text-decoration: none; transition: color .3s; }
+nav.full-nav a:hover { color: #ee9b00; }
+
+/* 6. 레이아웃 컨테이너: 사이드바 축소, 메인 확장 */
+.container { display: flex; max-width: 1350px; width: 100%; margin: 0 auto; gap: 10px; }
+.container > .sidebar { width: 150px; flex-shrink: 0; }
+.container > .main-content { flex: 1; }
+.container > .customer-center { width: 150px; flex-shrink: 0; }
+
+/* 7. 본문 박스 */
+.content { width: 100%; background: #fff; padding: 20px; border-radius: 8px; box-shadow: 0 0 10px rgba(0,0,0,0.1); }
+
+/* 8. 좌측 메뉴 통합 */
+.vertical-menu { list-style: none; padding: 0; }
+.vertical-menu li { margin-bottom: 2px; }
+.vertical-menu a { display: block; padding: 10px; background: #fff; border: 1px solid #ccc; border-radius: 3px; color: #333; text-align: center; font-size: 14px; font-weight: 500; transition: background .2s; }
+.vertical-menu a:hover { background: #429EB2; color: #fff; }
+
+/* 9. 우측 고객센터 */
+.sidebar ul, .sidebar { list-style: none; padding: 0; border: 1px solid #ddd; border-radius: 4px; background: #fff; }
+.sidebar li { border-bottom: 1px solid #eee; }
+.sidebar li:last-child { border-bottom: none; }
+.sidebar .title { background: #000; color: #fff; text-align: center; font-weight: 700; padding: 8px 0; }
+.sidebar a { display: block; padding: 10px; color: #333; text-decoration: none; transition: background .2s; }
+.sidebar a:hover { background: #f0f0f0; }
+
+/* 10. 메뉴 박스 스타일 */
+nav.box-menu ul { display: flex; flex-wrap: wrap; justify-content: center; gap: 12px; margin-bottom: 20px; list-style: none; padding: 0; }
+nav.box-menu li a { display: block; padding: 8px 12px; background: #fff; border: 1px solid #ccc; border-radius: 6px; font-size: 14px; font-weight: 600; color: #005f73; text-decoration: none; transition: all .2s; }
+nav.box-menu li a:hover { background: #0a9396; color: #fff; transform: translateY(-2px); }
+
+/* 11. 버튼 스타일 */
+.action-buttons { display: flex; justify-content: center; gap: 12px; margin: 20px 0; }
+.action-buttons .btn { padding: 10px 20px; border-radius: 6px; font-size: 16px; font-weight: 700; color: #fff; text-decoration: none; transition: background .2s; }
+.action-buttons .btn-price { background: #f4a261; }
+.action-buttons .btn-order { background: #2a9d8f; }
+.action-buttons .btn:hover { opacity: 0.9; }
+
+/* 12. 기타 */
+a, a:link, a:visited { color: #333; text-decoration: none; }
+a:hover, a:active { color: #666; }
+span.font12blue { color: #0066FF; font-size: 12px; }
+table { width: 100%; border-collapse: collapse; font-size: 12px; }

@@ -1,0 +1,129 @@
+<HEAD>
+<SCRIPT LANGUAGE="JavaScript">
+self.moveTo(0,0)
+self.resizeTo(availWidth=350,availHeight=280)
+
+function Activity(name, list){
+this.name = name;
+this.list = list;
+}
+///////////////////////////////////////////////////////////////////////////////////////////////////////////////
+
+var acts = new Array();
+
+<?
+include"../../db.php";
+$result= mysql_query("select * from $GGTABLE where Ttable='$Ttable' and BigNo='0' order by no asc",$db);
+$rows=mysql_num_rows($result);
+if($rows){
+	$g=0;
+while($row= mysql_fetch_array($result)) { 
+?>
+acts[<?=$g?>] = new Activity('<?=$row[no]?>', [<?
+
+              $result_Two= mysql_query("select * from $GGTABLE where BigNo='$row[no]' order by no asc",$db);
+                $rows_Two=mysql_num_rows($result_Two);
+                  if($rows_Two){
+                     while($row_Two= mysql_fetch_array($result_Two)) { 
+                                echo("'$row_Two[title]',");
+                               }  }
+      ?>'==================']);
+
+<?
+	$g++;
+}
+
+}else{echo("<option>등록자료  없음</option>");}
+mysql_close($db); 
+?>
+
+
+var VL = new Array();
+
+<?
+include"../../db.php";
+$result= mysql_query("select * from $GGTABLE where Ttable='$Ttable' and BigNo='0' order by no asc",$db);
+$rows=mysql_num_rows($result);
+if($rows){
+	$g=0;
+while($row= mysql_fetch_array($result)) { 
+?>
+VL[<?=$g?>] = new Activity('<?=$row[no]?>', [<?
+
+              $result_Two= mysql_query("select * from $GGTABLE where BigNo='$row[no]' order by no asc",$db);
+                $rows_Two=mysql_num_rows($result_Two);
+                  if($rows_Two){
+                     while($row_Two= mysql_fetch_array($result_Two)) { 
+                                echo("'$row_Two[no]',");
+                               }  }
+      ?>'==================']);
+
+<?
+	$g++;
+}
+
+}else{echo("<option>등록자료  없음</option>");}
+mysql_close($db); 
+?>
+
+
+function updateList(str){
+
+var frm = document.myForm;
+var oriLen = frm.myList.length;
+var numActs;
+
+for (var i = 0; i < acts.length; i++){
+if (str == acts[i].name) {
+numActs = acts[i].list.length;
+for (var j = 0; j < numActs; j++)
+frm.myList.options[j] = new Option(acts[i].list[j], VL[i].list[j]);
+for (var j = numActs; j < oriLen; j++)
+frm.myList.options[numActs] = null;
+}
+}
+
+}
+
+///////////////////////////////////////////////////////////////////////////////////////////////////////////////
+
+</SCRIPT>
+
+</HEAD>
+
+<FORM NAME="myForm" method='post' OnSubmit='javascript:return MemberXCheckField()' action='<?=$PHP_SELF?>'> 
+
+<?if($code=="Modify"){?>
+<INPUT TYPE="hidden" name='mode' value='Modify_ok'>
+<INPUT TYPE="hidden" name='no' value='<?=$no?>'>
+<?}else{?>
+<INPUT TYPE="hidden" name='mode' value='form_ok'>
+<?}?>
+
+<INPUT TYPE="hidden" name='Ttable' value='<?=$Ttable?>'>
+
+<tr>
+<td bgcolor='#<?=$Bgcolor1?>' width=100 class='Left1' align=right>종류&nbsp;&nbsp;</td>
+<td>
+<select name=RadOne onChange='updateList(this.value)'>
+<option value='#'>:::::: 선택하세요 ::::::</option>
+<?
+include"../../db.php";
+$result= mysql_query("select * from $GGTABLE where Ttable='$Ttable' and BigNo='0' order by no asc",$db);
+$rows=mysql_num_rows($result);
+if($rows){
+$r=0;
+while($row= mysql_fetch_array($result)) 
+{ 
+?>
+<option value='<?=$row[no]?>' <?if($code=="Modify"){if($MlangPrintAutoFildView_style=="$row[no]"){echo("selected style='font-size:10pt; background-color:#429EB2; color:#FFFFFF;'");}}?>><?=$row[title]?></option>
+<?
+	$r++;
+}
+
+}else{echo("<option>등록자료  없음</option>");}
+mysql_close($db); 
+?>
+</select>
+</td>
+</tr>

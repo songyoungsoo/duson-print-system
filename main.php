@@ -104,12 +104,13 @@ include "db.php";
 
         /* 메인 컨테이너 */
         .main-container {
-            max-width: 1200px;
+            max-width: 1040px;
             margin: 2rem auto;
             display: grid;
-            grid-template-columns: 200px 1fr 200px;
+            grid-template-columns: 200px 1fr;
             gap: 2rem;
             padding: 0 2rem;
+            margin-right: 180px;
         }
 
         /* 왼쪽 사이드바 */
@@ -249,14 +250,7 @@ include "db.php";
             transform: translateY(-3px);
         }
 
-        /* 오른쪽 사이드바 */
-        .right-sidebar {
-            background: white;
-            border-radius: 12px;
-            box-shadow: 0 4px 15px rgba(0,0,0,0.1);
-            padding: 1.5rem;
-            height: fit-content;
-        }
+        /* 오른쪽 사이드바 - right.php에서 position:fixed로 처리 */
 
         /* 푸터 */
         .footer {
@@ -308,10 +302,10 @@ include "db.php";
             .main-container {
                 grid-template-columns: 1fr;
                 gap: 1rem;
+                margin-right: auto;
             }
 
-            .left-sidebar,
-            .right-sidebar {
+            .left-sidebar {
                 display: none;
             }
 
@@ -1001,11 +995,10 @@ include "db.php";
             </div>
         </div>
 
-        <!-- 오른쪽 사이드바 -->
-        <div class="right-sidebar">
-            <?php include "right.php"; ?>
-        </div>
     </div>
+
+    <!-- 오른쪽 사이드바 (position:fixed) -->
+    <?php include "right.php"; ?>
 
     <!-- 푸터 -->
     <footer class="footer">
@@ -1140,5 +1133,9 @@ include "db.php";
             });
         }
     </script>
+<?php
+// 채팅 위젯 포함
+include_once __DIR__ . "/includes/chat_widget.php";
+?>
 </body>
 </html>

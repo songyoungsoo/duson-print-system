@@ -81,6 +81,105 @@ if ($placeholder_count === $type_count && $type_count === $var_count) {
 
 ---
 
+## 🚀 빠른 참조 (Quick Start)
+
+### 첫 실행 (First Time Setup)
+```bash
+# 서버 시작
+sudo service apache2 start
+sudo service mysql start
+
+# 사이트 접속
+http://localhost/
+
+# 데이터베이스 관리
+http://localhost/phpmyadmin/
+# 로그인: dsp1830 / ds701018
+
+# 환경 확인
+http://localhost/?debug_db=1
+```
+
+### 자주 쓰는 명령어 (Common Commands)
+```bash
+# 프로덕션 배포
+curl -T "파일.php" -u "dsp1830:ds701018" "ftp://dsp1830.shop/경로/파일.php"
+
+# Git 워크플로우
+git add .                    # 자동 스테이징 (Claude가 자동 수행)
+git status                   # 변경사항 확인
+git commit -m "메시지"       # 사용자 요청 시 커밋
+git push origin main         # 준비되면 푸시
+
+# DB 연결 테스트
+php -r "require 'db.php'; echo 'DB: ' . (\$db ? 'OK' : 'FAIL') . PHP_EOL;"
+
+# 파일 업로드 테스트 (curl)
+curl -X POST http://localhost/mlangprintauto/namecard/add_to_basket.php \
+  -F "uploaded_files[]=@/tmp/test.png" \
+  -F "product_type=namecard" \
+  -F "calculated_price=50000"
+```
+
+### 핵심 파일 위치 (Critical Files)
+```
+/var/www/html/
+├── db.php                              # DB 연결 & 환경 자동 감지
+├── config.env.php                      # 환경 설정
+├── includes/
+│   ├── auth.php                        # 인증 & 세션 (8시간)
+│   ├── StandardUploadHandler.php      # 파일 업로드 (9개 제품 표준)
+│   └── ImagePathResolver.php          # 파일 경로 해석 & 날짜 필터
+├── mlangprintauto/[product]/
+│   ├── index.php                       # 제품 페이지
+│   ├── add_to_basket.php              # 장바구니 API
+│   └── calculate_price_ajax.php       # 가격 계산 API
+└── mlangorder_printauto/
+    ├── ProcessOrder_unified.php        # 주문 처리
+    └── OrderComplete_universal.php     # 주문 완료
+```
+
+### 비상 연락처 (Emergency Access)
+```
+관리자 로그인:  duson1830 / du1830
+데이터베이스:   dsp1830 / ds701018
+FTP 서버:       dsp1830 / ds701018
+WSL sudo:       3305
+GitHub:         songyoungsoo / yeongsu32@gmail.com
+```
+
+### 11개 제품 코드 (Product Codes)
+```
+inserted        전단지
+namecard        명함
+envelope        봉투
+sticker         스티커
+msticker        자석스티커
+cadarok         카다록
+littleprint     포스터 (⚠️ poster 아님!)
+merchandisebond 상품권
+ncrflambeau     NCR양식
+leaflet         리플렛 (전단지+접지)
+```
+
+### 긴급 디버깅 (Quick Debug)
+```bash
+# bind_param 검증
+grep -n "mysqli_stmt_bind_param" 파일.php
+# 타입 문자 개수 = ? 개수 = 변수 개수 확인!
+
+# 파일 업로드 경로 확인
+SELECT no, ImgFolder, uploaded_files FROM shop_temp ORDER BY no DESC LIMIT 5;
+
+# 최근 주문 확인
+SELECT no, name, email, Type, date FROM mlangorder_printauto ORDER BY no DESC LIMIT 10;
+
+# 에러 로그 확인
+tail -f /var/log/apache2/error.log
+```
+
+---
+
 ## 📦 Git 저장소 규칙 (2025-12-10 확정)
 
 ### 🔴 핵심 원칙: 코드만 저장!
@@ -867,48 +966,6 @@ curl -s -o /dev/null -w "%{http_code}" "http://dsp1830.shop/mlangprintauto/quote
 - Protocol: FTP
 - Port: 21
 - Remote path: `/www/`
-
-### 🔴 Claude 배포 필수 규칙 (2025-12-19 추가)
-
-**⚠️ 파일 수정 후 Claude가 반드시 수행할 것:**
-
-#### 1. FTP 업로드 시 - 백업 후 업로드
-```bash
-# 기존 파일을 오늘 날짜로 백업 후 새 파일 업로드
-TODAY=$(date +%Y%m%d)
-# 백업: index.php → index_20251219.php
-# 업로드: 새 파일
-```
-
-#### 2. GitHub 푸시 - main 브랜치에 커밋
-```bash
-git add .
-git commit -m "변경 내용 설명"
-git push origin main
-```
-
-#### 3. 파일 목록 표시
-업로드/커밋하는 파일 목록을 사용자에게 보여줄 것
-
-**백업 및 업로드 스크립트:**
-```bash
-backup_and_upload() {
-    local LOCAL_FILE="$1"
-    local REMOTE_PATH="$2"
-    local FILENAME=$(basename "$REMOTE_PATH")
-    local REMOTE_DIR=$(dirname "$REMOTE_PATH")
-    local BACKUP_NAME="${FILENAME%.*}_${TODAY}.${FILENAME##*.}"
-
-    # 1. 백업 (이름 변경)
-    curl -s -u "dsp1830:ds701018" "ftp://dsp1830.shop" \
-        -Q "RNFR $REMOTE_PATH" \
-        -Q "RNTO ${REMOTE_DIR}/${BACKUP_NAME}" 2>/dev/null
-
-    # 2. 업로드
-    curl -s -T "$LOCAL_FILE" -u "dsp1830:ds701018" \
-        "ftp://dsp1830.shop$REMOTE_PATH" --ftp-create-dirs
-}
-```
 
 ### Testing
 ```bash

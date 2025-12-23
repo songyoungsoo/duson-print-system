@@ -18,12 +18,12 @@ $admin_name = "두손기획";
 $MataTitle = "$admin_name - 인쇄, 스티커, 전단지, 리플렛, 포스터, 브로슈어, 카다로그, 패키지, 각종 판촉물,인쇄홍보물, 온라인견적 등 인쇄에서 후가공까지 일괄작업.공장직영으로 신속 제작.";
 $SiteTitle = $admin_name;
 $admin_Tname = "Mlang";
-$admin_url = "http://www.dsp114.com";
+$admin_url = "http://www.dsp1830.shop";
 $Homedir = $admin_url;
 $admin_table = "member"; // 관리자 테이블
 $page_big_table = "page_menu_big"; // 주메뉴 테이블
 $page_table = "page"; // 페이지 내용 테이블
-$home_cookie_url = ".dsp114.com"; // 홈 쿠키 url
+$home_cookie_url = ".dsp1830.shop"; // 홈 쿠키 url
 
 $WebSoftCopyright = "
 <p align=center>

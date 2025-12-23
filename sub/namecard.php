@@ -224,7 +224,7 @@ document.addEventListener('DOMContentLoaded', function() {
           <td width="821" height="5"> </td>
         </tr>
         <tr>
-          <td valign="top"><a href="http://dsp114.com/mlangprintauto/NameCard/index.php" onMouseOut="MM_swapImgRestore()" onMouseOver="MM_swapImage('subj-07','','../img/subjk-07.jpg',1)"><img src="../img/subj-07.jpg" alt="명함가격보기" name="subj-07" width="821" height="60" border="0"></a></td>
+          <td valign="top"><a href="http://dsp1830.shop/mlangprintauto/NameCard/index.php" onMouseOut="MM_swapImgRestore()" onMouseOver="MM_swapImage('subj-07','','../img/subjk-07.jpg',1)"><img src="../img/subj-07.jpg" alt="명함가격보기" name="subj-07" width="821" height="60" border="0"></a></td>
         </tr>
         <tr> 
           <td height="5" valign="top"></td>
@@ -280,7 +280,7 @@ include "$BbsDir/skin/portfolio/list_new.php";
                 </TR>
                 <TR>
                   <TD height=15 colspan="2"><font 
-                                color=#333333><a href="http://dsp114.com/mlangprintauto/NameCard/index.php"><img src="../img/pbt.jpg" alt="가격보기로이동합니다" width="78" height="78" border="0"><img src="../img/obt.jpg" alt="주문하기버튼" width="78" height="78" border="0"></a></font></TD>
+                                color=#333333><a href="http://dsp1830.shop/mlangprintauto/NameCard/index.php"><img src="../img/pbt.jpg" alt="가격보기로이동합니다" width="78" height="78" border="0"><img src="../img/obt.jpg" alt="주문하기버튼" width="78" height="78" border="0"></a></font></TD>
                 </TR>
                 <TR>
                   <TD height=15 ></TD>

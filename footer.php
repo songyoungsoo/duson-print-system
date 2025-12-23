@@ -15,7 +15,7 @@
         <div style="color: #666; line-height: 1.5; font-family: 'Noto Sans KR', sans-serif; font-size: 13px;">
           <p style="margin: 3px 0;"><strong>주소:</strong><br>서울 영등포구 영등포로 36길 9<br>송호빌딩 1F</p>
           <p style="margin: 3px 0;"><strong>전화:</strong> 02-2632-1830</p>
-          <p style="margin: 3px 0;"><strong>웹사이트:</strong> www.dsp114.com</p>
+          <p style="margin: 3px 0;"><strong>웹사이트:</strong> www.dsp1830.shop</p>
         </div>
       </div>
 
@@ -62,5 +62,10 @@
     </div>
   </div>
 </footer>
+
+<!-- 채팅 시스템 -->
+<link rel="stylesheet" href="/chat/chat.css">
+<script src="/chat/chat.js"></script>
+
 </body>
 </html>

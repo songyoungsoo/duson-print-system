@@ -1,0 +1,396 @@
+/**
+ * ===================================================================
+ * 두손기획인쇄 통합 컬러 시스템 (Unified Color System)
+ * ===================================================================
+ *
+ * 목적: 전체 시스템의 컬러를 단일 파일에서 관리 (Single Source of Truth)
+ * 생성일: 2025-10-11
+ * 버전: 1.1.0
+ * 수정일: 2025-10-11 (브랜드 가이드라인 적용)
+ *
+ * ⚠️⚠️⚠️ 브랜드 가이드라인 (CRITICAL) ⚠️⚠️⚠️
+ *
+ * 허용된 브랜드 컬러 (ONLY THESE):
+ *   1. 메인 컬러: Deep Navy #1E4E79 (--dsp-primary)
+ *   2. 포인트 컬러: Bright Yellow #FFD500 (--dsp-accent)
+ *   3. 보조 컬러: Light Gray #F4F4F4, White (--dsp-gray-*)
+ *   4. 에러 컬러: Red #DC3545 (--dsp-error) - 유일한 예외
+ *
+ * ❌ 금지사항:
+ *   - 제품별 컬러 사용 금지 (녹색, 보라색, 오렌지 등)
+ *   - 제품별 그림자 컬러 사용 금지
+ *   - Success 녹색 사용 금지 → Navy 사용
+ *   - 아래 제품 컬러 변수들은 레거시 호환성만을 위해 유지
+ *
+ * ✅ 사용 예시:
+ *   - Primary 버튼: Yellow gradient (--dsp-accent)
+ *   - Secondary 버튼: Navy gradient (--dsp-primary)
+ *   - Success 표시: Navy (--dsp-primary, NOT green)
+ *   - Error 표시: Red (--dsp-error) ← 유일한 예외
+ *   - 텍스트 강조: Navy (--dsp-primary)
+ *   - 배경: White, Light Gray (--dsp-white, --dsp-gray-100)
+ *
+ * 네이밍 규칙:
+ *   - 접두사: --dsp- (Duson Planning)
+ *   - 구조: --dsp-{category}-{name}-{variant}
+ *   - 예시: --dsp-primary-dark, --dsp-accent-lighter
+ *
+ * ⚠️ 주의: 이 파일을 수정하면 전체 시스템에 영향을 미칩니다.
+ * ===================================================================
+ */
+
+:root {
+  /* ===================================================================
+   * 브랜드 코어 컬러 (Brand Core Colors)
+   * =================================================================== */
+
+  /* 메인 컬러 - Deep Navy */
+  --dsp-primary: #1E4E79;
+  --dsp-primary-dark: #153A5A;
+  --dsp-primary-light: #2D6FA8;
+  --dsp-primary-lighter: #E8F0F7;
+  --dsp-primary-hover: #164264;
+
+  /* 포인트 컬러 - Bright Yellow */
+  --dsp-accent: #FFD500;
+  --dsp-accent-dark: #E6C000;
+  --dsp-accent-light: #FFE14D;
+  --dsp-accent-lighter: #FFF9CC;
+  --dsp-accent-hover: #FFDD33;
+
+
+  /* ===================================================================
+   * 제품 브랜드 컬러 (Product Brand Colors)
+   * =================================================================== */
+
+  /* 전단지 (Leaflet/Inserted) - 녹색 */
+  --dsp-product-leaflet: #4CAF50;
+  --dsp-product-leaflet-dark: #2E7D32;
+  --dsp-product-leaflet-darker: #1B5E20;
+  --dsp-product-leaflet-light: #81C784;
+  --dsp-product-leaflet-lighter: #C8E6C9;
+  --dsp-product-leaflet-hover: #45A049;
+
+  /* 명함 (Namecard) - 보라색 */
+  --dsp-product-namecard: #667EEA;
+  --dsp-product-namecard-dark: #5563D1;
+  --dsp-product-namecard-darker: #4451B8;
+  --dsp-product-namecard-light: #9BA8F5;
+  --dsp-product-namecard-lighter: #D0D6FA;
+  --dsp-product-namecard-hover: #5A6FDE;
+
+  /* 봉투 (Envelope) - 오렌지 */
+  --dsp-product-envelope: #FF9800;
+  --dsp-product-envelope-dark: #F57C00;
+  --dsp-product-envelope-darker: #E65100;
+  --dsp-product-envelope-light: #FFB74D;
+  --dsp-product-envelope-lighter: #FFE0B2;
+  --dsp-product-envelope-hover: #FB8C00;
+
+  /* 스티커 (Sticker) - 핑크 */
+  --dsp-product-sticker: #E91E63;
+  --dsp-product-sticker-dark: #C2185B;
+  --dsp-product-sticker-darker: #AD1457;
+  --dsp-product-sticker-light: #F48FB1;
+  --dsp-product-sticker-lighter: #F8BBD0;
+  --dsp-product-sticker-hover: #D81B60;
+
+  /* 자석스티커 (Magnet Sticker) - 진보라 */
+  --dsp-product-msticker: #9C27B0;
+  --dsp-product-msticker-dark: #7B1FA2;
+  --dsp-product-msticker-darker: #6A1B9A;
+  --dsp-product-msticker-light: #BA68C8;
+  --dsp-product-msticker-lighter: #E1BEE7;
+  --dsp-product-msticker-hover: #8E24AA;
+
+  /* 포스터 (Poster/LittlePrint) - 파랑 */
+  --dsp-product-poster: #2196F3;
+  --dsp-product-poster-dark: #1976D2;
+  --dsp-product-poster-darker: #1565C0;
+  --dsp-product-poster-light: #64B5F6;
+  --dsp-product-poster-lighter: #BBDEFB;
+  --dsp-product-poster-hover: #1E88E5;
+
+  /* 카다록 (Catalog) - 딥오렌지 */
+  --dsp-product-cadarok: #FF5722;
+  --dsp-product-cadarok-dark: #E64A19;
+  --dsp-product-cadarok-darker: #D84315;
+  --dsp-product-cadarok-light: #FF8A65;
+  --dsp-product-cadarok-lighter: #FFCCBC;
+  --dsp-product-cadarok-hover: #F4511E;
+
+  /* 상품권 (Merchandise Bond) - 금색 */
+  --dsp-product-merchandisebond: #FFA726;
+  --dsp-product-merchandisebond-dark: #F57C00;
+  --dsp-product-merchandisebond-darker: #EF6C00;
+  --dsp-product-merchandisebond-light: #FFD54F;
+  --dsp-product-merchandisebond-lighter: #FFE082;
+  --dsp-product-merchandisebond-hover: #FB8C00;
+
+  /* NCR양식 (NCR Flambeau) - 블루그레이 */
+  --dsp-product-ncr: #607D8B;
+  --dsp-product-ncr-dark: #455A64;
+  --dsp-product-ncr-darker: #37474F;
+  --dsp-product-ncr-light: #90A4AE;
+  --dsp-product-ncr-lighter: #CFD8DC;
+  --dsp-product-ncr-hover: #546E7A;
+
+
+  /* ===================================================================
+   * 시맨틱 컬러 (Semantic Colors)
+   * =================================================================== */
+
+  /* 성공 (Success) - 브랜드 가이드라인: 녹색 → 네이비 */
+  --dsp-success: var(--dsp-primary);           /* #1E4E79 Navy */
+  --dsp-success-dark: var(--dsp-primary-dark); /* #153A5A */
+  --dsp-success-light: var(--dsp-primary-lighter); /* #E8F0F7 */
+  --dsp-success-lighter: var(--dsp-primary-lighter); /* #E8F0F7 */
+  --dsp-success-hover: var(--dsp-primary-hover); /* #164264 */
+
+  /* 경고 (Warning) */
+  --dsp-warning: #FFC107;
+  --dsp-warning-dark: #F57C00;
+  --dsp-warning-light: #FFE0B2;
+  --dsp-warning-lighter: #FFF3E0;
+  --dsp-warning-hover: #FFB300;
+
+  /* 에러 (Error/Danger) */
+  --dsp-error: #DC3545;
+  --dsp-error-dark: #C82333;
+  --dsp-error-light: #FFCDD2;
+  --dsp-error-lighter: #FFEBEE;
+  --dsp-error-hover: #BD2130;
+
+  /* 정보 (Info) */
+  --dsp-info: #17A2B8;
+  --dsp-info-dark: #117A8B;
+  --dsp-info-light: #BBDEFB;
+  --dsp-info-lighter: #D1ECF1;
+  --dsp-info-hover: #138496;
+
+
+  /* ===================================================================
+   * 그레이 스케일 (Gray Scale)
+   * =================================================================== */
+
+  --dsp-white: #FFFFFF;
+  --dsp-gray-50: #FAFAFA;
+  --dsp-gray-100: #F5F5F5;
+  --dsp-gray-200: #EEEEEE;
+  --dsp-gray-300: #E0E0E0;
+  --dsp-gray-400: #BDBDBD;
+  --dsp-gray-500: #9E9E9E;
+  --dsp-gray-600: #757575;
+  --dsp-gray-700: #616161;
+  --dsp-gray-800: #424242;
+  --dsp-gray-900: #212121;
+  --dsp-black: #000000;
+
+
+  /* ===================================================================
+   * 텍스트 컬러 (Text Colors)
+   * =================================================================== */
+
+  --dsp-text-primary: #2D3748;
+  --dsp-text-secondary: #4A5568;
+  --dsp-text-muted: #718096;
+  --dsp-text-light: #A0AEC0;
+  --dsp-text-white: #FFFFFF;
+  --dsp-text-black: #000000;
+  --dsp-text-link: var(--dsp-primary);
+  --dsp-text-link-hover: var(--dsp-primary-dark);
+
+
+  /* ===================================================================
+   * 배경 컬러 (Background Colors)
+   * =================================================================== */
+
+  --dsp-bg-primary: #FFFFFF;
+  --dsp-bg-secondary: #F8F9FA;
+  --dsp-bg-tertiary: #E9ECEF;
+  --dsp-bg-dark: #2D3748;
+  --dsp-bg-overlay-light: rgba(0, 0, 0, 0.3);
+  --dsp-bg-overlay-medium: rgba(0, 0, 0, 0.5);
+  --dsp-bg-overlay-dark: rgba(0, 0, 0, 0.7);
+
+
+  /* ===================================================================
+   * 테두리 컬러 (Border Colors)
+   * =================================================================== */
+
+  --dsp-border-light: #E2E8F0;
+  --dsp-border-medium: #CBD5E0;
+  --dsp-border-dark: #A0AEC0;
+  --dsp-border-primary: var(--dsp-primary);
+  --dsp-border-success: var(--dsp-primary);  /* Navy (success = primary) */
+  --dsp-border-warning: var(--dsp-warning);
+  --dsp-border-error: var(--dsp-error);
+
+
+  /* ===================================================================
+   * 그림자 컬러 (Shadow Colors with Alpha)
+   * =================================================================== */
+
+  --dsp-shadow-sm: rgba(0, 0, 0, 0.05);
+  --dsp-shadow-md: rgba(0, 0, 0, 0.1);
+  --dsp-shadow-lg: rgba(0, 0, 0, 0.15);
+  --dsp-shadow-xl: rgba(0, 0, 0, 0.25);
+  --dsp-shadow-2xl: rgba(0, 0, 0, 0.3);
+
+  /* 제품별 그림자 (투명도 적용) */
+  --dsp-shadow-leaflet: rgba(76, 175, 80, 0.25);
+  --dsp-shadow-namecard: rgba(102, 126, 234, 0.25);
+  --dsp-shadow-envelope: rgba(255, 152, 0, 0.25);
+  --dsp-shadow-sticker: rgba(233, 30, 99, 0.25);
+  --dsp-shadow-msticker: rgba(156, 39, 176, 0.25);
+  --dsp-shadow-poster: rgba(33, 150, 243, 0.25);
+  --dsp-shadow-cadarok: rgba(255, 87, 34, 0.25);
+  --dsp-shadow-merchandisebond: rgba(255, 167, 38, 0.25);
+  --dsp-shadow-ncr: rgba(96, 125, 139, 0.25);
+
+
+  /* ===================================================================
+   * 특수 용도 컬러 (Special Purpose Colors)
+   * =================================================================== */
+
+  /* 포커스 링 (Focus Ring) */
+  --dsp-focus-ring: rgba(30, 78, 121, 0.3);
+
+  /* 선택 영역 (Selection) */
+  --dsp-selection-bg: var(--dsp-accent-light);
+  --dsp-selection-text: var(--dsp-gray-900);
+
+  /* 비활성화 (Disabled) */
+  --dsp-disabled-bg: var(--dsp-gray-200);
+  --dsp-disabled-text: var(--dsp-gray-500);
+  --dsp-disabled-border: var(--dsp-gray-300);
+
+  /* 호버 배경 (Hover Background) */
+  --dsp-hover-bg: var(--dsp-gray-100);
+  --dsp-hover-bg-dark: var(--dsp-gray-700);
+}
+
+
+/* ===================================================================
+ * 하위 호환성 Alias (Backward Compatibility)
+ * ===================================================================
+ *
+ * 기존 코드와의 호환성을 위해 3개월간 유지
+ * 2025-01-11 이후 제거 예정
+ * =================================================================== */
+
+:root {
+  /* design-tokens.css 호환 */
+  --color-primary: var(--dsp-primary);
+  --color-primary-light: var(--dsp-primary-light);
+  --color-primary-dark: var(--dsp-primary-dark);
+
+  --color-secondary: var(--dsp-accent);
+  --color-secondary-light: var(--dsp-accent-light);
+
+  --color-success: var(--dsp-primary);        /* Navy (success = primary) */
+  --color-success-light: var(--dsp-primary-lighter);
+  --color-danger: var(--dsp-error);
+  --color-danger-light: var(--dsp-error-light);
+  --color-warning: var(--dsp-warning);
+  --color-warning-light: var(--dsp-warning-light);
+  --color-info: var(--dsp-info);
+  --color-info-light: var(--dsp-info-light);
+
+  --color-white: var(--dsp-white);
+  --color-gray-50: var(--dsp-gray-50);
+  --color-gray-100: var(--dsp-gray-100);
+  --color-gray-200: var(--dsp-gray-200);
+  --color-gray-300: var(--dsp-gray-300);
+  --color-gray-400: var(--dsp-gray-400);
+  --color-gray-500: var(--dsp-gray-500);
+  --color-gray-600: var(--dsp-gray-600);
+  --color-gray-700: var(--dsp-gray-700);
+  --color-gray-800: var(--dsp-gray-800);
+  --color-gray-900: var(--dsp-gray-900);
+  --color-black: var(--dsp-black);
+
+  --color-text-primary: var(--dsp-text-primary);
+  --color-text-secondary: var(--dsp-text-secondary);
+  --color-text-muted: var(--dsp-text-muted);
+  --color-text-light: var(--dsp-text-light);
+
+  --color-bg-primary: var(--dsp-bg-primary);
+  --color-bg-secondary: var(--dsp-bg-secondary);
+  --color-bg-tertiary: var(--dsp-bg-tertiary);
+
+  --color-border-light: var(--dsp-border-light);
+  --color-border-medium: var(--dsp-border-medium);
+  --color-border-dark: var(--dsp-border-dark);
+
+  /* 제품 컬러 호환 */
+  --color-namecard: var(--dsp-product-namecard);
+  --color-envelope: var(--dsp-product-envelope);
+  --color-leaflet: var(--dsp-product-leaflet);
+  --color-sticker: var(--dsp-product-sticker);
+  --color-msticker: var(--dsp-product-msticker);
+  --color-poster: var(--dsp-product-poster);
+  --color-cadarok: var(--dsp-product-cadarok);
+
+  /* brand-design-system.css 호환 */
+  --brand-primary: var(--dsp-primary);
+  --brand-primary-dark: var(--dsp-primary-dark);
+  --brand-primary-light: var(--dsp-primary-light);
+  --brand-primary-lighter: var(--dsp-primary-lighter);
+
+  --brand-accent: var(--dsp-accent);
+  --brand-accent-dark: var(--dsp-accent-dark);
+  --brand-accent-light: var(--dsp-accent-light);
+  --brand-accent-lighter: var(--dsp-accent-lighter);
+
+  --brand-success: var(--dsp-primary);  /* Navy (success = primary) */
+  --brand-warning: var(--dsp-warning);
+  --brand-error: var(--dsp-error);
+  --brand-info: var(--dsp-info);
+
+  --brand-gray-100: var(--dsp-gray-50);
+  --brand-gray-200: var(--dsp-gray-100);
+  --brand-gray-300: var(--dsp-gray-300);
+  --brand-gray-400: var(--dsp-gray-400);
+  --brand-gray-500: var(--dsp-gray-500);
+  --brand-gray-600: var(--dsp-gray-600);
+  --brand-gray-700: var(--dsp-gray-700);
+  --brand-gray-800: var(--dsp-gray-800);
+  --brand-gray-900: var(--dsp-gray-900);
+
+  /* mlang-design-system.css 호환 */
+  --mlang-primary: var(--dsp-primary);
+  --mlang-secondary: var(--dsp-accent);
+  --mlang-success: var(--dsp-primary);  /* Navy (success = primary) */
+  --mlang-warning: var(--dsp-warning);
+  --mlang-danger: var(--dsp-error);
+  --mlang-info: var(--dsp-info);
+}
+
+
+/* ===================================================================
+ * 사용 예시 (Usage Examples)
+ * ===================================================================
+ *
+ * 1. 기본 사용:
+ *    background: var(--dsp-primary);
+ *    color: var(--dsp-text-white);
+ *
+ * 2. 제품별 컬러:
+ *    background: var(--dsp-product-leaflet);
+ *    box-shadow: 0 4px 12px var(--dsp-shadow-leaflet);
+ *
+ * 3. 동적 컬러 (제품별 적용):
+ *    <div style="--product-color: var(--dsp-product-namecard);">
+ *      background: var(--product-color);
+ *    </div>
+ *
+ * 4. 그라데이션:
+ *    background: linear-gradient(135deg,
+ *      var(--dsp-product-leaflet) 0%,
+ *      var(--dsp-product-leaflet-dark) 100%);
+ *
+ * 5. 투명도 적용:
+ *    box-shadow: 0 4px 12px var(--dsp-shadow-md);
+ *
+ * =================================================================== */

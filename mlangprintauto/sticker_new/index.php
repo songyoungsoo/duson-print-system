@@ -31,7 +31,6 @@ $current_page = 'sticker'; // 네비게이션 활성화를 위한 페이지 식�
 
 // 📱 모달 모드 감지 (견적서 시스템에서 iframe으로 호출될 때)
 $is_quotation_mode = isset($_GET['mode']) && $_GET['mode'] === 'quotation';
-$isQuotationMode = $is_quotation_mode; // camelCase 별칭 (호환성)
 $body_class = $is_quotation_mode ? ' quotation-modal-mode' : '';
 
 // 스티커 기본값 설정
@@ -453,7 +452,7 @@ $default_values = [
                         </div>
                     </div>
 
-                    <?php if ($isQuotationMode): ?>
+                    <?php if ($is_quotation_mode): ?>
                     <!-- 견적서 모달 모드: 견적서에 적용 버튼 -->
                     <div class="quotation-apply-button">
                         <button type="button" class="btn-quotation-apply" onclick="applyToQuotation()">
@@ -1822,42 +1821,19 @@ $default_values = [
 
             const formData = new FormData();
             formData.append("action", "add_to_basket");
-            formData.append("product_type", "sticker");  // "sticker_new" → "sticker" (서버 검증과 일치)
+            formData.append("product_type", "sticker_new");
+            formData.append("MY_type", document.getElementById("MY_type").value);
+            formData.append("Section", document.getElementById("Section").value);
+            formData.append("POtype", document.getElementById("POtype").value);
+            formData.append("MY_amount", document.getElementById("MY_amount").value);
+            formData.append("ordertype", document.getElementById("ordertype").value);
+            formData.append("calculated_price", Math.round(window.currentPriceData.total_price));
+            formData.append("calculated_vat_price", Math.round(window.currentPriceData.vat_price));
 
-            // 스티커 전용 필드 추가 (add_to_basket.php 필수 필드)
-            const jongSelect = document.getElementById("jong");
-            const garoInput = document.getElementById("garo");
-            const seroInput = document.getElementById("sero");
-            const mesuSelect = document.getElementById("mesu");
-            const uhyungSelect = document.getElementById("uhyung");
-            const domusongSelect = document.getElementById("domusong");
-
-            formData.append("jong", jongSelect ? jongSelect.value : "");
-            formData.append("garo", garoInput ? garoInput.value : "");
-            formData.append("sero", seroInput ? seroInput.value : "");
-            formData.append("mesu", mesuSelect ? mesuSelect.value : "");
-            formData.append("uhyung", uhyungSelect ? uhyungSelect.value : "");
-            formData.append("domusong", domusongSelect ? domusongSelect.value : "");
-
-            // 가격 정보 (add_to_basket.php 필드명과 일치)
-            formData.append("price", Math.round(window.currentPriceData.total_price));
-            formData.append("st_price_vat", Math.round(window.currentPriceData.vat_price));
-
-            // 작업 메모
             const workMemo = document.getElementById("modalWorkMemo");
-            if (workMemo) formData.append("memo", workMemo.value);
+            if (workMemo) formData.append("work_memo", workMemo.value);
 
             formData.append("upload_method", window.selectedUploadMethod || "upload");
-
-            console.log("스티커 FormData:", {
-                jong: jongSelect?.value,
-                garo: garoInput?.value,
-                sero: seroInput?.value,
-                mesu: mesuSelect?.value,
-                uhyung: uhyungSelect?.value,
-                domusong: domusongSelect?.value,
-                price: window.currentPriceData.total_price
-            });
 
             if (uploadedFiles && uploadedFiles.length > 0) {
                 uploadedFiles.forEach((file, index) => {

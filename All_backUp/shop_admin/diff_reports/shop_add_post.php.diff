@@ -1,0 +1,11 @@
+--- shop_add_post.php (original)
++++ shop_add_post.php (modified)
+@@ -9,7 +9,7 @@
+ 
+   $query = "insert into shop_data2(name, comment, price, memo, img) 
+             values('$name','$comment','$price','$memo','$img_name') "; 
+-  mysqli_query($query, $connect); 
++  mysqli_query($connect, $query); 
+ 
+ 
+ ?> 

@@ -69,8 +69,7 @@ class EnvironmentDetector {
 
         switch ($env) {
             case 'local':
-                // 로컬 개발 환경 설정 (WSL2/XAMPP)
-                // 로컬/운영 100% 동일한 DB 계정 사용 (마이그레이션 용이)
+                // 로컬 개발 환경 설정 (WSL2)
                 self::$config = [
                     'host' => 'localhost',
                     'user' => 'dsp1830',

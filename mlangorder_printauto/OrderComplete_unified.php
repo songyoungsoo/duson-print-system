@@ -231,6 +231,7 @@ include "../includes/nav.php";
                                                 break;
                                                 
                                             case 'littleprint':
+                                            case 'poster':
                                                 $display_text = "🎨 포스터 주문\n";
                                                 if (isset($json_data['MY_type'])) $display_text .= "• 타입: " . getCategoryName($connect, $json_data['MY_type']) . "\n";
                                                 if (isset($json_data['MY_Fsd'])) $display_text .= "• 용지: " . getCategoryName($connect, $json_data['MY_Fsd']) . "\n";
@@ -417,88 +418,8 @@ include "../includes/nav.php";
 </div>
 
 
-<style>
-@keyframes bounce {
-    0%, 20%, 50%, 80%, 100% {
-        transform: translateY(0);
-    }
-    40% {
-        transform: translateY(-10px);
-    }
-    60% {
-        transform: translateY(-5px);
-    }
-}
-
-a:hover {
-    transform: translateY(-2px);
-    box-shadow: 0 12px 35px rgba(0,0,0,0.2) !important;
-}
-</style>
-
-<?php
-// 메일 발송 기능 추가
-if (!empty($order_list) && !empty($email)) {
-    try {
-        include "mailer.lib.php";
-
-        // 메일 내용 생성
-        $first_order = $order_list[0];
-        $mail_content = "<div style='font-family: Noto Sans KR, sans-serif; max-width: 600px; margin: 0 auto;'>";
-        $mail_content .= "<h2 style='color: #2c3e50; text-align: center; border-bottom: 2px solid #3498db; padding-bottom: 10px;'>주문 확인서</h2>";
-
-        // 고객 정보
-        $mail_content .= "<div style='background: #f8f9fa; padding: 20px; border-radius: 8px; margin: 20px 0;'>";
-        $mail_content .= "<h3 style='color: #495057; margin-bottom: 15px;'>👤 주문자 정보</h3>";
-        $mail_content .= "<p><strong>성명:</strong> " . htmlspecialchars($first_order['name']) . "</p>";
-        $mail_content .= "<p><strong>이메일:</strong> " . htmlspecialchars($first_order['email']) . "</p>";
-        $mail_content .= "<p><strong>연락처:</strong> " . htmlspecialchars($first_order['phone']) . "</p>";
-        $mail_content .= "<p><strong>주문일시:</strong> " . htmlspecialchars($first_order['date']) . "</p>";
-        $mail_content .= "</div>";
-
-        // 배송지 정보 (추가)
-        $delivery_address = trim(($first_order['zip1'] ?? '') . ' ' . ($first_order['zip2'] ?? ''));
-        if (!empty($delivery_address)) {
-            $mail_content .= "<div style='background: #e8f4fd; padding: 20px; border-radius: 8px; margin: 20px 0; border-left: 4px solid #3498db;'>";
-            $mail_content .= "<h3 style='color: #495057; margin-bottom: 15px;'>🚚 배송지 정보</h3>";
-            if (!empty($first_order['zip'])) {
-                $mail_content .= "<p><strong>우편번호:</strong> " . htmlspecialchars($first_order['zip']) . "</p>";
-            }
-            $mail_content .= "<p><strong>주소:</strong> " . htmlspecialchars($delivery_address) . "</p>";
-            // 전달사항
-            if (!empty($first_order['cont'])) {
-                $mail_content .= "<p><strong>전달사항:</strong> " . nl2br(htmlspecialchars($first_order['cont'])) . "</p>";
-            }
-            $mail_content .= "</div>";
-        }
-
-        // 주문 상품 정보
-        $mail_content .= "<div style='background: white; border: 1px solid #dee2e6; border-radius: 8px; margin: 20px 0;'>";
-        $mail_content .= "<h3 style='color: #495057; padding: 15px; margin: 0; background: #e9ecef; border-radius: 8px 8px 0 0;'>📦 주문 상품</h3>";
-
-        $total_amount = 0;
-        foreach ($order_list as $order) {
-            $mail_content .= "<div style='padding: 15px; border-bottom: 1px solid #eee;'>";
-            $mail_content .= "<div style='display: flex; justify-content: space-between; align-items: center;'>";
-            $mail_content .= "<div>";
-            $mail_content .= "<strong>주문번호:</strong> " . $order['no'] . "<br>";
-
-            // 상품 상세 정보 (JSON 파싱)
-            if (!empty($order['Type_1'])) {
-                $json_data = json_decode($order['Type_1'], true);
-                if ($json_data && isset($json_data['formatted_display'])) {
-                    $mail_content .= "<div style='margin-top: 10px; font-size: 0.9em; color: #6c757d;'>";
-                    $mail_content .= $json_data['formatted_display'];
-                    $mail_content .= "</div>";
-                }
-            }
-            $mail_content .= "</div>";
-            $mail_content .= "<div style='text-align: right; font-weight: bold; color: #007bff;'>";
-            $mail_content .= number_format($order['money_5']) . "원";
-            $mail_content .= "</div>";
-            $mail_content .= "</div>";
-            $mail_content .= "</div>";
-
+<!-- Order Complete Style -->
+<link rel="stylesheet" href="../css/order-complete-style.css">
             $total_amount += intval($order['money_5']);
         }
 

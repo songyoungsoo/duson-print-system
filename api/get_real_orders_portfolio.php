@@ -32,6 +32,7 @@ try {
     $offset = ($page - 1) * $perPage;
 
     // 샘플 이미지 로드 함수 (썸네일용) - UTF-8 안전 버전
+    // samplegallery 이미지를 우선 표시하고, 부족하면 sample 이미지 추가
     function getSampleImages($category, $limit = 4) {
         // 카테고리 폴더명 매핑 (API 카테고리 -> 실제 폴더명)
         $folderMapping = [
@@ -48,64 +49,63 @@ try {
         ];
 
         $folderName = $folderMapping[$category] ?? $category;
-        $sampleDir = $_SERVER['DOCUMENT_ROOT'] . '/ImgFolder/sample/' . $folderName;
-
-        if (!is_dir($sampleDir)) {
-            return [];
-        }
-
+        $imageExtensions = ['jpg', 'jpeg', 'png', 'gif', 'webp'];
         $images = [];
 
-        // scandir()을 사용하여 UTF-8 파일명 보존 (glob() 대신)
-        $allFiles = scandir($sampleDir);
-        if ($allFiles === false) {
+        // 1️⃣ samplegallery 이미지 로드 (최우선 - 큐레이티드 샘플)
+        $sampleGalleryDir = $_SERVER['DOCUMENT_ROOT'] . '/ImgFolder/samplegallery/' . $folderName;
+        $galleryFiles = [];
+
+        if (is_dir($sampleGalleryDir)) {
+            $allGalleryFiles = scandir($sampleGalleryDir);
+            if ($allGalleryFiles !== false) {
+                foreach ($allGalleryFiles as $filename) {
+                    if ($filename === '.' || $filename === '..') {
+                        continue;
+                    }
+
+                    $ext = strtolower(pathinfo($filename, PATHINFO_EXTENSION));
+                    if (in_array($ext, $imageExtensions)) {
+                        $fullPath = $sampleGalleryDir . '/' . $filename;
+                        $galleryFiles[] = [
+                            'path' => $fullPath,
+                            'name' => $filename,
+                            'mtime' => filemtime($fullPath),
+                            'source_dir' => 'samplegallery'
+                        ];
+                    }
+                }
+            }
+        }
+
+        // samplegallery가 비어있으면 빈 배열 반환
+        if (empty($galleryFiles)) {
             return [];
         }
 
-        $imageExtensions = ['jpg', 'jpeg', 'png', 'gif', 'webp'];
-        $files = [];
-
-        foreach ($allFiles as $filename) {
-            if ($filename === '.' || $filename === '..') {
-                continue;
-            }
-
-            $ext = strtolower(pathinfo($filename, PATHINFO_EXTENSION));
-            if (in_array($ext, $imageExtensions)) {
-                $fullPath = $sampleDir . '/' . $filename;
-                $files[] = [
-                    'path' => $fullPath,
-                    'name' => $filename,
-                    'mtime' => filemtime($fullPath)
-                ];
-            }
-        }
-
-        if (empty($files)) {
-            return [];
-        }
-
-        // 수정 시간 기준 정렬 (최신순)
-        usort($files, function($a, $b) {
+        // 최신순으로 정렬
+        usort($galleryFiles, function($a, $b) {
             return $b['mtime'] - $a['mtime'];
         });
 
         // 최대 $limit개 가져오기
-        $files = array_slice($files, 0, $limit);
+        $galleryFiles = array_slice($galleryFiles, 0, $limit);
 
-        foreach ($files as $fileInfo) {
+        foreach ($galleryFiles as $fileInfo) {
             $filename = $fileInfo['name'];
+            $basePath = '/ImgFolder/samplegallery/' . $folderName . '/';
+
             $images[] = [
-                'id' => 'sample_' . md5($filename),
+                'id' => 'samplegallery_' . md5($filename),
                 'title' => pathinfo($filename, PATHINFO_FILENAME),
-                'path' => '/ImgFolder/sample/' . $folderName . '/' . rawurlencode($filename),
-                'image_path' => '/ImgFolder/sample/' . $folderName . '/' . rawurlencode($filename),
-                'thumbnail' => '/ImgFolder/sample/' . $folderName . '/' . rawurlencode($filename),
-                'thumbnail_path' => '/ImgFolder/sample/' . $folderName . '/' . rawurlencode($filename),
-                'url' => '/ImgFolder/sample/' . $folderName . '/' . rawurlencode($filename),
-                'thumb' => '/ImgFolder/sample/' . $folderName . '/' . rawurlencode($filename),
+                'path' => $basePath . rawurlencode($filename),
+                'image_path' => $basePath . rawurlencode($filename),
+                'thumbnail' => $basePath . rawurlencode($filename),
+                'thumbnail_path' => $basePath . rawurlencode($filename),
+                'url' => $basePath . rawurlencode($filename),
+                'thumb' => $basePath . rawurlencode($filename),
                 'category' => $category,
-                'source' => 'sample_images',
+                'source' => 'samplegallery_images',
                 'is_sample' => true,
                 'file_exists' => true
             ];
@@ -171,44 +171,54 @@ try {
         }
     }
     
-    // 총 개수 구하기
-    $countQuery = "SELECT COUNT(*) as total FROM mlangorder_printauto $whereClause";
-    $countResult = mysqli_query($db, $countQuery);
+    // 🔐 개인정보 민감 제품 정의
+    $privateCategories = ['namecard', 'envelope', 'ncrflambeau'];
+    $isPrivateCategory = in_array($category, $privateCategories);
+
+    // 총 개수 구하기 (개인정보 민감 제품은 실제 주문 제외)
     $totalCount = 0;
-    if ($countResult) {
-        $countRow = mysqli_fetch_assoc($countResult);
-        $totalCount = intval($countRow['total']);
+    if (!$isPrivateCategory) {
+        $countQuery = "SELECT COUNT(*) as total FROM mlangorder_printauto $whereClause";
+        $countResult = mysqli_query($db, $countQuery);
+        if ($countResult) {
+            $countRow = mysqli_fetch_assoc($countResult);
+            $totalCount = intval($countRow['total']);
+        }
     }
     
-    // 실제 데이터 가져오기
-    // 스티커는 랜덤으로, 나머지는 기존 정렬 유지
-    if ($category === 'sticker') {
-        // 스티커는 랜덤하게 가져오기 (매번 다른 이미지 표시)
-        $query = "SELECT no, ThingCate, Type, name, date 
-                  FROM mlangorder_printauto 
-                  $whereClause 
-                  ORDER BY RAND() 
-                  LIMIT " . intval($perPage) . " OFFSET " . intval($offset);
-    } else {
-        // 나머지 카테고리는 기존 정렬 유지 (2025년 1월 및 오래된 주문 우선)
-        $query = "SELECT no, ThingCate, Type, name, date 
-                  FROM mlangorder_printauto 
-                  $whereClause 
-                  ORDER BY 
-                    CASE 
-                        WHEN date >= '2025-01-01' AND date < '2025-02-01' THEN 0
-                        WHEN no < 70000 THEN 1
-                        WHEN no BETWEEN 70000 AND 75000 THEN 2
-                        WHEN no BETWEEN 75000 AND 80000 THEN 3
-                        ELSE 4
-                    END,
-                    no DESC 
-                  LIMIT " . intval($perPage) . " OFFSET " . intval($offset);
+    // 실제 데이터 가져오기 (개인정보 민감 제품은 건너뜀)
+    $result = null;
+    if (!$isPrivateCategory) {
+        // 스티커는 랜덤으로, 나머지는 기존 정렬 유지
+        if ($category === 'sticker') {
+            // 스티커는 랜덤하게 가져오기 (매번 다른 이미지 표시)
+            $query = "SELECT no, ThingCate, Type, name, date
+                      FROM mlangorder_printauto
+                      $whereClause
+                      ORDER BY RAND()
+                      LIMIT " . intval($perPage) . " OFFSET " . intval($offset);
+        } else {
+            // 나머지 카테고리는 기존 정렬 유지 (2025년 1월 및 오래된 주문 우선)
+            $query = "SELECT no, ThingCate, Type, name, date
+                      FROM mlangorder_printauto
+                      $whereClause
+                      ORDER BY
+                        CASE
+                            WHEN date >= '2025-01-01' AND date < '2025-02-01' THEN 0
+                            WHEN no < 70000 THEN 1
+                            WHEN no BETWEEN 70000 AND 75000 THEN 2
+                            WHEN no BETWEEN 75000 AND 80000 THEN 3
+                            ELSE 4
+                        END,
+                        no DESC
+                      LIMIT " . intval($perPage) . " OFFSET " . intval($offset);
+        }
+
+        $result = mysqli_query($db, $query);
     }
-              
-    $result = mysqli_query($db, $query);
     
-    if (!$result) {
+    // 개인정보 민감 제품이 아닐 때만 에러 체크
+    if (!$isPrivateCategory && !$result) {
         throw new Exception("Query failed: " . mysqli_error($db));
     }
     
@@ -216,11 +226,11 @@ try {
     $debugInfo = [];
     $processedCount = 0;
 
-    // 샘플 이미지 먼저 추가 (썸네일 모드일 때: per_page <= 4)
-    // exclude_samples=true 파라미터가 있으면 샘플 이미지 제외 (팝업용)
+    // 샘플 이미지 먼저 추가 (첫 페이지에서 항상 표시)
+    // exclude_samples=true 파라미터가 있으면 샘플 이미지 제외
     $excludeSamples = isset($_GET['exclude_samples']) && $_GET['exclude_samples'] === 'true';
 
-    if ($perPage <= 4 && $page === 1 && !$excludeSamples) {
+    if ($page === 1 && !$excludeSamples) {
         $sampleImages = getSampleImages($category, $perPage);
         if (!empty($sampleImages)) {
             $images = array_merge($images, $sampleImages);
@@ -271,14 +281,17 @@ try {
                 }
             }
             
-            // 파일이 존재하지 않으면 일단 경로만 생성 (실제 확인은 나중에)
+            // ⚠️ 빈 이미지 필터링: 파일이 존재하지 않거나 크기가 0이면 건너뛰기
             if (!$fileExists) {
-                // 가장 일반적인 경로로 설정
-                $imagePath = "/mlangorder_printauto/upload/$orderNo/$imageFile";
-                $fullPath = $_SERVER['DOCUMENT_ROOT'] . $imagePath;
-                $fileExists = false; // 실제 파일은 없음을 표시
+                continue; // 파일이 존재하지 않으면 건너뛰기
             }
-            
+
+            // 파일 크기 확인 (0바이트 파일 제외)
+            $fileSize = filesize($fullPath);
+            if ($fileSize === false || $fileSize === 0) {
+                continue; // 파일 크기가 0이거나 읽을 수 없으면 건너뛰기
+            }
+
             // 고객명 마스킹 (개인정보 보호)
             $customerName = $row['name'] ?? '';
             $maskedName = '';

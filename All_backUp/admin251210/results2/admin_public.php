@@ -1,0 +1,113 @@
+<?php
+declare(strict_types=1);
+
+// ✅ PHP 7.4 호환: 입력 변수 초기화
+$mode = $_GET['mode'] ?? $_POST['mode'] ?? '';
+$no = $_GET['no'] ?? $_POST['no'] ?? '';
+$search = $_GET['search'] ?? $_POST['search'] ?? '';
+$id = $_GET['id'] ?? $_POST['id'] ?? '';
+$name = $_GET['name'] ?? $_POST['name'] ?? '';
+$code = $_GET['code'] ?? $_POST['code'] ?? '';
+$page = $_GET['page'] ?? $_POST['page'] ?? '';
+
+if($mode=="delete"){
+
+include"../config.php";
+
+mysqli_query($db, "DROP TABLE Mlang_${id}_Results");
+// ⚠️  에러 처리 권장: mysqli_error() 사용을 고려하세요
+  // 테이블 삭제
+$result = mysqli_query($db, "DELETE FROM Mlnag_Results_Admin WHERE id='$id'"); // 게시판관리자료 삭제
+mysqli_close($db);
+
+
+// 전체 디렉토리를 연다. //////////////////////////////////////////////////////////
+$dir_path = "../../results/upload/$id";
+$dir_handle = opendir($dir_path);
+
+// 전체 디렉토리 내용을 출력한다.
+while($tmp = readdir($dir_handle))
+{
+
+// 한 폴더에 대한 전체 파일 삭제후 그 폴더 삭제 --------------------//
+
+	$Mlang_DIR = opendir("$dir_path/$tmp"); // upload 폴더 OPEN
+	while($ufiles = readdir($Mlang_DIR)) {
+              if(($ufiles != ".") && ($ufiles != "..")) {
+			  unlink("$dir_path/$tmp/$ufiles"); // 파일들 삭제
+		}
+	}
+	closedir($Mlang_DIR);
+
+	rmdir("$dir_path/$tmp");  // upload 폴더 삭제
+
+//-----------------------------------------------------------//
+
+
+}
+
+closedir($dir_handle);
+
+rmdir("../../results/upload/$id");  // upload 폴더 삭제
+
+////////////////////////////////////////////////////////////////////////////////////
+
+
+//////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+
+echo ("
+<html>
+<script language=javascript>
+window.alert('정상적으로 실적물 시스템 의 모든 자료를 삭제 하였습니다.');
+</script>
+<meta http-equiv='Refresh' content='0; URL=../results/admin.php?mode=list'>
+</html>
+");
+
+}
+
+/////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+
+if($mode=="admin_modify"){
+
+include"../config.php";
+
+if ( !$title ) {
+echo ("<script language=javascript>
+window.alert('타이틀(제목명)이 입력되지 않았습니다..');
+history.go(-1);
+</script>
+");
+exit;
+}
+
+
+$query ="UPDATE Mlnag_Results_Admin SET item='$item', title='$title', celect='$celect' WHERE no='$no'";
+$result= mysqli_query($db, $query);
+	if(!$result) {
+		echo "
+			<script language=javascript>
+				window.alert(\"DB 접속 에러입니다!\")
+				history.go(-1);
+			</script>";
+		exit;
+
+} else {
+	
+	echo ("
+		<script language=javascript>
+		alert('\\n정보를 정상적으로 수정하였습니다.\\n');
+		</script>
+<meta http-equiv='Refresh' content='0; URL=$PHP_SELF?mode=list'>
+	");
+		exit;
+
+}
+
+mysqli_close($db);
+
+
+}
+
+////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+?>

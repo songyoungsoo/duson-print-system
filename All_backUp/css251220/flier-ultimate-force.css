@@ -1,0 +1,283 @@
+/**
+ * 전단지 완벽 복제 CSS - 최종 강제 적용
+ * 모든 기존 스타일을 덮어씌움
+ * 계산 로직은 전혀 건드리지 않음
+ */
+
+/* 모든 기존 스타일 초기화 */
+.customer-container *,
+.calculator-pane *,
+.form-grid *,
+.dual-pane-layout * {
+  all: unset;
+  display: revert;
+  box-sizing: border-box;
+}
+
+/* 전체 컨테이너 재설정 */
+.customer-container {
+  max-width: 1200px;
+  margin: 0 auto;
+  padding: 20px;
+  background: #f5f5f5;
+}
+
+/* 상단 헤더 (전단지와 동일) */
+.customer-header {
+  background: linear-gradient(135deg, #4CAF50, #66BB6A);
+  padding: 20px;
+  border-radius: 12px 12px 0 0;
+  margin: 0 0 0 0;
+}
+
+.customer-header h1 {
+  color: white;
+  font-size: 24px;
+  text-align: center;
+  margin: 0;
+  font-weight: bold;
+}
+
+.customer-header p {
+  color: rgba(255,255,255,0.9);
+  font-size: 14px;
+  text-align: center;
+  margin: 8px 0 0 0;
+}
+
+/* 2단 레이아웃 유지 - 좌측 갤러리, 우측 계산기 */
+.dual-pane-layout {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 20px;
+  background: transparent;
+  padding: 20px 0;
+}
+
+/* 갤러리 섹션 (좌측) */
+.gallery-pane {
+  background: white;
+  border-radius: 12px;
+  box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+  overflow: hidden;
+  animation: none;
+}
+
+.gallery-pane h3 {
+  background: linear-gradient(135deg, #4CAF50, #66BB6A);
+  color: white;
+  padding: 15px;
+  margin: 0;
+  font-size: 18px;
+  text-align: center;
+}
+
+/* 계산기 섹션 (우측) */
+.calculator-pane {
+  background: white;
+  border-radius: 12px;
+  box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+  padding: 0;
+  overflow: hidden;
+  animation: none;
+}
+
+.calculator-header {
+  display: none;
+}
+
+.calculator-header h3 {
+  display: none;
+}
+
+/* 폼 그리드 - 정확히 2열 */
+.form-grid,
+#namecardForm {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 16px;
+  padding: 24px;
+  margin: 0;
+}
+
+/* 각 필드 */
+.form-field {
+  display: flex;
+  flex-direction: column;
+  width: 100%;
+}
+
+/* 라벨 스타일 */
+.form-label {
+  font-size: 13px;
+  color: #333;
+  margin-bottom: 6px;
+  font-weight: 500;
+  display: block;
+}
+
+/* 셀렉트 박스 - 전단지 스타일 */
+.form-select,
+select {
+  width: 100%;
+  height: 42px;
+  padding: 0 12px;
+  border: 1px solid #ddd;
+  border-radius: 6px;
+  background-color: #fafafa;
+  font-size: 14px;
+  color: #333;
+  cursor: pointer;
+  appearance: none;
+  background-image: url("data:image/svg+xml;charset=UTF-8,%3csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 12 12'%3e%3cpath fill='%23333' d='M6 9L1 4h10z'/%3e%3c/svg%3e");
+  background-repeat: no-repeat;
+  background-position: right 12px center;
+  background-size: 12px;
+  padding-right: 32px;
+}
+
+.form-select:hover,
+select:hover {
+  border-color: #4CAF50;
+  background-color: white;
+}
+
+.form-select:focus,
+select:focus {
+  outline: none;
+  border-color: #4CAF50;
+  box-shadow: 0 0 0 2px rgba(76, 175, 80, 0.1);
+}
+
+/* 전체 너비 필드 */
+.form-field.full-width {
+  grid-column: 1 / -1;
+}
+
+/* 가격 표시 영역 - 민트색 */
+.price-display,
+#priceDisplay {
+  grid-column: 1 / -1;
+  background: #E8F5E9;
+  border: 2px solid #4CAF50;
+  border-radius: 8px;
+  padding: 20px;
+  margin: 16px 0;
+  text-align: center;
+}
+
+.price-label {
+  font-size: 13px;
+  color: #666;
+  margin-bottom: 8px;
+  font-weight: normal;
+  text-transform: uppercase;
+  letter-spacing: 1px;
+}
+
+.price-amount,
+#priceAmount {
+  font-size: 32px;
+  font-weight: bold;
+  color: #4CAF50;
+  margin: 8px 0;
+  display: block;
+}
+
+.price-details {
+  font-size: 12px;
+  color: #777;
+  margin-top: 8px;
+}
+
+/* 주문 버튼 - 보라색 */
+.mt-lg,
+#uploadOrderButton {
+  grid-column: 1 / -1;
+  margin: 16px 0 0 0;
+  display: block;
+}
+
+.btn,
+.btn-primary,
+.btn-large,
+button[onclick*="upload"],
+button[onclick*="Upload"] {
+  width: 100%;
+  height: 52px;
+  background: linear-gradient(135deg, #7C4DFF, #9575CD);
+  color: white;
+  border: none;
+  border-radius: 8px;
+  font-size: 16px;
+  font-weight: bold;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  box-shadow: 0 3px 8px rgba(124, 77, 255, 0.3);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin: 0;
+  padding: 0;
+}
+
+.btn:hover,
+.btn-primary:hover {
+  background: linear-gradient(135deg, #6A3DE8, #7C4DFF);
+  transform: translateY(-2px);
+  box-shadow: 0 5px 12px rgba(124, 77, 255, 0.4);
+}
+
+/* 애니메이션 제거 */
+.animate-slide-in,
+.animate-fade-in,
+.animate-pulse {
+  animation: none;
+}
+
+/* 갤러리 스타일 개선 */
+.gallery-pane .gallery-grid,
+.gallery-container {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 12px;
+  padding: 20px;
+}
+
+.gallery-item {
+  aspect-ratio: 1;
+  border-radius: 8px;
+  overflow: hidden;
+  cursor: pointer;
+  transition: transform 0.2s;
+}
+
+.gallery-item:hover {
+  transform: scale(1.05);
+}
+
+.gallery-item img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+/* 모바일 반응형 */
+@media (max-width: 768px) {
+  /* 모바일에서는 상하로 배치 */
+  .dual-pane-layout {
+    grid-template-columns: 1fr;
+  }
+  
+  .form-grid {
+    grid-template-columns: 1fr;
+  }
+  
+  .gallery-pane .gallery-grid {
+    grid-template-columns: repeat(2, 1fr);
+  }
+  
+  .price-amount {
+    font-size: 24px;
+  }
+}

@@ -1,0 +1,42 @@
+<?
+if(is_uploaded_file($photofile_3)) {
+
+	$full_filename = split("\.", $photofile_3_name);
+	$file_extention = $full_filename[sizeof($photofile_3_name)];
+
+	if (eregi($file_extention, "html|php3|phtml|inc|asp")) {
+		$msg = "\\n사진자료를 업로드중에 문제가 발생하였습니다.\\n\\n회원정보수정에서 사진자료를 재입력하시면 됩니다.\\n\\n문제요인: php / asp 관련파일은 직접 업로드 하실 수 없습니다.\\n\\n파일의 확장자를 변경하여 올려 주세요.\\n";
+		echo ("<script language=javascript>
+                     window.alert('$msg');
+                  </script>");
+	}
+
+ 	if( $MAXFSIZE * 1024 < $photofile_3_size) {
+		$photofile_3_kfsize = intval($photofile_3_size/1024);
+		$msg = "\\n사진자료를 업로드중에 문제가 발생하였습니다.\\n\\n회원정보수정에서 사진자료를 재입력하시면 됩니다.\\n\\n문제요인: 업로드하신 파일의 크기가 $photofile_3_kfsize KB입니다. 관리자가 제한한 용량은 $MAXFSIZE KB입니다.";
+		echo ("<script language=javascript>
+                     window.alert('$msg');
+                  </script>");
+	}
+
+//---------------------------------------------------------------------------------------------------------------//
+$MlangHanGulChange = "$photofile_3_name";
+if(eregi ("(([^/a-zA-Z]){1,})(\.jpg|\.jpeg|\.bmp|\.png|\.gif)", $MlangHanGulChange ,$MlangHanGulregs)){
+$MlangHanGulCode_date=date("YmdHis");  $MlangHanGulCode_end=1014; $MlangHanGulCode_num=rand(0,$MlangHanGulCode_end);  
+$MlangHanGulCodeOK="${MlangHanGulCode_date}${MlangHanGulCode_num}";
+$photofile_3_name = eregi_replace ($MlangHanGulregs[1], "$MlangHanGulCodeOK",$MlangHanGulChange);
+}else{
+$photofile_3_name = $photofile_3_name;
+}
+//---------------------------------------------------------------------------------------------------------------//
+
+	if (is_file("$upload_dir/$photofile_3_name")) {
+		$photofile_3_name = date("is")."_$photofile_3_name";
+	}
+	if ($photofile_3_size) {
+	move_uploaded_file($photofile_3, "$upload_dir/$photofile_3_name");
+	}
+}
+
+$photofile_3Name = $photofile_3_name;
+?>

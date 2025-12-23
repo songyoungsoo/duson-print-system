@@ -1,211 +1,407 @@
 /**
- * Quotation Modal Common JavaScript
- * 견적서 모달에서 계산기를 사용할 때 공통으로 사용하는 기능
- * Created: 2025-12-18
+ * 견적서 모달 공통 JavaScript
+ * 모든 제품 계산기에서 공유하는 견적서 적용 기능
  */
 
 /**
- * 견적서에 적용 버튼 클릭 시 실행
- * 현재 계산된 가격 정보를 부모 창(견적서 페이지)으로 전달
+ * 견적서에 적용 - 계산기에서 견적서 생성 페이지로 데이터 전송
+ *
+ * 이 함수는:
+ * 1. 필수 옵션 선택 여부 확인
+ * 2. 가격 계산 (필요시 자동 실행)
+ * 3. 제품 상세 정보 수집
+ * 4. postMessage로 부모 창(create.php)에 전송
  */
 function applyToQuotation() {
-    try {
-        // 현재 가격 데이터 확인
-        if (!window.currentPriceData) {
-            alert('먼저 옵션을 선택하여 가격을 계산해주세요.');
-            return;
-        }
+    console.log('🚀 [견적서 적용] applyToQuotation() 호출됨');
 
-        const priceData = window.currentPriceData;
+    // 1. 필수 옵션 선택 여부 확인
+    if (!validateRequiredFields()) {
+        alert('모든 필수 옵션을 선택해주세요.');
+        console.error('❌ 필수 옵션 미선택');
+        return;
+    }
 
-        // 필수 데이터 검증
-        if (!priceData.total_price || priceData.total_price <= 0) {
-            alert('가격이 계산되지 않았습니다. 모든 옵션을 선택해주세요.');
-            return;
-        }
+    // 2. 가격 계산 여부 확인 - 없으면 자동 계산
+    if (!window.currentPriceData || !window.currentPriceData.Order_PriceForm) {
+        console.log('⚠️ [견적서 적용] 가격 데이터 없음 - 자동 계산 시도');
 
-        // 제품 정보 수집
-        const productData = {
-            // 가격 정보
-            supply_price: priceData.total_price || 0,
-            vat_price: priceData.vat_price || 0,
-            vat_amount: Math.round((priceData.total_price || 0) * 0.1),
-            total_price: (priceData.total_price || 0) + Math.round((priceData.total_price || 0) * 0.1),
+        // autoCalculatePrice 함수가 있으면 호출
+        if (typeof window.autoCalculatePrice === 'function') {
+            window.autoCalculatePrice();
 
-            // 제품 정보 (각 제품별로 커스터마이징 필요)
-            product_type: getProductType(),
-            product_name: getProductName(),
-            specification: getProductSpecification(),
-            quantity: getProductQuantity(),
-            unit: getProductUnit(),
+            // 계산 완료 대기 (최대 3초)
+            let attempts = 0;
+            const maxAttempts = 30; // 30 * 100ms = 3초
 
-            // 추가 정보
-            options: getSelectedOptions(),
-            notes: getProductNotes()
-        };
+            const waitForPrice = setInterval(() => {
+                attempts++;
 
-        console.log('견적서에 적용할 데이터:', productData);
+                if (window.currentPriceData && window.currentPriceData.Order_PriceForm) {
+                    // 가격 계산 완료
+                    clearInterval(waitForPrice);
+                    console.log('✅ [견적서 적용] 가격 계산 완료:', window.currentPriceData);
+                    proceedWithApply();
+                } else if (attempts >= maxAttempts) {
+                    // 타임아웃
+                    clearInterval(waitForPrice);
+                    alert('가격 계산에 실패했습니다. 모든 옵션을 확인해주세요.');
+                    console.error('❌ [견적서 적용] 가격 계산 타임아웃');
+                }
+            }, 100);
 
-        // 부모 창(견적서 페이지)으로 데이터 전달
-        if (window.parent && window.parent !== window) {
-            window.parent.postMessage({
-                type: 'QUOTATION_APPLY',
-                data: productData
-            }, '*');
-
-            // 성공 메시지 표시 후 모달 닫기
-            alert('견적서에 적용되었습니다!');
-
-            // 모달 닫기 시도
-            if (window.parent.closeCalculatorModal) {
-                window.parent.closeCalculatorModal();
-            }
+            return; // 비동기 처리 대기
         } else {
-            alert('견적서 페이지에서만 사용 가능합니다.');
+            alert('가격 계산 기능을 찾을 수 없습니다.');
+            console.error('❌ autoCalculatePrice 함수 없음');
+            return;
+        }
+    }
+
+    console.log('✅ [견적서 적용] 가격 데이터 확인:', window.currentPriceData);
+    proceedWithApply();
+}
+
+/**
+ * 필수 필드 검증
+ */
+function validateRequiredFields() {
+    // 현재 페이지 경로로 제품 타입 판단
+    const currentPath = window.location.pathname;
+
+    if (currentPath.includes('/inserted/') || currentPath.includes('/leaflet/')) {
+        // 전단지/리플렛: 색상, 종류, 규격, 인쇄면, 수량 필수
+        const required = ['MY_type', 'MY_Fsd', 'PN_type', 'POtype', 'MY_amount'];
+        for (const fieldId of required) {
+            const field = document.getElementById(fieldId);
+            if (!field || !field.value) {
+                console.error('필수 필드 누락:', fieldId);
+                return false;
+            }
+        }
+        return true;
+    } else if (currentPath.includes('/namecard/')) {
+        // 명함: MY_type, Section, POtype, MY_amount 필수
+        const required = ['MY_type', 'Section', 'POtype', 'MY_amount'];
+        for (const fieldId of required) {
+            const field = document.getElementById(fieldId);
+            if (!field || !field.value) {
+                console.error('필수 필드 누락:', fieldId);
+                return false;
+            }
+        }
+        return true;
+    }
+
+    // 기타 제품: 기본 검증 (최소한 가격 계산이 가능한지만 확인)
+    return true;
+}
+
+/**
+ * 견적서 적용 진행 (가격 계산 완료 후)
+ */
+function proceedWithApply() {
+    console.log('📋 [견적서 적용] 데이터 전송 시작');
+
+    // 2. 현재 제품 타입 감지 (URL 기반)
+    const currentPath = window.location.pathname;
+    let productType = '';
+    let productName = '';
+
+    if (currentPath.includes('/inserted/')) {
+        productType = 'inserted';
+        productName = '전단지';
+    } else if (currentPath.includes('/namecard/')) {
+        productType = 'namecard';
+        productName = '명함';
+    } else if (currentPath.includes('/envelope/')) {
+        productType = 'envelope';
+        productName = '봉투';
+    } else if (currentPath.includes('/sticker')) {
+        productType = 'sticker';
+        productName = '스티커';
+    } else if (currentPath.includes('/msticker/')) {
+        productType = 'msticker';
+        productName = '자석스티커';
+    } else if (currentPath.includes('/cadarok/')) {
+        productType = 'cadarok';
+        productName = '카다록';
+    } else if (currentPath.includes('/littleprint/')) {
+        productType = 'littleprint';
+        productName = '포스터';
+    } else if (currentPath.includes('/merchandisebond/')) {
+        productType = 'merchandisebond';
+        productName = '상품권';
+    } else if (currentPath.includes('/ncrflambeau/')) {
+        productType = 'ncrflambeau';
+        productName = 'NCR양식';
+    } else if (currentPath.includes('/leaflet/')) {
+        productType = 'leaflet';
+        productName = '리플렛';
+    }
+
+    console.log('🏷️ [견적서 적용] 제품 타입:', productType, productName);
+
+    // 3. 제품별 규격/옵션 정보 수집
+    let specification = '';
+    let quantity = 1;
+    let unit = '매';
+    let flyer_mesu = 0;
+    let quantity_display = '';
+
+    try {
+        if (productType === 'inserted' || productType === 'leaflet') {
+            // 전단지/리플렛 전용 로직
+            specification = buildInsertedSpecification();
+
+            // 수량 (연수)
+            const myAmount = document.getElementById('MY_amount');
+            if (myAmount && myAmount.value) {
+                quantity = parseFloat(myAmount.value) || 0.5;
+            }
+            unit = '연';
+
+            // 매수 정보 (MY_amountRight hidden field)
+            const myAmountRight = document.getElementById('MY_amountRight');
+            if (myAmountRight && myAmountRight.value) {
+                // "2000장" → 2000
+                flyer_mesu = parseInt(myAmountRight.value.replace(/[^0-9]/g, '')) || 0;
+            }
+
+            // 수량 표시 형식 ("0.5연\n(2,000매)")
+            if (flyer_mesu > 0) {
+                const yeonDisplay = (Math.floor(quantity) === quantity)
+                    ? quantity.toFixed(0)
+                    : quantity.toFixed(1);
+                quantity_display = `${yeonDisplay}연\n(${flyer_mesu.toLocaleString()}매)`;
+            }
+
+            console.log('📋 [전단지] 수량 정보:', {
+                quantity: quantity,
+                unit: unit,
+                flyer_mesu: flyer_mesu,
+                quantity_display: quantity_display
+            });
+
+        } else if (productType === 'namecard') {
+            // 명함
+            specification = buildNamecardSpecification();
+            const myAmount = document.getElementById('MY_amount');
+            if (myAmount) {
+                quantity = parseFloat(myAmount.value) || 1;
+            }
+            unit = '매';
+
+        } else if (productType === 'envelope') {
+            // 봉투
+            specification = buildEnvelopeSpecification();
+            const myAmount = document.getElementById('MY_amount');
+            if (myAmount) {
+                quantity = parseFloat(myAmount.value) || 1;
+            }
+            unit = '매';
+
+        } else {
+            // 기타 제품 - 기본 로직
+            specification = '제품 옵션 정보';
+            console.warn('⚠️ [견적서 적용] 제품별 규격 생성 함수 미구현:', productType);
         }
 
     } catch (error) {
-        console.error('견적서 적용 오류:', error);
-        alert('견적서 적용 중 오류가 발생했습니다.');
+        console.error('❌ [견적서 적용] 규격 정보 생성 실패:', error);
+        alert('규격 정보를 생성할 수 없습니다. 모든 옵션을 선택했는지 확인해주세요.');
+        return;
     }
-}
 
-/**
- * 제품 타입 반환 (각 제품별로 오버라이드 필요)
- */
-function getProductType() {
-    // body 클래스에서 제품 타입 추출
-    const bodyClasses = document.body.className;
-    if (bodyClasses.includes('namecard-page')) return 'namecard';
-    if (bodyClasses.includes('envelope-page')) return 'envelope';
-    if (bodyClasses.includes('msticker-page')) return 'msticker';
-    if (bodyClasses.includes('cadarok-page')) return 'cadarok';
-    if (bodyClasses.includes('littleprint-page')) return 'littleprint';
-    if (bodyClasses.includes('merchandisebond-page')) return 'merchandisebond';
-    if (bodyClasses.includes('ncrflambeau-page')) return 'ncrflambeau';
-    if (bodyClasses.includes('inserted-page')) return 'inserted';
-    if (bodyClasses.includes('sticker-page')) return 'sticker';
-    return 'unknown';
-}
+    // 4. 가격 데이터 준비
+    let supplyPrice = 0;
+    let totalPrice = 0;
 
-/**
- * 제품명 반환
- */
-function getProductName() {
-    const h1 = document.querySelector('.page-title h1, h1');
-    if (h1) {
-        return h1.textContent.trim().replace(/📋|📄|🎁|📝|🏷️|📰|✨/g, '').trim();
-    }
-    return '제품명';
-}
+    // 🔧 각 제품별 가격 데이터 읽기 (window.currentPriceData 또는 DOM에서)
+    if (window.currentPriceData && window.currentPriceData.Order_PriceForm) {
+        // 방법 1: currentPriceData 우선 (전단지/리플렛/명함 등)
+        supplyPrice = Math.round(window.currentPriceData.Order_PriceForm) || 0;
+        totalPrice = Math.round(window.currentPriceData.Total_PriceForm) || 0;
+        console.log('✅ [가격 읽기] currentPriceData 사용:', { supplyPrice, totalPrice });
 
-/**
- * 제품 규격 반환 (각 제품별로 커스터마이징 필요)
- */
-function getProductSpecification() {
-    const specs = [];
+    } else {
+        // 방법 2: DOM 요소에서 가격 읽기 시도 (기타 제품)
+        console.warn('⚠️ [가격 읽기] currentPriceData 없음, DOM에서 읽기 시도');
 
-    // 공통 규격 필드 수집
-    const form = document.querySelector('form');
-    if (form) {
-        // 사이즈/규격
-        const sizeSelect = form.querySelector('[name="MY_type"], [name="size"], [name="규격"]');
-        if (sizeSelect && sizeSelect.selectedOptions[0]) {
-            specs.push(sizeSelect.selectedOptions[0].text);
+        // 가격 표시 요소 찾기 (여러 패턴 시도)
+        const priceElements = [
+            document.getElementById('priceAmount'),
+            document.querySelector('.price-amount'),
+            document.querySelector('[class*="price"]'),
+            document.querySelector('[id*="price"]')
+        ];
+
+        for (const elem of priceElements) {
+            if (elem && elem.textContent) {
+                const text = elem.textContent.trim();
+                // "123,000원" 또는 "123,000" 형식에서 숫자 추출
+                const match = text.match(/([0-9,]+)/);
+                if (match) {
+                    const price = parseInt(match[1].replace(/,/g, ''));
+                    if (price > 0) {
+                        // VAT 포함 가격으로 간주
+                        totalPrice = price;
+                        // 공급가 = VAT 포함가 ÷ 1.1 (역산)
+                        supplyPrice = Math.round(price / 1.1);
+                        console.log('✅ [가격 읽기] DOM 파싱 성공:', { totalPrice, supplyPrice, source: elem.id || elem.className });
+                        break;
+                    }
+                }
+            }
         }
 
-        // 용지/재질
-        const paperSelect = form.querySelector('[name="Section"], [name="paper"], [name="용지"]');
-        if (paperSelect && paperSelect.selectedOptions[0]) {
-            specs.push(paperSelect.selectedOptions[0].text);
-        }
-
-        // 수량
-        const quantitySelect = form.querySelector('[name="MY_amount"], [name="quantity"], [name="수량"]');
-        if (quantitySelect && quantitySelect.selectedOptions[0]) {
-            specs.push(quantitySelect.selectedOptions[0].text);
+        if (totalPrice === 0) {
+            console.error('❌ [가격 읽기] 가격 데이터를 찾을 수 없음');
+            alert('가격 정보를 확인할 수 없습니다. 다시 시도해주세요.');
+            return;
         }
     }
 
-    return specs.join(' / ') || '규격 정보';
-}
-
-/**
- * 제품 수량 반환
- */
-function getProductQuantity() {
-    const form = document.querySelector('form');
-    if (form) {
-        const quantitySelect = form.querySelector('[name="MY_amount"], [name="quantity"], [name="수량"]');
-        if (quantitySelect) {
-            // 숫자만 추출
-            const value = quantitySelect.value;
-            const numericValue = parseFloat(value);
-            return isNaN(numericValue) ? 1 : numericValue;
-        }
-    }
-    return 1;
-}
-
-/**
- * 제품 단위 반환
- */
-function getProductUnit() {
-    const productType = getProductType();
-
-    // 제품별 기본 단위
-    const unitMap = {
-        'namecard': '매',
-        'envelope': '매',
-        'msticker': '매',
-        'cadarok': '부',
-        'littleprint': '매',
-        'merchandisebond': '매',
-        'ncrflambeau': '권',
-        'inserted': '연',
-        'sticker': '매'
+    // 5. postMessage 페이로드 구성
+    const payload = {
+        product_name: productName,
+        product_type: productType,
+        specification: specification,
+        quantity: quantity,
+        unit: unit,
+        supply_price: supplyPrice,
+        total_price: totalPrice,
+        flyer_mesu: flyer_mesu,  // 전단지/리플렛 전용
+        quantity_display: quantity_display  // 전단지/리플렛 전용
     };
 
-    return unitMap[productType] || '개';
+    console.log('📤 [견적서 적용] 전송할 데이터:', payload);
+
+    // 6. 부모 창으로 postMessage 전송
+    if (window.parent && window.parent !== window) {
+        window.parent.postMessage({
+            type: 'CALCULATOR_PRICE_DATA',
+            payload: payload
+        }, window.location.origin);
+
+        console.log('✅ [견적서 적용] postMessage 전송 완료');
+
+        // 성공 메시지
+        alert('견적서에 추가되었습니다.');
+
+    } else {
+        console.error('❌ [견적서 적용] 부모 창이 없습니다 (iframe이 아님)');
+        alert('견적서 모달에서만 사용 가능합니다.');
+    }
 }
 
 /**
- * 선택된 옵션 정보 반환
+ * 전단지 규격 정보 생성
  */
-function getSelectedOptions() {
-    const options = [];
+function buildInsertedSpecification() {
+    const parts = [];
 
-    // 추가 옵션 체크박스 수집
-    const checkboxes = document.querySelectorAll('input[type="checkbox"]:checked');
-    checkboxes.forEach(cb => {
-        const label = cb.closest('label') || document.querySelector(`label[for="${cb.id}"]`);
-        if (label) {
-            options.push(label.textContent.trim());
+    // 색상
+    const myType = document.getElementById('MY_type');
+    if (myType && myType.selectedOptions[0]) {
+        parts.push(myType.selectedOptions[0].text);
+    }
+
+    // 용지 종류
+    const myFsd = document.getElementById('MY_Fsd');
+    if (myFsd && myFsd.selectedOptions[0]) {
+        parts.push(myFsd.selectedOptions[0].text);
+    }
+
+    // 규격
+    const pnType = document.getElementById('PN_type');
+    if (pnType && pnType.selectedOptions[0]) {
+        parts.push(pnType.selectedOptions[0].text);
+    }
+
+    // 인쇄면
+    const poType = document.getElementById('POtype');
+    if (poType && poType.selectedOptions[0]) {
+        parts.push(poType.selectedOptions[0].text);
+    }
+
+    // 편집비
+    const orderType = document.getElementById('ordertype');
+    if (orderType && orderType.selectedOptions[0]) {
+        parts.push(orderType.selectedOptions[0].text);
+    }
+
+    // 추가 옵션 (코팅, 접지, 오시)
+    const coatingEnabled = document.getElementById('coating_enabled');
+    if (coatingEnabled && coatingEnabled.checked) {
+        const coatingType = document.getElementById('coating_type');
+        if (coatingType && coatingType.selectedOptions[0]) {
+            parts.push('코팅: ' + coatingType.selectedOptions[0].text);
         }
-    });
+    }
 
-    return options.join(', ');
+    const foldingEnabled = document.getElementById('folding_enabled');
+    if (foldingEnabled && foldingEnabled.checked) {
+        const foldingType = document.getElementById('folding_type');
+        if (foldingType && foldingType.selectedOptions[0]) {
+            parts.push('접지: ' + foldingType.selectedOptions[0].text);
+        }
+    }
+
+    const creasingEnabled = document.getElementById('creasing_enabled');
+    if (creasingEnabled && creasingEnabled.checked) {
+        const creasingLines = document.getElementById('creasing_lines');
+        if (creasingLines && creasingLines.selectedOptions[0]) {
+            parts.push('오시: ' + creasingLines.selectedOptions[0].text);
+        }
+    }
+
+    return parts.join('\n');
 }
 
 /**
- * 제품 비고사항 반환
+ * 명함 규격 정보 생성
  */
-function getProductNotes() {
-    // 작업메모 필드가 있으면 반환
-    const memoField = document.querySelector('[name="work_memo"], [name="memo"], [name="비고"]');
-    if (memoField) {
-        return memoField.value || '';
+function buildNamecardSpecification() {
+    const parts = [];
+
+    // 명함 전용 필드들 (실제 ID는 제품 페이지 확인 필요)
+    const myType = document.getElementById('MY_type');
+    if (myType && myType.selectedOptions[0]) {
+        parts.push(myType.selectedOptions[0].text);
     }
-    return '';
+
+    const section = document.getElementById('Section');
+    if (section && section.selectedOptions[0]) {
+        parts.push(section.selectedOptions[0].text);
+    }
+
+    const poType = document.getElementById('POtype');
+    if (poType && poType.selectedOptions[0]) {
+        parts.push(poType.selectedOptions[0].text);
+    }
+
+    return parts.join('\n');
 }
 
-// 페이지 로드 시 초기화
-document.addEventListener('DOMContentLoaded', function() {
-    console.log('Quotation Modal Common JS loaded');
+/**
+ * 봉투 규격 정보 생성
+ */
+function buildEnvelopeSpecification() {
+    const parts = [];
 
-    // 견적서 모달 모드인지 확인
-    const isQuotationMode = document.body.classList.contains('quotation-modal-mode');
-    if (isQuotationMode) {
-        console.log('견적서 모달 모드 활성화');
+    // 봉투 전용 필드들
+    const myType = document.getElementById('MY_type');
+    if (myType && myType.selectedOptions[0]) {
+        parts.push(myType.selectedOptions[0].text);
     }
-});
+
+    const section = document.getElementById('Section');
+    if (section && section.selectedOptions[0]) {
+        parts.push(section.selectedOptions[0].text);
+    }
+
+    return parts.join('\n');
+}
+
+console.log('✅ quotation-modal-common.js 로드 완료');

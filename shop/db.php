@@ -23,7 +23,7 @@ $Homedir = $admin_url;
 $admin_table = "member"; // 관리자 테이블
 $page_big_table = "page_menu_big"; // 주메뉴 테이블
 $page_table = "page"; // 페이지 내용 테이블
-$home_cookie_url = ".dsp114.com"; // 홈 쿠키 url
+$home_cookie_url = ".dsp1830.shop"; // 홈 쿠키 url
 
 $WebSoftCopyright = "
 <p align=center>

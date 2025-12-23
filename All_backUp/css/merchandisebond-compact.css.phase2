@@ -1,0 +1,928 @@
+/* 상품권/쿠폰 컴팩트 버전 CSS - 명함 시스템 기반 */
+
+/* 기본 리셋 및 폰트 */
+* {
+    box-sizing: border-box;
+    margin: 0;
+    padding: 0;
+}
+
+body {
+    font-family: 'Noto Sans KR', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+    background: linear-gradient(135deg, #f5f7fa 0%, #c3cfe2 100%);
+    min-height: 100vh;
+    color: #2d3748;
+    line-height: 1.6;
+}
+
+/* 컴팩트 컨테이너 */
+.compact-container {
+    max-width: 1400px;
+    margin: 0 auto;
+    padding: 20px;
+    min-height: calc(100vh - 140px);
+}
+
+/* ============================================================================ */
+/* 플렉스 레이아웃 - 수평 정렬 옵션 */
+/* ============================================================================ */
+
+/* 2열 그리드를 플렉스로 변경 가능 */
+.options-grid.form-grid-compact {
+    display: flex !important;
+    flex-direction: column !important;
+    gap: 12px !important;
+}
+
+/* 각 옵션 그룹 수평 정렬 */
+.option-group.form-field {
+    display: flex !important;
+    align-items: center !important;
+    gap: 15px !important;
+    width: 100% !important;
+}
+
+/* 라벨 스타일 - 고정 너비 */
+.option-group .option-label {
+    flex: 0 0 100px !important;
+    font-weight: 600 !important;
+    color: #2d3748 !important;
+    font-size: 0.95rem !important;
+    text-align: left !important;
+}
+
+/* 셀렉트 박스 스타일 - 유연한 너비 */
+.option-group .option-select {
+    flex: 1 !important;
+    min-width: 200px !important;
+    padding: 8px 12px !important;
+    border: 1px solid #cbd5e0 !important;
+    border-radius: 6px !important;
+    font-size: 0.95rem !important;
+    background-color: white !important;
+    transition: all 0.2s ease !important;
+}
+
+.option-group .option-select:hover {
+    border-color: #667eea !important;
+}
+
+.option-group .option-select:focus {
+    outline: none !important;
+    border-color: #667eea !important;
+    box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.1) !important;
+}
+
+/* 편집디자인 특별 레이아웃 */
+.design-flex-layout {
+    display: flex !important;
+    align-items: center !important;
+    gap: 15px !important;
+    width: 100% !important;
+    padding: 12px !important;
+    background: linear-gradient(135deg, #f7fafc 0%, #edf2f7 100%) !important;
+    border-radius: 8px !important;
+    border: 1px solid #e2e8f0 !important;
+}
+
+.design-flex-layout .option-label {
+    flex: 0 0 100px !important;
+    font-weight: 700 !important;
+    color: #1a202c !important;
+}
+
+.design-flex-layout .design-options-container {
+    flex: 1 !important;
+    display: flex !important;
+    align-items: center !important;
+    gap: 10px !important;
+}
+
+.design-flex-layout .option-select {
+    flex: 1 !important;
+    background: white !important;
+    border: 2px solid #cbd5e0 !important;
+    font-weight: 500 !important;
+}
+
+/* 페이지 타이틀 */
+.page-title {
+    text-align: center;
+    margin-bottom: 30px;
+    padding: 25px 0;
+    background: linear-gradient(135deg, #e0e0e0 0%, #d0d0d0 100%);
+    color: #333;
+    border-radius: 15px;
+    box-shadow: 0 8px 32px rgba(102, 126, 234, 0.3);
+}
+
+.page-title h1 {
+    font-size: 2.8rem;
+    font-weight: 700;
+    margin-bottom: 8px;
+    text-shadow: 0 2px 4px rgba(0,0,0,0.2);
+}
+
+.page-title p {
+    font-size: 1.2rem;
+    opacity: 0.9;
+    font-weight: 300;
+}
+
+/* 메인 컨텐츠 - 2단 그리드 레이아웃 */
+.main-content {
+    display: grid;
+    grid-template-columns: 500px 1fr;
+    gap: 30px;
+    align-items: start;
+}
+
+/* ============================================================================ */
+/* 고급 이미지 갤러리 시스템 */
+/* ============================================================================ */
+
+.gallery-section {
+    background: #f8f9fa;
+    border-radius: 15px;
+    padding: 25px;
+    border: 1px solid #e9ecef;
+    height: fit-content;
+    box-shadow: 0 4px 20px rgba(0,0,0,0.05);
+}
+
+.gallery-title {
+    text-align: center;
+    margin-bottom: 20px;
+    font-size: 1.3rem;
+    font-weight: 600;
+    color: #495057;
+    border-bottom: 2px solid #ffa726;
+    padding-bottom: 10px;
+}
+
+/* 메인 이미지 표시 영역 - 고급 확대 기능 (GPU 가속, 450px 크기) */
+.lightbox-viewer {
+    width: 450px;
+    height: 450px;
+    max-width: 100%;
+    background: white;
+    border: 2px solid #e9ecef;
+    border-radius: 12px;
+    position: relative;
+    overflow: hidden;
+    margin: 0 auto 20px auto;
+    cursor: crosshair;
+    background-repeat: no-repeat;
+    background-position: center center;
+    background-size: contain;
+    background-color: #fff;
+    will-change: background-position, background-size;
+    transform: translateZ(0); /* GPU 레이어 강제 생성 */
+    box-shadow: 0 4px 15px rgba(0,0,0,0.1);
+    transition: box-shadow 0.3s ease;
+}
+
+.lightbox-viewer:hover {
+    box-shadow: 0 8px 25px rgba(0,0,0,0.15);
+}
+
+/* 썸네일 영역 */
+.thumbnail-strip {
+    display: flex;
+    gap: 10px;
+    justify-content: center;
+    flex-wrap: wrap;
+    max-height: 120px;
+    overflow-y: auto;
+    padding: 5px;
+}
+
+.thumbnail {
+    width: 80px;
+    height: 80px;
+    border: 3px solid transparent;
+    border-radius: 8px;
+    cursor: pointer;
+    object-fit: cover;
+    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    transform: translateZ(0);
+    will-change: transform, border-color, box-shadow;
+}
+
+.thumbnail.active {
+    border-color: #ffa726;
+    box-shadow: 0 6px 20px rgba(255, 167, 38, 0.4);
+    transform: translateY(-2px) scale(1.05);
+}
+
+.thumbnail:hover {
+    border-color: #ffa726;
+    transform: translateY(-3px) scale(1.1);
+    box-shadow: 0 8px 25px rgba(255, 167, 38, 0.3);
+}
+
+/* ============================================================================ */
+/* 실시간 가격 계산 시스템 */
+/* ============================================================================ */
+
+.calculator-section {
+    display: flex;
+    flex-direction: column;
+    min-height: 500px;
+    background: #f8f9fa;
+    border-radius: 15px;
+    padding: 25px;
+    border: 1px solid #e9ecef;
+    box-shadow: 0 4px 20px rgba(0,0,0,0.05);
+}
+
+.calculator-header {
+    display: none !important;
+}
+
+.calculator-header h3 {
+    display: none !important;
+}
+
+/* 옵션 선택 영역 - 개선된 그리드 레이아웃 */
+.options-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 15px;
+    margin-bottom: 25px;
+}
+
+.option-group {
+    margin-bottom: 0;
+}
+
+.option-group.full-width {
+    grid-column: 1 / -1;
+}
+
+.option-label {
+    display: block;
+    margin-bottom: 8px;
+    font-weight: 600;
+    color: #495057;
+    font-size: 0.95rem;
+}
+
+.option-select {
+    width: 100%;
+    padding: 12px 15px;
+    border: 2px solid #e9ecef;
+    border-radius: 8px;
+    font-size: 0.9rem;
+    background: white;
+    transition: all 0.3s ease;
+    font-family: inherit;
+    will-change: border-color, box-shadow;
+}
+
+.option-select:focus {
+    outline: none;
+    border-color: #ffa726;
+    box-shadow: 0 0 0 3px rgba(255, 167, 38, 0.1);
+    transform: translateY(-1px);
+}
+
+.option-select:hover {
+    border-color: #ced4da;
+}
+
+/* 실시간 가격 표시 */
+.price-display {
+    background: linear-gradient(135deg, #f8f9fa 0%, #e9ecef 100%);
+    border: 2px solid #e9ecef;
+    border-radius: 12px;
+    padding: 20px;
+    margin-bottom: 20px;
+    text-align: center;
+    transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+    transform: translateZ(0);
+    will-change: background, border-color, transform;
+}
+
+.price-display.calculated {
+    border-color: #ff7043;
+    background: linear-gradient(135deg, #fff3e0 0%, #ffe0b2 100%);
+    transform: scale(1.02);
+    box-shadow: 0 6px 20px rgba(255, 112, 67, 0.2);
+}
+
+.price-label {
+    font-size: 1rem;
+    color: #6c757d;
+    margin-bottom: 8px;
+    font-weight: 500;
+}
+
+.price-amount {
+    font-size: 1.8rem;
+    font-weight: 700;
+    color: #ff7043;
+    margin-bottom: 10px;
+    text-shadow: 0 1px 2px rgba(0,0,0,0.1);
+}
+
+.price-details {
+    font-size: 0.85rem;
+    color: #6c757d;
+    line-height: 1.5;
+}
+
+/* 업로드 주문 버튼 */
+.upload-order-button {
+    margin-top: 20px;
+    text-align: center;
+}
+
+.btn-upload-order {
+    background: linear-gradient(135deg, #ffa726 0%, #ff7043 100%);
+    color: #333;
+    border: none;
+    padding: 15px 30px;
+    font-size: 1.1rem;
+    font-weight: 600;
+    border-radius: 12px;
+    cursor: pointer;
+    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    box-shadow: 0 6px 20px rgba(255, 167, 38, 0.3);
+    width: 100%;
+    position: relative;
+    overflow: hidden;
+    will-change: transform, box-shadow;
+}
+
+.btn-upload-order::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: -100%;
+    width: 100%;
+    height: 100%;
+    background: linear-gradient(90deg, transparent, rgba(255,255,255,0.2), transparent);
+    transition: left 0.5s;
+}
+
+.btn-upload-order:hover::before {
+    left: 100%;
+}
+
+.btn-upload-order:hover {
+    transform: translateY(-3px);
+    box-shadow: 0 10px 30px rgba(255, 167, 38, 0.4);
+}
+
+.btn-upload-order:active {
+    transform: translateY(-1px);
+}
+
+/* ============================================================================ */
+/* 파일 업로드 모달 시스템 */
+/* ============================================================================ */
+
+.upload-modal {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    z-index: 1000;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    backdrop-filter: blur(8px);
+}
+
+.modal-overlay {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: rgba(0, 0, 0, 0.6);
+    animation: fadeInOverlay 0.3s ease-out;
+}
+
+@keyframes fadeInOverlay {
+    from { background: rgba(0, 0, 0, 0); }
+    to { background: rgba(0, 0, 0, 0.6); }
+}
+
+.modal-content {
+    position: relative;
+    background: white;
+    border-radius: 20px;
+    max-width: 900px;
+    max-height: 90vh;
+    width: 95%;
+    overflow-y: auto;
+    box-shadow: 0 25px 80px rgba(0, 0, 0, 0.3);
+    animation: modalSlideIn 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+    transform: translateZ(0);
+}
+
+@keyframes modalSlideIn {
+    from {
+        opacity: 0;
+        transform: translateY(-50px) scale(0.9);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0) scale(1);
+    }
+}
+
+.modal-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 25px 30px;
+    border-bottom: 2px solid #ffa726;
+    background: linear-gradient(135deg, #f8f9fa 0%, #e9ecef 100%);
+    border-radius: 20px 20px 0 0;
+}
+
+.modal-title {
+    color: #495057;
+    font-size: 1.4rem;
+    font-weight: 600;
+    margin: 0;
+}
+
+.modal-close {
+    background: none;
+    border: none;
+    font-size: 1.5rem;
+    cursor: pointer;
+    color: #6c757d;
+    padding: 5px;
+    width: 35px;
+    height: 35px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border-radius: 50%;
+    transition: all 0.3s ease;
+}
+
+.modal-close:hover {
+    background: #ffa726;
+    color: #333;
+    transform: rotate(90deg);
+}
+
+.modal-body {
+    padding: 30px;
+}
+
+.modal-footer {
+    padding: 25px 30px;
+    border-top: 1px solid #e9ecef;
+    display: flex;
+    gap: 20px;
+    justify-content: center;
+    background: #f8f9fa;
+    border-radius: 0 0 20px 20px;
+}
+
+.modal-btn {
+    flex: 1;
+    max-width: 350px;
+    padding: 18px 30px;
+    border: none;
+    border-radius: 12px;
+    font-size: 1.2rem;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 10px;
+    box-shadow: 0 6px 20px rgba(255, 167, 38, 0.3);
+    position: relative;
+    overflow: hidden;
+}
+
+.upload-container {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 25px;
+    margin-bottom: 25px;
+}
+
+.upload-label {
+    display: block;
+    font-weight: 600;
+    color: #495057;
+    margin-bottom: 10px;
+    font-size: 1rem;
+}
+
+.upload-buttons {
+    display: flex;
+    gap: 10px;
+    margin-bottom: 20px;
+}
+
+.btn-upload-method {
+    padding: 10px 18px;
+    border: 2px solid #ffa726;
+    background: white;
+    color: #ffa726;
+    border-radius: 8px;
+    font-size: 0.9rem;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    font-weight: 500;
+}
+
+.btn-upload-method.active {
+    background: #ffa726;
+    color: #333;
+    box-shadow: 0 4px 15px rgba(255, 167, 38, 0.3);
+}
+
+.btn-upload-method:disabled {
+    opacity: 0.5;
+    cursor: not-allowed;
+}
+
+.upload-area {
+    margin-bottom: 20px;
+}
+
+/* 드래그 앤 드롭 존 */
+.upload-dropzone {
+    border: 3px dashed #ccc;
+    border-radius: 12px;
+    padding: 40px;
+    text-align: center;
+    cursor: pointer;
+    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    background: white;
+    position: relative;
+    overflow: hidden;
+}
+
+.upload-dropzone::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: linear-gradient(45deg, rgba(255, 167, 38, 0.05) 0%, rgba(255, 167, 38, 0.02) 100%);
+    opacity: 0;
+    transition: opacity 0.3s ease;
+}
+
+.upload-dropzone:hover {
+    border-color: #ffa726;
+    background: #fff8e1;
+    transform: scale(1.02);
+}
+
+.upload-dropzone:hover::before {
+    opacity: 1;
+}
+
+.upload-dropzone.dragover {
+    border-color: #ffa726;
+    background: #fff8e1;
+    transform: scale(1.05);
+    box-shadow: 0 10px 30px rgba(255, 167, 38, 0.2);
+}
+
+.upload-icon {
+    font-size: 2.5rem;
+    display: block;
+    margin-bottom: 15px;
+    animation: bounce 2s infinite;
+}
+
+@keyframes bounce {
+    0%, 20%, 50%, 80%, 100% { transform: translateY(0); }
+    40% { transform: translateY(-10px); }
+    60% { transform: translateY(-5px); }
+}
+
+.upload-text {
+    color: #6c757d;
+    font-size: 1rem;
+    font-weight: 500;
+}
+
+.upload-info {
+    font-size: 0.85rem;
+    color: #6c757d;
+    margin-top: 12px;
+    line-height: 1.5;
+}
+
+.memo-textarea {
+    width: 100%;
+    height: 140px;
+    padding: 15px;
+    border: 2px solid #e9ecef;
+    border-radius: 8px;
+    font-size: 0.9rem;
+    resize: vertical;
+    font-family: inherit;
+    line-height: 1.5;
+    transition: border-color 0.3s ease;
+}
+
+.memo-textarea:focus {
+    outline: none;
+    border-color: #ffa726;
+    box-shadow: 0 0 0 3px rgba(255, 167, 38, 0.1);
+}
+
+.upload-notice {
+    margin-top: 20px;
+    padding: 15px;
+    background: #fff3cd;
+    border: 1px solid #ffeaa7;
+    border-radius: 8px;
+    border-left: 4px solid #ffc107;
+}
+
+.notice-item {
+    font-size: 0.9rem;
+    color: #856404;
+    margin-bottom: 8px;
+    font-weight: 500;
+}
+
+.notice-item:last-child {
+    margin-bottom: 0;
+}
+
+/* 업로드된 파일 목록 */
+.uploaded-files {
+    margin-top: 20px;
+    padding: 20px;
+    background: #f8f9fa;
+    border-radius: 12px;
+    border: 1px solid #e9ecef;
+}
+
+.uploaded-files h5 {
+    color: #495057;
+    font-size: 1.1rem;
+    margin-bottom: 15px;
+    font-weight: 600;
+}
+
+.file-list {
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+}
+
+.file-item {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 12px 15px;
+    background: white;
+    border-radius: 8px;
+    border: 1px solid #e9ecef;
+    transition: all 0.3s ease;
+}
+
+.file-item:hover {
+    border-color: #ffa726;
+    box-shadow: 0 2px 8px rgba(255, 167, 38, 0.1);
+}
+
+.file-info {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+}
+
+.file-icon {
+    font-size: 1.4rem;
+}
+
+.file-details {
+    font-size: 0.9rem;
+}
+
+.file-name {
+    font-weight: 500;
+    color: #495057;
+    margin-bottom: 2px;
+}
+
+.file-size {
+    color: #6c757d;
+    font-size: 0.8rem;
+}
+
+.file-remove {
+    background: #ffa726;
+    color: #333;
+    border: none;
+    border-radius: 6px;
+    padding: 6px 12px;
+    font-size: 0.8rem;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    font-weight: 500;
+}
+
+.file-remove:hover {
+    background: #ff7043;
+    transform: scale(1.05);
+}
+
+/* 주문 버튼들 */
+.btn-cart {
+    background: linear-gradient(135deg, #ffa726 0%, #ff7043 100%);
+    color: #333;
+    position: relative;
+    overflow: hidden;
+}
+
+.btn-cart::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: -100%;
+    width: 100%;
+    height: 100%;
+    background: linear-gradient(90deg, transparent, rgba(255,255,255,0.2), transparent);
+    transition: left 0.5s;
+}
+
+.btn-cart:hover::before {
+    left: 100%;
+}
+
+.btn-cart:hover {
+    background: linear-gradient(135deg, #ff7043 0%, #ff5722 100%);
+    transform: translateY(-3px);
+    box-shadow: 0 12px 35px rgba(255, 167, 38, 0.4);
+}
+
+/* 로딩 및 에러 상태 */
+.loading, .error {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    height: 350px;
+    font-size: 1.1rem;
+    color: #6c757d;
+    background: #f8f9fa;
+    border-radius: 12px;
+    font-weight: 500;
+}
+
+.error {
+    color: #ffa726;
+}
+
+/* ============================================================================ */
+/* 반응형 디자인 (모바일 퍼스트) */
+/* ============================================================================ */
+
+@media (max-width: 1024px) {
+    .main-content {
+        grid-template-columns: 1fr;
+        gap: 25px;
+        max-width: 100%;
+    }
+    
+    .options-grid {
+        grid-template-columns: 1fr;
+        gap: 12px;
+    }
+    
+    .upload-container {
+        grid-template-columns: 1fr;
+        gap: 20px;
+    }
+}
+
+@media (max-width: 768px) {
+    .compact-container {
+        padding: 15px;
+        border-radius: 10px;
+    }
+    
+    .page-title {
+        padding: 20px 15px;
+        border-radius: 10px;
+    }
+    
+    .page-title h1 {
+        font-size: 1.8rem;
+    }
+    
+    .gallery-section,
+    .calculator-section {
+        padding: 20px;
+        border-radius: 10px;
+    }
+    
+    .lightbox-viewer {
+        width: 350px;
+        height: 350px;
+    }
+    
+    .thumbnail {
+        width: 60px;
+        height: 60px;
+    }
+    
+    .price-amount {
+        font-size: 1.6rem;
+    }
+    
+    .modal-content {
+        width: 95%;
+        margin: 10px;
+        border-radius: 15px;
+    }
+    
+    .modal-header,
+    .modal-body,
+    .modal-footer {
+        padding: 20px;
+    }
+    
+    .upload-dropzone {
+        padding: 30px 20px;
+    }
+}
+
+@media (max-width: 480px) {
+    .main-content {
+        gap: 20px;
+    }
+    
+    .lightbox-viewer {
+        width: 280px;
+        height: 280px;
+    }
+    
+    .options-grid {
+        gap: 10px;
+    }
+    
+    .option-select {
+        padding: 10px 12px;
+        font-size: 0.85rem;
+    }
+    
+    .price-display {
+        padding: 15px;
+    }
+    
+    .btn-upload-order {
+        padding: 12px 20px;
+        font-size: 1rem;
+    }
+    
+    .thumbnail {
+        width: 50px;
+        height: 50px;
+    }
+    
+    .modal-btn {
+        padding: 15px 20px;
+        font-size: 1rem;
+    }
+}
+
+/* ============================================================================ */
+/* 성능 최적화 및 GPU 가속 */
+/* ============================================================================ */
+
+/* GPU 가속 적용 요소들 */
+.lightbox-viewer,
+.thumbnail,
+.btn-upload-order,
+.option-select,
+.price-display,
+.modal-content,
+.upload-dropzone {
+    transform: translateZ(0);
+    backface-visibility: hidden;
+    perspective: 1000px;
+}
+
+/* 애니메이션 최적화 */
+@media (prefers-reduced-motion: reduce) {
+    * {
+        animation-duration: 0.01ms !important;
+        animation-iteration-count: 1 !important;
+        transition-duration: 0.01ms !important;
+    }
+}

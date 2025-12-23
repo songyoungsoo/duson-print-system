@@ -1,9 +1,18 @@
-<?php
-/**
- * 세션 로그인 - 메인 로그인으로 리다이렉트
- * 통합 로그인 시스템 사용
- */
-$redirect_to = urlencode($_GET['redirect'] ?? '/session/index.php');
-header("Location: /member/login.php?redirect=$redirect_to");
-exit;
-?>
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>로그인</title>
+</head>
+<body>
+
+<form action="loginProc.php" method="post"  >
+      <input type="text" name="id" placeholder="아이디" > <br>
+      <input type="password" name="pass" placeholder="비밀번호" > <br>
+      <button type="submit">로그인</button> 
+
+</form>
+    
+</body>
+</html>

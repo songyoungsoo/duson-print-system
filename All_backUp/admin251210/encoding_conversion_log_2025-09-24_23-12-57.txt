@@ -1,0 +1,385 @@
+[2025-09-24 23:12:57] === Admin 폴더 인코딩 변환 시작 ===
+[2025-09-24 23:12:57] 대상 디렉토리: C:\xampp\htdocs\admin
+[2025-09-24 23:12:57] 🔍 DRY RUN 모드: 실제 변환하지 않고 확인만 합니다.
+[2025-09-24 23:12:57] C:\xampp\htdocs\admin\AdminConfig.php - 감지된 인코딩: EUC-KR
+[2025-09-24 23:12:57] 🔍 [DRY RUN] 변환 예정: C:\xampp\htdocs\admin\AdminConfig.php
+[2025-09-24 23:12:57] C:\xampp\htdocs\admin\admin_menu.php - 감지된 인코딩: EUC-KR
+[2025-09-24 23:12:57] 🔍 [DRY RUN] 변환 예정: C:\xampp\htdocs\admin\admin_menu.php
+[2025-09-24 23:12:57] ⏭️  건너뜀 (이미 UTF-8): C:\xampp\htdocs\admin\bbs\AdminModify.php
+[2025-09-24 23:12:57] ⏭️  건너뜀 (이미 UTF-8): C:\xampp\htdocs\admin\bbs\BbsAdminCate.php
+[2025-09-24 23:12:57] ⏭️  건너뜀 (이미 UTF-8): C:\xampp\htdocs\admin\bbs\delete.php
+[2025-09-24 23:12:57] C:\xampp\htdocs\admin\bbs\dump.php - 감지된 인코딩: EUC-KR
+[2025-09-24 23:12:57] 🔍 [DRY RUN] 변환 예정: C:\xampp\htdocs\admin\bbs\dump.php
+[2025-09-24 23:12:57] ⏭️  건너뜀 (이미 UTF-8): C:\xampp\htdocs\admin\bbs\list.php
+[2025-09-24 23:12:57] ⏭️  건너뜀 (이미 UTF-8): C:\xampp\htdocs\admin\bbs\submit.php
+[2025-09-24 23:12:57] ⏭️  건너뜀 (이미 UTF-8): C:\xampp\htdocs\admin\BBSSinGo\index.php
+[2025-09-24 23:12:57] ⏭️  건너뜀 (이미 UTF-8): C:\xampp\htdocs\admin\bbs_admin.php
+[2025-09-24 23:12:58] ⏭️  건너뜀 (이미 UTF-8): C:\xampp\htdocs\admin\BizMap\admin.php
+[2025-09-24 23:12:58] C:\xampp\htdocs\admin\BizMap\db.php - 감지된 인코딩: EUC-KR
+[2025-09-24 23:12:58] 🔍 [DRY RUN] 변환 예정: C:\xampp\htdocs\admin\BizMap\db.php
+[2025-09-24 23:12:58] C:\xampp\htdocs\admin\BizMap\upload.php - 감지된 인코딩: EUC-KR
+[2025-09-24 23:12:58] 🔍 [DRY RUN] 변환 예정: C:\xampp\htdocs\admin\BizMap\upload.php
+[2025-09-24 23:12:58] C:\xampp\htdocs\admin\BizMap\upload_1.php - 감지된 인코딩: EUC-KR
+[2025-09-24 23:12:58] 🔍 [DRY RUN] 변환 예정: C:\xampp\htdocs\admin\BizMap\upload_1.php
+[2025-09-24 23:12:58] C:\xampp\htdocs\admin\BizMap\upload_2.php - 감지된 인코딩: EUC-KR
+[2025-09-24 23:12:58] 🔍 [DRY RUN] 변환 예정: C:\xampp\htdocs\admin\BizMap\upload_2.php
+[2025-09-24 23:12:58] C:\xampp\htdocs\admin\BizMap\upload_3.php - 감지된 인코딩: EUC-KR
+[2025-09-24 23:12:58] 🔍 [DRY RUN] 변환 예정: C:\xampp\htdocs\admin\BizMap\upload_3.php
+[2025-09-24 23:12:58] C:\xampp\htdocs\admin\BizMap\ViewFild.php - 감지된 인코딩: EUC-KR
+[2025-09-24 23:12:58] 🔍 [DRY RUN] 변환 예정: C:\xampp\htdocs\admin\BizMap\ViewFild.php
+[2025-09-24 23:12:58] ⏭️  건너뜀 (이미 UTF-8): C:\xampp\htdocs\admin\config.php
+[2025-09-24 23:12:58] C:\xampp\htdocs\admin\down.php - 감지된 인코딩: EUC-KR
+[2025-09-24 23:12:58] 🔍 [DRY RUN] 변환 예정: C:\xampp\htdocs\admin\down.php
+[2025-09-24 23:12:58] C:\xampp\htdocs\admin\encoding_converter.php - 감지된 인코딩: UTF-8
+[2025-09-24 23:12:58] 🔍 [DRY RUN] 변환 예정: C:\xampp\htdocs\admin\encoding_converter.php
+[2025-09-24 23:12:58] ⏭️  건너뜀 (이미 UTF-8): C:\xampp\htdocs\admin\func.php
+[2025-09-24 23:12:58] C:\xampp\htdocs\admin\HomePage\Customer\CateAdmin.php - 감지된 인코딩: EUC-KR
+[2025-09-24 23:12:58] 🔍 [DRY RUN] 변환 예정: C:\xampp\htdocs\admin\HomePage\Customer\CateAdmin.php
+[2025-09-24 23:12:58] ⏭️  건너뜀 (이미 UTF-8): C:\xampp\htdocs\admin\HomePage\Customer\CateView.php
+[2025-09-24 23:12:58] C:\xampp\htdocs\admin\HomePage\Customer\Year.php - 감지된 인코딩: EUC-KR
+[2025-09-24 23:12:58] 🔍 [DRY RUN] 변환 예정: C:\xampp\htdocs\admin\HomePage\Customer\Year.php
+[2025-09-24 23:12:58] C:\xampp\htdocs\admin\HomePage\Customer.php - 감지된 인코딩: EUC-KR
+[2025-09-24 23:12:58] 🔍 [DRY RUN] 변환 예정: C:\xampp\htdocs\admin\HomePage\Customer.php
+[2025-09-24 23:12:58] C:\xampp\htdocs\admin\HomePage\Movic\CateAdmin.php - 감지된 인코딩: EUC-KR
+[2025-09-24 23:12:58] 🔍 [DRY RUN] 변환 예정: C:\xampp\htdocs\admin\HomePage\Movic\CateAdmin.php
+[2025-09-24 23:12:58] ⏭️  건너뜀 (이미 UTF-8): C:\xampp\htdocs\admin\HomePage\Movic\CateView.php
+[2025-09-24 23:12:58] C:\xampp\htdocs\admin\HomePage\Movic\upload.php - 감지된 인코딩: EUC-KR
+[2025-09-24 23:12:58] 🔍 [DRY RUN] 변환 예정: C:\xampp\htdocs\admin\HomePage\Movic\upload.php
+[2025-09-24 23:12:58] C:\xampp\htdocs\admin\HomePage\Movic.php - 감지된 인코딩: EUC-KR
+[2025-09-24 23:12:58] 🔍 [DRY RUN] 변환 예정: C:\xampp\htdocs\admin\HomePage\Movic.php
+[2025-09-24 23:12:58] ⏭️  건너뜀 (이미 UTF-8): C:\xampp\htdocs\admin\index.php
+[2025-09-24 23:12:58] C:\xampp\htdocs\admin\int\delete.php - 감지된 인코딩: EUC-KR
+[2025-09-24 23:12:58] 🔍 [DRY RUN] 변환 예정: C:\xampp\htdocs\admin\int\delete.php
+[2025-09-24 23:12:58] C:\xampp\htdocs\admin\int\upload.php - 감지된 인코딩: EUC-KR
+[2025-09-24 23:12:58] 🔍 [DRY RUN] 변환 예정: C:\xampp\htdocs\admin\int\upload.php
+[2025-09-24 23:12:58] C:\xampp\htdocs\admin\int\uploadTwo.php - 감지된 인코딩: EUC-KR
+[2025-09-24 23:12:58] 🔍 [DRY RUN] 변환 예정: C:\xampp\htdocs\admin\int\uploadTwo.php
+[2025-09-24 23:12:58] C:\xampp\htdocs\admin\int\upload_ok.php - 감지된 인코딩: EUC-KR
+[2025-09-24 23:12:58] 🔍 [DRY RUN] 변환 예정: C:\xampp\htdocs\admin\int\upload_ok.php
+[2025-09-24 23:12:58] C:\xampp\htdocs\admin\int\zip.php - 감지된 인코딩: EUC-KR
+[2025-09-24 23:12:58] 🔍 [DRY RUN] 변환 예정: C:\xampp\htdocs\admin\int\zip.php
+[2025-09-24 23:12:58] C:\xampp\htdocs\admin\js\MlangMenu.php - 감지된 인코딩: EUC-KR
+[2025-09-24 23:12:58] 🔍 [DRY RUN] 변환 예정: C:\xampp\htdocs\admin\js\MlangMenu.php
+[2025-09-24 23:12:58] C:\xampp\htdocs\admin\mailing\form.php - 감지된 인코딩: EUC-KR
+[2025-09-24 23:12:58] 🔍 [DRY RUN] 변환 예정: C:\xampp\htdocs\admin\mailing\form.php
+[2025-09-24 23:12:58] C:\xampp\htdocs\admin\mailing\lib.inc.php - 감지된 인코딩: EUC-KR
+[2025-09-24 23:12:58] 🔍 [DRY RUN] 변환 예정: C:\xampp\htdocs\admin\mailing\lib.inc.php
+[2025-09-24 23:12:58] C:\xampp\htdocs\admin\mailing\mailling.php - 감지된 인코딩: EUC-KR
+[2025-09-24 23:12:58] 🔍 [DRY RUN] 변환 예정: C:\xampp\htdocs\admin\mailing\mailling.php
+[2025-09-24 23:12:58] ⏭️  건너뜀 (이미 UTF-8): C:\xampp\htdocs\admin\member\admin.php
+[2025-09-24 23:12:58] C:\xampp\htdocs\admin\member\admin201224.php - 감지된 인코딩: EUC-KR
+[2025-09-24 23:12:58] 🔍 [DRY RUN] 변환 예정: C:\xampp\htdocs\admin\member\admin201224.php
+[2025-09-24 23:12:58] C:\xampp\htdocs\admin\member\admin210112.php - 감지된 인코딩: EUC-KR
+[2025-09-24 23:12:58] 🔍 [DRY RUN] 변환 예정: C:\xampp\htdocs\admin\member\admin210112.php
+[2025-09-24 23:12:58] C:\xampp\htdocs\admin\member\admin240111.php - 감지된 인코딩: EUC-KR
+[2025-09-24 23:12:58] 🔍 [DRY RUN] 변환 예정: C:\xampp\htdocs\admin\member\admin240111.php
+[2025-09-24 23:12:58] C:\xampp\htdocs\admin\member\Free_index.php - 감지된 인코딩: EUC-KR
+[2025-09-24 23:12:58] 🔍 [DRY RUN] 변환 예정: C:\xampp\htdocs\admin\member\Free_index.php
+[2025-09-24 23:12:58] C:\xampp\htdocs\admin\member\index.php - 감지된 인코딩: EUC-KR
+[2025-09-24 23:12:58] 🔍 [DRY RUN] 변환 예정: C:\xampp\htdocs\admin\member\index.php
+[2025-09-24 23:12:58] C:\xampp\htdocs\admin\member\JoinAdmin.php - 감지된 인코딩: EUC-KR
+[2025-09-24 23:12:58] 🔍 [DRY RUN] 변환 예정: C:\xampp\htdocs\admin\member\JoinAdmin.php
+[2025-09-24 23:12:58] C:\xampp\htdocs\admin\member\JoinAdminInfo.php - 감지된 인코딩: EUC-KR
+[2025-09-24 23:12:58] 🔍 [DRY RUN] 변환 예정: C:\xampp\htdocs\admin\member\JoinAdminInfo.php
+[2025-09-24 23:12:58] C:\xampp\htdocs\admin\member\JoinAdminInfo1234.php - 감지된 인코딩: EUC-KR
+[2025-09-24 23:12:58] 🔍 [DRY RUN] 변환 예정: C:\xampp\htdocs\admin\member\JoinAdminInfo1234.php
+[2025-09-24 23:12:58] C:\xampp\htdocs\admin\member\JoinAdmin_231215.php - 감지된 인코딩: EUC-KR
+[2025-09-24 23:12:58] 🔍 [DRY RUN] 변환 예정: C:\xampp\htdocs\admin\member\JoinAdmin_231215.php
+[2025-09-24 23:12:58] C:\xampp\htdocs\admin\member\JoinAdmin_org.php - 감지된 인코딩: EUC-KR
+[2025-09-24 23:12:58] 🔍 [DRY RUN] 변환 예정: C:\xampp\htdocs\admin\member\JoinAdmin_org.php
+[2025-09-24 23:12:58] C:\xampp\htdocs\admin\member\MaillingJoinAdmin.php - 감지된 인코딩: EUC-KR
+[2025-09-24 23:12:58] 🔍 [DRY RUN] 변환 예정: C:\xampp\htdocs\admin\member\MaillingJoinAdmin.php
+[2025-09-24 23:12:58] C:\xampp\htdocs\admin\member\MaillingJoinAdminInfo.php - 감지된 인코딩: EUC-KR
+[2025-09-24 23:12:58] 🔍 [DRY RUN] 변환 예정: C:\xampp\htdocs\admin\member\MaillingJoinAdminInfo.php
+[2025-09-24 23:12:58] C:\xampp\htdocs\admin\member\MemberImail.php - 감지된 인코딩: EUC-KR
+[2025-09-24 23:12:58] 🔍 [DRY RUN] 변환 예정: C:\xampp\htdocs\admin\member\MemberImail.php
+[2025-09-24 23:12:58] C:\xampp\htdocs\admin\member\MemberMailling.php - 감지된 인코딩: EUC-KR
+[2025-09-24 23:12:58] 🔍 [DRY RUN] 변환 예정: C:\xampp\htdocs\admin\member\MemberMailling.php
+[2025-09-24 23:12:58] C:\xampp\htdocs\admin\member\stipulation.php - 감지된 인코딩: EUC-KR
+[2025-09-24 23:12:58] 🔍 [DRY RUN] 변환 예정: C:\xampp\htdocs\admin\member\stipulation.php
+[2025-09-24 23:12:58] C:\xampp\htdocs\admin\member_T\admin.php - 감지된 인코딩: EUC-KR
+[2025-09-24 23:12:58] 🔍 [DRY RUN] 변환 예정: C:\xampp\htdocs\admin\member_T\admin.php
+[2025-09-24 23:12:58] C:\xampp\htdocs\admin\member_T\index.php - 감지된 인코딩: EUC-KR
+[2025-09-24 23:12:58] 🔍 [DRY RUN] 변환 예정: C:\xampp\htdocs\admin\member_T\index.php
+[2025-09-24 23:12:58] C:\xampp\htdocs\admin\member_T\upload.php - 감지된 인코딩: EUC-KR
+[2025-09-24 23:12:58] 🔍 [DRY RUN] 변환 예정: C:\xampp\htdocs\admin\member_T\upload.php
+[2025-09-24 23:12:58] C:\xampp\htdocs\admin\member_X\admin.php - 감지된 인코딩: EUC-KR
+[2025-09-24 23:12:58] 🔍 [DRY RUN] 변환 예정: C:\xampp\htdocs\admin\member_X\admin.php
+[2025-09-24 23:12:58] C:\xampp\htdocs\admin\member_X\index.php - 감지된 인코딩: EUC-KR
+[2025-09-24 23:12:58] 🔍 [DRY RUN] 변환 예정: C:\xampp\htdocs\admin\member_X\index.php
+[2025-09-24 23:12:58] C:\xampp\htdocs\admin\MlangFriendSite\admin.php - 감지된 인코딩: EUC-KR
+[2025-09-24 23:12:58] 🔍 [DRY RUN] 변환 예정: C:\xampp\htdocs\admin\MlangFriendSite\admin.php
+[2025-09-24 23:12:58] C:\xampp\htdocs\admin\MlangFriendSite\db.php - 감지된 인코딩: EUC-KR
+[2025-09-24 23:12:58] 🔍 [DRY RUN] 변환 예정: C:\xampp\htdocs\admin\MlangFriendSite\db.php
+[2025-09-24 23:12:58] C:\xampp\htdocs\admin\MlangFriendSite\upload.php - 감지된 인코딩: EUC-KR
+[2025-09-24 23:12:58] 🔍 [DRY RUN] 변환 예정: C:\xampp\htdocs\admin\MlangFriendSite\upload.php
+[2025-09-24 23:12:58] C:\xampp\htdocs\admin\MlangFriendSite\ViewFild.php - 감지된 인코딩: EUC-KR
+[2025-09-24 23:12:58] 🔍 [DRY RUN] 변환 예정: C:\xampp\htdocs\admin\MlangFriendSite\ViewFild.php
+[2025-09-24 23:12:58] C:\xampp\htdocs\admin\MlangOrder\OnlineOrder_LoveStry103.php - 감지된 인코딩: EUC-KR
+[2025-09-24 23:12:58] 🔍 [DRY RUN] 변환 예정: C:\xampp\htdocs\admin\MlangOrder\OnlineOrder_LoveStry103.php
+[2025-09-24 23:12:58] C:\xampp\htdocs\admin\MlangOrder\OnlineOrder_LoveStry104.php - 감지된 인코딩: EUC-KR
+[2025-09-24 23:12:58] 🔍 [DRY RUN] 변환 예정: C:\xampp\htdocs\admin\MlangOrder\OnlineOrder_LoveStry104.php
+[2025-09-24 23:12:58] C:\xampp\htdocs\admin\MlangOrder_PrintAuto\OnlineOrder.php - 감지된 인코딩: EUC-KR
+[2025-09-24 23:12:58] 🔍 [DRY RUN] 변환 예정: C:\xampp\htdocs\admin\MlangOrder_PrintAuto\OnlineOrder.php
+[2025-09-24 23:12:58] C:\xampp\htdocs\admin\MlangPoll\admin.php - 감지된 인코딩: EUC-KR
+[2025-09-24 23:12:58] 🔍 [DRY RUN] 변환 예정: C:\xampp\htdocs\admin\MlangPoll\admin.php
+[2025-09-24 23:12:58] ⏭️  건너뜀 (이미 UTF-8): C:\xampp\htdocs\admin\MlangPoll\db.inc.php
+[2025-09-24 23:12:58] C:\xampp\htdocs\admin\MlangPoll\login.php - 감지된 인코딩: EUC-KR
+[2025-09-24 23:12:58] 🔍 [DRY RUN] 변환 예정: C:\xampp\htdocs\admin\MlangPoll\login.php
+[2025-09-24 23:12:58] C:\xampp\htdocs\admin\MlangPoll\pollconfig.php - 감지된 인코딩: EUC-KR
+[2025-09-24 23:12:58] 🔍 [DRY RUN] 변환 예정: C:\xampp\htdocs\admin\MlangPoll\pollconfig.php
+[2025-09-24 23:12:58] C:\xampp\htdocs\admin\MlangPoll\polldb.php - 감지된 인코딩: EUC-KR
+[2025-09-24 23:12:58] 🔍 [DRY RUN] 변환 예정: C:\xampp\htdocs\admin\MlangPoll\polldb.php
+[2025-09-24 23:12:58] ⏭️  건너뜀 (이미 UTF-8): C:\xampp\htdocs\admin\MlangPoll\pollfunctions.php
+[2025-09-24 23:12:58] C:\xampp\htdocs\admin\MlangPrintAuto\admin.php - 감지된 인코딩: EUC-KR
+[2025-09-24 23:12:58] 🔍 [DRY RUN] 변환 예정: C:\xampp\htdocs\admin\MlangPrintAuto\admin.php
+[2025-09-24 23:12:58] C:\xampp\htdocs\admin\MlangPrintAuto\cadarokTwo_admin.php - 감지된 인코딩: EUC-KR
+[2025-09-24 23:12:58] 🔍 [DRY RUN] 변환 예정: C:\xampp\htdocs\admin\MlangPrintAuto\cadarokTwo_admin.php
+[2025-09-24 23:12:58] C:\xampp\htdocs\admin\MlangPrintAuto\cadarokTwo_List.php - 감지된 인코딩: EUC-KR
+[2025-09-24 23:12:58] 🔍 [DRY RUN] 변환 예정: C:\xampp\htdocs\admin\MlangPrintAuto\cadarokTwo_List.php
+[2025-09-24 23:12:58] C:\xampp\htdocs\admin\MlangPrintAuto\cadarokTwo_NoFild.php - 감지된 인코딩: EUC-KR
+[2025-09-24 23:12:58] 🔍 [DRY RUN] 변환 예정: C:\xampp\htdocs\admin\MlangPrintAuto\cadarokTwo_NoFild.php
+[2025-09-24 23:12:58] C:\xampp\htdocs\admin\MlangPrintAuto\cadarokTwo_Script.php - 감지된 인코딩: EUC-KR
+[2025-09-24 23:12:58] 🔍 [DRY RUN] 변환 예정: C:\xampp\htdocs\admin\MlangPrintAuto\cadarokTwo_Script.php
+[2025-09-24 23:12:58] C:\xampp\htdocs\admin\MlangPrintAuto\cadarokTwo_ScriptSearch.php - 감지된 인코딩: EUC-KR
+[2025-09-24 23:12:58] 🔍 [DRY RUN] 변환 예정: C:\xampp\htdocs\admin\MlangPrintAuto\cadarokTwo_ScriptSearch.php
+[2025-09-24 23:12:58] C:\xampp\htdocs\admin\MlangPrintAuto\cadarok_admin.php - 감지된 인코딩: EUC-KR
+[2025-09-24 23:12:58] 🔍 [DRY RUN] 변환 예정: C:\xampp\htdocs\admin\MlangPrintAuto\cadarok_admin.php
+[2025-09-24 23:12:58] C:\xampp\htdocs\admin\MlangPrintAuto\cadarok_List.php - 감지된 인코딩: EUC-KR
+[2025-09-24 23:12:58] 🔍 [DRY RUN] 변환 예정: C:\xampp\htdocs\admin\MlangPrintAuto\cadarok_List.php
+[2025-09-24 23:12:58] C:\xampp\htdocs\admin\MlangPrintAuto\cadarok_NoFild.php - 감지된 인코딩: EUC-KR
+[2025-09-24 23:12:58] 🔍 [DRY RUN] 변환 예정: C:\xampp\htdocs\admin\MlangPrintAuto\cadarok_NoFild.php
+[2025-09-24 23:12:58] C:\xampp\htdocs\admin\MlangPrintAuto\cadarok_Script.php - 감지된 인코딩: EUC-KR
+[2025-09-24 23:12:58] 🔍 [DRY RUN] 변환 예정: C:\xampp\htdocs\admin\MlangPrintAuto\cadarok_Script.php
+[2025-09-24 23:12:58] C:\xampp\htdocs\admin\MlangPrintAuto\cadarok_ScriptSearch.php - 감지된 인코딩: EUC-KR
+[2025-09-24 23:12:58] 🔍 [DRY RUN] 변환 예정: C:\xampp\htdocs\admin\MlangPrintAuto\cadarok_ScriptSearch.php
+[2025-09-24 23:12:58] C:\xampp\htdocs\admin\MlangPrintAuto\CateAdmin.php - 감지된 인코딩: EUC-KR
+[2025-09-24 23:12:58] 🔍 [DRY RUN] 변환 예정: C:\xampp\htdocs\admin\MlangPrintAuto\CateAdmin.php
+[2025-09-24 23:12:58] C:\xampp\htdocs\admin\MlangPrintAuto\CateAdmin_title.php - 감지된 인코딩: EUC-KR
+[2025-09-24 23:12:58] 🔍 [DRY RUN] 변환 예정: C:\xampp\htdocs\admin\MlangPrintAuto\CateAdmin_title.php
+[2025-09-24 23:12:58] C:\xampp\htdocs\admin\MlangPrintAuto\CateList.php - 감지된 인코딩: EUC-KR
+[2025-09-24 23:12:58] 🔍 [DRY RUN] 변환 예정: C:\xampp\htdocs\admin\MlangPrintAuto\CateList.php
+[2025-09-24 23:12:58] C:\xampp\htdocs\admin\MlangPrintAuto\CateList_Title.php - 감지된 인코딩: EUC-KR
+[2025-09-24 23:12:58] 🔍 [DRY RUN] 변환 예정: C:\xampp\htdocs\admin\MlangPrintAuto\CateList_Title.php
+[2025-09-24 23:12:58] ⏭️  건너뜀 (이미 UTF-8): C:\xampp\htdocs\admin\MlangPrintAuto\CateView.php
+[2025-09-24 23:12:58] C:\xampp\htdocs\admin\MlangPrintAuto\download.php - 감지된 인코딩: EUC-KR
+[2025-09-24 23:12:58] 🔍 [DRY RUN] 변환 예정: C:\xampp\htdocs\admin\MlangPrintAuto\download.php
+[2025-09-24 23:12:58] C:\xampp\htdocs\admin\MlangPrintAuto\envelope_admin.php - 감지된 인코딩: EUC-KR
+[2025-09-24 23:12:58] 🔍 [DRY RUN] 변환 예정: C:\xampp\htdocs\admin\MlangPrintAuto\envelope_admin.php
+[2025-09-24 23:12:58] C:\xampp\htdocs\admin\MlangPrintAuto\envelope_List.php - 감지된 인코딩: EUC-KR
+[2025-09-24 23:12:58] 🔍 [DRY RUN] 변환 예정: C:\xampp\htdocs\admin\MlangPrintAuto\envelope_List.php
+[2025-09-24 23:12:58] C:\xampp\htdocs\admin\MlangPrintAuto\envelope_NoFild.php - 감지된 인코딩: EUC-KR
+[2025-09-24 23:12:58] 🔍 [DRY RUN] 변환 예정: C:\xampp\htdocs\admin\MlangPrintAuto\envelope_NoFild.php
+[2025-09-24 23:12:58] C:\xampp\htdocs\admin\MlangPrintAuto\envelope_Script.php - 감지된 인코딩: EUC-KR
+[2025-09-24 23:12:58] 🔍 [DRY RUN] 변환 예정: C:\xampp\htdocs\admin\MlangPrintAuto\envelope_Script.php
+[2025-09-24 23:12:58] C:\xampp\htdocs\admin\MlangPrintAuto\envelope_ScriptSearch.php - 감지된 인코딩: EUC-KR
+[2025-09-24 23:12:58] 🔍 [DRY RUN] 변환 예정: C:\xampp\htdocs\admin\MlangPrintAuto\envelope_ScriptSearch.php
+[2025-09-24 23:12:58] C:\xampp\htdocs\admin\MlangPrintAuto\inserted_admin.php - 감지된 인코딩: EUC-KR
+[2025-09-24 23:12:58] 🔍 [DRY RUN] 변환 예정: C:\xampp\htdocs\admin\MlangPrintAuto\inserted_admin.php
+[2025-09-24 23:12:58] C:\xampp\htdocs\admin\MlangPrintAuto\inserted_List.php - 감지된 인코딩: EUC-KR
+[2025-09-24 23:12:58] 🔍 [DRY RUN] 변환 예정: C:\xampp\htdocs\admin\MlangPrintAuto\inserted_List.php
+[2025-09-24 23:12:58] C:\xampp\htdocs\admin\MlangPrintAuto\inserted_NoFild.php - 감지된 인코딩: EUC-KR
+[2025-09-24 23:12:58] 🔍 [DRY RUN] 변환 예정: C:\xampp\htdocs\admin\MlangPrintAuto\inserted_NoFild.php
+[2025-09-24 23:12:58] C:\xampp\htdocs\admin\MlangPrintAuto\inserted_Script.php - 감지된 인코딩: EUC-KR
+[2025-09-24 23:12:58] 🔍 [DRY RUN] 변환 예정: C:\xampp\htdocs\admin\MlangPrintAuto\inserted_Script.php
+[2025-09-24 23:12:58] C:\xampp\htdocs\admin\MlangPrintAuto\inserted_ScriptSearch.php - 감지된 인코딩: EUC-KR
+[2025-09-24 23:12:58] 🔍 [DRY RUN] 변환 예정: C:\xampp\htdocs\admin\MlangPrintAuto\inserted_ScriptSearch.php
+[2025-09-24 23:12:58] C:\xampp\htdocs\admin\MlangPrintAuto\int\info.php - 감지된 인코딩: EUC-KR
+[2025-09-24 23:12:58] 🔍 [DRY RUN] 변환 예정: C:\xampp\htdocs\admin\MlangPrintAuto\int\info.php
+[2025-09-24 23:12:58] C:\xampp\htdocs\admin\MlangPrintAuto\int\info13.php - 감지된 인코딩: EUC-KR
+[2025-09-24 23:12:58] 🔍 [DRY RUN] 변환 예정: C:\xampp\htdocs\admin\MlangPrintAuto\int\info13.php
+[2025-09-24 23:12:58] C:\xampp\htdocs\admin\MlangPrintAuto\ListSearchBox.php - 감지된 인코딩: EUC-KR
+[2025-09-24 23:12:58] 🔍 [DRY RUN] 변환 예정: C:\xampp\htdocs\admin\MlangPrintAuto\ListSearchBox.php
+[2025-09-24 23:12:58] C:\xampp\htdocs\admin\MlangPrintAuto\LittlePrint_admin.php - 감지된 인코딩: EUC-KR
+[2025-09-24 23:12:58] 🔍 [DRY RUN] 변환 예정: C:\xampp\htdocs\admin\MlangPrintAuto\LittlePrint_admin.php
+[2025-09-24 23:12:58] C:\xampp\htdocs\admin\MlangPrintAuto\LittlePrint_List.php - 감지된 인코딩: EUC-KR
+[2025-09-24 23:12:58] 🔍 [DRY RUN] 변환 예정: C:\xampp\htdocs\admin\MlangPrintAuto\LittlePrint_List.php
+[2025-09-24 23:12:58] C:\xampp\htdocs\admin\MlangPrintAuto\LittlePrint_NoFild.php - 감지된 인코딩: EUC-KR
+[2025-09-24 23:12:58] 🔍 [DRY RUN] 변환 예정: C:\xampp\htdocs\admin\MlangPrintAuto\LittlePrint_NoFild.php
+[2025-09-24 23:12:58] C:\xampp\htdocs\admin\MlangPrintAuto\LittlePrint_Script.php - 감지된 인코딩: EUC-KR
+[2025-09-24 23:12:58] 🔍 [DRY RUN] 변환 예정: C:\xampp\htdocs\admin\MlangPrintAuto\LittlePrint_Script.php
+[2025-09-24 23:12:58] C:\xampp\htdocs\admin\MlangPrintAuto\LittlePrint_ScriptSearch.php - 감지된 인코딩: EUC-KR
+[2025-09-24 23:12:58] 🔍 [DRY RUN] 변환 예정: C:\xampp\htdocs\admin\MlangPrintAuto\LittlePrint_ScriptSearch.php
+[2025-09-24 23:12:58] C:\xampp\htdocs\admin\MlangPrintAuto\MemberOrderOffice\admin.php - 감지된 인코딩: EUC-KR
+[2025-09-24 23:12:58] 🔍 [DRY RUN] 변환 예정: C:\xampp\htdocs\admin\MlangPrintAuto\MemberOrderOffice\admin.php
+[2025-09-24 23:12:58] ⏭️  건너뜀 (이미 UTF-8): C:\xampp\htdocs\admin\MlangPrintAuto\MemberOrderOffice\BizInfoView.php
+[2025-09-24 23:12:58] C:\xampp\htdocs\admin\MlangPrintAuto\MemberOrderOffice\int.php - 감지된 인코딩: EUC-KR
+[2025-09-24 23:12:58] 🔍 [DRY RUN] 변환 예정: C:\xampp\htdocs\admin\MlangPrintAuto\MemberOrderOffice\int.php
+[2025-09-24 23:12:58] C:\xampp\htdocs\admin\MlangPrintAuto\MemberOrderOffice\upload_1.php - 감지된 인코딩: EUC-KR
+[2025-09-24 23:12:58] 🔍 [DRY RUN] 변환 예정: C:\xampp\htdocs\admin\MlangPrintAuto\MemberOrderOffice\upload_1.php
+[2025-09-24 23:12:58] C:\xampp\htdocs\admin\MlangPrintAuto\MemberOrderOffice\upload_2.php - 감지된 인코딩: EUC-KR
+[2025-09-24 23:12:58] 🔍 [DRY RUN] 변환 예정: C:\xampp\htdocs\admin\MlangPrintAuto\MemberOrderOffice\upload_2.php
+[2025-09-24 23:12:58] C:\xampp\htdocs\admin\MlangPrintAuto\MemberOrderOffice\upload_3.php - 감지된 인코딩: EUC-KR
+[2025-09-24 23:12:58] 🔍 [DRY RUN] 변환 예정: C:\xampp\htdocs\admin\MlangPrintAuto\MemberOrderOffice\upload_3.php
+[2025-09-24 23:12:58] C:\xampp\htdocs\admin\MlangPrintAuto\MemberOrderOffice\upload_4.php - 감지된 인코딩: EUC-KR
+[2025-09-24 23:12:58] 🔍 [DRY RUN] 변환 예정: C:\xampp\htdocs\admin\MlangPrintAuto\MemberOrderOffice\upload_4.php
+[2025-09-24 23:12:58] ⏭️  건너뜀 (이미 UTF-8): C:\xampp\htdocs\admin\MlangPrintAuto\MemberOrderOffice\View.php
+[2025-09-24 23:12:58] C:\xampp\htdocs\admin\MlangPrintAuto\MemberOrderOffice\View230315.php - 감지된 인코딩: EUC-KR
+[2025-09-24 23:12:58] 🔍 [DRY RUN] 변환 예정: C:\xampp\htdocs\admin\MlangPrintAuto\MemberOrderOffice\View230315.php
+[2025-09-24 23:12:58] C:\xampp\htdocs\admin\MlangPrintAuto\MemberOrderOfficeList.php - 감지된 인코딩: EUC-KR
+[2025-09-24 23:12:58] 🔍 [DRY RUN] 변환 예정: C:\xampp\htdocs\admin\MlangPrintAuto\MemberOrderOfficeList.php
+[2025-09-24 23:12:58] C:\xampp\htdocs\admin\MlangPrintAuto\MemberOrderOfficeList01.php - 감지된 인코딩: EUC-KR
+[2025-09-24 23:12:58] 🔍 [DRY RUN] 변환 예정: C:\xampp\htdocs\admin\MlangPrintAuto\MemberOrderOfficeList01.php
+[2025-09-24 23:12:58] C:\xampp\htdocs\admin\MlangPrintAuto\MemberOrderOfficeList201231.php - 감지된 인코딩: EUC-KR
+[2025-09-24 23:12:58] 🔍 [DRY RUN] 변환 예정: C:\xampp\htdocs\admin\MlangPrintAuto\MemberOrderOfficeList201231.php
+[2025-09-24 23:12:58] C:\xampp\htdocs\admin\MlangPrintAuto\MerchandiseBond_admin.php - 감지된 인코딩: EUC-KR
+[2025-09-24 23:12:58] 🔍 [DRY RUN] 변환 예정: C:\xampp\htdocs\admin\MlangPrintAuto\MerchandiseBond_admin.php
+[2025-09-24 23:12:58] C:\xampp\htdocs\admin\MlangPrintAuto\MerchandiseBond_List.php - 감지된 인코딩: EUC-KR
+[2025-09-24 23:12:58] 🔍 [DRY RUN] 변환 예정: C:\xampp\htdocs\admin\MlangPrintAuto\MerchandiseBond_List.php
+[2025-09-24 23:12:58] C:\xampp\htdocs\admin\MlangPrintAuto\MerchandiseBond_NoFild.php - 감지된 인코딩: EUC-KR
+[2025-09-24 23:12:58] 🔍 [DRY RUN] 변환 예정: C:\xampp\htdocs\admin\MlangPrintAuto\MerchandiseBond_NoFild.php
+[2025-09-24 23:12:58] C:\xampp\htdocs\admin\MlangPrintAuto\MerchandiseBond_Script.php - 감지된 인코딩: EUC-KR
+[2025-09-24 23:12:58] 🔍 [DRY RUN] 변환 예정: C:\xampp\htdocs\admin\MlangPrintAuto\MerchandiseBond_Script.php
+[2025-09-24 23:12:58] C:\xampp\htdocs\admin\MlangPrintAuto\MerchandiseBond_ScriptSearch.php - 감지된 인코딩: EUC-KR
+[2025-09-24 23:12:58] 🔍 [DRY RUN] 변환 예정: C:\xampp\htdocs\admin\MlangPrintAuto\MerchandiseBond_ScriptSearch.php
+[2025-09-24 23:12:58] C:\xampp\htdocs\admin\MlangPrintAuto\NameCard_admin.php - 감지된 인코딩: EUC-KR
+[2025-09-24 23:12:58] 🔍 [DRY RUN] 변환 예정: C:\xampp\htdocs\admin\MlangPrintAuto\NameCard_admin.php
+[2025-09-24 23:12:58] C:\xampp\htdocs\admin\MlangPrintAuto\NameCard_List.php - 감지된 인코딩: EUC-KR
+[2025-09-24 23:12:58] 🔍 [DRY RUN] 변환 예정: C:\xampp\htdocs\admin\MlangPrintAuto\NameCard_List.php
+[2025-09-24 23:12:58] C:\xampp\htdocs\admin\MlangPrintAuto\NameCard_NoFild.php - 감지된 인코딩: EUC-KR
+[2025-09-24 23:12:58] 🔍 [DRY RUN] 변환 예정: C:\xampp\htdocs\admin\MlangPrintAuto\NameCard_NoFild.php
+[2025-09-24 23:12:58] C:\xampp\htdocs\admin\MlangPrintAuto\NameCard_Script.php - 감지된 인코딩: EUC-KR
+[2025-09-24 23:12:58] 🔍 [DRY RUN] 변환 예정: C:\xampp\htdocs\admin\MlangPrintAuto\NameCard_Script.php
+[2025-09-24 23:12:58] C:\xampp\htdocs\admin\MlangPrintAuto\NameCard_ScriptSearch.php - 감지된 인코딩: EUC-KR
+[2025-09-24 23:12:58] 🔍 [DRY RUN] 변환 예정: C:\xampp\htdocs\admin\MlangPrintAuto\NameCard_ScriptSearch.php
+[2025-09-24 23:12:58] C:\xampp\htdocs\admin\MlangPrintAuto\NcrFlambeau_admin.php - 감지된 인코딩: EUC-KR
+[2025-09-24 23:12:58] 🔍 [DRY RUN] 변환 예정: C:\xampp\htdocs\admin\MlangPrintAuto\NcrFlambeau_admin.php
+[2025-09-24 23:12:58] C:\xampp\htdocs\admin\MlangPrintAuto\NcrFlambeau_List.php - 감지된 인코딩: EUC-KR
+[2025-09-24 23:12:58] 🔍 [DRY RUN] 변환 예정: C:\xampp\htdocs\admin\MlangPrintAuto\NcrFlambeau_List.php
+[2025-09-24 23:12:58] C:\xampp\htdocs\admin\MlangPrintAuto\NcrFlambeau_NoFild.php - 감지된 인코딩: EUC-KR
+[2025-09-24 23:12:58] 🔍 [DRY RUN] 변환 예정: C:\xampp\htdocs\admin\MlangPrintAuto\NcrFlambeau_NoFild.php
+[2025-09-24 23:12:58] C:\xampp\htdocs\admin\MlangPrintAuto\NcrFlambeau_Script.php - 감지된 인코딩: EUC-KR
+[2025-09-24 23:12:58] 🔍 [DRY RUN] 변환 예정: C:\xampp\htdocs\admin\MlangPrintAuto\NcrFlambeau_Script.php
+[2025-09-24 23:12:58] C:\xampp\htdocs\admin\MlangPrintAuto\NcrFlambeau_ScriptSearch.php - 감지된 인코딩: EUC-KR
+[2025-09-24 23:12:58] 🔍 [DRY RUN] 변환 예정: C:\xampp\htdocs\admin\MlangPrintAuto\NcrFlambeau_ScriptSearch.php
+[2025-09-24 23:12:58] C:\xampp\htdocs\admin\MlangPrintAuto\OfferOrder.php - 감지된 인코딩: EUC-KR
+[2025-09-24 23:12:58] 🔍 [DRY RUN] 변환 예정: C:\xampp\htdocs\admin\MlangPrintAuto\OfferOrder.php
+[2025-09-24 23:12:58] C:\xampp\htdocs\admin\MlangPrintAuto\OrderList.php - 감지된 인코딩: EUC-KR
+[2025-09-24 23:12:58] 🔍 [DRY RUN] 변환 예정: C:\xampp\htdocs\admin\MlangPrintAuto\OrderList.php
+[2025-09-24 23:12:58] C:\xampp\htdocs\admin\MlangPrintAuto\OrderList0501.php - 감지된 인코딩: EUC-KR
+[2025-09-24 23:12:58] 🔍 [DRY RUN] 변환 예정: C:\xampp\htdocs\admin\MlangPrintAuto\OrderList0501.php
+[2025-09-24 23:12:58] C:\xampp\htdocs\admin\MlangPrintAuto\OrderList181102.php - 감지된 인코딩: EUC-KR
+[2025-09-24 23:12:58] 🔍 [DRY RUN] 변환 예정: C:\xampp\htdocs\admin\MlangPrintAuto\OrderList181102.php
+[2025-09-24 23:12:58] C:\xampp\htdocs\admin\MlangPrintAuto\sticker_admin.php - 감지된 인코딩: EUC-KR
+[2025-09-24 23:12:58] 🔍 [DRY RUN] 변환 예정: C:\xampp\htdocs\admin\MlangPrintAuto\sticker_admin.php
+[2025-09-24 23:12:58] C:\xampp\htdocs\admin\MlangPrintAuto\sticker_List.php - 감지된 인코딩: EUC-KR
+[2025-09-24 23:12:58] 🔍 [DRY RUN] 변환 예정: C:\xampp\htdocs\admin\MlangPrintAuto\sticker_List.php
+[2025-09-24 23:12:58] C:\xampp\htdocs\admin\MlangPrintAuto\sticker_NoFild.php - 감지된 인코딩: EUC-KR
+[2025-09-24 23:12:58] 🔍 [DRY RUN] 변환 예정: C:\xampp\htdocs\admin\MlangPrintAuto\sticker_NoFild.php
+[2025-09-24 23:12:58] C:\xampp\htdocs\admin\MlangPrintAuto\sticker_Script.php - 감지된 인코딩: EUC-KR
+[2025-09-24 23:12:58] 🔍 [DRY RUN] 변환 예정: C:\xampp\htdocs\admin\MlangPrintAuto\sticker_Script.php
+[2025-09-24 23:12:58] C:\xampp\htdocs\admin\MlangPrintAuto\sticker_ScriptSearch.php - 감지된 인코딩: EUC-KR
+[2025-09-24 23:12:58] 🔍 [DRY RUN] 변환 예정: C:\xampp\htdocs\admin\MlangPrintAuto\sticker_ScriptSearch.php
+[2025-09-24 23:12:58] C:\xampp\htdocs\admin\MlangPrintAuto\SuCateAdmin.php - 감지된 인코딩: EUC-KR
+[2025-09-24 23:12:58] 🔍 [DRY RUN] 변환 예정: C:\xampp\htdocs\admin\MlangPrintAuto\SuCateAdmin.php
+[2025-09-24 23:12:58] C:\xampp\htdocs\admin\MlangPrintAuto\SuCateList.php - 감지된 인코딩: EUC-KR
+[2025-09-24 23:12:58] 🔍 [DRY RUN] 변환 예정: C:\xampp\htdocs\admin\MlangPrintAuto\SuCateList.php
+[2025-09-24 23:12:58] ⏭️  건너뜀 (이미 UTF-8): C:\xampp\htdocs\admin\MlangPrintAuto\SuCateView.php
+[2025-09-24 23:12:58] C:\xampp\htdocs\admin\MlangPrintAuto\upload.php - 감지된 인코딩: EUC-KR
+[2025-09-24 23:12:58] 🔍 [DRY RUN] 변환 예정: C:\xampp\htdocs\admin\MlangPrintAuto\upload.php
+[2025-09-24 23:12:58] C:\xampp\htdocs\admin\MlangWebOffice\Biz_particulars\admin.php - 감지된 인코딩: EUC-KR
+[2025-09-24 23:12:58] 🔍 [DRY RUN] 변환 예정: C:\xampp\htdocs\admin\MlangWebOffice\Biz_particulars\admin.php
+[2025-09-24 23:12:58] C:\xampp\htdocs\admin\MlangWebOffice\Biz_particulars\SoList.php - 감지된 인코딩: EUC-KR
+[2025-09-24 23:12:58] 🔍 [DRY RUN] 변환 예정: C:\xampp\htdocs\admin\MlangWebOffice\Biz_particulars\SoList.php
+[2025-09-24 23:12:58] ⏭️  건너뜀 (이미 UTF-8): C:\xampp\htdocs\admin\MlangWebOffice\Biz_particulars\view_admin.php
+[2025-09-24 23:12:58] C:\xampp\htdocs\admin\MlangWebOffice\Biz_particulars\view_list.php - 감지된 인코딩: EUC-KR
+[2025-09-24 23:12:58] 🔍 [DRY RUN] 변환 예정: C:\xampp\htdocs\admin\MlangWebOffice\Biz_particulars\view_list.php
+[2025-09-24 23:12:58] C:\xampp\htdocs\admin\MlangWebOffice\Biz_particulars.php - 감지된 인코딩: EUC-KR
+[2025-09-24 23:12:58] 🔍 [DRY RUN] 변환 예정: C:\xampp\htdocs\admin\MlangWebOffice\Biz_particulars.php
+[2025-09-24 23:12:58] C:\xampp\htdocs\admin\MlangWebOffice\customer\admin.php - 감지된 인코딩: EUC-KR
+[2025-09-24 23:12:58] 🔍 [DRY RUN] 변환 예정: C:\xampp\htdocs\admin\MlangWebOffice\customer\admin.php
+[2025-09-24 23:12:58] C:\xampp\htdocs\admin\MlangWebOffice\customer\upload.php - 감지된 인코딩: EUC-KR
+[2025-09-24 23:12:58] 🔍 [DRY RUN] 변환 예정: C:\xampp\htdocs\admin\MlangWebOffice\customer\upload.php
+[2025-09-24 23:12:58] ⏭️  건너뜀 (이미 UTF-8): C:\xampp\htdocs\admin\MlangWebOffice\customer\view.php
+[2025-09-24 23:12:58] ⏭️  건너뜀 (이미 UTF-8): C:\xampp\htdocs\admin\MlangWebOffice\customer\view_staff.php
+[2025-09-24 23:12:58] C:\xampp\htdocs\admin\MlangWebOffice\customer.php - 감지된 인코딩: EUC-KR
+[2025-09-24 23:12:58] 🔍 [DRY RUN] 변환 예정: C:\xampp\htdocs\admin\MlangWebOffice\customer.php
+[2025-09-24 23:12:58] C:\xampp\htdocs\admin\MlangWebOffice\heavy_customer\admin.php - 감지된 인코딩: EUC-KR
+[2025-09-24 23:12:58] 🔍 [DRY RUN] 변환 예정: C:\xampp\htdocs\admin\MlangWebOffice\heavy_customer\admin.php
+[2025-09-24 23:12:58] C:\xampp\htdocs\admin\MlangWebOffice\heavy_customer\upload.php - 감지된 인코딩: EUC-KR
+[2025-09-24 23:12:58] 🔍 [DRY RUN] 변환 예정: C:\xampp\htdocs\admin\MlangWebOffice\heavy_customer\upload.php
+[2025-09-24 23:12:58] ⏭️  건너뜀 (이미 UTF-8): C:\xampp\htdocs\admin\MlangWebOffice\heavy_customer\view.php
+[2025-09-24 23:12:58] C:\xampp\htdocs\admin\MlangWebOffice\heavy_customer.php - 감지된 인코딩: EUC-KR
+[2025-09-24 23:12:58] 🔍 [DRY RUN] 변환 예정: C:\xampp\htdocs\admin\MlangWebOffice\heavy_customer.php
+[2025-09-24 23:12:58] ⏭️  건너뜀 (이미 UTF-8): C:\xampp\htdocs\admin\MlangWebOffice\job\admin.php
+[2025-09-24 23:12:58] C:\xampp\htdocs\admin\MlangWebOffice\job.php - 감지된 인코딩: EUC-KR
+[2025-09-24 23:12:58] 🔍 [DRY RUN] 변환 예정: C:\xampp\htdocs\admin\MlangWebOffice\job.php
+[2025-09-24 23:12:58] C:\xampp\htdocs\admin\page\editor\submit_ok.php - 감지된 인코딩: EUC-KR
+[2025-09-24 23:12:58] 🔍 [DRY RUN] 변환 예정: C:\xampp\htdocs\admin\page\editor\submit_ok.php
+[2025-09-24 23:12:58] C:\xampp\htdocs\admin\page\html_edit.php - 감지된 인코딩: EUC-KR
+[2025-09-24 23:12:58] 🔍 [DRY RUN] 변환 예정: C:\xampp\htdocs\admin\page\html_edit.php
+[2025-09-24 23:12:58] C:\xampp\htdocs\admin\page\html_edit_modify_br.php - 감지된 인코딩: EUC-KR
+[2025-09-24 23:12:58] 🔍 [DRY RUN] 변환 예정: C:\xampp\htdocs\admin\page\html_edit_modify_br.php
+[2025-09-24 23:12:58] C:\xampp\htdocs\admin\page\html_edit_modify_edit.php - 감지된 인코딩: EUC-KR
+[2025-09-24 23:12:58] 🔍 [DRY RUN] 변환 예정: C:\xampp\htdocs\admin\page\html_edit_modify_edit.php
+[2025-09-24 23:12:58] C:\xampp\htdocs\admin\page\html_edit_modify_file.php - 감지된 인코딩: EUC-KR
+[2025-09-24 23:12:58] 🔍 [DRY RUN] 변환 예정: C:\xampp\htdocs\admin\page\html_edit_modify_file.php
+[2025-09-24 23:12:58] C:\xampp\htdocs\admin\page\html_edit_modify_html.php - 감지된 인코딩: EUC-KR
+[2025-09-24 23:12:58] 🔍 [DRY RUN] 변환 예정: C:\xampp\htdocs\admin\page\html_edit_modify_html.php
+[2025-09-24 23:12:58] C:\xampp\htdocs\admin\page\page_admin.php - 감지된 인코딩: EUC-KR
+[2025-09-24 23:12:58] 🔍 [DRY RUN] 변환 예정: C:\xampp\htdocs\admin\page\page_admin.php
+[2025-09-24 23:12:58] C:\xampp\htdocs\admin\page\page_menu_admin.php - 감지된 인코딩: EUC-KR
+[2025-09-24 23:12:58] 🔍 [DRY RUN] 변환 예정: C:\xampp\htdocs\admin\page\page_menu_admin.php
+[2025-09-24 23:12:58] C:\xampp\htdocs\admin\page\page_menu_list.php - 감지된 인코딩: EUC-KR
+[2025-09-24 23:12:58] 🔍 [DRY RUN] 변환 예정: C:\xampp\htdocs\admin\page\page_menu_list.php
+[2025-09-24 23:12:58] C:\xampp\htdocs\admin\page\page_menu_submit.php - 감지된 인코딩: EUC-KR
+[2025-09-24 23:12:58] 🔍 [DRY RUN] 변환 예정: C:\xampp\htdocs\admin\page\page_menu_submit.php
+[2025-09-24 23:12:58] C:\xampp\htdocs\admin\page\page_page_list.php - 감지된 인코딩: EUC-KR
+[2025-09-24 23:12:58] 🔍 [DRY RUN] 변환 예정: C:\xampp\htdocs\admin\page\page_page_list.php
+[2025-09-24 23:12:58] C:\xampp\htdocs\admin\page\page_submit.php - 감지된 인코딩: EUC-KR
+[2025-09-24 23:12:58] 🔍 [DRY RUN] 변환 예정: C:\xampp\htdocs\admin\page\page_submit.php
+[2025-09-24 23:12:58] C:\xampp\htdocs\admin\page\upload\data.php - 감지된 인코딩: EUC-KR
+[2025-09-24 23:12:58] 🔍 [DRY RUN] 변환 예정: C:\xampp\htdocs\admin\page\upload\data.php
+[2025-09-24 23:12:58] C:\xampp\htdocs\admin\page\upload\img.php - 감지된 인코딩: EUC-KR
+[2025-09-24 23:12:58] 🔍 [DRY RUN] 변환 예정: C:\xampp\htdocs\admin\page\upload\img.php
+[2025-09-24 23:12:58] ⏭️  건너뜀 (이미 UTF-8): C:\xampp\htdocs\admin\results\admin.php
+[2025-09-24 23:12:58] C:\xampp\htdocs\admin\results\admin_public.php - 감지된 인코딩: EUC-KR
+[2025-09-24 23:12:58] 🔍 [DRY RUN] 변환 예정: C:\xampp\htdocs\admin\results\admin_public.php
+[2025-09-24 23:12:58] C:\xampp\htdocs\admin\results\admin_submit.php - 감지된 인코딩: EUC-KR
+[2025-09-24 23:12:58] 🔍 [DRY RUN] 변환 예정: C:\xampp\htdocs\admin\results\admin_submit.php
+[2025-09-24 23:12:58] ⏭️  건너뜀 (이미 UTF-8): C:\xampp\htdocs\admin\results\data.php
+[2025-09-24 23:12:58] C:\xampp\htdocs\admin\results\data_admin_fild.php - 감지된 인코딩: EUC-KR
+[2025-09-24 23:12:58] 🔍 [DRY RUN] 변환 예정: C:\xampp\htdocs\admin\results\data_admin_fild.php
+[2025-09-24 23:12:58] C:\xampp\htdocs\admin\results\data_list.php - 감지된 인코딩: EUC-KR
+[2025-09-24 23:12:58] 🔍 [DRY RUN] 변환 예정: C:\xampp\htdocs\admin\results\data_list.php
+[2025-09-24 23:12:58] C:\xampp\htdocs\admin\results\data_submit.php - 감지된 인코딩: EUC-KR
+[2025-09-24 23:12:58] 🔍 [DRY RUN] 변환 예정: C:\xampp\htdocs\admin\results\data_submit.php
+[2025-09-24 23:12:58] C:\xampp\htdocs\admin\results\list.php - 감지된 인코딩: EUC-KR
+[2025-09-24 23:12:58] 🔍 [DRY RUN] 변환 예정: C:\xampp\htdocs\admin\results\list.php
+[2025-09-24 23:12:58] C:\xampp\htdocs\admin\results\results_item.php - 감지된 인코딩: EUC-KR
+[2025-09-24 23:12:58] 🔍 [DRY RUN] 변환 예정: C:\xampp\htdocs\admin\results\results_item.php
+[2025-09-24 23:12:58] ⏭️  건너뜀 (이미 UTF-8): C:\xampp\htdocs\admin\results2\admin.php
+[2025-09-24 23:12:58] C:\xampp\htdocs\admin\results2\admin_public.php - 감지된 인코딩: EUC-KR
+[2025-09-24 23:12:58] 🔍 [DRY RUN] 변환 예정: C:\xampp\htdocs\admin\results2\admin_public.php
+[2025-09-24 23:12:58] C:\xampp\htdocs\admin\results2\admin_submit.php - 감지된 인코딩: EUC-KR
+[2025-09-24 23:12:58] 🔍 [DRY RUN] 변환 예정: C:\xampp\htdocs\admin\results2\admin_submit.php
+[2025-09-24 23:12:58] ⏭️  건너뜀 (이미 UTF-8): C:\xampp\htdocs\admin\results2\data.php
+[2025-09-24 23:12:58] C:\xampp\htdocs\admin\results2\data_admin_fild.php - 감지된 인코딩: EUC-KR
+[2025-09-24 23:12:58] 🔍 [DRY RUN] 변환 예정: C:\xampp\htdocs\admin\results2\data_admin_fild.php
+[2025-09-24 23:12:58] C:\xampp\htdocs\admin\results2\data_list.php - 감지된 인코딩: EUC-KR
+[2025-09-24 23:12:58] 🔍 [DRY RUN] 변환 예정: C:\xampp\htdocs\admin\results2\data_list.php
+[2025-09-24 23:12:58] C:\xampp\htdocs\admin\results2\data_submit.php - 감지된 인코딩: EUC-KR
+[2025-09-24 23:12:58] 🔍 [DRY RUN] 변환 예정: C:\xampp\htdocs\admin\results2\data_submit.php
+[2025-09-24 23:12:58] C:\xampp\htdocs\admin\results2\list.php - 감지된 인코딩: EUC-KR
+[2025-09-24 23:12:58] 🔍 [DRY RUN] 변환 예정: C:\xampp\htdocs\admin\results2\list.php
+[2025-09-24 23:12:58] C:\xampp\htdocs\admin\results2\Mlang_bbs_cateTr.php - 감지된 인코딩: EUC-KR
+[2025-09-24 23:12:58] 🔍 [DRY RUN] 변환 예정: C:\xampp\htdocs\admin\results2\Mlang_bbs_cateTr.php
+[2025-09-24 23:12:58] C:\xampp\htdocs\admin\results2\results_item.php - 감지된 인코딩: EUC-KR
+[2025-09-24 23:12:58] 🔍 [DRY RUN] 변환 예정: C:\xampp\htdocs\admin\results2\results_item.php
+[2025-09-24 23:12:58] ⏭️  건너뜀 (이미 UTF-8): C:\xampp\htdocs\admin\title.php
+[2025-09-24 23:12:58] ⏭️  건너뜀 (이미 UTF-8): C:\xampp\htdocs\admin\top.php
+[2025-09-24 23:12:58] C:\xampp\htdocs\admin\WomanMember\admin.php - 감지된 인코딩: EUC-KR
+[2025-09-24 23:12:58] 🔍 [DRY RUN] 변환 예정: C:\xampp\htdocs\admin\WomanMember\admin.php
+[2025-09-24 23:12:58] C:\xampp\htdocs\admin\WomanMember\form.php - 감지된 인코딩: EUC-KR
+[2025-09-24 23:12:58] 🔍 [DRY RUN] 변환 예정: C:\xampp\htdocs\admin\WomanMember\form.php
+[2025-09-24 23:12:58] C:\xampp\htdocs\admin\WomanMember\index.php - 감지된 인코딩: EUC-KR
+[2025-09-24 23:12:58] 🔍 [DRY RUN] 변환 예정: C:\xampp\htdocs\admin\WomanMember\index.php
+[2025-09-24 23:12:58] C:\xampp\htdocs\admin\WomanMember\UploadBig.php - 감지된 인코딩: EUC-KR
+[2025-09-24 23:12:58] 🔍 [DRY RUN] 변환 예정: C:\xampp\htdocs\admin\WomanMember\UploadBig.php
+[2025-09-24 23:12:58] C:\xampp\htdocs\admin\WomanMember\UploadSo.php - 감지된 인코딩: EUC-KR
+[2025-09-24 23:12:58] 🔍 [DRY RUN] 변환 예정: C:\xampp\htdocs\admin\WomanMember\UploadSo.php
+[2025-09-24 23:12:58] === 변환 완료 요약 ===
+[2025-09-24 23:12:58] 총 PHP 파일 수: 204
+[2025-09-24 23:12:58] 변환된 파일 수: 204
+[2025-09-24 23:12:58] === 인코딩 변환 완료 ===
+[2025-09-24 23:12:58] 로그 파일: C:\xampp\htdocs\admin/encoding_conversion_log_2025-09-24_23-12-57.txt

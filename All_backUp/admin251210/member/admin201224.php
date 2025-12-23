@@ -1,0 +1,212 @@
+<?php
+declare(strict_types=1);
+
+// ✅ PHP 7.4 호환: 입력 변수 초기화
+$mode = $_GET['mode'] ?? $_POST['mode'] ?? '';
+$no = $_GET['no'] ?? $_POST['no'] ?? '';
+$search = $_GET['search'] ?? $_POST['search'] ?? '';
+$id = $_GET['id'] ?? $_POST['id'] ?? '';
+$name = $_GET['name'] ?? $_POST['name'] ?? '';
+$code = $_GET['code'] ?? $_POST['code'] ?? '';
+$page = $_GET['page'] ?? $_POST['page'] ?? '';
+
+////////////////// 관리자 로그인 ////////////////////
+function authenticate()
+{
+  HEADER("WWW-authenticate: basic realm=\"관리자 인증!\" ");
+  HEADER("HTTP/1.0 401 Unauthorized");
+  echo("<html><head><script>
+       <!--
+        function pop()
+        { alert('관리자 인증 실패');
+             history.go(-1);}
+       //--->
+        </script>
+        </head>
+        <body onLoad='pop()'></body>
+        </html>
+       ");
+exit;
+}
+
+if(empty($_SERVER['PHP_AUTH_USER']) || empty($_SERVER['PHP_AUTH_PW']))
+{
+ authenticate();
+}
+
+else
+{
+
+include"../../db.php";
+$result= mysqli_query($db, "select * from member where no='1'");
+// ⚠️  에러 처리 권장: mysqli_error() 사용을 고려하세요
+
+$row= mysqli_fetch_array($result);
+
+$adminid="$row[id]";
+$adminpasswd="$row[pass]";
+
+
+ if(strcmp($_SERVER['PHP_AUTH_USER'] ?? '',$adminid) || strcmp($_SERVER['PHP_AUTH_PW'] ?? '',$adminpasswd) )
+ { authenticate(); }
+
+
+}
+
+////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+
+
+if($mode=="view"){
+
+include"../title.php";
+
+$op="pop";
+$db_dir="../..";
+include"../../member/member_fild.php";
+
+$action="admin.php?mode=modifyok";
+$MdoifyMode="view";
+include"../../member/form.php";
+
+} ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+
+if($mode=="delete"){
+
+if($no=="1"){
+echo ("
+<html>
+<script language=javascript>
+window.alert('$no 번은 관리자 입니다.\\n\\n관리자 자신을 탈퇴처리할수없습니다.');
+window.self.close();
+</script>
+</html>
+");
+exit;
+}
+
+
+$result = mysqli_query($db, "DELETE FROM member WHERE no='$no'");
+mysqli_close($db);
+
+echo ("
+<html>
+<script language=javascript>
+window.alert('정상적으로 $no번 회원을 탈퇴 처리 하였습니다.');
+opener.parent.location.reload();
+window.self.close();
+</script>
+</html>
+");
+exit;
+
+
+} ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+
+if($mode=="modifyok"){
+
+include"../../db.php";
+
+if($PhoFileChick){
+
+//^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^//
+if($photofile){
+$upload_dir="./$PhotoFileDir";
+include"./upload.php";
+if($PhotoFileDirName){
+	unlink("$upload_dir/$PhotoFileDirName");
+	unlink("$upload_dir/$SunPhotoName");
+	}
+
+// 이미지 있으니께 썸네일 처리 db.php에서 크기을 제어해준다.
+if($SunPhotoName_ok=="yes"){ //db.php에서 사용여부결정
+include"../PHPClass/UpFileProcessClass.php";
+$file="$upload_dir/$PhotofileName"; //원본이미지 파일
+$save_filename="$SunPhotoName"; //저장할 파일명
+$save_path="$upload_dir/"; //저장할 경로
+$max_width="$SunPhotoName_width"; //만들이미지의 width 값
+$max_height="$SunPhotoName_height"; //만들이미지의 height 
+thumnail($file, $save_filename, $save_path, $max_width, $max_height);
+}
+
+}else{
+echo ("<script language=javascript>
+window.alert('내사진 자료를 수정한다고 체크하셨습니다.\\n\\n그런데 수정할 사진자료가 빠져 있네요 *^^*');
+history.go(-1);
+</script>
+");
+exit;
+}
+//^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^//
+
+$query ="UPDATE member SET 
+pass='$pass',
+NigName='$NigName',
+zip1='$zip1',
+zip2='$zip2',
+zip3='$zip3',
+hendphone1='$hendphone1',
+hendphone2='$hendphone2',
+hendphone3='$hendphone3',
+HeadphoneAStyle='$HeadphoneAStyle',
+phone1='$phone1',
+phone2='$phone2',
+phone3='$phone3',
+PhoneAStyle='$PhoneAStyle',
+email='$email',
+emailAStyle='$emailAStyle',
+Metro='$Metro',
+MetroTwo='$MetroTwo',
+photofile='$PhotofileName'
+WHERE no='$no'";
+
+}else{ 
+
+$query ="UPDATE member SET 
+pass='$pass',
+NigName='$NigName',
+zip1='$zip1',
+zip2='$zip2',
+zip3='$zip3',
+hendphone1='$hendphone1',
+hendphone2='$hendphone2',
+hendphone3='$hendphone3',
+HeadphoneAStyle='$HeadphoneAStyle',
+phone1='$phone1',
+phone2='$phone2',
+phone3='$phone3',
+PhoneAStyle='$PhoneAStyle',
+email='$email',
+emailAStyle='$emailAStyle',
+Metro='$Metro',
+MetroTwo='$MetroTwo'
+WHERE no='$no'";
+
+}
+
+$result= mysqli_query($db, $query);
+
+
+	if(!$result) {
+		echo "
+			<script language=javascript>
+				window.alert(\"DB 접속 에러입니다!\")
+				history.go(-1);
+			</script>";
+		exit;
+
+} else {
+	
+	echo ("
+		<script language=javascript>
+		alert('\\n정보를 정상적으로 수정하였습니다.\\n');
+		opener.parent.location.reload();
+        window.self.close();
+		</script>
+			");
+		exit;
+
+}
+mysqli_close($db);
+
+} ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+?>

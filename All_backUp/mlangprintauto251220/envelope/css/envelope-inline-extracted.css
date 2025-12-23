@@ -1,0 +1,299 @@
+    /* btn-primary 스타일은 공통 CSS (../../css/btn-primary.css)에서 로드됨 */
+    
+    /* =================================================================== */
+    /* 1단계: Page-title 컴팩트화 (1/2 높이 축소) */
+    /* =================================================================== */
+
+    /* =================================================================== */
+    /* 2단계: Calculator-header 컴팩트화 (gallery-title과 동일한 디자인) */
+    /* =================================================================== */
+    .calculator-header, .price-section h3, .price-calculator h3 {
+        background: linear-gradient(135deg, #ff9800 0%, #f57c00 100%);
+        color: white;
+        padding: 15px 20px;       /* gallery-title과 동일 */
+        margin: 0px -25px 20px -25px;      /* 좌우 -25px로 섹션 너비에 맞춤 */
+        border-radius: 15px 15px 0 0;      /* gallery-title과 동일 */
+        font-size: 1.1rem;        /* gallery-title과 동일 */
+        font-weight: 600;
+        text-align: center;
+        box-shadow: 0 2px 10px rgba(255, 152, 0, 0.3); /* gallery-title과 동일 */
+        line-height: 1.2;
+    }
+
+    /* calculator-section 갤러리와 동일한 배경 및 패딩 */
+    .calculator-section {
+        background: linear-gradient(135deg, #f8f9fa 0%, #e9ecef 100%);
+        border-radius: 15px;
+        padding: 25px;
+        box-shadow: 0 10px 35px rgba(0, 0, 0, 0.12), 0 4px 15px rgba(0, 0, 0, 0.08);
+        border: 1px solid rgba(255, 255, 255, 0.9);
+        position: relative; /* 헤더 오버플로우를 위한 설정 */
+        margin-top: 0; /* 상단 여백 제거 */
+        align-self: start; /* 상단 정렬 */
+        height: 450px;
+        min-height: 450px;
+        overflow: auto;
+    }
+
+    .calculator-header h3 {
+        font-size: 1.1rem;        /* gallery-title과 동일 */
+        line-height: 1.2;
+        margin: 0;
+        color: white;
+        font-weight: 600;
+    }
+
+    .calculator-subtitle {
+        font-size: 0.85rem;
+        margin: 0;
+        opacity: 0.9;
+    }
+
+    /* =================================================================== */
+    /* 3단계: 통일된 가격 표시 - 메인 컬러 큰 글씨 (인쇄비+편집비=공급가) */
+    /* =================================================================== */
+    .price-display {
+        margin-bottom: 5px;
+        padding: 8px 5px;
+        border-radius: 8px;
+        background: linear-gradient(145deg, #f8f9fa 0%, #e9ecef 100%);
+        border: 2px solid #1E4E79;
+        text-align: center;
+        transition: all 0.3s ease;
+        box-shadow: 0 4px 12px rgba(30, 78, 121, 0.1);
+    }
+
+    .price-display.calculated {
+        background: linear-gradient(145deg, #E8F0F7 0%, #D1E3F3 100%);
+        transform: translateY(-2px);
+        box-shadow: 0 8px 20px rgba(30, 78, 121, 0.2);
+        border-color: #2D6FA8;
+    }
+
+    .price-display .price-label {
+        font-size: 0.9rem;
+        color: #495057;
+        margin-bottom: 8px;
+        font-weight: 500;
+    }
+
+    .price-display .price-amount {
+        font-size: 0.98rem;
+        font-weight: 700;
+        color: #1E4E79;
+        margin: 10px 0;
+        line-height: 1.2;
+        text-shadow: 0 2px 4px rgba(30, 78, 121, 0.3);
+        letter-spacing: -0.5px;
+    }
+
+    .price-display .price-details {
+        font-size: 0.8rem;
+        color: #6c757d;
+        line-height: 1.4;
+        margin-top: 8px;
+        
+        /* 한 줄 표시 강제 - msticker와 동일 */
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        gap: 15px;
+        flex-wrap: nowrap;
+        white-space: nowrap;
+        overflow-x: auto;
+    }
+    
+    /* 부가세 포함 금액을 견적 금액과 완전히 동일하게 - 봉투 전용 */
+    #priceDisplay .price-details .vat-amount,
+    .price-display .price-details .vat-amount {
+        color: #dc3545;  /* 빨간색 */
+        font-size: 0.98rem;  /* 견적 금액과 동일한 크기 */
+        font-weight: 700;  /* 견적 금액과 동일한 굵기 */
+        font-style: normal;
+        text-decoration: none;
+        line-height: 1.2;  /* 견적 금액과 동일한 라인 높이 */
+        letter-spacing: -0.5px;  /* 견적 금액과 동일한 글자 간격 */
+        font-family: inherit;
+    }
+
+    .price-display:hover {
+        transform: translateY(-1px);
+        box-shadow: 0 6px 16px rgba(30, 78, 121, 0.15);
+    }
+
+    /* =================================================================== */
+    /* 4단계: Form 요소 컴팩트화 (패딩 1/2 축소) */
+    /* =================================================================== */
+    .option-select {
+        padding: 6px 15px;        /* 상하 패딩 1/2 */
+    }
+
+    /* =================================================================== */
+    /* 5단계: 기타 요소들 컴팩트화 */
+    /* =================================================================== */
+    .main-content {
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        gap: 20px;
+        align-items: start; /* 그리드 아이템들을 상단 정렬 */
+    }
+    
+    .calculator-section {
+        padding: 0px 25px;        /* 더 타이트하게 */
+        min-height: 400px;
+    }
+
+    .options-grid {
+        gap: 12px;                /* 25% 축소 */
+    }
+
+    .option-group {
+        margin-bottom: 8px;       /* 33% 축소 */
+    }
+
+    .upload-order-button {
+        margin-top: 8px;          /* 20% 축소 */
+    }
+
+    /* =================================================================== */
+    /* 6단계: 갤러리 섹션 스타일 (봉투 브랜드 컬러 - 오렌지) */
+    /* =================================================================== */
+    .gallery-section {
+        background: linear-gradient(135deg, #f8f9fa 0%, #e9ecef 100%);
+        border-radius: 15px;
+        padding: 25px;
+        box-shadow: 0 10px 35px rgba(0, 0, 0, 0.12), 0 4px 15px rgba(0, 0, 0, 0.08);
+        border: 1px solid rgba(255, 255, 255, 0.9);
+        margin-top: 0; /* 상단 여백 제거 */
+        align-self: start; /* 상단 정렬 */
+        height: 450px;
+        min-height: 450px;
+        overflow: auto;
+    }
+    
+    .gallery-title {
+        background: linear-gradient(135deg, #ff9800 0%, #f57c00 100%);
+        color: white;
+        padding: 15px 20px;
+        margin: -25px -25px 20px -25px;
+        border-radius: 15px 15px 0 0;
+        font-size: 1.1rem;
+        font-weight: 600;
+        text-align: center;
+        box-shadow: 0 2px 10px rgba(255, 152, 0, 0.3);
+    }
+
+    /* 라이트박스 뷰어 스타일 */
+    .lightbox-viewer {
+        width: 100%;
+        height: 300px;
+        background-color: #fff;
+        border-radius: 12px;
+        box-shadow: 0 5px 20px rgba(0, 0, 0, 0.1);
+        margin-bottom: 15px;
+        cursor: zoom-in;
+        transition: all 0.3s ease;
+        border: 2px solid #e9ecef;
+        position: relative;
+        overflow: hidden;
+    }
+    
+    .lightbox-viewer:hover {
+        border-color: #ff9800;
+        box-shadow: 0 8px 30px rgba(255, 152, 0, 0.15);
+        transform: translateY(-2px);
+    }
+    
+    /* 썸네일 스트립 스타일 */
+    .thumbnail-strip {
+        display: grid;
+        grid-template-columns: repeat(4, 1fr);
+        gap: 10px;
+        padding: 10px;
+        background: white;
+        border-radius: 8px;
+        box-shadow: 0 2px 10px rgba(0, 0, 0, 0.05);
+    }
+    
+    .thumbnail-strip img {
+        width: 100%;
+        height: 80px;
+        object-fit: cover;
+        border-radius: 6px;
+        cursor: pointer;
+        transition: all 0.3s ease;
+        border: 2px solid transparent;
+        opacity: 0.7;
+    }
+    
+    .thumbnail-strip img:hover {
+        opacity: 1;
+        transform: translateY(-2px);
+        box-shadow: 0 4px 15px rgba(0, 0, 0, 0.15);
+        border-color: #ff9800;
+    }
+    
+    .thumbnail-strip img.active {
+        opacity: 1;
+        border-color: #ff9800;
+        box-shadow: 0 4px 15px rgba(255, 152, 0, 0.3);
+    }
+    
+    /* 갤러리 로딩 상태 */
+    #envelopeGallery .loading {
+        text-align: center;
+        padding: 60px 20px;
+        color: #6c757d;
+        font-size: 1.1rem;
+        background: white;
+        border-radius: 12px;
+        animation: pulse 2s infinite;
+    }
+    
+    /* 갤러리 에러 상태 */
+    #envelopeGallery .error {
+        text-align: center;
+        padding: 40px 20px;
+        color: #dc3545;
+        background: #fff5f5;
+        border: 1px solid #ffdddd;
+        border-radius: 12px;
+        font-size: 0.95rem;
+    }
+    
+    @keyframes pulse {
+        0%, 100% { opacity: 1; }
+        50% { opacity: 0.6; }
+    }
+
+    /* =================================================================== */
+    /* 7단계: 반응형 최적화 */
+    /* =================================================================== */
+    @media (max-width: 768px) {
+        /* 모바일에서는 축소 정도 완화 */
+        
+        
+        .calculator-header { 
+            padding: 15px 20px;    /* 터치 친화적 */
+        }
+        
+        .price-display .price-amount {
+            font-size: 0.98rem;     /* 모바일도 동일 크기 */
+        }
+        
+        .option-select {
+            padding: 10px 15px;    /* 터치 영역 확보 */
+        }
+
+        .gallery-section {
+            padding: 20px;
+            margin: 0 -10px;
+            border-radius: 10px;
+        }
+        
+        .gallery-title {
+            margin: -20px -20px 15px -20px;
+            padding: 12px 15px;
+            font-size: 1rem;
+        }
+    }

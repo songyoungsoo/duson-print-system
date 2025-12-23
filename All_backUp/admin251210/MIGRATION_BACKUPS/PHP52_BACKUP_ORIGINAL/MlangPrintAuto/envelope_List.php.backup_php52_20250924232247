@@ -1,0 +1,225 @@
+<?
+include"../../db.php";
+$TIO_CODE="envelope";
+$table="MlangPrintAuto_${TIO_CODE}";
+
+if($mode=="delete"){
+
+$result = mysql_query("DELETE FROM $table WHERE no='$no'");
+mysql_close();
+
+echo ("<script language=javascript>
+window.alert('테이블명: $table - $no 번 자료 삭제 완료');
+opener.parent.location.reload();
+window.self.close();
+</script>
+");
+exit;
+
+} ///////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+
+$M123="..";
+include"../top.php"; 
+
+$T_DirUrl="../../MlangPrintAuto";
+include"$T_DirUrl/ConDb.php";
+?>
+
+<head>
+<script>
+function clearField(field)
+{
+	if (field.value == field.defaultValue) {
+		field.value = "";
+	}
+}
+function checkField(field)
+{
+	if (!field.value) {
+		field.value = field.defaultValue;
+	}
+}
+///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+function WomanMember_Admin_Del(no){
+	if (confirm(+no+'번 자료을 삭제 처리 하시겠습니까..?\n\n한번 삭제한 자료는 복구 되지 않으니 신중을 기해주세요.............!!')) {
+		str='<?=$PHP_SELF?>?no='+no+'&mode=delete';
+        popup = window.open("","","scrollbars=no,resizable=yes,width=400,height=50,top=2000,left=2000");
+        popup.document.location.href=str;
+        popup.focus();
+	}
+}
+//////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+</script>
+
+</head>
+
+<table border=0 align=center width=100% cellpadding='8' cellspacing='3' class='coolBar'>
+<tr>
+<td align=left>
+<?include"ListSearchBox.php";?>
+</td>
+
+<?
+include"../../db.php";
+
+if($search=="yes"){ //검색모드일때
+ $Mlang_query="select * from $table where style='$RadOne' and Section='$myList'";
+}else{ // 일반모드 일때
+$Mlang_query="select * from $table";
+}
+
+$query= mysql_query("$Mlang_query",$db);
+$recordsu= mysql_num_rows($query);
+$total = mysql_affected_rows();
+
+$listcut= 15;  //한 페이지당 보여줄 목록 게시물수. 
+if(!$offset) $offset=0; 
+?>
+
+
+<td align=right>
+<input type='button' onClick="javascript:popup=window.open('CateList.php?Ttable=<?=$TIO_CODE?>&TreeSelect=ok', '<?=$table?>_FormCate','width=600,height=650,top=0,left=0,menubar=no,resizable=yes,statusbar=no,scrollbars=yes,toolbar=no'); popup.focus();" value=' 구분 관리 '>
+<input type='button' onClick="javascript:window.open('<?=$TIO_CODE?>_admin.php?mode=IncForm', '<?=$table?>_Form1','width=820,height=600,top=0,left=0,menubar=no,resizable=no,statusbar=no,scrollbars=yes,toolbar=no');" value=' 가격/설명 관리 '>
+<input type='button' onClick="javascript:popup=window.open('<?=$TIO_CODE?>_admin.php?mode=form&Ttable=<?=$TIO_CODE?>', '<?=$table?>_Form2','width=300,height=250,top=0,left=0,menubar=no,resizable=no,statusbar=no,scrollbars=yes,toolbar=no'); popup.focus();" value=' 신 자료 입력 '>
+<BR><BR>
+전체자료수-<font style='color:blue;'><b><?=$total?></b></font>&nbsp;개&nbsp;&nbsp;
+</td>
+</tr>
+</table>
+
+
+<!------------------------------------------- 리스트 시작----------------------------------------->
+<table border=0 align=center width=100% cellpadding='5' cellspacing='1' class='coolBar'>
+<tr>
+<td align=center>등록번호</td>
+<td align=center>구분</td>
+<td align=center>종류</td>
+<td align=center>인쇄색상</td>
+<td align=center>수량</td>
+<td align=center>가격</td>
+<!----<td align=center>기타</td>--->
+<td align=center>디자인비</td>
+<td align=center>관리기능</td>
+</tr>
+
+<?
+$result= mysql_query("$Mlang_query order by NO desc limit $offset,$listcut",$db);
+$rows=mysql_num_rows($result);
+if($rows){
+
+
+while($row= mysql_fetch_array($result)) 
+{ 
+?>
+
+<tr bgcolor='#575757'>
+<td align=center><font color=white><?=$row[no]?></font></td>
+<td align=center><font color=white>
+<? 
+$result_FGTwo=mysql_query("select * from $GGTABLE where no='$row[style]'",$db);
+$row_FGTwo= mysql_fetch_array($result_FGTwo);
+if($row_FGTwo){ echo("$row_FGTwo[title]"); }
+?>
+</font></td>
+<td align=center><font color=white>
+<? 
+$result_FGOne=mysql_query("select * from $GGTABLE where no='$row[Section]'",$db);
+$row_FGOne= mysql_fetch_array($result_FGOne);
+if($row_FGOne){ echo("$row_FGOne[title]"); }
+?>
+</font></td>
+<td align=center><font color=white>
+<?if($row[POtype]=="1"){echo("마스터1도");}?>
+<?if($row[POtype]=="2"){echo("마스터2도");}?>
+<?if($row[POtype]=="3"){echo("칼라4도(옵셋)");}?>
+</font></td>
+<td align=center><font color=white><?=$row[quantity]?>매</font></td>
+<td align=center><font color=white>
+<?$sum = "$row[money]"; $sum = number_format($sum);  echo("$sum"); $sum = str_replace(",","",$sum); ?>원
+</font></td>
+<!---- 디자인비 --->
+<td align=center><font color=white>
+<?$sumr = "$row[DesignMoney]"; $sumr = number_format($sumr);  echo("$sumr"); $sumr = str_replace(",","",$sumr); ?>원
+</font></td>
+<td align=center>
+<input type='button' onClick="javascript:popup=window.open('<?=$TIO_CODE?>_admin.php?mode=form&code=Modify&no=<?=$row[no]?>&Ttable=<?=$TIO_CODE?>', '<?=$table?>_Form2Modify','width=300,height=250,top=0,left=0,menubar=no,resizable=no,statusbar=no,scrollbars=yes,toolbar=no'); popup.focus();" value=' 수정 '>
+<input type='button' onClick="javascript:WomanMember_Admin_Del('<?=$row[no]?>');" value=' 삭제 '>
+</td>
+<tr>
+
+<?
+		$i=$i+1;
+} 
+
+
+}else{
+
+if($search){
+echo"<tr><td colspan=10><p align=center><BR><BR>관련 검색 자료없음</p></td></tr>";
+}else{
+echo"<tr><td colspan=10><p align=center><BR><BR>등록 자료없음</p></td></tr>";
+}
+
+}
+
+?>
+
+
+</table>
+
+
+
+<p align='center'>
+
+<?
+if($rows){
+
+if($search=="yes"){ $mlang_pagego="search=$search&cate=$cate&title_search=$title_search&RadOne=$RadOne&myListTreeSelect=$myListTreeSelect&myList=$myList";
+}else{
+  $mlang_pagego="cate=$cate&title_search=$title_search"; // 필드속성들 전달값
+}
+
+
+$pagecut= 7;  //한 장당 보여줄 페이지수 
+$one_bbs= $listcut*$pagecut;  //한 장당 실을 수 있는 목록(게시물)수 
+$start_offset= intval($offset/$one_bbs)*$one_bbs;  //각 장에 처음 페이지의 $offset값. 
+$end_offset= intval($recordsu/$one_bbs)*$one_bbs;  //마지막 장의 첫페이지의 $offset값. 
+$start_page= intval($start_offset/$listcut)+1; //각 장에 처음 페이지의 값. 
+$end_page= ($recordsu%$listcut>0)? intval($recordsu/$listcut)+1: intval($recordsu/$listcut); 
+//마지막 장의 끝 페이지. 
+if($start_offset!= 0) 
+{ 
+  $apoffset= $start_offset- $one_bbs; 
+  echo "<a href='$PHP_SELF?offset=$apoffset&$mlang_pagego'>...[이전]</a>&nbsp;"; 
+} 
+
+for($i= $start_page; $i< $start_page+$pagecut; $i++) 
+{ 
+$newoffset= ($i-1)*$listcut; 
+
+if($offset!= $newoffset){
+  echo "&nbsp;<a href='$PHP_SELF?offset=$newoffset&$mlang_pagego'>($i)</a>&nbsp;"; 
+}else{echo("&nbsp;<font style='font:bold; color:green;'>($i)</font>&nbsp;"); } 
+
+if($i==$end_page) break; 
+} 
+
+if($start_offset!= $end_offset) 
+{ 
+  $nextoffset= $start_offset+ $one_bbs; 
+  echo "&nbsp;<a href='$PHP_SELF?offset=$nextoffset&$mlang_pagego'>[다음]...</a>"; 
+} 
+echo "총목록갯수: $end_page 개"; 
+
+
+}
+
+mysql_close($db); 
+?> 
+
+</p>
+<!------------------------------------------- 리스트 끝----------------------------------------->
+
+<?
+include"../down.php";
+?>

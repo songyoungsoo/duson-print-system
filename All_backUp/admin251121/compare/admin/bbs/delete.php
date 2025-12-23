@@ -1,0 +1,35 @@
+<?
+include"../../db.php";
+include"../config.php"; // 관리자 로그인
+
+mysql_query("DROP TABLE Mlang_${id}_bbs");  // Board테이블 삭제
+mysql_query("DROP TABLE Mlang_${id}_bbs_coment");  // Coment테이블 삭제
+$result = mysql_query("DELETE FROM Mlnag_BBS_Admin WHERE id='$id'"); // 게시판관리자료 삭제
+mysql_close();
+
+
+
+	$Mlang_DIR = opendir("../../bbs/upload/$id"); // upload 폴더 OPEN
+	while($ufiles = readdir($Mlang_DIR)) {
+		if(($ufiles != ".") && ($ufiles != "..")) {
+			unlink("../../bbs/upload/$id/$ufiles"); // 파일들 삭제
+		}
+	}
+	closedir($Mlang_DIR);
+
+	rmdir("../../bbs/upload/$id");  // upload 폴더 삭제
+
+
+//////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+
+echo ("
+<html>
+<script language=javascript>
+window.alert('정상적으로 게시판의 모든 자료를 삭제 하였습니다.');
+</script>
+<meta http-equiv='Refresh' content='0; URL=../bbs_admin.php?mode=list'>
+</html>
+");
+exit;
+
+?>

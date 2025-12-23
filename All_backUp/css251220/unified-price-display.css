@@ -1,0 +1,100 @@
+/* =================================================================== */
+/* 통합 가격 표시 시스템 - 모든 MlangPrintAuto 품목 공통 사용 */
+/* 스티커 방식 기준으로 통일 (0.98rem 작은 크기 + 한 줄 중앙정렬) */
+/* =================================================================== */
+
+.price-display {
+    margin-bottom: 5px;
+    padding: 8px 5px;
+    border-radius: 8px;
+    background: #f8f9fa;
+    border: 1px solid #d0d0d0;
+    text-align: center;
+    transition: all 0.3s ease;
+    box-shadow: 0 2px 6px rgba(0, 0, 0, 0.05);
+}
+
+.price-display.calculated {
+    background: #f8f9fa;
+    transform: translateY(-2px);
+    box-shadow: 0 4px 10px rgba(0, 0, 0, 0.08);
+    border: 1px solid #d0d0d0;
+}
+
+.price-display .price-label {
+    font-size: 0.9rem;
+    color: #495057;
+    margin-bottom: 8px;
+    font-weight: 500;
+}
+
+/* 스티커 방식: 작은 크기 (0.98rem) */
+.price-display .price-amount {
+    font-size: 0.98rem;
+    font-weight: 700;
+    color: #1E4E79;
+    margin: 10px 0;
+    line-height: 1.2;
+    text-shadow: 0 2px 4px rgba(30, 78, 121, 0.3);
+    letter-spacing: -0.5px;
+}
+
+/* 가격 상세: 한 줄 중앙정렬 강제 */
+.price-display .price-details {
+    font-size: 0.8rem;
+    color: #6c757d;
+    line-height: 1.4;
+    margin-top: 8px;
+    
+    /* 한 줄 표시 강제 */
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    gap: 8px;
+    flex-wrap: nowrap;
+    white-space: nowrap;
+    overflow-x: auto;
+}
+
+/* 부가세 포함 금액 빨간색 강조 - 견적 금액과 동일한 크기와 굵기 */
+.price-display .price-details .vat-amount {
+    color: #dc3545;  /* 빨간색 */
+    font-size: 0.98rem;  /* 견적 금액과 동일한 크기 (price-amount와 동일) */
+    font-weight: 700;  /* 견적 금액과 동일한 굵기 (price-amount와 동일) */
+    font-style: normal;  /* 기울임체 방지 */
+    text-decoration: none;  /* 밑줄 방지 */
+    line-height: 1.2;  /* 견적 금액과 동일한 라인 높이 */
+    letter-spacing: -0.5px;  /* 견적 금액과 동일한 글자 간격 */
+    font-family: inherit;  /* 부모 요소 폰트 패밀리 상속 */
+    text-shadow: 0 2px 4px rgba(220, 53, 69, 0.3);  /* 견적 금액과 유사한 그림자 효과 */
+}
+
+.price-display:hover {
+    transform: translateY(-1px);
+    box-shadow: 0 6px 16px rgba(40, 167, 69, 0.15);
+}
+
+/* =================================================================== */
+/* 모바일 반응형 */
+/* =================================================================== */
+@media (max-width: 768px) {
+    .price-display .price-amount {
+        font-size: 0.98rem;     /* 모바일도 동일 크기 */
+    }
+    
+    .price-display .price-details {
+        gap: 6px;              /* 모바일에서 간격 줄임 */
+        font-size: 0.75rem;     /* 모바일에서 약간 작게 */
+        overflow-x: auto;       /* 가로 스크롤 허용 */
+        -webkit-overflow-scrolling: touch;
+    }
+    
+    /* 모바일에서 너무 길면 세로 배치 */
+    @media (max-width: 480px) {
+        .price-display .price-details {
+            flex-direction: column;
+            gap: 5px;
+            white-space: normal;
+        }
+    }
+}

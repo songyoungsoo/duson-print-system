@@ -1,0 +1,79 @@
+<? if($mode=="form"){ ?>
+
+<?
+$M123="..";
+include"../top.php"; 
+?>
+
+<table border=0 align=center width=600 cellpadding='0' cellspacing='0'>
+
+<tr><td>
+<BR><BR>
+* 제목명은 부메뉴로 호출됨으로 정확한 정보를 입력해주세요<BR>
+* 내용에서 자동 BR은 자동 줄건너띠기를 수행하며 HTML은 html소스를 직접 삽입하셔야 합니다.
+<BR><BR>
+</td></tr>
+
+<tr><td>	
+
+<!------------------------------------------------------------->
+<table border="0" cellpadding="5" cellspacing="0" width="571" class='coolBar'>
+<tr><td>
+	
+<? include"./html_edit.php"; ?>
+
+</td></tr>
+</table>
+<!------------------------------------------------------------->
+
+</td></tr>
+
+</table>
+
+<? 
+
+include"../down.php";
+
+} 
+
+////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+
+if($mode=="ok"){ 
+
+include"../db.php";
+
+	$result = mysql_query("SELECT max(no) FROM $page_big_table");
+	if (!$result) {
+		echo "
+			<script>
+				window.alert(\"DB 접속 에러입니다!\")
+				history.go(-1)
+			</script>";
+		exit;
+	}
+	$row = mysql_fetch_row($result);
+
+	if($row[0]) {
+	   $new_no = $row[0] + 1;
+	} else {
+	   $new_no = 1;
+	}   
+############################################
+//정보 입력
+$dbinsert ="insert into $page_big_table values('$new_no',
+'$menu'
+)";
+$result_insert= mysql_query($dbinsert,$db);
+
+//완료 메세지를 보인후 페이지를 이동 시킨다
+echo ("
+		<script language=javascript>
+		alert('\\n정상적으로 정보가 저장 되었습니다.\\n\\n');
+        opener.parent.location=\"./page_menu_list.php\"; 
+        window.self.close();
+		</script>
+		");
+		exit;
+
+}
+?>

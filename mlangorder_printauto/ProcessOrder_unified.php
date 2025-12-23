@@ -22,6 +22,7 @@ mysqli_set_charset($connect, 'utf8mb4');
 // 헬퍼 함수 포함
 include "../mlangprintauto/shop_temp_helper.php";
 include "../includes/upload_config.php";
+require_once __DIR__ . '/../includes/StandardUploadHandler.php';
 // upload_path_manager.php는 사용하지 않음 (안전 모드)
 
 try {
@@ -30,28 +31,48 @@ try {
     $username = trim($_POST['username'] ?? '');
     $email = $_POST['email'] ?? '';
 
-    // 디버그 로깅
-    error_log("주문 처리 - 받은 username: [" . $username . "], email: [" . $email . "]");
+    // 상세 디버그 로깅
+    error_log("=== 주문 처리 시작 - POST 데이터 ===");
+    error_log("받은 username (raw): [" . ($_POST['username'] ?? 'NOT SET') . "]");
+    error_log("받은 username (trimmed): [" . $username . "]");
+    error_log("받은 email: [" . $email . "]");
+    error_log("세션 user_id: " . ($_SESSION['user_id'] ?? 'NOT SET'));
+    error_log("세션 user_name: " . ($_SESSION['user_name'] ?? 'NOT SET'));
+    error_log("세션 username: " . ($_SESSION['username'] ?? 'NOT SET'));
+
+    // empty() 체크 결과 로깅
+    error_log("empty(\$username) = " . (empty($username) ? 'true' : 'false'));
+    error_log("\$username === '0' = " . ($username === '0' ? 'true' : 'false'));
 
     // "0"이나 빈 문자열이면 세션 또는 이메일에서 가져오기 시도
     if (empty($username) || $username === '0') {
+        error_log("조건 충족: username이 비어있거나 '0'임 - 폴백 로직 시작");
+
         // 1. 세션에서 사용자 이름 가져오기
         if (isset($_SESSION['user_name']) && !empty($_SESSION['user_name']) && $_SESSION['user_name'] !== '0') {
+            $old_username = $username;
             $username = $_SESSION['user_name'];
-            error_log("주문 처리 - 세션에서 username 복구: [" . $username . "]");
+            error_log("1단계 성공 - 세션에서 username 복구: [$old_username] → [$username]");
         }
-        // 2. 이메일에서 추출
-        elseif (!empty($email)) {
+        // 2. 이메일에서 추출 (username이 여전히 비어있을 때만)
+        elseif ((empty($username) || $username === '0') && !empty($email)) {
+            $old_username = $username;
             $email_parts = explode('@', $email);
             $username = $email_parts[0];
-            error_log("주문 처리 - 이메일에서 username 생성: [" . $username . "]");
+            error_log("2단계 - 이메일에서 username 생성: [$old_username] → [$username]");
         }
-        // 3. 기본값 사용
-        else {
+        // 3. 기본값 사용 (username이 여전히 비어있을 때만)
+        elseif (empty($username) || $username === '0') {
+            $old_username = $username;
             $username = '주문자';
-            error_log("주문 처리 - 기본값 사용: [주문자]");
+            error_log("3단계 - 기본값 사용: [$old_username] → [주문자]");
         }
+    } else {
+        error_log("조건 불충족: username을 그대로 사용 [$username]");
     }
+
+    error_log("최종 저장될 username: [$username]");
+    error_log("====================================");
     $phone = $_POST['phone'] ?? '';
     $hendphone = $_POST['Hendphone'] ?? '';
     $address_option = $_POST['address_option'] ?? 'different';
@@ -167,6 +188,9 @@ try {
     // 각 장바구니 아이템을 개별 주문으로 처리
     $order_numbers = [];
     $date = date("Y-m-d H:i:s");
+
+    // 💎 FIX: is_member 플래그 설정 (세션에 user_id가 있으면 회원)
+    $is_member_flag = (isset($_SESSION['user_id']) && !empty($_SESSION['user_id'])) ? 1 : 0;
     
     foreach ($cart_items as $item) {
         // 새 주문 번호 생성
@@ -237,9 +261,17 @@ try {
                 $sides = $item['POtype'] == '1' ? '단면' : '양면';
                 $design = ($item['ordertype'] == 'total' ? '디자인+인쇄' : '인쇄만');
 
-                $quantity_val = $item['quantity'] ?? $item['MY_amount'] ?? 0;
-                // flyer_mesu 우선 사용 (전단지/리플렛 전용), 없으면 mesu 폴백 (레거시 호환)
-                $flyer_mesu_val = $item['flyer_mesu'] ?? $item['mesu'] ?? 0;
+                // ★ 전단지 수량 표시: "X연 (Y매)" 형식
+                // quantityTwo 또는 mesu에서 매수 가져오기
+                $reams = $item['MY_amount'] ?? 0;
+                $sheets = intval($item['quantityTwo'] ?? $item['mesu'] ?? 0); // Here's the key line!
+
+                if ($sheets > 0) {
+                    $qty_display = number_format($reams, 1) . "연 (" . number_format($sheets) . "매)";
+                } else {
+                    // 매수 정보가 없으면 연 수만 표시
+                    $qty_display = number_format($reams, 1) . "연";
+                }
 
                 // 🔧 FIX: JSON 형식으로 저장하여 OrderComplete에서 일관되게 처리
                 $leaflet_data = [
@@ -248,16 +280,14 @@ try {
                     'MY_Fsd' => $item['MY_Fsd'],
                     'PN_type' => $item['PN_type'],
                     'POtype' => $item['POtype'],
-                    'quantity' => $quantity_val,
-                    'flyer_mesu' => $flyer_mesu_val,  // 전단지/리플렛 전용
-                    'mesu' => $flyer_mesu_val,  // 레거시 호환용
-                    'unit' => '연',
+                    'MY_amount' => $item['MY_amount'], // Ream count
+                    'mesu' => $sheets,  // Sheet count is stored as 'mesu' now! (FIXED)
                     'ordertype' => $item['ordertype'],
-                    'formatted_display' => "인쇄색상: $color_name\n" .
+                    'formatted_display' => // "인쇄색상: $color_name\n" . // REMOVED as per user request
                                           "용지: $paper_name\n" .
                                           "규격: $size_name\n" .
                                           "인쇄면: $sides\n" .
-                                          "수량: {$quantity_val}연 (" . number_format($flyer_mesu_val) . "매)\n" .
+                                          "수량: $qty_display\n" .
                                           "디자인: $design",
                     'created_at' => date('Y-m-d H:i:s')
                 ];
@@ -273,7 +303,7 @@ try {
                 $product_info = "명함종류: $type_name\n";
                 $product_info .= "명함재질: $paper_name\n";
                 $product_info .= "인쇄면: $sides\n";
-                $product_info .= "수량: " . ($item['MY_amount'] ?? '') . "매\n";
+                $product_info .= "수량: " . ($item['MY_amount'] ?? '') . ($item['unit'] ?? '매') . "\n";
                 $product_info .= "편집디자인: " . ($item['ordertype'] == 'total' ? '디자인+인쇄' : '인쇄만');
                 break;
 
@@ -299,7 +329,7 @@ try {
                     'ordertype' => $item['ordertype'],
                     'formatted_display' => "타입: $type_name\n" .
                                           "용지: $paper_name\n" .
-                                          "수량: " . number_format($item['MY_amount']) . "매\n" .
+                                          "수량: " . number_format($item['MY_amount']) . ($item['unit'] ?? '매') . "\n" .
                                           "인쇄: $print_name\n" .
                                           "디자인: $design",
                     'created_at' => date('Y-m-d H:i:s')
@@ -314,7 +344,7 @@ try {
                 $size_name = getCategoryName($connect, $item['PN_type']);
                 $product_info = "종류: $type_name\n";
                 $product_info .= "규격: $size_name\n";
-                $product_info .= "수량: " . ($item['MY_amount'] ?? '') . "매\n";
+                $product_info .= "수량: " . ($item['MY_amount'] ?? '') . ($item['unit'] ?? '매') . "\n";
                 $product_info .= "편집디자인: " . ($item['ordertype'] == 'total' ? '디자인+인쇄' : '인쇄만');
                 break;
                 
@@ -336,7 +366,7 @@ try {
                 $sides = $item['POtype'] == '1' ? '단면' : '양면';
                 $after_name = getCategoryName($connect, $item['PN_type']);
                 $product_info = "종류: $type_name\n";
-                $product_info .= "수량: " . ($item['MY_amount'] ?? '') . "매\n";
+                $product_info .= "수량: " . ($item['MY_amount'] ?? '') . ($item['unit'] ?? '매') . "\n";
                 $product_info .= "인쇄면: $sides\n";
                 $product_info .= "후가공: $after_name\n";
                 $product_info .= "편집디자인: " . ($item['ordertype'] == 'total' ? '디자인+인쇄' : '인쇄만');
@@ -406,9 +436,9 @@ try {
             $final_cont .= $business_info_text;
         }
         
-        // mlangorder_printauto 테이블에 삽입 (ImgFolder 필드 포함, mesu, flyer_mesu, quantity, unit 추가)
+        // mlangorder_printauto 테이블에 삽입 (ImgFolder 필드 포함)
         $insert_query = "INSERT INTO mlangorder_printauto (
-            no, Type, ImgFolder, Type_1, mesu, flyer_mesu, quantity, unit, money_4, money_5, name, email, zip, zip1, zip2,
+            no, Type, ImgFolder, uploaded_files, Type_1, money_4, money_5, name, email, zip, zip1, zip2,
             phone, Hendphone, cont, date, OrderStyle, ThingCate,
             coating_enabled, coating_type, coating_price,
             folding_enabled, folding_type, folding_price,
@@ -416,8 +446,8 @@ try {
             additional_options_total,
             premium_options, premium_options_total,
             envelope_tape_enabled, envelope_tape_quantity, envelope_tape_price,
-            envelope_additional_options_total
-        ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)";
+            envelope_additional_options_total, unit
+        ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)";
 
         $stmt = mysqli_prepare($connect, $insert_query);
         if (!$stmt) {
@@ -494,18 +524,12 @@ try {
         $envelope_tape_price = $item['envelope_tape_price'] ?? 0;
         $envelope_additional_options_total = $item['envelope_additional_options_total'] ?? 0;
 
-        // 🔧 전단지/리플렛 장수 - flyer_mesu와 mesu 분리
-        $product_type = $item['product_type'] ?? '';
+        // 🆕 단위 정보 가져오기 (unit 필드)
+        // 기본값: '매' (sheets) - 대부분의 제품이 매수 단위 사용
+        $unit = $item['unit'] ?? '매';
 
-        // mesu: 스티커 전용 (전단지/리플렛은 0)
-        // flyer_mesu: 전단지/리플렛 전용 (스티커는 0)
-        if (in_array($product_type, ['inserted', 'leaflet'])) {
-            $mesu = '';  // 전단지/리플렛은 mesu 비움
-            $flyer_mesu = intval($item['flyer_mesu'] ?? $item['mesu'] ?? 0);
-        } else {
-            $mesu = $item['mesu'] ?? '';  // 스티커 등 다른 제품은 기존 mesu 사용
-            $flyer_mesu = 0;  // 스티커는 flyer_mesu 0
-        }
+        // 📎 Phase 3: uploaded_files JSON 데이터 가져오기 (StandardUploadHandler)
+        $uploaded_files_json = $item['uploaded_files'] ?? null;
 
         // 🔧 수량 및 단위 추가 (제품별 분기 처리)
         if (in_array($product_type, ['inserted', 'leaflet'])) {
@@ -522,15 +546,71 @@ try {
             $unit = $item['unit'] ?? '개';
         }
 
-        // 🔧 FIX: 37개 필드에 맞는 타입 문자열 (flyer_mesu 추가)
-        // 1-4: i,s,s,s (no, Type, ImgFolder, Type_1)
-        // 5-8: s,i,d,s (mesu=문자열, flyer_mesu=정수, quantity=실수, unit=문자열)
-        // 9-10: i,i (money_4, money_5)
-        // 11-21: 11개 s (name~ThingCate)
-        // 22-31: i,s,i,i,s,i,i,i,i,i (coating~additional_options_total)
-        // 32-37: s,i,i,i,i,i (premium_options~envelope_additional_options_total)
-        mysqli_stmt_bind_param($stmt, 'issssidsiisssssssssssisiisiiiiisiiiii',
-            $new_no, $product_type_name, $img_folder_path, $product_info, $mesu, $flyer_mesu, $quantity, $unit, $item['st_price'], $item['st_price_vat'],
+        // 🔍 INSERT 직전 최종 확인 로깅
+        error_log("=== INSERT 직전 변수 확인 ===");
+        $debug_vars = [
+            'new_no' => $new_no,
+            'product_type_name' => $product_type_name,
+            'img_folder_path' => $img_folder_path,
+            'uploaded_files_json' => $uploaded_files_json,
+            'product_info' => $product_info,
+            'st_price' => $item['st_price'],
+            'st_price_vat' => $item['st_price_vat'],
+            'username' => $username,
+            'email' => $email,
+            'postcode' => $postcode,
+            'address' => $address,
+            'full_address' => $full_address,
+            'phone' => $phone,
+            'hendphone' => $hendphone,
+            'final_cont' => $final_cont,
+            'date' => $date,
+            'order_style' => $order_style,
+            'thing_cate' => $thing_cate,
+            'coating_enabled' => $coating_enabled,
+            'coating_type' => $coating_type,
+            'coating_price' => $coating_price,
+            'folding_enabled' => $folding_enabled,
+            'folding_type' => $folding_type,
+            'folding_price' => $folding_price,
+            'creasing_enabled' => $creasing_enabled,
+            'creasing_lines' => $creasing_lines,
+            'creasing_price' => $creasing_price,
+            'additional_options_total' => $additional_options_total,
+            'premium_options' => $premium_options,
+            'premium_options_total' => $premium_options_total,
+            'envelope_tape_enabled' => $envelope_tape_enabled,
+            'envelope_tape_quantity' => $envelope_tape_quantity,
+            'envelope_tape_price' => $envelope_tape_price,
+            'envelope_additional_options_total' => $envelope_additional_options_total
+        ];
+        error_log("BIND PARAM VARS: " . json_encode($debug_vars, JSON_UNESCAPED_UNICODE));
+        error_log("============================");
+
+        // 34 parameters: i + Type(s) + ImgFolder(s) + uploaded_files(s) + Type_1(s) + money_4(s) + money_5(s) + name(s) + email~ThingCate(10s) + coating(isi) + folding(isi) + creasing(iii) + additional(i) + premium(si) + envelope(iiii)
+        // 🔧 FIX: money_4, money_5, name은 varchar이므로 's' 타입 사용 (기존 'iii' → 'sss')
+        // 🔧 FIX: 전체 파라미터 개수(34개)와 타입을 정확히 일치시킴
+        // 🔧 FIX: mysqli_stmt_bind_param은 참조로 전달되므로 표현식 대신 변수 사용 필수
+        $st_price = strval($item['st_price'] ?? 0);
+        $st_price_vat = strval($item['st_price_vat'] ?? 0);
+
+        // 35개 파라미터 타입 문자열 (손가락으로 하나씩 세기!)
+        // 1:no(i) 2:Type(s) 3:ImgFolder(s) 4:uploaded_files(s) 5:Type_1(s) 6:money_4(s) 7:money_5(s)
+        // 8:name(s) 9:email(s) 10:zip(s) 11:zip1(s) 12:zip2(s) 13:phone(s) 14:Hendphone(s)
+        // 15:cont(s) 16:date(s) 17:OrderStyle(s) 18:ThingCate(s)
+        // 19:coating_enabled(i) 20:coating_type(s) 21:coating_price(i)
+        // 22:folding_enabled(i) 23:folding_type(s) 24:folding_price(i)
+        // 25:creasing_enabled(i) 26:creasing_lines(i) 27:creasing_price(i)
+        // 28:additional_options_total(i)
+        // 29:premium_options(s) 30:premium_options_total(i)
+        // 31:envelope_tape_enabled(i) 32:envelope_tape_quantity(i) 33:envelope_tape_price(i) 34:envelope_additional_options_total(i)
+        // 35:unit(s) - 🆕 단위 필드 추가
+        // 타입: i(1)+s(17)+isi+isi+iii+i+si+iiii+s = 1+17+3+3+3+1+2+4+1 = 35
+        $type_string = 'isssssssssssssssssisissiiiiisiiiiis';
+        $type_count = strlen($type_string); // 35
+
+        mysqli_stmt_bind_param($stmt, $type_string,
+            $new_no, $product_type_name, $img_folder_path, $uploaded_files_json, $product_info, $st_price, $st_price_vat,
             $username, $email, $postcode, $address, $full_address,
             $phone, $hendphone, $final_cont, $date, $order_style, $thing_cate,
             $coating_enabled, $coating_type, $coating_price,
@@ -539,25 +619,34 @@ try {
             $additional_options_total,
             $premium_options, $premium_options_total,
             $envelope_tape_enabled, $envelope_tape_quantity, $envelope_tape_price,
-            $envelope_additional_options_total
+            $envelope_additional_options_total,
+            $unit  // 🆕 35번째: 단위 필드
         );
         
         if (mysqli_stmt_execute($stmt)) {
             $order_numbers[] = $new_no;
-            
-            // 새로운 통합 업로드 시스템 사용 - 임시 파일을 주문 폴더로 이동
-            $final_upload_dir = getOrderUploadPath($new_no);
-            error_log("Creating order upload directory: {$final_upload_dir}");
-            error_log("Directory exists: " . (file_exists($final_upload_dir) ? 'YES' : 'NO'));
-            error_log("Parent directory: " . dirname($final_upload_dir));
-            error_log("Parent writable: " . (is_writable(dirname($final_upload_dir)) ? 'YES' : 'NO'));
 
-            if (!createUploadDirectory($final_upload_dir)) {
-                error_log("CRITICAL: Failed to create order directory: {$final_upload_dir}");
-                throw new Exception('주문 파일 디렉토리 생성에 실패했습니다. 경로: ' . $final_upload_dir);
+            // ✅ Phase 3: StandardUploadHandler로 파일 복사
+            if (!empty($item['uploaded_files'])) {
+                $copy_result = StandardUploadHandler::copyFilesForOrder(
+                    $new_no,
+                    $img_folder_from_cart,
+                    $item['uploaded_files']
+                );
+
+                if ($copy_result['success']) {
+                    error_log("주문 $new_no: " . count($copy_result['copied_files']) . "개 파일 복사 완료");
+                } else {
+                    error_log("주문 $new_no 파일 복사 실패: " . $copy_result['error']);
+                    // 파일 복사 실패는 주문을 중단하지 않음 (경고만)
+                }
             }
 
-            error_log("Order directory created successfully: {$final_upload_dir}");
+            // 새로운 통합 업로드 시스템 사용 - 임시 파일을 주문 폴더로 이동
+            $final_upload_dir = getOrderUploadPath($new_no);
+            if (!createUploadDirectory($final_upload_dir)) {
+                throw new Exception('주문 파일 디렉토리 생성에 실패했습니다.');
+            }
             
             $moved_files = [];
             $first_file_name = '';
