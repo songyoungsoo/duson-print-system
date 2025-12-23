@@ -40,26 +40,6 @@ if (isset($_SESSION['user_id'])) {
     $user_name = '';
 }
 
-// 갤러리 첫 번째 이미지 가져오기 함수
-function getFirstGalleryImage($category) {
-    $galleryPath = $_SERVER['DOCUMENT_ROOT'] . '/ImgFolder/' . $category . '/gallery/';
-    $webPath = '/ImgFolder/' . $category . '/gallery/';
-
-    if (is_dir($galleryPath)) {
-        $files = scandir($galleryPath);
-        foreach ($files as $file) {
-            if ($file !== '.' && $file !== '..') {
-                $ext = strtolower(pathinfo($file, PATHINFO_EXTENSION));
-                if (in_array($ext, ['jpg', 'jpeg', 'png', 'gif', 'webp'])) {
-                    return $webPath . rawurlencode($file);
-                }
-            }
-        }
-    }
-    // 기본 이미지 (없을 경우)
-    return '/ImgFolder/no-image.png';
-}
-
 // 캐시 방지 헤더
 header("Cache-Control: no-cache, no-store, must-revalidate");
 header("Pragma: no-cache");
@@ -117,6 +97,11 @@ header("Expires: 0");
     <script src="https://cdn.tailwindcss.com"></script>
 
     <style>
+        body {
+            margin: 0;
+            padding: 0;
+        }
+
         .slider-container {
             position: relative;
             overflow: hidden;
@@ -135,7 +120,7 @@ header("Expires: 0");
         }
 
         .slider-slide img {
-            transform: translateY(-25%);
+            transform: translateY(calc(-15% - 20px));
             object-fit: cover;
         }
 
@@ -151,174 +136,323 @@ header("Expires: 0");
         }
 
         .products-grid {
-            display: grid !important;
-            grid-template-columns: repeat(3, 1fr) !important;
-            grid-template-rows: repeat(4, 1fr) !important;
-            gap: 20px !important;
-            max-width: 1200px !important;
-            margin: 0 auto !important;
-            padding: 20px !important;
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            grid-template-rows: repeat(4, 1fr);
+            gap: 24px;
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 0 20px;
         }
 
-        .product-card {
-            height: auto !important;
-            min-height: 220px !important;
-            display: flex !important;
-            flex-direction: column !important;
-            border: 1px solid #dee2e6 !important;
-            border-radius: 0 !important;
-            overflow: hidden !important;
-            background: linear-gradient(135deg, #f0f4f8 0%, #d9e2ec 100%) !important;
+        .products-grid .product-card {
+            height: 220px;
+            overflow: visible;
+            display: flex;
+            flex-direction: column;
+            background: #ffffff;
+            border-radius: 16px;
+            box-shadow: 0 2px 12px rgba(0, 0, 0, 0.08);
+            transition: all 0.3s ease;
         }
 
-        .product-card-header {
-            background: #1E4E79 !important;
-            padding: 12px 15px !important;
-            width: 100% !important;
+        .products-grid .product-card:hover {
+            transform: translateY(-4px);
+            box-shadow: 0 8px 24px rgba(0, 0, 0, 0.12);
         }
 
-        .product-card-header .product-title {
-            color: white !important;
-            font-size: 1.1rem !important;
-            font-weight: 700 !important;
-            margin: 0 !important;
-            display: inline !important;
+        .product-card .product-header {
+            display: flex;
+            flex-direction: row;
+            align-items: center;
+            gap: 8px;
+            margin-bottom: 0;
+            padding: 12px 20px;
+            min-height: 44px;
         }
 
-        .product-card-header .product-title a {
-            color: white !important;
-            text-decoration: none !important;
-        }
-
-        .product-card-header .product-subtitle {
-            color: rgba(255,255,255,0.85) !important;
-            font-size: 0.8rem !important;
-            margin-left: 10px !important;
-            display: inline !important;
-        }
-
-        .product-card-body {
-            display: flex !important;
-            flex-direction: row !important;
-            flex: 1 !important;
-            padding: 15px !important;
-        }
-
-        .product-card-content {
+        .product-card .product-body {
+            padding: 0 20px 20px 20px;
+            display: grid;
+            grid-template-columns: 1fr 140px;
+            gap: 16px;
             flex: 1;
+        }
+
+        /* 이미지 없는 카드 (별도견적 제품) */
+        .product-card-no-image .product-body {
+            display: block;
+            grid-template-columns: none;
+        }
+
+        .product-content-single {
             display: flex;
             flex-direction: column;
             justify-content: space-between;
-            padding-right: 15px;
-        }
-
-        .product-card-image {
-            width: 45%;
-            max-width: 160px;
-            flex-shrink: 0;
-            overflow: hidden;
-            background: transparent;
-            display: flex;
-            align-items: center;
-            justify-content: flex-end;
-        }
-
-        .product-card-image img {
-            width: 100%;
-            height: auto;
-            max-height: 140px;
-            object-fit: contain;
-            transition: transform 0.3s ease;
-        }
-
-        .product-card:hover .product-card-image img {
-            transform: scale(1.05);
-        }
-
-        .product-card-no-image {
-            background: linear-gradient(135deg, #f0f4f8 0%, #d9e2ec 100%) !important;
-        }
-
-        .product-card-no-image .product-card-content {
-            min-width: 100%;
-        }
-
-        .product-header {
-            display: none !important;
-        }
-
-        .product-title {
-            font-size: 1rem !important;
-            margin: 0 !important;
-            white-space: nowrap !important;
-        }
-
-        .product-subtitle {
-            font-size: 0.75rem !important;
-            color: #6b7280 !important;
-            margin: 0 !important;
-            white-space: nowrap !important;
-        }
-
-        .product-features {
-            margin-bottom: 12px !important;
-            list-style: none !important;
-            padding-left: 0 !important;
-        }
-
-        .product-features li {
-            font-size: 0.85rem !important;
-            padding: 3px 0 !important;
-            color: #374151 !important;
-        }
-
-        .product-features li::before {
-            content: "✓" !important;
-            color: #1E4E79 !important;
-            font-weight: bold !important;
-            margin-right: 8px !important;
+            height: 100%;
         }
 
         .product-action {
-            margin-top: 10px !important;
+            display: flex;
+            gap: 8px;
+            margin-top: auto;
         }
 
-        .btn-product {
-            padding: 6px 14px !important;
-            font-size: 0.8rem !important;
-            font-weight: 600 !important;
-            border: none !important;
-            cursor: pointer !important;
-            transition: all 0.2s ease !important;
-            display: inline-block !important;
-            width: auto !important;
+        .product-action .btn-product {
+            flex: 1;
+            height: 40px;
+            padding: 0;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 0.875rem;
+            font-weight: 600;
+            letter-spacing: -0.02em;
+            border-radius: 8px;
+            box-sizing: border-box;
         }
 
-        .btn-product.btn-primary {
-            background: #1E4E79 !important;
-            color: white !important;
+        .product-action .btn-secondary {
+            background: #ffffff;
+            color: #374151;
+            border: 1px solid #d1d5db;
         }
 
-        .btn-product.btn-primary:hover {
-            background: #153A5A !important;
+        .product-action .btn-secondary:hover {
+            background: #f3f4f6;
         }
 
+        .product-card .product-content-left {
+            display: flex;
+            flex-direction: column;
+            justify-content: space-between;
+        }
+
+        .product-card .product-content-left .btn-product.btn-primary {
+            width: 177px;
+            height: 40px;
+            min-width: 177px;
+            max-width: 177px;
+            min-height: 40px;
+            max-height: 40px;
+            margin-top: auto;
+            padding: 0;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 0.875rem;
+            font-weight: 600;
+            letter-spacing: -0.02em;
+            border-radius: 8px;
+            box-sizing: border-box;
+        }
+
+        .product-card .product-content-right {
+            display: flex;
+            align-items: flex-end;
+            justify-content: center;
+        }
+
+        .product-card .product-title {
+            font-size: 1.25rem;
+            font-weight: 700;
+            margin: 0;
+            line-height: 1;
+            color: #ffffff;
+            display: flex;
+            align-items: center;
+        }
+
+        .product-card .product-title a {
+            display: flex;
+            align-items: center;
+            gap: 6px;
+            color: #ffffff;
+            text-decoration: none;
+            line-height: 1;
+        }
+
+        .product-card .product-subtitle {
+            font-size: 0.8125rem;
+            color: rgba(255, 255, 255, 0.7);
+            margin: 0;
+            font-weight: 500;
+            letter-spacing: -0.01em;
+        }
+
+        .product-card .product-features {
+            margin: 0;
+            padding: 0;
+            list-style: none;
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+        }
+
+        .product-card .product-features li {
+            font-size: 0.8125rem;
+            padding: 0;
+            margin: 0 0 6px 0;
+            line-height: 1.5;
+            color: #4b5563;
+            text-align: center;
+        }
+
+        .product-card .product-features li:before {
+            content: "✓ ";
+            color: #10b981;
+            font-weight: 700;
+            font-size: 0.875rem;
+        }
+
+        .product-card .product-features li:last-child {
+            margin-bottom: 0;
+        }
+
+        /* 태블릿 (1024px 이하) */
+        @media (max-width: 1024px) {
+            .products-grid {
+                grid-template-columns: repeat(2, 1fr);
+                grid-template-rows: auto;
+                gap: 20px;
+                padding: 30px 16px;
+            }
+        }
+
+        /* 모바일 (768px 이하) */
         @media (max-width: 768px) {
             .products-grid {
-                grid-template-columns: repeat(2, 1fr) !important;
-                grid-template-rows: auto !important;
-                gap: 15px !important;
+                grid-template-columns: repeat(2, 1fr);
+                grid-template-rows: auto;
+                gap: 16px;
+                padding: 24px 12px;
+            }
+
+            .products-grid .product-card {
+                height: 200px;
+            }
+
+            .product-card .product-header {
+                padding: 10px 16px;
+                min-height: 40px;
+            }
+
+            .product-card .product-title {
+                font-size: 1.125rem;
+            }
+
+            .product-card .product-subtitle {
+                font-size: 0.75rem;
+            }
+
+            .product-card .product-body {
+                padding: 0 16px 16px 16px;
+                gap: 12px;
+            }
+
+            .product-card .product-features {
+                margin: 0;
+            }
+
+            .product-card .product-features li {
+                font-size: 0.75rem;
+                margin: 0 0 4px 0;
+                text-align: center;
+            }
+
+            .product-card .product-image {
+                width: 100px;
+                height: 100px;
+            }
+
+            .product-card .product-content-left .btn-product.btn-primary {
+                width: 140px;
+                height: 36px;
+                min-width: 140px;
+                max-width: 140px;
+                min-height: 36px;
+                max-height: 36px;
+                font-size: 0.8125rem;
+            }
+
+            .product-action .btn-product {
+                height: 36px;
+                font-size: 0.8125rem;
+            }
+        }
+
+        /* 초소형 모바일 (480px 이하) */
+        @media (max-width: 480px) {
+            .products-grid {
+                grid-template-columns: 1fr;
+                gap: 12px;
+                padding: 20px 8px;
+            }
+
+            .products-grid .product-card {
+                height: auto;
+                min-height: 180px;
+            }
+
+            .product-card .product-body {
+                grid-template-columns: 1fr 90px;
+                gap: 10px;
+            }
+
+            .product-card .product-image {
+                width: 90px;
+                height: 90px;
+            }
+
+            .product-action {
+                flex-direction: column;
+                gap: 6px;
+            }
+
+            .product-action .btn-product {
+                width: 100%;
+                height: 36px;
+                font-size: 0.8125rem;
             }
         }
 
         .products-section {
-            margin-top: -20px !important;
-            padding-top: 20px !important;
+            margin: 0 auto;
+            padding: 20px 0;
+            max-width: 1200px;
+            width: 100%;
         }
 
         .section-header {
-            margin-bottom: 0 !important;
-            padding-bottom: 0 !important;
+            margin: 0 auto;
+            margin-bottom: 0;
+            padding-bottom: 0;
+            text-align: center;
+            width: 100%;
+            max-width: 1200px;
+        }
+
+
+        /* 🖼️ 이미지 고정 크기 */
+        .product-card .product-image {
+            width: 140px;
+            height: 140px;
+            flex-shrink: 0;
+            border-radius: 12px;
+            overflow: hidden;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+            transition: transform 0.3s ease;
+        }
+
+        .product-card .product-image:hover {
+            transform: scale(1.05);
+        }
+
+        .product-card .product-image img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
         }
     </style>
 
@@ -332,7 +466,7 @@ header("Expires: 0");
 
     <!-- Hero Slider Section -->
     <section class="relative overflow-hidden" style="max-width: 1200px; margin: 0 auto;">
-        <div id="hero-slider" class="relative" style="height: 250px;">
+        <div id="hero-slider" class="relative" style="height: 300px;">
             <!-- Slider Content -->
             <div class="slider-container relative w-full h-full">
                 <div class="slider-track" id="sliderTrack">
@@ -400,255 +534,258 @@ header("Expires: 0");
         </div>
         <div class="products-grid">
             <!-- 1. 스티커 (네비 첫 번째) -->
-            <div class="product-card">
-                <div class="product-card-header">
-                    <h3 class="product-title"><a href="mlangprintauto/sticker_new/">스티커</a></h3>
-                    <span class="product-subtitle">맞춤형 스티커 제작</span>
+            <div class="product-card" style="--card-gradient: #3b82f6">
+                <div class="product-header">
+                    <h3 class="product-title"><a href="mlangprintauto/sticker_new/" style="color: inherit; text-decoration: none;">🏷️ 스티커</a></h3>
+                    <p class="product-subtitle">맞춤형 스티커 제작</p>
                 </div>
-                <div class="product-card-body">
-                    <div class="product-card-content">
+                <div class="product-body">
+                    <div class="product-content-left">
                         <ul class="product-features">
                             <li>방수 소재 가능</li>
                             <li>자유로운 형태</li>
                         </ul>
-                        <div class="product-action">
-                            <a href="mlangprintauto/sticker_new/" class="btn-product btn-primary">주문하기</a>
-                        </div>
+                        <a href="mlangprintauto/sticker_new/" class="btn-product btn-primary">주문하기</a>
                     </div>
-                    <div class="product-card-image">
-                        <a href="mlangprintauto/sticker_new/"><img src="/ImgFolder/gate_picto/sticker_new_s.png" alt="스티커 샘플"></a>
+                    <div class="product-content-right">
+                        <div class="product-image">
+                            <img src="/ImgFolder/gate_picto/sticker_new_s.png" alt="스티커 샘플">
+                        </div>
                     </div>
                 </div>
             </div>
             
             <!-- 2. 전단지 (네비 두 번째) -->
-            <div class="product-card">
-                <div class="product-card-header">
-                    <h3 class="product-title"><a href="mlangprintauto/inserted/">전단지/리플릿</a></h3>
-                    <span class="product-subtitle">홍보용 전단지 제작</span>
+            <div class="product-card" style="--card-gradient: #10b981">
+                <div class="product-header">
+                    <h3 class="product-title"><a href="mlangprintauto/inserted/" style="color: inherit; text-decoration: none;">📄 전단지/리플릿</a></h3>
+                    <p class="product-subtitle">홍보용 전단지 제작</p>
                 </div>
-                <div class="product-card-body">
-                    <div class="product-card-content">
+                <div class="product-body">
+                    <div class="product-content-left">
                         <ul class="product-features">
                             <li>고해상도 인쇄</li>
                             <li>빠른 제작</li>
                         </ul>
-                        <div class="product-action">
-                            <a href="mlangprintauto/inserted/" class="btn-product btn-primary">주문하기</a>
-                        </div>
+                        <a href="mlangprintauto/inserted/" class="btn-product btn-primary">주문하기</a>
                     </div>
-                    <div class="product-card-image">
-                        <a href="mlangprintauto/inserted/"><img src="/ImgFolder/gate_picto/inserted_s.png" alt="전단지 샘플"></a>
+                    <div class="product-content-right">
+                        <div class="product-image">
+                            <img src="/ImgFolder/gate_picto/inserted_s.png" alt="전단지 샘플">
+                        </div>
                     </div>
                 </div>
             </div>
             
             <!-- 3. 명함 (네비 세 번째) -->
-            <div class="product-card">
-                <div class="product-card-header">
-                    <h3 class="product-title"><a href="mlangprintauto/namecard/">명함</a></h3>
-                    <span class="product-subtitle">전문 명함 제작</span>
+            <div class="product-card" style="--card-gradient: #8b5cf6">
+                <div class="product-header">
+                    <h3 class="product-title"><a href="mlangprintauto/namecard/" style="color: inherit; text-decoration: none;">📇 명함</a></h3>
+                    <p class="product-subtitle">전문 명함 제작</p>
                 </div>
-                <div class="product-card-body">
-                    <div class="product-card-content">
+                <div class="product-body">
+                    <div class="product-content-left">
                         <ul class="product-features">
                             <li>UV 코팅 가능</li>
                             <li>당일 제작 가능</li>
                         </ul>
-                        <div class="product-action">
-                            <a href="mlangprintauto/namecard/" class="btn-product btn-primary">주문하기</a>
-                        </div>
+                        <a href="mlangprintauto/namecard/" class="btn-product btn-primary">주문하기</a>
                     </div>
-                    <div class="product-card-image">
-                        <a href="mlangprintauto/namecard/"><img src="/ImgFolder/gate_picto/namecard_s.png" alt="명함 샘플"></a>
+                    <div class="product-content-right">
+                        <div class="product-image">
+                            <img src="/ImgFolder/gate_picto/namecard_s.png" alt="명함 샘플">
+                        </div>
                     </div>
                 </div>
             </div>
             
             <!-- 4. 봉투 (네비 네 번째) -->
-            <div class="product-card">
-                <div class="product-card-header">
-                    <h3 class="product-title"><a href="mlangprintauto/envelope/">봉투</a></h3>
-                    <span class="product-subtitle">각종 봉투 제작</span>
+            <div class="product-card" style="--card-gradient: #e11d48">
+                <div class="product-header">
+                    <h3 class="product-title"><a href="mlangprintauto/envelope/" style="color: inherit; text-decoration: none;">✉️ 봉투</a></h3>
+                    <p class="product-subtitle">각종 봉투 제작</p>
                 </div>
-                <div class="product-card-body">
-                    <div class="product-card-content">
+                <div class="product-body">
+                    <div class="product-content-left">
                         <ul class="product-features">
                             <li>창봉투 가능</li>
                             <li>대량 주문</li>
                         </ul>
-                        <div class="product-action">
-                            <a href="mlangprintauto/envelope/" class="btn-product btn-primary">주문하기</a>
-                        </div>
+                        <a href="mlangprintauto/envelope/" class="btn-product btn-primary">주문하기</a>
                     </div>
-                    <div class="product-card-image">
-                        <a href="mlangprintauto/envelope/"><img src="/ImgFolder/gate_picto/envelop_s.png" alt="봉투 샘플"></a>
+                    <div class="product-content-right">
+                        <div class="product-image">
+                            <img src="/ImgFolder/gate_picto/envelop_s.png" alt="봉투 샘플">
+                        </div>
                     </div>
                 </div>
             </div>
             
             <!-- 5. 카다록 (네비 다섯 번째) -->
-            <div class="product-card">
-                <div class="product-card-header">
-                    <h3 class="product-title"><a href="mlangprintauto/cadarok/">카다록</a></h3>
-                    <span class="product-subtitle">제품 카탈로그 제작</span>
+            <div class="product-card" style="--card-gradient: #06b6d4">
+                <div class="product-header">
+                    <h3 class="product-title"><a href="mlangprintauto/cadarok/" style="color: inherit; text-decoration: none;">📖 카다록</a></h3>
+                    <p class="product-subtitle">제품 카탈로그 제작</p>
                 </div>
-                <div class="product-card-body">
-                    <div class="product-card-content">
+                <div class="product-body">
+                    <div class="product-content-left">
                         <ul class="product-features">
                             <li>풀컬러 인쇄</li>
                             <li>전문 편집</li>
                         </ul>
-                        <div class="product-action">
-                            <a href="mlangprintauto/cadarok/" class="btn-product btn-primary">주문하기</a>
-                        </div>
+                        <a href="mlangprintauto/cadarok/" class="btn-product btn-primary">주문하기</a>
                     </div>
-                    <div class="product-card-image">
-                        <a href="mlangprintauto/cadarok/"><img src="/ImgFolder/gate_picto/catalogue_s.png" alt="카다록 샘플"></a>
+                    <div class="product-content-right">
+                        <div class="product-image">
+                            <img src="/ImgFolder/gate_picto/catalogue_s.png" alt="카다록 샘플">
+                        </div>
                     </div>
                 </div>
             </div>
             
             <!-- 6. 포스터 (네비 여섯 번째) -->
-            <div class="product-card">
-                <div class="product-card-header">
-                    <h3 class="product-title"><a href="mlangprintauto/littleprint/">포스터</a></h3>
-                    <span class="product-subtitle">대형 포스터 인쇄</span>
+            <div class="product-card" style="--card-gradient: #f97316">
+                <div class="product-header">
+                    <h3 class="product-title"><a href="mlangprintauto/littleprint/" style="color: inherit; text-decoration: none;">🎨 포스터</a></h3>
+                    <p class="product-subtitle">대형 포스터 인쇄</p>
                 </div>
-                <div class="product-card-body">
-                    <div class="product-card-content">
+                <div class="product-body">
+                    <div class="product-content-left">
                         <ul class="product-features">
                             <li>대형 사이즈</li>
                             <li>고화질 출력</li>
                         </ul>
-                        <div class="product-action">
-                            <a href="mlangprintauto/littleprint/" class="btn-product btn-primary">주문하기</a>
-                        </div>
+                        <a href="mlangprintauto/littleprint/" class="btn-product btn-primary">주문하기</a>
                     </div>
-                    <div class="product-card-image">
-                        <a href="mlangprintauto/littleprint/"><img src="/ImgFolder/gate_picto/poster_s.png" alt="포스터 샘플"></a>
+                    <div class="product-content-right">
+                        <div class="product-image">
+                            <img src="/ImgFolder/gate_picto/poster_s.png" alt="포스터 샘플">
+                        </div>
                     </div>
                 </div>
             </div>
             
             <!-- 7. 양식지 (네비 일곱 번째) -->
-            <div class="product-card">
-                <div class="product-card-header">
-                    <h3 class="product-title"><a href="mlangprintauto/ncrflambeau/">양식지</a></h3>
-                    <span class="product-subtitle">NCR 양식지 제작</span>
+            <div class="product-card" style="--card-gradient: #84cc16">
+                <div class="product-header">
+                    <h3 class="product-title"><a href="mlangprintauto/ncrflambeau/" style="color: inherit; text-decoration: none;">📋 양식지</a></h3>
+                    <p class="product-subtitle">NCR 양식지 제작</p>
                 </div>
-                <div class="product-card-body">
-                    <div class="product-card-content">
+                <div class="product-body">
+                    <div class="product-content-left">
                         <ul class="product-features">
                             <li>2~4연 제작</li>
                             <li>무탄소 용지</li>
                         </ul>
-                        <div class="product-action">
-                            <a href="mlangprintauto/ncrflambeau/" class="btn-product btn-primary">주문하기</a>
-                        </div>
+                        <a href="mlangprintauto/ncrflambeau/" class="btn-product btn-primary">주문하기</a>
                     </div>
-                    <div class="product-card-image">
-                        <a href="mlangprintauto/ncrflambeau/"><img src="/ImgFolder/gate_picto/ncr_s.png" alt="양식지 샘플"></a>
+                    <div class="product-content-right">
+                        <div class="product-image">
+                            <img src="/ImgFolder/gate_picto/ncr_s.png" alt="양식지 샘플">
+                        </div>
                     </div>
                 </div>
             </div>
             
             <!-- 8. 상품권 (네비 여덟 번째) -->
-            <div class="product-card">
-                <div class="product-card-header">
-                    <h3 class="product-title"><a href="mlangprintauto/merchandisebond/">상품권</a></h3>
-                    <span class="product-subtitle">쿠폰/상품권 제작</span>
+            <div class="product-card" style="--card-gradient: #d946ef">
+                <div class="product-header">
+                    <h3 class="product-title"><a href="mlangprintauto/merchandisebond/" style="color: inherit; text-decoration: none;">🎫 상품권</a></h3>
+                    <p class="product-subtitle">쿠폰/상품권 제작</p>
                 </div>
-                <div class="product-card-body">
-                    <div class="product-card-content">
+                <div class="product-body">
+                    <div class="product-content-left">
                         <ul class="product-features">
                             <li>위조 방지</li>
                             <li>번호 인쇄</li>
                         </ul>
-                        <div class="product-action">
-                            <a href="mlangprintauto/merchandisebond/" class="btn-product btn-primary">주문하기</a>
-                        </div>
+                        <a href="mlangprintauto/merchandisebond/" class="btn-product btn-primary">주문하기</a>
                     </div>
-                    <div class="product-card-image">
-                        <a href="mlangprintauto/merchandisebond/"><img src="/ImgFolder/gate_picto/merchandise_s.png" alt="상품권 샘플"></a>
+                    <div class="product-content-right">
+                        <div class="product-image">
+                            <img src="/ImgFolder/gate_picto/merchandise_s.png" alt="상품권 샘플">
+                        </div>
                     </div>
                 </div>
             </div>
             
             <!-- 9. 자석스티커 (네비 아홉 번째) -->
-            <div class="product-card">
-                <div class="product-card-header">
-                    <h3 class="product-title"><a href="mlangprintauto/msticker/">자석스티커</a></h3>
-                    <span class="product-subtitle">마그네틱 스티커 제작</span>
+            <div class="product-card" style="--card-gradient: #ef4444">
+                <div class="product-header">
+                    <h3 class="product-title"><a href="mlangprintauto/msticker/" style="color: inherit; text-decoration: none;">🧲 자석스티커</a></h3>
+                    <p class="product-subtitle">마그네틱 스티커 제작</p>
                 </div>
-                <div class="product-card-body">
-                    <div class="product-card-content">
+                <div class="product-body">
+                    <div class="product-content-left">
                         <ul class="product-features">
                             <li>강력한 자석</li>
                             <li>차량용 최적</li>
                         </ul>
-                        <div class="product-action">
-                            <a href="mlangprintauto/msticker/" class="btn-product btn-primary">주문하기</a>
-                        </div>
+                        <a href="mlangprintauto/msticker/" class="btn-product btn-primary">주문하기</a>
                     </div>
-                    <div class="product-card-image">
-                        <a href="mlangprintauto/msticker/"><img src="/ImgFolder/gate_picto/m_sticker_s.png" alt="자석스티커 샘플"></a>
+                    <div class="product-content-right">
+                        <div class="product-image">
+                            <img src="/ImgFolder/gate_picto/m_sticker_s.png" alt="자석스티커 샘플">
+                        </div>
                     </div>
                 </div>
             </div>
 
             <!-- 10. 배너 - 실내외게시대 -->
-            <div class="product-card product-card-no-image">
-                <div class="product-card-header">
-                    <h3 class="product-title">배너</h3>
-                    <span class="product-subtitle">실내외게시대</span>
+            <div class="product-card product-card-no-image" style="--card-gradient: #059669;">
+                <div class="product-header">
+                    <h3 class="product-title">🎪 배너</h3>
+                    <p class="product-subtitle">실내외게시대</p>
                 </div>
-                <div class="product-card-body">
-                    <div class="product-card-content">
+                <div class="product-body">
+                    <div class="product-content-single">
                         <ul class="product-features">
                             <li>단면/양면게시대</li>
                             <li>미니게시대</li>
                         </ul>
                         <div class="product-action">
                             <button class="btn-product btn-primary" onclick="alert('별도견적 문의: 1688-2384')">별도견적</button>
+                            <button class="btn-product btn-secondary" onclick="alert('문의전화: 1688-2384')">상세보기</button>
                         </div>
                     </div>
                 </div>
             </div>
 
             <!-- 11. 옥외스티커 - 탈색방지용스티커 -->
-            <div class="product-card product-card-no-image">
-                <div class="product-card-header">
-                    <h3 class="product-title">옥외스티커</h3>
-                    <span class="product-subtitle">탈색방지용스티커</span>
+            <div class="product-card product-card-no-image" style="--card-gradient: #7c3aed;">
+                <div class="product-header">
+                    <h3 class="product-title">🌞 옥외스티커</h3>
+                    <p class="product-subtitle">탈색방지용스티커</p>
                 </div>
-                <div class="product-card-body">
-                    <div class="product-card-content">
+                <div class="product-body">
+                    <div class="product-content-single">
                         <ul class="product-features">
                             <li>차량용스티커</li>
                             <li>대형스티커(1.4m폭 이하 길이는 자유)</li>
                         </ul>
                         <div class="product-action">
                             <button class="btn-product btn-primary" onclick="alert('별도견적 문의: 1688-2384')">별도견적</button>
+                            <button class="btn-product btn-secondary" onclick="alert('문의전화: 1688-2384')">상세보기</button>
                         </div>
                     </div>
                 </div>
             </div>
 
             <!-- 12. 책자인쇄 - 무선제본/양장제본 -->
-            <div class="product-card product-card-no-image">
-                <div class="product-card-header">
-                    <h3 class="product-title">책자인쇄</h3>
-                    <span class="product-subtitle">무선제본/양장제본</span>
+            <div class="product-card product-card-no-image" style="--card-gradient: #dc2626;">
+                <div class="product-header">
+                    <h3 class="product-title">📚 책자인쇄</h3>
+                    <p class="product-subtitle">무선제본/양장제본</p>
                 </div>
-                <div class="product-card-body">
-                    <div class="product-card-content">
+                <div class="product-body">
+                    <div class="product-content-single">
                         <ul class="product-features">
                             <li>소량(디지털)인쇄</li>
                             <li>컬러인쇄 2도인쇄</li>
                         </ul>
                         <div class="product-action">
                             <button class="btn-product btn-primary" onclick="alert('별도견적 문의: 1688-2384')">별도견적</button>
+                            <button class="btn-product btn-secondary" onclick="alert('문의전화: 1688-2384')">상세보기</button>
                         </div>
                     </div>
                 </div>

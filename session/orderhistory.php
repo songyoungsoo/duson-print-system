@@ -272,11 +272,32 @@ $orders = mysqli_stmt_get_result($order_stmt);
 
         <?php if ($pages > 1): ?>
         <div class="pagination">
-            <?php for ($i = 1; $i <= $pages; $i++): ?>
-                <a href="?page=<?php echo $i; ?>" class="<?php echo $i == $start ? 'active' : ''; ?>">
-                    <?php echo $i; ?>
-                </a>
-            <?php endfor; ?>
+            <?php
+            $page_links_to_show = 5;
+            $current_page = $start;
+
+            $start_page = max(1, $current_page - floor($page_links_to_show / 2));
+            $end_page = $start_page + $page_links_to_show - 1;
+
+            if ($end_page > $pages) {
+                $end_page = $pages;
+                $start_page = max(1, $end_page - $page_links_to_show + 1);
+            }
+
+            if ($current_page > 1) {
+                echo '<a href="?page=1">처음</a>';
+                echo '<a href="?page=' . ($current_page - 1) . '">이전</a>';
+            }
+
+            for ($i = $start_page; $i <= $end_page; $i++) {
+                echo '<a href="?page=' . $i . '" class="' . ($i == $current_page ? 'active' : '') . '">' . $i . '</a>';
+            }
+
+            if ($current_page < $pages) {
+                echo '<a href="?page=' . ($current_page + 1) . '">다음</a>';
+                echo '<a href="?page=' . $pages . '">끝</a>';
+            }
+            ?>
         </div>
         <?php endif; ?>
 

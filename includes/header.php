@@ -64,12 +64,7 @@ if (isset($_SESSION['user_id'])) {
                         </div>
                         <?php if ($is_logged_in): ?>
                         <div class="contact-card">
-                            <div class="user-info-header">
-                                <div class="value"><?php echo htmlspecialchars($user_name); ?>님</div>
-                            </div>
-                        </div>
-                        <div class="contact-card">
-                            <a href="/account/orders.php" class="contact-text">마이페이지</a>
+                            <a href="/mypage/" class="contact-text">마이페이지</a>
                         </div>
                         <div class="contact-card">
                             <form action="/auth/logout.php" method="post" style="margin: 0;" onsubmit="return confirm('로그아웃 하시겠습니까?');">
@@ -85,7 +80,7 @@ if (isset($_SESSION['user_id'])) {
                             <a href="/member/join.php" class="contact-text">회원가입</a>
                         </div>
                         <div class="contact-card">
-                            <a href="/account/orders.php" class="contact-text">마이페이지</a>
+                            <a href="/mypage/" class="contact-text">마이페이지</a>
                         </div>
                         <?php endif; ?>
                         <div class="contact-card">

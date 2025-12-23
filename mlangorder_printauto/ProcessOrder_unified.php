@@ -341,7 +341,34 @@ try {
                 $product_info .= "후가공: $after_name\n";
                 $product_info .= "편집디자인: " . ($item['ordertype'] == 'total' ? '디자인+인쇄' : '인쇄만');
                 break;
-                
+
+            case 'littleprint':
+            case 'poster':  // 레거시 호환 (기존 poster로 저장된 데이터 처리)
+                $product_type_name = '포스터';
+                $type_name = getCategoryName($connect, $item['MY_type']);
+                $paper_name = getCategoryName($connect, $item['Section'] ?? $item['MY_Fsd']);
+                $size_name = getCategoryName($connect, $item['PN_type']);
+                $design = ($item['ordertype'] == 'total' ? '디자인+인쇄' : '인쇄만');
+
+                // 🔧 FIX: JSON 형식으로 저장하여 OrderFormOrderTree.php에서 일관되게 처리
+                $littleprint_data = [
+                    'product_type' => 'littleprint',  // 항상 littleprint로 정규화
+                    'MY_type' => $item['MY_type'],
+                    'Section' => $item['Section'] ?? $item['MY_Fsd'],
+                    'PN_type' => $item['PN_type'],
+                    'MY_amount' => $item['MY_amount'],
+                    'ordertype' => $item['ordertype'],
+                    'formatted_display' => "구분: $type_name\n" .
+                                          "용지: $paper_name\n" .
+                                          "규격: $size_name\n" .
+                                          "수량: " . number_format($item['MY_amount']) . "매\n" .
+                                          "디자인: $design",
+                    'created_at' => date('Y-m-d H:i:s')
+                ];
+
+                $product_info = json_encode($littleprint_data, JSON_UNESCAPED_UNICODE);
+                break;
+
             default:
                 $product_type_name = '기타';
                 // 🔧 FIX: "상품 정보:" 텍스트 제거 - JSON만 저장 (OrderComplete에서 파싱 가능하도록)

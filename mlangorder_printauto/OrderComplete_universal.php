@@ -512,8 +512,9 @@ function extractQuantity($order) {
     if ($is_flyer) {
         $quantity_text = '';
         // 주문 데이터에 MY_amount 와 mesu 필드가 있는지 확인 (Type_1 JSON에서 추출)
-        $my_amount = $json_data['MY_amount'] ?? $order['MY_amount'] ?? null;
-        $mesu = $json_data['mesu'] ?? $order['mesu'] ?? null;
+        $my_amount = $json_data['MY_amount'] ?? $json_data['quantity'] ?? $order['MY_amount'] ?? $order['quantity'] ?? null;
+        // 🔧 FIX: flyer_mesu 우선 사용 (전단지 전용 필드)
+        $mesu = $json_data['flyer_mesu'] ?? $json_data['mesu'] ?? $order['flyer_mesu'] ?? $order['mesu'] ?? null;
 
         if (!empty($my_amount)) {
             $yeonsu = floatval($my_amount);
