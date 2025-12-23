@@ -376,36 +376,36 @@ if (!empty($debug_info) && strpos($_SERVER['HTTP_HOST'], 'localhost') !== false)
     <!-- 주문 정보 입력 폼 -->
     <div class="card" style="margin-bottom: 1rem;">
         <div class="card-header" style="background-color: #1E90FF; color: black; text-align: center; padding: 0.5rem;">
-            <h2 style="margin: 0; font-size: 16pt; color: black;">📋 주문 정보 입력</h2>
+            <h2 style="margin: 0; font-size: 16px; color: black;">📋 주문 정보 입력</h2>
         </div>
         
         <div class="centered-form" style="padding: 0.8rem;">
             <!-- 주문 요약 (장바구니 스타일) -->
             <div style="background-color: #f8f9fa; border-radius: 8px; padding: 20px; border: 1px solid #e2e8f0; margin-bottom: 1.5rem;">
                 <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 16px;">
-                    <div style="color: #4a5568; font-weight: 600; font-size: 14pt;">📋 주문 요약</div>
+                    <div style="color: #4a5568; font-weight: 600; font-size: 14px;">📋 주문 요약</div>
                     <div style="color: #718096; font-size: 13px;">총 <?php echo $total_info['count']; ?>개 상품</div>
                 </div>
                 
                 <div style="display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 16px;">
                     <div style="text-align: center; padding: 12px; background: white; border-radius: 6px; border: 1px solid #e2e8f0;">
                         <div style="color: #718096; font-size: 12px; margin-bottom: 4px;">상품금액</div>
-                        <div style="color: #2d3748; font-weight: 600; font-size: 14pt;"><?php echo number_format($total_info['total']); ?>원</div>
+                        <div style="color: #2d3748; font-weight: 600; font-size: 14px;"><?php echo number_format($total_info['total']); ?>원</div>
                     </div>
                     <div style="text-align: center; padding: 12px; background: white; border-radius: 6px; border: 1px solid #e2e8f0;">
                         <div style="color: #718096; font-size: 12px; margin-bottom: 4px;">부가세</div>
-                        <div style="color: #2d3748; font-weight: 600; font-size: 14pt;"><?php echo number_format($total_info['total_vat'] - $total_info['total']); ?>원</div>
+                        <div style="color: #2d3748; font-weight: 600; font-size: 14px;"><?php echo number_format($total_info['total_vat'] - $total_info['total']); ?>원</div>
                     </div>
                     <div style="text-align: center; padding: 12px; background-color: #1E90FF; border: 1px solid #1873CC; border-radius: 6px; color: white;">
                         <div style="opacity: 0.9; font-size: 12px; margin-bottom: 4px;">총 결제금액</div>
-                        <div style="font-weight: 700; font-size: 14pt;"><?php echo number_format($total_info['total_vat']); ?>원</div>
+                        <div style="font-weight: 700; font-size: 14px;"><?php echo number_format($total_info['total_vat']); ?>원</div>
                     </div>
                 </div>
             </div>
             
             <!-- 주문 상품 목록 (6컬럼: 순번|품목|규격/옵션|수량|단위|총액) -->
             <div style="margin-bottom: 1.5rem;">
-                <h3 style="color: #4a5568; font-weight: 600; font-size: 14pt; margin-bottom: 1rem;">🛍️ 주문 상품 목록</h3>
+                <h3 style="color: #4a5568; font-weight: 600; font-size: 14px; margin-bottom: 1rem;">🛍️ 주문 상품 목록</h3>
                 <div class="excel-cart-table-wrapper">
                     <table class="excel-cart-table" style="width: 100%; border-collapse: collapse; table-layout: fixed;">
                         <colgroup>
@@ -447,22 +447,22 @@ if (!empty($debug_info) && strpos($_SERVER['HTTP_HOST'], 'localhost') !== false)
                     ?>
                     <tr>
                         <!-- 순번 -->
-                        <td style="border: 1px solid #ccc; padding: 10px; vertical-align: top; text-align: center; font-weight: bold;">
+                        <td style="border: 1px solid #ccc; padding: 10px; vertical-align: middle; text-align: center; font-weight: bold; font-size: 14px;">
                             <?php echo $index + 1; ?>
                         </td>
                         <!-- 품목 -->
-                        <td style="border: 1px solid #ccc; padding: 10px; vertical-align: top;">
+                        <td style="border: 1px solid #ccc; padding: 10px; vertical-align: middle; font-size: 14px;">
                             <div class="product-info-cell">
                                 <div class="product-icon <?php echo htmlspecialchars($item['product_type']); ?>" style="background-color: <?php echo $product['color']; ?>; padding: 8px; border-radius: 6px; font-size: 18px; line-height: 1; min-width: 36px; text-align: center;">
                                     <?php echo $product['icon']; ?>
                                 </div>
                                 <div>
-                                    <div class="product-name" style="font-weight: 600; color: #2d3748; margin-bottom: 4px; font-size: 15px;"><?php echo $product['name']; ?></div>
+                                    <div class="product-name" style="font-weight: 600; color: #2d3748; margin-bottom: 4px; font-size: 14px;"><?php echo $product['name']; ?></div>
                                 </div>
                             </div>
                         </td>
                         <!-- 규격/옵션 -->
-                        <td style="border: 1px solid #ccc; padding: 10px; vertical-align: top;">
+                        <td style="border: 1px solid #ccc; padding: 10px; vertical-align: top; font-size: 14px;">
                             <div class="specs-cell">
                                 <?php if ($is_direct_order): ?>
                                     <?php if ($item['product_type'] == 'envelope'): ?>
@@ -582,7 +582,7 @@ if (!empty($debug_info) && strpos($_SERVER['HTTP_HOST'], 'localhost') !== false)
                                 <?php endif; ?>
                         </td>
                         <!-- 수량 -->
-                        <td style="border: 1px solid #ccc; padding: 10px; vertical-align: middle; text-align: center; font-size: 14pt;">
+                        <td style="border: 1px solid #ccc; padding: 10px; vertical-align: middle; text-align: center; font-size: 14px;">
                             <?php
                             // 전단지/리플렛 여부 확인
                             $is_flyer = in_array($item['product_type'], ['inserted', 'leaflet']) ||
@@ -609,7 +609,7 @@ if (!empty($debug_info) && strpos($_SERVER['HTTP_HOST'], 'localhost') !== false)
                             ?>
                         </td>
                         <!-- 단위 -->
-                        <td style="border: 1px solid #ccc; padding: 10px; vertical-align: middle; text-align: center; font-size: 14pt;">
+                        <td style="border: 1px solid #ccc; padding: 10px; vertical-align: middle; text-align: center; font-size: 14px;">
                             <?php
                             if ($is_flyer) {
                                 echo '연';
@@ -624,7 +624,7 @@ if (!empty($debug_info) && strpos($_SERVER['HTTP_HOST'], 'localhost') !== false)
                         </td>
                         <!-- 총액 -->
                         <td style="border: 1px solid #ccc; padding: 10px; vertical-align: middle; text-align: right;">
-                            <div style="font-size: 14pt; font-weight: 600;">
+                            <div style="font-size: 14px; font-weight: 600;">
                                 <?php echo number_format($is_direct_order ? $item['price_vat'] : $item['st_price_vat']); ?>원
                             </div>
                         </td>

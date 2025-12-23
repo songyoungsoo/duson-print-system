@@ -351,17 +351,20 @@ try {
                 $design = ($item['ordertype'] == 'total' ? '디자인+인쇄' : '인쇄만');
 
                 // 🔧 FIX: JSON 형식으로 저장하여 OrderFormOrderTree.php에서 일관되게 처리
+                $poster_qty = floatval($item['MY_amount'] ?? 0);
                 $littleprint_data = [
                     'product_type' => 'littleprint',  // 항상 littleprint로 정규화
                     'MY_type' => $item['MY_type'],
                     'Section' => $item['Section'] ?? $item['MY_Fsd'],
                     'PN_type' => $item['PN_type'],
                     'MY_amount' => $item['MY_amount'],
+                    'quantity' => $poster_qty,  // 🔧 수량 필드 추가
+                    'unit' => '매',  // 🔧 단위 필드 추가
                     'ordertype' => $item['ordertype'],
                     'formatted_display' => "구분: $type_name\n" .
                                           "용지: $paper_name\n" .
                                           "규격: $size_name\n" .
-                                          "수량: " . number_format($item['MY_amount']) . "매\n" .
+                                          "수량: " . number_format($poster_qty) . "매\n" .
                                           "디자인: $design",
                     'created_at' => date('Y-m-d H:i:s')
                 ];
@@ -504,9 +507,20 @@ try {
             $flyer_mesu = 0;  // 스티커는 flyer_mesu 0
         }
 
-        // 🔧 수량 및 단위 추가
-        $quantity = $item['quantity'] ?? 1.0;
-        $unit = $item['unit'] ?? '개';
+        // 🔧 수량 및 단위 추가 (제품별 분기 처리)
+        if (in_array($product_type, ['inserted', 'leaflet'])) {
+            // 전단지/리플렛: quantity는 연수, unit은 '연'
+            $quantity = floatval($item['quantity'] ?? $item['MY_amount'] ?? 1.0);
+            $unit = $item['unit'] ?? '연';
+        } elseif (in_array($product_type, ['littleprint', 'poster'])) {
+            // 포스터: MY_amount가 실제 수량, unit은 '매'
+            $quantity = floatval($item['MY_amount'] ?? $item['quantity'] ?? 1.0);
+            $unit = '매';
+        } else {
+            // 기타 제품: 기본값 사용
+            $quantity = floatval($item['quantity'] ?? 1.0);
+            $unit = $item['unit'] ?? '개';
+        }
 
         // 🔧 FIX: 37개 필드에 맞는 타입 문자열 (flyer_mesu 추가)
         // 1-4: i,s,s,s (no, Type, ImgFolder, Type_1)
