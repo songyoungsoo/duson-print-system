@@ -118,6 +118,7 @@ try {
     $typeMapping = [
         'namecard' => ['명함', 'namecard'],  // 명함은 한글로 저장됨
         'sticker' => ['스티커', 'sticker'],  // 한글과 영문, 인코딩 차이 고려
+        'sticker_new' => ['스티커', 'sticker'],  // sticker_new도 스티커로 매핑
         'envelope' => ['봉투', 'envelope'],
         'littleprint' => ['포스터', 'littleprint'],
         'cadarok' => ['카탈로그', 'cadarok'],
