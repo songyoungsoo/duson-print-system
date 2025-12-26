@@ -17,7 +17,7 @@ if (file_exists('../../includes/gallery_helper.php')) {
     include_once '../../includes/gallery_helper.php';
 }
 if (function_exists("init_gallery_system")) {
-    init_gallery_system("sticker");
+    init_gallery_system("sticker_new");
 }
 
 // 데이터베이스 연결 및 설정
@@ -345,7 +345,7 @@ $default_values = [
                 </div>
                 <?php
                 // 통합 갤러리 시스템 (500×400 마우스 호버 줌)
-                $gallery_product = 'sticker';
+                $gallery_product = 'sticker_new';
                 if (file_exists('../../includes/simple_gallery_include.php')) {
                     include '../../includes/simple_gallery_include.php';
                 }
@@ -1659,7 +1659,7 @@ $default_values = [
             
             // 통일된 갤러리 팝업 인스턴스 생성
             unifiedStickerGallery = new UnifiedGalleryPopup({
-                category: 'sticker',
+                category: 'sticker_new',
                 apiUrl: '/api/get_real_orders_portfolio.php',
                 title: '스티커 전체 갤러리',
                 icon: '',
