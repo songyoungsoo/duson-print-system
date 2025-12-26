@@ -88,8 +88,8 @@ try {
             return $b['mtime'] - $a['mtime'];
         });
 
-        // 최대 $limit개 가져오기
-        $galleryFiles = array_slice($galleryFiles, 0, $limit);
+        // 모든 samplegallery 이미지 반환 (limit 제한 제거)
+        // $galleryFiles = array_slice($galleryFiles, 0, $limit);
 
         foreach ($galleryFiles as $fileInfo) {
             $filename = $fileInfo['name'];
