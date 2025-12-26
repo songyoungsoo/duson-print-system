@@ -148,7 +148,7 @@ try {
         $whereClause .= " AND Type = '전단지'";
     } elseif ($category === 'namecard') {
         $whereClause .= " AND (Type = '명함' OR Type = 'namecard')";
-    } elseif ($category === 'sticker') {
+    } elseif ($category === 'sticker' || $category === 'sticker_new') {
         $whereClause .= " AND Type = '스티커'";
     } elseif ($category === 'ncrflambeau') {
         $whereClause .= " AND (Type = '양식지' OR Type = 'ncrflambeau')";
@@ -191,7 +191,7 @@ try {
     $result = null;
     if (!$isPrivateCategory) {
         // 스티커는 랜덤으로, 나머지는 기존 정렬 유지
-        if ($category === 'sticker') {
+        if ($category === 'sticker' || $category === 'sticker_new') {
             // 스티커는 랜덤하게 가져오기 (매번 다른 이미지 표시)
             $query = "SELECT no, ThingCate, Type, name, date
                       FROM mlangorder_printauto
