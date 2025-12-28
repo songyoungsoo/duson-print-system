@@ -591,6 +591,12 @@ function buildCadarokSpecification() {
         parts.push(myType.selectedOptions[0].text);
     }
 
+    // 종이 재질 (Section)
+    const section = document.getElementById('Section');
+    if (section && section.selectedOptions[0]) {
+        parts.push(section.selectedOptions[0].text);
+    }
+
     const myFsd = document.getElementById('MY_Fsd');
     if (myFsd && myFsd.selectedOptions[0]) {
         parts.push(myFsd.selectedOptions[0].text);
@@ -618,6 +624,12 @@ function buildLittleprintSpecification() {
     const myType = document.getElementById('MY_type');
     if (myType && myType.selectedOptions[0]) {
         parts.push(myType.selectedOptions[0].text);
+    }
+
+    // 종이 재질 (Section)
+    const section = document.getElementById('Section');
+    if (section && section.selectedOptions[0]) {
+        parts.push(section.selectedOptions[0].text);
     }
 
     const myFsd = document.getElementById('MY_Fsd');
