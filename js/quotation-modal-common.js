@@ -519,19 +519,26 @@ function buildEnvelopeSpecification() {
 function buildStickerSpecification() {
     const parts = [];
 
-    const myType = document.getElementById('MY_type');
-    if (myType && myType.selectedOptions[0]) {
-        parts.push(myType.selectedOptions[0].text);
+    // 용지 종류
+    const jong = document.getElementById('jong');
+    if (jong && jong.selectedOptions[0]) {
+        parts.push(jong.selectedOptions[0].text);
     }
 
-    const section = document.getElementById('Section');
-    if (section && section.selectedOptions[0]) {
-        parts.push(section.selectedOptions[0].text);
+    // 재단 형태
+    const domusong = document.getElementById('domusong');
+    if (domusong && domusong.selectedOptions[0]) {
+        const domusongText = domusong.selectedOptions[0].text;
+        parts.push(domusongText);
     }
 
-    const poType = document.getElementById('POtype');
-    if (poType && poType.selectedOptions[0]) {
-        parts.push(poType.selectedOptions[0].text);
+    // 편집비 (인쇄만이 아닌 경우만 표시)
+    const uhyung = document.getElementById('uhyung');
+    if (uhyung && uhyung.selectedOptions[0]) {
+        const uhyungText = uhyung.selectedOptions[0].text;
+        if (!uhyungText.includes('인쇄만')) {
+            parts.push(uhyungText);
+        }
     }
 
     return parts.join('\n');
