@@ -319,13 +319,13 @@ class CalculatorModal {
                 }
             }
 
-            // 7. VAT와 총액 계산
-            const vat = Math.round(supply * 0.1);
-            const total = supply + vat;
+            // 7. VAT와 총액 (전송된 데이터 사용)
+            const total = parseInt(data.total_price) || (supply + Math.round(supply * 0.1));
+            const vat = total - supply;
 
             row.querySelector('.vat-cell').textContent = vat.toLocaleString();
             row.querySelector('.total-cell').textContent = total.toLocaleString();
-            console.log('✅ VAT 및 총액 계산:', {vat: vat, total: total});
+            console.log('✅ VAT 및 총액:', {supply: supply, vat: vat, total: total});
 
             // 8. 전체 합계 재계산 (create.php의 calculateTotals() 함수 호출)
             if (typeof window.calculateTotals === 'function') {
