@@ -546,6 +546,13 @@ function buildStickerSpecification() {
         }
     }
 
+    // 가로/세로 사이즈
+    const garo = document.getElementById('garo');
+    const sero = document.getElementById('sero');
+    if (garo && sero && garo.value && sero.value) {
+        parts.push(`${garo.value}mm x ${sero.value}mm`);
+    }
+
     return parts.join('\n');
 }
 
