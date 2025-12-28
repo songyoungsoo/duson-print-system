@@ -23,9 +23,9 @@ function applyToQuotation() {
     }
 
     // 2. 가격 계산 여부 확인 - 없으면 자동 계산
-    // 전단지: Order_PriceForm / 기타: total_price / 명함: total_supply_price 체크
+    // 전단지: Order_PriceForm / 일반: total_price / 명함: total_supply_price / 스티커: price 체크
     const hasPriceData = window.currentPriceData &&
-        (window.currentPriceData.Order_PriceForm || window.currentPriceData.total_price || window.currentPriceData.total_supply_price);
+        (window.currentPriceData.Order_PriceForm || window.currentPriceData.total_price || window.currentPriceData.total_supply_price || window.currentPriceData.price);
 
     if (!hasPriceData) {
         console.log('⚠️ [견적서 적용] 가격 데이터 없음 - 자동 계산 시도');
@@ -59,7 +59,7 @@ function applyToQuotation() {
                 attempts++;
 
                 const hasPriceNow = window.currentPriceData &&
-                    (window.currentPriceData.Order_PriceForm || window.currentPriceData.total_price || window.currentPriceData.total_supply_price);
+                    (window.currentPriceData.Order_PriceForm || window.currentPriceData.total_price || window.currentPriceData.total_supply_price || window.currentPriceData.price);
 
                 if (hasPriceNow) {
                     // 가격 계산 완료
@@ -226,6 +226,60 @@ function proceedWithApply() {
             }
             unit = '매';
 
+        } else if (productType === 'sticker') {
+            // 스티커
+            specification = buildStickerSpecification();
+            const myAmount = document.getElementById('MY_amount');
+            if (myAmount) {
+                quantity = parseFloat(myAmount.value) || 1;
+            }
+            unit = '매';
+
+        } else if (productType === 'msticker') {
+            // 자석스티커
+            specification = buildMstickerSpecification();
+            const myAmount = document.getElementById('MY_amount');
+            if (myAmount) {
+                quantity = parseFloat(myAmount.value) || 1;
+            }
+            unit = '매';
+
+        } else if (productType === 'cadarok') {
+            // 카다록
+            specification = buildCadarokSpecification();
+            const myAmount = document.getElementById('MY_amount');
+            if (myAmount) {
+                quantity = parseFloat(myAmount.value) || 1;
+            }
+            unit = '권';
+
+        } else if (productType === 'littleprint') {
+            // 포스터
+            specification = buildLittleprintSpecification();
+            const myAmount = document.getElementById('MY_amount');
+            if (myAmount) {
+                quantity = parseFloat(myAmount.value) || 1;
+            }
+            unit = '매';
+
+        } else if (productType === 'merchandisebond') {
+            // 상품권
+            specification = buildMerchandisebondSpecification();
+            const myAmount = document.getElementById('MY_amount');
+            if (myAmount) {
+                quantity = parseFloat(myAmount.value) || 1;
+            }
+            unit = '매';
+
+        } else if (productType === 'ncrflambeau') {
+            // NCR양식
+            specification = buildNcrflambeauSpecification();
+            const myAmount = document.getElementById('MY_amount');
+            if (myAmount) {
+                quantity = parseFloat(myAmount.value) || 1;
+            }
+            unit = '권';
+
         } else {
             // 기타 제품 - 기본 로직
             specification = '제품 옵션 정보';
@@ -259,6 +313,14 @@ function proceedWithApply() {
             supplyPrice = Math.round(window.currentPriceData.total_supply_price) || 0;
             totalPrice = Math.round(window.currentPriceData.final_total_with_vat) || 0;
             console.log('✅ [가격 읽기] total_supply_price 사용:', { supplyPrice, totalPrice });
+        } else if (window.currentPriceData.price) {
+            // 방법 1D: 스티커 형식 (price, price_vat)
+            // price가 문자열인 경우 콤마 제거 후 변환
+            const priceStr = window.currentPriceData.price.toString().replace(/,/g, '');
+            const priceVatStr = window.currentPriceData.price_vat.toString().replace(/,/g, '');
+            supplyPrice = Math.round(parseFloat(priceStr)) || 0;
+            totalPrice = Math.round(parseFloat(priceVatStr)) || 0;
+            console.log('✅ [가격 읽기] price 사용 (스티커 형식):', { supplyPrice, totalPrice });
         }
 
     } else {
@@ -446,6 +508,165 @@ function buildEnvelopeSpecification() {
     const section = document.getElementById('Section');
     if (section && section.selectedOptions[0]) {
         parts.push(section.selectedOptions[0].text);
+    }
+
+    return parts.join('\n');
+}
+
+/**
+ * 스티커 규격 정보 생성
+ */
+function buildStickerSpecification() {
+    const parts = [];
+
+    const myType = document.getElementById('MY_type');
+    if (myType && myType.selectedOptions[0]) {
+        parts.push(myType.selectedOptions[0].text);
+    }
+
+    const section = document.getElementById('Section');
+    if (section && section.selectedOptions[0]) {
+        parts.push(section.selectedOptions[0].text);
+    }
+
+    const poType = document.getElementById('POtype');
+    if (poType && poType.selectedOptions[0]) {
+        parts.push(poType.selectedOptions[0].text);
+    }
+
+    return parts.join('\n');
+}
+
+/**
+ * 자석스티커 규격 정보 생성
+ */
+function buildMstickerSpecification() {
+    const parts = [];
+
+    const myType = document.getElementById('MY_type');
+    if (myType && myType.selectedOptions[0]) {
+        parts.push(myType.selectedOptions[0].text);
+    }
+
+    const section = document.getElementById('Section');
+    if (section && section.selectedOptions[0]) {
+        parts.push(section.selectedOptions[0].text);
+    }
+
+    const poType = document.getElementById('POtype');
+    if (poType && poType.selectedOptions[0]) {
+        parts.push(poType.selectedOptions[0].text);
+    }
+
+    return parts.join('\n');
+}
+
+/**
+ * 카다록 규격 정보 생성
+ */
+function buildCadarokSpecification() {
+    const parts = [];
+
+    const myType = document.getElementById('MY_type');
+    if (myType && myType.selectedOptions[0]) {
+        parts.push(myType.selectedOptions[0].text);
+    }
+
+    const myFsd = document.getElementById('MY_Fsd');
+    if (myFsd && myFsd.selectedOptions[0]) {
+        parts.push(myFsd.selectedOptions[0].text);
+    }
+
+    const pnType = document.getElementById('PN_type');
+    if (pnType && pnType.selectedOptions[0]) {
+        parts.push(pnType.selectedOptions[0].text);
+    }
+
+    const poType = document.getElementById('POtype');
+    if (poType && poType.selectedOptions[0]) {
+        parts.push(poType.selectedOptions[0].text);
+    }
+
+    return parts.join('\n');
+}
+
+/**
+ * 포스터 규격 정보 생성
+ */
+function buildLittleprintSpecification() {
+    const parts = [];
+
+    const myType = document.getElementById('MY_type');
+    if (myType && myType.selectedOptions[0]) {
+        parts.push(myType.selectedOptions[0].text);
+    }
+
+    const myFsd = document.getElementById('MY_Fsd');
+    if (myFsd && myFsd.selectedOptions[0]) {
+        parts.push(myFsd.selectedOptions[0].text);
+    }
+
+    const pnType = document.getElementById('PN_type');
+    if (pnType && pnType.selectedOptions[0]) {
+        parts.push(pnType.selectedOptions[0].text);
+    }
+
+    const poType = document.getElementById('POtype');
+    if (poType && poType.selectedOptions[0]) {
+        parts.push(poType.selectedOptions[0].text);
+    }
+
+    return parts.join('\n');
+}
+
+/**
+ * 상품권 규격 정보 생성
+ */
+function buildMerchandisebondSpecification() {
+    const parts = [];
+
+    const myType = document.getElementById('MY_type');
+    if (myType && myType.selectedOptions[0]) {
+        parts.push(myType.selectedOptions[0].text);
+    }
+
+    const section = document.getElementById('Section');
+    if (section && section.selectedOptions[0]) {
+        parts.push(section.selectedOptions[0].text);
+    }
+
+    const poType = document.getElementById('POtype');
+    if (poType && poType.selectedOptions[0]) {
+        parts.push(poType.selectedOptions[0].text);
+    }
+
+    return parts.join('\n');
+}
+
+/**
+ * NCR양식 규격 정보 생성
+ */
+function buildNcrflambeauSpecification() {
+    const parts = [];
+
+    const myType = document.getElementById('MY_type');
+    if (myType && myType.selectedOptions[0]) {
+        parts.push(myType.selectedOptions[0].text);
+    }
+
+    const myFsd = document.getElementById('MY_Fsd');
+    if (myFsd && myFsd.selectedOptions[0]) {
+        parts.push(myFsd.selectedOptions[0].text);
+    }
+
+    const pnType = document.getElementById('PN_type');
+    if (pnType && pnType.selectedOptions[0]) {
+        parts.push(pnType.selectedOptions[0].text);
+    }
+
+    const poType = document.getElementById('POtype');
+    if (poType && poType.selectedOptions[0]) {
+        parts.push(poType.selectedOptions[0].text);
     }
 
     return parts.join('\n');
