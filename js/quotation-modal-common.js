@@ -67,18 +67,19 @@ function applyToQuotation() {
                     console.log('✅ [견적서 적용] 가격 계산 완료:', window.currentPriceData);
                     proceedWithApply();
                 } else if (attempts >= maxAttempts) {
-                    // 타임아웃
+                    // 타임아웃 - DOM에서 가격 읽기 시도
                     clearInterval(waitForPrice);
-                    alert('가격 계산에 실패했습니다. 모든 옵션을 확인해주세요.');
-                    console.error('❌ [견적서 적용] 가격 계산 타임아웃');
+                    console.warn('⚠️ [견적서 적용] 가격 계산 타임아웃 - DOM 읽기 시도');
+                    proceedWithApply(); // DOM 읽기 로직 시도
                 }
             }, 100);
 
             return; // 비동기 처리 대기
         } else {
-            alert('먼저 모든 옵션을 선택하고 "견적 계산" 버튼을 눌러주세요.');
-            console.error('❌ 가격 계산 함수를 찾을 수 없습니다. 시도한 함수: autoCalculatePrice, calculatePrice, calc_ajax, calculatePriceAjax');
-            return;
+            // 가격 계산 함수가 없음 - DOM에서 직접 읽기 시도
+            console.warn('⚠️ [견적서 적용] 가격 계산 함수 없음 - DOM 읽기 시도');
+            console.log('   시도한 함수: autoCalculatePrice, calculatePrice, calc_ajax, calculatePriceAjax');
+            // return 대신 proceedWithApply() 호출하여 DOM 읽기 시도
         }
     }
 
@@ -266,9 +267,18 @@ function proceedWithApply() {
 
         // 가격 표시 요소 찾기 (여러 패턴 시도)
         const priceElements = [
+            // 명함 등의 가격 표시
+            document.querySelector('.price-item.final .price-item-value'),
+            document.querySelector('.price-item-value'),
+            // 일반적인 가격 표시
             document.getElementById('priceAmount'),
             document.querySelector('.price-amount'),
-            document.querySelector('[class*="price"]'),
+            document.querySelector('.final-price'),
+            document.querySelector('#finalPrice'),
+            // 포괄적 검색
+            document.querySelector('[class*="price-item-value"]'),
+            document.querySelector('[class*="price-amount"]'),
+            document.querySelector('[class*="final"]'),
             document.querySelector('[id*="price"]')
         ];
 
