@@ -23,9 +23,9 @@ function applyToQuotation() {
     }
 
     // 2. 가격 계산 여부 확인 - 없으면 자동 계산
-    // 전단지: Order_PriceForm / 일반: total_price / 명함: total_supply_price / 스티커: price 체크
+    // 전단지: Order_PriceForm / 일반: total_price / 명함: total_supply_price / 스티커: price / 상품권: PriceForm 체크
     const hasPriceData = window.currentPriceData &&
-        (window.currentPriceData.Order_PriceForm || window.currentPriceData.total_price || window.currentPriceData.total_supply_price || window.currentPriceData.price);
+        (window.currentPriceData.Order_PriceForm || window.currentPriceData.total_price || window.currentPriceData.total_supply_price || window.currentPriceData.price || window.currentPriceData.PriceForm);
 
     if (!hasPriceData) {
         console.log('⚠️ [견적서 적용] 가격 데이터 없음 - 자동 계산 시도');
@@ -59,7 +59,7 @@ function applyToQuotation() {
                 attempts++;
 
                 const hasPriceNow = window.currentPriceData &&
-                    (window.currentPriceData.Order_PriceForm || window.currentPriceData.total_price || window.currentPriceData.total_supply_price || window.currentPriceData.price);
+                    (window.currentPriceData.Order_PriceForm || window.currentPriceData.total_price || window.currentPriceData.total_supply_price || window.currentPriceData.price || window.currentPriceData.PriceForm);
 
                 if (hasPriceNow) {
                     // 가격 계산 완료
@@ -303,18 +303,23 @@ function proceedWithApply() {
             supplyPrice = Math.round(window.currentPriceData.Order_PriceForm) || 0;
             totalPrice = Math.round(window.currentPriceData.Total_PriceForm) || 0;
             console.log('✅ [가격 읽기] Order_PriceForm 사용:', { supplyPrice, totalPrice });
+        } else if (window.currentPriceData.PriceForm) {
+            // 방법 1B: 상품권 형식 (PriceForm, Total_PriceForm)
+            supplyPrice = Math.round(window.currentPriceData.PriceForm) || 0;
+            totalPrice = Math.round(window.currentPriceData.Total_PriceForm) || 0;
+            console.log('✅ [가격 읽기] PriceForm 사용 (상품권):', { supplyPrice, totalPrice });
         } else if (window.currentPriceData.total_price) {
-            // 방법 1B: 기타 품목 형식 (total_price, vat_price)
+            // 방법 1C: 기타 품목 형식 (total_price, vat_price)
             supplyPrice = Math.round(window.currentPriceData.total_price) || 0;
             totalPrice = Math.round(window.currentPriceData.vat_price) || 0;
             console.log('✅ [가격 읽기] total_price 사용:', { supplyPrice, totalPrice });
         } else if (window.currentPriceData.total_supply_price) {
-            // 방법 1C: 명함 형식 (total_supply_price, final_total_with_vat)
+            // 방법 1D: 명함 형식 (total_supply_price, final_total_with_vat)
             supplyPrice = Math.round(window.currentPriceData.total_supply_price) || 0;
             totalPrice = Math.round(window.currentPriceData.final_total_with_vat) || 0;
             console.log('✅ [가격 읽기] total_supply_price 사용:', { supplyPrice, totalPrice });
         } else if (window.currentPriceData.price) {
-            // 방법 1D: 스티커 형식 (price, price_vat)
+            // 방법 1E: 스티커 형식 (price, price_vat)
             // price가 문자열인 경우 콤마 제거 후 변환
             const priceStr = window.currentPriceData.price.toString().replace(/,/g, '');
             const priceVatStr = window.currentPriceData.price_vat.toString().replace(/,/g, '');
