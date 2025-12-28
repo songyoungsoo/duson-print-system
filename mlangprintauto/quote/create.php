@@ -481,7 +481,7 @@ $typeLabel = $quoteType === 'transaction' ? '거래명세표' : '견적서';
                                 <tr class="item-row" data-source="cart" data-source-id="<?php echo $item['no']; ?>">
                                     <td class="col-no"><?php echo $index + 1; ?></td>
                                     <td class="col-name"><input type="text" name="items[<?php echo $index; ?>][product_name]" value="<?php echo htmlspecialchars($productName); ?>" readonly></td>
-                                    <td class="col-spec"><span class="spec-display"><?php echo nl2br(htmlspecialchars($spec)); ?></span><input type="hidden" name="items[<?php echo $index; ?>][specification]" value="<?php echo htmlspecialchars($spec); ?>"></td>
+                                    <td class="col-spec"><span class="spec-display" style="display: block; min-height: 20px; white-space: pre-line;"><?php echo htmlspecialchars($spec); ?></span><input type="hidden" name="items[<?php echo $index; ?>][specification]" value="<?php echo htmlspecialchars($spec); ?>"></td>
                                     <td class="col-qty">
                                         <span class="qty-display"><?php echo nl2br(htmlspecialchars($qtyDisplay)); ?></span>
                                         <input type="hidden" name="items[<?php echo $index; ?>][quantity]" value="<?php echo $qty; ?>">
@@ -532,7 +532,7 @@ $typeLabel = $quoteType === 'transaction' ? '거래명세표' : '견적서';
                                 <tr class="item-row" data-source="quotation_temp" data-source-id="<?php echo $item['id']; ?>">
                                     <td class="col-no"><?php echo $index + 1; ?></td>
                                     <td class="col-name"><input type="text" name="items[<?php echo $index; ?>][product_name]" value="<?php echo htmlspecialchars($productName); ?>" readonly></td>
-                                    <td class="col-spec"><span class="spec-display"><?php echo nl2br(htmlspecialchars($spec)); ?></span><input type="hidden" name="items[<?php echo $index; ?>][specification]" value="<?php echo htmlspecialchars($spec); ?>"></td>
+                                    <td class="col-spec"><span class="spec-display" style="display: block; min-height: 20px; white-space: pre-line;"><?php echo htmlspecialchars($spec); ?></span><input type="hidden" name="items[<?php echo $index; ?>][specification]" value="<?php echo htmlspecialchars($spec); ?>"></td>
                                     <td class="col-qty">
                                         <span class="qty-display"><?php echo nl2br(htmlspecialchars($qtyDisplay)); ?></span>
                                         <input type="hidden" name="items[<?php echo $index; ?>][quantity]" value="<?php echo $qty; ?>">
@@ -575,7 +575,10 @@ $typeLabel = $quoteType === 'transaction' ? '거래명세표' : '견적서';
                                     </select>
                                     <input type="text" name="items[<?php echo $blankRowStartIndex + $i; ?>][product_name_custom]" placeholder="품명을 직접 입력하세요" class="direct-input-field">
                                 </td>
-                                <td class="col-spec"><input type="text" name="items[<?php echo $blankRowStartIndex + $i; ?>][specification]" placeholder="규격/사양"></td>
+                                <td class="col-spec">
+                                    <span class="spec-display" style="display: block; min-height: 20px; white-space: pre-line;"></span>
+                                    <input type="hidden" name="items[<?php echo $blankRowStartIndex + $i; ?>][specification]" value="">
+                                </td>
                                 <td class="col-qty">
                                     <input type="number" step="0.01" name="items[<?php echo $blankRowStartIndex + $i; ?>][quantity]" value="1" class="qty-input" min="0.01">
                                     <input type="hidden" name="items[<?php echo $blankRowStartIndex + $i; ?>][unit]" value="개">
