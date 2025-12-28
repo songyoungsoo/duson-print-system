@@ -522,16 +522,19 @@ function buildEnvelopeSpecification() {
  * 스티커 규격 정보 생성
  */
 function buildStickerSpecification() {
+    console.log('🔍 [스티커] buildStickerSpecification 호출');
     const parts = [];
 
     // 용지 종류
     const jong = document.getElementById('jong');
+    console.log('🔍 [스티커] jong:', jong, jong?.value, jong?.selectedOptions[0]?.text);
     if (jong && jong.selectedOptions[0]) {
         parts.push(jong.selectedOptions[0].text);
     }
 
     // 재단 형태
     const domusong = document.getElementById('domusong');
+    console.log('🔍 [스티커] domusong:', domusong, domusong?.value, domusong?.selectedOptions[0]?.text);
     if (domusong && domusong.selectedOptions[0]) {
         const domusongText = domusong.selectedOptions[0].text;
         parts.push(domusongText);
@@ -539,6 +542,7 @@ function buildStickerSpecification() {
 
     // 편집비 (인쇄만이 아닌 경우만 표시)
     const uhyung = document.getElementById('uhyung');
+    console.log('🔍 [스티커] uhyung:', uhyung, uhyung?.value, uhyung?.selectedOptions[0]?.text);
     if (uhyung && uhyung.selectedOptions[0]) {
         const uhyungText = uhyung.selectedOptions[0].text;
         if (!uhyungText.includes('인쇄만')) {
@@ -549,10 +553,13 @@ function buildStickerSpecification() {
     // 가로/세로 사이즈
     const garo = document.getElementById('garo');
     const sero = document.getElementById('sero');
+    console.log('🔍 [스티커] garo:', garo, garo?.value);
+    console.log('🔍 [스티커] sero:', sero, sero?.value);
     if (garo && sero && garo.value && sero.value) {
         parts.push(`${garo.value}mm x ${sero.value}mm`);
     }
 
+    console.log('✅ [스티커] 최종 규격:', parts.join('\n'));
     return parts.join('\n');
 }
 
