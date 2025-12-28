@@ -16,8 +16,7 @@
 
 class ThemeLoader {
     const THEME_DEFAULT = 'default';
-    const THEME_EXCEL = 'excel';
-    const THEME_PRINT = 'print';
+    const THEME_MS = 'ms';
     const COOKIE_NAME = 'dsp_theme';
     const COOKIE_DAYS = 30;
 
@@ -40,7 +39,7 @@ class ThemeLoader {
         // 1. URL 파라미터 확인 (최우선)
         if (isset($_GET['theme'])) {
             $theme = $_GET['theme'];
-            if (in_array($theme, [self::THEME_DEFAULT, self::THEME_EXCEL, self::THEME_PRINT])) {
+            if (in_array($theme, [self::THEME_DEFAULT, self::THEME_MS])) {
                 self::setTheme($theme);
             }
         }
@@ -52,7 +51,7 @@ class ThemeLoader {
         // 3. 쿠키에서 테마 로드
         elseif (isset($_COOKIE[self::COOKIE_NAME])) {
             $theme = $_COOKIE[self::COOKIE_NAME];
-            if (in_array($theme, [self::THEME_DEFAULT, self::THEME_EXCEL, self::THEME_PRINT])) {
+            if (in_array($theme, [self::THEME_DEFAULT, self::THEME_MS])) {
                 self::$currentTheme = $theme;
                 $_SESSION['theme'] = $theme;
             }
@@ -65,7 +64,7 @@ class ThemeLoader {
      * 테마 설정
      */
     public static function setTheme($theme) {
-        if (!in_array($theme, [self::THEME_DEFAULT, self::THEME_EXCEL, self::THEME_PRINT])) {
+        if (!in_array($theme, [self::THEME_DEFAULT, self::THEME_MS])) {
             return false;
         }
 
@@ -88,10 +87,10 @@ class ThemeLoader {
     }
 
     /**
-     * Excel 테마인지 확인
+     * MS 테마인지 확인
      */
-    public static function isExcelTheme() {
-        return self::getTheme() === self::THEME_EXCEL;
+    public static function isMSTheme() {
+        return self::getTheme() === self::THEME_MS;
     }
 
     /**
@@ -102,13 +101,9 @@ class ThemeLoader {
 
         // 기본 CSS는 항상 로드됨 (각 페이지에서 직접 로드)
 
-        // Excel 테마 CSS 추가 로드
-        if (self::$currentTheme === self::THEME_EXCEL) {
-            echo '<link rel="stylesheet" href="/css/theme-excel.css">' . "\n";
-        }
-        // Print 테마 CSS 추가 로드
-        elseif (self::$currentTheme === self::THEME_PRINT) {
-            echo '<link rel="stylesheet" href="/css/theme-print.css">' . "\n";
+        // MS 테마 CSS 추가 로드
+        if (self::$currentTheme === self::THEME_MS) {
+            echo '<link rel="stylesheet" href="/css/theme-ms.css">' . "\n";
         }
     }
 
@@ -120,11 +115,8 @@ class ThemeLoader {
 
         $attrs = [];
 
-        if (self::$currentTheme === self::THEME_EXCEL) {
-            $attrs[] = 'data-theme="excel"';
-        }
-        elseif (self::$currentTheme === self::THEME_PRINT) {
-            $attrs[] = 'data-theme="print"';
+        if (self::$currentTheme === self::THEME_MS) {
+            $attrs[] = 'data-theme="ms"';
         }
 
         echo implode(' ', $attrs);
@@ -147,8 +139,7 @@ class ThemeLoader {
         // 테마 정보 배열
         $themes = [
             self::THEME_DEFAULT => ['icon' => '🎨', 'label' => '기본'],
-            self::THEME_EXCEL => ['icon' => '📊', 'label' => 'Excel'],
-            self::THEME_PRINT => ['icon' => '🖨️', 'label' => '인쇄업']
+            self::THEME_MS => ['icon' => '💼', 'label' => 'MS스타일']
         ];
 
         ?>
@@ -345,25 +336,15 @@ class ThemeLoader {
                     </span>
                     <span class="theme-name">기본 테마</span>
                 </label>
-                <label class="theme-option <?php echo $currentTheme === self::THEME_EXCEL ? 'active' : ''; ?>">
-                    <input type="radio" name="site_theme" value="excel"
-                           <?php echo $currentTheme === self::THEME_EXCEL ? 'checked' : ''; ?>
-                           onchange="ThemeSwitcher.setTheme('excel')">
-                    <span class="theme-preview excel-preview">
+                <label class="theme-option <?php echo $currentTheme === self::THEME_MS ? 'active' : ''; ?>">
+                    <input type="radio" name="site_theme" value="ms"
+                           <?php echo $currentTheme === self::THEME_MS ? 'checked' : ''; ?>
+                           onchange="ThemeSwitcher.setTheme('ms')">
+                    <span class="theme-preview ms-preview">
                         <span class="preview-header"></span>
                         <span class="preview-content"></span>
                     </span>
-                    <span class="theme-name">Excel 테마</span>
-                </label>
-                <label class="theme-option <?php echo $currentTheme === self::THEME_PRINT ? 'active' : ''; ?>">
-                    <input type="radio" name="site_theme" value="print"
-                           <?php echo $currentTheme === self::THEME_PRINT ? 'checked' : ''; ?>
-                           onchange="ThemeSwitcher.setTheme('print')">
-                    <span class="theme-preview print-preview">
-                        <span class="preview-header"></span>
-                        <span class="preview-content"></span>
-                    </span>
-                    <span class="theme-name">인쇄업 테마</span>
+                    <span class="theme-name">MS 스타일</span>
                 </label>
             </div>
         </div>
@@ -413,35 +394,19 @@ class ThemeLoader {
                 height: 50px;
                 background: #fff;
             }
-            .excel-preview .preview-header {
-                background: #E8F4E8;
-            }
-            .excel-preview .preview-content {
-                background: linear-gradient(to bottom, #FFF9E6 50%, #fff 50%);
-            }
-            .excel-preview {
-                border-radius: 0;
-            }
             .default-preview {
                 border-radius: 8px;
             }
-            .print-preview .preview-header {
-                background: linear-gradient(135deg, #00A9E0 0%, #D4006A 50%, #FFD100 100%);
+            .ms-preview .preview-header {
+                background: linear-gradient(135deg, #0052CC 0%, #5FC5C5 100%);
             }
-            .print-preview .preview-content {
-                background: #F8F8F0;
-                background-image:
-                    repeating-linear-gradient(
-                        0deg,
-                        transparent,
-                        transparent 2px,
-                        rgba(0,0,0,0.02) 2px,
-                        rgba(0,0,0,0.02) 4px
-                    );
+            .ms-preview .preview-content {
+                background: #F8F9FA;
+                border-left: 4px solid #5FC5C5;
             }
-            .print-preview {
-                border-radius: 2px;
-                box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+            .ms-preview {
+                border-radius: 8px;
+                box-shadow: 0 2px 6px rgba(0, 82, 204, 0.15);
             }
             .theme-name {
                 display: block;

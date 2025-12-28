@@ -158,10 +158,9 @@ include_once __DIR__ . '/includes/theme_loader.php';
                 $theme = ThemeLoader::getTheme();
                 $themeNames = [
                     'default' => '기본 테마',
-                    'excel' => 'Excel 테마',
-                    'print' => '인쇄업 테마'
+                    'ms' => 'MS PRINTING 스타일'
                 ];
-                echo $themeNames[$theme];
+                echo $themeNames[$theme] ?? '기본 테마';
                 ?>
             </div>
         </div>
@@ -272,9 +271,8 @@ include_once __DIR__ . '/includes/theme_loader.php';
             <h3>테마 빠른 전환</h3>
             <p>URL 파라미터로 직접 전환:</p>
             <div style="margin-top: 10px;">
-                <a href="?theme=default" class="btn btn-primary">기본 테마</a>
-                <a href="?theme=excel" class="btn btn-success">Excel 테마</a>
-                <a href="?theme=print" class="btn btn-warning">인쇄업 테마</a>
+                <a href="?theme=default" class="btn btn-primary">🎨 기본 테마</a>
+                <a href="?theme=ms" class="btn btn-success">💼 MS PRINTING 스타일</a>
             </div>
         </div>
     </div>
