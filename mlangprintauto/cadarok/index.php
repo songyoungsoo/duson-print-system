@@ -123,7 +123,7 @@ if ($type_result && ($type_row = mysqli_fetch_assoc($type_result))) {
 
 
 </head>
-<body class="cadarok-page<?php echo $isQuotationMode ? ' quotation-modal-mode' : ''; ? <?php ThemeLoader::renderBodyAttributes(); ?>>">
+<body class="cadarok-page<?php echo $isQuotationMode ? ' quotation-modal-mode' : ''; ?>" <?php ThemeLoader::renderBodyAttributes(); ?>>
     <?php if (!$isQuotationMode) include "../../includes/header-ui.php"; ?>
     <?php if (!$isQuotationMode) include "../../includes/nav.php"; ?>
 
@@ -612,7 +612,7 @@ if ($type_result && ($type_row = mysqli_fetch_assoc($type_result))) {
     <script src="js/cadarok-premium-options.js"></script>
 
     <!-- 견적서 모달 공통 JavaScript -->
-    <script src="../../js/quotation-modal-common.js"></script>
+    <script src="../../js/quotation-modal-common.js?v=<?php echo time(); ?>"></script>
 
     <?php
     // 데이터베이스 연결 종료

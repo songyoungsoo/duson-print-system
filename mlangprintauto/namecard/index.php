@@ -1042,7 +1042,7 @@ if ($type_result && ($type_row = mysqli_fetch_assoc($type_result))) {
     </script>
 
     <!-- 견적서 모달 공통 JavaScript -->
-    <script src="../../js/quotation-modal-common.js"></script>
+    <script src="../../js/quotation-modal-common.js?v=<?php echo time(); ?>"></script>
 
     <!-- 테마 스위처 -->
     <?php if (!$isQuotationMode) ThemeLoader::renderSwitcher('bottom-right'); ?>

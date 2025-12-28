@@ -136,7 +136,7 @@ $default_values['MY_type'] = '475'; // 양식(100매철)
 
 </head>
 
-<body class="ncrflambeau-page<?php echo $isQuotationMode ? ' quotation-modal-mode' : ''; ? <?php ThemeLoader::renderBodyAttributes(); ?>>">
+<body class="ncrflambeau-page<?php echo $isQuotationMode ? ' quotation-modal-mode' : ''; ?>" <?php ThemeLoader::renderBodyAttributes(); ?>>
     <?php if (!$isQuotationMode) include "../../includes/header-ui.php"; ?>
     <?php if (!$isQuotationMode) include "../../includes/nav.php"; ?>
 
@@ -606,7 +606,7 @@ $default_values['MY_type'] = '475'; // 양식(100매철)
     </script>
 
     <!-- 견적서 모달 공통 JavaScript -->
-    <script src="../../js/quotation-modal-common.js"></script>
+    <script src="../../js/quotation-modal-common.js?v=<?php echo time(); ?>"></script>
     <!-- 테마 스위처 -->
     <?php ThemeLoader::renderSwitcher('bottom-right'); ?>
     <?php ThemeLoader::renderSwitcherJS(); ?>

@@ -833,7 +833,7 @@ header("Expires: 0");
     <script src="../../js/common-gallery-popup.js"></script>
 
     <!-- 견적서 모달 공통 JavaScript -->
-    <script src="../../js/quotation-modal-common.js"></script>
+    <script src="../../js/quotation-modal-common.js?v=<?php echo time(); ?>"></script>
 
     <!-- 전단지 전용 컴팩트 디자인 적용 (Frontend-Compact-Design-Guide.md 기반) -->
 

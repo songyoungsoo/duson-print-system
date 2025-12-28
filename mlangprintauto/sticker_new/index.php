@@ -297,7 +297,7 @@ $default_values = [
     <?php ThemeLoader::renderCSS(); ?>
 
 </head>
-<body class="sticker-page<?php echo $body_class; ? <?php ThemeLoader::renderBodyAttributes(); ?>>">
+<body class="sticker-page<?php echo $body_class; ?>" <?php ThemeLoader::renderBodyAttributes(); ?>>
 <?php if (!$is_quotation_mode): ?>
 <?php include "../../includes/header-ui.php"; ?>
 <?php include "../../includes/nav.php"; ?>
@@ -2908,7 +2908,7 @@ if ($db) {
 ?>
 
     <!-- 견적서 모달 공통 JavaScript -->
-    <script src="../../js/quotation-modal-common.js"></script>
+    <script src="../../js/quotation-modal-common.js?v=<?php echo time(); ?>"></script>
 
 <?php if (!$is_quotation_mode): ?>
     <?php

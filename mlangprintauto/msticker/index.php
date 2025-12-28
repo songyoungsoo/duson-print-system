@@ -134,7 +134,7 @@ if ($type_row = mysqli_fetch_assoc($type_result)) {
     <?php ThemeLoader::renderCSS(); ?>
 
 </head>
-<body class="msticker-page<?php echo $isQuotationMode ? ' quotation-modal-mode' : ''; ? <?php ThemeLoader::renderBodyAttributes(); ?>>">
+<body class="msticker-page<?php echo $isQuotationMode ? ' quotation-modal-mode' : ''; ?>" <?php ThemeLoader::renderBodyAttributes(); ?>>
     <?php if (!$isQuotationMode) include "../../includes/header-ui.php"; ?>
     <?php if (!$isQuotationMode) include "../../includes/nav.php"; ?>
 
@@ -819,7 +819,7 @@ if (!$isQuotationMode) {
     </script>
 
     <!-- 견적서 모달 공통 JavaScript -->
-    <script src="../../js/quotation-modal-common.js"></script>
+    <script src="../../js/quotation-modal-common.js?v=<?php echo time(); ?>"></script>
 
 <?php
 // 데이터베이스 연결 종료
