@@ -1,4 +1,7 @@
 <?php
+// 테마 시스템 로드
+include_once __DIR__ . '/../../includes/theme_loader.php';
+
 session_start(); 
 $session_id = session_id();
 
@@ -127,10 +130,13 @@ $default_values['MY_type'] = '475'; // 양식(100매철)
     .btn-request-quote { background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%); color: white; }
     .btn-request-quote:hover { transform: translateY(-2px); box-shadow: 0 4px 12px rgba(240, 147, 251, 0.4); }
 </style>
+    <!-- 테마 시스템 CSS -->
+    <?php ThemeLoader::renderCSS(); ?>
+
 
 </head>
 
-<body class="ncrflambeau-page<?php echo $isQuotationMode ? ' quotation-modal-mode' : ''; ?>">
+<body class="ncrflambeau-page<?php echo $isQuotationMode ? ' quotation-modal-mode' : ''; ? <?php ThemeLoader::renderBodyAttributes(); ?>>">
     <?php if (!$isQuotationMode) include "../../includes/header-ui.php"; ?>
     <?php if (!$isQuotationMode) include "../../includes/nav.php"; ?>
 
@@ -601,5 +607,9 @@ $default_values['MY_type'] = '475'; // 양식(100매철)
 
     <!-- 견적서 모달 공통 JavaScript -->
     <script src="../../js/quotation-modal-common.js"></script>
+    <!-- 테마 스위처 -->
+    <?php ThemeLoader::renderSwitcher('bottom-right'); ?>
+    <?php ThemeLoader::renderSwitcherJS(); ?>
+
 </body>
 </html>

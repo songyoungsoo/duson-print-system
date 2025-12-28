@@ -1,4 +1,7 @@
 <?php
+// 테마 시스템 로드
+include_once __DIR__ . '/../../includes/theme_loader.php';
+
 // 보안 상수 정의 후 공통 함수 및 설정
 include "../../includes/functions.php";
 include "../../db.php";
@@ -127,8 +130,11 @@ if ($type_row = mysqli_fetch_assoc($type_result)) {
         .btn-request-quote { background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%); color: white; }
         .btn-request-quote:hover { transform: translateY(-2px); box-shadow: 0 4px 12px rgba(240, 147, 251, 0.4); }
     </style>
+    <!-- 테마 시스템 CSS -->
+    <?php ThemeLoader::renderCSS(); ?>
+
 </head>
-<body class="msticker-page<?php echo $isQuotationMode ? ' quotation-modal-mode' : ''; ?>">
+<body class="msticker-page<?php echo $isQuotationMode ? ' quotation-modal-mode' : ''; ? <?php ThemeLoader::renderBodyAttributes(); ?>>">
     <?php if (!$isQuotationMode) include "../../includes/header-ui.php"; ?>
     <?php if (!$isQuotationMode) include "../../includes/nav.php"; ?>
 
@@ -821,5 +827,9 @@ if ($db) {
     mysqli_close($db);
 }
 ?>
+    <!-- 테마 스위처 -->
+    <?php ThemeLoader::renderSwitcher('bottom-right'); ?>
+    <?php ThemeLoader::renderSwitcherJS(); ?>
+
 </body>
 </html>

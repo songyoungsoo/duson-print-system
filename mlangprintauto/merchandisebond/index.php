@@ -1,4 +1,7 @@
 <?php
+// 테마 시스템 로드
+include_once __DIR__ . '/../../includes/theme_loader.php';
+
 /**
  * 상품권/쿠폰 견적안내 컴팩트 시스템 - NameCard 시스템 구조 적용
  * Features: 적응형 이미지 분석, 부드러운 애니메이션, 실시간 가격 계산
@@ -120,9 +123,12 @@ if ($type_result && ($type_row = mysqli_fetch_assoc($type_result))) {
     .btn-request-quote { background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%); color: white; }
     .btn-request-quote:hover { transform: translateY(-2px); box-shadow: 0 4px 12px rgba(240, 147, 251, 0.4); }
 </style>
+    <!-- 테마 시스템 CSS -->
+    <?php ThemeLoader::renderCSS(); ?>
+
 
 </head>
-<body class="merchandisebond-page<?php echo $isQuotationMode ? ' quotation-modal-mode' : ''; ?>">
+<body class="merchandisebond-page<?php echo $isQuotationMode ? ' quotation-modal-mode' : ''; ? <?php ThemeLoader::renderBodyAttributes(); ?>>">
     <?php if (!$isQuotationMode) include "../../includes/header-ui.php"; ?>
     <?php if (!$isQuotationMode) include "../../includes/nav.php"; ?>
 
@@ -500,5 +506,9 @@ if ($type_result && ($type_row = mysqli_fetch_assoc($type_result))) {
         mysqli_close($db);
     }
     ?>
+    <!-- 테마 스위처 -->
+    <?php ThemeLoader::renderSwitcher('bottom-right'); ?>
+    <?php ThemeLoader::renderSwitcherJS(); ?>
+
 </body>
 </html>

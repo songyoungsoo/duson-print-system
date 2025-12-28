@@ -6,6 +6,9 @@
  * Created: 2025년 1월 (Premium Options Development)
  */
 
+// 테마 시스템 로드
+include_once __DIR__ . '/../../includes/theme_loader.php';
+
 // 보안 상수 정의 후 공통 인증 및 설정
 include "../../includes/auth.php";
 
@@ -128,6 +131,9 @@ if ($type_result && ($type_row = mysqli_fetch_assoc($type_result))) {
     <!-- 견적서 모달용 공통 스타일 -->
     <link rel="stylesheet" href="../../css/quotation-modal-common.css">
 
+    <!-- 테마 시스템 CSS -->
+    <?php ThemeLoader::renderCSS(); ?>
+
     <!-- Phase 5: 견적 요청 버튼 스타일 -->
     <style>
         .action-buttons {
@@ -163,7 +169,7 @@ if ($type_result && ($type_row = mysqli_fetch_assoc($type_result))) {
         }
     </style>
 </head>
-<body class="namecard-page<?php echo $isQuotationMode ? ' quotation-modal-mode' : ''; ?>">
+<body class="namecard-page<?php echo $isQuotationMode ? ' quotation-modal-mode' : ''; ?>" <?php ThemeLoader::renderBodyAttributes(); ?>>
     <?php if (!$isQuotationMode) include "../../includes/header-ui.php"; ?>
     <?php if (!$isQuotationMode) include "../../includes/nav.php"; ?>
 
@@ -767,13 +773,15 @@ if ($type_result && ($type_row = mysqli_fetch_assoc($type_result))) {
             const priceDisplay = document.getElementById('priceDisplay');
             const uploadButton = document.getElementById('uploadOrderButton');
 
-            priceAmount.textContent = '견적 계산 필요';
-            priceDetails.textContent = '모든 옵션을 선택하면 자동으로 계산됩니다';
-            priceDisplay.classList.remove('calculated');
-            uploadButton.style.display = 'none';
+            if (priceAmount) priceAmount.textContent = '견적 계산 필요';
+            if (priceDetails) priceDetails.textContent = '모든 옵션을 선택하면 자동으로 계산됩니다';
+            if (priceDisplay) priceDisplay.classList.remove('calculated');
+            if (uploadButton) uploadButton.style.display = 'none';
 
             // 프리미엄 옵션 가격 초기화
-            updatePremiumPriceDisplay(0);
+            if (typeof updatePremiumPriceDisplay === 'function') {
+                updatePremiumPriceDisplay(0);
+            }
 
             window.currentPriceData = null;
         }
@@ -790,7 +798,9 @@ if ($type_result && ($type_row = mysqli_fetch_assoc($type_result))) {
         // 업로드 버튼 표시
         function showUploadButton() {
             const uploadButton = document.getElementById('uploadOrderButton');
-            uploadButton.style.display = 'block';
+            if (uploadButton) {
+                uploadButton.style.display = 'block';
+            }
         }
 
         document.addEventListener('DOMContentLoaded', function() {
@@ -1033,6 +1043,10 @@ if ($type_result && ($type_row = mysqli_fetch_assoc($type_result))) {
 
     <!-- 견적서 모달 공통 JavaScript -->
     <script src="../../js/quotation-modal-common.js"></script>
+
+    <!-- 테마 스위처 -->
+    <?php if (!$isQuotationMode) ThemeLoader::renderSwitcher('bottom-right'); ?>
+    <?php if (!$isQuotationMode) ThemeLoader::renderSwitcherJS(); ?>
 
     <?php
     // 데이터베이스 연결 종료

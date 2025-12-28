@@ -1,4 +1,7 @@
 <?php
+// 테마 시스템 로드
+include_once __DIR__ . '/../../includes/theme_loader.php';
+
 /**
  * 스티커 견적안내 시스템 - 명함 시스템 기반 적용
  * Features: 포트폴리오 갤러리, 수식 기반 실시간 가격 계산, 드래그 업로드
@@ -290,8 +293,11 @@ $default_values = [
             }
         }
     </style>
+    <!-- 테마 시스템 CSS -->
+    <?php ThemeLoader::renderCSS(); ?>
+
 </head>
-<body class="sticker-page<?php echo $body_class; ?>">
+<body class="sticker-page<?php echo $body_class; ? <?php ThemeLoader::renderBodyAttributes(); ?>>">
 <?php if (!$is_quotation_mode): ?>
 <?php include "../../includes/header-ui.php"; ?>
 <?php include "../../includes/nav.php"; ?>
@@ -2911,6 +2917,10 @@ if ($db) {
     ?>
 <?php else: ?>
     <!-- quotation_mode일 때만 직접 closing 태그 제공 -->
+    <!-- 테마 스위처 -->
+    <?php ThemeLoader::renderSwitcher('bottom-right'); ?>
+    <?php ThemeLoader::renderSwitcherJS(); ?>
+
     </body>
     </html>
 <?php endif; ?>
