@@ -792,6 +792,61 @@ case 'msticker':
 
 ---
 
+## 19. 양식지(ncrflambeau) 넘버링/미싱 옵션 변경 (2025-12-30)
+
+### 요청 사항
+양식지 페이지의 넘버링/미싱 옵션을 체크 시 "전화문의 1688-2384"만 표시되도록 변경.
+
+### 변경 전
+```html
+<!-- 넘버링 옵션 -->
+<option value="numbering">전화문의 1688-2384</option>
+
+<!-- 미싱 옵션 -->
+<option value="1">1줄</option>
+<option value="2">2줄</option>
+<option value="3">3줄</option>
+```
+
+### 변경 후
+```html
+<!-- 넘버링 옵션 -->
+<option value="numbering">전화문의 1688-2384</option>
+
+<!-- 미싱 옵션 (통합) -->
+<option value="mising">전화문의 1688-2384</option>
+```
+
+### 수정 파일
+- `/var/www/html/mlangprintauto/ncrflambeau/index.php`
+
+---
+
+## 20. 견적 요청 버튼 삭제 (2025-12-30)
+
+### 요청 사항
+모든 9개 품목 페이지에서 "견적 요청" 버튼 삭제, "파일 업로드 및 주문하기" 버튼만 유지.
+
+### 삭제된 코드
+```html
+<button type="button" class="btn-request-quote" onclick="addToQuotation()">
+    견적 요청
+</button>
+```
+
+### 수정된 파일 (9개)
+- `/var/www/html/mlangprintauto/inserted/index.php`
+- `/var/www/html/mlangprintauto/namecard/index.php`
+- `/var/www/html/mlangprintauto/envelope/index.php`
+- `/var/www/html/mlangprintauto/sticker_new/index.php`
+- `/var/www/html/mlangprintauto/msticker/index.php`
+- `/var/www/html/mlangprintauto/cadarok/index.php`
+- `/var/www/html/mlangprintauto/littleprint/index.php`
+- `/var/www/html/mlangprintauto/merchandisebond/index.php`
+- `/var/www/html/mlangprintauto/ncrflambeau/index.php`
+
+---
+
 ## 버그 리포트 양식
 
 ```
