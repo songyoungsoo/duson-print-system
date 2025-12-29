@@ -305,7 +305,7 @@ if ($cart_result === false) {
                             <th style="border: 1px solid #ccc; padding: 10px; background: #f3f3f3; text-align: center; font-weight: bold;">규격/옵션</th>
                             <th style="border: 1px solid #ccc; padding: 10px; background: #f3f3f3; text-align: center; font-weight: bold;">수량</th>
                             <th style="border: 1px solid #ccc; padding: 10px; background: #f3f3f3; text-align: center; font-weight: bold;">단위</th>
-                            <th style="border: 1px solid #ccc; padding: 10px; background: #f3f3f3; text-align: center; font-weight: bold;">총액</th>
+                            <th style="border: 1px solid #ccc; padding: 10px; background: #f3f3f3; text-align: center; font-weight: bold;">공급가액</th>
                             <th style="border: 1px solid #ccc; padding: 10px; background: #f3f3f3; text-align: center; font-weight: bold;">관리</th>
                         </tr>
                     </thead>
@@ -455,10 +455,10 @@ if ($cart_result === false) {
                                     <?php endif; ?>
                                 </td>
 
-                                <!-- 총액 -->
+                                <!-- 공급가액 -->
                                 <td class="td-right">
-                                    <div class="price-label">부가세포함</div>
-                                    <div class="price-total"><?php echo number_format($final_price_vat); ?>원</div>
+                                    <div class="price-label">부가세 별도</div>
+                                    <div class="price-total"><?php echo number_format($final_price); ?>원</div>
                                 </td>
 
                                 <!-- 관리 -->
@@ -856,17 +856,12 @@ if ($cart_result === false) {
 
         <!-- 합계 정보 -->
         <div style="background: #ecf0f1; padding: 20px; border-radius: 5px; margin-bottom: 30px;">
-            <div style="display: flex; justify-content: space-between; margin-bottom: 10px;">
-                <span>공급가액 (VAT 제외):</span>
+            <div style="display: flex; justify-content: space-between; font-weight: bold;">
+                <span>공급가액:</span>
                 <span><?php echo number_format($quote_total); ?>원</span>
             </div>
-            <div style="display: flex; justify-content: space-between; margin-bottom: 10px;">
-                <span>부가세(10%):</span>
-                <span><?php echo number_format($quote_total_vat - $quote_total); ?>원</span>
-            </div>
-            <div style="display: flex; justify-content: space-between; font-weight: bold; border-top: 2px solid #34495e; padding-top: 10px; margin-top: 10px;">
-                <span>총 합계금액 (VAT 포함):</span>
-                <span><?php echo number_format($quote_total_vat); ?>원</span>
+            <div style="text-align: right; color: #666; font-size: 13px; margin-top: 5px;">
+                부가세 별도
             </div>
         </div>
     <?php endif; ?>

@@ -417,6 +417,205 @@ mysqli_stmt_bind_param($stmt, "...",
 
 ---
 
+## 13. msticker.js 무한 재귀 호출 오류
+
+### 증상
+자석스티커 페이지에서 업로드 버튼 클릭 시:
+```
+Uncaught RangeError: Maximum call stack size exceeded
+    at openUploadModal (msticker.js:473)
+```
+
+### 원인
+`openUploadModal()` 함수가 `window.openUploadModal()`을 호출하는데, 이것이 자기 자신임.
+```javascript
+// 문제 코드
+function openUploadModal() {
+    if (!currentPriceData) { ... }
+    window.openUploadModal();  // ← 자기 자신 호출 = 무한 루프
+}
+```
+
+### 해결
+```javascript
+// 수정 후 - 직접 모달 조작
+function openUploadModal() {
+    if (!currentPriceData) {
+        showUserMessage('먼저 가격을 계산해주세요.', 'warning');
+        return;
+    }
+
+    const modal = document.getElementById('uploadModal');
+    if (modal) {
+        modal.style.display = 'flex';
+        document.body.style.overflow = 'hidden';
+    }
+}
+
+function closeUploadModal() {
+    const modal = document.getElementById('uploadModal');
+    if (modal) {
+        modal.style.display = 'none';
+        document.body.style.overflow = '';
+    }
+}
+```
+
+### 관련 파일
+- `/var/www/html/js/msticker.js`
+
+---
+
+## 14. 카다록/봉투 장바구니 가격 0 문제
+
+### 증상
+카다록, 봉투 장바구니 추가 시 `st_price: 0.00`으로 저장됨.
+- 가격 계산은 정상 표시
+- 장바구니 추가 후 총액이 0원
+
+### 원인 1: window.currentPriceData 미설정
+JavaScript 파일에서 `let currentPriceData`로 로컬 변수 사용.
+index.php에서는 `window.currentPriceData`를 참조하여 불일치 발생.
+
+### 원인 2: POST 필드명 불일치 (주요 원인)
+JavaScript에서 `price`, `vat_price`로 전송하지만,
+PHP에서 `calculated_price`, `calculated_vat_price`를 기대함.
+
+```javascript
+// 문제 코드 (cadarok.js, envelope.js)
+formData.set('price', Math.round(currentPriceData.total_price));
+formData.set('vat_price', Math.round(currentPriceData.total_with_vat));
+
+// PHP 기대값 (add_to_basket.php)
+$calculated_price = $_POST['calculated_price'] ?? 0;  // price가 아님!
+$calculated_vat_price = $_POST['calculated_vat_price'] ?? 0;
+```
+
+### 해결
+
+#### 1. window.currentPriceData 전역 설정
+```javascript
+// cadarok.js, envelope.js
+currentPriceData = priceData;
+window.currentPriceData = priceData;  // 전역 설정 추가
+```
+
+#### 2. POST 필드명 수정 (핵심!)
+```javascript
+// 수정 후 (cadarok.js:747-748, envelope.js:690-691)
+formData.set('calculated_price', Math.round(currentPriceData.total_price));
+formData.set('calculated_vat_price', Math.round(currentPriceData.total_with_vat));
+```
+
+### 관련 파일
+- `/var/www/html/mlangprintauto/cadarok/js/cadarok.js`
+- `/var/www/html/js/envelope.js`
+- `/var/www/html/mlangprintauto/cadarok/add_to_basket.php`
+- `/var/www/html/mlangprintauto/envelope/add_to_basket.php`
+
+---
+
+## 15. Type_1 JSON vs Text 형식 불일치
+
+### 증상
+주문 완료 페이지에서 일부 제품 규격이 제대로 표시되지 않음.
+- 전단지, 스티커: 정상 (JSON 형식)
+- 카다록, 명함, 자석스티커, 양식지, 상품권: 오류 (Text 형식)
+
+### 원인
+`ProcessOrder_unified.php`에서 제품별로 다른 형식 사용:
+```php
+// JSON 형식 (정상)
+$product_info = json_encode($data, JSON_UNESCAPED_UNICODE);
+
+// Text 형식 (문제)
+$product_info = "카다록 / $paper / $qty";
+```
+
+### 해결
+모든 제품을 JSON 형식으로 통일 (ProcessOrder_unified.php):
+
+```php
+// 모든 제품에 동일 패턴 적용
+case 'namecard':
+    $namecard_data = [
+        'product_type' => 'namecard',
+        'MY_type' => $item['MY_type'],
+        'MY_type_name' => getCategoryName($connect, $item['MY_type']),
+        'MY_Fsd' => $item['MY_Fsd'],
+        'Section_name' => getCategoryName($connect, $item['MY_Fsd']),
+        'POtype' => $item['POtype'],
+        'POtype_name' => ($item['POtype'] == '1' ? '단면' : '양면'),
+        'MY_amount' => intval($item['MY_amount'] ?? 0),
+        'created_at' => date('Y-m-d H:i:s')
+    ];
+    $product_info = json_encode($namecard_data, JSON_UNESCAPED_UNICODE);
+    break;
+```
+
+### 핵심 필드 규칙
+- `*_name` 필드: 사람이 읽을 수 있는 이름 (getCategoryName 결과)
+- 원본 코드 필드: DB 참조용 유지
+- `MY_amount`: 정수로 변환 (`intval`)
+
+### 관련 파일
+- `/var/www/html/mlangorder_printauto/ProcessOrder_unified.php`
+- `/var/www/html/mlangorder_printauto/OrderComplete_universal.php`
+
+---
+
+## 16. 장바구니 가격 표시 변경 (공급가액 + 부가세 별도)
+
+### 요청 사항
+장바구니 페이지에서:
+- "총액" → "공급가액"으로 변경
+- VAT 포함 금액 → 공급가액(VAT 미포함)으로 변경
+- "부가세포함" → "부가세 별도"로 변경
+
+### 변경 전
+```
+| 품목 | 규격/옵션 | 수량 | 단위 | 총액 | 관리 |
+|------|-----------|------|------|------|------|
+| 카다록 | ... | 1000 | 매 | 부가세포함 294,800원 | ✕ |
+```
+
+### 변경 후
+```
+| 품목 | 규격/옵션 | 수량 | 단위 | 공급가액 | 관리 |
+|------|-----------|------|------|----------|------|
+| 카다록 | ... | 1000 | 매 | 부가세 별도 268,000원 | ✕ |
+```
+
+### 수정 내용
+
+#### cart.php 수정 사항
+1. **테이블 헤더** (라인 308)
+   ```php
+   // Before
+   <th>총액</th>
+
+   // After
+   <th>공급가액</th>
+   ```
+
+2. **각 상품 가격 표시** (라인 458-462)
+   ```php
+   // Before
+   <div class="price-label">부가세포함</div>
+   <div class="price-total"><?php echo number_format($final_price_vat); ?>원</div>
+
+   // After
+   <div class="price-label">부가세 별도</div>
+   <div class="price-total"><?php echo number_format($final_price); ?>원</div>
+   ```
+
+3. **주문 요약** - 변경 없음 (상품금액/부가세/총 결제금액 유지)
+
+### 관련 파일
+- `/var/www/html/mlangprintauto/shop/cart.php`
+
+---
+
 ## 버그 리포트 양식
 
 ```
