@@ -20,6 +20,7 @@ include "../mlangprintauto/shop_temp_helper.php";
 
 // 추가 옵션 표시 클래스 포함
 include "../includes/AdditionalOptionsDisplay.php";
+include "../includes/quantity_formatter.php";
 $optionsDisplay = new AdditionalOptionsDisplay($connect);
 
 /**
@@ -86,6 +87,40 @@ function getStickerSpecs($item) {
         $edit_types = ['10000' => '기본편집', '30000' => '고급편집'];
         $edit_label = $edit_types[$item['uhyung']] ?? htmlspecialchars($item['uhyung']) . '원';
         $specs[] = '편집: ' . $edit_label;
+    }
+
+    return $specs;
+}
+
+/**
+ * 자석스티커 규격 정보 포맷팅 함수
+ */
+function getMstickerSpecs($item) {
+    global $connect;
+    $specs = [];
+
+    // Type (종류) - MY_type field
+    if (!empty($item['MY_type'])) {
+        $type_name = getKoreanName($connect, $item['MY_type']);
+        $specs[] = '종류: ' . htmlspecialchars($type_name);
+    }
+
+    // Specification/Size (규격) - Section field
+    if (!empty($item['Section'])) {
+        $section_name = getKoreanName($connect, $item['Section']);
+        $specs[] = '규격: ' . htmlspecialchars($section_name);
+    }
+
+    // Print type (인쇄) - POtype field
+    if (!empty($item['POtype'])) {
+        $print_types = ['1' => '단면', '2' => '양면'];
+        $print_label = $print_types[$item['POtype']] ?? htmlspecialchars($item['POtype']);
+        $specs[] = '인쇄: ' . $print_label;
+    }
+
+    // Quantity (수량) - MY_amount field
+    if (!empty($item['MY_amount'])) {
+        $specs[] = '수량: ' . formatQuantity($item['MY_amount'], 'msticker', '매');
     }
 
     return $specs;
@@ -545,20 +580,20 @@ if (!empty($debug_info) && strpos($_SERVER['HTTP_HOST'], 'localhost') !== false)
                     <?php
                     // 상품명 매핑 (cart.php와 동일)
                     $product_info_map = [
-                        'cadarok' => ['name' => '카달로그', 'icon' => '📖', 'color' => '#e3f2fd'],
-                        'sticker' => ['name' => '스티커', 'icon' => '🏷️', 'color' => '#f3e5f5'],
-                        'msticker' => ['name' => '자석스티커', 'icon' => '🧲', 'color' => '#e8f5e8'],
-                        'leaflet' => ['name' => '전단지', 'icon' => '📄', 'color' => '#fff3e0'],
-                        'inserted' => ['name' => '전단지', 'icon' => '📄', 'color' => '#fff3e0'],
-                        'namecard' => ['name' => '명함', 'icon' => '💼', 'color' => '#fce4ec'],
-                        'envelope' => ['name' => '봉투', 'icon' => '✉️', 'color' => '#e0f2f1'],
-                        'merchandisebond' => ['name' => '상품권', 'icon' => '🎫', 'color' => '#f1f8e9'],
-                        'littleprint' => ['name' => '포스터', 'icon' => '🎨', 'color' => '#e8eaf6'],
-                        'poster' => ['name' => '포스터', 'icon' => '🎨', 'color' => '#e8eaf6'],
-                        'ncrflambeau' => ['name' => '양식지', 'icon' => '📋', 'color' => '#e8eaf6']
+                        'cadarok' => ['name' => '카달로그', 'icon' => '', 'color' => '#e3f2fd'],
+                        'sticker' => ['name' => '스티커', 'icon' => '', 'color' => '#f3e5f5'],
+                        'msticker' => ['name' => '자석스티커', 'icon' => '', 'color' => '#e8f5e8'],
+                        'leaflet' => ['name' => '전단지', 'icon' => '', 'color' => '#fff3e0'],
+                        'inserted' => ['name' => '전단지', 'icon' => '', 'color' => '#fff3e0'],
+                        'namecard' => ['name' => '명함', 'icon' => '', 'color' => '#fce4ec'],
+                        'envelope' => ['name' => '봉투', 'icon' => '', 'color' => '#e0f2f1'],
+                        'merchandisebond' => ['name' => '상품권', 'icon' => '', 'color' => '#f1f8e9'],
+                        'littleprint' => ['name' => '포스터', 'icon' => '', 'color' => '#e8eaf6'],
+                        'poster' => ['name' => '포스터', 'icon' => '', 'color' => '#e8eaf6'],
+                        'ncrflambeau' => ['name' => '양식지', 'icon' => '', 'color' => '#e8eaf6']
                     ];
                     foreach ($cart_items as $index => $item):
-                        $product = $product_info_map[$item['product_type']] ?? ['name' => '상품', 'icon' => '📦', 'color' => '#f5f5f5'];
+                        $product = $product_info_map[$item['product_type']] ?? ['name' => '상품', 'icon' => '', 'color' => '#f5f5f5'];
                     ?>
                     <tr>
                         <!-- 상품정보 -->
@@ -663,8 +698,10 @@ if (!empty($debug_info) && strpos($_SERVER['HTTP_HOST'], 'localhost') !== false)
                                         <?php
                                         // 스티커/자석스티커: 장바구니와 동일한 표시 방식
                                         $all_specs = [];
-                                        if ($product_type === 'sticker' || $product_type === 'msticker') {
+                                        if ($product_type === 'sticker') {
                                             $all_specs = getStickerSpecs($item);
+                                        } elseif ($product_type === 'msticker') {
+                                            $all_specs = getMstickerSpecs($item);
                                         } else {
                                             // 기타 제품: 레거시 방식 (장바구니와 동일)
                                             if (!empty($item['MY_type'])) $all_specs[] = htmlspecialchars(getKoreanName($connect, $item['MY_type']));
@@ -693,7 +730,7 @@ if (!empty($debug_info) && strpos($_SERVER['HTTP_HOST'], 'localhost') !== false)
                                         <?php endfor; ?>
                                     <?php endif; ?>
                                     <?php
-                                    // 📎 추가 옵션 표시 (장바구니와 동일한 스타일)
+                                    // 추가 옵션 표시 (장바구니와 동일한 스타일)
                                     $optionDetails = $optionsDisplay->getOrderDetails($item);
                                     if ($optionDetails['has_options']):
                                     ?>
