@@ -539,10 +539,28 @@ foreach ($order_rows as $order_item) {
                             <tr>
                                 <td style="border: 0.3pt solid #000; padding: 1.5mm; text-align: center;"><?= $row_num++ ?></td>
                                 <td style="border: 0.3pt solid #000; padding: 1.5mm;"><?= $item_type_display ?></td>
-                                <td style="border: 0.3pt solid #000; padding: 1.5mm; font-size: 10pt; line-height: 1.2; vertical-align: top;">
-                                    <?= htmlspecialchars($full_spec) ?>
+                                <td style="border: 0.3pt solid #000; padding: 1.5mm; font-size: 10pt; line-height: 1.4; vertical-align: top;">
+                                    <?php
+                                    // 🔧 규격/옵션 2줄+2줄 형식으로 표시 (duson-print-rules 준수)
+                                    $spec_parts = array_map('trim', explode('|', $full_spec));
+                                    $spec_parts = array_filter($spec_parts, function($p) { return !empty($p); });
+                                    $spec_parts = array_values($spec_parts);
+
+                                    // 규격 (최대 2줄)
+                                    for ($i = 0; $i < min(2, count($spec_parts)); $i++):
+                                    ?>
+                                        <div style="color: #4a5568; margin-bottom: 1px;"><?= htmlspecialchars($spec_parts[$i]) ?></div>
+                                    <?php endfor; ?>
+
+                                    <?php
+                                    // 옵션 (나머지 최대 2줄)
+                                    for ($i = 2; $i < min(4, count($spec_parts)); $i++):
+                                    ?>
+                                        <div style="color: #667eea; margin-bottom: 1px;"><?= htmlspecialchars($spec_parts[$i]) ?></div>
+                                    <?php endfor; ?>
+
                                     <?php if (!empty($item_options)): ?>
-                                    <br><span style="color: #e65100; font-size: 9pt;">└ 옵션: <?= implode(', ', $item_options) ?></span>
+                                        <div style="color: #e65100; font-size: 9pt; margin-top: 2px;"><?= implode(' / ', $item_options) ?></div>
                                     <?php endif; ?>
                                 </td>
                                 <td style="border: 0.3pt solid #000; padding: 1.5mm; text-align: center;">
@@ -962,10 +980,28 @@ foreach ($order_rows as $order_item) {
                             <tr>
                                 <td style="border: 0.3pt solid #000; padding: 1.5mm; text-align: center;"><?= $row_num++ ?></td>
                                 <td style="border: 0.3pt solid #000; padding: 1.5mm;"><?= $item_type_display ?></td>
-                                <td style="border: 0.3pt solid #000; padding: 1.5mm; font-size: 10pt; line-height: 1.2; vertical-align: top;">
-                                    <?= htmlspecialchars($full_spec) ?>
+                                <td style="border: 0.3pt solid #000; padding: 1.5mm; font-size: 10pt; line-height: 1.4; vertical-align: top;">
+                                    <?php
+                                    // 🔧 규격/옵션 2줄+2줄 형식으로 표시 (duson-print-rules 준수)
+                                    $spec_parts = array_map('trim', explode('|', $full_spec));
+                                    $spec_parts = array_filter($spec_parts, function($p) { return !empty($p); });
+                                    $spec_parts = array_values($spec_parts);
+
+                                    // 규격 (최대 2줄)
+                                    for ($i = 0; $i < min(2, count($spec_parts)); $i++):
+                                    ?>
+                                        <div style="color: #4a5568; margin-bottom: 1px;"><?= htmlspecialchars($spec_parts[$i]) ?></div>
+                                    <?php endfor; ?>
+
+                                    <?php
+                                    // 옵션 (나머지 최대 2줄)
+                                    for ($i = 2; $i < min(4, count($spec_parts)); $i++):
+                                    ?>
+                                        <div style="color: #667eea; margin-bottom: 1px;"><?= htmlspecialchars($spec_parts[$i]) ?></div>
+                                    <?php endfor; ?>
+
                                     <?php if (!empty($item_options)): ?>
-                                    <br><span style="color: #e65100; font-size: 9pt;">└ 옵션: <?= implode(', ', $item_options) ?></span>
+                                        <div style="color: #e65100; font-size: 9pt; margin-top: 2px;"><?= implode(' / ', $item_options) ?></div>
                                     <?php endif; ?>
                                 </td>
                                 <td style="border: 0.3pt solid #000; padding: 1.5mm; text-align: center;">
@@ -1350,9 +1386,27 @@ foreach ($order_rows as $order_item) {
                                                 <td class='excel-label' style='text-align: center;'><?= $row_num++ ?></td>
                                                 <td class='excel-value' style='text-align: center; font-weight: 600; color: #2F5496;'><?= htmlspecialchars($product_type_kr) ?></td>
                                                 <td class='excel-value' style='line-height: 1.6;'>
-                                                    <?= htmlspecialchars($full_spec) ?>
+                                                    <?php
+                                                    // 🔧 규격/옵션 2줄+2줄 형식으로 표시 (duson-print-rules 준수)
+                                                    $spec_parts = array_map('trim', explode('|', $full_spec));
+                                                    $spec_parts = array_filter($spec_parts, function($p) { return !empty($p); });
+                                                    $spec_parts = array_values($spec_parts);
+
+                                                    // 규격 (최대 2줄)
+                                                    for ($i = 0; $i < min(2, count($spec_parts)); $i++):
+                                                    ?>
+                                                        <div style="color: #2F5496; margin-bottom: 1px;"><?= htmlspecialchars($spec_parts[$i]) ?></div>
+                                                    <?php endfor; ?>
+
+                                                    <?php
+                                                    // 옵션 (나머지 최대 2줄)
+                                                    for ($i = 2; $i < min(4, count($spec_parts)); $i++):
+                                                    ?>
+                                                        <div style="color: #667eea; margin-bottom: 1px;"><?= htmlspecialchars($spec_parts[$i]) ?></div>
+                                                    <?php endfor; ?>
+
                                                     <?php if (!empty($item_options)): ?>
-                                                    <br><span style='color: #C65911; font-size: 10px;'>└ 옵션: <?= implode(', ', $item_options) ?></span>
+                                                        <div style="color: #C65911; font-size: 10px; margin-top: 2px;">└ 옵션: <?= implode(', ', $item_options) ?></div>
                                                     <?php endif; ?>
                                                 </td>
                                                 <td class='excel-value' style='text-align: right;'><?= $quantity_display ?></td>

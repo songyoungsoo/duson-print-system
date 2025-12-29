@@ -302,51 +302,72 @@ if ($cart_result === false) {
                                     </div>
                                 </td>
 
-                                <!-- 규격/옵션 -->
+                                <!-- 규격/옵션 (2줄+2줄 형식) -->
                                 <td>
                                     <div class="specs-cell">
                                         <?php
-                                        $all_specs = [];
-                                        if (!empty($item['MY_type'])) $all_specs[] = htmlspecialchars(getKoreanName($connect, $item['MY_type']));
-                                        if (!empty($item['MY_Fsd'])) $all_specs[] = htmlspecialchars(getKoreanName($connect, $item['MY_Fsd']));
-                                        if (!empty($item['PN_type'])) $all_specs[] = htmlspecialchars(getKoreanName($connect, $item['PN_type']));
-                                        if (!empty($item['Section'])) $all_specs[] = htmlspecialchars(getKoreanName($connect, $item['Section']));
-                                        if (!empty($item['POtype'])) $all_specs[] = ($item['POtype'] == '1' ? '단면' : '양면');
-                                        if (!empty($item['ordertype'])) $all_specs[] = ($item['ordertype'] == 'total' ? '디자인+인쇄' : ($item['ordertype'] == 'print' ? '인쇄만' : htmlspecialchars($item['ordertype'])));
+                                        // 규격 정보 (최대 2줄)
+                                        $spec_lines = [];
+                                        // 규격 1줄: 용지/타입
+                                        if (!empty($item['MY_Fsd'])) {
+                                            $spec_lines[] = htmlspecialchars(getKoreanName($connect, $item['MY_Fsd']));
+                                        } elseif (!empty($item['MY_type'])) {
+                                            $spec_lines[] = htmlspecialchars(getKoreanName($connect, $item['MY_type']));
+                                        } elseif (!empty($item['Section'])) {
+                                            $spec_lines[] = htmlspecialchars(getKoreanName($connect, $item['Section']));
+                                        }
+                                        // 규격 2줄: 사이즈/규격
+                                        if (!empty($item['PN_type'])) {
+                                            $spec_lines[] = htmlspecialchars(getKoreanName($connect, $item['PN_type']));
+                                        } elseif (!empty($item['Section']) && !empty($item['MY_Fsd'])) {
+                                            $spec_lines[] = htmlspecialchars(getKoreanName($connect, $item['Section']));
+                                        }
 
-                                        // 3개씩 묶어서 / 로 구분, 줄바꿈
-                                        $spec_count = count($all_specs);
-                                        for ($i = 0; $i < $spec_count; $i += 3):
+                                        // 옵션 정보 (최대 2줄)
+                                        $option_lines = [];
+                                        // 옵션 1줄: 인쇄방식
+                                        $print_info = [];
+                                        if (!empty($item['POtype'])) {
+                                            $print_info[] = ($item['POtype'] == '1' ? '단면' : '양면') . '컬러인쇄';
+                                        }
+                                        if (!empty($print_info)) {
+                                            $option_lines[] = implode(' ', $print_info);
+                                        }
+                                        // 옵션 2줄: 디자인/주문타입
+                                        if (!empty($item['ordertype'])) {
+                                            $option_lines[] = ($item['ordertype'] == 'total' ? '디자인+인쇄' : ($item['ordertype'] == 'print' ? '인쇄만' : htmlspecialchars($item['ordertype'])));
+                                        }
+
+                                        // 규격 출력 (2줄)
+                                        foreach ($spec_lines as $spec):
                                         ?>
-                                            <div class="spec-line">
-                                                <span class="spec-item"><?php echo $all_specs[$i]; ?></span>
-                                                <?php if (isset($all_specs[$i + 1])): ?>
-                                                    <span class="spec-separator">/</span>
-                                                    <span class="spec-item"><?php echo $all_specs[$i + 1]; ?></span>
-                                                <?php endif; ?>
-                                                <?php if (isset($all_specs[$i + 2])): ?>
-                                                    <span class="spec-separator">/</span>
-                                                    <span class="spec-item"><?php echo $all_specs[$i + 2]; ?></span>
-                                                <?php endif; ?>
-                                            </div>
-                                        <?php endfor; ?>
+                                            <div class="spec-line"><?php echo $spec; ?></div>
+                                        <?php endforeach; ?>
 
-                                        <!-- 추가 옵션 정보 표시 -->
+                                        <?php
+                                        // 옵션 출력 (2줄)
+                                        foreach ($option_lines as $opt):
+                                        ?>
+                                            <div class="spec-line"><?php echo $opt; ?></div>
+                                        <?php endforeach; ?>
+
+                                        <!-- 추가 옵션 정보 표시 (코팅/접지/오시 등) -->
                                         <?php
                                         $options_details = $optionsDisplay->getOrderDetails($item);
                                         if (!empty($options_details['options'])):
+                                            $opt_names = [];
+                                            foreach ($options_details['options'] as $option) {
+                                                $opt_names[] = $option['name'];
+                                            }
+                                            // 최대 2개씩 한 줄로 표시
+                                            $opt_chunks = array_chunk($opt_names, 2);
+                                            foreach ($opt_chunks as $chunk):
                                         ?>
-                                            <div class="options-section">
-                                                <div class="options-title">📎 추가옵션</div>
-                                                <?php foreach ($options_details['options'] as $option): ?>
-                                                    <div class="option-item">
-                                                        <span class="option-category"><?php echo $option['category']; ?>:</span>
-                                                        <?php echo $option['name']; ?>
-                                                        <span class="option-price">(+<?php echo $option['formatted_price']; ?>)</span>
-                                                    </div>
-                                                <?php endforeach; ?>
-                                            </div>
-                                        <?php endif; ?>
+                                            <div class="spec-line option-line"><?php echo implode(' / ', $chunk); ?></div>
+                                        <?php
+                                            endforeach;
+                                        endif;
+                                        ?>
                                     </div>
                                 </td>
 

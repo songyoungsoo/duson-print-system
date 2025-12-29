@@ -447,7 +447,28 @@ $publicUrl = $baseUrl . '/mlangprintauto/quote/public/view.php?token=' . $quote[
                                 <tr>
                                     <td class="col-no"><?php echo $no++; ?></td>
                                     <td class="col-name"><?php echo htmlspecialchars($item['product_name']); ?></td>
-                                    <td class="col-spec"><?php echo htmlspecialchars($item['specification']); ?></td>
+                                    <td class="col-spec"><?php
+                                        // 🔧 규격/옵션 2줄+2줄 형식으로 표시 (duson-print-rules 준수)
+                                        $spec_raw = $item['specification'] ?? '';
+                                        // | 또는 줄바꿈으로 분리
+                                        $spec_parts = preg_split('/[\|\n]+/', $spec_raw);
+                                        $spec_parts = array_map('trim', $spec_parts);
+                                        $spec_parts = array_filter($spec_parts, function($p) { return !empty($p); });
+                                        $spec_parts = array_values($spec_parts);
+
+                                        // 규격 (최대 2줄)
+                                        for ($i = 0; $i < min(2, count($spec_parts)); $i++):
+                                        ?>
+                                            <div style="color: #2F5496; margin-bottom: 1px;"><?php echo htmlspecialchars($spec_parts[$i]); ?></div>
+                                        <?php endfor; ?>
+
+                                        <?php
+                                        // 옵션 (나머지 최대 2줄)
+                                        for ($i = 2; $i < min(4, count($spec_parts)); $i++):
+                                        ?>
+                                            <div style="color: #667eea; margin-bottom: 1px;"><?php echo htmlspecialchars($spec_parts[$i]); ?></div>
+                                        <?php endfor; ?>
+                                    </td>
                                     <td class="col-qty"><?php
                                         $qty = $item['quantity'];
                                         // 소수점이 있으면 소수점 표시, 정수면 정수로 표시

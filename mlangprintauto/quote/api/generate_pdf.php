@@ -346,14 +346,35 @@ $koreanAmount = numberToKorean($quote['grand_total']);
                 <tr>
                     <td class="center"><?php echo $index + 1; ?></td>
                     <td><?php echo htmlspecialchars($item['product_name']); ?></td>
-                    <td class="spec"><?php echo nl2br(htmlspecialchars($item['specification'])); ?></td>
+                    <td class="spec"><?php
+                        // 🔧 규격/옵션 2줄+2줄 형식으로 표시 (duson-print-rules 준수)
+                        $spec_raw = $item['specification'] ?? '';
+                        // | 또는 줄바꿈으로 분리
+                        $spec_parts = preg_split('/[\|\n]+/', $spec_raw);
+                        $spec_parts = array_map('trim', $spec_parts);
+                        $spec_parts = array_filter($spec_parts, function($p) { return !empty($p); });
+                        $spec_parts = array_values($spec_parts);
+
+                        // 규격 (최대 2줄) - 진한 색상
+                        for ($i = 0; $i < min(2, count($spec_parts)); $i++):
+                        ?>
+                            <div style="color: #000; margin-bottom: 1px;"><?php echo htmlspecialchars($spec_parts[$i]); ?></div>
+                        <?php endfor; ?>
+
+                        <?php
+                        // 옵션 (나머지 최대 2줄) - 약간 연한 색상
+                        for ($i = 2; $i < min(4, count($spec_parts)); $i++):
+                        ?>
+                            <div style="color: #555; margin-bottom: 1px;"><?php echo htmlspecialchars($spec_parts[$i]); ?></div>
+                        <?php endfor; ?>
+                    </td>
                     <td class="center"><?php
                         $qty = $item['quantity'];
                         $qtyDisplay = ($qty == intval($qty)) ? number_format($qty) : rtrim(rtrim(number_format($qty, 2), '0'), '.');
                         echo $qtyDisplay;
 
-                        // 전단지(inserted)인 경우 매수 표시 추가 - 한 줄 형식
-                        if ($item['product_type'] == 'inserted' && !empty($item['source_data'])) {
+                        // 전단지/리플렛(inserted/leaflet)인 경우 매수 표시 추가 - 한 줄 형식
+                        if (in_array($item['product_type'], ['inserted', 'leaflet']) && !empty($item['source_data'])) {
                             $sourceData = json_decode($item['source_data'], true);
                             if (!empty($sourceData['mesu'])) {
                                 echo '연 (' . number_format($sourceData['mesu']) . '매)';
