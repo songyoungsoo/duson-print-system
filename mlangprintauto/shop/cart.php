@@ -411,10 +411,11 @@ if ($cart_result === false) {
                                                 break;
 
                                             case 'msticker':
-                                                // 규격: 종류 / 용지 / 규격
+                                                // 규격: 종류 / 규격
                                                 if (!empty($item['MY_type'])) $line1_parts[] = htmlspecialchars(getKoreanName($connect, $item['MY_type']));
                                                 if (!empty($item['Section'])) $line1_parts[] = htmlspecialchars(getKoreanName($connect, $item['Section']));
-                                                // 옵션: 수량 / 디자인
+                                                // 옵션: 인쇄면 / 수량 / 디자인
+                                                if (!empty($item['POtype'])) $line2_parts[] = ($item['POtype'] == '2' ? '양면인쇄' : '단면인쇄');
                                                 if (!empty($item['MY_amount'])) $line2_parts[] = number_format(intval($item['MY_amount'])) . '매';
                                                 if (!empty($item['ordertype'])) $line2_parts[] = ($item['ordertype'] == 'total' ? '디자인+인쇄' : ($item['ordertype'] == 'print' ? '인쇄만' : htmlspecialchars($item['ordertype'])));
                                                 break;

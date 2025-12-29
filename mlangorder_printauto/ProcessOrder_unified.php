@@ -377,8 +377,9 @@ try {
 
             case 'msticker':
                 $product_type_name = '자석스티커';
-                $type_name = getCategoryName($connect, $item['MY_type']);
-                $size_name = getCategoryName($connect, $item['PN_type']);
+                // 자석스티커 필드 매핑: MY_type=종류, Section=규격, POtype=인쇄면
+                $type_name = getCategoryName($connect, $item['MY_type']);      // 종류
+                $section_name = getCategoryName($connect, $item['Section']);   // 규격
                 $design = ($item['ordertype'] == 'total' ? '디자인+인쇄' : '인쇄만');
                 $qty = intval($item['MY_amount'] ?? 0);
 
@@ -386,8 +387,9 @@ try {
                     'product_type' => 'msticker',
                     'MY_type' => $item['MY_type'],
                     'MY_type_name' => $type_name,
-                    'PN_type' => $item['PN_type'],
-                    'PN_type_name' => $size_name,
+                    'Section' => $item['Section'],
+                    'Section_name' => $section_name,
+                    'POtype' => $item['POtype'] ?? '',
                     'MY_amount' => $qty,
                     'ordertype' => $item['ordertype'],
                     'created_at' => date('Y-m-d H:i:s')

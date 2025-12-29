@@ -352,6 +352,9 @@ $display = ($quantity == 0.5) ? '0.5' : number_format(intval($quantity));
 - **스킬**: `duson-print-rules` - 수량/규격/옵션 표기 규칙 (상세)
 - **공통 함수**: `/var/www/html/includes/quantity_formatter.php`
 
+
+
+
 ---
 
 ## 12. 봉투/자석스티커/카다록 공급가액 표시 오류
@@ -711,6 +714,81 @@ mysqli_query($db, "UPDATE mlangorder_printauto SET Type_1 = '$updated_json' WHER
 
 ### 관련 스킬
 - `duson-print-rules/SKILL.md` - 주의사항 #5에 필드 매핑 규칙 추가
+
+---
+
+## 18. 자석스티커(msticker) 규격 표시 누락 (2025-12-30 수정)
+
+### 증상
+자석스티커 주문 완료 페이지에서 규격이 표시되지 않음.
+
+**주문번호 #104049 (수정 전)**:
+```
+자석스티커(종이자석)
+1,000매 / 인쇄만
+```
+→ **규격(Section) 누락!**
+
+### 원인
+ProcessOrder_unified.php에서 자석스티커 필드 매핑 오류:
+- `$item['PN_type']` 사용 ❌ (항상 null)
+- `$item['Section']` 사용해야 함 ✅
+
+**shop_temp 필드 구조 (자석스티커)**:
+| 필드명 | 의미 | 예시 값 |
+|--------|------|---------|
+| `MY_type` | 종류 | 742 (자석스티커) |
+| `Section` | 규격 | 743 (90x50mm) |
+| `POtype` | 인쇄면 | 1=단면, 2=양면 |
+| `MY_amount` | 수량 | 1000 |
+
+### 수정 사항
+
+**ProcessOrder_unified.php** (line 378-399):
+```php
+case 'msticker':
+    $product_type_name = '자석스티커';
+    // 자석스티커 필드 매핑: MY_type=종류, Section=규격, POtype=인쇄면
+    $type_name = getCategoryName($connect, $item['MY_type']);      // 종류
+    $section_name = getCategoryName($connect, $item['Section']);   // 규격
+
+    $msticker_data = [
+        'product_type' => 'msticker',
+        'MY_type' => $item['MY_type'],
+        'MY_type_name' => $type_name,
+        'Section' => $item['Section'],
+        'Section_name' => $section_name,
+        'POtype' => $item['POtype'] ?? '',
+        'MY_amount' => $qty,
+        'ordertype' => $item['ordertype'],
+        'created_at' => date('Y-m-d H:i:s')
+    ];
+```
+
+**OrderComplete_universal.php** (line 278-299):
+```php
+case 'msticker':
+    // 필드 매핑: MY_type=종류, Section=규격, POtype=인쇄면
+    $type_display = $json_data['MY_type_name'] ?? getCategoryName($connect, $json_data['MY_type'] ?? '');
+    $section_display = $json_data['Section_name'] ?? getCategoryName($connect, $json_data['Section'] ?? '');
+    $potype = $json_data['POtype'] ?? '';
+    // ... (2줄 슬래시 형식 출력)
+```
+
+### 수정 후 예상 결과
+**주문번호 (수정 후)**:
+```
+자석스티커(종이자석) / 90x50mm     (1줄: 종류/규격)
+단면인쇄 / 1,000매 / 인쇄만         (2줄: 인쇄면/수량/디자인)
+```
+
+### 관련 파일
+- `/var/www/html/mlangorder_printauto/ProcessOrder_unified.php`
+- `/var/www/html/mlangorder_printauto/OrderComplete_universal.php`
+- `/var/www/html/mlangprintauto/shop/cart.php`
+
+### 관련 스킬
+- `duson-print-rules/SKILL.md` - 주의사항 #6에 자석스티커 필드 매핑 규칙 추가
 
 ---
 

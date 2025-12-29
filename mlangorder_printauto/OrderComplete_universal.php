@@ -277,19 +277,22 @@ function displayProductDetails($connect, $order) {
 
             case 'msticker':
                 // 자석스티커 - JSON 형식 (2줄 슬래시 방식)
+                // 필드 매핑: MY_type=종류, Section=규격, POtype=인쇄면
                 $type_display = $json_data['MY_type_name'] ?? getCategoryName($connect, $json_data['MY_type'] ?? '');
-                $size_display = $json_data['PN_type_name'] ?? getCategoryName($connect, $json_data['PN_type'] ?? '');
+                $section_display = $json_data['Section_name'] ?? getCategoryName($connect, $json_data['Section'] ?? '');
+                $potype = $json_data['POtype'] ?? '';
                 $my_amount = $json_data['MY_amount'] ?? 0;
                 $ordertype = $json_data['ordertype'] ?? '';
 
-                // 1줄: 종류 / 용지 / 규격
+                // 1줄: 종류 / 규격
                 $line1 = [];
                 if (!empty($type_display)) $line1[] = htmlspecialchars($type_display);
-                if (!empty($size_display)) $line1[] = htmlspecialchars($size_display);
+                if (!empty($section_display)) $line1[] = htmlspecialchars($section_display);
                 if (!empty($line1)) $html .= '<div class="spec-item">' . implode(' / ', $line1) . '</div>';
 
-                // 2줄: 수량 / 디자인
+                // 2줄: 인쇄면 / 수량 / 디자인
                 $line2 = [];
+                if (!empty($potype)) $line2[] = ($potype == '2' ? '양면인쇄' : '단면인쇄');
                 if (!empty($my_amount)) $line2[] = formatQuantity($my_amount, 'msticker', '매');
                 if (!empty($ordertype)) $line2[] = ($ordertype == 'total' ? '디자인+인쇄' : ($ordertype == 'print' ? '인쇄만' : htmlspecialchars($ordertype)));
                 if (!empty($line2)) $html .= '<div class="spec-item">' . implode(' / ', $line2) . '</div>';

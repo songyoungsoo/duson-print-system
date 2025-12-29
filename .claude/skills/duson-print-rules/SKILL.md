@@ -391,6 +391,24 @@ $section_name = getCategoryName($connect, $item['Section']);  // Section 필드 
 
 **관련 파일**: `mlangorder_printauto/ProcessOrder_unified.php` (cadarok case)
 
+### 6. 자석스티커 필드 매핑 (2025-12-30 수정)
+```php
+// [X] 잘못된 필드 매핑 (버그)
+$size_name = getCategoryName($connect, $item['PN_type']);  // PN_type은 비어있음!
+
+// [O] 올바른 필드 매핑
+$section_name = getCategoryName($connect, $item['Section']);  // Section 필드 사용
+
+// 자석스티커 shop_temp 필드 매핑:
+// - MY_type: 종류 (예: 742 = "자석스티커(종이자석)")
+// - Section: 규격 (예: 743 = "90x50mm")
+// - POtype: 인쇄면 (1=단면, 2=양면)
+// - PN_type: 미사용
+// - MY_amount: 수량
+```
+
+**관련 파일**: `mlangorder_printauto/ProcessOrder_unified.php` (msticker case)
+
 ---
 
 ## [검증 체크리스트]
