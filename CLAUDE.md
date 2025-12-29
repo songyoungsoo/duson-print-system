@@ -235,6 +235,86 @@ formData.append("product_type", "inserted"); // 제품 코드
 
 ---
 
+## 🎁 Additional Options System
+
+### 품목별 추가 옵션
+
+| 제품 | 추가 옵션 시스템 | DB 필드 |
+|------|------------------|---------|
+| **전단지** (inserted) | 코팅, 접지, 오시 | `additional_options` (JSON) |
+| **카다록** (cadarok) | 코팅, 접지, 오시 | 전단지와 공유 |
+| **포스터** (littleprint) | 코팅, 접지, 오시 | 전단지와 공유 |
+| **명함** (namecard) | 프리미엄 옵션 | `premium_options` (JSON) |
+| **상품권** (merchandisebond) | 프리미엄 옵션 | 명함과 동일 |
+| **봉투** (envelope) | 양면테이프 | `envelope_tape_*` 개별 필드 |
+| 스티커/자석/양식지 | 없음 | - |
+
+### 1. 전단지/카다록/포스터 공통 옵션
+**저장**: `shop_temp.additional_options` (JSON) → `mlangorder_printauto` 개별 필드
+
+```php
+// 옵션 종류
+coating_enabled, coating_type, coating_price      // 코팅
+folding_enabled, folding_type, folding_price      // 접지
+creasing_enabled, creasing_lines, creasing_price  // 오시
+additional_options_total                          // 총액
+```
+
+### 2. 명함/상품권 프리미엄 옵션
+**저장**: `shop_temp.premium_options` (JSON 또는 개별) → `mlangorder_printauto.premium_options`
+
+```php
+// 공통 옵션 (명함 + 상품권)
+- foil (박/금박)
+- numbering (넘버링)
+- perforation (미싱)
+- rounding (라운딩)
+- creasing (오시)
+
+// 명함 전용
+- embossing (형압)
+- edge_coloring (에지컬러)
+
+premium_options_total  // 총액
+```
+
+**코드 참조**:
+- 명함: `mlangprintauto/namecard/add_to_basket.php`
+- 상품권: `mlangprintauto/merchandisebond/add_to_basket.php:57`
+  ```php
+  // 상품권 프리미엄 옵션들 (명함과 동일)
+  $option_names = ['foil', 'numbering', 'perforation', 'rounding', 'creasing'];
+  ```
+
+### 3. 봉투 양면테이프
+**저장**: 개별 필드
+
+```php
+envelope_tape_enabled      // 사용 여부
+envelope_tape_quantity     // 수량
+envelope_tape_price        // 단가
+envelope_additional_options_total  // 총액
+```
+
+### mlangorder_printauto 테이블 구조
+```sql
+-- 전단지/카다록/포스터
+coating_enabled INT, coating_type VARCHAR(50), coating_price INT,
+folding_enabled INT, folding_type VARCHAR(50), folding_price INT,
+creasing_enabled INT, creasing_lines INT, creasing_price INT,
+additional_options_total INT,
+
+-- 명함/상품권
+premium_options TEXT,
+premium_options_total INT,
+
+-- 봉투
+envelope_tape_enabled INT, envelope_tape_quantity INT,
+envelope_tape_price INT, envelope_additional_options_total INT
+```
+
+---
+
 ## 📤 File Upload System
 
 ### StandardUploadHandler 사용 (전체 품목 표준화)

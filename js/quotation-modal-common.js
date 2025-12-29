@@ -384,10 +384,27 @@ function proceedWithApply() {
         quantity: quantity,
         unit: unit,
         supply_price: supplyPrice,
-        total_price: totalPrice,
         flyer_mesu: flyer_mesu,  // 전단지/리플렛 전용
         quantity_display: quantity_display  // 전단지/리플렛 전용
     };
+
+    // 가격 필드는 출처에 따라 적절한 이름 사용
+    if (window.currentPriceData) {
+        // currentPriceData가 있으면 원본 필드명 유지
+        if (window.currentPriceData.total_with_vat) {
+            payload.total_price = supplyPrice;  // 공급가액 (VAT 미포함)
+            payload.total_with_vat = totalPrice;  // 총액 (VAT 포함)
+        } else if (window.currentPriceData.Total_PriceForm) {
+            payload.supply_price = supplyPrice;  // 전단지/상품권은 supply_price가 없을 수 있음
+            payload.Total_PriceForm = totalPrice;
+        } else {
+            payload.total_price = totalPrice;  // 일반 형식
+        }
+    } else {
+        // DOM 파싱: totalPrice는 VAT 포함 총액, supplyPrice는 역산
+        payload.total_price = totalPrice;  // VAT 포함 총액
+        payload.vat_price = totalPrice - supplyPrice;  // VAT
+    }
 
     console.log('📤 [견적서 적용] 전송할 데이터:', payload);
 

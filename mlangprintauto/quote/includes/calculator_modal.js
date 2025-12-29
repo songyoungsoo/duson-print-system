@@ -294,16 +294,35 @@ class CalculatorModal {
 
             // 5. 공급가 설정
             const supplyInput = row.querySelector('.supply-input');
+            let supply = 0;
+
             if (supplyInput) {
-                const supply = parseInt(data.supply_price) || 0;
+                // 우선순위: supply_price > total_price (봉투 등의 경우)
+                if (data.supply_price) {
+                    supply = parseInt(data.supply_price);
+                    console.log('✅ 공급가 설정 (supply_price):', supply);
+                } else if (data.total_price && data.total_with_vat) {
+                    // 봉투/자석스티커/카다록 등: total_price = 공급가액 (VAT 미포함)
+                    supply = parseInt(data.total_price);
+                    console.log('✅ 공급가 설정 (total_price, envelope 패턴):', supply);
+                } else if (data.Order_PriceForm) {
+                    // 전단지: Order_PriceForm = 공급가액
+                    supply = parseInt(data.Order_PriceForm);
+                    console.log('✅ 공급가 설정 (Order_PriceForm):', supply);
+                } else if (data.PriceForm) {
+                    // 상품권: PriceForm = 공급가액
+                    supply = parseInt(data.PriceForm);
+                    console.log('✅ 공급가 설정 (PriceForm):', supply);
+                } else {
+                    console.warn('⚠️ 공급가 필드를 찾을 수 없음, 0으로 설정');
+                }
+
                 supplyInput.value = supply;
-                console.log('✅ 공급가 설정:', supply);
             }
 
             // 6. 단가 계산 (전단지는 단가를 비움, 다른 품목은 공급가 ÷ 수량)
-            const supply = parseInt(supplyInput.value) || 0;
             const qty = parseFloat(qtyInput.value) || 1;
-            
+
             const priceInput = row.querySelector('.price-input');
             if (priceInput) {
                 // 전단지(inserted)는 단가를 비움
@@ -319,13 +338,38 @@ class CalculatorModal {
                 }
             }
 
-            // 7. VAT와 총액 (전송된 데이터 사용)
-            const total = parseInt(data.total_price) || (supply + Math.round(supply * 0.1));
-            const vat = total - supply;
+            // 7. VAT와 총액 계산
+            let total, vat;
+
+            if (data.total_with_vat) {
+                // 봉투/자석스티커/카다록 등: total_with_vat = 총액 (VAT 포함)
+                total = parseInt(data.total_with_vat);
+                vat = total - supply;
+                console.log('✅ VAT 및 총액 (total_with_vat):', {supply, vat, total});
+            } else if (data.Total_PriceForm) {
+                // 전단지/상품권: Total_PriceForm = 총액 (VAT 포함)
+                total = parseInt(data.Total_PriceForm);
+                vat = total - supply;
+                console.log('✅ VAT 및 총액 (Total_PriceForm):', {supply, vat, total});
+            } else if (data.vat_price) {
+                // DOM 파싱: vat_price가 있으면 사용
+                vat = parseInt(data.vat_price);
+                total = parseInt(data.total_price);
+                console.log('✅ VAT 및 총액 (vat_price):', {supply, vat, total});
+            } else if (data.total_price) {
+                // 일반 형식: total_price = 총액 (VAT 포함)
+                total = parseInt(data.total_price);
+                vat = total - supply;
+                console.log('✅ VAT 및 총액 (total_price):', {supply, vat, total});
+            } else {
+                // Fallback: 계산
+                total = supply + Math.round(supply * 0.1);
+                vat = Math.round(supply * 0.1);
+                console.log('✅ VAT 및 총액 (계산):', {supply, vat, total});
+            }
 
             row.querySelector('.vat-cell').textContent = vat.toLocaleString();
             row.querySelector('.total-cell').textContent = total.toLocaleString();
-            console.log('✅ VAT 및 총액:', {supply: supply, vat: vat, total: total});
 
             // 8. 전체 합계 재계산 (create.php의 calculateTotals() 함수 호출)
             if (typeof window.calculateTotals === 'function') {
