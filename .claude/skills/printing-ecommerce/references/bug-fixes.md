@@ -778,9 +778,37 @@ case 'msticker':
 ### 수정 후 예상 결과
 **주문번호 (수정 후)**:
 ```
-자석스티커(종이자석) / 90x50mm     (1줄: 종류/규격)
-단면인쇄 / 1,000매 / 인쇄만         (2줄: 인쇄면/수량/디자인)
+자석스티커(종이자석) / 90x60mm(후면에작은자석)     (1줄: 종류/규격)
+단면인쇄 / 1,000매 / 인쇄만                        (2줄: 인쇄면/수량/디자인)
 ```
+
+### 기존 주문 수정 방법 (중요!)
+**코드 수정 전에 생성된 주문**은 Type_1 JSON에 Section 정보가 누락되어 있음.
+이러한 주문은 DB를 직접 업데이트해야 함:
+
+```php
+// 예시: 주문번호 #104049 수정
+$updated_json = json_encode([
+    'product_type' => 'msticker',
+    'MY_type' => '742',
+    'MY_type_name' => '자석스티커(종이자석)',
+    'Section' => '743',                              // 추가
+    'Section_name' => '90x60mm(후면에작은자석)',      // 추가
+    'POtype' => '1',                                 // 추가 (1=단면, 2=양면)
+    'PN_type' => null,
+    'PN_type_name' => '',
+    'MY_amount' => 1000,
+    'ordertype' => 'print',
+    'created_at' => '2025-12-30 00:28:44'
+], JSON_UNESCAPED_UNICODE);
+
+mysqli_query($db, "UPDATE mlangorder_printauto SET Type_1 = '$updated_json' WHERE no = 104049");
+```
+
+**주의사항:**
+- 새로운 주문은 자동으로 Section/POtype이 저장됨
+- 기존 주문 수정 시 transactioncate 테이블에서 규격 코드 확인 필요
+- Section 코드는 품목별로 다름 (예: 742=자석스티커 종류, 743=90x60mm 규격)
 
 ### 관련 파일
 - `/var/www/html/mlangorder_printauto/ProcessOrder_unified.php`
