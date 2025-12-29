@@ -357,9 +357,6 @@ $default_values['ordertype'] = 'print'; // 인쇄만
                         <button type="button" class="btn-upload-order" onclick="openUploadModal()">
                             파일 업로드 및 주문하기
                         </button>
-                        <button type="button" class="btn-request-quote" onclick="addToQuotation()">
-                            견적 요청
-                        </button>
                     </div>
                     <?php endif; ?>
 

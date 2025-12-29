@@ -358,9 +358,6 @@ if ($type_result && ($type_row = mysqli_fetch_assoc($type_result))) {
                         <button type="button" class="btn-upload-order" onclick="openUploadModal()">
                             파일 업로드 및 주문하기
                         </button>
-                        <button type="button" class="btn-request-quote" onclick="addToQuotation()">
-                            견적 요청
-                        </button>
                     </div>
                     <?php endif; ?>
 

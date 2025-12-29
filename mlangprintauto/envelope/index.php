@@ -290,9 +290,6 @@ if ($type_result && ($type_row = mysqli_fetch_assoc($type_result))) {
                         <button type="button" class="btn-upload-order" onclick="openUploadModal()">
                             파일 업로드 및 주문하기
                         </button>
-                        <button type="button" class="btn-request-quote" onclick="addToQuotation()">
-                            견적 요청
-                        </button>
                     </div>
                     <?php endif; ?>
 
@@ -553,8 +550,8 @@ if ($type_result && ($type_row = mysqli_fetch_assoc($type_result))) {
             formData.append("POtype", document.getElementById("POtype").value);
             formData.append("MY_amount", document.getElementById("MY_amount").value);
             formData.append("ordertype", document.getElementById("ordertype").value);
-            formData.append("calculated_price", Math.round(window.currentPriceData.total_price));
-            formData.append("calculated_vat_price", Math.round(window.currentPriceData.vat_price));
+            formData.append("calculated_price", Math.round(window.currentPriceData.total_price));      // 공급가액 (VAT 미포함)
+            formData.append("calculated_vat_price", Math.round(window.currentPriceData.total_with_vat));  // 합계 (VAT 포함)
 
             // 양면테이프 옵션 추가
             const tapeEnabled = document.getElementById("envelope_tape_enabled")?.checked;
@@ -609,8 +606,8 @@ if ($type_result && ($type_row = mysqli_fetch_assoc($type_result))) {
             formData.append('POtype', document.getElementById('POtype').value);
             formData.append('MY_amount', document.getElementById('MY_amount').value);
             formData.append('ordertype', document.getElementById('ordertype').value);
-            formData.append('calculated_price', Math.round(window.currentPriceData.total_price));
-            formData.append('calculated_vat_price', Math.round(window.currentPriceData.vat_price));
+            formData.append('calculated_price', Math.round(window.currentPriceData.total_price));      // 공급가액 (VAT 미포함)
+            formData.append('calculated_vat_price', Math.round(window.currentPriceData.total_with_vat));  // 합계 (VAT 포함)
 
             // AJAX 전송
             fetch('../quote/add_to_quotation_temp.php', {

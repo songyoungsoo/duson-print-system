@@ -238,9 +238,6 @@ if ($type_row = mysqli_fetch_assoc($type_result)) {
                         <button type="button" class="btn-upload-order" onclick="openUploadModal()">
                             파일 업로드 및 주문하기
                         </button>
-                        <button type="button" class="btn-request-quote" onclick="addToQuotation()">
-                            견적 요청
-                        </button>
                     </div>
                     <?php endif; ?>
 
@@ -390,8 +387,8 @@ if (!$isQuotationMode) {
 
             // 기본 주문 정보
             formData.set('action', 'add_to_basket');
-            formData.set('price', Math.round(priceData.total_price));
-            formData.set('vat_price', Math.round(priceData.total_with_vat));
+            formData.set('calculated_price', Math.round(priceData.total_price));      // 공급가액 (VAT 미포함)
+            formData.set('calculated_vat_price', Math.round(priceData.total_with_vat));  // 합계 (VAT 포함)
             formData.set('product_type', 'msticker');
 
             // 자석스티커 상세 정보 추가
@@ -479,8 +476,8 @@ if (!$isQuotationMode) {
             formData.append('POtype', document.getElementById('POtype').value);
             formData.append('MY_amount', document.getElementById('MY_amount').value);
             formData.append('ordertype', document.getElementById('ordertype').value);
-            formData.append('calculated_price', Math.round(window.currentPriceData.total_price));
-            formData.append('calculated_vat_price', Math.round(window.currentPriceData.vat_price));
+            formData.append('calculated_price', Math.round(window.currentPriceData.total_price));      // 공급가액 (VAT 미포함)
+            formData.append('calculated_vat_price', Math.round(window.currentPriceData.total_with_vat));  // 합계 (VAT 포함)
 
             // AJAX 전송
             fetch('../quote/add_to_quotation_temp.php', {

@@ -236,7 +236,7 @@ $default_values['MY_type'] = '475'; // 양식(100매철)
                         <div class="option-details" id="folding_options" style="display: none;">
                             <select name="folding_type" id="folding_type" class="option-select">
                                 <option value="">선택하세요</option>
-                                <option value="numbering">전화 문의 1688-2384</option>
+                                <option value="numbering">전화문의 1688-2384</option>
                             </select>
                         </div>
 
@@ -244,9 +244,7 @@ $default_values['MY_type'] = '475'; // 양식(100매철)
                         <div class="option-details" id="creasing_options" style="display: none;">
                             <select name="creasing_lines" id="creasing_lines" class="option-select">
                                 <option value="">선택하세요</option>
-                                <option value="1">1줄</option>
-                                <option value="2">2줄</option>
-                                <option value="3">3줄</option>
+                                <option value="mising">전화문의 1688-2384</option>
                             </select>
                         </div>
 
@@ -276,9 +274,6 @@ $default_values['MY_type'] = '475'; // 양식(100매철)
                     <div class="action-buttons" id="actionButtons">
                         <button type="button" class="btn-upload-order" onclick="openUploadModal()">
                             파일 업로드 및 주문하기
-                        </button>
-                        <button type="button" class="btn-request-quote" onclick="addToQuotation()">
-                            견적 요청
                         </button>
                     </div>
                     <?php endif; ?>
