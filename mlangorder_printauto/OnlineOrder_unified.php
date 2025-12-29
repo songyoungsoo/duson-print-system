@@ -602,71 +602,128 @@ if (!empty($debug_info) && strpos($_SERVER['HTTP_HOST'], 'localhost') !== false)
                                 <?php echo $product['name']; ?>
                             </div>
                         </td>
-                        <!-- 규격/옵션 -->
+                        <!-- 규격/옵션 (2줄 방식: 규격 1줄 + 옵션 1줄) -->
                         <td style="border: 1px solid #ccc; padding: 10px; vertical-align: top;">
-                            <div class="specs-cell">
+                            <div class="specs-cell" style="line-height: 1.6;">
                                 <?php if ($is_direct_order): ?>
-                                    <?php if ($item['product_type'] == 'envelope'): ?>
-                                        <div class="spec-item"><span style="color: #00b4d8; font-weight: 500;">종류:</span> <?php echo htmlspecialchars($item['type_text']); ?></div>
-                                        <div class="spec-item"><span style="color: #00b4d8; font-weight: 500;">규격:</span> <?php echo htmlspecialchars($item['size_text']); ?></div>
-                                        <div class="spec-item" style="text-align: center;"><span style="color: #00b4d8; font-weight: 500;">수량:</span> <?php echo htmlspecialchars($item['quantity_text']); ?></div>
-                                        <div class="spec-item"><span style="color: #00b4d8; font-weight: 500;">디자인:</span> <?php echo htmlspecialchars($item['design_text']); ?></div>
-                                        <?php if (!empty($item['MY_comment'])): ?>
-                                            <div style="margin-top: 0.3rem; padding: 0.4rem; background: #fff3cd; border-radius: 3px; font-size: 0.8rem;">
-                                                <strong>요청사항:</strong> <?php echo htmlspecialchars($item['MY_comment']); ?>
-                                            </div>
-                                        <?php endif; ?>
-                                    <?php elseif ($item['product_type'] == 'merchandisebond'): ?>
-                                        <div class="spec-item"><span style="color: #e91e63; font-weight: 500;">종류:</span> <?php echo htmlspecialchars($item['type_text']); ?></div>
-                                        <div class="spec-item"><span style="color: #e91e63; font-weight: 500;">후가공:</span> <?php echo htmlspecialchars($item['size_text']); ?></div>
-                                        <div class="spec-item" style="text-align: center;"><span style="color: #e91e63; font-weight: 500;">수량:</span> <?php echo htmlspecialchars($item['quantity_text']); ?></div>
-                                        <div class="spec-item"><span style="color: #e91e63; font-weight: 500;">인쇄면:</span> <?php echo htmlspecialchars($item['po_text']); ?></div>
-                                        <div class="spec-item"><span style="color: #e91e63; font-weight: 500;">주문방법:</span> <?php echo htmlspecialchars($item['design_text']); ?></div>
-                                        <?php if (!empty($item['MY_comment'])): ?>
-                                            <div style="margin-top: 0.5rem; padding: 0.5rem; background: #fff3cd; border-radius: 4px; font-size: 0.9rem;">
-                                                <strong>요청사항:</strong> <?php echo htmlspecialchars($item['MY_comment']); ?>
-                                            </div>
-                                        <?php endif; ?>
-                                    <?php elseif ($item['product_type'] == 'namecard'): ?>
-                                        <div class="spec-item"><span style="color: #d69e2e; font-weight: 500;">명함종류:</span> <?php echo htmlspecialchars($item['type_text'] ?? ''); ?></div>
-                                        <div class="spec-item"><span style="color: #d69e2e; font-weight: 500;">용지종류:</span> <?php echo htmlspecialchars($item['paper_text'] ?? ''); ?></div>
-                                        <div class="spec-item" style="text-align: center;"><span style="color: #d69e2e; font-weight: 500;">수량:</span> <?php echo htmlspecialchars($item['quantity_text'] ?? ''); ?></div>
-                                        <div class="spec-item"><span style="color: #d69e2e; font-weight: 500;">인쇄면:</span> <?php echo htmlspecialchars($item['sides_text'] ?? ''); ?></div>
-                                        <div class="spec-item"><span style="color: #d69e2e; font-weight: 500;">디자인:</span> <?php echo htmlspecialchars($item['design_text'] ?? ''); ?></div>
-                                        <?php if (!empty($item['NC_comment'])): ?>
-                                            <div style="margin-top: 0.5rem; padding: 0.5rem; background: #fff3cd; border-radius: 4px; font-size: 0.9rem;">
-                                                <strong>요청사항:</strong> <?php echo htmlspecialchars($item['NC_comment']); ?>
-                                            </div>
-                                        <?php endif; ?>
-                                    <?php elseif ($item['product_type'] == 'cadarok'): ?>
-                                        <div class="spec-item"><span style="color: #2196f3; font-weight: 500;">구분:</span> <?php echo htmlspecialchars($item['type_text'] ?? ''); ?></div>
-                                        <div class="spec-item"><span style="color: #2196f3; font-weight: 500;">규격:</span> <?php echo htmlspecialchars($item['size_text'] ?? ''); ?></div>
-                                        <div class="spec-item"><span style="color: #2196f3; font-weight: 500;">종이종류:</span> <?php echo htmlspecialchars($item['paper_text'] ?? ''); ?></div>
-                                        <div class="spec-item" style="text-align: center;"><span style="color: #2196f3; font-weight: 500;">수량:</span> <?php echo htmlspecialchars($item['quantity_text'] ?? ''); ?></div>
-                                        <div class="spec-item"><span style="color: #2196f3; font-weight: 500;">주문방법:</span> <?php echo htmlspecialchars($item['design_text'] ?? ''); ?></div>
-                                        <?php if (!empty($item['MY_comment'])): ?>
-                                            <div style="margin-top: 0.5rem; padding: 0.5rem; background: #fff3cd; border-radius: 4px; font-size: 0.9rem;">
-                                                <strong>요청사항:</strong> <?php echo htmlspecialchars($item['MY_comment']); ?>
-                                            </div>
-                                        <?php endif; ?>
-                                    <?php else: ?>
-                                        <?php
-                                        // 전단지: 슬래시 구분 2줄 압축 표시 (test02.html 스타일)
-                                        $line1_parts = [];
-                                        $line2_parts = [];
-                                        if (!empty($item['color_text'])) $line1_parts[] = htmlspecialchars($item['color_text']);
-                                        if (!empty($item['paper_type_text'])) $line1_parts[] = htmlspecialchars($item['paper_type_text']);
-                                        if (!empty($item['paper_size_text'])) $line2_parts[] = htmlspecialchars($item['paper_size_text']);
-                                        if (!empty($item['sides_text'])) $line2_parts[] = htmlspecialchars($item['sides_text']);
-                                        if (!empty($item['quantity_text'])) $line2_parts[] = htmlspecialchars($item['quantity_text']);
-                                        if (!empty($item['design_text'])) $line2_parts[] = htmlspecialchars($item['design_text']);
-                                        ?>
-                                        <?php if (!empty($line1_parts)): ?>
-                                        <div style="color: #4a5568; margin-bottom: 2px;"><?php echo implode(' / ', $line1_parts); ?></div>
-                                        <?php endif; ?>
-                                        <?php if (!empty($line2_parts)): ?>
-                                        <div style="color: #4a5568;"><?php echo implode(' / ', $line2_parts); ?></div>
-                                        <?php endif; ?>
+                                    <?php
+                                    // 2줄 압축 표시 (OrderComplete_universal.php 스타일)
+                                    $line1_parts = [];
+                                    $line2_parts = [];
+
+                                    switch ($item['product_type']) {
+                                        case 'envelope':
+                                            // 규격: 종류 / 규격
+                                            if (!empty($item['type_text'])) $line1_parts[] = htmlspecialchars($item['type_text']);
+                                            if (!empty($item['size_text'])) $line1_parts[] = htmlspecialchars($item['size_text']);
+                                            // 옵션: 수량 / 디자인
+                                            if (!empty($item['quantity_text'])) $line2_parts[] = htmlspecialchars($item['quantity_text']);
+                                            if (!empty($item['design_text'])) $line2_parts[] = htmlspecialchars($item['design_text']);
+                                            $comment_field = $item['MY_comment'] ?? '';
+                                            break;
+
+                                        case 'merchandisebond':
+                                            // 규격: 종류 / 후가공
+                                            if (!empty($item['type_text'])) $line1_parts[] = htmlspecialchars($item['type_text']);
+                                            if (!empty($item['size_text'])) $line1_parts[] = htmlspecialchars($item['size_text']);
+                                            // 옵션: 인쇄면 / 수량 / 주문방법
+                                            if (!empty($item['po_text'])) $line2_parts[] = htmlspecialchars($item['po_text']);
+                                            if (!empty($item['quantity_text'])) $line2_parts[] = htmlspecialchars($item['quantity_text']);
+                                            if (!empty($item['design_text'])) $line2_parts[] = htmlspecialchars($item['design_text']);
+                                            $comment_field = $item['MY_comment'] ?? '';
+                                            break;
+
+                                        case 'namecard':
+                                            // 규격: 명함종류 / 용지종류
+                                            if (!empty($item['type_text'])) $line1_parts[] = htmlspecialchars($item['type_text']);
+                                            if (!empty($item['paper_text'])) $line1_parts[] = htmlspecialchars($item['paper_text']);
+                                            // 옵션: 인쇄면 / 수량 / 디자인
+                                            if (!empty($item['sides_text'])) $line2_parts[] = htmlspecialchars($item['sides_text']);
+                                            if (!empty($item['quantity_text'])) $line2_parts[] = htmlspecialchars($item['quantity_text']);
+                                            if (!empty($item['design_text'])) $line2_parts[] = htmlspecialchars($item['design_text']);
+                                            $comment_field = $item['NC_comment'] ?? '';
+                                            break;
+
+                                        case 'cadarok':
+                                            // 규격: 구분 / 종이종류
+                                            if (!empty($item['type_text'])) $line1_parts[] = htmlspecialchars($item['type_text']);
+                                            if (!empty($item['paper_text'])) $line1_parts[] = htmlspecialchars($item['paper_text']);
+                                            // 옵션: 규격 / 수량 / 디자인
+                                            if (!empty($item['size_text'])) $line2_parts[] = htmlspecialchars($item['size_text']);
+                                            if (!empty($item['quantity_text'])) $line2_parts[] = htmlspecialchars($item['quantity_text']);
+                                            if (!empty($item['design_text'])) $line2_parts[] = htmlspecialchars($item['design_text']);
+                                            $comment_field = $item['MY_comment'] ?? '';
+                                            break;
+
+                                        case 'sticker':
+                                            // 규격: 종류 / 용지 / 규격
+                                            if (!empty($item['type_text'])) $line1_parts[] = htmlspecialchars($item['type_text']);
+                                            if (!empty($item['paper_text'])) $line1_parts[] = htmlspecialchars($item['paper_text']);
+                                            if (!empty($item['size_text'])) $line1_parts[] = htmlspecialchars($item['size_text']);
+                                            // 옵션: 인쇄면 / 수량 / 디자인
+                                            if (!empty($item['sides_text'])) $line2_parts[] = htmlspecialchars($item['sides_text']);
+                                            if (!empty($item['quantity_text'])) $line2_parts[] = htmlspecialchars($item['quantity_text']);
+                                            if (!empty($item['design_text'])) $line2_parts[] = htmlspecialchars($item['design_text']);
+                                            $comment_field = $item['MY_comment'] ?? '';
+                                            break;
+
+                                        case 'msticker':
+                                            // 규격: 종류 / 용지 / 규격
+                                            if (!empty($item['type_text'])) $line1_parts[] = htmlspecialchars($item['type_text']);
+                                            if (!empty($item['paper_text'])) $line1_parts[] = htmlspecialchars($item['paper_text']);
+                                            if (!empty($item['size_text'])) $line1_parts[] = htmlspecialchars($item['size_text']);
+                                            // 옵션: 수량 / 디자인
+                                            if (!empty($item['quantity_text'])) $line2_parts[] = htmlspecialchars($item['quantity_text']);
+                                            if (!empty($item['design_text'])) $line2_parts[] = htmlspecialchars($item['design_text']);
+                                            $comment_field = $item['MY_comment'] ?? '';
+                                            break;
+
+                                        case 'littleprint':
+                                            // 포스터: 종류 / 용지 / 규격
+                                            if (!empty($item['type_text'])) $line1_parts[] = htmlspecialchars($item['type_text']);
+                                            if (!empty($item['paper_text'])) $line1_parts[] = htmlspecialchars($item['paper_text']);
+                                            if (!empty($item['size_text'])) $line1_parts[] = htmlspecialchars($item['size_text']);
+                                            // 옵션: 인쇄면 / 수량 / 디자인
+                                            if (!empty($item['sides_text'])) $line2_parts[] = htmlspecialchars($item['sides_text']);
+                                            if (!empty($item['quantity_text'])) $line2_parts[] = htmlspecialchars($item['quantity_text']);
+                                            if (!empty($item['design_text'])) $line2_parts[] = htmlspecialchars($item['design_text']);
+                                            $comment_field = $item['MY_comment'] ?? '';
+                                            break;
+
+                                        case 'ncrflambeau':
+                                            // 양식지: 종류 / 용지 / 규격
+                                            if (!empty($item['type_text'])) $line1_parts[] = htmlspecialchars($item['type_text']);
+                                            if (!empty($item['paper_text'])) $line1_parts[] = htmlspecialchars($item['paper_text']);
+                                            if (!empty($item['size_text'])) $line1_parts[] = htmlspecialchars($item['size_text']);
+                                            // 옵션: 수량 / 인쇄도수 / 디자인
+                                            if (!empty($item['quantity_text'])) $line2_parts[] = htmlspecialchars($item['quantity_text']);
+                                            if (!empty($item['color_text'])) $line2_parts[] = htmlspecialchars($item['color_text']);
+                                            if (!empty($item['design_text'])) $line2_parts[] = htmlspecialchars($item['design_text']);
+                                            $comment_field = $item['MY_comment'] ?? '';
+                                            break;
+
+                                        default:
+                                            // 전단지 등 기타
+                                            if (!empty($item['color_text'])) $line1_parts[] = htmlspecialchars($item['color_text']);
+                                            if (!empty($item['paper_type_text'])) $line1_parts[] = htmlspecialchars($item['paper_type_text']);
+                                            if (!empty($item['paper_size_text'])) $line2_parts[] = htmlspecialchars($item['paper_size_text']);
+                                            if (!empty($item['sides_text'])) $line2_parts[] = htmlspecialchars($item['sides_text']);
+                                            if (!empty($item['quantity_text'])) $line2_parts[] = htmlspecialchars($item['quantity_text']);
+                                            if (!empty($item['design_text'])) $line2_parts[] = htmlspecialchars($item['design_text']);
+                                            $comment_field = $item['MY_comment'] ?? '';
+                                            break;
+                                    }
+                                    ?>
+                                    <?php if (!empty($line1_parts)): ?>
+                                    <div class="spec-item" style="color: #2d3748; margin-bottom: 2px;"><?php echo implode(' / ', $line1_parts); ?></div>
+                                    <?php endif; ?>
+                                    <?php if (!empty($line2_parts)): ?>
+                                    <div class="spec-item" style="color: #4a5568;"><?php echo implode(' / ', $line2_parts); ?></div>
+                                    <?php endif; ?>
+                                    <?php if (!empty($comment_field)): ?>
+                                        <div style="margin-top: 0.4rem; padding: 0.4rem; background: #fff3cd; border-radius: 3px; font-size: 0.8rem;">
+                                            <strong>요청사항:</strong> <?php echo htmlspecialchars($comment_field); ?>
+                                        </div>
                                     <?php endif; ?>
                                 <?php else: ?>
                                     <!-- 장바구니에서 온 주문: 장바구니와 동일한 표시 방식 -->

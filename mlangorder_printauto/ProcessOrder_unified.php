@@ -253,9 +253,10 @@ try {
                 
             case 'cadarok':
                 $product_type_name = '카다록';
-                $type_name = getCategoryName($connect, $item['MY_type']);
-                $style_name = getCategoryName($connect, $item['MY_Fsd']);
-                $section_name = getCategoryName($connect, $item['PN_type']);
+                // 카다록 필드 매핑: MY_type=종류, Section=규격, PN_type=용지(미사용)
+                $type_name = getCategoryName($connect, $item['MY_type']);      // 종류 (카다록,리플렛)
+                $section_name = getCategoryName($connect, $item['Section']);   // 규격 (A4, A5 등)
+                $paper_name = getCategoryName($connect, $item['PN_type']);     // 용지 (보통 미사용)
                 $design = ($item['ordertype'] == 'total' ? '디자인+인쇄' : '인쇄만');
                 $qty = intval($item['MY_amount'] ?? 0);
 
@@ -263,10 +264,11 @@ try {
                     'product_type' => 'cadarok',
                     'MY_type' => $item['MY_type'],
                     'MY_type_name' => $type_name,
-                    'MY_Fsd' => $item['MY_Fsd'],
+                    'Section' => $item['Section'],
                     'Section_name' => $section_name,
                     'PN_type' => $item['PN_type'],
-                    'PN_type_name' => $style_name,
+                    'PN_type_name' => $paper_name,
+                    'POtype' => $item['POtype'] ?? '',
                     'MY_amount' => $qty,
                     'ordertype' => $item['ordertype'],
                     'created_at' => date('Y-m-d H:i:s')

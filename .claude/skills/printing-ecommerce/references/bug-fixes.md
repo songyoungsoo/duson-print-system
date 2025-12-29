@@ -616,6 +616,104 @@ case 'namecard':
 
 ---
 
+## 17. 카다록 규격 표시 누락 (Type_1 JSON 필드 매핑 오류)
+
+### 증상
+OrderComplete_universal.php에서 카다록 주문 시 규격이 표시되지 않음.
+- 표시: `카다록,리플렛 / 1,000매 / 인쇄만` (규격 누락)
+- 기대: `카다록,리플렛 / 24절(127*260)3단` + `양면컬러인쇄 / 500부 / 디자인+인쇄`
+
+### 원인
+`ProcessOrder_unified.php`에서 카다록 Type_1 JSON 생성 시 잘못된 필드 매핑:
+```php
+// 버그 코드
+$section_name = getCategoryName($connect, $item['PN_type']);  // PN_type은 비어있음!
+$style_name = getCategoryName($connect, $item['MY_Fsd']);     // MY_Fsd도 비어있음!
+
+// shop_temp 실제 데이터
+// - MY_type: 691 (종류)
+// - Section: 692 (규격) ← 이 값을 사용해야 함
+// - PN_type: empty
+// - MY_Fsd: empty
+```
+
+### 해결
+
+#### ProcessOrder_unified.php (라인 254-278)
+```php
+// 수정 전 (버그)
+$style_name = getCategoryName($connect, $item['MY_Fsd']);
+$section_name = getCategoryName($connect, $item['PN_type']);
+
+$cadarok_data = [
+    'MY_Fsd' => $item['MY_Fsd'],
+    'Section_name' => $section_name,  // empty
+    'PN_type' => $item['PN_type'],
+    'PN_type_name' => $style_name,    // empty
+    ...
+];
+
+// 수정 후
+$section_name = getCategoryName($connect, $item['Section']);  // Section 필드 사용!
+$paper_name = getCategoryName($connect, $item['PN_type']);
+
+$cadarok_data = [
+    'Section' => $item['Section'],           // 추가
+    'Section_name' => $section_name,         // "24절(127*260)3단"
+    'PN_type' => $item['PN_type'],
+    'PN_type_name' => $paper_name,
+    'POtype' => $item['POtype'] ?? '',       // 추가 (인쇄면)
+    ...
+];
+```
+
+### 카다록 shop_temp 필드 매핑
+
+| shop_temp 필드 | 용도 | 예시 값 |
+|---------------|------|---------|
+| MY_type | 종류 | 691 → "카다록,리플렛" |
+| Section | 규격 | 692 → "24절(127*260)3단" |
+| PN_type | 용지 | (대부분 비어있음) |
+| MY_Fsd | 미사용 | (비어있음) |
+| POtype | 인쇄면 | 1=단면, 2=양면 |
+
+### 테스트 결과
+
+**주문번호 #104037 (수정 후)**:
+```
+카다록,리플렛 / 24절(127*260)3단     (1줄: 종류/규격)
+양면컬러인쇄 / 500부 / 디자인+인쇄    (2줄: 인쇄면/수량/디자인)
+```
+
+### 기존 주문 수정 방법
+```php
+// 주문번호 104028 예시
+$updated_json = json_encode([
+    'product_type' => 'cadarok',
+    'MY_type' => '691',
+    'MY_type_name' => '카다록,리플렛',
+    'Section' => '692',
+    'Section_name' => '24절(127*260)3단',
+    'PN_type' => null,
+    'PN_type_name' => '',
+    'POtype' => '',
+    'MY_amount' => 1000,
+    'ordertype' => 'print',
+    'created_at' => '2025-12-29 23:08:45'
+], JSON_UNESCAPED_UNICODE);
+
+mysqli_query($db, "UPDATE mlangorder_printauto SET Type_1 = '$updated_json' WHERE no = 104028");
+```
+
+### 관련 파일
+- `/var/www/html/mlangorder_printauto/ProcessOrder_unified.php`
+- `/var/www/html/mlangorder_printauto/OrderComplete_universal.php`
+
+### 관련 스킬
+- `duson-print-rules/SKILL.md` - 주의사항 #5에 필드 매핑 규칙 추가
+
+---
+
 ## 버그 리포트 양식
 
 ```
