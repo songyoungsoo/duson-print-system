@@ -923,7 +923,7 @@ try {
 
     // 주문 완료 페이지로 리다이렉트
     $order_list = implode(',', $order_numbers);
-    $redirect_url = "OrderComplete_unified.php?orders=" . urlencode($order_list) . "&email=" . urlencode($email) . "&name=" . urlencode($username);
+    $redirect_url = "OrderComplete_universal.php?orders=" . urlencode($order_list) . "&email=" . urlencode($email) . "&name=" . urlencode($username);
 
     // 🔧 FIX: 디버깅 로그 추가 (리다이렉트 URL 확인)
     error_log("===== 주문 완료 리다이렉트 시작 =====");
