@@ -1094,6 +1094,127 @@ if ($yeon > 0) {
 
 ---
 
+## 25. 관리자 작업지시서 인쇄 기능 (2025-12-30)
+
+### 기능 설명
+관리자 주문 상세 페이지에서 **주문서 출력** 버튼 클릭 시 작업지시서 인쇄.
+A4 용지 한 장에 관리자용/직원용 두 장을 인쇄하여 절취선을 따라 나눠 가짐.
+
+### 접근 경로
+```
+/admin/mlangprintauto/admin.php?mode=OrderView&no={주문번호}
+→ [🖨️ 주문서 출력] 버튼 클릭
+```
+
+### 인쇄 레이아웃
+```
+┌─────────────────────────────────┐
+│    주문서 (관리자용)              │
+│  주문번호 / 일시 / 주문자 / 전화   │
+│  ───────────────────────────── │
+│  주문상세 표 (품목/규격/수량/금액) │
+│  고객정보 / 기타사항              │
+│  두손기획인쇄 02-2632-1830       │
+├─────────────────────────────────┤
+│        ✂ 절취선                  │
+├─────────────────────────────────┤
+│    주문서 (직원용)               │
+│  (동일 내용)                     │
+│  두손기획인쇄 02-2632-1830       │
+└─────────────────────────────────┘
+```
+
+### 핵심 CSS 구조
+```css
+/* 화면에서 인쇄 전용 영역 숨김 */
+.print-only {
+    display: none;
+}
+
+@media print {
+    /* 화면 전용 요소 숨기기 */
+    .admin-container, .screen-only, .file-section,
+    .btn-group, form, .no-print {
+        display: none !important;
+    }
+
+    /* 인쇄 전용 요소 표시 */
+    .print-only {
+        display: block !important;
+    }
+
+    /* A4 절반 크기로 각 주문서 배치 */
+    .print-order {
+        height: 135mm;
+        page-break-inside: avoid;
+    }
+
+    /* 절취선 스타일 */
+    .print-divider {
+        border-top: 1pt dashed #999;
+        border-bottom: 1pt dashed #999;
+    }
+    .print-divider::before {
+        content: '✂ 절취선';
+    }
+}
+```
+
+### HTML 구조
+```php
+<!-- 인쇄 전용 (화면에서는 숨김) -->
+<div class="print-only">
+    <div class="print-container">
+        <!-- 관리자용 -->
+        <div class="print-order">
+            <div class="print-title">주문서 (관리자용)</div>
+            <!-- 주문 상세 테이블 -->
+            <!-- 고객 정보 -->
+            <div class="print-footer">두손기획인쇄 02-2632-1830</div>
+        </div>
+
+        <div class="print-divider"></div>
+
+        <!-- 직원용 -->
+        <div class="print-order">
+            <div class="print-title">주문서 (직원용)</div>
+            <!-- 동일 내용 -->
+        </div>
+    </div>
+</div>
+
+<!-- 화면 전용 (인쇄 시 숨김) -->
+<div class="screen-only">
+    <div class="admin-container">
+        <!-- 관리자 폼 -->
+    </div>
+</div>
+```
+
+### 주요 클래스
+| 클래스 | 용도 |
+|--------|------|
+| `.print-only` | 인쇄 시에만 표시 |
+| `.screen-only` | 화면에서만 표시 |
+| `.print-order` | 개별 작업지시서 (A4 절반) |
+| `.print-divider` | 절취선 |
+| `.print-title` | 주문서 제목 |
+| `.print-info-section` | 정보 섹션 |
+| `.print-table` | 고객정보 테이블 |
+| `.print-footer` | 푸터 (연락처) |
+
+### 관련 파일
+- `/var/www/html/mlangorder_printauto/OrderFormOrderTree.php` (인쇄 레이아웃 + CSS)
+- `/var/www/html/admin/mlangprintauto/admin.php` (OrderView 모드에서 include)
+
+### 사용 방법
+1. 관리자 → 주문관리 → 주문 클릭
+2. **🖨️ 주문서 출력** 버튼 클릭
+3. 브라우저 인쇄 다이얼로그 → PDF 저장 또는 프린터 출력
+4. 절취선을 따라 잘라서 관리자/직원이 나눠 가짐
+
+---
+
 ## 버그 리포트 양식
 
 ```
