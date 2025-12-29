@@ -875,6 +875,225 @@ mysqli_query($db, "UPDATE mlangorder_printauto SET Type_1 = '$updated_json' WHER
 
 ---
 
+## 21. OnlineOrder_unified.php 주문 상품 목록 테이블 개선 (2025-12-30)
+
+### 요청 사항
+OnlineOrder_unified.php의 주문 상품 목록 테이블을 cart.php와 동일한 5컬럼 구조로 변경.
+
+### 변경 전
+```
+| 품목 | 규격/옵션 | 공급가 |
+|------|-----------|--------|
+| 3컬럼 구조 (18% / 52% / 30%) |
+```
+
+### 변경 후
+```
+| 품목 | 규격/옵션 | 수량 | 단위 | 공급가액 |
+|------|-----------|------|------|----------|
+| 5컬럼 구조 (15% / 42% / 10% / 8% / 25%) |
+```
+
+### 수량/단위 표시 규칙 (cart.php와 동일)
+- **전단지(inserted/leaflet)**: 수량 컬럼에 "X연 (XXX매)" 표시, 단위 컬럼은 "-"
+- **양식지(ncrflambeau)**: 단위 "권"
+- **카다록(cadarok)**: 단위 "부"
+- **기타 제품**: 단위 "매"
+
+### 수정 내용
+
+#### 1. colgroup 변경 (line 567-573)
+```html
+<colgroup>
+    <col style="width: 15%;"><!-- 품목 -->
+    <col style="width: 42%;"><!-- 규격/옵션 -->
+    <col style="width: 10%;"><!-- 수량 -->
+    <col style="width: 8%;"><!-- 단위 -->
+    <col style="width: 25%;"><!-- 공급가액 -->
+</colgroup>
+```
+
+#### 2. thead 헤더 추가 (line 575-581)
+```html
+<th>품목</th>
+<th>규격/옵션</th>
+<th>수량</th>
+<th>단위</th>
+<th>공급가액</th>
+```
+
+#### 3. 수량/단위 계산 로직 추가 (line 602-641)
+```php
+// 수량/단위 계산 (cart.php와 동일한 로직)
+$is_flyer = in_array($item['product_type'], ['inserted', 'leaflet']);
+$unit = '매'; // Default
+
+if ($is_flyer) {
+    $unit = '연';
+    $main_amount_display = formatQuantityValue($main_amount_val, 'inserted');
+    $sub_amount = $item['flyer_mesu'] ?? null;
+} else {
+    if ($item['product_type'] == 'ncrflambeau') $unit = '권';
+    elseif ($item['product_type'] == 'cadarok') $unit = '부';
+}
+```
+
+#### 4. 수량/단위 td 추가 (line 857-874)
+```html
+<!-- 수량 -->
+<td class="amount-cell">
+    <span class="amount-value"><?php echo $main_amount_display; ?></span>
+    <?php if ($is_flyer && $sub_amount): ?>
+        <br><span class="amount-sub">(<?php echo number_format($sub_amount); ?>매)</span>
+    <?php endif; ?>
+</td>
+
+<!-- 단위 -->
+<td class="unit-cell">
+    <?php echo $is_flyer ? '-' : $unit; ?>
+</td>
+```
+
+#### 5. 테이블 전체 폭 설정 (line 563, 1271)
+```css
+/* 주문 상품 목록 div */
+max-width: 1200px;
+
+/* .centered-form 클래스 */
+.centered-form {
+    max-width: 1200px;
+}
+```
+
+### 관련 파일
+- `/var/www/html/mlangorder_printauto/OnlineOrder_unified.php`
+
+---
+
+## 22. OnlineOrder_unified.php 수량 필드 누락 수정 (2025-12-30)
+
+### 증상
+장바구니에서 주문 페이지로 이동 시 수량이 항상 "1"로 표시됨.
+- DB에 `MY_amount: 1000`이 저장되어 있어도 화면에 "1"로 표시
+- 봉투, 명함 등 모든 제품에서 동일 증상
+
+### 원인
+장바구니 데이터를 `$formatted_item`에 복사할 때 `MY_amount`, `mesu`, `flyer_mesu` 필드가 누락됨.
+
+```php
+// 수정 전 (line 286, 344)
+$formatted_item['MY_type'] = $item['MY_type'] ?? '';
+$formatted_item['ordertype'] = $item['ordertype'] ?? '';
+// MY_amount, mesu, flyer_mesu 누락!
+```
+
+### 해결
+2곳에 누락된 필드 추가:
+
+```php
+// 수정 후 (line 286-295, 344-353)
+$formatted_item['MY_type'] = $item['MY_type'] ?? '';
+$formatted_item['MY_Fsd'] = $item['MY_Fsd'] ?? '';
+$formatted_item['PN_type'] = $item['PN_type'] ?? '';
+$formatted_item['Section'] = $item['Section'] ?? '';
+$formatted_item['POtype'] = $item['POtype'] ?? '';
+$formatted_item['ordertype'] = $item['ordertype'] ?? '';
+$formatted_item['MY_amount'] = $item['MY_amount'] ?? '';  // 추가
+$formatted_item['mesu'] = $item['mesu'] ?? '';            // 추가
+$formatted_item['flyer_mesu'] = $item['flyer_mesu'] ?? ''; // 추가
+```
+
+### 관련 파일
+- `/var/www/html/mlangorder_printauto/OnlineOrder_unified.php`
+
+---
+
+## 23. OrderComplete_universal.php 전단지 수량 단위 수정 (2025-12-30)
+
+### 증상
+주문완료 페이지에서 전단지 수량이 "0.5매 (2,000매)"로 표시됨.
+- 올바른 표시: "0.5연 (2,000매)"
+- 잘못된 표시: "0.5매 (2,000매)"
+
+### 원인
+`formatQuantity()` 호출 시 `$order['unit']` 값을 사용했는데, DB에 '매'가 저장되어 있어서 '매'로 표시됨.
+
+```php
+// 수정 전 (line 438)
+$qty_text = formatQuantity($my_amount, 'inserted', $order['unit'] ?? '연');
+// $order['unit']이 '매'일 경우 '매'로 표시됨
+```
+
+### 해결
+cart.php, OnlineOrder_unified.php와 동일한 로직으로 변경하여 전단지는 항상 '연' 사용:
+
+```php
+// 수정 후 (line 438-443)
+// 전단지는 항상 '연' 사용 (cart.php, OnlineOrder_unified.php와 동일)
+$yeon = floatval($my_amount);
+$yeon_display = ($yeon == 0.5) ? '0.5' : number_format(intval($yeon));
+$qty_text = $yeon_display . '연';
+if (!empty($mesu)) $qty_text .= '(' . number_format(intval($mesu)) . '매)';
+$line2[] = $qty_text;
+```
+
+### 관련 파일
+- `/var/www/html/mlangorder_printauto/OrderComplete_universal.php`
+- `/var/www/html/mlangprintauto/shop/cart.php` (참조 - 이미 올바르게 구현됨)
+- `/var/www/html/mlangorder_printauto/OnlineOrder_unified.php` (참조 - 이미 올바르게 구현됨)
+
+---
+
+## 24. 전단지 표기 3개 페이지 통일 (2025-12-30)
+
+### 증상
+장바구니, 주문페이지, 주문완료페이지에서 전단지 표기가 불일치:
+- 규격 필드: `Section` vs `PN_type`
+- 인쇄면: `단면/양면` vs `단면컬러인쇄/양면컬러인쇄`
+- 수량 형식: `0.5연 (2,000매)` vs `0.5연(2,000매)` (공백 불일치)
+
+### 해결
+3개 파일 모두 동일한 형식으로 통일:
+
+```php
+// 전단지 표기 통일 코드
+if (!empty($item['MY_type'])) $line1_parts[] = htmlspecialchars(getKoreanName($connect, $item['MY_type']));
+if (!empty($item['MY_Fsd'])) $line1_parts[] = htmlspecialchars(getKoreanName($connect, $item['MY_Fsd']));
+if (!empty($item['PN_type'])) $line1_parts[] = htmlspecialchars(getKoreanName($connect, $item['PN_type']));
+
+if (!empty($item['POtype'])) $line2_parts[] = ($item['POtype'] == '1' ? '단면컬러인쇄' : '양면컬러인쇄');
+
+$yeon = !empty($item['MY_amount']) ? floatval($item['MY_amount']) : 0;
+$mesu = !empty($item['flyer_mesu']) ? intval($item['flyer_mesu']) : (!empty($item['mesu']) ? intval($item['mesu']) : 0);
+if ($yeon > 0) {
+    $yeon_display = ($yeon == 0.5) ? '0.5' : number_format(intval($yeon));
+    $qty_text = $yeon_display . '연';
+    if ($mesu > 0) $qty_text .= '(' . number_format($mesu) . '매)';  // 공백 없음
+    $line2_parts[] = $qty_text;
+}
+```
+
+### 변경 사항
+| 항목 | 수정 전 | 수정 후 |
+|------|---------|---------|
+| 규격 | Section | PN_type |
+| 인쇄면 | 단면/양면 | 단면컬러인쇄/양면컬러인쇄 |
+| 수량 형식 | 0.5연 (2,000매) | 0.5연(2,000매) |
+| mesu fallback | flyer_mesu만 | flyer_mesu → mesu |
+
+### 최종 표시 형식
+```
+칼라(CMYK) / 90g아트지(합판전단)
+단면컬러인쇄 / 0.5연(2,000매) / 인쇄만
+```
+
+### 관련 파일
+- `/var/www/html/mlangprintauto/shop/cart.php` (line 492-510)
+- `/var/www/html/mlangorder_printauto/OnlineOrder_unified.php` (line 884-902)
+- `/var/www/html/mlangorder_printauto/OrderComplete_universal.php` (line 416-447, 625-637)
+
+---
+
 ## 버그 리포트 양식
 
 ```

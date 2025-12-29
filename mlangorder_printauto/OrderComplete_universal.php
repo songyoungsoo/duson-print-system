@@ -435,8 +435,11 @@ function displayProductDetails($connect, $order) {
                 $line2 = [];
                 if (!empty($potype)) $line2[] = ($potype == '1' ? '단면컬러인쇄' : '양면컬러인쇄');
                 if (!empty($my_amount)) {
-                    $qty_text = formatQuantity($my_amount, 'inserted', $order['unit'] ?? '연');
-                    if (!empty($mesu)) $qty_text .= ' (' . number_format(intval($mesu)) . '매)';
+                    // 전단지는 항상 '연' 사용 (cart.php, OnlineOrder_unified.php와 동일)
+                    $yeon = floatval($my_amount);
+                    $yeon_display = ($yeon == 0.5) ? '0.5' : number_format(intval($yeon));
+                    $qty_text = $yeon_display . '연';
+                    if (!empty($mesu)) $qty_text .= '(' . number_format(intval($mesu)) . '매)';
                     $line2[] = $qty_text;
                 }
                 if (!empty($ordertype)) $line2[] = ($ordertype == 'total' ? '디자인+인쇄' : ($ordertype == 'print' ? '인쇄만' : htmlspecialchars($ordertype)));
@@ -626,7 +629,7 @@ function extractQuantity($order) {
             $quantity_text = $formatted_qty . '연';
 
             if (!empty($mesu)) {
-                $quantity_text .= ' (' . number_format(intval($mesu)) . '매)';
+                $quantity_text .= '(' . number_format(intval($mesu)) . '매)';
             }
             return htmlspecialchars($quantity_text);
         } elseif (!empty($mesu)) {

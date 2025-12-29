@@ -490,19 +490,20 @@ if ($cart_result === false) {
                                                 break;
 
                                             default:
-                                                // 전단지/리플렛: 종류 / 용지 / 규격
+                                                // 전단지/리플렛: 종류 / 용지 / 규격 (OrderComplete_universal.php와 동일)
                                                 if (!empty($item['MY_type'])) $line1_parts[] = htmlspecialchars(getKoreanName($connect, $item['MY_type']));
                                                 if (!empty($item['MY_Fsd'])) $line1_parts[] = htmlspecialchars(getKoreanName($connect, $item['MY_Fsd']));
-                                                if (!empty($item['Section'])) $line1_parts[] = htmlspecialchars(getKoreanName($connect, $item['Section']));
+                                                if (!empty($item['PN_type'])) $line1_parts[] = htmlspecialchars(getKoreanName($connect, $item['PN_type']));
                                                 // 옵션: 인쇄면 / 수량 / 디자인
-                                                if (!empty($item['POtype'])) $line2_parts[] = ($item['POtype'] == '1' ? '단면' : '양면');
+                                                if (!empty($item['POtype'])) $line2_parts[] = ($item['POtype'] == '1' ? '단면컬러인쇄' : '양면컬러인쇄');
                                                 // 전단지는 연/매수 표시
                                                 $yeon = !empty($item['MY_amount']) ? floatval($item['MY_amount']) : 0;
-                                                $mesu = !empty($item['flyer_mesu']) ? intval($item['flyer_mesu']) : 0;
+                                                // flyer_mesu 우선, 없으면 mesu 필드 확인
+                                                $mesu = !empty($item['flyer_mesu']) ? intval($item['flyer_mesu']) : (!empty($item['mesu']) ? intval($item['mesu']) : 0);
                                                 if ($yeon > 0) {
                                                     $yeon_display = ($yeon == 0.5) ? '0.5' : number_format(intval($yeon));
                                                     $qty_text = $yeon_display . '연';
-                                                    if ($mesu > 0) $qty_text .= ' (' . number_format($mesu) . '매)';
+                                                    if ($mesu > 0) $qty_text .= '(' . number_format($mesu) . '매)';
                                                     $line2_parts[] = $qty_text;
                                                 }
                                                 if (!empty($item['ordertype'])) $line2_parts[] = ($item['ordertype'] == 'total' ? '디자인+인쇄' : ($item['ordertype'] == 'print' ? '인쇄만' : htmlspecialchars($item['ordertype'])));
