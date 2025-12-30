@@ -1396,6 +1396,92 @@ value="<?php echo htmlspecialchars($user_info['postcode'] ?? ''); ?>"
 
 ---
 
+## 29. 주문서 출력 기능 Playwright E2E 테스트 (2025-12-30)
+
+### 테스트 대상
+관리자 주문 상세 페이지 → 주문서 출력 버튼 클릭 → 인쇄 미리보기 검증
+
+### 테스트 URL
+```
+http://dsp1830.shop/admin/mlangprintauto/admin.php?mode=OrderView&no=104049
+```
+
+### 테스트 방법
+Playwright를 사용한 자동화 테스트:
+1. 페이지 접속
+2. `window.print()` 호출 감지 설정 (모킹)
+3. "🖨️ 주문서 출력" 버튼 클릭
+4. `window.print()` 호출 확인
+5. `@media print` CSS 적용 상태에서 스크린샷 캡처
+
+### 테스트 코드
+```python
+# window.print() 호출 감지
+page.evaluate("""
+    () => {
+        window._printCalled = false;
+        window._originalPrint = window.print;
+        window.print = function() {
+            window._printCalled = true;
+            window._printCalledWith = document.title;
+        };
+    }
+""")
+
+# 버튼 클릭
+print_btn = page.locator('[onclick*="printOrder"]').first
+print_btn.click()
+
+# 결과 확인
+print_called = page.evaluate("() => window._printCalled")
+
+# 인쇄 미리보기 캡처
+page.emulate_media(media='print')
+page.screenshot(path='/tmp/print_preview.png', full_page=True)
+```
+
+### 테스트 결과
+| 항목 | 결과 |
+|------|------|
+| 주문서 출력 버튼 발견 | ✅ `🖨️ 주문서 출력` |
+| printOrder() 함수 | ✅ `window.print()` 호출 |
+| window.print() 호출 | ✅ 성공 |
+| PDF 파일명 형식 | ✅ `관리자_104049.pdf` |
+| @media print 규칙 | ✅ 1개 발견 |
+| 인쇄 레이아웃 | ✅ 관리자용/직원용 2부 |
+
+### 인쇄 미리보기 검증 내용
+```
+┌─────────────────────────────────┐
+│    주문서 (관리자용)              │
+│  주문번호: 104049                │
+│  일시: 2025-12-30 02:28:16      │
+│  주문자: 관리자                   │
+│  전화: 010-3712-1830            │
+│  ────────────────────────────── │
+│  품목: 전단지                     │
+│  규격: 90g아트지 | A4 | 단면     │
+│  수량: 0.5연 (2,000매)           │
+│  금액: 49,000원 (부가세포함 53,900원) │
+│  두손기획인쇄 02-2632-1830       │
+├─────────────────────────────────┤
+│        ✂ 절취선                  │
+├─────────────────────────────────┤
+│    주문서 (직원용)               │
+│  (동일 내용)                     │
+└─────────────────────────────────┘
+```
+
+### 스크린샷 위치
+- 화면 뷰: `/tmp/screen_view.png`
+- 인쇄 미리보기: `/tmp/print_preview.png`
+
+### 관련 파일
+- `/var/www/html/mlangorder_printauto/OrderFormOrderTree.php` (printOrder 함수 + CSS)
+- `/var/www/html/admin/mlangprintauto/admin.php` (OrderView 모드)
+
+---
+
 ## 버그 리포트 양식
 
 ```
