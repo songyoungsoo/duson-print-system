@@ -1354,6 +1354,48 @@ if ($login_success && $need_hash_upgrade) {
 
 ---
 
+## 28. 회원정보 수정 DB 오류 - postcode 컬럼명 불일치 (2025-12-30)
+
+### 증상
+비밀번호 검증 통과 후에도 "회원정보 수정 중 오류가 발생했습니다" 메시지 발생.
+
+### 원인
+DB 컬럼명과 PHP 코드 불일치:
+- **DB 테이블**: `postcode`
+- **PHP 코드**: `zipcode`
+
+```sql
+-- users 테이블 실제 구조
+postcode    varchar(20)    YES    NULL
+```
+
+### 해결
+```php
+// 수정 전
+$update_query = "UPDATE users SET
+                 ...
+                 zipcode = ?,
+                 ...";
+
+// 수정 후
+$update_query = "UPDATE users SET
+                 ...
+                 postcode = ?,
+                 ...";
+
+// HTML 표시도 수정
+// 수정 전
+value="<?php echo htmlspecialchars($user_info['zipcode'] ?? ''); ?>"
+
+// 수정 후
+value="<?php echo htmlspecialchars($user_info['postcode'] ?? ''); ?>"
+```
+
+### 수정 파일
+- `mypage/profile.php` - UPDATE 쿼리 및 HTML 표시 수정
+
+---
+
 ## 버그 리포트 양식
 
 ```
