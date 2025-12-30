@@ -1277,6 +1277,83 @@ $type_1_display                         // 배송메세지
 
 ---
 
+## 27. 회원정보 비밀번호 검증 실패 수정 (2025-12-30)
+
+### 증상
+회원정보수정 페이지에서 올바른 비밀번호를 입력해도 "현재 비밀번호가 일치하지 않습니다" 오류 발생.
+- 프로필 수정 불가
+- 비밀번호 변경 불가
+- 회원 탈퇴 불가
+
+### 원인
+DB에 **평문 비밀번호**와 **bcrypt 해시**가 혼재되어 있음:
+
+| 사용자 | 비밀번호 저장 형태 | 길이 |
+|--------|-------------------|------|
+| admin | `$2y$10$3noob...` | 60자 (bcrypt) ✅ |
+| heotaijun | `1234` | 4자 (평문) ❌ |
+| cbs07068 | `exoexo0112` | 10자 (평문) ❌ |
+
+`password_verify()` 함수는 **bcrypt 해시만** 검증 가능하므로, 평문 비밀번호 사용자는 항상 실패.
+
+### 해결
+평문과 bcrypt 해시 비밀번호 모두 지원하도록 검증 로직 수정:
+
+```php
+// 수정 전
+if (!password_verify($current_password, $user['password'])) {
+    $error = "현재 비밀번호가 일치하지 않습니다.";
+}
+
+// 수정 후
+$stored_password = $user['password'];
+$password_valid = false;
+
+// bcrypt 해시인 경우 ($2y$로 시작하고 60자)
+if (strlen($stored_password) === 60 && strpos($stored_password, '$2y$') === 0) {
+    $password_valid = password_verify($current_password, $stored_password);
+} else {
+    // 평문 비밀번호인 경우 직접 비교
+    $password_valid = ($current_password === $stored_password);
+}
+
+if (!$password_valid) {
+    $error = "현재 비밀번호가 일치하지 않습니다.";
+}
+```
+
+### 추가 개선: 로그인 시 자동 해시 업그레이드
+평문 비밀번호로 로그인 성공 시, 자동으로 bcrypt 해시로 업그레이드:
+
+```php
+// member/login_unified.php
+if ($login_success && $need_hash_upgrade) {
+    $new_hash = password_hash($pass, PASSWORD_DEFAULT);
+    $update_query = "UPDATE users SET password = ? WHERE id = ?";
+    // ... 업데이트 실행
+}
+```
+
+### 수정된 파일 (6개)
+| 파일 | 용도 |
+|------|------|
+| `mypage/profile.php` | 회원정보수정 |
+| `mypage/change_password.php` | 비밀번호변경 |
+| `mypage/account.php` | 계정관리 |
+| `mypage/withdraw.php` | 회원탈퇴 |
+| `member/login_unified.php` | 로그인 + 자동 해시 업그레이드 |
+| `member/change_password.php` | 레거시 비밀번호변경 |
+
+### 테스트 결과
+```
+✅ heotaijun (평문 1234) - 올바른 비밀번호 검증 성공
+✅ heotaijun (평문 1234) - 틀린 비밀번호 거부 성공
+✅ cbs07068 (평문 exoexo0112) - 올바른 비밀번호 검증 성공
+✅ admin (bcrypt 해시) - bcrypt 검증 로직 정상 작동
+```
+
+---
+
 ## 버그 리포트 양식
 
 ```
