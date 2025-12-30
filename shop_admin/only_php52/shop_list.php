@@ -1,0 +1,28 @@
+<? 
+  include "lib.php"; 
+  $connect = dbconn(); 
+
+  $query = "select * from shop_data "; 
+  $result = mysql_query($query, $connect); 
+?> 
+<table border=1 width=100%> 
+  <tr> 
+    <td> 상품명 
+    <td> 이미지 
+    <td> 금액 
+    <td> 기타 
+<? 
+  while($data = mysql_fetch_array($result)){ 
+?> 
+    <tr> 
+      <td> <?=$data[name]?> 
+      <td> <img src=../shop/data/<?=$data[img]?> height=40> 
+      <td> <?=$data[st_price]?> 
+      <td> <a href=shop_edit.php?no=<?=$data[no]?>>수정</a> 
+<? 
+  } 
+?> 
+
+
+
+</table> 
