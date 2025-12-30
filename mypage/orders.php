@@ -87,7 +87,7 @@ mysqli_stmt_close($stmt);
 
 // 주문 목록 조회
 $query = "
-    SELECT no, Type, name, Hendphone, phone, date, OrderStyle, money_1, money_2
+    SELECT no, Type, Type_1, name, Hendphone, phone, date, OrderStyle, money_1, money_2, money_4
     FROM mlangorder_printauto
     WHERE {$where_clause}
     ORDER BY date DESC
@@ -132,7 +132,7 @@ $order_statuses = [
     <link rel="stylesheet" href="/mlangprintauto/css/common-styles.css">
     <style>
         body { background: #f5f5f5; padding: 20px; }
-        .container { max-width: 1600px; margin: 0 auto; }
+        .container { max-width: 1100px; margin: 0 auto; }
         .header { background: white; padding: 30px; border-radius: 8px; box-shadow: 0 2px 10px rgba(0,0,0,0.1); margin-bottom: 20px; }
         .header h1 { color: #333; }
         
@@ -159,23 +159,23 @@ $order_statuses = [
             display: flex;
             justify-content: center;
             align-items: center;
-            gap: 4px;
-            margin-top: 20px;
-            flex-wrap: wrap;
+            gap: 2px;
+            margin-top: 15px;
+            flex-wrap: nowrap;
         }
         .pagination a, .pagination span {
             display: inline-flex;
             align-items: center;
             justify-content: center;
-            min-width: 36px;
-            height: 36px;
-            padding: 0 10px;
+            min-width: 26px;
+            height: 26px;
+            padding: 0 6px;
             background: white;
             color: #667eea;
             text-decoration: none;
             border: 1px solid #ddd;
-            border-radius: 4px;
-            font-size: 14px;
+            border-radius: 3px;
+            font-size: 12px;
             transition: all 0.2s;
         }
         .pagination a:hover:not(.active):not(.disabled) {
@@ -243,24 +243,93 @@ $order_statuses = [
                 <table>
                     <thead>
                         <tr>
-                            <th>주문번호</th><th>제품</th><th>주문자</th><th>연락처</th>
-                            <th>주문일</th><th>상태</th><th>금액(VAT포함)</th>
+                            <th style="width: 70px;">주문번호</th>
+                            <th style="width: 55px;">제품</th>
+                            <th style="width: auto;">주문내용</th>
+                            <th style="width: 60px;">주문자</th>
+                            <th style="width: 90px;">총금액</th>
+                            <th style="width: 80px;">주문일자</th>
+                            <th style="width: 70px;">상태</th>
                         </tr>
                     </thead>
                     <tbody>
-                        <?php while ($order = mysqli_fetch_assoc($orders)): ?>
+                        <?php while ($order = mysqli_fetch_assoc($orders)):
+                            // Type_1 파싱 (2줄 슬래시 형식)
+                            $line1_parts = [];
+                            $line2_parts = [];
+                            $type1_raw = $order['Type_1'] ?? '';
+                            $json_data = json_decode($type1_raw, true);
+
+                            if ($json_data) {
+                                if (isset($json_data['order_details'])) {
+                                    $d = $json_data['order_details'];
+                                    // 1줄: 종류 / 용지 / 규격
+                                    if (!empty($d['jong'])) $line1_parts[] = $d['jong'];
+                                    if (!empty($d['paper'])) $line1_parts[] = $d['paper'];
+                                    if (!empty($d['garo']) && !empty($d['sero'])) {
+                                        $line1_parts[] = $d['garo'] . '×' . $d['sero'] . 'mm';
+                                    }
+                                    // 2줄: 인쇄면 / 수량
+                                    if (!empty($d['print_side'])) $line2_parts[] = $d['print_side'];
+                                    if (!empty($d['mesu'])) {
+                                        $line2_parts[] = number_format(intval($d['mesu'])) . '매';
+                                    }
+                                } elseif (isset($json_data['formatted_display'])) {
+                                    $fd = $json_data['formatted_display'];
+                                    $parsed = [];
+                                    $lines = preg_split('/\\\\n|\n/', $fd);
+                                    foreach ($lines as $line) {
+                                        if (strpos($line, ':') !== false) {
+                                            $parts = explode(':', $line, 2);
+                                            $parsed[trim($parts[0])] = trim($parts[1] ?? '');
+                                        }
+                                    }
+                                    if (!empty($parsed['용지'])) $line1_parts[] = $parsed['용지'];
+                                    if (!empty($parsed['규격'])) $line1_parts[] = $parsed['규격'];
+                                    if (!empty($parsed['인쇄면'])) $line2_parts[] = $parsed['인쇄면'];
+                                    if (!empty($parsed['수량'])) $line2_parts[] = $parsed['수량'];
+                                } else {
+                                    if (!empty($json_data['paper_type'])) $line1_parts[] = $json_data['paper_type'];
+                                    if (!empty($json_data['size'])) $line1_parts[] = $json_data['size'];
+                                    if (!empty($json_data['print_side'])) $line2_parts[] = $json_data['print_side'];
+                                    if (!empty($json_data['quantity'])) $line2_parts[] = $json_data['quantity'];
+                                }
+                            }
+
+                            $order_content = '';
+                            if (!empty($line1_parts) || !empty($line2_parts)) {
+                                if (!empty($line1_parts)) {
+                                    $order_content .= implode(' / ', $line1_parts);
+                                }
+                                if (!empty($line2_parts)) {
+                                    $order_content .= '<br><span style="color:#666;font-size:12px;">' . implode(' / ', $line2_parts) . '</span>';
+                                }
+                            } else {
+                                $order_content = htmlspecialchars(mb_substr($type1_raw, 0, 30));
+                            }
+
+                            // 상태 색상
+                            $status_code = $order['OrderStyle'] ?? '0';
+                            $status_colors = [
+                                '0' => '#6c757d', '1' => '#17a2b8', '2' => '#007bff',
+                                '3' => '#28a745', '4' => '#ffc107', '5' => '#fd7e14',
+                                '6' => '#6f42c1', '7' => '#e83e8c', '8' => '#28a745',
+                                '9' => '#fd7e14', '10' => '#e83e8c'
+                            ];
+                            $status_color = $status_colors[$status_code] ?? '#6c757d';
+                        ?>
                             <tr style="cursor: pointer;" onclick="location.href='order_detail.php?no=<?php echo $order['no']; ?>'">
                                 <td><a href="order_detail.php?no=<?php echo $order['no']; ?>" style="color: #667eea; text-decoration: none; font-weight: 500;"><?php echo htmlspecialchars($order['no']); ?></a></td>
                                 <td><?php echo htmlspecialchars($order['Type']); ?></td>
+                                <td style="text-align: left; font-size: 13px;"><?php echo $order_content; ?></td>
                                 <td><?php echo htmlspecialchars($order['name']); ?></td>
-                                <td><?php echo htmlspecialchars($order['Hendphone'] ?: $order['phone']); ?></td>
-                                <td><?php echo date('Y-m-d H:i', strtotime($order['date'])); ?></td>
+                                <td style="text-align: right;">₩<?php echo number_format($order['money_2']); ?></td>
+                                <td><?php echo date('Y-m-d', strtotime($order['date'])); ?></td>
                                 <td>
-                                    <span class="status-badge status-<?php echo $order['OrderStyle']; ?>">
-                                        <?php echo $order_statuses[$order['OrderStyle']] ?? $order['OrderStyle']; ?>
+                                    <span style="display: inline-block; padding: 3px 8px; border-radius: 3px; font-size: 11px; background: <?php echo $status_color; ?>20; color: <?php echo $status_color; ?>;">
+                                        <?php echo $order_statuses[$status_code] ?? $status_code; ?>
                                     </span>
                                 </td>
-                                <td>₩<?php echo number_format($order['money_2']); ?></td>
                             </tr>
                         <?php endwhile; ?>
                     </tbody>
