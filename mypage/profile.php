@@ -70,7 +70,7 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST' && isset($_POST['update_profile'])) {
                          business_type = ?,
                          business_item = ?,
                          tax_invoice_email = ?,
-                         zipcode = ?,
+                         postcode = ?,
                          address = ?,
                          detail_address = ?
                          WHERE id = ?";
@@ -398,7 +398,7 @@ include $_SERVER['DOCUMENT_ROOT'] . '/includes/header-ui.php';
 
                     <div class="form-group">
                         <div class="address-group">
-                            <input type="text" name="zipcode" class="form-control" value="<?php echo htmlspecialchars($user_info['zipcode'] ?? ''); ?>" placeholder="우편번호" readonly>
+                            <input type="text" name="zipcode" class="form-control" value="<?php echo htmlspecialchars($user_info['postcode'] ?? ''); ?>" placeholder="우편번호" readonly>
                             <button type="button" class="btn btn-secondary" onclick="execDaumPostcode()">우편번호 찾기</button>
                         </div>
                     </div>
