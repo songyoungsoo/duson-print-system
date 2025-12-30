@@ -1215,6 +1215,68 @@ A4 용지 한 장에 관리자용/직원용 두 장을 인쇄하여 절취선을
 
 ---
 
+## 26. 택배 목록 품목명/배송메세지 컬럼 교체 (2025-12-30)
+
+### 변경 내용
+`post_list52.php` 택배 목록 화면과 엑셀 내보내기에서 품목명과 배송메세지 컬럼의 데이터를 교체함.
+
+### 변경 전후
+| 헤더 | 변경 전 데이터 | 변경 후 데이터 |
+|------|----------------|----------------|
+| 품목명 | `Type_1` (A4 단면 80g 0.5연) | `Type` (Inserted, NameCard 등) |
+| 배송메세지 | `Type` (Inserted, NameCard 등) | `Type_1` (A4 단면 80g 0.5연) |
+
+### 수정 파일
+
+#### 1. post_list52.php (테이블 표시)
+```php
+// 헤더 (lines 352-354) - 순서 유지
+<td>품목명</td>
+<td>기타</td>
+<td>배송메세지</td>
+
+// 데이터 (lines 409-411) - 교체됨
+<td><?php echo htmlspecialchars($data['Type'] ?? '')?></td>
+<td><?php echo htmlspecialchars($data['no'] ?? '')?></td>
+<td><?php echo $type1_display?></td>
+```
+
+#### 2. export_logen_excel.php (로젠택배 엑셀)
+```php
+// 데이터 배열 (lines 178-180)
+$data['Type'] ?? '',                    // 품목명
+'dsno' . ($data['no'] ?? ''),          // 기타
+$type_1_display                         // 배송메세지
+```
+
+#### 3. export_excel52.php (일반 엑셀)
+```php
+// 데이터 출력 (lines 129-131)
+echo "<td>" . htmlspecialchars($data['Type'] ?? '') . "</td>";      // 품목명
+echo "<td>" . htmlspecialchars($data['Date'] ?? '') . "</td>";      // 주문일자
+echo "<td>" . htmlspecialchars($data['Type_1'] ?? '') . "</td>";    // 배송메세지
+```
+
+#### 4. export_logen_format.php (로젠택배 CSV)
+```php
+// 데이터 배열 (lines 166-168)
+$data['Type'] ?? '',                    // 물품명
+$box_count,                             // 수량(박스)
+$type_1_display                         // 배송메세지
+```
+
+### 관련 URL
+- 테이블: `http://dsp1830.shop/shop_admin/post_list52.php`
+- 엑셀: 로젠택배 엑셀 (선택/전체) 버튼
+
+### 관련 파일
+- `/var/www/html/shop_admin/post_list52.php`
+- `/var/www/html/shop_admin/export_logen_excel.php`
+- `/var/www/html/shop_admin/export_excel52.php`
+- `/var/www/html/shop_admin/export_logen_format.php`
+
+---
+
 ## 버그 리포트 양식
 
 ```
