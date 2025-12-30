@@ -1482,6 +1482,111 @@ page.screenshot(path='/tmp/print_preview.png', full_page=True)
 
 ---
 
+## 30. 전단지 가격 계산기 Playwright E2E 테스트 (2025-12-30)
+
+### 테스트 대상
+전단지(inserted) 제품 페이지 가격 계산기 기능 검증
+
+### 테스트 URL
+```
+http://dsp1830.shop/mlangprintauto/inserted/
+```
+
+### 테스트 항목 및 결과
+
+| 항목 | 결과 | 상세 |
+|------|------|------|
+| 페이지 로드 | ✅ | 정상 접속 |
+| 옵션 셀렉트박스 | ✅ | 5개 모두 작동 |
+| AJAX 가격 계산 | ✅ | calculate_price_ajax.php 응답 정상 |
+| window.currentPriceData | ✅ | 전역 변수 설정됨 |
+| 추가 옵션 (코팅) | ✅ | 가격 정상 반영 |
+
+### 옵션 요소
+
+| 옵션 | 필드명 | 개수 |
+|------|--------|------|
+| 종류 | MY_type | 1개 (칼라 CMYK) |
+| 용지 | MY_Fsd | 12개 |
+| 규격 | PN_type | 10개 |
+| 인쇄면 | POtype | 2개 (단면/양면) |
+| 수량 | MY_amount | 12개 |
+
+### 가격 계산 검증
+
+**기본 옵션 (A4 양면 0.5연)**:
+```
+공급가액: 62,000원
+부가세:   6,200원
+합계:    68,200원
+```
+
+**코팅 옵션 추가 시**:
+```
+기본가:       62,000원
+코팅 옵션:    80,000원
+─────────────────────
+공급가액:    142,000원
+부가세:      14,200원
+합계:       156,200원
+```
+
+### currentPriceData 구조 (전단지)
+```javascript
+window.currentPriceData = {
+    "Price": "62,000",              // 기본 인쇄비 (표시용)
+    "PriceForm": "62000",           // 기본 인쇄비 (숫자)
+    "Additional_Options": "80,000", // 추가옵션 합계
+    "Additional_Options_Form": 80000,
+    "Order_Price": "142,000",       // 공급가액 (표시용)
+    "Order_PriceForm": 142000,      // 공급가액 (숫자) ← 장바구니 전송용
+    "VAT_PriceForm": 14200,         // 부가세
+    "Total_PriceForm": 156200,      // 합계 (VAT포함) ← 장바구니 전송용
+    "StyleForm": "802",             // 종류 코드
+    "SectionForm": "821",           // 규격 코드
+    "QuantityForm": "0.5",          // 수량 (연)
+    "DesignForm": "print",          // 디자인 타입
+    "MY_amountRight": "2000장"      // 매수 표시
+};
+```
+
+### 장바구니 연동 필드 매핑
+```javascript
+// add_to_basket.php 전송 시
+formData.append("calculated_price", currentPriceData.Order_PriceForm);     // 공급가액
+formData.append("calculated_vat_price", currentPriceData.Total_PriceForm); // VAT포함
+```
+
+### 테스트 코드 핵심
+```python
+# AJAX 응답 캡처
+def handle_response(response):
+    if 'calculate_price' in response.url:
+        ajax_responses.append(response.json())
+
+page.on("response", handle_response)
+
+# 옵션 선택
+page.locator('select[name="POtype"]').select_option(value='2')  # 양면
+
+# 가격 계산 함수 호출
+page.evaluate("() => calculatePrice()")
+
+# 결과 확인
+price_data = page.evaluate("() => window.currentPriceData")
+```
+
+### 스크린샷 위치
+- `/tmp/leaflet_initial.png` (초기 상태)
+- `/tmp/leaflet_final.png` (테스트 후)
+
+### 관련 파일
+- `/var/www/html/mlangprintauto/inserted/index.php` (제품 페이지)
+- `/var/www/html/mlangprintauto/inserted/calculate_price_ajax.php` (가격 계산 API)
+- `/var/www/html/js/inserted-logic.js` (클라이언트 로직)
+
+---
+
 ## 버그 리포트 양식
 
 ```
