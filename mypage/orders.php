@@ -131,21 +131,22 @@ $order_statuses = [
     <title>주문 내역 - 두손기획인쇄</title>
     <link rel="stylesheet" href="/mlangprintauto/css/common-styles.css">
     <style>
-        body { background: #f5f5f5; padding: 20px; }
+        body { background: #f5f5f5; padding: 10px; }
         .container { max-width: 1100px; margin: 0 auto; }
-        .header { background: white; padding: 30px; border-radius: 8px; box-shadow: 0 2px 10px rgba(0,0,0,0.1); margin-bottom: 20px; }
-        .header h1 { color: #333; }
-        
-        .filters { background: white; padding: 20px; border-radius: 8px; box-shadow: 0 2px 10px rgba(0,0,0,0.1); margin-bottom: 20px; }
-        .filters form { display: flex; flex-wrap: wrap; gap: 10px; align-items: end; }
-        .filters input, .filters select { padding: 8px 12px; border: 1px solid #ddd; border-radius: 4px; }
-        .filters button { padding: 8px 20px; background: #667eea; color: white; border: none; border-radius: 4px; cursor: pointer; }
+        .header { background: white; padding: 15px 20px; border-radius: 6px; box-shadow: 0 1px 5px rgba(0,0,0,0.1); margin-bottom: 10px; }
+        .header h1 { color: #333; font-size: 20px; margin: 0; }
+        .header p { margin: 5px 0 0 0; }
+
+        .filters { background: white; padding: 12px 15px; border-radius: 6px; box-shadow: 0 1px 5px rgba(0,0,0,0.1); margin-bottom: 10px; }
+        .filters form { display: flex; flex-wrap: wrap; gap: 8px; align-items: end; }
+        .filters input, .filters select { padding: 6px 10px; border: 1px solid #ddd; border-radius: 4px; font-size: 13px; }
+        .filters button { padding: 6px 15px; background: #667eea; color: white; border: none; border-radius: 4px; cursor: pointer; font-size: 13px; }
         .filters button:hover { background: #5568d3; }
-        
-        .orders-table { background: white; padding: 20px; border-radius: 8px; box-shadow: 0 2px 10px rgba(0,0,0,0.1); }
+
+        .orders-table { background: white; padding: 10px 15px; border-radius: 6px; box-shadow: 0 1px 5px rgba(0,0,0,0.1); }
         table { width: 100%; border-collapse: collapse; }
-        th { background: #f8f9fa; padding: 12px; text-align: left; font-weight: 600; border-bottom: 2px solid #e0e0e0; }
-        td { padding: 12px; border-bottom: 1px solid #f0f0f0; }
+        th { background: #f8f9fa; padding: 8px 6px; text-align: left; font-weight: 600; font-size: 13px; border-bottom: 2px solid #e0e0e0; }
+        td { padding: 6px; border-bottom: 1px solid #f0f0f0; font-size: 13px; }
         tr:hover { background: #f0f4ff; }
         tbody tr { transition: background-color 0.2s; }
         
@@ -205,8 +206,8 @@ $order_statuses = [
             color: #999;
         }
         
-        .nav-link { margin: 20px 0; }
-        .nav-link a { color: #667eea; text-decoration: none; }
+        .nav-link { margin: 8px 0; }
+        .nav-link a { color: #667eea; text-decoration: none; font-size: 13px; }
     </style>
 </head>
 <body>
@@ -244,7 +245,7 @@ $order_statuses = [
                     <thead>
                         <tr>
                             <th style="width: 70px;">주문번호</th>
-                            <th style="width: 55px;">제품</th>
+                            <th style="width: 82px;">제품</th>
                             <th style="width: auto;">주문내용</th>
                             <th style="width: 60px;">주문자</th>
                             <th style="width: 90px;">총금액</th>
@@ -398,7 +399,7 @@ $order_statuses = [
                             <span class="page-nav disabled">»</span>
                         <?php endif; ?>
                     </div>
-                    <div style="text-align: center; margin-top: 10px; color: #888; font-size: 13px;">
+                    <div style="text-align: center; margin-top: 5px; color: #888; font-size: 12px;">
                         <?php echo number_format($page); ?> / <?php echo number_format($total_pages); ?> 페이지
                     </div>
                 <?php endif; ?>

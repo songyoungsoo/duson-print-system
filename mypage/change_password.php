@@ -100,7 +100,7 @@ include $_SERVER['DOCUMENT_ROOT'] . '/includes/header-ui.php';
             padding: 30px;
             border-radius: 8px;
             box-shadow: 0 2px 8px rgba(0,0,0,0.1);
-            max-width: 600px;
+            max-width: 900px;
         }
 
         .page-title {

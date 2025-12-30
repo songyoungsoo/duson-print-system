@@ -431,6 +431,55 @@ $section_name = getCategoryName($connect, $item['Section']);  // Section 필드 
 
 ---
 
+## [핵심 규칙 5] 마이페이지 레이아웃 표준
+
+### 규칙 5-1: 컨테이너 및 콘텐츠 너비
+
+| 요소 | 너비 | 적용 |
+|------|------|------|
+| `.mypage-container` | max-width: 1200px | 전체 컨테이너 |
+| `.mypage-content` | **max-width: 900px** | 메인 콘텐츠 영역 |
+| 사이드바 | 250px | grid-template-columns: 250px 1fr |
+
+### 규칙 5-2: 페이지네이션 표준
+
+**형식**: « ‹ ... (±5 range) ... › »
+
+```css
+.pagination {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    gap: 2px;
+    margin-top: 15px;
+    flex-wrap: nowrap;
+}
+.pagination a, .pagination span {
+    min-width: 26px;
+    height: 26px;
+    padding: 0 6px;
+    border-radius: 3px;
+    font-size: 12px;
+}
+```
+
+**페이지 정보 표시**: "X / Y 페이지" (font-size: 12px, color: #888)
+
+### 규칙 5-3: 적용 대상 파일
+
+| 파일 | 설명 |
+|------|------|
+| `/mypage/index.php` | 마이페이지 메인 |
+| `/mypage/orders.php` | 주문 내역 |
+| `/mypage/transactions.php` | 거래내역조회 |
+| `/mypage/profile.php` | 회원정보 |
+| `/mypage/change_password.php` | 비밀번호변경 |
+| `/mypage/withdraw.php` | 회원탈퇴 |
+| `/mypage/business_certificate.php` | 사업자등록증 |
+| `/mypage/tax_invoices.php` | 세금계산서 |
+
+---
+
 ## [관련 문서]
 
 - CLAUDE.md - 프로젝트 전체 규칙
