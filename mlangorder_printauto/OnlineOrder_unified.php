@@ -21,7 +21,9 @@ include "../mlangprintauto/shop_temp_helper.php";
 // 추가 옵션 표시 클래스 포함
 include "../includes/AdditionalOptionsDisplay.php";
 include "../includes/quantity_formatter.php";
+include "../includes/ProductSpecFormatter.php";
 $optionsDisplay = new AdditionalOptionsDisplay($connect);
+$specFormatter = new ProductSpecFormatter($connect);
 
 /**
  * ID로 한글명 가져오기 함수 (장바구니와 동일)
@@ -777,158 +779,23 @@ if (!empty($debug_info) && strpos($_SERVER['HTTP_HOST'], 'localhost') !== false)
                                         </div>
                                     <?php endif; ?>
                                 <?php else: ?>
-                                    <!-- 장바구니에서 온 주문: 장바구니와 동일한 표시 방식 (switch/case) -->
+                                    <!-- 장바구니에서 온 주문: ProductSpecFormatter 사용 -->
                                     <?php
-                                    $product_type = $item['product_type'] ?? '';
-                                    $line1_parts = [];
-                                    $line2_parts = [];
-
-                                    switch ($product_type) {
-                                        case 'sticker':
-                                            // 스티커: 재질 / 크기 / 모양 (cart.php와 동일)
-                                            if (!empty($item['jong'])) {
-                                                $material = preg_replace('/^(jil|jsp|jka|cka)\s+/', '', $item['jong']);
-                                                $line1_parts[] = htmlspecialchars($material);
-                                            }
-                                            if (!empty($item['garo']) && !empty($item['sero'])) {
-                                                $line1_parts[] = htmlspecialchars($item['garo']) . '×' . htmlspecialchars($item['sero']) . 'mm';
-                                            }
-                                            if (!empty($item['domusong'])) {
-                                                $shape_parts = explode(' ', $item['domusong'], 2);
-                                                $line1_parts[] = htmlspecialchars($shape_parts[1] ?? $item['domusong']);
-                                            }
-                                            // 옵션: 수량 / 편집유형 / 디자인
-                                            if (!empty($item['mesu'])) $line2_parts[] = number_format(intval($item['mesu'])) . '매';
-                                            if (!empty($item['uhyung']) && $item['uhyung'] != '0') {
-                                                $edit_types = ['10000' => '기본편집', '30000' => '고급편집'];
-                                                $line2_parts[] = $edit_types[$item['uhyung']] ?? htmlspecialchars($item['uhyung']) . '원';
-                                            }
-                                            if (!empty($item['ordertype'])) $line2_parts[] = ($item['ordertype'] == 'total' ? '디자인+인쇄' : ($item['ordertype'] == 'print' ? '인쇄만' : htmlspecialchars($item['ordertype'])));
-                                            break;
-
-                                        case 'msticker':
-                                            // 자석스티커: 종류 / 규격
-                                            if (!empty($item['MY_type'])) $line1_parts[] = htmlspecialchars(getKoreanName($connect, $item['MY_type']));
-                                            if (!empty($item['Section'])) $line1_parts[] = htmlspecialchars(getKoreanName($connect, $item['Section']));
-                                            // 옵션: 인쇄면 / 수량 / 디자인
-                                            if (!empty($item['POtype'])) $line2_parts[] = ($item['POtype'] == '2' ? '양면인쇄' : '단면인쇄');
-                                            if (!empty($item['MY_amount'])) $line2_parts[] = number_format(intval($item['MY_amount'])) . '매';
-                                            if (!empty($item['ordertype'])) $line2_parts[] = ($item['ordertype'] == 'total' ? '디자인+인쇄' : ($item['ordertype'] == 'print' ? '인쇄만' : htmlspecialchars($item['ordertype'])));
-                                            break;
-
-                                        case 'envelope':
-                                            // 봉투: 종류 / 규격
-                                            if (!empty($item['MY_type'])) $line1_parts[] = htmlspecialchars(getKoreanName($connect, $item['MY_type']));
-                                            if (!empty($item['Section'])) $line1_parts[] = htmlspecialchars(getKoreanName($connect, $item['Section']));
-                                            // 옵션: 수량 / 디자인
-                                            if (!empty($item['mesu'])) $line2_parts[] = number_format(intval($item['mesu'])) . '매';
-                                            elseif (!empty($item['MY_amount'])) $line2_parts[] = number_format(intval($item['MY_amount'])) . '매';
-                                            if (!empty($item['ordertype'])) $line2_parts[] = ($item['ordertype'] == 'total' ? '디자인+인쇄' : ($item['ordertype'] == 'print' ? '인쇄만' : htmlspecialchars($item['ordertype'])));
-                                            break;
-
-                                        case 'namecard':
-                                            // 명함: 종류 / 용지 / 규격
-                                            if (!empty($item['MY_type'])) $line1_parts[] = htmlspecialchars(getKoreanName($connect, $item['MY_type']));
-                                            if (!empty($item['PN_type'])) $line1_parts[] = htmlspecialchars(getKoreanName($connect, $item['PN_type']));
-                                            if (!empty($item['Section'])) $line1_parts[] = htmlspecialchars(getKoreanName($connect, $item['Section']));
-                                            // 옵션: 인쇄면 / 수량 / 디자인
-                                            if (!empty($item['POtype'])) $line2_parts[] = ($item['POtype'] == '1' ? '단면' : '양면');
-                                            if (!empty($item['mesu'])) $line2_parts[] = number_format(intval($item['mesu'])) . '매';
-                                            elseif (!empty($item['MY_amount'])) $line2_parts[] = number_format(intval($item['MY_amount'])) . '매';
-                                            if (!empty($item['ordertype'])) $line2_parts[] = ($item['ordertype'] == 'total' ? '디자인+인쇄' : ($item['ordertype'] == 'print' ? '인쇄만' : htmlspecialchars($item['ordertype'])));
-                                            break;
-
-                                        case 'merchandisebond':
-                                            // 상품권: 종류 / 용지
-                                            if (!empty($item['MY_type'])) $line1_parts[] = htmlspecialchars(getKoreanName($connect, $item['MY_type']));
-                                            if (!empty($item['PN_type'])) $line1_parts[] = htmlspecialchars(getKoreanName($connect, $item['PN_type']));
-                                            // 옵션: 수량 / 인쇄면 / 디자인
-                                            if (!empty($item['mesu'])) $line2_parts[] = number_format(intval($item['mesu'])) . '매';
-                                            elseif (!empty($item['MY_amount'])) $line2_parts[] = number_format(intval($item['MY_amount'])) . '매';
-                                            if (!empty($item['POtype'])) $line2_parts[] = ($item['POtype'] == '1' ? '단면' : '양면');
-                                            if (!empty($item['ordertype'])) $line2_parts[] = ($item['ordertype'] == 'total' ? '디자인+인쇄' : ($item['ordertype'] == 'print' ? '인쇄만' : htmlspecialchars($item['ordertype'])));
-                                            break;
-
-                                        case 'cadarok':
-                                            // 카달록: 종류 / 용지 / 규격
-                                            if (!empty($item['MY_type'])) $line1_parts[] = htmlspecialchars(getKoreanName($connect, $item['MY_type']));
-                                            if (!empty($item['PN_type'])) $line1_parts[] = htmlspecialchars(getKoreanName($connect, $item['PN_type']));
-                                            if (!empty($item['Section'])) $line1_parts[] = htmlspecialchars(getKoreanName($connect, $item['Section']));
-                                            // 옵션: 인쇄면 / 수량 / 디자인
-                                            if (!empty($item['POtype'])) $line2_parts[] = ($item['POtype'] == '1' ? '단면' : '양면');
-                                            if (!empty($item['mesu'])) $line2_parts[] = number_format(intval($item['mesu'])) . '부';
-                                            elseif (!empty($item['MY_amount'])) $line2_parts[] = number_format(intval($item['MY_amount'])) . '부';
-                                            if (!empty($item['ordertype'])) $line2_parts[] = ($item['ordertype'] == 'total' ? '디자인+인쇄' : ($item['ordertype'] == 'print' ? '인쇄만' : htmlspecialchars($item['ordertype'])));
-                                            break;
-
-                                        case 'littleprint':
-                                            // 포스터: 종류 / 용지 / 규격
-                                            if (!empty($item['MY_type'])) $line1_parts[] = htmlspecialchars(getKoreanName($connect, $item['MY_type']));
-                                            if (!empty($item['PN_type'])) $line1_parts[] = htmlspecialchars(getKoreanName($connect, $item['PN_type']));
-                                            if (!empty($item['Section'])) $line1_parts[] = htmlspecialchars(getKoreanName($connect, $item['Section']));
-                                            // 옵션: 인쇄면 / 수량 / 디자인
-                                            if (!empty($item['POtype'])) $line2_parts[] = ($item['POtype'] == '1' ? '단면' : '양면');
-                                            if (!empty($item['mesu'])) $line2_parts[] = number_format(intval($item['mesu'])) . '매';
-                                            elseif (!empty($item['MY_amount'])) $line2_parts[] = number_format(intval($item['MY_amount'])) . '매';
-                                            if (!empty($item['ordertype'])) $line2_parts[] = ($item['ordertype'] == 'total' ? '디자인+인쇄' : ($item['ordertype'] == 'print' ? '인쇄만' : htmlspecialchars($item['ordertype'])));
-                                            break;
-
-                                        case 'ncrflambeau':
-                                            // 양식지: 종류 / 용지 / 규격
-                                            if (!empty($item['MY_type'])) $line1_parts[] = htmlspecialchars(getKoreanName($connect, $item['MY_type']));
-                                            if (!empty($item['PN_type'])) $line1_parts[] = htmlspecialchars(getKoreanName($connect, $item['PN_type']));
-                                            if (!empty($item['Section'])) $line1_parts[] = htmlspecialchars(getKoreanName($connect, $item['Section']));
-                                            // 옵션: 수량 / 인쇄도수 / 디자인
-                                            if (!empty($item['mesu'])) $line2_parts[] = number_format(intval($item['mesu'])) . '권';
-                                            elseif (!empty($item['MY_amount'])) $line2_parts[] = number_format(intval($item['MY_amount'])) . '권';
-                                            if (!empty($item['MY_Fsd'])) $line2_parts[] = htmlspecialchars(getKoreanName($connect, $item['MY_Fsd']));
-                                            if (!empty($item['ordertype'])) $line2_parts[] = ($item['ordertype'] == 'total' ? '디자인+인쇄' : ($item['ordertype'] == 'print' ? '인쇄만' : htmlspecialchars($item['ordertype'])));
-                                            break;
-
-                                        default:
-                                            // 전단지/리플렛: 종류 / 용지 / 규격 (OrderComplete_universal.php와 동일)
-                                            if (!empty($item['MY_type'])) $line1_parts[] = htmlspecialchars(getKoreanName($connect, $item['MY_type']));
-                                            if (!empty($item['MY_Fsd'])) $line1_parts[] = htmlspecialchars(getKoreanName($connect, $item['MY_Fsd']));
-                                            if (!empty($item['PN_type'])) $line1_parts[] = htmlspecialchars(getKoreanName($connect, $item['PN_type']));
-                                            // 옵션: 인쇄면 / 수량 / 디자인
-                                            if (!empty($item['POtype'])) $line2_parts[] = ($item['POtype'] == '1' ? '단면컬러인쇄' : '양면컬러인쇄');
-                                            // 전단지는 연/매수 표시
-                                            $yeon = !empty($item['MY_amount']) ? floatval($item['MY_amount']) : 0;
-                                            // flyer_mesu 우선, 없으면 mesu 필드 확인
-                                            $mesu = !empty($item['flyer_mesu']) ? intval($item['flyer_mesu']) : (!empty($item['mesu']) ? intval($item['mesu']) : 0);
-                                            if ($yeon > 0) {
-                                                $yeon_display = ($yeon == 0.5) ? '0.5' : number_format(intval($yeon));
-                                                $qty_text = $yeon_display . '연';
-                                                if ($mesu > 0) $qty_text .= '(' . number_format($mesu) . '매)';
-                                                $line2_parts[] = $qty_text;
-                                            }
-                                            if (!empty($item['ordertype'])) $line2_parts[] = ($item['ordertype'] == 'total' ? '디자인+인쇄' : ($item['ordertype'] == 'print' ? '인쇄만' : htmlspecialchars($item['ordertype'])));
-                                            break;
-                                    }
+                                    $specs = $specFormatter->format($item);
                                     ?>
-                                    <?php if (!empty($line1_parts)): ?>
-                                        <div class="spec-line" style="color: #2d3748; margin-bottom: 2px;"><?php echo implode(' / ', $line1_parts); ?></div>
+                                    <?php if (!empty($specs['line1'])): ?>
+                                        <div class="spec-line" style="color: #2d3748; margin-bottom: 2px;"><?php echo htmlspecialchars($specs['line1']); ?></div>
                                     <?php endif; ?>
-                                    <?php if (!empty($line2_parts)): ?>
-                                        <div class="spec-line" style="color: #4a5568;"><?php echo implode(' / ', $line2_parts); ?></div>
+                                    <?php if (!empty($specs['line2'])): ?>
+                                        <div class="spec-line" style="color: #4a5568;"><?php echo htmlspecialchars($specs['line2']); ?></div>
                                     <?php endif; ?>
-                                    <?php
-                                    // 추가 옵션 표시 (장바구니와 동일한 스타일)
-                                    $optionDetails = $optionsDisplay->getOrderDetails($item);
-                                    if ($optionDetails['has_options']):
-                                    ?>
+                                    <?php if (!empty($specs['additional'])): ?>
                                         <div style="margin-top: 8px; padding-top: 8px; border-top: 1px solid #e2e8f0;">
                                             <div style="color: #e53e3e; font-weight: 600; font-size: 12px; margin-bottom: 4px;">추가옵션</div>
-                                            <?php foreach ($optionDetails['options'] as $option): ?>
-                                                <div style="color: #2d3748; font-size: 11px; margin-bottom: 2px;">
-                                                    <span style="color: #e53e3e; font-weight: 500;"><?php echo $option['category']; ?>:</span>
-                                                    <?php echo $option['name']; ?>
-                                                    <span style="color: #38a169; font-weight: 600;">(+<?php echo $option['formatted_price']; ?>)</span>
-                                                </div>
-                                            <?php endforeach; ?>
+                                            <div style="color: #2d3748; font-size: 11px;"><?php echo htmlspecialchars($specs['additional']); ?></div>
                                         </div>
                                     <?php endif; ?>
-                                    <?php if ($item['MY_comment']): ?>
+                                    <?php if (!empty($item['MY_comment'])): ?>
                                         <div style="margin-top: 0.5rem; padding: 0.5rem; background: #fff3cd; border-radius: 4px; font-size: 0.9rem;">
                                             <strong>요청사항:</strong> <?php echo htmlspecialchars($item['MY_comment']); ?>
                                         </div>

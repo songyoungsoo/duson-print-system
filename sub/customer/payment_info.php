@@ -27,46 +27,41 @@ include_once $_SERVER['DOCUMENT_ROOT'] . '/includes/header-ui.php';
         .customer-content {
             max-width: 900px;
         }
-        /* 계좌 카드 한 줄 레이아웃 */
+        /* 계좌 카드 - 결제 방법과 동일한 스타일 */
         .account-cards-row {
-            display: flex;
-            gap: 15px;
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 20px;
             margin: 15px 0;
         }
         .account-card-compact {
-            flex: 1;
-            background: #fff;
-            border: 1px solid #e0e0e0;
-            border-radius: 8px;
-            padding: 15px;
+            background: #f8f9fa;
+            border-radius: 12px;
+            padding: 25px;
             text-align: center;
-            transition: all 0.2s;
-        }
-        .account-card-compact:hover {
-            border-color: #1466BA;
-            box-shadow: 0 2px 8px rgba(20, 102, 186, 0.15);
         }
         .account-card-compact .bank-name {
+            font-size: 18px;
             font-weight: 600;
-            color: #1466BA;
-            font-size: 14px;
-            margin-bottom: 8px;
+            color: #333;
+            margin-bottom: 15px;
         }
         .account-card-compact .account-num {
             font-family: 'Courier New', monospace;
             font-weight: 600;
-            font-size: 13px;
-            color: #333;
-            margin-bottom: 10px;
+            font-size: 15px;
+            color: #1466BA;
+            margin-bottom: 15px;
         }
         .btn-copy-sm {
-            padding: 5px 12px;
-            font-size: 12px;
+            padding: 8px 16px;
+            font-size: 13px;
             background: #1466BA;
             color: #fff;
             border: none;
-            border-radius: 4px;
+            border-radius: 6px;
             cursor: pointer;
+            transition: background 0.2s;
         }
         .btn-copy-sm:hover {
             background: #0d4d8a;
@@ -74,13 +69,8 @@ include_once $_SERVER['DOCUMENT_ROOT'] . '/includes/header-ui.php';
         .account-holder-note {
             text-align: center;
             color: #666;
-            font-size: 13px;
-            margin-top: 10px;
-        }
-        @media (max-width: 600px) {
-            .account-cards-row {
-                flex-direction: column;
-            }
+            font-size: 14px;
+            margin-top: 15px;
         }
     </style>
 </head>

@@ -8,8 +8,12 @@
  */
 
 require_once __DIR__ . '/auth_required.php';
+require_once $_SERVER['DOCUMENT_ROOT'] . '/includes/ProductSpecFormatter.php';
 
 $user_id = $current_user['id'];
+
+// ✅ ProductSpecFormatter 인스턴스 생성
+$specFormatter = new ProductSpecFormatter($db);
 
 // 페이지네이션
 $page = isset($_GET['page']) ? max(1, intval($_GET['page'])) : 1;
@@ -255,57 +259,19 @@ $order_statuses = [
                     </thead>
                     <tbody>
                         <?php while ($order = mysqli_fetch_assoc($orders)):
-                            // Type_1 파싱 (2줄 슬래시 형식)
-                            $line1_parts = [];
-                            $line2_parts = [];
-                            $type1_raw = $order['Type_1'] ?? '';
-                            $json_data = json_decode($type1_raw, true);
-
-                            if ($json_data) {
-                                if (isset($json_data['order_details'])) {
-                                    $d = $json_data['order_details'];
-                                    // 1줄: 종류 / 용지 / 규격
-                                    if (!empty($d['jong'])) $line1_parts[] = $d['jong'];
-                                    if (!empty($d['paper'])) $line1_parts[] = $d['paper'];
-                                    if (!empty($d['garo']) && !empty($d['sero'])) {
-                                        $line1_parts[] = $d['garo'] . '×' . $d['sero'] . 'mm';
-                                    }
-                                    // 2줄: 인쇄면 / 수량
-                                    if (!empty($d['print_side'])) $line2_parts[] = $d['print_side'];
-                                    if (!empty($d['mesu'])) {
-                                        $line2_parts[] = number_format(intval($d['mesu'])) . '매';
-                                    }
-                                } elseif (isset($json_data['formatted_display'])) {
-                                    $fd = $json_data['formatted_display'];
-                                    $parsed = [];
-                                    $lines = preg_split('/\\\\n|\n/', $fd);
-                                    foreach ($lines as $line) {
-                                        if (strpos($line, ':') !== false) {
-                                            $parts = explode(':', $line, 2);
-                                            $parsed[trim($parts[0])] = trim($parts[1] ?? '');
-                                        }
-                                    }
-                                    if (!empty($parsed['용지'])) $line1_parts[] = $parsed['용지'];
-                                    if (!empty($parsed['규격'])) $line1_parts[] = $parsed['규격'];
-                                    if (!empty($parsed['인쇄면'])) $line2_parts[] = $parsed['인쇄면'];
-                                    if (!empty($parsed['수량'])) $line2_parts[] = $parsed['수량'];
-                                } else {
-                                    if (!empty($json_data['paper_type'])) $line1_parts[] = $json_data['paper_type'];
-                                    if (!empty($json_data['size'])) $line1_parts[] = $json_data['size'];
-                                    if (!empty($json_data['print_side'])) $line2_parts[] = $json_data['print_side'];
-                                    if (!empty($json_data['quantity'])) $line2_parts[] = $json_data['quantity'];
-                                }
-                            }
-
+                            // ✅ ProductSpecFormatter 사용 (2줄 슬래시 형식 표준화)
+                            $spec_result = $specFormatter->format($order);
                             $order_content = '';
-                            if (!empty($line1_parts) || !empty($line2_parts)) {
-                                if (!empty($line1_parts)) {
-                                    $order_content .= implode(' / ', $line1_parts);
+
+                            if (!empty($spec_result['line1']) || !empty($spec_result['line2'])) {
+                                if (!empty($spec_result['line1'])) {
+                                    $order_content .= htmlspecialchars($spec_result['line1']);
                                 }
-                                if (!empty($line2_parts)) {
-                                    $order_content .= '<br><span style="color:#666;font-size:12px;">' . implode(' / ', $line2_parts) . '</span>';
+                                if (!empty($spec_result['line2'])) {
+                                    $order_content .= '<br><span style="color:#666;font-size:12px;">' . htmlspecialchars($spec_result['line2']) . '</span>';
                                 }
                             } else {
+                                $type1_raw = $order['Type_1'] ?? '';
                                 $order_content = htmlspecialchars(mb_substr($type1_raw, 0, 30));
                             }
 

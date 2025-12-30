@@ -355,6 +355,11 @@ $display = ($quantity == 0.5) ? '0.5' : number_format(intval($quantity));
 
 
 
+
+
+
+
+
 ---
 
 ## 12. 봉투/자석스티커/카다록 공급가액 표시 오류
@@ -1612,3 +1617,269 @@ price_data = page.evaluate("() => window.currentPriceData")
 ## 스크린샷
 [있으면 첨부]
 ```
+
+---
+
+## 31. 마이페이지 주문내역 페이지네이션 구현 (2025-12-30)
+
+### 증상
+마이페이지에서 사용자 주문내역 조회 기능이 없음.
+
+### 구현 내용
+`/mypage/orders.php` 신규 생성 - 로그인한 사용자의 주문 내역 조회
+
+### 기능 상세
+- **페이지당 20건** 표시
+- **페이지네이션**: « (맨처음), ‹ (이전), 숫자(현재 ±5범위), › (다음), » (맨끝)
+- **필터**: 검색어(이름, 전화), 상태, 날짜 범위
+- **표시 정보**: 주문번호, 제품, 주문자, 연락처, 주문일, 상태, 금액(VAT포함)
+
+### 발생한 문제 및 해결
+
+#### 1. 500 Internal Server Error
+- **원인**: `auth_required.php`에서 `$current_user['email']` 미설정
+- **해결**: member 테이블에서 email/name 조회 추가
+
+#### 2. 로그인 리다이렉트 루프
+- **원인**: 레거시 로그인 시스템은 `$_SESSION['id_login_ok']` 사용, 신규 auth는 `$_SESSION['user_id']` 확인
+- **해결**: `auth_required.php`에서 레거시 세션을 신규 형식으로 변환 (auth.php 로드 전에 실행)
+
+```php
+// 레거시 세션 호환성 처리
+if (!isset($_SESSION['user_id']) && isset($_SESSION['id_login_ok'])) {
+    $legacy_user = $_SESSION['id_login_ok'];
+    if (is_array($legacy_user) && isset($legacy_user['id'])) {
+        $_SESSION['user_id'] = $legacy_user['id'];
+        $_SESSION['username'] = $legacy_user['id'];
+    }
+}
+```
+
+#### 3. COUNT는 337건인데 주문목록 0건
+- **원인**: SELECT 쿼리에 존재하지 않는 `product_info` 컬럼 참조
+- **해결**: `product_info` 컬럼 제거
+
+### 테스트 결과
+```
+✅ Page 1: 20 orders
+✅ Last page URL: ?page=17
+✅ Last page: 17 orders
+✅ First page URL: ?page=1
+✅ Filtered (status=2): 20 orders
+```
+
+### 파일 변경
+- `/var/www/html/mypage/orders.php` - 주문내역 페이지 신규
+- `/var/www/html/mypage/auth_required.php` - 레거시 세션 호환성 추가, email/name 조회
+
+### 스크린샷
+- `/tmp/orders_page_1.png`
+- `/tmp/orders_page_2.png`
+
+---
+
+## 32. 마이페이지 주문 상세보기 기능 추가 (2025-12-30)
+
+### 요구사항
+주문 내역에서 개별 주문의 상세 정보를 확인하는 기능 필요
+
+### 구현 내용
+`/mypage/order_detail.php` 신규 생성
+
+### 기능 상세
+
+**표시 정보**:
+- 주문 정보: 주문번호, 주문일시, 제품, 상태
+- 제품 상세: 규격/사양 (JSON 파싱), 수량, 품목코드
+- 주문자 정보: 이름, 연락처, 이메일, 업체명
+- 배송 정보: 우편번호, 주소, 배송방법, 택배조회
+- 결제 정보: 공급가액, 추가옵션, VAT포함 총액
+- 추가옵션: 코팅/접지/오시, 프리미엄옵션, 봉투옵션
+- 업로드 파일: 파일 목록 또는 폴더 경로
+- 요청사항: 고객 메모
+- 교정 승인: 승인 일시, 승인자
+
+**보안**:
+- 본인 주문만 조회 가능 (email 또는 name으로 검증)
+- 타인 주문 접근 시 목록 페이지로 리다이렉트
+
+**UI 개선**:
+- 주문 목록에서 행 클릭 시 상세 페이지로 이동
+- 주문번호 링크 스타일 적용
+- 호버 효과 추가
+
+### 파일 변경
+- `/var/www/html/mypage/order_detail.php` - 신규 생성
+- `/var/www/html/mypage/orders.php` - 상세 링크 추가
+
+### 테스트 결과
+```
+✅ 상세 페이지 접근 성공
+✅ 섹션: 주문 정보, 제품 상세, 주문자 정보, 배송 정보, 결제 정보, 업로드 파일
+✅ 뒤로가기 링크 동작
+✅ JSON 규격 데이터 파싱 표시
+```
+
+---
+
+## 33. 마이페이지 메인 페이지네이션 표준화 (2025-12-30)
+
+### 증상
+`/mypage/index.php`의 "전체 주문조회 & 배송조회" 섹션에서 페이지네이션이 모든 페이지 번호(1-34)를 표시하여 UI가 너무 길어짐.
+
+### 수정 전
+```
+1 | 2 | 3 | 4 | 5 | 6 | ... | 32 | 33 | 34  (모든 페이지 표시)
+```
+
+### 수정 후
+```
+« | ‹ | 1 | 2 | 3 | 4 | 5 | 6 | ... | › | »  (1페이지)
+« | ‹ | ... | 12 | 13 | 14 | 15 | 16 | 17 | 18 | 19 | 20 | 21 | 22 | ... | › | »  (17페이지)
+```
+
+### 구현 내용
+
+**표준 페이지네이션 형식**:
+- « (맨처음): `?page=1#order-history`
+- ‹ (이전): `?page=N-1#order-history`
+- 현재 페이지 ±5 범위의 페이지 번호만 표시
+- ... (생략 표시): 범위 양끝에 더 있는 경우
+- › (다음): `?page=N+1#order-history`
+- » (맨끝): `?page=MAX#order-history`
+
+**CSS 스타일링**:
+```css
+.pagination {
+    display: flex;
+    justify-content: center;
+    gap: 4px;
+    flex-wrap: wrap;
+}
+.pagination a, .pagination span {
+    min-width: 36px;
+    height: 36px;
+    border: 1px solid #ddd;
+    border-radius: 4px;
+}
+.pagination a.active {
+    background: #1466BA;
+    color: white;
+}
+.pagination .disabled {
+    color: #ccc;
+    cursor: not-allowed;
+}
+```
+
+**페이지 정보 표시**:
+```
+17 / 34 페이지
+```
+
+### 파일 변경
+- `/mypage/index.php` (프로덕션 직접 수정)
+
+### 테스트 결과
+```
+✅ Page 1: « | ‹ | 1 | 2 | 3 | 4 | 5 | 6 | ... | › | »
+✅ Page 17: « | ‹ | ... | 12-22 (11개) | ... | › | »
+✅ Active page 표시 정상
+✅ Page info: 17 / 34 페이지
+```
+
+---
+
+## 34. ProductSpecFormatter 표준화 (2025-12-31)
+
+### 배경
+규격/옵션 표시가 각 파일마다 다른 방식으로 구현되어 있어 일관성 문제 발생.
+- cart.php, OnlineOrder_unified.php, OrderComplete_universal.php 등에서 제각각 구현
+- 견적서 시스템(`mlangprintauto/quote/`)에 별도 ProductSpecFormatter 존재
+- 코드 중복 및 유지보수 어려움
+
+### 해결: 중앙 집중식 ProductSpecFormatter
+
+**파일**: `/includes/ProductSpecFormatter.php`
+
+**기능**:
+- 모든 9개 품목에 대해 2줄 슬래시 형식 출력 지원
+- HTML, Text, SingleLine 3가지 출력 포맷
+- 정적 헬퍼 메서드 (getProductTypeName, getUnit, getQuantity, getPrice 등)
+
+### 주요 메서드
+
+#### 인스턴스 메서드 (DB 연결 필요)
+```php
+$formatter = new ProductSpecFormatter($db);
+
+// HTML 형식 (2줄, <br> 구분)
+$formatter->formatHtml($item);
+// "90g아트지(합판인쇄) / A4 (210x297)<br>단면 / 0.5연 (2,000매) / 인쇄만"
+
+// 텍스트 형식 (2줄, | 구분)
+$formatter->formatText($item);
+// "90g아트지(합판인쇄) / A4 (210x297) | 단면 / 0.5연 (2,000매) / 인쇄만"
+
+// 한 줄 형식
+$formatter->formatSingleLine($item);
+// "90g아트지(합판인쇄) / A4 (210x297) / 단면 / 0.5연"
+```
+
+#### 정적 메서드 (DB 연결 불필요)
+```php
+// 제품 타입 한글명
+ProductSpecFormatter::getProductTypeName('inserted');  // "전단지"
+ProductSpecFormatter::getProductTypeName('namecard');  // "명함"
+
+// 단위
+ProductSpecFormatter::getUnit($item);  // "연", "매", "부", "권"
+
+// 수량 숫자값
+ProductSpecFormatter::getQuantity($item);  // 0.5, 1000
+
+// 수량 표시용
+ProductSpecFormatter::getQuantityDisplay($item);  // "0.5연 (2,000매)", "1,000매"
+
+// 가격 (VAT 포함)
+ProductSpecFormatter::getPrice($item);  // 156200
+
+// 공급가액 (VAT 미포함)
+ProductSpecFormatter::getSupplyPrice($item);  // 142000
+```
+
+### 견적서 시스템 통합
+
+**변경 전**: `mlangprintauto/quote/includes/ProductSpecFormatter.php` (로컬 버전)
+**변경 후**: 중앙 버전 사용 + 로컬 버전 백업
+
+```php
+// 변경된 include 경로
+require_once $_SERVER['DOCUMENT_ROOT'] . '/includes/ProductSpecFormatter.php';
+```
+
+**수정된 파일**:
+- `mlangprintauto/quote/includes/QuoteManager.php`
+- `mlangprintauto/quote/edit.php`
+- `mlangprintauto/quote/revise.php`
+
+### 테스트 결과
+
+**주문서 출력 (OrderFormPrint.php)**:
+```
+✅ [전단지] #104068: 90g아트지(합판인쇄) / A4 (210x297) | 단면 / 0.5연 (2,000매) / 인쇄만
+✅ [명함] #104067: 일반명함(쿠폰) | 단면 / 500매 / 인쇄만
+✅ [봉투] #104066: 소봉투 / 소봉투(100모조 220*105) | 마스터1도 / 1,000매 / 인쇄만
+✅ [카다록] #104065: 카다록,리플렛 / 24절(127*260)3단 | 1,000매 / 인쇄만
+✅ [NCR양식] #104064: 양식(100매철) / 계약서(A4).기타서식(A4) | 1도 / 10매 / 인쇄만
+```
+
+### 관련 파일
+- `/var/www/html/includes/ProductSpecFormatter.php` - 중앙 포맷터 클래스
+- `/var/www/html/mlangprintauto/quote/includes/ProductSpecFormatter.php.bak` - 백업
+- `/var/www/html/mlangprintauto/quote/includes/QuoteManager.php` - include 경로 수정
+- `/var/www/html/mlangprintauto/quote/edit.php` - include 경로 수정
+- `/var/www/html/mlangprintauto/quote/revise.php` - include 경로 수정
+
+### 관련 스킬
+- `duson-print-rules/SKILL.md` - 규칙 2-5에 ProductSpecFormatter 사용법 추가

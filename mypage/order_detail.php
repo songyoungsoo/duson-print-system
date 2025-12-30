@@ -7,6 +7,10 @@
  */
 
 require_once __DIR__ . '/auth_required.php';
+require_once $_SERVER['DOCUMENT_ROOT'] . '/includes/ProductSpecFormatter.php';
+
+// ✅ ProductSpecFormatter 인스턴스 생성
+$specFormatter = new ProductSpecFormatter($db);
 
 // 주문번호 확인
 $order_no = isset($_GET['no']) ? intval($_GET['no']) : 0;
@@ -23,6 +27,10 @@ $user_name = $current_user['name'];
 // 주문 조회 (본인 주문만)
 $query = "SELECT * FROM mlangorder_printauto WHERE no = ?";
 $where_check = "";
+
+
+
+
 $params = [$order_no];
 $types = "i";
 
@@ -139,6 +147,36 @@ function formatPremiumOptions($premium_options) {
         }
     }
     return $options;
+}
+
+/**
+ * Type_1 JSON을 읽기 쉬운 텍스트로 변환
+ * ✅ ProductSpecFormatter 사용으로 중복 코드 제거
+ */
+function formatType1Json($type1_data) {
+    global $specFormatter;
+
+    if (!$type1_data || !is_array($type1_data)) {
+        return null;
+    }
+
+    // ProductSpecFormatter로 규격 정보 추출
+    $order_data = $type1_data;
+    $order_data['product_type'] = $type1_data['product_type'] ?? '';
+    $order_data['Type_1'] = json_encode($type1_data);
+
+    $spec_result = $specFormatter->format($order_data);
+
+    // 2줄 형식을 단일 출력으로 변환
+    $output_parts = [];
+    if (!empty($spec_result['line1'])) {
+        $output_parts[] = htmlspecialchars($spec_result['line1']);
+    }
+    if (!empty($spec_result['line2'])) {
+        $output_parts[] = htmlspecialchars($spec_result['line2']);
+    }
+
+    return !empty($output_parts) ? implode('<br>', $output_parts) : null;
 }
 ?>
 <!DOCTYPE html>
@@ -333,44 +371,20 @@ function formatPremiumOptions($premium_options) {
             <div class="info-grid">
                 <?php if (!empty($order['Type_1'])): ?>
                 <?php
-                // Type_1이 JSON인 경우 파싱하여 보기 좋게 표시
+                // Type_1 JSON 파싱 및 표시
                 $type1_data = json_decode($order['Type_1'], true);
-                if ($type1_data && is_array($type1_data)):
+                $formatted_spec = formatType1Json($type1_data);
                 ?>
                 <div class="info-item" style="grid-column: span 2;">
                     <div class="label">규격/사양</div>
                     <div class="value">
-                        <?php
-                        $display_parts = [];
-                        $labels = [
-                            'MY_type' => '종류',
-                            'MY_Fsd' => '규격',
-                            'PN_t' => '용지',
-                            'formatted_display' => '상세'
-                        ];
-                        foreach ($type1_data as $key => $val) {
-                            if (in_array($key, ['product_type', 'created_at', 'type'])) continue;
-                            if (empty($val)) continue;
-                            $label = $labels[$key] ?? $key;
-                            if (is_string($val) && strlen($val) > 100) {
-                                // 긴 텍스트는 줄바꿈으로 표시
-                                echo "<div style='margin-bottom: 8px;'><strong>{$label}:</strong><br>{$val}</div>";
-                            } else {
-                                $display_parts[] = is_string($val) ? $val : json_encode($val);
-                            }
-                        }
-                        if (!empty($display_parts)) {
-                            echo implode(' / ', array_slice($display_parts, 0, 5));
-                        }
-                        ?>
+                        <?php if ($formatted_spec): ?>
+                            <?php echo $formatted_spec; ?>
+                        <?php else: ?>
+                            <?php echo nl2br(htmlspecialchars($order['Type_1'])); ?>
+                        <?php endif; ?>
                     </div>
                 </div>
-                <?php else: ?>
-                <div class="info-item" style="grid-column: span 2;">
-                    <div class="label">규격/사양</div>
-                    <div class="value"><?php echo nl2br(htmlspecialchars($order['Type_1'])); ?></div>
-                </div>
-                <?php endif; ?>
                 <?php endif; ?>
 
                 <?php if (!empty($order['mesu'])): ?>

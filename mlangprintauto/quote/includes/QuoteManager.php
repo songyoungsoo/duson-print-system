@@ -3,7 +3,7 @@
  * 견적서/거래명세표 관리 클래스
  */
 
-require_once __DIR__ . '/ProductSpecFormatter.php';
+require_once $_SERVER['DOCUMENT_ROOT'] . '/includes/ProductSpecFormatter.php';
 
 class QuoteManager {
     private $db;
@@ -612,7 +612,7 @@ class QuoteManager {
      */
     private function addItemFromQuoteTemp($quoteId, $itemNo, $tempItem) {
         // === ProductSpecFormatter를 사용하여 quotation_temp 데이터 처리 ===
-        require_once __DIR__ . '/ProductSpecFormatter.php';
+        // (이미 상단에서 include됨)
         $formatter = new ProductSpecFormatter($this->db);
 
         // 1. 제품 정보 추출

@@ -136,14 +136,61 @@ description: 두손기획 인쇄 시스템의 비즈니스 규칙. 수량 표기
 [추가옵션: 무선제본, 유광코팅]
 ```
 
-### 규칙 2-5: 적용 위치
+### 규칙 2-5: ProductSpecFormatter 클래스 (권장)
 
-- 장바구니 상품 목록
-- 주문 페이지 상품 정보
-- 주문 완료 페이지 상세
-- 관리자 주문서
-- 이메일 본문
-- 견적서 상품 설명
+**파일**: `/includes/ProductSpecFormatter.php`
+
+```php
+// 사용법
+require_once $_SERVER['DOCUMENT_ROOT'] . '/includes/ProductSpecFormatter.php';
+
+// 인스턴스 생성 (DB 연결 필수)
+$formatter = new ProductSpecFormatter($db);
+
+// HTML 포맷 (2줄 <br> 형식)
+echo $formatter->formatHtml($item);
+// 출력: "종류 / 용지 / 규격<br>인쇄면 / 수량 / 디자인"
+
+// 텍스트 포맷 (2줄 | 구분)
+echo $formatter->formatText($item);
+// 출력: "종류 / 용지 / 규격 | 인쇄면 / 수량 / 디자인"
+
+// 한 줄 포맷
+echo $formatter->formatSingleLine($item);
+// 출력: "종류 / 용지 / 규격 / 인쇄면 / 수량"
+```
+
+**헬퍼 메서드 (static)**:
+```php
+// 제품 타입 한글명
+ProductSpecFormatter::getProductTypeName('inserted');  // "전단지"
+
+// 단위
+ProductSpecFormatter::getUnit($item);  // "연", "매", "부", "권"
+
+// 수량 (숫자)
+ProductSpecFormatter::getQuantity($item);  // 0.5, 1000
+
+// 수량 표시
+ProductSpecFormatter::getQuantityDisplay($item);  // "0.5연 (2,000매)", "1,000매"
+
+// 가격 (VAT 포함)
+ProductSpecFormatter::getPrice($item);  // 156200
+
+// 공급가액 (VAT 미포함)
+ProductSpecFormatter::getSupplyPrice($item);  // 142000
+```
+
+### 규칙 2-6: 적용 위치
+
+- 장바구니 상품 목록 (`cart.php`)
+- 주문 페이지 상품 정보 (`OnlineOrder_unified.php`)
+- 주문 완료 페이지 상세 (`OrderComplete_universal.php`)
+- 관리자 주문서 (`OrderFormOrderTree.php`)
+- 주문서 출력 (`OrderFormPrint.php`)
+- 이메일 본문 (`ProcessOrder_unified.php`)
+- 견적서 상품 설명 (`quote/edit.php`, `quote/revise.php`)
+- 마이페이지 주문내역 (`mypage/orders.php`, `mypage/order_detail.php`)
 
 ---
 
@@ -485,8 +532,9 @@ $section_name = getCategoryName($connect, $item['Section']);  // Section 필드 
 - CLAUDE.md - 프로젝트 전체 규칙
 - CLAUDE_DOCS/03_PRODUCTS/FLYER_QUANTITY_SYSTEM.md - 전단지 연/매수 상세
 - 업로드다운로드251118.md - 파일 업로드 시스템
+- `/includes/ProductSpecFormatter.php` - 규격/옵션 포맷터 클래스 (중앙 집중)
 
 ---
 
-*Last Updated: 2025-12-30*
+*Last Updated: 2025-12-31*
 *적용 범위: 두손기획 인쇄 시스템 전체*
