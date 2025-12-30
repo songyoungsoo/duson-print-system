@@ -785,15 +785,19 @@ if (!empty($debug_info) && strpos($_SERVER['HTTP_HOST'], 'localhost') !== false)
 
                                     switch ($product_type) {
                                         case 'sticker':
-                                            // 스티커: 종류 / 모양 / 규격
-                                            if (!empty($item['MY_type'])) $line1_parts[] = htmlspecialchars(getKoreanName($connect, $item['MY_type']));
-                                            if (!empty($item['PN_type'])) $line1_parts[] = htmlspecialchars(getKoreanName($connect, $item['PN_type']));
+                                            // 스티커: 재질 / 크기 / 모양 (cart.php와 동일)
+                                            if (!empty($item['jong'])) {
+                                                $material = preg_replace('/^(jil|jsp|jka|cka)\s+/', '', $item['jong']);
+                                                $line1_parts[] = htmlspecialchars($material);
+                                            }
+                                            if (!empty($item['garo']) && !empty($item['sero'])) {
+                                                $line1_parts[] = htmlspecialchars($item['garo']) . '×' . htmlspecialchars($item['sero']) . 'mm';
+                                            }
                                             if (!empty($item['domusong'])) {
                                                 $shape_parts = explode(' ', $item['domusong'], 2);
                                                 $line1_parts[] = htmlspecialchars($shape_parts[1] ?? $item['domusong']);
                                             }
-                                            // 옵션: 인쇄면 / 수량 / 디자인
-                                            if (!empty($item['POtype'])) $line2_parts[] = ($item['POtype'] == '1' ? '단면' : '양면');
+                                            // 옵션: 수량 / 편집유형 / 디자인
                                             if (!empty($item['mesu'])) $line2_parts[] = number_format(intval($item['mesu'])) . '매';
                                             if (!empty($item['uhyung']) && $item['uhyung'] != '0') {
                                                 $edit_types = ['10000' => '기본편집', '30000' => '고급편집'];
