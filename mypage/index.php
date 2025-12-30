@@ -60,6 +60,16 @@ mysqli_stmt_close($stmt);
 $page = isset($_GET['page']) ? intval($_GET['page']) : 1;
 if (!$page) $page = 1;
 
+// 상태 필터
+$status_filter = isset($_GET['status']) ? $_GET['status'] : '';
+$level_filter_map = [
+    '0' => '주문취소',
+    '1' => '주문접수',
+    '2' => '입금확인',
+    '3' => '작업중',
+    '4' => '배송중'
+];
+
 // 사용자 이메일 가져오기
 $email_query = "SELECT email FROM users WHERE id = ?";
 $email_stmt = mysqli_prepare($db, $email_query);
@@ -70,10 +80,16 @@ $user_email_data = mysqli_fetch_assoc($email_result);
 $userEmail = $user_email_data['email'] ?? '';
 mysqli_stmt_close($email_stmt);
 
-// 전체 주문 수
+// 전체 주문 수 (필터 적용)
 $count_query = "SELECT COUNT(*) as total FROM mlangorder_printauto WHERE email = ?";
-$count_stmt = mysqli_prepare($db, $count_query);
-mysqli_stmt_bind_param($count_stmt, "s", $userEmail);
+if ($status_filter !== '') {
+    $count_query .= " AND level = ?";
+    $count_stmt = mysqli_prepare($db, $count_query);
+    mysqli_stmt_bind_param($count_stmt, "si", $userEmail, $status_filter);
+} else {
+    $count_stmt = mysqli_prepare($db, $count_query);
+    mysqli_stmt_bind_param($count_stmt, "s", $userEmail);
+}
 mysqli_stmt_execute($count_stmt);
 $count_result = mysqli_stmt_get_result($count_stmt);
 $count_data = mysqli_fetch_assoc($count_result);
@@ -85,10 +101,18 @@ $pagenum = 10;
 $pages = ceil($total_orders / $pagenum);
 $offset = $pagenum * ($page - 1);
 
-// 전체 주문 내역 조회
-$all_orders_query = "SELECT * FROM mlangorder_printauto WHERE email = ? ORDER BY no DESC LIMIT ?, ?";
-$all_orders_stmt = mysqli_prepare($db, $all_orders_query);
-mysqli_stmt_bind_param($all_orders_stmt, "sii", $userEmail, $offset, $pagenum);
+// 전체 주문 내역 조회 (필터 적용)
+$all_orders_query = "SELECT * FROM mlangorder_printauto WHERE email = ?";
+if ($status_filter !== '') {
+    $all_orders_query .= " AND level = ?";
+    $all_orders_query .= " ORDER BY no DESC LIMIT ?, ?";
+    $all_orders_stmt = mysqli_prepare($db, $all_orders_query);
+    mysqli_stmt_bind_param($all_orders_stmt, "siii", $userEmail, $status_filter, $offset, $pagenum);
+} else {
+    $all_orders_query .= " ORDER BY no DESC LIMIT ?, ?";
+    $all_orders_stmt = mysqli_prepare($db, $all_orders_query);
+    mysqli_stmt_bind_param($all_orders_stmt, "sii", $userEmail, $offset, $pagenum);
+}
 mysqli_stmt_execute($all_orders_stmt);
 $all_orders_result = mysqli_stmt_get_result($all_orders_stmt);
 $all_orders = mysqli_fetch_all($all_orders_result, MYSQLI_ASSOC);
@@ -396,14 +420,14 @@ include $_SERVER['DOCUMENT_ROOT'] . '/includes/header-ui.php';
         .order-history-table th {
             background: #1466BA;
             color: white;
-            padding: 12px 8px;
+            padding: 8px 6px;
             text-align: center;
             font-weight: 500;
             font-size: 13px;
         }
 
         .order-history-table td {
-            padding: 12px 8px;
+            padding: 6px;
             border-bottom: 1px solid #e0e0e0;
             text-align: center;
             font-size: 13px;
@@ -563,9 +587,27 @@ include $_SERVER['DOCUMENT_ROOT'] . '/includes/header-ui.php';
 
             <!-- 전체 주문조회 & 배송조회 (orderhistory.php 통합) -->
             <div id="order-history" class="order-history-section">
-                <h2 class="section-title">📦 전체 주문조회 & 배송조회</h2>
+                <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 15px;">
+                    <h2 class="section-title" style="margin: 0; border-bottom: none;">📦 전체 주문조회 & 배송조회</h2>
+                    <form method="get" action="" style="display: flex; gap: 8px; align-items: center;">
+                        <select name="status" onchange="this.form.submit()" style="padding: 6px 10px; border: 1px solid #ddd; border-radius: 4px; font-size: 12px;">
+                            <option value="">전체 상태</option>
+                            <?php foreach ($level_filter_map as $code => $text): ?>
+                                <option value="<?php echo $code; ?>" <?php echo $status_filter === $code ? 'selected' : ''; ?>>
+                                    <?php echo $text; ?>
+                                </option>
+                            <?php endforeach; ?>
+                        </select>
+                        <?php if ($status_filter !== ''): ?>
+                            <a href="?#order-history" style="font-size: 12px; color: #1466BA;">초기화</a>
+                        <?php endif; ?>
+                    </form>
+                </div>
 
                 <div class="total-count">
+                    <?php if ($status_filter !== ''): ?>
+                        <strong><?php echo $level_filter_map[$status_filter] ?? ''; ?></strong> 상태:
+                    <?php endif; ?>
                     총 <strong><?php echo number_format($total_orders); ?></strong>건의 주문
                 </div>
 
@@ -706,17 +748,18 @@ include $_SERVER['DOCUMENT_ROOT'] . '/includes/header-ui.php';
                     $range = 5;
                     $start_page = max(1, $page - $range);
                     $end_page = min($pages, $page + $range);
+                    $status_param = $status_filter !== '' ? '&status=' . $status_filter : '';
 
                     // 맨처음
                     if ($page > 1): ?>
-                        <a href="?page=1#order-history" class="page-nav" title="맨 처음">«</a>
+                        <a href="?page=1<?php echo $status_param; ?>#order-history" class="page-nav" title="맨 처음">«</a>
                     <?php else: ?>
                         <span class="page-nav disabled">«</span>
                     <?php endif;
 
                     // 이전
                     if ($page > 1): ?>
-                        <a href="?page=<?php echo $page - 1; ?>#order-history" class="page-nav" title="이전">‹</a>
+                        <a href="?page=<?php echo $page - 1; ?><?php echo $status_param; ?>#order-history" class="page-nav" title="이전">‹</a>
                     <?php else: ?>
                         <span class="page-nav disabled">‹</span>
                     <?php endif;
@@ -728,7 +771,7 @@ include $_SERVER['DOCUMENT_ROOT'] . '/includes/header-ui.php';
 
                     // 페이지 번호들
                     for ($i = $start_page; $i <= $end_page; $i++): ?>
-                        <a href="?page=<?php echo $i; ?>#order-history"
+                        <a href="?page=<?php echo $i; ?><?php echo $status_param; ?>#order-history"
                            class="<?php echo $i == $page ? 'active' : ''; ?>">
                             <?php echo $i; ?>
                         </a>
@@ -741,14 +784,14 @@ include $_SERVER['DOCUMENT_ROOT'] . '/includes/header-ui.php';
 
                     // 다음
                     if ($page < $pages): ?>
-                        <a href="?page=<?php echo $page + 1; ?>#order-history" class="page-nav" title="다음">›</a>
+                        <a href="?page=<?php echo $page + 1; ?><?php echo $status_param; ?>#order-history" class="page-nav" title="다음">›</a>
                     <?php else: ?>
                         <span class="page-nav disabled">›</span>
                     <?php endif;
 
                     // 맨끝
                     if ($page < $pages): ?>
-                        <a href="?page=<?php echo $pages; ?>#order-history" class="page-nav" title="맨 끝">»</a>
+                        <a href="?page=<?php echo $pages; ?><?php echo $status_param; ?>#order-history" class="page-nav" title="맨 끝">»</a>
                     <?php else: ?>
                         <span class="page-nav disabled">»</span>
                     <?php endif; ?>
