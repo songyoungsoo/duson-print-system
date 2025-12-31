@@ -22,6 +22,12 @@ include_once $_SERVER['DOCUMENT_ROOT'] . '/includes/header-ui.php';
 
     <link rel="stylesheet" href="/css/common-styles.css">
     <link rel="stylesheet" href="/css/customer-center.css">
+    <style>
+        /* 콘텐츠 영역 폭 제한 */
+        .customer-content {
+            max-width: 900px;
+        }
+    </style>
 </head>
 <body>
     <div class="customer-center-container">

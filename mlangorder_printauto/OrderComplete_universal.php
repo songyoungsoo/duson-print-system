@@ -13,14 +13,14 @@
 
 session_start();
 
-// 🔧 FIX: HTTP 헤더에서 UTF-8 명시 (브라우저 인코딩 깨짐 방지)
+// FIX: HTTP 헤더에서 UTF-8 명시 (브라우저 인코딩 깨짐 방지)
 header('Content-Type: text/html; charset=UTF-8');
 
 // 데이터베이스 연결 및 통합 인증 시스템
 include "../db.php";
 $connect = $db;
 
-// 🔧 FIX: 명시적으로 UTF-8 charset 설정 (인코딩 깨짐 방지)
+// FIX: 명시적으로 UTF-8 charset 설정 (인코딩 깨짐 방지)
 mysqli_set_charset($connect, 'utf8mb4');
 
 // 통합 인증 시스템 로드
@@ -28,7 +28,12 @@ include "../includes/auth.php";
 
 // 추가 옵션 표시 클래스 포함
 include "../includes/AdditionalOptionsDisplay.php";
+
+// 수량 포맷팅 헬퍼
+include "../includes/quantity_formatter.php";
+include "../includes/ProductSpecFormatter.php";
 $optionsDisplay = new AdditionalOptionsDisplay($connect);
+$specFormatter = new ProductSpecFormatter($connect);
 
 // ===========================================
 // 🔧 공통 함수들
@@ -192,20 +197,20 @@ function getProductUrlMapping() {
  * 제품 상세 정보 표시
  */
 function displayProductDetails($connect, $order) {
-    global $optionsDisplay; // 전역 변수로 접근
+    global $optionsDisplay, $specFormatter; // 전역 변수로 접근
 
     if (empty($order['Type_1'])) return '';
 
     $type_data = $order['Type_1'];
 
-    // 🔧 FIX: "상품 정보: " 접두사 제거 (기존 데이터 호환성)
+    // FIX: "상품 정보: " 접두사 제거 (기존 데이터 호환성)
     if (strpos($type_data, '상품 정보: ') === 0) {
         $type_data = substr($type_data, strlen('상품 정보: '));
     }
 
     $json_data = json_decode($type_data, true);
 
-    // 🔧 2025-12-19: 테이블 대신 div 스타일로 변경 (OnlineOrder_unified.php 규격/옵션 스타일)
+    // 2025-12-19: 테이블 대신 div 스타일로 변경 (OnlineOrder_unified.php 규격/옵션 스타일)
     $html = '<div class="specs-cell" style="line-height: 1.6;">';
 
     // JSON 파싱 실패 시 키-값 쌍으로 파싱 시도 (Type_1이 일반 텍스트인 경우)
@@ -226,184 +231,29 @@ function displayProductDetails($connect, $order) {
     }
 
     if ($json_data && is_array($json_data)) {
-        // 🔧 PRIORITY 1: formatted_display 우선 사용 (분석 문서 권장사항)
-        $use_formatted = false;
-        if (!empty($json_data['formatted_display'])) {
-            $formatted_lines = explode('\\n', $json_data['formatted_display']);
-            foreach ($formatted_lines as $line) {
-                $line = trim($line);
-                if (!empty($line)) {
-                    // 키: 값 형식을 분리하여 div로 표시
-                    if (strpos($line, ':') !== false) {
-                        list($key, $value) = explode(':', $line, 2);
-                        $html .= '<div class="spec-item"><span style="color: #666; font-weight: 500;">' . htmlspecialchars(trim($key)) . ':</span> ' . htmlspecialchars(trim($value)) . '</div>';
-                    } else {
-                        $html .= '<div class="spec-item">' . htmlspecialchars($line) . '</div>';
-                    }
-                }
+        // ProductSpecFormatter 사용 (규격 2줄 + 옵션 형식)
+        $item = array_merge($order, $json_data);
+        $item['product_type'] = $order['product_type'] ?? $json_data['product_type'] ?? '';
+
+        // product_type이 없으면 데이터 구조로 추론
+        if (empty($item['product_type'])) {
+            if (isset($json_data['Section']) && isset($json_data['PN_type'])) {
+                $item['product_type'] = 'littleprint';
+            } elseif (isset($json_data['MY_Fsd']) && isset($json_data['PN_type'])) {
+                $item['product_type'] = 'inserted';
+            } elseif (isset($json_data['Section']) && !isset($json_data['PN_type'])) {
+                $item['product_type'] = 'cadarok';
             }
-            $use_formatted = true;
-            // 🔧 FIX: formatted_display 사용 후에도 추가 옵션 표시를 위해 계속 진행 (조기 반환 제거)
         }
 
-        // 🔧 FALLBACK: formatted_display가 없을 때만 제품별 파싱
-        if (!$use_formatted) {
-            $product_type = $json_data['product_type'] ?? '';
-
-            // product_type이 없으면 데이터 구조로 추론
-            if (empty($product_type)) {
-                // 포스터 판별: Section + PN_type 조합 (littleprint 특징)
-                if (isset($json_data['Section']) && isset($json_data['PN_type'])) {
-                    $product_type = 'littleprint';
-                }
-                // 전단지 판별: MY_Fsd + PN_type 조합
-                elseif (isset($json_data['MY_Fsd']) && isset($json_data['PN_type'])) {
-                    $product_type = 'inserted';
-                }
-                // 카다록 판별: Section만 있고 PN_type 없음
-                elseif (isset($json_data['Section']) && !isset($json_data['PN_type'])) {
-                    $product_type = 'cadarok';
-                }
-            }
-
-        // 🔧 2줄+2줄 통일 형식 (duson-print-rules 준수)
-        // 규격 2줄 + 옵션 2줄 형식으로 출력
-        $spec_lines = [];  // 규격 정보 (최대 2줄)
-        $opt_lines = [];   // 옵션 정보 (최대 2줄)
-
-        switch($product_type) {
-            case 'sticker':
-                $details = $json_data['order_details'] ?? $json_data;
-                // 규격 1줄: 재질
-                if (isset($details['jong'])) $spec_lines[] = htmlspecialchars($details['jong']);
-                // 규격 2줄: 크기
-                if (isset($details['garo']) && isset($details['sero'])) {
-                    $spec_lines[] = htmlspecialchars($details['garo']) . '×' . htmlspecialchars($details['sero']) . 'mm';
-                }
-                // 옵션 1줄: 수량/편집
-                $opt_parts = [];
-                if (isset($details['mesu'])) $opt_parts[] = number_format($details['mesu']) . '매';
-                if (isset($details['uhyung'])) $opt_parts[] = htmlspecialchars($details['uhyung']);
-                if (!empty($opt_parts)) $opt_lines[] = implode(' / ', $opt_parts);
-                // 옵션 2줄: 모양
-                if (isset($details['domusong'])) $opt_lines[] = htmlspecialchars($details['domusong']);
-                break;
-
-            case 'envelope':
-                $type_display = $json_data['MY_type_name'] ?? getCategoryName($connect, $json_data['MY_type'] ?? '');
-                $section_display = $json_data['Section_name'] ?? getCategoryName($connect, $json_data['Section'] ?? '');
-                $potion_display = $json_data['POtype_name'] ?? getCategoryName($connect, $json_data['POtype'] ?? '');
-                // 규격 1줄: 타입
-                if (!empty($type_display)) $spec_lines[] = htmlspecialchars($type_display);
-                // 규격 2줄: 용지
-                if (!empty($section_display)) $spec_lines[] = htmlspecialchars($section_display);
-                // 옵션 1줄: 인쇄
-                if (!empty($potion_display)) $opt_lines[] = htmlspecialchars($potion_display);
-                // 옵션 2줄: 디자인
-                if (isset($json_data['ordertype'])) $opt_lines[] = ($json_data['ordertype'] === 'total' ? '디자인+인쇄' : '인쇄만');
-                break;
-
-            case 'namecard':
-                // 규격 1줄: 타입
-                if (isset($json_data['MY_type'])) $spec_lines[] = getCategoryName($connect, $json_data['MY_type']);
-                // 규격 2줄: 용지
-                if (isset($json_data['Section'])) $spec_lines[] = getCategoryName($connect, $json_data['Section']);
-                // 옵션 1줄: 인쇄
-                if (isset($json_data['POtype'])) $opt_lines[] = ($json_data['POtype'] == '1' ? '단면컬러인쇄' : '양면컬러인쇄');
-                // 옵션 2줄: 수량
-                if (isset($json_data['MY_amount'])) $opt_lines[] = number_format($json_data['MY_amount']) . ($order['unit'] ?? '매');
-                break;
-
-            case 'merchandisebond':
-                // 규격 1줄: 구분
-                if (isset($json_data['MY_type'])) $spec_lines[] = getCategoryName($connect, $json_data['MY_type']);
-                // 규격 2줄: 종류
-                if (isset($json_data['MY_Fsd'])) $spec_lines[] = getCategoryName($connect, $json_data['MY_Fsd']);
-                // 옵션 1줄: 수량
-                if (isset($json_data['MY_amount'])) $opt_lines[] = number_format($json_data['MY_amount']) . ($order['unit'] ?? '매');
-                break;
-
-            case 'cadarok':
-                // 규격 1줄: 타입
-                if (isset($json_data['MY_type'])) $spec_lines[] = getCategoryName($connect, $json_data['MY_type']);
-                // 규격 2줄: 스타일
-                if (isset($json_data['MY_Fsd'])) $spec_lines[] = getCategoryName($connect, $json_data['MY_Fsd']);
-                // 옵션 1줄: 수량
-                if (isset($json_data['MY_amount'])) $opt_lines[] = number_format($json_data['MY_amount']) . ($order['unit'] ?? '부');
-                break;
-
-            case 'poster':
-            case 'littleprint':
-                $my_type = $json_data['MY_type'] ?? $json_data['My_type'] ?? '';
-                $section = $json_data['Section'] ?? $json_data['section'] ?? '';
-                $pn_type = $json_data['PN_type'] ?? $json_data['Pn_type'] ?? '';
-                $potype = $json_data['POtype'] ?? $json_data['Potype'] ?? '';
-                $ordertype = $json_data['ordertype'] ?? $json_data['Ordertype'] ?? '';
-                // 규격 1줄: 종류/지류
-                $spec1_parts = [];
-                if (!empty($my_type)) $spec1_parts[] = (is_numeric($my_type) ? getCategoryName($connect, $my_type) : htmlspecialchars($my_type));
-                if (!empty($section)) $spec1_parts[] = (is_numeric($section) ? getCategoryName($connect, $section) : htmlspecialchars($section));
-                if (!empty($spec1_parts)) $spec_lines[] = implode(' ', $spec1_parts);
-                // 규격 2줄: 규격
-                if (!empty($pn_type)) $spec_lines[] = (is_numeric($pn_type) ? getCategoryName($connect, $pn_type) : htmlspecialchars($pn_type));
-                // 옵션 1줄: 인쇄면
-                if (!empty($potype)) $opt_lines[] = ($potype == '1' ? '단면컬러인쇄' : '양면컬러인쇄');
-                // 옵션 2줄: 디자인
-                if (!empty($ordertype)) $opt_lines[] = ($ordertype == 'total' ? '디자인+인쇄' : '인쇄만');
-                break;
-
-            case 'inserted':
-            case 'leaflet':
-                // 규격 1줄: 타입/용지
-                $spec1_parts = [];
-                if (isset($json_data['MY_type'])) $spec1_parts[] = getCategoryName($connect, $json_data['MY_type']);
-                if (isset($json_data['MY_Fsd'])) $spec1_parts[] = getCategoryName($connect, $json_data['MY_Fsd']);
-                if (!empty($spec1_parts)) $spec_lines[] = implode(' ', $spec1_parts);
-                // 규격 2줄: 규격
-                if (isset($json_data['PN_type'])) $spec_lines[] = getCategoryName($connect, $json_data['PN_type']);
-                // 옵션 1줄: 인쇄
-                if (isset($json_data['POtype'])) $opt_lines[] = ($json_data['POtype'] == '1' ? '단면컬러인쇄' : '양면컬러인쇄');
-                // 옵션 2줄: 디자인
-                if (isset($json_data['ordertype'])) $opt_lines[] = ($json_data['ordertype'] == 'total' ? '디자인+인쇄' : '인쇄만');
-                break;
-
-            default:
-                // 기타 제품 타입 처리
-                $exclude_fields = [
-                    'product_type', 'no', 'session_id', 'Session_id', 'st_price', 'St_price',
-                    'st_price_vat', 'St_price_vat', 'upload_method', 'Upload_method',
-                    'coating_enabled', 'Coating_enabled', 'coating_type', 'Coating_type',
-                    'coating_price', 'Coating_price', 'folding_enabled', 'Folding_enabled',
-                    'folding_type', 'Folding_type', 'folding_price', 'Folding_price',
-                    'creasing_enabled', 'Creasing_enabled', 'creasing_lines', 'Creasing_lines',
-                    'creasing_price', 'Creasing_price', 'additional_options_total',
-                    'Additional_options_total', 'additional_options', 'Additional_options'
-                ];
-                // 기타 제품: 최대 4줄까지만 수집
-                $line_count = 0;
-                foreach ($json_data as $key => $value) {
-                    if (empty($value) || in_array($key, $exclude_fields) || $line_count >= 4) continue;
-                    $display_value = is_numeric($value) && in_array($key, ['MY_type', 'MY_Fsd', 'PN_type', 'Section'])
-                        ? getCategoryName($connect, $value)
-                        : htmlspecialchars($value);
-                    if ($line_count < 2) {
-                        $spec_lines[] = $display_value;
-                    } else {
-                        $opt_lines[] = $display_value;
-                    }
-                    $line_count++;
-                }
-                break;
+        $specs = $specFormatter->format($item);
+        if (!empty($specs['line1'])) {
+            $html .= '<div class="spec-item">' . htmlspecialchars($specs['line1']) . '</div>';
         }
-
-        // 🔧 규격/옵션 통일 출력 (2줄+2줄 형식)
-        foreach ($spec_lines as $spec) {
-            $html .= '<div class="spec-line" style="color: #4a5568; margin-bottom: 2px;">' . $spec . '</div>';
+        if (!empty($specs['line2'])) {
+            $html .= '<div class="spec-item">' . htmlspecialchars($specs['line2']) . '</div>';
         }
-        foreach ($opt_lines as $opt) {
-            $html .= '<div class="spec-line" style="color: #667eea; margin-bottom: 2px;">' . $opt . '</div>';
-        }
-        } // close if (!$use_formatted)
+        // 추가옵션은 별도 섹션에서 표시하므로 여기서는 생략
     } else {
         // 일반 텍스트 데이터 처리 (전단지 등)
         $lines = explode("\n", $type_data);
@@ -441,7 +291,7 @@ function displayProductDetails($connect, $order) {
         $optionDetails = $optionsDisplay->getOrderDetails($optionData);
         if ($optionDetails['has_options']) {
             $html .= '<div style="margin-top: 8px; padding: 10px 10px 5px 10px; background: #e8f5e9; border-radius: 4px; border-left: 3px solid #4caf50;">';
-            $html .= '<strong style="color: #2e7d32;">📎 추가 옵션:</strong> ';
+            $html .= '<strong style="color: #2e7d32;">추가 옵션:</strong> ';
 
             foreach ($optionDetails['options'] as $option) {
                 $html .= '<span class="option-item" style="background-color: #c8e6c9; color: #1b5e20; margin: 0 5px;">';
@@ -524,56 +374,61 @@ function displayProductDetails($connect, $order) {
  * 수량 추출
  */
 function extractQuantity($order) {
-    // 상품 타입이 전단지/리플렛인지 확인
-    $is_flyer = false;
+    // 상품 타입 확인
+    $product_type = '';
+    $json_data = null;
+
     if (isset($order['Type_1'])) {
         $json_data = json_decode($order['Type_1'], true);
-        if (isset($json_data['product_type']) && in_array($json_data['product_type'], ['inserted', 'leaflet'])) {
-            $is_flyer = true;
-        }
-    }
-    if (!$is_flyer && (strpos($order['Type'], '전단') !== false || strpos($order['Type'], '리플렛') !== false)) {
-        $is_flyer = true;
+        $product_type = $json_data['product_type'] ?? '';
     }
 
+    // 전단지/리플렛 특별 처리
+    $is_flyer = in_array($product_type, ['inserted', 'leaflet']) ||
+                strpos($order['Type'] ?? '', '전단') !== false ||
+                strpos($order['Type'] ?? '', '리플렛') !== false;
+
     if ($is_flyer) {
-        $quantity_text = '';
-        // 주문 데이터에 MY_amount 와 mesu 필드가 있는지 확인 (Type_1 JSON에서 추출)
-        $my_amount = $json_data['MY_amount'] ?? $json_data['quantity'] ?? $order['MY_amount'] ?? $order['quantity'] ?? null;
-        // 🔧 FIX: flyer_mesu 우선 사용 (전단지 전용 필드)
-        $mesu = $json_data['flyer_mesu'] ?? $json_data['mesu'] ?? $order['flyer_mesu'] ?? $order['mesu'] ?? null;
+        $my_amount = $json_data['MY_amount'] ?? $order['MY_amount'] ?? null;
+        $mesu = $json_data['mesu'] ?? $order['mesu'] ?? null;
 
         if (!empty($my_amount)) {
             $yeonsu = floatval($my_amount);
-            $quantity_text .= rtrim(rtrim(sprintf('%.1f', $yeonsu), '0'), '.') . '연';
-        }
-        if (!empty($mesu)) {
-            if (!empty($quantity_text)) {
-                 $quantity_text .= ' (' . number_format($mesu) . '매)';
-            } else {
-                 $quantity_text = number_format($mesu) . '매';
+            // formatQuantityValue 사용 (정수면 정수로, 소수면 소수로)
+            $formatted_qty = formatQuantityValue($yeonsu, 'inserted');
+            $quantity_text = $formatted_qty . '연';
+
+            if (!empty($mesu)) {
+                $quantity_text .= '(' . number_format(intval($mesu)) . '매)';
             }
-        }
-        // 생성된 문자열이 있으면 반환
-        if (!empty(trim($quantity_text))) {
             return htmlspecialchars($quantity_text);
+        } elseif (!empty($mesu)) {
+            return htmlspecialchars(number_format(intval($mesu)) . '매');
         }
     }
 
-    // 전단지가 아니거나 위 로직이 실패한 경우, 기존 폴백 로직 실행
-    if (isset($order['Type_1'])) {
-        $json_data = json_decode($order['Type_1'], true);
-        if ($json_data && is_array($json_data)) {
-            $details = $json_data['order_details'] ?? $json_data;
-            if (isset($details['MY_amount'])) return number_format($details['MY_amount']);
-            if (isset($details['mesu'])) return number_format($details['mesu']);
-        } else {
-            if (preg_match('/수량:\s*([0-9.,]+)/', $order['Type_1'], $matches)) {
-                return htmlspecialchars($matches[1]);
-            }
+    // 다른 모든 품목: 정수로 표시
+    if ($json_data && is_array($json_data)) {
+        $details = $json_data['order_details'] ?? $json_data;
+        $my_amount = $details['MY_amount'] ?? null;
+        $unit = $order['unit'] ?? '매';
+
+        if (!empty($my_amount)) {
+            // formatQuantity 사용 (항상 정수)
+            return formatQuantity($my_amount, $product_type, $unit);
+        }
+
+        // mesu 폴백
+        if (isset($details['mesu'])) {
+            return formatQuantity($details['mesu'], $product_type, '매');
         }
     }
-    
+
+    // 마지막 폴백: Type_1 텍스트 파싱
+    if (isset($order['Type_1']) && preg_match('/수량:\s*([0-9.,]+)/', $order['Type_1'], $matches)) {
+        return htmlspecialchars($matches[1]);
+    }
+
     // 최종 폴백
     return '1';
 }
@@ -628,7 +483,7 @@ if (empty($order_list)) {
 $first_order = $order_list[0];
 
 // 페이지 설정
-$page_title = '🎉 주문 완료 - Universal System';
+$page_title = '주문 완료 - Universal System';
 $current_page = 'order_complete';
 
 // 추가 CSS 연결
@@ -640,16 +495,20 @@ $additional_css = [
 ];
 
 // 공통 헤더 포함
-include "../includes/header.php";
-include "../includes/nav.php";
 ?>
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>주문 완료 - 두손기획인쇄</title>
 
-<!-- Google Fonts - Noto Sans KR -->
-<link rel="preconnect" href="https://fonts.googleapis.com">
-<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link href="https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@400;500;700&display=swap" rel="stylesheet">
+    <!-- Google Fonts - Noto Sans KR -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@400;500;700&display=swap" rel="stylesheet">
 
-<!-- 📱 Excel 스타일 OrderComplete -->
+<!-- Excel 스타일 OrderComplete -->
 <style>
 /* Excel Design System - 깔끔한 스프레드시트 스타일 */
 :root {
@@ -726,12 +585,15 @@ include "../includes/nav.php";
     text-align: center;
     font-weight: 600;
     color: var(--primary-blue);
+    vertical-align: middle;
 }
 
 .col-product {
     width: 13%;
     font-weight: 600;
     color: var(--text-primary);
+    vertical-align: middle;
+    text-align: center;
 }
 
 .col-details {
@@ -743,6 +605,8 @@ include "../includes/nav.php";
     text-align: center;
     font-weight: 600;
     color: var(--text-primary);
+    font-size: 13px;
+    vertical-align: middle;
 }
 
 .col-price {
@@ -767,6 +631,11 @@ include "../includes/nav.php";
 
 .price-total {
     margin: 3px 0;
+    font-size: 13px;
+}
+
+.price-total span {
+    font-size: 13px;
 }
 
 .price-vat {
@@ -845,17 +714,17 @@ include "../includes/nav.php";
     flex: 1;
     color: var(--text-primary);
     font-weight: 500;
-    font-size: 0.9rem;
+    font-size: 13px;
 }
 
 .info-label {
     width: 90px;
     font-weight: 600;
     color: var(--text-primary);
-    font-size: 0.9rem;
+    font-size: 13px;
 }
 
-/* 📄 인쇄용 스타일 */
+/* 인쇄용 스타일 */
 @media print {
     /* 헤더, 푸터, 네비게이션 숨김 */
     header, footer, nav, .nav, .navbar, .header, .footer,
@@ -1061,34 +930,37 @@ include "../includes/nav.php";
 .action-buttons {
     display: flex;
     justify-content: center;
-    gap: 20px;
+    gap: 15px;
     flex-wrap: wrap;
 }
 
 .btn-action {
     display: inline-flex;
     align-items: center;
+    justify-content: center;
     gap: 8px;
-    padding: 10px 20px;
-    border-radius: 4px;  /* Excel 스타일 sharp corners */
+    padding: 12px 24px;
+    border-radius: 6px;
     text-decoration: none;
     font-weight: 600;
-    font-size: 0.9rem;
+    font-size: 0.95rem;
     transition: all 0.2s ease;
     border: none;
     cursor: pointer;
+    min-width: auto;
+    max-width: fit-content;
 }
 
 .btn-continue {
-    background-color: var(--success-green);
-    color: white;
-    box-shadow: 0 2px 4px rgba(40, 167, 69, 0.3);
+    background-color: #28a745 !important;
+    color: white !important;
+    box-shadow: 0 2px 8px rgba(40, 167, 69, 0.3);
 }
 
 .btn-print {
-    background-color: var(--primary-blue);
-    color: white;
-    box-shadow: 0 2px 4px rgba(30, 144, 255, 0.3);
+    background-color: #1E90FF !important;
+    color: white !important;
+    box-shadow: 0 2px 8px rgba(30, 144, 255, 0.3);
 }
 
 .btn-action:hover {
@@ -1104,7 +976,7 @@ include "../includes/nav.php";
     background-color: #1873CC;  /* Darker blue on hover */
 }
 
-/* 🎨 상태 배지 - Excel 스타일 */
+/* 상태 배지 - Excel 스타일 */
 .status-badge {
     display: inline-block;
     padding: 6px 12px;
@@ -1132,7 +1004,7 @@ include "../includes/nav.php";
     border: 1px solid var(--success-green);
 }
 
-/* 📱 반응형 디자인 */
+/* 반응형 디자인 */
 @media (max-width: 768px) {
     .universal-container {
         margin: 10px;
@@ -1156,16 +1028,19 @@ include "../includes/nav.php";
     }
     
     .action-buttons {
-        flex-direction: column;
+        flex-direction: row;
         align-items: center;
+        gap: 10px;
     }
-    
+
     .btn-action {
-        min-width: 200px;
+        min-width: auto;
+        padding: 10px 20px;
+        font-size: 0.9rem;
     }
 }
 
-/* 🖨️ 세련된 인쇄 스타일 */
+/* 세련된 인쇄 스타일 */
 @media print {
     * {
         -webkit-print-color-adjust: exact !important;
@@ -1194,7 +1069,7 @@ include "../includes/nav.php";
         background: white !important;
     }
     
-    /* 🏢 회사 헤더 - 고급스러운 디자인 */
+    /* 회사 헤더 - 고급스러운 디자인 */
     .print-header {
         display: block !important;
         page-break-inside: avoid;
@@ -1256,7 +1131,7 @@ include "../includes/nav.php";
         font-weight: 500;
     }
     
-    /* 📋 문서 제목 - 전문적인 스타일 */
+    /* 문서 제목 - 전문적인 스타일 */
     .print-doc-title {
         text-align: center;
         margin: 25px 0;
@@ -1268,7 +1143,7 @@ include "../includes/nav.php";
     }
     
     .print-doc-title::before {
-        content: '✓';
+        content: '';
         position: absolute;
         top: -15px;
         left: 50%;
@@ -1306,7 +1181,7 @@ include "../includes/nav.php";
         border: 1px solid #dee2e6;
     }
     
-    /* 👤 고객 정보 - 세련된 테이블 */
+    /* 고객 정보 - 세련된 테이블 */
     .print-customer-info {
         margin: 25px 0;
         page-break-inside: avoid;
@@ -1435,7 +1310,7 @@ include "../includes/nav.php";
         font-weight: 700 !important;
     }
     
-    /* 💳 결제 정보 푸터 - 우아한 디자인 */
+    /* 결제 정보 푸터 - 우아한 디자인 */
     .print-footer {
         display: block !important;
         page-break-inside: avoid;
@@ -1527,7 +1402,7 @@ include "../includes/nav.php";
     }
     
     .print-contact-notice::before {
-        content: '📞';
+        content: '';
         position: absolute;
         top: -15px;
         left: 50%;
@@ -1566,6 +1441,13 @@ include "../includes/nav.php";
 }
 </style>
 
+<!-- 헤더 스타일 (header-ui.php용) -->
+<link rel="stylesheet" href="../css/common-styles.css">
+</head>
+<body>
+
+<?php include "../includes/header-ui.php"; ?>
+
 <div class="universal-container">
     <!-- 인쇄용 헤더 (화면에서는 숨김, 인쇄시에만 표시) -->
     <div class="print-header" style="display: none;">
@@ -1595,7 +1477,14 @@ include "../includes/nav.php";
     </div>
 
     <!-- 주문완료 제목 -->
-    <h2 style="text-align: center; font-size: 22px; font-weight: bold; margin: 20px 0 30px; color: #2c3e50;">주문이 정상적으로 완료되었습니다</h2>
+    <h2 style="text-align: center; font-size: 22px; font-weight: bold; margin: 20px 0 10px; color: #2c3e50;">주문이 완료되었습니다</h2>
+
+    <!-- 이메일 발송 안내 -->
+    <div style="text-align: center; margin: 0 0 30px; padding: 12px 20px; background: #e3f2fd; border-left: 4px solid #2196f3; border-radius: 4px; max-width: 600px; margin-left: auto; margin-right: auto;">
+        <p style="margin: 0; color: #1565c0; font-size: 14px; font-weight: 500;">
+            주문내용은 이메일로 발송됩니다
+        </p>
+    </div>
 
     <?php
         // Gemini Debug Block
@@ -1674,11 +1563,11 @@ include "../includes/nav.php";
         </tfoot>
     </table>
 
-    <!-- 📋 정보 카드들 -->
+    <!-- 정보 카드들 -->
     <div class="info-cards">
         <!-- 고객 정보 -->
         <div class="info-card">
-            <h3>👤 고객 정보</h3>
+            <h3>고객 정보</h3>
             <div class="info-row" style="margin-bottom: 5px;">
                 <div class="info-label">성명:</div>
                 <div class="info-value"><?php echo htmlspecialchars($name ?: $first_order['name'] ?: '정보없음'); ?></div>
@@ -1731,7 +1620,7 @@ include "../includes/nav.php";
 
         <!-- 입금 안내 -->
         <div class="info-card">
-            <h3>💳 입금 안내</h3>
+            <h3>입금 안내</h3>
             <div class="info-row" style="margin-bottom: 5px;">
                 <div class="info-label">예금주:</div>
                 <div class="info-value">두손기획인쇄 차경선</div>
@@ -1750,10 +1639,10 @@ include "../includes/nav.php";
             </div>
             <div class="info-row" style="margin-bottom: 5px;">
                 <div class="info-label">카드결제:</div>
-                <div class="info-value">📞 1688-2384</div>
+                <div class="info-value">1688-2384</div>
             </div>
-            <div style="background: #fff3cd; padding: 8px; border-radius: 4px; margin-top: 10px; font-size: 0.85rem; color: #856404;">
-                ⚠️ <strong>입금자명을 주문자명(<?php echo htmlspecialchars($name ?: $first_order['name']); ?>)과 동일하게 해주세요</strong>
+            <div style="background: #fff3cd; padding: 8px; border-radius: 4px; margin-top: 10px; font-size: 13px; color: #856404;">
+                <strong>입금자명을 주문자명(<?php echo htmlspecialchars($name ?: $first_order['name']); ?>)과 동일하게 해주세요</strong>
             </div>
         </div>
     </div>
@@ -1803,7 +1692,7 @@ include "../includes/nav.php";
     </div>
 </div>
 
-<!-- 📧 JavaScript (인쇄 및 애니메이션) -->
+<!-- JavaScript (인쇄 및 애니메이션) -->
 <script>
 // 월스트리트 스타일 주문서 별도 창 열기
 function openPrintWindow() {
@@ -1848,7 +1737,7 @@ document.addEventListener('DOMContentLoaded', function() {
 // 복사 기능 (계좌번호 등)
 function copyToClipboard(text) {
     navigator.clipboard.writeText(text).then(() => {
-        alert('📋 복사되었습니다: ' + text);
+        alert('복사되었습니다: ' + text);
     });
 }
 
@@ -1862,16 +1751,16 @@ function toggleOrderDetails(orderNo) {
 
 console.log('🌟 Universal OrderComplete System Loaded');
 console.log('📊 Order Count:', <?php echo count($order_list); ?>);
-console.log('💰 Total Amount:', <?php echo $total_amount_vat; ?>);
+console.log('Total Amount:', <?php echo $total_amount_vat; ?>);
 console.log('🔗 Continue Shopping URL:', '<?php echo addslashes(getLastOrderProductUrl($order_list)); ?>');
 <?php
 // 디버깅: 마지막 주문 데이터 출력
 if (!empty($order_list)) {
     $latest = $order_list[0];
-    echo "console.log('📦 Latest Order Type:', '" . addslashes($latest['Type'] ?? 'N/A') . "');";
+    echo "console.log('Latest Order Type:', '" . addslashes($latest['Type'] ?? 'N/A') . "');";
     if (!empty($latest['Type_1'])) {
         $type1_preview = substr($latest['Type_1'], 0, 200);
-        echo "console.log('📋 Type_1 Preview:', '" . addslashes($type1_preview) . "...');";
+        echo "console.log('Type_1 Preview:', '" . addslashes($type1_preview) . "...');";
     }
 }
 ?>

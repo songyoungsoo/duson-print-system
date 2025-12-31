@@ -22,6 +22,57 @@ include_once $_SERVER['DOCUMENT_ROOT'] . '/includes/header-ui.php';
 
     <link rel="stylesheet" href="/css/common-styles.css">
     <link rel="stylesheet" href="/css/customer-center.css">
+    <style>
+        /* 콘텐츠 영역 폭 제한 */
+        .customer-content {
+            max-width: 900px;
+        }
+        /* 계좌 카드 - 결제 방법과 동일한 스타일 */
+        .account-cards-row {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 20px;
+            margin: 15px 0;
+        }
+        .account-card-compact {
+            background: #f8f9fa;
+            border-radius: 12px;
+            padding: 25px;
+            text-align: center;
+        }
+        .account-card-compact .bank-name {
+            font-size: 18px;
+            font-weight: 600;
+            color: #333;
+            margin-bottom: 15px;
+        }
+        .account-card-compact .account-num {
+            font-family: 'Courier New', monospace;
+            font-weight: 600;
+            font-size: 15px;
+            color: #1466BA;
+            margin-bottom: 15px;
+        }
+        .btn-copy-sm {
+            padding: 8px 16px;
+            font-size: 13px;
+            background: #1466BA;
+            color: #fff;
+            border: none;
+            border-radius: 6px;
+            cursor: pointer;
+            transition: background 0.2s;
+        }
+        .btn-copy-sm:hover {
+            background: #0d4d8a;
+        }
+        .account-holder-note {
+            text-align: center;
+            color: #666;
+            font-size: 14px;
+            margin-top: 15px;
+        }
+    </style>
 </head>
 <body>
     <div class="customer-center-container">
@@ -41,37 +92,24 @@ include_once $_SERVER['DOCUMENT_ROOT'] . '/includes/header-ui.php';
                 <!-- 주요 입금 계좌 -->
                 <section class="account-section main-account">
                     <h2 class="section-title">주요 입금 계좌</h2>
-                    <div class="account-cards">
-                        <div class="account-card primary">
-                            <div class="bank-logo">🏦</div>
-                            <div class="account-info">
-                                <h3>국민은행</h3>
-                                <div class="account-number">999-1688-2384</div>
-                                <div class="account-holder">예금주: 두손기획인쇄 차경선</div>
-                            </div>
-                            <button class="btn-copy" data-account="999-1688-2384">계좌번호 복사</button>
+                    <div class="account-cards-row">
+                        <div class="account-card-compact">
+                            <div class="bank-name">국민은행</div>
+                            <div class="account-num">999-1688-2384</div>
+                            <button class="btn-copy-sm" data-account="999-1688-2384">복사</button>
                         </div>
-
-                        <div class="account-card">
-                            <div class="bank-logo">🏦</div>
-                            <div class="account-info">
-                                <h3>신한은행</h3>
-                                <div class="account-number">110-342-543507</div>
-                                <div class="account-holder">예금주: 두손기획인쇄 차경선</div>
-                            </div>
-                            <button class="btn-copy" data-account="110-342-543507">계좌번호 복사</button>
+                        <div class="account-card-compact">
+                            <div class="bank-name">신한은행</div>
+                            <div class="account-num">110-342-543507</div>
+                            <button class="btn-copy-sm" data-account="110-342-543507">복사</button>
                         </div>
-
-                        <div class="account-card">
-                            <div class="bank-logo">🏦</div>
-                            <div class="account-info">
-                                <h3>농협</h3>
-                                <div class="account-number">301-2632-1829</div>
-                                <div class="account-holder">예금주: 두손기획인쇄 차경선</div>
-                            </div>
-                            <button class="btn-copy" data-account="301-2632-1829">계좌번호 복사</button>
+                        <div class="account-card-compact">
+                            <div class="bank-name">농협</div>
+                            <div class="account-num">301-2632-1829</div>
+                            <button class="btn-copy-sm" data-account="301-2632-1829">복사</button>
                         </div>
                     </div>
+                    <p class="account-holder-note">예금주: 두손기획인쇄 차경선</p>
                 </section>
 
                 <!-- 결제 방법 안내 -->
@@ -182,5 +220,46 @@ include_once $_SERVER['DOCUMENT_ROOT'] . '/includes/header-ui.php';
     </div>
 
     <script src="/js/customer-center.js"></script>
+    <script>
+    // 계좌번호 복사 기능 (인라인)
+    document.addEventListener('DOMContentLoaded', function() {
+        document.querySelectorAll('.btn-copy-sm').forEach(function(btn) {
+            btn.addEventListener('click', function(e) {
+                e.preventDefault();
+                var accountNumber = this.getAttribute('data-account');
+                var button = this;
+
+                // fallback 방식 사용 (HTTP에서도 작동)
+                var textArea = document.createElement('textarea');
+                textArea.value = accountNumber;
+                textArea.style.position = 'fixed';
+                textArea.style.left = '-9999px';
+                textArea.style.top = '0';
+                document.body.appendChild(textArea);
+                textArea.focus();
+                textArea.select();
+
+                try {
+                    var successful = document.execCommand('copy');
+                    if (successful) {
+                        var originalText = button.textContent;
+                        button.textContent = '✓ 복사완료!';
+                        button.style.background = '#4CAF50';
+                        setTimeout(function() {
+                            button.textContent = originalText;
+                            button.style.background = '#1466BA';
+                        }, 2000);
+                    } else {
+                        alert('계좌번호: ' + accountNumber);
+                    }
+                } catch (err) {
+                    alert('계좌번호: ' + accountNumber);
+                }
+
+                document.body.removeChild(textArea);
+            });
+        });
+    });
+    </script>
 </body>
 </html>

@@ -20,10 +20,116 @@ include "../mlangprintauto/shop_temp_helper.php";
 
 // 추가 옵션 표시 클래스 포함
 include "../includes/AdditionalOptionsDisplay.php";
+include "../includes/quantity_formatter.php";
+include "../includes/ProductSpecFormatter.php";
 $optionsDisplay = new AdditionalOptionsDisplay($connect);
+$specFormatter = new ProductSpecFormatter($connect);
+
+/**
+ * ID로 한글명 가져오기 함수 (장바구니와 동일)
+ */
+function getKoreanName($connect, $id)
+{
+    if (!$connect || !$id) {
+        return $id;
+    }
+
+    // ID가 이미 한글이면 그대로 반환
+    if (preg_match('/[가-힣]/u', $id)) {
+        return $id;
+    }
+
+    // 숫자와 문자열 모두 처리
+    $query = "SELECT title FROM mlangprintauto_transactioncate WHERE no = ? OR title = ? LIMIT 1";
+    $stmt = mysqli_prepare($connect, $query);
+    if (!$stmt) {
+        error_log("getKoreanName prepare failed: " . mysqli_error($connect));
+        return $id;
+    }
+
+    mysqli_stmt_bind_param($stmt, 'ss', $id, $id);
+    mysqli_stmt_execute($stmt);
+    $result = mysqli_stmt_get_result($stmt);
+
+    if ($row = mysqli_fetch_assoc($result)) {
+        mysqli_stmt_close($stmt);
+        return $row['title'];
+    }
+
+    mysqli_stmt_close($stmt);
+    return $id;
+}
+
+/**
+ * 스티커 규격 정보 포맷팅 함수 (장바구니와 동일)
+ */
+function getStickerSpecs($item) {
+    $specs = [];
+
+    // Material (재질)
+    if (!empty($item['jong'])) {
+        $material = preg_replace('/^(jil|jsp|jka|cka)\s+/', '', $item['jong']);
+        $specs[] = '재질: ' . htmlspecialchars($material);
+    }
+
+    // Size (크기)
+    if (!empty($item['garo']) && !empty($item['sero'])) {
+        $specs[] = '크기: ' . htmlspecialchars($item['garo']) . ' × ' . htmlspecialchars($item['sero']) . 'mm';
+    }
+
+    // Shape (모양)
+    if (!empty($item['domusong'])) {
+        $shape_parts = explode(' ', $item['domusong'], 2);
+        $shape_name = isset($shape_parts[1]) ? $shape_parts[1] : $item['domusong'];
+        $specs[] = '모양: ' . htmlspecialchars($shape_name);
+    }
+
+    // Edit type (편집) - Only if not 0
+    if (!empty($item['uhyung']) && $item['uhyung'] != '0') {
+        $edit_types = ['10000' => '기본편집', '30000' => '고급편집'];
+        $edit_label = $edit_types[$item['uhyung']] ?? htmlspecialchars($item['uhyung']) . '원';
+        $specs[] = '편집: ' . $edit_label;
+    }
+
+    return $specs;
+}
+
+/**
+ * 자석스티커 규격 정보 포맷팅 함수
+ */
+function getMstickerSpecs($item) {
+    global $connect;
+    $specs = [];
+
+    // Type (종류) - MY_type field
+    if (!empty($item['MY_type'])) {
+        $type_name = getKoreanName($connect, $item['MY_type']);
+        $specs[] = '종류: ' . htmlspecialchars($type_name);
+    }
+
+    // Specification/Size (규격) - Section field
+    if (!empty($item['Section'])) {
+        $section_name = getKoreanName($connect, $item['Section']);
+        $specs[] = '규격: ' . htmlspecialchars($section_name);
+    }
+
+    // Print type (인쇄) - POtype field
+    if (!empty($item['POtype'])) {
+        $print_types = ['1' => '단면', '2' => '양면'];
+        $print_label = $print_types[$item['POtype']] ?? htmlspecialchars($item['POtype']);
+        $specs[] = '인쇄: ' . $print_label;
+    }
+
+    // Quantity (수량) - MY_amount field
+    if (!empty($item['MY_amount'])) {
+        $specs[] = '수량: ' . formatQuantity($item['MY_amount'], 'msticker', '매');
+    }
+
+    return $specs;
+}
 
 // 페이지 설정
-$page_title = '📋 주문 정보 입력';
+$page_title = '주문 정보 입력';
 $current_page = 'order';
 
 // 추가 CSS 연결
@@ -168,6 +274,28 @@ if ($is_post_order) {
     if ($cart_result) {
         while ($item = mysqli_fetch_assoc($cart_result)) {
             $formatted_item = formatCartItemForDisplay($connect, $item);
+
+            // 스티커/자석스티커: 원본 데이터 보존 (장바구니와 동일한 표시를 위해)
+            if ($item['product_type'] === 'sticker' || $item['product_type'] === 'msticker') {
+                $formatted_item['jong'] = $item['jong'] ?? '';
+                $formatted_item['garo'] = $item['garo'] ?? '';
+                $formatted_item['sero'] = $item['sero'] ?? '';
+                $formatted_item['mesu'] = $item['mesu'] ?? '';
+                $formatted_item['domusong'] = $item['domusong'] ?? '';
+                $formatted_item['uhyung'] = $item['uhyung'] ?? '';
+            }
+
+            // 기타 제품: MY_type, MY_Fsd, PN_type, Section, POtype, ordertype, MY_amount, mesu 보존
+            $formatted_item['MY_type'] = $item['MY_type'] ?? '';
+            $formatted_item['MY_Fsd'] = $item['MY_Fsd'] ?? '';
+            $formatted_item['PN_type'] = $item['PN_type'] ?? '';
+            $formatted_item['Section'] = $item['Section'] ?? '';
+            $formatted_item['POtype'] = $item['POtype'] ?? '';
+            $formatted_item['ordertype'] = $item['ordertype'] ?? '';
+            $formatted_item['MY_amount'] = $item['MY_amount'] ?? '';
+            $formatted_item['mesu'] = $item['mesu'] ?? '';
+            $formatted_item['flyer_mesu'] = $item['flyer_mesu'] ?? '';
+
             $cart_items[] = $formatted_item;
             error_log("Debug: Cart POST item: " . $item['product_type'] . " - " . $item['st_price_vat']);
         }
@@ -207,6 +335,28 @@ if ($is_post_order) {
     if ($cart_result) {
         while ($item = mysqli_fetch_assoc($cart_result)) {
             $formatted_item = formatCartItemForDisplay($connect, $item);
+
+            // 스티커/자석스티커: 원본 데이터 보존 (장바구니와 동일한 표시를 위해)
+            if ($item['product_type'] === 'sticker' || $item['product_type'] === 'msticker') {
+                $formatted_item['jong'] = $item['jong'] ?? '';
+                $formatted_item['garo'] = $item['garo'] ?? '';
+                $formatted_item['sero'] = $item['sero'] ?? '';
+                $formatted_item['mesu'] = $item['mesu'] ?? '';
+                $formatted_item['domusong'] = $item['domusong'] ?? '';
+                $formatted_item['uhyung'] = $item['uhyung'] ?? '';
+            }
+
+            // 기타 제품: MY_type, MY_Fsd, PN_type, Section, POtype, ordertype, MY_amount, mesu 보존
+            $formatted_item['MY_type'] = $item['MY_type'] ?? '';
+            $formatted_item['MY_Fsd'] = $item['MY_Fsd'] ?? '';
+            $formatted_item['PN_type'] = $item['PN_type'] ?? '';
+            $formatted_item['Section'] = $item['Section'] ?? '';
+            $formatted_item['POtype'] = $item['POtype'] ?? '';
+            $formatted_item['ordertype'] = $item['ordertype'] ?? '';
+            $formatted_item['MY_amount'] = $item['MY_amount'] ?? '';
+            $formatted_item['mesu'] = $item['mesu'] ?? '';
+            $formatted_item['flyer_mesu'] = $item['flyer_mesu'] ?? '';
+
             $cart_items[] = $formatted_item;
             error_log("Debug: Added cart item: " . $item['product_type'] . " - " . $item['st_price_vat']);
         }
@@ -320,9 +470,9 @@ foreach ($debug_info as $info) {
     error_log("UserInfo Debug: " . $info);
 }
 
-// 공통 헤더 포함
-include "../includes/header.php";
-include "../includes/nav.php";
+// 공통 헤더 포함 - header-ui.php로 대체됨 (구식 헤더 비활성화)
+// include "../includes/header.php";
+// include "../includes/nav.php";
 
 // 디버깅 정보 임시 표시 (개발용 - localhost만) - 주석 처리
 /*
@@ -365,245 +515,316 @@ if (!empty($debug_info) && strpos($_SERVER['HTTP_HOST'], 'localhost') !== false)
 }
 */
 ?>
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>주문 정보 입력 - 두손기획인쇄</title>
 
-<!-- 엑셀 스타일 CSS 추가 -->
-<link rel="preconnect" href="https://fonts.googleapis.com">
-<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link href="https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@400;500;700&display=swap" rel="stylesheet">
-<link rel="stylesheet" href="../css/excel-unified-style.css">
+    <!-- 엑셀 스타일 CSS 추가 -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@400;500;700&display=swap" rel="stylesheet">
+
+    <!-- 헤더 스타일 (header-ui.php용) -->
+    <link rel="stylesheet" href="../css/common-styles.css">
+
+    <link rel="stylesheet" href="../css/excel-unified-style.css">
+</head>
+<body>
+
+<?php include "../includes/header-ui.php"; ?>
 
 <div class="container" style="font-family: 'Noto Sans KR', sans-serif; font-size: 14px; color: #222; line-height: 1.4; padding: 0.5rem 1rem; margin-top: -1rem;">
     <!-- 주문 정보 입력 폼 -->
     <div class="card" style="margin-bottom: 1rem;">
         <div class="card-header" style="background-color: #1E90FF; color: black; text-align: center; padding: 0.5rem;">
-            <h2 style="margin: 0; font-size: 18px; color: black;">📋 주문 정보 입력</h2>
+            <h2 style="margin: 0; font-size: 2.5rem; color: black;">주문 정보 입력</h2>
         </div>
-        
+
         <div class="centered-form" style="padding: 0.8rem;">
             <!-- 주문 요약 (장바구니 스타일) -->
             <div style="background-color: #f8f9fa; border-radius: 8px; padding: 20px; border: 1px solid #e2e8f0; margin-bottom: 1.5rem;">
                 <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 16px;">
-                    <div style="color: #4a5568; font-weight: 600; font-size: 14px;">📋 주문 요약</div>
+                    <div style="color: #4a5568; font-weight: 600; font-size: 16px;">주문 요약</div>
                     <div style="color: #718096; font-size: 13px;">총 <?php echo $total_info['count']; ?>개 상품</div>
                 </div>
                 
                 <div style="display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 16px;">
                     <div style="text-align: center; padding: 12px; background: white; border-radius: 6px; border: 1px solid #e2e8f0;">
                         <div style="color: #718096; font-size: 12px; margin-bottom: 4px;">상품금액</div>
-                        <div style="color: #2d3748; font-weight: 600; font-size: 14px;"><?php echo number_format($total_info['total']); ?>원</div>
+                        <div style="color: #2d3748; font-weight: 600; font-size: 15px;"><?php echo number_format($total_info['total']); ?>원</div>
                     </div>
                     <div style="text-align: center; padding: 12px; background: white; border-radius: 6px; border: 1px solid #e2e8f0;">
                         <div style="color: #718096; font-size: 12px; margin-bottom: 4px;">부가세</div>
-                        <div style="color: #2d3748; font-weight: 600; font-size: 14px;"><?php echo number_format($total_info['total_vat'] - $total_info['total']); ?>원</div>
+                        <div style="color: #2d3748; font-weight: 600; font-size: 15px;"><?php echo number_format($total_info['total_vat'] - $total_info['total']); ?>원</div>
                     </div>
                     <div style="text-align: center; padding: 12px; background-color: #1E90FF; border: 1px solid #1873CC; border-radius: 6px; color: white;">
                         <div style="opacity: 0.9; font-size: 12px; margin-bottom: 4px;">총 결제금액</div>
-                        <div style="font-weight: 700; font-size: 14px;"><?php echo number_format($total_info['total_vat']); ?>원</div>
+                        <div style="font-weight: 700; font-size: 18px;"><?php echo number_format($total_info['total_vat']); ?>원</div>
                     </div>
                 </div>
             </div>
             
-            <!-- 주문 상품 목록 (6컬럼: 순번|품목|규격/옵션|수량|단위|총액) -->
-            <div style="margin-bottom: 1.5rem;">
-                <h3 style="color: #4a5568; font-weight: 600; font-size: 14px; margin-bottom: 1rem;">🛍️ 주문 상품 목록</h3>
+            <!-- 주문 상품 목록 (엑셀 스타일 테이블 - 통합장바구니와 동일) -->
+            <div style="margin-bottom: 1.5rem; max-width: 1100px; margin-left: auto; margin-right: auto;">
+                <h3 style="color: #4a5568; font-weight: 600; font-size: 16px; margin-bottom: 1rem;">주문 상품 목록</h3>
                 <div class="excel-cart-table-wrapper">
                     <table class="excel-cart-table" style="width: 100%; border-collapse: collapse; table-layout: fixed;">
                         <colgroup>
-                            <col style="width: 5%;"><!-- 순번 -->
                             <col style="width: 15%;"><!-- 품목 -->
-                            <col style="width: 40%;"><!-- 규격/옵션 -->
+                            <col style="width: 42%;"><!-- 규격/옵션 -->
                             <col style="width: 10%;"><!-- 수량 -->
                             <col style="width: 8%;"><!-- 단위 -->
-                            <col style="width: 22%;"><!-- 총액 -->
+                            <col style="width: 25%;"><!-- 공급가액 -->
                         </colgroup>
                         <thead>
                             <tr>
-                                <th style="border: 1px solid #ccc; padding: 10px; background: #f3f3f3; text-align: center; font-weight: bold;">NO</th>
                                 <th style="border: 1px solid #ccc; padding: 10px; background: #f3f3f3; text-align: center; font-weight: bold;">품목</th>
                                 <th style="border: 1px solid #ccc; padding: 10px; background: #f3f3f3; text-align: center; font-weight: bold;">규격/옵션</th>
                                 <th style="border: 1px solid #ccc; padding: 10px; background: #f3f3f3; text-align: center; font-weight: bold;">수량</th>
                                 <th style="border: 1px solid #ccc; padding: 10px; background: #f3f3f3; text-align: center; font-weight: bold;">단위</th>
-                                <th style="border: 1px solid #ccc; padding: 10px; background: #f3f3f3; text-align: center; font-weight: bold;">총액</th>
+                                <th style="border: 1px solid #ccc; padding: 10px; background: #f3f3f3; text-align: center; font-weight: bold;">공급가액</th>
                             </tr>
                         </thead>
                         <tbody>
                     <?php
                     // 상품명 매핑 (cart.php와 동일)
                     $product_info_map = [
-                        'cadarok' => ['name' => '카달로그', 'icon' => '📖', 'color' => '#e3f2fd'],
-                        'sticker' => ['name' => '스티커', 'icon' => '🏷️', 'color' => '#f3e5f5'],
-                        'msticker' => ['name' => '자석스티커', 'icon' => '🧲', 'color' => '#e8f5e8'],
-                        'leaflet' => ['name' => '전단지', 'icon' => '📄', 'color' => '#fff3e0'],
-                        'inserted' => ['name' => '전단지', 'icon' => '📄', 'color' => '#fff3e0'],
-                        'namecard' => ['name' => '명함', 'icon' => '💼', 'color' => '#fce4ec'],
-                        'envelope' => ['name' => '봉투', 'icon' => '✉️', 'color' => '#e0f2f1'],
-                        'merchandisebond' => ['name' => '상품권', 'icon' => '🎫', 'color' => '#f1f8e9'],
-                        'littleprint' => ['name' => '포스터', 'icon' => '🎨', 'color' => '#e8eaf6'],
-                        'poster' => ['name' => '포스터', 'icon' => '🎨', 'color' => '#e8eaf6'],
-                        'ncrflambeau' => ['name' => '양식지', 'icon' => '📋', 'color' => '#e8eaf6']
+                        'cadarok' => ['name' => '카달로그', 'icon' => '', 'color' => '#e3f2fd'],
+                        'sticker' => ['name' => '스티커', 'icon' => '', 'color' => '#f3e5f5'],
+                        'msticker' => ['name' => '자석스티커', 'icon' => '', 'color' => '#e8f5e8'],
+                        'leaflet' => ['name' => '전단지', 'icon' => '', 'color' => '#fff3e0'],
+                        'inserted' => ['name' => '전단지', 'icon' => '', 'color' => '#fff3e0'],
+                        'namecard' => ['name' => '명함', 'icon' => '', 'color' => '#fce4ec'],
+                        'envelope' => ['name' => '봉투', 'icon' => '', 'color' => '#e0f2f1'],
+                        'merchandisebond' => ['name' => '상품권', 'icon' => '', 'color' => '#f1f8e9'],
+                        'littleprint' => ['name' => '포스터', 'icon' => '', 'color' => '#e8eaf6'],
+                        'poster' => ['name' => '포스터', 'icon' => '', 'color' => '#e8eaf6'],
+                        'ncrflambeau' => ['name' => '양식지', 'icon' => '', 'color' => '#e8eaf6']
                     ];
                     foreach ($cart_items as $index => $item):
-                        $product = $product_info_map[$item['product_type']] ?? ['name' => '상품', 'icon' => '📦', 'color' => '#f5f5f5'];
+                        $product = $product_info_map[$item['product_type']] ?? ['name' => '상품', 'icon' => '', 'color' => '#f5f5f5'];
+
+                        // 수량/단위 계산 (cart.php와 동일한 로직)
+                        $is_flyer = in_array($item['product_type'], ['inserted', 'leaflet']);
+                        $show_sheet_count = ($is_flyer && !empty($item['flyer_mesu']));
+
+                        $main_amount_val = 1;
+                        $main_amount_display = '1';
+                        $unit = '매'; // Default unit
+                        $sub_amount = null;
+
+                        if ($is_direct_order) {
+                            // 직접 주문인 경우
+                            $main_amount_val = !empty($item['MY_amount']) ? floatval($item['MY_amount']) : 1;
+
+                            if ($is_flyer) {
+                                $unit = '연';
+                                $main_amount_display = formatQuantityValue($main_amount_val, 'inserted');
+                                // 직접 주문 시 매수 정보가 있으면 표시
+                                if (!empty($item['mesu'])) {
+                                    $sub_amount = intval($item['mesu']);
+                                }
+                            } else {
+                                $main_amount_display = formatQuantityValue($main_amount_val, $item['product_type']);
+                                if ($item['product_type'] == 'ncrflambeau') $unit = '권';
+                                elseif ($item['product_type'] == 'cadarok') $unit = '부';
+                            }
+                        } else {
+                            // 장바구니에서 온 주문
+                            if ($is_flyer) {
+                                $unit = '연';
+                                $main_amount_val = !empty($item['MY_amount']) ? floatval($item['MY_amount']) : 1;
+                                $main_amount_display = formatQuantityValue($main_amount_val, 'inserted');
+                                $sub_amount = $item['flyer_mesu'] ?? null;
+                            } else {
+                                $main_amount_val = !empty($item['mesu']) ? intval($item['mesu']) : (!empty($item['MY_amount']) ? intval($item['MY_amount']) : 1);
+                                $main_amount_display = formatQuantityValue($main_amount_val, $item['product_type']);
+
+                                if ($item['product_type'] == 'ncrflambeau') $unit = '권';
+                                elseif ($item['product_type'] == 'cadarok') $unit = '부';
+                            }
+                        }
                     ?>
                     <tr>
-                        <!-- 순번 -->
-                        <td style="border: 1px solid #ccc; padding: 10px; vertical-align: middle; text-align: center; font-weight: bold; font-size: 14px;">
-                            <?php echo $index + 1; ?>
-                        </td>
-                        <!-- 품목 -->
-                        <td style="border: 1px solid #ccc; padding: 10px; vertical-align: middle; font-size: 14px;">
-                            <div class="product-info-cell">
-                                <div class="product-icon <?php echo htmlspecialchars($item['product_type']); ?>" style="background-color: <?php echo $product['color']; ?>; padding: 8px; border-radius: 6px; font-size: 18px; line-height: 1; min-width: 36px; text-align: center;">
-                                    <?php echo $product['icon']; ?>
-                                </div>
-                                <div>
-                                    <div class="product-name" style="font-weight: 600; color: #2d3748; margin-bottom: 4px; font-size: 14px;"><?php echo $product['name']; ?></div>
-                                </div>
+                        <!-- 상품정보 -->
+                        <td style="border: 1px solid #ccc; padding: 10px; vertical-align: top;">
+                            <div class="product-name" style="font-weight: 600; color: #2d3748; font-size: 15px;">
+                                <?php echo $product['name']; ?>
                             </div>
                         </td>
-                        <!-- 규격/옵션 (2줄+2줄 통일 형식) -->
-                        <td style="border: 1px solid #ccc; padding: 10px; vertical-align: top; font-size: 14px;">
-                            <div class="specs-cell">
-                                <?php
-                                // 규격/옵션 2줄+2줄 형식으로 통일
-                                $spec_line1 = ''; // 규격 1줄: 용지/타입
-                                $spec_line2 = ''; // 규격 2줄: 사이즈/규격
-                                $opt_line1 = '';  // 옵션 1줄: 인쇄방식
-                                $opt_line2 = '';  // 옵션 2줄: 디자인/주문타입
-
-                                if ($is_direct_order) {
-                                    // 직접 주문
-                                    if ($item['product_type'] == 'envelope') {
-                                        $spec_line1 = $item['type_text'] ?? '';
-                                        $spec_line2 = $item['size_text'] ?? '';
-                                        $opt_line1 = '수량: ' . ($item['quantity_text'] ?? '');
-                                        $opt_line2 = $item['design_text'] ?? '';
-                                    } elseif ($item['product_type'] == 'merchandisebond') {
-                                        $spec_line1 = $item['type_text'] ?? '';
-                                        $spec_line2 = $item['size_text'] ?? '';
-                                        $opt_line1 = ($item['po_text'] ?? '') . ' / 수량: ' . ($item['quantity_text'] ?? '');
-                                        $opt_line2 = $item['design_text'] ?? '';
-                                    } elseif ($item['product_type'] == 'namecard') {
-                                        $spec_line1 = $item['type_text'] ?? '';
-                                        $spec_line2 = $item['paper_text'] ?? '';
-                                        $opt_line1 = ($item['sides_text'] ?? '') . ' / 수량: ' . ($item['quantity_text'] ?? '');
-                                        $opt_line2 = $item['design_text'] ?? '';
-                                    } elseif ($item['product_type'] == 'cadarok') {
-                                        $spec_line1 = $item['type_text'] ?? '';
-                                        $spec_line2 = ($item['size_text'] ?? '') . ' / ' . ($item['paper_text'] ?? '');
-                                        $opt_line1 = '수량: ' . ($item['quantity_text'] ?? '');
-                                        $opt_line2 = $item['design_text'] ?? '';
-                                    } else {
-                                        // 전단지/기타
-                                        $spec_line1 = $item['paper_type_text'] ?? '';
-                                        $spec_line2 = $item['paper_size_text'] ?? '';
-                                        $opt_line1 = ($item['sides_text'] ?? '') . '컬러인쇄';
-                                        $opt_line2 = $item['design_text'] ?? '';
-                                    }
-                                } else {
-                                    // 장바구니에서 온 주문
-                                    $details = $item['details'] ?? [];
-                                    $product_type = $item['product_type'] ?? '';
-
-                                    if (in_array($product_type, ['inserted', 'leaflet'])) {
-                                        $spec_line1 = $details['종류'] ?? '';
-                                        $spec_line2 = $details['규격'] ?? '';
-                                        $opt_line1 = $details['인쇄'] ?? '';
-                                        $opt_line2 = $details['타입'] ?? '';
-                                    } else {
-                                        // 기타 제품: details 배열에서 추출
-                                        $keys = array_keys($details);
-                                        $spec_line1 = $details[$keys[0] ?? ''] ?? '';
-                                        $spec_line2 = $details[$keys[1] ?? ''] ?? '';
-                                        $opt_line1 = $details[$keys[2] ?? ''] ?? '';
-                                        $opt_line2 = $details[$keys[3] ?? ''] ?? '';
-                                    }
-                                }
-                                ?>
-                                <!-- 규격 2줄 -->
-                                <?php if (!empty($spec_line1)): ?>
-                                <div style="color: #4a5568; margin-bottom: 2px;"><?php echo htmlspecialchars($spec_line1); ?></div>
-                                <?php endif; ?>
-                                <?php if (!empty($spec_line2)): ?>
-                                <div style="color: #4a5568; margin-bottom: 2px;"><?php echo htmlspecialchars($spec_line2); ?></div>
-                                <?php endif; ?>
-                                <!-- 옵션 2줄 -->
-                                <?php if (!empty($opt_line1)): ?>
-                                <div style="color: #4a5568; margin-bottom: 2px;"><?php echo htmlspecialchars($opt_line1); ?></div>
-                                <?php endif; ?>
-                                <?php if (!empty($opt_line2)): ?>
-                                <div style="color: #4a5568;"><?php echo htmlspecialchars($opt_line2); ?></div>
-                                <?php endif; ?>
-
-                                <?php if (!$is_direct_order): ?>
+                        <!-- 규격/옵션 (2줄 방식: 규격 1줄 + 옵션 1줄) -->
+                        <td style="border: 1px solid #ccc; padding: 10px; vertical-align: top;">
+                            <div class="specs-cell" style="line-height: 1.6;">
+                                <?php if ($is_direct_order): ?>
                                     <?php
-                                    // 추가 옵션 표시 (코팅/접지/오시 등)
-                                    $optionDetails = $optionsDisplay->getOrderDetails($item);
-                                    if ($optionDetails['has_options']):
-                                        $opt_names = [];
-                                        foreach ($optionDetails['options'] as $option) {
-                                            $opt_names[] = $option['name'];
-                                        }
+                                    // 2줄 압축 표시 (OrderComplete_universal.php 스타일)
+                                    $line1_parts = [];
+                                    $line2_parts = [];
+
+                                    switch ($item['product_type']) {
+                                        case 'envelope':
+                                            // 규격: 종류 / 규격
+                                            if (!empty($item['type_text'])) $line1_parts[] = htmlspecialchars($item['type_text']);
+                                            if (!empty($item['size_text'])) $line1_parts[] = htmlspecialchars($item['size_text']);
+                                            // 옵션: 수량 / 디자인
+                                            if (!empty($item['quantity_text'])) $line2_parts[] = htmlspecialchars($item['quantity_text']);
+                                            if (!empty($item['design_text'])) $line2_parts[] = htmlspecialchars($item['design_text']);
+                                            $comment_field = $item['MY_comment'] ?? '';
+                                            break;
+
+                                        case 'merchandisebond':
+                                            // 규격: 종류 / 후가공
+                                            if (!empty($item['type_text'])) $line1_parts[] = htmlspecialchars($item['type_text']);
+                                            if (!empty($item['size_text'])) $line1_parts[] = htmlspecialchars($item['size_text']);
+                                            // 옵션: 인쇄면 / 수량 / 주문방법
+                                            if (!empty($item['po_text'])) $line2_parts[] = htmlspecialchars($item['po_text']);
+                                            if (!empty($item['quantity_text'])) $line2_parts[] = htmlspecialchars($item['quantity_text']);
+                                            if (!empty($item['design_text'])) $line2_parts[] = htmlspecialchars($item['design_text']);
+                                            $comment_field = $item['MY_comment'] ?? '';
+                                            break;
+
+                                        case 'namecard':
+                                            // 규격: 명함종류 / 용지종류
+                                            if (!empty($item['type_text'])) $line1_parts[] = htmlspecialchars($item['type_text']);
+                                            if (!empty($item['paper_text'])) $line1_parts[] = htmlspecialchars($item['paper_text']);
+                                            // 옵션: 인쇄면 / 수량 / 디자인
+                                            if (!empty($item['sides_text'])) $line2_parts[] = htmlspecialchars($item['sides_text']);
+                                            if (!empty($item['quantity_text'])) $line2_parts[] = htmlspecialchars($item['quantity_text']);
+                                            if (!empty($item['design_text'])) $line2_parts[] = htmlspecialchars($item['design_text']);
+                                            $comment_field = $item['NC_comment'] ?? '';
+                                            break;
+
+                                        case 'cadarok':
+                                            // 규격: 구분 / 종이종류
+                                            if (!empty($item['type_text'])) $line1_parts[] = htmlspecialchars($item['type_text']);
+                                            if (!empty($item['paper_text'])) $line1_parts[] = htmlspecialchars($item['paper_text']);
+                                            // 옵션: 규격 / 수량 / 디자인
+                                            if (!empty($item['size_text'])) $line2_parts[] = htmlspecialchars($item['size_text']);
+                                            if (!empty($item['quantity_text'])) $line2_parts[] = htmlspecialchars($item['quantity_text']);
+                                            if (!empty($item['design_text'])) $line2_parts[] = htmlspecialchars($item['design_text']);
+                                            $comment_field = $item['MY_comment'] ?? '';
+                                            break;
+
+                                        case 'sticker':
+                                            // 규격: 종류 / 용지 / 규격
+                                            if (!empty($item['type_text'])) $line1_parts[] = htmlspecialchars($item['type_text']);
+                                            if (!empty($item['paper_text'])) $line1_parts[] = htmlspecialchars($item['paper_text']);
+                                            if (!empty($item['size_text'])) $line1_parts[] = htmlspecialchars($item['size_text']);
+                                            // 옵션: 인쇄면 / 수량 / 디자인
+                                            if (!empty($item['sides_text'])) $line2_parts[] = htmlspecialchars($item['sides_text']);
+                                            if (!empty($item['quantity_text'])) $line2_parts[] = htmlspecialchars($item['quantity_text']);
+                                            if (!empty($item['design_text'])) $line2_parts[] = htmlspecialchars($item['design_text']);
+                                            $comment_field = $item['MY_comment'] ?? '';
+                                            break;
+
+                                        case 'msticker':
+                                            // 규격: 종류 / 용지 / 규격
+                                            if (!empty($item['type_text'])) $line1_parts[] = htmlspecialchars($item['type_text']);
+                                            if (!empty($item['paper_text'])) $line1_parts[] = htmlspecialchars($item['paper_text']);
+                                            if (!empty($item['size_text'])) $line1_parts[] = htmlspecialchars($item['size_text']);
+                                            // 옵션: 수량 / 디자인
+                                            if (!empty($item['quantity_text'])) $line2_parts[] = htmlspecialchars($item['quantity_text']);
+                                            if (!empty($item['design_text'])) $line2_parts[] = htmlspecialchars($item['design_text']);
+                                            $comment_field = $item['MY_comment'] ?? '';
+                                            break;
+
+                                        case 'littleprint':
+                                            // 포스터: 종류 / 용지 / 규격
+                                            if (!empty($item['type_text'])) $line1_parts[] = htmlspecialchars($item['type_text']);
+                                            if (!empty($item['paper_text'])) $line1_parts[] = htmlspecialchars($item['paper_text']);
+                                            if (!empty($item['size_text'])) $line1_parts[] = htmlspecialchars($item['size_text']);
+                                            // 옵션: 인쇄면 / 수량 / 디자인
+                                            if (!empty($item['sides_text'])) $line2_parts[] = htmlspecialchars($item['sides_text']);
+                                            if (!empty($item['quantity_text'])) $line2_parts[] = htmlspecialchars($item['quantity_text']);
+                                            if (!empty($item['design_text'])) $line2_parts[] = htmlspecialchars($item['design_text']);
+                                            $comment_field = $item['MY_comment'] ?? '';
+                                            break;
+
+                                        case 'ncrflambeau':
+                                            // 양식지: 종류 / 용지 / 규격
+                                            if (!empty($item['type_text'])) $line1_parts[] = htmlspecialchars($item['type_text']);
+                                            if (!empty($item['paper_text'])) $line1_parts[] = htmlspecialchars($item['paper_text']);
+                                            if (!empty($item['size_text'])) $line1_parts[] = htmlspecialchars($item['size_text']);
+                                            // 옵션: 수량 / 인쇄도수 / 디자인
+                                            if (!empty($item['quantity_text'])) $line2_parts[] = htmlspecialchars($item['quantity_text']);
+                                            if (!empty($item['color_text'])) $line2_parts[] = htmlspecialchars($item['color_text']);
+                                            if (!empty($item['design_text'])) $line2_parts[] = htmlspecialchars($item['design_text']);
+                                            $comment_field = $item['MY_comment'] ?? '';
+                                            break;
+
+                                        default:
+                                            // 전단지 등 기타
+                                            if (!empty($item['color_text'])) $line1_parts[] = htmlspecialchars($item['color_text']);
+                                            if (!empty($item['paper_type_text'])) $line1_parts[] = htmlspecialchars($item['paper_type_text']);
+                                            if (!empty($item['paper_size_text'])) $line2_parts[] = htmlspecialchars($item['paper_size_text']);
+                                            if (!empty($item['sides_text'])) $line2_parts[] = htmlspecialchars($item['sides_text']);
+                                            if (!empty($item['quantity_text'])) $line2_parts[] = htmlspecialchars($item['quantity_text']);
+                                            if (!empty($item['design_text'])) $line2_parts[] = htmlspecialchars($item['design_text']);
+                                            $comment_field = $item['MY_comment'] ?? '';
+                                            break;
+                                    }
                                     ?>
-                                        <div style="color: #e53e3e; margin-top: 4px;"><?php echo implode(' / ', $opt_names); ?></div>
+                                    <?php if (!empty($line1_parts)): ?>
+                                    <div class="spec-item" style="color: #2d3748; margin-bottom: 2px;"><?php echo implode(' / ', $line1_parts); ?></div>
+                                    <?php endif; ?>
+                                    <?php if (!empty($line2_parts)): ?>
+                                    <div class="spec-item" style="color: #4a5568;"><?php echo implode(' / ', $line2_parts); ?></div>
+                                    <?php endif; ?>
+                                    <?php if (!empty($comment_field)): ?>
+                                        <div style="margin-top: 0.4rem; padding: 0.4rem; background: #fff3cd; border-radius: 3px; font-size: 0.8rem;">
+                                            <strong>요청사항:</strong> <?php echo htmlspecialchars($comment_field); ?>
+                                        </div>
+                                    <?php endif; ?>
+                                <?php else: ?>
+                                    <!-- 장바구니에서 온 주문: ProductSpecFormatter 사용 -->
+                                    <?php
+                                    $specs = $specFormatter->format($item);
+                                    ?>
+                                    <?php if (!empty($specs['line1'])): ?>
+                                        <div class="spec-line" style="color: #2d3748; margin-bottom: 2px;"><?php echo htmlspecialchars($specs['line1']); ?></div>
+                                    <?php endif; ?>
+                                    <?php if (!empty($specs['line2'])): ?>
+                                        <div class="spec-line" style="color: #4a5568;"><?php echo htmlspecialchars($specs['line2']); ?></div>
+                                    <?php endif; ?>
+                                    <?php if (!empty($specs['additional'])): ?>
+                                        <div style="margin-top: 8px; padding-top: 8px; border-top: 1px solid #e2e8f0;">
+                                            <div style="color: #e53e3e; font-weight: 600; font-size: 12px; margin-bottom: 4px;">추가옵션</div>
+                                            <div style="color: #2d3748; font-size: 11px;"><?php echo htmlspecialchars($specs['additional']); ?></div>
+                                        </div>
+                                    <?php endif; ?>
+                                    <?php if (!empty($item['MY_comment'])): ?>
+                                        <div style="margin-top: 0.5rem; padding: 0.5rem; background: #fff3cd; border-radius: 4px; font-size: 0.9rem;">
+                                            <strong>요청사항:</strong> <?php echo htmlspecialchars($item['MY_comment']); ?>
+                                        </div>
                                     <?php endif; ?>
                                 <?php endif; ?>
-
-                                <?php
-                                // 요청사항 표시
-                                $comment = $item['MY_comment'] ?? $item['NC_comment'] ?? '';
-                                if (!empty($comment)):
-                                ?>
-                                    <div style="margin-top: 0.5rem; padding: 0.5rem; background: #fff3cd; border-radius: 4px; font-size: 0.9rem;">
-                                        <strong>요청사항:</strong> <?php echo htmlspecialchars($comment); ?>
-                                    </div>
+                        </td>
+                        <!-- 수량 (cart.php와 동일) -->
+                        <td class="amount-cell <?php echo $is_flyer ? 'leaflet' : ''; ?>" style="border: 1px solid #ccc; padding: 10px; vertical-align: middle; text-align: center;">
+                            <span class="amount-value" style="font-weight: 600; font-size: 15px;"><?php echo $main_amount_display; ?></span>
+                            <?php if ($is_flyer): ?>
+                                <span class="amount-unit" style="font-size: 13px; color: #4a5568; margin-left: 2px;"><?php echo $unit; ?></span>
+                                <?php if ($show_sheet_count && $sub_amount): ?>
+                                    <br><span class="amount-sub" style="font-size: 12px; color: #718096;">(<?php echo number_format($sub_amount); ?>매)</span>
                                 <?php endif; ?>
+                            <?php endif; ?>
                         </td>
-                        <!-- 수량 -->
-                        <td style="border: 1px solid #ccc; padding: 10px; vertical-align: middle; text-align: center; font-size: 14px;">
-                            <?php
-                            // 전단지/리플렛 여부 확인
-                            $is_flyer = in_array($item['product_type'], ['inserted', 'leaflet']) ||
-                                       (!empty($item['unit']) && $item['unit'] === '연');
-
-                            if ($is_flyer) {
-                                // 전단지: 연수 표시
-                                if (!empty($item['MY_amount'])) {
-                                    $yeonsu = floatval($item['MY_amount']);
-                                    $yeonsu_display = (floor($yeonsu) == $yeonsu) ? number_format($yeonsu) : number_format($yeonsu, 1);
-                                    echo $yeonsu_display;
-                                }
-                                // 매수 추가 표시
-                                // 🔧 FIX: 전단지는 flyer_mesu 컬럼 사용 (mesu는 스티커용)
-                                $flyer_sheet_count = $item['flyer_mesu'] ?? $item['mesu'] ?? null;
-                                if (!empty($flyer_sheet_count)) {
-                                    echo '<br><span style="font-size: 11px; color: #666;">(' . number_format($flyer_sheet_count) . '매)</span>';
-                                }
-                            } else {
-                                // 기타 제품: 수량만 표시
-                                $qty = floatval($item['mesu'] ?? $item['MY_amount'] ?? 1);
-                                echo (floor($qty) == $qty) ? number_format($qty) : number_format($qty, 1);
-                            }
-                            ?>
+                        <!-- 단위 (cart.php와 동일) -->
+                        <td class="unit-cell" style="border: 1px solid #ccc; padding: 10px; vertical-align: middle; text-align: center;">
+                            <?php if ($is_flyer): ?>
+                                <span class="amount-unit" style="font-size: 14px; color: #718096;">-</span>
+                            <?php else: ?>
+                                <span class="amount-unit" style="font-size: 14px; color: #2d3748;"><?php echo $unit; ?></span>
+                            <?php endif; ?>
                         </td>
-                        <!-- 단위 -->
-                        <td style="border: 1px solid #ccc; padding: 10px; vertical-align: middle; text-align: center; font-size: 14px;">
-                            <?php
-                            if ($is_flyer) {
-                                echo '연';
-                            } elseif ($item['product_type'] == 'ncrflambeau') {
-                                echo '권';
-                            } elseif ($item['product_type'] == 'cadarok') {
-                                echo '부';
-                            } else {
-                                echo '매';
-                            }
-                            ?>
-                        </td>
-                        <!-- 총액 -->
-                        <td style="border: 1px solid #ccc; padding: 10px; vertical-align: middle; text-align: right;">
-                            <div style="font-size: 14px; font-weight: 600;">
-                                <?php echo number_format($is_direct_order ? $item['price_vat'] : $item['st_price_vat']); ?>원
+                        <!-- 공급가액 -->
+                        <td class="td-right" style="border: 1px solid #ccc; padding: 10px; vertical-align: middle; text-align: right;">
+                            <div class="price-label" style="font-size: 11px; color: #718096; margin-bottom: 2px;">부가세 별도</div>
+                            <div class="price-total" style="font-weight: 600; font-size: 15px; color: #2d3748;">
+                                <?php echo number_format($is_direct_order ? $item['price'] : $item['st_price']); ?>원
                             </div>
                         </td>
                     </tr>
@@ -646,16 +867,16 @@ if (!empty($debug_info) && strpos($_SERVER['HTTP_HOST'], 'localhost') !== false)
                     <input type="hidden" name="address_option" value="different">
                 <?php endif; ?>
                 
-                <h3>👤 신청자 정보</h3>
+                <h3>신청자 정보</h3>
                 <?php if ($is_logged_in): ?>
                     <div style="background: #e8f5e8; padding: 0.8rem; border-radius: 4px; margin-bottom: 1rem; border-left: 3px solid #27ae60;">
-                        <p class="description-text" style="margin: 0; color: #27ae60; font-weight: bold;">✅ 로그인된 회원 정보가 자동으로 입력됩니다</p>
+                        <p class="description-text" style="margin: 0; color: #27ae60; font-weight: bold;">로그인된 회원 정보가 자동으로 입력됩니다</p>
                         <p class="small-text" style="margin: 0.3rem 0 0 0; color: #666;">정보가 변경된 경우 직접 수정해주세요</p>
                     </div>
                 <?php else: ?>
                     <div style="background: #e3f2fd; padding: 0.8rem; border-radius: 4px; margin-bottom: 1rem; border-left: 3px solid #2196f3;">
                         <p class="description-text" style="margin: 0; color: #1976d2; font-weight: bold;">
-                            👋 회원이신가요?
+                            회원이신가요?
                             <button onclick="showLoginModal()" style="background: #2196f3; color: white; border: none; padding: 0.3rem 0.8rem; border-radius: 15px; margin-left: 0.5rem; cursor: pointer;">
                                 로그인하기
                             </button>
@@ -676,8 +897,8 @@ if (!empty($debug_info) && strpos($_SERVER['HTTP_HOST'], 'localhost') !== false)
                         </colgroup>
                         <tbody>
                             <tr>
-                                <th class="th-left" style="border: 1px solid #ccc; padding: 10px; background: #f3f3f3; text-align: center; font-weight: bold;">👤 성명/상호 *</th>
-                                <td style="border: 1px solid #ccc; padding: 10px;">
+                                <th class="th-left" style="border: 1px solid #ccc; padding: 10px; background: #f3f3f3; text-align: center; font-weight: bold;">성명/상호 *</th>
+                                <td style="border: 1px solid #ccc; padding: 5px;">
                                     <input type="text" name="username" required
                                            value="<?php
                                            if ($is_logged_in && $user_info) {
@@ -693,29 +914,29 @@ if (!empty($debug_info) && strpos($_SERVER['HTTP_HOST'], 'localhost') !== false)
                                            }
                                            ?>"
                                            placeholder="성명 또는 상호명"
-                                           style="width: 100%; padding: 8px; border: 1px solid #ddd; border-radius: 3px;">
+                                           style="width: 100%; padding: 8px; border: none; background: transparent;">
                                 </td>
-                                <th class="th-left" style="border: 1px solid #ccc; padding: 10px; background: #f3f3f3; text-align: center; font-weight: bold;">📧 이메일 *</th>
-                                <td style="border: 1px solid #ccc; padding: 10px;">
+                                <th class="th-left" style="border: 1px solid #ccc; padding: 10px; background: #f3f3f3; text-align: center; font-weight: bold;">이메일 *</th>
+                                <td style="border: 1px solid #ccc; padding: 5px;">
                                     <input type="email" name="email" required
                                            value="<?php echo $is_logged_in ? htmlspecialchars($user_info['email'] ?? '') : ''; ?>"
                                            placeholder="이메일 주소"
-                                           style="width: 100%; padding: 8px; border: 1px solid #ddd; border-radius: 3px;">
+                                           style="width: 100%; padding: 8px; border: none; background: transparent;">
                                 </td>
                             </tr>
                             <tr>
-                                <th class="th-left" style="border: 1px solid #ccc; padding: 10px; background: #f3f3f3; text-align: center; font-weight: bold;">📞 전화번호 *</th>
-                                <td style="border: 1px solid #ccc; padding: 10px;">
+                                <th class="th-left" style="border: 1px solid #ccc; padding: 10px; background: #f3f3f3; text-align: center; font-weight: bold;">전화번호 *</th>
+                                <td style="border: 1px solid #ccc; padding: 5px;">
                                     <input type="tel" name="phone" required
                                            value="<?php echo $is_logged_in ? htmlspecialchars($user_info['phone'] ?? '') : ''; ?>"
                                            placeholder="전화번호"
-                                           style="width: 100%; padding: 8px; border: 1px solid #ddd; border-radius: 3px;">
+                                           style="width: 100%; padding: 8px; border: none; background: transparent;">
                                 </td>
-                                <th class="th-left" style="border: 1px solid #ccc; padding: 10px; background: #f3f3f3; text-align: center; font-weight: bold;">📱 핸드폰</th>
-                                <td style="border: 1px solid #ccc; padding: 10px;">
+                                <th class="th-left" style="border: 1px solid #ccc; padding: 10px; background: #f3f3f3; text-align: center; font-weight: bold;">핸드폰</th>
+                                <td style="border: 1px solid #ccc; padding: 5px;">
                                     <input type="tel" name="Hendphone"
                                            placeholder="핸드폰 번호"
-                                           style="width: 100%; padding: 8px; border: 1px solid #ddd; border-radius: 3px;">
+                                           style="width: 100%; padding: 8px; border: none; background: transparent;">
                                 </td>
                             </tr>
                         </tbody>
@@ -723,7 +944,7 @@ if (!empty($debug_info) && strpos($_SERVER['HTTP_HOST'], 'localhost') !== false)
                 </div>
                 
                 <!-- 수령지 정보 섹션 -->
-                <h3>🏠 우편물 수령지</h3>
+                <h3>우편물 수령지</h3>
 
                 <?php if ($is_logged_in): ?>
                     <div style="margin-bottom: 1rem; display: flex; gap: 2rem; align-items: center;">
@@ -749,7 +970,7 @@ if (!empty($debug_info) && strpos($_SERVER['HTTP_HOST'], 'localhost') !== false)
                         <input type="text" id="sample6_postcode" name="sample6_postcode" placeholder="우편번호" readonly
                                style="width: 140px;">
                         <button type="button" onclick="sample6_execDaumPostcode()"
-                                style="background: #1a73e8; color: white; border: none; padding: 8px 20px; cursor: pointer; border-radius: 6px;">
+                                style="background: #3498db; color: white; border: none; cursor: pointer;">
                             우편번호 찾기
                         </button>
                     </div>
@@ -843,7 +1064,7 @@ if (!empty($debug_info) && strpos($_SERVER['HTTP_HOST'], 'localhost') !== false)
                                             <input type="text" id="business_postcode" placeholder="우편번호" readonly
                                                    style="width: 140px;">
                                             <button type="button" onclick="execBusinessDaumPostcode()"
-                                                    style="background: #1a73e8; color: white; border: none; padding: 8px 20px; cursor: pointer; border-radius: 6px; white-space: nowrap;">
+                                                    style="background: #3498db; color: white; border: none; padding: 8px 16px; cursor: pointer; border-radius: 3px; white-space: nowrap;">
                                                 우편번호 찾기
                                             </button>
                                         </div>
@@ -890,8 +1111,8 @@ if (!empty($debug_info) && strpos($_SERVER['HTTP_HOST'], 'localhost') !== false)
                 
                 <div style="text-align: center; margin-top: 1.5rem;">
                     <button type="submit"
-                            style="background-color: #D9534F; color: white; border: none; padding: 12px 36px; border-radius: 6px; font-weight: bold; cursor: pointer; box-shadow: 0 4px 15px rgba(217, 83, 79, 0.25);">
-                        🚀 주문 완료하기
+                            style="background-color: #D9534F; color: white; border: none; padding: 12px 36px; border-radius: 20px; font-weight: bold; cursor: pointer; box-shadow: 0 4px 15px rgba(217, 83, 79, 0.25);">
+                        주문 완료하기
                     </button>
                 </div>
             </form>
@@ -909,7 +1130,7 @@ body {
 }
 
 .container {
-    max-width: 1200px;
+    max-width: 1100px;
     margin: 0 auto !important;
     padding: 0.3rem 0.8rem !important;
 }
@@ -995,7 +1216,7 @@ button {
 
 /* 중앙 집중형 레이아웃 */
 .centered-form {
-    max-width: 900px;
+    max-width: 1100px;
     margin: 0 auto;
     padding: 0 1rem;
 }

@@ -56,6 +56,10 @@ $notices = mysqli_fetch_all($result, MYSQLI_ASSOC);
     <link rel="stylesheet" href="/css/common-styles.css">
     <link rel="stylesheet" href="/css/customer-center.css">
     <style>
+        /* 콘텐츠 영역 폭 제한 */
+        .customer-content {
+            max-width: 900px;
+        }
         .admin-btn {
             padding: 8px 16px;
             background: #1466BA;

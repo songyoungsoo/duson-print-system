@@ -23,6 +23,10 @@ include_once $_SERVER['DOCUMENT_ROOT'] . '/includes/header-ui.php';
     <link rel="stylesheet" href="/css/common-styles.css">
     <link rel="stylesheet" href="/css/customer-center.css">
     <style>
+        /* 콘텐츠 영역 폭 제한 */
+        .customer-content {
+            max-width: 900px;
+        }
         .spec-table {
             width: 100%;
             border-collapse: collapse;
@@ -342,7 +346,7 @@ include_once $_SERVER['DOCUMENT_ROOT'] . '/includes/header-ui.php';
                         <table class="spec-table">
                             <tr>
                                 <th>작업 사이즈</th>
-                                <td>96x56mm (도련 포함)</td>
+                                <td>92x52mm (도련 포함)</td>
                             </tr>
                             <tr>
                                 <th>재단선</th>
@@ -370,7 +374,7 @@ include_once $_SERVER['DOCUMENT_ROOT'] . '/includes/header-ui.php';
                         <table class="spec-table">
                             <tr>
                                 <th>작업 사이즈</th>
-                                <td>216x303mm (도련 포함)</td>
+                                <td>213x300mm (도련 포함)</td>
                             </tr>
                             <tr>
                                 <th>재단선</th>

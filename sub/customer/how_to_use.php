@@ -55,6 +55,11 @@ include_once $_SERVER['DOCUMENT_ROOT'] . '/includes/header-ui.php';
     <link rel="stylesheet" href="/css/customer-center.css">
 
     <style>
+        /* 콘텐츠 영역 폭 제한 */
+        .customer-content {
+            max-width: 900px;
+        }
+
         /* 공지사항 섹션 스타일 */
         .notice-section {
             background: #f8f9fa;

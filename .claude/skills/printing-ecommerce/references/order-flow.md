@@ -113,6 +113,26 @@ $sql = "DELETE FROM shop_temp WHERE idx = ? AND session_id = ?";
 | 양식지 (ncrflambeau) | 권 | 10권, 50권 |
 | 기타 제품 | 매 | 100매, 500매 |
 
+### 규격/옵션 표시: ProductSpecFormatter (권장)
+
+**파일**: `/includes/ProductSpecFormatter.php`
+
+모든 페이지에서 일관된 규격/옵션 표시를 위해 중앙 집중식 포맷터 사용.
+
+```php
+require_once $_SERVER['DOCUMENT_ROOT'] . '/includes/ProductSpecFormatter.php';
+$formatter = new ProductSpecFormatter($db);
+
+// 2줄 형식 (HTML)
+echo $formatter->formatHtml($item);
+// 출력: "90g아트지 / A4 (210x297)<br>단면 / 0.5연 (2,000매) / 인쇄만"
+
+// 수량 표시용
+echo ProductSpecFormatter::getQuantityDisplay($item);
+// 출력: "0.5연 (2,000매)" 또는 "500매"
+```
+
+**레거시 코드 (직접 구현)**:
 ```php
 // 전단지 수량 표시 코드 (cart.php, OnlineOrder_unified.php, OrderComplete_universal.php 공통)
 $yeon = !empty($item['MY_amount']) ? floatval($item['MY_amount']) : 0;
@@ -126,6 +146,7 @@ if ($yeon > 0) {
 ```
 
 **관련 파일:**
+- `/var/www/html/includes/ProductSpecFormatter.php` - 중앙 포맷터 (권장)
 - `/var/www/html/mlangprintauto/shop/cart.php` (line 492-510)
 - `/var/www/html/mlangorder_printauto/OnlineOrder_unified.php` (line 884-902)
 - `/var/www/html/mlangorder_printauto/OrderComplete_universal.php` (line 416-447, 625-637)

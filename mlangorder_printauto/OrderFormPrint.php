@@ -8,6 +8,7 @@
 // 세션 시작 및 데이터베이스 연결
 session_start();
 include "../db.php";
+include $_SERVER['DOCUMENT_ROOT'] . "/includes/ProductSpecFormatter.php";
 
 // URL 파라미터에서 주문 정보 받기
 $orders = $_GET['orders'] ?? '';
@@ -32,108 +33,33 @@ if (!empty($order_numbers)) {
 
 $first_order = $order_list[0] ?? [];
 
+// ✅ ProductSpecFormatter 인스턴스 생성
+$specFormatter = new ProductSpecFormatter($db);
+
 // 상품 상세 정보 표시 함수
 function displayProductDetails($db, $order) {
+    global $specFormatter;
     $details = [];
 
-    // JSON 데이터 파싱 시도
-    if (!empty($order['Type_1'])) {
-        $json_data = json_decode($order['Type_1'], true);
-        if (json_last_error() === JSON_ERROR_NONE && is_array($json_data)) {
-            // 🔧 PRIORITY 1: formatted_display 우선 사용 (분석 문서 권장사항)
-            if (!empty($json_data['formatted_display'])) {
-                // 🔧 FIX: 이중 백슬래시 이스케이프 처리 (\\n)
-                $formatted_lines = explode('\\n', $json_data['formatted_display']);
-                foreach ($formatted_lines as $line) {
-                    $line = trim($line);
-                    if (!empty($line)) {
-                        $details[] = $line;
-                    }
-                }
-                // 🔧 FIX: formatted_display 사용 후에도 추가 옵션 표시를 위해 계속 진행
-                // (Lines 141-183에서 추가 옵션 처리됨)
-            } else {
-
-            // 🔧 FALLBACK: formatted_display가 없을 때만 제품별 파싱
-            if (true) {
-                // formatted_display가 없으면 product_type별 처리
-                $product_type = $json_data['product_type'] ?? $order['Type'];
-
-                switch ($product_type) {
-                    case 'envelope':
-                    $details[] = "📮 " . ($json_data['env_type'] ?? '봉투');
-                    if (!empty($json_data['env_paper'])) $details[] = "용지: " . $json_data['env_paper'];
-                    if (!empty($json_data['env_print_side'])) $details[] = "인쇄면: " . $json_data['env_print_side'];
-                    break;
-
-                case 'sticker':
-                    $details[] = "🏷️ 스티커";
-                    // order_details 안에 있는 경우와 바로 있는 경우 둘 다 처리
-                    $sticker_data = $json_data['order_details'] ?? $json_data;
-                    if (!empty($sticker_data['jong'])) $details[] = "재질: " . $sticker_data['jong'];
-                    if (!empty($sticker_data['garo']) && !empty($sticker_data['sero'])) {
-                        $details[] = "크기: " . $sticker_data['garo'] . "×" . $sticker_data['sero'] . "mm";
-                    }
-                    if (!empty($sticker_data['domusong'])) $details[] = "모양: " . $sticker_data['domusong'];
-                    break;
-
-                case 'namecard':
-                    $details[] = "💼 명함";
-                    if (!empty($json_data['nc_paper'])) $details[] = "용지: " . $json_data['nc_paper'];
-                    break;
-
-                case 'inserted':
-                case 'leaflet':
-                    $details[] = "📄 전단지";
-                    if (!empty($json_data['color'])) $details[] = "색상: " . $json_data['color'];
-                    if (!empty($json_data['paper'])) $details[] = "종류: " . $json_data['paper'];
-                    if (!empty($json_data['size'])) $details[] = "규격: " . $json_data['size'];
-                    if (!empty($json_data['print_side'])) $details[] = "인쇄: " . $json_data['print_side'];
-                    break;
-
-                    default:
-                        if (!empty($order['Type'])) $details[] = $order['Type'];
-                }
-            }
-            } // close else block for formatted_display
-        } else {
-            // JSON 파싱 실패 시 텍스트에서 정보 추출
-            $text = $order['Type_1'];
-
-            // 기본 정보 추출
-            if (preg_match('/재질[:\s]*([^\n\r,]+)/u', $text, $matches)) {
-                $details[] = "재질: " . trim($matches[1]);
-            }
-            if (preg_match('/크기[:\s]*([0-9]+)\s*[×xX]\s*([0-9]+)/u', $text, $matches)) {
-                $details[] = "크기: " . $matches[1] . "×" . $matches[2] . "mm";
-            }
-            if (preg_match('/모양[:\s]*([^\n\r,]+)/u', $text, $matches)) {
-                $details[] = "모양: " . trim($matches[1]);
-            }
-
-            // 전단지 정보 추출
-            if (preg_match('/색상[:\s]*([^\n\r,]+)/u', $text, $matches)) {
-                $details[] = "색상: " . trim($matches[1]);
-            }
-            if (preg_match('/종류[:\s]*([^\n\r,]+)/u', $text, $matches)) {
-                $details[] = "종류: " . trim($matches[1]);
-            }
-            if (preg_match('/규격[:\s]*([^\n\r,]+)/u', $text, $matches)) {
-                $details[] = "규격: " . trim($matches[1]);
-            }
-            if (preg_match('/인쇄[:\s]*([^\n\r,]+)/u', $text, $matches)) {
-                $details[] = "인쇄: " . trim($matches[1]);
-            }
-
-            // 아무것도 추출 못했으면 텍스트 그대로
-            if (empty($details)) {
-                $details[] = strip_tags($text);
-            }
-        }
+    // ✅ ProductSpecFormatter 사용하여 규격 정보 추출 (중복 코드 제거)
+    $json_data = !empty($order['Type_1']) ? json_decode($order['Type_1'], true) : null;
+    if ($json_data && is_array($json_data)) {
+        $order['product_type'] = $json_data['product_type'] ?? $order['Type'];
     }
 
+    $spec_result = $specFormatter->format($order);
+
+    // 2줄 형식을 단일 배열로 변환 (인쇄용)
+    if (!empty($spec_result['line1'])) {
+        $details[] = $spec_result['line1'];
+    }
+    if (!empty($spec_result['line2'])) {
+        $details[] = $spec_result['line2'];
+    }
+
+    // 폴백: 규격 정보가 없으면 제품 유형 표시
     if (empty($details)) {
-        $details[] = $order['Type'] ?? '주문 상품';
+        $details[] = $specFormatter->getProductTypeName($order['Type'] ?? '') ?: ($order['Type'] ?? '주문 상품');
     }
 
     // 추가 옵션 정보 표시
@@ -272,55 +198,17 @@ function displayProductDetails($db, $order) {
     return implode(' | ', $details);
 }
 
-// 수량 추출 함수 - DB unit 필드 사용 (2025-12-10 수정)
+// 수량 추출 함수 - ProductSpecFormatter::getQuantityDisplay() 사용 (2025-12-31 수정)
 function extractQuantity($order) {
-    // DB에서 unit 필드 가져오기 (없으면 '매' 기본값)
-    $unit = $order['unit'] ?? '매';
-
+    // Type_1 JSON 파싱하여 item 배열 구성
+    $item = $order;
     $json_data = json_decode($order['Type_1'] ?? '', true);
     if (json_last_error() === JSON_ERROR_NONE && is_array($json_data)) {
-        // order_details 안에 있는 경우와 바로 있는 경우 둘 다 처리
-        $order_data = $json_data['order_details'] ?? $json_data;
-
-        // 🔧 FIX: quantityTwo (전단지 매수), mesu, quantity 순으로 확인
-        $quantity = $order_data['quantityTwo'] ?? $order_data['mesu'] ?? $order_data['quantity'] ?? 0;
-        if ($quantity > 0) {
-            return number_format($quantity) . $unit;
-        }
-
-        // 🔧 FIX: MY_amount가 있으면 연수로 표시 (전단지/리플렛)
-        if (!empty($order_data['MY_amount'])) {
-            $yeonsu = floatval($order_data['MY_amount']);
-            if ($yeonsu > 0) {
-                // 정수면 정수로, 소수면 소수점 1자리로 표시
-                if (floor($yeonsu) == $yeonsu) {
-                    return number_format($yeonsu) . $unit;
-                } else {
-                    return number_format($yeonsu, 1) . $unit;
-                }
-            }
-        }
+        $item = array_merge($order, $json_data);
     }
 
-    // JSON에서 수량을 못 찾으면 텍스트에서 추출 시도
-    if (!empty($order['Type_1'])) {
-        // "수량: 0.5연 (2,000매)" 패턴에서 매수 추출
-        if (preg_match('/\(([0-9,]+)매\)/u', $order['Type_1'], $matches)) {
-            $quantity = str_replace(',', '', $matches[1]);
-            return number_format($quantity) . $unit;
-        }
-        // "수량: 1000" 또는 "1000매" 패턴 찾기
-        if (preg_match('/수량[:\s]*([0-9,]+)/u', $order['Type_1'], $matches)) {
-            $quantity = str_replace(',', '', $matches[1]);
-            return number_format($quantity) . $unit;
-        }
-        if (preg_match('/([0-9,]+)\s*매/u', $order['Type_1'], $matches)) {
-            $quantity = str_replace(',', '', $matches[1]);
-            return number_format($quantity) . $unit;
-        }
-    }
-
-    return '1' . $unit;
+    // ProductSpecFormatter::getQuantityDisplay() 사용
+    return ProductSpecFormatter::getQuantityDisplay($item);
 }
 ?>
 <!DOCTYPE html>

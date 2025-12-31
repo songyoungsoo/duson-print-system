@@ -253,40 +253,6 @@ if ($type_row = mysqli_fetch_assoc($type_result)) {
     </div>
     <?php endif; ?>
 
-    <!-- 갤러리 더보기 모달 -->
-    <div id="mstickerGalleryModal" class="gallery-modal" style="display: none;">
-        <div class="gallery-modal-overlay" onclick="closeMStickerGalleryModal()"></div>
-        <div class="gallery-modal-content">
-            <div class="gallery-modal-header">
-                <h3 class="gallery-modal-title">🔰 자석스티커 전체 갤러리</h3>
-                <button type="button" class="gallery-modal-close" onclick="closeMStickerGalleryModal()">✕</button>
-            </div>
-            
-            <div class="gallery-modal-body">
-                <div class="gallery-grid" id="mstickerGalleryModalGrid">
-                    <div class="gallery-loading">갤러리를 불러오는 중...</div>
-                </div>
-                
-                <!-- 페이지네이션 -->
-                <div class="gallery-pagination" id="mstickerPagination" style="display: none;">
-                    <div class="pagination-info">
-                        <span id="mstickerPageInfo">페이지 1 / 1 (총 0개)</span>
-                    </div>
-                    <div class="pagination-controls">
-                        <button id="mstickerPrevBtn" class="pagination-btn" onclick="loadMStickerPage('prev')" disabled>
-                            ← 이전
-                        </button>
-                        <div class="pagination-numbers" id="mstickerPageNumbers">
-                        </div>
-                        <button id="mstickerNextBtn" class="pagination-btn" onclick="loadMStickerPage('next')" disabled>
-                            다음 →
-                        </button>
-                    </div>
-                </div>
-            </div>
-        </div>
-    </div>
-
 <?php
 // 공통 푸터 포함 (견적서 모달에서는 제외)
 if (!$isQuotationMode) {

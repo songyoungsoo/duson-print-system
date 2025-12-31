@@ -44,7 +44,19 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST' && isset($_POST['update_profile'])) {
     $user = mysqli_fetch_assoc($result);
     mysqli_stmt_close($stmt);
 
-    if (!password_verify($current_password, $user['password'])) {
+    // 비밀번호 검증 (bcrypt 해시 또는 평문 모두 지원)
+    $stored_password = $user['password'];
+    $password_valid = false;
+
+    // bcrypt 해시인 경우 ($2y$로 시작하고 60자)
+    if (strlen($stored_password) === 60 && strpos($stored_password, '$2y$') === 0) {
+        $password_valid = password_verify($current_password, $stored_password);
+    } else {
+        // 평문 비밀번호인 경우 직접 비교
+        $password_valid = ($current_password === $stored_password);
+    }
+
+    if (!$password_valid) {
         $error = "현재 비밀번호가 일치하지 않습니다.";
     } else {
         // 회원정보 업데이트
@@ -58,7 +70,7 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST' && isset($_POST['update_profile'])) {
                          business_type = ?,
                          business_item = ?,
                          tax_invoice_email = ?,
-                         zipcode = ?,
+                         postcode = ?,
                          address = ?,
                          detail_address = ?
                          WHERE id = ?";
@@ -119,6 +131,7 @@ include $_SERVER['DOCUMENT_ROOT'] . '/includes/header-ui.php';
             padding: 30px;
             border-radius: 8px;
             box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+            max-width: 900px;
         }
 
         .page-title {
@@ -386,7 +399,7 @@ include $_SERVER['DOCUMENT_ROOT'] . '/includes/header-ui.php';
 
                     <div class="form-group">
                         <div class="address-group">
-                            <input type="text" name="zipcode" class="form-control" value="<?php echo htmlspecialchars($user_info['zipcode'] ?? ''); ?>" placeholder="우편번호" readonly>
+                            <input type="text" name="zipcode" class="form-control" value="<?php echo htmlspecialchars($user_info['postcode'] ?? ''); ?>" placeholder="우편번호" readonly>
                             <button type="button" class="btn btn-secondary" onclick="execDaumPostcode()">우편번호 찾기</button>
                         </div>
                     </div>

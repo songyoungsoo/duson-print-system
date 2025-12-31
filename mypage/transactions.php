@@ -160,6 +160,7 @@ include $_SERVER['DOCUMENT_ROOT'] . '/includes/header-ui.php';
             padding: 30px;
             border-radius: 8px;
             box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+            max-width: 900px;
         }
 
         .page-title {
@@ -313,28 +314,57 @@ include $_SERVER['DOCUMENT_ROOT'] . '/includes/header-ui.php';
             display: flex;
             justify-content: center;
             align-items: center;
-            gap: 8px;
-            margin-top: 20px;
+            gap: 2px;
+            margin-top: 15px;
+            flex-wrap: nowrap;
         }
 
         .pagination a,
         .pagination span {
-            padding: 8px 12px;
-            border: 1px solid #ddd;
-            border-radius: 4px;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            min-width: 26px;
+            height: 26px;
+            padding: 0 6px;
+            background: white;
+            color: #667eea;
             text-decoration: none;
-            color: #333;
-            font-size: 13px;
+            border: 1px solid #ddd;
+            border-radius: 3px;
+            font-size: 12px;
+            transition: all 0.2s;
         }
 
-        .pagination a:hover {
-            background: #f8f9fa;
-        }
-
-        .pagination .current {
-            background: #1466BA;
+        .pagination a:hover:not(.active):not(.disabled) {
+            background: #667eea;
             color: white;
-            border-color: #1466BA;
+            border-color: #667eea;
+        }
+
+        .pagination a.active {
+            background: #667eea;
+            color: white;
+            border-color: #667eea;
+            font-weight: bold;
+        }
+
+        .pagination a.disabled,
+        .pagination span.disabled {
+            background: #f5f5f5;
+            color: #ccc;
+            cursor: not-allowed;
+            pointer-events: none;
+        }
+
+        .pagination .page-nav {
+            font-weight: 500;
+        }
+
+        .pagination .page-ellipsis {
+            border: none;
+            background: transparent;
+            color: #999;
         }
 
         .no-data {
@@ -450,22 +480,47 @@ include $_SERVER['DOCUMENT_ROOT'] . '/includes/header-ui.php';
 
             <!-- 페이지네이션 -->
             <?php if ($total_pages > 1): ?>
+            <?php
+                $query_params = http_build_query(array_filter([
+                    'date_from' => $search_date_from,
+                    'date_to' => $search_date_to
+                ]));
+                $base_url = "?" . ($query_params ? $query_params . "&" : "");
+                $range = 5;
+                $start_page = max(1, $page - $range);
+                $end_page = min($total_pages, $page + $range);
+            ?>
             <div class="pagination">
                 <?php if ($page > 1): ?>
-                    <a href="?page=<?php echo $page - 1; ?><?php echo $search_date_from ? '&date_from=' . $search_date_from : ''; ?><?php echo $search_date_to ? '&date_to=' . $search_date_to : ''; ?>">◀ 이전</a>
+                    <a href="<?php echo $base_url; ?>page=1" class="page-nav" title="맨 처음">«</a>
+                    <a href="<?php echo $base_url; ?>page=<?php echo $page - 1; ?>" class="page-nav" title="이전">‹</a>
+                <?php else: ?>
+                    <span class="page-nav disabled">«</span>
+                    <span class="page-nav disabled">‹</span>
                 <?php endif; ?>
 
-                <?php for ($i = max(1, $page - 2); $i <= min($total_pages, $page + 2); $i++): ?>
-                    <?php if ($i == $page): ?>
-                        <span class="current"><?php echo $i; ?></span>
-                    <?php else: ?>
-                        <a href="?page=<?php echo $i; ?><?php echo $search_date_from ? '&date_from=' . $search_date_from : ''; ?><?php echo $search_date_to ? '&date_to=' . $search_date_to : ''; ?>"><?php echo $i; ?></a>
-                    <?php endif; ?>
+                <?php if ($start_page > 1): ?>
+                    <span class="page-ellipsis">...</span>
+                <?php endif; ?>
+
+                <?php for ($i = $start_page; $i <= $end_page; $i++): ?>
+                    <a href="<?php echo $base_url; ?>page=<?php echo $i; ?>" class="<?php echo $i == $page ? 'active' : ''; ?>"><?php echo $i; ?></a>
                 <?php endfor; ?>
 
-                <?php if ($page < $total_pages): ?>
-                    <a href="?page=<?php echo $page + 1; ?><?php echo $search_date_from ? '&date_from=' . $search_date_from : ''; ?><?php echo $search_date_to ? '&date_to=' . $search_date_to : ''; ?>">다음 ▶</a>
+                <?php if ($end_page < $total_pages): ?>
+                    <span class="page-ellipsis">...</span>
                 <?php endif; ?>
+
+                <?php if ($page < $total_pages): ?>
+                    <a href="<?php echo $base_url; ?>page=<?php echo $page + 1; ?>" class="page-nav" title="다음">›</a>
+                    <a href="<?php echo $base_url; ?>page=<?php echo $total_pages; ?>" class="page-nav" title="맨 끝">»</a>
+                <?php else: ?>
+                    <span class="page-nav disabled">›</span>
+                    <span class="page-nav disabled">»</span>
+                <?php endif; ?>
+            </div>
+            <div style="text-align: center; margin-top: 5px; color: #888; font-size: 12px;">
+                <?php echo number_format($page); ?> / <?php echo number_format($total_pages); ?> 페이지
             </div>
             <?php endif; ?>
 

@@ -37,7 +37,7 @@ class UnifiedGalleryPopup {
         }
         
         const popupHTML = `
-            <div id="unified-gallery-popup-${this.options.category}" class="unified-gallery-popup">
+            <div id="unified-gallery-popup-${this.options.category}" class="unified-gallery-popup" style="display: none;">
                 <div class="unified-popup-container">
                     <div class="unified-popup-header">
                         <h3 class="unified-popup-title">
@@ -117,19 +117,26 @@ class UnifiedGalleryPopup {
     
     async open() {
         console.log(`📸 ${this.options.category} 갤러리 팝업 열기`);
-        
+
         const popup = document.getElementById(`unified-gallery-popup-${this.options.category}`);
+        popup.style.display = 'flex';
         popup.classList.add('active');
         document.body.style.overflow = 'hidden';
-        
+
         // 첫 페이지 로드
         await this.loadPage(1);
+    }
+
+    // show() 별칭 (open()과 동일)
+    async show() {
+        return this.open();
     }
     
     close() {
         console.log(`❌ ${this.options.category} 갤러리 팝업 닫기`);
-        
+
         const popup = document.getElementById(`unified-gallery-popup-${this.options.category}`);
+        popup.style.display = 'none';
         popup.classList.remove('active');
         document.body.style.overflow = 'auto';
     }

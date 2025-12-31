@@ -5,6 +5,8 @@ $session_id = session_id();
 // 경로 수정: MlangPrintAuto/shop/에서 루트의 db.php 접근
 include "../../db.php";
 include "../../includes/AdditionalOptionsDisplay.php";
+include "../../includes/quantity_formatter.php";
+include "../../includes/ProductSpecFormatter.php";
 $connect = $db; // db.php에서 $db 변수 사용
 
 // --- REFACTOR ---
@@ -58,6 +60,79 @@ function getKoreanName($connect, $id)
     // 못 찾으면 로그 남기고 원본 반환
     error_log("getKoreanName: No match found for ID: " . $id);
     return $id; // 찾지 못하면 원본 ID 반환
+}
+
+/**
+ * Get formatted sticker specifications for cart display
+ * @param array $item Cart item data
+ * @return array Array of specification strings ready for display
+ */
+function getStickerSpecs($item) {
+    $specs = [];
+
+    // Material (재질)
+    if (!empty($item['jong'])) {
+        $material = preg_replace('/^(jil|jsp|jka|cka)\s+/', '', $item['jong']);
+        $specs[] = '재질: ' . htmlspecialchars($material);
+    }
+
+    // Size (크기)
+    if (!empty($item['garo']) && !empty($item['sero'])) {
+        $specs[] = '크기: ' . htmlspecialchars($item['garo']) . ' × ' . htmlspecialchars($item['sero']) . 'mm';
+    }
+
+    // Shape (모양)
+    if (!empty($item['domusong'])) {
+        $shape_parts = explode(' ', $item['domusong'], 2);
+        $shape_name = isset($shape_parts[1]) ? $shape_parts[1] : $item['domusong'];
+        $specs[] = '모양: ' . htmlspecialchars($shape_name);
+    }
+
+    // Edit type (편집) - Only if not 0
+    if (!empty($item['uhyung']) && $item['uhyung'] != '0') {
+        $edit_types = ['10000' => '기본편집', '30000' => '고급편집'];
+        $edit_label = $edit_types[$item['uhyung']] ?? htmlspecialchars($item['uhyung']) . '원';
+        $specs[] = '편집: ' . $edit_label;
+    }
+
+    return $specs;
+}
+
+/**
+ * Get msticker (자석스티커) specifications for display
+ * Msticker uses different field names than regular sticker
+ * @param array $item Cart item data
+ * @return array Array of specification strings ready for display
+ */
+function getMstickerSpecs($item) {
+    global $connect; // DB 연결 사용
+    $specs = [];
+
+    // Type (종류) - MY_type field
+    if (!empty($item['MY_type'])) {
+        $type_name = getKoreanName($connect, $item['MY_type']);
+        $specs[] = '종류: ' . htmlspecialchars($type_name);
+    }
+
+    // Specification/Size (규격) - Section field
+    if (!empty($item['Section'])) {
+        $section_name = getKoreanName($connect, $item['Section']);
+        $specs[] = '규격: ' . htmlspecialchars($section_name);
+    }
+
+    // Print type (인쇄) - POtype field
+    if (!empty($item['POtype'])) {
+        $print_types = ['1' => '단면', '2' => '양면'];
+        $print_label = $print_types[$item['POtype']] ?? htmlspecialchars($item['POtype']);
+        $specs[] = '인쇄: ' . $print_label;
+    }
+
+    // Quantity (수량) - MY_amount field
+    if (!empty($item['MY_amount'])) {
+        $specs[] = '수량: ' . number_format(intval($item['MY_amount'])) . '매';
+    }
+
+    return $specs;
 }
 
 // 장바구니 내용 가져오기 (통합 버전)
@@ -167,18 +242,24 @@ if ($cart_result === false) {
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>🛒 통합 장바구니</title>
+    <title>통합 장바구니 - 두손기획인쇄</title>
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@400;500;700&display=swap" rel="stylesheet">
+
+    <!-- 헤더 스타일 (header-ui.php용) -->
+    <link rel="stylesheet" href="../../css/common-styles.css">
+
     <link rel="stylesheet" href="../../css/excel-unified-style.css">
 </head>
 
 <body>
+    <?php include "../../includes/header-ui.php"; ?>
+
     <div class="cart-container">
         <!-- 헤더 섹션 -->
         <div class="cart-hero">
-            <h1>🛒 통합 장바구니</h1>
+            <h1>통합 장바구니</h1>
             <p>모든 인쇄 상품을 한 번에 주문하세요</p>
         </div>
 
@@ -225,7 +306,7 @@ if ($cart_result === false) {
                             <th style="border: 1px solid #ccc; padding: 10px; background: #f3f3f3; text-align: center; font-weight: bold;">규격/옵션</th>
                             <th style="border: 1px solid #ccc; padding: 10px; background: #f3f3f3; text-align: center; font-weight: bold;">수량</th>
                             <th style="border: 1px solid #ccc; padding: 10px; background: #f3f3f3; text-align: center; font-weight: bold;">단위</th>
-                            <th style="border: 1px solid #ccc; padding: 10px; background: #f3f3f3; text-align: center; font-weight: bold;">총액</th>
+                            <th style="border: 1px solid #ccc; padding: 10px; background: #f3f3f3; text-align: center; font-weight: bold;">공급가액</th>
                             <th style="border: 1px solid #ccc; padding: 10px; background: #f3f3f3; text-align: center; font-weight: bold;">관리</th>
                         </tr>
                     </thead>
@@ -243,23 +324,23 @@ if ($cart_result === false) {
 
                             // 상품명 매핑
                             $product_info = [
-                                'cadarok' => ['name' => '카달로그', 'icon' => '📖'],
-                                'sticker' => ['name' => '스티커', 'icon' => '🏷️'],
-                                'msticker' => ['name' => '자석스티커', 'icon' => '🧲'],
-                                'leaflet' => ['name' => '전단지', 'icon' => '📄'],
-                                'inserted' => ['name' => '전단지', 'icon' => '📄'],
-                                'namecard' => ['name' => '명함', 'icon' => '💼'],
-                                'envelope' => ['name' => '봉투', 'icon' => '✉️'],
-                                'merchandisebond' => ['name' => '상품권', 'icon' => '🎫'],
-                                'littleprint' => ['name' => '포스터', 'icon' => '🎨'],
-                                'poster' => ['name' => '포스터', 'icon' => '🎨']
+                                'cadarok' => ['name' => '카달로그', 'icon' => ''],
+                                'sticker' => ['name' => '스티커', 'icon' => ''],
+                                'msticker' => ['name' => '자석스티커', 'icon' => ''],
+                                'leaflet' => ['name' => '전단지', 'icon' => ''],
+                                'inserted' => ['name' => '전단지', 'icon' => ''],
+                                'namecard' => ['name' => '명함', 'icon' => ''],
+                                'envelope' => ['name' => '봉투', 'icon' => ''],
+                                'merchandisebond' => ['name' => '상품권', 'icon' => ''],
+                                'littleprint' => ['name' => '포스터', 'icon' => ''],
+                                'poster' => ['name' => '포스터', 'icon' => '']
                             ];
 
-                            $product = $product_info[$item['product_type']] ?? ['name' => '상품', 'icon' => '📦'];
+                            $product = $product_info[$item['product_type']] ?? ['name' => '상품', 'icon' => ''];
 
                             // --- REFACTOR: Prepare variables for new amount display ---
                             $is_flyer = in_array($item['product_type'], ['inserted', 'leaflet']);
-                            // 🔧 FIX: 전단지는 flyer_mesu 컬럼 사용 (mesu는 스티커용)
+                            // FIX: 전단지는 flyer_mesu 컬럼 사용 (mesu는 스티커용)
                             $show_sheet_count = ($is_flyer && $LEAFLET_DISPLAY_STYLE === 'Y' && !empty($item['flyer_mesu']));
                             
                             $main_amount_val = 1;
@@ -270,19 +351,15 @@ if ($cart_result === false) {
                             if ($is_flyer) {
                                 $unit = '연';
                                 $main_amount_val = !empty($item['MY_amount']) ? floatval($item['MY_amount']) : 1;
-                                // Format to 1 decimal place only if it's not a whole number
-                                if ($main_amount_val > 0 && floor($main_amount_val) != $main_amount_val) {
-                                    $main_amount_display = number_format($main_amount_val, 1);
-                                } else {
-                                    $main_amount_display = number_format($main_amount_val);
-                                }
-                                // 🔧 FIX: 전단지는 flyer_mesu 컬럼에서 매수 읽기
+                                // 0.5만 소수점, 나머지 정수 (formatQuantityValue 사용)
+                                $main_amount_display = formatQuantityValue($main_amount_val, 'inserted');
+                                // FIX: 전단지는 flyer_mesu 컬럼에서 매수 읽기
                                 $sub_amount = $item['flyer_mesu'] ?? null;
                             } else {
-                                // Other products
-                                $main_amount_val = !empty($item['mesu']) ? floatval($item['mesu']) : (!empty($item['MY_amount']) ? floatval($item['MY_amount']) : 1);
-                                $main_amount_display = number_format($main_amount_val);
-                                
+                                // Other products - 정수로만 표시
+                                $main_amount_val = !empty($item['mesu']) ? intval($item['mesu']) : (!empty($item['MY_amount']) ? intval($item['MY_amount']) : 1);
+                                $main_amount_display = formatQuantityValue($main_amount_val, $item['product_type']);
+
                                 if ($item['product_type'] == 'ncrflambeau') $unit = '권';
                                 elseif ($item['product_type'] == 'cadarok') $unit = '부';
                             }
@@ -302,72 +379,40 @@ if ($cart_result === false) {
                                     </div>
                                 </td>
 
-                                <!-- 규격/옵션 (2줄+2줄 형식) -->
+                                <!-- 규격/옵션 (2줄 슬래시 방식) - ProductSpecFormatter 사용 -->
                                 <td>
                                     <div class="specs-cell">
                                         <?php
-                                        // 규격 정보 (최대 2줄)
-                                        $spec_lines = [];
-                                        // 규격 1줄: 용지/타입
-                                        if (!empty($item['MY_Fsd'])) {
-                                            $spec_lines[] = htmlspecialchars(getKoreanName($connect, $item['MY_Fsd']));
-                                        } elseif (!empty($item['MY_type'])) {
-                                            $spec_lines[] = htmlspecialchars(getKoreanName($connect, $item['MY_type']));
-                                        } elseif (!empty($item['Section'])) {
-                                            $spec_lines[] = htmlspecialchars(getKoreanName($connect, $item['Section']));
-                                        }
-                                        // 규격 2줄: 사이즈/규격
-                                        if (!empty($item['PN_type'])) {
-                                            $spec_lines[] = htmlspecialchars(getKoreanName($connect, $item['PN_type']));
-                                        } elseif (!empty($item['Section']) && !empty($item['MY_Fsd'])) {
-                                            $spec_lines[] = htmlspecialchars(getKoreanName($connect, $item['Section']));
-                                        }
-
-                                        // 옵션 정보 (최대 2줄)
-                                        $option_lines = [];
-                                        // 옵션 1줄: 인쇄방식
-                                        $print_info = [];
-                                        if (!empty($item['POtype'])) {
-                                            $print_info[] = ($item['POtype'] == '1' ? '단면' : '양면') . '컬러인쇄';
-                                        }
-                                        if (!empty($print_info)) {
-                                            $option_lines[] = implode(' ', $print_info);
-                                        }
-                                        // 옵션 2줄: 디자인/주문타입
-                                        if (!empty($item['ordertype'])) {
-                                            $option_lines[] = ($item['ordertype'] == 'total' ? '디자인+인쇄' : ($item['ordertype'] == 'print' ? '인쇄만' : htmlspecialchars($item['ordertype'])));
-                                        }
-
-                                        // 규격 출력 (2줄)
-                                        foreach ($spec_lines as $spec):
+                                        // ProductSpecFormatter로 2줄 형식 생성
+                                        $specFormatter = new ProductSpecFormatter($connect);
+                                        $specs = $specFormatter->format($item);
                                         ?>
-                                            <div class="spec-line"><?php echo $spec; ?></div>
-                                        <?php endforeach; ?>
+                                        <?php if (!empty($specs['line1'])): ?>
+                                            <div class="spec-line" style="color: #2d3748; margin-bottom: 2px;"><?php echo htmlspecialchars($specs['line1']); ?></div>
+                                        <?php endif; ?>
+                                        <?php if (!empty($specs['line2'])): ?>
+                                            <div class="spec-line" style="color: #4a5568;"><?php echo htmlspecialchars($specs['line2']); ?></div>
+                                        <?php endif; ?>
+                                        <?php if (!empty($specs['additional'])): ?>
+                                            <div class="spec-line" style="color: #666; font-size: 12px;"><?php echo htmlspecialchars($specs['additional']); ?></div>
+                                        <?php endif; ?>
 
-                                        <?php
-                                        // 옵션 출력 (2줄)
-                                        foreach ($option_lines as $opt):
-                                        ?>
-                                            <div class="spec-line"><?php echo $opt; ?></div>
-                                        <?php endforeach; ?>
-
-                                        <!-- 추가 옵션 정보 표시 (코팅/접지/오시 등) -->
+                                        <!-- 추가 옵션 정보 표시 -->
                                         <?php
                                         $options_details = $optionsDisplay->getOrderDetails($item);
                                         if (!empty($options_details['options'])):
-                                            $opt_names = [];
-                                            foreach ($options_details['options'] as $option) {
-                                                $opt_names[] = $option['name'];
-                                            }
-                                            // 최대 2개씩 한 줄로 표시
-                                            $opt_chunks = array_chunk($opt_names, 2);
-                                            foreach ($opt_chunks as $chunk):
                                         ?>
-                                            <div class="spec-line option-line"><?php echo implode(' / ', $chunk); ?></div>
-                                        <?php
-                                            endforeach;
-                                        endif;
-                                        ?>
+                                            <div class="options-section">
+                                                <div class="options-title">추가옵션</div>
+                                                <?php foreach ($options_details['options'] as $option): ?>
+                                                    <div class="option-item">
+                                                        <span class="option-category"><?php echo $option['category']; ?>:</span>
+                                                        <?php echo $option['name']; ?>
+                                                        <span class="option-price">(+<?php echo $option['formatted_price']; ?>)</span>
+                                                    </div>
+                                                <?php endforeach; ?>
+                                            </div>
+                                        <?php endif; ?>
                                     </div>
                                 </td>
 
@@ -391,14 +436,14 @@ if ($cart_result === false) {
                                     <?php endif; ?>
                                 </td>
 
-                                <!-- 총액 -->
-                                <td style="text-align: right;">
-                                    <div class="price-label">부가세포함</div>
-                                    <div class="price-total"><?php echo number_format($final_price_vat); ?>원</div>
+                                <!-- 공급가액 -->
+                                <td class="td-right">
+                                    <div class="price-label">부가세 별도</div>
+                                    <div class="price-total"><?php echo number_format($final_price); ?>원</div>
                                 </td>
 
                                 <!-- 관리 -->
-                                <td style="text-align: center;">
+                                <td class="td-center">
                                     <a href="?delete=<?php echo $item['no']; ?>"
                                         onclick="return confirm('이 상품을 삭제하시겠습니까?')"
                                         class="delete-btn">
@@ -414,7 +459,7 @@ if ($cart_result === false) {
             <!-- 요약 정보 -->
             <div class="cart-summary">
                 <div class="summary-header">
-                    <div class="summary-title">📋 주문 요약</div>
+                    <div class="summary-title">주문 요약</div>
                     <div class="summary-count">총 <?php echo count($cart_items); ?>개 상품</div>
                 </div>
 
@@ -447,13 +492,13 @@ if ($cart_result === false) {
                 <!-- 컴팩트 버튼 그룹 -->
                 <div class="button-group">
                     <button type="button" onclick="continueShopping()" class="btn-continue">
-                        🛍️ 계속 쇼핑
+                        계속 쇼핑
                     </button>
                     <button type="button" onclick="showQuotation()" class="btn-quote">
-                        📄 견적서 받기
+                        견적서 받기
                     </button>
                     <button type="submit" class="btn-order">
-                        📋 주문하기
+                        주문하기
                     </button>
                 </div>
             </div>
@@ -462,12 +507,12 @@ if ($cart_result === false) {
         <!-- 도움말 및 정보 섹션 -->
         <div style="background: #f3f3f3; padding: 15px; border-radius: 4px; margin: 20px 0 15px 0; border: 1px solid #ccc;">
             <h4 style="margin: 0 0 10px 0; font-size: 15px; font-weight: bold; display: flex; align-items: center; justify-content: center;">
-                <span style="margin-right: 6px;">💡</span>두손기획인쇄 이용 안내
+                두손기획인쇄 이용 안내
             </h4>
             <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 10px; text-align: left;">
                 <div style="background: white; padding: 10px; border-radius: 4px; border: 1px solid #ccc;">
                     <h5 style="color: #1976d2; margin: 0 0 6px 0; font-size: 14px; font-weight: bold; display: flex; align-items: center;">
-                        <span style="margin-right: 5px;">🏆</span>품질 보장
+                        품질 보장
                     </h5>
                     <ul style="margin: 0; padding-left: 18px; color: #555; font-size: 13px; line-height: 1.4;">
                         <li>20년 이상의 인쇄 경험</li>
@@ -478,7 +523,7 @@ if ($cart_result === false) {
 
                 <div style="background: white; padding: 10px; border-radius: 4px; border: 1px solid #ccc;">
                     <h5 style="color: #388e3c; margin: 0 0 6px 0; font-size: 14px; font-weight: bold; display: flex; align-items: center;">
-                        <span style="margin-right: 5px;">🚚</span>빠른 배송
+                        빠른 배송
                     </h5>
                     <ul style="margin: 0; padding-left: 18px; color: #555; font-size: 13px; line-height: 1.4;">
                         <li>당일 출고 (오전 11시 이전 주문)</li>
@@ -489,7 +534,7 @@ if ($cart_result === false) {
 
                 <div style="background: white; padding: 10px; border-radius: 4px; border: 1px solid #ccc;">
                     <h5 style="color: #f57c00; margin: 0 0 6px 0; font-size: 14px; font-weight: bold; display: flex; align-items: center;">
-                        <span style="margin-right: 5px;">💰</span>합리적 가격
+                        합리적 가격
                     </h5>
                     <ul style="margin: 0; padding-left: 18px; color: #555; font-size: 13px; line-height: 1.4;">
                         <li>실시간 가격 계산</li>
@@ -503,19 +548,16 @@ if ($cart_result === false) {
         <!-- 연락처 정보 -->
         <div style="background: #f3f3f3; padding: 12px 15px; border-radius: 4px; margin-bottom: 15px; border: 1px solid #ccc;">
             <h4 style="color: #0066cc; margin: 0 0 8px 0; font-size: 14px; font-weight: bold; display: flex; align-items: center; justify-content: center;">
-                <span style="margin-right: 6px;">📞</span>문의사항이 있으시면 언제든 연락하세요
+                문의사항이 있으시면 언제든 연락하세요
             </h4>
             <div style="display: flex; flex-wrap: wrap; gap: 15px; justify-content: center; align-items: center; font-size: 14px;">
                 <div style="display: flex; align-items: center; color: #222;">
-                    <span style="margin-right: 5px;">☎️</span>
                     <span style="font-weight: bold;">02-2632-1830</span>
                 </div>
                 <div style="display: flex; align-items: center; color: #222;">
-                    <span style="margin-right: 5px;">📱</span>
                     <span style="font-weight: bold;">1688-2384</span>
                 </div>
                 <div style="display: flex; align-items: center; color: #222;">
-                    <span style="margin-right: 5px;">🕘</span>
                     <span>평일 09:00~18:00</span>
                 </div>
             </div>
@@ -524,19 +566,18 @@ if ($cart_result === false) {
     <?php else: ?>
         <!-- 빈 장바구니 상태 - 개선된 UI -->
         <div class="empty-cart">
-            <div class="empty-cart-icon">📭</div>
             <h3>장바구니가 비어있습니다</h3>
             <p>원하시는 인쇄물을 선택해서 주문을 시작해보세요!</p>
 
             <!-- 도움말 및 정보 섹션 -->
             <div style="background: #f3f3f3; padding: 15px; border-radius: 4px; margin-bottom: 15px; border: 1px solid #ccc;">
                 <h4 style="margin: 0 0 10px 0; font-size: 15px; font-weight: bold; display: flex; align-items: center; justify-content: center;">
-                    <span style="margin-right: 6px;">💡</span>두손기획인쇄 이용 안내
+                    두손기획인쇄 이용 안내
                 </h4>
                 <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 10px; text-align: left;">
                     <div style="background: white; padding: 10px; border-radius: 4px; border: 1px solid #ccc;">
                         <h5 style="color: #1976d2; margin: 0 0 6px 0; font-size: 14px; font-weight: bold; display: flex; align-items: center;">
-                            <span style="margin-right: 5px;">🏆</span>품질 보장
+                            품질 보장
                         </h5>
                         <ul style="margin: 0; padding-left: 18px; color: #555; font-size: 13px; line-height: 1.4;">
                             <li>20년 이상의 인쇄 경험</li>
@@ -547,7 +588,7 @@ if ($cart_result === false) {
 
                     <div style="background: white; padding: 10px; border-radius: 4px; border: 1px solid #ccc;">
                         <h5 style="color: #388e3c; margin: 0 0 6px 0; font-size: 14px; font-weight: bold; display: flex; align-items: center;">
-                            <span style="margin-right: 5px;">🚚</span>빠른 배송
+                            빠른 배송
                         </h5>
                         <ul style="margin: 0; padding-left: 18px; color: #555; font-size: 13px; line-height: 1.4;">
                             <li>당일 출고 (오전 11시 이전 주문)</li>
@@ -558,7 +599,7 @@ if ($cart_result === false) {
 
                     <div style="background: white; padding: 10px; border-radius: 4px; border: 1px solid #ccc;">
                         <h5 style="color: #f57c00; margin: 0 0 6px 0; font-size: 14px; font-weight: bold; display: flex; align-items: center;">
-                            <span style="margin-right: 5px;">💰</span>합리적 가격
+                            합리적 가격
                         </h5>
                         <ul style="margin: 0; padding-left: 18px; color: #555; font-size: 13px; line-height: 1.4;">
                             <li>실시간 가격 계산</li>
@@ -572,19 +613,16 @@ if ($cart_result === false) {
             <!-- 연락처 정보 -->
             <div style="background: #f3f3f3; padding: 12px 15px; border-radius: 4px; margin-bottom: 15px; border: 1px solid #ccc;">
                 <h4 style="color: #0066cc; margin: 0 0 8px 0; font-size: 14px; font-weight: bold; display: flex; align-items: center; justify-content: center;">
-                    <span style="margin-right: 6px;">📞</span>문의사항이 있으시면 언제든 연락하세요
+                    문의사항이 있으시면 언제든 연락하세요
                 </h4>
                 <div style="display: flex; flex-wrap: wrap; gap: 15px; justify-content: center; align-items: center; font-size: 14px;">
                     <div style="display: flex; align-items: center; color: #222;">
-                        <span style="margin-right: 5px;">☎️</span>
                         <span style="font-weight: bold;">02-2632-1830</span>
                     </div>
                     <div style="display: flex; align-items: center; color: #222;">
-                        <span style="margin-right: 5px;">📱</span>
                         <span style="font-weight: bold;">1688-2384</span>
                     </div>
                     <div style="display: flex; align-items: center; color: #222;">
-                        <span style="margin-right: 5px;">🕘</span>
                         <span>평일 09:00~18:00</span>
                     </div>
                 </div>
@@ -593,14 +631,14 @@ if ($cart_result === false) {
             <!-- 쇼핑 시작 버튼 -->
             <div style="text-align: center; margin-top: 15px;">
                 <button onclick="continueShopping()" class="btn-continue" style="padding: 12px 30px; border-radius: 4px; font-size: 14px; min-width: 180px;">
-                    🛍️ 인쇄 주문 시작하기
+                    인쇄 주문 시작하기
                 </button>
             </div>
         </div>
     <?php endif; ?>
 </div>
 
-<!-- 📄 견적서 섹션 (기본적으로 숨겨짐) -->
+<!-- 견적서 섹션 (기본적으로 숨겨짐) -->
 <div id="quotationSection" class="quotation-section" style="display: none;">
 
     <!-- 견적서 헤더 -->
@@ -799,17 +837,12 @@ if ($cart_result === false) {
 
         <!-- 합계 정보 -->
         <div style="background: #ecf0f1; padding: 20px; border-radius: 5px; margin-bottom: 30px;">
-            <div style="display: flex; justify-content: space-between; margin-bottom: 10px;">
-                <span>공급가액 (VAT 제외):</span>
+            <div style="display: flex; justify-content: space-between; font-weight: bold;">
+                <span>공급가액:</span>
                 <span><?php echo number_format($quote_total); ?>원</span>
             </div>
-            <div style="display: flex; justify-content: space-between; margin-bottom: 10px;">
-                <span>부가세(10%):</span>
-                <span><?php echo number_format($quote_total_vat - $quote_total); ?>원</span>
-            </div>
-            <div style="display: flex; justify-content: space-between; font-weight: bold; border-top: 2px solid #34495e; padding-top: 10px; margin-top: 10px;">
-                <span>총 합계금액 (VAT 포함):</span>
-                <span><?php echo number_format($quote_total_vat); ?>원</span>
+            <div style="text-align: right; color: #666; font-size: 13px; margin-top: 5px;">
+                부가세 별도
             </div>
         </div>
     <?php endif; ?>
@@ -839,17 +872,17 @@ if ($cart_result === false) {
     <!-- 견적서 전용 버튼 -->
     <div style="text-align: center; margin-top: 30px; display: flex; gap: 15px; justify-content: center;">
         <button onclick="printQuotation()" class="btn-quote">
-            🖨️ 견적서 인쇄
+            견적서 인쇄
         </button>
         <button onclick="hideQuotation()" style="padding: 12px 30px; background-color: #6c757d; color: white; border: none; border-radius: 6px; font-size: 16px; font-weight: 600; cursor: pointer;">
-            ⬅️ 장바구니로 돌아가기
+            장바구니로 돌아가기
         </button>
     </div>
 </div>
 </div>
 
 <script>
-    // 📄 견적서 표시 함수
+    // 견적서 표시 함수
     function showQuotation() {
         // 장바구니 내용 숨기기
         document.getElementById('cartContent').style.display = 'none';
@@ -864,10 +897,10 @@ if ($cart_result === false) {
         });
 
         // 페이지 제목 변경
-        document.title = '📄 견적서 - 두손기획인쇄';
+        document.title = '견적서 - 두손기획인쇄';
     }
 
-    // 🛒 장바구니로 돌아가기 함수
+    // 장바구니로 돌아가기 함수
     function hideQuotation() {
         // 견적서 숨기기
         document.getElementById('quotationSection').style.display = 'none';
@@ -882,10 +915,10 @@ if ($cart_result === false) {
         });
 
         // 페이지 제목 복원
-        document.title = '🛒 통합 장바구니 - 두손기획인쇄';
+        document.title = '통합 장바구니 - 두손기획인쇄';
     }
 
-    // 🖨️ 견적서 인쇄 함수
+    // 견적서 인쇄 함수
     function printQuotation() {
         // 견적서만 인쇄하기 위한 새 창 열기
         const quotationContent = document.getElementById('quotationSection').innerHTML;
