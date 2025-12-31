@@ -183,6 +183,9 @@ member/pass.html
 member/test_*.php
 member/change_password.html
 
+# 임시/작업 폴더 (DB 덤프, 라이브러리)
+새 폴더/
+
 # 레거시 유틸리티 파일
 member/Cookie_chick.php
 member/PhotoFileView.php
