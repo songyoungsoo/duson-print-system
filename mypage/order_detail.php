@@ -8,27 +8,29 @@
 
 require_once __DIR__ . '/auth_required.php';
 
+// ProductSpecFormatter 로드
+require_once __DIR__ . '/../includes/ProductSpecFormatter.php';
+$specFormatter = new ProductSpecFormatter();
 
+// 주문번호 파라미터 확인
+$order_no = isset($_GET['no']) ? intval($_GET['no']) : 0;
+if ($order_no <= 0) {
+    header("Location: orders.php?error=invalid_order");
+    exit;
+}
 
+// 사용자 정보 (auth_required.php에서 제공)
+$user_email = $current_user['email'] ?? '';
+$user_name = $current_user['name'] ?? '';
 
-
-
-
-
-
-
-
-
+// SQL 쿼리 초기화
+$query = "SELECT * FROM mlangorder_printauto WHERE no = ?";
 
 $params = [$order_no];
 $types = "i";
 
 // 이메일 또는 이름으로 본인 확인
 if (!empty($user_email)) {
-
-
-
-
     $where_check = " AND email = ?";
     $params[] = $user_email;
     $types .= "s";
