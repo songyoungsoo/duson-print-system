@@ -95,6 +95,7 @@ if ($mode == "ModifyOk") { /////////////////////////////////////////////////////
     );
 
     if (!$stmt->execute()) {
+        $stmt->close();
         echo "<script>
                 alert('DB 접속 에러입니다!');
                 history.go(-1);
@@ -102,16 +103,22 @@ if ($mode == "ModifyOk") { /////////////////////////////////////////////////////
         exit;
     }
 
+    $stmt->close();
+
+    // JavaScript로 알림 후 페이지 새로고침 (header() 대신 사용)
+    $redirect_url = htmlspecialchars($_SERVER['PHP_SELF']) . "?mode=OrderView&no=" . intval($no);
     echo "<script>
             alert('정보를 정상적으로 수정하였습니다.');
-            opener.parent.location.reload();
+            if (window.opener) {
+                // 팝업 창인 경우: 부모 창 새로고침 후 닫기
+                window.opener.location.reload();
+                window.close();
+            } else {
+                // 일반 페이지인 경우: 리디렉션
+                window.location.href = '{$redirect_url}';
+            }
           </script>";
-
-    header("Location: " . htmlspecialchars($_SERVER['PHP_SELF']) . "?mode=OrderView&no=$no");
     exit;
-
-    $stmt->close();
-    // // $db->close(); // 스크립트 끝에서 자동으로 닫힘 // 연결 유지
 }
 ?>
 
@@ -391,7 +398,7 @@ if ($mode == "BankModifyOk") { /////////////////////////////////////////////////
             $tempVar = "ContText_" . $index;
             // POST 데이터에서 직접 가져오기
             $get_tempTwo = isset($contTextData[$tempVar]) ? addslashes($contTextData[$tempVar]) : '';
-            $content .= "\$View_ContText_${index}=\"" . $get_tempTwo . "\";\n";
+            $content .= "\$View_ContText_{$index}=\"" . $get_tempTwo . "\";\n";
         }
     }
 

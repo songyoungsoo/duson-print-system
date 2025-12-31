@@ -56,18 +56,30 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST' && isset($_POST['change_password'])) {
         if (!$password_valid) {
             $error = "현재 비밀번호가 일치하지 않습니다.";
         } else {
-            // 비밀번호 업데이트
+            // 비밀번호 업데이트 (users 테이블)
             $hashed_password = password_hash($new_password, PASSWORD_BCRYPT);
             $update_query = "UPDATE users SET password = ? WHERE id = ?";
             $stmt = mysqli_prepare($db, $update_query);
             mysqli_stmt_bind_param($stmt, "si", $hashed_password, $user_id);
 
             if (mysqli_stmt_execute($stmt)) {
+                mysqli_stmt_close($stmt);
+
+                // member 테이블도 동기화 (username으로 조회)
+                $username = $_SESSION['username'] ?? '';
+                if ($username) {
+                    $sync_query = "UPDATE member SET pass = ? WHERE id = ?";
+                    $sync_stmt = mysqli_prepare($db, $sync_query);
+                    mysqli_stmt_bind_param($sync_stmt, "ss", $hashed_password, $username);
+                    mysqli_stmt_execute($sync_stmt);
+                    mysqli_stmt_close($sync_stmt);
+                }
+
                 $message = "비밀번호가 성공적으로 변경되었습니다.";
             } else {
                 $error = "비밀번호 변경 중 오류가 발생했습니다.";
+                mysqli_stmt_close($stmt);
             }
-            mysqli_stmt_close($stmt);
         }
     }
 }

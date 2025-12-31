@@ -298,6 +298,34 @@ function getOrderItemInfo($summary_item, $specFormatter) {
             const originalTitle = document.title;
             document.title = fileName.replace('.pdf', '');
 
+            // ✅ 관리자용 내용 높이 체크하여 레이아웃 결정
+            const printOnly = document.querySelector('.print-only');
+            const adminOrder = document.querySelector('.print-order:not(.employee-copy)');
+            const divider = document.querySelector('.print-divider');
+            const employeeOrder = document.querySelector('.print-order.employee-copy');
+
+            if (adminOrder && divider && employeeOrder) {
+                // 임시로 print-only 표시하여 높이 측정
+                printOnly.style.display = 'block';
+                const adminHeight = adminOrder.offsetHeight;
+
+                // A4 용지 세로 길이의 약 45% (여백 고려) = 약 450px
+                const halfPageHeight = 450;
+
+                if (adminHeight > halfPageHeight) {
+                    // 관리자 내용이 절반을 넘으면: 절취선 숨기고 2페이지 모드
+                    divider.classList.add('hidden');
+                    employeeOrder.classList.add('new-page');
+                } else {
+                    // 관리자 내용이 절반 이하면: 절취선 표시, 같은 페이지
+                    divider.classList.remove('hidden');
+                    employeeOrder.classList.remove('new-page');
+                }
+
+                // 다시 숨기기 (프린트 CSS에서 표시됨)
+                printOnly.style.display = '';
+            }
+
             window.print();
 
             // 제목 복원
@@ -309,6 +337,80 @@ function getOrderItemInfo($summary_item, $specFormatter) {
     <link href="/mlangprintauto/css/board.css" rel="stylesheet" type="text/css">
 <!-- Order Complete Style -->
     <link rel="stylesheet" href="/css/order-complete-style.css">
+    <style>
+        /* 화면에서는 프린트 전용 내용 숨기기 */
+        .print-only {
+            display: none;
+        }
+
+        /* 절취선 스타일 */
+        .print-divider {
+            position: relative;
+            margin: 8mm 0;
+            border: none;
+            border-top: 2px dashed #666;
+            height: 0;
+        }
+
+        .print-divider::before {
+            content: "✂ 절 취 선";
+            position: absolute;
+            top: -10px;
+            left: 50%;
+            transform: translateX(-50%);
+            background: #fff;
+            padding: 0 15px;
+            font-size: 11px;
+            color: #666;
+            letter-spacing: 3px;
+        }
+
+        /* 절취선 숨김 (JS에서 제어) */
+        .print-divider.hidden {
+            display: none !important;
+        }
+
+        /* 프린트 시에만 표시 */
+        @media print {
+            /* 프린트 전용 내용만 표시 */
+            .print-only {
+                display: block !important;
+            }
+
+            .screen-only {
+                display: none !important;
+            }
+
+            /* 화면 전용 요소 숨기기 */
+            .admin-container,
+            .file-section,
+            input,
+            button,
+            textarea {
+                display: none !important;
+            }
+
+            /* 주문서 컨테이너 */
+            .print-container {
+                width: 100%;
+            }
+
+            /* 각 주문서가 페이지에 맞게 자동 분리 */
+            .print-order {
+                page-break-inside: auto;
+            }
+
+            /* 절취선 숨김 시에도 적용 */
+            .print-divider.hidden {
+                display: none !important;
+            }
+
+            /* 2페이지 모드: 직원용 주문서 새 페이지에서 시작 */
+            .print-order.employee-copy.new-page {
+                page-break-before: always;
+            }
+        }
+    </style>
 </head>
 
 <body>
@@ -590,7 +692,7 @@ function getOrderItemInfo($summary_item, $specFormatter) {
             <div class="print-divider"></div>
 
             <!-- 두 번째 주문서 (직원용) -->
-            <div class="print-order">
+            <div class="print-order employee-copy">
                 <div class="print-title">주문서 (직원용)</div>
 
                 <!-- 주요 정보를 크게 표시 -->

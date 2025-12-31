@@ -7,26 +7,14 @@
  */
 
 require_once __DIR__ . '/auth_required.php';
-require_once $_SERVER['DOCUMENT_ROOT'] . '/includes/ProductSpecFormatter.php';
 
-// ✅ ProductSpecFormatter 인스턴스 생성
-$specFormatter = new ProductSpecFormatter($db);
 
-// 주문번호 확인
-$order_no = isset($_GET['no']) ? intval($_GET['no']) : 0;
 
-if (!$order_no) {
-    header("Location: orders.php");
-    exit;
-}
 
-// 사용자 정보
-$user_email = $current_user['email'];
-$user_name = $current_user['name'];
 
-// 주문 조회 (본인 주문만)
-$query = "SELECT * FROM mlangorder_printauto WHERE no = ?";
-$where_check = "";
+
+
+
 
 
 
@@ -37,6 +25,10 @@ $types = "i";
 
 // 이메일 또는 이름으로 본인 확인
 if (!empty($user_email)) {
+
+
+
+
     $where_check = " AND email = ?";
     $params[] = $user_email;
     $types .= "s";

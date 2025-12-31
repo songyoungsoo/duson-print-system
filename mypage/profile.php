@@ -357,7 +357,7 @@ include $_SERVER['DOCUMENT_ROOT'] . '/includes/header-ui.php';
                     <label class="form-label">
                         현재 비밀번호<span class="required">*</span>
                     </label>
-                    <input type="password" name="current_password" class="form-control" required placeholder="현재 비밀번호를 입력하세요">
+                    <input type="password" name="current_password" class="form-control" required placeholder="현재 비밀번호를 입력하세요" autocomplete="current-password">
                 </div>
 
                 <!-- 기본 정보 -->

@@ -38,16 +38,26 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
                 // Update the user's password in the database
                 $hashedPassword = password_hash($newPassword, PASSWORD_DEFAULT);
 
+                // member 테이블 업데이트
                 $updateQuery = "UPDATE member SET pass = ? WHERE id = ?";
                 $updateStmt = $db->prepare($updateQuery);
                 $updateStmt->bind_param('ss', $hashedPassword, $id);
 
                 if ($updateStmt->execute()) {
+                    $updateStmt->close();
+
+                    // users 테이블도 동기화
+                    $syncQuery = "UPDATE users SET password = ? WHERE username = ?";
+                    $syncStmt = $db->prepare($syncQuery);
+                    $syncStmt->bind_param('ss', $hashedPassword, $id);
+                    $syncStmt->execute();
+                    $syncStmt->close();
+
                     $success = "비밀번호가 성공적으로 변경되었습니다.";
                 } else {
                     $error = "비밀번호 변경에 실패하였습니다.";
+                    $updateStmt->close();
                 }
-                $updateStmt->close();
             } else {
                 $error = "새 비밀번호와 확인 비밀번호가 일치하지 않습니다.";
             }
