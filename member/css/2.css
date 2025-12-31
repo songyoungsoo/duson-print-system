@@ -1,0 +1,53 @@
+/* style.css */
+
+/* 상단 네비바 */
+.topnav {
+    overflow: hidden;
+    background-color: #333;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+  }
+  
+  /* 로고 */
+  .logo {
+    float: left;
+    font-size: 30px;
+    color: white;
+    text-align: center;
+    padding: 20px 16px;
+    text-decoration: none;
+  }
+  
+  /* 사이드바 */
+  .sidebar {
+    float: left;
+    display: flex;
+  }
+  
+  .sidebar a {
+    color: white;
+    text-align: center;
+    padding: 20px 16px;
+    text-decoration: none;
+  }
+  
+  /* 사이드바 메뉴 클릭시 */
+  .sidebar .active {
+    background-color: #0082e6;
+    color: white;
+  }
+  
+  .main {
+    padding: 20px;
+  }
+  
+  .banner img {
+    max-width: 100%;
+    height: auto;
+  }
+  
+  .content {
+    padding: 20px;
+  }
+  
