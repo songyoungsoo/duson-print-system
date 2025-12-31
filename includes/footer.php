@@ -679,6 +679,9 @@
     <?php
     // 채팅 위젯 포함 (모든 페이지)
     include_once __DIR__ . '/chat_widget.php';
+
+    // 로딩 스피너 포함 (모든 페이지)
+    include_once __DIR__ . '/loading-spinner.php';
     ?>
 
     <?php if (isset($additional_js)): ?>

@@ -1,0 +1,146 @@
+/**
+ * 두손기획인쇄 로딩 스피너 CSS
+ * 꽃잎이 원을 그리며 채워지는 애니메이션
+ * 중앙에 "두손" 텍스트 표시
+ */
+
+/* 로딩 오버레이 */
+.duson-loading-overlay {
+    display: none;
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: rgba(255, 255, 255, 0.85);
+    backdrop-filter: blur(5px);
+    -webkit-backdrop-filter: blur(5px);
+    z-index: 99999;
+    justify-content: center;
+    align-items: center;
+}
+
+.duson-loading-overlay.active {
+    display: flex;
+}
+
+/* 스피너 컨테이너 */
+.duson-spinner-container {
+    position: relative;
+    width: 100px;
+    height: 100px;
+}
+
+/* 꽃잎 스피너 */
+.duson-spinner {
+    position: absolute;
+    width: 100%;
+    height: 100%;
+    animation: duson-rotate 1.5s linear infinite;
+}
+
+/* 꽃잎 스타일 */
+.duson-petal {
+    position: absolute;
+    width: 8px;
+    height: 24px;
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    border-radius: 4px;
+    left: 50%;
+    top: 50%;
+    transform-origin: 50% -20px;
+    opacity: 0;
+    animation: duson-petal-fade 1.2s ease-in-out infinite;
+}
+
+/* 12개 꽃잎 배치 */
+.duson-petal:nth-child(1)  { transform: translateX(-50%) rotate(0deg) translateY(-30px); animation-delay: 0s; }
+.duson-petal:nth-child(2)  { transform: translateX(-50%) rotate(30deg) translateY(-30px); animation-delay: 0.1s; }
+.duson-petal:nth-child(3)  { transform: translateX(-50%) rotate(60deg) translateY(-30px); animation-delay: 0.2s; }
+.duson-petal:nth-child(4)  { transform: translateX(-50%) rotate(90deg) translateY(-30px); animation-delay: 0.3s; }
+.duson-petal:nth-child(5)  { transform: translateX(-50%) rotate(120deg) translateY(-30px); animation-delay: 0.4s; }
+.duson-petal:nth-child(6)  { transform: translateX(-50%) rotate(150deg) translateY(-30px); animation-delay: 0.5s; }
+.duson-petal:nth-child(7)  { transform: translateX(-50%) rotate(180deg) translateY(-30px); animation-delay: 0.6s; }
+.duson-petal:nth-child(8)  { transform: translateX(-50%) rotate(210deg) translateY(-30px); animation-delay: 0.7s; }
+.duson-petal:nth-child(9)  { transform: translateX(-50%) rotate(240deg) translateY(-30px); animation-delay: 0.8s; }
+.duson-petal:nth-child(10) { transform: translateX(-50%) rotate(270deg) translateY(-30px); animation-delay: 0.9s; }
+.duson-petal:nth-child(11) { transform: translateX(-50%) rotate(300deg) translateY(-30px); animation-delay: 1.0s; }
+.duson-petal:nth-child(12) { transform: translateX(-50%) rotate(330deg) translateY(-30px); animation-delay: 1.1s; }
+
+/* 중앙 원형 배경 + 두손 텍스트 */
+.duson-center-logo {
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    width: 50px;
+    height: 50px;
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    border-radius: 50%;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    box-shadow: 0 4px 15px rgba(102, 126, 234, 0.4);
+}
+
+.duson-center-logo span {
+    color: #ffffff;
+    font-size: 12px;
+    font-weight: 700;
+    font-family: 'Noto Sans KR', sans-serif;
+    letter-spacing: 1px;
+}
+
+/* 꽃잎 페이드 애니메이션 */
+@keyframes duson-petal-fade {
+    0%, 100% {
+        opacity: 0.2;
+    }
+    50% {
+        opacity: 1;
+    }
+}
+
+/* 전체 회전 애니메이션 */
+@keyframes duson-rotate {
+    0% {
+        transform: rotate(0deg);
+    }
+    100% {
+        transform: rotate(360deg);
+    }
+}
+
+/* 로딩 메시지 (선택사항) */
+.duson-loading-message {
+    position: absolute;
+    bottom: -40px;
+    left: 50%;
+    transform: translateX(-50%);
+    color: #667eea;
+    font-size: 13px;
+    font-weight: 500;
+    white-space: nowrap;
+}
+
+/* 모바일 대응 */
+@media (max-width: 768px) {
+    .duson-spinner-container {
+        width: 80px;
+        height: 80px;
+    }
+
+    .duson-petal {
+        width: 6px;
+        height: 18px;
+    }
+
+    .duson-center-logo {
+        width: 40px;
+        height: 40px;
+    }
+
+    .duson-center-logo span {
+        font-size: 10px;
+    }
+}

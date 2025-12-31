@@ -1750,6 +1750,11 @@ function prepareBusinessAddress() {
         document.getElementById('orderForm').appendChild(hiddenInput);
     }
 
+    // 로딩 스피너 표시
+    if (typeof showDusonLoading === 'function') {
+        showDusonLoading('주문 처리 중...');
+    }
+
     return true;
 }
 

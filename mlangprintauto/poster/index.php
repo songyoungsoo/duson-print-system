@@ -40,21 +40,58 @@ $quantityOptions = getQuantityOptions($connect);
 
 // 공통 인증 처리 포함
 include "../../includes/auth.php";
-// 공통 헤더 포함
-include "../../includes/header.php";
-?>
 
-<?php
-// 통합 갤러리 시스템 에셋 포함
-if (defined("GALLERY_ASSETS_NEEDED") && function_exists("include_gallery_assets")) {
-    include_gallery_assets();
+// 로그인 상태 확인 (header-ui.php와 동일 패턴)
+$is_logged_in = isset($_SESSION['user_id']) || isset($_SESSION['id_login_ok']) || isset($_COOKIE['id_login_ok']);
+
+if (isset($_SESSION['user_id'])) {
+    $user_name = $_SESSION['user_name'] ?? '';
+} elseif (isset($_SESSION['id_login_ok'])) {
+    $user_name = $_SESSION['id_login_ok']['id'] ?? '';
+} elseif (isset($_COOKIE['id_login_ok'])) {
+    $user_name = $_COOKIE['id_login_ok'];
+} else {
+    $user_name = '';
 }
 ?>
 
-<link rel="stylesheet" href="../../css/upload-modal-common.css">
-<link rel="stylesheet" href="../../css/poster.css">
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title><?php echo isset($page_title) ? $page_title : '두손기획인쇄 - 포스터'; ?></title>
 
-<?php include "../../includes/nav.php"; ?>
+    <!-- 폰트 -->
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@300;400;500;700&display=swap" rel="stylesheet">
+
+    <!-- 기본 스타일 -->
+    <link rel="stylesheet" type="text/css" href="/css/style250801.css">
+    <link rel="stylesheet" href="../../css/common-styles.css">
+    <link rel="stylesheet" href="../../css/product-layout.css">
+
+    <!-- 포스터 전용 스타일 -->
+    <link rel="stylesheet" href="../../css/upload-modal-common.css">
+    <link rel="stylesheet" href="../../css/poster.css">
+
+    <!-- 통합 갤러리 시스템 -->
+    <?php
+    if (defined("GALLERY_ASSETS_NEEDED") && function_exists("include_gallery_assets")) {
+        include_gallery_assets();
+    }
+    ?>
+
+    <!-- 공통 인증 JavaScript -->
+    <script src="/js/common-auth.js"></script>
+</head>
+<body>
+    <div class="page-wrapper">
+        <div class="main-content-wrapper">
+            <?php include "../../includes/header-ui.php"; ?>
+            <?php include "../../includes/nav.php"; ?>
 
             <div class="container">
                 <!-- 포스터 갤러리 섹션 -->
@@ -240,15 +277,10 @@ if (defined("GALLERY_ASSETS_NEEDED") && function_exists("include_gallery_assets"
                     </div>
                 </div>
             </div>
-        </div> <!-- main-content-wrapper 끝 -->   
-     
-<?php
-// 공통 로그인 모달 포함
-include "../../includes/login_modal.php";
-?>
+        </div> <!-- product-content 끝 -->
 
 <?php
-// 공통 푸터 포함
+// 공통 푸터 포함 (main-content-wrapper, page-wrapper 닫기 + login_modal 포함)
 include "../../includes/footer.php";
 ?>    
 

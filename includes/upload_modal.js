@@ -298,30 +298,46 @@ window.addToBasketFromModal = function() {
     console.log('addToBasketFromModal 호출됨');
     console.log('handleModalBasketAdd 타입:', typeof handleModalBasketAdd);
 
+    // 로딩 스피너 표시
+    if (typeof showDusonLoading === 'function') {
+        showDusonLoading('장바구니에 담는 중...');
+    }
+
     // 각 제품별 장바구니 추가 함수 호출 (파일 업로드는 선택사항)
     if (typeof handleModalBasketAdd === 'function') {
         console.log('handleModalBasketAdd 함수 발견, 호출 시작');
         // 성공 콜백 함수 정의
         const onSuccess = function() {
             console.log('장바구니 저장 성공 - 장바구니 페이지로 이동');
-            
+
+            // 로딩 스피너 숨김
+            if (typeof hideDusonLoading === 'function') {
+                hideDusonLoading();
+            }
+
             // 짧은 성공 메시지 표시
             const cartButton = document.querySelector('.btn-cart');
             if (cartButton) {
                 cartButton.innerHTML = '✅ 저장완료';
                 cartButton.style.backgroundColor = '#28a745';
             }
-            
+
             // 1초 후 장바구니 페이지로 이동
             setTimeout(function() {
                 window.location.href = window.location.origin + '/mlangprintauto/shop/cart.php';
             }, 1000);
         };
-        
+
         const onError = function(errorMessage) {
             console.error('장바구니 저장 실패:', errorMessage);
+
+            // 로딩 스피너 숨김
+            if (typeof hideDusonLoading === 'function') {
+                hideDusonLoading();
+            }
+
             alert('장바구니 저장에 실패했습니다: ' + (errorMessage || '알 수 없는 오류'));
-            
+
             // 버튼 상태 복원
             const cartButton = document.querySelector('.btn-cart');
             if (cartButton) {
@@ -331,10 +347,14 @@ window.addToBasketFromModal = function() {
                 cartButton.style.backgroundColor = '';
             }
         };
-        
+
         // 제품별 함수 호출 (성공/실패 콜백 전달)
         handleModalBasketAdd(window.uploadedFiles, onSuccess, onError);
     } else {
+        // 로딩 스피너 숨김
+        if (typeof hideDusonLoading === 'function') {
+            hideDusonLoading();
+        }
         console.error('handleModalBasketAdd 함수가 정의되지 않았습니다.');
         alert('장바구니 추가 기능을 사용할 수 없습니다.');
     }
