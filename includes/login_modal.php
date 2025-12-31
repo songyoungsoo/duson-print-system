@@ -13,18 +13,19 @@
             
             <div class="login-tabs">
                 <button class="login-tab active" onclick="showLoginTab(event)">로그인</button>
-                <button class="login-tab" onclick="showRegisterTab(event)">회원가입</button>
+                <button class="login-tab" onclick="location.href='/member/join.php'">회원가입</button>
             </div>
             
-            <form id="loginForm" class="login-form active" method="post" action="">
-                <input type="hidden" name="login_action" value="1">
+            <form id="loginForm" class="login-form active" method="post" action="/member/login_unified.php">
+                <input type="hidden" name="mode" value="member_login">
+                <input type="hidden" name="redirect" value="<?php echo htmlspecialchars($_SERVER['REQUEST_URI']); ?>">
                 <div class="form-group">
-                    <label for="username">아이디</label>
-                    <input type="text" id="username" name="username" required>
+                    <label for="login_id">아이디</label>
+                    <input type="text" id="login_id" name="id" required>
                 </div>
                 <div class="form-group">
-                    <label for="password">비밀번호</label>
-                    <input type="password" id="password" name="password" required>
+                    <label for="login_pass">비밀번호</label>
+                    <input type="password" id="login_pass" name="pass" required>
                 </div>
                 <div class="form-group remember-me-group">
                     <label class="remember-me-label">
@@ -36,31 +37,30 @@
                 <button type="submit" class="form-submit">로그인</button>
             </form>
             
-            <form id="registerForm" class="login-form" method="post" action="">
-                <input type="hidden" name="register_action" value="1">
+            <form id="registerForm" class="login-form" method="post" action="/member/register_unified.php">
                 <div class="form-group">
-                    <label for="reg_username">아이디 *</label>
-                    <input type="text" id="reg_username" name="reg_username" required>
+                    <label for="reg_id">아이디 *</label>
+                    <input type="text" id="reg_id" name="id" required>
                 </div>
                 <div class="form-group">
-                    <label for="reg_password">비밀번호 * (6자 이상)</label>
-                    <input type="password" id="reg_password" name="reg_password" required minlength="6">
+                    <label for="reg_pass">비밀번호 * (6자 이상)</label>
+                    <input type="password" id="reg_pass" name="pass" required minlength="6">
                 </div>
                 <div class="form-group">
-                    <label for="reg_confirm_password">비밀번호 확인 *</label>
-                    <input type="password" id="reg_confirm_password" name="reg_confirm_password" required minlength="6">
+                    <label for="reg_pass2">비밀번호 확인 *</label>
+                    <input type="password" id="reg_pass2" name="pass2" required minlength="6">
                 </div>
                 <div class="form-group">
                     <label for="reg_name">이름 *</label>
-                    <input type="text" id="reg_name" name="reg_name" required>
+                    <input type="text" id="reg_name" name="name" required>
                 </div>
                 <div class="form-group">
                     <label for="reg_email">이메일</label>
-                    <input type="email" id="reg_email" name="reg_email">
+                    <input type="email" id="reg_email" name="email">
                 </div>
                 <div class="form-group">
                     <label for="reg_phone">전화번호</label>
-                    <input type="tel" id="reg_phone" name="reg_phone">
+                    <input type="tel" id="reg_phone" name="phone" placeholder="010-1234-5678">
                 </div>
                 <button type="submit" class="form-submit">회원가입</button>
             </form>

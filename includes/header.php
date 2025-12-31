@@ -74,10 +74,10 @@ if (isset($_SESSION['user_id'])) {
                         </div>
                         <?php else: ?>
                         <div class="contact-card">
-                            <a href="/member/login.php" class="contact-text">로그인</a>
+                            <a href="javascript:void(0);" onclick="showLoginModal()" class="contact-text">로그인</a>
                         </div>
                         <div class="contact-card">
-                            <a href="/member/join.php" class="contact-text">회원가입</a>
+                            <a href="javascript:void(0);" onclick="showLoginModal(); setTimeout(function(){ document.querySelector('.login-tab:last-child').click(); }, 100);" class="contact-text">회원가입</a>
                         </div>
                         <div class="contact-card">
                             <a href="/mypage/" class="contact-text">마이페이지</a>
@@ -93,3 +93,10 @@ if (isset($_SESSION['user_id'])) {
                 </div>
             </div>
             <!-- 사용자 메뉴 JavaScript는 /js/common-auth.js에서 처리 -->
+
+<?php
+// 로그인 모달 포함 (비로그인 상태에서만)
+if (!$is_logged_in) {
+    include __DIR__ . '/login_modal.php';
+}
+?>
