@@ -160,3 +160,43 @@ php_errors.log
 *_backup_*.php
 *.backup
 archive/
+
+# ============================================
+# 11. 회원(member) 백업/레거시 파일
+# ============================================
+# 날짜 접미사 백업 파일
+member/*240*.php
+member/*231208*
+member/*_original.php
+
+# 한글 파일명 레거시
+member/*노토*
+member/*이메일*
+
+# 백업 폴더
+member251231/
+
+# 테스트 파일
+member/modal*.html
+member/moda*.html
+member/pass.html
+member/test_*.php
+member/change_password.html
+
+# 레거시 유틸리티 파일
+member/Cookie_chick.php
+member/PhotoFileView.php
+member/index.php
+member/int/
+member/login_id.php
+member/member_form_ok.php
+member/member_login_ok.php
+member/member_modify.php
+member/member_search.php
+member/postnumber.php
+member/repair.php
+member/tnwjd.php
+member/update_admin_password.php
+member/upload.php
+member/upload/
+member/zip.php
