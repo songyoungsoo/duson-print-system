@@ -1089,6 +1089,22 @@ $default_values = [
         
         // 파일업로드 모달 관련 함수들 (명함 완성 시스템)
         function openUploadModal() {
+            // 가로/세로 입력 검증
+            const garoInput = document.getElementById('garo');
+            const seroInput = document.getElementById('sero');
+            const garo = parseInt(garoInput?.value) || 0;
+            const sero = parseInt(seroInput?.value) || 0;
+
+            if (garo <= 0 || sero <= 0) {
+                alert('가로와 세로 크기를 입력해주세요.');
+                if (garo <= 0 && garoInput) {
+                    garoInput.focus();
+                } else if (sero <= 0 && seroInput) {
+                    seroInput.focus();
+                }
+                return;
+            }
+
             if (!window.currentPriceData) {
                 showUserMessage('먼저 가격을 계산해주세요.', 'warning');
                 return;

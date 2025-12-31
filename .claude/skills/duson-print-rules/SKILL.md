@@ -456,6 +456,46 @@ $section_name = getCategoryName($connect, $item['Section']);  // Section 필드 
 
 **관련 파일**: `mlangorder_printauto/ProcessOrder_unified.php` (msticker case)
 
+### 7. 스티커 가로/세로 입력 필수 (2025-12-31 추가)
+
+스티커는 사용자가 직접 가로/세로 크기를 입력해야 하는 유일한 제품입니다.
+
+```php
+// 스티커는 고정 규격이 아닌 사용자 입력 방식
+// - 가로(garo): 밀리미터 단위
+// - 세로(sero): 밀리미터 단위
+// 빈 값으로 주문 시도 시 경고창 표시 필수
+```
+
+**검증 로직** (`mlangprintauto/sticker_new/index.php`):
+```javascript
+function openUploadModal() {
+    // 가로/세로 입력 검증
+    const garoInput = document.getElementById('garo');
+    const seroInput = document.getElementById('sero');
+    const garo = parseInt(garoInput?.value) || 0;
+    const sero = parseInt(seroInput?.value) || 0;
+
+    if (garo <= 0 || sero <= 0) {
+        alert('가로와 세로 크기를 입력해주세요.');
+        if (garo <= 0 && garoInput) {
+            garoInput.focus();
+        } else if (sero <= 0 && seroInput) {
+            seroInput.focus();
+        }
+        return;
+    }
+    // ... 이후 파일 업로드 모달 열기
+}
+```
+
+**동작**:
+- "파일 업로드 및 주문하기" 버튼 클릭 시 검증 실행
+- 가로 또는 세로가 0이거나 비어있으면 경고창 표시
+- 비어있는 첫 번째 입력 필드로 자동 포커스 이동
+
+**관련 파일**: `mlangprintauto/sticker_new/index.php` (openUploadModal 함수)
+
 ---
 
 ## [검증 체크리스트]
