@@ -1,10 +1,19 @@
 <?php
 ini_set('display_errors', '0');
 
-$HomeDir = "..";
+// 절대 경로로 설정 (admin.php에서 include할 때도 정상 작동)
+$HomeDir = $_SERVER['DOCUMENT_ROOT'];
 $PageCode = "PrintAuto";
-include "$HomeDir/db.php";
-include "$HomeDir/includes/ProductSpecFormatter.php";
+
+// 이미 db.php가 include되어 $db가 설정되어 있으면 건너뛰기
+if (!isset($db) || !$db) {
+    include "$HomeDir/db.php";
+}
+
+// ProductSpecFormatter도 한 번만 include
+if (!class_exists('ProductSpecFormatter')) {
+    include "$HomeDir/includes/ProductSpecFormatter.php";
+}
 // include $_SERVER['DOCUMENT_ROOT'] . "/mlangprintauto/mlangprintautotop.php";
 
 // 데이터베이스 연결은 이미 db.php에서 완료됨
@@ -790,42 +799,52 @@ function getOrderItemInfo($summary_item, $specFormatter) {
                                         }
                                     } elseif ($json_data && isset($json_data['product_type']) &&
                                               ($json_data['product_type'] === 'sticker' || $json_data['product_type'] === 'msticker')) {
-                                        // ✅ 스티커/자석스티커 raw JSON 처리
-                                        $spec_parts = [];
+                                        // ✅ 스티커/자석스티커 raw JSON 처리 (관리자용 ProductSpecFormatter와 동일 포맷)
+                                        $line1Parts = [];
+                                        $line2Parts = [];
 
-                                        // 재질
-                                        if (!empty($json_data['jong'])) {
+                                        // 1줄: 종류 / 규격 (신규: MY_type_name, Section_name / 레거시: jong, garo/sero)
+                                        if (!empty($json_data['MY_type_name'])) {
+                                            $line1Parts[] = htmlspecialchars($json_data['MY_type_name']);
+                                        } elseif (!empty($json_data['jong'])) {
                                             $material = preg_replace('/^(jil|jsp|jka|cka)\s+/', '', $json_data['jong']);
-                                            $spec_parts[] = '재질: ' . htmlspecialchars($material);
+                                            $line1Parts[] = htmlspecialchars($material);
                                         }
 
-                                        // 크기
-                                        if (!empty($json_data['garo']) && !empty($json_data['sero'])) {
-                                            $spec_parts[] = '크기: ' . htmlspecialchars($json_data['garo']) . '×' . htmlspecialchars($json_data['sero']) . 'mm';
+                                        if (!empty($json_data['Section_name'])) {
+                                            $line1Parts[] = htmlspecialchars($json_data['Section_name']);
+                                        } elseif (!empty($json_data['garo']) && !empty($json_data['sero'])) {
+                                            $line1Parts[] = htmlspecialchars($json_data['garo']) . '×' . htmlspecialchars($json_data['sero']) . 'mm';
                                         }
 
-                                        // 모양
+                                        // 모양 (레거시: domusong)
                                         if (!empty($json_data['domusong'])) {
                                             $shape_parts = explode(' ', $json_data['domusong'], 2);
-                                            $spec_parts[] = '모양: ' . htmlspecialchars($shape_parts[1] ?? $json_data['domusong']);
+                                            $line1Parts[] = htmlspecialchars($shape_parts[1] ?? $json_data['domusong']);
                                         }
 
-                                        // 디자인
-                                        if (!empty($json_data['ordertype'])) {
-                                            $design = ($json_data['ordertype'] == 'total') ? '디자인+인쇄' : '인쇄만';
-                                            $spec_parts[] = '디자인: ' . $design;
-                                        }
-
-                                        $full_spec = implode(' | ', $spec_parts);
-
-                                        // 수량
+                                        // 2줄: 수량 / 디자인
+                                        $qty = '';
                                         if (!empty($json_data['mesu'])) {
+                                            $qty = number_format(intval($json_data['mesu'])) . '매';
                                             $quantity_num = intval($json_data['mesu']);
                                             $unit = '매';
                                         } elseif (!empty($json_data['MY_amount'])) {
+                                            $qty = number_format(floatval($json_data['MY_amount'])) . '매';
                                             $quantity_num = floatval($json_data['MY_amount']);
                                             $unit = '매';
                                         }
+                                        if ($qty) $line2Parts[] = $qty;
+
+                                        if (!empty($json_data['ordertype'])) {
+                                            $design = ($json_data['ordertype'] == 'total') ? '디자인+인쇄' : '인쇄만';
+                                            $line2Parts[] = $design;
+                                        }
+
+                                        // 관리자용과 동일 포맷: "종류 / 규격 | 수량 / 디자인"
+                                        $line1 = implode(' / ', array_filter($line1Parts));
+                                        $line2 = implode(' / ', array_filter($line2Parts));
+                                        $full_spec = $line1 . ($line2 ? ' | ' . $line2 : '');
                                     } elseif ($json_data && isset($json_data['product_type']) && $json_data['product_type'] === 'merchandisebond') {
                                         // ✅ 상품권 raw JSON 처리
                                         $spec_parts = [];
