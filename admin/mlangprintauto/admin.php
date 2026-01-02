@@ -504,7 +504,7 @@ if ($mode == "OrderView") {
         /* Admin OrderView 모던 스타일 */
         body {
             font-family: 'Noto Sans KR', 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            background: #ffffff;
             margin: 0;
             padding: 15px;
             min-height: 100vh;
@@ -528,6 +528,7 @@ if ($mode == "OrderView") {
             padding: 15px 25px;
             border-bottom: 2px solid #3498db;
             text-shadow: 0 1px 2px rgba(0,0,0,0.2);
+            max-width: 610px;
         }
 
         .admin-header h1 {
@@ -567,6 +568,8 @@ if ($mode == "OrderView") {
             padding: 15px;
             box-shadow: 0 4px 6px rgba(0,0,0,0.07);
             border: 1px solid #e9ecef;
+            margin: 0 auto;
+            max-width: 610px;
         }
 
         .info-card h3 {
@@ -679,7 +682,8 @@ if ($mode == "OrderView") {
             padding: 25px;
             box-shadow: 0 4px 6px rgba(0,0,0,0.07);
             border: 1px solid #e9ecef;
-            margin: 20px 0;
+            margin: 20px auto;
+            max-width: 610px;
         }
 
         /* 반응형 디자인 */
