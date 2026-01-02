@@ -533,6 +533,8 @@ if ($mode == "OrderView") {
             padding: 15px 25px;
             border-bottom: 2px solid #3498db;
             text-shadow: 0 1px 2px rgba(0,0,0,0.2);
+            border-radius: 12px 12px 0 0;
+            align-self: stretch;
         }
 
         .admin-header h1 {
