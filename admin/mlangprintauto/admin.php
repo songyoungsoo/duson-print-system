@@ -512,7 +512,7 @@ if ($mode == "OrderView") {
         }
 
         .admin-container {
-            max-width: 610px;
+            max-width: 650px;
             width: calc(100vw - 30px);
             min-height: 780px;
             margin: 0 auto;
