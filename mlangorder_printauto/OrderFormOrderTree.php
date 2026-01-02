@@ -664,9 +664,9 @@ function getOrderItemInfo($summary_item, $specFormatter) {
                                 <td style="border: 0.3pt solid #000; padding: 1.5mm; text-align: right;"><?= number_format(round($View_money_4, -1)) ?></td>
                             </tr>
                             <!-- 부가세포함금액 행 추가 (10원 단위 반올림) -->
-                            <tr style="background-color: #ffe6e6; font-weight: bold;">
-                                <td colspan="5" style="border: 0.3pt solid #000; padding: 1.5mm; text-align: center; color: #d32f2f;">💰 부가세포함</td>
-                                <td colspan="2" style="border: 0.3pt solid #000; padding: 1.5mm; text-align: right; color: #d32f2f; font-size: 12pt;"><?= number_format(round($View_money_5, -1)) ?> 원</td>
+                            <tr style="background-color: #e9ecef; font-weight: bold;">
+                                <td colspan="5" style="border: 0.3pt solid #000; padding: 1.5mm; text-align: center; color: #000;">💰 부가세포함</td>
+                                <td colspan="2" style="border: 0.3pt solid #000; padding: 1.5mm; text-align: right; color: #000; font-size: 12pt;"><?= number_format(round($View_money_5, -1)) ?> 원</td>
                             </tr>
                         </tbody>
                     </table>
@@ -1331,9 +1331,9 @@ function getOrderItemInfo($summary_item, $specFormatter) {
                                 <td style="border: 0.3pt solid #000; padding: 1.5mm; text-align: right;"><?= number_format(round($View_money_4, -1)) ?></td>
                             </tr>
                             <!-- 부가세포함금액 행 추가 (10원 단위 반올림) -->
-                            <tr style="background-color: #ffe6e6; font-weight: bold;">
-                                <td colspan="5" style="border: 0.3pt solid #000; padding: 1.5mm; text-align: center; color: #d32f2f;">💰 부가세포함</td>
-                                <td colspan="2" style="border: 0.3pt solid #000; padding: 1.5mm; text-align: right; color: #d32f2f; font-size: 12pt;"><?= number_format(round($View_money_5, -1)) ?> 원</td>
+                            <tr style="background-color: #e9ecef; font-weight: bold;">
+                                <td colspan="5" style="border: 0.3pt solid #000; padding: 1.5mm; text-align: center; color: #000;">💰 부가세포함</td>
+                                <td colspan="2" style="border: 0.3pt solid #000; padding: 1.5mm; text-align: right; color: #000; font-size: 12pt;"><?= number_format(round($View_money_5, -1)) ?> 원</td>
                             </tr>
                         </tbody>
                     </table>
