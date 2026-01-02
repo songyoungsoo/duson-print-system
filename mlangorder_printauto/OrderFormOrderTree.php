@@ -1938,8 +1938,9 @@ function getOrderItemInfo($summary_item, $specFormatter) {
 
                 </form>
                 </table>
-            </div>
-        </div> <!-- screen-only 종료 -->
+            </div> <!-- admin-content 종료 -->
+        </div> <!-- admin-container 종료 -->
+    </div> <!-- screen-only 종료 -->
 
 </body>
 
