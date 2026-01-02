@@ -191,22 +191,47 @@ function getOrderItemInfo($summary_item, $specFormatter) {
                 }
             }
         } else {
-            // 레거시 텍스트 처리
-            $full_spec = strip_tags($type_1_data);
-            $full_spec = str_replace(["\r\n", "\n", "\r"], ' | ', $full_spec);
-            $full_spec = preg_replace('/\s+/', ' ', $full_spec);
-            $full_spec = preg_replace('/\|\s*\|+/', ' | ', $full_spec);
-            $full_spec = trim($full_spec, ' |');
+            // 레거시 텍스트 처리 (2줄 슬래시 형식 적용 - duson-print-rules 준수)
+            $raw_spec = strip_tags($type_1_data);
+            $raw_spec = str_replace(["\r\n", "\n", "\r"], '|', $raw_spec);
+            $raw_spec = preg_replace('/\s+/', ' ', $raw_spec);
+            $raw_spec = trim($raw_spec, ' |');
 
-            // 레거시: 숫자만 있는 항목을 수량으로 추출
-            $parts = explode('|', $full_spec);
+            // 파이프로 분리
+            $parts = explode('|', $raw_spec);
+            $clean_parts = [];
+
             foreach ($parts as $part) {
                 $part = trim($part);
-                if (preg_match('/^[\d.]+$/', $part) && floatval($part) > 0) {
-                    $quantity_num = floatval($part);
-                    $unit = '연';
-                    break;
+                if (empty($part)) continue;
+
+                // 라벨 제거 (크기:, 매수:, 규격:, 용지:, 인쇄면:, 디자인: 등)
+                $part = preg_replace('/^(크기|매수|규격|용지|인쇄면|인쇄|디자인|종류|수량|모양|재질|도무송)\s*[:：]\s*/u', '', $part);
+
+                // 숫자 + 단위 형식일 경우 포맷팅 (10000 매 → 10,000매)
+                if (preg_match('/^(\d+)\s*(매|개|장|부|연|권|EA)$/u', $part, $matches)) {
+                    $quantity_num = intval($matches[1]);
+                    $unit = $matches[2];
+                    $part = number_format($quantity_num) . $unit;
                 }
+
+                if (!empty($part)) {
+                    $clean_parts[] = $part;
+                }
+            }
+
+            // 2줄 슬래시 형식으로 조합
+            // Line 1: 첫 2개 항목 (규격)
+            // Line 2: 나머지 항목 (옵션)
+            $line1_items = array_slice($clean_parts, 0, 2);
+            $line2_items = array_slice($clean_parts, 2);
+
+            $line1 = implode(' / ', $line1_items);
+            $line2 = implode(' / ', $line2_items);
+
+            $full_spec = $line1;
+            if (!empty($line2)) {
+                $full_spec .= ' | ' . $line2;  // 표시 시 |로 분리하여 2줄로 표시
             }
         }
     }
@@ -1081,28 +1106,56 @@ function getOrderItemInfo($summary_item, $specFormatter) {
                                             $unit = '매';
                                         }
                                     } else {
-                                        // 레거시 일반 텍스트 처리 (2024년 이전 주문)
-                                        $full_spec = strip_tags($type_1_data);
-                                        // 줄바꿈을 | 구분자로 변환
-                                        $full_spec = str_replace(["\r\n", "\n", "\r"], ' | ', $full_spec);
-                                        // 연속된 공백 제거
-                                        $full_spec = preg_replace('/\s+/', ' ', $full_spec);
-                                        // 연속된 | 제거
-                                        $full_spec = preg_replace('/\|\s*\|+/', ' | ', $full_spec);
-                                        // 앞뒤 공백 및 | 제거
-                                        $full_spec = trim($full_spec, ' |');
+                                        // 레거시 텍스트 처리 (2줄 슬래시 형식 적용 - duson-print-rules 준수)
+                                        $raw_spec = strip_tags($type_1_data);
+                                        $raw_spec = str_replace(["\r\n", "\n", "\r"], '|', $raw_spec);
+                                        $raw_spec = preg_replace('/\s+/', ' ', $raw_spec);
+                                        $raw_spec = trim($raw_spec, ' |');
 
-                                        // 🔧 레거시: | 구분자로 분리하여 숫자만 있는 항목을 수량으로 추출
-                                        // 예: "칼라인쇄(CMYK) | 100g아트지 | A4 | 단면 | 3 | 인쇄만 의뢰"
-                                        $parts = explode('|', $full_spec);
+                                        // 파이프로 분리
+                                        $parts = explode('|', $raw_spec);
+                                        $clean_parts = [];
+
                                         foreach ($parts as $part) {
                                             $part = trim($part);
+                                            if (empty($part)) continue;
+
+                                            // 라벨 제거 (크기:, 매수:, 규격:, 용지:, 인쇄면:, 디자인: 등)
+                                            $part = preg_replace('/^(크기|매수|규격|용지|인쇄면|인쇄|디자인|종류|수량|모양|재질|도무송)\s*[:：]\s*/u', '', $part);
+
+                                            // 숫자 + 단위 형식일 경우 포맷팅 (10000 매 → 10,000매)
+                                            if (preg_match('/^(\d+)\s*(매|개|장|부|연|권|EA)$/u', $part, $matches)) {
+                                                $qty_num = intval($matches[1]);
+                                                $qty_unit = $matches[2];
+                                                $part = number_format($qty_num) . $qty_unit;
+                                                // 수량/단위도 저장
+                                                $quantity_num = $qty_num;
+                                                $unit = $qty_unit;
+                                            }
+
                                             // 순수 숫자 또는 소수점 숫자인 경우 수량으로 간주
                                             if (preg_match('/^[\d.]+$/', $part) && floatval($part) > 0) {
                                                 $quantity_num = floatval($part);
                                                 $unit = '연'; // 레거시 전단지는 연 단위
-                                                break;
                                             }
+
+                                            if (!empty($part)) {
+                                                $clean_parts[] = $part;
+                                            }
+                                        }
+
+                                        // 2줄 슬래시 형식으로 조합
+                                        // Line 1: 첫 2개 항목 (규격)
+                                        // Line 2: 나머지 항목 (옵션)
+                                        $line1_items = array_slice($clean_parts, 0, 2);
+                                        $line2_items = array_slice($clean_parts, 2);
+
+                                        $line1 = implode(' / ', $line1_items);
+                                        $line2 = implode(' / ', $line2_items);
+
+                                        $full_spec = $line1;
+                                        if (!empty($line2)) {
+                                            $full_spec .= ' | ' . $line2;  // 표시 시 |로 분리하여 2줄로 표시
                                         }
                                     }
 
