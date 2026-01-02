@@ -1,0 +1,32 @@
+{
+    "db_host": "localhost",
+    "db_name": "dsp1830",
+    "db_user": "dsp1830",
+    "db_pass": "your_password_here",
+
+    "admin_id": "admin",
+    "admin_pass": "admin123456",
+    "admin_name": "관리자",
+    "admin_email": "admin@example.com",
+
+    "company_name": "두손기획인쇄",
+    "company_owner": "차경선",
+    "company_phone": "1688-2384",
+    "company_address": "서울 영등포구 영등포로36길 9 송호빌딩 1층",
+    "company_email": "dsp1830@naver.com",
+    "company_bizno": "119-20-73509",
+
+    "bank1_name": "국민은행",
+    "bank1_account": "999-1688-2384",
+    "bank2_name": "신한은행",
+    "bank2_account": "110-342-543507",
+    "bank3_name": "농협",
+    "bank3_account": "301-2632-1830-11",
+    "bank_holder": "차경선 두손기획인쇄",
+
+    "smtp_host": "smtp.naver.com",
+    "smtp_port": 465,
+    "smtp_user": "your_smtp_user",
+    "smtp_pass": "your_smtp_password",
+    "smtp_secure": "ssl"
+}

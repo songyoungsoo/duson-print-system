@@ -1,0 +1,10 @@
+{
+  "name": "test-product",
+  "description": "Test product page functionality end-to-end",
+  "version": "1.0.0",
+  "invocation": {
+    "type": "slash-command",
+    "command": "test"
+  },
+  "prompt": "Test product page functionality end-to-end.\n\nSTEPS:\n1. Ask user which product to test (inserted, namecard, envelope, etc.)\n\n2. Verify file structure:\n   - index.php exists\n   - calculator.js exists\n   - calculate_price_ajax.php exists\n   - add_to_basket.php exists\n\n3. Check database table:\n   - Table mlangprintauto_{product} exists\n   - shop_temp table accessible\n\n4. Test price calculation:\n   - Open: http://localhost/mlangprintauto/{product}/?debug=1\n   - Check browser console for AJAX responses\n   - Verify window.currentPriceData is set\n\n5. Test cart addition:\n   - Click \"장바구니 담기\" button\n   - Check POST to add_to_basket.php\n   - Verify session_id in shop_temp table:\n     SELECT * FROM shop_temp WHERE session_id = 'test_session';\n\n6. Verify data integrity:\n   - Check st_price and st_price_vat are NOT 0\n   - Check product_type matches\n   - Check all required fields populated\n\n7. Test bind_param correctness:\n   - Run /check-bindings on add_to_basket.php\n\n8. Report results:\n   ✅ Price calculation working\n   ✅ Cart addition working\n   ✅ Database save working\n   ✅ bind_param correct\n   OR\n   ❌ Errors found with details\n\nPRODUCTS:\n- inserted (전단지)\n- namecard (명함)\n- envelope (봉투)\n- sticker (스티커)\n- msticker (자석스티커)\n- cadarok (카다록)\n- littleprint (포스터)\n- merchandisebond (상품권)\n- ncrflambeau (NCR양식)\n- leaflet (리플렛)"
+}

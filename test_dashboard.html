@@ -1,0 +1,357 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>🧪 테스트 대시보드 - 두손기획인쇄</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, sans-serif;
+            background: #f5f7fa;
+            padding: 20px;
+        }
+
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+        }
+
+        header {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 30px;
+            border-radius: 12px;
+            margin-bottom: 30px;
+            box-shadow: 0 4px 20px rgba(0,0,0,0.1);
+        }
+
+        h1 {
+            font-size: 32px;
+            margin-bottom: 10px;
+        }
+
+        .subtitle {
+            opacity: 0.9;
+            font-size: 14px;
+        }
+
+        .section {
+            background: white;
+            padding: 25px;
+            border-radius: 12px;
+            margin-bottom: 20px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.05);
+        }
+
+        .section h2 {
+            color: #333;
+            margin-bottom: 20px;
+            font-size: 20px;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .link-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+            gap: 15px;
+        }
+
+        .link-card {
+            display: block;
+            padding: 15px 20px;
+            background: #f8f9fa;
+            border: 2px solid #e9ecef;
+            border-radius: 8px;
+            text-decoration: none;
+            color: #333;
+            transition: all 0.3s;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .link-card:hover {
+            border-color: #667eea;
+            transform: translateY(-2px);
+            box-shadow: 0 4px 12px rgba(102, 126, 234, 0.2);
+        }
+
+        .link-card::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 4px;
+            height: 100%;
+            background: #667eea;
+            transform: scaleY(0);
+            transition: transform 0.3s;
+        }
+
+        .link-card:hover::before {
+            transform: scaleY(1);
+        }
+
+        .link-title {
+            font-weight: 600;
+            margin-bottom: 5px;
+            color: #667eea;
+        }
+
+        .link-desc {
+            font-size: 13px;
+            color: #666;
+        }
+
+        .badge {
+            display: inline-block;
+            padding: 4px 12px;
+            background: #667eea;
+            color: white;
+            border-radius: 12px;
+            font-size: 11px;
+            font-weight: 600;
+            margin-left: 10px;
+        }
+
+        .badge.admin {
+            background: #dc3545;
+        }
+
+        .badge.new {
+            background: #28a745;
+        }
+
+        .quick-start {
+            background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%);
+            color: white;
+            padding: 20px;
+            border-radius: 8px;
+            margin-bottom: 30px;
+        }
+
+        .quick-start h3 {
+            margin-bottom: 15px;
+        }
+
+        .quick-start ol {
+            margin-left: 20px;
+            line-height: 1.8;
+        }
+
+        .products {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+            gap: 12px;
+        }
+
+        .product-link {
+            display: block;
+            padding: 15px;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            text-align: center;
+            border-radius: 8px;
+            text-decoration: none;
+            font-weight: 600;
+            transition: transform 0.2s;
+        }
+
+        .product-link:hover {
+            transform: scale(1.05);
+        }
+
+        .info-box {
+            background: #e7f3ff;
+            border-left: 4px solid #2196F3;
+            padding: 15px;
+            margin-top: 15px;
+            border-radius: 4px;
+        }
+
+        .info-box strong {
+            color: #1976D2;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <header>
+            <h1>🧪 테스트 대시보드</h1>
+            <p class="subtitle">두손기획인쇄 시스템 - 배포 전 기능 테스트</p>
+        </header>
+
+        <div class="quick-start">
+            <h3>⚡ 빠른 시작 가이드</h3>
+            <ol>
+                <li><strong>관리자 계정 생성:</strong> <a href="/setup_admin.php" style="color: white; text-decoration: underline;">setup_admin.php</a> 실행</li>
+                <li><strong>고객 계정 생성:</strong> 회원가입 페이지에서 테스트 계정 생성</li>
+                <li><strong>주문 테스트:</strong> 제품 선택 → 가격 계산 → 주문하기</li>
+                <li><strong>견적 테스트:</strong> 제품 선택 → 견적 요청 → 주문 전환</li>
+                <li><strong>관리자 확인:</strong> 관리자 페이지에서 주문/견적 관리</li>
+            </ol>
+        </div>
+
+        <!-- 관리자 페이지 -->
+        <div class="section">
+            <h2>
+                🔧 관리자 페이지
+                <span class="badge admin">ADMIN</span>
+            </h2>
+            <div class="link-grid">
+                <a href="/admin/mlangprintauto/" class="link-card">
+                    <div class="link-title">📊 통합 대시보드</div>
+                    <div class="link-desc">주문/견적 통계, 퀵링크</div>
+                </a>
+                <a href="/admin/mlangprintauto/orderlist_improved.php" class="link-card">
+                    <div class="link-title">📦 주문 관리</div>
+                    <div class="link-desc">전체 주문 리스트, 검색, 필터</div>
+                </a>
+                <a href="/admin/mlangprintauto/quote_manager.php" class="link-card">
+                    <div class="link-title">💰 견적 관리</div>
+                    <div class="link-desc">견적 리스트, 상태 관리</div>
+                </a>
+                <a href="/admin/mlangprintauto/product_manager.php" class="link-card">
+                    <div class="link-title">🎨 제품 관리</div>
+                    <div class="link-desc">제품별 주문 관리</div>
+                </a>
+            </div>
+
+            <div class="info-box">
+                <strong>ℹ️ 관리자 로그인:</strong> 먼저 <a href="/setup_admin.php" style="color: #1976D2;">setup_admin.php</a>에서 계정을 생성하세요
+            </div>
+        </div>
+
+        <!-- 고객 페이지 -->
+        <div class="section">
+            <h2>🛒 고객 페이지</h2>
+            <div class="link-grid">
+                <a href="/mlangprintauto/includes/register.php" class="link-card">
+                    <div class="link-title">✏️ 회원가입</div>
+                    <div class="link-desc">테스트 고객 계정 생성</div>
+                </a>
+                <a href="/mlangprintauto/includes/login.php" class="link-card">
+                    <div class="link-title">🔐 로그인</div>
+                    <div class="link-desc">계정으로 로그인</div>
+                </a>
+                <a href="/mypage/" class="link-card">
+                    <div class="link-title">👤 마이페이지</div>
+                    <div class="link-desc">주문/견적 내역 확인</div>
+                </a>
+                <a href="/mypage/orders.php" class="link-card">
+                    <div class="link-title">📋 주문 내역</div>
+                    <div class="link-desc">내 주문 리스트</div>
+                </a>
+                <a href="/mypage/quotes.php" class="link-card">
+                    <div class="link-title">💰 견적 내역</div>
+                    <div class="link-desc">내 견적 리스트, 주문 전환</div>
+                </a>
+                <a href="/mlangprintauto/cart/" class="link-card">
+                    <div class="link-title">🛒 장바구니</div>
+                    <div class="link-desc">담은 상품 확인</div>
+                </a>
+            </div>
+        </div>
+
+        <!-- 제품 페이지 -->
+        <div class="section">
+            <h2>
+                📦 제품 페이지 (9개)
+                <span class="badge new">Phase 5 완료</span>
+            </h2>
+            <div class="products">
+                <a href="/mlangprintauto/namecard/" class="product-link">📇 명함</a>
+                <a href="/mlangprintauto/inserted/" class="product-link">📄 전단지</a>
+                <a href="/mlangprintauto/envelope/" class="product-link">✉️ 봉투</a>
+                <a href="/mlangprintauto/sticker_new/" class="product-link">🏷️ 스티커</a>
+                <a href="/mlangprintauto/msticker/" class="product-link">🧲 자석스티커</a>
+                <a href="/mlangprintauto/cadarok/" class="product-link">📕 카다록</a>
+                <a href="/mlangprintauto/littleprint/" class="product-link">📄 포스터</a>
+                <a href="/mlangprintauto/merchandisebond/" class="product-link">🎁 상품권</a>
+                <a href="/mlangprintauto/ncrflambeau/" class="product-link">📋 NCR양식</a>
+            </div>
+
+            <div class="info-box">
+                <strong>✨ 신규 기능:</strong> 모든 제품에서 "💰 견적 요청" 버튼 사용 가능
+            </div>
+        </div>
+
+        <!-- 견적 시스템 -->
+        <div class="section">
+            <h2>
+                💰 견적 시스템
+                <span class="badge new">Phase 5</span>
+            </h2>
+            <div class="link-grid">
+                <a href="/mlangprintauto/quote/" class="link-card">
+                    <div class="link-title">📝 견적서 작성</div>
+                    <div class="link-desc">견적 품목 확인 및 견적서 생성</div>
+                </a>
+                <a href="/mlangprintauto/quote/index.php" class="link-card">
+                    <div class="link-title">📋 견적 리스트</div>
+                    <div class="link-desc">임시 저장된 견적 확인</div>
+                </a>
+            </div>
+
+            <div class="info-box">
+                <strong>🔄 견적 → 주문 전환:</strong> 마이페이지 견적 내역에서 "🛒 주문하기" 버튼 클릭
+            </div>
+        </div>
+
+        <!-- 테스트 시나리오 -->
+        <div class="section">
+            <h2>✅ 테스트 시나리오</h2>
+            <div style="line-height: 1.8; color: #333;">
+                <h3 style="margin-bottom: 10px; color: #667eea;">📌 시나리오 1: 일반 주문</h3>
+                <ol style="margin-left: 20px; margin-bottom: 20px;">
+                    <li>회원가입 → 로그인</li>
+                    <li>명함 페이지 → 옵션 선택 → 가격 계산</li>
+                    <li>파일 업로드 및 주문하기</li>
+                    <li>마이페이지에서 주문 확인</li>
+                    <li>관리자 페이지에서 주문 관리</li>
+                </ol>
+
+                <h3 style="margin-bottom: 10px; color: #f5576c;">📌 시나리오 2: 견적 → 주문</h3>
+                <ol style="margin-left: 20px;">
+                    <li>전단지 페이지 → 옵션 선택 → "견적 요청" 클릭</li>
+                    <li>견적 페이지에서 견적서 생성</li>
+                    <li>마이페이지 견적 내역 → "주문하기" 클릭</li>
+                    <li>확인 모달에서 "주문 전환" 클릭</li>
+                    <li>주문 내역에서 전환된 주문 확인</li>
+                    <li>관리자 페이지에서 주문/견적 확인</li>
+                </ol>
+            </div>
+        </div>
+
+        <!-- 유용한 링크 -->
+        <div class="section">
+            <h2>🔗 유용한 링크</h2>
+            <div class="link-grid">
+                <a href="/phpmyadmin/" class="link-card" target="_blank">
+                    <div class="link-title">🗄️ phpMyAdmin</div>
+                    <div class="link-desc">데이터베이스 확인</div>
+                </a>
+                <a href="/TESTING_GUIDE.md" class="link-card" target="_blank">
+                    <div class="link-title">📖 테스트 가이드</div>
+                    <div class="link-desc">상세 테스트 문서</div>
+                </a>
+                <a href="/CLAUDE.md" class="link-card" target="_blank">
+                    <div class="link-title">📝 프로젝트 문서</div>
+                    <div class="link-desc">CLAUDE.md</div>
+                </a>
+                <a href="/setup_admin.php" class="link-card">
+                    <div class="link-title">🔧 관리자 계정 생성</div>
+                    <div class="link-desc">setup_admin.php</div>
+                </a>
+            </div>
+        </div>
+    </div>
+</body>
+</html>

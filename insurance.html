@@ -1,0 +1,393 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>인카다이렉트 - 보험 관리 전문 포스터</title>
+    <style>
+        @page {
+            size: A4 portrait;
+            margin: 0;
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            width: 210mm;
+            height: 297mm;
+            font-family: 'Malgun Gothic', '맑은 고딕', sans-serif;
+            background: linear-gradient(135deg, #f5f7fa 0%, #c3cfe2 100%);
+            overflow: hidden;
+        }
+
+        .container {
+            width: 100%;
+            height: 100%;
+            padding: 20mm;
+            position: relative;
+        }
+
+        /* Header */
+        .header {
+            text-align: center;
+            margin-bottom: 15mm;
+            padding: 8mm;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            border-radius: 8px;
+            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
+        }
+
+        .main-title {
+            font-size: 32px;
+            font-weight: 700;
+            color: #ffffff;
+            margin-bottom: 5mm;
+            line-height: 1.3;
+        }
+
+        .main-title-highlight {
+            font-size: 38px;
+            color: #ffd700;
+            text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.3);
+        }
+
+        .header-subtitle {
+            font-size: 16px;
+            color: rgba(255, 255, 255, 0.95);
+            line-height: 1.6;
+        }
+
+        /* Check section */
+        .check-section {
+            background: white;
+            padding: 6mm;
+            border-radius: 8px;
+            margin-bottom: 5mm;
+            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.08);
+        }
+
+        .section-title {
+            font-size: 20px;
+            font-weight: 700;
+            color: #667eea;
+            margin-bottom: 4mm;
+            padding-left: 3mm;
+            border-left: 4px solid #667eea;
+        }
+
+        .check-list {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 3mm;
+        }
+
+        .check-item {
+            display: flex;
+            align-items: flex-start;
+            gap: 2mm;
+            font-size: 14px;
+            line-height: 1.5;
+            padding: 2mm;
+            background: #f8f9fa;
+            border-radius: 4px;
+        }
+
+        .check-icon {
+            color: #667eea;
+            font-size: 18px;
+            flex-shrink: 0;
+        }
+
+        /* Service features */
+        .features {
+            background: white;
+            padding: 6mm;
+            border-radius: 8px;
+            margin-bottom: 5mm;
+            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.08);
+        }
+
+        .feature-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 3mm;
+            margin-top: 4mm;
+        }
+
+        .feature-item {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            padding: 4mm;
+            border-radius: 6px;
+            text-align: center;
+            color: white;
+        }
+
+        .feature-icon {
+            font-size: 28px;
+            margin-bottom: 2mm;
+        }
+
+        .feature-title {
+            font-size: 15px;
+            font-weight: 700;
+            margin-bottom: 1mm;
+        }
+
+        .feature-desc {
+            font-size: 12px;
+            opacity: 0.9;
+        }
+
+        /* Recruitment section */
+        .recruitment {
+            background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%);
+            padding: 6mm;
+            border-radius: 8px;
+            margin-bottom: 5mm;
+            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+            color: white;
+        }
+
+        .recruitment-title {
+            font-size: 22px;
+            font-weight: 700;
+            margin-bottom: 3mm;
+            text-align: center;
+        }
+
+        .recruitment-subtitle {
+            font-size: 14px;
+            text-align: center;
+            margin-bottom: 4mm;
+            opacity: 0.95;
+        }
+
+        .recruitment-list {
+            display: grid;
+            grid-template-columns: 1fr 1fr 1fr;
+            gap: 3mm;
+            margin-bottom: 4mm;
+        }
+
+        .recruitment-item {
+            background: rgba(255, 255, 255, 0.2);
+            padding: 3mm;
+            border-radius: 4px;
+            text-align: center;
+            font-size: 13px;
+            font-weight: 500;
+        }
+
+        /* Contact section */
+        .contact {
+            background: #2d3748;
+            padding: 6mm;
+            border-radius: 8px;
+            color: white;
+            text-align: center;
+        }
+
+        .contact-title {
+            font-size: 18px;
+            font-weight: 700;
+            margin-bottom: 3mm;
+            color: #ffd700;
+        }
+
+        .contact-main {
+            font-size: 16px;
+            margin-bottom: 2mm;
+        }
+
+        .contact-name {
+            font-size: 20px;
+            font-weight: 700;
+            color: #667eea;
+            margin-bottom: 1mm;
+        }
+
+        .contact-phone {
+            font-size: 26px;
+            font-weight: 700;
+            color: #f093fb;
+            letter-spacing: 2px;
+            margin-bottom: 3mm;
+        }
+
+        .contact-note {
+            font-size: 13px;
+            opacity: 0.85;
+            line-height: 1.5;
+        }
+
+        /* Tip box */
+        .tip-box {
+            background: #fff3cd;
+            border-left: 4px solid #ffc107;
+            padding: 3mm;
+            border-radius: 4px;
+            margin-top: 3mm;
+        }
+
+        .tip-title {
+            font-size: 14px;
+            font-weight: 700;
+            color: #856404;
+            margin-bottom: 1mm;
+        }
+
+        .tip-content {
+            font-size: 13px;
+            color: #856404;
+            line-height: 1.5;
+        }
+
+        /* Decorative elements */
+        .deco-circle {
+            position: absolute;
+            border-radius: 50%;
+            opacity: 0.1;
+        }
+
+        .deco-1 {
+            width: 150px;
+            height: 150px;
+            background: #667eea;
+            top: 30mm;
+            right: -50px;
+        }
+
+        .deco-2 {
+            width: 100px;
+            height: 100px;
+            background: #f093fb;
+            bottom: 40mm;
+            left: -30px;
+        }
+
+        /* Print optimization */
+        @media print {
+            body {
+                -webkit-print-color-adjust: exact;
+                print-color-adjust: exact;
+            }
+        }
+    </style>
+</head>
+<body>
+    <!-- Decorative elements -->
+    <div class="deco-circle deco-1"></div>
+    <div class="deco-circle deco-2"></div>
+
+    <div class="container">
+        <!-- Header -->
+        <div class="header">
+            <h1 class="main-title">
+                보험은 가입보다<br>
+                <span class="main-title-highlight">'관리'</span>가 더 중요합니다!
+            </h1>
+            <p class="header-subtitle">
+                사람도, 우리 집 막내 반려동물도<br>
+                정기적인 점검이 꼭 필요합니다
+            </p>
+        </div>
+
+        <!-- Check section -->
+        <div class="check-section">
+            <h2 class="section-title">💡 혹시 내 보험, 이대로...?</h2>
+            <div class="check-list">
+                <div class="check-item">
+                    <span class="check-icon">✓</span>
+                    <span>현재 내 상황에 꼭 맞는 보장인지?</span>
+                </div>
+                <div class="check-item">
+                    <span class="check-icon">✓</span>
+                    <span>사랑하는 반려동물 보장도 포함?</span>
+                </div>
+                <div class="check-item">
+                    <span class="check-icon">✓</span>
+                    <span>새 나가는 불필요한 보험료는?</span>
+                </div>
+                <div class="check-item">
+                    <span class="check-icon">✓</span>
+                    <span>여러 보험사 비교견적 받았는지?</span>
+                </div>
+            </div>
+        </div>
+
+        <!-- Features -->
+        <div class="features">
+            <h2 class="section-title">🌟 인카다이렉트만의 특별한 서비스</h2>
+            <div class="feature-grid">
+                <div class="feature-item">
+                    <div class="feature-icon">📊</div>
+                    <div class="feature-title">전 보험사 한 번에 비교</div>
+                    <div class="feature-desc">여러 보험사 상품을 한눈에</div>
+                </div>
+                <div class="feature-item">
+                    <div class="feature-icon">🎯</div>
+                    <div class="feature-title">맞춤형 설계</div>
+                    <div class="feature-desc">내게 꼭 필요한 보장만</div>
+                </div>
+                <div class="feature-item">
+                    <div class="feature-icon">🐾</div>
+                    <div class="feature-title">펫보험 전문</div>
+                    <div class="feature-desc">반려동물을 위한 준비</div>
+                </div>
+                <div class="feature-item">
+                    <div class="feature-icon">💎</div>
+                    <div class="feature-title">철저한 사후관리</div>
+                    <div class="feature-desc">'잘 관리하는 것'에 집중</div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Recruitment -->
+        <div class="recruitment">
+            <h2 class="recruitment-title">👥 함께 성장할 보험설계사 모집</h2>
+            <p class="recruitment-subtitle">주부 · 초보자 · 투잡 희망자 환영!</p>
+            <div class="recruitment-list">
+                <div class="recruitment-item">✨ 체계적인<br>교육 지원</div>
+                <div class="recruitment-item">🚀 부업으로<br>가볍게 시작</div>
+                <div class="recruitment-item">💼 성장 가능한<br>커리어</div>
+            </div>
+            <div class="tip-box">
+                <div class="tip-title">💡 비유로 이해하기</div>
+                <div class="tip-content">
+                    보험 관리는 마치 <strong>'자동차 정기 점검'</strong>과 같습니다.<br>
+                    정기적인 관리가 있어야 안전하고 효율적입니다!
+                </div>
+            </div>
+        </div>
+
+        <!-- Contact -->
+        <div class="contact">
+            <h3 class="contact-title">📞 상담 및 채용 문의</h3>
+            <p class="contact-main">관리 잘하고 일 제대로 하는</p>
+            <p class="contact-name">김권 지점장</p>
+            <p class="contact-phone">010-8140-0711</p>
+            <p class="contact-note">
+                궁금한 점이 있다면 언제든 편하게 연락 주세요<br>
+                모든 상담은 부담 없이 진행해 드립니다
+            </p>
+        </div>
+    </div>
+
+    <script>
+        window.addEventListener('load', function() {
+            console.log('✅ 인카다이렉트 보험 포스터 준비 완료!');
+            console.log('');
+            console.log('📄 PDF로 저장하려면:');
+            console.log('1. Ctrl+P (인쇄)');
+            console.log('2. 대상: "PDF로 저장"');
+            console.log('3. 용지: A4');
+            console.log('4. 여백: 없음');
+            console.log('5. 배경 그래픽: ✅ 체크');
+        });
+    </script>
+</body>
+</html>

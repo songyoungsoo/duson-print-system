@@ -1,0 +1,407 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>SuperClaude Skills - Promotional Poster</title>
+    <style>
+        @page {
+            size: A3;
+            margin: 0;
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Helvetica Neue', Arial, sans-serif;
+            background: linear-gradient(135deg, #0a1929 0%, #1a2845 50%, #2d1b69 100%);
+            width: 297mm;
+            height: 420mm;
+            overflow: hidden;
+            position: relative;
+        }
+
+        .container {
+            width: 100%;
+            height: 100%;
+            padding: 40mm;
+            display: flex;
+            flex-direction: column;
+            justify-content: space-between;
+            position: relative;
+        }
+
+        /* Geometric background patterns */
+        .geo-pattern {
+            position: absolute;
+            border: 1px solid rgba(255, 255, 255, 0.05);
+        }
+
+        .geo-1 {
+            width: 200px;
+            height: 200px;
+            border-radius: 50%;
+            top: 10%;
+            right: 15%;
+            border-width: 2px;
+            border-color: rgba(138, 43, 226, 0.3);
+        }
+
+        .geo-2 {
+            width: 150px;
+            height: 150px;
+            top: 60%;
+            left: 10%;
+            transform: rotate(45deg);
+            border-color: rgba(65, 105, 225, 0.25);
+        }
+
+        .geo-3 {
+            width: 100px;
+            height: 100px;
+            border-radius: 50%;
+            top: 35%;
+            left: 20%;
+            border-color: rgba(138, 43, 226, 0.2);
+        }
+
+        .geo-4 {
+            width: 180px;
+            height: 180px;
+            bottom: 15%;
+            right: 10%;
+            transform: rotate(30deg);
+            border-width: 2px;
+            border-color: rgba(138, 43, 226, 0.25);
+        }
+
+        .geo-5 {
+            width: 120px;
+            height: 120px;
+            border-radius: 50%;
+            top: 15%;
+            left: 35%;
+            border-color: rgba(65, 105, 225, 0.15);
+        }
+
+        .geo-6 {
+            width: 90px;
+            height: 90px;
+            bottom: 30%;
+            right: 40%;
+            transform: rotate(15deg);
+            border-color: rgba(138, 43, 226, 0.2);
+        }
+
+        /* Header section */
+        .header {
+            position: relative;
+            z-index: 10;
+        }
+
+        .label {
+            font-size: 11px;
+            font-weight: 300;
+            letter-spacing: 3px;
+            color: rgba(255, 255, 255, 0.5);
+            text-transform: uppercase;
+            margin-bottom: 20mm;
+        }
+
+        .title {
+            font-size: 72px;
+            font-weight: 200;
+            letter-spacing: -2px;
+            color: #ffffff;
+            line-height: 0.95;
+            margin-bottom: 8mm;
+        }
+
+        .title-strong {
+            font-weight: 700;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+            display: block;
+        }
+
+        .subtitle {
+            font-size: 18px;
+            font-weight: 300;
+            color: rgba(255, 255, 255, 0.7);
+            letter-spacing: 1px;
+            margin-bottom: 40mm;
+        }
+
+        /* Stats grid */
+        .stats-grid {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 15mm;
+            margin-bottom: 40mm;
+            position: relative;
+            z-index: 10;
+        }
+
+        .stat-card {
+            background: rgba(255, 255, 255, 0.03);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            border-radius: 8px;
+            padding: 20mm 15mm;
+            text-align: center;
+            backdrop-filter: blur(10px);
+            transition: transform 0.3s ease;
+        }
+
+        .stat-number {
+            font-size: 56px;
+            font-weight: 700;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+            line-height: 1;
+            margin-bottom: 8mm;
+        }
+
+        .stat-label {
+            font-size: 13px;
+            font-weight: 300;
+            color: rgba(255, 255, 255, 0.6);
+            letter-spacing: 1.5px;
+            text-transform: uppercase;
+        }
+
+        /* Features module */
+        .features {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 8mm;
+            margin-bottom: 30mm;
+            position: relative;
+            z-index: 10;
+        }
+
+        .feature-item {
+            display: flex;
+            align-items: center;
+            gap: 10mm;
+            background: rgba(255, 255, 255, 0.02);
+            border-left: 3px solid;
+            padding: 12mm 15mm;
+            border-radius: 4px;
+        }
+
+        .feature-item:nth-child(1) { border-color: #667eea; }
+        .feature-item:nth-child(2) { border-color: #764ba2; }
+        .feature-item:nth-child(3) { border-color: #f093fb; }
+        .feature-item:nth-child(4) { border-color: #4facfe; }
+
+        .feature-icon {
+            width: 15mm;
+            height: 15mm;
+            border-radius: 50%;
+            background: rgba(255, 255, 255, 0.08);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 24px;
+            flex-shrink: 0;
+        }
+
+        .feature-text {
+            flex: 1;
+        }
+
+        .feature-title {
+            font-size: 16px;
+            font-weight: 500;
+            color: #ffffff;
+            margin-bottom: 3mm;
+        }
+
+        .feature-desc {
+            font-size: 11px;
+            font-weight: 300;
+            color: rgba(255, 255, 255, 0.5);
+            line-height: 1.5;
+        }
+
+        /* Footer */
+        .footer {
+            display: flex;
+            justify-content: space-between;
+            align-items: flex-end;
+            position: relative;
+            z-index: 10;
+        }
+
+        .footer-left {
+            font-size: 10px;
+            font-weight: 300;
+            color: rgba(255, 255, 255, 0.4);
+            letter-spacing: 2px;
+            text-transform: uppercase;
+        }
+
+        .footer-right {
+            text-align: right;
+        }
+
+        .footer-title {
+            font-size: 11px;
+            font-weight: 500;
+            color: rgba(255, 255, 255, 0.6);
+            margin-bottom: 2mm;
+            letter-spacing: 1px;
+        }
+
+        .footer-link {
+            font-size: 13px;
+            font-weight: 400;
+            color: #667eea;
+            text-decoration: none;
+        }
+
+        /* Accent dots */
+        .accent-dots {
+            position: absolute;
+            display: flex;
+            gap: 8px;
+        }
+
+        .accent-dots.top-right {
+            top: 40mm;
+            right: 40mm;
+        }
+
+        .accent-dot {
+            width: 8px;
+            height: 8px;
+            border-radius: 50%;
+            background: rgba(102, 126, 234, 0.4);
+        }
+
+        .accent-dot:nth-child(2) {
+            background: rgba(118, 75, 162, 0.4);
+        }
+
+        .accent-dot:nth-child(3) {
+            background: rgba(240, 147, 251, 0.4);
+        }
+
+        /* Print optimizations */
+        @media print {
+            body {
+                -webkit-print-color-adjust: exact;
+                print-color-adjust: exact;
+            }
+        }
+    </style>
+</head>
+<body>
+    <!-- Geometric patterns -->
+    <div class="geo-pattern geo-1"></div>
+    <div class="geo-pattern geo-2"></div>
+    <div class="geo-pattern geo-3"></div>
+    <div class="geo-pattern geo-4"></div>
+    <div class="geo-pattern geo-5"></div>
+    <div class="geo-pattern geo-6"></div>
+
+    <!-- Accent dots -->
+    <div class="accent-dots top-right">
+        <div class="accent-dot"></div>
+        <div class="accent-dot"></div>
+        <div class="accent-dot"></div>
+    </div>
+
+    <div class="container">
+        <!-- Header -->
+        <div class="header">
+            <div class="label">AI Development Framework</div>
+            <h1 class="title">
+                <span class="title-strong">SuperClaude</span>
+                Skills
+            </h1>
+            <div class="subtitle">차세대 AI 개발 어시스턴트</div>
+        </div>
+
+        <!-- Stats Grid -->
+        <div class="stats-grid">
+            <div class="stat-card">
+                <div class="stat-number">22</div>
+                <div class="stat-label">Specialized Skills</div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-number">6</div>
+                <div class="stat-label">MCP Servers</div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-number">9</div>
+                <div class="stat-label">Expert Advisors</div>
+            </div>
+        </div>
+
+        <!-- Features -->
+        <div class="features">
+            <div class="feature-item">
+                <div class="feature-icon">⚡</div>
+                <div class="feature-text">
+                    <div class="feature-title">300-500% 생산성 향상</div>
+                    <div class="feature-desc">반복 작업 자동화 및 지능형 워크플로우</div>
+                </div>
+            </div>
+            <div class="feature-item">
+                <div class="feature-icon">🛡️</div>
+                <div class="feature-text">
+                    <div class="feature-title">90% 버그 조기 발견</div>
+                    <div class="feature-desc">실시간 코드 분석 및 보안 취약점 탐지</div>
+                </div>
+            </div>
+            <div class="feature-item">
+                <div class="feature-icon">📊</div>
+                <div class="feature-text">
+                    <div class="feature-title">완전 자동화 문서화</div>
+                    <div class="feature-desc">API 문서, 가이드, 주석 자동 생성</div>
+                </div>
+            </div>
+            <div class="feature-item">
+                <div class="feature-icon">🧠</div>
+                <div class="feature-text">
+                    <div class="feature-title">전문가 수준 자문</div>
+                    <div class="feature-desc">비즈니스 전략부터 기술 구현까지</div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Footer -->
+        <div class="footer">
+            <div class="footer-left">
+                2025 · SuperClaude Framework
+            </div>
+            <div class="footer-right">
+                <div class="footer-title">Get Started</div>
+                <a href="#" class="footer-link">github.com/anthropics/skills</a>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // Print instruction on load
+        window.addEventListener('load', function() {
+            console.log('포스터가 준비되었습니다!');
+            console.log('PDF로 저장하려면:');
+            console.log('1. Ctrl+P (또는 Cmd+P)를 눌러 인쇄 대화상자를 엽니다');
+            console.log('2. "대상"에서 "PDF로 저장"을 선택합니다');
+            console.log('3. 용지 크기를 "A3"로 설정합니다');
+            console.log('4. 여백을 "없음"으로 설정합니다');
+            console.log('5. "배경 그래픽" 옵션을 활성화합니다');
+        });
+    </script>
+</body>
+</html>

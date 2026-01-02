@@ -1,0 +1,10 @@
+{
+  "name": "deploy-to-ftp",
+  "description": "Deploy files to dsp1830.shop via FTP",
+  "version": "1.0.0",
+  "invocation": {
+    "type": "slash-command",
+    "command": "deploy"
+  },
+  "prompt": "Deploy files to dsp1830.shop staging server.\n\nFTP CREDENTIALS:\n- User: dsp1830\n- Password: ds701018\n\nSTEPS:\n1. Ask user which files/directories to deploy\n2. Verify files exist locally\n3. Use curl FTP upload:\n   curl -T \"<filepath>\" --ftp-create-dirs \\\n     -u \"dsp1830:ds701018\" \\\n     \"ftp://dsp1830.shop/<remote-path>\"\n4. Verify upload success\n5. Test deployed file via browser\n\nCRITICAL:\n- FTP root = web root (paths match exactly)\n- Preserve directory structure\n- Upload .php, .js, .css, .json files only (NO images)\n- Show web URL for testing after upload\n\nEXAMPLE:\nLocal: /var/www/html/mlangprintauto/inserted/index.php\nRemote: ftp://dsp1830.shop/mlangprintauto/inserted/index.php\nTest: http://dsp1830.shop/mlangprintauto/inserted/index.php"
+}

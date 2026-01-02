@@ -207,5 +207,6 @@ member/zip.php
 # Python virtual environments
 .claude/skills/webapp-testing/venv/
 venv/
+.venv/
 *.pyc
 __pycache__/

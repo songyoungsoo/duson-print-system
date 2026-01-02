@@ -1382,58 +1382,76 @@ function getOrderItemInfo($summary_item, $specFormatter) {
         </div>
     </div>
 
-    <!-- 화면 표시용 내용 -->
+    <!-- 화면 표시용 내용 (엑셀 스타일 리디자인 2026-01-03) -->
     <div class="screen-only">
-        <div class="admin-container">
-            <div class="admin-header">
-                <h1>📋 주문 상세 정보</h1>
-                <div class="order-info">
-                    <span style="color: #ffffff; font-weight: 600; text-shadow: 1px 1px 2px rgba(0,0,0,0.5);">📅 주문일시: <?= $View_date ?></span> |
-                    <span style="color: #ffffff; font-weight: 600; text-shadow: 1px 1px 2px rgba(0,0,0,0.5);">🔢 주문번호: <?= $View_No ?></span> |
-                    <span style="color: #ffffff; font-weight: 600; text-shadow: 1px 1px 2px rgba(0,0,0,0.5);">👤 주문자: <?= $View_name ?></span>
-                </div>
-            </div>
+        <div class="admin-container" style="max-width: 700px; margin: 0 auto; padding: 15px; background: #fff;">
 
-            <div class="admin-content">
+            <!-- ===== 주문 기본 정보 테이블 ===== -->
+            <table style="width: 100%; border-collapse: collapse; margin-bottom: 15px; border: 2px solid #333;">
+                <tr style="background: #4472C4;">
+                    <td colspan="4" style="padding: 12px 15px; color: #fff; font-size: 16px; font-weight: bold; text-align: center;">
+                        주문 상세 정보
+                    </td>
+                </tr>
+                <tr>
+                    <th style="width: 15%; background: #D6DCE4; border: 1px solid #999; padding: 8px 10px; font-size: 12px; text-align: center;">주문번호</th>
+                    <td style="width: 35%; border: 1px solid #999; padding: 8px 10px; font-size: 13px; font-weight: bold; color: #C00000;"><?= $View_No ?></td>
+                    <th style="width: 15%; background: #D6DCE4; border: 1px solid #999; padding: 8px 10px; font-size: 12px; text-align: center;">주문일시</th>
+                    <td style="width: 35%; border: 1px solid #999; padding: 8px 10px; font-size: 12px;"><?= $View_date ?></td>
+                </tr>
+                <tr>
+                    <th style="background: #D6DCE4; border: 1px solid #999; padding: 8px 10px; font-size: 12px; text-align: center;">주문자</th>
+                    <td style="border: 1px solid #999; padding: 8px 10px; font-size: 13px; font-weight: bold;"><?= $View_name ?></td>
+                    <th style="background: #D6DCE4; border: 1px solid #999; padding: 8px 10px; font-size: 12px; text-align: center;">주문상태</th>
+                    <td style="border: 1px solid #999; padding: 8px 10px; font-size: 12px;">
+                        <?php
+                        switch ($View_OrderStyle) {
+                            case '1': echo '<span style="color: #856404; font-weight: bold;">주문접수</span>'; break;
+                            case '2': echo '<span style="color: #155724; font-weight: bold;">신규주문</span>'; break;
+                            case '3': echo '<span style="color: #004085; font-weight: bold;">확인완료</span>'; break;
+                            case '6': echo '<span style="color: #721c24; font-weight: bold;">시안</span>'; break;
+                            case '7': echo '<span style="color: #383d41; font-weight: bold;">교정</span>'; break;
+                            default: echo '<span style="color: #6c757d;">상태미정</span>';
+                        }
+                        ?>
+                    </td>
+                </tr>
+            </table>
 
-                <form name='JoinInfo' method='post' enctype='multipart/form-data' onsubmit='return JoinCheckField()' action='/admin/mlangprintauto/admin.php'>
-                    <?php if ($no) { ?>
-                        <input type="hidden" name="no" value="<?= $no ?>">
-                        <input type="hidden" name="mode" value="ModifyOk">
-                    <?php } else { ?>
-                        <input type="hidden" name="mode" value="SubmitOk">
-                    <?php } ?>
+            <form name='JoinInfo' method='post' enctype='multipart/form-data' onsubmit='return JoinCheckField()' action='/admin/mlangprintauto/admin.php'>
+                <?php if ($no) { ?>
+                    <input type="hidden" name="no" value="<?= $no ?>">
+                    <input type="hidden" name="mode" value="ModifyOk">
+                <?php } else { ?>
+                    <input type="hidden" name="mode" value="SubmitOk">
+                <?php } ?>
 
-                    <?php if ($no) { ?>
-                        <div class="info-grid">
-                            <div class="info-card">
-                                <div style='font-size: 0.8rem; font-weight: 600; color: #2c3e50; margin-bottom: 15px; border-bottom: 1px solid #e0e0e0; padding-bottom: 8px;'>📦 주문 상세 정보</div>
+                <?php if ($no) { ?>
 
-                                <!-- 🔧 주문 정보를 표 형식으로 표시 (주문서 출력과 동일한 형태) -->
-                                <div style='overflow-x: auto; margin-bottom: 20px;'>
-                                    <?php
-                                    if (empty($order_rows) || !is_array($order_rows)) {
-                                        echo "<div style='color: #dc3545; font-weight: bold; padding: 15px; background: #fff3cd; border-left: 4px solid #ffc107;'>";
-                                        echo "⚠️ 주문 데이터를 불러올 수 없습니다.<br>";
-                                        echo "주문번호: " . htmlspecialchars($View_No ?? 'N/A') . "<br>";
-                                        echo "디버깅 정보: order_rows 배열이 비어있거나 유효하지 않습니다.";
-                                        echo "</div>";
-                                    } else {
-                                    ?>
-                                    <table class='excel-table'>
-                                        <thead>
-                                            <tr>
-                                                <th class='excel-header-cell' style='width: 5%;'>NO</th>
-                                                <th class='excel-header-cell' style='width: 12%;'>품목</th>
-                                                <th class='excel-header-cell' style='width: 43%; text-align: left;'>규격/옵션</th>
-                                                <th class='excel-header-cell' style='width: 10%;'>수량</th>
-                                                <th class='excel-header-cell' style='width: 6%;'>단위</th>
-                                                <th class='excel-header-cell' style='width: 12%; text-align: right;'>인쇄비</th>
-                                                <th class='excel-header-cell' style='width: 12%; text-align: right;'>공급가액</th>
-                                            </tr>
-                                        </thead>
-                                        <tbody>
-                                        <?php
+                <!-- ===== 주문 상품 테이블 ===== -->
+                <table style="width: 100%; border-collapse: collapse; margin-bottom: 15px; border: 2px solid #333;">
+                    <tr style="background: #4472C4;">
+                        <td colspan="7" style="padding: 10px 15px; color: #fff; font-size: 14px; font-weight: bold;">
+                            주문 상품 정보
+                        </td>
+                    </tr>
+                    <?php
+                    if (empty($order_rows) || !is_array($order_rows)) {
+                        echo "<tr><td colspan='7' style='padding: 15px; color: #dc3545; background: #fff3cd;'>";
+                        echo "주문 데이터를 불러올 수 없습니다. (주문번호: " . htmlspecialchars($View_No ?? 'N/A') . ")";
+                        echo "</td></tr>";
+                    } else {
+                    ?>
+                    <tr style="background: #D6DCE4;">
+                        <th style="width: 5%; border: 1px solid #999; padding: 8px; font-size: 11px; text-align: center;">NO</th>
+                        <th style="width: 12%; border: 1px solid #999; padding: 8px; font-size: 11px; text-align: center;">품목</th>
+                        <th style="width: 43%; border: 1px solid #999; padding: 8px; font-size: 11px; text-align: left;">규격/옵션</th>
+                        <th style="width: 10%; border: 1px solid #999; padding: 8px; font-size: 11px; text-align: center;">수량</th>
+                        <th style="width: 6%; border: 1px solid #999; padding: 8px; font-size: 11px; text-align: center;">단위</th>
+                        <th style="width: 12%; border: 1px solid #999; padding: 8px; font-size: 11px; text-align: right;">인쇄비</th>
+                        <th style="width: 12%; border: 1px solid #999; padding: 8px; font-size: 11px; text-align: right;">공급가액</th>
+                    </tr>
+                    <?php
                                         // 각 주문 아이템을 표의 행으로 표시
                                         $row_num = 1;
                                         foreach ($order_rows as $summary_item):
@@ -1564,54 +1582,42 @@ function getOrderItemInfo($summary_item, $specFormatter) {
                                             $unit_display = !empty($unit) ? htmlspecialchars($unit) : '';
 
                                             ?>
-                                            <tr>
-                                                <td class='excel-label' style='text-align: center;'><?= $row_num++ ?></td>
-                                                <td class='excel-value' style='text-align: center; font-weight: 600; color: #2F5496;'><?= htmlspecialchars($product_type_kr) ?></td>
-                                                <td class='excel-value' style='line-height: 1.6;'>
-                                                    <?php
-                                                    // 🔧 규격/옵션 2줄+2줄 형식으로 표시 (duson-print-rules 준수)
-                                                    $spec_parts = array_map('trim', explode('|', $full_spec));
-                                                    $spec_parts = array_filter($spec_parts, function($p) { return !empty($p); });
-                                                    $spec_parts = array_values($spec_parts);
+                    <tr>
+                        <td style="border: 1px solid #999; padding: 6px; text-align: center; font-size: 11px;"><?= $row_num++ ?></td>
+                        <td style="border: 1px solid #999; padding: 6px; text-align: center; font-size: 12px; font-weight: bold; color: #2F5496;"><?= htmlspecialchars($product_type_kr) ?></td>
+                        <td style="border: 1px solid #999; padding: 6px; font-size: 11px; line-height: 1.5;">
+                            <?php
+                            // 규격/옵션 표시
+                            $spec_parts = array_map('trim', explode('|', $full_spec));
+                            $spec_parts = array_filter($spec_parts, function($p) { return !empty($p); });
+                            $spec_parts = array_values($spec_parts);
+                            foreach ($spec_parts as $i => $part):
+                                $color = ($i < 2) ? '#2F5496' : '#667eea';
+                            ?>
+                                <div style="color: <?= $color ?>; margin-bottom: 1px;"><?= htmlspecialchars($part) ?></div>
+                            <?php endforeach; ?>
+                            <?php if (!empty($item_options)): ?>
+                                <div style="color: #C65911; font-size: 10px; margin-top: 2px;">옵션: <?= implode(', ', $item_options) ?></div>
+                            <?php endif; ?>
+                        </td>
+                        <td style="border: 1px solid #999; padding: 6px; text-align: right; font-size: 11px;"><?= $quantity_display ?></td>
+                        <td style="border: 1px solid #999; padding: 6px; text-align: center; font-size: 11px;"><?= $unit_display ?></td>
+                        <td style="border: 1px solid #999; padding: 6px; text-align: right; font-size: 11px;"><?= number_format($printing_cost) ?></td>
+                        <td style="border: 1px solid #999; padding: 6px; text-align: right; font-size: 11px; font-weight: bold;"><?= number_format($supply_price) ?></td>
+                    </tr>
+                    <?php
+                    endforeach;
+                    ?>
+                </table>
+                <?php } // end if (!empty($order_rows)) ?>
 
-                                                    // 규격 (최대 2줄)
-                                                    for ($i = 0; $i < min(2, count($spec_parts)); $i++):
-                                                    ?>
-                                                        <div style="color: #2F5496; margin-bottom: 1px;"><?= htmlspecialchars($spec_parts[$i]) ?></div>
-                                                    <?php endfor; ?>
-
-                                                    <?php
-                                                    // 옵션 (나머지 최대 2줄)
-                                                    for ($i = 2; $i < min(4, count($spec_parts)); $i++):
-                                                    ?>
-                                                        <div style="color: #667eea; margin-bottom: 1px;"><?= htmlspecialchars($spec_parts[$i]) ?></div>
-                                                    <?php endfor; ?>
-
-                                                    <?php if (!empty($item_options)): ?>
-                                                        <div style="color: #C65911; font-size: 10px; margin-top: 2px;">└ 옵션: <?= implode(', ', $item_options) ?></div>
-                                                    <?php endif; ?>
-                                                </td>
-                                                <td class='excel-value' style='text-align: right;'><?= $quantity_display ?></td>
-                                                <td class='excel-value' style='text-align: center;'><?= $unit_display ?></td>
-                                                <td class='excel-value' style='text-align: right;'><?= number_format($printing_cost) ?></td>
-                                                <td class='excel-value' style='text-align: right; font-weight: 600;'><?= number_format($supply_price) ?></td>
-                                            </tr>
-                                            <?php
-                                        endforeach;
-                                        ?>
-                                        </tbody>
-                                    </table>
-                                    <?php } // end if (!empty($order_rows)) ?>
-                                </div>
-
-                                </td>
-                                <td>
-                                    <div class='excel-section-header' style='padding: 8px 10px; margin-bottom: 0;'>
-                                        💰 가격 정보
-                                    </div>
-
-                                    <div style='background: white; padding: 0;'>
-                                        <table class='excel-table' style='font-size: 11px;'>
+                <!-- ===== 가격 정보 테이블 ===== -->
+                <table style="width: 100%; border-collapse: collapse; margin-bottom: 15px; border: 2px solid #333;">
+                    <tr style="background: #4472C4;">
+                        <td colspan="2" style="padding: 10px 15px; color: #fff; font-size: 14px; font-weight: bold;">
+                            가격 정보
+                        </td>
+                    </tr>
                                             <?php
                                             // ✅ 전체 합산용 변수 초기화
                                             $total_money_1 = 0; // 디자인비 합계
@@ -1711,235 +1717,142 @@ function getOrderItemInfo($summary_item, $specFormatter) {
                                             } // ✅ foreach ($order_rows as $index => $order_item) 종료
                                             ?>
 
-                                            <tr style='background: #f8f9fa !important;'>
-                                                <td style='color: #000 !important; font-weight: bold; font-size: 14px; padding: 12px 15px; border-top: 2px solid #dee2e6;'>공급가액</td>
-                                                <td style='color: #000 !important; font-weight: bold; font-size: 14px; padding: 12px 15px; border-top: 2px solid #dee2e6; text-align: right;'><?= number_format(round($total_money_4 + $total_money_2 + $grand_additional_options_total, -1)) ?> 원</td>
-                                            </tr>
-                                            <tr style='background: #e9ecef !important;'>
-                                                <td style='color: #000 !important; font-weight: bold; font-size: 16px; padding: 15px; border: none;'>💰 부가세포함금액</td>
-                                                <td style='color: #000 !important; font-weight: bold; font-size: 16px; padding: 15px; border: none; text-align: right;'><?= number_format(round($total_money_5, -1)) ?> 원</td>
-                                            </tr>
-                                        </table>
-                                    </div>
+                    <tr>
+                        <th style="width: 30%; background: #D6DCE4; border: 1px solid #999; padding: 8px 10px; font-size: 12px; text-align: center;">공급가액</th>
+                        <td style="width: 70%; border: 1px solid #999; padding: 8px 10px; font-size: 13px; text-align: right; font-weight: bold;"><?= number_format(round($total_money_4 + $total_money_2 + $grand_additional_options_total, -1)) ?> 원</td>
+                    </tr>
+                    <tr style="background: #FFF2CC;">
+                        <th style="width: 30%; background: #4472C4; border: 1px solid #999; padding: 10px; font-size: 13px; text-align: center; color: #fff;">부가세포함금액</th>
+                        <td style="width: 70%; border: 1px solid #999; padding: 10px; font-size: 15px; text-align: right; font-weight: bold; color: #C00000;"><?= number_format(round($total_money_5, -1)) ?> 원</td>
+                    </tr>
+                </table>
 
-                                    <!-- 🔧 추가 옵션 정보 표시 숨김 (2025-12-02) - 사용자 요청 -->
+                <!-- ===== 상품/주문 상태 테이블 ===== -->
+                <table style="width: 100%; border-collapse: collapse; margin-bottom: 15px; border: 2px solid #333;">
+                    <tr>
+                        <th style="width: 15%; background: #D6DCE4; border: 1px solid #999; padding: 8px 10px; font-size: 12px; text-align: center;">상품 유형</th>
+                        <td style="width: 35%; border: 1px solid #999; padding: 8px 10px; font-size: 12px; font-weight: bold; color: #2F5496;"><?= htmlspecialchars($View_Type) ?></td>
+                        <th style="width: 15%; background: #D6DCE4; border: 1px solid #999; padding: 8px 10px; font-size: 12px; text-align: center;">주문 상태</th>
+                        <td style="width: 35%; border: 1px solid #999; padding: 8px 10px; font-size: 12px; font-weight: bold;">
+                            <?php
+                            switch ($View_OrderStyle) {
+                                case '1': echo '<span style="color: #856404;">주문접수</span>'; break;
+                                case '2': echo '<span style="color: #155724;">신규주문</span>'; break;
+                                case '3': echo '<span style="color: #004085;">확인완료</span>'; break;
+                                case '6': echo '<span style="color: #721c24;">시안</span>'; break;
+                                case '7': echo '<span style="color: #383d41;">교정</span>'; break;
+                                default: echo '<span style="color: #6c757d;">상태미정</span>';
+                            }
+                            ?>
+                        </td>
+                    </tr>
+                </table>
 
-                                    <div style='margin-top: 15px; background: #f8f9fa; padding: 15px; border-radius: 8px; border: 1px solid #dee2e6;'>
-                                        <div style='margin-bottom: 12px; font-size: 0.8rem;'>
-                                            <span style='font-weight: 600; color: #495057;'>📦 상품 유형:</span>
-                                            <span style='background: #e3f2fd; padding: 6px 12px; border-radius: 4px; color: #1976d2; font-weight: 600; margin-left: 8px;'>
-                                                <?= htmlspecialchars($View_Type) ?>
-                                            </span>
-                                        </div>
-                                        <div style='font-size: 0.8rem;'>
-                                            <span style='font-weight: 600; color: #495057;'>📋 주문 상태:</span>
-                                            <span style='background: <?php
-                                                                        switch ($View_OrderStyle) {
-                                                                            case '1':
-                                                                                echo '#fff3cd; color: #856404;';
-                                                                                break; // 주문접수
-                                                                            case '2':
-                                                                                echo '#d4edda; color: #155724;';
-                                                                                break; // 신규주문
-                                                                            case '3':
-                                                                                echo '#cce5ff; color: #004085;';
-                                                                                break; // 확인완료
-                                                                            case '6':
-                                                                                echo '#f8d7da; color: #721c24;';
-                                                                                break; // 시안
-                                                                            case '7':
-                                                                                echo '#e2e3e5; color: #383d41;';
-                                                                                break; // 교정
-                                                                            default:
-                                                                                echo '#f8f9fa; color: #6c757d;'; // 상태미정
-                                                                        }
-                                                                        ?> padding: 6px 12px; border-radius: 4px; font-weight: 600; margin-left: 8px;'>
-                                                <?php
-                                                switch ($View_OrderStyle) {
-                                                    case '1':
-                                                        echo '📥 주문접수';
-                                                        break;
-                                                    case '2':
-                                                        echo '🆕 신규주문';
-                                                        break;
-                                                    case '3':
-                                                        echo '✅ 확인완료';
-                                                        break;
-                                                    case '6':
-                                                        echo '🎨 시안';
-                                                        break;
-                                                    case '7':
-                                                        echo '📝 교정';
-                                                        break;
-                                                    default:
-                                                        echo '❓ 상태미정';
-                                                }
-                                                ?>
-                                            </span>
-                                        </div>
-                                    </div>
+                <?php
+                // 업로드된 파일 표시 섹션 (Excel 스타일)
+                if (!empty($View_ImgFolder) && $View_ImgFolder != '') {
+                    $imgFolder = $View_ImgFolder;
+                    $fullPath = $_SERVER['DOCUMENT_ROOT'] . '/' . ltrim($imgFolder, '/');
 
-                                    <?php
-                                    // 업로드된 파일 표시 섹션
-                                    if (!empty($View_ImgFolder) && $View_ImgFolder != '') {
-                                        // ImgFolder 경로에서 실제 파일 목록 가져오기
-                                        $imgFolder = $View_ImgFolder;
-                                        $fullPath = $_SERVER['DOCUMENT_ROOT'] . '/' . ltrim($imgFolder, '/');
+                    if (is_dir($fullPath)) {
+                        $files = array_diff(scandir($fullPath), array('.', '..'));
 
-                                        if (is_dir($fullPath)) {
-                                            $files = array_diff(scandir($fullPath), array('.', '..'));
+                        if (!empty($files)) {
+                            echo "<table style='width: 100%; border-collapse: collapse; margin-bottom: 15px; border: 2px solid #333;'>";
+                            echo "<tr style='background: #4472C4;'>";
+                            echo "<td colspan='3' style='padding: 10px 15px; color: #fff; font-size: 14px; font-weight: bold;'>첨부 파일 (" . count($files) . "개)</td>";
+                            echo "</tr>";
+                            echo "<tr style='background: #D6DCE4;'>";
+                            echo "<th style='width: 50%; border: 1px solid #999; padding: 6px; font-size: 11px; text-align: center;'>파일명</th>";
+                            echo "<th style='width: 20%; border: 1px solid #999; padding: 6px; font-size: 11px; text-align: center;'>크기</th>";
+                            echo "<th style='width: 30%; border: 1px solid #999; padding: 6px; font-size: 11px; text-align: center;'>다운로드</th>";
+                            echo "</tr>";
 
-                                            if (!empty($files)) {
-                                                echo "<div style='margin-top: 15px; background: #fff3cd; padding: 15px; border-radius: 8px; border-left: 4px solid #ffc107;'>";
-                                                echo "<div style='margin-bottom: 10px; font-size: 0.9rem; font-weight: 600; color: #856404;'>";
-                                                echo "📎 업로드된 파일 (" . count($files) . "개)";
-                                                echo "</div>";
+                            foreach ($files as $file) {
+                                $filePath = $imgFolder . '/' . $file;
+                                $fileSize = filesize($fullPath . '/' . $file);
+                                $fileSizeFormatted = $fileSize > 1024 * 1024
+                                    ? number_format($fileSize / (1024 * 1024), 2) . ' MB'
+                                    : number_format($fileSize / 1024, 2) . ' KB';
 
-                                                echo "<div style='display: flex; flex-direction: column; gap: 8px;'>";
-                                                foreach ($files as $file) {
-                                                    $filePath = $imgFolder . '/' . $file;
-                                                    $fileSize = filesize($fullPath . '/' . $file);
-                                                    $fileSizeFormatted = $fileSize > 1024 * 1024
-                                                        ? number_format($fileSize / (1024 * 1024), 2) . ' MB'
-                                                        : number_format($fileSize / 1024, 2) . ' KB';
+                                echo "<tr>";
+                                echo "<td style='border: 1px solid #999; padding: 6px; font-size: 11px; word-break: break-all;'>" . htmlspecialchars($file) . "</td>";
+                                echo "<td style='border: 1px solid #999; padding: 6px; font-size: 11px; text-align: center;'>$fileSizeFormatted</td>";
+                                echo "<td style='border: 1px solid #999; padding: 6px; text-align: center;'>";
+                                echo "<a href='/" . htmlspecialchars($filePath) . "' download='" . htmlspecialchars($file) . "' style='padding: 4px 10px; background: #4472C4; color: white; text-decoration: none; font-size: 10px; font-weight: bold;'>다운로드</a>";
+                                echo "</td>";
+                                echo "</tr>";
+                            }
+                            echo "</table>";
+                        }
+                    }
+                }
+                ?>
 
-                                                    $fileIcon = '📄';
-                                                    $ext = strtolower(pathinfo($file, PATHINFO_EXTENSION));
-                                                    switch ($ext) {
-                                                        case 'jpg':
-                                                        case 'jpeg':
-                                                        case 'png':
-                                                        case 'gif':
-                                                            $fileIcon = '🖼️';
-                                                            break;
-                                                        case 'pdf':
-                                                            $fileIcon = '📕';
-                                                            break;
-                                                        case 'ai':
-                                                        case 'eps':
-                                                        case 'psd':
-                                                            $fileIcon = '🎨';
-                                                            break;
-                                                        case 'zip':
-                                                        case 'rar':
-                                                            $fileIcon = '📦';
-                                                            break;
-                                                    }
+                <!-- 주문개수 필드 숨김 (레거시 필드) -->
+                <input name="Gensu" type="hidden" value='<?= $View_Gensu ?>'>
 
-                                                    echo "<div style='display: flex; align-items: center; justify-content: space-between; padding: 10px; background: white; border-radius: 6px; border: 1px solid #e0e0e0;'>";
-                                                    echo "<div style='display: flex; align-items: center; gap: 10px; flex: 1;'>";
-                                                    echo "<span style='font-size: 1.5rem;'>$fileIcon</span>";
-                                                    echo "<div style='flex: 1;'>";
-                                                    echo "<div style='font-size: 0.85rem; font-weight: 500; color: #2c3e50; word-break: break-all;'>" . htmlspecialchars($file) . "</div>";
-                                                    echo "<div style='font-size: 0.75rem; color: #6c757d;'>$fileSizeFormatted</div>";
-                                                    echo "</div>";
-                                                    echo "</div>";
-                                                    echo "<a href='/" . htmlspecialchars($filePath) . "' download='" . htmlspecialchars($file) . "' style='padding: 6px 12px; background: #007bff; color: white; text-decoration: none; border-radius: 4px; font-size: 0.75rem; font-weight: 600; white-space: nowrap;'>⬇️ 다운로드</a>";
-                                                    echo "</div>";
-                                                }
-                                                echo "</div>";
-                                                echo "</div>";
-                                            }
-                                        }
-                                    }
-                                    ?>
-                                </td>
-                            <?php } else { ?>
-                                <td>
-                                    <textarea name="TypeOne" cols="80" rows="5"><?= $View_Type_1 ?></textarea>
-                                </td>
-                            <?php } ?>
-                            </tr>
-                            </table>
-                            </td>
-                            </tr>
+                <!-- ===== 신청자 정보 테이블 ===== -->
+                <table style="width: 100%; border-collapse: collapse; margin-bottom: 15px; border: 2px solid #333;">
+                    <tr style="background: #4472C4;">
+                        <td colspan="4" style="padding: 10px 15px; color: #fff; font-size: 14px; font-weight: bold;">
+                            신청자 정보
+                        </td>
+                    </tr>
+                    <tr>
+                        <th style="width: 15%; background: #D6DCE4; border: 1px solid #999; padding: 6px 10px; font-size: 11px; text-align: center;">성명/상호</th>
+                        <td style="width: 35%; border: 1px solid #999; padding: 4px 8px;"><input name="name" type="text" style="width: 100%; border: 1px solid #ccc; padding: 4px 6px; font-size: 12px;" value='<?= $View_name ?>'></td>
+                        <th style="width: 15%; background: #D6DCE4; border: 1px solid #999; padding: 6px 10px; font-size: 11px; text-align: center;">E-MAIL</th>
+                        <td style="width: 35%; border: 1px solid #999; padding: 4px 8px;"><input name="email" type="text" style="width: 100%; border: 1px solid #ccc; padding: 4px 6px; font-size: 12px;" value='<?= $View_email ?>'></td>
+                    </tr>
+                    <tr>
+                        <th style="background: #D6DCE4; border: 1px solid #999; padding: 6px 10px; font-size: 11px; text-align: center;">우편번호</th>
+                        <td style="border: 1px solid #999; padding: 4px 8px;"><input type="text" name="zip" style="width: 80px; border: 1px solid #ccc; padding: 4px 6px; font-size: 12px;" value='<?= $View_zip ?>'></td>
+                        <th style="background: #D6DCE4; border: 1px solid #999; padding: 6px 10px; font-size: 11px; text-align: center;">전화번호</th>
+                        <td style="border: 1px solid #999; padding: 4px 8px;"><input name="phone" type="text" style="width: 100%; border: 1px solid #ccc; padding: 4px 6px; font-size: 12px;" value='<?= $View_phone ?>'></td>
+                    </tr>
+                    <tr>
+                        <th style="background: #D6DCE4; border: 1px solid #999; padding: 6px 10px; font-size: 11px; text-align: center;">주소</th>
+                        <td colspan="3" style="border: 1px solid #999; padding: 4px 8px;">
+                            <input type="text" name="zip1" placeholder="기본주소" style="width: 48%; border: 1px solid #ccc; padding: 4px 6px; font-size: 12px; margin-right: 2%;" value='<?= $View_zip1 ?>'>
+                            <input type="text" name="zip2" placeholder="상세주소" style="width: 48%; border: 1px solid #ccc; padding: 4px 6px; font-size: 12px;" value='<?= $View_zip2 ?>'>
+                        </td>
+                    </tr>
+                    <tr>
+                        <th style="background: #D6DCE4; border: 1px solid #999; padding: 6px 10px; font-size: 11px; text-align: center;">배송지</th>
+                        <td style="border: 1px solid #999; padding: 4px 8px;"><input type="text" name="delivery" style="width: 100%; border: 1px solid #ccc; padding: 4px 6px; font-size: 12px;" value='<?= $View_delivery ?>'></td>
+                        <th style="background: #D6DCE4; border: 1px solid #999; padding: 6px 10px; font-size: 11px; text-align: center;">휴대폰</th>
+                        <td style="border: 1px solid #999; padding: 4px 8px;"><input name="Hendphone" type="text" style="width: 100%; border: 1px solid #ccc; padding: 4px 6px; font-size: 12px;" value='<?= $View_Hendphone ?>'></td>
+                    </tr>
+                    <tr>
+                        <th style="background: #D6DCE4; border: 1px solid #999; padding: 6px 10px; font-size: 11px; text-align: center;">사업자명</th>
+                        <td style="border: 1px solid #999; padding: 4px 8px;"><input type="text" name="bizname" style="width: 100%; border: 1px solid #ccc; padding: 4px 6px; font-size: 12px;" value='<?= $View_bizname ?>'></td>
+                        <th style="background: #D6DCE4; border: 1px solid #999; padding: 6px 10px; font-size: 11px; text-align: center;">입금은행</th>
+                        <td style="border: 1px solid #999; padding: 4px 8px;"><input name="bank" type="text" style="width: 100%; border: 1px solid #ccc; padding: 4px 6px; font-size: 12px;" value='<?= $View_bank ?>'></td>
+                    </tr>
+                    <tr>
+                        <th style="background: #D6DCE4; border: 1px solid #999; padding: 6px 10px; font-size: 11px; text-align: center;">입금자명</th>
+                        <td style="border: 1px solid #999; padding: 4px 8px;"><input name="bankname" type="text" style="width: 100%; border: 1px solid #ccc; padding: 4px 6px; font-size: 12px;" value='<?= $View_bankname ?>'></td>
+                        <th style="background: #D6DCE4; border: 1px solid #999; padding: 6px 10px; font-size: 11px; text-align: center;">비고</th>
+                        <td style="border: 1px solid #999; padding: 4px 8px;"><textarea name="cont" rows="2" style="width: 100%; border: 1px solid #ccc; padding: 4px 6px; font-size: 12px; resize: vertical;"><?= $View_cont ?></textarea></td>
+                    </tr>
+                </table>
 
-                            <!-- 주문개수 필드 숨김 (레거시 필드, 96.7% 주문에서 0값) -->
-                            <!-- DB 유지 (하위 호환성), 화면에서만 제거 -->
-                            <input name="Gensu" type="hidden" value='<?= $View_Gensu ?>'>
+                <!-- ✅ 첨부 파일 섹션 (admin.php에서 전달) -->
+                <?php if (isset($GLOBALS['file_section_html']) && !empty($GLOBALS['file_section_html'])): ?>
+                    <?php echo $GLOBALS['file_section_html']; ?>
+                <?php endif; ?>
 
-                            <!-- 컴팩트한 신청자 정보 섹션 -->
-                            <div class="form-section" style="margin-top: 8px; padding: 10px 15px;">
-                                <h3 style="margin-bottom: 8px; font-size: 0.9rem; color: #2c3e50;">📝 신청자 정보 <span style="color: #dc3545; font-size: 0.75rem; font-weight: normal;">(정확히 입력해 주세요)</span></h3>
+                <!-- ===== 관리자 버튼 ===== -->
+                <div style="margin-top: 15px; text-align: center; padding: 15px; background: #f5f5f5; border: 1px solid #ddd;">
+                    <?php if ($no) { ?>
+                        <button type="submit" style="padding: 10px 25px; font-size: 13px; margin-right: 10px; background: #4472C4; color: white; border: none; cursor: pointer; font-weight: bold;">정보 수정</button>
+                        <button type="button" onclick="printOrder();" style="padding: 10px 25px; font-size: 13px; margin-right: 10px; background: #28a745; color: white; border: none; cursor: pointer; font-weight: bold;">주문서 출력</button>
+                    <?php } ?>
+                    <button type="button" onclick="window.close();" style="padding: 10px 25px; font-size: 13px; background: #6c757d; color: white; border: none; cursor: pointer; font-weight: bold;">창 닫기</button>
+                </div>
 
-                                <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 8px 15px; margin-bottom: 6px;">
-                                    <div class="form-row" style="grid-template-columns: 60px 1fr; gap: 8px; margin-bottom: 0;">
-                                        <div class="form-label" style="font-size: 0.75rem; padding: 4px 6px;">성명/상호</div>
-                                        <input name="name" type="text" class="form-input" style="padding: 4px 8px; font-size: 0.8rem;" value='<?= $View_name ?>'>
-                                    </div>
-                                    <div class="form-row" style="grid-template-columns: 60px 1fr; gap: 8px; margin-bottom: 0;">
-                                        <div class="form-label" style="font-size: 0.75rem; padding: 4px 6px;">E-MAIL</div>
-                                        <input name="email" type="text" class="form-input" style="padding: 4px 8px; font-size: 0.8rem;" value='<?= $View_email ?>'>
-                                    </div>
-                                </div>
-
-                                <div class="form-row" style="grid-template-columns: 60px 1fr; gap: 8px; margin-bottom: 6px;">
-                                    <div class="form-label" style="font-size: 0.75rem; padding: 4px 6px;">우편번호</div>
-                                    <div style="display: flex; gap: 6px; align-items: center;">
-                                        <input type="text" name="zip" class="form-input" style="width: 70px; padding: 4px 8px; font-size: 0.8rem;" value='<?= $View_zip ?>'>
-                                        <button type="button" class="btn btn-secondary" style="padding: 4px 8px; font-size: 0.7rem;">검색</button>
-                                    </div>
-                                </div>
-
-                                <div class="form-row" style="grid-template-columns: 60px 1fr; gap: 8px; margin-bottom: 6px;">
-                                    <div class="form-label" style="font-size: 0.75rem; padding: 4px 6px;">주소</div>
-                                    <div style="display: flex; gap: 6px; flex-wrap: wrap;">
-                                        <input type="text" name="zip1" class="form-input" placeholder="기본주소" style="flex: 2; padding: 4px 8px; min-width: 120px; font-size: 0.8rem;" value='<?= $View_zip1 ?>'>
-                                        <input type="text" name="zip2" class="form-input" placeholder="상세주소" style="flex: 1; padding: 4px 8px; min-width: 80px; font-size: 0.8rem;" value='<?= $View_zip2 ?>'>
-                                    </div>
-                                </div>
-
-                                <div class="form-row" style="grid-template-columns: 60px 1fr; gap: 8px; margin-bottom: 6px;">
-                                    <div class="form-label" style="font-size: 0.75rem; padding: 4px 6px;">배송지</div>
-                                    <input type="text" name="delivery" class="form-input" style="padding: 4px 8px; font-size: 0.8rem;" value='<?= $View_delivery ?>'>
-                                </div>
-
-                                <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 8px 15px; margin-bottom: 6px;">
-                                    <div class="form-row" style="grid-template-columns: 60px 1fr; gap: 8px; margin-bottom: 0;">
-                                        <div class="form-label" style="font-size: 0.75rem; padding: 4px 6px;">전화번호</div>
-                                        <input name="phone" type="text" class="form-input" style="padding: 4px 8px; font-size: 0.8rem;" value='<?= $View_phone ?>'>
-                                    </div>
-                                    <div class="form-row" style="grid-template-columns: 60px 1fr; gap: 8px; margin-bottom: 0;">
-                                        <div class="form-label" style="font-size: 0.75rem; padding: 4px 6px;">휴대폰</div>
-                                        <input name="Hendphone" type="text" class="form-input" style="padding: 4px 8px; font-size: 0.8rem;" value='<?= $View_Hendphone ?>'>
-                                    </div>
-                                </div>
-
-                                <div class="form-row" style="grid-template-columns: 60px 1fr; gap: 8px; margin-bottom: 6px;">
-                                    <div class="form-label" style="font-size: 0.75rem; padding: 4px 6px;">사업자명</div>
-                                    <input type="text" name="bizname" class="form-input" style="padding: 4px 8px; font-size: 0.8rem;" value='<?= $View_bizname ?>'>
-                                </div>
-
-                                <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 8px 15px; margin-bottom: 6px;">
-                                    <div class="form-row" style="grid-template-columns: 60px 1fr; gap: 8px; margin-bottom: 0;">
-                                        <div class="form-label" style="font-size: 0.75rem; padding: 4px 6px;">입금은행</div>
-                                        <input name="bank" type="text" class="form-input" style="padding: 4px 8px; font-size: 0.8rem;" value='<?= $View_bank ?>'>
-                                    </div>
-                                    <div class="form-row" style="grid-template-columns: 60px 1fr; gap: 8px; margin-bottom: 0;">
-                                        <div class="form-label" style="font-size: 0.75rem; padding: 4px 6px;">입금자명</div>
-                                        <input name="bankname" type="text" class="form-input" style="padding: 4px 8px; font-size: 0.8rem;" value='<?= $View_bankname ?>'>
-                                    </div>
-                                </div>
-
-                                <div class="form-row" style="grid-template-columns: 60px 1fr; gap: 8px; margin-bottom: 0;">
-                                    <div class="form-label" style="font-size: 0.75rem; padding: 4px 6px;">비고사항</div>
-                                    <textarea name="cont" class="form-input" rows="2" style="padding: 4px 8px; resize: vertical; font-size: 0.8rem;"><?= $View_cont ?></textarea>
-                                </div>
-                            </div>
-
-                            <!-- ✅ 첨부 파일 섹션 (admin.php에서 전달) -->
-                            <?php if (isset($GLOBALS['file_section_html']) && !empty($GLOBALS['file_section_html'])): ?>
-                                <?php echo $GLOBALS['file_section_html']; ?>
-                            <?php endif; ?>
-
-                            <!-- 관리자 버튼 -->
-                            <div class="btn-group" style="margin-top: 15px;">
-                                <?php if ($no) { ?>
-                                    <button type="submit" class="btn btn-primary" style="padding: 8px 20px; font-size: 0.9rem; margin-right: 10px;">💾 정보 수정</button>
-                                    <button type="button" onclick="printOrder();" class="btn btn-success" style="padding: 8px 20px; font-size: 0.9rem; margin-right: 10px; background: linear-gradient(135deg, #28a745 0%, #1e7e34 100%); color: white;">🖨️ 주문서 출력</button>
-                                <?php } ?>
-                                <button type="button" onclick="window.close();" class="btn btn-secondary" style="padding: 8px 16px; font-size: 0.9rem;">✖️ 창 닫기</button>
-                            </div>
+                <?php } // end if ($no) - line 1429에서 열린 블록 종료 ?>
 
                 </form>
                 </table>

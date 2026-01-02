@@ -1,0 +1,10 @@
+{
+  "name": "db-backup",
+  "description": "Backup MySQL database tables",
+  "version": "1.0.0",
+  "invocation": {
+    "type": "slash-command",
+    "command": "backup"
+  },
+  "prompt": "Backup MySQL database tables to SQL file.\n\nSTEPS:\n1. Ask user what to backup:\n   - All tables (full backup)\n   - Specific tables (e.g., shop_temp, mlangprintauto_*)\n   - Specific product tables only\n\n2. Create backup directory if not exists:\n   mkdir -p /var/www/html/backups/$(date +%Y%m%d)\n\n3. Execute mysqldump:\n   # Full database\n   mysqldump -u root dsp1830 > backups/$(date +%Y%m%d)/dsp1830_full_$(date +%H%M%S).sql\n\n   # Specific tables\n   mysqldump -u root dsp1830 shop_temp mlangorder_printauto > backups/$(date +%Y%m%d)/cart_orders_$(date +%H%M%S).sql\n\n   # Product tables only\n   mysqldump -u root dsp1830 $(mysql -u root -N -e \"SELECT GROUP_CONCAT(table_name SEPARATOR ' ') FROM information_schema.tables WHERE table_schema='dsp1830' AND table_name LIKE 'mlangprintauto_%'\") > backups/$(date +%Y%m%d)/products_$(date +%H%M%S).sql\n\n4. Verify backup:\n   - Check file size > 0\n   - Count tables in backup:\n     grep -c \"CREATE TABLE\" backups/.../*.sql\n\n5. Report:\n   ✅ Backup created: /var/www/html/backups/{date}/{filename}.sql\n   📊 Size: {size}\n   📋 Tables: {count}\n\nIMPORTANT:\n- Backups are in .gitignore (not committed)\n- Keep last 7 days of backups\n- Before major changes, always backup!\n\nRESTORE:\nmysql -u root dsp1830 < backups/{date}/{filename}.sql"
+}

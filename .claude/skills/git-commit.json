@@ -1,0 +1,10 @@
+{
+  "name": "git-commit",
+  "description": "Git commit with standardized message format",
+  "version": "1.0.0",
+  "invocation": {
+    "type": "slash-command",
+    "command": "commit"
+  },
+  "prompt": "Create a Git commit with standardized message format.\n\nSTEPS:\n1. Check git status:\n   git status\n\n2. Show changes:\n   git diff\n\n3. Analyze changes and categorize:\n   - feat: New feature\n   - fix: Bug fix\n   - refactor: Code restructuring\n   - style: Formatting, CSS changes\n   - docs: Documentation only\n   - perf: Performance improvement\n   - test: Testing\n   - chore: Build, config changes\n\n4. Ask user to confirm commit message:\n   FORMAT: {type}({scope}): {description}\n   \n   EXAMPLES:\n   feat(inserted): Add quantity calculator with real-time pricing\n   fix(namecard): Correct bind_param parameter count in add_to_basket\n   refactor(gallery): Unify gallery system across all products\n   style(common): Update button styles for consistency\n   docs(claude): Update CLAUDE.md with new MCP configuration\n\n5. Add files:\n   git add .\n\n6. Commit with message:\n   git commit -m \"{type}({scope}): {description}\n   \n   🤖 Generated with Claude Code\n   Co-Authored-By: Claude Sonnet 4.5 <noreply@anthropic.com>\"\n\n7. Show commit:\n   git log -1 --stat\n\n8. Ask if user wants to push:\n   git push origin main\n\nGit Config:\n- User: songyoungsoo\n- Email: yeongsu32@gmail.com\n- Repo: https://github.com/songyoungsoo/duson-print-system\n\nSCOPES:\n- Product names: inserted, namecard, envelope, sticker, etc.\n- Systems: gallery, cart, order, admin, auth, upload\n- Infrastructure: db, config, deploy, claude"
+}

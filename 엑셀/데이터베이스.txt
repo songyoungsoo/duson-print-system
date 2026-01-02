@@ -1,0 +1,3 @@
+데이터베이스
+dsp114.com duson1830/du1830 데이터베이스 에서 가져온
+MlangOrder_PrintAuto 의 데이터중 84228번 이후 것을 로컬 데이터베이스와 dsp1830.shop의 dsp1830/ds701018  에 넣어줘

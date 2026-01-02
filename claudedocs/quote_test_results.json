@@ -1,0 +1,115 @@
+{
+  "total_products": 9,
+  "passed": 6,
+  "failed": 3,
+  "details": [
+    {
+      "product": "전단지",
+      "status": "PASS",
+      "error": null,
+      "specification": "칼라인쇄(CMYK)\n90g아트지(합판인쇄)\nA4 (210x297)\n단면\n인쇄만 의뢰",
+      "quantity": "0.5",
+      "unit": "연",
+      "supply_price": 49000,
+      "vat": 4900,
+      "total": 53900,
+      "screenshot": "/tmp/quote_test_전단지.png"
+    },
+    {
+      "product": "명함",
+      "status": "PASS",
+      "error": null,
+      "specification": "일반명함(쿠폰)\n칼라코팅\n단면",
+      "quantity": "500",
+      "unit": "매",
+      "supply_price": 9000,
+      "vat": 900,
+      "total": 9900,
+      "screenshot": "/tmp/quote_test_명함.png"
+    },
+    {
+      "product": "봉투",
+      "status": "FAIL",
+      "error": "규격 데이터가 비어있음",
+      "specification": null,
+      "quantity": null,
+      "unit": null,
+      "supply_price": null,
+      "vat": null,
+      "total": null,
+      "screenshot": null
+    },
+    {
+      "product": "스티커",
+      "status": "PASS",
+      "error": null,
+      "specification": "아트지유광\n기본사각",
+      "quantity": "1",
+      "unit": "매",
+      "supply_price": 26000,
+      "vat": 2600,
+      "total": 28600,
+      "screenshot": "/tmp/quote_test_스티커.png"
+    },
+    {
+      "product": "자석스티커",
+      "status": "FAIL",
+      "error": "규격 데이터가 비어있음",
+      "specification": null,
+      "quantity": null,
+      "unit": null,
+      "supply_price": null,
+      "vat": null,
+      "total": null,
+      "screenshot": null
+    },
+    {
+      "product": "카다록",
+      "status": "FAIL",
+      "error": "규격 데이터가 비어있음",
+      "specification": null,
+      "quantity": null,
+      "unit": null,
+      "supply_price": null,
+      "vat": null,
+      "total": null,
+      "screenshot": null
+    },
+    {
+      "product": "포스터",
+      "status": "PASS",
+      "error": null,
+      "specification": "소량포스터\n120아트/스노우\n국2절\n단면",
+      "quantity": "10",
+      "unit": "매",
+      "supply_price": 110000,
+      "vat": 11000,
+      "total": 121000,
+      "screenshot": "/tmp/quote_test_포스터.png"
+    },
+    {
+      "product": "상품권",
+      "status": "PASS",
+      "error": null,
+      "specification": "상품권(148x68\n인쇄만\n단면",
+      "quantity": "500",
+      "unit": "매",
+      "supply_price": 35000,
+      "vat": 3500,
+      "total": 38500,
+      "screenshot": "/tmp/quote_test_상품권.png"
+    },
+    {
+      "product": "NCR양식",
+      "status": "PASS",
+      "error": null,
+      "specification": "양식(100매철)\n계약서(A4).기타서식(A4)\n1도",
+      "quantity": "10",
+      "unit": "권",
+      "supply_price": 48000,
+      "vat": 4800,
+      "total": 52800,
+      "screenshot": "/tmp/quote_test_NCR양식.png"
+    }
+  ]
+}

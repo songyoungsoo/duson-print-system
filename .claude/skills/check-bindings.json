@@ -1,0 +1,10 @@
+{
+  "name": "check-bindings",
+  "description": "Verify mysqli_stmt_bind_param correctness (CRITICAL for data integrity)",
+  "version": "1.0.0",
+  "invocation": {
+    "type": "slash-command",
+    "command": "check-bindings"
+  },
+  "prompt": "🔴 CRITICAL: Verify bind_param correctness in PHP files\n\nThis is the #1 cause of data corruption and save failures!\n\nSTEPS:\n1. Search for all mysqli_stmt_bind_param calls:\n   grep -r \"mysqli_stmt_bind_param\" --include=\"*.php\" .\n\n2. For EACH occurrence, verify THREE things match:\n   a) Count '?' in SQL query: substr_count($query, '?')\n   b) Count type string length: strlen($type_string)\n   c) Count variables manually (finger count!)\n\n3. Check pattern:\n   ✅ CORRECT:\n   // 7 parameters: session_id(s) + product_type(s) + price(i) + ...\n   $query = \"INSERT INTO shop_temp (...) VALUES (?, ?, ?, ?, ?, ?, ?)\";\n   $type_string = \"ssiisss\";  // 7 chars\n   mysqli_stmt_bind_param($stmt, $type_string,\n       $session_id,    // 1: s\n       $product_type,  // 2: s\n       ...\n   );\n\n   ❌ WRONG:\n   $type_string = \"ssii\";  // 4 chars BUT 7 placeholders!\n\n4. Report:\n   - List all bind_param calls\n   - Mark each as ✅ CORRECT or ❌ MISMATCH\n   - For mismatches, show expected vs actual counts\n   - Suggest fixes\n\nTYPE REFERENCE:\n- i = integer\n- s = string\n- d = double\n- b = BLOB\n\nSYMPTOMS of bind_param errors:\n- FormData has data but DB shows 0 or NULL\n- Some fields save, others don't\n- mysqli_stmt_execute() returns false"
+}

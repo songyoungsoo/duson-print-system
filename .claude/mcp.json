@@ -1,0 +1,63 @@
+{
+  "mcpServers": {
+    "sequential-thinking": {
+      "command": "npx",
+      "args": [
+        "-y",
+        "@modelcontextprotocol/server-sequential-thinking"
+      ],
+      "description": "Complex reasoning and debugging for PHP/MySQL issues"
+    },
+    "context7": {
+      "command": "npx",
+      "args": [
+        "-y",
+        "@context7/mcp"
+      ],
+      "env": {
+        "CONTEXT7_API_KEY": "${CONTEXT7_API_KEY}"
+      },
+      "description": "PHP, MySQL, JavaScript documentation and patterns"
+    },
+    "morphllm": {
+      "command": "npx",
+      "args": [
+        "-y",
+        "@morphllm/morphmcp"
+      ],
+      "description": "Bulk code transformations across multiple PHP files"
+    },
+    "shrimp-task-manager": {
+      "command": "npx",
+      "args": [
+        "-y",
+        "@shaneholloman/mcp-shrimp-task-manager"
+      ],
+      "description": "Task planning and management for complex features"
+    },
+    "playwright": {
+      "command": "npx",
+      "args": [
+        "-y",
+        "@executeautomation/playwright-mcp-server"
+      ],
+      "description": "Browser automation and E2E testing for web interfaces"
+    },
+    "doc-ops": {
+      "command": "npx",
+      "args": [
+        "-y",
+        "doc-ops-mcp"
+      ],
+      "description": "Document processing: PDF, DOCX, XLSX, PPTX, HTML, Markdown conversion and extraction"
+    },
+    "mcp-pdf": {
+      "command": "npx",
+      "args": [
+        "-y",
+        "mcp-pdf"
+      ],
+      "description": "PDF manipulation: merge, split, extract text, forms, signatures"
+    }
+  }
+}
