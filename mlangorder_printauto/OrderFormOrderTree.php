@@ -1942,6 +1942,4 @@ function getOrderItemInfo($summary_item, $specFormatter) {
         </div> <!-- admin-container 종료 -->
     </div> <!-- screen-only 종료 -->
 
-</body>
-
-</html>
+<!-- </body></html>은 admin.php에서 닫음 (첨부파일 섹션이 body 안에 포함되도록) -->

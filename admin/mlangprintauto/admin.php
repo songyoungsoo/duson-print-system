@@ -911,9 +911,10 @@ if ($mode == "OrderView") {
 
         <!-- ✅ 추가 옵션 정보는 OrderFormOrderTree.php의 💰 가격 정보 테이블 안에 통합 표시됨 -->
     <?php } ?>
-    
-    
-    <?php
+
+</body>
+</html>
+<?php
 } // End of OrderView mode
 ?>
 
