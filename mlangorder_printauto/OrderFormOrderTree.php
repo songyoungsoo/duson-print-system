@@ -1927,6 +1927,11 @@ function getOrderItemInfo($summary_item, $specFormatter) {
                                 </div>
                             </div>
 
+                            <!-- ✅ 첨부 파일 섹션 (admin.php에서 전달) -->
+                            <?php if (isset($GLOBALS['file_section_html']) && !empty($GLOBALS['file_section_html'])): ?>
+                                <?php echo $GLOBALS['file_section_html']; ?>
+                            <?php endif; ?>
+
                             <!-- 관리자 버튼 -->
                             <div class="btn-group" style="margin-top: 15px;">
                                 <?php if ($no) { ?>
@@ -1942,4 +1947,5 @@ function getOrderItemInfo($summary_item, $specFormatter) {
         </div> <!-- admin-container 종료 -->
     </div> <!-- screen-only 종료 -->
 
-<!-- </body></html>은 admin.php에서 닫음 (첨부파일 섹션이 body 안에 포함되도록) -->
+</body>
+</html>

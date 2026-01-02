@@ -740,18 +740,12 @@ if ($mode == "OrderView") {
     </style>
 
     <?php
-    // OrderFormOrderTree.php가 $no를 덮어쓰므로 백업
-    $original_no = $no;
-    include "../../mlangorder_printauto/OrderFormOrderTree.php";
-    // $no 복원
-    $no = $original_no;
-    ?>
-
-    <?php if (!empty($no)) { ?>
-    <!-- 첨부 파일 섹션 (별도 컨테이너) -->
-    <div class="admin-container" style="margin-top: 20px;">
-        <div class="admin-content" style="min-height: auto; padding: 20px;">
-            <div class="file-section" style="padding: 12px; margin: 0;">
+    // ✅ 첨부 파일 섹션 HTML을 미리 생성 (OrderFormOrderTree.php 내부에서 버튼 전에 출력됨)
+    if (!empty($no) && $row) {
+        ob_start();
+?>
+            <!-- 첨부 파일 섹션 -->
+            <div class="file-section" style="padding: 12px; margin: 15px 0; background: white; border-radius: 8px; border: 1px solid #e9ecef;">
             <h3 style="color: #2c3e50; margin-bottom: 8px; font-size: 0.95rem;">📎 첨부 파일</h3>
             <p style="color: #6c757d; margin-bottom: 10px; font-size: 0.8rem;">파일명을 클릭하시면 다운로드됩니다.</p>
             <div style="background: #f8f9fa; padding: 10px; border-radius: 6px; border: 1px solid #e9ecef;">
@@ -906,15 +900,15 @@ if ($mode == "OrderView") {
                     ?>
             </div>
         </div> <!-- file-section 종료 -->
-        </div> <!-- admin-content 종료 -->
-    </div> <!-- admin-container 종료 -->
-
-        <!-- ✅ 추가 옵션 정보는 OrderFormOrderTree.php의 💰 가격 정보 테이블 안에 통합 표시됨 -->
-    <?php } ?>
-
-</body>
-</html>
 <?php
+        $GLOBALS['file_section_html'] = ob_get_clean();
+    } // end if (!empty($no) && $row)
+
+    // OrderFormOrderTree.php가 $no를 덮어쓰므로 백업
+    $original_no = $no;
+    include "../../mlangorder_printauto/OrderFormOrderTree.php";
+    // $no 복원
+    $no = $original_no;
 } // End of OrderView mode
 ?>
 
