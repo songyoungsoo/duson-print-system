@@ -128,8 +128,8 @@ $where_conditions = [];
 $params = [];
 $param_types = '';
 
-// 기본 조건: 주소가 있는 주문만 표시 (배송 대상)
-$where_conditions[] = "((zip IS NOT NULL AND zip != '') OR (zip1 IS NOT NULL AND zip1 != ''))";
+// 기본 조건: 모든 주문 표시 (주소 필터 제거 - 2025-01-02)
+$where_conditions[] = "1=1";
 
 // 검색 필터는 관리자만 사용 가능
 if ($is_admin) {
