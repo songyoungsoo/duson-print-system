@@ -1394,15 +1394,15 @@ function getOrderItemInfo($summary_item, $specFormatter) {
                     </td>
                 </tr>
                 <tr>
-                    <th style="width: 15%; background: #D6DCE4; border: 1px solid #999; padding: 8px 10px; font-size: 12px; text-align: center;">주문번호</th>
+                    <th style="width: 15%; background: #E0E0E0; border: 1px solid #999; padding: 8px 10px; font-size: 12px; text-align: center;">주문번호</th>
                     <td style="width: 35%; border: 1px solid #999; padding: 8px 10px; font-size: 13px; font-weight: bold; color: #C00000;"><?= $View_No ?></td>
-                    <th style="width: 15%; background: #D6DCE4; border: 1px solid #999; padding: 8px 10px; font-size: 12px; text-align: center;">주문일시</th>
+                    <th style="width: 15%; background: #E0E0E0; border: 1px solid #999; padding: 8px 10px; font-size: 12px; text-align: center;">주문일시</th>
                     <td style="width: 35%; border: 1px solid #999; padding: 8px 10px; font-size: 12px;"><?= $View_date ?></td>
                 </tr>
                 <tr>
-                    <th style="background: #D6DCE4; border: 1px solid #999; padding: 8px 10px; font-size: 12px; text-align: center;">주문자</th>
+                    <th style="background: #E0E0E0; border: 1px solid #999; padding: 8px 10px; font-size: 12px; text-align: center;">주문자</th>
                     <td style="border: 1px solid #999; padding: 8px 10px; font-size: 13px; font-weight: bold;"><?= $View_name ?></td>
-                    <th style="background: #D6DCE4; border: 1px solid #999; padding: 8px 10px; font-size: 12px; text-align: center;">주문상태</th>
+                    <th style="background: #E0E0E0; border: 1px solid #999; padding: 8px 10px; font-size: 12px; text-align: center;">주문상태</th>
                     <td style="border: 1px solid #999; padding: 8px 10px; font-size: 12px;">
                         <?php
                         switch ($View_OrderStyle) {

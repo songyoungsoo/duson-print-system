@@ -28,6 +28,13 @@ if (session_status() == PHP_SESSION_NONE) {
         'samesite' => 'Lax'
     ]);
 
+    // 세션 저장 경로 설정 (권한 문제 해결)
+    $session_path = dirname(__DIR__) . '/sessions';
+    if (!is_dir($session_path)) {
+        mkdir($session_path, 0777, true);
+    }
+    ini_set('session.save_path', $session_path);
+
     session_start();
 }
 
