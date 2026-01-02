@@ -31,12 +31,12 @@ if (INICIS_TEST_MODE) {
 // API URL 설정
 if (INICIS_TEST_MODE) {
     define('INICIS_STD_URL', 'https://stgstdpay.inicis.com/stdjs/INIStdPay.js'); // 표준결제 테스트 URL
-    define('INICIS_RETURN_URL', 'http://localhost/payment/inicis_return.php'); // 결제 결과 수신 URL
-    define('INICIS_CLOSE_URL', 'http://localhost/payment/inicis_close.php'); // 결제창 닫기 URL
+    define('INICIS_RETURN_URL', 'https://dsp1830.shop/payment/inicis_return.php'); // 운영서버 테스트
+    define('INICIS_CLOSE_URL', 'https://dsp1830.shop/payment/inicis_close.php'); // 운영서버 테스트
 } else {
     define('INICIS_STD_URL', 'https://stdpay.inicis.com/stdjs/INIStdPay.js'); // 표준결제 운영 URL
-    define('INICIS_RETURN_URL', 'https://www.dsp1830.shop/payment/inicis_return.php'); // 실제 도메인으로 변경
-    define('INICIS_CLOSE_URL', 'https://www.dsp1830.shop/payment/inicis_close.php'); // 실제 도메인으로 변경
+    define('INICIS_RETURN_URL', 'https://dsp1830.shop/payment/inicis_return.php'); // 실제 도메인
+    define('INICIS_CLOSE_URL', 'https://dsp1830.shop/payment/inicis_close.php'); // 실제 도메인
 }
 
 // ================================
@@ -120,8 +120,17 @@ function getInicisTimestamp() {
  * @return string 해시값
  */
 function generateInicisSignature($oid, $price, $timestamp) {
-    $data = INICIS_SIGNKEY . $oid . $price . $timestamp;
+    $data = 'oid=' . $oid . '&price=' . $price . '&timestamp=' . $timestamp;
     return hash(INICIS_HASH_ALGO, $data);
+}
+
+/**
+ * mKey 생성 (signkey의 SHA256 해시)
+ *
+ * @return string mKey 해시값
+ */
+function generateInicisMKey() {
+    return hash(INICIS_HASH_ALGO, INICIS_SIGNKEY);
 }
 
 /**

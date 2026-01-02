@@ -67,18 +67,46 @@ if ($order['OrderStyle'] === 'payment_confirmed' || $order['OrderStyle'] === 'in
 // 결제 정보 준비
 $timestamp = getInicisTimestamp();
 $oid = 'DSP' . $order_no . '_' . $timestamp; // 이니시스 주문번호
-$price = $order['money_1'] ?? 0; // 결제 금액
 
-// 상품명 정리
-$goods_name = sanitizeGoodsName($order['Product'] ?? $order['Type'] ?? '인쇄물');
+// money_5 = 부가세 포함 결제 금액, money_4 = 부가세 제외 금액
+$price = intval($order['money_5'] ?? $order['money_4'] ?? $order['money_1'] ?? 0);
+
+// 금액이 0원이면 결제 불가
+if ($price <= 0) {
+    die("
+    <!DOCTYPE html>
+    <html lang='ko'>
+    <head><meta charset='UTF-8'><title>오류</title></head>
+    <body style='font-family: sans-serif; padding: 40px; text-align: center;'>
+        <h1>결제 금액 오류</h1>
+        <p>주문번호 <strong>{$order_no}</strong>의 결제 금액이 0원입니다.</p>
+        <p>주문 정보를 확인해주세요.</p>
+        <p style='color: #888; font-size: 14px;'>money_5: " . ($order['money_5'] ?? 'NULL') . ", money_4: " . ($order['money_4'] ?? 'NULL') . "</p>
+        <a href='/' style='color: #3498db;'>홈으로 돌아가기</a>
+    </body>
+    </html>
+    ");
+}
+
+// 상품명 정리 (Type 필드 사용)
+$goods_name = sanitizeGoodsName($order['Type'] ?? '인쇄물');
 
 // 구매자 정보 정리
 $buyer_name = sanitizeBuyerName($order['name']);
-$buyer_tel = sanitizePhone($order['phone1']);
+$buyer_tel = sanitizePhone($order['Hendphone'] ?? $order['phone'] ?? '');
 $buyer_email = $order['email'] ?? '';
 
-// 서명 생성
+// 서명 및 mKey 생성
 $signature = generateInicisSignature($oid, $price, $timestamp);
+$mKey = generateInicisMKey();
+
+// 필수 필드 기본값 설정
+if (empty($buyer_tel)) {
+    $buyer_tel = '01000000000';
+}
+if (empty($buyer_email)) {
+    $buyer_email = 'guest@dsp1830.shop';
+}
 
 // 로그 기록
 logInicisTransaction("결제 요청 시작 - 주문번호: {$order_no}, 금액: {$price}원", 'request');
@@ -104,7 +132,7 @@ $_SESSION['inicis_timestamp'] = $timestamp;
 
         body {
             font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
-            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            background: #f0f2f5;
             min-height: 100vh;
             padding: 20px;
             display: flex;
@@ -113,50 +141,50 @@ $_SESSION['inicis_timestamp'] = $timestamp;
         }
 
         .container {
-            max-width: 600px;
+            max-width: 420px;
             width: 100%;
             background: white;
-            border-radius: 20px;
-            box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
+            border-radius: 12px;
+            box-shadow: 0 4px 20px rgba(0, 0, 0, 0.1);
             overflow: hidden;
         }
 
         .header {
-            background: linear-gradient(135deg, #3498db, #2c3e50);
+            background: #2c3e50;
             color: white;
-            padding: 30px;
+            padding: 20px;
             text-align: center;
         }
 
         .header h1 {
-            font-size: 24px;
-            margin-bottom: 10px;
+            font-size: 18px;
+            margin-bottom: 5px;
         }
 
         .content {
-            padding: 40px;
+            padding: 24px;
         }
 
         .order-info {
             background: #f8f9fa;
-            border-radius: 12px;
-            padding: 25px;
-            margin-bottom: 30px;
+            border-radius: 8px;
+            padding: 16px;
+            margin-bottom: 20px;
         }
 
         .order-info h2 {
             color: #2c3e50;
-            font-size: 18px;
-            margin-bottom: 20px;
-            padding-bottom: 10px;
-            border-bottom: 2px solid #3498db;
+            font-size: 14px;
+            margin-bottom: 12px;
+            padding-bottom: 8px;
+            border-bottom: 1px solid #dee2e6;
         }
 
         .info-row {
             display: flex;
             justify-content: space-between;
-            padding: 12px 0;
-            border-bottom: 1px solid #e1e8ed;
+            padding: 8px 0;
+            border-bottom: 1px solid #e9ecef;
         }
 
         .info-row:last-child {
@@ -165,111 +193,109 @@ $_SESSION['inicis_timestamp'] = $timestamp;
 
         .info-label {
             color: #6c757d;
-            font-size: 14px;
+            font-size: 13px;
         }
 
         .info-value {
             color: #2c3e50;
-            font-size: 14px;
+            font-size: 13px;
             font-weight: 600;
         }
 
         .amount-box {
-            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            background: #3498db;
             color: white;
-            border-radius: 12px;
-            padding: 30px;
+            border-radius: 8px;
+            padding: 20px;
             text-align: center;
-            margin-bottom: 30px;
+            margin-bottom: 20px;
         }
 
         .amount-label {
-            font-size: 14px;
+            font-size: 12px;
             opacity: 0.9;
-            margin-bottom: 10px;
+            margin-bottom: 6px;
         }
 
         .amount-value {
-            font-size: 36px;
+            font-size: 28px;
             font-weight: bold;
         }
 
         .payment-methods {
-            margin-bottom: 30px;
+            margin-bottom: 20px;
         }
 
         .payment-methods h3 {
             color: #2c3e50;
-            font-size: 16px;
-            margin-bottom: 15px;
+            font-size: 13px;
+            margin-bottom: 10px;
         }
 
         .method-list {
             display: flex;
-            gap: 10px;
+            gap: 8px;
             flex-wrap: wrap;
         }
 
         .method-item {
             flex: 1;
-            min-width: 80px;
+            min-width: 70px;
             background: #f0f4f8;
-            padding: 15px 10px;
-            border-radius: 8px;
+            padding: 10px 8px;
+            border-radius: 6px;
             text-align: center;
-            font-size: 13px;
+            font-size: 12px;
             color: #333;
         }
 
         .btn-pay {
             width: 100%;
-            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            background: #2c3e50;
             color: white;
             border: none;
-            padding: 18px;
-            border-radius: 50px;
-            font-size: 18px;
-            font-weight: bold;
+            padding: 14px;
+            border-radius: 8px;
+            font-size: 15px;
+            font-weight: 600;
             cursor: pointer;
-            transition: transform 0.3s ease, box-shadow 0.3s ease;
-            box-shadow: 0 4px 15px rgba(102, 126, 234, 0.4);
+            transition: background 0.2s ease;
         }
 
         .btn-pay:hover {
-            transform: translateY(-2px);
-            box-shadow: 0 6px 20px rgba(102, 126, 234, 0.6);
+            background: #34495e;
         }
 
         .btn-pay:active {
-            transform: translateY(0);
+            background: #1a252f;
         }
 
         .notice {
-            background: #fff3cd;
-            border-left: 4px solid #ffc107;
-            padding: 15px;
-            border-radius: 8px;
-            margin-top: 20px;
-            font-size: 13px;
-            color: #856404;
+            background: #f8f9fa;
+            border-left: 3px solid #6c757d;
+            padding: 12px;
+            border-radius: 4px;
+            margin-top: 16px;
+            font-size: 11px;
+            color: #6c757d;
         }
 
         .notice ul {
-            margin-left: 20px;
-            margin-top: 10px;
+            margin-left: 16px;
+            margin-top: 8px;
         }
 
         .notice li {
-            margin-bottom: 5px;
+            margin-bottom: 4px;
         }
 
         @media (max-width: 640px) {
             .content {
-                padding: 25px;
+                padding: 20px;
             }
 
             .amount-value {
-                font-size: 28px;
+                font-size: 24px;
             }
 
             .method-item {
@@ -305,7 +331,7 @@ $_SESSION['inicis_timestamp'] = $timestamp;
                 </div>
                 <div class="info-row">
                     <span class="info-label">연락처</span>
-                    <span class="info-value"><?php echo htmlspecialchars($order['phone1']); ?></span>
+                    <span class="info-value"><?php echo htmlspecialchars($order['phone1'] ?? $order['Hendphone'] ?? $order['phone'] ?? ''); ?></span>
                 </div>
             </div>
 
@@ -351,20 +377,45 @@ $_SESSION['inicis_timestamp'] = $timestamp;
         <input type="hidden" name="price" value="<?php echo $price; ?>">
         <input type="hidden" name="timestamp" value="<?php echo $timestamp; ?>">
         <input type="hidden" name="signature" value="<?php echo $signature; ?>">
+        <input type="hidden" name="mKey" value="<?php echo $mKey; ?>">
         <input type="hidden" name="returnUrl" value="<?php echo INICIS_RETURN_URL; ?>">
         <input type="hidden" name="closeUrl" value="<?php echo INICIS_CLOSE_URL; ?>">
-        <input type="hidden" name="acceptmethod" value="<?php echo INICIS_PAYMENT_METHODS; ?>">
+        <input type="hidden" name="gopaymethod" value="Card">
+        <input type="hidden" name="acceptmethod" value="below1000:HPP(1):cardonly">
         <input type="hidden" name="buyername" value="<?php echo htmlspecialchars($buyer_name); ?>">
         <input type="hidden" name="buyertel" value="<?php echo $buyer_tel; ?>">
         <input type="hidden" name="buyeremail" value="<?php echo htmlspecialchars($buyer_email); ?>">
-        <input type="hidden" name="charset" value="UTF-8">
-        <input type="hidden" name="languageView" value="<?php echo INICIS_LANGUAGE; ?>">
+        <input type="hidden" name="currency" value="WON">
     </form>
 
     <script>
+        // SDK 로딩 확인
+        window.onload = function() {
+            if (typeof INIStdPay === 'undefined') {
+                console.error('INIStdPay SDK 로딩 실패');
+                alert('결제 모듈 로딩에 실패했습니다. 페이지를 새로고침 해주세요.');
+            } else {
+                console.log('INIStdPay SDK 로딩 성공');
+            }
+        };
+
         function requestPayment() {
-            // 이니시스 표준결제 호출
-            INIStdPay.pay('SendPayForm_id');
+            console.log('결제 요청 시작...');
+
+            // SDK 로딩 확인
+            if (typeof INIStdPay === 'undefined') {
+                alert('결제 모듈이 로딩되지 않았습니다. 페이지를 새로고침 해주세요.');
+                return;
+            }
+
+            try {
+                // 이니시스 표준결제 호출
+                console.log('INIStdPay.pay 호출');
+                INIStdPay.pay('SendPayForm_id');
+            } catch (e) {
+                console.error('결제 호출 오류:', e);
+                alert('결제 호출 중 오류가 발생했습니다: ' + e.message);
+            }
         }
 
         // 페이지 로드 시 자동 결제창 호출 (선택사항)

@@ -963,6 +963,16 @@ $additional_css = [
     box-shadow: 0 2px 8px rgba(30, 144, 255, 0.3);
 }
 
+.btn-payment {
+    background-color: #6f42c1 !important;
+    color: white !important;
+    box-shadow: 0 2px 8px rgba(111, 66, 193, 0.3);
+}
+
+.btn-payment:hover {
+    background-color: #5a32a3 !important;
+}
+
 .btn-action:hover {
     transform: translateY(-1px);  /* Subtle hover effect */
     box-shadow: 0 4px 8px rgba(0,0,0,0.15);
@@ -1656,9 +1666,12 @@ $additional_css = [
             <button onclick="openPrintWindow()" class="btn-action btn-print">
                 주문서 인쇄
             </button>
+            <a href="/payment/inicis_request.php?order_no=<?php echo htmlspecialchars($first_order['no']); ?>" class="btn-action btn-payment">
+                💳 카드결제
+            </a>
         </div>
         <p style="margin-top: 15px; font-size: 0.9rem; color: var(--text-secondary);">
-            입금 확인 후 제작이 시작됩니다. 궁금한 사항은 <strong>1688-2384</strong>로 연락주세요.
+            카드결제 또는 계좌이체 후 제작이 시작됩니다. 궁금한 사항은 <strong>1688-2384</strong>로 연락주세요.
         </p>
     </div>
     

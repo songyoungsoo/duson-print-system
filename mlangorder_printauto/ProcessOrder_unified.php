@@ -532,6 +532,7 @@ try {
         $uploaded_files_json = $item['uploaded_files'] ?? null;
 
         // 🔧 수량 및 단위 추가 (제품별 분기 처리)
+        $product_type = $item['product_type'] ?? 'unknown';
         if (in_array($product_type, ['inserted', 'leaflet'])) {
             // 전단지/리플렛: quantity는 연수, unit은 '연'
             $quantity = floatval($item['quantity'] ?? $item['MY_amount'] ?? 1.0);
@@ -606,7 +607,11 @@ try {
         // 31:envelope_tape_enabled(i) 32:envelope_tape_quantity(i) 33:envelope_tape_price(i) 34:envelope_additional_options_total(i)
         // 35:unit(s) - 🆕 단위 필드 추가
         // 타입: i(1)+s(17)+isi+isi+iii+i+si+iiii+s+d = 1+17+3+3+3+1+2+4+1+1 = 36
-        $type_string = 'isssssssssssssssssisissiiiiisiiiisd';
+        // 36개 파라미터 타입 문자열 (정확한 검증 완료!)
+        // 1:no(i) 2-7:Type~money_5(s×6) 8-18:name~ThingCate(s×11)
+        // 19-21:coating(isi) 22-24:folding(isi) 25-27:creasing(iii) 28:additional(i)
+        // 29-30:premium(si) 31-34:envelope(iiii) 35:unit(s) 36:quantity(d)
+        $type_string = 'isssssssssssssssssisiisiiiiisiiiiisd';
         $type_count = strlen($type_string); // 36
 
         mysqli_stmt_bind_param($stmt, $type_string,

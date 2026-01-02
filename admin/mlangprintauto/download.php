@@ -163,14 +163,51 @@ if (!$json_path_found && !file_exists($full_path)) {
     }
 
     if (!file_exists($full_path)) {
-        error_log("Download 실패: 파일을 찾을 수 없음 - path: $path, file: $downfile, no: $no");
-        error_log("시도한 경로들: " . implode(', ', array_merge([$downfiledir . $downfile], $alternative_paths)));
+        // NAS 폴백: 구서버에서 마이그레이션된 파일 (ipTIME NAS)
+        $nas_host = 'dsp1830.ipdisk.co.kr';
+        $nas_user = 'admin';
+        $nas_pass = '1830';
+        $nas_base = '/HDD2/share/ImgFolder_old';
+
+        $nas_paths = [];
+        if (!empty($db_img_folder)) {
+            $nas_paths[] = $nas_base . '/' . $db_img_folder . '/' . $downfile;
+        }
+        if (!empty($path) && strpos($path, '_MlangPrintAuto_') !== false) {
+            $nas_paths[] = $nas_base . '/' . $path . '/' . $downfile;
+        }
+
+        foreach ($nas_paths as $nas_path) {
+            $ftp_url = "ftp://{$nas_user}:{$nas_pass}@{$nas_host}{$nas_path}";
+            $ch = curl_init();
+            curl_setopt($ch, CURLOPT_URL, $ftp_url);
+            curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
+            curl_setopt($ch, CURLOPT_FTP_USE_EPSV, false);
+            curl_setopt($ch, CURLOPT_TIMEOUT, 60);
+            $file_content = curl_exec($ch);
+            $err = curl_error($ch);
+            curl_close($ch);
+
+            if ($file_content !== false && strlen($file_content) > 0 && empty($err)) {
+                error_log("Download: NAS 폴백 성공 - $nas_path");
+                $enc_name = preg_match('/MSIE|Trident/i', $_SERVER['HTTP_USER_AGENT'] ?? '')
+                    ? str_replace('+', '%20', urlencode($downfile)) : $downfile;
+                header("Content-Type: application/octet-stream");
+                header("Content-Disposition: attachment; filename=\"$enc_name\"");
+                header("Content-Length: " . strlen($file_content));
+                echo $file_content;
+                ob_end_flush();
+                exit;
+            }
+        }
+
+        error_log("Download 실패: path=$path, file=$downfile, no=$no");
         die("<script>alert('존재하지 않는 파일입니다.'); history.back();</script>");
     }
 }
 
 // 8. 파일 타입 검증 (추가 보안)
-$allowed_extensions = ['jpg', 'jpeg', 'png', 'gif', 'pdf', 'ai', 'psd', 'zip', 'doc', 'docx', 'xls', 'xlsx', 'txt'];
+$allowed_extensions = ['jpg', 'jpeg', 'png', 'gif', 'pdf', 'ai', 'psd', 'zip', 'doc', 'docx', 'xls', 'xlsx', 'txt', 'pptx', 'ppt', 'hwp', 'eps', 'tif', 'tiff', 'bmp', 'svg'];
 $file_ext = strtolower(pathinfo($downfile, PATHINFO_EXTENSION));
 if (!in_array($file_ext, $allowed_extensions)) {
     die("<script>alert('허용되지 않은 파일 형식입니다.'); history.back();</script>");

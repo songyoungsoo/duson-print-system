@@ -1,26 +1,2 @@
-# .env 파일과 설정 파일들 접근 차단
-<Files ".env">
-    Order Allow,Deny
-    Deny from all
-</Files>
-
-# db.php는 PHP include로만 사용되므로 직접 웹 접근 차단 안함
-# 대신 PHP 코드에서 DB_ACCESS_ALLOWED 상수로 보안 처리
-
-# .env 파일 패턴 차단
-<FilesMatch "^\.env">
-    Order Allow,Deny
-    Deny from all
-</FilesMatch>
-
-# 백업 파일 차단
-<FilesMatch "\.(bak|backup|old|tmp)$">
-    Order Allow,Deny
-    Deny from all
-</FilesMatch>
-
-# config 관련 파일들 보호 (db.php는 제외 - include용으로 필요)
-<FilesMatch "^(db_constants)\.php$">
-    Order Allow,Deny
-    Deny from all
-</FilesMatch>
+RewriteEngine On
+RewriteRule ^MlangOrder_PrintAuto/(.*)$ mlangorder_printauto/$1 [L]

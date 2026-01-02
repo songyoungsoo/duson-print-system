@@ -45,15 +45,19 @@ if ($row) {
     $view_designer = $row['Designer'] ?? '';
     $View_Phone = $row['phone'] ?? '';
 
+    // 추가: ImgFolder 및 uploaded_files 가져오기
+    $ImgFolder = $row['ImgFolder'] ?? '';
+    $uploaded_files_json = $row['uploaded_files'] ?? '';
+
     // 고객 접근 시 본인 주문인지 확인
     if ($is_customer_access) {
         $session_name = $_SESSION['customer_name'] ?? '';
         $session_phone = $_SESSION['customer_phone'] ?? '';
         $session_phone_normalized = preg_replace('/[^0-9]/', '', $session_phone);
         $db_phone_normalized = preg_replace('/[^0-9]/', '', $View_Phone);
-        
-        if ($View_OrderName !== $session_name || 
-            ($session_phone_normalized !== $db_phone_normalized && 
+
+        if ($View_OrderName !== $session_name ||
+            ($session_phone_normalized !== $db_phone_normalized &&
              strpos($db_phone_normalized, $session_phone_normalized) === false)) {
             echo "<script>
                     alert('본인의 주문만 조회하실 수 있습니다.');
@@ -64,9 +68,97 @@ if ($row) {
         }
     }
 
+    // 이미지 경로 찾기 (폴백 순서: 교정이미지 → ImgFolder → uploaded_files)
+    $found_image_path = '';
+    $found_image_url = '';
+    $image_source = '';
+
+    // 1. 교정 이미지 경로 확인 (./upload/$no/$ThingCate)
+    if (!empty($ImgFile)) {
+        $proof_image_path = "./upload/$no/$ImgFile";
+        if (file_exists($proof_image_path)) {
+            $found_image_path = $proof_image_path;
+            $found_image_url = "./upload/$no/$ImgFile";
+            $image_source = 'proof';
+        }
+    }
+
+    // 2. ImgFolder 경로 확인 (폴백)
+    if (empty($found_image_path) && !empty($ImgFolder)) {
+        // 2-1. 레거시 경로 처리 (../shop/data/파일명)
+        if (strpos($ImgFolder, '../shop/data/') === 0) {
+            // 레거시 경로에서 파일명 추출
+            $legacy_filename = basename($ImgFolder);
+            $legacy_path = $_SERVER['DOCUMENT_ROOT'] . '/shop/data/' . $legacy_filename;
+            if (file_exists($legacy_path)) {
+                $ext = strtolower(pathinfo($legacy_path, PATHINFO_EXTENSION));
+                if (in_array($ext, ['jpg', 'jpeg', 'png', 'gif', 'webp', 'pdf', 'ai', 'psd', 'hwp', 'hwpx'])) {
+                    $found_image_path = $legacy_path;
+                    $found_image_url = '/shop/data/' . $legacy_filename;
+                    $image_source = 'legacy';
+                }
+            }
+        }
+        // 2-2. _MlangPrintAuto_ 경로 (신규 업로드 시스템)
+        elseif (strpos($ImgFolder, '_MlangPrintAuto_') !== false) {
+            $img_folder_base = $_SERVER['DOCUMENT_ROOT'] . '/ImgFolder/' . $ImgFolder;
+            if (is_dir($img_folder_base)) {
+                $files = scandir($img_folder_base);
+                foreach ($files as $file) {
+                    if ($file !== '.' && $file !== '..') {
+                        $ext = strtolower(pathinfo($file, PATHINFO_EXTENSION));
+                        if (in_array($ext, ['jpg', 'jpeg', 'png', 'gif', 'webp', 'pdf'])) {
+                            $found_image_path = $img_folder_base . '/' . $file;
+                            $found_image_url = '/ImgFolder/' . $ImgFolder . '/' . $file;
+                            $image_source = 'imgfolder';
+                            break;
+                        }
+                    }
+                }
+            }
+        }
+        // 2-3. 기타 ImgFolder 경로
+        else {
+            $img_folder_base = $_SERVER['DOCUMENT_ROOT'] . '/ImgFolder/' . $ImgFolder;
+            if (is_dir($img_folder_base)) {
+                $files = scandir($img_folder_base);
+                foreach ($files as $file) {
+                    if ($file !== '.' && $file !== '..') {
+                        $ext = strtolower(pathinfo($file, PATHINFO_EXTENSION));
+                        if (in_array($ext, ['jpg', 'jpeg', 'png', 'gif', 'webp', 'pdf'])) {
+                            $found_image_path = $img_folder_base . '/' . $file;
+                            $found_image_url = '/ImgFolder/' . $ImgFolder . '/' . $file;
+                            $image_source = 'imgfolder';
+                            break;
+                        }
+                    }
+                }
+            }
+        }
+    }
+
+    // 3. uploaded_files JSON에서 이미지 찾기 (폴백)
+    if (empty($found_image_path) && !empty($uploaded_files_json) && $uploaded_files_json !== '0') {
+        $uploaded_files = json_decode($uploaded_files_json, true);
+        if (is_array($uploaded_files) && count($uploaded_files) > 0) {
+            foreach ($uploaded_files as $file_info) {
+                $file_path = $file_info['path'] ?? '';
+                $web_url = $file_info['web_url'] ?? '';
+                if (!empty($file_path) && file_exists($file_path)) {
+                    $ext = strtolower(pathinfo($file_path, PATHINFO_EXTENSION));
+                    if (in_array($ext, ['jpg', 'jpeg', 'png', 'gif', 'webp', 'pdf'])) {
+                        $found_image_path = $file_path;
+                        $found_image_url = $web_url;
+                        $image_source = 'uploaded_files';
+                        break;
+                    }
+                }
+            }
+        }
+    }
+
     // 이미지 파일이 없는 경우에도 주문 정보는 표시
-    if (!$ImgFile) {
-        $ImgFile = ''; // 빈 값으로 처리하여 계속 진행
+    if (empty($found_image_path)) {
         $no_image_message = "업로드된 이미지 파일이 없습니다.";
     }
 } else {
@@ -643,12 +735,17 @@ if ($View_SignMMk == "yes") {
             </div>
         </div>
         
-        <?php if (!empty($ImgFile) && file_exists("./upload/$no/$ImgFile")) { ?>
+        <?php if (!empty($found_image_url)) { ?>
             <div class="image-container">
-                <img src="./upload/<?= $no ?>/<?= $ImgFile ?>" alt="주문 이미지" onclick="window.close();" style="cursor: pointer;">
+                <img src="<?= htmlspecialchars($found_image_url) ?>" alt="주문 이미지" onclick="window.close();" style="cursor: pointer;">
             </div>
             <p style="margin-top: 16px; color: #64748b; font-size: 13px;">
                 💡 이미지를 클릭하면 창이 닫힙니다
+                <?php if ($image_source === 'imgfolder'): ?>
+                <br><small style="color: #94a3b8;">(고객 원고 파일)</small>
+                <?php elseif ($image_source === 'uploaded_files'): ?>
+                <br><small style="color: #94a3b8;">(업로드 파일)</small>
+                <?php endif; ?>
             </p>
         <?php } else { ?>
             <div class="no-image-message">
