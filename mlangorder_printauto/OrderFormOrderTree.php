@@ -1384,7 +1384,7 @@ function getOrderItemInfo($summary_item, $specFormatter) {
 
     <!-- 화면 표시용 내용 (엑셀 스타일 리디자인 2026-01-03) -->
     <div class="screen-only">
-        <div class="admin-container" style="max-width: 700px; margin: 0 auto; padding: 15px; background: #fff;">
+        <div class="admin-container" style="width: 700px; max-width: 100%; margin: 0 auto; padding: 15px; background: #fff; box-sizing: border-box;">
 
             <!-- ===== 주문 기본 정보 테이블 ===== -->
             <table style="width: 100%; border-collapse: collapse; margin-bottom: 15px; border: 2px solid #333;">
@@ -1418,7 +1418,7 @@ function getOrderItemInfo($summary_item, $specFormatter) {
                 </tr>
             </table>
 
-            <form name='JoinInfo' method='post' enctype='multipart/form-data' onsubmit='return JoinCheckField()' action='/admin/mlangprintauto/admin.php'>
+            <form name='JoinInfo' method='post' enctype='multipart/form-data' onsubmit='return JoinCheckField()' action='/admin/mlangprintauto/admin.php' style="width: 100%; margin: 0; padding: 0;">
                 <?php if ($no) { ?>
                     <input type="hidden" name="no" value="<?= $no ?>">
                     <input type="hidden" name="mode" value="ModifyOk">
@@ -1443,12 +1443,12 @@ function getOrderItemInfo($summary_item, $specFormatter) {
                     } else {
                     ?>
                     <tr style="background: #D6DCE4;">
-                        <th style="width: 5%; border: 1px solid #999; padding: 8px; font-size: 11px; text-align: center;">NO</th>
-                        <th style="width: 12%; border: 1px solid #999; padding: 8px; font-size: 11px; text-align: center;">품목</th>
-                        <th style="width: 43%; border: 1px solid #999; padding: 8px; font-size: 11px; text-align: left;">규격/옵션</th>
-                        <th style="width: 10%; border: 1px solid #999; padding: 8px; font-size: 11px; text-align: center;">수량</th>
-                        <th style="width: 6%; border: 1px solid #999; padding: 8px; font-size: 11px; text-align: center;">단위</th>
-                        <th style="width: 12%; border: 1px solid #999; padding: 8px; font-size: 11px; text-align: right;">인쇄비</th>
+                        <th style="width: 4%; border: 1px solid #999; padding: 8px; font-size: 11px; text-align: center;">NO</th>
+                        <th style="width: 8%; border: 1px solid #999; padding: 8px; font-size: 11px; text-align: center;">품목</th>
+                        <th style="width: 48%; border: 1px solid #999; padding: 8px; font-size: 11px; text-align: left;">규격/옵션</th>
+                        <th style="width: 12%; border: 1px solid #999; padding: 8px; font-size: 11px; text-align: center;">수량</th>
+                        <th style="width: 5%; border: 1px solid #999; padding: 8px; font-size: 11px; text-align: center;">단위</th>
+                        <th style="width: 11%; border: 1px solid #999; padding: 8px; font-size: 11px; text-align: right;">인쇄비</th>
                         <th style="width: 12%; border: 1px solid #999; padding: 8px; font-size: 11px; text-align: right;">공급가액</th>
                     </tr>
                     <?php
@@ -1801,40 +1801,40 @@ function getOrderItemInfo($summary_item, $specFormatter) {
                     </tr>
                     <tr>
                         <th style="width: 15%; background: #D6DCE4; border: 1px solid #999; padding: 6px 10px; font-size: 11px; text-align: center;">성명/상호</th>
-                        <td style="width: 35%; border: 1px solid #999; padding: 4px 8px;"><input name="name" type="text" style="width: 100%; border: 1px solid #ccc; padding: 4px 6px; font-size: 12px;" value='<?= $View_name ?>'></td>
+                        <td style="width: 35%; border: 1px solid #999; padding: 4px 8px;"><input name="name" type="text" style="width: 100%; box-sizing: border-box; border: 1px solid #ccc; padding: 4px 6px; font-size: 12px;" value='<?= $View_name ?>'></td>
                         <th style="width: 15%; background: #D6DCE4; border: 1px solid #999; padding: 6px 10px; font-size: 11px; text-align: center;">E-MAIL</th>
-                        <td style="width: 35%; border: 1px solid #999; padding: 4px 8px;"><input name="email" type="text" style="width: 100%; border: 1px solid #ccc; padding: 4px 6px; font-size: 12px;" value='<?= $View_email ?>'></td>
+                        <td style="width: 35%; border: 1px solid #999; padding: 4px 8px;"><input name="email" type="text" style="width: 100%; box-sizing: border-box; border: 1px solid #ccc; padding: 4px 6px; font-size: 12px;" value='<?= $View_email ?>'></td>
                     </tr>
                     <tr>
                         <th style="background: #D6DCE4; border: 1px solid #999; padding: 6px 10px; font-size: 11px; text-align: center;">우편번호</th>
-                        <td style="border: 1px solid #999; padding: 4px 8px;"><input type="text" name="zip" style="width: 80px; border: 1px solid #ccc; padding: 4px 6px; font-size: 12px;" value='<?= $View_zip ?>'></td>
+                        <td style="border: 1px solid #999; padding: 4px 8px;"><input type="text" name="zip" style="width: 80px; box-sizing: border-box; border: 1px solid #ccc; padding: 4px 6px; font-size: 12px;" value='<?= $View_zip ?>'></td>
                         <th style="background: #D6DCE4; border: 1px solid #999; padding: 6px 10px; font-size: 11px; text-align: center;">전화번호</th>
-                        <td style="border: 1px solid #999; padding: 4px 8px;"><input name="phone" type="text" style="width: 100%; border: 1px solid #ccc; padding: 4px 6px; font-size: 12px;" value='<?= $View_phone ?>'></td>
+                        <td style="border: 1px solid #999; padding: 4px 8px;"><input name="phone" type="text" style="width: 100%; box-sizing: border-box; border: 1px solid #ccc; padding: 4px 6px; font-size: 12px;" value='<?= $View_phone ?>'></td>
                     </tr>
                     <tr>
                         <th style="background: #D6DCE4; border: 1px solid #999; padding: 6px 10px; font-size: 11px; text-align: center;">주소</th>
                         <td colspan="3" style="border: 1px solid #999; padding: 4px 8px;">
-                            <input type="text" name="zip1" placeholder="기본주소" style="width: 48%; border: 1px solid #ccc; padding: 4px 6px; font-size: 12px; margin-right: 2%;" value='<?= $View_zip1 ?>'>
-                            <input type="text" name="zip2" placeholder="상세주소" style="width: 48%; border: 1px solid #ccc; padding: 4px 6px; font-size: 12px;" value='<?= $View_zip2 ?>'>
+                            <input type="text" name="zip1" placeholder="기본주소" style="width: 48%; box-sizing: border-box; border: 1px solid #ccc; padding: 4px 6px; font-size: 12px; margin-right: 2%;" value='<?= $View_zip1 ?>'>
+                            <input type="text" name="zip2" placeholder="상세주소" style="width: 48%; box-sizing: border-box; border: 1px solid #ccc; padding: 4px 6px; font-size: 12px;" value='<?= $View_zip2 ?>'>
                         </td>
                     </tr>
                     <tr>
                         <th style="background: #D6DCE4; border: 1px solid #999; padding: 6px 10px; font-size: 11px; text-align: center;">배송지</th>
-                        <td style="border: 1px solid #999; padding: 4px 8px;"><input type="text" name="delivery" style="width: 100%; border: 1px solid #ccc; padding: 4px 6px; font-size: 12px;" value='<?= $View_delivery ?>'></td>
+                        <td style="border: 1px solid #999; padding: 4px 8px;"><input type="text" name="delivery" style="width: 100%; box-sizing: border-box; border: 1px solid #ccc; padding: 4px 6px; font-size: 12px;" value='<?= $View_delivery ?>'></td>
                         <th style="background: #D6DCE4; border: 1px solid #999; padding: 6px 10px; font-size: 11px; text-align: center;">휴대폰</th>
-                        <td style="border: 1px solid #999; padding: 4px 8px;"><input name="Hendphone" type="text" style="width: 100%; border: 1px solid #ccc; padding: 4px 6px; font-size: 12px;" value='<?= $View_Hendphone ?>'></td>
+                        <td style="border: 1px solid #999; padding: 4px 8px;"><input name="Hendphone" type="text" style="width: 100%; box-sizing: border-box; border: 1px solid #ccc; padding: 4px 6px; font-size: 12px;" value='<?= $View_Hendphone ?>'></td>
                     </tr>
                     <tr>
                         <th style="background: #D6DCE4; border: 1px solid #999; padding: 6px 10px; font-size: 11px; text-align: center;">사업자명</th>
-                        <td style="border: 1px solid #999; padding: 4px 8px;"><input type="text" name="bizname" style="width: 100%; border: 1px solid #ccc; padding: 4px 6px; font-size: 12px;" value='<?= $View_bizname ?>'></td>
+                        <td style="border: 1px solid #999; padding: 4px 8px;"><input type="text" name="bizname" style="width: 100%; box-sizing: border-box; border: 1px solid #ccc; padding: 4px 6px; font-size: 12px;" value='<?= $View_bizname ?>'></td>
                         <th style="background: #D6DCE4; border: 1px solid #999; padding: 6px 10px; font-size: 11px; text-align: center;">입금은행</th>
-                        <td style="border: 1px solid #999; padding: 4px 8px;"><input name="bank" type="text" style="width: 100%; border: 1px solid #ccc; padding: 4px 6px; font-size: 12px;" value='<?= $View_bank ?>'></td>
+                        <td style="border: 1px solid #999; padding: 4px 8px;"><input name="bank" type="text" style="width: 100%; box-sizing: border-box; border: 1px solid #ccc; padding: 4px 6px; font-size: 12px;" value='<?= $View_bank ?>'></td>
                     </tr>
                     <tr>
                         <th style="background: #D6DCE4; border: 1px solid #999; padding: 6px 10px; font-size: 11px; text-align: center;">입금자명</th>
-                        <td style="border: 1px solid #999; padding: 4px 8px;"><input name="bankname" type="text" style="width: 100%; border: 1px solid #ccc; padding: 4px 6px; font-size: 12px;" value='<?= $View_bankname ?>'></td>
+                        <td style="border: 1px solid #999; padding: 4px 8px;"><input name="bankname" type="text" style="width: 100%; box-sizing: border-box; border: 1px solid #ccc; padding: 4px 6px; font-size: 12px;" value='<?= $View_bankname ?>'></td>
                         <th style="background: #D6DCE4; border: 1px solid #999; padding: 6px 10px; font-size: 11px; text-align: center;">비고</th>
-                        <td style="border: 1px solid #999; padding: 4px 8px;"><textarea name="cont" rows="2" style="width: 100%; border: 1px solid #ccc; padding: 4px 6px; font-size: 12px; resize: vertical;"><?= $View_cont ?></textarea></td>
+                        <td style="border: 1px solid #999; padding: 4px 8px;"><textarea name="cont" rows="2" style="width: 100%; box-sizing: border-box; border: 1px solid #ccc; padding: 4px 6px; font-size: 12px; resize: vertical;"><?= $View_cont ?></textarea></td>
                     </tr>
                 </table>
 
