@@ -512,7 +512,7 @@ if ($mode == "OrderView") {
         }
 
         .admin-container {
-            max-width: 650px;
+            max-width: 700px;
             width: calc(100vw - 30px);
             min-height: 780px;
             margin: 0 auto;
@@ -520,9 +520,14 @@ if ($mode == "OrderView") {
             border-radius: 12px;
             box-shadow: 0 15px 30px rgba(0,0,0,0.1);
             overflow: visible;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
         }
 
         .admin-header {
+            width: 100%;
+            box-sizing: border-box;
             background: linear-gradient(135deg, #2c3e50 0%, #34495e 100%);
             color: #ffffff;
             padding: 15px 25px;
@@ -548,6 +553,8 @@ if ($mode == "OrderView") {
         }
 
         .admin-content {
+            width: 100%;
+            box-sizing: border-box;
             padding: 15px 25px;
             background: #f8f9fa;
             min-height: 680px;
@@ -555,6 +562,8 @@ if ($mode == "OrderView") {
         }
 
         .info-grid {
+            width: 100%;
+            box-sizing: border-box;
             display: grid;
             grid-template-columns: 1fr 1fr;
             gap: 20px;
@@ -579,6 +588,8 @@ if ($mode == "OrderView") {
         }
 
         .form-section {
+            width: 100%;
+            box-sizing: border-box;
             background: white;
             border-radius: 8px;
             padding: 12px 20px;
@@ -633,6 +644,8 @@ if ($mode == "OrderView") {
         }
 
         .btn-group {
+            width: 100%;
+            box-sizing: border-box;
             text-align: center;
             margin-top: 30px;
             padding-top: 20px;
@@ -674,6 +687,8 @@ if ($mode == "OrderView") {
 
         /* 파일 섹션 스타일 개선 */
         .file-section {
+            width: 100%;
+            box-sizing: border-box;
             background: white;
             border-radius: 12px;
             padding: 25px;

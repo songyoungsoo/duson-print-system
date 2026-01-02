@@ -1715,7 +1715,7 @@ function getOrderItemInfo($summary_item, $specFormatter) {
                                                 <td style='color: #000 !important; font-weight: bold; font-size: 14px; padding: 12px 15px; border-top: 2px solid #dee2e6;'>공급가액</td>
                                                 <td style='color: #000 !important; font-weight: bold; font-size: 14px; padding: 12px 15px; border-top: 2px solid #dee2e6; text-align: right;'><?= number_format(round($total_money_4 + $total_money_2 + $grand_additional_options_total, -1)) ?> 원</td>
                                             </tr>
-                                            <tr style='background: #28a745 !important;'>
+                                            <tr style='background: #e9ecef !important;'>
                                                 <td style='color: #000 !important; font-weight: bold; font-size: 16px; padding: 15px; border: none;'>💰 부가세포함금액</td>
                                                 <td style='color: #000 !important; font-weight: bold; font-size: 16px; padding: 15px; border: none; text-align: right;'><?= number_format(round($total_money_5, -1)) ?> 원</td>
                                             </tr>
