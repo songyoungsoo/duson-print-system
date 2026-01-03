@@ -22,9 +22,11 @@ function applyToQuotation() {
         return;
     }
 
-    // 2. 가격 계산 여부 확인 - 없으면 자동 계산
-    if (!window.currentPriceData || !window.currentPriceData.Order_PriceForm) {
-        console.log('⚠️ [견적서 적용] 가격 데이터 없음 - 자동 계산 시도');
+    // 2. 가격 계산 여부 확인 - 없으면 자동 계산 (타임아웃 로직)
+    const isPriceDataSet = window.currentPriceData && (window.currentPriceData.Order_PriceForm || window.currentPriceData.price);
+    
+    if (!isPriceDataSet) {
+        console.log('⚠️ [견적서 적용] 가격 데이터 미확보 - 자동 계산 및 대기 로직 진입');
 
         // autoCalculatePrice 함수가 있으면 호출
         if (typeof window.autoCalculatePrice === 'function') {
@@ -37,10 +39,11 @@ function applyToQuotation() {
             const waitForPrice = setInterval(() => {
                 attempts++;
 
-                if (window.currentPriceData && window.currentPriceData.Order_PriceForm) {
+                // 재확인
+                if (window.currentPriceData && (window.currentPriceData.Order_PriceForm || window.currentPriceData.price)) {
                     // 가격 계산 완료
                     clearInterval(waitForPrice);
-                    console.log('✅ [견적서 적용] 가격 계산 완료:', window.currentPriceData);
+                    console.log('✅ [견적서 적용] 자동 가격 계산 완료 및 데이터 확보. 대기 로직 종료.');
                     proceedWithApply();
                 } else if (attempts >= maxAttempts) {
                     // 타임아웃
@@ -58,7 +61,7 @@ function applyToQuotation() {
         }
     }
 
-    console.log('✅ [견적서 적용] 가격 데이터 확인:', window.currentPriceData);
+    console.log('✅ [견적서 적용] 가격 데이터 확보 확인:', JSON.parse(JSON.stringify(window.currentPriceData)));
     proceedWithApply();
 }
 
@@ -183,6 +186,15 @@ function proceedWithApply() {
                 quantity_display: quantity_display
             });
 
+        } else if (productType === 'sticker') {
+            // 스티커
+            specification = buildStickerSpecification();
+            const mesuInput = document.getElementById('mesu');
+            if (mesuInput) {
+                quantity = parseFloat(mesuInput.value) || 1;
+            }
+            unit = '매';
+            
         } else if (productType === 'namecard') {
             // 명함
             specification = buildNamecardSpecification();
@@ -195,6 +207,51 @@ function proceedWithApply() {
         } else if (productType === 'envelope') {
             // 봉투
             specification = buildEnvelopeSpecification();
+            const myAmount = document.getElementById('MY_amount');
+            if (myAmount) {
+                quantity = parseFloat(myAmount.value) || 1;
+            }
+            unit = '매';
+
+        } else if (productType === 'msticker') {
+            // 자석스티커
+            specification = buildMstickerSpecification();
+            const myAmount = document.getElementById('MY_amount');
+            if (myAmount) {
+                quantity = parseFloat(myAmount.value) || 1;
+            }
+            unit = '매';
+
+        } else if (productType === 'cadarok') {
+            // 카다록
+            specification = buildCadarokSpecification();
+            const myAmount = document.getElementById('MY_amount');
+            if (myAmount) {
+                quantity = parseFloat(myAmount.value) || 1;
+            }
+            unit = '부';
+
+        } else if (productType === 'littleprint') {
+            // 포스터
+            specification = buildLittleprintSpecification();
+            const myAmount = document.getElementById('MY_amount');
+            if (myAmount) {
+                quantity = parseFloat(myAmount.value) || 1;
+            }
+            unit = '매';
+
+        } else if (productType === 'merchandisebond') {
+            // 상품권
+            specification = buildMerchandisebondSpecification();
+            const myAmount = document.getElementById('MY_amount');
+            if (myAmount) {
+                quantity = parseFloat(myAmount.value) || 1;
+            }
+            unit = '매';
+
+        } else if (productType === 'ncrflambeau') {
+            // NCR양식
+            specification = buildNcrflambeauSpecification();
             const myAmount = document.getElementById('MY_amount');
             if (myAmount) {
                 quantity = parseFloat(myAmount.value) || 1;
@@ -218,10 +275,11 @@ function proceedWithApply() {
     let totalPrice = 0;
 
     // 🔧 각 제품별 가격 데이터 읽기 (window.currentPriceData 또는 DOM에서)
-    if (window.currentPriceData && window.currentPriceData.Order_PriceForm) {
-        // 방법 1: currentPriceData 우선 (전단지/리플렛/명함 등)
-        supplyPrice = Math.round(window.currentPriceData.Order_PriceForm) || 0;
-        totalPrice = Math.round(window.currentPriceData.Total_PriceForm) || 0;
+    if (window.currentPriceData && (window.currentPriceData.Order_PriceForm || window.currentPriceData.price)) {
+        // 방법 1: currentPriceData 우선 (전단지/리플렛/명함/스티커 등)
+        // 스티커는 price, 나머지는 Order_PriceForm 사용 호환
+        supplyPrice = Math.round(window.currentPriceData.Order_PriceForm || parseInt(String(window.currentPriceData.price).replace(/,/g, ''))) || 0;
+        totalPrice = Math.round(window.currentPriceData.Total_PriceForm || parseInt(String(window.currentPriceData.price_vat).replace(/,/g, ''))) || 0;
         console.log('✅ [가격 읽기] currentPriceData 사용:', { supplyPrice, totalPrice });
 
     } else {
@@ -360,6 +418,34 @@ function buildInsertedSpecification() {
 }
 
 /**
+ * 스티커 규격 정보 생성
+ */
+function buildStickerSpecification() {
+    const parts = [];
+    const form = document.getElementById('stickerForm');
+    if (!form) return '규격 정보를 찾을 수 없습니다.';
+
+    const formData = new FormData(form);
+    const jong = formData.get('jong').replace(/^(jil|jsp|jka|cka)\s+/, '');
+    const garo = formData.get('garo') || '100';
+    const sero = formData.get('sero') || '100';
+    const domusong = formData.get('domusong').split(' ').slice(1).join(' ') || '사각';
+    const uhyung = formData.get('uhyung');
+
+    parts.push(`재질: ${jong}`);
+    parts.push(`크기: ${garo}x${sero}mm`);
+    parts.push(`모양: ${domusong}`);
+
+    if (uhyung === '10000') {
+        parts.push('편집: 기본편집');
+    } else if (uhyung === '30000') {
+        parts.push('편집: 고급편집');
+    }
+
+    return parts.join(' / ');
+}
+
+/**
  * 명함 규격 정보 생성
  */
 function buildNamecardSpecification() {
@@ -399,6 +485,285 @@ function buildEnvelopeSpecification() {
     const section = document.getElementById('Section');
     if (section && section.selectedOptions[0]) {
         parts.push(section.selectedOptions[0].text);
+    }
+
+    return parts.join('\n');
+}
+
+/**
+ * 자석스티커 규격 정보 생성
+ */
+function buildMstickerSpecification() {
+    const parts = [];
+
+    // 자석 종류
+    const myType = document.getElementById('MY_type');
+    if (myType && myType.selectedOptions[0]) {
+        parts.push(myType.selectedOptions[0].text);
+    }
+
+    // 규격
+    const section = document.getElementById('Section');
+    if (section && section.selectedOptions[0]) {
+        parts.push(section.selectedOptions[0].text);
+    }
+
+    // 인쇄면
+    const poType = document.getElementById('POtype');
+    if (poType && poType.selectedOptions[0]) {
+        parts.push(poType.selectedOptions[0].text);
+    }
+
+    // 편집비
+    const orderType = document.getElementById('ordertype');
+    if (orderType && orderType.selectedOptions[0]) {
+        parts.push(orderType.selectedOptions[0].text);
+    }
+
+    return parts.join('\n');
+}
+
+/**
+ * 카다록 규격 정보 생성
+ */
+function buildCadarokSpecification() {
+    const parts = [];
+
+    // 색상
+    const myType = document.getElementById('MY_type');
+    if (myType && myType.selectedOptions[0]) {
+        parts.push(myType.selectedOptions[0].text);
+    }
+
+    // 용지
+    const section = document.getElementById('Section');
+    if (section && section.selectedOptions[0]) {
+        parts.push(section.selectedOptions[0].text);
+    }
+
+    // 인쇄면
+    const poType = document.getElementById('POtype');
+    if (poType && poType.selectedOptions[0]) {
+        parts.push(poType.selectedOptions[0].text);
+    }
+
+    // 편집비
+    const orderType = document.getElementById('ordertype');
+    if (orderType && orderType.selectedOptions[0]) {
+        parts.push(orderType.selectedOptions[0].text);
+    }
+
+    // 추가 옵션 (코팅, 접지, 오시)
+    const coatingEnabled = document.getElementById('coating_enabled');
+    if (coatingEnabled && coatingEnabled.checked) {
+        const coatingType = document.getElementById('coating_type');
+        if (coatingType && coatingType.selectedOptions[0]) {
+            parts.push('코팅: ' + coatingType.selectedOptions[0].text);
+        }
+    }
+
+    const foldingEnabled = document.getElementById('folding_enabled');
+    if (foldingEnabled && foldingEnabled.checked) {
+        const foldingType = document.getElementById('folding_type');
+        if (foldingType && foldingType.selectedOptions[0]) {
+            parts.push('접지: ' + foldingType.selectedOptions[0].text);
+        }
+    }
+
+    const creasingEnabled = document.getElementById('creasing_enabled');
+    if (creasingEnabled && creasingEnabled.checked) {
+        const creasingLines = document.getElementById('creasing_lines');
+        if (creasingLines && creasingLines.selectedOptions[0]) {
+            parts.push('오시: ' + creasingLines.selectedOptions[0].text);
+        }
+    }
+
+    return parts.join('\n');
+}
+
+/**
+ * 포스터 규격 정보 생성
+ */
+function buildLittleprintSpecification() {
+    const parts = [];
+
+    // 색상
+    const myType = document.getElementById('MY_type');
+    if (myType && myType.selectedOptions[0]) {
+        parts.push(myType.selectedOptions[0].text);
+    }
+
+    // 용지
+    const section = document.getElementById('Section');
+    if (section && section.selectedOptions[0]) {
+        parts.push(section.selectedOptions[0].text);
+    }
+
+    // 규격
+    const pnType = document.getElementById('PN_type');
+    if (pnType && pnType.selectedOptions[0]) {
+        parts.push(pnType.selectedOptions[0].text);
+    }
+
+    // 인쇄면
+    const poType = document.getElementById('POtype');
+    if (poType && poType.selectedOptions[0]) {
+        parts.push(poType.selectedOptions[0].text);
+    }
+
+    // 편집비
+    const orderType = document.getElementById('ordertype');
+    if (orderType && orderType.selectedOptions[0]) {
+        parts.push(orderType.selectedOptions[0].text);
+    }
+
+    // 추가 옵션 (코팅, 접지, 오시)
+    const coatingEnabled = document.getElementById('coating_enabled');
+    if (coatingEnabled && coatingEnabled.checked) {
+        const coatingType = document.getElementById('coating_type');
+        if (coatingType && coatingType.selectedOptions[0]) {
+            parts.push('코팅: ' + coatingType.selectedOptions[0].text);
+        }
+    }
+
+    const foldingEnabled = document.getElementById('folding_enabled');
+    if (foldingEnabled && foldingEnabled.checked) {
+        const foldingType = document.getElementById('folding_type');
+        if (foldingType && foldingType.selectedOptions[0]) {
+            parts.push('접지: ' + foldingType.selectedOptions[0].text);
+        }
+    }
+
+    const creasingEnabled = document.getElementById('creasing_enabled');
+    if (creasingEnabled && creasingEnabled.checked) {
+        const creasingLines = document.getElementById('creasing_lines');
+        if (creasingLines && creasingLines.selectedOptions[0]) {
+            parts.push('오시: ' + creasingLines.selectedOptions[0].text);
+        }
+    }
+
+    return parts.join('\n');
+}
+
+/**
+ * 상품권 규격 정보 생성
+ */
+function buildMerchandisebondSpecification() {
+    const parts = [];
+
+    // 종류
+    const myType = document.getElementById('MY_type');
+    if (myType && myType.selectedOptions[0]) {
+        parts.push(myType.selectedOptions[0].text);
+    }
+
+    // 용지
+    const section = document.getElementById('Section');
+    if (section && section.selectedOptions[0]) {
+        parts.push(section.selectedOptions[0].text);
+    }
+
+    // 인쇄면
+    const poType = document.getElementById('POtype');
+    if (poType && poType.selectedOptions[0]) {
+        parts.push(poType.selectedOptions[0].text);
+    }
+
+    // 편집비
+    const orderType = document.getElementById('ordertype');
+    if (orderType && orderType.selectedOptions[0]) {
+        parts.push(orderType.selectedOptions[0].text);
+    }
+
+    // 프리미엄 옵션 (박, 넘버링, 미싱, 귀둥글이, 오시)
+    const foilEnabled = document.getElementById('foil_enabled');
+    if (foilEnabled && foilEnabled.checked) {
+        const foilType = document.getElementById('foil_type');
+        if (foilType && foilType.selectedOptions[0]) {
+            parts.push('박: ' + foilType.selectedOptions[0].text);
+        }
+    }
+
+    const numberingEnabled = document.getElementById('numbering_enabled');
+    if (numberingEnabled && numberingEnabled.checked) {
+        const numberingType = document.getElementById('numbering_type');
+        if (numberingType && numberingType.selectedOptions[0]) {
+            parts.push('넘버링: ' + numberingType.selectedOptions[0].text);
+        }
+    }
+
+    const perforationEnabled = document.getElementById('perforation_enabled');
+    if (perforationEnabled && perforationEnabled.checked) {
+        const perforationType = document.getElementById('perforation_type');
+        if (perforationType && perforationType.selectedOptions[0]) {
+            parts.push('미싱: ' + perforationType.selectedOptions[0].text);
+        }
+    }
+
+    const roundingEnabled = document.getElementById('rounding_enabled');
+    if (roundingEnabled && roundingEnabled.checked) {
+        const roundingType = document.getElementById('rounding_type');
+        if (roundingType && roundingType.selectedOptions[0]) {
+            parts.push('귀둥글이: ' + roundingType.selectedOptions[0].text);
+        }
+    }
+
+    const creasingEnabled = document.getElementById('creasing_enabled');
+    if (creasingEnabled && creasingEnabled.checked) {
+        const creasingType = document.getElementById('creasing_type');
+        if (creasingType && creasingType.selectedOptions[0]) {
+            parts.push('오시: ' + creasingType.selectedOptions[0].text);
+        }
+    }
+
+    return parts.join('\n');
+}
+
+/**
+ * NCR양식 규격 정보 생성
+ */
+function buildNcrflambeauSpecification() {
+    const parts = [];
+
+    // 종류/색상
+    const myType = document.getElementById('MY_type');
+    if (myType && myType.selectedOptions[0]) {
+        parts.push(myType.selectedOptions[0].text);
+    }
+
+    // 용지
+    const myFsd = document.getElementById('MY_Fsd');
+    if (myFsd && myFsd.selectedOptions[0]) {
+        parts.push(myFsd.selectedOptions[0].text);
+    }
+
+    // 규격
+    const pnType = document.getElementById('PN_type');
+    if (pnType && pnType.selectedOptions[0]) {
+        parts.push(pnType.selectedOptions[0].text);
+    }
+
+    // 편집비
+    const orderType = document.getElementById('ordertype');
+    if (orderType && orderType.selectedOptions[0]) {
+        parts.push(orderType.selectedOptions[0].text);
+    }
+
+    // 추가 옵션 (접지, 오시)
+    const foldingEnabled = document.getElementById('folding_enabled');
+    if (foldingEnabled && foldingEnabled.checked) {
+        const foldingType = document.getElementById('folding_type');
+        if (foldingType && foldingType.selectedOptions[0]) {
+            parts.push('접지: ' + foldingType.selectedOptions[0].text);
+        }
+    }
+
+    const creasingEnabled = document.getElementById('creasing_enabled');
+    if (creasingEnabled && creasingEnabled.checked) {
+        const creasingLines = document.getElementById('creasing_lines');
+        if (creasingLines && creasingLines.selectedOptions[0]) {
+            parts.push('오시: ' + creasingLines.selectedOptions[0].text);
+        }
     }
 
     return parts.join('\n');

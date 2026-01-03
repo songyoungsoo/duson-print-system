@@ -452,6 +452,17 @@ function calculatePrice(isAuto = true) {
             const priceData = response.data;
             currentPriceData = priceData;
 
+            // 🔧 quotation-modal-common.js 호환을 위해 window 객체에도 설정
+            // 표준 속성명 추가 (Order_PriceForm, Total_PriceForm)
+            window.currentPriceData = {
+                ...priceData,
+                Order_PriceForm: priceData.total_price,
+                Total_PriceForm: Math.round(priceData.total_with_vat),
+                price: priceData.total_price,
+                price_vat: Math.round(priceData.total_with_vat),
+                vat_price: Math.round(priceData.total_with_vat)
+            };
+
             // 서버에서 이미 추가 옵션이 포함된 가격을 반환하므로 여기서 다시 더하지 않음
             console.log('가격 계산 완료:', {
                 base_price: priceData.base_price,
