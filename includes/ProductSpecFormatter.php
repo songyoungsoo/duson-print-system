@@ -33,7 +33,13 @@ class ProductSpecFormatter {
         }
 
         // ✅ Phase 3-3: 버전 체크 - 신규 vs 레거시 (강화된 폴백)
-        if (isset($item['data_version']) && $item['data_version'] == 2) {
+        // data_version=2이거나, data_version이 없어도 표준 필드가 있으면 표준 포맷 시도
+        $hasStandardFields = !empty($item['spec_type']) || !empty($item['spec_material']) ||
+                             !empty($item['spec_size']) || !empty($item['quantity_display']);
+
+        $shouldTryStandard = (isset($item['data_version']) && $item['data_version'] == 2) || $hasStandardFields;
+
+        if ($shouldTryStandard) {
             $standardResult = $this->formatStandardized($item);  // 신규 표준 포맷
 
             // ✅ Phase 3-3: 표준 필드가 모두 비어있으면 레거시로 폴백
@@ -42,6 +48,7 @@ class ProductSpecFormatter {
                 return $this->formatLegacy($item);
             }
 
+            error_log("Phase 3-3: 표준 포맷 사용 - product_type: " . ($item['product_type'] ?? 'unknown') . ", has_data_version: " . (isset($item['data_version']) ? 'yes' : 'no'));
             return $standardResult;
         }
 

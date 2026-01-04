@@ -23,6 +23,7 @@ mysqli_set_charset($connect, 'utf8mb4');
 include "../mlangprintauto/shop_temp_helper.php";
 include "../includes/upload_config.php";
 require_once __DIR__ . '/../includes/StandardUploadHandler.php';
+require_once __DIR__ . '/../includes/DataAdapter.php';  // Phase 2: 데이터 표준화
 // upload_path_manager.php는 사용하지 않음 (안전 모드)
 
 try {
@@ -197,216 +198,43 @@ try {
         $max_result = mysqli_query($connect, "SELECT MAX(no) as max_no FROM mlangorder_printauto");
         $max_row = mysqli_fetch_assoc($max_result);
         $new_no = ($max_row['max_no'] ?? 0) + 1;
-        
-        // 상품 타입별 정보 구성
-        $product_info = '';
-        $product_type_name = '';
-        
-        switch ($item['product_type']) {
-            case 'sticker':
-                $product_type_name = '스티커';
-                
-                // 스티커 데이터 디버깅
-                error_log("스티커 주문 처리 - 원본 데이터: " . json_encode($item, JSON_UNESCAPED_UNICODE));
-                
-                // 스티커 데이터 추출 (안전한 방식)
-                $jong = !empty($item['jong']) ? $item['jong'] : '정보없음';
-                $garo = !empty($item['garo']) ? intval($item['garo']) : 0;
-                $sero = !empty($item['sero']) ? intval($item['sero']) : 0;
-                $mesu = !empty($item['mesu']) ? intval($item['mesu']) : 0;
-                $domusong = !empty($item['domusong']) ? $item['domusong'] : '정보없음';
-                $uhyung = !empty($item['uhyung']) ? intval($item['uhyung']) : 0;
-                
-                // 스티커 데이터를 JSON 형태로 구조화
-                $sticker_data = [
-                    'product_type' => 'sticker',
-                    'order_details' => [
-                        'jong' => $jong,
-                        'garo' => $garo,
-                        'sero' => $sero,
-                        'mesu' => $mesu,
-                        'domusong' => $domusong,
-                        'uhyung' => $uhyung
-                    ],
-                    'formatted_display' => "재질: $jong\n" .
-                                         "크기: {$garo}mm × {$sero}mm\n" .
-                                         "수량: " . number_format($mesu) . "매\n" .
-                                         "모양: $domusong\n" .
-                                         "편집비: " . number_format($uhyung) . "원",
-                    'created_at' => date('Y-m-d H:i:s')
-                ];
-                
-                $product_info = json_encode($sticker_data, JSON_UNESCAPED_UNICODE);
-                error_log("스티커 주문 처리 - 최종 JSON: " . $product_info);
-                break;
-                
-            case 'cadarok':
-                $product_type_name = '카다록';
-                $type_name = getCategoryName($connect, $item['MY_type']);
-                $style_name = getCategoryName($connect, $item['MY_Fsd']);
-                $section_name = getCategoryName($connect, $item['PN_type']);
-                $product_info = "구분: $type_name\n";
-                $product_info .= "규격: $style_name\n";
-                $product_info .= "종이종류: $section_name\n";
-                $product_info .= "수량: " . ($item['MY_amount'] ?? '') . "부\n";
-                $product_info .= "주문방법: " . ($item['ordertype'] == 'total' ? '디자인+인쇄' : '인쇄만');
-                break;
-                
-            case 'leaflet':
-            case 'inserted':
-                $product_type_name = '전단지';
-                $color_name = getCategoryName($connect, $item['MY_type']);
-                $paper_name = getCategoryName($connect, $item['MY_Fsd']);
-                $size_name = getCategoryName($connect, $item['PN_type']);
-                $sides = $item['POtype'] == '1' ? '단면' : '양면';
-                $design = ($item['ordertype'] == 'total' ? '디자인+인쇄' : '인쇄만');
 
-                // ★ 전단지 수량 표시: "X연 (Y매)" 형식
-                // quantityTwo 또는 mesu에서 매수 가져오기
-                $reams = $item['MY_amount'] ?? 0;
-                $sheets = intval($item['quantityTwo'] ?? $item['mesu'] ?? 0); // Here's the key line!
-
-                if ($sheets > 0) {
-                    $qty_display = number_format($reams, 1) . "연 (" . number_format($sheets) . "매)";
-                } else {
-                    // 매수 정보가 없으면 연 수만 표시
-                    $qty_display = number_format($reams, 1) . "연";
-                }
-
-                // 🔧 FIX: JSON 형식으로 저장하여 OrderComplete에서 일관되게 처리
-                $leaflet_data = [
-                    'product_type' => 'inserted',
-                    'MY_type' => $item['MY_type'],
-                    'MY_Fsd' => $item['MY_Fsd'],
-                    'PN_type' => $item['PN_type'],
-                    'POtype' => $item['POtype'],
-                    'MY_amount' => $item['MY_amount'], // Ream count
-                    'mesu' => $sheets,  // Sheet count is stored as 'mesu' now! (FIXED)
-                    'ordertype' => $item['ordertype'],
-                    'formatted_display' => // "인쇄색상: $color_name\n" . // REMOVED as per user request
-                                          "용지: $paper_name\n" .
-                                          "규격: $size_name\n" .
-                                          "인쇄면: $sides\n" .
-                                          "수량: $qty_display\n" .
-                                          "디자인: $design",
-                    'created_at' => date('Y-m-d H:i:s')
-                ];
-
-                $product_info = json_encode($leaflet_data, JSON_UNESCAPED_UNICODE);
-                break;
-                
-            case 'namecard':
-                $product_type_name = '명함';
-                $type_name = getCategoryName($connect, $item['MY_type']);
-                $paper_name = getCategoryName($connect, $item['MY_Fsd']);
-                $sides = $item['POtype'] == '1' ? '단면' : '양면';
-                $product_info = "명함종류: $type_name\n";
-                $product_info .= "명함재질: $paper_name\n";
-                $product_info .= "인쇄면: $sides\n";
-                $product_info .= "수량: " . ($item['MY_amount'] ?? '') . ($item['unit'] ?? '매') . "\n";
-                $product_info .= "편집디자인: " . ($item['ordertype'] == 'total' ? '디자인+인쇄' : '인쇄만');
-                break;
-
-            case 'envelope':
-                $product_type_name = '봉투';
-
-                // 🔧 FIX: Use pre-stored *_name fields from shop_temp instead of getCategoryName
-                $type_name = $item['MY_type_name'] ?? getCategoryName($connect, $item['MY_type']);
-                $paper_name = $item['Section_name'] ?? getCategoryName($connect, $item['Section'] ?? $item['MY_Fsd']);
-                $print_name = $item['POtype_name'] ?? getCategoryName($connect, $item['POtype']);
-                $design = ($item['ordertype'] === 'total' ? '디자인+인쇄' : '인쇄만');
-
-                // 🔧 FIX: JSON 형식으로 저장 (Korean names included)
-                $envelope_data = [
-                    'product_type' => 'envelope',
-                    'MY_type' => $item['MY_type'],
-                    'MY_type_name' => $type_name,
-                    'Section' => $item['Section'] ?? $item['MY_Fsd'],
-                    'Section_name' => $paper_name,
-                    'MY_amount' => $item['MY_amount'],
-                    'POtype' => $item['POtype'],
-                    'POtype_name' => $print_name,
-                    'ordertype' => $item['ordertype'],
-                    'formatted_display' => "타입: $type_name\n" .
-                                          "용지: $paper_name\n" .
-                                          "수량: " . number_format($item['MY_amount']) . ($item['unit'] ?? '매') . "\n" .
-                                          "인쇄: $print_name\n" .
-                                          "디자인: $design",
-                    'created_at' => date('Y-m-d H:i:s')
-                ];
-
-                $product_info = json_encode($envelope_data, JSON_UNESCAPED_UNICODE);
-                break;
-
-            case 'msticker':
-                $product_type_name = '자석스티커';
-                $type_name = getCategoryName($connect, $item['MY_type']);
-                $size_name = getCategoryName($connect, $item['PN_type']);
-                $product_info = "종류: $type_name\n";
-                $product_info .= "규격: $size_name\n";
-                $product_info .= "수량: " . ($item['MY_amount'] ?? '') . ($item['unit'] ?? '매') . "\n";
-                $product_info .= "편집디자인: " . ($item['ordertype'] == 'total' ? '디자인+인쇄' : '인쇄만');
-                break;
-                
-            case 'ncrflambeau':
-                $product_type_name = '양식지/NCR';
-                $type_name = getCategoryName($connect, $item['MY_type']);
-                $size_name = getCategoryName($connect, $item['MY_Fsd']);
-                $color_name = getCategoryName($connect, $item['PN_type']);
-                $product_info = "구분: $type_name\n";
-                $product_info .= "규격: $size_name\n";
-                $product_info .= "색상: $color_name\n";
-                $product_info .= "수량: " . ($item['MY_amount'] ?? '') . "권\n";
-                $product_info .= "편집디자인: " . ($item['ordertype'] == 'total' ? '디자인+인쇄' : '인쇄만');
-                break;
-                
-            case 'merchandisebond':
-                $product_type_name = '상품권/쿠폰';
-                $type_name = getCategoryName($connect, $item['MY_type']);
-                $sides = $item['POtype'] == '1' ? '단면' : '양면';
-                $after_name = getCategoryName($connect, $item['PN_type']);
-                $product_info = "종류: $type_name\n";
-                $product_info .= "수량: " . ($item['MY_amount'] ?? '') . ($item['unit'] ?? '매') . "\n";
-                $product_info .= "인쇄면: $sides\n";
-                $product_info .= "후가공: $after_name\n";
-                $product_info .= "편집디자인: " . ($item['ordertype'] == 'total' ? '디자인+인쇄' : '인쇄만');
-                break;
-
-            case 'littleprint':
-            case 'poster':  // 레거시 호환 (기존 poster로 저장된 데이터 처리)
-                $product_type_name = '포스터';
-                $type_name = getCategoryName($connect, $item['MY_type']);
-                $paper_name = getCategoryName($connect, $item['Section'] ?? $item['MY_Fsd']);
-                $size_name = getCategoryName($connect, $item['PN_type']);
-                $design = ($item['ordertype'] == 'total' ? '디자인+인쇄' : '인쇄만');
-
-                // 🔧 FIX: JSON 형식으로 저장하여 OrderFormOrderTree.php에서 일관되게 처리
-                $poster_qty = floatval($item['MY_amount'] ?? 0);
-                $littleprint_data = [
-                    'product_type' => 'littleprint',  // 항상 littleprint로 정규화
-                    'MY_type' => $item['MY_type'],
-                    'Section' => $item['Section'] ?? $item['MY_Fsd'],
-                    'PN_type' => $item['PN_type'],
-                    'MY_amount' => $item['MY_amount'],
-                    'quantity' => $poster_qty,  // 🔧 수량 필드 추가
-                    'unit' => '매',  // 🔧 단위 필드 추가
-                    'ordertype' => $item['ordertype'],
-                    'formatted_display' => "구분: $type_name\n" .
-                                          "용지: $paper_name\n" .
-                                          "규격: $size_name\n" .
-                                          "수량: " . number_format($poster_qty) . "매\n" .
-                                          "디자인: $design",
-                    'created_at' => date('Y-m-d H:i:s')
-                ];
-
-                $product_info = json_encode($littleprint_data, JSON_UNESCAPED_UNICODE);
-                break;
-
-            default:
-                $product_type_name = '기타';
-                // 🔧 FIX: "상품 정보:" 텍스트 제거 - JSON만 저장 (OrderComplete에서 파싱 가능하도록)
-                $product_info = json_encode($item, JSON_UNESCAPED_UNICODE);
+        // ✅ Phase 2: 표준화된 데이터 사용 (Flat JSON 통일)
+        // 모든 제품을 동일한 flat 구조로 처리하여 OrderComplete에서 일관성 있게 파싱 가능
+        if (isset($item['data_version']) && $item['data_version'] == 2) {
+            // 신규 데이터: product_data_json 직접 사용 (이미 표준화됨)
+            $product_data = json_decode($item['product_data_json'], true);
+            error_log("Phase 2: 신규 데이터 사용 - product_type: {$item['product_type']}, data_version: 2");
+        } else {
+            // 레거시 데이터: DataAdapter로 변환
+            $product_data = DataAdapter::legacyToStandard($item, $item['product_type']);
+            error_log("Phase 2: 레거시 데이터 변환 - product_type: {$item['product_type']}, data_version: " . ($item['data_version'] ?? '1'));
         }
+
+        // ✅ Phase 3 FIX: data_version을 명시적으로 JSON에 포함 (OrderComplete에서 필수)
+        $product_data['data_version'] = isset($item['data_version']) && $item['data_version'] == 2 ? 2 : 1;
+        error_log("Phase 3 FIX: data_version 추가됨 - " . $product_data['data_version']);
+
+        // product_type_name 설정 (표시용)
+        $product_type_names = [
+            'sticker' => '스티커',
+            'namecard' => '명함',
+            'inserted' => '전단지',
+            'leaflet' => '전단지',
+            'envelope' => '봉투',
+            'cadarok' => '카다록',
+            'littleprint' => '포스터',
+            'poster' => '포스터',
+            'merchandisebond' => '상품권/쿠폰',
+            'ncrflambeau' => '양식지/NCR',
+            'msticker' => '자석스티커'
+        ];
+        $product_type_name = $product_type_names[$item['product_type']] ?? '기타';
+
+        // Flat JSON 생성 (모든 제품 통일된 구조 - nested 구조 제거)
+        $product_info = json_encode($product_data, JSON_UNESCAPED_UNICODE);
+
+        error_log("Phase 2: {$product_type_name} 주문 처리 완료 - flat JSON 길이: " . strlen($product_info) . " bytes");
         
         // 디자인 여부
         $design_info = ($item['uhyung'] == 1 || $item['ordertype'] === 'design') ? '디자인+인쇄' : '인쇄만';
@@ -438,7 +266,7 @@ try {
         
         // mlangorder_printauto 테이블에 삽입 (ImgFolder 필드 포함)
         $insert_query = "INSERT INTO mlangorder_printauto (
-            no, Type, ImgFolder, uploaded_files, Type_1, money_4, money_5, name, email, zip, zip1, zip2,
+            no, Type, product_type, ImgFolder, uploaded_files, Type_1, money_4, money_5, name, email, zip, zip1, zip2,
             phone, Hendphone, cont, date, OrderStyle, ThingCate,
             coating_enabled, coating_type, coating_price,
             folding_enabled, folding_type, folding_price,
@@ -447,7 +275,7 @@ try {
             premium_options, premium_options_total,
             envelope_tape_enabled, envelope_tape_quantity, envelope_tape_price,
             envelope_additional_options_total, unit, quantity
-        ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)";
+        ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)";
 
         $stmt = mysqli_prepare($connect, $insert_query);
         if (!$stmt) {
@@ -595,27 +423,23 @@ try {
         $st_price = strval($item['st_price'] ?? 0);
         $st_price_vat = strval($item['st_price_vat'] ?? 0);
 
-        // 35개 파라미터 타입 문자열 (손가락으로 하나씩 세기!)
-        // 1:no(i) 2:Type(s) 3:ImgFolder(s) 4:uploaded_files(s) 5:Type_1(s) 6:money_4(s) 7:money_5(s)
-        // 8:name(s) 9:email(s) 10:zip(s) 11:zip1(s) 12:zip2(s) 13:phone(s) 14:Hendphone(s)
-        // 15:cont(s) 16:date(s) 17:OrderStyle(s) 18:ThingCate(s)
-        // 19:coating_enabled(i) 20:coating_type(s) 21:coating_price(i)
-        // 22:folding_enabled(i) 23:folding_type(s) 24:folding_price(i)
-        // 25:creasing_enabled(i) 26:creasing_lines(i) 27:creasing_price(i)
-        // 28:additional_options_total(i)
-        // 29:premium_options(s) 30:premium_options_total(i)
-        // 31:envelope_tape_enabled(i) 32:envelope_tape_quantity(i) 33:envelope_tape_price(i) 34:envelope_additional_options_total(i)
-        // 35:unit(s) - 🆕 단위 필드 추가
-        // 타입: i(1)+s(17)+isi+isi+iii+i+si+iiii+s+d = 1+17+3+3+3+1+2+4+1+1 = 36
-        // 36개 파라미터 타입 문자열 (정확한 검증 완료!)
-        // 1:no(i) 2-7:Type~money_5(s×6) 8-18:name~ThingCate(s×11)
-        // 19-21:coating(isi) 22-24:folding(isi) 25-27:creasing(iii) 28:additional(i)
-        // 29-30:premium(si) 31-34:envelope(iiii) 35:unit(s) 36:quantity(d)
-        $type_string = 'isssssssssssssssssisiisiiiiisiiiiisd';
-        $type_count = strlen($type_string); // 36
+        // 37개 파라미터 타입 문자열 (손가락으로 하나씩 세기!)
+        // 1:no(i) 2:Type(s) 3:product_type(s) 4:ImgFolder(s) 5:uploaded_files(s) 6:Type_1(s) 7:money_4(s) 8:money_5(s)
+        // 9:name(s) 10:email(s) 11:zip(s) 12:zip1(s) 13:zip2(s) 14:phone(s) 15:Hendphone(s)
+        // 16:cont(s) 17:date(s) 18:OrderStyle(s) 19:ThingCate(s)
+        // 20:coating_enabled(i) 21:coating_type(s) 22:coating_price(i)
+        // 23:folding_enabled(i) 24:folding_type(s) 25:folding_price(i)
+        // 26:creasing_enabled(i) 27:creasing_lines(i) 28:creasing_price(i)
+        // 29:additional_options_total(i)
+        // 30:premium_options(s) 31:premium_options_total(i)
+        // 32:envelope_tape_enabled(i) 33:envelope_tape_quantity(i) 34:envelope_tape_price(i) 35:envelope_additional_options_total(i)
+        // 36:unit(s) 37:quantity(d)
+        // 타입: i(1)+s(18)+isi+isi+iii+i+si+iiii+s+d = 1+18+3+3+3+1+2+4+1+1 = 37
+        $type_string = 'issssssssssssssssssisiisiiiiisiiiiisd';
+        $type_count = strlen($type_string); // 37
 
         mysqli_stmt_bind_param($stmt, $type_string,
-            $new_no, $product_type_name, $img_folder_path, $uploaded_files_json, $product_info, $st_price, $st_price_vat,
+            $new_no, $product_type_name, $product_type, $img_folder_path, $uploaded_files_json, $product_info, $st_price, $st_price_vat,
             $username, $email, $postcode, $address, $full_address,
             $phone, $hendphone, $final_cont, $date, $order_style, $thing_cate,
             $coating_enabled, $coating_type, $coating_price,
@@ -625,8 +449,8 @@ try {
             $premium_options, $premium_options_total,
             $envelope_tape_enabled, $envelope_tape_quantity, $envelope_tape_price,
             $envelope_additional_options_total,
-            $unit,      // 35번째: 단위 필드
-            $quantity   // 36번째: 수량 필드 (포스터=MY_amount, 전단지=연수)
+            $unit,      // 36번째: 단위 필드
+            $quantity   // 37번째: 수량 필드 (포스터=MY_amount, 전단지=연수)
         );
         
         if (mysqli_stmt_execute($stmt)) {
