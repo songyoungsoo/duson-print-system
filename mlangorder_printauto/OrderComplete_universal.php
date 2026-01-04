@@ -400,18 +400,22 @@ function extractQuantity($order) {
         $product_type = $json_data['product_type'] ?? '';
     }
 
-    // ✅ Phase 3-2: 표준 필드 우선 사용 (신규 주문 data_version=2)
-    if ($json_data && isset($json_data['data_version']) && $json_data['data_version'] == 2) {
+    // ✅ Phase 3-2: 표준 필드 우선 사용 (신규 주문 data_version=2 OR 표준 필드 존재)
+    // ProductSpecFormatter와 동일한 로직: data_version 없어도 quantity_display 있으면 사용
+    $hasQuantityDisplay = !empty($json_data['quantity_display']);
+    $shouldTryStandard = (isset($json_data['data_version']) && $json_data['data_version'] == 2) || $hasQuantityDisplay;
+
+    if ($json_data && $shouldTryStandard) {
         // 신규 주문: quantity_display 직접 사용
         if (!empty($json_data['quantity_display'])) {
-            error_log("Phase 3-2: quantity_display 사용 - " . $json_data['quantity_display']);
+            error_log("Phase 3-2 FIX: quantity_display 사용 - " . $json_data['quantity_display'] . ", has_data_version: " . (isset($json_data['data_version']) ? 'yes' : 'no'));
             return htmlspecialchars($json_data['quantity_display']);
         }
         // quantity_display가 없으면 quantity_value + quantity_unit 조합
         if (isset($json_data['quantity_value']) && !empty($json_data['quantity_unit'])) {
             $qty_value = formatQuantityValue($json_data['quantity_value'], $product_type);
             $qty_display = $qty_value . $json_data['quantity_unit'];
-            error_log("Phase 3-2: quantity_value+unit 조합 - " . $qty_display);
+            error_log("Phase 3-2 FIX: quantity_value+unit 조합 - " . $qty_display);
             return htmlspecialchars($qty_display);
         }
     }
