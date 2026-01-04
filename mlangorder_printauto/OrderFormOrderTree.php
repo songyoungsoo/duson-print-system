@@ -1429,7 +1429,17 @@ function getOrderItemInfo($summary_item, $specFormatter) {
                 <?php if ($no) { ?>
 
                 <!-- ===== 주문 상품 테이블 ===== -->
-                <table style="width: 100%; border-collapse: collapse; margin-bottom: 15px; border: 2px solid #333;">
+                <table id="order-products-table" style="width: 100%; table-layout: fixed; border-collapse: collapse; margin-bottom: 15px; border: 2px solid #333;">
+                    <!-- 🎯 colgroup으로 컬럼 폭 강제 지정 (품목 +3%, 공급가액 -3%) -->
+                    <colgroup>
+                        <col style="width: 5%;">
+                        <col style="width: 15%;">
+                        <col style="width: 40%;">
+                        <col style="width: 10%;">
+                        <col style="width: 8%;">
+                        <col style="width: 10%;">
+                        <col style="width: 12%;">
+                    </colgroup>
                     <tr style="background: #4472C4;">
                         <td colspan="7" style="padding: 10px 15px; color: #fff; font-size: 14px; font-weight: bold;">
                             주문 상품 정보
@@ -1443,13 +1453,13 @@ function getOrderItemInfo($summary_item, $specFormatter) {
                     } else {
                     ?>
                     <tr style="background: #E0E0E0;">
-                        <th style="width: 4%; border: 1px solid #999; padding: 8px; font-size: 11px; text-align: center;">NO</th>
-                        <th style="width: 8%; border: 1px solid #999; padding: 8px; font-size: 11px; text-align: center;">품목</th>
-                        <th style="width: 48%; border: 1px solid #999; padding: 8px; font-size: 11px; text-align: left;">규격/옵션</th>
-                        <th style="width: 12%; border: 1px solid #999; padding: 8px; font-size: 11px; text-align: center;">수량</th>
-                        <th style="width: 5%; border: 1px solid #999; padding: 8px; font-size: 11px; text-align: center;">단위</th>
-                        <th style="width: 11%; border: 1px solid #999; padding: 8px; font-size: 11px; text-align: right;">인쇄비</th>
-                        <th style="width: 12%; border: 1px solid #999; padding: 8px; font-size: 11px; text-align: right;">공급가액</th>
+                        <th style="border: 1px solid #999; padding: 8px; font-size: 11px; text-align: center;">NO</th>
+                        <th style="border: 1px solid #999; padding: 8px; font-size: 11px; text-align: center;">품목</th>
+                        <th style="border: 1px solid #999; padding: 8px; font-size: 11px; text-align: left;">규격/옵션</th>
+                        <th style="border: 1px solid #999; padding: 8px; font-size: 11px; text-align: center;">수량</th>
+                        <th style="border: 1px solid #999; padding: 8px; font-size: 11px; text-align: center;">단위</th>
+                        <th style="border: 1px solid #999; padding: 8px; font-size: 11px; text-align: right;">인쇄비</th>
+                        <th style="border: 1px solid #999; padding: 8px; font-size: 11px; text-align: right;">공급가액</th>
                     </tr>
                     <?php
                                         // 각 주문 아이템을 표의 행으로 표시

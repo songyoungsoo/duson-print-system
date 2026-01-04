@@ -721,7 +721,8 @@ if ($mode == "OrderView") {
         }
 
         /* 기존 테이블 스타일 개선 */
-        table {
+        /* ⚠️ 주문 상품 테이블은 제외 (OrderFormOrderTree.php의 인라인 스타일 우선) */
+        table:not(#order-products-table) {
             width: 100%;
             border-collapse: collapse;
             background: white;
@@ -730,10 +731,21 @@ if ($mode == "OrderView") {
             box-shadow: 0 2px 4px rgba(0,0,0,0.1);
         }
 
-        td {
+        td:not(#order-products-table td):not(#order-products-table th) {
             padding: 15px;
             border-bottom: 1px solid #e9ecef;
             vertical-align: top;
+        }
+
+        /* 🎯 주문 상품 테이블 전용 스타일 - 최고 우선순위로 강제 적용 */
+        #order-products-table {
+            table-layout: fixed !important;
+        }
+
+        #order-products-table th,
+        #order-products-table td {
+            overflow: hidden !important;
+            text-overflow: ellipsis !important;
         }
 
         /* 텍스트 영역 스타일 개선 */
