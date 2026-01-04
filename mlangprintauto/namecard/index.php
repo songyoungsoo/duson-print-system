@@ -355,11 +355,11 @@ if ($type_result && ($type_row = mysqli_fetch_assoc($type_result))) {
 
     <!-- 명함 전용 스크립트만 유지 (계산 로직 절대 건드리지 않음) -->
 
-    <!-- 명함 전용 스크립트 -->
-    <script src="js/namecard-compact.js"></script>
-
-    <!-- 🆕 프리미엄 옵션 JavaScript 추가 -->
+    <!-- 🆕 프리미엄 옵션 JavaScript (먼저 로드해야 함) -->
     <script src="js/namecard-premium-options.js"></script>
+
+    <!-- 명함 전용 스크립트 -->
+    <script src="js/namecard-compact.js?v=<?php echo time(); ?>"></script>
 
     <!-- 공통 업로드 모달 JavaScript -->
     <script src="../../includes/upload_modal.js"></script>
