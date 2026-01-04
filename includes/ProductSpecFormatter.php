@@ -24,16 +24,94 @@ class ProductSpecFormatter {
      * @return array ['line1' => '규격', 'line2' => '옵션', 'additional' => '추가옵션']
      */
     public function format($item) {
-        $productType = $item['product_type'] ?? '';
-
         // Type_1 JSON 파싱 (mlangorder_printauto에서 가져온 경우)
         if (!empty($item['Type_1']) && is_string($item['Type_1'])) {
             $type1Data = json_decode($item['Type_1'], true);
             if ($type1Data && is_array($type1Data)) {
                 $item = array_merge($item, $type1Data);
-                $productType = $type1Data['product_type'] ?? $productType;
             }
         }
+
+        // ✅ Phase 3-3: 버전 체크 - 신규 vs 레거시 (강화된 폴백)
+        if (isset($item['data_version']) && $item['data_version'] == 2) {
+            $standardResult = $this->formatStandardized($item);  // 신규 표준 포맷
+
+            // ✅ Phase 3-3: 표준 필드가 모두 비어있으면 레거시로 폴백
+            if (empty($standardResult['line1']) && empty($standardResult['line2'])) {
+                error_log("Phase 3-3: 표준 필드 비어있음, 레거시로 폴백 - product_type: " . ($item['product_type'] ?? 'unknown'));
+                return $this->formatLegacy($item);
+            }
+
+            return $standardResult;
+        }
+
+        return $this->formatLegacy($item);  // 레거시 포맷 (10만+ 기존 주문)
+    }
+
+    /**
+     * ✅ Phase 3: 표준화된 데이터 포맷 (모든 제품 동일 로직)
+     * @param array $item 표준 필드가 있는 데이터
+     * @return array ['line1' => '규격', 'line2' => '옵션', 'additional' => '추가옵션']
+     */
+    private function formatStandardized($item) {
+        // 1줄: 규격 정보 (spec_type / spec_material / spec_size)
+        $line1_parts = array_filter([
+            $item['spec_type'] ?? '',
+            $item['spec_material'] ?? '',
+            $item['spec_size'] ?? ''
+        ]);
+
+        // 2줄: 옵션 정보 (spec_sides / quantity_display / spec_design)
+        $line2_parts = array_filter([
+            $item['spec_sides'] ?? '',
+            $item['quantity_display'] ?? '',
+            $item['spec_design'] ?? ''
+        ]);
+
+        // 추가 옵션 처리 (제품 타입별로 적절한 포맷터 호출)
+        $additional = $this->formatStandardOptions($item);
+
+        return [
+            'line1' => implode(' / ', $line1_parts),
+            'line2' => implode(' / ', $line2_parts),
+            'additional' => $additional
+        ];
+    }
+
+    /**
+     * ✅ Phase 3: 표준 데이터의 추가 옵션 포맷 (제품별 분기)
+     */
+    private function formatStandardOptions($item) {
+        $productType = $item['product_type'] ?? '';
+
+        // 프리미엄 옵션 제품: 명함, 상품권, NCR
+        if (in_array($productType, ['namecard', 'merchandisebond', 'ncrflambeau'])) {
+            return $this->formatPremiumOptions($item);
+        }
+
+        // 추가 옵션 제품: 전단지, 카다록, 포스터
+        if (in_array($productType, ['inserted', 'leaflet', 'cadarok', 'littleprint', 'poster'])) {
+            return $this->formatAdditionalOptions($item);
+        }
+
+        // 봉투: 양면테이프 처리
+        if ($productType === 'envelope') {
+            if (!empty($item['envelope_tape_enabled']) && $item['envelope_tape_enabled'] == 1) {
+                $tapeQty = intval($item['envelope_tape_quantity'] ?? 0);
+                return $tapeQty > 0 ? "양면테이프: " . number_format($tapeQty) . "개" : "양면테이프";
+            }
+        }
+
+        return '';
+    }
+
+    /**
+     * ✅ Phase 3: 레거시 데이터 포맷 (기존 10만+ 주문 호환)
+     * @param array $item 레거시 필드가 있는 데이터
+     * @return array ['line1' => '규격', 'line2' => '옵션', 'additional' => '추가옵션']
+     */
+    private function formatLegacy($item) {
+        $productType = $item['product_type'] ?? '';
 
         // 레거시 스티커 감지
         if (empty($productType) && !empty($item['jong']) && !empty($item['garo']) && !empty($item['sero'])) {
@@ -363,28 +441,28 @@ class ProductSpecFormatter {
 
     /**
      * NCR양식지
-     * 1줄: 규격 / 용도
-     * 2줄: 인쇄도수 / 수량 / 디자인
+     * 1줄: 타입 / 용지
+     * 2줄: 도수 / 수량 / 디자인
+     * 필드 매핑: MY_type=도수, PN_type=타입, MY_Fsd=용지
      */
     private function formatNCR($item) {
         $line1Parts = [];
         $line2Parts = [];
 
-        // 1줄: 규격
-        if (!empty($item['MY_type'])) {
-            $name = $item['MY_type_name'] ?? $this->getKoreanName($item['MY_type']);
-            if ($name) $line1Parts[] = $name;
-        }
-        if (!empty($item['MY_Fsd']) || !empty($item['Section'])) {
-            $code = $item['MY_Fsd'] ?? $item['Section'];
-            $name = $item['Section_name'] ?? $this->getKoreanName($code);
-            if ($name) $line1Parts[] = $name;
-        }
-
-        // 2줄: 옵션
+        // 1줄: 타입 / 용지
         if (!empty($item['PN_type'])) {
             $name = $item['PN_type_name'] ?? $this->getKoreanName($item['PN_type']);
-            if ($name) $line2Parts[] = $name;
+            if ($name) $line1Parts[] = $name;  // 타입
+        }
+        if (!empty($item['MY_Fsd'])) {
+            $name = $item['MY_Fsd_name'] ?? $this->getKoreanName($item['MY_Fsd']);
+            if ($name) $line1Parts[] = $name;  // 용지
+        }
+
+        // 2줄: 도수 / 수량 / 디자인
+        if (!empty($item['MY_type'])) {
+            $name = $item['MY_type_name'] ?? $this->getKoreanName($item['MY_type']);
+            if ($name) $line2Parts[] = $name;  // 도수
         }
         $line2Parts[] = $this->formatQuantity($item);
         $line2Parts[] = $this->formatDesign($item);
@@ -398,24 +476,29 @@ class ProductSpecFormatter {
 
     /**
      * 상품권
-     * 1줄: 종류 / 인쇄면
-     * 2줄: 수량 / 디자인
+     * 1줄: 타입 / 용지
+     * 2줄: 인쇄면 / 수량 / 디자인
+     * 필드: MY_type=종류, Section=재질, POtype=인쇄면
      */
     private function formatVoucher($item) {
         $line1Parts = [];
         $line2Parts = [];
 
-        // 1줄: 규격
+        // 1줄: 타입 / 용지 (Section 사용!)
         if (!empty($item['MY_type'])) {
             $name = $item['MY_type_name'] ?? $this->getKoreanName($item['MY_type']);
             if ($name) $line1Parts[] = $name;
         }
-        if (!empty($item['POtype'])) {
-            $name = $item['POtype_name'] ?? ($item['POtype'] == '1' ? '단면' : '양면');
-            $line1Parts[] = $name;
+        if (!empty($item['Section'])) {
+            $name = $item['Section_name'] ?? $this->getKoreanName($item['Section']);
+            if ($name) $line1Parts[] = $name;
         }
 
-        // 2줄: 옵션
+        // 2줄: 인쇄면 / 수량 / 디자인
+        if (!empty($item['POtype'])) {
+            $name = $item['POtype_name'] ?? ($item['POtype'] == '1' ? '단면' : '양면');
+            $line2Parts[] = $name;
+        }
         $line2Parts[] = $this->formatQuantity($item);
         $line2Parts[] = $this->formatDesign($item);
 
@@ -455,12 +538,24 @@ class ProductSpecFormatter {
     // ========== 공통 헬퍼 ==========
 
     /**
-     * 수량 포맷팅
+     * 수량 포맷팅 (규격/사양 텍스트용)
      */
     private function formatQuantity($item) {
         $productType = $item['product_type'] ?? '';
 
-        // 전단지/리플렛: 연 단위
+        // 레거시 스티커 감지
+        if (empty($productType) && !empty($item['jong']) && !empty($item['garo']) && !empty($item['sero'])) {
+            $productType = 'sticker';
+        }
+
+        // 1. 스티커: mesu 최우선 사용 - 단위 없이 숫자만 표시
+        if (in_array($productType, ['sticker', 'msticker', 'msticker_01'])) {
+            if (!empty($item['mesu'])) {
+                return number_format(intval($item['mesu']));  // 단위 제거
+            }
+        }
+
+        // 2. 전단지/리플렛: 연 단위
         if (in_array($productType, ['inserted', 'leaflet'])) {
             $reams = floatval($item['MY_amount'] ?? 0);
             $sheets = intval($item['mesu'] ?? $item['quantityTwo'] ?? 0);
@@ -478,12 +573,7 @@ class ProductSpecFormatter {
             }
         }
 
-        // 스티커: mesu 사용
-        if (!empty($item['mesu'])) {
-            return number_format(intval($item['mesu'])) . '매';
-        }
-
-        // 기타: MY_amount 사용
+        // 3. 기타: MY_amount 사용
         if (!empty($item['MY_amount'])) {
             $amount = floatval($item['MY_amount']);
             $unit = $item['unit'] ?? '매';
@@ -665,51 +755,73 @@ class ProductSpecFormatter {
     /**
      * 수량 추출 (견적서/장바구니용)
      * 전단지/리플렛: MY_amount를 "연" 단위 그대로 반환 (0.5연)
-     * 기타 상품: 정수로 변환
+     * 스티커: mesu를 "매" 단위로 반환 (1000)
+     * 기타 상품: MY_amount를 정수로 변환
      */
     public static function getQuantity($item) {
         $productType = $item['product_type'] ?? '';
 
-        // 전단지/리플렛은 MY_amount("연" 단위) 우선 사용
+        // 레거시 스티커 감지
+        if (empty($productType) && !empty($item['jong']) && !empty($item['garo']) && !empty($item['sero'])) {
+            $productType = 'sticker';
+        }
+
+        // 1. 스티커: mesu("매" 단위) 최우선 사용 - productType 명시적 체크
+        if (in_array($productType, ['sticker', 'msticker', 'msticker_01'])) {
+            if (!empty($item['mesu'])) {
+                return intval($item['mesu']);  // 500, 1000 등 매수
+            }
+        }
+
+        // 2. 전단지/리플렛: MY_amount("연" 단위) 사용
         if (in_array($productType, ['inserted', 'leaflet'])) {
             if (!empty($item['MY_amount'])) {
                 return floatval($item['MY_amount']);  // 0.5, 1, 2 등 그대로
             }
         }
 
-        // 스티커는 mesu 사용
-        if (!empty($item['mesu'])) {
-            return intval($item['mesu']);
-        }
-
-        // 다른 상품은 MY_amount 사용
+        // 3. 다른 상품: MY_amount 사용
         if (!empty($item['MY_amount'])) {
             $amount = floatval($item['MY_amount']);
 
-            // 기타 상품: 10 미만이면 천 단위로 해석
+            // 명함, 봉투 등: 10 미만이면 천 단위로 해석 (1 → 1000)
             if ($amount > 0 && $amount < 10) {
                 return intval($amount * 1000);
             }
             return intval($amount);
         }
 
-        // quantity 필드
+        // 4. quantity 필드 (폴백)
         if (!empty($item['quantity'])) {
             return intval($item['quantity']);
         }
+
         return 1;
     }
 
     /**
      * 수량 표시용 (장바구니 형식)
      * 전단지/리플렛: "0.5연 (250매)" 형식
+     * 스티커: "1,000매" 형식
      * 기타: "1,000매" 형식
      */
     public static function getQuantityDisplay($item) {
         $productType = $item['product_type'] ?? '';
         $unit = self::getUnit($item);
 
-        // 전단지/리플렛: 연 + 매수 표시
+        // 레거시 스티커 감지
+        if (empty($productType) && !empty($item['jong']) && !empty($item['garo']) && !empty($item['sero'])) {
+            $productType = 'sticker';
+        }
+
+        // 1. 스티커: mesu 최우선 사용 - 단위 없이 숫자만 표시
+        if (in_array($productType, ['sticker', 'msticker', 'msticker_01'])) {
+            if (!empty($item['mesu'])) {
+                return number_format(intval($item['mesu']));  // 단위 제거
+            }
+        }
+
+        // 2. 전단지/리플렛: 연 + 매수 표시
         if (in_array($productType, ['inserted', 'leaflet'])) {
             $reams = floatval($item['MY_amount'] ?? 0);
             $sheets = intval($item['mesu'] ?? $item['quantityTwo'] ?? 0);
@@ -727,7 +839,7 @@ class ProductSpecFormatter {
             }
         }
 
-        // 기타: 수량 + 단위
+        // 3. 기타: 수량 + 단위
         $qty = self::getQuantity($item);
         return number_format($qty) . $unit;
     }
@@ -745,6 +857,7 @@ class ProductSpecFormatter {
         }
         return 0;
     }
+
 
     /**
      * 공급가액 추출 (VAT 제외)

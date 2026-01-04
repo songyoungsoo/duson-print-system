@@ -231,9 +231,23 @@ function displayProductDetails($connect, $order) {
     }
 
     if ($json_data && is_array($json_data)) {
-        // ProductSpecFormatter 사용 (규격 2줄 + 옵션 형식)
-        $item = array_merge($order, $json_data);
-        $item['product_type'] = $order['product_type'] ?? $json_data['product_type'] ?? '';
+        // ✅ Phase 3: nested structure 문제 해결 (스티커의 order_details)
+        if (isset($json_data['data_version']) && $json_data['data_version'] == 2) {
+            // 신규 데이터: flat structure, 바로 사용
+            $item = array_merge($order, $json_data);
+        } else {
+            // 레거시: nested structure 대응 (스티커만 order_details 중첩 구조)
+            if (isset($json_data['order_details'])) {
+                // 스티커 레거시 데이터: order_details 안의 데이터 추출
+                $item = array_merge($order, $json_data['order_details']);
+                $item['product_type'] = $json_data['product_type'] ?? '';
+            } else {
+                // 다른 제품: flat structure
+                $item = array_merge($order, $json_data);
+            }
+        }
+
+        $item['product_type'] = $order['product_type'] ?? $json_data['product_type'] ?? $item['product_type'] ?? '';
 
         // product_type이 없으면 데이터 구조로 추론
         if (empty($item['product_type'])) {
@@ -241,6 +255,9 @@ function displayProductDetails($connect, $order) {
                 $item['product_type'] = 'littleprint';
             } elseif (isset($json_data['MY_Fsd']) && isset($json_data['PN_type'])) {
                 $item['product_type'] = 'inserted';
+            } elseif (isset($json_data['MY_type']) && isset($json_data['Section']) && isset($json_data['POtype'])) {
+                // 봉투: MY_type + Section + POtype 조합
+                $item['product_type'] = 'envelope';
             } elseif (isset($json_data['Section']) && !isset($json_data['PN_type'])) {
                 $item['product_type'] = 'cadarok';
             }
@@ -383,6 +400,23 @@ function extractQuantity($order) {
         $product_type = $json_data['product_type'] ?? '';
     }
 
+    // ✅ Phase 3-2: 표준 필드 우선 사용 (신규 주문 data_version=2)
+    if ($json_data && isset($json_data['data_version']) && $json_data['data_version'] == 2) {
+        // 신규 주문: quantity_display 직접 사용
+        if (!empty($json_data['quantity_display'])) {
+            error_log("Phase 3-2: quantity_display 사용 - " . $json_data['quantity_display']);
+            return htmlspecialchars($json_data['quantity_display']);
+        }
+        // quantity_display가 없으면 quantity_value + quantity_unit 조합
+        if (isset($json_data['quantity_value']) && !empty($json_data['quantity_unit'])) {
+            $qty_value = formatQuantityValue($json_data['quantity_value'], $product_type);
+            $qty_display = $qty_value . $json_data['quantity_unit'];
+            error_log("Phase 3-2: quantity_value+unit 조합 - " . $qty_display);
+            return htmlspecialchars($qty_display);
+        }
+    }
+
+    // ✅ 레거시 데이터 폴백 (기존 로직 유지)
     // 전단지/리플렛 특별 처리
     $is_flyer = in_array($product_type, ['inserted', 'leaflet']) ||
                 strpos($order['Type'] ?? '', '전단') !== false ||
@@ -409,7 +443,15 @@ function extractQuantity($order) {
 
     // 다른 모든 품목: 정수로 표시
     if ($json_data && is_array($json_data)) {
-        $details = $json_data['order_details'] ?? $json_data;
+        // ✅ Phase 3: nested structure 대응 (스티커의 order_details)
+        if (isset($json_data['data_version']) && $json_data['data_version'] == 2) {
+            // 신규: flat structure
+            $details = $json_data;
+        } else {
+            // 레거시: nested structure 대응
+            $details = $json_data['order_details'] ?? $json_data;
+        }
+
         $my_amount = $details['MY_amount'] ?? null;
         $unit = $order['unit'] ?? '매';
 
