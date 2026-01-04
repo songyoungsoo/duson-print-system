@@ -79,7 +79,7 @@ class QuoteManager {
         $pattern = "{$prefix}-{$today}-%";
 
         // 오늘 생성된 문서 수 조회
-        $query = "SELECT COUNT(*) as cnt FROM quotes WHERE quote_no LIKE ?";
+        $query = "SELECT COUNT(*) as cnt FROM quotations WHERE quotation_no LIKE ?";
         $stmt = mysqli_prepare($this->db, $query);
         mysqli_stmt_bind_param($stmt, "s", $pattern);
         mysqli_stmt_execute($stmt);
@@ -103,7 +103,7 @@ class QuoteManager {
      * 견적번호 중복 체크
      */
     private function quoteNoExists($quoteNo) {
-        $query = "SELECT id FROM quotes WHERE quote_no = ? LIMIT 1";
+        $query = "SELECT id FROM quotations WHERE quotation_no = ? LIMIT 1";
         $stmt = mysqli_prepare($this->db, $query);
         mysqli_stmt_bind_param($stmt, "s", $quoteNo);
         mysqli_stmt_execute($stmt);
@@ -129,7 +129,10 @@ class QuoteManager {
         try {
             // 장바구니 아이템 조회
             $cartItems = $this->getCartItems($sessionId);
-            if (empty($cartItems)) {
+            $quoteTempItems = $this->getQuoteTempItems($sessionId);
+
+            // 장바구니 또는 quotation_temp에 최소 1개 이상의 품목이 있어야 함
+            if (empty($cartItems) && empty($quoteTempItems)) {
                 throw new Exception('장바구니가 비어있습니다.');
             }
 
@@ -138,14 +141,19 @@ class QuoteManager {
             $publicToken = $this->generatePublicToken();
             $validUntil = date('Y-m-d', strtotime('+' . ($data['valid_days'] ?? 7) . ' days'));
 
-            $query = "INSERT INTO quotes (
-                quote_no, quote_type, public_token, session_id,
+            // 🆕 Phase C: quote_source 결정
+            $quoteSource = isset($_SESSION['admin_logged_in']) && $_SESSION['admin_logged_in'] === true
+                ? 'admin_auto'
+                : 'customer';
+
+            $query = "INSERT INTO quotations (
+                quotation_no, quote_type, public_token, session_id,
                 customer_name, customer_company, customer_phone, customer_email, recipient_email,
                 delivery_type, delivery_address, delivery_price, delivery_vat,
                 supply_total, vat_total, discount_amount, discount_reason, grand_total,
                 payment_terms, valid_days, valid_until,
-                notes, status, created_by
-            ) VALUES (?, 'quotation', ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, 'draft', ?)";
+                notes, status, created_by, quote_source
+            ) VALUES (?, 'quotation', ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, 'draft', ?, ?)";
 
             $stmt = mysqli_prepare($this->db, $query);
             if (!$stmt) {
@@ -171,8 +179,8 @@ class QuoteManager {
             $notes = $data['notes'] ?? '';
             $createdBy = intval($data['created_by'] ?? 0);
 
-            // 22개 파라미터: s×10 + i×5 + s×1 + i×1 + s×1 + i×1 + s×1 + s×1 + i×1 = ssssssssssiiiiisissssi
-            mysqli_stmt_bind_param($stmt, "ssssssssssiiiiisissssi",
+            // 23개 파라미터 (Phase C): s×10 + i×5 + s×1 + i×1 + s×1 + i×1 + s×1 + i×1 + s×1 = ssssssssssiiiiisisissis
+            mysqli_stmt_bind_param($stmt, "ssssssssssiiiiisisissis",
                 $quoteNo,           // 1: s
                 $publicToken,       // 2: s
                 $sessionId,         // 3: s
@@ -194,7 +202,8 @@ class QuoteManager {
                 $validDays,         // 19: i
                 $validUntil,        // 20: s
                 $notes,             // 21: s
-                $createdBy          // 22: i
+                $createdBy,         // 22: i
+                $quoteSource        // 23: s (Phase C)
             );
 
             if (!mysqli_stmt_execute($stmt)) {
@@ -281,14 +290,19 @@ class QuoteManager {
             $publicToken = $this->generatePublicToken();
             $validUntil = date('Y-m-d', strtotime('+' . ($data['valid_days'] ?? 7) . ' days'));
 
-            $query = "INSERT INTO quotes (
-                quote_no, quote_type, public_token,
+            // 🆕 Phase C: quote_source 결정 (빈 견적서 = 수동입력)
+            $quoteSource = isset($_SESSION['admin_logged_in']) && $_SESSION['admin_logged_in'] === true
+                ? 'admin_manual'
+                : 'customer';
+
+            $query = "INSERT INTO quotations (
+                quotation_no, quote_type, public_token,
                 customer_name, customer_company, customer_phone, customer_email, recipient_email,
                 delivery_type, delivery_address, delivery_price, delivery_vat,
                 supply_total, vat_total, discount_amount, discount_reason, grand_total,
                 payment_terms, valid_days, valid_until,
-                notes, status, created_by
-            ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, 'draft', ?)";
+                notes, status, created_by, quote_source
+            ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, 'draft', ?, ?)";
 
             $stmt = mysqli_prepare($this->db, $query);
             if (!$stmt) {
@@ -315,8 +329,8 @@ class QuoteManager {
             $notes = $data['notes'] ?? '';
             $createdBy = intval($data['created_by'] ?? 0);
 
-            // 22개 파라미터: s×10 + i×5 + s×1 + i×1 + s×1 + i×1 + s×1 + s×1 + i×1 = ssssssssssiiiiisissssi
-            mysqli_stmt_bind_param($stmt, "ssssssssssiiiiisissssi",
+            // 23개 파라미터 (Phase C): s×10 + i×5 + s×1 + i×1 + s×1 + i×1 + s×1 + i×1 + s×1 = ssssssssssiiiiisisissis
+            mysqli_stmt_bind_param($stmt, "ssssssssssiiiiisisissis",
                 $quoteNo,           // 1: s
                 $quoteType,         // 2: s
                 $publicToken,       // 3: s
@@ -338,7 +352,8 @@ class QuoteManager {
                 $validDays,         // 19: i
                 $validUntil,        // 20: s
                 $notes,             // 21: s
-                $createdBy          // 22: i
+                $createdBy,         // 22: i
+                $quoteSource        // 23: s (Phase C)
             );
 
             if (!mysqli_stmt_execute($stmt)) {
@@ -424,7 +439,7 @@ class QuoteManager {
      * quotation_temp 품목 조회
      */
     private function getQuoteTempItems($sessionId) {
-        $query = "SELECT * FROM quotation_temp WHERE session_id = ? ORDER BY created_at ASC";
+        $query = "SELECT * FROM quotation_temp WHERE session_id = ? ORDER BY regdate ASC";
         $stmt = mysqli_prepare($this->db, $query);
         mysqli_stmt_bind_param($stmt, "s", $sessionId);
         mysqli_stmt_execute($stmt);
@@ -558,27 +573,29 @@ class QuoteManager {
 
         $additionalOptions = json_encode($additionalOptionsArray, JSON_UNESCAPED_UNICODE);
 
-        // ===== INSERT 쿼리 (24개 파라미터) =====
+        $isManualEntry = 0; // 🆕 Phase C: 자동계산 품목
+
+        // ===== INSERT 쿼리 (25개 파라미터) - Phase C: is_manual_entry 추가 =====
         $query = "INSERT INTO quote_items (
             quote_id, item_no, product_type, MY_type, PN_type, MY_Fsd, POtype, MY_amount, mesu,
             product_name, specification,
             quantity, unit, ordertype, unit_price, supply_price, vat_amount, total_price,
             source_type, source_id, source_data,
-            product_data, formatted_display, additional_options, additional_options_total
-        ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, 'cart', ?, ?, ?, ?, ?, ?)";
+            product_data, formatted_display, additional_options, additional_options_total, is_manual_entry
+        ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, 'cart', ?, ?, ?, ?, ?, ?, ?)";
 
         $stmt = mysqli_prepare($this->db, $query);
         $sourceData = json_encode($cartItem, JSON_UNESCAPED_UNICODE);
         $sourceId = intval($cartItem['no'] ?? 0);
 
-        // bind_param 타입 문자열: 24개 파라미터
-        // i i s s s s s d i s s d s s d i i i i s s s s i
-        mysqli_stmt_bind_param($stmt, "iisssssdiisdsdiiiisssssi",
+        // bind_param 타입 문자열: 25개 파라미터 (Phase C)
+        // i i s s s s s d i s s d s s d i i i i s s s s i i
+        mysqli_stmt_bind_param($stmt, "iisssssdissdssdiiiissssii",
             $quoteId, $itemNo, $productType, $myType, $pnType, $myFsd, $poType, $myAmount, $mesu,
             $productName, $specification,
             $quantity, $unit, $ordertype, $unitPrice, $supplyPrice, $vatAmount, $totalPrice,
             $sourceId, $sourceData,
-            $productData, $formattedDisplay, $additionalOptions, $additionalOptionsTotal
+            $productData, $formattedDisplay, $additionalOptions, $additionalOptionsTotal, $isManualEntry
         );
 
         if (!mysqli_stmt_execute($stmt)) {
@@ -628,21 +645,23 @@ class QuoteManager {
         // 5. 메모 추출
         $notes = $tempItem['MY_comment'] ?? $tempItem['work_memo'] ?? '';
 
-        // 6. DB INSERT
+        $isManualEntry = 0; // 🆕 Phase C: 자동계산 품목
+
+        // 6. DB INSERT (Phase C: is_manual_entry 추가)
         $query = "INSERT INTO quote_items (
             quote_id, item_no, product_type, product_name, specification,
             quantity, unit, unit_price, supply_price, vat_amount, total_price,
-            source_type, source_id, notes
-        ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, 'quotation_temp', ?, ?)";
+            source_type, source_id, notes, is_manual_entry
+        ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, 'quotation_temp', ?, ?, ?)";
 
         $stmt = mysqli_prepare($this->db, $query);
         $sourceId = intval($tempItem['no'] ?? $tempItem['id'] ?? 0);
 
-        // 13개 파라미터: i i s s s d s d i i i i s
-        mysqli_stmt_bind_param($stmt, "iisssdsdiiiis",
+        // 14개 파라미터 (Phase C): i i s s s d s d i i i i s i
+        mysqli_stmt_bind_param($stmt, "iisssdsdiiissi",
             $quoteId, $itemNo, $productType, $productName, $specification,
             $quantity, $unit, $unitPrice, $supplyPrice, $vatAmount, $totalPrice,
-            $sourceId, $notes
+            $sourceId, $notes, $isManualEntry
         );
 
         mysqli_stmt_execute($stmt);
@@ -693,18 +712,19 @@ class QuoteManager {
         $totalPrice = $supplyPrice + $vatAmount;
 
         $sourceType = 'manual';
+        $isManualEntry = 1; // 🆕 Phase C: 수동입력 품목
 
         $query = "INSERT INTO quote_items (
             quote_id, item_no, product_type, product_name, specification,
             quantity, unit, unit_price, supply_price, vat_amount, total_price,
-            source_type, notes
-        ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)";
+            source_type, notes, is_manual_entry
+        ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)";
 
         $stmt = mysqli_prepare($this->db, $query);
 
-        // 타입 문자열: 13개 (i=integer, s=string, d=double)
-        // quote_id(i), item_no(i), product_type(s), product_name(s), specification(s), quantity(d), unit(s), unit_price(d), supply_price(i), vat_amount(i), total_price(i), source_type(s), notes(s)
-        mysqli_stmt_bind_param($stmt, "iisssdsdiiiss",
+        // 타입 문자열: 14개 (i=integer, s=string, d=double) - Phase C: is_manual_entry 추가
+        // quote_id(i), item_no(i), product_type(s), product_name(s), specification(s), quantity(d), unit(s), unit_price(d), supply_price(i), vat_amount(i), total_price(i), source_type(s), notes(s), is_manual_entry(i)
+        mysqli_stmt_bind_param($stmt, "iisssdsdiiissi",
             $quoteId, $itemNo,
             $productType,
             $productName,
@@ -713,7 +733,8 @@ class QuoteManager {
             $unit,
             $unitPrice, $supplyPrice, $vatAmount, $totalPrice,
             $sourceType,
-            $notes
+            $notes,
+            $isManualEntry
         );
 
         mysqli_stmt_execute($stmt);
@@ -724,7 +745,7 @@ class QuoteManager {
      * 견적서 조회 (ID)
      */
     public function getById($id) {
-        $query = "SELECT * FROM quotes WHERE id = ? LIMIT 1";
+        $query = "SELECT * FROM quotations WHERE id = ? LIMIT 1";
         $stmt = mysqli_prepare($this->db, $query);
         mysqli_stmt_bind_param($stmt, "i", $id);
         mysqli_stmt_execute($stmt);
@@ -743,7 +764,7 @@ class QuoteManager {
      * 견적서 조회 (토큰)
      */
     public function getByToken($token) {
-        $query = "SELECT * FROM quotes WHERE public_token = ? LIMIT 1";
+        $query = "SELECT * FROM quotations WHERE public_token = ? LIMIT 1";
         $stmt = mysqli_prepare($this->db, $query);
         mysqli_stmt_bind_param($stmt, "s", $token);
         mysqli_stmt_execute($stmt);
@@ -781,7 +802,7 @@ class QuoteManager {
      * 상태 업데이트
      */
     public function updateStatus($id, $status) {
-        $query = "UPDATE quotes SET status = ? WHERE id = ?";
+        $query = "UPDATE quotations SET status = ? WHERE id = ?";
         $stmt = mysqli_prepare($this->db, $query);
         mysqli_stmt_bind_param($stmt, "si", $status, $id);
         $result = mysqli_stmt_execute($stmt);
@@ -793,7 +814,7 @@ class QuoteManager {
      * PDF 경로 저장
      */
     public function updatePdfPath($id, $pdfPath) {
-        $query = "UPDATE quotes SET pdf_path = ? WHERE id = ?";
+        $query = "UPDATE quotations SET pdf_path = ? WHERE id = ?";
         $stmt = mysqli_prepare($this->db, $query);
         mysqli_stmt_bind_param($stmt, "si", $pdfPath, $id);
         $result = mysqli_stmt_execute($stmt);
@@ -832,7 +853,7 @@ class QuoteManager {
 
         if (!empty($filters['search'])) {
             $search = '%' . $filters['search'] . '%';
-            $where .= " AND (quote_no LIKE ? OR customer_name LIKE ? OR customer_email LIKE ? OR customer_company LIKE ?)";
+            $where .= " AND (quotation_no LIKE ? OR customer_name LIKE ? OR customer_email LIKE ? OR customer_company LIKE ?)";
             $params[] = $search;
             $params[] = $search;
             $params[] = $search;
@@ -841,7 +862,7 @@ class QuoteManager {
         }
 
         // 전체 개수
-        $countQuery = "SELECT COUNT(*) as total FROM quotes WHERE {$where}";
+        $countQuery = "SELECT COUNT(*) as total FROM quotations WHERE {$where}";
         $stmt = mysqli_prepare($this->db, $countQuery);
         if (!empty($params)) {
             mysqli_stmt_bind_param($stmt, $types, ...$params);
@@ -853,7 +874,7 @@ class QuoteManager {
 
         // 목록 조회
         $offset = ($page - 1) * $perPage;
-        $query = "SELECT * FROM quotes WHERE {$where} ORDER BY created_at DESC LIMIT ?, ?";
+        $query = "SELECT * FROM quotations WHERE {$where} ORDER BY created_at DESC LIMIT ?, ?";
         $params[] = $offset;
         $params[] = $perPage;
         $types .= "ii";
@@ -932,7 +953,7 @@ class QuoteManager {
             $validUntil = date('Y-m-d', strtotime('+' . $validDays . ' days'));
 
             // 견적서 기본 정보 업데이트 (delivery_vat 포함)
-            $query = "UPDATE quotes SET
+            $query = "UPDATE quotations SET
                 quote_type = ?,
                 customer_name = ?,
                 customer_company = ?,
@@ -1066,7 +1087,7 @@ class QuoteManager {
             }
 
             // 원본의 최신 버전 플래그 해제
-            $updateOriginalQuery = "UPDATE quotes SET is_latest = 0 WHERE id = ?";
+            $updateOriginalQuery = "UPDATE quotations SET is_latest = 0 WHERE id = ?";
             $updateStmt = mysqli_prepare($this->db, $updateOriginalQuery);
             mysqli_stmt_bind_param($updateStmt, "i", $originalQuoteId);
             mysqli_stmt_execute($updateStmt);
@@ -1074,14 +1095,14 @@ class QuoteManager {
 
             // 동일한 original_quote_id를 가진 모든 이전 버전도 is_latest = 0
             $rootId = $original['original_quote_id'] ?? $originalQuoteId;
-            $updateAllQuery = "UPDATE quotes SET is_latest = 0 WHERE original_quote_id = ? OR id = ?";
+            $updateAllQuery = "UPDATE quotations SET is_latest = 0 WHERE original_quote_id = ? OR id = ?";
             $updateAllStmt = mysqli_prepare($this->db, $updateAllQuery);
             mysqli_stmt_bind_param($updateAllStmt, "ii", $rootId, $rootId);
             mysqli_stmt_execute($updateAllStmt);
             mysqli_stmt_close($updateAllStmt);
 
             // 새 버전 번호 계산 - DB에서 실제 최대 버전 조회
-            $maxVersionQuery = "SELECT MAX(version) as max_version FROM quotes WHERE original_quote_id = ? OR id = ?";
+            $maxVersionQuery = "SELECT MAX(version) as max_version FROM quotations WHERE original_quote_id = ? OR id = ?";
             $maxVersionStmt = mysqli_prepare($this->db, $maxVersionQuery);
             mysqli_stmt_bind_param($maxVersionStmt, "ii", $rootId, $rootId);
             mysqli_stmt_execute($maxVersionStmt);
@@ -1093,7 +1114,7 @@ class QuoteManager {
             $newVersion = $currentMaxVersion + 1;
 
             // 새 견적번호 생성 (버전 표시)
-            $baseQuoteNo = preg_replace('/-v\d+$/', '', $original['quote_no']); // 기존 버전 제거
+            $baseQuoteNo = preg_replace('/-v\d+$/', '', $original['quotation_no']); // 기존 버전 제거
             $newQuoteNo = $baseQuoteNo . '-v' . $newVersion;
 
             // 새 공개 토큰 생성
@@ -1101,8 +1122,8 @@ class QuoteManager {
             $validUntil = date('Y-m-d', strtotime('+' . ($data['valid_days'] ?? 7) . ' days'));
 
             // 개정판 견적서 INSERT (delivery_vat 포함)
-            $query = "INSERT INTO quotes (
-                quote_no, quote_type, public_token,
+            $query = "INSERT INTO quotations (
+                quotation_no, quote_type, public_token,
                 original_quote_id, version, is_latest,
                 customer_name, customer_company, customer_phone, customer_email, recipient_email,
                 delivery_type, delivery_address, delivery_price, delivery_vat,
@@ -1136,8 +1157,8 @@ class QuoteManager {
             $notes = $data['notes'] ?? $original['notes'];
             $createdBy = intval($_SESSION['user_id'] ?? 0);
 
-            // 24개 파라미터: s×3 + i×2 + s×7 + i×5 + s×1 + i×1 + s×1 + i×1 + s×1 + s×1 + i×1 = sssiisssssssiiiiisisssi
-            mysqli_stmt_bind_param($stmt, "sssiisssssssiiiiisisssi",
+            // 24개 파라미터: s×3 + i×2 + s×7 + i×5 + s×1 + i×1 + s×1 + i×1 + s×1 + s×1 + i×1 = sssiisssssssiiiiisisissі
+            mysqli_stmt_bind_param($stmt, "sssiisssssssiiiiisisissi",
                 $newQuoteNo,        // 1: s
                 $quoteType,         // 2: s
                 $publicToken,       // 3: s

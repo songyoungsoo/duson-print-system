@@ -55,9 +55,9 @@ $ordertype = $_POST['ordertype'] ?? '';
 $Section = $_POST['Section'] ?? '';
 $TreeSelect = $_POST['TreeSelect'] ?? null;
 
-// === 4. 가격 필드 ===
-$st_price = intval($_POST['calculated_price'] ?? $_POST['st_price'] ?? 0);
-$st_price_vat = intval($_POST['calculated_vat_price'] ?? $_POST['st_price_vat'] ?? 0);
+// === 4. 가격 필드 (신구 필드명 모두 지원)
+$st_price = intval($_POST['supply_price'] ?? $_POST['calculated_price'] ?? $_POST['st_price'] ?? 0);
+$st_price_vat = intval($_POST['total_price'] ?? $_POST['calculated_vat_price'] ?? $_POST['st_price_vat'] ?? 0);
 
 // === 5. 메모/코멘트 ===
 $MY_comment = $_POST['MY_comment'] ?? null;

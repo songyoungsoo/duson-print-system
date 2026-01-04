@@ -414,13 +414,11 @@ function updatePriceDisplay(priceData) {
         priceDisplay.classList.add('calculated');
     }
     
-    // 인쇄비 + 디자인비 합계를 큰 금액으로 표시
+    const supplyPrice = priceData.total_price || 0;
+    const totalWithVat = priceData.vat_price || 0;
+
     if (priceAmount) {
-        // API에서 이미 계산된 total_price 사용
-        const totalPrice = priceData.total_price || 0;
-        
-        priceAmount.textContent = formatNumber(totalPrice) + '원';
-        console.log('💰 큰 금액 표시 (인쇄비+디자인비):', totalPrice + '원');
+        priceAmount.textContent = formatNumber(supplyPrice) + '원';
     }
     
     if (priceDetails) {
@@ -428,18 +426,22 @@ function updatePriceDisplay(priceData) {
             <span>인쇄비: ${priceData.formatted.base_price}</span>
             <span>디자인비: ${priceData.formatted.design_price}</span>
         `;
-
-        // 추가 옵션이 있으면 표시
         if (priceData.additional_options_total && priceData.additional_options_total > 0) {
             detailsHtml += `<span>추가 옵션: ${priceData.formatted.additional_options}</span>`;
         }
-
         detailsHtml += `
             <span>부가세 포함: <span class="vat-amount">${priceData.formatted.vat_price}</span></span>
         `;
-
         priceDetails.innerHTML = detailsHtml;
     }
+
+    // [FIX] 공통 스크립트 호환성을 위해 표준 형식으로 데이터 저장
+    window.currentPriceData = {
+        Order_PriceForm: supplyPrice,
+        Total_PriceForm: totalWithVat,
+        ...priceData // 기존 데이터도 유지
+    };
+    console.log('✅ Price data saved in standard format for ncrflambeau:', window.currentPriceData);
     
     // 업로드 버튼 표시 (hidden 클래스 제거로 표시)
     if (uploadOrderButton) {

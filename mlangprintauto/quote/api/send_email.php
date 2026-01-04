@@ -56,16 +56,21 @@ function sendQuotationEmail($db, $quoteId, $recipientEmail, $recipientName = '',
             $qty = $item['quantity'];
             $qtyDisplay = ($qty == intval($qty)) ? number_format($qty) : rtrim(rtrim(number_format($qty, 2), '0'), '.');
 
-            // 전단지(inserted)인 경우 매수 표시 추가
-            if ($item['product_type'] == 'inserted' && !empty($item['source_data'])) {
-                $sourceData = json_decode($item['source_data'], true);
-                if (!empty($sourceData['mesu'])) {
-                    $qtyDisplay .= '<br><span style="font-size:9px;color:#888;">(' . number_format($sourceData['mesu']) . '매)</span>';
-                }
-            }
-
             $productName = htmlspecialchars($item['product_name']);
             $specification = htmlspecialchars($item['specification']);
+            
+            // 전단지(inserted)인 경우 규격 끝에 연수/매수 표시 추가
+            if ($item['product_type'] == 'inserted') {
+                $myAmount = floatval($item['MY_amount'] ?? 0);
+                $mesu = intval($item['mesu'] ?? 0);
+                if ($myAmount > 0 && $mesu > 0) {
+                    $yeonDisplay = floor($myAmount) == $myAmount 
+                        ? number_format($myAmount) 
+                        : number_format($myAmount, 1);
+                    $specification .= '<br><strong style="color:#03C75A;">' . $yeonDisplay . '연 (' . number_format($mesu) . '매)</strong>';
+                }
+            }
+            
             $unit = htmlspecialchars($item['unit']);
 
             // 단가 계산: 역계산 검증으로 무한소수는 생략

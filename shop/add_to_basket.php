@@ -141,6 +141,8 @@ function calculatePriceFromBasketLogic($jong, $garo, $sero, $mesu, $uhyung, $dom
     
     // 도무송칼 크기 계산
     $d2 = ($garo >= $sero) ? $garo : $sero;
+
+    
     
     // 큰사이즈 마진비율
     $gase_rate = ($gase <= 18000) ? 1 : 1.25;

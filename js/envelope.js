@@ -421,18 +421,19 @@ function updatePriceDisplay(priceData) {
     const priceDetails = document.getElementById('priceDetails');
     const uploadOrderButton = document.getElementById('uploadOrderButton');
     
+    const supplyPrice = priceData.total_price || (priceData.base_price + priceData.design_price);
+    const totalWithVat = Math.round(priceData.total_with_vat);
+
     // 인쇄비 + 디자인비 합계를 큰 금액으로 표시 (VAT 제외)
     if (priceAmount) {
-        const supplyPrice = priceData.total_price || (priceData.base_price + priceData.design_price);
         priceAmount.textContent = formatNumber(supplyPrice) + '원';
-        console.log('💰 큰 금액 표시 (인쇄비+디자인비):', supplyPrice + '원');
     }
     
     if (priceDetails) {
         priceDetails.innerHTML = `
             <span>인쇄비: ${formatNumber(priceData.base_price)}원</span>
             <span>디자인비: ${formatNumber(priceData.design_price)}원</span>
-            <span>부가세 포함: <span class="vat-amount">${formatNumber(Math.round(priceData.total_with_vat))}원</span></span>
+            <span>부가세 포함: <span class="vat-amount">${formatNumber(totalWithVat)}원</span></span>
         `;
     }
     
@@ -440,6 +441,13 @@ function updatePriceDisplay(priceData) {
         priceDisplay.classList.add('calculated');
     }
     
+    // [FIX] 공통 스크립트 호환성을 위해 표준 형식으로 데이터 저장
+    window.currentPriceData = {
+        Order_PriceForm: supplyPrice,
+        Total_PriceForm: totalWithVat
+    };
+    console.log('✅ Price data saved in standard format:', window.currentPriceData);
+
     if (uploadOrderButton) {
         uploadOrderButton.style.display = 'block';
     }

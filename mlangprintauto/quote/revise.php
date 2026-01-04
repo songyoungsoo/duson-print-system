@@ -14,7 +14,7 @@ header('Expires: 0');
 
 require_once __DIR__ . '/../db.php';
 require_once __DIR__ . '/includes/QuoteManager.php';
-require_once __DIR__ . '/includes/ProductSpecFormatter.php';
+require_once $_SERVER['DOCUMENT_ROOT'] . '/includes/ProductSpecFormatter.php';
 
 $manager = new QuoteManager($db);
 $formatter = new ProductSpecFormatter($db);

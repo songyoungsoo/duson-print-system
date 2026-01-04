@@ -74,9 +74,6 @@ if ($type_result && ($type_row = mysqli_fetch_assoc($type_result))) {
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title><?php echo safe_html($page_title); ?></title>
 
-    <!-- 🏆 Competition Edition: 테이블 디자인 시스템 (최우선 로드) -->
-    <link rel="stylesheet" href="../../css/table-design-system.css">
-
     <!-- 🎯 통합 컬러 시스템 -->
     <link rel="stylesheet" href="../../css/color-system-unified.css">
 
@@ -366,9 +363,6 @@ if ($type_result && ($type_row = mysqli_fetch_assoc($type_result))) {
 
     <!-- 공통 업로드 모달 JavaScript -->
     <script src="../../includes/upload_modal.js"></script>
-
-    <!-- 🆕 Duson 갤러리 시스템 JavaScript -->
-    <script src="../../duson/js/gallery-system.js" defer></script>
 
     <script>
         // PHP 변수를 JavaScript로 전달 (PROJECT_SUCCESS_REPORT.md 스펙)
@@ -718,8 +712,11 @@ if ($type_result && ($type_row = mysqli_fetch_assoc($type_result))) {
             priceDetails.innerHTML = detailsHtml;
             priceDisplay.classList.add('calculated');
 
-            // 현재 가격 데이터 저장
-            window.currentPriceData = priceData;
+            // [FIX] 공통 스크립트 호환성을 위해 표준 형식으로 데이터 저장
+            window.currentPriceData = {
+                Order_PriceForm: priceData.total_supply_price,
+                Total_PriceForm: finalTotal
+            };
         }
 
         // 가격 표시 초기화
@@ -729,10 +726,10 @@ if ($type_result && ($type_row = mysqli_fetch_assoc($type_result))) {
             const priceDisplay = document.getElementById('priceDisplay');
             const uploadButton = document.getElementById('uploadOrderButton');
 
-            priceAmount.textContent = '견적 계산 필요';
-            priceDetails.textContent = '모든 옵션을 선택하면 자동으로 계산됩니다';
-            priceDisplay.classList.remove('calculated');
-            uploadButton.style.display = 'none';
+            if (priceAmount) priceAmount.textContent = '견적 계산 필요';
+            if (priceDetails) priceDetails.textContent = '모든 옵션을 선택하면 자동으로 계산됩니다';
+            if (priceDisplay) priceDisplay.classList.remove('calculated');
+            if (uploadButton) uploadButton.style.display = 'none'; // 요소가 있을 때만 실행
 
             // 프리미엄 옵션 가격 초기화
             updatePremiumPriceDisplay(0);
@@ -752,7 +749,9 @@ if ($type_result && ($type_row = mysqli_fetch_assoc($type_result))) {
         // 업로드 버튼 표시
         function showUploadButton() {
             const uploadButton = document.getElementById('uploadOrderButton');
-            uploadButton.style.display = 'block';
+            if (uploadButton) {
+                uploadButton.style.display = 'block';
+            }
         }
 
         document.addEventListener('DOMContentLoaded', function() {

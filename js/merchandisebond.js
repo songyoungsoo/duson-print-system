@@ -488,47 +488,38 @@ function updatePriceDisplay(priceData) {
     const priceDisplay = document.getElementById('priceDisplay');
     const priceAmount = document.getElementById('priceAmount');
     const priceDetails = document.getElementById('priceDetails');
-    const uploadButton = document.getElementById('uploadOrderButton');
+    const uploadOrderButton = document.getElementById('uploadOrderButton');
+    
+    const supplyPrice = priceData.total_price || (priceData.base_price + priceData.design_price);
+    const totalWithVat = Math.round(priceData.total_with_vat);
+
+    // 인쇄비 + 디자인비 합계를 큰 금액으로 표시 (VAT 제외)
+    if (priceAmount) {
+        priceAmount.textContent = formatNumber(supplyPrice) + '원';
+    }
+    
+    if (priceDetails) {
+        priceDetails.innerHTML = `
+            <span>인쇄비: ${formatNumber(priceData.base_price)}원</span>
+            <span>디자인비: ${formatNumber(priceData.design_price)}원</span>
+            <span>부가세 포함: <span class="vat-amount">${formatNumber(totalWithVat)}원</span></span>
+        `;
+    }
     
     if (priceDisplay) {
         priceDisplay.classList.add('calculated');
     }
+
+    // [FIX] 공통 스크립트 호환성을 위해 표준 형식으로 데이터 저장
+    window.currentPriceData = {
+        Order_PriceForm: supplyPrice,
+        Total_PriceForm: totalWithVat
+    };
+    console.log('✅ Price data saved in standard format for merchandisebond:', window.currentPriceData);
     
-    // 인쇄비 + 디자인비 합계를 큰 금액으로 표시 (VAT 제외)
-    if (priceAmount) {
-        const printCost = Math.round(priceData.PriceForm);         // 인쇄비만
-        const designCost = Math.round(priceData.DS_PriceForm);     // 디자인비만
-        const supplyPrice = printCost + designCost;               // 공급가 (VAT 제외)
-        
-        priceAmount.textContent = supplyPrice.toLocaleString() + '원';
-        console.log('💰 큰 금액 표시 (인쇄비+디자인비):', supplyPrice + '원');
+    if (uploadOrderButton) {
+        uploadOrderButton.style.display = 'block';
     }
-    
-    if (priceDetails) {
-        const printCost = Math.round(priceData.PriceForm);         // 인쇄비만
-        const designCost = Math.round(priceData.DS_PriceForm);     // 디자인비만
-        const supplyPrice = printCost + designCost;               // 공급가 (VAT 제외)
-        const total = Math.round(priceData.Total_PriceForm);       // VAT 포함 총합계
-        
-        priceDetails.innerHTML = `
-            <span>인쇄비: ${printCost.toLocaleString()}원</span>
-            <span>디자인비: ${designCost.toLocaleString()}원</span>
-            <span>부가세 포함: <span class="vat-amount">${total.toLocaleString()}원</span></span>
-        `;
-    }
-    
-    // 파일 업로드 버튼 표시
-    if (uploadButton) {
-        uploadButton.style.display = 'block';
-    }
-    
-    // 선택한 옵션 요약 표시
-    const selectedOptions = document.getElementById('selectedOptions');
-    if (selectedOptions) {
-        selectedOptions.style.display = 'block';
-    }
-    
-    console.log('✅ 가격 표시 업데이트 완료');
 }
 
 // 🆕 프리미엄 옵션 포함 가격 표시 업데이트

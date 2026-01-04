@@ -714,99 +714,35 @@ if ($cart_result === false) {
                         <td><?php echo $index + 1; ?></td>
                         <td><?php echo $product_name; ?></td>
                         <td class="text-left small-text">
-                            <?php if ($item['product_type'] == 'envelope'): ?>
-                                <?php if (!empty($item['MY_type_name']) || !empty($item['MY_type'])): ?>
-                                    <div><strong>종류:</strong> <?php echo htmlspecialchars($item['MY_type_name'] ?: getKoreanName($connect, $item['MY_type'])); ?></div>
-                                <?php endif; ?>
-                                <?php if (!empty($item['Section_name']) || !empty($item['Section'])): ?>
-                                    <div><strong>재질:</strong> <?php echo htmlspecialchars($item['Section_name'] ?: getKoreanName($connect, $item['Section'])); ?></div>
-                                <?php endif; ?>
-                                <?php if (!empty($item['POtype_name']) || !empty($item['POtype'])): ?>
-                                    <div><strong>인쇄:</strong> <?php echo htmlspecialchars($item['POtype_name'] ?: ($item['POtype'] == '1' ? '단면' : '양면')); ?></div>
-                                <?php endif; ?>
-                            <?php elseif ($item['product_type'] == 'ncrflambeau'): ?>
-                                <?php if (!empty($item['MY_type'])): ?>
-                                    <div><strong>색상:</strong> <?php echo htmlspecialchars(getKoreanName($connect, $item['MY_type'])); ?></div>
-                                <?php endif; ?>
-                                <?php if (!empty($item['MY_Fsd'])): ?>
-                                    <div><strong>종류:</strong> <?php echo htmlspecialchars(getKoreanName($connect, $item['MY_Fsd'])); ?></div>
-                                <?php endif; ?>
-                                <?php if (!empty($item['PN_type'])): ?>
-                                    <div><strong>규격:</strong> <?php echo htmlspecialchars(getKoreanName($connect, $item['PN_type'])); ?></div>
-                                <?php endif; ?>
-                                <?php if (!empty($item['ordertype'])): ?>
-                                    <div><strong>타입:</strong> <?php echo $item['ordertype'] == 'total' ? '디자인+인쇄' : ($item['ordertype'] == 'print' ? '인쇄만' : htmlspecialchars($item['ordertype'])); ?></div>
-                                <?php endif; ?>
-
-                                <!-- 🆕 양식지 추가옵션 (견적서용) -->
-                                <?php if (!empty($item['premium_options'])): ?>
-                                    <?php
-                                    $premium_options = json_decode($item['premium_options'], true);
-                                    if ($premium_options && isset($premium_options['additional_options_total']) && $premium_options['additional_options_total'] > 0):
-                                        $selected_options = [];
-
-                                        // 넘버링 (folding_enabled로 저장됨)
-                                        if (isset($premium_options['folding_enabled']) && $premium_options['folding_enabled']) {
-                                            $folding_type = $premium_options['folding_type'] ?? '';
-                                            $folding_price = intval($premium_options['folding_price'] ?? 0);
-                                            if (!empty($folding_type)) {
-                                                if ($folding_type === 'numbering') {
-                                                    $selected_options[] = '넘버링 (전화문의 1688-2384)';
-                                                } else {
-                                                    $folding_types = [
-                                                        '1' => '넘버링 1줄',
-                                                        '2' => '넘버링 2줄',
-                                                        '3' => '넘버링 3줄'
-                                                    ];
-                                                    $folding_label = $folding_types[$folding_type] ?? getKoreanName($connect, $folding_type);
-                                                    if ($folding_price > 0) {
-                                                        $selected_options[] = $folding_label . ' (+' . number_format($folding_price) . '원)';
-                                                    } else {
-                                                        $selected_options[] = $folding_label;
-                                                    }
-                                                }
-                                            }
-                                        }
-
-                                        // 미싱 (creasing_enabled로 저장됨)
-                                        if (isset($premium_options['creasing_enabled']) && $premium_options['creasing_enabled']) {
-                                            $creasing_lines = $premium_options['creasing_lines'] ?? '';
-                                            $creasing_price = intval($premium_options['creasing_price'] ?? 0);
-                                            if (!empty($creasing_lines)) {
-                                                // 미싱 줄수 직접 표시 (1, 2, 3)
-                                                $selected_options[] = '미싱 ' . $creasing_lines . '줄 (+' . number_format($creasing_price) . '원)';
-                                            }
-                                        }
-
-                                        if (!empty($selected_options)):
-                                    ?>
-                                            <div style="margin-top: 8px; padding-top: 8px; border-top: 1px solid #e2e8f0;">
-                                                <strong>추가옵션:</strong><br>
-                                                <?php echo implode(', ', $selected_options); ?>
-                                            </div>
-                                        <?php endif; ?>
-                                    <?php endif; ?>
-                                <?php endif; ?>
-                            <?php else: ?>
-                                <?php if (!empty($item['MY_type'])): ?>
-                                    <div><strong>종류:</strong> <?php echo htmlspecialchars(getKoreanName($connect, $item['MY_type'])); ?></div>
-                                <?php endif; ?>
-                                <?php if (!empty($item['PN_type'])): ?>
-                                    <div><strong>규격:</strong> <?php echo htmlspecialchars(getKoreanName($connect, $item['PN_type'])); ?></div>
-                                <?php endif; ?>
-                                <?php if (!empty($item['Section'])): ?>
-                                    <div><strong>재질:</strong> <?php echo htmlspecialchars(getKoreanName($connect, $item['Section'])); ?></div>
-                                <?php endif; ?>
-                                <?php if (!empty($item['POtype'])): ?>
-                                    <div><strong>인쇄:</strong> <?php echo $item['POtype'] == '1' ? '단면' : '양면'; ?></div>
-                                <?php endif; ?>
+                            <?php
+                                // ProductSpecFormatter로 2줄 형식 생성 (견적서용)
+                                $specFormatter = new ProductSpecFormatter($connect);
+                                $specs = $specFormatter->format($item);
+                            ?>
+                            <?php if (!empty($specs['line1'])): ?>
+                                <div class="spec-line"><?php echo htmlspecialchars($specs['line1']); ?></div>
+                            <?php endif; ?>
+                            <?php if (!empty($specs['line2'])): ?>
+                                <div class="spec-line" style="color: #555;"><?php echo htmlspecialchars($specs['line2']); ?></div>
+                            <?php endif; ?>
+                            <?php if (!empty($specs['additional'])): ?>
+                                <div class="spec-line" style="color: #777; font-size: 11px;"><?php echo htmlspecialchars($specs['additional']); ?></div>
                             <?php endif; ?>
 
-                            <!-- 추가 옵션 정보 표시 (일반 제품용) -->
-                            <?php if ($has_additional_options && $item['product_type'] != 'ncrflambeau'): ?>
+                            <!-- 추가 옵션 정보 표시 (모든 제품 공통) -->
+                            <?php
+                            $options_details_quote = $optionsDisplay->getOrderDetails($item);
+                            if (!empty($options_details_quote['options'])):
+                            ?>
                                 <div style="margin-top: 8px; padding-top: 8px; border-top: 1px solid #e2e8f0;">
                                     <strong style="color: #e53e3e;">추가옵션:</strong><br>
-                                    <?php echo $optionsDisplay->getCartColumnHtml($item); ?>
+                                    <?php
+                                    $option_strings = [];
+                                    foreach ($options_details_quote['options'] as $option) {
+                                        $option_strings[] = htmlspecialchars($option['category'] . ': ' . $option['name'] . ' (' . $option['formatted_price'] . ')');
+                                    }
+                                    echo implode('<br>', $option_strings);
+                                    ?>
                                 </div>
                             <?php endif; ?>
                         </td>

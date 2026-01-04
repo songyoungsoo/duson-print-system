@@ -1442,7 +1442,7 @@ function getOrderItemInfo($summary_item, $specFormatter) {
                         echo "</td></tr>";
                     } else {
                     ?>
-                    <tr style="background: #D6DCE4;">
+                    <tr style="background: #E0E0E0;">
                         <th style="width: 4%; border: 1px solid #999; padding: 8px; font-size: 11px; text-align: center;">NO</th>
                         <th style="width: 8%; border: 1px solid #999; padding: 8px; font-size: 11px; text-align: center;">품목</th>
                         <th style="width: 48%; border: 1px solid #999; padding: 8px; font-size: 11px; text-align: left;">규격/옵션</th>
@@ -1718,7 +1718,7 @@ function getOrderItemInfo($summary_item, $specFormatter) {
                                             ?>
 
                     <tr>
-                        <th style="width: 30%; background: #D6DCE4; border: 1px solid #999; padding: 8px 10px; font-size: 12px; text-align: center;">공급가액</th>
+                        <th style="width: 30%; background: #E0E0E0; border: 1px solid #999; padding: 8px 10px; font-size: 12px; text-align: center;">공급가액</th>
                         <td style="width: 70%; border: 1px solid #999; padding: 8px 10px; font-size: 13px; text-align: right; font-weight: bold;"><?= number_format(round($total_money_4 + $total_money_2 + $grand_additional_options_total, -1)) ?> 원</td>
                     </tr>
                     <tr style="background: #FFF2CC;">
@@ -1730,9 +1730,9 @@ function getOrderItemInfo($summary_item, $specFormatter) {
                 <!-- ===== 상품/주문 상태 테이블 ===== -->
                 <table style="width: 100%; border-collapse: collapse; margin-bottom: 15px; border: 2px solid #333;">
                     <tr>
-                        <th style="width: 15%; background: #D6DCE4; border: 1px solid #999; padding: 8px 10px; font-size: 12px; text-align: center;">상품 유형</th>
+                        <th style="width: 15%; background: #E0E0E0; border: 1px solid #999; padding: 8px 10px; font-size: 12px; text-align: center;">상품 유형</th>
                         <td style="width: 35%; border: 1px solid #999; padding: 8px 10px; font-size: 12px; font-weight: bold; color: #2F5496;"><?= htmlspecialchars($View_Type) ?></td>
-                        <th style="width: 15%; background: #D6DCE4; border: 1px solid #999; padding: 8px 10px; font-size: 12px; text-align: center;">주문 상태</th>
+                        <th style="width: 15%; background: #E0E0E0; border: 1px solid #999; padding: 8px 10px; font-size: 12px; text-align: center;">주문 상태</th>
                         <td style="width: 35%; border: 1px solid #999; padding: 8px 10px; font-size: 12px; font-weight: bold;">
                             <?php
                             switch ($View_OrderStyle) {
@@ -1762,7 +1762,7 @@ function getOrderItemInfo($summary_item, $specFormatter) {
                             echo "<tr style='background: #4472C4;'>";
                             echo "<td colspan='3' style='padding: 10px 15px; color: #fff; font-size: 14px; font-weight: bold;'>첨부 파일 (" . count($files) . "개)</td>";
                             echo "</tr>";
-                            echo "<tr style='background: #D6DCE4;'>";
+                            echo "<tr style='background: #E0E0E0;'>";
                             echo "<th style='width: 50%; border: 1px solid #999; padding: 6px; font-size: 11px; text-align: center;'>파일명</th>";
                             echo "<th style='width: 20%; border: 1px solid #999; padding: 6px; font-size: 11px; text-align: center;'>크기</th>";
                             echo "<th style='width: 30%; border: 1px solid #999; padding: 6px; font-size: 11px; text-align: center;'>다운로드</th>";
@@ -1800,40 +1800,40 @@ function getOrderItemInfo($summary_item, $specFormatter) {
                         </td>
                     </tr>
                     <tr>
-                        <th style="width: 15%; background: #D6DCE4; border: 1px solid #999; padding: 6px 10px; font-size: 11px; text-align: center;">성명/상호</th>
+                        <th style="width: 15%; background: #E0E0E0; border: 1px solid #999; padding: 6px 10px; font-size: 11px; text-align: center;">성명/상호</th>
                         <td style="width: 35%; border: 1px solid #999; padding: 4px 8px;"><input name="name" type="text" style="width: 100%; box-sizing: border-box; border: 1px solid #ccc; padding: 4px 6px; font-size: 12px;" value='<?= $View_name ?>'></td>
-                        <th style="width: 15%; background: #D6DCE4; border: 1px solid #999; padding: 6px 10px; font-size: 11px; text-align: center;">E-MAIL</th>
+                        <th style="width: 15%; background: #E0E0E0; border: 1px solid #999; padding: 6px 10px; font-size: 11px; text-align: center;">E-MAIL</th>
                         <td style="width: 35%; border: 1px solid #999; padding: 4px 8px;"><input name="email" type="text" style="width: 100%; box-sizing: border-box; border: 1px solid #ccc; padding: 4px 6px; font-size: 12px;" value='<?= $View_email ?>'></td>
                     </tr>
                     <tr>
-                        <th style="background: #D6DCE4; border: 1px solid #999; padding: 6px 10px; font-size: 11px; text-align: center;">우편번호</th>
+                        <th style="background: #E0E0E0; border: 1px solid #999; padding: 6px 10px; font-size: 11px; text-align: center;">우편번호</th>
                         <td style="border: 1px solid #999; padding: 4px 8px;"><input type="text" name="zip" style="width: 80px; box-sizing: border-box; border: 1px solid #ccc; padding: 4px 6px; font-size: 12px;" value='<?= $View_zip ?>'></td>
-                        <th style="background: #D6DCE4; border: 1px solid #999; padding: 6px 10px; font-size: 11px; text-align: center;">전화번호</th>
+                        <th style="background: #E0E0E0; border: 1px solid #999; padding: 6px 10px; font-size: 11px; text-align: center;">전화번호</th>
                         <td style="border: 1px solid #999; padding: 4px 8px;"><input name="phone" type="text" style="width: 100%; box-sizing: border-box; border: 1px solid #ccc; padding: 4px 6px; font-size: 12px;" value='<?= $View_phone ?>'></td>
                     </tr>
                     <tr>
-                        <th style="background: #D6DCE4; border: 1px solid #999; padding: 6px 10px; font-size: 11px; text-align: center;">주소</th>
+                        <th style="background: #E0E0E0; border: 1px solid #999; padding: 6px 10px; font-size: 11px; text-align: center;">주소</th>
                         <td colspan="3" style="border: 1px solid #999; padding: 4px 8px;">
                             <input type="text" name="zip1" placeholder="기본주소" style="width: 48%; box-sizing: border-box; border: 1px solid #ccc; padding: 4px 6px; font-size: 12px; margin-right: 2%;" value='<?= $View_zip1 ?>'>
                             <input type="text" name="zip2" placeholder="상세주소" style="width: 48%; box-sizing: border-box; border: 1px solid #ccc; padding: 4px 6px; font-size: 12px;" value='<?= $View_zip2 ?>'>
                         </td>
                     </tr>
                     <tr>
-                        <th style="background: #D6DCE4; border: 1px solid #999; padding: 6px 10px; font-size: 11px; text-align: center;">배송지</th>
+                        <th style="background: #E0E0E0; border: 1px solid #999; padding: 6px 10px; font-size: 11px; text-align: center;">배송지</th>
                         <td style="border: 1px solid #999; padding: 4px 8px;"><input type="text" name="delivery" style="width: 100%; box-sizing: border-box; border: 1px solid #ccc; padding: 4px 6px; font-size: 12px;" value='<?= $View_delivery ?>'></td>
-                        <th style="background: #D6DCE4; border: 1px solid #999; padding: 6px 10px; font-size: 11px; text-align: center;">휴대폰</th>
+                        <th style="background: #E0E0E0; border: 1px solid #999; padding: 6px 10px; font-size: 11px; text-align: center;">휴대폰</th>
                         <td style="border: 1px solid #999; padding: 4px 8px;"><input name="Hendphone" type="text" style="width: 100%; box-sizing: border-box; border: 1px solid #ccc; padding: 4px 6px; font-size: 12px;" value='<?= $View_Hendphone ?>'></td>
                     </tr>
                     <tr>
-                        <th style="background: #D6DCE4; border: 1px solid #999; padding: 6px 10px; font-size: 11px; text-align: center;">사업자명</th>
+                        <th style="background: #E0E0E0; border: 1px solid #999; padding: 6px 10px; font-size: 11px; text-align: center;">사업자명</th>
                         <td style="border: 1px solid #999; padding: 4px 8px;"><input type="text" name="bizname" style="width: 100%; box-sizing: border-box; border: 1px solid #ccc; padding: 4px 6px; font-size: 12px;" value='<?= $View_bizname ?>'></td>
-                        <th style="background: #D6DCE4; border: 1px solid #999; padding: 6px 10px; font-size: 11px; text-align: center;">입금은행</th>
+                        <th style="background: #E0E0E0; border: 1px solid #999; padding: 6px 10px; font-size: 11px; text-align: center;">입금은행</th>
                         <td style="border: 1px solid #999; padding: 4px 8px;"><input name="bank" type="text" style="width: 100%; box-sizing: border-box; border: 1px solid #ccc; padding: 4px 6px; font-size: 12px;" value='<?= $View_bank ?>'></td>
                     </tr>
                     <tr>
-                        <th style="background: #D6DCE4; border: 1px solid #999; padding: 6px 10px; font-size: 11px; text-align: center;">입금자명</th>
+                        <th style="background: #E0E0E0; border: 1px solid #999; padding: 6px 10px; font-size: 11px; text-align: center;">입금자명</th>
                         <td style="border: 1px solid #999; padding: 4px 8px;"><input name="bankname" type="text" style="width: 100%; box-sizing: border-box; border: 1px solid #ccc; padding: 4px 6px; font-size: 12px;" value='<?= $View_bankname ?>'></td>
-                        <th style="background: #D6DCE4; border: 1px solid #999; padding: 6px 10px; font-size: 11px; text-align: center;">비고</th>
+                        <th style="background: #E0E0E0; border: 1px solid #999; padding: 6px 10px; font-size: 11px; text-align: center;">비고</th>
                         <td style="border: 1px solid #999; padding: 4px 8px;"><textarea name="cont" rows="2" style="width: 100%; box-sizing: border-box; border: 1px solid #ccc; padding: 4px 6px; font-size: 12px; resize: vertical;"><?= $View_cont ?></textarea></td>
                     </tr>
                 </table>

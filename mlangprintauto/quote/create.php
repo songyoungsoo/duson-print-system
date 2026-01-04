@@ -68,8 +68,9 @@ foreach ($cartItems as $item) {
 
 // quotation_temp 품목
 foreach ($quoteTempItems as $item) {
-    $supply = intval($item['supply_price'] ?? 0);
-    $vat = intval($item['vat_amount'] ?? 0);
+    $supply = intval($item['st_price'] ?? 0);
+    $total = intval($item['st_price_vat'] ?? 0);
+    $vat = $total - $supply;
     $supplyTotal += $supply;
     $vatTotal += $vat;
 }
@@ -512,9 +513,9 @@ $typeLabel = $quoteType === 'transaction' ? '거래명세표' : '견적서';
                                     $qtyDisplay = ProductSpecFormatter::getQuantityDisplay($item);  // 장바구니 형식
 
                                     $unit = ProductSpecFormatter::getUnit($item);
-                                    $supply = intval($item['supply_price'] ?? 0);
-                                    $vat = intval($item['vat_amount'] ?? 0);
-                                    $total = intval($item['total_price'] ?? 0);
+                                    $supply = intval($item['st_price'] ?? 0);
+                                    $total = intval($item['st_price_vat'] ?? 0);
+                                    $vat = $total - $supply;
 
                                     // 단가 계산: 전단지 0.5연은 '-', 그 외는 공급가 ÷ 수량
                                     $unitPrice = 0;

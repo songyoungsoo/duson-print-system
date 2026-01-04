@@ -92,8 +92,8 @@ function calculatePriceAjax() {
             }
 
             window.currentPriceData = {
-                total_price: parseInt(data.Order_Price) || 0,
-                vat_price: parseInt(data.Total_PriceForm) || 0,
+                Order_PriceForm: parseInt(data.Order_Price) || 0,
+                Total_PriceForm: parseInt(data.Total_PriceForm) || 0,
                 additional_options_total: additionalOptionsTotal
             };
             console.log("window.currentPriceData 설정 (추가 옵션 포함):", window.currentPriceData);

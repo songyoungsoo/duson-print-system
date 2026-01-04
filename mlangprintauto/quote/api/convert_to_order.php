@@ -7,8 +7,9 @@
 session_start();
 header('Content-Type: application/json; charset=utf-8');
 
-require_once __DIR__ . '/../../db.php';
+require_once __DIR__ . '/../../../db.php';
 require_once __DIR__ . '/../includes/QuoteManager.php';
+require_once __DIR__ . '/../../../includes/EmailNotification.php';
 
 function jsonResponse($success, $data = [], $message = '') {
     echo json_encode(array_merge([
@@ -114,6 +115,9 @@ try {
                 $type = PRODUCT_NAME_TO_TYPE[$item['product_name']];
             }
 
+            // is_custom_product 자동 결정 (Phase B)
+            $isCustomProduct = ($type === 'custom') ? 1 : 0;
+
             // Type_1 JSON 생성 (11개 신규 필드 포함)
             $type1Data = [
                 // 기본 필드
@@ -201,9 +205,9 @@ try {
             $itemId = intval($item['id'] ?? 0);
             $quoteNo = $quote['quote_no'] ?? '';
 
-            // 주문 INSERT (24개 파라미터)
+            // 주문 INSERT (26개 파라미터 - Phase B: product_type, is_custom_product 추가)
             $insertQuery = "INSERT INTO mlangorder_printauto (
-                Type, Type_1,
+                Type, Type_1, product_type, is_custom_product,
                 money_2, money_3, money_4, money_5,
                 name, email, bizname, phone, Hendphone,
                 zip1, zip2, delivery,
@@ -212,7 +216,7 @@ try {
                 custom_product_name, custom_specification,
                 quantity, unit, order_group_id, order_group_seq
             ) VALUES (
-                ?, ?,
+                ?, ?, ?, ?,
                 ?, ?, ?, ?,
                 ?, ?, ?, ?, ?,
                 ?, ?, ?,
@@ -227,18 +231,19 @@ try {
                 throw new Exception('쿼리 준비 실패: ' . $db->error);
             }
 
-            // 24개 파라미터 타입 정의:
+            // 26개 파라미터 타입 정의 (Phase B):
             // ss = Type, Type_1 (2)
-            // iiii = money_2, money_3, money_4, money_5 (4) = 6
-            // sssss = name, email, bizname, phone, Hendphone (5) = 11
-            // sss = zip1, zip2, delivery (3) = 14
-            // s = cont (1) = 15
-            // isi = quote_id, quote_no, quote_item_id (3) = 18
-            // ss = custom_product_name, custom_specification (2) = 20
-            // dssi = quantity, unit, order_group_id, order_group_seq (4) = 24
+            // si = product_type, is_custom_product (2) = 4
+            // iiii = money_2, money_3, money_4, money_5 (4) = 8
+            // sssss = name, email, bizname, phone, Hendphone (5) = 13
+            // sss = zip1, zip2, delivery (3) = 16
+            // s = cont (1) = 17
+            // isi = quote_id, quote_no, quote_item_id (3) = 20
+            // ss = custom_product_name, custom_specification (2) = 22
+            // dssi = quantity, unit, order_group_id, order_group_seq (4) = 26
             $stmt->bind_param(
-                "ssiiiisssssssssisissdssi",
-                $type, $type1Json,
+                "sssiiiiisssssssssisissdssi",
+                $type, $type1Json, $type, $isCustomProduct,
                 $money2, $money3, $money4, $money5,
                 $customerName, $customerEmail, $customerCompany, $customerPhone, $customerPhone,
                 $zip1, $zip2, $deliveryType,
@@ -283,12 +288,31 @@ try {
         // 트랜잭션 커밋
         $db->commit();
 
+        // 이메일 발송 (트랜잭션 외부에서 실행)
+        $emailNotification = new EmailNotification();
+        $order_numbers_array = array_column($createdOrders, 'no');
+        $total_price = array_sum(array_column($createdOrders, 'total_price'));
+
+        $email_sent = $emailNotification->sendOrderConvertedNotification(
+            $quote['customer_email'],
+            $quote['customer_name'],
+            $quote['quote_no'],
+            $order_numbers_array,
+            count($createdOrders),
+            $total_price
+        );
+
+        if (!$email_sent) {
+            error_log("견적→주문 전환 이메일 발송 실패: quote_no={$quote['quote_no']}, email={$quote['customer_email']}");
+        }
+
         jsonResponse(true, [
             'orders' => $createdOrders,
             'order_count' => count($createdOrders),
             'first_order_no' => $firstOrderNo,
             'order_group_id' => $orderGroupId,
-            'quote_no' => $quote['quote_no']
+            'quote_no' => $quote['quote_no'],
+            'email_sent' => $email_sent
         ], count($createdOrders) . '건의 주문이 생성되었습니다.');
 
     } catch (Exception $e) {
