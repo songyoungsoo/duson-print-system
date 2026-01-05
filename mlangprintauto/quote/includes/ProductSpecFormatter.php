@@ -536,9 +536,14 @@ class ProductSpecFormatter {
 
     /**
      * 가격 추출 (VAT 포함)
+     * Phase 3: price_vat 우선, legacy st_price_vat fallback
      */
     public static function getPrice($item) {
-        // VAT 포함 가격 우선
+        // Phase 3: price_vat 우선
+        if (!empty($item['price_vat'])) {
+            return intval($item['price_vat']);
+        }
+        // Legacy: st_price_vat fallback
         if (!empty($item['st_price_vat'])) {
             return intval($item['st_price_vat']);
         }
@@ -550,14 +555,23 @@ class ProductSpecFormatter {
 
     /**
      * 공급가액 추출 (VAT 제외)
+     * Phase 3: price_supply 우선, legacy st_price fallback
      */
     public static function getSupplyPrice($item) {
+        // Phase 3: price_supply 우선
+        if (!empty($item['price_supply'])) {
+            return intval($item['price_supply']);
+        }
+        // Legacy: st_price fallback
         if (!empty($item['st_price'])) {
             return intval($item['st_price']);
         }
-        // VAT 포함 가격에서 역산
+        // VAT 포함 가격에서 역산 (최후 수단)
         if (!empty($item['st_price_vat'])) {
             return intval(round($item['st_price_vat'] / 1.1));
+        }
+        if (!empty($item['price_vat'])) {
+            return intval(round($item['price_vat'] / 1.1));
         }
         return 0;
     }

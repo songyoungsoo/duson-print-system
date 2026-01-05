@@ -66,10 +66,10 @@ foreach ($cartItems as $item) {
     $vatTotal += ($total - $supply);
 }
 
-// quotation_temp 품목
+// quotation_temp 품목 (Phase 3: ProductSpecFormatter 사용)
 foreach ($quoteTempItems as $item) {
-    $supply = intval($item['st_price'] ?? 0);
-    $total = intval($item['st_price_vat'] ?? 0);
+    $supply = ProductSpecFormatter::getSupplyPrice($item);  // Phase 3 우선
+    $total = ProductSpecFormatter::getPrice($item);  // Phase 3 우선
     $vat = $total - $supply;
     $supplyTotal += $supply;
     $vatTotal += $vat;
