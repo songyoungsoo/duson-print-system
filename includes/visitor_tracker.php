@@ -125,6 +125,12 @@ class VisitorTracker {
              WHERE ip = '$ip'
              AND (expires_at IS NULL OR expires_at > NOW() OR is_permanent = 1)"
         );
+
+        // 쿼리 실패 시 (테이블 없음 등) false 반환
+        if ($result === false) {
+            return false;
+        }
+
         return mysqli_num_rows($result) > 0;
     }
 
@@ -178,6 +184,11 @@ class VisitorTracker {
 
         $result = mysqli_query($db, $sql);
         $suspicious = [];
+
+        // 쿼리 실패 시 빈 배열 반환
+        if ($result === false) {
+            return $suspicious;
+        }
 
         while ($row = mysqli_fetch_assoc($result)) {
             $suspicious[] = [
