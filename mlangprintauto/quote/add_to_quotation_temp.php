@@ -7,6 +7,7 @@
 
 require_once __DIR__ . '/../../includes/safe_json_response.php';
 require_once __DIR__ . '/../../includes/StandardUploadHandler.php';
+require_once __DIR__ . '/../../includes/DataAdapter.php';
 
 header('Content-Type: application/json; charset=utf-8');
 session_start();
@@ -141,7 +142,43 @@ $customer_phone = $_POST['customer_phone'] ?? null;
 // === 13. 원본 파일명 ===
 $original_filename = $_POST['original_filename'] ?? null;
 
-// === 14. DB INSERT (53개 필드 - no와 regdate 제외) ===
+// === 14. Phase 3: DataAdapter 변환 (shop_temp와 동일) ===
+$adapter_input = [
+    'product_type' => $product_type,
+    'jong' => $jong ?? '',
+    'garo' => $garo ?? '',
+    'sero' => $sero ?? '',
+    'mesu' => $mesu ?? '',
+    'domusong' => $domusong ?? '',
+    'uhyung' => $uhyung ?? 0,
+    'MY_type' => $MY_type ?? '',
+    'MY_Fsd' => $MY_Fsd ?? '',
+    'PN_type' => $PN_type ?? '',
+    'MY_amount' => $MY_amount ?? '',
+    'POtype' => $POtype ?? '',
+    'st_price' => $st_price,
+    'st_price_vat' => $st_price_vat,
+    'quantity_display' => $_POST['quantity_display'] ?? ''  // Frontend 우선
+];
+
+$phase3_data = DataAdapter::convert($adapter_input);
+
+// Phase 3 필드 추출
+$spec_type = $phase3_data['spec_type'] ?? '';
+$spec_material = $phase3_data['spec_material'] ?? '';
+$spec_size = $phase3_data['spec_size'] ?? '';
+$spec_sides = $phase3_data['spec_sides'] ?? '';
+$spec_design = $phase3_data['spec_design'] ?? '';
+$quantity_value = $phase3_data['quantity_value'] ?? null;
+$quantity_unit = $phase3_data['quantity_unit'] ?? '매';
+$quantity_sheets = $phase3_data['quantity_sheets'] ?? null;
+$quantity_display = $phase3_data['quantity_display'] ?? '';
+$price_supply = $phase3_data['price_supply'] ?? 0;
+$price_vat = $phase3_data['price_vat'] ?? 0;
+$price_vat_amount = $phase3_data['price_vat_amount'] ?? 0;
+$data_version = 2;  // Phase 3 마크
+
+// === 15. DB INSERT (66개 필드 - no와 regdate 제외) ===
 $query = "INSERT INTO quotation_temp (
     session_id, order_id, parent, product_type,
     jong, garo, sero, mesu, domusong, uhyung,
@@ -160,6 +197,9 @@ $query = "INSERT INTO quotation_temp (
     MY_type_name, Section_name, POtype_name,
     customer_name, customer_phone,
     original_filename,
+    spec_type, spec_material, spec_size, spec_sides, spec_design,
+    quantity_value, quantity_unit, quantity_sheets, quantity_display,
+    price_supply, price_vat, price_vat_amount, data_version,
     regdate
 ) VALUES (
     ?, ?, ?, ?,
@@ -179,6 +219,9 @@ $query = "INSERT INTO quotation_temp (
     ?, ?, ?,
     ?, ?,
     ?,
+    ?, ?, ?, ?, ?,
+    ?, ?, ?, ?,
+    ?, ?, ?, ?,
     UNIX_TIMESTAMP()
 )";
 
@@ -186,7 +229,7 @@ $query = "INSERT INTO quotation_temp (
 // Placeholder 개수
 $placeholder_count = substr_count($query, '?');
 
-// 타입 문자열 (53개 파라미터)
+// 타입 문자열 (66개 파라미터)
 $type_string =
     "ssss" .        // session_id, order_id, parent, product_type (4)
     "sssssi" .      // jong, garo, sero, mesu, domusong, uhyung (6)
@@ -204,8 +247,9 @@ $type_string =
     "iiii" .        // envelope_tape_enabled, envelope_tape_quantity, envelope_tape_price, envelope_additional_options_total (4)
     "sss" .         // MY_type_name, Section_name, POtype_name (3)
     "ss" .          // customer_name, customer_phone (2)
-    "s";            // original_filename (1)
-    // Total: 53 parameters
+    "s" .           // original_filename (1)
+    "sssssdsissiii";  // Phase 3: spec_type, spec_material, spec_size, spec_sides, spec_design, quantity_value, quantity_unit, quantity_sheets, quantity_display, price_supply, price_vat, price_vat_amount, data_version (13)
+    // Total: 66 parameters
 
 $type_count = strlen($type_string);
 
@@ -226,7 +270,7 @@ if (!$stmt) {
     safe_json_response(false, null, 'DB 준비 실패: ' . mysqli_error($db));
 }
 
-// bind_param 실행 (53개 파라미터)
+// bind_param 실행 (66개 파라미터)
 mysqli_stmt_bind_param($stmt, $type_string,
     $session_id, $order_id, $parent, $product_type,
     $jong, $garo, $sero, $mesu, $domusong, $uhyung,
@@ -244,7 +288,10 @@ mysqli_stmt_bind_param($stmt, $type_string,
     $envelope_tape_enabled, $envelope_tape_quantity, $envelope_tape_price, $envelope_additional_options_total,
     $MY_type_name, $Section_name, $POtype_name,
     $customer_name, $customer_phone,
-    $original_filename
+    $original_filename,
+    $spec_type, $spec_material, $spec_size, $spec_sides, $spec_design,
+    $quantity_value, $quantity_unit, $quantity_sheets, $quantity_display,
+    $price_supply, $price_vat, $price_vat_amount, $data_version
 );
 
 if (!mysqli_stmt_execute($stmt)) {
