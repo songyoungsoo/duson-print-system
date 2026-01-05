@@ -811,8 +811,15 @@ class ProductSpecFormatter {
      * 전단지/리플렛: "0.5연 (250매)" 형식
      * 스티커: "1,000매" 형식
      * 기타: "1,000매" 형식
+     *
+     * ✅ Phase 3: quantity_display 필드 우선 사용
      */
     public static function getQuantityDisplay($item) {
+        // ✅ Phase 3: quantity_display 우선 체크 (quotation_temp, shop_temp)
+        if (!empty($item['quantity_display'])) {
+            return $item['quantity_display'];
+        }
+
         $productType = $item['product_type'] ?? '';
         $unit = self::getUnit($item);
 
