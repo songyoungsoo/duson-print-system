@@ -4,6 +4,7 @@
  */
 
 require_once $_SERVER['DOCUMENT_ROOT'] . '/includes/ProductSpecFormatter.php';
+require_once $_SERVER['DOCUMENT_ROOT'] . '/includes/DataAdapter.php';  // Phase 2
 
 class QuoteManager {
     private $db;
@@ -35,28 +36,33 @@ class QuoteManager {
             $formatted .= "규격: " . $data['MY_type'] . "\n";
         }
 
-        // 수량 정보 - 전단지/리플렛은 "X연 (Y매)" 형식, 나머지는 일반 형식
-        if (($productType === 'inserted' || $productType === 'leaflet')) {
-            $myAmount = floatval($data['MY_amount'] ?? 0);
-            $mesu = intval($data['mesu'] ?? 0);
-
-            if ($myAmount > 0 && $mesu > 0) {
-                // 연수 표시: 정수면 소수점 없이, 소수면 1자리
-                $yeonDisplay = floor($myAmount) == $myAmount
-                    ? number_format($myAmount)
-                    : number_format($myAmount, 1);
-                $formatted .= "수량: " . $yeonDisplay . "연 (" . number_format($mesu) . "매)\n";
-            }
+        // ★★★ PRIORITY: Use stored quantity_display if available ★★★
+        if (!empty($data['quantity_display'])) {
+            $formatted .= "수량: " . $data['quantity_display'] . "\n";
         } else {
-            // 기타 제품: 일반 수량 표시
-            $quantity = floatval($data['quantity'] ?? 0);
-            $unit = $data['unit'] ?? '매';
+            // Fallback: 레거시 데이터를 위한 계산 로직
+            if (($productType === 'inserted' || $productType === 'leaflet')) {
+                $myAmount = floatval($data['MY_amount'] ?? 0);
+                $mesu = intval($data['mesu'] ?? 0);
 
-            if ($quantity > 0) {
-                $quantityDisplay = floor($quantity) == $quantity
-                    ? number_format($quantity)
-                    : number_format($quantity, 1);
-                $formatted .= "수량: " . $quantityDisplay . " " . $unit . "\n";
+                if ($myAmount > 0 && $mesu > 0) {
+                    // 연수 표시: 정수면 소수점 없이, 소수면 1자리
+                    $yeonDisplay = floor($myAmount) == $myAmount
+                        ? number_format($myAmount)
+                        : number_format($myAmount, 1);
+                    $formatted .= "수량: " . $yeonDisplay . "연 (" . number_format($mesu) . "매)\n";
+                }
+            } else {
+                // 기타 제품: 일반 수량 표시
+                $quantity = floatval($data['quantity'] ?? 0);
+                $unit = $data['unit'] ?? '매';
+
+                if ($quantity > 0) {
+                    $quantityDisplay = floor($quantity) == $quantity
+                        ? number_format($quantity)
+                        : number_format($quantity, 1);
+                    $formatted .= "수량: " . $quantityDisplay . " " . $unit . "\n";
+                }
             }
         }
 
@@ -477,6 +483,10 @@ class QuoteManager {
             $productType = 'sticker';
         }
 
+        // ✅ Phase 2: DataAdapter로 표준 데이터 추출
+        $standard_data = DataAdapter::legacyToStandard($cartItem, $productType);
+        $quantity_display = $standard_data['quantity_display'] ?? '';
+
         // 기본 필드 추출
         $productName = ProductSpecFormatter::getProductTypeName($productType);
         $specification = $this->formatter->format($cartItem);
@@ -530,7 +540,8 @@ class QuoteManager {
             'mesu' => $mesu,
             'quantity' => $quantity,
             'unit' => $unit,
-            'ordertype' => $ordertype
+            'ordertype' => $ordertype,
+            'quantity_display' => $quantity_display  // ★ Phase 2: 저장된 드롭다운 텍스트 우선 사용
         ];
         $formattedDisplay = $this->generateFormattedDisplay($productType, $displayData);
 
@@ -575,27 +586,49 @@ class QuoteManager {
 
         $isManualEntry = 0; // 🆕 Phase C: 자동계산 품목
 
-        // ===== INSERT 쿼리 (25개 파라미터) - Phase C: is_manual_entry 추가 =====
+        // ===== Phase 3: Extract Phase 3 fields from cart item =====
+        $specType = $cartItem['spec_type'] ?? '';
+        $specMaterial = $cartItem['spec_material'] ?? '';
+        $specSize = $cartItem['spec_size'] ?? '';
+        $specSides = $cartItem['spec_sides'] ?? '';
+        $specDesign = $cartItem['spec_design'] ?? '';
+        $quantityValue = $cartItem['quantity_value'] ?? null;
+        $quantityUnitPhase3 = $cartItem['quantity_unit'] ?? '매';
+        $quantitySheets = $cartItem['quantity_sheets'] ?? null;
+        $quantityDisplayPhase3 = $cartItem['quantity_display'] ?? '';
+        $priceSupplyPhase3 = $cartItem['price_supply'] ?? 0;
+        $priceVat = $cartItem['price_vat'] ?? 0;
+        $priceVatAmountPhase3 = $cartItem['price_vat_amount'] ?? 0;
+        $dataVersion = $cartItem['data_version'] ?? 1;
+
+        // ===== INSERT 쿼리 (37개 파라미터) - Phase 3: 12개 필드 추가 =====
         $query = "INSERT INTO quote_items (
             quote_id, item_no, product_type, MY_type, PN_type, MY_Fsd, POtype, MY_amount, mesu,
             product_name, specification,
             quantity, unit, ordertype, unit_price, supply_price, vat_amount, total_price,
             source_type, source_id, source_data,
-            product_data, formatted_display, additional_options, additional_options_total, is_manual_entry
-        ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, 'cart', ?, ?, ?, ?, ?, ?, ?)";
+            product_data, formatted_display, additional_options, additional_options_total, is_manual_entry,
+            spec_type, spec_material, spec_size, spec_sides, spec_design,
+            quantity_value, quantity_unit_phase3, quantity_sheets, quantity_display,
+            price_supply_phase3, price_vat, price_vat_amount_phase3, data_version
+        ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, 'cart', ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)";
 
         $stmt = mysqli_prepare($this->db, $query);
         $sourceData = json_encode($cartItem, JSON_UNESCAPED_UNICODE);
         $sourceId = intval($cartItem['no'] ?? 0);
 
-        // bind_param 타입 문자열: 25개 파라미터 (Phase C)
-        // i i s s s s s d i s s d s s d i i i i s s s s i i
-        mysqli_stmt_bind_param($stmt, "iisssssdissdssdiiiissssii",
+        // bind_param 타입 문자열: 38개 파라미터 (Phase 3: 25 original + 13 Phase 3)
+        // Original 25: i i s s s s s d i s s d s s d i i i i s s s s i i
+        // Phase 3 13:  s s s s s d s i s i i i i
+        mysqli_stmt_bind_param($stmt, "iisssssdissdssdiiiissssii" . "sssssdsissiii",
             $quoteId, $itemNo, $productType, $myType, $pnType, $myFsd, $poType, $myAmount, $mesu,
             $productName, $specification,
             $quantity, $unit, $ordertype, $unitPrice, $supplyPrice, $vatAmount, $totalPrice,
             $sourceId, $sourceData,
-            $productData, $formattedDisplay, $additionalOptions, $additionalOptionsTotal, $isManualEntry
+            $productData, $formattedDisplay, $additionalOptions, $additionalOptionsTotal, $isManualEntry,
+            $specType, $specMaterial, $specSize, $specSides, $specDesign,
+            $quantityValue, $quantityUnitPhase3, $quantitySheets, $quantityDisplayPhase3,
+            $priceSupplyPhase3, $priceVat, $priceVatAmountPhase3, $dataVersion
         );
 
         if (!mysqli_stmt_execute($stmt)) {
@@ -647,21 +680,44 @@ class QuoteManager {
 
         $isManualEntry = 0; // 🆕 Phase C: 자동계산 품목
 
-        // 6. DB INSERT (Phase C: is_manual_entry 추가)
+        // ===== Phase 3: Extract Phase 3 fields from quotation_temp =====
+        $specType = $tempItem['spec_type'] ?? '';
+        $specMaterial = $tempItem['spec_material'] ?? '';
+        $specSize = $tempItem['spec_size'] ?? '';
+        $specSides = $tempItem['spec_sides'] ?? '';
+        $specDesign = $tempItem['spec_design'] ?? '';
+        $quantityValue = $tempItem['quantity_value'] ?? null;
+        $quantityUnitPhase3 = $tempItem['quantity_unit'] ?? '매';
+        $quantitySheets = $tempItem['quantity_sheets'] ?? null;
+        $quantityDisplayPhase3 = $tempItem['quantity_display'] ?? '';
+        $priceSupplyPhase3 = $tempItem['price_supply'] ?? 0;
+        $priceVat = $tempItem['price_vat'] ?? 0;
+        $priceVatAmountPhase3 = $tempItem['price_vat_amount'] ?? 0;
+        $dataVersion = $tempItem['data_version'] ?? 1;
+
+        // 6. DB INSERT (Phase 3: 13개 필드 추가)
         $query = "INSERT INTO quote_items (
             quote_id, item_no, product_type, product_name, specification,
             quantity, unit, unit_price, supply_price, vat_amount, total_price,
-            source_type, source_id, notes, is_manual_entry
-        ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, 'quotation_temp', ?, ?, ?)";
+            source_type, source_id, notes, is_manual_entry,
+            spec_type, spec_material, spec_size, spec_sides, spec_design,
+            quantity_value, quantity_unit_phase3, quantity_sheets, quantity_display,
+            price_supply_phase3, price_vat, price_vat_amount_phase3, data_version
+        ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, 'quotation_temp', ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)";
 
         $stmt = mysqli_prepare($this->db, $query);
         $sourceId = intval($tempItem['no'] ?? $tempItem['id'] ?? 0);
 
-        // 14개 파라미터 (Phase C): i i s s s d s d i i i i s i
-        mysqli_stmt_bind_param($stmt, "iisssdsdiiissi",
+        // 27개 파라미터 (Phase 3: 14 original + 13 Phase 3)
+        // Original 14: i i s s s d s d i i i i s i
+        // Phase 3 13:  s s s s s d s i s i i i i
+        mysqli_stmt_bind_param($stmt, "iisssdsdiiissi" . "sssssdsissiii",
             $quoteId, $itemNo, $productType, $productName, $specification,
             $quantity, $unit, $unitPrice, $supplyPrice, $vatAmount, $totalPrice,
-            $sourceId, $notes, $isManualEntry
+            $sourceId, $notes, $isManualEntry,
+            $specType, $specMaterial, $specSize, $specSides, $specDesign,
+            $quantityValue, $quantityUnitPhase3, $quantitySheets, $quantityDisplayPhase3,
+            $priceSupplyPhase3, $priceVat, $priceVatAmountPhase3, $dataVersion
         );
 
         mysqli_stmt_execute($stmt);
@@ -714,17 +770,37 @@ class QuoteManager {
         $sourceType = 'manual';
         $isManualEntry = 1; // 🆕 Phase C: 수동입력 품목
 
+        // ===== Phase 3: Manual entry uses NULL/empty for most Phase 3 fields =====
+        // 수동입력은 사용자가 직접 입력한 값만 사용하고, Phase 3 표준화 안함
+        $specType = null;
+        $specMaterial = null;
+        $specSize = null;
+        $specSides = null;
+        $specDesign = null;
+        $quantityValue = $quantity;  // 사용자 입력 수량
+        $quantityUnitPhase3 = $unit;  // 사용자 입력 단위
+        $quantitySheets = null;
+        $quantityDisplayPhase3 = $quantity . $unit;  // "10개" 형식
+        $priceSupplyPhase3 = $supplyPrice;  // 사용자 입력 공급가
+        $priceVat = $totalPrice;
+        $priceVatAmountPhase3 = $vatAmount;
+        $dataVersion = 1;  // Legacy format (manual entry)
+
         $query = "INSERT INTO quote_items (
             quote_id, item_no, product_type, product_name, specification,
             quantity, unit, unit_price, supply_price, vat_amount, total_price,
-            source_type, notes, is_manual_entry
-        ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)";
+            source_type, notes, is_manual_entry,
+            spec_type, spec_material, spec_size, spec_sides, spec_design,
+            quantity_value, quantity_unit_phase3, quantity_sheets, quantity_display,
+            price_supply_phase3, price_vat, price_vat_amount_phase3, data_version
+        ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)";
 
         $stmt = mysqli_prepare($this->db, $query);
 
-        // 타입 문자열: 14개 (i=integer, s=string, d=double) - Phase C: is_manual_entry 추가
-        // quote_id(i), item_no(i), product_type(s), product_name(s), specification(s), quantity(d), unit(s), unit_price(d), supply_price(i), vat_amount(i), total_price(i), source_type(s), notes(s), is_manual_entry(i)
-        mysqli_stmt_bind_param($stmt, "iisssdsdiiissi",
+        // 타입 문자열: 27개 파라미터 (Phase 3: 14 original + 13 Phase 3)
+        // Original 14: i i s s s d s d i i i s s i
+        // Phase 3 13:  s s s s s d s i s i i i i
+        mysqli_stmt_bind_param($stmt, "iisssdsdiiissi" . "sssssdsissiii",
             $quoteId, $itemNo,
             $productType,
             $productName,
@@ -734,7 +810,10 @@ class QuoteManager {
             $unitPrice, $supplyPrice, $vatAmount, $totalPrice,
             $sourceType,
             $notes,
-            $isManualEntry
+            $isManualEntry,
+            $specType, $specMaterial, $specSize, $specSides, $specDesign,
+            $quantityValue, $quantityUnitPhase3, $quantitySheets, $quantityDisplayPhase3,
+            $priceSupplyPhase3, $priceVat, $priceVatAmountPhase3, $dataVersion
         );
 
         mysqli_stmt_execute($stmt);
