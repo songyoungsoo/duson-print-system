@@ -562,7 +562,7 @@ function handleStatusChange_<?php echo $row['no']; ?>(select) {
 </script>
 </td>
 <td class="order-table-td">
-<button type="button" class="btn btn--sm btn--secondary" onClick="javascript:popup=window.open('admin.php?mode=SinForm&coe&no=<?php echo $row['no'] ?><?php if ($row['ThingCate']) { ?>&ModifyCode=ok<?php } ?>', 'SinHH','width=600,height=100,top=0,left=0,menubar=no,resizable=no,statusbar=no,scrollbars=yes,toolbar=no'); popup.focus();">
+<button type="button" class="btn btn--sm btn--secondary" onClick="javascript:popup=window.open('admin.php?mode=SinForm&coe&no=<?php echo $row['no'] ?><?php if ($row['ThingCate']) { ?>&ModifyCode=ok<?php } ?>', 'SinHH','width=390,height=450,top=100,left=100,menubar=no,resizable=yes,statusbar=no,scrollbars=yes,toolbar=no'); popup.focus();">
     <?php if ($row['ThingCate']) { ?>📝 시안수정<?php } else { ?>➕ 시안등록<?php } ?>
 </button>
 </td>

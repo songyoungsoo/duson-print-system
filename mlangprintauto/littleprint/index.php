@@ -15,6 +15,9 @@ $isQuotationMode = isset($_GET['mode']) && $_GET['mode'] === 'quotation';
 include "../../includes/functions.php";
 include "../../db.php";
 
+// 방문자 추적 시스템
+include_once $_SERVER['DOCUMENT_ROOT'] . '/includes/visitor_tracker.php';
+
 // 데이터베이스 연결 및 설정
 check_db_connection($db);
 mysqli_set_charset($db, "utf8");

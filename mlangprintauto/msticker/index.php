@@ -3,6 +3,9 @@
 include "../../includes/functions.php";
 include "../../db.php";
 
+// 방문자 추적 시스템
+include_once $_SERVER['DOCUMENT_ROOT'] . '/includes/visitor_tracker.php';
+
 // 공통 인증 시스템
 include "../../includes/auth.php";
 

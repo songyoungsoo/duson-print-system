@@ -14,6 +14,9 @@ ini_set('display_errors', 0);
 include "../../db.php";
 $connect = $db;
 
+// 방문자 추적 시스템
+include_once $_SERVER['DOCUMENT_ROOT'] . '/includes/visitor_tracker.php';
+
 // 페이지 설정
 $page_title = '📄 두손기획인쇄 - 전단지 컴팩트 견적';
 $current_page = 'leaflet';

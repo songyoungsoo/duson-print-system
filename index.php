@@ -11,6 +11,9 @@ ini_set('display_errors', 0);
 include "db.php";
 $connect = $db;
 
+// 방문자 추적 시스템
+include_once $_SERVER['DOCUMENT_ROOT'] . '/includes/visitor_tracker.php';
+
 // 페이지 설정
 $page_title = '두손기획인쇄 - 스티커 전단지 명함 봉투 카다록 포스터 상품권 양식지 자석스티커 인쇄 전문';
 $current_page = 'home';

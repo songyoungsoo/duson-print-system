@@ -5,6 +5,6 @@
 
 
 <frameset cols = 150,*>
-<frame src= left.php name=menu>
+<frame src= left01.php name=menu>
 <frame src = main.php name=main>
 </frameset>

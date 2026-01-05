@@ -945,126 +945,213 @@ if ($mode == "OrderView") {
 <?php
 if ($mode == "SinForm") { /////////////////////////////////////////////////////////////////////////
     include "../title.php";
+
+    // 전화번호 조회 (교정확인용)
+    $db->set_charset("utf8");
+    $stmt = $db->prepare("SELECT Hendphone, pass FROM mlangorder_printauto WHERE no = ?");
+    $stmt->bind_param("i", $no);
+    $stmt->execute();
+    $stmt->bind_result($ViewSignTy_Hendphone, $ViewSignTy_pass);
+    $stmt->fetch();
+    $stmt->close();
 ?>
+<!DOCTYPE html>
+<html lang="ko">
 <head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>교정/시안 등록</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@300;400;500;600;700&display=swap" rel="stylesheet">
     <style>
-        .Left1 {
-            font-size: 10pt;
-            color: #000000; /* 글씨 검은색 */
-            font-weight: bold;
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
         }
-
+        body {
+            font-family: 'Noto Sans KR', sans-serif;
+            margin: 0;
+            padding: 20px;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        }
+        .form-container {
+            width: 350px;
+            min-width: 350px;
+            max-width: 350px;
+            background: #fff;
+            border-radius: 12px;
+            box-shadow: 0 15px 40px rgba(0,0,0,0.3);
+            overflow: hidden;
+            animation: slideIn 0.3s ease-out;
+        }
+        @keyframes slideIn {
+            from {
+                opacity: 0;
+                transform: translateX(-20px);
+            }
+            to {
+                opacity: 1;
+                transform: translateX(0);
+            }
+        }
+        .form-header {
+            background: linear-gradient(135deg, #1e3c72 0%, #2a5298 100%);
+            color: #fff;
+            padding: 16px;
+            text-align: center;
+        }
+        .form-header h2 {
+            font-size: 16px;
+            font-weight: 600;
+            margin: 0;
+            letter-spacing: 0.5px;
+        }
+        .form-header .subtitle {
+            font-size: 11px;
+            opacity: 0.8;
+            margin-top: 4px;
+        }
+        .form-body {
+            padding: 18px;
+        }
+        .form-group {
+            margin-bottom: 14px;
+        }
+        .form-group label {
+            display: block;
+            font-size: 12px;
+            font-weight: 500;
+            color: #374151;
+            margin-bottom: 6px;
+        }
+        .form-group input[type="text"],
+        .form-group input[type="file"],
+        .form-group select {
+            width: 100%;
+            padding: 8px 10px;
+            border: 1px solid #e5e7eb;
+            border-radius: 6px;
+            font-size: 12px;
+            font-family: 'Noto Sans KR', sans-serif;
+            transition: all 0.2s ease;
+            background: #f9fafb;
+        }
+        .form-group input[type="text"]:focus,
+        .form-group select:focus {
+            border-color: #667eea;
+            background: #fff;
+            outline: none;
+            box-shadow: 0 0 0 2px rgba(102, 126, 234, 0.15);
+        }
+        .form-group input[type="file"] {
+            padding: 6px;
+            cursor: pointer;
+            font-size: 11px;
+        }
+        .form-group .hint {
+            font-size: 10px;
+            color: #6b7280;
+            margin-top: 4px;
+        }
+        .btn-submit {
+            width: 100%;
+            padding: 12px;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: #fff;
+            border: none;
+            border-radius: 8px;
+            font-size: 13px;
+            font-weight: 600;
+            font-family: 'Noto Sans KR', sans-serif;
+            cursor: pointer;
+            transition: all 0.2s ease;
+            margin-top: 8px;
+        }
+        .btn-submit:hover {
+            transform: translateY(-1px);
+            box-shadow: 0 6px 20px rgba(102, 126, 234, 0.35);
+        }
     </style>
-</head>
-
-
     <script>
-        self.moveTo(0,0);
-        self.resizeTo(600, 200);
-
         function MlangFriendSiteCheckField() {
             var f = document.MlangFriendSiteInfo;
-
             if (f.photofile.value.trim() === "") {
                 alert("업로드할 이미지를 올려주시기 바랍니다.");
                 f.photofile.focus();
                 return false;
             }
-            console.log("폼 제출 진행 중...");
-            return true; // `return false;`를 잘못 사용하면 폼이 전송되지 않음!
             <?php
             include "$T_DirFole";
-            if ($View_SignMMk == "yes") {  // 추가된 교정시안 비번 입력 기능
+            if ($View_SignMMk == "yes") {
             ?>
                 if (f.pass.value == "") {
                     alert("사용할 비밀번호를 입력해 주시기 바랍니다.");
                     f.pass.focus();
                     return false;
                 }
-            <?php
-            }
-            ?>
+            <?php } ?>
             return true;
         }
 
-        // 이미지 미리보기
-        function Mlamg_image(image) {
-            let Mlangwindow = window.open("", "Image_Mlang", "toolbar=0,location=0,directories=0,status=0,menubar=0,scrollbars=1,resizable=1,copyhistory=0,width=600,height=400,top=0,left=0");
-            Mlangwindow.document.open();
-            Mlangwindow.document.write("<html><head><title>이미지 미리보기</title></head>");
-            Mlangwindow.document.write("<body>");
-            Mlangwindow.document.write("<p align=center><img src='" + image + "'></p>");
-            Mlangwindow.document.write("<p align=center><INPUT TYPE='button' VALUE='윈도우 닫기' onClick='window.close()'></p>");
-            Mlangwindow.document.write("</body></html>");
-            Mlangwindow.document.close();
-        }
+        // 창 크기 자동 조정
+        window.onload = function() {
+            try {
+                window.resizeTo(390, 450);
+                window.moveTo(100, 100);
+            } catch(e) {
+                console.log('창 크기 조정 불가: ', e);
+            }
+        };
     </script>
-    <script src="../js/coolbar.js" type="text/javascript"></script>
 </head>
+<body>
+    <div class="form-container">
+        <div class="form-header">
+            <h2>📋 교정/시안 <?php echo $ModifyCode ? '수정' : '등록'; ?></h2>
+            <div class="subtitle">주문번호: <?php echo htmlspecialchars($no ?? ''); ?></div>
+        </div>
 
-<body class='coolBar'>
-    <table border=0 align=center width=100% cellpadding='5' cellspacing='1' >
-    <form name="MlangFriendSiteInfo" method="post" enctype="multipart/form-data" 
-    onsubmit="return MlangFriendSiteCheckField()" 
-    action="<?php echo  htmlspecialchars($_SERVER['PHP_SELF']) ?>">
-            <input type="hidden" name='mode' value='SinFormModifyOk'>
-            <input type="hidden" name='no' value="<?php echo  isset($_GET['no']) ? htmlspecialchars($_GET['no']) : '' ?>">
-            <?php if(isset($ModifyCode) && !empty($ModifyCode)){ ?>
-    <input type="hidden" name="ModifyCode" value="ok">
-<?php } ?>
+        <div class="form-body">
+            <form name="MlangFriendSiteInfo" method="post" enctype="multipart/form-data"
+                  onsubmit="return MlangFriendSiteCheckField()"
+                  action="<?php echo htmlspecialchars($_SERVER['PHP_SELF']) ?>">
+                <input type="hidden" name="mode" value="SinFormModifyOk">
+                <input type="hidden" name="no" value="<?php echo htmlspecialchars($_GET['no'] ?? '') ?>">
+                <input type="hidden" name="return_url" value="<?php echo htmlspecialchars($_GET['return_url'] ?? $_SERVER['HTTP_REFERER'] ?? 'admin.php') ?>">
+                <?php if(isset($ModifyCode) && !empty($ModifyCode)){ ?>
+                <input type="hidden" name="ModifyCode" value="ok">
+                <?php } ?>
+                <input type="hidden" name="photofileModify" value="ok">
 
+                <div class="form-group">
+                    <label>📁 이미지 파일 <span style="color:#ef4444;">*</span></label>
+                    <input type="file" name="photofile" accept=".jpg,.jpeg,.png,.gif,.pdf">
+                    <div class="hint">JPG, PNG, GIF, PDF (최대 10MB)</div>
+                </div>
 
-            <tr>
-                <td bgcolor='#6699CC' colspan=2 align=center>
-                    <font color='#FFFFFF'><b>교정/시안 - 등록/수정</b></font>
-                </td>
-            </tr>
+                <div class="form-group">
+                    <label>📱 휴대폰 번호</label>
+                    <input type="text" name="Hendphone" value="<?php echo htmlspecialchars($ViewSignTy_Hendphone ?? '') ?>" placeholder="010-1234-5678">
+                    <div class="hint">고객 교정확인용 (뒷자리 4자리)</div>
+                </div>
 
-            <tr>
-                <td align=right>이미지 자료:&nbsp;</td>
-                <td>
-                    <input type="hidden" name="photofileModify" value='ok'>
-                    <input type="file" size=45 name="photofile" accept=".jpg,.jpeg,.png,.gif,.pdf" onchange="Mlamg_image(this.value)">
-                </td>
-            </tr>
+                <?php if ($View_SignMMk == "yes") { ?>
+                <div class="form-group">
+                    <label>🔒 비밀번호</label>
+                    <input type="text" name="pass" value="<?php echo htmlspecialchars($ViewSignTy_pass ?? '') ?>">
+                </div>
+                <?php } ?>
 
-            <?php
-            if ($View_SignMMk == "yes") {  // 추가된 교정시안 비번 입력 기능
-                // $db는 이미 ../../db.php에서 생성됨
-                if ($db->connect_error) {
-                    die("Database connection failed: " . $db->connect_error);
-                }
-                $db->set_charset("utf8");
-
-                $stmt = $db->prepare("SELECT pass FROM mlangorder_printauto WHERE no = ?");
-                $stmt->bind_param("i", $no);
-                $stmt->execute();
-                $stmt->bind_result($ViewSignTy_pass);
-                $stmt->fetch();
-                $stmt->close();
-                // // $db->close(); // 스크립트 끝에서 자동으로 닫힘 // 데이터베이스 연결은 계속 필요하므로 닫지 않음
-            ?>
-                <tr>
-                    <td align=right>사용 비밀번호:&nbsp;</td>
-                    <td>
-                        <input type="text" name="pass" size=20 value='<?php echo  htmlspecialchars($ViewSignTy_pass) ?>'>
-                    </td>
-                </tr>
-            <?php } ?>
-
-            <tr>
-                <td>&nbsp;</td>
-                <td>
-                    <?php if ($ModifyCode) { ?>
-                        <input type='submit' value='수정 합니다.'>
-                    <?php } else { ?>
-                        <input type='submit' value='등록 합니다.'>
-                    <?php } ?>
-                </td>
-            </tr>
-        </form>
-    </table>
+                <button type="submit" class="btn-submit">
+                    <?php echo $ModifyCode ? '✏️ 수정하기' : '📤 등록하기'; ?>
+                </button>
+            </form>
+        </div>
+    </div>
 </body>
+</html>
 <?php
 }
 ?>
@@ -1140,9 +1227,10 @@ if ($mode == "SinFormModifyOk") { //////////////////////////////////////////////
         $photofileNAME = $new_file_name; // 업로드한 파일명을 DB에 저장할 변수로 설정
     }
 
-    // DB 업데이트
-    $stmt = $db->prepare("UPDATE mlangorder_printauto SET OrderStyle=?, ThingCate=?, pass=? WHERE no=?");
-    $stmt->bind_param("sssi", $TOrderStyle, $photofileNAME, $pass, $no);
+    // DB 업데이트 (전화번호 포함)
+    $Hendphone = isset($_POST['Hendphone']) ? $_POST['Hendphone'] : '';
+    $stmt = $db->prepare("UPDATE mlangorder_printauto SET OrderStyle=?, ThingCate=?, pass=?, Hendphone=? WHERE no=?");
+    $stmt->bind_param("ssssi", $TOrderStyle, $photofileNAME, $pass, $Hendphone, $no);
     
     if (!$stmt->execute()) {
         echo "<script>
@@ -1152,11 +1240,71 @@ if ($mode == "SinFormModifyOk") { //////////////////////////////////////////////
         exit;
     }
 
-    echo "<script>
-            alert('정보를 정상적으로 수정하였습니다.');
-            opener.parent.location.reload();
-            window.self.close();
-          </script>";
+    $return_url = isset($_POST['return_url']) && !empty($_POST['return_url']) ? $_POST['return_url'] : 'admin.php';
+    echo "<!DOCTYPE html>
+<html>
+<head>
+    <meta charset='UTF-8'>
+    <title>완료</title>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body {
+            font-family: 'Noto Sans KR', sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+            padding: 20px;
+        }
+        .alert-box {
+            background: #fff;
+            border-radius: 12px;
+            padding: 30px 20px;
+            text-align: center;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.2);
+            max-width: 350px;
+            width: 100%;
+        }
+        .alert-icon {
+            font-size: 48px;
+            margin-bottom: 15px;
+        }
+        .alert-msg {
+            font-size: 15px;
+            color: #333;
+            margin-bottom: 20px;
+            line-height: 1.5;
+        }
+        .alert-btn {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: #fff;
+            border: none;
+            padding: 12px 30px;
+            border-radius: 8px;
+            font-size: 14px;
+            cursor: pointer;
+            font-family: 'Noto Sans KR', sans-serif;
+        }
+        .alert-btn:hover {
+            opacity: 0.9;
+        }
+    </style>
+</head>
+<body>
+    <div class='alert-box'>
+        <div class='alert-icon'>✅</div>
+        <div class='alert-msg'>정보를 정상적으로<br>수정하였습니다.</div>
+        <button class='alert-btn' onclick=\"window.location.href='" . htmlspecialchars($return_url, ENT_QUOTES) . "'\">확인</button>
+    </div>
+    <script>
+        window.resizeTo(390, 450);
+        setTimeout(function() {
+            window.location.href = '" . htmlspecialchars($return_url, ENT_QUOTES) . "';
+        }, 2000);
+    </script>
+</body>
+</html>";
 
     $stmt->close();
     // // $db->close(); // 스크립트 끝에서 자동으로 닫힘 // 연결 유지
@@ -1171,15 +1319,205 @@ if ($mode == "SinFormModifyOk") { //////////////////////////////////////////////
 if ($mode == "AdminMlangOrdert") { /////////////////////////////////////////////////////////////////
     include "../title.php";
 ?>
+<!DOCTYPE html>
+<html lang="ko">
 <head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>교정/시안 등록</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        body {
+            font-family: 'Noto Sans KR', sans-serif;
+            margin: 0;
+            padding: 20px;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        }
+        .form-container {
+            width: 350px;
+            min-width: 350px;
+            max-width: 350px;
+            background: #fff;
+            border-radius: 12px;
+            box-shadow: 0 15px 40px rgba(0,0,0,0.3);
+            overflow: hidden;
+            animation: slideIn 0.3s ease-out;
+        }
+        @keyframes slideIn {
+            from {
+                opacity: 0;
+                transform: translateX(-20px);
+            }
+            to {
+                opacity: 1;
+                transform: translateX(0);
+            }
+        }
+        .form-header {
+            background: linear-gradient(135deg, #1e3c72 0%, #2a5298 100%);
+            color: #fff;
+            padding: 16px;
+            text-align: center;
+        }
+        .form-header h2 {
+            font-size: 16px;
+            font-weight: 600;
+            margin: 0;
+            letter-spacing: 0.5px;
+        }
+        .form-header .subtitle {
+            font-size: 11px;
+            opacity: 0.8;
+            margin-top: 4px;
+        }
+        .form-body {
+            padding: 18px;
+        }
+        .form-group {
+            margin-bottom: 14px;
+        }
+        .form-group label {
+            display: block;
+            font-size: 12px;
+            font-weight: 500;
+            color: #374151;
+            margin-bottom: 6px;
+        }
+        .form-group label .required {
+            color: #ef4444;
+            margin-left: 2px;
+        }
+        .form-group input[type="text"],
+        .form-group input[type="file"],
+        .form-group select {
+            width: 100%;
+            padding: 8px 10px;
+            border: 1px solid #e5e7eb;
+            border-radius: 6px;
+            font-size: 12px;
+            font-family: 'Noto Sans KR', sans-serif;
+            transition: all 0.2s ease;
+            background: #f9fafb;
+        }
+        .form-group input[type="text"]:focus,
+        .form-group select:focus {
+            border-color: #667eea;
+            background: #fff;
+            outline: none;
+            box-shadow: 0 0 0 2px rgba(102, 126, 234, 0.15);
+        }
+        .form-group input[type="file"] {
+            padding: 6px;
+            cursor: pointer;
+            font-size: 11px;
+        }
+        .form-group input[type="file"]:hover {
+            border-color: #667eea;
+            background: #fff;
+        }
+        .form-group .hint {
+            font-size: 10px;
+            color: #6b7280;
+            margin-top: 4px;
+            display: flex;
+            align-items: center;
+            gap: 3px;
+        }
+        .form-group .hint::before {
+            content: "💡";
+            font-size: 10px;
+        }
+        .radio-group {
+            display: flex;
+            gap: 14px;
+            margin-bottom: 8px;
+        }
+        .radio-item {
+            display: flex;
+            align-items: center;
+            gap: 5px;
+            cursor: pointer;
+        }
+        .radio-item input[type="radio"] {
+            width: 14px;
+            height: 14px;
+            accent-color: #667eea;
+            cursor: pointer;
+        }
+        .radio-item span {
+            font-size: 12px;
+            color: #374151;
+        }
+        .dynamic-select {
+            margin-top: 8px;
+            padding: 8px;
+            background: #f3f4f6;
+            border-radius: 6px;
+            min-height: 36px;
+        }
+        .dynamic-select select,
+        .dynamic-select input[type="text"] {
+            width: 100%;
+            padding: 7px 10px;
+            border: 1px solid #d1d5db;
+            border-radius: 6px;
+            font-size: 12px;
+            font-family: 'Noto Sans KR', sans-serif;
+            background: #fff;
+        }
+        .form-row {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 10px;
+        }
+        .btn-submit {
+            width: 100%;
+            padding: 12px;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: #fff;
+            border: none;
+            border-radius: 8px;
+            font-size: 13px;
+            font-weight: 600;
+            font-family: 'Noto Sans KR', sans-serif;
+            cursor: pointer;
+            transition: all 0.2s ease;
+            margin-top: 8px;
+            letter-spacing: 0.5px;
+        }
+        .btn-submit:hover {
+            transform: translateY(-1px);
+            box-shadow: 0 6px 20px rgba(102, 126, 234, 0.35);
+        }
+        .btn-submit:active {
+            transform: translateY(0);
+        }
+        .icon-label {
+            display: flex;
+            align-items: center;
+            gap: 4px;
+        }
+        @media (max-width: 400px) {
+            .form-row {
+                grid-template-columns: 1fr;
+            }
+            .form-body {
+                padding: 14px;
+            }
+        }
+    </style>
     <script>
-        self.moveTo(0, 0);
-        self.resizeTo(680, 400);
-
         function MlangFriendSiteCheckField() {
             var f = document.MlangFriendSiteInfo;
 
-            if ((!f.MlangFriendSiteInfo[0].checked) && (!f.MlangFriendSiteInfo[1].checked)) {
+            if ((!f.MlangFriendSiteInfoS[0].checked) && (!f.MlangFriendSiteInfoS[1].checked)) {
                 alert('종류를 선택해주세요');
                 return false;
             }
@@ -1208,122 +1546,149 @@ if ($mode == "AdminMlangOrdert") { /////////////////////////////////////////////
                 f.photofile.focus();
                 return false;
             }
+            // 디자이너 이름 저장 (다음 입력 시 기본값으로 사용)
+            localStorage.setItem('lastDesigner', f.Designer.value);
             return true;
         }
 
-    // HONG : 스크립트 값을 표준화시키고 선택하경우 히든으로 값을 넣는 inThing()함수를 하나더 사용.
+        function MlangFriendSiteInfocheck() {
+            let f = document.MlangFriendSiteInfo;
+            let thingInputArea = document.getElementById('Mlang_go');
 
-    function MlangFriendSiteInfocheck() {
-    let f = document.MlangFriendSiteInfo;
-    let thingInputArea = document.getElementById('Mlang_go');
-    
-    if (f.MlangFriendSiteInfoS[0].checked) {
-        let selectHTML = "<select name='Thing' onchange='inThing(this.value)'>";
-        
-        fetch("fetch_categories.php") // Fetch categories dynamically
-        .then(response => response.json())
-        .then(data => {
-            data.forEach(category => {
-                selectHTML += `<option value='${category}'>${category}</option>`;
-            });
-            selectHTML += "</select>";
-            thingInputArea.innerHTML = selectHTML;
-        })
-        .catch(error => console.error("Error fetching categories:", error));
-    } else if (f.MlangFriendSiteInfoS[1].checked) {
-        thingInputArea.innerHTML = "<input type='text' name='Thing' size='30' onblur='inThing(this.value)'>";
-    }
-}
+            if (f.MlangFriendSiteInfoS[0].checked) {
+                fetch("fetch_categories.php")
+                .then(response => response.json())
+                .then(data => {
+                    let selectHTML = "<select name='Thing' onchange='inThing(this.value)'>";
+                    selectHTML += "<option value=''>-- 선택하세요 --</option>";
+                    data.forEach(category => {
+                        selectHTML += `<option value='${category}'>${category}</option>`;
+                    });
+                    selectHTML += "</select>";
+                    thingInputArea.innerHTML = selectHTML;
+                })
+                .catch(error => console.error("Error:", error));
+            } else if (f.MlangFriendSiteInfoS[1].checked) {
+                thingInputArea.innerHTML = "<input type='text' name='Thing' placeholder='품목명을 직접 입력하세요' onblur='inThing(this.value)'>";
+            }
+        }
 
-function inThing(value) {
-    document.MlangFriendSiteInfo.ThingNo.value = value;
-}
+        function inThing(value) {
+            document.MlangFriendSiteInfo.ThingNo.value = value;
+        }
 
-
-</script>
-<script src="../js/coolbar.js" type="text/javascript"></script>
-<SCRIPT LANGUAGE=JAVASCRIPT src='../js/exchange.js'></SCRIPT>
+        // 창 크기 자동 조정 - resizeTo 제거 (left01.php에서 설정한 크기 사용)
+        window.onload = function() {
+            try {
+                // window.resizeTo(390, 630); // 제거: left01.php의 390x700 설정 우선
+                window.moveTo(100, 100);
+            } catch(e) {
+                console.log('창 위치 조정 불가: ', e);
+            }
+        };
+    </script>
+    <script src="../js/exchange.js"></script>
 </head>
+<body>
+    <div class="form-container">
+        <div class="form-header">
+            <h2>📋 교정/시안 등록</h2>
+            <div class="subtitle">Proof & Design Upload</div>
+        </div>
 
-<body class='coolBar'>
-    <table border=0 align=center width=100% cellpadding='8' cellspacing='1' >
-    <form name="MlangFriendSiteInfo" method="post" enctype="multipart/form-data" 
-    onsubmit="return MlangFriendSiteCheckField()" 
-    action="<?php echo  htmlspecialchars($_SERVER['PHP_SELF'], ENT_QUOTES, 'UTF-8') ?>">
+        <div class="form-body">
+            <form name="MlangFriendSiteInfo" method="post" enctype="multipart/form-data"
+                  onsubmit="return MlangFriendSiteCheckField()"
+                  action="<?php echo htmlspecialchars($_SERVER['PHP_SELF'], ENT_QUOTES, 'UTF-8') ?>">
 
-    <input type="hidden" name='mode' value='AdminMlangOrdertOk'>
-    <input type="hidden" name='no' value='<?php echo  htmlspecialchars($no, ENT_QUOTES, 'UTF-8') ?>'>
+                <input type="hidden" name="mode" value="AdminMlangOrdertOk">
+                <input type="hidden" name="no" value="<?php echo htmlspecialchars($no ?? '', ENT_QUOTES, 'UTF-8') ?>">
+                <input type="hidden" name="return_url" value="<?php echo htmlspecialchars($_SERVER['HTTP_REFERER'] ?? 'admin.php') ?>">
+                <input type="hidden" name="ThingNo" value="">
+                <?php if (!empty($ModifyCode)) { ?>
+                    <input type="hidden" name="ModifyCode" value="ok">
+                <?php } ?>
 
-    <?php if (!empty($ModifyCode)) { ?>
-        <input type="hidden" name='ModifyCode' value='ok'>
-    <?php } ?>
-    <tr>
-                <td bgcolor='#6699CC' colspan=2 align=center>
-                    <font color='#FFFFFF'><b>교정/시안 - 등록/수정</b></font>
-                </td>
-            </tr>
-    <tr>
-        <td bgcolor='#6699CC' align=right>종류&nbsp;</td>
-        <td>
-            <input type="radio" name="MlangFriendSiteInfoS" value="select" onclick='MlangFriendSiteInfocheck()'> 선택박스
-            <input type="radio" name="MlangFriendSiteInfoS" value="input" onclick='MlangFriendSiteInfocheck()'> 직접입력
-            <input type='hidden' name='ThingNo'>
-            <BR>
-            <table border=0 align=center width=100% cellpadding=5 cellspacing=0>
-                <tr>
-                    <td id='Mlang_go'></td>
-                </tr>
-            </table>
-        </td>
-    </tr>
+                <!-- 종류 선택 -->
+                <div class="form-group">
+                    <label><span class="icon-label">📁 종류 <span class="required">*</span></span></label>
+                    <div class="radio-group">
+                        <label class="radio-item">
+                            <input type="radio" name="MlangFriendSiteInfoS" value="select" onclick="MlangFriendSiteInfocheck()">
+                            <span>선택박스</span>
+                        </label>
+                        <label class="radio-item">
+                            <input type="radio" name="MlangFriendSiteInfoS" value="input" onclick="MlangFriendSiteInfocheck()">
+                            <span>직접입력</span>
+                        </label>
+                    </div>
+                    <div class="dynamic-select" id="Mlang_go">
+                        <span style="color:#9ca3af; font-size:13px;">↑ 위에서 종류를 선택하세요</span>
+                    </div>
+                </div>
 
-    <tr>
-        <td bgcolor='#6699CC' align=right>주문인 성함&nbsp;</td>
-        <td><input type="text" name="name" size=20 required></td>
-    </tr>
+                <!-- 주문인/디자이너 -->
+                <div class="form-row">
+                    <div class="form-group">
+                        <label><span class="icon-label">👤 주문인 성함 <span class="required">*</span></span></label>
+                        <input type="text" name="name" placeholder="홍길동" required>
+                    </div>
+                    <div class="form-group">
+                        <label><span class="icon-label">🎨 담당 디자이너 <span class="required">*</span></span></label>
+                        <input type="text" name="Designer" id="designerInput" placeholder="디자이너명" required>
+                        <script>
+                            // 이전에 입력한 디자이너 불러오기
+                            (function() {
+                                var saved = localStorage.getItem('lastDesigner');
+                                if (saved) {
+                                    document.getElementById('designerInput').value = saved;
+                                }
+                            })();
+                        </script>
+                    </div>
+                </div>
 
-    <tr>
-        <td bgcolor='#6699CC' align=right>담당 디자이너&nbsp;</td>
-        <td><input type="text" name="Designer" size=20 required></td>
-    </tr>
+                <!-- 휴대폰 번호 -->
+                <div class="form-group">
+                    <label><span class="icon-label">📱 휴대폰 번호</span></label>
+                    <input type="text" name="Hendphone" placeholder="010-1234-5678">
+                    <div class="hint">고객 교정확인용 - 뒷자리 4자리로 인증</div>
+                </div>
 
-    <tr>
-        <td bgcolor='#6699CC' align=right>결과 처리&nbsp;</td>
-        <td>
-            <select name='OrderStyle' required>
-                <option value='0'>:::선택:::</option>
-                <option value='6'>시안</option>
-                <option value='7'>교정</option>
-            </select>
-        </td>
-    </tr>
+                <!-- 결과처리/주문날짜 -->
+                <div class="form-row">
+                    <div class="form-group">
+                        <label><span class="icon-label">⚙️ 결과 처리 <span class="required">*</span></span></label>
+                        <select name="OrderStyle" required>
+                            <option value="0">-- 선택 --</option>
+                            <option value="6" selected>📝 시안</option>
+                            <option value="7">✅ 교정</option>
+                        </select>
+                    </div>
+                    <div class="form-group">
+                        <label><span class="icon-label">📅 주문 날짜 <span class="required">*</span></span></label>
+                        <input type="text" name="date" value="<?php echo date('Y-m-d'); ?>" onclick="Calendar(this);" readonly>
+                    </div>
+                </div>
 
-    <tr>
-        <td bgcolor='#6699CC' align=right>주문 날짜&nbsp;</td>
-        <td><input type="text" name="date" size=20 onclick="Calendar(this);">
-        <font style='color:#363636; font-size:8pt;'>(입력예:2005-08-10 * 마우스로 선택 가능)</font></td>
-    </tr>
+                <!-- 파일 업로드 -->
+                <div class="form-group">
+                    <label><span class="icon-label">📎 이미지 자료 <span class="required">*</span></span></label>
+                    <input type="file" name="photofile" accept=".jpg,.jpeg,.png,.gif,.pdf">
+                    <div class="hint">jpg, jpeg, png, gif, pdf 파일만 업로드 가능</div>
+                </div>
 
-    <tr>
-        <td bgcolor='#6699CC' align=right>이미지 자료&nbsp;</td>
-        <td>
-            <input type="file" name="photofile" accept=".jpg,.jpeg,.png,.gif,.pdf">
-        </td>
-    </tr>
-
-    <tr>
-        <td align=center colspan=2>
-            <?php if (!empty($ModifyCode)) { ?>
-                <input type='submit' value='수정 합니다.'>
-            <?php } else { ?>
-                <input type='submit' value='등록 합니다.'>
-            <?php } ?>
-        </td>
-    </tr>
-</form>
-    </table>
+                <!-- 제출 버튼 -->
+                <?php if (!empty($ModifyCode)) { ?>
+                    <button type="submit" class="btn-submit">✏️ 수정하기</button>
+                <?php } else { ?>
+                    <button type="submit" class="btn-submit">📤 등록하기</button>
+                <?php } ?>
+            </form>
+        </div>
+    </div>
 </body>
-
+</html>
 <?php
 }
 ?>
@@ -1357,12 +1722,24 @@ if ($mode == "AdminMlangOrdertOk") { ///////////////////////////////////////////
     $row = $Table_result->fetch_row();
     $new_no = $row[0] ? $row[0] + 1 : 1;
 
-    // 업로드 폴더 생성
-    $dir = "../../mlangorder_printauto/upload/$new_no";
-    if (!is_dir($dir)) {
-        mkdir($dir, 0755, true);
-        chmod($dir, 0777);
+    // 업로드 폴더 생성 (절대 경로 사용)
+    $upload_base = $_SERVER['DOCUMENT_ROOT'] . '/mlangorder_printauto/upload';
+    $dir = $upload_base . '/' . $new_no;
+
+    // 베이스 폴더 확인 및 생성
+    if (!is_dir($upload_base)) {
+        if (!mkdir($upload_base, 0777, true)) {
+            die("<script>alert('업로드 베이스 폴더 생성 실패!'); history.go(-1);</script>");
+        }
     }
+
+    // 주문별 폴더 생성
+    if (!is_dir($dir)) {
+        if (!mkdir($dir, 0777, true)) {
+            die("<script>alert('업로드 폴더 생성 실패! 폴더: " . $dir . "'); history.go(-1);</script>");
+        }
+    }
+
     //파일 업로드 처리
     $photofileNAME = "";
     if (!empty($_FILES['photofile']['name'])) {
@@ -1370,10 +1747,10 @@ if ($mode == "AdminMlangOrdertOk") { ///////////////////////////////////////////
         $file_tmp_path = $_FILES['photofile']['tmp_name'];
         $file_ext = strtolower(pathinfo($file_name, PATHINFO_EXTENSION));
         $allowed_extensions = ["jpg", "jpeg", "png", "gif", "pdf"];
-        $max_file_size = 2 * 1024 * 1024;
+        $max_file_size = 10 * 1024 * 1024; // 10MB로 증가
 
         if ($_FILES['photofile']['size'] > $max_file_size) {
-            die("<script>alert('파일 크기가 너무 큽니다. (최대: 2MB)'); history.go(-1);</script>");
+            die("<script>alert('파일 크기가 너무 큽니다. (최대: 10MB)'); history.go(-1);</script>");
         }
         if (!in_array($file_ext, $allowed_extensions)) {
             die("<script>alert('허용되지 않은 파일 형식입니다. (jpg, jpeg, png, gif, pdf 만 가능)'); history.go(-1);</script>");
@@ -1382,8 +1759,16 @@ if ($mode == "AdminMlangOrdertOk") { ///////////////////////////////////////////
         $new_file_name = date("YmdHis") . "_" . uniqid() . "." . $file_ext;
         $target_file = $dir . "/" . $new_file_name;
 
+        // 임시 파일 확인
+        if (!is_uploaded_file($file_tmp_path)) {
+            die("<script>alert('업로드된 파일이 없습니다!'); history.go(-1);</script>");
+        }
+
         if (!move_uploaded_file($file_tmp_path, $target_file)) {
-            die("<script>alert('파일 이동 실패!'); history.go(-1);</script>");
+            $error_msg = '파일 이동 실패! ';
+            $error_msg .= '폴더 쓰기 가능: ' . (is_writable($dir) ? 'Y' : 'N') . ', ';
+            $error_msg .= '폴더 존재: ' . (is_dir($dir) ? 'Y' : 'N');
+            die("<script>alert('" . $error_msg . "'); history.go(-1);</script>");
         }
 
         $photofileNAME = $new_file_name;
@@ -1447,20 +1832,73 @@ if (!$stmt->execute()) {
     die("❌ SQL Execution Error: " . $stmt->error);
 }
 
-// 성공 메시지 및 리디렉션
-echo "<script>
-        alert('정보를 정상적으로 저장하였습니다.');
-        opener.parent.location.reload();
-        window.self.close();
-      </script>";
-// <script>
-//     alert('정보를 정상적으로 저장하였습니다.');
-//     if (window.opener && !window.opener.closed) {
-//         window.opener.location.href = '/admin/mlangprintauto/orderlist.php'; // 부모 창 이동
-//         window.opener.focus(); // 부모 창 활성화
-//     }
-//     window.close(); // 현재 창 닫기
-// </script>
+// 성공 메시지 및 교정보기 페이지로 이동
+$return_url_encoded = urlencode('/sub/checkboard.php');
+$next_url = "admin.php?mode=SinForm&no=" . $new_no . "&ModifyCode=ok&return_url=" . $return_url_encoded;
+echo "<!DOCTYPE html>
+<html>
+<head>
+    <meta charset='UTF-8'>
+    <title>완료</title>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body {
+            font-family: 'Noto Sans KR', sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+            padding: 20px;
+        }
+        .alert-box {
+            background: #fff;
+            border-radius: 12px;
+            padding: 30px 20px;
+            text-align: center;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.2);
+            max-width: 350px;
+            width: 100%;
+        }
+        .alert-icon {
+            font-size: 48px;
+            margin-bottom: 15px;
+        }
+        .alert-msg {
+            font-size: 15px;
+            color: #333;
+            margin-bottom: 20px;
+            line-height: 1.5;
+        }
+        .alert-btn {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: #fff;
+            border: none;
+            padding: 12px 30px;
+            border-radius: 8px;
+            font-size: 14px;
+            cursor: pointer;
+            font-family: 'Noto Sans KR', sans-serif;
+        }
+        .alert-btn:hover {
+            opacity: 0.9;
+        }
+    </style>
+</head>
+<body>
+    <div class='alert-box'>
+        <div class='alert-icon'>✅</div>
+        <div class='alert-msg'>정보를 정상적으로 저장하였습니다.<br>시안등록 페이지로 이동합니다.</div>
+        <button class='alert-btn' onclick=\"window.location.href='" . $next_url . "'\">확인</button>
+    </div>
+    <script>
+        window.resizeTo(390, 630);
+        setTimeout(function() {
+            window.location.href = '" . $next_url . "';
+        }, 2000);
+    </script>
+</body>
+</html>";
 
 $stmt->close();
 // $db->close(); // 스크립트 끝에서 자동으로 닫힘

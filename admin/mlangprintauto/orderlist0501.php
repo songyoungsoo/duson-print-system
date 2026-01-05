@@ -428,7 +428,7 @@ function MM_jumpMenuYY_<?=$row[no]?>G(targ,selObj,restore){
 </td>
 <td align=center>
 
-<input type='button' onClick="javascript:popup=window.open('admin.php?mode=SinForm&coe&no=<?=$row[no]?><?if($row[ThingCate]){?>&ModifyCode=ok<?}?>', 'SinHH','width=600,height=100,top=0,left=0,menubar=no,resizable=no,statusbar=no,scrollbars=yes,toolbar=no'); popup.focus();" value='교정/시안 <?if($row[ThingCate]){?>수정<?}else{?>등록<?}?>'>
+<input type='button' onClick="javascript:popup=window.open('admin.php?mode=SinForm&coe&no=<?=$row[no]?><?if($row[ThingCate]){?>&ModifyCode=ok<?}?>', 'SinHH','width=420,height=700,top=100,left=100,menubar=no,resizable=yes,statusbar=no,scrollbars=yes,toolbar=no'); popup.focus();" value='교정/시안 <?if($row[ThingCate]){?>수정<?}else{?>등록<?}?>'>
 
 </td>
 

@@ -1,5 +1,5 @@
 <?php
-$View_SignMMk="";
+$View_SignMMk="no";
 $View_BankName="";
 $View_TName="";
 $View_BankNo="";
