@@ -272,8 +272,8 @@ class ProductSpecFormatter {
 
     /**
      * 봉투
-     * 1줄: 종류 / 용지
-     * 2줄: 인쇄 / 수량 / 디자인
+     * 1줄: 종류 / 재질
+     * 2줄: 인쇄 색상 / 수량 / 디자인
      */
     private function formatEnvelope($item) {
         $line1Parts = [];
@@ -293,7 +293,7 @@ class ProductSpecFormatter {
         // 2줄: 옵션
         if (!empty($item['POtype'])) {
             $name = $item['POtype_name'] ?? $this->getKoreanName($item['POtype']);
-            if ($name) $line2Parts[] = $name;
+            if ($name) $line2Parts[] = $name;  // 인쇄 색상 (마스터1도/마스터2도/칼라4도)
         }
         $line2Parts[] = $this->formatQuantity($item);
         $line2Parts[] = $this->formatDesign($item);

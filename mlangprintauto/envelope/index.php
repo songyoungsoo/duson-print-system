@@ -1,4 +1,7 @@
 <?php
+// 테마 시스템 로드
+include_once __DIR__ . '/../../includes/theme_loader.php';
+
 /**
  * 봉투 견적안내 컴팩트 시스템 - NameCard 시스템 구조 적용
  * Features: 적응형 이미지 분석, 부드러운 애니메이션, 실시간 가격 계산
@@ -31,7 +34,7 @@ $page_title = generate_page_title("봉투 견적안내 컴팩트 - 프리미엄"
 $default_values = [
     'MY_type' => '',
     'Section' => '',
-    'POtype' => '1', // 기본값: 단면
+    'POtype' => '1', // 기본값: 마스터1도
     'MY_amount' => '',
     'ordertype' => 'print' // 기본값: 인쇄만
 ];
@@ -130,14 +133,52 @@ if ($type_result && ($type_row = mysqli_fetch_assoc($type_result))) {
     <link rel="stylesheet" href="../../css/upload-modal-common.css">
     <!-- 견적서 모달용 공통 스타일 -->
     <link rel="stylesheet" href="../../css/quotation-modal-common.css">
+
+    <!-- Phase 5: 견적 요청 버튼 스타일 -->
+    <style>
+        .action-buttons {
+            display: flex;
+            gap: 10px;
+            margin-top: 20px;
+        }
+        .action-buttons button {
+            flex: 1;
+            padding: 15px 20px;
+            font-size: 16px;
+            font-weight: 600;
+            border: none;
+            border-radius: 8px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+        .btn-upload-order {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+        }
+        .btn-upload-order:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 4px 12px rgba(102, 126, 234, 0.4);
+        }
+        .btn-request-quote {
+            background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%);
+            color: white;
+        }
+        .btn-request-quote:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 4px 12px rgba(240, 147, 251, 0.4);
+        }
+    </style>
+    <!-- 테마 시스템 CSS -->
+    <?php ThemeLoader::renderCSS(); ?>
+
 </head>
-<body class="envelope-page<?php echo $isQuotationMode ? ' quotation-modal-mode' : ''; ?>">
+<body class="envelope-page<?php echo $isQuotationMode ? ' quotation-modal-mode' : ''; ?>" <?php ThemeLoader::renderBodyAttributes(); ?>>
     <?php if (!$isQuotationMode) include "../../includes/header-ui.php"; ?>
     <?php if (!$isQuotationMode) include "../../includes/nav.php"; ?>
 
     <div class="product-container">
         <div class="page-title">
-            <h1>✉️ 봉투 견적 안내</h1>
+            <h1>봉투 견적 안내</h1>
         </div>
 
         <!-- 컴팩트 2단 그리드 레이아웃 (500px 갤러리 + 나머지 계산기) -->
@@ -156,7 +197,7 @@ if ($type_result && ($type_row = mysqli_fetch_assoc($type_result))) {
             <!-- 우측: 실시간 가격 계산기 (동적 옵션 로딩 및 자동 계산) -->
             <div class="product-calculator">
                 <div class="calculator-header">
-                    <h3>💰견적 안내</h3>
+                    <h3>견적 안내</h3>
                 </div>
 
                 <form id="envelopeForm">
@@ -186,13 +227,14 @@ if ($type_result && ($type_row = mysqli_fetch_assoc($type_result))) {
                         </div>
 
                         <div class="inline-form-row">
-                            <label class="inline-label" for="POtype">인쇄면</label>
+                            <label class="inline-label" for="POtype">인쇄 색상</label>
                             <select class="inline-select" name="POtype" id="POtype" required>
                                 <option value="">선택해주세요</option>
-                                <option value="1" <?php echo ($default_values['POtype'] == '1') ? 'selected' : ''; ?>>단면</option>
-                                <option value="2" <?php echo ($default_values['POtype'] == '2') ? 'selected' : ''; ?>>양면</option>
+                                <option value="1" <?php echo ($default_values['POtype'] == '1') ? 'selected' : ''; ?>>마스터1도</option>
+                                <option value="2" <?php echo ($default_values['POtype'] == '2') ? 'selected' : ''; ?>>마스터2도</option>
+                                <option value="3" <?php echo ($default_values['POtype'] == '3') ? 'selected' : ''; ?>>칼라4도(옵셋)</option>
                             </select>
-                            <span class="inline-note">단면 또는 양면 인쇄</span>
+                            <span class="inline-note">인쇄 도수 선택</span>
                         </div>
 
                         <div class="inline-form-row">
@@ -244,10 +286,10 @@ if ($type_result && ($type_row = mysqli_fetch_assoc($type_result))) {
                         </button>
                     </div>
                     <?php else: ?>
-                    <!-- 일반 모드: 파일 업로드 및 주문하기 버튼 -->
-                    <div class="upload-order-button" id="uploadOrderButton">
+                    <!-- 일반 모드: 파일 업로드 및 주문하기 / 견적 요청 버튼 -->
+                    <div class="action-buttons" id="actionButtons">
                         <button type="button" class="btn-upload-order" onclick="openUploadModal()">
-                            📎 파일 업로드 및 주문하기
+                            파일 업로드 및 주문하기
                         </button>
                     </div>
                     <?php endif; ?>
@@ -312,7 +354,7 @@ if ($type_result && ($type_row = mysqli_fetch_assoc($type_result))) {
                 category: 'envelope',
                 apiUrl: '/api/get_real_orders_portfolio.php',
                 title: '봉투 전체 갤러리',
-                icon: '✉️',
+                icon: '',
                 perPage: 18
             });
             
@@ -509,8 +551,8 @@ if ($type_result && ($type_row = mysqli_fetch_assoc($type_result))) {
             formData.append("POtype", document.getElementById("POtype").value);
             formData.append("MY_amount", document.getElementById("MY_amount").value);
             formData.append("ordertype", document.getElementById("ordertype").value);
-            formData.append("calculated_price", Math.round(window.currentPriceData.total_price));
-            formData.append("calculated_vat_price", Math.round(window.currentPriceData.vat_price));
+            formData.append("calculated_price", Math.round(window.currentPriceData.total_price));      // 공급가액 (VAT 미포함)
+            formData.append("calculated_vat_price", Math.round(window.currentPriceData.total_with_vat));  // 합계 (VAT 포함)
 
             // 양면테이프 옵션 추가
             const tapeEnabled = document.getElementById("envelope_tape_enabled")?.checked;
@@ -546,10 +588,52 @@ if ($type_result && ($type_row = mysqli_fetch_assoc($type_result))) {
                 if (onError) onError("네트워크 오류가 발생했습니다.");
             });
         };
+
+        // Phase 5: 견적 요청 함수
+        window.addToQuotation = function() {
+            console.log('💰 견적 요청 시작 - 봉투');
+
+            // 가격 계산 확인
+            if (!window.currentPriceData || !window.currentPriceData.total_price) {
+                alert('가격을 먼저 계산해주세요.');
+                return;
+            }
+
+            // 폼 데이터 수집
+            const formData = new FormData();
+            formData.append('product_type', 'envelope');
+            formData.append('MY_type', document.getElementById('MY_type').value);
+            formData.append('Section', document.getElementById('Section').value);
+            formData.append('POtype', document.getElementById('POtype').value);
+            formData.append('MY_amount', document.getElementById('MY_amount').value);
+            formData.append('ordertype', document.getElementById('ordertype').value);
+            formData.append('calculated_price', Math.round(window.currentPriceData.total_price));      // 공급가액 (VAT 미포함)
+            formData.append('calculated_vat_price', Math.round(window.currentPriceData.total_with_vat));  // 합계 (VAT 포함)
+
+            // AJAX 전송
+            fetch('../quote/add_to_quotation_temp.php', {
+                method: 'POST',
+                body: formData
+            })
+            .then(response => response.json())
+            .then(data => {
+                console.log('서버 응답:', data);
+                if (data.success) {
+                    alert('견적서에 추가되었습니다.');
+                    window.location.href = '/mlangprintauto/quote/';
+                } else {
+                    alert('오류: ' + (data.message || '견적 추가 실패'));
+                }
+            })
+            .catch(error => {
+                console.error('네트워크 오류:', error);
+                alert('네트워크 오류가 발생했습니다.');
+            });
+        };
     </script>
 
     <!-- 견적서 모달 공통 JavaScript -->
-    <script src="../../js/quotation-modal-common.js"></script>
+    <script src="../../js/quotation-modal-common.js?v=<?php echo time(); ?>"></script>
 
     <?php
     // 데이터베이스 연결 종료
