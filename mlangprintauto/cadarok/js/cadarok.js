@@ -452,17 +452,6 @@ function calculatePrice(isAuto = true) {
             const priceData = response.data;
             currentPriceData = priceData;
 
-            // 🔧 quotation-modal-common.js 호환을 위해 window 객체에도 설정
-            // 표준 속성명 추가 (Order_PriceForm, Total_PriceForm)
-            window.currentPriceData = {
-                ...priceData,
-                Order_PriceForm: priceData.total_price,
-                Total_PriceForm: Math.round(priceData.total_with_vat),
-                price: priceData.total_price,
-                price_vat: Math.round(priceData.total_with_vat),
-                vat_price: Math.round(priceData.total_with_vat)
-            };
-
             // 서버에서 이미 추가 옵션이 포함된 가격을 반환하므로 여기서 다시 더하지 않음
             console.log('가격 계산 완료:', {
                 base_price: priceData.base_price,
@@ -760,7 +749,14 @@ function addToBasketFromModal() {
     // 추가 정보
     formData.set('work_memo', workMemo);
     formData.set('upload_method', selectedUploadMethod);
-    
+
+    // ✅ Phase 3: Capture dropdown text for quantity_display
+    const quantitySelect = document.getElementById('MY_amount');
+    if (quantitySelect && quantitySelect.selectedIndex >= 0) {
+        const selectedOption = quantitySelect.options[quantitySelect.selectedIndex];
+        formData.set('quantity_display', selectedOption.text);
+    }
+
     // 업로드된 파일들 추가
     uploadedFiles.forEach((fileObj, index) => {
         formData.append(`uploaded_files[${index}]`, fileObj.file);

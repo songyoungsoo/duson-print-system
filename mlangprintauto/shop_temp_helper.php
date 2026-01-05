@@ -397,7 +397,35 @@ function formatCartItemForDisplay($connect, $item) {
         'additional_options_total' => $item['additional_options_total'] ?? 0,
         // 🆕 명함 프리미엄 옵션 데이터 포함
         'premium_options' => $item['premium_options'] ?? '',
-        'premium_options_total' => $item['premium_options_total'] ?? 0
+        'premium_options_total' => $item['premium_options_total'] ?? 0,
+        // 🆕 봉투 양면테이프 옵션 데이터 포함
+        'envelope_tape_enabled' => $item['envelope_tape_enabled'] ?? 0,
+        'envelope_tape_quantity' => $item['envelope_tape_quantity'] ?? 0,
+        'envelope_tape_price' => $item['envelope_tape_price'] ?? 0,
+        'envelope_additional_options_total' => $item['envelope_additional_options_total'] ?? 0,
+        // 🔧 ProductSpecFormatter를 위한 원본 필드 포함
+        'MY_type' => $item['MY_type'] ?? '',
+        'MY_Fsd' => $item['MY_Fsd'] ?? '',
+        'PN_type' => $item['PN_type'] ?? '',
+        'Section' => $item['Section'] ?? '',
+        'POtype' => $item['POtype'] ?? '',
+        'MY_amount' => $item['MY_amount'] ?? '',
+        'mesu' => $item['mesu'] ?? '',
+        'ordertype' => $item['ordertype'] ?? '',
+        // 🔧 모든 제품의 한글명 필드 포함
+        'MY_type_name' => $item['MY_type_name'] ?? '',
+        'MY_Fsd_name' => $item['MY_Fsd_name'] ?? '',
+        'PN_type_name' => $item['PN_type_name'] ?? '',
+        'Section_name' => $item['Section_name'] ?? '',
+        'POtype_name' => $item['POtype_name'] ?? '',
+        // ✅ Phase 3: 표준 필드 보존 (ProductSpecFormatter용)
+        'spec_type' => $item['spec_type'] ?? '',
+        'spec_material' => $item['spec_material'] ?? '',
+        'spec_size' => $item['spec_size'] ?? '',
+        'spec_sides' => $item['spec_sides'] ?? '',
+        'spec_design' => $item['spec_design'] ?? '',
+        'quantity_display' => $item['quantity_display'] ?? '',
+        'data_version' => $item['data_version'] ?? 1
     ];
     
     switch ($item['product_type']) {
@@ -408,7 +436,7 @@ function formatCartItemForDisplay($connect, $item) {
             $formatted['details'] = [
                 '종류' => $item['jong'],
                 '크기' => $item['garo'] . 'x' . $item['sero'] . 'mm',
-                '수량' => number_format($item['mesu']) . $unit,
+                '수량' => number_format($item['mesu'], 0) . $unit,
                 '옵션' => $item['domusong']
             ];
             break;
@@ -680,11 +708,17 @@ function formatCartItemForDisplay($connect, $item) {
             $formatted['name'] = '📨 봉투';
             // 양식지(ncrflambeau)는 "권" 단위 사용
             $unit = ($item['product_type'] == 'ncrflambeau') ? '권' : '매';
+
+            // 한글명 필드 우선 사용, 없으면 DB 조회
+            $type_name = $item['MY_type_name'] ?? getCategoryName($connect, $item['MY_type']);
+            $section_name = $item['Section_name'] ?? getCategoryName($connect, $item['Section']);
+            $potype_name = $item['POtype_name'] ?? ($item['POtype'] == '1' ? '단면' : '양면');
+
             $formatted['details'] = [
-                '타입' => getCategoryName($connect, $item['MY_type']),
-                '용지' => getCategoryName($connect, $item['MY_Fsd']),
+                '타입' => $type_name,
+                '용지' => $section_name,
                 '수량' => $item['MY_amount'] . $unit,
-                '면수' => $item['POtype'] == '1' ? '단면' : '양면',
+                '면수' => $potype_name,
                 '주문타입' => $item['ordertype'] === 'design' ? '디자인+인쇄' : '인쇄만'
             ];
 
@@ -754,38 +788,74 @@ function formatCartItemForDisplay($connect, $item) {
             break;
             
         case 'msticker':
-            $formatted['name'] = '자석스티커';
-            // 양식지(ncrflambeau)는 "권" 단위 사용
-            $unit = ($item['product_type'] == 'ncrflambeau') ? '권' : '매';
+            $formatted['name'] = '🧲 자석스티커';
+            $unit = '매';
+
+            // 한글명 필드 우선 사용, 없으면 DB 조회
+            $type_name = $item['MY_type_name'] ?? getCategoryName($connect, $item['MY_type']);
+            $section_name = $item['Section_name'] ?? getCategoryName($connect, $item['Section']);
+            $potype_name = $item['POtype_name'] ?? ($item['POtype'] == '1' ? '단면' : '양면');
+
             $formatted['details'] = [
-                '타입' => getCategoryName($connect, $item['MY_type']),
-                '용지' => getCategoryName($connect, $item['MY_Fsd']),
-                '수량' => $item['MY_amount'] . $unit,
+                '종류' => $type_name,
+                '규격' => $section_name,  // Section = 규격/재질
+                '수량' => number_format($item['MY_amount'], 0) . $unit,
+                '면수' => $potype_name,
                 '주문타입' => $item['ordertype'] === 'design' ? '디자인+인쇄' : '인쇄만'
             ];
             break;
             
         case 'merchandisebond':
-            $formatted['name'] = '쿠폰';
-            // 양식지(ncrflambeau)는 "권" 단위 사용
-            $unit = ($item['product_type'] == 'ncrflambeau') ? '권' : '매';
+            $formatted['name'] = '🎫 상품권';
+            $unit = '매';
+
+            // 한글명 필드 우선 사용, 없으면 DB 조회
+            // 상품권은 Section을 재질로 사용
+            $type_name = $item['MY_type_name'] ?? getCategoryName($connect, $item['MY_type']);
+            $section_name = $item['Section_name'] ?? getCategoryName($connect, $item['Section']);
+            $potype_name = $item['POtype_name'] ?? ($item['POtype'] == '1' ? '단면' : '양면');
+
             $formatted['details'] = [
-                '타입' => getCategoryName($connect, $item['MY_type']),
-                '용지' => getCategoryName($connect, $item['MY_Fsd']),
+                '타입' => $type_name,
+                '용지' => $section_name,  // Section 사용
                 '수량' => $item['MY_amount'] . $unit,
-                '면수' => $item['POtype'] == '1' ? '단면' : '양면',
+                '면수' => $potype_name,
                 '주문타입' => $item['ordertype'] === 'design' ? '디자인+인쇄' : '인쇄만'
             ];
             break;
-            
-        case 'ncrflambeau':
-            $formatted['name'] = '양식지';
-            // 양식지(ncrflambeau)는 "권" 단위 사용
-            $unit = '권';
+
+        case 'cadarok':
+            $formatted['name'] = '📘 카달로그';
+            $unit = '매';
+
+            // 한글명 필드 우선 사용, 없으면 DB 조회
+            $type_name = $item['MY_type_name'] ?? getCategoryName($connect, $item['MY_type']);
+            $section_name = $item['Section_name'] ?? getCategoryName($connect, $item['Section']);
+            $potype_name = $item['POtype_name'] ?? ($item['POtype'] == '1' ? '단면' : '양면');
+
             $formatted['details'] = [
-                '타입' => getCategoryName($connect, $item['MY_type']),
-                '용지' => getCategoryName($connect, $item['MY_Fsd']),
-                '규격' => getCategoryName($connect, $item['PN_type']),
+                '타입' => $type_name,
+                '용지' => $section_name,
+                '수량' => number_format($item['MY_amount'], 0) . $unit,
+                '면수' => $potype_name,
+                '주문타입' => $item['ordertype'] === 'design' ? '디자인+인쇄' : '인쇄만'
+            ];
+            break;
+
+        case 'ncrflambeau':
+            $formatted['name'] = '📋 양식지';
+            $unit = '권';
+
+            // 한글명 필드 우선 사용, 없으면 DB 조회
+            // NCR 필드 매핑: MY_type=도수, PN_type=타입, MY_Fsd=용지
+            $type_name = $item['PN_type_name'] ?? getCategoryName($connect, $item['PN_type']);  // 타입
+            $fsd_name = $item['MY_Fsd_name'] ?? getCategoryName($connect, $item['MY_Fsd']);     // 용지
+            $mytype_name = $item['MY_type_name'] ?? getCategoryName($connect, $item['MY_type']); // 도수
+
+            $formatted['details'] = [
+                '타입' => $type_name,
+                '용지' => $fsd_name,
+                '도수' => $mytype_name,  // MY_type이 도수 정보
                 '수량' => $item['MY_amount'] . $unit,
                 '주문타입' => $item['ordertype'] === 'design' ? '디자인+인쇄' : '인쇄만'
             ];
@@ -793,12 +863,22 @@ function formatCartItemForDisplay($connect, $item) {
             
         case 'littleprint':
         case 'poster':  // 레거시 호환
-            $formatted['name'] = '포스터';
+            $formatted['name'] = '🖼️ 포스터';
+            $unit = '매';
+
+            // 한글명 필드 우선 사용, 없으면 DB 조회
+            // 포스터는 Section을 용지로 사용
+            $type_name = $item['MY_type_name'] ?? getCategoryName($connect, $item['MY_type']);
+            $section_name = $item['Section_name'] ?? getCategoryName($connect, $item['Section']);  // Section = 용지
+            $pntype_name = $item['PN_type_name'] ?? getCategoryName($connect, $item['PN_type']);
+            $potype_name = $item['POtype_name'] ?? ($item['POtype'] == '1' ? '단면' : '양면');
+
             $formatted['details'] = [
-                '타입' => getCategoryName($connect, $item['MY_type']),
-                '용지' => getCategoryName($connect, $item['MY_Fsd']),
-                '규격' => getCategoryName($connect, $item['PN_type']),
-                '수량' => $item['MY_amount'],
+                '타입' => $type_name,
+                '용지' => $section_name,  // Section을 용지로 사용
+                '규격' => $pntype_name,
+                '수량' => $item['MY_amount'] . $unit,
+                '면수' => $potype_name,
                 '주문타입' => $item['ordertype'] === 'design' ? '디자인+인쇄' : '인쇄만'
             ];
             break;

@@ -138,7 +138,42 @@ function getOrderItemInfo($summary_item, $specFormatter) {
         $unit = $db_unit;
     }
 
-    if (!empty($summary_item['Type_1'])) {
+    // ✅ Phase 3: 표준 필드 우선 사용 (cart.php, OnlineOrder, OrderComplete와 동일)
+    $has_phase3 = isset($summary_item['data_version']) && $summary_item['data_version'] == 2;
+    $has_phase3_fields = !empty($summary_item['spec_type']) || !empty($summary_item['quantity_display']);
+
+    if ($has_phase3 || $has_phase3_fields) {
+        // ✅ Phase 3 방식: DB 표준 필드 직접 사용
+        $product_type = $summary_item['product_type'] ?? '';
+
+        if ($product_type) {
+            $item_type_display = $specFormatter->getProductTypeName($product_type);
+        }
+
+        // ProductSpecFormatter에 전달 (DB 필드 우선)
+        $full_spec = $specFormatter->formatSingleLine($summary_item);
+
+        // quantity_display에서 수량 정보 추출
+        if (!empty($summary_item['quantity_display'])) {
+            $qty_str = $summary_item['quantity_display'];
+            // 예: "1,000부" → quantity_num=1000, unit="부"
+            if (preg_match('/^([\d,.]+)\s*([가-힣a-zA-Z]+)?/', $qty_str, $matches)) {
+                $quantity_num = floatval(str_replace(',', '', $matches[1]));
+                $unit = $matches[2] ?? $summary_item['quantity_unit'] ?? '';
+            }
+        } else {
+            $quantity_num = $summary_item['quantity_value'] ?? 0;
+            $unit = $summary_item['quantity_unit'] ?? '';
+        }
+
+        // 전단지 판별
+        $is_flyer = ($product_type === 'inserted' || $product_type === 'leaflet');
+        if ($is_flyer) {
+            $mesu_for_display = intval($summary_item['quantity_sheets'] ?? 0);
+        }
+
+    } elseif (!empty($summary_item['Type_1'])) {
+        // ✅ Fallback: Type_1 JSON 사용 (레거시 주문)
         $type_1_data = trim($summary_item['Type_1']);
         $json_data = json_decode($type_1_data, true);
 

@@ -182,6 +182,11 @@ class DataAdapter {
     private static function convertCadarok($data) {
         $amount = intval($data['MY_amount'] ?? 0);
 
+        // ✅ Phase 3: Frontend에서 보낸 quantity_display 우선 사용 (inserted 방식과 동일)
+        $quantity_display = !empty($data['quantity_display'])
+            ? $data['quantity_display']
+            : number_format($amount) . '부';
+
         return [
             'spec_type' => $data['MY_type_name'] ?? '',
             'spec_material' => '',
@@ -191,7 +196,7 @@ class DataAdapter {
             'quantity_value' => $amount,
             'quantity_unit' => '부',
             'quantity_sheets' => $amount,
-            'quantity_display' => number_format($amount) . '부',
+            'quantity_display' => $quantity_display,
             'price_supply' => intval($data['price'] ?? 0),
             'price_vat' => intval($data['vat_price'] ?? 0),
             'price_vat_amount' => intval($data['vat_price'] ?? 0) - intval($data['price'] ?? 0),
