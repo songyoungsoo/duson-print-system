@@ -28,6 +28,67 @@ class DataAdapter {
     }
 
     /**
+     * 표준 데이터 검증
+     *
+     * Phase 3 추가: 필수 필드 검증 메소드
+     *
+     * @param array $standardData 표준 필드 배열
+     * @param string $productType 제품 타입
+     * @return bool 검증 성공 여부
+     */
+    public static function validateStandardData($standardData, $productType) {
+        // 필수 필드 정의 (spec_type은 레거시 데이터의 경우 숫자 ID도 허용)
+        $required = ['spec_type', 'quantity_value', 'quantity_unit'];
+
+        // 각 필수 필드 검증
+        foreach ($required as $field) {
+            if (!isset($standardData[$field]) || $standardData[$field] === '') {
+                error_log("DataAdapter Validation Error: Missing field '{$field}' for product type '{$productType}'");
+                return false;
+            }
+        }
+
+        // 수량 값 유효성 검증
+        if ($standardData['quantity_value'] <= 0) {
+            error_log("DataAdapter Validation Error: Invalid quantity_value for product type '{$productType}'");
+            return false;
+        }
+
+        // 가격 유효성 검증 (price_supply는 필수 아님, 있으면 >= 0 확인)
+        if (isset($standardData['price_supply']) && $standardData['price_supply'] < 0) {
+            error_log("DataAdapter Validation Error: Invalid price_supply for product type '{$productType}'");
+            return false;
+        }
+
+        return true;
+    }
+
+    /**
+     * quantity_display 자동 생성
+     *
+     * Phase 3 추가: 표준 필드에서 quantity_display 문자열 자동 생성
+     *
+     * @param array $standardData 표준 필드 배열
+     * @return string 수량 표시 문자열 (예: "1,000매", "1.5연 (750매)")
+     */
+    public static function generateQuantityDisplay($standardData) {
+        $value = floatval($standardData['quantity_value'] ?? 0);
+        $unit = $standardData['quantity_unit'] ?? '매';
+        $sheets = intval($standardData['quantity_sheets'] ?? 0);
+
+        // 기본 수량 표시: 숫자 + 단위
+        // 정수는 소수점 없이, 소수는 소수점 1자리까지 표시
+        $display = number_format($value, ($value == intval($value)) ? 0 : 1) . $unit;
+
+        // 전단지(연 단위)인 경우: 매수 추가 표시
+        if ($unit === '연' && $sheets > 0) {
+            $display .= ' (' . number_format($sheets) . '매)';
+        }
+
+        return $display;
+    }
+
+    /**
      * 명함 (namecard) 변환
      * MY_type=종류, Section=용지, POtype=인쇄면, MY_amount=매수(천단위)
      */
@@ -35,19 +96,23 @@ class DataAdapter {
         $amount = floatval($data['MY_amount'] ?? 0);
         $qty_value = $amount > 0 && $amount < 10 ? $amount * 1000 : intval($amount);
 
+        // 가격 필드 fallback: shop_temp는 st_price/st_price_vat 사용
+        $price_supply = intval($data['price'] ?? $data['st_price'] ?? 0);
+        $price_vat = intval($data['vat_price'] ?? $data['st_price_vat'] ?? 0);
+
         return [
-            'spec_type' => $data['MY_type_name'] ?? '',
-            'spec_material' => $data['Section_name'] ?? '',
+            'spec_type' => $data['MY_type_name'] ?: ($data['MY_type'] ?? ''),
+            'spec_material' => $data['Section_name'] ?: ($data['Section'] ?? ''),
             'spec_size' => '90x50mm',  // 명함 고정 규격
-            'spec_sides' => $data['POtype_name'] ?? ($data['POtype'] == '1' ? '단면' : '양면'),
+            'spec_sides' => $data['POtype_name'] ?: ($data['POtype'] == '1' ? '단면' : '양면'),
             'spec_design' => ($data['ordertype'] ?? '') === 'total' ? '디자인+인쇄' : '인쇄만',
             'quantity_value' => $qty_value,
             'quantity_unit' => '매',
             'quantity_sheets' => $qty_value,
             'quantity_display' => number_format($qty_value) . '매',
-            'price_supply' => intval($data['price'] ?? 0),
-            'price_vat' => intval($data['vat_price'] ?? 0),
-            'price_vat_amount' => intval($data['vat_price'] ?? 0) - intval($data['price'] ?? 0),
+            'price_supply' => $price_supply,
+            'price_vat' => $price_vat,
+            'price_vat_amount' => $price_vat - $price_supply,
             'premium_options' => $data['premium_options'] ?? '',
             'product_type' => 'namecard'
         ];
@@ -116,19 +181,23 @@ class DataAdapter {
             }
         }
 
+        // 가격 필드 fallback: shop_temp는 st_price/st_price_vat 사용
+        $price_supply = intval($data['Order_PriceForm'] ?? $data['price'] ?? $data['st_price'] ?? 0);
+        $price_vat = intval($data['Total_PriceForm'] ?? $data['vat_price'] ?? $data['st_price_vat'] ?? 0);
+
         return [
-            'spec_type' => $data['MY_type_name'] ?? '',
-            'spec_material' => $data['MY_Fsd_name'] ?? '',
-            'spec_size' => $data['PN_type_name'] ?? '',
-            'spec_sides' => $data['POtype_name'] ?? ($data['POtype'] == '1' ? '단면' : '양면'),
+            'spec_type' => $data['MY_type_name'] ?: ($data['MY_type'] ?? ''),
+            'spec_material' => $data['MY_Fsd_name'] ?: ($data['MY_Fsd'] ?? ''),
+            'spec_size' => $data['PN_type_name'] ?: ($data['PN_type'] ?? ''),
+            'spec_sides' => $data['POtype_name'] ?: ($data['POtype'] == '1' ? '단면' : '양면'),
             'spec_design' => ($data['ordertype'] ?? '') === 'total' ? '디자인+인쇄' : '인쇄만',
             'quantity_value' => $reams,
             'quantity_unit' => '연',
             'quantity_sheets' => $sheets,
             'quantity_display' => $qty_display,
-            'price_supply' => intval($data['Order_PriceForm'] ?? $data['price'] ?? 0),
-            'price_vat' => intval($data['Total_PriceForm'] ?? $data['vat_price'] ?? 0),
-            'price_vat_amount' => intval($data['Total_PriceForm'] ?? 0) - intval($data['Order_PriceForm'] ?? 0),
+            'price_supply' => $price_supply,
+            'price_vat' => $price_vat,
+            'price_vat_amount' => $price_vat - $price_supply,
             'additional_options' => $data['additional_options'] ?? '',
             'product_type' => 'inserted'
         ];
@@ -156,19 +225,23 @@ class DataAdapter {
             ? $data['quantity_display']
             : number_format($qty_value) . '매';
 
+        // 가격 필드 fallback: shop_temp는 st_price/st_price_vat 사용
+        $price_supply = intval($data['price'] ?? $data['st_price'] ?? 0);
+        $price_vat = intval($data['vat_price'] ?? $data['st_price_vat'] ?? 0);
+
         return [
-            'spec_type' => $data['MY_type_name'] ?? '',
-            'spec_material' => $data['Section_name'] ?? '',
+            'spec_type' => $data['MY_type_name'] ?: ($data['MY_type'] ?? ''),
+            'spec_material' => $data['Section_name'] ?: ($data['Section'] ?? ''),
             'spec_size' => '',
-            'spec_sides' => $data['POtype_name'] ?? '',  // 봉투: 인쇄 색상(마스터1도/마스터2도/칼라4도)
+            'spec_sides' => $data['POtype_name'] ?: ($data['POtype'] ?? ''),  // 봉투: 인쇄 색상(마스터1도/마스터2도/칼라4도)
             'spec_design' => ($data['ordertype'] ?? '') === 'total' ? '디자인+인쇄' : '인쇄만',
             'quantity_value' => $qty_value,
             'quantity_unit' => '매',
             'quantity_sheets' => $qty_value,
             'quantity_display' => $quantity_display,
-            'price_supply' => intval($data['price'] ?? 0),
-            'price_vat' => intval($data['vat_price'] ?? 0),
-            'price_vat_amount' => intval($data['vat_price'] ?? 0) - intval($data['price'] ?? 0),
+            'price_supply' => $price_supply,
+            'price_vat' => $price_vat,
+            'price_vat_amount' => $price_vat - $price_supply,
             'envelope_tape_enabled' => $data['envelope_tape_enabled'] ?? 0,
             'envelope_tape_quantity' => $data['envelope_tape_quantity'] ?? 0,
             'product_type' => 'envelope'
@@ -187,19 +260,23 @@ class DataAdapter {
             ? $data['quantity_display']
             : number_format($amount) . '부';
 
+        // 가격 필드 fallback: shop_temp는 st_price/st_price_vat 사용
+        $price_supply = intval($data['price'] ?? $data['st_price'] ?? 0);
+        $price_vat = intval($data['vat_price'] ?? $data['st_price_vat'] ?? 0);
+
         return [
-            'spec_type' => $data['MY_type_name'] ?? '',
+            'spec_type' => $data['MY_type_name'] ?: ($data['MY_type'] ?? ''),
             'spec_material' => '',
-            'spec_size' => $data['Section_name'] ?? '',
-            'spec_sides' => $data['POtype_name'] ?? '',
+            'spec_size' => $data['Section_name'] ?: ($data['Section'] ?? ''),
+            'spec_sides' => $data['POtype_name'] ?: ($data['POtype'] ?? ''),
             'spec_design' => ($data['ordertype'] ?? '') === 'total' ? '디자인+인쇄' : '인쇄만',
             'quantity_value' => $amount,
             'quantity_unit' => '부',
             'quantity_sheets' => $amount,
             'quantity_display' => $quantity_display,
-            'price_supply' => intval($data['price'] ?? 0),
-            'price_vat' => intval($data['vat_price'] ?? 0),
-            'price_vat_amount' => intval($data['vat_price'] ?? 0) - intval($data['price'] ?? 0),
+            'price_supply' => $price_supply,
+            'price_vat' => $price_vat,
+            'price_vat_amount' => $price_vat - $price_supply,
             'additional_options' => $data['additional_options'] ?? '',
             'product_type' => 'cadarok'
         ];
@@ -212,19 +289,23 @@ class DataAdapter {
     private static function convertLittleprint($data) {
         $amount = intval($data['MY_amount'] ?? 0);
 
+        // 가격 필드 fallback: shop_temp는 st_price/st_price_vat 사용
+        $price_supply = intval($data['price'] ?? $data['st_price'] ?? 0);
+        $price_vat = intval($data['vat_price'] ?? $data['st_price_vat'] ?? 0);
+
         return [
-            'spec_type' => $data['MY_type_name'] ?? '',
-            'spec_material' => $data['Section_name'] ?? '',
-            'spec_size' => $data['PN_type_name'] ?? '',
+            'spec_type' => $data['MY_type_name'] ?: ($data['MY_type'] ?? ''),
+            'spec_material' => $data['Section_name'] ?: ($data['Section'] ?? ''),
+            'spec_size' => $data['PN_type_name'] ?: ($data['PN_type'] ?? ''),
             'spec_sides' => '',
             'spec_design' => ($data['ordertype'] ?? '') === 'total' ? '디자인+인쇄' : '인쇄만',
             'quantity_value' => $amount,
             'quantity_unit' => '장',
             'quantity_sheets' => $amount,
             'quantity_display' => number_format($amount) . '장',
-            'price_supply' => intval($data['price'] ?? 0),
-            'price_vat' => intval($data['vat_price'] ?? 0),
-            'price_vat_amount' => intval($data['vat_price'] ?? 0) - intval($data['price'] ?? 0),
+            'price_supply' => $price_supply,
+            'price_vat' => $price_vat,
+            'price_vat_amount' => $price_vat - $price_supply,
             'additional_options' => $data['additional_options'] ?? '',
             'product_type' => 'littleprint'
         ];
@@ -246,19 +327,23 @@ class DataAdapter {
     private static function convertMsticker($data) {
         $amount = intval($data['MY_amount'] ?? 0);
 
+        // 가격 필드 fallback: shop_temp는 st_price/st_price_vat 사용
+        $price_supply = intval($data['price'] ?? $data['st_price'] ?? 0);
+        $price_vat = intval($data['vat_price'] ?? $data['st_price_vat'] ?? 0);
+
         return [
-            'spec_type' => $data['MY_type_name'] ?? '',
+            'spec_type' => $data['MY_type_name'] ?: ($data['MY_type'] ?? ''),
             'spec_material' => '',
-            'spec_size' => $data['Section_name'] ?? '',
-            'spec_sides' => $data['POtype_name'] ?? ($data['POtype'] == '1' ? '단면' : '양면'),
+            'spec_size' => $data['Section_name'] ?: ($data['Section'] ?? ''),
+            'spec_sides' => $data['POtype_name'] ?: ($data['POtype'] == '1' ? '단면' : '양면'),
             'spec_design' => ($data['ordertype'] ?? '') === 'total' ? '디자인+인쇄' : '인쇄만',
             'quantity_value' => $amount,
             'quantity_unit' => '매',
             'quantity_sheets' => $amount,
             'quantity_display' => number_format($amount) . '매',
-            'price_supply' => intval($data['price'] ?? 0),
-            'price_vat' => intval($data['vat_price'] ?? 0),
-            'price_vat_amount' => intval($data['vat_price'] ?? 0) - intval($data['price'] ?? 0),
+            'price_supply' => $price_supply,
+            'price_vat' => $price_vat,
+            'price_vat_amount' => $price_vat - $price_supply,
             'product_type' => 'msticker'
         ];
     }
@@ -270,19 +355,23 @@ class DataAdapter {
     private static function convertNcrflambeau($data) {
         $amount = intval($data['MY_amount'] ?? 0);
 
+        // 가격 필드 fallback: shop_temp는 st_price/st_price_vat 사용
+        $price_supply = intval($data['price'] ?? $data['st_price'] ?? 0);
+        $price_vat = intval($data['vat_price'] ?? $data['st_price_vat'] ?? 0);
+
         return [
-            'spec_type' => $data['PN_type_name'] ?? '',  // 타입
-            'spec_material' => $data['MY_Fsd_name'] ?? '',  // 용지
+            'spec_type' => $data['PN_type_name'] ?: ($data['PN_type'] ?? ''),  // 타입
+            'spec_material' => $data['MY_Fsd_name'] ?: ($data['MY_Fsd'] ?? ''),  // 용지
             'spec_size' => '',
-            'spec_sides' => $data['MY_type_name'] ?? '',  // 도수
+            'spec_sides' => $data['MY_type_name'] ?: ($data['MY_type'] ?? ''),  // 도수
             'spec_design' => ($data['ordertype'] ?? '') === 'total' ? '디자인+인쇄' : '인쇄만',
             'quantity_value' => $amount,
             'quantity_unit' => '권',
             'quantity_sheets' => $amount,
             'quantity_display' => number_format($amount) . '권',
-            'price_supply' => intval($data['price'] ?? 0),
-            'price_vat' => intval($data['vat_price'] ?? 0),
-            'price_vat_amount' => intval($data['vat_price'] ?? 0) - intval($data['price'] ?? 0),
+            'price_supply' => $price_supply,
+            'price_vat' => $price_vat,
+            'price_vat_amount' => $price_vat - $price_supply,
             'premium_options' => $data['premium_options'] ?? '',
             'product_type' => 'ncrflambeau'
         ];
@@ -295,19 +384,23 @@ class DataAdapter {
     private static function convertMerchandisebond($data) {
         $amount = intval($data['MY_amount'] ?? 0);
 
+        // 가격 필드 fallback: shop_temp는 st_price/st_price_vat 사용
+        $price_supply = intval($data['price'] ?? $data['st_price'] ?? 0);
+        $price_vat = intval($data['vat_price'] ?? $data['st_price_vat'] ?? 0);
+
         return [
-            'spec_type' => $data['MY_type_name'] ?? '',
-            'spec_material' => $data['Section_name'] ?? '',
+            'spec_type' => $data['MY_type_name'] ?: ($data['MY_type'] ?? ''),
+            'spec_material' => $data['Section_name'] ?: ($data['Section'] ?? ''),
             'spec_size' => '',
-            'spec_sides' => $data['POtype_name'] ?? ($data['POtype'] == '1' ? '단면' : '양면'),
+            'spec_sides' => $data['POtype_name'] ?: ($data['POtype'] == '1' ? '단면' : '양면'),
             'spec_design' => ($data['ordertype'] ?? '') === 'total' ? '디자인+인쇄' : '인쇄만',
             'quantity_value' => $amount,
             'quantity_unit' => '매',
             'quantity_sheets' => $amount,
             'quantity_display' => number_format($amount) . '매',
-            'price_supply' => intval($data['price'] ?? 0),
-            'price_vat' => intval($data['vat_price'] ?? 0),
-            'price_vat_amount' => intval($data['vat_price'] ?? 0) - intval($data['price'] ?? 0),
+            'price_supply' => $price_supply,
+            'price_vat' => $price_vat,
+            'price_vat_amount' => $price_vat - $price_supply,
             'premium_options' => $data['premium_options'] ?? '',
             'product_type' => 'merchandisebond'
         ];
