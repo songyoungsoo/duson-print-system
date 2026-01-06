@@ -30,9 +30,11 @@
         <div class="modal-footer">
             <!-- 페이지네이션 -->
             <div class="pagination" id="unifiedPagination">
+                <button class="page-btn" onclick="loadUnifiedPage('first')" id="firstBtn">◀◀ 맨 처음</button>
                 <button class="page-btn" onclick="loadUnifiedPage('prev')" id="prevBtn">◀ 이전</button>
                 <div class="page-numbers" id="pageNumbers"></div>
                 <button class="page-btn" onclick="loadUnifiedPage('next')" id="nextBtn">다음 ▶</button>
+                <button class="page-btn" onclick="loadUnifiedPage('last')" id="lastBtn">맨 끝 ▶▶</button>
             </div>
         </div>
     </div>
@@ -344,10 +346,14 @@ document.addEventListener('keydown', function(e) {
 // 페이지 로드 함수
 async function loadUnifiedPage(page) {
     if (typeof page === 'string') {
-        if (page === 'prev') {
+        if (page === 'first') {
+            page = 1;
+        } else if (page === 'prev') {
             page = Math.max(1, unifiedCurrentPage - 1);
         } else if (page === 'next') {
             page = Math.min(unifiedTotalPages, unifiedCurrentPage + 1);
+        } else if (page === 'last') {
+            page = unifiedTotalPages;
         } else {
             page = parseInt(page);
         }
@@ -441,13 +447,19 @@ async function loadUnifiedPage(page) {
 
 // 페이지네이션 UI 업데이트
 function updateUnifiedPagination(pagination) {
+    const firstBtn = document.getElementById('firstBtn');
     const prevBtn = document.getElementById('prevBtn');
     const nextBtn = document.getElementById('nextBtn');
+    const lastBtn = document.getElementById('lastBtn');
     const pageNumbers = document.getElementById('pageNumbers');
-    
-    // 이전/다음 버튼 상태
+
+    // 맨 처음/이전 버튼 상태
+    firstBtn.disabled = !pagination.has_prev;
     prevBtn.disabled = !pagination.has_prev;
+
+    // 다음/맨 끝 버튼 상태
     nextBtn.disabled = !pagination.has_next;
+    lastBtn.disabled = !pagination.has_next;
     
     // 페이지 번호 생성
     pageNumbers.innerHTML = '';

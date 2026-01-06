@@ -2,6 +2,9 @@
 session_start();
 $session_id = session_id();
 
+// 테마 시스템 로드
+include_once __DIR__ . '/../../includes/theme_loader.php';
+
 // 견적서 모달용 간소화 모드 체크
 $isQuotationMode = isset($_GET['mode']) && $_GET['mode'] === 'quotation';
 
@@ -18,7 +21,7 @@ $connect = $db;
 include_once $_SERVER['DOCUMENT_ROOT'] . '/includes/visitor_tracker.php';
 
 // 페이지 설정
-$page_title = '📄 두손기획인쇄 - 전단지 컴팩트 견적';
+$page_title = '두손기획인쇄 - 전단지 컴팩트 견적';
 $current_page = 'leaflet';
 
 // UTF-8 설정
@@ -189,16 +192,54 @@ header("Expires: 0");
 
     <!-- 견적서 모달용 공통 스타일 -->
     <link rel="stylesheet" href="../../css/quotation-modal-common.css">
+
+    <!-- 테마 시스템 CSS -->
+    <?php ThemeLoader::renderCSS(); ?>
+
+    <!-- Phase 5: 견적 요청 버튼 스타일 -->
+    <style>
+        .action-buttons {
+            display: flex;
+            gap: 10px;
+            margin-top: 20px;
+        }
+        .action-buttons button {
+            flex: 1;
+            padding: 15px 20px;
+            font-size: 16px;
+            font-weight: 600;
+            border: none;
+            border-radius: 8px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+        .btn-upload-order {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+        }
+        .btn-upload-order:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 4px 12px rgba(102, 126, 234, 0.4);
+        }
+        .btn-request-quote {
+            background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%);
+            color: white;
+        }
+        .btn-request-quote:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 4px 12px rgba(240, 147, 251, 0.4);
+        }
+    </style>
 </head>
 
-<body class="inserted-page<?php echo $isQuotationMode ? ' quotation-modal-mode' : ''; ?>">
+<body class="inserted-page<?php echo $isQuotationMode ? ' quotation-modal-mode' : ''; ?>" <?php ThemeLoader::renderBodyAttributes(); ?>>
     <?php if (!$isQuotationMode) include "../../includes/header-ui.php"; ?>
     <?php if (!$isQuotationMode) include "../../includes/nav.php"; ?>
 
     <div class="product-container">
         <!-- 페이지 타이틀 -->
         <div class="page-title">
-            <h1>📄 전단지 견적 안내</h1>
+            <h1>전단지 견적 안내</h1>
         </div>
 
         <div class="product-content">
@@ -387,8 +428,8 @@ header("Expires: 0");
                         </button>
                     </div>
                     <?php else: ?>
-                    <!-- 일반 모드: 파일 업로드 및 주문하기 버튼 -->
-                    <div class="upload-order-button" id="uploadOrderButton">
+                    <!-- 일반 모드: 파일 업로드 및 주문하기 / 견적 요청 버튼 -->
+                    <div class="action-buttons" id="actionButtons">
                         <button type="button" class="btn-upload-order" onclick="openUploadModal()">
                             파일 업로드 및 주문하기
                         </button>
@@ -446,7 +487,7 @@ header("Expires: 0");
             <div class="flyer-card">
                 <!-- 제목 (네모 박스 반전글) -->
                 <div class="hapan-title">
-                    <h3>📄 합판 전단지</h3>
+                    <h3>합판 전단지</h3>
                 </div>
                 
                 <!-- 헤어라인 -->
@@ -470,7 +511,7 @@ header("Expires: 0");
                     </div>
                     
                     <div class="flyer-tip">
-                        <p>💡 TIP! 작업 템플릿을 다운 받아 사용하시면 더욱 정확하고 편리하게 작업하실 수 있습니다!</p>
+                        <p>TIP! 작업 템플릿을 다운 받아 사용하시면 더욱 정확하고 편리하게 작업하실 수 있습니다!</p>
                     </div>
                 </div>
             </div>
@@ -479,7 +520,7 @@ header("Expires: 0");
             <div class="flyer-card">
                 <!-- 제목 (네모 박스 반전글) -->
                 <div class="dokpan-title">
-                    <h3>📋 독판 전단지</h3>
+                    <h3>독판 전단지</h3>
                 </div>
                 
                 <!-- 헤어라인 -->
@@ -724,15 +765,81 @@ header("Expires: 0");
                 if (onError) onError("네트워크 오류: " + error.message);
             });
         };
+
+        // Phase 5: 견적 요청 함수
+        window.addToQuotation = function() {
+            console.log('💰 견적 요청 시작 - 전단지');
+
+            // 가격 계산 확인
+            if (!window.currentPriceData || !window.currentPriceData.total_price) {
+                alert('가격을 먼저 계산해주세요.');
+                return;
+            }
+
+            // 프리미엄 옵션 재계산
+            const premiumTotal = calculatePremiumOptions();
+            console.log('💰 프리미엄 옵션 총액:', premiumTotal);
+
+            // 폼 데이터 수집
+            const formData = new FormData();
+            formData.append('product_type', 'inserted');
+            formData.append('MY_type', document.getElementById('MY_type').value);
+            formData.append('PN_type', document.getElementById('PN_type').value);
+            formData.append('MY_Fsd', document.getElementById('MY_Fsd').value);
+            formData.append('POtype', document.getElementById('POtype').value);
+            formData.append('MY_amount', document.getElementById('MY_amount').value);
+            formData.append('mesu', document.getElementById('mesu').value);
+            formData.append('ordertype', document.getElementById('ordertype').value);
+            formData.append('calculated_price', Math.round(window.currentPriceData.total_price));
+            formData.append('calculated_vat_price', Math.round(window.currentPriceData.vat_price));
+
+            // 프리미엄 옵션 추가
+            ['coating', 'folding', 'creasing', 'binding', 'packaging'].forEach(option => {
+                const checkbox = document.getElementById(option + '_enabled');
+                if (checkbox && checkbox.checked) {
+                    formData.append(option + '_enabled', '1');
+                    const typeSelect = document.getElementById(option + '_type');
+                    if (typeSelect) {
+                        formData.append(option + '_type', typeSelect.value);
+                    }
+                    formData.append(option + '_price', document.getElementById(option + '_price').value || '0');
+                }
+            });
+            formData.append('premium_options_total', premiumTotal);
+
+            // AJAX 전송
+            fetch('../quote/add_to_quotation_temp.php', {
+                method: 'POST',
+                body: formData
+            })
+            .then(response => response.json())
+            .then(data => {
+                console.log('서버 응답:', data);
+                if (data.success) {
+                    alert('견적서에 추가되었습니다.');
+                    window.location.href = '/mlangprintauto/quote/';
+                } else {
+                    alert('오류: ' + (data.message || '견적 추가 실패'));
+                }
+            })
+            .catch(error => {
+                console.error('네트워크 오류:', error);
+                alert('네트워크 오류가 발생했습니다.');
+            });
+        };
     </script>
 
     <!-- 통합 갤러리 시스템 JavaScript -->
     <script src="../../js/common-gallery-popup.js"></script>
 
     <!-- 견적서 모달 공통 JavaScript -->
-    <script src="../../js/quotation-modal-common.js"></script>
+    <script src="../../js/quotation-modal-common.js?v=<?php echo time(); ?>"></script>
 
     <!-- 전단지 전용 컴팩트 디자인 적용 (Frontend-Compact-Design-Guide.md 기반) -->
+
+    <!-- 테마 스위처 -->
+    <?php if (!$isQuotationMode) ThemeLoader::renderSwitcher('bottom-right'); ?>
+    <?php if (!$isQuotationMode) ThemeLoader::renderSwitcherJS(); ?>
 </body>
 </html>
 

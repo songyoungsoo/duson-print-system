@@ -6,7 +6,9 @@
  */
 
 session_start();
-$session_id = session_id();
+// 🔧 CRITICAL FIX: 장바구니에서 전달된 세션 ID 우선 사용 (세션 불일치 문제 해결)
+$session_id = !empty($_POST['cart_session_id']) ? $_POST['cart_session_id'] : session_id();
+error_log("OnlineOrder: Using session_id = $session_id (current: " . session_id() . ", POST: " . ($_POST['cart_session_id'] ?? 'none') . ")");
 
 // 데이터베이스 연결
 include "../db.php";

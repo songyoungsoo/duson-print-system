@@ -283,6 +283,7 @@ if ($cart_result === false) {
     <?php if (!empty($cart_items)): ?>
         <form method="post" action="../../mlangorder_printauto/OnlineOrder_unified.php" id="orderForm">
             <input type="hidden" name="SubmitMode" value="OrderOne">
+            <input type="hidden" name="cart_session_id" value="<?php echo $session_id; ?>">
             <?php
             $total_price = 0;
             $total_vat = 0;
@@ -333,15 +334,16 @@ if ($cart_result === false) {
                                 'envelope' => ['name' => '봉투', 'icon' => ''],
                                 'merchandisebond' => ['name' => '상품권', 'icon' => ''],
                                 'littleprint' => ['name' => '포스터', 'icon' => ''],
-                                'poster' => ['name' => '포스터', 'icon' => '']
+                                'poster' => ['name' => '포스터', 'icon' => ''],
+                                'ncrflambeau' => ['name' => '양식지', 'icon' => '']
                             ];
 
                             $product = $product_info[$item['product_type']] ?? ['name' => '상품', 'icon' => ''];
 
                             // --- REFACTOR: Prepare variables for new amount display ---
                             $is_flyer = in_array($item['product_type'], ['inserted', 'leaflet']);
-                            // FIX: 전단지는 flyer_mesu 컬럼 사용 (mesu는 스티커용)
-                            $show_sheet_count = ($is_flyer && $LEAFLET_DISPLAY_STYLE === 'Y' && !empty($item['flyer_mesu']));
+                            // FIX: 전단지는 mesu 컬럼 사용 (flyer_mesu는 존재하지 않음)
+                            $show_sheet_count = ($is_flyer && $LEAFLET_DISPLAY_STYLE === 'Y' && !empty($item['mesu']));
                             
                             $main_amount_val = 1;
                             $main_amount_display = '1';
@@ -353,8 +355,8 @@ if ($cart_result === false) {
                                 $main_amount_val = !empty($item['MY_amount']) ? floatval($item['MY_amount']) : 1;
                                 // 0.5만 소수점, 나머지 정수 (formatQuantityValue 사용)
                                 $main_amount_display = formatQuantityValue($main_amount_val, 'inserted');
-                                // FIX: 전단지는 flyer_mesu 컬럼에서 매수 읽기
-                                $sub_amount = $item['flyer_mesu'] ?? null;
+                                // FIX: 전단지는 mesu 컬럼에서 매수 읽기 (flyer_mesu 컬럼은 존재하지 않음)
+                                $sub_amount = $item['mesu'] ?? null;
                             } else {
                                 // Other products - 정수로만 표시
                                 $main_amount_val = !empty($item['mesu']) ? intval($item['mesu']) : (!empty($item['MY_amount']) ? intval($item['MY_amount']) : 1);

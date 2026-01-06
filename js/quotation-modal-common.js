@@ -227,20 +227,32 @@ function proceedWithApply() {
             unit = '매';
 
         } else if (productType === 'sticker') {
-            // 스티커
+            // 스티커: mesu 선택 박스에서 수량 가져오기
             specification = buildStickerSpecification();
-            const myAmount = document.getElementById('MY_amount');
-            if (myAmount) {
-                quantity = parseFloat(myAmount.value) || 1;
+            const mesuSelect = document.getElementById('mesu');
+            if (mesuSelect && mesuSelect.value) {
+                quantity = parseInt(mesuSelect.value) || 1000;
+            } else {
+                // 폴백: MY_amount 필드 확인 (수동입력 모드)
+                const myAmount = document.getElementById('MY_amount');
+                if (myAmount) {
+                    quantity = parseFloat(myAmount.value) || 1;
+                }
             }
             unit = '매';
 
         } else if (productType === 'msticker') {
-            // 자석스티커
+            // 자석스티커: mesu 선택 박스에서 수량 가져오기
             specification = buildMstickerSpecification();
-            const myAmount = document.getElementById('MY_amount');
-            if (myAmount) {
-                quantity = parseFloat(myAmount.value) || 1;
+            const mesuSelect = document.getElementById('mesu');
+            if (mesuSelect && mesuSelect.value) {
+                quantity = parseInt(mesuSelect.value) || 1000;
+            } else {
+                // 폴백: MY_amount 필드 확인 (수동입력 모드)
+                const myAmount = document.getElementById('MY_amount');
+                if (myAmount) {
+                    quantity = parseFloat(myAmount.value) || 1;
+                }
             }
             unit = '매';
 
@@ -387,6 +399,11 @@ function proceedWithApply() {
         flyer_mesu: flyer_mesu,  // 전단지/리플렛 전용
         quantity_display: quantity_display  // 전단지/리플렛 전용
     };
+
+    // 스티커/자석스티커: mesu 필드도 함께 전송 (quotation_temp에 저장용)
+    if (productType === 'sticker' || productType === 'msticker') {
+        payload.mesu = quantity;  // quantity에 이미 mesu 값이 들어있음
+    }
 
     // 가격 필드는 출처에 따라 적절한 이름 사용
     if (window.currentPriceData) {

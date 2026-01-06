@@ -1,12 +1,13 @@
 <?php
 /**
- * 갤러리 데이터 어댑터 v1.0
- * A경로(mlangorder_printauto) 우선, B경로(레거시) 폴백
+ * 갤러리 데이터 어댑터 v2.0
+ * 메인 갤러리 4개 썸네일용 (sample 폴더 사용)
  *
  * 우선순위:
- * 1. mlangorder_printauto 테이블의 실제 주문 이미지
- * 2. 레거시 폴더 (/ImgFolder/{product}/gallery/)
- * 3. 플레이스홀더 이미지
+ * 1. /ImgFolder/sample/{product}/ - 샘플 이미지
+ * 2. mlangorder_printauto 테이블 - 실제 주문 이미지 (샘플 부족 시)
+ *
+ * 주의: "샘플 더보기" 모달은 get_real_orders_portfolio.php API 사용
  */
 
 /**
@@ -76,7 +77,7 @@ function load_gallery_items($product, $orderNo = null, $thumbCount = 4, $modalPe
         'msticker' => ['자석스티커', 'msticker', '자석']
     ];
 
-    // ⭐ 우선순위 1: /ImgFolder/sample/{product}/ 샘플 이미지 (항상 최우선)
+    // ⭐ 우선순위 1: /ImgFolder/sample/{product}/ 샘플 이미지 (메인 갤러리용)
     $productFolder = $product;
     $samplePath = "/ImgFolder/sample/{$productFolder}/";
 
@@ -95,6 +96,7 @@ function load_gallery_items($product, $orderNo = null, $thumbCount = 4, $modalPe
         }
     }
 
+    // sample 이미지 로드 (메인 갤러리용)
     if ($realPath && is_dir($realPath)) {
         $files = glob($realPath . "*.{jpg,jpeg,png,gif,webp}", GLOB_BRACE);
 
@@ -114,7 +116,7 @@ function load_gallery_items($product, $orderNo = null, $thumbCount = 4, $modalPe
                     $items[] = [
                         'src' => $samplePath . $encodedFilename,
                         'alt' => $altText,
-                        'type' => 'B' // B경로 표시 (샘플 이미지 - 최우선)
+                        'type' => 'sample' // 샘플 이미지
                     ];
                 }
             }

@@ -1,0 +1,168 @@
+/**
+ * 계산기 모달 스타일
+ * 견적서 작성 페이지에서 제품 계산기를 모달로 표시
+ */
+
+.calc-modal {
+    display: none; /* JavaScript로 제어 */
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    z-index: 9999;
+    align-items: center;
+    justify-content: center;
+}
+
+.calc-modal-overlay {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: rgba(0, 0, 0, 0.5);
+    z-index: 1;
+}
+
+.calc-modal-content {
+    position: relative;
+    width: 90%;
+    max-width: 1200px;
+    min-width: 900px; /* 모바일 뷰 방지 - 최소 너비 설정 */
+    height: 85vh; /* 높이 증가 */
+    background: #fff;
+    border-radius: 8px;
+    box-shadow: 0 4px 20px rgba(0, 0, 0, 0.3);
+    z-index: 2;
+    display: flex;
+    flex-direction: column;
+}
+
+/* 화면이 작을 때 (태블릿/모바일) - 최소 너비 해제 */
+@media screen and (max-width: 960px) {
+    .calc-modal-content {
+        width: 95%;
+        min-width: auto;
+        max-width: none;
+    }
+}
+
+.calc-modal-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 10px 16px; /* 패딩 축소 (16px 20px → 10px 16px) */
+    border-bottom: 1px solid #e0e0e0;
+    background: #f8f9fa;
+    border-radius: 8px 8px 0 0;
+}
+
+.calc-modal-header h3 {
+    margin: 0;
+    font-size: 18px;
+    font-weight: 600;
+    color: #333;
+}
+
+.calc-modal-close {
+    background: transparent;
+    border: none;
+    font-size: 28px;
+    line-height: 1;
+    color: #999;
+    cursor: pointer;
+    padding: 0;
+    width: 32px;
+    height: 32px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: color 0.2s;
+}
+
+.calc-modal-close:hover {
+    color: #333;
+}
+
+.calc-modal-body {
+    flex: 1;
+    overflow: hidden;
+    position: relative;
+}
+
+.calc-modal-body iframe {
+    width: 100%;
+    height: 100%;
+    border: none;
+}
+
+.calc-modal-footer {
+    display: flex;
+    justify-content: flex-end;
+    gap: 10px;
+    padding: 10px 16px; /* 패딩 축소 (16px 20px → 10px 16px) */
+    border-top: 1px solid #e0e0e0;
+    background: #f8f9fa;
+    border-radius: 0 0 8px 8px;
+}
+
+.calc-modal-footer .btn {
+    padding: 8px 20px;
+    font-size: 14px;
+    border-radius: 4px;
+    cursor: pointer;
+    transition: all 0.2s;
+}
+
+.calc-modal-footer .btn-secondary {
+    background: #6c757d;
+    color: white;
+    border: 1px solid #6c757d;
+}
+
+.calc-modal-footer .btn-secondary:hover {
+    background: #5a6268;
+    border-color: #5a6268;
+}
+
+.calc-modal-footer .btn-primary {
+    background: #217346;
+    color: white;
+    border: 1px solid #217346;
+}
+
+.calc-modal-footer .btn-primary:hover {
+    background: #1a5c38;
+    border-color: #1a5c38;
+}
+
+.calc-modal-footer .btn-primary:disabled {
+    background: #ccc;
+    border-color: #ccc;
+    cursor: not-allowed;
+}
+
+/* 계산기 오픈 버튼 (품목 테이블에 추가될 버튼) */
+.btn-calculator {
+    background: #17a2b8;
+    color: white;
+    border: 1px solid #17a2b8;
+    padding: 4px 8px;
+    font-size: 12px;
+    border-radius: 3px;
+    cursor: pointer;
+    transition: all 0.2s;
+    white-space: nowrap;
+}
+
+.btn-calculator:hover {
+    background: #138496;
+    border-color: #117a8b;
+}
+
+.btn-calculator:disabled {
+    background: #ccc;
+    border-color: #ccc;
+    cursor: not-allowed;
+}

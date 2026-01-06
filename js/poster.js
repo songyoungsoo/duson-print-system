@@ -592,6 +592,13 @@ function calculatePrice(isAuto = true) {
             const priceData = response.data;
             currentPriceData = priceData;
 
+            // 🔧 FIX: window.currentPriceData도 설정 (견적서 모드 호환용)
+            window.currentPriceData = {
+                total_price: priceData.total_price,
+                vat_price: priceData.total_with_vat,
+                vat_amount: priceData.vat || (priceData.total_with_vat - priceData.total_price)
+            };
+
             // 서버에서 이미 추가 옵션이 포함된 가격을 반환하므로 여기서 다시 더하지 않음
             console.log('가격 계산 완료:', {
                 base_price: priceData.base_price,
@@ -625,23 +632,33 @@ function updatePriceDisplay(priceData) {
     const priceDetails = document.getElementById('priceDetails');
     const uploadOrderButton = document.getElementById('uploadOrderButton');
     
-    const supplyPrice = priceData.total_price || (priceData.base_price + priceData.design_price);
-    const totalWithVat = Math.round(priceData.total_with_vat);
-
     // 인쇄비 + 디자인비 합계를 큰 금액으로 표시 (VAT 제외)
     if (priceAmount) {
+        const supplyPrice = priceData.total_price || (priceData.base_price + priceData.design_price);
         priceAmount.textContent = formatNumber(supplyPrice) + '원';
+        console.log('💰 큰 금액 표시 (인쇄비+디자인비):', supplyPrice + '원');
     }
     
+    // 공통 가격 표시 함수 사용
     if (typeof updatePosterPriceDetails === 'function') {
         updatePosterPriceDetails(priceData);
     } else {
+        // fallback - 공통 함수가 없을 때
         if (priceDetails) {
             priceDetails.innerHTML = `
                 <span>인쇄비: ${formatNumber(priceData.base_price)}원</span>
                 <span>디자인비: ${formatNumber(priceData.design_price)}원</span>
-                <span>부가세 포함: <span class="vat-amount">${formatNumber(totalWithVat)}원</span></span>
+                <span>부가세 포함: <span class="vat-amount">${formatNumber(Math.round(priceData.total_with_vat))}원</span></span>
             `;
+            
+            // 강제로 한 줄 레이아웃 스타일 적용 - 모든 CSS 규칙 무시
+            priceDetails.style.display = 'flex';
+            priceDetails.style.justifyContent = 'center';
+            priceDetails.style.alignItems = 'center';
+            priceDetails.style.gap = '15px';
+            priceDetails.style.flexWrap = 'nowrap';
+            priceDetails.style.whiteSpace = 'nowrap';
+            priceDetails.style.flexDirection = 'row';
         }
     }
     
@@ -649,13 +666,6 @@ function updatePriceDisplay(priceData) {
         priceDisplay.classList.add('calculated');
     }
     
-    // [FIX] 공통 스크립트 호환성을 위해 표준 형식으로 데이터 저장
-    window.currentPriceData = {
-        Order_PriceForm: supplyPrice,
-        Total_PriceForm: totalWithVat
-    };
-    console.log('✅ Price data saved in standard format for poster:', window.currentPriceData);
-
     if (uploadOrderButton) {
         uploadOrderButton.style.display = 'block';
     }

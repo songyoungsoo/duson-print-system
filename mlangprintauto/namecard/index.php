@@ -6,6 +6,9 @@
  * Created: 2025년 1월 (Premium Options Development)
  */
 
+// 테마 시스템 로드
+include_once __DIR__ . '/../../includes/theme_loader.php';
+
 // 보안 상수 정의 후 공통 인증 및 설정
 include "../../includes/auth.php";
 
@@ -77,6 +80,9 @@ if ($type_result && ($type_row = mysqli_fetch_assoc($type_result))) {
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title><?php echo safe_html($page_title); ?></title>
 
+    <!-- 🏆 Competition Edition: 테이블 디자인 시스템 (최우선 로드) -->
+    <link rel="stylesheet" href="../../css/table-design-system.css">
+
     <!-- 🎯 통합 컬러 시스템 -->
     <link rel="stylesheet" href="../../css/color-system-unified.css">
 
@@ -127,8 +133,46 @@ if ($type_result && ($type_row = mysqli_fetch_assoc($type_result))) {
 
     <!-- 견적서 모달용 공통 스타일 -->
     <link rel="stylesheet" href="../../css/quotation-modal-common.css">
+
+    <!-- 테마 시스템 CSS -->
+    <?php ThemeLoader::renderCSS(); ?>
+
+    <!-- Phase 5: 견적 요청 버튼 스타일 -->
+    <style>
+        .action-buttons {
+            display: flex;
+            gap: 10px;
+            margin-top: 20px;
+        }
+        .action-buttons button {
+            flex: 1;
+            padding: 15px 20px;
+            font-size: 16px;
+            font-weight: 600;
+            border: none;
+            border-radius: 8px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+        .btn-upload-order {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+        }
+        .btn-upload-order:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 4px 12px rgba(102, 126, 234, 0.4);
+        }
+        .btn-request-quote {
+            background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%);
+            color: white;
+        }
+        .btn-request-quote:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 4px 12px rgba(240, 147, 251, 0.4);
+        }
+    </style>
 </head>
-<body class="namecard-page<?php echo $isQuotationMode ? ' quotation-modal-mode' : ''; ?>">
+<body class="namecard-page<?php echo $isQuotationMode ? ' quotation-modal-mode' : ''; ?>" <?php ThemeLoader::renderBodyAttributes(); ?>>
     <?php if (!$isQuotationMode) include "../../includes/header-ui.php"; ?>
     <?php if (!$isQuotationMode) include "../../includes/nav.php"; ?>
 
@@ -153,7 +197,7 @@ if ($type_result && ($type_row = mysqli_fetch_assoc($type_result))) {
             <!-- 우측: 계산기 -->
             <aside class="product-calculator">
                 <div class="calculator-header">
-                    <h3>💰견적 안내</h3>
+                    <h3>견적 안내</h3>
                 </div>
 
                 <form id="namecardForm">
@@ -312,8 +356,8 @@ if ($type_result && ($type_row = mysqli_fetch_assoc($type_result))) {
                         </button>
                     </div>
                     <?php else: ?>
-                    <!-- 일반 모드: 파일 업로드 및 주문하기 버튼 -->
-                    <div class="upload-order-button" id="uploadOrderButton">
+                    <!-- 일반 모드: 파일 업로드 및 주문하기 / 견적 요청 버튼 -->
+                    <div class="action-buttons" id="actionButtons">
                         <button type="button" class="btn-upload-order" onclick="openUploadModal()">
                             파일 업로드 및 주문하기
                         </button>
@@ -358,14 +402,17 @@ if ($type_result && ($type_row = mysqli_fetch_assoc($type_result))) {
 
     <!-- 명함 전용 스크립트만 유지 (계산 로직 절대 건드리지 않음) -->
 
-    <!-- 🆕 프리미엄 옵션 JavaScript (먼저 로드해야 함) -->
-    <script src="js/namecard-premium-options.js"></script>
-
     <!-- 명함 전용 스크립트 -->
-    <script src="js/namecard-compact.js?v=<?php echo time(); ?>"></script>
+    <script src="js/namecard-compact.js"></script>
+
+    <!-- 🆕 프리미엄 옵션 JavaScript 추가 -->
+    <script src="js/namecard-premium-options.js"></script>
 
     <!-- 공통 업로드 모달 JavaScript -->
     <script src="../../includes/upload_modal.js"></script>
+
+    <!-- 🆕 Duson 갤러리 시스템 JavaScript -->
+    <script src="../../duson/js/gallery-system.js" defer></script>
 
     <script>
         // PHP 변수를 JavaScript로 전달 (PROJECT_SUCCESS_REPORT.md 스펙)
@@ -715,11 +762,8 @@ if ($type_result && ($type_row = mysqli_fetch_assoc($type_result))) {
             priceDetails.innerHTML = detailsHtml;
             priceDisplay.classList.add('calculated');
 
-            // [FIX] 공통 스크립트 호환성을 위해 표준 형식으로 데이터 저장
-            window.currentPriceData = {
-                Order_PriceForm: priceData.total_supply_price,
-                Total_PriceForm: finalTotal
-            };
+            // 현재 가격 데이터 저장
+            window.currentPriceData = priceData;
         }
 
         // 가격 표시 초기화
@@ -732,10 +776,12 @@ if ($type_result && ($type_row = mysqli_fetch_assoc($type_result))) {
             if (priceAmount) priceAmount.textContent = '견적 계산 필요';
             if (priceDetails) priceDetails.textContent = '모든 옵션을 선택하면 자동으로 계산됩니다';
             if (priceDisplay) priceDisplay.classList.remove('calculated');
-            if (uploadButton) uploadButton.style.display = 'none'; // 요소가 있을 때만 실행
+            if (uploadButton) uploadButton.style.display = 'none';
 
             // 프리미엄 옵션 가격 초기화
-            updatePremiumPriceDisplay(0);
+            if (typeof updatePremiumPriceDisplay === 'function') {
+                updatePremiumPriceDisplay(0);
+            }
 
             window.currentPriceData = null;
         }
@@ -932,11 +978,75 @@ if ($type_result && ($type_row = mysqli_fetch_assoc($type_result))) {
             });
         };
 
+        // Phase 5: 견적 요청 함수
+        window.addToQuotation = function() {
+            console.log('💰 견적 요청 시작');
+
+            // 가격 계산 확인
+            if (!window.currentPriceData || !window.currentPriceData.total_price) {
+                alert('가격을 먼저 계산해주세요.');
+                return;
+            }
+
+            // 프리미엄 옵션 재계산
+            const premiumTotal = calculatePremiumOptions();
+            console.log('💰 프리미엄 옵션 총액:', premiumTotal);
+
+            // 폼 데이터 수집
+            const formData = new FormData();
+            formData.append('product_type', 'namecard');
+            formData.append('MY_type', document.getElementById('MY_type').value);
+            formData.append('Section', document.getElementById('Section').value);
+            formData.append('POtype', document.getElementById('POtype').value);
+            formData.append('MY_amount', document.getElementById('MY_amount').value);
+            formData.append('ordertype', document.getElementById('ordertype').value);
+            formData.append('calculated_price', Math.round(window.currentPriceData.total_price));
+            formData.append('calculated_vat_price', Math.round(window.currentPriceData.vat_price));
+
+            // 프리미엄 옵션 추가
+            ['foil', 'numbering', 'perforation', 'rounding', 'creasing'].forEach(option => {
+                const checkbox = document.getElementById(option + '_enabled');
+                if (checkbox && checkbox.checked) {
+                    formData.append(option + '_enabled', '1');
+                    const typeSelect = document.getElementById(option + '_type');
+                    if (typeSelect) {
+                        formData.append(option + '_type', typeSelect.value);
+                    }
+                    formData.append(option + '_price', document.getElementById(option + '_price').value || '0');
+                }
+            });
+            formData.append('premium_options_total', premiumTotal);
+
+            // AJAX 전송
+            fetch('../quote/add_to_quotation_temp.php', {
+                method: 'POST',
+                body: formData
+            })
+            .then(response => response.json())
+            .then(data => {
+                console.log('서버 응답:', data);
+                if (data.success) {
+                    alert('견적서에 추가되었습니다.');
+                    window.location.href = '/mlangprintauto/quote/';
+                } else {
+                    alert('오류: ' + (data.message || '견적 추가 실패'));
+                }
+            })
+            .catch(error => {
+                console.error('네트워크 오류:', error);
+                alert('네트워크 오류가 발생했습니다.');
+            });
+        };
+
         // 🆕 namecard.js 대체 필수 기능들
     </script>
 
     <!-- 견적서 모달 공통 JavaScript -->
-    <script src="../../js/quotation-modal-common.js"></script>
+    <script src="../../js/quotation-modal-common.js?v=<?php echo time(); ?>"></script>
+
+    <!-- 테마 스위처 -->
+    <?php if (!$isQuotationMode) ThemeLoader::renderSwitcher('bottom-right'); ?>
+    <?php if (!$isQuotationMode) ThemeLoader::renderSwitcherJS(); ?>
 
     <?php
     // 데이터베이스 연결 종료

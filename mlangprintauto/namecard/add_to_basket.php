@@ -2,6 +2,7 @@
 // 공통 응답 함수 포함 (출력 버퍼링 및 에러 처리 포함)
 require_once __DIR__ . '/../../includes/safe_json_response.php';
 require_once __DIR__ . '/../../includes/StandardUploadHandler.php';
+require_once __DIR__ . '/../../includes/DataAdapter.php';  // Phase 2: 데이터 표준화
 
 // JSON 헤더 우선 설정
 header('Content-Type: application/json; charset=utf-8');
@@ -177,13 +178,56 @@ switch ($POtype) {
         $POtype_name = '';
 }
 
-// ✅ 장바구니에 추가 - 모든 필드를 하나의 INSERT에 통합
+// ★ NEW: Receive quantity_display from JavaScript (dropdown text)
+$quantity_display_from_dropdown = $_POST['quantity_display'] ?? '';
+
+// ✅ Phase 2: 표준 데이터 생성 (레거시 → 표준)
+$legacy_data = [
+    'MY_type' => $MY_type,
+    'MY_type_name' => $MY_type_name,
+    'Section' => $Section,
+    'Section_name' => $Section_name,
+    'POtype' => $POtype,
+    'POtype_name' => $POtype_name,
+    'MY_amount' => $MY_amount,
+    'ordertype' => $ordertype,
+    'price' => $price,
+    'vat_price' => $vat_price,
+    'premium_options' => $premium_options_json,
+    'quantity_display' => $quantity_display_from_dropdown  // ★ Pass dropdown text to DataAdapter
+];
+
+$standard_data = DataAdapter::legacyToStandard($legacy_data, 'namecard');
+
+// 표준 필드 추출
+$spec_type = $standard_data['spec_type'];
+$spec_material = $standard_data['spec_material'];
+$spec_size = $standard_data['spec_size'];
+$spec_sides = $standard_data['spec_sides'];
+$spec_design = $standard_data['spec_design'];
+$quantity_value = $standard_data['quantity_value'];
+$quantity_unit = $standard_data['quantity_unit'];
+$quantity_sheets = $standard_data['quantity_sheets'];
+$quantity_display = $standard_data['quantity_display'];  // ★ Use value from DataAdapter
+$price_supply = $standard_data['price_supply'];
+$price_vat = $standard_data['price_vat'];
+$price_vat_amount = $standard_data['price_vat_amount'];
+$product_data_json = json_encode($standard_data, JSON_UNESCAPED_UNICODE);
+$data_version = 2;  // Phase 2 신규 데이터
+
+error_log("Phase 2: 표준 데이터 생성 완료 - spec_type: $spec_type, price_supply: $price_supply");
+
+// ✅ 장바구니에 추가 - 레거시 + 표준 필드 모두 저장 (Dual-Write)
 $insert_query = "INSERT INTO shop_temp (
     session_id, product_type, MY_type, Section, POtype, MY_amount, ordertype,
     st_price, st_price_vat, premium_options, premium_options_total,
     MY_type_name, Section_name, POtype_name,
-    work_memo, upload_method, uploaded_files, ThingCate, ImgFolder
-) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)";
+    work_memo, upload_method, uploaded_files, ThingCate, ImgFolder,
+    spec_type, spec_material, spec_size, spec_sides, spec_design,
+    quantity_value, quantity_unit, quantity_sheets, quantity_display,
+    price_supply, price_vat, price_vat_amount,
+    product_data_json, data_version
+) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)";
 
 error_log("SQL 쿼리: " . $insert_query);
 $stmt = mysqli_prepare($db, $insert_query);
@@ -199,11 +243,25 @@ error_log("Session: $session_id, Product: $product_type, ImgFolder: $img_folder,
 error_log("premium_options_total: $premium_total");
 error_log("Uploaded files JSON: " . $uploaded_files_json);
 
-mysqli_stmt_bind_param($stmt, "ssssssssisissssssss",
+// Phase 2: 33개 파라미터 (레거시 19개 + 표준 14개)
+// 타입 순서: session_id(s), product_type(s), MY_type(s), Section(s), POtype(s), MY_amount(s), ordertype(s),
+//            st_price(d), st_price_vat(d), premium_options(s), premium_options_total(i),
+//            MY_type_name(s), Section_name(s), POtype_name(s), work_memo(s), upload_method(s), uploaded_files(s), ThingCate(s), ImgFolder(s),
+//            spec_type(s), spec_material(s), spec_size(s), spec_sides(s), spec_design(s),
+//            quantity_value(d), quantity_unit(s), quantity_sheets(i), quantity_display(s),
+//            price_supply(i), price_vat(i), price_vat_amount(i), product_data_json(s), data_version(i)
+mysqli_stmt_bind_param($stmt, "sssssssddsisssssssssssssdsisiiisi",
+    // 레거시 필드 (19개)
     $session_id, $product_type, $MY_type, $Section, $POtype, $MY_amount, $ordertype,
     $price, $vat_price, $premium_options_json, $premium_total,
     $MY_type_name, $Section_name, $POtype_name,
-    $work_memo, $upload_method, $uploaded_files_json, $thing_cate, $img_folder);
+    $work_memo, $upload_method, $uploaded_files_json, $thing_cate, $img_folder,
+    // 표준 필드 (14개)
+    $spec_type, $spec_material, $spec_size, $spec_sides, $spec_design,
+    $quantity_value, $quantity_unit, $quantity_sheets, $quantity_display,
+    $price_supply, $price_vat, $price_vat_amount,
+    $product_data_json, $data_version
+);
 
 if (mysqli_stmt_execute($stmt)) {
     $basket_id = mysqli_insert_id($db);

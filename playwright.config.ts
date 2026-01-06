@@ -93,6 +93,53 @@ export default defineConfig({
       workers: 1,
       use: { ...devices['Desktop Chrome'] },
     },
+
+    // 🟢 Tier 1: 읽기 전용 테스트 (최대 병렬)
+    {
+      name: 'tier-1-readonly',
+      testMatch: /.*\.tier-1\.spec\.ts/,
+      fullyParallel: true,
+      workers: 11,
+      use: { ...devices['Desktop Chrome'] },
+    },
+
+    // 🟢 Tier 2: 가격 계산 테스트 (최대 병렬)
+    {
+      name: 'tier-2-calculation',
+      testMatch: /.*\.tier-2\.spec\.ts/,
+      fullyParallel: true,
+      workers: 11,
+      use: { ...devices['Desktop Chrome'] },
+    },
+
+    // 🟡 Tier 3: 파일 업로드 테스트 (제한 병렬)
+    {
+      name: 'tier-3-upload',
+      testMatch: /.*\.tier-3\.spec\.ts/,
+      fullyParallel: true,
+      workers: 4,
+      use: {
+        ...devices['Desktop Chrome'],
+        contextOptions: {
+          ignoreHTTPSErrors: true,
+        },
+      },
+    },
+
+    // 🔴 Tier 4: E2E 플로우 (순차 실행)
+    {
+      name: 'tier-4-e2e',
+      testMatch: /.*\.tier-4\.spec\.ts/,
+      fullyParallel: false,
+      workers: 1,
+      use: {
+        ...devices['Desktop Chrome'],
+        contextOptions: {
+          ignoreHTTPSErrors: true,
+        },
+      },
+      timeout: 90 * 1000, // E2E는 90초 타임아웃
+    },
   ],
 
   webServer: {

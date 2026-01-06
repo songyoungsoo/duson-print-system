@@ -161,7 +161,20 @@ $adapter_input = [
     'quantity_display' => $_POST['quantity_display'] ?? ''  // Frontend 우선
 ];
 
-$phase3_data = DataAdapter::convert($adapter_input);
+// ✅ FIX: convert() 메소드가 없으므로 legacyToStandard() 사용
+$phase3_data = DataAdapter::legacyToStandard($adapter_input, $product_type);
+
+// ✅ Phase 3: 데이터 검증 (필수 필드 누락 방지)
+if (!DataAdapter::validateStandardData($phase3_data, $product_type)) {
+    error_log("quotation_temp 데이터 검증 실패: product_type=$product_type");
+    safe_json_response(false, null, '데이터 변환 실패: 필수 필드가 누락되었습니다. 모든 옵션을 선택해주세요.');
+}
+
+// ✅ Phase 3: quantity_display 자동 생성 (Frontend에서 전송하지 않은 경우)
+if (empty($phase3_data['quantity_display'])) {
+    $phase3_data['quantity_display'] = DataAdapter::generateQuantityDisplay($phase3_data);
+    error_log("quantity_display 자동 생성: {$phase3_data['quantity_display']} (product_type=$product_type)");
+}
 
 // Phase 3 필드 추출
 $spec_type = $phase3_data['spec_type'] ?? '';

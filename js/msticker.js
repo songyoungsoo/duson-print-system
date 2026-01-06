@@ -400,7 +400,7 @@ function calculatePrice(isAuto = true) {
     
     const params = new URLSearchParams(formData);
     
-    fetch('/mlangprintauto/msticker/calculate_price_ajax.php?' + params.toString())
+    fetch('calculate_price_ajax.php?' + params.toString())
     .then(response => {
         if (!response.ok) {
             throw new Error(`HTTP error! status: ${response.status}`);
@@ -410,7 +410,9 @@ function calculatePrice(isAuto = true) {
     .then(response => {
         if (response.success) {
             const priceData = response.data;
-            // The global variable is now set correctly inside updatePriceDisplay
+            currentPriceData = priceData;
+            
+            // 가격 표시 업데이트
             updatePriceDisplay(priceData);
             
         } else {
@@ -424,7 +426,7 @@ function calculatePrice(isAuto = true) {
         console.error('가격 계산 오류:', error);
         if (!isAuto) {
             showUserMessage('가격 계산 중 오류가 발생했습니다.', 'error');
-        } 
+        }
     });
 }
 
@@ -433,34 +435,25 @@ function updatePriceDisplay(priceData) {
     const priceAmount = document.getElementById('priceAmount');
     const priceDetails = document.getElementById('priceDetails');
     const uploadOrderButton = document.getElementById('uploadOrderButton');
-
-    const supplyPrice = priceData.total_price || (priceData.base_price + priceData.design_price);
-    const totalWithVat = Math.round(priceData.total_with_vat);
     
     // 인쇄비 + 디자인비 합계를 큰 금액으로 표시 (VAT 제외)
     if (priceAmount) {
+        const supplyPrice = priceData.total_price || (priceData.base_price + priceData.design_price);
         priceAmount.textContent = formatNumber(supplyPrice) + '원';
+        console.log('💰 큰 금액 표시 (인쇄비+디자인비):', supplyPrice + '원');
     }
     
     if (priceDetails) {
         priceDetails.innerHTML = `
             <span>인쇄비: ${formatNumber(priceData.base_price)}원</span>
             <span>디자인비: ${formatNumber(priceData.design_price)}원</span>
-            <span>부가세 포함: <span class="vat-amount">${formatNumber(totalWithVat)}원</span></span>
+            <span>부가세 포함: <span class="vat-amount">${formatNumber(Math.round(priceData.total_with_vat))}원</span></span>
         `;
     }
     
     if (priceDisplay) {
         priceDisplay.classList.add('calculated');
     }
-
-    // [FIX] 공통 스크립트 호환성을 위해 표준 형식으로 데이터 저장
-    window.currentPriceData = {
-        Order_PriceForm: supplyPrice,
-        Total_PriceForm: totalWithVat,
-        ...priceData // 기존 데이터도 유지
-    };
-    console.log('✅ Price data saved in standard format for msticker:', window.currentPriceData);
     
     if (uploadOrderButton) {
         uploadOrderButton.style.display = 'block';
@@ -482,28 +475,15 @@ function openUploadModal() {
         return;
     }
 
-    // 로그인 체크 (upload_modal.js의 isLoggedIn 함수 사용)
-    if (typeof isLoggedIn === 'function' && !isLoggedIn()) {
-        if (typeof openLoginModal === 'function') {
-            openLoginModal();
-        }
-        return;
-    }
-
-    // 직접 모달 열기 (window.openUploadModal 호출하지 않음 - 무한재귀 방지)
-    const modal = document.getElementById('uploadModal');
-    if (modal) {
-        modal.style.display = 'flex';
-        document.body.style.overflow = 'hidden';
-
-        // 모달 파일 업로드 초기화
-        if (typeof window.initializeModalFileUpload === 'function') {
-            window.initializeModalFileUpload();
-        }
-
-        // 가격 정보 업데이트
-        if (typeof updateModalPrice === 'function') {
-            updateModalPrice();
+    // 공통 upload_modal.js의 openUploadModal 사용
+    if (typeof window.openUploadModal === 'function') {
+        window.openUploadModal();
+    } else {
+        // 폴백: 직접 모달 열기
+        const modal = document.getElementById('uploadModal');
+        if (modal) {
+            modal.style.display = 'flex';
+            document.body.style.overflow = 'hidden';
         }
     }
 }

@@ -1050,10 +1050,19 @@ function addToBasket() {
         alert('먼저 가격을 계산해주세요.');
         return;
     }
-    
+
     const form = document.getElementById('orderForm');
     const formData = new FormData(form);
-    
+
+    // ★ NEW: Capture quantity_display from dropdown text
+    const quantitySelect = document.querySelector('select[name="MY_amount"]');
+    if (quantitySelect && quantitySelect.selectedIndex >= 0) {
+        const selectedOption = quantitySelect.options[quantitySelect.selectedIndex];
+        const quantityDisplay = selectedOption.text; // e.g., "0.5연 (2,000매)"
+        formData.set('quantity_display', quantityDisplay);
+        console.log('✅ quantity_display captured:', quantityDisplay);
+    }
+
     // 가격 정보 추가
     formData.set('action', 'add_to_basket');
     formData.set('price', Math.round(currentPriceData.Order_PriceForm));

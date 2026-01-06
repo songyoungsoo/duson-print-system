@@ -2,6 +2,7 @@
 // 공통 응답 함수 포함 (출력 버퍼링 및 에러 처리 포함)
 require_once __DIR__ . '/../../includes/safe_json_response.php';
 require_once __DIR__ . '/../../includes/StandardUploadHandler.php';
+require_once __DIR__ . '/../../includes/DataAdapter.php';  // Phase 2
 
 // JSON 헤더 우선 설정
 header('Content-Type: application/json; charset=utf-8');
@@ -173,14 +174,60 @@ foreach ($required_columns as $column_name => $column_definition) {
 
 // 장바구니에 추가 - 새 모달 정보 포함
 if ($product_type === 'sticker') {
-    $insert_query = "INSERT INTO shop_temp (session_id, product_type, jong, garo, sero, mesu, uhyung, domusong, st_price, st_price_vat, customer_name, customer_phone, work_memo, upload_method, uploaded_files, ThingCate, ImgFolder)
-                    VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)";
+    // ★ NEW: Receive quantity_display from JavaScript (dropdown text)
+    $quantity_display_from_dropdown = $_POST['quantity_display'] ?? '';
+
+    // Phase 2: 표준 데이터 생성
+    $legacy_data = [
+        'jong' => $jong,
+        'garo' => $garo,
+        'sero' => $sero,
+        'mesu' => $mesu,
+        'uhyung' => $uhyung,
+        'domusong' => $domusong,
+        'price' => $st_price,
+        'price_vat' => $st_price_vat,
+        'quantity_display' => $quantity_display_from_dropdown  // ★ Pass dropdown text
+    ];
+    $standard_data = DataAdapter::legacyToStandard($legacy_data, 'sticker');
+
+    $spec_type = $standard_data['spec_type'];
+    $spec_material = $standard_data['spec_material'];
+    $spec_size = $standard_data['spec_size'];
+    $spec_sides = $standard_data['spec_sides'];
+    $spec_design = $standard_data['spec_design'];
+    $quantity_value = $standard_data['quantity_value'];
+    $quantity_unit = $standard_data['quantity_unit'];
+    $quantity_sheets = $standard_data['quantity_sheets'];
+    $quantity_display = $standard_data['quantity_display'];  // ★ Use value from DataAdapter
+    $price_supply = $standard_data['price_supply'];
+    $price_vat = $standard_data['price_vat'];
+    $price_vat_amount = $standard_data['price_vat_amount'];
+    $product_data_json = json_encode($standard_data, JSON_UNESCAPED_UNICODE);
+    $data_version = 2;
+
+    $insert_query = "INSERT INTO shop_temp (
+        session_id, product_type, jong, garo, sero, mesu, uhyung, domusong, st_price, st_price_vat,
+        customer_name, customer_phone, work_memo, upload_method, uploaded_files, ThingCate, ImgFolder,
+        spec_type, spec_material, spec_size, spec_sides, spec_design,
+        quantity_value, quantity_unit, quantity_sheets, quantity_display,
+        price_supply, price_vat, price_vat_amount, product_data_json, data_version
+    ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)";
 
     $stmt = mysqli_prepare($connect, $insert_query);
     if ($stmt) {
-        mysqli_stmt_bind_param($stmt, "ssssssisiisssssss",
-            $session_id, $product_type, $jong, $garo, $sero, $mesu, $uhyung, $domusong, $st_price, $st_price_vat, $customer_name, $customer_phone,
-            $work_memo, $upload_method, $uploaded_files_json, $thing_cate, $img_folder);
+        // Phase 2: 31개 파라미터
+        // 타입: session_id(s), product_type(s), jong(s), garo(s), sero(s), mesu(s), uhyung(s), domusong(s),
+        //       st_price(d), st_price_vat(d), customer_name(s), customer_phone(s), work_memo(s), upload_method(s),
+        //       uploaded_files(s), ThingCate(s), ImgFolder(s), spec_type(s), spec_material(s), spec_size(s),
+        //       spec_sides(s), spec_design(s), quantity_value(d), quantity_unit(s), quantity_sheets(i),
+        //       quantity_display(s), price_supply(i), price_vat(i), price_vat_amount(i), product_data_json(s), data_version(i)
+        mysqli_stmt_bind_param($stmt, "sssssssddissssssssssssdsiiiiisi",
+            $session_id, $product_type, $jong, $garo, $sero, $mesu, $uhyung, $domusong, $st_price, $st_price_vat,
+            $customer_name, $customer_phone, $work_memo, $upload_method, $uploaded_files_json, $thing_cate, $img_folder,
+            $spec_type, $spec_material, $spec_size, $spec_sides, $spec_design,
+            $quantity_value, $quantity_unit, $quantity_sheets, $quantity_display,
+            $price_supply, $price_vat, $price_vat_amount, $product_data_json, $data_version);
         
         if (mysqli_stmt_execute($stmt)) {
             $basket_id = mysqli_insert_id($connect);

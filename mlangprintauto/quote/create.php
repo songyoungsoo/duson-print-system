@@ -459,9 +459,22 @@ $typeLabel = $quoteType === 'transaction' ? '거래명세표' : '견적서';
                                     $productName = ProductSpecFormatter::getProductTypeName($productType);
                                     $spec = $formatter->format($item);
                                     $qty = ProductSpecFormatter::getQuantity($item);
-                                    $qtyDisplay = ProductSpecFormatter::getQuantityDisplay($item);  // 장바구니 형식
 
-                                    $unit = ProductSpecFormatter::getUnit($item);
+                                    // ✅ Phase 3: quantity_display 필드 우선 사용 (shop_temp도 Phase 3 지원)
+                                    if (!empty($item['quantity_display'])) {
+                                        // Phase 3 표준 필드 사용
+                                        $qtyDisplay = $item['quantity_display'];
+                                    } else {
+                                        // Fallback: 레거시 로직
+                                        $unit = ($item['product_type'] == 'ncrflambeau') ? '권' : '매';
+                                        if (!empty($item['mesu'])) {
+                                            $qtyDisplay = number_format($item['mesu']) . $unit;
+                                        } elseif (!empty($item['MY_amount'])) {
+                                            $qtyDisplay = htmlspecialchars($item['MY_amount']) . $unit;
+                                        } else {
+                                            $qtyDisplay = '1' . $unit;
+                                        }
+                                    }
                                     $supply = ProductSpecFormatter::getSupplyPrice($item);
                                     $total = ProductSpecFormatter::getPrice($item);
                                     $vat = $total - $supply;
@@ -508,11 +521,24 @@ $typeLabel = $quoteType === 'transaction' ? '거래명세표' : '견적서';
                                     // formatter로 규격 생성 (라벨 포함 형식)
                                     $spec = $formatter->format($item);
 
-                                    // ProductSpecFormatter 사용 (MY_amount에서 quantity 추출)
-                                    $qty = ProductSpecFormatter::getQuantity($item);
-                                    $qtyDisplay = ProductSpecFormatter::getQuantityDisplay($item);  // 장바구니 형식
+                                    // ✅ Phase 3: quantity_display 필드 우선 사용 (DataAdapter 표준화)
+                                    if (!empty($item['quantity_display'])) {
+                                        // Phase 3 표준 필드 사용 (가장 정확함)
+                                        $qtyDisplay = $item['quantity_display'];
+                                        $qty = floatval($item['quantity_value'] ?? $item['MY_amount'] ?? 1);
+                                    } else {
+                                        // Fallback: ProductSpecFormatter 사용
+                                        $qty = ProductSpecFormatter::getQuantity($item);
+                                        $unit = ($item['product_type'] == 'ncrflambeau') ? '권' : '매';
 
-                                    $unit = ProductSpecFormatter::getUnit($item);
+                                        if (!empty($item['mesu'])) {
+                                            $qtyDisplay = number_format($item['mesu']) . $unit;
+                                        } elseif (!empty($item['MY_amount'])) {
+                                            $qtyDisplay = htmlspecialchars($item['MY_amount']) . $unit;
+                                        } else {
+                                            $qtyDisplay = '1' . $unit;
+                                        }
+                                    }
                                     $supply = intval($item['st_price'] ?? 0);
                                     $total = intval($item['st_price_vat'] ?? 0);
                                     $vat = $total - $supply;

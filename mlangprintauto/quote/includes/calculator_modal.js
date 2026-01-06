@@ -4,17 +4,19 @@
  * 계산 완료 시 postMessage로 가격 데이터를 받아 견적서 폼에 자동 입력
  */
 
-// 제품별 계산기 URL 매핑
+// ✅ Phase 4: 통합 계산기 v2.0 사용
+// 모든 제품이 단일 페이지에서 처리됨 (calculator_v2.php)
 const CALCULATOR_URLS = {
-    '전단지': '/mlangprintauto/inserted/index.php',
-    '명함': '/mlangprintauto/namecard/index.php',
-    '봉투': '/mlangprintauto/envelope/index.php',
-    '스티커': '/mlangprintauto/sticker_new/index.php',
-    '자석스티커': '/mlangprintauto/msticker/index.php',
-    '카다록': '/mlangprintauto/cadarok/index.php',
-    '포스터': '/mlangprintauto/littleprint/index.php',
-    '상품권': '/mlangprintauto/merchandisebond/index.php',
-    'NCR양식': '/mlangprintauto/ncrflambeau/index.php'
+    '전단지': '/mlangprintauto/quote/calculator_v2.php',
+    '명함': '/mlangprintauto/quote/calculator_v2.php',
+    '봉투': '/mlangprintauto/quote/calculator_v2.php',
+    '스티커': '/mlangprintauto/quote/calculator_v2.php',
+    '자석스티커': '/mlangprintauto/quote/calculator_v2.php',
+    '카다록': '/mlangprintauto/quote/calculator_v2.php',
+    '포스터': '/mlangprintauto/quote/calculator_v2.php',
+    '상품권': '/mlangprintauto/quote/calculator_v2.php',
+    'NCR양식': '/mlangprintauto/quote/calculator_v2.php',
+    '리플렛': '/mlangprintauto/quote/calculator_v2.php'
 };
 
 // 제품별 product_type 매핑
@@ -101,18 +103,33 @@ class CalculatorModal {
                 });
             }
 
-            // 계산기에서 전송한 가격 데이터 처리
-            if (event.data.type === 'CALCULATOR_PRICE_DATA') {
-                console.log('✅ CALCULATOR_PRICE_DATA 수신, handlePriceData 호출');
-                this.handlePriceData(event.data.payload);
+            // ✅ Phase 4: 통합 계산기 v2.0 메시지 처리
+            // 계산기 v2에서는 quotation_temp에 직접 저장 후 CLOSE_CALCULATOR 전송
+            if (event.data.type === 'QUOTATION_ITEM_ADDED') {
+                console.log('✅ QUOTATION_ITEM_ADDED 수신 (calculator_v2.js)');
+                // 데이터는 이미 quotation_temp에 저장됨, 페이지 새로고침 준비
             }
 
-            // 계산기에서 모달 닫기 요청 (전단지는 직접 AJAX 저장 후 모달 닫기)
-            if (event.data.type === 'CALCULATOR_CLOSE_MODAL') {
-                console.log('🚪 계산기에서 모달 닫기 요청 받음 → 페이지 새로고침');
+            if (event.data.type === 'CLOSE_CALCULATOR') {
+                console.log('🚪 CLOSE_CALCULATOR 수신 → 모달 닫고 페이지 새로고침');
                 this.close();
 
                 // 페이지 새로고침하여 quotation_temp 데이터 표시
+                setTimeout(() => {
+                    window.location.reload();
+                }, 300);
+            }
+
+            // ⚠️ Backward Compatibility: 레거시 계산기 지원 (필요시)
+            if (event.data.type === 'CALCULATOR_PRICE_DATA') {
+                console.log('✅ CALCULATOR_PRICE_DATA 수신 (레거시), handlePriceData 호출');
+                this.handlePriceData(event.data.payload);
+            }
+
+            if (event.data.type === 'CALCULATOR_CLOSE_MODAL') {
+                console.log('🚪 CALCULATOR_CLOSE_MODAL 수신 (레거시) → 페이지 새로고침');
+                this.close();
+
                 setTimeout(() => {
                     window.location.reload();
                 }, 300);
@@ -248,18 +265,39 @@ class CalculatorModal {
                     displayMesu = parseInt(mesuMatch[1].replace(/,/g, ''));
                 }
             }
+
+            // ✅ 스티커의 경우, mesu를 displayQuantity로 사용 (quantity=1 무시)
+            if (this.productName === '스티커' || this.productName === '자석스티커') {
+                if (displayMesu > 0) {
+                    displayQuantity = displayMesu;
+                    console.log('🔧 스티커 수량 수정: mesu=' + displayMesu + ' 사용');
+                } else if (data.mesu && parseInt(data.mesu) > 0) {
+                    displayQuantity = parseInt(data.mesu);
+                    console.log('🔧 스티커 수량 수정: data.mesu=' + data.mesu + ' 사용');
+                }
+            }
             // =================== 수정된 로직 끝 =====================
 
             // 3. 수량 설정
-            const qtyInput = row.querySelector('.qty-input');
-            if (qtyInput) {
-                // ✅ create.php와 동일한 스마트 포맷팅 적용
-                const qtyDisplay = (displayQuantity == Math.floor(displayQuantity))
-                    ? parseInt(displayQuantity)
-                    : parseFloat(displayQuantity.toFixed(2)).toString().replace(/\.?0+$/, '');
+            // ✅ 수량 값 계산 (정수면 정수로, 소수면 소수로)
+            const qtyValue = (displayQuantity == Math.floor(displayQuantity))
+                ? parseInt(displayQuantity)
+                : parseFloat(displayQuantity.toFixed(2)).toString().replace(/\.?0+$/, '');
 
-                qtyInput.value = qtyDisplay;
-                console.log('✅ 수량 설정:', qtyDisplay, data.unit === '연' ? '(연 단위)' : '');
+            // ✅ hidden input 설정 (서버 전송용)
+            const qtyHiddenInput = row.querySelector('input[name*="[quantity]"]');
+            if (qtyHiddenInput) {
+                qtyHiddenInput.value = qtyValue;
+                console.log('✅ 수량 hidden input 설정:', qtyValue);
+            }
+
+            // ✅ 화면 표시 설정 (span.qty-display)
+            const qtyDisplaySpan = row.querySelector('.qty-display');
+            if (qtyDisplaySpan) {
+                const unit = data.unit || '매';
+                const displayText = qtyValue.toLocaleString() + unit;  // "1,000매"
+                qtyDisplaySpan.textContent = displayText;
+                console.log('✅ 수량 화면 표시:', displayText);
             }
 
             // 4. 단위 설정

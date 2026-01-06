@@ -37,9 +37,9 @@ document.addEventListener('DOMContentLoaded', function() {
     }
 });
 
-// ============================================================================
+// ============================================================================ 
 // 고급 이미지 갤러리 시스템 (적응형 이미지 분석 및 부드러운 애니메이션)
-// ============================================================================
+// ============================================================================ 
 
 function initializeGallery() {
     const galleryContainer = document.getElementById('merchandisebondGallery');
@@ -254,9 +254,9 @@ function checkMoreButtonForLightbox() {
         });
 }
 
-// ============================================================================
+// ============================================================================ 
 // 실시간 가격 계산 시스템 (동적 옵션 로딩 및 자동 계산)
-// ============================================================================
+// ============================================================================ 
 
 function initializeCalculator() {
     const typeSelect = document.getElementById('MY_type');
@@ -404,7 +404,7 @@ function loadQuantities(styleParam = null) {
 }
 
 function updateSelectWithOptions(selectElement, options, defaultOptionText) {
-    if (!selectElement) return;
+    if (!selectElement) return; 
     
     selectElement.innerHTML = `<option value="">${defaultOptionText}</option>`;
     if (options) {
@@ -420,7 +420,7 @@ function updateSelectWithOptions(selectElement, options, defaultOptionText) {
 // 자동 계산 (실시간)
 function autoCalculatePrice() {
     const form = document.getElementById('merchandisebondForm');
-    if (!form) return;
+    if (!form) return; 
     
     const formData = new FormData(form);
     
@@ -435,7 +435,7 @@ function autoCalculatePrice() {
     calculatePrice(true);
 }
 
-// 가격 계산 함수 (강화된 에러 처리)
+// 가격 계산 함수 (강화된 에러 처리 및 디버깅)
 function calculatePrice(isAuto = true) {
     console.log('💰 calculatePrice 함수 호출됨');
     const form = document.getElementById('merchandisebondForm');
@@ -446,40 +446,67 @@ function calculatePrice(isAuto = true) {
     
     const formData = new FormData(form);
     
-    if (!formData.get('MY_type') || !formData.get('Section') || 
-        !formData.get('POtype') || !formData.get('MY_amount') || 
-        !formData.get('ordertype')) {
-        return;
+    // 필수 옵션 확인
+    const required_fields = ['MY_type', 'Section', 'POtype', 'MY_amount', 'ordertype'];
+    for (const field of required_fields) {
+        if (!formData.get(field)) {
+            console.log(`⚠️ 필수 필드 누락: ${field}. 가격 계산을 중단합니다.`);
+            if (!isAuto) {
+                showUserMessage(`'${field}' 옵션을 선택해야 가격 계산이 가능합니다.`, 'warning');
+            }
+            return;
+        }
     }
     
     const params = new URLSearchParams(formData);
-    
-    fetch('calculate_price_ajax.php?' + params.toString())
+    const fetchUrl = 'calculate_price_ajax.php?' + params.toString();
+
+    console.log('📡 [DEBUG] Fetching price from URL:', fetchUrl); // URL 로깅
+
+    fetch(fetchUrl)
     .then(response => {
+        console.log('📬 [DEBUG] Server response status:', response.status); // 상태 코드 로깅
         if (!response.ok) {
             throw new Error(`HTTP error! status: ${response.status}`);
         }
-        return response.json();
+        return response.text(); // 항상 텍스트로 먼저 받기
     })
-    .then(response => {
-        if (response.success) {
-            const priceData = response.data;
-            currentPriceData = priceData;
-            
-            // 프리미엄 옵션 포함하여 가격 표시
-            updatePriceDisplayWithPremium(priceData);
-            
-        } else {
-            resetPrice();
+    .then(text => {
+        console.log('📄 [DEBUG] Raw server response:', text); // 원본 응답 로깅
+        try {
+            const response = JSON.parse(text);
+            if (response.success) {
+                const priceData = response.data;
+                currentPriceData = priceData;
+                window.currentPriceData = priceData;  // 견적서 연동용 전역 변수 설정
+                updatePriceDisplayWithPremium(priceData);
+
+                // Directly show the apply button and hide the calculate button
+                const applyBtn = document.getElementById('applyBtn');
+                const calcBtn = document.getElementById('calculateBtn');
+                if (applyBtn && calcBtn) {
+                    calcBtn.style.display = 'none';
+                    applyBtn.style.display = 'block';
+                    console.log('✅ [DIRECT] 견적서 모드: 2단계 버튼 활성화됨');
+                }
+
+            } else {
+                resetPrice();
+                if (!isAuto) {
+                    showUserMessage('가격 계산 실패: ' + (response.message || '알 수 없는 오류'), 'error');
+                }
+            }
+        } catch (e) {
+            console.error('JSON Parsing Error:', e);
             if (!isAuto) {
-                showUserMessage('가격 계산 실패: ' + (response.message || '알 수 없는 오류'), 'error');
+                 showUserMessage('서버 응답을 처리할 수 없습니다: ' + text.substring(0, 100), 'error');
             }
         }
     })
     .catch(error => {
-        console.error('가격 계산 오류:', error);
+        console.error('가격 계산 fetch 오류:', error);
         if (!isAuto) {
-            showUserMessage('가격 계산 중 오류가 발생했습니다.', 'error');
+            showUserMessage('가격 계산 중 네트워크 오류가 발생했습니다.', 'error');
         }
     });
 }
@@ -488,38 +515,47 @@ function updatePriceDisplay(priceData) {
     const priceDisplay = document.getElementById('priceDisplay');
     const priceAmount = document.getElementById('priceAmount');
     const priceDetails = document.getElementById('priceDetails');
-    const uploadOrderButton = document.getElementById('uploadOrderButton');
-    
-    const supplyPrice = priceData.total_price || (priceData.base_price + priceData.design_price);
-    const totalWithVat = Math.round(priceData.total_with_vat);
-
-    // 인쇄비 + 디자인비 합계를 큰 금액으로 표시 (VAT 제외)
-    if (priceAmount) {
-        priceAmount.textContent = formatNumber(supplyPrice) + '원';
-    }
-    
-    if (priceDetails) {
-        priceDetails.innerHTML = `
-            <span>인쇄비: ${formatNumber(priceData.base_price)}원</span>
-            <span>디자인비: ${formatNumber(priceData.design_price)}원</span>
-            <span>부가세 포함: <span class="vat-amount">${formatNumber(totalWithVat)}원</span></span>
-        `;
-    }
+    const uploadButton = document.getElementById('uploadOrderButton');
     
     if (priceDisplay) {
         priceDisplay.classList.add('calculated');
     }
-
-    // [FIX] 공통 스크립트 호환성을 위해 표준 형식으로 데이터 저장
-    window.currentPriceData = {
-        Order_PriceForm: supplyPrice,
-        Total_PriceForm: totalWithVat
-    };
-    console.log('✅ Price data saved in standard format for merchandisebond:', window.currentPriceData);
     
-    if (uploadOrderButton) {
-        uploadOrderButton.style.display = 'block';
+    // 인쇄비 + 디자인비 합계를 큰 금액으로 표시 (VAT 제외)
+    if (priceAmount) {
+        const printCost = Math.round(priceData.PriceForm);         // 인쇄비만
+        const designCost = Math.round(priceData.DS_PriceForm);     // 디자인비만
+        const supplyPrice = printCost + designCost;               // 공급가 (VAT 제외)
+        
+        priceAmount.textContent = supplyPrice.toLocaleString() + '원';
+        console.log('💰 큰 금액 표시 (인쇄비+디자인비):', supplyPrice + '원');
     }
+    
+    if (priceDetails) {
+        const printCost = Math.round(priceData.PriceForm);         // 인쇄비만
+        const designCost = Math.round(priceData.DS_PriceForm);     // 디자인비만
+        const supplyPrice = printCost + designCost;               // 공급가 (VAT 제외)
+        const total = Math.round(priceData.Total_PriceForm);       // VAT 포함 총합계
+        
+        priceDetails.innerHTML = `
+            <span>인쇄비: ${printCost.toLocaleString()}원</span>
+            <span>디자인비: ${designCost.toLocaleString()}원</span>
+            <span>부가세 포함: <span class="vat-amount">${total.toLocaleString()}원</span></span>
+        `;
+    }
+    
+    // 파일 업로드 버튼 표시
+    if (uploadButton) {
+        uploadButton.style.display = 'block';
+    }
+    
+    // 선택한 옵션 요약 표시
+    const selectedOptions = document.getElementById('selectedOptions');
+    if (selectedOptions) {
+        selectedOptions.style.display = 'block';
+    }
+    
+    console.log('✅ 가격 표시 업데이트 완료');
 }
 
 // 🆕 프리미엄 옵션 포함 가격 표시 업데이트
@@ -681,9 +717,9 @@ function updatePremiumPriceDisplay(total) {
         }
     }
 }
-// ============================================================================
+// ============================================================================ 
 // 파일 업로드 모달 시스템 (드래그 앤 드롭 및 강화된 에러 처리)
-// ============================================================================
+// ============================================================================ 
 
 function initializeFileUpload() {
     // 페이지 로드 시에는 모달 파일 업로드를 초기화하지 않음
@@ -1047,9 +1083,9 @@ function restoreButton(button, originalText) {
     button.style.opacity = '1';
 }
 
-// ============================================================================
+// ============================================================================ 
 // 사용자 피드백 및 유틸리티 함수들
-// ============================================================================
+// ============================================================================ 
 
 function showUserMessage(message, type = 'info') {
     // 토스트 메시지 구현 (간단한 alert 대신 사용)
@@ -1057,7 +1093,7 @@ function showUserMessage(message, type = 'info') {
 }
 
 function formatNumber(number) {
-    return number.toString().replace(/\B(?=(\d{3})+(?!\d))/g, ",");
+    return number.toString().replace(/\B(?=(\d{3})+(?!\d))/g, ',');
 }
 
 // 호환성을 위한 기본 함수들
@@ -1069,9 +1105,9 @@ function directOrder() {
     openUploadModal();
 }
 
-// ============================================================================
+// ============================================================================ 
 // 상품권 프리미엄 옵션 관리 시스템
-// ============================================================================
+// ============================================================================ 
 
 // 🆕 상품권 프리미엄 옵션 함수들 (명함 방식 적용)
 
@@ -1294,4 +1330,3 @@ function initializePremiumOptionsListeners() {
         });
     });
 }
-

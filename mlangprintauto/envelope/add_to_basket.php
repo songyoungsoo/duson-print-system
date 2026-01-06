@@ -2,6 +2,7 @@
 // 공통 응답 함수 포함 (출력 버퍼링 및 에러 처리 포함)
 require_once __DIR__ . '/../../includes/safe_json_response.php';
 require_once __DIR__ . '/../../includes/StandardUploadHandler.php';
+require_once __DIR__ . '/../../includes/DataAdapter.php';  // Phase 2: 데이터 표준화
 
 // JSON 헤더 우선 설정
 header('Content-Type: application/json; charset=utf-8');
@@ -165,9 +166,59 @@ switch ($POtype) {
         $POtype_name = '';
 }
 
-// 장바구니에 추가 - 모든 필드 포함 (uploaded_files, ThingCate, ImgFolder 추가)
-$insert_query = "INSERT INTO shop_temp (session_id, product_type, MY_type, Section, POtype, MY_amount, ordertype, st_price, st_price_vat, envelope_tape_enabled, envelope_tape_quantity, envelope_tape_price, envelope_additional_options_total, MY_type_name, Section_name, POtype_name, work_memo, upload_method, uploaded_files, ThingCate, ImgFolder)
-                VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)";
+// ★ NEW: Receive quantity_display from JavaScript (dropdown text)
+$quantity_display_from_dropdown = $_POST['quantity_display'] ?? '';
+
+// ✅ Phase 2: 표준 데이터 생성 (레거시 → 표준)
+$legacy_data = [
+    'MY_type' => $MY_type,
+    'MY_type_name' => $MY_type_name,
+    'Section' => $Section,
+    'Section_name' => $Section_name,
+    'POtype' => $POtype,
+    'POtype_name' => $POtype_name,
+    'MY_amount' => $MY_amount,
+    'ordertype' => $ordertype,
+    'price' => $price,
+    'vat_price' => $vat_price,
+    'envelope_tape_enabled' => $envelope_tape_enabled,
+    'envelope_tape_price' => $envelope_tape_price,
+    'envelope_additional_options_total' => $envelope_additional_options_total,
+    'quantity_display' => $quantity_display_from_dropdown  // ★ Pass dropdown text to DataAdapter
+];
+
+$standard_data = DataAdapter::legacyToStandard($legacy_data, 'envelope');
+
+// 표준 필드 추출
+$spec_type = $standard_data['spec_type'];
+$spec_material = $standard_data['spec_material'];
+$spec_size = $standard_data['spec_size'];
+$spec_sides = $standard_data['spec_sides'];
+$spec_design = $standard_data['spec_design'];
+$quantity_value = $standard_data['quantity_value'];
+$quantity_unit = $standard_data['quantity_unit'];
+$quantity_sheets = $standard_data['quantity_sheets'];
+$quantity_display = $standard_data['quantity_display'];  // ★ Use value from DataAdapter
+$price_supply = $standard_data['price_supply'];
+$price_vat = $standard_data['price_vat'];
+$price_vat_amount = $standard_data['price_vat_amount'];
+$product_data_json = json_encode($standard_data, JSON_UNESCAPED_UNICODE);
+$data_version = 2;  // Phase 2 신규 데이터
+
+error_log("Phase 2: 봉투 표준 데이터 생성 완료 - spec_type: $spec_type, price_supply: $price_supply");
+
+// ✅ 장바구니에 추가 - 레거시 + 표준 필드 모두 저장 (Dual-Write)
+$insert_query = "INSERT INTO shop_temp (
+    session_id, product_type, MY_type, Section, POtype, MY_amount, ordertype,
+    st_price, st_price_vat,
+    envelope_tape_enabled, envelope_tape_quantity, envelope_tape_price, envelope_additional_options_total,
+    MY_type_name, Section_name, POtype_name,
+    work_memo, upload_method, uploaded_files, ThingCate, ImgFolder,
+    spec_type, spec_material, spec_size, spec_sides, spec_design,
+    quantity_value, quantity_unit, quantity_sheets, quantity_display,
+    price_supply, price_vat, price_vat_amount,
+    product_data_json, data_version
+) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)";
 
 error_log("SQL 쿼리: " . $insert_query);
 $stmt = mysqli_prepare($db, $insert_query);
@@ -194,18 +245,33 @@ if ($stmt) {
     $envelope_tape_price_int = intval($envelope_tape_price);
     $envelope_additional_options_total_int = intval($envelope_additional_options_total);
 
-    error_log("bind_param 전 - 파라미터 수: 16개");
+    error_log("bind_param 전 - 파라미터 수: 35개 (레거시 21개 + 표준 14개)");
     error_log("=== 봉투 옵션명 디버그 ===");
     error_log("MY_type_name: " . $MY_type_name);
     error_log("Section_name: " . $Section_name);
     error_log("POtype_name: " . $POtype_name);
 
-    $bind_result = mysqli_stmt_bind_param($stmt, "sssssssiiiiisssssssss",
+    // Phase 2: 35개 파라미터 (레거시 21개 + 표준 14개)
+    // 타입 순서: session_id(s), product_type(s), MY_type(s), Section(s), POtype(s), MY_amount(s), ordertype(s),
+    //            st_price(d), st_price_vat(d), envelope_tape_enabled(i), envelope_tape_quantity(i),
+    //            envelope_tape_price(i), envelope_additional_options_total(i), MY_type_name(s), Section_name(s), POtype_name(s),
+    //            work_memo(s), upload_method(s), uploaded_files(s), ThingCate(s), ImgFolder(s),
+    //            spec_type(s), spec_material(s), spec_size(s), spec_sides(s), spec_design(s),
+    //            quantity_value(d), quantity_unit(s), quantity_sheets(i), quantity_display(s),
+    //            price_supply(i), price_vat(i), price_vat_amount(i), product_data_json(s), data_version(i)
+    $bind_result = mysqli_stmt_bind_param($stmt, "sssssssddiiissssssssssssssdsiiiiisi",
+        // 레거시 필드 (21개)
         $session_id, $product_type, $MY_type, $Section, $POtype, $MY_amount, $ordertype,
         $price, $vat_price, $tape_enabled, $tape_quantity,
         $envelope_tape_price_int, $envelope_additional_options_total_int,
         $MY_type_name, $Section_name, $POtype_name,
-        $work_memo, $upload_method, $uploaded_files_json, $thing_cate, $img_folder);
+        $work_memo, $upload_method, $uploaded_files_json, $thing_cate, $img_folder,
+        // 표준 필드 (14개)
+        $spec_type, $spec_material, $spec_size, $spec_sides, $spec_design,
+        $quantity_value, $quantity_unit, $quantity_sheets, $quantity_display,
+        $price_supply, $price_vat, $price_vat_amount,
+        $product_data_json, $data_version
+    );
 
     if (!$bind_result) {
         error_log("mysqli_stmt_bind_param 실패: " . mysqli_stmt_error($stmt));

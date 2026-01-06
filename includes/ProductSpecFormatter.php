@@ -815,10 +815,21 @@ class ProductSpecFormatter {
      * ✅ Phase 3: quantity_display 필드 우선 사용
      */
     public static function getQuantityDisplay($item) {
+        // DEBUG: 디버깅 시작
+        error_log("=== ProductSpecFormatter::getQuantityDisplay DEBUG ===");
+        error_log("File: " . __FILE__);
+        error_log("quantity_display in item: " . (isset($item['quantity_display']) ? 'YES' : 'NO'));
+        error_log("quantity_display value: " . ($item['quantity_display'] ?? 'NULL'));
+        error_log("quantity_display empty: " . (empty($item['quantity_display']) ? 'YES' : 'NO'));
+
         // ✅ Phase 3: quantity_display 우선 체크 (quotation_temp, shop_temp)
         if (!empty($item['quantity_display'])) {
+            error_log("Returning quantity_display: " . $item['quantity_display']);
             return $item['quantity_display'];
         }
+
+        error_log("quantity_display is empty, falling back to legacy logic");
+        error_log("product_type: " . ($item['product_type'] ?? 'NULL'));
 
         $productType = $item['product_type'] ?? '';
         $unit = self::getUnit($item);
@@ -830,8 +841,11 @@ class ProductSpecFormatter {
 
         // 1. 스티커: mesu 최우선 사용 - 단위 없이 숫자만 표시
         if (in_array($productType, ['sticker', 'msticker', 'msticker_01'])) {
+            error_log("Sticker product detected, mesu: " . ($item['mesu'] ?? 'NULL'));
             if (!empty($item['mesu'])) {
-                return number_format(intval($item['mesu']));  // 단위 제거
+                $result = number_format(intval($item['mesu']));
+                error_log("Returning mesu value: " . $result);
+                return $result;
             }
         }
 

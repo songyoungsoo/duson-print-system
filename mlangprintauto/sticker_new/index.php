@@ -540,51 +540,65 @@ $default_values = [
         }
 
         function debouncedCalculatePrice(event) {
-            if (isCalculating) return;
+            console.log('Debounced calculation triggered by:', event?.target?.name || 'unknown');
+            
+            // 이미 계산 중이면 스킵
+            if (isCalculating) {
+                console.log('Skipping - calculation already in progress');
+                return;
+            }
+            
             clearTimeout(calculationTimeout);
             calculationTimeout = setTimeout(() => {
                 isCalculating = true;
                 autoCalculatePrice();
-                setTimeout(() => { isCalculating = false; }, 100);
+                setTimeout(() => {
+                    isCalculating = false;
+                }, 100);
             }, 150);
         }
-
-        // 가격 표시 초기화 함수
-        function resetPriceDisplay() {
-            const priceAmount = document.getElementById('priceAmount');
-            const priceDetails = document.getElementById('priceDetails');
-            const priceDisplay = document.getElementById('priceDisplay');
-            const uploadButton = document.getElementById('uploadOrderButton');
-            const quotationApplyBtn = document.querySelector('.btn-quotation-apply');
-
-            if (priceAmount) priceAmount.textContent = '견적 계산 필요';
-            if (priceDetails) priceDetails.textContent = '모든 옵션을 선택하면 자동으로 계산됩니다';
-            if (priceDisplay) priceDisplay.classList.remove('calculated');
-            if (uploadButton) uploadButton.style.display = 'none';
-            if (quotationApplyBtn) quotationApplyBtn.style.display = 'none';
-            window.currentPriceData = null;
+        
+        // 모든 옵션이 선택되었는지 확인하는 함수
+        function areAllOptionsSelected() {
+            const form = document.getElementById('stickerForm');
+            const jong = form.querySelector('select[name="jong"]').value;
+            const garo = parseInt(form.querySelector('input[name="garo"]').value) || 0;
+            const sero = parseInt(form.querySelector('input[name="sero"]').value) || 0;
+            const mesu = form.querySelector('select[name="mesu"]').value;
+            const uhyung = form.querySelector('select[name="uhyung"]').value;
+            const domusong = form.querySelector('select[name="domusong"]').value;
+            
+            // 모든 필수 옵션과 크기값이 유효한지 확인
+            return jong && garo > 0 && sero > 0 && mesu && uhyung !== '' && domusong;
         }
 
-        // 가격 표시를 업데이트하는 함수 (표준 데이터 형식 사용)
+        // 가격 표시를 업데이트하는 함수 (공급가격 중심 표시)
         function updatePriceDisplay(priceData) {
             const priceDisplay = document.getElementById('priceDisplay');
             const priceAmount = document.getElementById('priceAmount');
             const priceDetails = document.getElementById('priceDetails');
             const uploadButton = document.getElementById('uploadOrderButton');
-            const quotationApplyBtn = document.querySelector('.btn-quotation-apply');
-
-            if (!priceDisplay || !priceAmount || !priceDetails) {
-                console.error('Required price display DOM elements not found');
+            
+            // DOM 요소 존재 확인
+            if (!priceDisplay || !priceAmount || !priceDetails || !uploadButton) {
+                console.error('Required DOM elements not found');
                 return;
             }
             
             if (priceData && priceData.success) {
-                const editFee = parseInt(new FormData(document.getElementById('stickerForm')).get('uhyung')) || 0;
+                console.log('Updating price display with success data - Supply price focus');
+                
+                // 편집비 계산
+                const formData = new FormData(document.getElementById('stickerForm'));
+                const editFee = parseInt(formData.get('uhyung')) || 0;
                 const supplyPriceNum = parseInt(priceData.price.replace(/,/g, ''));
-                const totalVatPriceNum = parseInt(priceData.price_vat.replace(/,/g, ''));
                 const printPrice = supplyPriceNum - editFee;
-
+                
+                // 공급가격을 큰 글씨로 표시 (VAT 제외) - 마케팅 전략
                 priceAmount.textContent = priceData.price + '원';
+                console.log('Large display price (Supply price without VAT):', priceData.price + '원');
+                
+                // 상세 내역 표시 - 한 행으로 표시, VAT는 적색과 큰 글씨, 중앙정렬
                 priceDetails.innerHTML = `
                     <div style="font-size: 0.8rem; margin-top: 6px; line-height: 1.4; color: #6c757d; display: flex; gap: 15px; align-items: center; flex-wrap: wrap; justify-content: center;">
                         <span>인쇄비: ${new Intl.NumberFormat('ko-KR').format(printPrice)}원</span>
@@ -593,68 +607,104 @@ $default_values = [
                         <span>부가세 포함: <span style="color: #dc3545; font-size: 1rem;">${priceData.price_vat}원</span></span>
                     </div>
                 `;
-                priceDisplay.classList.add('calculated');
-
-                window.currentPriceData = {
-                    Order_PriceForm: supplyPriceNum,
-                    Total_PriceForm: totalVatPriceNum,
-                    price: priceData.price, // 호환성 유지
-                    price_vat: priceData.price_vat // 호환성 유지
-                };
                 
-                if (uploadButton) uploadButton.style.display = 'block';
-                if (quotationApplyBtn) quotationApplyBtn.style.display = 'block';
+                // 가격 표시 영역을 calculated 상태로 변경
+                priceDisplay.classList.add('calculated');
+                
+                // 업로드/주문 버튼 표시
+                uploadButton.style.display = 'block';
+                
+                // 세션에 가격 정보 저장 (장바구니/주문용)
+                window.currentPriceData = priceData;
+                console.log('Price display updated successfully - Supply price focus');
+                
+                // 견적서 모드일 때 견적서 적용 버튼 표시
+                const applyBtn = document.getElementById('applyBtn');
+                if (applyBtn) {
+                    console.log('✅ 견적서 모드: 견적서 적용 버튼 표시');
+                    applyBtn.style.display = 'block';
+                }
+                
             } else {
-                resetPriceDisplay();
+                console.log('Resetting price display - no valid data');
+                priceAmount.textContent = '견적 계산 필요';
+                priceDetails.textContent = '모든 옵션을 선택하면 자동으로 계산됩니다';
+                priceDisplay.classList.remove('calculated');
+                uploadButton.style.display = 'none';
+                window.currentPriceData = null;
             }
         }
 
-        // 자동 가격 계산 함수 (수정됨)
-        function autoCalculatePrice() {
-            const form = document.getElementById('stickerForm');
-            const formData = new FormData(form);
+        // 가격 표시 초기화 함수 (명함 방식)
+        function resetPriceDisplay() {
+            const priceAmount = document.getElementById('priceAmount');
+            const priceDetails = document.getElementById('priceDetails');
+            const priceDisplay = document.getElementById('priceDisplay');
+            const uploadButton = document.getElementById('uploadOrderButton');
             
-            const jong = formData.get('jong');
-            const mesu = formData.get('mesu');
-            const uhyung = formData.get('uhyung');
-            const domusong = formData.get('domusong');
+            if (priceAmount) priceAmount.textContent = '견적 계산 필요';
+            if (priceDetails) priceDetails.textContent = '모든 옵션을 선택하면 자동으로 계산됩니다';
+            if (priceDisplay) priceDisplay.classList.remove('calculated');
+            if (uploadButton) uploadButton.style.display = 'none';
+            
+            window.currentPriceData = null;
+        }
 
-            if (!jong || !mesu || uhyung === '' || !domusong) {
+        // 자동 가격 계산 함수 (명함 방식)
+        function autoCalculatePrice() {
+            console.log('Auto calculation triggered'); // 디버깅
+            
+            if (!areAllOptionsSelected()) {
+                console.log('Not all options selected - checking details:'); // 디버깅
+                // 각 옵션 상태 확인
+                const form = document.getElementById('stickerForm');
+                const jong = form.querySelector('select[name="jong"]').value;
+                const garo = parseInt(form.querySelector('input[name="garo"]').value) || 0;
+                const sero = parseInt(form.querySelector('input[name="sero"]').value) || 0;
+                const mesu = form.querySelector('select[name="mesu"]').value;
+                const uhyung = form.querySelector('select[name="uhyung"]').value;
+                const domusong = form.querySelector('select[name="domusong"]').value;
+                
+                console.log('Options status:', {jong, garo, sero, mesu, uhyung, domusong});
+                
+                // 옵션이 부족할 때만 가격 초기화 (명함 방식과 동일)
                 resetPriceDisplay();
                 return;
             }
-
-            const fetchFormData = new FormData();
+            
+            console.log('All options selected, calculating...'); // 디버깅
+            const formData = new FormData(document.getElementById('stickerForm'));
+            
+            // 디버깅: 전송되는 데이터 확인
+            console.log('Sending form data:');
             for (let [key, value] of formData.entries()) {
-                fetchFormData.append(key, value);
-            }
-
-            if (!fetchFormData.get('garo') || parseInt(fetchFormData.get('garo')) <= 0) {
-                fetchFormData.set('garo', '100');
-            }
-            if (!fetchFormData.get('sero') || parseInt(fetchFormData.get('sero')) <= 0) {
-                fetchFormData.set('sero', '100');
+                console.log(`  ${key}: ${value}`);
             }
             
+            console.log('Fetching: ./calculate_price.php');
             fetch('./calculate_price.php', {
                 method: 'POST',
-                body: fetchFormData
+                body: formData
             })
             .then(response => {
-                if (!response.ok) throw new Error(`HTTP error! status: ${response.status}`);
+                console.log('Response received:', response.status, response.statusText); // 디버깅
+                if (!response.ok) {
+                    throw new Error(`HTTP error! status: ${response.status}`);
+                }
                 return response.json();
             })
             .then(data => {
+                console.log('Price data received:', data); // 디버깅
                 if (data.success) {
+                    console.log('Calculation successful, updating display');
                     updatePriceDisplay(data);
                 } else {
                     console.error('Calculation failed:', data.message);
-                    alert('가격 계산에 실패했습니다: ' + data.message);
                     resetPriceDisplay();
                 }
             })
             .catch(error => {
-                console.error('Price calculation fetch error:', error);
+                console.error('Price calculation error:', error);
                 resetPriceDisplay();
             });
         }
@@ -1693,6 +1743,86 @@ $default_values = [
         }
     </script>
 
+    <!-- jQuery 라이브러리 (폼 검증 스크립트에서 필요) -->
+    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+
+    <script type="text/javascript">
+    (function($) {
+      $(function() {
+        var $form = $('form[action$="basket_post.php"]');
+        var $garo = $('input[name="garo"]');
+        var $sero = $('input[name="sero"]');
+        var $domu = $('select[name="domusong"]');
+
+        function toNumber(v) {
+          if (v == null) return null;
+          var s = $.trim(String(v)).replace(/[^\d.]/g, '');
+          if (s === '') return null;
+          var n = parseFloat(s);
+          return isNaN(n) ? null : n;
+        }
+
+        // from: 'blur' | 'submit' | (그 외: 방어용)
+        function applyRules(from) {
+          var w = toNumber($garo.val());
+          var h = toNumber($sero.val());
+
+          // 현재 포커스된 엘리먼트
+          var active = document.activeElement;
+
+          // 1) 50mm 미만이면 도무송 자동 선택 (경고 없음)
+          if ((w != null && w < 50) || (h != null && h < 50)) {
+            $domu.val('08000 사각도무송'); // 값 정확히 일치
+          }
+
+          // 2) 10mm 미만이면 경고 대상
+          var tooSmallTarget = null;
+          if (w != null && w < 10) tooSmallTarget = $garo;
+          if (h != null && h < 10) tooSmallTarget = tooSmallTarget || $sero;
+
+          // ⚠️ 방어 로직: 입력 중(해당 칸이 여전히 포커스)에는 경고 금지
+          var isEditing =
+            active === $garo.get(0) || active === $sero.get(0);
+
+          if (tooSmallTarget) {
+            // blur/submit에서만 경고 허용, 그리고 편집 중이면 경고 금지
+            var allowAlert = (from === 'blur' || from === 'submit') && !isEditing;
+
+            if (allowAlert) {
+              alert('별도견적을 요청하세요 문의 1688-2384');
+            }
+
+            // 제출 단계에서는 차단, blur 단계에서는 안내만 수행(제출 아님)
+            if (from === 'submit') {
+              setTimeout(function(){ tooSmallTarget.focus(); }, 0);
+              return { ok: false };
+            }
+          }
+
+          return { ok: true };
+        }
+
+        // 각 칸을 떠날 때만 검사 (입력 도중에는 검사 X)
+        $garo.on('blur', function(){ applyRules('blur'); });
+        $sero.on('blur', function(){ applyRules('blur'); });
+
+        // 제출 직전 최종 검사 (blur를 건너뛴 경우 대비)
+        $form.on('submit', function(e) {
+          var result = applyRules('submit');
+          if (!result.ok) {
+            e.preventDefault();
+            return false;
+          }
+        });
+
+        // ✋ 혹시 기존에 걸려 있던 input/keyup 검사들이 있으면,
+        // 우리 로직이 경고를 막아주지만, 완전 차단하려면 아래처럼 제거도 고려:
+        // $garo.off('input keyup change');
+        // $sero.off('input keyup change');
+      });
+    })(jQuery);
+    </script>
+
     <!-- 통합 갤러리 JavaScript 포함 -->
     <script src="../../js/common-gallery-popup.js"></script>
 
@@ -2659,20 +2789,23 @@ $default_values = [
                 // 견적서 폼에 전달할 데이터 구조
                 const quotationData = {
                     product_name: '스티커',
+                    product_type: 'sticker',
                     specification: specification,
                     quantity: quantityValue,
+                    mesu: mesuSelect ? mesuSelect.value : '',  // ✅ mesu를 최상위로 추가!
                     unit: '매',
                     supply_price: supplyPrice,
                     vat_price: vatPrice,
 
+                    // 원본 스펙 데이터 (quotation_temp 저장용)
+                    jong: jongSelect ? jongSelect.value : '',
+                    garo: garoValue,
+                    sero: seroValue,
+                    uhyung: uhyungSelect ? uhyungSelect.value : '',
+                    domusong: domusongSelect ? domusongSelect.value : '',
+
                     // 원본 계산 데이터도 포함 (디버깅용)
                     _debug: {
-                        jong: jongSelect ? jongSelect.value : '',
-                        garo: garoValue,
-                        sero: seroValue,
-                        mesu: mesuSelect ? mesuSelect.value : '',
-                        uhyung: uhyungSelect ? uhyungSelect.value : '',
-                        domusong: domusongSelect ? domusongSelect.value : '',
                         calculated_price: window.currentPriceData
                     }
                 };

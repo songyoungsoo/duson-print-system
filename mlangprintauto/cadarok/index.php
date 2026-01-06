@@ -1,4 +1,7 @@
 <?php
+// 테마 시스템 로드
+include_once __DIR__ . '/../../includes/theme_loader.php';
+
 /**
  * 카다록/리플렛 견적안내 컴팩트 시스템 - PROJECT_SUCCESS_REPORT.md 스펙 구현
  * Features: 적응형 이미지 분석, 부드러운 애니메이션, 실시간 가격 계산
@@ -108,8 +111,22 @@ if ($type_result && ($type_row = mysqli_fetch_assoc($type_result))) {
     <link rel="stylesheet" href="../../css/upload-modal-common.css">
     <!-- 견적서 모달용 공통 스타일 -->
     <link rel="stylesheet" href="../../css/quotation-modal-common.css">
+
+<!-- Phase 5: 견적 요청 버튼 스타일 -->
+<style>
+    .action-buttons { display: flex; gap: 10px; margin-top: 20px; }
+    .action-buttons button { flex: 1; padding: 15px 20px; font-size: 16px; font-weight: 600; border: none; border-radius: 8px; cursor: pointer; transition: all 0.3s ease; }
+    .btn-upload-order { background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); color: white; }
+    .btn-upload-order:hover { transform: translateY(-2px); box-shadow: 0 4px 12px rgba(102, 126, 234, 0.4); }
+    .btn-request-quote { background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%); color: white; }
+    .btn-request-quote:hover { transform: translateY(-2px); box-shadow: 0 4px 12px rgba(240, 147, 251, 0.4); }
+</style>
+    <!-- 테마 시스템 CSS -->
+    <?php ThemeLoader::renderCSS(); ?>
+
+
 </head>
-<body class="cadarok-page<?php echo $isQuotationMode ? ' quotation-modal-mode' : ''; ?>">
+<body class="cadarok-page<?php echo $isQuotationMode ? ' quotation-modal-mode' : ''; ?>" <?php ThemeLoader::renderBodyAttributes(); ?>>
     <?php if (!$isQuotationMode) include "../../includes/header-ui.php"; ?>
     <?php if (!$isQuotationMode) include "../../includes/nav.php"; ?>
 
@@ -117,7 +134,7 @@ if ($type_result && ($type_row = mysqli_fetch_assoc($type_result))) {
     
     
         <div class="page-title">
-            <h1>📝 카다록/리플렛 견적 안내</h1>
+            <h1>카다록/리플렛 견적 안내</h1>
         </div>
 
         <!-- 컴팩트 2단 그리드 레이아웃 (500px 갤러리 + 나머지 계산기) -->
@@ -136,7 +153,7 @@ if ($type_result && ($type_row = mysqli_fetch_assoc($type_result))) {
             <!-- 우측: 실시간 가격 계산기 (동적 옵션 로딩 및 자동 계산) -->
             <div class="product-calculator">
                 <div class="calculator-header">
-                    <h3>💰 실시간 견적 계산기</h3>
+                    <h3>실시간 견적 계산기</h3>
                 </div>
 
                 <form id="cadarokForm">
@@ -270,10 +287,10 @@ if ($type_result && ($type_row = mysqli_fetch_assoc($type_result))) {
                         </button>
                     </div>
                     <?php else: ?>
-                    <!-- 일반 모드: 파일 업로드 및 주문하기 버튼 -->
-                    <div class="upload-order-button" id="uploadOrderButton">
+                    <!-- 일반 모드: 파일 업로드 및 주문하기 / 견적 요청 버튼 -->
+                    <div class="action-buttons" id="actionButtons">
                         <button type="button" class="btn-upload-order" onclick="openUploadModal()">
-                            📎 파일 업로드 및 주문하기
+                            파일 업로드 및 주문하기
                         </button>
                     </div>
                     <?php endif; ?>
@@ -299,7 +316,7 @@ if ($type_result && ($type_row = mysqli_fetch_assoc($type_result))) {
         <div class="gallery-modal-overlay" onclick="closeCadarokGalleryModal()"></div>
         <div class="gallery-modal-content">
             <div class="gallery-modal-header">
-                <h3>🖼️ 카다록/리플렛 갤러리 (전체)</h3>
+                <h3>카다록/리플렛 갤러리 (전체)</h3>
                 <button type="button" class="gallery-modal-close" onclick="closeCadarokGalleryModal()">✕</button>
             </div>
             <div class="gallery-modal-body">
@@ -520,8 +537,8 @@ if ($type_result && ($type_row = mysqli_fetch_assoc($type_result))) {
             formData.append("POtype", document.getElementById("POtype").value);
             formData.append("MY_amount", document.getElementById("MY_amount").value);
             formData.append("ordertype", document.getElementById("ordertype").value);
-            formData.append("calculated_price", Math.round(window.currentPriceData.total_price));
-            formData.append("calculated_vat_price", Math.round(window.currentPriceData.vat_price));
+            formData.append("calculated_price", Math.round(window.currentPriceData.total_price));      // 공급가액 (VAT 미포함)
+            formData.append("calculated_vat_price", Math.round(window.currentPriceData.total_with_vat));  // 합계 (VAT 포함)
 
             const workMemo = document.getElementById("modalWorkMemo");
             if (workMemo) formData.append("work_memo", workMemo.value);
@@ -551,13 +568,51 @@ if ($type_result && ($type_row = mysqli_fetch_assoc($type_result))) {
                 if (onError) onError("네트워크 오류가 발생했습니다.");
             });
         };
+
+        // Phase 5: 견적 요청 함수
+        window.addToQuotation = function() {
+            console.log('💰 견적 요청 시작 - 카다록');
+
+            if (!window.currentPriceData || !window.currentPriceData.total_price) {
+                alert('가격을 먼저 계산해주세요.');
+                return;
+            }
+
+            const formData = new FormData();
+            formData.append('product_type', 'cadarok');
+            formData.append('MY_type', document.getElementById('MY_type').value);
+            formData.append('Section', document.getElementById('Section').value);
+            formData.append('POtype', document.getElementById('POtype').value);
+            formData.append('MY_amount', document.getElementById('MY_amount').value);
+            formData.append('ordertype', document.getElementById('ordertype').value);
+            formData.append('calculated_price', Math.round(window.currentPriceData.total_price));      // 공급가액 (VAT 미포함)
+            formData.append('calculated_vat_price', Math.round(window.currentPriceData.total_with_vat));  // 합계 (VAT 포함)
+
+            fetch('../quote/add_to_quotation_temp.php', {
+                method: 'POST',
+                body: formData
+            })
+            .then(response => response.json())
+            .then(data => {
+                if (data.success) {
+                    alert('견적서에 추가되었습니다.');
+                    window.location.href = '/mlangprintauto/quote/';
+                } else {
+                    alert('오류: ' + (data.message || '견적 추가 실패'));
+                }
+            })
+            .catch(error => {
+                console.error('네트워크 오류:', error);
+                alert('네트워크 오류가 발생했습니다.');
+            });
+        };
     </script>
 
     <!-- 카다록 추가 옵션 시스템 -->
     <script src="js/cadarok-premium-options.js"></script>
 
     <!-- 견적서 모달 공통 JavaScript -->
-    <script src="../../js/quotation-modal-common.js"></script>
+    <script src="../../js/quotation-modal-common.js?v=<?php echo time(); ?>"></script>
 
     <?php
     // 데이터베이스 연결 종료
@@ -565,5 +620,9 @@ if ($type_result && ($type_row = mysqli_fetch_assoc($type_result))) {
         mysqli_close($db);
     }
     ?>
+    <!-- 테마 스위처 -->
+    <?php ThemeLoader::renderSwitcher('bottom-right'); ?>
+    <?php ThemeLoader::renderSwitcherJS(); ?>
+
 </body>
 </html>

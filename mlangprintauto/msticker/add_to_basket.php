@@ -2,6 +2,7 @@
 // 안전한 JSON 응답 및 표준 업로드 핸들러
 require_once __DIR__ . '/../../includes/safe_json_response.php';
 require_once __DIR__ . '/../../includes/StandardUploadHandler.php';
+require_once __DIR__ . '/../../includes/DataAdapter.php';  // Phase 2: 데이터 표준화
 
 // 세션 시작
 session_start();
@@ -102,14 +103,123 @@ if (mysqli_num_rows($column_result) == 0) {
 // 파일 정보 JSON 변환
 $files_json = json_encode($uploaded_files, JSON_UNESCAPED_UNICODE);
 
-// 장바구니에 추가
-$insert_query = "INSERT INTO shop_temp (session_id, product_type, MY_type, Section, POtype, MY_amount, ordertype, st_price, st_price_vat, selected_options, work_memo, upload_method, ImgFolder, ThingCate, uploaded_files)
-                VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)";
+// 자석스티커 옵션명 조회
+$MY_type_name = '';
+$Section_name = '';
+$POtype_name = '';
+
+// MY_type 이름 조회
+if (!empty($MY_type)) {
+    $name_query = "SELECT title FROM mlangprintauto_transactioncate WHERE no = ? AND Ttable = 'MSticker'";
+    $name_stmt = mysqli_prepare($db, $name_query);
+    if ($name_stmt) {
+        mysqli_stmt_bind_param($name_stmt, "s", $MY_type);
+        mysqli_stmt_execute($name_stmt);
+        $name_result = mysqli_stmt_get_result($name_stmt);
+        if ($name_row = mysqli_fetch_assoc($name_result)) {
+            $MY_type_name = $name_row['title'];
+        }
+        mysqli_stmt_close($name_stmt);
+    }
+}
+
+// Section 이름 조회 (규격)
+if (!empty($Section)) {
+    $name_query = "SELECT title FROM mlangprintauto_transactioncate WHERE no = ? AND Ttable = 'MSticker'";
+    $name_stmt = mysqli_prepare($db, $name_query);
+    if ($name_stmt) {
+        mysqli_stmt_bind_param($name_stmt, "s", $Section);
+        mysqli_stmt_execute($name_stmt);
+        $name_result = mysqli_stmt_get_result($name_stmt);
+        if ($name_row = mysqli_fetch_assoc($name_result)) {
+            $Section_name = $name_row['title'];
+        }
+        mysqli_stmt_close($name_stmt);
+    }
+}
+
+// POtype 이름 설정 (인쇄면)
+switch ($POtype) {
+    case '1':
+        $POtype_name = '단면칼라';
+        break;
+    case '2':
+        $POtype_name = '양면칼라';
+        break;
+    default:
+        $POtype_name = '';
+}
+
+// ★ NEW: Receive quantity_display from JavaScript (dropdown text)
+$quantity_display_from_dropdown = $_POST['quantity_display'] ?? '';
+
+// ✅ Phase 2: 표준 데이터 생성 (레거시 → 표준)
+$legacy_data = [
+    'MY_type' => $MY_type,
+    'MY_type_name' => $MY_type_name,
+    'Section' => $Section,
+    'Section_name' => $Section_name,
+    'POtype' => $POtype,
+    'POtype_name' => $POtype_name,
+    'MY_amount' => $MY_amount,
+    'ordertype' => $ordertype,
+    'price' => $price,
+    'vat_price' => $vat_price,
+    'selected_options' => $selected_options,
+    'quantity_display' => $quantity_display_from_dropdown  // ★ Pass dropdown text to DataAdapter
+];
+
+$standard_data = DataAdapter::legacyToStandard($legacy_data, 'msticker');
+
+// 표준 필드 추출
+$spec_type = $standard_data['spec_type'];
+$spec_material = $standard_data['spec_material'];
+$spec_size = $standard_data['spec_size'];
+$spec_sides = $standard_data['spec_sides'];
+$spec_design = $standard_data['spec_design'];
+$quantity_value = $standard_data['quantity_value'];
+$quantity_unit = $standard_data['quantity_unit'];
+$quantity_sheets = $standard_data['quantity_sheets'];
+$quantity_display = $standard_data['quantity_display'];  // ★ Use value from DataAdapter
+$price_supply = $standard_data['price_supply'];
+$price_vat = $standard_data['price_vat'];
+$price_vat_amount = $standard_data['price_vat_amount'];
+$product_data_json = json_encode($standard_data, JSON_UNESCAPED_UNICODE);
+$data_version = 2;  // Phase 2 신규 데이터
+
+error_log("Phase 2: 자석스티커 표준 데이터 생성 완료 - spec_type: $spec_type, price_supply: $price_supply");
+
+// ✅ 장바구니에 추가 - 레거시 + 표준 필드 모두 저장 (Dual-Write)
+$insert_query = "INSERT INTO shop_temp (
+    session_id, product_type, MY_type, Section, POtype, MY_amount, ordertype,
+    st_price, st_price_vat, selected_options, work_memo, upload_method,
+    ImgFolder, ThingCate, uploaded_files,
+    spec_type, spec_material, spec_size, spec_sides, spec_design,
+    quantity_value, quantity_unit, quantity_sheets, quantity_display,
+    price_supply, price_vat, price_vat_amount,
+    product_data_json, data_version
+) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)";
 
 $stmt = mysqli_prepare($db, $insert_query);
 if ($stmt) {
-    // 15개 파라미터: 7 strings (session~ordertype) + 2 ints (price, vat_price) + 6 strings (options~json)
-    mysqli_stmt_bind_param($stmt, "sssssssiissssss", $session_id, $product_type, $MY_type, $Section, $POtype, $MY_amount, $ordertype, $price, $vat_price, $selected_options, $work_memo, $upload_method, $upload_folder_db, $thing_cate, $files_json);
+    // Phase 2: 29개 파라미터 (레거시 15개 + 표준 14개)
+    // 타입 순서: session_id(s), product_type(s), MY_type(s), Section(s), POtype(s), MY_amount(s), ordertype(s),
+    //            st_price(d), st_price_vat(d), selected_options(s), work_memo(s), upload_method(s),
+    //            ImgFolder(s), ThingCate(s), uploaded_files(s),
+    //            spec_type(s), spec_material(s), spec_size(s), spec_sides(s), spec_design(s),
+    //            quantity_value(d), quantity_unit(s), quantity_sheets(i), quantity_display(s),
+    //            price_supply(i), price_vat(i), price_vat_amount(i), product_data_json(s), data_version(i)
+    mysqli_stmt_bind_param($stmt, "sssssssddsssssssssssdsisiiisi",
+        // 레거시 필드 (15개)
+        $session_id, $product_type, $MY_type, $Section, $POtype, $MY_amount, $ordertype,
+        $price, $vat_price, $selected_options, $work_memo, $upload_method,
+        $upload_folder_db, $thing_cate, $files_json,
+        // 표준 필드 (14개)
+        $spec_type, $spec_material, $spec_size, $spec_sides, $spec_design,
+        $quantity_value, $quantity_unit, $quantity_sheets, $quantity_display,
+        $price_supply, $price_vat, $price_vat_amount,
+        $product_data_json, $data_version
+    );
     
     if (mysqli_stmt_execute($stmt)) {
         $message = '장바구니에 추가되었습니다.';

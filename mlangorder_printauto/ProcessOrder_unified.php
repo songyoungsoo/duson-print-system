@@ -265,6 +265,7 @@ try {
         }
         
         // mlangorder_printauto 테이블에 삽입 (ImgFolder 필드 포함)
+        // ✅ Phase 3: 표준 필드 추가 (spec_*, quantity_*, price_*, data_version)
         $insert_query = "INSERT INTO mlangorder_printauto (
             no, Type, product_type, ImgFolder, uploaded_files, Type_1, money_4, money_5, name, email, zip, zip1, zip2,
             phone, Hendphone, cont, date, OrderStyle, ThingCate,
@@ -274,8 +275,11 @@ try {
             additional_options_total,
             premium_options, premium_options_total,
             envelope_tape_enabled, envelope_tape_quantity, envelope_tape_price,
-            envelope_additional_options_total, unit, quantity
-        ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)";
+            envelope_additional_options_total, unit, quantity,
+            spec_type, spec_material, spec_size, spec_sides, spec_design,
+            quantity_value, quantity_unit, quantity_sheets, quantity_display,
+            price_supply, price_vat, price_vat_amount, data_version
+        ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)";
 
         $stmt = mysqli_prepare($connect, $insert_query);
         if (!$stmt) {
@@ -375,6 +379,21 @@ try {
             $unit = $item['unit'] ?? '개';
         }
 
+        // ✅ Phase 3: 표준 필드 추출 ($product_data에서)
+        $spec_type = $product_data['spec_type'] ?? '';
+        $spec_material = $product_data['spec_material'] ?? '';
+        $spec_size = $product_data['spec_size'] ?? '';
+        $spec_sides = $product_data['spec_sides'] ?? '';
+        $spec_design = $product_data['spec_design'] ?? '';
+        $quantity_value = $product_data['quantity_value'] ?? 0;
+        $quantity_unit = $product_data['quantity_unit'] ?? '매';
+        $quantity_sheets = $product_data['quantity_sheets'] ?? 0;
+        $quantity_display = $product_data['quantity_display'] ?? '';
+        $price_supply = $product_data['price_supply'] ?? 0;
+        $price_vat = $product_data['price_vat'] ?? 0;
+        $price_vat_amount = $product_data['price_vat_amount'] ?? 0;
+        $data_version = $product_data['data_version'] ?? 1;
+
         // 🔍 INSERT 직전 최종 확인 로깅
         error_log("=== INSERT 직전 변수 확인 ===");
         $debug_vars = [
@@ -423,7 +442,8 @@ try {
         $st_price = strval($item['st_price'] ?? 0);
         $st_price_vat = strval($item['st_price_vat'] ?? 0);
 
-        // 37개 파라미터 타입 문자열 (손가락으로 하나씩 세기!)
+        // ✅ Phase 3: 49개 파라미터 타입 문자열 (3번 검증!)
+        // 기존 37개 + Phase 3 표준 필드 12개 = 49개
         // 1:no(i) 2:Type(s) 3:product_type(s) 4:ImgFolder(s) 5:uploaded_files(s) 6:Type_1(s) 7:money_4(s) 8:money_5(s)
         // 9:name(s) 10:email(s) 11:zip(s) 12:zip1(s) 13:zip2(s) 14:phone(s) 15:Hendphone(s)
         // 16:cont(s) 17:date(s) 18:OrderStyle(s) 19:ThingCate(s)
@@ -434,9 +454,19 @@ try {
         // 30:premium_options(s) 31:premium_options_total(i)
         // 32:envelope_tape_enabled(i) 33:envelope_tape_quantity(i) 34:envelope_tape_price(i) 35:envelope_additional_options_total(i)
         // 36:unit(s) 37:quantity(d)
-        // 타입: i(1)+s(18)+isi+isi+iii+i+si+iiii+s+d = 1+18+3+3+3+1+2+4+1+1 = 37
-        $type_string = 'issssssssssssssssssisiisiiiiisiiiiisd';
-        $type_count = strlen($type_string); // 37
+        // 38:spec_type(s) 39:spec_material(s) 40:spec_size(s) 41:spec_sides(s) 42:spec_design(s)
+        // 43:quantity_value(d) 44:quantity_unit(s) 45:quantity_sheets(i) 46:quantity_display(s)
+        // 47:price_supply(i) 48:price_vat(i) 49:price_vat_amount(i) 50:data_version(i)
+        // 타입 검증: i(1)+s(18)+isi+isi+iii+i+si+iiii+s+d + sssss+dsis+iiii = 50개
+        $type_string = 'issssssssssssssssssisiisiiiiisiiiiisd' . 'sssssdsisiiii';
+        $placeholder_count = substr_count($insert_query, '?');  // 검증 1
+        $type_count = strlen($type_string);                      // 검증 2
+        $var_count = 50;                                         // 검증 3
+
+        if ($placeholder_count !== $type_count || $type_count !== $var_count) {
+            error_log("🔴 bind_param 개수 불일치! placeholder=$placeholder_count, type=$type_count, var=$var_count");
+            throw new Exception("bind_param 개수 불일치 발생");
+        }
 
         mysqli_stmt_bind_param($stmt, $type_string,
             $new_no, $product_type_name, $product_type, $img_folder_path, $uploaded_files_json, $product_info, $st_price, $st_price_vat,
@@ -449,8 +479,11 @@ try {
             $premium_options, $premium_options_total,
             $envelope_tape_enabled, $envelope_tape_quantity, $envelope_tape_price,
             $envelope_additional_options_total,
-            $unit,      // 36번째: 단위 필드
-            $quantity   // 37번째: 수량 필드 (포스터=MY_amount, 전단지=연수)
+            $unit, $quantity,
+            // ✅ Phase 3: 표준 필드 추가 (12개)
+            $spec_type, $spec_material, $spec_size, $spec_sides, $spec_design,
+            $quantity_value, $quantity_unit, $quantity_sheets, $quantity_display,
+            $price_supply, $price_vat, $price_vat_amount, $data_version
         );
         
         if (mysqli_stmt_execute($stmt)) {
