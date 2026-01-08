@@ -69,9 +69,16 @@ class ProductSpecFormatter {
         ]);
 
         // 2줄: 옵션 정보 (spec_sides / quantity_display / spec_design)
+        $quantity_display = $item['quantity_display'] ?? '';
+
+        // ✅ 수정: quantity_display가 비어있거나 단위가 없는 경우 formatQuantity() 호출
+        if (empty($quantity_display) || !preg_match('/[매연부권개장]/u', $quantity_display)) {
+            $quantity_display = $this->formatQuantity($item);
+        }
+
         $line2_parts = array_filter([
             $item['spec_sides'] ?? '',
-            $item['quantity_display'] ?? '',
+            $quantity_display,
             $item['spec_design'] ?? ''
         ]);
 
@@ -184,6 +191,192 @@ class ProductSpecFormatter {
         if (!empty($result['additional'])) $lines[] = $result['additional'];
 
         return implode("\n", $lines);
+    }
+
+    /**
+     * ✅ 통합 포맷: 고정 양식에 맞춰 4줄로 표시
+     * 모든 제품을 동일한 구조로 표시 (일관성 확보)
+     *
+     * @param array $item 상품 데이터
+     * @return array ['line1' => '', 'line2' => '', 'line3' => '', 'line4' => '']
+     */
+    public function formatUnified($item) {
+        // Type_1 JSON 파싱
+        if (!empty($item['Type_1']) && is_string($item['Type_1'])) {
+            $type1Data = json_decode($item['Type_1'], true);
+            if ($type1Data && is_array($type1Data)) {
+                $item = array_merge($item, $type1Data);
+            }
+        }
+
+        $productType = $item['product_type'] ?? '';
+
+        // 1줄: 제품종류 / 재질 / 규격
+        $line1 = $this->buildLine1($item, $productType);
+
+        // 2줄: 인쇄옵션 / 수량+단위 / 디자인
+        $line2 = $this->buildLine2($item, $productType);
+
+        // 3줄: 추가옵션 (코팅, 접지, 오시)
+        $line3 = $this->buildLine3($item, $productType);
+
+        // 4줄: 특수옵션 (프리미엄 옵션, 양면테이프)
+        $line4 = $this->buildLine4($item, $productType);
+
+        return [
+            'line1' => $line1,
+            'line2' => $line2,
+            'line3' => $line3,
+            'line4' => $line4
+        ];
+    }
+
+    /**
+     * 1줄 구성: spec_type / spec_material / spec_size
+     */
+    private function buildLine1($item, $productType) {
+        // 표준 필드 우선 사용
+        $slot1 = $item['spec_type'] ?? '';
+        $slot2 = $item['spec_material'] ?? '';
+        $slot3 = $item['spec_size'] ?? '';
+
+        // 레거시 필드 폴백
+        if (empty($slot1)) {
+            if ($productType === 'sticker') {
+                // 스티커: domusong 필드 (앞의 0과 공백 제거)
+                $domusong = $item['domusong'] ?? '';
+                $slot1 = preg_replace('/^[0\s]+/', '', $domusong);
+            } elseif ($productType === 'ncrflambeau') {
+                // NCR은 PN_type이 spec_type에 매핑
+                $slot1 = $item['PN_type_name'] ?? $this->getKoreanName($item['PN_type'] ?? '');
+            } else {
+                $slot1 = $item['MY_type_name'] ?? $this->getKoreanName($item['MY_type'] ?? '');
+            }
+        }
+
+        if (empty($slot2)) {
+            if ($productType === 'sticker') {
+                // 스티커: jong 필드 사용 (jil 제거)
+                $jong = $item['jong'] ?? '';
+                $slot2 = preg_replace('/^jil\s*/i', '', $jong);
+            } elseif ($productType === 'cadarok') {
+                // 카다록: slot2는 비어있음 (종류 / 규격 형식)
+                $slot2 = '';
+            } elseif (in_array($productType, ['namecard', 'envelope', 'merchandisebond'])) {
+                $slot2 = $item['Section_name'] ?? $this->getKoreanName($item['Section'] ?? '');
+            } elseif (in_array($productType, ['littleprint', 'poster'])) {
+                // 포스터: Section 또는 MY_Fsd가 재질
+                $slot2 = $item['Section_name'] ?? $item['MY_Fsd_name'] ??
+                         $this->getKoreanName($item['Section'] ?? $item['MY_Fsd'] ?? '');
+            } else {
+                $slot2 = $item['MY_Fsd_name'] ?? $this->getKoreanName($item['MY_Fsd'] ?? '');
+            }
+        }
+
+        if (empty($slot3)) {
+            if ($productType === 'sticker') {
+                // 스티커: garo x sero 형식
+                if (!empty($item['garo']) && !empty($item['sero'])) {
+                    $slot3 = $item['garo'] . 'mm x ' . $item['sero'] . 'mm';
+                }
+            } elseif ($productType === 'msticker' || $productType === 'msticker_01') {
+                $slot3 = $item['Section_name'] ?? $this->getKoreanName($item['Section'] ?? '');
+            } elseif (in_array($productType, ['namecard', 'merchandisebond'])) {
+                $slot3 = '90mm x 50mm';  // 고정값
+            } elseif ($productType === 'cadarok') {
+                // 카다록: Section이 규격
+                $slot3 = $item['Section_name'] ?? $this->getKoreanName($item['Section'] ?? '');
+            } elseif ($productType === 'ncrflambeau') {
+                // NCR: slot3는 비어있음 (타입 / 용지 형식)
+                $slot3 = '';
+            } else {
+                $slot3 = $item['PN_type_name'] ?? $this->getKoreanName($item['PN_type'] ?? '');
+            }
+        }
+
+        return implode(' / ', array_filter([$slot1, $slot2, $slot3]));
+    }
+
+    /**
+     * 2줄 구성: spec_sides / quantity_display / spec_design
+     */
+    private function buildLine2($item, $productType) {
+        // 인쇄옵션 (spec_sides)
+        $slot1 = $item['spec_sides'] ?? '';
+        if (empty($slot1)) {
+            if ($productType === 'envelope') {
+                // 봉투: POtype_name이 인쇄 색상 (마스터1도, 칼라4도 등)
+                $slot1 = $item['POtype_name'] ?? $this->getKoreanName($item['POtype'] ?? '');
+            } elseif ($productType === 'ncrflambeau') {
+                // NCR: MY_type_name이 도수 (spec_sides에 매핑)
+                $slot1 = $item['MY_type_name'] ?? $this->getKoreanName($item['MY_type'] ?? '');
+            } elseif (in_array($productType, ['namecard', 'inserted', 'leaflet', 'merchandisebond'])) {
+                // 명함, 전단지, 상품권: POtype이 단면/양면
+                if (!empty($item['POtype'])) {
+                    $slot1 = $item['POtype_name'] ?? ($item['POtype'] == '1' ? '단면' : '양면');
+                }
+            } elseif (in_array($productType, ['msticker', 'msticker_01'])) {
+                // 자석스티커: POtype이 단면/양면
+                if (!empty($item['POtype'])) {
+                    $slot1 = $item['POtype'] == '1' ? '단면' : '양면';
+                }
+            } elseif ($productType === 'cadarok') {
+                // 카다록: POtype_name (4도4도 등)
+                $slot1 = $item['POtype_name'] ?? $this->getKoreanName($item['POtype'] ?? '');
+            }
+            // 스티커, 포스터는 빈값
+        }
+
+        // 수량+단위 (quantity_display)
+        $slot2 = $item['quantity_display'] ?? '';
+
+        // ✅ 수정: quantity_display가 비어있거나 단위가 없는 경우 formatQuantity() 호출
+        // 단위: 매, 연, 부, 권, 개, 장 등
+        if (empty($slot2) || !preg_match('/[매연부권개장]/u', $slot2)) {
+            // formatQuantity() 호출 (레거시 로직 + 천 단위 변환)
+            $slot2 = $this->formatQuantity($item);
+        }
+
+        // 디자인 (spec_design)
+        $slot3 = $item['spec_design'] ?? '';
+        if (empty($slot3)) {
+            $slot3 = $this->formatDesign($item);
+        }
+
+        return implode(' / ', array_filter([$slot1, $slot2, $slot3]));
+    }
+
+    /**
+     * 3줄 구성: 추가옵션 (코팅, 접지, 오시)
+     * 해당 제품만 표시: inserted, leaflet, cadarok, littleprint, poster
+     */
+    private function buildLine3($item, $productType) {
+        // 추가옵션 제품만
+        if (!in_array($productType, ['inserted', 'leaflet', 'cadarok', 'littleprint', 'poster'])) {
+            return '';
+        }
+
+        return $this->formatAdditionalOptions($item);
+    }
+
+    /**
+     * 4줄 구성: 특수옵션 (프리미엄 옵션, 양면테이프)
+     */
+    private function buildLine4($item, $productType) {
+        // 프리미엄 옵션 제품: 명함, 상품권, NCR
+        if (in_array($productType, ['namecard', 'merchandisebond', 'ncrflambeau'])) {
+            return $this->formatPremiumOptions($item);
+        }
+
+        // 봉투: 양면테이프
+        if ($productType === 'envelope') {
+            if (!empty($item['envelope_tape_enabled']) && $item['envelope_tape_enabled'] == 1) {
+                $tapeQty = intval($item['envelope_tape_quantity'] ?? 0);
+                return $tapeQty > 0 ? "양면테이프: " . number_format($tapeQty) . "개" : "양면테이프";
+            }
+        }
+
+        return '';
     }
 
     /**
@@ -555,10 +748,10 @@ class ProductSpecFormatter {
             $productType = 'sticker';
         }
 
-        // 1. 스티커: mesu 최우선 사용 - 단위 없이 숫자만 표시
+        // 1. 스티커: mesu 최우선 사용 - 단위 포함
         if (in_array($productType, ['sticker', 'msticker', 'msticker_01'])) {
             if (!empty($item['mesu'])) {
-                return number_format(intval($item['mesu']));  // 단위 제거
+                return number_format(intval($item['mesu'])) . '매';  // ✅ 단위 추가
             }
         }
 
@@ -580,7 +773,16 @@ class ProductSpecFormatter {
             }
         }
 
-        // 3. 기타: MY_amount 사용
+        // 3. 봉투/명함: 10 미만이면 천 단위로 변환
+        if (in_array($productType, ['envelope', 'namecard'])) {
+            if (!empty($item['MY_amount'])) {
+                $amount = floatval($item['MY_amount']);
+                $qty_value = $amount > 0 && $amount < 10 ? $amount * 1000 : intval($amount);
+                return number_format($qty_value) . '매';
+            }
+        }
+
+        // 4. 기타: MY_amount 사용
         if (!empty($item['MY_amount'])) {
             $amount = floatval($item['MY_amount']);
             $unit = $item['unit'] ?? '매';
@@ -823,8 +1025,9 @@ class ProductSpecFormatter {
         error_log("quantity_display empty: " . (empty($item['quantity_display']) ? 'YES' : 'NO'));
 
         // ✅ Phase 3: quantity_display 우선 체크 (quotation_temp, shop_temp)
-        if (!empty($item['quantity_display'])) {
-            error_log("Returning quantity_display: " . $item['quantity_display']);
+        // ✅ 수정: 단위가 있는 경우만 사용 (cart.php, create.php와 동일 패턴)
+        if (!empty($item['quantity_display']) && preg_match('/[매연부권개장]/u', $item['quantity_display'])) {
+            error_log("Returning quantity_display with unit: " . $item['quantity_display']);
             return $item['quantity_display'];
         }
 
@@ -839,12 +1042,12 @@ class ProductSpecFormatter {
             $productType = 'sticker';
         }
 
-        // 1. 스티커: mesu 최우선 사용 - 단위 없이 숫자만 표시
+        // 1. 스티커: mesu 최우선 사용 - 단위 포함
         if (in_array($productType, ['sticker', 'msticker', 'msticker_01'])) {
             error_log("Sticker product detected, mesu: " . ($item['mesu'] ?? 'NULL'));
             if (!empty($item['mesu'])) {
-                $result = number_format(intval($item['mesu']));
-                error_log("Returning mesu value: " . $result);
+                $result = number_format(intval($item['mesu'])) . '매';  // ✅ 단위 추가
+                error_log("Returning mesu value with unit: " . $result);
                 return $result;
             }
         }

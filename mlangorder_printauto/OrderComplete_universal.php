@@ -32,8 +32,10 @@ include "../includes/AdditionalOptionsDisplay.php";
 // 수량 포맷팅 헬퍼
 include "../includes/quantity_formatter.php";
 include "../includes/ProductSpecFormatter.php";
+include "../includes/SpecDisplayService.php";
 $optionsDisplay = new AdditionalOptionsDisplay($connect);
 $specFormatter = new ProductSpecFormatter($connect);
+$specDisplayService = new SpecDisplayService($connect);
 
 // ===========================================
 // 🔧 공통 함수들
@@ -307,7 +309,7 @@ function displayProductDetails($connect, $order) {
 
         $optionDetails = $optionsDisplay->getOrderDetails($optionData);
         if ($optionDetails['has_options']) {
-            $html .= '<div style="margin-top: 8px; padding: 10px 10px 5px 10px; background: #e8f5e9; border-radius: 4px; border-left: 3px solid #4caf50;">';
+            $html .= '<div style="margin-top: 8px; padding: 10px 10px 5px 10px; background: #e8f5e9; border-radius: 4px; border-left: 3px solid #4caf50; max-width: 100%; overflow: hidden; word-wrap: break-word;">';
             $html .= '<strong style="color: #2e7d32;">추가 옵션:</strong> ';
 
             foreach ($optionDetails['options'] as $option) {
@@ -328,7 +330,7 @@ function displayProductDetails($connect, $order) {
     if (!empty($order['premium_options']) && !empty($order['premium_options_total'])) {
         $premium_options = json_decode($order['premium_options'], true);
         if ($premium_options && $order['premium_options_total'] > 0) {
-            $html .= '<div style="margin-top: 8px; padding: 10px 10px 5px 10px; background: #fff3e0; border-radius: 4px; border-left: 3px solid #ff9800;">';
+            $html .= '<div style="margin-top: 8px; padding: 10px 10px 5px 10px; background: #fff3e0; border-radius: 4px; border-left: 3px solid #ff9800; max-width: 100%; overflow: hidden; word-wrap: break-word;">';
             $html .= '<strong style="color: #e65100;">✨ 프리미엄 옵션:</strong> ';
 
             $premium_option_names = [
@@ -364,7 +366,7 @@ function displayProductDetails($connect, $order) {
                         }
 
                         $html .= ' <strong>' . number_format($price) . '원</strong>';
-                        $html .= '</td></tr>';
+                        $html .= '</span>';
                     }
                 }
             }
@@ -388,91 +390,75 @@ function displayProductDetails($connect, $order) {
 }
 
 /**
- * 수량 추출
+ * 수량 추출 - SpecDisplayService 통합 버전
+ *
+ * @deprecated 직접 호출 대신 $specDisplayService->getDisplayData($order) 사용 권장
  */
 function extractQuantity($order) {
+    global $specDisplayService;
+
+    // SpecDisplayService 사용 가능하면 통합 출력 사용
+    if ($specDisplayService) {
+        $displayData = $specDisplayService->getDisplayData($order);
+        $quantity_display = $displayData['quantity_display'] ?? '';
+
+        if (!empty($quantity_display)) {
+            return htmlspecialchars($quantity_display);
+        }
+    }
+
+    // SpecDisplayService 사용 불가 시 레거시 폴백
     // 상품 타입 확인
     $product_type = '';
     $json_data = null;
 
     if (isset($order['Type_1'])) {
-        $json_data = json_decode($order['Type_1'], true);
+        $type_data = $order['Type_1'];
+        // "상품 정보: " 접두사 제거
+        if (strpos($type_data, '상품 정보: ') === 0) {
+            $type_data = substr($type_data, strlen('상품 정보: '));
+        }
+        $json_data = json_decode($type_data, true);
         $product_type = $json_data['product_type'] ?? '';
     }
 
-    // ✅ Phase 3-2: 표준 필드 우선 사용 (신규 주문 data_version=2 OR 표준 필드 존재)
-    // ProductSpecFormatter와 동일한 로직: data_version 없어도 quantity_display 있으면 사용
-    $hasQuantityDisplay = !empty($json_data['quantity_display']);
-    $shouldTryStandard = (isset($json_data['data_version']) && $json_data['data_version'] == 2) || $hasQuantityDisplay;
-
-    if ($json_data && $shouldTryStandard) {
-        // 신규 주문: quantity_display 직접 사용
-        if (!empty($json_data['quantity_display'])) {
-            error_log("Phase 3-2 FIX: quantity_display 사용 - " . $json_data['quantity_display'] . ", has_data_version: " . (isset($json_data['data_version']) ? 'yes' : 'no'));
+    // 표준 필드 우선 사용
+    if ($json_data && !empty($json_data['quantity_display'])) {
+        // 단위 검증
+        if (preg_match('/[매연부권개장]/u', $json_data['quantity_display'])) {
             return htmlspecialchars($json_data['quantity_display']);
-        }
-        // quantity_display가 없으면 quantity_value + quantity_unit 조합
-        if (isset($json_data['quantity_value']) && !empty($json_data['quantity_unit'])) {
-            $qty_value = formatQuantityValue($json_data['quantity_value'], $product_type);
-            $qty_display = $qty_value . $json_data['quantity_unit'];
-            error_log("Phase 3-2 FIX: quantity_value+unit 조합 - " . $qty_display);
-            return htmlspecialchars($qty_display);
         }
     }
 
-    // ✅ 레거시 데이터 폴백 (기존 로직 유지)
-    // 전단지/리플렛 특별 처리
+    // 레거시 데이터 폴백
     $is_flyer = in_array($product_type, ['inserted', 'leaflet']) ||
                 strpos($order['Type'] ?? '', '전단') !== false ||
                 strpos($order['Type'] ?? '', '리플렛') !== false;
 
-    if ($is_flyer) {
+    if ($is_flyer && $json_data) {
         $my_amount = $json_data['MY_amount'] ?? $order['MY_amount'] ?? null;
         $mesu = $json_data['mesu'] ?? $order['mesu'] ?? null;
 
         if (!empty($my_amount)) {
             $yeonsu = floatval($my_amount);
-            // formatQuantityValue 사용 (정수면 정수로, 소수면 소수로)
             $formatted_qty = formatQuantityValue($yeonsu, 'inserted');
             $quantity_text = $formatted_qty . '연';
-
             if (!empty($mesu)) {
                 $quantity_text .= '(' . number_format(intval($mesu)) . '매)';
             }
             return htmlspecialchars($quantity_text);
-        } elseif (!empty($mesu)) {
-            return htmlspecialchars(number_format(intval($mesu)) . '매');
         }
     }
 
-    // 다른 모든 품목: 정수로 표시
+    // 다른 품목
     if ($json_data && is_array($json_data)) {
-        // ✅ Phase 3: nested structure 대응 (스티커의 order_details)
-        if (isset($json_data['data_version']) && $json_data['data_version'] == 2) {
-            // 신규: flat structure
-            $details = $json_data;
-        } else {
-            // 레거시: nested structure 대응
-            $details = $json_data['order_details'] ?? $json_data;
-        }
-
+        $details = $json_data['order_details'] ?? $json_data;
         $my_amount = $details['MY_amount'] ?? null;
         $unit = $order['unit'] ?? '매';
 
         if (!empty($my_amount)) {
-            // formatQuantity 사용 (항상 정수)
             return formatQuantity($my_amount, $product_type, $unit);
         }
-
-        // mesu 폴백
-        if (isset($details['mesu'])) {
-            return formatQuantity($details['mesu'], $product_type, '매');
-        }
-    }
-
-    // 마지막 폴백: Type_1 텍스트 파싱
-    if (isset($order['Type_1']) && preg_match('/수량:\s*([0-9.,]+)/', $order['Type_1'], $matches)) {
-        return htmlspecialchars($matches[1]);
     }
 
     // 최종 폴백
@@ -643,7 +629,10 @@ $additional_css = [
 }
 
 .col-details {
-    width: 40%;
+    word-wrap: break-word;
+    overflow-wrap: break-word;
+    white-space: normal;
+    width: 45%;
 }
 
 .col-quantity {
@@ -656,7 +645,7 @@ $additional_css = [
 }
 
 .col-price {
-    width: 15%;
+    width: 10%;
     text-align: right;
     font-weight: 700;
     color: var(--error-red);
@@ -708,6 +697,22 @@ $additional_css = [
     border: 1px solid var(--excel-border);
 }
 
+/* 규격/옵션 셀 스타일 */
+.specs-cell {
+    max-width: 100%;
+    overflow: hidden;
+    word-wrap: break-word;
+    overflow-wrap: break-word;
+}
+
+.spec-item {
+    line-height: 1.5;
+    margin-bottom: 4px;
+    max-width: 100%;
+    word-wrap: break-word;
+    overflow-wrap: break-word;
+}
+
 /* 요청사항 스타일 */
 .request-note {
     margin-top: 8px;
@@ -717,6 +722,9 @@ $additional_css = [
     border-radius: 4px;
     font-size: 0.85rem;
     color: #856404;
+    max-width: 100%;
+    overflow: hidden;
+    word-wrap: break-word;
 }
 
 /* 정보 카드들 - Excel 스타일 */
@@ -1555,16 +1563,17 @@ $additional_css = [
         <thead>
             <tr>
                 <th class="col-order-no">주문번호</th>
-                <th class="col-product">상품명</th>
+                <th class="col-product">품목</th>
                 <th class="col-details">규격/옵션</th>
                 <th class="col-quantity">수량</th>
-                <th class="col-price">금액</th>
+                <th class="col-price">공급가액</th>
                 <th class="col-status">상태</th>
             </tr>
         </thead>
         <tbody>
             <?php foreach ($order_list as $index => $order):
-            // 주문 상세 정보 표시 함수 호출 시 $connect 변수 전달
+            // ✅ Phase 2 통합: SpecDisplayService로 통합 출력 데이터 생성
+            $displayData = $specDisplayService->getDisplayData($order);
             $product_details_html = displayProductDetails($connect, $order);
             ?>
             <tr class="order-row" style="animation-delay: <?php echo $index * 0.1; ?>s">
@@ -1572,29 +1581,25 @@ $additional_css = [
                 <td class="col-order-no">
                     #<?php echo htmlspecialchars($order['no']); ?>
                 </td>
-                
+
                 <!-- 상품명 -->
                 <td class="col-product">
                     <?php echo htmlspecialchars($order['Type']); ?>
                 </td>
-                
+
                 <!-- 상세 정보 -->
                 <td class="col-details">
                     <?php echo $product_details_html; // 생성된 HTML 삽입 ?>
                 </td>
-                
-                <!-- 수량 -->
+
+                <!-- 수량 (SpecDisplayService 통합) -->
                 <td class="col-quantity">
-                    <?php echo extractQuantity($order); ?>
+                    <?php echo htmlspecialchars($displayData['quantity_display']); ?>
                 </td>
-                
-                <!-- 금액 -->
+
+                <!-- 공급가액 (SpecDisplayService 통합) -->
                 <td class="col-price">
-                    <div class="price-container">
-                        <div class="price-supply">공급가: <span><?php echo number_format($order['money_4']); ?>원</span></div>
-                        <div class="price-total">합계금액: <span><?php echo number_format($order['money_5']); ?>원</span></div>
-                        <div class="price-vat">(VAT <?php echo number_format($order['money_5'] - $order['money_4']); ?>원 포함)</div>
-                    </div>
+                    <?php echo number_format($displayData['price_supply']) . '원'; ?>
                 </td>
                 
                 <!-- 상태 -->

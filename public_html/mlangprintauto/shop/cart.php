@@ -559,12 +559,22 @@ if ($cart_result === false) {
                                         // 양식지(ncrflambeau)는 "권" 단위 사용
                                         $unit = ($item['product_type'] == 'ncrflambeau') ? '권' : '매';
 
-                                        if (!empty($item['mesu'])) {
-                                            echo number_format($item['mesu']) . $unit;
-                                        } elseif (!empty($item['MY_amount'])) {
-                                            echo htmlspecialchars($item['MY_amount']) . $unit;
+                                        // 우선순위: quantity_display > mesu > MY_amount > 에러
+                                        if (!empty($item['quantity_display'])) {
+                                            // Phase 3 표준 필드 우선 사용
+                                            echo htmlspecialchars($item['quantity_display']);
+                                        } elseif (isset($item['mesu']) && $item['mesu'] !== '' && $item['mesu'] !== '0' && $item['mesu'] !== 0) {
+                                            // 스티커 전용 필드
+                                            echo number_format(floatval($item['mesu'])) . $unit;
+                                        } elseif (isset($item['MY_amount']) && $item['MY_amount'] !== '' && $item['MY_amount'] !== '0' && $item['MY_amount'] !== 0) {
+                                            // 봉투/명함 전용 필드
+                                            $qty = floatval($item['MY_amount']);
+                                            // ⚠️ 사용자 요구: 계산 금지, DB 값 그대로 표시
+                                            echo number_format($qty) . $unit;
                                         } else {
-                                            echo '1' . $unit;
+                                            // 마지막 fallback - 에러 표시 및 로깅
+                                            error_log("cart.php ERROR: 수량 필드 없음 - no={$item['no']}, product_type={$item['product_type']}, session_id=" . ($item['session_id'] ?? 'N/A'));
+                                            echo '<span style="color:red; font-weight:bold;">수량 미지정</span>';
                                         }
                                         ?>
                                     </div>
@@ -1096,12 +1106,23 @@ function numberToKorean($num) {
                         </td>
                         <td style="border: 1px solid #000; padding: 4px; text-align: center;">
                             <?php
-                            if (!empty($item['mesu'])) {
-                                echo number_format($item['mesu']);
-                            } elseif (!empty($item['MY_amount'])) {
-                                echo htmlspecialchars($item['MY_amount']);
+                            // 우선순위: quantity_display > mesu > MY_amount > 에러
+                            // Note: 단위는 다음 컬럼에 별도 표시됨 (line 1119)
+                            if (!empty($item['quantity_display'])) {
+                                // Phase 3 표준 필드 - 단위 포함된 경우 그대로 표시
+                                echo htmlspecialchars($item['quantity_display']);
+                            } elseif (isset($item['mesu']) && $item['mesu'] !== '' && $item['mesu'] !== '0' && $item['mesu'] !== 0) {
+                                // 스티커 전용 필드
+                                echo number_format(floatval($item['mesu']));
+                            } elseif (isset($item['MY_amount']) && $item['MY_amount'] !== '' && $item['MY_amount'] !== '0' && $item['MY_amount'] !== 0) {
+                                // 봉투/명함 전용 필드
+                                $qty = floatval($item['MY_amount']);
+                                // ⚠️ 사용자 요구: 계산 금지, DB 값 그대로 표시
+                                echo number_format($qty);
                             } else {
-                                echo '1';
+                                // 마지막 fallback - 에러 표시 및 로깅
+                                error_log("cart.php PRINT ERROR: 수량 필드 없음 - no={$item['no']}, product_type={$item['product_type']}");
+                                echo '<span style="color:red; font-weight:bold;">수량 미지정</span>';
                             }
                             ?>
                         </td>

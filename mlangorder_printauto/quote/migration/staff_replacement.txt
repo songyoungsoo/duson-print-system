@@ -1,0 +1,9 @@
+                                // ✅ ProductSpecFormatter로 규격/수량/단위 정보 추출 (중복 코드 제거)
+                                $info = getOrderItemInfo($summary_item, $specFormatter);
+                                $full_spec = $info['full_spec'];
+                                $quantity_num = $info['quantity_num'];
+                                $unit = $info['unit'];
+                                $item_type_display = $info['item_type_display'];
+                                $is_flyer = $info['is_flyer'];
+                                $mesu_for_display = $info['mesu_for_display'];
+                                $json_data = $info['json_data'];

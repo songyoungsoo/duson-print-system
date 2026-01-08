@@ -492,8 +492,8 @@ header("Expires: 0");
 
             console.log("💰 전달할 가격 정보:", {totalPrice, vatPrice, currentPriceData: window.currentPriceData});
 
-            formData.append("calculated_price", totalPrice);
-            formData.append("calculated_vat_price", vatPrice);
+            formData.append("price", totalPrice);
+            formData.append("vat_price", vatPrice);
 
             // 추가 옵션 데이터 포함 (올바른 ID 사용)
             const coatingToggle = document.getElementById("coating_enabled");

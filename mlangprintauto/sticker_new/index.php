@@ -577,11 +577,11 @@ $default_values = [
             const priceDisplay = document.getElementById('priceDisplay');
             const priceAmount = document.getElementById('priceAmount');
             const priceDetails = document.getElementById('priceDetails');
-            const uploadButton = document.getElementById('uploadOrderButton');
-            
-            // DOM 요소 존재 확인
-            if (!priceDisplay || !priceAmount || !priceDetails || !uploadButton) {
-                console.error('Required DOM elements not found');
+            const uploadButton = document.getElementById('uploadOrderButton');  // 일반 모드에만 존재
+
+            // 필수 DOM 요소 존재 확인 (uploadButton은 선택적 - 견적서 모드에는 없음)
+            if (!priceDisplay || !priceAmount || !priceDetails) {
+                console.error('Required DOM elements not found (priceDisplay, priceAmount, priceDetails)');
                 return;
             }
             
@@ -610,13 +610,34 @@ $default_values = [
                 
                 // 가격 표시 영역을 calculated 상태로 변경
                 priceDisplay.classList.add('calculated');
+
+                // 업로드/주문 버튼 표시 (일반 모드에만 존재)
+                if (uploadButton) {
+                    uploadButton.style.display = 'block';
+                }
                 
-                // 업로드/주문 버튼 표시
-                uploadButton.style.display = 'block';
-                
-                // 세션에 가격 정보 저장 (장바구니/주문용)
-                window.currentPriceData = priceData;
-                console.log('Price display updated successfully - Supply price focus');
+                // 세션에 가격 정보 + 규격 정보 저장 (장바구니/주문/견적서용)
+                // ✅ 규격 정보도 함께 저장 (견적서 적용 시 buildStickerSpecification() 대신 사용)
+                const jong = document.getElementById('jong');
+                const domusong = document.getElementById('domusong');
+                const uhyungSelect = document.getElementById('uhyung');
+                const garo = document.getElementById('garo');
+                const sero = document.getElementById('sero');
+                const mesu = document.getElementById('mesu');
+
+                window.currentPriceData = {
+                    ...priceData,
+                    // 규격 정보 추가 (DOM에서 직접 읽기)
+                    specData: {
+                        jong: jong?.selectedOptions[0]?.text || '',
+                        garo: garo?.value || '',
+                        sero: sero?.value || '',
+                        mesu: mesu?.value || '',
+                        uhyung: uhyungSelect?.selectedOptions[0]?.text || '',
+                        domusong: domusong?.selectedOptions[0]?.text || ''
+                    }
+                };
+                console.log('Price and specification data saved:', window.currentPriceData);
                 
                 // 견적서 모드일 때 견적서 적용 버튼 표시
                 const applyBtn = document.getElementById('applyBtn');
@@ -640,22 +661,26 @@ $default_values = [
             const priceAmount = document.getElementById('priceAmount');
             const priceDetails = document.getElementById('priceDetails');
             const priceDisplay = document.getElementById('priceDisplay');
-            const uploadButton = document.getElementById('uploadOrderButton');
-            
+            const uploadButton = document.getElementById('uploadOrderButton');  // 일반 모드에만 존재
+
             if (priceAmount) priceAmount.textContent = '견적 계산 필요';
             if (priceDetails) priceDetails.textContent = '모든 옵션을 선택하면 자동으로 계산됩니다';
             if (priceDisplay) priceDisplay.classList.remove('calculated');
-            if (uploadButton) uploadButton.style.display = 'none';
-            
+
+            // 업로드 버튼 숨김 (일반 모드에만 존재)
+            if (uploadButton) {
+                uploadButton.style.display = 'none';
+            }
+
             window.currentPriceData = null;
         }
 
         // 자동 가격 계산 함수 (명함 방식)
-        function autoCalculatePrice() {
-            console.log('Auto calculation triggered'); // 디버깅
-            
-            if (!areAllOptionsSelected()) {
-                console.log('Not all options selected - checking details:'); // 디버깅
+        function autoCalculatePrice(skipValidation = false) {
+            console.log('Auto calculation triggered (skipValidation:', skipValidation, ')');
+
+            if (!skipValidation && !areAllOptionsSelected()) {
+                console.log('Not all options selected - checking details:');
                 // 각 옵션 상태 확인
                 const form = document.getElementById('stickerForm');
                 const jong = form.querySelector('select[name="jong"]').value;
@@ -664,48 +689,51 @@ $default_values = [
                 const mesu = form.querySelector('select[name="mesu"]').value;
                 const uhyung = form.querySelector('select[name="uhyung"]').value;
                 const domusong = form.querySelector('select[name="domusong"]').value;
-                
+
                 console.log('Options status:', {jong, garo, sero, mesu, uhyung, domusong});
-                
+
                 // 옵션이 부족할 때만 가격 초기화 (명함 방식과 동일)
                 resetPriceDisplay();
-                return;
+                return Promise.reject('Not all options selected');
             }
-            
-            console.log('All options selected, calculating...'); // 디버깅
+
+            console.log('All options selected, calculating...');
             const formData = new FormData(document.getElementById('stickerForm'));
-            
+
             // 디버깅: 전송되는 데이터 확인
             console.log('Sending form data:');
             for (let [key, value] of formData.entries()) {
                 console.log(`  ${key}: ${value}`);
             }
-            
+
             console.log('Fetching: ./calculate_price.php');
-            fetch('./calculate_price.php', {
+            return fetch('./calculate_price.php', {
                 method: 'POST',
                 body: formData
             })
             .then(response => {
-                console.log('Response received:', response.status, response.statusText); // 디버깅
+                console.log('Response received:', response.status, response.statusText);
                 if (!response.ok) {
                     throw new Error(`HTTP error! status: ${response.status}`);
                 }
                 return response.json();
             })
             .then(data => {
-                console.log('Price data received:', data); // 디버깅
+                console.log('Price data received:', data);
                 if (data.success) {
                     console.log('Calculation successful, updating display');
                     updatePriceDisplay(data);
+                    return data;
                 } else {
                     console.error('Calculation failed:', data.message);
                     resetPriceDisplay();
+                    throw new Error(data.message || 'Calculation failed');
                 }
             })
             .catch(error => {
                 console.error('Price calculation error:', error);
                 resetPriceDisplay();
+                throw error;
             });
         }
         
@@ -925,29 +953,40 @@ $default_values = [
             
             // 초기 계산을 위해 기본값 설정 (사용자에게는 안보임)
             setTimeout(() => {
-                console.log('Setting default values for initial calculation');
+                console.log('🚀 Setting default values for initial calculation');
 
                 // 기본값 설정 (계산용)
                 if (garoInput && !garoInput.value) {
                     garoInput.value = '100';
+                    console.log('  garo set to 100');
                 }
                 if (seroInput && !seroInput.value) {
                     seroInput.value = '100';
+                    console.log('  sero set to 100');
                 }
 
-                // 초기 계산 실행
-                autoCalculatePrice();
-
-                // 값 지우기 (커서만 남김)
-                setTimeout(() => {
-                    if (garoInput) {
-                        garoInput.value = '';
-                    }
-                    if (seroInput) {
-                        seroInput.value = '';
-                    }
-                }, 200);
-            }, 100);
+                // ✅ 초기 계산 실행 (검증 건너뜀) 및 완료 대기 (Promise 방식)
+                autoCalculatePrice(true)  // skipValidation = true
+                    .then(() => {
+                        console.log('✅ Initial calculation successful');
+                        // 계산 완료 후 입력값 지우기 (사용자가 변경하지 않았을 때만)
+                        if (garoInput && garoInput.value === '100') {
+                            garoInput.value = '';
+                            console.log('  garo cleared');
+                        }
+                        if (seroInput && seroInput.value === '100') {
+                            seroInput.value = '';
+                            console.log('  sero cleared');
+                        }
+                        console.log('✨ Initial calculation complete, input fields cleared');
+                    })
+                    .catch(error => {
+                        console.error('❌ Initial calculation failed:', error);
+                        // 계산 실패 시에도 입력값 지우기
+                        if (garoInput) garoInput.value = '';
+                        if (seroInput) seroInput.value = '';
+                    });
+            }, 300);  // DOM 완전 로드 대기: 100ms → 300ms
         }
 
         // 장바구니 추가 함수 (명함 완성 시스템 적용)
@@ -1846,8 +1885,8 @@ $default_values = [
             formData.append("POtype", document.getElementById("POtype").value);
             formData.append("MY_amount", document.getElementById("MY_amount").value);
             formData.append("ordertype", document.getElementById("ordertype").value);
-            formData.append("calculated_price", Math.round(window.currentPriceData.total_price));
-            formData.append("calculated_vat_price", Math.round(window.currentPriceData.vat_price));
+            formData.append("price", Math.round(window.currentPriceData.total_price));
+            formData.append("vat_price", Math.round(window.currentPriceData.vat_price));
 
             const workMemo = document.getElementById("modalWorkMemo");
             if (workMemo) formData.append("work_memo", workMemo.value);
@@ -2864,6 +2903,151 @@ if ($db) {
 
     <!-- 견적서 모달 공통 JavaScript -->
     <script src="../../js/quotation-modal-common.js"></script>
+
+<?php if ($is_quotation_mode): ?>
+    <!-- 견적서 모드: add_to_basket.php로 직접 저장 -->
+    <script>
+    // applyToQuotation() 함수를 재정의하여 add_to_basket.php?mode=quotation 사용
+    window.applyToQuotation = function() {
+        console.log('🚀 [스티커 견적서] applyToQuotation() 호출 - 새 로직 사용');
+
+        // 1. 필수 필드 검증
+        const jong = document.getElementById('jong')?.value;
+        const garo = document.getElementById('garo')?.value;
+        const sero = document.getElementById('sero')?.value;
+        const mesu = document.getElementById('mesu')?.value;
+
+        if (!jong || !garo || !sero || !mesu) {
+            alert('모든 필수 옵션을 선택해주세요.');
+            console.error('❌ 필수 필드 누락');
+            return;
+        }
+
+        // 2. 가격 계산 확인 및 자동 계산
+        if (!window.currentPriceData || !window.currentPriceData.price) {
+            console.log('⚠️ 가격 데이터 없음 - 자동 계산 시도');
+
+            // 자동으로 가격 계산 실행 (스티커는 autoCalculatePrice 사용)
+            if (typeof window.autoCalculatePrice === 'function') {
+                console.log('📞 autoCalculatePrice() 자동 호출');
+                window.autoCalculatePrice();
+
+                // 계산 완료 대기 (최대 3초)
+                let attempts = 0;
+                const maxAttempts = 30;
+
+                const waitForPrice = setInterval(() => {
+                    attempts++;
+
+                    if (window.currentPriceData && window.currentPriceData.price) {
+                        // 계산 완료
+                        clearInterval(waitForPrice);
+                        console.log('✅ 자동 가격 계산 완료');
+                        // 재귀 호출로 다시 시도
+                        window.applyToQuotation();
+                    } else if (attempts >= maxAttempts) {
+                        // 타임아웃
+                        clearInterval(waitForPrice);
+                        alert('가격 계산에 실패했습니다. 옵션을 다시 확인해주세요.');
+                        console.error('❌ 가격 계산 타임아웃');
+                    }
+                }, 100);
+
+                return; // 비동기 처리 대기
+            } else if (typeof window.calculatePrice === 'function') {
+                // 폴백: calculatePrice() 시도
+                console.log('📞 calculatePrice() 자동 호출 (폴백)');
+                window.calculatePrice();
+
+                // 동일한 대기 로직
+                let attempts = 0;
+                const maxAttempts = 30;
+
+                const waitForPrice = setInterval(() => {
+                    attempts++;
+
+                    if (window.currentPriceData && window.currentPriceData.price) {
+                        clearInterval(waitForPrice);
+                        console.log('✅ 자동 가격 계산 완료');
+                        window.applyToQuotation();
+                    } else if (attempts >= maxAttempts) {
+                        clearInterval(waitForPrice);
+                        alert('가격 계산에 실패했습니다. 옵션을 다시 확인해주세요.');
+                        console.error('❌ 가격 계산 타임아웃');
+                    }
+                }, 100);
+
+                return;
+            } else {
+                alert('가격 계산 함수를 찾을 수 없습니다. 페이지를 새로고침해주세요.');
+                console.error('❌ 가격 계산 함수 없음 (autoCalculatePrice, calculatePrice 둘 다 없음)');
+                return;
+            }
+        }
+
+        // 3. FormData 구성 (기존 add_to_basket 로직 재사용)
+        const form = document.getElementById('stickerForm');
+        const formData = new FormData(form);
+
+        // 필수 데이터 추가
+        formData.set('action', 'add_to_basket');
+        formData.set('st_price', window.currentPriceData.price.toString().replace(/,/g, ''));
+        formData.set('st_price_vat', window.currentPriceData.price_vat.toString().replace(/,/g, ''));
+        formData.set('product_type', 'sticker');
+
+        // 수량 표시 (quantity_display) 추가 - 드롭다운 텍스트
+        const mesuSelect = document.getElementById('mesu');
+        if (mesuSelect && mesuSelect.selectedOptions[0]) {
+            const mesuText = mesuSelect.selectedOptions[0].text;
+            formData.set('quantity_display', mesuText);
+            console.log('📋 quantity_display:', mesuText);
+        }
+
+        // 업로드된 파일 정보 추가 (StandardUploadHandler와 동일한 형식)
+        if (window.uploadedFiles && window.uploadedFiles.length > 0) {
+            const fileInfoArray = window.uploadedFiles.map(file => ({
+                name: file.name,
+                size: file.size,
+                path: file.path
+            }));
+            formData.set('uploaded_files_info', JSON.stringify(fileInfoArray));
+        }
+
+        console.log('📤 [스티커 견적서] add_to_basket.php?mode=quotation 호출');
+
+        // 4. add_to_basket.php?mode=quotation 호출
+        fetch('./add_to_basket.php?mode=quotation', {
+            method: 'POST',
+            body: formData
+        })
+        .then(response => response.json())
+        .then(data => {
+            console.log('✅ [스티커 견적서] 응답:', data);
+
+            if (data.success) {
+                alert('견적서에 추가되었습니다!');
+
+                // 부모 창 새로고침 (create.php가 quotation_temp를 다시 로드)
+                if (window.parent && window.parent !== window) {
+                    console.log('🔄 부모 창 새로고침');
+                    window.parent.location.reload();
+                } else {
+                    console.warn('⚠️ 부모 창 없음 (모달이 아님)');
+                }
+            } else {
+                alert('견적서 추가 실패: ' + (data.message || '알 수 없는 오류'));
+                console.error('❌ 견적서 추가 실패:', data);
+            }
+        })
+        .catch(error => {
+            console.error('❌ [스티커 견적서] 네트워크 오류:', error);
+            alert('견적서 추가 중 오류가 발생했습니다: ' + error.message);
+        });
+    };
+
+    console.log('✅ [스티커 견적서] applyToQuotation() 재정의 완료');
+    </script>
+<?php endif; ?>
 
 <?php if (!$is_quotation_mode): ?>
     <?php

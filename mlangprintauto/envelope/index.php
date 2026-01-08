@@ -554,8 +554,8 @@ if ($type_result && ($type_row = mysqli_fetch_assoc($type_result))) {
             formData.append("POtype", document.getElementById("POtype").value);
             formData.append("MY_amount", document.getElementById("MY_amount").value);
             formData.append("ordertype", document.getElementById("ordertype").value);
-            formData.append("calculated_price", Math.round(window.currentPriceData.total_price));      // 공급가액 (VAT 미포함)
-            formData.append("calculated_vat_price", Math.round(window.currentPriceData.total_with_vat));  // 합계 (VAT 포함)
+            formData.append("price", Math.round(window.currentPriceData.total_price));      // 공급가액 (VAT 미포함)
+            formData.append("vat_price", Math.round(window.currentPriceData.total_with_vat));  // 합계 (VAT 포함)
 
             // 양면테이프 옵션 추가
             const tapeEnabled = document.getElementById("envelope_tape_enabled")?.checked;
@@ -610,8 +610,8 @@ if ($type_result && ($type_row = mysqli_fetch_assoc($type_result))) {
             formData.append('POtype', document.getElementById('POtype').value);
             formData.append('MY_amount', document.getElementById('MY_amount').value);
             formData.append('ordertype', document.getElementById('ordertype').value);
-            formData.append('calculated_price', Math.round(window.currentPriceData.total_price));      // 공급가액 (VAT 미포함)
-            formData.append('calculated_vat_price', Math.round(window.currentPriceData.total_with_vat));  // 합계 (VAT 포함)
+            formData.append('price', Math.round(window.currentPriceData.total_price));      // 공급가액 (VAT 미포함)
+            formData.append('vat_price', Math.round(window.currentPriceData.total_with_vat));  // 합계 (VAT 포함)
 
             // AJAX 전송
             fetch('../quote/add_to_quotation_temp.php', {

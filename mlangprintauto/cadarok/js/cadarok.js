@@ -451,6 +451,7 @@ function calculatePrice(isAuto = true) {
         if (response.success) {
             const priceData = response.data;
             currentPriceData = priceData;
+            window.currentPriceData = priceData;  // ✅ 견적서 모달에서 접근 가능하도록
 
             // 서버에서 이미 추가 옵션이 포함된 가격을 반환하므로 여기서 다시 더하지 않음
             console.log('가격 계산 완료:', {

@@ -7,7 +7,11 @@ include "../../db.php";
 include "../../includes/AdditionalOptionsDisplay.php";
 include "../../includes/quantity_formatter.php";
 include "../../includes/ProductSpecFormatter.php";
+include "../../includes/SpecDisplayService.php";
 $connect = $db; // db.php에서 $db 변수 사용
+
+// SpecDisplayService 인스턴스 (통합 출력 서비스)
+$specDisplayService = new SpecDisplayService($connect);
 
 // --- REFACTOR ---
 // Guideline: Admin Configuration for Leaflet Display
@@ -340,31 +344,20 @@ if ($cart_result === false) {
 
                             $product = $product_info[$item['product_type']] ?? ['name' => '상품', 'icon' => ''];
 
-                            // --- REFACTOR: Prepare variables for new amount display ---
+                            // --- REFACTOR: SpecDisplayService 통합 출력 사용 ---
+                            $displayData = $specDisplayService->getDisplayData($item);
                             $is_flyer = in_array($item['product_type'], ['inserted', 'leaflet']);
-                            // FIX: 전단지는 mesu 컬럼 사용 (flyer_mesu는 존재하지 않음)
-                            $show_sheet_count = ($is_flyer && $LEAFLET_DISPLAY_STYLE === 'Y' && !empty($item['mesu']));
-                            
-                            $main_amount_val = 1;
-                            $main_amount_display = '1';
-                            $unit = '매'; // Default unit
-                            $sub_amount = null;
+                            $show_sheet_count = ($is_flyer && $LEAFLET_DISPLAY_STYLE === 'Y');
 
-                            if ($is_flyer) {
-                                $unit = '연';
-                                $main_amount_val = !empty($item['MY_amount']) ? floatval($item['MY_amount']) : 1;
-                                // 0.5만 소수점, 나머지 정수 (formatQuantityValue 사용)
-                                $main_amount_display = formatQuantityValue($main_amount_val, 'inserted');
-                                // FIX: 전단지는 mesu 컬럼에서 매수 읽기 (flyer_mesu 컬럼은 존재하지 않음)
-                                $sub_amount = $item['mesu'] ?? null;
-                            } else {
-                                // Other products - 정수로만 표시
-                                $main_amount_val = !empty($item['mesu']) ? intval($item['mesu']) : (!empty($item['MY_amount']) ? intval($item['MY_amount']) : 1);
-                                $main_amount_display = formatQuantityValue($main_amount_val, $item['product_type']);
+                            // SpecDisplayService에서 통합 데이터 사용
+                            $quantity_display = $displayData['quantity_display'];  // 예: "1연 (5,000매)" 또는 "1,000매"
+                            $unit = $displayData['unit'];  // 연, 매, 부, 권 등
+                            $main_amount_val = $displayData['quantity_value'];
 
-                                if ($item['product_type'] == 'ncrflambeau') $unit = '권';
-                                elseif ($item['product_type'] == 'cadarok') $unit = '부';
-                            }
+                            // 전단지: quantity_display에 이미 "연 (매)" 형식 포함
+                            // 다른 제품: quantity_display에 "매" 등 단위 포함
+                            $main_amount_display = $quantity_display;
+                            $sub_amount = $item['mesu'] ?? $item['quantity_sheets'] ?? null;
                             // --- END REFACTOR ---
                         ?>
                             <tr>
@@ -419,23 +412,14 @@ if ($cart_result === false) {
                                 </td>
 
                                 <!-- 수량 (Refactored) - 전단지: 값+단위+매수 통합 표시 -->
+                                <!-- 수량 (SpecDisplayService 통합) - quantity_display에 단위 포함 -->
                                 <td class="amount-cell <?php echo $is_flyer ? 'leaflet' : ''; ?>">
-                                    <span class="amount-value"><?php echo $main_amount_display; ?></span>
-                                    <?php if ($is_flyer): ?>
-                                        <span class="amount-unit"><?php echo $unit; ?></span>
-                                        <?php if ($show_sheet_count): ?>
-                                            <span class="amount-sub">(<?php echo number_format($sub_amount); ?>매)</span>
-                                        <?php endif; ?>
-                                    <?php endif; ?>
+                                    <span class="amount-value"><?php echo htmlspecialchars($quantity_display); ?></span>
                                 </td>
 
-                                <!-- 단위 (Refactored) - 전단지는 '-' 표시 -->
+                                <!-- 단위 - quantity_display에 이미 포함되어 있으므로 '-' 표시 -->
                                 <td class="unit-cell">
-                                    <?php if ($is_flyer): ?>
-                                        <span class="amount-unit">-</span>
-                                    <?php else: ?>
-                                        <span class="amount-unit"><?php echo $unit; ?></span>
-                                    <?php endif; ?>
+                                    <span class="amount-unit">-</span>
                                 </td>
 
                                 <!-- 공급가액 -->

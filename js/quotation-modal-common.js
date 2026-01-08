@@ -321,9 +321,10 @@ function proceedWithApply() {
             totalPrice = Math.round(window.currentPriceData.Total_PriceForm) || 0;
             console.log('✅ [가격 읽기] PriceForm 사용 (상품권):', { supplyPrice, totalPrice });
         } else if (window.currentPriceData.total_price) {
-            // 방법 1C: 기타 품목 형식 (total_price, vat_price)
+            // 방법 1C: 기타 품목 형식 (total_price, vat_price 또는 total_with_vat)
             supplyPrice = Math.round(window.currentPriceData.total_price) || 0;
-            totalPrice = Math.round(window.currentPriceData.vat_price) || 0;
+            // vat_price와 total_with_vat 모두 확인 (제품마다 필드명이 다름)
+            totalPrice = Math.round(window.currentPriceData.vat_price || window.currentPriceData.total_with_vat) || 0;
             console.log('✅ [가격 읽기] total_price 사용:', { supplyPrice, totalPrice });
         } else if (window.currentPriceData.total_supply_price) {
             // 방법 1D: 명함 형식 (total_supply_price, final_total_with_vat)
@@ -341,44 +342,11 @@ function proceedWithApply() {
         }
 
     } else {
-        // 방법 2: DOM 요소에서 가격 읽기 시도 (기타 제품)
-        console.warn('⚠️ [가격 읽기] currentPriceData 없음, DOM에서 읽기 시도');
-
-        // 가격 표시 요소 찾기 (여러 패턴 시도)
-        const priceElements = [
-            // 명함 등의 가격 표시
-            document.querySelector('.price-item.final .price-item-value'),
-            document.querySelector('.price-item-value'),
-            // 일반적인 가격 표시
-            document.getElementById('priceAmount'),
-            document.querySelector('.price-amount'),
-            document.querySelector('.final-price'),
-            document.querySelector('#finalPrice'),
-            // 포괄적 검색
-            document.querySelector('[class*="price-item-value"]'),
-            document.querySelector('[class*="price-amount"]'),
-            document.querySelector('[class*="final"]'),
-            document.querySelector('[id*="price"]')
-        ];
-
-        for (const elem of priceElements) {
-            if (elem && elem.textContent) {
-                const text = elem.textContent.trim();
-                // "123,000원" 또는 "123,000" 형식에서 숫자 추출
-                const match = text.match(/([0-9,]+)/);
-                if (match) {
-                    const price = parseInt(match[1].replace(/,/g, ''));
-                    if (price > 0) {
-                        // VAT 포함 가격으로 간주
-                        totalPrice = price;
-                        // 공급가 = VAT 포함가 ÷ 1.1 (역산)
-                        supplyPrice = Math.round(price / 1.1);
-                        console.log('✅ [가격 읽기] DOM 파싱 성공:', { totalPrice, supplyPrice, source: elem.id || elem.className });
-                        break;
-                    }
-                }
-            }
-        }
+        // ❌ 역계산 금지: DOM 파싱 제거됨
+        console.error('❌ [가격 읽기] currentPriceData 없음 - 가격 계산 필수');
+        console.error('   window.currentPriceData 구조:', window.currentPriceData);
+        alert('가격 정보를 확인할 수 없습니다.\n먼저 "견적 계산" 버튼을 눌러 가격을 계산해주세요.');
+        return;
     }
 
     // 가격 데이터 유효성 최종 검증
@@ -406,21 +374,19 @@ function proceedWithApply() {
     }
 
     // 가격 필드는 출처에 따라 적절한 이름 사용
-    if (window.currentPriceData) {
-        // currentPriceData가 있으면 원본 필드명 유지
-        if (window.currentPriceData.total_with_vat) {
-            payload.total_price = supplyPrice;  // 공급가액 (VAT 미포함)
-            payload.total_with_vat = totalPrice;  // 총액 (VAT 포함)
-        } else if (window.currentPriceData.Total_PriceForm) {
-            payload.supply_price = supplyPrice;  // 전단지/상품권은 supply_price가 없을 수 있음
-            payload.Total_PriceForm = totalPrice;
-        } else {
-            payload.total_price = totalPrice;  // 일반 형식
-        }
+    // ✅ currentPriceData 존재 보장됨 (없으면 Line 349에서 return)
+    if (window.currentPriceData.total_with_vat) {
+        // 카다록, 봉투, 자석스티커 등
+        payload.total_price = supplyPrice;  // 공급가액 (VAT 미포함)
+        payload.total_with_vat = totalPrice;  // 총액 (VAT 포함)
+    } else if (window.currentPriceData.Total_PriceForm) {
+        // 전단지/리플렛/상품권
+        payload.supply_price = supplyPrice;
+        payload.Total_PriceForm = totalPrice;
     } else {
-        // DOM 파싱: totalPrice는 VAT 포함 총액, supplyPrice는 역산
-        payload.total_price = totalPrice;  // VAT 포함 총액
-        payload.vat_price = totalPrice - supplyPrice;  // VAT
+        // 기타 일반 형식
+        payload.total_price = supplyPrice;  // 공급가액 (VAT 미포함)
+        payload.total_with_vat = totalPrice;  // 총액 (VAT 포함)
     }
 
     console.log('📤 [견적서 적용] 전송할 데이터:', payload);
@@ -558,6 +524,38 @@ function buildEnvelopeSpecification() {
 function buildStickerSpecification() {
     const parts = [];
 
+    // ✅ 우선순위: window.currentPriceData.specData 사용 (초기 계산 후 입력값 클리어됨)
+    if (window.currentPriceData && window.currentPriceData.specData) {
+        console.log('Using stored specData from window.currentPriceData:', window.currentPriceData.specData);
+        const spec = window.currentPriceData.specData;
+
+        // 용지 종류
+        if (spec.jong) {
+            parts.push(spec.jong);
+        }
+
+        // 재단 형태
+        if (spec.domusong) {
+            parts.push(spec.domusong);
+        }
+
+        // 편집비 (인쇄만이 아닌 경우만 표시)
+        if (spec.uhyung && !spec.uhyung.includes('인쇄만')) {
+            parts.push(spec.uhyung);
+        }
+
+        // 가로/세로 사이즈
+        if (spec.garo && spec.sero) {
+            parts.push(`${spec.garo}mm x ${spec.sero}mm`);
+        }
+
+        console.log('Specification built from stored data:', parts.join('\n'));
+        return parts.join('\n');
+    }
+
+    // 폴백: DOM에서 읽기 (레거시 지원)
+    console.log('No stored specData, reading from DOM elements');
+
     // 용지 종류
     const jong = document.getElementById('jong');
     if (jong && jong.selectedOptions[0]) {
@@ -587,6 +585,7 @@ function buildStickerSpecification() {
         parts.push(`${garo.value}mm x ${sero.value}mm`);
     }
 
+    console.log('Specification built from DOM:', parts.join('\n'));
     return parts.join('\n');
 }
 

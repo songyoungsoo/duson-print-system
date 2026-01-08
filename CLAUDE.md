@@ -47,7 +47,33 @@ if ($placeholder_count === $type_count && $type_count === $var_count) {
 - **연결 변수**: `$db` (legacy는 `$conn = $db;` alias)
 - **Character Set**: utf8mb4
 
-### 3. 파일명 규칙
+### 3. quantity_display 검증 규칙 (필수)
+```php
+// ❌ NEVER: quantity_display를 단위 체크 없이 그대로 사용
+$line2 = implode(' / ', [$spec_sides, $item['quantity_display'], $spec_design]);
+
+// ✅ ALWAYS: 단위가 없으면 formatQuantity() 호출
+$quantity_display = $item['quantity_display'] ?? '';
+
+// 단위 체크: 매, 연, 부, 권, 개, 장
+if (empty($quantity_display) || !preg_match('/[매연부권개장]/u', $quantity_display)) {
+    $quantity_display = $this->formatQuantity($item);
+}
+
+$line2 = implode(' / ', [$spec_sides, $quantity_display, $spec_design]);
+```
+
+**이유**:
+- DB에 `quantity_display = "1"`처럼 단위 없이 저장될 수 있음
+- `formatQuantity()`는 `MY_amount=1000` → "1,000매" 자동 변환
+- 천 단위 변환 로직 포함 (봉투/명함: `MY_amount < 10`이면 ×1000)
+
+**적용 위치**:
+- `ProductSpecFormatter::formatStandardized()` (lines 71-83)
+- `ProductSpecFormatter::buildLine2()` (lines 323-331)
+- 모든 수량 표시 로직
+
+### 4. 파일명 규칙
 - **All lowercase**: `cateadmin_title.php` (NOT `CateAdmin_title.php`)
 - **Includes**: 소문자 경로만 사용 (Linux case-sensitive)
 - **No symlinks**: 실제 디렉토리만 사용
@@ -150,9 +176,10 @@ curl -T "file.php" -u "dsp1830:ds701018" \
 3. ❌ 대문자 include 경로 → Linux에서 파일 못 찾음
 4. ❌ number_format(0.5) → "1" 반올림 오류
 5. ❌ `littleprint`를 `poster`로 변경 → 시스템 전체 오류
+6. ❌ colgroup 개수 ≠ 실제 컬럼 개수 → 오른쪽 빈 공란 발생
 
 ---
 
-*Core Version - Last Updated: 2025-01-03*
+*Core Version - Last Updated: 2026-01-07*
 *Environment: WSL2 Ubuntu + Windows XAMPP*
 *Full Docs: CLAUDE_DOCS/ | Changelog: .claude/changelog/*

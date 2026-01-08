@@ -20,11 +20,23 @@ class DataAdapter {
         $method = 'convert' . ucfirst(str_replace('_', '', $product_type));
 
         if (method_exists(__CLASS__, $method)) {
-            return self::$method($legacy_data);
+            $result = self::$method($legacy_data);
+        } else {
+            // 알 수 없는 제품 타입: 기본 변환
+            $result = self::convertGeneric($legacy_data);
         }
 
-        // 알 수 없는 제품 타입: 기본 변환
-        return self::convertGeneric($legacy_data);
+        // ✅ Phase 3 FIX: quantity_display 단위 검증 자동 적용
+        // 모든 변환 결과에서 단위가 포함되도록 보장
+        if (isset($result['quantity_display'])) {
+            $result['quantity_display'] = self::ensureQuantityDisplayUnit(
+                $result['quantity_display'],
+                $product_type,
+                $legacy_data
+            );
+        }
+
+        return $result;
     }
 
     /**
@@ -89,6 +101,71 @@ class DataAdapter {
     }
 
     /**
+     * quantity_display 단위 검증 및 보정
+     *
+     * @param string $display 입력된 quantity_display
+     * @param string $productType 제품 타입
+     * @param array $data 원본 데이터 (폴백용)
+     * @return string 단위가 포함된 quantity_display
+     */
+    public static function ensureQuantityDisplayUnit($display, $productType, $data = []) {
+        // 단위 패턴: 매, 연, 부, 권, 개, 장
+        $unitPattern = '/[매연부권개장]/u';
+
+        // 이미 단위가 있으면 그대로 반환
+        if (!empty($display) && preg_match($unitPattern, $display)) {
+            return $display;
+        }
+
+        // 제품별 기본 단위
+        $defaultUnits = [
+            'inserted' => '연',
+            'leaflet' => '연',
+            'sticker' => '매',
+            'msticker' => '매',
+            'msticker_01' => '매',
+            'namecard' => '매',
+            'envelope' => '매',
+            'cadarok' => '부',
+            'littleprint' => '장',
+            'poster' => '장',
+            'ncrflambeau' => '권',
+            'merchandisebond' => '매'
+        ];
+
+        $unit = $defaultUnits[$productType] ?? '개';
+
+        // 숫자만 있으면 단위 추가
+        if (!empty($display) && is_numeric(str_replace(',', '', $display))) {
+            return $display . $unit;
+        }
+
+        // 원본 데이터에서 재생성
+        $standardData = self::legacyToStandard($data, $productType);
+        return $standardData['quantity_display'] ?? number_format(1) . $unit;
+    }
+
+    /**
+     * 레거시 데이터를 표준 필드로 변환 후 quantity_display 단위 검증
+     *
+     * @param array $legacyData 레거시 필드 배열
+     * @param string $productType 제품 타입
+     * @return array 표준 필드 배열 (quantity_display 단위 보장)
+     */
+    public static function legacyToStandardWithUnitCheck($legacyData, $productType) {
+        $standardData = self::legacyToStandard($legacyData, $productType);
+
+        // quantity_display 단위 최종 검증
+        $standardData['quantity_display'] = self::ensureQuantityDisplayUnit(
+            $standardData['quantity_display'] ?? '',
+            $productType,
+            $legacyData
+        );
+
+        return $standardData;
+    }
+
+    /**
      * 명함 (namecard) 변환
      * MY_type=종류, Section=용지, POtype=인쇄면, MY_amount=매수(천단위)
      */
@@ -141,6 +218,10 @@ class DataAdapter {
 
         $mesu = intval($data['mesu'] ?? 0);
 
+        // ✅ DEBUG: quantity_display 생성 확인
+        $quantity_display_value = number_format($mesu) . '매';
+        error_log("DataAdapter convertSticker DEBUG: mesu={$mesu}, quantity_display={$quantity_display_value}");
+
         return [
             'spec_type' => $domusong && $domusong !== '0' ? $domusong : '사각',
             'spec_material' => $jong,
@@ -150,7 +231,7 @@ class DataAdapter {
             'quantity_value' => $mesu,
             'quantity_unit' => '매',
             'quantity_sheets' => $mesu,
-            'quantity_display' => number_format($mesu),  // 단위 없이 숫자만
+            'quantity_display' => $quantity_display_value,  // 스티커 수량 단위 추가
             'price_supply' => $price_supply,
             'price_vat' => $price_vat,
             'price_vat_amount' => $price_vat - $price_supply,
@@ -220,10 +301,9 @@ class DataAdapter {
         $amount = floatval($data['MY_amount'] ?? 0);
         $qty_value = $amount > 0 && $amount < 10 ? $amount * 1000 : intval($amount);
 
-        // ★ Phase 2: 드롭다운 텍스트 우선 사용 (quantity_display)
-        $quantity_display = !empty($data['quantity_display'])
-            ? $data['quantity_display']
-            : number_format($qty_value) . '매';
+        // ✅ 수정: 항상 계산된 qty_value 사용 (프론트엔드 값 무시)
+        // 이유: 프론트엔드에서 "1"만 보내면 "1,000매"로 변환되지 않는 문제 해결
+        $quantity_display = number_format($qty_value) . '매';
 
         // 가격 필드 fallback: shop_temp는 st_price/st_price_vat 사용
         $price_supply = intval($data['price'] ?? $data['st_price'] ?? 0);

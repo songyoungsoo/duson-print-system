@@ -411,7 +411,8 @@ function calculatePrice(isAuto = true) {
         if (response.success) {
             const priceData = response.data;
             currentPriceData = priceData;
-            
+            window.currentPriceData = priceData;  // ✅ 견적서 모달에서 접근 가능하도록
+
             // 가격 표시 업데이트
             updatePriceDisplay(priceData);
             

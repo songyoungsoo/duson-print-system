@@ -459,8 +459,8 @@ if ($type_result && ($type_row = mysqli_fetch_assoc($type_result))) {
             formData.append('POtype', document.getElementById('POtype').value);
             formData.append('MY_amount', document.getElementById('MY_amount').value);
             formData.append('ordertype', document.getElementById('ordertype').value);
-            formData.append('calculated_price', Math.round(window.currentPriceData.total_price));
-            formData.append('calculated_vat_price', Math.round(window.currentPriceData.vat_price));
+            formData.append('price', Math.round(window.currentPriceData.total_price));
+            formData.append('vat_price', Math.round(window.currentPriceData.vat_price));
 
             fetch('../quote/add_to_quotation_temp.php', {
                 method: 'POST',

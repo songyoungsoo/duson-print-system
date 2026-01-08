@@ -625,8 +625,8 @@ header("Expires: 0");
 
             console.log("💰 전달할 가격 정보:", {totalPrice, vatPrice, currentPriceData: window.currentPriceData});
 
-            formData.append("calculated_price", totalPrice);
-            formData.append("calculated_vat_price", vatPrice);
+            formData.append("price", totalPrice);
+            formData.append("vat_price", vatPrice);
 
             // 매수(MY_amountRight) 데이터 전송 (quantityTwo)
             const myAmountRight = document.getElementById("MY_amountRight");
@@ -790,8 +790,8 @@ header("Expires: 0");
             formData.append('MY_amount', document.getElementById('MY_amount').value);
             formData.append('mesu', document.getElementById('mesu').value);
             formData.append('ordertype', document.getElementById('ordertype').value);
-            formData.append('calculated_price', Math.round(window.currentPriceData.total_price));
-            formData.append('calculated_vat_price', Math.round(window.currentPriceData.vat_price));
+            formData.append('price', Math.round(window.currentPriceData.total_price));
+            formData.append('vat_price', Math.round(window.currentPriceData.vat_price));
 
             // 프리미엄 옵션 추가
             ['coating', 'folding', 'creasing', 'binding', 'packaging'].forEach(option => {
