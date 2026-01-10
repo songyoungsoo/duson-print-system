@@ -1,0 +1,221 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <title>견적서 - AQ-20260109-0001</title>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body {
+            font-family: 'Malgun Gothic', '맑은 고딕', sans-serif;
+            font-size: 12px;
+            line-height: 1.5;
+            color: #333;
+            background: #fff;
+        }
+        .container {
+            max-width: 800px;
+            margin: 0 auto;
+            padding: 30px;
+        }
+        .header {
+            text-align: center;
+            margin-bottom: 30px;
+            border-bottom: 2px solid #2c5aa0;
+            padding-bottom: 20px;
+        }
+        .company-name {
+            font-size: 22px;
+            font-weight: bold;
+            color: #2c5aa0;
+            margin-bottom: 5px;
+        }
+        .document-title {
+            font-size: 28px;
+            font-weight: bold;
+            color: #333;
+            letter-spacing: 10px;
+            margin: 15px 0;
+        }
+        .info-table {
+            width: 100%;
+            margin-bottom: 25px;
+            border-collapse: collapse;
+        }
+        .info-table td {
+            padding: 8px 12px;
+            border: 1px solid #ddd;
+            background: #f8f9fa;
+        }
+        .info-table .label {
+            width: 100px;
+            font-weight: 600;
+            background: #e9ecef;
+        }
+        .items-table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-bottom: 20px;
+        }
+        .items-table th {
+            background: #2c5aa0;
+            color: white;
+            padding: 10px 8px;
+            text-align: center;
+            font-weight: 600;
+            font-size: 12px;
+        }
+        .items-table td {
+            padding: 10px 8px;
+            border: 1px solid #ddd;
+            font-size: 11px;
+        }
+        .items-table tbody tr:nth-child(even) {
+            background: #f8f9fa;
+        }
+        .col-no { width: 40px; text-align: center; }
+        .col-product { width: 100px; }
+        .col-spec { }
+        .col-qty { width: 80px; text-align: center; }
+        .col-price { width: 90px; text-align: right; }
+        .col-amount { width: 100px; text-align: right; font-weight: 600; }
+        .totals {
+            margin-left: auto;
+            width: 300px;
+        }
+        .totals-row {
+            display: flex;
+            justify-content: space-between;
+            padding: 8px 12px;
+            border-bottom: 1px solid #ddd;
+        }
+        .totals-row.grand {
+            background: #2c5aa0;
+            color: white;
+            font-size: 16px;
+            font-weight: bold;
+            border: none;
+        }
+        .payment-info {
+            background: #f8f9fa;
+            padding: 15px;
+            border-radius: 8px;
+            margin: 25px 0;
+            border-left: 4px solid #2c5aa0;
+        }
+        .payment-info h4 {
+            color: #2c5aa0;
+            margin-bottom: 10px;
+        }
+        .notes {
+            margin-top: 25px;
+            padding: 15px;
+            background: #fff9e6;
+            border: 1px solid #ffd700;
+            border-radius: 8px;
+        }
+        .notes h4 {
+            color: #856404;
+            margin-bottom: 10px;
+        }
+        .notes ul {
+            margin-left: 20px;
+        }
+        .notes li {
+            margin-bottom: 5px;
+        }
+        .footer {
+            margin-top: 30px;
+            padding-top: 20px;
+            border-top: 1px solid #ddd;
+            text-align: center;
+            font-size: 11px;
+            color: #666;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <div class="company-name">두손기획인쇄</div>
+            <div class="document-title">견 적 서</div>
+        </div>
+
+        <table class="info-table">
+            <tr>
+                <td class="label">견적번호</td>
+                <td>AQ-20260109-0001</td>
+                <td class="label">견적일자</td>
+                <td>2026년 01월 09일</td>
+            </tr>
+            <tr>
+                <td class="label">고객명</td>
+                <td>홍길동</td>
+                <td class="label">유효기간</td>
+                <td>2026년 02월 08일</td>
+            </tr><tr><td class="label">회사명</td><td>테스트회사</td><td class="label">연락처</td><td>010-1234-5678</td></tr></table>        <table class="items-table">
+            <thead>
+                <tr>
+                    <th class="col-no">NO</th>
+                    <th class="col-product">품목</th>
+                    <th class="col-spec">규격 및 사양</th>
+                    <th class="col-qty">수량</th>
+                    <th class="col-price">단가</th>
+                    <th class="col-amount">공급가액</th>
+                </tr>
+            </thead>
+            <tbody>                <tr>
+                    <td class="col-no">1</td>
+                    <td class="col-product">스티커</td>
+                    <td class="col-spec">아트지유광 / 60×50mm / 사각</td>
+                    <td class="col-qty">500매</td>
+                    <td class="col-price">166원</td>
+                    <td class="col-amount">83,000원</td>
+                </tr>                <tr>
+                    <td class="col-no">2</td>
+                    <td class="col-product">전단지</td>
+                    <td class="col-spec">90g / A4 / 단면</td>
+                    <td class="col-qty">0.5연 (2,000매)</td>
+                    <td class="col-price">98,000원</td>
+                    <td class="col-amount">49,000원</td>
+                </tr>                <tr>
+                    <td class="col-no">3</td>
+                    <td class="col-product">택배비</td>
+                    <td class="col-spec">택배 선불</td>
+                    <td class="col-qty">1식</td>
+                    <td class="col-price">4,000원</td>
+                    <td class="col-amount">4,000원</td>
+                </tr></tbody></table>        <div class="totals">
+            <div class="totals-row">
+                <span>공급가액</span>
+                <span>136,000원</span>
+            </div>
+            <div class="totals-row">
+                <span>부가세(10%)</span>
+                <span>13,600원</span>
+            </div>
+            <div class="totals-row grand">
+                <span>총 견적금액</span>
+                <span>149,600원</span>
+            </div>
+        </div>        <div class="payment-info">
+            <h4>💳 결제 안내</h4>
+            <p><strong>예금주:</strong> 두손기획인쇄 차경선</p>
+            <p>• 국민은행 999-1688-2384 • 신한은행 110-342-543507 • 농협 301-2632-1829</p>
+            <p>• 카드 결제 가능</p>
+            <p style="color: #e74c3c; font-weight: 600;">📦 택배는 기본이 착불입니다</p>
+        </div>        <div class="notes">
+            <h4>※ 안내사항</h4>
+            <ul>
+                <li>본 견적서는 2026년 02월 08일까지 유효합니다.</li>
+                <li>실제 주문 시 디자인 파일 및 세부 사양에 따라 금액이 변동될 수 있습니다.</li>
+                <li>문의사항이 있으시면 02-2632-1830으로 연락 주시기 바랍니다.</li>
+                <li>영업시간: 평일 09:00~18:00 (토요일, 일요일, 공휴일 휴무)</li>
+            </ul>
+        </div>        <div class="footer">
+            <p><strong>두손기획인쇄</strong> | 대표자: 차경선 | 사업자등록번호: 107-06-45106</p>
+            <p>주소: 서울 영등포구 영등포로 36길 9 송호빌딩 1층 | 전화: 02-2632-1830</p>
+            <p>업태: 제조·도매 | 종목: 인쇄업·광고물</p>
+        </div>
+    </div>
+</body>
+</html>
