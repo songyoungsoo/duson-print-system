@@ -140,9 +140,26 @@ class DataAdapter {
             return $display . $unit;
         }
 
-        // 원본 데이터에서 재생성
-        $standardData = self::legacyToStandard($data, $productType);
-        return $standardData['quantity_display'] ?? number_format(1) . $unit;
+        // ✅ FIX (2026-01-09): 원본 데이터에서 수량 직접 추출 (재귀 호출 제거)
+        // 스티커: mesu, 전단지: MY_amount, 기타: MY_amount 또는 quantity
+        $qty = 0;
+        if (in_array($productType, ['sticker', 'msticker', 'msticker_01', 'sticker_new'])) {
+            $qty = intval($data['mesu'] ?? 0);
+        } elseif (in_array($productType, ['inserted', 'leaflet'])) {
+            $qty = floatval($data['MY_amount'] ?? 0);
+        } else {
+            $qty = floatval($data['MY_amount'] ?? $data['quantity'] ?? 0);
+        }
+
+        // 수량이 0이면 경고 로그 및 기본값 사용
+        if ($qty <= 0) {
+            error_log("DataAdapter::ensureQuantityDisplayUnit WARNING: qty=0 for $productType, data=" . json_encode(array_slice($data, 0, 5)));
+            $qty = 1;
+        }
+
+        // 단위 포함 수량 표시 반환
+        $formattedQty = ($qty == intval($qty)) ? number_format($qty) : number_format($qty, 1);
+        return $formattedQty . $unit;
     }
 
     /**

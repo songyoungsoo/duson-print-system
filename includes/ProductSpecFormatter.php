@@ -931,6 +931,7 @@ class ProductSpecFormatter {
     public static function getProductTypeName($type) {
         $types = [
             'sticker' => '스티커',
+            'sticker_new' => '스티커',  // ✅ FIX (2026-01-09): 레거시 호환
             'namecard' => '명함',
             'envelope' => '봉투',
             'inserted' => '전단지',
@@ -955,7 +956,7 @@ class ProductSpecFormatter {
         if (in_array($productType, ['inserted', 'leaflet'])) {
             return '연';
         }
-        if (in_array($productType, ['sticker', 'msticker', 'msticker_01', 'namecard'])) {
+        if (in_array($productType, ['sticker', 'sticker_new', 'msticker', 'msticker_01', 'namecard'])) {
             return '매';
         }
         return $item['unit'] ?? '부';
@@ -976,7 +977,8 @@ class ProductSpecFormatter {
         }
 
         // 1. 스티커: mesu("매" 단위) 최우선 사용 - productType 명시적 체크
-        if (in_array($productType, ['sticker', 'msticker', 'msticker_01'])) {
+        // ✅ FIX (2026-01-09): sticker_new 추가 (레거시 호환)
+        if (in_array($productType, ['sticker', 'msticker', 'msticker_01', 'sticker_new'])) {
             if (!empty($item['mesu'])) {
                 return intval($item['mesu']);  // 500, 1000 등 매수
             }
@@ -1017,23 +1019,6 @@ class ProductSpecFormatter {
      * ✅ Phase 3: quantity_display 필드 우선 사용
      */
     public static function getQuantityDisplay($item) {
-        // DEBUG: 디버깅 시작
-        error_log("=== ProductSpecFormatter::getQuantityDisplay DEBUG ===");
-        error_log("File: " . __FILE__);
-        error_log("quantity_display in item: " . (isset($item['quantity_display']) ? 'YES' : 'NO'));
-        error_log("quantity_display value: " . ($item['quantity_display'] ?? 'NULL'));
-        error_log("quantity_display empty: " . (empty($item['quantity_display']) ? 'YES' : 'NO'));
-
-        // ✅ Phase 3: quantity_display 우선 체크 (quotation_temp, shop_temp)
-        // ✅ 수정: 단위가 있는 경우만 사용 (cart.php, create.php와 동일 패턴)
-        if (!empty($item['quantity_display']) && preg_match('/[매연부권개장]/u', $item['quantity_display'])) {
-            error_log("Returning quantity_display with unit: " . $item['quantity_display']);
-            return $item['quantity_display'];
-        }
-
-        error_log("quantity_display is empty, falling back to legacy logic");
-        error_log("product_type: " . ($item['product_type'] ?? 'NULL'));
-
         $productType = $item['product_type'] ?? '';
         $unit = self::getUnit($item);
 
@@ -1042,14 +1027,18 @@ class ProductSpecFormatter {
             $productType = 'sticker';
         }
 
-        // 1. 스티커: mesu 최우선 사용 - 단위 포함
-        if (in_array($productType, ['sticker', 'msticker', 'msticker_01'])) {
-            error_log("Sticker product detected, mesu: " . ($item['mesu'] ?? 'NULL'));
+        // ✅ FIX (2026-01-09): 스티커는 quantity_display 무시하고 mesu에서 항상 추출
+        // 이유: quotation_temp에 quantity_display가 "1매"로 잘못 저장된 경우가 있음
+        if (in_array($productType, ['sticker', 'msticker', 'msticker_01', 'sticker_new'])) {
             if (!empty($item['mesu'])) {
-                $result = number_format(intval($item['mesu'])) . '매';  // ✅ 단위 추가
-                error_log("Returning mesu value with unit: " . $result);
-                return $result;
+                return number_format(intval($item['mesu'])) . '매';
             }
+        }
+
+        // ✅ Phase 3: quantity_display 우선 체크 (스티커 제외)
+        // 단위가 있는 경우만 사용
+        if (!empty($item['quantity_display']) && preg_match('/[매연부권개장]/u', $item['quantity_display'])) {
+            return $item['quantity_display'];
         }
 
         // 2. 전단지/리플렛: 연 + 매수 표시

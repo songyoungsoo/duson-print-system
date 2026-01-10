@@ -815,11 +815,6 @@ class ProductSpecFormatter {
      * ✅ Phase 3: quantity_display 필드 우선 사용
      */
     public static function getQuantityDisplay($item) {
-        // ✅ Phase 3: quantity_display 우선 체크 (quotation_temp, shop_temp)
-        if (!empty($item['quantity_display'])) {
-            return $item['quantity_display'];
-        }
-
         $productType = $item['product_type'] ?? '';
         $unit = self::getUnit($item);
 
@@ -828,11 +823,18 @@ class ProductSpecFormatter {
             $productType = 'sticker';
         }
 
-        // 1. 스티커: mesu 최우선 사용 - 단위 없이 숫자만 표시
-        if (in_array($productType, ['sticker', 'msticker', 'msticker_01'])) {
+        // ✅ FIX (2026-01-09): 스티커는 quantity_display 무시하고 mesu에서 항상 추출
+        // 이유: quotation_temp에 quantity_display가 "1매"로 잘못 저장된 경우가 있음
+        if (in_array($productType, ['sticker', 'msticker', 'msticker_01', 'sticker_new'])) {
             if (!empty($item['mesu'])) {
-                return number_format(intval($item['mesu']));  // 단위 제거
+                return number_format(intval($item['mesu'])) . '매';
             }
+        }
+
+        // ✅ Phase 3: quantity_display 우선 체크 (스티커 제외)
+        // 단위가 있는 경우만 사용
+        if (!empty($item['quantity_display']) && preg_match('/[매연부권개장]/u', $item['quantity_display'])) {
+            return $item['quantity_display'];
         }
 
         // 2. 전단지/리플렛: 연 + 매수 표시
