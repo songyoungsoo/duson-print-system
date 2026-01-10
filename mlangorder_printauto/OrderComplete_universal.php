@@ -913,6 +913,29 @@ $additional_css = [
     border: 1px solid #dee2e6;
 }
 
+.bank-item-centered {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    padding: 14px 20px;
+    background: white;
+    border-radius: 8px;
+    border: 1px solid #dee2e6;
+    margin-bottom: 10px;
+}
+
+.bank-item-centered .bank-name {
+    font-size: 0.9rem;
+    color: #666;
+    margin-bottom: 4px;
+}
+
+.bank-item-centered .bank-account {
+    font-size: 1.2rem;
+    font-weight: 700;
+}
+
 .bank-name {
     font-weight: 600;
     color: #333;
@@ -1273,10 +1296,16 @@ $additional_css = [
 }
 
 .action-buttons {
-    display: flex;
-    justify-content: center;
-    gap: 15px;
-    flex-wrap: wrap;
+    display: flex !important;
+    justify-content: center !important;
+    gap: 12px !important;
+    flex-wrap: nowrap !important;
+    grid-template-columns: none !important;
+}
+
+.action-buttons .btn-action {
+    flex: 1 !important;
+    max-width: 180px !important;
 }
 
 .btn-action {
@@ -1935,6 +1964,21 @@ $additional_css = [
                 <div class="summary-box-value"><?php echo number_format($total_amount_vat); ?>원</div>
             </div>
         </div>
+        <!-- 버튼 영역 (결제 금액 바로 아래) -->
+        <div class="action-buttons" style="margin-top: 16px;">
+            <a href="<?php echo getLastOrderProductUrl($order_list); ?>" class="btn-action btn-continue">
+                계속 쇼핑하기
+            </a>
+            <button onclick="openPaymentModal()" class="btn-action btn-pay">
+                결제하기
+            </button>
+            <button onclick="openPrintWindow()" class="btn-action btn-print">
+                주문서 인쇄
+            </button>
+        </div>
+        <p style="margin-top: 12px; font-size: 0.9rem; color: var(--text-secondary); text-align: center;">
+            결제 방법을 선택하여 진행해주세요. 궁금한 사항은 <strong>1688-2384</strong>로 연락주세요.
+        </p>
     </div>
 
     <!-- 정보 카드들 -->
@@ -1953,7 +1997,7 @@ $additional_css = [
             <div class="info-row" style="margin-bottom: 5px;">
                 <div class="info-label">연락처:</div>
                 <div class="info-value">
-                    <?php 
+                    <?php
                     // 휴대폰이 우선, 없으면 일반전화, 둘 다 없으면 정보없음
                     $phone_display = '';
                     if (!empty($first_order['Hendphone'])) {
@@ -1970,21 +2014,21 @@ $additional_css = [
             <div class="info-row" style="margin-bottom: 5px;">
                 <div class="info-label">주소:</div>
                 <div class="info-value">
-                    <?php 
+                    <?php
                     $address_parts = [];
-                    
+
                     // 우편번호 추가
                     if (!empty($first_order['zip'])) {
                         $address_parts[] = '(' . $first_order['zip'] . ')';
                     }
-                    
+
                     // 주소1, 주소2 추가 (다양한 필드명 시도)
                     $address1 = $first_order['zip1'] ?? $first_order['addr1'] ?? $first_order['address1'] ?? '';
                     $address2 = $first_order['zip2'] ?? $first_order['addr2'] ?? $first_order['address2'] ?? '';
-                    
+
                     if (!empty($address1)) $address_parts[] = $address1;
                     if (!empty($address2)) $address_parts[] = $address2;
-                    
+
                     $address_display = !empty($address_parts) ? implode(' ', $address_parts) : '주소 정보 없음';
                     echo htmlspecialchars($address_display);
                     ?>
@@ -2021,37 +2065,19 @@ $additional_css = [
         </div>
     </div>
 
-    <!-- 액션 섹션 -->
-    <div class="action-section">
-        <div class="action-buttons">
-            <a href="<?php echo getLastOrderProductUrl($order_list); ?>" class="btn-action btn-continue">
-                계속 쇼핑하기
-            </a>
-            <button onclick="openPrintWindow()" class="btn-action btn-print">
-                주문서 인쇄
-            </button>
-            <button onclick="openPaymentModal()" class="btn-action btn-pay">
-                결제하기
-            </button>
-        </div>
-        <p style="margin-top: 15px; font-size: 0.9rem; color: var(--text-secondary);">
-            결제 방법을 선택하여 진행해주세요. 궁금한 사항은 <strong>1688-2384</strong>로 연락주세요.
-        </p>
-    </div>
-
     <!-- 무통장입금 계좌 안내 섹션 (숨김 상태) -->
     <div id="bankTransferSection" class="bank-transfer-section" style="display:none;">
-        <h4>🏦 무통장입금 계좌 안내</h4>
-        <div class="bank-accounts">
-            <div class="bank-item">
+        <h4>🏦 무통장입금 계좌 안내 <span style="font-size: 0.75rem; font-weight: normal; color: #6c757d;">(계좌번호를 클릭하면 복사)</span></h4>
+        <div class="bank-accounts" style="text-align: center;">
+            <div class="bank-item-centered">
                 <span class="bank-name">국민은행</span>
                 <span class="bank-account" onclick="copyToClipboard('999-1688-2384')">999-1688-2384</span>
             </div>
-            <div class="bank-item">
+            <div class="bank-item-centered">
                 <span class="bank-name">신한은행</span>
                 <span class="bank-account" onclick="copyToClipboard('110-342-543507')">110-342-543507</span>
             </div>
-            <div class="bank-item">
+            <div class="bank-item-centered">
                 <span class="bank-name">농협</span>
                 <span class="bank-account" onclick="copyToClipboard('301-2632-1830-11')">301-2632-1830-11</span>
             </div>
