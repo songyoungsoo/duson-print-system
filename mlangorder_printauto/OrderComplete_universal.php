@@ -636,7 +636,16 @@ $additional_css = [
 }
 
 .col-quantity {
-    width: 12%;
+    width: 10%;
+    text-align: center;
+    font-weight: 600;
+    color: var(--text-primary);
+    font-size: 13px;
+    vertical-align: middle;
+}
+
+.col-unit {
+    width: 8%;
     text-align: center;
     font-weight: 600;
     color: var(--text-primary);
@@ -684,6 +693,288 @@ $additional_css = [
     text-align: center;
 }
 
+/* 주문 요약 섹션 (cart.php 스타일) */
+.order-summary {
+    margin-top: 20px;
+    background-color: #F8F9FA;
+    border-radius: 8px;
+    padding: 16px;
+    border: 1px solid #CCCCCC;
+}
+
+.summary-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 12px;
+}
+
+.summary-title {
+    color: #4a5568;
+    font-weight: 600;
+    font-size: 15px;
+}
+
+.summary-count {
+    color: #718096;
+    font-size: 13px;
+}
+
+.summary-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr 1fr;
+    gap: 12px;
+    margin-bottom: 0;
+}
+
+.summary-box {
+    text-align: center;
+    padding: 12px;
+    background-color: white;
+    border-radius: 6px;
+    border: 1px solid #CCCCCC;
+}
+
+.summary-box-label {
+    color: #718096;
+    font-size: 12px;
+    margin-bottom: 4px;
+}
+
+.summary-box-value {
+    color: #2d3748;
+    font-weight: 600;
+    font-size: 14px;
+}
+
+.summary-box.total {
+    background-color: #1E90FF;
+    color: white;
+    border: 1px solid #1873CC;
+}
+
+.summary-box.total .summary-box-label {
+    opacity: 0.9;
+    color: white;
+}
+
+.summary-box.total .summary-box-value {
+    font-weight: 700;
+    font-size: 16px;
+    color: white;
+}
+
+/* 결제 모달 스타일 */
+.payment-modal {
+    display: none;
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background-color: rgba(0, 0, 0, 0.5);
+    z-index: 1000;
+    justify-content: center;
+    align-items: center;
+}
+
+.payment-modal-content {
+    background: white;
+    border-radius: 12px;
+    max-width: 420px;
+    width: 90%;
+    max-height: 90vh;
+    overflow-y: auto;
+    box-shadow: 0 10px 40px rgba(0, 0, 0, 0.3);
+}
+
+.payment-modal-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 16px 20px;
+    border-bottom: 1px solid #eee;
+}
+
+.payment-modal-header h3 {
+    margin: 0;
+    font-size: 18px;
+    color: #333;
+}
+
+.modal-close {
+    background: none;
+    border: none;
+    font-size: 24px;
+    cursor: pointer;
+    color: #999;
+    padding: 0;
+    line-height: 1;
+}
+
+.modal-close:hover {
+    color: #333;
+}
+
+.payment-modal-body {
+    padding: 20px;
+}
+
+.payment-amount {
+    text-align: center;
+    padding: 16px;
+    background: #f8f9fa;
+    border-radius: 8px;
+    margin-bottom: 20px;
+    font-size: 15px;
+    color: #333;
+}
+
+.payment-amount strong {
+    font-size: 20px;
+    color: #D9534F;
+}
+
+.payment-options {
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+}
+
+.payment-option {
+    display: flex;
+    align-items: center;
+    padding: 16px;
+    border: 2px solid #e0e0e0;
+    border-radius: 10px;
+    cursor: pointer;
+    transition: all 0.2s ease;
+}
+
+.payment-option:hover {
+    border-color: #1E90FF;
+    background-color: #f8fbff;
+    transform: translateY(-2px);
+    box-shadow: 0 4px 12px rgba(30, 144, 255, 0.15);
+}
+
+.option-icon {
+    font-size: 28px;
+    margin-right: 16px;
+}
+
+.option-info {
+    flex: 1;
+}
+
+.option-title {
+    font-weight: 600;
+    font-size: 15px;
+    color: #333;
+    margin-bottom: 4px;
+}
+
+.option-desc {
+    font-size: 13px;
+    color: #666;
+}
+
+/* 무통장입금 섹션 */
+.bank-transfer-section {
+    margin-top: 20px;
+    padding: 20px;
+    background: linear-gradient(135deg, #f8f9fa 0%, #e9ecef 100%);
+    border-radius: 10px;
+    border: 1px solid #dee2e6;
+}
+
+.bank-transfer-section h4 {
+    margin: 0 0 16px 0;
+    font-size: 16px;
+    color: #333;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+
+.bank-accounts {
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+}
+
+.bank-item {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 12px 16px;
+    background: white;
+    border-radius: 8px;
+    border: 1px solid #dee2e6;
+}
+
+.bank-name {
+    font-weight: 600;
+    color: #333;
+    font-size: 14px;
+}
+
+.bank-account {
+    font-family: 'Consolas', monospace;
+    font-size: 15px;
+    color: #1E90FF;
+    font-weight: 600;
+    cursor: pointer;
+}
+
+.bank-account:hover {
+    text-decoration: underline;
+}
+
+.bank-notice {
+    margin-top: 16px;
+    padding: 12px;
+    background: #fff3cd;
+    border-radius: 6px;
+    font-size: 13px;
+    color: #856404;
+    line-height: 1.5;
+}
+
+.bank-notice strong {
+    color: #533f03;
+}
+
+/* 결제하기 버튼 스타일 (빨간색으로 변경) */
+.btn-pay {
+    background-color: #D9534F !important;
+    color: white !important;
+    box-shadow: 0 2px 8px rgba(217, 83, 79, 0.3);
+}
+
+.btn-pay:hover {
+    background-color: #C9302C !important;
+    transform: translateY(-1px);
+    box-shadow: 0 4px 12px rgba(217, 83, 79, 0.4);
+}
+
+/* 반응형 */
+@media (max-width: 768px) {
+    .summary-grid {
+        grid-template-columns: 1fr;
+    }
+
+    .payment-modal-content {
+        width: 95%;
+        margin: 10px;
+    }
+
+    .bank-item {
+        flex-direction: column;
+        align-items: flex-start;
+        gap: 4px;
+    }
+}
 
 .option-item {
     display: inline-block;
@@ -1566,6 +1857,7 @@ $additional_css = [
                 <th class="col-product">품목</th>
                 <th class="col-details">규격/옵션</th>
                 <th class="col-quantity">수량</th>
+                <th class="col-unit">단위</th>
                 <th class="col-price">공급가액</th>
                 <th class="col-status">상태</th>
             </tr>
@@ -1597,6 +1889,11 @@ $additional_css = [
                     <?php echo htmlspecialchars($displayData['quantity_display']); ?>
                 </td>
 
+                <!-- 단위 (SpecDisplayService 통합) -->
+                <td class="col-unit">
+                    <?php echo htmlspecialchars($displayData['unit'] ?? '-'); ?>
+                </td>
+
                 <!-- 공급가액 (SpecDisplayService 통합) -->
                 <td class="col-price">
                     <?php echo number_format($displayData['price_supply']) . '원'; ?>
@@ -1611,18 +1908,34 @@ $additional_css = [
         </tbody>
         <tfoot>
             <tr style="background: #f0f0f0; font-weight: bold; border-top: 2px solid #333;">
-                <td colspan="4" style="text-align: right; padding: 15px;">총 합계금액</td>
-                <td class="col-price" style="padding: 15px;">
-                    <div class="price-container">
-                        <div class="price-supply">공급가: <span><?php echo number_format($total_amount); ?>원</span></div>
-                        <div class="price-total">합계금액: <span><?php echo number_format($total_amount_vat); ?>원</span></div>
-                        <div class="price-vat">(VAT <?php echo number_format($total_amount_vat - $total_amount); ?>원 포함)</div>
-                    </div>
+                <td colspan="7" style="text-align: center; padding: 12px; color: #666; font-size: 13px;">
+                    아래 결제 금액을 확인하신 후 결제를 진행해주세요
                 </td>
-                <td class="col-status"></td>
             </tr>
         </tfoot>
     </table>
+
+    <!-- 주문 요약 (cart.php 스타일) -->
+    <div class="order-summary">
+        <div class="summary-header">
+            <div class="summary-title">결제 금액</div>
+            <div class="summary-count">총 <?php echo count($order_list); ?>개 상품</div>
+        </div>
+        <div class="summary-grid">
+            <div class="summary-box">
+                <div class="summary-box-label">상품금액</div>
+                <div class="summary-box-value"><?php echo number_format($total_amount); ?>원</div>
+            </div>
+            <div class="summary-box">
+                <div class="summary-box-label">부가세</div>
+                <div class="summary-box-value"><?php echo number_format($total_amount_vat - $total_amount); ?>원</div>
+            </div>
+            <div class="summary-box total">
+                <div class="summary-box-label">총 결제금액</div>
+                <div class="summary-box-value"><?php echo number_format($total_amount_vat); ?>원</div>
+            </div>
+        </div>
+    </div>
 
     <!-- 정보 카드들 -->
     <div class="info-cards">
@@ -1696,7 +2009,7 @@ $additional_css = [
             </div>
             <div class="info-row" style="margin-bottom: 5px;">
                 <div class="info-label">농협:</div>
-                <div class="info-value">301-2632-1829</div>
+                <div class="info-value">301-2632-1830-11</div>
             </div>
             <div class="info-row" style="margin-bottom: 5px;">
                 <div class="info-label">카드결제:</div>
@@ -1717,13 +2030,70 @@ $additional_css = [
             <button onclick="openPrintWindow()" class="btn-action btn-print">
                 주문서 인쇄
             </button>
-            <a href="/payment/inicis_request.php?order_no=<?php echo htmlspecialchars($first_order['no']); ?>" class="btn-action btn-payment">
-                💳 카드결제
-            </a>
+            <button onclick="openPaymentModal()" class="btn-action btn-pay">
+                결제하기
+            </button>
         </div>
         <p style="margin-top: 15px; font-size: 0.9rem; color: var(--text-secondary);">
-            카드결제 또는 계좌이체 후 제작이 시작됩니다. 궁금한 사항은 <strong>1688-2384</strong>로 연락주세요.
+            결제 방법을 선택하여 진행해주세요. 궁금한 사항은 <strong>1688-2384</strong>로 연락주세요.
         </p>
+    </div>
+
+    <!-- 무통장입금 계좌 안내 섹션 (숨김 상태) -->
+    <div id="bankTransferSection" class="bank-transfer-section" style="display:none;">
+        <h4>🏦 무통장입금 계좌 안내</h4>
+        <div class="bank-accounts">
+            <div class="bank-item">
+                <span class="bank-name">국민은행</span>
+                <span class="bank-account" onclick="copyToClipboard('999-1688-2384')">999-1688-2384</span>
+            </div>
+            <div class="bank-item">
+                <span class="bank-name">신한은행</span>
+                <span class="bank-account" onclick="copyToClipboard('110-342-543507')">110-342-543507</span>
+            </div>
+            <div class="bank-item">
+                <span class="bank-name">농협</span>
+                <span class="bank-account" onclick="copyToClipboard('301-2632-1830-11')">301-2632-1830-11</span>
+            </div>
+        </div>
+        <p class="bank-notice">
+            예금주: <strong>두손기획인쇄 차경선</strong><br>
+            입금자명을 주문자명(<strong><?php echo htmlspecialchars($name ?: $first_order['name']); ?></strong>)과 동일하게 해주세요.<br>
+            입금 확인 후 제작이 시작됩니다.
+        </p>
+    </div>
+
+    <!-- 결제 방법 선택 모달 -->
+    <div id="paymentModal" class="payment-modal">
+        <div class="payment-modal-content">
+            <div class="payment-modal-header">
+                <h3>결제 방법 선택</h3>
+                <button class="modal-close" onclick="closePaymentModal()">&times;</button>
+            </div>
+            <div class="payment-modal-body">
+                <div class="payment-amount">
+                    결제금액: <strong><?php echo number_format($total_amount_vat); ?>원</strong>
+                </div>
+                <div class="payment-options">
+                    <!-- 옵션 1: 신용카드 / 실시간 계좌이체 (이니시스) -->
+                    <div class="payment-option" onclick="payWithInicis()">
+                        <div class="option-icon">💳</div>
+                        <div class="option-info">
+                            <div class="option-title">신용카드 / 실시간 계좌이체</div>
+                            <div class="option-desc">신용카드 또는 실시간 계좌이체로 즉시 결제</div>
+                        </div>
+                    </div>
+                    <!-- 옵션 2: 무통장입금 -->
+                    <div class="payment-option" onclick="showBankTransfer()">
+                        <div class="option-icon">🏦</div>
+                        <div class="option-info">
+                            <div class="option-title">무통장입금</div>
+                            <div class="option-desc">계좌번호 확인 후 직접 입금</div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
     </div>
     
     <!-- 인쇄용 푸터 (화면에서는 숨김, 인쇄시에만 표시) -->
@@ -1745,7 +2115,7 @@ $additional_css = [
                 </tr>
                 <tr>
                     <td><strong>농협</strong></td>
-                    <td>301-2632-1829</td>
+                    <td>301-2632-1830-11</td>
                 </tr>
             </table>
         </div>
@@ -1774,6 +2144,52 @@ function openPrintWindow() {
     // 새 창으로 주문서 열기
     window.open(printUrl, 'orderPrint', 'width=800,height=900,scrollbars=yes,resizable=yes');
 }
+
+// 결제 모달 열기
+function openPaymentModal() {
+    document.getElementById('paymentModal').style.display = 'flex';
+    document.body.style.overflow = 'hidden'; // 배경 스크롤 방지
+}
+
+// 결제 모달 닫기
+function closePaymentModal() {
+    document.getElementById('paymentModal').style.display = 'none';
+    document.body.style.overflow = ''; // 스크롤 복원
+}
+
+// 이니시스 결제 (신용카드 / 실시간 계좌이체)
+function payWithInicis() {
+    var orderNo = <?php echo json_encode($first_order['no'] ?? ''); ?>;
+    if (orderNo) {
+        window.location.href = '/payment/inicis_request.php?order_no=' + encodeURIComponent(orderNo);
+    } else {
+        alert('주문 정보를 찾을 수 없습니다.');
+    }
+}
+
+// 무통장입금 정보 표시
+function showBankTransfer() {
+    closePaymentModal();
+    var bankSection = document.getElementById('bankTransferSection');
+    bankSection.style.display = 'block';
+    // 부드러운 스크롤
+    bankSection.scrollIntoView({ behavior: 'smooth', block: 'center' });
+}
+
+// 모달 외부 클릭 시 닫기
+document.addEventListener('click', function(e) {
+    var modal = document.getElementById('paymentModal');
+    if (e.target === modal) {
+        closePaymentModal();
+    }
+});
+
+// ESC 키로 모달 닫기
+document.addEventListener('keydown', function(e) {
+    if (e.key === 'Escape') {
+        closePaymentModal();
+    }
+});
 
 // 페이지 로드 애니메이션
 document.addEventListener('DOMContentLoaded', function() {

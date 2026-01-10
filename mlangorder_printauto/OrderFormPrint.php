@@ -210,6 +210,19 @@ function extractQuantity($order) {
     // ProductSpecFormatter::getQuantityDisplay() 사용
     return ProductSpecFormatter::getQuantityDisplay($item);
 }
+
+// 단위 추출 함수 - ProductSpecFormatter::getUnit() 사용
+function extractUnit($order) {
+    // Type_1 JSON 파싱하여 item 배열 구성
+    $item = $order;
+    $json_data = json_decode($order['Type_1'] ?? '', true);
+    if (json_last_error() === JSON_ERROR_NONE && is_array($json_data)) {
+        $item = array_merge($order, $json_data);
+    }
+
+    // ProductSpecFormatter::getUnit() 사용
+    return ProductSpecFormatter::getUnit($item);
+}
 ?>
 <!DOCTYPE html>
 <html lang="ko">
@@ -495,12 +508,19 @@ function extractQuantity($order) {
         }
         
         .col-quantity {
-            width: 12%;
+            width: 10%;
             text-align: center;
             font-weight: 600;
             color: #b45309;
         }
-        
+
+        .col-unit {
+            width: 8%;
+            text-align: center;
+            font-weight: 600;
+            color: #4b5563;
+        }
+
         .col-price {
             width: 18%;
             text-align: right;
@@ -730,10 +750,11 @@ function extractQuantity($order) {
                 <thead>
                     <tr>
                         <th class="col-order-no">주문번호</th>
-                        <th class="col-product">상품명</th>
-                        <th class="col-details">상세 정보</th>
+                        <th class="col-product">품목</th>
+                        <th class="col-details">규격/옵션</th>
                         <th class="col-quantity">수량</th>
-                        <th class="col-price">금액</th>
+                        <th class="col-unit">단위</th>
+                        <th class="col-price">공급가액</th>
                         <th class="col-status">상태</th>
                     </tr>
                 </thead>
@@ -744,6 +765,7 @@ function extractQuantity($order) {
                         <td class="col-product"><?php echo htmlspecialchars($order['Type']); ?></td>
                         <td class="col-details"><?php echo displayProductDetails($db, $order); ?></td>
                         <td class="col-quantity"><?php echo extractQuantity($order); ?></td>
+                        <td class="col-unit"><?php echo extractUnit($order); ?></td>
                         <td class="col-price">
                             <div class="price-container">
                                 <div class="price-supply">₩<?php echo number_format($order['money_4']); ?></div>
@@ -774,7 +796,7 @@ function extractQuantity($order) {
                 </div>
                 <div class="bank-item">
                     <div class="bank-name">농협</div>
-                    <div class="bank-account">301-2632-1829</div>
+                    <div class="bank-account">301-2632-1830-11</div>
                 </div>
             </div>
             <div class="account-holder">

@@ -285,6 +285,12 @@ include "../includes/nav.php";
     text-align: center;
 }
 
+.col-unit {
+    width: 6%;
+    text-align: center;
+    font-weight: 600;
+}
+
 .col-price {
     width: 12%;
     text-align: right;
@@ -576,10 +582,11 @@ include "../includes/nav.php";
         <thead>
             <tr>
                 <th class="col-order-no">주문번호</th>
-                <th class="col-product">상품명</th>
-                <th class="col-details">상세 옵션</th>
+                <th class="col-product">품목</th>
+                <th class="col-details">규격/옵션</th>
                 <th class="col-quantity">수량</th>
-                <th class="col-price">금액(VAT포함)</th>
+                <th class="col-unit">단위</th>
+                <th class="col-price">공급가액</th>
                 <th class="col-date">주문일시</th>
                 <th class="col-actions">상태</th>
             </tr>
@@ -702,11 +709,21 @@ include "../includes/nav.php";
                 <!-- 수량 (JSON에서 추출) -->
                 <td class="col-quantity">
                     <?php
+                    $extracted_unit = '매'; // 기본 단위
                     if (!empty($order['Type_1'])) {
                         $json_data = json_decode($order['Type_1'], true);
                         if ($json_data && is_array($json_data)) {
                             // JSON 데이터에서 수량 추출
                             $details = $json_data['order_details'] ?? $json_data;
+                            $product_type = $json_data['product_type'] ?? '';
+
+                            // 단위 결정
+                            if (in_array($product_type, ['inserted', 'leaflet'])) {
+                                $extracted_unit = '연';
+                            } elseif ($product_type == 'ncrflambeau') {
+                                $extracted_unit = '권';
+                            }
+
                             if (isset($details['MY_amount'])) {
                                 echo number_format($details['MY_amount']);
                             } elseif (isset($details['mesu'])) {
@@ -727,10 +744,15 @@ include "../includes/nav.php";
                     }
                     ?>
                 </td>
-                
-                <!-- 금액 -->
+
+                <!-- 단위 -->
+                <td class="col-unit">
+                    <?php echo htmlspecialchars($extracted_unit); ?>
+                </td>
+
+                <!-- 공급가액 -->
                 <td class="col-price">
-                    <?php echo number_format($order['money_5']); ?>원
+                    <?php echo number_format($order['money_4']); ?>원
                 </td>
                 
                 <!-- 주문일시 -->
@@ -806,7 +828,7 @@ include "../includes/nav.php";
             </div>
             <div class="info-row">
                 <div class="info-label">농협:</div>
-                <div class="info-value">301-2632-1829</div>
+                <div class="info-value">301-2632-1830-11</div>
             </div>
             <div class="info-row">
                 <div class="info-label">카드결제:</div>
