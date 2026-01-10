@@ -105,8 +105,8 @@ include_once $_SERVER['DOCUMENT_ROOT'] . '/includes/header-ui.php';
                         </div>
                         <div class="account-card-compact">
                             <div class="bank-name">농협</div>
-                            <div class="account-num">301-2632-1829</div>
-                            <button class="btn-copy-sm" data-account="301-2632-1829">복사</button>
+                            <div class="account-num">301-2632-1830-11</div>
+                            <button class="btn-copy-sm" data-account="301-2632-1830-11">복사</button>
                         </div>
                     </div>
                     <p class="account-holder-note">예금주: 두손기획인쇄 차경선</p>

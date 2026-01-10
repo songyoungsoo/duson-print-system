@@ -1219,7 +1219,7 @@ function numberToKorean($num) {
 
     <!-- 하단 정보 -->
     <div style="margin-top: 12px; font-size: 13px; line-height: 1.8;">
-        <p style="margin: 4px 0;"><strong>▶ 입금 계좌번호 :</strong> 국민 999-1688-2384 / 신한 110-342-543507 / 농협 301-2632-1829 예금주: 두손기획인쇄 차경선</p>
+        <p style="margin: 4px 0;"><strong>▶ 입금 계좌번호 :</strong> 국민 999-1688-2384 / 신한 110-342-543507 / 농협 301-2632-1830-11 예금주: 두손기획인쇄 차경선</p>
         <p style="margin: 4px 0;"><strong>▶ 담당자 :</strong></p>
         <p style="margin: 4px 0;"><strong>▶ 비 고 :</strong> 택배는 착불기준입니다</p>
     </div>

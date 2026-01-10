@@ -636,7 +636,7 @@ function getAdditionalOptions($order) {
                 <td class="label-cell">신한은행</td>
                 <td class="value-cell" style="font-weight: 600;">110-342-543507</td>
                 <td class="label-cell">농협</td>
-                <td class="value-cell" style="font-weight: 600;">301-2632-1829</td>
+                <td class="value-cell" style="font-weight: 600;">301-2632-1830-11</td>
             </tr>
 
             <tr class="bank-section">

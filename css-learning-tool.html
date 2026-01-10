@@ -321,7 +321,7 @@
             <h2>🎨 CSS 조정 패널</h2>
 
             <!-- 배열 (Flexbox) 설정 -->
-            <div class="control-section">
+            <div class="control-section" id="flexSection">
                 <h3>📐 배열 (Display & Flex)</h3>
 
                 <div class="control-group">
@@ -375,6 +375,63 @@
                         <option value="flex-start">flex-start (위)</option>
                         <option value="center" selected>center (가운데)</option>
                         <option value="flex-end">flex-end (아래)</option>
+                        <option value="stretch">stretch (늘리기)</option>
+                    </select>
+                </div>
+            </div>
+
+            <!-- Grid 설정 -->
+            <div class="control-section" id="gridSection" style="display: none;">
+                <h3>🔲 그리드 (Grid Layout)</h3>
+
+                <div class="control-group">
+                    <label>
+                        grid-template-columns (열 구성)
+                        <span class="tooltip">
+                            <span class="info-icon">?</span>
+                            <span class="tooltiptext">그리드의 열 개수와 크기를 정의합니다</span>
+                        </span>
+                    </label>
+                    <select id="gridColumns" onchange="updateStyle()">
+                        <option value="1fr" selected>1열 (1fr)</option>
+                        <option value="1fr 1fr">2열 균등 (1fr 1fr)</option>
+                        <option value="100px 1fr">라벨+내용 (100px 1fr)</option>
+                        <option value="120px 1fr">라벨+내용 넓게 (120px 1fr)</option>
+                        <option value="1fr 1fr 1fr">3열 균등 (1fr 1fr 1fr)</option>
+                        <option value="repeat(auto-fit, minmax(150px, 1fr))">반응형 (auto-fit)</option>
+                    </select>
+                </div>
+
+                <div class="control-group">
+                    <label>
+                        grid-gap (그리드 간격)
+                        <span class="value-display" id="gridGapValue">10px</span>
+                    </label>
+                    <input type="range" id="gridGap" min="0" max="40" value="10" onchange="updateStyle()">
+                </div>
+
+                <div class="control-group">
+                    <label>
+                        justify-items (셀 내 가로 정렬)
+                        <span class="value-display" id="justifyItemsValue">stretch</span>
+                    </label>
+                    <select id="justifyItems" onchange="updateStyle()">
+                        <option value="start">start (왼쪽)</option>
+                        <option value="center">center (가운데)</option>
+                        <option value="end">end (오른쪽)</option>
+                        <option value="stretch" selected>stretch (늘리기)</option>
+                    </select>
+                </div>
+
+                <div class="control-group">
+                    <label>
+                        align-items (셀 내 세로 정렬)
+                        <span class="value-display" id="gridAlignValue">center</span>
+                    </label>
+                    <select id="gridAlignItems" onchange="updateStyle()">
+                        <option value="start">start (위)</option>
+                        <option value="center" selected>center (가운데)</option>
+                        <option value="end">end (아래)</option>
                         <option value="stretch">stretch (늘리기)</option>
                     </select>
                 </div>
@@ -561,11 +618,22 @@
             <div class="code-display" style="margin-top: 20px; background: #f8f9ff; color: #333;">
                 <h3 style="color: #667eea;">📚 CSS 속성 설명</h3>
                 <div style="line-height: 2;">
+                    <p><strong style="color: #667eea;">[ Flexbox ]</strong></p>
                     <p><strong>display: flex</strong> - 요소들을 유연하게 배치할 수 있는 Flexbox 레이아웃을 활성화합니다.</p>
                     <p><strong>flex-direction</strong> - 배치 방향을 결정합니다 (row: 가로, column: 세로).</p>
                     <p><strong>justify-content</strong> - 주축(가로) 방향 정렬을 제어합니다.</p>
                     <p><strong>align-items</strong> - 교차축(세로) 방향 정렬을 제어합니다.</p>
-                    <p><strong>gap</strong> - 요소들 사이의 간격을 일관되게 설정합니다.</p>
+                    <p><strong>flex: 1</strong> - 남은 공간을 채우도록 요소를 늘립니다.</p>
+                    <br>
+                    <p><strong style="color: #e91e63;">[ Grid ]</strong></p>
+                    <p><strong>display: grid</strong> - 2차원 격자 레이아웃을 활성화합니다. 행과 열을 동시에 제어할 수 있습니다.</p>
+                    <p><strong>grid-template-columns</strong> - 열의 개수와 크기를 정의합니다. (예: 100px 1fr = 첫 열 100px, 나머지 자동)</p>
+                    <p><strong>fr 단위</strong> - 남은 공간을 비율로 분배합니다. (1fr 1fr = 50% 50%)</p>
+                    <p><strong>justify-items</strong> - 그리드 셀 안에서 가로 정렬을 제어합니다.</p>
+                    <p><strong>repeat(auto-fit, minmax())</strong> - 반응형 그리드를 자동으로 생성합니다.</p>
+                    <br>
+                    <p><strong style="color: #4caf50;">[ 공통 ]</strong></p>
+                    <p><strong>gap</strong> - 요소들 사이의 간격을 일관되게 설정합니다. (Flex/Grid 모두 사용)</p>
                     <p><strong>padding</strong> - 요소의 안쪽 여백을 설정합니다.</p>
                     <p><strong>margin</strong> - 요소의 바깥쪽 여백을 설정합니다.</p>
                     <p><strong>border-radius</strong> - 모서리를 둥글게 만듭니다.</p>
@@ -577,10 +645,11 @@
                 <h3 style="color: #ff9800;">💡 학습 팁</h3>
                 <div style="line-height: 2;">
                     <p>1. 좌측 컨트롤을 하나씩 조정하면서 변화를 관찰하세요.</p>
-                    <p>2. flex-direction을 row와 column으로 바꿔보며 차이를 이해하세요.</p>
-                    <p>3. justify-content와 align-items로 정렬 방식을 실험해보세요.</p>
-                    <p>4. padding과 margin의 차이를 눈으로 확인하세요.</p>
-                    <p>5. 생성된 CSS 코드를 복사해서 실제 프로젝트에 적용해보세요.</p>
+                    <p>2. <strong>Flex vs Grid</strong>: display를 flex와 grid로 바꿔보며 차이를 비교하세요.</p>
+                    <p>3. flex-direction을 row와 column으로 바꿔보며 차이를 이해하세요.</p>
+                    <p>4. Grid에서 <strong>grid-template-columns</strong>를 변경하며 열 구조를 실험하세요.</p>
+                    <p>5. padding과 margin의 차이를 눈으로 확인하세요.</p>
+                    <p>6. 생성된 CSS 코드를 복사해서 실제 프로젝트에 적용해보세요.</p>
                 </div>
             </div>
 
@@ -588,10 +657,18 @@
             <div class="code-display" style="margin-top: 20px; background: #e8f5e9; color: #333;">
                 <h3 style="color: #4caf50;">🎯 실습 과제</h3>
                 <div style="line-height: 2;">
+                    <p><strong style="color: #667eea;">[Flex 과제]</strong></p>
                     <p><strong>초급:</strong> 라벨과 입력칸을 세로로 배치해보세요 (flex-direction: column).</p>
                     <p><strong>중급:</strong> 모든 요소를 가운데 정렬하고 간격을 20px로 만들어보세요.</p>
-                    <p><strong>고급:</strong> 라벨 너비를 120px, 패딩을 15px로 조정하고 모서리를 완전히 둥글게 (30px) 만들어보세요.</p>
-                    <p><strong>도전:</strong> 각 행의 배경색을 다르게 만들어보세요 (힌트: JavaScript 수정 필요).</p>
+                    <br>
+                    <p><strong style="color: #e91e63;">[Grid 과제]</strong></p>
+                    <p><strong>초급:</strong> display를 grid로 바꾸고 "라벨+내용 (100px 1fr)"을 선택해보세요.</p>
+                    <p><strong>중급:</strong> grid-template-columns를 "1fr 1fr"로 선택해 라벨과 입력칸을 동일 비율로 만들어보세요.</p>
+                    <p><strong>고급:</strong> "반응형 (auto-fit)"을 선택하고 브라우저 창 크기를 줄여보세요.</p>
+                    <br>
+                    <p><strong style="color: #ff5722;">[도전 과제]</strong></p>
+                    <p><strong>고급:</strong> Flex로 라벨 너비 120px, Grid로 "120px 1fr" 설정을 비교하세요. 결과가 같나요?</p>
+                    <p><strong>마스터:</strong> Grid의 justify-items를 center로 바꾸면 어떻게 되나요?</p>
                 </div>
             </div>
         </div>
@@ -624,6 +701,28 @@
             const rowBgColor = document.getElementById('rowBgColor').value;
             const borderColor = document.getElementById('borderColor').value;
 
+            // Grid 값 가져오기
+            const gridColumns = document.getElementById('gridColumns').value;
+            const gridGap = document.getElementById('gridGap').value;
+            const justifyItems = document.getElementById('justifyItems').value;
+            const gridAlignItems = document.getElementById('gridAlignItems').value;
+
+            // Flex/Grid 섹션 토글
+            const flexSection = document.getElementById('flexSection');
+            const gridSection = document.getElementById('gridSection');
+            const flexControls = flexSection.querySelectorAll('.control-group:not(:first-child)');
+
+            if (displayType === 'grid') {
+                flexControls.forEach(el => el.style.display = 'none');
+                gridSection.style.display = 'block';
+            } else if (displayType === 'flex') {
+                flexControls.forEach(el => el.style.display = 'block');
+                gridSection.style.display = 'none';
+            } else {
+                flexControls.forEach(el => el.style.display = 'none');
+                gridSection.style.display = 'none';
+            }
+
             // 폼 스타일 적용
             form.style.maxWidth = formWidth + 'px';
             form.style.padding = formPadding + 'px';
@@ -634,12 +733,25 @@
 
             // 행 스타일 적용
             rows.forEach(row => {
+                // 이전 스타일 초기화
                 row.style.display = displayType;
+                row.style.flexDirection = '';
+                row.style.justifyContent = '';
+                row.style.alignItems = '';
+                row.style.gridTemplateColumns = '';
+                row.style.justifyItems = '';
+                row.style.gap = '';
+
                 if (displayType === 'flex') {
                     row.style.flexDirection = flexDirection;
                     row.style.justifyContent = justifyContent;
                     row.style.alignItems = alignItems;
                     row.style.gap = itemGap + 'px';
+                } else if (displayType === 'grid') {
+                    row.style.gridTemplateColumns = gridColumns;
+                    row.style.gap = gridGap + 'px';
+                    row.style.justifyItems = justifyItems;
+                    row.style.alignItems = gridAlignItems;
                 }
                 row.style.marginBottom = marginBottom + 'px';
                 row.style.padding = rowPadding + 'px';
@@ -649,7 +761,7 @@
 
             // 라벨 스타일 적용
             labels.forEach(label => {
-                label.style.minWidth = labelWidth + 'px';
+                label.style.minWidth = displayType === 'grid' ? '' : labelWidth + 'px';
             });
 
             // 입력칸 스타일 적용
@@ -673,57 +785,94 @@
             document.getElementById('borderWidthValue').textContent = borderWidth + 'px';
             document.getElementById('borderRadiusValue').textContent = borderRadius + 'px';
 
+            // Grid 값 표시 업데이트
+            document.getElementById('gridGapValue').textContent = gridGap + 'px';
+            document.getElementById('justifyItemsValue').textContent = justifyItems;
+            document.getElementById('gridAlignValue').textContent = gridAlignItems;
+
             // CSS 코드 생성
             updateCSSCode();
         }
 
         // CSS 코드 표시 업데이트
         function updateCSSCode() {
-            const code = `
-<span class="css-comment">/* 폼 전체 스타일 */</span>
+            const displayType = document.getElementById('displayType').value;
+            let layoutCode = '';
+            let labelCode = '';
+            let selectCode = '';
+
+            if (displayType === 'flex') {
+                layoutCode = `    display: flex;
+    flex-direction: ${document.getElementById('flexDirection').value};
+    justify-content: ${document.getElementById('justifyContent').value};
+    align-items: ${document.getElementById('alignItems').value};
+    gap: ${document.getElementById('itemGap').value}px;`;
+                labelCode = `    min-width: ${document.getElementById('labelWidth').value}px;`;
+                selectCode = `    flex: 1; /* 남은 공간 채우기 */`;
+            } else if (displayType === 'grid') {
+                layoutCode = `    display: grid;
+    grid-template-columns: ${document.getElementById('gridColumns').value};
+    gap: ${document.getElementById('gridGap').value}px;
+    justify-items: ${document.getElementById('justifyItems').value};
+    align-items: ${document.getElementById('gridAlignItems').value};`;
+                labelCode = `    /* Grid에서는 grid-template-columns로 너비 제어 */`;
+                selectCode = `    width: 100%; /* 그리드 셀에 맞춤 */`;
+            } else {
+                layoutCode = `    display: block;`;
+                labelCode = `    display: block;
+    margin-bottom: 5px;`;
+                selectCode = `    width: 100%;`;
+            }
+
+            const code = `/* 폼 전체 스타일 */
 #learningForm {
-    <span class="css-property">max-width</span>: <span class="css-value">${document.getElementById('formWidth').value}px</span>;
-    <span class="css-property">padding</span>: <span class="css-value">${document.getElementById('formPadding').value}px</span>;
-    <span class="css-property">border</span>: <span class="css-value">${document.getElementById('borderWidth').value}px solid ${document.getElementById('borderColor').value}</span>;
-    <span class="css-property">border-radius</span>: <span class="css-value">${document.getElementById('borderRadius').value}px</span>;
-    <span class="css-property">background-color</span>: <span class="css-value">${document.getElementById('formBgColor').value}</span>;
+    max-width: ${document.getElementById('formWidth').value}px;
+    padding: ${document.getElementById('formPadding').value}px;
+    border: ${document.getElementById('borderWidth').value}px solid ${document.getElementById('borderColor').value};
+    border-radius: ${document.getElementById('borderRadius').value}px;
+    background-color: ${document.getElementById('formBgColor').value};
 }
 
-<span class="css-comment">/* 각 행 스타일 */</span>
+/* 각 행 스타일 - ${displayType.toUpperCase()} 레이아웃 */
 .form-row {
-    <span class="css-property">display</span>: <span class="css-value">${document.getElementById('displayType').value}</span>;
-    <span class="css-property">flex-direction</span>: <span class="css-value">${document.getElementById('flexDirection').value}</span>;
-    <span class="css-property">justify-content</span>: <span class="css-value">${document.getElementById('justifyContent').value}</span>;
-    <span class="css-property">align-items</span>: <span class="css-value">${document.getElementById('alignItems').value}</span>;
-    <span class="css-property">gap</span>: <span class="css-value">${document.getElementById('itemGap').value}px</span>;
-    <span class="css-property">margin-bottom</span>: <span class="css-value">${document.getElementById('marginBottom').value}px</span>;
-    <span class="css-property">padding</span>: <span class="css-value">${document.getElementById('rowPadding').value}px</span>;
-    <span class="css-property">background-color</span>: <span class="css-value">${document.getElementById('rowBgColor').value}</span>;
-    <span class="css-property">border-radius</span>: <span class="css-value">${parseInt(document.getElementById('borderRadius').value) / 2}px</span>;
+${layoutCode}
+    margin-bottom: ${document.getElementById('marginBottom').value}px;
+    padding: ${document.getElementById('rowPadding').value}px;
+    background-color: ${document.getElementById('rowBgColor').value};
+    border-radius: ${parseInt(document.getElementById('borderRadius').value) / 2}px;
 }
 
-<span class="css-comment">/* 라벨 스타일 */</span>
+/* 라벨 스타일 */
 .form-label {
-    <span class="css-property">min-width</span>: <span class="css-value">${document.getElementById('labelWidth').value}px</span>;
-    <span class="css-property">font-weight</span>: <span class="css-value">600</span>;
+${labelCode}
+    font-weight: 600;
 }
 
-<span class="css-comment">/* 입력칸 스타일 */</span>
+/* 입력칸 스타일 */
 .form-select {
-    <span class="css-property">flex</span>: <span class="css-value">1</span>; <span class="css-comment">/* 남은 공간 채우기 */</span>
-    <span class="css-property">padding</span>: <span class="css-value">${document.getElementById('selectPadding').value}px</span>;
-    <span class="css-property">border-radius</span>: <span class="css-value">${parseInt(document.getElementById('borderRadius').value) / 2}px</span>;
+${selectCode}
+    padding: ${document.getElementById('selectPadding').value}px;
+    border-radius: ${parseInt(document.getElementById('borderRadius').value) / 2}px;
 }`;
 
-            document.getElementById('cssCode').innerHTML = code;
+            document.getElementById('cssCode').textContent = code;
         }
 
         // 초기화 함수
         function resetStyles() {
+            // Flex 설정
             document.getElementById('displayType').value = 'flex';
             document.getElementById('flexDirection').value = 'row';
             document.getElementById('justifyContent').value = 'flex-start';
             document.getElementById('alignItems').value = 'center';
+
+            // Grid 설정
+            document.getElementById('gridColumns').value = '100px 1fr';
+            document.getElementById('gridGap').value = 10;
+            document.getElementById('justifyItems').value = 'stretch';
+            document.getElementById('gridAlignItems').value = 'center';
+
+            // 크기 설정
             document.getElementById('formWidth').value = 600;
             document.getElementById('labelWidth').value = 80;
             document.getElementById('rowGap').value = 15;

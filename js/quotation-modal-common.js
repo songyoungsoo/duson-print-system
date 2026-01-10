@@ -357,12 +357,18 @@ function proceedWithApply() {
     }
 
     // 5. postMessage 페이로드 구성
+    // 단가 계산 (전단지/리플렛은 연 단위라 단가 의미 없음)
+    const unitPrice = (productType !== 'inserted' && productType !== 'leaflet' && quantity > 0)
+        ? Math.round(supplyPrice / quantity)
+        : 0;
+
     const payload = {
         product_name: productName,
         product_type: productType,
         specification: specification,
         quantity: quantity,
         unit: unit,
+        unit_price: unitPrice,
         supply_price: supplyPrice,
         flyer_mesu: flyer_mesu,  // 전단지/리플렛 전용
         quantity_display: quantity_display  // 전단지/리플렛 전용

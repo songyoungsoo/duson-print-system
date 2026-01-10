@@ -66,7 +66,7 @@ $show_bank = isset($show_bank) ? $show_bank : true;
             </div>
             <div class="bank-item">
                 <div class="bank-name">농협</div>
-                <div class="bank-account">301-2632-1829</div>
+                <div class="bank-account">301-2632-1830-11</div>
             </div>
             <div class="bank-owner">
                 <span>예금주: 두손기획인쇄 차경선</span>

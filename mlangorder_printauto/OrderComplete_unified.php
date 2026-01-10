@@ -391,7 +391,7 @@ include "../includes/nav.php";
                 <div>
                     <div style="margin-bottom: 0.8rem;">
                         <label style="font-weight: bold; color: #2c3e50; display: block; margin-bottom: 0.2rem; font-size: 0.9rem;">🏦 농협</label>
-                        <div style="color: #495057; font-size: 1rem;">301-2632-1829</div>
+                        <div style="color: #495057; font-size: 1rem;">301-2632-1830-11</div>
                     </div>
                     <div style="margin-bottom: 0.8rem;">
                         <label style="font-weight: bold; color: #2c3e50; display: block; margin-bottom: 0.2rem; font-size: 0.9rem;">💳 카드 결제</label>

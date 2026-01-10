@@ -17,7 +17,7 @@ if ($_POST['action'] == 'login') {
         $_SESSION['admin_login_time'] = time();
 
         // 원래 요청된 페이지로 리다이렉트
-        $redirect = $_GET['redirect'] ?? '../../duson/admin/product-manager/';
+        $redirect = $_GET['redirect'] ?? '/admin/mlangprintauto/quote/';
         header("Location: $redirect");
         exit;
     } else {
@@ -27,7 +27,7 @@ if ($_POST['action'] == 'login') {
 
 // 이미 로그인된 경우
 if (isset($_SESSION['admin_logged_in']) && $_SESSION['admin_logged_in'] === true) {
-    $redirect = $_GET['redirect'] ?? '../../duson/admin/product-manager/';
+    $redirect = $_GET['redirect'] ?? '/admin/mlangprintauto/quote/';
     header("Location: $redirect");
     exit;
 }

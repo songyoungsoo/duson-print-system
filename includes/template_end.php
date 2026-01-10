@@ -42,7 +42,7 @@
                                     <div class="account-list">
                                         <div class="account-item">국민은행: 999-1688-2384</div>
                                         <div class="account-item">신한은행: 110-342-543507</div>
-                                        <div class="account-item">농협: 301-2632-1829</div>
+                                        <div class="account-item">농협: 301-2632-1830-11</div>
                                         <div class="account-item highlight">💳 카드결제: 1688-2384</div>
                                     </div>
                                 </div>

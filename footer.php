@@ -26,7 +26,7 @@
           <p style="margin: 3px 0;">예금주: 두손기획인쇄 차경선</p>
           <p style="margin: 3px 0;">국민은행: 999-1688-2384</p>
           <p style="margin: 3px 0;">신한은행: 110-342-543507</p>
-          <p style="margin: 3px 0;">농협: 301-2632-1829</p>
+          <p style="margin: 3px 0;">농협: 301-2632-1830-11</p>
         </div>
       </div>
 
