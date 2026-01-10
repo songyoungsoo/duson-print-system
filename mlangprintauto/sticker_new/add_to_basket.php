@@ -164,7 +164,22 @@ $required_columns = [
     'upload_method' => 'VARCHAR(50)',
     'uploaded_files' => 'TEXT',
     'ThingCate' => 'VARCHAR(255)',
-    'ImgFolder' => 'VARCHAR(255)'
+    'ImgFolder' => 'VARCHAR(255)',
+    // Phase 2 표준 컬럼 (spec_type 등)
+    'spec_type' => 'VARCHAR(100)',
+    'spec_material' => 'VARCHAR(200)',
+    'spec_size' => 'VARCHAR(100)',
+    'spec_sides' => 'VARCHAR(100)',
+    'spec_design' => 'VARCHAR(100)',
+    'quantity_value' => 'INT(11) DEFAULT 0',
+    'quantity_unit' => 'VARCHAR(20)',
+    'quantity_sheets' => 'INT(11) DEFAULT 0',
+    'quantity_display' => 'VARCHAR(100)',
+    'price_supply' => 'INT(11) DEFAULT 0',
+    'price_vat' => 'INT(11) DEFAULT 0',
+    'price_vat_amount' => 'INT(11) DEFAULT 0',
+    'product_data_json' => 'TEXT',
+    'data_version' => 'INT(11) DEFAULT 1'
 ];
 
 foreach ($required_columns as $column_name => $column_definition) {

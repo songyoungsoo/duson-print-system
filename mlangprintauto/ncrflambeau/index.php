@@ -48,6 +48,7 @@ include "../../includes/auth.php";
 
 // 견적서 모달용 간소화 모드 체크
 $isQuotationMode = isset($_GET['mode']) && $_GET['mode'] === 'quotation';
+$isAdminQuoteMode = isset($_GET['mode']) && $_GET['mode'] === 'admin_quote';
 
 // 사용자 정보 설정
 if (isset($_SESSION['user_id'])) {
@@ -139,9 +140,9 @@ $default_values['MY_type'] = '475'; // 양식(100매철)
 
 </head>
 
-<body class="ncrflambeau-page<?php echo $isQuotationMode ? ' quotation-modal-mode' : ''; ?>" <?php ThemeLoader::renderBodyAttributes(); ?>>
-    <?php if (!$isQuotationMode) include "../../includes/header-ui.php"; ?>
-    <?php if (!$isQuotationMode) include "../../includes/nav.php"; ?>
+<body class="ncrflambeau-page<?php echo ($isQuotationMode || $isAdminQuoteMode) ? ' quotation-modal-mode' : ''; ?>" <?php ThemeLoader::renderBodyAttributes(); ?>>
+    <?php if (!$isQuotationMode && !$isAdminQuoteMode) include "../../includes/header-ui.php"; ?>
+    <?php if (!$isQuotationMode && !$isAdminQuoteMode) include "../../includes/nav.php"; ?>
 
     <div class="product-container">
     
@@ -265,11 +266,11 @@ $default_values['MY_type'] = '475'; // 양식(100매철)
                         </div>
                     </div>
 
-                    <?php if ($isQuotationMode): ?>
+                    <?php if ($isQuotationMode || $isAdminQuoteMode): ?>
                     <!-- 견적서 모달 모드: 견적서에 적용 버튼 -->
                     <div class="quotation-apply-button">
                         <button type="button" class="btn-quotation-apply" onclick="applyToQuotation()">
-                            견적서에 적용
+                            ✓ 견적서에 적용
                         </button>
                     </div>
                     <?php else: ?>
@@ -309,7 +310,7 @@ $default_values['MY_type'] = '475'; // 양식(100매철)
     include "../../includes/login_modal.php";
     ?>
 
-    <?php if (!$isQuotationMode): ?>
+    <?php if (!$isQuotationMode && !$isAdminQuoteMode): ?>
     <!-- NCR양식지 상세 설명 섹션 (1200px 폭) - 하단 설명방법 적용 -->
     <div class="ncrflambeau-detail-combined" style="width: 1200px; max-width: 100%; margin: 7.5px auto; padding: 25px; background: #f8f9fa; border-radius: 12px; border: 1px solid #e0e0e0;">
         <?php include "explane_ncrflambeau.php"; ?>
@@ -318,7 +319,7 @@ $default_values['MY_type'] = '475'; // 양식(100매철)
 
     <?php
     // 공통 푸터 포함 (견적서 모달에서는 제외)
-    if (!$isQuotationMode) {
+    if (!$isQuotationMode && !$isAdminQuoteMode) {
         include "../../includes/footer.php";
     }
     ?>

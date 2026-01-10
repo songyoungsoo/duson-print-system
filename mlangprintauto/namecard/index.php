@@ -14,6 +14,7 @@ include "../../includes/auth.php";
 
 // 견적서 모달용 간소화 모드 체크
 $isQuotationMode = isset($_GET['mode']) && $_GET['mode'] === 'quotation';
+$isAdminQuoteMode = isset($_GET['mode']) && $_GET['mode'] === 'admin_quote';
 
 // 공통 함수 및 데이터베이스
 include "../../includes/functions.php";
@@ -172,9 +173,9 @@ if ($type_result && ($type_row = mysqli_fetch_assoc($type_result))) {
         }
     </style>
 </head>
-<body class="namecard-page<?php echo $isQuotationMode ? ' quotation-modal-mode' : ''; ?>" <?php ThemeLoader::renderBodyAttributes(); ?>>
-    <?php if (!$isQuotationMode) include "../../includes/header-ui.php"; ?>
-    <?php if (!$isQuotationMode) include "../../includes/nav.php"; ?>
+<body class="namecard-page<?php echo ($isQuotationMode || $isAdminQuoteMode) ? ' quotation-modal-mode' : ''; ?>" <?php ThemeLoader::renderBodyAttributes(); ?>>
+    <?php if (!$isQuotationMode && !$isAdminQuoteMode) include "../../includes/header-ui.php"; ?>
+    <?php if (!$isQuotationMode && !$isAdminQuoteMode) include "../../includes/nav.php"; ?>
 
     <div class="product-container">
         <div class="page-title">
@@ -348,7 +349,7 @@ if ($type_result && ($type_row = mysqli_fetch_assoc($type_result))) {
                     </div>
 
                     <!-- 파일 업로드 및 주문 버튼 - 프리미엄 스타일 -->
-                    <?php if ($isQuotationMode): ?>
+                    <?php if ($isQuotationMode || $isAdminQuoteMode): ?>
                     <!-- 견적서 모달 모드: 견적서에 적용 버튼 -->
                     <div class="quotation-apply-button">
                         <button type="button" class="btn-quotation-apply" onclick="applyToQuotation()">
@@ -389,7 +390,7 @@ if ($type_result && ($type_row = mysqli_fetch_assoc($type_result))) {
 
     <?php include "../../includes/login_modal.php"; ?>
 
-    <?php if (!$isQuotationMode): ?>
+    <?php if (!$isQuotationMode && !$isAdminQuoteMode): ?>
     <!-- 명함 상세 설명 섹션 (1200px 폭) - 하단 설명방법 적용 -->
     <div class="namecard-detail-combined" style="width: 1200px; max-width: 100%; margin: 7.5px auto; padding: 25px; background: #f8f9fa; border-radius: 12px; border: 1px solid #e0e0e0;">
         <?php include "explane_namecard.php"; ?>
@@ -1045,8 +1046,8 @@ if ($type_result && ($type_row = mysqli_fetch_assoc($type_result))) {
     <script src="../../js/quotation-modal-common.js?v=<?php echo time(); ?>"></script>
 
     <!-- 테마 스위처 -->
-    <?php if (!$isQuotationMode) ThemeLoader::renderSwitcher('bottom-right'); ?>
-    <?php if (!$isQuotationMode) ThemeLoader::renderSwitcherJS(); ?>
+    <?php if (!$isQuotationMode && !$isAdminQuoteMode) ThemeLoader::renderSwitcher('bottom-right'); ?>
+    <?php if (!$isQuotationMode && !$isAdminQuoteMode) ThemeLoader::renderSwitcherJS(); ?>
 
     <?php
     // 데이터베이스 연결 종료
@@ -1055,4 +1056,4 @@ if ($type_result && ($type_row = mysqli_fetch_assoc($type_result))) {
     }
     ?>
 
-<?php if (!$isQuotationMode) include "../../includes/footer.php"; ?>
+<?php if (!$isQuotationMode && !$isAdminQuoteMode) include "../../includes/footer.php"; ?>

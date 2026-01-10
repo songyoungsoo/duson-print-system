@@ -34,7 +34,8 @@ $current_page = 'sticker'; // 네비게이션 활성화를 위한 페이지 식�
 
 // 📱 모달 모드 감지 (견적서 시스템에서 iframe으로 호출될 때)
 $is_quotation_mode = isset($_GET['mode']) && $_GET['mode'] === 'quotation';
-$body_class = $is_quotation_mode ? ' quotation-modal-mode' : '';
+$is_admin_quote_mode = isset($_GET['mode']) && $_GET['mode'] === 'admin_quote';
+$body_class = ($is_quotation_mode || $is_admin_quote_mode) ? ' quotation-modal-mode' : '';
 
 // 스티커 기본값 설정
 $default_values = [
@@ -285,14 +286,14 @@ $default_values = [
     </style>
 </head>
 <body class="sticker-page<?php echo $body_class; ?>">
-<?php if (!$is_quotation_mode): ?>
+<?php if (!$is_quotation_mode && !$is_admin_quote_mode): ?>
 <?php include "../../includes/header-ui.php"; ?>
 <?php include "../../includes/nav.php"; ?>
 <?php endif; ?>
 
     <div class="product-container">
 
-<?php if (!$is_quotation_mode): ?>
+<?php if (!$is_quotation_mode && !$is_admin_quote_mode): ?>
         <div class="page-title">
             <h1>🏷️ 스티커 견적 안내</h1>
         </div>
@@ -300,7 +301,7 @@ $default_values = [
 
         <!-- 컴팩트 2단 그리드 레이아웃 -->
         <div class="product-content">
-<?php if (!$is_quotation_mode): ?>
+<?php if (!$is_quotation_mode && !$is_admin_quote_mode): ?>
             <!-- 좌측: 갤러리 (500×400 마우스 호버 줌) -->
             <section class="product-gallery" style="position: relative;">
                 <!-- 실시간 사이즈 미리보기 캔버스 (플로팅 오버레이) -->
@@ -455,7 +456,7 @@ $default_values = [
                         </div>
                     </div>
 
-                    <?php if ($is_quotation_mode): ?>
+                    <?php if ($is_quotation_mode || $is_admin_quote_mode): ?>
                     <!-- 견적서 모달 모드: 견적서에 적용 버튼 -->
                     <div class="quotation-apply-button">
                         <button type="button" class="btn-quotation-apply" onclick="applyToQuotation()">
@@ -489,7 +490,7 @@ $default_values = [
 
     <?php include "../../includes/login_modal.php"; ?>
 
-<?php if (!$is_quotation_mode): ?>
+<?php if (!$is_quotation_mode && !$is_admin_quote_mode): ?>
     <!-- 스티커 상세 설명 섹션 -->
     <div class="sticker-detail-combined">
         <?php include "explane_sticker.php"; ?>
@@ -1022,7 +1023,7 @@ $default_values = [
             formData.set('st_price', window.currentPriceData.price.replace(/,/g, ''));
             formData.set('st_price_vat', window.currentPriceData.price_vat.replace(/,/g, ''));
             formData.set('product_type', 'sticker');
-            
+
             // 스티커 전용 추가 정보
             formData.set('work_memo', workMemo);
             formData.set('upload_method', selectedUploadMethod || 'upload');
@@ -3049,13 +3050,108 @@ if ($db) {
     </script>
 <?php endif; ?>
 
-<?php if (!$is_quotation_mode): ?>
+<?php if ($is_admin_quote_mode): ?>
+    <!-- 관리자 견적서 모드: postMessage로 부모 창에 데이터 전송 -->
+    <script>
+    window.applyToQuotation = function() {
+        console.log('🚀 [관리자 견적서] applyToQuotation() 호출');
+
+        // 1. 필수 필드 검증
+        const jong = document.getElementById('jong')?.value;
+        const garo = document.getElementById('garo')?.value;
+        const sero = document.getElementById('sero')?.value;
+        const mesu = document.getElementById('mesu')?.value;
+        const uhyung = document.getElementById('uhyung')?.value || '0';
+        const domusong = document.getElementById('domusong')?.value || '';
+
+        if (!jong || !garo || !sero || !mesu) {
+            alert('모든 필수 옵션을 선택해주세요.');
+            return;
+        }
+
+        // 2. 가격 확인 (없으면 자동 계산)
+        if (!window.currentPriceData || !window.currentPriceData.price) {
+            if (typeof window.autoCalculatePrice === 'function') {
+                window.autoCalculatePrice();
+                let attempts = 0;
+                const waitForPrice = setInterval(() => {
+                    attempts++;
+                    if (window.currentPriceData && window.currentPriceData.price) {
+                        clearInterval(waitForPrice);
+                        window.applyToQuotation();
+                    } else if (attempts >= 30) {
+                        clearInterval(waitForPrice);
+                        alert('가격 계산에 실패했습니다.');
+                    }
+                }, 100);
+                return;
+            }
+            alert('가격을 먼저 계산해주세요.');
+            return;
+        }
+
+        // 3. 재질명 추출
+        const jongSelect = document.getElementById('jong');
+        const jongText = jongSelect?.selectedOptions[0]?.text || jong;
+        const materialName = jongText.replace(/^jil\s*/, '').trim();
+
+        // 4. 수량 표시 텍스트
+        const mesuSelect = document.getElementById('mesu');
+        const mesuText = mesuSelect?.selectedOptions[0]?.text || (mesu + '매');
+
+        // 5. 도무송 표시 텍스트
+        const domusongSelect = document.getElementById('domusong');
+        const domusongText = domusongSelect?.selectedOptions[0]?.text || domusong;
+        const shape = domusongText.replace(/^\d+\s*/, '').trim() || '사각';
+
+        // 6. 규격 문자열 생성
+        const specification = `${materialName} / ${garo}×${sero}mm / ${shape}`;
+
+        // 7. 단가 계산 (스티커는 단가 × 수량 허용)
+        const supplyPrice = parseInt(window.currentPriceData.price.toString().replace(/,/g, ''));
+        const quantity = parseInt(mesu);
+        const unitPrice = quantity > 0 ? Math.round(supplyPrice / quantity) : 0;
+
+        // 8. 부모 창에 데이터 전송
+        const payload = {
+            product_type: 'sticker',
+            product_name: '스티커',
+            specification: specification,
+            quantity: quantity,
+            unit: '매',
+            quantity_display: mesuText,
+            unit_price: unitPrice,
+            supply_price: supplyPrice,
+            // 원본 데이터 (저장용)
+            jong: jong,
+            garo: garo,
+            sero: sero,
+            mesu: mesu,
+            uhyung: uhyung,
+            domusong: domusong,
+            st_price: supplyPrice,
+            st_price_vat: parseInt(window.currentPriceData.price_vat.toString().replace(/,/g, ''))
+        };
+
+        console.log('📤 [관리자 견적서] postMessage 전송:', payload);
+
+        window.parent.postMessage({
+            type: 'ADMIN_QUOTE_ITEM_ADDED',
+            payload: payload
+        }, window.location.origin);
+    };
+
+    console.log('✅ [관리자 견적서] applyToQuotation() 정의 완료');
+    </script>
+<?php endif; ?>
+
+<?php if (!$is_quotation_mode && !$is_admin_quote_mode): ?>
     <?php
     // 공통 푸터 포함
     include "../../includes/footer.php";
     ?>
 <?php else: ?>
-    <!-- quotation_mode일 때만 직접 closing 태그 제공 -->
+    <!-- quotation/admin_quote 모드일 때 직접 closing 태그 제공 -->
     </body>
     </html>
 <?php endif; ?>

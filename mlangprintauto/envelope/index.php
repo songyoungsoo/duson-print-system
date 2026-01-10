@@ -13,6 +13,7 @@ include "../../includes/auth.php";
 
 // 견적서 모달용 간소화 모드 체크
 $isQuotationMode = isset($_GET['mode']) && $_GET['mode'] === 'quotation';
+$isAdminQuoteMode = isset($_GET['mode']) && $_GET['mode'] === 'admin_quote';
 
 // 공통 함수 및 데이터베이스
 include "../../includes/functions.php";
@@ -175,9 +176,9 @@ if ($type_result && ($type_row = mysqli_fetch_assoc($type_result))) {
     <?php ThemeLoader::renderCSS(); ?>
 
 </head>
-<body class="envelope-page<?php echo $isQuotationMode ? ' quotation-modal-mode' : ''; ?>" <?php ThemeLoader::renderBodyAttributes(); ?>>
-    <?php if (!$isQuotationMode) include "../../includes/header-ui.php"; ?>
-    <?php if (!$isQuotationMode) include "../../includes/nav.php"; ?>
+<body class="envelope-page<?php echo ($isQuotationMode || $isAdminQuoteMode) ? ' quotation-modal-mode' : ''; ?>" <?php ThemeLoader::renderBodyAttributes(); ?>>
+    <?php if (!$isQuotationMode && !$isAdminQuoteMode) include "../../includes/header-ui.php"; ?>
+    <?php if (!$isQuotationMode && !$isAdminQuoteMode) include "../../includes/nav.php"; ?>
 
     <div class="product-container">
         <div class="page-title">
@@ -281,7 +282,7 @@ if ($type_result && ($type_row = mysqli_fetch_assoc($type_result))) {
                         </div>
                     </div>
 
-                    <?php if ($isQuotationMode): ?>
+                    <?php if ($isQuotationMode || $isAdminQuoteMode): ?>
                     <!-- 견적서 모달 모드: 견적서에 적용 버튼 -->
                     <div class="quotation-apply-button">
                         <button type="button" class="btn-quotation-apply" onclick="applyToQuotation()">
@@ -315,7 +316,7 @@ if ($type_result && ($type_row = mysqli_fetch_assoc($type_result))) {
 
     <?php include "../../includes/login_modal.php"; ?>
 
-    <?php if (!$isQuotationMode): ?>
+    <?php if (!$isQuotationMode && !$isAdminQuoteMode): ?>
     <!-- 옵셋봉투 및 작업 시 유의사항 통합 섹션 (1200px 폭) -->
     <div class="envelope-detail-combined" style="width: 1200px; max-width: 100%; margin: 30px auto; padding: 25px; background: #f8f9fa; border-radius: 12px; border: 1px solid #e0e0e0;">
         <?php include "explane05.php"; ?>
@@ -645,4 +646,4 @@ if ($type_result && ($type_row = mysqli_fetch_assoc($type_result))) {
     }
     ?>
 
-<?php if (!$isQuotationMode) include "../../includes/footer.php"; ?>
+<?php if (!$isQuotationMode && !$isAdminQuoteMode) include "../../includes/footer.php"; ?>

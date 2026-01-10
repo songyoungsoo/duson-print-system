@@ -11,6 +11,7 @@ include "../../includes/auth.php";
 
 // 견적서 모달용 간소화 모드 체크
 $isQuotationMode = isset($_GET['mode']) && $_GET['mode'] === 'quotation';
+$isAdminQuoteMode = isset($_GET['mode']) && $_GET['mode'] === 'admin_quote';
 
 // 파일 업로드 컴포넌트 포함
 include "../../includes/FileUploadComponent.php";
@@ -121,9 +122,9 @@ if ($type_row = mysqli_fetch_assoc($type_result)) {
     <!-- 견적서 모달용 공통 스타일 -->
     <link rel="stylesheet" href="../../css/quotation-modal-common.css">
 </head>
-<body class="msticker-page<?php echo $isQuotationMode ? ' quotation-modal-mode' : ''; ?>">
-    <?php if (!$isQuotationMode) include "../../includes/header-ui.php"; ?>
-    <?php if (!$isQuotationMode) include "../../includes/nav.php"; ?>
+<body class="msticker-page<?php echo ($isQuotationMode || $isAdminQuoteMode) ? ' quotation-modal-mode' : ''; ?>">
+    <?php if (!$isQuotationMode && !$isAdminQuoteMode) include "../../includes/header-ui.php"; ?>
+    <?php if (!$isQuotationMode && !$isAdminQuoteMode) include "../../includes/nav.php"; ?>
 
     <div class="product-container">
         <div class="page-title">
@@ -212,7 +213,7 @@ if ($type_row = mysqli_fetch_assoc($type_result)) {
                         </div>
                     </div>
 
-                    <?php if ($isQuotationMode): ?>
+                    <?php if ($isQuotationMode || $isAdminQuoteMode): ?>
                     <!-- 견적서 모달 모드: 견적서에 적용 버튼 -->
                     <div class="quotation-apply-button">
                         <button type="button" class="btn-quotation-apply" onclick="applyToQuotation()">
@@ -249,7 +250,7 @@ if ($type_row = mysqli_fetch_assoc($type_result)) {
 
     <?php include "../../includes/login_modal.php"; ?>
 
-    <?php if (!$isQuotationMode): ?>
+    <?php if (!$isQuotationMode && !$isAdminQuoteMode): ?>
     <!-- 종이자석스티커 상세 설명 섹션 (하단 설명방법) -->
     <div class="msticker-detail-combined" style="width: 1200px; max-width: 100%; margin: 7.5px auto; padding: 25px; background: #f8f9fa; border-radius: 12px; border: 1px solid #e0e0e0;">
         <?php include "explane_msticker.php"; ?>
@@ -258,7 +259,7 @@ if ($type_row = mysqli_fetch_assoc($type_result)) {
 
 <?php
 // 공통 푸터 포함 (견적서 모달에서는 제외)
-if (!$isQuotationMode) {
+if (!$isQuotationMode && !$isAdminQuoteMode) {
     include "../../includes/footer.php";
 }
 ?>
@@ -735,5 +736,66 @@ if ($db) {
     mysqli_close($db);
 }
 ?>
+
+<?php if ($isAdminQuoteMode): ?>
+    <!-- 관리자 견적서 모드: postMessage로 부모 창에 데이터 전송 -->
+    <script>
+    window.applyToQuotation = function() {
+        console.log('🚀 [관리자 견적서-자석스티커] applyToQuotation() 호출');
+
+        // 실제 필드: MY_type, Section, MY_amount (DB에서 가져옴)
+        const MY_type = document.getElementById('MY_type')?.value;
+        const Section = document.getElementById('Section')?.value;
+        const MY_amount = document.getElementById('MY_amount')?.value;
+
+        if (!MY_type || !Section || !MY_amount) {
+            alert('모든 필수 옵션을 선택해주세요.');
+            return;
+        }
+
+        // 가격 확인 (window.currentPriceData 사용)
+        const priceData = window.currentPriceData || window.priceData;
+        if (!priceData || !priceData.total_price) {
+            alert('가격을 먼저 계산해주세요.');
+            return;
+        }
+        const supplyPrice = Math.round(priceData.total_price) || 0;
+
+        if (supplyPrice <= 0) {
+            alert('가격을 먼저 계산해주세요.');
+            return;
+        }
+
+        const typeSelect = document.getElementById('MY_type');
+        const sectionSelect = document.getElementById('Section');
+        const amountSelect = document.getElementById('MY_amount');
+
+        const paperType = typeSelect?.selectedOptions[0]?.text || MY_type;
+        const paperSection = sectionSelect?.selectedOptions[0]?.text || Section;
+        const quantityText = amountSelect?.selectedOptions[0]?.text || MY_amount;
+
+        const specification = paperType + ' / ' + paperSection;
+        const quantity = parseFloat(MY_amount) || 1;
+
+        const payload = {
+            product_type: 'msticker',
+            product_name: '자석스티커',
+            specification: specification,
+            quantity: quantity,
+            unit: '매',
+            quantity_display: quantityText,
+            unit_price: quantity > 0 ? Math.round(supplyPrice / quantity) : 0,
+            supply_price: supplyPrice,
+            MY_type: MY_type, Section: Section, MY_amount: MY_amount,
+            st_price: supplyPrice,
+            st_price_vat: Math.round(supplyPrice * 1.1)
+        };
+
+        console.log('📤 [관리자 견적서-자석스티커] postMessage 전송:', payload);
+        window.parent.postMessage({ type: 'ADMIN_QUOTE_ITEM_ADDED', payload: payload }, window.location.origin);
+    };
+    console.log('✅ [관리자 견적서-자석스티커] applyToQuotation() 정의 완료');
+    </script>
+<?php endif; ?>
 </body>
 </html>

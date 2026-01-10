@@ -49,6 +49,10 @@ check_db_connection($db);
 // 로그 정보 생성
 $log_info = generateLogInfo();
 
+// admin_quote 모드 체크
+$isAdminQuoteMode = isset($_GET['mode']) && $_GET['mode'] === 'admin_quote';
+$body_class = $isAdminQuoteMode ? ' quotation-modal-mode' : '';
+
 // 공통 인증 시스템 사용
 include "../../includes/auth.php";
 $is_logged_in = isLoggedIn() || isset($_SESSION['id_login_ok']) || isset($_COOKIE['id_login_ok']);
@@ -185,9 +189,11 @@ header("Expires: 0");
     <script src="../../includes/js/UniversalFileUpload.js"></script>
 </head>
 
-<body class="inserted-page">
+<body class="inserted-page<?php echo $body_class; ?>">
+    <?php if (!$isAdminQuoteMode): ?>
     <?php include "../../includes/header-ui.php"; ?>
     <?php include "../../includes/nav.php"; ?>
+    <?php endif; ?>
 
     <div class="product-container">
         <!-- 페이지 타이틀 -->
@@ -374,11 +380,19 @@ header("Expires: 0");
                     </div>
 
                     <!-- 파일 업로드 및 주문 버튼 -->
+                    <?php if ($isAdminQuoteMode): ?>
+                    <div class="upload-order-button" id="uploadOrderButton">
+                        <button type="button" class="btn-upload-order" onclick="applyToQuotation()" style="background: #28a745;">
+                            견적서에 적용
+                        </button>
+                    </div>
+                    <?php else: ?>
                     <div class="upload-order-button" id="uploadOrderButton">
                         <button type="button" class="btn-upload-order" onclick="openUploadModal()">
                             파일 업로드 및 주문하기
                         </button>
                     </div>
+                    <?php endif; ?>
                     
                     <!-- 선택한 옵션 요약 영역 제거됨 -->
                     
@@ -422,7 +436,9 @@ header("Expires: 0");
     </section>
 
     <!-- 공통 푸터 포함 -->
+    <?php if (!$isAdminQuoteMode): ?>
     <?php include "../../includes/footer.php"; ?>
+    <?php endif; ?>
 
     <!-- 공통 업로드 모달 JavaScript -->
     <script src="../../includes/upload_modal.js?v=1759243573751415300"></script>
@@ -598,6 +614,68 @@ header("Expires: 0");
     <script src="../../js/common-gallery-popup.js"></script>
 
     <!-- 전단지 전용 컴팩트 디자인 적용 (Frontend-Compact-Design-Guide.md 기반) -->
+
+<?php if ($isAdminQuoteMode): ?>
+    <!-- 관리자 견적서 모드: postMessage로 부모 창에 데이터 전송 -->
+    <script>
+    window.applyToQuotation = function() {
+        console.log('🚀 [관리자 견적서-리플렛] applyToQuotation() 호출');
+
+        const MY_type = document.getElementById('MY_type')?.value;
+        const MY_Fsd = document.getElementById('MY_Fsd')?.value;
+        const PN_type = document.getElementById('PN_type')?.value;
+        const MY_amount = document.getElementById('MY_amount')?.value;
+
+        if (!MY_type || !MY_Fsd || !PN_type || !MY_amount) {
+            alert('모든 필수 옵션을 선택해주세요.');
+            return;
+        }
+
+        // 가격 확인 (window.currentPriceData 사용)
+        if (!window.currentPriceData || !window.currentPriceData.Order_PriceForm) {
+            alert('가격을 먼저 계산해주세요.');
+            return;
+        }
+        const supplyPrice = Math.round(window.currentPriceData.Order_PriceForm) || 0;
+
+        if (supplyPrice <= 0) {
+            alert('가격을 먼저 계산해주세요.');
+            return;
+        }
+
+        const typeSelect = document.getElementById('MY_type');
+        const fsdSelect = document.getElementById('MY_Fsd');
+        const pnSelect = document.getElementById('PN_type');
+        const amountSelect = document.getElementById('MY_amount');
+
+        const paperType = typeSelect?.selectedOptions[0]?.text || MY_type;
+        const paperSize = fsdSelect?.selectedOptions[0]?.text || MY_Fsd;
+        const printSides = pnSelect?.selectedOptions[0]?.text || PN_type;
+        const quantityText = amountSelect?.selectedOptions[0]?.text || MY_amount;
+
+        const specification = paperType + ' / ' + paperSize + ' / ' + printSides;
+        const quantity = parseFloat(MY_amount) || 1;
+
+        const payload = {
+            product_type: 'leaflet',
+            product_name: '리플렛',
+            specification: specification,
+            quantity: quantity,
+            unit: '부',
+            quantity_display: quantityText,
+            unit_price: supplyPrice,
+            supply_price: supplyPrice,
+            MY_type: MY_type, MY_Fsd: MY_Fsd, PN_type: PN_type, MY_amount: MY_amount,
+            st_price: supplyPrice,
+            st_price_vat: Math.round(supplyPrice * 1.1)
+        };
+
+        console.log('📤 [관리자 견적서-리플렛] postMessage 전송:', payload);
+        window.parent.postMessage({ type: 'ADMIN_QUOTE_ITEM_ADDED', payload: payload }, window.location.origin);
+    };
+    console.log('✅ [관리자 견적서-리플렛] applyToQuotation() 정의 완료');
+    </script>
+<?php endif; ?>
 </body>
 </html>
 

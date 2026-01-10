@@ -7,6 +7,7 @@ include_once __DIR__ . '/../../includes/theme_loader.php';
 
 // 견적서 모달용 간소화 모드 체크
 $isQuotationMode = isset($_GET['mode']) && $_GET['mode'] === 'quotation';
+$isAdminQuoteMode = isset($_GET['mode']) && $_GET['mode'] === 'admin_quote';
 
 // 출력 버퍼 관리 및 에러 설정 (명함 성공 패턴)
 ob_start();
@@ -232,9 +233,9 @@ header("Expires: 0");
     </style>
 </head>
 
-<body class="inserted-page<?php echo $isQuotationMode ? ' quotation-modal-mode' : ''; ?>" <?php ThemeLoader::renderBodyAttributes(); ?>>
-    <?php if (!$isQuotationMode) include "../../includes/header-ui.php"; ?>
-    <?php if (!$isQuotationMode) include "../../includes/nav.php"; ?>
+<body class="inserted-page<?php echo ($isQuotationMode || $isAdminQuoteMode) ? ' quotation-modal-mode' : ''; ?>" <?php ThemeLoader::renderBodyAttributes(); ?>>
+    <?php if (!$isQuotationMode && !$isAdminQuoteMode) include "../../includes/header-ui.php"; ?>
+    <?php if (!$isQuotationMode && !$isAdminQuoteMode) include "../../includes/nav.php"; ?>
 
     <div class="product-container">
         <!-- 페이지 타이틀 -->
@@ -420,7 +421,7 @@ header("Expires: 0");
                         </div>
                     </div>
 
-                    <?php if ($isQuotationMode): ?>
+                    <?php if ($isQuotationMode || $isAdminQuoteMode): ?>
                     <!-- 견적서 모달 모드: 견적서에 적용 버튼 -->
                     <div class="quotation-apply-button">
                         <button type="button" class="btn-quotation-apply" onclick="applyToQuotation()">
@@ -473,7 +474,7 @@ header("Expires: 0");
     include "../../includes/login_modal.php";
     ?>
 
-    <?php if (!$isQuotationMode): ?>
+    <?php if (!$isQuotationMode && !$isAdminQuoteMode): ?>
     <!-- 합판 전단지 상세 설명 섹션 (하단 설명방법) -->
     <div class="inserted-detail-combined">
         <?php include "explane_inserted.php"; ?>
@@ -548,7 +549,7 @@ header("Expires: 0");
 
     <?php
     // 공통 푸터 포함 (견적서 모달에서는 제외)
-    if (!$isQuotationMode) {
+    if (!$isQuotationMode && !$isAdminQuoteMode) {
         include "../../includes/footer.php";
     }
     ?>
@@ -838,8 +839,87 @@ header("Expires: 0");
     <!-- 전단지 전용 컴팩트 디자인 적용 (Frontend-Compact-Design-Guide.md 기반) -->
 
     <!-- 테마 스위처 -->
-    <?php if (!$isQuotationMode) ThemeLoader::renderSwitcher('bottom-right'); ?>
-    <?php if (!$isQuotationMode) ThemeLoader::renderSwitcherJS(); ?>
+    <?php if (!$isQuotationMode && !$isAdminQuoteMode) ThemeLoader::renderSwitcher('bottom-right'); ?>
+    <?php if (!$isQuotationMode && !$isAdminQuoteMode) ThemeLoader::renderSwitcherJS(); ?>
+
+<?php if ($isAdminQuoteMode): ?>
+    <!-- 관리자 견적서 모드: postMessage로 부모 창에 데이터 전송 -->
+    <script>
+    window.applyToQuotation = function() {
+        console.log('🚀 [관리자 견적서-전단지] applyToQuotation() 호출');
+
+        // 1. 필수 필드 검증
+        const MY_type = document.getElementById('MY_type')?.value;
+        const MY_Fsd = document.getElementById('MY_Fsd')?.value;
+        const PN_type = document.getElementById('PN_type')?.value;
+        const MY_amount = document.getElementById('MY_amount')?.value;
+
+        if (!MY_type || !MY_Fsd || !PN_type || !MY_amount) {
+            alert('모든 필수 옵션을 선택해주세요.');
+            return;
+        }
+
+        // 2. 가격 확인 (window.currentPriceData 사용)
+        if (!window.currentPriceData || !window.currentPriceData.Order_PriceForm) {
+            alert('가격을 먼저 계산해주세요.');
+            return;
+        }
+        const supplyPrice = Math.round(window.currentPriceData.Order_PriceForm) || 0;
+
+        if (supplyPrice <= 0) {
+            alert('가격을 먼저 계산해주세요.');
+            return;
+        }
+
+        // 3. 옵션 텍스트 추출
+        const typeSelect = document.getElementById('MY_type');
+        const fsdSelect = document.getElementById('MY_Fsd');
+        const pnSelect = document.getElementById('PN_type');
+        const amountSelect = document.getElementById('MY_amount');
+
+        const paperWeight = typeSelect?.selectedOptions[0]?.text || MY_type;
+        const paperSize = fsdSelect?.selectedOptions[0]?.text || MY_Fsd;
+        const printSides = pnSelect?.selectedOptions[0]?.text || PN_type;
+        const quantityText = amountSelect?.selectedOptions[0]?.text || MY_amount;
+
+        // 4. 규격 문자열 생성
+        const specification = `${paperWeight} / ${paperSize} / ${printSides}`;
+
+        // 5. 수량 파싱 (연 단위 병기)
+        let quantity = parseFloat(MY_amount) || 1;
+        let unit = '연';
+        let quantityDisplay = quantityText;
+
+        // 6. 부모 창에 데이터 전송
+        const payload = {
+            product_type: 'inserted',
+            product_name: '전단지',
+            specification: specification,
+            quantity: quantity,
+            unit: unit,
+            quantity_display: quantityDisplay,
+            unit_price: supplyPrice,  // 전단지는 연 단가
+            supply_price: supplyPrice,
+            // 원본 데이터
+            MY_type: MY_type,
+            MY_Fsd: MY_Fsd,
+            PN_type: PN_type,
+            MY_amount: MY_amount,
+            st_price: supplyPrice,
+            st_price_vat: Math.round(supplyPrice * 1.1)
+        };
+
+        console.log('📤 [관리자 견적서-전단지] postMessage 전송:', payload);
+
+        window.parent.postMessage({
+            type: 'ADMIN_QUOTE_ITEM_ADDED',
+            payload: payload
+        }, window.location.origin);
+    };
+
+    console.log('✅ [관리자 견적서-전단지] applyToQuotation() 정의 완료');
+    </script>
+<?php endif; ?>
 </body>
 </html>
 
