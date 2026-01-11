@@ -15,7 +15,7 @@ body {
 }
 
 /* Container */
-.container { max-width: 1000px; margin: 0 auto; padding: 10px; }
+.container { max-width: 900px; margin: 0 auto; padding: 10px; }
 
 /* Header Bar */
 .page-header {
@@ -130,6 +130,32 @@ body {
 }
 .form-input:focus { outline: 1px solid #217346; border-color: #217346; }
 textarea.form-input { min-height: 50px; resize: vertical; }
+
+/* Inline Form Grid - 라벨 인풋 라벨 인풋 한 줄 */
+.form-inline-grid {
+    display: grid;
+    grid-template-columns: 70px 1fr 70px 1fr;
+    gap: 6px 10px;
+    align-items: center;
+}
+.form-inline-grid.three-col {
+    grid-template-columns: 70px 1fr 70px 1fr 70px 1fr;
+}
+.form-inline-grid .form-label {
+    margin-bottom: 0;
+    text-align: right;
+    white-space: nowrap;
+}
+.form-inline-grid .form-input {
+    width: 100%;
+}
+.form-inline-grid .full-row {
+    grid-column: 1 / -1;
+    display: grid;
+    grid-template-columns: 70px 1fr;
+    gap: 10px;
+    align-items: center;
+}
 
 /* Excel Table */
 .excel-table {

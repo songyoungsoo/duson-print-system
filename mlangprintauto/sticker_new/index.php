@@ -2906,7 +2906,7 @@ if ($db) {
     <script src="../../js/quotation-modal-common.js"></script>
 
 <?php if ($is_quotation_mode): ?>
-    <!-- 견적서 모드: add_to_basket.php로 직접 저장 -->
+    <!-- 견적서 모드: add_to_basket.php로 직접 저장 후 postMessage로 모달 닫기 -->
     <script>
     // applyToQuotation() 함수를 재정의하여 add_to_basket.php?mode=quotation 사용
     window.applyToQuotation = function() {
@@ -2990,18 +2990,25 @@ if ($db) {
         const form = document.getElementById('stickerForm');
         const formData = new FormData(form);
 
+        // 가격에서 콤마 제거
+        const priceStr = window.currentPriceData.price.toString().replace(/,/g, '');
+        const priceVatStr = window.currentPriceData.price_vat.toString().replace(/,/g, '');
+        const supplyPrice = parseInt(priceStr) || 0;
+        const totalWithVat = parseInt(priceVatStr) || supplyPrice;
+
         // 필수 데이터 추가
         formData.set('action', 'add_to_basket');
-        formData.set('st_price', window.currentPriceData.price.toString().replace(/,/g, ''));
-        formData.set('st_price_vat', window.currentPriceData.price_vat.toString().replace(/,/g, ''));
+        formData.set('st_price', supplyPrice);
+        formData.set('st_price_vat', totalWithVat);
         formData.set('product_type', 'sticker');
 
         // 수량 표시 (quantity_display) 추가 - 드롭다운 텍스트
         const mesuSelect = document.getElementById('mesu');
+        let quantityDisplay = mesu;
         if (mesuSelect && mesuSelect.selectedOptions[0]) {
-            const mesuText = mesuSelect.selectedOptions[0].text;
-            formData.set('quantity_display', mesuText);
-            console.log('📋 quantity_display:', mesuText);
+            quantityDisplay = mesuSelect.selectedOptions[0].text;
+            formData.set('quantity_display', quantityDisplay);
+            console.log('📋 quantity_display:', quantityDisplay);
         }
 
         // 업로드된 파일 정보 추가 (StandardUploadHandler와 동일한 형식)
@@ -3026,13 +3033,15 @@ if ($db) {
             console.log('✅ [스티커 견적서] 응답:', data);
 
             if (data.success) {
-                alert('견적서에 추가되었습니다!');
-
-                // 부모 창 새로고침 (create.php가 quotation_temp를 다시 로드)
+                // 부모 창에 postMessage로 모달 닫기 요청 (calculator_modal.js가 처리)
                 if (window.parent && window.parent !== window) {
-                    console.log('🔄 부모 창 새로고침');
-                    window.parent.location.reload();
+                    console.log('📨 [스티커 견적서] CALCULATOR_CLOSE_MODAL 메시지 전송');
+                    window.parent.postMessage({
+                        type: 'CALCULATOR_CLOSE_MODAL'
+                    }, window.location.origin);
                 } else {
+                    // 부모 창이 없으면 직접 알림
+                    alert('견적서에 추가되었습니다!');
                     console.warn('⚠️ 부모 창 없음 (모달이 아님)');
                 }
             } else {
@@ -3051,97 +3060,46 @@ if ($db) {
 <?php endif; ?>
 
 <?php if ($is_admin_quote_mode): ?>
-    <!-- 관리자 견적서 모드: postMessage로 부모 창에 데이터 전송 -->
+    <!-- 관리자 견적서 모드: quotation-modal-common.js 공통 로직 사용 -->
+    <!-- 스티커 원본 데이터 (jong, garo, sero, mesu 등)를 payload에 추가 -->
     <script>
-    window.applyToQuotation = function() {
-        console.log('🚀 [관리자 견적서] applyToQuotation() 호출');
+    // quotation-modal-common.js의 applyToQuotation()을 확장하여 스티커 원본 데이터 추가
+    (function() {
+        // 공통 함수 백업
+        const originalApplyToQuotation = window.applyToQuotation;
 
-        // 1. 필수 필드 검증
-        const jong = document.getElementById('jong')?.value;
-        const garo = document.getElementById('garo')?.value;
-        const sero = document.getElementById('sero')?.value;
-        const mesu = document.getElementById('mesu')?.value;
-        const uhyung = document.getElementById('uhyung')?.value || '0';
-        const domusong = document.getElementById('domusong')?.value || '';
+        window.applyToQuotation = function() {
+            console.log('🚀 [관리자 견적서-스티커] applyToQuotation() 호출 (공통 로직 사용)');
 
-        if (!jong || !garo || !sero || !mesu) {
-            alert('모든 필수 옵션을 선택해주세요.');
-            return;
-        }
-
-        // 2. 가격 확인 (없으면 자동 계산)
-        if (!window.currentPriceData || !window.currentPriceData.price) {
-            if (typeof window.autoCalculatePrice === 'function') {
-                window.autoCalculatePrice();
-                let attempts = 0;
-                const waitForPrice = setInterval(() => {
-                    attempts++;
-                    if (window.currentPriceData && window.currentPriceData.price) {
-                        clearInterval(waitForPrice);
-                        window.applyToQuotation();
-                    } else if (attempts >= 30) {
-                        clearInterval(waitForPrice);
-                        alert('가격 계산에 실패했습니다.');
-                    }
-                }, 100);
-                return;
+            // 가격 데이터가 없으면 자동 계산 시도
+            if (!window.currentPriceData || !window.currentPriceData.price) {
+                console.log('⚠️ 가격 데이터 없음 - 자동 계산 시도');
+                if (typeof window.autoCalculatePrice === 'function') {
+                    window.autoCalculatePrice();
+                    let attempts = 0;
+                    const waitForPrice = setInterval(() => {
+                        attempts++;
+                        if (window.currentPriceData && window.currentPriceData.price) {
+                            clearInterval(waitForPrice);
+                            console.log('✅ 가격 계산 완료');
+                            window.applyToQuotation();
+                        } else if (attempts >= 30) {
+                            clearInterval(waitForPrice);
+                            alert('가격 계산에 실패했습니다.');
+                        }
+                    }, 100);
+                    return;
+                }
             }
-            alert('가격을 먼저 계산해주세요.');
-            return;
-        }
 
-        // 3. 재질명 추출
-        const jongSelect = document.getElementById('jong');
-        const jongText = jongSelect?.selectedOptions[0]?.text || jong;
-        const materialName = jongText.replace(/^jil\s*/, '').trim();
-
-        // 4. 수량 표시 텍스트
-        const mesuSelect = document.getElementById('mesu');
-        const mesuText = mesuSelect?.selectedOptions[0]?.text || (mesu + '매');
-
-        // 5. 도무송 표시 텍스트
-        const domusongSelect = document.getElementById('domusong');
-        const domusongText = domusongSelect?.selectedOptions[0]?.text || domusong;
-        const shape = domusongText.replace(/^\d+\s*/, '').trim() || '사각';
-
-        // 6. 규격 문자열 생성
-        const specification = `${materialName} / ${garo}×${sero}mm / ${shape}`;
-
-        // 7. 단가 계산 (스티커는 단가 × 수량 허용)
-        const supplyPrice = parseInt(window.currentPriceData.price.toString().replace(/,/g, ''));
-        const quantity = parseInt(mesu);
-        const unitPrice = quantity > 0 ? Math.round(supplyPrice / quantity) : 0;
-
-        // 8. 부모 창에 데이터 전송
-        const payload = {
-            product_type: 'sticker',
-            product_name: '스티커',
-            specification: specification,
-            quantity: quantity,
-            unit: '매',
-            quantity_display: mesuText,
-            unit_price: unitPrice,
-            supply_price: supplyPrice,
-            // 원본 데이터 (저장용)
-            jong: jong,
-            garo: garo,
-            sero: sero,
-            mesu: mesu,
-            uhyung: uhyung,
-            domusong: domusong,
-            st_price: supplyPrice,
-            st_price_vat: parseInt(window.currentPriceData.price_vat.toString().replace(/,/g, ''))
+            // 공통 함수 호출 (quotation-modal-common.js)
+            if (typeof originalApplyToQuotation === 'function') {
+                originalApplyToQuotation();
+            }
         };
 
-        console.log('📤 [관리자 견적서] postMessage 전송:', payload);
-
-        window.parent.postMessage({
-            type: 'ADMIN_QUOTE_ITEM_ADDED',
-            payload: payload
-        }, window.location.origin);
-    };
-
-    console.log('✅ [관리자 견적서] applyToQuotation() 정의 완료');
+        console.log('✅ [관리자 견적서-스티커] 공통 로직 확장 완료');
+    })();
     </script>
 <?php endif; ?>
 

@@ -374,15 +374,38 @@ function proceedWithApply() {
         quantity_display: quantity_display  // 전단지/리플렛 전용
     };
 
-    // 스티커/자석스티커: mesu 필드도 함께 전송 (quotation_temp에 저장용)
+    // 스티커/자석스티커: 원본 데이터 필드 추가 (quotation_temp 저장용)
     if (productType === 'sticker' || productType === 'msticker') {
         payload.mesu = quantity;  // quantity에 이미 mesu 값이 들어있음
+
+        // 스티커 원본 데이터 추가 (DOM에서 읽기)
+        const jongEl = document.getElementById('jong');
+        const garoEl = document.getElementById('garo');
+        const seroEl = document.getElementById('sero');
+        const uhyungEl = document.getElementById('uhyung');
+        const domusongEl = document.getElementById('domusong');
+
+        if (jongEl) payload.jong = jongEl.value;
+        if (garoEl) payload.garo = garoEl.value;
+        if (seroEl) payload.sero = seroEl.value;
+        if (uhyungEl) payload.uhyung = uhyungEl.value;
+        if (domusongEl) payload.domusong = domusongEl.value;
+
+        // 스티커 가격 데이터 추가
+        payload.st_price = supplyPrice;
+        payload.st_price_vat = totalPrice;
+
+        console.log('📦 [스티커] 원본 데이터 추가:', { jong: payload.jong, garo: payload.garo, sero: payload.sero });
     }
 
     // 가격 필드는 출처에 따라 적절한 이름 사용
     // ✅ currentPriceData 존재 보장됨 (없으면 Line 349에서 return)
-    if (window.currentPriceData.total_with_vat) {
-        // 카다록, 봉투, 자석스티커 등
+    if (productType === 'sticker' || productType === 'msticker') {
+        // 스티커/자석스티커: supply_price 사용 (관리자 견적서 API 호환)
+        payload.supply_price = supplyPrice;
+        payload.total_with_vat = totalPrice;
+    } else if (window.currentPriceData.total_with_vat) {
+        // 카다록, 봉투 등
         payload.total_price = supplyPrice;  // 공급가액 (VAT 미포함)
         payload.total_with_vat = totalPrice;  // 총액 (VAT 포함)
     } else if (window.currentPriceData.Total_PriceForm) {

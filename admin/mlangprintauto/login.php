@@ -11,7 +11,7 @@ if ($_POST['action'] == 'login') {
     $password = $_POST['password'] ?? '';
 
     // 간단한 인증 (프로덕션에서는 보안 강화 필요)
-    if ($username == 'admin' && $password == 'admin123') {
+    if ($username == 'admin' && $password == 'admin123!@#') {
         $_SESSION['admin_logged_in'] = true;
         $_SESSION['admin_username'] = $username;
         $_SESSION['admin_login_time'] = time();
@@ -178,7 +178,7 @@ if (isset($_SESSION['admin_logged_in']) && $_SESSION['admin_logged_in'] === true
         <div class="login-info">
             <h4>📋 임시 로그인 정보</h4>
             <strong>아이디:</strong> admin<br>
-            <strong>비밀번호:</strong> admin123<br><br>
+            <strong>비밀번호:</strong> admin123!@#<br><br>
             <em>※ 개발/테스트 목적의 임시 인증입니다.</em>
         </div>
     </div>

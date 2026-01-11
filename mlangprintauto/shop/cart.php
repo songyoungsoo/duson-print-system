@@ -657,7 +657,7 @@ if ($cart_result === false) {
                     <th>규격/옵션</th>
                     <th>수량</th>
                     <th>단가</th>
-                    <th>부가세포함</th>
+                    <th>공급가액</th>
                 </tr>
             </thead>
             <tbody>
@@ -734,15 +734,27 @@ if ($cart_result === false) {
                         </td>
                         <td>
                             <?php
-                            // 양식지(ncrflambeau)는 "권" 단위 사용
-                            $unit = ($item['product_type'] == 'ncrflambeau') ? '권' : '매';
+                            // 전단지(inserted/leaflet)는 "연" 단위로 소수점 허용
+                            // 양식지(ncrflambeau)는 "권" 단위
+                            // 그 외는 정수 "매" 단위
+                            $is_flyer = in_array($item['product_type'], ['inserted', 'leaflet']);
 
-                            if (!empty($item['mesu'])) {
-                                echo number_format($item['mesu']) . $unit;
-                            } elseif (!empty($item['MY_amount'])) {
-                                echo htmlspecialchars($item['MY_amount']) . $unit;
+                            if ($is_flyer) {
+                                // 전단지: 연 단위 표시 (0.5연, 1연 등)
+                                $yeon = floatval($item['yeon'] ?? $item['MY_amount'] ?? 1);
+                                if ($yeon == intval($yeon)) {
+                                    echo number_format($yeon) . '연';
+                                } else {
+                                    echo rtrim(rtrim(number_format($yeon, 1), '0'), '.') . '연';
+                                }
+                            } elseif ($item['product_type'] == 'ncrflambeau') {
+                                // 양식지: 권 단위 (정수)
+                                $qty = intval($item['MY_amount'] ?? 1);
+                                echo number_format($qty) . '권';
                             } else {
-                                echo '1' . $unit;
+                                // 그 외: 매 단위 (정수)
+                                $qty = intval($item['mesu'] ?? $item['MY_amount'] ?? 1);
+                                echo number_format($qty) . '매';
                             }
                             ?>
                         </td>
@@ -757,14 +769,29 @@ if ($cart_result === false) {
             </tbody>
         </table>
 
-        <!-- 합계 정보 -->
-        <div style="background: #ecf0f1; padding: 20px; border-radius: 5px; margin-bottom: 30px;">
-            <div style="display: flex; justify-content: space-between; font-weight: bold;">
-                <span>공급가액:</span>
-                <span><?php echo number_format($quote_total); ?>원</span>
+        <!-- 합계 정보 (3박스 그리드) -->
+        <?php
+        $quote_vat = intval($quote_total * 0.1);
+        $quote_grand_total = $quote_total + $quote_vat;
+        ?>
+        <div class="cart-summary" style="background: #F8F9FA; padding: 15px; border-radius: 8px; margin-bottom: 30px; border: 1px solid #e0e0e0;">
+            <div class="summary-header" style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 10px;">
+                <div class="summary-title" style="font-weight: 600; font-size: 14px; color: #2d3748;">주문 요약</div>
+                <div class="summary-count" style="color: #718096; font-size: 13px;">총 <?php echo count($cart_items); ?>개 상품</div>
             </div>
-            <div style="text-align: right; color: #666; font-size: 13px; margin-top: 5px;">
-                부가세 별도
+            <div class="summary-grid" style="display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 10px;">
+                <div class="summary-box" style="text-align: center; padding: 12px; background: white; border-radius: 6px; border: 1px solid #ccc;">
+                    <div class="summary-box-label" style="color: #718096; font-size: 12px; margin-bottom: 4px;">상품금액</div>
+                    <div class="summary-box-value" style="color: #2d3748; font-weight: 600; font-size: 14px;"><?php echo number_format($quote_total); ?>원</div>
+                </div>
+                <div class="summary-box" style="text-align: center; padding: 12px; background: white; border-radius: 6px; border: 1px solid #ccc;">
+                    <div class="summary-box-label" style="color: #718096; font-size: 12px; margin-bottom: 4px;">부가세</div>
+                    <div class="summary-box-value" style="color: #2d3748; font-weight: 600; font-size: 14px;"><?php echo number_format($quote_vat); ?>원</div>
+                </div>
+                <div class="summary-box total" style="text-align: center; padding: 12px; background: #1E90FF; border-radius: 6px; border: 1px solid #1873CC;">
+                    <div class="summary-box-label" style="color: rgba(255,255,255,0.9); font-size: 12px; margin-bottom: 4px;">총 결제금액</div>
+                    <div class="summary-box-value" style="color: white; font-weight: 700; font-size: 15px;"><?php echo number_format($quote_grand_total); ?>원</div>
+                </div>
             </div>
         </div>
     <?php endif; ?>
@@ -780,12 +807,16 @@ if ($cart_result === false) {
 
         <div style="background: #f8f9fa; padding: 10px; border-radius: 5px; margin-top: 15px;">
             <strong>입금계좌 안내</strong><br>
-            국민은행: 123-456-789012 (예금주: 두손기획인쇄)<br>
-            신한은행: 987-654-321098 (예금주: 두손기획인쇄)
+            예금주: 두손기획인쇄 차경선<br>
+            국민은행: 999-1688-2384<br>
+            신한은행: 110-342-543507<br>
+            농협: 301-2632-1830-11<br>
+            카드결제: 1688-2384<br>
+            <span style="color: #d9534f; font-size: 12px;">입금자명을 주문자명(관리자)과 동일하게 해주세요</span>
         </div>
 
         <p style="margin-top: 20px; font-size: 12px; color: #999;">
-            ※ 본 견적서의 유효기간은 발행일로부터 30일입니다.<br>
+            ※ 본 견적서의 유효기간은 발행일로부터 7일입니다.<br>
             ※ 상기 금액은 부가세가 포함된 금액입니다.<br>
             ※ 디자인 수정 및 추가 작업 시 별도 비용이 발생할 수 있습니다.
         </p>

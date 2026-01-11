@@ -46,24 +46,16 @@ $unitOptions = ['매', '연', '부', '권', '개', '장', '식'];
     <div class="card">
         <div class="card-header">고객 정보</div>
         <div class="card-body">
-            <div class="form-grid">
-                <div class="form-group">
-                    <label class="form-label">회사명</label>
-                    <input type="text" id="customer_company" class="form-input" placeholder="회사명">
-                </div>
-                <div class="form-group">
-                    <label class="form-label">담당자명 <span class="required">*</span></label>
-                    <input type="text" id="customer_name" class="form-input" placeholder="담당자명" required>
-                </div>
-                <div class="form-group">
-                    <label class="form-label">연락처</label>
-                    <input type="tel" id="customer_phone" class="form-input" placeholder="010-0000-0000">
-                </div>
-                <div class="form-group">
-                    <label class="form-label">이메일</label>
-                    <input type="email" id="customer_email" class="form-input" placeholder="email@example.com">
-                </div>
-                <div class="form-group full">
+            <div class="form-inline-grid">
+                <label class="form-label">회사명</label>
+                <input type="text" id="customer_company" class="form-input" placeholder="회사명">
+                <label class="form-label">담당자명 <span class="required">*</span></label>
+                <input type="text" id="customer_name" class="form-input" placeholder="담당자명" required>
+                <label class="form-label">연락처</label>
+                <input type="tel" id="customer_phone" class="form-input" placeholder="010-0000-0000">
+                <label class="form-label">이메일</label>
+                <input type="email" id="customer_email" class="form-input" placeholder="email@example.com">
+                <div class="full-row">
                     <label class="form-label">주소</label>
                     <input type="text" id="customer_address" class="form-input" placeholder="배송 주소">
                 </div>

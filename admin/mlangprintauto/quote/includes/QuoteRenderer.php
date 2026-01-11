@@ -1,23 +1,91 @@
 <?php
 /**
  * 견적서 PDF/HTML 렌더러
- * 업계 최고 표준 견적서 양식
+ * 표준 레이아웃 연동 버전 (standard/layout.php 사용)
  */
 
 $companyInfoPath = !empty($_SERVER['DOCUMENT_ROOT']) ? $_SERVER['DOCUMENT_ROOT'] : '/var/www/html';
 require_once $companyInfoPath . '/mlangprintauto/includes/company_info.php';
+
+// Standard 레이아웃 로드
+$standardLayoutPath = $companyInfoPath . '/mlangprintauto/quote/standard/layout.php';
+if (file_exists($standardLayoutPath)) {
+    require_once $standardLayoutPath;
+}
 
 class QuoteRenderer
 {
     private $quote;
     private $items;
     private $companyInfo;
+    private $useStandardLayout = true; // standard 레이아웃 사용 여부
 
     public function __construct(array $quote, array $items)
     {
         $this->quote = $quote;
         $this->items = $items;
         $this->companyInfo = getCompanyInfo();
+    }
+
+    /**
+     * Standard 레이아웃 사용 여부 설정
+     */
+    public function setUseStandardLayout(bool $use): void
+    {
+        $this->useStandardLayout = $use;
+    }
+
+    /**
+     * 데이터를 Standard 형식으로 변환
+     */
+    private function convertToStandardFormat(): array
+    {
+        $quote = $this->quote;
+        $company = $this->companyInfo;
+
+        // Quote 데이터 변환
+        $standardQuote = [
+            'quote_no' => $quote['quote_no'] ?? '',
+            'quote_date' => $quote['created_at'] ?? date('Y-m-d'),
+            'customer_company' => $quote['customer_company'] ?? '',
+            'customer_name' => $quote['customer_name'] ?? '',
+            'customer_email' => $quote['customer_email'] ?? '',
+            'validity_days' => 7, // 기본 7일
+        ];
+
+        // Items 데이터 변환
+        $standardItems = [];
+        foreach ($this->items as $item) {
+            $standardItems[] = [
+                'product_name' => $item['product_name'] ?? '',
+                'specification' => $item['specification'] ?? '',
+                'quantity_display' => $item['quantity_display'] ?? number_format($item['quantity'] ?? 0),
+                'unit_price' => $item['unit_price'] ?? 0,
+                'supply_price' => $item['supply_price'] ?? 0,
+            ];
+        }
+
+        // Supplier 데이터 변환
+        $standardSupplier = [
+            'company_name' => $company['name'] ?? '',
+            'business_no' => $company['business_number'] ?? '',
+            'ceo_name' => $company['owner'] ?? '',
+            'address' => $company['address'] ?? '',
+            'phone' => $company['phone'] ?? '',
+            'email' => $company['email'] ?? 'dsp1830@naver.com',
+            'account_holder' => $company['account_holder'] ?? '',
+            'bank_accounts' => [
+                ['bank_name' => '국민', 'account_no' => preg_replace('/^국민(은행)?\s*/', '', $company['bank_kookmin'] ?? '')],
+                ['bank_name' => '신한', 'account_no' => preg_replace('/^신한(은행)?\s*/', '', $company['bank_shinhan'] ?? '')],
+                ['bank_name' => '농협', 'account_no' => preg_replace('/^농협\s*/', '', $company['bank_nonghyup'] ?? '')],
+            ],
+        ];
+
+        return [
+            'quote' => $standardQuote,
+            'items' => $standardItems,
+            'supplier' => $standardSupplier,
+        ];
     }
 
     private function numberToKorean($number): string
@@ -57,6 +125,92 @@ class QuoteRenderer
 
     public function renderHTML(): string
     {
+        // Standard 레이아웃 사용 시
+        if ($this->useStandardLayout && function_exists('renderQuoteLayout')) {
+            return $this->renderStandardHTML();
+        }
+
+        // 레거시 렌더링 (fallback)
+        return $this->renderLegacyHTML();
+    }
+
+    /**
+     * Standard 레이아웃을 사용한 HTML 렌더링
+     */
+    private function renderStandardHTML(): string
+    {
+        $data = $this->convertToStandardFormat();
+        $protocol = (!empty($_SERVER['HTTPS']) && $_SERVER['HTTPS'] !== 'off') ? 'https' : 'http';
+        $baseUrl = $protocol . '://' . ($_SERVER['HTTP_HOST'] ?? 'localhost');
+
+        $quoteHtml = renderQuoteLayout($data['quote'], $data['items'], $data['supplier'], $baseUrl);
+
+        // 완전한 HTML 문서로 래핑
+        return <<<HTML
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>견적서 - {$this->escape($data['quote']['quote_no'])}</title>
+    <style>
+        body {
+            font-family: 'Malgun Gothic', Arial, sans-serif;
+            background: #e8e8e8;
+            margin: 0;
+            padding: 20px;
+        }
+        .quote-wrapper {
+            max-width: 800px;
+            margin: 0 auto;
+            background: #fff;
+            padding: 20px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.15);
+        }
+        .print-controls {
+            position: fixed;
+            top: 20px;
+            right: 20px;
+            display: flex;
+            gap: 10px;
+            z-index: 1000;
+        }
+        .print-controls button {
+            padding: 12px 24px;
+            font-size: 14px;
+            font-weight: 600;
+            cursor: pointer;
+            border: none;
+            border-radius: 6px;
+            color: white;
+        }
+        .btn-print { background: #2980b9; }
+        .btn-close { background: #7f8c8d; }
+        @media print {
+            body { background: #fff; padding: 0; }
+            .quote-wrapper { box-shadow: none; padding: 0; }
+            .print-controls { display: none !important; }
+        }
+    </style>
+</head>
+<body>
+    <div class="print-controls">
+        <button class="btn-print" onclick="window.print();">인쇄 / PDF</button>
+        <button class="btn-close" onclick="window.close();">닫기</button>
+    </div>
+    <div class="quote-wrapper">
+        {$quoteHtml}
+    </div>
+</body>
+</html>
+HTML;
+    }
+
+    /**
+     * 레거시 HTML 렌더링 (기존 방식)
+     */
+    private function renderLegacyHTML(): string
+    {
         $quote = $this->quote;
         $items = $this->items;
         $company = $this->companyInfo;
@@ -68,7 +222,7 @@ class QuoteRenderer
 
         $validUntil = !empty($quote['valid_until'])
             ? date('Y년 m월 d일', strtotime($quote['valid_until']))
-            : date('Y년 m월 d일', strtotime('+30 days'));
+            : date('Y년 m월 d일', strtotime('+7 days'));
 
         $createdAt = !empty($quote['created_at'])
             ? date('Y년 m월 d일', strtotime($quote['created_at']))
@@ -550,12 +704,125 @@ HTML;
 
     public function renderPDF(?string $outputPath = null, string $mode = 'D')
     {
+        // Standard 레이아웃 사용 시 mPDF 우선
+        if ($this->useStandardLayout && function_exists('renderQuoteLayout')) {
+            return $this->renderStandardPDF($outputPath, $mode);
+        }
+
+        // 레거시 렌더링 (TCPDF fallback)
+        return $this->renderLegacyPDF($outputPath, $mode);
+    }
+
+    /**
+     * Standard 레이아웃 + mPDF를 사용한 PDF 렌더링
+     */
+    private function renderStandardPDF(?string $outputPath, string $mode)
+    {
+        $docRoot = !empty($_SERVER['DOCUMENT_ROOT']) ? $_SERVER['DOCUMENT_ROOT'] : '/var/www/html';
+
+        // Composer autoload
+        $autoloadPaths = [
+            $docRoot . '/vendor/autoload.php',
+            '/var/www/html/vendor/autoload.php',
+        ];
+        foreach ($autoloadPaths as $path) {
+            if (file_exists($path)) {
+                require_once $path;
+                break;
+            }
+        }
+
+        // mPDF 필요
+        if (!class_exists('Mpdf\\Mpdf')) {
+            // mPDF 없으면 TCPDF fallback
+            return $this->renderLegacyPDF($outputPath, $mode);
+        }
+
+        $data = $this->convertToStandardFormat();
+        $protocol = (!empty($_SERVER['HTTPS']) && $_SERVER['HTTPS'] !== 'off') ? 'https' : 'http';
+        $baseUrl = $protocol . '://' . ($_SERVER['HTTP_HOST'] ?? 'localhost');
+
+        $quoteHtml = renderQuoteLayout($data['quote'], $data['items'], $data['supplier'], $baseUrl);
+
+        // 전체 HTML 문서 구성
+        $fullHtml = <<<HTML
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <style>
+        * {
+            font-family: nanumgothic, sans-serif !important;
+        }
+        body {
+            font-size: 13px;
+            line-height: 1.4;
+            color: #000;
+        }
+    </style>
+</head>
+<body>
+{$quoteHtml}
+</body>
+</html>
+HTML;
+
+        try {
+            // Noto Sans CJK 폰트 설정
+            $defaultConfig = (new \Mpdf\Config\ConfigVariables())->getDefaults();
+            $fontDirs = $defaultConfig['fontDir'];
+
+            $defaultFontConfig = (new \Mpdf\Config\FontVariables())->getDefaults();
+            $fontData = $defaultFontConfig['fontdata'];
+
+            $mpdf = new \Mpdf\Mpdf([
+                'mode' => 'utf-8',
+                'format' => 'A4',
+                'margin_left' => 15,
+                'margin_right' => 15,
+                'margin_top' => 15,
+                'margin_bottom' => 15,
+                'default_font' => 'nanumgothic',
+                'tempDir' => '/tmp/mpdf',
+                'fontDir' => array_merge($fontDirs, ['/usr/share/fonts/truetype/nanum']),
+                'fontdata' => $fontData + [
+                    'nanumgothic' => [
+                        'R' => 'NanumGothic.ttf',
+                        'B' => 'NanumGothicBold.ttf',
+                    ],
+                ],
+            ]);
+
+            $mpdf->WriteHTML($fullHtml);
+
+            $filename = '견적서_' . ($data['quote']['quote_no'] ?? date('Ymd')) . '.pdf';
+
+            if ($mode === 'F' && $outputPath) {
+                return $mpdf->Output($outputPath, \Mpdf\Output\Destination::FILE);
+            } elseif ($mode === 'I') {
+                return $mpdf->Output($filename, \Mpdf\Output\Destination::INLINE);
+            } else {
+                return $mpdf->Output($filename, \Mpdf\Output\Destination::DOWNLOAD);
+            }
+
+        } catch (\Exception $e) {
+            error_log('mPDF Error: ' . $e->getMessage());
+            // mPDF 실패 시 TCPDF fallback
+            return $this->renderLegacyPDF($outputPath, $mode);
+        }
+    }
+
+    /**
+     * 레거시 PDF 렌더링 (TCPDF)
+     */
+    private function renderLegacyPDF(?string $outputPath, string $mode)
+    {
         if (file_exists($_SERVER['DOCUMENT_ROOT'] . '/vendor/autoload.php')) {
             require_once($_SERVER['DOCUMENT_ROOT'] . '/vendor/autoload.php');
         } elseif (file_exists($_SERVER['DOCUMENT_ROOT'] . '/lib/tcpdf/tcpdf.php')) {
             require_once($_SERVER['DOCUMENT_ROOT'] . '/lib/tcpdf/tcpdf.php');
         } else {
-            throw new Exception('TCPDF 라이브러리를 찾을 수 없습니다.');
+            throw new Exception('PDF 라이브러리를 찾을 수 없습니다.');
         }
 
         $quote = $this->quote;
@@ -569,7 +836,7 @@ HTML;
 
         $validUntil = !empty($quote['valid_until'])
             ? date('Y년 m월 d일', strtotime($quote['valid_until']))
-            : date('Y년 m월 d일', strtotime('+30 days'));
+            : date('Y년 m월 d일', strtotime('+7 days'));
         $createdAt = !empty($quote['created_at'])
             ? date('Y년 m월 d일', strtotime($quote['created_at']))
             : date('Y년 m월 d일');

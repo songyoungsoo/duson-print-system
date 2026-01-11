@@ -66,10 +66,28 @@ foreach ($cartItems as $item) {
     $vatTotal += ($total - $supply);
 }
 
-// quotation_temp 품목
+// quotation_temp 품목 - 제품별 컬럼명 차이 처리
 foreach ($quoteTempItems as $item) {
-    $supply = intval($item['supply_price'] ?? 0);
-    $vat = intval($item['vat_amount'] ?? 0);
+    $productType = $item['product_type'] ?? '';
+
+    // 공급가: price_supply > st_price > supply_price 우선순위로 확인
+    $supply = intval($item['price_supply'] ?? 0);
+    if ($supply === 0) {
+        $supply = intval($item['st_price'] ?? 0);
+    }
+    if ($supply === 0) {
+        $supply = intval($item['supply_price'] ?? 0);
+    }
+
+    // VAT: price_vat_amount > (st_price_vat - st_price) > vat_amount 우선순위
+    $vat = intval($item['price_vat_amount'] ?? 0);
+    if ($vat === 0 && !empty($item['st_price_vat'])) {
+        $vat = intval($item['st_price_vat']) - intval($item['st_price']);
+    }
+    if ($vat === 0) {
+        $vat = intval($item['vat_amount'] ?? 0);
+    }
+
     $supplyTotal += $supply;
     $vatTotal += $vat;
 }
@@ -512,9 +530,36 @@ $typeLabel = $quoteType === 'transaction' ? '거래명세표' : '견적서';
                                     $qtyDisplay = ProductSpecFormatter::getQuantityDisplay($item);  // 장바구니 형식
 
                                     $unit = ProductSpecFormatter::getUnit($item);
-                                    $supply = intval($item['supply_price'] ?? 0);
-                                    $vat = intval($item['vat_amount'] ?? 0);
-                                    $total = intval($item['total_price'] ?? 0);
+
+                                    // 공급가: price_supply > st_price > supply_price 우선순위
+                                    $supply = intval($item['price_supply'] ?? 0);
+                                    if ($supply === 0) {
+                                        $supply = intval($item['st_price'] ?? 0);
+                                    }
+                                    if ($supply === 0) {
+                                        $supply = intval($item['supply_price'] ?? 0);
+                                    }
+
+                                    // VAT: price_vat_amount > (st_price_vat - st_price) > vat_amount
+                                    $vat = intval($item['price_vat_amount'] ?? 0);
+                                    if ($vat === 0 && !empty($item['st_price_vat'])) {
+                                        $vat = intval($item['st_price_vat']) - intval($item['st_price']);
+                                    }
+                                    if ($vat === 0) {
+                                        $vat = intval($item['vat_amount'] ?? 0);
+                                    }
+
+                                    // 합계: price_vat > st_price_vat > total_price > (supply + vat)
+                                    $total = intval($item['price_vat'] ?? 0);
+                                    if ($total === 0) {
+                                        $total = intval($item['st_price_vat'] ?? 0);
+                                    }
+                                    if ($total === 0) {
+                                        $total = intval($item['total_price'] ?? 0);
+                                    }
+                                    if ($total === 0) {
+                                        $total = $supply + $vat;
+                                    }
 
                                     // 단가 계산: 전단지 0.5연은 '-', 그 외는 공급가 ÷ 수량
                                     $unitPrice = 0;
