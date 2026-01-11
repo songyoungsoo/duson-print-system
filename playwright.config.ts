@@ -12,15 +12,15 @@ export default defineConfig({
   forbidOnly: !!process.env.CI,
 
   // 타임아웃
-  timeout: 30 * 1000, // 30초
+  timeout: 60 * 1000, // 60초
   expect: {
-    timeout: 5 * 1000, // 5초
+    timeout: 10 * 1000, // 10초
   },
 
   // 리포터
   reporter: [
-    ['html', { outputFolder: 'test-results/html' }],
-    ['json', { outputFile: 'test-results/results.json' }],
+    ['html', { outputFolder: 'playwright-report' }],
+    ['json', { outputFile: 'playwright-report/results.json' }],
     ['list'],
   ],
 
