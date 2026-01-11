@@ -37,8 +37,8 @@ function renderQuoteLayout(array $quote, array $items, array $supplier, string $
     // === HTML 생성 시작 ===
     ob_start();
 ?>
-<!-- 표준 견적서 레이아웃 v2.0 - quotation.html 스타일 -->
-<div style="width:100%;max-width:800px;margin:0 auto;font-family:'Noto Sans KR',sans-serif;font-size:13px;color:#000;line-height:1.4;">
+<!-- 표준 견적서 레이아웃 v2.0 - quotation.html 스타일 (A4) -->
+<div class="a4-page" style="width:210mm;min-height:297mm;margin:20px auto;padding:15mm;background:white;box-shadow:0 2px 10px rgba(0,0,0,0.1);box-sizing:border-box;font-family:'Noto Sans KR',sans-serif;font-size:13px;color:#000;line-height:1.4;">
 
     <!-- 견적번호 -->
     <table style="width:100%;border-collapse:collapse;margin-bottom:5px;">
@@ -193,9 +193,43 @@ function renderQuoteLayout(array $quote, array $items, array $supplier, string $
  */
 function getQuoteStyles(): string {
     return <<<CSS
-/* 표준 견적서 CSS */
+/* 표준 견적서 CSS - A4 설정 */
+@page {
+    size: A4;
+    margin: 15mm;
+}
+
+body {
+    font-family: "Noto Sans KR", sans-serif;
+    font-size: 13px;
+    color: #000;
+    margin: 0;
+    padding: 0;
+    background: #f0f0f0;
+}
+
+.a4-page {
+    width: 210mm;
+    min-height: 297mm;
+    margin: 20px auto;
+    padding: 15mm;
+    background: white;
+    box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+    box-sizing: border-box;
+}
+
 @media print {
-    body { margin: 0; padding: 0; }
+    body {
+        background: white;
+        margin: 0;
+        padding: 0;
+    }
+    .a4-page {
+        width: 100%;
+        margin: 0;
+        padding: 0;
+        box-shadow: none;
+    }
     .no-print { display: none !important; }
 }
 CSS;

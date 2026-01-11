@@ -7,11 +7,44 @@
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@400;700&display=swap" rel="stylesheet">
 <style>
+/* A4 용지 설정 */
+@page {
+    size: A4;
+    margin: 15mm;
+}
+
 body {
     font-family: "Noto Sans KR", sans-serif;
     font-size: 13px;
     color: #000;
+    margin: 0;
+    padding: 0;
+    background: #f0f0f0;
 }
+
+/* A4 컨테이너 */
+.a4-page {
+    width: 210mm;
+    min-height: 297mm;
+    margin: 20px auto;
+    padding: 15mm;
+    background: white;
+    box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+    box-sizing: border-box;
+}
+
+@media print {
+    body {
+        background: white;
+    }
+    .a4-page {
+        width: 100%;
+        margin: 0;
+        padding: 0;
+        box-shadow: none;
+    }
+}
+
 table {
     width: 100%;
     border-collapse: collapse;
@@ -50,6 +83,8 @@ th {
 </head>
 
 <body>
+
+<div class="a4-page">
 
 <table>
     <tr>
@@ -168,18 +203,15 @@ th {
 
     <tr>
         <td colspan="6" class="right bold">공급가액 합계</td>
-        <td class="right bold">58,000</td>
-        <td></td>
+        <td colspan="2" class="right bold">58,000</td>
     </tr>
     <tr>
         <td colspan="6" class="right bold">부가세</td>
-        <td class="right bold">5,800</td>
-        <td></td>
+        <td colspan="2" class="right bold">5,800</td>
     </tr>
     <tr>
-        <td colspan="6" class="right bold">합 계 (VAT포함)</td>
-        <td class="right bold">63,800</td>
-        <td></td>
+        <th colspan="6" class="right bold">합 계 (VAT포함)</th>
+        <td colspan="2" class="right bold">63,800</td>
     </tr>
 </table>
 
@@ -202,6 +234,8 @@ th {
         <td class="no-border">비고 : 택배는 착불기준입니다</td>
     </tr>
 </table>
+
+</div>
 
 </body>
 </html>

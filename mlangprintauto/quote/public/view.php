@@ -462,32 +462,27 @@ $koreanAmount = numberToKorean($quote['grand_total']);
             <tfoot>
                 <tr>
                     <td colspan="6" style="text-align: right; font-weight: bold; background: #f0f0f0;">공급가액 합계</td>
-                    <td class="right" style="font-weight: bold;"><?php echo number_format($quote['supply_total']); ?></td>
-                    <td></td>
+                    <td colspan="2" class="right" style="font-weight: bold;"><?php echo number_format($quote['supply_total']); ?></td>
                 </tr>
                 <tr>
                     <td colspan="6" style="text-align: right; font-weight: bold; background: #f0f0f0;">부가세</td>
-                    <td class="right" style="font-weight: bold;"><?php echo number_format($quote['vat_total']); ?></td>
-                    <td></td>
+                    <td colspan="2" class="right" style="font-weight: bold;"><?php echo number_format($quote['vat_total']); ?></td>
                 </tr>
                 <?php if ($quote['delivery_price'] > 0): ?>
                 <tr>
                     <td colspan="6" style="text-align: right; font-weight: bold; background: #f0f0f0;">배송비</td>
-                    <td class="right" style="font-weight: bold;"><?php echo number_format($quote['delivery_price']); ?></td>
-                    <td></td>
+                    <td colspan="2" class="right" style="font-weight: bold;"><?php echo number_format($quote['delivery_price']); ?></td>
                 </tr>
                 <?php endif; ?>
                 <?php if ($quote['discount_amount'] > 0): ?>
                 <tr>
                     <td colspan="6" style="text-align: right; font-weight: bold; background: #f0f0f0;">할인</td>
-                    <td class="right" style="font-weight: bold; color: #c00;">-<?php echo number_format($quote['discount_amount']); ?></td>
-                    <td></td>
+                    <td colspan="2" class="right" style="font-weight: bold; color: #c00;">-<?php echo number_format($quote['discount_amount']); ?></td>
                 </tr>
                 <?php endif; ?>
                 <tr>
-                    <td colspan="6" style="text-align: right; font-weight: bold; background: #f0f0f0; font-size: 14px;">합 계 (VAT포함)</td>
-                    <td class="right" style="font-weight: bold; font-size: 14px;"><?php echo number_format($quote['grand_total']); ?></td>
-                    <td></td>
+                    <th colspan="6" style="text-align: right; font-weight: bold; background: #f0f0f0; font-size: 14px;">합 계 (VAT포함)</th>
+                    <td colspan="2" class="right" style="font-weight: bold; font-size: 14px;"><?php echo number_format($quote['grand_total']); ?></td>
                 </tr>
             </tfoot>
         </table>
