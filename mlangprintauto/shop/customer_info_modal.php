@@ -6,11 +6,12 @@
 ?>
 
 <!-- 고객 정보 입력 모달 -->
-<div id="customerInfoModal" class="modal" style="display: none;">
+<div id="customerInfoModal" class="modal customer-modal" style="display: none;">
     <div class="modal-content">
         <div class="modal-header">
-            <h3>📋 견적서 고객 정보 입력</h3>
+            <h2 class="modal-brand">두손기획인쇄</h2>
             <span class="close" onclick="closeCustomerModal()">&times;</span>
+            <h3 class="modal-title">📋 견적서 고객 정보 입력</h3>
         </div>
         
         <form id="customerInfoForm" onsubmit="generateQuoteWithCustomerInfo(event)">
@@ -57,25 +58,28 @@
 </div>
 
 <style>
-.modal {
+.modal.customer-modal {
     position: fixed;
     z-index: 1000;
     left: 0;
     top: 0;
     width: 100%;
     height: 100%;
-    background-color: rgba(0, 0, 0, 0.5);
-    backdrop-filter: blur(3px);
+    background: rgba(255, 255, 255, 0.15);
+    backdrop-filter: blur(12px);
+    -webkit-backdrop-filter: blur(12px);
+    display: flex;
+    align-items: center;
+    justify-content: center;
 }
 
-.modal-content {
+.customer-modal .modal-content {
     background-color: white;
-    margin: 5% auto;
     padding: 0;
-    border-radius: 15px;
+    border-radius: 12px;
     width: 90%;
     max-width: 500px;
-    box-shadow: 0 10px 30px rgba(0, 0, 0, 0.3);
+    box-shadow: 0 20px 40px rgba(0, 0, 0, 0.2);
     animation: modalSlideIn 0.3s ease-out;
 }
 
@@ -90,32 +94,55 @@
     }
 }
 
-.modal-header {
-    background: linear-gradient(135deg, #2c5aa0 0%, #17a2b8 100%);
+.customer-modal .modal-header {
+    background: linear-gradient(135deg, #2563eb 0%, #1d4ed8 100%);
     color: white;
-    padding: 20px;
-    border-radius: 15px 15px 0 0;
+    padding: 16px 20px;
+    border-radius: 12px 12px 0 0;
     display: flex;
     justify-content: space-between;
     align-items: center;
+    flex-wrap: wrap;
+    gap: 4px;
 }
 
-.modal-header h3 {
+.customer-modal .modal-header .modal-brand {
+    font-size: 1.2rem;
+    font-weight: 700;
+    color: white;
     margin: 0;
-    font-size: 18px;
-    font-weight: 600;
+    text-shadow: 0 1px 2px rgba(0, 0, 0, 0.1);
 }
 
-.close {
-    font-size: 28px;
-    font-weight: bold;
+.customer-modal .modal-header .modal-title {
+    font-size: 0.95rem;
+    font-weight: 500;
+    color: rgba(255, 255, 255, 0.9);
+    margin: 0;
+    width: 100%;
+    order: 1;
+}
+
+.customer-modal .close {
+    background: rgba(255, 255, 255, 0.2);
+    border: none;
+    font-size: 1.3rem;
     cursor: pointer;
+    color: white;
+    width: 32px;
+    height: 32px;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: all 0.2s ease;
+    font-weight: normal;
     line-height: 1;
-    transition: color 0.2s;
 }
 
-.close:hover {
-    color: #ffeb3b;
+.customer-modal .close:hover {
+    background: rgba(255, 255, 255, 0.3);
+    transform: scale(1.1);
 }
 
 #customerInfoForm {
@@ -148,8 +175,8 @@
 .form-group input:focus,
 .form-group textarea:focus {
     outline: none;
-    border-color: #2c5aa0;
-    box-shadow: 0 0 0 3px rgba(44, 90, 160, 0.1);
+    border-color: #2563eb;
+    box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.1);
 }
 
 .form-group textarea {
@@ -186,13 +213,13 @@
 }
 
 .btn-generate {
-    background: linear-gradient(135deg, #2c5aa0 0%, #17a2b8 100%);
+    background: linear-gradient(135deg, #2563eb 0%, #1d4ed8 100%);
     color: white;
 }
 
 .btn-generate:hover {
     transform: translateY(-1px);
-    box-shadow: 0 4px 15px rgba(44, 90, 160, 0.3);
+    box-shadow: 0 4px 15px rgba(37, 99, 235, 0.3);
 }
 
 .btn-generate:disabled {

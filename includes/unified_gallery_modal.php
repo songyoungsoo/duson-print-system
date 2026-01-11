@@ -10,11 +10,12 @@
     <div class="modal-overlay" onclick="closeUnifiedModal()"></div>
     <div class="modal-content">
         <div class="modal-header">
-            <h2 class="modal-title">
+            <h2 class="modal-brand">두손기획인쇄</h2>
+            <button class="modal-close" onclick="closeUnifiedModal()">✕</button>
+            <h3 class="modal-title">
                 <span id="modalIcon">📂</span>
                 <span id="modalTitle">샘플 갤러리</span>
-            </h2>
-            <button class="modal-close" onclick="closeUnifiedModal()">✕</button>
+            </h3>
         </div>
         
         <div class="modal-body">
@@ -60,7 +61,9 @@
     left: 0;
     width: 100%;
     height: 100%;
-    background: rgba(0, 0, 0, 0.85);
+    background: rgba(255, 255, 255, 0.15);
+    backdrop-filter: blur(12px);
+    -webkit-backdrop-filter: blur(12px);
     animation: fadeIn 0.3s ease;
 }
 
@@ -79,45 +82,54 @@
 }
 
 .unified-gallery-modal .modal-header {
-    padding: 20px 25px;
-    border-bottom: 1px solid #e5e7eb;
+    padding: 16px 25px;
     display: flex;
     align-items: center;
     justify-content: space-between;
-    background: linear-gradient(135deg, #f8f9fa 0%, #e9ecef 100%);
+    flex-wrap: wrap;
+    gap: 4px;
+    background: linear-gradient(135deg, #2563eb 0%, #1d4ed8 100%);
     border-radius: 16px 16px 0 0;
 }
 
+.unified-gallery-modal .modal-brand {
+    font-size: 1.2rem;
+    font-weight: 700;
+    color: white;
+    margin: 0;
+    text-shadow: 0 1px 2px rgba(0, 0, 0, 0.1);
+}
+
 .unified-gallery-modal .modal-title {
-    font-size: 1.4rem;
-    font-weight: 600;
-    color: #2c3e50;
+    font-size: 0.95rem;
+    font-weight: 500;
+    color: rgba(255, 255, 255, 0.9);
     display: flex;
     align-items: center;
-    gap: 10px;
+    gap: 8px;
     margin: 0;
+    width: 100%;
+    order: 1;
 }
 
 .unified-gallery-modal .modal-close {
-    width: 36px;
-    height: 36px;
+    width: 32px;
+    height: 32px;
     border-radius: 50%;
     border: none;
-    background: white;
-    color: #6c757d;
+    background: rgba(255, 255, 255, 0.2);
+    color: white;
     font-size: 1.2rem;
     cursor: pointer;
     transition: all 0.2s ease;
     display: flex;
     align-items: center;
     justify-content: center;
-    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
 }
 
 .unified-gallery-modal .modal-close:hover {
-    background: #dc3545;
-    color: white;
-    transform: rotate(90deg);
+    background: rgba(255, 255, 255, 0.3);
+    transform: scale(1.1);
 }
 
 .unified-gallery-modal .modal-body {

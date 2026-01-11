@@ -479,28 +479,32 @@ while ($row = mysqli_fetch_array($result)) {
 <!-- 전화번호 인증 모달 -->
 <div id="passwordModal" class="password-modal" onclick="if(event.target===this) closePasswordModal()">
     <div class="modal-content">
-        <button class="modal-close" onclick="closePasswordModal()">&times;</button>
-
-        <h3>📱 주문 확인</h3>
-        <p>주문번호 <strong>#<span id="modalOrderNo"></span></strong></p>
-
-        <div class="modal-hint">
-            전화번호 뒤 4자리를 입력하세요
+        <div class="modal-header">
+            <h2>두손기획인쇄</h2>
+            <button class="modal-close" onclick="closePasswordModal()">&times;</button>
         </div>
+        <div class="modal-body">
+            <h3>📱 주문 확인</h3>
+            <p>주문번호 <strong>#<span id="modalOrderNo"></span></strong></p>
 
-        <input type="text"
-               id="passwordInput"
-               placeholder="0000"
-               maxlength="4"
-               pattern="[0-9]{4}"
-               class="modal-input"
-               autocomplete="off">
+            <div class="modal-hint">
+                전화번호 뒤 4자리를 입력하세요
+            </div>
 
-        <div id="passwordError" class="password-error" style="display:none;"></div>
+            <input type="text"
+                   id="passwordInput"
+                   placeholder="0000"
+                   maxlength="4"
+                   pattern="[0-9]{4}"
+                   class="modal-input"
+                   autocomplete="off">
 
-        <div class="modal-buttons">
-            <button onclick="closePasswordModal()" class="modal-btn btn-cancel">취소</button>
-            <button onclick="verifyPassword()" class="modal-btn btn-verify">확인</button>
+            <div id="passwordError" class="password-error" style="display:none;"></div>
+
+            <div class="modal-buttons">
+                <button onclick="closePasswordModal()" class="modal-btn btn-cancel">취소</button>
+                <button onclick="verifyPassword()" class="modal-btn btn-verify">확인</button>
+            </div>
         </div>
     </div>
 </div>

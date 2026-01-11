@@ -21,6 +21,7 @@ $full_modal_title = $modal_product_icon . " " . $modal_product_name . " " . $mod
     <div class="modal-overlay" onclick="closeUploadModal()"></div>
     <div class="modal-content">
         <div class="modal-header">
+            <h2 class="modal-brand">두손기획인쇄</h2>
             <h3 class="modal-title"><?php echo htmlspecialchars($full_modal_title); ?></h3>
             <button type="button" class="modal-close" onclick="closeUploadModal()">✕</button>
         </div>

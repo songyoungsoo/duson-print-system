@@ -772,7 +772,9 @@ $additional_css = [
     left: 0;
     width: 100%;
     height: 100%;
-    background-color: rgba(0, 0, 0, 0.5);
+    background: rgba(255, 255, 255, 0.15);
+    backdrop-filter: blur(12px);
+    -webkit-backdrop-filter: blur(12px);
     z-index: 1000;
     justify-content: center;
     align-items: center;
@@ -785,35 +787,55 @@ $additional_css = [
     width: 90%;
     max-height: 90vh;
     overflow-y: auto;
-    box-shadow: 0 10px 40px rgba(0, 0, 0, 0.3);
+    box-shadow: 0 20px 40px rgba(0, 0, 0, 0.2);
 }
 
 .payment-modal-header {
     display: flex;
     justify-content: space-between;
     align-items: center;
+    flex-wrap: wrap;
+    gap: 4px;
     padding: 16px 20px;
-    border-bottom: 1px solid #eee;
+    background: linear-gradient(135deg, #2563eb 0%, #1d4ed8 100%);
+    border-radius: 12px 12px 0 0;
 }
 
-.payment-modal-header h3 {
+.payment-modal-header .modal-brand {
+    font-size: 1.2rem;
+    font-weight: 700;
+    color: white;
     margin: 0;
-    font-size: 18px;
-    color: #333;
+    text-shadow: 0 1px 2px rgba(0, 0, 0, 0.1);
 }
 
-.modal-close {
-    background: none;
+.payment-modal-header .modal-title {
+    font-size: 0.95rem;
+    font-weight: 500;
+    color: rgba(255, 255, 255, 0.9);
+    margin: 0;
+    width: 100%;
+    order: 1;
+}
+
+.payment-modal-header .modal-close {
+    background: rgba(255, 255, 255, 0.2);
     border: none;
-    font-size: 24px;
+    font-size: 1.3rem;
     cursor: pointer;
-    color: #999;
-    padding: 0;
-    line-height: 1;
+    color: white;
+    width: 32px;
+    height: 32px;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: all 0.2s ease;
 }
 
-.modal-close:hover {
-    color: #333;
+.payment-modal-header .modal-close:hover {
+    background: rgba(255, 255, 255, 0.3);
+    transform: scale(1.1);
 }
 
 .payment-modal-body {
@@ -2093,8 +2115,9 @@ $additional_css = [
     <div id="paymentModal" class="payment-modal">
         <div class="payment-modal-content">
             <div class="payment-modal-header">
-                <h3>결제 방법 선택</h3>
+                <h2 class="modal-brand">두손기획인쇄</h2>
                 <button class="modal-close" onclick="closePaymentModal()">&times;</button>
+                <h3 class="modal-title">결제 방법 선택</h3>
             </div>
             <div class="payment-modal-body">
                 <div class="payment-amount">
