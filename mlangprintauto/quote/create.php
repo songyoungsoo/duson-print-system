@@ -18,6 +18,21 @@ $manager = new QuoteManager($db);
 $formatter = new ProductSpecFormatter($db);
 $company = $manager->getCompanySettings();
 
+// === 자동 정리: 7일 이상 된 quotation_temp 데이터 삭제 ===
+$cleanupDays = 7;
+$cleanupTimestamp = time() - ($cleanupDays * 24 * 60 * 60);
+$cleanupQuery = "DELETE FROM quotation_temp WHERE regdate < ?";
+$cleanupStmt = mysqli_prepare($db, $cleanupQuery);
+if ($cleanupStmt) {
+    mysqli_stmt_bind_param($cleanupStmt, "i", $cleanupTimestamp);
+    mysqli_stmt_execute($cleanupStmt);
+    $deletedCount = mysqli_affected_rows($db);
+    if ($deletedCount > 0) {
+        error_log("quotation_temp 자동 정리: {$deletedCount}개 품목 삭제 (7일 이상)");
+    }
+    mysqli_stmt_close($cleanupStmt);
+}
+
 // 장바구니에서 온 경우
 $fromCart = ($_GET['from'] ?? '') === 'cart';
 $cartItems = [];
