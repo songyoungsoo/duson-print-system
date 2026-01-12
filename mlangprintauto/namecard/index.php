@@ -175,7 +175,7 @@ if ($type_result && ($type_row = mysqli_fetch_assoc($type_result))) {
         /* 명함재질보기 버튼 */
         .btn-texture-view {
             display: inline-block;
-            font-size: 0.45em;
+            font-size: 0.55em;
             padding: 6px 12px;
             margin-left: 15px;
             background: linear-gradient(135deg, #6366f1 0%, #8b5cf6 100%);
