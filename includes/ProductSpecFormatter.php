@@ -74,6 +74,9 @@ class ProductSpecFormatter {
         // ✅ 수정: quantity_display가 비어있거나 단위가 없는 경우 formatQuantity() 호출
         if (empty($quantity_display) || !preg_match('/[매연부권개장]/u', $quantity_display)) {
             $quantity_display = $this->formatQuantity($item);
+        } else {
+            // ✅ 2026-01-12: 단위가 있어도 소수점 정리 (500.00매 → 500매)
+            $quantity_display = $this->formatDecimalQuantity($quantity_display);
         }
 
         $line2_parts = array_filter([
@@ -328,13 +331,16 @@ class ProductSpecFormatter {
         }
 
         // 수량+단위 (quantity_display)
-        $slot2 = $item['quantity_display'] ?? '';
+        $rawSlot2 = $item['quantity_display'] ?? '';
 
-        // ✅ 수정: quantity_display가 비어있거나 단위가 없는 경우 formatQuantity() 호출
+        // ✅ 2026-01-12: 모든 경우에 소수점 정리 적용
         // 단위: 매, 연, 부, 권, 개, 장 등
-        if (empty($slot2) || !preg_match('/[매연부권개장]/u', $slot2)) {
+        if (empty($rawSlot2) || !preg_match('/[매연부권개장]/u', $rawSlot2)) {
             // formatQuantity() 호출 (레거시 로직 + 천 단위 변환)
             $slot2 = $this->formatQuantity($item);
+        } else {
+            // 단위가 있는 경우에도 소수점 정리 (500.00매 → 500매)
+            $slot2 = $this->formatDecimalQuantity($rawSlot2);
         }
 
         // 디자인 (spec_design)
@@ -782,7 +788,31 @@ class ProductSpecFormatter {
             }
         }
 
-        // 4. 기타: MY_amount 사용
+        // 4. 카다록: 부 단위
+        if ($productType === 'cadarok') {
+            if (!empty($item['MY_amount'])) {
+                $amount = floatval($item['MY_amount']);
+                // 소수점 정리 (1000.00 → 1,000)
+                if (floor($amount) == $amount) {
+                    return number_format($amount) . '부';
+                }
+                return rtrim(rtrim(number_format($amount, 2), '0'), '.') . '부';
+            }
+        }
+
+        // 5. NCR양식지: 권 단위
+        if ($productType === 'ncrflambeau') {
+            if (!empty($item['MY_amount'])) {
+                $amount = floatval($item['MY_amount']);
+                // 소수점 정리 (10.00 → 10)
+                if (floor($amount) == $amount) {
+                    return number_format($amount) . '권';
+                }
+                return rtrim(rtrim(number_format($amount, 2), '0'), '.') . '권';
+            }
+        }
+
+        // 6. 기타: MY_amount 사용
         if (!empty($item['MY_amount'])) {
             $amount = floatval($item['MY_amount']);
             $unit = $item['unit'] ?? '매';
@@ -790,6 +820,27 @@ class ProductSpecFormatter {
         }
 
         return '';
+    }
+
+    /**
+     * 소수점 정리된 수량 반환 (2026-01-12)
+     * 500.00매 → 500매, 0.50연 → 0.5연
+     *
+     * @param string $quantity 수량 문자열 (단위 포함)
+     * @return string 소수점 정리된 수량
+     */
+    private function formatDecimalQuantity(string $quantity): string {
+        if (preg_match('/([0-9,\.]+)\s*([매연부권개장])/u', $quantity, $matches)) {
+            $num = floatval(str_replace(',', '', $matches[1]));
+            $unit = $matches[2];
+            // 정수면 소수점 없이, 소수면 불필요한 0 제거
+            if (floor($num) == $num) {
+                return number_format($num) . $unit;
+            }
+            return rtrim(rtrim(number_format($num, 2), '0'), '.') . $unit;
+        }
+        // 매칭 실패 시 원본 반환
+        return $quantity;
     }
 
     /**
@@ -959,6 +1010,14 @@ class ProductSpecFormatter {
         if (in_array($productType, ['sticker', 'sticker_new', 'msticker', 'msticker_01', 'namecard'])) {
             return '매';
         }
+        // 카다록: 부 단위
+        if ($productType === 'cadarok') {
+            return '부';
+        }
+        // NCR양식지: 권 단위
+        if ($productType === 'ncrflambeau') {
+            return '권';
+        }
         return $item['unit'] ?? '부';
     }
 
@@ -991,7 +1050,14 @@ class ProductSpecFormatter {
             }
         }
 
-        // 3. 다른 상품: MY_amount 사용
+        // 3. 카다록/NCR: 천 단위 변환 없이 그대로 사용
+        if (in_array($productType, ['cadarok', 'ncrflambeau'])) {
+            if (!empty($item['MY_amount'])) {
+                return floatval($item['MY_amount']);  // 1000부, 10권 등 그대로
+            }
+        }
+
+        // 4. 다른 상품: MY_amount 사용
         if (!empty($item['MY_amount'])) {
             $amount = floatval($item['MY_amount']);
 
@@ -1059,7 +1125,29 @@ class ProductSpecFormatter {
             }
         }
 
-        // 3. 기타: 수량 + 단위
+        // 3. 카다록: 부 단위 (소수점 정리)
+        if ($productType === 'cadarok') {
+            if (!empty($item['MY_amount'])) {
+                $amount = floatval($item['MY_amount']);
+                if (floor($amount) == $amount) {
+                    return number_format($amount) . '부';
+                }
+                return rtrim(rtrim(number_format($amount, 2), '0'), '.') . '부';
+            }
+        }
+
+        // 4. NCR양식지: 권 단위 (소수점 정리)
+        if ($productType === 'ncrflambeau') {
+            if (!empty($item['MY_amount'])) {
+                $amount = floatval($item['MY_amount']);
+                if (floor($amount) == $amount) {
+                    return number_format($amount) . '권';
+                }
+                return rtrim(rtrim(number_format($amount, 2), '0'), '.') . '권';
+            }
+        }
+
+        // 5. 기타: 수량 + 단위
         $qty = self::getQuantity($item);
         return number_format($qty) . $unit;
     }

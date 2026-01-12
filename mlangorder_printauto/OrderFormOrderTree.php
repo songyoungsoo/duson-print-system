@@ -185,6 +185,19 @@ function getOrderItemInfo($summary_item, $specFormatter) {
             $unit = $summary_item['quantity_unit'] ?? '';
         }
 
+        // ✅ 2026-01-12: 수량이 없으면 ProductSpecFormatter에서 추출 (카다록/NCR 지원)
+        if (empty($quantity_num) && !empty($summary_item['MY_amount'])) {
+            $quantity_num = floatval($summary_item['MY_amount']);
+            // 제품 타입별 단위 설정
+            if ($product_type === 'cadarok') {
+                $unit = '부';
+            } elseif ($product_type === 'ncrflambeau') {
+                $unit = '권';
+            } elseif (empty($unit)) {
+                $unit = ProductSpecFormatter::getUnit($summary_item);
+            }
+        }
+
         // 전단지 판별
         $is_flyer = ($product_type === 'inserted' || $product_type === 'leaflet');
         if ($is_flyer) {
@@ -262,11 +275,18 @@ function getOrderItemInfo($summary_item, $specFormatter) {
                 // 라벨 제거 (크기:, 매수:, 규격:, 용지:, 인쇄면:, 디자인: 등)
                 $part = preg_replace('/^(크기|매수|규격|용지|인쇄면|인쇄|디자인|종류|수량|모양|재질|도무송)\s*[:：]\s*/u', '', $part);
 
-                // 숫자 + 단위 형식일 경우 포맷팅 (10000 매 → 10,000매)
-                if (preg_match('/^(\d+)\s*(매|개|장|부|연|권|EA)$/u', $part, $matches)) {
-                    $quantity_num = intval($matches[1]);
+                // ✅ 2026-01-12: 숫자 + 단위 형식일 경우 포맷팅 (소수점 포함)
+                // 10000 매 → 10,000매, 10.00권 → 10권, 500.00매 → 500매
+                if (preg_match('/^([\d,\.]+)\s*(매|개|장|부|연|권|EA)$/u', $part, $matches)) {
+                    $num = floatval(str_replace(',', '', $matches[1]));
                     $unit = $matches[2];
-                    $part = number_format($quantity_num) . $unit;
+                    $quantity_num = $num;
+                    // 정수면 소수점 없이, 소수면 불필요한 0 제거
+                    if (floor($num) == $num) {
+                        $part = number_format($num) . $unit;
+                    } else {
+                        $part = rtrim(rtrim(number_format($num, 2), '0'), '.') . $unit;
+                    }
                 }
 
                 if (!empty($part)) {
@@ -537,10 +557,10 @@ function getOrderItemInfo($summary_item, $specFormatter) {
                             <tr style="background-color: #f5f5f5; border: 0.3pt solid #000;">
                                 <th style="border: 0.3pt solid #000; padding: 1.5mm; text-align: center; width: 6%;">NO</th>
                                 <th style="border: 0.3pt solid #000; padding: 1.5mm; text-align: center; width: 17%;">품 목</th>
-                                <th style="border: 0.3pt solid #000; padding: 1.5mm; text-align: center; width: 35%;">규격/옵션</th>
+                                <th style="border: 0.3pt solid #000; padding: 1.5mm; text-align: center; width: 44%;">규격/옵션</th>
                                 <th style="border: 0.3pt solid #000; padding: 1.5mm; text-align: center; width: 11%;">수량</th>
                                 <th style="border: 0.3pt solid #000; padding: 1.5mm; text-align: center; width: 9%;">단위</th>
-                                <th style="border: 0.3pt solid #000; padding: 1.5mm; text-align: right; width: 22%;">공급가액</th>
+                                <th style="border: 0.3pt solid #000; padding: 1.5mm; text-align: right; width: 13%;">공급가액</th>
                             </tr>
                         </thead>
                         <tbody>
@@ -726,7 +746,7 @@ function getOrderItemInfo($summary_item, $specFormatter) {
                             <!-- 부가세포함금액 행 추가 (10원 단위 반올림) -->
                             <tr style="background-color: #e9ecef; font-weight: bold;">
                                 <td colspan="5" style="border: 0.3pt solid #000; padding: 1.5mm; text-align: center; color: #000;">💰 부가세포함</td>
-                                <td style="border: 0.3pt solid #000; padding: 1.5mm; text-align: right; color: #000; font-size: 12pt;"><?= number_format(round($View_money_5, -1)) ?> 원</td>
+                                <td style="border: 0.3pt solid #000; padding: 1.5mm; text-align: right; color: #000; font-size: 9pt;"><?= number_format(round($View_money_5, -1)) ?> 원</td>
                             </tr>
                         </tbody>
                     </table>
@@ -809,10 +829,10 @@ function getOrderItemInfo($summary_item, $specFormatter) {
                             <tr style="background-color: #f5f5f5; border: 0.3pt solid #000;">
                                 <th style="border: 0.3pt solid #000; padding: 1.5mm; text-align: center; width: 6%;">NO</th>
                                 <th style="border: 0.3pt solid #000; padding: 1.5mm; text-align: center; width: 17%;">품 목</th>
-                                <th style="border: 0.3pt solid #000; padding: 1.5mm; text-align: center; width: 35%;">규격/옵션</th>
+                                <th style="border: 0.3pt solid #000; padding: 1.5mm; text-align: center; width: 44%;">규격/옵션</th>
                                 <th style="border: 0.3pt solid #000; padding: 1.5mm; text-align: center; width: 11%;">수량</th>
                                 <th style="border: 0.3pt solid #000; padding: 1.5mm; text-align: center; width: 9%;">단위</th>
-                                <th style="border: 0.3pt solid #000; padding: 1.5mm; text-align: right; width: 22%;">공급가액</th>
+                                <th style="border: 0.3pt solid #000; padding: 1.5mm; text-align: right; width: 13%;">공급가액</th>
                             </tr>
                         </thead>
                         <tbody>
@@ -991,7 +1011,7 @@ function getOrderItemInfo($summary_item, $specFormatter) {
                             <!-- 부가세포함금액 행 추가 (10원 단위 반올림) -->
                             <tr style="background-color: #e9ecef; font-weight: bold;">
                                 <td colspan="5" style="border: 0.3pt solid #000; padding: 1.5mm; text-align: center; color: #000;">💰 부가세포함</td>
-                                <td  style="border: 0.3pt solid #000; padding: 1.5mm; text-align: right; color: #000; font-size: 12pt;"><?= number_format(round($View_money_5, -1)) ?> 원</td>
+                                <td style="border: 0.3pt solid #000; padding: 1.5mm; text-align: right; color: #000; font-size: 9pt;"><?= number_format(round($View_money_5, -1)) ?> 원</td>
                             </tr>
                         </tbody>
                     </table>
@@ -1088,14 +1108,14 @@ function getOrderItemInfo($summary_item, $specFormatter) {
 
                 <!-- ===== 주문 상품 테이블 ===== -->
                 <table id="order-products-table" style="width: 100%; table-layout: fixed; border-collapse: collapse; margin-bottom: 15px; border: 2px solid #333;">
-                    <!-- 🎯 colgroup으로 컬럼 폭 재조정 (규격/옵션 축소, 공급가액 확대) -->
+                    <!-- 🎯 colgroup으로 컬럼 폭 재조정 (규격/옵션 확대, 공급가액 축소) -->
                     <colgroup>
                         <col style="width: 6%;">
                         <col style="width: 17%;">
-                        <col style="width: 35%;">
+                        <col style="width: 44%;">
                         <col style="width: 11%;">
                         <col style="width: 9%;">
-                        <col style="width: 22%;">
+                        <col style="width: 13%;">
                     </colgroup>
                     <tr style="background: #4472C4;">
                         <td colspan="6" style="padding: 10px 15px; color: #fff; font-size: 14px; font-weight: bold;">
@@ -1112,10 +1132,10 @@ function getOrderItemInfo($summary_item, $specFormatter) {
                     <tr style="background: #E0E0E0;">
                         <th style="border: 1px solid #999; padding: 8px; font-size: 11px; text-align: center; width: 6%;">NO</th>
                         <th style="border: 1px solid #999; padding: 8px; font-size: 11px; text-align: center; width: 17%;">품목</th>
-                        <th style="border: 1px solid #999; padding: 8px; font-size: 11px; text-align: left; width: 35%;">규격/옵션</th>
+                        <th style="border: 1px solid #999; padding: 8px; font-size: 11px; text-align: left; width: 44%;">규격/옵션</th>
                         <th style="border: 1px solid #999; padding: 8px; font-size: 11px; text-align: center; width: 11%;">수량</th>
                         <th style="border: 1px solid #999; padding: 8px; font-size: 11px; text-align: center; width: 9%;">단위</th>
-                        <th style="border: 1px solid #999; padding: 8px; font-size: 11px; text-align: right; width: 22%;">공급가액</th>
+                        <th style="border: 1px solid #999; padding: 8px; font-size: 11px; text-align: right; width: 13%;">공급가액</th>
                     </tr>
                     <?php
                                         // 각 주문 아이템을 표의 행으로 표시

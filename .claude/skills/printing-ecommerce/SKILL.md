@@ -78,6 +78,7 @@ const ORDER_STATUS = [
 | 문서 | 내용 | 사용 시점 |
 |------|------|----------|
 | [order-flow.md](references/order-flow.md) | 5단계 주문 프로세스 | 장바구니→주문완료 개발 시 |
+| [spec-display-rules.md](references/spec-display-rules.md) | **규격/수량 표시 통합 규칙** | 모든 페이지 표시 일관성 |
 | [db-schema.md](references/db-schema.md) | 전체 테이블 스키마 | DB 작업 시 |
 | [price-calculator.md](references/price-calculator.md) | 가격 계산 로직 | 계산기 수정 시 |
 | [member-system.md](references/member-system.md) | 회원/로그인/마이페이지 | 회원 기능 개발 시 |
@@ -115,12 +116,15 @@ const ORDER_STATUS = [
 ## 자주 발생하는 문제
 
 ### 1. 규격/옵션 표시 불일치
-페이지마다 다른 형식으로 표시됨 → **ProductSpecFormatter 사용** (`/includes/ProductSpecFormatter.php`)
-- 관련 스킬: `duson-print-rules` 규칙 2-5
-- 관련 문서: `bug-fixes.md` #34
+페이지마다 다른 형식으로 표시됨 → **SpecDisplayService + ProductSpecFormatter 사용**
+- **필수 참조**: `spec-display-rules.md`
+- 핵심 파일: `/includes/SpecDisplayService.php`, `/includes/ProductSpecFormatter.php`
+- 컬럼 너비 표준: 규격/옵션 44%, 공급가액 13%
 
-### 2. 수량 표시 불일치
-전단지의 "연" 단위가 장바구니/주문서에서 다르게 표시됨 → `bug-fixes.md`
+### 2. 수량 표시 불일치 (소수점, 단위 오류)
+"10.00권" → "10권", "매" → "부" 자동 변환 → **SpecDisplayService가 처리**
+- 레거시 데이터 자동 정리
+- 제품별 단위: 전단지=연, 카다록=부, 양식지=권, 기타=매
 
 ### 3. 추가옵션 누락
 코팅/접지/오시 옵션이 주문서에 표시 안 됨 → `shop_temp.options` 필드 확인

@@ -113,45 +113,70 @@ $sql = "DELETE FROM shop_temp WHERE idx = ? AND session_id = ?";
 | 양식지 (ncrflambeau) | 권 | 10권, 50권 |
 | 기타 제품 | 매 | 100매, 500매 |
 
-### 규격/옵션 표시: ProductSpecFormatter (권장)
+### 규격/옵션 표시: 통합 서비스 (필수)
 
-**파일**: `/includes/ProductSpecFormatter.php`
+> **상세 문서**: `spec-display-rules.md` 참조
 
-모든 페이지에서 일관된 규격/옵션 표시를 위해 중앙 집중식 포맷터 사용.
+**핵심 서비스 파일**:
+- `/includes/SpecDisplayService.php` - 통합 출력 서비스
+- `/includes/ProductSpecFormatter.php` - 2줄 형식 포맷터
 
 ```php
-require_once $_SERVER['DOCUMENT_ROOT'] . '/includes/ProductSpecFormatter.php';
-$formatter = new ProductSpecFormatter($db);
+// SpecDisplayService 사용 (권장)
+$specDisplayService = new SpecDisplayService($db);
+$displayData = $specDisplayService->getDisplayData($item);
 
-// 2줄 형식 (HTML)
-echo $formatter->formatHtml($item);
-// 출력: "90g아트지 / A4 (210x297)<br>단면 / 0.5연 (2,000매) / 인쇄만"
+$displayData['line1'];           // "카다록,리플렛 / 24절(127*260)3단"
+$displayData['line2'];           // "단면칼라 / 1,000부 / 인쇄만"
+$displayData['quantity_value'];  // 1000 (숫자만)
+$displayData['unit'];            // "부"
 
-// 수량 표시용
-echo ProductSpecFormatter::getQuantityDisplay($item);
-// 출력: "0.5연 (2,000매)" 또는 "500매"
+// ProductSpecFormatter 사용
+$specFormatter = new ProductSpecFormatter($db);
+$specs = $specFormatter->format($item);
+$specs['line1'];  // 규격
+$specs['line2'];  // 옵션
 ```
 
-**레거시 코드 (직접 구현)**:
-```php
-// 전단지 수량 표시 코드 (cart.php, OnlineOrder_unified.php, OrderComplete_universal.php 공통)
-$yeon = !empty($item['MY_amount']) ? floatval($item['MY_amount']) : 0;
-$mesu = !empty($item['flyer_mesu']) ? intval($item['flyer_mesu']) : (!empty($item['mesu']) ? intval($item['mesu']) : 0);
-if ($yeon > 0) {
-    $yeon_display = ($yeon == 0.5) ? '0.5' : number_format(intval($yeon));
-    $qty_text = $yeon_display . '연';
-    if ($mesu > 0) $qty_text .= '(' . number_format($mesu) . '매)';  // 공백 없음
-    $line2_parts[] = $qty_text;
-}
+**테이블 컬럼 너비 표준 (2026-01-12 확정)**:
+```
+관리자/주문서출력: | NO:6% | 품목:17% | 규격/옵션:44% | 수량:11% | 단위:9% | 공급가액:13% |
 ```
 
 **관련 파일:**
-- `/var/www/html/includes/ProductSpecFormatter.php` - 중앙 포맷터 (권장)
-- `/var/www/html/mlangprintauto/shop/cart.php` (line 492-510)
-- `/var/www/html/mlangorder_printauto/OnlineOrder_unified.php` (line 884-902)
-- `/var/www/html/mlangorder_printauto/OrderComplete_universal.php` (line 416-447, 625-637)
+- `/var/www/html/includes/SpecDisplayService.php` - 통합 출력 서비스
+- `/var/www/html/includes/ProductSpecFormatter.php` - 중앙 포맷터
+- `/var/www/html/mlangprintauto/shop/cart.php` - 장바구니
+- `/var/www/html/mlangorder_printauto/OnlineOrder_unified.php` - 주문 페이지
+- `/var/www/html/mlangorder_printauto/OrderComplete_universal.php` - 주문 완료
+- `/var/www/html/mlangorder_printauto/OrderFormOrderTree.php` - 관리자 주문상세/출력
 
-## 3단계: 주문서 (order.php)
+## 3단계: 주문서 (OnlineOrder_unified.php)
+
+### 페이지 레이아웃 구조
+```
+┌─────────────────────────────────────────────┐
+│ 주문 정보 입력 (헤더)                         │
+│ - 배경: #1E90FF (파란색)                      │
+│ - 폰트: 흰색, 2.8rem                         │
+├─────────────────────────────────────────────┤
+│ 주문 상품 목록 (5컬럼 테이블)                  │
+│ - 품목 (15%, 중앙정렬)                        │
+│ - 규격/옵션 (42%)                            │
+│ - 수량 (10%, 중앙정렬)                        │
+│ - 단위 (8%, 중앙정렬)                         │
+│ - 공급가액 (25%, 우측정렬)                    │
+├─────────────────────────────────────────────┤
+│ 주문 요약 (상품금액 / 부가세 / 총 결제금액)    │
+├─────────────────────────────────────────────┤
+│ 신청자 정보 입력 폼                           │
+├─────────────────────────────────────────────┤
+│ 배송지 정보 입력 폼                           │
+└─────────────────────────────────────────────┘
+```
+
+### 관련 파일
+- `/var/www/html/mlangorder_printauto/OnlineOrder_unified.php` - 통합 주문서 페이지
 
 ### 배송 정보 폼
 ```html
@@ -242,27 +267,62 @@ $items = $pdo->query("SELECT * FROM orderformtree WHERE order_no = ?")->fetchAll
 sendOrderConfirmEmail($order, $items);
 ```
 
-### 주문 완료 UI
+### 주문 완료 UI (7컬럼 테이블)
+
+| 컬럼 | 설명 | 너비 |
+|------|------|------|
+| 주문번호 | 주문 고유 ID (#1234) | 10% |
+| 품목 | 제품명 (명함, 스티커 등) | 12% |
+| 규격/옵션 | 용지, 사이즈, 추가옵션 등 상세 | 38% |
+| 수량 | 숫자만 표시 | 10% |
+| 단위 | 매, 연, 부, 권 등 | 8% |
+| 공급가액 | VAT 별도 금액 | 12% |
+| 상태 | 입금대기, 제작중, 완료 등 | 10% |
+
 ```html
 <div class="order-complete">
     <h2>주문이 완료되었습니다!</h2>
-    <p>주문번호: <?= $order['order_no'] ?></p>
-    <p>결제금액: <?= number_format($order['total_price']) ?>원</p>
-    
-    <table>
-        <tr><th>상품명</th><th>수량</th><th>금액</th></tr>
-        <?php foreach ($items as $item): ?>
-        <tr>
-            <td><?= $item['product_name'] ?></td>
-            <td><?= $item['quantity_display'] ?></td>
-            <td><?= number_format($item['price']) ?>원</td>
-        </tr>
-        <?php endforeach; ?>
+
+    <table class="order-table">
+        <thead>
+            <tr>
+                <th>주문번호</th>
+                <th>품목</th>
+                <th>규격/옵션</th>
+                <th>수량</th>
+                <th>단위</th>
+                <th>공급가액</th>
+                <th>상태</th>
+            </tr>
+        </thead>
+        <tbody>
+            <?php foreach ($items as $item): ?>
+            <tr>
+                <td class="col-order-no">#<?= $item['no'] ?></td>
+                <td class="col-product"><?= $item['Type'] ?></td>
+                <td class="col-details"><?= displayProductDetails($item) ?></td>
+                <td class="col-quantity"><?= $item['quantity_display'] ?></td>
+                <td class="col-unit"><?= $item['unit'] ?></td>
+                <td class="col-price"><?= number_format($item['price_supply']) ?>원</td>
+                <td class="col-status"><span class="status-badge">입금대기</span></td>
+            </tr>
+            <?php endforeach; ?>
+        </tbody>
     </table>
-    
+
+    <!-- 결제 금액 요약 -->
+    <div class="order-summary">
+        <div class="summary-box">상품금액: <?= number_format($total_supply) ?>원</div>
+        <div class="summary-box">부가세: <?= number_format($total_vat) ?>원</div>
+        <div class="summary-box total">총 결제금액: <?= number_format($total_with_vat) ?>원</div>
+    </div>
+
     <a href="/member/mypage.php">주문내역 보기</a>
 </div>
 ```
+
+### 관련 파일
+- `/var/www/html/mlangorder_printauto/OrderComplete_universal.php` - 통합 주문완료 페이지
 
 ## 메뉴 일관성
 

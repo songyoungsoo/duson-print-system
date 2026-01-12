@@ -229,6 +229,12 @@ class SpecDisplayService {
                 } else {
                     $item = array_merge($item, $type1Data);
                 }
+            } else {
+                // JSON 실패 시 레거시 텍스트 파싱
+                $legacyData = $this->parseLegacyType1($item['Type_1'], $item);
+                if (!empty($legacyData)) {
+                    $item = array_merge($item, $legacyData);
+                }
             }
         }
 
@@ -249,14 +255,204 @@ class SpecDisplayService {
     }
 
     /**
-     * quantity_display에 단위가 없으면 추가
+     * 레거시 Type_1 텍스트 파싱 (프로덕션 호환)
+     *
+     * 프로덕션 DB에서 Type_1이 JSON이 아닌 텍스트로 저장된 경우 처리
+     * 예: "명함종류: 일반명함(쿠폰)\n명함재질: \n인쇄면: 단면\n수량: 500.00매"
+     *
+     * @param string $text Type_1 텍스트
+     * @param array $item 원본 아이템 데이터
+     * @return array 파싱된 데이터
+     */
+    private function parseLegacyType1(string $text, array $item): array {
+        $result = [];
+
+        // 줄바꿈으로 분리
+        $lines = preg_split('/[\r\n]+/', $text);
+
+        foreach ($lines as $line) {
+            $line = trim($line);
+            if (empty($line)) continue;
+
+            // "키: 값" 형식 파싱
+            if (preg_match('/^(.+?):\s*(.*)$/', $line, $matches)) {
+                $key = trim($matches[1]);
+                $value = trim($matches[2]);
+
+                // 명함
+                if ($key === '명함종류') {
+                    $result['spec_type'] = $value;
+                    if (empty($item['product_type'])) {
+                        $result['product_type'] = 'namecard';
+                    }
+                }
+                elseif ($key === '명함재질') {
+                    $result['spec_material'] = $value;
+                }
+                // 봉투
+                elseif ($key === '봉투종류') {
+                    $result['spec_type'] = $value;
+                    if (empty($item['product_type'])) {
+                        $result['product_type'] = 'envelope';
+                    }
+                }
+                elseif ($key === '봉투재질') {
+                    $result['spec_material'] = $value;
+                }
+                // 스티커
+                elseif ($key === '스티커종류' || $key === '종류') {
+                    $result['spec_type'] = $value;
+                    if (empty($item['product_type'])) {
+                        $result['product_type'] = 'sticker';
+                    }
+                }
+                elseif ($key === '스티커재질' || $key === '재질') {
+                    $result['spec_material'] = $value;
+                }
+                // 카다록
+                elseif ($key === '카다록종류' || $key === '리플렛종류') {
+                    $result['spec_type'] = $value;
+                    if (empty($item['product_type'])) {
+                        $result['product_type'] = 'cadarok';
+                    }
+                }
+                // 전단지
+                elseif ($key === '전단지종류') {
+                    $result['spec_type'] = $value;
+                    if (empty($item['product_type'])) {
+                        $result['product_type'] = 'inserted';
+                    }
+                }
+                // 포스터
+                elseif ($key === '포스터종류') {
+                    $result['spec_type'] = $value;
+                    if (empty($item['product_type'])) {
+                        $result['product_type'] = 'littleprint';
+                    }
+                }
+                // ✅ 2026-01-12: 양식지/NCR, 카다록 레거시 필드 추가
+                // 구분 (양식지/NCR, 카다록 공통)
+                elseif ($key === '구분') {
+                    $result['spec_type'] = $value;
+                    // product_type 감지
+                    if (empty($item['product_type'])) {
+                        if (strpos($value, '양식') !== false || strpos($value, 'NCR') !== false) {
+                            $result['product_type'] = 'ncrflambeau';
+                        } elseif (strpos($value, '카다록') !== false || strpos($value, '리플렛') !== false) {
+                            $result['product_type'] = 'cadarok';
+                        }
+                    }
+                }
+                // 규격 (양식지/NCR: 계약서(A4).기타서식(A4) 등)
+                elseif ($key === '규격') {
+                    if (!empty($value)) {
+                        $result['spec_size'] = $value;
+                    }
+                }
+                // 색상 (양식지/NCR: 1도, 2도 등)
+                elseif ($key === '색상') {
+                    if (!empty($value)) {
+                        $result['spec_sides'] = $value;
+                    }
+                }
+                // 종이종류 (카다록)
+                elseif ($key === '종이종류') {
+                    if (!empty($value)) {
+                        $result['spec_material'] = $value;
+                    }
+                }
+                // 주문방법 (카다록: 인쇄만/디자인+인쇄)
+                elseif ($key === '주문방법') {
+                    $result['spec_design'] = $value;
+                }
+                // 공통
+                elseif ($key === '인쇄면') {
+                    $result['spec_sides'] = $value;
+                }
+                elseif ($key === '편집디자인' || $key === '디자인') {
+                    $result['spec_design'] = $value;
+                }
+                elseif ($key === '용지' || $key === '용지종류') {
+                    $result['spec_material'] = $value;
+                }
+                elseif ($key === '크기' || $key === '사이즈') {
+                    $result['spec_size'] = $value;
+                }
+                // 수량 파싱 (예: "500.00매", "1,000부")
+                elseif ($key === '수량') {
+                    // ✅ 2026-01-12: 소수점 정리 후 quantity_display 설정
+                    // 예: "10.00권" → "10권", "500.00매" → "500매", "0.50연" → "0.5연"
+                    $cleanedValue = $value;
+                    if (preg_match('/([0-9,\.]+)\s*([매연부권개장])/u', $value, $matches)) {
+                        $num = floatval(str_replace(',', '', $matches[1]));
+                        $unit = $matches[2];
+                        // 정수면 소수점 없이, 소수면 불필요한 0 제거
+                        if (floor($num) == $num) {
+                            $cleanedValue = number_format($num) . $unit;
+                        } else {
+                            $cleanedValue = rtrim(rtrim(number_format($num, 2), '0'), '.') . $unit;
+                        }
+                    }
+                    $result['quantity_display'] = $cleanedValue;
+
+                    // 숫자 추출
+                    if (preg_match('/([0-9,\.]+)/', $value, $qtyMatch)) {
+                        $result['quantity_value'] = floatval(str_replace(',', '', $qtyMatch[1]));
+                    }
+                    // 단위 추출
+                    if (preg_match('/([매연부권개장])/u', $value, $unitMatch)) {
+                        $result['quantity_unit'] = $unitMatch[1];
+                    }
+                }
+            }
+        }
+
+        // Type에서 product_type 감지 (폴백)
+        if (empty($result['product_type']) && !empty($item['Type'])) {
+            $type = $item['Type'];
+            if (strpos($type, '명함') !== false) {
+                $result['product_type'] = 'namecard';
+            } elseif (strpos($type, '봉투') !== false) {
+                $result['product_type'] = 'envelope';
+            } elseif (strpos($type, '스티커') !== false) {
+                $result['product_type'] = 'sticker';
+            } elseif (strpos($type, '자석') !== false) {
+                $result['product_type'] = 'msticker';
+            } elseif (strpos($type, '전단') !== false) {
+                $result['product_type'] = 'inserted';
+            } elseif (strpos($type, '카다록') !== false || strpos($type, '리플렛') !== false) {
+                $result['product_type'] = 'cadarok';
+            } elseif (strpos($type, '포스터') !== false) {
+                $result['product_type'] = 'littleprint';
+            } elseif (strpos($type, 'NCR') !== false || strpos($type, '양식') !== false) {
+                $result['product_type'] = 'ncrflambeau';
+            } elseif (strpos($type, '상품권') !== false) {
+                $result['product_type'] = 'merchandisebond';
+            }
+        }
+
+        return $result;
+    }
+
+    /**
+     * quantity_display에 단위가 없으면 추가, 소수점 정리
      */
     private function ensureQuantityUnit(array $item): string {
         // Phase 3 필드 우선
         $display = $item['quantity_display'] ?? '';
 
-        // 이미 단위가 있으면 그대로 반환
+        // 이미 단위가 있는 경우 소수점 정리
         if (!empty($display) && preg_match(self::UNIT_PATTERN, $display)) {
+            // 숫자와 단위 분리 후 재포맷
+            if (preg_match('/([0-9,\.]+)\s*([매연부권개장])/u', $display, $matches)) {
+                $num = floatval(str_replace(',', '', $matches[1]));
+                $unit = $matches[2];
+                // 정수면 소수점 없이, 소수면 불필요한 0 제거
+                if (floor($num) == $num) {
+                    return number_format($num) . $unit;
+                }
+                return rtrim(rtrim(number_format($num, 2), '0'), '.') . $unit;
+            }
             return $display;
         }
 
