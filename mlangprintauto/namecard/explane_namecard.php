@@ -89,6 +89,10 @@
     <div class="detail-section" id="paper-texture-section">
         <h3>📜 명함의 재질</h3>
         <p class="section-desc">다양한 명함 용지의 질감과 색상을 확인해보세요. 이미지를 클릭하면 크게 볼 수 있습니다.</p>
+        <p class="section-desc texture-notice">
+            <strong>📐 사이즈 안내:</strong> 아래 이미지에 표시된 <span class="old-size">편집: 91×52mm / 재단: 89×50mm</span>는 현재 <span class="new-size">편집: 92×52mm / 재단: 90×50mm</span>로 변경되었음을 알려드립니다.<br>
+            <strong>⚠️ 참고:</strong> 실제 질감은 미묘한 차이로 인해 이미지로 보여드리는 것은 한계가 있음을 양지해주시기 바랍니다.
+        </p>
 
         <div class="texture-gallery">
             <?php
@@ -609,6 +613,32 @@
     color: #6c757d;
     padding: 40px;
     font-style: italic;
+}
+
+.texture-notice {
+    background: linear-gradient(135deg, #fff3cd 0%, #ffeaa7 100%);
+    border: 1px solid #ffc107;
+    border-left: 4px solid #ff9800;
+    padding: 15px 20px;
+    border-radius: 8px;
+    margin-bottom: 20px;
+    line-height: 1.8;
+}
+
+.texture-notice .old-size {
+    text-decoration: line-through;
+    color: #dc3545;
+    background: #f8d7da;
+    padding: 2px 6px;
+    border-radius: 4px;
+}
+
+.texture-notice .new-size {
+    color: #155724;
+    background: #d4edda;
+    padding: 2px 6px;
+    border-radius: 4px;
+    font-weight: 600;
 }
 
 /* 재질 모달 스타일 */
