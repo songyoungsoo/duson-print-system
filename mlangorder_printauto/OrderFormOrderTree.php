@@ -120,6 +120,25 @@ foreach ($order_rows as $order_item) {
 $specFormatter = new ProductSpecFormatter($db);
 
 /**
+ * 수량 숫자 포맷팅 (불필요한 소수점 제거)
+ * 500.00 → 500, 0.50 → 0.5
+ * @param mixed $num 수량 값
+ * @return string 포맷된 수량
+ */
+function formatQuantityNum($num) {
+    if (empty($num) || !is_numeric($num)) {
+        return '-';
+    }
+    $float_val = floatval($num);
+    // 정수면 소수점 없이
+    if (floor($float_val) == $float_val) {
+        return number_format($float_val);
+    }
+    // 0.50 → 0.5 (불필요한 0 제거)
+    return rtrim(rtrim(number_format($float_val, 2), '0'), '.');
+}
+
+/**
  * 주문 항목에서 규격, 수량, 단위 정보 추출
  * ProductSpecFormatter 사용으로 중복 코드 제거
  */
@@ -392,6 +411,13 @@ function getOrderItemInfo($summary_item, $specFormatter) {
             setTimeout(() => {
                 document.title = originalTitle;
             }, 1000);
+        }
+
+        // 재주문 함수
+        function reOrder(orderNo) {
+            if (confirm('이 주문을 재주문하시겠습니까?\n동일한 내용으로 새 주문이 생성됩니다.')) {
+                window.location.href = '/admin/mlangprintauto/admin.php?mode=ReOrder&source_no=' + orderNo;
+            }
         }
     </script>
     <link href="/mlangprintauto/css/board.css" rel="stylesheet" type="text/css">
@@ -666,18 +692,19 @@ function getOrderItemInfo($summary_item, $specFormatter) {
                                     <?php
                                     // 🔧 전단지/리플렛: "X연 (Y매)" 형식으로 표시
                                     if (isset($is_flyer) && $is_flyer && $mesu_for_display > 0) {
-                                        $yeon_display = $quantity_num ? (floor($quantity_num) == $quantity_num ? number_format($quantity_num) : number_format($quantity_num, 1)) : '0';
+                                        $yeon_display = formatQuantityNum($quantity_num);
+                                        if ($yeon_display === '-') $yeon_display = '0';
                                         echo $yeon_display . '연 (' . number_format($mesu_for_display) . '매)';
                                     } else {
-                                        echo $quantity_num ? (floor($quantity_num) == $quantity_num ? number_format($quantity_num) : number_format($quantity_num, 1)) : '-';
+                                        echo formatQuantityNum($quantity_num);
                                     }
                                     ?>
                                 </td>
                                 <td style="border: 0.3pt solid #000; padding: 1.5mm; text-align: center;">
                                     <?php
-                                    // 🔧 전단지/리플렛: 단위 칼럼 비우기
+                                    // 🔧 전단지/리플렛: 단위 칼럼 비우기 (빈 문자열로 통일)
                                     if (isset($is_flyer) && $is_flyer && $mesu_for_display > 0) {
-                                        echo '-';
+                                        echo '';
                                     } else {
                                         echo htmlspecialchars($unit);
                                     }
@@ -933,17 +960,26 @@ function getOrderItemInfo($summary_item, $specFormatter) {
                                     <?php endif; ?>
                                 </td>
                                 <td style="border: 0.3pt solid #000; padding: 1.5mm; text-align: center;">
-                                    <?= $quantity_num ? (floor($quantity_num) == $quantity_num ? number_format($quantity_num) : number_format($quantity_num, 1)) : '-' ?>
+                                    <?php
+                                    // 🔧 전단지/리플렛: "X연 (Y매)" 형식으로 표시 (인쇄용)
+                                    if (isset($is_flyer) && $is_flyer && $mesu_for_display > 0) {
+                                        $yeon_display = formatQuantityNum($quantity_num);
+                                        if ($yeon_display === '-') $yeon_display = '0';
+                                        echo $yeon_display . '연 (' . number_format($mesu_for_display) . '매)';
+                                    } else {
+                                        echo formatQuantityNum($quantity_num);
+                                    }
+                                    ?>
                                 </td>
                                 <td style="border: 0.3pt solid #000; padding: 1.5mm; text-align: center;">
-                                    <?= htmlspecialchars($unit) ?>
+                                    <?= (isset($is_flyer) && $is_flyer && $mesu_for_display > 0) ? '' : htmlspecialchars($unit) ?>
+                                </td>
                                 <td style="border: 0.3pt solid #000; padding: 1.5mm; text-align: right; font-weight: bold;">
                                     <?php
                                     // Phase 3 표준 필드 우선 사용
                                     $supply = !empty($summary_item['price_supply']) ? $summary_item['price_supply'] : $summary_item['money_4'];
                                     echo number_format(intval($supply));
                                     ?>
-                                    <?= number_format(intval($summary_item['money_4'])) ?>
                                 </td>
                             </tr>
                             <?php endforeach; ?>
@@ -1193,21 +1229,14 @@ function getOrderItemInfo($summary_item, $specFormatter) {
                                             $printing_cost = intval($summary_item['money_4'] ?? 0);
                                             $supply_price = $printing_cost; // 공급가액 = 인쇄비
 
-                                            // 수량 표시 포맷 (천 단위 구분, 소수점 처리)
-                                            if (!empty($quantity_num)) {
-                                                $qty_float = floatval($quantity_num);
-                                                // 정수면 소수점 없이, 소수면 1자리까지 표시
-                                                $quantity_display = (floor($qty_float) == $qty_float)
-                                                    ? number_format($qty_float)
-                                                    : number_format($qty_float, 1);
-                                                
-                                                // 🆕 전단지인 경우 매수 정보 추가 표시: "0.5연 (2,000매)"
-                                                if ($is_flyer && !empty($mesu_for_display) && $mesu_for_display > 0) {
-                                                    $quantity_display .= $unit . ' (' . number_format($mesu_for_display) . '매)';
-                                                    $unit = ''; // 단위 셀 비우기 (수량에 이미 포함됨)
-                                                }
-                                            } else {
-                                                $quantity_display = '-';
+                                            // 수량 표시 포맷 (formatQuantityNum 사용)
+                                            $quantity_display = formatQuantityNum($quantity_num);
+
+                                            // 🔧 전단지인 경우 매수 정보 추가 표시: "0.5연 (2,000매)"
+                                            if ($is_flyer && !empty($mesu_for_display) && $mesu_for_display > 0) {
+                                                if ($quantity_display === '-') $quantity_display = '0';
+                                                $quantity_display .= $unit . ' (' . number_format($mesu_for_display) . '매)';
+                                                $unit = ''; // 단위 셀 비우기 (수량에 이미 포함됨)
                                             }
                                             $unit_display = !empty($unit) ? htmlspecialchars($unit) : '';
 
@@ -1477,6 +1506,7 @@ function getOrderItemInfo($summary_item, $specFormatter) {
                     <?php if ($no) { ?>
                         <button type="submit" style="padding: 10px 25px; font-size: 13px; margin-right: 10px; background: #4472C4; color: white; border: none; cursor: pointer; font-weight: bold;">정보 수정</button>
                         <button type="button" onclick="printOrder();" style="padding: 10px 25px; font-size: 13px; margin-right: 10px; background: #28a745; color: white; border: none; cursor: pointer; font-weight: bold;">주문서 출력</button>
+                        <button type="button" onclick="reOrder(<?php echo $no; ?>);" style="padding: 10px 25px; font-size: 13px; margin-right: 10px; background: #ff9800; color: white; border: none; cursor: pointer; font-weight: bold;">재주문</button>
                     <?php } ?>
                     <button type="button" onclick="window.close();" style="padding: 10px 25px; font-size: 13px; background: #6c757d; color: white; border: none; cursor: pointer; font-weight: bold;">창 닫기</button>
                 </div>

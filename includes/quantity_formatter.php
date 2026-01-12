@@ -2,8 +2,8 @@
 /**
  * 수량 표시 포맷팅 헬퍼 함수
  *
- * 0.5연 (전단지 전용)만 소수점 표시
- * 나머지 모든 값은 정수로 표시
+ * 정수면 소수점 없이, 소수면 불필요한 0 제거
+ * 예: 500.00 → 500, 0.50 → 0.5, 1.25 → 1.25
  *
  * @param mixed $quantity 수량 값
  * @param string $product_type 제품 타입 (inserted, namecard, envelope 등)
@@ -26,16 +26,13 @@ function formatQuantity($quantity, $product_type = '', $unit = null) {
         }
     }
 
-    // 0.5만 소수점 표시, 나머지는 정수
-    if ($qty == 0.5) {
-        return '0.5' . $unit;
-    }
-
-    return number_format(intval($qty), 0) . $unit;
+    // 정수면 소수점 없이, 소수면 불필요한 0 제거
+    return formatQuantityNum($qty) . $unit;
 }
 
 /**
  * 수량 값만 포맷팅 (단위 제외)
+ * 정수면 소수점 없이, 소수면 불필요한 0 제거
  *
  * @param mixed $quantity 수량 값
  * @param string $product_type 제품 타입 (사용 안 함, 호환성 유지)
@@ -46,14 +43,30 @@ function formatQuantityValue($quantity, $product_type = '') {
         return '';
     }
 
-    $qty = floatval($quantity);
+    return formatQuantityNum(floatval($quantity));
+}
 
-    // 0.5만 소수점 표시, 나머지는 정수
-    if ($qty == 0.5) {
-        return '0.5';
+/**
+ * 수량 숫자 포맷팅 (불필요한 소수점 제거)
+ * 500.00 → 500, 0.50 → 0.5, 1.25 → 1.25
+ *
+ * @param mixed $num 수량 값
+ * @return string 포맷된 수량
+ */
+function formatQuantityNum($num) {
+    if (empty($num) && $num !== 0 && $num !== '0' && $num !== 0.0) {
+        return '-';
     }
-
-    return number_format(intval($qty), 0);
+    if (!is_numeric($num)) {
+        return '-';
+    }
+    $float_val = floatval($num);
+    // 정수면 소수점 없이
+    if (floor($float_val) == $float_val) {
+        return number_format($float_val);
+    }
+    // 소수면 불필요한 0 제거 (0.50 → 0.5)
+    return rtrim(rtrim(number_format($float_val, 2), '0'), '.');
 }
 
 /**
@@ -64,8 +77,22 @@ function formatQuantityValue($quantity, $product_type = '') {
 function getQuantityFormatterJS() {
     return <<<'JS'
 /**
+ * 수량 숫자 포맷팅 (불필요한 소수점 제거)
+ * 500.00 → 500, 0.50 → 0.5
+ */
+function formatQuantityNum(num) {
+    if (!num && num !== 0) return '-';
+    const qty = parseFloat(num);
+    if (Number.isInteger(qty)) {
+        return qty.toLocaleString();
+    }
+    // 소수점 2자리까지 표시 후 불필요한 0 제거
+    return parseFloat(qty.toFixed(2)).toString().replace(/\B(?=(\d{3})+(?!\d))/g, ',');
+}
+
+/**
  * 수량 포맷팅 (JavaScript)
- * 0.5만 소수점, 나머지는 정수
+ * 정수면 소수점 없이, 소수면 불필요한 0 제거
  *
  * @param {number|string} quantity 수량
  * @param {string} productType 제품 타입
@@ -83,12 +110,7 @@ function formatQuantity(quantity, productType, unit) {
         unit = isFlyer ? '연' : '매';
     }
 
-    // 0.5만 소수점, 나머지 정수
-    if (qty === 0.5) {
-        return '0.5' + unit;
-    }
-
-    return parseInt(qty).toLocaleString() + unit;
+    return formatQuantityNum(qty) + unit;
 }
 
 /**
@@ -96,15 +118,7 @@ function formatQuantity(quantity, productType, unit) {
  */
 function formatQuantityValue(quantity, productType) {
     if (!quantity && quantity !== 0) return '';
-
-    const qty = parseFloat(quantity);
-
-    // 0.5만 소수점, 나머지 정수
-    if (qty === 0.5) {
-        return '0.5';
-    }
-
-    return parseInt(qty).toLocaleString();
+    return formatQuantityNum(parseFloat(quantity));
 }
 JS;
 }

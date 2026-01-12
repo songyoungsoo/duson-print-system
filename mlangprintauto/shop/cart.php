@@ -329,7 +329,7 @@ if ($cart_result === false) {
 
                             // 상품명 매핑
                             $product_info = [
-                                'cadarok' => ['name' => '카달로그', 'icon' => ''],
+                                'cadarok' => ['name' => '카다록', 'icon' => ''],
                                 'sticker' => ['name' => '스티커', 'icon' => ''],
                                 'msticker' => ['name' => '자석스티커', 'icon' => ''],
                                 'leaflet' => ['name' => '전단지', 'icon' => ''],
@@ -411,15 +411,24 @@ if ($cart_result === false) {
                                     </div>
                                 </td>
 
-                                <!-- 수량 (Refactored) - 전단지: 값+단위+매수 통합 표시 -->
-                                <!-- 수량 (SpecDisplayService 통합) - quantity_display에 단위 포함 -->
+                                <!-- 수량 (Refactored) - 전단지: "X연 (Y매)" 형식, 기타: 숫자만 -->
                                 <td class="amount-cell <?php echo $is_flyer ? 'leaflet' : ''; ?>">
-                                    <span class="amount-value"><?php echo htmlspecialchars($quantity_display); ?></span>
+                                    <?php
+                                    // 전단지: "0.5연 (2,000매)" 형식
+                                    // 기타: 숫자만 (단위는 단위 칼럼에)
+                                    if ($is_flyer) {
+                                        echo '<span class="amount-value">' . htmlspecialchars($quantity_display) . '</span>';
+                                    } else {
+                                        // formatQuantityNum 사용하여 불필요한 소수점 제거
+                                        $qty_val = $displayData['quantity_value'] ?? 0;
+                                        echo '<span class="amount-value">' . (function_exists('formatQuantityNum') ? formatQuantityNum($qty_val) : number_format(floatval($qty_val))) . '</span>';
+                                    }
+                                    ?>
                                 </td>
 
-                                <!-- 단위 - quantity_display에 이미 포함되어 있으므로 '-' 표시 -->
+                                <!-- 단위 - 전단지는 빈칸 (수량에 이미 포함), 기타는 실제 단위 표시 -->
                                 <td class="unit-cell">
-                                    <span class="amount-unit">-</span>
+                                    <span class="amount-unit"><?php echo $is_flyer ? '' : htmlspecialchars($unit); ?></span>
                                 </td>
 
                                 <!-- 공급가액 -->
@@ -682,7 +691,7 @@ if ($cart_result === false) {
                     $quote_total_vat += $final_price_vat;
 
                     $product_info = [
-                        'cadarok' => '카달로그',
+                        'cadarok' => '카다록',
                         'sticker' => '스티커',
                         'msticker' => '자석스티커',
                         'leaflet' => '전단지',

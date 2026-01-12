@@ -611,7 +611,7 @@ $additional_css = [
     word-break: break-word;
 }
 
-/* 테이블 컬럼 스타일 */
+/* 테이블 컬럼 스타일 (7컬럼: 주문번호, 품목, 규격/옵션, 수량, 단위, 공급가액, 상태) */
 .col-order-no {
     width: 10%;
     text-align: center;
@@ -621,7 +621,7 @@ $additional_css = [
 }
 
 .col-product {
-    width: 13%;
+    width: 12%;
     font-weight: 600;
     color: var(--text-primary);
     vertical-align: middle;
@@ -629,10 +629,11 @@ $additional_css = [
 }
 
 .col-details {
+    width: 38%;
     word-wrap: break-word;
     overflow-wrap: break-word;
     white-space: normal;
-    width: 45%;
+    vertical-align: top;
 }
 
 .col-quantity {
@@ -640,7 +641,7 @@ $additional_css = [
     text-align: center;
     font-weight: 600;
     color: var(--text-primary);
-    font-size: 13px;
+    font-size: 14px;
     vertical-align: middle;
 }
 
@@ -649,48 +650,23 @@ $additional_css = [
     text-align: center;
     font-weight: 600;
     color: var(--text-primary);
-    font-size: 13px;
+    font-size: 14px;
     vertical-align: middle;
 }
 
 .col-price {
-    width: 10%;
+    width: 12%;
     text-align: right;
     font-weight: 700;
     color: var(--error-red);
-    font-size: 1rem;
-}
-
-/* 가격 컨테이너 스타일 */
-.price-container {
-    text-align: right;
-    line-height: 1.3;
-}
-
-.price-supply {
-    font-size: 0.85rem;
-    color: #666;
-    margin-bottom: 2px;
-}
-
-.price-total {
-    margin: 3px 0;
-    font-size: 13px;
-}
-
-.price-total span {
-    font-size: 13px;
-}
-
-.price-vat {
-    font-size: 0.75rem;
-    color: #888;
-    margin-top: 2px;
+    font-size: 14px;
+    vertical-align: middle;
 }
 
 .col-status {
     width: 10%;
     text-align: center;
+    vertical-align: middle;
 }
 
 /* 주문 요약 섹션 (cart.php 스타일) */
@@ -1672,48 +1648,62 @@ $additional_css = [
     }
     
     .order-table .col-order-no {
+        width: 10% !important;
         text-align: center !important;
         font-weight: 700 !important;
         background: #f8f9fa !important;
+        vertical-align: middle !important;
     }
-    
+
     .order-table .col-product {
-        font-weight: 700 !important;
-        color: #000 !important;
-    }
-    
-    .order-table .col-quantity {
+        width: 12% !important;
         text-align: center !important;
         font-weight: 700 !important;
-    }
-    
-    .order-table .col-price {
-        text-align: right !important;
-    }
-    
-    .price-supply span {
-        font-size: 12pt !important;
-        font-weight: 800 !important;
         color: #000 !important;
+        vertical-align: middle !important;
     }
-    
-    .price-total span {
-        font-size: 10pt !important;
-        color: #495057 !important;
+
+    .order-table .col-details {
+        width: 38% !important;
+        text-align: left !important;
+        vertical-align: top !important;
+        font-size: 9pt !important;
     }
-    
-    .price-vat {
-        font-size: 8pt !important;
-        color: #6c757d !important;
+
+    .order-table .col-quantity {
+        width: 10% !important;
+        text-align: center !important;
+        font-weight: 700 !important;
+        vertical-align: middle !important;
     }
-    
+
+    .order-table .col-unit {
+        width: 8% !important;
+        text-align: center !important;
+        font-weight: 600 !important;
+        vertical-align: middle !important;
+    }
+
+    .order-table .col-price {
+        width: 12% !important;
+        text-align: right !important;
+        font-weight: 700 !important;
+        vertical-align: middle !important;
+    }
+
+    .order-table .col-status {
+        width: 10% !important;
+        text-align: center !important;
+        vertical-align: middle !important;
+    }
+
     .status-badge {
         background: #000 !important;
         color: #fff !important;
-        padding: 5px 10px !important;
-        border-radius: 15px !important;
-        font-size: 9pt !important;
-        font-weight: 700 !important;
+        padding: 4px 8px !important;
+        border-radius: 4px !important;
+        font-size: 8pt !important;
+        font-weight: 600 !important;
     }
     
     /* 결제 정보 푸터 - 우아한 디자인 */
@@ -1900,7 +1890,7 @@ $additional_css = [
             error_log("================================================");
         }
     ?>
-    <!-- 주문 테이블 -->
+    <!-- 주문 테이블 (7컬럼: 주문번호, 품목, 규격/옵션, 수량, 단위, 공급가액, 상태) -->
     <table class="order-table">
         <thead>
             <tr>
@@ -1918,6 +1908,8 @@ $additional_css = [
             // ✅ Phase 2 통합: SpecDisplayService로 통합 출력 데이터 생성
             $displayData = $specDisplayService->getDisplayData($order);
             $product_details_html = displayProductDetails($connect, $order);
+            // 전단지/리플렛 체크 (수량에 단위가 이미 포함됨)
+            $is_flyer = in_array($order['product_type'] ?? '', ['inserted', 'leaflet']);
             ?>
             <tr class="order-row" style="animation-delay: <?php echo $index * 0.1; ?>s">
                 <!-- 주문번호 -->
@@ -1925,31 +1917,31 @@ $additional_css = [
                     #<?php echo htmlspecialchars($order['no']); ?>
                 </td>
 
-                <!-- 상품명 -->
+                <!-- 품목 -->
                 <td class="col-product">
                     <?php echo htmlspecialchars($order['Type']); ?>
                 </td>
 
-                <!-- 상세 정보 -->
+                <!-- 규격/옵션 -->
                 <td class="col-details">
-                    <?php echo $product_details_html; // 생성된 HTML 삽입 ?>
+                    <?php echo $product_details_html; ?>
                 </td>
 
-                <!-- 수량 (SpecDisplayService 통합) -->
+                <!-- 수량 -->
                 <td class="col-quantity">
                     <?php echo htmlspecialchars($displayData['quantity_display']); ?>
                 </td>
 
-                <!-- 단위 (SpecDisplayService 통합) -->
+                <!-- 단위 - 전단지는 빈칸 (수량에 이미 포함), 기타는 실제 단위 표시 -->
                 <td class="col-unit">
-                    <?php echo htmlspecialchars($displayData['unit'] ?? '-'); ?>
+                    <?php echo $is_flyer ? '' : htmlspecialchars($displayData['unit'] ?? '매'); ?>
                 </td>
 
-                <!-- 공급가액 (SpecDisplayService 통합) -->
+                <!-- 공급가액 -->
                 <td class="col-price">
-                    <?php echo number_format($displayData['price_supply']) . '원'; ?>
+                    <?php echo number_format($displayData['price_supply']); ?>원
                 </td>
-                
+
                 <!-- 상태 -->
                 <td class="col-status">
                     <span class="status-badge status-pending">입금대기</span>
@@ -1957,13 +1949,6 @@ $additional_css = [
             </tr>
             <?php endforeach; ?>
         </tbody>
-        <tfoot>
-            <tr style="background: #f0f0f0; font-weight: bold; border-top: 2px solid #333;">
-                <td colspan="7" style="text-align: center; padding: 12px; color: #666; font-size: 13px;">
-                    아래 결제 금액을 확인하신 후 결제를 진행해주세요
-                </td>
-            </tr>
-        </tfoot>
     </table>
 
     <!-- 주문 요약 (cart.php 스타일) -->

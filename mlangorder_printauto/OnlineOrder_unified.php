@@ -555,34 +555,11 @@ if (!empty($debug_info) && strpos($_SERVER['HTTP_HOST'], 'localhost') !== false)
 <div class="container" style="font-family: 'Noto Sans KR', sans-serif; font-size: 14px; color: #222; line-height: 1.4; padding: 0.5rem 1rem; margin-top: -1rem;">
     <!-- 주문 정보 입력 폼 -->
     <div class="card" style="margin-bottom: 1rem;">
-        <div class="card-header" style="background-color: #1E90FF; color: black; text-align: center; padding: 0.5rem;">
-            <h2 style="margin: 0; font-size: 2.5rem; color: black;">주문 정보 입력</h2>
+        <div class="card-header" style="background-color: #1E90FF; color: white; text-align: center; padding: 0.5rem;">
+            <h2 style="margin: 0; font-size: 2.8rem; color: white;">주문 정보 입력</h2>
         </div>
 
         <div class="centered-form" style="padding: 0.8rem;">
-            <!-- 주문 요약 (장바구니 스타일) -->
-            <div style="background-color: #f8f9fa; border-radius: 8px; padding: 20px; border: 1px solid #e2e8f0; margin-bottom: 1.5rem;">
-                <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 16px;">
-                    <div style="color: #4a5568; font-weight: 600; font-size: 16px;">주문 요약</div>
-                    <div style="color: #718096; font-size: 13px;">총 <?php echo $total_info['count']; ?>개 상품</div>
-                </div>
-                
-                <div style="display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 16px;">
-                    <div style="text-align: center; padding: 12px; background: white; border-radius: 6px; border: 1px solid #e2e8f0;">
-                        <div style="color: #718096; font-size: 12px; margin-bottom: 4px;">상품금액</div>
-                        <div style="color: #2d3748; font-weight: 600; font-size: 15px;"><?php echo number_format($total_info['total']); ?>원</div>
-                    </div>
-                    <div style="text-align: center; padding: 12px; background: white; border-radius: 6px; border: 1px solid #e2e8f0;">
-                        <div style="color: #718096; font-size: 12px; margin-bottom: 4px;">부가세</div>
-                        <div style="color: #2d3748; font-weight: 600; font-size: 15px;"><?php echo number_format($total_info['total_vat'] - $total_info['total']); ?>원</div>
-                    </div>
-                    <div style="text-align: center; padding: 12px; background-color: #1E90FF; border: 1px solid #1873CC; border-radius: 6px; color: white;">
-                        <div style="opacity: 0.9; font-size: 12px; margin-bottom: 4px;">총 결제금액</div>
-                        <div style="font-weight: 700; font-size: 18px;"><?php echo number_format($total_info['total_vat']); ?>원</div>
-                    </div>
-                </div>
-            </div>
-            
             <!-- 주문 상품 목록 (엑셀 스타일 테이블 - 통합장바구니와 동일) -->
             <div style="margin-bottom: 1.5rem; max-width: 1100px; margin-left: auto; margin-right: auto;">
                 <h3 style="color: #4a5568; font-weight: 600; font-size: 16px; margin-bottom: 1rem;">주문 상품 목록</h3>
@@ -608,7 +585,7 @@ if (!empty($debug_info) && strpos($_SERVER['HTTP_HOST'], 'localhost') !== false)
                     <?php
                     // 상품명 매핑 (cart.php와 동일)
                     $product_info_map = [
-                        'cadarok' => ['name' => '카달로그', 'icon' => '', 'color' => '#e3f2fd'],
+                        'cadarok' => ['name' => '카다록', 'icon' => '', 'color' => '#e3f2fd'],
                         'sticker' => ['name' => '스티커', 'icon' => '', 'color' => '#f3e5f5'],
                         'msticker' => ['name' => '자석스티커', 'icon' => '', 'color' => '#e8f5e8'],
                         'leaflet' => ['name' => '전단지', 'icon' => '', 'color' => '#fff3e0'],
@@ -666,7 +643,7 @@ if (!empty($debug_info) && strpos($_SERVER['HTTP_HOST'], 'localhost') !== false)
                     ?>
                     <tr>
                         <!-- 상품정보 -->
-                        <td style="border: 1px solid #ccc; padding: 10px; vertical-align: top;">
+                        <td style="border: 1px solid #ccc; padding: 10px; vertical-align: middle; text-align: center;">
                             <div class="product-name" style="font-weight: 600; color: #2d3748; font-size: 15px;">
                                 <?php echo $product['name']; ?>
                             </div>
@@ -702,23 +679,17 @@ if (!empty($debug_info) && strpos($_SERVER['HTTP_HOST'], 'localhost') !== false)
                                     </div>
                                 <?php endif; ?>
                         </td>
-                        <!-- 수량 (cart.php와 동일) -->
+                        <!-- 수량 - 전단지: "X연 (Y매)" 통합 표시, 기타: 숫자만 -->
                         <td class="amount-cell <?php echo $is_flyer ? 'leaflet' : ''; ?>" style="border: 1px solid #ccc; padding: 10px; vertical-align: middle; text-align: center;">
-                            <span class="amount-value" style="font-weight: 600; font-size: 15px;"><?php echo $main_amount_display; ?></span>
                             <?php if ($is_flyer): ?>
-                                <span class="amount-unit" style="font-size: 13px; color: #4a5568; margin-left: 2px;"><?php echo $unit; ?></span>
-                                <?php if ($show_sheet_count && $sub_amount): ?>
-                                    <br><span class="amount-sub" style="font-size: 12px; color: #718096;">(<?php echo number_format($sub_amount); ?>매)</span>
-                                <?php endif; ?>
+                                <span class="amount-value" style="font-weight: 600; font-size: 15px;"><?php echo $main_amount_display; ?><?php echo $unit; ?><?php if ($sub_amount): ?> (<?php echo number_format($sub_amount); ?>매)<?php endif; ?></span>
+                            <?php else: ?>
+                                <span class="amount-value" style="font-weight: 600; font-size: 15px;"><?php echo $main_amount_display; ?></span>
                             <?php endif; ?>
                         </td>
-                        <!-- 단위 (cart.php와 동일) -->
+                        <!-- 단위 - 전단지는 빈칸 (수량에 이미 포함), 기타는 실제 단위 표시 -->
                         <td class="unit-cell" style="border: 1px solid #ccc; padding: 10px; vertical-align: middle; text-align: center;">
-                            <?php if ($is_flyer): ?>
-                                <span class="amount-unit" style="font-size: 14px; color: #718096;">-</span>
-                            <?php else: ?>
-                                <span class="amount-unit" style="font-size: 14px; color: #2d3748;"><?php echo $unit; ?></span>
-                            <?php endif; ?>
+                            <span class="amount-unit" style="font-size: 14px; color: #2d3748;"><?php echo $is_flyer ? '' : $unit; ?></span>
                         </td>
                         <!-- 공급가액 -->
                         <td class="td-right" style="border: 1px solid #ccc; padding: 10px; vertical-align: middle; text-align: right;">
@@ -733,7 +704,30 @@ if (!empty($debug_info) && strpos($_SERVER['HTTP_HOST'], 'localhost') !== false)
                     </table>
                 </div>
             </div>
-            
+
+            <!-- 주문 요약 (장바구니 스타일) - 상품 목록 아래 배치 -->
+            <div style="background-color: #f8f9fa; border-radius: 8px; padding: 20px; border: 1px solid #e2e8f0; margin-bottom: 1.5rem; max-width: 1100px; margin-left: auto; margin-right: auto;">
+                <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 16px;">
+                    <div style="color: #4a5568; font-weight: 600; font-size: 16px;">주문 요약</div>
+                    <div style="color: #718096; font-size: 13px;">총 <?php echo $total_info['count']; ?>개 상품</div>
+                </div>
+
+                <div style="display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 16px;">
+                    <div style="text-align: center; padding: 12px; background: white; border-radius: 6px; border: 1px solid #e2e8f0;">
+                        <div style="color: #718096; font-size: 12px; margin-bottom: 4px;">상품금액</div>
+                        <div style="color: #2d3748; font-weight: 600; font-size: 15px;"><?php echo number_format($total_info['total']); ?>원</div>
+                    </div>
+                    <div style="text-align: center; padding: 12px; background: white; border-radius: 6px; border: 1px solid #e2e8f0;">
+                        <div style="color: #718096; font-size: 12px; margin-bottom: 4px;">부가세</div>
+                        <div style="color: #2d3748; font-weight: 600; font-size: 15px;"><?php echo number_format($total_info['total_vat'] - $total_info['total']); ?>원</div>
+                    </div>
+                    <div style="text-align: center; padding: 12px; background-color: #1E90FF; border: 1px solid #1873CC; border-radius: 6px; color: white;">
+                        <div style="opacity: 0.9; font-size: 12px; margin-bottom: 4px;">총 결제금액</div>
+                        <div style="font-weight: 700; font-size: 18px;"><?php echo number_format($total_info['total_vat']); ?>원</div>
+                    </div>
+                </div>
+            </div>
+
             <!-- 주문자 정보 입력 폼 -->
             <form method="post" action="ProcessOrder_unified.php" id="orderForm" onsubmit="return prepareBusinessAddress()">
                 <!-- 주문 데이터를 hidden으로 전달 -->
