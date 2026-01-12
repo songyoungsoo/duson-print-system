@@ -47,6 +47,7 @@ $statusClass = ['draft'=>'status-draft','sent'=>'status-sent','viewed'=>'status-
         <div class="action-bar">
             <a href="index.php" class="back-link">← 목록</a>
             <a href="edit.php?id=<?php echo $quoteId; ?>" class="btn btn-primary btn-sm">수정</a>
+            <a href="/admin/mlangprintauto/quote/preview.php?id=<?php echo $quoteId; ?>" class="btn btn-sm" target="_blank">미리보기</a>
             <a href="api/generate_pdf.php?id=<?php echo $quoteId; ?>" class="btn btn-sm" target="_blank">PDF</a>
             <button onclick="sendEmail()" class="btn btn-primary btn-sm"><?php echo $quote['status']==='draft'?'발송':'재발송'; ?></button>
         </div>

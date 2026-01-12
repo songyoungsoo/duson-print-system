@@ -199,7 +199,7 @@ function getProductUrlMapping() {
  * 제품 상세 정보 표시
  */
 function displayProductDetails($connect, $order) {
-    global $optionsDisplay, $specFormatter; // 전역 변수로 접근
+    global $optionsDisplay, $specFormatter, $specDisplayService; // 전역 변수로 접근
 
     if (empty($order['Type_1'])) return '';
 
@@ -215,21 +215,20 @@ function displayProductDetails($connect, $order) {
     // 2025-12-19: 테이블 대신 div 스타일로 변경 (OnlineOrder_unified.php 규격/옵션 스타일)
     $html = '<div class="specs-cell" style="line-height: 1.6;">';
 
-    // JSON 파싱 실패 시 키-값 쌍으로 파싱 시도 (Type_1이 일반 텍스트인 경우)
+    // JSON 파싱 실패 시 SpecDisplayService를 통해 레거시 텍스트 파싱 (2026-01-12)
     if (!$json_data && !empty($type_data)) {
-        $json_data = [];
-        $lines = explode("\n", $type_data);
-        foreach ($lines as $line) {
-            if (strpos($line, ':') !== false) {
-                list($key, $value) = explode(':', $line, 2);
-                // 대소문자 통일 (첫 글자만 대문자, 나머지 소문자)
-                $normalized_key = str_replace('_', '', $key);
-                $normalized_key = str_replace(' ', '', $normalized_key);
+        // SpecDisplayService.getDisplayData()가 레거시 텍스트 파싱 담당
+        $displayData = $specDisplayService->getDisplayData($order);
 
-                // 원래 키 형식 유지하면서 대소문자 구별 없이 저장
-                $json_data[trim($key)] = trim($value);
-            }
+        // line1, line2 표시 (타입/재질/사이즈/면수/디자인)
+        if (!empty($displayData['line1'])) {
+            $html .= '<div class="spec-item">' . htmlspecialchars($displayData['line1']) . '</div>';
         }
+        if (!empty($displayData['line2'])) {
+            $html .= '<div class="spec-item">' . htmlspecialchars($displayData['line2']) . '</div>';
+        }
+        $html .= '</div>';
+        return $html;
     }
 
     if ($json_data && is_array($json_data)) {

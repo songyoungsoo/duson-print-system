@@ -58,6 +58,103 @@ $TName = isset($_POST['TName']) ? $_POST['TName'] : "";
 $BankNo = isset($_POST['BankNo']) ? $_POST['BankNo'] : "";
 ///////////////////////////////////////////////////////////////////////////////////////////////
 
+// ✅ 재주문 처리
+if ($mode == "ReOrder") {
+    $db->set_charset("utf8");
+
+    // 원본 주문 조회
+    $source_no = isset($_GET['source_no']) ? intval($_GET['source_no']) : 0;
+    if ($source_no <= 0) {
+        echo "<script>alert('원본 주문번호가 없습니다.'); history.back();</script>";
+        exit;
+    }
+
+    $stmt = $db->prepare("SELECT * FROM mlangorder_printauto WHERE no = ?");
+    $stmt->bind_param("i", $source_no);
+    $stmt->execute();
+    $result = $stmt->get_result();
+    $source_order = $result->fetch_assoc();
+    $stmt->close();
+
+    if (!$source_order) {
+        echo "<script>alert('원본 주문을 찾을 수 없습니다.'); history.back();</script>";
+        exit;
+    }
+
+    // 최신 주문번호 조회 후 +1
+    $max_result = $db->query("SELECT MAX(no) as max_no FROM mlangorder_printauto");
+    $max_row = $max_result->fetch_assoc();
+    $new_no = intval($max_row['max_no']) + 1;
+
+    // 새 주문 생성 (날짜와 상태만 변경)
+    $new_date = date("Y-m-d H:i:s");
+    $new_order_style = "2"; // 입금대기 상태
+
+    // 실제 테이블 컬럼에 맞춰 INSERT
+    $insert_stmt = $db->prepare("INSERT INTO mlangorder_printauto
+        (no, Type, ImgFolder, Type_1, mesu, money_1, money_2, money_3, money_4, money_5,
+         name, email, zip, zip1, zip2, phone, Hendphone, bizname, bank, bankname,
+         cont, date, OrderStyle, ThingCate, Designer, pass, Gensu, delivery,
+         price_supply, price_vat, quantity_display, unit, uploaded_files, product_type)
+        VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)");
+
+    if (!$insert_stmt) {
+        echo "<script>alert('SQL 준비 실패: " . $db->error . "'); history.back();</script>";
+        exit;
+    }
+
+    // 타입: i(no) + 25s(Type~pass) + i(Gensu) + s(delivery) + ii(price_supply,price_vat) + 4s(quantity_display~product_type)
+    $insert_stmt->bind_param("isssssssssssssssssssssssssisiissss",
+        $new_no,
+        $source_order['Type'],
+        $source_order['ImgFolder'],
+        $source_order['Type_1'],
+        $source_order['mesu'],
+        $source_order['money_1'],
+        $source_order['money_2'],
+        $source_order['money_3'],
+        $source_order['money_4'],
+        $source_order['money_5'],
+        $source_order['name'],
+        $source_order['email'],
+        $source_order['zip'],
+        $source_order['zip1'],
+        $source_order['zip2'],
+        $source_order['phone'],
+        $source_order['Hendphone'],
+        $source_order['bizname'],
+        $source_order['bank'],
+        $source_order['bankname'],
+        $source_order['cont'],
+        $new_date,
+        $new_order_style,
+        $source_order['ThingCate'],
+        $source_order['Designer'],
+        $source_order['pass'],
+        $source_order['Gensu'],
+        $source_order['delivery'],
+        $source_order['price_supply'],
+        $source_order['price_vat'],
+        $source_order['quantity_display'],
+        $source_order['unit'],
+        $source_order['uploaded_files'],
+        $source_order['product_type']
+    );
+
+    if ($insert_stmt->execute()) {
+        $insert_stmt->close();
+        echo "<script>
+            alert('재주문이 생성되었습니다.\\n새 주문번호: $new_no');
+            window.location.href = 'admin.php?mode=OrderView&no=$new_no';
+        </script>";
+    } else {
+        $error = $insert_stmt->error;
+        $insert_stmt->close();
+        echo "<script>alert('재주문 생성 실패: $error'); history.back();</script>";
+    }
+    exit;
+}
+
 if ($mode == "ModifyOk") { ////////////////////////////////////////////////////////////////////////////
     // 데이터베이스 연결
     // $db는 이미 ../../db.php에서 생성됨

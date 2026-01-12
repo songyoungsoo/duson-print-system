@@ -145,7 +145,7 @@ class QuoteRenderer
 
         $quoteHtml = renderQuoteLayout($data['quote'], $data['items'], $data['supplier'], $baseUrl);
 
-        // 완전한 HTML 문서로 래핑
+        // 완전한 HTML 문서로 래핑 (여백 없음)
         return <<<HTML
 <!DOCTYPE html>
 <html lang="ko">
@@ -153,19 +153,14 @@ class QuoteRenderer
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>견적서 - {$this->escape($data['quote']['quote_no'])}</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@400;700&display=swap" rel="stylesheet">
     <style>
         body {
-            font-family: 'Malgun Gothic', Arial, sans-serif;
-            background: #e8e8e8;
+            font-family: 'Noto Sans KR', sans-serif;
             margin: 0;
-            padding: 20px;
-        }
-        .quote-wrapper {
-            max-width: 800px;
-            margin: 0 auto;
-            background: #fff;
-            padding: 20px;
-            box-shadow: 0 2px 10px rgba(0,0,0,0.15);
+            padding: 0;
         }
         .print-controls {
             position: fixed;
@@ -187,8 +182,7 @@ class QuoteRenderer
         .btn-print { background: #2980b9; }
         .btn-close { background: #7f8c8d; }
         @media print {
-            body { background: #fff; padding: 0; }
-            .quote-wrapper { box-shadow: none; padding: 0; }
+            body { margin: 0; padding: 0; }
             .print-controls { display: none !important; }
         }
     </style>
@@ -198,9 +192,7 @@ class QuoteRenderer
         <button class="btn-print" onclick="window.print();">인쇄 / PDF</button>
         <button class="btn-close" onclick="window.close();">닫기</button>
     </div>
-    <div class="quote-wrapper">
-        {$quoteHtml}
-    </div>
+    {$quoteHtml}
 </body>
 </html>
 HTML;
@@ -744,6 +736,11 @@ HTML;
 
         $quoteHtml = renderQuoteLayout($data['quote'], $data['items'], $data['supplier'], $baseUrl);
 
+        // PDF용: 불필요한 wrapper와 CSS 제거
+        $quoteHtml = preg_replace('/<style>.*?<\/style>/s', '', $quoteHtml);
+        $quoteHtml = preg_replace('/<div class="quote-body">\s*<div class="a4-page">/s', '<div>', $quoteHtml);
+        $quoteHtml = preg_replace('/<\/div>\s*<\/div>\s*<!--\s*\/표준 견적서 레이아웃\s*-->/s', '</div>', $quoteHtml);
+
         // 전체 HTML 문서 구성
         $fullHtml = <<<HTML
 <!DOCTYPE html>
@@ -755,9 +752,35 @@ HTML;
             font-family: nanumgothic, sans-serif !important;
         }
         body {
-            font-size: 13px;
+            font-size: 12px;
             line-height: 1.4;
             color: #000;
+            margin: 0;
+            padding: 0;
+        }
+        table {
+            width: 100%;
+            border-collapse: collapse;
+        }
+        th, td {
+            border: 1px solid #000;
+            padding: 5px;
+            vertical-align: middle;
+        }
+        th {
+            background: #e8e8e8;
+            text-align: center;
+        }
+        .no-border { border: none; }
+        .right { text-align: right; }
+        .center { text-align: center; }
+        .bold { font-weight: bold; }
+        .table-bordered { border: 2px solid #000; }
+        .title {
+            font-size: 22px;
+            font-weight: bold;
+            text-align: center;
+            border: none;
         }
     </style>
 </head>
@@ -1095,7 +1118,195 @@ HTML;
 
     public function renderEmailBody(): string
     {
-        return $this->renderHTML();
+        $quote = $this->quote;
+        $items = $this->items;
+        $company = $this->companyInfo;
+
+        $supplyTotal = intval($quote['supply_total']);
+        $vatTotal = intval($quote['vat_total']);
+        $grandTotal = intval($quote['grand_total']);
+        $koreanAmount = $this->numberToKorean($grandTotal);
+
+        $validUntil = !empty($quote['valid_until'])
+            ? date('Y년 m월 d일', strtotime($quote['valid_until']))
+            : date('Y년 m월 d일', strtotime('+7 days'));
+        $createdAt = !empty($quote['created_at'])
+            ? date('Y년 m월 d일', strtotime($quote['created_at']))
+            : date('Y년 m월 d일');
+
+        // 인라인 스타일 정의
+        $tableStyle = 'width:100%;border-collapse:collapse;font-family:Arial,sans-serif;font-size:13px;';
+        $thStyle = 'background:#e8e8e8;border:1px solid #000;padding:8px;text-align:center;font-weight:normal;';
+        $tdStyle = 'border:1px solid #000;padding:8px;';
+        $boldStyle = 'font-weight:bold;';
+        $centerStyle = 'text-align:center;';
+        $rightStyle = 'text-align:right;';
+        $noBorderStyle = 'border:none;';
+
+        $html = <<<HTML
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>견적서 - {$this->escape($quote['quote_no'])}</title>
+</head>
+<body style="margin:0;padding:20px;background:#f5f5f5;font-family:Arial,'Malgun Gothic',sans-serif;">
+<div style="max-width:700px;margin:0 auto;background:#fff;padding:30px;border:1px solid #ddd;">
+
+<!-- 헤더 -->
+<table style="{$tableStyle}">
+    <tr>
+        <td style="{$noBorderStyle}padding:0 0 5px 0;font-size:12px;color:#666;">No. {$this->escape($quote['quote_no'])}</td>
+    </tr>
+    <tr>
+        <td style="{$noBorderStyle}padding:15px 0;font-size:26px;font-weight:bold;text-align:center;border-bottom:3px solid #000;">견 적 서</td>
+    </tr>
+</table>
+
+<div style="height:15px;"></div>
+
+<!-- 기본정보 테이블 -->
+<table style="{$tableStyle}border:2px solid #000;">
+    <tr>
+        <th style="{$thStyle}width:12%;">견적일</th>
+        <td style="{$tdStyle}width:38%;">{$createdAt}</td>
+        <th colspan="4" style="{$thStyle}width:50%;">공급자</th>
+    </tr>
+    <tr>
+        <th style="{$thStyle}">회사명</th>
+        <td style="{$tdStyle}">{$this->escape($quote['customer_company'] ?? '')}</td>
+        <th style="{$thStyle}width:10%;">등록번호</th>
+        <td style="{$tdStyle}{$boldStyle}width:15%;">{$this->escape($company['business_number'])}</td>
+        <th style="{$thStyle}width:10%;">대표자</th>
+        <td style="{$tdStyle}width:15%;">{$this->escape($company['owner'])} <span style="font-size:10px;color:#888;">(직인생략)</span></td>
+    </tr>
+    <tr>
+        <th style="{$thStyle}">담당자</th>
+        <td style="{$tdStyle}">{$this->escape($quote['customer_name'])} 귀하</td>
+        <th style="{$thStyle}">상호</th>
+        <td colspan="3" style="{$tdStyle}{$boldStyle}">{$this->escape($company['name'])}</td>
+    </tr>
+    <tr>
+        <th style="{$thStyle}">유효기간</th>
+        <td style="{$tdStyle}">{$validUntil}까지</td>
+        <th style="{$thStyle}">주소</th>
+        <td colspan="3" style="{$tdStyle}">{$this->escape($company['address'])}</td>
+    </tr>
+    <tr>
+        <th style="{$thStyle}">전화번호</th>
+        <td style="{$tdStyle}">{$this->escape($company['phone'])}</td>
+        <th style="{$thStyle}">업태</th>
+        <td style="{$tdStyle}">{$this->escape($company['business_type'])}</td>
+        <th style="{$thStyle}">종목</th>
+        <td style="{$tdStyle}">{$this->escape($company['business_item'])}</td>
+    </tr>
+</table>
+
+<div style="height:15px;"></div>
+
+<!-- 합계금액 + 품목 테이블 -->
+<table style="{$tableStyle}border:2px solid #000;">
+    <tr>
+        <th colspan="2" style="{$thStyle}{$boldStyle}">합계금액(VAT포함)</th>
+        <td colspan="2" style="{$tdStyle}{$centerStyle}{$boldStyle}">
+            일금 {$koreanAmount}원정<br>
+            ( ₩{$this->formatPrice($grandTotal)} )
+        </td>
+        <td colspan="4" style="{$tdStyle}{$centerStyle}{$boldStyle}font-size:20px;">
+            {$this->formatPrice($grandTotal)} 원
+        </td>
+    </tr>
+    <tr>
+        <th style="{$thStyle}width:5%;">NO</th>
+        <th style="{$thStyle}width:10%;">품목</th>
+        <th style="{$thStyle}width:30%;">규격 및 사양</th>
+        <th style="{$thStyle}width:8%;">수량</th>
+        <th style="{$thStyle}width:7%;">단위</th>
+        <th style="{$thStyle}width:12%;">단가</th>
+        <th style="{$thStyle}width:13%;">공급가액</th>
+        <th style="{$thStyle}width:15%;">비고</th>
+    </tr>
+HTML;
+
+        // 품목 행
+        foreach ($items as $index => $item) {
+            $no = $index + 1;
+            $spec = str_replace(['|', "\n"], ' / ', $item['specification'] ?? '');
+            $qtyDisplay = $item['quantity_display'] ?? number_format($item['quantity'] ?? 0);
+            $unit = $item['unit'] ?? '개';
+            $unitPrice = floatval($item['unit_price'] ?? 0);
+            $unitPriceStr = ($unitPrice > 0) ? $this->formatPrice($unitPrice) : '-';
+            $supplyPrice = intval($item['supply_price'] ?? 0);
+            $notes = $item['notes'] ?? '';
+
+            $html .= <<<HTML
+    <tr>
+        <td style="{$tdStyle}{$centerStyle}">{$no}</td>
+        <td style="{$tdStyle}{$centerStyle}">{$this->escape($item['product_name'])}</td>
+        <td style="{$tdStyle}">{$this->escape($spec)}</td>
+        <td style="{$tdStyle}{$centerStyle}">{$this->escape($qtyDisplay)}</td>
+        <td style="{$tdStyle}{$centerStyle}">{$this->escape($unit)}</td>
+        <td style="{$tdStyle}{$rightStyle}">{$unitPriceStr}</td>
+        <td style="{$tdStyle}{$rightStyle}">{$this->formatPrice($supplyPrice)}</td>
+        <td style="{$tdStyle}{$centerStyle}">{$this->escape($notes)}</td>
+    </tr>
+HTML;
+        }
+
+        // 빈 행 추가 (최소 3행)
+        $emptyRows = max(0, 3 - count($items));
+        for ($i = 0; $i < $emptyRows; $i++) {
+            $html .= '<tr><td style="'.$tdStyle.'">&nbsp;</td><td style="'.$tdStyle.'"></td><td style="'.$tdStyle.'"></td><td style="'.$tdStyle.'"></td><td style="'.$tdStyle.'"></td><td style="'.$tdStyle.'"></td><td style="'.$tdStyle.'"></td><td style="'.$tdStyle.'"></td></tr>';
+        }
+
+        // 합계 행
+        $html .= <<<HTML
+    <tr>
+        <td colspan="6" style="{$tdStyle}{$rightStyle}{$boldStyle}">공급가액 합계</td>
+        <td colspan="2" style="{$tdStyle}{$rightStyle}{$boldStyle}">{$this->formatPrice($supplyTotal)}</td>
+    </tr>
+    <tr>
+        <td colspan="6" style="{$tdStyle}{$rightStyle}{$boldStyle}">부가세</td>
+        <td colspan="2" style="{$tdStyle}{$rightStyle}{$boldStyle}">{$this->formatPrice($vatTotal)}</td>
+    </tr>
+    <tr>
+        <th colspan="6" style="{$thStyle}{$rightStyle}{$boldStyle}">합 계 (VAT포함)</th>
+        <td colspan="2" style="{$tdStyle}{$rightStyle}{$boldStyle}font-size:15px;">{$this->formatPrice($grandTotal)}</td>
+    </tr>
+</table>
+
+<div style="height:15px;"></div>
+
+<!-- 하단 정보 -->
+<table style="{$tableStyle}">
+    <tr>
+        <td style="{$noBorderStyle}padding:8px 0;line-height:1.8;">
+            <strong>입금 계좌번호 :</strong><br>
+            {$this->escape($company['bank_kookmin'])} / {$this->escape($company['bank_shinhan'])} / {$this->escape($company['bank_nonghyup'])}<br>
+            예금주 : {$this->escape($company['account_holder'])}
+        </td>
+    </tr>
+    <tr>
+        <td style="{$noBorderStyle}padding:5px 0;">담당자 : {$this->escape($quote['customer_name'])}</td>
+    </tr>
+    <tr>
+        <td style="{$noBorderStyle}padding:5px 0;color:#0066cc;">비고 : 택배는 착불기준입니다</td>
+    </tr>
+</table>
+
+<!-- 푸터 -->
+<div style="margin-top:30px;padding-top:20px;border-top:1px solid #ddd;text-align:center;color:#888;font-size:12px;">
+    본 견적서는 두손기획인쇄에서 발송되었습니다.<br>
+    문의: {$this->escape($company['phone'])} | {$this->escape($company['email'] ?? 'dsp1830@naver.com')}
+</div>
+
+</div>
+</body>
+</html>
+HTML;
+
+        return $html;
     }
 
     private function escape(?string $str): string

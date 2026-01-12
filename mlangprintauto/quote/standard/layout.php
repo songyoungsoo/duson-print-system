@@ -29,6 +29,38 @@ function renderQuoteLayout(array $quote, array $items, array $supplier, string $
         return date('Y년 m월 d일', strtotime($date));
     };
 
+    // === 숫자를 한글로 변환 ===
+    $numberToKorean = function($number) {
+        $number = intval($number);
+        if ($number == 0) return '영';
+        $units = ['', '만', '억', '조'];
+        $digits = ['', '일', '이', '삼', '사', '오', '육', '칠', '팔', '구'];
+        $positions = ['', '십', '백', '천'];
+        $result = '';
+        $unitIndex = 0;
+        while ($number > 0) {
+            $part = $number % 10000;
+            if ($part > 0) {
+                $partStr = '';
+                $posIndex = 0;
+                while ($part > 0) {
+                    $digit = $part % 10;
+                    if ($digit > 0) {
+                        $digitStr = ($digit == 1 && $posIndex > 0) ? '' : $digits[$digit];
+                        $partStr = $digitStr . $positions[$posIndex] . $partStr;
+                    }
+                    $part = intdiv($part, 10);
+                    $posIndex++;
+                }
+                $result = $partStr . $units[$unitIndex] . $result;
+            }
+            $number = intdiv($number, 10000);
+            $unitIndex++;
+        }
+        return $result;
+    };
+    $koreanAmount = $numberToKorean($grandTotal);
+
     // === HTML 이스케이프 ===
     $e = function($str) {
         return htmlspecialchars($str ?? '', ENT_QUOTES, 'UTF-8');
@@ -37,151 +69,242 @@ function renderQuoteLayout(array $quote, array $items, array $supplier, string $
     // === HTML 생성 시작 ===
     ob_start();
 ?>
-<!-- 표준 견적서 레이아웃 v2.0 - quotation.html 스타일 (A4) -->
-<div class="a4-page" style="width:210mm;min-height:297mm;margin:20px auto;padding:15mm;background:white;box-shadow:0 2px 10px rgba(0,0,0,0.1);box-sizing:border-box;font-family:'Noto Sans KR',sans-serif;font-size:13px;color:#000;line-height:1.4;">
+<!-- 표준 견적서 레이아웃 - quotation.html 스타일 -->
+<style>
+/* A4 용지 설정 */
+@page {
+    size: A4;
+    margin: 15mm;
+}
+.quote-body {
+    font-family: "Noto Sans KR", sans-serif;
+    font-size: 13px;
+    color: #000;
+    margin: 0;
+    padding: 0;
+    background: white;
+}
+/* A4 컨테이너 */
+.a4-page {
+    width: 210mm;
+    min-height: 297mm;
+    margin: 0 auto;
+    padding: 15mm;
+    background: white;
+    box-sizing: border-box;
+}
+@media print {
+    .quote-body {
+        background: white;
+    }
+    .a4-page {
+        width: 100%;
+        margin: 0;
+        padding: 0;
+        box-shadow: none;
+    }
+}
+.a4-page table {
+    width: 100%;
+    border-collapse: collapse;
+}
+.a4-page th, .a4-page td {
+    border: 1px solid #000;
+    padding: 6px;
+    vertical-align: middle;
+}
+.a4-page th {
+    background: #e8e8e8;
+    text-align: center;
+}
+.a4-page .title {
+    font-size: 24px;
+    font-weight: bold;
+    text-align: center;
+    border: none;
+}
+.a4-page .no-border {
+    border: none;
+}
+.a4-page .right {
+    text-align: right;
+}
+.a4-page .center {
+    text-align: center;
+}
+.a4-page .bold {
+    font-weight: bold;
+}
+.a4-page .table-bordered {
+    border: 2px solid #000;
+}
+</style>
 
-    <!-- 견적번호 -->
-    <table style="width:100%;border-collapse:collapse;margin-bottom:5px;">
-        <tr>
-            <td style="border:none;font-size:13px;">No. <?php echo $e($quote['quote_no'] ?? ''); ?></td>
-        </tr>
-    </table>
+<div class="quote-body">
+<div class="a4-page">
 
-    <!-- 제목 -->
-    <table style="width:100%;border-collapse:collapse;margin-bottom:10px;">
-        <tr>
-            <td style="border:none;font-size:24px;font-weight:bold;text-align:center;padding:15px 0;">견 적 서</td>
-        </tr>
-    </table>
+<table>
+    <tr>
+        <td class="no-border">No. <?php echo $e($quote['quote_no'] ?? ''); ?></td>
+    </tr>
+    <tr>
+        <td class="title" colspan="4">견 적 서</td>
+        <td class="no-border"></td>
+    </tr>
+</table>
 
-    <!-- 기본정보 테이블 (공급받는자 50% / 공급자 50%) -->
-    <table style="width:100%;border-collapse:collapse;margin-bottom:10px;border:2px solid #000;">
-        <tr>
-            <th style="background:#e8e8e8;border:1px solid #000;padding:6px;text-align:center;width:12%;">견적일</th>
-            <td style="border:1px solid #000;padding:6px;width:38%;"><?php echo $formatDate($quote['quote_date'] ?? date('Y-m-d')); ?></td>
-            <th colspan="4" style="background:#e8e8e8;border:1px solid #000;padding:6px;text-align:center;width:50%;">공급자</th>
-        </tr>
-        <tr>
-            <th style="background:#e8e8e8;border:1px solid #000;padding:6px;text-align:center;">회사명</th>
-            <td style="border:1px solid #000;padding:6px;"><?php echo $e($quote['customer_company'] ?? ''); ?></td>
-            <th style="background:#e8e8e8;border:1px solid #000;padding:6px;text-align:center;width:10%;">등록번호</th>
-            <td style="border:1px solid #000;padding:6px;font-weight:bold;width:15%;"><?php echo $e($supplier['business_no'] ?? ''); ?></td>
-            <th style="background:#e8e8e8;border:1px solid #000;padding:6px;text-align:center;width:10%;">대표자</th>
-            <td style="border:1px solid #000;padding:6px;width:15%;"><?php echo $e($supplier['ceo_name'] ?? ''); ?> <span style="font-size:0.7em;color:#666;">(직인생략)</span></td>
-        </tr>
-        <tr>
-            <th style="background:#e8e8e8;border:1px solid #000;padding:6px;text-align:center;">담당자</th>
-            <td style="border:1px solid #000;padding:6px;"><?php echo $e($quote['customer_name'] ?? ''); ?> 귀하</td>
-            <th style="background:#e8e8e8;border:1px solid #000;padding:6px;text-align:center;">상호</th>
-            <td colspan="3" style="border:1px solid #000;padding:6px;font-weight:bold;"><?php echo $e($supplier['company_name'] ?? ''); ?></td>
-        </tr>
-        <tr>
-            <th style="background:#e8e8e8;border:1px solid #000;padding:6px;text-align:center;">유효기간</th>
-            <td style="border:1px solid #000;padding:6px;">발행일로부터 <?php echo intval($quote['validity_days'] ?? 7); ?>일간 유효</td>
-            <th style="background:#e8e8e8;border:1px solid #000;padding:6px;text-align:center;">주소</th>
-            <td colspan="3" style="border:1px solid #000;padding:6px;"><?php echo $e($supplier['address'] ?? ''); ?></td>
-        </tr>
-        <tr>
-            <th style="background:#e8e8e8;border:1px solid #000;padding:6px;text-align:center;">전화번호</th>
-            <td style="border:1px solid #000;padding:6px;"><?php echo $e($supplier['phone'] ?? ''); ?></td>
-            <th style="background:#e8e8e8;border:1px solid #000;padding:6px;text-align:center;">업태</th>
-            <td style="border:1px solid #000;padding:6px;">제조</td>
-            <th style="background:#e8e8e8;border:1px solid #000;padding:6px;text-align:center;">종목</th>
-            <td style="border:1px solid #000;padding:6px;">인쇄업외</td>
-        </tr>
-    </table>
+<br>
 
-    <!-- 합계금액 테이블 -->
-    <table style="width:100%;border-collapse:collapse;margin-bottom:10px;border:2px solid #000;">
-        <tr>
-            <th colspan="2" style="background:#e8e8e8;border:1px solid #000;padding:6px;text-align:center;width:50%;">합계금액 (부가세포함)</th>
-            <td rowspan="2" style="border:1px solid #000;padding:10px;text-align:center;font-weight:bold;font-size:20px;width:50%;">
-                <?php echo $formatMoney($grandTotal); ?> 원
-            </td>
-        </tr>
-        <tr>
-            <td colspan="2" style="border:1px solid #000;padding:10px;text-align:center;font-weight:bold;">
-                ( ₩<?php echo $formatMoney($grandTotal); ?> )
-            </td>
-        </tr>
-    </table>
+<table class="table-bordered">
+    <colgroup>
+        <!-- 공급받는자 50% -->
+        <col style="width:12%;">
+        <col style="width:38%;">
+        <!-- 공급자 50% -->
+        <col style="width:10%;">
+        <col style="width:15%;">
+        <col style="width:10%;">
+        <col style="width:15%;">
+    </colgroup>
+    <tr>
+        <th>견적일</th>
+        <td><?php echo $formatDate($quote['quote_date'] ?? date('Y-m-d')); ?></td>
+        <th colspan="4">공급자</th>
+    </tr>
+    <tr>
+        <th>회사명</th>
+        <td><?php echo $e($quote['customer_company'] ?? ''); ?></td>
+        <th>등록번호</th>
+        <td class="bold"><?php echo $e($supplier['business_no'] ?? ''); ?></td>
+        <th>대표자</th>
+        <td><?php echo $e($supplier['ceo_name'] ?? ''); ?> <span style="font-size:0.7em;color:#666;">(직인생략)</span></td>
+    </tr>
+    <tr>
+        <th>담당자</th>
+        <td><?php echo $e($quote['customer_name'] ?? ''); ?> 귀하</td>
+        <th>상호</th>
+        <td colspan="3" class="bold"><?php echo $e($supplier['company_name'] ?? ''); ?></td>
+    </tr>
+    <tr>
+        <th>유효기간</th>
+        <td>발행일로부터 <?php echo intval($quote['validity_days'] ?? 7); ?>일간 유효</td>
+        <th>주소</th>
+        <td colspan="3"><?php echo $e($supplier['address'] ?? ''); ?></td>
+    </tr>
+    <tr>
+        <th>전화번호</th>
+        <td><?php echo $e($supplier['phone'] ?? ''); ?></td>
+        <th>업태</th>
+        <td>제조</td>
+        <th>종목</th>
+        <td>인쇄업외</td>
+    </tr>
+</table>
 
-    <!-- 품목 테이블 -->
-    <table style="width:100%;border-collapse:collapse;margin-bottom:10px;border:2px solid #000;">
-        <tr>
-            <th style="background:#e8e8e8;border:1px solid #000;padding:6px;text-align:center;width:40px;">NO</th>
-            <th style="background:#e8e8e8;border:1px solid #000;padding:6px;text-align:center;width:70px;">품목</th>
-            <th style="background:#e8e8e8;border:1px solid #000;padding:6px;text-align:center;">규격 및 사양</th>
-            <th style="background:#e8e8e8;border:1px solid #000;padding:6px;text-align:center;width:70px;">수량</th>
-            <th style="background:#e8e8e8;border:1px solid #000;padding:6px;text-align:center;width:70px;">단가</th>
-            <th style="background:#e8e8e8;border:1px solid #000;padding:6px;text-align:center;width:90px;">공급가액</th>
-        </tr>
+<br>
 
-        <?php if (empty($items)): ?>
-        <tr>
-            <td colspan="6" style="border:1px solid #000;padding:20px;text-align:center;color:#888;">등록된 품목이 없습니다.</td>
-        </tr>
-        <?php else: ?>
-        <?php foreach ($items as $idx => $item): ?>
-        <tr>
-            <td style="border:1px solid #000;padding:6px;text-align:center;"><?php echo ($idx + 1); ?></td>
-            <td style="border:1px solid #000;padding:6px;text-align:center;"><?php echo $e($item['product_name'] ?? ''); ?></td>
-            <td style="border:1px solid #000;padding:6px;"><?php echo nl2br($e($item['specification'] ?? '')); ?></td>
-            <td style="border:1px solid #000;padding:6px;text-align:center;"><?php echo $e($item['quantity_display'] ?? ''); ?></td>
-            <td style="border:1px solid #000;padding:6px;text-align:right;"><?php echo $formatMoney($item['unit_price'] ?? 0); ?></td>
-            <td style="border:1px solid #000;padding:6px;text-align:right;"><?php echo $formatMoney($item['supply_price'] ?? 0); ?></td>
-        </tr>
-        <?php endforeach; ?>
-        <?php endif; ?>
+<table class="table-bordered">
+    <colgroup>
+        <col style="width:5%;">
+        <col style="width:8%;">
+        <col style="width:32%;">
+        <col style="width:8%;">
+        <col style="width:6%;">
+        <col style="width:10%;">
+        <col style="width:14%;">
+        <col style="width:17%;">
+    </colgroup>
+    <tr>
+        <th colspan="2" class="center bold">합계금액(VAT포함)</th>
+        <td colspan="2" class="center bold">
+            일금 <?php echo $koreanAmount; ?>원정<br>
+            ( ₩<?php echo $formatMoney($grandTotal); ?> )
+        </td>
+        <td colspan="4" class="center bold" style="font-size:20px;">
+            <?php echo $formatMoney($grandTotal); ?> 원
+        </td>
+    </tr>
+    <tr>
+        <th>NO</th>
+        <th>품목</th>
+        <th>규격 및 사양</th>
+        <th>수량</th>
+        <th>단위</th>
+        <th>단가</th>
+        <th>공급가액</th>
+        <th>비고</th>
+    </tr>
 
-        <!-- 빈 행 (최소 3행 유지) -->
-        <?php for ($i = count($items); $i < 3; $i++): ?>
-        <tr>
-            <td style="border:1px solid #000;padding:6px;">&nbsp;</td>
-            <td style="border:1px solid #000;padding:6px;">&nbsp;</td>
-            <td style="border:1px solid #000;padding:6px;">&nbsp;</td>
-            <td style="border:1px solid #000;padding:6px;">&nbsp;</td>
-            <td style="border:1px solid #000;padding:6px;">&nbsp;</td>
-            <td style="border:1px solid #000;padding:6px;">&nbsp;</td>
-        </tr>
-        <?php endfor; ?>
+    <?php if (empty($items)): ?>
+    <tr>
+        <td colspan="8" class="center" style="padding:20px;color:#888;">등록된 품목이 없습니다.</td>
+    </tr>
+    <?php else: ?>
+    <?php foreach ($items as $idx => $item): ?>
+    <tr>
+        <td class="center"><?php echo ($idx + 1); ?></td>
+        <td class="center"><?php echo $e($item['product_name'] ?? ''); ?></td>
+        <td><?php echo nl2br($e($item['specification'] ?? '')); ?></td>
+        <td class="center"><?php echo $e($item['quantity_display'] ?? ''); ?></td>
+        <td class="center"><?php echo $e($item['unit'] ?? '개'); ?></td>
+        <td class="right"><?php echo $formatMoney($item['unit_price'] ?? 0); ?></td>
+        <td class="right"><?php echo $formatMoney($item['supply_price'] ?? 0); ?></td>
+        <td class="center"><?php echo $e($item['notes'] ?? ''); ?></td>
+    </tr>
+    <?php endforeach; ?>
+    <?php endif; ?>
 
-        <!-- 합계 -->
-        <tr>
-            <td colspan="5" style="border:1px solid #000;padding:6px;text-align:right;font-weight:bold;">공급가액 합계</td>
-            <td style="border:1px solid #000;padding:6px;text-align:right;font-weight:bold;"><?php echo $formatMoney($supplyTotal); ?></td>
-        </tr>
-        <tr>
-            <td colspan="5" style="border:1px solid #000;padding:6px;text-align:right;font-weight:bold;">부가세</td>
-            <td style="border:1px solid #000;padding:6px;text-align:right;font-weight:bold;"><?php echo $formatMoney($vatAmount); ?></td>
-        </tr>
-        <tr>
-            <td colspan="5" style="border:1px solid #000;padding:6px;text-align:right;font-weight:bold;">합 계 (VAT포함)</td>
-            <td style="border:1px solid #000;padding:6px;text-align:right;font-weight:bold;font-size:16px;"><?php echo $formatMoney($grandTotal); ?></td>
-        </tr>
-    </table>
+    <!-- 빈 행 (최소 3행 유지) -->
+    <?php for ($i = count($items); $i < 3; $i++): ?>
+    <tr>
+        <td>&nbsp;</td>
+        <td>&nbsp;</td>
+        <td>&nbsp;</td>
+        <td>&nbsp;</td>
+        <td>&nbsp;</td>
+        <td>&nbsp;</td>
+        <td>&nbsp;</td>
+        <td>&nbsp;</td>
+    </tr>
+    <?php endfor; ?>
 
-    <!-- 하단 정보 -->
-    <table style="width:100%;border-collapse:collapse;">
-        <tr>
-            <td style="border:none;padding:6px;line-height:1.8;">
-                입금 계좌번호 :<br>
-                <?php if (!empty($supplier['bank_accounts'])): ?>
-                <?php foreach ($supplier['bank_accounts'] as $bank): ?>
-                <?php echo $e($bank['bank_name']); ?> <?php echo $e($bank['account_no']); ?> /
-                <?php endforeach; ?>
-                <?php endif; ?><br>
-                예금주 : <?php echo $e($supplier['account_holder'] ?? $supplier['company_name'] ?? ''); ?>
-            </td>
-        </tr>
-        <tr>
-            <td style="border:none;padding:6px;">담당자 : <?php echo $e($quote['customer_name'] ?? ''); ?></td>
-        </tr>
-        <tr>
-            <td style="border:none;padding:6px;">비고 : 택배는 착불기준입니다</td>
-        </tr>
-    </table>
+    <tr>
+        <td colspan="6" class="right bold">공급가액 합계</td>
+        <td colspan="2" class="right bold"><?php echo $formatMoney($supplyTotal); ?></td>
+    </tr>
+    <tr>
+        <td colspan="6" class="right bold">부가세</td>
+        <td colspan="2" class="right bold"><?php echo $formatMoney($vatAmount); ?></td>
+    </tr>
+    <tr>
+        <th colspan="6" class="right bold">합 계 (VAT포함)</th>
+        <td colspan="2" class="right bold"><?php echo $formatMoney($grandTotal); ?></td>
+    </tr>
+</table>
 
+<br>
+
+<table>
+    <tr>
+        <td class="no-border">
+            입금 계좌번호 :<br>
+            <?php if (!empty($supplier['bank_accounts'])): ?>
+            <?php foreach ($supplier['bank_accounts'] as $bank): ?>
+            <?php echo $e($bank['bank_name']); ?> <?php echo $e($bank['account_no']); ?> /
+            <?php endforeach; ?>
+            <?php endif; ?>
+            예금주 : <?php echo $e($supplier['account_holder'] ?? $supplier['company_name'] ?? ''); ?>
+        </td>
+    </tr>
+    <tr>
+        <td class="no-border">담당자 : <?php echo $e($quote['customer_name'] ?? ''); ?></td>
+    </tr>
+    <tr>
+        <td class="no-border">비고 : 택배는 착불기준입니다</td>
+    </tr>
+</table>
+
+</div>
 </div>
 <!-- /표준 견적서 레이아웃 -->
 <?php

@@ -180,9 +180,34 @@ if ($type_result && ($type_row = mysqli_fetch_assoc($type_result))) {
     <?php if (!$isQuotationMode && !$isAdminQuoteMode) include "../../includes/header-ui.php"; ?>
     <?php if (!$isQuotationMode && !$isAdminQuoteMode) include "../../includes/nav.php"; ?>
 
+    <style>
+        /* 봉투재질보기 버튼 스타일 */
+        .btn-texture-view {
+            display: inline-block;
+            font-size: 0.55em;
+            padding: 6px 12px;
+            margin-left: 15px;
+            background: linear-gradient(135deg, #6366f1 0%, #8b5cf6 100%);
+            color: white !important;
+            text-decoration: none;
+            border-radius: 20px;
+            font-weight: 500;
+            vertical-align: middle;
+            transition: all 0.3s ease;
+            box-shadow: 0 2px 8px rgba(99, 102, 241, 0.3);
+        }
+        .btn-texture-view:hover {
+            background: linear-gradient(135deg, #4f46e5 0%, #7c3aed 100%);
+            transform: translateY(-2px);
+            box-shadow: 0 4px 12px rgba(99, 102, 241, 0.4);
+        }
+    </style>
+
     <div class="product-container">
         <div class="page-title">
-            <h1>봉투 견적 안내</h1>
+            <h1>봉투 견적 안내
+                <a href="#envelope-texture-section" class="btn-texture-view" title="봉투 재질 이미지 보기">📋 봉투재질보기</a>
+            </h1>
         </div>
 
         <!-- 컴팩트 2단 그리드 레이아웃 (500px 갤러리 + 나머지 계산기) -->

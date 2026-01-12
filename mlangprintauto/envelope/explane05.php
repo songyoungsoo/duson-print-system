@@ -83,6 +83,108 @@
             </div>
         </div>
 
+        <!-- 📜 봉투의 재질 갤러리 섹션 -->
+        <div id="envelope-texture-section" style="display: flex; gap: 15px; margin-top: 20px;">
+            <div style="background: #007bff; color: white; width: 35px; height: 35px; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-weight: bold; font-size: 1rem; flex-shrink: 0;">📜</div>
+            <div style="flex: 1;">
+                <h4 style="color: #333; font-size: 1.1rem; margin-bottom: 12px;">봉투의 재질</h4>
+                <p style="color: #666; font-size: 0.9rem; margin-bottom: 10px;">다양한 봉투 용지의 질감과 색상을 확인해보세요. 이미지를 클릭하면 크게 볼 수 있습니다.</p>
+                <p style="color: #856404; font-size: 0.85rem; margin-bottom: 15px; padding: 10px; background: #fff3cd; border-radius: 6px; border-left: 4px solid #ffc107;">
+                    <strong>⚠️ 참고:</strong> 실제 질감은 미묘한 차이로 인해 이미지로 보여드리는 것은 한계가 있음을 양지해주시기 바랍니다. 이 이미지는 사용된 질감 표현의 일부임을 알려드립니다.
+                </p>
+
+                <div style="display: grid; grid-template-columns: repeat(2, 1fr); gap: 20px; margin: 20px 0;">
+                    <?php
+                    $textureDir = $_SERVER['DOCUMENT_ROOT'] . '/ImgFolder/paper_texture/봉투재질/';
+                    $webPath = '/ImgFolder/paper_texture/봉투재질/';
+
+                    // 이미지 파일 목록 가져오기
+                    $imageFiles = [];
+                    if (is_dir($textureDir)) {
+                        $files = scandir($textureDir);
+                        foreach ($files as $file) {
+                            if (preg_match('/\.(jpg|jpeg|png|gif|webp)$/i', $file)) {
+                                $imageFiles[] = $file;
+                            }
+                        }
+                        sort($imageFiles);
+                    }
+
+                    // 이미지 출력
+                    foreach ($imageFiles as $file) {
+                        // 한글 파일명 지원 (pathinfo 대신 preg_replace 사용)
+                        $textureName = preg_replace('/\.[^.]+$/', '', $file);
+                        $imagePath = $webPath . rawurlencode($file);
+                        ?>
+                        <div style="background: white; border-radius: 10px; overflow: hidden; box-shadow: 0 3px 10px rgba(0,0,0,0.1); transition: all 0.3s ease; cursor: pointer;"
+                             onclick="openEnvelopeTextureModal('<?php echo htmlspecialchars($imagePath); ?>', '<?php echo htmlspecialchars($textureName); ?>')"
+                             onmouseover="this.style.transform='translateY(-5px)'; this.style.boxShadow='0 8px 20px rgba(0,0,0,0.15)';"
+                             onmouseout="this.style.transform='translateY(0)'; this.style.boxShadow='0 3px 10px rgba(0,0,0,0.1)';">
+                            <div style="width: 100%; height: 200px; overflow: hidden;">
+                                <img src="<?php echo htmlspecialchars($imagePath); ?>"
+                                     alt="<?php echo htmlspecialchars($textureName); ?>"
+                                     style="width: 100%; height: 100%; object-fit: cover; transition: transform 0.3s ease;"
+                                     onmouseover="this.style.transform='scale(1.1)';"
+                                     onmouseout="this.style.transform='scale(1)';">
+                            </div>
+                            <div style="padding: 12px; text-align: center;">
+                                <span style="font-weight: 600; color: #333; font-size: 0.95rem;"><?php echo htmlspecialchars($textureName); ?></span>
+                            </div>
+                        </div>
+                        <?php
+                    }
+
+                    if (empty($imageFiles)) {
+                        echo '<p style="color: #999; grid-column: span 2; text-align: center; padding: 20px;">표시할 재질 이미지가 없습니다.</p>';
+                    }
+                    ?>
+                </div>
+            </div>
+        </div>
+
+        <!-- 봉투 재질 이미지 모달 -->
+        <div id="envelopeTextureModal" style="display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.9); z-index: 10000; justify-content: center; align-items: center;">
+            <span onclick="closeEnvelopeTextureModal()" style="position: absolute; top: 20px; right: 30px; color: white; font-size: 40px; cursor: pointer; z-index: 10001;">&times;</span>
+            <div style="text-align: center; max-width: 90%; max-height: 90%;">
+                <img id="envelopeTextureModalImg" src="" alt="" style="max-width: 100%; max-height: 80vh; border-radius: 8px; box-shadow: 0 10px 40px rgba(0,0,0,0.5);">
+                <p id="envelopeTextureModalCaption" style="color: white; font-size: 1.2rem; margin-top: 15px; font-weight: 500;"></p>
+            </div>
+        </div>
+
+        <script>
+        function openEnvelopeTextureModal(src, name) {
+            const modal = document.getElementById('envelopeTextureModal');
+            const modalImg = document.getElementById('envelopeTextureModalImg');
+            const caption = document.getElementById('envelopeTextureModalCaption');
+
+            modal.style.display = 'flex';
+            modalImg.src = src;
+            modalImg.alt = name;
+            caption.textContent = name;
+
+            document.body.style.overflow = 'hidden';
+        }
+
+        function closeEnvelopeTextureModal() {
+            document.getElementById('envelopeTextureModal').style.display = 'none';
+            document.body.style.overflow = '';
+        }
+
+        // ESC 키로 모달 닫기
+        document.addEventListener('keydown', function(e) {
+            if (e.key === 'Escape') {
+                closeEnvelopeTextureModal();
+            }
+        });
+
+        // 모달 바깥 클릭시 닫기
+        document.getElementById('envelopeTextureModal')?.addEventListener('click', function(e) {
+            if (e.target === this) {
+                closeEnvelopeTextureModal();
+            }
+        });
+        </script>
+
         <!-- 🚚 접수 출고안내 -->
         <div style="display: flex; gap: 15px;">
             <div style="background: #007bff; color: white; width: 35px; height: 35px; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-weight: bold; font-size: 1rem; flex-shrink: 0;">🚚</div>
