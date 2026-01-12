@@ -474,21 +474,32 @@ class SpecDisplayService {
 
     /**
      * 단위 추출
+     * 우선순위: quantity_unit_phase3 > quantity_unit > PRODUCT_UNITS > unit > 기본값
      */
     private function getUnit(array $item): string {
-        // Phase 3 필드 우선
+        // 1. Phase 3 필드 우선
         if (!empty($item['quantity_unit_phase3'])) {
             return $item['quantity_unit_phase3'];
         }
+
+        // 2. quantity_unit (파싱된 데이터)
         if (!empty($item['quantity_unit'])) {
             return $item['quantity_unit'];
         }
+
+        // 3. 제품 타입 기반 단위 (DB unit 컬럼보다 우선)
+        // ✅ 2026-01-12: DB unit 컬럼에 잘못된 기본값('매')이 있을 수 있음
+        $productType = $item['product_type'] ?? '';
+        if (!empty($productType) && isset(self::PRODUCT_UNITS[$productType])) {
+            return self::PRODUCT_UNITS[$productType];
+        }
+
+        // 4. DB unit 컬럼 (제품 타입 없을 때만)
         if (!empty($item['unit'])) {
             return $item['unit'];
         }
 
-        $productType = $item['product_type'] ?? '';
-        return self::PRODUCT_UNITS[$productType] ?? '개';
+        return '개';
     }
 
     /**
