@@ -198,7 +198,26 @@ class OrderStatusManager {
      * @param string $status 상태 코드
      */
     private function handleStatusSpecificActions($status) {
+        // 주문 정보 조회
+        $order = $this->getOrderInfo();
+
         switch ($status) {
+            case 'payment_confirmed':
+                // 결제 확인 알림
+                $this->sendNotification('payment_complete', $order);
+                break;
+
+            case 'proof_ready':
+                // 교정본 준비 완료 알림
+                $proofUrl = 'https://dsp1830.shop/proof/view.php?order=' . $this->order_no;
+                $this->sendProofRequestNotification($order, $proofUrl);
+                break;
+
+            case 'in_production':
+                // 제작 시작 알림
+                $this->sendNotification('production_start', $order);
+                break;
+
             case 'shipped':
                 // 배송 시작 시간 기록
                 $stmt = $this->db->prepare("
@@ -208,6 +227,9 @@ class OrderStatusManager {
                 ");
                 $stmt->bind_param('i', $this->order_no);
                 $stmt->execute();
+
+                // 배송 시작 알림
+                $this->sendShippingNotification($order);
                 break;
 
             case 'delivered':
@@ -219,17 +241,113 @@ class OrderStatusManager {
                 ");
                 $stmt->bind_param('i', $this->order_no);
                 $stmt->execute();
-                break;
 
-            case 'proof_ready':
-                // 교정본 준비 완료 알림 대기열에 추가
-                $this->queueNotification('proof_ready');
+                // 배송 완료 알림
+                $this->sendNotification('delivery_complete', $order);
                 break;
+        }
+    }
 
-            case 'shipped':
-                // 배송 시작 알림 대기열에 추가
-                $this->queueNotification('shipped');
-                break;
+    /**
+     * 주문 정보 조회
+     */
+    private function getOrderInfo() {
+        $stmt = $this->db->prepare("
+            SELECT no, name, Hendphone, email, money_4, courier, tracking_number
+            FROM mlangorder_printauto WHERE no = ?
+        ");
+        $stmt->bind_param('i', $this->order_no);
+        $stmt->execute();
+        $result = $stmt->get_result();
+        return $result->fetch_assoc();
+    }
+
+    /**
+     * 알림 서비스를 통한 알림 발송
+     */
+    private function sendNotification($type, $order) {
+        if (empty($order['Hendphone'])) return;
+
+        try {
+            require_once __DIR__ . '/services/NotificationService.php';
+            $notification = new NotificationService($this->db);
+
+            switch ($type) {
+                case 'payment_complete':
+                    $notification->sendPaymentComplete(
+                        $this->order_no,
+                        $order['Hendphone'],
+                        $order['name'],
+                        $order['money_4'],
+                        '결제'
+                    );
+                    break;
+
+                case 'production_start':
+                    $notification->send([
+                        'type' => NotificationService::TYPE_KAKAO_ALIMTALK,
+                        'template' => NotificationService::TEMPLATE_PRODUCTION_START,
+                        'phone' => $order['Hendphone'],
+                        'message' => "[두손기획] 제작 시작 안내\n\n{$order['name']}님, 주문번호 {$this->order_no}의 제작이 시작되었습니다.\n\n제작 완료 후 배송 안내 드리겠습니다.\n\n감사합니다.",
+                        'order_id' => $this->order_no
+                    ]);
+                    break;
+
+                case 'delivery_complete':
+                    $notification->send([
+                        'type' => NotificationService::TYPE_KAKAO_ALIMTALK,
+                        'template' => NotificationService::TEMPLATE_DELIVERY_COMPLETE,
+                        'phone' => $order['Hendphone'],
+                        'message' => "[두손기획] 배송 완료\n\n{$order['name']}님, 주문하신 상품이 배송 완료되었습니다.\n\n주문번호: {$this->order_no}\n\n이용해 주셔서 감사합니다.",
+                        'order_id' => $this->order_no
+                    ]);
+                    break;
+            }
+        } catch (Exception $e) {
+            error_log("[OrderStatusManager] 알림 발송 실패: " . $e->getMessage());
+        }
+    }
+
+    /**
+     * 교정 요청 알림 발송
+     */
+    private function sendProofRequestNotification($order, $proofUrl) {
+        if (empty($order['Hendphone'])) return;
+
+        try {
+            require_once __DIR__ . '/services/NotificationService.php';
+            $notification = new NotificationService($this->db);
+            $notification->sendProofRequest(
+                $this->order_no,
+                $order['Hendphone'],
+                $order['name'],
+                $proofUrl
+            );
+        } catch (Exception $e) {
+            error_log("[OrderStatusManager] 교정 요청 알림 실패: " . $e->getMessage());
+        }
+    }
+
+    /**
+     * 배송 시작 알림 발송
+     */
+    private function sendShippingNotification($order) {
+        if (empty($order['Hendphone']) || empty($order['courier']) || empty($order['tracking_number'])) {
+            return;
+        }
+
+        try {
+            require_once __DIR__ . '/services/NotificationService.php';
+            $notification = new NotificationService($this->db);
+            $notification->sendShippingStart(
+                $this->order_no,
+                $order['Hendphone'],
+                $order['name'],
+                $order['courier'],
+                $order['tracking_number']
+            );
+        } catch (Exception $e) {
+            error_log("[OrderStatusManager] 배송 알림 실패: " . $e->getMessage());
         }
     }
 
