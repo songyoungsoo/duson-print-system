@@ -29,6 +29,12 @@ switch ($type) {
     case 'recent':
         echo json_encode(getRecentOrders($db), JSON_UNESCAPED_UNICODE);
         break;
+    case 'pending':
+        echo json_encode(getPendingStats($db), JSON_UNESCAPED_UNICODE);
+        break;
+    case 'action_items':
+        echo json_encode(getActionItems($db), JSON_UNESCAPED_UNICODE);
+        break;
     default:
         echo json_encode(['error' => 'Invalid type'], JSON_UNESCAPED_UNICODE);
 }
@@ -201,4 +207,158 @@ function getRecentOrders($db) {
     }
 
     return $data;
+}
+
+/**
+ * 처리 대기 현황
+ */
+function getPendingStats($db) {
+    // 결제 대기
+    $paymentPending = 0;
+    $result = mysqli_query($db, "SELECT COUNT(*) as cnt FROM mlangorder_printauto WHERE payment_status = 'pending' OR payment_status IS NULL");
+    if ($row = mysqli_fetch_assoc($result)) {
+        $paymentPending = intval($row['cnt']);
+    }
+
+    // 입금 확인 대기 (무통장입금)
+    $depositPending = 0;
+    $result = mysqli_query($db, "SELECT COUNT(*) as cnt FROM payments WHERE payment_method = 'bank_transfer' AND status = 'pending'");
+    if ($row = mysqli_fetch_assoc($result)) {
+        $depositPending = intval($row['cnt']);
+    }
+
+    // 교정 승인 대기
+    $proofPending = 0;
+    $result = mysqli_query($db, "SELECT COUNT(*) as cnt FROM mlangorder_printauto WHERE OrderStyle = 'proof_ready'");
+    if ($row = mysqli_fetch_assoc($result)) {
+        $proofPending = intval($row['cnt']);
+    }
+
+    // 제작 대기
+    $productionPending = 0;
+    $result = mysqli_query($db, "SELECT COUNT(*) as cnt FROM mlangorder_printauto WHERE OrderStyle IN ('proof_approved', 'payment_confirmed')");
+    if ($row = mysqli_fetch_assoc($result)) {
+        $productionPending = intval($row['cnt']);
+    }
+
+    // 배송 대기
+    $shippingPending = 0;
+    $result = mysqli_query($db, "SELECT COUNT(*) as cnt FROM mlangorder_printauto WHERE OrderStyle = 'shipping_ready' OR (ship_status = 'pending' AND OrderStyle NOT IN ('pending', 'cancelled'))");
+    if ($row = mysqli_fetch_assoc($result)) {
+        $shippingPending = intval($row['cnt']);
+    }
+
+    // 배송 중
+    $inShipping = 0;
+    $result = mysqli_query($db, "SELECT COUNT(*) as cnt FROM shipping_info WHERE status IN ('picked_up', 'in_transit', 'out_for_delivery')");
+    if ($row = mysqli_fetch_assoc($result)) {
+        $inShipping = intval($row['cnt']);
+    }
+
+    return [
+        'payment_pending' => $paymentPending,
+        'deposit_pending' => $depositPending,
+        'proof_pending' => $proofPending,
+        'production_pending' => $productionPending,
+        'shipping_pending' => $shippingPending,
+        'in_shipping' => $inShipping,
+        'total_pending' => $paymentPending + $depositPending + $proofPending + $productionPending + $shippingPending
+    ];
+}
+
+/**
+ * 조치 필요 항목
+ */
+function getActionItems($db) {
+    $items = [];
+
+    // 3일 이상 입금 대기 중인 주문
+    $result = mysqli_query($db, "
+        SELECT o.no, o.name, o.money_5, o.date
+        FROM mlangorder_printauto o
+        LEFT JOIN payments p ON o.no = p.order_id
+        WHERE (o.payment_status = 'pending' OR o.payment_status IS NULL)
+        AND o.date < DATE_SUB(NOW(), INTERVAL 3 DAY)
+        ORDER BY o.date ASC
+        LIMIT 5
+    ");
+    while ($row = mysqli_fetch_assoc($result)) {
+        $items[] = [
+            'type' => 'payment_overdue',
+            'priority' => 'high',
+            'title' => "입금 대기 3일 초과",
+            'description' => "주문 #{$row['no']} - {$row['name']} (" . number_format($row['money_5']) . "원)",
+            'order_no' => $row['no'],
+            'date' => $row['date']
+        ];
+    }
+
+    // 48시간 이상 교정 응답 대기
+    $result = mysqli_query($db, "
+        SELECT no, name, date
+        FROM mlangorder_printauto
+        WHERE OrderStyle = 'proof_ready'
+        AND date < DATE_SUB(NOW(), INTERVAL 48 HOUR)
+        ORDER BY date ASC
+        LIMIT 5
+    ");
+    while ($row = mysqli_fetch_assoc($result)) {
+        $items[] = [
+            'type' => 'proof_overdue',
+            'priority' => 'medium',
+            'title' => "교정 응답 48시간 초과",
+            'description' => "주문 #{$row['no']} - {$row['name']}",
+            'order_no' => $row['no'],
+            'date' => $row['date']
+        ];
+    }
+
+    // 배송 중 5일 이상 경과
+    $result = mysqli_query($db, "
+        SELECT s.order_id, o.name, s.created_at, s.courier_code, s.tracking_number
+        FROM shipping_info s
+        JOIN mlangorder_printauto o ON s.order_id = o.no
+        WHERE s.status IN ('picked_up', 'in_transit')
+        AND s.created_at < DATE_SUB(NOW(), INTERVAL 5 DAY)
+        ORDER BY s.created_at ASC
+        LIMIT 5
+    ");
+    while ($row = mysqli_fetch_assoc($result)) {
+        $items[] = [
+            'type' => 'shipping_delayed',
+            'priority' => 'medium',
+            'title' => "배송 5일 이상 경과",
+            'description' => "주문 #{$row['order_id']} - {$row['name']} ({$row['tracking_number']})",
+            'order_no' => $row['order_id'],
+            'date' => $row['created_at']
+        ];
+    }
+
+    // 알림 발송 실패
+    $result = mysqli_query($db, "
+        SELECT order_id, notification_type, recipient, created_at
+        FROM notification_logs
+        WHERE status = 'failed'
+        AND created_at > DATE_SUB(NOW(), INTERVAL 7 DAY)
+        ORDER BY created_at DESC
+        LIMIT 5
+    ");
+    while ($row = mysqli_fetch_assoc($result)) {
+        $items[] = [
+            'type' => 'notification_failed',
+            'priority' => 'low',
+            'title' => "알림 발송 실패",
+            'description' => "주문 #{$row['order_id']} - {$row['notification_type']} ({$row['recipient']})",
+            'order_no' => $row['order_id'],
+            'date' => $row['created_at']
+        ];
+    }
+
+    // 우선순위별 정렬
+    usort($items, function($a, $b) {
+        $priority = ['high' => 0, 'medium' => 1, 'low' => 2];
+        return $priority[$a['priority']] <=> $priority[$b['priority']];
+    });
+
+    return $items;
 }
