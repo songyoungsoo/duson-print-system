@@ -1,1 +1,0 @@
-This is a test file created by the Gemini assistant on 2025-12-17 to check if an automated script is overwriting file changes. If this file disappears, it confirms the hypothesis.
