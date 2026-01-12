@@ -171,6 +171,27 @@ if ($type_result && ($type_row = mysqli_fetch_assoc($type_result))) {
             transform: translateY(-2px);
             box-shadow: 0 4px 12px rgba(240, 147, 251, 0.4);
         }
+
+        /* 명함재질보기 버튼 */
+        .btn-texture-view {
+            display: inline-block;
+            font-size: 0.45em;
+            padding: 6px 12px;
+            margin-left: 15px;
+            background: linear-gradient(135deg, #6366f1 0%, #8b5cf6 100%);
+            color: white !important;
+            text-decoration: none;
+            border-radius: 20px;
+            font-weight: 500;
+            vertical-align: middle;
+            transition: all 0.3s ease;
+            box-shadow: 0 2px 8px rgba(99, 102, 241, 0.3);
+        }
+        .btn-texture-view:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 4px 12px rgba(99, 102, 241, 0.5);
+            background: linear-gradient(135deg, #4f46e5 0%, #7c3aed 100%);
+        }
     </style>
 </head>
 <body class="namecard-page<?php echo ($isQuotationMode || $isAdminQuoteMode) ? ' quotation-modal-mode' : ''; ?>" <?php ThemeLoader::renderBodyAttributes(); ?>>
@@ -179,7 +200,9 @@ if ($type_result && ($type_row = mysqli_fetch_assoc($type_result))) {
 
     <div class="product-container">
         <div class="page-title">
-            <h1>💳 명함 견적 안내</h1>
+            <h1>💳 명함 견적 안내
+                <a href="#paper-texture-section" class="btn-texture-view" title="명함 재질 이미지 보기">📋 명함재질보기</a>
+            </h1>
         </div>
 
         <!-- 컴팩트 2단 그리드 레이아웃 -->
@@ -886,14 +909,20 @@ if ($type_result && ($type_row = mysqli_fetch_assoc($type_result))) {
             formData.append('MY_amount', document.getElementById('MY_amount').value);
             formData.append('ordertype', document.getElementById('ordertype').value);
 
-            // 가격 정보 추가 (프리미엄 옵션 포함)
+            // 가격 정보 추가 (프리미엄 옵션 포함) - 신구 형식 모두 지원
             if (window.currentPriceData) {
-                // 공급가액 합계 (인쇄비 + 디자인비 + 프리미엄 옵션)
-                const totalSupplyPrice = window.currentPriceData.total_supply_price || window.currentPriceData.base_price;
+                // 공급가액 합계 (신형식 우선, 구형식 fallback)
+                const totalSupplyPrice = window.currentPriceData.total_supply_price
+                    || window.currentPriceData.base_price
+                    || window.currentPriceData.Order_PriceForm
+                    || 0;
                 formData.append('price', totalSupplyPrice);
 
-                // 부가세 포함 최종 금액
-                const finalTotalWithVat = window.currentPriceData.final_total_with_vat || window.currentPriceData.total_with_vat;
+                // 부가세 포함 최종 금액 (신형식 우선, 구형식 fallback)
+                const finalTotalWithVat = window.currentPriceData.final_total_with_vat
+                    || window.currentPriceData.total_with_vat
+                    || window.currentPriceData.Total_PriceForm
+                    || 0;
                 formData.append('vat_price', finalTotalWithVat);
             }
 

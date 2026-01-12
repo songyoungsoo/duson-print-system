@@ -86,6 +86,59 @@
         </div>
     </div>
 
+    <div class="detail-section" id="paper-texture-section">
+        <h3>📜 명함의 재질</h3>
+        <p class="section-desc">다양한 명함 용지의 질감과 색상을 확인해보세요. 이미지를 클릭하면 크게 볼 수 있습니다.</p>
+
+        <div class="texture-gallery">
+            <?php
+            $textureDir = $_SERVER['DOCUMENT_ROOT'] . '/ImgFolder/paper_texture/명함재질/';
+            $webPath = '/ImgFolder/paper_texture/명함재질/';
+
+            if (is_dir($textureDir)) {
+                $files = scandir($textureDir);
+                $imageFiles = array_filter($files, function($file) use ($textureDir) {
+                    $ext = strtolower(pathinfo($file, PATHINFO_EXTENSION));
+                    return in_array($ext, ['jpg', 'jpeg', 'png', 'gif', 'webp']) && is_file($textureDir . $file);
+                });
+
+                // 정렬
+                sort($imageFiles);
+
+                foreach ($imageFiles as $file) {
+                    // pathinfo()는 한글 파일명에서 문제 발생 → preg_replace 사용
+                    $textureName = preg_replace('/\.[^.]+$/', '', $file);
+                    $imagePath = $webPath . rawurlencode($file);
+                    ?>
+                    <div class="texture-item" onclick="openTextureModal('<?php echo htmlspecialchars($imagePath); ?>', '<?php echo htmlspecialchars($textureName); ?>')">
+                        <div class="texture-image-wrapper">
+                            <img src="<?php echo htmlspecialchars($imagePath); ?>"
+                                 alt="<?php echo htmlspecialchars($textureName); ?> 재질"
+                                 loading="lazy">
+                            <div class="texture-overlay">
+                                <span class="zoom-icon">🔍</span>
+                            </div>
+                        </div>
+                        <div class="texture-name"><?php echo htmlspecialchars($textureName); ?></div>
+                    </div>
+                    <?php
+                }
+            } else {
+                echo '<p class="no-textures">재질 이미지 폴더를 찾을 수 없습니다.</p>';
+            }
+            ?>
+        </div>
+    </div>
+
+    <!-- 재질 확대 모달 -->
+    <div id="textureModal" class="texture-modal" onclick="closeTextureModal(event)">
+        <div class="texture-modal-content">
+            <span class="texture-modal-close" onclick="closeTextureModal(event)">&times;</span>
+            <img id="textureModalImage" src="" alt="">
+            <div id="textureModalCaption" class="texture-modal-caption"></div>
+        </div>
+    </div>
+
     <div class="detail-section">
         <h3>🚚 접수 출고안내</h3>
         <p class="section-desc">제품별 출고일을 확인해 보세요.</p>
@@ -466,5 +519,213 @@
     .file-types {
         grid-template-columns: 1fr;
     }
+
+    .texture-gallery {
+        grid-template-columns: 1fr !important;
+    }
+}
+
+/* 명함 재질 갤러리 스타일 */
+.texture-gallery {
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    gap: 20px;
+    margin: 20px 0;
+}
+
+.texture-item {
+    background: white;
+    border-radius: 12px;
+    overflow: hidden;
+    box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
+    cursor: pointer;
+    transition: all 0.3s ease;
+}
+
+.texture-item:hover {
+    transform: translateY(-5px);
+    box-shadow: 0 8px 25px rgba(0, 0, 0, 0.2);
+}
+
+.texture-image-wrapper {
+    position: relative;
+    width: 100%;
+    height: 200px;
+    overflow: hidden;
+}
+
+.texture-image-wrapper img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    transition: transform 0.5s ease;
+}
+
+.texture-item:hover .texture-image-wrapper img {
+    transform: scale(1.1);
+}
+
+.texture-overlay {
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background: rgba(0, 0, 0, 0);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: background 0.3s ease;
+}
+
+.texture-item:hover .texture-overlay {
+    background: rgba(0, 0, 0, 0.4);
+}
+
+.zoom-icon {
+    font-size: 2.5rem;
+    opacity: 0;
+    transform: scale(0.5);
+    transition: all 0.3s ease;
+}
+
+.texture-item:hover .zoom-icon {
+    opacity: 1;
+    transform: scale(1);
+}
+
+.texture-name {
+    padding: 15px;
+    text-align: center;
+    font-weight: 600;
+    font-size: 1.1rem;
+    color: #2c3e50;
+    background: linear-gradient(135deg, #f8f9fa 0%, #e9ecef 100%);
+    border-top: 1px solid #dee2e6;
+}
+
+.no-textures {
+    text-align: center;
+    color: #6c757d;
+    padding: 40px;
+    font-style: italic;
+}
+
+/* 재질 모달 스타일 */
+.texture-modal {
+    display: none;
+    position: fixed;
+    z-index: 10000;
+    left: 0;
+    top: 0;
+    width: 100%;
+    height: 100%;
+    background-color: rgba(0, 0, 0, 0.9);
+    animation: fadeIn 0.3s ease;
+}
+
+@keyframes fadeIn {
+    from { opacity: 0; }
+    to { opacity: 1; }
+}
+
+.texture-modal-content {
+    position: relative;
+    margin: auto;
+    padding: 20px;
+    max-width: 90%;
+    max-height: 90%;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    height: 100%;
+}
+
+.texture-modal-content img {
+    max-width: 100%;
+    max-height: 80vh;
+    border-radius: 8px;
+    box-shadow: 0 10px 40px rgba(0, 0, 0, 0.5);
+    animation: zoomIn 0.3s ease;
+}
+
+@keyframes zoomIn {
+    from {
+        opacity: 0;
+        transform: scale(0.8);
+    }
+    to {
+        opacity: 1;
+        transform: scale(1);
+    }
+}
+
+.texture-modal-close {
+    position: absolute;
+    top: 20px;
+    right: 35px;
+    color: #fff;
+    font-size: 45px;
+    font-weight: bold;
+    cursor: pointer;
+    transition: all 0.2s ease;
+    z-index: 10001;
+}
+
+.texture-modal-close:hover {
+    color: #f1c40f;
+    transform: scale(1.2);
+}
+
+.texture-modal-caption {
+    margin-top: 15px;
+    color: #fff;
+    font-size: 1.3rem;
+    font-weight: 600;
+    text-align: center;
+    padding: 10px 25px;
+    background: rgba(255, 255, 255, 0.1);
+    border-radius: 25px;
+    backdrop-filter: blur(5px);
 }
 </style>
+
+<script>
+// 재질 모달 열기
+function openTextureModal(imageSrc, textureName) {
+    const modal = document.getElementById('textureModal');
+    const modalImg = document.getElementById('textureModalImage');
+    const modalCaption = document.getElementById('textureModalCaption');
+
+    modal.style.display = 'block';
+    modalImg.src = imageSrc;
+    modalImg.alt = textureName + ' 재질';
+    modalCaption.textContent = textureName;
+
+    // 스크롤 방지
+    document.body.style.overflow = 'hidden';
+}
+
+// 재질 모달 닫기
+function closeTextureModal(event) {
+    // 모달 콘텐츠 클릭 시에는 닫지 않음
+    if (event.target.classList.contains('texture-modal') ||
+        event.target.classList.contains('texture-modal-close')) {
+        const modal = document.getElementById('textureModal');
+        modal.style.display = 'none';
+        document.body.style.overflow = '';
+    }
+}
+
+// ESC 키로 모달 닫기
+document.addEventListener('keydown', function(event) {
+    if (event.key === 'Escape') {
+        const modal = document.getElementById('textureModal');
+        if (modal.style.display === 'block') {
+            modal.style.display = 'none';
+            document.body.style.overflow = '';
+        }
+    }
+});
+</script>
