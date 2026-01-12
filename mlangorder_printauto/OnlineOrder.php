@@ -140,8 +140,10 @@ if (isset($_POST['mode']) && $_POST['mode'] == "SubmitOk") {
     // 데이터베이스 연결 및 최대 no 조회
     $Table_result = mysqli_query($db, "SELECT MAX(no) FROM mlangorder_printauto");
     if (!$Table_result) {
+        // 보안: DB 에러 상세 정보는 로그에만 기록
+        error_log("[OnlineOrder] DB 조회 오류: " . mysqli_error($db));
         echo "<script>
-                window.alert(\"DB 접속 에러입니다!\");
+                window.alert(\"주문 처리 중 일시적인 오류가 발생했습니다. 잠시 후 다시 시도해주세요.\");
                 history.go(-1);
               </script>";
         exit;
@@ -226,8 +228,10 @@ if (isset($_POST['mode']) && $_POST['mode'] == "SubmitOk") {
             "&standard=$standard&page=$page&PageSS=$PageSS";
         echo "<html><meta http-equiv='Refresh' content='0; URL=$redirect_url'></html>";
     } else {
+        // 보안: SQL 에러는 로그에만 기록하고 사용자에게는 일반 메시지 표시
+        error_log("[OnlineOrder] 주문 삽입 오류: " . mysqli_error($db));
         echo "<script>
-                window.alert(\"데이터 삽입 중 오류가 발생했습니다: " . mysqli_error($db) . "\");
+                window.alert(\"주문 처리 중 오류가 발생했습니다. 잠시 후 다시 시도해주세요.\");
                 history.go(-1);
               </script>";
     }

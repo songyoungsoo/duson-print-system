@@ -4,15 +4,11 @@
  * 경로: /admin/tax_invoice_manager.php
  */
 
-session_start();
-
-// 관리자 권한 확인 (개발 중에는 주석 처리)
-// if (!isset($_SESSION['admin_logged_in']) || $_SESSION['admin_logged_in'] !== true) {
-//     header('Location: /admin/index.php');
-//     exit;
-// }
-
+require_once __DIR__ . '/includes/admin_auth.php';
 require_once $_SERVER['DOCUMENT_ROOT'] . '/db.php';
+
+// 관리자 인증 필수
+requireAdminAuth();
 require_once $_SERVER['DOCUMENT_ROOT'] . '/lib/TrusbillAPI.php';
 
 $error = '';

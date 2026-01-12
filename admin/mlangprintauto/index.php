@@ -8,15 +8,12 @@
  * @date 2025-12-25
  */
 
-session_start();
+require_once __DIR__ . '/../includes/admin_auth.php';
 require_once __DIR__ . '/../../db.php';
 require_once __DIR__ . '/includes/ProductConfig.php';
 
-// 인증 체크 (TODO: 실제 인증 시스템 연동)
-// if (!isset($_SESSION['admin_logged_in'])) {
-//     header('Location: login.php');
-//     exit;
-// }
+// 관리자 인증 필수
+requireAdminAuth();
 
 // 전체 통계 조회
 $stats_query = "

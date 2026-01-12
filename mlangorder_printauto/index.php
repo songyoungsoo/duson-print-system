@@ -59,22 +59,22 @@ function MM_showHideLayers() {
 								var f=document.choiceForm;
 
 								 if (f.StyleForm.value == "") {
-                                        alert("주문/견적문의 을 실행 하기 위하여 오류가 있습니다.\n\n다시 실행 시켜 주십시요...!!\n\n(<?=$admin_name?>)");
+                                        alert("상품 종류를 선택해주세요.\n\n왼쪽 옵션에서 원하시는 상품 종류를 선택해주세요.");
                                             return false;
                                      }
 
 								if (f.SectionForm.value == "") {
-                                        alert("주문/견적문의 을 실행 하기 위하여 오류가 있습니다.\n\n다시 실행 시켜 주십시요...!!");
+                                        alert("상품 옵션을 선택해주세요.\n\n재질, 사이즈 등 필요한 옵션을 선택해주세요.");
                                             return false;
                                      }
 
 								if (f.Order_PriceForm.value == "") {
-                                        alert("주문/견적문의 을 실행 하기 위하여 오류가 있습니다.\n\n다시 실행 시켜 주십시요...!!");
+                                        alert("가격 계산이 완료되지 않았습니다.\n\n모든 옵션 선택 후 가격이 표시되면 주문해주세요.");
                                             return false;
                                      }
 
 							   if (f.Total_PriceForm.value == "") {
-                                        alert("주문/견적문의 을 실행 하기 위하여 오류가 있습니다.\n\n다시 실행 시켜 주십시요...!!");
+                                        alert("총 금액이 계산되지 않았습니다.\n\n옵션을 다시 선택하시거나 페이지를 새로고침해주세요.");
                                             return false;
                                      }
 								

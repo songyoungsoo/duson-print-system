@@ -372,13 +372,23 @@ body {
     position: relative;
     background: white;
     border-radius: 20px;
-    min-width: 1000px;
+    max-width: 1000px;
     max-height: 90vh;
     width: 95%;
     overflow-y: auto;
     box-shadow: 0 25px 80px rgba(0, 0, 0, 0.3);
     animation: modalSlideIn 0.4s cubic-bezier(0.4, 0, 0.2, 1);
     transform: translateZ(0);
+}
+
+/* 모바일 모달 반응형 */
+@media (max-width: 768px) {
+    .modal-content {
+        width: 98%;
+        max-width: none;
+        border-radius: 12px;
+        margin: 10px;
+    }
 }
 
 @keyframes modalSlideIn {

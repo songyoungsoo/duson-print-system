@@ -3,14 +3,11 @@
  * 두손기획 통계 대시보드
  * Google Analytics 스타일 디자인
  */
-session_start();
+require_once __DIR__ . '/includes/admin_auth.php';
 require_once __DIR__ . '/../db.php';
 
-// 간단한 인증 체크 (필요시)
-// if (!isset($_SESSION['admin_logged_in'])) {
-//     header('Location: /member/login.php');
-//     exit;
-// }
+// 관리자 인증 필수
+requireAdminAuth();
 ?>
 <!DOCTYPE html>
 <html lang="ko">
