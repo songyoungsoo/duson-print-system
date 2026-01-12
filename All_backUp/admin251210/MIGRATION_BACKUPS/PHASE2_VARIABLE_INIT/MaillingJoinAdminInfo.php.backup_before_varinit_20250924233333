@@ -1,6 +1,0 @@
-<?php
-declare(strict_types=1);
-$admin_name = "두손기획인쇄";
-$admin_email = "dsp1830@naver.com";
-$admin_url = "http://www.dsp1830.shop";
-?>

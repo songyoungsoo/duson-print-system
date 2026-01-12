@@ -1,4 +1,0 @@
-cd admin/mlangprintauto
-delete CateAdmin_title.php
-delete CateList_Title.php
-bye

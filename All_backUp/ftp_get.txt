@@ -1,4 +1,0 @@
-get
-mlangprintauto/namecard/add_to_basket.php
-add_to_basket_server.php
-quit
