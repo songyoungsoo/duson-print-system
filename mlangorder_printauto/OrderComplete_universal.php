@@ -388,82 +388,6 @@ function displayProductDetails($connect, $order) {
     return $html;
 }
 
-/**
- * 수량 추출 - SpecDisplayService 통합 버전
- *
- * @deprecated 직접 호출 대신 $specDisplayService->getDisplayData($order) 사용 권장
- */
-function extractQuantity($order) {
-    global $specDisplayService;
-
-    // SpecDisplayService 사용 가능하면 통합 출력 사용
-    if ($specDisplayService) {
-        $displayData = $specDisplayService->getDisplayData($order);
-        $quantity_display = $displayData['quantity_display'] ?? '';
-
-        if (!empty($quantity_display)) {
-            return htmlspecialchars($quantity_display);
-        }
-    }
-
-    // SpecDisplayService 사용 불가 시 레거시 폴백
-    // 상품 타입 확인
-    $product_type = '';
-    $json_data = null;
-
-    if (isset($order['Type_1'])) {
-        $type_data = $order['Type_1'];
-        // "상품 정보: " 접두사 제거
-        if (strpos($type_data, '상품 정보: ') === 0) {
-            $type_data = substr($type_data, strlen('상품 정보: '));
-        }
-        $json_data = json_decode($type_data, true);
-        $product_type = $json_data['product_type'] ?? '';
-    }
-
-    // 표준 필드 우선 사용
-    if ($json_data && !empty($json_data['quantity_display'])) {
-        // 단위 검증
-        if (preg_match('/[매연부권개장]/u', $json_data['quantity_display'])) {
-            return htmlspecialchars($json_data['quantity_display']);
-        }
-    }
-
-    // 레거시 데이터 폴백
-    $is_flyer = in_array($product_type, ['inserted', 'leaflet']) ||
-                strpos($order['Type'] ?? '', '전단') !== false ||
-                strpos($order['Type'] ?? '', '리플렛') !== false;
-
-    if ($is_flyer && $json_data) {
-        $my_amount = $json_data['MY_amount'] ?? $order['MY_amount'] ?? null;
-        $mesu = $json_data['mesu'] ?? $order['mesu'] ?? null;
-
-        if (!empty($my_amount)) {
-            $yeonsu = floatval($my_amount);
-            $formatted_qty = formatQuantityValue($yeonsu, 'inserted');
-            $quantity_text = $formatted_qty . '연';
-            if (!empty($mesu)) {
-                $quantity_text .= '(' . number_format(intval($mesu)) . '매)';
-            }
-            return htmlspecialchars($quantity_text);
-        }
-    }
-
-    // 다른 품목
-    if ($json_data && is_array($json_data)) {
-        $details = $json_data['order_details'] ?? $json_data;
-        $my_amount = $details['MY_amount'] ?? null;
-        $unit = $order['unit'] ?? '매';
-
-        if (!empty($my_amount)) {
-            return formatQuantity($my_amount, $product_type, $unit);
-        }
-    }
-
-    // 최종 폴백
-    return '1';
-}
-
 // ===========================================
 // 🎯 메인 로직 시작
 // ===========================================
@@ -1881,14 +1805,6 @@ $additional_css = [
         </p>
     </div>
 
-    <?php
-        // Gemini Debug Block
-        if (!empty($order_list)) {
-            error_log("======= FIRST ORDER DATA DEBUG (pre-table) =======");
-            error_log(print_r($order_list[0], true)); // Log the first order
-            error_log("================================================");
-        }
-    ?>
     <!-- 주문 테이블 (7컬럼: 주문번호, 품목, 규격/옵션, 수량, 단위, 공급가액, 상태) -->
     <table class="order-table">
         <thead>

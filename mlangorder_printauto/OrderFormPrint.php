@@ -769,8 +769,6 @@ function extractUnit($order) {
                         <td class="col-price">
                             <div class="price-container">
                                 <div class="price-supply">₩<?php echo number_format($order['money_4']); ?></div>
-                                <div class="price-total">총액: ₩<?php echo number_format($order['money_5']); ?></div>
-                                <div class="price-vat">(VAT ₩<?php echo number_format($order['money_5'] - $order['money_4']); ?> 포함)</div>
                             </div>
                         </td>
                         <td class="col-status">
@@ -779,6 +777,33 @@ function extractUnit($order) {
                     </tr>
                     <?php endforeach; ?>
                 </tbody>
+                <!-- 합계 섹션 -->
+                <tfoot>
+                    <?php
+                    $total_supply = 0;
+                    $total_vat = 0;
+                    $total_amount = 0;
+                    foreach ($order_list as $order) {
+                        $supply = intval($order['money_4'] ?? 0);
+                        $amount = intval($order['money_5'] ?? 0);
+                        $total_supply += $supply;
+                        $total_amount += $amount;
+                    }
+                    $total_vat = $total_amount - $total_supply;
+                    ?>
+                    <tr class="summary-row">
+                        <td colspan="5" style="text-align: right; font-weight: 600; padding-right: 15px; background: #f8fafc;">공급가액 합계:</td>
+                        <td colspan="2" style="text-align: right; font-weight: 700; font-size: 11pt; color: #059669; background: #f8fafc;">₩<?php echo number_format($total_supply); ?></td>
+                    </tr>
+                    <tr class="summary-row">
+                        <td colspan="5" style="text-align: right; font-weight: 600; padding-right: 15px; background: #f8fafc;">부가세(VAT):</td>
+                        <td colspan="2" style="text-align: right; font-weight: 600; font-size: 10pt; color: #6b7280; background: #f8fafc;">₩<?php echo number_format($total_vat); ?></td>
+                    </tr>
+                    <tr class="total-row">
+                        <td colspan="5" style="text-align: right; font-weight: 700; padding-right: 15px; background: linear-gradient(135deg, #1e293b 0%, #334155 100%); color: white; font-size: 11pt;">합계 (VAT 포함):</td>
+                        <td colspan="2" style="text-align: right; font-weight: 800; font-size: 14pt; color: white; background: linear-gradient(135deg, #1e293b 0%, #334155 100%);">₩<?php echo number_format($total_amount); ?></td>
+                    </tr>
+                </tfoot>
             </table>
         </div>
         

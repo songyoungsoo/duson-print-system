@@ -32,48 +32,23 @@ try {
     $username = trim($_POST['username'] ?? '');
     $email = $_POST['email'] ?? '';
 
-    // 상세 디버그 로깅
-    error_log("=== 주문 처리 시작 - POST 데이터 ===");
-    error_log("받은 username (raw): [" . ($_POST['username'] ?? 'NOT SET') . "]");
-    error_log("받은 username (trimmed): [" . $username . "]");
-    error_log("받은 email: [" . $email . "]");
-    error_log("세션 user_id: " . ($_SESSION['user_id'] ?? 'NOT SET'));
-    error_log("세션 user_name: " . ($_SESSION['user_name'] ?? 'NOT SET'));
-    error_log("세션 username: " . ($_SESSION['username'] ?? 'NOT SET'));
-
-    // empty() 체크 결과 로깅
-    error_log("empty(\$username) = " . (empty($username) ? 'true' : 'false'));
-    error_log("\$username === '0' = " . ($username === '0' ? 'true' : 'false'));
-
     // "0"이나 빈 문자열이면 세션 또는 이메일에서 가져오기 시도
     if (empty($username) || $username === '0') {
-        error_log("조건 충족: username이 비어있거나 '0'임 - 폴백 로직 시작");
-
         // 1. 세션에서 사용자 이름 가져오기
         if (isset($_SESSION['user_name']) && !empty($_SESSION['user_name']) && $_SESSION['user_name'] !== '0') {
-            $old_username = $username;
             $username = $_SESSION['user_name'];
-            error_log("1단계 성공 - 세션에서 username 복구: [$old_username] → [$username]");
         }
-        // 2. 이메일에서 추출 (username이 여전히 비어있을 때만)
+        // 2. 이메일에서 추출
         elseif ((empty($username) || $username === '0') && !empty($email)) {
-            $old_username = $username;
             $email_parts = explode('@', $email);
             $username = $email_parts[0];
-            error_log("2단계 - 이메일에서 username 생성: [$old_username] → [$username]");
         }
-        // 3. 기본값 사용 (username이 여전히 비어있을 때만)
+        // 3. 기본값 사용
         elseif (empty($username) || $username === '0') {
-            $old_username = $username;
             $username = '주문자';
-            error_log("3단계 - 기본값 사용: [$old_username] → [주문자]");
         }
-    } else {
-        error_log("조건 불충족: username을 그대로 사용 [$username]");
     }
 
-    error_log("최종 저장될 username: [$username]");
-    error_log("====================================");
     $phone = $_POST['phone'] ?? '';
     $hendphone = $_POST['Hendphone'] ?? '';
     $address_option = $_POST['address_option'] ?? 'different';
@@ -425,47 +400,6 @@ try {
         $price_vat = $product_data['price_vat'] ?? 0;
         $price_vat_amount = $product_data['price_vat_amount'] ?? 0;
         $data_version = $product_data['data_version'] ?? 1;
-
-        // 🔍 INSERT 직전 최종 확인 로깅
-        error_log("=== INSERT 직전 변수 확인 ===");
-        $debug_vars = [
-            'new_no' => $new_no,
-            'product_type_name' => $product_type_name,
-            'img_folder_path' => $img_folder_path,
-            'uploaded_files_json' => $uploaded_files_json,
-            'product_info' => $product_info,
-            'st_price' => $item['st_price'],
-            'st_price_vat' => $item['st_price_vat'],
-            'username' => $username,
-            'email' => $email,
-            'postcode' => $postcode,
-            'address' => $address,
-            'full_address' => $full_address,
-            'phone' => $phone,
-            'hendphone' => $hendphone,
-            'final_cont' => $final_cont,
-            'date' => $date,
-            'order_style' => $order_style,
-            'thing_cate' => $thing_cate,
-            'coating_enabled' => $coating_enabled,
-            'coating_type' => $coating_type,
-            'coating_price' => $coating_price,
-            'folding_enabled' => $folding_enabled,
-            'folding_type' => $folding_type,
-            'folding_price' => $folding_price,
-            'creasing_enabled' => $creasing_enabled,
-            'creasing_lines' => $creasing_lines,
-            'creasing_price' => $creasing_price,
-            'additional_options_total' => $additional_options_total,
-            'premium_options' => $premium_options,
-            'premium_options_total' => $premium_options_total,
-            'envelope_tape_enabled' => $envelope_tape_enabled,
-            'envelope_tape_quantity' => $envelope_tape_quantity,
-            'envelope_tape_price' => $envelope_tape_price,
-            'envelope_additional_options_total' => $envelope_additional_options_total
-        ];
-        error_log("BIND PARAM VARS: " . json_encode($debug_vars, JSON_UNESCAPED_UNICODE));
-        error_log("============================");
 
         // 34 parameters: i + Type(s) + ImgFolder(s) + uploaded_files(s) + Type_1(s) + money_4(s) + money_5(s) + name(s) + email~ThingCate(10s) + coating(isi) + folding(isi) + creasing(iii) + additional(i) + premium(si) + envelope(iiii)
         // 🔧 FIX: money_4, money_5, name은 varchar이므로 's' 타입 사용 (기존 'iii' → 'sss')

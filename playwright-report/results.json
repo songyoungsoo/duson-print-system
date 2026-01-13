@@ -1,0 +1,988 @@
+{
+  "config": {
+    "configFile": "/var/www/html/playwright.config.ts",
+    "rootDir": "/var/www/html/tests",
+    "forbidOnly": false,
+    "fullyParallel": true,
+    "globalSetup": null,
+    "globalTeardown": null,
+    "globalTimeout": 0,
+    "grep": {},
+    "grepInvert": null,
+    "maxFailures": 0,
+    "metadata": {
+      "actualWorkers": 10
+    },
+    "preserveOutput": "always",
+    "reporter": [
+      [
+        "html",
+        {
+          "outputFolder": "playwright-report"
+        }
+      ],
+      [
+        "json",
+        {
+          "outputFile": "playwright-report/results.json"
+        }
+      ],
+      [
+        "list",
+        null
+      ]
+    ],
+    "reportSlowTests": {
+      "max": 5,
+      "threshold": 300000
+    },
+    "quiet": false,
+    "projects": [
+      {
+        "outputDir": "/var/www/html/test-results",
+        "repeatEach": 1,
+        "retries": 0,
+        "metadata": {
+          "actualWorkers": 10
+        },
+        "id": "group-a-readonly",
+        "name": "group-a-readonly",
+        "testDir": "/var/www/html/tests",
+        "testIgnore": [],
+        "testMatch": [
+          "/.*\\.group-a\\.spec\\.ts/"
+        ],
+        "timeout": 30000
+      },
+      {
+        "outputDir": "/var/www/html/test-results",
+        "repeatEach": 1,
+        "retries": 0,
+        "metadata": {
+          "actualWorkers": 10
+        },
+        "id": "group-b-calculation",
+        "name": "group-b-calculation",
+        "testDir": "/var/www/html/tests",
+        "testIgnore": [],
+        "testMatch": [
+          "/.*\\.group-b\\.spec\\.ts/"
+        ],
+        "timeout": 30000
+      },
+      {
+        "outputDir": "/var/www/html/test-results",
+        "repeatEach": 1,
+        "retries": 0,
+        "metadata": {
+          "actualWorkers": 10
+        },
+        "id": "group-c-features",
+        "name": "group-c-features",
+        "testDir": "/var/www/html/tests",
+        "testIgnore": [],
+        "testMatch": [
+          "/.*\\.group-c\\.spec\\.ts/"
+        ],
+        "timeout": 30000
+      },
+      {
+        "outputDir": "/var/www/html/test-results",
+        "repeatEach": 1,
+        "retries": 0,
+        "metadata": {
+          "actualWorkers": 10
+        },
+        "id": "group-d-e2e",
+        "name": "group-d-e2e",
+        "testDir": "/var/www/html/tests",
+        "testIgnore": [],
+        "testMatch": [
+          "/.*\\.group-d\\.spec\\.ts/"
+        ],
+        "timeout": 60000
+      },
+      {
+        "outputDir": "/var/www/html/test-results",
+        "repeatEach": 1,
+        "retries": 0,
+        "metadata": {
+          "actualWorkers": 10
+        },
+        "id": "group-e-admin",
+        "name": "group-e-admin",
+        "testDir": "/var/www/html/tests",
+        "testIgnore": [],
+        "testMatch": [
+          "/.*\\.group-e\\.spec\\.ts/"
+        ],
+        "timeout": 30000
+      },
+      {
+        "outputDir": "/var/www/html/test-results",
+        "repeatEach": 1,
+        "retries": 0,
+        "metadata": {
+          "actualWorkers": 10
+        },
+        "id": "tier-1-readonly",
+        "name": "tier-1-readonly",
+        "testDir": "/var/www/html/tests",
+        "testIgnore": [],
+        "testMatch": [
+          "/.*\\.tier-1\\.spec\\.ts/"
+        ],
+        "timeout": 30000
+      },
+      {
+        "outputDir": "/var/www/html/test-results",
+        "repeatEach": 1,
+        "retries": 0,
+        "metadata": {
+          "actualWorkers": 10
+        },
+        "id": "tier-2-calculation",
+        "name": "tier-2-calculation",
+        "testDir": "/var/www/html/tests",
+        "testIgnore": [],
+        "testMatch": [
+          "/.*\\.tier-2\\.spec\\.ts/"
+        ],
+        "timeout": 30000
+      },
+      {
+        "outputDir": "/var/www/html/test-results",
+        "repeatEach": 1,
+        "retries": 0,
+        "metadata": {
+          "actualWorkers": 10
+        },
+        "id": "tier-3-upload",
+        "name": "tier-3-upload",
+        "testDir": "/var/www/html/tests",
+        "testIgnore": [],
+        "testMatch": [
+          "/.*\\.tier-3\\.spec\\.ts/"
+        ],
+        "timeout": 30000
+      },
+      {
+        "outputDir": "/var/www/html/test-results",
+        "repeatEach": 1,
+        "retries": 0,
+        "metadata": {
+          "actualWorkers": 10
+        },
+        "id": "tier-4-e2e",
+        "name": "tier-4-e2e",
+        "testDir": "/var/www/html/tests",
+        "testIgnore": [],
+        "testMatch": [
+          "/.*\\.tier-4\\.spec\\.ts/"
+        ],
+        "timeout": 90000
+      }
+    ],
+    "shard": null,
+    "tags": [],
+    "updateSnapshots": "missing",
+    "updateSourceMethod": "patch",
+    "version": "1.57.0",
+    "workers": 10,
+    "webServer": {
+      "command": "echo \"Using external server at http://dsp1830.shop\"",
+      "url": "http://dsp1830.shop",
+      "reuseExistingServer": true,
+      "timeout": 5000
+    }
+  },
+  "suites": [
+    {
+      "title": "group-a-readonly/page-loading.group-a.spec.ts",
+      "file": "group-a-readonly/page-loading.group-a.spec.ts",
+      "column": 0,
+      "line": 0,
+      "specs": [
+        {
+          "title": "전단지 페이지 로딩 테스트",
+          "ok": true,
+          "tags": [],
+          "tests": [
+            {
+              "timeout": 30000,
+              "annotations": [],
+              "expectedStatus": "passed",
+              "projectId": "group-a-readonly",
+              "projectName": "group-a-readonly",
+              "results": [
+                {
+                  "workerIndex": 0,
+                  "parallelIndex": 0,
+                  "status": "passed",
+                  "duration": 25100,
+                  "errors": [],
+                  "stdout": [],
+                  "stderr": [],
+                  "retry": 0,
+                  "startTime": "2026-01-11T14:09:22.139Z",
+                  "annotations": [],
+                  "attachments": []
+                }
+              ],
+              "status": "expected"
+            }
+          ],
+          "id": "07959854372eca724b96-b50edcb824d0c75e7019",
+          "file": "group-a-readonly/page-loading.group-a.spec.ts",
+          "line": 28,
+          "column": 7
+        },
+        {
+          "title": "명함 페이지 로딩 테스트",
+          "ok": true,
+          "tags": [],
+          "tests": [
+            {
+              "timeout": 30000,
+              "annotations": [],
+              "expectedStatus": "passed",
+              "projectId": "group-a-readonly",
+              "projectName": "group-a-readonly",
+              "results": [
+                {
+                  "workerIndex": 1,
+                  "parallelIndex": 1,
+                  "status": "passed",
+                  "duration": 35804,
+                  "errors": [],
+                  "stdout": [],
+                  "stderr": [],
+                  "retry": 0,
+                  "startTime": "2026-01-11T14:09:22.727Z",
+                  "annotations": [],
+                  "attachments": []
+                }
+              ],
+              "status": "expected"
+            }
+          ],
+          "id": "07959854372eca724b96-fd94047a43e8f2d3d948",
+          "file": "group-a-readonly/page-loading.group-a.spec.ts",
+          "line": 28,
+          "column": 7
+        },
+        {
+          "title": "봉투 페이지 로딩 테스트",
+          "ok": true,
+          "tags": [],
+          "tests": [
+            {
+              "timeout": 30000,
+              "annotations": [],
+              "expectedStatus": "passed",
+              "projectId": "group-a-readonly",
+              "projectName": "group-a-readonly",
+              "results": [
+                {
+                  "workerIndex": 2,
+                  "parallelIndex": 2,
+                  "status": "passed",
+                  "duration": 19987,
+                  "errors": [],
+                  "stdout": [],
+                  "stderr": [],
+                  "retry": 0,
+                  "startTime": "2026-01-11T14:09:22.351Z",
+                  "annotations": [],
+                  "attachments": []
+                }
+              ],
+              "status": "expected"
+            }
+          ],
+          "id": "07959854372eca724b96-32aa1a29627529f4d4b9",
+          "file": "group-a-readonly/page-loading.group-a.spec.ts",
+          "line": 28,
+          "column": 7
+        },
+        {
+          "title": "스티커 페이지 로딩 테스트",
+          "ok": true,
+          "tags": [],
+          "tests": [
+            {
+              "timeout": 30000,
+              "annotations": [],
+              "expectedStatus": "passed",
+              "projectId": "group-a-readonly",
+              "projectName": "group-a-readonly",
+              "results": [
+                {
+                  "workerIndex": 3,
+                  "parallelIndex": 3,
+                  "status": "passed",
+                  "duration": 13906,
+                  "errors": [],
+                  "stdout": [],
+                  "stderr": [],
+                  "retry": 0,
+                  "startTime": "2026-01-11T14:09:22.726Z",
+                  "annotations": [],
+                  "attachments": []
+                }
+              ],
+              "status": "expected"
+            }
+          ],
+          "id": "07959854372eca724b96-a0d506efcb11db193a91",
+          "file": "group-a-readonly/page-loading.group-a.spec.ts",
+          "line": 28,
+          "column": 7
+        },
+        {
+          "title": "자석스티커 페이지 로딩 테스트",
+          "ok": true,
+          "tags": [],
+          "tests": [
+            {
+              "timeout": 30000,
+              "annotations": [],
+              "expectedStatus": "passed",
+              "projectId": "group-a-readonly",
+              "projectName": "group-a-readonly",
+              "results": [
+                {
+                  "workerIndex": 4,
+                  "parallelIndex": 4,
+                  "status": "passed",
+                  "duration": 14522,
+                  "errors": [],
+                  "stdout": [],
+                  "stderr": [],
+                  "retry": 0,
+                  "startTime": "2026-01-11T14:09:21.972Z",
+                  "annotations": [],
+                  "attachments": []
+                }
+              ],
+              "status": "expected"
+            }
+          ],
+          "id": "07959854372eca724b96-13ce156b25428b092a26",
+          "file": "group-a-readonly/page-loading.group-a.spec.ts",
+          "line": 28,
+          "column": 7
+        },
+        {
+          "title": "카다록 페이지 로딩 테스트",
+          "ok": true,
+          "tags": [],
+          "tests": [
+            {
+              "timeout": 30000,
+              "annotations": [],
+              "expectedStatus": "passed",
+              "projectId": "group-a-readonly",
+              "projectName": "group-a-readonly",
+              "results": [
+                {
+                  "workerIndex": 5,
+                  "parallelIndex": 5,
+                  "status": "passed",
+                  "duration": 15194,
+                  "errors": [],
+                  "stdout": [],
+                  "stderr": [],
+                  "retry": 0,
+                  "startTime": "2026-01-11T14:09:22.399Z",
+                  "annotations": [],
+                  "attachments": []
+                }
+              ],
+              "status": "expected"
+            }
+          ],
+          "id": "07959854372eca724b96-b7b0bfd3c9ca1310b007",
+          "file": "group-a-readonly/page-loading.group-a.spec.ts",
+          "line": 28,
+          "column": 7
+        },
+        {
+          "title": "포스터 페이지 로딩 테스트",
+          "ok": true,
+          "tags": [],
+          "tests": [
+            {
+              "timeout": 30000,
+              "annotations": [],
+              "expectedStatus": "passed",
+              "projectId": "group-a-readonly",
+              "projectName": "group-a-readonly",
+              "results": [
+                {
+                  "workerIndex": 6,
+                  "parallelIndex": 6,
+                  "status": "passed",
+                  "duration": 14558,
+                  "errors": [],
+                  "stdout": [],
+                  "stderr": [],
+                  "retry": 0,
+                  "startTime": "2026-01-11T14:09:22.218Z",
+                  "annotations": [],
+                  "attachments": []
+                }
+              ],
+              "status": "expected"
+            }
+          ],
+          "id": "07959854372eca724b96-7a74f9d0bbd8a55619bd",
+          "file": "group-a-readonly/page-loading.group-a.spec.ts",
+          "line": 28,
+          "column": 7
+        },
+        {
+          "title": "상품권 페이지 로딩 테스트",
+          "ok": true,
+          "tags": [],
+          "tests": [
+            {
+              "timeout": 30000,
+              "annotations": [],
+              "expectedStatus": "passed",
+              "projectId": "group-a-readonly",
+              "projectName": "group-a-readonly",
+              "results": [
+                {
+                  "workerIndex": 7,
+                  "parallelIndex": 7,
+                  "status": "passed",
+                  "duration": 16009,
+                  "errors": [],
+                  "stdout": [],
+                  "stderr": [],
+                  "retry": 0,
+                  "startTime": "2026-01-11T14:09:22.012Z",
+                  "annotations": [],
+                  "attachments": []
+                }
+              ],
+              "status": "expected"
+            }
+          ],
+          "id": "07959854372eca724b96-35476e421c25611586ac",
+          "file": "group-a-readonly/page-loading.group-a.spec.ts",
+          "line": 28,
+          "column": 7
+        },
+        {
+          "title": "양식지 페이지 로딩 테스트",
+          "ok": true,
+          "tags": [],
+          "tests": [
+            {
+              "timeout": 30000,
+              "annotations": [],
+              "expectedStatus": "passed",
+              "projectId": "group-a-readonly",
+              "projectName": "group-a-readonly",
+              "results": [
+                {
+                  "workerIndex": 8,
+                  "parallelIndex": 8,
+                  "status": "passed",
+                  "duration": 22776,
+                  "errors": [],
+                  "stdout": [],
+                  "stderr": [],
+                  "retry": 0,
+                  "startTime": "2026-01-11T14:09:22.107Z",
+                  "annotations": [],
+                  "attachments": []
+                }
+              ],
+              "status": "expected"
+            }
+          ],
+          "id": "07959854372eca724b96-a1251d8361e1e741c584",
+          "file": "group-a-readonly/page-loading.group-a.spec.ts",
+          "line": 28,
+          "column": 7
+        },
+        {
+          "title": "리플렛 페이지 로딩 테스트",
+          "ok": true,
+          "tags": [],
+          "tests": [
+            {
+              "timeout": 30000,
+              "annotations": [],
+              "expectedStatus": "passed",
+              "projectId": "group-a-readonly",
+              "projectName": "group-a-readonly",
+              "results": [
+                {
+                  "workerIndex": 9,
+                  "parallelIndex": 9,
+                  "status": "passed",
+                  "duration": 12894,
+                  "errors": [],
+                  "stdout": [],
+                  "stderr": [],
+                  "retry": 0,
+                  "startTime": "2026-01-11T14:09:22.777Z",
+                  "annotations": [],
+                  "attachments": []
+                }
+              ],
+              "status": "expected"
+            }
+          ],
+          "id": "07959854372eca724b96-f5e2a1fddc00f00f538d",
+          "file": "group-a-readonly/page-loading.group-a.spec.ts",
+          "line": 28,
+          "column": 7
+        },
+        {
+          "title": "모든 제품 페이지 공통 요소 확인",
+          "ok": false,
+          "tags": [],
+          "tests": [
+            {
+              "timeout": 30000,
+              "annotations": [],
+              "expectedStatus": "passed",
+              "projectId": "group-a-readonly",
+              "projectName": "group-a-readonly",
+              "results": [
+                {
+                  "workerIndex": 4,
+                  "parallelIndex": 4,
+                  "status": "timedOut",
+                  "duration": 39883,
+                  "error": {
+                    "message": "\u001b[31mTest timeout of 30000ms exceeded.\u001b[39m",
+                    "stack": "\u001b[31mTest timeout of 30000ms exceeded.\u001b[39m"
+                  },
+                  "errors": [
+                    {
+                      "message": "\u001b[31mTest timeout of 30000ms exceeded.\u001b[39m"
+                    },
+                    {
+                      "location": {
+                        "file": "/var/www/html/tests/group-a-readonly/page-loading.group-a.spec.ts",
+                        "column": 16,
+                        "line": 53
+                      },
+                      "message": "Error: page.goto: Test timeout of 30000ms exceeded.\nCall log:\n\u001b[2m  - navigating to \"http://dsp1830.shop/mlangprintauto/namecard/\", waiting until \"load\"\u001b[22m\n\n\n  51 | test('모든 제품 페이지 공통 요소 확인', async ({ page }) => {\n  52 |   for (const { url, name } of products.slice(0, 3)) { // 샘플로 3개만\n> 53 |     await page.goto(url);\n     |                ^\n  54 |     await page.waitForLoadState('networkidle');\n  55 |\n  56 |     // 로고/홈 링크 확인 - 짧은 타임아웃으로 빠르게 확인\n    at /var/www/html/tests/group-a-readonly/page-loading.group-a.spec.ts:53:16"
+                    }
+                  ],
+                  "stdout": [
+                    {
+                      "text": "✅ 전단지 페이지 공통 요소 확인 완료\n"
+                    }
+                  ],
+                  "stderr": [],
+                  "retry": 0,
+                  "startTime": "2026-01-11T14:09:36.936Z",
+                  "annotations": [],
+                  "attachments": [
+                    {
+                      "name": "video",
+                      "contentType": "video/webm",
+                      "path": "/var/www/html/test-results/group-a-readonly-page-loading.group-a-모든-제품-페이지-공통-요소-확인-group-a-readonly/video.webm"
+                    },
+                    {
+                      "name": "error-context",
+                      "contentType": "text/markdown",
+                      "path": "/var/www/html/test-results/group-a-readonly-page-loading.group-a-모든-제품-페이지-공통-요소-확인-group-a-readonly/error-context.md"
+                    }
+                  ]
+                }
+              ],
+              "status": "unexpected"
+            }
+          ],
+          "id": "07959854372eca724b96-8633408283b9df98845e",
+          "file": "group-a-readonly/page-loading.group-a.spec.ts",
+          "line": 51,
+          "column": 5
+        }
+      ]
+    },
+    {
+      "title": "group-b-calculation/basic-price.group-b.spec.ts",
+      "file": "group-b-calculation/basic-price.group-b.spec.ts",
+      "column": 0,
+      "line": 0,
+      "specs": [
+        {
+          "title": "가격 계산 병렬 실행 테스트 (3개 제품 동시)",
+          "ok": true,
+          "tags": [],
+          "tests": [
+            {
+              "timeout": 30000,
+              "annotations": [],
+              "expectedStatus": "passed",
+              "projectId": "group-b-calculation",
+              "projectName": "group-b-calculation",
+              "results": [
+                {
+                  "workerIndex": 15,
+                  "parallelIndex": 2,
+                  "status": "passed",
+                  "duration": 27523,
+                  "errors": [],
+                  "stdout": [],
+                  "stderr": [],
+                  "retry": 0,
+                  "startTime": "2026-01-11T14:09:53.475Z",
+                  "annotations": [],
+                  "attachments": []
+                }
+              ],
+              "status": "expected"
+            }
+          ],
+          "id": "e637d8c2960ba367545f-83db08606fbafb825ba9",
+          "file": "group-b-calculation/basic-price.group-b.spec.ts",
+          "line": 131,
+          "column": 5
+        }
+      ],
+      "suites": [
+        {
+          "title": "전단지 가격 계산",
+          "file": "group-b-calculation/basic-price.group-b.spec.ts",
+          "line": 12,
+          "column": 6,
+          "specs": [
+            {
+              "title": "A4 0.5연 컬러인쇄 기본 가격 계산",
+              "ok": false,
+              "tags": [],
+              "tests": [
+                {
+                  "timeout": 30000,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectId": "group-b-calculation",
+                  "projectName": "group-b-calculation",
+                  "results": [
+                    {
+                      "workerIndex": 10,
+                      "parallelIndex": 9,
+                      "status": "timedOut",
+                      "duration": 33594,
+                      "error": {
+                        "message": "\u001b[31mTest timeout of 30000ms exceeded.\u001b[39m",
+                        "stack": "\u001b[31mTest timeout of 30000ms exceeded.\u001b[39m"
+                      },
+                      "errors": [
+                        {
+                          "message": "\u001b[31mTest timeout of 30000ms exceeded.\u001b[39m"
+                        },
+                        {
+                          "location": {
+                            "file": "/var/www/html/tests/group-b-calculation/basic-price.group-b.spec.ts",
+                            "column": 16,
+                            "line": 23
+                          },
+                          "message": "Error: page.waitForTimeout: Test timeout of 30000ms exceeded.\n\n  21 |\n  22 |     // 가격 계산 대기 (AJAX)\n> 23 |     await page.waitForTimeout(1000);\n     |                ^\n  24 |\n  25 |     // 총액 표시 확인\n  26 |     const totalPrice = page.locator('.total-price, #total_price, .price-display');\n    at /var/www/html/tests/group-b-calculation/basic-price.group-b.spec.ts:23:16"
+                        }
+                      ],
+                      "stdout": [],
+                      "stderr": [],
+                      "retry": 0,
+                      "startTime": "2026-01-11T14:09:44.576Z",
+                      "annotations": [],
+                      "attachments": [
+                        {
+                          "name": "screenshot",
+                          "contentType": "image/png",
+                          "path": "/var/www/html/test-results/group-b-calculation-basic--02cf9-가격-계산-A4-0-5연-컬러인쇄-기본-가격-계산-group-b-calculation/test-failed-1.png"
+                        },
+                        {
+                          "name": "video",
+                          "contentType": "video/webm",
+                          "path": "/var/www/html/test-results/group-b-calculation-basic--02cf9-가격-계산-A4-0-5연-컬러인쇄-기본-가격-계산-group-b-calculation/video.webm"
+                        },
+                        {
+                          "name": "error-context",
+                          "contentType": "text/markdown",
+                          "path": "/var/www/html/test-results/group-b-calculation-basic--02cf9-가격-계산-A4-0-5연-컬러인쇄-기본-가격-계산-group-b-calculation/error-context.md"
+                        }
+                      ]
+                    }
+                  ],
+                  "status": "unexpected"
+                }
+              ],
+              "id": "e637d8c2960ba367545f-e518f547cdcca8dce8e7",
+              "file": "group-b-calculation/basic-price.group-b.spec.ts",
+              "line": 13,
+              "column": 7
+            },
+            {
+              "title": "A4 1.0연 컬러인쇄 기본 가격 계산",
+              "ok": false,
+              "tags": [],
+              "tests": [
+                {
+                  "timeout": 30000,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectId": "group-b-calculation",
+                  "projectName": "group-b-calculation",
+                  "results": [
+                    {
+                      "workerIndex": 11,
+                      "parallelIndex": 6,
+                      "status": "timedOut",
+                      "duration": 33545,
+                      "error": {
+                        "message": "\u001b[31mTest timeout of 30000ms exceeded.\u001b[39m",
+                        "stack": "\u001b[31mTest timeout of 30000ms exceeded.\u001b[39m"
+                      },
+                      "errors": [
+                        {
+                          "message": "\u001b[31mTest timeout of 30000ms exceeded.\u001b[39m"
+                        },
+                        {
+                          "location": {
+                            "file": "/var/www/html/tests/group-b-calculation/basic-price.group-b.spec.ts",
+                            "column": 16,
+                            "line": 44
+                          },
+                          "message": "Error: page.waitForLoadState: Test timeout of 30000ms exceeded.\n\n  42 |\n  43 |     // Wait for page to fully load\n> 44 |     await page.waitForLoadState('networkidle');\n     |                ^\n  45 |\n  46 |     // Wait for the default price to be calculated first\n  47 |     await page.waitForTimeout(1000);\n    at /var/www/html/tests/group-b-calculation/basic-price.group-b.spec.ts:44:16"
+                        }
+                      ],
+                      "stdout": [],
+                      "stderr": [],
+                      "retry": 0,
+                      "startTime": "2026-01-11T14:09:44.976Z",
+                      "annotations": [],
+                      "attachments": [
+                        {
+                          "name": "screenshot",
+                          "contentType": "image/png",
+                          "path": "/var/www/html/test-results/group-b-calculation-basic--111f2-가격-계산-A4-1-0연-컬러인쇄-기본-가격-계산-group-b-calculation/test-failed-1.png"
+                        },
+                        {
+                          "name": "video",
+                          "contentType": "video/webm",
+                          "path": "/var/www/html/test-results/group-b-calculation-basic--111f2-가격-계산-A4-1-0연-컬러인쇄-기본-가격-계산-group-b-calculation/video.webm"
+                        },
+                        {
+                          "name": "error-context",
+                          "contentType": "text/markdown",
+                          "path": "/var/www/html/test-results/group-b-calculation-basic--111f2-가격-계산-A4-1-0연-컬러인쇄-기본-가격-계산-group-b-calculation/error-context.md"
+                        }
+                      ]
+                    }
+                  ],
+                  "status": "unexpected"
+                }
+              ],
+              "id": "e637d8c2960ba367545f-645eea94751798057ea8",
+              "file": "group-b-calculation/basic-price.group-b.spec.ts",
+              "line": 40,
+              "column": 7
+            }
+          ]
+        },
+        {
+          "title": "명함 가격 계산",
+          "file": "group-b-calculation/basic-price.group-b.spec.ts",
+          "line": 66,
+          "column": 6,
+          "specs": [
+            {
+              "title": "일반명함 500매 아트지 기본 가격",
+              "ok": true,
+              "tags": [],
+              "tests": [
+                {
+                  "timeout": 30000,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectId": "group-b-calculation",
+                  "projectName": "group-b-calculation",
+                  "results": [
+                    {
+                      "workerIndex": 12,
+                      "parallelIndex": 3,
+                      "status": "passed",
+                      "duration": 29184,
+                      "errors": [],
+                      "stdout": [],
+                      "stderr": [],
+                      "retry": 0,
+                      "startTime": "2026-01-11T14:09:45.224Z",
+                      "annotations": [],
+                      "attachments": []
+                    }
+                  ],
+                  "status": "expected"
+                }
+              ],
+              "id": "e637d8c2960ba367545f-89093449ef7130010f77",
+              "file": "group-b-calculation/basic-price.group-b.spec.ts",
+              "line": 67,
+              "column": 7
+            }
+          ]
+        },
+        {
+          "title": "봉투 가격 계산",
+          "file": "group-b-calculation/basic-price.group-b.spec.ts",
+          "line": 89,
+          "column": 6,
+          "specs": [
+            {
+              "title": "소봉투 1000매 기본 가격",
+              "ok": true,
+              "tags": [],
+              "tests": [
+                {
+                  "timeout": 30000,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectId": "group-b-calculation",
+                  "projectName": "group-b-calculation",
+                  "results": [
+                    {
+                      "workerIndex": 13,
+                      "parallelIndex": 7,
+                      "status": "passed",
+                      "duration": 27245,
+                      "errors": [],
+                      "stdout": [],
+                      "stderr": [],
+                      "retry": 0,
+                      "startTime": "2026-01-11T14:09:46.285Z",
+                      "annotations": [],
+                      "attachments": []
+                    }
+                  ],
+                  "status": "expected"
+                }
+              ],
+              "id": "e637d8c2960ba367545f-d9c52c14446af6ee56a8",
+              "file": "group-b-calculation/basic-price.group-b.spec.ts",
+              "line": 90,
+              "column": 7
+            }
+          ]
+        },
+        {
+          "title": "리플렛 가격 계산 (접지 추가금 포함)",
+          "file": "group-b-calculation/basic-price.group-b.spec.ts",
+          "line": 111,
+          "column": 6,
+          "specs": [
+            {
+              "title": "A4 0.5연 + 2단접지 가격 계산",
+              "ok": true,
+              "tags": [],
+              "tests": [
+                {
+                  "timeout": 30000,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectId": "group-b-calculation",
+                  "projectName": "group-b-calculation",
+                  "results": [
+                    {
+                      "workerIndex": 14,
+                      "parallelIndex": 5,
+                      "status": "passed",
+                      "duration": 24621,
+                      "errors": [],
+                      "stdout": [],
+                      "stderr": [],
+                      "retry": 0,
+                      "startTime": "2026-01-11T14:09:48.140Z",
+                      "annotations": [],
+                      "attachments": []
+                    }
+                  ],
+                  "status": "expected"
+                }
+              ],
+              "id": "e637d8c2960ba367545f-a069b0c06558d5ca7f93",
+              "file": "group-b-calculation/basic-price.group-b.spec.ts",
+              "line": 112,
+              "column": 7
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "title": "group-d-e2e/flyer-e2e.group-d.spec.ts",
+      "file": "group-d-e2e/flyer-e2e.group-d.spec.ts",
+      "column": 0,
+      "line": 0,
+      "specs": [],
+      "suites": [
+        {
+          "title": "Tier 4A - 전단지 E2E Order Flow (Sequential Group)",
+          "file": "group-d-e2e/flyer-e2e.group-d.spec.ts",
+          "line": 6,
+          "column": 6,
+          "specs": [
+            {
+              "title": "Complete flyer order from selection to cart (7 sequential steps)",
+              "ok": true,
+              "tags": [],
+              "tests": [
+                {
+                  "timeout": 60000,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectId": "group-d-e2e",
+                  "projectName": "group-d-e2e",
+                  "results": [
+                    {
+                      "workerIndex": 16,
+                      "parallelIndex": 8,
+                      "status": "passed",
+                      "duration": 32323,
+                      "errors": [],
+                      "stdout": [
+                        {
+                          "text": "✅ Tier 4A E2E Test Complete: Product selection → Upload → Cart verification passed\n"
+                        }
+                      ],
+                      "stderr": [],
+                      "retry": 0,
+                      "startTime": "2026-01-11T14:09:56.880Z",
+                      "annotations": [],
+                      "attachments": []
+                    }
+                  ],
+                  "status": "expected"
+                }
+              ],
+              "id": "4a0b5abed820e98e1bf5-a31eab564ddb3d02ecce",
+              "file": "group-d-e2e/flyer-e2e.group-d.spec.ts",
+              "line": 7,
+              "column": 7
+            }
+          ]
+        }
+      ]
+    }
+  ],
+  "errors": [],
+  "stats": {
+    "startTime": "2026-01-11T14:09:18.918Z",
+    "duration": 71561.808,
+    "expected": 15,
+    "skipped": 0,
+    "unexpected": 3,
+    "flaky": 0
+  }
+}

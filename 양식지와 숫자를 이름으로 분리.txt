@@ -1,0 +1,645 @@
+# phpMyAdmin MySQL-Dump
+# version 2.3.3pl1
+# http://www.phpmyadmin.net/ (download page)
+#
+# 호스트: localhost
+# 처리한 시간: 2025년 타오름달 26일 PM 11:04 
+# 서버 버전: 4.00.27
+# PHP 버전: 5.2.17
+# 데이터베이스 : `duson1830`
+# --------------------------------------------------------
+
+#
+# 테이블 구조 `MlangPrintAuto_NcrFlambeau`
+#
+
+CREATE TABLE MlangPrintAuto_NcrFlambeau (
+  no mediumint(9) unsigned NOT NULL auto_increment,
+  style varchar(100) default NULL,
+  Section varchar(200) default NULL,
+  quantity float NOT NULL default '0',
+  money varchar(200) default NULL,
+  TreeSelect varchar(200) default NULL,
+  DesignMoney varchar(100) default NULL,
+  POtype varchar(100) default NULL,
+  quantityTwo varchar(100) default NULL,
+  PRIMARY KEY  (no),
+  KEY id (style)
+) TYPE=MyISAM;
+
+#
+# 테이블의 덤프 데이터 `MlangPrintAuto_NcrFlambeau`
+#
+
+INSERT INTO MlangPrintAuto_NcrFlambeau VALUES (11, '475', '484', '60', '140000', '505', '10000', '', '');
+INSERT INTO MlangPrintAuto_NcrFlambeau VALUES (10, '475', '484', '40', '100000', '505', '10000', '', '');
+INSERT INTO MlangPrintAuto_NcrFlambeau VALUES (9, '475', '484', '30', '85000', '505', '10000', '', '');
+INSERT INTO MlangPrintAuto_NcrFlambeau VALUES (8, '475', '484', '20', '65000', '505', '10000', '', '');
+INSERT INTO MlangPrintAuto_NcrFlambeau VALUES (7, '475', '484', '10', '48000', '505', '10000', '', '');
+INSERT INTO MlangPrintAuto_NcrFlambeau VALUES (12, '475', '484', '80', '180000', '505', '10000', '', '');
+INSERT INTO MlangPrintAuto_NcrFlambeau VALUES (272, '476', '520', '30', '103000', '512', '10000', '', '');
+INSERT INTO MlangPrintAuto_NcrFlambeau VALUES (14, '475', '485', '10', '48000', '505', '10000', '', '');
+INSERT INTO MlangPrintAuto_NcrFlambeau VALUES (15, '475', '485', '20', '65000', '505', '10000', '', '');
+INSERT INTO MlangPrintAuto_NcrFlambeau VALUES (16, '475', '485', '30', '75000', '505', '10000', '', '');
+INSERT INTO MlangPrintAuto_NcrFlambeau VALUES (17, '475', '485', '40', '80000', '505', '10000', '', '');
+INSERT INTO MlangPrintAuto_NcrFlambeau VALUES (18, '475', '485', '50', '90000', '505', '10000', '', '');
+INSERT INTO MlangPrintAuto_NcrFlambeau VALUES (19, '475', '485', '60', '100000', '505', '10000', '', '');
+INSERT INTO MlangPrintAuto_NcrFlambeau VALUES (20, '475', '485', '80', '120000', '505', '10000', '', '');
+INSERT INTO MlangPrintAuto_NcrFlambeau VALUES (21, '475', '486', '50', '74000', '505', '10000', '', '');
+INSERT INTO MlangPrintAuto_NcrFlambeau VALUES (22, '475', '486', '100', '138000', '505', '10000', '', '');
+INSERT INTO MlangPrintAuto_NcrFlambeau VALUES (23, '475', '486', '200', '240000', '505', '10000', '', '');
+INSERT INTO MlangPrintAuto_NcrFlambeau VALUES (24, '475', '486', '300', '328000', '505', '10000', '', '');
+INSERT INTO MlangPrintAuto_NcrFlambeau VALUES (25, '475', '486', '500', '520000', '505', '10000', '', '');
+INSERT INTO MlangPrintAuto_NcrFlambeau VALUES (26, '475', '487', '50', '76000', '505', '10000', '', '');
+INSERT INTO MlangPrintAuto_NcrFlambeau VALUES (27, '476', '520', '100', '155000', '511', '10000', '', '');
+INSERT INTO MlangPrintAuto_NcrFlambeau VALUES (28, '475', '487', '160', '130000', '505', '10000', '', '');
+INSERT INTO MlangPrintAuto_NcrFlambeau VALUES (29, '475', '487', '240', '202000', '505', '10000', '', '');
+INSERT INTO MlangPrintAuto_NcrFlambeau VALUES (30, '475', '487', '460', '310000', '505', '10000', '', '');
+INSERT INTO MlangPrintAuto_NcrFlambeau VALUES (31, '475', '489', '50', '55000', '505', '10000', '', '');
+INSERT INTO MlangPrintAuto_NcrFlambeau VALUES (32, '475', '489', '100', '100000', '505', '10000', '', '');
+INSERT INTO MlangPrintAuto_NcrFlambeau VALUES (33, '475', '489', '180', '150000', '505', '10000', '', '');
+INSERT INTO MlangPrintAuto_NcrFlambeau VALUES (34, '475', '487', '300', '172000', '505', '10000', '', '');
+INSERT INTO MlangPrintAuto_NcrFlambeau VALUES (35, '475', '489', '480', '230000', '505', '10000', '', '');
+INSERT INTO MlangPrintAuto_NcrFlambeau VALUES (36, '476', '515', '10', '60000', '511', '10000', '', '');
+INSERT INTO MlangPrintAuto_NcrFlambeau VALUES (37, '476', '515', '20', '75000', '511', '10000', '', '');
+INSERT INTO MlangPrintAuto_NcrFlambeau VALUES (38, '476', '515', '30', '100000', '511', '10000', '', '');
+INSERT INTO MlangPrintAuto_NcrFlambeau VALUES (39, '476', '515', '40', '125000', '511', '10000', '', '');
+INSERT INTO MlangPrintAuto_NcrFlambeau VALUES (44, '476', '515', '50', '150000', '511', '10000', '', '');
+INSERT INTO MlangPrintAuto_NcrFlambeau VALUES (45, '476', '515', '80', '200000', '511', '10000', '', '');
+INSERT INTO MlangPrintAuto_NcrFlambeau VALUES (46, '476', '518', '10', '50000', '511', '10000', '', '');
+INSERT INTO MlangPrintAuto_NcrFlambeau VALUES (47, '476', '518', '20', '70000', '511', '10000', '', '');
+INSERT INTO MlangPrintAuto_NcrFlambeau VALUES (48, '475', '485', '40', '110000', '505', '10000', '', '');
+INSERT INTO MlangPrintAuto_NcrFlambeau VALUES (49, '475', '485', '50', '150000', '505', '10000', '', '');
+INSERT INTO MlangPrintAuto_NcrFlambeau VALUES (50, '476', '518', '60', '160000', '511', '10000', '', '');
+INSERT INTO MlangPrintAuto_NcrFlambeau VALUES (51, '476', '518', '80', '200000', '511', '10000', '', '');
+INSERT INTO MlangPrintAuto_NcrFlambeau VALUES (52, '476', '519', '50', '100000', '511', '10000', '', '');
+INSERT INTO MlangPrintAuto_NcrFlambeau VALUES (53, '476', '519', '100', '180000', '511', '10000', '', '');
+INSERT INTO MlangPrintAuto_NcrFlambeau VALUES (54, '476', '519', '200', '290000', '511', '10000', '', '');
+INSERT INTO MlangPrintAuto_NcrFlambeau VALUES (55, '476', '519', '300', '470000', '511', '10000', '', '');
+INSERT INTO MlangPrintAuto_NcrFlambeau VALUES (56, '476', '519', '500', '756000', '511', '10000', '', '');
+INSERT INTO MlangPrintAuto_NcrFlambeau VALUES (57, '476', '520', '50', '95000', '511', '10000', '', '');
+INSERT INTO MlangPrintAuto_NcrFlambeau VALUES (58, '476', '520', '100', '154000', '511', '10000', '', '');
+INSERT INTO MlangPrintAuto_NcrFlambeau VALUES (59, '476', '520', '160', '240000', '511', '10000', '', '');
+INSERT INTO MlangPrintAuto_NcrFlambeau VALUES (60, '476', '520', '280', '320000', '511', '10000', '', '');
+INSERT INTO MlangPrintAuto_NcrFlambeau VALUES (61, '476', '520', '500', '560000', '511', '10000', '', '');
+INSERT INTO MlangPrintAuto_NcrFlambeau VALUES (62, '476', '522', '50', '80000', '511', '10000', '', '');
+INSERT INTO MlangPrintAuto_NcrFlambeau VALUES (63, '476', '522', '100', '120000', '511', '10000', '', '');
+INSERT INTO MlangPrintAuto_NcrFlambeau VALUES (64, '476', '522', '200', '190000', '511', '10000', '', '');
+INSERT INTO MlangPrintAuto_NcrFlambeau VALUES (65, '476', '522', '300', '250000', '511', '10000', '', '');
+INSERT INTO MlangPrintAuto_NcrFlambeau VALUES (70, '476', '522', '500', '330000', '511', '10000', '', '');
+INSERT INTO MlangPrintAuto_NcrFlambeau VALUES (67, '477', '524', '10', '80000', '513', '10000', '', '');
+INSERT INTO MlangPrintAuto_NcrFlambeau VALUES (68, '477', '524', '20', '110000', '513', '10000', '', '');
+INSERT INTO MlangPrintAuto_NcrFlambeau VALUES (69, '477', '524', '30', '140000', '513', '10000', '', '');
+INSERT INTO MlangPrintAuto_NcrFlambeau VALUES (71, '477', '524', '40', '190000', '513', '10000', '', '');
+INSERT INTO MlangPrintAuto_NcrFlambeau VALUES (72, '477', '524', '50', '230000', '513', '10000', '', '');
+INSERT INTO MlangPrintAuto_NcrFlambeau VALUES (73, '477', '525', '10', '90000', '513', '10000', '', '');
+INSERT INTO MlangPrintAuto_NcrFlambeau VALUES (74, '477', '525', '20', '120000', '513', '10000', '', '');
+INSERT INTO MlangPrintAuto_NcrFlambeau VALUES (75, '477', '525', '40', '180000', '513', '10000', '', '');
+INSERT INTO MlangPrintAuto_NcrFlambeau VALUES (76, '477', '525', '50', '200000', '513', '10000', '', '');
+INSERT INTO MlangPrintAuto_NcrFlambeau VALUES (77, '477', '525', '60', '230000', '513', '10000', '', '');
+INSERT INTO MlangPrintAuto_NcrFlambeau VALUES (78, '477', '526', '50', '135000', '513', '10000', '', '');
+INSERT INTO MlangPrintAuto_NcrFlambeau VALUES (79, '477', '526', '100', '237000', '513', '10000', '', '');
+INSERT INTO MlangPrintAuto_NcrFlambeau VALUES (80, '477', '526', '200', '460000', '513', '10000', '', '');
+INSERT INTO MlangPrintAuto_NcrFlambeau VALUES (81, '477', '526', '300', '710000', '513', '10000', '', '');
+INSERT INTO MlangPrintAuto_NcrFlambeau VALUES (82, '477', '526', '500', '1210000', '513', '10000', '', '');
+INSERT INTO MlangPrintAuto_NcrFlambeau VALUES (83, '477', '527', '50', '110000', '513', '10000', '', '');
+INSERT INTO MlangPrintAuto_NcrFlambeau VALUES (84, '477', '527', '100', '180000', '513', '10000', '', '');
+INSERT INTO MlangPrintAuto_NcrFlambeau VALUES (85, '477', '527', '200', '350000', '513', '10000', '', '');
+INSERT INTO MlangPrintAuto_NcrFlambeau VALUES (86, '477', '527', '300', '600000', '513', '10000', '', '');
+INSERT INTO MlangPrintAuto_NcrFlambeau VALUES (88, '477', '527', '500', '690000', '513', '10000', '', '');
+INSERT INTO MlangPrintAuto_NcrFlambeau VALUES (89, '477', '529', '50', '84000', '513', '10000', '', '');
+INSERT INTO MlangPrintAuto_NcrFlambeau VALUES (90, '477', '529', '100', '134000', '513', '10000', '', '');
+INSERT INTO MlangPrintAuto_NcrFlambeau VALUES (91, '477', '529', '200', '250000', '513', '10000', '', '');
+INSERT INTO MlangPrintAuto_NcrFlambeau VALUES (92, '477', '529', '300', '414000', '513', '10000', '', '');
+INSERT INTO MlangPrintAuto_NcrFlambeau VALUES (93, '477', '529', '500', '600000', '513', '10000', '', '');
+INSERT INTO MlangPrintAuto_NcrFlambeau VALUES (94, '676', '681', '10', '120000', '686', '10000', '', '');
+INSERT INTO MlangPrintAuto_NcrFlambeau VALUES (95, '676', '681', '20', '190000', '686', '10000', '', '');
+INSERT INTO MlangPrintAuto_NcrFlambeau VALUES (96, '676', '681', '30', '260000', '686', '10000', '', '');
+INSERT INTO MlangPrintAuto_NcrFlambeau VALUES (97, '676', '681', '40', '320000', '686', '10000', '', '');
+INSERT INTO MlangPrintAuto_NcrFlambeau VALUES (98, '676', '681', '50', '412000', '686', '10000', '', '');
+INSERT INTO MlangPrintAuto_NcrFlambeau VALUES (99, '676', '681', '80', '640000', '686', '10000', '', '');
+INSERT INTO MlangPrintAuto_NcrFlambeau VALUES (100, '676', '682', '10', '100000', '686', '10000', '', '');
+INSERT INTO MlangPrintAuto_NcrFlambeau VALUES (101, '676', '682', '20', '170000', '686', '10000', '', '');
+INSERT INTO MlangPrintAuto_NcrFlambeau VALUES (102, '676', '682', '40', '250000', '686', '10000', '', '');
+INSERT INTO MlangPrintAuto_NcrFlambeau VALUES (103, '676', '682', '50', '320000', '686', '10000', '', '');
+INSERT INTO MlangPrintAuto_NcrFlambeau VALUES (105, '676', '682', '60', '380000', '686', '10000', '', '');
+INSERT INTO MlangPrintAuto_NcrFlambeau VALUES (106, '676', '682', '80', '480000', '686', '10000', '', '');
+INSERT INTO MlangPrintAuto_NcrFlambeau VALUES (107, '676', '683', '50', '302000', '686', '10000', '', '');
+INSERT INTO MlangPrintAuto_NcrFlambeau VALUES (108, '676', '683', '100', '378000', '686', '10000', '', '');
+INSERT INTO MlangPrintAuto_NcrFlambeau VALUES (109, '676', '683', '200', '702000', '686', '10000', '', '');
+INSERT INTO MlangPrintAuto_NcrFlambeau VALUES (110, '676', '683', '300', '1080000', '686', '10000', '', '');
+INSERT INTO MlangPrintAuto_NcrFlambeau VALUES (111, '676', '683', '500', '1700000', '686', '10000', '', '');
+INSERT INTO MlangPrintAuto_NcrFlambeau VALUES (112, '676', '684', '50', '170000', '686', '10000', '', '');
+INSERT INTO MlangPrintAuto_NcrFlambeau VALUES (113, '676', '684', '100', '280000', '686', '10000', '', '');
+INSERT INTO MlangPrintAuto_NcrFlambeau VALUES (114, '676', '684', '200', '520000', '686', '10000', '', '');
+INSERT INTO MlangPrintAuto_NcrFlambeau VALUES (115, '676', '684', '300', '800000', '686', '10000', '', '');
+INSERT INTO MlangPrintAuto_NcrFlambeau VALUES (116, '676', '684', '500', '1260000', '686', '10000', '', '');
+INSERT INTO MlangPrintAuto_NcrFlambeau VALUES (117, '676', '685', '50', '120000', '686', '10000', '', '');
+INSERT INTO MlangPrintAuto_NcrFlambeau VALUES (118, '676', '685', '100', '230000', '686', '10000', '', '');
+INSERT INTO MlangPrintAuto_NcrFlambeau VALUES (119, '676', '685', '200', '400000', '686', '10000', '', '');
+INSERT INTO MlangPrintAuto_NcrFlambeau VALUES (120, '676', '685', '300', '630000', '686', '10000', '', '');
+INSERT INTO MlangPrintAuto_NcrFlambeau VALUES (121, '676', '685', '500', '920000', '686', '10000', '', '');
+INSERT INTO MlangPrintAuto_NcrFlambeau VALUES (122, '475', '484', '10', '58000', '506', '10000', '', '');
+INSERT INTO MlangPrintAuto_NcrFlambeau VALUES (123, '475', '484', '20', '78000', '506', '10000', '', '');
+INSERT INTO MlangPrintAuto_NcrFlambeau VALUES (124, '475', '484', '30', '98000', '506', '10000', '', '');
+INSERT INTO MlangPrintAuto_NcrFlambeau VALUES (125, '475', '484', '40', '118000', '506', '10000', '', '');
+INSERT INTO MlangPrintAuto_NcrFlambeau VALUES (126, '475', '484', '60', '158000', '506', '10000', '', '');
+INSERT INTO MlangPrintAuto_NcrFlambeau VALUES (127, '475', '484', '80', '215000', '506', '10000', '', '');
+INSERT INTO MlangPrintAuto_NcrFlambeau VALUES (128, '475', '485', '10', '44000', '506', '10000', '', '');
+INSERT INTO MlangPrintAuto_NcrFlambeau VALUES (129, '475', '485', '20', '66000', '506', '10000', '', '');
+INSERT INTO MlangPrintAuto_NcrFlambeau VALUES (130, '475', '485', '40', '90000', '506', '10000', '', '');
+INSERT INTO MlangPrintAuto_NcrFlambeau VALUES (131, '475', '485', '50', '100000', '506', '10000', '', '');
+INSERT INTO MlangPrintAuto_NcrFlambeau VALUES (132, '475', '485', '60', '116000', '506', '10000', '', '');
+INSERT INTO MlangPrintAuto_NcrFlambeau VALUES (133, '475', '485', '80', '136000', '506', '10000', '', '');
+INSERT INTO MlangPrintAuto_NcrFlambeau VALUES (135, '475', '486', '50', '94000', '506', '10000', '', '');
+INSERT INTO MlangPrintAuto_NcrFlambeau VALUES (136, '475', '486', '100', '128000', '506', '10000', '', '');
+INSERT INTO MlangPrintAuto_NcrFlambeau VALUES (137, '475', '486', '200', '220000', '506', '10000', '', '');
+INSERT INTO MlangPrintAuto_NcrFlambeau VALUES (138, '475', '486', '300', '328000', '506', '10000', '', '');
+INSERT INTO MlangPrintAuto_NcrFlambeau VALUES (139, '475', '486', '500', '500000', '506', '10000', '', '');
+INSERT INTO MlangPrintAuto_NcrFlambeau VALUES (140, '475', '487', '50', '107000', '506', '10000', '', '');
+INSERT INTO MlangPrintAuto_NcrFlambeau VALUES (141, '475', '487', '100', '185000', '506', '10000', '', '');
+INSERT INTO MlangPrintAuto_NcrFlambeau VALUES (142, '475', '487', '180', '260000', '506', '10000', '', '');
+INSERT INTO MlangPrintAuto_NcrFlambeau VALUES (144, '475', '487', '280', '340000', '506', '10000', '', '');
+INSERT INTO MlangPrintAuto_NcrFlambeau VALUES (145, '475', '487', '460', '440000', '506', '10000', '', '');
+INSERT INTO MlangPrintAuto_NcrFlambeau VALUES (146, '475', '489', '50', '64000', '506', '10000', '', '');
+INSERT INTO MlangPrintAuto_NcrFlambeau VALUES (147, '475', '489', '100', '98000', '506', '10000', '', '');
+INSERT INTO MlangPrintAuto_NcrFlambeau VALUES (148, '475', '489', '200', '146000', '506', '10000', '', '');
+INSERT INTO MlangPrintAuto_NcrFlambeau VALUES (152, '475', '489', '300', '192000', '506', '10000', '', '');
+INSERT INTO MlangPrintAuto_NcrFlambeau VALUES (151, '475', '489', '500', '290000', '506', '10000', '', '');
+INSERT INTO MlangPrintAuto_NcrFlambeau VALUES (153, '476', '515', '10', '70000', '512', '10000', '', '');
+INSERT INTO MlangPrintAuto_NcrFlambeau VALUES (154, '476', '515', '20', '95000', '512', '10000', '', '');
+INSERT INTO MlangPrintAuto_NcrFlambeau VALUES (155, '476', '515', '30', '130000', '512', '10000', '', '');
+INSERT INTO MlangPrintAuto_NcrFlambeau VALUES (156, '476', '515', '40', '150000', '512', '10000', '', '');
+INSERT INTO MlangPrintAuto_NcrFlambeau VALUES (157, '476', '515', '50', '170000', '512', '10000', '', '');
+INSERT INTO MlangPrintAuto_NcrFlambeau VALUES (158, '476', '515', '80', '220000', '512', '10000', '', '');
+INSERT INTO MlangPrintAuto_NcrFlambeau VALUES (159, '476', '518', '10', '70000', '512', '10000', '', '');
+INSERT INTO MlangPrintAuto_NcrFlambeau VALUES (160, '476', '518', '20', '95000', '512', '10000', '', '');
+INSERT INTO MlangPrintAuto_NcrFlambeau VALUES (161, '476', '518', '40', '150000', '512', '10000', '', '');
+INSERT INTO MlangPrintAuto_NcrFlambeau VALUES (162, '476', '518', '50', '170000', '512', '10000', '', '');
+INSERT INTO MlangPrintAuto_NcrFlambeau VALUES (163, '476', '518', '60', '220000', '512', '10000', '', '');
+INSERT INTO MlangPrintAuto_NcrFlambeau VALUES (164, '476', '518', '80', '210000', '512', '10000', '', '');
+INSERT INTO MlangPrintAuto_NcrFlambeau VALUES (165, '476', '519', '50', '110000', '512', '10000', '', '');
+INSERT INTO MlangPrintAuto_NcrFlambeau VALUES (166, '476', '519', '100', '190000', '512', '10000', '', '');
+INSERT INTO MlangPrintAuto_NcrFlambeau VALUES (167, '476', '519', '200', '310000', '512', '10000', '', '');
+INSERT INTO MlangPrintAuto_NcrFlambeau VALUES (168, '476', '519', '300', '480000', '512', '10000', '', '');
+INSERT INTO MlangPrintAuto_NcrFlambeau VALUES (169, '476', '519', '500', '740000', '512', '10000', '', '');
+INSERT INTO MlangPrintAuto_NcrFlambeau VALUES (170, '476', '520', '80', '175000', '512', '10000', '', '');
+INSERT INTO MlangPrintAuto_NcrFlambeau VALUES (171, '476', '520', '100', '185000', '512', '10000', '', '');
+INSERT INTO MlangPrintAuto_NcrFlambeau VALUES (172, '476', '520', '200', '250000', '512', '10000', '', '');
+INSERT INTO MlangPrintAuto_NcrFlambeau VALUES (173, '476', '520', '300', '350000', '512', '10000', '', '');
+INSERT INTO MlangPrintAuto_NcrFlambeau VALUES (174, '476', '520', '500', '510000', '512', '10000', '', '');
+INSERT INTO MlangPrintAuto_NcrFlambeau VALUES (175, '476', '522', '50', '84000', '512', '10000', '', '');
+INSERT INTO MlangPrintAuto_NcrFlambeau VALUES (176, '476', '522', '100', '126000', '512', '10000', '', '');
+INSERT INTO MlangPrintAuto_NcrFlambeau VALUES (177, '476', '522', '200', '200000', '512', '10000', '', '');
+INSERT INTO MlangPrintAuto_NcrFlambeau VALUES (178, '476', '522', '300', '303000', '512', '10000', '', '');
+INSERT INTO MlangPrintAuto_NcrFlambeau VALUES (179, '476', '522', '500', '420000', '512', '10000', '', '');
+INSERT INTO MlangPrintAuto_NcrFlambeau VALUES (180, '477', '524', '10', '90000', '514', '10000', '', '');
+INSERT INTO MlangPrintAuto_NcrFlambeau VALUES (181, '477', '524', '20', '150000', '514', '10000', '', '');
+INSERT INTO MlangPrintAuto_NcrFlambeau VALUES (182, '477', '524', '30', '220000', '514', '10000', '', '');
+INSERT INTO MlangPrintAuto_NcrFlambeau VALUES (183, '477', '524', '40', '260000', '514', '10000', '', '');
+INSERT INTO MlangPrintAuto_NcrFlambeau VALUES (184, '477', '524', '50', '320000', '514', '10000', '', '');
+INSERT INTO MlangPrintAuto_NcrFlambeau VALUES (185, '477', '525', '10', '110000', '514', '10000', '', '');
+INSERT INTO MlangPrintAuto_NcrFlambeau VALUES (186, '477', '525', '20', '150000', '514', '10000', '', '');
+INSERT INTO MlangPrintAuto_NcrFlambeau VALUES (187, '477', '525', '40', '210000', '514', '10000', '', '');
+INSERT INTO MlangPrintAuto_NcrFlambeau VALUES (188, '477', '525', '50', '250000', '514', '10000', '', '');
+INSERT INTO MlangPrintAuto_NcrFlambeau VALUES (189, '477', '525', '60', '290000', '514', '10000', '', '');
+INSERT INTO MlangPrintAuto_NcrFlambeau VALUES (190, '477', '526', '50', '168000', '514', '10000', '', '');
+INSERT INTO MlangPrintAuto_NcrFlambeau VALUES (191, '477', '526', '100', '306000', '514', '10000', '', '');
+INSERT INTO MlangPrintAuto_NcrFlambeau VALUES (192, '477', '526', '200', '548000', '514', '10000', '', '');
+INSERT INTO MlangPrintAuto_NcrFlambeau VALUES (193, '477', '526', '300', '834000', '514', '10000', '', '');
+INSERT INTO MlangPrintAuto_NcrFlambeau VALUES (194, '477', '526', '500', '1234000', '514', '10000', '', '');
+INSERT INTO MlangPrintAuto_NcrFlambeau VALUES (195, '477', '527', '50', '130000', '514', '10000', '', '');
+INSERT INTO MlangPrintAuto_NcrFlambeau VALUES (196, '477', '527', '100', '220000', '514', '10000', '', '');
+INSERT INTO MlangPrintAuto_NcrFlambeau VALUES (199, '477', '527', '200', '410000', '514', '10000', '', '');
+INSERT INTO MlangPrintAuto_NcrFlambeau VALUES (200, '477', '527', '300', '610000', '514', '10000', '', '');
+INSERT INTO MlangPrintAuto_NcrFlambeau VALUES (201, '477', '527', '500', '860000', '514', '10000', '', '');
+INSERT INTO MlangPrintAuto_NcrFlambeau VALUES (202, '477', '529', '50', '104000', '514', '10000', '', '');
+INSERT INTO MlangPrintAuto_NcrFlambeau VALUES (203, '477', '529', '100', '164000', '514', '10000', '', '');
+INSERT INTO MlangPrintAuto_NcrFlambeau VALUES (204, '477', '529', '200', '290000', '514', '10000', '', '');
+INSERT INTO MlangPrintAuto_NcrFlambeau VALUES (205, '477', '529', '300', '434000', '514', '10000', '', '');
+INSERT INTO MlangPrintAuto_NcrFlambeau VALUES (206, '477', '529', '500', '620000', '514', '10000', '', '');
+INSERT INTO MlangPrintAuto_NcrFlambeau VALUES (207, '676', '681', '10', '140000', '687', '10000', '', '');
+INSERT INTO MlangPrintAuto_NcrFlambeau VALUES (208, '676', '681', '20', '210000', '687', '10000', '', '');
+INSERT INTO MlangPrintAuto_NcrFlambeau VALUES (209, '676', '681', '30', '280000', '687', '10000', '', '');
+INSERT INTO MlangPrintAuto_NcrFlambeau VALUES (210, '676', '681', '40', '340000', '687', '10000', '', '');
+INSERT INTO MlangPrintAuto_NcrFlambeau VALUES (211, '676', '681', '50', '432000', '687', '10000', '', '');
+INSERT INTO MlangPrintAuto_NcrFlambeau VALUES (212, '676', '681', '80', '660000', '687', '10000', '', '');
+INSERT INTO MlangPrintAuto_NcrFlambeau VALUES (213, '676', '682', '10', '120000', '687', '10000', '', '');
+INSERT INTO MlangPrintAuto_NcrFlambeau VALUES (214, '676', '682', '20', '190000', '687', '10000', '', '');
+INSERT INTO MlangPrintAuto_NcrFlambeau VALUES (215, '676', '682', '40', '270000', '687', '10000', '', '');
+INSERT INTO MlangPrintAuto_NcrFlambeau VALUES (216, '676', '682', '50', '340000', '687', '10000', '', '');
+INSERT INTO MlangPrintAuto_NcrFlambeau VALUES (217, '676', '682', '60', '400000', '687', '10000', '', '');
+INSERT INTO MlangPrintAuto_NcrFlambeau VALUES (218, '676', '682', '80', '500000', '687', '10000', '', '');
+INSERT INTO MlangPrintAuto_NcrFlambeau VALUES (219, '676', '683', '50', '322000', '687', '10000', '', '');
+INSERT INTO MlangPrintAuto_NcrFlambeau VALUES (220, '676', '683', '100', '398000', '687', '10000', '', '');
+INSERT INTO MlangPrintAuto_NcrFlambeau VALUES (221, '676', '683', '200', '722000', '687', '10000', '', '');
+INSERT INTO MlangPrintAuto_NcrFlambeau VALUES (222, '676', '683', '300', '1100000', '687', '10000', '', '');
+INSERT INTO MlangPrintAuto_NcrFlambeau VALUES (223, '676', '683', '500', '1720000', '687', '10000', '', '');
+INSERT INTO MlangPrintAuto_NcrFlambeau VALUES (224, '676', '684', '50', '190000', '687', '10000', '', '');
+INSERT INTO MlangPrintAuto_NcrFlambeau VALUES (225, '676', '684', '100', '300000', '687', '10000', '', '');
+INSERT INTO MlangPrintAuto_NcrFlambeau VALUES (226, '676', '684', '200', '540000', '687', '10000', '', '');
+INSERT INTO MlangPrintAuto_NcrFlambeau VALUES (227, '676', '684', '300', '820000', '687', '10000', '', '');
+INSERT INTO MlangPrintAuto_NcrFlambeau VALUES (228, '676', '684', '500', '1280000', '687', '10000', '', '');
+INSERT INTO MlangPrintAuto_NcrFlambeau VALUES (229, '676', '685', '50', '140000', '687', '10000', '', '');
+INSERT INTO MlangPrintAuto_NcrFlambeau VALUES (230, '477', '515', '10', '85000', '513', '10000', '', '');
+INSERT INTO MlangPrintAuto_NcrFlambeau VALUES (231, '476', '905', '80', '235000', '511', '10000', '', '');
+INSERT INTO MlangPrintAuto_NcrFlambeau VALUES (232, '476', '518', '100', '240000', '511', '10000', '', '');
+INSERT INTO MlangPrintAuto_NcrFlambeau VALUES (235, '476', '905', '60', '185000', '511', '10000', '', '');
+INSERT INTO MlangPrintAuto_NcrFlambeau VALUES (271, '476', '518', '30', '130000', '512', '10000', '', '');
+INSERT INTO MlangPrintAuto_NcrFlambeau VALUES (270, '476', '520', '30', '80000', '511', '10000', '', '');
+INSERT INTO MlangPrintAuto_NcrFlambeau VALUES (269, '476', '520', '20', '73000', '511', '10000', '', '');
+INSERT INTO MlangPrintAuto_NcrFlambeau VALUES (240, '475', '485', '10', '35000', '505', '10000', '', '');
+INSERT INTO MlangPrintAuto_NcrFlambeau VALUES (241, '475', '485', '20', '65000', '505', '10000', '', '');
+INSERT INTO MlangPrintAuto_NcrFlambeau VALUES (242, '475', '485', '30', '70000', '505', '10000', '', '');
+INSERT INTO MlangPrintAuto_NcrFlambeau VALUES (243, '476', '905', '10', '60000', '511', '10000', '', '');
+INSERT INTO MlangPrintAuto_NcrFlambeau VALUES (244, '476', '905', '20', '85000', '511', '10000', '', '');
+INSERT INTO MlangPrintAuto_NcrFlambeau VALUES (245, '476', '905', '10', '86000', '512', '10000', '', '');
+INSERT INTO MlangPrintAuto_NcrFlambeau VALUES (246, '476', '905', '20', '116000', '512', '10000', '', '');
+INSERT INTO MlangPrintAuto_NcrFlambeau VALUES (256, '476', '905', '30', '110000', '511', '10000', '', '');
+INSERT INTO MlangPrintAuto_NcrFlambeau VALUES (248, '476', '905', '30', '146000', '512', '10000', '', '');
+INSERT INTO MlangPrintAuto_NcrFlambeau VALUES (249, '476', '905', '40', '176000', '512', '10000', '', '');
+INSERT INTO MlangPrintAuto_NcrFlambeau VALUES (258, '477', '515', '20', '130000', '513', '10000', '', '');
+INSERT INTO MlangPrintAuto_NcrFlambeau VALUES (257, '476', '905', '40', '135000', '511', '10000', '', '');
+INSERT INTO MlangPrintAuto_NcrFlambeau VALUES (252, '476', '905', '50', '206000', '512', '10000', '', '');
+INSERT INTO MlangPrintAuto_NcrFlambeau VALUES (253, '476', '905', '60', '236000', '512', '10000', '', '');
+INSERT INTO MlangPrintAuto_NcrFlambeau VALUES (254, '476', '905', '80', '296000', '512', '10000', '', '');
+INSERT INTO MlangPrintAuto_NcrFlambeau VALUES (255, '476', '905', '100', '350000', '512', '10000', '', '');
+INSERT INTO MlangPrintAuto_NcrFlambeau VALUES (259, '477', '515', '30', '180000', '513', '10000', '', '');
+INSERT INTO MlangPrintAuto_NcrFlambeau VALUES (260, '477', '515', '40', '210000', '513', '10000', '', '');
+INSERT INTO MlangPrintAuto_NcrFlambeau VALUES (261, '477', '515', '60', '290000', '513', '10000', '', '');
+INSERT INTO MlangPrintAuto_NcrFlambeau VALUES (262, '477', '515', '80', '365000', '513', '10000', '', '');
+INSERT INTO MlangPrintAuto_NcrFlambeau VALUES (263, '477', '515', '10', '105000', '514', '10000', '', '');
+INSERT INTO MlangPrintAuto_NcrFlambeau VALUES (264, '477', '515', '20', '160000', '514', '10000', '', '');
+INSERT INTO MlangPrintAuto_NcrFlambeau VALUES (265, '477', '515', '30', '210000', '514', '10000', '', '');
+INSERT INTO MlangPrintAuto_NcrFlambeau VALUES (266, '477', '515', '40', '250000', '514', '10000', '', '');
+INSERT INTO MlangPrintAuto_NcrFlambeau VALUES (267, '477', '515', '60', '340000', '514', '10000', '', '');
+INSERT INTO MlangPrintAuto_NcrFlambeau VALUES (268, '477', '515', '80', '420000', '514', '10000', '', '');
+INSERT INTO MlangPrintAuto_NcrFlambeau VALUES (273, '476', '520', '20', '88000', '512', '10000', '', '');
+INSERT INTO MlangPrintAuto_NcrFlambeau VALUES (274, '476', '945', '10', '60000', '511', '10000', '', '');
+INSERT INTO MlangPrintAuto_NcrFlambeau VALUES (275, '476', '945', '20', '85000', '511', '10000', '', '');
+INSERT INTO MlangPrintAuto_NcrFlambeau VALUES (276, '476', '945', '30', '110000', '511', '10000', '', '');
+INSERT INTO MlangPrintAuto_NcrFlambeau VALUES (277, '476', '945', '40', '135000', '511', '10000', '', '');
+INSERT INTO MlangPrintAuto_NcrFlambeau VALUES (278, '476', '945', '50', '175000', '511', '10000', '', '');
+INSERT INTO MlangPrintAuto_NcrFlambeau VALUES (279, '476', '945', '80', '255000', '511', '10000', '', '');
+INSERT INTO MlangPrintAuto_NcrFlambeau VALUES (280, '476', '945', '10', '70000', '512', '10000', '', '');
+INSERT INTO MlangPrintAuto_NcrFlambeau VALUES (281, '476', '945', '20', '95000', '512', '10000', '', '');
+INSERT INTO MlangPrintAuto_NcrFlambeau VALUES (282, '476', '945', '30', '125000', '512', '10000', '', '');
+INSERT INTO MlangPrintAuto_NcrFlambeau VALUES (283, '476', '945', '40', '155000', '512', '10000', '', '');
+INSERT INTO MlangPrintAuto_NcrFlambeau VALUES (284, '476', '520', '50', '145000', '512', '10000', '', '');
+INSERT INTO MlangPrintAuto_NcrFlambeau VALUES (285, '476', '945', '80', '265000', '512', '10000', '', '');
+INSERT INTO MlangPrintAuto_NcrFlambeau VALUES (286, '946', '947', '20', '160000', '948', '10000', '', '');
+INSERT INTO MlangPrintAuto_NcrFlambeau VALUES (293, '955', '956', '40', '185000', '957', '10000', '', '');
+INSERT INTO MlangPrintAuto_NcrFlambeau VALUES (289, '475', '954', '20', '160000', '506', '10000', '', '');
+INSERT INTO MlangPrintAuto_NcrFlambeau VALUES (292, '955', '956', '20', '160000', '957', '10000', '', '');
+INSERT INTO MlangPrintAuto_NcrFlambeau VALUES (290, '475', '954', '40', '185000', '506', '10000', '', '');
+INSERT INTO MlangPrintAuto_NcrFlambeau VALUES (294, '476', '518', '40', '130000', '511', '10000', '', '');
+INSERT INTO MlangPrintAuto_NcrFlambeau VALUES (295, '476', '518', '200', '390000', '511', '10000', '', '');
+INSERT INTO MlangPrintAuto_NcrFlambeau VALUES (296, '959', '960', '30', '45000', '961', '10000', '', '');
+INSERT INTO MlangPrintAuto_NcrFlambeau VALUES (297, '959', '960', '50', '50000', '961', '10000', '', '');
+INSERT INTO MlangPrintAuto_NcrFlambeau VALUES (298, '959', '960', '80', '80000', '961', '10000', '', '');
+INSERT INTO MlangPrintAuto_NcrFlambeau VALUES (299, '959', '960', '100', '90000', '961', '10000', '', '');
+INSERT INTO MlangPrintAuto_NcrFlambeau VALUES (300, '959', '960', '200', '140000', '961', '10000', '', '');
+INSERT INTO MlangPrintAuto_NcrFlambeau VALUES (301, '959', '960', '400', '190000', '961', '10000', '', '');
+INSERT INTO MlangPrintAuto_NcrFlambeau VALUES (302, '959', '960', '20', '45000', '963', '10000', '', '');
+INSERT INTO MlangPrintAuto_NcrFlambeau VALUES (303, '959', '960', '50', '55000', '964', '10000', '', '');
+INSERT INTO MlangPrintAuto_NcrFlambeau VALUES (304, '959', '960', '80', '88000', '964', '10000', '', '');
+INSERT INTO MlangPrintAuto_NcrFlambeau VALUES (305, '959', '960', '100', '100000', '964', '10000', '', '');
+INSERT INTO MlangPrintAuto_NcrFlambeau VALUES (306, '959', '960', '200', '195000', '964', '10000', '', '');
+INSERT INTO MlangPrintAuto_NcrFlambeau VALUES (307, '959', '960', '200', '140000', '964', '10000', '', '');
+INSERT INTO MlangPrintAuto_NcrFlambeau VALUES (308, '959', '960', '400', '200000', '964', '10000', '', '');
+INSERT INTO MlangPrintAuto_NcrFlambeau VALUES (309, '959', '960', '20', '55000', '965', '10000', '', '');
+INSERT INTO MlangPrintAuto_NcrFlambeau VALUES (310, '959', '960', '50', '65000', '965', '10000', '', '');
+INSERT INTO MlangPrintAuto_NcrFlambeau VALUES (311, '959', '960', '80', '95000', '965', '10000', '', '');
+INSERT INTO MlangPrintAuto_NcrFlambeau VALUES (312, '959', '960', '100', '100000', '965', '10000', '', '');
+INSERT INTO MlangPrintAuto_NcrFlambeau VALUES (313, '959', '960', '200', '150000', '965', '10000', '', '');
+INSERT INTO MlangPrintAuto_NcrFlambeau VALUES (314, '477', '525', '50', '250000', '514', '10000', '', '');
+INSERT INTO MlangPrintAuto_NcrFlambeau VALUES (315, '477', '966', '100', '250000', '514', '10000', '', '');
+INSERT INTO MlangPrintAuto_NcrFlambeau VALUES (316, '475', '969', '20', '45000', '505', '10000', '', '');
+INSERT INTO MlangPrintAuto_NcrFlambeau VALUES (317, '475', '969', '50', '55000', '505', '10000', '', '');
+INSERT INTO MlangPrintAuto_NcrFlambeau VALUES (318, '475', '969', '50', '55000', '505', '10000', '', '');
+INSERT INTO MlangPrintAuto_NcrFlambeau VALUES (319, '475', '969', '80', '88000', '505', '10000', '', '');
+INSERT INTO MlangPrintAuto_NcrFlambeau VALUES (320, '475', '969', '100', '100000', '505', '10000', '', '');
+INSERT INTO MlangPrintAuto_NcrFlambeau VALUES (321, '475', '969', '200', '160000', '505', '10000', '', '');
+INSERT INTO MlangPrintAuto_NcrFlambeau VALUES (322, '475', '969', '300', '200000', '505', '10000', '', '');
+INSERT INTO MlangPrintAuto_NcrFlambeau VALUES (323, '475', '969', '20', '55000', '506', '10000', '', '');
+INSERT INTO MlangPrintAuto_NcrFlambeau VALUES (324, '475', '969', '50', '65000', '506', '10000', '', '');
+INSERT INTO MlangPrintAuto_NcrFlambeau VALUES (325, '475', '969', '80', '98000', '506', '10000', '', '');
+INSERT INTO MlangPrintAuto_NcrFlambeau VALUES (326, '475', '969', '100', '110000', '506', '10000', '', '');
+INSERT INTO MlangPrintAuto_NcrFlambeau VALUES (327, '475', '969', '200', '170000', '506', '10000', '', '');
+INSERT INTO MlangPrintAuto_NcrFlambeau VALUES (328, '973', '975', '20', '160000', '976', '10000', '', '');
+INSERT INTO MlangPrintAuto_NcrFlambeau VALUES (329, '973', '975', '40', '185000', '976', '10000', '', '');
+INSERT INTO MlangPrintAuto_NcrFlambeau VALUES (330, '973', '975', '20', '180000', '977', '10000', '', '');
+INSERT INTO MlangPrintAuto_NcrFlambeau VALUES (331, '973', '975', '40', '205000', '977', '10000', '', '');
+INSERT INTO MlangPrintAuto_NcrFlambeau VALUES (332, '974', '978', '20', '165000', '979', '10000', '', '');
+INSERT INTO MlangPrintAuto_NcrFlambeau VALUES (333, '974', '978', '40', '185000', '979', '10000', '', '');
+INSERT INTO MlangPrintAuto_NcrFlambeau VALUES (334, '974', '978', '20', '180000', '980', '10000', '', '');
+INSERT INTO MlangPrintAuto_NcrFlambeau VALUES (335, '974', '978', '40', '205000', '980', '10000', '', '');
+INSERT INTO MlangPrintAuto_NcrFlambeau VALUES (336, '475', '981', '20', '80000', '505', '10000', '', '');
+INSERT INTO MlangPrintAuto_NcrFlambeau VALUES (337, '475', '484', '40', '100000', '505', '10000', '', '');
+INSERT INTO MlangPrintAuto_NcrFlambeau VALUES (338, '475', '981', '20', '90000', '506', '10000', '', '');
+INSERT INTO MlangPrintAuto_NcrFlambeau VALUES (339, '475', '484', '40', '115000', '506', '10000', '', '');
+INSERT INTO MlangPrintAuto_NcrFlambeau VALUES (340, '475', '982', '20', '90000', '505', '10000', '', '');
+INSERT INTO MlangPrintAuto_NcrFlambeau VALUES (341, '475', '982', '40', '110000', '505', '10000', '', '');
+INSERT INTO MlangPrintAuto_NcrFlambeau VALUES (342, '476', '520', '640', '710000', '511', '10000', '', '');
+INSERT INTO MlangPrintAuto_NcrFlambeau VALUES (343, '476', '520', '80', '125000', '511', '10000', '', '');
+INSERT INTO MlangPrintAuto_NcrFlambeau VALUES (344, '475', '981', '40', '120000', '505', '10000', '', '');
+INSERT INTO MlangPrintAuto_NcrFlambeau VALUES (345, '475', '981', '10', '65000', '505', '10000', '', '');
+INSERT INTO MlangPrintAuto_NcrFlambeau VALUES (346, '477', '987', '10', '70000', '513', '10000', '', '');
+INSERT INTO MlangPrintAuto_NcrFlambeau VALUES (347, '477', '987', '20', '116000', '513', '10000', '', '');
+INSERT INTO MlangPrintAuto_NcrFlambeau VALUES (348, '477', '987', '30', '158000', '513', '10000', '', '');
+INSERT INTO MlangPrintAuto_NcrFlambeau VALUES (349, '477', '987', '40', '207000', '513', '10000', '', '');
+INSERT INTO MlangPrintAuto_NcrFlambeau VALUES (350, '477', '987', '50', '257000', '513', '10000', '', '');
+INSERT INTO MlangPrintAuto_NcrFlambeau VALUES (351, '477', '525', '60', '306000', '513', '10000', '', '');
+INSERT INTO MlangPrintAuto_NcrFlambeau VALUES (352, '477', '525', '70', '349000', '513', '10000', '', '');
+INSERT INTO MlangPrintAuto_NcrFlambeau VALUES (353, '477', '987', '80', '394000', '513', '10000', '', '');
+INSERT INTO MlangPrintAuto_NcrFlambeau VALUES (354, '477', '987', '60', '306000', '513', '10000', '', '');
+INSERT INTO MlangPrintAuto_NcrFlambeau VALUES (355, '476', '518', '100', '270000', '512', '10000', '', '');
+INSERT INTO MlangPrintAuto_NcrFlambeau VALUES (356, '476', '518', '120', '310000', '512', '10000', '', '');
+INSERT INTO MlangPrintAuto_NcrFlambeau VALUES (357, '476', '518', '100', '240000', '511', '10000', '', '');
+INSERT INTO MlangPrintAuto_NcrFlambeau VALUES (358, '476', '518', '120', '280000', '511', '10000', '', '');
+INSERT INTO MlangPrintAuto_NcrFlambeau VALUES (359, '475', '484', '40', '110000', '506', '10000', '', '');
+
+-- phpMyAdmin SQL Dump
+-- version 5.2.2
+-- https://www.phpmyadmin.net/
+--
+-- 호스트: localhost
+-- 생성 시간: 25-06-17 12:44
+-- 서버 버전: 10.4.25-MariaDB
+-- PHP 버전: 7.4.33
+
+SET SQL_MODE = "NO_AUTO_VALUE_ON_ZERO";
+START TRANSACTION;
+SET time_zone = "+00:00";
+
+
+/*!40101 SET @OLD_CHARACTER_SET_CLIENT=@@CHARACTER_SET_CLIENT */;
+/*!40101 SET @OLD_CHARACTER_SET_RESULTS=@@CHARACTER_SET_RESULTS */;
+/*!40101 SET @OLD_COLLATION_CONNECTION=@@COLLATION_CONNECTION */;
+/*!40101 SET NAMES utf8mb4 */;
+
+--
+-- 데이터베이스: `duson1830`
+--
+
+-- --------------------------------------------------------
+
+--
+-- 테이블 구조 `mlangprintauto_transactioncate`
+--
+
+CREATE TABLE `mlangprintauto_transactioncate` (
+  `no` mediumint(12) UNSIGNED NOT NULL,
+  `Ttable` varchar(250) COLLATE utf8mb4_unicode_ci DEFAULT NULL,
+  `BigNo` varchar(100) COLLATE utf8mb4_unicode_ci NOT NULL DEFAULT '',
+  `title` varchar(250) COLLATE utf8mb4_unicode_ci DEFAULT NULL,
+  `TreeNo` varchar(100) COLLATE utf8mb4_unicode_ci NOT NULL DEFAULT ''
+) ENGINE=MyISAM DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+
+--
+-- 테이블의 덤프 데이터 `mlangprintauto_transactioncate`
+--
+
+INSERT INTO `mlangprintauto_transactioncate` (`no`, `Ttable`, `BigNo`, `title`, `TreeNo`) VALUES
+(823, 'inserted', '802', 'B4(8절) 257x367', ''),
+(263, 'sticker', '260', '80X50mm익일배송', ''),
+(264, 'sticker', '260', '90X55mm익일배송', ''),
+(822, 'inserted', '802', 'A5(147x210)', ''),
+(821, 'inserted', '802', 'A4 (210x297)', ''),
+(818, 'inserted', '802', 'B5(16절)182x257', ''),
+(626, 'inserted', '', '100g아트지(90g~95g A/T(합판인쇄)', '802'),
+(820, 'inserted', '802', 'B6(32절)127x182', ''),
+(809, 'inserted', '', '120모조', '802'),
+(261, 'sticker', '260', '50X50mm익일배송', ''),
+(275, 'NameCard', '0', '일반명함(쿠폰)', ''),
+(276, 'NameCard', '275', '칼라코팅', ''),
+(277, 'NameCard', '275', '칼라비코팅', ''),
+(278, 'NameCard', '0', '고급수입지', ''),
+(279, 'NameCard', '278', '휘라레216g(라레216g)', ''),
+(280, 'NameCard', '278', '누브지210g(누브210g)', ''),
+(634, 'NameCard', '278', '컨셉(블루펄)285g(컨셉실버블루285g)', ''),
+(282, 'envelope', '0', '소봉투', ''),
+(283, 'envelope', '282', '소봉투(100모조 220*105)', ''),
+(284, 'envelope', '282', '레자크(100g 220*105)', ''),
+(285, 'envelope', '282', '쟈켓소봉투(100모조 220*105)', ''),
+(301, 'sticker', '0', '원형스티커', ''),
+(682, 'NcrFlambeau', '676', '16절', ''),
+(680, 'LittlePrint', '590', '100모조', ''),
+(679, 'LittlePrint', '590', '80모조', ''),
+(676, 'NcrFlambeau', '0', 'NCR 4매(200매철)', ''),
+(646, 'sticker', '0', '사각귀돌이스티커', ''),
+(671, 'sticker', '645', '90X150 mm 기타란에종류기입', ''),
+(670, 'sticker', '645', '90X140mm 기타란에종류기입', ''),
+(669, 'sticker', '645', '90X130mm 기타란에종류기입', ''),
+(687, 'NcrFlambeau', '', '2도', '676'),
+(686, 'NcrFlambeau', '', '1도', '676'),
+(685, 'NcrFlambeau', '676', '48절 빌지, 영수증', ''),
+(684, 'NcrFlambeau', '676', '32절 거래명세표', ''),
+(683, 'NcrFlambeau', '676', 'A5', ''),
+(438, 'NameCard', '278', '그레이스-256g', ''),
+(439, 'NameCard', '278', '머쉬멜로우209g(머쉬209g)', ''),
+(717, 'inserted', '', '200g 아트지,스노우지(독판인쇄)', '802'),
+(633, 'NameCard', '278', '유포지250g(유포250g)', ''),
+(445, 'NameCard', '278', '스타드림240g(스타240g)', ''),
+(448, 'NameCard', '278', '키칼라메탈릭200g', ''),
+(466, 'envelope', '0', '대봉투', ''),
+(700, 'cadarok', '', '180g(A/T,S/W)', '691'),
+(699, 'cadarok', '', '150g(A/T,S/W)', '691'),
+(681, 'NcrFlambeau', '676', 'A4 거래명세서,계약서,회원가입등등', ''),
+(473, 'envelope', '466', '대봉투330*243(120g모조)', ''),
+(474, 'envelope', '466', '대봉투330*243(110g레자크)', ''),
+(475, 'NcrFlambeau', '0', '양식(100매철)', ''),
+(476, 'NcrFlambeau', '0', 'NCR 2매(100매철)', ''),
+(477, 'NcrFlambeau', '0', 'NCR 3매(150매철)', ''),
+(484, 'NcrFlambeau', '475', '계약서(A4).기타서식(A4)', ''),
+(485, 'NcrFlambeau', '475', '16절', ''),
+(486, 'NcrFlambeau', '475', 'A5', ''),
+(487, 'NcrFlambeau', '475', '거래명세표 각종서식 (32절)', ''),
+(489, 'NcrFlambeau', '475', '빌지, 영수증', ''),
+(518, 'NcrFlambeau', '476', '16절', ''),
+(519, 'NcrFlambeau', '476', 'A5', ''),
+(520, 'NcrFlambeau', '476', '32절거래명세표 세금계산서', ''),
+(522, 'NcrFlambeau', '676', '빌지 영수증', ''),
+(524, 'NcrFlambeau', '676', 'A4 거래명세서,계약서,회원가입등등', ''),
+(525, 'NcrFlambeau', '477', '16절', ''),
+(505, 'NcrFlambeau', '', '1도', '475'),
+(506, 'NcrFlambeau', '', '2도', '475'),
+(511, 'NcrFlambeau', '', '1도', '476'),
+(512, 'NcrFlambeau', '', '2도', '476'),
+(513, 'NcrFlambeau', '', '1도', '477'),
+(514, 'NcrFlambeau', '', '2도', '477'),
+(515, 'NcrFlambeau', '676', 'A4 거래명세서,계약서,회원가입등등', ''),
+(526, 'NcrFlambeau', '477', 'A5', ''),
+(527, 'NcrFlambeau', '676', '32절 거래명세표', ''),
+(529, 'NcrFlambeau', '676', '빌지 영수증', ''),
+(698, 'cadarok', '691', '16페이지 중철(A4)', ''),
+(697, 'cadarok', '691', '12페이지 중철(A4)', ''),
+(691, 'cadarok', '0', '카다록,리플렛', ''),
+(692, 'cadarok', '691', '24절(127*260)3단', ''),
+(693, 'cadarok', '691', 'A4의1/3크기-A4(297*210)3단접지', ''),
+(694, 'cadarok', '691', 'A4_6면(국3절(630*297)3단접지)', ''),
+(695, 'cadarok', '691', 'A4_4면(A3_반접지)', ''),
+(696, 'cadarok', '691', '8페이지 중철(A4)', ''),
+(701, 'cadarok', '', '200g(A/T,S/W)', '691'),
+(712, 'NameCard', '704', '누드(투명)', ''),
+(706, 'NameCard', '704', '실버', ''),
+(705, 'NameCard', '704', '화이트', ''),
+(704, 'NameCard', '0', '카드명함(PET명함)', ''),
+(702, 'cadarok', '', '250g(A/T,S/W)', '691'),
+(716, 'inserted', '', '180g 아트지,스노우지(독판인쇄)', '802'),
+(715, 'inserted', '', '150g아트지,스노우지(독판인쇄)', '802'),
+(714, 'inserted', '', '120g아트지,스노우지(독판인쇄)', '802'),
+(741, 'envelope', '466', '크라프트지(누런종이)', ''),
+(708, 'NameCard', '704', '플레티늄 실버', ''),
+(709, 'NameCard', '704', '플레티늄 골드', ''),
+(590, 'LittlePrint', '0', '소량포스터', ''),
+(604, 'LittlePrint', '590', '120아트/스노우', ''),
+(605, 'LittlePrint', '590', '150아트/스노우', ''),
+(606, 'LittlePrint', '590', '180아트/스노우', ''),
+(607, 'LittlePrint', '590', '200아트/스노우', ''),
+(608, 'LittlePrint', '590', '250아트/스노우', ''),
+(609, 'LittlePrint', '590', '300아트/스노우', ''),
+(610, 'LittlePrint', '', '국2절', '590'),
+(611, 'LittlePrint', '', '국전', '590'),
+(612, 'LittlePrint', '', '4절', '590'),
+(613, 'LittlePrint', '', '2절', '590'),
+(614, 'MerchandiseBond', '0', '상품권(148x68', ''),
+(615, 'MerchandiseBond', '614', '인쇄만', ''),
+(616, 'MerchandiseBond', '614', '홀로그램박', ''),
+(617, 'MerchandiseBond', '614', '넘버링', ''),
+(618, 'MerchandiseBond', '614', '넘버링+홀로그램박', ''),
+(719, 'MerchandiseBond', '614', '미싱선', ''),
+(722, 'cadarok', '', '아트지(유광) 스노우지(무광)', '691'),
+(723, 'LittlePrint', '', '150', '590'),
+(725, 'cadarok', '691', '유광코팅 광이있는종이', ''),
+(726, 'cadarok', '691', '20페이지중철(A4)', ''),
+(727, 'cadarok', '', '180g(A/T,S/W)', '691'),
+(742, 'msticker', '0', '자석스티커(종이자석)', ''),
+(743, 'msticker', '742', '90x60mm(후면에작은자석)', ''),
+(731, 'NameCard', '275', '일반명함(쿠폰)', ''),
+(744, 'msticker', '742', '90x70mm(후면에작은자석)', ''),
+(739, 'NameCard', '278', '크리스탈펄(구,팝셋)235g', ''),
+(753, 'msticker', '0', '자석스티커(전체)', ''),
+(754, 'msticker', '753', '38x55mm 기간3~5일', ''),
+(755, 'msticker', '753', '41x60mm기간3~5일', ''),
+(761, 'msticker', '742', '90x90 mm(후면에작은자석)', ''),
+(762, 'msticker', '742', '90x100 mm(후면에작은자석)', ''),
+(763, 'msticker', '742', '90x110 mm(후면에작은자석)', ''),
+(764, 'msticker', '742', '90x120mm(후면에작은자석)', ''),
+(765, 'msticker', '742', '90x130mm(후면에작은자석)', ''),
+(808, 'inserted', '', '100모조', '802'),
+(807, 'inserted', '', '80모조(복사용지)', '802'),
+(802, 'inserted', '0', '칼라인쇄(CMYK)', ''),
+(774, 'sticker', '645', '60x40mm(은데롱/투명)종류기타란에기입', ''),
+(806, 'inserted', '', '250g 아트지,스노우지(독판인쇄)', '802'),
+(775, 'sticker', '645', '53x32mm(은데롱/투명)종류기타란에기입', ''),
+(776, 'sticker', '645', '55x35mm(은데롱/투명)종류기타란에기입', ''),
+(777, 'msticker', '753', '50x50mm 납품은3~5일', ''),
+(824, 'inserted', '802', 'A3 (297x423', ''),
+(825, 'inserted', '802', '4절(367x517)', ''),
+(826, 'inserted', '802', '국2절423x597', ''),
+(827, 'MerchandiseBond', '0', '명함크기는 명함란에서접수', ''),
+(828, 'MerchandiseBond', '614', '인쇄만+넘버링', ''),
+(829, 'sticker', '260', '50x100 mm 다음날택배배송', ''),
+(830, 'sticker', '260', '100x60 mm 다음날택배배송', ''),
+(831, 'sticker', '260', '100x70mm 다음날택배배송', ''),
+(832, 'sticker', '260', '100x40mm 다음날택배배송', ''),
+(833, 'sticker', '260', '100x30mm 다음날택배 배송', ''),
+(842, 'msticker', '753', '33x53mm  납품은(3~5일걸림니다)', ''),
+(841, 'sticker', '260', '65x90mm익일배송', ''),
+(840, 'MerchandiseBond', '614', '인쇄만', ''),
+(839, 'MerchandiseBond', '0', '상품권130*52', ''),
+(843, 'msticker', '753', '30x35 mm   납품은3~5일', ''),
+(847, 'msticker', '742', '13x18Cm납품은3~5일', ''),
+(863, 'msticker', '742', '비규격은기타란에크기기입', ''),
+(864, 'msticker', '753', '비규격은주문하시고 기타란에기입', ''),
+(867, 'NcrFlambeau', '', 'A4  거래명세서,계약서,회원가입등등', '676'),
+(872, 'MerchandiseBond', '0', '명함용지쿠폰명함에서주문', ''),
+(873, 'MerchandiseBond', '827', '넘버링', ''),
+(874, 'MerchandiseBond', '614', '미싱선', ''),
+(875, 'MerchandiseBond', '614', '미싱선', ''),
+(905, 'NcrFlambeau', '676', 'A4 거래명세서 계약서, 회원가입등등', ''),
+(909, 'NameCard', '704', '골드', ''),
+(907, 'sticker', '0', '자석스티커(전체)', ''),
+(908, 'sticker', '0', '자석스티커(종이자석)', ''),
+(910, 'NameCard', '275', '화이트모조220g', ''),
+(911, 'NameCard', '278', '엑스트라매트350g', ''),
+(912, 'NameCard', '278', '아르떼울트라화이트(310g랑데뷰울트라)', ''),
+(991, 'NameCard', '0', '1', ''),
+(914, 'NameCard', '278', '크라프트지240g', ''),
+(920, 'envelope', '282', '쟈켓(100모조 220*105)', ''),
+(924, 'inserted', '', '300g A/T,S/W', '802'),
+(927, 'NameCard', '278', '스타골드240g', ''),
+(992, 'NameCard', '278', '친환경용지209g(3일)', ''),
+(930, 'NameCard', '278', '르느와르320g', ''),
+(933, 'envelope', '282', '자켓 줄레자크100g 220*105', ''),
+(932, 'NameCard', '278', '스코틀랜드220g', ''),
+(934, 'envelope', '282', '자켓  체크레자크100g  220*105', ''),
+(935, 'envelope', '466', '대봉투245*330(110g체크레자크)', ''),
+(936, 'envelope', '466', '대봉투330*243(줄레자크110g)', ''),
+(939, 'NameCard', '278', '카멜레온-200g은색', ''),
+(940, 'NameCard', '278', '마제스틱200g 은색펄', ''),
+(943, 'inserted', '', '150모조', '802'),
+(944, 'inserted', '802', 'A6(105X147)', ''),
+(945, 'NcrFlambeau', '476', 'A4 거래명세서 계약서 기타 서식류', ''),
+(948, 'NcrFlambeau', '', ' 100모조 2도 적색 청색', '676'),
+(957, 'NcrFlambeau', '', '거래명세표A4 100모조 중앙미싱 2도인쇄', '955'),
+(958, 'LittlePrint', '590', '200g아트/스노우지', ''),
+(954, 'NcrFlambeau', '475', '거래명세표A4 100모조 중앙미싱 2도인쇄', ''),
+(955, 'NcrFlambeau', '0', '거래명세표 A4', ''),
+(956, 'NcrFlambeau', '955', ' 거래명세표A4 100모조 중앙미싱 2도인쇄', ''),
+(959, 'NcrFlambeau', '0', '빌지 영수증 (85-190mm)100매철', ''),
+(960, 'NcrFlambeau', '959', '빌지 영수증(85-190mm)100매철', ''),
+(963, 'NcrFlambeau', '', '1도', '676'),
+(964, 'NcrFlambeau', '', '1도', '959'),
+(965, 'NcrFlambeau', '', '2도', '959'),
+(966, 'NcrFlambeau', '676', '32절(130-190)', ''),
+(967, 'envelope', '282', '체크레자크100g 220*105', ''),
+(968, 'envelope', '282', '줄레자크100g 220*105', ''),
+(970, 'NcrFlambeau', '475', '빌지 영수증 (85-190mm)100매철', ''),
+(971, 'NcrFlambeau', '', '1도', '475'),
+(972, 'NcrFlambeau', '', '2도', '475'),
+(973, 'NcrFlambeau', '0', '거래명세표A4 100모조 중앙미싱', ''),
+(974, 'NcrFlambeau', '0', '거래명세표A4 100모조 중앙미싱', ''),
+(975, 'NcrFlambeau', '973', '거래명세표A4 100모조 중앙미싱', ''),
+(976, 'NcrFlambeau', '', '2도', '973'),
+(977, 'NcrFlambeau', '', '3도', '973'),
+(978, 'NcrFlambeau', '974', '거래명세표A4 100모조 중앙미싱', ''),
+(979, 'NcrFlambeau', '', '2도', '974'),
+(980, 'NcrFlambeau', '', '3도', '974'),
+(981, 'NcrFlambeau', '475', '80모조A4단면', ''),
+(982, 'NcrFlambeau', '475', '80모조A4 양면', ''),
+(985, 'envelope', '466', ' 대봉투120g모조(330*243)', ''),
+(986, 'NcrFlambeau', '', '4도칼라', '676'),
+(987, 'NcrFlambeau', '477', 'A4', ''),
+(988, 'envelope', '282', '소봉투120모조(220*105)', ''),
+(989, 'envelope', '282', '소봉투120모조( 220*105)', ''),
+(990, 'envelope', '0', '소봉투 별사이즈는 전화견적', ''),
+(993, 'NameCard', '278', '몽블랑240g', '');
+
+--
+-- 덤프된 테이블의 인덱스
+--
+
+--
+-- 테이블의 인덱스 `mlangprintauto_transactioncate`
+--
+ALTER TABLE `mlangprintauto_transactioncate`
+  ADD PRIMARY KEY (`no`);
+
+--
+-- 덤프된 테이블의 AUTO_INCREMENT
+--
+
+--
+-- 테이블의 AUTO_INCREMENT `mlangprintauto_transactioncate`
+--
+ALTER TABLE `mlangprintauto_transactioncate`
+  MODIFY `no` mediumint(12) UNSIGNED NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=994;
+COMMIT;
+
+/*!40101 SET CHARACTER_SET_CLIENT=@OLD_CHARACTER_SET_CLIENT */;
+/*!40101 SET CHARACTER_SET_RESULTS=@OLD_CHARACTER_SET_RESULTS */;
+/*!40101 SET COLLATION_CONNECTION=@OLD_COLLATION_CONNECTION */;
+
+
