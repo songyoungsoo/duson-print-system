@@ -107,6 +107,12 @@ class CalculatorModal {
                 this.handlePriceData(event.data.payload);
             }
 
+            // 관리자 견적서에서 사용하는 메시지 타입 (전단지 등)
+            if (event.data.type === 'ADMIN_QUOTE_ITEM_ADDED') {
+                console.log('✅ ADMIN_QUOTE_ITEM_ADDED 수신, handlePriceData 호출');
+                this.handlePriceData(event.data.payload);
+            }
+
             // 계산기에서 모달 닫기 요청 (전단지는 직접 AJAX 저장 후 모달 닫기)
             if (event.data.type === 'CALCULATOR_CLOSE_MODAL') {
                 console.log('🚪 계산기에서 모달 닫기 요청 받음 → 페이지 새로고침');
@@ -141,10 +147,11 @@ class CalculatorModal {
         // 모달 제목 설정
         document.getElementById('calcModalTitle').textContent = `${productName} 계산기`;
 
-        // iframe URL 설정 (쿼리 파라미터로 견적서 모드 전달)
-        this.iframe.src = calculatorUrl + '?mode=quotation';
+        // iframe URL 설정 (쿼리 파라미터로 관리자 견적서 모드 전달)
+        // admin_quote 모드: postMessage로 부모창에 데이터 전송
+        this.iframe.src = calculatorUrl + '?mode=admin_quote';
 
-        console.log('✅ [TUNNEL 1/5] iframe 로드 시작:', calculatorUrl + '?mode=quotation');
+        console.log('✅ [TUNNEL 1/5] iframe 로드 시작:', calculatorUrl + '?mode=admin_quote');
 
         // 모달 표시
         this.modal.style.display = 'flex';

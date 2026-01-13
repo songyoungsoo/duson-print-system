@@ -338,6 +338,11 @@ if ($type_result && ($type_row = mysqli_fetch_assoc($type_result))) {
     <!-- 파일 업로드 모달 (통합 컴포넌트) -->
     <?php include "../../includes/upload_modal.php"; ?>
     <script src="../../includes/upload_modal.js?v=1759243573751415300"></script>
+    <!-- 로그인 체크 건너뛰기 (다른 제품과 동일) -->
+    <script>
+    window.isLoggedIn = function() { return true; };
+    window.checkLoginStatus = function() { return true; };
+    </script>
 
     <?php include "../../includes/login_modal.php"; ?>
 
@@ -660,6 +665,96 @@ if ($type_result && ($type_row = mysqli_fetch_assoc($type_result))) {
             });
         };
     </script>
+
+    <?php if ($isQuotationMode || $isAdminQuoteMode): ?>
+    <!-- 관리자 견적서 모달용 applyToQuotation 함수 -->
+    <script>
+    /**
+     * 견적서에 봉투 품목 추가
+     * calculator_modal.js가 ADMIN_QUOTE_ITEM_ADDED 메시지를 수신
+     */
+    window.applyToQuotation = function() {
+        console.log('🚀 [관리자 견적서-봉투] applyToQuotation() 호출');
+
+        // 1. 필수 필드 검증
+        const MY_type = document.getElementById('MY_type')?.value;
+        const Section = document.getElementById('Section')?.value;
+        const POtype = document.getElementById('POtype')?.value;
+        const MY_amount = document.getElementById('MY_amount')?.value;
+        const ordertype = document.getElementById('ordertype')?.value;
+
+        if (!MY_type || !Section || !POtype || !MY_amount || !ordertype) {
+            alert('모든 필수 옵션을 선택해주세요.');
+            return;
+        }
+
+        // 2. 가격 확인
+        if (!window.currentPriceData) {
+            alert('가격을 먼저 계산해주세요.');
+            return;
+        }
+
+        // 공급가액 계산 (VAT 미포함)
+        const supplyPrice = Math.round(
+            window.currentPriceData.total_price ||
+            window.currentPriceData.base_price ||
+            window.currentPriceData.Order_PriceForm || 0
+        );
+
+        if (supplyPrice <= 0) {
+            alert('유효한 가격이 계산되지 않았습니다.');
+            return;
+        }
+
+        // 3. 사양 텍스트 생성 (2줄 형식)
+        const typeText = document.getElementById('MY_type')?.options[document.getElementById('MY_type').selectedIndex]?.text || '';
+        const sectionText = document.getElementById('Section')?.options[document.getElementById('Section').selectedIndex]?.text || '';
+        const potypeText = document.getElementById('POtype')?.options[document.getElementById('POtype').selectedIndex]?.text || '';
+        const ordertypeText = document.getElementById('ordertype')?.options[document.getElementById('ordertype').selectedIndex]?.text || '';
+
+        // 양면테이프 옵션 체크
+        const tapeEnabled = document.getElementById('envelope_tape_enabled')?.checked;
+        const tapePrice = parseInt(document.getElementById('envelope_tape_price')?.value) || 0;
+
+        // 1줄: 종류 / 재질
+        const line1 = [typeText, sectionText].filter(s => s).join(' / ');
+        // 2줄: 인쇄색상 / 편집비 (+ 양면테이프)
+        let line2Parts = [potypeText, ordertypeText];
+        if (tapeEnabled && tapePrice > 0) {
+            line2Parts.push('양면테이프');
+        }
+        const line2 = line2Parts.filter(s => s).join(' / ');
+        const specification = `${line1}\n${line2}`;
+
+        // 4. 페이로드 생성
+        const payload = {
+            product_code: 'envelope',
+            product_name: '봉투',
+            quantity: parseInt(MY_amount),
+            quantity_unit: '매',
+            supply_price: supplyPrice,
+            specification: specification,
+            options: {
+                MY_type: MY_type,
+                Section: Section,
+                POtype: POtype,
+                MY_amount: MY_amount,
+                ordertype: ordertype,
+                envelope_tape_enabled: tapeEnabled ? '1' : '0',
+                envelope_tape_price: tapePrice
+            }
+        };
+
+        console.log('📤 [봉투] postMessage 전송:', payload);
+
+        // 5. 부모 창으로 메시지 전송
+        window.parent.postMessage({
+            type: 'ADMIN_QUOTE_ITEM_ADDED',
+            payload: payload
+        }, window.location.origin);
+    };
+    </script>
+    <?php endif; ?>
 
     <!-- 견적서 모달 공통 JavaScript -->
     <script src="../../js/quotation-modal-common.js?v=<?php echo time(); ?>"></script>

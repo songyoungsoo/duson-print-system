@@ -416,8 +416,13 @@ if ($type_result && ($type_row = mysqli_fetch_assoc($type_result))) {
         // 공통 모달 JavaScript 로드
         const modalScript = document.createElement('script');
         modalScript.src = '../../includes/upload_modal.js';
+        modalScript.onload = function() {
+            // 로그인 체크 건너뛰기 (다른 제품과 동일)
+            window.isLoggedIn = function() { return true; };
+            window.checkLoginStatus = function() { return true; };
+        };
         document.head.appendChild(modalScript);
-        
+
         // 상품권 전용 장바구니 추가 함수
         function handleModalBasketAdd(uploadedFiles, onSuccess, onError) {
             console.log('상품권 handleModalBasketAdd 호출');
@@ -548,7 +553,10 @@ if ($type_result && ($type_row = mysqli_fetch_assoc($type_result))) {
         const paperSection = sectionSelect?.selectedOptions[0]?.text || Section;
         const quantityText = amountSelect?.selectedOptions[0]?.text || MY_amount;
 
-        const specification = paperType + ' / ' + paperSection;
+        // 2줄 형식: 종류 / 재질(규격)
+        const line1 = paperType;
+        const line2 = paperSection;
+        const specification = `${line1}\n${line2}`;
         const quantity = parseFloat(MY_amount) || 1;
 
         const payload = {

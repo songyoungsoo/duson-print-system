@@ -110,39 +110,45 @@ $stats = mysqli_fetch_assoc($stats_result);
 <head>
     <meta charset="UTF-8">
     <title>견적 관리 - 두손기획인쇄 관리자</title>
+    <link rel="stylesheet" href="/css/color-system-unified.css">
     <style>
         * { margin: 0; padding: 0; box-sizing: border-box; }
         body { font-family: 'Malgun Gothic', sans-serif; background: #f5f5f5; padding: 20px; }
-        
+
         .container { max-width: 1400px; margin: 0 auto; }
-        
+
         .header {
             background: white;
             padding: 30px;
             border-radius: 8px;
             box-shadow: 0 2px 10px rgba(0,0,0,0.1);
             margin-bottom: 20px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
         }
-        
+
         .header h1 { color: #333; margin-bottom: 10px; }
-        
+
+        .header-actions { display: flex; gap: 10px; }
+
         .stats {
             display: grid;
             grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
             gap: 15px;
             margin-bottom: 20px;
         }
-        
+
         .stat-card {
             background: white;
             padding: 20px;
             border-radius: 8px;
             box-shadow: 0 2px 5px rgba(0,0,0,0.1);
         }
-        
+
         .stat-card h3 { color: #666; font-size: 14px; margin-bottom: 10px; }
-        .stat-card .number { font-size: 32px; font-weight: bold; color: #667eea; }
-        
+        .stat-card .number { font-size: 32px; font-weight: bold; color: var(--dsp-primary, #1E4E79); }
+
         .filters {
             background: white;
             padding: 20px;
@@ -150,86 +156,86 @@ $stats = mysqli_fetch_assoc($stats_result);
             box-shadow: 0 2px 5px rgba(0,0,0,0.1);
             margin-bottom: 20px;
         }
-        
+
         .filter-row {
             display: flex;
             gap: 10px;
             align-items: center;
             flex-wrap: wrap;
         }
-        
+
         .filter-row select, .filter-row input {
             padding: 8px 12px;
             border: 1px solid #ddd;
             border-radius: 4px;
             font-size: 14px;
         }
-        
+
         .filter-row button {
             padding: 8px 16px;
-            background: #667eea;
+            background: var(--dsp-primary, #1E4E79);
             color: white;
             border: none;
             border-radius: 4px;
             cursor: pointer;
         }
-        
-        .filter-row button:hover { background: #5568d3; }
-        
+
+        .filter-row button:hover { background: var(--dsp-primary-dark, #153A5A); }
+
         .quote-list {
             background: white;
             border-radius: 8px;
             box-shadow: 0 2px 10px rgba(0,0,0,0.1);
         }
-        
+
         .quote-item {
             border-bottom: 1px solid #f0f0f0;
             padding: 20px;
         }
-        
+
         .quote-item:last-child { border-bottom: none; }
-        
+
         .quote-header {
             display: flex;
             justify-content: space-between;
             align-items: center;
             margin-bottom: 15px;
         }
-        
+
         .quote-info h3 { color: #333; margin-bottom: 5px; }
         .quote-info p { color: #666; font-size: 14px; }
-        
+
         .status-badge {
             padding: 6px 12px;
             border-radius: 4px;
             font-size: 14px;
             font-weight: 600;
         }
-        
+
         .status-draft { background: #e9ecef; color: #495057; }
         .status-sent { background: #d1ecf1; color: #0c5460; }
         .status-viewed { background: #cfe2ff; color: #084298; }
-        .status-accepted { background: #d4edda; color: #155724; }
+        .status-accepted { background: var(--dsp-primary-lighter, #E8F0F7); color: var(--dsp-primary, #1E4E79); }
         .status-rejected { background: #f8d7da; color: #721c24; }
         .status-expired { background: #f8f9fa; color: #6c757d; }
-        .status-converted { background: #d4edda; color: #155724; font-weight: bold; }
-        
+        .status-converted { background: var(--dsp-primary-lighter, #E8F0F7); color: var(--dsp-primary, #1E4E79); font-weight: bold; }
+
         .quote-details {
             display: grid;
             grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
             gap: 15px;
             margin-bottom: 15px;
         }
-        
+
         .detail-item { color: #666; font-size: 14px; }
         .detail-item strong { color: #333; }
-        
+
         .actions {
             display: flex;
             gap: 10px;
             margin-top: 15px;
         }
-        
+
         .btn {
             padding: 8px 16px;
             border: none;
@@ -239,21 +245,36 @@ $stats = mysqli_fetch_assoc($stats_result);
             text-decoration: none;
             display: inline-block;
         }
-        
+
         .btn-primary {
-            background: #667eea;
+            background: var(--dsp-primary, #1E4E79);
             color: white;
         }
-        
-        .btn-primary:hover { background: #5568d3; }
-        
+
+        .btn-primary:hover { background: var(--dsp-primary-dark, #153A5A); }
+
+        .btn-secondary {
+            background: #6c757d;
+            color: white;
+        }
+
+        .btn-secondary:hover { background: #5a6268; }
+
+        .btn-success {
+            background: var(--dsp-accent, #FFD500);
+            color: #333;
+            font-weight: 600;
+        }
+
+        .btn-success:hover { background: var(--dsp-accent-dark, #E6C000); }
+
         .pagination {
             display: flex;
             justify-content: center;
             gap: 10px;
             margin-top: 20px;
         }
-        
+
         .pagination a, .pagination span {
             padding: 8px 12px;
             background: white;
@@ -262,22 +283,31 @@ $stats = mysqli_fetch_assoc($stats_result);
             text-decoration: none;
             color: #333;
         }
-        
+
         .pagination a:hover { background: #f0f0f0; }
-        .pagination .current { background: #667eea; color: white; border-color: #667eea; }
-        
+        .pagination .current { background: var(--dsp-primary, #1E4E79); color: white; border-color: var(--dsp-primary, #1E4E79); }
+
         .no-quotes {
             text-align: center;
             padding: 40px;
             color: #999;
         }
+
+        a.link-primary { color: var(--dsp-primary, #1E4E79); text-decoration: none; }
+        a.link-primary:hover { text-decoration: underline; }
     </style>
 </head>
 <body>
     <div class="container">
         <div class="header">
-            <h1>💰 견적 관리</h1>
-            <p>고객 견적 요청 및 관리</p>
+            <div>
+                <h1>💰 견적 관리</h1>
+                <p>고객 견적 요청 및 관리</p>
+            </div>
+            <div class="header-actions">
+                <a href="/mlangprintauto/quote/create.php" class="btn btn-success" target="_blank">➕ 새 견적 작성</a>
+                <a href="/mlangprintauto/quote/index.php" class="btn btn-primary" target="_blank">📋 견적서 시스템</a>
+            </div>
         </div>
         
         <!-- Statistics -->
@@ -321,8 +351,8 @@ $stats = mysqli_fetch_assoc($stats_result);
                 <input type="text" name="search" placeholder="견적번호, 고객명, 회사명" value="<?php echo htmlspecialchars($search); ?>">
                 
                 <button type="submit">검색</button>
-                <a href="?" style="margin-left: 10px; color: #667eea; text-decoration: none;">초기화</a>
-                <a href="index.php" style="margin-left: auto; color: #667eea; text-decoration: none;">← 대시보드로</a>
+                <a href="?" class="link-primary" style="margin-left: 10px;">초기화</a>
+                <a href="index.php" class="link-primary" style="margin-left: auto;">← 대시보드로</a>
             </form>
         </div>
         
@@ -377,8 +407,8 @@ $stats = mysqli_fetch_assoc($stats_result);
                             <?php endif; ?>
                             <?php if ($quote['converted_order_no']): ?>
                                 <div class="detail-item">
-                                    <strong>주문번호:</strong> 
-                                    <a href="/admin/mlangprintauto/order_manager.php?search=<?php echo urlencode($quote['converted_order_no']); ?>" style="color: #667eea;">
+                                    <strong>주문번호:</strong>
+                                    <a href="/admin/mlangprintauto/admin.php?mode=OrderView&no=<?php echo urlencode($quote['converted_order_no']); ?>" class="link-primary" target="_blank">
                                         <?php echo htmlspecialchars($quote['converted_order_no']); ?>
                                     </a>
                                 </div>

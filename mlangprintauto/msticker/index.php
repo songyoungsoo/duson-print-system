@@ -415,6 +415,11 @@ if (!$isQuotationMode && !$isAdminQuoteMode) {
         // 공통 모달 JavaScript 로드 (자석스티커 함수 정의 후)
         const modalScript = document.createElement('script');
         modalScript.src = '../../includes/upload_modal.js';
+        modalScript.onload = function() {
+            // 로그인 체크 건너뛰기 (다른 제품과 동일)
+            window.isLoggedIn = function() { return true; };
+            window.checkLoginStatus = function() { return true; };
+        };
         document.head.appendChild(modalScript);
         
         // 자석스티커 전용 msticker.js가 모든 기능을 처리합니다
@@ -774,7 +779,10 @@ if ($db) {
         const paperSection = sectionSelect?.selectedOptions[0]?.text || Section;
         const quantityText = amountSelect?.selectedOptions[0]?.text || MY_amount;
 
-        const specification = paperType + ' / ' + paperSection;
+        // 2줄 형식: 종류 / 재질(규격)
+        const line1 = paperType;
+        const line2 = paperSection;
+        const specification = `${line1}\n${line2}`;
         const quantity = parseFloat(MY_amount) || 1;
 
         const payload = {

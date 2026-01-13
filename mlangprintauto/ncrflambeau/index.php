@@ -340,8 +340,13 @@ $default_values['MY_type'] = '475'; // 양식(100매철)
         // 공통 모달 JavaScript 로드
         const modalScript = document.createElement('script');
         modalScript.src = '../../includes/upload_modal.js';
+        modalScript.onload = function() {
+            // 로그인 체크 건너뛰기 (다른 제품과 동일)
+            window.isLoggedIn = function() { return true; };
+            window.checkLoginStatus = function() { return true; };
+        };
         document.head.appendChild(modalScript);
-        
+
         // 양식지 갤러리 로드
         loadNcrGallery();
     });
@@ -603,6 +608,106 @@ $default_values['MY_type'] = '475'; // 양식(100매철)
         });
     };
     </script>
+
+    <?php if ($isQuotationMode || $isAdminQuoteMode): ?>
+    <!-- 관리자 견적서 모달용 applyToQuotation 함수 -->
+    <script>
+    /**
+     * 견적서에 NCR양식 품목 추가
+     * calculator_modal.js가 ADMIN_QUOTE_ITEM_ADDED 메시지를 수신
+     *
+     * Standard Architecture Directive 준수:
+     * - product_type: 제품 코드 (ncrflambeau)
+     * - unit: 단위 (권)
+     * - quantity_display: formatPrintQuantity() 결과와 동일한 형식
+     */
+    window.applyToQuotation = function() {
+        console.log('🚀 [관리자 견적서-NCR양식] applyToQuotation() 호출');
+
+        // 1. 필수 필드 검증
+        const MY_type = document.getElementById('MY_type')?.value;
+        const MY_Fsd = document.getElementById('MY_Fsd')?.value;
+        const PN_type = document.getElementById('PN_type')?.value;
+        const MY_amount = document.getElementById('MY_amount')?.value;
+        const ordertype = document.getElementById('ordertype')?.value;
+
+        if (!MY_type || !MY_Fsd || !PN_type || !MY_amount || !ordertype) {
+            alert('모든 필수 옵션을 선택해주세요.');
+            return;
+        }
+
+        // 2. 가격 확인
+        if (!window.currentPriceData) {
+            alert('가격을 먼저 계산해주세요.');
+            return;
+        }
+
+        // 공급가액 계산 (VAT 미포함)
+        const supplyPrice = Math.round(
+            window.currentPriceData.total_price ||
+            window.currentPriceData.base_price ||
+            window.currentPriceData.Order_PriceForm || 0
+        );
+
+        if (supplyPrice <= 0) {
+            alert('유효한 가격이 계산되지 않았습니다.');
+            return;
+        }
+
+        // 3. 사양 텍스트 생성
+        const typeText = document.getElementById('MY_type')?.options[document.getElementById('MY_type').selectedIndex]?.text || '';
+        const fsdText = document.getElementById('MY_Fsd')?.options[document.getElementById('MY_Fsd').selectedIndex]?.text || '';
+        const pntypeText = document.getElementById('PN_type')?.options[document.getElementById('PN_type').selectedIndex]?.text || '';
+        const ordertypeText = document.getElementById('ordertype')?.options[document.getElementById('ordertype').selectedIndex]?.text || '';
+
+        // 추가 옵션 체크
+        const foldingEnabled = document.getElementById('folding_enabled')?.checked;
+        const creasingEnabled = document.getElementById('creasing_enabled')?.checked;
+
+        // 2줄 형식: 구분/규격 + 색상/수량/편집비/옵션
+        // 1줄: 구분 / 규격
+        const line1 = [typeText, fsdText].filter(s => s).join(' / ');
+
+        // 수량 표시: "100권" 형식 (Standard Architecture: qty_value + qty_unit)
+        const quantity = parseInt(MY_amount);
+        const quantityDisplay = quantity.toLocaleString() + '권';
+
+        // 2줄: 색상 / 수량 / 편집비 (+ 넘버링/미싱)
+        let line2Parts = [pntypeText, quantityDisplay, ordertypeText];
+        if (foldingEnabled) line2Parts.push('넘버링');
+        if (creasingEnabled) line2Parts.push('미싱');
+        const line2 = line2Parts.filter(s => s).join(' / ');
+        const specification = `${line1}\n${line2}`;
+
+        // 4. 페이로드 생성 (Standard Architecture 준수)
+        const payload = {
+            product_type: 'ncrflambeau',
+            product_name: 'NCR양식',
+            specification: specification,
+            quantity: quantity,
+            unit: '권',
+            quantity_display: quantityDisplay,
+            supply_price: supplyPrice,
+            // 원시 필드값 (legacy 호환)
+            MY_type: MY_type,
+            MY_Fsd: MY_Fsd,
+            PN_type: PN_type,
+            MY_amount: MY_amount,
+            ordertype: ordertype,
+            folding_enabled: foldingEnabled ? '1' : '0',
+            creasing_enabled: creasingEnabled ? '1' : '0'
+        };
+
+        console.log('📤 [NCR양식] postMessage 전송:', payload);
+
+        // 5. 부모 창으로 메시지 전송
+        window.parent.postMessage({
+            type: 'ADMIN_QUOTE_ITEM_ADDED',
+            payload: payload
+        }, window.location.origin);
+    };
+    </script>
+    <?php endif; ?>
 
     <!-- 견적서 모달 공통 JavaScript -->
     <script src="../../js/quotation-modal-common.js?v=<?php echo time(); ?>"></script>

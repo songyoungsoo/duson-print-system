@@ -379,6 +379,11 @@ $default_values['ordertype'] = 'print'; // 인쇄만
     <!-- 파일 업로드 모달 (통합 컴포넌트) -->
     <?php include "../../includes/upload_modal.php"; ?>
     <script src="../../includes/upload_modal.js?v=1759244661"></script>
+    <!-- 로그인 체크 건너뛰기 (다른 제품과 동일) -->
+    <script>
+    window.isLoggedIn = function() { return true; };
+    window.checkLoginStatus = function() { return true; };
+    </script>
 
     <?php include "../../includes/login_modal.php"; ?>
 
@@ -560,7 +565,10 @@ $default_values['ordertype'] = 'print'; // 인쇄만
         const printSides = pnSelect?.selectedOptions[0]?.text || PN_type;
         const quantityText = amountSelect?.selectedOptions[0]?.text || MY_amount;
 
-        const specification = paperType + ' / ' + paperSection + ' / ' + printSides;
+        // 2줄 형식: 종류 / 재질 / 인쇄면
+        const line1 = paperType + ' / ' + paperSection;
+        const line2 = printSides;
+        const specification = `${line1}\n${line2}`;
         const quantity = parseFloat(MY_amount) || 1;
 
         const payload = {

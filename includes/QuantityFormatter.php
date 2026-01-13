@@ -18,12 +18,19 @@ class QuantityFormatter {
      * DB unit_codes 테이블과 동기화 유지
      */
     const UNIT_CODES = [
+        // 표준 인쇄 단위
         'R' => '연',  // Ream - 전단지/리플렛
         'S' => '매',  // Sheet - 스티커/명함/봉투/포스터
         'B' => '부',  // Bundle - 카다록
         'V' => '권',  // Volume - NCR양식지
         'P' => '장',  // Piece - 개별 인쇄물
-        'E' => '개'   // Each - 기타/커스텀
+        'E' => '개',  // Each - 기타/커스텀
+
+        // 비규격/수동 견적용 단위
+        'H' => '헤베',  // Square Meter - 대형 출력물 (현수막, 배너)
+        'X' => '박스',  // Box - 박스 단위
+        'T' => '세트',  // Set - 세트 단위
+        'M' => '미터'   // Meter - 길이 단위 (현수막)
     ];
 
     /**
@@ -298,4 +305,34 @@ class QuantityFormatter {
 
         return true;
     }
+}
+
+/**
+ * formatPrintQuantity - 공통 수량 출력 함수 (SSOT Wrapper)
+ *
+ * Standard Architecture Directive 준수:
+ * - 견적서, 장바구니, 주문서, 관리자 모두 이 함수만 사용
+ * - 새 단위 추가 시 이 함수(QuantityFormatter) 한 곳만 수정
+ *
+ * @param float $qty_val 수량 값 (0.5, 1000 등)
+ * @param string $qty_unit 단위 코드 (R/S/B/V/P/E/H/X/T/M) 또는 한글 (연/매/부 등)
+ * @param int|null $qty_sheets 매수 (연 단위 제품용, 선택)
+ * @param string $separator 연수/매수 구분자 (기본: ' ', HTML용: '<br>')
+ * @return string "1,000매", "0.5연 (2,000매)", "2개" 등
+ *
+ * @example
+ * formatPrintQuantity(0.5, 'R', 2000);      // "0.5연 (2,000매)"
+ * formatPrintQuantity(1000, 'S');            // "1,000매"
+ * formatPrintQuantity(2, 'E');               // "2개"
+ * formatPrintQuantity(5.5, 'H');             // "5.5헤베"
+ * formatPrintQuantity(3, 'X');               // "3박스"
+ * formatPrintQuantity(2, '개');              // "2개" (한글 단위도 지원)
+ */
+function formatPrintQuantity(float $qty_val, string $qty_unit, ?int $qty_sheets = null, string $separator = ' '): string {
+    // 한글 단위가 입력된 경우 코드로 변환
+    if (mb_strlen($qty_unit) > 1 || preg_match('/[가-힣]/u', $qty_unit)) {
+        $qty_unit = QuantityFormatter::getUnitCode($qty_unit);
+    }
+
+    return QuantityFormatter::format($qty_val, $qty_unit, $qty_sheets, $separator);
 }

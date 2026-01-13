@@ -9,7 +9,7 @@
 // 테마 시스템 로드
 include_once __DIR__ . '/../../includes/theme_loader.php';
 
-// 보안 상수 정의 후 공통 인증 및 설정
+// 공통 인증 및 설정
 include "../../includes/auth.php";
 
 // 견적서 모달용 간소화 모드 체크
@@ -432,8 +432,22 @@ if ($type_result && ($type_row = mysqli_fetch_assoc($type_result))) {
     <!-- 🆕 프리미엄 옵션 JavaScript 추가 -->
     <script src="js/namecard-premium-options.js"></script>
 
-    <!-- 공통 업로드 모달 JavaScript -->
+    <?php if (!$isQuotationMode && !$isAdminQuoteMode): ?>
+    <!-- 공통 업로드 모달 JavaScript (일반 모드에서만 로드) -->
     <script src="../../includes/upload_modal.js"></script>
+    <!-- 일반 모드에서도 로그인 체크 건너뛰기 (다른 제품과 동일) -->
+    <script>
+    window.isLoggedIn = function() { return true; };
+    window.checkLoginStatus = function() { return true; };
+    </script>
+    <?php else: ?>
+    <!-- 견적서 모드: 로그인 체크 우회 -->
+    <script>
+    // 견적서 모드에서는 로그인 체크 건너뛰기
+    window.isLoggedIn = function() { return true; };
+    window.checkLoginStatus = function() { return true; };
+    </script>
+    <?php endif; ?>
 
     <!-- 🆕 Duson 갤러리 시스템 JavaScript -->
     <script src="../../duson/js/gallery-system.js" defer></script>
@@ -1070,6 +1084,93 @@ if ($type_result && ($type_row = mysqli_fetch_assoc($type_result))) {
 
         // 🆕 namecard.js 대체 필수 기능들
     </script>
+
+<?php if ($isQuotationMode || $isAdminQuoteMode): ?>
+    <!-- 관리자 견적서 모달용 applyToQuotation 함수 -->
+    <script>
+    /**
+     * 견적서에 명함 품목 추가
+     * calculator_modal.js가 ADMIN_QUOTE_ITEM_ADDED 메시지를 수신
+     */
+    window.applyToQuotation = function() {
+        console.log('🚀 [관리자 견적서-명함] applyToQuotation() 호출');
+
+        // 1. 필수 필드 검증
+        const MY_type = document.getElementById('MY_type')?.value;
+        const Section = document.getElementById('Section')?.value;
+        const POtype = document.getElementById('POtype')?.value;
+        const MY_amount = document.getElementById('MY_amount')?.value;
+
+        if (!MY_type || !Section || !POtype || !MY_amount) {
+            alert('모든 필수 옵션을 선택해주세요.');
+            return;
+        }
+
+        // 2. 가격 확인
+        if (!window.currentPriceData) {
+            alert('가격을 먼저 계산해주세요.');
+            return;
+        }
+
+        // 공급가액 계산 (VAT 미포함)
+        const supplyPrice = Math.round(
+            window.currentPriceData.total_price ||
+            window.currentPriceData.total_supply_price ||
+            window.currentPriceData.base_price ||
+            window.currentPriceData.Order_PriceForm || 0
+        );
+
+        if (supplyPrice <= 0) {
+            alert('유효한 가격이 계산되지 않았습니다.');
+            return;
+        }
+
+        // 3. 사양 텍스트 생성 (2줄 형식)
+        const typeText = document.getElementById('MY_type')?.options[document.getElementById('MY_type').selectedIndex]?.text || '';
+        const sectionText = document.getElementById('Section')?.options[document.getElementById('Section').selectedIndex]?.text || '';
+        const potypeText = document.getElementById('POtype')?.options[document.getElementById('POtype').selectedIndex]?.text || '';
+
+        // 1줄: 종류 / 재질
+        const line1 = [typeText, sectionText].filter(s => s).join(' / ');
+        // 2줄: 인쇄
+        const line2 = potypeText;
+        const specification = `${line1}\n${line2}`;
+
+        // 4. 수량 계산 (명함: 1 = 1,000매)
+        let quantity = parseInt(MY_amount) || 1;
+        if (quantity < 10) {
+            quantity = quantity * 1000;
+        }
+        const quantityDisplay = quantity.toLocaleString() + '매';
+
+        // 5. 페이로드 생성
+        const payload = {
+            product_type: 'namecard',
+            product_name: '명함',
+            specification: specification,
+            quantity: quantity,
+            unit: '매',
+            quantity_display: quantityDisplay,
+            supply_price: supplyPrice,
+            // 원본 데이터
+            MY_type: MY_type,
+            Section: Section,
+            POtype: POtype,
+            MY_amount: MY_amount
+        };
+
+        console.log('📤 [명함] postMessage 전송:', payload);
+
+        // 6. 부모 창으로 메시지 전송
+        window.parent.postMessage({
+            type: 'ADMIN_QUOTE_ITEM_ADDED',
+            payload: payload
+        }, window.location.origin);
+    };
+
+    console.log('✅ [관리자 견적서-명함] applyToQuotation() 정의 완료');
+    </script>
+<?php endif; ?>
 
     <!-- 견적서 모달 공통 JavaScript -->
     <script src="../../js/quotation-modal-common.js?v=<?php echo time(); ?>"></script>

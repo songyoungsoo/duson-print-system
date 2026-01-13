@@ -311,6 +311,11 @@ if ($type_result && ($type_row = mysqli_fetch_assoc($type_result))) {
     <!-- 파일 업로드 모달 (통합 컴포넌트) -->
     <?php include "../../includes/upload_modal.php"; ?>
     <script src="../../includes/upload_modal.js?v=1759243573751415300"></script>
+    <!-- 로그인 체크 건너뛰기 (다른 제품과 동일) -->
+    <script>
+    window.isLoggedIn = function() { return true; };
+    window.checkLoginStatus = function() { return true; };
+    </script>
 
     <!-- 갤러리 더보기 모달 - 공통 팝업으로 대체됨 (/popup/proof_gallery.php) -->
     <div id="cadarokGalleryModal" class="gallery-modal" style="display: none !important;">
@@ -662,7 +667,10 @@ if ($type_result && ($type_row = mysqli_fetch_assoc($type_result))) {
         const paperSection = sectionSelect?.selectedOptions[0]?.text || Section;
         const quantityText = amountSelect?.selectedOptions[0]?.text || MY_amount;
 
-        const specification = paperType + ' / ' + paperSection;
+        // 2줄 형식: 종류 / 재질(규격)
+        const line1 = paperType;
+        const line2 = paperSection;
+        const specification = `${line1}\n${line2}`;
         const quantity = parseFloat(MY_amount) || 1;
 
         const payload = {

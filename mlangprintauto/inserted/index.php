@@ -882,13 +882,31 @@ header("Expires: 0");
         const printSides = pnSelect?.selectedOptions[0]?.text || PN_type;
         const quantityText = amountSelect?.selectedOptions[0]?.text || MY_amount;
 
-        // 4. 규격 문자열 생성
-        const specification = `${paperWeight} / ${paperSize} / ${printSides}`;
+        // 4. 규격 문자열 생성 (2줄 형식)
+        // 1줄: 용지 / 규격
+        const line1 = `${paperWeight} / ${paperSize}`;
+        // 2줄: 인쇄면
+        const line2 = printSides;
+        const specification = `${line1}\n${line2}`;
 
-        // 5. 수량 파싱 (연 단위 병기)
+        // 5. 수량 파싱 (연 단위 + 매수 표시)
         let quantity = parseFloat(MY_amount) || 1;
         let unit = '연';
-        let quantityDisplay = quantityText;
+
+        // ✅ 매수는 DB에서 가져온 quantityTwo 값 사용 (계산 금지)
+        // window.currentPriceData.MY_amountRight = "250장" 형식
+        let sheets = 0;
+        const myAmountRight = window.currentPriceData?.MY_amountRight || '';
+        const sheetsMatch = myAmountRight.match(/(\d{1,3}(?:,\d{3})*|\d+)/);
+        if (sheetsMatch && sheetsMatch[1]) {
+            sheets = parseInt(sheetsMatch[1].replace(/,/g, ''));
+        }
+
+        // 수량 표시: "0.5연 (250매)" 형식 - DB에서 읽어온 매수 사용
+        const formattedQty = Number.isInteger(quantity) ? quantity.toLocaleString() : quantity;
+        const quantityDisplay = sheets > 0
+            ? `${formattedQty}연 (${sheets.toLocaleString()}매)`
+            : `${formattedQty}연`;
 
         // 6. 부모 창에 데이터 전송
         const payload = {
@@ -897,6 +915,7 @@ header("Expires: 0");
             specification: specification,
             quantity: quantity,
             unit: unit,
+            qty_sheets: sheets,  // 매수 추가
             quantity_display: quantityDisplay,
             unit_price: supplyPrice,  // 전단지는 연 단가
             supply_price: supplyPrice,

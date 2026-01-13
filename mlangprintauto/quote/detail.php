@@ -6,6 +6,7 @@
 session_start();
 require_once __DIR__ . '/../db.php';
 require_once __DIR__ . '/includes/QuoteManager.php';
+require_once __DIR__ . '/../includes/QuantityFormatter.php';
 
 if (!$db) {
     die('데이터베이스 연결 실패');
@@ -39,15 +40,15 @@ while ($row = mysqli_fetch_assoc($emailResult)) {
     $emailLogs[] = $row;
 }
 
-// 상태 라벨
+// 상태 라벨 (SP 컬러 적용: Success = Navy, Error = Red)
 $statusLabels = [
     'draft' => ['label' => '작성중', 'color' => '#6c757d'],
     'sent' => ['label' => '발송', 'color' => '#0d6efd'],
     'viewed' => ['label' => '확인', 'color' => '#17a2b8'],
-    'accepted' => ['label' => '승인', 'color' => '#28a745'],
+    'accepted' => ['label' => '승인', 'color' => '#1E4E79'],  // SP: Navy
     'rejected' => ['label' => '거절', 'color' => '#dc3545'],
     'expired' => ['label' => '만료', 'color' => '#6c757d'],
-    'converted' => ['label' => '주문', 'color' => '#198754']
+    'converted' => ['label' => '주문', 'color' => '#1E4E79']  // SP: Navy
 ];
 
 $statusInfo = $statusLabels[$quote['status']] ?? ['label' => $quote['status'], 'color' => '#6c757d'];
@@ -66,6 +67,7 @@ $publicUrl = $baseUrl . '/mlangprintauto/quote/public/view.php?token=' . $quote[
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@400;500;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="/css/color-system-unified.css">
     <style>
         * { margin: 0; padding: 0; box-sizing: border-box; }
         body { font-family: 'Noto Sans KR', sans-serif; background: #f0f0f0; font-size: 13px; }
@@ -120,8 +122,8 @@ $publicUrl = $baseUrl . '/mlangprintauto/quote/public/view.php?token=' . $quote[
             font-size: 13px;
         }
         .btn:hover { background: #e0e0e0; }
-        .btn-primary { background: #217346; color: #fff; border-color: #217346; }
-        .btn-primary:hover { background: #1a5c38; }
+        .btn-primary { background: var(--dsp-primary, #1E4E79); color: #fff; border-color: var(--dsp-primary, #1E4E79); }
+        .btn-primary:hover { background: var(--dsp-primary-dark, #153A5A); }
         .btn-warning { background: #ffc107; color: #000; border-color: #ffc107; }
         .btn-warning:hover { background: #e0a800; }
 
@@ -142,7 +144,7 @@ $publicUrl = $baseUrl . '/mlangprintauto/quote/public/view.php?token=' . $quote[
             font-size: 13px;
         }
         .alert-warning { background: #fff3cd; border-color: #ffc107; color: #856404; }
-        .alert-success { background: #d4edda; border-color: #28a745; color: #155724; }
+        .alert-success { background: var(--dsp-primary-lighter, #E8F0F7); border-color: var(--dsp-primary, #1E4E79); color: var(--dsp-primary-dark, #153A5A); }
         .alert-danger { background: #f8d7da; border-color: #dc3545; color: #721c24; }
 
         /* 그리드 레이아웃 */
@@ -242,10 +244,10 @@ $publicUrl = $baseUrl . '/mlangprintauto/quote/public/view.php?token=' . $quote[
         }
         .summary-table tr.total-row th,
         .summary-table tr.total-row td {
-            background: #217346;
+            background: var(--dsp-primary, #1E4E79);
             color: #fff;
             font-weight: bold;
-            border-color: #217346;
+            border-color: var(--dsp-primary, #1E4E79);
         }
 
         /* URL 박스 */
@@ -331,18 +333,18 @@ $publicUrl = $baseUrl . '/mlangprintauto/quote/public/view.php?token=' . $quote[
                     <a href="api/generate_pdf.php?id=<?php echo $quote['id']; ?>&token=<?php echo $quote['public_token']; ?>" class="btn" target="_blank">PDF</a>
                     <a href="public/view.php?token=<?php echo $quote['public_token']; ?>" class="btn" target="_blank">미리보기</a>
                     <button class="btn btn-primary" onclick="sendEmail()">📧 다시 보내기</button>
-                    <button class="btn" style="background: #198754; color: white;" onclick="convertToOrder(<?php echo $quote['id']; ?>)">🛒 주문 변환</button>
+                    <button class="btn" style="background: #1E4E79; color: white;" onclick="convertToOrder(<?php echo $quote['id']; ?>)">🛒 주문 변환</button>
                 <?php elseif ($quote['status'] === 'accepted'): ?>
                     <!-- accepted 상태: 주문 변환 가능 -->
                     <a href="api/generate_pdf.php?id=<?php echo $quote['id']; ?>&token=<?php echo $quote['public_token']; ?>" class="btn" target="_blank">PDF</a>
                     <a href="public/view.php?token=<?php echo $quote['public_token']; ?>" class="btn" target="_blank">미리보기</a>
-                    <button class="btn" style="background: #198754; color: white; font-weight: bold;" onclick="convertToOrder(<?php echo $quote['id']; ?>)">🛒 주문으로 변환</button>
+                    <button class="btn" style="background: #1E4E79; color: white; font-weight: bold;" onclick="convertToOrder(<?php echo $quote['id']; ?>)">🛒 주문으로 변환</button>
                 <?php elseif ($quote['status'] === 'converted'): ?>
                     <!-- converted 상태: 주문 보기 -->
                     <a href="api/generate_pdf.php?id=<?php echo $quote['id']; ?>&token=<?php echo $quote['public_token']; ?>" class="btn" target="_blank">PDF</a>
                     <a href="public/view.php?token=<?php echo $quote['public_token']; ?>" class="btn" target="_blank">미리보기</a>
                     <?php if (!empty($quote['converted_order_no'])): ?>
-                    <a href="/admin/mlangprintauto/admin.php?mode=OrderView&no=<?php echo htmlspecialchars($quote['converted_order_no']); ?>" class="btn" style="background: #198754; color: white;" target="_blank">📦 주문 보기 (#<?php echo htmlspecialchars($quote['converted_order_no']); ?>)</a>
+                    <a href="/admin/mlangprintauto/admin.php?mode=OrderView&no=<?php echo htmlspecialchars($quote['converted_order_no']); ?>" class="btn" style="background: #1E4E79; color: white;" target="_blank">📦 주문 보기 (#<?php echo htmlspecialchars($quote['converted_order_no']); ?>)</a>
                     <?php endif; ?>
                 <?php else: ?>
                     <!-- 기타 상태: 조회만 가능 -->
@@ -449,21 +451,35 @@ $publicUrl = $baseUrl . '/mlangprintauto/quote/public/view.php?token=' . $quote[
                                     <td class="col-name"><?php echo htmlspecialchars($item['product_name']); ?></td>
                                     <td class="col-spec"><?php echo htmlspecialchars($item['specification']); ?></td>
                                     <td class="col-qty"><?php
-                                        $qty = $item['quantity'];
-                                        // 소수점이 있으면 소수점 표시, 정수면 정수로 표시
-                                        $qtyDisplay = ($qty == intval($qty)) ? number_format($qty) : rtrim(rtrim(number_format($qty, 2), '0'), '.');
+                                        // === 하이브리드 모델: qty_val/qty_unit 우선 사용, 없으면 레거시 fallback ===
+                                        $qtyVal = $item['qty_val'] ?? $item['quantity'] ?? 0;
+                                        $qtyUnit = $item['qty_unit'] ?? 'E';
+                                        $qtySheets = $item['qty_sheets'] ?? null;
+
+                                        // 숫자 포맷팅: 정수면 소수점 없이, 소수면 필요한 만큼만
+                                        $qtyVal = floatval($qtyVal);
+                                        if (floor($qtyVal) == $qtyVal) {
+                                            $qtyDisplay = number_format($qtyVal);
+                                        } else {
+                                            $qtyDisplay = rtrim(rtrim(number_format($qtyVal, 2), '0'), '.');
+                                        }
                                         echo $qtyDisplay;
 
-                                        // 전단지(inserted/leaflet)인 경우 매수 표시 추가
-                                        $productType = $item['product_type'] ?? '';
-                                        if (in_array($productType, ['inserted', 'leaflet']) && !empty($item['source_data'])) {
-                                            $sourceData = json_decode($item['source_data'], true);
-                                            if (!empty($sourceData['mesu'])) {
-                                                echo '<br><span style="font-size: 10px; color: #666;">(' . number_format($sourceData['mesu']) . '매)</span>';
-                                            }
+                                        // 연 단위(R)인 경우 매수 표시 추가
+                                        if ($qtyUnit === 'R' && !empty($qtySheets) && $qtySheets > 0) {
+                                            echo '<br><span style="font-size: 10px; color: #666;">(' . number_format($qtySheets) . '매)</span>';
                                         }
                                     ?></td>
-                                    <td class="col-unit"><?php echo htmlspecialchars($item['unit']); ?></td>
+                                    <td class="col-unit"><?php
+                                        // 하이브리드 모델: qty_unit 코드 → 한글 단위명 변환
+                                        $qtyUnitDisplay = $item['qty_unit'] ?? null;
+                                        if ($qtyUnitDisplay && isset(QuantityFormatter::UNIT_CODES[$qtyUnitDisplay])) {
+                                            echo QuantityFormatter::getUnitName($qtyUnitDisplay);
+                                        } else {
+                                            // 레거시 fallback: 기존 unit 필드 사용
+                                            echo htmlspecialchars($item['unit'] ?? '개');
+                                        }
+                                    ?></td>
                                     <td class="col-price"><?php
                                         // 소수점 1자리까지 표시 (모든 품목)
                                         $unitPrice = floatval($item['unit_price']);
@@ -583,7 +599,7 @@ $publicUrl = $baseUrl . '/mlangprintauto/quote/public/view.php?token=' . $quote[
                 <button onclick="changeStatus('draft')" class="btn" style="background: #6c757d; color: white; font-size: 13px; padding: 6px 12px;">📝 초안</button>
                 <button onclick="changeStatus('sent')" class="btn" style="background: #0d6efd; color: white; font-size: 13px; padding: 6px 12px;">📧 발송됨</button>
                 <button onclick="changeStatus('viewed')" class="btn" style="background: #17a2b8; color: white; font-size: 13px; padding: 6px 12px;">👀 조회됨</button>
-                <button onclick="changeStatus('accepted')" class="btn" style="background: #28a745; color: white; font-size: 13px; padding: 6px 12px;">✅ 승인됨</button>
+                <button onclick="changeStatus('accepted')" class="btn" style="background: #1E4E79; color: white; font-size: 13px; padding: 6px 12px;">✅ 승인됨</button>
                 <button onclick="changeStatus('rejected')" class="btn" style="background: #dc3545; color: white; font-size: 13px; padding: 6px 12px;">❌ 거절됨</button>
             </div>
             <p style="margin: 10px 0 0 0; font-size: 12px; color: #999;">

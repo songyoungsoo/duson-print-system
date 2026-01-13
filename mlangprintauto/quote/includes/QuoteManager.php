@@ -4,6 +4,7 @@
  */
 
 require_once __DIR__ . '/ProductSpecFormatter.php';
+require_once __DIR__ . '/../../../includes/QuantityFormatter.php';
 
 class QuoteManager {
     private $db;
@@ -406,6 +407,7 @@ class QuoteManager {
 
     /**
      * 장바구니 아이템을 견적 품목으로 추가
+     * [하이브리드 모델] qty_val, qty_unit, qty_sheets, is_manual 포함
      */
     private function addItemFromCart($quoteId, $itemNo, $cartItem) {
         $productType = $cartItem['product_type'] ?? '';
@@ -423,29 +425,44 @@ class QuoteManager {
         $totalPrice = ProductSpecFormatter::getPrice($cartItem);
         $vatAmount = $totalPrice - $supplyPrice;
 
-        // 전단지/리플렛: flyer_mesu(매수)로 단가 계산 (소수점 1자리), 나머지는 quantity로 계산
-        // flyer_mesu 우선 사용 (전단지/리플렛 전용), 없으면 mesu 폴백 (레거시 호환)
+        // === 하이브리드 모델: 표준화된 수량 데이터 ===
+        $qtyVal = floatval($quantity);
+        $qtyUnit = QuantityFormatter::getUnitCode($productType);
+        $qtySheets = null;
+
+        // 전단지/리플렛: 매수 계산
         $flyerMesu = intval($cartItem['flyer_mesu'] ?? $cartItem['mesu'] ?? 0);
-        if (in_array($productType, ['inserted', 'leaflet']) && $flyerMesu > 0) {
-            $unitPrice = round($supplyPrice / $flyerMesu, 1);
+        if (in_array($productType, ['inserted', 'leaflet'])) {
+            $qtySheets = $flyerMesu > 0 ? $flyerMesu : null;
+            if ($flyerMesu > 0) {
+                $unitPrice = round($supplyPrice / $flyerMesu, 1);
+            } else {
+                $unitPrice = $quantity > 0 ? intval($supplyPrice / $quantity) : 0;
+            }
         } else {
             $unitPrice = $quantity > 0 ? intval($supplyPrice / $quantity) : 0;
         }
 
+        // 장바구니 품목은 is_manual = 0 (정규 품목)
+        $isManual = 0;
+
         $query = "INSERT INTO quote_items (
             quote_id, item_no, product_type, product_name, specification,
-            quantity, unit, unit_price, supply_price, vat_amount, total_price,
-            source_type, source_id, source_data
-        ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, 'cart', ?, ?)";
+            quantity, qty_val, qty_unit, qty_sheets, unit, unit_price,
+            supply_price, vat_amount, total_price,
+            source_type, is_manual, source_id, source_data
+        ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, 'cart', ?, ?, ?)";
 
         $stmt = mysqli_prepare($this->db, $query);
         $sourceData = json_encode($cartItem, JSON_UNESCAPED_UNICODE);
         $sourceId = intval($cartItem['no'] ?? 0);
 
-        mysqli_stmt_bind_param($stmt, "iisssdsdiiiis",
+        // 17개 파라미터: i i s s s d d s i s d i i i i i s
+        mysqli_stmt_bind_param($stmt, "iisssddsisdiiiiis",
             $quoteId, $itemNo, $productType, $productName, $specification,
-            $quantity, $unit, $unitPrice, $supplyPrice, $vatAmount, $totalPrice,
-            $sourceId, $sourceData
+            $quantity, $qtyVal, $qtyUnit, $qtySheets, $unit, $unitPrice,
+            $supplyPrice, $vatAmount, $totalPrice,
+            $isManual, $sourceId, $sourceData
         );
 
         mysqli_stmt_execute($stmt);
@@ -454,31 +471,32 @@ class QuoteManager {
 
     /**
      * quotation_temp 품목을 견적 품목으로 추가
+     * [하이브리드 모델] qty_val, qty_unit, qty_sheets, is_manual 포함
      */
     private function addItemFromQuoteTemp($quoteId, $itemNo, $tempItem) {
-        // === ProductSpecFormatter를 사용하여 quotation_temp 데이터 처리 ===
-        require_once __DIR__ . '/ProductSpecFormatter.php';
-        $formatter = new ProductSpecFormatter($this->db);
-
         // 1. 제품 정보 추출
         $productType = $tempItem['product_type'] ?? '';
         $productName = ProductSpecFormatter::getProductTypeName($productType);
-        $specification = $formatter->format($tempItem);
+        $specification = $this->formatter->format($tempItem);
 
-        // 2. 수량 및 단위 추출 (ProductSpecFormatter 사용)
+        // 2. 수량 및 단위 추출
         $quantity = ProductSpecFormatter::getQuantity($tempItem);
         $unit = ProductSpecFormatter::getUnit($tempItem);
 
-        // 3. 가격 정보 추출 (shop_temp 구조: st_price, st_price_vat)
-        $supplyPrice = ProductSpecFormatter::getSupplyPrice($tempItem);  // VAT 제외
-        $totalPrice = ProductSpecFormatter::getPrice($tempItem);         // VAT 포함
+        // 3. 가격 정보 추출
+        $supplyPrice = ProductSpecFormatter::getSupplyPrice($tempItem);
+        $totalPrice = ProductSpecFormatter::getPrice($tempItem);
         $vatAmount = $totalPrice - $supplyPrice;
 
-        // 4. 단가 계산
-        // 전단지/리플렛: flyer_mesu(매수)로 단가 계산, 기타: quantity로 계산
-        // flyer_mesu 우선 사용 (전단지/리플렛 전용), 없으면 mesu 폴백 (레거시 호환)
+        // === 하이브리드 모델: 표준화된 수량 데이터 ===
+        $qtyVal = floatval($quantity);
+        $qtyUnit = QuantityFormatter::getUnitCode($productType);
+        $qtySheets = null;
+
+        // 4. 단가 계산 및 매수 처리
+        $flyerMesu = intval($tempItem['flyer_mesu'] ?? $tempItem['mesu'] ?? 0);
         if (in_array($productType, ['inserted', 'leaflet'])) {
-            $flyerMesu = intval($tempItem['flyer_mesu'] ?? $tempItem['mesu'] ?? 0);
+            $qtySheets = $flyerMesu > 0 ? $flyerMesu : null;
             if ($flyerMesu > 0) {
                 $unitPrice = round($supplyPrice / $flyerMesu, 1);
             } else {
@@ -488,27 +506,32 @@ class QuoteManager {
             $unitPrice = $quantity > 0 ? round($supplyPrice / $quantity, 1) : 0;
         }
 
+        // quotation_temp 품목은 is_manual = 0 (정규 품목)
+        $isManual = 0;
+
         // 5. 메모 추출
         $notes = $tempItem['MY_comment'] ?? $tempItem['work_memo'] ?? '';
 
-        // 6. source_data JSON 생성 (mesu 등 원본 데이터 보존)
+        // 6. source_data JSON 생성
         $sourceData = json_encode($tempItem, JSON_UNESCAPED_UNICODE);
 
-        // 7. DB INSERT (source_data 포함)
+        // 7. DB INSERT (하이브리드 필드 포함)
         $query = "INSERT INTO quote_items (
             quote_id, item_no, product_type, product_name, specification,
-            quantity, unit, unit_price, supply_price, vat_amount, total_price,
-            source_type, source_id, source_data, notes
-        ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, 'quotation_temp', ?, ?, ?)";
+            quantity, qty_val, qty_unit, qty_sheets, unit, unit_price,
+            supply_price, vat_amount, total_price,
+            source_type, is_manual, source_id, source_data, notes
+        ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, 'quotation_temp', ?, ?, ?, ?)";
 
         $stmt = mysqli_prepare($this->db, $query);
         $sourceId = intval($tempItem['no'] ?? $tempItem['id'] ?? 0);
 
-        // 14개 파라미터: i i s s s d s d i i i i s s
-        mysqli_stmt_bind_param($stmt, "iisssdsdiiiiss",
+        // 18개 파라미터
+        mysqli_stmt_bind_param($stmt, "iisssddsisdiiiiiss",
             $quoteId, $itemNo, $productType, $productName, $specification,
-            $quantity, $unit, $unitPrice, $supplyPrice, $vatAmount, $totalPrice,
-            $sourceId, $sourceData, $notes
+            $quantity, $qtyVal, $qtyUnit, $qtySheets, $unit, $unitPrice,
+            $supplyPrice, $vatAmount, $totalPrice,
+            $isManual, $sourceId, $sourceData, $notes
         );
 
         mysqli_stmt_execute($stmt);
@@ -517,6 +540,11 @@ class QuoteManager {
 
     /**
      * 수동 입력 품목 추가
+     * [하이브리드 모델] qty_val, qty_unit, qty_sheets, is_manual 포함
+     *
+     * 비규격 품목(배너, 현수막 등)도 동일한 데이터 구조 사용
+     * - is_manual = 1 (수동 입력)
+     * - qty_unit = 'E' (기본: 개) 또는 사용자 지정 코드
      */
     private function addManualItem($quoteId, $itemNo, $item) {
         // 변수 추출 (PHP bind_param은 참조만 허용)
@@ -539,7 +567,6 @@ class QuoteManager {
         }
 
         $quantity = floatval($item['quantity'] ?? 1);
-        // flyer_mesu 우선 사용 (전단지/리플렛 전용), 없으면 mesu 폴백 (레거시 호환)
         $flyerMesu = intval($item['flyer_mesu'] ?? $item['mesu'] ?? 0);
 
         // 수량 검증 - 0 이하 방지
@@ -548,7 +575,29 @@ class QuoteManager {
             $quantity = 1;
         }
 
-        // 공급가: 사용자가 직접 입력한 값이 있으면 그대로 사용, 없으면 계산
+        // === 하이브리드 모델: 표준화된 수량 데이터 ===
+        $qtyVal = floatval($quantity);
+
+        // 단위 코드 결정: 정규 품목이면 코드 조회, 비규격이면 텍스트→코드 변환
+        $unitTextToCode = [
+            '연' => 'R', '매' => 'S', '부' => 'B', '권' => 'V', '장' => 'P', '개' => 'E',
+            '식' => 'E', '세트' => 'E', '박스' => 'E', '롤' => 'E', 'm²' => 'E', '헤베' => 'E'
+        ];
+        if (!empty($productType) && isset(QuantityFormatter::PRODUCT_UNITS[$productType])) {
+            $qtyUnit = QuantityFormatter::getUnitCode($productType);
+        } else {
+            $qtyUnit = $unitTextToCode[$unit] ?? 'E';
+        }
+
+        $qtySheets = null;
+        if (in_array($productType, ['inserted', 'leaflet']) && $flyerMesu > 0) {
+            $qtySheets = $flyerMesu;
+        }
+
+        // 수동 입력 품목: is_manual = 1
+        $isManual = 1;
+
+        // 공급가 계산
         if (isset($item['supply_price']) && $item['supply_price'] !== '' && $item['supply_price'] !== null) {
             $supplyPrice = intval($item['supply_price']);
         } else {
@@ -558,33 +607,32 @@ class QuoteManager {
         $vatAmount = intval(round($supplyPrice * 0.1));
         $totalPrice = $supplyPrice + $vatAmount;
 
-        // 단가 계산: 전단지/리플렛은 flyer_mesu로, 기타는 quantity로
+        // 단가 계산
         if (in_array($productType, ['inserted', 'leaflet']) && $flyerMesu > 0) {
             $unitPrice = round($supplyPrice / $flyerMesu, 1);
         } else {
             $unitPrice = floatval($item['unit_price'] ?? 0);
-            if ($unitPrice === 0 && $quantity > 0) {
+            if ($unitPrice === 0.0 && $quantity > 0) {
                 $unitPrice = round($supplyPrice / $quantity, 1);
             }
         }
 
-        // 단가 0원 경고 (저장은 하되 로그 기록)
         if ($unitPrice == 0) {
             error_log("[QuoteManager] 경고: 품목 '$productName'의 단가가 0원입니다 (quote_id=$quoteId)");
         }
 
-        // source_type 결정 (calculator에서 온 경우도 manual로 저장하되 source_data에 구분)
+        // source_type 결정
         $sourceType = $item['source_type'] ?? 'manual';
         if ($sourceType === 'calculator') {
-            $sourceType = 'manual';  // DB에는 manual로 저장
+            $sourceType = 'manual';
         }
 
-        // source_data 생성 (flyer_mesu 등 원본 데이터 보존)
+        // source_data 생성
         $sourceData = null;
         if ($flyerMesu > 0 || !empty($item['_debug'])) {
             $sourceDataArray = [
                 'flyer_mesu' => $flyerMesu,
-                'mesu' => $flyerMesu,  // 레거시 호환용
+                'mesu' => $flyerMesu,
                 'product_type' => $productType,
                 'from_calculator' => isset($item['source_type']) && $item['source_type'] === 'calculator'
             ];
@@ -593,24 +641,20 @@ class QuoteManager {
 
         $query = "INSERT INTO quote_items (
             quote_id, item_no, product_type, product_name, specification,
-            quantity, unit, unit_price, supply_price, vat_amount, total_price,
-            source_type, source_data, notes
-        ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)";
+            quantity, qty_val, qty_unit, qty_sheets, unit, unit_price,
+            supply_price, vat_amount, total_price,
+            source_type, is_manual, source_data, notes
+        ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)";
 
         $stmt = mysqli_prepare($this->db, $query);
 
-        // 타입 문자열: 14개 (i=integer, s=string, d=double)
-        mysqli_stmt_bind_param($stmt, "iisssdsdiiisss",
+        // 18개 파라미터
+        mysqli_stmt_bind_param($stmt, "iisssddsisdiiisiss",
             $quoteId, $itemNo,
-            $productType,
-            $productName,
-            $specification,
-            $quantity,
-            $unit,
-            $unitPrice, $supplyPrice, $vatAmount, $totalPrice,
-            $sourceType,
-            $sourceData,
-            $notes
+            $productType, $productName, $specification,
+            $quantity, $qtyVal, $qtyUnit, $qtySheets, $unit, $unitPrice,
+            $supplyPrice, $vatAmount, $totalPrice,
+            $sourceType, $isManual, $sourceData, $notes
         );
 
         mysqli_stmt_execute($stmt);

@@ -3060,46 +3060,110 @@ if ($db) {
 <?php endif; ?>
 
 <?php if ($is_admin_quote_mode): ?>
-    <!-- 관리자 견적서 모드: quotation-modal-common.js 공통 로직 사용 -->
-    <!-- 스티커 원본 데이터 (jong, garo, sero, mesu 등)를 payload에 추가 -->
+    <!-- 관리자 견적서 모달용 applyToQuotation 함수 -->
     <script>
-    // quotation-modal-common.js의 applyToQuotation()을 확장하여 스티커 원본 데이터 추가
-    (function() {
-        // 공통 함수 백업
-        const originalApplyToQuotation = window.applyToQuotation;
+    /**
+     * 견적서에 스티커 품목 추가
+     * calculator_modal.js가 ADMIN_QUOTE_ITEM_ADDED 메시지를 수신
+     */
+    window.applyToQuotation = function() {
+        console.log('🚀 [관리자 견적서-스티커] applyToQuotation() 호출');
 
-        window.applyToQuotation = function() {
-            console.log('🚀 [관리자 견적서-스티커] applyToQuotation() 호출 (공통 로직 사용)');
+        // 1. 필수 필드 검증
+        const jong = document.getElementById('jong')?.value;
+        const garo = document.getElementById('garo')?.value;
+        const sero = document.getElementById('sero')?.value;
+        const mesu = document.getElementById('mesu')?.value;
 
-            // 가격 데이터가 없으면 자동 계산 시도
-            if (!window.currentPriceData || !window.currentPriceData.price) {
-                console.log('⚠️ 가격 데이터 없음 - 자동 계산 시도');
-                if (typeof window.autoCalculatePrice === 'function') {
-                    window.autoCalculatePrice();
-                    let attempts = 0;
-                    const waitForPrice = setInterval(() => {
-                        attempts++;
-                        if (window.currentPriceData && window.currentPriceData.price) {
-                            clearInterval(waitForPrice);
-                            console.log('✅ 가격 계산 완료');
-                            window.applyToQuotation();
-                        } else if (attempts >= 30) {
-                            clearInterval(waitForPrice);
-                            alert('가격 계산에 실패했습니다.');
-                        }
-                    }, 100);
-                    return;
-                }
+        if (!jong || !garo || !sero || !mesu) {
+            alert('모든 필수 옵션을 선택해주세요.');
+            return;
+        }
+
+        // 2. 가격 확인 및 자동 계산
+        if (!window.currentPriceData || !window.currentPriceData.price) {
+            console.log('⚠️ 가격 데이터 없음 - 자동 계산 시도');
+            if (typeof window.autoCalculatePrice === 'function') {
+                window.autoCalculatePrice();
+                let attempts = 0;
+                const waitForPrice = setInterval(() => {
+                    attempts++;
+                    if (window.currentPriceData && window.currentPriceData.price) {
+                        clearInterval(waitForPrice);
+                        console.log('✅ 가격 계산 완료');
+                        window.applyToQuotation();
+                    } else if (attempts >= 30) {
+                        clearInterval(waitForPrice);
+                        alert('가격 계산에 실패했습니다.');
+                    }
+                }, 100);
+                return;
             }
+            alert('가격을 먼저 계산해주세요.');
+            return;
+        }
 
-            // 공통 함수 호출 (quotation-modal-common.js)
-            if (typeof originalApplyToQuotation === 'function') {
-                originalApplyToQuotation();
+        // 공급가액 계산 (VAT 미포함)
+        const priceStr = window.currentPriceData.price.toString().replace(/,/g, '');
+        const supplyPrice = parseInt(priceStr) || 0;
+
+        if (supplyPrice <= 0) {
+            alert('유효한 가격이 계산되지 않았습니다.');
+            return;
+        }
+
+        // 3. 사양 텍스트 생성 (2줄 형식)
+        const jongText = document.getElementById('jong')?.options[document.getElementById('jong').selectedIndex]?.text || '';
+        const uhyungEl = document.getElementById('uhyung');
+        const uhyungText = uhyungEl?.options[uhyungEl.selectedIndex]?.text || '';
+        const domusongEl = document.getElementById('domusong');
+        const domusongText = domusongEl?.options[domusongEl.selectedIndex]?.text || '';
+
+        // 1줄: 종류 / 규격(가로x세로)
+        const line1 = `${jongText} / ${garo}x${sero}mm`;
+
+        // 2줄: 형태 / 도무송 (있는 경우만)
+        let line2Parts = [];
+        if (uhyungText && uhyungText !== '선택' && uhyungText !== '선택하세요') line2Parts.push(uhyungText);
+        if (domusongText && domusongText !== '선택' && domusongText !== '선택하세요' && domusongText !== '없음') line2Parts.push(domusongText);
+        const line2 = line2Parts.join(' / ');
+
+        // 2줄 형식으로 결합 (줄바꿈 사용)
+        const specification = line2 ? `${line1}\n${line2}` : line1;
+
+        // 4. 수량 처리
+        const mesuSelect = document.getElementById('mesu');
+        const quantityDisplay = mesuSelect?.options[mesuSelect.selectedIndex]?.text || mesu;
+        const quantity = parseInt(mesu) || 0;
+
+        // 5. 페이로드 생성
+        const payload = {
+            product_code: 'sticker',
+            product_name: '스티커',
+            quantity: quantity,
+            quantity_unit: '매',
+            supply_price: supplyPrice,
+            specification: specification,
+            options: {
+                jong: jong,
+                garo: garo,
+                sero: sero,
+                mesu: mesu,
+                uhyung: document.getElementById('uhyung')?.value || '',
+                domusong: document.getElementById('domusong')?.value || ''
             }
         };
 
-        console.log('✅ [관리자 견적서-스티커] 공통 로직 확장 완료');
-    })();
+        console.log('📤 [스티커] postMessage 전송:', payload);
+
+        // 6. 부모 창으로 메시지 전송
+        window.parent.postMessage({
+            type: 'ADMIN_QUOTE_ITEM_ADDED',
+            payload: payload
+        }, window.location.origin);
+    };
+
+    console.log('✅ [관리자 견적서-스티커] applyToQuotation() 정의 완료');
     </script>
 <?php endif; ?>
 
