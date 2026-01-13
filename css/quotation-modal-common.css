@@ -4,6 +4,14 @@
  *          littleprint, merchandisebond, ncrflambeau (9개 품목)
  * Created: 2025-11-30
  * Updated: 2025-12-01 - inserted 인라인 스타일 통합 (전 품목 공통)
+ * Updated: 2026-01-14 - SP Protocol 검토
+ *
+ * ⚠️ SP 예외 (Controlled Exception):
+ * 이 파일의 !important는 의도적입니다.
+ * 모달 모드에서 모든 기존 스타일을 완전히 오버라이드해야 하므로
+ * !important 사용이 정당화됩니다. (45개 인스턴스)
+ *
+ * 향후 개선: CSS @layer 도입 시 !important 제거 가능
  */
 
 /* ==========================================

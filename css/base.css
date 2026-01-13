@@ -1,0 +1,118 @@
+/**
+ * ===================================================================
+ * base.css - 스타일 프로토콜(SP) 기본 레이어
+ * ===================================================================
+ *
+ * SP (Style Protocol) v1.0 - 2026-01-14
+ *
+ * 로드 순서 (CSS Cascade 우선순위):
+ *   1. CSS Variables (color-system-unified.css) - 최저 우선순위
+ *   2. Common Styles (common-styles.css) - 기본 컴포넌트
+ *   3. Product Layout (product_layout.css) - 제품별 차이 (선택적)
+ *   4. Page-specific styles - 최고 우선순위
+ *
+ * ⚠️ 핵심 규칙:
+ *   - !important 사용 금지 (Zero !important Policy)
+ *   - 하드코딩 색상 금지 → var(--dsp-*) 사용
+ *   - 인라인 스타일 금지 → 클래스 사용
+ *
+ * ===================================================================
+ */
+
+/* 1단계: CSS 변수 시스템 (SSOT) */
+@import url('color-system-unified.css');
+
+/* 2단계: 공통 컴포넌트 스타일 */
+@import url('common-styles.css');
+
+/* 3단계: 브랜드 디자인 시스템 */
+@import url('brand-design-system.css');
+
+/**
+ * ===================================================================
+ * SP 유틸리티 클래스
+ * ===================================================================
+ */
+
+/* 가시성 */
+.sp-hidden { display: none; }
+.sp-visible { display: block; }
+
+/* 텍스트 정렬 */
+.sp-text-center { text-align: center; }
+.sp-text-right { text-align: right; }
+.sp-text-left { text-align: left; }
+
+/* 플렉스 유틸리티 */
+.sp-flex { display: flex; }
+.sp-flex-center { display: flex; align-items: center; justify-content: center; }
+.sp-flex-between { display: flex; align-items: center; justify-content: space-between; }
+.sp-flex-1 { flex: 1; }
+
+/* 간격 (CSS 변수 기반) */
+.sp-mt-1 { margin-top: var(--dsp-spacing-1, 4px); }
+.sp-mt-2 { margin-top: var(--dsp-spacing-2, 8px); }
+.sp-mt-3 { margin-top: var(--dsp-spacing-3, 12px); }
+.sp-mt-4 { margin-top: var(--dsp-spacing-4, 16px); }
+
+.sp-mb-1 { margin-bottom: var(--dsp-spacing-1, 4px); }
+.sp-mb-2 { margin-bottom: var(--dsp-spacing-2, 8px); }
+.sp-mb-3 { margin-bottom: var(--dsp-spacing-3, 12px); }
+.sp-mb-4 { margin-bottom: var(--dsp-spacing-4, 16px); }
+
+.sp-p-1 { padding: var(--dsp-spacing-1, 4px); }
+.sp-p-2 { padding: var(--dsp-spacing-2, 8px); }
+.sp-p-3 { padding: var(--dsp-spacing-3, 12px); }
+.sp-p-4 { padding: var(--dsp-spacing-4, 16px); }
+
+/* 브랜드 컬러 텍스트 */
+.sp-text-primary { color: var(--dsp-primary); }
+.sp-text-accent { color: var(--dsp-accent); }
+.sp-text-error { color: var(--dsp-error, #DC3545); }
+.sp-text-muted { color: var(--dsp-gray-600, #6c757d); }
+
+/* 브랜드 배경 */
+.sp-bg-primary { background-color: var(--dsp-primary); }
+.sp-bg-accent { background-color: var(--dsp-accent); }
+.sp-bg-light { background-color: var(--dsp-gray-100, #f8f9fa); }
+.sp-bg-white { background-color: var(--dsp-white, #ffffff); }
+
+/**
+ * ===================================================================
+ * 수량 표시 표준 스타일 (9개 제품 공통)
+ * ===================================================================
+ */
+.quantity-display {
+    font-size: var(--qty-font-size, 14px);
+    font-weight: 600;
+    color: var(--dsp-primary);
+}
+
+.quantity-display .unit {
+    font-size: 0.9em;
+    color: var(--dsp-gray-600, #6c757d);
+}
+
+.quantity-display .sheets {
+    font-size: 0.85em;
+    color: var(--dsp-gray-500, #adb5bd);
+}
+
+/**
+ * ===================================================================
+ * 가격 표시 표준 스타일
+ * ===================================================================
+ */
+.price-display {
+    font-weight: 700;
+    color: var(--dsp-primary);
+}
+
+.price-display.total {
+    font-size: 1.25em;
+    color: var(--dsp-accent-dark, #E6C000);
+}
+
+.price-display.supply {
+    color: var(--accent-color, #e74c3c);
+}

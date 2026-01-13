@@ -129,10 +129,11 @@
     color: white;
 }
 
-.user-info-header .value {
-    font-size: 0.85rem !important;
-    font-weight: 600 !important;
-    color: #00D4FF !important;
+/* SP: !important 제거 - 명시도로 해결 */
+.top-header .user-info-header .value {
+    font-size: 0.85rem;
+    font-weight: 600;
+    color: #00D4FF;
 }
 
 /* =================================================================== */
@@ -550,9 +551,10 @@
         padding: 6px 10px;
     }
 
-    .user-info-header .value {
-        font-size: 0.85rem !important;
-        color: #00D4FF !important;
+    /* SP: !important 제거 - 명시도로 해결 */
+    .top-header .user-info-header .value {
+        font-size: 0.85rem;
+        color: #00D4FF;
     }
 
     /* === 나머지 모바일 스타일 === */

@@ -7,6 +7,14 @@
  * - 반응형 디자인
  * - 접근성 개선
  * - 애니메이션 및 인터랙션
+ *
+ * Updated: 2026-01-14 - SP Protocol 검토
+ *
+ * ⚠️ SP 예외 (Controlled Exception):
+ * - Line 96: 전역 폰트 강제 적용 (브라우저 기본값 오버라이드)
+ * - Lines 793-848: jQuery UI Datepicker 커스터마이징
+ *   (서드파티 위젯 스타일 오버라이드에 !important 필요)
+ * (33개 인스턴스)
  */
 
 /* Google Fonts - Noto Sans KR */
