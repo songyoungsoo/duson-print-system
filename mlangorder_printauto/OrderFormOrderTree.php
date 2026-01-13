@@ -14,6 +14,44 @@ if (!isset($db) || !$db) {
 if (!class_exists('ProductSpecFormatter')) {
     include "$HomeDir/includes/ProductSpecFormatter.php";
 }
+// QuantityFormatter도 한 번만 include (SSOT)
+if (!class_exists('QuantityFormatter')) {
+    include "$HomeDir/includes/QuantityFormatter.php";
+}
+
+/**
+ * ✅ 2026-01-13: 전단지 매수를 mlangprintauto_inserted 테이블에서 조회
+ * (절대 계산하지 않음, DB값만 사용 - 샛밥 방식)
+ *
+ * @param mysqli $db DB 연결
+ * @param float $reams 연수 (0.5, 1, 2, ...)
+ * @return int 매수 (2000, 4000, 8000, ...)
+ */
+function lookupInsertedSheets($db, float $reams): int {
+    if (!$db || $reams <= 0) {
+        return 0;
+    }
+
+    $stmt = mysqli_prepare($db,
+        "SELECT quantityTwo FROM mlangprintauto_inserted WHERE quantity = ? LIMIT 1"
+    );
+
+    if ($stmt) {
+        mysqli_stmt_bind_param($stmt, "d", $reams);
+        mysqli_stmt_execute($stmt);
+        $result = mysqli_stmt_get_result($stmt);
+
+        if ($row = mysqli_fetch_assoc($result)) {
+            $sheets = intval($row['quantityTwo']);
+            mysqli_stmt_close($stmt);
+            return $sheets;
+        }
+        mysqli_stmt_close($stmt);
+    }
+
+    return 0;  // 조회 실패 시 0 반환 (계산하지 않음)
+}
+
 // include $_SERVER['DOCUMENT_ROOT'] . "/mlangprintauto/mlangprintautotop.php";
 
 // 데이터베이스 연결은 이미 db.php에서 완료됨
@@ -210,6 +248,12 @@ function getOrderItemInfo($summary_item, $specFormatter) {
         $json_data = json_decode($type_1_data, true);
 
         if ($json_data && is_array($json_data)) {
+            // ✅ 2026-01-13 FIX: order_details 중첩 구조 처리 (레거시 데이터 호환)
+            if (isset($json_data['order_details']) && is_array($json_data['order_details'])) {
+                $json_data = array_merge($json_data, $json_data['order_details']);
+                unset($json_data['order_details']);
+            }
+
             // ✅ product_type으로 품목명 변환
             $product_type = $json_data['product_type'] ?? '';
             if ($product_type) {
@@ -235,7 +279,13 @@ function getOrderItemInfo($summary_item, $specFormatter) {
             } elseif ($is_flyer) {
                 $quantity_num = floatval($json_data['quantityTwo'] ?? $json_data['quantity'] ?? $json_data['MY_amount'] ?? 1);
                 $unit = '연';
-            } elseif (isset($json_data['quantityTwo']) && $json_data['quantityTwo'] > 0) {
+            }
+            // ✅ 2026-01-13 FIX: 스티커 mesu 필드 처리
+            elseif ($product_type === 'sticker' && isset($json_data['mesu']) && intval($json_data['mesu']) > 0) {
+                $quantity_num = intval($json_data['mesu']);
+                $unit = '매';
+            }
+            elseif (isset($json_data['quantityTwo']) && $json_data['quantityTwo'] > 0) {
                 $quantity_num = intval($json_data['quantityTwo']);
                 $unit = '매';
             } elseif ((isset($json_data['MY_amount']) && is_numeric($json_data['MY_amount']) && floatval($json_data['MY_amount']) > 0)) {
@@ -255,6 +305,10 @@ function getOrderItemInfo($summary_item, $specFormatter) {
                 $mesu_for_display = intval($json_data['quantityTwo'] ?? $json_data['mesu'] ?? 0);
                 if ($mesu_for_display == 0 && isset($summary_item['mesu']) && $summary_item['mesu'] > 0) {
                     $mesu_for_display = intval($summary_item['mesu']);
+                }
+                // ✅ 2026-01-13: 매수가 없으면 mlangprintauto_inserted에서 조회 (샛밥 방식)
+                if ($mesu_for_display == 0 && $quantity_num > 0) {
+                    $mesu_for_display = lookupInsertedSheets($db, floatval($quantity_num));
                 }
             }
         } else {
@@ -710,11 +764,9 @@ function getOrderItemInfo($summary_item, $specFormatter) {
                                 </td>
                                 <td style="border: 0.3pt solid #000; padding: 1.5mm; text-align: center;">
                                     <?php
-                                    // 🔧 전단지/리플렛: "X연 (Y매)" 형식으로 표시
+                                    // 🔧 전단지/리플렛: QuantityFormatter SSOT 사용
                                     if (isset($is_flyer) && $is_flyer && $mesu_for_display > 0) {
-                                        $yeon_display = formatQuantityNum($quantity_num);
-                                        if ($yeon_display === '-') $yeon_display = '0';
-                                        echo $yeon_display . '연 (' . number_format($mesu_for_display) . '매)';
+                                        echo QuantityFormatter::format(floatval($quantity_num), 'R', intval($mesu_for_display), '<br>');
                                     } else {
                                         echo formatQuantityNum($quantity_num);
                                     }
@@ -981,11 +1033,9 @@ function getOrderItemInfo($summary_item, $specFormatter) {
                                 </td>
                                 <td style="border: 0.3pt solid #000; padding: 1.5mm; text-align: center;">
                                     <?php
-                                    // 🔧 전단지/리플렛: "X연 (Y매)" 형식으로 표시 (인쇄용)
+                                    // 🔧 전단지/리플렛: QuantityFormatter SSOT 사용 (인쇄용)
                                     if (isset($is_flyer) && $is_flyer && $mesu_for_display > 0) {
-                                        $yeon_display = formatQuantityNum($quantity_num);
-                                        if ($yeon_display === '-') $yeon_display = '0';
-                                        echo $yeon_display . '연 (' . number_format($mesu_for_display) . '매)';
+                                        echo QuantityFormatter::format(floatval($quantity_num), 'R', intval($mesu_for_display), '<br>');
                                     } else {
                                         echo formatQuantityNum($quantity_num);
                                     }
@@ -1132,7 +1182,7 @@ function getOrderItemInfo($summary_item, $specFormatter) {
                     <tr style="background: #E0E0E0;">
                         <th style="border: 1px solid #999; padding: 8px; font-size: 11px; text-align: center; width: 6%;">NO</th>
                         <th style="border: 1px solid #999; padding: 8px; font-size: 11px; text-align: center; width: 17%;">품목</th>
-                        <th style="border: 1px solid #999; padding: 8px; font-size: 11px; text-align: left; width: 44%;">규격/옵션</th>
+                        <th style="border: 1px solid #999; padding: 8px; font-size: 11px; text-align: center; width: 44%;">규격/옵션</th>
                         <th style="border: 1px solid #999; padding: 8px; font-size: 11px; text-align: center; width: 11%;">수량</th>
                         <th style="border: 1px solid #999; padding: 8px; font-size: 11px; text-align: center; width: 9%;">단위</th>
                         <th style="border: 1px solid #999; padding: 8px; font-size: 11px; text-align: right; width: 13%;">공급가액</th>
@@ -1252,10 +1302,10 @@ function getOrderItemInfo($summary_item, $specFormatter) {
                                             // 수량 표시 포맷 (formatQuantityNum 사용)
                                             $quantity_display = formatQuantityNum($quantity_num);
 
-                                            // 🔧 전단지인 경우 매수 정보 추가 표시: "0.5연 (2,000매)"
+                                            // 🔧 전단지인 경우 매수 정보 2줄 표시: "0.5연" + "(2,000매)"
                                             if ($is_flyer && !empty($mesu_for_display) && $mesu_for_display > 0) {
                                                 if ($quantity_display === '-') $quantity_display = '0';
-                                                $quantity_display .= $unit . ' (' . number_format($mesu_for_display) . '매)';
+                                                $quantity_display .= $unit . '<br>(' . number_format($mesu_for_display) . '매)';
                                                 $unit = ''; // 단위 셀 비우기 (수량에 이미 포함됨)
                                             }
                                             $unit_display = !empty($unit) ? htmlspecialchars($unit) : '';

@@ -215,6 +215,38 @@ try {
         $product_data['data_version'] = isset($item['data_version']) && $item['data_version'] == 2 ? 2 : 1;
         error_log("Phase 3 FIX: data_version 추가됨 - " . $product_data['data_version']);
 
+        // ✅ 2026-01-13 FIX: Type_1 JSON에 레거시 필드 포함 (OrderView에서 formatSticker() 등 호환)
+        // 스티커: jong, garo, sero, domusong, mesu
+        if ($item['product_type'] === 'sticker') {
+            $product_data['jong'] = $item['jong'] ?? '';
+            $product_data['garo'] = $item['garo'] ?? '';
+            $product_data['sero'] = $item['sero'] ?? '';
+            $product_data['domusong'] = $item['domusong'] ?? '';
+            $product_data['mesu'] = $item['mesu'] ?? '';
+            $product_data['ordertype'] = $item['ordertype'] ?? 'print';
+            error_log("Sticker legacy fields added to product_data: jong={$product_data['jong']}, size={$product_data['garo']}x{$product_data['sero']}");
+        }
+        // 명함, 봉투, 카다록 등: MY_type, Section, POtype, MY_amount
+        elseif (in_array($item['product_type'], ['namecard', 'envelope', 'cadarok', 'littleprint', 'poster', 'merchandisebond', 'msticker', 'ncrflambeau'])) {
+            $product_data['MY_type'] = $item['MY_type'] ?? '';
+            $product_data['Section'] = $item['Section'] ?? '';
+            $product_data['PN_type'] = $item['PN_type'] ?? '';
+            $product_data['POtype'] = $item['POtype'] ?? '';
+            $product_data['MY_amount'] = $item['MY_amount'] ?? '';
+            $product_data['MY_Fsd'] = $item['MY_Fsd'] ?? '';
+            $product_data['ordertype'] = $item['ordertype'] ?? 'print';
+        }
+        // 전단지/리플렛: MY_type, MY_Fsd, PN_type, POtype, MY_amount, mesu
+        elseif (in_array($item['product_type'], ['inserted', 'leaflet'])) {
+            $product_data['MY_type'] = $item['MY_type'] ?? '';
+            $product_data['MY_Fsd'] = $item['MY_Fsd'] ?? '';
+            $product_data['PN_type'] = $item['PN_type'] ?? '';
+            $product_data['POtype'] = $item['POtype'] ?? '';
+            $product_data['MY_amount'] = $item['MY_amount'] ?? '';
+            $product_data['mesu'] = $item['mesu'] ?? '';
+            $product_data['ordertype'] = $item['ordertype'] ?? 'print';
+        }
+
         // product_type_name 설정 (표시용)
         $product_type_names = [
             'sticker' => '스티커',
@@ -488,6 +520,92 @@ try {
         
         if (mysqli_stmt_execute($stmt)) {
             $order_numbers[] = $new_no;
+
+            // ✅ Phase 4: Dual-Write - 새 테이블(orders, order_items)에도 저장
+            try {
+                // 1. orders 테이블 삽입
+                $orderSql = "INSERT INTO orders (
+                    legacy_no, customer_name, customer_email, customer_phone, customer_mobile,
+                    shipping_postcode, shipping_address, shipping_detail,
+                    total_supply, total_vat, total_amount,
+                    order_date, data_version
+                ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, 3)";
+
+                $orderStmt = mysqli_prepare($connect, $orderSql);
+                if ($orderStmt) {
+                    $o_total_supply = intval($st_price);
+                    $o_total_vat = intval($st_price_vat);
+                    $o_total_amount = $o_total_vat > 0 ? $o_total_vat : $o_total_supply;
+
+                    mysqli_stmt_bind_param($orderStmt, "isssssssiiis",
+                        $new_no, $username, $email, $phone, $hendphone,
+                        $postcode, $address, $full_address,
+                        $o_total_supply, $o_total_vat, $o_total_amount, $date
+                    );
+
+                    if (mysqli_stmt_execute($orderStmt)) {
+                        $orderId = mysqli_insert_id($connect);
+                        mysqli_stmt_close($orderStmt);
+
+                        // 2. order_items 테이블 삽입
+                        $itemSql = "INSERT INTO order_items (
+                            order_id, legacy_no, product_type, product_type_display,
+                            spec_type, spec_material, spec_size, spec_sides, spec_design,
+                            qty_value, qty_unit_code, qty_sheets,
+                            price_supply, price_vat, price_unit,
+                            img_folder, thing_cate, ordertype, work_memo, legacy_data
+                        ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)";
+
+                        $itemStmt = mysqli_prepare($connect, $itemSql);
+                        if ($itemStmt) {
+                            // QuantityFormatter 단위 코드 매핑
+                            require_once __DIR__ . '/../includes/QuantityFormatter.php';
+                            $unitCode = QuantityFormatter::getProductUnitCode($product_type);
+
+                            $v_order_id = $orderId;
+                            $v_legacy_no = $new_no;
+                            $v_product_type = $product_type;
+                            $v_product_type_display = $product_type_name;
+                            $v_spec_type = $spec_type ?? '';
+                            $v_spec_material = $spec_material ?? '';
+                            $v_spec_size = $spec_size ?? '';
+                            $v_spec_sides = $spec_sides ?? '';
+                            $v_spec_design = $spec_design ?? '';
+                            $v_qty_value = floatval($quantity_value);
+                            $v_qty_unit_code = $unitCode;
+                            $v_qty_sheets = intval($quantity_sheets);
+                            $v_price_supply = intval($st_price);
+                            $v_price_vat = intval($st_price_vat);
+                            $v_price_unit = $v_qty_value > 0 ? intval($v_price_supply / $v_qty_value) : 0;
+                            $v_img_folder = $img_folder_path ?? '';
+                            $v_thing_cate = $thing_cate ?? '';
+                            $v_ordertype = $order_style ?? '';
+                            $v_work_memo = $final_cont ?? '';
+                            $v_legacy_data = json_encode($item, JSON_UNESCAPED_UNICODE);
+
+                            mysqli_stmt_bind_param($itemStmt, "iisssssssdsiiiiissss",
+                                $v_order_id, $v_legacy_no, $v_product_type, $v_product_type_display,
+                                $v_spec_type, $v_spec_material, $v_spec_size, $v_spec_sides, $v_spec_design,
+                                $v_qty_value, $v_qty_unit_code, $v_qty_sheets,
+                                $v_price_supply, $v_price_vat, $v_price_unit,
+                                $v_img_folder, $v_thing_cate, $v_ordertype, $v_work_memo, $v_legacy_data
+                            );
+
+                            if (mysqli_stmt_execute($itemStmt)) {
+                                error_log("Dual-Write 성공: 주문 $new_no → orders.order_id=$orderId");
+                            } else {
+                                error_log("Dual-Write order_items 실패: " . mysqli_stmt_error($itemStmt));
+                            }
+                            mysqli_stmt_close($itemStmt);
+                        }
+                    } else {
+                        error_log("Dual-Write orders 실패: " . mysqli_stmt_error($orderStmt));
+                    }
+                }
+            } catch (Exception $e) {
+                error_log("Dual-Write 예외: " . $e->getMessage());
+                // Dual-Write 실패해도 주문은 계속 진행
+            }
 
             // ✅ Phase 3: StandardUploadHandler로 파일 복사
             if (!empty($item['uploaded_files'])) {

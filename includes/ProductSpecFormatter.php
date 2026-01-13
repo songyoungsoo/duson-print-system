@@ -8,7 +8,11 @@
  * - 추가옵션(코팅, 접지 등)이 있으면 별도 행으로 표시
  *
  * 사용 위치: 장바구니, 주문, 주문완료, 관리자, 주문서출력, 견적서, 마이페이지
+ *
+ * ✅ 2026-01-13 Grand Design: QuantityFormatter SSOT 통합
  */
+
+require_once __DIR__ . '/QuantityFormatter.php';
 
 class ProductSpecFormatter {
     private $db;
@@ -24,11 +28,25 @@ class ProductSpecFormatter {
      * @return array ['line1' => '규격', 'line2' => '옵션', 'additional' => '추가옵션']
      */
     public function format($item) {
+        // ✅ 2026-01-13 FIX: DB 컬럼 값 보존, Type_1 JSON은 누락된 필드만 보충
         // Type_1 JSON 파싱 (mlangorder_printauto에서 가져온 경우)
         if (!empty($item['Type_1']) && is_string($item['Type_1'])) {
             $type1Data = json_decode($item['Type_1'], true);
             if ($type1Data && is_array($type1Data)) {
-                $item = array_merge($item, $type1Data);
+                // ✅ 2026-01-13 FIX: order_details 중첩 구조 처리 (레거시 데이터 호환)
+                // 예: {"order_details": {"jong": "...", "garo": 90, ...}}
+                if (isset($type1Data['order_details']) && is_array($type1Data['order_details'])) {
+                    $type1Data = array_merge($type1Data, $type1Data['order_details']);
+                    unset($type1Data['order_details']);
+                }
+
+                // DB 컬럼 값이 없는 경우에만 Type_1 JSON 값 사용
+                foreach ($type1Data as $key => $value) {
+                    // 빈 문자열이나 NULL은 건너뛰기, DB 값이 이미 있으면 덮어쓰지 않음
+                    if ($value !== '' && $value !== null && (!isset($item[$key]) || $item[$key] === '' || $item[$key] === null)) {
+                        $item[$key] = $value;
+                    }
+                }
             }
         }
 
@@ -513,27 +531,46 @@ class ProductSpecFormatter {
 
     /**
      * 스티커
-     * 1줄: 재질 / 크기 / 모양
+     * 1줄: 모양 / 재질 / 크기
      * 2줄: 수량 / 디자인
+     *
+     * ✅ 2026-01-13 FIX: 표준 필드 우선 사용, 레거시 필드 폴백
+     * 표준 필드: spec_type(모양), spec_material(재질), spec_size(크기)
+     * 레거시 필드: domusong(모양), jong(재질), garo/sero(크기)
      */
     private function formatSticker($item) {
         $line1Parts = [];
         $line2Parts = [];
 
-        // 1줄: 규격
-        $jong = $item['jong'] ?? '';
-        $jong = preg_replace('/^jil\s*/i', '', $jong);
-        if (!empty($jong)) $line1Parts[] = $jong;
-
-        if (!empty($item['garo']) && !empty($item['sero'])) {
-            $line1Parts[] = $item['garo'] . 'mm x ' . $item['sero'] . 'mm';
+        // ✅ 1줄: 규격 - 표준 필드 우선, 레거시 폴백
+        // 모양 (spec_type 우선 → domusong 폴백)
+        $shape = $item['spec_type'] ?? '';
+        if (empty($shape)) {
+            $domusong = $item['domusong'] ?? '';
+            $domusong = preg_replace('/^[0\s]+/', '', $domusong);
+            if (!empty($domusong) && $domusong !== '0') {
+                $shape = $domusong;
+            }
         }
+        if (!empty($shape)) $line1Parts[] = $shape;
 
-        $domusong = $item['domusong'] ?? '';
-        $domusong = preg_replace('/^[0\s]+/', '', $domusong);
-        if (!empty($domusong) && $domusong !== '0') {
-            $line1Parts[] = $domusong;
+        // 재질 (spec_material 우선 → jong 폴백)
+        $material = $item['spec_material'] ?? '';
+        if (empty($material)) {
+            $jong = $item['jong'] ?? '';
+            $jong = preg_replace('/^jil\s*/i', '', $jong);
+            if (!empty($jong)) {
+                $material = $jong;
+            }
         }
+        if (!empty($material)) $line1Parts[] = $material;
+
+        // 크기 (spec_size 우선 → garo/sero 폴백)
+        $size = $item['spec_size'] ?? '';
+        if (empty($size) && !empty($item['garo']) && !empty($item['sero'])) {
+            $size = $item['garo'] . 'mm x ' . $item['sero'] . 'mm';
+        }
+        if (!empty($size)) $line1Parts[] = $size;
 
         // 2줄: 옵션
         $line2Parts[] = $this->formatQuantity($item);
@@ -745,19 +782,56 @@ class ProductSpecFormatter {
 
     /**
      * 수량 포맷팅 (규격/사양 텍스트용)
+     *
+     * ✅ 2026-01-13 Grand Design: QuantityFormatter SSOT 적용
+     * 1. 새 스키마 필드 (qty_value, qty_unit_code) 우선 사용
+     * 2. 레거시 데이터는 extractFromLegacy()로 변환 후 format() 사용
      */
     private function formatQuantity($item) {
-        $productType = $item['product_type'] ?? '';
+        // ✅ Grand Design: 새 스키마 필드 우선 사용 (SSOT)
+        if (!empty($item['qty_value']) && !empty($item['qty_unit_code'])) {
+            return QuantityFormatter::format(
+                floatval($item['qty_value']),
+                $item['qty_unit_code'],
+                $item['qty_sheets'] ?? null
+            );
+        }
 
         // 레거시 스티커 감지
+        $productType = $item['product_type'] ?? '';
         if (empty($productType) && !empty($item['jong']) && !empty($item['garo']) && !empty($item['sero'])) {
             $productType = 'sticker';
         }
 
-        // 1. 스티커: mesu 최우선 사용 - 단위 포함
+        // ✅ Grand Design: 레거시 데이터 → QuantityFormatter 위임
+        $extracted = QuantityFormatter::extractFromLegacy($item, $productType);
+
+        // ✅ 2026-01-13: 전단지 매수가 없거나 계산값인 경우 DB에서 조회
+        if (in_array($productType, ['inserted', 'leaflet']) && $extracted['qty_value'] > 0) {
+            $mesu = intval($item['mesu'] ?? $item['quantityTwo'] ?? 0);
+            // mesu가 없으면 mlangprintauto_inserted에서 조회 (샛밥 방식)
+            if ($mesu === 0 && $this->db) {
+                $mesu = $this->lookupInsertedSheets($extracted['qty_value']);
+            }
+            if ($mesu > 0) {
+                $extracted['qty_sheets'] = $mesu;
+            }
+        }
+
+        // extractFromLegacy가 유효한 값을 반환하면 format() 사용
+        if ($extracted['qty_value'] > 0) {
+            return QuantityFormatter::format(
+                $extracted['qty_value'],
+                $extracted['qty_unit_code'],
+                $extracted['qty_sheets']
+            );
+        }
+
+        // 폴백: 기존 레거시 로직 (extractFromLegacy에서 처리하지 못한 경우)
+        // 1. 스티커: mesu 최우선 사용
         if (in_array($productType, ['sticker', 'msticker', 'msticker_01'])) {
             if (!empty($item['mesu'])) {
-                return number_format(intval($item['mesu'])) . '매';  // ✅ 단위 추가
+                return number_format(intval($item['mesu'])) . '매';
             }
         }
 
@@ -766,15 +840,18 @@ class ProductSpecFormatter {
             $reams = floatval($item['MY_amount'] ?? 0);
             $sheets = intval($item['mesu'] ?? $item['quantityTwo'] ?? 0);
 
+            // ✅ 2026-01-13: 매수가 없으면 mlangprintauto_inserted 테이블에서 조회
+            if ($sheets === 0 && $reams > 0 && $this->db) {
+                $sheets = $this->lookupInsertedSheets($reams);
+            }
+
             if ($reams > 0) {
-                // 연수가 있으면 "X연 (Y매)" 형식
                 $qty = number_format($reams, $reams == intval($reams) ? 0 : 1) . '연';
                 if ($sheets > 0) {
                     $qty .= ' (' . number_format($sheets) . '매)';
                 }
                 return $qty;
             } elseif ($sheets > 0) {
-                // 연수 없이 매수만 있으면 "X매" 형식
                 return number_format($sheets) . '매';
             }
         }
@@ -792,7 +869,6 @@ class ProductSpecFormatter {
         if ($productType === 'cadarok') {
             if (!empty($item['MY_amount'])) {
                 $amount = floatval($item['MY_amount']);
-                // 소수점 정리 (1000.00 → 1,000)
                 if (floor($amount) == $amount) {
                     return number_format($amount) . '부';
                 }
@@ -804,7 +880,6 @@ class ProductSpecFormatter {
         if ($productType === 'ncrflambeau') {
             if (!empty($item['MY_amount'])) {
                 $amount = floatval($item['MY_amount']);
-                // 소수점 정리 (10.00 → 10)
                 if (floor($amount) == $amount) {
                     return number_format($amount) . '권';
                 }
@@ -830,6 +905,18 @@ class ProductSpecFormatter {
      * @return string 소수점 정리된 수량
      */
     private function formatDecimalQuantity(string $quantity): string {
+        // ✅ 2026-01-13: 전단지 "X연 (Y매)" 패턴 우선 처리 - 전체 패턴 보존
+        if (preg_match('/([0-9,\.]+)\s*연\s*\(([0-9,]+)매\)/u', $quantity, $matches)) {
+            $yeon = floatval(str_replace(',', '', $matches[1]));
+            $maesoo = intval(str_replace(',', '', $matches[2]));
+            // 연수 포맷팅: 정수면 소수점 없이, 소수면 불필요한 0 제거
+            $yeonFormatted = (floor($yeon) == $yeon)
+                ? number_format($yeon)
+                : rtrim(rtrim(number_format($yeon, 2), '0'), '.');
+            return $yeonFormatted . '연 (' . number_format($maesoo) . '매)';
+        }
+
+        // 일반 패턴: "500매", "100부" 등
         if (preg_match('/([0-9,\.]+)\s*([매연부권개장])/u', $quantity, $matches)) {
             $num = floatval(str_replace(',', '', $matches[1]));
             $unit = $matches[2];
@@ -841,6 +928,48 @@ class ProductSpecFormatter {
         }
         // 매칭 실패 시 원본 반환
         return $quantity;
+    }
+
+    /**
+     * ✅ 2026-01-13: 전단지 매수를 mlangprintauto_inserted 테이블에서 조회
+     * 기존 방식: 연수로 가격표에서 매수 조회 (샛밥 먹듯이 별도 조회)
+     *
+     * @param float $reams 연수 (0.5, 1, 2, ...)
+     * @return int 매수 (2000, 4000, 8000, ...)
+     */
+    private function lookupInsertedSheets(float $reams): int {
+        if (!$this->db || $reams <= 0) {
+            return 0;
+        }
+
+        // 캐시 키
+        $cacheKey = "inserted_sheets_{$reams}";
+        if (isset($this->nameCache[$cacheKey])) {
+            return $this->nameCache[$cacheKey];
+        }
+
+        // mlangprintauto_inserted 테이블에서 조회
+        $stmt = mysqli_prepare($this->db,
+            "SELECT quantityTwo FROM mlangprintauto_inserted WHERE quantity = ? LIMIT 1"
+        );
+
+        if ($stmt) {
+            mysqli_stmt_bind_param($stmt, "d", $reams);
+            mysqli_stmt_execute($stmt);
+            $result = mysqli_stmt_get_result($stmt);
+
+            if ($row = mysqli_fetch_assoc($result)) {
+                $sheets = intval($row['quantityTwo']);
+                $this->nameCache[$cacheKey] = $sheets;
+                mysqli_stmt_close($stmt);
+                return $sheets;
+            }
+            mysqli_stmt_close($stmt);
+        }
+
+        // ✅ 2026-01-13: 조회 실패 시 0 반환 (절대 계산하지 않음, DB값만 사용)
+        $this->nameCache[$cacheKey] = 0;
+        return 0;
     }
 
     /**
@@ -908,8 +1037,10 @@ class ProductSpecFormatter {
         $options = [];
 
         $foilNames = [
-            'gold' => '금박', 'silver' => '은박', 'hologram' => '홀로그램',
-            'red' => '적박', 'blue' => '청박'
+            'gold' => '금박', 'gold_matte' => '금무광', 'gold_glossy' => '금유광',
+            'silver' => '은박', 'silver_matte' => '은무광', 'silver_glossy' => '은유광',
+            'hologram' => '홀로그램', 'red' => '적박', 'blue' => '청박',
+            'rose_gold' => '로즈골드', 'copper' => '동박'
         ];
 
         // JSON 파싱
@@ -1000,25 +1131,18 @@ class ProductSpecFormatter {
 
     /**
      * 수량 단위 추출
+     *
+     * ✅ 2026-01-13 Grand Design: QuantityFormatter SSOT 적용
      */
     public static function getUnit($item) {
-        $productType = $item['product_type'] ?? '';
+        // ✅ Grand Design: 새 스키마 필드 우선 사용
+        if (!empty($item['qty_unit_code'])) {
+            return QuantityFormatter::getUnitName($item['qty_unit_code']);
+        }
 
-        if (in_array($productType, ['inserted', 'leaflet'])) {
-            return '연';
-        }
-        if (in_array($productType, ['sticker', 'sticker_new', 'msticker', 'msticker_01', 'namecard'])) {
-            return '매';
-        }
-        // 카다록: 부 단위
-        if ($productType === 'cadarok') {
-            return '부';
-        }
-        // NCR양식지: 권 단위
-        if ($productType === 'ncrflambeau') {
-            return '권';
-        }
-        return $item['unit'] ?? '부';
+        // 레거시: 제품 타입에서 단위 추출
+        $productType = $item['product_type'] ?? '';
+        return QuantityFormatter::getProductUnitName($productType) ?: ($item['unit'] ?? '부');
     }
 
     /**
@@ -1082,50 +1206,66 @@ class ProductSpecFormatter {
      * 스티커: "1,000매" 형식
      * 기타: "1,000매" 형식
      *
-     * ✅ Phase 3: quantity_display 필드 우선 사용
+     * ✅ 2026-01-13 Grand Design: QuantityFormatter SSOT 적용
      */
     public static function getQuantityDisplay($item) {
-        $productType = $item['product_type'] ?? '';
-        $unit = self::getUnit($item);
+        // ✅ Grand Design: 새 스키마 필드 우선 사용 (SSOT)
+        if (!empty($item['qty_value']) && !empty($item['qty_unit_code'])) {
+            return QuantityFormatter::format(
+                floatval($item['qty_value']),
+                $item['qty_unit_code'],
+                $item['qty_sheets'] ?? null
+            );
+        }
 
         // 레거시 스티커 감지
+        $productType = $item['product_type'] ?? '';
         if (empty($productType) && !empty($item['jong']) && !empty($item['garo']) && !empty($item['sero'])) {
             $productType = 'sticker';
         }
 
+        // ✅ Grand Design: 레거시 데이터 → QuantityFormatter 위임
+        $extracted = QuantityFormatter::extractFromLegacy($item, $productType);
+        if ($extracted['qty_value'] > 0) {
+            return QuantityFormatter::format(
+                $extracted['qty_value'],
+                $extracted['qty_unit_code'],
+                $extracted['qty_sheets']
+            );
+        }
+
+        // 폴백: 기존 로직 (extractFromLegacy에서 처리하지 못한 경우)
+        $unit = self::getUnit($item);
+
         // ✅ FIX (2026-01-09): 스티커는 quantity_display 무시하고 mesu에서 항상 추출
-        // 이유: quotation_temp에 quantity_display가 "1매"로 잘못 저장된 경우가 있음
         if (in_array($productType, ['sticker', 'msticker', 'msticker_01', 'sticker_new'])) {
             if (!empty($item['mesu'])) {
                 return number_format(intval($item['mesu'])) . '매';
             }
         }
 
-        // ✅ Phase 3: quantity_display 우선 체크 (스티커 제외)
-        // 단위가 있는 경우만 사용
+        // quantity_display 우선 체크 (스티커 제외, 단위가 있는 경우만)
         if (!empty($item['quantity_display']) && preg_match('/[매연부권개장]/u', $item['quantity_display'])) {
             return $item['quantity_display'];
         }
 
-        // 2. 전단지/리플렛: 연 + 매수 표시
+        // 전단지/리플렛: 연 + 매수 표시
         if (in_array($productType, ['inserted', 'leaflet'])) {
             $reams = floatval($item['MY_amount'] ?? 0);
             $sheets = intval($item['mesu'] ?? $item['quantityTwo'] ?? 0);
 
             if ($reams > 0) {
-                // 연수가 있으면 "X연 (Y매)" 형식
                 $display = number_format($reams, $reams == intval($reams) ? 0 : 1) . '연';
                 if ($sheets > 0) {
                     $display .= ' (' . number_format($sheets) . '매)';
                 }
                 return $display;
             } elseif ($sheets > 0) {
-                // 연수 없이 매수만 있으면 "X매" 형식
                 return number_format($sheets) . '매';
             }
         }
 
-        // 3. 카다록: 부 단위 (소수점 정리)
+        // 카다록: 부 단위
         if ($productType === 'cadarok') {
             if (!empty($item['MY_amount'])) {
                 $amount = floatval($item['MY_amount']);
@@ -1136,7 +1276,7 @@ class ProductSpecFormatter {
             }
         }
 
-        // 4. NCR양식지: 권 단위 (소수점 정리)
+        // NCR양식지: 권 단위
         if ($productType === 'ncrflambeau') {
             if (!empty($item['MY_amount'])) {
                 $amount = floatval($item['MY_amount']);
@@ -1147,7 +1287,7 @@ class ProductSpecFormatter {
             }
         }
 
-        // 5. 기타: 수량 + 단위
+        // 기타: 수량 + 단위
         $qty = self::getQuantity($item);
         return number_format($qty) . $unit;
     }

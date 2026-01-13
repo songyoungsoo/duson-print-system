@@ -496,6 +496,72 @@ function openUploadModal() {
 
 **관련 파일**: `mlangprintauto/sticker_new/index.php` (openUploadModal 함수)
 
+### 8. 스티커 Type_1 JSON 데이터 구조 (2026-01-13 추가)
+
+스티커 주문의 Type_1 JSON은 **두 가지 구조**가 존재합니다:
+
+**레거시 구조 (중첩)** - 과거 주문:
+```json
+{
+  "product_type": "sticker",
+  "order_details": {
+    "jong": "jil 아트유광코팅",
+    "garo": 90,
+    "sero": 50,
+    "mesu": 1000,
+    "domusong": "정보없음",
+    "uhyung": 0
+  },
+  "formatted_display": "재질: jil 아트유광코팅\n크기: 90mm × 50mm..."
+}
+```
+
+**신규 구조 (flat)** - 2026-01-13 이후 주문:
+```json
+{
+  "product_type": "sticker",
+  "spec_type": "사각",
+  "spec_material": "아트유광코팅",
+  "spec_size": "90mm x 50mm",
+  "spec_design": "인쇄만",
+  "quantity_display": "1,000매",
+  "jong": "jil 아트유광코팅",
+  "garo": "90",
+  "sero": "50",
+  "mesu": "1000",
+  "domusong": "사각",
+  "data_version": 2
+}
+```
+
+**코드에서 처리 방법**:
+```php
+// order_details 중첩 구조 자동 풀기
+if (isset($json_data['order_details']) && is_array($json_data['order_details'])) {
+    $json_data = array_merge($json_data, $json_data['order_details']);
+}
+
+// 이후 flat 구조로 접근 가능
+$jong = $json_data['jong'];  // "jil 아트유광코팅"
+$garo = $json_data['garo'];  // 90
+$sero = $json_data['sero'];  // 50
+$mesu = $json_data['mesu'];  // 1000
+```
+
+**스티커 필드 매핑**:
+| 레거시 필드 | 표준 필드 | 설명 | 예시 |
+|------------|----------|------|------|
+| jong | spec_material | 재질 | "jil 아트유광코팅" → "아트유광코팅" |
+| garo + sero | spec_size | 크기 | "90mm x 50mm" |
+| domusong | spec_type | 모양 | "00000 사각" → "사각" |
+| mesu | quantity_value | 수량 | 1000 |
+| ordertype | spec_design | 디자인 | "print" → "인쇄만" |
+
+**관련 파일**:
+- `includes/ProductSpecFormatter.php` - format(), formatSticker()
+- `mlangorder_printauto/OrderFormOrderTree.php` - getOrderItemInfo()
+- `mlangorder_printauto/ProcessOrder_unified.php` - Type_1 JSON 생성
+
 ---
 
 ## [검증 체크리스트]

@@ -30,7 +30,7 @@ if ($result) {
     while ($row = mysqli_fetch_array($result)) {
         $quantities[] = [
             'value' => $row['quantity'],
-            'text' => format_number($row['quantity']) . '매'
+            'text' => format_number($row['quantity']) . '부'
         ];
     }
     if (empty($quantities)) {
@@ -46,7 +46,7 @@ if ($result) {
             while ($row_fallback = mysqli_fetch_array($result_fallback)) {
                 $quantities[] = [
                     'value' => $row_fallback['quantity'],
-                    'text' => format_number($row_fallback['quantity']) . '매'
+                    'text' => format_number($row_fallback['quantity']) . '부'
                 ];
             }
         }

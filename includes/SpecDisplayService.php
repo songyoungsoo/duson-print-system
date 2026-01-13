@@ -436,14 +436,43 @@ class SpecDisplayService {
 
     /**
      * quantity_display에 단위가 없으면 추가, 소수점 정리
+     *
+     * ✅ 2026-01-13: 전단지 "X연 (Y매)" 패턴 보존
+     * ✅ 2026-01-13: 전단지 매수가 없으면 mlangprintauto_inserted에서 조회
      */
     private function ensureQuantityUnit(array $item): string {
         // Phase 3 필드 우선
         $display = $item['quantity_display'] ?? '';
+        $productType = $item['product_type'] ?? '';
 
-        // 이미 단위가 있는 경우 소수점 정리
+        // 이미 단위가 있는 경우
         if (!empty($display) && preg_match(self::UNIT_PATTERN, $display)) {
-            // 숫자와 단위 분리 후 재포맷
+            // ✅ 전단지 패턴: "0.5연 (2,000매)" - 전체 패턴 보존
+            if (preg_match('/([0-9,\.]+)\s*연\s*\(([0-9,]+)매\)/u', $display, $matches)) {
+                $yeon = floatval(str_replace(',', '', $matches[1]));
+                $maesoo = intval(str_replace(',', '', $matches[2]));
+                // 연수 소수점 정리
+                $yeonFormatted = (floor($yeon) == $yeon)
+                    ? number_format($yeon)
+                    : rtrim(rtrim(number_format($yeon, 2), '0'), '.');
+                return $yeonFormatted . '연 (' . number_format($maesoo) . '매)';
+            }
+
+            // ✅ 2026-01-13: 전단지 "X연"만 있고 매수가 없으면 DB에서 조회
+            if (in_array($productType, ['inserted', 'leaflet']) &&
+                preg_match('/^([0-9,\.]+)\s*연$/u', trim($display), $matches)) {
+                $yeon = floatval(str_replace(',', '', $matches[1]));
+                $maesoo = $this->lookupInsertedSheets($yeon);
+                $yeonFormatted = (floor($yeon) == $yeon)
+                    ? number_format($yeon)
+                    : rtrim(rtrim(number_format($yeon, 2), '0'), '.');
+                if ($maesoo > 0) {
+                    return $yeonFormatted . '연 (' . number_format($maesoo) . '매)';
+                }
+                return $yeonFormatted . '연';
+            }
+
+            // 일반 패턴: 숫자와 단위 분리 후 재포맷
             if (preg_match('/([0-9,\.]+)\s*([매연부권개장])/u', $display, $matches)) {
                 $num = floatval(str_replace(',', '', $matches[1]));
                 $unit = $matches[2];
@@ -458,6 +487,35 @@ class SpecDisplayService {
 
         // 단위가 없으면 ProductSpecFormatter의 getQuantityDisplay 사용
         return ProductSpecFormatter::getQuantityDisplay($item);
+    }
+
+    /**
+     * ✅ 2026-01-13: 전단지 매수를 mlangprintauto_inserted 테이블에서 조회
+     * (절대 계산하지 않음, DB값만 사용)
+     */
+    private function lookupInsertedSheets(float $reams): int {
+        if (!$this->db || $reams <= 0) {
+            return 0;
+        }
+
+        $stmt = mysqli_prepare($this->db,
+            "SELECT quantityTwo FROM mlangprintauto_inserted WHERE quantity = ? LIMIT 1"
+        );
+
+        if ($stmt) {
+            mysqli_stmt_bind_param($stmt, "d", $reams);
+            mysqli_stmt_execute($stmt);
+            $result = mysqli_stmt_get_result($stmt);
+
+            if ($row = mysqli_fetch_assoc($result)) {
+                $sheets = intval($row['quantityTwo']);
+                mysqli_stmt_close($stmt);
+                return $sheets;
+            }
+            mysqli_stmt_close($stmt);
+        }
+
+        return 0;  // 조회 실패 시 0 반환 (계산하지 않음)
     }
 
     /**

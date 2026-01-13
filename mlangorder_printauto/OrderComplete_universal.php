@@ -329,8 +329,8 @@ function displayProductDetails($connect, $order) {
     if (!empty($order['premium_options']) && !empty($order['premium_options_total'])) {
         $premium_options = json_decode($order['premium_options'], true);
         if ($premium_options && $order['premium_options_total'] > 0) {
-            $html .= '<div style="margin-top: 8px; padding: 10px 10px 5px 10px; background: #fff3e0; border-radius: 4px; border-left: 3px solid #ff9800; max-width: 100%; overflow: hidden; word-wrap: break-word;">';
-            $html .= '<strong style="color: #e65100;">✨ 프리미엄 옵션:</strong> ';
+            $html .= '<div style="margin-top: 8px; padding: 10px 10px 5px 10px; background: #e8f5e9; border-radius: 4px; border-left: 3px solid #4caf50; max-width: 100%; overflow: hidden; word-wrap: break-word;">';
+            $html .= '<strong style="color: #2e7d32;">✨ 프리미엄 옵션:</strong> ';
 
             $premium_option_names = [
                 'foil' => ['name' => '박', 'types' => [
@@ -353,7 +353,7 @@ function displayProductDetails($connect, $order) {
                 if (!empty($premium_options[$option_key . '_enabled']) && $premium_options[$option_key . '_enabled'] == 1) {
                     $price = intval($premium_options[$option_key . '_price'] ?? 0);
                     if ($price > 0) {
-                        $html .= '<span class="option-item" style="background-color: #ffe0b2; color: #e65100; margin: 0 5px;">';
+                        $html .= '<span class="option-item" style="background-color: #c8e6c9; color: #1b5e20; margin: 0 5px;">';
                         $html .= $option_info['name'];
 
                         // 타입 표시
@@ -370,7 +370,7 @@ function displayProductDetails($connect, $order) {
                 }
             }
 
-            $html .= '<div style="margin-top: 2.5px; font-size: 0.85rem; color: #e65100;">';
+            $html .= '<div style="margin-top: 2.5px; font-size: 0.85rem; color: #2e7d32;">';
             $html .= '프리미엄 옵션 소계: <strong>' . number_format($order['premium_options_total']) . '원</strong>';
             $html .= '</div>';
             $html .= '</div>';

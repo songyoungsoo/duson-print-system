@@ -99,7 +99,34 @@ if ($row) {
                 }
             }
         }
-        // 2-2. _MlangPrintAuto_ 경로 (신규 업로드 시스템)
+        // 2-2. uploads/orders/ 경로 (최신 업로드 시스템)
+        elseif (strpos($ImgFolder, 'uploads/orders/') === 0) {
+            $uploads_folder = $_SERVER['DOCUMENT_ROOT'] . '/' . $ImgFolder;
+            if (is_dir($uploads_folder)) {
+                $files = scandir($uploads_folder);
+                foreach ($files as $file) {
+                    if ($file !== '.' && $file !== '..') {
+                        $ext = strtolower(pathinfo($file, PATHINFO_EXTENSION));
+                        if (in_array($ext, ['jpg', 'jpeg', 'png', 'gif', 'webp', 'pdf', 'ai', 'psd'])) {
+                            $found_image_path = $uploads_folder . '/' . $file;
+                            $found_image_url = '/' . $ImgFolder . '/' . $file;
+                            $image_source = 'uploads_orders';
+                            break;
+                        }
+                    }
+                }
+            }
+            // 폴더에 파일이 없으면 ThingCate에서 파일명으로 검색
+            if (empty($found_image_path) && !empty($ImgFile)) {
+                $thingcate_path = $uploads_folder . '/' . $ImgFile;
+                if (file_exists($thingcate_path)) {
+                    $found_image_path = $thingcate_path;
+                    $found_image_url = '/' . $ImgFolder . '/' . $ImgFile;
+                    $image_source = 'uploads_orders';
+                }
+            }
+        }
+        // 2-3. _MlangPrintAuto_ 경로 (신규 업로드 시스템)
         elseif (strpos($ImgFolder, '_MlangPrintAuto_') !== false) {
             $img_folder_base = $_SERVER['DOCUMENT_ROOT'] . '/ImgFolder/' . $ImgFolder;
             if (is_dir($img_folder_base)) {

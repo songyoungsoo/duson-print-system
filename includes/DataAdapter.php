@@ -5,7 +5,13 @@
  *
  * 11개 제품의 서로 다른 필드명을 표준화된 필드로 변환
  * 예: namecard MY_type → spec_type, sticker jong → spec_material
+ *
+ * ✅ 2026-01-13 Grand Design: legacyToNormalized() 추가
+ * - 새 스키마 (orders, order_items) 형식으로 변환
+ * - QuantityFormatter SSOT 적용
  */
+
+require_once __DIR__ . '/QuantityFormatter.php';
 
 class DataAdapter {
 
@@ -190,9 +196,9 @@ class DataAdapter {
         $amount = floatval($data['MY_amount'] ?? 0);
         $qty_value = $amount > 0 && $amount < 10 ? $amount * 1000 : intval($amount);
 
-        // 가격 필드 fallback: shop_temp는 st_price/st_price_vat 사용
-        $price_supply = intval($data['price'] ?? $data['st_price'] ?? 0);
-        $price_vat = intval($data['vat_price'] ?? $data['st_price_vat'] ?? 0);
+        // 가격 필드 fallback: shop_temp는 st_price, mlangorder_printauto는 money_4/money_5
+        $price_supply = intval($data['price'] ?? $data['st_price'] ?? $data['money_4'] ?? 0);
+        $price_vat = intval($data['vat_price'] ?? $data['st_price_vat'] ?? $data['money_5'] ?? 0);
 
         return [
             'spec_type' => $data['MY_type_name'] ?: ($data['MY_type'] ?? ''),
@@ -322,9 +328,9 @@ class DataAdapter {
         // 이유: 프론트엔드에서 "1"만 보내면 "1,000매"로 변환되지 않는 문제 해결
         $quantity_display = number_format($qty_value) . '매';
 
-        // 가격 필드 fallback: shop_temp는 st_price/st_price_vat 사용
-        $price_supply = intval($data['price'] ?? $data['st_price'] ?? 0);
-        $price_vat = intval($data['vat_price'] ?? $data['st_price_vat'] ?? 0);
+        // 가격 필드 fallback: shop_temp는 st_price, mlangorder_printauto는 money_4/money_5
+        $price_supply = intval($data['price'] ?? $data['st_price'] ?? $data['money_4'] ?? 0);
+        $price_vat = intval($data['vat_price'] ?? $data['st_price_vat'] ?? $data['money_5'] ?? 0);
 
         return [
             'spec_type' => $data['MY_type_name'] ?: ($data['MY_type'] ?? ''),
@@ -357,9 +363,9 @@ class DataAdapter {
             ? $data['quantity_display']
             : number_format($amount) . '부';
 
-        // 가격 필드 fallback: shop_temp는 st_price/st_price_vat 사용
-        $price_supply = intval($data['price'] ?? $data['st_price'] ?? 0);
-        $price_vat = intval($data['vat_price'] ?? $data['st_price_vat'] ?? 0);
+        // 가격 필드 fallback: shop_temp는 st_price, mlangorder_printauto는 money_4/money_5
+        $price_supply = intval($data['price'] ?? $data['st_price'] ?? $data['money_4'] ?? 0);
+        $price_vat = intval($data['vat_price'] ?? $data['st_price_vat'] ?? $data['money_5'] ?? 0);
 
         return [
             'spec_type' => $data['MY_type_name'] ?: ($data['MY_type'] ?? ''),
@@ -386,9 +392,9 @@ class DataAdapter {
     private static function convertLittleprint($data) {
         $amount = intval($data['MY_amount'] ?? 0);
 
-        // 가격 필드 fallback: shop_temp는 st_price/st_price_vat 사용
-        $price_supply = intval($data['price'] ?? $data['st_price'] ?? 0);
-        $price_vat = intval($data['vat_price'] ?? $data['st_price_vat'] ?? 0);
+        // 가격 필드 fallback: shop_temp는 st_price, mlangorder_printauto는 money_4/money_5
+        $price_supply = intval($data['price'] ?? $data['st_price'] ?? $data['money_4'] ?? 0);
+        $price_vat = intval($data['vat_price'] ?? $data['st_price_vat'] ?? $data['money_5'] ?? 0);
 
         return [
             'spec_type' => $data['MY_type_name'] ?: ($data['MY_type'] ?? ''),
@@ -424,9 +430,9 @@ class DataAdapter {
     private static function convertMsticker($data) {
         $amount = intval($data['MY_amount'] ?? 0);
 
-        // 가격 필드 fallback: shop_temp는 st_price/st_price_vat 사용
-        $price_supply = intval($data['price'] ?? $data['st_price'] ?? 0);
-        $price_vat = intval($data['vat_price'] ?? $data['st_price_vat'] ?? 0);
+        // 가격 필드 fallback: shop_temp는 st_price, mlangorder_printauto는 money_4/money_5
+        $price_supply = intval($data['price'] ?? $data['st_price'] ?? $data['money_4'] ?? 0);
+        $price_vat = intval($data['vat_price'] ?? $data['st_price_vat'] ?? $data['money_5'] ?? 0);
 
         return [
             'spec_type' => $data['MY_type_name'] ?: ($data['MY_type'] ?? ''),
@@ -452,9 +458,9 @@ class DataAdapter {
     private static function convertNcrflambeau($data) {
         $amount = intval($data['MY_amount'] ?? 0);
 
-        // 가격 필드 fallback: shop_temp는 st_price/st_price_vat 사용
-        $price_supply = intval($data['price'] ?? $data['st_price'] ?? 0);
-        $price_vat = intval($data['vat_price'] ?? $data['st_price_vat'] ?? 0);
+        // 가격 필드 fallback: shop_temp는 st_price, mlangorder_printauto는 money_4/money_5
+        $price_supply = intval($data['price'] ?? $data['st_price'] ?? $data['money_4'] ?? 0);
+        $price_vat = intval($data['vat_price'] ?? $data['st_price_vat'] ?? $data['money_5'] ?? 0);
 
         return [
             'spec_type' => $data['PN_type_name'] ?: ($data['PN_type'] ?? ''),  // 타입
@@ -481,9 +487,9 @@ class DataAdapter {
     private static function convertMerchandisebond($data) {
         $amount = intval($data['MY_amount'] ?? 0);
 
-        // 가격 필드 fallback: shop_temp는 st_price/st_price_vat 사용
-        $price_supply = intval($data['price'] ?? $data['st_price'] ?? 0);
-        $price_vat = intval($data['vat_price'] ?? $data['st_price_vat'] ?? 0);
+        // 가격 필드 fallback: shop_temp는 st_price, mlangorder_printauto는 money_4/money_5
+        $price_supply = intval($data['price'] ?? $data['st_price'] ?? $data['money_4'] ?? 0);
+        $price_vat = intval($data['vat_price'] ?? $data['st_price_vat'] ?? $data['money_5'] ?? 0);
 
         return [
             'spec_type' => $data['MY_type_name'] ?: ($data['MY_type'] ?? ''),
@@ -533,6 +539,223 @@ class DataAdapter {
     public static function standardToLegacy($standard_data, $product_type) {
         // 현재는 미구현 (Dual-Write 전략에서는 불필요)
         throw new Exception('standardToLegacy not implemented yet');
+    }
+
+    // ========== Grand Design Methods (2026-01-13) ==========
+
+    /**
+     * ✅ Grand Design: 레거시 데이터를 정규화된 스키마로 변환
+     *
+     * 새 order_items 테이블 형식으로 변환:
+     * - qty_value (DECIMAL): 수량 값
+     * - qty_unit_code (CHAR): R/S/B/V/P/E
+     * - qty_sheets (INT): 전단지 등 실제 매수
+     *
+     * @param array $legacyData 레거시 필드 배열 (mlangorder_printauto 또는 shop_temp)
+     * @param string $productType 제품 타입
+     * @return array order_items 테이블 형식의 정규화된 데이터
+     */
+    public static function legacyToNormalized(array $legacyData, string $productType): array {
+        // ✅ Type_1 파싱 (JSON 또는 파이프 구분 텍스트)
+        if (!empty($legacyData['Type_1']) && is_string($legacyData['Type_1'])) {
+            $type1Str = trim($legacyData['Type_1']);
+
+            // 1. JSON 형식 시도
+            $type1Data = json_decode($type1Str, true);
+            if ($type1Data && is_array($type1Data)) {
+                // order_details 중첩 구조 처리
+                if (isset($type1Data['order_details']) && is_array($type1Data['order_details'])) {
+                    $type1Data = array_merge($type1Data, $type1Data['order_details']);
+                }
+                // DB 컬럼 값이 없는 경우에만 Type_1 값 사용
+                foreach ($type1Data as $key => $value) {
+                    if ($value !== '' && $value !== null && (!isset($legacyData[$key]) || $legacyData[$key] === '' || $legacyData[$key] === null)) {
+                        $legacyData[$key] = $value;
+                    }
+                }
+                // product_type이 없으면 Type_1에서 가져옴
+                if (empty($productType) && !empty($type1Data['product_type'])) {
+                    $productType = $type1Data['product_type'];
+                }
+            }
+            // 2. 파이프(|) 구분 레거시 형식 시도
+            // 예: "아트코팅 스티카|크기: 90 x 50mm |매수: 1000 매|사각"
+            elseif (strpos($type1Str, '|') !== false) {
+                $parts = explode('|', $type1Str);
+                foreach ($parts as $part) {
+                    $part = trim($part);
+                    if (empty($part)) continue;
+
+                    // 매수 파싱: "매수: 1000 매" 또는 "1000 매"
+                    if (preg_match('/매수[:\s]*(\d+)/u', $part, $m)) {
+                        $legacyData['mesu'] = intval($m[1]);
+                    } elseif (preg_match('/^(\d+)\s*매$/u', $part, $m)) {
+                        $legacyData['mesu'] = intval($m[1]);
+                    }
+                    // 크기 파싱: "크기: 90 x 50mm"
+                    elseif (preg_match('/크기[:\s]*(.+)/u', $part, $m)) {
+                        $legacyData['spec_size'] = trim($m[1]);
+                    }
+                    // 수량 파싱: "수량: 1연"
+                    elseif (preg_match('/수량[:\s]*(.+)/u', $part, $m)) {
+                        $legacyData['MY_amount'] = trim($m[1]);
+                    }
+                }
+            }
+        }
+
+        // 기존 표준 변환 (spec_type, spec_material 등)
+        $standard = self::legacyToStandard($legacyData, $productType);
+
+        // QuantityFormatter로 수량 정보 추출 (SSOT)
+        $qtyInfo = QuantityFormatter::extractFromLegacy($legacyData, $productType);
+
+        // 가격 정보 추출
+        $priceSupply = intval($standard['price_supply'] ?? 0);
+        $priceVat = intval($standard['price_vat'] ?? 0);
+
+        // 정규화된 order_items 형식으로 반환
+        return [
+            // 제품 정보
+            'product_type' => $productType,
+            'product_type_display' => ProductSpecFormatter::getProductTypeName($productType),
+
+            // 규격 정보 (표준 필드 그대로 사용)
+            'spec_type' => $standard['spec_type'] ?? null,
+            'spec_material' => $standard['spec_material'] ?? null,
+            'spec_size' => $standard['spec_size'] ?? null,
+            'spec_sides' => $standard['spec_sides'] ?? null,
+            'spec_design' => $standard['spec_design'] ?? null,
+
+            // 수량 정보 (QuantityFormatter SSOT)
+            'qty_value' => $qtyInfo['qty_value'],
+            'qty_unit_code' => $qtyInfo['qty_unit_code'],
+            'qty_sheets' => $qtyInfo['qty_sheets'],
+
+            // 가격 정보
+            'price_supply' => $priceSupply,
+            'price_vat' => $priceVat,
+            'price_unit' => $priceSupply > 0 && $qtyInfo['qty_value'] > 0
+                ? intval($priceSupply / $qtyInfo['qty_value'])
+                : null,
+
+            // 파일 정보 (DB 컬럼은 대문자: ImgFolder, ThingCate)
+            'img_folder' => $legacyData['ImgFolder'] ?? $legacyData['img_folder'] ?? null,
+            'thing_cate' => $legacyData['ThingCate'] ?? $legacyData['thing_cate'] ?? null,
+
+            // 메타 정보 (DB 컬럼은 OrderStyle)
+            'ordertype' => $legacyData['OrderStyle'] ?? $legacyData['ordertype'] ?? null,
+            'work_memo' => $legacyData['memo'] ?? $legacyData['work_memo'] ?? null,
+
+            // 레거시 데이터 보존 (롤백용)
+            'legacy_data' => json_encode($legacyData, JSON_UNESCAPED_UNICODE),
+
+            // 추가 옵션 (제품별로 다름)
+            'additional_options' => self::extractOptions($standard, $productType)
+        ];
+    }
+
+    /**
+     * ✅ Grand Design: 옵션 정보 추출
+     *
+     * @param array $standard 표준 데이터
+     * @param string $productType 제품 타입
+     * @return array|null order_options 테이블용 데이터
+     */
+    private static function extractOptions(array $standard, string $productType): ?array {
+        $options = [];
+
+        // 코팅/접지/오시 옵션 (전단지, 카다록, 포스터)
+        if (!empty($standard['additional_options'])) {
+            $addOpts = is_string($standard['additional_options'])
+                ? json_decode($standard['additional_options'], true)
+                : $standard['additional_options'];
+
+            if (!empty($addOpts['coating_enabled'])) {
+                $options[] = [
+                    'category' => 'coating',
+                    'type' => $addOpts['coating_type'] ?? null,
+                    'price' => intval($addOpts['coating_price'] ?? 0)
+                ];
+            }
+            if (!empty($addOpts['folding_enabled'])) {
+                $options[] = [
+                    'category' => 'folding',
+                    'type' => $addOpts['folding_type'] ?? null,
+                    'price' => intval($addOpts['folding_price'] ?? 0)
+                ];
+            }
+            if (!empty($addOpts['creasing_enabled'])) {
+                $options[] = [
+                    'category' => 'creasing',
+                    'value' => $addOpts['creasing_lines'] ?? null,
+                    'price' => intval($addOpts['creasing_price'] ?? 0)
+                ];
+            }
+        }
+
+        // 프리미엄 옵션 (명함, 상품권, NCR)
+        if (!empty($standard['premium_options'])) {
+            $premOpts = is_string($standard['premium_options'])
+                ? json_decode($standard['premium_options'], true)
+                : $standard['premium_options'];
+
+            if (!empty($premOpts['foil_enabled'])) {
+                $options[] = [
+                    'category' => 'premium',
+                    'type' => 'foil_' . ($premOpts['foil_type'] ?? 'gold'),
+                    'price' => intval($premOpts['foil_price'] ?? 0)
+                ];
+            }
+            if (!empty($premOpts['numbering_enabled'])) {
+                $options[] = [
+                    'category' => 'premium',
+                    'type' => 'numbering',
+                    'value' => $premOpts['numbering_count'] ?? null,
+                    'price' => intval($premOpts['numbering_price'] ?? 0)
+                ];
+            }
+            if (!empty($premOpts['perforation_enabled'])) {
+                $options[] = [
+                    'category' => 'premium',
+                    'type' => 'perforation',
+                    'value' => $premOpts['perforation_count'] ?? null,
+                    'price' => intval($premOpts['perforation_price'] ?? 0)
+                ];
+            }
+        }
+
+        // 봉투 양면테이프
+        if ($productType === 'envelope' && !empty($standard['envelope_tape_enabled'])) {
+            $options[] = [
+                'category' => 'envelope_tape',
+                'value' => $standard['envelope_tape_quantity'] ?? null,
+                'price' => intval($standard['envelope_tape_price'] ?? 0)
+            ];
+        }
+
+        return !empty($options) ? $options : null;
+    }
+
+    /**
+     * ✅ Grand Design: 정규화된 데이터를 표시용으로 변환
+     *
+     * @param array $normalizedData order_items 형식의 데이터
+     * @return array 표시용 데이터 (quantity_display 등 포함)
+     */
+    public static function normalizedToDisplay(array $normalizedData): array {
+        $display = $normalizedData;
+
+        // QuantityFormatter로 표시 문자열 생성 (SSOT)
+        if (!empty($normalizedData['qty_value']) && !empty($normalizedData['qty_unit_code'])) {
+            $display['quantity_display'] = QuantityFormatter::format(
+                floatval($normalizedData['qty_value']),
+                $normalizedData['qty_unit_code'],
+                $normalizedData['qty_sheets'] ?? null
+            );
+        }
+
+        return $display;
     }
 }
 ?>

@@ -1,0 +1,301 @@
+<?php
+/**
+ * QuantityFormatter - 수량/단위의 단일 진실 공급원 (SSOT)
+ *
+ * Grand Design 원칙:
+ * - 저장: qty_value (DECIMAL) + qty_unit_code (CHAR)
+ * - 표시: format() 함수로 동적 생성
+ * - 절대로 quantity_display를 직접 저장하지 않음
+ *
+ * @package DusonPrint
+ * @since 2026-01-13
+ */
+
+class QuantityFormatter {
+
+    /**
+     * 단위 코드 ↔ 한글 매핑
+     * DB unit_codes 테이블과 동기화 유지
+     */
+    const UNIT_CODES = [
+        'R' => '연',  // Ream - 전단지/리플렛
+        'S' => '매',  // Sheet - 스티커/명함/봉투/포스터
+        'B' => '부',  // Bundle - 카다록
+        'V' => '권',  // Volume - NCR양식지
+        'P' => '장',  // Piece - 개별 인쇄물
+        'E' => '개'   // Each - 기타/커스텀
+    ];
+
+    /**
+     * 제품별 기본 단위 코드
+     *
+     * ⚠️ 중요 참고사항 (이전 개발자 레거시 주의):
+     * - sticker: 폴더만 있고 사용 안 함 (옛날 방식)
+     * - sticker_new: 실제 사용하는 스티커 (수학계산 기반)
+     * - inserted: 전단지 + 리플렛 포괄 (90g/120g 이상은 리플렛)
+     * - leaflet: 이미지 경로용만, 실제 주문은 inserted로 처리
+     * - littleprint = poster: 같은 것 (이전 개발자 명칭 오류)
+     * - msticker = msticker_01: 자석스티커
+     */
+    const PRODUCT_UNITS = [
+        'inserted'       => 'R',  // 전단지+리플렛 - 연 (90g/120g 이상은 리플렛)
+        'leaflet'        => 'R',  // (미사용) 이미지 경로용만
+        'sticker'        => 'S',  // (미사용) 옛날 방식, 폴더만 존재
+        'sticker_new'    => 'S',  // ✅ 실제 스티커 - 매 (수학계산 기반)
+        'msticker'       => 'S',  // 자석스티커 - 매
+        'msticker_01'    => 'S',  // 자석스티커 - 매 (msticker와 동일)
+        'namecard'       => 'S',  // 명함 - 매
+        'envelope'       => 'S',  // 봉투 - 매
+        'cadarok'        => 'B',  // 카다록 - 부
+        'ncrflambeau'    => 'V',  // NCR양식지 - 권
+        'littleprint'    => 'S',  // 포스터 - 매 (=poster, 명칭 오류)
+        'poster'         => 'S',  // 포스터 - 매 (=littleprint)
+        'merchandisebond'=> 'S'   // 상품권 - 매
+    ];
+
+    /**
+     * 전단지 1연당 매수 (용지별)
+     */
+    const SHEETS_PER_REAM = [
+        'default' => 500,   // 기본
+        '80g'     => 500,
+        '100g'    => 500,
+        '120g'    => 500,
+        '150g'    => 250,
+        '200g'    => 250
+    ];
+
+    /**
+     * 수량 표시 문자열 생성 (SSOT - 단일 진실 공급원)
+     *
+     * 이 함수만이 수량 표시 문자열을 생성합니다.
+     * 모든 화면(장바구니, 주문서, 완료, 관리자)에서 이 함수를 사용해야 합니다.
+     *
+     * @param float $value 수량 값 (0.5, 1, 1000 등)
+     * @param string $unitCode 단위 코드 (R/S/B/V/P/E)
+     * @param int|null $sheets 실제 매수 (연 단위 제품용)
+     * @param string $separator 연수/매수 구분자 (기본: ' ', 테이블용: '<br>')
+     * @return string "1,000매", "0.5연 (2,000매)" 또는 "0.5연<br>(2,000매)" 형식
+     */
+    public static function format(float $value, string $unitCode, ?int $sheets = null, string $separator = ' '): string {
+        // 단위 이름 조회
+        $unitName = self::UNIT_CODES[$unitCode] ?? '개';
+
+        // 숫자 포맷팅: 정수면 소수점 없이, 소수면 필요한 만큼만
+        if (floor($value) == $value) {
+            $formatted = number_format($value);
+        } else {
+            // 소수점 이하 불필요한 0 제거
+            $formatted = rtrim(rtrim(number_format($value, 2), '0'), '.');
+        }
+
+        $display = $formatted . $unitName;
+
+        // 연 단위이고 매수 정보가 있으면 "(X매)" 추가
+        if ($unitCode === 'R' && $sheets !== null && $sheets > 0) {
+            $display .= $separator . '(' . number_format($sheets) . '매)';
+        }
+
+        return $display;
+    }
+
+    /**
+     * 레거시 데이터에서 표준 수량 정보 추출
+     *
+     * @param array $data 레거시 데이터 (MY_amount, mesu, quantity 등 포함)
+     * @param string $productType 제품 타입
+     * @return array [qty_value, qty_unit_code, qty_sheets]
+     */
+    public static function extractFromLegacy(array $data, string $productType): array {
+        $unitCode = self::PRODUCT_UNITS[$productType] ?? 'E';
+        $value = 0;
+        $sheets = null;
+
+        switch ($productType) {
+            // 스티커류: mesu 필드 최우선, 없으면 quantity 또는 MY_amount
+            case 'sticker':
+            case 'sticker_new':
+            case 'msticker':
+            case 'msticker_01':
+                $value = intval($data['mesu'] ?? 0);
+                if ($value === 0) {
+                    $value = intval($data['MY_amount'] ?? $data['quantity'] ?? 0);
+                }
+                break;
+
+            // 전단지/리플렛: 연 단위 + 매수
+            case 'inserted':
+            case 'leaflet':
+                $value = floatval($data['MY_amount'] ?? $data['quantity'] ?? 0);
+                $sheets = intval($data['mesu'] ?? $data['quantityTwo'] ?? $data['quantity_sheets'] ?? 0);
+                // ✅ 2026-01-13: 매수가 없으면 0 유지 (계산 금지, DB에서만 조회)
+                // 호출하는 쪽(ProductSpecFormatter)에서 mlangprintauto_inserted 테이블 조회
+                break;
+
+            // 명함/봉투: mesu 우선, 없으면 quantity 또는 MY_amount
+            case 'namecard':
+            case 'envelope':
+                // mesu가 있으면 그대로 사용
+                if (!empty($data['mesu']) && $data['mesu'] != '0') {
+                    $value = intval($data['mesu']);
+                } else {
+                    // quantity 또는 MY_amount 사용, 10 미만이면 천 단위로 해석
+                    $amount = floatval($data['MY_amount'] ?? $data['quantity'] ?? 0);
+                    if ($amount > 0 && $amount < 10) {
+                        $value = intval($amount * 1000);
+                    } else {
+                        $value = intval($amount);
+                    }
+                }
+                break;
+
+            // 카다록: 부 단위
+            case 'cadarok':
+                $value = intval($data['MY_amount'] ?? $data['mesu'] ?? $data['quantity'] ?? 0);
+                break;
+
+            // NCR양식지: 권 단위
+            case 'ncrflambeau':
+                $value = intval($data['MY_amount'] ?? $data['mesu'] ?? $data['quantity'] ?? 0);
+                break;
+
+            // 포스터: 매/장 단위
+            case 'littleprint':
+            case 'poster':
+                $value = intval($data['MY_amount'] ?? $data['mesu'] ?? $data['quantity'] ?? 0);
+                break;
+
+            // 상품권: 매 단위
+            case 'merchandisebond':
+                $value = intval($data['MY_amount'] ?? $data['mesu'] ?? $data['quantity'] ?? 0);
+                break;
+
+            // 기타: MY_amount 또는 quantity 사용
+            default:
+                $value = floatval($data['MY_amount'] ?? $data['mesu'] ?? $data['quantity'] ?? 0);
+        }
+
+        return [
+            'qty_value' => $value,
+            'qty_unit_code' => $unitCode,
+            'qty_sheets' => $sheets
+        ];
+    }
+
+    /**
+     * 연수에서 매수 계산 (전단지/리플렛용)
+     *
+     * @param float $reams 연수
+     * @param array $data 용지 정보 포함 데이터
+     * @return int 매수
+     */
+    public static function calculateSheets(float $reams, array $data = []): int {
+        // 용지 종류에서 연당 매수 결정
+        $paperType = $data['MY_Fsd'] ?? $data['spec_material'] ?? 'default';
+        $sheetsPerReam = self::SHEETS_PER_REAM['default'];
+
+        foreach (self::SHEETS_PER_REAM as $key => $value) {
+            if (stripos($paperType, $key) !== false) {
+                $sheetsPerReam = $value;
+                break;
+            }
+        }
+
+        return intval($reams * $sheetsPerReam);
+    }
+
+    /**
+     * 단위 코드에서 한글명 반환
+     *
+     * @param string $code 단위 코드 (R/S/B/V/P/E)
+     * @return string 한글 단위명
+     */
+    public static function getUnitName(string $code): string {
+        return self::UNIT_CODES[$code] ?? '개';
+    }
+
+    /**
+     * 한글 단위에서 코드 반환
+     *
+     * @param string $name 한글 단위명
+     * @return string 단위 코드
+     */
+    public static function getUnitCode(string $name): string {
+        $reversed = array_flip(self::UNIT_CODES);
+        return $reversed[$name] ?? 'E';
+    }
+
+    /**
+     * 제품 타입에서 기본 단위 코드 반환
+     *
+     * @param string $productType 제품 타입
+     * @return string 단위 코드
+     */
+    public static function getProductUnitCode(string $productType): string {
+        return self::PRODUCT_UNITS[$productType] ?? 'E';
+    }
+
+    /**
+     * 제품 타입에서 기본 단위명 반환
+     *
+     * @param string $productType 제품 타입
+     * @return string 한글 단위명
+     */
+    public static function getProductUnitName(string $productType): string {
+        $code = self::getProductUnitCode($productType);
+        return self::getUnitName($code);
+    }
+
+    /**
+     * 기존 quantity_display 문자열 파싱
+     *
+     * @param string $display "1,000매", "0.5연 (2,000매)" 형식
+     * @return array [qty_value, qty_unit_code, qty_sheets]
+     */
+    public static function parseDisplay(string $display): array {
+        $result = [
+            'qty_value' => 0,
+            'qty_unit_code' => 'E',
+            'qty_sheets' => null
+        ];
+
+        // "0.5연 (2,000매)" 형식 파싱
+        if (preg_match('/^([\d,\.]+)\s*(연|매|부|권|장|개)\s*(?:\(([\d,]+)매\))?$/u', $display, $matches)) {
+            $result['qty_value'] = floatval(str_replace(',', '', $matches[1]));
+            $result['qty_unit_code'] = self::getUnitCode($matches[2]);
+
+            if (!empty($matches[3])) {
+                $result['qty_sheets'] = intval(str_replace(',', '', $matches[3]));
+            }
+        }
+
+        return $result;
+    }
+
+    /**
+     * 수량 값 검증
+     *
+     * @param float $value 수량 값
+     * @param string $unitCode 단위 코드
+     * @return bool 유효 여부
+     */
+    public static function validate(float $value, string $unitCode): bool {
+        // 수량은 0보다 커야 함
+        if ($value <= 0) {
+            return false;
+        }
+
+        // 단위 코드 유효성
+        if (!isset(self::UNIT_CODES[$unitCode])) {
+            return false;
+        }
+
+        // 연 단위가 아닌 경우 정수여야 함 (선택적 검증)
+        if ($unitCode !== 'R' && floor($value) != $value) {
+            // 경고만 로그, 실패로 처리하지 않음
+            error_log("QuantityFormatter::validate WARNING: Non-integer value {$value} for unit {$unitCode}");
+        }
+
+        return true;
+    }
+}
