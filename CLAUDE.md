@@ -88,22 +88,23 @@ $line2 = implode(' / ', [$spec_sides, $quantity_display, $spec_design]);
 
 ---
 
-## 📦 11개 제품 코드
+## 📦 전사 표준 품목 매핑 사전 (9개 제품)
 
-| Code | Name | Directory |
-|------|------|-----------|
-| inserted | 전단지 | mlangprintauto/inserted/ |
-| namecard | 명함 | mlangprintauto/namecard/ |
-| envelope | 봉투 | mlangprintauto/envelope/ |
-| sticker | 스티커 | mlangprintauto/sticker_new/ |
-| msticker | 자석스티커 | mlangprintauto/msticker/ |
-| cadarok | 카다록 | mlangprintauto/cadarok/ |
-| **littleprint** | **포스터** ⚠️ | mlangprintauto/littleprint/ |
-| merchandisebond | 상품권 | mlangprintauto/merchandisebond/ |
-| ncrflambeau | NCR양식 | mlangprintauto/ncrflambeau/ |
-| leaflet | 리플렛 | mlangprintauto/leaflet/ |
+> **[공표] 최상위 법전**: 아래 폴더명은 절대 변경 금지. AI가 임의로 명칭 변경 불가.
 
-⚠️ **AI 주의**: `littleprint` = 포스터 (레거시 코드명, 변경 금지)
+| # | 품목명 | 폴더명 (강제) | ❌ 금지 명칭 | 작명 유래 |
+|---|--------|--------------|-------------|----------|
+| 1 | 전단지 | `inserted` | leaflet | 신문 삽입 홍보물 |
+| 2 | 스티커 | `sticker_new` | sticker | 구형 폴더와 혼동 방지 |
+| 3 | 자석스티커 | `msticker` | - | 독립 전용 경로 |
+| 4 | 명함 | `namecard` | - | 표준 명칭 |
+| 5 | 봉투 | `envelope` | - | 표준 명칭 |
+| 6 | 포스터 | `littleprint` | poster | 대량 대비 소량 인쇄 |
+| 7 | 상품권 | `merchandisebond` | giftcard | 고유 작명 |
+| 8 | 카다록 | `cadarok` | catalog | 발음 기반 고유 작명 |
+| 9 | NCR양식지 | `ncrflambeau` | form, ncr | 고유 작명 |
+
+**시각물 규칙**: UI/디자인에서는 '리플렛', '포스터' 사용 가능. 단, **코드/경로에서는 위 폴더명 100% 일치 필수**
 
 ---
 
@@ -153,19 +154,64 @@ curl -T "file.php" -u "dsp1830:ds701018" \
 
 ---
 
-## 📚 상세 문서 참조
+## 🎯 SSOT (Single Source of Truth) 체계
 
-**이 파일은 핵심만 포함합니다. 상세 내용은:**
+### 수량 포맷팅 - 유일한 진입점
+```php
+// ✅ 모든 수량 출력은 반드시 이 함수를 거침
+QuantityFormatter::format($value, $unitCode, $sheets);
+// 예: format(0.5, 'R', 2000) → "0.5연 (2,000매)"
+```
+
+### 단위 코드 체계
+| 코드 | 단위 | 제품 |
+|------|------|------|
+| **R** | 연 | inserted, leaflet (전단지/리플렛) |
+| **S** | 매 | sticker_new, namecard, envelope, littleprint, msticker, merchandisebond |
+| **B** | 부 | cadarok (카다록) |
+| **V** | 권 | ncrflambeau (NCR양식지) |
+
+### 데이터 구조 (신규 스키마)
+```
+qty_value: DECIMAL(10,2) - 수량 값 (0.5, 1000 등)
+qty_unit_code: CHAR(1) - 단위 코드 (R/S/B/V)
+qty_sheets: INT - 매수 (전단지용, DB 조회만)
+```
+
+### 핵심 SSOT 파일
+```
+/var/www/html/
+├── includes/
+│   ├── QuantityFormatter.php      ← 수량/단위 SSOT
+│   └── ProductSpecFormatter.php   ← 제품 사양 포맷터
+└── lib/
+    └── core_print_logic.php       ← 중앙 로직 파사드
+```
+
+### 절대 금지 사항
+```php
+// ❌ 매수 계산 금지 (반드시 DB 조회)
+$sheets = $reams * 4000;
+
+// ❌ 직접 포맷팅 금지
+$display = number_format($amount) . '매';
+
+// ✅ 필수: SSOT 함수 사용
+$display = QuantityFormatter::format($value, $unitCode, $sheets);
+$sheets = PrintCore::lookupInsertedSheets($reams);  // DB 조회만
+```
+
+---
+
+## 📚 문서 참조
 
 | 주제 | 파일 |
 |------|------|
-| Git 규칙 | `.claude/guides/git-workflow.md` |
-| 업로드 시스템 | `.claude/guides/upload-system.md` |
-| 갤러리 시스템 | `.claude/guides/gallery-system.md` |
-| Recent Fixes | `.claude/changelog/2025-12.md` |
-| 비즈니스 규칙 | `~/.claude/skills/duson-print-rules/` |
-| MCP 가이드 | `CLAUDE_DOCS/05_DEVELOPMENT/MCP_Installation_Guide.md` |
-| 전체 문서 | `CLAUDE_DOCS/INDEX.md` |
+| 마스터 명세서 | `CLAUDE_DOCS/Duson_System_Master_Spec_v1.0.md` |
+| 데이터 흐름 | `CLAUDE_DOCS/DATA_LINEAGE.md` |
+| 변경 이력 | `.claude/changelog/CHANGELOG.md` |
+| 스킬 가이드 | `~/.claude/skills/duson-print-system/SKILL.md` |
+| 레거시 아카이브 | `CLAUDE_DOCS/00_Legacy_Archive/` |
 
 ---
 
@@ -180,6 +226,6 @@ curl -T "file.php" -u "dsp1830:ds701018" \
 
 ---
 
-*Core Version - Last Updated: 2026-01-07*
+*Core Version - Last Updated: 2026-01-14*
 *Environment: WSL2 Ubuntu + Windows XAMPP*
-*Full Docs: CLAUDE_DOCS/ | Changelog: .claude/changelog/*
+*SSOT Docs: CLAUDE_DOCS/Duson_System_Master_Spec_v1.0.md*
