@@ -1,0 +1,135 @@
+/**
+ * cart-styles.css - 장바구니 스타일 (SP Protocol)
+ *
+ * 용도: cart.php의 인라인 스타일을 클래스로 대체
+ * Created: 2026-01-14
+ *
+ * 사용법:
+ * 1. cart.php에서 <link rel="stylesheet" href="/css/cart-styles.css"> 추가
+ * 2. 인라인 스타일을 아래 클래스로 교체
+ *
+ * 예시:
+ * Before: <th style="border: 1px solid #ccc; padding: 10px; background: #f3f3f3;">
+ * After:  <th class="cart-th">
+ */
+
+/* CSS 변수 임포트 */
+@import url('color-system-unified.css');
+
+/* ===================================================================
+   장바구니 컨테이너
+   =================================================================== */
+.cart-container {
+    font-family: 'Noto Sans KR', sans-serif;
+    font-size: 13px;
+    color: #222;
+    line-height: 1.6;
+    box-sizing: border-box;
+    max-width: 1145px;
+    margin: 0 auto;
+    background: #fff;
+    padding: 20px;
+    margin-bottom: 1rem;
+}
+
+/* ===================================================================
+   장바구니 테이블
+   =================================================================== */
+.cart-table {
+    width: 100%;
+    border-collapse: collapse;
+    table-layout: fixed;
+}
+
+/* 테이블 헤더 */
+.cart-th {
+    border: 1px solid #ccc;
+    padding: 10px;
+    background: #f3f3f3;
+    text-align: center;
+    font-weight: bold;
+}
+
+/* 테이블 셀 */
+.cart-td {
+    border: 1px solid #ccc;
+    padding: 10px;
+    text-align: center;
+    vertical-align: middle;
+}
+
+.cart-td-left {
+    border: 1px solid #ccc;
+    padding: 10px;
+    text-align: left;
+    vertical-align: middle;
+}
+
+/* ===================================================================
+   컬럼 너비 (colgroup용)
+   =================================================================== */
+.col-product { width: 15%; }    /* 품목 */
+.col-spec { width: 42%; }       /* 규격/옵션 */
+.col-qty { width: 10%; }        /* 수량 */
+.col-unit { width: 8%; }        /* 단위 */
+.col-price { width: 15%; }      /* 총액 */
+.col-action { width: 10%; }     /* 관리 */
+
+/* ===================================================================
+   가격 표시
+   =================================================================== */
+.cart-price {
+    font-weight: bold;
+    color: var(--dsp-primary, #1E4E79);
+}
+
+.cart-price-total {
+    font-size: 1.1em;
+    font-weight: 700;
+    color: var(--dsp-accent-dark, #E6C000);
+}
+
+/* ===================================================================
+   버튼
+   =================================================================== */
+.cart-btn {
+    padding: 6px 12px;
+    border: none;
+    border-radius: 4px;
+    cursor: pointer;
+    font-size: 12px;
+    transition: all 0.2s;
+}
+
+.cart-btn-delete {
+    background: #dc3545;
+    color: white;
+}
+
+.cart-btn-delete:hover {
+    background: #c82333;
+}
+
+.cart-btn-order {
+    background: var(--dsp-primary, #1E4E79);
+    color: white;
+}
+
+.cart-btn-order:hover {
+    background: var(--dsp-primary-dark, #153A5A);
+}
+
+/* ===================================================================
+   반응형
+   =================================================================== */
+@media (max-width: 768px) {
+    .cart-container {
+        padding: 10px;
+        font-size: 12px;
+    }
+
+    .cart-th,
+    .cart-td {
+        padding: 6px;
+    }
+}
