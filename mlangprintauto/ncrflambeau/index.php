@@ -109,7 +109,7 @@ $default_values['MY_type'] = '475'; // 양식(100매철)
     <!-- 통합 가격 표시 시스템 CSS -->
     <link rel="stylesheet" href="../../css/unified-price-display.css">
     <!-- 통일 인라인 폼 스타일 시스템 -->
-    <link rel="stylesheet" href="../../css/unified-inline-form.css">
+    <link rel="stylesheet" href="../../css/unified-inline-form.css?v=<?php echo filemtime(__DIR__ . '/../../css/unified-inline-form.css'); ?>">
     <!-- 추가 옵션 시스템 CSS (전단지와 동일) -->
     <link rel="stylesheet" href="../../css/additional-options.css">
 

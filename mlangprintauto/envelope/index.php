@@ -101,7 +101,7 @@ if ($type_result && ($type_row = mysqli_fetch_assoc($type_result))) {
     <!-- 컴팩트 폼 그리드 CSS (모든 품목 공통) -->
     <link rel="stylesheet" href="../../css/compact-form.css">
     <!-- 통일 인라인 폼 시스템 CSS -->
-    <link rel="stylesheet" href="../../css/unified-inline-form.css">
+    <link rel="stylesheet" href="../../css/unified-inline-form.css?v=<?php echo filemtime(__DIR__ . '/../../css/unified-inline-form.css'); ?>">
     <!-- 추가 옵션 시스템 CSS -->
     <link rel="stylesheet" href="../../css/additional-options.css">
 

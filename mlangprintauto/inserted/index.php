@@ -172,7 +172,7 @@ header("Expires: 0");
     <link rel="stylesheet" href="../../css/unified-gallery.css">
 
     <!-- 통일 인라인 폼 시스템 CSS -->
-    <link rel="stylesheet" href="../../css/unified-inline-form.css">
+    <link rel="stylesheet" href="../../css/unified-inline-form.css?v=<?php echo filemtime(__DIR__ . '/../../css/unified-inline-form.css'); ?>">
 
     <?php
     // 통합 갤러리 시스템 에셋 포함
