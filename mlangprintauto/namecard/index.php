@@ -88,7 +88,7 @@ if ($type_result && ($type_row = mysqli_fetch_assoc($type_result))) {
     <link rel="stylesheet" href="../../css/color-system-unified.css">
 
     <!-- 명함 컴팩트 페이지 전용 CSS (PROJECT_SUCCESS_REPORT.md 스펙) -->
-    <link rel="stylesheet" href="../../css/product-layout.css">
+    <link rel="stylesheet" href="../../css/product-layout.css?v=<?php echo filemtime(__DIR__ . '/../../css/product-layout.css'); ?>">
 
     <!-- 🎨 브랜드 디자인 시스템 CSS -->
     <link rel="stylesheet" href="../../css/brand-design-system.css">

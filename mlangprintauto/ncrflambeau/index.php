@@ -93,7 +93,7 @@ $default_values['MY_type'] = '475'; // 양식(100매철)
     <meta name="session-id" content="<?php echo htmlspecialchars($session_id); ?>">
 
     <!-- 컴팩트 전용 CSS -->
-    <link rel="stylesheet" href="../../css/product-layout.css">
+    <link rel="stylesheet" href="../../css/product-layout.css?v=<?php echo filemtime(__DIR__ . '/../../css/product-layout.css'); ?>">
     
     <!-- 통합 갤러리 CSS -->
     <link rel="stylesheet" href="../../css/unified-gallery.css">

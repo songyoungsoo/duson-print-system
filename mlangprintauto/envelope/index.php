@@ -86,7 +86,7 @@ if ($type_result && ($type_row = mysqli_fetch_assoc($type_result))) {
     
     
     <!-- 봉투 컴팩트 페이지 전용 CSS -->
-    <link rel="stylesheet" href="../../css/product-layout.css">
+    <link rel="stylesheet" href="../../css/product-layout.css?v=<?php echo filemtime(__DIR__ . '/../../css/product-layout.css'); ?>">
     <!-- 통합 가격 표시 시스템 CSS -->
     <link rel="stylesheet" href="../../css/unified-price-display.css">
     

@@ -100,7 +100,7 @@ $default_values = [
     <link rel="stylesheet" href="css/sticker_new-inline-extracted.css">
 
     <!-- 🎯 공통 레이아웃 CSS (product-layout.css가 기본 구조 제공) -->
-    <link rel="stylesheet" href="../../css/product-layout.css">
+    <link rel="stylesheet" href="../../css/product-layout.css?v=<?php echo filemtime(__DIR__ . '/../../css/product-layout.css'); ?>">
 
     <!-- 스티커 전용 스타일 (공통 스타일을 덮어쓰지 않음) -->
     <link rel="stylesheet" href="../../css/sticker-inline-styles.css">

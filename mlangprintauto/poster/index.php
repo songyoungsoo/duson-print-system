@@ -71,7 +71,7 @@ if (isset($_SESSION['user_id'])) {
     <!-- 기본 스타일 -->
     <link rel="stylesheet" type="text/css" href="/css/style250801.css">
     <link rel="stylesheet" href="../../css/common-styles.css">
-    <link rel="stylesheet" href="../../css/product-layout.css">
+    <link rel="stylesheet" href="../../css/product-layout.css?v=<?php echo filemtime(__DIR__ . '/../../css/product-layout.css'); ?>">
 
     <!-- 포스터 전용 스타일 -->
     <link rel="stylesheet" href="../../css/upload-modal-common.css">

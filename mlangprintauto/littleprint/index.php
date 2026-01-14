@@ -114,7 +114,7 @@ $default_values['ordertype'] = 'print'; // 인쇄만
     
     
     <!-- 포스터 컴팩트 페이지 전용 CSS -->
-    <link rel="stylesheet" href="../../css/product-layout.css">
+    <link rel="stylesheet" href="../../css/product-layout.css?v=<?php echo filemtime(__DIR__ . '/../../css/product-layout.css'); ?>">
     <!-- 공통 버튼 스타일 CSS -->
     <link rel="stylesheet" href="../../css/btn-primary.css">
     <!-- 컴팩트 폼 그리드 CSS (모든 품목 공통) -->

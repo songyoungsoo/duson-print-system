@@ -154,7 +154,7 @@ header("Expires: 0");
     <link rel="stylesheet" href="../../css/color-system-unified.css">
 
     <!-- 전단지 전용 컴팩트 레이아웃 CSS -->
-    <link rel="stylesheet" href="../../css/product-layout.css">
+    <link rel="stylesheet" href="../../css/product-layout.css?v=<?php echo filemtime(__DIR__ . '/../../css/product-layout.css'); ?>">
 
     <!-- 🎯 통합 공통 스타일 CSS (먼저 로드) -->
     <link rel="stylesheet" href="../../css/common-styles.css?v=<?php echo time(); ?>">

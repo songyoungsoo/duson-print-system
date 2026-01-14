@@ -70,7 +70,7 @@ if ($type_result && ($type_row = mysqli_fetch_assoc($type_result))) {
     
     
     <!-- 통합 제품 레이아웃 CSS -->
-    <link rel="stylesheet" href="../../css/product-layout.css">
+    <link rel="stylesheet" href="../../css/product-layout.css?v=<?php echo filemtime(__DIR__ . '/../../css/product-layout.css'); ?>">
     <link rel="stylesheet" href="../../css/unified-gallery.css">
     
     <!-- 고급 JavaScript 라이브러리 (적응형 이미지 분석 및 실시간 계산) -->

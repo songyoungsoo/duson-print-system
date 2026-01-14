@@ -82,7 +82,7 @@ if ($type_result && ($type_row = mysqli_fetch_assoc($type_result))) {
     
     
     <!-- 상품권/쿠폰 컴팩트 페이지 전용 CSS -->
-    <link rel="stylesheet" href="../../css/product-layout.css">
+    <link rel="stylesheet" href="../../css/product-layout.css?v=<?php echo filemtime(__DIR__ . '/../../css/product-layout.css'); ?>">
     <link rel="stylesheet" href="../../css/unified-gallery.css">
     <link rel="stylesheet" href="../../css/btn-primary.css">
     <!-- 컴팩트 폼 그리드 CSS (모든 품목 공통) -->
