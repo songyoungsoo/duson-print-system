@@ -465,9 +465,9 @@ $publicUrl = $baseUrl . '/mlangprintauto/quote/public/view.php?token=' . $quote[
                                         }
                                         echo $qtyDisplay;
 
-                                        // 연 단위(R)인 경우 매수 표시 추가
+                                        // 연 단위(R)인 경우 매수 표시 추가 - 파란색 강조
                                         if ($qtyUnit === 'R' && !empty($qtySheets) && $qtySheets > 0) {
-                                            echo '<br><span style="font-size: 10px; color: #666;">(' . number_format($qtySheets) . '매)</span>';
+                                            echo '<br><span style="font-size: 10px; color: #1e88ff;">(' . number_format($qtySheets) . '매)</span>';
                                         }
                                     ?></td>
                                     <td class="col-unit"><?php

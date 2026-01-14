@@ -236,10 +236,79 @@ class QuantityFormatter {
      * 제품 타입에서 기본 단위 코드 반환
      *
      * @param string $productType 제품 타입
+     * @param mysqli|null $db DB 연결 (null이면 상수 사용)
      * @return string 단위 코드
      */
-    public static function getProductUnitCode(string $productType): string {
+    public static function getProductUnitCode(string $productType, $db = null): string {
+        // DB 연결이 있으면 product_unit_config 테이블 조회
+        if ($db !== null) {
+            $config = self::getUnitConfigFromDB($db, $productType);
+            if ($config !== null) {
+                return $config['unit_code'];
+            }
+        }
+        // Fallback: 상수 사용
         return self::PRODUCT_UNITS[$productType] ?? 'E';
+    }
+
+    /**
+     * DB에서 품목별 단위 설정 조회
+     *
+     * @param mysqli $db DB 연결
+     * @param string $productType 제품 타입
+     * @return array|null [unit_code, unit_name, has_sub_quantity, sub_quantity_source]
+     */
+    public static function getUnitConfigFromDB($db, string $productType): ?array {
+        static $cache = [];
+
+        // 캐시에 있으면 반환
+        if (isset($cache[$productType])) {
+            return $cache[$productType];
+        }
+
+        $stmt = mysqli_prepare($db,
+            "SELECT unit_code, unit_name, has_sub_quantity, sub_quantity_source
+             FROM product_unit_config WHERE product_type = ?"
+        );
+
+        if (!$stmt) {
+            return null;
+        }
+
+        mysqli_stmt_bind_param($stmt, 's', $productType);
+        mysqli_stmt_execute($stmt);
+        $result = mysqli_stmt_get_result($stmt);
+        $row = mysqli_fetch_assoc($result);
+        mysqli_stmt_close($stmt);
+
+        // 캐시에 저장 (null도 저장하여 반복 쿼리 방지)
+        $cache[$productType] = $row;
+
+        return $row;
+    }
+
+    /**
+     * 품목이 보조수량(매수) 표시가 필요한지 확인
+     *
+     * @param mysqli $db DB 연결
+     * @param string $productType 제품 타입
+     * @return bool
+     */
+    public static function needsSubQuantity($db, string $productType): bool {
+        $config = self::getUnitConfigFromDB($db, $productType);
+        return $config !== null && !empty($config['has_sub_quantity']);
+    }
+
+    /**
+     * 품목의 매수 조회 테이블명 반환
+     *
+     * @param mysqli $db DB 연결
+     * @param string $productType 제품 타입
+     * @return string|null 테이블명 또는 null
+     */
+    public static function getSubQuantitySource($db, string $productType): ?string {
+        $config = self::getUnitConfigFromDB($db, $productType);
+        return $config['sub_quantity_source'] ?? null;
     }
 
     /**

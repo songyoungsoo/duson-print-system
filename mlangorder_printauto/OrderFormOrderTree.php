@@ -764,22 +764,17 @@ function getOrderItemInfo($summary_item, $specFormatter) {
                                 </td>
                                 <td style="border: 0.3pt solid #000; padding: 1.5mm; text-align: center;">
                                     <?php
-                                    // 🔧 전단지/리플렛: QuantityFormatter SSOT 사용
+                                    // 🔧 2026-01-14: 수량/단위 분리 - 수량 칼럼에 숫자+매수, 단위는 별도 칼럼
+                                    echo formatQuantityNum($quantity_num);
                                     if (isset($is_flyer) && $is_flyer && $mesu_for_display > 0) {
-                                        echo QuantityFormatter::format(floatval($quantity_num), 'R', intval($mesu_for_display), '<br>');
-                                    } else {
-                                        echo formatQuantityNum($quantity_num);
+                                        echo '<br><span style="font-size: 8pt; color: #1e88ff;">(' . number_format($mesu_for_display) . '매)</span>';
                                     }
                                     ?>
                                 </td>
                                 <td style="border: 0.3pt solid #000; padding: 1.5mm; text-align: center;">
                                     <?php
-                                    // 🔧 전단지/리플렛: 단위 칼럼 비우기 (빈 문자열로 통일)
-                                    if (isset($is_flyer) && $is_flyer && $mesu_for_display > 0) {
-                                        echo '';
-                                    } else {
-                                        echo htmlspecialchars($unit);
-                                    }
+                                    // 🔧 2026-01-14: 단위 칼럼 항상 표시
+                                    echo htmlspecialchars($unit);
                                     ?>
                                 </td>
                                 <td style="border: 0.3pt solid #000; padding: 1.5mm; text-align: right; font-weight: bold;">
@@ -1033,16 +1028,15 @@ function getOrderItemInfo($summary_item, $specFormatter) {
                                 </td>
                                 <td style="border: 0.3pt solid #000; padding: 1.5mm; text-align: center;">
                                     <?php
-                                    // 🔧 전단지/리플렛: QuantityFormatter SSOT 사용 (인쇄용)
+                                    // 🔧 2026-01-14: 수량/단위 분리 - 수량 칼럼에 숫자+매수, 단위는 별도 칼럼 (인쇄용)
+                                    echo formatQuantityNum($quantity_num);
                                     if (isset($is_flyer) && $is_flyer && $mesu_for_display > 0) {
-                                        echo QuantityFormatter::format(floatval($quantity_num), 'R', intval($mesu_for_display), '<br>');
-                                    } else {
-                                        echo formatQuantityNum($quantity_num);
+                                        echo '<br><span style="font-size: 8pt; color: #1e88ff;">(' . number_format($mesu_for_display) . '매)</span>';
                                     }
                                     ?>
                                 </td>
                                 <td style="border: 0.3pt solid #000; padding: 1.5mm; text-align: center;">
-                                    <?= (isset($is_flyer) && $is_flyer && $mesu_for_display > 0) ? '' : htmlspecialchars($unit) ?>
+                                    <?= htmlspecialchars($unit) ?>
                                 </td>
                                 <td style="border: 0.3pt solid #000; padding: 1.5mm; text-align: right; font-weight: bold;">
                                     <?php
@@ -1302,11 +1296,11 @@ function getOrderItemInfo($summary_item, $specFormatter) {
                                             // 수량 표시 포맷 (formatQuantityNum 사용)
                                             $quantity_display = formatQuantityNum($quantity_num);
 
-                                            // 🔧 전단지인 경우 매수 정보 2줄 표시: "0.5연" + "(2,000매)"
+                                            // 🔧 전단지인 경우 매수 정보 2줄 표시: "0.5" + "(2,000매)", 단위는 별도 칼럼
                                             if ($is_flyer && !empty($mesu_for_display) && $mesu_for_display > 0) {
                                                 if ($quantity_display === '-') $quantity_display = '0';
-                                                $quantity_display .= $unit . '<br>(' . number_format($mesu_for_display) . '매)';
-                                                $unit = ''; // 단위 셀 비우기 (수량에 이미 포함됨)
+                                                $quantity_display .= '<br><span style="font-size: 10px; color: #1e88ff;">(' . number_format($mesu_for_display) . '매)</span>';
+                                                // 단위 칼럼 유지 (비우지 않음)
                                             }
                                             $unit_display = !empty($unit) ? htmlspecialchars($unit) : '';
 

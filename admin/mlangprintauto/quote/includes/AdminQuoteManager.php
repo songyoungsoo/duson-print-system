@@ -295,6 +295,19 @@ class AdminQuoteManager
             // source_data JSON 디코딩
             if (!empty($row['source_data'])) {
                 $row['source_data'] = json_decode($row['source_data'], true);
+
+                // qty_sheets 추출 (전단지 매수)
+                if (!empty($row['source_data']['qty_sheets'])) {
+                    $row['qty_sheets'] = intval($row['source_data']['qty_sheets']);
+                }
+
+                // qty_val, qty_unit 추출 (신규 스키마)
+                if (isset($row['source_data']['quantity'])) {
+                    $row['qty_val'] = floatval($row['source_data']['quantity']);
+                }
+                if (!empty($row['source_data']['unit'])) {
+                    $row['qty_unit'] = $row['source_data']['unit'] === '연' ? 'R' : 'E';
+                }
             }
             $items[] = $row;
         }

@@ -103,6 +103,7 @@ class SpecDisplayService {
             // 수량 정보
             'quantity_display' => $quantityDisplay,
             'quantity_value' => $this->getQuantityValue($normalized),
+            'quantity_sheets' => intval($normalized['mesu'] ?? $normalized['quantity_sheets'] ?? 0),
             'unit' => $unit,
 
             // 가격 정보 (DB값 그대로)
@@ -458,8 +459,8 @@ class SpecDisplayService {
                 return $yeonFormatted . '연 (' . number_format($maesoo) . '매)';
             }
 
-            // ✅ 2026-01-13: 전단지 "X연"만 있고 매수가 없으면 DB에서 조회
-            if (in_array($productType, ['inserted', 'leaflet']) &&
+            // ✅ 2026-01-14: DB 기반 보조수량 필요 여부 확인 (product_unit_config 테이블 사용)
+            if (QuantityFormatter::needsSubQuantity($this->db, $productType) &&
                 preg_match('/^([0-9,\.]+)\s*연$/u', trim($display), $matches)) {
                 $yeon = floatval(str_replace(',', '', $matches[1]));
                 $maesoo = $this->lookupInsertedSheets($yeon);

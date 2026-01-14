@@ -47,12 +47,16 @@ try {
         $supplyPrice = intval($unitPrice * $quantity);
     }
 
+    // qty_sheets 추가 (전단지 매수)
+    $qtySheets = intval($input['qty_sheets'] ?? 0);
+
     // admin_quotation_temp에 저장
     $calcItem = [
         'is_manual' => false,
         'product_type' => $productType,
         'specification' => $specification,
         'unit_price' => $unitPrice,
+        'qty_sheets' => $qtySheets,
         'jong' => $input['jong'] ?? '',
         'garo' => $input['garo'] ?? '',
         'sero' => $input['sero'] ?? '',

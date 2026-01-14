@@ -233,10 +233,12 @@ function renderItems() {
         // 저장된 unit_price 사용, 없으면 계산
         const unitPrice = item.unit_price > 0 ? Math.round(item.unit_price) : (item.quantity > 0 ? Math.round(item.supply_price / item.quantity) : 0);
         const qtyDisplay = item.quantity_display || (formatNumber(item.quantity) + item.unit);
+        // 줄바꿈(\n)을 <br>로 변환하여 2줄 표시
+        const specHtml = (item.specification || '').replace(/\n/g, '<br>');
         tbody.innerHTML += `<tr>
             <td class="text-center">${i+1}</td>
             <td>${item.product_name}</td>
-            <td>${item.specification}</td>
+            <td>${specHtml}</td>
             <td class="text-center">${qtyDisplay}</td>
             <td class="text-right">${formatNumber(unitPrice)}</td>
             <td class="text-right">${formatNumber(item.supply_price)}</td>

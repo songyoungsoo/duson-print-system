@@ -28,6 +28,45 @@ if (!$db) {
     jsonError('데이터베이스 연결 실패', 500);
 }
 
+/**
+ * 전단지 매수 DB 조회 (SSOT 준수 - 계산 금지)
+ * @param mysqli $db DB 연결
+ * @param float $reams 연 수량
+ * @param string $myType 색상 (MY_type/style)
+ * @param string $pnType 규격 (PN_type/Section)
+ * @param string $myFsd 용지 (MY_Fsd/TreeSelect)
+ * @param string $poType 인쇄면 (POtype)
+ * @return int 매수 (DB에서 조회된 값, 없으면 0)
+ */
+function lookupInsertedSheets($db, $reams, $myType = '', $pnType = '', $myFsd = '', $poType = '') {
+    // 모든 조건이 있으면 정확한 조회
+    if (!empty($myType) && !empty($pnType) && !empty($myFsd) && !empty($poType)) {
+        $stmt = mysqli_prepare($db, "SELECT quantityTwo FROM mlangprintauto_inserted WHERE style = ? AND Section = ? AND quantity = ? AND TreeSelect = ? AND POtype = ? LIMIT 1");
+        if ($stmt) {
+            mysqli_stmt_bind_param($stmt, "ssdss", $myType, $pnType, $reams, $myFsd, $poType);
+            mysqli_stmt_execute($stmt);
+            $result = mysqli_stmt_get_result($stmt);
+            $row = mysqli_fetch_assoc($result);
+            mysqli_stmt_close($stmt);
+            if (!empty($row['quantityTwo'])) {
+                return intval($row['quantityTwo']);
+            }
+        }
+    }
+
+    // 조건이 부족하면 수량만으로 대표값 조회 (가장 많이 사용되는 값)
+    $stmt = mysqli_prepare($db, "SELECT quantityTwo, COUNT(*) as cnt FROM mlangprintauto_inserted WHERE quantity = ? AND quantityTwo > 0 GROUP BY quantityTwo ORDER BY cnt DESC LIMIT 1");
+    if (!$stmt) {
+        return 0;
+    }
+    mysqli_stmt_bind_param($stmt, "d", $reams);
+    mysqli_stmt_execute($stmt);
+    $result = mysqli_stmt_get_result($stmt);
+    $row = mysqli_fetch_assoc($result);
+    mysqli_stmt_close($stmt);
+    return intval($row['quantityTwo'] ?? 0);
+}
+
 mysqli_set_charset($db, 'utf8mb4');
 
 // POST JSON 데이터 파싱
@@ -159,11 +198,18 @@ try {
         $my_amount_value = $source_data['MY_amount'] ?? $item['quantity'];
         $quantityTwo_value = intval($source_data['quantityTwo'] ?? $source_data['mesu'] ?? 0);
 
-        // 매수가 없고 전단지/리플렛일 경우 연수에서 계산 (1연 = 4000매)
+        // 매수가 없고 전단지/리플렛일 경우 DB에서 조회 (계산 금지 - SSOT 준수)
         if ($quantityTwo_value === 0 && in_array($product_type, ['inserted', 'leaflet'])) {
             $reams_float = floatval($my_amount_value);
-            if ($reams_float > 0 && $reams_float <= 10) {
-                $quantityTwo_value = intval($reams_float * 4000);
+            if ($reams_float > 0) {
+                $quantityTwo_value = lookupInsertedSheets(
+                    $db,
+                    $reams_float,
+                    $source_data['MY_type'] ?? '',
+                    $source_data['PN_type'] ?? '',
+                    $source_data['MY_Fsd'] ?? '',
+                    $source_data['POtype'] ?? ''
+                );
             }
         }
 
@@ -303,11 +349,18 @@ function buildFormattedDisplay($item, $source_data, $product_type) {
         $reams = $source_data['MY_amount'] ?? $quantity;
         $sheets = intval($source_data['quantityTwo'] ?? $source_data['mesu'] ?? 0);
 
-        // 🔧 매수가 없으면 연수에서 계산 (전단지: 1연 = 4000매)
+        // 매수가 없으면 DB에서 조회 (계산 금지 - SSOT 준수)
         if ($sheets === 0) {
             $reams_float = floatval($reams);
-            if ($reams_float > 0 && $reams_float <= 10) {
-                $sheets = intval($reams_float * 4000);
+            if ($reams_float > 0) {
+                $sheets = lookupInsertedSheets(
+                    $db,
+                    $reams_float,
+                    $source_data['MY_type'] ?? '',
+                    $source_data['PN_type'] ?? '',
+                    $source_data['MY_Fsd'] ?? '',
+                    $source_data['POtype'] ?? ''
+                );
             }
         }
 

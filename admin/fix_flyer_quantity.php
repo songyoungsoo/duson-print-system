@@ -11,6 +11,36 @@
 session_start();
 require_once __DIR__ . '/../db.php';
 
+/**
+ * 전단지 매수 DB 조회 (SSOT 준수 - 계산 금지)
+ */
+function lookupInsertedSheets($db, $reams, $myType = '', $pnType = '', $myFsd = '', $poType = '') {
+    // 모든 조건이 있으면 정확한 조회
+    if (!empty($myType) && !empty($pnType) && !empty($myFsd) && !empty($poType)) {
+        $stmt = mysqli_prepare($db, "SELECT quantityTwo FROM mlangprintauto_inserted WHERE style = ? AND Section = ? AND quantity = ? AND TreeSelect = ? AND POtype = ? LIMIT 1");
+        if ($stmt) {
+            mysqli_stmt_bind_param($stmt, "ssdss", $myType, $pnType, $reams, $myFsd, $poType);
+            mysqli_stmt_execute($stmt);
+            $result = mysqli_stmt_get_result($stmt);
+            $row = mysqli_fetch_assoc($result);
+            mysqli_stmt_close($stmt);
+            if (!empty($row['quantityTwo'])) {
+                return intval($row['quantityTwo']);
+            }
+        }
+    }
+
+    // 조건이 부족하면 수량만으로 대표값 조회
+    $stmt = mysqli_prepare($db, "SELECT quantityTwo, COUNT(*) as cnt FROM mlangprintauto_inserted WHERE quantity = ? AND quantityTwo > 0 GROUP BY quantityTwo ORDER BY cnt DESC LIMIT 1");
+    if (!$stmt) return 0;
+    mysqli_stmt_bind_param($stmt, "d", $reams);
+    mysqli_stmt_execute($stmt);
+    $result = mysqli_stmt_get_result($stmt);
+    $row = mysqli_fetch_assoc($result);
+    mysqli_stmt_close($stmt);
+    return intval($row['quantityTwo'] ?? 0);
+}
+
 // 관리자만 실행 가능하도록 체크 (또는 CLI)
 if (php_sapi_name() !== 'cli') {
     if (!isset($_SESSION['admin_logged_in']) || $_SESSION['admin_logged_in'] !== true) {
@@ -62,8 +92,15 @@ while ($row = mysqli_fetch_assoc($result)) {
         $qty2 = $mesu; // calculator_data에서 mesu가 있으면 사용
         if ($qty2 === null) {
             if ($my_amount > 0 && $my_amount <= 10) {
-                // 연수 → 매수 계산
-                $qty2 = intval($my_amount * 4000);
+                // 연수 → 매수 DB 조회 (계산 금지 - SSOT 준수)
+                $qty2 = lookupInsertedSheets(
+                    $db,
+                    $my_amount,
+                    $type1['MY_type'] ?? $type1['calculator_data']['MY_type'] ?? '',
+                    $type1['PN_type'] ?? $type1['calculator_data']['PN_type'] ?? '',
+                    $type1['MY_Fsd'] ?? $type1['calculator_data']['MY_Fsd'] ?? '',
+                    $type1['POtype'] ?? $type1['calculator_data']['POtype'] ?? ''
+                );
             } else if ($my_amount > 1000) {
                 // 이미 매수로 보임
                 $qty2 = intval($my_amount);

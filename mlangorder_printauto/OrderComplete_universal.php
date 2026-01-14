@@ -1842,14 +1842,23 @@ $additional_css = [
                     <?php echo $product_details_html; ?>
                 </td>
 
-                <!-- 수량 -->
+                <!-- 수량 (통합) - 모든 품목 동일 구조 -->
                 <td class="col-quantity">
-                    <?php echo htmlspecialchars($displayData['quantity_display']); ?>
+                    <?php
+                    $qty_val = $displayData['quantity_value'] ?? 0;
+                    $qty_sheets = $displayData['quantity_sheets'] ?? null;
+                    $formatted_qty = function_exists('formatQuantityNum')
+                        ? formatQuantityNum($qty_val)
+                        : number_format(floatval($qty_val));
+                    echo $formatted_qty;
+                    if ($is_flyer && $qty_sheets): ?>
+                        <br><span style="font-size: 11px; color: #1e88ff;">(<?php echo number_format($qty_sheets); ?>매)</span>
+                    <?php endif; ?>
                 </td>
 
-                <!-- 단위 - 전단지는 빈칸 (수량에 이미 포함), 기타는 실제 단위 표시 -->
+                <!-- 단위 (통합) - 모든 품목 동일하게 단위 표시 -->
                 <td class="col-unit">
-                    <?php echo $is_flyer ? '' : htmlspecialchars($displayData['unit'] ?? '매'); ?>
+                    <?php echo htmlspecialchars($displayData['unit'] ?? '매'); ?>
                 </td>
 
                 <!-- 공급가액 -->

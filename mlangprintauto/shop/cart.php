@@ -411,24 +411,24 @@ if ($cart_result === false) {
                                     </div>
                                 </td>
 
-                                <!-- 수량 (Refactored) - 전단지: "X연 (Y매)" 형식, 기타: 숫자만 -->
+                                <!-- 수량 (통합) - 모든 품목 동일 구조 -->
                                 <td class="amount-cell <?php echo $is_flyer ? 'leaflet' : ''; ?>">
                                     <?php
-                                    // 전단지: "0.5연 (2,000매)" 형식
-                                    // 기타: 숫자만 (단위는 단위 칼럼에)
-                                    if ($is_flyer) {
-                                        echo '<span class="amount-value">' . htmlspecialchars($quantity_display) . '</span>';
-                                    } else {
-                                        // formatQuantityNum 사용하여 불필요한 소수점 제거
-                                        $qty_val = $displayData['quantity_value'] ?? 0;
-                                        echo '<span class="amount-value">' . (function_exists('formatQuantityNum') ? formatQuantityNum($qty_val) : number_format(floatval($qty_val))) . '</span>';
-                                    }
+                                    $qty_val = $displayData['quantity_value'] ?? 0;
+                                    $qty_sheets = $displayData['quantity_sheets'] ?? null;
+                                    $formatted_qty = function_exists('formatQuantityNum')
+                                        ? formatQuantityNum($qty_val)
+                                        : number_format(floatval($qty_val));
                                     ?>
+                                    <span class="amount-value"><?php echo $formatted_qty; ?></span>
+                                    <?php if ($is_flyer && $qty_sheets): ?>
+                                        <br><span class="amount-sub">(<?php echo number_format($qty_sheets); ?>매)</span>
+                                    <?php endif; ?>
                                 </td>
 
-                                <!-- 단위 - 전단지는 빈칸 (수량에 이미 포함), 기타는 실제 단위 표시 -->
+                                <!-- 단위 (통합) - 모든 품목 동일하게 단위 표시 -->
                                 <td class="unit-cell">
-                                    <span class="amount-unit"><?php echo $is_flyer ? '' : htmlspecialchars($unit); ?></span>
+                                    <span class="amount-unit"><?php echo htmlspecialchars($unit); ?></span>
                                 </td>
 
                                 <!-- 공급가액 -->

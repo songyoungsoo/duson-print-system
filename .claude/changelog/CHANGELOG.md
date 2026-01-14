@@ -8,6 +8,9 @@
 
 | 수정자 | 수정항목 | 관련 파일 |
 |--------|----------|-----------|
+| Claude | **[SSOT] 수량/단위 컬럼 분리** - 전단지: 수량 칸에 숫자+(매수), 단위 칸에 '연' | OrderFormOrderTree.php (3개 섹션) |
+| Claude | **PriceCalculationService 중앙화** - 모바일 API 12개 마이그레이션 | m/mlangprintauto260104/*/calculate_price_ajax.php |
+| Claude | 모바일 CSS 개선 - 셀렉트 박스 44px 높이, 센터 정렬 | css/common-styles.css |
 | Claude | 문서 체계 현대화 - 레거시 아카이브, 마스터 명세서 생성 | CLAUDE_DOCS/ |
 | Claude | 주문서 출력 정석 형식 (공급가액 → VAT → 합계) | OrderFormPrint.php |
 | Claude | Dead Code 삭제 (~150줄) | OrderComplete_universal.php, ProcessOrder_unified.php |

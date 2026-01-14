@@ -11,6 +11,7 @@ if (!isset($_SESSION['admin_logged_in']) || $_SESSION['admin_logged_in'] !== tru
 
 require_once __DIR__ . '/../../../db.php';
 require_once __DIR__ . '/includes/AdminQuoteManager.php';
+require_once __DIR__ . '/../../../includes/QuantityFormatter.php';
 
 if (!$db) { die('DB 연결 실패'); }
 mysqli_set_charset($db, 'utf8mb4');
@@ -92,21 +93,34 @@ $statusClass = ['draft'=>'status-draft','sent'=>'status-sent','viewed'=>'status-
                     <th style="width:40px">NO</th>
                     <th style="width:100px">품목</th>
                     <th>규격 및 사양</th>
-                    <th style="width:80px">수량</th>
+                    <th style="width:60px">수량</th>
+                    <th style="width:40px">단위</th>
                     <th style="width:80px">단가</th>
                     <th style="width:100px">공급가액</th>
                 </tr>
             </thead>
             <tbody>
             <?php if (empty($items)): ?>
-                <tr><td colspan="6" class="text-center" style="padding:30px;color:#888;">품목 없음</td></tr>
+                <tr><td colspan="7" class="text-center" style="padding:30px;color:#888;">품목 없음</td></tr>
             <?php else: ?>
                 <?php foreach ($items as $item): ?>
                 <tr>
                     <td class="text-center"><?php echo $item['item_no']; ?></td>
                     <td><?php echo htmlspecialchars($item['product_name']); ?></td>
                     <td><?php echo nl2br(htmlspecialchars($item['specification'])); ?></td>
-                    <td class="text-center"><?php echo htmlspecialchars($item['quantity_display'] ?: number_format($item['quantity']).$item['unit']); ?></td>
+                    <td class="text-center"><?php
+                        $qtyVal = $item['qty_val'] ?? $item['quantity'] ?? 0;
+                        $qtySheets = $item['qty_sheets'] ?? null;
+                        $qtyVal = floatval($qtyVal);
+                        echo (floor($qtyVal) == $qtyVal) ? number_format($qtyVal) : rtrim(rtrim(number_format($qtyVal, 2), '0'), '.');
+                        if (!empty($qtySheets) && $qtySheets > 0):
+                    ?><br><span style="font-size: 10px; color: #1e88ff;">(<?php echo number_format($qtySheets); ?>매)</span><?php endif; ?></td>
+                    <td class="text-center"><?php
+                        $qtyUnit = $item['qty_unit'] ?? 'E';
+                        echo isset(QuantityFormatter::UNIT_CODES[$qtyUnit])
+                            ? QuantityFormatter::getUnitName($qtyUnit)
+                            : htmlspecialchars($item['unit'] ?? '개');
+                    ?></td>
                     <td class="text-right"><?php echo number_format($item['unit_price']); ?></td>
                     <td class="text-right"><?php echo number_format($item['supply_price']); ?></td>
                 </tr>

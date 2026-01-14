@@ -1,86 +1,45 @@
 <?php
-include "../../includes/functions.php";
-include "../../db.php";
+/**
+ * [모바일] 스티커(구형) 가격 계산 API
+ *
+ * PriceCalculationService 중앙 서비스 사용
+ * mlangprintauto_sticker 테이블 기반 가격 조회
+ * 레거시 응답 형식 유지
+ *
+ * @migrated 2026-01-14
+ */
+
+header("Content-Type: application/json");
+
+// 중앙 서비스 로드
+require_once __DIR__ . "/../../../db.php";
+require_once __DIR__ . "/../../../includes/functions.php";
+require_once __DIR__ . "/../../../includes/PriceCalculationService.php";
 
 check_db_connection($db);
 mysqli_set_charset($db, "utf8");
 
-// 파라미터 받기
-$style = $_GET['MY_type'] ?? '';
-$section = $_GET['Section'] ?? '';
-$potype = $_GET['POtype'] ?? '';
-$quantity = $_GET['MY_amount'] ?? '';
-$ordertype = $_GET['ordertype'] ?? '';
+// 파라미터 수집 (GET 방식)
+$params = $_GET;
 
-if (empty($style) || empty($section) || empty($potype) || empty($quantity) || empty($ordertype)) {
-    error_response('모든 옵션을 선택해주세요.');
-}
+// 중앙 서비스로 가격 계산
+$service = new PriceCalculationService($db);
+$result = $service->calculate('sticker', $params);
 
-$TABLE = "mlangprintauto_sticker";
-
-// 데이터베이스에서 가격 정보 조회
-$query = "SELECT money, DesignMoney 
-          FROM $TABLE 
-          WHERE style='" . mysqli_real_escape_string($db, $style) . "' 
-          AND Section='" . mysqli_real_escape_string($db, $section) . "' 
-          AND POtype='" . mysqli_real_escape_string($db, $potype) . "'
-          AND quantity='" . mysqli_real_escape_string($db, $quantity) . "'";
-
-$result = mysqli_query($db, $query);
-
-if ($result && mysqli_num_rows($result) > 0) {
-    $row = mysqli_fetch_assoc($result);
-    
-    $base_price = (int)$row['money'];
-    $design_price_db = (int)$row['DesignMoney'];
-    
-    $design_price = ($ordertype === 'total') ? $design_price_db : 0;
-    
-    $total_price = $base_price + $design_price;
-    $total_with_vat = $total_price * 1.1;
+// 레거시 응답 형식으로 변환
+if ($result['success']) {
+    $data = $result['data'];
 
     $response_data = [
-        'base_price' => $base_price,
-        'design_price' => $design_price,
-        'total_price' => $total_price,
-        'total_with_vat' => $total_with_vat
+        'base_price' => $data['base_price'],
+        'design_price' => $data['design_price'],
+        'total_price' => $data['order_price'],
+        'total_with_vat' => $data['total_with_vat']
     ];
-    
+
     success_response($response_data, '가격 계산 완료');
-
 } else {
-    // 혹시 POtype 없이 데이터가 있는지 확인
-    $query_fallback = "SELECT money, DesignMoney 
-                       FROM $TABLE 
-                       WHERE style='" . mysqli_real_escape_string($db, $style) . "' 
-                       AND Section='" . mysqli_real_escape_string($db, $section) . "' 
-                       AND quantity='" . mysqli_real_escape_string($db, $quantity) . "'";
-    
-    $result_fallback = mysqli_query($db, $query_fallback);
-
-    if ($result_fallback && mysqli_num_rows($result_fallback) > 0) {
-        $row = mysqli_fetch_assoc($result_fallback);
-    
-        $base_price = (int)$row['money'];
-        $design_price_db = (int)$row['DesignMoney'];
-        
-        $design_price = ($ordertype === 'total') ? $design_price_db : 0;
-        
-        $total_price = $base_price + $design_price;
-        $total_with_vat = $total_price * 1.1;
-
-        $response_data = [
-            'base_price' => $base_price,
-            'design_price' => $design_price,
-            'total_price' => $total_price,
-            'total_with_vat' => $total_with_vat
-        ];
-        
-        success_response($response_data, '가격 계산 완료 (fallback)');
-    } else {
-        error_response('해당 조건의 가격 정보를 찾을 수 없습니다.');
-    }
+    error_response($result['error']['message']);
 }
 
 mysqli_close($db);
-?>

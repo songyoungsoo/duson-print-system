@@ -578,6 +578,15 @@
     color: #777;
 }
 
+/* 전단지 매수 표시 (수량 아래) - 파란색 강조 */
+.amount-sub {
+    font-size: 11px;
+    color: #1e88ff;
+    font-weight: 400;
+    display: block;
+    margin-top: 2px;
+}
+
 /* 전단지 전용 스타일 - 0.5연 표기 강조 */
 .amount-cell.leaflet .amount-value {
     color: #1e88ff; /* 파란색 강조 */
@@ -588,7 +597,7 @@
     font-weight: 600;
 }
 .amount-cell.leaflet .amount-sub {
-    color: #666;
+    color: #1e88ff; /* 파란색 통일 */
     font-style: normal;
 }
 

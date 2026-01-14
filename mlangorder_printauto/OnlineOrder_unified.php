@@ -631,7 +631,7 @@ if (!empty($debug_info) && strpos($_SERVER['HTTP_HOST'], 'localhost') !== false)
                                 $unit = '연';
                                 $main_amount_val = !empty($item['MY_amount']) ? floatval($item['MY_amount']) : 1;
                                 $main_amount_display = formatQuantityValue($main_amount_val, 'inserted');
-                                $sub_amount = $item['flyer_mesu'] ?? null;
+                                $sub_amount = $item['mesu'] ?? $item['flyer_mesu'] ?? null;
                             } else {
                                 $main_amount_val = !empty($item['mesu']) ? intval($item['mesu']) : (!empty($item['MY_amount']) ? intval($item['MY_amount']) : 1);
                                 $main_amount_display = formatQuantityValue($main_amount_val, $item['product_type']);
@@ -679,17 +679,16 @@ if (!empty($debug_info) && strpos($_SERVER['HTTP_HOST'], 'localhost') !== false)
                                     </div>
                                 <?php endif; ?>
                         </td>
-                        <!-- 수량 - 전단지: "X연 (Y매)" 통합 표시, 기타: 숫자만 -->
+                        <!-- 수량 (통합) - 모든 품목 동일 구조 -->
                         <td class="amount-cell <?php echo $is_flyer ? 'leaflet' : ''; ?>" style="border: 1px solid #ccc; padding: 10px; vertical-align: middle; text-align: center;">
-                            <?php if ($is_flyer): ?>
-                                <span class="amount-value" style="font-weight: 600; font-size: 15px;"><?php echo $main_amount_display; ?><?php echo $unit; ?><?php if ($sub_amount): ?> (<?php echo number_format($sub_amount); ?>매)<?php endif; ?></span>
-                            <?php else: ?>
-                                <span class="amount-value" style="font-weight: 600; font-size: 15px;"><?php echo $main_amount_display; ?></span>
+                            <span class="amount-value" style="font-weight: 600; font-size: 15px;"><?php echo $main_amount_display; ?></span>
+                            <?php if ($is_flyer && $sub_amount): ?>
+                                <br><span class="amount-sub" style="font-size: 12px; color: #1e88ff;">(<?php echo number_format($sub_amount); ?>매)</span>
                             <?php endif; ?>
                         </td>
-                        <!-- 단위 - 전단지는 빈칸 (수량에 이미 포함), 기타는 실제 단위 표시 -->
+                        <!-- 단위 (통합) - 모든 품목 동일하게 단위 표시 -->
                         <td class="unit-cell" style="border: 1px solid #ccc; padding: 10px; vertical-align: middle; text-align: center;">
-                            <span class="amount-unit" style="font-size: 14px; color: #2d3748;"><?php echo $is_flyer ? '' : $unit; ?></span>
+                            <span class="amount-unit" style="font-size: 14px; color: #2d3748;"><?php echo $unit; ?></span>
                         </td>
                         <!-- 공급가액 -->
                         <td class="td-right" style="border: 1px solid #ccc; padding: 10px; vertical-align: middle; text-align: right;">

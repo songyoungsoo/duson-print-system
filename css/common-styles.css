@@ -575,16 +575,34 @@
         font-size: 1.5rem;
     }
 
+    /* 모바일 셀렉트/인풋 스타일 - 얇은 가로 막대 형태 유지 */
     .option-select, select, input[type="text"], input[type="email"], textarea {
-        padding: 6px 15px;
+        padding: 8px 15px;
+        height: 44px; /* 모바일 터치 최적화 높이 */
+        width: 100%; /* 전체 너비 */
+        box-sizing: border-box;
+        font-size: 16px; /* iOS 확대 방지 */
+        -webkit-appearance: none; /* iOS 기본 스타일 제거 */
+        appearance: none;
+        border-radius: 8px;
+    }
+
+    /* select 드롭다운 화살표 추가 */
+    select {
+        background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 12 12'%3E%3Cpath fill='%23666' d='M6 8L1 3h10z'/%3E%3C/svg%3E");
+        background-repeat: no-repeat;
+        background-position: right 12px center;
+        padding-right: 35px;
     }
 
     .gallery-section,
     .calculator-section {
         padding: 20px;
-        margin: 0 -10px;
+        margin: 0 auto; /* 센터 정렬 */
+        max-width: 100%; /* 화면 너비 제한 */
         border-radius: 10px;
         height: auto; /* 자동 높이 */
+        box-sizing: border-box;
     }
 
     /* === 모바일 인라인 레이아웃 조정 === */

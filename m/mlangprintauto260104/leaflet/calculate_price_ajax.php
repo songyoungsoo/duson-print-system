@@ -1,143 +1,116 @@
 <?php
+/**
+ * [모바일] 리플렛 가격 계산 API
+ *
+ * PriceCalculationService 중앙 서비스 사용 (inserted 테이블)
+ * 접지/코팅/오시 추가 옵션 처리
+ * 레거시 응답 형식 유지
+ *
+ * @migrated 2026-01-14
+ */
+
 header("Content-Type: application/json");
-// 세션 시작
+
 if (session_status() == PHP_SESSION_NONE) {
     session_start();
 }
 
-// 데이터베이스 연결 - db.php 사용
-include "../../db.php";
-$connect = $db;
+// 중앙 서비스 로드
+require_once __DIR__ . "/../../../db.php";
+require_once __DIR__ . "/../../../includes/functions.php";
+require_once __DIR__ . "/../../../includes/PriceCalculationService.php";
 
-if (!$connect) {
-    die(json_encode(['success' => false, 'error' => ['message' => '데이터베이스 연결에 실패했습니다: ' . mysqli_connect_error()]]));
-}
+check_db_connection($db);
+mysqli_set_charset($db, "utf8");
 
-mysqli_set_charset($connect, "utf8");
-
-// GET 방식으로 데이터 가져오기
-$MY_type = $_GET['MY_type'] ?? '';        // 규격 (A4, A5 등)
-$PN_type = $_GET['PN_type'] ?? '';        // 용지
-$MY_Fsd = $_GET['MY_Fsd'] ?? '';          // 재단 옵션
-$MY_amount = $_GET['MY_amount'] ?? '';    // 수량
-$POtype = $_GET['POtype'] ?? '';          // 인쇄 타입
-$ordertype = $_GET['ordertype'] ?? '';    // 주문 유형 (인쇄/디자인/전체)
-$fold_type = $_GET['fold_type'] ?? '';    // 접지방식 (리플렛 전용)
-$coating_type = $_GET['coating_type'] ?? '';    // 코팅 옵션
-$creasing_type = $_GET['creasing_type'] ?? '';  // 오시 옵션
+// 파라미터 수집 (GET 방식)
+$params = $_GET;
 
 // 추가 옵션 가격 받기
-$additional_options_total = intval($_GET['premium_options_total'] ?? $_GET['additional_options_total'] ?? 0);
-
-// 입력값 검증
-if (empty($MY_type) || empty($PN_type) || empty($MY_Fsd) || empty($MY_amount) || empty($POtype) || empty($ordertype)) {
-    echo json_encode(['success' => false, 'error' => ['message' => '필수 입력값이 누락되었습니다.']]);
-    exit;
+$additional_options_total = intval($params['premium_options_total'] ?? $params['additional_options_total'] ?? 0);
+if ($additional_options_total > 0) {
+    $params['additional_options_total'] = $additional_options_total;
 }
 
-// Step 1: inserted 테이블에서 기본 가격 조회 (전단지 가격 활용)
-$TABLE = "mlangprintauto_inserted";
-$query = "SELECT * FROM $TABLE WHERE style='$MY_type' AND Section='$PN_type' AND quantity='$MY_amount' AND TreeSelect='$MY_Fsd' AND POtype='$POtype'";
-$result = mysqli_query($connect, $query);
+// 접지/코팅/오시 옵션
+$fold_type = $params['fold_type'] ?? '';
+$coating_type = $params['coating_type'] ?? '';
+$creasing_type = $params['creasing_type'] ?? '';
 
-if (!$result) {
-    echo json_encode(['success' => false, 'error' => ['message' => '데이터베이스 쿼리 오류: ' . mysqli_error($connect)]]);
-    exit;
-}
+// 중앙 서비스로 기본 가격 계산 (leaflet은 inserted 테이블 사용)
+$service = new PriceCalculationService($db);
+$result = $service->calculate('leaflet', $params);
 
-$row = mysqli_fetch_array($result);
+if ($result['success']) {
+    $data = $result['data'];
 
-if ($row) {
-    // 기본 가격 계산 (전단지 가격)
-    if ($ordertype == "print") {
-        $Price = $row['money'];  // 인쇄비
-        $DesignMoneyOk = 0;  // 디자인편집비
-    } elseif ($ordertype == "design") {
-        $Price = 0;  // 인쇄비
-        $DesignMoneyOk = $row['DesignMoney'];  // 디자인편집비
-    } else { // total
-        $Price = $row['money'];  // 인쇄비
-        $DesignMoneyOk = $row['DesignMoney'];  // 디자인편집비
-    }
-
-    // Step 2: 접지방식 추가 금액 조회
+    // 접지방식 추가 금액 조회
     $fold_additional_price = 0;
     if (!empty($fold_type)) {
-        $fold_query = "SELECT additional_price FROM mlangprintauto_leaflet_fold WHERE fold_type='$fold_type' AND is_active=1";
-        $fold_result = mysqli_query($connect, $fold_query);
+        $fold_query = "SELECT additional_price FROM mlangprintauto_leaflet_fold WHERE fold_type='" . mysqli_real_escape_string($db, $fold_type) . "' AND is_active=1";
+        $fold_result = mysqli_query($db, $fold_query);
         if ($fold_result && $fold_row = mysqli_fetch_array($fold_result)) {
             $fold_additional_price = intval($fold_row['additional_price']);
         }
     }
 
-    // Step 3: 코팅 추가 금액 조회 (전단지와 동일)
+    // 코팅 추가 금액 조회
     $coating_additional_price = 0;
     if (!empty($coating_type)) {
-        $coating_query = "SELECT base_price FROM additional_options_config WHERE option_type='$coating_type' AND option_category='coating' AND is_active=1";
-        $coating_result = mysqli_query($connect, $coating_query);
+        $coating_query = "SELECT base_price FROM additional_options_config WHERE option_type='" . mysqli_real_escape_string($db, $coating_type) . "' AND option_category='coating' AND is_active=1";
+        $coating_result = mysqli_query($db, $coating_query);
         if ($coating_result && $coating_row = mysqli_fetch_array($coating_result)) {
             $coating_additional_price = intval($coating_row['base_price']);
         }
     }
 
-    // Step 4: 오시 추가 금액 조회 (전단지와 동일)
+    // 오시 추가 금액 조회
     $creasing_additional_price = 0;
     if (!empty($creasing_type)) {
-        $creasing_query = "SELECT base_price FROM additional_options_config WHERE option_type='$creasing_type' AND option_category='creasing' AND is_active=1";
-        $creasing_result = mysqli_query($connect, $creasing_query);
+        $creasing_query = "SELECT base_price FROM additional_options_config WHERE option_type='" . mysqli_real_escape_string($db, $creasing_type) . "' AND option_category='creasing' AND is_active=1";
+        $creasing_result = mysqli_query($db, $creasing_query);
         if ($creasing_result && $creasing_row = mysqli_fetch_array($creasing_result)) {
             $creasing_additional_price = intval($creasing_row['base_price']);
         }
     }
 
-    // Step 5: 최종 가격 계산
-    $Order_PricOk = $Price + $DesignMoneyOk + $fold_additional_price + $coating_additional_price + $creasing_additional_price; // 기본 합계 + 접지 + 코팅 + 오시
-    $Order_PricOk_With_Options = $Order_PricOk + $additional_options_total; // 추가 옵션 포함 합계
-    $VAT_PriceOk = $Order_PricOk_With_Options / 10;  // 부가세 10%
-    $Total_PriceOk = $Order_PricOk_With_Options + $VAT_PriceOk;  // 최종 총액
-    $ViewquantityTwo = $row['quantityTwo'] ?? '';  // 전단지 연수 옆에 장수
+    // 최종 가격 계산 (접지 + 코팅 + 오시 추가)
+    $base_price = $data['base_price'];
+    $design_price = $data['design_price'];
+    $order_price_with_options = $base_price + $design_price + $fold_additional_price + $coating_additional_price + $creasing_additional_price + $additional_options_total;
+    $vat_price = $order_price_with_options / 10;
+    $total_with_vat = $order_price_with_options + $vat_price;
 
-    // 성공 응답
-    $response = [
-        'success' => true,
-        'data' => [
-            'Price' => number_format($Price),
-            'DS_Price' => number_format($DesignMoneyOk),
-            'Fold_Price' => number_format($fold_additional_price), // 접지 추가금 표시
-            'Coating_Price' => number_format($coating_additional_price), // 코팅 추가금 표시
-            'Creasing_Price' => number_format($creasing_additional_price), // 오시 추가금 표시
-            'Order_Price' => number_format($Order_PricOk_With_Options), // 추가 옵션 포함된 가격
-            'Additional_Options' => number_format($additional_options_total), // 추가 옵션 가격
-            'PriceForm' => $Price,
-            'DS_PriceForm' => $DesignMoneyOk,
-            'Fold_PriceForm' => $fold_additional_price, // 접지 추가금 숫자
-            'Coating_PriceForm' => $coating_additional_price, // 코팅 추가금 숫자
-            'Creasing_PriceForm' => $creasing_additional_price, // 오시 추가금 숫자
-            'Order_PriceForm' => $Order_PricOk_With_Options, // 추가 옵션 포함된 가격
-            'Additional_Options_Form' => $additional_options_total, // 추가 옵션 가격
-            'VAT_PriceForm' => $VAT_PriceOk,
-            'Total_PriceForm' => $Total_PriceOk,
-            'StyleForm' => $MY_type,
-            'SectionForm' => $PN_type,
-            'QuantityForm' => $MY_amount,
-            'FoldTypeForm' => $fold_type, // 접지방식
-            'CoatingTypeForm' => $coating_type, // 코팅 옵션
-            'CreasingTypeForm' => $creasing_type, // 오시 옵션
-            'DesignForm' => $ordertype,
-            'MY_amountRight' => $ViewquantityTwo . '장'
-        ]
+    $response_data = [
+        'Price' => number_format($base_price),
+        'DS_Price' => number_format($design_price),
+        'Fold_Price' => number_format($fold_additional_price),
+        'Coating_Price' => number_format($coating_additional_price),
+        'Creasing_Price' => number_format($creasing_additional_price),
+        'Order_Price' => number_format($order_price_with_options),
+        'Additional_Options' => number_format($additional_options_total),
+        'PriceForm' => $base_price,
+        'DS_PriceForm' => $design_price,
+        'Fold_PriceForm' => $fold_additional_price,
+        'Coating_PriceForm' => $coating_additional_price,
+        'Creasing_PriceForm' => $creasing_additional_price,
+        'Order_PriceForm' => $order_price_with_options,
+        'Additional_Options_Form' => $additional_options_total,
+        'VAT_PriceForm' => $vat_price,
+        'Total_PriceForm' => $total_with_vat,
+        'StyleForm' => $data['StyleForm'] ?? ($params['MY_type'] ?? ''),
+        'SectionForm' => $data['SectionForm'] ?? ($params['PN_type'] ?? ''),
+        'QuantityForm' => $data['QuantityForm'] ?? ($params['MY_amount'] ?? ''),
+        'FoldTypeForm' => $fold_type,
+        'CoatingTypeForm' => $coating_type,
+        'CreasingTypeForm' => $creasing_type,
+        'DesignForm' => $data['DesignForm'] ?? ($params['ordertype'] ?? ''),
+        'MY_amountRight' => $data['MY_amountRight'] ?? ''
     ];
 
-    echo json_encode($response);
+    echo json_encode(['success' => true, 'data' => $response_data]);
 } else {
-    // 가격 정보가 없는 경우
-    echo json_encode([
-        'success' => false,
-        'error' => [
-            'message' => '견적을 수행할 관련 정보가 없습니다.\n\n다른 항목으로 견적을 해주시기 바랍니다.'
-        ]
-    ]);
+    error_response($result['error']['message']);
 }
 
-mysqli_close($connect);
-?>
+mysqli_close($db);

@@ -871,25 +871,24 @@ header("Expires: 0");
             return;
         }
 
-        // 3. 옵션 텍스트 추출
-        const typeSelect = document.getElementById('MY_type');
-        const fsdSelect = document.getElementById('MY_Fsd');
-        const pnSelect = document.getElementById('PN_type');
+        // 3. 옵션 텍스트 추출 (정확한 필드 매핑)
+        const colorSelect = document.getElementById('MY_type');      // 색상: 칼라(CMYK)
+        const paperSelect = document.getElementById('MY_Fsd');       // 용지: 90g아트지(합판전단)
+        const sizeSelect = document.getElementById('PN_type');       // 규격: A4 (210x297)
+        const sidesSelect = document.getElementById('POtype');       // 인쇄면: 단면/양면
         const amountSelect = document.getElementById('MY_amount');
+        const orderTypeSelect = document.getElementById('ordertype');
 
-        const paperWeight = typeSelect?.selectedOptions[0]?.text || MY_type;
-        const paperSize = fsdSelect?.selectedOptions[0]?.text || MY_Fsd;
-        const printSides = pnSelect?.selectedOptions[0]?.text || PN_type;
+        const colorText = colorSelect?.selectedOptions[0]?.text || '';           // "칼라(CMYK)"
+        const paperText = paperSelect?.selectedOptions[0]?.text || '';           // "90g아트지(합판전단)"
+        const sizeText = sizeSelect?.selectedOptions[0]?.text || '';             // "A4 (210x297)"
+        const sidesValue = sidesSelect?.value || '1';                            // "1"=단면, "2"=양면
+        const sidesText = sidesValue === '2' ? '양면칼라' : '단면칼라';          // "단면칼라" 또는 "양면칼라"
         const quantityText = amountSelect?.selectedOptions[0]?.text || MY_amount;
+        const orderType = orderTypeSelect?.value || 'print';
+        const designText = orderType === 'total' ? '디자인+인쇄' : '인쇄만';
 
-        // 4. 규격 문자열 생성 (2줄 형식)
-        // 1줄: 용지 / 규격
-        const line1 = `${paperWeight} / ${paperSize}`;
-        // 2줄: 인쇄면
-        const line2 = printSides;
-        const specification = `${line1}\n${line2}`;
-
-        // 5. 수량 파싱 (연 단위 + 매수 표시)
+        // 4. 수량 파싱 (연 단위 + 매수 표시)
         let quantity = parseFloat(MY_amount) || 1;
         let unit = '연';
 
@@ -908,6 +907,13 @@ header("Expires: 0");
             ? `${formattedQty}연 (${sheets.toLocaleString()}매)`
             : `${formattedQty}연`;
 
+        // 5. 규격 문자열 생성 (2줄 형식) - 장바구니/주문서와 동일한 형식
+        // 1줄: 색상 / 용지 / 규격 (예: 칼라(CMYK) / 90g아트지(합판전단) / A4 (210x297))
+        const line1 = `${colorText} / ${paperText} / ${sizeText}`;
+        // 2줄: 인쇄면 / 수량 / 인쇄만(또는 디자인+인쇄) (예: 단면칼라 / 0.5연 (2,000매) / 인쇄만)
+        const line2 = `${sidesText} / ${quantityDisplay} / ${designText}`;
+        const specification = `${line1}\n${line2}`;
+
         // 6. 부모 창에 데이터 전송
         const payload = {
             product_type: 'inserted',
@@ -924,6 +930,7 @@ header("Expires: 0");
             MY_Fsd: MY_Fsd,
             PN_type: PN_type,
             MY_amount: MY_amount,
+            ordertype: orderType,  // 인쇄만/디자인+인쇄
             st_price: supplyPrice,
             st_price_vat: Math.round(supplyPrice * 1.1)
         };
