@@ -55,31 +55,38 @@
 }
 
 /* =================================================================== */
-/* 라벨 스타일 (우측 정렬) */
+/* 라벨 스타일 - 공통 */
 /* =================================================================== */
 
 .inline-label,
 .options-grid .inline-label {
-    width: 60px;
-    text-align: right;
     font-weight: 500;
     color: #333;
-    flex-shrink: 0;
-    margin-right: 0;
     font-size: 0.85rem;
     line-height: 1.2;
     cursor: pointer;
 }
 
-/* 특수 라벨 크기 조정 */
-.inline-label.wide,
-.options-grid .inline-label.wide {
-    width: 70px;
-}
+/* 라벨 스타일 - 데스크톱 전용 (row 레이아웃 기준) */
+@media (min-width: 769px) {
+    .inline-label,
+    .options-grid .inline-label {
+        width: 60px;
+        text-align: right;
+        flex-shrink: 0;
+        margin-right: 0;
+    }
 
-.inline-label.narrow,
-.options-grid .inline-label.narrow {
-    width: 40px;
+    /* 특수 라벨 크기 조정 */
+    .inline-label.wide,
+    .options-grid .inline-label.wide {
+        width: 70px;
+    }
+
+    .inline-label.narrow,
+    .options-grid .inline-label.narrow {
+        width: 40px;
+    }
 }
 
 /* =================================================================== */
@@ -93,7 +100,7 @@
     padding: 6px 8px;
     border: 1px solid #ced4da;
     border-radius: 3px;
-    font-size: 0.8rem;
+    font-size: 0.85rem;  /* 라벨과 동일 */
     background: white;
     margin-right: 0;
     height: 36px;
@@ -101,38 +108,40 @@
     transition: all 0.2s ease;
 }
 
-/* 기본 셀렉트박스 폭 */
-.inline-select,
-.options-grid .inline-select {
-    flex: 0 0 220px;
-    width: 220px;
-}
+/* 기본 셀렉트박스/인풋 폭 - 데스크톱 전용 (row 레이아웃 기준) */
+@media (min-width: 769px) {
+    .inline-select,
+    .options-grid .inline-select {
+        flex: 0 0 220px;
+        width: 220px;
+    }
 
-/* 넓은 셀렉트박스 (긴 옵션명용) */
-.inline-select.wide,
-.options-grid .inline-select.wide {
-    flex: 0 0 180px;
-    width: 180px;
-}
+    /* 넓은 셀렉트박스 (긴 옵션명용) */
+    .inline-select.wide,
+    .options-grid .inline-select.wide {
+        flex: 0 0 180px;
+        width: 180px;
+    }
 
-/* 좁은 셀렉트박스 (짧은 옵션용) */
-.inline-select.narrow,
-.options-grid .inline-select.narrow {
-    flex: 0 0 120px;
-    width: 120px;
-}
+    /* 좁은 셀렉트박스 (짧은 옵션용) */
+    .inline-select.narrow,
+    .options-grid .inline-select.narrow {
+        flex: 0 0 120px;
+        width: 120px;
+    }
 
-/* 인풋 필드 */
-.inline-input,
-.options-grid .inline-input {
-    flex: 0 0 130px;
-    width: 130px;
-}
+    /* 인풋 필드 */
+    .inline-input,
+    .options-grid .inline-input {
+        flex: 0 0 130px;
+        width: 130px;
+    }
 
-.inline-input.wide,
-.options-grid .inline-input.wide {
-    flex: 0 0 150px;
-    width: 150px;
+    .inline-input.wide,
+    .options-grid .inline-input.wide {
+        flex: 0 0 150px;
+        width: 150px;
+    }
 }
 
 /* =================================================================== */
@@ -283,41 +292,48 @@
     .options-grid {
         padding: 10px;
         margin: 5px 0;
+        max-width: 100%;
+        box-sizing: border-box;
+        overflow-x: hidden;
     }
 
     .inline-form-row,
     .options-grid .inline-form-row {
-        flex-direction: column;
-        align-items: flex-start;
+        flex-direction: row;  /* 모바일: 한 줄 레이아웃 유지 */
+        align-items: center;
         gap: 8px;
-        margin-bottom: 12px;
+        margin-bottom: 10px;
+        max-width: 100%;
+        box-sizing: border-box;
     }
 
     .inline-label,
     .options-grid .inline-label {
-        width: 100%;
-        text-align: left;
+        width: 55px;
+        min-width: 55px;
+        flex-shrink: 0;
+        text-align: right;
         margin-bottom: 0;
         margin-right: 0;
+        font-size: 0.85rem;
     }
 
     .inline-select,
     .inline-input,
     .options-grid .inline-select,
     .options-grid .inline-input {
-        width: 100%;
-        flex: 1 1 auto;
+        flex: 1;
+        min-width: 0;  /* flex item 축소 허용 */
         margin-right: 0;
         margin-bottom: 0;
-        height: 40px;
-        font-size: 16px;
+        height: 36px;
+        font-size: 0.85rem;  /* 라벨과 동일 */
+        box-sizing: border-box;
     }
 
     .inline-note,
     .options-grid .inline-note {
-        padding-left: 0;
-        font-size: 0.7rem;
-        width: 100%;
+        display: none;  /* 모바일에서 설명 숨김 */
     }
 }
 
@@ -331,16 +347,21 @@
     .inline-form-row,
     .options-grid .inline-form-row {
         gap: 6px;
-        min-height: 40px;
+    }
+
+    .inline-label,
+    .options-grid .inline-label {
+        width: 50px;
+        min-width: 50px;
     }
 
     .inline-select,
     .inline-input,
     .options-grid .inline-select,
     .options-grid .inline-input {
-        height: 44px;
-        font-size: 16px;
-        padding: 8px 10px;
+        height: 36px;
+        font-size: 0.85rem;  /* 라벨과 동일 */
+        padding: 6px 8px;
     }
 
     .price-amount {
@@ -352,39 +373,42 @@
 /* 특수 제품별 오버라이드 */
 /* =================================================================== */
 
-/* 스티커 페이지 전용 */
-.sticker-page .inline-select {
-    flex: 0 0 130px;
-    width: 130px;
-}
+/* 제품별 오버라이드 - 데스크톱 전용 (row 레이아웃 기준) */
+@media (min-width: 769px) {
+    /* 스티커 페이지 전용 */
+    .sticker-page .inline-select {
+        flex: 0 0 130px;
+        width: 130px;
+    }
 
-/* 명함 페이지 전용 */
-.namecard-page .inline-select {
-    flex: 0 0 180px;
-    width: 180px;
-}
+    /* 명함 페이지 전용 */
+    .namecard-page .inline-select {
+        flex: 0 0 180px;
+        width: 180px;
+    }
 
-/* 봉투 페이지 전용 */
-.envelope-page .inline-select {
-    flex: 0 0 160px;
-    width: 160px;
-}
+    /* 봉투 페이지 전용 */
+    .envelope-page .inline-select {
+        flex: 0 0 160px;
+        width: 160px;
+    }
 
-/* 모든 제품 페이지 220px 통일 */
-.poster-page .inline-form-container .inline-select,
-.littleprint-page .inline-form-container .inline-select,
-.inserted-page .inline-form-container .inline-select,
-.leaflet-page .inline-form-container .inline-select,
-.namecard-page .inline-form-container .inline-select,
-.envelope-page .inline-form-container .inline-select,
-.cadarok-page .inline-form-container .inline-select,
-.ncrflambeau-page .inline-form-container .inline-select,
-.merchandisebond-page .inline-form-container .inline-select,
-.msticker-page .inline-form-container .inline-select {
-    flex: 0 0 220px !important;
-    width: 220px !important;
-    max-width: 220px !important;
-    min-width: 220px !important;
+    /* 모든 제품 페이지 220px 통일 */
+    .poster-page .inline-form-container .inline-select,
+    .littleprint-page .inline-form-container .inline-select,
+    .inserted-page .inline-form-container .inline-select,
+    .leaflet-page .inline-form-container .inline-select,
+    .namecard-page .inline-form-container .inline-select,
+    .envelope-page .inline-form-container .inline-select,
+    .cadarok-page .inline-form-container .inline-select,
+    .ncrflambeau-page .inline-form-container .inline-select,
+    .merchandisebond-page .inline-form-container .inline-select,
+    .msticker-page .inline-form-container .inline-select {
+        flex: 0 0 220px !important;
+        width: 220px !important;
+        max-width: 220px !important;
+        min-width: 220px !important;
+    }
 }
 
 /* =================================================================== */
