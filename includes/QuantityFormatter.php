@@ -55,8 +55,8 @@ class QuantityFormatter {
         'envelope'       => 'S',  // 봉투 - 매
         'cadarok'        => 'B',  // 카다록 - 부
         'ncrflambeau'    => 'V',  // NCR양식지 - 권
-        'littleprint'    => 'S',  // 포스터 - 매 (=poster, 명칭 오류)
-        'poster'         => 'S',  // 포스터 - 매 (=littleprint)
+        'littleprint'    => 'P',  // 포스터 - 장 (=poster)
+        'poster'         => 'P',  // 포스터 - 장 (=littleprint)
         'merchandisebond'=> 'S'   // 상품권 - 매
     ];
 
