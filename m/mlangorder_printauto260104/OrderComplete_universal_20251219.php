@@ -1695,7 +1695,7 @@ include "../includes/nav.php";
             </div>
             <div class="info-row" style="margin-bottom: 5px;">
                 <div class="info-label">농협:</div>
-                <div class="info-value">301-2632-1829</div>
+                <div class="info-value">301-2632-1830-11</div>
             </div>
             <div class="info-row" style="margin-bottom: 5px;">
                 <div class="info-label">카드결제:</div>
@@ -1742,7 +1742,7 @@ include "../includes/nav.php";
                 </tr>
                 <tr>
                     <td><strong>농협</strong></td>
-                    <td>301-2632-1829</td>
+                    <td>301-2632-1830-11</td>
                 </tr>
             </table>
         </div>

@@ -299,7 +299,7 @@ class DusonQuotationFromDB:
         footer_data = [
             [Paragraph('<font face="NotoSans-Bold"><b>입금 계좌</b></font>',
                       ParagraphStyle('FB', fontName='NotoSans-Bold', fontSize=9)),
-             Paragraph('<font face="NotoSans">국민은행 999-1688-2384 | 신한은행 110-342-543507 | 농협 301-2632-1829</font>', footer_style)],
+             Paragraph('<font face="NotoSans">국민은행 999-1688-2384 | 신한은행 110-342-543507 | 농협 301-2632-1830-11</font>', footer_style)],
             [Paragraph('<font face="NotoSans-Bold"><b></b></font>',
                       ParagraphStyle('FB', fontName='NotoSans-Bold', fontSize=9)),
              Paragraph('<font face="NotoSans">예금주: 두손기획인쇄 차경선</font>', footer_style)],

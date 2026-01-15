@@ -432,7 +432,7 @@ $koreanAmount = numberToKorean($quote['grand_total']);
 
         <!-- 하단 정보 -->
         <div class="footer-info">
-            <p><strong>입금 계좌번호 :</strong> 국민 999-1688-2384 / 신한 110-342-543507 / 농협 301-2632-1829 예금주: 두손기획인쇄 차경선</p>
+            <p><strong>입금 계좌번호 :</strong> 국민 999-1688-2384 / 신한 110-342-543507 / 농협 301-2632-1830-11 예금주: 두손기획인쇄 차경선</p>
             <p><strong>담당자 :</strong> <?php echo htmlspecialchars($quote['customer_name']); ?></p>
             <?php if (!empty($quote['notes'])): ?>
             <p><strong>비 고 :</strong> <?php echo nl2br(htmlspecialchars($quote['notes'])); ?></p>

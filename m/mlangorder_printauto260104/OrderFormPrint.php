@@ -774,7 +774,7 @@ function extractQuantity($order) {
                 </div>
                 <div class="bank-item">
                     <div class="bank-name">농협</div>
-                    <div class="bank-account">301-2632-1829</div>
+                    <div class="bank-account">301-2632-1830-11</div>
                 </div>
             </div>
             <div class="account-holder">

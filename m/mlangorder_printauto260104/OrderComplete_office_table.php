@@ -806,7 +806,7 @@ include "../includes/nav.php";
             </div>
             <div class="info-row">
                 <div class="info-label">농협:</div>
-                <div class="info-value">301-2632-1829</div>
+                <div class="info-value">301-2632-1830-11</div>
             </div>
             <div class="info-row">
                 <div class="info-label">카드결제:</div>

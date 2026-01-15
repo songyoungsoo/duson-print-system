@@ -30,7 +30,7 @@ define('COMPANY_BUSINESS_HOURS', '평일 09:00~18:00 (토요일, 일요일, 공�
 define('COMPANY_ACCOUNT_HOLDER', '두손기획인쇄 차경선');
 define('COMPANY_BANK_KOOKMIN', '국민은행 999-1688-2384');
 define('COMPANY_BANK_SHINHAN', '신한은행 110-342-543507');
-define('COMPANY_BANK_NONGHYUP', '농협 301-2632-1829');
+define('COMPANY_BANK_NONGHYUP', '농협 301-2632-1830-11');
 
 // 배송 정보
 define('COMPANY_DELIVERY_INFO', '택배는 기본이 착불입니다');

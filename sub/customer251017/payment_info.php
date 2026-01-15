@@ -66,10 +66,10 @@ include_once $_SERVER['DOCUMENT_ROOT'] . '/includes/header-ui.php';
                             <div class="bank-logo">🏦</div>
                             <div class="account-info">
                                 <h3>농협</h3>
-                                <div class="account-number">301-2632-1829</div>
+                                <div class="account-number">301-2632-1830-11</div>
                                 <div class="account-holder">예금주: 두손기획인쇄 차경선</div>
                             </div>
-                            <button class="btn-copy" data-account="301-2632-1829">계좌번호 복사</button>
+                            <button class="btn-copy" data-account="301-2632-1830-11">계좌번호 복사</button>
                         </div>
                     </div>
                 </section>

@@ -15,12 +15,12 @@ require_once __DIR__ . '/../../../db.php';
 function getSupplierInfo(): array {
     return [
         'company_name'   => '두손기획인쇄',
-        'business_no'    => '125-22-28970',
+        'business_no'    => '107-06-45106',
         'ceo_name'       => '차경선',
-        'address'        => '서울시 중구 을지로33길 33, 청자빌딩 301호',
-        'phone'          => '02-2267-1830',
-        'fax'            => '02-2285-1830',
-        'email'          => 'duson1830@naver.com',
+        'address'        => '서울시 영등포구 영등포로 36길9 송호빌딩 1층',
+        'phone'          => '02-2632-1830',
+        'fax'            => '02-2632-1829',
+        'email'          => 'dsp1830@naver.com',
         'stamp_image'    => '/images/stamp.png', // 직인 이미지 경로
         'account_holder' => '두손기획인쇄 차경선',
         'bank_accounts'  => [

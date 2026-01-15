@@ -269,7 +269,7 @@ class DusonQuotation:
         footer_data = [
             [Paragraph('<font face="NanumGothic-Bold"><b>입금 계좌</b></font>',
                       ParagraphStyle('FB', fontName='NanumGothic-Bold', fontSize=9)),
-             Paragraph('<font face="NanumGothic">국민은행 999-1688-2384 | 신한은행 110-342-543507 | 농협 301-2632-1829</font>', footer_style)],
+             Paragraph('<font face="NanumGothic">국민은행 999-1688-2384 | 신한은행 110-342-543507 | 농협 301-2632-1830-11</font>', footer_style)],
             [Paragraph('<font face="NanumGothic-Bold"><b></b></font>',
                       ParagraphStyle('FB', fontName='NanumGothic-Bold', fontSize=9)),
              Paragraph('<font face="NanumGothic">예금주: 두손기획인쇄 차경선</font>', footer_style)],
@@ -357,7 +357,7 @@ if __name__ == '__main__':
     print(f'   - 대표: 차경선')
     print(f'   - 주소: 서울 영등포구 영등포로 36길 9 송호빌딩 1층')
     print(f'   - 전화: 02-2632-1830')
-    print(f'   - 계좌: 국민 999-1688-2384 | 신한 110-342-543507 | 농협 301-2632-1829')
+    print(f'   - 계좌: 국민 999-1688-2384 | 신한 110-342-543507 | 농협 301-2632-1830-11')
     print(f'\n📦 견적 내용:')
     print(f'   - 전단지 1,000매 (코팅+접지 옵션)')
     print(f'   - 명함 200매')
