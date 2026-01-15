@@ -7,6 +7,7 @@
 session_start();
 require_once __DIR__ . '/../../db.php';
 require_once __DIR__ . '/../includes/QuoteManager.php';
+require_once __DIR__ . '/../../../includes/QuantityFormatter.php';  // ✅ 2026-01-16: SSOT 연동
 
 // 파라미터 확인
 $id = intval($_GET['id'] ?? 0);
@@ -351,15 +352,16 @@ $koreanAmount = numberToKorean($quote['grand_total']);
                         $qtyDisplay = ($qty == intval($qty)) ? number_format($qty) : rtrim(rtrim(number_format($qty, 2), '0'), '.');
                         echo $qtyDisplay;
 
-                        // 전단지/NCR 등 매수 표시 (qty_sheets 우선, source_data 폴백)
+                        // ✅ 2026-01-16: 전단지/NCR 매수 표시 (QuantityFormatter SSOT)
                         $productType = $item['product_type'] ?? '';
+                        $unit = $item['unit'] ?? '';
                         $sheets = null;
 
-                        // ✅ 표준 필드 qty_sheets 우선 사용
+                        // 1. 표준 필드 qty_sheets 우선 사용
                         if (!empty($item['qty_sheets'])) {
                             $sheets = intval($item['qty_sheets']);
                         }
-                        // 폴백: source_data의 mesu
+                        // 2. 폴백: source_data의 mesu
                         elseif (!empty($item['source_data'])) {
                             $sourceData = json_decode($item['source_data'], true);
                             if (!empty($sourceData['mesu'])) {
@@ -367,8 +369,27 @@ $koreanAmount = numberToKorean($quote['grand_total']);
                             }
                         }
 
+                        // 3. ✅ SSOT: 전단지는 DB 조회, NCR은 계산
+                        if (!$sheets && $qty > 0 && in_array($unit, ['연', '권'])) {
+                            if ($unit === '연') {
+                                // 전단지: mlangprintauto_inserted 테이블에서 매수 조회
+                                $sheetStmt = mysqli_prepare($db, "SELECT quantityTwo FROM mlangprintauto_inserted WHERE quantity = ? LIMIT 1");
+                                if ($sheetStmt) {
+                                    mysqli_stmt_bind_param($sheetStmt, "d", $qty);
+                                    mysqli_stmt_execute($sheetStmt);
+                                    $sheetResult = mysqli_stmt_get_result($sheetStmt);
+                                    if ($sheetRow = mysqli_fetch_assoc($sheetResult)) {
+                                        $sheets = intval($sheetRow['quantityTwo']);
+                                    }
+                                    mysqli_stmt_close($sheetStmt);
+                                }
+                            } elseif ($unit === '권') {
+                                // NCR양식지: 권 × 50 × multiplier(기본 2)
+                                $sheets = QuantityFormatter::calculateNcrSheets(intval($qty), 2);
+                            }
+                        }
+
                         // 연/권 단위인 경우 매수 표시
-                        $unit = $item['unit'] ?? '';
                         if ($sheets && in_array($unit, ['연', '권'])) {
                             echo '<br><span style="font-size: 10px; color: #666;">(' . number_format($sheets) . '매)</span>';
                         }
