@@ -232,7 +232,8 @@ error_log("Uploaded files JSON: " . $uploaded_files_json);
 //            quantity_value(d), quantity_unit(s), quantity_sheets(i), quantity_display(s),
 //            price_supply(i), price_vat(i), price_vat_amount(i),
 //            product_data_json(s), data_version(i)
-mysqli_stmt_bind_param($stmt, "ssssssssddssissssssssdsisiiisi",
+// ✅ 2026-01-15: 타입 문자열 수정 - 위치12 additional_options_total(i), 위치13 mesu(s)
+mysqli_stmt_bind_param($stmt, "ssssssssddsisssssssssdsisiiisi",
     // 레거시 필드 (16개)
     $session_id, $product_type, $MY_type, $PN_type, $MY_Fsd, $MY_amount, $POtype, $ordertype,
     $price, $vat_price, $additional_options_json, $additional_options_total, $mesu,
