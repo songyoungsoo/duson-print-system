@@ -454,7 +454,7 @@ $publicUrl = $baseUrl . '/mlangprintauto/quote/public/view.php?token=' . $quote[
                                         // === 하이브리드 모델: qty_val/qty_unit 우선 사용, 없으면 레거시 fallback ===
                                         $qtyVal = $item['qty_val'] ?? $item['quantity'] ?? 0;
                                         $qtyUnit = $item['qty_unit'] ?? 'E';
-                                        $qtySheets = $item['qty_sheets'] ?? null;
+                                        $qtySheets = intval($item['qty_sheets'] ?? 0);
 
                                         // 숫자 포맷팅: 정수면 소수점 없이, 소수면 필요한 만큼만
                                         $qtyVal = floatval($qtyVal);
@@ -465,8 +465,29 @@ $publicUrl = $baseUrl . '/mlangprintauto/quote/public/view.php?token=' . $quote[
                                         }
                                         echo $qtyDisplay;
 
-                                        // 연 단위(R)인 경우 매수 표시 추가 - 파란색 강조
-                                        if ($qtyUnit === 'R' && !empty($qtySheets) && $qtySheets > 0) {
+                                        // ✅ 2026-01-16: SSOT 연동 - 연/권 단위 모두 매수 표시
+                                        // qty_sheets가 0이면 DB 조회(전단지) 또는 계산(NCR)
+                                        if ($qtySheets <= 0 && $qtyVal > 0 && in_array($qtyUnit, ['R', 'V'])) {
+                                            if ($qtyUnit === 'R') {
+                                                // 전단지: mlangprintauto_inserted 테이블에서 매수 조회
+                                                $sheetStmt = mysqli_prepare($db, "SELECT quantityTwo FROM mlangprintauto_inserted WHERE quantity = ? LIMIT 1");
+                                                if ($sheetStmt) {
+                                                    mysqli_stmt_bind_param($sheetStmt, "d", $qtyVal);
+                                                    mysqli_stmt_execute($sheetStmt);
+                                                    $sheetResult = mysqli_stmt_get_result($sheetStmt);
+                                                    if ($sheetRow = mysqli_fetch_assoc($sheetResult)) {
+                                                        $qtySheets = intval($sheetRow['quantityTwo']);
+                                                    }
+                                                    mysqli_stmt_close($sheetStmt);
+                                                }
+                                            } elseif ($qtyUnit === 'V') {
+                                                // NCR양식지: 권 × 50 × multiplier(기본 2)
+                                                $qtySheets = QuantityFormatter::calculateNcrSheets(intval($qtyVal), 2);
+                                            }
+                                        }
+
+                                        // 연/권 단위인 경우 매수 표시 추가 - 파란색 강조
+                                        if (in_array($qtyUnit, ['R', 'V']) && $qtySheets > 0) {
                                             echo '<br><span style="font-size: 10px; color: #1e88ff;">(' . number_format($qtySheets) . '매)</span>';
                                         }
                                     ?></td>
