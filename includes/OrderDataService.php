@@ -94,6 +94,14 @@ class OrderDataService {
                     QuantityFormatter::getProductUnitCode($productType);
         $qtySheets = intval($orderRow['quantity_sheets'] ?? $orderRow['qty_sheets'] ?? 0);
 
+        // ✅ 2026-01-16: NCR양식지 매수 재계산 (잘못 저장된 레거시 데이터 보정)
+        // quantity_sheets == quantity_value인 경우 명백히 잘못된 값
+        if ($productType === 'ncrflambeau' && $qtyValue > 0 && $qtySheets <= $qtyValue) {
+            $multiplier = QuantityFormatter::extractNcrMultiplier($orderRow);
+            $qtySheets = QuantityFormatter::calculateNcrSheets(intval($qtyValue), $multiplier);
+            error_log("[OrderDataService] NCR sheets recalculated: {$qtyValue}권 × multiplier={$multiplier} = {$qtySheets}매");
+        }
+
         // 수량 표시 (QuantityFormatter SSOT)
         $qtyDisplay = QuantityFormatter::format($qtyValue, $unitCode, $qtySheets);
 

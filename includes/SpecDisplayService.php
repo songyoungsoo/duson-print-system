@@ -16,6 +16,7 @@
  */
 
 require_once __DIR__ . '/ProductSpecFormatter.php';
+require_once __DIR__ . '/QuantityFormatter.php';  // ✅ 2026-01-16: SSOT 연동
 
 class SpecDisplayService {
     private $db;
@@ -78,13 +79,25 @@ class SpecDisplayService {
         // 3. 사양 라인 생성 (ProductSpecFormatter 활용)
         $specs = $this->formatter->format($normalized);
 
-        // 4. quantity_display 보정 (단위 필수)
-        $quantityDisplay = $this->ensureQuantityUnit($normalized);
-
-        // 5. 단위 추출
+        // 4. 단위 추출
         $unit = $this->getUnit($normalized);
 
-        // 6. 가격 정보 (DB 값 그대로, 역계산 금지)
+        // 5. 수량 값 및 매수 추출
+        $qtyValue = $this->getQuantityValue($normalized);
+        $qtySheets = intval($normalized['mesu'] ?? $normalized['quantity_sheets'] ?? 0);
+
+        // ✅ 2026-01-16: NCR양식지 매수 재계산 (잘못 저장된 레거시 데이터 보정)
+        // quantity_sheets == quantity_value인 경우 명백히 잘못된 값
+        if ($productType === 'ncrflambeau' && $qtyValue > 0 && $qtySheets <= $qtyValue) {
+            $multiplier = QuantityFormatter::extractNcrMultiplier($normalized);
+            $qtySheets = QuantityFormatter::calculateNcrSheets(intval($qtyValue), $multiplier);
+        }
+
+        // 6. quantity_display 생성 (QuantityFormatter SSOT)
+        $unitCode = QuantityFormatter::getProductUnitCode($productType);
+        $quantityDisplay = QuantityFormatter::format($qtyValue, $unitCode, $qtySheets);
+
+        // 7. 가격 정보 (DB 값 그대로, 역계산 금지)
         $priceData = $this->getPriceData($normalized);
 
         return [
@@ -102,8 +115,8 @@ class SpecDisplayService {
 
             // 수량 정보
             'quantity_display' => $quantityDisplay,
-            'quantity_value' => $this->getQuantityValue($normalized),
-            'quantity_sheets' => intval($normalized['mesu'] ?? $normalized['quantity_sheets'] ?? 0),
+            'quantity_value' => $qtyValue,
+            'quantity_sheets' => $qtySheets,
             'unit' => $unit,
 
             // 가격 정보 (DB값 그대로)

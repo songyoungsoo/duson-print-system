@@ -1846,12 +1846,18 @@ $additional_css = [
                 <td class="col-quantity">
                     <?php
                     $qty_val = $displayData['quantity_value'] ?? 0;
-                    $qty_sheets = $displayData['quantity_sheets'] ?? null;
+                    $qty_sheets = $displayData['quantity_sheets'] ?? 0;
+                    $productType = $order['product_type'] ?? '';
+
+                    // 수량 포맷팅
                     $formatted_qty = function_exists('formatQuantityNum')
                         ? formatQuantityNum($qty_val)
                         : number_format(floatval($qty_val));
                     echo $formatted_qty;
-                    if ($is_flyer && $qty_sheets): ?>
+
+                    // ✅ 2026-01-16: 연/권 단위에 매수 표시 (전단지, NCR양식지)
+                    $unit = $displayData['unit'] ?? '';
+                    if ($qty_sheets > 0 && in_array($unit, ['연', '권'])): ?>
                         <br><span style="font-size: 11px; color: #1e88ff;">(<?php echo number_format($qty_sheets); ?>매)</span>
                     <?php endif; ?>
                 </td>

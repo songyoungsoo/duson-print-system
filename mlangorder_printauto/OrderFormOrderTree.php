@@ -242,6 +242,18 @@ function getOrderItemInfo($summary_item, $specFormatter) {
             $mesu_for_display = intval($summary_item['quantity_sheets'] ?? 0);
         }
 
+        // ✅ 2026-01-16: NCR양식지 매수 계산 (권 × 50 × multiplier)
+        $is_ncr = ($product_type === 'ncrflambeau');
+        if ($is_ncr && $quantity_num > 0) {
+            $ncr_sheets = intval($summary_item['quantity_sheets'] ?? 0);
+            // 잘못 저장된 레거시 데이터 보정 (sheets <= qty면 재계산)
+            if ($ncr_sheets <= $quantity_num) {
+                $multiplier = QuantityFormatter::extractNcrMultiplier($summary_item);
+                $ncr_sheets = QuantityFormatter::calculateNcrSheets(intval($quantity_num), $multiplier);
+            }
+            $mesu_for_display = $ncr_sheets;
+        }
+
     } elseif (!empty($summary_item['Type_1'])) {
         // ✅ Fallback: Type_1 JSON 사용 (레거시 주문)
         $type_1_data = trim($summary_item['Type_1']);
@@ -310,6 +322,19 @@ function getOrderItemInfo($summary_item, $specFormatter) {
                 if ($mesu_for_display == 0 && $quantity_num > 0) {
                     $mesu_for_display = lookupInsertedSheets($db, floatval($quantity_num));
                 }
+            }
+
+            // ✅ 2026-01-16: NCR양식지 매수 계산 (권 × 50 × multiplier)
+            $is_ncr = ($product_type === 'ncrflambeau');
+            if ($is_ncr && $quantity_num > 0) {
+                $ncr_sheets = intval($summary_item['quantity_sheets'] ?? 0);
+                // 잘못 저장된 레거시 데이터 보정
+                if ($ncr_sheets <= $quantity_num) {
+                    $itemData_for_ncr = array_merge($summary_item, $json_data);
+                    $multiplier = QuantityFormatter::extractNcrMultiplier($itemData_for_ncr);
+                    $ncr_sheets = QuantityFormatter::calculateNcrSheets(intval($quantity_num), $multiplier);
+                }
+                $mesu_for_display = $ncr_sheets;
             }
         } else {
             // 레거시 텍스트 처리 (2줄 슬래시 형식 적용 - duson-print-rules 준수)
@@ -766,7 +791,8 @@ function getOrderItemInfo($summary_item, $specFormatter) {
                                     <?php
                                     // 🔧 2026-01-14: 수량/단위 분리 - 수량 칼럼에 숫자+매수, 단위는 별도 칼럼
                                     echo formatQuantityNum($quantity_num);
-                                    if (isset($is_flyer) && $is_flyer && $mesu_for_display > 0) {
+                                    // ✅ 2026-01-16: 연/권 단위 모두 매수 표시 (전단지, NCR양식지)
+                                    if ($mesu_for_display > 0 && in_array($unit, ['연', '권'])) {
                                         echo '<br><span style="font-size: 8pt; color: #1e88ff;">(' . number_format($mesu_for_display) . '매)</span>';
                                     }
                                     ?>
@@ -1030,7 +1056,8 @@ function getOrderItemInfo($summary_item, $specFormatter) {
                                     <?php
                                     // 🔧 2026-01-14: 수량/단위 분리 - 수량 칼럼에 숫자+매수, 단위는 별도 칼럼 (인쇄용)
                                     echo formatQuantityNum($quantity_num);
-                                    if (isset($is_flyer) && $is_flyer && $mesu_for_display > 0) {
+                                    // ✅ 2026-01-16: 연/권 단위 모두 매수 표시 (전단지, NCR양식지)
+                                    if ($mesu_for_display > 0 && in_array($unit, ['연', '권'])) {
                                         echo '<br><span style="font-size: 8pt; color: #1e88ff;">(' . number_format($mesu_for_display) . '매)</span>';
                                     }
                                     ?>

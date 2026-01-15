@@ -3,15 +3,20 @@
  * 통합 장바구니 페이지
  * 경로: MlangPrintAuto/cart.php
  * 모든 상품 유형을 지원하는 장바구니
+ *
+ * ✅ 2026-01-16: SpecDisplayService SSOT 적용
  */
 
 session_start();
 $session_id = session_id();
 
+include "../db.php";  // ✅ 표준 DB 연결 사용
 include "../lib/func.php";
 include "shop_temp_helper.php";
+include "../includes/SpecDisplayService.php";  // ✅ SSOT 연동
 
-$connect = dbconn();
+$connect = $db;  // ✅ db.php의 $db 변수 사용
+$specDisplayService = new SpecDisplayService($connect);  // ✅ SSOT 서비스
 
 // UTF-8 설정
 if ($connect) {
@@ -39,7 +44,18 @@ if (isset($_GET['clear'])) {
 $cart_result = getCartItems($connect, $session_id);
 $cart_items = [];
 while ($item = mysqli_fetch_assoc($cart_result)) {
-    $cart_items[] = formatCartItemForDisplay($connect, $item);
+    // 기존 포맷 (hidden fields용)
+    $formatted = formatCartItemForDisplay($connect, $item);
+
+    // ✅ 2026-01-16: SpecDisplayService SSOT로 규격/수량 표준화
+    $displayData = $specDisplayService->getDisplayData($item);
+    $formatted['spec_line1'] = $displayData['line1'];
+    $formatted['spec_line2'] = $displayData['line2'];
+    $formatted['quantity_display'] = $displayData['quantity_display'];
+    $formatted['unit'] = $displayData['unit'];
+    $formatted['additional'] = $displayData['additional'];
+
+    $cart_items[] = $formatted;
 }
 
 // 총액 계산
@@ -102,9 +118,17 @@ $total_info = calculateCartTotal($connect, $session_id);
                                 </div>
                                 
                                 <div class="product-details">
-                                    <?php foreach ($item['details'] as $key => $value): ?>
-                                        <p><strong><?php echo htmlspecialchars($key); ?>:</strong> <?php echo htmlspecialchars($value); ?></p>
-                                    <?php endforeach; ?>
+                                    <!-- ✅ 2026-01-16: SpecDisplayService SSOT 적용 -->
+                                    <?php if (!empty($item['spec_line1'])): ?>
+                                        <p><strong>규격:</strong> <?php echo htmlspecialchars($item['spec_line1']); ?></p>
+                                    <?php endif; ?>
+                                    <?php if (!empty($item['spec_line2'])): ?>
+                                        <p><strong>옵션:</strong> <?php echo htmlspecialchars($item['spec_line2']); ?></p>
+                                    <?php endif; ?>
+                                    <p><strong>수량:</strong> <?php echo htmlspecialchars($item['quantity_display']); ?></p>
+                                    <?php if (!empty($item['additional'])): ?>
+                                        <p><strong>후가공:</strong> <?php echo htmlspecialchars($item['additional']); ?></p>
+                                    <?php endif; ?>
                                 </div>
                                 
                                 <?php if ($item['MY_comment']): ?>
