@@ -10,26 +10,39 @@ let galleryImages = [];
 let currentImageIndex = 0;
 
 /**
- * [신규] 수량 드롭다운에서 '매수'를 파싱하여 숨겨진 필드에 값을 설정하는 함수
+ * [신규] 수량 드롭다운에서 '매수'를 설정하는 함수
+ * ✅ paper_standard_master 연동: data-sheets 속성 우선 사용
  */
 function updateMesuFromQuantity() {
     const quantitySelect = document.querySelector('select[name="MY_amount"]');
     if (!quantitySelect) return;
 
     const selectedOption = quantitySelect.options[quantitySelect.selectedIndex];
-    const text = selectedOption ? selectedOption.textContent : '';
-    // 표준 형식 "X연 (Y매)"에서 매수를 추출하는 정규식
-    const mesuMatch = text.match(/\((\d{1,3}(,\d{3})*|\d+)매\)/);
+    if (!selectedOption) return;
+
     const myAmountRightInput = document.getElementById('MY_amountRight');
 
-    if (myAmountRightInput) {
+    // ✅ Step 1: data-sheets 속성에서 매수 가져오기 (paper_standard_master 연동)
+    let mesuValue = parseInt(selectedOption.dataset.sheets || 0);
+
+    // ✅ Step 2: data-sheets가 없으면 텍스트에서 파싱 (폴백)
+    if (!mesuValue || mesuValue === 0) {
+        const text = selectedOption.textContent || '';
+        const mesuMatch = text.match(/\((\d{1,3}(,\d{3})*|\d+)매\)/);
         if (mesuMatch && mesuMatch[1]) {
-            const mesuValue = parseInt(mesuMatch[1].replace(/,/g, ''));
+            mesuValue = parseInt(mesuMatch[1].replace(/,/g, ''));
+        }
+    }
+
+    // ✅ Step 3: 숨겨진 필드에 값 설정
+    if (myAmountRightInput) {
+        if (mesuValue > 0) {
             myAmountRightInput.value = mesuValue;
-            console.log(`[통일된 로직] 매수(MY_amountRight)가 ${mesuValue}로 설정되었습니다. 원본: "${text}"`);
+            const spec = selectedOption.dataset.spec || '알 수 없음';
+            console.log(`✅ [paper_standard] 매수 설정: ${mesuValue.toLocaleString()}매 (규격: ${spec})`);
         } else {
             myAmountRightInput.value = '';
-            console.log(`[통일된 로직] 매수를 찾지 못했습니다. 원본: "${text}"`);
+            console.log(`⚠️ 매수를 결정할 수 없습니다.`);
         }
     }
 }
@@ -74,6 +87,16 @@ function handleModalBasketAdd(uploadedFiles, onSuccess, onError) {
     formData.set('calculated_price', basePriceWithoutVat);
     formData.set('calculated_vat_price', totalPriceWithVat);
     formData.set('product_type', 'inserted'); // 🔧 FIX: leaflet → inserted
+
+    // ✅ paper_standard_master 연동: 수량 및 규격 정보 캡처
+    const quantitySelect = document.querySelector('select[name="MY_amount"]');
+    if (quantitySelect && quantitySelect.selectedIndex >= 0) {
+        const selectedOption = quantitySelect.options[quantitySelect.selectedIndex];
+        formData.set('quantity_display', selectedOption.text);
+        formData.set('quantity_sheets', selectedOption.dataset.sheets || '');
+        formData.set('paper_spec', selectedOption.dataset.spec || '');
+        console.log(`📐 규격 정보 저장: ${selectedOption.dataset.spec}, 매수: ${selectedOption.dataset.sheets}`);
+    }
     
     // 추가 정보
     formData.set('work_memo', workMemo);
@@ -487,15 +510,25 @@ function updateQuantities() {
                     return;
                 }
                 
+                // ✅ paper_standard_master 연동: 규격 정보 저장
+                let currentSpec = null;
+
                 data.forEach((option, index) => {
                     const optionElement = document.createElement('option');
                     optionElement.value = option.value;
                     optionElement.textContent = option.text;
-                    if (index === 0) optionElement.selected = true; // 첫 번째 옵션 자동 선택
+                    // ✅ data-* 속성으로 매수와 규격 정보 저장
+                    optionElement.dataset.sheets = option.sheets || 0;
+                    optionElement.dataset.spec = option.spec || '';
+                    if (index === 0) {
+                        optionElement.selected = true;
+                        currentSpec = option.spec;
+                    }
                     quantitySelect.appendChild(optionElement);
                 });
-                
+
                 console.log('✅ 수량 옵션 로드 완료 (POtype ' + POtype + '):', data.length, '개');
+                console.log('📐 규격 감지:', currentSpec, '(paper_standard_master 연동)');
 
                 // [수정] 수량 로드 직후 매수 파싱 함수 호출
                 updateMesuFromQuantity();
@@ -1054,13 +1087,20 @@ function addToBasket() {
     const form = document.getElementById('orderForm');
     const formData = new FormData(form);
 
-    // ★ NEW: Capture quantity_display from dropdown text
+    // ★ paper_standard_master 연동: 수량 및 규격 정보 캡처
     const quantitySelect = document.querySelector('select[name="MY_amount"]');
     if (quantitySelect && quantitySelect.selectedIndex >= 0) {
         const selectedOption = quantitySelect.options[quantitySelect.selectedIndex];
         const quantityDisplay = selectedOption.text; // e.g., "0.5연 (2,000매)"
+        const quantitySheets = selectedOption.dataset.sheets || '';
+        const paperSpec = selectedOption.dataset.spec || '';
+
         formData.set('quantity_display', quantityDisplay);
-        console.log('✅ quantity_display captured:', quantityDisplay);
+        formData.set('quantity_sheets', quantitySheets);  // ✅ 자동 계산된 매수
+        formData.set('paper_spec', paperSpec);  // ✅ 규격 (A4, B4 등)
+
+        console.log(`✅ quantity_display: ${quantityDisplay}`);
+        console.log(`✅ quantity_sheets: ${quantitySheets}매 (paper_standard: ${paperSpec})`);
     }
 
     // 가격 정보 추가
