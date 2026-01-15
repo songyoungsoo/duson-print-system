@@ -290,23 +290,32 @@ class DataAdapter {
     /**
      * 전단지 (inserted/leaflet) 변환
      * MY_type=도수, MY_Fsd=용지, PN_type=규격, POtype=인쇄면, MY_amount=연수, mesu=매수
+     *
+     * ✅ 2026-01-16: 명세서 v2.1 적용 - Data Integrity 검증
+     * - DB mesu 값과 paper_standard_master 공식 계산값을 교차 검증
+     * - 불일치 시 로그 기록 + 공식 계산값 우선 적용
      */
     private static function convertInserted($data) {
         $reams = floatval($data['MY_amount'] ?? 0);
-        $sheets = intval($data['mesu'] ?? 0);
+        $db_mesu = intval($data['mesu'] ?? 0);  // DB에 저장된 매수
 
-        // ★ PRIORITY: Use stored quantity_display from dropdown if available
+        // ✅ 2026-01-16: 규격 기반 매수 계산 (Group A 공식)
+        $spec_size = $data['PN_type_name'] ?: ($data['PN_type'] ?? '');
+        $calculated_sheets = self::calculateInsertedSheetsInternal($reams, $spec_size);
+
+        // ✅ Data Integrity 검증: DB값과 계산값 비교
+        $final_sheets = self::validateAndSelectSheets($db_mesu, $calculated_sheets, $reams, $spec_size, 'inserted');
+
+        // ★ quantity_display 생성
         $qty_display = $data['quantity_display'] ?? '';
-
-        // Fallback: Calculate quantity_display if not provided
         if (empty($qty_display)) {
             if ($reams > 0) {
                 $qty_display = number_format($reams, $reams == intval($reams) ? 0 : 1) . '연';
-                if ($sheets > 0) {
-                    $qty_display .= ' (' . number_format($sheets) . '매)';
+                if ($final_sheets > 0) {
+                    $qty_display .= ' (' . number_format($final_sheets) . '매)';
                 }
-            } elseif ($sheets > 0) {
-                $qty_display = number_format($sheets) . '매';
+            } elseif ($final_sheets > 0) {
+                $qty_display = number_format($final_sheets) . '매';
             }
         }
 
@@ -317,12 +326,12 @@ class DataAdapter {
         return [
             'spec_type' => $data['MY_type_name'] ?: ($data['MY_type'] ?? ''),
             'spec_material' => $data['MY_Fsd_name'] ?: ($data['MY_Fsd'] ?? ''),
-            'spec_size' => $data['PN_type_name'] ?: ($data['PN_type'] ?? ''),
+            'spec_size' => $spec_size,
             'spec_sides' => $data['POtype_name'] ?: ($data['POtype'] == '1' ? '단면' : '양면'),
             'spec_design' => ($data['ordertype'] ?? '') === 'total' ? '디자인+인쇄' : '인쇄만',
             'quantity_value' => $reams,
             'quantity_unit' => '연',
-            'quantity_sheets' => $sheets,
+            'quantity_sheets' => $final_sheets,
             'quantity_display' => $qty_display,
             'price_supply' => $price_supply,
             'price_vat' => $price_vat,
@@ -330,6 +339,116 @@ class DataAdapter {
             'additional_options' => $data['additional_options'] ?? '',
             'product_type' => 'inserted'
         ];
+    }
+
+    /**
+     * ✅ 2026-01-16: 전단지 매수 내부 계산 (Group A 공식)
+     *
+     * 명세서 v2.1: Qty(연) × 500 × CutRatio = quantity_sheets
+     * paper_standard_master의 sheets_per_ream = 500 × CutRatio (사전 계산됨)
+     *
+     * @param float $reams 연수
+     * @param string $specSize 규격명 (A4, B4 등)
+     * @return int 계산된 매수 (0이면 계산 불가)
+     */
+    private static function calculateInsertedSheetsInternal(float $reams, string $specSize): int {
+        if ($reams <= 0) {
+            return 0;
+        }
+
+        // 1. 규격명에서 규격 코드 추출
+        $specName = QuantityFormatter::extractSpecName($specSize);
+
+        if ($specName) {
+            // 2. paper_standard_master 기반 sheets_per_ream 조회
+            // sheets_per_ream = 500 × cut_ratio (예: A4=8절 → 4000)
+            $sheetsPerReamMap = [
+                'A1' => 500,   // 1절: 500 × 1
+                'A2' => 1000,  // 2절: 500 × 2
+                'A3' => 2000,  // 4절: 500 × 4
+                'A4' => 4000,  // 8절: 500 × 8
+                'A5' => 8000,  // 16절: 500 × 16
+                'A6' => 16000, // 32절: 500 × 32
+                'B1' => 500,
+                'B2' => 1000,
+                'B3' => 2000,
+                'B4' => 4000,
+                'B5' => 8000,
+                'B6' => 16000
+            ];
+
+            $sheetsPerReam = $sheetsPerReamMap[$specName] ?? null;
+
+            if ($sheetsPerReam !== null) {
+                return intval($reams * $sheetsPerReam);
+            }
+        }
+
+        // 3. 한국식 규격명 처리
+        $koreanCutRatio = self::extractKoreanCutRatio($specSize);
+        if ($koreanCutRatio > 0) {
+            return intval($reams * 500 * $koreanCutRatio);
+        }
+
+        // 4. 계산 불가 (DB값 또는 폴백 필요)
+        return 0;
+    }
+
+    /**
+     * ✅ 2026-01-16: DB값과 계산값 교차 검증 (Data Integrity)
+     *
+     * 명세서 v2.1 규약:
+     * - DB값과 공식 계산값이 다르면 로그 기록
+     * - 공식 계산값을 우선 적용 (데이터 일관성 강제)
+     *
+     * @param int $dbSheets DB에 저장된 매수 (mesu)
+     * @param int $calculatedSheets 공식으로 계산된 매수
+     * @param float $reams 연수 (로그용)
+     * @param string $specSize 규격명 (로그용)
+     * @param string $productType 제품 타입 (로그용)
+     * @return int 최종 적용할 매수
+     */
+    private static function validateAndSelectSheets(
+        int $dbSheets,
+        int $calculatedSheets,
+        float $reams,
+        string $specSize,
+        string $productType
+    ): int {
+        // Case 1: 둘 다 0이면 기본값 적용 (A4 기준)
+        if ($dbSheets === 0 && $calculatedSheets === 0) {
+            $fallback = intval($reams * 4000);  // A4 기본값
+            error_log("[DataAdapter::validateAndSelectSheets] WARNING: Both values are 0, using fallback - product=$productType, reams=$reams, spec=$specSize, fallback=$fallback");
+            return $fallback;
+        }
+
+        // Case 2: 계산값만 있으면 계산값 사용
+        if ($calculatedSheets > 0 && $dbSheets === 0) {
+            return $calculatedSheets;
+        }
+
+        // Case 3: DB값만 있으면 DB값 사용 (레거시 호환)
+        if ($dbSheets > 0 && $calculatedSheets === 0) {
+            return $dbSheets;
+        }
+
+        // Case 4: 둘 다 있으면 비교 검증
+        $tolerance = 0.01;  // 1% 오차 허용
+        $diff = abs($dbSheets - $calculatedSheets);
+        $diffPercent = $calculatedSheets > 0 ? ($diff / $calculatedSheets) : 0;
+
+        if ($diffPercent > $tolerance) {
+            // ⚠️ 불일치 경고 로그
+            error_log("[DataAdapter::validateAndSelectSheets] ⚠️ MISMATCH DETECTED - product=$productType, reams=$reams, spec=$specSize");
+            error_log("  → DB mesu: $dbSheets, Calculated: $calculatedSheets, Diff: $diff (" . round($diffPercent * 100, 2) . "%)");
+            error_log("  → RESOLUTION: Using calculated value (formula priority per v2.1 spec)");
+
+            // 공식 계산값 우선 (명세서 v2.1 규약)
+            return $calculatedSheets;
+        }
+
+        // Case 5: 일치하면 계산값 사용
+        return $calculatedSheets;
     }
 
     /**
@@ -415,6 +534,8 @@ class DataAdapter {
     /**
      * 포스터 (littleprint/poster) 변환
      * MY_type=구분, Section=용지, PN_type=규격, MY_amount=수량
+     *
+     * ✅ Group B: 고정 수량 (장 단위 직접 복사)
      */
     private static function convertLittleprint($data) {
         $amount = intval($data['MY_amount'] ?? 0);
@@ -439,6 +560,21 @@ class DataAdapter {
             'additional_options' => $data['additional_options'] ?? '',
             'product_type' => 'littleprint'
         ];
+    }
+
+    /**
+     * ✅ 2026-01-16: 한국식 규격명에서 절수 추출
+     * (전단지 검증용으로 유지)
+     *
+     * @param string $specSize 규격명 (국2절, 4×6 4절 등)
+     * @return int 절수 (2, 4, 8 등) 또는 0
+     */
+    private static function extractKoreanCutRatio(string $specSize): int {
+        // 패턴: "국2절", "국4절", "4×6 2절", "2절", "4절" 등
+        if (preg_match('/(\d+)\s*절/u', $specSize, $matches)) {
+            return intval($matches[1]);
+        }
+        return 0;
     }
 
     /**
@@ -483,18 +619,33 @@ class DataAdapter {
      * MY_type=도수, MY_Fsd=용지, PN_type=타입, MY_amount=수량
      *
      * ✅ 2026-01-15: quantity_sheets 계산 추가 (권 × 50 × multiplier)
-     * - 복사 매수(2매/3매/4매)를 MY_Fsd_name에서 자동 추출
+     * ✅ 2026-01-16: 명세서 v2.1 - 멀티플라이어 정교화 및 0 방지
+     * - 복사 매수(2매/3매/4매)를 여러 필드에서 자동 추출
      * - 공식: 총 매수 = 주문 권수 × 50 × 복사 매수
+     * - quantity_sheets가 0이 되는 현상 방지
      */
     private static function convertNcrflambeau($data) {
         $amount = intval($data['MY_amount'] ?? 0);
 
-        // ✅ 용지(MY_Fsd_name)에서 복사 매수 추출 (2매/3매/4매)
+        // ✅ 2026-01-16: 여러 필드에서 복사 매수 추출 시도 (정교화)
         $spec_material = $data['MY_Fsd_name'] ?: ($data['MY_Fsd'] ?? '');
-        $multiplier = QuantityFormatter::extractNcrMultiplier(['spec_material' => $spec_material]);
+        $multiplier = QuantityFormatter::extractNcrMultiplier([
+            'spec_material' => $spec_material,
+            'MY_Fsd_name' => $data['MY_Fsd_name'] ?? '',
+            'MY_Fsd' => $data['MY_Fsd'] ?? '',
+            'PN_type_name' => $data['PN_type_name'] ?? '',
+            'PN_type' => $data['PN_type'] ?? ''
+        ]);
 
         // ✅ quantity_sheets 계산: 권 × 50 × multiplier
         $quantity_sheets = QuantityFormatter::calculateNcrSheets($amount, $multiplier);
+
+        // ✅ 2026-01-16: quantity_sheets가 0이면 안전 폴백 적용
+        if ($quantity_sheets === 0 && $amount > 0) {
+            // 기본 2매 복사로 계산 (가장 일반적)
+            $quantity_sheets = $amount * 50 * 2;
+            error_log("[DataAdapter::convertNcrflambeau] WARNING: quantity_sheets was 0, applied fallback - amount=$amount, multiplier=$multiplier, fallback_sheets=$quantity_sheets");
+        }
 
         // ✅ quantity_display 생성: "10권 (2,000매)" 형식
         $quantity_display = QuantityFormatter::format($amount, 'V', $quantity_sheets);
@@ -504,6 +655,9 @@ class DataAdapter {
         $price_supply = self::sanitizePrice($data['price'] ?? $data['st_price'] ?? $data['money_4'] ?? 0);
         $price_vat = self::sanitizePrice($data['vat_price'] ?? $data['st_price_vat'] ?? $data['money_5'] ?? 0);
 
+        // ✅ 로그: NCR 변환 결과 기록
+        error_log("[DataAdapter::convertNcrflambeau] amount=$amount, multiplier=$multiplier, sheets=$quantity_sheets, display=$quantity_display");
+
         return [
             'spec_type' => $data['PN_type_name'] ?: ($data['PN_type'] ?? ''),  // 타입
             'spec_material' => $spec_material,  // 용지 (복사 매수 포함)
@@ -512,7 +666,7 @@ class DataAdapter {
             'spec_design' => ($data['ordertype'] ?? '') === 'total' ? '디자인+인쇄' : '인쇄만',
             'quantity_value' => $amount,
             'quantity_unit' => '권',
-            'quantity_sheets' => $quantity_sheets,  // ✅ 계산된 총 매수
+            'quantity_sheets' => $quantity_sheets,  // ✅ 계산된 총 매수 (0 방지)
             'quantity_display' => $quantity_display,  // ✅ "10권 (2,000매)" 형식
             'price_supply' => $price_supply,
             'price_vat' => $price_vat,

@@ -209,28 +209,78 @@ class QuantityFormatter {
      * NCR양식지 복사 매수(multiplier) 추출
      *
      * ✅ 2026-01-15: 신규 추가
+     * ✅ 2026-01-16: 명세서 v2.1 - 패턴 매칭 강화 및 예외 처리
      *
-     * spec_material 또는 MY_Fsd_name에서 "2매", "3매", "4매" 키워드 추출
-     * 예: "NCR 2매(100매철)" → 2, "NCR 3매(150매철)" → 3
+     * spec_material 또는 MY_Fsd_name에서 복사 매수 추출
+     *
+     * 지원 패턴:
+     * - "NCR 2매(100매철)" → 2
+     * - "NCR 3매(150매철)" → 3
+     * - "2매 1조", "3매 1조" → 2, 3
+     * - "2P", "3P", "4P" → 2, 3, 4
+     * - "복사 2매", "2매 복사" → 2
      *
      * @param array $data 주문 데이터
      * @return int multiplier (2, 3, 4) - 기본값 2
      */
     public static function extractNcrMultiplier(array $data): int {
-        // spec_material 또는 MY_Fsd_name에서 추출
-        $materialText = $data['spec_material'] ?? $data['MY_Fsd_name'] ?? $data['MY_Fsd'] ?? '';
+        // 여러 필드에서 텍스트 추출 (우선순위: spec_material > MY_Fsd_name > MY_Fsd > PN_type_name)
+        $searchFields = [
+            $data['spec_material'] ?? '',
+            $data['MY_Fsd_name'] ?? '',
+            $data['MY_Fsd'] ?? '',
+            $data['PN_type_name'] ?? '',
+            $data['PN_type'] ?? ''
+        ];
 
-        // "4매", "3매", "2매" 순으로 검색 (더 큰 숫자 우선)
-        if (preg_match('/(\d)매/u', $materialText, $matches)) {
-            $multiplier = intval($matches[1]);
-            // 유효 범위: 2~4
-            if ($multiplier >= 2 && $multiplier <= 4) {
-                return $multiplier;
-            }
+        $materialText = implode(' ', array_filter($searchFields));
+
+        if (empty($materialText)) {
+            error_log("[QuantityFormatter::extractNcrMultiplier] WARNING: No material text found, using default=2");
+            return 2;  // 기본값
         }
 
-        // 기본값: 2매 복사
-        return 2;
+        // ✅ 패턴 1: "X매" 형식 (가장 일반적)
+        // 예: "2매", "3매", "4매", "NCR 2매(100매철)"
+        if (preg_match('/([2-4])매/u', $materialText, $matches)) {
+            $multiplier = intval($matches[1]);
+            error_log("[QuantityFormatter::extractNcrMultiplier] Pattern 'X매' matched: $multiplier from '$materialText'");
+            return $multiplier;
+        }
+
+        // ✅ 패턴 2: "XP" 형식 (영문 표기)
+        // 예: "2P", "3P", "4P"
+        if (preg_match('/([2-4])P/i', $materialText, $matches)) {
+            $multiplier = intval($matches[1]);
+            error_log("[QuantityFormatter::extractNcrMultiplier] Pattern 'XP' matched: $multiplier from '$materialText'");
+            return $multiplier;
+        }
+
+        // ✅ 패턴 3: "X매 1조" / "X매1조" 형식
+        // 예: "2매 1조", "3매1조"
+        if (preg_match('/([2-4])매\s*1?\s*조/u', $materialText, $matches)) {
+            $multiplier = intval($matches[1]);
+            error_log("[QuantityFormatter::extractNcrMultiplier] Pattern 'X매 조' matched: $multiplier from '$materialText'");
+            return $multiplier;
+        }
+
+        // ✅ 패턴 4: "복사X매" / "X매복사" 형식
+        if (preg_match('/복사\s*([2-4])매|([2-4])매\s*복사/u', $materialText, $matches)) {
+            $multiplier = intval($matches[1] ?: $matches[2]);
+            error_log("[QuantityFormatter::extractNcrMultiplier] Pattern '복사' matched: $multiplier from '$materialText'");
+            return $multiplier;
+        }
+
+        // ✅ 패턴 5: 단순 숫자 (2, 3, 4만 추출)
+        if (preg_match('/\b([2-4])\b/', $materialText, $matches)) {
+            $multiplier = intval($matches[1]);
+            error_log("[QuantityFormatter::extractNcrMultiplier] Pattern 'single digit' matched: $multiplier from '$materialText'");
+            return $multiplier;
+        }
+
+        // ⚠️ 패턴 매칭 실패 시 기본값 사용
+        error_log("[QuantityFormatter::extractNcrMultiplier] WARNING: No pattern matched for '$materialText', using default=2");
+        return 2;  // 기본값: 2매 복사 (가장 일반적)
     }
 
     /**
