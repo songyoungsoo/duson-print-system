@@ -587,6 +587,108 @@ class DataAdapter {
         throw new Exception('standardToLegacy not implemented yet');
     }
 
+    // =========================================================================
+    // 용지 규격 마스터 연동 (paper_standard_master 테이블)
+    // ✅ 2026-01-15: A/B 시리즈 혼란 방지를 위한 DB 기반 계산
+    // =========================================================================
+
+    /**
+     * 규격명으로 매수 자동 계산 (SSOT Wrapper)
+     *
+     * paper_standard_master 테이블에서 1연당 매수를 조회하여 계산합니다.
+     * A4/B4 혼동 없이 정확한 매수를 계산합니다.
+     *
+     * @param mysqli $db DB 연결
+     * @param string $specName 규격명 (A4, B4 등)
+     * @param float $reams 주문 연수
+     * @return int 계산된 매수
+     *
+     * @example
+     * // add_to_basket.php에서 사용
+     * $sheets = DataAdapter::calculateSheetsBySpec($db, 'A4', 0.5);  // 2000
+     */
+    public static function calculateSheetsBySpec($db, string $specName, float $reams): int {
+        return QuantityFormatter::calculateSheetsBySpec($db, $specName, $reams);
+    }
+
+    /**
+     * PN_type_name에서 규격 코드 추출
+     *
+     * 전단지/포스터 주문 시 PN_type_name 필드에서 규격을 추출합니다.
+     * 예: "A4 (210×297)" → "A4", "국4절" → "B3"
+     *
+     * @param string $pnTypeName PN_type_name 필드 값
+     * @return string|null 규격 코드 (A4, B4 등) 또는 null
+     */
+    public static function extractSpecFromPnType(string $pnTypeName): ?string {
+        return QuantityFormatter::extractSpecName($pnTypeName);
+    }
+
+    /**
+     * 전단지/리플렛 매수 자동 계산 (규격 기반)
+     *
+     * PN_type_name에서 규격을 추출하고, paper_standard_master에서 조회하여
+     * 정확한 매수를 계산합니다. DB 조회 실패 시 레거시 방식으로 폴백합니다.
+     *
+     * @param mysqli $db DB 연결
+     * @param array $data 주문 데이터 (PN_type_name, MY_amount 포함)
+     * @return int 계산된 매수
+     *
+     * @example
+     * // inserted/add_to_basket.php에서 사용
+     * $data = ['PN_type_name' => 'A4 (210×297)', 'MY_amount' => 0.5];
+     * $sheets = DataAdapter::calculateInsertedSheets($db, $data);  // 2000
+     */
+    public static function calculateInsertedSheets($db, array $data): int {
+        $reams = floatval($data['MY_amount'] ?? 0);
+        if ($reams <= 0) {
+            return 0;
+        }
+
+        // 1. PN_type_name에서 규격 추출 시도
+        $pnTypeName = $data['PN_type_name'] ?? $data['spec_size'] ?? '';
+        $specName = self::extractSpecFromPnType($pnTypeName);
+
+        // 2. 규격이 있으면 paper_standard_master에서 조회
+        if ($specName) {
+            $sheets = self::calculateSheetsBySpec($db, $specName, $reams);
+            if ($sheets > 0) {
+                return $sheets;
+            }
+        }
+
+        // 3. Fallback: mesu 필드 또는 레거시 계산
+        if (!empty($data['mesu'])) {
+            return intval($data['mesu']);
+        }
+
+        // 4. Fallback: mlangprintauto_inserted 테이블 조회 (기존 방식)
+        // 이 부분은 OrderDataService에서 처리
+        return 0;
+    }
+
+    /**
+     * 규격 정보 조회 (SSOT Wrapper)
+     *
+     * @param mysqli $db DB 연결
+     * @param string $specName 규격명
+     * @return array|null 규격 정보
+     */
+    public static function getPaperStandard($db, string $specName): ?array {
+        return QuantityFormatter::getPaperStandard($db, $specName);
+    }
+
+    /**
+     * 모든 규격 목록 조회 (SSOT Wrapper)
+     *
+     * @param mysqli $db DB 연결
+     * @param string|null $series A 또는 B (null이면 전체)
+     * @return array 규격 목록
+     */
+    public static function getAllPaperStandards($db, ?string $series = null): array {
+        return QuantityFormatter::getAllPaperStandards($db, $series);
+    }
+
     // ========== Grand Design Methods (2026-01-13) ==========
 
     /**

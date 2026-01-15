@@ -270,6 +270,158 @@ class QuantityFormatter {
         return intval($reams * $sheetsPerReam);
     }
 
+    // =========================================================================
+    // 용지 규격 마스터 연동 (paper_standard_master 테이블)
+    // ✅ 2026-01-15: A/B 시리즈 혼란 방지를 위한 DB 기반 계산
+    // =========================================================================
+
+    /**
+     * 용지 규격 정보 조회 (SSOT)
+     *
+     * paper_standard_master 테이블에서 규격 정보를 조회합니다.
+     * A4, B4 등 규격명을 입력하면 해당 규격의 모든 정보를 반환합니다.
+     *
+     * @param mysqli $db DB 연결
+     * @param string $specName 규격명 (A4, B4 등)
+     * @return array|null [spec_name, series, width, height, cut_ratio, sheets_per_ream]
+     */
+    public static function getPaperStandard($db, string $specName): ?array {
+        static $cache = [];
+
+        // 규격명 정규화 (대문자, 공백 제거)
+        $specName = strtoupper(trim($specName));
+
+        // 캐시 확인
+        if (isset($cache[$specName])) {
+            return $cache[$specName];
+        }
+
+        $stmt = mysqli_prepare($db,
+            "SELECT spec_name, series, width, height, cut_ratio, sheets_per_ream
+             FROM paper_standard_master WHERE spec_name = ?"
+        );
+
+        if (!$stmt) {
+            error_log("QuantityFormatter::getPaperStandard - DB prepare failed: " . mysqli_error($db));
+            return null;
+        }
+
+        mysqli_stmt_bind_param($stmt, 's', $specName);
+        mysqli_stmt_execute($stmt);
+        $result = mysqli_stmt_get_result($stmt);
+        $row = mysqli_fetch_assoc($result);
+        mysqli_stmt_close($stmt);
+
+        // 캐시에 저장 (null도 저장하여 반복 쿼리 방지)
+        $cache[$specName] = $row;
+
+        return $row;
+    }
+
+    /**
+     * 규격 기준 매수 자동 계산 (SSOT)
+     *
+     * paper_standard_master 테이블에서 1연당 매수를 조회하여 자동 계산합니다.
+     * A/B 시리즈 혼란을 원천 차단합니다.
+     *
+     * @param mysqli $db DB 연결
+     * @param string $specName 규격명 (A4, B4 등)
+     * @param float $reams 주문 연수 (0.5, 1 등)
+     * @return int 계산된 매수 (규격 없으면 0)
+     *
+     * @example
+     * calculateSheetsBySpec($db, 'A4', 0.5);  // 2,000 (4,000 * 0.5)
+     * calculateSheetsBySpec($db, 'B4', 0.5);  // 2,000 (4,000 * 0.5)
+     * calculateSheetsBySpec($db, 'A3', 1);    // 2,000 (2,000 * 1)
+     */
+    public static function calculateSheetsBySpec($db, string $specName, float $reams): int {
+        $standard = self::getPaperStandard($db, $specName);
+
+        if (!$standard) {
+            error_log("QuantityFormatter::calculateSheetsBySpec - Unknown spec: $specName");
+            return 0;
+        }
+
+        return intval($reams * $standard['sheets_per_ream']);
+    }
+
+    /**
+     * 규격명에서 규격 코드 추출
+     *
+     * 다양한 형태의 규격 문자열에서 표준 규격 코드(A4, B4 등)를 추출합니다.
+     *
+     * @param string $text 규격 포함 텍스트 (예: "A4 (210×297)", "국4절")
+     * @return string|null 규격 코드 (A4, B4 등) 또는 null
+     */
+    public static function extractSpecName(string $text): ?string {
+        // A/B 시리즈 패턴 매칭
+        if (preg_match('/([AB])([1-6])/i', $text, $matches)) {
+            return strtoupper($matches[1] . $matches[2]);
+        }
+
+        // 국전/전지 표기 매핑 (한국식)
+        $koreanMap = [
+            '국전' => 'B1', '국2절' => 'B2', '국4절' => 'B3', '국8절' => 'B4', '국16절' => 'B5', '국32절' => 'B6',
+            '4×6전지' => 'A1', '4×6반절' => 'A2', '4×6 4절' => 'A3', '4×6 8절' => 'A4', '4×6 16절' => 'A5'
+        ];
+
+        foreach ($koreanMap as $korean => $spec) {
+            if (mb_strpos($text, $korean) !== false) {
+                return $spec;
+            }
+        }
+
+        return null;
+    }
+
+    /**
+     * 모든 규격 목록 조회
+     *
+     * @param mysqli $db DB 연결
+     * @param string|null $series 시리즈 필터 ('A' 또는 'B', null이면 전체)
+     * @return array 규격 목록
+     */
+    public static function getAllPaperStandards($db, ?string $series = null): array {
+        $sql = "SELECT spec_name, series, width, height, cut_ratio, sheets_per_ream
+                FROM paper_standard_master";
+
+        if ($series !== null) {
+            $sql .= " WHERE series = '" . mysqli_real_escape_string($db, $series) . "'";
+        }
+
+        $sql .= " ORDER BY series, cut_ratio";
+
+        $result = mysqli_query($db, $sql);
+        $standards = [];
+
+        while ($row = mysqli_fetch_assoc($result)) {
+            $standards[] = $row;
+        }
+
+        return $standards;
+    }
+
+    /**
+     * 규격별 1연당 매수 반환 (Fallback 포함)
+     *
+     * DB 조회 실패 시 기본값 반환
+     *
+     * @param mysqli|null $db DB 연결 (null이면 기본값 사용)
+     * @param string $specName 규격명
+     * @return int 1연당 매수 (기본값: 4000)
+     */
+    public static function getSheetsPerReam($db, string $specName): int {
+        if ($db !== null) {
+            $standard = self::getPaperStandard($db, $specName);
+            if ($standard) {
+                return intval($standard['sheets_per_ream']);
+            }
+        }
+
+        // Fallback: 기본값 (A4/B4 기준)
+        return 4000;
+    }
+
     /**
      * 단위 코드에서 한글명 반환
      *
