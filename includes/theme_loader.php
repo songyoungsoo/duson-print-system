@@ -123,10 +123,11 @@ class ThemeLoader {
     }
 
     /**
-     * 테마 스위처 UI 렌더링
+     * 테마 스위처 UI 렌더링 (비활성화됨)
      */
     public static function renderSwitcher($position = 'bottom-right') {
-        self::init();
+        // 테마 스위처 비활성화 - 2026-01-15
+        return;
 
         $isExcel = self::$currentTheme === self::THEME_EXCEL;
         $currentUrl = $_SERVER['REQUEST_URI'];
@@ -217,9 +218,11 @@ class ThemeLoader {
     }
 
     /**
-     * 테마 스위처 JavaScript (AJAX 전환용)
+     * 테마 스위처 JavaScript (AJAX 전환용) - 비활성화됨
      */
     public static function renderSwitcherJS() {
+        // 테마 스위처 JS 비활성화 - 2026-01-15
+        return;
         ?>
         <script>
         const ThemeSwitcher = {

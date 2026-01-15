@@ -381,12 +381,16 @@
             font-family: 'Noto Sans KR', sans-serif;
             box-shadow: 0 -4px 20px rgba(0,0,0,0.1);
             padding: 20px 0 15px;
+            max-width: 100%;
+            box-sizing: border-box;
+            overflow-x: hidden;
         }
 
         .footer-compact-container {
             max-width: 1200px;
             margin: 0 auto;
             padding: 0 20px;
+            box-sizing: border-box;
         }
 
         /* 상단 네비게이션 링크 */
@@ -570,6 +574,15 @@
 
         /* 반응형 디자인 */
         @media (max-width: 768px) {
+            .compact-footer {
+                padding: 15px 10px;
+            }
+
+            .footer-compact-container {
+                padding: 0 10px;
+                max-width: 100%;
+            }
+
             .footer-nav {
                 display: flex;
                 flex-wrap: wrap;
@@ -582,12 +595,27 @@
             }
 
             .footer-nav-link {
-                font-size: 12px;
+                font-size: 11px;
+            }
+
+            .footer-info {
+                word-break: keep-all;
             }
 
             .company-main,
             .company-detail {
-                font-size: 11px;
+                font-size: 10px;
+                word-break: keep-all;
+            }
+
+            .company-detail {
+                display: flex;
+                flex-direction: column;
+                gap: 2px;
+            }
+
+            .company-detail .info-divider {
+                display: none;
             }
 
             .footer-bottom-compact {
@@ -597,7 +625,8 @@
             }
 
             .copyright-text {
-                font-size: 10px;
+                font-size: 9px;
+                word-break: keep-all;
             }
 
             .escrow-img-compact {
