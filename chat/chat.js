@@ -117,13 +117,34 @@ class ChatWidget {
         });
 
         // 채팅 열기/닫기
-        document.getElementById('chat-toggle-btn').addEventListener('click', () => {
-            this.toggleChat();
-        });
+        const toggleBtn = document.getElementById('chat-toggle-btn');
+        let lastTap = 0;
 
-        document.getElementById('chat-minimize-btn').addEventListener('click', () => {
+        const handleToggle = (e) => {
+            const now = Date.now();
+            if (now - lastTap < 500) return; // 중복 방지
+            lastTap = now;
+            e.preventDefault();
+            e.stopPropagation();
+            this.toggleChat();
+        };
+
+        // 클릭 이벤트 (데스크톱)
+        toggleBtn.addEventListener('click', handleToggle, { passive: false });
+
+        // 터치 이벤트 (모바일) - touchend 사용
+        toggleBtn.addEventListener('touchend', handleToggle, { passive: false });
+
+        // 채팅 닫기 버튼 (모바일 터치 지원)
+        const minimizeBtn = document.getElementById('chat-minimize-btn');
+        minimizeBtn.addEventListener('click', (e) => {
+            e.preventDefault();
             this.closeChat();
         });
+        minimizeBtn.addEventListener('touchstart', (e) => {
+            e.preventDefault();
+            this.closeChat();
+        }, { passive: false });
 
         // 메시지 전송
         document.getElementById('chat-send-btn').addEventListener('click', () => {
@@ -134,6 +155,40 @@ class ChatWidget {
             if (e.key === 'Enter') {
                 this.sendMessage();
             }
+        });
+
+        // 모바일 키보드 대응
+        const chatInput = document.getElementById('chat-input');
+        const chatWindow = document.getElementById('chat-window');
+
+        // 모바일 키보드 대응 - visualViewport API
+        if (window.visualViewport && window.innerWidth <= 480) {
+            let initialHeight = window.innerHeight;
+
+            const adjustForKeyboard = () => {
+                if (chatWindow.classList.contains('active')) {
+                    const currentHeight = window.visualViewport.height;
+                    const keyboardOpen = initialHeight - currentHeight > 100;
+
+                    if (keyboardOpen) {
+                        // 키보드 열림 - 뷰포트 크기로 조정
+                        chatWindow.style.height = currentHeight + 'px';
+                        chatWindow.style.bottom = 'auto';
+                    } else {
+                        // 키보드 닫힘 - 전체화면 복귀
+                        chatWindow.style.height = '100%';
+                        chatWindow.style.bottom = '0';
+                    }
+                }
+            };
+
+            window.visualViewport.addEventListener('resize', adjustForKeyboard);
+        }
+
+        chatInput.addEventListener('focus', () => {
+            setTimeout(() => {
+                chatInput.scrollIntoView({ behavior: 'smooth', block: 'end' });
+            }, 350);
         });
 
         // 이미지 업로드
@@ -222,7 +277,9 @@ class ChatWidget {
 
     showNameModal() {
         const modal = document.getElementById('chat-name-modal');
-        modal.classList.add('active');
+        if (modal) {
+            modal.classList.add('active');
+        }
 
         // 입력창에 포커스
         setTimeout(() => {
@@ -269,6 +326,9 @@ class ChatWidget {
         this.isOpen = true;
         document.getElementById('chat-window').classList.add('active');
 
+        // 모바일에서 채팅창 열면 토글 버튼 숨김
+        document.getElementById('chat-toggle-btn').classList.add('chat-open');
+
         // 채팅방 가져오기 또는 생성
         if (!this.roomId) {
             await this.getOrCreateRoom();
@@ -289,7 +349,16 @@ class ChatWidget {
 
     closeChat() {
         this.isOpen = false;
-        document.getElementById('chat-window').classList.remove('active');
+        const chatWindow = document.getElementById('chat-window');
+        chatWindow.classList.remove('active');
+
+        // 인라인 스타일 초기화 (키보드 조정으로 인한 스타일)
+        chatWindow.style.height = '';
+        chatWindow.style.bottom = '';
+        chatWindow.style.top = '';
+
+        // 모바일에서 채팅창 닫으면 토글 버튼 다시 표시
+        document.getElementById('chat-toggle-btn').classList.remove('chat-open');
 
         // 폴링 중지
         this.stopPolling();
@@ -346,8 +415,10 @@ class ChatWidget {
         const messagesContainer = document.getElementById('chat-messages');
         const user = this.getCurrentUser();
 
-        const isSent = msg.senderid == user.id;
+        // 고객 메시지는 오른쪽, 직원/시스템 메시지는 왼쪽
+        const isCustomer = msg.senderid && (msg.senderid.startsWith('guest_') || msg.senderid == user.id);
         const isSystem = msg.senderid === 'system';
+        const isSent = isCustomer && !isSystem;
 
         const messageDiv = document.createElement('div');
         messageDiv.className = `chat-message ${isSent ? 'sent' : 'received'} ${isSystem ? 'system' : ''}`;
@@ -544,19 +615,22 @@ class ChatWidget {
     }
 
     getCurrentUser() {
-        // 세션에서 사용자 정보 가져오기
-        let userId = sessionStorage.getItem('user_id');
-        let userName = sessionStorage.getItem('user_name');
+        // localStorage에서 사용자 정보 가져오기 (영구 저장)
+        let userId = localStorage.getItem('chat_user_id');
+        let userName = sessionStorage.getItem('user_name') || localStorage.getItem('chat_user_name');
 
-        // 사용자 ID가 없으면 생성
+        // 사용자 ID가 없으면 생성 (영구 저장)
         if (!userId) {
             userId = 'guest_' + Date.now();
-            sessionStorage.setItem('user_id', userId);
+            localStorage.setItem('chat_user_id', userId);
         }
 
-        // 사용자 이름이 없으면 기본값 (모달을 건너뛴 경우)
+        // 사용자 이름이 없으면 기본값
         if (!userName) {
             userName = '손님';
+        } else {
+            // 이름도 localStorage에 백업
+            localStorage.setItem('chat_user_name', userName);
         }
 
         return {
@@ -577,7 +651,4 @@ class ChatWidget {
     }
 }
 
-// 페이지 로드 시 채팅 위젯 초기화
-document.addEventListener('DOMContentLoaded', () => {
-    new ChatWidget();
-});
+// 초기화는 chat_widget.php에서 처리 (중복 방지 로직 포함)

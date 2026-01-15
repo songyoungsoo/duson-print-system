@@ -8,8 +8,8 @@
  */
 ?>
 <!-- 채팅 시스템 -->
-<link rel="stylesheet" href="/chat/chat.css">
-<script src="/chat/chat.js"></script>
+<link rel="stylesheet" href="/chat/chat.css?v=20260115v">
+<script src="/chat/chat.js?v=20260115w"></script>
 <script>
 // DOMContentLoaded가 이미 발생했다면 즉시 초기화
 if (document.readyState === 'loading') {

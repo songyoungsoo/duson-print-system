@@ -234,13 +234,14 @@
         }
 
         .admin-message.sent .message-bubble {
-            background: linear-gradient(135deg, #4A5FBF 0%, #3A4D99 100%);
+            background: #4A5568;
             color: white;
         }
 
         .admin-message.received .message-bubble {
-            background: #e9ecef;
+            background: #F7FAFC;
             color: #333;
+            border: 1px solid #E2E8F0;
         }
 
         .admin-message.system .message-bubble {
@@ -650,8 +651,17 @@
         // 메시지 추가
         function appendAdminMessage(msg) {
             const messagesArea = document.getElementById('messages-area');
-            const isSent = msg.senderid === currentStaffId;
+
+            // 관리자 화면: 직원 메시지는 오른쪽, 고객 메시지는 왼쪽
+            // staff*, admin* → 오른쪽 (sent)
+            // guest_* → 왼쪽 (received)
+            const isStaff = msg.senderid && (
+                msg.senderid.startsWith('staff') ||
+                msg.senderid.startsWith('admin') ||
+                msg.senderid === currentStaffId
+            );
             const isSystem = msg.senderid === 'system';
+            const isSent = isStaff && !isSystem;
 
             // 디버그: 메시지 표시 로직 확인
             console.log('💬 메시지 표시:', {
@@ -659,6 +669,7 @@
                 sendername: msg.sendername,
                 currentStaffId: currentStaffId,
                 currentStaffName: currentStaffName,
+                isStaff: isStaff,
                 isSent: isSent,
                 isSystem: isSystem
             });
