@@ -7,6 +7,7 @@
 
 require_once __DIR__ . '/../../includes/safe_json_response.php';
 require_once __DIR__ . '/../../includes/StandardUploadHandler.php';
+require_once __DIR__ . '/../../includes/DataAdapter.php';  // ✅ 2026-01-16: SSOT 표준화 적용
 
 header('Content-Type: application/json; charset=utf-8');
 session_start();
@@ -148,7 +149,57 @@ $customer_phone = $_POST['customer_phone'] ?? null;
 // === 13. 원본 파일명 ===
 $original_filename = $_POST['original_filename'] ?? null;
 
-// === 14. DB INSERT (54개 필드 - no와 regdate 제외, flyer_mesu 추가) ===
+// === 14. DataAdapter SSOT 적용 (2026-01-16) ===
+// 레거시 데이터 → 표준 데이터 변환 (Group A/B/C 공식 적용)
+$legacy_data = [
+    'product_type' => $product_type,
+    'MY_type' => $MY_type,
+    'MY_type_name' => $MY_type_name,
+    'MY_Fsd' => $MY_Fsd,
+    'MY_Fsd_name' => $_POST['MY_Fsd_name'] ?? '',
+    'PN_type' => $PN_type,
+    'PN_type_name' => $_POST['PN_type_name'] ?? '',
+    'POtype' => $POtype,
+    'POtype_name' => $POtype_name,
+    'Section' => $Section,
+    'Section_name' => $Section_name,
+    'MY_amount' => $MY_amount,
+    'mesu' => in_array($product_type, ['inserted', 'leaflet']) ? $flyer_mesu : $mesu,
+    'ordertype' => $ordertype,
+    'st_price' => $st_price,
+    'st_price_vat' => $st_price_vat,
+    'additional_options' => $additional_options_json,
+    'premium_options' => $premium_options,
+    // 스티커 전용
+    'jong' => $jong,
+    'garo' => $garo,
+    'sero' => $sero,
+    'domusong' => $domusong,
+    'uhyung' => $uhyung,
+    // quantity_display 전달 (드롭다운 텍스트)
+    'quantity_display' => $_POST['quantity_display'] ?? ''
+];
+
+$standard_data = DataAdapter::legacyToStandard($legacy_data, $product_type);
+
+// 표준 필드 추출
+$spec_type = $standard_data['spec_type'];
+$spec_material = $standard_data['spec_material'];
+$spec_size = $standard_data['spec_size'];
+$spec_sides = $standard_data['spec_sides'];
+$spec_design = $standard_data['spec_design'];
+$quantity_value = $standard_data['quantity_value'];
+$quantity_unit = $standard_data['quantity_unit'];
+$quantity_sheets = $standard_data['quantity_sheets'];
+$quantity_display = $standard_data['quantity_display'];
+$price_supply = $standard_data['price_supply'];
+$price_vat = $standard_data['price_vat'];
+$price_vat_amount = $standard_data['price_vat_amount'];
+$data_version = 2;  // 표준화된 데이터
+
+error_log("quotation_temp DataAdapter 적용 - product: $product_type, spec_type: $spec_type, qty_display: $quantity_display");
+
+// === 15. DB INSERT (68개 필드 - 레거시 54개 + 표준 14개) ===
 $query = "INSERT INTO quotation_temp (
     session_id, order_id, parent, product_type,
     jong, garo, sero, mesu, flyer_mesu, domusong, uhyung,
@@ -167,6 +218,9 @@ $query = "INSERT INTO quotation_temp (
     MY_type_name, Section_name, POtype_name,
     customer_name, customer_phone,
     original_filename,
+    spec_type, spec_material, spec_size, spec_sides, spec_design,
+    quantity_value, quantity_unit, quantity_sheets, quantity_display,
+    price_supply, price_vat, price_vat_amount, data_version,
     regdate
 ) VALUES (
     ?, ?, ?, ?,
@@ -186,6 +240,9 @@ $query = "INSERT INTO quotation_temp (
     ?, ?, ?,
     ?, ?,
     ?,
+    ?, ?, ?, ?, ?,
+    ?, ?, ?, ?,
+    ?, ?, ?, ?,
     UNIX_TIMESTAMP()
 )";
 
@@ -193,7 +250,7 @@ $query = "INSERT INTO quotation_temp (
 // Placeholder 개수
 $placeholder_count = substr_count($query, '?');
 
-// 타입 문자열 (54개 파라미터 - flyer_mesu 추가)
+// 타입 문자열 (68개 파라미터 - 레거시 54개 + 표준 14개)
 $type_string =
     "ssss" .        // session_id, order_id, parent, product_type (4)
     "ssssisi" .     // jong, garo, sero, mesu, flyer_mesu, domusong, uhyung (7)
@@ -211,8 +268,12 @@ $type_string =
     "iiii" .        // envelope_tape_enabled, envelope_tape_quantity, envelope_tape_price, envelope_additional_options_total (4)
     "sss" .         // MY_type_name, Section_name, POtype_name (3)
     "ss" .          // customer_name, customer_phone (2)
-    "s";            // original_filename (1)
-    // Total: 54 parameters
+    "s" .           // original_filename (1)
+    // ✅ 표준 필드 14개 (2026-01-16)
+    "sssss" .       // spec_type, spec_material, spec_size, spec_sides, spec_design (5)
+    "dsis" .        // quantity_value, quantity_unit, quantity_sheets, quantity_display (4)
+    "iiii";         // price_supply, price_vat, price_vat_amount, data_version (4)
+    // Total: 68 parameters
 
 $type_count = strlen($type_string);
 
@@ -233,8 +294,9 @@ if (!$stmt) {
     safe_json_response(false, null, 'DB 준비 실패: ' . mysqli_error($db));
 }
 
-// bind_param 실행 (54개 파라미터 - flyer_mesu 추가)
+// bind_param 실행 (68개 파라미터 - 레거시 54개 + 표준 14개)
 mysqli_stmt_bind_param($stmt, $type_string,
+    // 레거시 필드 (54개)
     $session_id, $order_id, $parent, $product_type,
     $jong, $garo, $sero, $mesu, $flyer_mesu, $domusong, $uhyung,
     $MY_type, $MY_Fsd, $PN_type, $MY_amount, $POtype, $ordertype,
@@ -251,7 +313,11 @@ mysqli_stmt_bind_param($stmt, $type_string,
     $envelope_tape_enabled, $envelope_tape_quantity, $envelope_tape_price, $envelope_additional_options_total,
     $MY_type_name, $Section_name, $POtype_name,
     $customer_name, $customer_phone,
-    $original_filename
+    $original_filename,
+    // 표준 필드 (14개) - 2026-01-16
+    $spec_type, $spec_material, $spec_size, $spec_sides, $spec_design,
+    $quantity_value, $quantity_unit, $quantity_sheets, $quantity_display,
+    $price_supply, $price_vat, $price_vat_amount, $data_version
 );
 
 if (!mysqli_stmt_execute($stmt)) {

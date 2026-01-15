@@ -8,7 +8,11 @@
  * - 추가옵션(코팅, 접지 등)이 있으면 별도 행으로 표시
  *
  * 사용 위치: 장바구니, 주문, 주문완료, 관리자, 주문서출력, 견적서, 마이페이지
+ *
+ * ✅ 2026-01-16: QuantityFormatter SSOT 연동
  */
+
+require_once __DIR__ . '/../../../includes/QuantityFormatter.php';
 
 class ProductSpecFormatter {
     private $db;
@@ -745,6 +749,11 @@ class ProductSpecFormatter {
 
     /**
      * 수량 포맷팅 (규격/사양 텍스트용)
+     *
+     * ✅ 2026-01-16: QuantityFormatter SSOT 연동
+     * - Group A/B/C 공식 적용
+     * - extractNcrMultiplier() 연동
+     * - validateAndSelectSheets() 규칙 반영
      */
     private function formatQuantity($item) {
         $productType = $item['product_type'] ?? '';
@@ -754,72 +763,14 @@ class ProductSpecFormatter {
             $productType = 'sticker';
         }
 
-        // 1. 스티커: mesu 최우선 사용 - 단위 포함
-        if (in_array($productType, ['sticker', 'msticker', 'msticker_01'])) {
-            if (!empty($item['mesu'])) {
-                return number_format(intval($item['mesu'])) . '매';  // ✅ 단위 추가
-            }
-        }
+        // ✅ SSOT: QuantityFormatter를 통한 단위 코드 및 수량 추출
+        $quantityData = QuantityFormatter::extractQuantityData($item, $productType);
+        $qtyValue = $quantityData['qty_value'];
+        $unitCode = $quantityData['qty_unit_code'];
+        $sheets = $quantityData['qty_sheets'];
 
-        // 2. 전단지/리플렛: 연 단위
-        if (in_array($productType, ['inserted', 'leaflet'])) {
-            $reams = floatval($item['MY_amount'] ?? 0);
-            $sheets = intval($item['mesu'] ?? $item['quantityTwo'] ?? 0);
-
-            if ($reams > 0) {
-                // 연수가 있으면 "X연 (Y매)" 형식
-                $qty = number_format($reams, $reams == intval($reams) ? 0 : 1) . '연';
-                if ($sheets > 0) {
-                    $qty .= ' (' . number_format($sheets) . '매)';
-                }
-                return $qty;
-            } elseif ($sheets > 0) {
-                // 연수 없이 매수만 있으면 "X매" 형식
-                return number_format($sheets) . '매';
-            }
-        }
-
-        // 3. 봉투/명함: 10 미만이면 천 단위로 변환
-        if (in_array($productType, ['envelope', 'namecard'])) {
-            if (!empty($item['MY_amount'])) {
-                $amount = floatval($item['MY_amount']);
-                $qty_value = $amount > 0 && $amount < 10 ? $amount * 1000 : intval($amount);
-                return number_format($qty_value) . '매';
-            }
-        }
-
-        // 4. 카다록: 부 단위
-        if ($productType === 'cadarok') {
-            if (!empty($item['MY_amount'])) {
-                $amount = floatval($item['MY_amount']);
-                // 소수점 정리 (1000.00 → 1,000)
-                if (floor($amount) == $amount) {
-                    return number_format($amount) . '부';
-                }
-                return rtrim(rtrim(number_format($amount, 2), '0'), '.') . '부';
-            }
-        }
-
-        // 5. NCR양식지: 권 단위
-        if ($productType === 'ncrflambeau') {
-            if (!empty($item['MY_amount'])) {
-                $amount = floatval($item['MY_amount']);
-                // 소수점 정리 (10.00 → 10)
-                if (floor($amount) == $amount) {
-                    return number_format($amount) . '권';
-                }
-                return rtrim(rtrim(number_format($amount, 2), '0'), '.') . '권';
-            }
-        }
-
-        // 6. 기타: MY_amount 사용
-        if (!empty($item['MY_amount'])) {
-            $amount = floatval($item['MY_amount']);
-            $unit = $item['unit'] ?? '매';
-            return number_format(intval($amount)) . $unit;
-        }
-
-        return '';
+        // ✅ SSOT: QuantityFormatter::format()으로 표준 출력
+        return QuantityFormatter::format($qtyValue, $unitCode, $sheets);
     }
 
     /**

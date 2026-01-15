@@ -351,13 +351,26 @@ $koreanAmount = numberToKorean($quote['grand_total']);
                         $qtyDisplay = ($qty == intval($qty)) ? number_format($qty) : rtrim(rtrim(number_format($qty, 2), '0'), '.');
                         echo $qtyDisplay;
 
-                        // 전단지(inserted/leaflet)인 경우 매수 표시 추가
+                        // 전단지/NCR 등 매수 표시 (qty_sheets 우선, source_data 폴백)
                         $productType = $item['product_type'] ?? '';
-                        if (in_array($productType, ['inserted', 'leaflet']) && !empty($item['source_data'])) {
+                        $sheets = null;
+
+                        // ✅ 표준 필드 qty_sheets 우선 사용
+                        if (!empty($item['qty_sheets'])) {
+                            $sheets = intval($item['qty_sheets']);
+                        }
+                        // 폴백: source_data의 mesu
+                        elseif (!empty($item['source_data'])) {
                             $sourceData = json_decode($item['source_data'], true);
                             if (!empty($sourceData['mesu'])) {
-                                echo '<br><span style="font-size: 10px; color: #666;">(' . number_format($sourceData['mesu']) . '매)</span>';
+                                $sheets = intval($sourceData['mesu']);
                             }
+                        }
+
+                        // 연/권 단위인 경우 매수 표시
+                        $unit = $item['unit'] ?? '';
+                        if ($sheets && in_array($unit, ['연', '권'])) {
+                            echo '<br><span style="font-size: 10px; color: #666;">(' . number_format($sheets) . '매)</span>';
                         }
                     ?></td>
                     <td class="center"><?php echo htmlspecialchars($item['unit']); ?></td>
