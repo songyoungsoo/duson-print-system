@@ -16,6 +16,31 @@ require_once __DIR__ . '/QuantityFormatter.php';
 class DataAdapter {
 
     /**
+     * 가격 문자열을 정수로 안전하게 변환 (방어 로직)
+     *
+     * ✅ 2026-01-15: 신규 추가
+     *
+     * 콤마(,)가 포함된 문자열도 자동으로 숫자로 변환
+     * 예: "1,000,000" → 1000000, "50000" → 50000, null → 0
+     *
+     * @param mixed $value 가격 값 (string, int, float, null)
+     * @return int 정수 가격
+     */
+    public static function sanitizePrice($value): int {
+        if ($value === null || $value === '') {
+            return 0;
+        }
+
+        // 문자열인 경우 콤마 제거
+        if (is_string($value)) {
+            $value = str_replace(',', '', $value);
+            $value = str_replace(' ', '', $value);
+        }
+
+        return intval($value);
+    }
+
+    /**
      * 레거시 데이터를 표준 필드로 변환
      *
      * @param array $legacy_data 레거시 필드 배열
@@ -196,9 +221,9 @@ class DataAdapter {
         $amount = floatval($data['MY_amount'] ?? 0);
         $qty_value = $amount > 0 && $amount < 10 ? $amount * 1000 : intval($amount);
 
-        // 가격 필드 fallback: shop_temp는 st_price, mlangorder_printauto는 money_4/money_5
-        $price_supply = intval($data['price'] ?? $data['st_price'] ?? $data['money_4'] ?? 0);
-        $price_vat = intval($data['vat_price'] ?? $data['st_price_vat'] ?? $data['money_5'] ?? 0);
+        // ✅ 방어 로직: 콤마 포함 문자열도 자동 변환
+        $price_supply = self::sanitizePrice($data['price'] ?? $data['st_price'] ?? $data['money_4'] ?? 0);
+        $price_vat = self::sanitizePrice($data['vat_price'] ?? $data['st_price_vat'] ?? $data['money_5'] ?? 0);
 
         return [
             'spec_type' => $data['MY_type_name'] ?: ($data['MY_type'] ?? ''),
@@ -223,9 +248,9 @@ class DataAdapter {
      * jong=재질, garo/sero=크기, domusong=모양, mesu=매수
      */
     private static function convertSticker($data) {
-        // 가격이 문자열로 저장된 경우 정수로 변환
-        $price_supply = is_numeric($data['price'] ?? 0) ? intval($data['price']) : 0;
-        $price_vat = is_numeric($data['price_vat'] ?? 0) ? intval($data['price_vat']) : 0;
+        // ✅ 방어 로직: 콤마 포함 문자열도 자동 변환
+        $price_supply = self::sanitizePrice($data['price'] ?? 0);
+        $price_vat = self::sanitizePrice($data['price_vat'] ?? 0);
 
         // jong 필드에서 "jil" 제거
         $jong = $data['jong'] ?? '';
@@ -285,9 +310,9 @@ class DataAdapter {
             }
         }
 
-        // 가격 필드 fallback: shop_temp는 st_price/st_price_vat 사용
-        $price_supply = intval($data['Order_PriceForm'] ?? $data['price'] ?? $data['st_price'] ?? 0);
-        $price_vat = intval($data['Total_PriceForm'] ?? $data['vat_price'] ?? $data['st_price_vat'] ?? 0);
+        // ✅ 방어 로직: 콤마 포함 문자열도 자동 변환
+        $price_supply = self::sanitizePrice($data['Order_PriceForm'] ?? $data['price'] ?? $data['st_price'] ?? 0);
+        $price_vat = self::sanitizePrice($data['Total_PriceForm'] ?? $data['vat_price'] ?? $data['st_price_vat'] ?? 0);
 
         return [
             'spec_type' => $data['MY_type_name'] ?: ($data['MY_type'] ?? ''),
@@ -328,9 +353,9 @@ class DataAdapter {
         // 이유: 프론트엔드에서 "1"만 보내면 "1,000매"로 변환되지 않는 문제 해결
         $quantity_display = number_format($qty_value) . '매';
 
-        // 가격 필드 fallback: shop_temp는 st_price, mlangorder_printauto는 money_4/money_5
-        $price_supply = intval($data['price'] ?? $data['st_price'] ?? $data['money_4'] ?? 0);
-        $price_vat = intval($data['vat_price'] ?? $data['st_price_vat'] ?? $data['money_5'] ?? 0);
+        // ✅ 방어 로직: 콤마 포함 문자열도 자동 변환
+        $price_supply = self::sanitizePrice($data['price'] ?? $data['st_price'] ?? $data['money_4'] ?? 0);
+        $price_vat = self::sanitizePrice($data['vat_price'] ?? $data['st_price_vat'] ?? $data['money_5'] ?? 0);
 
         return [
             'spec_type' => $data['MY_type_name'] ?: ($data['MY_type'] ?? ''),
@@ -365,9 +390,9 @@ class DataAdapter {
             ? $data['quantity_display']
             : number_format($amount) . '부';
 
-        // 가격 필드 fallback: shop_temp는 st_price, mlangorder_printauto는 money_4/money_5
-        $price_supply = intval($data['price'] ?? $data['st_price'] ?? $data['money_4'] ?? 0);
-        $price_vat = intval($data['vat_price'] ?? $data['st_price_vat'] ?? $data['money_5'] ?? 0);
+        // ✅ 방어 로직: 콤마 포함 문자열도 자동 변환
+        $price_supply = self::sanitizePrice($data['price'] ?? $data['st_price'] ?? $data['money_4'] ?? 0);
+        $price_vat = self::sanitizePrice($data['vat_price'] ?? $data['st_price_vat'] ?? $data['money_5'] ?? 0);
 
         return [
             'spec_type' => $data['MY_type_name'] ?: ($data['MY_type'] ?? ''),
@@ -394,9 +419,9 @@ class DataAdapter {
     private static function convertLittleprint($data) {
         $amount = intval($data['MY_amount'] ?? 0);
 
-        // 가격 필드 fallback: shop_temp는 st_price, mlangorder_printauto는 money_4/money_5
-        $price_supply = intval($data['price'] ?? $data['st_price'] ?? $data['money_4'] ?? 0);
-        $price_vat = intval($data['vat_price'] ?? $data['st_price_vat'] ?? $data['money_5'] ?? 0);
+        // ✅ 방어 로직: 콤마 포함 문자열도 자동 변환
+        $price_supply = self::sanitizePrice($data['price'] ?? $data['st_price'] ?? $data['money_4'] ?? 0);
+        $price_vat = self::sanitizePrice($data['vat_price'] ?? $data['st_price_vat'] ?? $data['money_5'] ?? 0);
 
         return [
             'spec_type' => $data['MY_type_name'] ?: ($data['MY_type'] ?? ''),
@@ -432,9 +457,9 @@ class DataAdapter {
     private static function convertMsticker($data) {
         $amount = intval($data['MY_amount'] ?? 0);
 
-        // 가격 필드 fallback: shop_temp는 st_price, mlangorder_printauto는 money_4/money_5
-        $price_supply = intval($data['price'] ?? $data['st_price'] ?? $data['money_4'] ?? 0);
-        $price_vat = intval($data['vat_price'] ?? $data['st_price_vat'] ?? $data['money_5'] ?? 0);
+        // ✅ 방어 로직: 콤마 포함 문자열도 자동 변환
+        $price_supply = self::sanitizePrice($data['price'] ?? $data['st_price'] ?? $data['money_4'] ?? 0);
+        $price_vat = self::sanitizePrice($data['vat_price'] ?? $data['st_price_vat'] ?? $data['money_5'] ?? 0);
 
         return [
             'spec_type' => $data['MY_type_name'] ?: ($data['MY_type'] ?? ''),
@@ -456,24 +481,39 @@ class DataAdapter {
     /**
      * NCR양식지 (ncrflambeau) 변환
      * MY_type=도수, MY_Fsd=용지, PN_type=타입, MY_amount=수량
+     *
+     * ✅ 2026-01-15: quantity_sheets 계산 추가 (권 × 50 × multiplier)
+     * - 복사 매수(2매/3매/4매)를 MY_Fsd_name에서 자동 추출
+     * - 공식: 총 매수 = 주문 권수 × 50 × 복사 매수
      */
     private static function convertNcrflambeau($data) {
         $amount = intval($data['MY_amount'] ?? 0);
 
+        // ✅ 용지(MY_Fsd_name)에서 복사 매수 추출 (2매/3매/4매)
+        $spec_material = $data['MY_Fsd_name'] ?: ($data['MY_Fsd'] ?? '');
+        $multiplier = QuantityFormatter::extractNcrMultiplier(['spec_material' => $spec_material]);
+
+        // ✅ quantity_sheets 계산: 권 × 50 × multiplier
+        $quantity_sheets = QuantityFormatter::calculateNcrSheets($amount, $multiplier);
+
+        // ✅ quantity_display 생성: "10권 (2,000매)" 형식
+        $quantity_display = QuantityFormatter::format($amount, 'V', $quantity_sheets);
+
         // 가격 필드 fallback: shop_temp는 st_price, mlangorder_printauto는 money_4/money_5
-        $price_supply = intval($data['price'] ?? $data['st_price'] ?? $data['money_4'] ?? 0);
-        $price_vat = intval($data['vat_price'] ?? $data['st_price_vat'] ?? $data['money_5'] ?? 0);
+        // ✅ 방어 로직: 콤마 포함 문자열도 자동 변환
+        $price_supply = self::sanitizePrice($data['price'] ?? $data['st_price'] ?? $data['money_4'] ?? 0);
+        $price_vat = self::sanitizePrice($data['vat_price'] ?? $data['st_price_vat'] ?? $data['money_5'] ?? 0);
 
         return [
             'spec_type' => $data['PN_type_name'] ?: ($data['PN_type'] ?? ''),  // 타입
-            'spec_material' => $data['MY_Fsd_name'] ?: ($data['MY_Fsd'] ?? ''),  // 용지
+            'spec_material' => $spec_material,  // 용지 (복사 매수 포함)
             'spec_size' => '',
             'spec_sides' => $data['MY_type_name'] ?: ($data['MY_type'] ?? ''),  // 도수
             'spec_design' => ($data['ordertype'] ?? '') === 'total' ? '디자인+인쇄' : '인쇄만',
             'quantity_value' => $amount,
             'quantity_unit' => '권',
-            'quantity_sheets' => $amount,
-            'quantity_display' => number_format($amount) . '권',
+            'quantity_sheets' => $quantity_sheets,  // ✅ 계산된 총 매수
+            'quantity_display' => $quantity_display,  // ✅ "10권 (2,000매)" 형식
             'price_supply' => $price_supply,
             'price_vat' => $price_vat,
             'price_vat_amount' => $price_vat - $price_supply,
@@ -489,9 +529,9 @@ class DataAdapter {
     private static function convertMerchandisebond($data) {
         $amount = intval($data['MY_amount'] ?? 0);
 
-        // 가격 필드 fallback: shop_temp는 st_price, mlangorder_printauto는 money_4/money_5
-        $price_supply = intval($data['price'] ?? $data['st_price'] ?? $data['money_4'] ?? 0);
-        $price_vat = intval($data['vat_price'] ?? $data['st_price_vat'] ?? $data['money_5'] ?? 0);
+        // ✅ 방어 로직: 콤마 포함 문자열도 자동 변환
+        $price_supply = self::sanitizePrice($data['price'] ?? $data['st_price'] ?? $data['money_4'] ?? 0);
+        $price_vat = self::sanitizePrice($data['vat_price'] ?? $data['st_price_vat'] ?? $data['money_5'] ?? 0);
 
         return [
             'spec_type' => $data['MY_type_name'] ?: ($data['MY_type'] ?? ''),
@@ -517,6 +557,10 @@ class DataAdapter {
     private static function convertGeneric($data) {
         $amount = intval($data['MY_amount'] ?? $data['quantity'] ?? 1);
 
+        // ✅ 방어 로직: 콤마 포함 문자열도 자동 변환
+        $price_supply = self::sanitizePrice($data['price'] ?? 0);
+        $price_vat = self::sanitizePrice($data['vat_price'] ?? 0);
+
         return [
             'spec_type' => $data['MY_type_name'] ?? '',
             'spec_material' => $data['Section_name'] ?? $data['MY_Fsd_name'] ?? '',
@@ -527,9 +571,9 @@ class DataAdapter {
             'quantity_unit' => '개',
             'quantity_sheets' => $amount,
             'quantity_display' => number_format($amount) . '개',
-            'price_supply' => intval($data['price'] ?? 0),
-            'price_vat' => intval($data['vat_price'] ?? 0),
-            'price_vat_amount' => intval($data['vat_price'] ?? 0) - intval($data['price'] ?? 0),
+            'price_supply' => $price_supply,
+            'price_vat' => $price_vat,
+            'price_vat_amount' => $price_vat - $price_supply,
             'product_type' => $data['product_type'] ?? 'unknown'
         ];
     }

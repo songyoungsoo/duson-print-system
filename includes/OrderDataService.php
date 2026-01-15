@@ -150,6 +150,12 @@ class OrderDataService {
             $qtySheets = $this->lookupInsertedSheets($qtyValue);
         }
 
+        // ✅ 2026-01-15: NCR양식지 매수 계산 (권 × 50 × multiplier)
+        if ($productType === 'ncrflambeau' && $qtyValue > 0 && empty($qtySheets)) {
+            $multiplier = QuantityFormatter::extractNcrMultiplier($orderRow);
+            $qtySheets = QuantityFormatter::calculateNcrSheets(intval($qtyValue), $multiplier);
+        }
+
         // 수량 표시 (QuantityFormatter SSOT)
         $qtyDisplay = QuantityFormatter::format($qtyValue, $unitCode, $qtySheets);
 

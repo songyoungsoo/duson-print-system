@@ -73,6 +73,12 @@ class QuantityFormatter {
     ];
 
     /**
+     * NCR양식지 1권당 조(Set) 수
+     * 1권 = 50조 (고정)
+     */
+    const NCR_SETS_PER_VOLUME = 50;
+
+    /**
      * 수량 표시 문자열 생성 (SSOT - 단일 진실 공급원)
      *
      * 이 함수만이 수량 표시 문자열을 생성합니다.
@@ -80,9 +86,9 @@ class QuantityFormatter {
      *
      * @param float $value 수량 값 (0.5, 1, 1000 등)
      * @param string $unitCode 단위 코드 (R/S/B/V/P/E)
-     * @param int|null $sheets 실제 매수 (연 단위 제품용)
+     * @param int|null $sheets 실제 매수 (연/권 단위 제품용)
      * @param string $separator 연수/매수 구분자 (기본: ' ', 테이블용: '<br>')
-     * @return string "1,000매", "0.5연 (2,000매)" 또는 "0.5연<br>(2,000매)" 형식
+     * @return string "1,000매", "0.5연 (2,000매)", "10권 (2,000매)" 형식
      */
     public static function format(float $value, string $unitCode, ?int $sheets = null, string $separator = ' '): string {
         // 단위 이름 조회
@@ -98,8 +104,9 @@ class QuantityFormatter {
 
         $display = $formatted . $unitName;
 
-        // 연 단위이고 매수 정보가 있으면 "(X매)" 추가
-        if ($unitCode === 'R' && $sheets !== null && $sheets > 0) {
+        // ✅ 2026-01-15: 연(R) 또는 권(V) 단위이고 매수 정보가 있으면 "(X매)" 추가
+        // NCR양식지: "10권 (2,000매)" / 전단지: "0.5연 (2,000매)"
+        if (($unitCode === 'R' || $unitCode === 'V') && $sheets !== null && $sheets > 0) {
             $display .= $separator . '(' . number_format($sheets) . '매)';
         }
 
@@ -161,9 +168,18 @@ class QuantityFormatter {
                 $value = intval($data['MY_amount'] ?? $data['mesu'] ?? $data['quantity'] ?? 0);
                 break;
 
-            // NCR양식지: 권 단위
+            // NCR양식지: 권 단위 + 매수 계산
+            // ✅ 2026-01-15: quantity_sheets 계산 추가 (권 × 50 × multiplier)
             case 'ncrflambeau':
                 $value = intval($data['MY_amount'] ?? $data['mesu'] ?? $data['quantity'] ?? 0);
+                // qty_sheets가 이미 있으면 사용, 없으면 계산
+                if (!empty($data['quantity_sheets']) || !empty($data['qty_sheets'])) {
+                    $sheets = intval($data['quantity_sheets'] ?? $data['qty_sheets'] ?? 0);
+                } else {
+                    // spec_material 또는 MY_Fsd_name에서 복사 매수(2매/3매/4매) 추출
+                    $multiplier = self::extractNcrMultiplier($data);
+                    $sheets = intval($value * self::NCR_SETS_PER_VOLUME * $multiplier);
+                }
                 break;
 
             // 포스터: 매/장 단위
@@ -187,6 +203,49 @@ class QuantityFormatter {
             'qty_unit_code' => $unitCode,
             'qty_sheets' => $sheets
         ];
+    }
+
+    /**
+     * NCR양식지 복사 매수(multiplier) 추출
+     *
+     * ✅ 2026-01-15: 신규 추가
+     *
+     * spec_material 또는 MY_Fsd_name에서 "2매", "3매", "4매" 키워드 추출
+     * 예: "NCR 2매(100매철)" → 2, "NCR 3매(150매철)" → 3
+     *
+     * @param array $data 주문 데이터
+     * @return int multiplier (2, 3, 4) - 기본값 2
+     */
+    public static function extractNcrMultiplier(array $data): int {
+        // spec_material 또는 MY_Fsd_name에서 추출
+        $materialText = $data['spec_material'] ?? $data['MY_Fsd_name'] ?? $data['MY_Fsd'] ?? '';
+
+        // "4매", "3매", "2매" 순으로 검색 (더 큰 숫자 우선)
+        if (preg_match('/(\d)매/u', $materialText, $matches)) {
+            $multiplier = intval($matches[1]);
+            // 유효 범위: 2~4
+            if ($multiplier >= 2 && $multiplier <= 4) {
+                return $multiplier;
+            }
+        }
+
+        // 기본값: 2매 복사
+        return 2;
+    }
+
+    /**
+     * NCR양식지 매수 계산
+     *
+     * ✅ 2026-01-15: 신규 추가
+     *
+     * 공식: 총 매수 = 주문 권수 × 50 × 복사 매수
+     *
+     * @param int $volumes 주문 권수
+     * @param int $multiplier 복사 매수 (2/3/4)
+     * @return int 총 매수
+     */
+    public static function calculateNcrSheets(int $volumes, int $multiplier = 2): int {
+        return $volumes * self::NCR_SETS_PER_VOLUME * $multiplier;
     }
 
     /**
