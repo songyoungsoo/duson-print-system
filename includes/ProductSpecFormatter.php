@@ -281,8 +281,8 @@ class ProductSpecFormatter {
                 $jong = $item['jong'] ?? '';
                 $slot2 = preg_replace('/^jil\s*/i', '', $jong);
             } elseif ($productType === 'cadarok') {
-                // 카다록: slot2는 비어있음 (종류 / 규격 형식)
-                $slot2 = '';
+                // 카다록: MY_Fsd가 용지 (종류 / 용지 / 규격 형식)
+                $slot2 = $item['MY_Fsd_name'] ?? $this->getKoreanName($item['MY_Fsd'] ?? '');
             } elseif (in_array($productType, ['namecard', 'envelope', 'merchandisebond'])) {
                 $slot2 = $item['Section_name'] ?? $this->getKoreanName($item['Section'] ?? '');
             } elseif (in_array($productType, ['littleprint', 'poster'])) {

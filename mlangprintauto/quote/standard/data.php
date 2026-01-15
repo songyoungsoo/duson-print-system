@@ -4,9 +4,12 @@
  *
  * DB 또는 배열에서 견적서 데이터를 로드하고 정규화합니다.
  * 모든 출력(view, pdf, mail)에서 동일한 데이터 구조를 사용합니다.
+ *
+ * ✅ 2026-01-15: QuantityFormatter SSOT 적용
  */
 
 require_once __DIR__ . '/../../../db.php';
+require_once __DIR__ . '/../../../includes/QuantityFormatter.php';
 
 /**
  * 공급자(회사) 기본 정보
@@ -135,20 +138,24 @@ function loadQuoteItemsFromDB(mysqli $db, int $quoteId): array {
  * 품목 데이터 정규화
  * DB 컬럼이 변경되어도 출력에 영향 없도록 함
  *
+ * ✅ 2026-01-15: QuantityFormatter SSOT 적용
+ *
  * @param array $row DB 원본 행
  * @return array 정규화된 품목 데이터
  */
 function normalizeItem(array $row): array {
-    // 수량 표시 생성 (없으면 생성)
+    // ✅ QuantityFormatter SSOT 적용
     $quantityDisplay = $row['quantity_display'] ?? '';
-    if (empty($quantityDisplay)) {
-        $qty = floatval($row['quantity'] ?? 1);
-        $unit = $row['unit'] ?? '개';
-        if ($qty == intval($qty)) {
-            $quantityDisplay = number_format($qty) . $unit;
-        } else {
-            $quantityDisplay = rtrim(rtrim(number_format($qty, 1), '0'), '.') . $unit;
-        }
+    $qtyValue = floatval($row['quantity'] ?? 1);
+    $unit = $row['unit'] ?? '개';
+    $qtySheets = intval($row['qty_sheets'] ?? 0);
+
+    // 단위 코드 변환 (한글 → 코드)
+    $unitCode = QuantityFormatter::getUnitCode($unit);
+
+    // quantity_display가 없거나 단위가 없으면 QuantityFormatter로 생성
+    if (empty($quantityDisplay) || !preg_match('/[매연부권개장헤베박스세트미터]/u', $quantityDisplay)) {
+        $quantityDisplay = QuantityFormatter::format($qtyValue, $unitCode, $qtySheets);
     }
 
     return [
@@ -156,8 +163,10 @@ function normalizeItem(array $row): array {
         'product_type'     => $row['product_type'] ?? '',
         'product_name'     => $row['product_name'] ?? '',
         'specification'    => $row['specification'] ?? '',
-        'quantity'         => floatval($row['quantity'] ?? 1),
-        'unit'             => $row['unit'] ?? '개',
+        'quantity'         => $qtyValue,
+        'unit'             => $unit,
+        'unit_code'        => $unitCode,
+        'qty_sheets'       => $qtySheets,
         'quantity_display' => $quantityDisplay,
         'unit_price'       => intval($row['unit_price'] ?? 0),
         'supply_price'     => intval($row['supply_price'] ?? 0),

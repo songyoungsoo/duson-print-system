@@ -353,7 +353,9 @@ class DataAdapter {
 
     /**
      * 카다록 (cadarok) 변환
-     * MY_type=종류, Section=규격, POtype=인쇄면, MY_amount=수량
+     * MY_type=종류, MY_Fsd=용지, Section=규격, POtype=인쇄면, MY_amount=수량
+     *
+     * ✅ 2026-01-15: spec_material 추가 (MY_Fsd_name 사용)
      */
     private static function convertCadarok($data) {
         $amount = intval($data['MY_amount'] ?? 0);
@@ -369,7 +371,7 @@ class DataAdapter {
 
         return [
             'spec_type' => $data['MY_type_name'] ?: ($data['MY_type'] ?? ''),
-            'spec_material' => '',
+            'spec_material' => $data['MY_Fsd_name'] ?: ($data['MY_Fsd'] ?? ''),  // ✅ 2026-01-15: 용지 정보 추가
             'spec_size' => $data['Section_name'] ?: ($data['Section'] ?? ''),
             'spec_sides' => $data['POtype_name'] ?: ($data['POtype'] ?? ''),
             'spec_design' => ($data['ordertype'] ?? '') === 'total' ? '디자인+인쇄' : '인쇄만',
