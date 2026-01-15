@@ -23,6 +23,10 @@ mysqli_set_charset($connect, 'utf8mb4');
 include "../mlangprintauto/shop_temp_helper.php";
 include "../includes/upload_config.php";
 require_once __DIR__ . '/../includes/StandardUploadHandler.php';
+// ✅ 2026-01-16: QuantityFormatter SSOT 추가
+if (!class_exists('QuantityFormatter')) {
+    include $_SERVER['DOCUMENT_ROOT'] . "/includes/QuantityFormatter.php";
+}
 // upload_path_manager.php는 사용하지 않음 (안전 모드)
 
 try {
@@ -353,10 +357,23 @@ try {
                 $type_name = getCategoryName($connect, $item['MY_type']);
                 $size_name = getCategoryName($connect, $item['MY_Fsd']);
                 $color_name = getCategoryName($connect, $item['PN_type']);
+
+                // ✅ 2026-01-16: NCR양식지 매수 계산 SSOT 적용
+                $ncr_qty = intval($item['MY_amount'] ?? 0);
+                $ncr_sheets = intval($item['quantity_sheets'] ?? 0);
+                if ($ncr_sheets <= $ncr_qty && class_exists('QuantityFormatter')) {
+                    $multiplier = QuantityFormatter::extractNcrMultiplier($item);
+                    $ncr_sheets = QuantityFormatter::calculateNcrSheets($ncr_qty, $multiplier);
+                }
+                $ncr_qty_display = number_format($ncr_qty) . '권';
+                if ($ncr_sheets > 0) {
+                    $ncr_qty_display .= ' (' . number_format($ncr_sheets) . '매)';
+                }
+
                 $product_info = "구분: $type_name\n";
                 $product_info .= "규격: $size_name\n";
                 $product_info .= "색상: $color_name\n";
-                $product_info .= "수량: " . number_format(intval($item['MY_amount'] ?? 0), 0) . "권\n";
+                $product_info .= "수량: $ncr_qty_display\n";
                 $product_info .= "편집디자인: " . ($item['ordertype'] == 'total' ? '디자인+인쇄' : '인쇄만');
                 break;
                 

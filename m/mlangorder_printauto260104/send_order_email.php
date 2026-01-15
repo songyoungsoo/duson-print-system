@@ -24,6 +24,11 @@ header('Cache-Control: no-cache, must-revalidate');
 // 데이터베이스 연결
 include "../db.php";
 
+// ✅ 2026-01-16: QuantityFormatter SSOT 추가
+if (!class_exists('QuantityFormatter')) {
+    include $_SERVER['DOCUMENT_ROOT'] . "/includes/QuantityFormatter.php";
+}
+
 // PHPMailer 라이브러리 포함 (비밀번호 통일된 버전)
 require 'mailer.lib.php';
 
@@ -414,26 +419,53 @@ try {
         
         $emailHtml .= '</td>';
         
-        // 수량
-        $quantity = 1;
+        // ✅ 2026-01-16: 수량 표시 SSOT 적용
+        $quantity_display = '1';
         if (!empty($order['Type_1'])) {
             $json_data = json_decode($order['Type_1'], true);
             if ($json_data && is_array($json_data)) {
-                // JSON 데이터에서 수량 추출
                 $details = $json_data['order_details'] ?? $json_data;
-                if (isset($details['MY_amount'])) {
-                    $quantity = $details['MY_amount'];
-                } elseif (isset($details['mesu'])) {
-                    $quantity = $details['mesu'];
+                $product_type = $json_data['product_type'] ?? '';
+                $my_amount = floatval($details['MY_amount'] ?? $details['quantity'] ?? 1);
+
+                // 전단지: 연 + 매수
+                $is_flyer = in_array($product_type, ['inserted', 'leaflet']);
+                if ($is_flyer) {
+                    $yeon_display = ($my_amount == 0.5) ? '0.5' : number_format(intval($my_amount));
+                    $mesu = intval($details['quantityTwo'] ?? $details['mesu'] ?? 0);
+                    if ($mesu > 0) {
+                        $quantity_display = $yeon_display . '연 (' . number_format($mesu) . '매)';
+                    } else {
+                        $quantity_display = $yeon_display . '연';
+                    }
+                }
+                // NCR양식지: 권 + 매수
+                elseif ($product_type === 'ncrflambeau') {
+                    $ncr_qty = intval($my_amount);
+                    $ncr_sheets = intval($order['quantity_sheets'] ?? 0);
+                    if ($ncr_sheets <= $ncr_qty && class_exists('QuantityFormatter')) {
+                        $multiplier = QuantityFormatter::extractNcrMultiplier($order);
+                        $ncr_sheets = QuantityFormatter::calculateNcrSheets($ncr_qty, $multiplier);
+                    }
+                    if ($ncr_sheets > 0) {
+                        $quantity_display = number_format($ncr_qty) . '권 (' . number_format($ncr_sheets) . '매)';
+                    } else {
+                        $quantity_display = number_format($ncr_qty) . '권';
+                    }
+                }
+                // 기타: 정수 + 단위
+                else {
+                    $unit = ($product_type === 'cadarok') ? '부' : '매';
+                    $quantity_display = number_format(intval($my_amount)) . $unit;
                 }
             } else {
                 // 일반 텍스트에서 수량 추출
                 if (preg_match('/수량:\s*([0-9.]+)매/', $order['Type_1'], $matches)) {
-                    $quantity = floatval($matches[1]);
+                    $quantity_display = number_format(floatval($matches[1])) . '매';
                 }
             }
         }
-        $emailHtml .= '<td class="col-quantity">' . number_format($quantity) . '</td>';
+        $emailHtml .= '<td class="col-quantity">' . $quantity_display . '</td>';
         
         // 금액
         $emailHtml .= '<td class="col-price">' . number_format($order['money_5']) . '원</td>';

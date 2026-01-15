@@ -14,6 +14,10 @@ if (!isset($db) || !$db) {
 if (!class_exists('ProductSpecFormatter')) {
     include "$HomeDir/includes/ProductSpecFormatter.php";
 }
+// ✅ 2026-01-16: QuantityFormatter SSOT 추가
+if (!class_exists('QuantityFormatter')) {
+    include "$HomeDir/includes/QuantityFormatter.php";
+}
 // include $_SERVER['DOCUMENT_ROOT'] . "/mlangprintauto/mlangprintautotop.php";
 
 // 데이터베이스 연결은 이미 db.php에서 완료됨
@@ -129,6 +133,7 @@ function getOrderItemInfo($summary_item, $specFormatter) {
     $unit = '';
     $item_type_display = htmlspecialchars($summary_item['Type']); // 기본값
     $is_flyer = false;
+    $is_ncr = false;  // ✅ 2026-01-16: NCR양식지 추가
     $mesu_for_display = 0;
     $json_data = null;
 
@@ -190,6 +195,18 @@ function getOrderItemInfo($summary_item, $specFormatter) {
                     $mesu_for_display = intval($summary_item['mesu']);
                 }
             }
+
+            // ✅ 2026-01-16: NCR양식지 매수 정보 SSOT 적용
+            $is_ncr = ($product_type === 'ncrflambeau');
+            if ($is_ncr && $quantity_num > 0) {
+                $ncr_sheets = intval($summary_item['quantity_sheets'] ?? 0);
+                // 재계산 필요 시 (권수보다 작거나 같으면 잘못된 값)
+                if ($ncr_sheets <= $quantity_num) {
+                    $multiplier = QuantityFormatter::extractNcrMultiplier($summary_item);
+                    $ncr_sheets = QuantityFormatter::calculateNcrSheets(intval($quantity_num), $multiplier);
+                }
+                $mesu_for_display = $ncr_sheets;
+            }
         } else {
             // 레거시 텍스트 처리 (2줄 슬래시 형식 적용 - duson-print-rules 준수)
             $raw_spec = strip_tags($type_1_data);
@@ -247,6 +264,7 @@ function getOrderItemInfo($summary_item, $specFormatter) {
         'unit' => $unit,
         'item_type_display' => $item_type_display,
         'is_flyer' => $is_flyer,
+        'is_ncr' => $is_ncr,  // ✅ 2026-01-16: NCR양식지 추가
         'mesu_for_display' => $mesu_for_display,
         'json_data' => $json_data
     ];
@@ -503,6 +521,7 @@ function getOrderItemInfo($summary_item, $specFormatter) {
                                 $unit = $info['unit'];
                                 $item_type_display = $info['item_type_display'];
                                 $is_flyer = $info['is_flyer'];
+                                $is_ncr = $info['is_ncr'] ?? false;  // ✅ 2026-01-16: NCR양식지 추가
                                 $mesu_for_display = $info['mesu_for_display'];
                                 $json_data = $info['json_data'];
 
@@ -639,19 +658,22 @@ function getOrderItemInfo($summary_item, $specFormatter) {
                                 </td>
                                 <td style="border: 0.3pt solid #000; padding: 1.5mm; text-align: center;">
                                     <?php
-                                    // 🔧 전단지/리플렛: "X연 (Y매)" 형식으로 표시
-                                    if (isset($is_flyer) && $is_flyer && $mesu_for_display > 0) {
-                                        $yeon_display = $quantity_num ? (floor($quantity_num) == $quantity_num ? number_format($quantity_num) : number_format($quantity_num, 1)) : '0';
-                                        echo $yeon_display . '연 (' . number_format($mesu_for_display) . '매)';
+                                    // ✅ 2026-01-16: SSOT - 전단지/NCR양식지 "X연/권 (Y매)" 형식
+                                    $qty_display = $quantity_num ? (floor($quantity_num) == $quantity_num ? number_format($quantity_num) : number_format($quantity_num, 1)) : '0';
+                                    if ((isset($is_flyer) && $is_flyer) || (isset($is_ncr) && $is_ncr)) {
+                                        echo $qty_display . $unit;
+                                        if ($mesu_for_display > 0) {
+                                            echo '<br><span style="font-size: 8pt; color: #1e88ff;">(' . number_format($mesu_for_display) . '매)</span>';
+                                        }
                                     } else {
-                                        echo $quantity_num ? (floor($quantity_num) == $quantity_num ? number_format($quantity_num) : number_format($quantity_num, 1)) : '-';
+                                        echo $qty_display ?: '-';
                                     }
                                     ?>
                                 </td>
                                 <td style="border: 0.3pt solid #000; padding: 1.5mm; text-align: center;">
                                     <?php
-                                    // 🔧 전단지/리플렛: 단위 칼럼 비우기
-                                    if (isset($is_flyer) && $is_flyer && $mesu_for_display > 0) {
+                                    // ✅ 2026-01-16: 전단지/NCR양식지는 수량 칼럼에 단위 포함
+                                    if ((isset($is_flyer) && $is_flyer) || (isset($is_ncr) && $is_ncr)) {
                                         echo '-';
                                     } else {
                                         echo htmlspecialchars($unit);
@@ -1489,6 +1511,7 @@ function getOrderItemInfo($summary_item, $specFormatter) {
                                             $unit = $info['unit'];
                                             $product_type_kr = $info['item_type_display'];  // Excel 섹션용 변수명
                                             $is_flyer = $info['is_flyer'];
+                                            $is_ncr = $info['is_ncr'] ?? false;  // ✅ 2026-01-16: NCR양식지 추가
                                             $mesu_for_display = $info['mesu_for_display'];
                                             $type1_data = $info['json_data'];  // Excel 섹션용 변수명
 
@@ -1597,9 +1620,9 @@ function getOrderItemInfo($summary_item, $specFormatter) {
                                                 $quantity_display = (floor($qty_float) == $qty_float)
                                                     ? number_format($qty_float)
                                                     : number_format($qty_float, 1);
-                                                
-                                                // 🆕 전단지인 경우 매수 정보 추가 표시: "0.5연 (2,000매)"
-                                                if ($is_flyer && !empty($mesu_for_display) && $mesu_for_display > 0) {
+
+                                                // ✅ 2026-01-16: SSOT - 전단지/NCR양식지 매수 표시
+                                                if (($is_flyer || $is_ncr) && !empty($mesu_for_display) && $mesu_for_display > 0) {
                                                     $quantity_display .= $unit . ' (' . number_format($mesu_for_display) . '매)';
                                                     $unit = ''; // 단위 셀 비우기 (수량에 이미 포함됨)
                                                 }

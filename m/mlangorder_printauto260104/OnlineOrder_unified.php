@@ -22,6 +22,10 @@ include "../mlangprintauto/shop_temp_helper.php";
 include "../includes/AdditionalOptionsDisplay.php";
 include "../includes/quantity_formatter.php";
 include "../includes/ProductSpecFormatter.php";
+// ✅ 2026-01-16: QuantityFormatter SSOT 추가
+if (!class_exists('QuantityFormatter')) {
+    include $_SERVER['DOCUMENT_ROOT'] . "/includes/QuantityFormatter.php";
+}
 $optionsDisplay = new AdditionalOptionsDisplay($connect);
 $specFormatter = new ProductSpecFormatter($connect);
 
@@ -641,8 +645,19 @@ if (!empty($debug_info) && strpos($_SERVER['HTTP_HOST'], 'localhost') !== false)
                                 $qty_val = !empty($item['MY_amount']) ? intval($item['MY_amount']) : 1;
                                 $quantity_display = number_format($qty_val, 0);
 
-                                if ($item['product_type'] == 'ncrflambeau') $unit = '권';
-                                elseif ($item['product_type'] == 'cadarok') $unit = '부';
+                                // ✅ 2026-01-16: NCR양식지 매수 계산 SSOT 적용
+                                if ($item['product_type'] == 'ncrflambeau') {
+                                    $unit = '권';
+                                    $ncr_sheets = intval($item['quantity_sheets'] ?? 0);
+                                    if ($ncr_sheets <= $qty_val && class_exists('QuantityFormatter')) {
+                                        $multiplier = QuantityFormatter::extractNcrMultiplier($item);
+                                        $ncr_sheets = QuantityFormatter::calculateNcrSheets($qty_val, $multiplier);
+                                    }
+                                    if ($ncr_sheets > 0) {
+                                        $quantity_display .= '권 (' . number_format($ncr_sheets) . '매)';
+                                        $unit = '-';
+                                    }
+                                } elseif ($item['product_type'] == 'cadarok') $unit = '부';
                             }
                         } else {
                             // 장바구니에서 온 주문
@@ -669,8 +684,19 @@ if (!empty($debug_info) && strpos($_SERVER['HTTP_HOST'], 'localhost') !== false)
                                 $qty_val = !empty($item['mesu']) ? intval($item['mesu']) : (!empty($item['MY_amount']) ? intval($item['MY_amount']) : 1);
                                 $quantity_display = number_format($qty_val, 0);
 
-                                if ($item['product_type'] == 'ncrflambeau') $unit = '권';
-                                elseif ($item['product_type'] == 'cadarok') $unit = '부';
+                                // ✅ 2026-01-16: NCR양식지 매수 계산 SSOT 적용
+                                if ($item['product_type'] == 'ncrflambeau') {
+                                    $unit = '권';
+                                    $ncr_sheets = intval($item['quantity_sheets'] ?? 0);
+                                    if ($ncr_sheets <= $qty_val && class_exists('QuantityFormatter')) {
+                                        $multiplier = QuantityFormatter::extractNcrMultiplier($item);
+                                        $ncr_sheets = QuantityFormatter::calculateNcrSheets($qty_val, $multiplier);
+                                    }
+                                    if ($ncr_sheets > 0) {
+                                        $quantity_display .= '권 (' . number_format($ncr_sheets) . '매)';
+                                        $unit = '-';
+                                    }
+                                } elseif ($item['product_type'] == 'cadarok') $unit = '부';
                             }
                         }
                     ?>

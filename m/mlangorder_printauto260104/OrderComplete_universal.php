@@ -34,6 +34,10 @@ include "../includes/AdditionalOptionsDisplay.php";
 // 수량 포맷팅 헬퍼
 include "../includes/quantity_formatter.php";
 include "../includes/ProductSpecFormatter.php";
+// ✅ 2026-01-16: QuantityFormatter SSOT 추가
+if (!class_exists('QuantityFormatter')) {
+    include $_SERVER['DOCUMENT_ROOT'] . "/includes/QuantityFormatter.php";
+}
 $optionsDisplay = new AdditionalOptionsDisplay($connect);
 $specFormatter = new ProductSpecFormatter($connect);
 
@@ -440,6 +444,19 @@ function extractQuantity($order) {
         $unit = $unit_map[$product_type] ?? $unit_map['default'];
 
         if (!empty($my_amount)) {
+            // ✅ 2026-01-16: NCR양식지 매수 계산 SSOT 적용
+            if ($product_type === 'ncrflambeau') {
+                $ncr_qty = intval($my_amount);
+                $ncr_sheets = intval($order['quantity_sheets'] ?? 0);
+                // 재계산 필요 시 (권수보다 작거나 같으면 잘못된 값)
+                if ($ncr_sheets <= $ncr_qty && class_exists('QuantityFormatter')) {
+                    $multiplier = QuantityFormatter::extractNcrMultiplier($order);
+                    $ncr_sheets = QuantityFormatter::calculateNcrSheets($ncr_qty, $multiplier);
+                }
+                if ($ncr_sheets > 0) {
+                    return number_format($ncr_qty, 0) . '권 (' . number_format($ncr_sheets) . '매)';
+                }
+            }
             // 두손기획 비즈니스 규칙: 전단지 외 모든 제품은 정수로 표시
             return number_format(intval($my_amount), 0) . $unit;
         }
