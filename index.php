@@ -143,33 +143,45 @@ header("Expires: 0");
             }
 
             /* 모바일 슬라이더 - 전체 너비, 좌측 정렬 */
-            #hero-slider {
-                height: 180px;
+            #slider-section {
                 overflow: hidden;
             }
 
-            .slider-container {
+            #slider-section #hero-slider {
                 height: 180px;
                 overflow: hidden;
+                position: relative;
             }
 
-            .slider-track {
+            #slider-section .slider-container {
+                width: 100%;
+                height: 180px;
+                overflow: hidden;
+                position: relative;
+            }
+
+            #slider-section .slider-track {
                 display: flex;
-                width: 700%; /* 7 slides * 100% */
+                flex-wrap: nowrap;
+                width: 700%;
+                height: 180px;
             }
 
-            .slider-slide {
-                width: 14.28571%; /* 100% / 7 */
+            #slider-section .slider-slide {
+                width: 14.28571%;
+                min-width: 14.28571%;
                 flex-shrink: 0;
                 height: 180px;
             }
 
-            .slider-slide img {
+            #slider-section .slider-slide img,
+            #slider-section .slider-slide .slider-img {
+                display: block;
                 transform: none;
                 width: 100%;
                 height: 180px;
                 object-fit: cover;
-                object-position: left center; /* 좌측 정렬 */
+                object-position: left center;
             }
         }
 
