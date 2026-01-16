@@ -132,40 +132,45 @@ header("Expires: 0");
             transform: scale(1.2);
         }
 
+        /* 데스크톱 슬라이더 기본 높이 */
+        #hero-slider {
+            height: 300px;
+        }
+
         @media (max-width: 768px) {
             .slider-prev, .slider-next {
                 display: none;
             }
 
-            /* 모바일 슬라이더 최적화 - 인라인 스타일 오버라이드 */
+            /* 모바일 슬라이더 최적화 */
             #hero-slider {
-                height: auto !important;
-                max-height: 200px !important;
+                height: auto;
+                max-height: 200px;
             }
 
             .slider-container {
-                height: auto !important;
-                max-height: none !important;
-                overflow: hidden !important;
+                height: auto;
+                max-height: none;
+                overflow: hidden;
             }
 
             .slider-track {
-                align-items: flex-start !important;
+                align-items: flex-start;
             }
 
             .slider-slide {
-                display: flex !important;
-                align-items: center !important;
-                justify-content: center !important;
+                display: flex;
+                align-items: center;
+                justify-content: center;
             }
 
-            .slider-slide img {
-                transform: none !important;
-                width: 100% !important;
-                height: auto !important;
-                max-height: 200px !important;
-                object-fit: contain !important;
-                object-position: center center !important;
+            .slider-slide img.w-full.h-full.object-cover {
+                transform: none;
+                width: 100%;
+                height: auto;
+                max-height: 200px;
+                object-fit: contain;
+                object-position: center center;
             }
         }
 
@@ -500,7 +505,7 @@ header("Expires: 0");
 
     <!-- Hero Slider Section -->
     <section class="relative overflow-hidden" style="max-width: 1200px; margin: 0 auto;">
-        <div id="hero-slider" class="relative" style="height: 300px;">
+        <div id="hero-slider" class="relative">
             <!-- Slider Content -->
             <div class="slider-container relative w-full h-full">
                 <div class="slider-track" id="sliderTrack">

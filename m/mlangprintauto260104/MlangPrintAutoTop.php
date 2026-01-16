@@ -283,34 +283,34 @@ $SoftUrl="/MlangPrintAuto";
             }
 
             /* 모바일 3x3 그리드 버튼 레이아웃 */
-            .box-menu ul {
-                display: grid !important;
-                grid-template-columns: repeat(3, 1fr) !important;
-                gap: 8px !important;
-                padding: 0 !important;
-                flex-wrap: unset !important;
+            .content-body .box-menu ul {
+                display: grid;
+                grid-template-columns: repeat(3, 1fr);
+                gap: 8px;
+                padding: 0;
+                flex-wrap: unset;
             }
 
-            .box-menu li {
-                width: 100% !important;
-                aspect-ratio: 1 !important;
-                margin: 0 !important;
+            .content-body .box-menu li {
+                width: 100%;
+                aspect-ratio: 1;
+                margin: 0;
             }
 
-            .box-menu a {
-                width: 100% !important;
-                height: 100% !important;
-                padding: 10px 5px !important;
-                text-align: center !important;
-                font-size: 0.75rem !important;
-                display: flex !important;
-                flex-direction: column !important;
-                align-items: center !important;
-                justify-content: center !important;
-                line-height: 1.3 !important;
-                word-break: keep-all !important;
-                border-radius: 12px !important;
-                box-sizing: border-box !important;
+            .content-body .box-menu a {
+                width: 100%;
+                height: 100%;
+                padding: 10px 5px;
+                text-align: center;
+                font-size: 0.75rem;
+                display: flex;
+                flex-direction: column;
+                align-items: center;
+                justify-content: center;
+                line-height: 1.3;
+                word-break: keep-all;
+                border-radius: 12px;
+                box-sizing: border-box;
             }
         }
     </style>
