@@ -796,9 +796,9 @@ html, body {
         overflow-x: hidden;
     }
 
-    /* 모바일 갤러리-계산기 간격 최적화 */
+    /* 모바일 갤러리-계산기 간격 최적화 - 자연스럽게 이어지도록 */
     .product-content {
-        gap: 10px;
+        gap: 5px;
     }
 
     .page-title {
@@ -813,7 +813,7 @@ html, body {
 
     .product-gallery {
         padding: 10px;
-        padding-bottom: 5px;
+        padding-bottom: 0;
         margin-bottom: 0;
         border-radius: 10px;
         max-width: 100%;
@@ -824,6 +824,7 @@ html, body {
 
     .product-calculator {
         padding: 15px;
+        padding-top: 10px;
         border-radius: 10px;
         margin: 0 auto;
         max-width: 100%;

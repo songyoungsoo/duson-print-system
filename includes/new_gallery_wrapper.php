@@ -148,6 +148,12 @@ function render_new_gallery_with_existing_data($product) {
 
     /* 반응형 디자인 */
     @media (max-width: 768px) {
+        .new-gallery-wrapper {
+            margin: 0;
+            margin-bottom: 5px;
+            gap: 10px;
+        }
+
         .new-main-container {
             width: 100%;
             height: 300px;
