@@ -796,6 +796,11 @@ html, body {
         overflow-x: hidden;
     }
 
+    /* 모바일 갤러리-계산기 간격 최적화 */
+    .product-content {
+        gap: 15px;
+    }
+
     .page-title {
         padding: 20px 15px;
         border-radius: 10px;
@@ -806,7 +811,17 @@ html, body {
         font-size: 1.8rem;
     }
 
-    .product-gallery,
+    .product-gallery {
+        padding: 15px;
+        padding-bottom: 10px;
+        margin-bottom: 0;
+        border-radius: 10px;
+        max-width: 100%;
+        width: 100%;
+        box-sizing: border-box;
+        overflow-x: hidden;
+    }
+
     .product-calculator {
         padding: 15px;
         border-radius: 10px;

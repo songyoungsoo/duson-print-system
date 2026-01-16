@@ -136,6 +136,24 @@ header("Expires: 0");
             .slider-prev, .slider-next {
                 display: none;
             }
+
+            /* 모바일 슬라이더 최적화 */
+            .slider-container {
+                height: auto;
+                max-height: 180px;
+            }
+
+            .slider-track {
+                align-items: center;
+            }
+
+            .slider-slide img {
+                transform: none;
+                height: auto;
+                max-height: 180px;
+                object-fit: contain;
+                object-position: center;
+            }
         }
 
         .products-grid {

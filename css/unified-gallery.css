@@ -141,6 +141,8 @@
    ================================= */
 .more-button-container {
     text-align: center;
+    margin-bottom: 0;
+    padding-bottom: 0;
 }
 
 .btn-more-gallery {
@@ -512,6 +514,8 @@
     .unified-gallery {
         max-width: 100%;
         margin: 0;
+        margin-bottom: 0;
+        padding-bottom: 0.5rem;
         border-radius: 0;
         box-shadow: none;
     }

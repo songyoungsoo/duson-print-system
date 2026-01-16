@@ -263,33 +263,46 @@ $SoftUrl="/MlangPrintAuto";
                 gap: 20px;
                 text-align: center;
             }
-            
+
             .contact-info {
                 flex-direction: column;
                 gap: 15px;
             }
-            
+
             .nav-links {
                 flex-wrap: wrap;
                 justify-content: center;
             }
-            
+
             .layout-wrapper {
                 flex-direction: column;
             }
-            
+
             .sidebar {
                 width: 100%;
             }
-            
+
+            /* 모바일 3x3 그리드 버튼 레이아웃 */
             .box-menu ul {
-                flex-direction: column;
-                align-items: center;
+                display: grid;
+                grid-template-columns: repeat(3, 1fr);
+                gap: 10px;
+                padding: 0;
             }
-            
+
+            .box-menu li {
+                width: 100%;
+            }
+
             .box-menu a {
-                width: 200px;
+                width: 100%;
+                padding: 15px 8px;
                 text-align: center;
+                font-size: 0.85rem;
+                white-space: nowrap;
+                overflow: hidden;
+                text-overflow: ellipsis;
+                display: block;
             }
         }
     </style>
