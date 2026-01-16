@@ -286,31 +286,38 @@ $SoftUrl="/MlangPrintAuto";
             .content-body .box-menu ul {
                 display: grid;
                 grid-template-columns: repeat(3, 1fr);
-                gap: 8px;
+                gap: 10px;
                 padding: 0;
-                flex-wrap: unset;
             }
 
             .content-body .box-menu li {
                 width: 100%;
-                aspect-ratio: 1;
                 margin: 0;
             }
 
             .content-body .box-menu a {
                 width: 100%;
-                height: 100%;
-                padding: 10px 5px;
+                height: 70px;
+                padding: 8px 4px;
                 text-align: center;
-                font-size: 0.75rem;
                 display: flex;
                 flex-direction: column;
                 align-items: center;
                 justify-content: center;
-                line-height: 1.3;
-                word-break: keep-all;
-                border-radius: 12px;
+                border-radius: 10px;
                 box-sizing: border-box;
+                gap: 4px;
+            }
+
+            .content-body .box-menu .btn-icon {
+                font-size: 1.4rem;
+                line-height: 1;
+            }
+
+            .content-body .box-menu .btn-text {
+                font-size: 0.8rem;
+                font-weight: 600;
+                line-height: 1.2;
             }
         }
     </style>
@@ -376,15 +383,15 @@ $SoftUrl="/MlangPrintAuto";
                     <!-- 서비스 메뉴 -->
                     <nav class="box-menu">
                         <ul>
-                            <li><a href="/mlangprintauto/inserted/index.php">📄 전단지</a></li>
-                            <li><a href="/shop/view_modern.php">🏷️ 스티커</a></li>
-                            <li><a href="/mlangprintauto/cadarok/index.php">📖 카다록</a></li>
-                            <li><a href="/mlangprintauto/NameCard/index.php">📇 명함</a></li>
-                            <li><a href="/mlangprintauto/MerchandiseBond/index.php">🎫 상품권</a></li>
-                            <li><a href="/mlangprintauto/envelope/index.php">✉️ 봉투</a></li>
-                            <li><a href="/mlangprintauto/NcrFlambeau/index.php" class="nav-link">📄 양식/서식</a>
-                            <li><a href="/mlangprintauto/LittlePrint/index.php">🎨 포스터</a></li>
-                            <li><a href="/mlangprintauto/shop/cart.php">🛒 장바구니</a></li>
+                            <li><a href="/mlangprintauto/inserted/index.php"><span class="btn-icon">📄</span><span class="btn-text">전단지</span></a></li>
+                            <li><a href="/shop/view_modern.php"><span class="btn-icon">🏷️</span><span class="btn-text">스티커</span></a></li>
+                            <li><a href="/mlangprintauto/cadarok/index.php"><span class="btn-icon">📖</span><span class="btn-text">카다록</span></a></li>
+                            <li><a href="/mlangprintauto/NameCard/index.php"><span class="btn-icon">📇</span><span class="btn-text">명함</span></a></li>
+                            <li><a href="/mlangprintauto/MerchandiseBond/index.php"><span class="btn-icon">🎫</span><span class="btn-text">상품권</span></a></li>
+                            <li><a href="/mlangprintauto/envelope/index.php"><span class="btn-icon">✉️</span><span class="btn-text">봉투</span></a></li>
+                            <li><a href="/mlangprintauto/NcrFlambeau/index.php"><span class="btn-icon">📄</span><span class="btn-text">양식지</span></a></li>
+                            <li><a href="/mlangprintauto/LittlePrint/index.php"><span class="btn-icon">🎨</span><span class="btn-text">포스터</span></a></li>
+                            <li><a href="/mlangprintauto/shop/cart.php"><span class="btn-icon">🛒</span><span class="btn-text">카트</span></a></li>
                         </ul>
                     </nav>
                     
