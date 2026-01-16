@@ -286,23 +286,28 @@ $SoftUrl="/MlangPrintAuto";
             .box-menu ul {
                 display: grid;
                 grid-template-columns: repeat(3, 1fr);
-                gap: 10px;
+                gap: 8px;
                 padding: 0;
             }
 
             .box-menu li {
                 width: 100%;
+                aspect-ratio: 1;
             }
 
             .box-menu a {
                 width: 100%;
-                padding: 15px 8px;
+                height: 100%;
+                padding: 10px 5px;
                 text-align: center;
-                font-size: 0.85rem;
-                white-space: nowrap;
-                overflow: hidden;
-                text-overflow: ellipsis;
-                display: block;
+                font-size: 0.75rem;
+                display: flex;
+                flex-direction: column;
+                align-items: center;
+                justify-content: center;
+                line-height: 1.3;
+                word-break: keep-all;
+                border-radius: 12px;
             }
         }
     </style>

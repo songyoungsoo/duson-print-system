@@ -140,19 +140,27 @@ header("Expires: 0");
             /* 모바일 슬라이더 최적화 */
             .slider-container {
                 height: auto;
-                max-height: 180px;
+                max-height: none;
+                overflow: hidden;
             }
 
             .slider-track {
+                align-items: flex-start;
+            }
+
+            .slider-slide {
+                display: flex;
                 align-items: center;
+                justify-content: center;
             }
 
             .slider-slide img {
                 transform: none;
+                width: 100%;
                 height: auto;
-                max-height: 180px;
-                object-fit: contain;
-                object-position: center;
+                max-height: none;
+                object-fit: cover;
+                object-position: center top;
             }
         }
 
