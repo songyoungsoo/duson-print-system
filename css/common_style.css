@@ -486,11 +486,52 @@ input, select, textarea, button {
 
 /* 반응형 디자인 */
 @media (max-width: 768px) {
-    .header-content, .contact-info, .nav-links {
+    .header-content, .contact-info {
         flex-direction: column;
         gap: 15px;
         text-align: center;
     }
+
+    /* 모바일 네비게이션 3x3 그리드 */
+    .nav-links {
+        display: grid;
+        grid-template-columns: repeat(3, 1fr);
+        gap: 8px;
+        padding: 10px;
+    }
+
+    .nav-link {
+        height: 60px;
+        padding: 8px 4px;
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        justify-content: center;
+        font-size: 0.75rem;
+        border-radius: 10px;
+        border-bottom: none;
+        background: linear-gradient(135deg, #3498db 0%, #2980b9 100%);
+        color: white;
+        gap: 4px;
+    }
+
+    .nav-link:hover,
+    .nav-link.active {
+        background: linear-gradient(135deg, #2980b9 0%, #1a5276 100%);
+        border-bottom: none;
+    }
+
+    .nav-icon {
+        font-size: 1.2rem;
+        line-height: 1;
+    }
+
+    .nav-text {
+        font-size: 0.75rem;
+        font-weight: 600;
+        white-space: nowrap;
+    }
+
     .form-grid {
         grid-template-columns: 1fr;
     }
