@@ -150,46 +150,50 @@ header("Expires: 0");
                 display: none;
             }
 
-            /* 모바일 슬라이더 - 전체 너비, 좌측 정렬 */
+            /* 모바일 슬라이더 - vw 단위 사용 */
             #slider-section {
+                width: 100vw;
+                max-width: 100vw;
                 overflow: hidden;
+                margin-left: calc(-50vw + 50%);
             }
 
-            #slider-section #hero-slider {
+            #hero-slider {
+                width: 100vw;
                 height: 180px;
                 overflow: hidden;
-                position: relative;
             }
 
-            #slider-section .slider-container {
-                width: 100%;
+            .slider-container {
+                width: 100vw;
                 height: 180px;
                 overflow: hidden;
-                position: relative;
             }
 
-            #slider-section .slider-track {
+            .slider-track {
                 display: flex;
+                flex-direction: row;
                 flex-wrap: nowrap;
-                width: 700%;
+                width: 700vw;
                 height: 180px;
             }
 
-            #slider-section .slider-slide {
-                width: 14.28571%;
-                min-width: 14.28571%;
-                flex-shrink: 0;
+            .slider-slide {
+                width: 100vw;
+                min-width: 100vw;
+                max-width: 100vw;
                 height: 180px;
+                flex: 0 0 100vw;
             }
 
-            #slider-section .slider-slide img,
-            #slider-section .slider-slide .slider-img {
+            .slider-slide img,
+            .slider-slide .slider-img {
                 display: block;
-                transform: none;
-                width: 100%;
+                width: 100vw;
                 height: 180px;
                 object-fit: cover;
                 object-position: left center;
+                transform: none;
             }
         }
 
@@ -963,9 +967,16 @@ header("Expires: 0");
         const totalSlides = slides.length;
 
         function showSlide(index) {
-            // 우측에서 좌측으로 슬라이드 (음수 translate로 좌측 이동)
-            const translateX = -index * (100 / totalSlides);
-            sliderTrack.style.transform = `translateX(${translateX}%)`;
+            const isMobile = window.innerWidth <= 768;
+            if (isMobile) {
+                // 모바일: 100vw씩 이동
+                const translateX = -index * 100;
+                sliderTrack.style.transform = `translateX(${translateX}vw)`;
+            } else {
+                // 데스크톱: 퍼센트 기반
+                const translateX = -index * (100 / totalSlides);
+                sliderTrack.style.transform = `translateX(${translateX}%)`;
+            }
 
             // 도트 상태 업데이트
             dots.forEach(dot => dot.classList.remove('active'));
