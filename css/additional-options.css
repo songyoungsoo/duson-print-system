@@ -254,19 +254,28 @@
    ================================ */
 
 @media (max-width: 768px) {
+    /* 옵션 체크박스 한 줄 표시 (코팅/접지/오시 등) */
+    .leaflet-premium-options-section .option-headers-row,
+    .premium-options-section .option-headers-row,
+    .additional-options-section .option-headers-row,
     .option-headers-row {
-        flex-direction: row;
-        flex-wrap: wrap;
-        align-items: center;
-        justify-content: flex-start;
-        gap: 8px 12px;
+        display: flex !important;
+        flex-direction: row !important;
+        flex-wrap: wrap !important;
+        align-items: center !important;
+        justify-content: flex-start !important;
+        gap: 6px 15px !important;
     }
 
+    .leaflet-premium-options-section .option-checkbox-group,
+    .premium-options-section .option-checkbox-group,
+    .additional-options-section .option-checkbox-group,
     .option-checkbox-group {
-        display: inline-flex;
-        align-items: center;
-        gap: 4px;
-        flex-shrink: 0;
+        display: inline-flex !important;
+        flex-direction: row !important;
+        align-items: center !important;
+        gap: 4px !important;
+        flex-shrink: 0 !important;
     }
 
     .option-price-display {
