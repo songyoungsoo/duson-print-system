@@ -142,35 +142,29 @@ header("Expires: 0");
                 display: none;
             }
 
-            /* 모바일 슬라이더 최적화 */
+            /* 모바일 슬라이더 - 이미지 2/3 크롭 */
             #hero-slider {
-                height: auto;
-                max-height: 180px;
+                height: 200px;
             }
 
             .slider-container {
-                height: auto;
-                max-height: 180px;
+                height: 200px;
                 overflow: hidden;
             }
 
             .slider-track {
-                align-items: center;
+                align-items: stretch;
             }
 
             .slider-slide {
-                display: flex;
-                align-items: center;
-                justify-content: center;
-                max-height: 180px;
+                height: 200px;
             }
 
             .slider-slide img {
                 transform: none;
                 width: 100%;
-                height: auto;
-                max-height: 180px;
-                object-fit: contain;
+                height: 200px;
+                object-fit: cover;
                 object-position: center center;
             }
         }
