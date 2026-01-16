@@ -255,32 +255,38 @@
 
 @media (max-width: 768px) {
     .option-headers-row {
-        flex-direction: column;
-        align-items: flex-start;
-        gap: 10px;
-    }
-    
-    .option-checkbox-group {
+        flex-direction: row;
+        flex-wrap: wrap;
+        align-items: center;
         justify-content: flex-start;
+        gap: 8px 12px;
     }
-    
+
+    .option-checkbox-group {
+        display: inline-flex;
+        align-items: center;
+        gap: 4px;
+        flex-shrink: 0;
+    }
+
     .option-price-display {
-        margin-left: 0;
-        align-self: flex-end;
+        margin-left: auto;
+        flex-shrink: 0;
     }
-    
+
     .option-details {
         margin: 5px 0;
         padding: 6px;
     }
-    
+
     .option-toggle {
         width: 16px;
         height: 16px;
     }
-    
+
     .toggle-label {
-        font-size: 14px;
+        font-size: 13px;
+        white-space: nowrap;
     }
 }
 
