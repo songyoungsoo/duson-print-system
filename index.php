@@ -510,37 +510,37 @@ header("Expires: 0");
                 <div class="slider-track" id="sliderTrack">
                     <!-- Slide 1: 전단지 -->
                     <div class="slider-slide" data-slide="0">
-                        <img src="/slide/slide_inserted.gif" alt="전단지 인쇄 서비스" class="w-full h-full object-cover">
+                        <img src="/slide/slide_inserted.gif" alt="전단지 인쇄 서비스" class="slider-img">
                     </div>
 
                     <!-- Slide 2: 스티커 -->
                     <div class="slider-slide" data-slide="1">
-                        <img src="/slide/slide__Sticker.gif" alt="스티커 인쇄 서비스" class="w-full h-full object-cover">
+                        <img src="/slide/slide__Sticker.gif" alt="스티커 인쇄 서비스" class="slider-img">
                     </div>
 
                     <!-- Slide 3: 카다록 -->
                     <div class="slider-slide" data-slide="2">
-                        <img src="/slide/slide_cadarok.gif" alt="카다록 인쇄 서비스" class="w-full h-full object-cover">
+                        <img src="/slide/slide_cadarok.gif" alt="카다록 인쇄 서비스" class="slider-img">
                     </div>
 
                     <!-- Slide 4: NCR 양식지 -->
                     <div class="slider-slide" data-slide="3">
-                        <img src="/slide/slide_Ncr.gif" alt="NCR 양식지 인쇄 서비스" class="w-full h-full object-cover">
+                        <img src="/slide/slide_Ncr.gif" alt="NCR 양식지 인쇄 서비스" class="slider-img">
                     </div>
 
                     <!-- Slide 5: 포스터 -->
                     <div class="slider-slide" data-slide="4">
-                        <img src="/slide/slide__poster.gif" alt="포스터 인쇄 서비스" class="w-full h-full object-cover">
+                        <img src="/slide/slide__poster.gif" alt="포스터 인쇄 서비스" class="slider-img">
                     </div>
 
                     <!-- Slide 6: 스티커 2 -->
                     <div class="slider-slide" data-slide="5">
-                        <img src="/slide/slide__Sticker_2.gif" alt="스티커 제작 서비스 2" class="w-full h-full object-cover">
+                        <img src="/slide/slide__Sticker_2.gif" alt="스티커 제작 서비스 2" class="slider-img">
                     </div>
 
                     <!-- Slide 7: 스티커 3 -->
                     <div class="slider-slide" data-slide="6">
-                        <img src="/slide/slide__Sticker_3.gif" alt="스티커 제작 서비스 3" class="w-full h-full object-cover">
+                        <img src="/slide/slide__Sticker_3.gif" alt="스티커 제작 서비스 3" class="slider-img">
                     </div>
                 </div>
             </div>
