@@ -820,6 +820,7 @@ html, body {
         width: 100%;
         box-sizing: border-box;
         overflow-x: hidden;
+        min-height: auto;  /* 500px 제거 - 내용에 맞게 자동 조절 */
     }
 
     .product-calculator {
