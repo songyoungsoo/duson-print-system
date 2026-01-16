@@ -203,44 +203,86 @@ $SoftUrl="/MlangPrintAuto";
             padding: 2rem;
         }
         
-        /* 박스 메뉴 스타일 */
+        /* 박스 메뉴 스타일 - 모바일 기본 (Mobile First) */
         .box-menu {
             background: linear-gradient(135deg, #f8f9fa 0%, #e9ecef 100%);
             border-radius: 15px;
-            padding: 20px;
+            padding: 15px;
             margin-bottom: 20px;
             box-shadow: 0 5px 15px rgba(0,0,0,0.05);
         }
-        
+
         .box-menu ul {
             list-style: none;
-            display: flex;
-            flex-wrap: wrap;
-            justify-content: center;
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
             gap: 10px;
+            padding: 0;
+            margin: 0;
         }
-        
+
         .box-menu li {
             margin: 0;
         }
-        
+
         .box-menu a {
-            display: inline-block;
-            padding: 12px 20px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            height: 70px;
+            padding: 8px 4px;
             background: linear-gradient(135deg, #3498db 0%, #2980b9 100%);
             color: white;
             text-decoration: none;
-            border-radius: 25px;
+            border-radius: 10px;
             font-weight: 600;
-            font-size: 0.95rem;
             transition: all 0.3s ease;
             box-shadow: 0 4px 15px rgba(52, 152, 219, 0.3);
+            gap: 4px;
         }
-        
+
+        .box-menu .btn-icon {
+            font-size: 1.4rem;
+            line-height: 1;
+        }
+
+        .box-menu .btn-text {
+            font-size: 0.8rem;
+            font-weight: 600;
+            line-height: 1.2;
+        }
+
         .box-menu a:hover {
             transform: translateY(-2px);
             box-shadow: 0 6px 20px rgba(52, 152, 219, 0.4);
             background: linear-gradient(135deg, #2980b9 0%, #3498db 100%);
+        }
+
+        /* 데스크톱 - 가로 배열 */
+        @media (min-width: 769px) {
+            .box-menu ul {
+                display: flex;
+                flex-wrap: wrap;
+                justify-content: center;
+            }
+
+            .box-menu a {
+                display: inline-flex;
+                flex-direction: row;
+                height: auto;
+                padding: 12px 20px;
+                border-radius: 25px;
+                gap: 8px;
+            }
+
+            .box-menu .btn-icon {
+                font-size: 1rem;
+            }
+
+            .box-menu .btn-text {
+                font-size: 0.95rem;
+            }
         }
         
         /* 레이아웃 조정 */
@@ -280,44 +322,6 @@ $SoftUrl="/MlangPrintAuto";
 
             .sidebar {
                 width: 100%;
-            }
-
-            /* 모바일 3x3 그리드 버튼 레이아웃 */
-            .content-body .box-menu ul {
-                display: grid;
-                grid-template-columns: repeat(3, 1fr);
-                gap: 10px;
-                padding: 0;
-            }
-
-            .content-body .box-menu li {
-                width: 100%;
-                margin: 0;
-            }
-
-            .content-body .box-menu a {
-                width: 100%;
-                height: 70px;
-                padding: 8px 4px;
-                text-align: center;
-                display: flex;
-                flex-direction: column;
-                align-items: center;
-                justify-content: center;
-                border-radius: 10px;
-                box-sizing: border-box;
-                gap: 4px;
-            }
-
-            .content-body .box-menu .btn-icon {
-                font-size: 1.4rem;
-                line-height: 1;
-            }
-
-            .content-body .box-menu .btn-text {
-                font-size: 0.8rem;
-                font-weight: 600;
-                line-height: 1.2;
             }
         }
     </style>
