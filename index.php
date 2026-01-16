@@ -108,23 +108,31 @@ header("Expires: 0");
         .slider-container {
             position: relative;
             overflow: hidden;
+            width: 100%;
+            height: 100%;
         }
 
         .slider-track {
             display: flex;
+            flex-wrap: nowrap;
             width: 700%; /* 7 slides * 100% */
+            height: 100%;
             transition: transform 1000ms ease-in-out;
         }
 
         .slider-slide {
             width: 14.28571%; /* 100% / 7 slides */
+            height: 100%;
             flex-shrink: 0;
             position: relative;
         }
 
-        .slider-slide img {
-            transform: translateY(calc(-15% - 20px));
+        .slider-slide img,
+        .slider-slide .slider-img {
+            width: 100%;
+            height: 100%;
             object-fit: cover;
+            transform: translateY(calc(-15% - 20px));
         }
 
         .slider-dot.active {
