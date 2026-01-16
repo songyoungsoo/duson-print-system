@@ -798,7 +798,7 @@ html, body {
 
     /* 모바일 갤러리-계산기 간격 최적화 - 자연스럽게 이어지도록 */
     .product-content {
-        gap: 5px;
+        gap: 0;
     }
 
     .page-title {
@@ -824,7 +824,7 @@ html, body {
 
     .product-calculator {
         padding: 15px;
-        padding-top: 10px;
+        padding-top: 5px;
         border-radius: 10px;
         margin: 0 auto;
         max-width: 100%;
