@@ -27,14 +27,14 @@ $current_page = isset($current_page) ? $current_page : '';
        style="display: inline-block; padding: 10px 20px; background: <?php echo ($current_page == 'namecard') ? '#5a6268' : '#6c757d'; ?>; color: white; text-decoration: none; border-radius: 8px; font-size: 14px; font-weight: 500; transition: all 0.3s ease; box-shadow: 0 2px 8px rgba(0,0,0,0.15);" 
        onmouseover="this.style.background='#5a6268'; this.style.transform='translateY(-1px)'; this.style.boxShadow='0 4px 12px rgba(0,0,0,0.2)'" 
        onmouseout="this.style.background='<?php echo ($current_page == 'namecard') ? '#5a6268' : '#6c757d'; ?>'; this.style.transform='translateY(0px)'; this.style.boxShadow='0 2px 8px rgba(0,0,0,0.15)'">
-       📇 명함
+       📇 명<span style="color: transparent;">중</span>함
     </a>
     
     <a href="/mlangprintauto/envelope/index.php" 
        style="display: inline-block; padding: 10px 20px; background: <?php echo ($current_page == 'envelope') ? '#5a6268' : '#6c757d'; ?>; color: white; text-decoration: none; border-radius: 8px; font-size: 14px; font-weight: 500; transition: all 0.3s ease; box-shadow: 0 2px 8px rgba(0,0,0,0.15);" 
        onmouseover="this.style.background='#5a6268'; this.style.transform='translateY(-1px)'; this.style.boxShadow='0 4px 12px rgba(0,0,0,0.2)'" 
        onmouseout="this.style.background='<?php echo ($current_page == 'envelope') ? '#5a6268' : '#6c757d'; ?>'; this.style.transform='translateY(0px)'; this.style.boxShadow='0 2px 8px rgba(0,0,0,0.15)'">
-       ✉️ 봉투
+       ✉️ 봉<span style="color: transparent;">중</span>투
     </a>
     
     <a href="/mlangprintauto/cadarok/index.php" 
