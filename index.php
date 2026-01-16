@@ -142,28 +142,34 @@ header("Expires: 0");
                 display: none;
             }
 
-            /* 모바일 슬라이더 - 이미지 2/3 크롭 */
+            /* 모바일 슬라이더 - 2/3 너비로 다음 슬라이드 미리보기 */
             #hero-slider {
-                height: 200px;
+                height: 180px;
+                overflow: visible;
             }
 
             .slider-container {
-                height: 200px;
-                overflow: hidden;
+                height: 180px;
+                overflow: visible;
             }
 
             .slider-track {
+                width: 467%; /* 7 slides * 66.67% */
                 align-items: stretch;
+                gap: 10px;
             }
 
             .slider-slide {
-                height: 200px;
+                width: 14.28%; /* 각 슬라이드는 트랙의 1/7 = 컨테이너의 66.67% */
+                height: 180px;
+                border-radius: 12px;
+                overflow: hidden;
             }
 
             .slider-slide img {
                 transform: none;
                 width: 100%;
-                height: 200px;
+                height: 180px;
                 object-fit: cover;
                 object-position: center center;
             }
