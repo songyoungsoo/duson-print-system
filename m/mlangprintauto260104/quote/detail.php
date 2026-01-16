@@ -6,6 +6,8 @@
 session_start();
 require_once __DIR__ . '/../db.php';
 require_once __DIR__ . '/includes/QuoteManager.php';
+// ✅ 2026-01-16: QuantityFormatter SSOT 추가
+require_once $_SERVER['DOCUMENT_ROOT'] . '/includes/QuantityFormatter.php';
 
 if (!$db) {
     die('데이터베이스 연결 실패');
@@ -449,18 +451,42 @@ $publicUrl = $baseUrl . '/mlangprintauto/quote/public/view.php?token=' . $quote[
                                     <td class="col-name"><?php echo htmlspecialchars($item['product_name']); ?></td>
                                     <td class="col-spec"><?php echo htmlspecialchars($item['specification']); ?></td>
                                     <td class="col-qty"><?php
-                                        $qty = $item['quantity'];
+                                        $qty = floatval($item['quantity']);
+                                        $unit = $item['unit'] ?? '개';
+                                        $productType = $item['product_type'] ?? '';
+                                        $qtySheets = intval($item['qty_sheets'] ?? 0);
+
                                         // 소수점이 있으면 소수점 표시, 정수면 정수로 표시
                                         $qtyDisplay = ($qty == intval($qty)) ? number_format($qty) : rtrim(rtrim(number_format($qty, 2), '0'), '.');
                                         echo $qtyDisplay;
 
-                                        // 전단지(inserted/leaflet)인 경우 매수 표시 추가 - 한 줄 형식
-                                        $productType = $item['product_type'] ?? '';
-                                        if (in_array($productType, ['inserted', 'leaflet']) && !empty($item['source_data'])) {
-                                            $sourceData = json_decode($item['source_data'], true);
-                                            if (!empty($sourceData['mesu'])) {
-                                                echo '연 (' . number_format($sourceData['mesu']) . '매)';
+                                        // ✅ 2026-01-16: SSOT - 전단지/NCR양식지 매수 표시
+                                        $is_flyer = in_array($productType, ['inserted', 'leaflet']) || $unit === '연';
+                                        $is_ncr = ($productType === 'ncrflambeau') || $unit === '권';
+
+                                        // qty_sheets가 0이면 조회/계산
+                                        if ($qtySheets <= 0 && $qty > 0 && ($is_flyer || $is_ncr)) {
+                                            if ($is_flyer) {
+                                                // 전단지: DB 조회
+                                                $sheetStmt = mysqli_prepare($db, "SELECT quantityTwo FROM mlangprintauto_inserted WHERE quantity = ? LIMIT 1");
+                                                if ($sheetStmt) {
+                                                    mysqli_stmt_bind_param($sheetStmt, "d", $qty);
+                                                    mysqli_stmt_execute($sheetStmt);
+                                                    $sheetResult = mysqli_stmt_get_result($sheetStmt);
+                                                    if ($sheetRow = mysqli_fetch_assoc($sheetResult)) {
+                                                        $qtySheets = intval($sheetRow['quantityTwo']);
+                                                    }
+                                                    mysqli_stmt_close($sheetStmt);
+                                                }
+                                            } elseif ($is_ncr) {
+                                                // NCR양식지: 계산
+                                                $qtySheets = QuantityFormatter::calculateNcrSheets(intval($qty), 2);
                                             }
+                                        }
+
+                                        // 매수 표시 (연/권 단위)
+                                        if (($is_flyer || $is_ncr) && $qtySheets > 0) {
+                                            echo $unit . '<br><span style="font-size: 10px; color: #1e88ff;">(' . number_format($qtySheets) . '매)</span>';
                                         }
                                     ?></td>
                                     <td class="col-unit"><?php echo htmlspecialchars($item['unit']); ?></td>
