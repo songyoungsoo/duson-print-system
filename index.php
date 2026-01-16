@@ -154,17 +154,14 @@ header("Expires: 0");
             }
 
             .slider-track {
-                width: calc(7 * 263px + 6 * 10px); /* 7 슬라이드 * 263px + 간격 */
+                width: 700%; /* 7 slides * 100% */
                 align-items: stretch;
-                gap: 10px;
             }
 
             .slider-slide {
-                width: 263px; /* 395px의 2/3 */
+                width: 14.28%; /* 100% / 7 */
                 flex-shrink: 0;
                 height: 180px;
-                border-radius: 12px;
-                overflow: hidden;
             }
 
             .slider-slide img {
@@ -172,7 +169,7 @@ header("Expires: 0");
                 width: 100%;
                 height: 180px;
                 object-fit: cover;
-                object-position: center center;
+                object-position: left center; /* 좌측 정렬 */
             }
         }
 
@@ -946,18 +943,9 @@ header("Expires: 0");
         const totalSlides = slides.length;
 
         function showSlide(index) {
-            // 모바일 체크 (768px 이하)
-            const isMobile = window.innerWidth <= 768;
-
-            if (isMobile) {
-                // 모바일: 263px 슬라이드 + 10px 간격 = 273px 이동
-                const translateX = -index * 273;
-                sliderTrack.style.transform = `translateX(${translateX}px)`;
-            } else {
-                // 데스크톱: 퍼센트 기반
-                const translateX = -index * (100 / totalSlides);
-                sliderTrack.style.transform = `translateX(${translateX}%)`;
-            }
+            // 우측에서 좌측으로 슬라이드 (음수 translate로 좌측 이동)
+            const translateX = -index * (100 / totalSlides);
+            sliderTrack.style.transform = `translateX(${translateX}%)`;
 
             // 도트 상태 업데이트
             dots.forEach(dot => dot.classList.remove('active'));
