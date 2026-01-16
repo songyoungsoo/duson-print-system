@@ -390,12 +390,12 @@ $SoftUrl="/MlangPrintAuto";
                             <li><a href="/mlangprintauto/inserted/index.php"><span class="btn-icon">📄</span><span class="btn-text">전단지</span></a></li>
                             <li><a href="/shop/view_modern.php"><span class="btn-icon">🏷️</span><span class="btn-text">스티커</span></a></li>
                             <li><a href="/mlangprintauto/cadarok/index.php"><span class="btn-icon">📖</span><span class="btn-text">카다록</span></a></li>
-                            <li><a href="/mlangprintauto/NameCard/index.php"><span class="btn-icon">📇</span><span class="btn-text">명함</span></a></li>
+                            <li><a href="/mlangprintauto/NameCard/index.php"><span class="btn-icon">📇</span><span class="btn-text">명&nbsp;함</span></a></li>
                             <li><a href="/mlangprintauto/MerchandiseBond/index.php"><span class="btn-icon">🎫</span><span class="btn-text">상품권</span></a></li>
-                            <li><a href="/mlangprintauto/envelope/index.php"><span class="btn-icon">✉️</span><span class="btn-text">봉투</span></a></li>
+                            <li><a href="/mlangprintauto/envelope/index.php"><span class="btn-icon">✉️</span><span class="btn-text">봉&nbsp;투</span></a></li>
                             <li><a href="/mlangprintauto/NcrFlambeau/index.php"><span class="btn-icon">📄</span><span class="btn-text">양식지</span></a></li>
                             <li><a href="/mlangprintauto/LittlePrint/index.php"><span class="btn-icon">🎨</span><span class="btn-text">포스터</span></a></li>
-                            <li><a href="/mlangprintauto/shop/cart.php"><span class="btn-icon">🛒</span><span class="btn-text">카트</span></a></li>
+                            <li><a href="/mlangprintauto/shop/cart.php"><span class="btn-icon">🛒</span><span class="btn-text">카&nbsp;트</span></a></li>
                         </ul>
                     </nav>
                     
