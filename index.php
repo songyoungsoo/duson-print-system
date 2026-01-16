@@ -142,24 +142,24 @@ header("Expires: 0");
                 display: none;
             }
 
-            /* 모바일 슬라이더 - 2/3 너비로 다음 슬라이드 미리보기 */
+            /* 모바일 슬라이더 - 전체 너비, 좌측 정렬 */
             #hero-slider {
                 height: 180px;
-                overflow: visible;
+                overflow: hidden;
             }
 
             .slider-container {
                 height: 180px;
-                overflow: visible;
+                overflow: hidden;
             }
 
             .slider-track {
+                display: flex;
                 width: 700%; /* 7 slides * 100% */
-                align-items: stretch;
             }
 
             .slider-slide {
-                width: 14.28%; /* 100% / 7 */
+                width: 14.28571%; /* 100% / 7 */
                 flex-shrink: 0;
                 height: 180px;
             }
