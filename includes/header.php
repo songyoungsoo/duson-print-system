@@ -64,7 +64,7 @@ if (isset($_SESSION['user_id'])) {
                         </div>
                         <?php if ($is_logged_in): ?>
                         <div class="contact-card">
-                            <a href="/mypage/" class="contact-text">마이페이지</a>
+                            <a href="/mypage/" class="contact-text">주문열람</a>
                         </div>
                         <div class="contact-card">
                             <form action="/auth/logout.php" method="post" style="margin: 0;" onsubmit="return confirm('로그아웃 하시겠습니까?');">
@@ -74,13 +74,13 @@ if (isset($_SESSION['user_id'])) {
                         </div>
                         <?php else: ?>
                         <div class="contact-card">
-                            <a href="javascript:void(0);" onclick="showLoginModal()" class="contact-text">로그인</a>
+                            <a href="javascript:void(0);" onclick="showLoginModal()" class="contact-text"><span style="letter-spacing: 0.35em;">로그인</span></a>
                         </div>
                         <div class="contact-card">
                             <a href="javascript:void(0);" onclick="showLoginModal(); setTimeout(function(){ document.querySelector('.login-tab:last-child').click(); }, 100);" class="contact-text">회원가입</a>
                         </div>
                         <div class="contact-card">
-                            <a href="/mypage/" class="contact-text">마이페이지</a>
+                            <a href="/mypage/" class="contact-text">주문열람</a>
                         </div>
                         <?php endif; ?>
                         <div class="contact-card">

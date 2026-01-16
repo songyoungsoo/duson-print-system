@@ -60,9 +60,9 @@ if (isset($_SESSION['user_id'])) {
                 </div>
             </div>
             <div class="contact-card mypage-dropdown">
-                <a href="/mypage/index.php" class="contact-text">마이페이지</a>
+                <a href="/mypage/index.php" class="contact-text">주문열람</a>
                 <div class="dropdown-menu">
-                    <a href="/mypage/index.php">마이페이지 홈</a>
+                    <a href="/mypage/index.php">주문열람 홈</a>
                     <a href="/mypage/orders.php">주문조회&배송조회</a>
                     <a href="/mypage/tax_invoices.php">전자세금계산서</a>
                     <a href="/mypage/transactions.php">거래내역조회</a>
@@ -82,13 +82,13 @@ if (isset($_SESSION['user_id'])) {
             </div>
             <?php else: ?>
             <div class="contact-card">
-                <a href="/member/login.php" class="contact-text">로그인</a>
+                <a href="/member/login.php" class="contact-text"><span style="letter-spacing: 0.35em;">로그인</span></a>
             </div>
             <div class="contact-card">
                 <a href="/member/join.php" class="contact-text">회원가입</a>
             </div>
             <div class="contact-card">
-                <a href="/account/orders.php" class="contact-text">마이페이지</a>
+                <a href="/account/orders.php" class="contact-text">주문열람</a>
             </div>
             <?php endif; ?>
             <div class="contact-card">
@@ -103,7 +103,7 @@ if (isset($_SESSION['user_id'])) {
 <!-- 사용자 메뉴 JavaScript는 /js/common-auth.js에서 처리 -->
 
 <style>
-/* 마이페이지 드롭다운 메뉴 스타일 */
+/* 주문열람 드롭다운 메뉴 스타일 */
 .mypage-dropdown {
     position: relative;
     cursor: pointer;
@@ -153,7 +153,7 @@ if (isset($_SESSION['user_id'])) {
     margin: 6px 0;
 }
 
-/* 마이페이지 메뉴 아이콘 추가 */
+/* 주문열람 메뉴 아이콘 추가 */
 .dropdown-menu a:before {
     margin-right: 8px;
 }
