@@ -254,28 +254,30 @@
    ================================ */
 
 @media (max-width: 768px) {
-    /* 옵션 체크박스 한 줄 표시 (코팅/접지/오시 등) */
-    .leaflet-premium-options-section .option-headers-row,
-    .premium-options-section .option-headers-row,
-    .additional-options-section .option-headers-row,
-    .option-headers-row {
-        display: flex !important;
-        flex-direction: row !important;
-        flex-wrap: wrap !important;
-        align-items: center !important;
-        justify-content: flex-start !important;
-        gap: 6px 15px !important;
+    /* 옵션 체크박스 한 줄 표시 (코팅/접지/오시 등) - 구체적 선택자로 우선순위 확보 */
+    .product-calculator .leaflet-premium-options-section .option-headers-row,
+    .product-calculator .premium-options-section .option-headers-row,
+    .product-calculator .additional-options-section .option-headers-row,
+    .inline-form-container .option-headers-row,
+    div.option-headers-row {
+        display: flex;
+        flex-direction: row;
+        flex-wrap: wrap;
+        align-items: center;
+        justify-content: flex-start;
+        gap: 6px 15px;
     }
 
-    .leaflet-premium-options-section .option-checkbox-group,
-    .premium-options-section .option-checkbox-group,
-    .additional-options-section .option-checkbox-group,
-    .option-checkbox-group {
-        display: inline-flex !important;
-        flex-direction: row !important;
-        align-items: center !important;
-        gap: 4px !important;
-        flex-shrink: 0 !important;
+    .product-calculator .leaflet-premium-options-section .option-checkbox-group,
+    .product-calculator .premium-options-section .option-checkbox-group,
+    .product-calculator .additional-options-section .option-checkbox-group,
+    .inline-form-container .option-checkbox-group,
+    div.option-checkbox-group {
+        display: inline-flex;
+        flex-direction: row;
+        align-items: center;
+        gap: 4px;
+        flex-shrink: 0;
     }
 
     .option-price-display {
