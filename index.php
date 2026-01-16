@@ -137,30 +137,35 @@ header("Expires: 0");
                 display: none;
             }
 
-            /* 모바일 슬라이더 최적화 */
+            /* 모바일 슬라이더 최적화 - 인라인 스타일 오버라이드 */
+            #hero-slider {
+                height: auto !important;
+                max-height: 200px !important;
+            }
+
             .slider-container {
-                height: auto;
-                max-height: none;
-                overflow: hidden;
+                height: auto !important;
+                max-height: none !important;
+                overflow: hidden !important;
             }
 
             .slider-track {
-                align-items: flex-start;
+                align-items: flex-start !important;
             }
 
             .slider-slide {
-                display: flex;
-                align-items: center;
-                justify-content: center;
+                display: flex !important;
+                align-items: center !important;
+                justify-content: center !important;
             }
 
             .slider-slide img {
-                transform: none;
-                width: 100%;
-                height: auto;
-                max-height: none;
-                object-fit: cover;
-                object-position: center top;
+                transform: none !important;
+                width: 100% !important;
+                height: auto !important;
+                max-height: 200px !important;
+                object-fit: contain !important;
+                object-position: center center !important;
             }
         }
 
