@@ -503,10 +503,10 @@ header("Expires: 0");
     <?php if (file_exists('includes/nav.php')) include "includes/nav.php"; ?>
 
     <!-- Hero Slider Section -->
-    <section class="relative overflow-hidden" style="max-width: 1200px; margin: 0 auto;">
-        <div id="hero-slider" class="relative">
+    <section id="slider-section" style="max-width: 1200px; margin: 0 auto; position: relative; overflow: hidden;">
+        <div id="hero-slider">
             <!-- Slider Content -->
-            <div class="slider-container relative w-full h-full">
+            <div class="slider-container">
                 <div class="slider-track" id="sliderTrack">
                     <!-- Slide 1: 전단지 -->
                     <div class="slider-slide" data-slide="0">
