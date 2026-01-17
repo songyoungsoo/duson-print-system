@@ -337,7 +337,7 @@ $koreanAmount = numberToKorean($quote['grand_total']);
                 <tr>
                     <th style="width: 5%;">NO</th>
                     <th style="width: 15%;">품 목</th>
-                    <th style="width: 25%;">규격 및 사양</th>
+                    <th style="width: 25%;">규격/옵션</th>
                     <th style="width: 12%;">수량</th>
                     <th style="width: 5%;">단위</th>
                     <th style="width: 8%;">단가</th>

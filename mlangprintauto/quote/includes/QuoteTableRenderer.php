@@ -87,18 +87,32 @@ class QuoteTableRenderer {
     /**
      * 단위 셀 포맷팅 (SSOT)
      *
+     * ✅ 2026-01-17: SKILL.md Part 4.1 단위 코드 매핑 준수
+     * - 레거시 unit 필드를 무시하고, product_type 기반으로 단위 결정
+     *
      * @param array $item 견적 아이템 데이터
      * @return string 한글 단위명
      */
     public function formatUnitCell(array $item): string {
-        $qtyUnit = $item['qty_unit'] ?? null;
+        // ✅ SSOT 우선순위:
+        // 1. product_type 기반 (SKILL.md Part 4.1 - 최우선)
+        // 2. qty_unit (표준 필드)
+        // 3. 레거시 unit (fallback)
 
-        // 표준 필드 우선 사용
+        // 1. product_type이 있으면 무조건 SSOT 규칙 적용
+        $productType = $item['product_type'] ?? '';
+        if (!empty($productType) && isset(QuantityFormatter::PRODUCT_UNITS[$productType])) {
+            $unitCode = QuantityFormatter::getProductUnitCode($productType);
+            return QuantityFormatter::getUnitName($unitCode);
+        }
+
+        // 2. 비규격 품목: qty_unit 사용
+        $qtyUnit = $item['qty_unit'] ?? null;
         if ($qtyUnit && isset(QuantityFormatter::UNIT_CODES[$qtyUnit])) {
             return QuantityFormatter::getUnitName($qtyUnit);
         }
 
-        // 레거시 fallback: unit 필드 사용
+        // 3. 최후 fallback: 레거시 unit 필드
         return htmlspecialchars($item['unit'] ?? '개');
     }
 

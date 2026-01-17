@@ -427,7 +427,8 @@ class QuoteManager {
 
         // === 하이브리드 모델: 표준화된 수량 데이터 ===
         $qtyVal = floatval($quantity);
-        $qtyUnit = QuantityFormatter::getUnitCode($productType);
+        // ✅ FIX: getProductUnitCode() 사용 (product_type → 단위코드)
+        $qtyUnit = QuantityFormatter::getProductUnitCode($productType);
         $qtySheets = null;
 
         // 전단지/리플렛: 매수 계산
@@ -490,7 +491,8 @@ class QuoteManager {
 
         // === 하이브리드 모델: 표준화된 수량 데이터 ===
         $qtyVal = floatval($quantity);
-        $qtyUnit = QuantityFormatter::getUnitCode($productType);
+        // ✅ FIX: getProductUnitCode() 사용 (product_type → 단위코드)
+        $qtyUnit = QuantityFormatter::getProductUnitCode($productType);
         $qtySheets = null;
 
         // 4. 단가 계산 및 매수 처리
@@ -584,7 +586,8 @@ class QuoteManager {
             '식' => 'E', '세트' => 'E', '박스' => 'E', '롤' => 'E', 'm²' => 'E', '헤베' => 'E'
         ];
         if (!empty($productType) && isset(QuantityFormatter::PRODUCT_UNITS[$productType])) {
-            $qtyUnit = QuantityFormatter::getUnitCode($productType);
+            // ✅ FIX: getProductUnitCode() 사용 (product_type → 단위코드)
+            $qtyUnit = QuantityFormatter::getProductUnitCode($productType);
         } else {
             $qtyUnit = $unitTextToCode[$unit] ?? 'E';
         }
