@@ -215,6 +215,18 @@
     font-family: var(--font-family-primary);
 }
 
+/* number/text input 폰트 크기 강제 (브라우저 기본 16px override) */
+input[type="number"].inline-input,
+input[type="text"].inline-input {
+    font-size: var(--font-size-sm);
+}
+
+/* placeholder 스타일 - 라벨과 동일한 크기 */
+.inline-input::placeholder {
+    font-size: var(--font-size-sm);
+    color: var(--color-gray-400);
+}
+
 /* 인라인 노트 (설명글) 스타일 (명시도: 10) */
 .inline-note {
     font-size: var(--font-size-xs);

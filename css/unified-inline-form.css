@@ -105,6 +105,19 @@
     margin-right: 0;
     height: 36px;
     box-sizing: border-box;
+}
+
+/* placeholder 스타일 - 라벨과 동일한 크기 */
+.inline-input::placeholder,
+.options-grid .inline-input::placeholder {
+    font-size: 0.85rem;
+    color: #adb5bd;
+}
+
+/* number input 폰트 크기 강제 (브라우저 기본 16px override) */
+input[type="number"].inline-input,
+input[type="text"].inline-input {
+    font-size: 0.85rem;
     transition: all 0.2s ease;
 }
 
