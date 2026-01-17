@@ -261,6 +261,7 @@ function changeAdminPassword($current_password, $new_password) {
     $new_credentials = [
         'username' => $credentials['username'],
         'password_hash' => $new_hash,
+        'needs_change' => false,  // 비밀번호 변경 완료 표시
         'updated_at' => date('Y-m-d H:i:s')
     ];
 
