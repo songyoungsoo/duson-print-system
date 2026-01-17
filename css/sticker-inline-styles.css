@@ -818,23 +818,5 @@
     font-weight: 600;
 }
 
-/* 파일 업로드 및 주문하기 버튼 - 컴팩트 */
-.btn-upload-order {
-    width: 100%;
-    padding: 10px;
-    background: #28a745;
-    color: white;
-    border: none;
-    border-radius: 6px;
-    font-size: 0.9rem;
-    font-weight: 600;
-    cursor: pointer;
-    transition: all 0.3s ease;
-    margin-top: 8px;
-}
-
-.btn-upload-order:hover {
-    background: #218838;
-    transform: translateY(-1px);
-}
+/* .btn-upload-order 스타일은 common-styles.css에서 통합 관리 (SSOT) */
 

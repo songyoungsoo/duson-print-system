@@ -179,24 +179,7 @@ $default_values = [
             margin: 20px 0;
         }
         
-        .btn-upload-order {
-            background: linear-gradient(135deg, #7C4DFF, #9575CD);
-            color: white;
-            border: none;
-            padding: 15px 30px;
-            border-radius: 8px;
-            font-size: 16px;
-            font-weight: bold;
-            cursor: pointer;
-            transition: all 0.3s ease;
-            box-shadow: 0 3px 8px rgba(124, 77, 255, 0.3);
-        }
-        
-        .btn-upload-order:hover {
-            background: linear-gradient(135deg, #6A3DE8, #7C4DFF);
-            transform: translateY(-2px);
-            box-shadow: 0 5px 12px rgba(124, 77, 255, 0.4);
-        }
+        /* .btn-upload-order → common-styles.css SSOT 사용 */
     </style>
 </head>
 

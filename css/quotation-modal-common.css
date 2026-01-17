@@ -148,12 +148,10 @@
 }
 
 .quotation-modal-mode .btn-upload-order {
-    width: 100% !important;
-    padding: 12px !important;
-    font-size: 16px !important;
-    font-weight: 700 !important;
-    background: linear-gradient(135deg, #11998e 0%, #38ef7d 100%) !important;
-    box-shadow: 0 4px 15px rgba(17, 153, 142, 0.3) !important;
+    /* 색상은 common-styles.css SSOT 상속, 모달 전용 크기만 조정 */
+    width: 100%;
+    padding: 12px;
+    font-size: 16px;
 }
 
 /* ==========================================

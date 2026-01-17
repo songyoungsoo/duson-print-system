@@ -220,30 +220,7 @@
     margin-top: 1rem;
 }
 
-.btn-upload-order {
-    background: var(--magnet-gradient);
-    color: #333;
-    border: none;
-    padding: 1rem 2rem;
-    font-size: 1.1rem;
-    font-weight: 600;
-    border-radius: var(--border-radius);
-    cursor: pointer;
-    transition: var(--transition);
-    box-shadow: var(--magnet-shadow);
-    display: inline-flex;
-    align-items: center;
-    gap: 0.5rem;
-}
-
-.btn-upload-order:hover {
-    transform: translateY(-2px);
-    box-shadow: var(--magnet-hover-shadow);
-}
-
-.btn-upload-order:active {
-    transform: translateY(0);
-}
+/* .btn-upload-order 스타일은 common-styles.css에서 통합 관리 (SSOT) */
 
 /* 📁 업로드 모달 */
 .upload-modal {

@@ -256,32 +256,7 @@
 /* =================================================================== */
 /* 버튼 스타일 */
 /* =================================================================== */
-
-.btn-upload-order {
-    width: 100%;
-    padding: 10px;
-    background: #364052;
-    color: white;
-    border: none;
-    border-radius: 6px;
-    font-size: 0.9rem;
-    font-weight: 600;
-    cursor: pointer;
-    transition: all 0.3s ease;
-    margin-top: 8px;
-    box-shadow: 0 4px 12px rgba(54, 64, 82, 0.3);
-}
-
-.btn-upload-order:hover {
-    background: #4a5568;
-    transform: translateY(-2px);
-    box-shadow: 0 6px 20px rgba(54, 64, 82, 0.4);
-}
-
-.btn-upload-order:active {
-    background: #4a5568;
-    transform: translateY(0);
-}
+/* .btn-upload-order 스타일은 common-styles.css에서 통합 관리 (SSOT) */
 
 /* =================================================================== */
 /* 반응형 디자인 */

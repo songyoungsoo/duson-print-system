@@ -207,30 +207,7 @@ include "../../includes/CommonGallery.php";
       margin-top: 15px;
       text-align: center;
     }
-    .btn-upload-order {
-      background: linear-gradient(135deg, #28a745 0%, #20c997 100%);
-      color: white;
-      border: none;
-      padding: 10px 20px;
-      font-size: 0.95rem;
-      font-weight: 600;
-      border-radius: 8px;
-      cursor: pointer;
-      transition: all 0.3s ease;
-      box-shadow: 0 2px 8px rgba(40, 167, 69, 0.3);
-      text-transform: none;
-      letter-spacing: 0.3px;
-      transform: translateZ(0);
-    }
-    .btn-upload-order:hover {
-      background: linear-gradient(135deg, #20c997 0%, #28a745 100%);
-      transform: translateY(-2px);
-      box-shadow: 0 6px 20px rgba(40, 167, 69, 0.4);
-    }
-    .btn-upload-order:active {
-      transform: translateY(0);
-      box-shadow: 0 4px 15px rgba(40, 167, 69, 0.3);
-    }
+    /* .btn-upload-order → common-styles.css SSOT 사용 */
 
     /* 도무송 선택 시 특수 스타일 */
     .domusong-selected {

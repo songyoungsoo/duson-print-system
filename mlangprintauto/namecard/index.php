@@ -155,14 +155,7 @@ if ($type_result && ($type_row = mysqli_fetch_assoc($type_result))) {
             cursor: pointer;
             transition: all 0.3s ease;
         }
-        .btn-upload-order {
-            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-            color: white;
-        }
-        .btn-upload-order:hover {
-            transform: translateY(-2px);
-            box-shadow: 0 4px 12px rgba(102, 126, 234, 0.4);
-        }
+        /* .btn-upload-order → common-styles.css SSOT 사용 */
         .btn-request-quote {
             background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%);
             color: white;

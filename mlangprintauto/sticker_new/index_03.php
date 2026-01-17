@@ -250,10 +250,7 @@ $default_values = [
         flex-shrink: 0 !important;
     }
     
-    .btn-upload-order {
-        padding: 8px 16px !important;
-        font-size: 0.85rem !important;
-    }
+    /* .btn-upload-order → common-styles.css SSOT 사용 */
     
     /* 파일 업로드 모달 타이트 스타일 조정 */
     .upload-modal {

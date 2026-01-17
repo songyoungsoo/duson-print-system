@@ -312,24 +312,7 @@ $default_values = [
         flex-shrink: 0 !important;
     }
     
-    .btn-upload-order {
-        padding: 8px 16px !important;
-        font-size: 0.85rem !important;
-        background: linear-gradient(135deg, #4CAF50, #66BB6A) !important;
-        color: white !important;
-        border: none !important;
-        border-radius: 8px !important;
-        font-weight: bold !important;
-        cursor: pointer !important;
-        box-shadow: none !important;
-        transition: all 0.3s ease !important;
-    }
-    
-    .btn-upload-order:hover {
-        background: linear-gradient(135deg, #45a049, #4CAF50) !important;
-        box-shadow: none !important;
-        transform: translateY(-1px) !important;
-    }
+    /* .btn-upload-order → common-styles.css SSOT 사용 */
     
     /* 파일 업로드 모달 타이트 스타일 조정 */
     .upload-modal {
