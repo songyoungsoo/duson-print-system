@@ -114,8 +114,6 @@ if ($type_row = mysqli_fetch_assoc($type_result)) {
     <!-- 공통 갤러리 팝업 함수 -->
     <script src="../../js/common-gallery-popup.js"></script>
 
-    <!-- 인라인 CSS 추출 파일 -->
-    <link rel="stylesheet" href="css/msticker-inline-extracted.css">
     <!-- 🎯 통합 공통 스타일 CSS (최종 로드로 최우선 적용) -->
     <link rel="stylesheet" href="../../css/common-styles.css?v=1759615861">
     <link rel="stylesheet" href="../../css/upload-modal-common.css">
@@ -223,7 +221,7 @@ if ($type_row = mysqli_fetch_assoc($type_result)) {
                     <?php else: ?>
                     <!-- 일반 모드: 파일 업로드 및 주문하기 버튼 -->
                     <div class="action-buttons" id="actionButtons">
-                        <button type="button" class="btn-upload-order" onclick="openUploadModal()">
+                        <button type="button" class="btn-upload-order" onclick="mstickerOpenUploadModal()">
                             파일 업로드 및 주문하기
                         </button>
                     </div>

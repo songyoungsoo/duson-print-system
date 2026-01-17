@@ -321,17 +321,8 @@ window.addToBasketFromModal = function() {
                 hideDusonLoading();
             }
 
-            // 짧은 성공 메시지 표시
-            const cartButton = document.querySelector('.btn-cart');
-            if (cartButton) {
-                cartButton.innerHTML = '✅ 저장완료';
-                cartButton.style.backgroundColor = '#28a745';
-            }
-
-            // 1초 후 장바구니 페이지로 이동
-            setTimeout(function() {
-                window.location.href = window.location.origin + '/mlangprintauto/shop/cart.php';
-            }, 1000);
+            // 바로 장바구니 페이지로 이동 (딜레이 없이)
+            window.location.href = window.location.origin + '/mlangprintauto/shop/cart.php';
         };
 
         const onError = function(errorMessage) {

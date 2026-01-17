@@ -25,12 +25,27 @@ document.addEventListener('DOMContentLoaded', function() {
     // initializeGallery(); // 제거: 공통 갤러리 시스템 사용
     initializeCalculator();
     initializeFileUpload();
-    
+
     // 기본값이 설정되어 있으면 자동으로 하위 옵션들 로드
     const typeSelect = document.getElementById('MY_type');
     if (typeSelect && typeSelect.value) {
         loadSizes(typeSelect.value);
     }
+
+    // 🚀 즉시 가격 계산 (모든 기본값이 설정된 경우)
+    // PHP에서 기본값이 이미 설정되어 있으면 즉시 계산하여 버튼 반응성 향상
+    setTimeout(() => {
+        const form = document.getElementById('mstickerForm');
+        if (form) {
+            const formData = new FormData(form);
+            if (formData.get('MY_type') && formData.get('Section') &&
+                formData.get('POtype') && formData.get('MY_amount') &&
+                formData.get('ordertype')) {
+                console.log('🚀 페이지 로드 시 즉시 가격 계산 실행');
+                calculatePrice(true);
+            }
+        }
+    }, 100);  // DOM 렌더링 완료 후 즉시 실행
 });
 
 // ============================================================================
@@ -470,7 +485,8 @@ function initializeFileUpload() {
     // 모달이 처음 열릴 때만 초기화
 }
 
-function openUploadModal() {
+// 자석스티커 전용 모달 열기 함수 (window.openUploadModal과 충돌 방지)
+function mstickerOpenUploadModal() {
     if (!currentPriceData) {
         showUserMessage('먼저 가격을 계산해주세요.', 'warning');
         return;
@@ -489,12 +505,11 @@ function openUploadModal() {
     }
 }
 
-function closeUploadModal() {
-    // 공통 upload_modal.js의 closeUploadModal 사용
-    if (typeof window.closeUploadModal === 'function') {
-        window.closeUploadModal();
-    }
-}
+// onclick="openUploadModal()" 호환성을 위한 전역 등록
+window.openUploadModalWithPriceCheck = mstickerOpenUploadModal;
+
+// closeUploadModal은 upload_modal.js에서 window.closeUploadModal로 제공됨
+// 중복 정의 시 무한 재귀 발생하므로 제거
 
 // initializeModalFileUpload 제거 - 공통 upload_modal.js 사용
 

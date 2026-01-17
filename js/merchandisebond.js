@@ -1041,12 +1041,9 @@ function addToBasketFromModalDirect(onSuccess, onError) {
                 if (typeof onSuccess === 'function') {
                     onSuccess();
                 } else {
-                    // 기본 성공 처리
+                    // 기본 성공 처리 (alert 없이 바로 이동)
                     closeUploadModal();
-                    showUserMessage('장바구니에 저장되었습니다! 🛒', 'success');
-                    setTimeout(() => {
-                        window.location.href = '/mlangprintauto/shop/cart.php';
-                    }, 1000);
+                    window.location.href = '/mlangprintauto/shop/cart.php';
                 }
 
             } else {

@@ -994,15 +994,10 @@ function addToBasketFromModal() {
             if (response.success) {
                 // 모달 닫기
                 closeUploadModal();
-                
-                // 성공 메시지 표시
-                showUserMessage('장바구니에 저장되었습니다! 🛒', 'success');
-                
-                // 장바구니 페이지로 이동
-                setTimeout(() => {
-                    window.location.href = '/mlangprintauto/shop/cart.php';
-                }, 1000);
-                
+
+                // 바로 장바구니 페이지로 이동 (alert 없이)
+                window.location.href = '/mlangprintauto/shop/cart.php';
+
             } else {
                 restoreButton(cartButton, originalText);
                 showUserMessage('장바구니 저장 중 오류가 발생했습니다: ' + response.message, 'error');
