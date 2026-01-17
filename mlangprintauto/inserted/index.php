@@ -557,7 +557,7 @@ header("Expires: 0");
         <?php endif; ?>
     });
         // 전단지 전용 장바구니 추가 함수 (통합 모달 패턴)
-        window.handleModalBasketAdd = function(onSuccess, onError) {
+        window.handleModalBasketAdd = function(uploadedFiles, onSuccess, onError) {
             console.log("전단지 장바구니 추가 시작");
 
             // 현재 가격 데이터가 없으면 에러

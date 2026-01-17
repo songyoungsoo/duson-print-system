@@ -890,7 +890,7 @@ if ($type_result && ($type_row = mysqli_fetch_assoc($type_result))) {
         }
 
         // 🆕 공통 업로드 모달에서 사용할 장바구니 추가 함수
-        window.handleModalBasketAdd = function(onSuccess, onError) {
+        window.handleModalBasketAdd = function(uploadedFiles, onSuccess, onError) {
             console.log('명함 장바구니 추가 시작');
 
             // 🔧 장바구니 추가 전에 프리미엄 옵션 재계산
