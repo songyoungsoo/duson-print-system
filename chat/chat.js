@@ -84,8 +84,8 @@ class ChatWidget {
 
                 <div class="chat-input-area">
                     <div class="chat-input-wrapper">
-                        <button class="chat-image-btn" id="chat-image-btn" title="이미지 전송">+</button>
-                        <input type="file" id="chat-image-input" accept="image/*">
+                        <button class="chat-image-btn" id="chat-image-btn" title="파일 첨부">+</button>
+                        <input type="file" id="chat-image-input" accept="image/*,.pdf,.doc,.docx,.xls,.xlsx,.ppt,.pptx,.hwp,.hwpx,.ai,.txt">
                         <input type="text" class="chat-input" id="chat-input" placeholder="메시지를 입력하세요...">
                         <button class="chat-send-btn" id="chat-send-btn">
                             <svg width="20" height="20" viewBox="0 0 24 24" fill="white">
@@ -438,6 +438,21 @@ class ChatWidget {
                     <img src="/${msg.filepath}" alt="${msg.filename}" class="chat-message-image" onclick="window.open('/${msg.filepath}', '_blank')">
                 </div>
             `;
+        } else if (msg.messagetype === 'file') {
+            // 파일 첨부
+            const fileSize = msg.filesize ? this.formatFileSize(msg.filesize) : '';
+            const fileIcon = this.getFileIcon(msg.filename);
+            contentHtml = `
+                <div class="chat-message-bubble chat-file-message">
+                    <a href="/${msg.filepath}" target="_blank" class="chat-file-link">
+                        <span class="chat-file-icon">${fileIcon}</span>
+                        <span class="chat-file-info">
+                            <span class="chat-file-name">${this.escapeHtml(msg.filename)}</span>
+                            <span class="chat-file-size">${fileSize}</span>
+                        </span>
+                    </a>
+                </div>
+            `;
         }
 
         const time = new Date(msg.createdat).toLocaleTimeString('ko-KR', { hour: '2-digit', minute: '2-digit' });
@@ -488,20 +503,28 @@ class ChatWidget {
     async uploadImage(file) {
         if (!file || !this.roomId) return;
 
-        // 파일 크기 체크 (5MB)
-        if (file.size > 5 * 1024 * 1024) {
-            alert('이미지 크기는 5MB 이하여야 합니다.');
+        // 파일 크기 체크 (10MB)
+        if (file.size > 10 * 1024 * 1024) {
+            alert('파일 크기 초과 (최대 10MB)\n\n대용량 파일은 dsp1830@naver.com 으로 보내주세요.');
+            return;
+        }
+
+        // 허용된 파일 확장자 확인
+        const allowedExtensions = ['jpg', 'jpeg', 'png', 'gif', 'webp', 'pdf', 'doc', 'docx', 'xls', 'xlsx', 'ppt', 'pptx', 'hwp', 'hwpx', 'ai', 'txt'];
+        const ext = file.name.split('.').pop().toLowerCase();
+        if (!allowedExtensions.includes(ext)) {
+            alert('허용되지 않는 파일 형식입니다.');
             return;
         }
 
         try {
             const user = this.getCurrentUser();
             const formData = new FormData();
-            formData.append('action', 'upload_image');
+            formData.append('action', 'upload_file');
             formData.append('room_id', this.roomId);
-            formData.append('image', file);
-            formData.append('sender_id', user.id); // 사용자 ID 전송
-            formData.append('sender_name', user.name); // 사용자 이름 전송
+            formData.append('file', file);
+            formData.append('sender_id', user.id);
+            formData.append('sender_name', user.name);
 
             const response = await fetch('/chat/api.php', {
                 method: 'POST',
@@ -512,15 +535,38 @@ class ChatWidget {
 
             if (data.success) {
                 await this.loadMessages();
-                // 입력 초기화
                 document.getElementById('chat-image-input').value = '';
             } else {
-                alert('이미지 업로드 실패: ' + data.message);
+                alert('파일 업로드 실패: ' + data.message);
             }
         } catch (error) {
-            console.error('이미지 업로드 오류:', error);
-            alert('이미지 업로드 중 오류가 발생했습니다.');
+            console.error('파일 업로드 오류:', error);
+            alert('파일 업로드 중 오류가 발생했습니다.');
         }
+    }
+
+    // 파일 크기 포맷팅
+    formatFileSize(bytes) {
+        if (bytes === 0) return '0 Bytes';
+        const k = 1024;
+        const sizes = ['Bytes', 'KB', 'MB', 'GB'];
+        const i = Math.floor(Math.log(bytes) / Math.log(k));
+        return parseFloat((bytes / Math.pow(k, i)).toFixed(1)) + ' ' + sizes[i];
+    }
+
+    // 파일 타입별 아이콘
+    getFileIcon(filename) {
+        const ext = filename.split('.').pop().toLowerCase();
+        const icons = {
+            'pdf': '📕',
+            'doc': '📘', 'docx': '📘',
+            'xls': '📗', 'xlsx': '📗',
+            'ppt': '📙', 'pptx': '📙',
+            'hwp': '📝', 'hwpx': '📝',
+            'ai': '🎨',
+            'txt': '📄'
+        };
+        return icons[ext] || '📎';
     }
 
     async markAsRead() {

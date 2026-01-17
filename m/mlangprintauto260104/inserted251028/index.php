@@ -6,8 +6,8 @@ $session_id = session_id();
 ob_start();
 error_reporting(E_ALL & ~E_NOTICE & ~E_WARNING);
 ini_set('display_errors', 0);
-include "../../db.php";
-include "../../includes/functions.php";
+include __DIR__ . "/../../../db.php";
+include __DIR__ . "/../../../includes/functions.php";
 
 // 페이지 설정
 $page_title = '📄 두손기획인쇄 - 전단지 컴팩트 견적';
@@ -19,7 +19,7 @@ $GGTABLE = "mlangprintauto_transactioncate";
 if ($db) mysqli_set_charset($db, "utf8");
 
 // 통합 갤러리 시스템 - 제거됨 (새 갤러리 v2.0 사용)
-// if (file_exists('../../includes/gallery_helper.php')) {
+// if (file_exists(__DIR__ . '/../../../includes/gallery_helper.php')) {
 //     include_once '../../includes/gallery_helper.php';
 // }
 // if (function_exists("init_gallery_system")) {
@@ -56,29 +56,29 @@ header("Cache-Control: no-cache, no-store, must-revalidate");
     <meta name="session-id" content="<?php echo htmlspecialchars($session_id); ?>">
 
     <!-- CSS -->
-    <link rel="stylesheet" href="../../css/color-system-unified.css">
-    <link rel="stylesheet" href="../../css/product-layout.css">
-    <link rel="stylesheet" href="../../css/common-styles.css?v=<?php echo time(); ?>">
-    <link rel="stylesheet" href="../../css/upload-modal-common.css?v=<?php echo time(); ?>">
-    <link rel="stylesheet" href="../../css/brand-design-system.css">
-    <link rel="stylesheet" href="../../css/additional-options.css">
-    <!-- <link rel="stylesheet" href="../../css/unified-gallery.css"> -->
-    <link rel="stylesheet" href="../../css/unified-inline-form.css">
+    <link rel="stylesheet" href="/css/color-system-unified.css">
+    <link rel="stylesheet" href="/css/product-layout.css">
+    <link rel="stylesheet" href="/css/common-styles.css?v=<?php echo time(); ?>">
+    <link rel="stylesheet" href="/css/upload-modal-common.css?v=<?php echo time(); ?>">
+    <link rel="stylesheet" href="/css/brand-design-system.css">
+    <link rel="stylesheet" href="/css/additional-options.css">
+    <!-- <link rel="stylesheet" href="/css/unified-gallery.css"> -->
+    <link rel="stylesheet" href="/css/unified-inline-form.css">
 
     <!-- 공통 갤러리 팝업 함수 (샘플더보기 버튼용) -->
-    <script src="../../js/common-gallery-popup.js"></script>
+    <script src="/js/common-gallery-popup.js"></script>
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@300;400;500;700&display=swap" rel="stylesheet">
 
     <!-- JS -->
-    <script src="../../js/common-unified.js" defer></script>
-    <script src="../../js/inserted-logic.js" defer></script>
+    <script src="/js/common-unified.js" defer></script>
+    <script src="/js/inserted-logic.js" defer></script>
 </head>
 
 <body class="inserted-page">
-    <?php include "../../includes/header-ui.php"; ?>
-    <?php include "../../includes/nav.php"; ?>
+    <?php include __DIR__ . "/../../../includes/header-ui.php"; ?>
+    <?php include __DIR__ . "/../../../includes/nav.php"; ?>
 
     <div class="product-container">
         <div class="page-title"><h1>📄 전단지 견적 안내</h1></div>
@@ -87,7 +87,7 @@ header("Cache-Control: no-cache, no-store, must-revalidate");
                 <?php
                 // 새 갤러리 시스템 - 한 줄 인클루드 (계산 로직 무관)
                 $gallery_product = 'inserted';
-                include '../../includes/simple_gallery_include.php';
+                include __DIR__ . '/../../../includes/simple_gallery_include.php';
                 ?>
             </section>
 
@@ -163,10 +163,10 @@ header("Cache-Control: no-cache, no-store, must-revalidate");
     </div>
 
     <?php 
-    include "../../includes/upload_modal.php";
-    include "../../includes/login_modal.php";
+    include __DIR__ . "/../../../includes/upload_modal.php";
+    include __DIR__ . "/../../../includes/login_modal.php";
     include "explane_inserted.php";
-    include "../../includes/footer.php"; 
+    include __DIR__ . "/../../../includes/footer.php"; 
     ?>
 </body>
 </html>

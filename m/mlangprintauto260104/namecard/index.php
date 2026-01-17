@@ -7,20 +7,20 @@
  */
 
 // 테마 시스템 로드
-include_once __DIR__ . '/../../includes/theme_loader.php';
+include_once __DIR__ . '/../../../includes/theme_loader.php';
 
 // 보안 상수 정의 후 공통 인증 및 설정
-include "../../includes/auth.php";
+include __DIR__ . "/../../../includes/auth.php";
 
 // 견적서 모달용 간소화 모드 체크
 $isQuotationMode = isset($_GET['mode']) && $_GET['mode'] === 'quotation';
 
 // 공통 함수 및 데이터베이스
-include "../../includes/functions.php";
-include "../../db.php";
+include __DIR__ . "/../../../includes/functions.php";
+include __DIR__ . "/../../../db.php";
 
 // 통합 갤러리 시스템 초기화
-if (file_exists('../../includes/gallery_helper.php')) { if (file_exists('../../includes/gallery_helper.php')) { include_once '../../includes/gallery_helper.php'; } }
+if (file_exists(__DIR__ . '/../../../includes/gallery_helper.php')) { if (file_exists(__DIR__ . '/../../../includes/gallery_helper.php')) { include_once '../../includes/gallery_helper.php'; } }
 if (function_exists("init_gallery_system")) { init_gallery_system("namecard"); }
 
 // 데이터베이스 연결 및 설정
@@ -78,34 +78,34 @@ if ($type_result && ($type_row = mysqli_fetch_assoc($type_result))) {
     <title><?php echo safe_html($page_title); ?></title>
 
     <!-- 🏆 Competition Edition: 테이블 디자인 시스템 (최우선 로드) -->
-    <link rel="stylesheet" href="../../css/table-design-system.css">
+    <link rel="stylesheet" href="/css/table-design-system.css">
 
     <!-- 🎯 통합 컬러 시스템 -->
-    <link rel="stylesheet" href="../../css/color-system-unified.css">
+    <link rel="stylesheet" href="/css/color-system-unified.css">
 
     <!-- 명함 컴팩트 페이지 전용 CSS (PROJECT_SUCCESS_REPORT.md 스펙) -->
-    <link rel="stylesheet" href="../../css/product-layout.css">
+    <link rel="stylesheet" href="/css/product-layout.css">
 
     <!-- 🎨 브랜드 디자인 시스템 CSS -->
-    <link rel="stylesheet" href="../../css/brand-design-system.css">
+    <link rel="stylesheet" href="/css/brand-design-system.css">
     <!-- 공통 버튼 스타일 CSS -->
-    <link rel="stylesheet" href="../../css/btn-primary.css">
+    <link rel="stylesheet" href="/css/btn-primary.css">
     <!-- 🆕 Duson 통합 갤러리 시스템 CSS -->
-    <link rel="stylesheet" href="../../css/unified-gallery.css">
+    <link rel="stylesheet" href="/css/unified-gallery.css">
     <!-- 컴팩트 폼 그리드 CSS (모든 품목 공통) -->
-    <link rel="stylesheet" href="../../css/compact-form.css">
+    <link rel="stylesheet" href="/css/compact-form.css">
     <!-- 통일 인라인 폼 시스템 CSS -->
-    <link rel="stylesheet" href="../../css/unified-inline-form.css">
-    <link rel="stylesheet" href="../../css/unified-price-display.css">
+    <link rel="stylesheet" href="/css/unified-inline-form.css">
+    <link rel="stylesheet" href="/css/unified-price-display.css">
 
     <!-- 🆕 프리미엄 옵션 CSS 추가 -->
-    <link rel="stylesheet" href="../../css/additional-options.css">
+    <link rel="stylesheet" href="/css/additional-options.css">
 
 
     <!-- 공통 가격 표시 시스템 -->
-    <script src="../../js/common-price-display.js" defer></script>
+    <script src="/js/common-price-display.js" defer></script>
     <!-- 명함 전용 JavaScript -->
-    <!-- <script src="../../js/namecard.js" defer></script> 🔥 프리미엄 옵션과 충돌하므로 비활성화 -->
+    <!-- <script src="/js/namecard.js" defer></script> 🔥 프리미엄 옵션과 충돌하므로 비활성화 -->
 
     <!-- 세션 ID 및 설정값 메타 태그 -->
     <meta name="session-id" content="<?php echo htmlspecialchars(session_id()); ?>">
@@ -119,17 +119,17 @@ if ($type_result && ($type_row = mysqli_fetch_assoc($type_result))) {
     }
     ?>
     <!-- 공통 갤러리 팝업 함수 -->
-    <script src="../../js/common-gallery-popup.js"></script>
+    <script src="/js/common-gallery-popup.js"></script>
 
     <!-- 명함 전용 스타일 (공통 스타일보다 먼저 로드) -->
-    <link rel="stylesheet" href="../../css/namecard-inline-styles.css">
+    <link rel="stylesheet" href="/css/namecard-inline-styles.css">
 
     <!-- 🎯 통합 공통 스타일 CSS (최종 로드로 최우선 적용) -->
-    <link rel="stylesheet" href="../../css/common-styles.css?v=<?php echo time(); ?>">
-    <link rel="stylesheet" href="../../css/upload-modal-common.css">
+    <link rel="stylesheet" href="/css/common-styles.css?v=<?php echo time(); ?>">
+    <link rel="stylesheet" href="/css/upload-modal-common.css">
 
     <!-- 견적서 모달용 공통 스타일 -->
-    <link rel="stylesheet" href="../../css/quotation-modal-common.css">
+    <link rel="stylesheet" href="/css/quotation-modal-common.css">
 
     <!-- 테마 시스템 CSS -->
     <?php ThemeLoader::renderCSS(); ?>
@@ -170,8 +170,8 @@ if ($type_result && ($type_row = mysqli_fetch_assoc($type_result))) {
     </style>
 </head>
 <body class="namecard-page<?php echo $isQuotationMode ? ' quotation-modal-mode' : ''; ?>" <?php ThemeLoader::renderBodyAttributes(); ?>>
-    <?php if (!$isQuotationMode) include "../../includes/header-ui.php"; ?>
-    <?php if (!$isQuotationMode) include "../../includes/nav.php"; ?>
+    <?php if (!$isQuotationMode) include __DIR__ . "/../../../includes/header-ui.php"; ?>
+    <?php if (!$isQuotationMode) include __DIR__ . "/../../../includes/nav.php"; ?>
 
     <div class="product-container">
         <div class="page-title">
@@ -185,8 +185,8 @@ if ($type_result && ($type_row = mysqli_fetch_assoc($type_result))) {
                 <?php
                 // 통합 갤러리 시스템 (500×400 마우스 호버 줌)
                 $gallery_product = 'namecard';
-                if (file_exists('../../includes/simple_gallery_include.php')) {
-                    include '../../includes/simple_gallery_include.php';
+                if (file_exists(__DIR__ . '/../../../includes/simple_gallery_include.php')) {
+                    include __DIR__ . '/../../../includes/simple_gallery_include.php';
                 }
                 ?>
             </section>
@@ -379,12 +379,12 @@ if ($type_result && ($type_row = mysqli_fetch_assoc($type_result))) {
     $modalProductIcon = '🃏';
 
     // 공통 업로드 모달 포함
-    include "../../includes/upload_modal.php";
+    include __DIR__ . "/../../../includes/upload_modal.php";
     ?>
 
     <!-- 통합 갤러리 모달은 include_product_gallery()에서 자동 포함됨 -->
 
-    <?php include "../../includes/login_modal.php"; ?>
+    <?php include __DIR__ . "/../../../includes/login_modal.php"; ?>
 
     <?php if (!$isQuotationMode): ?>
     <!-- 명함 상세 설명 섹션 (1200px 폭) - 하단 설명방법 적용 -->
@@ -406,7 +406,7 @@ if ($type_result && ($type_row = mysqli_fetch_assoc($type_result))) {
     <script src="js/namecard-premium-options.js"></script>
 
     <!-- 공통 업로드 모달 JavaScript -->
-    <script src="../../includes/upload_modal.js"></script>
+    <script src="/includes/upload_modal.js"></script>
 
     <!-- 🆕 Duson 갤러리 시스템 JavaScript -->
     <script src="../../duson/js/gallery-system.js" defer></script>
@@ -414,7 +414,7 @@ if ($type_result && ($type_row = mysqli_fetch_assoc($type_result))) {
     <script>
         // PHP 변수를 JavaScript로 전달 (PROJECT_SUCCESS_REPORT.md 스펙)
         window.phpVars = {
-            MultyUploadDir: "../../PHPClass/MultyUpload",
+            MultyUploadDir: "/PHPClass/MultyUpload",
             log_url: "<?php echo safe_html($log_info['url']); ?>",
             log_y: "<?php echo safe_html($log_info['y']); ?>",
             log_md: "<?php echo safe_html($log_info['md']); ?>",
@@ -1039,7 +1039,7 @@ if ($type_result && ($type_row = mysqli_fetch_assoc($type_result))) {
     </script>
 
     <!-- 견적서 모달 공통 JavaScript -->
-    <script src="../../js/quotation-modal-common.js?v=<?php echo time(); ?>"></script>
+    <script src="/js/quotation-modal-common.js?v=<?php echo time(); ?>"></script>
 
     <!-- 테마 스위처 -->
     <?php if (!$isQuotationMode) ThemeLoader::renderSwitcher('bottom-right'); ?>
@@ -1052,4 +1052,4 @@ if ($type_result && ($type_row = mysqli_fetch_assoc($type_result))) {
     }
     ?>
 
-<?php if (!$isQuotationMode) include "../../includes/footer.php"; ?>
+<?php if (!$isQuotationMode) include __DIR__ . "/../../../includes/footer.php"; ?>

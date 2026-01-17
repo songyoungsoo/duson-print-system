@@ -1,15 +1,15 @@
 <?php 
 // 공통 함수 포함
-include "../../includes/functions.php";
+include __DIR__ . "/../../../includes/functions.php";
 
 // 세션 및 기본 설정
 $session_id = check_session();
 
 // 데이터베이스 연결
-include "../../db.php";
+include __DIR__ . "/../../../db.php";
 
 // 통합 갤러리 시스템
-if (file_exists('../../includes/gallery_helper.php')) {
+if (file_exists(__DIR__ . '/../../../includes/gallery_helper.php')) {
     include_once '../../includes/gallery_helper.php';
 }
 if (function_exists("init_gallery_system")) {
@@ -39,7 +39,7 @@ $paperSizeOptions = getPaperSizes($connect, $GGTABLE, $firstCategoryNo);
 $quantityOptions = getQuantityOptions($connect);
 
 // 공통 인증 처리 포함
-include "../../includes/auth.php";
+include __DIR__ . "/../../../includes/auth.php";
 
 // 로그인 상태 확인 (header-ui.php와 동일 패턴)
 $is_logged_in = isset($_SESSION['user_id']) || isset($_SESSION['id_login_ok']) || isset($_COOKIE['id_login_ok']);
@@ -70,12 +70,12 @@ if (isset($_SESSION['user_id'])) {
 
     <!-- 기본 스타일 -->
     <link rel="stylesheet" type="text/css" href="/css/style250801.css">
-    <link rel="stylesheet" href="../../css/common-styles.css">
-    <link rel="stylesheet" href="../../css/product-layout.css">
+    <link rel="stylesheet" href="/css/common-styles.css">
+    <link rel="stylesheet" href="/css/product-layout.css">
 
     <!-- 포스터 전용 스타일 -->
-    <link rel="stylesheet" href="../../css/upload-modal-common.css">
-    <link rel="stylesheet" href="../../css/poster.css">
+    <link rel="stylesheet" href="/css/upload-modal-common.css">
+    <link rel="stylesheet" href="/css/poster.css">
 
     <!-- 통합 갤러리 시스템 -->
     <?php
@@ -90,8 +90,8 @@ if (isset($_SESSION['user_id'])) {
 <body>
     <div class="page-wrapper">
         <div class="main-content-wrapper">
-            <?php include "../../includes/header-ui.php"; ?>
-            <?php include "../../includes/nav.php"; ?>
+            <?php include __DIR__ . "/../../../includes/header-ui.php"; ?>
+            <?php include __DIR__ . "/../../../includes/nav.php"; ?>
 
             <div class="container">
                 <!-- 포스터 갤러리 섹션 -->
@@ -281,13 +281,13 @@ if (isset($_SESSION['user_id'])) {
 
 <?php
 // 공통 푸터 포함 (main-content-wrapper, page-wrapper 닫기 + login_modal 포함)
-include "../../includes/footer.php";
+include __DIR__ . "/../../../includes/footer.php";
 ?>    
 
     <script>
     // PHP 변수를 JavaScript로 전달 (공통함수 활용)
     var phpVars = {
-        MultyUploadDir: "../../PHPClass/MultyUpload",
+        MultyUploadDir: "/PHPClass/MultyUpload",
         log_url: "<?php echo safe_html($log_info['url']); ?>",
         log_y: "<?php echo safe_html($log_info['y']); ?>",
         log_md: "<?php echo safe_html($log_info['md']); ?>",

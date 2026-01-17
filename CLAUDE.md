@@ -78,7 +78,71 @@ $line2 = implode(' / ', [$spec_sides, $quantity_display, $spec_design]);
 - **Includes**: 소문자 경로만 사용 (Linux case-sensitive)
 - **No symlinks**: 실제 디렉토리만 사용
 
-### 4. 환경 자동 감지
+### 5. CSS !important 사용 금지 ⚠️
+```css
+/* ❌ NEVER: !important 사용 금지 - 임시방편 코드 */
+.product-nav {
+    display: grid !important;  /* 절대 금지 */
+}
+
+/* ✅ ALWAYS: 명시도(specificity) 계층으로 해결 */
+/* 레벨 1: 기본 스타일 (클래스 1개) */
+.product-nav { display: flex; }
+
+/* 레벨 2: 상태/컨텍스트 (클래스 2개) */
+.mobile-view .product-nav { display: grid; }
+
+/* 레벨 3: 구체적 선택자 (클래스 3개 또는 부모 포함) */
+body.cart-page .mobile-view .product-nav { display: grid; }
+```
+
+**🚨 CSS 문제 발생 시 필수 행동 (작업 진행 전 반드시 수행)**:
+```
+1. "왜 안 되는지" 먼저 답하기
+   - 개발자도구로 어떤 규칙이 덮어쓰는지 확인
+   - 답 못 하면 → 작업 진행 금지
+
+2. 컨테이너부터 점검 (내용물 정렬 전에)
+   - margin, padding, width 확인
+   - 부모 요소의 display, position 확인
+
+3. !important 쓰기 전 자문
+   - "근본 원인을 찾았는가?" → No면 금지
+   - "명시도로 해결 가능한가?" → Yes면 그렇게 해결
+```
+
+**!important 사용 시 체크리스트** (위 행동 수행 후에만):
+1. ⚠️ **정말 필요한가?** - 명시도로 해결 가능한지 먼저 확인
+2. ⚠️ **임시 코드인가?** - 임시라면 TODO 주석 필수
+3. ⚠️ **부작용은?** - 다른 페이지에 영향 없는지 확인
+4. ⚠️ **문서화했나?** - 사용 사유를 주석으로 기록
+
+**참조**:
+- `css/common-styles.css` 상단 주석 "명시도 우선순위 설계"
+- `CLAUDE_DOCS/CSS_DEBUG_LESSONS.md` - CSS 디버깅 교훈록
+
+### 6. 임기응변 금지 - 전체 설계 우선 🎯
+```
+❌ NEVER: 임기응변식 코딩
+- 당장 동작하게 !important 추가
+- 한 곳만 고치고 다른 곳 영향 무시
+- 빠른 수정 위해 인라인 스타일 남발
+- 기존 구조 무시하고 새 패턴 도입
+
+✅ ALWAYS: 전체 설계 후 구현
+1. 현재 시스템 구조 파악 (파일, CSS, JS 연관관계)
+2. 영향 범위 분석 (이 변경이 어디에 영향을 주는가?)
+3. 기존 패턴 확인 (프로젝트에서 이미 사용 중인 방식은?)
+4. 확장성 고려 (나중에 비슷한 요청이 오면 어떻게 되나?)
+5. 계획 수립 후 구현
+```
+
+**핵심 원칙**:
+- **기본에 충실 → 확장성 확보**: 올바른 기초 위에서만 확장 가능
+- **임시 코드 = 기술 부채**: 나중에 반드시 문제 발생
+- **전체 그림 먼저**: 부분 최적화보다 전체 일관성 우선
+
+### 7. 환경 자동 감지
 ```php
 // db.php가 자동 감지
 - localhost → $admin_url = "http://localhost"

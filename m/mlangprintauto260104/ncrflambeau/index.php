@@ -1,6 +1,6 @@
 <?php
 // 테마 시스템 로드
-include_once __DIR__ . '/../../includes/theme_loader.php';
+include_once __DIR__ . '/../../../includes/theme_loader.php';
 
 session_start(); 
 $session_id = session_id();
@@ -11,7 +11,7 @@ error_reporting(E_ALL & ~E_NOTICE & ~E_WARNING);
 ini_set('display_errors', 0);
 
 // 보안 상수 정의 후 데이터베이스 연결
-include "../../db.php";
+include __DIR__ . "/../../../db.php";
 $connect = $db;
 
 // 페이지 설정
@@ -24,10 +24,10 @@ if ($connect) {
 } 
 
 // 공통 함수 및 설정
-include "../../includes/functions.php";
+include __DIR__ . "/../../../includes/functions.php";
 
 // 파일 업로드 컴포넌트 포함
-include "../../includes/FileUploadComponent.php";
+include __DIR__ . "/../../../includes/FileUploadComponent.php";
 
 // 세션 및 기본 설정
 check_session();
@@ -41,7 +41,7 @@ $login_message = '';
 $is_logged_in = isset($_SESSION['user_id']) || isset($_SESSION['id_login_ok']) || isset($_COOKIE['id_login_ok']);
 
 // 공통 인증 시스템 사용
-include "../../includes/auth.php";
+include __DIR__ . "/../../../includes/auth.php";
 
 // 견적서 모달용 간소화 모드 체크
 $isQuotationMode = isset($_GET['mode']) && $_GET['mode'] === 'quotation';
@@ -80,7 +80,7 @@ $default_values['MY_type'] = '475'; // 양식(100매철)
 <html lang="ko">
 <head>
     <!-- 통합 컬러 시스템 -->
-    <link rel="stylesheet" href="../../css/color-system-unified.css">
+    <link rel="stylesheet" href="/css/color-system-unified.css">
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title><?php echo safe_html($page_title); ?></title>
@@ -89,13 +89,13 @@ $default_values['MY_type'] = '475'; // 양식(100매철)
     <meta name="session-id" content="<?php echo htmlspecialchars($session_id); ?>">
 
     <!-- 컴팩트 전용 CSS -->
-    <link rel="stylesheet" href="../../css/product-layout.css">
+    <link rel="stylesheet" href="/css/product-layout.css">
     
     <!-- 통합 갤러리 CSS -->
-    <link rel="stylesheet" href="../../css/unified-gallery.css">
-    <link rel="stylesheet" href="../../css/btn-primary.css">
+    <link rel="stylesheet" href="/css/unified-gallery.css">
+    <link rel="stylesheet" href="/css/btn-primary.css">
     <!-- 컴팩트 폼 그리드 CSS (모든 품목 공통) -->
-    <link rel="stylesheet" href="../../css/compact-form.css">
+    <link rel="stylesheet" href="/css/compact-form.css">
     
     <!-- 노토 폰트 -->
     <link rel="preconnect" href="https://fonts.googleapis.com">
@@ -103,23 +103,23 @@ $default_values['MY_type'] = '475'; // 양식(100매철)
     <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@300;400;500;700&display=swap" rel="stylesheet">
     
     <!-- 통합 가격 표시 시스템 CSS -->
-    <link rel="stylesheet" href="../../css/unified-price-display.css">
+    <link rel="stylesheet" href="/css/unified-price-display.css">
     <!-- 통일 인라인 폼 스타일 시스템 -->
-    <link rel="stylesheet" href="../../css/unified-inline-form.css">
+    <link rel="stylesheet" href="/css/unified-inline-form.css">
     <!-- 추가 옵션 시스템 CSS (전단지와 동일) -->
-    <link rel="stylesheet" href="../../css/additional-options.css">
+    <link rel="stylesheet" href="/css/additional-options.css">
 
     <!-- 통합 공통 스타일 CSS (최종 로딩으로 최우선권 확보) -->
 
     <!-- 공통 갤러리 팝업 함수 -->
-    <script src="../../js/common-gallery-popup.js"></script>
+    <script src="/js/common-gallery-popup.js"></script>
     <!-- 파일 업로드 컴포넌트 JavaScript -->
-    <script src="../../includes/js/UniversalFileUpload.js"></script>
+    <script src="/includes/js/UniversalFileUpload.js"></script>
     <!-- 통합 공통 스타일 CSS (최종 로드로 최우선 적용) -->
-    <link rel="stylesheet" href="../../css/common-styles.css?v=1759615861">
-    <link rel="stylesheet" href="../../css/upload-modal-common.css">
+    <link rel="stylesheet" href="/css/common-styles.css?v=1759615861">
+    <link rel="stylesheet" href="/css/upload-modal-common.css">
     <!-- 견적서 모달용 공통 스타일 -->
-    <link rel="stylesheet" href="../../css/quotation-modal-common.css">
+    <link rel="stylesheet" href="/css/quotation-modal-common.css">
 
 <!-- Phase 5: 견적 요청 버튼 스타일 -->
 <style>
@@ -137,8 +137,8 @@ $default_values['MY_type'] = '475'; // 양식(100매철)
 </head>
 
 <body class="ncrflambeau-page<?php echo $isQuotationMode ? ' quotation-modal-mode' : ''; ?>" <?php ThemeLoader::renderBodyAttributes(); ?>>
-    <?php if (!$isQuotationMode) include "../../includes/header-ui.php"; ?>
-    <?php if (!$isQuotationMode) include "../../includes/nav.php"; ?>
+    <?php if (!$isQuotationMode) include __DIR__ . "/../../../includes/header-ui.php"; ?>
+    <?php if (!$isQuotationMode) include __DIR__ . "/../../../includes/nav.php"; ?>
 
     <div class="product-container">
     
@@ -153,8 +153,8 @@ $default_values['MY_type'] = '475'; // 양식(100매철)
                 <?php
                 // 통합 갤러리 시스템 (500×400 마우스 호버 줌)
                 $gallery_product = 'ncrflambeau';
-                if (file_exists('../../includes/simple_gallery_include.php')) {
-                    include '../../includes/simple_gallery_include.php';
+                if (file_exists(__DIR__ . '/../../../includes/simple_gallery_include.php')) {
+                    include __DIR__ . '/../../../includes/simple_gallery_include.php';
                 }
                 ?>
             </section>
@@ -298,12 +298,12 @@ $default_values['MY_type'] = '475'; // 양식(100매철)
     // NCR양식 모달 설정
     $modalProductName = 'NCR양식';
     $modalProductIcon = '';
-    include '../../includes/upload_modal.php';
+    include __DIR__ . '/../../../includes/upload_modal.php';
     ?>
 
     <?php
     // 공통 로그인 모달 포함
-    include "../../includes/login_modal.php";
+    include __DIR__ . "/../../../includes/login_modal.php";
     ?>
 
     <?php if (!$isQuotationMode): ?>
@@ -316,13 +316,13 @@ $default_values['MY_type'] = '475'; // 양식(100매철)
     <?php
     // 공통 푸터 포함 (견적서 모달에서는 제외)
     if (!$isQuotationMode) {
-        include "../../includes/footer.php";
+        include __DIR__ . "/../../../includes/footer.php";
     }
     ?>
 
 
     <!-- 공통 가격 표시 시스템 -->
-    <script src="../../js/common-price-display.js" defer></script>
+    <script src="/js/common-price-display.js" defer></script>
     <!-- NCR양식 계산기 JavaScript -->
     <script src="js/ncrflambeau-compact.js?v=<?php echo time(); ?>"></script>
     <!-- 🆕 추가 옵션 시스템 스크립트 (전단지와 동일) -->
@@ -601,7 +601,7 @@ $default_values['MY_type'] = '475'; // 양식(100매철)
     </script>
 
     <!-- 견적서 모달 공통 JavaScript -->
-    <script src="../../js/quotation-modal-common.js?v=<?php echo time(); ?>"></script>
+    <script src="/js/quotation-modal-common.js?v=<?php echo time(); ?>"></script>
     <!-- 테마 스위처 -->
     <?php ThemeLoader::renderSwitcher('bottom-right'); ?>
     <?php ThemeLoader::renderSwitcherJS(); ?>

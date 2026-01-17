@@ -1,6 +1,6 @@
 <?php
 // 테마 시스템 로드
-include_once __DIR__ . '/../../includes/theme_loader.php';
+include_once __DIR__ . '/../../../includes/theme_loader.php';
 
 /**
  * 상품권/쿠폰 견적안내 컴팩트 시스템 - NameCard 시스템 구조 적용
@@ -9,14 +9,14 @@ include_once __DIR__ . '/../../includes/theme_loader.php';
  */
 
 // 보안 상수 정의 후 공통 인증 및 설정
-include "../../includes/auth.php";
+include __DIR__ . "/../../../includes/auth.php";
 
 // 견적서 모달용 간소화 모드 체크
 $isQuotationMode = isset($_GET['mode']) && $_GET['mode'] === 'quotation';
 
 // 공통 함수 및 데이터베이스
-include "../../includes/functions.php";
-include "../../db.php";
+include __DIR__ . "/../../../includes/functions.php";
+include __DIR__ . "/../../../db.php";
 
 // 데이터베이스 연결 및 설정
 check_db_connection($db);
@@ -69,7 +69,7 @@ if ($type_result && ($type_row = mysqli_fetch_assoc($type_result))) {
 <html lang="ko">
 <head>
     <!-- 통합 컬러 시스템 -->
-    <link rel="stylesheet" href="../../css/color-system-unified.css">
+    <link rel="stylesheet" href="/css/color-system-unified.css">
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title><?php echo safe_html($page_title); ?></title>
@@ -78,23 +78,23 @@ if ($type_result && ($type_row = mysqli_fetch_assoc($type_result))) {
     
     
     <!-- 상품권/쿠폰 컴팩트 페이지 전용 CSS -->
-    <link rel="stylesheet" href="../../css/product-layout.css">
-    <link rel="stylesheet" href="../../css/unified-gallery.css">
-    <link rel="stylesheet" href="../../css/btn-primary.css">
+    <link rel="stylesheet" href="/css/product-layout.css">
+    <link rel="stylesheet" href="/css/unified-gallery.css">
+    <link rel="stylesheet" href="/css/btn-primary.css">
     <!-- 컴팩트 폼 그리드 CSS (모든 품목 공통) -->
-    <link rel="stylesheet" href="../../css/compact-form.css">
+    <link rel="stylesheet" href="/css/compact-form.css">
 
     <!-- 통합 가격 표시 시스템 CSS -->
-    <link rel="stylesheet" href="../../css/unified-price-display.css">
+    <link rel="stylesheet" href="/css/unified-price-display.css">
     <!-- 통일 인라인 폼 스타일 시스템 -->
-    <link rel="stylesheet" href="../../css/unified-inline-form.css">
+    <link rel="stylesheet" href="/css/unified-inline-form.css">
     <!-- 프리미엄 옵션 시스템 CSS -->
-    <link rel="stylesheet" href="../../css/additional-options.css">
+    <link rel="stylesheet" href="/css/additional-options.css">
     
 
     <!-- 고급 JavaScript 라이브러리 (적응형 이미지 분석 및 실시간 계산) -->
-    <script src="../../includes/js/GalleryLightbox.js"></script>
-    <script src="../../js/merchandisebond.js?v=<?php echo time(); ?>" defer></script>
+    <script src="/includes/js/GalleryLightbox.js"></script>
+    <script src="/js/merchandisebond.js?v=<?php echo time(); ?>" defer></script>
 
     <!-- 프리미엄 옵션 시스템 (명함 방식 적용) -->
     <script src="js/merchandisebond-premium-options.js?v=<?php echo time(); ?>"></script>
@@ -104,15 +104,15 @@ if ($type_result && ($type_row = mysqli_fetch_assoc($type_result))) {
     <meta name="default-section" content="<?php echo htmlspecialchars($default_values['Section']); ?>">
     <meta name="default-quantity" content="<?php echo htmlspecialchars($default_values['MY_amount']); ?>">
     <!-- 공통 갤러리 팝업 함수 -->
-    <script src="../../js/common-gallery-popup.js"></script>
+    <script src="/js/common-gallery-popup.js"></script>
 
     <!-- 인라인 CSS 추출 파일 -->
     <link rel="stylesheet" href="css/merchandisebond-inline-extracted.css">
     <!-- 통합 공통 스타일 CSS (최종 로드로 최우선 적용) -->
-    <link rel="stylesheet" href="../../css/common-styles.css?v=1759615861">
-    <link rel="stylesheet" href="../../css/upload-modal-common.css">
+    <link rel="stylesheet" href="/css/common-styles.css?v=1759615861">
+    <link rel="stylesheet" href="/css/upload-modal-common.css">
     <!-- 견적서 모달용 공통 스타일 -->
-    <link rel="stylesheet" href="../../css/quotation-modal-common.css">
+    <link rel="stylesheet" href="/css/quotation-modal-common.css">
 
 <!-- Phase 5: 견적 요청 버튼 스타일 -->
 <style>
@@ -129,8 +129,8 @@ if ($type_result && ($type_row = mysqli_fetch_assoc($type_result))) {
 
 </head>
 <body class="merchandisebond-page<?php echo $isQuotationMode ? ' quotation-modal-mode' : ''; ?>" <?php ThemeLoader::renderBodyAttributes(); ?>>
-    <?php if (!$isQuotationMode) include "../../includes/header-ui.php"; ?>
-    <?php if (!$isQuotationMode) include "../../includes/nav.php"; ?>
+    <?php if (!$isQuotationMode) include __DIR__ . "/../../../includes/header-ui.php"; ?>
+    <?php if (!$isQuotationMode) include __DIR__ . "/../../../includes/nav.php"; ?>
 
     <div class="product-container">
         <div class="page-title">
@@ -144,8 +144,8 @@ if ($type_result && ($type_row = mysqli_fetch_assoc($type_result))) {
                 <?php
                 // 통합 갤러리 시스템 (500×400 마우스 호버 줌)
                 $gallery_product = 'merchandisebond';
-                if (file_exists('../../includes/simple_gallery_include.php')) {
-                    include '../../includes/simple_gallery_include.php';
+                if (file_exists(__DIR__ . '/../../../includes/simple_gallery_include.php')) {
+                    include __DIR__ . '/../../../includes/simple_gallery_include.php';
                 }
                 ?>
             </section>
@@ -351,7 +351,7 @@ if ($type_result && ($type_row = mysqli_fetch_assoc($type_result))) {
     // 상품권 모달 설정
     $modalProductName = '상품권';
     $modalProductIcon = '';
-    include '../../includes/upload_modal.php';
+    include __DIR__ . '/../../../includes/upload_modal.php';
     ?>
 
     <!-- 상품권 통합 갤러리 모달 색상 설정 -->
@@ -371,7 +371,7 @@ if ($type_result && ($type_row = mysqli_fetch_assoc($type_result))) {
     // 갤러리 모달과 JavaScript는 if (function_exists("include_product_gallery")) { include_product_gallery()에서 자동 포함됨
     ?>
 
-    <?php include "../../includes/login_modal.php"; ?>
+    <?php include __DIR__ . "/../../../includes/login_modal.php"; ?>
 
     <?php if (!$isQuotationMode): ?>
     <!-- 상품권/쿠폰 상세 설명 섹션 (하단 설명방법) -->
@@ -383,7 +383,7 @@ if ($type_result && ($type_row = mysqli_fetch_assoc($type_result))) {
     <?php
     // 공통 푸터 포함 (견적서 모달에서는 제외)
     if (!$isQuotationMode) {
-        include "../../includes/footer.php";
+        include __DIR__ . "/../../../includes/footer.php";
     }
     ?>
 
@@ -393,7 +393,7 @@ if ($type_result && ($type_row = mysqli_fetch_assoc($type_result))) {
     <script>
         // PHP 변수를 JavaScript로 전달 (PROJECT_SUCCESS_REPORT.md 스펙)
         window.phpVars = {
-            MultyUploadDir: "../../PHPClass/MultyUpload",
+            MultyUploadDir: "/PHPClass/MultyUpload",
             log_url: "<?php echo safe_html($log_info['url']); ?>",
             log_y: "<?php echo safe_html($log_info['y']); ?>",
             log_md: "<?php echo safe_html($log_info['md']); ?>",
@@ -495,7 +495,7 @@ if ($type_result && ($type_row = mysqli_fetch_assoc($type_result))) {
     </script>
 
     <!-- 견적서 모달 공통 JavaScript -->
-    <script src="../../js/quotation-modal-common.js?v=<?php echo time(); ?>"></script>
+    <script src="/js/quotation-modal-common.js?v=<?php echo time(); ?>"></script>
 
     <?php
     // 데이터베이스 연결 종료

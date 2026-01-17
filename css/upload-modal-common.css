@@ -129,10 +129,45 @@ body .upload-modal .upload-right {
 
 /* 6. 업로드 영역 */
 body .upload-modal .upload-label {
-    font-size: 1rem;
+    font-size: 14px;
     font-weight: 600;
     color: #495057;
     margin-bottom: 12px;
+}
+
+/* 업로드 버튼 그룹 - 통일된 스타일 */
+body .upload-modal .upload-buttons {
+    display: flex;
+    gap: 8px;
+    margin-bottom: 12px;
+}
+
+body .upload-modal .btn-upload-method {
+    padding: 8px 16px;
+    border: 1px solid #dee2e6;
+    border-radius: 6px;
+    background: #f8f9fa;
+    color: #495057;
+    font-size: 13px;
+    font-weight: 500;
+    cursor: pointer;
+    transition: all 0.2s ease;
+}
+
+body .upload-modal .btn-upload-method:hover:not(:disabled) {
+    background: #e9ecef;
+    border-color: #ced4da;
+}
+
+body .upload-modal .btn-upload-method.active {
+    background: #1E90FF;
+    border-color: #1E90FF;
+    color: white;
+}
+
+body .upload-modal .btn-upload-method:disabled {
+    opacity: 0.5;
+    cursor: not-allowed;
 }
 
 body .upload-modal .upload-dropzone {
@@ -158,20 +193,49 @@ body .upload-modal .upload-dropzone.dragover {
 }
 
 body .upload-modal .upload-icon {
-    font-size: 3rem;
-    margin-bottom: 12px;
+    font-size: 2.5rem;
+    margin-bottom: 8px;
+    display: block;
+}
+
+/* 드롭존 텍스트 - 통일된 폰트 크기 */
+body .upload-modal .upload-text {
+    font-size: 13px;
+    color: #1E90FF;
+    font-weight: 500;
+    display: block;
 }
 
 body .upload-modal .upload-dropzone p {
-    font-size: 1.1rem;
-    font-weight: 600;
+    font-size: 13px;
+    font-weight: 500;
     color: #1E90FF;
     margin: 0 0 8px 0;
 }
 
 body .upload-modal .upload-formats {
-    font-size: 0.9rem;
+    font-size: 13px;
     color: #6c757d;
+}
+
+/* 파일 안내 텍스트 - 통일된 폰트 크기 */
+body .upload-modal .upload-info {
+    font-size: 13px;
+    color: #6c757d;
+    margin-top: 12px;
+    line-height: 1.5;
+}
+
+/* 공지사항 - 통일된 폰트 크기 */
+body .upload-modal .upload-notice {
+    margin-top: 12px;
+}
+
+body .upload-modal .upload-notice .notice-item {
+    font-size: 13px;
+    color: #6c757d;
+    margin-bottom: 6px;
+    line-height: 1.5;
 }
 
 /* 7. 파일 목록 */
@@ -218,17 +282,24 @@ body .upload-modal .upload-right textarea {
     padding: 12px;
     border: 2px solid #e9ecef;
     border-radius: 8px;
-    font-size: 0.95rem;
+    font-size: 13px;
     font-family: inherit;
     resize: vertical;
     min-height: 200px;
     transition: border-color 0.3s ease;
-    
+
     /* 스크롤 방지 */
     box-sizing: border-box;
     overflow-x: hidden;
     word-wrap: break-word;
     white-space: pre-wrap;
+}
+
+/* placeholder 스타일 - 통일된 폰트 크기 */
+body .upload-modal .upload-right textarea::placeholder {
+    font-size: 13px;
+    color: #adb5bd;
+    line-height: 1.5;
 }
 
 body .upload-modal .upload-right textarea:focus {

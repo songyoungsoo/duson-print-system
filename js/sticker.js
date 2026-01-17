@@ -634,9 +634,14 @@ function formatFileSize(bytes) {
 function selectUploadMethod(method) {
     const buttons = document.querySelectorAll('.btn-upload-method');
     buttons.forEach(btn => btn.classList.remove('active'));
-    
+
     if (method === 'upload') {
         buttons[0]?.classList.add('active');
+        // 파일업로드 버튼 클릭 시 파일 선택 다이얼로그 열기
+        const fileInput = document.getElementById('modalFileInput');
+        if (fileInput) {
+            fileInput.click();
+        }
     }
 }
 

@@ -18,7 +18,8 @@ switch ($action) {
         sendMessage();
         break;
     case 'upload_image':
-        uploadImage();
+    case 'upload_file':
+        uploadFile();
         break;
     case 'mark_as_read':
         markAsRead();
@@ -160,53 +161,94 @@ function sendMessage() {
     }
 }
 
-// 이미지 업로드
-function uploadImage() {
+// 파일 업로드 (이미지 + PDF)
+function uploadFile() {
     global $db;
     $user = getCurrentUser();
 
     $roomId = $_POST['room_id'] ?? 0;
-    $senderId = $_POST['sender_id'] ?? $user['id']; // 전달된 ID 우선 사용
-    $senderName = $_POST['sender_name'] ?? $user['name']; // 전달된 이름 우선 사용
+    $senderId = $_POST['sender_id'] ?? $user['id'];
+    $senderName = $_POST['sender_name'] ?? $user['name'];
 
     if (!$roomId) {
         jsonResponse(false, null, '채팅방 ID가 필요합니다.');
     }
 
-    if (!isset($_FILES['image']) || $_FILES['image']['error'] !== UPLOAD_ERR_OK) {
-        jsonResponse(false, null, '이미지 업로드 오류');
+    // 'image' 또는 'file' 키로 파일 받기 (하위 호환성)
+    $file = null;
+    if (isset($_FILES['file']) && $_FILES['file']['error'] === UPLOAD_ERR_OK) {
+        $file = $_FILES['file'];
+    } elseif (isset($_FILES['image']) && $_FILES['image']['error'] === UPLOAD_ERR_OK) {
+        $file = $_FILES['image'];
     }
 
-    $file = $_FILES['image'];
+    if (!$file) {
+        jsonResponse(false, null, '파일 업로드 오류');
+    }
 
     // 파일 크기 체크
     if ($file['size'] > CHAT_UPLOAD_MAX_SIZE) {
-        jsonResponse(false, null, '파일 크기는 5MB를 초과할 수 없습니다.');
+        jsonResponse(false, null, '파일 크기 초과 (최대 10MB)\n대용량 파일은 dsp1830@naver.com 으로 보내주세요.');
     }
 
-    // 이미지 파일 확인
-    $allowedTypes = ['image/jpeg', 'image/png', 'image/gif', 'image/webp'];
+    // 허용된 파일 타입
+    $imageTypes = ['image/jpeg', 'image/png', 'image/gif', 'image/webp'];
+    $documentTypes = [
+        'application/pdf',                                                      // PDF
+        'application/msword',                                                   // DOC
+        'application/vnd.openxmlformats-officedocument.wordprocessingml.document', // DOCX
+        'application/vnd.ms-excel',                                             // XLS
+        'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',    // XLSX
+        'application/vnd.ms-powerpoint',                                        // PPT
+        'application/vnd.openxmlformats-officedocument.presentationml.presentation', // PPTX
+        'application/haansofthwp',                                              // HWP
+        'application/x-hwp',                                                    // HWP (alt)
+        'application/vnd.hancom.hwp',                                           // HWP (alt2)
+        'application/postscript',                                               // AI
+        'application/illustrator',                                              // AI (alt)
+        'text/plain',                                                           // TXT
+        'text/x-c',                                                             // TXT (code)
+        'text/x-java',                                                          // TXT (java)
+        'text/x-python',                                                        // TXT (python)
+        'text/html',                                                            // HTML
+        'text/css',                                                             // CSS
+        'text/javascript',                                                      // JS
+        'application/octet-stream',                                             // 일반 바이너리 (확장자로 2차 확인)
+    ];
+    $allowedTypes = array_merge($imageTypes, $documentTypes);
+
+    // 확장자로도 추가 확인 (MIME 타입 감지 실패 대비)
+    $allowedExtensions = ['jpg', 'jpeg', 'png', 'gif', 'webp', 'pdf', 'doc', 'docx', 'xls', 'xlsx', 'ppt', 'pptx', 'hwp', 'hwpx', 'ai', 'txt'];
+
     $finfo = finfo_open(FILEINFO_MIME_TYPE);
     $mimeType = finfo_file($finfo, $file['tmp_name']);
     finfo_close($finfo);
 
-    if (!in_array($mimeType, $allowedTypes)) {
-        jsonResponse(false, null, '이미지 파일만 업로드 가능합니다.');
+    // 확장자 확인
+    $extension = strtolower(pathinfo($file['name'], PATHINFO_EXTENSION));
+
+    // MIME 타입 또는 확장자로 허용 여부 확인
+    if (!in_array($mimeType, $allowedTypes) && !in_array($extension, $allowedExtensions)) {
+        jsonResponse(false, null, '허용되지 않는 파일 형식입니다. (이미지, PDF, 문서, 한글, 엑셀, PPT, AI, TXT 파일만 가능)');
     }
 
+    // 메시지 타입 결정
+    $messageType = in_array($mimeType, $imageTypes) ? 'image' : 'file';
+    $filePrefix = $messageType === 'image' ? 'chat_img_' : 'chat_file_';
+
     // 파일명 생성
-    $extension = pathinfo($file['name'], PATHINFO_EXTENSION);
-    $fileName = uniqid('chat_img_') . '.' . $extension;
+    $extension = strtolower(pathinfo($file['name'], PATHINFO_EXTENSION));
+    $fileName = uniqid($filePrefix) . '.' . $extension;
     $filePath = CHAT_UPLOAD_DIR . $fileName;
 
     if (move_uploaded_file($file['tmp_name'], $filePath)) {
         // DB에 저장
         $query = "INSERT INTO chatmessages (roomid, senderid, sendername, messagetype, message, filepath, filename, filesize)
-                  VALUES (?, ?, ?, 'image', '', ?, ?, ?)";
+                  VALUES (?, ?, ?, ?, '', ?, ?, ?)";
 
         $stmt = mysqli_prepare($db, $query);
         $relativeFilePath = 'chat_uploads/' . $fileName;
-        mysqli_stmt_bind_param($stmt, 'issssi', $roomId, $senderId, $senderName,
+        mysqli_stmt_bind_param($stmt, 'isssssi', $roomId, $senderId, $senderName, $messageType,
                                $relativeFilePath, $file['name'], $file['size']);
 
         if (mysqli_stmt_execute($stmt)) {
@@ -221,7 +263,8 @@ function uploadImage() {
             jsonResponse(true, [
                 'id' => $messageId,
                 'filepath' => $relativeFilePath,
-                'filename' => $file['name']
+                'filename' => $file['name'],
+                'messagetype' => $messageType
             ]);
         } else {
             unlink($filePath);

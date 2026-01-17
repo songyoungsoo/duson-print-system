@@ -1,22 +1,22 @@
 <?php
-// 테마 시스템 로드
-include_once __DIR__ . '/../../includes/theme_loader.php';
+// 테마 시스템 로드 (m/mlangprintauto260104/littleprint/ → 루트는 3단계 위)
+include_once __DIR__ . '/../../../includes/theme_loader.php';
 
 /**
- * 포스터/리플렛 견적안내 컴팩트 시스템 - PROJECT_SUCCESS_REPORT.md 스펙 구현  
+ * 포스터/리플렛 견적안내 컴팩트 시스템 - PROJECT_SUCCESS_REPORT.md 스펙 구현
  * Features: 적응형 이미지 분석, 부드러운 애니메이션, 실시간 가격 계산
  * Created: 2025년 8월 (AI Assistant - Frontend Persona)
  */
 
 // 보안 상수 정의 후 공통 인증 및 설정
-include "../../includes/auth.php";
+include __DIR__ . "/../../../includes/auth.php";
 
 // 견적서 모달용 간소화 모드 체크
 $isQuotationMode = isset($_GET['mode']) && $_GET['mode'] === 'quotation';
 
 // 공통 함수 및 데이터베이스
-include "../../includes/functions.php";
-include "../../db.php";
+include __DIR__ . "/../../../includes/functions.php";
+include __DIR__ . "/../../../db.php";
 
 // 데이터베이스 연결 및 설정
 check_db_connection($db);
@@ -101,7 +101,7 @@ $default_values['ordertype'] = 'print'; // 인쇄만
 <html lang="ko">
 <head>
     <!-- 통합 컬러 시스템 -->
-    <link rel="stylesheet" href="../../css/color-system-unified.css">
+    <link rel="stylesheet" href="/css/color-system-unified.css">
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title><?php echo safe_html($page_title); ?></title>
@@ -110,39 +110,39 @@ $default_values['ordertype'] = 'print'; // 인쇄만
     
     
     <!-- 포스터 컴팩트 페이지 전용 CSS -->
-    <link rel="stylesheet" href="../../css/product-layout.css">
+    <link rel="stylesheet" href="/css/product-layout.css">
     <!-- 공통 버튼 스타일 CSS -->
-    <link rel="stylesheet" href="../../css/btn-primary.css">
+    <link rel="stylesheet" href="/css/btn-primary.css">
     <!-- 컴팩트 폼 그리드 CSS (모든 품목 공통) -->
-    <link rel="stylesheet" href="../../css/compact-form.css">
+    <link rel="stylesheet" href="/css/compact-form.css">
     <!-- 통합 갤러리 CSS -->
-    <link rel="stylesheet" href="../../css/unified-gallery.css">
+    <link rel="stylesheet" href="/css/unified-gallery.css">
     <!-- 통합 가격 표시 시스템 -->
-    <link rel="stylesheet" href="../../css/unified-price-display.css">
+    <link rel="stylesheet" href="/css/unified-price-display.css">
     <!-- 통합 인라인 폼 스타일 시스템 -->
-    <link rel="stylesheet" href="../../css/unified-inline-form.css">
+    <link rel="stylesheet" href="/css/unified-inline-form.css">
     <!-- 추가 옵션 시스템 CSS -->
-    <link rel="stylesheet" href="../../css/additional-options.css">
+    <link rel="stylesheet" href="/css/additional-options.css">
 
     <!-- 공통 가격 표시 시스템 -->
-    <script src="../../js/common-price-display.js" defer></script>
+    <script src="/js/common-price-display.js" defer></script>
     <!-- 공통 갤러리 시스템 (helper가 자동으로 필요한 에셋 로드) -->
-    <script src="../../js/poster.js?v=1759244654" defer></script>
+    <script src="/js/poster.js?v=1759244654" defer></script>
     
     <!-- 세션 ID 및 설정값 메타 태그 -->
     <meta name="session-id" content="<?php echo htmlspecialchars(session_id()); ?>">
     <meta name="default-section" content="<?php echo htmlspecialchars($default_values['Section']); ?>">
     <meta name="default-quantity" content="<?php echo htmlspecialchars($default_values['MY_amount']); ?>">
     <!-- 공통 갤러리 팝업 함수 -->
-    <script src="../../js/common-gallery-popup.js"></script>
+    <script src="/js/common-gallery-popup.js"></script>
 
     <!-- 인라인 CSS 추출 파일 -->
     <link rel="stylesheet" href="css/littleprint-inline-extracted.css">
     <!-- 통합 공통 스타일 CSS (최종 로드로 최우선 적용) -->
-    <link rel="stylesheet" href="../../css/common-styles.css?v=1759615861">
-    <link rel="stylesheet" href="../../css/upload-modal-common.css">
+    <link rel="stylesheet" href="/css/common-styles.css?v=1759615861">
+    <link rel="stylesheet" href="/css/upload-modal-common.css">
     <!-- 견적서 모달용 공통 스타일 -->
-    <link rel="stylesheet" href="../../css/quotation-modal-common.css">
+    <link rel="stylesheet" href="/css/quotation-modal-common.css">
 
 <!-- Phase 5: 견적 요청 버튼 스타일 -->
 <style>
@@ -159,8 +159,8 @@ $default_values['ordertype'] = 'print'; // 인쇄만
 
 </head>
 <body class="littleprint-page<?php echo $isQuotationMode ? ' quotation-modal-mode' : ''; ?>" <?php ThemeLoader::renderBodyAttributes(); ?>>
-    <?php if (!$isQuotationMode) include "../../includes/header-ui.php"; ?>
-    <?php if (!$isQuotationMode) include "../../includes/nav.php"; ?>
+    <?php if (!$isQuotationMode) include __DIR__ . "/../../../includes/header-ui.php"; ?>
+    <?php if (!$isQuotationMode) include __DIR__ . "/../../../includes/nav.php"; ?>
 
     <div class="product-container">
         <div class="page-title">
@@ -174,8 +174,8 @@ $default_values['ordertype'] = 'print'; // 인쇄만
                 <?php
                 // 통합 갤러리 시스템 (500×400 마우스 호버 줌)
                 $gallery_product = 'littleprint';
-                if (file_exists('../../includes/simple_gallery_include.php')) {
-                    include '../../includes/simple_gallery_include.php';
+                if (file_exists(__DIR__ . '/../../../includes/simple_gallery_include.php')) {
+                    include __DIR__ . '/../../../includes/simple_gallery_include.php';
                 }
                 ?>
             </div>
@@ -373,10 +373,10 @@ $default_values['ordertype'] = 'print'; // 인쇄만
     </div>
 
     <!-- 파일 업로드 모달 (통합 컴포넌트) -->
-    <?php include "../../includes/upload_modal.php"; ?>
-    <script src="../../includes/upload_modal.js?v=1759244661"></script>
+    <?php include __DIR__ . "/../../../includes/upload_modal.php"; ?>
+    <script src="/includes/upload_modal.js?v=1759244661"></script>
 
-    <?php include "../../includes/login_modal.php"; ?>
+    <?php include __DIR__ . "/../../../includes/login_modal.php"; ?>
 
     <?php if (!$isQuotationMode): ?>
     <!-- 포스터 상세 설명 섹션 (1200px 폭) - 하단 설명방법 적용 -->
@@ -385,12 +385,12 @@ $default_values['ordertype'] = 'print'; // 인쇄만
     </div>
     <?php endif; ?>
 
-    <?php if (!$isQuotationMode) include "../../includes/footer.php"; ?>
+    <?php if (!$isQuotationMode) include __DIR__ . "/../../../includes/footer.php"; ?>
 
     <script>
         // PHP 변수를 JavaScript로 전달 (PROJECT_SUCCESS_REPORT.md 스펙)
         window.phpVars = {
-            MultyUploadDir: "../../PHPClass/MultyUpload",
+            MultyUploadDir: "/PHPClass/MultyUpload",
             log_url: "<?php echo safe_html($log_info['url']); ?>",
             log_y: "<?php echo safe_html($log_info['y']); ?>",
             log_md: "<?php echo safe_html($log_info['md']); ?>",
@@ -501,7 +501,7 @@ $default_values['ordertype'] = 'print'; // 인쇄만
     <script src="js/littleprint-premium-options.js"></script>
 
     <!-- 견적서 모달 공통 JavaScript -->
-    <script src="../../js/quotation-modal-common.js?v=<?php echo time(); ?>"></script>
+    <script src="/js/quotation-modal-common.js?v=<?php echo time(); ?>"></script>
 
     <!-- 포스터/리플렛 전용 컴팩트 디자인 적용 (Frontend-Compact-Design-Guide.md 기반) -->
 

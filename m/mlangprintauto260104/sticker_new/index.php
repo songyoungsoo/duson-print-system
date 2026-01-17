@@ -6,14 +6,14 @@
  */
 
 // 보안 상수 정의 후 공통 인증 및 설정
-include "../../includes/auth.php";
+include __DIR__ . "/../../../includes/auth.php";
 
 // 공통 함수 및 데이터베이스
-include "../../includes/functions.php";
-include "../../db.php";
+include __DIR__ . "/../../../includes/functions.php";
+include __DIR__ . "/../../../db.php";
 
 // 통합 갤러리 시스템
-if (file_exists('../../includes/gallery_helper.php')) {
+if (file_exists(__DIR__ . '/../../../includes/gallery_helper.php')) {
     include_once '../../includes/gallery_helper.php';
 }
 if (function_exists("init_gallery_system")) {
@@ -50,7 +50,7 @@ $default_values = [
 <html lang="ko">
 <head>
     <!-- 🎨 통합 컬러 시스템 -->
-    <link rel="stylesheet" href="../../css/color-system-unified.css">
+    <link rel="stylesheet" href="/css/color-system-unified.css">
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title><?php echo safe_html($page_title); ?></title>
@@ -59,18 +59,18 @@ $default_values = [
     
 
     <!-- 스티커 컴팩트 페이지 전용 CSS -->
-    <link rel="stylesheet" href="../../css/sticker-compact.css">
+    <link rel="stylesheet" href="/css/sticker-compact.css">
 
     <!-- 🎨 브랜드 디자인 시스템 CSS -->
-    <link rel="stylesheet" href="../../css/brand-design-system.css">
+    <link rel="stylesheet" href="/css/brand-design-system.css">
 
     <!-- 🆕 Duson 통합 갤러리 시스템 CSS -->
-    <link rel="stylesheet" href="../../css/unified-gallery.css">
+    <link rel="stylesheet" href="/css/unified-gallery.css">
 
     <!-- 컴팩트 폼 그리드 CSS (모든 품목 공통) -->
-    <link rel="stylesheet" href="../../css/compact-form.css">
+    <link rel="stylesheet" href="/css/compact-form.css">
     <!-- 추가 옵션 시스템 CSS -->
-    <link rel="stylesheet" href="../../css/additional-options.css">
+    <link rel="stylesheet" href="/css/additional-options.css">
 
     <?php
     // 통합 갤러리 시스템 에셋 포함
@@ -80,7 +80,7 @@ $default_values = [
     ?>
 
     <!-- 스티커 전용 JavaScript - 인라인 스크립트로 대체되어 별도 파일 불필요 -->
-    <!-- <script src="../../js/sticker.js" defer></script> -->
+    <!-- <script src="/js/sticker.js" defer></script> -->
 
     <!-- 스티커 가로/세로 input 전용 스타일 -->
     
@@ -96,17 +96,17 @@ $default_values = [
     <link rel="stylesheet" href="css/sticker_new-inline-extracted.css">
 
     <!-- 🎯 공통 레이아웃 CSS (product-layout.css가 기본 구조 제공) -->
-    <link rel="stylesheet" href="../../css/product-layout.css">
+    <link rel="stylesheet" href="/css/product-layout.css">
 
     <!-- 스티커 전용 스타일 (공통 스타일을 덮어쓰지 않음) -->
-    <link rel="stylesheet" href="../../css/sticker-inline-styles.css">
+    <link rel="stylesheet" href="/css/sticker-inline-styles.css">
 
     <!-- 🎯 통합 공통 스타일 CSS (최종 로드로 최우선 적용) -->
-    <link rel="stylesheet" href="../../css/common-styles.css?v=<?php echo time(); ?>">
-    <link rel="stylesheet" href="../../css/upload-modal-common.css">
+    <link rel="stylesheet" href="/css/common-styles.css?v=<?php echo time(); ?>">
+    <link rel="stylesheet" href="/css/upload-modal-common.css">
 
     <!-- 📱 견적서 모달 모드 공통 CSS (전 제품 공통) -->
-    <link rel="stylesheet" href="../../css/quotation-modal-common.css">
+    <link rel="stylesheet" href="/css/quotation-modal-common.css">
 
     <!-- 재질보기 버튼 및 모달 스타일 -->
     <style>
@@ -283,8 +283,8 @@ $default_values = [
 </head>
 <body class="sticker-page<?php echo $body_class; ?>">
 <?php if (!$is_quotation_mode): ?>
-<?php include "../../includes/header-ui.php"; ?>
-<?php include "../../includes/nav.php"; ?>
+<?php include __DIR__ . "/../../../includes/header-ui.php"; ?>
+<?php include __DIR__ . "/../../../includes/nav.php"; ?>
 <?php endif; ?>
 
     <div class="product-container">
@@ -336,8 +336,8 @@ $default_values = [
                 <?php
                 // 통합 갤러리 시스템 (500×400 마우스 호버 줌)
                 $gallery_product = 'sticker';
-                if (file_exists('../../includes/simple_gallery_include.php')) {
-                    include '../../includes/simple_gallery_include.php';
+                if (file_exists(__DIR__ . '/../../../includes/simple_gallery_include.php')) {
+                    include __DIR__ . '/../../../includes/simple_gallery_include.php';
                 }
                 ?>
             </section>
@@ -481,10 +481,10 @@ $default_values = [
     </div>
 
     <!-- 파일 업로드 모달 (통합 컴포넌트) -->
-    <?php include "../../includes/upload_modal.php"; ?>
-    <script src="../../includes/upload_modal.js?v=1759243573751415300"></script>
+    <?php include __DIR__ . "/../../../includes/upload_modal.php"; ?>
+    <script src="/includes/upload_modal.js?v=1759243573751415300"></script>
 
-    <?php include "../../includes/login_modal.php"; ?>
+    <?php include __DIR__ . "/../../../includes/login_modal.php"; ?>
 
 <?php if (!$is_quotation_mode): ?>
     <!-- 스티커 상세 설명 섹션 -->
@@ -503,7 +503,7 @@ $default_values = [
     <script>
         // PHP 변수를 JavaScript로 전달
         window.phpVars = {
-            MultyUploadDir: "../../PHPClass/MultyUpload",
+            MultyUploadDir: "/PHPClass/MultyUpload",
             log_url: "<?php echo safe_html($log_info['url']); ?>",
             log_y: "<?php echo safe_html($log_info['y']); ?>",
             log_md: "<?php echo safe_html($log_info['md']); ?>",
@@ -1821,7 +1821,7 @@ $default_values = [
     </script>
 
     <!-- 통합 갤러리 JavaScript 포함 -->
-    <script src="../../js/common-gallery-popup.js"></script>
+    <script src="/js/common-gallery-popup.js"></script>
 
     <!-- 스티커 장바구니 스크립트 -->
     <script>
@@ -2857,12 +2857,12 @@ if ($db) {
 ?>
 
     <!-- 견적서 모달 공통 JavaScript -->
-    <script src="../../js/quotation-modal-common.js"></script>
+    <script src="/js/quotation-modal-common.js"></script>
 
 <?php if (!$is_quotation_mode): ?>
     <?php
     // 공통 푸터 포함
-    include "../../includes/footer.php";
+    include __DIR__ . "/../../../includes/footer.php";
     ?>
 <?php else: ?>
     <!-- quotation_mode일 때만 직접 closing 태그 제공 -->

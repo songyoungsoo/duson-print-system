@@ -805,10 +805,19 @@ html, body {
         padding: 20px 15px;
         border-radius: 10px;
         max-width: 100%;
+        display: flex;
+        justify-content: center;
+        align-items: center;
     }
 
     .page-title h1 {
         font-size: 1.8rem;
+        text-align: center;
+    }
+
+    /* 모바일에서 재질보기 버튼 숨김 - 제목 중앙 정렬 */
+    .page-title h1 .btn-texture-view {
+        display: none;
     }
 
     .product-gallery {

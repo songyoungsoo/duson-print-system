@@ -115,13 +115,17 @@ header("Expires: 0");
         .slider-track {
             display: flex;
             flex-wrap: nowrap;
-            width: 700%; /* 7 slides * 100% */
+            width: 900%; /* 9 slides (7 + 2 clones) * 100% */
             height: 100%;
             transition: transform 1000ms ease-in-out;
         }
 
+        .slider-track.no-transition {
+            transition: none;
+        }
+
         .slider-slide {
-            width: 14.28571%; /* 100% / 7 slides */
+            width: 11.1111%; /* 100% / 9 slides */
             height: 100%;
             flex-shrink: 0;
             position: relative;
@@ -130,9 +134,9 @@ header("Expires: 0");
         .slider-slide img,
         .slider-slide .slider-img {
             width: 100%;
-            height: 100%;
+            height: 300px;
             object-fit: cover;
-            transform: translateY(calc(-15% - 20px));
+            object-position: center center;
         }
 
         .slider-dot.active {
@@ -174,7 +178,7 @@ header("Expires: 0");
                 display: flex;
                 flex-direction: row;
                 flex-wrap: nowrap;
-                width: 700vw;
+                width: 900vw;
                 height: 180px;
             }
 
@@ -532,6 +536,11 @@ header("Expires: 0");
             <!-- Slider Content -->
             <div class="slider-container">
                 <div class="slider-track" id="sliderTrack">
+                    <!-- Clone of last slide (for infinite loop) -->
+                    <div class="slider-slide clone" data-slide="-1">
+                        <img src="/slide/slide__Sticker_3.gif" alt="스티커 제작 서비스 3" class="slider-img">
+                    </div>
+
                     <!-- Slide 1: 전단지 -->
                     <div class="slider-slide" data-slide="0">
                         <img src="/slide/slide_inserted.gif" alt="전단지 인쇄 서비스" class="slider-img">
@@ -566,11 +575,16 @@ header("Expires: 0");
                     <div class="slider-slide" data-slide="6">
                         <img src="/slide/slide__Sticker_3.gif" alt="스티커 제작 서비스 3" class="slider-img">
                     </div>
+
+                    <!-- Clone of first slide (for infinite loop) -->
+                    <div class="slider-slide clone" data-slide="7">
+                        <img src="/slide/slide_inserted.gif" alt="전단지 인쇄 서비스" class="slider-img">
+                    </div>
                 </div>
             </div>
             
             <!-- Slider Controls -->
-            <div class="absolute bottom-6 left-1/2 transform -translate-x-1/2 flex gap-3 z-10">
+            <div class="absolute bottom-16 left-1/2 transform -translate-x-1/2 flex gap-3 z-10">
                 <button class="slider-dot w-3 h-3 rounded-full bg-white/60 hover:bg-white transition active" data-slide="0" aria-label="첫 번째 슬라이드로 이동"></button>
                 <button class="slider-dot w-3 h-3 rounded-full bg-white/60 hover:bg-white transition" data-slide="1" aria-label="두 번째 슬라이드로 이동"></button>
                 <button class="slider-dot w-3 h-3 rounded-full bg-white/60 hover:bg-white transition" data-slide="2" aria-label="세 번째 슬라이드로 이동"></button>
@@ -959,41 +973,73 @@ header("Expires: 0");
     <script src="assets/js/layout.js"></script>
     
     <script>
-        // Hero Slider functionality
-        let currentSlide = 0;
+        // Hero Slider functionality - Infinite Loop
+        let currentIndex = 1; // Start at first real slide (index 1, after clone)
         const sliderTrack = document.getElementById('sliderTrack');
         const slides = document.querySelectorAll('.slider-slide');
         const dots = document.querySelectorAll('.slider-dot');
-        const totalSlides = slides.length;
+        const totalSlides = 7; // Real slides count
+        const totalWithClones = slides.length; // 9 (7 + 2 clones)
+        let isTransitioning = false;
 
-        function showSlide(index) {
+        function moveToSlide(index, withTransition = true) {
+            if (!withTransition) {
+                sliderTrack.classList.add('no-transition');
+            } else {
+                sliderTrack.classList.remove('no-transition');
+            }
+
             const isMobile = window.innerWidth <= 768;
             if (isMobile) {
-                // 모바일: 100vw씩 이동
                 const translateX = -index * 100;
                 sliderTrack.style.transform = `translateX(${translateX}vw)`;
             } else {
-                // 데스크톱: 퍼센트 기반
-                const translateX = -index * (100 / totalSlides);
+                const translateX = -index * (100 / totalWithClones);
                 sliderTrack.style.transform = `translateX(${translateX}%)`;
             }
 
-            // 도트 상태 업데이트
-            dots.forEach(dot => dot.classList.remove('active'));
-            dots[index].classList.add('active');
+            currentIndex = index;
 
-            currentSlide = index;
+            // Update dots (map index to real slide 0-6)
+            const realIndex = getRealIndex(index);
+            dots.forEach(dot => dot.classList.remove('active'));
+            if (realIndex >= 0 && realIndex < totalSlides) {
+                dots[realIndex].classList.add('active');
+            }
+        }
+
+        function getRealIndex(index) {
+            // index 0 = clone of last, index 1-7 = real slides, index 8 = clone of first
+            if (index === 0) return totalSlides - 1;
+            if (index === totalWithClones - 1) return 0;
+            return index - 1;
         }
 
         function nextSlide() {
-            const next = (currentSlide + 1) % totalSlides;
-            showSlide(next);
+            if (isTransitioning) return;
+            isTransitioning = true;
+            moveToSlide(currentIndex + 1);
         }
 
         function prevSlide() {
-            const prev = (currentSlide - 1 + totalSlides) % totalSlides;
-            showSlide(prev);
+            if (isTransitioning) return;
+            isTransitioning = true;
+            moveToSlide(currentIndex - 1);
         }
+
+        // Handle transition end for infinite loop
+        sliderTrack.addEventListener('transitionend', () => {
+            isTransitioning = false;
+
+            // If at clone of first slide (index 8), jump to real first (index 1)
+            if (currentIndex === totalWithClones - 1) {
+                moveToSlide(1, false);
+            }
+            // If at clone of last slide (index 0), jump to real last (index 7)
+            if (currentIndex === 0) {
+                moveToSlide(totalSlides, false);
+            }
+        });
 
         // Event listeners for slider controls
         document.querySelector('.slider-next').addEventListener('click', nextSlide);
@@ -1001,10 +1047,17 @@ header("Expires: 0");
 
         // Event listeners for dots
         dots.forEach((dot, index) => {
-            dot.addEventListener('click', () => showSlide(index));
+            dot.addEventListener('click', () => {
+                if (isTransitioning) return;
+                isTransitioning = true;
+                moveToSlide(index + 1); // +1 because of leading clone
+            });
         });
 
-        // Auto-play slider (우측에서 좌측으로 자동 슬라이딩)
+        // Initialize position (start at first real slide)
+        moveToSlide(1, false);
+
+        // Auto-play slider
         setInterval(nextSlide, 4000);
 
         // 현재 연도 설정

@@ -79,8 +79,14 @@ window.selectUploadMethod = function(method) {
 
     console.log('selectUploadMethod 호출됨:', method);
 
-    // 버튼 클릭 시에는 파일 다이얼로그를 열지 않음
-    // 드롭존 클릭으로만 열리도록 함 (중복 실행 방지)
+    // 파일업로드 버튼 클릭 시 파일 선택 다이얼로그 열기
+    if (method === 'upload') {
+        const fileInput = document.getElementById('modalFileInput');
+        if (fileInput) {
+            console.log('파일 선택 다이얼로그 열기');
+            fileInput.click();
+        }
+    }
 }
 
 /**
@@ -371,4 +377,4 @@ document.addEventListener('DOMContentLoaded', function() {
             }
         }
     });
-});/* Cache buster: 1759243178 */
+});/* Cache buster: 1759617001 */

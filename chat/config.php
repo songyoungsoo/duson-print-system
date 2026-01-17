@@ -9,11 +9,15 @@ require_once __DIR__ . '/../db.php';
 
 // 업로드 디렉토리 설정
 define('CHAT_UPLOAD_DIR', '../chat_uploads/');
-define('CHAT_UPLOAD_MAX_SIZE', 5 * 1024 * 1024); // 5MB
+define('CHAT_UPLOAD_MAX_SIZE', 10 * 1024 * 1024); // 10MB
 
-// 업로드 디렉토리 생성
+// 업로드 디렉토리 생성 및 권한 설정
 if (!file_exists(CHAT_UPLOAD_DIR)) {
-    mkdir(CHAT_UPLOAD_DIR, 0755, true);
+    mkdir(CHAT_UPLOAD_DIR, 0777, true);
+}
+// 쓰기 권한 확인 및 설정
+if (!is_writable(CHAT_UPLOAD_DIR)) {
+    @chmod(CHAT_UPLOAD_DIR, 0777);
 }
 
 // 현재 로그인 사용자 정보 가져오기

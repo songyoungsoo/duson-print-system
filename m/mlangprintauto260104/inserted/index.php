@@ -3,7 +3,7 @@ session_start();
 $session_id = session_id();
 
 // 테마 시스템 로드
-include_once __DIR__ . '/../../includes/theme_loader.php';
+include_once __DIR__ . '/../../../includes/theme_loader.php';
 
 // 견적서 모달용 간소화 모드 체크
 $isQuotationMode = isset($_GET['mode']) && $_GET['mode'] === 'quotation';
@@ -14,7 +14,7 @@ error_reporting(E_ALL & ~E_NOTICE & ~E_WARNING);
 ini_set('display_errors', 0);
 
 // 보안 상수 정의 후 데이터베이스 연결
-include "../../db.php";
+include __DIR__ . "/../../../db.php";
 $connect = $db;
 
 // 페이지 설정
@@ -32,14 +32,14 @@ $GGTABLE = "mlangprintauto_transactioncate";
 $TABLE = "mlangprintauto_transactioncate";
 
 // 공통 함수 및 설정
-include "../../includes/functions.php";
+include __DIR__ . "/../../../includes/functions.php";
 
 // 파일 업로드 컴포넌트 포함
-include "../../includes/FileUploadComponent.php";
+include __DIR__ . "/../../../includes/FileUploadComponent.php";
 
 // 통합 갤러리 시스템
-if (file_exists('../../includes/gallery_helper.php')) {
-    include_once '../../includes/gallery_helper.php';
+if (file_exists(__DIR__ . '/../../../includes/gallery_helper.php')) {
+    include_once __DIR__ . '/../../../includes/gallery_helper.php';
 }
 if (function_exists("init_gallery_system")) {
     init_gallery_system("inserted");
@@ -53,7 +53,7 @@ check_db_connection($db);
 $log_info = generateLogInfo();
 
 // 공통 인증 시스템 사용
-include "../../includes/auth.php";
+include __DIR__ . "/../../../includes/auth.php";
 $is_logged_in = isLoggedIn() || isset($_SESSION['id_login_ok']) || isset($_COOKIE['id_login_ok']);
 
 // 사용자 정보 설정
@@ -147,28 +147,28 @@ header("Expires: 0");
     <meta name="session-id" content="<?php echo htmlspecialchars($session_id); ?>">
 
     <!-- 🎨 통합 컬러 시스템 (우선 로딩) -->
-    <link rel="stylesheet" href="../../css/color-system-unified.css">
+    <link rel="stylesheet" href="/css/color-system-unified.css">
 
     <!-- 전단지 전용 컴팩트 레이아웃 CSS -->
-    <link rel="stylesheet" href="../../css/product-layout.css">
+    <link rel="stylesheet" href="/css/product-layout.css">
 
     <!-- 🎯 통합 공통 스타일 CSS (먼저 로드) -->
-    <link rel="stylesheet" href="../../css/common-styles.css?v=<?php echo time(); ?>">
+    <link rel="stylesheet" href="/css/common-styles.css?v=<?php echo time(); ?>">
 
     <!-- 📎 공통 파일 업로드 모달 CSS (최종 로드로 최우선권 확보) -->
-    <link rel="stylesheet" href="../../css/upload-modal-common.css?v=<?php echo time(); ?>">
+    <link rel="stylesheet" href="/css/upload-modal-common.css?v=<?php echo time(); ?>">
 
     <!-- 🎨 브랜드 디자인 시스템 CSS -->
-    <link rel="stylesheet" href="../../css/brand-design-system.css">
+    <link rel="stylesheet" href="/css/brand-design-system.css">
 
     <!-- 추가 옵션 시스템 전용 CSS -->
-    <link rel="stylesheet" href="../../css/additional-options.css">
+    <link rel="stylesheet" href="/css/additional-options.css">
 
     <!-- 🆕 Duson 통합 갤러리 시스템 CSS -->
-    <link rel="stylesheet" href="../../css/unified-gallery.css">
+    <link rel="stylesheet" href="/css/unified-gallery.css">
 
     <!-- 통일 인라인 폼 시스템 CSS -->
-    <link rel="stylesheet" href="../../css/unified-inline-form.css">
+    <link rel="stylesheet" href="/css/unified-inline-form.css">
 
     <?php
     // 통합 갤러리 시스템 에셋 포함
@@ -185,10 +185,10 @@ header("Expires: 0");
     <!-- 통합 갤러리 시스템 CSS (위에서 자동 포함됨) -->
 
     <!-- 파일 업로드 컴포넌트 JavaScript -->
-    <script src="../../includes/js/UniversalFileUpload.js"></script>
+    <script src="/includes/js/UniversalFileUpload.js"></script>
 
     <!-- 견적서 모달용 공통 스타일 -->
-    <link rel="stylesheet" href="../../css/quotation-modal-common.css">
+    <link rel="stylesheet" href="/css/quotation-modal-common.css">
 
     <!-- 테마 시스템 CSS -->
     <?php ThemeLoader::renderCSS(); ?>
@@ -230,8 +230,8 @@ header("Expires: 0");
 </head>
 
 <body class="inserted-page<?php echo $isQuotationMode ? ' quotation-modal-mode' : ''; ?>" <?php ThemeLoader::renderBodyAttributes(); ?>>
-    <?php if (!$isQuotationMode) include "../../includes/header-ui.php"; ?>
-    <?php if (!$isQuotationMode) include "../../includes/nav.php"; ?>
+    <?php if (!$isQuotationMode) include __DIR__ . "/../../../includes/header-ui.php"; ?>
+    <?php if (!$isQuotationMode) include __DIR__ . "/../../../includes/nav.php"; ?>
 
     <div class="product-container">
         <!-- 페이지 타이틀 -->
@@ -245,8 +245,8 @@ header("Expires: 0");
                 <?php
                 // 통합 갤러리 시스템 (500×400 마우스 호버 줌)
                 $gallery_product = 'inserted';
-                if (file_exists('../../includes/simple_gallery_include.php')) {
-                    include '../../includes/simple_gallery_include.php';
+                if (file_exists(__DIR__ . '/../../../includes/simple_gallery_include.php')) {
+                    include __DIR__ . '/../../../includes/simple_gallery_include.php';
                 }
                 ?>
             </section>
@@ -462,12 +462,12 @@ header("Expires: 0");
     $modalProductIcon = '📎';
     
     // 공통 업로드 모달 포함
-    include "../../includes/upload_modal.php";
+    include __DIR__ . "/../../../includes/upload_modal.php";
     ?>
 
     <?php
     // 공통 로그인 모달 포함
-    include "../../includes/login_modal.php";
+    include __DIR__ . "/../../../includes/login_modal.php";
     ?>
 
     <?php if (!$isQuotationMode): ?>
@@ -546,12 +546,12 @@ header("Expires: 0");
     <?php
     // 공통 푸터 포함 (견적서 모달에서는 제외)
     if (!$isQuotationMode) {
-        include "../../includes/footer.php";
+        include __DIR__ . "/../../../includes/footer.php";
     }
     ?>
 
     <!-- 공통 업로드 모달 JavaScript -->
-    <script src="../../includes/upload_modal.js?v=1759243573751415300"></script>
+    <script src="/includes/upload_modal.js?v=1759243573751415300"></script>
     
     <!-- 전단지 전용 스크립트 -->
     <script src="js/leaflet-compact.js?v=<?php echo time(); ?>"></script>
@@ -827,10 +827,10 @@ header("Expires: 0");
     </script>
 
     <!-- 통합 갤러리 시스템 JavaScript -->
-    <script src="../../js/common-gallery-popup.js"></script>
+    <script src="/js/common-gallery-popup.js"></script>
 
     <!-- 견적서 모달 공통 JavaScript -->
-    <script src="../../js/quotation-modal-common.js?v=<?php echo time(); ?>"></script>
+    <script src="/js/quotation-modal-common.js?v=<?php echo time(); ?>"></script>
 
     <!-- 전단지 전용 컴팩트 디자인 적용 (Frontend-Compact-Design-Guide.md 기반) -->
 

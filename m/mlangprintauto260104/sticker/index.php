@@ -6,11 +6,11 @@
  */
 
 // 공통 인증 및 설정
-include "../../includes/auth.php";
+include __DIR__ . "/../../../includes/auth.php";
 
 // 공통 함수 및 데이터베이스
-include "../../includes/functions.php";
-include "../../db.php";
+include __DIR__ . "/../../../includes/functions.php";
+include __DIR__ . "/../../../db.php";
 
 // 데이터베이스 연결 및 설정
 check_db_connection($db);
@@ -70,26 +70,26 @@ if ($type_result && ($type_row = mysqli_fetch_assoc($type_result))) {
     
     
     <!-- 통합 제품 레이아웃 CSS -->
-    <link rel="stylesheet" href="../../css/product-layout.css">
-    <link rel="stylesheet" href="../../css/unified-gallery.css">
+    <link rel="stylesheet" href="/css/product-layout.css">
+    <link rel="stylesheet" href="/css/unified-gallery.css">
     
     <!-- 고급 JavaScript 라이브러리 (적응형 이미지 분석 및 실시간 계산) -->
-    <script src="../../includes/js/GalleryLightbox.js"></script>
-    <script src="../../js/namecard.js" defer></script>
+    <script src="/includes/js/GalleryLightbox.js"></script>
+    <script src="/js/namecard.js" defer></script>
     
     <!-- 세션 ID 및 설정값 메타 태그 -->
     <meta name="session-id" content="<?php echo htmlspecialchars(session_id()); ?>">
     <meta name="default-section" content="<?php echo htmlspecialchars($default_values['Section']); ?>">
     <meta name="default-quantity" content="<?php echo htmlspecialchars($default_values['MY_amount']); ?>">
     <!-- 공통 갤러리 팝업 함수 -->
-    <script src="../../js/common-gallery-popup.js"></script>
+    <script src="/js/common-gallery-popup.js"></script>
     <!-- 🎯 통합 공통 스타일 CSS (최종 로드로 최우선 적용) -->
-    <link rel="stylesheet" href="../../css/common-styles.css?v=1759615861">
-    <link rel="stylesheet" href="../../css/upload-modal-common.css">
+    <link rel="stylesheet" href="/css/common-styles.css?v=1759615861">
+    <link rel="stylesheet" href="/css/upload-modal-common.css">
 </head>
 <body>
-    <?php include "../../includes/header-ui.php"; ?>
-    <?php include "../../includes/nav.php"; ?>
+    <?php include __DIR__ . "/../../../includes/header-ui.php"; ?>
+    <?php include __DIR__ . "/../../../includes/nav.php"; ?>
 
     <div class="product-container">
         <div class="page-title">
@@ -252,13 +252,13 @@ if ($type_result && ($type_row = mysqli_fetch_assoc($type_result))) {
         </div>
     </div>
 
-    <?php include "../../includes/login_modal.php"; ?>
-    <?php include "../../includes/footer.php"; ?>
+    <?php include __DIR__ . "/../../../includes/login_modal.php"; ?>
+    <?php include __DIR__ . "/../../../includes/footer.php"; ?>
 
     <script>
         // PHP 변수를 JavaScript로 전달 (PROJECT_SUCCESS_REPORT.md 스펙)
         window.phpVars = {
-            MultyUploadDir: "../../PHPClass/MultyUpload",
+            MultyUploadDir: "/PHPClass/MultyUpload",
             log_url: "<?php echo safe_html($log_info['url']); ?>",
             log_y: "<?php echo safe_html($log_info['y']); ?>",
             log_md: "<?php echo safe_html($log_info['md']); ?>",

@@ -140,7 +140,7 @@
 /* 1. 페이지 타이틀 공통 스타일 (명시도: 10) */
 /* =================================================================== */
 .page-title {
-    margin: 0 -20px var(--page-title-margin-bottom);
+    margin: 0 10px var(--page-title-margin-bottom);
     padding: var(--spacing-2) 0;
     border-radius: 0;
     background: rgba(30, 78, 121, 0.3);
@@ -491,6 +491,98 @@
 /* =================================================================== */
 /* 7. 반응형 디자인 */
 /* =================================================================== */
+
+/* === 제품 네비게이션 스타일 === */
+/* 네비게이션 래퍼 */
+.cart-nav-wrapper {
+    max-width: 1200px;
+    margin: 0 auto;
+    padding: 0 1rem;
+}
+
+/* 레벨 1: 기본 데스크톱 스타일 */
+.product-nav {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 10px;
+    margin-bottom: 0.5rem;
+    justify-content: center;
+    padding: 1rem 0;
+    background: transparent;
+}
+
+/* 네비게이션 버튼 기본 스타일 */
+.product-nav .nav-btn {
+    display: inline-block;
+    padding: 10px 20px;
+    background: #6c757d;
+    color: white;
+    text-decoration: none;
+    border-radius: 8px;
+    font-size: 14px;
+    font-weight: 500;
+    transition: all 0.3s ease;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.15);
+}
+
+.product-nav .nav-btn:hover {
+    background: #5a6268;
+    transform: translateY(-1px);
+    box-shadow: 0 4px 12px rgba(0,0,0,0.2);
+}
+
+.product-nav .nav-btn.active {
+    background: #5a6268;
+}
+
+/* 레벨 2: 모바일 3x3 그리드 */
+@media (max-width: 768px) {
+    /* 장바구니 컨테이너 모바일 최적화 */
+    .cart-container,
+    .cart-nav-wrapper {
+        padding-left: 4px;
+        padding-right: 4px;
+        margin-left: 0;
+        margin-right: 0;
+        width: 100%;
+        max-width: 100%;
+    }
+
+    .product-nav {
+        display: grid;
+        grid-template-columns: repeat(3, 1fr);
+        gap: 4px;
+        padding: 4px 0;
+        margin: 0;
+        max-width: 100%;
+        width: 100%;
+    }
+
+    .product-nav .nav-btn {
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        padding: 10px 4px;
+        font-size: 11px;
+        text-align: center;
+        white-space: nowrap;
+        line-height: 1.2;
+        border-radius: 6px;
+        box-shadow: 0 1px 4px rgba(0,0,0,0.1);
+        min-height: 40px;
+        width: 100%;
+        box-sizing: border-box;
+        background: #6c757d;
+        color: white;
+        text-decoration: none;
+    }
+
+    .product-nav .nav-btn:hover,
+    .product-nav .nav-btn.active {
+        background: #5a6268;
+    }
+}
+
 @media (max-width: 768px) {
     /* === 모바일 헤더 최적화 === */
     .top-header {
@@ -561,10 +653,19 @@
 
     .page-title {
         padding: 15px 0;
+        display: flex;
+        justify-content: center;
+        align-items: center;
     }
 
     .page-title h1 {
         font-size: 1.4rem;
+        text-align: center;
+    }
+
+    /* 모바일에서 재질보기 버튼 숨김 - 제목 중앙 정렬 위해 */
+    .page-title h1 .btn-texture-view {
+        display: none;
     }
 
     .calculator-header {

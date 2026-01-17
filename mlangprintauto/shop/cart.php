@@ -252,9 +252,9 @@ if ($cart_result === false) {
     <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@400;500;700&display=swap" rel="stylesheet">
 
     <!-- 헤더 스타일 (header-ui.php용) -->
-    <link rel="stylesheet" href="../../css/common-styles.css">
+    <link rel="stylesheet" href="../../css/common-styles.css?v=20260117">
 
-    <link rel="stylesheet" href="../../css/excel-unified-style.css">
+    <link rel="stylesheet" href="../../css/excel-unified-style.css?v=20260117">
 </head>
 
 <body>
@@ -283,7 +283,7 @@ if ($cart_result === false) {
 <?php endif; ?>
 
 <!-- 장바구니 메인 콘텐츠 -->
-<div id="cartContent" style="font-family: 'Noto Sans KR', sans-serif; font-size: 13px; color: #222; line-height: 1.6; box-sizing: border-box; max-width: 1145px; margin: 0 auto; background: #fff; padding: 20px; margin-bottom: 1rem;">
+<div id="cartContent" style="font-family: 'Noto Sans KR', sans-serif; font-size: 13px; color: #222; line-height: 1.6; box-sizing: border-box; background: #fff; margin-bottom: 1rem;">
     <?php if (!empty($cart_items)): ?>
         <form method="post" action="../../mlangorder_printauto/OnlineOrder_unified.php" id="orderForm">
             <input type="hidden" name="SubmitMode" value="OrderOne">
@@ -362,16 +362,9 @@ if ($cart_result === false) {
                         ?>
                             <tr>
                                 <!-- 상품정보 -->
-                                <td>
-                                    <div class="product-info-cell">
-                                        <div class="product-icon <?php echo $item['product_type']; ?>">
-                                            <?php echo $product['icon']; ?>
-                                        </div>
-                                        <div>
-                                            <div class="product-name"><?php echo $product['name']; ?></div>
-                                            <div class="product-number">#<?php echo $item['no']; ?></div>
-                                        </div>
-                                    </div>
+                                <td style="text-align: center; vertical-align: middle;">
+                                    <div class="product-name"><?php echo $product['name']; ?></div>
+                                    <div class="product-number">#<?php echo $item['no']; ?></div>
                                 </td>
 
                                 <!-- 규격/옵션 (2줄 슬래시 방식) - ProductSpecFormatter 사용 -->
@@ -433,8 +426,7 @@ if ($cart_result === false) {
 
                                 <!-- 공급가액 -->
                                 <td class="td-right">
-                                    <div class="price-label">부가세 별도</div>
-                                    <div class="price-total"><?php echo number_format($final_price); ?>원</div>
+                                    <div class="price-total"><?php echo number_format($final_price); ?>원 <span style="font-size: 9px; font-weight: 400; color: #888;">(부가세별도)</span></div>
                                 </td>
 
                                 <!-- 관리 -->
@@ -500,7 +492,7 @@ if ($cart_result === false) {
         </form>
 
         <!-- 도움말 및 정보 섹션 -->
-        <div style="background: #f3f3f3; padding: 15px; border-radius: 4px; margin: 20px 0 15px 0; border: 1px solid #ccc;">
+        <div class="cart-info-section" style="background: #f3f3f3; padding: 15px; border-radius: 4px; margin: 20px 0 15px 0; border: 1px solid #ccc;">
             <h4 style="margin: 0 0 10px 0; font-size: 15px; font-weight: bold; display: flex; align-items: center; justify-content: center;">
                 두손기획인쇄 이용 안내
             </h4>
@@ -541,7 +533,7 @@ if ($cart_result === false) {
         </div>
 
         <!-- 연락처 정보 -->
-        <div style="background: #f3f3f3; padding: 12px 15px; border-radius: 4px; margin-bottom: 15px; border: 1px solid #ccc;">
+        <div class="cart-contact-section" style="background: #f3f3f3; padding: 12px 15px; border-radius: 4px; margin-bottom: 15px; border: 1px solid #ccc;">
             <h4 style="color: #0066cc; margin: 0 0 8px 0; font-size: 14px; font-weight: bold; display: flex; align-items: center; justify-content: center;">
                 문의사항이 있으시면 언제든 연락하세요
             </h4>
@@ -565,7 +557,7 @@ if ($cart_result === false) {
             <p>원하시는 인쇄물을 선택해서 주문을 시작해보세요!</p>
 
             <!-- 도움말 및 정보 섹션 -->
-            <div style="background: #f3f3f3; padding: 15px; border-radius: 4px; margin-bottom: 15px; border: 1px solid #ccc;">
+            <div class="cart-info-section" style="background: #f3f3f3; padding: 15px; border-radius: 4px; margin-bottom: 15px; border: 1px solid #ccc;">
                 <h4 style="margin: 0 0 10px 0; font-size: 15px; font-weight: bold; display: flex; align-items: center; justify-content: center;">
                     두손기획인쇄 이용 안내
                 </h4>
@@ -606,7 +598,7 @@ if ($cart_result === false) {
             </div>
 
             <!-- 연락처 정보 -->
-            <div style="background: #f3f3f3; padding: 12px 15px; border-radius: 4px; margin-bottom: 15px; border: 1px solid #ccc;">
+            <div class="cart-contact-section" style="background: #f3f3f3; padding: 12px 15px; border-radius: 4px; margin-bottom: 15px; border: 1px solid #ccc;">
                 <h4 style="color: #0066cc; margin: 0 0 8px 0; font-size: 14px; font-weight: bold; display: flex; align-items: center; justify-content: center;">
                     문의사항이 있으시면 언제든 연락하세요
                 </h4>
@@ -640,8 +632,8 @@ if ($cart_result === false) {
     <div class="quotation-header">
         <h1>견 적 서</h1>
         <div>
-            두손기획인쇄 | 사업자등록번호: 201-10-69847<br>
-            TEL: 02-2632-1830 | FAX: 02-2632-1831
+            두손기획인쇄 | 사업자등록번호: 107-06-45106<br>
+            TEL: 02-2632-1830 | FAX: 02-2632-1829
         </div>
     </div>
 

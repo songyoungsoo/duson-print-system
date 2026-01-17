@@ -192,6 +192,12 @@ if ($type_result && ($type_row = mysqli_fetch_assoc($type_result))) {
             box-shadow: 0 4px 12px rgba(99, 102, 241, 0.5);
             background: linear-gradient(135deg, #4f46e5 0%, #7c3aed 100%);
         }
+        /* 모바일에서 버튼 숨김 - 제목 중앙 정렬 */
+        @media (max-width: 768px) {
+            .btn-texture-view {
+                display: none;
+            }
+        }
     </style>
 </head>
 <body class="namecard-page<?php echo ($isQuotationMode || $isAdminQuoteMode) ? ' quotation-modal-mode' : ''; ?>" <?php ThemeLoader::renderBodyAttributes(); ?>>

@@ -1,6 +1,6 @@
 <?php
 // 테마 시스템 로드
-include_once __DIR__ . '/../../includes/theme_loader.php';
+include_once __DIR__ . '/../../../includes/theme_loader.php';
 
 /**
  * 봉투 견적안내 컴팩트 시스템 - NameCard 시스템 구조 적용
@@ -9,17 +9,17 @@ include_once __DIR__ . '/../../includes/theme_loader.php';
  */
 
 // 공통 인증 및 설정
-include "../../includes/auth.php";
+include __DIR__ . "/../../../includes/auth.php";
 
 // 견적서 모달용 간소화 모드 체크
 $isQuotationMode = isset($_GET['mode']) && $_GET['mode'] === 'quotation';
 
 // 공통 함수 및 데이터베이스
-include "../../includes/functions.php";
-include "../../db.php";
+include __DIR__ . "/../../../includes/functions.php";
+include __DIR__ . "/../../../db.php";
 
 // 통합 갤러리 시스템 초기화
-if (file_exists('../../includes/gallery_helper.php')) { if (file_exists('../../includes/gallery_helper.php')) { include_once '../../includes/gallery_helper.php'; } }
+if (file_exists(__DIR__ . '/../../../includes/gallery_helper.php')) { if (file_exists(__DIR__ . '/../../../includes/gallery_helper.php')) { include_once '../../includes/gallery_helper.php'; } }
 if (function_exists("init_gallery_system")) { init_gallery_system("envelope"); }
 
 // 데이터베이스 연결 및 설정
@@ -73,7 +73,7 @@ if ($type_result && ($type_row = mysqli_fetch_assoc($type_result))) {
 <html lang="ko">
 <head>
     <!-- 🎨 통합 컬러 시스템 -->
-    <link rel="stylesheet" href="../../css/color-system-unified.css">
+    <link rel="stylesheet" href="/css/color-system-unified.css">
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title><?php echo safe_html($page_title); ?></title>
@@ -82,34 +82,34 @@ if ($type_result && ($type_row = mysqli_fetch_assoc($type_result))) {
     
     
     <!-- 봉투 컴팩트 페이지 전용 CSS -->
-    <link rel="stylesheet" href="../../css/product-layout.css">
+    <link rel="stylesheet" href="/css/product-layout.css">
     <!-- 통합 가격 표시 시스템 CSS -->
-    <link rel="stylesheet" href="../../css/unified-price-display.css">
+    <link rel="stylesheet" href="/css/unified-price-display.css">
     
     <!-- 노토 폰트 -->
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@300;400;500;700&display=swap" rel="stylesheet">
     <!-- 공통 버튼 스타일 CSS -->
-    <link rel="stylesheet" href="../../css/btn-primary.css">
+    <link rel="stylesheet" href="/css/btn-primary.css">
     <!-- 통합 갤러리 CSS -->
-    <link rel="stylesheet" href="../../css/unified-gallery.css">
+    <link rel="stylesheet" href="/css/unified-gallery.css">
     <!-- 컴팩트 폼 그리드 CSS (모든 품목 공통) -->
-    <link rel="stylesheet" href="../../css/compact-form.css">
+    <link rel="stylesheet" href="/css/compact-form.css">
     <!-- 통일 인라인 폼 시스템 CSS -->
-    <link rel="stylesheet" href="../../css/unified-inline-form.css">
+    <link rel="stylesheet" href="/css/unified-inline-form.css">
     <!-- 추가 옵션 시스템 CSS -->
-    <link rel="stylesheet" href="../../css/additional-options.css">
+    <link rel="stylesheet" href="/css/additional-options.css">
 
     <!-- jQuery 라이브러리 -->
     <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
     
     <!-- 통합 갤러리 JavaScript 라이브러리 -->
     <script src="../NameCard/js/unified-gallery.js"></script>
-    <script src="../../js/unified-gallery-popup.js"></script>
+    <script src="/js/unified-gallery-popup.js"></script>
     
     <!-- 봉투 전용 JavaScript -->
-    <script src="../../js/envelope.js" defer></script>
+    <script src="/js/envelope.js" defer></script>
     
     
     <!-- 세션 ID 및 설정값 메타 태그 -->
@@ -124,15 +124,15 @@ if ($type_result && ($type_row = mysqli_fetch_assoc($type_result))) {
     }
     ?>
     <!-- 공통 갤러리 팝업 함수 -->
-    <script src="../../js/common-gallery-popup.js"></script>
+    <script src="/js/common-gallery-popup.js"></script>
 
     <!-- 인라인 CSS 추출 파일 -->
     <link rel="stylesheet" href="css/envelope-inline-extracted.css">
     <!-- 🎯 통합 공통 스타일 CSS (최종 로드로 최우선 적용) -->
-    <link rel="stylesheet" href="../../css/common-styles.css?v=1759615861">
-    <link rel="stylesheet" href="../../css/upload-modal-common.css">
+    <link rel="stylesheet" href="/css/common-styles.css?v=1759615861">
+    <link rel="stylesheet" href="/css/upload-modal-common.css">
     <!-- 견적서 모달용 공통 스타일 -->
-    <link rel="stylesheet" href="../../css/quotation-modal-common.css">
+    <link rel="stylesheet" href="/css/quotation-modal-common.css">
 
     <!-- Phase 5: 견적 요청 버튼 스타일 -->
     <style>
@@ -173,8 +173,8 @@ if ($type_result && ($type_row = mysqli_fetch_assoc($type_result))) {
 
 </head>
 <body class="envelope-page<?php echo $isQuotationMode ? ' quotation-modal-mode' : ''; ?>" <?php ThemeLoader::renderBodyAttributes(); ?>>
-    <?php if (!$isQuotationMode) include "../../includes/header-ui.php"; ?>
-    <?php if (!$isQuotationMode) include "../../includes/nav.php"; ?>
+    <?php if (!$isQuotationMode) include __DIR__ . "/../../../includes/header-ui.php"; ?>
+    <?php if (!$isQuotationMode) include __DIR__ . "/../../../includes/nav.php"; ?>
 
     <div class="product-container">
         <div class="page-title">
@@ -188,8 +188,8 @@ if ($type_result && ($type_row = mysqli_fetch_assoc($type_result))) {
                 <?php
                 // 통합 갤러리 시스템 (500×400 마우스 호버 줌)
                 $gallery_product = 'envelope';
-                if (file_exists('../../includes/simple_gallery_include.php')) {
-                    include '../../includes/simple_gallery_include.php';
+                if (file_exists(__DIR__ . '/../../../includes/simple_gallery_include.php')) {
+                    include __DIR__ . '/../../../includes/simple_gallery_include.php';
                 }
                 ?>
             </section>
@@ -306,10 +306,10 @@ if ($type_result && ($type_row = mysqli_fetch_assoc($type_result))) {
     </div>
 
     <!-- 파일 업로드 모달 (통합 컴포넌트) -->
-    <?php include "../../includes/upload_modal.php"; ?>
-    <script src="../../includes/upload_modal.js?v=1759243573751415300"></script>
+    <?php include __DIR__ . "/../../../includes/upload_modal.php"; ?>
+    <script src="/includes/upload_modal.js?v=1759243573751415300"></script>
 
-    <?php include "../../includes/login_modal.php"; ?>
+    <?php include __DIR__ . "/../../../includes/login_modal.php"; ?>
 
     <?php if (!$isQuotationMode): ?>
     <!-- 옵셋봉투 및 작업 시 유의사항 통합 섹션 (1200px 폭) -->
@@ -324,7 +324,7 @@ if ($type_result && ($type_row = mysqli_fetch_assoc($type_result))) {
     <script>
         // PHP 변수를 JavaScript로 전달 (PROJECT_SUCCESS_REPORT.md 스펙)
         window.phpVars = {
-            MultyUploadDir: "../../PHPClass/MultyUpload",
+            MultyUploadDir: "/PHPClass/MultyUpload",
             log_url: "<?php echo safe_html($log_info['url']); ?>",
             log_y: "<?php echo safe_html($log_info['y']); ?>",
             log_md: "<?php echo safe_html($log_info['md']); ?>",
@@ -632,7 +632,7 @@ if ($type_result && ($type_row = mysqli_fetch_assoc($type_result))) {
     </script>
 
     <!-- 견적서 모달 공통 JavaScript -->
-    <script src="../../js/quotation-modal-common.js?v=<?php echo time(); ?>"></script>
+    <script src="/js/quotation-modal-common.js?v=<?php echo time(); ?>"></script>
 
     <?php
     // 데이터베이스 연결 종료
@@ -641,4 +641,4 @@ if ($type_result && ($type_row = mysqli_fetch_assoc($type_result))) {
     }
     ?>
 
-<?php if (!$isQuotationMode) include "../../includes/footer.php"; ?>
+<?php if (!$isQuotationMode) include __DIR__ . "/../../../includes/footer.php"; ?>

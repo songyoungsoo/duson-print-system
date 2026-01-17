@@ -6,8 +6,25 @@ error_reporting(E_ALL & ~E_NOTICE & ~E_DEPRECATED & ~E_STRICT);
 session_start();
 $session_id = session_id();
 
-// 세션 또는 쿠키에 로그인 정보가 있는지 확인
-if (isset($_SESSION['id_login_ok']) || isset($_COOKIE['id_login_ok'])) {
+// 통합 로그인 상태 확인 (신규 시스템 우선)
+$is_logged_in = false;
+
+// 1. 신규 시스템 확인 (user_id)
+if (isset($_SESSION['user_id'])) {
+    $is_logged_in = true;
+}
+// 2. 구 시스템 확인 (id_login_ok) - 신규 시스템 로그인이 없을 때만
+elseif (isset($_SESSION['id_login_ok']) || isset($_COOKIE['id_login_ok'])) {
+    // 구 시스템만 있고 신규 시스템 없음 = 세션 불일치
+    // 구 시스템 쿠키/세션 정리하고 새로 로그인 유도
+    unset($_SESSION['id_login_ok']);
+    if (isset($_COOKIE['id_login_ok'])) {
+        setcookie('id_login_ok', '', time() - 3600, '/');
+    }
+    // 로그인 페이지 표시 (is_logged_in = false 유지)
+}
+
+if ($is_logged_in) {
     echo "<script language='javascript'>
           window.alert('회원님은 이미 로그인되어 있습니다.');
           history.back();

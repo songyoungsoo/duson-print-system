@@ -257,6 +257,48 @@
             cursor: pointer;
         }
 
+        /* PDF 파일 메시지 스타일 */
+        .message-file {
+            background: #f8f9fa !important;
+            padding: 10px 14px !important;
+        }
+
+        .file-link {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            text-decoration: none;
+            color: #333;
+        }
+
+        .file-link:hover {
+            color: #1466BA;
+        }
+
+        .file-icon {
+            font-size: 28px;
+            flex-shrink: 0;
+        }
+
+        .file-info {
+            display: flex;
+            flex-direction: column;
+            gap: 3px;
+            min-width: 0;
+        }
+
+        .file-name {
+            font-size: 13px;
+            font-weight: 500;
+            word-break: break-all;
+            line-height: 1.3;
+        }
+
+        .file-size {
+            font-size: 11px;
+            color: #888;
+        }
+
         .message-time {
             font-size: 10px;
             color: #999;
@@ -436,7 +478,7 @@
                                 <path d="M21 19V5c0-1.1-.9-2-2-2H5c-1.1 0-2 .9-2 2v14c0 1.1.9 2 2 2h14c1.1 0 2-.9 2-2zM8.5 13.5l2.5 3.01L14.5 12l4.5 6H5l3.5-4.5z"/>
                             </svg>
                         </button>
-                        <input type="file" id="admin-image-input" accept="image/*" style="display:none" onchange="uploadAdminImage(event)">
+                        <input type="file" id="admin-image-input" accept="image/*,.pdf,.doc,.docx,.xls,.xlsx,.ppt,.pptx,.hwp,.hwpx,.ai,.txt" style="display:none" onchange="uploadAdminFile(event)">
                         <input type="text" class="input-admin" id="admin-message-input" placeholder="메시지를 입력하세요..." onkeypress="if(event.key==='Enter') sendAdminMessage()">
                         <button class="btn-admin" onclick="sendAdminMessage()">전송</button>
                     </div>
@@ -692,6 +734,20 @@
                         <img src="/${msg.filepath}" alt="${msg.filename}" class="message-image" onclick="window.open('/${msg.filepath}', '_blank')">
                     </div>
                 `;
+            } else if (msg.messagetype === 'file') {
+                const fileSize = msg.filesize ? formatFileSize(msg.filesize) : '';
+                const fileIcon = getFileIcon(msg.filename);
+                contentHtml = `
+                    <div class="message-bubble message-file">
+                        <a href="/${msg.filepath}" target="_blank" class="file-link">
+                            <span class="file-icon">${fileIcon}</span>
+                            <span class="file-info">
+                                <span class="file-name">${escapeHtml(msg.filename)}</span>
+                                <span class="file-size">${fileSize}</span>
+                            </span>
+                        </a>
+                    </div>
+                `;
             }
 
             const time = new Date(msg.createdat).toLocaleTimeString('ko-KR', { hour: '2-digit', minute: '2-digit' });
@@ -746,18 +802,34 @@
             }
         }
 
-        // 이미지 업로드
-        async function uploadAdminImage(event) {
+        // 파일 업로드 (이미지 + PDF)
+        async function uploadAdminFile(event) {
             const file = event.target.files[0];
             if (!file || !currentRoomId) return;
 
+            // 파일 크기 체크 (10MB)
+            if (file.size > 10 * 1024 * 1024) {
+                alert('파일 크기 초과 (최대 10MB)\n\n대용량 파일은 dsp1830@naver.com 으로 보내주세요.');
+                event.target.value = '';
+                return;
+            }
+
+            // 허용된 파일 확장자 확인
+            const allowedExtensions = ['jpg', 'jpeg', 'png', 'gif', 'webp', 'pdf', 'doc', 'docx', 'xls', 'xlsx', 'ppt', 'pptx', 'hwp', 'hwpx', 'ai', 'txt'];
+            const ext = file.name.split('.').pop().toLowerCase();
+            if (!allowedExtensions.includes(ext)) {
+                alert('허용되지 않는 파일 형식입니다.');
+                event.target.value = '';
+                return;
+            }
+
             try {
                 const formData = new FormData();
-                formData.append('action', 'upload_image');
+                formData.append('action', 'upload_file');
                 formData.append('room_id', currentRoomId);
-                formData.append('image', file);
-                formData.append('sender_id', currentStaffId); // 직원 ID 전송
-                formData.append('sender_name', currentStaffName); // 직원 이름 전송
+                formData.append('file', file);
+                formData.append('sender_id', currentStaffId);
+                formData.append('sender_name', currentStaffName);
 
                 const response = await fetch('api.php', {
                     method: 'POST',
@@ -770,11 +842,35 @@
                     loadMessages();
                     event.target.value = '';
                 } else {
-                    alert('이미지 업로드 실패: ' + data.message);
+                    alert('파일 업로드 실패: ' + data.message);
                 }
             } catch (error) {
-                console.error('이미지 업로드 오류:', error);
+                console.error('파일 업로드 오류:', error);
             }
+        }
+
+        // 파일 크기 포맷팅
+        function formatFileSize(bytes) {
+            if (bytes === 0) return '0 Bytes';
+            const k = 1024;
+            const sizes = ['Bytes', 'KB', 'MB', 'GB'];
+            const i = Math.floor(Math.log(bytes) / Math.log(k));
+            return parseFloat((bytes / Math.pow(k, i)).toFixed(1)) + ' ' + sizes[i];
+        }
+
+        // 파일 타입별 아이콘
+        function getFileIcon(filename) {
+            const ext = filename.split('.').pop().toLowerCase();
+            const icons = {
+                'pdf': '📕',
+                'doc': '📘', 'docx': '📘',
+                'xls': '📗', 'xlsx': '📗',
+                'ppt': '📙', 'pptx': '📙',
+                'hwp': '📝', 'hwpx': '📝',
+                'ai': '🎨',
+                'txt': '📄'
+            };
+            return icons[ext] || '📎';
         }
 
         function scrollToBottom() {

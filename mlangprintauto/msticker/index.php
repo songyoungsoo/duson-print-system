@@ -222,9 +222,9 @@ if ($type_row = mysqli_fetch_assoc($type_result)) {
                     </div>
                     <?php else: ?>
                     <!-- 일반 모드: 파일 업로드 및 주문하기 버튼 -->
-                    <div class="upload-order-button" id="uploadOrderButton">
+                    <div class="action-buttons" id="actionButtons">
                         <button type="button" class="btn-upload-order" onclick="openUploadModal()">
-                            📎 파일 업로드 및 주문하기
+                            파일 업로드 및 주문하기
                         </button>
                     </div>
                     <?php endif; ?>
