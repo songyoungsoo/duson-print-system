@@ -18,6 +18,7 @@ use PHPMailer\PHPMailer\Exception;
  */
 function sendQuotationEmail($db, $quoteId, $recipientEmail, $recipientName = '', $ccEmail = '') {
     require_once __DIR__ . '/../includes/QuoteManager.php';
+    require_once __DIR__ . '/../includes/QuoteTableRenderer.php';
 
     try {
         $manager = new QuoteManager($db);
@@ -30,6 +31,9 @@ function sendQuotationEmail($db, $quoteId, $recipientEmail, $recipientName = '',
         $company = $manager->getCompanySettings();
         $quoteNo = $quote['quote_no'];
         $items = $quote['items'];
+
+        // ✅ 2026-01-17: QuoteTableRenderer SSOT 사용
+        $renderer = new QuoteTableRenderer($db);
 
         // 변수 준비
         $customerName = htmlspecialchars($quote['customer_name']);
@@ -48,47 +52,8 @@ function sendQuotationEmail($db, $quoteId, $recipientEmail, $recipientName = '',
         $companyEmail = htmlspecialchars($company['email'] ?? 'dsp1830@naver.com');
         $paymentTerms = htmlspecialchars($quote['payment_terms'] ?? '발행일로부터 7일');
 
-        // 품목 HTML 생성
-        $itemsHtml = '';
-        $no = 1;
-        foreach ($items as $item) {
-            $qty = $item['quantity'];
-            $qtyDisplay = ($qty == intval($qty)) ? number_format($qty) : rtrim(rtrim(number_format($qty, 2), '0'), '.');
-
-            // 전단지(inserted)인 경우 매수 표시 추가
-            if ($item['product_type'] == 'inserted' && !empty($item['source_data'])) {
-                $sourceData = json_decode($item['source_data'], true);
-                if (!empty($sourceData['mesu'])) {
-                    $qtyDisplay .= '<br><span style="font-size:9px;color:#888;">(' . number_format($sourceData['mesu']) . '매)</span>';
-                }
-            }
-
-            $productName = htmlspecialchars($item['product_name']);
-            $specification = htmlspecialchars($item['specification']);
-            $unit = htmlspecialchars($item['unit']);
-
-            // 전단지는 소수점 1자리 표시
-            if ($item['product_type'] == 'inserted') {
-                $unitPriceFmt = number_format($item['unit_price'], 1);
-            } else {
-                $unitPriceFmt = number_format($item['unit_price']);
-            }
-
-            $supplyPriceFmt = number_format($item['supply_price']);
-            $notes = htmlspecialchars($item['notes'] ?? '');
-
-            $itemsHtml .= "<tr>
-                <td style='border:1px solid #ddd;padding:5px;text-align:center;font-size:14px;'>{$no}</td>
-                <td style='border:1px solid #ddd;padding:5px;font-size:14px;'>{$productName}</td>
-                <td style='border:1px solid #ddd;padding:5px;font-size:13px;line-height:1.4;'>{$specification}</td>
-                <td style='border:1px solid #ddd;padding:5px;text-align:center;font-size:14px;'>{$qtyDisplay}</td>
-                <td style='border:1px solid #ddd;padding:5px;text-align:center;font-size:14px;'>{$unit}</td>
-                <td style='border:1px solid #ddd;padding:5px;text-align:right;font-size:14px;'>{$unitPriceFmt}</td>
-                <td style='border:1px solid #ddd;padding:5px;text-align:right;font-size:14px;font-weight:600;'>{$supplyPriceFmt}</td>
-                <td style='border:1px solid #ddd;padding:5px;font-size:12px;color:#666;'>{$notes}</td>
-            </tr>";
-            $no++;
-        }
+        // ✅ 2026-01-17: QuoteTableRenderer SSOT 사용
+        $itemsHtml = $renderer->renderEmailTableBody($items);
 
         // 배송비/할인 행
         $deliveryRow = '';

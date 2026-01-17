@@ -8,6 +8,7 @@
 session_start();
 require_once __DIR__ . '/../../db.php';
 require_once __DIR__ . '/../includes/QuoteManager.php';
+require_once __DIR__ . '/../includes/QuoteTableRenderer.php';
 
 $token = $_GET['token'] ?? '';
 $manager = new QuoteManager($db);
@@ -25,6 +26,9 @@ if ($quote['status'] === 'draft' || $quote['status'] === 'sent') {
 
 $company = $manager->getCompanySettings();
 $items = $quote['items'];
+
+// ✅ 2026-01-17: QuoteTableRenderer SSOT 사용
+$renderer = new QuoteTableRenderer($db);
 
 // 상태 라벨
 $statusLabels = [
@@ -409,35 +413,17 @@ $koreanAmount = numberToKorean($quote['grand_total']);
                 </tr>
             </thead>
             <tbody>
-                <?php foreach ($items as $index => $item): ?>
+                <?php
+                // ✅ 2026-01-17: QuoteTableRenderer SSOT 사용
+                foreach ($items as $index => $item): ?>
                 <tr>
                     <td class="center"><?php echo $index + 1; ?></td>
                     <td><?php echo htmlspecialchars($item['product_name']); ?></td>
                     <td class="spec"><?php echo nl2br(htmlspecialchars($item['specification'])); ?></td>
-                    <td class="center"><?php
-                        $qty = $item['quantity'];
-                        $qtyDisplay = ($qty == intval($qty)) ? number_format($qty) : rtrim(rtrim(number_format($qty, 2), '0'), '.');
-                        echo $qtyDisplay;
-
-                        // 전단지(inserted)인 경우 매수 표시 추가
-                        if ($item['product_type'] == 'inserted' && !empty($item['source_data'])) {
-                            $sourceData = json_decode($item['source_data'], true);
-                            if (!empty($sourceData['mesu'])) {
-                                echo '<br><span style="font-size: 10px; color: #666;">(' . number_format($sourceData['mesu']) . '매)</span>';
-                            }
-                        }
-                    ?></td>
-                    <td class="center"><?php echo htmlspecialchars($item['unit']); ?></td>
-                    <td class="right"><?php
-                        // 소수점 1자리까지 표시 (모든 품목)
-                        $unitPrice = floatval($item['unit_price']);
-                        if ($unitPrice == floor($unitPrice)) {
-                            echo number_format($unitPrice);
-                        } else {
-                            echo number_format($unitPrice, 1);
-                        }
-                    ?></td>
-                    <td class="right"><?php echo number_format($item['supply_price']); ?></td>
+                    <td class="center"><?php echo $renderer->formatQuantityCell($item); ?></td>
+                    <td class="center"><?php echo $renderer->formatUnitCell($item); ?></td>
+                    <td class="right"><?php echo $renderer->formatUnitPriceCell($item); ?></td>
+                    <td class="right"><?php echo $renderer->formatSupplyPriceCell($item); ?></td>
                     <td class="spec"><?php echo htmlspecialchars($item['notes'] ?? ''); ?></td>
                 </tr>
                 <?php endforeach; ?>

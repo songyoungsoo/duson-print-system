@@ -396,6 +396,82 @@ try {
         $quantity_unit = $product_data['quantity_unit'] ?? '매';
         $quantity_sheets = $product_data['quantity_sheets'] ?? 0;
         $quantity_display = $product_data['quantity_display'] ?? '';
+
+        // ✅ 2026-01-17 SSOT FIX: 스티커 수량 정규화 보장
+        // 스티커의 경우 mesu 필드에서 quantity_value 추출 보장 (NULL 방지)
+        if ($item['product_type'] === 'sticker' || $item['product_type'] === 'sticker_new') {
+            $mesu = intval($item['mesu'] ?? $product_data['mesu'] ?? 0);
+            if ($mesu > 0 && $quantity_value == 0) {
+                $quantity_value = $mesu;
+                $quantity_unit = '매';
+                $quantity_sheets = $mesu;
+                $quantity_display = number_format($mesu) . '매';
+                error_log("SSOT FIX: Sticker quantity normalized - mesu={$mesu} → quantity_value={$quantity_value}, display={$quantity_display}");
+            }
+        }
+
+        // ✅ 2026-01-17 SSOT FIX: 명함/봉투 수량 정규화 (10 미만 → ×1000)
+        if (in_array($item['product_type'], ['namecard', 'envelope'])) {
+            $mesu = intval($item['mesu'] ?? $product_data['mesu'] ?? 0);
+            $my_amount = floatval($item['MY_amount'] ?? $product_data['MY_amount'] ?? 0);
+
+            if ($mesu > 0 && $quantity_value == 0) {
+                $quantity_value = $mesu;
+                $quantity_unit = '매';
+                $quantity_sheets = $mesu;
+                $quantity_display = number_format($mesu) . '매';
+            } elseif ($my_amount > 0 && $my_amount < 10 && $quantity_value == 0) {
+                // 10 미만이면 천 단위로 해석
+                $quantity_value = intval($my_amount * 1000);
+                $quantity_unit = '매';
+                $quantity_sheets = $quantity_value;
+                $quantity_display = number_format($quantity_value) . '매';
+                error_log("SSOT FIX: Namecard/Envelope quantity normalized - MY_amount={$my_amount} → quantity_value={$quantity_value}");
+            }
+        }
+
+        // ✅ 2026-01-17 SSOT FIX: 전단지 수량 정규화 (연 단위)
+        if (in_array($item['product_type'], ['inserted', 'leaflet'])) {
+            $my_amount = floatval($item['MY_amount'] ?? $product_data['MY_amount'] ?? 0);
+            $mesu = intval($item['mesu'] ?? $product_data['mesu'] ?? 0);
+
+            if ($my_amount > 0 && $quantity_value == 0) {
+                $quantity_value = $my_amount;
+                $quantity_unit = '연';
+                $quantity_sheets = $mesu > 0 ? $mesu : 0;  // DB에서 조회 필요
+                if (floor($my_amount) == $my_amount) {
+                    $quantity_display = number_format($my_amount) . '연';
+                } else {
+                    $quantity_display = rtrim(rtrim(number_format($my_amount, 2), '0'), '.') . '연';
+                }
+                if ($quantity_sheets > 0) {
+                    $quantity_display .= ' (' . number_format($quantity_sheets) . '매)';
+                }
+                error_log("SSOT FIX: Inserted quantity normalized - MY_amount={$my_amount}, mesu={$mesu} → display={$quantity_display}");
+            }
+        }
+
+        // ✅ 2026-01-17 SSOT FIX: NCR양식지 수량 정규화 (권 단위)
+        if ($item['product_type'] === 'ncrflambeau') {
+            $my_amount = intval($item['MY_amount'] ?? $product_data['MY_amount'] ?? 0);
+
+            if ($my_amount > 0 && $quantity_value == 0) {
+                $quantity_value = $my_amount;
+                $quantity_unit = '권';
+                // 매수 계산: 권 × 50 × 복사매수(기본 2)
+                $multiplier = 2;  // 기본값
+                if (!empty($item['MY_Fsd']) || !empty($product_data['MY_Fsd'])) {
+                    $materialText = $item['MY_Fsd'] ?? $product_data['MY_Fsd'] ?? '';
+                    if (preg_match('/([2-4])매/u', $materialText, $matches)) {
+                        $multiplier = intval($matches[1]);
+                    }
+                }
+                $quantity_sheets = $my_amount * 50 * $multiplier;
+                $quantity_display = number_format($my_amount) . '권 (' . number_format($quantity_sheets) . '매)';
+                error_log("SSOT FIX: NCR quantity normalized - MY_amount={$my_amount}, multiplier={$multiplier} → display={$quantity_display}");
+            }
+        }
+
         $price_supply = $product_data['price_supply'] ?? 0;
         $price_vat = $product_data['price_vat'] ?? 0;
         $price_vat_amount = $product_data['price_vat_amount'] ?? 0;

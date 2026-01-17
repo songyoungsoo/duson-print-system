@@ -7,6 +7,7 @@
 session_start();
 require_once __DIR__ . '/../../db.php';
 require_once __DIR__ . '/../includes/QuoteManager.php';
+require_once __DIR__ . '/../includes/QuoteTableRenderer.php';
 require_once __DIR__ . '/../../../includes/QuantityFormatter.php';  // ✅ 2026-01-16: SSOT 연동
 
 // 파라미터 확인
@@ -28,6 +29,9 @@ if (!$quote || $quote['id'] != $id) {
 
 $company = $manager->getCompanySettings();
 $items = $quote['items'];
+
+// ✅ 2026-01-17: QuoteTableRenderer SSOT 사용
+$renderer = new QuoteTableRenderer($db);
 
 // 금액을 한글로 변환
 function numberToKorean($number) {
@@ -342,69 +346,17 @@ $koreanAmount = numberToKorean($quote['grand_total']);
                 </tr>
             </thead>
             <tbody>
-                <?php foreach ($items as $index => $item): ?>
+                <?php
+                // ✅ 2026-01-17: QuoteTableRenderer SSOT 사용
+                foreach ($items as $index => $item): ?>
                 <tr>
                     <td class="center"><?php echo $index + 1; ?></td>
                     <td><?php echo htmlspecialchars($item['product_name']); ?></td>
                     <td class="spec"><?php echo nl2br(htmlspecialchars($item['specification'])); ?></td>
-                    <td class="center"><?php
-                        $qty = $item['quantity'];
-                        $qtyDisplay = ($qty == intval($qty)) ? number_format($qty) : rtrim(rtrim(number_format($qty, 2), '0'), '.');
-                        echo $qtyDisplay;
-
-                        // ✅ 2026-01-16: 전단지/NCR 매수 표시 (QuantityFormatter SSOT)
-                        $productType = $item['product_type'] ?? '';
-                        $unit = $item['unit'] ?? '';
-                        $sheets = null;
-
-                        // 1. 표준 필드 qty_sheets 우선 사용
-                        if (!empty($item['qty_sheets'])) {
-                            $sheets = intval($item['qty_sheets']);
-                        }
-                        // 2. 폴백: source_data의 mesu
-                        elseif (!empty($item['source_data'])) {
-                            $sourceData = json_decode($item['source_data'], true);
-                            if (!empty($sourceData['mesu'])) {
-                                $sheets = intval($sourceData['mesu']);
-                            }
-                        }
-
-                        // 3. ✅ SSOT: 전단지는 DB 조회, NCR은 계산
-                        if (!$sheets && $qty > 0 && in_array($unit, ['연', '권'])) {
-                            if ($unit === '연') {
-                                // 전단지: mlangprintauto_inserted 테이블에서 매수 조회
-                                $sheetStmt = mysqli_prepare($db, "SELECT quantityTwo FROM mlangprintauto_inserted WHERE quantity = ? LIMIT 1");
-                                if ($sheetStmt) {
-                                    mysqli_stmt_bind_param($sheetStmt, "d", $qty);
-                                    mysqli_stmt_execute($sheetStmt);
-                                    $sheetResult = mysqli_stmt_get_result($sheetStmt);
-                                    if ($sheetRow = mysqli_fetch_assoc($sheetResult)) {
-                                        $sheets = intval($sheetRow['quantityTwo']);
-                                    }
-                                    mysqli_stmt_close($sheetStmt);
-                                }
-                            } elseif ($unit === '권') {
-                                // NCR양식지: 권 × 50 × multiplier(기본 2)
-                                $sheets = QuantityFormatter::calculateNcrSheets(intval($qty), 2);
-                            }
-                        }
-
-                        // 연/권 단위인 경우 매수 표시
-                        if ($sheets && in_array($unit, ['연', '권'])) {
-                            echo '<br><span style="font-size: 10px; color: #666;">(' . number_format($sheets) . '매)</span>';
-                        }
-                    ?></td>
-                    <td class="center"><?php echo htmlspecialchars($item['unit']); ?></td>
-                    <td class="right"><?php
-                        // 소수점 1자리까지 표시 (모든 품목)
-                        $unitPrice = floatval($item['unit_price']);
-                        if ($unitPrice == floor($unitPrice)) {
-                            echo number_format($unitPrice);
-                        } else {
-                            echo number_format($unitPrice, 1);
-                        }
-                    ?></td>
-                    <td class="right"><?php echo number_format($item['supply_price']); ?></td>
+                    <td class="center"><?php echo $renderer->formatQuantityCell($item); ?></td>
+                    <td class="center"><?php echo $renderer->formatUnitCell($item); ?></td>
+                    <td class="right"><?php echo $renderer->formatUnitPriceCell($item); ?></td>
+                    <td class="right"><?php echo $renderer->formatSupplyPriceCell($item); ?></td>
                     <td class="spec"><?php echo htmlspecialchars($item['notes'] ?? ''); ?></td>
                 </tr>
                 <?php endforeach; ?>

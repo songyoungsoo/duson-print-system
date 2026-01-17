@@ -6,6 +6,7 @@
 session_start();
 require_once __DIR__ . '/../db.php';
 require_once __DIR__ . '/includes/QuoteManager.php';
+require_once __DIR__ . '/includes/QuoteTableRenderer.php';
 require_once __DIR__ . '/../includes/QuantityFormatter.php';
 
 if (!$db) {
@@ -28,6 +29,9 @@ if (!$quote) {
 
 $company = $manager->getCompanySettings();
 $items = $quote['items'];
+
+// ✅ 2026-01-17: QuoteTableRenderer SSOT 사용
+$renderer = new QuoteTableRenderer($db);
 
 // 이메일 발송 이력
 $emailLogs = [];
@@ -445,73 +449,18 @@ $publicUrl = $baseUrl . '/mlangprintauto/quote/public/view.php?token=' . $quote[
                                 </tr>
                             </thead>
                             <tbody>
-                                <?php $no = 1; foreach ($items as $item): ?>
+                                <?php
+                                // ✅ 2026-01-17: QuoteTableRenderer SSOT 사용
+                                $no = 1;
+                                foreach ($items as $item): ?>
                                 <tr>
                                     <td class="col-no"><?php echo $no++; ?></td>
                                     <td class="col-name"><?php echo htmlspecialchars($item['product_name']); ?></td>
                                     <td class="col-spec"><?php echo htmlspecialchars($item['specification']); ?></td>
-                                    <td class="col-qty"><?php
-                                        // === 하이브리드 모델: qty_val/qty_unit 우선 사용, 없으면 레거시 fallback ===
-                                        $qtyVal = $item['qty_val'] ?? $item['quantity'] ?? 0;
-                                        $qtyUnit = $item['qty_unit'] ?? 'E';
-                                        $qtySheets = intval($item['qty_sheets'] ?? 0);
-
-                                        // 숫자 포맷팅: 정수면 소수점 없이, 소수면 필요한 만큼만
-                                        $qtyVal = floatval($qtyVal);
-                                        if (floor($qtyVal) == $qtyVal) {
-                                            $qtyDisplay = number_format($qtyVal);
-                                        } else {
-                                            $qtyDisplay = rtrim(rtrim(number_format($qtyVal, 2), '0'), '.');
-                                        }
-                                        echo $qtyDisplay;
-
-                                        // ✅ 2026-01-16: SSOT 연동 - 연/권 단위 모두 매수 표시
-                                        // qty_sheets가 0이면 DB 조회(전단지) 또는 계산(NCR)
-                                        if ($qtySheets <= 0 && $qtyVal > 0 && in_array($qtyUnit, ['R', 'V'])) {
-                                            if ($qtyUnit === 'R') {
-                                                // 전단지: mlangprintauto_inserted 테이블에서 매수 조회
-                                                $sheetStmt = mysqli_prepare($db, "SELECT quantityTwo FROM mlangprintauto_inserted WHERE quantity = ? LIMIT 1");
-                                                if ($sheetStmt) {
-                                                    mysqli_stmt_bind_param($sheetStmt, "d", $qtyVal);
-                                                    mysqli_stmt_execute($sheetStmt);
-                                                    $sheetResult = mysqli_stmt_get_result($sheetStmt);
-                                                    if ($sheetRow = mysqli_fetch_assoc($sheetResult)) {
-                                                        $qtySheets = intval($sheetRow['quantityTwo']);
-                                                    }
-                                                    mysqli_stmt_close($sheetStmt);
-                                                }
-                                            } elseif ($qtyUnit === 'V') {
-                                                // NCR양식지: 권 × 50 × multiplier(기본 2)
-                                                $qtySheets = QuantityFormatter::calculateNcrSheets(intval($qtyVal), 2);
-                                            }
-                                        }
-
-                                        // 연/권 단위인 경우 매수 표시 추가 - 파란색 강조
-                                        if (in_array($qtyUnit, ['R', 'V']) && $qtySheets > 0) {
-                                            echo '<br><span style="font-size: 10px; color: #1e88ff;">(' . number_format($qtySheets) . '매)</span>';
-                                        }
-                                    ?></td>
-                                    <td class="col-unit"><?php
-                                        // 하이브리드 모델: qty_unit 코드 → 한글 단위명 변환
-                                        $qtyUnitDisplay = $item['qty_unit'] ?? null;
-                                        if ($qtyUnitDisplay && isset(QuantityFormatter::UNIT_CODES[$qtyUnitDisplay])) {
-                                            echo QuantityFormatter::getUnitName($qtyUnitDisplay);
-                                        } else {
-                                            // 레거시 fallback: 기존 unit 필드 사용
-                                            echo htmlspecialchars($item['unit'] ?? '개');
-                                        }
-                                    ?></td>
-                                    <td class="col-price"><?php
-                                        // 소수점 1자리까지 표시 (모든 품목)
-                                        $unitPrice = floatval($item['unit_price']);
-                                        // 소수점이 있으면 소수점 1자리까지, 정수면 정수로 표시
-                                        if ($unitPrice == floor($unitPrice)) {
-                                            echo number_format($unitPrice);
-                                        } else {
-                                            echo number_format($unitPrice, 1);
-                                        }
-                                    ?></td>
-                                    <td class="col-supply"><?php echo number_format($item['supply_price']); ?></td>
+                                    <td class="col-qty"><?php echo $renderer->formatQuantityCell($item); ?></td>
+                                    <td class="col-unit"><?php echo $renderer->formatUnitCell($item); ?></td>
+                                    <td class="col-price"><?php echo $renderer->formatUnitPriceCell($item); ?></td>
+                                    <td class="col-supply"><?php echo $renderer->formatSupplyPriceCell($item); ?></td>
                                     <td class="col-notes"><?php echo htmlspecialchars($item['notes'] ?? ''); ?></td>
                                 </tr>
                                 <?php endforeach; ?>

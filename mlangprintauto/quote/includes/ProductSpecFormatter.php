@@ -764,7 +764,8 @@ class ProductSpecFormatter {
         }
 
         // ✅ SSOT: QuantityFormatter를 통한 단위 코드 및 수량 추출
-        $quantityData = QuantityFormatter::extractQuantityData($item, $productType);
+        // ✅ 2026-01-17: extractQuantityData → extractFromLegacy 수정
+        $quantityData = QuantityFormatter::extractFromLegacy($item, $productType);
         $qtyValue = $quantityData['qty_value'];
         $unitCode = $quantityData['qty_unit_code'];
         $sheets = $quantityData['qty_sheets'];
