@@ -321,6 +321,7 @@ function DelGCheckField() {
             <div class="filter-group">
                 <label class="filter-label">검색 필드</label>
                 <select name='Cate' class="select">
+                    <option value='no' <?php echo $Cate == "no" ? "selected" : "" ?>>번호</option>
                     <option value='name' <?php echo $Cate == "name" ? "selected" : "" ?>>상호/성명</option>
                     <option value='phone' <?php echo $Cate == "phone" ? "selected" : "" ?>>전화번호</option>
                     <option value='Hendphone' <?php echo $Cate == "Hendphone" ? "selected" : "" ?>>휴대폰</option>
@@ -407,12 +408,19 @@ if ($Type) {
 
   $TypeOk = ($Type == "total") ? "" : "and Type='$Type'";
 
+  // 번호(no) 검색은 정확히 일치, 나머지는 LIKE 검색
+  if ($Cate === 'no') {
+    $searchCondition = "no = " . intval($TDsearchValue);
+  } else {
+    $searchCondition = "$Cate like '%$TDsearchValue%'";
+  }
+
   if ($YearOne || $YearTwo) {
     $YearOneOk = $YearOne . " 00:00:00";
     $YearTwoOk = $YearTwo . " 00:00:00";
-    $Mlang_query = "select * from $table where date > '$YearOneOk' and date < '$YearTwoOk' $TypeOk and $Cate like '%$TDsearchValue%'";
+    $Mlang_query = "select * from $table where date > '$YearOneOk' and date < '$YearTwoOk' $TypeOk and $searchCondition";
   } else {
-    $Mlang_query = "select * from $table where $Cate like '%$TDsearchValue%' $TypeOk";
+    $Mlang_query = "select * from $table where $searchCondition $TypeOk";
   }
 } else {
   $Mlang_query = "select * from $table";
