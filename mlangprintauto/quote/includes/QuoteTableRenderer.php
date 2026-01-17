@@ -119,11 +119,23 @@ class QuoteTableRenderer {
     /**
      * 단가 셀 포맷팅
      *
+     * ✅ SSOT: unit_price가 0이면 supply_price / quantity로 계산
+     *
      * @param array $item 견적 아이템 데이터
      * @return string 포맷된 단가
      */
     public function formatUnitPriceCell(array $item): string {
         $unitPrice = floatval($item['unit_price'] ?? 0);
+
+        // ✅ unit_price가 0이면 supply_price / quantity로 계산
+        if ($unitPrice == 0) {
+            $supplyPrice = floatval($item['supply_price'] ?? 0);
+            $quantity = floatval($item['quantity'] ?? $item['qty_val'] ?? 1);
+
+            if ($supplyPrice > 0 && $quantity > 0) {
+                $unitPrice = round($supplyPrice / $quantity, 1);
+            }
+        }
 
         // 소수점이 있으면 1자리까지, 정수면 정수로
         if ($unitPrice == floor($unitPrice)) {

@@ -1121,15 +1121,34 @@ class ProductSpecFormatter {
 
     /**
      * 공급가액 추출 (VAT 제외)
+     *
+     * ✅ SSOT 우선순위:
+     * 1. price_supply (Phase 2 표준 필드)
+     * 2. supply_price (견적서 저장 필드)
+     * 3. st_price (레거시)
+     * 4. st_price_vat → 역산
      */
     public static function getSupplyPrice($item) {
+        // 1. Phase 2 표준 필드 (quotation_temp)
+        if (!empty($item['price_supply'])) {
+            return intval($item['price_supply']);
+        }
+
+        // 2. 견적서 저장 필드
+        if (!empty($item['supply_price'])) {
+            return intval($item['supply_price']);
+        }
+
+        // 3. 레거시 필드
         if (!empty($item['st_price'])) {
             return intval($item['st_price']);
         }
-        // VAT 포함 가격에서 역산
+
+        // 4. VAT 포함 가격에서 역산
         if (!empty($item['st_price_vat'])) {
             return intval(round($item['st_price_vat'] / 1.1));
         }
+
         return 0;
     }
 }
