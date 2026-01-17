@@ -96,11 +96,21 @@ class QuoteTableRenderer {
     public function formatUnitCell(array $item): string {
         // ✅ SSOT 우선순위:
         // 1. product_type 기반 (SKILL.md Part 4.1 - 최우선)
-        // 2. qty_unit (표준 필드)
-        // 3. 레거시 unit (fallback)
+        // 2. 레거시 스티커 감지 (product_name으로 판별)
+        // 3. qty_unit (표준 필드)
+        // 4. 레거시 unit (fallback)
+
+        $productType = $item['product_type'] ?? '';
+
+        // ✅ 레거시 스티커 감지: product_type이 없고 product_name이 '스티커'면
+        if (empty($productType)) {
+            $productName = $item['product_name'] ?? '';
+            if (stripos($productName, '스티커') !== false) {
+                $productType = 'sticker';
+            }
+        }
 
         // 1. product_type이 있으면 무조건 SSOT 규칙 적용
-        $productType = $item['product_type'] ?? '';
         if (!empty($productType) && isset(QuantityFormatter::PRODUCT_UNITS[$productType])) {
             $unitCode = QuantityFormatter::getProductUnitCode($productType);
             return QuantityFormatter::getUnitName($unitCode);

@@ -477,6 +477,12 @@ class QuoteManager {
     private function addItemFromQuoteTemp($quoteId, $itemNo, $tempItem) {
         // 1. 제품 정보 추출
         $productType = $tempItem['product_type'] ?? '';
+
+        // ✅ 레거시 스티커 감지: product_type이 없으면 jong/garo/sero로 판별
+        if (empty($productType) && !empty($tempItem['jong']) && !empty($tempItem['garo'])) {
+            $productType = 'sticker';
+        }
+
         $productName = ProductSpecFormatter::getProductTypeName($productType);
         $specification = $this->formatter->format($tempItem);
 
