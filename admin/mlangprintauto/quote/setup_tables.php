@@ -95,7 +95,7 @@ CREATE TABLE IF NOT EXISTS `admin_quote_items` (
 
   -- 품목 정보
   `product_name` VARCHAR(200) NOT NULL COMMENT '품명',
-  `specification` TEXT COMMENT '규격 및 사양',
+  `specification` TEXT COMMENT '규격/옵션',
 
   -- 수량/단가/금액
   `quantity` DECIMAL(10,2) NOT NULL DEFAULT 1 COMMENT '수량',

@@ -252,7 +252,7 @@ function getProductSpecs($item, $db) {
                         <tr>
                             <th>NO</th>
                             <th>품목</th>
-                            <th>규격 및 사양</th>
+                            <th>규격/옵션</th>
                             <th>수량</th>
                             <th class="text-right">금액</th>
                         </tr>

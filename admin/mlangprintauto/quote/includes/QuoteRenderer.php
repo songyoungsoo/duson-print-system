@@ -614,7 +614,7 @@ HTML;
                 </colgroup>
                 <thead>
                     <tr>
-                        <th>NO</th><th>품 목</th><th>규격 및 사양</th>
+                        <th>NO</th><th>품 목</th><th>규격/옵션</th>
                         <th>수량</th><th>단위</th><th>단가</th><th>공급가액</th><th>비 고</th>
                     </tr>
                 </thead>
@@ -1024,7 +1024,7 @@ HTML;
         $pdf->SetXY(15, $itemsY);
         $pdf->Cell($colW[0], $headerH, 'NO', 1, 0, 'C', true);
         $pdf->Cell($colW[1], $headerH, '품 목', 1, 0, 'C', true);
-        $pdf->Cell($colW[2], $headerH, '규격 및 사양', 1, 0, 'C', true);
+        $pdf->Cell($colW[2], $headerH, '규격/옵션', 1, 0, 'C', true);
         $pdf->Cell($colW[3], $headerH, '수량', 1, 0, 'C', true);
         $pdf->Cell($colW[4], $headerH, '단위', 1, 0, 'C', true);
         $pdf->Cell($colW[5], $headerH, '단가', 1, 0, 'C', true);
@@ -1220,7 +1220,7 @@ HTML;
     <tr>
         <th style="{$thStyle}width:5%;">NO</th>
         <th style="{$thStyle}width:10%;">품목</th>
-        <th style="{$thStyle}width:30%;">규격 및 사양</th>
+        <th style="{$thStyle}width:30%;">규격/옵션</th>
         <th style="{$thStyle}width:8%;">수량</th>
         <th style="{$thStyle}width:7%;">단위</th>
         <th style="{$thStyle}width:12%;">단가</th>

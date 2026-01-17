@@ -84,7 +84,7 @@ $unitOptions = ['매', '연', '부', '권', '개', '장', '식'];
                 <tr>
                     <th style="width:40px">NO</th>
                     <th style="width:100px">품목</th>
-                    <th>규격 및 사양</th>
+                    <th>규격/옵션</th>
                     <th style="width:80px">수량</th>
                     <th style="width:80px">단가</th>
                     <th style="width:100px">공급가액</th>

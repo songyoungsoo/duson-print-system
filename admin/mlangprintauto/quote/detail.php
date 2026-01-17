@@ -92,7 +92,7 @@ $statusClass = ['draft'=>'status-draft','sent'=>'status-sent','viewed'=>'status-
                 <tr>
                     <th style="width:40px">NO</th>
                     <th style="width:100px">품목</th>
-                    <th>규격 및 사양</th>
+                    <th>규격/옵션</th>
                     <th style="width:60px">수량</th>
                     <th style="width:40px">단위</th>
                     <th style="width:80px">단가</th>
