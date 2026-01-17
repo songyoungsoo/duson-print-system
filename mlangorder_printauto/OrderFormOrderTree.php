@@ -145,7 +145,8 @@ foreach ($order_rows as $order_item) {
     $item_vat = intval($order_item['money_3'] ?? 0);
     if ($item_vat == 0 && $order_item['money_5'] > 0) {
         // money_3가 저장되지 않은 경우, money_5에서 VAT 추출
-        $supply_price = intval($order_item['money_4'] ?? 0) + intval($order_item['money_2'] ?? 0);
+        // ✅ 2026-01-18: money_4는 이미 공급가액 (money_1+money_2 포함), money_2 중복 추가 버그 수정
+        $supply_price = intval($order_item['money_4'] ?? 0);
         $item_vat = intval($order_item['money_5']) - $supply_price;
     }
     $View_money_3 += $item_vat;
@@ -1445,14 +1446,15 @@ function getOrderItemInfo($summary_item, $specFormatter) {
                                             // 프리미엄 옵션은 이미 인쇄비(money_4)에 포함되어 있으므로 별도 계산 불필요
 
                                             // ✅ 이 아이템의 소계를 전체 합계에 누적
-                                            $total_money_2 += intval($row['money_2']); // 디자인비
-                                            $total_money_4 += intval($row['money_4']); // 인쇄비
+                                            $total_money_2 += intval($row['money_2']); // 디자인비 (참고용, money_4에 이미 포함)
+                                            $total_money_4 += intval($row['money_4']); // 공급가액 (money_1+money_2 포함)
 
                                             // ✅ 부가세 계산: money_3가 0이면 money_5에서 역산 (레거시 데이터 처리)
                                             $item_vat = intval($row['money_3']);
                                             if ($item_vat == 0 && $row['money_5'] > 0) {
                                                 // money_3가 저장되지 않은 경우, money_5에서 VAT 추출
-                                                $supply_price = intval($row['money_4']) + intval($row['money_2']) + $additionalOptionsTotal;
+                                                // ✅ 2026-01-18: money_4는 이미 공급가액 (money_1+money_2 포함), money_2 중복 추가 버그 수정
+                                                $supply_price = intval($row['money_4']) + $additionalOptionsTotal;
                                                 $item_vat = intval($row['money_5']) - $supply_price;
                                             }
                                             $total_money_3 += $item_vat; // 부가세
@@ -1468,7 +1470,8 @@ function getOrderItemInfo($summary_item, $specFormatter) {
 
                     <tr>
                         <th style="width: 30%; background: #E0E0E0; border: 1px solid #999; padding: 8px 10px; font-size: 12px; text-align: center;">공급가액</th>
-                        <td style="width: 70%; border: 1px solid #999; padding: 8px 10px; font-size: 13px; text-align: right; font-weight: bold;"><?= number_format(round($total_money_4 + $total_money_2 + $grand_additional_options_total, -1)) ?> 원</td>
+                        <!-- ✅ 2026-01-18: money_4는 이미 공급가액 (money_1+money_2 포함), money_2 중복 추가 버그 수정 -->
+                        <td style="width: 70%; border: 1px solid #999; padding: 8px 10px; font-size: 13px; text-align: right; font-weight: bold;"><?= number_format(round($total_money_4 + $grand_additional_options_total, -1)) ?> 원</td>
                     </tr>
                     <tr style="background: #FFF2CC;">
                         <th style="width: 30%; background: #4472C4; border: 1px solid #999; padding: 10px; font-size: 13px; text-align: center; color: #fff;">부가세포함금액</th>

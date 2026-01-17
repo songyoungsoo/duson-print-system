@@ -1,4 +1,6 @@
-# CLAUDE.md (CORE)
+# CLAUDE.md
+
+This file provides guidance to Claude Code (claude.ai/code) when working with code in this repository.
 
 ---
 
@@ -248,6 +250,10 @@ qty_sheets: INT - 매수 (전단지용, DB 조회만)
 ├── includes/
 │   ├── QuantityFormatter.php      ← 수량/단위 SSOT
 │   └── ProductSpecFormatter.php   ← 제품 사양 포맷터
+├── mlangprintauto/quote/includes/
+│   ├── QuoteManager.php           ← 견적서 데이터 관리
+│   ├── QuoteTableRenderer.php     ← 견적서 테이블 렌더링 SSOT
+│   └── ProductSpecFormatter.php   ← 견적서 사양 포맷터
 └── lib/
     └── core_print_logic.php       ← 중앙 로직 파사드
 ```
@@ -264,6 +270,46 @@ $display = number_format($amount) . '매';
 $display = QuantityFormatter::format($value, $unitCode, $sheets);
 $sheets = PrintCore::lookupInsertedSheets($reams);  // DB 조회만
 ```
+
+### 8. getUnitCode vs getProductUnitCode 구분 (필수) 🔴
+```php
+// ❌ NEVER: product_type으로 getUnitCode 호출 (버그 발생!)
+$unitCode = QuantityFormatter::getUnitCode($productType);  // 'sticker' → 'E' (오류)
+
+// ✅ ALWAYS: product_type에는 getProductUnitCode 사용
+$unitCode = QuantityFormatter::getProductUnitCode($productType);  // 'sticker' → 'S' (정확)
+```
+
+**메서드 구분**:
+| 메서드 | 입력 | 출력 | 용도 |
+|--------|------|------|------|
+| `getUnitCode($name)` | 한글 단위명 ("매", "연") | 코드 (S, R) | 한글→코드 변환 |
+| `getProductUnitCode($productType)` | 품목 타입 ("sticker", "inserted") | 코드 (S, R) | 품목→단위 매핑 |
+
+**발생한 버그 (2026-01-17)**:
+- `QuoteManager.php`에서 `getUnitCode('msticker')` 호출
+- 'msticker'가 UNIT_CODES에 없어 기본값 'E' 반환
+- 스티커가 "개" 단위로 잘못 표시됨
+
+### 9. 레거시 스티커 감지 패턴 (필수) 🟡
+```php
+// product_type이 비어있을 때 스티커 감지 방법:
+
+// 방법 1: jong/garo/sero 필드로 감지 (QuoteManager에서)
+if (empty($productType) && !empty($tempItem['jong']) && !empty($tempItem['garo'])) {
+    $productType = 'sticker';
+}
+
+// 방법 2: product_name으로 감지 (QuoteTableRenderer에서)
+if (empty($productType)) {
+    $productName = $item['product_name'] ?? '';
+    if (stripos($productName, '스티커') !== false) {
+        $productType = 'sticker';
+    }
+}
+```
+
+**이유**: 레거시 데이터에서 `product_type`이 비어있는 경우가 많음. 스티커는 "개"가 아닌 "매" 단위 사용
 
 ---
 
@@ -287,9 +333,49 @@ $sheets = PrintCore::lookupInsertedSheets($reams);  // DB 조회만
 4. ❌ number_format(0.5) → "1" 반올림 오류
 5. ❌ `littleprint`를 `poster`로 변경 → 시스템 전체 오류
 6. ❌ colgroup 개수 ≠ 실제 컬럼 개수 → 오른쪽 빈 공란 발생
+7. ❌ `getUnitCode($productType)` 호출 → 스티커 "개" 단위 버그 (2026-01-17)
+8. ❌ product_type 없이 단위 결정 → 레거시 데이터 감지 로직 필수
+9. ❌ unit_price=0일 때 그대로 표시 → supply_price/quantity로 계산 필요
 
 ---
 
-*Core Version - Last Updated: 2026-01-14*
+## 🏗️ 견적서 시스템 (Quote System)
+
+### QuoteTableRenderer SSOT 원칙
+```
+"데이터는 하나로, 출력은 표준 렌더러로"
+견적서/주문서/PDF/이메일 모두 동일한 포맷 출력
+```
+
+### 표준 7개 컬럼
+| NO | 품목 | 규격/옵션 | 수량 | 단위 | 단가 | 공급가액 |
+|----|------|----------|------|------|------|---------|
+
+### 핵심 메서드 (QuoteTableRenderer)
+```php
+// 수량 셀 포맷팅 (매수 자동 조회)
+$renderer->formatQuantityCell($item);  // "1,000" 또는 "0.5<br>(2,000매)"
+
+// 단위 셀 포맷팅 (SSOT: product_type 기반)
+$renderer->formatUnitCell($item);  // "매", "연", "권"
+
+// 단가 셀 포맷팅 (0이면 자동 계산)
+$renderer->formatUnitPriceCell($item);  // supply_price / quantity
+
+// 공급가액 셀 포맷팅
+$renderer->formatSupplyPriceCell($item);  // number_format 적용
+```
+
+### 단위 결정 우선순위 (formatUnitCell SSOT)
+```
+1. product_type → QuantityFormatter::getProductUnitCode() (최우선)
+2. 레거시 스티커 감지: product_name에 '스티커' 포함
+3. qty_unit → QuantityFormatter::getUnitName()
+4. 최후 fallback: 레거시 unit 필드 또는 '개'
+```
+
+---
+
+*Core Version - Last Updated: 2026-01-17*
 *Environment: WSL2 Ubuntu + Windows XAMPP*
 *SSOT Docs: CLAUDE_DOCS/Duson_System_Master_Spec_v1.0.md*

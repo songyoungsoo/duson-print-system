@@ -2,14 +2,23 @@
 /**
  * 견적서 상태 변경 API
  * POST 요청으로 견적서 상태 업데이트
+ *
+ * ✅ 2026-01-17: 보안 강화 - 인증/CSRF 체크 추가
  */
 
 session_start();
 header('Content-Type: application/json; charset=utf-8');
 
 require_once __DIR__ . '/../../db.php';
+require_once __DIR__ . '/../includes/security.php';
 
-function jsonResponse($success, $message = '', $data = []) {
+// ✅ 보안 체크: 관리자 인증 + CSRF 토큰
+apiSecurityCheck(true);
+
+function jsonResponse($success, $message = '', $data = [], $internalError = null) {
+    if ($internalError) {
+        error_log("[Quote API Error] " . $internalError);
+    }
     echo json_encode(array_merge([
         'success' => $success,
         'message' => $message
@@ -34,7 +43,7 @@ try {
     // 유효한 상태 값 확인
     $validStatuses = ['draft', 'sent', 'viewed', 'accepted', 'rejected', 'expired', 'converted'];
     if (!in_array($newStatus, $validStatuses)) {
-        jsonResponse(false, '유효하지 않은 상태입니다: ' . $newStatus);
+        jsonResponse(false, '유효하지 않은 상태입니다.');
     }
 
     // 견적서 존재 확인
@@ -81,7 +90,7 @@ try {
         ]);
     } else {
         mysqli_stmt_close($updateStmt);
-        jsonResponse(false, '상태 변경에 실패했습니다: ' . mysqli_error($db));
+        jsonResponse(false, '상태 변경에 실패했습니다.', [], mysqli_error($db));
     }
 
 } catch (Exception $e) {

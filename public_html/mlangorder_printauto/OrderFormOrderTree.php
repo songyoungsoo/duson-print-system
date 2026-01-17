@@ -1541,8 +1541,9 @@ if ($no > 0) {
 
                                             <tr style='border-bottom: 2px solid #007bff;'>
                                                 <td style='padding: 10px 0; font-weight: bold; color: #495057; font-size: 0.8rem;'>소계</td>
+                                                <!-- ✅ 2026-01-18: money_4는 이미 공급가액 (money_1+money_2 포함), money_2 중복 추가 버그 수정 -->
                                                 <td style='padding: 10px 0; text-align: right; color: #495057; font-weight: 600; font-size: 0.8rem;'>
-                                                    <?= number_format($View_money_4 + $View_money_2 + $additionalOptionsTotal) ?> 원
+                                                    <?= number_format($View_money_4 + $additionalOptionsTotal) ?> 원
                                                 </td>
                                             </tr>
                                             <tr style='border-bottom: 1px solid #eee;'>

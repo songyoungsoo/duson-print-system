@@ -1,11 +1,18 @@
 <?php
 /**
  * 견적서 삭제 API
+ *
+ * ✅ 2026-01-17: 보안 강화 - 인증/CSRF 체크 추가
  */
 
+session_start();
 header('Content-Type: application/json; charset=utf-8');
 
 require_once __DIR__ . '/../../db.php';
+require_once __DIR__ . '/../includes/security.php';
+
+// ✅ 보안 체크: 관리자 인증 + CSRF 토큰
+apiSecurityCheck(true);
 
 // POST 요청만 허용
 if ($_SERVER['REQUEST_METHOD'] !== 'POST') {
@@ -52,7 +59,8 @@ if (mysqli_stmt_execute($stmt)) {
         'deleted_quote_no' => $quote['quote_no']
     ], JSON_UNESCAPED_UNICODE);
 } else {
-    echo json_encode(['success' => false, 'message' => '삭제 중 오류가 발생했습니다: ' . mysqli_error($db)], JSON_UNESCAPED_UNICODE);
+    error_log("[Quote API Error] Delete failed: " . mysqli_error($db));
+    echo json_encode(['success' => false, 'message' => '삭제 중 오류가 발생했습니다.'], JSON_UNESCAPED_UNICODE);
 }
 
 mysqli_stmt_close($stmt);

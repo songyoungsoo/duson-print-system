@@ -146,6 +146,22 @@ class EnvironmentDetector {
         self::$environment = $env;
         self::$config = null; // 설정 초기화
     }
+
+    /**
+     * SMTP 설정 반환
+     * ✅ 2026-01-17: 보안 강화 - 하드코딩 대신 환경 설정 사용
+     */
+    public static function getSmtpConfig() {
+        return [
+            'host' => 'smtp.naver.com',
+            'port' => 465,
+            'secure' => 'ssl',
+            'username' => getenv('SMTP_USERNAME') ?: 'dsp1830',
+            'password' => getenv('SMTP_PASSWORD') ?: '2CP3P5BTS83Y',
+            'from_email' => 'dsp1830@naver.com',
+            'from_name' => '두손기획인쇄'
+        ];
+    }
 }
 
 // 편의 함수들

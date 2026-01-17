@@ -5,7 +5,15 @@
 
 session_start();
 require_once __DIR__ . '/../db.php';
+require_once __DIR__ . '/includes/security.php';
 require_once __DIR__ . '/includes/QuoteManager.php';
+
+// ✅ 보안 체크: 관리자 인증 필수
+requireAdminAuth(false);
+if (empty($_SESSION['admin_id']) && empty($_SESSION['user_id'])) {
+    header('Location: /admin/login.php?redirect=' . urlencode($_SERVER['REQUEST_URI']));
+    exit;
+}
 require_once __DIR__ . '/includes/QuoteTableRenderer.php';
 require_once __DIR__ . '/../includes/QuantityFormatter.php';
 
@@ -72,6 +80,7 @@ $publicUrl = $baseUrl . '/mlangprintauto/quote/public/view.php?token=' . $quote[
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@400;500;700&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="/css/color-system-unified.css">
+    <?php echo csrfTokenMeta(); ?>
     <style>
         * { margin: 0; padding: 0; box-sizing: border-box; }
         body { font-family: 'Noto Sans KR', sans-serif; background: #f0f0f0; font-size: 13px; }
@@ -579,6 +588,12 @@ $publicUrl = $baseUrl . '/mlangprintauto/quote/public/view.php?token=' . $quote[
     </div>
 
     <script>
+    // CSRF 토큰 가져오기
+    function getCsrfToken() {
+        const meta = document.querySelector('meta[name="csrf-token"]');
+        return meta ? meta.content : '';
+    }
+
     function copyUrl() {
         const input = document.getElementById('publicUrl');
         input.select();
@@ -587,7 +602,7 @@ $publicUrl = $baseUrl . '/mlangprintauto/quote/public/view.php?token=' . $quote[
     }
 
     function sendEmail() {
-        const email = '<?php echo addslashes($quote['customer_email'] ?? ''); ?>';
+        const email = <?php echo json_encode($quote['customer_email'] ?? '', JSON_UNESCAPED_UNICODE); ?>;
         if (!email) {
             alert('고객 이메일이 등록되어 있지 않습니다.');
             return;
@@ -599,8 +614,11 @@ $publicUrl = $baseUrl . '/mlangprintauto/quote/public/view.php?token=' . $quote[
 
         fetch('api/send_email.php', {
             method: 'POST',
-            headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
-            body: 'quote_id=<?php echo $quote['id']; ?>&recipient_email=' + encodeURIComponent(email)
+            headers: {
+                'Content-Type': 'application/x-www-form-urlencoded',
+                'X-CSRF-Token': getCsrfToken()
+            },
+            body: 'quote_id=<?php echo $quote['id']; ?>&recipient_email=' + encodeURIComponent(email) + '&csrf_token=' + encodeURIComponent(getCsrfToken())
         })
         .then(res => res.json())
         .then(data => {
@@ -630,8 +648,11 @@ $publicUrl = $baseUrl . '/mlangprintauto/quote/public/view.php?token=' . $quote[
 
         fetch('api/convert_to_order.php', {
             method: 'POST',
-            headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
-            body: 'quote_id=' + quoteId + '&confirm=1'
+            headers: {
+                'Content-Type': 'application/x-www-form-urlencoded',
+                'X-CSRF-Token': getCsrfToken()
+            },
+            body: 'quote_id=' + quoteId + '&confirm=1&csrf_token=' + encodeURIComponent(getCsrfToken())
         })
         .then(res => res.json())
         .then(data => {
@@ -679,8 +700,11 @@ $publicUrl = $baseUrl . '/mlangprintauto/quote/public/view.php?token=' . $quote[
         // API 호출
         fetch('api/update_status.php', {
             method: 'POST',
-            headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
-            body: 'quote_id=<?php echo $quote['id']; ?>&status=' + encodeURIComponent(newStatus)
+            headers: {
+                'Content-Type': 'application/x-www-form-urlencoded',
+                'X-CSRF-Token': getCsrfToken()
+            },
+            body: 'quote_id=<?php echo $quote['id']; ?>&status=' + encodeURIComponent(newStatus) + '&csrf_token=' + encodeURIComponent(getCsrfToken())
         })
         .then(res => res.json())
         .then(data => {

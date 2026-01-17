@@ -193,18 +193,22 @@ function sendQuotationEmail($db, $quoteId, $recipientEmail, $recipientName = '',
 HTML;
 
         // PHPMailer로 발송
+        // ✅ 2026-01-17: 보안 강화 - 환경 설정에서 자격증명 로드
+        require_once __DIR__ . '/../../../config.env.php';
+        $smtpConfig = EnvironmentDetector::getSmtpConfig();
+
         $mail = new PHPMailer(true);
         $mail->isSMTP();
-        $mail->Host = 'smtp.naver.com';
-        $mail->Port = 465;
+        $mail->Host = $smtpConfig['host'];
+        $mail->Port = $smtpConfig['port'];
         $mail->SMTPAuth = true;
-        $mail->SMTPSecure = 'ssl';
-        $mail->Username = 'dsp1830';
-        $mail->Password = '2CP3P5BTS83Y';
+        $mail->SMTPSecure = $smtpConfig['secure'];
+        $mail->Username = $smtpConfig['username'];
+        $mail->Password = $smtpConfig['password'];
         $mail->CharSet = 'UTF-8';
 
-        $mail->setFrom('dsp1830@naver.com', '두손기획인쇄');
-        $mail->addReplyTo('dsp1830@naver.com', '두손기획인쇄');
+        $mail->setFrom($smtpConfig['from_email'], $smtpConfig['from_name']);
+        $mail->addReplyTo($smtpConfig['from_email'], $smtpConfig['from_name']);
         $mail->addAddress($recipientEmail, $recipientName ?: $quote['customer_name']);
 
         if (!empty($ccEmail) && filter_var($ccEmail, FILTER_VALIDATE_EMAIL)) {
@@ -290,6 +294,10 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && basename($_SERVER['SCRIPT_FILENAME'
     header('Content-Type: application/json; charset=utf-8');
 
     require_once __DIR__ . '/../../db.php';
+    require_once __DIR__ . '/../includes/security.php';
+
+    // ✅ 2026-01-17: 보안 강화 - 관리자 인증 + CSRF 체크
+    apiSecurityCheck(true);
 
     $quoteId = intval($_POST['quote_id'] ?? 0);
     $recipientEmail = trim($_POST['recipient_email'] ?? '');

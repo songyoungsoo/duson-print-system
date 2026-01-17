@@ -8,7 +8,11 @@ session_start();
 header('Content-Type: application/json; charset=utf-8');
 
 require_once __DIR__ . '/../../db.php';
+require_once __DIR__ . '/../includes/security.php';
 require_once __DIR__ . '/../includes/QuoteManager.php';
+
+// ✅ 보안 체크: 관리자 인증 + CSRF 토큰
+apiSecurityCheck(true);
 
 function jsonResponse($success, $data = [], $message = '') {
     echo json_encode(array_merge([
