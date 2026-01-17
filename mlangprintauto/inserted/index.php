@@ -199,22 +199,7 @@ header("Expires: 0");
 
     <!-- Phase 5: 견적 요청 버튼 스타일 -->
     <style>
-        .action-buttons {
-            display: flex;
-            gap: 10px;
-            margin-top: 20px;
-        }
-        .action-buttons button {
-            flex: 1;
-            padding: 15px 20px;
-            font-size: 16px;
-            font-weight: 600;
-            border: none;
-            border-radius: 8px;
-            cursor: pointer;
-            transition: all 0.3s ease;
-        }
-        /* .btn-upload-order → common-styles.css SSOT 사용 */
+        /* .action-buttons, .btn-upload-order → common-styles.css SSOT 사용 */
         .btn-request-quote {
             background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%);
             color: white;

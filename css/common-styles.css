@@ -1498,11 +1498,17 @@ aside.calculator-section.leaflet-style {
 
 /* 액션 버튼들 - 타이트하게 */
 .action-buttons {
-    display: grid;
-    grid-template-columns: 1fr 1fr;
-    gap: 5px;
-    margin: 5px 0;
+    display: flex;
+    gap: 10px;
+    margin-top: 20px;
     padding: 0;
+}
+
+/* 액션 버튼 내 업로드 버튼 크기 통일 */
+.action-buttons .btn-upload-order {
+    flex: 1;
+    padding: 15px 20px;
+    font-size: 16px;
 }
 
 .btn-action {
