@@ -16,6 +16,7 @@ set -e
 
 # 설정
 LOCAL_PATH="/var/www/html/ImgFolder"
+UPLOAD_PATH="/var/www/html/mlangorder_printauto/upload"
 LOG_FILE="/var/log/imgfolder_sync.log"
 DATE=$(date '+%Y-%m-%d %H:%M:%S')
 
@@ -45,21 +46,30 @@ error() {
 # 사용법 출력
 usage() {
     cat << EOF
-ImgFolder 동기화 스크립트
+두손기획인쇄 이미지 동기화 스크립트
 
 사용법:
     $0 <method> <source> [options]
 
 방법 (method):
-    ftp     - curl을 사용한 FTP 다운로드
-    lftp    - lftp를 사용한 FTP 미러링 (병렬 다운로드)
-    rsync   - rsync를 사용한 동기화
+    ftp         - curl을 사용한 FTP 다운로드 (ImgFolder)
+    lftp        - lftp를 사용한 FTP 미러링 (ImgFolder, 병렬)
+    rsync       - rsync를 사용한 동기화 (ImgFolder)
+    upload-lftp - lftp를 사용한 교정이미지 동기화 (upload 폴더)
+    upload-rsync- rsync를 사용한 교정이미지 동기화 (upload 폴더)
 
 예시:
-    $0 ftp dsp114.com --user=duson1830 --pass=du1830
+    # ImgFolder 동기화 (제품별 주문 파일)
     $0 lftp dsp1830.shop --user=dsp1830 --pass=ds701018
     $0 rsync user@192.168.1.100:/var/www/html/ImgFolder/
-    $0 create-structure   # 빈 폴더 구조만 생성
+
+    # 교정이미지 동기화 (주문번호별 완성 이미지)
+    $0 upload-lftp dsp1830.shop --user=dsp1830 --pass=ds701018
+    $0 upload-lftp dsp1830.shop --user=dsp1830 --pass=ds701018 --from=84000
+    $0 upload-rsync user@192.168.1.100:/var/www/html/mlangorder_printauto/upload/
+
+    # 폴더 구조만 생성
+    $0 create-structure
 
 옵션:
     --user=USERNAME     FTP 사용자명
@@ -68,12 +78,18 @@ ImgFolder 동기화 스크립트
                         예: inserted,namecard,envelope
     --years=LIST        동기화할 연도 (콤마 구분, 기본값: 2026)
                         예: --years=2025,2026
+    --from=NUMBER       교정이미지: 이 주문번호부터 동기화 (기본값: 84000)
+    --to=NUMBER         교정이미지: 이 주문번호까지 동기화
     --dry-run           실제 다운로드 없이 시뮬레이션
     --help              이 도움말 출력
 
 제품 목록:
     inserted, sticker_new, msticker, namecard, envelope,
     littleprint, merchandisebond, cadarok, ncrflambeau
+
+폴더 설명:
+    ImgFolder/          - 제품별 주문 업로드 파일 (연도/월/주문번호)
+    mlangorder_printauto/upload/ - 교정 완성 이미지 (주문번호별)
 
 EOF
     exit 0
@@ -302,6 +318,106 @@ sync_rsync() {
     log "rsync 동기화 완료!"
 }
 
+# ============================================================
+# 교정이미지 (upload) 동기화 함수
+# ============================================================
+
+# 교정이미지 lftp 동기화
+sync_upload_lftp() {
+    local host=$1
+    local user=$2
+    local pass=$3
+    local from_order=$4
+    local to_order=$5
+    local dry_run=$6
+
+    if ! command -v lftp &> /dev/null; then
+        error "lftp가 설치되어 있지 않습니다. sudo apt install lftp"
+    fi
+
+    if [ -z "$user" ] || [ -z "$pass" ]; then
+        error "FTP 사용자명과 비밀번호가 필요합니다"
+    fi
+
+    # 기본값: 84000번부터 (2026년 주문)
+    if [ -z "$from_order" ]; then
+        from_order="84000"
+    fi
+
+    log "교정이미지 lftp 미러링 시작: $host"
+    log "  주문번호 범위: ${from_order}${to_order:+ ~ $to_order}"
+
+    mkdir -p "$UPLOAD_PATH"
+
+    if [ "$dry_run" = "true" ]; then
+        echo "[DRY-RUN] lftp mirror /www/mlangorder_printauto/upload/ -> $UPLOAD_PATH"
+        echo "[DRY-RUN] 필터: 주문번호 >= $from_order"
+    else
+        # lftp로 미러링 (주문번호 필터링)
+        if [ -n "$to_order" ]; then
+            # 범위 지정된 경우
+            lftp -u "$user,$pass" "ftp://$host" << EOF
+set ssl:verify-certificate no
+set ftp:passive-mode yes
+set mirror:parallel-transfer-count 10
+set mirror:use-pget-n 5
+mirror --verbose --continue --parallel=10 \
+    --include-glob "[${from_order:0:2}][0-9][0-9][0-9][0-9]/" \
+    "/www/mlangorder_printauto/upload/" "$UPLOAD_PATH/"
+bye
+EOF
+        else
+            # from만 지정된 경우 - 전체 미러링 후 이전 폴더 제외
+            lftp -u "$user,$pass" "ftp://$host" << EOF
+set ssl:verify-certificate no
+set ftp:passive-mode yes
+set mirror:parallel-transfer-count 10
+set mirror:use-pget-n 5
+mirror --verbose --continue --parallel=10 \
+    "/www/mlangorder_printauto/upload/" "$UPLOAD_PATH/"
+bye
+EOF
+        fi
+    fi
+
+    # 권한 설정
+    if [ "$EUID" -eq 0 ]; then
+        chown -R www-data:www-data "$UPLOAD_PATH"
+        chmod -R 775 "$UPLOAD_PATH"
+    fi
+
+    log "교정이미지 lftp 미러링 완료!"
+}
+
+# 교정이미지 rsync 동기화
+sync_upload_rsync() {
+    local source=$1
+    local dry_run=$2
+
+    if ! command -v rsync &> /dev/null; then
+        error "rsync가 설치되어 있지 않습니다. sudo apt install rsync"
+    fi
+
+    log "교정이미지 rsync 동기화 시작: $source"
+
+    mkdir -p "$UPLOAD_PATH"
+
+    local opts="-avz --progress"
+    if [ "$dry_run" = "true" ]; then
+        opts="$opts --dry-run"
+    fi
+
+    rsync $opts "$source" "$UPLOAD_PATH/"
+
+    # 권한 설정
+    if [ "$EUID" -eq 0 ]; then
+        chown -R www-data:www-data "$UPLOAD_PATH"
+        chmod -R 775 "$UPLOAD_PATH"
+    fi
+
+    log "교정이미지 rsync 동기화 완료!"
+}
+
 # 메인 로직
 main() {
     local method=$1
@@ -312,6 +428,8 @@ main() {
     local pass=""
     local products=""
     local years=""
+    local from_order=""
+    local to_order=""
     local dry_run="false"
 
     # 인수 파싱
@@ -331,6 +449,14 @@ main() {
                 ;;
             --years=*)
                 years="${1#*=}"
+                shift
+                ;;
+            --from=*)
+                from_order="${1#*=}"
+                shift
+                ;;
+            --to=*)
+                to_order="${1#*=}"
                 shift
                 ;;
             --dry-run)
@@ -361,6 +487,12 @@ main() {
             ;;
         rsync)
             sync_rsync "$source" "$dry_run"
+            ;;
+        upload-lftp)
+            sync_upload_lftp "$source" "$user" "$pass" "$from_order" "$to_order" "$dry_run"
+            ;;
+        upload-rsync)
+            sync_upload_rsync "$source" "$dry_run"
             ;;
         --help|-h|"")
             usage
