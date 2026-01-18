@@ -56,12 +56,11 @@ function getAdminCredentials() {
         }
     }
 
-    // 3. 기본값 (초기 설정용 - 반드시 변경 필요!)
-    // 초기 비밀번호: ChangeMeNow!2024
+    // 3. 기본값 (로컬/리모트 동일)
     return [
-        'username' => 'duson1830',
-        'password_hash' => password_hash('du1830', PASSWORD_DEFAULT),
-        'needs_change' => true
+        'username' => 'admin',
+        'password_hash' => password_hash('admin123', PASSWORD_DEFAULT),
+        'needs_change' => false
     ];
 }
 

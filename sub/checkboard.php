@@ -41,11 +41,20 @@ if (file_exists("../includes/auth.php")) {
 
 // 관리자 로그인 체크
 $is_admin = false;
-if (isset($_SESSION['user_level']) && $_SESSION['user_level'] == '1') {
+// 1. admin 시스템 로그인 체크 (admin_logged_in)
+if (isset($_SESSION['admin_logged_in']) && $_SESSION['admin_logged_in'] === true) {
     $is_admin = true;
-} elseif (isset($_SESSION['username']) && $_SESSION['username'] == 'admin') {
+}
+// 2. user_level 체크
+elseif (isset($_SESSION['user_level']) && $_SESSION['user_level'] == '1') {
     $is_admin = true;
-} elseif (isset($_SESSION['level']) && $_SESSION['level'] == '1') {
+}
+// 3. username이 'admin'인 경우
+elseif (isset($_SESSION['username']) && $_SESSION['username'] == 'admin') {
+    $is_admin = true;
+}
+// 4. level 체크
+elseif (isset($_SESSION['level']) && $_SESSION['level'] == '1') {
     $is_admin = true;
 }
 
@@ -480,7 +489,7 @@ while ($row = mysqli_fetch_array($result)) {
 <div id="passwordModal" class="password-modal" onclick="if(event.target===this) closePasswordModal()">
     <div class="modal-content">
         <div class="modal-header">
-            <h2>두손기획인쇄</h2>
+            <h2>🔐 교정사항 확인 인증</h2>
             <button class="modal-close" onclick="closePasswordModal()">&times;</button>
         </div>
         <div class="modal-body">
