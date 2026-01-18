@@ -409,8 +409,10 @@ if ($Type) {
   $TypeOk = ($Type == "total") ? "" : "and Type='$Type'";
 
   // 번호(no) 검색은 정확히 일치, 나머지는 LIKE 검색
-  if ($Cate === 'no') {
+  if ($Cate === 'no' && $TDsearchValue !== '') {
     $searchCondition = "no = " . intval($TDsearchValue);
+  } elseif ($Cate === 'no' && $TDsearchValue === '') {
+    $searchCondition = "1=1"; // 검색어 없으면 전체
   } else {
     $searchCondition = "$Cate like '%$TDsearchValue%'";
   }

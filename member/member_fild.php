@@ -1,10 +1,14 @@
 <?php
 // db.php 파일을 포함하여 데이터베이스 연결을 설정합니다.
-// include "../db.php";
-include_once(__DIR__ . '/../db.php');
+if (!isset($db) || !$db) {
+    $db_path = isset($db_dir) ? "$db_dir/db.php" : __DIR__ . '/../db.php';
+    include_once($db_path);
+}
 
-// 사용자 ID를 세션 또는 GET/POST 요청에서 가져옵니다.
-$no = isset($_GET['no']) ? $_GET['no'] : '';
+// 사용자 ID: 이미 설정된 $no 변수 사용, 없으면 GET에서 가져옴
+if (!isset($no) || $no === '') {
+    $no = isset($_GET['no']) ? $_GET['no'] : '';
+}
 
 if ($db) {
     // SQL 쿼리를 준비합니다.
@@ -73,9 +77,9 @@ if ($db) {
         }
     }
 
-    // 데이터베이스 연결을 종료합니다.
+    // statement만 종료 (DB 연결은 유지 - 이후 코드에서 사용)
     $stmt->close();
-    $db->close();
+    // $db->close(); // 주석처리: 연결은 호출자가 관리
 } else {
     echo "데이터베이스에 연결할 수 없습니다.";
 }

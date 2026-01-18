@@ -1,54 +1,15 @@
 <?php
 declare(strict_types=1);
-////////////////// 관리자 로그인 ////////////////////
-function authenticate()
-{
-  HEADER("WWW-authenticate: basic realm=\"관리자 전용!\" ");
-  HEADER("HTTP/1.0 401 Unauthorized");
-  echo("<html><head><script>
-        function pop()
-        { alert('인증 실패 오류');
-             history.go(-1);}
-        </script>
-        </head>
-        <body onLoad='pop()'></body>
-        </html>
-       ");
-exit;
-}
 
-// ✅ PHP 7.4 호환: 변수 초기화
-$auth_user = $_SERVER['PHP_AUTH_USER'] ?? '';
-$auth_pw = $_SERVER['PHP_AUTH_PW'] ?? '';
-
-// ✅ 입력 변수 초기화
-$mode = $_GOST['mode'] ?? ''ET['mode'] ?? $_POST['mode'] ?? '';
-$no = $_GOST['no'] ?? ''ET['no'] ?? $_POST['no'] ?? '';
-$search = $_GOST['search'] ?? ''ET['search'] ?? $_POST['search'] ?? '';
+// ✅ PHP 7.4 호환: 입력 변수 초기화
+$mode = $_GET['mode'] ?? $_POST['mode'] ?? '';
+$no = $_GET['no'] ?? $_POST['no'] ?? '';
+$search = $_GET['search'] ?? $_POST['search'] ?? '';
 $PhoFileChick = $_POST['PhoFileChick'] ?? '';
 $photofile = $_FILES['photofile']['name'] ?? '';
 
-if (empty($auth_user) || empty($auth_pw))
-{
- authenticate();
-}
-
-else
-{
-
+// DB 연결
 include"../../db.php";
-$result= mysqli_query($db, "select * from member where no='1'");
-$row = mysqli_fetch_array($result);
-
-$adminid="$row[id]";
-$adminpasswd="$row[pass]";
-
-
- if(strcmp($auth_user,$adminid) || strcmp($auth_pw,$adminpasswd) )
- { authenticate(); }
-
-
-}
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
@@ -136,6 +97,34 @@ if ($stmt) {
 if($mode==="modifyok"){
 
 include"../../db.php";
+
+// ✅ PHP 7.4 호환: POST 변수 초기화
+$pass1 = $_POST['pass1'] ?? '';
+$name = $_POST['name'] ?? '';
+$phone1 = $_POST['phone1'] ?? '';
+$phone2 = $_POST['phone2'] ?? '';
+$phone3 = $_POST['phone3'] ?? '';
+$hendphone1 = $_POST['hendphone1'] ?? '';
+$hendphone2 = $_POST['hendphone2'] ?? '';
+$hendphone3 = $_POST['hendphone3'] ?? '';
+$email = $_POST['email'] ?? '';
+$sample6_postcode = $_POST['sample6_postcode'] ?? '';
+$sample6_address = $_POST['sample6_address'] ?? '';
+$sample6_detailAddress = $_POST['sample6_detailAddress'] ?? '';
+$sample6_extraAddress = $_POST['sample6_extraAddress'] ?? '';
+$po1 = $_POST['po1'] ?? '';
+$po2 = $_POST['po2'] ?? '';
+$po3 = $_POST['po3'] ?? '';
+$po4 = $_POST['po4'] ?? '';
+$po5 = $_POST['po5'] ?? '';
+$po6 = $_POST['po6'] ?? '';
+$po7 = $_POST['po7'] ?? '';
+$connent = $_POST['connent'] ?? '';
+$no = $_POST['no'] ?? $_GET['no'] ?? '';
+$PhotoFileDir = $_POST['PhotoFileDir'] ?? '';
+$PhotoFileDirName = $_POST['PhotoFileDirName'] ?? '';
+$SunPhotoName = $_POST['SunPhotoName'] ?? '';
+$PhotofileName = $_POST['PhotofileName'] ?? '';
 
 if($PhoFileChick){
 
