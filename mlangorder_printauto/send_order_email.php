@@ -24,11 +24,11 @@ header('Cache-Control: no-cache, must-revalidate');
 // 데이터베이스 연결
 include "../db.php";
 
+// 수량 포맷터 (0.5연 등 소수점 지원)
+require_once __DIR__ . "/../includes/quantity_formatter.php";
+
 // PHPMailer 라이브러리 포함 (비밀번호 통일된 버전)
 require 'mailer.lib.php';
-
-// ✅ 2026-01-15: OrderDataService SSOT 적용
-require_once __DIR__ . '/../includes/OrderDataService.php';
 
 try {
     // POST 데이터 받기
@@ -335,29 +335,78 @@ try {
         // 상품명
         $emailHtml .= '<td class="col-product">' . htmlspecialchars($order['Type']) . '</td>';
         
-        // ✅ 2026-01-15: OrderDataService SSOT 적용 - 제품별 switch 제거
-        $orderDataService = new OrderDataService($db);
-        $std = $orderDataService->getStandardized($order);
-
-        // 상세 옵션 (OrderDataService에서 표준화된 규격/옵션 사용)
+        // 상세 옵션
         $emailHtml .= '<td class="col-details">';
-        $emailHtml .= '<div class="product-options">';
+        
+        if (!empty($order['Type_1'])) {
+            $type_data = $order['Type_1'];
+            $json_data = json_decode($type_data, true);
+            
+            $emailHtml .= '<div class="product-options">';
+            
+            if ($json_data && is_array($json_data)) {
+                // JSON 데이터 처리
+                $product_type = $json_data['product_type'] ?? '';
+                
+                switch($product_type) {
+                    case 'sticker':
+                        // 실제 데이터 구조에 맞게 수정
+                        $details = $json_data['order_details'] ?? $json_data;
+                        if (isset($details['jong'])) $emailHtml .= '<span class="option-item">재질: ' . htmlspecialchars($details['jong']) . '</span>';
+                        if (isset($details['garo']) && isset($details['sero'])) {
+                            $emailHtml .= '<span class="option-item">크기: ' . htmlspecialchars($details['garo']) . '×' . htmlspecialchars($details['sero']) . 'mm</span>';
+                        }
+                        // DB unit 필드 사용 (2025-12-10 수정)
+                        $unit = $order['unit'] ?? '매';
+                        if (isset($details['mesu'])) $emailHtml .= '<span class="option-item">수량: ' . number_format($details['mesu']) . $unit . '</span>';
+                        if (isset($details['uhyung'])) $emailHtml .= '<span class="option-item">편집: ' . htmlspecialchars($details['uhyung']) . '</span>';
+                        if (isset($details['domusong'])) $emailHtml .= '<span class="option-item">모양: ' . htmlspecialchars($details['domusong']) . '</span>';
+                        break;
+                        
+                    case 'envelope':
+                        if (isset($json_data['MY_type'])) $emailHtml .= '<span class="option-item">타입: ' . getCategoryName($db, $json_data['MY_type']) . '</span>';
+                        if (isset($json_data['MY_Fsd'])) $emailHtml .= '<span class="option-item">용지: ' . getCategoryName($db, $json_data['MY_Fsd']) . '</span>';
+                        // DB unit 필드 사용 (2025-12-10 수정)
+                        $unit = $order['unit'] ?? '매';
+                        if (isset($json_data['MY_amount'])) $emailHtml .= '<span class="option-item">수량: ' . formatQuantityNum($json_data['MY_amount']) . $unit . '</span>';
+                        if (isset($json_data['POtype'])) $emailHtml .= '<span class="option-item">인쇄: ' . ($json_data['POtype'] == '1' ? '단면' : '양면') . '</span>';
+                        break;
 
-        // Line 1: 규격 정보
-        if (!empty($std['spec']['line1'])) {
-            $emailHtml .= '<span class="option-item">' . htmlspecialchars($std['spec']['line1']) . '</span>';
+                    case 'namecard':
+                        if (isset($json_data['MY_type'])) $emailHtml .= '<span class="option-item">타입: ' . getCategoryName($db, $json_data['MY_type']) . '</span>';
+                        if (isset($json_data['Section'])) $emailHtml .= '<span class="option-item">용지: ' . getCategoryName($db, $json_data['Section']) . '</span>';
+                        // DB unit 필드 사용 (2025-12-10 수정)
+                        $unit = $order['unit'] ?? '매';
+                        if (isset($json_data['MY_amount'])) $emailHtml .= '<span class="option-item">수량: ' . formatQuantityNum($json_data['MY_amount']) . $unit . '</span>';
+                        if (isset($json_data['POtype'])) $emailHtml .= '<span class="option-item">인쇄: ' . ($json_data['POtype'] == '1' ? '단면' : '양면') . '</span>';
+                        break;
+                        
+                    default:
+                        foreach ($json_data as $key => $value) {
+                            if (!empty($value) && $key != 'product_type') {
+                                $display_key = ucfirst($key);
+                                $display_value = is_numeric($value) && in_array($key, ['MY_type', 'MY_Fsd', 'PN_type']) 
+                                    ? getCategoryName($db, $value) 
+                                    : $value;
+                                $emailHtml .= '<span class="option-item">' . htmlspecialchars($display_key) . ': ' . htmlspecialchars($display_value) . '</span>';
+                            }
+                        }
+                        break;
+                }
+            } else {
+                // 일반 텍스트 데이터 처리 (전단지 등)
+                $lines = explode("\n", $type_data);
+                foreach ($lines as $line) {
+                    $line = trim($line);
+                    if (!empty($line)) {
+                        $emailHtml .= '<span class="option-item">' . htmlspecialchars($line) . '</span>';
+                    }
+                }
+            }
+            
+            $emailHtml .= '</div>';
         }
-        // Line 2: 옵션 정보 (수량 포함)
-        if (!empty($std['spec']['line2'])) {
-            $emailHtml .= '<span class="option-item">' . htmlspecialchars($std['spec']['line2']) . '</span>';
-        }
-        // 추가 옵션 (코팅, 접지, 프리미엄 등)
-        if (!empty($std['spec']['additional'])) {
-            $emailHtml .= '<span class="option-item">' . htmlspecialchars($std['spec']['additional']) . '</span>';
-        }
-
-        $emailHtml .= '</div>';
-
+        
         // 요청사항 표시
         if (!empty($order['cont'])) {
             $emailHtml .= '<div class="request-note">';
@@ -365,11 +414,29 @@ try {
             $emailHtml .= nl2br(htmlspecialchars($order['cont']));
             $emailHtml .= '</div>';
         }
-
+        
         $emailHtml .= '</td>';
-
-        // 수량 (OrderDataService SSOT)
-        $emailHtml .= '<td class="col-quantity">' . htmlspecialchars($std['qty_display']) . '</td>';
+        
+        // 수량
+        $quantity = 1;
+        if (!empty($order['Type_1'])) {
+            $json_data = json_decode($order['Type_1'], true);
+            if ($json_data && is_array($json_data)) {
+                // JSON 데이터에서 수량 추출
+                $details = $json_data['order_details'] ?? $json_data;
+                if (isset($details['MY_amount'])) {
+                    $quantity = $details['MY_amount'];
+                } elseif (isset($details['mesu'])) {
+                    $quantity = $details['mesu'];
+                }
+            } else {
+                // 일반 텍스트에서 수량 추출
+                if (preg_match('/수량:\s*([0-9.]+)매/', $order['Type_1'], $matches)) {
+                    $quantity = floatval($matches[1]);
+                }
+            }
+        }
+        $emailHtml .= '<td class="col-quantity">' . number_format($quantity) . '</td>';
         
         // 금액
         $emailHtml .= '<td class="col-price">' . number_format($order['money_5']) . '원</td>';

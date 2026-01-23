@@ -11,6 +11,9 @@ session_start();
 include "../db.php";
 $connect = $db;
 
+// 수량 포맷터 (0.5연 등 소수점 지원)
+require_once __DIR__ . "/../includes/quantity_formatter.php";
+
 // 카테고리 번호로 한글명 조회 함수
 function getCategoryName($connect, $category_no) {
     if (!$category_no) return '';
@@ -637,7 +640,7 @@ include "../includes/nav.php";
                                     if (isset($json_data['MY_Fsd'])) echo '<span class="option-item">용지: ' . getCategoryName($connect, $json_data['MY_Fsd']) . '</span>';
                                     // 양식지(ncrflambeau)는 "권" 단위 사용
                                     $unit = ($product_type == 'ncrflambeau') ? '권' : '매';
-                                    if (isset($json_data['MY_amount'])) echo '<span class="option-item">수량: ' . number_format($json_data['MY_amount']) . $unit . '</span>';
+                                    if (isset($json_data['MY_amount'])) echo '<span class="option-item">수량: ' . formatQuantityNum($json_data['MY_amount']) . $unit . '</span>';
                                     if (isset($json_data['POtype'])) echo '<span class="option-item">인쇄: ' . ($json_data['POtype'] == '1' ? '단면' : '양면') . '</span>';
                                     break;
                                     
@@ -646,7 +649,7 @@ include "../includes/nav.php";
                                     if (isset($json_data['Section'])) echo '<span class="option-item">용지: ' . getCategoryName($connect, $json_data['Section']) . '</span>';
                                     // 양식지(ncrflambeau)는 "권" 단위 사용
                                     $unit = ($product_type == 'ncrflambeau') ? '권' : '매';
-                                    if (isset($json_data['MY_amount'])) echo '<span class="option-item">수량: ' . number_format($json_data['MY_amount']) . $unit . '</span>';
+                                    if (isset($json_data['MY_amount'])) echo '<span class="option-item">수량: ' . formatQuantityNum($json_data['MY_amount']) . $unit . '</span>';
                                     if (isset($json_data['POtype'])) echo '<span class="option-item">인쇄: ' . ($json_data['POtype'] == '1' ? '단면' : '양면') . '</span>';
                                     break;
                                     
@@ -655,19 +658,19 @@ include "../includes/nav.php";
                                     if (isset($json_data['MY_Fsd'])) echo '<span class="option-item">종류: ' . getCategoryName($connect, $json_data['MY_Fsd']) . '</span>';
                                     // 양식지(ncrflambeau)는 "권" 단위 사용
                                     $unit = ($product_type == 'ncrflambeau') ? '권' : '매';
-                                    if (isset($json_data['MY_amount'])) echo '<span class="option-item">수량: ' . number_format($json_data['MY_amount']) . $unit . '</span>';
+                                    if (isset($json_data['MY_amount'])) echo '<span class="option-item">수량: ' . formatQuantityNum($json_data['MY_amount']) . $unit . '</span>';
                                     break;
                                     
                                 case 'cadarok':
                                     if (isset($json_data['MY_type'])) echo '<span class="option-item">타입: ' . getCategoryName($connect, $json_data['MY_type']) . '</span>';
                                     if (isset($json_data['MY_Fsd'])) echo '<span class="option-item">스타일: ' . getCategoryName($connect, $json_data['MY_Fsd']) . '</span>';
-                                    if (isset($json_data['MY_amount'])) echo '<span class="option-item">수량: ' . number_format($json_data['MY_amount']) . '</span>';
+                                    if (isset($json_data['MY_amount'])) echo '<span class="option-item">수량: ' . formatQuantityNum($json_data['MY_amount']) . '</span>';
                                     break;
                                     
                                 case 'littleprint':
                                     if (isset($json_data['MY_type'])) echo '<span class="option-item">타입: ' . getCategoryName($connect, $json_data['MY_type']) . '</span>';
                                     if (isset($json_data['MY_Fsd'])) echo '<span class="option-item">용지: ' . getCategoryName($connect, $json_data['MY_Fsd']) . '</span>';
-                                    if (isset($json_data['MY_amount'])) echo '<span class="option-item">수량: ' . number_format($json_data['MY_amount']) . '</span>';
+                                    if (isset($json_data['MY_amount'])) echo '<span class="option-item">수량: ' . formatQuantityNum($json_data['MY_amount']) . '</span>';
                                     break;
                                     
                                 default:
@@ -725,7 +728,7 @@ include "../includes/nav.php";
                             }
 
                             if (isset($details['MY_amount'])) {
-                                echo number_format($details['MY_amount']);
+                                echo formatQuantityNum($details['MY_amount']);
                             } elseif (isset($details['mesu'])) {
                                 echo number_format($details['mesu']);
                             } else {
@@ -734,7 +737,7 @@ include "../includes/nav.php";
                         } else {
                             // 일반 텍스트에서 수량 추출
                             if (preg_match('/수량:\s*([0-9.]+)매/', $order['Type_1'], $matches)) {
-                                echo number_format(floatval($matches[1]));
+                                echo formatQuantityNum($matches[1]);
                             } else {
                                 echo '1';
                             }

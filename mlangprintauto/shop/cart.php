@@ -131,9 +131,9 @@ function getMstickerSpecs($item) {
         $specs[] = '인쇄: ' . $print_label;
     }
 
-    // Quantity (수량) - MY_amount field
+    // Quantity (수량) - MY_amount field (formatQuantityNum으로 0.5연 등 소수점 지원)
     if (!empty($item['MY_amount'])) {
-        $specs[] = '수량: ' . number_format(intval($item['MY_amount'])) . '매';
+        $specs[] = '수량: ' . formatQuantityNum($item['MY_amount']) . '매';
     }
 
     return $specs;
