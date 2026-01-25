@@ -1955,7 +1955,12 @@ if ($mode == "AdminMlangOrdertOk") { ///////////////////////////////////////////
 
     $TypeOne = trim("$Type_1 $Type_2 $Type_3 $Type_4 $Type_5 $Type_6"); // 합쳐서 사용
 
-    $date = !empty($date) ? $date : date("Y-m-d H:i:s");   
+    $posted_date = isset($_POST['date']) ? $_POST['date'] : '';
+    if (!empty($posted_date) && strlen($posted_date) == 10) {
+        $date = $posted_date . ' ' . date('H:i:s');
+    } else {
+        $date = date("Y-m-d H:i:s");
+    }   
 // `INSERT INTO` SQL 실행
 $stmt = $db->prepare("INSERT INTO mlangorder_printauto 
     (no, Type, ImgFolder, Type_1, money_1, money_2, money_3, money_4, money_5, 
