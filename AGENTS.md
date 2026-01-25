@@ -248,6 +248,45 @@ if (!$stmt) {
 4. ❌ `number_format(0.5)` → Rounds to "1" (use rtrim for decimals)
 5. ❌ `getUnitCode($productType)` → Use `getProductUnitCode()`
 6. ❌ Direct `quantity_display` → Use `QuantityFormatter::format()`
+7. ❌ **AI 하드코딩 데이터** → DB에서 가져올 수 있는 값은 반드시 DB 조회
+
+---
+
+## V2 개발 주의사항 (AI 협업 필독)
+
+> **상세 문서**: `/var/www/html/v2/CAUTION.md`
+
+### AI 할루시네이션 (Hallucination) 주의
+
+**발생 사례 (2025-01-26)**:
+```php
+// ❌ AI가 추측으로 하드코딩한 잘못된 정보
+$lines[] = "1연=500매";  // 실제로는 규격마다 다름 (A4=4000매, A5=8000매 등)
+```
+
+### 핵심 원칙
+
+| 원칙 | 설명 |
+|------|------|
+| **DB가 진실** | 가격, 수량, 옵션명은 반드시 DB에서 조회 |
+| **추측 금지** | "업계 표준", "일반적으로" 같은 가정 금지 |
+| **검증 필수** | AI가 작성한 수치는 DB로 크로스체크 |
+
+### 절대 하드코딩하면 안 되는 것
+
+- 가격 (money, DesignMoney)
+- 수량/단위 (quantity, quantityTwo)
+- 옵션 이름 (title)
+- 제품 카테고리 구조
+
+### V2 경로
+
+```
+/var/www/html/v2/           # V2 루트
+├── CAUTION.md              # AI 협업 주의사항 (상세)
+├── src/Services/AI/        # AI 서비스 (ChatbotService 등)
+└── config/products.php     # 제품 설정
+```
 
 ---
 

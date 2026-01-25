@@ -86,12 +86,72 @@ return [
                 ['name' => 'quantity', 'label' => '수량', 'source' => 'price_table', 'depends_on' => 'Section'],
             ],
             'price_table' => 'mlangprintauto_namecard',
-            // 명함 프리미엄 옵션
-            'premium_options' => [
-                ['name' => 'foil', 'label' => '박가공', 'type' => 'checkbox'],
-                ['name' => 'numbering', 'label' => '넘버링', 'type' => 'checkbox'],
-                ['name' => 'round_corner', 'label' => '귀도리', 'type' => 'checkbox'],
-                ['name' => 'embossing', 'label' => '형압', 'type' => 'checkbox'],
+        ],
+        // 명함 프리미엄 옵션 (V1 기반)
+        'premium_options' => [
+            'foil' => [
+                'name' => 'foil',
+                'label' => '박',
+                'type' => 'select',
+                'base_qty' => 500,
+                'base_price' => 30000,
+                'unit_price' => 60,
+                'options' => [
+                    ['value' => 'gold_matte', 'label' => '금박무광'],
+                    ['value' => 'gold_gloss', 'label' => '금박유광'],
+                    ['value' => 'silver_matte', 'label' => '은박무광'],
+                    ['value' => 'silver_gloss', 'label' => '은박유광'],
+                    ['value' => 'blue_gloss', 'label' => '청박유광'],
+                    ['value' => 'red_gloss', 'label' => '적박유광'],
+                    ['value' => 'green_gloss', 'label' => '녹박유광'],
+                    ['value' => 'black_gloss', 'label' => '먹박유광'],
+                ],
+                'note' => '박(20mm×20mm 이하)',
+            ],
+            'numbering' => [
+                'name' => 'numbering',
+                'label' => '넘버링',
+                'type' => 'select',
+                'base_qty' => 500,
+                'base_price' => 60000,
+                'unit_price' => 120,
+                'options' => [
+                    ['value' => 'single', 'label' => '1개', 'extra_per_1000' => 0],
+                    ['value' => 'double', 'label' => '2개', 'extra_per_1000' => 15000],
+                ],
+            ],
+            'perforation' => [
+                'name' => 'perforation',
+                'label' => '미싱',
+                'type' => 'select',
+                'base_qty' => 500,
+                'base_price' => 20000,
+                'unit_price' => 25,
+                'options' => [
+                    ['value' => 'single', 'label' => '1개', 'extra_per_1000' => 0],
+                    ['value' => 'double', 'label' => '2개', 'extra_per_1000' => 15000],
+                ],
+            ],
+            'rounding' => [
+                'name' => 'rounding',
+                'label' => '귀돌이',
+                'type' => 'checkbox',
+                'base_qty' => 500,
+                'base_price' => 10000,
+                'unit_price' => 24,
+            ],
+            'creasing' => [
+                'name' => 'creasing',
+                'label' => '오시',
+                'type' => 'select',
+                'base_qty' => 500,
+                'base_price' => 20000,
+                'unit_price' => 25,
+                'options' => [
+                    ['value' => '1line', 'label' => '1줄', 'extra_per_1000' => 0],
+                    ['value' => '2line', 'label' => '2줄', 'extra_per_1000' => 0],
+                    ['value' => '3line', 'label' => '3줄', 'extra_per_1000' => 15000],
+                ],
             ],
         ],
     ],
@@ -111,8 +171,16 @@ return [
                 ['name' => 'quantity', 'label' => '수량', 'source' => 'price_table', 'depends_on' => 'Section'],
             ],
             'price_table' => 'mlangprintauto_envelope',
-            'extra_options' => [
-                ['name' => 'tape', 'label' => '양면테이프', 'type' => 'checkbox'],
+        ],
+        // 봉투 추가 옵션
+        'premium_options' => [
+            'tape' => [
+                'name' => 'tape',
+                'label' => '양면테이프',
+                'type' => 'checkbox',
+                'base_qty' => 1000,
+                'base_price' => 5000,
+                'unit_price' => 5,
             ],
         ],
     ],
@@ -141,12 +209,14 @@ return [
         'unit_name' => '장',
         'has_template' => false,
         'icon' => 'image',
-        'ui_type' => 'dropdown_3level',
+        // littleprint는 4단계: style(종류) → TreeSelect(용지) → Section(규격) → quantity
+        'ui_type' => 'dropdown_4level',
         'ui_config' => [
             'levels' => [
-                ['name' => 'style', 'label' => '인쇄도수', 'source' => 'cate_level1'],
-                ['name' => 'TreeSelect', 'label' => '용지/규격', 'source' => 'cate_level2', 'depends_on' => 'style'],
-                ['name' => 'quantity', 'label' => '수량', 'source' => 'price_table', 'depends_on' => 'TreeSelect'],
+                ['name' => 'style', 'label' => '종류', 'source' => 'cate_level1'],
+                ['name' => 'TreeSelect', 'label' => '용지', 'source' => 'cate_level2', 'depends_on' => 'style'],
+                ['name' => 'Section', 'label' => '규격', 'source' => 'cate_level3', 'depends_on' => 'TreeSelect'],
+                ['name' => 'quantity', 'label' => '수량', 'source' => 'price_table', 'depends_on' => 'Section'],
             ],
             'price_table' => 'mlangprintauto_littleprint',
         ],
@@ -168,6 +238,64 @@ return [
              ],
              'price_table' => 'mlangprintauto_merchandisebond',
          ],
+         // 상품권 프리미엄 옵션 (V1 기반)
+         'premium_options' => [
+             'foil' => [
+                 'name' => 'foil',
+                 'label' => '박',
+                 'type' => 'select',
+                 'base_qty' => 500,
+                 'base_price' => 30000,
+                 'unit_price' => 60,
+                 'options' => [
+                     ['value' => 'gold_matte', 'label' => '금박무광'],
+                     ['value' => 'gold_gloss', 'label' => '금박유광'],
+                     ['value' => 'silver_matte', 'label' => '은박무광'],
+                     ['value' => 'silver_gloss', 'label' => '은박유광'],
+                     ['value' => 'blue_gloss', 'label' => '청박유광'],
+                     ['value' => 'red_gloss', 'label' => '적박유광'],
+                     ['value' => 'green_gloss', 'label' => '녹박유광'],
+                     ['value' => 'black_gloss', 'label' => '먹박유광'],
+                 ],
+             ],
+             'numbering' => [
+                 'name' => 'numbering',
+                 'label' => '넘버링',
+                 'type' => 'select',
+                 'base_qty' => 500,
+                 'base_price' => 60000,
+                 'unit_price' => 120,
+                 'options' => [
+                     ['value' => 'single', 'label' => '1개 (4~6자리)', 'extra_per_1000' => 0],
+                     ['value' => 'double', 'label' => '2개 (4~6자리)', 'extra_per_1000' => 15000],
+                 ],
+                 'note' => '넘버링(1~9999)',
+             ],
+             'perforation' => [
+                 'name' => 'perforation',
+                 'label' => '미싱',
+                 'type' => 'select',
+                 'base_qty' => 500,
+                 'base_price' => 20000,
+                 'unit_price' => 40,
+                 'options' => [
+                     ['value' => 'horizontal', 'label' => '가로미싱'],
+                     ['value' => 'vertical', 'label' => '세로미싱'],
+                     ['value' => 'cross', 'label' => '십자미싱', 'base_price' => 30000, 'unit_price' => 60],
+                 ],
+                 'note' => '미싱선 1줄 기준',
+             ],
+             'rounding' => [
+                 'name' => 'rounding',
+                 'label' => '귀돌이',
+                 'type' => 'select',
+                 'base_qty' => 500,
+                 'options' => [
+                     ['value' => '4corners', 'label' => '네귀돌이', 'base_price' => 15000, 'unit_price' => 30],
+                     ['value' => '2corners', 'label' => '두귀돌이', 'base_price' => 12000, 'unit_price' => 25],
+                 ],
+             ],
+         ],
      ],
     'ncrflambeau' => [
         'name' => 'NCR양식지',
@@ -186,6 +314,21 @@ return [
                 ['name' => 'quantity', 'label' => '수량', 'source' => 'price_table', 'depends_on' => 'PN_type'],
             ],
             'price_table' => 'mlangprintauto_ncrflambeau',
+        ],
+        // NCR 추가 옵션
+        'premium_options' => [
+            'numbering' => [
+                'name' => 'numbering',
+                'label' => '넘버링',
+                'type' => 'checkbox',
+                'fixed_price' => 10000,
+            ],
+            'perforation' => [
+                'name' => 'perforation',
+                'label' => '미싱',
+                'type' => 'checkbox',
+                'fixed_price' => 10000,
+            ],
         ],
     ],
      'msticker' => [
