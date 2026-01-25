@@ -1070,18 +1070,32 @@ if ($mode == "SinForm") { //////////////////////////////////////////////////////
         body {
             font-family: 'Noto Sans KR', sans-serif;
             margin: 0;
-            padding: 20px;
+            padding: 0;
             background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+        }
+        body.popup-mode {
+            padding: 20px;
+            display: block;
         }
         .form-container {
+            width: 100%;
+            background: #fff;
+            overflow: hidden;
+            animation: slideIn 0.3s ease-out;
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+        }
+        body.popup-mode .form-container {
             width: 350px;
             min-width: 350px;
             max-width: 350px;
-            background: #fff;
             border-radius: 12px;
             box-shadow: 0 15px 40px rgba(0,0,0,0.3);
-            overflow: hidden;
-            animation: slideIn 0.3s ease-out;
+            display: block;
         }
         @keyframes slideIn {
             from {
@@ -1111,7 +1125,8 @@ if ($mode == "SinForm") { //////////////////////////////////////////////////////
             margin-top: 4px;
         }
         .form-body {
-            padding: 18px;
+            padding: 18px 18px 25px 18px;
+            flex: 1;
         }
         .form-group {
             margin-bottom: 14px;
@@ -1152,8 +1167,13 @@ if ($mode == "SinForm") { //////////////////////////////////////////////////////
             color: #6b7280;
             margin-top: 4px;
         }
+        .btn-group {
+            display: flex;
+            gap: 10px;
+            margin-top: 8px;
+        }
         .btn-submit {
-            width: 100%;
+            flex: 1;
             padding: 12px;
             background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
             color: #fff;
@@ -1164,11 +1184,29 @@ if ($mode == "SinForm") { //////////////////////////////////////////////////////
             font-family: 'Noto Sans KR', sans-serif;
             cursor: pointer;
             transition: all 0.2s ease;
-            margin-top: 8px;
         }
         .btn-submit:hover {
             transform: translateY(-1px);
             box-shadow: 0 6px 20px rgba(102, 126, 234, 0.35);
+        }
+        .btn-close {
+            flex: 1;
+            padding: 12px;
+            background: #f3f4f6;
+            color: #374151;
+            border: 1px solid #d1d5db;
+            border-radius: 8px;
+            font-size: 13px;
+            font-weight: 500;
+            font-family: 'Noto Sans KR', sans-serif;
+            cursor: pointer;
+            transition: all 0.2s ease;
+        }
+        .btn-close:hover {
+            background: #e5e7eb;
+        }
+        .form-footer {
+            padding: 0 18px 18px 18px;
         }
     </style>
     <script>
@@ -1192,15 +1230,27 @@ if ($mode == "SinForm") { //////////////////////////////////////////////////////
             return true;
         }
 
-        // 창 크기 자동 조정
+        // 창 크기 자동 조정 (팝업 모드에서만)
         window.onload = function() {
-            try {
-                window.resizeTo(390, 450);
-                window.moveTo(100, 100);
-            } catch(e) {
-                console.log('창 크기 조정 불가: ', e);
+            var isModal = window.location.search.indexOf('modal=1') > -1;
+            if (!isModal) {
+                document.body.classList.add('popup-mode');
+                try {
+                    window.resizeTo(420, 520);
+                    window.moveTo(100, 100);
+                } catch(e) {
+                    console.log('창 크기 조정 불가: ', e);
+                }
             }
         };
+        
+        function closeModal() {
+            if (window.parent !== window) {
+                window.parent.postMessage('closeSinModal', '*');
+            } else {
+                window.close();
+            }
+        }
     </script>
 </head>
 <body>
@@ -1217,6 +1267,9 @@ if ($mode == "SinForm") { //////////////////////////////////////////////////////
                 <input type="hidden" name="mode" value="SinFormModifyOk">
                 <input type="hidden" name="no" value="<?php echo htmlspecialchars($_GET['no'] ?? '') ?>">
                 <input type="hidden" name="return_url" value="<?php echo htmlspecialchars($_GET['return_url'] ?? $_SERVER['HTTP_REFERER'] ?? 'admin.php') ?>">
+                <?php if(isset($_GET['modal']) && $_GET['modal'] == '1'){ ?>
+                <input type="hidden" name="modal" value="1">
+                <?php } ?>
                 <?php if(isset($ModifyCode) && !empty($ModifyCode)){ ?>
                 <input type="hidden" name="ModifyCode" value="ok">
                 <?php } ?>
@@ -1241,9 +1294,16 @@ if ($mode == "SinForm") { //////////////////////////////////////////////////////
                 </div>
                 <?php } ?>
 
-                <button type="submit" class="btn-submit">
-                    <?php echo $ModifyCode ? '✏️ 수정하기' : '📤 등록하기'; ?>
-                </button>
+                <div class="btn-group">
+                    <button type="submit" class="btn-submit">
+                        <?php echo $ModifyCode ? '✏️ 수정하기' : '📤 등록하기'; ?>
+                    </button>
+                    <?php if(isset($_GET['modal']) && $_GET['modal'] == '1'){ ?>
+                    <button type="button" class="btn-close" onclick="closeModal()">
+                        ✕ 닫기
+                    </button>
+                    <?php } ?>
+                </div>
             </form>
         </div>
     </div>
@@ -1283,12 +1343,11 @@ if ($mode == "SinFormModifyOk") { //////////////////////////////////////////////
         exit;
     }
 
-    // 자료를 업로드할 폴더를 생성 시켜준다.. ///////////////////////////////
-    $dir = "../../mlangorder_printauto/upload/$no";
+    // 자료를 업로드할 폴더를 생성 (절대 경로 사용)
+    $dir = $_SERVER['DOCUMENT_ROOT'] . "/mlangorder_printauto/upload/$no";
     
     if (!is_dir($dir)) {
-        mkdir($dir, 0755, true);
-        chmod($dir, 0777);
+        mkdir($dir, 0777, true);
     }
 
     // 새로운 파일 업로드 처리
@@ -1338,6 +1397,8 @@ if ($mode == "SinFormModifyOk") { //////////////////////////////////////////////
     }
 
     $return_url = isset($_POST['return_url']) && !empty($_POST['return_url']) ? $_POST['return_url'] : 'admin.php';
+    $isModal = isset($_GET['modal']) || isset($_POST['modal']) || (strpos($return_url, 'modal=1') !== false);
+    
     echo "<!DOCTYPE html>
 <html>
 <head>
@@ -1392,13 +1453,26 @@ if ($mode == "SinFormModifyOk") { //////////////////////////////////////////////
     <div class='alert-box'>
         <div class='alert-icon'>✅</div>
         <div class='alert-msg'>정보를 정상적으로<br>수정하였습니다.</div>
-        <button class='alert-btn' onclick=\"window.location.href='" . htmlspecialchars($return_url, ENT_QUOTES) . "'\">확인</button>
+        <button class='alert-btn' onclick=\"closeWindow()\">확인</button>
     </div>
     <script>
-        window.resizeTo(390, 450);
+        var isModal = " . ($isModal ? 'true' : 'false') . ";
+        
+        function closeWindow() {
+            if (isModal && window.parent !== window) {
+                window.parent.postMessage('closeSinModal', '*');
+            } else {
+                window.location.href = '" . htmlspecialchars($return_url, ENT_QUOTES) . "';
+            }
+        }
+        
+        if (!isModal) {
+            window.resizeTo(390, 450);
+        }
+        
         setTimeout(function() {
-            window.location.href = '" . htmlspecialchars($return_url, ENT_QUOTES) . "';
-        }, 2000);
+            closeWindow();
+        }, 1500);
     </script>
 </body>
 </html>";
@@ -1929,9 +2003,8 @@ if (!$stmt->execute()) {
     die("❌ SQL Execution Error: " . $stmt->error);
 }
 
-// 성공 메시지 및 교정보기 페이지로 이동
-$return_url_encoded = urlencode('/sub/checkboard.php');
-$next_url = "admin.php?mode=SinForm&no=" . $new_no . "&ModifyCode=ok&return_url=" . $return_url_encoded;
+// 성공 메시지 및 주문 목록 페이지로 이동
+$next_url = "orderlist.php";
 echo "<!DOCTYPE html>
 <html>
 <head>
@@ -1985,14 +2058,14 @@ echo "<!DOCTYPE html>
 <body>
     <div class='alert-box'>
         <div class='alert-icon'>✅</div>
-        <div class='alert-msg'>정보를 정상적으로 저장하였습니다.<br>시안등록 페이지로 이동합니다.</div>
+        <div class='alert-msg'>주문이 정상적으로 등록되었습니다.<br>주문 목록으로 이동합니다.</div>
         <button class='alert-btn' onclick=\"window.location.href='" . $next_url . "'\">확인</button>
     </div>
     <script>
         window.resizeTo(390, 630);
         setTimeout(function() {
             window.location.href = '" . $next_url . "';
-        }, 2000);
+        }, 1500);
     </script>
 </body>
 </html>";

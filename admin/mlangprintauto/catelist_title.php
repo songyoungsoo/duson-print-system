@@ -12,7 +12,7 @@ $name = $_GET['name'] ?? $_POST['name'] ?? '';
 $code = $_GET['code'] ?? $_POST['code'] ?? '';
 $page = $_GET['page'] ?? $_POST['page'] ?? '';
 
-include"CateAdmin_title.php";
+include"cateadmin_title.php";
 ?>
 
 <?php if($Ttable=="inserted"){////////////////////////////////////////////////////////////////////////////////////////

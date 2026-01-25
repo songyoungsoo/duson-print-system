@@ -572,7 +572,7 @@ function handleStatusChange_<?php echo $row['no']; ?>(select) {
 </script>
 </td>
 <td class="order-table-td">
-<button type="button" class="btn btn--sm btn--secondary" onClick="javascript:popup=window.open('admin.php?mode=SinForm&coe&no=<?php echo $row['no'] ?><?php if ($row['ThingCate']) { ?>&ModifyCode=ok<?php } ?>', 'SinHH','width=390,height=450,top=100,left=100,menubar=no,resizable=yes,statusbar=no,scrollbars=yes,toolbar=no'); popup.focus();">
+<button type="button" class="btn btn--sm btn--secondary" onclick="openSinModal(<?php echo $row['no'] ?>, <?php echo $row['ThingCate'] ? 'true' : 'false' ?>)">
     <?php if ($row['ThingCate']) { ?>📝 시안수정<?php } else { ?>➕ 시안등록<?php } ?>
 </button>
 </td>
@@ -699,6 +699,93 @@ mysqli_close($db);
 ?>
 
 </div><!-- .order-list-container -->
+
+<!-- 시안수정 모달 -->
+<div id="sinModal" class="sin-modal" style="display:none;">
+    <div class="sin-modal-overlay" onclick="closeSinModal()"></div>
+    <div class="sin-modal-content">
+        <iframe id="sinModalIframe" src="" frameborder="0"></iframe>
+    </div>
+</div>
+
+<style>
+.sin-modal {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    z-index: 9999;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+.sin-modal-overlay {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: rgba(0, 0, 0, 0.6);
+    backdrop-filter: blur(4px);
+}
+.sin-modal-content {
+    position: relative;
+    width: 390px;
+    height: 365px;
+    background: transparent;
+    border-radius: 12px;
+    box-shadow: 0 25px 50px rgba(0, 0, 0, 0.3);
+    overflow: hidden;
+    animation: modalSlideIn 0.3s ease-out;
+}
+@keyframes modalSlideIn {
+    from {
+        opacity: 0;
+        transform: scale(0.9) translateY(-20px);
+    }
+    to {
+        opacity: 1;
+        transform: scale(1) translateY(0);
+    }
+}
+#sinModalIframe {
+    width: 100%;
+    height: 100%;
+    border: none;
+}
+</style>
+
+<script>
+function openSinModal(orderNo, hasThingCate) {
+    var url = 'admin.php?mode=SinForm&coe&no=' + orderNo + '&modal=1';
+    if (hasThingCate) {
+        url += '&ModifyCode=ok';
+    }
+    document.getElementById('sinModalIframe').src = url;
+    document.getElementById('sinModal').style.display = 'flex';
+    document.body.style.overflow = 'hidden';
+}
+
+function closeSinModal() {
+    document.getElementById('sinModal').style.display = 'none';
+    document.getElementById('sinModalIframe').src = '';
+    document.body.style.overflow = '';
+}
+
+window.addEventListener('message', function(e) {
+    if (e.data === 'closeSinModal') {
+        closeSinModal();
+        location.reload();
+    }
+});
+
+document.addEventListener('keydown', function(e) {
+    if (e.key === 'Escape') {
+        closeSinModal();
+    }
+});
+</script>
 
 <?php
 include "../down.php";
