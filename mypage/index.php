@@ -1,20 +1,9 @@
 <?php
-/**
- * 마이페이지 홈 (대시보드)
- * 경로: /mypage/index.php
- */
-
-// 세션 및 인증 처리 (8시간 유지, 자동 로그인 30일)
+require_once $_SERVER['DOCUMENT_ROOT'] . '/db.php';
 require_once $_SERVER['DOCUMENT_ROOT'] . '/includes/auth.php';
 
-// 로그인 확인
-if (!isset($_SESSION['user_id'])) {
-    echo "<script>alert('세션이 만료되었습니다. 다시 로그인해주세요.'); location.href='/member/login.php';</script>";
-    exit;
-}
-
-// 데이터베이스 연결
-require_once $_SERVER['DOCUMENT_ROOT'] . '/db.php';
+// 세션 만료 vs 미로그인 구분하여 적절한 메시지 표시
+requireLogin('/member/login.php');
 
 $user_id = $_SESSION['user_id'];
 $user_name = $_SESSION['user_name'] ?? '';

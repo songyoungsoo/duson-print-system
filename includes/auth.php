@@ -15,25 +15,16 @@
 $session_lifetime = 28800; // 8시간 = 28800초
 
 if (session_status() == PHP_SESSION_NONE) {
-    // 세션 유효 시간 설정
     ini_set('session.gc_maxlifetime', $session_lifetime);
 
-    // 세션 쿠키 설정 (브라우저 닫아도 8시간 유지)
     session_set_cookie_params([
         'lifetime' => $session_lifetime,
         'path' => '/',
         'domain' => '',
-        'secure' => false,  // HTTPS 사용 시 true로 변경
+        'secure' => isset($_SERVER['HTTPS']) && $_SERVER['HTTPS'] !== 'off',
         'httponly' => true,
         'samesite' => 'Lax'
     ]);
-
-    // 세션 저장 경로 설정 (권한 문제 해결)
-    $session_path = dirname(__DIR__) . '/sessions';
-    if (!is_dir($session_path)) {
-        mkdir($session_path, 0777, true);
-    }
-    ini_set('session.save_path', $session_path);
 
     session_start();
 }
@@ -192,6 +183,87 @@ function clearRememberMeCookie() {
 // ============================================
 function refreshSessionActivity() {
     $_SESSION['last_activity'] = time();
+}
+
+// ============================================
+// 9-1. 세션 만료 여부 확인
+// ============================================
+define('SESSION_EXPIRED_COOKIE', 'session_was_active');
+
+/**
+ * 로그인 필요 페이지에서 사용하는 인증 체크 함수
+ * 세션 만료와 미로그인을 구분하여 적절한 메시지 표시
+ * 
+ * @param string $redirect_url 리다이렉트할 URL (기본: /member/login.php)
+ * @return bool 로그인 상태면 true, 아니면 경고 후 exit
+ */
+function requireLogin($redirect_url = '/member/login.php') {
+    global $session_lifetime;
+    
+    // 로그인 상태면 통과
+    if (isset($_SESSION['user_id'])) {
+        // 활동 쿠키 설정 (세션 만료 감지용)
+        setcookie(SESSION_EXPIRED_COOKIE, '1', [
+            'expires' => time() + $session_lifetime,
+            'path' => '/',
+            'httponly' => true,
+            'samesite' => 'Lax'
+        ]);
+        return true;
+    }
+    
+    // 세션 만료 vs 미로그인 구분
+    $was_logged_in = isset($_COOKIE[SESSION_EXPIRED_COOKIE]);
+    
+    if ($was_logged_in) {
+        // 세션이 만료된 경우
+        $message = '세션이 만료되었습니다. (8시간 경과)\\n다시 로그인해주세요.';
+        
+        // 쿠키 삭제
+        setcookie(SESSION_EXPIRED_COOKIE, '', [
+            'expires' => time() - 3600,
+            'path' => '/',
+            'httponly' => true,
+            'samesite' => 'Lax'
+        ]);
+    } else {
+        // 처음부터 로그인하지 않은 경우
+        $message = '로그인이 필요한 페이지입니다.';
+    }
+    
+    echo "<script>alert('{$message}'); location.href='{$redirect_url}';</script>";
+    exit;
+}
+
+/**
+ * 세션 상태 확인 (API용 - JSON 응답)
+ * 
+ * @return array ['logged_in' => bool, 'expired' => bool, 'message' => string]
+ */
+function checkSessionStatus() {
+    if (isset($_SESSION['user_id'])) {
+        return [
+            'logged_in' => true,
+            'expired' => false,
+            'message' => '로그인 상태입니다.'
+        ];
+    }
+    
+    $was_logged_in = isset($_COOKIE[SESSION_EXPIRED_COOKIE]);
+    
+    if ($was_logged_in) {
+        return [
+            'logged_in' => false,
+            'expired' => true,
+            'message' => '세션이 만료되었습니다. 다시 로그인해주세요.'
+        ];
+    }
+    
+    return [
+        'logged_in' => false,
+        'expired' => false,
+        'message' => '로그인이 필요합니다.'
+    ];
 }
 
 // ============================================
