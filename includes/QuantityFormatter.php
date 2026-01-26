@@ -337,6 +337,7 @@ class QuantityFormatter {
      */
     public static function getPaperStandard($db, string $specName): ?array {
         static $cache = [];
+        static $tableExists = null;
 
         // 규격명 정규화 (대문자, 공백 제거)
         $specName = strtoupper(trim($specName));
@@ -346,26 +347,52 @@ class QuantityFormatter {
             return $cache[$specName];
         }
 
-        $stmt = mysqli_prepare($db,
-            "SELECT spec_name, series, width, height, cut_ratio, sheets_per_ream
-             FROM paper_standard_master WHERE spec_name = ?"
-        );
+        // 테이블 존재 여부 확인 (한 번만) - PHP 8.0+ 예외 처리
+        if ($tableExists === null) {
+            try {
+                $checkResult = mysqli_query($db, "SELECT 1 FROM paper_standard_master LIMIT 1");
+                $tableExists = ($checkResult !== false);
+                if ($checkResult) {
+                    mysqli_free_result($checkResult);
+                }
+            } catch (mysqli_sql_exception $e) {
+                // 테이블이 없으면 예외 발생 (PHP 8.0+)
+                $tableExists = false;
+            }
+        }
 
-        if (!$stmt) {
-            error_log("QuantityFormatter::getPaperStandard - DB prepare failed: " . mysqli_error($db));
+        // 테이블이 없으면 null 반환 (fallback 사용)
+        if (!$tableExists) {
+            $cache[$specName] = null;
             return null;
         }
 
-        mysqli_stmt_bind_param($stmt, 's', $specName);
-        mysqli_stmt_execute($stmt);
-        $result = mysqli_stmt_get_result($stmt);
-        $row = mysqli_fetch_assoc($result);
-        mysqli_stmt_close($stmt);
+        try {
+            $stmt = mysqli_prepare($db,
+                "SELECT spec_name, series, width, height, cut_ratio, sheets_per_ream
+                 FROM paper_standard_master WHERE spec_name = ?"
+            );
 
-        // 캐시에 저장 (null도 저장하여 반복 쿼리 방지)
-        $cache[$specName] = $row;
+            if (!$stmt) {
+                $cache[$specName] = null;
+                return null;
+            }
 
-        return $row;
+            mysqli_stmt_bind_param($stmt, 's', $specName);
+            mysqli_stmt_execute($stmt);
+            $result = mysqli_stmt_get_result($stmt);
+            $row = mysqli_fetch_assoc($result);
+            mysqli_stmt_close($stmt);
+
+            // 캐시에 저장 (null도 저장하여 반복 쿼리 방지)
+            $cache[$specName] = $row;
+
+            return $row;
+        } catch (mysqli_sql_exception $e) {
+            error_log("QuantityFormatter::getPaperStandard - Exception: " . $e->getMessage());
+            $cache[$specName] = null;
+            return null;
+        }
     }
 
     /**

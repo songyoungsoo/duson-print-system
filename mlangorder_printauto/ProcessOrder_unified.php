@@ -311,21 +311,26 @@ try {
             
             error_log("레거시 경로 사용 - ImgFolder: {$img_folder_path}, ThingCate: {$thing_cate}");
         } else {
-            // 기존 방식: uploaded_files 테이블 조회
+            // 기존 방식: uploaded_files 테이블 조회 (PHP 8.0+ 예외 처리)
             $thing_cate = '';
-            $file_query = "SELECT file_name FROM uploaded_files WHERE session_id = ? AND product_type = ? ORDER BY upload_date DESC LIMIT 1";
-            $file_stmt = mysqli_prepare($connect, $file_query);
+            try {
+                $file_query = "SELECT file_name FROM uploaded_files WHERE session_id = ? AND product_type = ? ORDER BY upload_date DESC LIMIT 1";
+                $file_stmt = mysqli_prepare($connect, $file_query);
 
-            if ($file_stmt) {
-                mysqli_stmt_bind_param($file_stmt, 'ss', $session_id, $item['product_type']);
-                mysqli_stmt_execute($file_stmt);
-                $file_result = mysqli_stmt_get_result($file_stmt);
+                if ($file_stmt) {
+                    mysqli_stmt_bind_param($file_stmt, 'ss', $session_id, $item['product_type']);
+                    mysqli_stmt_execute($file_stmt);
+                    $file_result = mysqli_stmt_get_result($file_stmt);
 
-                if ($file_row = mysqli_fetch_assoc($file_result)) {
-                    $thing_cate = $file_row['file_name'];
+                    if ($file_row = mysqli_fetch_assoc($file_result)) {
+                        $thing_cate = $file_row['file_name'];
+                    }
+
+                    mysqli_stmt_close($file_stmt);
                 }
-
-                mysqli_stmt_close($file_stmt);
+            } catch (mysqli_sql_exception $e) {
+                // uploaded_files 테이블이 없으면 무시 (PHP 8.0+)
+                error_log("uploaded_files 테이블 조회 스킵 (테이블 없음): " . $e->getMessage());
             }
 
             // 파일이 없으면 기본값 설정
@@ -642,47 +647,52 @@ try {
             $moved_files = [];
             $first_file_name = '';
             
-            // 1. uploaded_files 테이블에서 파일 정보 조회
-            $move_files_query = "SELECT * FROM uploaded_files WHERE session_id = ? AND product_type = ? ORDER BY upload_date ASC";
-            $move_stmt = mysqli_prepare($connect, $move_files_query);
-            
-            if ($move_stmt) {
-                mysqli_stmt_bind_param($move_stmt, 'ss', $session_id, $item['product_type']);
-                mysqli_stmt_execute($move_stmt);
-                $move_result = mysqli_stmt_get_result($move_stmt);
+            // 1. uploaded_files 테이블에서 파일 정보 조회 (PHP 8.0+ 예외 처리)
+            try {
+                $move_files_query = "SELECT * FROM uploaded_files WHERE session_id = ? AND product_type = ? ORDER BY upload_date ASC";
+                $move_stmt = mysqli_prepare($connect, $move_files_query);
                 
-                while ($file_row = mysqli_fetch_assoc($move_result)) {
-                    $temp_file_path = getTempUploadPath($session_id) . $file_row['file_name'];
-                    $final_file_path = $final_upload_dir . $file_row['file_name'];
+                if ($move_stmt) {
+                    mysqli_stmt_bind_param($move_stmt, 'ss', $session_id, $item['product_type']);
+                    mysqli_stmt_execute($move_stmt);
+                    $move_result = mysqli_stmt_get_result($move_stmt);
                     
-                    // 파일 존재 확인 및 이동
-                    if (file_exists($temp_file_path)) {
-                        // 중복 파일명 처리
-                        $counter = 1;
-                        $original_final_path = $final_file_path;
-                        while (file_exists($final_file_path)) {
-                            $path_info = pathinfo($original_final_path);
-                            $final_file_path = $path_info['dirname'] . '/' . $path_info['filename'] . '_' . $counter . '.' . $path_info['extension'];
-                            $counter++;
-                        }
+                    while ($file_row = mysqli_fetch_assoc($move_result)) {
+                        $temp_file_path = getTempUploadPath($session_id) . $file_row['file_name'];
+                        $final_file_path = $final_upload_dir . $file_row['file_name'];
                         
-                        if (rename($temp_file_path, $final_file_path)) {
-                            $moved_files[] = basename($final_file_path);
-                            if (empty($first_file_name)) {
-                                $first_file_name = basename($final_file_path);
+                        // 파일 존재 확인 및 이동
+                        if (file_exists($temp_file_path)) {
+                            // 중복 파일명 처리
+                            $counter = 1;
+                            $original_final_path = $final_file_path;
+                            while (file_exists($final_file_path)) {
+                                $path_info = pathinfo($original_final_path);
+                                $final_file_path = $path_info['dirname'] . '/' . $path_info['filename'] . '_' . $counter . '.' . $path_info['extension'];
+                                $counter++;
                             }
                             
-                            // 로그 기록
-                            error_log("파일 이동 성공: $temp_file_path -> $final_file_path");
+                            if (rename($temp_file_path, $final_file_path)) {
+                                $moved_files[] = basename($final_file_path);
+                                if (empty($first_file_name)) {
+                                    $first_file_name = basename($final_file_path);
+                                }
+                                
+                                // 로그 기록
+                                error_log("파일 이동 성공: $temp_file_path -> $final_file_path");
+                            } else {
+                                error_log("파일 이동 실패: $temp_file_path -> $final_file_path");
+                            }
                         } else {
-                            error_log("파일 이동 실패: $temp_file_path -> $final_file_path");
+                            error_log("임시 파일 없음: $temp_file_path");
                         }
-                    } else {
-                        error_log("임시 파일 없음: $temp_file_path");
                     }
+                    
+                    mysqli_stmt_close($move_stmt);
                 }
-                
-                mysqli_stmt_close($move_stmt);
+            } catch (mysqli_sql_exception $e) {
+                // uploaded_files 테이블이 없으면 무시 (PHP 8.0+)
+                error_log("uploaded_files 테이블 파일 조회 스킵 (테이블 없음): " . $e->getMessage());
             }
             
             // 2. 스티커 주문의 경우 추가 파일 경로 확인
@@ -737,13 +747,18 @@ try {
                 }
             }
             
-            // 4. 데이터베이스 정리
-            $cleanup_query = "DELETE FROM uploaded_files WHERE session_id = ? AND product_type = ?";
-            $cleanup_stmt = mysqli_prepare($connect, $cleanup_query);
-            if ($cleanup_stmt) {
-                mysqli_stmt_bind_param($cleanup_stmt, 'ss', $session_id, $item['product_type']);
-                mysqli_stmt_execute($cleanup_stmt);
-                mysqli_stmt_close($cleanup_stmt);
+            // 4. 데이터베이스 정리 (PHP 8.0+ 예외 처리)
+            try {
+                $cleanup_query = "DELETE FROM uploaded_files WHERE session_id = ? AND product_type = ?";
+                $cleanup_stmt = mysqli_prepare($connect, $cleanup_query);
+                if ($cleanup_stmt) {
+                    mysqli_stmt_bind_param($cleanup_stmt, 'ss', $session_id, $item['product_type']);
+                    mysqli_stmt_execute($cleanup_stmt);
+                    mysqli_stmt_close($cleanup_stmt);
+                }
+            } catch (mysqli_sql_exception $e) {
+                // uploaded_files 테이블이 없으면 무시 (PHP 8.0+)
+                error_log("uploaded_files 정리 스킵 (테이블 없음): " . $e->getMessage());
             }
             
             // 5. 스티커 파일 이동 처리 (uploads/sticker_new -> uploads/orders)
