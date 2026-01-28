@@ -1,316 +1,270 @@
-# AGENTS.md - Duson Print System
+# AGENTS.md - Duson Planning Print System
 
-> Agent instructions for AI coding assistants working in this repository.
+## 🏗️ System Overview
 
-## Project Overview
+**Duson Planning Print System (두손기획인쇄)** - PHP 7.4 기반 인쇄 주문 관리 시스템
+- **Backend**: PHP 7.4+ with MySQL 5.7+
+- **Frontend**: Mixed (PHP templates + modern JavaScript)
+- **Testing**: Playwright (E2E) + Python test utilities
+- **Document Root**: `/var/www/html`
+- **Environment**: Multi-environment (localhost/staging/production)
 
-**Duson Planning Print System (두손기획인쇄)** - PHP 7.4 print order management system.
+## 🚀 Build, Test & Development Commands
 
-| Aspect | Details |
-|--------|---------|
-| Language | PHP 7.4+ |
-| Database | MySQL 5.7+ / MariaDB 10.3 (utf8mb4) |
-| Web Server | Apache 2.4+ |
-| Document Root | `/var/www/html` |
-| Dependencies | composer (TCPDF, DomPDF, mPDF, PHPMailer) |
-
----
-
-## Build & Server Commands
-
+### Environment Setup
 ```bash
-# Start development servers
+# Start servers (WSL2 Ubuntu)
 sudo service apache2 start
 sudo service mysql start
 
-# Access local site
+# Verify installation
 http://localhost/
-
-# Install PHP dependencies
-composer install
-
-# Install Node dependencies (Playwright for testing)
-npm install
 ```
 
-### No Automated Testing Framework
-
-This project does NOT have PHPUnit or automated tests configured.
-Manual testing via browser is the primary verification method.
-
----
-
-## Critical Rules (MUST FOLLOW)
-
-### 1. MySQL/MariaDB Collation (HIGHEST PRIORITY)
-
-```sql
--- NEVER use MySQL 8.0+ collation
-COLLATE=utf8mb4_0900_ai_ci  -- FORBIDDEN!
-
--- ALWAYS use MySQL 5.7 / MariaDB 10.3 compatible
-COLLATE=utf8mb4_general_ci  -- REQUIRED
-COLLATE=utf8mb4_unicode_ci  -- ALLOWED
-```
-
-### 2. bind_param Triple Verification
-
-```php
-// ALWAYS verify counts match before binding
-$placeholder_count = substr_count($query, '?');  // Step 1
-$type_count = strlen($type_string);              // Step 2
-$var_count = 7; // Count manually                // Step 3
-
-// All three MUST match
-mysqli_stmt_bind_param($stmt, $type_string, ...);
-```
-
-### 3. File & Table Naming
-
-```
-ALL LOWERCASE - Linux is case-sensitive!
-
-Tables:  mlangprintauto_namecard (NOT MlangPrintAuto_Namecard)
-Files:   cateadmin_title.php (NOT CateAdmin_title.php)
-Includes: lowercase paths only
-```
-
-### 4. CSS !important Ban
-
-```css
-/* NEVER use !important - it's a code smell */
-.product-nav { display: grid !important; }  /* FORBIDDEN */
-
-/* ALWAYS use specificity hierarchy */
-.product-nav { display: flex; }              /* Level 1 */
-.mobile-view .product-nav { display: grid; } /* Level 2 */
-```
-
----
-
-## Code Style Guidelines
-
-### PHP Formatting
-
-```php
-<?php
-/**
- * Class/Function DocBlock (required for public APIs)
- * 
- * @param type $param Description
- * @return type Description
- */
-class ClassName {
-    // 4-space indentation
-    // Opening brace on same line
-    public function methodName($param): string {
-        // Early return pattern preferred
-        if (!$condition) {
-            return '';
-        }
-        
-        return $result;
-    }
-}
-```
-
-### Variable Naming
-
-```php
-$db           // Database connection (primary)
-$conn = $db;  // Legacy alias (for compatibility)
-$stmt         // Prepared statement
-$result       // Query result
-$row          // Fetched row
-```
-
-### Database Conventions
-
-```php
-// ALWAYS use prepared statements for user input
-$stmt = mysqli_prepare($db, "SELECT * FROM users WHERE id = ?");
-mysqli_stmt_bind_param($stmt, "i", $user_id);
-mysqli_stmt_execute($stmt);
-$result = mysqli_stmt_get_result($stmt);
-```
-
----
-
-## SSOT (Single Source of Truth) Classes
-
-### QuantityFormatter (includes/QuantityFormatter.php)
-
-**THE ONLY way to format quantities.**
-
-```php
-// CORRECT: Use SSOT
-$display = QuantityFormatter::format($value, $unitCode, $sheets);
-$unitCode = QuantityFormatter::getProductUnitCode($productType);
-
-// WRONG: Direct formatting
-$display = number_format($amount) . '매';  // FORBIDDEN
-```
-
-### Unit Code System
-
-| Code | Unit | Products |
-|------|------|----------|
-| R | 연 (Ream) | inserted (전단지) |
-| S | 매 (Sheet) | sticker_new, namecard, envelope, msticker |
-| B | 부 (Bundle) | cadarok (카다록) |
-| V | 권 (Volume) | ncrflambeau (NCR양식지) |
-| P | 장 (Piece) | littleprint (포스터) |
-| E | 개 (Each) | Default/Custom |
-
-### Method Distinction (CRITICAL)
-
-```php
-// getUnitCode: Korean unit name → Code
-QuantityFormatter::getUnitCode('매');      // → 'S'
-
-// getProductUnitCode: Product type → Code  
-QuantityFormatter::getProductUnitCode('sticker');  // → 'S'
-
-// NEVER mix these up!
-```
-
----
-
-## Product Folder Mapping (IMMUTABLE)
-
-| Product | Folder (REQUIRED) | FORBIDDEN |
-|---------|-------------------|-----------|
-| 전단지 | `inserted` | leaflet |
-| 스티커 | `sticker_new` | sticker |
-| 자석스티커 | `msticker` | - |
-| 명함 | `namecard` | - |
-| 봉투 | `envelope` | - |
-| 포스터 | `littleprint` | poster |
-| 상품권 | `merchandisebond` | giftcard |
-| 카다록 | `cadarok` | catalog |
-| NCR양식지 | `ncrflambeau` | form, ncr |
-
-**Code paths MUST use these exact folder names.**
-
----
-
-## Directory Structure
-
-```
-/var/www/html/
-├── db.php                    # DB connection & env detection
-├── config.env.php            # Environment config
-├── includes/
-│   ├── QuantityFormatter.php # Quantity SSOT
-│   ├── auth.php              # Authentication (8hr session)
-│   └── functions.php         # Common utilities
-├── mlangprintauto/[product]/ # Product pages
-│   ├── index.php             # Product page
-│   ├── add_to_basket.php     # Cart API
-│   └── calculate_price_ajax.php
-└── mlangorder_printauto/     # Order processing
-    ├── ProcessOrder_unified.php
-    └── OrderComplete_universal.php
-```
-
----
-
-## Error Handling
-
-```php
-// Database errors
-if (!$db) {
-    die("DB connection failed: " . mysqli_connect_error());
-}
-
-// Query errors
-$result = mysqli_query($db, $query);
-if (!$result) {
-    error_log("Query failed: " . mysqli_error($db));
-    return false;
-}
-
-// Prepared statement errors
-$stmt = mysqli_prepare($db, $query);
-if (!$stmt) {
-    error_log("Prepare failed: " . mysqli_error($db));
-    return false;
-}
-```
-
----
-
-## Common Pitfalls
-
-1. ❌ `utf8mb4_0900_ai_ci` → Use `utf8mb4_general_ci`
-2. ❌ bind_param count mismatch → Triple verify
-3. ❌ Uppercase table names → Use lowercase
-4. ❌ `number_format(0.5)` → Rounds to "1" (use rtrim for decimals)
-5. ❌ `getUnitCode($productType)` → Use `getProductUnitCode()`
-6. ❌ Direct `quantity_display` → Use `QuantityFormatter::format()`
-7. ❌ **AI 하드코딩 데이터** → DB에서 가져올 수 있는 값은 반드시 DB 조회
-
----
-
-## V2 개발 주의사항 (AI 협업 필독)
-
-> **상세 문서**: `/var/www/html/v2/CAUTION.md`
-
-### AI 할루시네이션 (Hallucination) 주의
-
-**발생 사례 (2025-01-26)**:
-```php
-// ❌ AI가 추측으로 하드코딩한 잘못된 정보
-$lines[] = "1연=500매";  // 실제로는 규격마다 다름 (A4=4000매, A5=8000매 등)
-```
-
-### 핵심 원칙
-
-| 원칙 | 설명 |
-|------|------|
-| **DB가 진실** | 가격, 수량, 옵션명은 반드시 DB에서 조회 |
-| **추측 금지** | "업계 표준", "일반적으로" 같은 가정 금지 |
-| **검증 필수** | AI가 작성한 수치는 DB로 크로스체크 |
-
-### 절대 하드코딩하면 안 되는 것
-
-- 가격 (money, DesignMoney)
-- 수량/단위 (quantity, quantityTwo)
-- 옵션 이름 (title)
-- 제품 카테고리 구조
-
-### V2 경로
-
-```
-/var/www/html/v2/           # V2 루트
-├── CAUTION.md              # AI 협업 주의사항 (상세)
-├── src/Services/AI/        # AI 서비스 (ChatbotService 등)
-└── config/products.php     # 제품 설정
-```
-
----
-
-## Git Workflow
-
+### Playwright Testing
 ```bash
-# Check status
-git status
-git diff
+# Install dependencies
+npm install
 
-# Commit (only when requested)
-git add .
-git commit -m "feat: description"
-git push origin main
+# Run all tests
+npx playwright test
+
+# Run specific test groups (parallel optimized)
+npx playwright test --project="group-a-readonly"     # Read-only tests (max parallel)
+npx playwright test --project="group-b-calculation" # Price calculation tests
+npx playwright test --project="group-c-features"    # Single feature tests
+npx playwright test --project="group-d-e2e"        # E2E flows (limited parallel)
+npx playwright test --project="group-e-admin"       # Admin functions (sequential)
+
+# Run single test file
+npx playwright test tests/tier-1-readonly/page-loading.tier-1.spec.ts
+
+# Debug mode
+npx playwright test --debug
+
+# Generate reports
+npx playwright test --reporter=html
 ```
 
-**NEVER commit unless explicitly requested by user.**
+### Production Deployment
+```bash
+# FTP deployment to production server
+./scripts/deploy_to_production.sh
+
+# Verify all products have correct CSS
+./scripts/verify_all_products.sh
+
+# Sync image folders
+./scripts/sync_imgfolder.sh
+```
+
+### Database Operations
+```bash
+# Fetch production schema
+./scripts/fetch_production_schema.sh
+
+# Verify all products
+./scripts/verify_all_products.sh
+```
+
+## 🎯 Code Style Guidelines
+
+### PHP Standards
+
+#### 1. File Naming & Structure
+- **All lowercase**: `cateadmin_title.php` (NOT `CateAdmin_title.php`)
+- **Table names**: Always lowercase (`mlangprintauto_namecard`)
+- **Includes**: Use lowercase paths (Linux case-sensitive)
+- **No symlinks**: Use actual directories only
+
+#### 2. Database Operations (CRITICAL)
+
+**bind_param Validation Rule (3-Step Verification)**:
+```php
+// ❌ NEVER: Count by sight
+mysqli_stmt_bind_param($stmt, "issss...", ...);
+
+// ✅ ALWAYS: 3-step verification
+$placeholder_count = substr_count($query, '?');  // 1
+$type_count = strlen($type_string);             // 2
+$var_count = 7; // Manual count                    // 3
+
+if ($placeholder_count === $type_count && $type_count === $var_count) {
+    mysqli_stmt_bind_param($stmt, $type_string, ...);
+}
+```
+
+**Database Connection**:
+- Connection variable: `$db` (legacy alias: `$conn = $db`)
+- Character set: utf8mb4
+- Environment auto-detection via `config.env.php`
+
+#### 3. Quantity Display Handling (MANDATORY)
+
+```php
+// ❌ NEVER: Use quantity_display without unit validation
+$line2 = implode(' / ', [$spec_sides, $item['quantity_display'], $spec_design]);
+
+// ✅ ALWAYS: Validate unit, fallback to formatQuantity()
+$quantity_display = $item['quantity_display'] ?? '';
+
+// Unit validation: 매, 연, 부, 권, 개, 장
+if (empty($quantity_display) || !preg_match('/[매연부권개장]/u', $quantity_display)) {
+    $quantity_display = $this->formatQuantity($item);
+}
+
+$line2 = implode(' / ', [$spec_sides, $quantity_display, $spec_design]);
+```
+
+#### 4. Unit Code vs Product Type (CRITICAL DISTINCTION)
+
+```php
+// ❌ NEVER: Use getUnitCode() with product_type (BUG!)
+$unitCode = QuantityFormatter::getUnitCode($productType);  // 'sticker' → 'E' (ERROR)
+
+// ✅ ALWAYS: Use getProductUnitCode() for product types
+$unitCode = QuantityFormatter::getProductUnitCode($productType);  // 'sticker' → 'S' (CORRECT)
+```
+
+#### 5. Error Handling
+- Never suppress type errors with `as any`, `@ts-ignore`, `@ts-expect-error`
+- Use proper exception handling for database operations
+- Validate all user inputs before processing
+- Use prepared statements exclusively for database queries
+
+### CSS Standards
+
+#### !important Usage PROHIBITED ⚠️
+```css
+/* ❌ NEVER: !important usage */
+.product-nav {
+    display: grid !important;  // ABSOLUTELY FORBIDDEN
+}
+
+/* ✅ ALWAYS: Use specificity hierarchy */
+/* Level 1: Basic styles (1 class) */
+.product-nav { display: flex; }
+
+/* Level 2: Context/state (2 classes) */
+.mobile-view .product-nav { display: grid; }
+
+/* Level 3: Specific selectors (3+ classes or parent included) */
+body.cart-page .mobile-view .product-nav { display: grid; }
+```
+
+**CSS Debugging Protocol**:
+1. Diagnose "why it's not working" with dev tools first
+2. Check container elements before content alignment
+3. Verify margin, padding, width, display, position of parent
+4. Only use !important after completing the above checklist
+
+### JavaScript/TypeScript Standards
+
+#### Playwright Test Organization
+- **Group A**: Read-only tests (maximum parallelism)
+- **Group B**: Price calculation tests (maximum parallelism)  
+- **Group C**: Single feature tests (limited parallelism)
+- **Group D**: E2E flows (resource-limited parallelism)
+- **Group E**: Admin functions (sequential execution)
+
+#### Test File Naming
+- Format: `[functionality].[group/tier]-[level].spec.ts`
+- Examples: `page-loading.group-a.spec.ts`, `price-calculation.tier-2.spec.ts`
+
+## 📦 Product Type Mapping (9 Standard Products)
+
+| # | Product Name | Folder Name (FORCED) | ❌ Forbidden Names | Unit |
+|---|-------------|---------------------|------------------|-------|
+| 1 | 전단지 | `inserted` | leaflet | 연 |
+| 2 | 스티커 | `sticker_new` | sticker | 매 |
+| 3 | 자석스티커 | `msticker` | - | 매 |
+| 4 | 명함 | `namecard` | - | 매 |
+| 5 | 봉투 | `envelope` | - | 매 |
+| 6 | 포스터 | `littleprint` | poster | 매 |
+| 7 | 상품권 | `merchandisebond` | giftcard | 매 |
+| 8 | 카다록 | `cadarok` | catalog | 부 |
+| 9 | NCR양식지 | `ncrflambeau` | form, ncr | 권 |
+
+## 🔧 Critical SSOT (Single Source of Truth) Files
+
+### Core Logic Files
+- `includes/QuantityFormatter.php` - Quantity/unit formatting SSOT
+- `includes/ProductSpecFormatter.php` - Product specification formatter
+- `lib/core_print_logic.php` - Central logic facade
+
+### Quote System Files  
+- `mlangprintauto/quote/includes/QuoteManager.php` - Quote data management
+- `mlangprintauto/quote/includes/QuoteTableRenderer.php` - Table rendering SSOT
+
+### Legacy Detection Patterns
+```php
+// Detect stickers from legacy data (product_type empty)
+if (empty($productType) && !empty($tempItem['jong']) && !empty($tempItem['garo'])) {
+    $productType = 'sticker';
+}
+
+// Or detect from product_name
+if (empty($productType) && stripos($productName, '스티커') !== false) {
+    $productType = 'sticker';
+}
+```
+
+## ⚡ Development Workflow
+
+### Before Starting Work
+1. Read `CLAUDE.md` for project-specific rules
+2. Check existing patterns in similar files
+3. Verify CSS specificity before using !important
+4. Validate bind_param parameters (3-step rule)
+
+### After Completing Work
+1. Run `lsp_diagnostics` on changed files
+2. Run relevant Playwright tests
+3. Verify no existing functionality is broken
+4. Test on multiple environments if applicable
+
+### Code Quality Gates
+- ✅ All bind_param calls validated (3-step rule)
+- ✅ No !important usage in CSS
+- ✅ Proper unit validation for quantity displays
+- ✅ Correct product type → unit code mapping
+- ✅ Playwright tests passing for affected areas
+
+## 🎨 UI/UX Improvements
+
+### 명함 재질 Hover 효과 (2026-01-28)
+**변경 전**:
+- 돋보기 아이콘 🔍 표시
+- 어두운 overlay 배경 (rgba(0,0,0,0.4))
+- 이미지 1.1배 확대
+
+**변경 후**:
+- ✅ "클릭하면 확대되어보입니다" 텍스트 메시지
+- ✅ 투명 overlay (깔끔한 UI)
+- ✅ 이미지 1.1배 확대 유지
+- ✅ 부드러운 fade-in 애니메이션
+
+**구현 위치**: `mlangprintauto/namecard/explane_namecard.php`
+
+## 🚨 Common Pitfalls to Avoid
+
+1. ❌ bind_param count mismatch → customer name saved as '0'
+2. ❌ Uppercase table names → SELECT failure
+3. ❌ Uppercase include paths → file not found on Linux
+4. ❌ `getUnitCode($productType)` → sticker "개" unit bug
+5. ❌ Direct quantity formatting without unit validation
+6. ❌ CSS !important usage without proper diagnosis
+7. ❌ number_format(0.5) → "1" rounding error
+8. ❌ Changing `littleprint` to `poster` → system-wide errors
+
+## 📚 Documentation References
+
+- Master Specification: `CLAUDE_DOCS/Duson_System_Master_Spec_v1.0.md`
+- Data Flow: `CLAUDE_DOCS/DATA_LINEAGE.md`
+- CSS Debug Lessons: `CLAUDE_DOCS/CSS_DEBUG_LESSONS.md`
+- Change History: `.claude/changelog/CHANGELOG.md`
 
 ---
 
-## Documentation References
-
-| Topic | File |
-|-------|------|
-| Master Spec | `CLAUDE_DOCS/Duson_System_Master_Spec_v1.0.md` |
-| Data Lineage | `CLAUDE_DOCS/DATA_LINEAGE.md` |
-| Changelog | `.claude/changelog/CHANGELOG.md` |
+*Last Updated: 2026-01-28*
+*Environment: WSL2 Ubuntu + Windows XAMPP + Production Deployment*
