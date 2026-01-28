@@ -10,6 +10,54 @@
     <p>자사의 일반명함은 일반용지부터 최고급 수입지 까지 30가지의 다양한 용지로<br>
     제작이 가능하며, 다양한 후가공으로 나만의 특별한 명함 제작이 가능합니다.</p>
 
+    <div class="detail-section" id="paper-texture-section">
+        <h3>📜 명함의 재질</h3>
+        <p class="section-desc">다양한 명함 용지의 질감과 색상을 확인해보세요. 이미지를 클릭하면 크게 볼 수 있습니다.</p>
+        <p class="section-desc texture-notice">
+            <strong>📐 사이즈 안내:</strong> 아래 이미지에 표시된 <span class="old-size">편집: 91×52mm / 재단: 89×50mm</span>는 현재 <span class="new-size">편집: 92×52mm / 재단: 90×50mm</span>로 변경되었음을 알려드립니다.<br>
+            <strong>⚠️ 참고:</strong> 실제 질감은 미묘한 차이로 인해 이미지로 보여드리는 것은 한계가 있음을 양지해주시기 바랍니다.
+        </p>
+
+        <div class="texture-gallery">
+            <?php
+            $textureDir = $_SERVER['DOCUMENT_ROOT'] . '/ImgFolder/paper_texture/명함재질/';
+            $webPath = '/ImgFolder/paper_texture/명함재질/';
+
+            if (is_dir($textureDir)) {
+                $files = scandir($textureDir);
+                $imageFiles = array_filter($files, function($file) use ($textureDir) {
+                    $ext = strtolower(pathinfo($file, PATHINFO_EXTENSION));
+                    return in_array($ext, ['jpg', 'jpeg', 'png', 'gif', 'webp']) && is_file($textureDir . $file);
+                });
+
+                // 정렬
+                sort($imageFiles);
+
+                foreach ($imageFiles as $file) {
+                    // pathinfo()는 한글 파일명에서 문제 발생 → preg_replace 사용
+                    $textureName = preg_replace('/\.[^.]+$/', '', $file);
+                    $imagePath = $webPath . rawurlencode($file);
+                    ?>
+                    <div class="texture-item" onclick="openTextureModal('<?php echo htmlspecialchars($imagePath); ?>', '<?php echo htmlspecialchars($textureName); ?>')">
+                        <div class="texture-image-wrapper">
+                            <img src="<?php echo htmlspecialchars($imagePath); ?>"
+                                 alt="<?php echo htmlspecialchars($textureName); ?> 재질"
+                                 loading="lazy">
+                            <div class="texture-overlay">
+                                <span class="zoom-message">클릭하면 확대되어보입니다</span>
+                            </div>
+                        </div>
+                        <div class="texture-name"><?php echo htmlspecialchars($textureName); ?></div>
+                    </div>
+                    <?php
+                }
+            } else {
+                echo '<p class="no-textures">재질 이미지 폴더를 찾을 수 없습니다.</p>';
+            }
+            ?>
+        </div>
+    </div>
+
     <div class="detail-section">
         <h3>📏 제작 가능 사이즈</h3>
         <div class="size-info">
@@ -83,54 +131,6 @@
                 <div class="coating-title">고품격코팅명함</div>
                 <div class="coating-status tear-no">잘 찢어지지 않음</div>
             </div>
-        </div>
-    </div>
-
-    <div class="detail-section" id="paper-texture-section">
-        <h3>📜 명함의 재질</h3>
-        <p class="section-desc">다양한 명함 용지의 질감과 색상을 확인해보세요. 이미지를 클릭하면 크게 볼 수 있습니다.</p>
-        <p class="section-desc texture-notice">
-            <strong>📐 사이즈 안내:</strong> 아래 이미지에 표시된 <span class="old-size">편집: 91×52mm / 재단: 89×50mm</span>는 현재 <span class="new-size">편집: 92×52mm / 재단: 90×50mm</span>로 변경되었음을 알려드립니다.<br>
-            <strong>⚠️ 참고:</strong> 실제 질감은 미묘한 차이로 인해 이미지로 보여드리는 것은 한계가 있음을 양지해주시기 바랍니다.
-        </p>
-
-        <div class="texture-gallery">
-            <?php
-            $textureDir = $_SERVER['DOCUMENT_ROOT'] . '/ImgFolder/paper_texture/명함재질/';
-            $webPath = '/ImgFolder/paper_texture/명함재질/';
-
-            if (is_dir($textureDir)) {
-                $files = scandir($textureDir);
-                $imageFiles = array_filter($files, function($file) use ($textureDir) {
-                    $ext = strtolower(pathinfo($file, PATHINFO_EXTENSION));
-                    return in_array($ext, ['jpg', 'jpeg', 'png', 'gif', 'webp']) && is_file($textureDir . $file);
-                });
-
-                // 정렬
-                sort($imageFiles);
-
-                foreach ($imageFiles as $file) {
-                    // pathinfo()는 한글 파일명에서 문제 발생 → preg_replace 사용
-                    $textureName = preg_replace('/\.[^.]+$/', '', $file);
-                    $imagePath = $webPath . rawurlencode($file);
-                    ?>
-                    <div class="texture-item" onclick="openTextureModal('<?php echo htmlspecialchars($imagePath); ?>', '<?php echo htmlspecialchars($textureName); ?>')">
-                        <div class="texture-image-wrapper">
-                            <img src="<?php echo htmlspecialchars($imagePath); ?>"
-                                 alt="<?php echo htmlspecialchars($textureName); ?> 재질"
-                                 loading="lazy">
-                            <div class="texture-overlay">
-                                <span class="zoom-icon">🔍</span>
-                            </div>
-                        </div>
-                        <div class="texture-name"><?php echo htmlspecialchars($textureName); ?></div>
-                    </div>
-                    <?php
-                }
-            } else {
-                echo '<p class="no-textures">재질 이미지 폴더를 찾을 수 없습니다.</p>';
-            }
-            ?>
         </div>
     </div>
 
@@ -583,19 +583,25 @@
 }
 
 .texture-item:hover .texture-overlay {
-    background: rgba(0, 0, 0, 0.4);
+    background: rgba(0, 0, 0, 0);
 }
 
-.zoom-icon {
-    font-size: 2.5rem;
+.zoom-message {
+    font-size: 0.95rem;
+    font-weight: 500;
+    color: white;
+    background: rgba(0, 0, 0, 0.75);
+    padding: 8px 16px;
+    border-radius: 20px;
     opacity: 0;
-    transform: scale(0.5);
+    transform: translateY(10px);
     transition: all 0.3s ease;
+    white-space: nowrap;
 }
 
-.texture-item:hover .zoom-icon {
+.texture-item:hover .zoom-message {
     opacity: 1;
-    transform: scale(1);
+    transform: translateY(0);
 }
 
 .texture-name {
