@@ -11,32 +11,47 @@
 // KG이니시스 기본 설정
 // ================================
 
-// 테스트/운영 모드 설정
-define('INICIS_TEST_MODE', true); // true: 테스트 모드, false: 운영 모드
+// 환경 감지 시스템 로드
+require_once __DIR__ . '/../config.env.php';
+
+// 현재 호스트 감지
+$currentHost = $_SERVER['HTTP_HOST'] ?? 'localhost';
+$isLocalhost = (strpos($currentHost, 'localhost') !== false || strpos($currentHost, '127.0.0.1') !== false);
+$protocol = (!empty($_SERVER['HTTPS']) && $_SERVER['HTTPS'] !== 'off') ? 'https://' : 'http://';
+$baseUrl = $protocol . $currentHost;
+
+// ================================
+// ⚠️ 테스트/운영 모드 설정
+// ================================
+// true: 테스트 모드 (실제 결제 안됨, 테스트 카드만 사용 가능)
+// false: 운영 모드 (실제 결제됨, MID: dsp1147479)
+//
+// 🔐 운영 모드로 전환하려면 아래 값을 false로 변경하세요
+define('INICIS_TEST_MODE', true);
 
 // 상점 아이디 (MID)
 if (INICIS_TEST_MODE) {
     define('INICIS_MID', 'INIpayTest'); // 테스트용 MID
 } else {
-    define('INICIS_MID', 'YOUR_REAL_MID'); // 실제 가맹점 MID로 변경 필요
+    define('INICIS_MID', 'dsp1147479'); // 두손기획인쇄 실제 가맹점 MID
 }
 
 // 상점 키 (Signkey)
 if (INICIS_TEST_MODE) {
     define('INICIS_SIGNKEY', 'SU5JTElURV9UUklQTEVERVNfS0VZU1RS'); // 테스트용 Signkey
 } else {
-    define('INICIS_SIGNKEY', 'YOUR_REAL_SIGNKEY'); // 실제 Signkey로 변경 필요
+    define('INICIS_SIGNKEY', 'cEdnbCtISFZ1QUNpNm5hbG1JY1RlQT09'); // KG이니시스 웹결제 Sign Key
 }
 
-// API URL 설정
+// API URL 설정 (환경별 자동 감지)
 if (INICIS_TEST_MODE) {
     define('INICIS_STD_URL', 'https://stgstdpay.inicis.com/stdjs/INIStdPay.js'); // 표준결제 테스트 URL
-    define('INICIS_RETURN_URL', 'https://dsp1830.shop/payment/inicis_return.php'); // 운영서버 테스트
-    define('INICIS_CLOSE_URL', 'https://dsp1830.shop/payment/inicis_close.php'); // 운영서버 테스트
+    define('INICIS_RETURN_URL', $baseUrl . '/payment/inicis_return.php'); // 환경별 자동 감지
+    define('INICIS_CLOSE_URL', $baseUrl . '/payment/inicis_close.php'); // 환경별 자동 감지
 } else {
     define('INICIS_STD_URL', 'https://stdpay.inicis.com/stdjs/INIStdPay.js'); // 표준결제 운영 URL
-    define('INICIS_RETURN_URL', 'https://dsp1830.shop/payment/inicis_return.php'); // 실제 도메인
-    define('INICIS_CLOSE_URL', 'https://dsp1830.shop/payment/inicis_close.php'); // 실제 도메인
+    define('INICIS_RETURN_URL', 'https://dsp114.co.kr/payment/inicis_return.php'); // 운영 도메인
+    define('INICIS_CLOSE_URL', 'https://dsp114.co.kr/payment/inicis_close.php'); // 운영 도메인
 }
 
 // ================================
@@ -280,4 +295,4 @@ if (INICIS_ENABLE_LOG && !is_dir(INICIS_LOG_DIR)) {
 }
 
 // 초기화 로그
-logInicisTransaction('KG이니시스 설정 로드 완료 (모드: ' . (INICIS_TEST_MODE ? '테스트' : '운영') . ')', 'info');
+logInicisTransaction('KG이니시스 설정 로드 완료 (모드: ' . (INICIS_TEST_MODE ? '테스트' : '운영') . ', RETURN_URL: ' . INICIS_RETURN_URL . ')', 'info');

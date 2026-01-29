@@ -105,7 +105,7 @@ if (empty($buyer_tel)) {
     $buyer_tel = '01000000000';
 }
 if (empty($buyer_email)) {
-    $buyer_email = 'guest@dsp1830.shop';
+    $buyer_email = 'guest@dsp114.co.kr';
 }
 
 // 로그 기록
@@ -289,6 +289,90 @@ $_SESSION['inicis_timestamp'] = $timestamp;
             margin-bottom: 4px;
         }
 
+        .notice .warning-text {
+            color: #dc3545;
+            font-weight: bold;
+            margin: 10px 0;
+            line-height: 1.5;
+        }
+
+        .modal-overlay {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0,0,0,0.6);
+            z-index: 9999;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .modal-overlay.show {
+            display: flex;
+        }
+
+        .modal-box {
+            background: white;
+            border-radius: 12px;
+            padding: 30px;
+            max-width: 360px;
+            width: 90%;
+            text-align: center;
+            box-shadow: 0 10px 40px rgba(0,0,0,0.3);
+        }
+
+        .modal-box h3 {
+            color: #dc3545;
+            font-weight: bold;
+            font-size: 18px;
+            margin-bottom: 20px;
+            border-bottom: 2px solid #dc3545;
+            padding-bottom: 10px;
+        }
+
+        .modal-box p {
+            color: #dc3545;
+            font-weight: bold;
+            font-size: 15px;
+            line-height: 1.8;
+            margin-bottom: 10px;
+        }
+
+        .modal-box .phone {
+            color: #dc3545;
+            font-weight: bold;
+            font-size: 18px;
+            margin: 15px 0;
+        }
+
+        .modal-buttons {
+            display: flex;
+            gap: 10px;
+            margin-top: 20px;
+        }
+
+        .modal-buttons button {
+            flex: 1;
+            padding: 12px;
+            border: none;
+            border-radius: 6px;
+            font-size: 14px;
+            font-weight: bold;
+            cursor: pointer;
+        }
+
+        .btn-cancel {
+            background: #6c757d;
+            color: white;
+        }
+
+        .btn-confirm {
+            background: #dc3545;
+            color: white;
+        }
+
         @media (max-width: 640px) {
             .content {
                 padding: 20px;
@@ -297,26 +381,36 @@ $_SESSION['inicis_timestamp'] = $timestamp;
             .amount-value {
                 font-size: 24px;
             }
-
-            .method-item {
-                font-size: 12px;
-            }
         }
     </style>
     <!-- KG이니시스 표준결제 JS -->
     <script src="<?php echo INICIS_STD_URL; ?>" charset="UTF-8"></script>
+    <script type="text/javascript">
+        function paybtn() {
+            document.getElementById('warningModal').classList.add('show');
+        }
+        
+        function closeModal() {
+            document.getElementById('warningModal').classList.remove('show');
+        }
+        
+        function proceedPayment() {
+            closeModal();
+            INIStdPay.pay('SendPayForm_id');
+        }
+    </script>
 </head>
 <body>
     <div class="container">
         <div class="header">
-            <h1>💳 결제하기</h1>
+            <h1>결제하기</h1>
             <p>두손기획인쇄</p>
         </div>
 
         <div class="content">
             <!-- 주문 정보 -->
             <div class="order-info">
-                <h2>📦 주문 정보</h2>
+                <h2>주문 정보</h2>
                 <div class="info-row">
                     <span class="info-label">주문번호</span>
                     <span class="info-value">#<?php echo $order_no; ?></span>
@@ -341,29 +435,34 @@ $_SESSION['inicis_timestamp'] = $timestamp;
                 <div class="amount-value"><?php echo formatInicisAmount($price); ?>원</div>
             </div>
 
-            <!-- 결제 수단 -->
-            <div class="payment-methods">
-                <h3>결제 수단</h3>
-                <div class="method-list">
-                    <div class="method-item">💳 신용카드</div>
-                    <div class="method-item">📱 휴대폰</div>
-                    <div class="method-item">🏦 계좌이체</div>
-                </div>
-            </div>
-
             <!-- 결제 버튼 -->
-            <button type="button" class="btn-pay" onclick="requestPayment()">
+            <button type="button" class="btn-pay" onclick="paybtn()">
                 결제하기
             </button>
 
             <!-- 안내사항 -->
             <div class="notice">
-                <strong>📌 결제 전 확인사항</strong>
+                <strong>결제 전 확인사항</strong>
+                <p class="warning-text">택배 선불 (금액 확인 필수), 디자인 수정(금액 변동)에 해당하시는 분은 반드시 전화 후 결제 바랍니다.</p>
                 <ul>
                     <li>결제 금액과 주문 정보를 확인해주세요</li>
-                    <li>결제 후 입금 확인까지 영업일 기준 1일 소요됩니다</li>
-                    <li>결제 중 오류 발생 시 고객센터로 문의주세요 (02-2632-1830)</li>
+                    <li>문의: 02-2632-1830</li>
                 </ul>
+            </div>
+        </div>
+    </div>
+
+    <!-- 경고 모달 -->
+    <div id="warningModal" class="modal-overlay">
+        <div class="modal-box">
+            <h3>결제 전 필수 확인</h3>
+            <p>택배 선불 (금액 확인 필수)</p>
+            <p>디자인 수정 (금액 변동)</p>
+            <p>위 사항에 해당하시는 분은<br>반드시 전화 후 결제해 주세요!</p>
+            <div class="phone">02-2632-1830</div>
+            <div class="modal-buttons">
+                <button type="button" class="btn-cancel" onclick="closeModal()">취소</button>
+                <button type="button" class="btn-confirm" onclick="proceedPayment()">결제 진행</button>
             </div>
         </div>
     </div>
@@ -388,40 +487,6 @@ $_SESSION['inicis_timestamp'] = $timestamp;
         <input type="hidden" name="currency" value="WON">
     </form>
 
-    <script>
-        // SDK 로딩 확인
-        window.onload = function() {
-            if (typeof INIStdPay === 'undefined') {
-                console.error('INIStdPay SDK 로딩 실패');
-                alert('결제 모듈 로딩에 실패했습니다. 페이지를 새로고침 해주세요.');
-            } else {
-                console.log('INIStdPay SDK 로딩 성공');
-            }
-        };
 
-        function requestPayment() {
-            console.log('결제 요청 시작...');
-
-            // SDK 로딩 확인
-            if (typeof INIStdPay === 'undefined') {
-                alert('결제 모듈이 로딩되지 않았습니다. 페이지를 새로고침 해주세요.');
-                return;
-            }
-
-            try {
-                // 이니시스 표준결제 호출
-                console.log('INIStdPay.pay 호출');
-                INIStdPay.pay('SendPayForm_id');
-            } catch (e) {
-                console.error('결제 호출 오류:', e);
-                alert('결제 호출 중 오류가 발생했습니다: ' + e.message);
-            }
-        }
-
-        // 페이지 로드 시 자동 결제창 호출 (선택사항)
-        // window.onload = function() {
-        //     requestPayment();
-        // };
-    </script>
 </body>
 </html>
