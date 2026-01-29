@@ -209,6 +209,133 @@ if (empty($productType) && stripos($productName, '스티커') !== false) {
 }
 ```
 
+## 💳 Payment System (KG이니시스)
+
+### Configuration Files
+- `payment/inicis_config.php` - Main configuration (environment auto-detection)
+- `payment/config.php` - Legacy configuration (backwards compatibility)
+- `payment/README_PAYMENT.md` - Complete setup guide
+
+### Production Settings
+- **Merchant ID**: `dsp1147479`
+- **Domain**: `https://dsp114.co.kr`
+- **Test Mode**: Controlled via `INICIS_TEST_MODE` constant
+- **Environment Detection**: Automatic localhost/production URL switching
+
+### Critical Rules
+
+#### 1. Test Mode vs Production Mode
+```php
+// ⚠️ NEVER enable production mode on localhost
+define('INICIS_TEST_MODE', false);  // Only on dsp114.co.kr
+
+// ✅ ALWAYS use test mode locally
+define('INICIS_TEST_MODE', true);   // localhost default
+```
+
+#### 2. Environment URL Auto-Detection
+```php
+// ✅ CORRECT: Auto-detection based on SERVER_NAME
+if (strpos($_SERVER['SERVER_NAME'], 'dsp114.co.kr') !== false) {
+    $returnUrl = "https://dsp114.co.kr/payment/inicis_return.php";
+} else {
+    $returnUrl = "http://localhost/payment/inicis_return.php";
+}
+
+// ❌ NEVER: Hardcode production URLs in localhost
+$returnUrl = "https://dsp114.co.kr/payment/inicis_return.php";  // WRONG!
+```
+
+#### 3. Production Deployment Checklist
+- [ ] Set `INICIS_TEST_MODE = false` on production only
+- [ ] Verify `dsp114.co.kr` domain in `config.env.php`
+- [ ] Test with small amount (100-1,000원) first
+- [ ] Check logs in `/var/www/html/payment/logs/`
+- [ ] Verify database `payment_inicis` table updates
+
+### Test Card Numbers (Test Mode Only)
+| Bank | Card Number | Expiry | CVC |
+|------|-------------|--------|-----|
+| 신한 | 9410-1234-5678-1234 | Any future | 123 |
+| 국민 | 9430-1234-5678-1234 | Any future | 123 |
+| 삼성 | 9435-1234-5678-1234 | Any future | 123 |
+
+### UI/UX Features
+- **Payment Warning Modal**: Reminds users to confirm shipping/design before payment
+- **Contact Emphasis**: Phone number (02-2632-1830) prominently displayed
+- **Clean Interface**: Payment method icons removed for simplicity
+
+## 🔐 Authentication System
+
+### System Architecture (4 Independent Layers)
+
+#### 1. User Authentication
+- **Files**: `/includes/auth.php`, `/member/login_unified.php`
+- **Database**: `users` table (bcrypt), `member` table (legacy)
+- **Features**: Remember me (30 days), auto-upgrade plaintext passwords
+
+#### 2. Admin Authentication
+- **Files**: `/admin/includes/admin_auth.php`
+- **Database**: `admin_users` table
+- **Features**: Role-based access, session timeout
+
+#### 3. Order Management Authentication
+- **Files**: `/sub/checkboard_auth.php`
+- **Access**: Order verification with password
+
+#### 4. Customer Order Lookup
+- **Files**: `/sub/my_orders_auth.php`
+- **Access**: Phone + password verification
+
+### Password Storage Standards
+
+#### Bcrypt Format (Modern)
+```php
+// ✅ ALWAYS: New passwords use bcrypt
+$hash = password_hash($password, PASSWORD_DEFAULT);
+// Result: $2y$10$... (60 characters)
+```
+
+#### Plaintext Support (Legacy)
+```php
+// ✅ ALWAYS: Support legacy plaintext + auto-upgrade
+if (strlen($stored_password) === 60 && strpos($stored_password, '$2y$') === 0) {
+    // Bcrypt verification
+    $login_success = password_verify($password, $stored_password);
+} else {
+    // Plaintext verification + auto-upgrade
+    if ($password === $stored_password) {
+        $login_success = true;
+        $new_hash = password_hash($password, PASSWORD_DEFAULT);
+        // UPDATE users SET password = $new_hash WHERE id = ?
+    }
+}
+```
+
+### Critical SSOT Files
+- `includes/auth.php` - Main user authentication (bcrypt + plaintext support)
+- `member/login_unified.php` - Header login handler
+- `mlangorder_printauto/OnlineOrder_unified.php` - Order page modal login
+
+### Session Management
+- **Session Duration**: 8 hours
+- **Remember Token**: 30 days (stored in `remember_tokens` table)
+- **Cart Session Preservation**: Session ID passed via hidden field during login/signup
+
+### Authentication Consistency Rule (CRITICAL)
+
+```php
+// ❌ WRONG: Header login supports plaintext, order login doesn't
+// Header (login_unified.php): password_verify() + plaintext fallback ✓
+// Order page (auth.php): password_verify() only ✗
+// Result: Same user can't login on order page!
+
+// ✅ CORRECT: Both use identical verification logic
+// Header login: bcrypt + plaintext with auto-upgrade
+// Order login: bcrypt + plaintext with auto-upgrade
+// Result: Consistent behavior across all login points
+```
+
 ## ⚡ Development Workflow
 
 ### Before Starting Work
@@ -248,14 +375,29 @@ if (empty($productType) && stripos($productName, '스티커') !== false) {
 
 ## 🚨 Common Pitfalls to Avoid
 
+### Database & Core Logic
 1. ❌ bind_param count mismatch → customer name saved as '0'
 2. ❌ Uppercase table names → SELECT failure
 3. ❌ Uppercase include paths → file not found on Linux
 4. ❌ `getUnitCode($productType)` → sticker "개" unit bug
 5. ❌ Direct quantity formatting without unit validation
-6. ❌ CSS !important usage without proper diagnosis
-7. ❌ number_format(0.5) → "1" rounding error
-8. ❌ Changing `littleprint` to `poster` → system-wide errors
+6. ❌ number_format(0.5) → "1" rounding error
+7. ❌ Changing `littleprint` to `poster` → system-wide errors
+
+### CSS & Frontend
+8. ❌ CSS !important usage without proper diagnosis
+
+### Payment System
+9. ❌ Enabling production mode on localhost → real payments triggered
+10. ❌ Hardcoding production URLs → closeUrl domain mismatch error
+11. ❌ Forgetting to test with small amounts → accidental large payments
+12. ❌ Not checking logs after deployment → silent payment failures
+
+### Authentication
+13. ❌ Inconsistent password verification → same user can't login everywhere
+14. ❌ Not preserving cart session during login → cart data loss
+15. ❌ Only supporting bcrypt → legacy users locked out
+16. ❌ Forgetting auto-upgrade → users stuck with plaintext passwords
 
 ## 📚 Documentation References
 
@@ -266,5 +408,5 @@ if (empty($productType) && stripos($productName, '스티커') !== false) {
 
 ---
 
-*Last Updated: 2026-01-28*
+*Last Updated: 2026-01-29*
 *Environment: WSL2 Ubuntu + Windows XAMPP + Production Deployment*

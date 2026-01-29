@@ -770,7 +770,7 @@ if (!empty($debug_info) && strpos($_SERVER['HTTP_HOST'], 'localhost') !== false)
                     <div style="background: #e3f2fd; padding: 0.8rem; border-radius: 4px; margin-bottom: 1rem; border-left: 3px solid #2196f3;">
                         <p class="description-text" style="margin: 0; color: #1976d2; font-weight: bold;">
                             회원이신가요?
-                            <button onclick="showLoginModal()" style="background: #2196f3; color: white; border: none; padding: 0.3rem 0.8rem; border-radius: 15px; margin-left: 0.5rem; cursor: pointer;">
+                            <button type="button" onclick="showLoginModal(); return false;" style="background: #2196f3; color: white; border: none; padding: 0.3rem 0.8rem; border-radius: 15px; margin-left: 0.5rem; cursor: pointer;">
                                 로그인하기
                             </button>
                         </p>
@@ -1334,7 +1334,7 @@ button {
 <div id="loginModal" class="modal" style="display: none;">
     <div class="modal-content">
         <div class="modal-header">
-            <h3 style="margin: 0; color: #2c3e50;">🔐 로그인</h3>
+            <h3 style="margin: 0; color: white;">🔐 로그인</h3>
             <span class="close" onclick="hideLoginModal()">&times;</span>
         </div>
         
@@ -1406,7 +1406,7 @@ button {
 /* ID 선택자로 구체성 높이기 - common-styles.css의 min-width: 1000px 오버라이드 */
 #loginModal.modal {
     position: fixed;
-    z-index: 9999;
+    z-index: 9999999 !important; /* 챗봇(999999)보다 높게 설정 */
     left: 0;
     top: 0;
     width: 100%;
@@ -1751,8 +1751,19 @@ function toggleAddressInput() {
 
 // 로그인 모달 관련 함수들
 function showLoginModal() {
-    document.getElementById('loginModal').style.display = 'flex';
+    const modal = document.getElementById('loginModal');
+    const modalContent = modal.querySelector('.modal-content');
+    
+    modal.style.display = 'flex';
     document.body.style.overflow = 'hidden'; // 배경 스크롤 방지
+    
+    // 모달 컨텐츠 클릭 시 이벤트 전파 중지 (모달이 닫히는 것 방지)
+    if (modalContent && !modalContent.hasAttribute('data-click-handler')) {
+        modalContent.addEventListener('click', function(e) {
+            e.stopPropagation(); // 클릭 이벤트가 모달 배경으로 전파되지 않도록
+        });
+        modalContent.setAttribute('data-click-handler', 'true');
+    }
 }
 
 function hideLoginModal() {
@@ -1775,18 +1786,35 @@ function switchTab(tab) {
     }
 }
 
-// 모달 외부 클릭 시 닫기
-document.addEventListener('click', function(event) {
+// 모달 배경(overlay) 클릭 시에만 닫기 (드래그 방지)
+(function() {
     const modal = document.getElementById('loginModal');
-    if (event.target === modal) {
-        hideLoginModal();
-    }
-});
+    let mouseDownTarget = null;
+    
+    // mousedown 시 타겟 기록
+    modal.addEventListener('mousedown', function(event) {
+        mouseDownTarget = event.target;
+    });
+    
+    // mouseup 시 실제 클릭인지 확인
+    modal.addEventListener('mouseup', function(event) {
+        // mousedown과 mouseup이 같은 요소(모달 배경)에서 발생했을 때만 닫기
+        if (event.target === this && mouseDownTarget === this) {
+            hideLoginModal();
+        }
+        mouseDownTarget = null;
+    });
+    
+    // click 이벤트는 사용 안 함 (드래그와 충돌)
+})();
 
 // ESC 키로 모달 닫기
 document.addEventListener('keydown', function(event) {
     if (event.key === 'Escape') {
-        hideLoginModal();
+        const modal = document.getElementById('loginModal');
+        if (modal && modal.style.display === 'flex') {
+            hideLoginModal();
+        }
     }
 });
 

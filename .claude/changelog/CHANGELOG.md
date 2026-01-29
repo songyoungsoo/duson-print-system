@@ -4,6 +4,14 @@
 
 ---
 
+## 2026-01-29
+
+| 수정자 | 수정항목 | 관련 파일 |
+|--------|----------|-----------|
+| Claude | **KG이니시스 실제 결제 시스템 구축** - 테스트→운영 모드 전환, 환경별 자동 URL 감지, 결제 UI 개선 (경고 모달, 전화 안내) | inicis_config.php, inicis_request.php, config.env.php, README_PAYMENT.md |
+| Claude | **인증 시스템 일관성 개선** - auth.php에 평문 비밀번호 지원 추가 (자동 bcrypt 업그레이드), 주문 페이지 장바구니 세션 보존 | includes/auth.php (394번 라인), mlangorder_printauto/OnlineOrder_unified.php (1354, 1371번 라인) |
+| Claude | **문서 업데이트** - AGENTS.md에 결제/인증 시스템 섹션 추가, Common Pitfalls 업데이트 | AGENTS.md |
+
 ## 2026-01-28
 
 | 수정자 | 수정항목 | 관련 파일 |
