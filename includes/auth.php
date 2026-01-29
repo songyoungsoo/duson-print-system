@@ -391,7 +391,36 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
                     $result = mysqli_stmt_get_result($stmt);
 
                     if ($user = mysqli_fetch_assoc($result)) {
-                        if (password_verify($password, $user['password'])) {
+                        $login_success = false;
+                        $stored_password = $user['password'];
+                        $need_hash_upgrade = false;
+
+                        // bcrypt 해시인 경우 ($2y$로 시작하고 60자)
+                        if (strlen($stored_password) === 60 && strpos($stored_password, '$2y$') === 0) {
+                            // 해시된 비밀번호 확인
+                            if (password_verify($password, $stored_password)) {
+                                $login_success = true;
+                            }
+                        } else {
+                            // 평문 비밀번호인 경우 직접 비교 (레거시 지원)
+                            if ($password === $stored_password) {
+                                $login_success = true;
+                                $need_hash_upgrade = true;
+                            }
+                        }
+
+                        // 평문 비밀번호 로그인 성공 시 해시로 업그레이드
+                        if ($login_success && $need_hash_upgrade) {
+                            $new_hash = password_hash($password, PASSWORD_DEFAULT);
+                            $update_query = "UPDATE users SET password = ? WHERE id = ?";
+                            $update_stmt = mysqli_prepare($connect, $update_query);
+                            mysqli_stmt_bind_param($update_stmt, "si", $new_hash, $user['id']);
+                            mysqli_stmt_execute($update_stmt);
+                            mysqli_stmt_close($update_stmt);
+                            error_log("비밀번호 해시 업그레이드: user_id=" . $user['id']);
+                        }
+
+                        if ($login_success) {
                             // 로그인 성공
                             $_SESSION['user_id'] = $user['id'];
                             $_SESSION['username'] = $user['username'];

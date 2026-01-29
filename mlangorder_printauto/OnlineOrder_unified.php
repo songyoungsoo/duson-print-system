@@ -1353,6 +1353,7 @@ button {
         <div id="loginForm" class="tab-content active">
             <form method="POST" action="">
                 <input type="hidden" name="login_action" value="1">
+                <input type="hidden" name="cart_session_id" value="<?php echo htmlspecialchars($session_id); ?>">
                 <div class="form-group">
                     <label>아이디</label>
                     <input type="text" name="username" required placeholder="아이디를 입력하세요">
@@ -1369,6 +1370,7 @@ button {
         <div id="registerForm" class="tab-content">
             <form method="POST" action="">
                 <input type="hidden" name="register_action" value="1">
+                <input type="hidden" name="cart_session_id" value="<?php echo htmlspecialchars($session_id); ?>">
                 <div class="form-group">
                     <label>아이디 *</label>
                     <input type="text" name="reg_username" required placeholder="아이디를 입력하세요">
