@@ -138,12 +138,12 @@ $show_bank = isset($show_bank) ? $show_bank : true;
     width: 165px;
     background: #f8f9fa;
     border-left: 1px solid #e9ecef;
-    padding: 5px 5px 100px 5px;
+    padding: 5px;
     font-size: 13px;
     max-height: 100vh;
     z-index: 100;
     box-shadow: -2px 0 8px rgba(0,0,0,0.1);
-    overflow-y: auto;
+    overflow: hidden;
     box-sizing: border-box;
     font-family: 'Noto Sans KR', 'Noto Sans', sans-serif;
 }
