@@ -27,7 +27,7 @@ $baseUrl = $protocol . $currentHost;
 // false: 운영 모드 (실제 결제됨, MID: dsp1147479)
 //
 // 🔐 운영 모드로 전환하려면 아래 값을 false로 변경하세요
-define('INICIS_TEST_MODE', true);
+define('INICIS_TEST_MODE', false);
 
 // 상점 아이디 (MID)
 if (INICIS_TEST_MODE) {
