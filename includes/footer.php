@@ -65,7 +65,7 @@
                     <div class="footer-logos-right">
                         <!-- 공정거래위원회 -->
                         <div class="cert-logo-item">
-                            <img src="/images/logo-ftc.png" alt="공정거래위원회" class="cert-logo ftc-logo" onerror="this.outerHTML='<svg width=135 height=35 viewBox=%220 0 135 35%22 xmlns=%22http://www.w3.org/2000/svg%22><rect fill=%22%23fff%22 width=%22135%22 height=%2235%22 rx=%224%22/><text x=%2267.5%22 y=%2222%22 text-anchor=%22middle%22 font-size=%2212%22 font-family=%22Arial,sans-serif%22 fill=%22%23333%22>공정거래위원회</text></svg>';" />
+                            <img src="/images/logo-ftc.png" alt="공정거래위원회" class="cert-logo ftc-logo" onerror="this.outerHTML='<svg width=130 height=35 viewBox=%220 0 130 35%22 xmlns=%22http://www.w3.org/2000/svg%22><rect fill=%22%23fff%22 width=%22130%22 height=%2235%22 rx=%224%22/><text x=%2265%22 y=%2222%22 text-anchor=%22middle%22 font-size=%2212%22 font-family=%22Arial,sans-serif%22 fill=%22%23333%22>공정거래위원회</text></svg>';" />
                         </div>
                         <!-- 금융결제원 -->
                         <div class="cert-logo-item">
@@ -531,7 +531,7 @@
         }
 
         .ftc-logo {
-            width: 135px;
+            width: 130px;
             height: 35px;
         }
 
