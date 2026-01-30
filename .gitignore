@@ -115,6 +115,7 @@ config.local.php
 *secret*
 *_api_config.php
 shop_admin/logen_api_config.php
+관리자 정보입니다..txt
 
 # ============================================
 # 8. 의존성 패키지 (각 환경에서 설치)

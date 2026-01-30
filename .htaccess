@@ -1,2 +1,44 @@
+# ============================================
+# 기존 URL 리라이트 규칙
+# ============================================
 RewriteEngine On
 RewriteRule ^MlangOrder_PrintAuto/(.*)$ mlangorder_printauto/$1 [L]
+
+# ============================================
+# 1. 디렉토리 목록 노출 차단
+# ============================================
+Options -Indexes
+
+# ============================================
+# 2. 민감 파일 직접 접근 차단
+#    (PHP include/require는 서버 내부 호출이라 영향 없음)
+# ============================================
+
+# db.php, config*.php (include 전용 파일)
+<FilesMatch "^(db|config\.env)\.php$">
+    Require all denied
+</FilesMatch>
+
+# .md, .txt, .log, .sh, .sql, .env 파일
+<FilesMatch "\.(md|txt|log|sh|sql|env|bak|orig|swp)$">
+    Require all denied
+</FilesMatch>
+
+# robots.txt는 검색엔진용으로 허용
+<Files "robots.txt">
+    Require all granted
+</Files>
+
+# ============================================
+# 3. 숨김 파일/폴더 차단 (.git, .env 등)
+# ============================================
+<FilesMatch "^\.">
+    Require all denied
+</FilesMatch>
+
+# ============================================
+# 4. 백업/설정 파일 차단
+# ============================================
+<FilesMatch "\.(ini|conf|dist|bak|old|save|orig)$">
+    Require all denied
+</FilesMatch>
