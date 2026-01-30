@@ -152,13 +152,37 @@ $_SESSION['inicis_timestamp'] = $timestamp;
         .header {
             background: #2c3e50;
             color: white;
-            padding: 20px;
+            padding: 20px 20px 20px 50px;
             text-align: center;
+            position: relative;
         }
 
         .header h1 {
             font-size: 18px;
             margin-bottom: 5px;
+        }
+
+        .header-close {
+            position: absolute;
+            top: 50%;
+            left: 15px;
+            transform: translateY(-50%);
+            background: rgba(255, 255, 255, 0.2);
+            border: none;
+            color: white;
+            width: 32px;
+            height: 32px;
+            border-radius: 50%;
+            font-size: 20px;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: background 0.2s ease;
+        }
+
+        .header-close:hover {
+            background: rgba(255, 255, 255, 0.3);
         }
 
         .content {
@@ -373,26 +397,6 @@ $_SESSION['inicis_timestamp'] = $timestamp;
             color: white;
         }
 
-        .btn-back {
-            width: 100%;
-            background: #95a5a6;
-            color: white;
-            border: none;
-            padding: 12px;
-            border-radius: 8px;
-            font-size: 14px;
-            font-weight: 600;
-            cursor: pointer;
-            transition: background 0.2s ease;
-            text-decoration: none;
-            display: inline-block;
-            text-align: center;
-        }
-
-        .btn-back:hover {
-            background: #7f8c8d;
-        }
-
         @media (max-width: 640px) {
             .content {
                 padding: 20px;
@@ -429,6 +433,7 @@ $_SESSION['inicis_timestamp'] = $timestamp;
 <body>
     <div class="container">
         <div class="header">
+            <button type="button" class="header-close" onclick="goToOrderComplete()" title="닫기">&times;</button>
             <h1>결제하기</h1>
             <p>두손기획인쇄</p>
         </div>
@@ -460,11 +465,6 @@ $_SESSION['inicis_timestamp'] = $timestamp;
                 <div class="amount-label">결제 금액</div>
                 <div class="amount-value"><?php echo formatInicisAmount($price); ?>원</div>
             </div>
-
-            <!-- 이전 버튼 -->
-            <button type="button" class="btn-back" onclick="goToOrderComplete()">
-                ← 이전으로 (결제 방법 다시 선택)
-            </button>
 
             <!-- 결제 버튼 -->
             <button type="button" class="btn-pay" onclick="paybtn()">
