@@ -288,7 +288,7 @@ if ($resultCode === '0000' || $resultCode === '00') {
     // 주문 테이블 업데이트
     $update_query = "UPDATE mlangorder_printauto
                      SET money_2 = ?,
-                         OrderStyle = 'payment_confirmed'
+                         OrderStyle = '11'
                      WHERE no = ?";
 
     $stmt = mysqli_prepare($db, $update_query);

@@ -422,7 +422,22 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
 
                         if ($login_success) {
                             // 🔐 세션 고정 공격 방지 - 세션 ID 재생성
+                            // 장바구니 세션 ID를 먼저 저장 (regenerate 후 shop_temp 업데이트용)
+                            $old_session_id = $_POST['cart_session_id'] ?? session_id();
                             session_regenerate_id(true);
+                            $new_session_id = session_id();
+                            
+                            // 🔄 장바구니 데이터를 새 세션 ID로 이전
+                            if ($old_session_id !== $new_session_id && $connect) {
+                                $migrate_stmt = mysqli_prepare($connect, "UPDATE shop_temp SET session_id = ? WHERE session_id = ?");
+                                if ($migrate_stmt) {
+                                    mysqli_stmt_bind_param($migrate_stmt, 'ss', $new_session_id, $old_session_id);
+                                    mysqli_stmt_execute($migrate_stmt);
+                                    $migrated = mysqli_stmt_affected_rows($migrate_stmt);
+                                    mysqli_stmt_close($migrate_stmt);
+                                    error_log("장바구니 세션 이전: {$old_session_id} → {$new_session_id} ({$migrated}건)");
+                                }
+                            }
                             
                             // 로그인 성공
                             $_SESSION['user_id'] = $user['id'];
@@ -444,17 +459,8 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
                                 }
                             }
 
-                            // 🔄 장바구니 세션 ID 유지하면서 리다이렉트
-                            $redirect_url = $_SERVER['PHP_SELF'];
-                            
-                            // POST로 cart_session_id가 전달되었으면 GET 파라미터로 전환
-                            if (!empty($_POST['cart_session_id'])) {
-                                $cart_session = $_POST['cart_session_id'];
-                                $redirect_url .= (strpos($redirect_url, '?') !== false ? '&' : '?') . 'session_preserved=1';
-                                error_log("로그인 성공 - 세션 유지: cart_session={$cart_session}, new_session=" . session_id());
-                            }
-                            
-                            header("Location: " . $redirect_url);
+                            // 리다이렉트 (장바구니는 이미 새 세션으로 이전됨)
+                            header("Location: " . $_SERVER['PHP_SELF']);
                             exit;
                         } else {
                             $login_message = '비밀번호가 올바르지 않습니다.';

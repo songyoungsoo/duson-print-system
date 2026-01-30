@@ -219,7 +219,7 @@ if ($mode === "OrderStyleModify") {
     $after = $check_result->fetch_assoc();
     $check_stmt->close();
 
-    $orderStyleNames = [1=>"견적접수", 2=>"주문접수", 3=>"접수완료", 4=>"입금대기", 5=>"시안제작중", 6=>"시안", 7=>"교정", 8=>"작업완료", 9=>"작업중", 10=>"교정작업중"];
+    $orderStyleNames = [1=>"견적접수", 2=>"주문접수", 3=>"접수완료", 4=>"입금대기", 5=>"시안제작중", 6=>"시안", 7=>"교정", 8=>"작업완료", 9=>"작업중", 10=>"교정작업중", 11=>"카드결제"];
     $beforeName = $orderStyleNames[$before['OrderStyle']] ?? $before['OrderStyle'];
     $afterName = $orderStyleNames[$after['OrderStyle']] ?? $after['OrderStyle'];
 
@@ -463,7 +463,7 @@ if ($rows) {
         "1" => "badge--info", "2" => "badge--warning", "3" => "badge--success",
         "4" => "badge--warning", "5" => "badge--primary", "6" => "badge--info",
         "7" => "badge--warning", "8" => "badge--success", "9" => "badge--primary",
-        "10" => "badge--warning"
+        "10" => "badge--warning", "11" => "badge--danger"
     ];
     $badgeClass = $statusBadgeClass[$row["OrderStyle"]] ?? "badge--secondary";
 ?>
@@ -538,7 +538,7 @@ if (class_exists('AdditionalOptionsDisplay')) {
 $orderStyles = [
   1 => "견적접수", 2 => "주문접수", 3 => "접수완료", 4 => "입금대기",
   5 => "시안제작중", 6 => "시안", 7 => "교정", 8 => "작업완료",
-  9 => "작업중", 10 => "교정작업중"
+  9 => "작업중", 10 => "교정작업중", 11 => "카드결제"
 ];
 // 현재 OrderStyle 값 (빈 문자열이나 NULL이면 1로 기본값 설정, 0은 유효한 값으로 처리)
 $currentStatus = ($row["OrderStyle"] === '' || $row["OrderStyle"] === null) ? 1 : intval($row["OrderStyle"]);

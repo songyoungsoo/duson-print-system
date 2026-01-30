@@ -1161,6 +1161,7 @@ function getOrderItemInfo($summary_item, $specFormatter) {
                             case '3': echo '<span style="color: #004085; font-weight: bold;">확인완료</span>'; break;
                             case '6': echo '<span style="color: #721c24; font-weight: bold;">시안</span>'; break;
                             case '7': echo '<span style="color: #383d41; font-weight: bold;">교정</span>'; break;
+                            case '11': echo '<span style="color: #dc3545; font-weight: bold;">카드결제</span>'; break;
                             default: echo '<span style="color: #6c757d;">상태미정</span>';
                         }
                         ?>
@@ -1493,6 +1494,7 @@ function getOrderItemInfo($summary_item, $specFormatter) {
                                 case '3': echo '<span style="color: #004085;">확인완료</span>'; break;
                                 case '6': echo '<span style="color: #721c24;">시안</span>'; break;
                                 case '7': echo '<span style="color: #383d41;">교정</span>'; break;
+                                case '11': echo '<span style="color: #dc3545; font-weight: bold;">카드결제</span>'; break;
                                 default: echo '<span style="color: #6c757d;">상태미정</span>';
                             }
                             ?>

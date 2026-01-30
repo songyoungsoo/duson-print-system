@@ -62,7 +62,20 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
             
             if ($login_success) {
                 // 🔐 세션 고정 공격 방지 - 세션 ID 재생성
+                // 장바구니 세션 ID를 먼저 저장 (regenerate 후 shop_temp 업데이트용)
+                $old_session_id = session_id();
                 session_regenerate_id(true);
+                $new_session_id = session_id();
+                
+                // 🔄 장바구니 데이터를 새 세션 ID로 이전
+                if ($old_session_id !== $new_session_id && $db) {
+                    $migrate_stmt = mysqli_prepare($db, "UPDATE shop_temp SET session_id = ? WHERE session_id = ?");
+                    if ($migrate_stmt) {
+                        mysqli_stmt_bind_param($migrate_stmt, 'ss', $new_session_id, $old_session_id);
+                        mysqli_stmt_execute($migrate_stmt);
+                        mysqli_stmt_close($migrate_stmt);
+                    }
+                }
 
                 // 로그인 통계 업데이트
                 $login_count = ($user['login_count'] ?? 0) + 1;
@@ -117,7 +130,20 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
                     $last_login = date("Y-m-d H:i:s");
 
                     // 🔐 세션 고정 공격 방지 - 세션 ID 재생성
+                    // 장바구니 세션 ID를 먼저 저장 (regenerate 후 shop_temp 업데이트용)
+                    $old_session_id = session_id();
                     session_regenerate_id(true);
+                    $new_session_id = session_id();
+                    
+                    // 🔄 장바구니 데이터를 새 세션 ID로 이전
+                    if ($old_session_id !== $new_session_id && $db) {
+                        $cart_migrate_stmt = mysqli_prepare($db, "UPDATE shop_temp SET session_id = ? WHERE session_id = ?");
+                        if ($cart_migrate_stmt) {
+                            mysqli_stmt_bind_param($cart_migrate_stmt, 'ss', $new_session_id, $old_session_id);
+                            mysqli_stmt_execute($cart_migrate_stmt);
+                            mysqli_stmt_close($cart_migrate_stmt);
+                        }
+                    }
 
                     // 세션 설정
                     $_SESSION['user_id'] = $existing_user['id'];
@@ -156,7 +182,20 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
 
                     if (mysqli_stmt_execute($migrate_stmt)) {
                         // 🔐 세션 고정 공격 방지 - 세션 ID 재생성
+                        // 장바구니 세션 ID를 먼저 저장 (regenerate 후 shop_temp 업데이트용)
+                        $old_session_id = session_id();
                         session_regenerate_id(true);
+                        $new_session_id = session_id();
+                        
+                        // 🔄 장바구니 데이터를 새 세션 ID로 이전
+                        if ($old_session_id !== $new_session_id && $db) {
+                            $cart_migrate_stmt = mysqli_prepare($db, "UPDATE shop_temp SET session_id = ? WHERE session_id = ?");
+                            if ($cart_migrate_stmt) {
+                                mysqli_stmt_bind_param($cart_migrate_stmt, 'ss', $new_session_id, $old_session_id);
+                                mysqli_stmt_execute($cart_migrate_stmt);
+                                mysqli_stmt_close($cart_migrate_stmt);
+                            }
+                        }
 
                         // 세션 설정
                         $_SESSION['user_id'] = mysqli_insert_id($db);
