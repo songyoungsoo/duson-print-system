@@ -2039,20 +2039,20 @@ $additional_css = [
                     결제금액: <strong><?php echo number_format($total_amount_vat); ?>원</strong>
                 </div>
                 <div class="payment-options">
-                    <!-- 옵션 1: 신용카드 / 실시간 계좌이체 (이니시스) -->
-                    <div class="payment-option" onclick="payWithInicis()">
-                        <div class="option-icon">💳</div>
-                        <div class="option-info">
-                            <div class="option-title">신용카드 / 실시간 계좌이체</div>
-                            <div class="option-desc">신용카드 또는 실시간 계좌이체로 즉시 결제</div>
-                        </div>
-                    </div>
-                    <!-- 옵션 2: 무통장입금 -->
+                    <!-- 옵션 1: 무통장입금 -->
                     <div class="payment-option" onclick="showBankTransfer()">
                         <div class="option-icon">🏦</div>
                         <div class="option-info">
                             <div class="option-title">무통장입금</div>
                             <div class="option-desc">계좌번호 확인 후 직접 입금</div>
+                        </div>
+                    </div>
+                    <!-- 옵션 2: 신용카드 / 실시간 계좌이체 (이니시스) -->
+                    <div class="payment-option" onclick="payWithInicis()">
+                        <div class="option-icon">💳</div>
+                        <div class="option-info">
+                            <div class="option-title">신용카드 / 실시간 계좌이체</div>
+                            <div class="option-desc">신용카드 또는 실시간 계좌이체로 즉시 결제</div>
                         </div>
                     </div>
                 </div>
