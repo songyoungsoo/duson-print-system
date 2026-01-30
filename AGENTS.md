@@ -1,12 +1,53 @@
 # AGENTS.md - Duson Planning Print System
 
+## 🚨 CRITICAL - PRODUCTION SERVER INFO (배포 필수 확인!)
+
+**⚠️ 운영 서버 FTP/웹 루트 구조 - 배포 시 반드시 확인!**
+
+**서버 변경 내역:**
+- ❌ 구 서버: `dsp1830.shop` (마이그레이션 완료, 더 이상 사용 안 함)
+- ✅ 현재 운영: `dsp114.co.kr` (2026년 1월 현재)
+
+```
+FTP 접속 정보 (dsp114.co.kr):
+├─ Host: dsp114.co.kr
+├─ User: dsp1830
+├─ Pass: cH*j@yzj093BeTtc
+└─ Protocol: FTP (plain, port 21)
+
+FTP 디렉토리 구조:
+/ (FTP 루트)
+├─ httpdocs/          ← ✅ 실제 웹 루트 (https://dsp114.co.kr/)
+│  ├─ index.php       ← 메인 페이지
+│  ├─ payment/        ← 결제 시스템
+│  ├─ mlangprintauto/ ← 제품 페이지
+│  ├─ includes/
+│  └─ ...
+├─ public_html/       ← ❌ 웹 루트 아님! (별도 디렉토리)
+├─ logs/              ← 서버 로그
+└─ error_docs/        ← 에러 문서
+
+🎯 배포 시 업로드 경로:
+✅ 올바름: /httpdocs/payment/inicis_return.php
+❌ 틀림:   /payment/inicis_return.php
+❌ 틀림:   /public_html/payment/inicis_return.php
+```
+
+**배포 전 체크리스트:**
+- [ ] 업로드 경로가 `/httpdocs/`로 시작하는가?
+- [ ] curl 또는 FTP 클라이언트에서 경로 확인했는가?
+- [ ] 업로드 후 https://dsp114.co.kr/ 에서 동작 확인했는가?
+
+---
+
 ## 🏗️ System Overview
 
 **Duson Planning Print System (두손기획인쇄)** - PHP 7.4 기반 인쇄 주문 관리 시스템
 - **Backend**: PHP 7.4+ with MySQL 5.7+
 - **Frontend**: Mixed (PHP templates + modern JavaScript)
 - **Testing**: Playwright (E2E) + Python test utilities
-- **Document Root**: `/var/www/html`
+- **Local Document Root**: `/var/www/html` (개발 환경)
+- **Production Web Root**: `/httpdocs/` (운영 서버 FTP 기준)
 - **Environment**: Multi-environment (localhost/staging/production)
 
 ## 🚀 Build, Test & Development Commands

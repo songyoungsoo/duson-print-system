@@ -4,6 +4,34 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 ---
 
+## 🚨 PRODUCTION SERVER - FTP 웹 루트 구조 (배포 시 필수!)
+
+**⚠️ 서버 마이그레이션 완료:**
+- ❌ 구 서버: dsp1830.shop (사용 중단)
+- ✅ 현재 운영: dsp114.co.kr
+
+**⚠️ 운영 서버는 FTP 루트 ≠ 웹 루트입니다!**
+
+```
+FTP: dsp114.co.kr (dsp1830 / cH*j@yzj093BeTtc)
+
+/ (FTP 루트)
+└─ httpdocs/ ← ✅ 실제 웹 루트 (https://dsp114.co.kr/)
+
+🎯 배포 경로:
+✅ /httpdocs/payment/inicis_return.php
+❌ /payment/inicis_return.php (잘못된 경로!)
+```
+
+**curl 업로드 예시:**
+```bash
+curl -T local_file.php \
+  ftp://dsp114.co.kr/httpdocs/payment/file.php \
+  --user "dsp1830:cH*j@yzj093BeTtc"
+```
+
+---
+
 ## 🏢 Project Identity
 
 **Duson Planning Print System (두손기획인쇄)** - PHP 7.4 기반 인쇄 주문 관리 시스템
@@ -13,8 +41,9 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 - **Web Server**: Apache 2.4+
 - **PHP**: 7.4+
 - **Database**: MySQL 5.7+ (utf8mb4)
-- **Document Root**: `/var/www/html`
-- **Domains**: localhost (dev) / dsp1830.shop (staging) / dsp1830.shop (prod)
+- **Local Document Root**: `/var/www/html` (개발 환경)
+- **Production Web Root**: `/httpdocs/` (FTP 기준)
+- **Domains**: localhost (dev) / dsp114.co.kr (prod)
 
 ### 긴급 접속 정보
 ```

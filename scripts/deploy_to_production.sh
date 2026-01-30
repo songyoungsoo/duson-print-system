@@ -2,14 +2,19 @@
 
 # ============================================================================
 # 프로덕션 배포 스크립트
-# 2025-10-10 - 포스터 추가 옵션 시스템 배포
+# 2026-01-30 - FTP 웹 루트 경로 수정 (/public_html → /httpdocs)
 # ============================================================================
 
+# 🚨 CRITICAL: 운영 서버 웹 루트는 /httpdocs/ 입니다!
+# FTP 루트 ≠ 웹 루트
+# ✅ 올바름: /httpdocs/payment/file.php
+# ❌ 틀림:   /public_html/payment/file.php
+
 # FTP 접속 정보 (환경 변수 또는 직접 입력)
-FTP_HOST="${FTP_HOST:-dsp1830.shop}"
+FTP_HOST="${FTP_HOST:-dsp114.co.kr}"
 FTP_USER="${FTP_USER:-dsp1830}"
-FTP_PASS="${FTP_PASS:-ds701018}"
-FTP_REMOTE_DIR="${FTP_REMOTE_DIR:-/public_html}"
+FTP_PASS="${FTP_PASS:-cH*j@yzj093BeTtc}"
+FTP_REMOTE_DIR="${FTP_REMOTE_DIR:-/httpdocs}"
 
 # 로컬 경로
 LOCAL_ROOT="/var/www/html"
@@ -133,13 +138,13 @@ echo ""
 echo -e "${GREEN}✅ 파일 업로드 완료${NC}"
 echo ""
 echo "📌 다음 단계:"
-echo "1. SSH 접속하여 심볼릭 링크 생성:"
-echo "   cd /home/$FTP_USER/public_html/admin"
-echo "   ln -s MlangPrintAuto mlangprintauto"
+echo "1. 프로덕션 사이트 테스트:"
+echo "   https://dsp114.co.kr/"
 echo ""
-echo "2. 프로덕션 사이트 테스트:"
-echo "   https://dsp1830.shop/mlangprintauto/littleprint/"
+echo "2. 업로드 경로 확인:"
+echo "   ✅ FTP 경로: /httpdocs/ (웹 루트)"
+echo "   ❌ 잘못된 경로: /public_html/ (웹 루트 아님)"
 echo ""
-echo "3. 관리자 페이지 테스트:"
-echo "   https://dsp1830.shop/admin/MlangPrintAuto/admin.php"
+echo "3. 결제 시스템 테스트:"
+echo "   https://dsp114.co.kr/payment/inicis_request.php"
 echo ""

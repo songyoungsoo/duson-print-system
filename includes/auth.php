@@ -421,6 +421,9 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
                         }
 
                         if ($login_success) {
+                            // 🔐 세션 고정 공격 방지 - 세션 ID 재생성
+                            session_regenerate_id(true);
+                            
                             // 로그인 성공
                             $_SESSION['user_id'] = $user['id'];
                             $_SESSION['username'] = $user['username'];
@@ -441,8 +444,17 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
                                 }
                             }
 
-                            // 리다이렉트
-                            header("Location: " . $_SERVER['PHP_SELF']);
+                            // 🔄 장바구니 세션 ID 유지하면서 리다이렉트
+                            $redirect_url = $_SERVER['PHP_SELF'];
+                            
+                            // POST로 cart_session_id가 전달되었으면 GET 파라미터로 전환
+                            if (!empty($_POST['cart_session_id'])) {
+                                $cart_session = $_POST['cart_session_id'];
+                                $redirect_url .= (strpos($redirect_url, '?') !== false ? '&' : '?') . 'session_preserved=1';
+                                error_log("로그인 성공 - 세션 유지: cart_session={$cart_session}, new_session=" . session_id());
+                            }
+                            
+                            header("Location: " . $redirect_url);
                             exit;
                         } else {
                             $login_message = '비밀번호가 올바르지 않습니다.';
