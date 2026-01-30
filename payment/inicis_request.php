@@ -152,7 +152,7 @@ $_SESSION['inicis_timestamp'] = $timestamp;
         .header {
             background: #2c3e50;
             color: white;
-            padding: 20px 20px 20px 50px;
+            padding: 20px 50px 20px 20px;
             text-align: center;
             position: relative;
         }
@@ -165,7 +165,7 @@ $_SESSION['inicis_timestamp'] = $timestamp;
         .header-close {
             position: absolute;
             top: 50%;
-            left: 15px;
+            right: 15px;
             transform: translateY(-50%);
             background: rgba(255, 255, 255, 0.2);
             border: none;
