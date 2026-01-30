@@ -95,7 +95,8 @@ Thumbs.db
 # 6. IDE/에디터 설정
 # ============================================
 .idea/
-.vscode/
+.vscode/*
+!.vscode/extensions.json
 *.swp
 *.swo
 *.sublime-project

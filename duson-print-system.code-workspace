@@ -1,0 +1,39 @@
+{
+	"folders": [
+		{
+			"name": "Duson Print System",
+			"path": "."
+		}
+	],
+	"settings": {
+		"files.exclude": {
+			"**/.git": false,
+			"**/node_modules": true,
+			"**/vendor": true
+		},
+		"search.exclude": {
+			"**/node_modules": true,
+			"**/vendor": true,
+			"**/*.log": true
+		},
+		"files.associations": {
+			"*.php": "php"
+		},
+		"php.validate.enable": true,
+		"php.validate.executablePath": "/usr/bin/php",
+		"[php]": {
+			"editor.tabSize": 4,
+			"editor.insertSpaces": false,
+			"editor.formatOnSave": false
+		},
+		"terminal.integrated.defaultProfile.linux": "bash",
+		"terminal.integrated.cwd": "/var/www/html"
+	},
+	"extensions": {
+		"recommendations": [
+			"bmewburn.vscode-intelephense-client",
+			"xdebug.php-debug",
+			"ms-playwright.playwright"
+		]
+	}
+}
