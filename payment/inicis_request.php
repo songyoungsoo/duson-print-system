@@ -373,6 +373,26 @@ $_SESSION['inicis_timestamp'] = $timestamp;
             color: white;
         }
 
+        .btn-back {
+            width: 100%;
+            background: #95a5a6;
+            color: white;
+            border: none;
+            padding: 12px;
+            border-radius: 8px;
+            font-size: 14px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: background 0.2s ease;
+            text-decoration: none;
+            display: inline-block;
+            text-align: center;
+        }
+
+        .btn-back:hover {
+            background: #7f8c8d;
+        }
+
         @media (max-width: 640px) {
             .content {
                 padding: 20px;
@@ -392,6 +412,12 @@ $_SESSION['inicis_timestamp'] = $timestamp;
         
         function closeModal() {
             document.getElementById('warningModal').classList.remove('show');
+        }
+
+        function goToOrderComplete() {
+            var orderNo = '<?php echo $order_no; ?>';
+            // 주문 완료 페이지로 돌아가기 (세션에서 주문 정보 복원)
+            window.location.href = '/mlangorder_printauto/OrderComplete_universal.php?orders=' + orderNo + '&payment=cancelled';
         }
         
         function proceedPayment() {
@@ -435,6 +461,11 @@ $_SESSION['inicis_timestamp'] = $timestamp;
                 <div class="amount-value"><?php echo formatInicisAmount($price); ?>원</div>
             </div>
 
+            <!-- 이전 버튼 -->
+            <button type="button" class="btn-back" onclick="goToOrderComplete()">
+                ← 이전으로 (결제 방법 다시 선택)
+            </button>
+
             <!-- 결제 버튼 -->
             <button type="button" class="btn-pay" onclick="paybtn()">
                 결제하기
@@ -461,7 +492,7 @@ $_SESSION['inicis_timestamp'] = $timestamp;
             <p>위 사항에 해당하시는 분은<br>반드시 전화 후 결제해 주세요!</p>
             <div class="phone">02-2632-1830</div>
             <div class="modal-buttons">
-                <button type="button" class="btn-cancel" onclick="closeModal()">취소</button>
+                <button type="button" class="btn-cancel" onclick="goToOrderComplete()">이전으로</button>
                 <button type="button" class="btn-confirm" onclick="proceedPayment()">결제 진행</button>
             </div>
         </div>

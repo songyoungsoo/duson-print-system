@@ -396,6 +396,7 @@ function displayProductDetails($connect, $order) {
 $orders = $_GET['orders'] ?? '';
 $email = $_GET['email'] ?? '';
 $name = $_GET['name'] ?? '';
+$payment_status = $_GET['payment'] ?? ''; // payment=cancelled, failed, success
 
 if (empty($orders)) {
     echo "<script>alert('잘못된 접근입니다.'); location.href='../mlangorder_printauto/shop/cart.php';</script>";
@@ -754,6 +755,16 @@ $additional_css = [
 .payment-amount strong {
     font-size: 20px;
     color: #D9534F;
+}
+
+.payment-cancelled-message {
+    background: #fff3cd;
+    border-left: 4px solid #f39c12;
+    border-radius: 6px;
+    padding: 12px 16px;
+    margin-bottom: 16px;
+    color: #856404;
+    text-align: center;
 }
 
 .payment-options {
@@ -2035,6 +2046,13 @@ $additional_css = [
                 <h3 class="modal-title">결제 방법 선택</h3>
             </div>
             <div class="payment-modal-body">
+                <?php if ($payment_status === 'cancelled'): ?>
+                    <div class="payment-cancelled-message">
+                        <strong>⚠️ 결제가 취소되었습니다</strong><br>
+                        <span style="font-size: 13px; color: #666;">결제를 다시 시도하거나 무통장입금을 이용해주세요.</span>
+                    </div>
+                <?php endif; ?>
+
                 <div class="payment-amount">
                     결제금액: <strong><?php echo number_format($total_amount_vat); ?>원</strong>
                 </div>
@@ -2157,6 +2175,20 @@ document.addEventListener('keydown', function(e) {
 
 // 페이지 로드 애니메이션
 document.addEventListener('DOMContentLoaded', function() {
+    // 결제 취소/실패 시 자동으로 결제 모달 열기
+    var paymentStatus = <?php echo json_encode($payment_status); ?>;
+    if (paymentStatus === 'cancelled' || paymentStatus === 'failed') {
+        setTimeout(function() {
+            openPaymentModal();
+        }, 500);
+
+        // URL에서 payment 파라미터 제거 (새로고침 시 메시지 다시 표시 방지)
+        if (window.history.replaceState) {
+            var newUrl = window.location.pathname + window.location.search.replace(/[?&]payment=[^&]*/, '').replace(/^&/, '?');
+            window.history.replaceState({}, document.title, newUrl);
+        }
+    }
+
     // 테이블 행들에 순차적 애니메이션
     const rows = document.querySelectorAll('.order-row');
     rows.forEach((row, index) => {
@@ -2165,7 +2197,7 @@ document.addEventListener('DOMContentLoaded', function() {
             row.style.transform = 'translateY(0)';
         }, index * 100);
     });
-    
+
     // 성공 헤더 펄스 효과
     const header = document.querySelector('.success-header');
     if (header) {

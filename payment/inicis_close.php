@@ -18,6 +18,12 @@ unset($_SESSION['inicis_oid']);
 unset($_SESSION['inicis_order_no']);
 unset($_SESSION['inicis_price']);
 unset($_SESSION['inicis_timestamp']);
+
+// OrderComplete 페이지로 리다이렉트 (결제 취소 상태)
+if ($order_no > 0) {
+    header('Location: /mlangorder_printauto/OrderComplete_universal.php?orders=' . $order_no . '&payment=cancelled');
+    exit;
+}
 ?>
 <!DOCTYPE html>
 <html lang="ko">
