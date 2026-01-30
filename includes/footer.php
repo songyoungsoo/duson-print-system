@@ -29,35 +29,51 @@
                     <a href="/sub/customer/how_to_use.php" class="footer-nav-link">고객센터</a>
                 </div>
 
-                <!-- 회사 정보 -->
-                <div class="footer-info">
-                    <div class="company-main">
-                        <span class="company-name">두손기획인쇄</span>
-                        <span class="info-divider">|</span>
-                        <span>대표 : 차경선</span>
-                        <span class="info-divider">|</span>
-                        <span>Tel : 1688-2384</span>
-                    </div>
-                    <div class="company-detail">
-                        <span>사업자등록번호 : 107-06-45106</span>
-                        <span class="info-divider">|</span>
-                        <span>주소 : 서울시 영등포구 영등포로 36길 9 송호빌딩 1층</span>
-                    </div>
-                </div>
+                <!-- 회사 정보 및 인증마크 -->
+                <div class="footer-info-section">
+                    <div class="footer-info-left">
+                        <!-- 회사 정보 -->
+                        <div class="footer-info">
+                            <div class="company-main">
+                                <span class="company-name">두손기획인쇄</span>
+                                <span>대표자 : 차경선</span>
+                                <span class="info-divider">|</span>
+                                <span>TEL 1688-2384 / 02-2632-1830</span>
+                                <span class="info-divider">|</span>
+                                <span>FAX 02-2362-1829</span>
+                                <span class="info-divider">|</span>
+                                <span>E-mail : dsp1830@naver.com</span>
+                            </div>
+                            <div class="company-detail">
+                                <span>사업자등록번호 107-06-45106</span>
+                                <span class="info-divider">|</span>
+                                <span>통신판매업신고 영등포 제2008-0105</span>
+                                <span class="info-divider">|</span>
+                                <span>주소 : 서울시 영등포구 영등포로 36길 9 송호빌딩 1층</span>
+                            </div>
+                        </div>
 
-                <!-- 하단 저작권 및 KB 에스크로 -->
-                <div class="footer-bottom-compact">
-                    <div class="copyright-text">
-                        COPYRIGHT© 2004 두손기획인쇄 ALL RIGHTS RESERVED
+                        <!-- 하단 저작권 -->
+                        <div class="copyright-section">
+                            <div class="copyright-text">
+                                COPYRIGHT© 2004 두손기획인쇄 ALL RIGHTS RESERVED
+                            </div>
+                        </div>
                     </div>
-                    <div class="escrow-compact">
-                        <a href="javascript:onPopKBAuthMark();"
-                           title="KB 에스크로 가입 사실 확인"
-                           class="escrow-link-compact">
-                            <img src="/images/escrowcmark.gif"
-                                 alt="KB 에스크로 인증마크"
-                                 class="escrow-img-compact" />
-                            <span class="escrow-text-compact">KB 에스크로 서비스</span>
+
+                    <!-- 인증마크 (우측) -->
+                    <div class="footer-logos-right">
+                        <!-- 공정거래위원회 -->
+                        <a href="https://www.ftc.go.kr/bizCommPop.do?wrkr_no=1070645106" target="_blank" rel="noopener noreferrer" class="cert-logo-link" title="공정거래위원회 사업자정보 확인">
+                            <img src="/images/logo-ftc.png" alt="공정거래위원회" class="cert-logo" onerror="this.src='data:image/svg+xml,%3Csvg xmlns=%22http://www.w3.org/2000/svg%22 width=%2260%22 height=%2230%22 viewBox=%220 0 60 30%22%3E%3Crect fill=%22%23fff%22 width=%2260%22 height=%2230%22 rx=%224%22/%3E%3Ctext x=%2230%22 y=%2220%22 text-anchor=%22middle%22 font-size=%228%22 fill=%22%23333%22%3E공정거래%3C/text%3E%3C/svg%3E';" />
+                        </a>
+                        <!-- 금융결제원 -->
+                        <a href="https://www.kftc.co.kr/" target="_blank" rel="noopener noreferrer" class="cert-logo-link" title="금융결제원">
+                            <img src="/images/logo-kftc.png" alt="금융결제원" class="cert-logo" onerror="this.src='data:image/svg+xml,%3Csvg xmlns=%22http://www.w3.org/2000/svg%22 width=%2260%22 height=%2230%22 viewBox=%220 0 60 30%22%3E%3Crect fill=%22%23fff%22 width=%2260%22 height=%2230%22 rx=%224%22/%3E%3Ctext x=%2230%22 y=%2220%22 text-anchor=%22middle%22 font-size=%228%22 fill=%22%23333%22%3E금융결제원%3C/text%3E%3C/svg%3E';" />
+                        </a>
+                        <!-- KB 에스크로 -->
+                        <a href="javascript:onPopKBAuthMark();" title="KB 에스크로 가입 사실 확인" class="cert-logo-link">
+                            <img src="/images/escrowcmark.gif" alt="KB 에스크로 인증마크" class="cert-logo" />
                         </a>
                     </div>
                 </div>
@@ -431,28 +447,42 @@
             font-size: 12px;
         }
 
+        /* 회사 정보 및 인증마크 영역 */
+        .footer-info-section {
+            display: flex;
+            justify-content: space-between;
+            align-items: flex-start;
+            padding: 15px 0;
+            gap: 20px;
+        }
+
+        .footer-info-left {
+            flex: 1;
+        }
+
         /* 회사 정보 */
         .footer-info {
-            text-align: center;
+            text-align: left;
             padding: 10px 0;
-            border-bottom: 1px solid rgba(255, 255, 255, 0.2);
-            margin-bottom: 12px;
         }
 
         .company-main {
-            margin-bottom: 6px;
+            margin-bottom: 8px;
             font-size: 13px;
+            line-height: 1.6;
+            color: #ffffff;
         }
 
         .company-name {
             color: #ffc107;
             font-weight: 700;
-            margin-right: 3px;
+            margin-right: 5px;
         }
 
         .company-detail {
             font-size: 12px;
             color: #e0e0e0;
+            line-height: 1.5;
         }
 
         .info-divider {
@@ -460,12 +490,11 @@
             margin: 0 8px;
         }
 
-        /* 하단 저작권 및 KB 에스크로 */
-        .footer-bottom-compact {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            padding: 10px 0;
+        /* 저작권 섹션 */
+        .copyright-section {
+            margin-top: 12px;
+            padding-top: 10px;
+            border-top: 1px solid rgba(255, 255, 255, 0.15);
         }
 
         .copyright-text {
@@ -473,36 +502,31 @@
             color: #b0b0b0;
         }
 
-        .escrow-compact {
+        /* 인증마크 (우측) */
+        .footer-logos-right {
             display: flex;
+            flex-direction: column;
             align-items: center;
+            gap: 8px;
+            flex-shrink: 0;
         }
 
-        .escrow-link-compact {
-            display: flex;
-            align-items: center;
-            text-decoration: none;
-            background: white;
-            padding: 4px 10px;
-            border-radius: 6px;
+        .cert-logo-link {
+            display: block;
             transition: transform 0.2s ease, box-shadow 0.2s ease;
+            border-radius: 4px;
+            overflow: hidden;
         }
 
-        .escrow-link-compact:hover {
+        .cert-logo-link:hover {
             transform: translateY(-2px);
-            box-shadow: 0 4px 12px rgba(102, 126, 234, 0.4);
+            box-shadow: 0 4px 12px rgba(255, 255, 255, 0.2);
         }
 
-        .escrow-img-compact {
-            height: 24px;
+        .cert-logo {
+            height: 30px;
             width: auto;
-            margin-right: 6px;
-        }
-
-        .escrow-text-compact {
-            color: #2c3e50;
-            font-size: 11px;
-            font-weight: 600;
+            display: block;
         }
 
         /* 법적 정보 모달 스타일 */
@@ -598,43 +622,50 @@
                 font-size: 11px;
             }
 
+            .footer-info-section {
+                flex-direction: column;
+                align-items: center;
+                gap: 15px;
+            }
+
+            .footer-info-left {
+                width: 100%;
+            }
+
             .footer-info {
-                word-break: keep-all;
+                text-align: center;
             }
 
             .company-main,
             .company-detail {
                 font-size: 10px;
                 word-break: keep-all;
-            }
-
-            .company-detail {
                 display: flex;
                 flex-direction: column;
                 gap: 2px;
             }
 
-            .company-detail .info-divider {
+            .info-divider {
                 display: none;
             }
 
-            .footer-bottom-compact {
-                flex-direction: column;
-                gap: 10px;
+            .copyright-section {
                 text-align: center;
+            }
+
+            .footer-logos-right {
+                flex-direction: row;
+                justify-content: center;
+                width: 100%;
+            }
+
+            .cert-logo {
+                height: 25px;
             }
 
             .copyright-text {
                 font-size: 9px;
                 word-break: keep-all;
-            }
-
-            .escrow-img-compact {
-                height: 20px;
-            }
-
-            .escrow-text-compact {
-                font-size: 10px;
             }
 
             .legal-modal-content {
@@ -646,6 +677,17 @@
             .legal-modal-header {
                 padding: 1rem;
                 font-size: 1rem;
+            }
+        }
+
+        @media (max-width: 480px) {
+            .company-main,
+            .company-detail {
+                font-size: 9px;
+            }
+
+            .cert-logo {
+                height: 22px;
             }
         }
         </style>
