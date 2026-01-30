@@ -73,7 +73,7 @@
                         </a>
                         <!-- KB 에스크로 -->
                         <a href="javascript:onPopKBAuthMark();" title="KB 에스크로 가입 사실 확인" class="cert-logo-link">
-                            <img src="/images/escrowcmark.gif" alt="KB 에스크로 인증마크" class="cert-logo kb-logo" onerror="this.outerHTML='<svg width=50 height=50 viewBox=%220 0 50 50%22 xmlns=%22http://www.w3.org/2000/svg%22><rect fill=%22%23fff%22 width=%2250%22 height=%2250%22 rx=%2250%22/><text x=%2225%22 y=%2230%22 text-anchor=%22middle%22 font-size=%229%22 font-family=%22Arial,sans-serif%22 fill=%22%23333%22>KB</text></svg>';" />
+                            <img src="/images/escrowcmark.gif" alt="KB 에스크로 인증마크" class="cert-logo kb-logo" onerror="this.outerHTML='<svg width=60 height=60 viewBox=%220 0 60 60%22 xmlns=%22http://www.w3.org/2000/svg%22><rect fill=%22%23fff%22 width=%2260%22 height=%2260%22 rx=%2260%22/><text x=%2230%22 y=%2237%22 text-anchor=%22middle%22 font-size=%2211%22 font-family=%22Arial,sans-serif%22 fill=%22%23333%22>KB</text></svg>';" />
                         </a>
                     </div>
                 </div>
@@ -541,8 +541,8 @@
         }
 
         .kb-logo {
-            width: 50px;
-            height: 50px;
+            width: 60px;
+            height: 60px;
             border-radius: 50%;
         }
 
@@ -685,8 +685,8 @@
             }
 
             .kb-logo {
-                width: 50px;
-                height: 50px;
+                width: 60px;
+                height: 60px;
                 border-radius: 50%;
             }
 
@@ -720,8 +720,8 @@
             }
 
             .kb-logo {
-                width: 50px;
-                height: 50px;
+                width: 60px;
+                height: 60px;
                 border-radius: 50%;
             }
         }
