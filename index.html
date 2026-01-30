@@ -1,0 +1,112 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="description" content="다국어 웹 번역기 - 100개 이상의 언어를 지원하는 무료 온라인 번역 서비스">
+    <title>웹 번역기 | Web Translator</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+    <div class="background-effects">
+        <div class="gradient-orb orb-1"></div>
+        <div class="gradient-orb orb-2"></div>
+        <div class="gradient-orb orb-3"></div>
+    </div>
+
+    <div class="container">
+        <header class="header">
+            <div class="logo">
+                <svg class="logo-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                    <path d="M12.87 15.07l-2.54-2.51.03-.03A17.52 17.52 0 0014.07 6H17V4h-7V2H8v2H1v2h11.17C11.5 7.92 10.44 9.75 9 11.35 8.07 10.32 7.3 9.19 6.69 8h-2c.73 1.63 1.73 3.17 2.98 4.56l-5.09 5.02L4 19l5-5 3.11 3.11.76-2.04z"/>
+                    <path d="M21.07 12l-4.83 12h-2.27l1.87-5H12.6l1.87 5h-2.27L7.37 12h2.25l2.5 6.67L14.62 12h2.25l2.5 6.67L21.87 12h2.25l-3.05 8"/>
+                </svg>
+                <h1>웹 번역기</h1>
+            </div>
+            <p class="tagline">100+ 언어를 지원하는 무료 번역 서비스</p>
+        </header>
+
+        <main class="translator-card">
+            <div class="language-selector">
+                <div class="language-select-wrapper">
+                    <label for="source-lang">원본 언어</label>
+                    <select id="source-lang" class="language-dropdown">
+                        <option value="auto">자동 감지</option>
+                    </select>
+                </div>
+
+                <button id="swap-btn" class="swap-button" title="언어 교환">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <path d="M7 16V4m0 0L3 8m4-4l4 4M17 8v12m0 0l4-4m-4 4l-4-4"/>
+                    </svg>
+                </button>
+
+                <div class="language-select-wrapper">
+                    <label for="target-lang">번역 언어</label>
+                    <select id="target-lang" class="language-dropdown">
+                    </select>
+                </div>
+            </div>
+
+            <div class="translation-area">
+                <div class="text-panel source-panel">
+                    <div class="panel-header">
+                        <span class="panel-label">원문</span>
+                        <span id="char-count" class="char-count">0 / 5000</span>
+                    </div>
+                    <textarea 
+                        id="source-text" 
+                        class="text-input" 
+                        placeholder="번역할 텍스트를 입력하세요..."
+                        maxlength="5000"
+                    ></textarea>
+                    <div class="panel-actions">
+                        <button id="clear-btn" class="action-btn" title="지우기">
+                            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                <path d="M18 6L6 18M6 6l12 12"/>
+                            </svg>
+                        </button>
+                    </div>
+                </div>
+
+                <div class="text-panel target-panel">
+                    <div class="panel-header">
+                        <span class="panel-label">번역 결과</span>
+                        <div id="detected-lang" class="detected-language"></div>
+                    </div>
+                    <div id="target-text" class="text-output">
+                        <span class="placeholder-text">번역 결과가 여기에 표시됩니다</span>
+                    </div>
+                    <div class="panel-actions">
+                        <button id="copy-btn" class="action-btn" title="복사" disabled>
+                            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                <rect x="9" y="9" width="13" height="13" rx="2" ry="2"/>
+                                <path d="M5 15H4a2 2 0 01-2-2V4a2 2 0 012-2h9a2 2 0 012 2v1"/>
+                            </svg>
+                            <span class="copy-feedback">복사됨!</span>
+                        </button>
+                    </div>
+                </div>
+            </div>
+
+            <button id="translate-btn" class="translate-button">
+                <span class="btn-text">번역하기</span>
+                <div class="btn-loader">
+                    <div class="spinner"></div>
+                </div>
+            </button>
+        </main>
+
+        <footer class="footer">
+            <p>Powered by MyMemory Translation API</p>
+        </footer>
+    </div>
+
+    <div id="toast" class="toast"></div>
+
+    <script src="app.js"></script>
+</body>
+</html>
