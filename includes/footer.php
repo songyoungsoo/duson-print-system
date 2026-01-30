@@ -65,15 +65,15 @@
                     <div class="footer-logos-right">
                         <!-- 공정거래위원회 -->
                         <div class="cert-logo-item">
-                            <img src="/images/logo-ftc.png" alt="공정거래위원회" class="cert-logo ftc-logo" onerror="this.src='data:image/svg+xml,%3Csvg xmlns=%22http://www.w3.org/2000/svg%22 width=%22135%22 height=%2235%22 viewBox=%220 0 135 35%22%3E%3Crect fill=%22%23fff%22 width=%22135%22 height=%2235%22 rx=%224%22/%3E%3Ctext x=%2267.5%22 y=%2222%22 text-anchor=%22middle%22 font-size=%2211%22 fill=%22%23333%22%3E공정거래%3C/text%3E%3C/svg%3E';" />
+                            <img src="/images/logo-ftc.png" alt="공정거래위원회" class="cert-logo ftc-logo" onerror="this.outerHTML='<svg width=135 height=35 viewBox=%220 0 135 35%22 xmlns=%22http://www.w3.org/2000/svg%22><rect fill=%22%23fff%22 width=%22135%22 height=%2235%22 rx=%224%22/><text x=%2267.5%22 y=%2222%22 text-anchor=%22middle%22 font-size=%2212%22 font-family=%22Arial,sans-serif%22 fill=%22%23333%22>공정거래위원회</text></svg>';" />
                         </div>
                         <!-- 금융결제원 -->
                         <div class="cert-logo-item">
-                            <img src="/images/logo-kftc.png" alt="금융결제원" class="cert-logo kftc-logo" onerror="this.src='data:image/svg+xml,%3Csvg xmlns=%22http://www.w3.org/2000/svg%22 width=%22135%22 height=%2235%22 viewBox=%220 0 135 35%22%3E%3Crect fill=%22%23fff%22 width=%22135%22 height=%2235%22 rx=%224%22/%3E%3Ctext x=%2267.5%22 y=%2222%22 text-anchor=%22middle%22 font-size=%2211%22 fill=%22%23333%22%3E금융결제원%3C/text%3E%3C/svg%3E';" />
+                            <img src="/images/logo-kftc.png" alt="금융결제원" class="cert-logo kftc-logo" onerror="this.outerHTML='<svg width=135 height=35 viewBox=%220 0 135 35%22 xmlns=%22http://www.w3.org/2000/svg%22><rect fill=%22%23fff%22 width=%22135%22 height=%2235%22 rx=%224%22/><text x=%2267.5%22 y=%2222%22 text-anchor=%22middle%22 font-size=%2212%22 font-family=%22Arial,sans-serif%22 fill=%22%23333%22>금융결제원</text></svg>';" />
                         </div>
                         <!-- KB 에스크로 -->
                         <a href="javascript:onPopKBAuthMark();" title="KB 에스크로 가입 사실 확인" class="cert-logo-link">
-                            <img src="/images/escrowcmark.gif" alt="KB 에스크로 인증마크" class="cert-logo kb-logo" />
+                            <img src="/images/escrowcmark.gif" alt="KB 에스크로 인증마크" class="cert-logo kb-logo" onerror="this.outerHTML='<svg width=40 height=40 viewBox=%220 0 40 40%22 xmlns=%22http://www.w3.org/2000/svg%22><rect fill=%22%23fff%22 width=%2240%22 height=%2240%22 rx=%224%22/><text x=%2220%22 y=%2225%22 text-anchor=%22middle%22 font-size=%228%22 font-family=%22Arial,sans-serif%22 fill=%22%23333%22>KB</text></svg>';" />
                         </a>
                     </div>
                 </div>
