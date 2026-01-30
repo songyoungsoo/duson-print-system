@@ -64,16 +64,16 @@
                     <!-- 인증마크 (우측) -->
                     <div class="footer-logos-right">
                         <!-- 공정거래위원회 -->
-                        <a href="https://www.ftc.go.kr/bizCommPop.do?wrkr_no=1070645106" target="_blank" rel="noopener noreferrer" class="cert-logo-link" title="공정거래위원회 사업자정보 확인">
-                            <img src="/images/logo-ftc.png" alt="공정거래위원회" class="cert-logo" onerror="this.src='data:image/svg+xml,%3Csvg xmlns=%22http://www.w3.org/2000/svg%22 width=%2260%22 height=%2230%22 viewBox=%220 0 60 30%22%3E%3Crect fill=%22%23fff%22 width=%2260%22 height=%2230%22 rx=%224%22/%3E%3Ctext x=%2230%22 y=%2220%22 text-anchor=%22middle%22 font-size=%228%22 fill=%22%23333%22%3E공정거래%3C/text%3E%3C/svg%3E';" />
-                        </a>
+                        <div class="cert-logo-item">
+                            <img src="/images/logo-ftc.png" alt="공정거래위원회" class="cert-logo ftc-logo" onerror="this.src='data:image/svg+xml,%3Csvg xmlns=%22http://www.w3.org/2000/svg%22 width=%22135%22 height=%2235%22 viewBox=%220 0 135 35%22%3E%3Crect fill=%22%23fff%22 width=%22135%22 height=%2235%22 rx=%224%22/%3E%3Ctext x=%2267.5%22 y=%2222%22 text-anchor=%22middle%22 font-size=%2211%22 fill=%22%23333%22%3E공정거래%3C/text%3E%3C/svg%3E';" />
+                        </div>
                         <!-- 금융결제원 -->
-                        <a href="https://www.kftc.co.kr/" target="_blank" rel="noopener noreferrer" class="cert-logo-link" title="금융결제원">
-                            <img src="/images/logo-kftc.png" alt="금융결제원" class="cert-logo" onerror="this.src='data:image/svg+xml,%3Csvg xmlns=%22http://www.w3.org/2000/svg%22 width=%2260%22 height=%2230%22 viewBox=%220 0 60 30%22%3E%3Crect fill=%22%23fff%22 width=%2260%22 height=%2230%22 rx=%224%22/%3E%3Ctext x=%2230%22 y=%2220%22 text-anchor=%22middle%22 font-size=%228%22 fill=%22%23333%22%3E금융결제원%3C/text%3E%3C/svg%3E';" />
-                        </a>
+                        <div class="cert-logo-item">
+                            <img src="/images/logo-kftc.png" alt="금융결제원" class="cert-logo kftc-logo" onerror="this.src='data:image/svg+xml,%3Csvg xmlns=%22http://www.w3.org/2000/svg%22 width=%22135%22 height=%2235%22 viewBox=%220 0 135 35%22%3E%3Crect fill=%22%23fff%22 width=%22135%22 height=%2235%22 rx=%224%22/%3E%3Ctext x=%2267.5%22 y=%2222%22 text-anchor=%22middle%22 font-size=%2211%22 fill=%22%23333%22%3E금융결제원%3C/text%3E%3C/svg%3E';" />
+                        </div>
                         <!-- KB 에스크로 -->
                         <a href="javascript:onPopKBAuthMark();" title="KB 에스크로 가입 사실 확인" class="cert-logo-link">
-                            <img src="/images/escrowcmark.gif" alt="KB 에스크로 인증마크" class="cert-logo" />
+                            <img src="/images/escrowcmark.gif" alt="KB 에스크로 인증마크" class="cert-logo kb-logo" />
                         </a>
                     </div>
                 </div>
@@ -505,28 +505,44 @@
         /* 인증마크 (우측) */
         .footer-logos-right {
             display: flex;
-            flex-direction: column;
+            flex-direction: row;
             align-items: center;
-            gap: 8px;
+            gap: 15px;
             flex-shrink: 0;
         }
 
+        .cert-logo-item {
+            display: flex;
+            align-items: center;
+        }
+
         .cert-logo-link {
-            display: block;
+            display: flex;
+            align-items: center;
             transition: transform 0.2s ease, box-shadow 0.2s ease;
-            border-radius: 4px;
-            overflow: hidden;
         }
 
         .cert-logo-link:hover {
             transform: translateY(-2px);
-            box-shadow: 0 4px 12px rgba(255, 255, 255, 0.2);
         }
 
         .cert-logo {
-            height: 30px;
-            width: auto;
             display: block;
+        }
+
+        .ftc-logo {
+            width: 135px;
+            height: 35px;
+        }
+
+        .kftc-logo {
+            width: 135px;
+            height: 35px;
+        }
+
+        .kb-logo {
+            width: 40px;
+            height: 40px;
         }
 
         /* 법적 정보 모달 스타일 */
@@ -655,12 +671,21 @@
 
             .footer-logos-right {
                 flex-direction: row;
+                flex-wrap: wrap;
                 justify-content: center;
                 width: 100%;
+                gap: 10px;
             }
 
-            .cert-logo {
-                height: 25px;
+            .ftc-logo,
+            .kftc-logo {
+                width: 100px;
+                height: 26px;
+            }
+
+            .kb-logo {
+                width: 35px;
+                height: 35px;
             }
 
             .copyright-text {
@@ -686,8 +711,15 @@
                 font-size: 9px;
             }
 
-            .cert-logo {
-                height: 22px;
+            .ftc-logo,
+            .kftc-logo {
+                width: 90px;
+                height: 23px;
+            }
+
+            .kb-logo {
+                width: 30px;
+                height: 30px;
             }
         }
         </style>
