@@ -43,16 +43,16 @@ if (INICIS_TEST_MODE) {
     define('INICIS_SIGNKEY', 'cEdnbCtISFZ1QUNpNm5hbG1JY1RlQT09'); // KG이니시스 웹결제 Sign Key
 }
 
-// API URL 설정 (환경별 자동 감지)
+// API URL 설정
+// JS SDK: 테스트/운영 모드에 따라 다른 URL
 if (INICIS_TEST_MODE) {
     define('INICIS_STD_URL', 'https://stgstdpay.inicis.com/stdjs/INIStdPay.js'); // 표준결제 테스트 URL
-    define('INICIS_RETURN_URL', $baseUrl . '/payment/inicis_return.php'); // 환경별 자동 감지
-    define('INICIS_CLOSE_URL', $baseUrl . '/payment/inicis_close.php'); // 환경별 자동 감지
 } else {
     define('INICIS_STD_URL', 'https://stdpay.inicis.com/stdjs/INIStdPay.js'); // 표준결제 운영 URL
-    define('INICIS_RETURN_URL', 'https://dsp114.co.kr/payment/inicis_return.php'); // 운영 도메인
-    define('INICIS_CLOSE_URL', 'https://dsp114.co.kr/payment/inicis_close.php'); // 운영 도메인
 }
+// Return/Close URL: 항상 현재 도메인 기반 (localhost/production 자동 감지)
+define('INICIS_RETURN_URL', $baseUrl . '/payment/inicis_return.php');
+define('INICIS_CLOSE_URL', $baseUrl . '/payment/inicis_close.php');
 
 // ================================
 // 결제 옵션 설정

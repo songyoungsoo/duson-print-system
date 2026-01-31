@@ -4,6 +4,17 @@
 
 ---
 
+## 2026-01-31
+
+| 수정자 | 수정항목 | 관련 파일 |
+|--------|----------|-----------|
+| Claude | **주문 폼 데이터 흐름 완성** - 물품수령방법(`delivery_method`→`delivery`), 결제방법(`payment_method`→`bank`), 입금자명(`bankname`→`bankname`) DB 저장 구현. INSERT 쿼리 50→54 파라미터 확장 (bind_param 3단계 검증 완료) | ProcessOrder_unified.php |
+| Claude | **결제방법 UI 추가** - 계좌이체/카드결제/현금/기타 라디오 버튼, 계좌이체 시 입금자명 필수 입력 + 주문자명 자동채움, 주문자명≠입금자명 시 전화 경고 confirm | OnlineOrder_unified.php |
+| Claude | **사업자 주문 상호(회사명) 필드 추가** - 세금계산서 필수 항목 누락 수정, `bizname` DB 컬럼에 `상호명 (사업자번호)` 형식 저장 | OnlineOrder_unified.php, ProcessOrder_unified.php |
+| Claude | **사업자 정보 자동 채움** - 로그인 회원의 users 테이블 사업자 정보를 주문 폼에 자동 채움 (7개 필드), 사업장주소 우편번호/주소/상세 자동 파싱 | OnlineOrder_unified.php |
+| Claude | **플로팅 채팅 버튼 "상담" 텍스트** + 사이드바 카톡 "상담" 텍스트 제거 | chat/chat.js, chat/chat.css, includes/sidebar.php |
+| Claude | **문서 업데이트** - AGENTS.md 주문 데이터 흐름 섹션 추가, CHANGELOG 업데이트 | AGENTS.md, CHANGELOG.md |
+
 ## 2026-01-29
 
 | 수정자 | 수정항목 | 관련 파일 |

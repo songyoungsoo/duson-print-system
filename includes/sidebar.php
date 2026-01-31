@@ -156,6 +156,7 @@ $show_bank = isset($show_bank) ? $show_bank : true;
 
 .kakao-special-link {
     display: inline-block;
+    position: relative;
     transition: transform 0.2s ease;
     border-radius: 8px;
     overflow: hidden;
@@ -172,6 +173,20 @@ $show_bank = isset($show_bank) ? $show_bank : true;
     display: block;
     border-radius: 8px;
     margin: 0 auto;
+}
+
+.kakao-label {
+    position: absolute;
+    top: 18%;
+    left: 50%;
+    transform: translateX(-50%);
+    color: #fff;
+    font-size: 13px;
+    font-weight: 800;
+    letter-spacing: 1px;
+    text-shadow: 1px 1px 3px rgba(0,0,0,0.6);
+    pointer-events: none;
+    line-height: 1;
 }
 
 .sidebar-section {

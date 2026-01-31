@@ -398,6 +398,69 @@ if (strlen($stored_password) === 60 && strpos($stored_password, '$2y$') === 0) {
 - ✅ Correct product type → unit code mapping
 - ✅ Playwright tests passing for affected areas
 
+## 📋 주문 폼 데이터 흐름 (Order Form Data Flow)
+
+### 주문 입력 → DB 저장 → 관리자 표시
+
+```
+OnlineOrder_unified.php (폼 입력)
+  → form action="ProcessOrder_unified.php" (POST 처리)
+    → INSERT INTO mlangorder_printauto (DB 저장)
+      → admin.php?mode=OrderView (admin 조회)
+        → OrderFormOrderTree.php (화면 렌더링)
+```
+
+### 주문자 정보 필드 매핑
+
+| 폼 필드 | POST name | DB 컬럼 | 관리자 라벨 |
+|---------|-----------|---------|------------|
+| 성명/상호 | `username` | `name` | 이름 |
+| 이메일 | `email` | `email` | 이메일 |
+| 전화번호 | `phone` | `phone` | 전화 |
+| 핸드폰 | `Hendphone` | `Hendphone` | 휴대폰 |
+| 우편번호 | `sample6_postcode` | `zip` | 우편번호 |
+| 주소 | `sample6_address` | `zip1` | 주소 |
+| 상세주소 | `sample6_detailAddress` | `zip2` | 상세주소 |
+| 물품수령방법 | `delivery_method` | `delivery` | 배송지 |
+| 결제방법 | `payment_method` | `bank` | 입금은행 |
+| 입금자명 | `bankname` | `bankname` | 입금자명 |
+| 요청사항 | `cont` | `cont` | 비고 |
+
+### 사업자 정보 필드 매핑
+
+| 폼 필드 | POST name | DB 저장 방식 | 관리자 라벨 |
+|---------|-----------|-------------|------------|
+| 상호(회사명) | `business_name` | `bizname` (상호 + 사업자번호 형식) | 사업자명 |
+| 사업자등록번호 | `business_number` | `bizname` + `cont` 텍스트 | 사업자명/비고 |
+| 대표자명 | `business_owner` | `bizname` + `cont` 텍스트 | 사업자명/비고 |
+| 업태 | `business_type` | `cont` 텍스트 | 비고 |
+| 종목 | `business_item` | `cont` 텍스트 | 비고 |
+| 사업장주소 | `business_address` (JS hidden) | `cont` 텍스트 | 비고 |
+| 세금용메일 | `tax_invoice_email` | `cont` 텍스트 | 비고 |
+
+### 결제방법 UI 동작
+
+```
+◉ 계좌이체 (기본값)  → 입금자명 입력란 표시 (필수, 주문자명 자동채움)
+                       → 주문자명 ≠ 입금자명 시 confirm 경고
+○ 카드결제           → 입금자명 숨김
+○ 현금               → 입금자명 숨김
+○ 기타               → 입금자명 숨김 (요청사항에 기재)
+```
+
+### 사업자 정보 자동 채움 (로그인 회원)
+
+회원가입 시 `users` 테이블에 저장된 사업자 정보가 주문 폼에서 자동 채워짐:
+- `users.business_name` → 상호(회사명)
+- `users.business_number` → 사업자등록번호
+- `users.business_owner` → 대표자명
+- `users.business_type` → 업태
+- `users.business_item` → 종목
+- `users.business_address` → 사업장주소 (우편번호/주소/상세 자동 파싱)
+- `users.tax_invoice_email` → 세금용 메일
+
+**구현**: `toggleBusinessInfo()` JS 함수에서 `memberInfo` 객체 활용
+
 ## 🎨 UI/UX Improvements
 
 ### 명함 재질 Hover 효과 (2026-01-28)
@@ -449,5 +512,5 @@ if (strlen($stored_password) === 60 && strpos($stored_password, '$2y$') === 0) {
 
 ---
 
-*Last Updated: 2026-01-29*
+*Last Updated: 2026-01-31*
 *Environment: WSL2 Ubuntu + Windows XAMPP + Production Deployment*

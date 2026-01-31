@@ -57,6 +57,7 @@ try {
     $detail_address = $_POST['sample6_detailAddress'] ?? '';
     $extra_address = $_POST['sample6_extraAddress'] ?? '';
     $cont = $_POST['cont'] ?? '';
+    $delivery_method = $_POST['delivery_method'] ?? '택배';  // 물품수령방법 (택배/방문/오토바이/다마스)
     $total_price = (float)($_POST['total_price'] ?? 0);
     $total_price_vat = (float)($_POST['total_price_vat'] ?? 0);
     $items_count = (int)($_POST['items_count'] ?? 0);
@@ -86,14 +87,32 @@ try {
         }
     }
     
+    // 결제방법 받기 (bank 컬럼에 저장, bankname은 입금자명)
+    $payment_method = $_POST['payment_method'] ?? '계좌이체';
+    $bankname = $_POST['bankname'] ?? '';
+    
     // 사업자 정보 받기
     $is_business = isset($_POST['is_business']) ? 1 : 0;
+    $business_name = $_POST['business_name'] ?? '';  // 상호(회사명)
     $business_number = $_POST['business_number'] ?? '';
     $business_owner = $_POST['business_owner'] ?? '';
     $business_type = $_POST['business_type'] ?? '';
     $business_item = $_POST['business_item'] ?? '';
     $business_address = $_POST['business_address'] ?? '';
     $tax_invoice_email = $_POST['tax_invoice_email'] ?? '';
+    // bizname: 사업자 정보 요약 저장 (DB bizname 컬럼 활용)
+    // 형식: "상호명 (사업자등록번호)" (관리자 OrderView에서 '사업자명' 필드로 표시)
+    $bizname = '';
+    if ($is_business) {
+        if (!empty($business_name)) {
+            $bizname = $business_name;
+            if (!empty($business_number)) {
+                $bizname .= ' (' . $business_number . ')';
+            }
+        } elseif (!empty($business_number)) {
+            $bizname = $business_number;
+        }
+    }
     
     // 필수 필드 검증
     if (empty($username) || empty($email) || empty($phone) || empty($address)) {
@@ -250,6 +269,9 @@ try {
         $final_cont = $cont;
         if ($is_business && !empty($business_number)) {
             $business_info_text = "\n\n=== 사업자 정보 ===\n";
+            if (!empty($business_name)) {
+                $business_info_text .= "상호(회사명): " . $business_name . "\n";
+            }
             $business_info_text .= "사업자등록번호: " . $business_number . "\n";
             if (!empty($business_owner)) {
                 $business_info_text .= "대표자명: " . $business_owner . "\n";
@@ -275,7 +297,7 @@ try {
         // ✅ Phase 3: 표준 필드 추가 (spec_*, quantity_*, price_*, data_version)
         $insert_query = "INSERT INTO mlangorder_printauto (
             no, Type, product_type, ImgFolder, uploaded_files, Type_1, money_4, money_5, name, email, zip, zip1, zip2,
-            phone, Hendphone, cont, date, OrderStyle, ThingCate,
+            phone, Hendphone, delivery, bizname, bank, bankname, cont, date, OrderStyle, ThingCate,
             coating_enabled, coating_type, coating_price,
             folding_enabled, folding_type, folding_price,
             creasing_enabled, creasing_lines, creasing_price,
@@ -286,7 +308,7 @@ try {
             spec_type, spec_material, spec_size, spec_sides, spec_design,
             quantity_value, quantity_unit, quantity_sheets, quantity_display,
             price_supply, price_vat, price_vat_amount, data_version
-        ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)";
+        ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)";
 
         $stmt = mysqli_prepare($connect, $insert_query);
         if (!$stmt) {
@@ -489,26 +511,25 @@ try {
         $st_price = strval($item['st_price'] ?? 0);
         $st_price_vat = strval($item['st_price_vat'] ?? 0);
 
-        // ✅ Phase 3: 49개 파라미터 타입 문자열 (3번 검증!)
-        // 기존 37개 + Phase 3 표준 필드 12개 = 49개
+        // ✅ 54개 파라미터 타입 문자열 (3번 검증!)
         // 1:no(i) 2:Type(s) 3:product_type(s) 4:ImgFolder(s) 5:uploaded_files(s) 6:Type_1(s) 7:money_4(s) 8:money_5(s)
         // 9:name(s) 10:email(s) 11:zip(s) 12:zip1(s) 13:zip2(s) 14:phone(s) 15:Hendphone(s)
-        // 16:cont(s) 17:date(s) 18:OrderStyle(s) 19:ThingCate(s)
-        // 20:coating_enabled(i) 21:coating_type(s) 22:coating_price(i)
-        // 23:folding_enabled(i) 24:folding_type(s) 25:folding_price(i)
-        // 26:creasing_enabled(i) 27:creasing_lines(i) 28:creasing_price(i)
-        // 29:additional_options_total(i)
-        // 30:premium_options(s) 31:premium_options_total(i)
-        // 32:envelope_tape_enabled(i) 33:envelope_tape_quantity(i) 34:envelope_tape_price(i) 35:envelope_additional_options_total(i)
-        // 36:unit(s) 37:quantity(d)
-        // 38:spec_type(s) 39:spec_material(s) 40:spec_size(s) 41:spec_sides(s) 42:spec_design(s)
-        // 43:quantity_value(d) 44:quantity_unit(s) 45:quantity_sheets(i) 46:quantity_display(s)
-        // 47:price_supply(i) 48:price_vat(i) 49:price_vat_amount(i) 50:data_version(i)
-        // 타입 검증: i(1)+s(18)+isi+isi+iii+i+si+iiii+s+d + sssss+dsis+iiii = 50개
-        $type_string = 'issssssssssssssssssisiisiiiiisiiiiisd' . 'sssssdsisiiii';
+        // 16:delivery(s) 17:bizname(s) 18:bank(s) 19:bankname(s)
+        // 20:cont(s) 21:date(s) 22:OrderStyle(s) 23:ThingCate(s)
+        // 24:coating_enabled(i) 25:coating_type(s) 26:coating_price(i)
+        // 27:folding_enabled(i) 28:folding_type(s) 29:folding_price(i)
+        // 30:creasing_enabled(i) 31:creasing_lines(i) 32:creasing_price(i)
+        // 33:additional_options_total(i)
+        // 34:premium_options(s) 35:premium_options_total(i)
+        // 36:envelope_tape_enabled(i) 37:envelope_tape_quantity(i) 38:envelope_tape_price(i) 39:envelope_additional_options_total(i)
+        // 40:unit(s) 41:quantity(d)
+        // 42:spec_type(s) 43:spec_material(s) 44:spec_size(s) 45:spec_sides(s) 46:spec_design(s)
+        // 47:quantity_value(d) 48:quantity_unit(s) 49:quantity_sheets(i) 50:quantity_display(s)
+        // 51:price_supply(i) 52:price_vat(i) 53:price_vat_amount(i) 54:data_version(i)
+        $type_string = 'issssssssssssssssssssssisiisiiiiisiiiiisdsssssdsisiiii';
         $placeholder_count = substr_count($insert_query, '?');  // 검증 1
         $type_count = strlen($type_string);                      // 검증 2
-        $var_count = 50;                                         // 검증 3
+        $var_count = 54;                                         // 검증 3
 
         if ($placeholder_count !== $type_count || $type_count !== $var_count) {
             error_log("🔴 bind_param 개수 불일치! placeholder=$placeholder_count, type=$type_count, var=$var_count");
@@ -518,7 +539,7 @@ try {
         mysqli_stmt_bind_param($stmt, $type_string,
             $new_no, $product_type_name, $product_type, $img_folder_path, $uploaded_files_json, $product_info, $st_price, $st_price_vat,
             $username, $email, $postcode, $address, $full_address,
-            $phone, $hendphone, $final_cont, $date, $order_style, $thing_cate,
+            $phone, $hendphone, $delivery_method, $bizname, $payment_method, $bankname, $final_cont, $date, $order_style, $thing_cate,
             $coating_enabled, $coating_type, $coating_price,
             $folding_enabled, $folding_type, $folding_price,
             $creasing_enabled, $creasing_lines, $creasing_price,

@@ -25,6 +25,11 @@
         cursor: pointer;
     }
 
+    body .chat-widget .chat-forehead-label {
+        top: 4px;
+        font-size: 9px;
+    }
+
     /* 모바일에서 채팅창 열렸을 때 토글 버튼 숨김 */
     body .chat-widget .chat-toggle-btn.chat-open {
         display: none;
@@ -60,6 +65,22 @@
 
 .chat-toggle-btn svg {
     display: none;
+}
+
+/* 이마 "상담" 라벨 */
+.chat-forehead-label {
+    position: absolute;
+    top: 6px;
+    left: 50%;
+    transform: translateX(-50%);
+    color: white;
+    font-size: 11px;
+    font-weight: 700;
+    letter-spacing: 1px;
+    pointer-events: none;
+    z-index: 1;
+    line-height: 1;
+    text-shadow: 0 1px 2px rgba(0, 0, 0, 0.3);
 }
 
 /* 눈 컨테이너 */

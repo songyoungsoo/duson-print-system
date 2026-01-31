@@ -40,6 +40,7 @@ class ChatWidget {
             </div>
 
             <button class="chat-toggle-btn" id="chat-toggle-btn">
+                <span class="chat-forehead-label">상담</span>
                 <div class="chat-eyes">
                     <div class="chat-eye">
                         <div class="chat-pupil"></div>

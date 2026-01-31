@@ -912,6 +912,51 @@ if (!empty($debug_info) && strpos($_SERVER['HTTP_HOST'], 'localhost') !== false)
                     </div>
                 </div>
 
+                <!-- 결제방법 -->
+                <div style="margin-bottom: 1rem;">
+                    <label style="display: block; margin-bottom: 0.6rem; font-weight: 600; color: #2c3e50;">
+                        결제방법
+                    </label>
+                    <div style="display: flex; gap: 1.5rem; align-items: center; flex-wrap: wrap;">
+                        <div style="display: flex; align-items: center;">
+                            <input type="radio" id="payment_transfer" name="payment_method" value="계좌이체" checked
+                                   style="margin-right: 0.3rem; transform: scale(1.1);" onchange="toggleDepositorName()">
+                            <label for="payment_transfer" style="font-weight: 500; color: #2c3e50; cursor: pointer; margin: 0;">
+                                계좌이체
+                            </label>
+                        </div>
+                        <div style="display: flex; align-items: center;">
+                            <input type="radio" id="payment_card" name="payment_method" value="카드결제"
+                                   style="margin-right: 0.3rem; transform: scale(1.1);" onchange="toggleDepositorName()">
+                            <label for="payment_card" style="font-weight: 500; color: #2c3e50; cursor: pointer; margin: 0;">
+                                카드결제
+                            </label>
+                        </div>
+                        <div style="display: flex; align-items: center;">
+                            <input type="radio" id="payment_cash" name="payment_method" value="현금"
+                                   style="margin-right: 0.3rem; transform: scale(1.1);" onchange="toggleDepositorName()">
+                            <label for="payment_cash" style="font-weight: 500; color: #2c3e50; cursor: pointer; margin: 0;">
+                                현금
+                            </label>
+                        </div>
+                        <div style="display: flex; align-items: center;">
+                            <input type="radio" id="payment_other" name="payment_method" value="기타"
+                                   style="margin-right: 0.3rem; transform: scale(1.1);" onchange="toggleDepositorName()">
+                            <label for="payment_other" style="font-weight: 500; color: #2c3e50; cursor: pointer; margin: 0;">
+                                기타<span style="font-size: 0.85rem; color: #888;">(요청사항에 기재)</span>
+                            </label>
+                        </div>
+                    </div>
+                    <!-- 입금자명 (계좌이체 선택 시만 표시) -->
+                    <div id="depositor_name_section" style="margin-top: 0.8rem;">
+                        <div style="display: flex; align-items: center; gap: 0.8rem;">
+                            <label style="font-weight: 600; color: #2c3e50; white-space: nowrap; min-width: 70px;">입금자명</label>
+                            <input type="text" name="bankname" placeholder="입금자명을 입력하세요"
+                                   style="flex: 1; max-width: 300px; padding: 8px 10px; border: 1px solid #ddd; border-radius: 4px; font-size: 0.95rem;">
+                        </div>
+                    </div>
+                </div>
+
                 <!-- 요청사항 -->
                 <div style="margin-bottom: 1rem;">
                     <label style="display: block; margin-bottom: 0.4rem; font-weight: 600; color: #2c3e50;">
@@ -935,6 +980,14 @@ if (!empty($debug_info) && strpos($_SERVER['HTTP_HOST'], 'localhost') !== false)
                     <div id="business_info" style="display: none;">
                         <!-- 사업자 정보 가로 배치 -->
                         <div class="business-info-horizontal">
+                            <!-- 0줄: 상호(회사명) -->
+                            <div class="info-row-single">
+                                <div class="info-field-full">
+                                    <label>상호(회사명) *</label>
+                                    <input type="text" name="business_name"
+                                           placeholder="상호명을 입력하세요">
+                                </div>
+                            </div>
                             <!-- 1줄: 사업자등록번호 + 대표자명 -->
                             <div class="info-row">
                                 <div class="info-field">
@@ -1622,6 +1675,36 @@ function execBusinessDaumPostcode() {
 
 // 사업장 주소 합치기 함수
 function prepareBusinessAddress() {
+    // 계좌이체 선택 시 입금자명 필수 검증
+    const paymentMethod = document.querySelector('input[name="payment_method"]:checked');
+    if (paymentMethod && paymentMethod.value === '계좌이체') {
+        const banknameInput = document.querySelector('input[name="bankname"]');
+        const bankname = banknameInput ? banknameInput.value.trim() : '';
+
+        if (!bankname) {
+            alert('계좌이체를 선택하셨습니다.\n\n입금자명을 반드시 입력해주세요.\n(입금 확인을 위해 필요합니다)');
+            if (banknameInput) banknameInput.focus();
+            return false;
+        }
+
+        // 입금자명이 주문자명과 다르면 경고
+        const orderName = document.querySelector('input[name="username"]');
+        if (orderName && orderName.value.trim() && bankname !== orderName.value.trim()) {
+            const confirmed = confirm(
+                '⚠️ 입금자명이 주문자명과 다릅니다.\n\n' +
+                '• 주문자명: ' + orderName.value.trim() + '\n' +
+                '• 입금자명: ' + bankname + '\n\n' +
+                '입금자명이 다를 경우 반드시 전화(02-2632-1830)로\n' +
+                '알려주셔야 입금 확인이 가능합니다.\n\n' +
+                '이대로 주문하시겠습니까?'
+            );
+            if (!confirmed) {
+                if (banknameInput) banknameInput.focus();
+                return false;
+            }
+        }
+    }
+
     const checkbox = document.getElementById('is_business');
 
     if (checkbox && checkbox.checked) {
@@ -1653,6 +1736,50 @@ function prepareBusinessAddress() {
     return true;
 }
 
+// name 속성으로 빈 필드에만 값 채우기
+function fillIfEmpty(fieldName, value) {
+    if (!value) return;
+    const field = document.querySelector('input[name="' + fieldName + '"]');
+    if (field && !field.value.trim()) {
+        field.value = value;
+    }
+}
+
+// 사업장 주소 자동 채움 (DB에 "[우편번호] 주소 상세주소" 형태로 저장된 경우 파싱)
+function fillBusinessAddress(fullAddress) {
+    if (!fullAddress) return;
+    const postcodeEl = document.getElementById('business_postcode');
+    const addressEl = document.getElementById('business_address');
+    const detailEl = document.getElementById('business_detailAddress');
+
+    // 이미 주소가 채워져 있으면 건너뛰기
+    if (addressEl && addressEl.value.trim()) return;
+
+    // "[07301] 서울 영등포구 ... 1층  (영등포동4가)" 형태 파싱
+    let postcode = '';
+    let address = fullAddress;
+    let detail = '';
+
+    // 우편번호 추출: [12345] 또는 (12345) 패턴
+    const postcodeMatch = fullAddress.match(/^\[(\d{5})\]\s*/);
+    if (postcodeMatch) {
+        postcode = postcodeMatch[1];
+        address = fullAddress.substring(postcodeMatch[0].length);
+    }
+
+    // 상세주소 분리: 쉼표나 괄호 뒤의 부분을 상세주소로
+    // 예: "서울 영등포구 영등포로36길 9 1층  (영등포동4가)" → 주소 + 상세
+    const commaIdx = address.indexOf(',');
+    if (commaIdx > 0) {
+        detail = address.substring(commaIdx + 1).trim();
+        address = address.substring(0, commaIdx).trim();
+    }
+
+    if (postcodeEl && postcode) postcodeEl.value = postcode;
+    if (addressEl) addressEl.value = address;
+    if (detailEl && detail) detailEl.value = detail;
+}
+
 // 사업자 정보 토글 함수
 function toggleBusinessInfo() {
     const checkbox = document.getElementById('is_business');
@@ -1663,10 +1790,23 @@ function toggleBusinessInfo() {
         // 사업자 정보 필드들을 필수로 만들기
         const businessFields = businessInfo.querySelectorAll('input[name^="business_"], input[name="tax_invoice_email"]');
         businessFields.forEach(field => {
-            if (field.name === 'business_number' || field.name === 'business_owner' || field.name === 'tax_invoice_email') {
+                if (field.name === 'business_name' || field.name === 'business_number' || field.name === 'business_owner' || field.name === 'tax_invoice_email') {
                 field.required = true;
             }
         });
+        // 회원 사업자 정보 자동 채움 (빈 필드만)
+        if (typeof memberInfo !== 'undefined' && memberInfo) {
+            fillIfEmpty('business_name', memberInfo.businessName);
+            fillIfEmpty('business_number', memberInfo.businessNumber);
+            fillIfEmpty('business_owner', memberInfo.businessOwner);
+            fillIfEmpty('business_type', memberInfo.businessType);
+            fillIfEmpty('business_item', memberInfo.businessItem);
+            fillIfEmpty('tax_invoice_email', memberInfo.taxInvoiceEmail);
+            // 사업장 주소 자동 채움 (id 기반 필드)
+            if (memberInfo.businessAddress) {
+                fillBusinessAddress(memberInfo.businessAddress);
+            }
+        }
     } else {
         businessInfo.style.display = 'none';
         // 사업자 정보 필드들의 필수 속성 제거 및 값 초기화
@@ -1675,6 +1815,35 @@ function toggleBusinessInfo() {
             field.required = false;
             field.value = '';
         });
+        // 사업장 주소 id 기반 필드도 초기화
+        ['business_postcode', 'business_address', 'business_detailAddress', 'business_extraAddress'].forEach(id => {
+            const el = document.getElementById(id);
+            if (el) el.value = '';
+        });
+    }
+}
+
+// 결제방법 변경 시 입금자명 표시/숨김
+function toggleDepositorName() {
+    const selected = document.querySelector('input[name="payment_method"]:checked');
+    const section = document.getElementById('depositor_name_section');
+    const input = section.querySelector('input[name="bankname"]');
+    if (selected && selected.value === '계좌이체') {
+        section.style.display = 'block';
+        if (input) input.required = true;
+        // 로그인 회원이면 주문자명을 입금자명 기본값으로
+        if (input && !input.value.trim()) {
+            const orderName = document.querySelector('input[name="username"]');
+            if (orderName && orderName.value.trim()) {
+                input.value = orderName.value.trim();
+            }
+        }
+    } else {
+        section.style.display = 'none';
+        if (input) {
+            input.required = false;
+            input.value = '';
+        }
     }
 }
 
@@ -1839,7 +2008,15 @@ var memberInfo = {
     extraAddress: '<?php echo htmlspecialchars($user_info['extra_address'] ?? ''); ?>',
     name: '<?php echo htmlspecialchars($user_info['name'] ?? ''); ?>',
     email: '<?php echo htmlspecialchars($user_info['email'] ?? ''); ?>',
-    phone: '<?php echo htmlspecialchars($user_info['phone'] ?? ''); ?>'
+    phone: '<?php echo htmlspecialchars($user_info['phone'] ?? ''); ?>',
+    // 사업자 정보
+    businessName: '<?php echo htmlspecialchars($user_info['business_name'] ?? ''); ?>',
+    businessNumber: '<?php echo htmlspecialchars($user_info['business_number'] ?? ''); ?>',
+    businessOwner: '<?php echo htmlspecialchars($user_info['business_owner'] ?? ''); ?>',
+    businessType: '<?php echo htmlspecialchars($user_info['business_type'] ?? ''); ?>',
+    businessItem: '<?php echo htmlspecialchars($user_info['business_item'] ?? ''); ?>',
+    businessAddress: '<?php echo htmlspecialchars($user_info['business_address'] ?? ''); ?>',
+    taxInvoiceEmail: '<?php echo htmlspecialchars($user_info['tax_invoice_email'] ?? ''); ?>'
 };
 console.log('Member info loaded:', memberInfo);
 <?php else: ?>
