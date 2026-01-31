@@ -532,7 +532,7 @@ function getOrderItemInfo($summary_item, $specFormatter) {
         /* 절취선 스타일 */
         .print-divider {
             position: relative;
-            margin: 8mm 0;
+            margin: 4mm 0;
             border: none;
             border-top: 2px dashed #666;
             height: 0;
@@ -556,8 +556,18 @@ function getOrderItemInfo($summary_item, $specFormatter) {
             display: none !important;
         }
 
-        /* 프린트 시에만 표시 */
+        /* 프린트 시에만 표시 - A4 한장 맞춤 최적화 */
         @media print {
+            @page {
+                margin: 6mm 8mm;
+                size: A4;
+            }
+
+            body {
+                margin: 0 !important;
+                padding: 0 !important;
+            }
+
             /* 프린트 전용 내용만 표시 */
             .print-only {
                 display: block !important;
@@ -583,7 +593,7 @@ function getOrderItemInfo($summary_item, $specFormatter) {
 
             /* 각 주문서가 페이지에 맞게 자동 분리 */
             .print-order {
-                page-break-inside: auto;
+                page-break-inside: avoid;
             }
 
             /* 절취선 숨김 시에도 적용 */
@@ -608,9 +618,9 @@ function getOrderItemInfo($summary_item, $specFormatter) {
             <div class="print-order">
                 <div class="print-title">주문서 (관리자용)</div>
 
-                <!-- 주요 정보를 크게 표시 (노인 친화적) -->
-                <div style="margin-bottom: 3mm; padding: 2mm; border: 0.3pt solid #666;">
-                    <div style="display: flex; gap: 3mm; align-items: center; font-size: 14pt; font-weight: bold; line-height: 1.2;">
+                <!-- 주요 정보 (compact) -->
+                <div style="margin-bottom: 2mm; padding: 1.5mm; border: 0.3pt solid #666;">
+                    <div style="display: flex; gap: 3mm; align-items: center; font-size: 12pt; font-weight: bold; line-height: 1.2;">
                         <div style="flex: 1;">
                             <span style="color: #000;">주문번호: <?= $View_No ?></span>
                         </div>
@@ -829,40 +839,35 @@ function getOrderItemInfo($summary_item, $specFormatter) {
                     <!-- 🔧 가격 정보 표시 제거됨 - 테이블의 "총 합계" 행에서 이미 표시됨 -->
                 </div>
 
-                <!-- 고객 정보 -->
-                <div class="print-info-section">
-                    <div class="print-info-title">고객정보</div>
-                    <table class="print-table">
+                <!-- 고객정보 + 기타사항 (compact 1줄 레이아웃) -->
+                <div style="margin-bottom: 1mm;">
+                    <table style="width: 100%; border-collapse: collapse; font-size: 8pt;">
                         <tr>
-                            <th>성명</th>
-                            <td><?= htmlspecialchars($View_name) ?></td>
-                            <th>전화</th>
-                            <td><?= htmlspecialchars($View_phone) ?></td>
+                            <th style="border: 0.3pt solid #000; background: #f0f0f0; padding: 1mm 2mm; width: 8%; text-align: center;">주소</th>
+                            <td style="border: 0.3pt solid #000; padding: 1mm 2mm;" colspan="5">[<?= $View_zip ?>] <?= htmlspecialchars($View_zip1) ?> <?= htmlspecialchars($View_zip2) ?></td>
                         </tr>
                         <tr>
-                            <th>주소</th>
-                            <td colspan="3">[<?= $View_zip ?>] <?= htmlspecialchars($View_zip1) ?> <?= htmlspecialchars($View_zip2) ?></td>
+                            <th style="border: 0.3pt solid #000; background: #f0f0f0; padding: 1mm 2mm; text-align: center;">배송</th>
+                            <td style="border: 0.3pt solid #000; padding: 1mm 2mm; width: 15%;"><?= htmlspecialchars($View_delivery) ?></td>
+                            <th style="border: 0.3pt solid #000; background: #f0f0f0; padding: 1mm 2mm; width: 8%; text-align: center;">결제</th>
+                            <td style="border: 0.3pt solid #000; padding: 1mm 2mm; width: 15%;"><?= htmlspecialchars($View_bank) ?></td>
+                            <th style="border: 0.3pt solid #000; background: #f0f0f0; padding: 1mm 2mm; width: 8%; text-align: center;">입금자</th>
+                            <td style="border: 0.3pt solid #000; padding: 1mm 2mm;"><?= htmlspecialchars($View_bankname) ?></td>
                         </tr>
                         <?php if (!empty($View_bizname)) { ?>
-                            <tr>
-                                <th>업체명</th>
-                                <td><?= htmlspecialchars($View_bizname) ?></td>
-                                <th>입금</th>
-                                <td><?= htmlspecialchars($View_bank) ?></td>
-                            </tr>
+                        <tr>
+                            <th style="border: 0.3pt solid #000; background: #f0f0f0; padding: 1mm 2mm; text-align: center;">업체</th>
+                            <td style="border: 0.3pt solid #000; padding: 1mm 2mm;" colspan="5"><?= htmlspecialchars($View_bizname) ?></td>
+                        </tr>
+                        <?php } ?>
+                        <?php if (!empty($View_cont) && trim($View_cont) != '') { ?>
+                        <tr>
+                            <th style="border: 0.3pt solid #000; background: #f0f0f0; padding: 1mm 2mm; text-align: center;">비고</th>
+                            <td style="border: 0.3pt solid #000; padding: 1mm 2mm; font-size: 7pt; line-height: 1.2;" colspan="5"><?= nl2br(htmlspecialchars($View_cont)) ?></td>
+                        </tr>
                         <?php } ?>
                     </table>
                 </div>
-
-                <!-- 기타 사항 및 사업자 정보 -->
-                <?php if (!empty($View_cont) && trim($View_cont) != '') { ?>
-                    <div class="print-info-section">
-                        <div class="print-info-title">기타사항</div>
-                        <div style="padding: 2mm; border: 0.3pt solid #666; min-height: 10mm; font-size: 8pt; line-height: 1.2;">
-                            <?php echo nl2br(htmlspecialchars($View_cont)); ?>
-                        </div>
-                    </div>
-                <?php } ?>
 
                 <div class="print-footer">두손기획인쇄 02-2632-1830</div>
             </div>
@@ -874,8 +879,8 @@ function getOrderItemInfo($summary_item, $specFormatter) {
             <div class="print-order employee-copy">
                 <div class="print-title">주문서 (직원용)</div>
 
-                <!-- 주요 정보를 크게 표시 -->
-                <div style="margin-bottom: 3mm; padding: 2mm; border: 0.3pt solid #666;">
+                <!-- 주요 정보 (compact) -->
+                <div style="margin-bottom: 2mm; padding: 1.5mm; border: 0.3pt solid #666;">
                     <div style="display: flex; gap: 3mm; align-items: center; font-size: 12pt; font-weight: bold; line-height: 1.2;">
                         <div style="flex: 1;">
                             <span style="color: #000;">주문번호: <?= $View_No ?></span>
@@ -1092,40 +1097,35 @@ function getOrderItemInfo($summary_item, $specFormatter) {
                     <!-- 🔧 가격 정보 표시 제거됨 - 테이블의 "총 합계" 행에서 이미 표시됨 -->
                 </div>
 
-                <!-- 고객 정보 -->
-                <div class="print-info-section">
-                    <div class="print-info-title">고객정보</div>
-                    <table class="print-table">
+                <!-- 고객정보 + 기타사항 (compact 1줄 레이아웃) -->
+                <div style="margin-bottom: 1mm;">
+                    <table style="width: 100%; border-collapse: collapse; font-size: 8pt;">
                         <tr>
-                            <th>성명</th>
-                            <td><?= htmlspecialchars($View_name) ?></td>
-                            <th>전화</th>
-                            <td><?= htmlspecialchars($View_phone) ?></td>
+                            <th style="border: 0.3pt solid #000; background: #f0f0f0; padding: 1mm 2mm; width: 8%; text-align: center;">주소</th>
+                            <td style="border: 0.3pt solid #000; padding: 1mm 2mm;" colspan="5">[<?= $View_zip ?>] <?= htmlspecialchars($View_zip1) ?> <?= htmlspecialchars($View_zip2) ?></td>
                         </tr>
                         <tr>
-                            <th>주소</th>
-                            <td colspan="3">[<?= $View_zip ?>] <?= htmlspecialchars($View_zip1) ?> <?= htmlspecialchars($View_zip2) ?></td>
+                            <th style="border: 0.3pt solid #000; background: #f0f0f0; padding: 1mm 2mm; text-align: center;">배송</th>
+                            <td style="border: 0.3pt solid #000; padding: 1mm 2mm; width: 15%;"><?= htmlspecialchars($View_delivery) ?></td>
+                            <th style="border: 0.3pt solid #000; background: #f0f0f0; padding: 1mm 2mm; width: 8%; text-align: center;">결제</th>
+                            <td style="border: 0.3pt solid #000; padding: 1mm 2mm; width: 15%;"><?= htmlspecialchars($View_bank) ?></td>
+                            <th style="border: 0.3pt solid #000; background: #f0f0f0; padding: 1mm 2mm; width: 8%; text-align: center;">입금자</th>
+                            <td style="border: 0.3pt solid #000; padding: 1mm 2mm;"><?= htmlspecialchars($View_bankname) ?></td>
                         </tr>
                         <?php if (!empty($View_bizname)) { ?>
-                            <tr>
-                                <th>업체명</th>
-                                <td><?= htmlspecialchars($View_bizname) ?></td>
-                                <th>입금</th>
-                                <td><?= htmlspecialchars($View_bank) ?></td>
-                            </tr>
+                        <tr>
+                            <th style="border: 0.3pt solid #000; background: #f0f0f0; padding: 1mm 2mm; text-align: center;">업체</th>
+                            <td style="border: 0.3pt solid #000; padding: 1mm 2mm;" colspan="5"><?= htmlspecialchars($View_bizname) ?></td>
+                        </tr>
+                        <?php } ?>
+                        <?php if (!empty($View_cont) && trim($View_cont) != '') { ?>
+                        <tr>
+                            <th style="border: 0.3pt solid #000; background: #f0f0f0; padding: 1mm 2mm; text-align: center;">비고</th>
+                            <td style="border: 0.3pt solid #000; padding: 1mm 2mm; font-size: 7pt; line-height: 1.2;" colspan="5"><?= nl2br(htmlspecialchars($View_cont)) ?></td>
+                        </tr>
                         <?php } ?>
                     </table>
                 </div>
-
-                <!-- 기타 사항 및 사업자 정보 -->
-                <?php if (!empty($View_cont) && trim($View_cont) != '') { ?>
-                    <div class="print-info-section">
-                        <div class="print-info-title">기타사항</div>
-                        <div style="padding: 2mm; border: 0.3pt solid #666; min-height: 10mm; font-size: 8pt; line-height: 1.2;">
-                            <?php echo nl2br(htmlspecialchars($View_cont)); ?>
-                        </div>
-                    </div>
-                <?php } ?>
 
                 <div class="print-footer">두손기획인쇄 02-2632-1830</div>
             </div>
