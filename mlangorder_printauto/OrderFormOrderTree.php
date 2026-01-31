@@ -1547,17 +1547,23 @@ function getOrderItemInfo($summary_item, $specFormatter) {
                 <input name="Gensu" type="hidden" value='<?= $View_Gensu ?>'>
 
                 <!-- ===== 신청자 정보 테이블 ===== -->
-                <table style="width: 100%; border-collapse: collapse; margin-bottom: 15px; border: 2px solid #333;">
+                <table style="width: 100%; table-layout: fixed; border-collapse: collapse; margin-bottom: 15px; border: 2px solid #333;">
+                    <colgroup>
+                        <col style="width: 10%;">
+                        <col style="width: 40%;">
+                        <col style="width: 10%;">
+                        <col style="width: 40%;">
+                    </colgroup>
                     <tr style="background: #4472C4;">
                         <td colspan="4" style="padding: 10px 15px; color: #fff; font-size: 14px; font-weight: bold;">
                             신청자 정보
                         </td>
                     </tr>
                     <tr>
-                        <th style="width: 15%; background: #E0E0E0; border: 1px solid #999; padding: 6px 10px; font-size: 11px; text-align: center;">성명/상호</th>
-                        <td style="width: 35%; border: 1px solid #999; padding: 4px 8px;"><input name="name" type="text" style="width: 100%; box-sizing: border-box; border: 1px solid #ccc; padding: 4px 6px; font-size: 12px;" value='<?= $View_name ?>'></td>
-                        <th style="width: 15%; background: #E0E0E0; border: 1px solid #999; padding: 6px 10px; font-size: 11px; text-align: center;">E-MAIL</th>
-                        <td style="width: 35%; border: 1px solid #999; padding: 4px 8px;"><input name="email" type="text" style="width: 100%; box-sizing: border-box; border: 1px solid #ccc; padding: 4px 6px; font-size: 12px;" value='<?= $View_email ?>'></td>
+                        <th style="background: #E0E0E0; border: 1px solid #999; padding: 6px 6px; font-size: 11px; text-align: center; white-space: nowrap;">성명/상호</th>
+                        <td style="border: 1px solid #999; padding: 4px 8px;"><input name="name" type="text" style="width: 100%; box-sizing: border-box; border: 1px solid #ccc; padding: 4px 6px; font-size: 12px;" value='<?= $View_name ?>'></td>
+                        <th style="background: #E0E0E0; border: 1px solid #999; padding: 6px 6px; font-size: 11px; text-align: center; white-space: nowrap;">E-MAIL</th>
+                        <td style="border: 1px solid #999; padding: 4px 8px;"><input name="email" type="text" style="width: 100%; box-sizing: border-box; border: 1px solid #ccc; padding: 4px 6px; font-size: 12px;" value='<?= $View_email ?>'></td>
                     </tr>
                     <tr>
                         <th style="background: #E0E0E0; border: 1px solid #999; padding: 6px 10px; font-size: 11px; text-align: center;">우편번호</th>

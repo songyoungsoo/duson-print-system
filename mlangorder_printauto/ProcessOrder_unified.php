@@ -100,6 +100,33 @@ try {
     $business_item = $_POST['business_item'] ?? '';
     $business_address = $_POST['business_address'] ?? '';
     $tax_invoice_email = $_POST['tax_invoice_email'] ?? '';
+    
+    // 로그인 회원이 사업자 체크를 안 했어도 users 테이블에 사업자 정보가 있으면 자동 반영
+    if (!$is_business && isset($_SESSION['user_id']) && !empty($_SESSION['user_id'])) {
+        $user_biz_query = "SELECT business_name, business_number, business_owner, business_type, business_item, business_address, tax_invoice_email FROM users WHERE id = ?";
+        $user_biz_stmt = mysqli_prepare($connect, $user_biz_query);
+        if ($user_biz_stmt) {
+            mysqli_stmt_bind_param($user_biz_stmt, "i", $_SESSION['user_id']);
+            mysqli_stmt_execute($user_biz_stmt);
+            $user_biz_result = mysqli_stmt_get_result($user_biz_stmt);
+            $user_biz = mysqli_fetch_assoc($user_biz_result);
+            mysqli_stmt_close($user_biz_stmt);
+            
+            if ($user_biz && !empty($user_biz['business_number'])) {
+                // 회원 DB에 사업자등록번호가 있으면 사업자 정보 자동 반영
+                $is_business = 1;
+                $business_name = $user_biz['business_name'] ?? '';
+                $business_number = $user_biz['business_number'] ?? '';
+                $business_owner = $user_biz['business_owner'] ?? '';
+                $business_type = $user_biz['business_type'] ?? '';
+                $business_item = $user_biz['business_item'] ?? '';
+                $business_address = $user_biz['business_address'] ?? '';
+                $tax_invoice_email = $user_biz['tax_invoice_email'] ?? '';
+                error_log("사업자 정보 자동 반영: user_id=" . $_SESSION['user_id'] . ", business_number=" . $business_number);
+            }
+        }
+    }
+    
     // bizname: 사업자 정보 요약 저장 (DB bizname 컬럼 활용)
     // 형식: "상호명 (사업자등록번호)" (관리자 OrderView에서 '사업자명' 필드로 표시)
     $bizname = '';
