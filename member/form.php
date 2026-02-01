@@ -358,7 +358,7 @@ function validateForm() {
 </head>
 <body>
 <div class="container">
-    <h2><?= $isEditMode ? '회원 정보 수정' : '회원 가입' ?></h2>
+    <h2><?= $isEditMode ? '회원 정보 수정' : '두손기획인쇄 회원가입' ?></h2>
 
     <form name="memberForm" method="post" action="<?= htmlspecialchars($action) ?>" onsubmit="return validateForm()" autocomplete="off">
         <input type="hidden" name="no" value="<?= htmlspecialchars($no) ?>">
