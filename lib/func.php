@@ -27,11 +27,16 @@ function member(){
     $user_id = $temp[0];
     $pw = $temp[1];
     
-    $query = "SELECT * FROM member WHERE user_id='$user_id'";
-    $result = mysqli_query($connect, $query);
+    // users 테이블 사용 (prepared statement)
+    $stmt = mysqli_prepare($connect, "SELECT * FROM users WHERE username = ?");
+    if (!$stmt) return null;
+    mysqli_stmt_bind_param($stmt, "s", $user_id);
+    mysqli_stmt_execute($stmt);
+    $result = mysqli_stmt_get_result($stmt);
     $data = mysqli_fetch_array($result);
+    mysqli_stmt_close($stmt);
     
-    if(passwd($data['pw']) == $pw) return $data;
+    if ($data && passwd($data['password'] ?? $data['pw'] ?? '') == $pw) return $data;
 }
 ?>
 

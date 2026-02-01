@@ -68,7 +68,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && $valid_token) {
             // member 테이블 업데이트
             $update_query = "UPDATE member SET pass = ?, reset_token = NULL, reset_expires = NULL WHERE id = ?";
             $update_stmt = mysqli_prepare($db, $update_query);
-            mysqli_stmt_bind_param($update_stmt, "ss", $new_password, $user_info['id']);
+            mysqli_stmt_bind_param($update_stmt, "ss", $hashed_password, $user_info['id']);
             $success = mysqli_stmt_execute($update_stmt);
             
             // users 테이블로 마이그레이션 시도

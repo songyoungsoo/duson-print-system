@@ -5,7 +5,7 @@
  * Created: 2025-08-29
  */
 
-$__TABLE_MAP = [
+$GLOBALS['__TABLE_MAP'] = [
   'Member' => 'member',
   'Shop_Temp' => 'shop_temp',
   'mlangorder_printauto' => 'mlangorder_printauto',
@@ -30,6 +30,10 @@ $__TABLE_MAP = [
  */
 function map_table_names($sql) {
     global $__TABLE_MAP;
+    
+    if (empty($__TABLE_MAP) || !is_array($__TABLE_MAP)) {
+        return $sql;
+    }
     
     foreach ($__TABLE_MAP as $old => $new) {
         // 백틱으로 감싸진 테이블명 변환

@@ -3,21 +3,20 @@ $DOCUMENT_ROOT = $_SERVER['DOCUMENT_ROOT'];
 include $_SERVER['DOCUMENT_ROOT'] ."/db.php";
 
 $userid = isset($_SESSION['id_login_ok']) ? $_SESSION['id_login_ok']['id'] : false;
-$query = "SELECT * FROM member WHERE id ='" . mysqli_real_escape_string($db, $userid) . "'";
-$result = mysqli_query($db, $query);
-
-if (!$result) {
-  die("쿼리 실행에 실패했습니다: " . mysqli_error($db));
-}
 
 $name = '';
 if ($userid) {
-  $query = "SELECT * FROM member WHERE id='" . mysqli_real_escape_string($db, $userid) . "'";
-  $result = mysqli_query($db, $query);
-  $data = mysqli_fetch_array($result);
+  $query = "SELECT name FROM users WHERE username = ?";
+  // 3-step verification: placeholders=1, types=1("s"), vars=1
+  $stmt = mysqli_prepare($db, $query);
+  mysqli_stmt_bind_param($stmt, "s", $userid);
+  mysqli_stmt_execute($stmt);
+  $result = mysqli_stmt_get_result($stmt);
+  $data = mysqli_fetch_assoc($result);
   if ($data) {
     $name = $data['name'];
   }
+  mysqli_stmt_close($stmt);
 }
 
 ?>

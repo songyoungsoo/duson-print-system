@@ -4,35 +4,57 @@ session_start();
 include $_SERVER['DOCUMENT_ROOT'] ."/db.php";
 if ($_SERVER["REQUEST_METHOD"] == "POST") {
     $id = $_SESSION['id_login_ok']['id'];
-    $currentPassword = mysqli_real_escape_string($db, $_POST['current_password']);
-    $newPassword = mysqli_real_escape_string($db, $_POST['new_password']);
-    $confirmPassword = mysqli_real_escape_string($db, $_POST['confirm_password']);
+    $currentPassword = $_POST['current_password'] ?? '';
+    $newPassword = $_POST['new_password'] ?? '';
+    $confirmPassword = $_POST['confirm_password'] ?? '';
 
-    $query = "SELECT * FROM member WHERE id='$id'";
-    $result = mysqli_query($query, $db);
+    $query = "SELECT password FROM users WHERE username = ?";
+    // 3-step verification: placeholders=1, types=1("s"), vars=1
+    $stmt = mysqli_prepare($db, $query);
+    mysqli_stmt_bind_param($stmt, "s", $id);
+    mysqli_stmt_execute($stmt);
+    $result = mysqli_stmt_get_result($stmt);
 
     if ($result) {
-        $data = mysqli_fetch_array($result);
+        $data = mysqli_fetch_assoc($result);
+        mysqli_stmt_close($stmt);
 
         if ($data) {
-            // Use crypt function with Blowfish
-            // if (crypt($currentPassword, $data['pass']) === $data['pass']) {
-            if ($currentPassword == $data['pass']) {
-                // Check if the new passwords match
+            $stored_password = $data['password'];
+            $password_valid = false;
+
+            // bcrypt 검증 우선, plaintext fallback
+            if (strlen($stored_password) === 60 && strpos($stored_password, '$2y$') === 0) {
+                $password_valid = password_verify($currentPassword, $stored_password);
+            } else {
+                $password_valid = ($currentPassword === $stored_password);
+            }
+
+            if ($password_valid) {
                 if ($newPassword === $confirmPassword) {
-                    // Use crypt with Blowfish to hash the new password
-                    // $hashedPassword = crypt($newPassword, '$2a$10$' . bin2hex(random_bytes(22))); // 22 characters for the salt
-                    // $randomBytes = mcrypt_create_iv(22, MCRYPT_DEV_URANDOM); // 22 bytes for the salt
-                    // $salt = bin2hex($randomBytes);
-                    // $hashedPassword = crypt($newPassword, '$2a$10$' . $salt);
-                    
-                    // Update the user's password in the database
-                    $updateQuery = "UPDATE member SET pass='$newPassword' WHERE id='$id'";
-                    $updateResult = mysqli_query($updateQuery, $db);
+                    // 항상 bcrypt로 저장
+                    $hashedPassword = password_hash($newPassword, PASSWORD_DEFAULT);
+
+                    // users 테이블 업데이트
+                    $updateQuery = "UPDATE users SET password = ? WHERE username = ?";
+                    // 3-step verification: placeholders=2, types=2("ss"), vars=2
+                    $updateStmt = mysqli_prepare($db, $updateQuery);
+                    mysqli_stmt_bind_param($updateStmt, "ss", $hashedPassword, $id);
+                    $updateResult = mysqli_stmt_execute($updateStmt);
+                    mysqli_stmt_close($updateStmt);
+
+                    // member 테이블 동시 업데이트 (backward compatibility dual write)
+                    $memberUpdateQuery = "UPDATE member SET pass = ? WHERE id = ?";
+                    // 3-step verification: placeholders=2, types=2("ss"), vars=2
+                    $memberStmt = mysqli_prepare($db, $memberUpdateQuery);
+                    if ($memberStmt) {
+                        mysqli_stmt_bind_param($memberStmt, "ss", $hashedPassword, $id);
+                        mysqli_stmt_execute($memberStmt);
+                        mysqli_stmt_close($memberStmt);
+                    }
 
                     if ($updateResult) {
                         $success = "비밀번호가 성공적으로 변경되었습니다.";
-                        // Add JavaScript to close the window and return to the previous page
                         echo '<script>
                                 alert("'.$success.'");
                                 if (window.opener && window.opener.notifyPasswordChangeCompleted) {
@@ -42,7 +64,6 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
                             </script>';
                     } else {
                         $error = "비밀번호 변경에 실패했습니다.";
-                        // Add JavaScript to display an error message and return to the previous page
                         echo '<script>
                                 alert("'.$error.'");
                                 window.history.back();
@@ -419,9 +440,7 @@ if (isset($success)) {
 </form>
 
 <script>
-    // Add this code when the password change operation is completed
     function notifyPasswordChangeCompleted() {
-        // Add any additional actions you want to perform when the password change is completed
         alert('Password change completed!');
     }
 

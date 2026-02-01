@@ -11,11 +11,70 @@ class ChatbotService
     private $db = null;
     private array $products;
     
+    // 제품별 단계 정의
+    private array $productSteps = [
+        'namecard' => [
+            'label' => '명함',
+            'steps' => ['style', 'section', 'quantity', 'side', 'design'],
+            'stepLabels' => ['명함 종류', '용지', '수량', '인쇄면', '디자인'],
+            'delivery' => '일반명함 익일 출고 / 오전판(AM 11:00까지) 접수시 당일 출고',
+        ],
+        'inserted' => [
+            'label' => '전단지',
+            'steps' => ['style', 'tree', 'section', 'quantity', 'side', 'design'],
+            'stepLabels' => ['인쇄도수', '용지', '규격', '수량', '인쇄면', '디자인'],
+            'delivery' => '시안확정 후 2~3일 출고',
+        ],
+        'sticker' => [
+            'label' => '스티커',
+            'steps' => ['material', 'size', 'quantity', 'domusong'],
+            'stepLabels' => ['재질', '크기', '수량', '도무송'],
+            'delivery' => '시안확정 후 3~4일 출고',
+        ],
+        'envelope' => [
+            'label' => '봉투',
+            'steps' => ['style', 'section', 'quantity', 'design'],
+            'stepLabels' => ['봉투 종류', '규격', '수량', '디자인'],
+            'delivery' => '시안확정 후 3~4일 출고',
+        ],
+        'cadarok' => [
+            'label' => '카다록',
+            'steps' => ['style', 'section', 'quantity', 'design'],
+            'stepLabels' => ['종류', '규격/페이지', '수량', '디자인'],
+            'delivery' => '시안확정 후 5~7일 출고',
+        ],
+        'littleprint' => [
+            'label' => '포스터',
+            'steps' => ['style', 'tree', 'section', 'quantity'],
+            'stepLabels' => ['종류', '용지', '규격', '수량'],
+            'delivery' => '시안확정 후 2~3일 출고',
+        ],
+        'merchandisebond' => [
+            'label' => '상품권',
+            'steps' => ['style', 'section', 'quantity', 'design'],
+            'stepLabels' => ['종류', '옵션', '수량', '디자인'],
+            'delivery' => '익일 출고(넘버링 등 옵션이 있을 경우 전화 문의 02-2632-1830)',
+        ],
+        'ncrflambeau' => [
+            'label' => 'NCR양식지',
+            'steps' => ['style', 'tree', 'section', 'quantity', 'design'],
+            'stepLabels' => ['매수', '규격', '인쇄도수', '수량', '디자인'],
+            'delivery' => '시안확정 후 5~7일 출고',
+        ],
+        'msticker' => [
+            'label' => '자석스티커',
+            'steps' => ['style', 'section', 'quantity'],
+            'stepLabels' => ['종류', '규격', '수량'],
+            'delivery' => '시안확정 후 5~7일 출고',
+        ],
+    ];
+    
     public function __construct(?string $apiKey = null)
     {
         $this->apiKey = $apiKey ?? $_ENV['GEMINI_API_KEY'] ?? getenv('GEMINI_API_KEY') ?: '';
         $this->products = require V2_ROOT . '/config/products.php';
         $this->initDatabase();
+        $this->initSession();
     }
     
     private function initDatabase(): void
@@ -28,366 +87,774 @@ class ChatbotService
         }
     }
     
+    private function initSession(): void
+    {
+        if (session_status() === PHP_SESSION_NONE) {
+            session_start();
+        }
+        if (!isset($_SESSION['chatbot'])) {
+            $_SESSION['chatbot'] = [
+                'product' => '',
+                'step' => 0,
+                'selections' => [],
+                'selectionIds' => [],  // DB no 값 저장
+            ];
+        }
+    }
+    
+    private function getState(): array
+    {
+        return $_SESSION['chatbot'];
+    }
+    
+    private function setState(array $state): void
+    {
+        $_SESSION['chatbot'] = $state;
+    }
+    
+    private function resetState(): void
+    {
+        $_SESSION['chatbot'] = [
+            'product' => '',
+            'step' => 0,
+            'selections' => [],
+            'selectionIds' => [],
+        ];
+    }
+    
     public function chat(string $message, array $history = []): array
     {
-        if (empty($this->apiKey)) {
-            return ['error' => 'API 키가 설정되지 않았습니다.'];
+        $state = $this->getState();
+        
+        // "다시", "처음", "리셋" → 초기화
+        if (preg_match('/다시|처음|리셋|초기화|취소/u', $message)) {
+            $this->resetState();
+            return ['success' => true, 'message' => $this->getProductMenu()];
         }
         
-        $dropdownData = $this->getDropdownStructure();
-        $systemPrompt = $this->buildSystemPrompt($dropdownData);
+        // 제품 감지: 이미 제품 선택 진행 중이면 숫자 매칭 비활성화 (옵션 선택과 충돌 방지)
+        $inProgress = !empty($state['product']);
+        $detectedProduct = $this->detectProduct($message, $history, $inProgress);
         
-        $response = $this->callApi($systemPrompt, $message, $history);
-        
-        if (isset($response['error'])) {
-            return $response;
-        }
-        
-        return $this->parseResponse($response);
-    }
-    
-    private function getDropdownStructure(): string
-    {
-        if (!$this->db) {
-            return "데이터베이스 연결 없음";
-        }
-        
-        $data = [];
-        
-        $data[] = "【품목 선택】";
-        $data[] = "1. 명함 - 명함종류 → 용지 → 수량 → 인쇄면 → 디자인";
-        $data[] = "2. 전단지 - 인쇄도수 → 용지 → 규격 → 수량 → 디자인";
-        $data[] = "3. 스티커 - 재질 → 크기(가로×세로) → 수량 → 도무송";
-        $data[] = "4. 봉투 - 봉투종류 → 규격 → 수량 → 디자인";
-        $data[] = "5. 카다록 - 종류 → 규격/페이지 → 수량 → 디자인";
-        $data[] = "6. 포스터 - 종류 → 용지 → 규격 → 수량";
-        $data[] = "7. 상품권 - 종류 → 옵션 → 수량 → 디자인";
-        $data[] = "8. NCR양식지 - 매수 → 규격 → 인쇄도수 → 수량 → 디자인";
-        $data[] = "9. 자석스티커 - 종류 → 규격 → 수량";
-        $data[] = "";
-        
-        $data[] = $this->getNamecardDropdowns();
-        $data[] = $this->getInsertedDropdowns();
-        $data[] = $this->getStickerDropdowns();
-        $data[] = $this->getEnvelopeDropdowns();
-        $data[] = $this->getCadarokDropdowns();
-        $data[] = $this->getLittleprintDropdowns();
-        $data[] = $this->getMerchandisebondDropdowns();
-        $data[] = $this->getNcrDropdowns();
-        $data[] = $this->getMstickerDropdowns();
-        
-        return implode("\n", array_filter($data));
-    }
-    
-    private function getNamecardDropdowns(): string
-    {
-        $lines = ["【명함】"];
-        
-        $styles = $this->getLevel1Options('namecard');
-        $lines[] = "1단계 - 명함종류: " . implode(', ', array_column($styles, 'title'));
-        
-        foreach ($styles as $style) {
-            $sections = $this->getLevel3Options('namecard', (int)$style['no']);
-            if (!empty($sections)) {
-                $lines[] = "  └ {$style['title']} 선택시 용지: " . implode(', ', array_slice(array_column($sections, 'title'), 0, 8));
+        if (!$inProgress) {
+            // 제품 미선택 상태
+            if (empty($detectedProduct)) {
+                return ['success' => true, 'message' => $this->getProductMenu()];
             }
+            $state['product'] = $detectedProduct;
+            $state['step'] = 0;
+            $state['selections'] = [];
+            $state['selectionIds'] = [];
+            $this->setState($state);
+            
+            return $this->askCurrentStep($state);
         }
         
-        $lines[] = "3단계 - 수량: 200, 500, 1000, 2000, 3000, 4000, 5000매 등";
-        $lines[] = "4단계 - 인쇄면: 단면, 양면";
-        $lines[] = "5단계 - 디자인: ";
-        $lines[] = "  - 디자인 있음 (시안 보유): 0원";
-        $lines[] = "  - 디자인 의뢰 (새로 제작): 단면 5,000원 / 양면 10,000원";
+        // 제품 선택 중인데 다른 제품 키워드(텍스트) 입력 → 제품 전환
+        if (!empty($detectedProduct) && $detectedProduct !== $state['product']) {
+            $state['product'] = $detectedProduct;
+            $state['step'] = 0;
+            $state['selections'] = [];
+            $state['selectionIds'] = [];
+            $this->setState($state);
+            
+            return $this->askCurrentStep($state);
+        }
         
-        $lines[] = "";
-        $lines[] = $this->getNamecardPriceTable();
-        
+        // 제품 선택됨 → 현재 단계 처리
+        return $this->processStepAnswer($state, $message);
+    }
+    
+    /**
+     * 품목 선택 메뉴
+     */
+    private function getProductMenu(): string
+    {
+        $lines = ["어떤 인쇄물 가격이 궁금하세요?\n"];
+        $i = 1;
+        foreach ($this->productSteps as $key => $info) {
+            $lines[] = "{$i}. {$info['label']}";
+            $i++;
+        }
         return implode("\n", $lines);
     }
     
-    private function getNamecardPriceTable(): string
+    /**
+     * 현재 단계의 선택지 제시
+     */
+    private function askCurrentStep(array $state): array
     {
-        $sql = "SELECT n.style, n.Section, n.quantity, n.money, n.DesignMoney, n.POtype,
-                       s.title as style_name, sec.title as section_name
-                FROM mlangprintauto_namecard n
-                LEFT JOIN mlangprintauto_transactioncate s ON n.style = s.no
-                LEFT JOIN mlangprintauto_transactioncate sec ON n.Section = sec.no
-                ORDER BY n.style, n.Section, n.POtype, n.quantity
-                LIMIT 500";
+        $product = $state['product'];
+        $config = $this->productSteps[$product];
+        $stepIdx = $state['step'];
+        $steps = $config['steps'];
         
-        $result = mysqli_query($this->db, $sql);
-        if (!$result) return "";
+        // 모든 단계 완료 → 가격 안내
+        if ($stepIdx >= count($steps)) {
+            return $this->showPrice($state);
+        }
         
-        $prices = [];
+        $stepType = $steps[$stepIdx];
+        $stepLabel = $config['stepLabels'][$stepIdx];
+        $options = $this->getStepOptions($product, $stepType, $state);
+        
+        // 선택지가 1개뿐이면 자동 선택하고 다음 단계로
+        if (count($options) === 1 && !in_array($stepType, ['side', 'design', 'quantity', 'size', 'domusong'])) {
+            $state['selections'][$stepType] = $options[0]['title'];
+            $state['selectionIds'][$stepType] = (int)$options[0]['no'];
+            $state['step']++;
+            $this->setState($state);
+            return $this->askCurrentStep($state);
+        }
+        
+        if (empty($options) && $stepType === 'quantity') {
+            return $this->askQuantityFreeInput($stepLabel, $product, $state);
+        }
+        
+        if (empty($options) && $stepType === 'size') {
+            return ['success' => true, 'message' => "크기를 입력해주세요 (가로×세로 mm):\n예: 50×30, 100×100"];
+        }
+        
+        if (empty($options)) {
+            // 옵션 못 가져오면 건너뛰기
+            $state['step']++;
+            $state['selections'][$stepType] = '-';
+            $state['selectionIds'][$stepType] = 0;
+            $this->setState($state);
+            return $this->askCurrentStep($state);
+        }
+        
+        $result = ['success' => true];
+        $lines = ["{$stepLabel}을 선택해주세요:"];
+        foreach ($options as $i => $opt) {
+            $lines[] = ($i + 1) . ". " . $opt['title'];
+        }
+        $result['message'] = implode("\n", $lines);
+        
+        // 용지 선택 단계면 paper_images 추가
+        if ($stepType === 'section' && $product === 'namecard') {
+            if ($this->containsPaperSelection(implode(',', array_column($options, 'title')))) {
+                $result['paper_images'] = $this->getPaperImages();
+            }
+        }
+        
+        return $result;
+    }
+    
+    /**
+     * 수량 자유입력 안내
+     */
+    private function askQuantityFreeInput(string $label, string $product, array $state): array
+    {
+        $config = $this->productSteps[$product];
+        $qtyOptions = $this->getQuantityOptions($product, $state);
+        
+        if (!empty($qtyOptions)) {
+            // 세션에 수량 옵션 저장 (processQuantityStep에서 매칭용)
+            $state['_quantityOptions'] = $qtyOptions;
+            $this->setState($state);
+            
+            $lines = ["{$label}을 선택해주세요:"];
+            foreach ($qtyOptions as $i => $q) {
+                $lines[] = ($i + 1) . ". " . $q['display'];
+            }
+            return ['success' => true, 'message' => implode("\n", $lines)];
+        }
+        
+        return ['success' => true, 'message' => "{$label}을 입력해주세요:"];
+    }
+    
+    /**
+     * 사용자 답변 처리
+     */
+    private function processStepAnswer(array $state, string $message): array
+    {
+        $product = $state['product'];
+        $config = $this->productSteps[$product];
+        $stepIdx = $state['step'];
+        $steps = $config['steps'];
+        
+        if ($stepIdx >= count($steps)) {
+            // 이미 완료 → 새 문의 감지
+            $newProduct = $this->detectProduct($message, []);
+            if (!empty($newProduct)) {
+                $this->resetState();
+                $state = $this->getState();
+                $state['product'] = $newProduct;
+                $this->setState($state);
+                return $this->askCurrentStep($state);
+            }
+            // 자유 질문 → AI 호출
+            return $this->callAiForFreeQuestion($message);
+        }
+        
+        $stepType = $steps[$stepIdx];
+        $options = $this->getStepOptions($product, $stepType, $state);
+        
+        // 수량 단계 특수 처리
+        if ($stepType === 'quantity') {
+            return $this->processQuantityStep($state, $message, $product);
+        }
+        
+        // 크기 입력 (스티커)
+        if ($stepType === 'size') {
+            $state['selections']['size'] = trim($message);
+            $state['selectionIds']['size'] = 0;
+            $state['step']++;
+            $this->setState($state);
+            return $this->askCurrentStep($state);
+        }
+        
+        // 디자인 단계
+        if ($stepType === 'design') {
+            return $this->processDesignStep($state, $message);
+        }
+        
+        // 인쇄면 단계 (명함)
+        if ($stepType === 'side') {
+            return $this->processSideStep($state, $message);
+        }
+        
+        // 일반 선택지 매칭
+        if (empty($options)) {
+            $state['selections'][$stepType] = trim($message);
+            $state['selectionIds'][$stepType] = 0;
+            $state['step']++;
+            $this->setState($state);
+            return $this->askCurrentStep($state);
+        }
+        
+        $matched = $this->matchOption($message, $options);
+        if ($matched === null) {
+            $stepLabel = $config['stepLabels'][$stepIdx];
+            $lines = ["선택지에서 골라주세요:"];
+            foreach ($options as $i => $opt) {
+                $lines[] = ($i + 1) . ". " . $opt['title'];
+            }
+            return ['success' => true, 'message' => implode("\n", $lines)];
+        }
+        
+        $state['selections'][$stepType] = $matched['title'];
+        $state['selectionIds'][$stepType] = (int)$matched['no'];
+        $state['step']++;
+        $this->setState($state);
+        
+        return $this->askCurrentStep($state);
+    }
+    
+    /**
+     * 수량 단계 처리
+     */
+    private function processQuantityStep(array $state, string $message, string $product): array
+    {
+        $config = $this->productSteps[$product];
+        $stepType = $config['steps'][$state['step']];
+        $msg = trim($message);
+        
+        // 세션에 저장된 수량 옵션에서 매칭 시도
+        $qtyOptions = $state['_quantityOptions'] ?? [];
+        $matched = null;
+        
+        if (!empty($qtyOptions)) {
+            // 1) 번호 매칭: "1", "2", "3" ...
+            if (preg_match('/^(\d+)$/', $msg, $m)) {
+                $idx = (int)$m[1] - 1;
+                if (isset($qtyOptions[$idx])) {
+                    $matched = $qtyOptions[$idx];
+                }
+            }
+            
+            // 2) 텍스트 매칭: display 문자열 부분일치
+            if ($matched === null) {
+                foreach ($qtyOptions as $opt) {
+                    if (mb_strpos($msg, $opt['display']) !== false || mb_strpos($opt['display'], $msg) !== false) {
+                        $matched = $opt;
+                        break;
+                    }
+                    // value만으로도 매칭 (예: "0.5" 입력)
+                    if ($msg === $opt['value'] || $msg === $opt['value'] . $this->getUnit($product)) {
+                        $matched = $opt;
+                        break;
+                    }
+                }
+            }
+        }
+        
+        if ($matched !== null) {
+            // 구조화된 데이터에서 정확한 값 사용
+            $state['selections'][$stepType] = $matched['value'];
+            $state['selections']['_quantityDisplay'] = $matched['display'];
+            $state['selections']['_quantityTwo'] = $matched['quantityTwo'] ?? '';
+            $state['selectionIds'][$stepType] = 0;
+        } else {
+            // 옵션 매칭 실패 → 숫자 직접 추출 (단위 앞 숫자만)
+            if (preg_match('/^([\d.]+)/', $msg, $m)) {
+                $num = $m[1];
+            } else {
+                $num = preg_replace('/[^0-9.]/', '', $msg);
+            }
+            if (empty($num)) {
+                return ['success' => true, 'message' => "숫자로 입력해주세요:"];
+            }
+            $state['selections'][$stepType] = $num;
+            $state['selections']['_quantityDisplay'] = '';
+            $state['selections']['_quantityTwo'] = '';
+            $state['selectionIds'][$stepType] = 0;
+        }
+        
+        // 수량 옵션 임시 데이터 정리
+        unset($state['_quantityOptions']);
+        $state['step']++;
+        $this->setState($state);
+        
+        return $this->askCurrentStep($state);
+    }
+    
+    /**
+     * 인쇄면 단계 처리
+     */
+    private function processSideStep(array $state, string $message): array
+    {
+        $msg = trim($message);
+        if (preg_match('/양면|2|앞뒤/u', $msg)) {
+            $side = '양면';
+            $sideId = 2;
+        } elseif (preg_match('/단면|1|앞면/u', $msg)) {
+            $side = '단면';
+            $sideId = 1;
+        } else {
+            return ['success' => true, 'message' => "인쇄면을 선택해주세요:\n1. 단면\n2. 양면"];
+        }
+        
+        $state['selections']['side'] = $side;
+        $state['selectionIds']['side'] = $sideId;
+        $state['step']++;
+        $this->setState($state);
+        
+        return $this->askCurrentStep($state);
+    }
+    
+    /**
+     * 디자인 단계 처리
+     */
+    private function processDesignStep(array $state, string $message): array
+    {
+        $msg = trim($message);
+        if (preg_match('/있음|보유|1|시안/u', $msg)) {
+            $design = '디자인 있음';
+            $designId = 0;
+        } elseif (preg_match('/의뢰|제작|2|새로/u', $msg)) {
+            $design = '디자인 의뢰';
+            $designId = 1;
+        } else {
+            return ['success' => true, 'message' => "디자인을 선택해주세요:\n1. 디자인 있음 (추가비용 없음)\n2. 디자인 의뢰"];
+        }
+        
+        $state['selections']['design'] = $design;
+        $state['selectionIds']['design'] = $designId;
+        $state['step']++;
+        $this->setState($state);
+        
+        return $this->askCurrentStep($state);
+    }
+    
+    /**
+     * DB에서 현재 단계 옵션 조회
+     */
+    private function getStepOptions(string $product, string $stepType, array $state): array
+    {
+        if (!$this->db) return [];
+        
+        $table = $this->getTableName($product);
+        
+        switch ($stepType) {
+            case 'style':
+            case 'material':
+                return $this->getLevel1Options($table);
+            
+            case 'tree':
+                $parentId = $state['selectionIds']['style'] ?? 0;
+                return $this->getLevel2Options($table, $parentId);
+            
+            case 'section':
+                $parentId = $state['selectionIds']['style'] ?? 0;
+                return $this->getLevel3Options($table, $parentId);
+            
+            case 'side':
+                return [
+                    ['no' => 1, 'title' => '단면'],
+                    ['no' => 2, 'title' => '양면'],
+                ];
+            
+            case 'design':
+                return [
+                    ['no' => 0, 'title' => '디자인 있음 (추가비용 없음)'],
+                    ['no' => 1, 'title' => '디자인 의뢰'],
+                ];
+            
+            case 'quantity':
+            case 'size':
+            case 'domusong':
+                return []; // 자유입력 또는 별도 처리
+            
+            default:
+                return [];
+        }
+    }
+    
+    /**
+     * 수량 선택지 조회 (구조화된 데이터 반환)
+     * @return array [ ['value' => '0.5', 'display' => '0.5(2000매)연', 'quantityTwo' => '2000'], ... ]
+     */
+    private function getQuantityOptions(string $product, array $state): array
+    {
+        if (!$this->db) return [];
+        
+        $priceTable = $this->getPriceTableName($product);
+        if (empty($priceTable)) return [];
+        
+        $styleId = $state['selectionIds']['style'] ?? 0;
+        $sectionId = $state['selectionIds']['section'] ?? 0;
+        
+        $hasQtyTwo = ($product === 'inserted');
+        $selectCols = $hasQtyTwo ? 'DISTINCT quantity, quantityTwo' : 'DISTINCT quantity';
+        
+        // 4단계 드롭다운 제품 (전단지, 포스터): TreeSelect(용지) 조건 필수
+        $has4Level = in_array($product, ['inserted', 'littleprint']);
+        if ($has4Level) {
+            $treeId = $state['selectionIds']['tree'] ?? 0;
+            $sql = "SELECT {$selectCols} FROM {$priceTable} WHERE style = ? AND TreeSelect = ? AND Section = ? ORDER BY quantity ASC";
+            $stmt = mysqli_prepare($this->db, $sql);
+            if (!$stmt) return [];
+            mysqli_stmt_bind_param($stmt, 'iii', $styleId, $treeId, $sectionId);
+        } else {
+            $sql = "SELECT {$selectCols} FROM {$priceTable} WHERE style = ? AND Section = ? ORDER BY quantity ASC";
+            $stmt = mysqli_prepare($this->db, $sql);
+            if (!$stmt) return [];
+            mysqli_stmt_bind_param($stmt, 'ii', $styleId, $sectionId);
+        }
+        mysqli_stmt_execute($stmt);
+        $result = mysqli_stmt_get_result($stmt);
+        
+        $quantities = [];
+        $seen = [];
+        $unit = $this->getUnit($product);
         while ($row = mysqli_fetch_assoc($result)) {
-            $style = $row['style_name'] ?: $row['style'];
-            $section = $row['section_name'] ?: $row['Section'];
-            $poType = ($row['POtype'] == '2') ? '양면' : '단면';
-            $qty = (int)$row['quantity'];
-            $printPrice = (int)$row['money'];
-            $designPrice = (int)$row['DesignMoney'];
+            $qty = $row['quantity'];
+            if (isset($seen[$qty])) continue;
+            $seen[$qty] = true;
             
-            $priceNoDesign = (int)round($printPrice * 1.1);
-            $priceWithDesign = (int)round(($printPrice + $designPrice) * 1.1);
+            $qtyTwo = '';
+            if ($hasQtyTwo && !empty($row['quantityTwo'])) {
+                $qtyTwo = $row['quantityTwo'];
+                $qtyTwoFormatted = number_format((int)$qtyTwo);
+                // 표시: "0.5(2,000매)연"
+                $display = "{$qty}({$qtyTwoFormatted}매){$unit}";
+            } else {
+                $display = $qty . $unit;
+            }
             
-            $key = "{$style}|{$section}|{$poType}";
-            if (!isset($prices[$key])) $prices[$key] = [];
-            $prices[$key][$qty] = [
-                'no_design' => $priceNoDesign,
-                'with_design' => $priceWithDesign,
-                'design_fee' => $designPrice
+            $quantities[] = [
+                'value' => (string)$qty,
+                'display' => $display,
+                'quantityTwo' => $qtyTwo,
+            ];
+        }
+        mysqli_stmt_close($stmt);
+        
+        return $quantities;
+    }
+    
+    /**
+     * 가격 조회 및 표시
+     */
+    private function showPrice(array $state): array
+    {
+        $product = $state['product'];
+        $config = $this->productSteps[$product];
+        $sels = $state['selections'];
+        $selIds = $state['selectionIds'];
+        
+        // 선택 요약
+        $summary = [];
+        foreach ($config['steps'] as $i => $step) {
+            if (isset($sels[$step]) && $sels[$step] !== '-') {
+                $val = $sels[$step];
+                if ($step === 'quantity') {
+                    // 저장된 display 문자열 우선 사용 (예: "0.5(2,000매)연")
+                    $qtyDisplay = $sels['_quantityDisplay'] ?? '';
+                    $val = !empty($qtyDisplay) ? $qtyDisplay : $val . $this->getUnit($product);
+                }
+                $summary[] = $val;
+            }
+        }
+        $summaryText = implode(' / ', $summary);
+        
+        // DB에서 가격 조회
+        $price = $this->lookupPrice($product, $selIds, $sels);
+        
+        if ($price !== null) {
+            $priceVat = (int)round($price * 1.1);
+            $lines = [
+                "✅ {$config['label']} / {$summaryText}",
+                "💰 총 " . number_format($priceVat) . "원 (VAT포함)",
+                $config['delivery'],
+            ];
+        } else {
+            $lines = [
+                "✅ {$config['label']} / {$summaryText}",
+                "정확한 견적은 전화(02-2632-1830)로 문의해주세요.",
             ];
         }
         
-        $lines = ["[명함 가격표] (VAT포함)"];
-        $lines[] = "※ 디자인 있음 = 시안 보유시 가격 / 디자인 의뢰 = 새로 제작시 가격";
-        foreach ($prices as $key => $qtyPrices) {
-            list($style, $section, $side) = explode('|', $key);
-            $pList = [];
-            foreach ($qtyPrices as $q => $p) {
-                $pList[] = "{$q}매: 디자인있음 " . number_format($p['no_design']) . "원 / 의뢰시 " . number_format($p['with_design']) . "원";
-            }
-            $lines[] = "- {$style}/{$section}/{$side}:";
-            foreach ($pList as $pl) {
-                $lines[] = "  " . $pl;
-            }
-        }
+        $lines[] = "\n다른 제품도 궁금하시면 말씀해주세요!";
         
-        return implode("\n", array_slice($lines, 0, 80));
+        // 대화 완료 → 상태 유지 (추가 질문 가능)
+        return ['success' => true, 'message' => implode("\n", $lines)];
     }
     
-    private function getInsertedDropdowns(): string
+    /**
+     * DB에서 실제 가격 조회
+     */
+    private function lookupPrice(string $product, array $selIds, array $sels): ?int
     {
-        $lines = ["【전단지】"];
+        if (!$this->db) return null;
         
-        $styles = $this->getLevel1Options('inserted');
-        $lines[] = "1단계 - 인쇄도수: " . implode(', ', array_column($styles, 'title'));
+        $priceTable = $this->getPriceTableName($product);
+        if (empty($priceTable)) return null;
         
-        foreach (array_slice($styles, 0, 2) as $style) {
-            $trees = $this->getLevel2Options('inserted', (int)$style['no']);
-            if (!empty($trees)) {
-                $lines[] = "  └ {$style['title']} 선택시 용지: " . implode(', ', array_slice(array_column($trees, 'title'), 0, 6));
-            }
+        $styleId = $selIds['style'] ?? 0;
+        $sectionId = $selIds['section'] ?? ($selIds['tree'] ?? 0);
+        $quantity = $sels['quantity'] ?? '0';
+        $quantity = preg_replace('/[^0-9.]/', '', $quantity);
+        
+        // 4단계 드롭다운 제품 (전단지, 포스터): TreeSelect 조건 필수
+        $has4Level = in_array($product, ['inserted', 'littleprint']);
+        if ($has4Level) {
+            $treeId = $selIds['tree'] ?? 0;
+            $poType = ($selIds['side'] ?? 1) == 2 ? '2' : '1';
+            $sql = "SELECT money, DesignMoney FROM {$priceTable} 
+                    WHERE style = ? AND TreeSelect = ? AND Section = ? AND quantity = ? AND POtype = ?
+                    LIMIT 1";
+            $stmt = mysqli_prepare($this->db, $sql);
+            if (!$stmt) return null;
+            mysqli_stmt_bind_param($stmt, 'iiiss', $styleId, $treeId, $sectionId, $quantity, $poType);
+        } elseif ($product === 'namecard') {
+            $poType = ($selIds['side'] ?? 1) == 2 ? '2' : '1';
+            $sql = "SELECT money, DesignMoney FROM {$priceTable} 
+                    WHERE style = ? AND Section = ? AND quantity = ? AND POtype = ?
+                    LIMIT 1";
+            $stmt = mysqli_prepare($this->db, $sql);
+            if (!$stmt) return null;
+            mysqli_stmt_bind_param($stmt, 'iiss', $styleId, $sectionId, $quantity, $poType);
+        } else {
+            $sql = "SELECT money, DesignMoney FROM {$priceTable} 
+                    WHERE style = ? AND Section = ? AND quantity = ?
+                    LIMIT 1";
+            $stmt = mysqli_prepare($this->db, $sql);
+            if (!$stmt) return null;
+            mysqli_stmt_bind_param($stmt, 'iis', $styleId, $sectionId, $quantity);
         }
         
-        $lines[] = "3단계 - 규격: A3, A4, A5, A6, B4, B5, B6, 국2절, 국4절, 국8절, 국16절 등";
-        $lines[] = "4단계 - 수량: 0.5연, 1연, 2연, 3연, 4연, 5연... (규격마다 1연당 매수가 다름)";
-        $lines[] = "  ※ 규격별 1연당 매수:";
-        $lines[] = "    - 국2절: 1연=1,000매 / A3: 1연=2,000매 / A4: 1연=4,000매";
-        $lines[] = "    - A5: 1연=8,000매 / A6: 1연=16,000매 / B4: 1연=4,000매";
-        $lines[] = "    - B5: 1연=8,000매 / B6: 1연=16,000매";
-        $lines[] = "5단계 - 디자인:";
-        $lines[] = "  - 디자인 있음 (시안 보유): 0원";
-        $lines[] = "  - 디자인 의뢰: 규격에 따라 10,000원~30,000원";
+        mysqli_stmt_execute($stmt);
+        $result = mysqli_stmt_get_result($stmt);
+        $row = mysqli_fetch_assoc($result);
+        mysqli_stmt_close($stmt);
         
-        $lines[] = "";
-        $lines[] = $this->getInsertedPriceTable();
+        if (!$row) return null;
         
-        return implode("\n", $lines);
+        $printPrice = (int)$row['money'];
+        $designPrice = (int)($row['DesignMoney'] ?? 0);
+        
+        // 디자인 의뢰시 디자인비 추가
+        $hasDesign = ($selIds['design'] ?? 0) == 1;
+        
+        return $hasDesign ? ($printPrice + $designPrice) : $printPrice;
     }
     
-    private function getInsertedPriceTable(): string
+    /**
+     * 제품 → 가격 테이블명
+     */
+    private function getPriceTableName(string $product): string
     {
-        $sql = "SELECT i.style, i.TreeSelect, i.Section, i.quantity, i.quantityTwo, i.money, i.DesignMoney,
-                       s.title as style_name, t.title as tree_name, sec.title as section_name
-                FROM mlangprintauto_inserted i
-                LEFT JOIN mlangprintauto_transactioncate s ON i.style = s.no
-                LEFT JOIN mlangprintauto_transactioncate t ON i.TreeSelect = t.no
-                LEFT JOIN mlangprintauto_transactioncate sec ON i.Section = sec.no
-                ORDER BY i.style, i.TreeSelect, i.Section, i.quantity
-                LIMIT 150";
-        
-        $result = mysqli_query($this->db, $sql);
-        if (!$result) return "";
-        
-        $prices = [];
-        while ($row = mysqli_fetch_assoc($result)) {
-            $style = $row['style_name'] ?: $row['style'];
-            $tree = $row['tree_name'] ?: '';
-            $section = $row['section_name'] ?: $row['Section'];
-            // 연수와 매수 함께 표시
-            $qty = $row['quantity'];
-            $qtyTwo = $row['quantityTwo'];
-            $qtyDisplay = $qtyTwo ? "{$qty}연({$qtyTwo}매)" : "{$qty}연";
-            $total = (int)round(((int)$row['money'] + (int)($row['DesignMoney'] ?? 0)) * 1.1);
-            
-            $key = "{$style}|{$tree}|{$section}";
-            if (!isset($prices[$key])) $prices[$key] = [];
-            $prices[$key][$qtyDisplay] = number_format($total);
-        }
-        
-        $lines = ["[전단지 가격표] (VAT포함)"];
-        foreach ($prices as $key => $qtyPrices) {
-            list($style, $tree, $section) = explode('|', $key);
-            $label = trim("{$style} {$tree} {$section}");
-            $pList = [];
-            foreach ($qtyPrices as $q => $p) {
-                $pList[] = "{$q}:{$p}원";
-            }
-            $lines[] = "- {$label}: " . implode(', ', array_slice($pList, 0, 4));
-        }
-        
-        return implode("\n", array_slice($lines, 0, 20));
+        $map = [
+            'namecard'        => 'mlangprintauto_namecard',
+            'inserted'        => 'mlangprintauto_inserted',
+            'envelope'        => 'mlangprintauto_envelope',
+            'cadarok'         => 'mlangprintauto_cadarok',
+            'littleprint'     => 'mlangprintauto_littleprint',
+            'merchandisebond' => 'mlangprintauto_merchandisebond',
+            'ncrflambeau'     => 'mlangprintauto_ncrflambeau',
+            'msticker'        => 'mlangprintauto_msticker',
+        ];
+        return $map[$product] ?? '';
     }
     
-    private function getStickerDropdowns(): string
+    /**
+     * 제품 → transactioncate 테이블명
+     */
+    private function getTableName(string $product): string
     {
-        $lines = ["【스티커】"];
-        $lines[] = "1단계 - 재질: 아트지유광, 아트지무광, 아트지비코팅, 강접아트유광, 초강접아트, 유포지, 은데드롱, 투명스티커, 모조지비코팅, 크라프트";
-        $lines[] = "2단계 - 크기: 가로(mm) × 세로(mm) 직접입력 (예: 50×30, 100×100)";
-        $lines[] = "3단계 - 수량: 500, 1000, 2000, 3000, 5000, 10000매";
-        $lines[] = "4단계 - 도무송: 기본사각(무료), 사각도무송(+8,000원), 귀돌이(+8,000원), 원형(+8,000원), 타원(+8,000원), 모양도무송(+19,000원)";
-        $lines[] = "";
-        $lines[] = "[스티커 가격 예시] (VAT포함)";
-        $lines[] = "- 50×30mm 아트유광 1000매: 약 35,000~45,000원";
-        $lines[] = "- 100×100mm 유포지 500매: 약 50,000~70,000원";
-        $lines[] = "- 정확한 가격은 크기 입력 필요 (홈페이지 계산기 이용)";
-        
-        return implode("\n", $lines);
+        $map = [
+            'namecard'        => 'namecard',
+            'inserted'        => 'inserted',
+            'sticker'         => 'sticker',
+            'envelope'        => 'envelope',
+            'cadarok'         => 'cadarok',
+            'littleprint'     => 'littleprint',
+            'merchandisebond' => 'merchandisebond',
+            'ncrflambeau'     => 'ncrflambeau',
+            'msticker'        => 'msticker',
+        ];
+        return $map[$product] ?? $product;
     }
     
-    private function getEnvelopeDropdowns(): string
+    /**
+     * 제품별 단위
+     */
+    private function getUnit(string $product): string
     {
-        $lines = ["【봉투】"];
-        
-        $styles = $this->getLevel1Options('envelope');
-        $lines[] = "1단계 - 봉투종류: " . implode(', ', array_column($styles, 'title'));
-        
-        foreach (array_slice($styles, 0, 2) as $style) {
-            $sections = $this->getLevel3Options('envelope', (int)$style['no']);
-            if (!empty($sections)) {
-                $lines[] = "  └ {$style['title']} 선택시 규격: " . implode(', ', array_slice(array_column($sections, 'title'), 0, 5));
-            }
-        }
-        
-        $lines[] = "3단계 - 수량: 500, 1000, 2000, 3000매 등";
-        $lines[] = "4단계 - 디자인:";
-        $lines[] = "  - 디자인 있음 (시안 보유): 0원";
-        $lines[] = "  - 디자인 의뢰: 10,000원~20,000원";
-        
-        $lines[] = "";
-        $lines[] = $this->getEnvelopePriceTable();
-        
-        return implode("\n", $lines);
+        $units = [
+            'namecard' => '매', 'inserted' => '연', 'sticker' => '매',
+            'envelope' => '매', 'cadarok' => '부', 'littleprint' => '매',
+            'merchandisebond' => '매', 'ncrflambeau' => '권', 'msticker' => '매',
+        ];
+        return $units[$product] ?? '매';
     }
     
-    private function getEnvelopePriceTable(): string
+    /**
+     * 사용자 입력과 옵션 매칭
+     */
+    private function matchOption(string $message, array $options): ?array
     {
-        $sql = "SELECT e.style, e.Section, e.quantity, e.money, e.DesignMoney,
-                       s.title as style_name, sec.title as section_name
-                FROM mlangprintauto_envelope e
-                LEFT JOIN mlangprintauto_transactioncate s ON e.style = s.no
-                LEFT JOIN mlangprintauto_transactioncate sec ON e.Section = sec.no
-                ORDER BY e.style, e.Section, e.quantity
-                LIMIT 100";
+        $msg = trim($message);
         
-        $result = mysqli_query($this->db, $sql);
-        if (!$result) return "";
-        
-        $prices = [];
-        while ($row = mysqli_fetch_assoc($result)) {
-            $style = $row['style_name'] ?: $row['style'];
-            $section = $row['section_name'] ?: $row['Section'];
-            $qty = (int)$row['quantity'];
-            $total = (int)round(((int)$row['money'] + (int)($row['DesignMoney'] ?? 0)) * 1.1);
-            
-            $key = "{$style}|{$section}";
-            if (!isset($prices[$key])) $prices[$key] = [];
-            $prices[$key][$qty] = number_format($total);
-        }
-        
-        $lines = ["[봉투 가격표] (VAT포함)"];
-        foreach ($prices as $key => $qtyPrices) {
-            list($style, $section) = explode('|', $key);
-            $pList = [];
-            foreach ($qtyPrices as $q => $p) {
-                $pList[] = "{$q}매:{$p}원";
-            }
-            $lines[] = "- {$style} {$section}: " . implode(', ', array_slice($pList, 0, 4));
-        }
-        
-        return implode("\n", array_slice($lines, 0, 15));
-    }
-    
-    private function getCadarokDropdowns(): string
-    {
-        $lines = ["【카다록/리플렛】"];
-        
-        $styles = $this->getLevel1Options('cadarok');
-        $lines[] = "1단계 - 종류: " . implode(', ', array_column($styles, 'title'));
-        
-        foreach (array_slice($styles, 0, 2) as $style) {
-            $sections = $this->getLevel3Options('cadarok', (int)$style['no']);
-            if (!empty($sections)) {
-                $lines[] = "  └ {$style['title']} 선택시: " . implode(', ', array_slice(array_column($sections, 'title'), 0, 5));
+        // 번호 매칭 (1, 2, 3...)
+        if (preg_match('/^(\d+)$/', $msg, $m)) {
+            $idx = (int)$m[1] - 1;
+            if (isset($options[$idx])) {
+                return $options[$idx];
             }
         }
         
-        $lines[] = "3단계 - 수량: 100, 200, 300, 500, 1000부 등";
-        $lines[] = "4단계 - 디자인:";
-        $lines[] = "  - 디자인 있음 (시안 보유): 0원";
-        $lines[] = "  - 디자인 의뢰: 페이지 수에 따라 20,000원~100,000원";
+        // 텍스트 매칭 (부분 일치)
+        foreach ($options as $opt) {
+            if (mb_strpos($msg, $opt['title']) !== false || mb_strpos($opt['title'], $msg) !== false) {
+                return $opt;
+            }
+        }
         
-        return implode("\n", $lines);
+        return null;
     }
     
-    private function getLittleprintDropdowns(): string
+    /**
+     * 대화에서 제품 키워드 감지
+     * @param bool $skipNumberMatch true이면 숫자 매칭 건너뜀 (진행 중 옵션 선택과 충돌 방지)
+     */
+    private function detectProduct(string $message, array $history, bool $skipNumberMatch = false): string
     {
-        $lines = ["【포스터/소량인쇄】"];
+        $keywords = [
+            'namecard'        => ['명함'],
+            'inserted'        => ['전단지', '전단', '플라이어'],
+            'sticker'         => ['스티커'],
+            'envelope'        => ['봉투'],
+            'cadarok'         => ['카다록', '카탈로그', '카달로그', '리플렛'],
+            'littleprint'     => ['포스터', '소량인쇄', '소량'],
+            'merchandisebond' => ['상품권'],
+            'ncrflambeau'     => ['NCR', 'ncr', '양식지'],
+            'msticker'        => ['자석스티커', '자석'],
+        ];
         
-        $styles = $this->getLevel1Options('littleprint');
-        $lines[] = "1단계 - 종류: " . implode(', ', array_column($styles, 'title'));
-        $lines[] = "2단계 - 용지: 선택한 종류에 따라 다름";
-        $lines[] = "3단계 - 규격: A1, A2, A3, A4, B1, B2 등";
-        $lines[] = "4단계 - 수량: 1, 5, 10, 20, 50, 100장 등";
+        // 번호 매칭 (1~9) - 제품 선택 진행 중에는 건너뜀
+        if (!$skipNumberMatch && preg_match('/^(\d)$/', trim($message), $m)) {
+            $productKeys = array_keys($this->productSteps);
+            $idx = (int)$m[1] - 1;
+            if (isset($productKeys[$idx])) {
+                return $productKeys[$idx];
+            }
+        }
         
-        return implode("\n", $lines);
+        // 텍스트 키워드 매칭: 현재 메시지만 검사 (히스토리 포함 시 제품 메뉴의 "명함" 등이 오탐됨)
+        foreach ($keywords as $product => $terms) {
+            foreach ($terms as $term) {
+                if (mb_strpos($message, $term) !== false) {
+                    return $product;
+                }
+            }
+        }
+        
+        // 현재 메시지에서 못 찾았고 & 진행 중이 아닐 때만 히스토리 검색 (초기 제품 감지용)
+        if (!$skipNumberMatch && !empty($history)) {
+            // 히스토리에서 사용자 메시지만 검색 (봇 응답의 제품 메뉴 텍스트 제외)
+            foreach ($history as $msg) {
+                if (($msg['role'] ?? '') !== 'user') continue;
+                $userText = $msg['content'] ?? '';
+                foreach ($keywords as $product => $terms) {
+                    foreach ($terms as $term) {
+                        if (mb_strpos($userText, $term) !== false) {
+                            return $product;
+                        }
+                    }
+                }
+            }
+        }
+        
+        return '';
     }
     
-    private function getMerchandisebondDropdowns(): string
+    /**
+     * 자유 질문 → AI 호출 (최소 프롬프트)
+     */
+    private function callAiForFreeQuestion(string $message): array
     {
-        $lines = ["【상품권】"];
+        if (empty($this->apiKey)) {
+            return ['success' => true, 'message' => "자세한 문의는 전화(02-2632-1830)로 연락주세요!"];
+        }
         
-        $styles = $this->getLevel1Options('merchandisebond');
-        $lines[] = "1단계 - 종류: " . implode(', ', array_column($styles, 'title'));
-        $lines[] = "2단계 - 옵션: 선택한 종류에 따라 다름";
-        $lines[] = "3단계 - 수량: 500, 1000, 2000, 3000매 등";
-        $lines[] = "4단계 - 디자인:";
-        $lines[] = "  - 디자인 있음 (시안 보유): 0원";
-        $lines[] = "  - 디자인 의뢰: 15,000원~30,000원";
-        $lines[] = "추가옵션: 박, 넘버링, 미싱, 귀돌이 (별도 비용)";
+        $prompt = "두손기획인쇄 상담봇. 짧게 답변. 인쇄 관련 질문만 답변. 가격문의는 품목 선택 안내.";
         
-        return implode("\n", $lines);
+        $data = [
+            'contents' => [
+                ['role' => 'user', 'parts' => [['text' => $message]]]
+            ],
+            'systemInstruction' => [
+                'parts' => [['text' => $prompt]]
+            ],
+            'generationConfig' => [
+                'temperature' => 0.3,
+                'maxOutputTokens' => 200,
+            ]
+        ];
+        
+        $url = $this->baseUrl . $this->model . ':generateContent?key=' . $this->apiKey;
+        $ch = curl_init($url);
+        curl_setopt_array($ch, [
+            CURLOPT_RETURNTRANSFER => true,
+            CURLOPT_POST => true,
+            CURLOPT_POSTFIELDS => json_encode($data),
+            CURLOPT_HTTPHEADER => ['Content-Type: application/json'],
+            CURLOPT_TIMEOUT => 15
+        ]);
+        
+        $response = curl_exec($ch);
+        $httpCode = curl_getinfo($ch, CURLINFO_HTTP_CODE);
+        curl_close($ch);
+        
+        if ($httpCode !== 200) {
+            return ['success' => true, 'message' => "자세한 문의는 전화(02-2632-1830)로 연락주세요!"];
+        }
+        
+        $decoded = json_decode($response, true);
+        $text = $decoded['candidates'][0]['content']['parts'][0]['text'] ?? '';
+        
+        if (empty($text)) {
+            return ['success' => true, 'message' => "자세한 문의는 전화(02-2632-1830)로 연락주세요!"];
+        }
+        
+        return ['success' => true, 'message' => trim($text)];
     }
     
-    private function getNcrDropdowns(): string
-    {
-        $lines = ["【NCR양식지】"];
-        
-        $styles = $this->getLevel1Options('ncrflambeau');
-        $lines[] = "1단계 - 매수: " . implode(', ', array_column($styles, 'title'));
-        $lines[] = "2단계 - 규격: A4, A5, B5 등";
-        $lines[] = "3단계 - 인쇄도수: 1도, 2도, 4도 등";
-        $lines[] = "4단계 - 수량: 5권, 10권, 20권, 30권 등";
-        $lines[] = "5단계 - 디자인:";
-        $lines[] = "  - 디자인 있음 (시안 보유): 0원";
-        $lines[] = "  - 디자인 의뢰: 10,000원~20,000원";
-        $lines[] = "추가옵션: 넘버링(+10,000원), 미싱(+10,000원)";
-        
-        return implode("\n", $lines);
-    }
-    
-    private function getMstickerDropdowns(): string
-    {
-        $lines = ["【자석스티커】"];
-        
-        $styles = $this->getLevel1Options('msticker');
-        $lines[] = "1단계 - 종류: " . implode(', ', array_column($styles, 'title'));
-        $lines[] = "2단계 - 규격: 선택한 종류에 따라 다름";
-        $lines[] = "3단계 - 수량: 100, 200, 300, 500, 1000매 등";
-        
-        return implode("\n", $lines);
-    }
+    // ===== DB 조회 메서드 (기존 유지) =====
     
     private function getLevel1Options(string $table): array
     {
@@ -455,186 +922,9 @@ class ChatbotService
         return $options;
     }
     
-    private function buildSystemPrompt(string $dropdownData): string
-    {
-        return <<<PROMPT
-당신은 "두손기획인쇄" 가격상담 챗봇입니다. 따뜻하고 친근하게 고객을 안내해주세요.
-
-## 상담 철학
-- 고객이 복잡한 인쇄 옵션을 쉽게 이해하도록 **한 단계씩 부드럽게 안내**
-- 각 선택지가 왜 필요한지 **간단한 설명 추가**
-- 전문 용어는 쉬운 말로 풀어서 설명
-
-## 대화 흐름 예시 (명함) - 이런 느낌으로!
-
-고객: "명함 가격 알려주세요"
-챗봇: "명함 견적 도와드릴게요! 😊
-
-먼저 **명함 종류**를 선택해주세요:
-1. 일반명함(쿠폰) - 가장 많이 찾으시는 실속형
-2. 고급수입지 - 특별한 질감의 프리미엄 용지
-3. 카드명함(PET명함) - 플라스틱 재질로 내구성 좋음
-
-어떤 스타일이 마음에 드세요?"
-
-고객: "일반명함"
-챗봇: "일반명함 좋은 선택이에요! 👍
-
-다음은 **용지**를 골라볼까요?
-1. 칼라코팅 - 광택이 있어 선명한 인쇄
-2. 칼라비코팅 - 무광으로 고급스러운 느낌
-
-용지에 따라 명함 분위기가 달라져요. 어떤 걸로 할까요?"
-
-고객: "칼라코팅"
-챗봇: "칼라코팅으로 할게요! ✨
-
-이제 **수량**을 정해주세요:
-- 200매, 500매, 1000매, 2000매...
-
-처음 만드시면 500매 정도 추천드려요. 몇 매로 할까요?"
-
-고객: "500매"
-챗봇: "500매 알겠습니다!
-
-**인쇄면**은 어떻게 할까요?
-1. 단면 - 앞면만 인쇄
-2. 양면 - 앞뒤 모두 인쇄
-
-보통 연락처만 넣으시면 단면, 회사 소개도 넣으시면 양면을 많이 하세요."
-
-고객: "단면"
-챗봇: "마지막으로 **디자인** 확인할게요!
-
-1. 디자인 있음 - 이미 시안 파일이 있으시면 (추가비용 없음)
-2. 디자인 의뢰 - 저희가 새로 만들어드려요
-
-시안 파일 있으세요, 아니면 디자인 의뢰하실까요?"
-
-고객: "디자인 있음"
-챗봇: "완벽해요! 정리해드릴게요 📋
-
-✅ **일반명함 / 칼라코팅 / 500매 / 단면 / 디자인있음**
-
-💰 **총 9,900원** (VAT 포함)
-
-시안 확정 후 2~3일이면 제작 완료되고, 전국 무료배송 해드려요!
-주문하시려면 홈페이지에서 진행해주세요 😊"
-
-## 옵션 및 가격 데이터 (DB에서 가져온 실제 데이터)
-{$dropdownData}
-
-## 응답 규칙
-1. **한 번에 한 가지만 물어보기** - 여러 옵션을 한꺼번에 묻지 않기
-2. **선택지에 간단한 설명 추가** - "칼라코팅 - 광택이 있어 선명한 인쇄"
-3. **고객 선택을 확인하며 진행** - "~로 할게요!"
-4. **추천이나 팁 제공** - "처음이시면 500매 정도 추천드려요"
-5. 모든 옵션 선택 완료시 → **가격표에서 정확한 가격 안내**
-6. 가격은 항상 **VAT(부가세 10%) 포함** 금액으로 안내
-7. 가격표에 없는 조합 → "정확한 견적은 홈페이지 계산기나 전화(000-0000-0000)로 문의해주세요"
-8. 이모지 적절히 사용해서 친근하게!
-
-## 옵션별 설명 가이드
-- 일반명함: 가장 많이 찾는 실속형
-- 고급수입지: 특별한 질감의 프리미엄 용지
-- 카드명함: 플라스틱 재질, 내구성 좋음
-- 칼라코팅: 광택, 선명한 인쇄
-- 칼라비코팅: 무광, 고급스러운 느낌
-- 단면: 앞면만 / 양면: 앞뒤 모두
-- 디자인있음: 시안 파일 보유시 추가비용 없음
-- 디자인의뢰: 새로 제작 (비용은 가격표 참고)
-
-## 추가 안내 (마지막에 알려주기)
-- 제작기간: 시안 확정 후 2~3일
-- 배송: 전국 무료배송
-- 추가옵션(박, 넘버링, 미싱 등)은 별도 문의
-PROMPT;
-    }
-    
-    private function callApi(string $systemPrompt, string $message, array $history): array
-    {
-        $url = $this->baseUrl . $this->model . ':generateContent?key=' . $this->apiKey;
-        
-        $contents = [];
-        
-        $contents[] = [
-            'role' => 'user',
-            'parts' => [['text' => $systemPrompt . "\n\n---\n\n고객: " . $message]]
-        ];
-        
-        foreach ($history as $msg) {
-            $role = $msg['role'] === 'user' ? 'user' : 'model';
-            $contents[] = [
-                'role' => $role,
-                'parts' => [['text' => $msg['content']]]
-            ];
-        }
-        
-        if (!empty($history)) {
-            $contents[] = [
-                'role' => 'user',
-                'parts' => [['text' => $message]]
-            ];
-        }
-        
-        $data = [
-            'contents' => $contents,
-            'generationConfig' => [
-                'temperature' => 0.3,
-                'maxOutputTokens' => 600,
-            ]
-        ];
-        
-        $ch = curl_init($url);
-        curl_setopt_array($ch, [
-            CURLOPT_RETURNTRANSFER => true,
-            CURLOPT_POST => true,
-            CURLOPT_POSTFIELDS => json_encode($data),
-            CURLOPT_HTTPHEADER => ['Content-Type: application/json'],
-            CURLOPT_TIMEOUT => 30
-        ]);
-        
-        $response = curl_exec($ch);
-        $httpCode = curl_getinfo($ch, CURLINFO_HTTP_CODE);
-        $curlError = curl_error($ch);
-        curl_close($ch);
-        
-        if ($curlError) {
-            return ['error' => '네트워크 오류: ' . $curlError];
-        }
-        
-        if ($httpCode !== 200) {
-            $errorData = json_decode($response, true);
-            $errorMsg = $errorData['error']['message'] ?? 'API 오류 (HTTP ' . $httpCode . ')';
-            return ['error' => $errorMsg];
-        }
-        
-        return json_decode($response, true) ?? ['error' => '응답 파싱 실패'];
-    }
-    
-    private function parseResponse(array $response): array
-    {
-        $content = $response['candidates'][0]['content']['parts'][0]['text'] ?? '';
-        
-        if (empty($content)) {
-            return ['error' => '응답이 비어있습니다.'];
-        }
-        
-        $result = [
-            'success' => true,
-            'message' => trim($content),
-        ];
-        
-        if ($this->containsPaperSelection($content)) {
-            $result['paper_images'] = $this->getPaperImages();
-        }
-        
-        return $result;
-    }
-    
     private function containsPaperSelection(string $content): bool
     {
-        $keywords = ['용지를 선택', '용지 선택', '칼라코팅', '스노우화이트', '머쉬멜로우', '누브', '스타드림'];
+        $keywords = ['누브', '라레', '랑데뷰', '머쉬멜로우', '스타드림', '스코틀랜드', '빌리지'];
         foreach ($keywords as $keyword) {
             if (mb_strpos($content, $keyword) !== false) {
                 return true;
@@ -680,6 +970,111 @@ PROMPT;
     
     public function isConfigured(): bool
     {
-        return !empty($this->apiKey);
+        return !empty($this->apiKey) || $this->db !== null;
+    }
+    
+    /**
+     * Gemini 2.5 Flash TTS로 자연스러운 한국어 음성 생성
+     * @return array ['success' => bool, 'audio' => base64 WAV string, 'error' => string]
+     */
+    public function textToSpeech(string $text): array
+    {
+        if (empty($this->apiKey)) {
+            return ['success' => false, 'error' => 'API 키가 설정되지 않았습니다.'];
+        }
+        
+        if (empty(trim($text))) {
+            return ['success' => false, 'error' => '텍스트가 비어있습니다.'];
+        }
+        
+        // Gemini TTS 프롬프트: 빠르고 친절한 한국어 여성 상담원 톤
+        $prompt = "다음 텍스트를 빠른 속도로, 밝고 활기찬 젊은 여성 상담원처럼 읽어주세요. 콜센터 상담원이 능숙하게 안내하듯 빠르지만 또렷하게: " . $text;
+        
+        $data = [
+            'contents' => [
+                ['parts' => [['text' => $prompt]]]
+            ],
+            'generationConfig' => [
+                'responseModalities' => ['AUDIO'],
+                'speechConfig' => [
+                    'voiceConfig' => [
+                        'prebuiltVoiceConfig' => [
+                            'voiceName' => 'Kore'  // 밝고 친근한 여성 음성
+                        ]
+                    ]
+                ]
+            ],
+            'model' => 'gemini-2.5-flash-preview-tts',
+        ];
+        
+        $url = $this->baseUrl . 'gemini-2.5-flash-preview-tts:generateContent?key=' . $this->apiKey;
+        
+        $ch = curl_init($url);
+        curl_setopt_array($ch, [
+            CURLOPT_RETURNTRANSFER => true,
+            CURLOPT_POST => true,
+            CURLOPT_POSTFIELDS => json_encode($data),
+            CURLOPT_HTTPHEADER => ['Content-Type: application/json'],
+            CURLOPT_TIMEOUT => 30,
+        ]);
+        
+        $response = curl_exec($ch);
+        $httpCode = curl_getinfo($ch, CURLINFO_HTTP_CODE);
+        $curlError = curl_error($ch);
+        curl_close($ch);
+        
+        if (!empty($curlError)) {
+            return ['success' => false, 'error' => '네트워크 오류: ' . $curlError];
+        }
+        
+        if ($httpCode !== 200) {
+            error_log("Gemini TTS API error (HTTP {$httpCode}): " . substr($response, 0, 500));
+            return ['success' => false, 'error' => "TTS API 오류 (HTTP {$httpCode})"];
+        }
+        
+        $decoded = json_decode($response, true);
+        $pcmBase64 = $decoded['candidates'][0]['content']['parts'][0]['inlineData']['data'] ?? '';
+        
+        if (empty($pcmBase64)) {
+            return ['success' => false, 'error' => 'TTS 응답에 오디오 데이터가 없습니다.'];
+        }
+        
+        // base64 PCM → WAV 변환 (24kHz, mono, 16-bit)
+        $pcmData = base64_decode($pcmBase64);
+        $wavData = $this->pcmToWav($pcmData, 24000, 1, 16);
+        
+        return [
+            'success' => true,
+            'audio' => base64_encode($wavData),
+            'mimeType' => 'audio/wav',
+        ];
+    }
+    
+    /**
+     * Raw PCM 데이터에 WAV 헤더 추가
+     */
+    private function pcmToWav(string $pcmData, int $sampleRate, int $channels, int $bitsPerSample): string
+    {
+        $dataSize = strlen($pcmData);
+        $byteRate = $sampleRate * $channels * ($bitsPerSample / 8);
+        $blockAlign = $channels * ($bitsPerSample / 8);
+        $chunkSize = 36 + $dataSize;
+        
+        // WAV 헤더 (44 bytes)
+        $header = pack('A4', 'RIFF');           // ChunkID
+        $header .= pack('V', $chunkSize);       // ChunkSize
+        $header .= pack('A4', 'WAVE');          // Format
+        $header .= pack('A4', 'fmt ');          // Subchunk1ID
+        $header .= pack('V', 16);              // Subchunk1Size (PCM)
+        $header .= pack('v', 1);               // AudioFormat (PCM=1)
+        $header .= pack('v', $channels);        // NumChannels
+        $header .= pack('V', $sampleRate);      // SampleRate
+        $header .= pack('V', (int)$byteRate);   // ByteRate
+        $header .= pack('v', (int)$blockAlign);  // BlockAlign
+        $header .= pack('v', $bitsPerSample);   // BitsPerSample
+        $header .= pack('A4', 'data');          // Subchunk2ID
+        $header .= pack('V', $dataSize);        // Subchunk2Size
+        
+        return $header . $pcmData;
     }
 }

@@ -1,95 +1,89 @@
 <?php
-include "../db.php";  // 데이터베이스 연결
+/**
+ * 회사명/이름 검색 API (users 테이블 사용)
+ * 
+ * 마이그레이션: member → users 테이블
+ * - mysql_* → mysqli prepared statements
+ * - member.id → users.username
+ * - member.phone1/2/3 → users.phone (combined)
+ * - member.sample6_* → users.postcode/address/detail_address/extra_address
+ * - member.po1-6 → users.business_number/name/owner/type/item/address
+ */
 
-$host = "localhost";
-$user = "duson1830";
-$dataname = "duson1830";
-$password = "du1830";
+include $_SERVER['DOCUMENT_ROOT'] . "/db.php";
 
-// 데이터베이스 연결
-$db = mysql_connect($host, $user, $password);
-if (!$db) {
-    die(json_encode(array("error" => "데이터베이스 연결 실패: " . mysql_error())));
-}
-
-mysql_select_db($dataname, $db);
-mysql_query("SET NAMES 'utf8'", $db);  // 🔹 문자셋 설정 (필요한 경우 'utf8'으로 변경 가능)
-
-// 🔹 검색어 가져오기 및 URL 디코딩 추가
 $searchTerm = isset($_GET['term']) ? trim($_GET['term']) : '';
 
 if ($searchTerm == '') {
+    header('Content-Type: application/json; charset=UTF-8');
     die(json_encode(array("error" => "검색어가 비어 있습니다.")));
 }
 
-$searchTerm = urldecode($searchTerm);  // 🔹 한글 URL 디코딩 추가
+$searchTerm = urldecode($searchTerm);
+$searchTermLike = "%" . $searchTerm . "%";
 
-// ✅ UTF-8 환경일 경우 UTF-8 → UTF-8 변환
-$searchTerm = iconv("UTF-8", "UTF-8", $searchTerm);
-
-// ✅ SQL Injection 방지
-$searchTerm = mysql_real_escape_string($searchTerm);
-$searchTermLike = "%" . $searchTerm . "%";  
-
-// 🔹 SQL 실행
-$query = "SELECT id, name, email, phone1, phone2, phone3, hendphone1, hendphone2, hendphone3, sample6_postcode AS postcode, 
-          sample6_address AS address, sample6_detailAddress AS detailAddress, sample6_extraAddress AS extraAddress, 
-          po1, po2, po3, po4, po5, po6 
-          FROM member 
-          WHERE name LIKE '$searchTermLike' 
+$query = "SELECT username, name, email, phone, 
+          postcode, address, detail_address, extra_address,
+          business_number, business_name, business_owner, 
+          business_type, business_item, business_address
+          FROM users 
+          WHERE name LIKE ? 
           LIMIT 10";
-          
-error_log("SQL 실행됨: " . $query);  // 🔹 SQL 로그 남기기
 
-$result = mysql_query($query, $db);
-
-if (!$result) {
-    die(json_encode(array("error" => "SQL 실행 오류: " . mysql_error())));
+$stmt = mysqli_prepare($db, $query);
+if (!$stmt) {
+    header('Content-Type: application/json; charset=UTF-8');
+    die(json_encode(array("error" => "SQL 준비 오류")));
 }
 
-// 데이터 배열 초기화
+mysqli_stmt_bind_param($stmt, "s", $searchTermLike);
+mysqli_stmt_execute($stmt);
+$result = mysqli_stmt_get_result($stmt);
+
+if (!$result) {
+    header('Content-Type: application/json; charset=UTF-8');
+    die(json_encode(array("error" => "SQL 실행 오류")));
+}
+
 $data = array();
-while ($row = mysql_fetch_assoc($result)) {
-    // NULL 값을 빈 문자열("")로 변환 + 한글 변환// 🔹 데이터 가져오기 및 한글 변환
-    foreach ($row as $key => $value) {
-        if ($value !== null) {
-            $row[$key] = iconv("UTF-8", "UTF-8", $value);
-        }
-    }
+while ($row = mysqli_fetch_assoc($result)) {
+    // phone → phone1/2/3 분리 (레거시 API 호환)
+    $phone_parts = explode('-', $row['phone'] ?? '');
+    $phone1 = $phone_parts[0] ?? '';
+    $phone2 = $phone_parts[1] ?? '';
+    $phone3 = $phone_parts[2] ?? '';
 
     $data[] = array(
         "label" => $row['name'],
-        "id" => $row['id'],
+        "id" => $row['username'],
         "name" => $row['name'],
-        "email" => $row['email'],
-        "phone1" => $row['phone1'],
-        "phone2" => $row['phone2'],
-        "phone3" => $row['phone3'],
-        "hendphone1" => $row['hendphone1'],
-        "hendphone2" => $row['hendphone2'],
-        "hendphone3" => $row['hendphone3'],
-        "postcode" => $row['postcode'],
-        "address" => $row['address'],
-        "detailAddress" => $row['detailAddress'],
-        "extraAddress" => $row['extraAddress'],
-        "po1" => $row['po1'],
-        "po2" => $row['po2'],
-        "po3" => $row['po3'],
-        "po4" => $row['po4'],
-        "po5" => $row['po5'],
-        "po6" => $row['po6']
+        "email" => $row['email'] ?? '',
+        "phone1" => $phone1,
+        "phone2" => $phone2,
+        "phone3" => $phone3,
+        "hendphone1" => $phone1,
+        "hendphone2" => $phone2,
+        "hendphone3" => $phone3,
+        "postcode" => $row['postcode'] ?? '',
+        "address" => $row['address'] ?? '',
+        "detailAddress" => $row['detail_address'] ?? '',
+        "extraAddress" => $row['extra_address'] ?? '',
+        "po1" => $row['business_number'] ?? '',   // po1-6: 레거시 API 키 유지
+        "po2" => $row['business_name'] ?? '',
+        "po3" => $row['business_owner'] ?? '',
+        "po4" => $row['business_type'] ?? '',
+        "po5" => $row['business_item'] ?? '',
+        "po6" => $row['business_address'] ?? ''
     );
 }
 
-// 🚨 검색된 데이터가 없을 때 확인
+mysqli_stmt_close($stmt);
+
 if (empty($data)) {
+    header('Content-Type: application/json; charset=UTF-8');
     die(json_encode(array("error" => "No data found for '$searchTerm'")));
 }
 
-// ✅ PHP 5.3에서는 JSON_UNESCAPED_UNICODE를 지원하지 않으므로 str_replace()를 사용
-$json_data = str_replace("\\/", "/", json_encode($data)); 
-
-// ✅ JSON 데이터 출력
 header('Content-Type: application/json; charset=UTF-8');
-echo $json_data;
+echo json_encode($data, JSON_UNESCAPED_UNICODE);
 ?>

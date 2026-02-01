@@ -52,10 +52,10 @@ $current_user = [
     'email' => ''
 ];
 
-// DB에서 email과 name 조회 (mlangorder_printauto에서 주문 조회 시 필요)
+// DB에서 email과 name 조회 (users 테이블 사용)
 $username = $_SESSION['username'] ?? '';
 if ($db && $username) {
-    $stmt = mysqli_prepare($db, "SELECT email, name FROM member WHERE id = ?");
+    $stmt = mysqli_prepare($db, "SELECT email, name FROM users WHERE username = ?");
     if ($stmt) {
         mysqli_stmt_bind_param($stmt, "s", $username);
         mysqli_stmt_execute($stmt);

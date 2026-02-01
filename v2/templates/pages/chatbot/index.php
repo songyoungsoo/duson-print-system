@@ -1,4 +1,4 @@
-<div class="max-w-2xl mx-auto px-4 py-8" x-data="chatbotApp()">
+<div class="max-w-sm mx-auto px-4 py-8" x-data="chatbotApp()">
     <div class="text-center mb-6">
         <h1 class="text-2xl font-bold text-gray-900 mb-2">가격상담 챗봇</h1>
         <p class="text-gray-600">인쇄물 가격이 궁금하시면 물어보세요!</p>
@@ -17,10 +17,17 @@
                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 10h.01M12 10h.01M16 10h.01M9 16H5a2 2 0 01-2-2V6a2 2 0 012-2h14a2 2 0 012 2v8a2 2 0 01-2 2h-5l-5 5v-5z"/>
                 </svg>
             </div>
-            <div>
+            <div class="flex-1">
                 <h2 class="text-white font-semibold">두손 상담봇</h2>
                 <p class="text-blue-100 text-xs">인쇄 가격 문의 전문</p>
             </div>
+            <!-- TTS ON/OFF 토글 -->
+            <button @click="ttsEnabled = !ttsEnabled" 
+                class="flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs font-medium transition-all"
+                :class="ttsEnabled ? 'bg-white/20 text-white' : 'bg-white/10 text-blue-200'">
+                <span x-text="ttsEnabled ? '🔊' : '🔇'"></span>
+                <span x-text="ttsEnabled ? '음성 ON' : '음성 OFF'"></span>
+            </button>
         </div>
 
         <div class="flex-1 overflow-y-auto p-4 space-y-4" id="chat-messages">
@@ -53,20 +60,26 @@
                     </div>
                     
                     <template x-if="msg.paper_images && msg.paper_images.length > 0">
-                        <div class="mt-3 ml-11">
-                            <p class="text-xs text-gray-500 mb-2">📷 명함 용지 샘플 (클릭하면 질감을 크게 볼 수 있어요)</p>
-                            <div class="flex gap-3 overflow-x-auto pb-2 pt-1">
-                                <template x-for="(img, imgIdx) in msg.paper_images" :key="imgIdx">
-                                    <div class="flex-shrink-0 cursor-pointer relative" 
-                                        @click="showImageModal(img)"
-                                        @mouseenter="$el.querySelector('img').style.transform = 'scale(2)'; $el.querySelector('img').style.zIndex = '50'"
-                                        @mouseleave="$el.querySelector('img').style.transform = 'scale(1)'; $el.querySelector('img').style.zIndex = '1'">
-                                        <img :src="img.url" :alt="img.name" 
-                                            class="w-16 h-16 object-cover rounded-lg border-2 border-gray-200 hover:border-blue-500 shadow-sm hover:shadow-xl transition-all duration-200 origin-center"
-                                            style="z-index: 1;">
-                                        <p class="text-xs text-center text-gray-600 mt-1 w-16 truncate" x-text="img.name"></p>
-                                    </div>
-                                </template>
+                        <div class="mt-3 ml-11" x-data="{ showSamples: false }">
+                            <button @click="showSamples = !showSamples" 
+                                class="px-3 py-1.5 bg-blue-50 border border-blue-200 rounded-full text-xs text-blue-700 hover:bg-blue-100 transition-colors inline-flex items-center gap-1">
+                                <span>📷 용지 샘플 보기</span>
+                                <svg :class="showSamples ? 'rotate-180' : ''" class="w-3 h-3 transition-transform" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"/>
+                                </svg>
+                            </button>
+                            <div x-show="showSamples" x-transition class="mt-2">
+                                <div class="flex gap-3 overflow-x-auto pb-2 pt-1">
+                                    <template x-for="(img, imgIdx) in msg.paper_images" :key="imgIdx">
+                                        <div class="flex-shrink-0 cursor-pointer relative" 
+                                            @click="showImageModal(img)">
+                                            <img :src="img.url" :alt="img.name" 
+                                                class="w-16 h-16 object-cover rounded-lg border-2 border-gray-200 hover:border-blue-500 shadow-sm hover:shadow-lg transition-all duration-200"
+                                                loading="lazy">
+                                            <p class="text-xs text-center text-gray-600 mt-1 w-16 truncate" x-text="img.name"></p>
+                                        </div>
+                                    </template>
+                                </div>
                             </div>
                         </div>
                     </template>
@@ -101,18 +114,26 @@
 
         <div class="p-4 border-t bg-gray-50">
             <div class="flex flex-wrap gap-2 mb-3">
-                <button @click="sendQuickMessage('명함 가격 알려주세요')" 
-                    class="px-3 py-1.5 bg-white border border-gray-300 rounded-full text-xs text-gray-700 hover:bg-gray-100 transition-colors">
-                    명함 가격
-                </button>
-                <button @click="sendQuickMessage('스티커 가격 알려주세요')" 
-                    class="px-3 py-1.5 bg-white border border-gray-300 rounded-full text-xs text-gray-700 hover:bg-gray-100 transition-colors">
-                    스티커 가격
-                </button>
-                <button @click="sendQuickMessage('전단지 가격 알려주세요')" 
-                    class="px-3 py-1.5 bg-white border border-gray-300 rounded-full text-xs text-gray-700 hover:bg-gray-100 transition-colors">
-                    전단지 가격
-                </button>
+                <button @click="resetChat()" 
+                    class="px-3 py-1.5 bg-red-50 border border-red-300 rounded-full text-xs text-red-600 hover:bg-red-100 transition-colors font-medium">🔄 처음으로</button>
+                <button @click="sendQuickMessage('명함')" 
+                    class="px-3 py-1.5 bg-white border border-gray-300 rounded-full text-xs text-gray-700 hover:bg-gray-100 transition-colors">명함</button>
+                <button @click="sendQuickMessage('전단지')" 
+                    class="px-3 py-1.5 bg-white border border-gray-300 rounded-full text-xs text-gray-700 hover:bg-gray-100 transition-colors">전단지</button>
+                <button @click="sendQuickMessage('스티커')" 
+                    class="px-3 py-1.5 bg-white border border-gray-300 rounded-full text-xs text-gray-700 hover:bg-gray-100 transition-colors">스티커</button>
+                <button @click="sendQuickMessage('봉투')" 
+                    class="px-3 py-1.5 bg-white border border-gray-300 rounded-full text-xs text-gray-700 hover:bg-gray-100 transition-colors">봉투</button>
+                <button @click="sendQuickMessage('카다록')" 
+                    class="px-3 py-1.5 bg-white border border-gray-300 rounded-full text-xs text-gray-700 hover:bg-gray-100 transition-colors">카다록</button>
+                <button @click="sendQuickMessage('포스터')" 
+                    class="px-3 py-1.5 bg-white border border-gray-300 rounded-full text-xs text-gray-700 hover:bg-gray-100 transition-colors">포스터</button>
+                <button @click="sendQuickMessage('상품권')" 
+                    class="px-3 py-1.5 bg-white border border-gray-300 rounded-full text-xs text-gray-700 hover:bg-gray-100 transition-colors">상품권</button>
+                <button @click="sendQuickMessage('NCR양식지')" 
+                    class="px-3 py-1.5 bg-white border border-gray-300 rounded-full text-xs text-gray-700 hover:bg-gray-100 transition-colors">NCR양식지</button>
+                <button @click="sendQuickMessage('자석스티커')" 
+                    class="px-3 py-1.5 bg-white border border-gray-300 rounded-full text-xs text-gray-700 hover:bg-gray-100 transition-colors">자석스티커</button>
             </div>
             
             <form @submit.prevent="send" class="flex gap-2">
@@ -177,10 +198,88 @@ function chatbotApp() {
         messages: [],
         loading: false,
         error: null,
+        ttsEnabled: true,
+        ttsAudio: null,
+        ttsLoading: false,
         imageModal: {
             show: false,
             url: '',
             name: ''
+        },
+        
+        async speakText(text) {
+            // 이전 재생 중지
+            if (this.ttsAudio) {
+                this.ttsAudio.pause();
+                this.ttsAudio = null;
+            }
+            
+            this.ttsLoading = true;
+            
+            try {
+                const formData = new FormData();
+                formData.append('text', text);
+                const csrfToken = document.querySelector('meta[name="csrf-token"]')?.content;
+                if (csrfToken) formData.append('csrf_token', csrfToken);
+                
+                const response = await fetch('<?= \App\Core\View::url('/chatbot/tts') ?>', {
+                    method: 'POST',
+                    body: formData
+                });
+                
+                const data = await response.json();
+                
+                if (data.success && data.audio) {
+                    // base64 WAV → Audio 재생
+                    const audioSrc = 'data:' + (data.mimeType || 'audio/wav') + ';base64,' + data.audio;
+                    this.ttsAudio = new Audio(audioSrc);
+                    this.ttsAudio.play();
+                } else {
+                    // Gemini TTS 실패 시 브라우저 TTS 폴백
+                    this.speakFallback(text);
+                }
+            } catch (err) {
+                console.warn('Gemini TTS failed, using browser fallback:', err);
+                this.speakFallback(text);
+            } finally {
+                this.ttsLoading = false;
+            }
+        },
+        
+        /**
+         * 봇 응답에서 안내 문구만 추출 (선택지 목록 제외)
+         * "수량을 선택해주세요:\n1. 500매\n2. 1000매" → "수량을 선택해주세요"
+         * "✅ 전단지 / ... \n💰 총 74,800원" → "전단지 ... 총 74,800원 ..."
+         */
+        extractGuideText(message) {
+            if (!message) return '';
+            const lines = message.split('\n');
+            const guideLines = [];
+            
+            for (const line of lines) {
+                const trimmed = line.trim();
+                // 번호 목록 (1. xxx, 2. xxx) → 선택지이므로 건너뜀
+                if (/^\d+[\.\)]\s/.test(trimmed)) continue;
+                // 빈 줄 건너뜀
+                if (!trimmed) continue;
+                // 이모지 정리
+                const clean = trimmed.replace(/[✅💰🔊⏳☑📷💡]/g, '').trim();
+                if (clean) guideLines.push(clean);
+            }
+            
+            return guideLines.join('. ');
+        },
+        
+        speakFallback(text) {
+            if (!('speechSynthesis' in window)) return;
+            speechSynthesis.cancel();
+            const utter = new SpeechSynthesisUtterance(text);
+            utter.lang = 'ko-KR';
+            utter.rate = 1.0;
+            const voices = speechSynthesis.getVoices();
+            const koVoice = voices.find(v => v.lang.startsWith('ko'));
+            if (koVoice) utter.voice = koVoice;
+            speechSynthesis.speak(utter);
         },
         
         async send() {
@@ -207,6 +306,11 @@ function chatbotApp() {
                 formData.append('csrf_token', csrfToken);
             }
             
+            // TTS ON이면 서버에서 chat+TTS 한 번에 처리 (API 호출 1회로 단축)
+            if (this.ttsEnabled) {
+                formData.append('tts', '1');
+            }
+            
             try {
                 const response = await fetch('<?= \App\Core\View::url('/chatbot/chat') ?>', {
                     method: 'POST',
@@ -223,6 +327,25 @@ function chatbotApp() {
                         content: data.message,
                         paper_images: data.paper_images || null
                     });
+                    
+                    // TTS 재생: 서버 응답에 audio가 포함되어 있으면 즉시 재생 (추가 API 호출 없음)
+                    if (this.ttsEnabled && data.audio) {
+                        if (this.ttsAudio) {
+                            this.ttsAudio.pause();
+                            this.ttsAudio = null;
+                        }
+                        const audioSrc = 'data:' + (data.audioMime || 'audio/wav') + ';base64,' + data.audio;
+                        this.ttsAudio = new Audio(audioSrc);
+                        this.ttsAudio.play().catch(() => {
+                            // 자동재생 차단 시 브라우저 TTS 폴백
+                            const ttsText = this.extractGuideText(data.message);
+                            if (ttsText) this.speakFallback(ttsText);
+                        });
+                    } else if (this.ttsEnabled && !data.audio) {
+                        // 서버 TTS 실패 시 브라우저 폴백
+                        const ttsText = this.extractGuideText(data.message);
+                        if (ttsText) this.speakFallback(ttsText);
+                    }
                 }
             } catch (err) {
                 this.error = '네트워크 오류가 발생했습니다.';
@@ -232,6 +355,12 @@ function chatbotApp() {
             }
         },
         
+        resetChat() {
+            this.messages = [];
+            this.error = null;
+            this.sendQuickMessage('초기화');
+        },
+
         sendQuickMessage(msg) {
             this.input = msg;
             this.send();
@@ -322,13 +451,15 @@ function chatbotApp() {
     }
 }
 
-// 전역 함수: 선택지 클릭시 호출
+// 전역 함수: 선택지 클릭시 호출 (Alpine.js v3)
 window.chatbotSelectChoice = function(text) {
-    // Alpine.js 컴포넌트 찾기
     const appEl = document.querySelector('[x-data="chatbotApp()"]');
-    if (appEl && appEl.__x) {
-        appEl.__x.$data.input = text;
-        appEl.__x.$data.send();
+    if (appEl) {
+        const data = Alpine.$data(appEl);
+        if (data) {
+            data.input = text;
+            data.send();
+        }
     }
 };
 </script>

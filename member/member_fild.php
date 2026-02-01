@@ -11,55 +11,53 @@ if (!isset($no) || $no === '') {
 }
 
 if ($db) {
-    // SQL 쿼리를 준비합니다.
-    $stmt = $db->prepare("SELECT * FROM member WHERE no = ?");
+    // users 테이블에서 조회 (member.no → users.id)
+    $stmt = mysqli_prepare($db, "SELECT * FROM users WHERE id = ?");
     
     // 사용자 ID를 쿼리에 바인딩합니다.
-    $stmt->bind_param("s", $no);
+    mysqli_stmt_bind_param($stmt, "i", $no);
     
     // 쿼리를 실행합니다.
-    $stmt->execute();
+    mysqli_stmt_execute($stmt);
     
     // 결과를 가져옵니다.
-    $result = $stmt->get_result();
+    $result = mysqli_stmt_get_result($stmt);
     
     // 결과를 배열로 변환합니다.
-    $row = $result->fetch_assoc();
+    $row = mysqli_fetch_assoc($result);
 
     if ($row) {
-        $MlangMember_id = htmlspecialchars($row['id']);
-        $MlangMember_pass1 = htmlspecialchars($row['pass']);  
-        $MlangMember_name = htmlspecialchars($row['name']); 
-        $MlangMember_phone1 = htmlspecialchars($row['phone1']); 
-        $MlangMember_phone2 = htmlspecialchars($row['phone2']);
-        $MlangMember_phone3 = htmlspecialchars($row['phone3']);
-        $MlangMember_hendphone1 = htmlspecialchars($row['hendphone1']);
-        $MlangMember_hendphone2 = htmlspecialchars($row['hendphone2']);
-        $MlangMember_hendphone3 = htmlspecialchars($row['hendphone3']);
-        $MlangMember_email = htmlspecialchars($row['email']);   
-        $MlangMember_sample6_postcode = htmlspecialchars($row['sample6_postcode']);
-        $MlangMember_sample6_address = htmlspecialchars($row['sample6_address']);
-        $MlangMember_sample6_detailAddress = htmlspecialchars($row['sample6_detailAddress']);
-        $MlangMember_sample6_extraAddress = htmlspecialchars($row['sample6_extraAddress']);
-        $MlangMember_po1 = htmlspecialchars($row['po1']); 
-        $MlangMember_po2 = htmlspecialchars($row['po2']); 
-        $MlangMember_po3 = htmlspecialchars($row['po3']); 
-        $MlangMember_po4 = htmlspecialchars($row['po4']); 
-        $MlangMember_po5 = htmlspecialchars($row['po5']); 
-        $MlangMember_po6 = htmlspecialchars($row['po6']); 
-        $MlangMember_po7 = htmlspecialchars($row['po7']);
+        $MlangMember_id = htmlspecialchars($row['username'] ?? '');
+        $MlangMember_pass1 = '********';  // 비밀번호 해시 노출 금지
+        $MlangMember_name = htmlspecialchars($row['name'] ?? '');
 
-        $CONTENT = $row['connent'];
-        $CONTENT = str_replace("<", "&lt;", $CONTENT);
-        $CONTENT = str_replace(">", "&gt;", $CONTENT);
-        $CONTENT = str_replace("\"", "&quot;", $CONTENT);
-        $CONTENT = str_replace("\|", "&#124;", $CONTENT);
-        $CONTENT = str_replace("\r\n\r\n", "<P>", $CONTENT);
-        $CONTENT = str_replace("\r\n", "<BR>", $CONTENT);
-        $MlangMember_connent = $CONTENT;
+        // phone → phone1/2/3 분리
+        list($p1, $p2, $p3) = array_pad(explode('-', $row['phone'] ?? ''), 3, '');
+        $MlangMember_phone1 = htmlspecialchars($p1);
+        $MlangMember_phone2 = htmlspecialchars($p2);
+        $MlangMember_phone3 = htmlspecialchars($p3);
+        // hendphone도 동일 phone 값 사용
+        $MlangMember_hendphone1 = htmlspecialchars($p1);
+        $MlangMember_hendphone2 = htmlspecialchars($p2);
+        $MlangMember_hendphone3 = htmlspecialchars($p3);
 
-        $MlangMember_date = htmlspecialchars($row['date']); 
-        $MlangMember_level = htmlspecialchars($row['level']); 
+        $MlangMember_email = htmlspecialchars($row['email'] ?? '');
+        $MlangMember_sample6_postcode = htmlspecialchars($row['postcode'] ?? '');
+        $MlangMember_sample6_address = htmlspecialchars($row['address'] ?? '');
+        $MlangMember_sample6_detailAddress = htmlspecialchars($row['detail_address'] ?? '');
+        $MlangMember_sample6_extraAddress = htmlspecialchars($row['extra_address'] ?? '');
+        $MlangMember_po1 = htmlspecialchars($row['business_number'] ?? '');
+        $MlangMember_po2 = htmlspecialchars($row['business_name'] ?? '');
+        $MlangMember_po3 = htmlspecialchars($row['business_owner'] ?? '');
+        $MlangMember_po4 = htmlspecialchars($row['business_type'] ?? '');
+        $MlangMember_po5 = htmlspecialchars($row['business_item'] ?? '');
+        $MlangMember_po6 = htmlspecialchars($row['business_address'] ?? '');
+        $MlangMember_po7 = htmlspecialchars($row['tax_invoice_email'] ?? '');
+
+        $MlangMember_connent = ''; // users 테이블에 해당 필드 없음
+
+        $MlangMember_date = htmlspecialchars($row['created_at'] ?? '');
+        $MlangMember_level = htmlspecialchars($row['level'] ?? '0');
     } else {
         if ($op == "back") {
             echo ("<script language='javascript'>
@@ -78,7 +76,7 @@ if ($db) {
     }
 
     // statement만 종료 (DB 연결은 유지 - 이후 코드에서 사용)
-    $stmt->close();
+    mysqli_stmt_close($stmt);
     // $db->close(); // 주석처리: 연결은 호출자가 관리
 } else {
     echo "데이터베이스에 연결할 수 없습니다.";

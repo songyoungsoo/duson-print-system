@@ -46,11 +46,9 @@ else
 {
     include"../db.php";
 
-    // ✅ Prepared Statement 적용 (보안 강화)
-    $stmt = mysqli_prepare($db, "SELECT id, pass FROM member WHERE no = ? LIMIT 1");
+    // ✅ users 테이블에서 관리자 조회 (member → users 마이그레이션)
+    $stmt = mysqli_prepare($db, "SELECT username AS id, password AS pass FROM users WHERE is_admin = 1 LIMIT 1");
     if ($stmt) {
-        $admin_no = 1;
-        mysqli_stmt_bind_param($stmt, "i", $admin_no);
         mysqli_stmt_execute($stmt);
         $result = mysqli_stmt_get_result($stmt);
 
@@ -58,9 +56,20 @@ else
             $adminid = $row['id'] ?? '';
             $adminpasswd = $row['pass'] ?? '';
 
-            // ✅ 안전한 문자열 비교 (타이밍 공격 방지)
-            if (!hash_equals($auth_user, $adminid) || !hash_equals($auth_pw, $adminpasswd)) {
+            // ✅ 아이디 비교 (타이밍 공격 방지)
+            if (!hash_equals($auth_user, $adminid)) {
                 authenticate();
+            } else {
+                // ✅ bcrypt 또는 평문 비밀번호 비교
+                if (strlen($adminpasswd) === 60 && strpos($adminpasswd, '$2y$') === 0) {
+                    if (!password_verify($auth_pw, $adminpasswd)) {
+                        authenticate();
+                    }
+                } else {
+                    if (!hash_equals($auth_pw, $adminpasswd)) {
+                        authenticate();
+                    }
+                }
             }
         } else {
             authenticate();

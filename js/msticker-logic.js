@@ -256,8 +256,8 @@ class UniversalFileUpload {
         this.config = {
             product_type: 'general',
             max_file_size: 10 * 1024 * 1024,
-            allowed_types: ['image/jpeg', 'image/jpg', 'image/png', 'application/pdf'],
-            allowed_extensions: ['jpg', 'jpeg', 'png', 'pdf'],
+            allowed_types: ['image/jpeg', 'image/jpg', 'image/png', 'application/pdf', 'application/postscript', 'application/illustrator', ''],
+            allowed_extensions: ['jpg', 'jpeg', 'png', 'pdf', 'ai', 'eps', 'psd'],
             upload_url: '../../includes/upload_handler.php',
             get_files_url: '../../includes/get_files_handler.php',
             delete_file_url: '../../includes/delete_file_handler.php',
@@ -346,7 +346,8 @@ class UniversalFileUpload {
     
     validateFile(file) {
         if (file.size > this.config.max_file_size) { this.showError(`파일 크기가 ${this.config.max_file_size / 1024 / 1024}MB를 초과합니다: ${file.name}`); return false; }
-        if (!this.config.allowed_types.includes(file.type)) { this.showError(`지원하지 않는 파일 형식입니다: ${file.name}\n지원 형식: ${this.config.allowed_extensions.join(', ').toUpperCase()}`); return false; }
+        const ext = file.name.split('.').pop().toLowerCase();
+        if (!this.config.allowed_types.includes(file.type) && !this.config.allowed_extensions.includes(ext)) { this.showError(`지원하지 않는 파일 형식입니다: ${file.name}\n지원 형식: ${this.config.allowed_extensions.join(', ').toUpperCase()}`); return false; }
         return true;
     }
     

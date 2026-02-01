@@ -34,15 +34,6 @@ if (isset($_SESSION['user_id'])) {
 
     if ($user) {
         $userEmail = $user['email'];
-    } else {
-        // member 테이블 확인
-        $query = "SELECT email FROM member WHERE id = ?";
-        $stmt = mysqli_prepare($db, $query);
-        mysqli_stmt_bind_param($stmt, "s", $userid);
-        mysqli_stmt_execute($stmt);
-        $result = mysqli_stmt_get_result($stmt);
-        $member = mysqli_fetch_assoc($result);
-        $userEmail = $member['email'] ?? '';
     }
 }
 

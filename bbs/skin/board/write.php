@@ -339,7 +339,7 @@ function onSpecialChar(SpecialChar)
 <?php // 현 기능은 관리자만 사용할수 있게 호출 해준다..
 /////////////////////////// 관리자 모드 호출 START //////////////////
 include "$DbDir/db.php";
-$AdminChickTYyj = mysqli_query($db, "select * from member where no='1'");
+$AdminChickTYyj = mysqli_query($db, "SELECT username AS id, password AS pass, name, email FROM users WHERE is_admin = 1 LIMIT 1");
 $row_AdminChickTYyj = mysqli_fetch_array($AdminChickTYyj);
 $BBSAdminloginKK = $row_AdminChickTYyj['id'];
 if (isset($_COOKIE['id_login_ok']) && $_COOKIE['id_login_ok'] == $BBSAdminloginKK) {
@@ -411,7 +411,7 @@ while ($row_pass = mysqli_fetch_array($result_pass)) {
 //------------------- 비번 제어 시작 ------------------------- 
 
 /////////////////////////// 관리자 모드 호출 START //////////////////
-$AdminChickTYyj = mysqli_query($db, "select * from member where no='1'");
+$AdminChickTYyj = mysqli_query($db, "SELECT username AS id, password AS pass, name, email FROM users WHERE is_admin = 1 LIMIT 1");
 $row_AdminChickTYyj = mysqli_fetch_array($AdminChickTYyj);
 $BBSAdminloginKK = $row_AdminChickTYyj['id'];
 /////////////////////////// 관리자 모드 호출 END    //////////////////

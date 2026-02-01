@@ -7,7 +7,7 @@ $table = isset($table) ? $table : '';
 include "$DbDir/db.php";
 
 // 관리자 정보 조회
-$result = mysqli_query($db, "select * from member where no='1'");
+$result = mysqli_query($db, "SELECT username AS id, password AS pass, name, email FROM users WHERE is_admin = 1 LIMIT 1");
 $row = mysqli_fetch_array($result);
 $BBSAdminloginKK = $row['id'];
 

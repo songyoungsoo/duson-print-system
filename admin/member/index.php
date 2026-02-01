@@ -25,7 +25,7 @@ if($mode=="LevelModify"){
     include"../config.php";
     $code = intval($code);
     $no = intval($no);
-    $stmt = $db->prepare("UPDATE member SET level=? WHERE no=?");
+    $stmt = $db->prepare("UPDATE users SET level=? WHERE id=?");
     $stmt->bind_param("ii", $code, $no);
     $stmt->execute();
     $stmt->close();
@@ -33,24 +33,6 @@ if($mode=="LevelModify"){
 
     echo ("<script>
     alert('회원의 레벨을 조절하였습니다.');
-    location.href='$PHP_SELF?offset=$offset&TDsearch=$TDsearch&TDsearchValue=$TDsearchValue';
-    </script>");
-    exit;
-}
-
-if($mode=="PointModlfy"){
-    include"../../db.php";
-    include"../config.php";
-    $money = intval($money);
-    $no = intval($no);
-    $stmt = $db->prepare("UPDATE member SET money=? WHERE no=?");
-    $stmt->bind_param("ii", $money, $no);
-    $stmt->execute();
-    $stmt->close();
-    mysqli_close($db);
-
-    echo ("<script>
-    alert('회원의 Point를 조절하였습니다.');
     location.href='$PHP_SELF?offset=$offset&TDsearch=$TDsearch&TDsearchValue=$TDsearchValue';
     </script>");
     exit;
@@ -86,14 +68,14 @@ function TDsearchCheckField(){
     <div class="member-header">
         <h1>👥 회원 관리</h1>
         <div class="member-stats">
-            <?php
-            include"../../db.php";
-            $totalQuery = mysqli_query($db, "SELECT COUNT(*) as total FROM member");
-            $totalRow = mysqli_fetch_assoc($totalQuery);
-            $totalMembers = intval($totalRow['total']);
-            ?>
-            <span>총 회원: <?= number_format($totalMembers) ?>명</span>
-        </div>
+             <?php
+             include"../../db.php";
+             $totalQuery = mysqli_query($db, "SELECT COUNT(*) as total FROM users");
+             $totalRow = mysqli_fetch_assoc($totalQuery);
+             $totalMembers = intval($totalRow['total']);
+             ?>
+             <span>총 회원: <?= number_format($totalMembers) ?>명</span>
+         </div>
     </div>
 
     <!-- Toolbar -->
@@ -113,37 +95,41 @@ function TDsearchCheckField(){
         </form>
 
         <div class="sort-buttons">
-            <button class="btn btn--secondary btn--sm" onclick="location.href='<?=$PHP_SELF?>?offset=<?=$offset?>&CountWW=Logincount&s=desc'">방문순 ↓</button>
-            <button class="btn btn--secondary btn--sm" onclick="location.href='<?=$PHP_SELF?>?offset=<?=$offset?>&CountWW=Logincount&s=asc'">방문순 ↑</button>
-            <button class="btn btn--secondary btn--sm" onclick="location.href='<?=$PHP_SELF?>?offset=<?=$offset?>&CountWW=money&s=desc'">포인트 ↓</button>
-            <button class="btn btn--secondary btn--sm" onclick="location.href='<?=$PHP_SELF?>?offset=<?=$offset?>&CountWW=money&s=asc'">포인트 ↑</button>
-        </div>
+             <button class="btn btn--secondary btn--sm" onclick="location.href='<?=$PHP_SELF?>?offset=<?=$offset?>&CountWW=login_count&s=desc'">방문순 ↓</button>
+             <button class="btn btn--secondary btn--sm" onclick="location.href='<?=$PHP_SELF?>?offset=<?=$offset?>&CountWW=login_count&s=asc'">방문순 ↑</button>
+         </div>
     </div>
 
     <!-- Table -->
     <div class="member-table-wrapper">
         <table class="member-table">
             <thead>
-                <tr>
-                    <th>번호</th>
-                    <th>아이디</th>
-                    <th>이름</th>
-                    <th>방문수</th>
-                    <th>최종방문</th>
-                    <th>가입일</th>
-                    <th>포인트</th>
-                    <th>레벨</th>
-                    <th>관리</th>
-                </tr>
-            </thead>
+                 <tr>
+                     <th>번호</th>
+                     <th>아이디</th>
+                     <th>이름</th>
+                     <th>방문수</th>
+                     <th>최종방문</th>
+                     <th>가입일</th>
+                     <th>레벨</th>
+                     <th>관리</th>
+                 </tr>
+             </thead>
             <tbody>
 <?php
-$table = "member";
+$table = "users";
 
 if($TDsearchValue){
     $TDsearch = mysqli_real_escape_string($db, $TDsearch);
     $TDsearchValue_esc = mysqli_real_escape_string($db, $TDsearchValue);
-    $Mlang_query = "SELECT * FROM $table WHERE $TDsearch LIKE '%$TDsearchValue_esc%'";
+    
+    if($TDsearch === 'id'){
+        $searchColumn = 'username';
+    } else {
+        $searchColumn = $TDsearch;
+    }
+    
+    $Mlang_query = "SELECT * FROM $table WHERE $searchColumn LIKE '%$TDsearchValue_esc%'";
 } else {
     $Mlang_query = "SELECT * FROM $table";
 }
@@ -159,57 +145,47 @@ if($CountWW){
     $s = mysqli_real_escape_string($db, $s);
     $result = mysqli_query($db, "$Mlang_query ORDER BY $CountWW $s LIMIT $offset,$listcut");
 } else {
-    $result = mysqli_query($db, "$Mlang_query ORDER BY no DESC LIMIT $offset,$listcut");
+    $result = mysqli_query($db, "$Mlang_query ORDER BY id DESC LIMIT $offset,$listcut");
 }
 
 $rows = mysqli_num_rows($result);
 if($rows){
     while($row = mysqli_fetch_array($result)){
-        $levelClass = 'level-' . ($row['level'] ?? 5);
-        $levelNames = [2 => '부운영자', 3 => '골드', 4 => '정회원', 5 => '일반'];
-        $levelName = $levelNames[$row['level']] ?? '일반';
+         $levelClass = 'level-' . ($row['level'] ?? 5);
+         $levelNames = [2 => '부운영자', 3 => '골드', 4 => '정회원', 5 => '일반'];
+         $levelName = $levelNames[$row['level']] ?? '일반';
 
-        $visitCount = intval($row['Logincount'] ?? 0);
-        $visitClass = $visitCount >= 100 ? 'high' : '';
+         $visitCount = intval($row['login_count'] ?? 0);
+         $visitClass = $visitCount >= 100 ? 'high' : '';
 ?>
-                <tr>
-                    <td class="col-no"><?= $row['no'] ?></td>
-                    <td class="col-id">
-                        <a href="#" onclick="window.open('MemberImail.php?no=<?=$row['no']?>&code=1', 'member_email','width=600,height=500'); return false;">
-                            <?= htmlspecialchars($row['id']) ?>
-                        </a>
-                    </td>
-                    <td class="col-name"><?= htmlspecialchars($row['name']) ?></td>
-                    <td class="col-visit">
-                        <span class="visit-badge <?= $visitClass ?>"><?= number_format($visitCount) ?></span>
-                    </td>
-                    <td class="col-date"><?= $row['EndLogin'] ? date('Y-m-d', strtotime($row['EndLogin'])) : '-' ?></td>
-                    <td class="col-date"><?= $row['date'] ? date('Y-m-d', strtotime($row['date'])) : '-' ?></td>
-                    <td class="col-point">
-                        <form method='post' action='<?=$PHP_SELF?>?offset=<?=$offset?>&TDsearch=<?=$TDsearch?>&TDsearchValue=<?=urlencode($TDsearchValue)?>' style="margin:0">
-                            <input type="hidden" name='mode' value='PointModlfy'>
-                            <input type="hidden" name='no' value='<?=$row['no']?>'>
-                            <div class="point-input-group">
-                                <input type="text" name="money" class="point-input" value='<?= number_format($row['money'] ?? 0) ?>'>
-                                <button type='submit' class="btn btn--secondary btn--xs">저장</button>
-                            </div>
-                        </form>
-                    </td>
-                    <td class="col-level">
-                        <select class="level-select" onchange="location.href=this.value">
-                            <option value='<?=$PHP_SELF?>?offset=<?=$offset?>&TDsearch=<?=$TDsearch?>&TDsearchValue=<?=urlencode($TDsearchValue)?>&mode=LevelModify&code=2&no=<?=$row['no']?>' <?= $row['level']=="2" ? "selected" : "" ?>>Lv.2 부운영자</option>
-                            <option value='<?=$PHP_SELF?>?offset=<?=$offset?>&TDsearch=<?=$TDsearch?>&TDsearchValue=<?=urlencode($TDsearchValue)?>&mode=LevelModify&code=3&no=<?=$row['no']?>' <?= $row['level']=="3" ? "selected" : "" ?>>Lv.3 골드</option>
-                            <option value='<?=$PHP_SELF?>?offset=<?=$offset?>&TDsearch=<?=$TDsearch?>&TDsearchValue=<?=urlencode($TDsearchValue)?>&mode=LevelModify&code=4&no=<?=$row['no']?>' <?= $row['level']=="4" ? "selected" : "" ?>>Lv.4 정회원</option>
-                            <option value='<?=$PHP_SELF?>?offset=<?=$offset?>&TDsearch=<?=$TDsearch?>&TDsearchValue=<?=urlencode($TDsearchValue)?>&mode=LevelModify&code=5&no=<?=$row['no']?>' <?= $row['level']=="5" ? "selected" : "" ?>>Lv.5 일반</option>
-                        </select>
-                    </td>
-                    <td class="col-actions">
-                        <div class="action-buttons">
-                            <button type='button' class="btn btn--primary btn--xs" onclick="window.open('admin.php?mode=view&no=<?=$row['no']?>', 'MemberView','width=650,height=600,scrollbars=yes');">정보</button>
-                            <button type='button' class="btn btn--danger btn--xs" onclick="Member_Admin_Del('<?=$row['no']?>');">탈퇴</button>
-                        </div>
-                    </td>
-                </tr>
+                 <tr>
+                     <td class="col-no"><?= $row['id'] ?></td>
+                     <td class="col-id">
+                         <a href="#" onclick="window.open('MemberImail.php?no=<?=$row['id']?>&code=1', 'member_email','width=600,height=500'); return false;">
+                             <?= htmlspecialchars($row['username']) ?>
+                         </a>
+                     </td>
+                     <td class="col-name"><?= htmlspecialchars($row['name']) ?></td>
+                     <td class="col-visit">
+                         <span class="visit-badge <?= $visitClass ?>"><?= number_format($visitCount) ?></span>
+                     </td>
+                     <td class="col-date"><?= $row['last_login'] ? date('Y-m-d', strtotime($row['last_login'])) : '-' ?></td>
+                     <td class="col-date"><?= $row['created_at'] ? date('Y-m-d', strtotime($row['created_at'])) : '-' ?></td>
+                     <td class="col-level">
+                         <select class="level-select" onchange="location.href=this.value">
+                             <option value='<?=$PHP_SELF?>?offset=<?=$offset?>&TDsearch=<?=$TDsearch?>&TDsearchValue=<?=urlencode($TDsearchValue)?>&mode=LevelModify&code=2&no=<?=$row['id']?>' <?= $row['level']=="2" ? "selected" : "" ?>>Lv.2 부운영자</option>
+                             <option value='<?=$PHP_SELF?>?offset=<?=$offset?>&TDsearch=<?=$TDsearch?>&TDsearchValue=<?=urlencode($TDsearchValue)?>&mode=LevelModify&code=3&no=<?=$row['id']?>' <?= $row['level']=="3" ? "selected" : "" ?>>Lv.3 골드</option>
+                             <option value='<?=$PHP_SELF?>?offset=<?=$offset?>&TDsearch=<?=$TDsearch?>&TDsearchValue=<?=urlencode($TDsearchValue)?>&mode=LevelModify&code=4&no=<?=$row['id']?>' <?= $row['level']=="4" ? "selected" : "" ?>>Lv.4 정회원</option>
+                             <option value='<?=$PHP_SELF?>?offset=<?=$offset?>&TDsearch=<?=$TDsearch?>&TDsearchValue=<?=urlencode($TDsearchValue)?>&mode=LevelModify&code=5&no=<?=$row['id']?>' <?= $row['level']=="5" ? "selected" : "" ?>>Lv.5 일반</option>
+                         </select>
+                     </td>
+                     <td class="col-actions">
+                         <div class="action-buttons">
+                             <button type='button' class="btn btn--primary btn--xs" onclick="window.open('admin.php?mode=view&no=<?=$row['id']?>', 'MemberView','width=650,height=600,scrollbars=yes');">정보</button>
+                             <button type='button' class="btn btn--danger btn--xs" onclick="Member_Admin_Del('<?=$row['id']?>');">탈퇴</button>
+                         </div>
+                     </td>
+                 </tr>
 <?php
         $i++;
     }

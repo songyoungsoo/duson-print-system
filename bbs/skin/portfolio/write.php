@@ -906,8 +906,8 @@ $row_pass = mysqli_fetch_array($result_pass);
 // 권한 검증
 $can_modify = false;
 
-// 관리자 정보 조회
-$admin_query = mysqli_query($db, "SELECT * FROM member WHERE no='1'");
+// 관리자 정보 조회 (users 테이블 사용)
+$admin_query = mysqli_query($db, "SELECT username AS id, password AS pass FROM users WHERE is_admin = 1 LIMIT 1");
 $admin_info = mysqli_fetch_array($admin_query);
 $admin_id = $admin_info['id'] ?? '';
 

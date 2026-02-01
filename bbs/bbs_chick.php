@@ -9,11 +9,9 @@ $BbsDir = isset($BbsDir) ? $BbsDir : ".";
 include "$DbDir/db.php";
 
 try {
-    // 관리자 비밀번호 조회
-    $query = "SELECT pass FROM member WHERE no = ?";
+    // 관리자 비밀번호 조회 (users 테이블 사용)
+    $query = "SELECT password AS pass FROM users WHERE is_admin = 1 LIMIT 1";
     $stmt = mysqli_prepare($db, $query);
-    mysqli_stmt_bind_param($stmt, 'i', $admin_no);
-    $admin_no = 1;
     
     mysqli_stmt_execute($stmt);
     $result = mysqli_stmt_get_result($stmt);
@@ -49,23 +47,8 @@ if($BBS_ADMIN_footer_include){include "$BBS_ADMIN_footer_include ";}
 
 exit;
 
-}
-
-
 ///////////////////////////////////////////////////////////////////////////////////////////////////////
-if($HTTP_COOKIE_VARS['bbs_login']=="$bbsadminpasswd"){ 
-}else if($HTTP_COOKIE_VARS['bbs_login']=="$BBS_ADMIN_pass"){
-}else if($HTTP_COOKIE_VARS['bbs_login']=="$BbsViewmlang_bbs_pass"){
-}else{
-	
-echo("<p align=center><BR><BR><BR><b>$TT_msg</b></p>");
-	
-include "$BbsDir/bbs_login.php"; 
-
-if($BBS_ADMIN_footer){echo("$BBS_ADMIN_footer");} 
-if($BBS_ADMIN_footer_include){include "$BBS_ADMIN_footer_include ";}
-
-exit;
-}
+// Legacy dead code removed during member→users migration (2026-02-02)
+// Original code used $HTTP_COOKIE_VARS (PHP 4 era) and was unreachable after exit above.
 ////////////////////////////////////////////////////////////////////////////////////////////////////////
 ?>

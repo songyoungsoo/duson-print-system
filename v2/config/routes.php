@@ -52,6 +52,7 @@ return function (Router $router) {
     
     $router->get('/chatbot', [ChatbotController::class, 'index']);
     $router->post('/chatbot/chat', [ChatbotController::class, 'chat']);
+    $router->post('/chatbot/tts', [ChatbotController::class, 'tts']);
     
     $router->group('/admin', function (Router $router) {
         $router->get('/orders', [AdminOrderController::class, 'index']);

@@ -29,8 +29,8 @@ if (isset($_SERVER['PHP_AUTH_USER']) && isset($_SERVER['PHP_AUTH_PW'])) {
     $admin_db = @mysqli_connect($host, $user, $password, $dataname);
     
     if ($admin_db) {
-        // 관리자 정보 가져오기
-        $admin_query = "SELECT * FROM member WHERE no='1'";
+        // 관리자 정보 가져오기 (users 테이블 사용)
+        $admin_query = "SELECT username AS id, password AS pass FROM users WHERE is_admin = 1 LIMIT 1";
         $admin_result = mysqli_query($admin_db, $admin_query);
         
         if ($admin_result && mysqli_num_rows($admin_result) > 0) {
@@ -38,9 +38,13 @@ if (isset($_SERVER['PHP_AUTH_USER']) && isset($_SERVER['PHP_AUTH_PW'])) {
             $adminid = $admin_row["id"];
             $adminpasswd = $admin_row["pass"];
             
-            // 관리자 인증 확인
-            if ($_SERVER['PHP_AUTH_USER'] == $adminid && $_SERVER['PHP_AUTH_PW'] == $adminpasswd) {
-                $is_admin = true;
+            // 관리자 인증 확인 (bcrypt 지원)
+            if ($_SERVER['PHP_AUTH_USER'] == $adminid) {
+                if (strlen($adminpasswd) === 60 && strpos($adminpasswd, '$2y$') === 0) {
+                    $is_admin = password_verify($_SERVER['PHP_AUTH_PW'], $adminpasswd);
+                } else {
+                    $is_admin = ($_SERVER['PHP_AUTH_PW'] == $adminpasswd);
+                }
             }
         }
         

@@ -415,39 +415,10 @@ if ($is_logged_in && isset($_SESSION['user_id']) && !empty($_SESSION['user_id'])
                 $user_info = mysqli_fetch_assoc($result);
                 $debug_info[] = "User info loaded from users table";
 
-                // 2. users 테이블에 주소가 없으면 member 테이블에서 조회
+                // member 테이블 폴백 제거됨 (2026-02-02)
+                // users 테이블에 주소가 없으면 폼 필드가 빈 상태로 표시됨
                 if (empty($user_info['postcode']) && empty($user_info['address'])) {
-                    $debug_info[] = "No address in users table, checking member table...";
-
-                    // username으로 member 테이블 조회
-                    $member_query = "SELECT * FROM member WHERE id = ? LIMIT 1";
-                    $member_stmt = safe_mysqli_prepare($connect, $member_query);
-
-                    if ($member_stmt) {
-                        $username = $user_info['username'];
-                        mysqli_stmt_bind_param($member_stmt, 's', $username);
-                        mysqli_stmt_execute($member_stmt);
-                        $member_result = mysqli_stmt_get_result($member_stmt);
-
-                        if ($member_result && mysqli_num_rows($member_result) > 0) {
-                            $member_info = mysqli_fetch_assoc($member_result);
-                            $debug_info[] = "Found address in member table";
-
-                            // member 테이블의 주소 정보를 user_info에 병합
-                            $user_info['postcode'] = $member_info['sample6_postcode'] ?? '';
-                            $user_info['address'] = $member_info['sample6_address'] ?? '';
-                            $user_info['detail_address'] = $member_info['sample6_detailAddress'] ?? '';
-                            $user_info['extra_address'] = $member_info['sample6_extraAddress'] ?? '';
-
-                            // phone 정보도 병합 (users에 없으면)
-                            if (empty($user_info['phone']) && !empty($member_info['phone1'])) {
-                                $user_info['phone'] = $member_info['phone1'] . '-' . $member_info['phone2'] . '-' . $member_info['phone3'];
-                            }
-                        } else {
-                            $debug_info[] = "No matching member found in member table";
-                        }
-                        mysqli_stmt_close($member_stmt);
-                    }
+                    $debug_info[] = "No address in users table (member fallback removed)";
                 }
 
                 $debug_info[] = "Available fields: " . implode(', ', array_keys($user_info));

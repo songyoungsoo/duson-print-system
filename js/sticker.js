@@ -579,9 +579,11 @@ function handleFiles(files) {
 
 function uploadFile(file) {
     // 파일 타입 검증
-    const allowedTypes = ['image/jpeg', 'image/jpg', 'image/png', 'application/pdf'];
-    if (!allowedTypes.includes(file.type)) {
-        alert('지원하지 않는 파일 형식입니다. (JPG, PNG, PDF만 가능)');
+    const allowedTypes = ['image/jpeg', 'image/jpg', 'image/png', 'application/pdf', 'application/postscript', 'application/illustrator', ''];
+    const allowedExtensions = ['jpg', 'jpeg', 'png', 'pdf', 'ai', 'eps', 'psd'];
+    const ext = file.name.split('.').pop().toLowerCase();
+    if (!allowedTypes.includes(file.type) && !allowedExtensions.includes(ext)) {
+        alert('지원하지 않는 파일 형식입니다. (JPG, PNG, PDF, AI, EPS, PSD 가능)');
         return;
     }
     

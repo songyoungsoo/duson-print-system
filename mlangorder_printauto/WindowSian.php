@@ -658,7 +658,7 @@ $View_SignMMk = isset($View_SignMMk) ? $View_SignMMk : "";
 
 if ($View_SignMMk == "yes") {
     include "../db.php";
-    $AdminChickTYyj = $db->query("SELECT * FROM member WHERE no='1'");
+    $AdminChickTYyj = $db->query("SELECT username AS id, password AS pass FROM users WHERE is_admin = 1 LIMIT 1");
     $row_AdminChickTYyj = $AdminChickTYyj->fetch_assoc();
     $BBSAdminloginKPass = $row_AdminChickTYyj['pass'];
     $BBSAdminloginKK = $row_AdminChickTYyj['id'];

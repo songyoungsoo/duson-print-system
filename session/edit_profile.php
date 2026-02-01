@@ -12,10 +12,9 @@ include $_SERVER['DOCUMENT_ROOT'] ."/mlangprintauto/mlangprintautotop_s.php";
 $userid = $_SESSION['id_login_ok']['id'];
 // $userpass = $_SESSION['id_login_ok']['pass'];
 
-// MySQLi 문법으로 수정 (mysql_* → mysqli_*)
-
-$query = "SELECT * FROM member WHERE id = ?";
-$stmt = mysqli_prepare($query, $db);
+$query = "SELECT * FROM users WHERE username = ?";
+// 3-step verification: placeholders=1, types=1("s"), vars=1
+$stmt = mysqli_prepare($db, $query);
 mysqli_stmt_bind_param($stmt, "s", $userid);
 mysqli_stmt_execute($stmt);
 $result = mysqli_stmt_get_result($stmt);
@@ -25,44 +24,77 @@ if (!$result) {
 }
 
 $data = mysqli_fetch_array($result);
+mysqli_stmt_close($stmt);
 
 if ($_SERVER['REQUEST_METHOD'] == 'POST') {
-  $pass = mysqli_real_escape_string($db, $_POST['pass']);
-  $name = mysqli_real_escape_string($db, $_POST['name']);
-  $sample6_postcode = mysqli_real_escape_string($db, $_POST['sample6_postcode']);
-  $sample6_address = mysqli_real_escape_string($db, $_POST['sample6_address']);
-  $sample6_detailAddress = mysqli_real_escape_string($db, $_POST['sample6_detailAddress']);
-  $email = mysqli_real_escape_string($db, $_POST['email']);
-  $phone1 = mysqli_real_escape_string($db, $_POST['phone1']);
-  $phone2 = mysqli_real_escape_string($db, $_POST['phone2']);
-  $phone3 = mysqli_real_escape_string($db, $_POST['phone3']);
-  $hendphone1 = mysqli_real_escape_string($db, $_POST['hendphone1']);
-  $hendphone2 = mysqli_real_escape_string($db, $_POST['hendphone2']);
-  $hendphone3 = mysqli_real_escape_string($db, $_POST['hendphone3']);
-  $po1 = mysqli_real_escape_string($db, $_POST['po1']);
-  $po2 = mysqli_real_escape_string($db, $_POST['po2']);
-  $po3 = mysqli_real_escape_string($db, $_POST['po3']);
-  $po4 = mysqli_real_escape_string($db, $_POST['po4']);
-  $po5 = mysqli_real_escape_string($db, $_POST['po5']);
-  $po6 = mysqli_real_escape_string($db, $_POST['po6']);
-  $po7 = mysqli_real_escape_string($db, $_POST['po7']);
+  $name = $_POST['name'] ?? '';
+  $sample6_postcode = $_POST['sample6_postcode'] ?? '';
+  $sample6_address = $_POST['sample6_address'] ?? '';
+  $sample6_detailAddress = $_POST['sample6_detailAddress'] ?? '';
+  $email = $_POST['email'] ?? '';
+  $phone1 = $_POST['phone1'] ?? '';
+  $phone2 = $_POST['phone2'] ?? '';
+  $phone3 = $_POST['phone3'] ?? '';
+  $hendphone1 = $_POST['hendphone1'] ?? '';
+  $hendphone2 = $_POST['hendphone2'] ?? '';
+  $hendphone3 = $_POST['hendphone3'] ?? '';
+  $po1 = $_POST['po1'] ?? '';
+  $po2 = $_POST['po2'] ?? '';
+  $po3 = $_POST['po3'] ?? '';
+  $po4 = $_POST['po4'] ?? '';
+  $po5 = $_POST['po5'] ?? '';
+  $po6 = $_POST['po6'] ?? '';
+  $po7 = $_POST['po7'] ?? '';
 
-  $update_query = "UPDATE member SET pass=?, name=?, sample6_postcode=?, sample6_address=?, sample6_detailAddress=?, email=?, phone1=?, phone2=?, phone3=?, hendphone1=?, hendphone2=?, hendphone3=?, po1=?, po2=?, po3=?, po4=?, po5=?, po6=?, po7=? WHERE id=?";
-  $stmt = mysqli_prepare($update_query, $db);
-  mysqli_stmt_bind_param($stmt, "ssssssssssssssssssss", $pass, $name, $sample6_postcode, $sample6_address, $sample6_detailAddress, $email, $phone1, $phone2, $phone3, $hendphone1, $hendphone2, $hendphone3, $po1, $po2, $po3, $po4, $po5, $po6, $po7, $userid);
+  // phone 결합: 핸드폰 우선, 없으면 전화번호 사용
+  $phone_combined = '';
+  if (!empty($hendphone1) && !empty($hendphone2) && !empty($hendphone3)) {
+    $phone_combined = $hendphone1 . '-' . $hendphone2 . '-' . $hendphone3;
+  } elseif (!empty($phone1) && !empty($phone2) && !empty($phone3)) {
+    $phone_combined = $phone1 . '-' . $phone2 . '-' . $phone3;
+  }
+
+  // users 테이블 UPDATE
+  $update_query = "UPDATE users SET name=?, postcode=?, address=?, detail_address=?, email=?, phone=?, business_number=?, business_name=?, business_owner=?, business_type=?, business_item=?, business_address=?, tax_invoice_email=? WHERE username=?";
+  // 3-step verification: placeholders=14, types=14("ssssssssssssss"), vars=14
+  $stmt = mysqli_prepare($db, $update_query);
+  mysqli_stmt_bind_param($stmt, "ssssssssssssss",
+    $name, $sample6_postcode, $sample6_address, $sample6_detailAddress,
+    $email, $phone_combined,
+    $po1, $po2, $po3, $po4, $po5, $po6, $po7,
+    $userid
+  );
   $update_result = mysqli_stmt_execute($stmt);
+  mysqli_stmt_close($stmt);
 
   if (!$update_result) {
     die("회원 정보 업데이트에 실패했습니다: " . mysqli_error($db));
   }
 
-  // 업데이트가 성공적으로 이루어지면 다시 회원 정보를 불러옵니다.
-  $query = "SELECT * FROM member WHERE id = ?";
-  $stmt = mysqli_prepare($query, $db);
+  // member 테이블 동시 업데이트 (backward compatibility dual write)
+  $member_update_query = "UPDATE member SET name=?, sample6_postcode=?, sample6_address=?, sample6_detailAddress=?, email=?, phone1=?, phone2=?, phone3=?, hendphone1=?, hendphone2=?, hendphone3=?, po1=?, po2=?, po3=?, po4=?, po5=?, po6=?, po7=? WHERE id=?";
+  // 3-step verification: placeholders=19, types=19("sssssssssssssssssss"), vars=19
+  $member_stmt = mysqli_prepare($db, $member_update_query);
+  if ($member_stmt) {
+    mysqli_stmt_bind_param($member_stmt, "sssssssssssssssssss",
+      $name, $sample6_postcode, $sample6_address, $sample6_detailAddress,
+      $email, $phone1, $phone2, $phone3, $hendphone1, $hendphone2, $hendphone3,
+      $po1, $po2, $po3, $po4, $po5, $po6, $po7,
+      $userid
+    );
+    mysqli_stmt_execute($member_stmt);
+    mysqli_stmt_close($member_stmt);
+  }
+
+  // 업데이트 후 다시 users에서 불러오기
+  $query = "SELECT * FROM users WHERE username = ?";
+  // 3-step verification: placeholders=1, types=1("s"), vars=1
+  $stmt = mysqli_prepare($db, $query);
   mysqli_stmt_bind_param($stmt, "s", $userid);
   mysqli_stmt_execute($stmt);
   $result = mysqli_stmt_get_result($stmt);
   $data = mysqli_fetch_array($result);
+  mysqli_stmt_close($stmt);
 }
 
 ?>
@@ -97,21 +129,25 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
 </head>
 
 <?php
-$id = $data['id'];
-$pass = $data['pass'];
+$id = $data['username'];
 $name = $data['name'];
-$sample6_postcode = $data['sample6_postcode'];
-$sample6_address = $data['sample6_address'];
-$sample6_detailAddress = $data['sample6_detailAddress'];
+$sample6_postcode = $data['postcode'];
+$sample6_address = $data['address'];
+$sample6_detailAddress = $data['detail_address'];
 $email = $data['email'];
-$date = $data['date'];
-$po1 = $data['po1'];
-$po2 = $data['po2'];
-$po3 = $data['po3'];
-$po4 = $data['po4'];
-$po5 = $data['po5'];
-$po6 = $data['po6'];
-$po7 = $data['po7'];
+$date = $data['created_at'];
+$po1 = $data['business_number'];
+$po2 = $data['business_name'];
+$po3 = $data['business_owner'];
+$po4 = $data['business_type'];
+$po5 = $data['business_item'];
+$po6 = $data['business_address'];
+$po7 = $data['tax_invoice_email'];
+
+// phone 분리: users.phone ("010-1234-5678") → phone1, phone2, phone3
+list($phone1, $phone2, $phone3) = array_pad(explode('-', $data['phone'] ?? ''), 3, '');
+// hendphone: users 테이블에 별도 필드 없음, phone과 동일하게 표시
+list($hendphone1, $hendphone2, $hendphone3) = array_pad(explode('-', $data['phone'] ?? ''), 3, '');
 ?>
 <br>
 <span class="OW"><h3><li>내 정보수정</h3></span>
@@ -124,51 +160,51 @@ $po7 = $data['po7'];
     </tr>
     <tr>
       <th bgcolor="#FFFFFF" class="OW">비밀번호</th>
-      <td bgcolor="#FFFFFF" class="OW"><input type="password" name="pass" value="<?php echo  htmlspecialchars($pass) ?>"></td>
+      <td bgcolor="#FFFFFF" class="OW"><input type="password" value="********" readonly> <a href="change_password.php" style="font-size:9pt; color:blue;" onclick="window.open(this.href,'ChangePasswordWindow','width=400,height=400'); return false;">&lt;비밀번호변경&gt;</a></td>
     </tr>
     <tr>
       <th bgcolor="#FFFFFF" class="OW">상호/성명</th>
-      <td bgcolor="#FFFFFF" class="OW"><input type="text" name="name" value="<?php echo  $name ?>"></td>
+      <td bgcolor="#FFFFFF" class="OW"><input type="text" name="name" value="<?php echo  htmlspecialchars($name) ?>"></td>
     </tr>
     <tr>
       <th bgcolor="#FFFFFF" class="OW">주소</th>
       <td bgcolor="#FFFFFF" class="OW">
-        <input type="text" name="sample6_postcode" value="<?php echo  $sample6_postcode ?>" class="long-input"><br>
-        <input type="text" name="sample6_address" value="<?php echo  $sample6_address ?>" class="long-input"><br>
-        <input type="text" name="sample6_detailAddress" value="<?php echo  $sample6_detailAddress ?>" class="long-input">
+        <input type="text" name="sample6_postcode" value="<?php echo  htmlspecialchars($sample6_postcode) ?>" class="long-input"><br>
+        <input type="text" name="sample6_address" value="<?php echo  htmlspecialchars($sample6_address) ?>" class="long-input"><br>
+        <input type="text" name="sample6_detailAddress" value="<?php echo  htmlspecialchars($sample6_detailAddress) ?>" class="long-input">
       </td>
     </tr>
     <tr>
       <th bgcolor="#FFFFFF" class="OW">전화</th>
       <td bgcolor="#FFFFFF" class="OW">
-        <input type="text" name="phone1" value="<?php echo  $data['phone1'] ?>">-
-        <input type="text" name="phone2" value="<?php echo  $data['phone2'] ?>">-
-        <input type="text" name="phone3" value="<?php echo  $data['phone3'] ?>">
+        <input type="text" name="phone1" value="<?php echo  htmlspecialchars($phone1) ?>">-
+        <input type="text" name="phone2" value="<?php echo  htmlspecialchars($phone2) ?>">-
+        <input type="text" name="phone3" value="<?php echo  htmlspecialchars($phone3) ?>">
       </td>
     </tr>
     <tr>
     <th bgcolor="#FFFFFF" class="OW">핸드폰</th>
       <td bgcolor="#FFFFFF" class="OW">
-      <input type="text" name="hendphone1" value="<?php echo  $data['hendphone1'] ?>">-
-      <input type="text" name="hendphone2" value="<?php echo  $data['hendphone2'] ?>">-
-      <input type="text" name="hendphone3" value="<?php echo  $data['hendphone3'] ?>"> 
+      <input type="text" name="hendphone1" value="<?php echo  htmlspecialchars($hendphone1) ?>">-
+      <input type="text" name="hendphone2" value="<?php echo  htmlspecialchars($hendphone2) ?>">-
+      <input type="text" name="hendphone3" value="<?php echo  htmlspecialchars($hendphone3) ?>"> 
       </tr>
       <tr>
       <th bgcolor="#FFFFFF" class="OW">이메일</th>
         <td bgcolor="#FFFFFF" class="OW">
-        <input type="text" name="email" value="<?php echo  $data['email'] ?>" class="long-input">
+        <input type="text" name="email" value="<?php echo  htmlspecialchars($email ?? '') ?>" class="long-input">
         <!-- <?php echo  $email ?></td> -->
       </tr>
       <tr>
       <th bgcolor="#FFFFFF" class="OW">사업자정보</th>
         <td bgcolor="#FFFFFF" class="OW">
-        <input type="text" name="po1" value="<?php echo  $data['po1'] ?>" class="long-input"> - 등록번호<br>          
-        <input type="text" name="po2" value="<?php echo  $data['po2'] ?>" class="long-input"> - 상호<br>         
-        <input type="text" name="po3" value="<?php echo  $data['po3'] ?>" class="long-input"> - 대표자명<br>         
-        <input type="text" name="po4" value="<?php echo  $data['po4'] ?>" class="long-input"> - 업태<br>         
-        <input type="text" name="po5" value="<?php echo  $data['po5'] ?>" class="long-input"> - 종목<br> 
-        <input type="text" name="po6" value="<?php echo  $data['po6'] ?>" class="long-input"> - 사업장주소<br>         
-        <input type="text" name="po7" value="<?php echo  $data['po7'] ?>" class="long-input"> - 계산서수취이메일         
+        <input type="text" name="po1" value="<?php echo  htmlspecialchars($po1 ?? '') ?>" class="long-input"> - 등록번호<br>          
+        <input type="text" name="po2" value="<?php echo  htmlspecialchars($po2 ?? '') ?>" class="long-input"> - 상호<br>         
+        <input type="text" name="po3" value="<?php echo  htmlspecialchars($po3 ?? '') ?>" class="long-input"> - 대표자명<br>         
+        <input type="text" name="po4" value="<?php echo  htmlspecialchars($po4 ?? '') ?>" class="long-input"> - 업태<br>         
+        <input type="text" name="po5" value="<?php echo  htmlspecialchars($po5 ?? '') ?>" class="long-input"> - 종목<br> 
+        <input type="text" name="po6" value="<?php echo  htmlspecialchars($po6 ?? '') ?>" class="long-input"> - 사업장주소<br>         
+        <input type="text" name="po7" value="<?php echo  htmlspecialchars($po7 ?? '') ?>" class="long-input"> - 계산서수취이메일         
       </td>
       </tr>
     </table>

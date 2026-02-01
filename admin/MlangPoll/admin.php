@@ -48,10 +48,25 @@ if(isset($modify) || isset($deleteanswer) || isset($addanswer))
 
 if(!isset($doit) && !isset($addpoll) && !isset($deleteno) && !isset($deleteyes) && !isset($modify) && !isset($deleteanswer) && !isset($addanswer))
 {
-	$userquery = mysqli_query($db, "SELECT * FROM member WHERE id='$username' AND pass='$password'");
-// ⚠️  에러 처리 권장: mysqli_error() 사용을 고려하세요
+	// ✅ users 테이블 조회 (member → users 마이그레이션, prepared statement + bcrypt)
+	$stmt = mysqli_prepare($db, "SELECT * FROM users WHERE username = ?");
+	mysqli_stmt_bind_param($stmt, "s", $username);
+	mysqli_stmt_execute($stmt);
+	$userquery_result = mysqli_stmt_get_result($stmt);
 
-	$adminrow = mysqli_num_rows($userquery);
+	if ($userquery_result && $admin_row = mysqli_fetch_assoc($userquery_result)) {
+	    $adminrow = 0;
+	    $stored_pass = $admin_row['password'];
+	    // bcrypt 또는 평문 비밀번호 비교
+	    if (strlen($stored_pass) === 60 && strpos($stored_pass, '$2y$') === 0) {
+	        if (password_verify($password, $stored_pass)) $adminrow = 1;
+	    } else {
+	        if ($password === $stored_pass) $adminrow = 1;
+	    }
+	} else {
+	    $adminrow = 0;
+	}
+	mysqli_stmt_close($stmt);
 	
 	if($adminrow==1)
 	{firstscreen();}

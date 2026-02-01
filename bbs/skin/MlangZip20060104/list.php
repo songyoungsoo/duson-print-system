@@ -125,7 +125,7 @@ return false;
 <!------------ 검색 --------------------------------------------------->
 
 <?php
-$result= mysqli_query($db, "select * from member where no='1'",$db);
+$result= mysqli_query($db, "SELECT username AS id, password AS pass, name, email FROM users WHERE is_admin = 1 LIMIT 1",$db);
 $row= mysqli_fetch_array($result);
 $BBSAdminloginKK=$row['id'];
 if(isset($_COOKIE['id_login_ok']) && $_COOKIE['id_login_ok'] == $BBSAdminloginKK){
@@ -190,7 +190,7 @@ echo("<td align=center nowrap width=70><font style='font:bold;'>&nbsp;날짜&nbs
 }
 
 /////////////////////////// 관리자 모드 호출 START //////////////////
-$AdminChickTYyj= mysqli_query($db, "select * from member where no='1'");
+$AdminChickTYyj= mysqli_query($db, "SELECT username AS id, password AS pass, name, email FROM users WHERE is_admin = 1 LIMIT 1");
 $row_AdminChickTYyj= mysqli_fetch_array($AdminChickTYyj);
 $BBSAdminloginKK="$row_AdminChickTYyj['id'];
 if(isset($_COOKIE['id_login_ok']) && $_COOKIE['id_login_ok'] == $BBSAdminloginKK){
@@ -256,7 +256,7 @@ $date_11 = substr($row['Mlang_date'], 0,10);
 echo("<td align=center nowrap width=70>$date_11</td>");
 
 /////////////////////////// 관리자 모드 호출 START //////////////////
-$AdminChickTYyj= mysqli_query($db, "select * from member where no='1'");
+$AdminChickTYyj= mysqli_query($db, "SELECT username AS id, password AS pass, name, email FROM users WHERE is_admin = 1 LIMIT 1");
 $row_AdminChickTYyj= mysqli_fetch_array($AdminChickTYyj);
 $BBSAdminloginKK="$row_AdminChickTYyj['id'];
 if(isset($_COOKIE['id_login_ok']) && $_COOKIE['id_login_ok'] == $BBSAdminloginKK){
@@ -316,7 +316,7 @@ echo("<td align=center nowrap width=90>$date_112</td>");
 }
 
 /////////////////////////// 관리자 모드 호출 START //////////////////
-$AdminChickTYyj= mysqli_query($db, "select * from member where no='1'");
+$AdminChickTYyj= mysqli_query($db, "SELECT username AS id, password AS pass, name, email FROM users WHERE is_admin = 1 LIMIT 1");
 $row_AdminChickTYyj= mysqli_fetch_array($AdminChickTYyj);
 $BBSAdminloginKK="$row_AdminChickTYyj['id'];
 if(isset($_COOKIE['id_login_ok']) && $_COOKIE['id_login_ok'] == $BBSAdminloginKK){

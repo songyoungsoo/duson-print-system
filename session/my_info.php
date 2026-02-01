@@ -12,11 +12,15 @@ include $_SERVER['DOCUMENT_ROOT'] ."/mlangprintauto/mlangprintautotop_s.php";
 $userid = $_SESSION['id_login_ok']['id'];
 // $userpass = $_SESSION['id_login_ok']['pass'];
 
-$query = "SELECT * FROM member WHERE id ='" . mysqli_real_escape_string($userid) . "'";
-$result = mysqli_query($query, $db);
+$query = "SELECT * FROM users WHERE username = ?";
+// 3-step verification: placeholders=1, types=1("s"), vars=1
+$stmt = mysqli_prepare($db, $query);
+mysqli_stmt_bind_param($stmt, "s", $userid);
+mysqli_stmt_execute($stmt);
+$result = mysqli_stmt_get_result($stmt);
 
 if (!$result) {
-  die("데이터베이스접속에러입니다: " . mysqli_error());
+  die("데이터베이스접속에러입니다: " . mysqli_error($db));
 }
 
 ?>
@@ -77,25 +81,27 @@ if (!$result) {
 </head>
 
   <?php
-  $query = "SELECT * FROM member WHERE id='$userid'";
-  $result = mysqli_query($query, $db);
   $data = mysqli_fetch_array($result);
+  mysqli_stmt_close($stmt);
 
-  $id = $data['id'];
-  $pass = $data['pass'];
+  $id = $data['username'];
+  $pass = '********';
   $name = $data['name'];
-  $sample6_postcode = $data['sample6_postcode'];
-  $sample6_address = $data['sample6_address'];
-  $sample6_detailAddress = $data['sample6_detailAddress'];
+  $sample6_postcode = $data['postcode'];
+  $sample6_address = $data['address'];
+  $sample6_detailAddress = $data['detail_address'];
   $email = $data['email'];
-  $date = $data['date'];
-  $po1 = $data['po1'];
-  $po2 = $data['po2'];
-  $po3 = $data['po3'];
-  $po4 = $data['po4'];
-  $po5 = $data['po5'];
-  $po6 = $data['po6'];
-  $po7 = $data['po7'];
+  $date = $data['created_at'];
+  $po1 = $data['business_number'];
+  $po2 = $data['business_name'];
+  $po3 = $data['business_owner'];
+  $po4 = $data['business_type'];
+  $po5 = $data['business_item'];
+  $po6 = $data['business_address'];
+  $po7 = $data['tax_invoice_email'];
+
+  // phone: users 테이블은 결합된 형식 ("010-1234-5678")
+  $phone_display = $data['phone'] ?? '';
   ?>
   <br>
   <span class="OW"><h3><li>MY INFOMATION</h3></span>
@@ -122,10 +128,10 @@ if (!$result) {
       </tr>
       <tr>
       <th bgcolor="#FFFFFF" class="OW">전화</th>
-        <td bgcolor="#FFFFFF" class="OW"><?php echo  $data['phone1'] ?>-<?php echo  $data['phone2'] ?>-<?php echo  $data['phone3'] ?></td>
+        <td bgcolor="#FFFFFF" class="OW"><?php echo  htmlspecialchars($phone_display) ?></td>
       <tr>
       <th bgcolor="#FFFFFF" class="OW">핸드폰</th>
-      <td bgcolor="#FFFFFF" class="OW"><?php echo  $data['hendphone1'] ?>-<?php echo  $data['hendphone2'] ?>-<?php echo  $data['hendphone3'] ?></td>
+      <td bgcolor="#FFFFFF" class="OW"><?php echo  htmlspecialchars($phone_display) ?></td>
       </tr>
       <tr>
       <th bgcolor="#FFFFFF" class="OW">이메일</th>

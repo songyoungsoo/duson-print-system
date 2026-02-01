@@ -279,19 +279,23 @@ if ($mode == "SubmitOk") {
                     <?php } else {
                         $userid = $_SESSION['id_login_ok']['id'];
                         if ($userid) {
-                            $query = "SELECT * FROM member WHERE id='" . $db->real_escape_string($userid) . "'";
-                            $result = $db->query($query);
+                            $query = "SELECT id, username, name, email, postcode, address, detail_address, extra_address, phone FROM users WHERE username = ?";
+                            $stmt = $db->prepare($query);
+                            $stmt->bind_param("s", $userid);
+                            $stmt->execute();
+                            $result = $stmt->get_result();
                             $row = $result->fetch_assoc();
 
                             if ($row) {
-                                $View_No = htmlspecialchars($row['no']);
+                                $View_No = htmlspecialchars($row['id']);
                                 $View_name = htmlspecialchars($row['name']);
                                 $View_email = htmlspecialchars($row['email']);
-                                $View_zip = htmlspecialchars($row['sample6_postcode']);
-                                $View_zip1 = htmlspecialchars($row['sample6_address']);
-                                $View_zip2 = htmlspecialchars($row['sample6_detailAddress']);
-                                $View_phone = htmlspecialchars($row['phone1']) . '-' . htmlspecialchars($row['phone2']) . '-' . htmlspecialchars($row['phone3']);
-                                $View_Hendphone = htmlspecialchars($row['hendphone1']) . '-' . htmlspecialchars($row['hendphone2']) . '-' . htmlspecialchars($row['hendphone3']);
+                                $View_zip = htmlspecialchars($row['postcode'] ?? '');
+                                $View_zip1 = htmlspecialchars($row['address'] ?? '');
+                                $View_zip2 = htmlspecialchars($row['detail_address'] ?? '');
+                                $View_zip3 = htmlspecialchars($row['extra_address'] ?? '');
+                                $View_phone = htmlspecialchars($row['phone'] ?? '');
+                                $View_Hendphone = htmlspecialchars($row['phone'] ?? '');
                             } else {
                                 echo ("<script language=javascript>
                                     window.alert('Database 오류입니다.');
@@ -299,6 +303,7 @@ if ($mode == "SubmitOk") {
                                 </script>");
                                 exit;
                             }
+                            $stmt->close();
                         }
                     ?>
                     <div class="form-grid" style="display: grid; gap: 1.5rem;">

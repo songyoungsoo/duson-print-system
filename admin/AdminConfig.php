@@ -57,9 +57,22 @@ self.resizeTo(availWidth=380,availHeight=200);
 
 if($mode=="AdminOk"){
 
-$query ="UPDATE member SET id='$id', pass='$pass' WHERE no='1'";
-$result= mysqli_query($db, $query);
-// ⚠️  에러 처리 권장: mysqli_error() 사용을 고려하세요
+// ✅ users 테이블 업데이트 (member → users 마이그레이션, prepared statement)
+$hashed_pass = password_hash($pass, PASSWORD_DEFAULT);
+$query = "UPDATE users SET username = ?, password = ? WHERE is_admin = 1";
+$stmt = mysqli_prepare($db, $query);
+mysqli_stmt_bind_param($stmt, "ss", $id, $hashed_pass);
+$result = mysqli_stmt_execute($stmt);
+mysqli_stmt_close($stmt);
+
+// ✅ member 테이블 동시 쓰기 (하위 호환성)
+$member_query = "UPDATE member SET id = ?, pass = ? WHERE no = '1'";
+$member_stmt = mysqli_prepare($db, $member_query);
+if ($member_stmt) {
+    mysqli_stmt_bind_param($member_stmt, "ss", $id, $hashed_pass);
+    mysqli_stmt_execute($member_stmt);
+    mysqli_stmt_close($member_stmt);
+}
 
 	if(!$result) {
 		echo "

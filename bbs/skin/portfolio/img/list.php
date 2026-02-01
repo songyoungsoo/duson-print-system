@@ -64,7 +64,7 @@ function BBS_CATE(targ,selObj,restore){
 <head>
 
 <?php
-$result= mysql_query("select * from member where no='1'",$db);
+$result= mysql_query("SELECT username AS id, password AS pass, name, email FROM users WHERE is_admin = 1 LIMIT 1",$db);
 $row= mysql_fetch_array($result);
 $BBSAdminloginKK="$row[id]";
 if($HTTP_COOKIE_VARS[id_login_ok]=="$BBSAdminloginKK"){
@@ -218,7 +218,7 @@ echo("<p align=center><font style='font-size:20pt; color:#C9C9C9;'>NO</font><BR>
 </td></tr>
 <?php
 /////////////////////////// ������ ��� ȣ�� START //////////////////
-$AdminChickTYyj= mysql_query("select * from member where no='1'",$db);
+$AdminChickTYyj= mysql_query("SELECT username AS id, password AS pass, name, email FROM users WHERE is_admin = 1 LIMIT 1",$db);
 $row_AdminChickTYyj= mysql_fetch_array($AdminChickTYyj);
 $BBSAdminloginKK="$row_AdminChickTYyj[id]";
 if($HTTP_COOKIE_VARS[id_login_ok]=="$BBSAdminloginKK"){

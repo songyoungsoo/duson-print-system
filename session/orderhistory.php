@@ -35,16 +35,6 @@ $result = mysqli_stmt_get_result($stmt);
 $user_data = mysqli_fetch_assoc($result);
 
 if (!$user_data) {
-    // users 테이블에 없으면 member 테이블 확인
-    $query = "SELECT email, name FROM member WHERE id = ?";
-    $stmt = mysqli_prepare($db, $query);
-    mysqli_stmt_bind_param($stmt, "s", $userid);
-    mysqli_stmt_execute($stmt);
-    $result = mysqli_stmt_get_result($stmt);
-    $user_data = mysqli_fetch_assoc($result);
-}
-
-if (!$user_data) {
     echo "<script>
             alert('사용자 정보를 찾을 수 없습니다.');
             location.href='/';

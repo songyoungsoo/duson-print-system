@@ -405,6 +405,131 @@ $renderer->formatSupplyPriceCell($item);  // number_format 적용
 
 ---
 
-*Core Version - Last Updated: 2026-01-17*
+---
+
+## 🔜 보류 작업: member → users 완전 마이그레이션 (예정: 2026년 2월 중순)
+
+### 배경
+- 2026-02-02: 회원가입/관리자 회원목록은 `users` 테이블로 전환 완료
+- 하지만 **50+개 PHP 파일**이 아직 `member` 테이블을 직접 참조 중
+- `register_process.php`가 users + member 양쪽에 이중 INSERT 중 (호환용)
+- `/system/migration/` 도구를 활용하여 체계적으로 전환 예정
+
+### 현재 상태
+
+| 영역 | 상태 | 테이블 |
+|------|------|--------|
+| 회원가입 (`register_process.php`) | ✅ users 저장 + ⚠️ member 이중 저장 | users (주) + member (호환) |
+| 로그인 (`member/login_unified.php`) | ✅ users 우선 조회 + member fallback (자동 마이그레이션) | users (주) + member (fallback) |
+| 로그인 (`session/loginProc.php`) | ✅ users 우선 조회 + member fallback (자동 마이그레이션) | users (주) + member (fallback) |
+| 관리자 회원목록 (`admin/member/index.php`) | ✅ users 전환 완료 | users |
+| 관리자 회원상세 (`admin/member/admin.php`) | ✅ users 전환 완료 | users |
+| 관리자 인증 (`admin/config.php`) | ⚠️ 현재 주석 처리됨, member 참조 코드 존재 | member (비활성) |
+| 세션 헤더 (`session/index.php`) | ✅ users 전환 완료 | users |
+| 내 정보 (`session/my_info.php`) | ✅ users 전환 완료 | users |
+| 프로필 수정 (`session/edit_profile.php`) | ✅ users 전환 + member 이중 쓰기 | users (주) + member (호환) |
+| 비밀번호 변경 (`session/change_password.php`) | ✅ users 전환 + bcrypt + member 이중 쓰기 | users (주) + member (호환) |
+| 주문 내역 (`session/orderhistory.php`) | ✅ users 전환 완료 | users |
+| 주문 상세 (`session/order_view_my.php`) | ✅ users 전환 완료 | users |
+| 주문 페이지 (`OnlineOrder_unified.php`) | ⚠️ member 참조 | member |
+| 비밀번호 초기화 | ⚠️ member 참조 | member |
+
+### member 참조 파일 목록 (활성 코드만, backup/scripts 제외)
+
+**핵심 (우선순위 1):**
+- `member/login_unified.php` — 로그인
+- `member/change_password.php` — 비밀번호 변경
+- `member/password_reset.php` — 비밀번호 초기화
+- `member/password_reset_request.php` — 초기화 요청
+- `mlangorder_printauto/OnlineOrder_unified.php` — 주문 페이지
+
+**세션/마이페이지 (우선순위 2):**
+- `session/loginProc.php` — 로그인 처리
+- `session/index.php` — 세션 관리
+- `session/my_info.php` — 내 정보
+- `session/edit_profile.php` — 프로필 수정
+- `session/change_password.php` — 비밀번호 변경
+- `session/orderhistory.php` — 주문 내역
+- `session/order_view_my.php` — 주문 조회
+- `mypage/auth_required.php` — 마이페이지 인증
+
+**관리자 (우선순위 3):**
+- `admin/config.php` — 관리자 인증 (현재 주석 처리)
+- `admin/MlangPoll/admin.php` — 설문 관리
+
+**기타:**
+- `member/member_fild.php`, `member_fild_member.php`, `member_fild_id.php` — 회원 조회
+- `lib/func.php` — 공통 함수
+- `mlangorder_printauto/session/` — 주문 세션
+- `mlangorder_printauto/OrderFormOrderOne.php`, `WindowSian.php`
+- `sub/pw_check.php` — 비밀번호 확인
+- `shop/search_company.php` — 업체 검색
+- `bbs/` — 게시판
+
+### 시스템 도구 현황 (인스톨러/백업/복구)
+
+| 시스템 | 파일 | 현재 상태 | 마이그레이션 후 할 일 |
+|--------|------|-----------|---------------------|
+| InstallerEngine | `system/install/InstallerEngine.php` | ✅ users에 admin INSERT | 변경 불필요 |
+| schema.sql | `system/install/sql/schema.sql` | ⚠️ member + users 둘 다 CREATE | member CREATE TABLE 제거 |
+| seed.sql | `system/install/sql/seed.sql` | ✅ member/users 데이터 없음 | 변경 불필요 |
+| BackupManager | `system/backup/BackupManager.php` | ✅ DB 전체 덤프/복구 | 변경 불필요 (DB 통째 처리) |
+| restore.php | `system/backup/restore.php` | ✅ SQL 파일 그대로 실행 | 변경 불필요 |
+
+**schema.sql 수정 시점**: 7단계(member 테이블 폐기) 시점에 member CREATE TABLE 제거
+
+### 작업 순서 (진행 상황)
+
+1. ~~**register_process.php**: member INSERT 코드 제거 (이중 저장 중단)~~ → 이중 저장 유지 중 (호환)
+2. ~~**login_unified.php + session/loginProc.php**: `SELECT FROM member` → `SELECT FROM users` 전환~~ ✅ 완료 (2026-02-02)
+3. ~~**session/ 디렉토리**: 전체 users 전환~~ ✅ 완료 (2026-02-02) - 7개 파일 전환
+4. **OnlineOrder_unified.php**: 주문 페이지 회원 조회 전환
+5. **admin/config.php**: 관리자 인증 활성화 + users 전환
+6. **나머지 파일들**: 순차 전환 (member_fild.php, lib/func.php, bbs/ 등)
+7. **member 테이블 폐기**: 백업 → schema.sql에서 member 제거 → DROP TABLE member
+
+### 컬럼 매핑 참조 (member → users)
+
+| member | users | 비고 |
+|--------|-------|------|
+| no | id | PK (auto_increment) |
+| id | username | UNIQUE |
+| pass | password | bcrypt ($2y$10$...) |
+| name | name | |
+| phone1-2-3 | phone | "010-1234-5678" 통합 형식 |
+| hendphone1-2-3 | phone | 일반전화 없으면 핸드폰 사용 |
+| email | email | |
+| sample6_postcode | postcode | |
+| sample6_address | address | |
+| sample6_detailAddress | detail_address | |
+| sample6_extraAddress | extra_address | |
+| po1 | business_number | 사업자등록번호 |
+| po2 | business_name | 상호 |
+| po3 | business_owner | 대표자 |
+| po4 | business_type | 업태 |
+| po5 | business_item | 종목 |
+| po6 | business_address | 사업장주소 |
+| po7 | tax_invoice_email | 세금계산서 이메일 |
+| date | created_at | |
+| Logincount | login_count | |
+| EndLogin | last_login | |
+| level | level | 기본값 '5' |
+| money | (제거됨) | 포인트 기능 폐기 |
+
+### 주의사항
+- 비밀번호: users는 bcrypt 전용, member는 평문+bcrypt 혼재 → 로그인 시 양쪽 지원 필요
+- 전화번호: member는 phone1/2/3 분리, users는 통합 → 전환 시 통합 로직 필요
+- `original_member_no` 컬럼: 마이그레이션된 회원의 원래 member.no 추적용
+
+### 완료된 정리 작업 (2026-02-02)
+- ✅ 스팸 계정 11건 삭제 (로컬+운영 member 테이블)
+  - `* * *` 스팸 8건 (pazapz@mailbox.in.ua)
+  - XSS 공격 1건 (박희선<sCRiPt...>)
+  - 중복 계정 2건 (88952634)
+- ✅ 회원가입 폼 autocomplete 방지 (form.php → 운영 배포 완료)
+
+---
+
+*Core Version - Last Updated: 2026-02-02*
 *Environment: WSL2 Ubuntu + Windows XAMPP*
 *SSOT Docs: CLAUDE_DOCS/Duson_System_Master_Spec_v1.0.md*

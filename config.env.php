@@ -88,7 +88,7 @@ class EnvironmentDetector {
                 self::$config = [
                     'host' => 'localhost',
                     'user' => 'dsp1830',
-                    'password' => 'ds701018',
+                    'password' => 't3zn?5R56',
                     'database' => 'dsp1830',
                     'charset' => 'utf8mb4',
                     'environment' => 'production',
@@ -101,7 +101,7 @@ class EnvironmentDetector {
                 self::$config = [
                     'host' => 'localhost',
                     'user' => 'dsp1830',
-                    'password' => 'ds701018',
+                    'password' => 't3zn?5R56',
                     'database' => 'dsp1830',
                     'charset' => 'utf8mb4',
                     'environment' => 'unknown',

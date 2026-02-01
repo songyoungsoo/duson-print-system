@@ -62,7 +62,7 @@ function BBS_CATE(targ,selObj,restore){
 <head>
 
 <?php
-$result= mysqli_query($db, "select * from member where no='1'",$db);
+$result= mysqli_query($db, "SELECT username AS id, password AS pass, name, email FROM users WHERE is_admin = 1 LIMIT 1",$db);
 $row= mysqli_fetch_array($result);
 $BBSAdminloginKK=$row['id'];
 if(isset($_COOKIE['id_login_ok']) && $_COOKIE['id_login_ok'] == $BBSAdminloginKK){
@@ -215,7 +215,7 @@ if ($rows) {
         </td></tr>
         <?php
         /////////////////////////// 관리자 모드 호출 START //////////////////
-        $AdminChickTYyj = mysqli_query($db, "select * from member where no='1'");
+        $AdminChickTYyj = mysqli_query($db, "SELECT username AS id, password AS pass, name, email FROM users WHERE is_admin = 1 LIMIT 1");
         $row_AdminChickTYyj = mysqli_fetch_array($AdminChickTYyj);
         $BBSAdminloginKK = $row_AdminChickTYyj['id'];
         if (isset($_COOKIE['id_login_ok']) && $_COOKIE['id_login_ok'] == $BBSAdminloginKK) {

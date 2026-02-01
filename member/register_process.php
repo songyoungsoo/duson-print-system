@@ -58,7 +58,14 @@ $po5 = isset($_POST['po5']) ? trim($_POST['po5']) : ''; // 종목
 $po6 = isset($_POST['po6']) ? trim($_POST['po6']) : ''; // 사업장주소
 $po7 = isset($_POST['po7']) ? trim($_POST['po7']) : ''; // 세금계산서 이메일
 
-// 1. 필수 항목 검증
+// 약관 동의 확인
+$agree_terms = isset($_POST['agree_terms']) ? 1 : 0;
+$agree_privacy = isset($_POST['agree_privacy']) ? 1 : 0;
+if (!$agree_terms || !$agree_privacy) {
+    ERROR("이용약관 및 개인정보 취급방침에 동의해주세요.");
+}
+
+// 필수 항목 검증
 if (!$id) {
     ERROR("아이디를 입력해주세요.");
 }
@@ -73,10 +80,6 @@ if ($pass1 !== $pass2) {
 
 if (!$name) {
     ERROR("이름을 입력해주세요.");
-}
-
-if (!$email) {
-    ERROR("이메일을 입력해주세요.");
 }
 
 // 2. 아이디 중복 체크 (users 테이블)
@@ -172,6 +175,52 @@ if (!mysqli_stmt_execute($stmt)) {
 
 $new_user_id = mysqli_insert_id($db);
 mysqli_stmt_close($stmt);
+
+// 5-2. member 테이블에도 동시 저장 (관리자 회원목록 호환)
+$member_query = "
+    INSERT INTO member (
+        id, pass, name,
+        phone1, phone2, phone3,
+        hendphone1, hendphone2, hendphone3,
+        email,
+        sample6_postcode, sample6_address, sample6_detailAddress, sample6_extraAddress,
+        po1, po2, po3, po4, po5, po6, po7,
+        date, level, Logincount
+    ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, NOW(), ?, 0)
+";
+
+$member_stmt = mysqli_prepare($db, $member_query);
+if ($member_stmt) {
+    // bind_param 검증: ? = 22개, 타입 = 22개 (s x 22), 변수 = 22개
+    mysqli_stmt_bind_param(
+        $member_stmt,
+        "ssssssssssssssssssssss",
+        $id,                    // id
+        $password_hash,         // pass (bcrypt)
+        $name,                  // name
+        $phone1,                // phone1
+        $phone2,                // phone2
+        $phone3,                // phone3
+        $hendphone1,            // hendphone1
+        $hendphone2,            // hendphone2
+        $hendphone3,            // hendphone3
+        $email,                 // email
+        $sample6_postcode,      // sample6_postcode
+        $sample6_address,       // sample6_address
+        $sample6_detailAddress, // sample6_detailAddress
+        $sample6_extraAddress,  // sample6_extraAddress
+        $po1,                   // po1 (사업자등록번호)
+        $po2,                   // po2 (상호)
+        $po3,                   // po3 (대표자)
+        $po4,                   // po4 (업태)
+        $po5,                   // po5 (종목)
+        $po6,                   // po6 (사업장주소)
+        $po7,                   // po7 (세금계산서 이메일)
+        $level                  // level
+    );
+    mysqli_stmt_execute($member_stmt);
+    mysqli_stmt_close($member_stmt);
+}
 
 // 6. 자동 로그인 (세션 설정)
 $_SESSION['id_login_ok'] = array(
