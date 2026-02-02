@@ -4,6 +4,17 @@
 
 ---
 
+## 2026-02-02
+
+| 수정자 | 수정항목 | 관련 파일 |
+|--------|----------|-----------|
+| Claude | **member → users 마이그레이션 6단계 완료** - 전체 활성 PHP 코드가 `users` 테이블을 primary로 사용하도록 전환. `member` 테이블은 backward compatibility용 이중 쓰기로 유지 (DROP 보류). 단계별: 1단계 회원가입/관리자, 2단계 로그인, 3단계 session/ 7개 파일, 4단계 주문 시스템, 5단계 관리자, 6단계 BBS skin 23개 + member/ + lib/ + shop/ + sub/ + mypage/ 등 나머지 전체 | admin/AdminConfig.php, admin/config.php, admin/MlangPoll/admin.php, admin/member/admin.php, admin/member/index.php, session/*.php (7개), member/*.php (6개), bbs/skin/**/*.php (23개), lib/func.php, shop/search_company.php, sub/pw_check.php, mypage/auth_required.php, mlangorder_printauto/*.php (3개) |
+| Claude | **레거시 mysql_* → mysqli prepared statement 전환** - shop/search_company.php, sub/pw_check.php 등 구형 mysql_* 함수를 mysqli prepared statement로 전면 재작성 | shop/search_company.php, sub/pw_check.php |
+| Claude | **Admin 인증 패턴 통일** - `member WHERE no='1'` → `users WHERE is_admin=1` + bcrypt password_verify 전환 | admin/config.php, admin/AdminConfig.php, admin/MlangPoll/admin.php, bbs/skin/**/*.php |
+| Claude | **password_reset.php 버그 수정** - 비밀번호 재설정 시 plaintext 저장 → bcrypt 저장으로 수정 | member/password_reset.php |
+| Claude | **회원가입 페이지 제목 변경** - '회원 가입' → '두손기획인쇄 회원가입' | member/form.php |
+| Claude | **문서 업데이트** - AGENTS.md 마이그레이션 완료 섹션 추가 (컬럼 매핑, 의도적 member 유지 파일 목록, Admin 패턴) | AGENTS.md, CHANGELOG.md |
+
 ## 2026-01-31
 
 | 수정자 | 수정항목 | 관련 파일 |
