@@ -10,8 +10,9 @@
 |--------|----------|-----------|
 | Claude | **전단지 1.5연 수량 옵션 제거** - 프로덕션 DB에서 비정상 1.5연 데이터 삭제 (백업: mlangprintauto_inserted_backup_20260204), 수량 옵션 12개→11개 정상화 | mlangprintauto/inserted/check_15_quantity.php, mlangprintauto/inserted/delete_15_quantity.php |
 | Claude | **추가옵션 가격 자동 업데이트 기능 프로덕션 배포** - 수량 변경 시 코팅/접지/오시 가격 자동 재계산 (1연 80,000원 → 2연 160,000원) | mlangprintauto/inserted/js/additional-options.js, mlangprintauto/inserted/js/leaflet-premium-options.js |
-| Claude | **푸터 로고 이미지 교체** - 공정거래위원회 logo-ftc.png→logo-kftc.png (107×35px), 금융결제원 logo-kftc.png→logo-ftc.png (98×35px) | includes/footer.php |
-| Claude | **Playwright 검증 테스트 추가** - 프로덕션 환경 자동 검증 (추가옵션 가격 업데이트, 푸터 로고 크기) | tests/verify-additional-options.tier-1.spec.ts, tests/verify-footer-logos.tier-1.spec.ts |
+| Claude | **푸터 로고 이미지 순서 수정** - 공정거래위원회(logo-ftc.png 107×35px), 금융결제원(logo-kftc.png 98×35px) 링크와 이미지 정상 매칭 | includes/footer.php |
+| Claude | **KB 에스크로 중복 폼 제거** - index.php의 오래된 KB 에스크로 코드 삭제, footer.php의 올바른 코드만 유지 (okbfex.kbstar.com HTTPS), 폼 2개→1개 정리 | index.php |
+| Claude | **Playwright 검증 테스트 추가** - 프로덕션 환경 자동 검증 (추가옵션 가격 업데이트, 푸터 로고 크기, KB 에스크로 연결) | tests/verify-additional-options.tier-1.spec.ts, tests/verify-footer-logos.tier-1.spec.ts, tests/verify-kb-escrow-fixed.tier-1.spec.ts |
 
 ## 2026-02-02
 
