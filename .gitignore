@@ -47,6 +47,7 @@
 
 # 인증 로고 이미지 (예외 - Git에 포함)
 !images/logo-*.png
+!images/escrowcmark.gif
 
 # 디자인 원본 파일
 *.psd
