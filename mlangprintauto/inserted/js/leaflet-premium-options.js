@@ -31,7 +31,7 @@ class LeafletPremiumOptionsManager {
             }
         };
 
-        this.currentQuantity = 1000; // 기본 수량 (전단지는 1000매 기준)
+        this.currentQuantity = 1; // 기본 수량 (1연)
         this.init();
     }
 
@@ -113,21 +113,18 @@ class LeafletPremiumOptionsManager {
      * 수량 업데이트
      */
     updateQuantity(value) {
-        const quantity = parseInt(value) || 1000;
+        const quantity = parseFloat(value) || 1;
         this.currentQuantity = quantity;
-        console.log('📊 수량 업데이트:', quantity);
+        console.log('📊 수량 업데이트:', quantity, '연');
         this.calculateAndUpdatePrice();
     }
 
-    /**
-     * 가격 계산 및 업데이트
-     */
     calculateAndUpdatePrice() {
         let totalPrice = 0;
         const quantity = this.currentQuantity;
-        const multiplier = Math.max(quantity / 1000, 1); // 1000매 기준 배수 계산
+        const multiplier = Math.max(parseFloat(quantity), 1);
 
-        console.log(`💰 가격 계산 시작 (수량: ${quantity}매, 배수: ${multiplier})`);
+        console.log(`💰 가격 계산 시작 (수량: ${quantity}연, 배수: ${multiplier})`);
 
         // 코팅 옵션
         const coatingEnabled = document.getElementById('coating_enabled')?.checked;

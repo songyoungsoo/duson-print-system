@@ -212,3 +212,12 @@ venv/
 .venv/
 *.pyc
 __pycache__/
+
+# ============================================
+# 12. Playwright 테스트 결과물
+# ============================================
+playwright-report/
+test-results/
+*.webm
+mlangprintauto/*/check_*_quantity.php
+mlangprintauto/*/delete_*_quantity.php

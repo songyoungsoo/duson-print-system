@@ -65,11 +65,11 @@
                     <div class="footer-logos-right">
                         <!-- 공정거래위원회 -->
                         <a href="https://www.ftc.go.kr/" target="_blank" rel="noopener noreferrer" title="공정거래위원회" class="cert-logo-link">
-                            <img src="/images/logo-ftc.png" alt="공정거래위원회" class="cert-logo ftc-logo" onerror="this.outerHTML='<svg width=130 height=35 viewBox=%220 0 130 35%22 xmlns=%22http://www.w3.org/2000/svg%22><rect fill=%22%23fff%22 width=%22130%22 height=%2235%22 rx=%224%22/><text x=%2265%22 y=%2222%22 text-anchor=%22middle%22 font-size=%2212%22 font-family=%22Arial,sans-serif%22 fill=%22%23333%22>공정거래위원회</text></svg>';" />
+                            <img src="/images/logo-kftc.png" alt="공정거래위원회" class="cert-logo ftc-logo" onerror="this.outerHTML='<svg width=107 height=35 viewBox=%220 0 107 35%22 xmlns=%22http://www.w3.org/2000/svg%22><rect fill=%22%23fff%22 width=%22107%22 height=%2235%22 rx=%224%22/><text x=%2253.5%22 y=%2222%22 text-anchor=%22middle%22 font-size=%2212%22 font-family=%22Arial,sans-serif%22 fill=%22%23333%22>공정거래위원회</text></svg>';" />
                         </a>
                         <!-- 금융결제원 -->
                         <a href="https://www.kftc.or.kr/" target="_blank" rel="noopener noreferrer" title="금융결제원" class="cert-logo-link">
-                            <img src="/images/logo-kftc.png" alt="금융결제원" class="cert-logo kftc-logo" onerror="this.outerHTML='<svg width=135 height=35 viewBox=%220 0 135 35%22 xmlns=%22http://www.w3.org/2000/svg%22><rect fill=%22%23fff%22 width=%22135%22 height=%2235%22 rx=%224%22/><text x=%2267.5%22 y=%2222%22 text-anchor=%22middle%22 font-size=%2212%22 font-family=%22Arial,sans-serif%22 fill=%22%23333%22>금융결제원</text></svg>';" />
+                            <img src="/images/logo-ftc.png" alt="금융결제원" class="cert-logo kftc-logo" onerror="this.outerHTML='<svg width=98 height=35 viewBox=%220 0 98 35%22 xmlns=%22http://www.w3.org/2000/svg%22><rect fill=%22%23fff%22 width=%2298%22 height=%2235%22 rx=%224%22/><text x=%2249%22 y=%2222%22 text-anchor=%22middle%22 font-size=%2212%22 font-family=%22Arial,sans-serif%22 fill=%22%23333%22>금융결제원</text></svg>';" />
                         </a>
                         <!-- KB 에스크로 -->
                         <a href="javascript:onPopKBAuthMark();" title="KB 에스크로 가입 사실 확인" class="cert-logo-link">
@@ -77,6 +77,13 @@
                         </a>
                     </div>
                 </div>
+
+                <!-- KB에스크로 이체 인증마크 Form -->
+                <form name="KB_AUTHMARK_FORM" method="get" style="display:none;">
+                    <input type="hidden" name="page" value="C021590"/>
+                    <input type="hidden" name="cc" value="b034066:b035526"/>
+                    <input type="hidden" name="mHValue" value="eb30fbb0bc1da7fdcaf800c0bceebbff201111241043905"/>
+                </form>
 
                 <!-- 이용약관 모달 -->
                 <div id="termsModal" class="legal-modal">
@@ -531,12 +538,12 @@
         }
 
         .ftc-logo {
-            width: 130px;
+            width: 107px;
             height: 35px;
         }
 
         .kftc-logo {
-            width: 135px;
+            width: 98px;
             height: 35px;
         }
 
@@ -728,6 +735,14 @@
         </style>
 
         <script>
+        // KB 에스크로 인증마크 팝업
+        function onPopKBAuthMark() {
+            window.open('', 'KB_AUTHMARK', 'height=604, width=648, status=yes, toolbar=no, menubar=no, location=no');
+            document.KB_AUTHMARK_FORM.action = 'https://okbfex.kbstar.com/quics';
+            document.KB_AUTHMARK_FORM.target = 'KB_AUTHMARK';
+            document.KB_AUTHMARK_FORM.submit();
+        }
+
         // 이용약관 모달 열기
         function openTermsModal() {
             document.getElementById('termsModal').style.display = 'block';

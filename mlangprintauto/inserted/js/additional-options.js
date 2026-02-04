@@ -31,7 +31,7 @@ class AdditionalOptionsManager {
             }
         };
         
-        this.currentQuantity = 1000; // 기본 수량 (1연)
+        this.currentQuantity = 1;
         this.init();
     }
     
@@ -123,17 +123,15 @@ class AdditionalOptionsManager {
      * 수량 업데이트
      */
     updateQuantity(quantityValue) {
-        this.currentQuantity = parseInt(quantityValue) || 1000;
-        console.log('📊 수량 업데이트:', this.currentQuantity);
+        // quantityValue는 '연' 단위 (0.5, 1, 2, 3 등)
+        this.currentQuantity = parseFloat(quantityValue) || 1;
+        console.log('📊 수량 업데이트:', this.currentQuantity, '연');
         this.calculateAndUpdatePrice();
     }
     
-    /**
-     * 수량 기준 배수 계산
-     */
     calculateQuantityMultiplier(quantity) {
-        const yeon = quantity / 1000; // 1000매 = 1연 기준
-        return yeon <= 0.5 ? 1.0 : yeon; // 0.5연 이하는 1연 가격
+        const yeon = parseFloat(quantity);
+        return Math.max(yeon, 1);
     }
     
     /**
