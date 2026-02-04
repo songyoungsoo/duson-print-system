@@ -1070,25 +1070,7 @@ header("Expires: 0");
     </script>
 
 
-    <!-- KB 에스크로 스크립트 -->
-    <script>
-    function onPopKBAuthMark() {
-        window.open('','KB_AUTHMARK','height=604, width=648, status=yes, toolbar=no, menubar=no, location=no');
-        document.KB_AUTHMARK_FORM.action='http://escrow1.kbstar.com/quics';
-        document.KB_AUTHMARK_FORM.target='KB_AUTHMARK';
-        document.KB_AUTHMARK_FORM.submit();
-    }
 
-    function WEBSILDESIGNWINDOW(url, width, height, scrollbars) {
-        window.open(url, 'WEBSILDESIGN', 'width=' + width + ',height=' + height + ',scrollbars=' + scrollbars);
-    }
-    </script>
-
-    <form name="KB_AUTHMARK_FORM" method="GET" style="display: none;">
-        <input type="HIDDEN" name="page" value="B009111">
-        <input type="HIDDEN" name="cc" value="b010807:b008491">
-        <input type="HIDDEN" name="mHValue" value="eb30fbb0bc1da7fdcaf800c0bceebbff201111241043905">
-    </form>
 
     <!-- 구조화된 데이터 (Schema.org) -->
     <script type="application/ld+json">
