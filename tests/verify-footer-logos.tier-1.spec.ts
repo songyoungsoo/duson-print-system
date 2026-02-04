@@ -13,13 +13,13 @@ test('푸터 로고 이미지 확인', async ({ page }) => {
   const ftcLogo = page.locator('.ftc-logo');
   const ftcSrc = await ftcLogo.getAttribute('src');
   console.log('공정거래위원회 로고 src:', ftcSrc);
-  expect(ftcSrc).toBe('/images/logo-kftc.png');
+  expect(ftcSrc).toBe('/images/logo-ftc.png');
   
   // 금융결제원 로고 확인
   const kftcLogo = page.locator('.kftc-logo');
   const kftcSrc = await kftcLogo.getAttribute('src');
   console.log('금융결제원 로고 src:', kftcSrc);
-  expect(kftcSrc).toBe('/images/logo-ftc.png');
+  expect(kftcSrc).toBe('/images/logo-kftc.png');
   
   // CSS 크기 확인
   const ftcBox = await ftcLogo.boundingBox();
