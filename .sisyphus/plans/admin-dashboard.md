@@ -899,7 +899,7 @@ Critical Path: Task 1 → 2 → 3 → 5 → 8 → 13
 
 ---
 
-- [ ] 12. 제품 옵션/가격 수정
+- [x] 12. 제품 옵션/가격 수정
 
   **What to do**:
   - `/dashboard/pricing/index.php` - 가격 관리 메인

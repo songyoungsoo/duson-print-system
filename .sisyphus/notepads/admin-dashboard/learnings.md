@@ -211,3 +211,34 @@
 - NOT implemented (as per requirements)
 - Reply stored in DB only
 - Customer must check via website
+
+## Product Pricing Module (2026-02-06)
+
+### Files Created
+- `/dashboard/pricing/index.php` - Product type selector for pricing
+- `/dashboard/pricing/edit.php` - Bulk price editor with table
+
+### Bulk Price Adjustment
+- Percentage-based: positive = increase, negative = decrease
+- Applies to all items in table
+- Visual feedback: yellow background for changed prices
+- Confirmation dialog before applying
+
+### Individual Price Editing
+- Inline input fields in table
+- Tracks original vs new price
+- Highlights changed rows
+- Reset button to revert all changes
+
+### Save Pattern
+- Collects only changed items
+- Batch API calls (sequential)
+- Progress feedback (N/M items updated)
+- Page reload on completion
+
+### UI Features
+- Original price display (read-only)
+- New price input (editable)
+- Reset button (revert to original)
+- Save button (apply changes)
+- Confirmation dialogs for all actions
