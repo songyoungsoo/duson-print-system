@@ -691,7 +691,7 @@ Critical Path: Task 1 → 2 → 3 → 5 → 8 → 13
 
 ---
 
-- [ ] 9. 회원 관리 모듈
+- [x] 9. 회원 관리 모듈
 
   **What to do**:
   - `/dashboard/members/index.php` - 회원 목록

@@ -131,3 +131,27 @@
 - 30 items per page (ITEMS_PER_PAGE constant)
 - Dynamic button rendering (current ±2 pages)
 - Previous/Next buttons when applicable
+
+## Member Management Module (2026-02-06)
+
+### Files Created
+- `/dashboard/members/index.php` - Member list with search
+- `/dashboard/members/view.php` - Member detail view with edit form
+- `/dashboard/api/members.php` - CRUD API (list/view/update)
+
+### Search Implementation
+- Single search field for username, name, email, phone
+- LIKE search across multiple columns
+- Real-time search with Enter key support
+
+### Update Pattern
+- Only allows updating: name, email, phone
+- Username is read-only (primary identifier)
+- Password changes not allowed (security)
+- AJAX form submission with reload on success
+
+### Data Display
+- Basic info: username, name, email, phone
+- Address info: postcode, address, detail_address
+- Business info: conditional display if business_number exists
+- Join info: created_at timestamp
