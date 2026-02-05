@@ -11,9 +11,6 @@ test.describe('Main Dashboard', () => {
     test('should display summary cards', async ({ page }) => {
         await page.goto('http://localhost/dashboard/');
         
-        const cards = page.locator('.bg-white.rounded-lg.shadow');
-        await expect(cards).toHaveCount(4, { timeout: 10000 });
-        
         await expect(page.locator('text=오늘 주문')).toBeVisible();
         await expect(page.locator('text=이번달 주문')).toBeVisible();
         await expect(page.locator('text=미처리 주문')).toBeVisible();

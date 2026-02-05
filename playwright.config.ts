@@ -140,6 +140,19 @@ export default defineConfig({
       },
       timeout: 90 * 1000, // E2E는 90초 타임아웃
     },
+
+    // 🟢 Dashboard: Admin dashboard tests
+    {
+      name: 'dashboard',
+      testMatch: /tests\/dashboard\/.*\.spec\.ts/,
+      fullyParallel: true,
+      workers: 5,
+      use: {
+        ...devices['Desktop Chrome'],
+        baseURL: 'http://localhost',
+      },
+      timeout: 60 * 1000,
+    },
   ],
 
   webServer: {

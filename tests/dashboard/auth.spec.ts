@@ -16,6 +16,6 @@ test.describe('Dashboard Authentication', () => {
         
         await page.goto('http://localhost/dashboard/');
         
-        await expect(page.locator('h1')).toContainText('대시보드');
+        await expect(page.locator('h1').filter({ hasText: '대시보드' }).first()).toBeVisible();
     });
 });

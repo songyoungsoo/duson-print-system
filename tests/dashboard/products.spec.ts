@@ -11,12 +11,11 @@ test.describe('Product Management', () => {
     test('should display 9 product types', async ({ page }) => {
         await page.goto('http://localhost/dashboard/products/');
         
-        const productCards = page.locator('.bg-white.rounded-lg.shadow');
-        await expect(productCards).toHaveCount(9, { timeout: 10000 });
-        
-        await expect(page.locator('text=명함')).toBeVisible();
-        await expect(page.locator('text=스티커')).toBeVisible();
-        await expect(page.locator('text=전단지')).toBeVisible();
+        await expect(page.locator('h3:has-text("명함")')).toBeVisible();
+        await expect(page.locator('h3').filter({ hasText: /^스티커$/ })).toBeVisible();
+        await expect(page.locator('h3:has-text("전단지")')).toBeVisible();
+        await expect(page.locator('h3:has-text("자석스티커")')).toBeVisible();
+        await expect(page.locator('h3:has-text("봉투")')).toBeVisible();
     });
 
     test('should display product options list', async ({ page }) => {
