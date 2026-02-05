@@ -415,6 +415,35 @@ if (strlen($stored_password) === 60 && strpos($stored_password, '$2y$') === 0) {
 - **Remember Token**: 30 days (stored in `remember_tokens` table)
 - **Cart Session Preservation**: Session ID passed via hidden field during login/signup
 
+### Cart (장바구니) System
+
+**테이블**: `shop_temp`
+
+**장바구니 흐름**:
+```
+1. 제품 페이지 "장바구니 담기" → shop_temp INSERT
+2. 장바구니/주문 페이지 → shop_temp 조회 (session_id로)
+3. "주문완료" 클릭 → mlangorder_printauto INSERT + shop_temp DELETE
+```
+
+**세션 만료 시 장바구니**:
+- 세션 만료(8시간) 후 새 세션 ID 발급
+- 이전 session_id와 달라서 장바구니 조회 불가
+- 데이터는 DB에 남아있음 (orphaned data)
+
+**자동 정리 기능 (2026-02-05 추가)**:
+```php
+// mlangprintauto/shop_temp_helper.php - cleanupOldCartItems()
+// 장바구니 조회 시 7일 이상 된 데이터 자동 삭제
+DELETE FROM shop_temp WHERE regdate < UNIX_TIMESTAMP(NOW() - INTERVAL 7 DAY)
+```
+
+| 항목 | 값 |
+|------|-----|
+| 정리 주기 | 장바구니 조회 시 자동 실행 |
+| 삭제 기준 | 7일 이상 경과 |
+| 로그 | error_log에 삭제 건수 기록 |
+
 ### Authentication Consistency Rule (CRITICAL)
 
 ```php

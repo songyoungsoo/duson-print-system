@@ -280,9 +280,29 @@ function addLittleprintToCart($connect, $session_id, $data) {
 }
 
 /**
+ * 오래된 장바구니 자동 정리 (7일 이상)
+ */
+function cleanupOldCartItems($connect) {
+    static $cleaned = false;
+    if ($cleaned) return;
+    
+    $cleanup_query = "DELETE FROM shop_temp WHERE regdate > 0 AND regdate < UNIX_TIMESTAMP(NOW() - INTERVAL 7 DAY)";
+    mysqli_query($connect, $cleanup_query);
+    
+    $deleted = mysqli_affected_rows($connect);
+    if ($deleted > 0) {
+        error_log("장바구니 자동 정리: {$deleted}건 삭제됨 (7일 이상 경과)");
+    }
+    
+    $cleaned = true;
+}
+
+/**
  * 장바구니 아이템 조회 (통합)
  */
 function getCartItems($connect, $session_id) {
+    cleanupOldCartItems($connect);
+    
     $query = "SELECT * FROM shop_temp WHERE session_id = ? ORDER BY no DESC";
     $stmt = mysqli_prepare($connect, $query);
     if (!$stmt) {
