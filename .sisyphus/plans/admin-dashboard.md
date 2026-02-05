@@ -968,7 +968,7 @@ Critical Path: Task 1 → 2 → 3 → 5 → 8 → 13
 
 ---
 
-- [ ] 13. Playwright E2E 테스트
+- [x] 13. Playwright E2E 테스트
 
   **What to do**:
   - `tests/dashboard/auth.spec.ts` - 인증 테스트

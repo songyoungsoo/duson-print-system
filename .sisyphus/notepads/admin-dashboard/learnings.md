@@ -242,3 +242,33 @@
 - Reset button (revert to original)
 - Save button (apply changes)
 - Confirmation dialogs for all actions
+
+## Playwright E2E Tests (2026-02-06)
+
+### Test Files Created
+- `tests/dashboard/auth.spec.ts` - Authentication tests
+- `tests/dashboard/main.spec.ts` - Main dashboard tests
+- `tests/dashboard/stats.spec.ts` - Statistics module tests
+- `tests/dashboard/orders.spec.ts` - Order management tests
+- `tests/dashboard/members.spec.ts` - Member management tests
+- `tests/dashboard/products.spec.ts` - Product management tests
+
+### Test Coverage
+- Authentication: redirect, login flow
+- Main dashboard: 4 summary cards, chart, recent orders
+- Statistics: 3 charts, period selector
+- Orders: list display, filters
+- Members: list display, search
+- Products: 9 product types, option list
+
+### Test Patterns
+- beforeEach: admin login for authenticated tests
+- Timeouts: 10000ms for async operations
+- Selectors: CSS selectors, text content, IDs
+- Assertions: toBeVisible, toHaveCount, toContainText
+
+### Notes
+- Tests assume admin credentials: admin/admin123
+- Tests use localhost URLs
+- Tests check UI rendering, not full CRUD operations
+- Focused on smoke testing (page loads, elements visible)
