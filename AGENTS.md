@@ -6,7 +6,7 @@
 
 **서버 변경 내역:**
 - ❌ 구 서버: `dsp1830.shop` (마이그레이션 완료, 더 이상 사용 안 함)
-- ✅ 현재 운영: `dsp114.co.kr` (2026년 1월 현재)
+- ✅ 현재 운영: `dsp114.co.kr` (2026년 2월 현재)
 
 ```
 FTP 접속 정보 (dsp114.co.kr):
@@ -325,6 +325,37 @@ if (window.opener && !window.opener.closed) {
 } else {
     window.location.href = redirectUrl;
 }
+```
+
+### Admin Notification (카드결제 관리자 알림)
+
+카드결제 완료 시 관리자에게 자동 이메일 알림이 발송됩니다.
+
+**구현 위치**: `payment/inicis_return.php`
+
+**알림 수신자**: `dsp1830@naver.com`
+
+**이메일 내용**:
+- 주문번호, 결제금액, 결제수단
+- 거래번호(TID), 주문자명, 연락처
+- 결제시각
+- 관리자 페이지 바로가기 링크
+
+**발송 조건**:
+- 결제 성공 (resultCode = '0000' 또는 '00')
+- 주문 상태 업데이트 성공 후
+
+```php
+// mailer() 함수 사용 예시
+$mail_result = mailer(
+    '두손기획인쇄',           // 발신자명
+    'dsp1830@naver.com',      // 발신 이메일
+    $admin_email,              // 수신 이메일
+    $admin_subject,            // 제목
+    $admin_body,               // 본문 (HTML)
+    1,                         // 타입: 1=HTML
+    ""                         // 첨부파일: 없음 (빈 문자열 필수!)
+);
 ```
 
 ## 🔐 Authentication System

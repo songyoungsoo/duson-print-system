@@ -11,6 +11,7 @@ require_once __DIR__ . '/inicis_config.php';
 require_once __DIR__ . '/../db.php';
 require_once __DIR__ . '/../includes/OrderStatusManager.php';
 require_once __DIR__ . '/../includes/OrderNotificationManager.php';
+require_once __DIR__ . '/../mlangorder_printauto/mailer.lib.php';
 
 // 🔍 디버깅: 모든 POST 데이터 먼저 로그로 기록
 logInicisTransaction('=== 결제 결과 수신 시작 ===', 'debug');
@@ -323,6 +324,86 @@ if ($resultCode === '0000' || $resultCode === '00') {
             }
         } catch (Exception $e) {
             logInicisTransaction("이메일 큐 추가 스킵: " . $e->getMessage(), 'warning');
+        }
+
+        // 관리자 이메일 알림 발송
+        try {
+            $admin_email = 'dsp1830@naver.com';
+            $admin_subject = "[카드결제완료] 주문번호 #{$order_no} - " . number_format($price) . "원";
+            
+            // 결제수단 한글명
+            $method_names = [
+                'Card' => '신용카드',
+                'DirectBank' => '계좌이체',
+                'VBank' => '가상계좌',
+                'HPP' => '휴대폰'
+            ];
+            $pay_method_kr = $method_names[$payMethod] ?? $payMethod;
+            
+            // 관리자용 이메일 본문 (HTML)
+            $admin_body = "
+            <div style='font-family: -apple-system, BlinkMacSystemFont, sans-serif; max-width: 600px; margin: 0 auto;'>
+                <div style='background: linear-gradient(135deg, #4caf50, #45a049); padding: 20px; text-align: center; border-radius: 10px 10px 0 0;'>
+                    <h1 style='color: white; margin: 0; font-size: 24px;'>카드결제 완료 알림</h1>
+                </div>
+                <div style='background: #f8f9fa; padding: 30px; border: 1px solid #e1e8ed; border-top: none; border-radius: 0 0 10px 10px;'>
+                    <table style='width: 100%; border-collapse: collapse;'>
+                        <tr>
+                            <td style='padding: 12px; border-bottom: 1px solid #e1e8ed; color: #6c757d; width: 120px;'>주문번호</td>
+                            <td style='padding: 12px; border-bottom: 1px solid #e1e8ed; font-weight: bold;'>#{$order_no}</td>
+                        </tr>
+                        <tr>
+                            <td style='padding: 12px; border-bottom: 1px solid #e1e8ed; color: #6c757d;'>결제금액</td>
+                            <td style='padding: 12px; border-bottom: 1px solid #e1e8ed; font-weight: bold; color: #4caf50;'>" . number_format($price) . "원</td>
+                        </tr>
+                        <tr>
+                            <td style='padding: 12px; border-bottom: 1px solid #e1e8ed; color: #6c757d;'>결제수단</td>
+                            <td style='padding: 12px; border-bottom: 1px solid #e1e8ed;'>{$pay_method_kr}</td>
+                        </tr>
+                        <tr>
+                            <td style='padding: 12px; border-bottom: 1px solid #e1e8ed; color: #6c757d;'>거래번호</td>
+                            <td style='padding: 12px; border-bottom: 1px solid #e1e8ed; font-size: 12px;'>{$tid}</td>
+                        </tr>
+                        <tr>
+                            <td style='padding: 12px; border-bottom: 1px solid #e1e8ed; color: #6c757d;'>주문자</td>
+                            <td style='padding: 12px; border-bottom: 1px solid #e1e8ed;'>" . htmlspecialchars($order['name'] ?? '') . "</td>
+                        </tr>
+                        <tr>
+                            <td style='padding: 12px; border-bottom: 1px solid #e1e8ed; color: #6c757d;'>연락처</td>
+                            <td style='padding: 12px; border-bottom: 1px solid #e1e8ed;'>" . htmlspecialchars($order['phone'] ?? $order['Hendphone'] ?? '') . "</td>
+                        </tr>
+                        <tr>
+                            <td style='padding: 12px; color: #6c757d;'>결제시각</td>
+                            <td style='padding: 12px;'>" . date('Y-m-d H:i:s') . "</td>
+                        </tr>
+                    </table>
+                    <div style='margin-top: 20px; text-align: center;'>
+                        <a href='https://dsp114.co.kr/admin.php?mode=OrderView&no={$order_no}' 
+                           style='display: inline-block; padding: 12px 30px; background: #667eea; color: white; text-decoration: none; border-radius: 5px; font-weight: bold;'>
+                            주문 상세 보기
+                        </a>
+                    </div>
+                </div>
+            </div>";
+            
+            // mailer() 함수로 발송 (HTML 형식, 첨부파일 없음)
+            $mail_result = mailer(
+                '두손기획인쇄',           // 발신자명
+                'dsp1830@naver.com',      // 발신 이메일
+                $admin_email,              // 수신 이메일
+                $admin_subject,            // 제목
+                $admin_body,               // 본문 (HTML)
+                1,                         // 타입: 1=HTML
+                ""                         // 첨부파일: 없음 (빈 문자열 필수!)
+            );
+            
+            if ($mail_result) {
+                logInicisTransaction("관리자 이메일 알림 발송 성공 - 주문번호: {$order_no}", 'info');
+            } else {
+                logInicisTransaction("관리자 이메일 알림 발송 실패 - 주문번호: {$order_no}", 'error');
+            }
+        } catch (Exception $e) {
+            logInicisTransaction("관리자 이메일 알림 발송 오류: " . $e->getMessage(), 'error');
         }
 
     } else {
