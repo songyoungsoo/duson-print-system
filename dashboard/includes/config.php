@@ -29,3 +29,16 @@ $DASHBOARD_MODULES = [
     'inquiries' => ['name' => '고객 문의', 'icon' => '💬', 'path' => '/dashboard/inquiries/'],
     'pricing' => ['name' => '가격 관리', 'icon' => '💰', 'path' => '/dashboard/pricing/'],
 ];
+
+// Product Types Configuration
+$PRODUCT_TYPES = [
+    'namecard' => ['name' => '명함', 'table' => 'mlangprintauto_namecard', 'unit' => '매'],
+    'sticker' => ['name' => '스티커', 'table' => 'mlangprintauto_sticker', 'unit' => '매'],
+    'inserted' => ['name' => '전단지', 'table' => 'mlangprintauto_inserted', 'unit' => '연'],
+    'envelope' => ['name' => '봉투', 'table' => 'mlangprintauto_envelope', 'unit' => '매'],
+    'littleprint' => ['name' => '포스터', 'table' => 'mlangprintauto_littleprint', 'unit' => '매'],
+    'merchandisebond' => ['name' => '상품권', 'table' => 'mlangprintauto_merchandisebond', 'unit' => '매'],
+    'cadarok' => ['name' => '카다록', 'table' => 'mlangprintauto_cadarok', 'unit' => '부'],
+    'ncrflambeau' => ['name' => 'NCR양식지', 'table' => 'mlangprintauto_ncrflambeau', 'unit' => '권'],
+    'msticker' => ['name' => '자석스티커', 'table' => 'mlangprintauto_msticker', 'unit' => '매'],
+];

@@ -155,3 +155,31 @@
 - Address info: postcode, address, detail_address
 - Business info: conditional display if business_number exists
 - Join info: created_at timestamp
+
+## Product Management Module (2026-02-06)
+
+### Files Created
+- `/dashboard/products/index.php` - Product type selector (9 types)
+- `/dashboard/products/list.php` - Product option list with inline editing
+- `/dashboard/api/products.php` - CRUD API (types/list/view/update)
+- Updated `/dashboard/includes/config.php` - Added $PRODUCT_TYPES array
+
+### Product Type Configuration
+- Centralized in $PRODUCT_TYPES array (config.php)
+- Maps type key → name, table, unit
+- 9 product types: namecard, sticker, inserted, envelope, littleprint, merchandisebond, cadarok, ncrflambeau, msticker
+
+### Table Abstraction
+- Dynamic table selection based on type parameter
+- All product tables follow similar schema (no, style, Section, quantity, money)
+- API validates type against $PRODUCT_TYPES before query
+
+### Inline Editing Pattern
+- JavaScript prompt() for quick price updates
+- No separate edit page (simpler UX)
+- AJAX POST with immediate table reload
+
+### Security
+- Type validation against whitelist ($PRODUCT_TYPES keys)
+- Prepared statements for all queries
+- Table name sanitization via config array (not user input)
