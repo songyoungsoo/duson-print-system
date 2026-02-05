@@ -103,3 +103,31 @@
 - 3-column grid: 2-col daily chart + 1-col doughnut
 - Full-width monthly bar chart below
 - Responsive: stacks to 1-column on mobile
+
+## Order Management Module (2026-02-06)
+
+### Files Created
+- `/dashboard/orders/index.php` - Order list with filters and pagination
+- `/dashboard/orders/view.php` - Order detail view with status management
+- `/dashboard/api/orders.php` - CRUD API (list/view/update/delete)
+
+### Filter Implementation
+- Period: today, 7days, 30days, 3months
+- Status: 1 (접수), 2 (진행중), 3 (완료), deleted
+- Product type: LIKE search on Type column
+- Search: order no, name, email
+
+### Soft Delete Pattern
+- Uses OrderStyle = 'deleted' instead of actual DELETE
+- Deleted orders excluded from default list view
+- Can be filtered explicitly with status=deleted
+
+### Status Management
+- Status change via POST to /dashboard/api/orders.php
+- Form submission with AJAX (no page reload)
+- Alert confirmation before delete
+
+### Pagination
+- 30 items per page (ITEMS_PER_PAGE constant)
+- Dynamic button rendering (current ±2 pages)
+- Previous/Next buttons when applicable

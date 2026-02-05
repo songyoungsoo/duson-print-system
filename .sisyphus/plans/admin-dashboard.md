@@ -604,7 +604,7 @@ Critical Path: Task 1 → 2 → 3 → 5 → 8 → 13
 
 ---
 
-- [ ] 8. 주문 관리 모듈
+- [x] 8. 주문 관리 모듈
 
   **What to do**:
   - `/dashboard/orders/index.php` - 주문 목록
