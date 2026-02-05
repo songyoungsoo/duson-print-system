@@ -2188,6 +2188,11 @@ document.addEventListener('DOMContentLoaded', function() {
             window.history.replaceState({}, document.title, newUrl);
         }
     }
+    
+    // 최초 주문 완료 시에만 자동 이메일 발송 (결제 취소/실패가 아닐 때)
+    if (!paymentStatus || (paymentStatus !== 'cancelled' && paymentStatus !== 'failed')) {
+        sendOrderEmail();
+    }
 
     // 테이블 행들에 순차적 애니메이션
     const rows = document.querySelectorAll('.order-row');
@@ -2209,6 +2214,51 @@ document.addEventListener('DOMContentLoaded', function() {
         }, 500);
     }
 });
+
+// 주문 완료 이메일 자동 발송
+function sendOrderEmail() {
+    var orderData = {
+        orders: '<?php echo addslashes($orders ?? ''); ?>',
+        email: '<?php echo addslashes($email ?? ($first_order['email'] ?? '')); ?>',
+        name: '<?php echo addslashes($name ?? ($first_order['name'] ?? '')); ?>',
+        orderList: <?php echo json_encode($order_list, JSON_UNESCAPED_UNICODE); ?>,
+        totalAmount: <?php echo $total_amount ?? 0; ?>,
+        totalAmountVat: <?php echo $total_amount_vat ?? 0; ?>
+    };
+    
+    // 이메일이 없으면 발송하지 않음
+    if (!orderData.email || orderData.email.indexOf('@') === -1) {
+        console.log('이메일 주소가 없어 발송을 건너뜁니다.');
+        return;
+    }
+    
+    // 이미 발송된 주문인지 체크 (sessionStorage 사용)
+    var emailSentKey = 'email_sent_' + orderData.orders;
+    if (sessionStorage.getItem(emailSentKey)) {
+        console.log('이미 이메일이 발송된 주문입니다.');
+        return;
+    }
+    
+    fetch('send_order_email.php', {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json'
+        },
+        body: JSON.stringify(orderData)
+    })
+    .then(response => response.json())
+    .then(data => {
+        if (data.success) {
+            console.log('주문 확인 이메일 발송 완료:', data.message);
+            sessionStorage.setItem(emailSentKey, 'true');
+        } else {
+            console.error('이메일 발송 실패:', data.message);
+        }
+    })
+    .catch(error => {
+        console.error('이메일 발송 오류:', error);
+    });
+}
 
 // 복사 기능 (계좌번호 등)
 function copyToClipboard(text) {

@@ -306,6 +306,27 @@ $returnUrl = "https://dsp114.co.kr/payment/inicis_return.php";  // WRONG!
 - **Contact Emphasis**: Phone number (02-2632-1830) prominently displayed
 - **Clean Interface**: Payment method icons removed for simplicity
 
+### Payment Flow (Popup Handling)
+```
+1. inicis_request.php → 결제 요청
+2. 이니시스 결제창 (팝업)
+3-a. 결제 완료 → inicis_return.php → 팝업 닫기 + 부모창 success.php로 이동
+3-b. 결제 취소 → inicis_close.php → 팝업 닫기 + 부모창 OrderComplete로 이동
+```
+
+#### Popup Close Logic (inicis_return.php, inicis_close.php)
+```javascript
+// 팝업/iframe 자동 감지 및 부모 창 리다이렉트
+if (window.opener && !window.opener.closed) {
+    window.opener.location.href = redirectUrl;
+    window.close();
+} else if (window.parent && window.parent !== window) {
+    window.parent.location.href = redirectUrl;
+} else {
+    window.location.href = redirectUrl;
+}
+```
+
 ## 🔐 Authentication System
 
 ### System Architecture (4 Independent Layers)
@@ -476,6 +497,68 @@ OnlineOrder_unified.php (폼 입력)
 - ✅ 부드러운 fade-in 애니메이션
 
 **구현 위치**: `mlangprintauto/namecard/explane_namecard.php`
+
+## 📧 Email System (주문 완료 이메일)
+
+### 시스템 구성
+
+| 파일 | 용도 |
+|------|------|
+| `mlangorder_printauto/mailer.lib.php` | PHPMailer 래퍼 (SMTP 설정) |
+| `mlangorder_printauto/send_order_email.php` | 이메일 발송 API |
+| `mlangorder_printauto/OrderComplete_universal.php` | 주문 완료 시 자동 발송 호출 |
+| `mlangorder_printauto/PHPMailer/` | PHPMailer 라이브러리 |
+
+### SMTP 설정 (네이버)
+
+```php
+$mail->Host = "smtp.naver.com";
+$mail->Port = 465;
+$mail->SMTPSecure = "ssl";
+$mail->Username = "dsp1830";
+$mail->Password = "2CP3P5BTS83Y";
+```
+
+### 이메일 발송 흐름
+
+```
+1. 주문 완료 → OrderComplete_universal.php 로드
+2. JavaScript에서 send_order_email.php로 POST 요청
+3. send_order_email.php에서 HTML 템플릿 생성
+4. mailer() 함수로 네이버 SMTP 통해 발송
+5. 고객 이메일로 주문 확인 메일 수신
+```
+
+### 자동 발송 조건
+
+- 최초 주문 완료 시에만 발송 (결제 취소/실패 시 발송 안 함)
+- `sessionStorage`로 중복 발송 방지
+- 이메일 주소 유효성 검증 후 발송
+
+### mailer() 함수 시그니처
+
+```php
+function mailer($fname, $fmail, $to, $subject, $content, $type=1, $file, $cc="", $bcc="")
+// $type: 0=text, 1=html, 2=text+html
+// $file: 첨부파일 배열 또는 "" (빈 문자열)
+```
+
+### PHP 8.2 호환성 패치 (2026-02-05)
+
+`PHPMailer/PHPMailer.php` Line 3612:
+```php
+// 변경 전 (PHP 8.2에서 오류)
+filter_var('http://' . $host, FILTER_VALIDATE_URL, FILTER_FLAG_HOST_REQUIRED)
+
+// 변경 후 (PHP 8.2 호환)
+filter_var('http://' . $host, FILTER_VALIDATE_URL)
+```
+
+### Critical Rules
+
+1. ❌ `mailer()` 호출 시 `$file` 파라미터 생략 금지 → 빈 문자열 `""` 필수
+2. ❌ 복잡한 HTML 템플릿에서 정의되지 않은 변수 사용 금지
+3. ✅ 운영 서버 PHP 버전 확인 필수 (현재 8.2.30)
 
 ## 🚨 Common Pitfalls to Avoid
 

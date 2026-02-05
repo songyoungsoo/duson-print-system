@@ -343,6 +343,9 @@ unset($_SESSION['inicis_order_no']);
 unset($_SESSION['inicis_price']);
 unset($_SESSION['inicis_timestamp']);
 
+$redirect_url = $success 
+    ? '/payment/success.php?order_no=' . $order_no
+    : '/payment/inicis_request.php?order_no=' . $order_no . '&error=' . urlencode($error_message);
 ?>
 <!DOCTYPE html>
 <html lang="ko">
@@ -350,6 +353,21 @@ unset($_SESSION['inicis_timestamp']);
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title><?php echo $success ? '결제 완료' : '결제 실패'; ?> - 두손기획인쇄</title>
+    <script>
+    (function() {
+        var redirectUrl = '<?php echo $redirect_url; ?>';
+        var success = <?php echo $success ? 'true' : 'false'; ?>;
+        
+        if (window.opener && !window.opener.closed) {
+            window.opener.location.href = redirectUrl;
+            window.close();
+        } else if (window.parent && window.parent !== window) {
+            window.parent.location.href = redirectUrl;
+        } else {
+            window.location.href = redirectUrl;
+        }
+    })();
+    </script>
     <style>
         * {
             margin: 0;

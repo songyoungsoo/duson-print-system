@@ -287,8 +287,20 @@ function exportAllToLogenExcel() {
 
     if (!empty($data['Type_1']) && substr(trim($data['Type_1']), 0, 1) === '{') {
         $json_data = json_decode($data['Type_1'], true);
-        if ($json_data && isset($json_data['formatted_display'])) {
-            $type1_display = str_replace(array("\r\n", "\r", "\n"), ' ', $json_data['formatted_display']);
+        if ($json_data) {
+            if (isset($json_data['formatted_display'])) {
+                // formatted_display 있으면 그대로 사용
+                $type1_display = str_replace(array("\r\n", "\r", "\n"), ' ', $json_data['formatted_display']);
+            } else {
+                // formatted_display 없으면 spec 필드들로 자동 조합
+                $parts = array();
+                if (!empty($json_data['spec_material'])) $parts[] = $json_data['spec_material'];
+                if (!empty($json_data['spec_size'])) $parts[] = $json_data['spec_size'];
+                if (!empty($json_data['spec_sides'])) $parts[] = $json_data['spec_sides'];
+                if (!empty($json_data['quantity_display'])) $parts[] = $json_data['quantity_display'];
+                if (!empty($json_data['spec_design'])) $parts[] = $json_data['spec_design'];
+                $type1_display = !empty($parts) ? implode(' / ', $parts) : $data['Type_1'];
+            }
             $type1_display = htmlspecialchars($type1_display);
         }
     }

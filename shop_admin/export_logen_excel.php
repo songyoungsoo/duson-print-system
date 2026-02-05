@@ -54,8 +54,8 @@ if ($selected_nos != '') {
     $nos_string = implode(',', $nos_cleaned);
     $where_conditions[] = "no IN ($nos_string)";
 } else {
-    // 전체 내보내기 시에만 기본 조건 적용
-    $where_conditions[] = "(zip1 like '%구%' ) or (zip2 like '%-%')";
+    // 전체 내보내기 시에만 기본 조건 적용 (주소가 있으면 모두 포함)
+    $where_conditions[] = "(zip1 IS NOT NULL AND zip1 != '')";
     if ($search_name != '') {
         $search_name_esc = mysqli_real_escape_string($connect, $search_name);
         $where_conditions[] = "name like '%$search_name_esc%'";
@@ -159,9 +159,20 @@ while ($data = mysqli_fetch_array($result)) {
     $type_1_display = $type1_raw;
     if (!empty($type1_raw) && substr(trim($type1_raw), 0, 1) === '{') {
         $json_data = json_decode($type1_raw, true);
-        if ($json_data && isset($json_data['formatted_display'])) {
-            // 줄바꿈 제거하고 공백으로 변경 (한 줄 표시)
-            $type_1_display = str_replace(array("\r\n", "\r", "\n"), ' ', $json_data['formatted_display']);
+        if ($json_data) {
+            if (isset($json_data['formatted_display'])) {
+                // formatted_display 있으면 그대로 사용
+                $type_1_display = str_replace(array("\r\n", "\r", "\n"), ' ', $json_data['formatted_display']);
+            } else {
+                // formatted_display 없으면 spec 필드들로 자동 조합
+                $parts = array();
+                if (!empty($json_data['spec_material'])) $parts[] = $json_data['spec_material'];
+                if (!empty($json_data['spec_size'])) $parts[] = $json_data['spec_size'];
+                if (!empty($json_data['spec_sides'])) $parts[] = $json_data['spec_sides'];
+                if (!empty($json_data['quantity_display'])) $parts[] = $json_data['quantity_display'];
+                if (!empty($json_data['spec_design'])) $parts[] = $json_data['spec_design'];
+                $type_1_display = !empty($parts) ? implode(' / ', $parts) : $type1_raw;
+            }
         }
     }
 

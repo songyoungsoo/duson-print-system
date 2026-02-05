@@ -8,8 +8,8 @@
 - **도메인**: `https://dsp114.co.kr`
 
 ### 운영 모드 상태
-- **현재 모드**: 🧪 **테스트 모드** (실제 결제 안됨)
-- **테스트 서버**: `https://stgstdpay.inicis.com`
+- **현재 모드**: 🟢 **운영 모드** (실제 결제 활성화)
+- **운영 서버**: `https://stdpay.inicis.com`
 
 ---
 
@@ -81,13 +81,46 @@ tail -f /var/www/html/payment/logs/inicis_*.log
 ├── inicis_config.php      # 메인 설정 파일 (환경별 자동 감지)
 ├── config.php             # 레거시 설정 파일
 ├── inicis_request.php     # 결제 요청 페이지
-├── inicis_return.php      # 결제 완료 콜백
-├── inicis_close.php       # 결제창 닫기 콜백
+├── inicis_return.php      # 결제 완료 콜백 (팝업 닫기 + 부모창 리다이렉트)
+├── inicis_close.php       # 결제창 닫기 콜백 (팝업 닫기 + 부모창 리다이렉트)
+├── success.php            # 결제 성공 페이지
 ├── kakaopay_*.php         # 카카오페이 관련
 ├── naverpay_*.php         # 네이버페이 관련
 └── logs/                  # 결제 로그 디렉토리
     └── inicis_YYYY-MM-DD.log
 ```
+
+---
+
+## 🔄 결제 흐름
+
+### 정상 결제 흐름
+```
+1. inicis_request.php (결제 요청)
+   ↓
+2. 이니시스 결제창 (팝업)
+   ↓
+3. inicis_return.php (결제 결과 처리)
+   ↓ 팝업 자동 닫힘 + 부모창 리다이렉트
+4. success.php (결제 완료 페이지)
+```
+
+### 결제 취소/닫기 흐름
+```
+1. inicis_request.php (결제 요청)
+   ↓
+2. 이니시스 결제창 (팝업)
+   ↓ 사용자가 X 버튼 또는 취소
+3. inicis_close.php (취소 처리)
+   ↓ 팝업 자동 닫힘 + 부모창 리다이렉트
+4. OrderComplete_universal.php?payment=cancelled
+```
+
+### 팝업/iframe 처리 로직
+`inicis_return.php`와 `inicis_close.php`는 다음 순서로 부모 창을 찾아 리다이렉트:
+1. `window.opener` (팝업인 경우) → 부모 창 리다이렉트 후 팝업 닫기
+2. `window.parent` (iframe인 경우) → 부모 프레임 리다이렉트
+3. 직접 `window.location` (일반 페이지인 경우)
 
 ---
 
@@ -116,5 +149,6 @@ INICIS_CLOSE_URL  = "https://dsp114.co.kr/payment/inicis_close.php"
 ---
 
 **작성일**: 2026-01-29  
-**버전**: 1.0  
+**최종 수정**: 2026-02-05 (팝업 닫기 로직 추가)  
+**버전**: 1.1  
 **담당**: 두손기획인쇄 개발팀
