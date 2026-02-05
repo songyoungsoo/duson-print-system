@@ -183,3 +183,31 @@
 - Type validation against whitelist ($PRODUCT_TYPES keys)
 - Prepared statements for all queries
 - Table name sanitization via config array (not user input)
+
+## Customer Inquiry Module (2026-02-06)
+
+### Files Created
+- `/dashboard/inquiries/index.php` - Inquiry list with status filter
+- `/dashboard/inquiries/view.php` - Inquiry detail with reply form
+- `/dashboard/api/inquiries.php` - CRUD API (list/view/reply)
+
+### Status Filter
+- pending: 미답변 (yellow badge)
+- answered: 답변완료 (green badge)
+- Filter applied via dropdown + button
+
+### Reply Pattern
+- Conditional form display (only if no reply exists)
+- Reply updates: admin_reply, admin_reply_at, status
+- Status auto-changes to 'answered' on reply
+- Blue background for answered section (visual distinction)
+
+### Data Display
+- Inquiry info: subject, message, category, status, created_at
+- Author info: name, email, phone (conditional)
+- Reply info: admin_reply, admin_reply_at (conditional)
+
+### Email Sending
+- NOT implemented (as per requirements)
+- Reply stored in DB only
+- Customer must check via website

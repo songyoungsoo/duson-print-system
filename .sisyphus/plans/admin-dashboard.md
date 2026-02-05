@@ -835,7 +835,7 @@ Critical Path: Task 1 → 2 → 3 → 5 → 8 → 13
 
 ---
 
-- [ ] 11. 고객 문의 모듈
+- [x] 11. 고객 문의 모듈
 
   **What to do**:
   - `/dashboard/inquiries/index.php` - 문의 목록
