@@ -76,3 +76,30 @@
 - `mlangorder_printauto.OrderStyle` - Order status
 - `mlangorder_printauto.date` - Order timestamp
 - `customer_inquiries.replied_at` - Inquiry reply status
+
+## Order Statistics Module (2026-02-06)
+
+### Chart Types Implemented
+- Line chart: Daily trends with period selector (7/30/90 days)
+- Bar chart: Monthly revenue (last 12 months)
+- Doughnut chart: Product distribution (top 10 categories)
+
+### API Endpoints Created
+- `/dashboard/api/stats.php?type=daily&days=30` - Daily trend data
+- `/dashboard/api/stats.php?type=monthly` - Monthly revenue data
+- `/dashboard/api/stats.php?type=products` - Product distribution data
+
+### Dynamic Chart Updates
+- Period selector triggers fetch() to reload daily chart data
+- Chart.update() method refreshes chart without page reload
+- Async/await pattern for API calls
+
+### Product Normalization
+- Used CASE statement to group similar product types
+- Handles variations: 스티커/스티카, 명함/NameCard, etc.
+- Returns top 10 categories by order count
+
+### Layout Pattern
+- 3-column grid: 2-col daily chart + 1-col doughnut
+- Full-width monthly bar chart below
+- Responsive: stacks to 1-column on mobile
