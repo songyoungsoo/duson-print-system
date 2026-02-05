@@ -40,6 +40,47 @@ FTP 디렉토리 구조:
 
 ---
 
+## 💾 NAS 백업 서버 INFO (자동 동기화)
+
+**⚠️ NAS FTP 구조 - Git 변경사항 자동 백업**
+
+```
+NAS 접속 정보 (dsp1830.ipdisk.co.kr):
+├─ Host: dsp1830.ipdisk.co.kr
+├─ User: admin
+├─ Pass: 1830
+├─ Port: 21
+└─ Protocol: FTP (plain)
+
+NAS 디렉토리 구조:
+/HDD2/share/              ← NAS 백업 루트
+├─ mlangprintauto/        ← 제품 페이지 백업
+├─ payment/               ← 결제 시스템 백업
+├─ includes/              ← 공통 컴포넌트 백업
+├─ AGENTS.md              ← 시스템 문서 백업
+└─ ...                    ← Git 추적 파일 전체
+
+🎯 NAS 동기화 방법:
+# 마지막 커밋 변경 파일만 동기화
+./scripts/sync_to_nas.sh
+
+# 특정 커밋 이후 변경사항 동기화
+./scripts/sync_to_nas.sh HEAD~3
+
+# 미리보기 (실제 업로드 없음)
+./scripts/sync_to_nas.sh --dry-run
+
+# 특정 파일만 업로드
+./scripts/sync_to_nas.sh --file payment/inicis_return.php
+```
+
+**NAS 동기화 체크리스트:**
+- [ ] Git 커밋 완료 후 실행하는가?
+- [ ] 프로덕션 배포 전/후에 NAS 백업했는가?
+- [ ] 동기화 로그에 실패한 파일이 없는가?
+
+---
+
 ## 🏗️ System Overview
 
 **Duson Planning Print System (두손기획인쇄)** - PHP 7.4 기반 인쇄 주문 관리 시스템
