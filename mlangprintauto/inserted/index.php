@@ -5,9 +5,7 @@ $session_id = session_id();
 // 테마 시스템 로드
 include_once __DIR__ . '/../../includes/theme_loader.php';
 
-// 견적서 모달용 간소화 모드 체크
-$isQuotationMode = isset($_GET['mode']) && $_GET['mode'] === 'quotation';
-$isAdminQuoteMode = isset($_GET['mode']) && $_GET['mode'] === 'admin_quote';
+require_once __DIR__ . '/../../includes/mode_helper.php';
 
 // 출력 버퍼 관리 및 에러 설정 (명함 성공 패턴)
 ob_start();
@@ -399,21 +397,7 @@ header("Expires: 0");
                         </div>
                     </div>
 
-                    <?php if ($isQuotationMode || $isAdminQuoteMode): ?>
-                    <!-- 견적서 모달 모드: 견적서에 적용 버튼 -->
-                    <div class="quotation-apply-button">
-                        <button type="button" class="btn-quotation-apply" onclick="applyToQuotation()">
-                            ✓ 견적서에 적용
-                        </button>
-                    </div>
-                    <?php else: ?>
-                    <!-- 일반 모드: 파일 업로드 및 주문하기 / 견적 요청 버튼 -->
-                    <div class="action-buttons" id="actionButtons">
-                        <button type="button" class="btn-upload-order" onclick="openUploadModal()">
-                            파일 업로드 및 주문하기
-                        </button>
-                    </div>
-                    <?php endif; ?>
+                    <?php include __DIR__ . '/../../includes/action_buttons.php'; ?>
                     
                     <!-- 선택한 옵션 요약 영역 제거됨 -->
                     

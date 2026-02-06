@@ -32,10 +32,8 @@ $log_info = generateLogInfo();
 $page_title = generate_page_title("스티커 견적안내 - 프리미엄");
 $current_page = 'sticker'; // 네비게이션 활성화를 위한 페이지 식별자
 
-// 📱 모달 모드 감지 (견적서 시스템에서 iframe으로 호출될 때)
-$is_quotation_mode = isset($_GET['mode']) && $_GET['mode'] === 'quotation';
-$is_admin_quote_mode = isset($_GET['mode']) && $_GET['mode'] === 'admin_quote';
-$body_class = ($is_quotation_mode || $is_admin_quote_mode) ? ' quotation-modal-mode' : '';
+require_once __DIR__ . '/../../includes/mode_helper.php';
+$body_class = $quotationBodyClass;
 
 // 스티커 기본값 설정
 $default_values = [
@@ -456,21 +454,7 @@ $default_values = [
                         </div>
                     </div>
 
-                    <?php if ($is_quotation_mode || $is_admin_quote_mode): ?>
-                    <!-- 견적서 모달 모드: 견적서에 적용 버튼 -->
-                    <div class="quotation-apply-button">
-                        <button type="button" class="btn-quotation-apply" onclick="applyToQuotation()">
-                            ✓ 견적서에 적용
-                        </button>
-                    </div>
-                    <?php else: ?>
-                    <!-- 일반 모드: 파일 업로드 및 주문하기 버튼 -->
-                    <div class="action-buttons" id="actionButtons">
-                        <button type="button" class="btn-upload-order" onclick="openUploadModal()">
-                            파일 업로드 및 주문하기
-                        </button>
-                    </div>
-                    <?php endif; ?>
+                    <?php include __DIR__ . '/../../includes/action_buttons.php'; ?>
 
                     <!-- 숨겨진 필드들 -->
                     <input type="hidden" name="log_url" value="<?php echo safe_html($log_info['url']); ?>">

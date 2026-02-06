@@ -49,9 +49,8 @@ check_db_connection($db);
 // 로그 정보 생성
 $log_info = generateLogInfo();
 
-// admin_quote 모드 체크
-$isAdminQuoteMode = isset($_GET['mode']) && $_GET['mode'] === 'admin_quote';
-$body_class = $isAdminQuoteMode ? ' quotation-modal-mode' : '';
+require_once __DIR__ . '/../../includes/mode_helper.php';
+$body_class = $quotationBodyClass;
 
 // 공통 인증 시스템 사용
 include "../../includes/auth.php";
@@ -379,20 +378,7 @@ header("Expires: 0");
                         </div>
                     </div>
 
-                    <!-- 파일 업로드 및 주문 버튼 -->
-                    <?php if ($isAdminQuoteMode): ?>
-                    <div class="upload-order-button" id="uploadOrderButton">
-                        <button type="button" class="btn-upload-order" onclick="applyToQuotation()" style="background: #28a745;">
-                            견적서에 적용
-                        </button>
-                    </div>
-                    <?php else: ?>
-                    <div class="upload-order-button" id="uploadOrderButton">
-                        <button type="button" class="btn-upload-order" onclick="openUploadModal()">
-                            파일 업로드 및 주문하기
-                        </button>
-                    </div>
-                    <?php endif; ?>
+                    <?php include __DIR__ . '/../../includes/action_buttons.php'; ?>
                     
                     <!-- 선택한 옵션 요약 영역 제거됨 -->
                     

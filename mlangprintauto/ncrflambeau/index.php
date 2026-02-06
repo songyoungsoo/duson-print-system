@@ -46,9 +46,7 @@ $is_logged_in = isset($_SESSION['user_id']) || isset($_SESSION['id_login_ok']) |
 // 공통 인증 시스템 사용
 include "../../includes/auth.php";
 
-// 견적서 모달용 간소화 모드 체크
-$isQuotationMode = isset($_GET['mode']) && $_GET['mode'] === 'quotation';
-$isAdminQuoteMode = isset($_GET['mode']) && $_GET['mode'] === 'admin_quote';
+require_once __DIR__ . '/../../includes/mode_helper.php';
 
 // 사용자 정보 설정
 if (isset($_SESSION['user_id'])) {
@@ -263,21 +261,7 @@ $default_values['MY_type'] = '475'; // 양식(100매철)
                         </div>
                     </div>
 
-                    <?php if ($isQuotationMode || $isAdminQuoteMode): ?>
-                    <!-- 견적서 모달 모드: 견적서에 적용 버튼 -->
-                    <div class="quotation-apply-button">
-                        <button type="button" class="btn-quotation-apply" onclick="applyToQuotation()">
-                            ✓ 견적서에 적용
-                        </button>
-                    </div>
-                    <?php else: ?>
-                    <!-- 일반 모드: 파일 업로드 및 주문하기 / 견적 요청 버튼 -->
-                    <div class="action-buttons" id="actionButtons">
-                        <button type="button" class="btn-upload-order" onclick="openUploadModal()">
-                            파일 업로드 및 주문하기
-                        </button>
-                    </div>
-                    <?php endif; ?>
+                    <?php include __DIR__ . '/../../includes/action_buttons.php'; ?>
 
                     <!-- 숨겨진 필드들 -->
                     <input type="hidden" name="log_url" value="<?php echo safe_html($log_info['url']); ?>">

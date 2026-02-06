@@ -12,9 +12,7 @@ include_once __DIR__ . '/../../includes/theme_loader.php';
 // 공통 인증 및 설정
 include "../../includes/auth.php";
 
-// 견적서 모달용 간소화 모드 체크
-$isQuotationMode = isset($_GET['mode']) && $_GET['mode'] === 'quotation';
-$isAdminQuoteMode = isset($_GET['mode']) && $_GET['mode'] === 'admin_quote';
+require_once __DIR__ . '/../../includes/mode_helper.php';
 
 // 공통 함수 및 데이터베이스
 include "../../includes/functions.php";
@@ -355,22 +353,7 @@ if ($type_result && ($type_row = mysqli_fetch_assoc($type_result))) {
                         </div>
                     </div>
 
-                    <!-- 파일 업로드 및 주문 버튼 - 프리미엄 스타일 -->
-                    <?php if ($isQuotationMode || $isAdminQuoteMode): ?>
-                    <!-- 견적서 모달 모드: 견적서에 적용 버튼 -->
-                    <div class="quotation-apply-button">
-                        <button type="button" class="btn-quotation-apply" onclick="applyToQuotation()">
-                            ✓ 견적서에 적용
-                        </button>
-                    </div>
-                    <?php else: ?>
-                    <!-- 일반 모드: 파일 업로드 및 주문하기 / 견적 요청 버튼 -->
-                    <div class="action-buttons" id="actionButtons">
-                        <button type="button" class="btn-upload-order" onclick="openUploadModal()">
-                            파일 업로드 및 주문하기
-                        </button>
-                    </div>
-                    <?php endif; ?>
+                    <?php include __DIR__ . '/../../includes/action_buttons.php'; ?>
 
                     <!-- 숨겨진 필드들 -->
                     <input type="hidden" name="log_url" value="<?php echo safe_html($log_info['url']); ?>">
