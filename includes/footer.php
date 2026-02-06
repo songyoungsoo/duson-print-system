@@ -82,7 +82,7 @@
                 <form name="KB_AUTHMARK_FORM" method="get" style="display:none;">
                     <input type="hidden" name="page" value="C021590"/>
                     <input type="hidden" name="cc" value="b034066:b035526"/>
-                    <input type="hidden" name="mHValue" value="eb30fbb0bc1da7fdcaf800c0bceebbff201111241043905"/>
+                    <input type="hidden" name="mHValue" value="ef04cec95f1a7298f1f686bfe3159ade"/>
                 </form>
 
                 <!-- 이용약관 모달 -->
