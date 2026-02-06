@@ -45,7 +45,9 @@ if ($result['success']) {
         'PriceForm' => $data['base_price'],
         'DS_PriceForm' => $data['design_price'],
         'Premium_PriceForm' => $premium_options_total,
-        'Total_PriceForm' => $data['total_with_vat']
+        'Total_PriceForm' => $data['total_with_vat'],
+        'mode' => isset($_GET['mode']) ? $_GET['mode'] : (isset($_POST['mode']) ? $_POST['mode'] : 'order'),
+        'calculated_at' => date('Y-m-d H:i:s')
     ];
 
     success_response($response_data, '가격 계산 완료');

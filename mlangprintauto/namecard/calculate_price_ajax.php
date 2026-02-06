@@ -62,7 +62,9 @@ if ($result['success']) {
         'premium_details' => $premium_details,
         'total_price' => $data['order_price'],
         'total_with_vat' => $data['total_with_vat'],
-        'vat_price' => $data['total_with_vat']  // 레거시 호환
+        'vat_price' => $data['total_with_vat'],  // 레거시 호환
+        'mode' => isset($_GET['mode']) ? $_GET['mode'] : (isset($_POST['mode']) ? $_POST['mode'] : 'order'),
+        'calculated_at' => date('Y-m-d H:i:s')
     ];
 
     success_response($response_data, '가격 계산 완료');

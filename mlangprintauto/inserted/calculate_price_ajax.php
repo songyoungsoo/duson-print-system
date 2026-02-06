@@ -58,7 +58,9 @@ if ($result['success']) {
             'SectionForm' => $data['SectionForm'],
             'QuantityForm' => $data['QuantityForm'],
             'DesignForm' => $data['DesignForm'],
-            'MY_amountRight' => $data['MY_amountRight'] ?? ''
+            'MY_amountRight' => $data['MY_amountRight'] ?? '',
+            'mode' => isset($_GET['mode']) ? $_GET['mode'] : 'order',
+            'calculated_at' => date('Y-m-d H:i:s')
         ]
     ];
 

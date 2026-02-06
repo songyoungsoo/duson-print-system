@@ -94,7 +94,9 @@ try {
         'price' => number_format($result['st_price']),
         'price_vat' => number_format($result['st_price_vat']),
         'raw_price' => $result['st_price'],
-        'raw_price_vat' => $result['st_price_vat']
+        'raw_price_vat' => $result['st_price_vat'],
+        'mode' => isset($_POST['mode']) ? $_POST['mode'] : 'order',
+        'calculated_at' => date('Y-m-d H:i:s')
     ];
     
 } catch (Exception $e) {

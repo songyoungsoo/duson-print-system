@@ -86,7 +86,9 @@ if ($result['success']) {
         'StyleForm' => $data['StyleForm'],
         'SectionForm' => $original_section, // 원본 섹션 값 유지
         'QuantityForm' => $data['QuantityForm'],
-        'DesignForm' => $data['DesignForm']
+        'DesignForm' => $data['DesignForm'],
+        'mode' => isset($_GET['mode']) ? $_GET['mode'] : (isset($_POST['mode']) ? $_POST['mode'] : 'order'),
+        'calculated_at' => date('Y-m-d H:i:s')
     ];
 
     success_response($response_data);

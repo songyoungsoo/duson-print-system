@@ -40,7 +40,9 @@ if ($result['success']) {
         'design_price' => $data['design_price'],
         'additional_options_total' => $data['additional_options_total'],
         'total_price' => $data['order_price'],
-        'total_with_vat' => $data['total_with_vat']
+        'total_with_vat' => $data['total_with_vat'],
+        'mode' => isset($_GET['mode']) ? $_GET['mode'] : (isset($_POST['mode']) ? $_POST['mode'] : 'order'),
+        'calculated_at' => date('Y-m-d H:i:s')
     ];
 
     success_response($response_data, '가격 계산 완료');

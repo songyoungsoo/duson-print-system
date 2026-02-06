@@ -84,7 +84,9 @@ if ($result['success']) {
             'additional_options' => number_format($additional_options_total) . '원',
             'total_price' => number_format($data['order_price']) . '원',
             'vat_price' => number_format($data['total_with_vat']) . '원'
-        ]
+        ],
+        'mode' => isset($_POST['mode']) ? $_POST['mode'] : 'order',
+        'calculated_at' => date('Y-m-d H:i:s')
     ];
 
     error_log("NcrFlambeau 가격 계산 성공: " . json_encode($price_data));
