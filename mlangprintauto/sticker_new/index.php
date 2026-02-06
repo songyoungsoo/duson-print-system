@@ -3133,20 +3133,22 @@ if ($db) {
 
         // 5. 페이로드 생성
         const payload = {
-            product_code: 'sticker',
+            product_type: 'sticker',
             product_name: '스티커',
             quantity: quantity,
-            quantity_unit: '매',
+            unit: '매',
+            quantity_display: quantityDisplay,
             supply_price: supplyPrice,
+            unit_price: quantity > 0 ? Math.round(supplyPrice / quantity) : 0,
             specification: specification,
-            options: {
-                jong: jong,
-                garo: garo,
-                sero: sero,
-                mesu: mesu,
-                uhyung: document.getElementById('uhyung')?.value || '',
-                domusong: document.getElementById('domusong')?.value || ''
-            }
+            jong: jong,
+            garo: garo,
+            sero: sero,
+            mesu: mesu,
+            uhyung: document.getElementById('uhyung')?.value || '',
+            domusong: document.getElementById('domusong')?.value || '',
+            st_price: supplyPrice,
+            st_price_vat: Math.round(supplyPrice * 1.1)
         };
 
         console.log('📤 [스티커] postMessage 전송:', payload);

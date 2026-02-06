@@ -355,16 +355,29 @@ function closeCalculatorIframe() {
 
 window.addEventListener('message', function(e) {
     if(e.origin!==window.location.origin||!e.data||!e.data.type) return;
-    // ADMIN_QUOTE_ITEM_ADDED: 인라인 스크립트 사용 계산기 (inserted, sticker 등)
-    // CALCULATOR_PRICE_DATA: quotation-modal-common.js 사용 계산기 (namecard, envelope 등)
     if(e.data.type==='ADMIN_QUOTE_ITEM_ADDED' || e.data.type==='CALCULATOR_PRICE_DATA') {
-        fetch('api/add_calculator_item.php', {method:'POST', headers:{'Content-Type':'application/json'}, body:JSON.stringify(e.data.payload)})
+        const payload = e.data.payload || {};
+        if (payload.product_code && !payload.product_type) payload.product_type = payload.product_code;
+        if (payload.quantity_unit && !payload.unit) payload.unit = payload.quantity_unit;
+        if (payload.options && typeof payload.options === 'object') {
+            Object.keys(payload.options).forEach(k => { if (!(k in payload)) payload[k] = payload.options[k]; });
+        }
+        const addBtn = document.querySelector('#calcIframeModal .btn-close, #calcIframeModal button');
+        if(addBtn) addBtn.disabled = true;
+        fetch('api/add_calculator_item.php', {method:'POST', headers:{'Content-Type':'application/json'}, body:JSON.stringify(payload)})
         .then(r=>r.json()).then(d=>{
             if(d.success) {
-                items.push({no:d.item_no, is_manual:0, product_name:d.item.product_name, specification:d.item.specification, quantity:d.item.quantity, unit:d.item.unit, quantity_display:d.item.quantity_display, unit_price:d.item.unit_price, supply_price:d.item.supply_price, product_type:d.item.product_type, source_data:e.data.payload});
-                renderItems(); closeCalculatorIframe();
-            } else alert('품목 추가 실패: '+d.message);
-        }).catch(err=>alert('오류: '+err.message));
+                items.push({no:d.item_no, is_manual:0, product_name:d.item.product_name, specification:d.item.specification, quantity:d.item.quantity, unit:d.item.unit, quantity_display:d.item.quantity_display, unit_price:d.item.unit_price, supply_price:d.item.supply_price, product_type:d.item.product_type, source_data:payload});
+                renderItems();
+                closeCalculatorIframe();
+            } else {
+                alert('품목 추가 실패: '+d.message);
+            }
+        }).catch(err=>{
+            alert('서버 오류: '+err.message+'\n다시 시도해주세요.');
+        }).finally(()=>{
+            if(addBtn) addBtn.disabled = false;
+        });
     }
     if(e.data.type==='ADMIN_QUOTE_CLOSE_MODAL') closeCalculatorIframe();
 });
