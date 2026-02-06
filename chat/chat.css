@@ -41,10 +41,10 @@
     width: 60px;
     height: 60px;
     border-radius: 50%;
-    background: #364052;
+    background: linear-gradient(145deg, #FFB347 0%, #F5872C 50%, #E06510 100%);
     border: none;
     cursor: pointer;
-    box-shadow: 0 4px 12px rgba(54, 64, 82, 0.3);
+    box-shadow: 0 4px 14px rgba(240, 120, 40, 0.45), inset 0 1px 2px rgba(255, 220, 180, 0.4);
     display: flex;
     align-items: center;
     justify-content: center;
@@ -60,7 +60,31 @@
 
 .chat-toggle-btn:hover {
     transform: scale(1.1);
-    box-shadow: 0 6px 16px rgba(0, 0, 0, 0.2);
+    background: linear-gradient(145deg, #FFC060 0%, #F5932C 50%, #E87820 100%);
+    box-shadow: 0 6px 20px rgba(240, 120, 40, 0.55), inset 0 1px 2px rgba(255, 220, 180, 0.5);
+}
+
+/* 이미지 아이콘 버튼 */
+.chat-toggle-btn-image {
+    width: 70px;
+    height: 70px;
+    padding: 0;
+    background: transparent;
+    box-shadow: none;
+    overflow: hidden;
+}
+
+.chat-toggle-btn-image:hover {
+    background: transparent;
+    box-shadow: none;
+    transform: scale(1.1);
+}
+
+.chat-toggle-img {
+    width: 100%;
+    height: 100%;
+    object-fit: contain;
+    border-radius: 50%;
 }
 
 .chat-toggle-btn svg {
@@ -174,7 +198,7 @@
     left: 0;
     width: 100%;
     height: 100%;
-    background: #364052;
+    background: #F5872C;
     transform: scaleY(0);
     transform-origin: top;
     animation: blink 5s ease-in-out infinite;
@@ -243,7 +267,7 @@
 
 /* 채팅 헤더 */
 .chat-header {
-    background: #364052;
+    background: #1E4E79;
     color: white;
     padding: 15px 20px;
     display: flex;
@@ -310,7 +334,7 @@
     width: 32px;
     height: 32px;
     border-radius: 50%;
-    background: #364052;
+    background: #F5872C;
     color: white;
     display: flex;
     align-items: center;
@@ -344,7 +368,7 @@
 }
 
 .chat-message.sent .chat-message-bubble {
-    background: #4A5568;
+    background: #1E4E79;
     color: white;
 }
 
@@ -440,12 +464,12 @@
 }
 
 .chat-input:focus {
-    border-color: #364052;
+    border-color: #F5872C;
 }
 
 .chat-image-btn,
 .chat-send-btn {
-    background: #364052;
+    background: #1E4E79;
     border: none;
     color: white;
     width: 23px;
@@ -463,18 +487,18 @@
 
 .chat-image-btn:hover,
 .chat-send-btn:hover {
-    background: #4a5568;
+    background: #2a6090;
     transform: scale(1.05);
 }
 
 .chat-image-btn {
-    background: #f0f0f0;
-    color: #666;
+    background: #e8f0f7;
+    color: #1E4E79;
     font-size: 17px;
 }
 
 .chat-image-btn:hover {
-    background: #e0e0e0;
+    background: #d0e0ed;
 }
 
 .chat-send-btn svg {
@@ -522,7 +546,7 @@
     width: 8px;
     height: 8px;
     border-radius: 50%;
-    background: #364052;
+    background: #F5872C;
     animation: bounce 1.4s infinite ease-in-out both;
 }
 
@@ -639,8 +663,8 @@
 }
 
 .chat-name-modal-input:focus {
-    border-color: #364052;
-    box-shadow: 0 0 0 3px rgba(54, 64, 82, 0.1);
+    border-color: #F5872C;
+    box-shadow: 0 0 0 3px rgba(245, 135, 44, 0.15);
 }
 
 .chat-name-modal-footer {
@@ -660,13 +684,13 @@
 }
 
 .chat-name-modal-btn-primary {
-    background: #364052;
+    background: #F5872C;
     color: white;
 }
 
 .chat-name-modal-btn-primary:hover {
     transform: translateY(-2px);
-    box-shadow: 0 4px 12px rgba(54, 64, 82, 0.3);
+    box-shadow: 0 4px 12px rgba(245, 135, 44, 0.4);
 }
 
 .chat-name-modal-btn-secondary {

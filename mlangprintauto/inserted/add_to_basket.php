@@ -2,6 +2,7 @@
 require_once __DIR__ . '/../../includes/safe_json_response.php';
 require_once __DIR__ . '/../../includes/StandardUploadHandler.php';
 require_once __DIR__ . '/../../includes/DataAdapter.php';  // Phase 2: 데이터 표준화
+require_once __DIR__ . '/../../includes/ensure_shop_temp_columns.php';
 
 header('Content-Type: application/json; charset=utf-8');
 session_start();
@@ -11,6 +12,8 @@ include "../../db.php";
 
 check_db_connection($db);
 mysqli_set_charset($db, "utf8");
+
+ensure_shop_temp_columns($db);
 
 // 🔍 디버그: 받은 데이터 로깅
 error_log("=== DEBUG START ===");

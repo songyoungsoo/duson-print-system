@@ -5,7 +5,7 @@
  * 
  * 사용법: GET /get_paper_sizes.php?category_id=1
  * 
- * LittlePrint 관계: TreeNo = 종류.no
+ * LittlePrint 관계: BigNo = 종류.no (inserted와 동일)
  */
 
 // 부트스트랩 로드

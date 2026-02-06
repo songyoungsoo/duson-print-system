@@ -29,12 +29,51 @@ $pending_data = mysqli_fetch_assoc($pending_result);
 $pending_count = intval($pending_data['cnt']);
 
 // Query: Unanswered inquiries (미답변 문의)
-$inquiry_result = @mysqli_query($db, "SELECT COUNT(*) as cnt FROM customer_inquiries WHERE replied_at IS NULL OR replied_at = ''");
-if ($inquiry_result) {
-    $inquiry_data = mysqli_fetch_assoc($inquiry_result);
-    $inquiry_count = intval($inquiry_data['cnt'] ?? 0);
-} else {
+$inquiry_count = 0;
+try {
+    $inquiry_result = mysqli_query($db, "SELECT COUNT(*) as cnt FROM customer_inquiries WHERE replied_at IS NULL OR replied_at = ''");
+    if ($inquiry_result) {
+        $inquiry_data = mysqli_fetch_assoc($inquiry_result);
+        $inquiry_count = intval($inquiry_data['cnt'] ?? 0);
+    }
+} catch (Throwable $e) {
     $inquiry_count = 0;
+}
+
+// Query: Proof pending count
+$proof_pending_count = 0;
+try {
+    $proof_result = mysqli_query($db, "SELECT COUNT(*) as cnt FROM mlangorder_printauto WHERE OrderStyle IN ('7', '10')");
+    if ($proof_result) {
+        $proof_data = mysqli_fetch_assoc($proof_result);
+        $proof_pending_count = intval($proof_data['cnt']);
+    }
+} catch (Throwable $e) {
+    $proof_pending_count = 0;
+}
+
+// Query: Unread chat count
+$chat_unread_count = 0;
+try {
+    $chat_result = mysqli_query($db, "SELECT COUNT(*) as cnt FROM chatmessages WHERE is_read = 0 AND sender_type = 'customer'");
+    if ($chat_result) {
+        $chat_data = mysqli_fetch_assoc($chat_result);
+        $chat_unread_count = intval($chat_data['cnt']);
+    }
+} catch (Throwable $e) {
+    $chat_unread_count = 0;
+}
+
+// Query: Quote stats
+$quote_pending_count = 0;
+try {
+    $quote_result = mysqli_query($db, "SELECT COUNT(*) as cnt FROM quotes WHERE status IN ('draft', 'sent')");
+    if ($quote_result) {
+        $quote_data = mysqli_fetch_assoc($quote_result);
+        $quote_pending_count = intval($quote_data['cnt']);
+    }
+} catch (Throwable $e) {
+    $quote_pending_count = 0;
 }
 
 // Query: Daily trend (last 30 days)
@@ -120,56 +159,88 @@ include __DIR__ . '/includes/sidebar.php';
             </div>
         </div>
 
-        <!-- Recent Orders & Quick Links -->
-        <div class="grid grid-cols-1 lg:grid-cols-2 gap-3">
-            <!-- Recent Orders -->
-            <div class="bg-white rounded-lg shadow p-3">
+        <!-- Quick Action Tools -->
+        <div class="grid grid-cols-2 lg:grid-cols-4 gap-3 mb-4">
+            <a href="/dashboard/orders/" class="block bg-white rounded-lg shadow p-3 hover:shadow-lg hover:border-orange-300 border border-transparent transition-all group">
                 <div class="flex items-center justify-between mb-2">
-                    <h3 class="text-sm font-semibold text-gray-900">최근 주문</h3>
-                    <a href="/dashboard/orders/" class="text-xs text-blue-600 hover:text-blue-800">전체 보기 →</a>
+                    <span class="text-2xl">📋</span>
+                    <?php if ($pending_count > 0): ?>
+                        <span class="bg-orange-100 text-orange-700 text-xs font-bold px-2 py-0.5 rounded-full"><?php echo $pending_count; ?></span>
+                    <?php endif; ?>
                 </div>
-                <div class="overflow-x-auto">
-                    <table class="min-w-full divide-y divide-gray-200">
-                        <thead class="bg-gray-50">
-                            <tr>
-                                <th class="px-2 py-1.5 text-left text-xs font-medium text-gray-500">주문번호</th>
-                                <th class="px-2 py-1.5 text-left text-xs font-medium text-gray-500">품목</th>
-                                <th class="px-2 py-1.5 text-left text-xs font-medium text-gray-500">주문자</th>
-                                <th class="px-2 py-1.5 text-right text-xs font-medium text-gray-500">금액</th>
-                            </tr>
-                        </thead>
-                        <tbody class="bg-white divide-y divide-gray-200">
-                            <?php foreach ($recent_orders as $order): ?>
-                            <tr class="hover:bg-gray-50">
-                                <td class="px-2 py-1.5 text-xs text-gray-900">#<?php echo $order['no']; ?></td>
-                                <td class="px-2 py-1.5 text-xs text-gray-600"><?php echo htmlspecialchars($order['Type']); ?></td>
-                                <td class="px-2 py-1.5 text-xs text-gray-600">
-                                    <?php echo htmlspecialchars($order['name'] ?: explode('@', $order['email'])[0]); ?>
-                                </td>
-                                <td class="px-2 py-1.5 text-xs text-gray-900 text-right">
-                                    <?php echo number_format((float)($order['money_5'] ?: 0)); ?>원
-                                </td>
-                            </tr>
-                            <?php endforeach; ?>
-                        </tbody>
-                    </table>
-                </div>
-            </div>
+                <div class="text-sm font-semibold text-gray-900 group-hover:text-orange-600">주문 확인</div>
+                <div class="text-xs text-gray-500">미처리 주문 확인·처리</div>
+            </a>
 
-            <!-- Quick Links -->
-            <div class="bg-white rounded-lg shadow p-3">
-                <h3 class="text-sm font-semibold text-gray-900 mb-2">빠른 이동</h3>
-                <div class="grid grid-cols-2 gap-2">
-                    <?php foreach ($DASHBOARD_MODULES as $key => $module): ?>
-                        <?php if ($key !== 'home'): ?>
-                        <a href="<?php echo $module['path']; ?>" 
-                           class="flex items-center p-2 border border-gray-200 rounded-lg hover:border-blue-500 hover:bg-blue-50 transition-colors">
-                            <span class="text-lg mr-2"><?php echo $module['icon']; ?></span>
-                            <span class="text-xs font-medium text-gray-700"><?php echo $module['name']; ?></span>
-                        </a>
-                        <?php endif; ?>
-                    <?php endforeach; ?>
+            <a href="/dashboard/proofs/" class="block bg-white rounded-lg shadow p-3 hover:shadow-lg hover:border-blue-300 border border-transparent transition-all group">
+                <div class="flex items-center justify-between mb-2">
+                    <span class="text-2xl">🔍</span>
+                    <?php if ($proof_pending_count > 0): ?>
+                        <span class="bg-blue-100 text-blue-700 text-xs font-bold px-2 py-0.5 rounded-full"><?php echo $proof_pending_count; ?></span>
+                    <?php endif; ?>
                 </div>
+                <div class="text-sm font-semibold text-gray-900 group-hover:text-blue-600">교정 관리</div>
+                <div class="text-xs text-gray-500">교정보기·파일올리기</div>
+            </a>
+
+            <a href="/dashboard/chat/" class="block bg-white rounded-lg shadow p-3 hover:shadow-lg hover:border-purple-300 border border-transparent transition-all group">
+                <div class="flex items-center justify-between mb-2">
+                    <span class="text-2xl">💬</span>
+                    <?php if ($chat_unread_count > 0): ?>
+                        <span class="bg-purple-100 text-purple-700 text-xs font-bold px-2 py-0.5 rounded-full"><?php echo $chat_unread_count; ?></span>
+                    <?php endif; ?>
+                </div>
+                <div class="text-sm font-semibold text-gray-900 group-hover:text-purple-600">채팅 관리</div>
+                <div class="text-xs text-gray-500">고객 채팅 응대</div>
+            </a>
+
+            <a href="/dashboard/quotes/" class="block bg-white rounded-lg shadow p-3 hover:shadow-lg hover:border-green-300 border border-transparent transition-all group">
+                <div class="flex items-center justify-between mb-2">
+                    <span class="text-2xl">📋</span>
+                    <?php if ($quote_pending_count > 0): ?>
+                        <span class="bg-green-100 text-green-700 text-xs font-bold px-2 py-0.5 rounded-full"><?php echo $quote_pending_count; ?></span>
+                    <?php endif; ?>
+                </div>
+                <div class="text-sm font-semibold text-gray-900 group-hover:text-green-600">견적 관리</div>
+                <div class="text-xs text-gray-500">견적서 작성·발송</div>
+            </a>
+        </div>
+
+        <!-- Recent Orders -->
+        <div class="bg-white rounded-lg shadow p-3 mb-4">
+            <div class="flex items-center justify-between mb-2">
+                <h3 class="text-sm font-semibold text-gray-900">최근 주문</h3>
+                <a href="/dashboard/orders/" class="text-xs text-blue-600 hover:text-blue-800">전체 보기 →</a>
+            </div>
+            <div class="overflow-x-auto">
+                <table class="min-w-full divide-y divide-gray-200">
+                    <thead class="bg-gray-50">
+                        <tr>
+                            <th class="px-2 py-1.5 text-left text-xs font-medium text-gray-500">주문번호</th>
+                            <th class="px-2 py-1.5 text-left text-xs font-medium text-gray-500">품목</th>
+                            <th class="px-2 py-1.5 text-left text-xs font-medium text-gray-500">주문자</th>
+                            <th class="px-2 py-1.5 text-right text-xs font-medium text-gray-500">금액</th>
+                            <th class="px-2 py-1.5 text-center text-xs font-medium text-gray-500">일시</th>
+                        </tr>
+                    </thead>
+                    <tbody class="bg-white divide-y divide-gray-200">
+                        <?php foreach ($recent_orders as $order): ?>
+                        <tr class="hover:bg-gray-50">
+                            <td class="px-2 py-1.5 text-xs text-gray-900 font-medium">#<?php echo $order['no']; ?></td>
+                            <td class="px-2 py-1.5 text-xs text-gray-600"><?php echo htmlspecialchars($order['Type']); ?></td>
+                            <td class="px-2 py-1.5 text-xs text-gray-600">
+                                <?php echo htmlspecialchars($order['name'] ?: explode('@', $order['email'])[0]); ?>
+                            </td>
+                            <td class="px-2 py-1.5 text-xs text-gray-900 text-right font-medium">
+                                <?php echo number_format((float)($order['money_5'] ?: 0)); ?>원
+                            </td>
+                            <td class="px-2 py-1.5 text-xs text-gray-400 text-center">
+                                <?php echo date('m/d H:i', strtotime($order['date'])); ?>
+                            </td>
+                        </tr>
+                        <?php endforeach; ?>
+                    </tbody>
+                </table>
             </div>
         </div>
     </div>

@@ -6,7 +6,7 @@
  * LittlePrint 시스템의 특징:
  * - 카테고리: mlangprintauto_transactionCate (Ttable='LittlePrint')
  * - 가격: mlangprintauto_LittlePrint
- * - 관계 구조: 종이종류(BigNo), 종이규격(TreeNo) - inserted와 반대!
+ * - 관계 구조: 종이규격(BigNo), 종이종류(TreeNo) - inserted와 동일!
  */
 class DatabaseManager {
     private $connection;
@@ -89,7 +89,7 @@ class DatabaseManager {
     
     /**
      * 종류에 따른 종이종류 목록 조회
-     * LittlePrint에서는 BigNo = 종류.no 관계 사용
+     * TreeNo = 종류.no 관계 사용 (inserted와 동일)
      * @param int $categoryId 종류 ID
      * @return array 종이종류 목록
      * @throws Exception 쿼리 실행 실패 시
@@ -99,7 +99,7 @@ class DatabaseManager {
         
         $query = "SELECT no, title 
                   FROM " . CATEGORY_TABLE . " 
-                  WHERE Ttable = ? AND BigNo = ? 
+                  WHERE Ttable = ? AND TreeNo = ? 
                   ORDER BY no ASC";
         
         $stmt = $this->connection->prepare($query);
@@ -130,7 +130,7 @@ class DatabaseManager {
     
     /**
      * 종류에 따른 종이규격 목록 조회
-     * LittlePrint에서는 TreeNo = 종류.no 관계 사용
+     * BigNo = 종류.no 관계 사용 (inserted와 동일)
      * @param int $categoryId 종류 ID
      * @return array 종이규격 목록
      * @throws Exception 쿼리 실행 실패 시
@@ -140,7 +140,7 @@ class DatabaseManager {
         
         $query = "SELECT no, title 
                   FROM " . CATEGORY_TABLE . " 
-                  WHERE Ttable = ? AND TreeNo = ? 
+                  WHERE Ttable = ? AND BigNo = ? 
                   ORDER BY no ASC";
         
         $stmt = $this->connection->prepare($query);

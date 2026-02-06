@@ -98,7 +98,16 @@ function loadCascade(parentVal, childId, resetIds) {
         return;
     }
 
-    fetch(OPT_URL + '?table=ncrflambeau&parent=' + parentVal, {credentials: 'same-origin'})
+    var url;
+    if (childId === 'PN_type') {
+        // L2 (색상): uses TreeNo=root_no (MY_type value), not BigNo
+        var rootVal = document.getElementById('MY_type').value;
+        url = OPT_URL + '?table=ncrflambeau&parent=' + rootVal + '&lookup=TreeNo';
+    } else {
+        url = OPT_URL + '?table=ncrflambeau&parent=' + parentVal;
+    }
+
+    fetch(url, {credentials: 'same-origin'})
         .then(function(r) { return r.json(); })
         .then(function(data) {
             child.innerHTML = '<option value="">선택</option>';

@@ -140,7 +140,16 @@ function loadCascade(parentVal, childId, resetIds) {
         return;
     }
 
-    fetch(OPT_URL + '?table=littleprint&parent=' + parentVal, {credentials: 'same-origin'})
+    var url;
+    if (childId === 'PN_type') {
+        // L2 (규격/용지): uses TreeNo=root_no (style value), not BigNo
+        var rootVal = document.getElementById('style').value;
+        url = OPT_URL + '?table=littleprint&parent=' + rootVal + '&lookup=TreeNo';
+    } else {
+        url = OPT_URL + '?table=littleprint&parent=' + parentVal;
+    }
+
+    fetch(url, {credentials: 'same-origin'})
         .then(function(r) { return r.json(); })
         .then(function(data) {
             child.innerHTML = '<option value="">선택</option>';

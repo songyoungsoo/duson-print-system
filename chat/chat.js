@@ -14,6 +14,22 @@ class ChatWidget {
         this.createWidget();
         this.attachEvents();
         this.loadChatState();
+        this.startBlinkAnimation();
+    }
+
+    startBlinkAnimation() {
+        const img = document.querySelector('.chat-toggle-img');
+        if (!img) return;
+
+        const openEye = '/ImgFolder/infolady.png';
+        const closedEye = '/ImgFolder/infolady2.png';
+
+        setInterval(() => {
+            img.src = closedEye;
+            setTimeout(() => {
+                img.src = openEye;
+            }, 150);
+        }, 2000);
     }
 
     createWidget() {
@@ -39,17 +55,8 @@ class ChatWidget {
                 </div>
             </div>
 
-            <button class="chat-toggle-btn" id="chat-toggle-btn">
-                <span class="chat-forehead-label">상담</span>
-                <div class="chat-eyes">
-                    <div class="chat-eye">
-                        <div class="chat-pupil"></div>
-                    </div>
-                    <div class="chat-eye">
-                        <div class="chat-pupil"></div>
-                    </div>
-                </div>
-                <div class="chat-smile"></div>
+            <button class="chat-toggle-btn chat-toggle-btn-image" id="chat-toggle-btn">
+                <img src="/ImgFolder/infolady.png" alt="상담" class="chat-toggle-img">
                 <span class="chat-unread-badge" id="chat-unread-badge" style="display:none;">0</span>
             </button>
 

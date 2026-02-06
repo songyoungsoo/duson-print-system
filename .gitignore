@@ -225,3 +225,36 @@ test-results/
 *.webm
 mlangprintauto/*/check_*_quantity.php
 mlangprintauto/*/delete_*_quantity.php
+
+# ============================================
+# 13. 임시/실험 파일 (Git 추적 제외)
+# ============================================
+# 임시 스크립트
+tmp_*.php
+today_fortune.php
+kospi_*.php
+logo.html
+
+# 실험 프로젝트 (별도 관리)
+KoreanInputKeeper/
+mini-erp/
+mini-erp-next/
+admin-new/
+
+# 백업 스냅샷
+backup_20260119/
+
+# 임시 마이그레이션 (완료)
+tmp_migration/
+
+# 개발용 shop 데이터
+shop/data/
+
+# Sisyphus 작업 파일
+.sisyphus/boulder.json
+.sisyphus/drafts/
+
+# BKIT/PDCA 메모리
+docs/.bkit-memory.json
+docs/.pdca-snapshots/
+docs/.pdca-status.json

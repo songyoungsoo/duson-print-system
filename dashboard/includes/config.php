@@ -18,17 +18,61 @@ define('DATE_FORMAT_SHORT', 'Y-m-d');
 define('DASHBOARD_ROOT', '/dashboard');
 define('DASHBOARD_API', DASHBOARD_ROOT . '/api');
 
-// Module Names
-$DASHBOARD_MODULES = [
-    'home' => ['name' => '대시보드 홈', 'icon' => '📊', 'path' => '/dashboard/'],
-    'orders' => ['name' => '주문 관리', 'icon' => '📦', 'path' => '/dashboard/orders/'],
-    'members' => ['name' => '회원 관리', 'icon' => '👥', 'path' => '/dashboard/members/'],
-    'products' => ['name' => '제품 관리', 'icon' => '🏷️', 'path' => '/dashboard/products/'],
-    'stats' => ['name' => '주문 통계', 'icon' => '📈', 'path' => '/dashboard/stats/'],
-    'payments' => ['name' => '결제 현황', 'icon' => '💳', 'path' => '/dashboard/payments/'],
-    'inquiries' => ['name' => '고객 문의', 'icon' => '💬', 'path' => '/dashboard/inquiries/'],
-    'pricing' => ['name' => '가격 관리', 'icon' => '💰', 'path' => '/dashboard/pricing/'],
+// Sidebar Navigation - Grouped
+$DASHBOARD_NAV = [
+    'main' => [
+        'label' => '',
+        'items' => [
+            'home' => ['name' => '대시보드', 'icon' => '📊', 'path' => '/dashboard/'],
+        ]
+    ],
+    'order_group' => [
+        'label' => '주문·교정',
+        'items' => [
+            'orders' => ['name' => '주문 관리', 'icon' => '📦', 'path' => '/dashboard/orders/'],
+            'proofs' => ['name' => '교정 관리', 'icon' => '🔍', 'path' => '/dashboard/proofs/'],
+            'payments' => ['name' => '결제 현황', 'icon' => '💳', 'path' => '/dashboard/payments/'],
+        ]
+    ],
+    'comm_group' => [
+        'label' => '소통·견적',
+        'items' => [
+            'chat' => ['name' => '채팅 관리', 'icon' => '💬', 'path' => '/dashboard/chat/'],
+            'quotes' => ['name' => '견적 관리', 'icon' => '📋', 'path' => '/dashboard/quotes/'],
+            'inquiries' => ['name' => '고객 문의', 'icon' => '✉️', 'path' => '/dashboard/inquiries/'],
+        ]
+    ],
+    'product_group' => [
+        'label' => '제품·가격',
+        'items' => [
+            'products' => ['name' => '제품 관리', 'icon' => '🏷️', 'path' => '/dashboard/products/'],
+            'pricing' => ['name' => '가격 관리', 'icon' => '💰', 'path' => '/dashboard/pricing/'],
+        ]
+    ],
+    'admin_group' => [
+        'label' => '관리·통계',
+        'items' => [
+            'members' => ['name' => '회원 관리', 'icon' => '👥', 'path' => '/dashboard/members/'],
+            'stats' => ['name' => '주문 통계', 'icon' => '📈', 'path' => '/dashboard/stats/'],
+        ]
+    ],
+    'legacy_group' => [
+        'label' => '기존 관리자',
+        'items' => [
+            'admin_legacy' => ['name' => '주문 관리(구)', 'icon' => '🗂️', 'path' => '/admin/mlangprintauto/orderlist.php', 'external' => true],
+            'admin_proof' => ['name' => '교정 관리(구)', 'icon' => '📂', 'path' => '/admin/mlangprintauto/proof_manager.php', 'external' => true],
+            'admin_quote' => ['name' => '견적서(구)', 'icon' => '📝', 'path' => '/admin/mlangprintauto/quote/', 'external' => true],
+        ]
+    ],
 ];
+
+// Flat module list for backward compatibility
+$DASHBOARD_MODULES = [];
+foreach ($DASHBOARD_NAV as $group) {
+    foreach ($group['items'] as $key => $item) {
+        $DASHBOARD_MODULES[$key] = $item;
+    }
+}
 
 // Product Types Configuration
 // ttable: mlangprintauto_transactioncate.Ttable 값 (대소문자 주의)

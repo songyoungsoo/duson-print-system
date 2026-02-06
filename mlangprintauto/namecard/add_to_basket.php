@@ -3,6 +3,7 @@
 require_once __DIR__ . '/../../includes/safe_json_response.php';
 require_once __DIR__ . '/../../includes/StandardUploadHandler.php';
 require_once __DIR__ . '/../../includes/DataAdapter.php';  // Phase 2: 데이터 표준화
+require_once __DIR__ . '/../../includes/ensure_shop_temp_columns.php';
 
 // JSON 헤더 우선 설정
 header('Content-Type: application/json; charset=utf-8');
@@ -17,6 +18,8 @@ include "../../db.php";
 // 데이터베이스 연결 체크
 check_db_connection($db);
 mysqli_set_charset($db, "utf8");
+
+ensure_shop_temp_columns($db);
 
 // POST 데이터 받기
 $action = $_POST['action'] ?? '';
@@ -107,29 +110,6 @@ error_log("명함 업로드 결과: $upload_count 개 파일, 경로: $img_folde
 
 // uploaded_files를 JSON으로 변환 (테이블의 uploaded_files 컬럼에 저장)
 $uploaded_files_json = json_encode($uploaded_files, JSON_UNESCAPED_UNICODE);
-
-// 필요한 컬럼이 있는지 확인하고 없으면 추가
-$required_columns = [
-    'premium_options' => 'TEXT',
-    'premium_options_total' => 'INT(11) DEFAULT 0',
-    'MY_type_name' => 'VARCHAR(100) DEFAULT NULL',
-    'Section_name' => 'VARCHAR(100) DEFAULT NULL',
-    'POtype_name' => 'VARCHAR(100) DEFAULT NULL'
-];
-
-foreach ($required_columns as $column_name => $column_definition) {
-    $check_column_query = "SHOW COLUMNS FROM shop_temp LIKE '$column_name'";
-    $column_result = mysqli_query($db, $check_column_query);
-    if (mysqli_num_rows($column_result) == 0) {
-        $add_column_query = "ALTER TABLE shop_temp ADD COLUMN $column_name $column_definition";
-        if (!mysqli_query($db, $add_column_query)) {
-            error_log("컬럼 $column_name 추가 오류: " . mysqli_error($db));
-            safe_json_response(false, null, "데이터베이스 설정 오류가 발생했습니다. 관리자에게 문의하세요.");
-        } else {
-            error_log("컬럼 $column_name 성공적으로 추가됨");
-        }
-    }
-}
 
 // 명함 옵션명 조회
 $MY_type_name = '';

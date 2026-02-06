@@ -1,9 +1,13 @@
 <?php
+require_once __DIR__ . '/../includes/ensure_shop_temp_columns.php';
+
 session_start();
 header('Content-Type: application/json');
 
 include "../lib/func.php";
 $connect = dbconn();
+
+ensure_shop_temp_columns($connect);
 
 try {
     if ($_POST['action'] !== 'add_to_basket') {

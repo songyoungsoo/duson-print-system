@@ -9,26 +9,26 @@ mysqli_set_charset($db, "utf8");
 
 echo "<h2>mlangprintauto_transactioncate 테이블 데이터 추가</h2>";
 
-// transactioncate 테이블 데이터 추가
+// transactioncate 테이블 데이터 추가 (inserted와 동일한 구조)
 $insert_queries = [
     // 1. 구분 (BigNo='0')
     "INSERT IGNORE INTO mlangprintauto_transactioncate (no, Ttable, BigNo, title, TreeNo) VALUES (590, 'LittlePrint', '0', '소량포스터', '')",
     
-    // 2. 종이규격 (TreeNo='590') - 실제 데이터에서 Section 값들
-    "INSERT IGNORE INTO mlangprintauto_transactioncate (no, Ttable, BigNo, title, TreeNo) VALUES (610, 'LittlePrint', '', '국2절', '590')",
-    "INSERT IGNORE INTO mlangprintauto_transactioncate (no, Ttable, BigNo, title, TreeNo) VALUES (611, 'LittlePrint', '', 'A3', '590')",
-    "INSERT IGNORE INTO mlangprintauto_transactioncate (no, Ttable, BigNo, title, TreeNo) VALUES (612, 'LittlePrint', '', 'A2', '590')",
-    "INSERT IGNORE INTO mlangprintauto_transactioncate (no, Ttable, BigNo, title, TreeNo) VALUES (613, 'LittlePrint', '', 'A1', '590')",
+    // 2. 종이규격/Section (BigNo='590') - inserted와 동일
+    "INSERT IGNORE INTO mlangprintauto_transactioncate (no, Ttable, BigNo, title, TreeNo) VALUES (610, 'LittlePrint', '590', '국2절', '')",
+    "INSERT IGNORE INTO mlangprintauto_transactioncate (no, Ttable, BigNo, title, TreeNo) VALUES (611, 'LittlePrint', '590', 'A3', '')",
+    "INSERT IGNORE INTO mlangprintauto_transactioncate (no, Ttable, BigNo, title, TreeNo) VALUES (612, 'LittlePrint', '590', 'A2', '')",
+    "INSERT IGNORE INTO mlangprintauto_transactioncate (no, Ttable, BigNo, title, TreeNo) VALUES (613, 'LittlePrint', '590', 'A1', '')",
     
-    // 3. 종이종류 (BigNo='590') - 실제 데이터에서 TreeSelect 값들
-    "INSERT IGNORE INTO mlangprintauto_transactioncate (no, Ttable, BigNo, title, TreeNo) VALUES (604, 'LittlePrint', '590', '120아트/스노우', '')",
-    "INSERT IGNORE INTO mlangprintauto_transactioncate (no, Ttable, BigNo, title, TreeNo) VALUES (605, 'LittlePrint', '590', '150아트/스노우', '')",
-    "INSERT IGNORE INTO mlangprintauto_transactioncate (no, Ttable, BigNo, title, TreeNo) VALUES (606, 'LittlePrint', '590', '180아트/스노우', '')",
-    "INSERT IGNORE INTO mlangprintauto_transactioncate (no, Ttable, BigNo, title, TreeNo) VALUES (607, 'LittlePrint', '590', '200아트/스노우', '')",
-    "INSERT IGNORE INTO mlangprintauto_transactioncate (no, Ttable, BigNo, title, TreeNo) VALUES (608, 'LittlePrint', '590', '250아트/스노우', '')",
-    "INSERT IGNORE INTO mlangprintauto_transactioncate (no, Ttable, BigNo, title, TreeNo) VALUES (609, 'LittlePrint', '590', '300아트/스노우', '')",
-    "INSERT IGNORE INTO mlangprintauto_transactioncate (no, Ttable, BigNo, title, TreeNo) VALUES (679, 'LittlePrint', '590', '80모조', '')",
-    "INSERT IGNORE INTO mlangprintauto_transactioncate (no, Ttable, BigNo, title, TreeNo) VALUES (680, 'LittlePrint', '590', '100모조', '')"
+    // 3. 종이종류/TreeSelect (TreeNo='590') - inserted와 동일
+    "INSERT IGNORE INTO mlangprintauto_transactioncate (no, Ttable, BigNo, title, TreeNo) VALUES (604, 'LittlePrint', '', '120아트/스노우', '590')",
+    "INSERT IGNORE INTO mlangprintauto_transactioncate (no, Ttable, BigNo, title, TreeNo) VALUES (605, 'LittlePrint', '', '150아트/스노우', '590')",
+    "INSERT IGNORE INTO mlangprintauto_transactioncate (no, Ttable, BigNo, title, TreeNo) VALUES (606, 'LittlePrint', '', '180아트/스노우', '590')",
+    "INSERT IGNORE INTO mlangprintauto_transactioncate (no, Ttable, BigNo, title, TreeNo) VALUES (607, 'LittlePrint', '', '200아트/스노우', '590')",
+    "INSERT IGNORE INTO mlangprintauto_transactioncate (no, Ttable, BigNo, title, TreeNo) VALUES (608, 'LittlePrint', '', '250아트/스노우', '590')",
+    "INSERT IGNORE INTO mlangprintauto_transactioncate (no, Ttable, BigNo, title, TreeNo) VALUES (609, 'LittlePrint', '', '300아트/스노우', '590')",
+    "INSERT IGNORE INTO mlangprintauto_transactioncate (no, Ttable, BigNo, title, TreeNo) VALUES (679, 'LittlePrint', '', '80모조', '590')",
+    "INSERT IGNORE INTO mlangprintauto_transactioncate (no, Ttable, BigNo, title, TreeNo) VALUES (680, 'LittlePrint', '', '100모조', '590')"
 ];
 
 foreach ($insert_queries as $query) {
@@ -49,16 +49,16 @@ while ($row = mysqli_fetch_array($result)) {
     echo "no: {$row['no']}, title: {$row['title']}, BigNo: {$row['BigNo']}, TreeNo: {$row['TreeNo']}<br>";
 }
 
-// 2. 종이종류 확인
-echo "<h4>2. 종이종류 (BigNo='590')</h4>";
+// 2. 종이규격/Section 확인 (BigNo='590') - inserted와 동일
+echo "<h4>2. 종이규격/Section (BigNo='590')</h4>";
 $query = "SELECT no, title, BigNo, TreeNo FROM mlangprintauto_transactioncate WHERE Ttable='LittlePrint' AND BigNo='590' ORDER BY no ASC";
 $result = mysqli_query($db, $query);
 while ($row = mysqli_fetch_array($result)) {
     echo "no: {$row['no']}, title: {$row['title']}, BigNo: {$row['BigNo']}, TreeNo: {$row['TreeNo']}<br>";
 }
 
-// 3. 종이규격 확인
-echo "<h4>3. 종이규격 (TreeNo='590')</h4>";
+// 3. 종이종류/TreeSelect 확인 (TreeNo='590') - inserted와 동일
+echo "<h4>3. 종이종류/TreeSelect (TreeNo='590')</h4>";
 $query = "SELECT no, title, BigNo, TreeNo FROM mlangprintauto_transactioncate WHERE Ttable='LittlePrint' AND TreeNo='590' ORDER BY no ASC";
 $result = mysqli_query($db, $query);
 while ($row = mysqli_fetch_array($result)) {

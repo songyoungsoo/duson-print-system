@@ -3,6 +3,8 @@
 ini_set('display_errors', 1);
 error_reporting(E_ALL);
 
+require_once __DIR__ . '/../../includes/ensure_shop_temp_columns.php';
+
 // 세션 시작
 if (session_status() == PHP_SESSION_NONE) {
     session_start();
@@ -25,6 +27,8 @@ if (!$db) {
 }
 
 mysqli_set_charset($db, "utf8mb4");
+
+ensure_shop_temp_columns($db);
 
 // JSON 응답 함수
 function success_response($data = null, $message = "성공") {
@@ -79,22 +83,6 @@ $create_table_query = "CREATE TABLE IF NOT EXISTS shop_temp (
 
 if (!mysqli_query($db, $create_table_query)) {
     error_response('테이블 생성 오류: ' . mysqli_error($db));
-}
-
-// 필수 컬럼들이 없으면 추가 (기존 테이블 호환성)
-$required_columns = [
-    'product_type' => "VARCHAR(50) NOT NULL DEFAULT 'poster'",
-    'Section' => "VARCHAR(50)",
-    'PN_type' => "VARCHAR(50)"
-];
-
-foreach ($required_columns as $column_name => $column_definition) {
-    $check_column_query = "SHOW COLUMNS FROM shop_temp LIKE '$column_name'";
-    $column_result = mysqli_query($db, $check_column_query);
-    if (mysqli_num_rows($column_result) == 0) {
-        $add_column_query = "ALTER TABLE shop_temp ADD COLUMN $column_name $column_definition";
-        mysqli_query($db, $add_column_query); // 오류 무시 (이미 있을 수 있음)
-    }
 }
 
 // 장바구니에 추가 (PN_type 포함)

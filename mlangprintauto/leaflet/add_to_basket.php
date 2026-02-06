@@ -2,6 +2,8 @@
 // 🔧 출력 버퍼링 시작 (JSON 응답 전에 불필요한 출력 방지)
 ob_start();
 
+require_once __DIR__ . '/../../includes/ensure_shop_temp_columns.php';
+
 session_start();
 $session_id = session_id();
 
@@ -24,6 +26,8 @@ if (!$connect) {
 
 // 🔧 FIX: utf8mb4 사용 (이모지 및 확장 유니코드 지원)
 mysqli_set_charset($connect, "utf8mb4");
+
+ensure_shop_temp_columns($connect);
 
 // POST 데이터 받기
 $product_type = isset($_POST['product_type']) ? $_POST['product_type'] : 'leaflet'; // 기본값 leaflet
@@ -113,42 +117,6 @@ if (!mysqli_query($connect, $create_table_query)) {
     exit;
 }
 error_log("shop_temp 테이블 확인/생성 완료");
-
-// 전단지용 필드들이 없으면 추가 (파일 업로드 필드 + 추가 옵션 필드 포함)
-$required_columns = [
-    'product_type' => "VARCHAR(50) NOT NULL DEFAULT 'leaflet'",
-    'MY_type' => "VARCHAR(50)",
-    'PN_type' => "VARCHAR(50)",
-    'MY_Fsd' => "VARCHAR(50)",
-    'MY_amount' => "VARCHAR(50)",
-    'POtype' => "VARCHAR(10)",
-    'ordertype' => "VARCHAR(50)",
-    'work_memo' => "TEXT",
-    'upload_method' => "VARCHAR(20) DEFAULT 'upload'",
-    'uploaded_files_info' => "TEXT",
-    'upload_folder' => "VARCHAR(255)",
-    // 🆕 추가 옵션 컬럼들 (JSON 방식 - 명함 스타일)
-    'additional_options' => "TEXT",
-    'additional_options_total' => "INT DEFAULT 0"
-];
-
-foreach ($required_columns as $column_name => $column_definition) {
-    $check_column_query = "SHOW COLUMNS FROM shop_temp LIKE '$column_name'";
-    $column_result = mysqli_query($connect, $check_column_query);
-    if (mysqli_num_rows($column_result) == 0) {
-        $add_column_query = "ALTER TABLE shop_temp ADD COLUMN $column_name $column_definition";
-        error_log("컬럼 추가 쿼리: $add_column_query");
-        if (!mysqli_query($connect, $add_column_query)) {
-            $error_msg = mysqli_error($connect);
-            error_log("컬럼 $column_name 추가 오류: $error_msg");
-            ob_end_clean();
-            echo json_encode(['success' => false, 'message' => "컬럼 $column_name 추가 오류: " . $error_msg]);
-            exit;
-        }
-        error_log("컬럼 $column_name 추가 성공");
-    }
-}
-error_log("필요한 컬럼들 확인/추가 완료");
 
 // 파일 업로드 처리
 $upload_folder = '';

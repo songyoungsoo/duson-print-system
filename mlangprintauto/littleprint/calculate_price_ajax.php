@@ -26,15 +26,25 @@ mysqli_set_charset($db, "utf8");
 $params = $_GET;
 
 // Section 매핑 로직 (레거시 호환)
+// 프론트엔드: Section = 종이종류(604 등), PN_type = 규격(610 등)
+// DB: style=590, Section=규격(610), TreeSelect=종이종류(604)
 $section_mapping = [
     '604' => '610', '605' => '610', '606' => '610', '607' => '610',
     '608' => '610', '609' => '610', '679' => '610', '680' => '610', '958' => '610'
 ];
 
-// 매핑된 section 값 적용 (PN_type을 Section으로 사용)
+// 원본 Section 값 저장 (종이종류 = TreeSelect)
 $original_section = $params['Section'] ?? '';
-if (isset($section_mapping[$original_section])) {
-    $params['Section'] = $section_mapping[$original_section];
+
+// 프론트엔드에서 PN_type으로 규격이 오면 그대로 사용, 아니면 매핑
+if (!empty($params['PN_type'])) {
+    // PN_type이 있으면: Section=종이종류, PN_type=규격
+    $params['MY_Fsd'] = $original_section;  // TreeSelect로 전달
+    $params['Section'] = $params['PN_type']; // 규격으로 사용
+} else if (isset($section_mapping[$original_section])) {
+    // PN_type이 없고 Section이 종이종류인 경우: 매핑
+    $params['MY_Fsd'] = $original_section;  // TreeSelect로 전달
+    $params['Section'] = $section_mapping[$original_section]; // 규격으로 변환
 }
 
 // 추가 옵션 총액 처리

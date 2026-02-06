@@ -3,6 +3,7 @@
 require_once __DIR__ . '/../../includes/safe_json_response.php';
 require_once __DIR__ . '/../../includes/StandardUploadHandler.php';
 require_once __DIR__ . '/../../includes/DataAdapter.php';  // Phase 2: 데이터 표준화
+require_once __DIR__ . '/../../includes/ensure_shop_temp_columns.php';
 
 ob_start();
 error_reporting(E_ALL & ~E_NOTICE & ~E_WARNING);
@@ -16,6 +17,8 @@ include "../../db.php";
 
 check_db_connection($db);
 mysqli_set_charset($db, "utf8");
+
+ensure_shop_temp_columns($db);
 
 // POST 데이터 받기
 $product_type = $_POST['product_type'] ?? 'ncrflambeau';
@@ -61,37 +64,6 @@ if (empty($calculated_price) || empty($calculated_vat_price)) {
 }
 
 try {
-    // shop_temp 테이블에 필요한 컬럼이 있는지 확인하고 없으면 추가
-    $required_columns = [
-        'session_id' => 'VARCHAR(255)',
-        'product_type' => 'VARCHAR(50)',
-        'MY_type' => 'VARCHAR(50)',
-        'MY_Fsd' => 'VARCHAR(50)',
-        'PN_type' => 'VARCHAR(50)',
-        'MY_amount' => 'VARCHAR(50)',
-        'ordertype' => 'VARCHAR(50)',
-        'st_price' => 'INT(11)',
-        'st_price_vat' => 'INT(11)',
-        'premium_options' => 'TEXT',
-        'premium_options_total' => 'INT(11)',
-        'work_memo' => 'TEXT',
-        'upload_method' => 'VARCHAR(50)',
-        'uploaded_files' => 'TEXT',
-        'ThingCate' => 'VARCHAR(255)',
-        'ImgFolder' => 'VARCHAR(255)'
-    ];
-
-    foreach ($required_columns as $column_name => $column_definition) {
-        $check_column_query = "SHOW COLUMNS FROM shop_temp LIKE '$column_name'";
-        $column_result = mysqli_query($db, $check_column_query);
-        if (mysqli_num_rows($column_result) == 0) {
-            $add_column_query = "ALTER TABLE shop_temp ADD COLUMN $column_name $column_definition";
-            if (!mysqli_query($db, $add_column_query)) {
-                error_log("컬럼 추가 실패: $column_name - " . mysqli_error($db));
-            }
-        }
-    }
-
     // 파일 업로드 처리 (StandardUploadHandler 사용)
     $upload_result = StandardUploadHandler::processUpload('ncrflambeau', $_FILES);
 

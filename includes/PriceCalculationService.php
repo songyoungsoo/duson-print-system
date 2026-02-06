@@ -76,11 +76,12 @@ class PriceCalculationService
             'fields' => [
                 'style' => 'style_id',
                 'Section' => 'section_id',
+                'TreeSelect' => 'tree_id',
                 'quantity' => 'quantity',
                 'POtype' => 'po_type'
             ],
             'type' => 'table_lookup',
-            'has_tree' => false
+            'has_tree' => true
         ],
         'merchandisebond' => [
             'table' => 'mlangprintauto_merchandisebond',

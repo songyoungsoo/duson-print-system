@@ -126,12 +126,6 @@ var API_URL = '/api/quote/calculate_price.php';
 var OPT_URL = '/admin/mlangprintauto/quote/widgets/api/get_options.php';
 var currentPayload = null;
 
-var cascadeMap = {
-    'style': 'Section',
-    'Section': 'TreeSelect',
-    'TreeSelect': 'quantity'
-};
-
 function loadChildren(parentId, childId) {
     var parentVal = document.getElementById(parentId).value;
     var child = document.getElementById(childId);
@@ -154,7 +148,16 @@ function loadChildren(parentId, childId) {
         return;
     }
 
-    fetch(OPT_URL + '?table=inserted&parent=' + parentVal, {credentials: 'same-origin'})
+    var url;
+    if (childId === 'TreeSelect') {
+        // L2 (용지): uses TreeNo=root_no (style value), not BigNo
+        var rootVal = document.getElementById('style').value;
+        url = OPT_URL + '?table=inserted&parent=' + rootVal + '&lookup=TreeNo';
+    } else {
+        url = OPT_URL + '?table=inserted&parent=' + parentVal;
+    }
+
+    fetch(url, {credentials: 'same-origin'})
         .then(function(r) { return r.json(); })
         .then(function(data) {
             child.innerHTML = '<option value="">선택</option>';

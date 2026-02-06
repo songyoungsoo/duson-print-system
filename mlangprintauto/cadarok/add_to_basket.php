@@ -3,6 +3,7 @@
 require_once __DIR__ . '/../../includes/safe_json_response.php';
 require_once __DIR__ . '/../../includes/StandardUploadHandler.php';
 require_once __DIR__ . '/../../includes/DataAdapter.php';  // Phase 2: 데이터 표준화
+require_once __DIR__ . '/../../includes/ensure_shop_temp_columns.php';
 
 // JSON 헤더 우선 설정
 header('Content-Type: application/json; charset=utf-8');
@@ -17,6 +18,8 @@ include "../../db.php";
 // 데이터베이스 연결 체크
 check_db_connection($db);
 mysqli_set_charset($db, "utf8");
+
+ensure_shop_temp_columns($db);
 
 // POST 데이터 받기
 $action = $_POST['action'] ?? '';
@@ -107,38 +110,6 @@ $thing_cate = $upload_result['thing_cate'];
 $uploaded_files_json = json_encode($uploaded_files, JSON_UNESCAPED_UNICODE);
 
 error_log("카다록 업로드 결과: " . count($uploaded_files) . " 개 파일, 경로: $img_folder");
-
-// 필요한 컬럼이 있는지 확인하고 없으면 추가
-$required_columns = [
-    'session_id' => 'VARCHAR(255)',
-    'product_type' => 'VARCHAR(50)',
-    'MY_type' => 'VARCHAR(50)',
-    'Section' => 'VARCHAR(50)',
-    'POtype' => 'VARCHAR(50)',
-    'MY_amount' => 'VARCHAR(50)',
-    'ordertype' => 'VARCHAR(50)',
-    'st_price' => 'INT(11)',
-    'st_price_vat' => 'INT(11)',
-    'work_memo' => 'TEXT',
-    'upload_method' => 'VARCHAR(50)',
-    'uploaded_files' => 'TEXT',
-    'ThingCate' => 'VARCHAR(255)',
-    'ImgFolder' => 'VARCHAR(255)',
-    // 추가 옵션 컬럼들 (JSON 방식)
-    'additional_options' => 'TEXT',
-    'additional_options_total' => 'INT DEFAULT 0'
-];
-
-foreach ($required_columns as $column_name => $column_definition) {
-    $check_column_query = "SHOW COLUMNS FROM shop_temp LIKE '$column_name'";
-    $column_result = mysqli_query($db, $check_column_query);
-    if (mysqli_num_rows($column_result) == 0) {
-        $add_column_query = "ALTER TABLE shop_temp ADD COLUMN $column_name $column_definition";
-        if (!mysqli_query($db, $add_column_query)) {
-            safe_json_response(false, null, "컬럼 $column_name 추가 오류: " . mysqli_error($db));
-        }
-    }
-}
 
 // 카다록 옵션명 조회
 $MY_type_name = '';

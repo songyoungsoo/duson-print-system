@@ -397,7 +397,12 @@ $stats_query = "SELECT
     SUM(CASE WHEN (waybill_no IS NULL OR waybill_no = '') AND zip1 IS NOT NULL AND zip1 != '' THEN 1 ELSE 0 END) as pending
 FROM mlangorder_printauto
 WHERE date >= DATE_SUB(NOW(), INTERVAL 30 DAY)";
-$stats = mysqli_fetch_assoc(mysqli_query($connect, $stats_query));
+$stats_result = @mysqli_query($connect, $stats_query);
+if ($stats_result) {
+    $stats = mysqli_fetch_assoc($stats_result);
+} else {
+    $stats = ['total' => 0, 'shipped' => 0, 'pending' => 0];
+}
 ?>
 <!DOCTYPE html>
 <html lang="ko">

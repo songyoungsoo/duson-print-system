@@ -68,7 +68,17 @@ td,input,li{font-size:9pt}
   $search_no_end = isset($_GET['search_no_end']) ? trim($_GET['search_no_end']) : '';
 
   // WHERE 조건 구성
-  $base_condition = "(delivery != '방문' AND delivery != '방문수령' OR delivery IS NULL)";
+  // 1) 방문수령 제외
+  // 2) 주소 패턴 필터: 구(지번) + 로/길/대로(도로명) + 5자리 우편번호
+  $base_condition = "(delivery != '방문' AND delivery != '방문수령' OR delivery IS NULL)
+    AND (
+      (zip1 LIKE '%구 %' OR zip1 LIKE '%구%동%')
+      OR (zip1 LIKE '%로 %' OR zip1 LIKE '%로%번길%')
+      OR (zip1 LIKE '%길 %')
+      OR (zip1 LIKE '%대로 %' OR zip1 LIKE '%대로%번길%')
+      OR (zip2 LIKE '%-%')
+      OR (zip REGEXP '^[0-9]{5}$')
+    )";
   $search_conditions = array();
 
   if($search_name != '') {

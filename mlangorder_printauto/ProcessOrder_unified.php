@@ -23,8 +23,10 @@ mysqli_set_charset($connect, 'utf8mb4');
 include "../mlangprintauto/shop_temp_helper.php";
 include "../includes/upload_config.php";
 require_once __DIR__ . '/../includes/StandardUploadHandler.php';
-require_once __DIR__ . '/../includes/DataAdapter.php';  // Phase 2: 데이터 표준화
-// upload_path_manager.php는 사용하지 않음 (안전 모드)
+require_once __DIR__ . '/../includes/DataAdapter.php';
+require_once __DIR__ . '/../includes/ensure_order_table_columns.php';
+
+ensure_order_table_columns($connect);
 
 try {
     // POST 데이터 받기

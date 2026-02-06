@@ -9,11 +9,17 @@ if (session_status() == PHP_SESSION_NONE) {
     session_start();
 }
 
-// 데이터베이스 연결 정보
-define('DB_HOST', 'localhost');
-define('DB_USER', 'duson1830');
-define('DB_PASSWORD', 'du1830');
-define('DB_NAME', 'duson1830');
+// 데이터베이스 연결 정보 - config.env.php 재사용 (SSOT)
+require_once __DIR__ . '/../../../config.env.php';
+$db_config = get_db_config();
+
+define('DB_HOST', $db_config['host']);
+define('DB_USER', $db_config['user']);
+define('DB_PASSWORD', $db_config['password']);
+define('DB_NAME', $db_config['database']);
+
+// 개발 모드 설정 (config.env.php의 debug 플래그 사용)
+define('DEVELOPMENT_MODE', $db_config['debug'] ?? false);
 
 // LittlePrint 전용 테이블 설정
 define('CATEGORY_TABLE', "mlangprintauto_transactioncate");
@@ -24,14 +30,7 @@ define('PAGE_NAME', 'LittlePrint');
 define('AJAX_TIMEOUT', 30); // 초 단위
 define('MAX_RESULTS_PER_PAGE', 100);
 
-// 에러 보고 설정 (개발 환경에서만 사용)
-if (defined('DEVELOPMENT_MODE') && DEVELOPMENT_MODE) {
-    error_reporting(E_ALL);
-    ini_set('display_errors', 1);
-} else {
-    error_reporting(0);
-    ini_set('display_errors', 0);
-}
+// 에러 보고 설정은 config.env.php에서 이미 처리됨
 
 // 로그 파일 경로
 define('ERROR_LOG_PATH', __DIR__ . '/logs/error.log');

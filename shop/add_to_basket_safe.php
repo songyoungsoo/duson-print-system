@@ -1,6 +1,8 @@
 <?php
 // 안전한 장바구니 추가 (JSON 전용)
 
+require_once __DIR__ . '/../includes/ensure_shop_temp_columns.php';
+
 // 모든 출력을 버퍼링
 ob_start();
 
@@ -49,6 +51,8 @@ try {
     // UTF-8 설정
     mysqli_set_charset($connect, 'utf8');
     
+    ensure_shop_temp_columns($connect);
+    
     // 입력값 받기
     $session_id = session_id();
     $jong = trim($_POST['jong'] ?? '');
@@ -87,14 +91,6 @@ try {
     
     // 데이터베이스 저장
     $regdate = time();
-    
-    // product_type 컬럼이 없으면 추가
-    $check_column_query = "SHOW COLUMNS FROM shop_temp LIKE 'product_type'";
-    $column_result = mysqli_query($connect, $check_column_query);
-    if (mysqli_num_rows($column_result) == 0) {
-        $add_column_query = "ALTER TABLE shop_temp ADD COLUMN product_type VARCHAR(50) DEFAULT 'sticker'";
-        mysqli_query($connect, $add_column_query);
-    }
     
     // 안전한 쿼리 준비 (product_type 포함)
     $stmt = mysqli_prepare($connect, 

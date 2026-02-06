@@ -26,6 +26,12 @@ if (session_status() == PHP_SESSION_NONE) {
         'samesite' => 'Lax'
     ]);
 
+    // 세션 디렉토리 권한 문제 해결
+    $customSessionPath = '/var/www/html/admin-new/sessions';
+    if (is_dir($customSessionPath) && is_writable($customSessionPath)) {
+        session_save_path($customSessionPath);
+    }
+
     session_start();
 }
 

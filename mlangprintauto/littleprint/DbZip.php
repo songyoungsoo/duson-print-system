@@ -34,7 +34,7 @@ case '<?=$Cate_row[no]?>':
 
 
 <?
-$result= mysqli_query($db, "select * from $GGTABLE where Ttable='$page' and TreeNo='$Cate_row[no]' order by no asc");
+$result= mysqli_query($db, "select * from $GGTABLE where Ttable='$page' and BigNo='$Cate_row[no]' order by no asc");
 $rows=mysqli_num_rows($result);
 if($rows){
 	$g=0;
@@ -50,7 +50,7 @@ objTwo.options[<?=$g?>] = new Option ('<?=$row[title]?>','<?=$row[no]?>');
 
 
 <?
-$result= mysqli_query($db, "select * from $GGTABLE where Ttable='$page' and BigNo='$Cate_row[no]' order by no asc");
+$result= mysqli_query($db, "select * from $GGTABLE where Ttable='$page' and TreeNo='$Cate_row[no]' order by no asc");
 $rows=mysqli_num_rows($result);
 if($rows){
 	$g=0;
