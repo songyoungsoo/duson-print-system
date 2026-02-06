@@ -95,9 +95,32 @@
 
   <li class="title">카드결제</li>
   <li><a href="#" class="default-1">카드 결제 가능</a></li>
+
+  <li class="title">KB에스크로</li>
+  <li style="text-align: center; padding: 10px;">
+    <a href="#" onclick="javascript:onPopKBAuthMark();return false;">
+      <img src="http://img1.kbstar.com/img/escrow/escrowcmark.gif" border="0" alt="KB에스크로 인증마크" style="max-width: 100%;"/>
+    </a>
+  </li>
 </ul>
 
+<!-- KB에스크로 이체 인증마크 Form -->
+<form name="KB_AUTHMARK_FORM" method="get" style="display:none;">
+  <input type="hidden" name="page" value="C021590"/>
+  <input type="hidden" name="cc" value="b034066:b035526"/>
+  <input type="hidden" name="mHValue" value="ef04cec95f1a7298f1f686bfe3159ade"/>
+</form>
+
 <script>
+  // KB에스크로 인증마크 팝업
+  function onPopKBAuthMark() {
+    window.open('', 'KB_AUTHMARK', 'height=604, width=648, status=yes, toolbar=no, menubar=no, location=no');
+    document.KB_AUTHMARK_FORM.action = 'https://okbfex.kbstar.com/quics';
+    document.KB_AUTHMARK_FORM.target = 'KB_AUTHMARK';
+    document.KB_AUTHMARK_FORM.submit();
+  }
+
+  // 즐겨찾기 추가
   function addfavorites() {
     var url = window.location.href;
     var title = document.title;
