@@ -326,15 +326,15 @@ function formatNumber(n) { const v=parseFloat(n); return isNaN(v)?'0':v.toLocale
 
 // 계산기 연동
 const CALC_CFG = {
-    'sticker':{name:'스티커',url:'/mlangprintauto/sticker_new/index.php'},
-    'inserted':{name:'전단지',url:'/mlangprintauto/inserted/index.php'},
-    'namecard':{name:'명함',url:'/mlangprintauto/namecard/index.php'},
-    'envelope':{name:'봉투',url:'/mlangprintauto/envelope/index.php'},
-    'ncrflambeau':{name:'NCR양식',url:'/mlangprintauto/ncrflambeau/index.php'},
-    'cadarok':{name:'카다록',url:'/mlangprintauto/cadarok/index.php'},
-    'littleprint':{name:'포스터',url:'/mlangprintauto/littleprint/index.php'},
-    'msticker':{name:'자석스티커',url:'/mlangprintauto/msticker/index.php'},
-    'merchandisebond':{name:'상품권',url:'/mlangprintauto/merchandisebond/index.php'}
+    'sticker':{name:'스티커',url:'/admin/mlangprintauto/quote/widgets/sticker.php'},
+    'inserted':{name:'전단지',url:'/admin/mlangprintauto/quote/widgets/inserted.php'},
+    'namecard':{name:'명함',url:'/admin/mlangprintauto/quote/widgets/namecard.php'},
+    'envelope':{name:'봉투',url:'/admin/mlangprintauto/quote/widgets/envelope.php'},
+    'ncrflambeau':{name:'NCR양식',url:'/admin/mlangprintauto/quote/widgets/ncrflambeau.php'},
+    'cadarok':{name:'카다록',url:'/admin/mlangprintauto/quote/widgets/cadarok.php'},
+    'littleprint':{name:'포스터',url:'/admin/mlangprintauto/quote/widgets/littleprint.php'},
+    'msticker':{name:'자석스티커',url:'/admin/mlangprintauto/quote/widgets/msticker.php'},
+    'merchandisebond':{name:'상품권',url:'/admin/mlangprintauto/quote/widgets/merchandisebond.php'}
 };
 
 function openCalculatorSelect() { document.getElementById('calcSelectModal').classList.add('active'); }
@@ -343,7 +343,7 @@ function openCalculator(type) {
     const c = CALC_CFG[type]; if(!c){alert('알 수 없는 품목');return;}
     closeCalculatorSelect();
     document.getElementById('calcModalTitle').textContent = c.name+' 계산기';
-    document.getElementById('calcIframe').src = c.url+'?mode=admin_quote';
+    document.getElementById('calcIframe').src = c.url;
     document.getElementById('calcIframeModal').classList.add('active');
     document.body.style.overflow='hidden';
 }
