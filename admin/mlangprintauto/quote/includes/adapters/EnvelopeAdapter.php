@@ -48,14 +48,16 @@ class EnvelopeAdapter implements QuoteAdapterInterface
         $payload->product_name = $this->getProductName();
         $payload->unit = $this->getDefaultUnit();
 
-        $amount = floatval($calcParams['MY_amount'] ?? 0);
+        $amount = floatval($calcParams['MY_amount'] ?? $calcParams['quantity'] ?? 0);
         $payload->quantity = $amount;
         $payload->quantity_display = number_format($amount) . '매';
 
-        $supply = $priceResponse['total_price'] ?? $priceResponse['order_price'] ?? 0;
+        $data = $priceResponse['data'] ?? $priceResponse;
+
+        $supply = $data['order_price'] ?? $data['total_price'] ?? $data['Order_PriceForm'] ?? 0;
         $payload->supply_price = intval($this->extractNumeric($supply));
 
-        $total = $priceResponse['total_with_vat'] ?? 0;
+        $total = $data['total_with_vat'] ?? $data['Total_PriceForm'] ?? 0;
         $totalParsed = intval($this->extractNumeric($total));
         if ($totalParsed > 0) {
             $payload->total_price = $totalParsed;
@@ -75,7 +77,7 @@ class EnvelopeAdapter implements QuoteAdapterInterface
             $options['envelope_tape_quantity'] = intval($calcParams['envelope_tape_quantity'] ?? 0);
             $options['envelope_tape_price'] = intval($calcParams['envelope_tape_price'] ?? 0);
         }
-        $additionalTotal = intval($priceResponse['additional_options_price'] ?? 0);
+        $additionalTotal = intval($data['additional_options_total'] ?? $priceResponse['additional_options_price'] ?? 0);
         if ($additionalTotal > 0) {
             $options['additional_options_total'] = $additionalTotal;
         }

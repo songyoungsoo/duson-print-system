@@ -60,10 +60,12 @@ class StickerAdapter implements QuoteAdapterInterface
         $payload->quantity = floatval($mesu);
         $payload->quantity_display = number_format($mesu) . '매';
 
-        $priceRaw = $priceResponse['price'] ?? $priceResponse['st_price'] ?? 0;
+        $data = $priceResponse['data'] ?? $priceResponse;
+
+        $priceRaw = $data['st_price'] ?? $data['base_price'] ?? $data['price'] ?? $priceResponse['price'] ?? 0;
         $payload->supply_price = intval($this->extractNumeric($priceRaw));
 
-        $vatRaw = $priceResponse['price_vat'] ?? $priceResponse['st_price_vat'] ?? 0;
+        $vatRaw = $data['st_price_vat'] ?? $data['total_with_vat'] ?? $data['price_vat'] ?? $priceResponse['price_vat'] ?? 0;
         $vatParsed = intval($this->extractNumeric($vatRaw));
         if ($vatParsed > 0) {
             $payload->total_price = $vatParsed;

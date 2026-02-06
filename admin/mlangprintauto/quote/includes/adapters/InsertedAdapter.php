@@ -50,7 +50,7 @@ class InsertedAdapter implements QuoteAdapterInterface
         $payload->product_name = $this->getProductName();
         $payload->unit = $this->getDefaultUnit();
 
-        $reams = floatval($calcParams['MY_amount'] ?? 0);
+        $reams = floatval($calcParams['MY_amount'] ?? $calcParams['quantity'] ?? 0);
         $payload->quantity = $reams;
 
         $data = $priceResponse['data'] ?? $priceResponse;
