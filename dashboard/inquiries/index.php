@@ -7,13 +7,13 @@ include __DIR__ . '/../includes/sidebar.php';
 ?>
 
 <main class="flex-1 overflow-y-auto bg-gray-50">
-    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
-        <div class="mb-8">
-            <h1 class="text-3xl font-bold text-gray-900">고객 문의</h1>
-            <p class="mt-2 text-sm text-gray-600">고객 문의 조회 및 답변 관리</p>
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-4">
+        <div class="mb-4">
+            <h1 class="text-2xl font-bold text-gray-900">고객 문의</h1>
+            <p class="mt-1 text-sm text-gray-600">고객 문의 조회 및 답변 관리</p>
         </div>
 
-        <div class="bg-white rounded-lg shadow p-6 mb-6">
+        <div class="bg-white rounded-lg shadow p-4 mb-4">
             <div class="flex gap-4">
                 <select id="statusFilter" class="px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500">
                     <option value="">전체</option>

@@ -67,7 +67,7 @@ function handleList() {
         SELECT 
             no as order_no,
             name as customer_name,
-            (price_supply + price_vat_amount) as amount,
+            CAST(COALESCE(NULLIF(money_5, ''), 0) AS DECIMAL(12,0)) as amount,
             bank as payment_method,
             bankname as depositor_name,
             CASE 
@@ -176,7 +176,7 @@ function getPaymentStats($period) {
     
     $stats_query = "
         SELECT 
-            SUM(price_supply + price_vat_amount) as total_amount,
+            SUM(CAST(COALESCE(NULLIF(money_5, ''), 0) AS DECIMAL(12,0))) as total_amount,
             SUM(CASE WHEN bank IS NOT NULL AND bank != '' AND bank != '미입금' AND bank != '취소' THEN 1 ELSE 0 END) as completed_count,
             SUM(CASE WHEN bank IS NULL OR bank = '' OR bank = '미입금' THEN 1 ELSE 0 END) as pending_count,
             SUM(CASE WHEN bank = '취소' THEN 1 ELSE 0 END) as cancelled_count

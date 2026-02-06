@@ -7,13 +7,13 @@ include __DIR__ . '/../includes/sidebar.php';
 ?>
 
 <main class="flex-1 overflow-y-auto bg-gray-50">
-    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
-        <div class="mb-8">
-            <h1 class="text-3xl font-bold text-gray-900">주문 관리</h1>
-            <p class="mt-2 text-sm text-gray-600">주문 목록 조회 및 상태 관리</p>
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-4">
+        <div class="mb-4">
+            <h1 class="text-2xl font-bold text-gray-900">주문 관리</h1>
+            <p class="mt-1 text-sm text-gray-600">주문 목록 조회 및 상태 관리</p>
         </div>
 
-        <div class="bg-white rounded-lg shadow p-6 mb-6">
+        <div class="bg-white rounded-lg shadow p-4 mb-4">
             <div class="grid grid-cols-1 md:grid-cols-4 gap-4">
                 <div>
                     <label class="block text-sm font-medium text-gray-700 mb-2">기간</label>
@@ -68,24 +68,24 @@ include __DIR__ . '/../includes/sidebar.php';
                 <table class="min-w-full divide-y divide-gray-200">
                     <thead class="bg-gray-50">
                         <tr>
-                            <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">주문번호</th>
-                            <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">품목</th>
-                            <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">주문자</th>
-                            <th class="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">금액</th>
-                            <th class="px-6 py-3 text-center text-xs font-medium text-gray-500 uppercase tracking-wider">상태</th>
-                            <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">주문일시</th>
-                            <th class="px-6 py-3 text-center text-xs font-medium text-gray-500 uppercase tracking-wider">관리</th>
+                            <th class="px-3 py-2 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">주문번호</th>
+                            <th class="px-3 py-2 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">품목</th>
+                            <th class="px-3 py-2 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">주문자</th>
+                            <th class="px-3 py-2 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">금액</th>
+                            <th class="px-3 py-2 text-center text-xs font-medium text-gray-500 uppercase tracking-wider">상태</th>
+                            <th class="px-3 py-2 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">주문일시</th>
+                            <th class="px-3 py-2 text-center text-xs font-medium text-gray-500 uppercase tracking-wider">관리</th>
                         </tr>
                     </thead>
                     <tbody id="ordersTableBody" class="bg-white divide-y divide-gray-200">
                         <tr>
-                            <td colspan="7" class="px-6 py-4 text-center text-gray-500">로딩 중...</td>
+                            <td colspan="7" class="px-3 py-3 text-center text-gray-500">로딩 중...</td>
                         </tr>
                     </tbody>
                 </table>
             </div>
 
-            <div id="pagination" class="px-6 py-4 border-t border-gray-200 flex items-center justify-between">
+            <div id="pagination" class="px-4 py-3 border-t border-gray-200 flex items-center justify-between">
                 <div class="text-sm text-gray-700">
                     총 <span id="totalItems">0</span>건
                 </div>
@@ -124,6 +124,10 @@ async function loadOrders(page = 1) {
         const result = await response.json();
         
         if (!result.success) {
+            if (response.status === 401) {
+                window.location.href = '/admin/mlangprintauto/login.php?redirect=/dashboard/orders/';
+                return;
+            }
             throw new Error(result.message);
         }
         
@@ -131,19 +135,19 @@ async function loadOrders(page = 1) {
         const orders = result.data.data;
         
         if (orders.length === 0) {
-            tbody.innerHTML = '<tr><td colspan="7" class="px-6 py-4 text-center text-gray-500">주문이 없습니다.</td></tr>';
+            tbody.innerHTML = '<tr><td colspan="7" class="px-3 py-3 text-center text-gray-500">주문이 없습니다.</td></tr>';
             return;
         }
         
         tbody.innerHTML = orders.map(order => `
             <tr class="hover:bg-gray-50">
-                <td class="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">#${order.no}</td>
-                <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-600">${order.type || '-'}</td>
-                <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-600">${order.name || order.email.split('@')[0]}</td>
-                <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900 text-right">${order.amount.toLocaleString()}원</td>
-                <td class="px-6 py-4 whitespace-nowrap text-center">${getStatusBadge(order.status)}</td>
-                <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-600">${order.date}</td>
-                <td class="px-6 py-4 whitespace-nowrap text-center text-sm">
+                <td class="px-3 py-2 whitespace-nowrap text-sm font-medium text-gray-900">#${order.no}</td>
+                <td class="px-3 py-2 whitespace-nowrap text-sm text-gray-600">${order.type || '-'}</td>
+                <td class="px-3 py-2 whitespace-nowrap text-sm text-gray-600">${order.name || (order.email ? order.email.split('@')[0] : '-')}</td>
+                <td class="px-3 py-2 whitespace-nowrap text-sm text-gray-900 text-right">${(order.amount || 0).toLocaleString()}원</td>
+                <td class="px-3 py-2 whitespace-nowrap text-center">${getStatusBadge(order.status)}</td>
+                <td class="px-3 py-2 whitespace-nowrap text-sm text-gray-600">${order.date || '-'}</td>
+                <td class="px-3 py-2 whitespace-nowrap text-center text-sm">
                     <a href="/dashboard/orders/view.php?no=${order.no}" class="text-blue-600 hover:text-blue-800 mr-3">상세</a>
                     <button onclick="deleteOrder(${order.no})" class="text-red-600 hover:text-red-800">삭제</button>
                 </td>
@@ -157,7 +161,7 @@ async function loadOrders(page = 1) {
     } catch (error) {
         console.error('Failed to load orders:', error);
         document.getElementById('ordersTableBody').innerHTML = 
-            '<tr><td colspan="7" class="px-6 py-4 text-center text-red-500">주문 목록을 불러오는데 실패했습니다.</td></tr>';
+            '<tr><td colspan="7" class="px-3 py-3 text-center text-red-500">주문 목록을 불러오는데 실패했습니다.</td></tr>';
     }
 }
 
