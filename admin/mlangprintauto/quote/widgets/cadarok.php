@@ -10,6 +10,11 @@ mysqli_set_charset($db, 'utf8');
 $types = [];
 $r = mysqli_query($db, "SELECT no, title FROM mlangprintauto_transactioncate WHERE Ttable='Cadarok' AND BigNo='0' ORDER BY TreeNo, no");
 if ($r) { while ($row = mysqli_fetch_assoc($r)) { $types[] = $row; } }
+
+// 추가옵션 가격을 DB에서 조회 (additional_options_config)
+$addOpts = ['coating' => [], 'folding' => [], 'creasing' => []];
+$r = mysqli_query($db, "SELECT option_category, option_type, option_name, base_price FROM additional_options_config WHERE is_active = 1 AND option_category IN ('coating','folding','creasing') ORDER BY option_category, sort_order");
+if ($r) { while ($row = mysqli_fetch_assoc($r)) { $addOpts[$row['option_category']][] = $row; } }
 ?>
 <!DOCTYPE html>
 <html lang="ko">
@@ -68,7 +73,7 @@ select:focus { outline: none; border-color: #4f7cff; }
     <label>편집</label>
     <select id="ordertype" onchange="calculatePrice()">
         <option value="print">인쇄만 의뢰</option>
-        <option value="design">디자인+인쇄</option>
+        <option value="total">디자인+인쇄</option>
     </select>
 
     <div class="section-label">추가옵션</div>
@@ -77,8 +82,9 @@ select:focus { outline: none; border-color: #4f7cff; }
     <div class="opt-row">
         <input type="checkbox" id="coating_enabled" onchange="calculatePrice()">
         <select id="coating_type" onchange="calculatePrice()">
-            <option value="유광코팅">유광코팅</option>
-            <option value="무광코팅">무광코팅</option>
+            <?php foreach ($addOpts['coating'] as $opt): ?>
+            <option value="<?php echo htmlspecialchars($opt['option_type']); ?>"><?php echo htmlspecialchars($opt['option_name']); ?></option>
+            <?php endforeach; ?>
         </select>
     </div>
 
@@ -86,10 +92,9 @@ select:focus { outline: none; border-color: #4f7cff; }
     <div class="opt-row">
         <input type="checkbox" id="folding_enabled" onchange="calculatePrice()">
         <select id="folding_type" onchange="calculatePrice()">
-            <option value="반접">반접</option>
-            <option value="3단접">3단접</option>
-            <option value="4단접">4단접</option>
-            <option value="대문접">대문접</option>
+            <?php foreach ($addOpts['folding'] as $opt): ?>
+            <option value="<?php echo htmlspecialchars($opt['option_type']); ?>"><?php echo htmlspecialchars($opt['option_name']); ?></option>
+            <?php endforeach; ?>
         </select>
     </div>
 
@@ -97,9 +102,9 @@ select:focus { outline: none; border-color: #4f7cff; }
     <div class="opt-row">
         <input type="checkbox" id="creasing_enabled" onchange="calculatePrice()">
         <select id="creasing_lines" onchange="calculatePrice()">
-            <option value="1">1줄</option>
-            <option value="2">2줄</option>
-            <option value="3">3줄</option>
+            <?php foreach ($addOpts['creasing'] as $opt): ?>
+            <option value="<?php echo htmlspecialchars($opt['option_type']); ?>"><?php echo htmlspecialchars($opt['option_name']); ?></option>
+            <?php endforeach; ?>
         </select>
     </div>
 </div>
@@ -120,6 +125,23 @@ select:focus { outline: none; border-color: #4f7cff; }
 var API_URL = '/api/quote/calculate_price.php';
 var OPT_URL = '/admin/mlangprintauto/quote/widgets/api/get_options.php';
 var currentPayload = null;
+
+// 추가옵션 base_price (DB: additional_options_config 자동 로드)
+var OPTION_PRICES = <?php
+    $optPrices = [];
+    foreach ($addOpts as $cat => $items) {
+        $optPrices[$cat] = [];
+        foreach ($items as $item) {
+            $optPrices[$cat][$item['option_type']] = (int)$item['base_price'];
+        }
+    }
+    echo json_encode($optPrices, JSON_UNESCAPED_UNICODE);
+?>;
+
+function getSelectedText(id) {
+    var el = document.getElementById(id);
+    return (el && el.selectedIndex >= 0) ? el.options[el.selectedIndex].text : '';
+}
 
 function loadChildren(parentVal, childId) {
     var child = document.getElementById(childId);
@@ -192,12 +214,39 @@ function calculatePrice() {
         return;
     }
 
+    // Calculate additional options price (OPTION_PRICES: DB additional_options_config 자동 로드)
+    var additionalTotal = 0;
+    var optionDetails = {};
+    var qtyMultiplier = Math.max(parseFloat(quantity), 1);
+    if (document.getElementById('coating_enabled').checked) {
+        var coatingType = document.getElementById('coating_type').value;
+        var coatingBase = (OPTION_PRICES.coating && OPTION_PRICES.coating[coatingType]) || 0;
+        var coatingPrice = Math.round(coatingBase * qtyMultiplier);
+        additionalTotal += coatingPrice;
+        optionDetails.coating = {type: getSelectedText('coating_type'), price: coatingPrice};
+    }
+    if (document.getElementById('folding_enabled').checked) {
+        var foldingType = document.getElementById('folding_type').value;
+        var foldingBase = (OPTION_PRICES.folding && OPTION_PRICES.folding[foldingType]) || 0;
+        var foldingPrice = Math.round(foldingBase * qtyMultiplier);
+        additionalTotal += foldingPrice;
+        optionDetails.folding = {type: getSelectedText('folding_type'), price: foldingPrice};
+    }
+    if (document.getElementById('creasing_enabled').checked) {
+        var creasingLines = document.getElementById('creasing_lines').value;
+        var creasingBase = (OPTION_PRICES.creasing && OPTION_PRICES.creasing[creasingLines]) || 0;
+        var creasingPrice = Math.round(creasingBase * qtyMultiplier);
+        additionalTotal += creasingPrice;
+        optionDetails.creasing = {lines: parseInt(creasingLines), price: creasingPrice};
+    }
+
     var params = {
         MY_type: style,
         Section: section,
         MY_amount: quantity,
         POtype: document.getElementById('POtype').value,
-        ordertype: document.getElementById('ordertype').value
+        ordertype: document.getElementById('ordertype').value,
+        premium_options_total: additionalTotal
     };
 
     if (document.getElementById('coating_enabled').checked) {
@@ -230,12 +279,56 @@ function calculatePrice() {
         document.getElementById('priceDisplay').style.opacity = '1';
 
         if (data.success && data.payload) {
-            var p = data.payload;
-            document.getElementById('supplyPrice').textContent = fmt(p.supply_price);
-            document.getElementById('vatPrice').textContent = fmt(p.vat_price);
-            document.getElementById('totalPrice').textContent = fmt(p.total_price);
-            document.getElementById('applyBtn').disabled = false;
-            currentPayload = p;
+             var p = data.payload;
+
+             // Override specification with human-readable dropdown text
+             p.spec_type = getSelectedText('style');
+             p.spec_material = getSelectedText('Section');
+             p.spec_sides = (function() {
+                 var val = document.getElementById('POtype').value;
+                 var map = {'1': '단면', '2': '양면'};
+                 return map[val] || '';
+             })();
+             p.spec_design = (function() {
+                 var val = document.getElementById('ordertype').value;
+                 var map = {'print': '인쇄만', 'total': '디자인+인쇄'};
+                 return map[val] || '';
+             })();
+
+             var line1 = [p.spec_type, p.spec_material].filter(Boolean).join(' / ');
+             var line2Parts = [];
+             if (p.spec_sides) line2Parts.push(p.spec_sides);
+             if (p.quantity_display) line2Parts.push(p.quantity_display);
+             if (p.spec_design) line2Parts.push(p.spec_design);
+             var line2 = line2Parts.filter(Boolean).join(' / ');
+             p.specification = line1 + '\n' + line2;
+
+             // Enrich with additional options info
+             if (Object.keys(optionDetails).length > 0) {
+                 p.options = p.options || {};
+                 if (optionDetails.coating) {
+                     p.options.coating_enabled = 1;
+                     p.options.coating_type = optionDetails.coating.type;
+                     p.options.coating_price = optionDetails.coating.price;
+                 }
+                 if (optionDetails.folding) {
+                     p.options.folding_enabled = 1;
+                     p.options.folding_type = optionDetails.folding.type;
+                     p.options.folding_price = optionDetails.folding.price;
+                 }
+                 if (optionDetails.creasing) {
+                     p.options.creasing_enabled = 1;
+                     p.options.creasing_lines = optionDetails.creasing.lines;
+                     p.options.creasing_price = optionDetails.creasing.price;
+                 }
+                 p.options.additional_options_total = additionalTotal;
+             }
+
+             document.getElementById('supplyPrice').textContent = fmt(p.supply_price);
+             document.getElementById('vatPrice').textContent = fmt(p.vat_price);
+             document.getElementById('totalPrice').textContent = fmt(p.total_price);
+             document.getElementById('applyBtn').disabled = false;
+             currentPayload = p;
         } else {
             showError(data.message || '가격 계산 실패');
         }

@@ -115,6 +115,7 @@ class NamecardAdapter implements QuoteAdapterInterface
     {
         $line1Parts = [];
 
+        // Use human-readable text from widget (spec_type), fall back to legacy keys
         $typeName = $calcParams['spec_type'] ?? $calcParams['MY_type_name'] ?? '';
         if (!empty($typeName)) {
             $line1Parts[] = $typeName;
@@ -127,7 +128,10 @@ class NamecardAdapter implements QuoteAdapterInterface
 
         $line2Parts = [];
 
-        $sidesName = $calcParams['spec_sides'] ?? $calcParams['POtype_name'] ?? '';
+        // Use spec_sides from widget ('단면칼라'/'양면칼라'), fall back to POtype mapping
+        $potype = $calcParams['POtype'] ?? '';
+        $sidesMap = ['1' => '단면칼라', '2' => '양면칼라'];
+        $sidesName = $calcParams['spec_sides'] ?? ($sidesMap[$potype] ?? '');
         if (!empty($sidesName)) {
             $line2Parts[] = $sidesName;
         }
@@ -137,8 +141,9 @@ class NamecardAdapter implements QuoteAdapterInterface
             $line2Parts[] = number_format($amount) . '매';
         }
 
+        // Use spec_design from widget ('인쇄만'/'디자인+인쇄')
         $ordertype = $calcParams['ordertype'] ?? '';
-        $designMap = ['print' => '인쇄만', 'design' => '디자인+인쇄'];
+        $designMap = ['print' => '인쇄만', 'total' => '디자인+인쇄'];
         $designName = $calcParams['spec_design'] ?? ($designMap[$ordertype] ?? '');
         if (!empty($designName)) {
             $line2Parts[] = $designName;

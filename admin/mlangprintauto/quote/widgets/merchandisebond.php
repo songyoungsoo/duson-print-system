@@ -10,6 +10,11 @@ mysqli_set_charset($db, 'utf8');
 $types = [];
 $r = mysqli_query($db, "SELECT no, title FROM mlangprintauto_transactioncate WHERE Ttable='MerchandiseBond' AND BigNo='0' ORDER BY TreeNo, no");
 if ($r) { while ($row = mysqli_fetch_assoc($r)) { $types[] = $row; } }
+
+// 프리미엄 옵션 가격을 DB에서 조회 (additional_options_config)
+$premOpts = [];
+$r = mysqli_query($db, "SELECT option_type, option_name, base_price, per_qty FROM additional_options_config WHERE is_active = 1 AND option_category = 'premium' ORDER BY sort_order");
+if ($r) { while ($row = mysqli_fetch_assoc($r)) { $premOpts[] = $row; } }
 ?>
 <!DOCTYPE html>
 <html lang="ko">
@@ -67,7 +72,7 @@ select:focus { outline: none; border-color: #4f7cff; }
     <label>편집</label>
     <select id="ordertype" onchange="calculatePrice()">
         <option value="print">인쇄만 의뢰</option>
-        <option value="design">디자인+인쇄</option>
+        <option value="total">디자인+인쇄</option>
     </select>
 
     <div class="section-label">프리미엄 옵션</div>
@@ -104,6 +109,25 @@ select:focus { outline: none; border-color: #4f7cff; }
 var API_URL = '/api/quote/calculate_price.php';
 var OPT_URL = '/admin/mlangprintauto/quote/widgets/api/get_options.php';
 var currentPayload = null;
+
+// 프리미엄 옵션 base_price (DB: additional_options_config 자동 로드)
+// 프리미엄 옵션 가격 (DB: additional_options_config 자동 로드)
+// per_qty=0: 고정가격, per_qty>0: ceil(수량/per_qty) × price
+var OPTION_PRICES = <?php
+    $optPrices = [];
+    foreach ($premOpts as $item) {
+        $optPrices[$item['option_type']] = [
+            'price' => (int)$item['base_price'],
+            'per_qty' => (int)$item['per_qty']
+        ];
+    }
+    echo json_encode($optPrices, JSON_UNESCAPED_UNICODE);
+?>;
+
+function getSelectedText(id) {
+    var el = document.getElementById(id);
+    return (el && el.selectedIndex >= 0) ? el.options[el.selectedIndex].text : '';
+}
 
 function loadChildren(parentVal, childId) {
     var child = document.getElementById(childId);
@@ -176,11 +200,22 @@ function calculatePrice() {
         return;
     }
 
+    // Calculate premium options price (OPTION_PRICES: DB additional_options_config 자동 로드)
     var premiumOptions = {};
+    var premiumTotal = 0;
+    var actualQty = parseInt(getSelectedText('quantity').replace(/[^0-9]/g, '')) || 0;
     var opts = ['foil', 'numbering', 'perforation', 'rounding', 'creasing'];
     for (var i = 0; i < opts.length; i++) {
         if (document.getElementById('opt_' + opts[i]).checked) {
-            premiumOptions[opts[i]] = {enabled: true};
+            var optInfo = OPTION_PRICES[opts[i]] || {price: 0, per_qty: 0};
+            var optPrice = 0;
+            if (optInfo.per_qty > 0 && actualQty > 0) {
+                optPrice = Math.ceil(actualQty / optInfo.per_qty) * optInfo.price;
+            } else {
+                optPrice = optInfo.price;
+            }
+            premiumTotal += optPrice;
+            premiumOptions[opts[i]] = {enabled: true, price: optPrice};
         }
     }
 
@@ -189,7 +224,8 @@ function calculatePrice() {
         Section: section,
         MY_amount: quantity,
         POtype: document.getElementById('POtype').value,
-        ordertype: document.getElementById('ordertype').value
+        ordertype: document.getElementById('ordertype').value,
+        premium_options_total: premiumTotal
     };
 
     if (Object.keys(premiumOptions).length > 0) {
@@ -213,12 +249,35 @@ function calculatePrice() {
         document.getElementById('priceDisplay').style.opacity = '1';
 
         if (data.success && data.payload) {
-            var p = data.payload;
-            document.getElementById('supplyPrice').textContent = fmt(p.supply_price);
-            document.getElementById('vatPrice').textContent = fmt(p.vat_price);
-            document.getElementById('totalPrice').textContent = fmt(p.total_price);
-            document.getElementById('applyBtn').disabled = false;
-            currentPayload = p;
+             var p = data.payload;
+             
+             // Override specification with human-readable dropdown text
+             p.spec_type = getSelectedText('style');
+             p.spec_material = getSelectedText('Section');
+             p.spec_sides = (function() {
+                 var val = document.getElementById('POtype').value;
+                 var map = {'1': '단면', '2': '양면'};
+                 return map[val] || '';
+             })();
+             p.spec_design = (function() {
+                 var val = document.getElementById('ordertype').value;
+                 var map = {'print': '인쇄만', 'total': '디자인+인쇄'};
+                 return map[val] || '';
+             })();
+             
+             var line1 = [p.spec_type, p.spec_material].filter(Boolean).join(' / ');
+             var line2Parts = [];
+             if (p.spec_sides) line2Parts.push(p.spec_sides);
+             if (p.quantity_display) line2Parts.push(p.quantity_display);
+             if (p.spec_design) line2Parts.push(p.spec_design);
+             var line2 = line2Parts.filter(Boolean).join(' / ');
+             p.specification = line1 + '\n' + line2;
+             
+             document.getElementById('supplyPrice').textContent = fmt(p.supply_price);
+             document.getElementById('vatPrice').textContent = fmt(p.vat_price);
+             document.getElementById('totalPrice').textContent = fmt(p.total_price);
+             document.getElementById('applyBtn').disabled = false;
+             currentPayload = p;
         } else {
             showError(data.message || '가격 계산 실패');
         }

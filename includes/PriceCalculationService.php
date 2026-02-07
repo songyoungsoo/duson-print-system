@@ -157,6 +157,7 @@ class PriceCalculationService
         'ordertype' => 'design_type',
         // 기타 품목 레거시
         'Section' => 'section_id',
+        'TreeSelect' => 'tree_id',
         'style' => 'style_id',
         'potype' => 'po_type',
         // 스티커 레거시

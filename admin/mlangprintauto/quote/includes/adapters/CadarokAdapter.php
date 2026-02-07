@@ -115,7 +115,7 @@ class CadarokAdapter implements QuoteAdapterInterface
         }
 
         $ordertype = $calcParams['ordertype'] ?? '';
-        $designMap = ['print' => '인쇄만', 'design' => '디자인+인쇄'];
+        $designMap = ['print' => '인쇄만', 'total' => '디자인+인쇄'];
         $designName = $designMap[$ordertype] ?? '';
         if (!empty($designName)) {
             $line2Parts[] = $designName;

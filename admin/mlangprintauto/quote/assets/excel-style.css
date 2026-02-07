@@ -19,7 +19,7 @@ body {
 
 /* Header Bar */
 .page-header {
-    background: #217346;
+    background: #1E4E79;
     color: white;
     padding: 8px 15px;
     display: flex;
@@ -44,11 +44,11 @@ body {
 }
 .btn:hover { background: linear-gradient(to bottom, #e8e8e8 0%, #d0d0d0 100%); }
 .btn-primary {
-    background: linear-gradient(to bottom, #217346 0%, #1a5c38 100%);
-    border-color: #145a32;
+    background: linear-gradient(to bottom, #1E4E79 0%, #163D5C 100%);
+    border-color: #153A5A;
     color: white;
 }
-.btn-primary:hover { background: linear-gradient(to bottom, #1a5c38 0%, #145a32 100%); }
+.btn-primary:hover { background: linear-gradient(to bottom, #163D5C 0%, #153A5A 100%); }
 .btn-danger { background: #d9534f; border-color: #c9302c; color: white; }
 .btn-danger:hover { background: #c9302c; }
 .btn-sm { padding: 2px 8px; font-size: 11px; }
@@ -66,7 +66,7 @@ body {
     padding: 8px 10px;
     text-align: center;
 }
-.stat-cell.highlight { background: #217346; color: white; border-color: #145a32; }
+.stat-cell.highlight { background: #1E4E79; color: white; border-color: #153A5A; }
 .stat-cell h4 { font-size: 11px; font-weight: normal; margin-bottom: 3px; }
 .stat-cell .number { font-size: 20px; font-weight: bold; }
 
@@ -92,7 +92,7 @@ body {
     background: white;
 }
 .filter-group select:focus,
-.filter-group input:focus { outline: 1px solid #217346; }
+.filter-group input:focus { outline: 1px solid #1E4E79; }
 
 /* Card / Panel */
 .card {
@@ -128,7 +128,7 @@ body {
     border: 1px solid #ababab;
     font-size: 12px;
 }
-.form-input:focus { outline: 1px solid #217346; border-color: #217346; }
+.form-input:focus { outline: 1px solid #1E4E79; border-color: #1E4E79; }
 textarea.form-input { min-height: 50px; resize: vertical; }
 
 /* Inline Form Grid - 라벨 인풋 라벨 인풋 한 줄 */
@@ -164,12 +164,12 @@ textarea.form-input { min-height: 50px; resize: vertical; }
     font-size: 12px;
 }
 .excel-table th {
-    background: #217346;
+    background: #1E4E79;
     color: white;
     padding: 6px 8px;
     text-align: center;
     font-weight: normal;
-    border: 1px solid #145a32;
+    border: 1px solid #153A5A;
 }
 .excel-table td {
     padding: 5px 8px;
@@ -177,14 +177,14 @@ textarea.form-input { min-height: 50px; resize: vertical; }
     vertical-align: middle;
 }
 .excel-table tbody tr:nth-child(even) { background: #f9f9f9; }
-.excel-table tbody tr:hover { background: #e8f4ec; }
+.excel-table tbody tr:hover { background: #E8F0F7; }
 .excel-table .text-center { text-align: center; }
 .excel-table .text-right { text-align: right; }
 .excel-table .text-left { text-align: left; }
 
 /* Totals */
 .totals-section {
-    border-top: 2px solid #217346;
+    border-top: 2px solid #1E4E79;
     margin-top: 10px;
     padding-top: 8px;
 }
@@ -196,7 +196,7 @@ textarea.form-input { min-height: 50px; resize: vertical; }
 }
 .totals-label { width: 80px; color: #555; text-align: right; padding-right: 10px; }
 .totals-value { width: 100px; text-align: right; font-weight: bold; }
-.totals-row.grand { font-size: 15px; color: #217346; border-top: 1px solid #217346; margin-top: 5px; padding-top: 8px; }
+.totals-row.grand { font-size: 15px; color: #1E4E79; border-top: 1px solid #1E4E79; margin-top: 5px; padding-top: 8px; }
 
 /* Status Badge */
 .status-badge {
@@ -208,7 +208,7 @@ textarea.form-input { min-height: 50px; resize: vertical; }
 .status-draft { background: #f5f5f5; border-color: #ababab; color: #555; }
 .status-sent { background: #d9edf7; border-color: #31708f; color: #31708f; }
 .status-viewed { background: #dff0d8; border-color: #3c763d; color: #3c763d; }
-.status-accepted { background: #217346; border-color: #145a32; color: white; }
+.status-accepted { background: #1E4E79; border-color: #153A5A; color: white; }
 .status-rejected { background: #f2dede; border-color: #a94442; color: #a94442; }
 .status-expired { background: #fcf8e3; border-color: #8a6d3b; color: #8a6d3b; }
 .status-converted { background: #e8d5f2; border-color: #6b46c1; color: #6b46c1; }
@@ -230,8 +230,8 @@ textarea.form-input { min-height: 50px; resize: vertical; }
     color: #333;
     font-size: 12px;
 }
-.pagination a:hover { background: #e8f4ec; }
-.pagination .current { background: #217346; color: white; border-color: #145a32; }
+.pagination a:hover { background: #E8F0F7; }
+.pagination .current { background: #1E4E79; color: white; border-color: #153A5A; }
 
 /* Empty State */
 .empty-state {
@@ -274,7 +274,7 @@ textarea.form-input { min-height: 50px; resize: vertical; }
     overflow: auto;
 }
 .modal-header {
-    background: #217346;
+    background: #1E4E79;
     color: white;
     padding: 8px 12px;
     display: flex;
@@ -306,7 +306,7 @@ textarea.form-input { min-height: 50px; resize: vertical; }
     cursor: pointer;
     text-align: center;
 }
-.calc-btn:hover { background: #e8f4ec; border-color: #217346; }
+.calc-btn:hover { background: #E8F0F7; border-color: #1E4E79; }
 .calc-btn .icon { font-size: 20px; margin-bottom: 4px; }
 .calc-btn .name { font-size: 11px; color: #333; }
 
@@ -324,7 +324,7 @@ textarea.form-input { min-height: 50px; resize: vertical; }
 .calc-modal.active { display: flex; }
 .calc-modal-content {
     background: white;
-    border: 2px solid #217346;
+    border: 2px solid #1E4E79;
     width: 95%;
     max-width: 900px;
     height: 90vh;
@@ -332,7 +332,7 @@ textarea.form-input { min-height: 50px; resize: vertical; }
     flex-direction: column;
 }
 .calc-modal-header {
-    background: #217346;
+    background: #1E4E79;
     color: white;
     padding: 8px 12px;
     display: flex;
@@ -389,7 +389,7 @@ textarea.form-input { min-height: 50px; resize: vertical; }
 /* Utility */
 .text-right { text-align: right; }
 .text-center { text-align: center; }
-.text-primary { color: #217346; }
+.text-primary { color: #1E4E79; }
 .fw-bold { font-weight: bold; }
 .mt-10 { margin-top: 10px; }
 .mb-10 { margin-bottom: 10px; }

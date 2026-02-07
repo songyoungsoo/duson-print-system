@@ -63,7 +63,7 @@ select:focus { outline: none; border-color: #4f7cff; }
     <label>편집</label>
     <select id="ordertype" onchange="calculatePrice()">
         <option value="print">인쇄만 의뢰</option>
-        <option value="design">디자인+인쇄</option>
+        <option value="total">디자인+인쇄</option>
     </select>
 </div>
 
@@ -83,6 +83,11 @@ select:focus { outline: none; border-color: #4f7cff; }
 var API_URL = '/api/quote/calculate_price.php';
 var OPT_URL = '/admin/mlangprintauto/quote/widgets/api/get_options.php';
 var currentPayload = null;
+
+function getSelectedText(id) {
+    var el = document.getElementById(id);
+    return (el && el.selectedIndex >= 0) ? el.options[el.selectedIndex].text : '';
+}
 
 function loadCascade(parentVal, childId, resetIds) {
     var child = document.getElementById(childId);
@@ -191,12 +196,30 @@ function calculatePrice() {
         document.getElementById('priceDisplay').style.opacity = '1';
 
         if (data.success && data.payload) {
-            var p = data.payload;
-            document.getElementById('supplyPrice').textContent = fmt(p.supply_price);
-            document.getElementById('vatPrice').textContent = fmt(p.vat_price);
-            document.getElementById('totalPrice').textContent = fmt(p.total_price);
-            document.getElementById('applyBtn').disabled = false;
-            currentPayload = p;
+             var p = data.payload;
+             
+             // Override specification with human-readable dropdown text (3-level, ncrflambeau uses MY_type/MY_Fsd/PN_type)
+             p.spec_type = getSelectedText('MY_type');
+             p.spec_material = getSelectedText('MY_Fsd');
+             p.spec_paper = getSelectedText('PN_type');
+             p.spec_design = (function() {
+                 var val = document.getElementById('ordertype').value;
+                 var map = {'print': '인쇄만', 'total': '디자인+인쇄'};
+                 return map[val] || '';
+             })();
+             
+             var line1 = [p.spec_type, p.spec_material, p.spec_paper].filter(Boolean).join(' / ');
+             var line2Parts = [];
+             if (p.quantity_display) line2Parts.push(p.quantity_display);
+             if (p.spec_design) line2Parts.push(p.spec_design);
+             var line2 = line2Parts.filter(Boolean).join(' / ');
+             p.specification = line1 + '\n' + line2;
+             
+             document.getElementById('supplyPrice').textContent = fmt(p.supply_price);
+             document.getElementById('vatPrice').textContent = fmt(p.vat_price);
+             document.getElementById('totalPrice').textContent = fmt(p.total_price);
+             document.getElementById('applyBtn').disabled = false;
+             currentPayload = p;
         } else {
             showError(data.message || '가격 계산 실패');
         }

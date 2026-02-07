@@ -74,12 +74,36 @@ class InsertedAdapter implements QuoteAdapterInterface
 
         $payload->calculateUnitPrice();
 
-        $payload->specification = $this->buildSpecification($calcParams);
+        // Pass spec_* fields from widget for human-readable specification
+        $specParams = $calcParams;
+        if (!empty($calcParams['spec_type'])) {
+            $specParams['spec_type'] = $calcParams['spec_type'];
+        }
+        if (!empty($calcParams['spec_size'])) {
+            $specParams['spec_material'] = $calcParams['spec_size'];
+        }
+        if (!empty($calcParams['spec_paper'])) {
+            $specParams['spec_size'] = $calcParams['spec_paper'];
+        }
 
+        $payload->specification = $this->buildSpecification($specParams);
+
+        // Build options including additional options (coating/folding/creasing)
         $options = [];
         $premiumTotal = intval($calcParams['premium_options_total'] ?? 0);
         if ($premiumTotal > 0) {
             $options['premium_options_total'] = $premiumTotal;
+        }
+
+        // Pass through coating/folding/creasing options from widget
+        $passthrough = ['coating_enabled', 'coating_type', 'coating_price',
+                        'folding_enabled', 'folding_type', 'folding_price',
+                        'creasing_enabled', 'creasing_lines', 'creasing_price',
+                        'additional_options_total'];
+        foreach ($passthrough as $key) {
+            if (isset($calcParams[$key])) {
+                $options[$key] = $calcParams[$key];
+            }
         }
         $payload->options = $options;
 
@@ -91,6 +115,9 @@ class InsertedAdapter implements QuoteAdapterInterface
             'MY_amount' => $calcParams['MY_amount'] ?? '',
             'mesu' => $sheets,
             'ordertype' => $calcParams['ordertype'] ?? '',
+            'spec_type' => $calcParams['spec_type'] ?? '',
+            'spec_size' => $calcParams['spec_size'] ?? '',
+            'spec_paper' => $calcParams['spec_paper'] ?? '',
         ];
 
         return $payload;
@@ -100,19 +127,21 @@ class InsertedAdapter implements QuoteAdapterInterface
     {
         $line1Parts = [];
 
-        $styleForm = $calcParams['StyleForm'] ?? $calcParams['spec_type'] ?? '';
-        if (!empty($styleForm)) {
-            $line1Parts[] = $styleForm;
+        // Use human-readable text from widget (spec_type), fall back to StyleForm (numeric ID)
+        $typeName = $calcParams['spec_type'] ?? $calcParams['StyleForm'] ?? '';
+        if (!empty($typeName)) {
+            $line1Parts[] = $typeName;
         }
 
-        $sectionForm = $calcParams['SectionForm'] ?? $calcParams['spec_material'] ?? '';
-        if (!empty($sectionForm)) {
-            $line1Parts[] = $sectionForm;
+        // spec_material = size name (규격), spec_size = paper name (용지)
+        $sizeName = $calcParams['spec_material'] ?? $calcParams['SectionForm'] ?? '';
+        if (!empty($sizeName)) {
+            $line1Parts[] = $sizeName;
         }
 
-        $quantityForm = $calcParams['QuantityForm'] ?? $calcParams['spec_size'] ?? '';
-        if (!empty($quantityForm)) {
-            $line1Parts[] = $quantityForm;
+        $paperName = $calcParams['spec_size'] ?? $calcParams['QuantityForm'] ?? '';
+        if (!empty($paperName)) {
+            $line1Parts[] = $paperName;
         }
 
         $line2Parts = [];
@@ -124,18 +153,26 @@ class InsertedAdapter implements QuoteAdapterInterface
             $line2Parts[] = $sidesName;
         }
 
-        $reams = floatval($calcParams['MY_amount'] ?? 0);
+        $reams = floatval($calcParams['MY_amount'] ?? $calcParams['quantity'] ?? 0);
         $sheets = intval($calcParams['mesu'] ?? 0);
-        $qtyDisplay = $this->formatQuantityDisplay($reams, $sheets);
+        $qtyDisplay = !empty($calcParams['spec_quantity_display'])
+            ? $calcParams['spec_quantity_display']
+            : $this->formatQuantityDisplay($reams, $sheets);
         if (!empty($qtyDisplay)) {
             $line2Parts[] = $qtyDisplay;
         }
 
         $ordertype = $calcParams['ordertype'] ?? '';
-        $designMap = ['print' => '인쇄만', 'design' => '디자인+인쇄'];
-        $designForm = $calcParams['DesignForm'] ?? ($designMap[$ordertype] ?? '');
-        if (!empty($designForm)) {
-            $line2Parts[] = $designForm;
+        $designMap = ['print' => '인쇄만', 'total' => '디자인+인쇄'];
+        $designName = $calcParams['spec_design'] ?? $calcParams['DesignForm'] ?? ($designMap[$ordertype] ?? '');
+        if (!empty($designName)) {
+            $line2Parts[] = $designName;
+        }
+
+        // Additional options text
+        $optionNames = $this->buildAdditionalOptionNames($calcParams);
+        if (!empty($optionNames)) {
+            $line2Parts[] = $optionNames;
         }
 
         $line1 = implode(' / ', array_filter($line1Parts));
@@ -145,6 +182,35 @@ class InsertedAdapter implements QuoteAdapterInterface
             return $line1 . "\n" . $line2;
         }
         return $line1 . $line2;
+    }
+
+    private function buildAdditionalOptionNames(array $calcParams)
+    {
+        $names = [];
+
+        $coatingNames = [
+            'single' => '단면유광코팅', 'double' => '양면유광코팅',
+            'single_matte' => '단면무광코팅', 'double_matte' => '양면무광코팅'
+        ];
+        $foldingNames = [
+            '2fold' => '2단접지', '3fold' => '3단접지',
+            'accordion' => '병풍접지', 'gate' => '대문접지'
+        ];
+
+        if (!empty($calcParams['coating_enabled'])) {
+            $type = $calcParams['coating_type'] ?? '';
+            $names[] = $coatingNames[$type] ?? $type ?: '코팅';
+        }
+        if (!empty($calcParams['folding_enabled'])) {
+            $type = $calcParams['folding_type'] ?? '';
+            $names[] = $foldingNames[$type] ?? $type ?: '접지';
+        }
+        if (!empty($calcParams['creasing_enabled'])) {
+            $lines = intval($calcParams['creasing_lines'] ?? 1);
+            $names[] = '오시' . $lines . '줄';
+        }
+
+        return !empty($names) ? implode('+', $names) : '';
     }
 
     private function formatQuantityDisplay($reams, $sheets)

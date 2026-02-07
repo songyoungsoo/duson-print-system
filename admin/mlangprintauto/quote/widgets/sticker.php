@@ -71,12 +71,12 @@ select:focus, input:focus { outline: none; border-color: #4f7cff; }
 
     <label>모양</label>
     <select id="domusong">
-        <option value="00000 사각">사각</option>
-        <option value="35000 도무송">도무송 (+35,000)</option>
-        <option value="08000 귀돌이">귀돌이 (+8,000)</option>
-        <option value="12000 원형">원형 (+12,000)</option>
-        <option value="18000 타원">타원 (+18,000)</option>
-        <option value="55000 복잡">복잡한모양 (+55,000)</option>
+        <option value="00000 사각">기본사각</option>
+        <option value="08000 사각도무송">사각도무송 (+8,000)</option>
+        <option value="08000 귀돌">귀돌이(라운드) (+8,000)</option>
+        <option value="08000 원형">원형 (+8,000)</option>
+        <option value="08000 타원">타원형 (+8,000)</option>
+        <option value="19000 복잡">모양도무송 (+19,000)</option>
     </select>
 
     <label>편집</label>
@@ -102,6 +102,11 @@ select:focus, input:focus { outline: none; border-color: #4f7cff; }
 <script>
 const API_URL = '/api/quote/calculate_price.php';
 let currentPayload = null;
+
+function getSelectedText(id) {
+    var el = document.getElementById(id);
+    return (el && el.selectedIndex >= 0) ? el.options[el.selectedIndex].text : '';
+}
 
 document.querySelectorAll('select, input').forEach(el => {
     el.addEventListener('change', calculatePrice);
@@ -172,9 +177,16 @@ function calculatePrice() {
             document.getElementById('totalPrice').textContent = fmt(p.total_price);
             document.getElementById('applyBtn').disabled = false;
 
-            currentPayload = p;
-            currentPayload.spec_type = jong.substring(4);
-            currentPayload.spec_material = garo + 'x' + sero + 'mm';
+             currentPayload = p;
+             currentPayload.spec_type = jong.substring(4);
+             currentPayload.spec_material = garo + 'x' + sero + 'mm';
+             
+             // Rebuild specification with human-readable format
+             var line1 = [currentPayload.spec_type, currentPayload.spec_material].filter(Boolean).join(' / ');
+             var line2Parts = [];
+             if (currentPayload.quantity_display) line2Parts.push(currentPayload.quantity_display);
+             var line2 = line2Parts.filter(Boolean).join(' / ');
+             currentPayload.specification = line1 + (line2 ? '\n' + line2 : '');
         } else {
             showError(data.message || '가격 계산 실패');
         }
