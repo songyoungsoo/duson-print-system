@@ -291,8 +291,6 @@ dropZone.addEventListener('drop', e => {
 document.getElementById('uploadForm').addEventListener('submit', function(e) {
     e.preventDefault();
     const formData = new FormData(this);
-    const files = document.getElementById('fileInput').files;
-    for (let f of files) formData.append('files[]', f);
 
     const btn = document.getElementById('uploadBtn');
     btn.disabled = true;
