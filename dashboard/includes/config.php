@@ -47,6 +47,7 @@ $DASHBOARD_NAV = [
         'items' => [
             'products' => ['name' => '제품 관리', 'icon' => '🏷️', 'path' => '/dashboard/products/'],
             'pricing' => ['name' => '가격 관리', 'icon' => '💰', 'path' => '/dashboard/pricing/'],
+            'option_prices' => ['name' => '옵션 가격', 'icon' => '⚙️', 'path' => '/admin/mlangprintauto/quote/option_prices.php', 'external' => true],
         ]
     ],
     'admin_group' => [
