@@ -164,7 +164,7 @@ function loadQuantities() {
     var qty = document.getElementById('quantity');
     qty.innerHTML = '<option value="">로딩중...</option>';
     if (!style || !section) { qty.innerHTML = '<option value="">상위 항목을 선택</option>'; resetPrice(); return; }
-    var url = OPT_URL + '?table=cadarok&source=price&field=quantity&filter_style=' + style + '&filter_Section=' + section + '&filter_POtype=' + document.getElementById('POtype').value;
+    var url = OPT_URL + '?table=cadarok&source=price&field=quantity&filter_style=' + style + '&filter_Section=' + section;
     fetch(url, {credentials: 'same-origin'}).then(function(r) { return r.json(); }).then(function(data) {
         qty.innerHTML = '<option value="">선택</option>';
         for (var i = 0; i < data.length; i++) { var o = document.createElement('option'); o.value = data[i].no; var n = parseInt(data[i].title); o.textContent = n ? n.toLocaleString() + '부' : data[i].title; qty.appendChild(o); }
