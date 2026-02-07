@@ -130,7 +130,7 @@ $categoryLabels = [
 
         /* Header */
         .page-header {
-            background: #217346;
+            background: #1E4E79;
             color: white;
             padding: 8px 15px;
             display: flex;
@@ -138,7 +138,7 @@ $categoryLabels = [
             align-items: center;
             margin-bottom: 10px;
         }
-        .page-header h1 { font-size: 15px; font-weight: 500; }
+        .page-header h1 { font-size: 15px; font-weight: normal; }
         .header-actions { display: flex; gap: 8px; align-items: center; }
 
         /* Buttons */
@@ -154,12 +154,12 @@ $categoryLabels = [
             font-family: inherit;
         }
         .btn:hover { background: linear-gradient(to bottom, #e8e8e8 0%, #d0d0d0 100%); }
-        .btn-primary { background: linear-gradient(to bottom, #217346 0%, #1a5c38 100%); border-color: #145a32; color: white; }
-        .btn-primary:hover { background: linear-gradient(to bottom, #1a5c38 0%, #145a32 100%); }
-        .btn-save { background: #2563eb; border-color: #1d4ed8; color: white; font-weight: 500; padding: 6px 20px; }
-        .btn-save:hover { background: #1d4ed8; }
-        .btn-danger { background: #dc2626; border-color: #b91c1c; color: white; }
-        .btn-danger:hover { background: #b91c1c; }
+        .btn-primary { background: linear-gradient(to bottom, #1E4E79 0%, #163D5C 100%); border-color: #153A5A; color: white; }
+        .btn-primary:hover { background: linear-gradient(to bottom, #163D5C 0%, #153A5A 100%); }
+        .btn-save { background: #1E4E79; border-color: #153A5A; color: white; font-weight: 500; padding: 6px 20px; }
+        .btn-save:hover { background: #163D5C; }
+        .btn-danger { background: #d9534f; border-color: #c9302c; color: white; }
+        .btn-danger:hover { background: #c9302c; }
         .btn-sm { padding: 2px 8px; font-size: 11px; }
         .back-link { color: white; text-decoration: none; font-size: 12px; opacity: 0.9; }
         .back-link:hover { opacity: 1; }
@@ -172,17 +172,17 @@ $categoryLabels = [
             font-weight: 700;
             font-size: 13px;
             border-bottom: 2px solid #b0b0b0;
-            color: #1e40af;
+            color: #1E4E79;
         }
         table { width: 100%; border-collapse: collapse; }
         thead th {
-            background: #4472c4;
+            background: #1E4E79;
             color: white;
             padding: 6px 8px;
             font-size: 12px;
-            font-weight: 500;
+            font-weight: normal;
             text-align: center;
-            border: 1px solid #3b63a8;
+            border: 1px solid #153A5A;
             position: sticky;
             top: 0;
             z-index: 10;
@@ -193,7 +193,7 @@ $categoryLabels = [
             text-align: center;
             vertical-align: middle;
         }
-        tbody tr:hover { background: #f0f7ff; }
+        tbody tr:hover { background: #E8F0F7; }
         tbody tr.new-row { background: #fffde7; }
 
         /* Inputs */
@@ -206,7 +206,7 @@ $categoryLabels = [
             background: transparent;
             text-align: inherit;
         }
-        .cell-input:focus { border-color: #4472c4; outline: none; background: #fff; }
+        .cell-input:focus { border-color: #1E4E79; outline: none; background: #fff; }
         .cell-input.num { text-align: right; }
         .cell-input.changed { background: #fef3c7; }
         td.num-cell { text-align: right; }
@@ -220,7 +220,7 @@ $categoryLabels = [
             background: transparent;
             cursor: pointer;
         }
-        .cell-select:focus { border-color: #4472c4; outline: none; }
+        .cell-select:focus { border-color: #1E4E79; outline: none; }
         input[type="checkbox"] { cursor: pointer; width: 16px; height: 16px; }
 
         /* Feedback */
