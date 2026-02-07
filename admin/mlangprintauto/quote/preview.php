@@ -57,7 +57,7 @@ try {
         top: 0;
         left: 0;
         right: 0;
-        background: linear-gradient(135deg, #1e3a5f 0%, #2c5282 100%);
+        background: #1E4E79;
         padding: 12px 20px;
         display: flex;
         justify-content: space-between;

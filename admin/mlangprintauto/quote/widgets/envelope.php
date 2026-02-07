@@ -28,12 +28,12 @@ body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif; f
 .form-grid { display: grid; grid-template-columns: 80px 1fr; gap: 8px 12px; align-items: center; }
 .form-grid label { font-weight: 600; color: #555; white-space: nowrap; }
 select { width: 100%; padding: 6px 8px; border: 1px solid #d0d5dd; border-radius: 4px; font-size: 13px; background: #fff; }
-select:focus { outline: none; border-color: #4f7cff; }
+select:focus { outline: none; border-color: #1E4E79; }
 .price-box { margin-top: 16px; background: #fff; border: 1px solid #e0e3e8; border-radius: 6px; padding: 12px; }
 .price-row { display: flex; justify-content: space-between; padding: 4px 0; }
-.price-row.total { font-weight: 700; font-size: 16px; color: #1a56db; border-top: 1px solid #e0e3e8; margin-top: 6px; padding-top: 8px; }
-.apply-btn { width: 100%; margin-top: 12px; padding: 10px; border: none; border-radius: 6px; background: #1a56db; color: #fff; font-size: 14px; font-weight: 600; cursor: pointer; }
-.apply-btn:hover { background: #1642b0; }
+.price-row.total { font-weight: 700; font-size: 16px; color: #1E4E79; border-top: 1px solid #e0e3e8; margin-top: 6px; padding-top: 8px; }
+.apply-btn { width: 100%; margin-top: 12px; padding: 10px; border: none; border-radius: 6px; background: #1E4E79; color: #fff; font-size: 14px; font-weight: 600; cursor: pointer; }
+.apply-btn:hover { background: #163D5C; }
 .apply-btn:disabled { background: #ccc; cursor: not-allowed; }
 .error-msg { color: #dc3545; font-size: 12px; margin-top: 8px; display: none; }
 .loading { display: none; text-align: center; padding: 8px; color: #666; }
