@@ -47,6 +47,9 @@ switch ($action) {
         }
 
         $uploaded = 0;
+        $custom_names = $_POST['names'] ?? [];
+        if (!is_array($custom_names)) $custom_names = [$custom_names];
+
         if (!empty($_FILES['files'])) {
             $file_count = is_array($_FILES['files']['name']) ? count($_FILES['files']['name']) : 1;
             for ($i = 0; $i < $file_count; $i++) {
@@ -60,8 +63,28 @@ switch ($action) {
                 $allowed = ['jpg', 'jpeg', 'png', 'gif', 'pdf', 'ai', 'psd', 'zip'];
                 if (!in_array($ext, $allowed)) continue;
 
-                $safe_name = date('YmdHis') . '_' . bin2hex(random_bytes(4)) . '.' . $ext;
-                if (move_uploaded_file($tmp, $upload_base . '/' . $safe_name)) {
+                // 커스텀 이름 사용 (없으면 원본 파일명)
+                $custom = isset($custom_names[$i]) ? trim($custom_names[$i]) : '';
+                if ($custom !== '') {
+                    // 파일명에 안전하지 않은 문자 제거 (한글, 영문, 숫자, 공백, -, _ 허용)
+                    $custom = preg_replace('/[\/\\\\:*?"<>|]/', '', $custom);
+                    $custom = mb_substr($custom, 0, 100, 'UTF-8'); // 100자 제한
+                    $save_name = date('Ymd_His') . '_' . $custom . '.' . $ext;
+                } else {
+                    $save_name = date('YmdHis') . '_' . bin2hex(random_bytes(4)) . '.' . $ext;
+                }
+
+                // 동일 이름 존재 시 숫자 추가
+                $final_path = $upload_base . '/' . $save_name;
+                if (file_exists($final_path)) {
+                    $base = pathinfo($save_name, PATHINFO_FILENAME);
+                    $n = 1;
+                    while (file_exists($upload_base . '/' . $base . '_' . $n . '.' . $ext)) $n++;
+                    $save_name = $base . '_' . $n . '.' . $ext;
+                    $final_path = $upload_base . '/' . $save_name;
+                }
+
+                if (move_uploaded_file($tmp, $final_path)) {
                     $uploaded++;
                 }
             }

@@ -69,11 +69,11 @@ if ($selected_nos != '') {
         $where_conditions[] = "company LIKE '%" . mysqli_real_escape_string($connect, $search_company) . "%'";
     }
     if ($search_date_start != '' && $search_date_end != '') {
-        $where_conditions[] = "date >= '" . mysqli_real_escape_string($connect, $search_date_start) . "' AND date <= '" . mysqli_real_escape_string($connect, $search_date_end) . "'";
+        $where_conditions[] = "date >= '" . mysqli_real_escape_string($connect, $search_date_start) . " 00:00:00' AND date <= '" . mysqli_real_escape_string($connect, $search_date_end) . " 23:59:59'";
     } else if ($search_date_start != '') {
-        $where_conditions[] = "date >= '" . mysqli_real_escape_string($connect, $search_date_start) . "'";
+        $where_conditions[] = "date >= '" . mysqli_real_escape_string($connect, $search_date_start) . " 00:00:00'";
     } else if ($search_date_end != '') {
-        $where_conditions[] = "date <= '" . mysqli_real_escape_string($connect, $search_date_end) . "'";
+        $where_conditions[] = "date <= '" . mysqli_real_escape_string($connect, $search_date_end) . " 23:59:59'";
     }
     if ($search_no_start != '' && $search_no_end != '') {
         $where_conditions[] = "no >= " . intval($search_no_start) . " AND no <= " . intval($search_no_end);
@@ -162,8 +162,18 @@ while ($data = mysqli_fetch_array($result)) {
     $type_1_display = $type1_raw;
     if (!empty($type1_raw) && substr(trim($type1_raw), 0, 1) === '{') {
         $json_data = json_decode($type1_raw, true);
-        if ($json_data && isset($json_data['formatted_display'])) {
-            $type_1_display = str_replace(array("\r\n", "\r", "\n"), ' ', $json_data['formatted_display']);
+        if ($json_data) {
+            if (isset($json_data['formatted_display'])) {
+                $type_1_display = str_replace(array("\r\n", "\r", "\n"), ' ', $json_data['formatted_display']);
+            } else {
+                $parts = array();
+                if (!empty($json_data['spec_material'])) $parts[] = $json_data['spec_material'];
+                if (!empty($json_data['spec_size'])) $parts[] = $json_data['spec_size'];
+                if (!empty($json_data['spec_sides'])) $parts[] = $json_data['spec_sides'];
+                if (!empty($json_data['quantity_display'])) $parts[] = $json_data['quantity_display'];
+                if (!empty($json_data['spec_design'])) $parts[] = $json_data['spec_design'];
+                $type_1_display = !empty($parts) ? implode(' / ', $parts) : '';
+            }
         }
     }
 

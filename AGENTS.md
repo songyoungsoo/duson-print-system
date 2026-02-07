@@ -514,6 +514,77 @@ DELETE FROM shop_temp WHERE regdate < UNIX_TIMESTAMP(NOW() - INTERVAL 7 DAY)
 // Result: Consistent behavior across all login points
 ```
 
+## 🔍 교정 관리 시스템 (Dashboard Proofs)
+
+### 파일 구조
+| 파일 | 용도 |
+|------|------|
+| `dashboard/proofs/index.php` | 교정 목록 + 이미지 뷰어 + 파일 업로드 UI |
+| `dashboard/proofs/api.php` | 파일 목록 조회 / 파일 업로드 API |
+
+### 교정파일 저장 경로
+```
+/mlangorder_printauto/upload/{주문번호}/
+  ├─ 20260208_153000_시안_최종.jpg    (커스텀 이름)
+  ├─ 20260208_a3f1b2c4.png            (자동 이름)
+  └─ ...
+```
+
+### 이미지 뷰어 동작
+```
+"보기" 클릭 → API 파일 목록 조회 → 이미지 100% 원본 크기 오버레이 (스크롤)
+  ├─ 여러 이미지: ‹ › 화살표 + 방향키 네비게이션 + 카운터(1/3)
+  ├─ 닫기: 이미지 클릭 / 배경 클릭 / ESC / ✕ 버튼
+  └─ 비이미지 파일: 새 탭으로 열기
+```
+
+### 파일 업로드 기능
+- 파일 누적 추가 (선택/드롭 반복 가능)
+- 개별 삭제, 이미지 썸네일 미리보기
+- 파일명 자동 입력 (편집 가능, 확장자 별도 표시)
+- 20MB/파일 제한, 허용 형식: jpg, jpeg, png, gif, pdf, ai, psd, zip
+- 업로드 진행률 표시, 완료 후 페이지 새로고침 없이 행 갱신
+
+## 📋 견적서 시스템 (Admin Quotes)
+
+### 견적서 상태 흐름 (CRITICAL)
+
+```
+생성/저장 → draft (임시저장)
+            ↓ "발송" 버튼 클릭 (이메일 발송)
+          sent (발송됨)
+            ↓ 고객 열람
+          viewed (열람)
+            ↓ 고객 승인/거절
+          accepted / rejected
+```
+
+### 상태 변경 규칙
+```php
+// ✅ CORRECT: 저장 시 무조건 draft
+$status = 'draft';  // saveQuote()
+
+// ✅ CORRECT: sent는 이메일 발송 API에서만 변경
+$manager->updateStatus($quoteId, 'sent');  // send_email.php
+
+// ❌ WRONG: 저장 시 sent 설정 (이메일 안 보냈는데 "발송됨" 표시)
+$status = $isDraft ? 'draft' : 'sent';
+```
+
+### 이메일 발송 제한
+- SMTP: 네이버 (`smtp.naver.com:465/ssl`, dsp1830)
+- 네이버→네이버: ✅ 정상
+- 네이버→Gmail: ⚠️ Gmail 스팸 필터에 의해 차단됨 (미해결)
+- 향후: Gmail SMTP 이중 발송 구현 예정
+
+### 대시보드 iframe 임베드
+```
+dashboard/embed.php?url=/admin/mlangprintauto/admin.php  → 주문 관리(구)
+dashboard/embed.php?url=/admin/mlangprintauto/admin.php?mode=sian  → 교정 관리(구)
+dashboard/embed.php?url=/admin/mlangprintauto/quote/  → 견적서(구)
+dashboard/embed.php?url=/admin/mlangprintauto/option_prices.php  → 옵션 가격
+```
+
 ## ⚡ Development Workflow
 
 ### Before Starting Work

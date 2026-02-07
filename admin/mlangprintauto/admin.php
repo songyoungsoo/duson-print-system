@@ -913,8 +913,16 @@ if ($mode == "OrderView") {
                                     // 대표 파일 아이콘
                                     $icon = ($file_info['saved_name'] == $row['ThingCate']) ? "📌" : "📄";
 
-                                    // 다운로드 링크 (download.php가 no와 downfile로 자동 경로 탐지)
-                                    echo "$icon <a href='download.php?no=$no&downfile=" . urlencode($file_info['saved_name']) . "' class='file'>";
+                                    // 이미지 파일이면 라이트박스, 아니면 다운로드
+                                    $ext = strtolower(pathinfo($file_info['saved_name'], PATHINFO_EXTENSION));
+                                    $is_image = in_array($ext, ['jpg', 'jpeg', 'png', 'gif']);
+                                    $file_url = "/mlangorder_printauto/upload/$no/" . urlencode($file_info['saved_name']);
+
+                                    if ($is_image) {
+                                        echo "$icon <a href='$file_url' class='file lightbox-trigger' onclick='openLightbox(\"$file_url\"); return false;'>";
+                                    } else {
+                                        echo "$icon <a href='download.php?no=$no&downfile=" . urlencode($file_info['saved_name']) . "' class='file'>";
+                                    }
                                     echo htmlspecialchars($file_info['original_name']) . "</a> ({$file_size_mb}MB)";
 
                                     if ($file_info['saved_name'] == $row['ThingCate']) {
@@ -954,15 +962,21 @@ if ($mode == "OrderView") {
 
                                         $icon = ($file == $row['ThingCate']) ? "📌" : "📄";
 
-                                        echo "$icon <a href='download.php?no=$no&downfile=" . urlencode($file) . "' class='file'>";
+                                        $f_ext = strtolower(pathinfo($file, PATHINFO_EXTENSION));
+                                        $f_is_image = in_array($f_ext, ['jpg', 'jpeg', 'png', 'gif']);
+                                        $web_path = "/" . ltrim(str_replace('../../', '', $dir_path), '/') . "/" . urlencode($file);
+
+                                        if ($f_is_image) {
+                                            echo "$icon <a href='$web_path' class='file lightbox-trigger' onclick='openLightbox(\"$web_path\"); return false;'>";
+                                        } else {
+                                            echo "$icon <a href='download.php?no=$no&downfile=" . urlencode($file) . "' class='file'>";
+                                        }
                                         echo htmlspecialchars($file) . "</a> ({$file_size_mb}MB)";
 
                                         if ($file == $row['ThingCate']) {
                                             echo " <span style='color: #28a745; font-weight: bold;'>(대표 파일)</span>";
                                         }
                                         echo "<br>";
-
-                                        $displayed_files[] = $file;
                                     }
                                 }
                             }
@@ -983,7 +997,15 @@ if ($mode == "OrderView") {
 
                                         $icon = ($file == $row['ThingCate']) ? "📌" : "📄";
 
-                                        echo "$icon <a href='download.php?no=$no&downfile=" . urlencode($file) . "' class='file'>";
+                                        $f_ext2 = strtolower(pathinfo($file, PATHINFO_EXTENSION));
+                                        $f_is_image2 = in_array($f_ext2, ['jpg', 'jpeg', 'png', 'gif']);
+                                        $upload_url = "/mlangorder_printauto/upload/$no/" . urlencode($file);
+
+                                        if ($f_is_image2) {
+                                            echo "$icon <a href='$upload_url' class='file lightbox-trigger' onclick='openLightbox(\"$upload_url\"); return false;'>";
+                                        } else {
+                                            echo "$icon <a href='download.php?no=$no&downfile=" . urlencode($file) . "' class='file'>";
+                                        }
                                         echo htmlspecialchars($file) . "</a> ({$file_size_mb}MB)";
 
                                         if ($file == $row['ThingCate']) {

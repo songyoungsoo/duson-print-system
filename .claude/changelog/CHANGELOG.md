@@ -4,6 +4,21 @@
 
 ---
 
+## 2026-02-08
+
+| 수정자 | 수정항목 | 관련 파일 |
+|--------|----------|-----------|
+| Claude | **교정 관리 이미지 뷰어 개선** - "보기" 클릭 → 100% 원본 크기 이미지 오버레이 (스크롤 지원). 여러 이미지 좌우 네비게이션 (화살표 버튼 + 방향키). 이미지 카운터(1/3). 이미지 클릭/ESC/배경 클릭으로 닫기 | dashboard/proofs/index.php |
+| Claude | **교정파일 다중 업로드 개선** - 파일 누적 추가, 개별 삭제, 이미지 썸네일 미리보기, 20MB/형식 검증, 중복 방지, 진행률 표시, 업로드 완료 후 페이지 새로고침 없이 행 갱신 | dashboard/proofs/index.php, dashboard/proofs/api.php |
+| Claude | **교정파일 업로드 시 파일명 자동 입력** - 이미지 선택 시 원본 파일명이 편집 가능한 입력란에 자동 표시. 수정하면 커스텀 이름으로 저장, 그대로 두면 원본 이름 사용. 확장자 별도 표시, 100자 제한, 동일명 충돌 시 자동 번호 추가 | dashboard/proofs/index.php, dashboard/proofs/api.php |
+| Claude | **교정 관리 페이지네이션 표준화** - 이전/다음만 있던 페이지네이션을 « ‹ 1 … 3 [4] 5 … 42 › » 형식으로 변경. 현재 페이지 ±2 범위 표시, 첫/마지막 페이지 바로가기 | dashboard/proofs/index.php |
+| Claude | **대시보드 iframe 임베드** - 주문관리(구)/교정관리(구)/견적서(구)/옵션가격을 _blank 대신 대시보드 메인 iframe으로 임베드 | dashboard/embed.php (신규), dashboard/includes/config.php, dashboard/includes/sidebar.php |
+| Claude | **관리자 주문 상세 라이트박스** - 파일 링크(Step 2/3/4) 이미지 클릭 → 전체화면 오버레이 (클릭/ESC 닫기). ImgFolder 경로 변환 포함 | admin/mlangprintauto/admin.php, mlangorder_printauto/OrderFormOrderTree.php |
+| Claude | **인쇄 레이아웃 A4 관리자/직원용** - 관리자용(130mm) + 절취선 + 직원용 1페이지. 단계적 압축(level 0~2) + JS overflow 감지 → 2페이지 자동 전환 | mlangorder_printauto/OrderFormOrderTree.php |
+| Claude | **엑셀 내보내기 품목 JSON 수정** - export_logen_excel74.php에서 Type_1 JSON → spec_* 필드 조합으로 읽기 가능한 텍스트 출력 | shop_admin/export_logen_excel74.php |
+| Claude | **로젠택배 날짜 검색 수정** - date 컬럼 datetime 비교 시 종료일 `23:59:59` 누락 → 당일 데이터 조회 불가. 검색+엑셀 내보내기 둘 다 수정 | shop_admin/post_list74.php, shop_admin/export_logen_excel74.php |
+| Claude | **견적서 저장 시 status 버그 수정** - "저장" 클릭 시 status가 바로 `sent`로 설정되어 발송 안 했는데 "재발송" 표시. 저장 시 무조건 `draft`, `sent`는 이메일 발송 시에만 변경 | admin/mlangprintauto/quote/includes/AdminQuoteManager.php |
+
 ## 2026-02-07
 
 | 수정자 | 수정항목 | 관련 파일 |

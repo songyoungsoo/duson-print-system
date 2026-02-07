@@ -35,7 +35,10 @@ $group_colors = [
                 <ul>
                     <?php foreach ($group['items'] as $key => $module):
                         $item_path = rtrim(parse_url($module['path'], PHP_URL_PATH), '/') . '/';
-                        $is_active = ($current_path === $item_path);
+                        $is_embed = !empty($module['embed']);
+                        $is_active = $is_embed
+                            ? ($current_path === '/dashboard/embed.php/' && isset($_GET['url']) && strpos($module['path'], urlencode($_GET['url'])) !== false)
+                            : ($current_path === $item_path);
                         $is_external = !empty($module['external']);
                         $active_class = $is_active
                             ? $colors['active_bg'] . ' ' . $colors['active_text'] . ' font-medium border-l-2 ' . $colors['active_border']

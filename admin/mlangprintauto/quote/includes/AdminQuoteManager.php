@@ -80,7 +80,7 @@ class AdminQuoteManager
             throw new Exception('Query preparation failed: ' . mysqli_error($this->db));
         }
 
-        $status = $isDraft ? 'draft' : 'sent';
+        $status = 'draft';
         $validUntil = date('Y-m-d', strtotime('+30 days'));
 
         $customerCompany = $quoteData['customer_company'] ?? '';

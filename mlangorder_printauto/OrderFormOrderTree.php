@@ -74,6 +74,7 @@ if (isset($order_rows) && is_array($order_rows) && count($order_rows) > 0) {
         }
     }
     $is_group_order = count($order_rows) > 1;
+    $item_count = count($order_rows);
 } else {
     // 단일 주문 처리 (기존 방식 유지)
     $no = isset($_REQUEST['no']) ? intval($_REQUEST['no']) : 0;
@@ -87,6 +88,7 @@ if (isset($order_rows) && is_array($order_rows) && count($order_rows) > 0) {
         if ($row = $result->fetch_assoc()) {
             $order_rows = [$row]; // 배열로 변환
             $is_group_order = false;
+            $item_count = 1;
         } else {
             echo ("<script>
                 alert('Database error.');
@@ -491,26 +493,35 @@ function getOrderItemInfo($summary_item, $specFormatter) {
             const divider = document.querySelector('.print-divider');
             const employeeOrder = document.querySelector('.print-order.employee-copy');
 
-            if (adminOrder && divider && employeeOrder) {
-                // 임시로 print-only 표시하여 높이 측정
+            const printContainer = document.querySelector('.print-container');
+
+            if (divider && employeeOrder) {
+                divider.classList.remove('hidden');
+                employeeOrder.classList.remove('new-page');
+            }
+
+            // overflow 감지: 관리자 영역이 130mm(≈492px @96dpi) 초과 시 2페이지 모드
+            if (printContainer && adminOrder) {
+                printContainer.classList.remove('two-page-mode');
+                // 임시로 보이게 해서 실제 높이 측정
+                const printOnly = document.querySelector('.print-only');
                 printOnly.style.display = 'block';
-                const adminHeight = adminOrder.offsetHeight;
+                printOnly.style.position = 'absolute';
+                printOnly.style.left = '-9999px';
+                printOnly.style.width = '194mm'; // A4 - margins
 
-                // A4 용지 세로 길이의 약 45% (여백 고려) = 약 450px
-                const halfPageHeight = 450;
+                const adminHeight = adminOrder.scrollHeight;
+                const mmToPx = 3.7795; // 1mm ≈ 3.78px at 96dpi
+                const threshold = 130 * mmToPx; // 130mm → ~491px
 
-                if (adminHeight > halfPageHeight) {
-                    // 관리자 내용이 절반을 넘으면: 절취선 숨기고 2페이지 모드
-                    divider.classList.add('hidden');
-                    employeeOrder.classList.add('new-page');
-                } else {
-                    // 관리자 내용이 절반 이하면: 절취선 표시, 같은 페이지
-                    divider.classList.remove('hidden');
-                    employeeOrder.classList.remove('new-page');
+                if (adminHeight > threshold) {
+                    printContainer.classList.add('two-page-mode');
                 }
 
-                // 다시 숨기기 (프린트 CSS에서 표시됨)
                 printOnly.style.display = '';
+                printOnly.style.position = '';
+                printOnly.style.left = '';
+                printOnly.style.width = '';
             }
 
             window.print();
@@ -540,7 +551,7 @@ function getOrderItemInfo($summary_item, $specFormatter) {
         /* 절취선 스타일 */
         .print-divider {
             position: relative;
-            margin: 4mm 0;
+            margin: 2mm 0;
             border: none;
             border-top: 2px dashed #666;
             height: 0;
@@ -564,7 +575,7 @@ function getOrderItemInfo($summary_item, $specFormatter) {
             display: none !important;
         }
 
-        /* 프린트 시에만 표시 - A4 한장 맞춤 최적화 */
+        /* 프린트 시에만 표시 - A4 한장에 관리자용(130mm) + 절취선 + 직원용 */
         @media print {
             @page {
                 margin: 6mm 8mm;
@@ -576,7 +587,6 @@ function getOrderItemInfo($summary_item, $specFormatter) {
                 padding: 0 !important;
             }
 
-            /* 프린트 전용 내용만 표시 */
             .print-only {
                 display: block !important;
             }
@@ -585,7 +595,6 @@ function getOrderItemInfo($summary_item, $specFormatter) {
                 display: none !important;
             }
 
-            /* 화면 전용 요소 숨기기 */
             .admin-container,
             .file-section,
             input,
@@ -594,24 +603,81 @@ function getOrderItemInfo($summary_item, $specFormatter) {
                 display: none !important;
             }
 
-            /* 주문서 컨테이너 */
             .print-container {
                 width: 100%;
+                height: 285mm;
+                overflow: hidden;
             }
 
-            /* 각 주문서가 페이지에 맞게 자동 분리 */
             .print-order {
                 page-break-inside: avoid;
+                overflow: hidden;
+                box-sizing: border-box;
             }
 
-            /* 절취선 숨김 시에도 적용 */
+            .print-order:first-child {
+                height: 130mm;
+            }
+
+            .print-order.employee-copy {
+                height: calc(285mm - 130mm - 6mm);
+            }
+
             .print-divider.hidden {
                 display: none !important;
             }
 
-            /* 2페이지 모드: 직원용 주문서 새 페이지에서 시작 */
-            .print-order.employee-copy.new-page {
+            /* === compact-level-1: 3~4개 품목 — 폰트/여백 축소 === */
+            .compact-level-1 .print-order table {
+                font-size: 9pt;
+            }
+            .compact-level-1 .print-order table td,
+            .compact-level-1 .print-order table th {
+                padding: 1mm;
+            }
+            .compact-level-1 .print-order .print-info-section {
+                margin-bottom: 1mm;
+            }
+            .compact-level-1 .print-title {
+                font-size: 11pt;
+                margin-bottom: 1mm;
+            }
+
+            /* === compact-level-2: 5개+ 품목 — 최대 압축 === */
+            .compact-level-2 .print-order table {
+                font-size: 8pt;
+            }
+            .compact-level-2 .print-order table td,
+            .compact-level-2 .print-order table th {
+                padding: 0.7mm;
+            }
+            .compact-level-2 .print-order .print-info-section {
+                margin-bottom: 0.5mm;
+            }
+            .compact-level-2 .print-title {
+                font-size: 10pt;
+                margin-bottom: 0.5mm;
+            }
+            .compact-level-2 .print-footer {
+                font-size: 7pt;
+                margin-top: 0;
+            }
+
+            /* === two-page-mode: JS가 overflow 감지 시 전환 === */
+            .two-page-mode {
+                height: auto;
+                overflow: visible;
+            }
+            .two-page-mode .print-order:first-child {
+                height: auto;
+                page-break-after: always;
+            }
+            .two-page-mode .print-order.employee-copy {
+                height: auto;
                 page-break-before: always;
+            }
+            .two-page-mode .print-divider {
+                display: none !important;
             }
         }
     </style>
@@ -620,8 +686,14 @@ function getOrderItemInfo($summary_item, $specFormatter) {
 <body>
 
     <!-- 프린트 전용 내용 -->
+    <?php
+    // 단계적 압축 레벨 결정: 0=기본, 1=압축, 2=최대압축
+    $compact_level = 0;
+    if ($item_count >= 5) $compact_level = 2;
+    elseif ($item_count >= 3) $compact_level = 1;
+    ?>
     <div class="print-only">
-        <div class="print-container">
+        <div class="print-container compact-level-<?= $compact_level ?>" data-item-count="<?= $item_count ?>">
             <!-- 첫 번째 주문서 (관리자용) -->
             <div class="print-order">
                 <div class="print-title">주문서 (관리자용)</div>
@@ -1628,6 +1700,27 @@ function getOrderItemInfo($summary_item, $specFormatter) {
             </div> <!-- admin-content 종료 -->
         </div> <!-- admin-container 종료 -->
     </div> <!-- screen-only 종료 -->
+
+    <!-- 이미지 라이트박스 (클릭하면 닫힘) -->
+    <div id="imgLightbox" style="display:none; position:fixed; top:0; left:0; width:100%; height:100%; background:rgba(0,0,0,0.85); z-index:9999; cursor:pointer; justify-content:center; align-items:center;" onclick="closeLightbox()">
+        <img id="lightboxImg" src="" style="max-width:90%; max-height:90%; object-fit:contain; border-radius:4px; box-shadow:0 4px 30px rgba(0,0,0,0.5);">
+        <div style="position:absolute; top:15px; right:20px; color:#fff; font-size:14px; opacity:0.7;">클릭하면 닫힙니다 ✕</div>
+    </div>
+    <script>
+    function openLightbox(src) {
+        var lb = document.getElementById('imgLightbox');
+        document.getElementById('lightboxImg').src = decodeURIComponent(src) + '?raw';
+        lb.style.display = 'flex';
+    }
+    function closeLightbox() {
+        var lb = document.getElementById('imgLightbox');
+        lb.style.display = 'none';
+        document.getElementById('lightboxImg').src = '';
+    }
+    document.addEventListener('keydown', function(e) {
+        if (e.key === 'Escape') closeLightbox();
+    });
+    </script>
 
 </body>
 </html>

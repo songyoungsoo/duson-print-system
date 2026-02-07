@@ -47,7 +47,7 @@ $DASHBOARD_NAV = [
         'items' => [
             'products' => ['name' => '제품 관리', 'icon' => '🏷️', 'path' => '/dashboard/products/'],
             'pricing' => ['name' => '가격 관리', 'icon' => '💰', 'path' => '/dashboard/pricing/'],
-            'option_prices' => ['name' => '옵션 가격', 'icon' => '⚙️', 'path' => '/admin/mlangprintauto/quote/option_prices.php', 'external' => true],
+            'option_prices' => ['name' => '옵션 가격', 'icon' => '⚙️', 'path' => '/dashboard/embed.php?url=' . urlencode('/admin/mlangprintauto/quote/option_prices.php'), 'embed' => true],
         ]
     ],
     'admin_group' => [
@@ -60,9 +60,9 @@ $DASHBOARD_NAV = [
     'legacy_group' => [
         'label' => '기존 관리자',
         'items' => [
-            'admin_legacy' => ['name' => '주문 관리(구)', 'icon' => '🗂️', 'path' => '/admin/mlangprintauto/orderlist.php', 'external' => true],
-            'admin_proof' => ['name' => '교정 관리(구)', 'icon' => '📂', 'path' => '/admin/mlangprintauto/proof_manager.php', 'external' => true],
-            'admin_quote' => ['name' => '견적서(구)', 'icon' => '📝', 'path' => '/admin/mlangprintauto/quote/', 'external' => true],
+            'admin_legacy' => ['name' => '주문 관리(구)', 'icon' => '🗂️', 'path' => '/dashboard/embed.php?url=' . urlencode('/admin/mlangprintauto/orderlist.php'), 'embed' => true],
+            'admin_proof' => ['name' => '교정 관리(구)', 'icon' => '📂', 'path' => '/dashboard/embed.php?url=' . urlencode('/admin/mlangprintauto/proof_manager.php'), 'embed' => true],
+            'admin_quote' => ['name' => '견적서(구)', 'icon' => '📝', 'path' => '/dashboard/embed.php?url=' . urlencode('/admin/mlangprintauto/quote/'), 'embed' => true],
         ]
     ],
 ];

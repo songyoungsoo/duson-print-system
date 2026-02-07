@@ -94,13 +94,13 @@ td,input,li{font-size:9pt}
   if($search_date_start != '' && $search_date_end != '') {
     $search_date_start_esc = mysqli_real_escape_string($connect, $search_date_start);
     $search_date_end_esc = mysqli_real_escape_string($connect, $search_date_end);
-    $search_conditions[] = "date >= '$search_date_start_esc' AND date <= '$search_date_end_esc'";
+    $search_conditions[] = "date >= '$search_date_start_esc 00:00:00' AND date <= '$search_date_end_esc 23:59:59'";
   } else if($search_date_start != '') {
     $search_date_start_esc = mysqli_real_escape_string($connect, $search_date_start);
-    $search_conditions[] = "date >= '$search_date_start_esc'";
+    $search_conditions[] = "date >= '$search_date_start_esc 00:00:00'";
   } else if($search_date_end != '') {
     $search_date_end_esc = mysqli_real_escape_string($connect, $search_date_end);
-    $search_conditions[] = "date <= '$search_date_end_esc'";
+    $search_conditions[] = "date <= '$search_date_end_esc 23:59:59'";
   }
 
   // 주문번호 범위 검색
