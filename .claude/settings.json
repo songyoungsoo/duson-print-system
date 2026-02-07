@@ -1,0 +1,38 @@
+{
+  "env": {
+    "CLAUDE_CODE_EXPERIMENTAL_AGENT_TEAMS": "1"
+  },
+  "enabledPlugins": {
+    "php-lsp@claude-plugins-official": true,
+    "code-review@claude-plugins-official": true,
+    "commit-commands@claude-plugins-official": true,
+    "security-guidance@claude-plugins-official": true,
+    "bkit@bkit-marketplace": true
+  },
+  "permissions": {
+    "allow": [
+      "Bash(git status)",
+      "Bash(git diff*)",
+      "Bash(git log*)",
+      "Bash(git add*)",
+      "Bash(git commit*)",
+      "Bash(git branch*)",
+      "Bash(git checkout*)",
+      "Bash(git push*)",
+      "Bash(composer*)",
+      "Bash(php -l*)",
+      "Bash(sudo service apache2*)",
+      "Bash(sudo service mysql*)",
+      "Bash(curl -T*ftp://dsp114.co.kr*)",
+      "Bash(du *)",
+      "Bash(ls *)"
+    ],
+    "deny": [
+      "Bash(rm -rf /)",
+      "Bash(git push --force*)",
+      "Bash(git reset --hard*)",
+      "Bash(DROP DATABASE*)",
+      "Bash(DROP TABLE*)"
+    ]
+  }
+}
