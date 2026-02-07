@@ -4,6 +4,19 @@
 
 ---
 
+## 2026-02-07
+
+| 수정자 | 수정항목 | 관련 파일 |
+|--------|----------|-----------|
+| Claude | **견적서 이메일 발송 500 에러 수정** - `use PHPMailer\PHPMailer\Exception;`으로 인해 `catch(Exception)`이 PHP 기본 `\Exception`을 못 잡는 문제. 모든 `catch(Exception)` → `catch(\Throwable)` 변경 | admin/mlangprintauto/quote/api/send_email.php |
+| Claude | **가격수정 시 검색 필터 초기화 문제 수정** - products/list.php: `location.reload()` 제거 → DOM 직접 업데이트로 필터 상태 유지. pricing/edit.php: 저장 시 data-original 갱신 + 하이라이트 제거 방식으로 전환 | dashboard/products/list.php, dashboard/pricing/edit.php |
+| Claude | **전단지 디자인비 정규화** - 확정 가격표 적용 (A6~A4 단면30K/양면60K, B4·A3 50K/100K, 4절 70K/140K, 국2절 80K/160K). 302행 UPDATE 로컬+프로덕션 완료. 그룹 단위 디자인비 수정 기능 JS 추가 | dashboard/pricing/edit.php |
+| Claude | **레거시 카테고리 이름 매핑 INSERT** - `mlangprintauto_transactioncate` 테이블 누락 항목 추가 (no=625, 628~632). 로컬+프로덕션 적용 | DB only |
+| Claude | **pricing/edit.php NaN 크래시 수정** - 프로덕션 DB `no=285` money='NaN' → PHP 8.2 `number_format()` fatal error → HTML 렌더링 중단 → JS 미출력. `is_numeric()` 검증 + `ob_flush()` 안전장치 추가. Playwright 검증 완료 (772행 전체 렌더링) | dashboard/pricing/edit.php |
+| Claude | **관리자 주문 상세 주문번호 불일치 수정** - 장바구니 그룹핑 `date + no ±50`만 사용 → 마이그레이션 데이터(time=00:00:00)에서 다른 고객 주문 혼합. 그룹핑 쿼리에 `AND name = ?` 조건 추가. `$row` 선택 로직도 `$original_no` 기준으로 수정 | admin/mlangprintauto/admin.php, mlangorder_printauto/OrderFormOrderTree.php |
+| Claude | **빈 상품정보 표시 수정** - `Type_1`이 빈 줄바꿈만(`"\n\n\n\n\n"`)인 경우 `!empty()` 통과 → 빈 파싱. `!empty(trim())` 체크로 수정 | mlangorder_printauto/OrderFormOrderTree.php |
+| Claude | **OrderView 제목 배경색 디자인 일관성 통일** - 섹션 제목 `#4472C4` → `linear-gradient(135deg, #2c3e50, #34495e)` 다크 그라데이션 (admin.php CSS 디자인 시스템에 맞춤). 버튼 `#4472C4` → `linear-gradient(135deg, #007bff, #0056b3)` + `border-radius: 6px`. 다운로드 링크 → `#007bff`. 전체 8곳 수정 | mlangorder_printauto/OrderFormOrderTree.php |
+
 ## 2026-02-04
 
 | 수정자 | 수정항목 | 관련 파일 |

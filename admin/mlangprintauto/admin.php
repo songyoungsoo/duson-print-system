@@ -542,20 +542,21 @@ if ($mode == "OrderView") {
             exit;
         }
 
-        // ✅ Step 2: 같은 장바구니(같은 초 + 연속 주문번호)의 주문을 모두 조회
+        // ✅ Step 2: 같은 장바구니(같은 초 + 같은 고객 + 연속 주문번호)의 주문을 모두 조회
         $base_date = $row['date'];
         $base_no = intval($row['no']);
+        $base_name = $row['name'];
 
-        // 같은 초 + 주문번호 ±50 범위 조회 (장바구니 그룹핑)
         $group_stmt = $db->prepare("
             SELECT * FROM mlangorder_printauto
             WHERE date = ?
+            AND name = ?
             AND no BETWEEN ? AND ?
             ORDER BY no ASC
         ");
         $no_min = $base_no - 50;
         $no_max = $base_no + 50;
-        $group_stmt->bind_param("sii", $base_date, $no_min, $no_max);
+        $group_stmt->bind_param("ssii", $base_date, $base_name, $no_min, $no_max);
         $group_stmt->execute();
         $group_result = $group_stmt->get_result();
 

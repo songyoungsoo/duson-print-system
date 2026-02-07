@@ -324,6 +324,7 @@ const productType = '<?php echo $type; ?>';
 const hasTreeSelect = <?php echo $hasTreeSelect ? 'true' : 'false'; ?>;
 const hasPOtype = <?php echo $hasPOtype ? 'true' : 'false'; ?>;
 const sectionOptions = <?php echo json_encode($sectionOptions, JSON_UNESCAPED_UNICODE); ?>;
+const categoryTitles = <?php echo json_encode(array_map(function($v){ return $v['title']; }, $categoryTitles), JSON_UNESCAPED_UNICODE); ?>;
 
 // 필터 기능
 const filterStyle = document.getElementById('filterStyle');
@@ -522,8 +523,62 @@ document.getElementById('modalSaveBtn').addEventListener('click', async function
         const result = await response.json();
         
         if (result.success) {
-            alert(formAction === 'create' ? '제품이 추가되었습니다.' : '제품이 수정되었습니다.');
-            location.reload();
+            const savedStyle = formStyle.value;
+            const savedSection = formSection.value;
+            const savedTree = hasTreeSelect && document.getElementById('formTree') ? document.getElementById('formTree').value : '';
+            const savedPOtype = hasPOtype && document.getElementById('formPOtype') ? document.getElementById('formPOtype').value : '';
+            const savedQty = document.getElementById('formQuantity').value;
+            const savedMoney = document.getElementById('formMoney').value;
+            const savedDesign = document.getElementById('formDesignMoney').value || '10000';
+            const styleName = categoryTitles[savedStyle] || savedStyle;
+            const sectionName = categoryTitles[savedSection] || savedSection;
+            const treeName = categoryTitles[savedTree] || savedTree || '-';
+            const poTypeName = savedPOtype === '1' ? '단면' : (savedPOtype === '2' ? '양면' : '-');
+            
+            if (formAction === 'update') {
+                const rowNo = document.getElementById('formNo').value;
+                const row = document.querySelector(`tr[data-no="${rowNo}"]`);
+                if (row) {
+                    row.dataset.style = savedStyle;
+                    row.dataset.section = savedSection;
+                    row.dataset.tree = savedTree;
+                    row.dataset.potype = savedPOtype;
+                    
+                    const cells = row.querySelectorAll('td');
+                    let ci = 1;
+                    cells[ci++].querySelector('span').textContent = styleName;
+                    cells[ci++].querySelector('span').textContent = sectionName;
+                    if (hasTreeSelect) cells[ci++].querySelector('span').textContent = treeName;
+                    if (hasPOtype) {
+                        const badge = cells[ci++].querySelector('span');
+                        badge.textContent = poTypeName;
+                        badge.className = 'px-2 py-1 rounded text-xs ' + 
+                            (savedPOtype === '1' ? 'bg-blue-100 text-blue-800' : (savedPOtype === '2' ? 'bg-purple-100 text-purple-800' : 'text-gray-500'));
+                    }
+                    cells[ci++].textContent = savedQty;
+                    cells[ci++].textContent = Number(savedMoney).toLocaleString() + '원';
+                    cells[ci++].textContent = Number(savedDesign).toLocaleString() + '원';
+                    
+                    const editBtn = row.querySelector('.edit-btn');
+                    if (editBtn) {
+                        editBtn.dataset.style = savedStyle;
+                        editBtn.dataset.section = savedSection;
+                        editBtn.dataset.tree = savedTree;
+                        editBtn.dataset.potype = savedPOtype;
+                        editBtn.dataset.quantity = savedQty;
+                        editBtn.dataset.money = savedMoney;
+                        editBtn.dataset.designMoney = savedDesign;
+                    }
+                }
+            } else {
+                // 새 행 추가 시에는 reload (새 no 값 필요)
+                location.reload();
+                return;
+            }
+            
+            modal.classList.add('hidden');
+            modal.classList.remove('flex');
+            applyFilters();
         } else {
             alert('저장 실패: ' + result.message);
         }

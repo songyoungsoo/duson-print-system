@@ -128,13 +128,13 @@ try {
         $mail->AltBody = '두손기획인쇄 견적서 - 견적번호: ' . $quote['quote_no']
             . ' / 총 견적금액: ' . number_format($quote['grand_total']) . '원 (VAT포함)';
 
-        // PDF 첨부
+        // PDF 첨부 (\Throwable로 PHP 기본 Exception도 포착)
         try {
             $pdfContent = $renderer->renderPDF(null, 'S');
             if ($pdfContent) {
                 $mail->addStringAttachment($pdfContent, '견적서_' . $quote['quote_no'] . '.pdf', 'base64', 'application/pdf');
             }
-        } catch (Exception $pdfError) {
+        } catch (\Throwable $pdfError) {
             // PDF 첨부 실패해도 이메일은 발송
         }
 
@@ -149,14 +149,14 @@ try {
             'recipient' => $recipientEmail
         ]);
 
-    } catch (Exception $e) {
+    } catch (\Throwable $e) {
         sendJsonResponse([
             'success' => false,
-            'message' => '이메일 발송 실패: ' . $mail->ErrorInfo
+            'message' => '이메일 발송 실패: ' . ($mail->ErrorInfo ?? $e->getMessage())
         ]);
     }
 
-} catch (Exception $e) {
+} catch (\Throwable $e) {
     sendJsonResponse([
         'success' => false,
         'message' => '오류: ' . $e->getMessage()

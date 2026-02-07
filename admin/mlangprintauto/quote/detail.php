@@ -159,7 +159,15 @@ function sendEmail() {
     <?php else: ?>
     if(confirm('<?php echo addslashes($quote['customer_email']); ?>로 발송하시겠습니까?')) {
         fetch('api/send_email.php', {method:'POST', headers:{'Content-Type':'application/json'}, body:JSON.stringify({quote_id:<?php echo $quoteId; ?>, recipient_email:'<?php echo addslashes($quote['customer_email']); ?>'})})
-        .then(r=>r.json()).then(d=>{ if(d.success){alert('발송됨');location.reload();}else alert('실패: '+d.message); })
+        .then(r=>{
+            if(!r.ok) throw new Error('HTTP '+r.status);
+            return r.text();
+        })
+        .then(text=>{
+            if(!text) throw new Error('빈 응답 (서버 오류 가능성)');
+            try { return JSON.parse(text); } catch(e) { throw new Error('JSON 파싱 실패: '+text.substring(0,200)); }
+        })
+        .then(d=>{ if(d.success){alert('발송됨');location.reload();}else alert('실패: '+d.message); })
         .catch(e=>alert('오류: '+e.message));
     }
     <?php endif; ?>

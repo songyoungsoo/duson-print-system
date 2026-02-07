@@ -115,6 +115,7 @@ include __DIR__ . '/../includes/sidebar.php';
             </div>
             <p class="mt-1 text-xs text-gray-500">* 양수는 인상, 음수는 인하입니다. 적용 전 확인 메시지가 표시됩니다.</p>
             <p class="mt-0.5 text-xs text-blue-600">* <span class="px-1 py-0.5 text-xs bg-green-100 text-green-700 rounded">기준</span> 표시된 1연 가격을 변경하면 2~10연이 자동 계산됩니다. (0.5연은 별도 수정)</p>
+            <p class="mt-0.5 text-xs text-green-600">* 디자인비를 변경하면 같은 그룹(스타일/섹션/종이/인쇄면)의 모든 수량에 <span class="px-1 py-0.5 text-xs bg-green-100 text-green-700 rounded">자동 적용</span>됩니다.</p>
         </div>
 
         <div class="bg-white rounded-lg shadow p-4 mb-4">
@@ -185,12 +186,17 @@ include __DIR__ . '/../includes/sidebar.php';
                         </tr>
                     </thead>
                     <tbody id="priceTableBody" class="bg-white divide-y divide-gray-200">
+<?php 
+// 프로덕션 서버 output_buffering 한도 대응: 테이블 출력 전 버퍼 플러시
+if (ob_get_level()) { ob_flush(); } flush(); 
+?>
                         <?php foreach ($products as $product): 
                             $styleNo = $product['style'];
                             $sectionNo = $product['Section'];
                             $treeSelectNo = $hasTreeSelect ? ($product['TreeSelect'] ?? '') : '';
                             $poType = $hasPOtype ? ($product['POtype'] ?? '') : '';
-                            $designMoney = $product['DesignMoney'] ?? 0;
+                            $designMoney = is_numeric($product['DesignMoney'] ?? 0) ? (float)($product['DesignMoney'] ?? 0) : 0;
+                            $money = is_numeric($product['money']) ? (float)$product['money'] : 0;
                             $quantity = $product['quantity'];
                             $groupKey = "{$styleNo}-{$sectionNo}-{$treeSelectNo}-{$poType}";
                             $styleName = isset($categoryTitles[$styleNo]) ? $categoryTitles[$styleNo]['title'] : $styleNo;
@@ -198,7 +204,7 @@ include __DIR__ . '/../includes/sidebar.php';
                             $treeSelectName = isset($categoryTitles[$treeSelectNo]) ? $categoryTitles[$treeSelectNo]['title'] : ($treeSelectNo ?: '-');
                             $poTypeName = ($poType == '1') ? '단면' : (($poType == '2') ? '양면' : '-');
                         ?>
-                        <tr data-no="<?php echo $product['no']; ?>" data-price="<?php echo $product['money']; ?>" 
+                        <tr data-no="<?php echo $product['no']; ?>" data-price="<?php echo $money; ?>" 
                             data-design-money="<?php echo $designMoney; ?>"
                             data-style="<?php echo $styleNo; ?>" data-section="<?php echo $sectionNo; ?>" 
                             data-tree="<?php echo $treeSelectNo; ?>" data-potype="<?php echo $poType; ?>"
@@ -229,7 +235,7 @@ include __DIR__ . '/../includes/sidebar.php';
                                 <?php endif; ?>
                             </td>
                             <td class="px-3 py-2 whitespace-nowrap text-sm text-gray-900 text-right original-price">
-                                <?php echo number_format($product['money']); ?>원
+                                <?php echo number_format($money); ?>원
                             </td>
                             <td class="px-3 py-2 whitespace-nowrap text-sm text-right">
                                 <input type="number" class="new-design-money w-20 px-1.5 py-0.5 border border-gray-300 rounded text-right text-xs" 
@@ -237,7 +243,7 @@ include __DIR__ . '/../includes/sidebar.php';
                             </td>
                             <td class="px-3 py-2 whitespace-nowrap text-sm text-right">
                                 <input type="number" class="new-price w-20 px-1.5 py-0.5 border border-gray-300 rounded text-right text-xs" 
-                                       value="<?php echo $product['money']; ?>" data-original="<?php echo $product['money']; ?>">
+                                       value="<?php echo $money; ?>" data-original="<?php echo $money; ?>">
                             </td>
                             <td class="px-3 py-2 whitespace-nowrap text-sm text-center">
                                 <button class="delete-btn text-red-600 hover:text-red-800 text-xs"
@@ -248,6 +254,7 @@ include __DIR__ . '/../includes/sidebar.php';
                     </tbody>
                 </table>
             </div>
+<?php if (ob_get_level()) { ob_flush(); } flush(); ?>
 
             <div class="px-4 py-3 border-t border-gray-200 flex justify-end gap-3">
                 <button id="resetBtn" class="px-4 py-1.5 text-sm bg-gray-600 text-white rounded-lg hover:bg-gray-700 transition-colors">
@@ -347,7 +354,7 @@ document.getElementById('filterResetBtn').addEventListener('click', function() {
 applyFilters();
 
 // 입력값 변경 시 하이라이트
-document.querySelectorAll('.new-price, .new-design-money').forEach(input => {
+document.querySelectorAll('.new-price').forEach(input => {
     input.addEventListener('input', function() {
         const original = parseFloat(this.dataset.original);
         const current = parseFloat(this.value);
@@ -356,6 +363,36 @@ document.querySelectorAll('.new-price, .new-design-money').forEach(input => {
         } else {
             this.classList.remove('bg-yellow-50', 'border-yellow-400');
         }
+    });
+});
+
+document.querySelectorAll('.new-design-money').forEach(input => {
+    input.addEventListener('input', function() {
+        const original = parseFloat(this.dataset.original);
+        const current = parseFloat(this.value);
+        const row = this.closest('tr');
+        const groupKey = row.dataset.groupKey;
+        
+        if (current !== original) {
+            this.classList.add('bg-yellow-50', 'border-yellow-400');
+        } else {
+            this.classList.remove('bg-yellow-50', 'border-yellow-400');
+        }
+        
+        if (isNaN(current) || current < 0) return;
+        
+        document.querySelectorAll(`#priceTableBody tr[data-group-key="${groupKey}"]`).forEach(otherRow => {
+            if (otherRow === row) return;
+            const otherInput = otherRow.querySelector('.new-design-money');
+            otherInput.value = current;
+            const otherOriginal = parseFloat(otherInput.dataset.original);
+            if (current !== otherOriginal) {
+                otherInput.classList.remove('bg-yellow-50', 'border-yellow-400');
+                otherInput.classList.add('bg-green-50', 'border-green-400');
+            } else {
+                otherInput.classList.remove('bg-green-50', 'border-green-400', 'bg-yellow-50', 'border-yellow-400');
+            }
+        });
     });
 });
 
@@ -506,7 +543,25 @@ document.getElementById('saveBtn').addEventListener('click', async function() {
         }
         
         alert(`${successCount}/${changes.length}개 항목이 성공적으로 수정되었습니다.`);
-        location.reload();
+        
+        changes.forEach(change => {
+            const row = document.querySelector(`tr[data-no="${change.no}"]`);
+            if (!row) return;
+            
+            const priceInput = row.querySelector('.new-price');
+            const designInput = row.querySelector('.new-design-money');
+            
+            row.dataset.price = change.price;
+            row.dataset.designMoney = change.designMoney;
+            
+            priceInput.dataset.original = change.price;
+            priceInput.classList.remove('bg-yellow-50', 'border-yellow-400', 'bg-blue-50', 'border-blue-400');
+            
+            designInput.dataset.original = change.designMoney;
+            designInput.classList.remove('bg-yellow-50', 'border-yellow-400');
+            
+            row.querySelector('.original-price').textContent = Number(change.price).toLocaleString() + '원';
+        });
         
     } catch (error) {
         alert('가격 수정 중 오류가 발생했습니다.');

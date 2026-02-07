@@ -63,9 +63,17 @@ $db->set_charset("utf8");
 
 // ✅ admin.php에서 $order_rows 배열이 전달되었는지 확인
 if (isset($order_rows) && is_array($order_rows) && count($order_rows) > 0) {
-    // 다중 주문 처리 (장바구니 그룹)
-    $row = $order_rows[0]; // 첫 번째 주문에서 고객 정보 사용
-    $is_group_order = count($order_rows) > 1; // 2개 이상이면 그룹 주문
+    // $original_no가 있으면 해당 주문을 기준으로 사용
+    $row = $order_rows[0];
+    if (isset($original_no) && $original_no > 0) {
+        foreach ($order_rows as $candidate) {
+            if (intval($candidate['no']) === intval($original_no)) {
+                $row = $candidate;
+                break;
+            }
+        }
+    }
+    $is_group_order = count($order_rows) > 1;
 } else {
     // 단일 주문 처리 (기존 방식 유지)
     $no = isset($_REQUEST['no']) ? intval($_REQUEST['no']) : 0;
@@ -255,7 +263,7 @@ function getOrderItemInfo($summary_item, $specFormatter) {
             $mesu_for_display = $ncr_sheets;
         }
 
-    } elseif (!empty($summary_item['Type_1'])) {
+    } elseif (!empty(trim($summary_item['Type_1'] ?? ''))) {
         // ✅ Fallback: Type_1 JSON 사용 (레거시 주문)
         $type_1_data = trim($summary_item['Type_1']);
         $json_data = json_decode($type_1_data, true);
@@ -1138,7 +1146,7 @@ function getOrderItemInfo($summary_item, $specFormatter) {
 
             <!-- ===== 주문 기본 정보 테이블 ===== -->
             <table style="width: 100%; border-collapse: collapse; margin-bottom: 15px; border: 2px solid #333;">
-                <tr style="background: #4472C4;">
+                <tr style="background: linear-gradient(135deg, #2c3e50, #34495e);">
                     <td colspan="4" style="padding: 12px 15px; color: #fff; font-size: 16px; font-weight: bold; text-align: center;">
                         주문 상세 정보
                     </td>
@@ -1190,7 +1198,7 @@ function getOrderItemInfo($summary_item, $specFormatter) {
                         <col style="width: 9%;">
                         <col style="width: 13%;">
                     </colgroup>
-                    <tr style="background: #4472C4;">
+                    <tr style="background: linear-gradient(135deg, #2c3e50, #34495e);">
                         <td colspan="6" style="padding: 10px 15px; color: #fff; font-size: 14px; font-weight: bold;">
                             주문 상품 정보
                         </td>
@@ -1364,7 +1372,7 @@ function getOrderItemInfo($summary_item, $specFormatter) {
 
                 <!-- ===== 가격 정보 테이블 ===== -->
                 <table style="width: 100%; border-collapse: collapse; margin-bottom: 15px; border: 2px solid #333;">
-                    <tr style="background: #4472C4;">
+                    <tr style="background: linear-gradient(135deg, #2c3e50, #34495e);">
                         <td colspan="2" style="padding: 10px 15px; color: #fff; font-size: 14px; font-weight: bold;">
                             가격 정보
                         </td>
@@ -1475,7 +1483,7 @@ function getOrderItemInfo($summary_item, $specFormatter) {
                         <td style="width: 70%; border: 1px solid #999; padding: 8px 10px; font-size: 13px; text-align: right; font-weight: bold;"><?= number_format(round($total_money_4 + $grand_additional_options_total, -1)) ?> 원</td>
                     </tr>
                     <tr style="background: #FFF2CC;">
-                        <th style="width: 30%; background: #4472C4; border: 1px solid #999; padding: 10px; font-size: 13px; text-align: center; color: #fff;">부가세포함금액</th>
+                        <th style="width: 30%; background: #2c3e50; border: 1px solid #999; padding: 10px; font-size: 13px; text-align: center; color: #fff;">부가세포함금액</th>
                         <td style="width: 70%; border: 1px solid #999; padding: 10px; font-size: 15px; text-align: right; font-weight: bold; color: #C00000;"><?= number_format(round($total_money_5, -1)) ?> 원</td>
                     </tr>
                 </table>
@@ -1513,7 +1521,7 @@ function getOrderItemInfo($summary_item, $specFormatter) {
 
                         if (!empty($files)) {
                             echo "<table style='width: 100%; border-collapse: collapse; margin-bottom: 15px; border: 2px solid #333;'>";
-                            echo "<tr style='background: #4472C4;'>";
+                            echo "<tr style='background: linear-gradient(135deg, #2c3e50, #34495e);'>";
                             echo "<td colspan='3' style='padding: 10px 15px; color: #fff; font-size: 14px; font-weight: bold;'>첨부 파일 (" . count($files) . "개)</td>";
                             echo "</tr>";
                             echo "<tr style='background: #E0E0E0;'>";
@@ -1533,7 +1541,7 @@ function getOrderItemInfo($summary_item, $specFormatter) {
                                 echo "<td style='border: 1px solid #999; padding: 6px; font-size: 11px; word-break: break-all;'>" . htmlspecialchars($file) . "</td>";
                                 echo "<td style='border: 1px solid #999; padding: 6px; font-size: 11px; text-align: center;'>$fileSizeFormatted</td>";
                                 echo "<td style='border: 1px solid #999; padding: 6px; text-align: center;'>";
-                                echo "<a href='/" . htmlspecialchars($filePath) . "' download='" . htmlspecialchars($file) . "' style='padding: 4px 10px; background: #4472C4; color: white; text-decoration: none; font-size: 10px; font-weight: bold;'>다운로드</a>";
+                                echo "<a href='/" . htmlspecialchars($filePath) . "' download='" . htmlspecialchars($file) . "' style='padding: 4px 10px; background: #007bff; color: white; text-decoration: none; font-size: 10px; font-weight: bold; border-radius: 4px;'>다운로드</a>";
                                 echo "</td>";
                                 echo "</tr>";
                             }
@@ -1554,7 +1562,7 @@ function getOrderItemInfo($summary_item, $specFormatter) {
                         <col style="width: 10%;">
                         <col style="width: 40%;">
                     </colgroup>
-                    <tr style="background: #4472C4;">
+                    <tr style="background: linear-gradient(135deg, #2c3e50, #34495e);">
                         <td colspan="4" style="padding: 10px 15px; color: #fff; font-size: 14px; font-weight: bold;">
                             신청자 정보
                         </td>
@@ -1606,11 +1614,11 @@ function getOrderItemInfo($summary_item, $specFormatter) {
                 <!-- ===== 관리자 버튼 ===== -->
                 <div style="margin-top: 15px; text-align: center; padding: 15px; background: #f5f5f5; border: 1px solid #ddd;">
                     <?php if ($no) { ?>
-                        <button type="submit" style="padding: 10px 25px; font-size: 13px; margin-right: 10px; background: #4472C4; color: white; border: none; cursor: pointer; font-weight: bold;">정보 수정</button>
-                        <button type="button" onclick="printOrder();" style="padding: 10px 25px; font-size: 13px; margin-right: 10px; background: #28a745; color: white; border: none; cursor: pointer; font-weight: bold;">주문서 출력</button>
-                        <button type="button" onclick="reOrder(<?php echo $no; ?>);" style="padding: 10px 25px; font-size: 13px; margin-right: 10px; background: #ff9800; color: white; border: none; cursor: pointer; font-weight: bold;">재주문</button>
+                        <button type="submit" style="padding: 10px 25px; font-size: 13px; margin-right: 10px; background: linear-gradient(135deg, #007bff, #0056b3); color: white; border: none; cursor: pointer; font-weight: bold; border-radius: 6px;">정보 수정</button>
+                        <button type="button" onclick="printOrder();" style="padding: 10px 25px; font-size: 13px; margin-right: 10px; background: linear-gradient(135deg, #28a745, #1e7e34); color: white; border: none; cursor: pointer; font-weight: bold; border-radius: 6px;">주문서 출력</button>
+                        <button type="button" onclick="reOrder(<?php echo $no; ?>);" style="padding: 10px 25px; font-size: 13px; margin-right: 10px; background: linear-gradient(135deg, #ff9800, #e68900); color: white; border: none; cursor: pointer; font-weight: bold; border-radius: 6px;">재주문</button>
                     <?php } ?>
-                    <button type="button" onclick="window.close();" style="padding: 10px 25px; font-size: 13px; background: #6c757d; color: white; border: none; cursor: pointer; font-weight: bold;">창 닫기</button>
+                    <button type="button" onclick="window.close();" style="padding: 10px 25px; font-size: 13px; background: linear-gradient(135deg, #6c757d, #495057); color: white; border: none; cursor: pointer; font-weight: bold; border-radius: 6px;">창 닫기</button>
                 </div>
 
                 <?php } // end if ($no) - line 1429에서 열린 블록 종료 ?>
