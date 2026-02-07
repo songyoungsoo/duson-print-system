@@ -108,6 +108,22 @@ document.querySelectorAll('select, input').forEach(el => {
     if (el.type === 'number') el.addEventListener('input', debounce(calculatePrice, 500));
 });
 
+// Auto-calculate on first load with sensible defaults
+(function autoInit() {
+    var jong = document.getElementById('jong');
+    var garo = document.getElementById('garo');
+    var sero = document.getElementById('sero');
+    // Select first material if not already selected
+    if (!jong.value && jong.options.length > 1) {
+        jong.value = jong.options[1].value; // skip "선택" placeholder
+    }
+    // Set default size if empty
+    if (!garo.value) garo.value = 50;
+    if (!sero.value) sero.value = 50;
+    // mesu already has "1000" selected by default
+    calculatePrice();
+})();
+
 function debounce(fn, ms) {
     let t;
     return function() { clearTimeout(t); t = setTimeout(fn, ms); };

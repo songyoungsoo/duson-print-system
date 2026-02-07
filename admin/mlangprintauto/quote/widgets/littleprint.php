@@ -159,7 +159,8 @@ function loadCascade(parentVal, childId, resetIds) {
                 o.textContent = data[i].title;
                 child.appendChild(o);
             }
-            if (data.length === 1) {
+            // Auto-select first option and cascade
+            if (data.length >= 1) {
                 child.value = data[0].no;
                 child.dispatchEvent(new Event('change'));
             }
@@ -170,6 +171,15 @@ function loadCascade(parentVal, childId, resetIds) {
 
     resetPrice();
 }
+
+// Auto-init: select first style on page load to cascade all dropdowns
+document.addEventListener('DOMContentLoaded', function() {
+    var style = document.getElementById('style');
+    if (style.options.length > 1) {
+        style.value = style.options[1].value;
+        loadCascade(style.value, 'Section', ['PN_type', 'quantity']);
+    }
+});
 
 function calculatePrice() {
     var style = document.getElementById('style').value;
