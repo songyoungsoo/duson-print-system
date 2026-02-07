@@ -51,7 +51,7 @@ select:focus { outline: none; border-color: #4f7cff; }
     </select>
 
     <label>용지</label>
-    <select id="PN_type" onchange="loadCascade(this.value,'MY_amount',[])">
+    <select id="PN_type" onchange="loadQuantities()">
         <option value="">규격을 먼저 선택</option>
     </select>
 
@@ -127,6 +127,22 @@ function loadCascade(parentVal, childId, resetIds) {
             child.innerHTML = '<option value="">로딩 실패</option>';
         });
 
+    resetPrice();
+}
+
+function loadQuantities() {
+    var myType = document.getElementById('MY_type').value;
+    var myFsd = document.getElementById('MY_Fsd').value;
+    var pnType = document.getElementById('PN_type').value;
+    var qty = document.getElementById('MY_amount');
+    qty.innerHTML = '<option value="">로딩중...</option>';
+    if (!myType || !myFsd || !pnType) { qty.innerHTML = '<option value="">상위 항목을 선택</option>'; resetPrice(); return; }
+    var url = OPT_URL + '?table=ncrflambeau&source=price&field=quantity&filter_style=' + myType + '&filter_Section=' + myFsd + '&filter_TreeSelect=' + pnType;
+    fetch(url, {credentials: 'same-origin'}).then(function(r) { return r.json(); }).then(function(data) {
+        qty.innerHTML = '<option value="">선택</option>';
+        for (var i = 0; i < data.length; i++) { var o = document.createElement('option'); o.value = data[i].no; var n = parseInt(data[i].title); o.textContent = n ? n.toLocaleString() + '권' : data[i].title; qty.appendChild(o); }
+        if (data.length >= 1) { qty.value = data[0].no; qty.dispatchEvent(new Event('change')); }
+    }).catch(function() { qty.innerHTML = '<option value="">로딩 실패</option>'; });
     resetPrice();
 }
 

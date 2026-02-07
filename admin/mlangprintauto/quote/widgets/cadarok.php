@@ -50,7 +50,7 @@ select:focus { outline: none; border-color: #4f7cff; }
     </select>
 
     <label>재질</label>
-    <select id="Section" onchange="loadChildren(this.value,'quantity')">
+    <select id="Section" onchange="loadQuantities()">
         <option value="">종류를 먼저 선택</option>
     </select>
 
@@ -155,6 +155,21 @@ function loadChildren(parentVal, childId) {
             child.innerHTML = '<option value="">로딩 실패</option>';
         });
 
+    resetPrice();
+}
+
+function loadQuantities() {
+    var style = document.getElementById('style').value;
+    var section = document.getElementById('Section').value;
+    var qty = document.getElementById('quantity');
+    qty.innerHTML = '<option value="">로딩중...</option>';
+    if (!style || !section) { qty.innerHTML = '<option value="">상위 항목을 선택</option>'; resetPrice(); return; }
+    var url = OPT_URL + '?table=cadarok&source=price&field=quantity&filter_style=' + style + '&filter_Section=' + section + '&filter_POtype=' + document.getElementById('POtype').value;
+    fetch(url, {credentials: 'same-origin'}).then(function(r) { return r.json(); }).then(function(data) {
+        qty.innerHTML = '<option value="">선택</option>';
+        for (var i = 0; i < data.length; i++) { var o = document.createElement('option'); o.value = data[i].no; var n = parseInt(data[i].title); o.textContent = n ? n.toLocaleString() + '부' : data[i].title; qty.appendChild(o); }
+        if (data.length >= 1) { qty.value = data[0].no; qty.dispatchEvent(new Event('change')); }
+    }).catch(function() { qty.innerHTML = '<option value="">로딩 실패</option>'; });
     resetPrice();
 }
 

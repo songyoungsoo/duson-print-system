@@ -117,9 +117,9 @@ document.querySelectorAll('select, input').forEach(el => {
     if (!jong.value && jong.options.length > 1) {
         jong.value = jong.options[1].value; // skip "선택" placeholder
     }
-    // Set default size if empty
+    // Set default size if empty (min 50x60mm for non-domusong)
     if (!garo.value) garo.value = 50;
-    if (!sero.value) sero.value = 50;
+    if (!sero.value) sero.value = 60;
     // mesu already has "1000" selected by default
     calculatePrice();
 })();

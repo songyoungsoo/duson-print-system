@@ -55,7 +55,7 @@ select:focus, input:focus { outline: none; border-color: #4f7cff; }
     </select>
 
     <label>용지</label>
-    <select id="TreeSelect" onchange="loadChildren('TreeSelect','quantity')">
+    <select id="TreeSelect" onchange="loadQuantities()">
         <option value="">규격을 먼저 선택</option>
     </select>
 
@@ -177,6 +177,22 @@ function loadChildren(parentId, childId) {
             child.innerHTML = '<option value="">로딩 실패</option>';
         });
 
+    resetPrice();
+}
+
+function loadQuantities() {
+    var style = document.getElementById('style').value;
+    var section = document.getElementById('Section').value;
+    var tree = document.getElementById('TreeSelect').value;
+    var qty = document.getElementById('quantity');
+    qty.innerHTML = '<option value="">로딩중...</option>';
+    if (!style || !section || !tree) { qty.innerHTML = '<option value="">상위 항목을 선택</option>'; resetPrice(); return; }
+    var url = OPT_URL + '?table=inserted&source=price&field=quantity&filter_style=' + style + '&filter_Section=' + section + '&filter_TreeSelect=' + tree + '&filter_POtype=' + document.getElementById('POtype').value;
+    fetch(url, {credentials: 'same-origin'}).then(function(r) { return r.json(); }).then(function(data) {
+        qty.innerHTML = '<option value="">선택</option>';
+        for (var i = 0; i < data.length; i++) { var o = document.createElement('option'); o.value = data[i].no; var n = parseFloat(data[i].title); o.textContent = n ? n.toLocaleString() + '연' : data[i].title; qty.appendChild(o); }
+        if (data.length >= 1) { qty.value = data[0].no; qty.dispatchEvent(new Event('change')); }
+    }).catch(function() { qty.innerHTML = '<option value="">로딩 실패</option>'; });
     resetPrice();
 }
 
