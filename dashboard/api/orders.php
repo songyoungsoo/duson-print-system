@@ -1,7 +1,16 @@
 <?php
 require_once __DIR__ . '/base.php';
 
-$action = $_GET['action'] ?? $_POST['action'] ?? 'list';
+$action = $_GET['action'] ?? $_POST['action'] ?? '';
+$jsonBody = null;
+if (empty($action) && $_SERVER['REQUEST_METHOD'] === 'POST') {
+    $rawBody = file_get_contents('php://input');
+    $jsonBody = json_decode($rawBody, true);
+    if ($jsonBody && isset($jsonBody['action'])) {
+        $action = $jsonBody['action'];
+    }
+}
+if (empty($action)) $action = 'list';
 
 switch ($action) {
     case 'list':
@@ -126,22 +135,50 @@ switch ($action) {
         
     case 'delete':
         $no = intval($_POST['no'] ?? 0);
-        
+
         if ($no <= 0) {
             jsonResponse(false, 'Invalid order number');
         }
-        
+
         $query = "UPDATE mlangorder_printauto SET OrderStyle = 'deleted' WHERE no = ?";
         $stmt = mysqli_prepare($db, $query);
         mysqli_stmt_bind_param($stmt, "i", $no);
-        
+
         if (mysqli_stmt_execute($stmt)) {
             jsonResponse(true, 'Order deleted successfully');
         } else {
             jsonResponse(false, 'Failed to delete order');
         }
         break;
-        
+
+    case 'bulk_delete':
+        $nos = $jsonBody['nos'] ?? [];
+
+        if (!is_array($nos) || count($nos) === 0) {
+            jsonResponse(false, '삭제할 주문을 선택해주세요.');
+        }
+
+        $nos = array_map('intval', $nos);
+        $nos = array_filter($nos, function($n) { return $n > 0; });
+
+        if (count($nos) === 0) {
+            jsonResponse(false, '유효한 주문번호가 없습니다.');
+        }
+
+        $placeholders = implode(',', array_fill(0, count($nos), '?'));
+        $types = str_repeat('i', count($nos));
+        $query = "UPDATE mlangorder_printauto SET OrderStyle = 'deleted' WHERE no IN ($placeholders)";
+        $stmt = mysqli_prepare($db, $query);
+        mysqli_stmt_bind_param($stmt, $types, ...$nos);
+
+        if (mysqli_stmt_execute($stmt)) {
+            $affected = mysqli_stmt_affected_rows($stmt);
+            jsonResponse(true, $affected . '건 삭제 완료', ['deleted' => $affected]);
+        } else {
+            jsonResponse(false, '일괄 삭제 실패');
+        }
+        break;
+
     default:
         jsonResponse(false, 'Invalid action');
 }

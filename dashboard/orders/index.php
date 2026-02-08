@@ -75,6 +75,7 @@ include __DIR__ . '/../includes/sidebar.php';
                 <table class="min-w-full divide-y divide-gray-200">
                     <thead class="bg-gray-50">
                         <tr>
+                            <th class="px-2 py-2 text-center w-10"><input type="checkbox" id="selectAll" class="w-4 h-4 rounded border-gray-300 text-blue-600 cursor-pointer"></th>
                             <th class="px-3 py-2 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">주문번호</th>
                             <th class="px-3 py-2 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">품목</th>
                             <th class="px-3 py-2 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">주문자</th>
@@ -86,17 +87,29 @@ include __DIR__ . '/../includes/sidebar.php';
                     </thead>
                     <tbody id="ordersTableBody" class="bg-white divide-y divide-gray-200">
                         <tr>
-                            <td colspan="7" class="px-3 py-3 text-center text-gray-500">로딩 중...</td>
+                            <td colspan="8" class="px-3 py-3 text-center text-gray-500">로딩 중...</td>
                         </tr>
                     </tbody>
                 </table>
             </div>
 
-            <div id="pagination" class="px-4 py-3 border-t border-gray-200 flex items-center justify-between">
-                <div class="text-sm text-gray-700">
-                    총 <span id="totalItems">0</span>건
+            <div id="bulkActionBar" class="px-4 py-2 border-t border-gray-200 bg-red-50 items-center justify-between hidden">
+                <div class="flex items-center gap-3">
+                    <span class="text-sm text-red-700"><span id="selectedCount" class="font-bold">0</span>건 선택됨</span>
+                    <button id="bulkDeleteBtn" class="px-3 py-1.5 bg-red-600 text-white text-sm rounded-lg hover:bg-red-700 transition-colors">
+                        선택 삭제
+                    </button>
+                    <button id="clearSelectionBtn" class="px-3 py-1.5 bg-white text-gray-600 text-sm rounded-lg border border-gray-300 hover:bg-gray-50 transition-colors">
+                        선택 해제
+                    </button>
                 </div>
-                <div id="paginationButtons" class="flex gap-2">
+            </div>
+            <div id="pagination" class="px-4 py-3 border-t border-gray-200 flex items-center justify-between">
+                <div class="text-sm text-gray-600">
+                    총 <span id="totalItems" class="font-semibold text-gray-900">0</span>건
+                    <span id="pageInfo" class="ml-2 text-gray-400"></span>
+                </div>
+                <div id="paginationButtons" class="flex items-center gap-1">
                 </div>
             </div>
         </div>
@@ -106,8 +119,9 @@ include __DIR__ . '/../includes/sidebar.php';
 <script>
 let currentPage = 1;
 let currentFilters = {};
+let selectedOrders = new Set();
 
-function getStatusBadge(status) {
+function getStatusInfo(status) {
     var s = String(status);
     var map = {
         '0':  {label: '미선택',    bg: 'bg-gray-100',   text: 'text-gray-600'},
@@ -123,8 +137,7 @@ function getStatusBadge(status) {
         '10': {label: '교정작업중', bg: 'bg-cyan-100',  text: 'text-cyan-700'},
         'deleted': {label: '삭제됨', bg: 'bg-red-100',  text: 'text-red-800'}
     };
-    var info = map[s] || {label: s, bg: 'bg-gray-100', text: 'text-gray-800'};
-    return '<span class="px-2 py-1 text-xs font-semibold rounded-full ' + info.bg + ' ' + info.text + '">' + info.label + '</span>';
+    return map[s] || {label: s, bg: 'bg-gray-100', text: 'text-gray-800'};
 }
 
 async function loadOrders(page = 1) {
@@ -152,24 +165,104 @@ async function loadOrders(page = 1) {
         const orders = result.data.data;
         
         if (orders.length === 0) {
-            tbody.innerHTML = '<tr><td colspan="7" class="px-3 py-3 text-center text-gray-500">주문이 없습니다.</td></tr>';
+            tbody.textContent = '';
+            var emptyRow = document.createElement('tr');
+            var emptyTd = document.createElement('td');
+            emptyTd.colSpan = 8;
+            emptyTd.className = 'px-3 py-3 text-center text-gray-500';
+            emptyTd.textContent = '주문이 없습니다.';
+            emptyRow.appendChild(emptyTd);
+            tbody.appendChild(emptyRow);
+            updateSelectionUI();
             return;
         }
-        
-        tbody.innerHTML = orders.map(order => `
-            <tr class="hover:bg-gray-50">
-                <td class="px-3 py-2 whitespace-nowrap text-sm font-medium text-gray-900">#${order.no}</td>
-                <td class="px-3 py-2 whitespace-nowrap text-sm text-gray-600">${order.type || '-'}</td>
-                <td class="px-3 py-2 whitespace-nowrap text-sm text-gray-600">${order.name || (order.email ? order.email.split('@')[0] : '-')}</td>
-                <td class="px-3 py-2 whitespace-nowrap text-sm text-gray-900 text-right">${(order.amount || 0).toLocaleString()}원</td>
-                <td class="px-3 py-2 whitespace-nowrap text-center">${getStatusBadge(order.status)}</td>
-                <td class="px-3 py-2 whitespace-nowrap text-sm text-gray-600">${order.date || '-'}</td>
-                <td class="px-3 py-2 whitespace-nowrap text-center text-sm">
-                    <a href="/dashboard/orders/view.php?no=${order.no}" class="text-blue-600 hover:text-blue-800 mr-3">상세</a>
-                    <button onclick="deleteOrder(${order.no})" class="text-red-600 hover:text-red-800">삭제</button>
-                </td>
-            </tr>
-        `).join('');
+
+        tbody.textContent = '';
+        orders.forEach(function(order) {
+            var tr = document.createElement('tr');
+            tr.className = 'hover:bg-gray-50';
+            if (selectedOrders.has(order.no)) tr.classList.add('bg-blue-50');
+
+            // 체크박스
+            var tdCheck = document.createElement('td');
+            tdCheck.className = 'px-2 py-2 text-center';
+            var cb = document.createElement('input');
+            cb.type = 'checkbox';
+            cb.className = 'order-checkbox w-4 h-4 rounded border-gray-300 text-blue-600 cursor-pointer';
+            cb.dataset.no = order.no;
+            cb.checked = selectedOrders.has(order.no);
+            cb.addEventListener('change', function() {
+                if (this.checked) {
+                    selectedOrders.add(order.no);
+                    tr.classList.add('bg-blue-50');
+                } else {
+                    selectedOrders.delete(order.no);
+                    tr.classList.remove('bg-blue-50');
+                }
+                updateSelectionUI();
+            });
+            tdCheck.appendChild(cb);
+            tr.appendChild(tdCheck);
+
+            // 주문번호
+            var tdNo = document.createElement('td');
+            tdNo.className = 'px-3 py-2 whitespace-nowrap text-sm font-medium text-gray-900';
+            tdNo.textContent = '#' + order.no;
+            tr.appendChild(tdNo);
+
+            // 품목
+            var tdType = document.createElement('td');
+            tdType.className = 'px-3 py-2 whitespace-nowrap text-sm text-gray-600';
+            tdType.textContent = order.type || '-';
+            tr.appendChild(tdType);
+
+            // 주문자
+            var tdName = document.createElement('td');
+            tdName.className = 'px-3 py-2 whitespace-nowrap text-sm text-gray-600';
+            tdName.textContent = order.name || (order.email ? order.email.split('@')[0] : '-');
+            tr.appendChild(tdName);
+
+            // 금액
+            var tdAmount = document.createElement('td');
+            tdAmount.className = 'px-3 py-2 whitespace-nowrap text-sm text-gray-900 text-right';
+            tdAmount.textContent = (order.amount || 0).toLocaleString() + '원';
+            tr.appendChild(tdAmount);
+
+            // 상태
+            var tdStatus = document.createElement('td');
+            tdStatus.className = 'px-3 py-2 whitespace-nowrap text-center';
+            var statusInfo = getStatusInfo(order.status);
+            var badge = document.createElement('span');
+            badge.className = 'px-2 py-1 text-xs font-semibold rounded-full ' + statusInfo.bg + ' ' + statusInfo.text;
+            badge.textContent = statusInfo.label;
+            tdStatus.appendChild(badge);
+            tr.appendChild(tdStatus);
+
+            // 주문일시
+            var tdDate = document.createElement('td');
+            tdDate.className = 'px-3 py-2 whitespace-nowrap text-sm text-gray-600';
+            tdDate.textContent = order.date || '-';
+            tr.appendChild(tdDate);
+
+            // 관리
+            var tdAction = document.createElement('td');
+            tdAction.className = 'px-3 py-2 whitespace-nowrap text-center text-sm';
+            var link = document.createElement('a');
+            link.href = '/dashboard/orders/view.php?no=' + order.no;
+            link.className = 'text-blue-600 hover:text-blue-800 mr-3';
+            link.textContent = '상세';
+            var delBtn = document.createElement('button');
+            delBtn.className = 'text-red-600 hover:text-red-800';
+            delBtn.textContent = '삭제';
+            delBtn.addEventListener('click', function() { deleteOrder(order.no); });
+            tdAction.appendChild(link);
+            tdAction.appendChild(delBtn);
+            tr.appendChild(tdAction);
+
+            tbody.appendChild(tr);
+        });
+
+        updateSelectionUI();
         
         document.getElementById('totalItems').textContent = result.data.pagination.total_items;
         
@@ -177,29 +270,108 @@ async function loadOrders(page = 1) {
         
     } catch (error) {
         console.error('Failed to load orders:', error);
-        document.getElementById('ordersTableBody').innerHTML = 
-            '<tr><td colspan="7" class="px-3 py-3 text-center text-red-500">주문 목록을 불러오는데 실패했습니다.</td></tr>';
+        var tbody = document.getElementById('ordersTableBody');
+        tbody.textContent = '';
+        var errRow = document.createElement('tr');
+        var errTd = document.createElement('td');
+        errTd.colSpan = 8;
+        errTd.className = 'px-3 py-3 text-center text-red-500';
+        errTd.textContent = '주문 목록을 불러오는데 실패했습니다.';
+        errRow.appendChild(errTd);
+        tbody.appendChild(errRow);
     }
 }
 
 function renderPagination(pagination) {
-    const container = document.getElementById('paginationButtons');
-    const buttons = [];
-    
-    if (pagination.current_page > 1) {
-        buttons.push(`<button onclick="loadOrders(${pagination.current_page - 1})" class="px-3 py-1 border border-gray-300 rounded hover:bg-gray-50">이전</button>`);
+    var container = document.getElementById('paginationButtons');
+    var cur = pagination.current_page;
+    var total = pagination.total_pages;
+    var pageInfo = document.getElementById('pageInfo');
+
+    while (container.firstChild) container.removeChild(container.firstChild);
+
+    if (total <= 1) {
+        pageInfo.textContent = '';
+        return;
     }
-    
-    for (let i = Math.max(1, pagination.current_page - 2); i <= Math.min(pagination.total_pages, pagination.current_page + 2); i++) {
-        const active = i === pagination.current_page ? 'bg-blue-600 text-white' : 'bg-white text-gray-700 hover:bg-gray-50';
-        buttons.push(`<button onclick="loadOrders(${i})" class="px-3 py-1 border border-gray-300 rounded ${active}">${i}</button>`);
+
+    pageInfo.textContent = '(' + cur + ' / ' + total + ' 페이지)';
+
+    var btnBase = 'min-w-[32px] h-8 text-sm rounded border transition-colors ';
+    var btnNavCls = btnBase + 'px-2 border-gray-300 text-gray-500 hover:bg-gray-100 hover:text-gray-700 disabled:opacity-40 disabled:cursor-not-allowed disabled:hover:bg-white';
+    var btnActiveCls = btnBase + 'px-1 border-blue-600 bg-blue-600 text-white font-semibold';
+    var btnNormalCls = btnBase + 'px-1 border-gray-300 text-gray-700 hover:bg-gray-50';
+
+    function makeBtn(label, page, cls, disabled) {
+        var btn = document.createElement('button');
+        btn.className = cls;
+        btn.innerHTML = label;
+        if (disabled) {
+            btn.disabled = true;
+        } else {
+            btn.addEventListener('click', function() { loadOrders(page); });
+        }
+        return btn;
     }
-    
-    if (pagination.current_page < pagination.total_pages) {
-        buttons.push(`<button onclick="loadOrders(${pagination.current_page + 1})" class="px-3 py-1 border border-gray-300 rounded hover:bg-gray-50">다음</button>`);
+
+    function makeDots() {
+        var span = document.createElement('span');
+        span.className = 'px-1 text-gray-400 select-none';
+        span.textContent = '...';
+        return span;
     }
-    
-    container.innerHTML = buttons.join('');
+
+    // 처음 / 이전
+    container.appendChild(makeBtn('&laquo;', 1, btnNavCls, cur === 1));
+    container.appendChild(makeBtn('&lsaquo;', cur - 1, btnNavCls, cur === 1));
+
+    // 페이지 번호 계산
+    var pages = [];
+    var delta = 2;
+    var left = cur - delta;
+    var right = cur + delta;
+
+    pages.push(1);
+    if (left > 3) {
+        pages.push('...');
+    } else {
+        for (var i = 2; i < left; i++) pages.push(i);
+    }
+    for (var i = Math.max(2, left); i <= Math.min(total - 1, right); i++) {
+        pages.push(i);
+    }
+    if (right < total - 2) {
+        pages.push('...');
+    } else {
+        for (var i = right + 1; i < total; i++) pages.push(i);
+    }
+    if (total > 1) pages.push(total);
+
+    // 중복 제거
+    var seen = {};
+    var unique = [];
+    for (var j = 0; j < pages.length; j++) {
+        var p = pages[j];
+        if (p === '...' || !seen[p]) {
+            unique.push(p);
+            if (p !== '...') seen[p] = true;
+        }
+    }
+
+    for (var j = 0; j < unique.length; j++) {
+        var p = unique[j];
+        if (p === '...') {
+            container.appendChild(makeDots());
+        } else if (p === cur) {
+            container.appendChild(makeBtn(String(p), p, btnActiveCls, false));
+        } else {
+            container.appendChild(makeBtn(String(p), p, btnNormalCls, false));
+        }
+    }
+
+    // 다음 / 끝
+    container.appendChild(makeBtn('&rsaquo;', cur + 1, btnNavCls, cur === total));
+    container.appendChild(makeBtn('&raquo;', total, btnNavCls, cur === total));
 }
 
 async function deleteOrder(no) {
@@ -230,6 +402,92 @@ async function deleteOrder(no) {
     }
 }
 
+// 선택 UI 업데이트
+function updateSelectionUI() {
+    var bar = document.getElementById('bulkActionBar');
+    var countEl = document.getElementById('selectedCount');
+    var selectAllCb = document.getElementById('selectAll');
+    var checkboxes = document.querySelectorAll('.order-checkbox');
+    var count = selectedOrders.size;
+
+    countEl.textContent = count;
+    if (count > 0) {
+        bar.classList.remove('hidden');
+        bar.classList.add('flex');
+    } else {
+        bar.classList.add('hidden');
+        bar.classList.remove('flex');
+    }
+
+    // 전체선택 체크박스 상태
+    if (checkboxes.length > 0) {
+        var allChecked = true;
+        checkboxes.forEach(function(cb) { if (!cb.checked) allChecked = false; });
+        selectAllCb.checked = allChecked && checkboxes.length > 0;
+        selectAllCb.indeterminate = count > 0 && !allChecked;
+    } else {
+        selectAllCb.checked = false;
+        selectAllCb.indeterminate = false;
+    }
+}
+
+// 전체 선택/해제
+document.getElementById('selectAll').addEventListener('change', function() {
+    var checked = this.checked;
+    document.querySelectorAll('.order-checkbox').forEach(function(cb) {
+        cb.checked = checked;
+        var no = parseInt(cb.dataset.no);
+        var row = cb.closest('tr');
+        if (checked) {
+            selectedOrders.add(no);
+            row.classList.add('bg-blue-50');
+        } else {
+            selectedOrders.delete(no);
+            row.classList.remove('bg-blue-50');
+        }
+    });
+    updateSelectionUI();
+});
+
+// 선택 해제 버튼
+document.getElementById('clearSelectionBtn').addEventListener('click', function() {
+    selectedOrders.clear();
+    document.querySelectorAll('.order-checkbox').forEach(function(cb) {
+        cb.checked = false;
+        cb.closest('tr').classList.remove('bg-blue-50');
+    });
+    document.getElementById('selectAll').checked = false;
+    document.getElementById('selectAll').indeterminate = false;
+    updateSelectionUI();
+});
+
+// 선택 삭제
+document.getElementById('bulkDeleteBtn').addEventListener('click', async function() {
+    var count = selectedOrders.size;
+    if (count === 0) return;
+
+    if (!confirm(count + '건의 주문을 삭제하시겠습니까?')) return;
+
+    try {
+        var response = await fetch('/dashboard/api/orders.php', {
+            method: 'POST',
+            headers: {'Content-Type': 'application/json'},
+            body: JSON.stringify({action: 'bulk_delete', nos: Array.from(selectedOrders)})
+        });
+        var result = await response.json();
+
+        if (result.success) {
+            alert(result.message);
+            selectedOrders.clear();
+            loadOrders(currentPage);
+        } else {
+            alert('삭제 실패: ' + result.message);
+        }
+    } catch (error) {
+        alert('삭제 중 오류가 발생했습니다.');
+    }
+});
+
 document.getElementById('searchBtn').addEventListener('click', function() {
     currentFilters = {
         period: document.getElementById('periodFilter').value,
@@ -237,6 +495,7 @@ document.getElementById('searchBtn').addEventListener('click', function() {
         product_type: document.getElementById('productFilter').value,
         search: document.getElementById('searchInput').value
     };
+    selectedOrders.clear();
     loadOrders(1);
 });
 

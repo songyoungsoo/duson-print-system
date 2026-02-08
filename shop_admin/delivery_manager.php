@@ -42,17 +42,87 @@ $sender = [
     'address' => '서울특별시 중구 을지로33길 33 두손빌딩'
 ];
 
-// 제품별 박스수/택배비 계산
-function getDeliveryInfo($type, $type1) {
-    if (preg_match("/16절/", $type1)) return ['boxes' => 2, 'fee' => 3000];
-    if (preg_match("/a4|A4/i", $type1)) return ['boxes' => 1, 'fee' => 4000];
-    if (preg_match("/a5|A5/i", $type1)) return ['boxes' => 1, 'fee' => 4000];
-    if (preg_match("/NameCard|명함/i", $type)) return ['boxes' => 1, 'fee' => 2500];
-    if (preg_match("/MerchandiseBond|상품권/i", $type)) return ['boxes' => 1, 'fee' => 2500];
-    if (preg_match("/sticker|스티커|스티카/i", $type)) return ['boxes' => 1, 'fee' => 2500];
-    if (preg_match("/envelope|봉투/i", $type)) return ['boxes' => 1, 'fee' => 3000];
-    if (preg_match("/전단지|inserted|leaflet/i", $type)) return ['boxes' => 1, 'fee' => 3500];
-    return ['boxes' => 1, 'fee' => 3000]; // 기본값
+// 품목 한글 레이블
+$type_labels = [
+    'NameCard' => '명함', 'Inserted' => '전단지', 'inserted' => '전단지',
+    'NcrFlambeau' => '양식지', 'ncrflambeau' => '양식지',
+    'Sticker' => '스티커', 'sticker' => '스티커', 'sticker_new' => '스티커',
+    'Msticker' => '자석스티커', 'msticker' => '자석스티커',
+    'Envelope' => '봉투', 'envelope' => '봉투',
+    'LittlePrint' => '포스터', 'littleprint' => '포스터',
+    'MerchandiseBond' => '상품권', 'merchandisebond' => '상품권',
+    'Cadarok' => '카다록', 'cadarok' => '카다록',
+];
+
+// 규격별 택배비 룩업 (post_list74.php와 동일)
+$shipping_rules = [
+    'A6'  => ['boxes' => 1, 'cost' => 4000],
+    'B6'  => ['boxes' => 1, 'cost' => 4000],
+    'A5'  => ['boxes' => 1, 'cost' => 6000],
+    'B5'  => ['boxes' => 2, 'cost' => 7000],
+    'A4'  => ['boxes' => 1, 'cost' => 6000],
+    'B4'  => ['boxes' => 2, 'cost' => 12000],
+    'A3'  => ['boxes' => 2, 'cost' => 12000],
+];
+
+// 택배비 자동 계산 (규격+연수 기반)
+function calcShipping($data, $shipping_rules) {
+    $type1_raw = isset($data['Type_1']) ? $data['Type_1'] : '';
+    $detected_size = '';
+    if (preg_match('/16절|B5/i', $type1_raw)) $detected_size = 'B5';
+    elseif (preg_match('/32절|B6/i', $type1_raw)) $detected_size = 'B6';
+    elseif (preg_match('/8절|B4/i', $type1_raw)) $detected_size = 'B4';
+    elseif (preg_match('/A3/i', $type1_raw)) $detected_size = 'A3';
+    elseif (preg_match('/A4/i', $type1_raw)) $detected_size = 'A4';
+    elseif (preg_match('/A5/i', $type1_raw)) $detected_size = 'A5';
+    elseif (preg_match('/A6/i', $type1_raw)) $detected_size = 'A6';
+
+    $yeon = 1;
+    if (!empty($data['quantity_value']) && floatval($data['quantity_value']) > 0) {
+        $yeon = floatval($data['quantity_value']);
+    }
+
+    $r = 1; $w = 3000;
+    if (!empty($detected_size) && isset($shipping_rules[$detected_size])) {
+        $rule = $shipping_rules[$detected_size];
+        $r = (int)ceil($yeon) * $rule['boxes'];
+        $w = (int)ceil($yeon) * $rule['cost'];
+    } elseif (preg_match("/NameCard/i", $data['Type'])) { $r = 1; $w = 3000; }
+    elseif (preg_match("/MerchandiseBond/i", $data['Type'])) { $r = 1; $w = 3000; }
+    elseif (preg_match("/sticker/i", $data['Type'])) { $r = 1; $w = 3000; }
+    elseif (preg_match("/envelop/i", $data['Type'])) { $r = 1; $w = 3000; }
+
+    return ['boxes' => $r, 'fee' => $w];
+}
+
+// Type_1 JSON → 읽기 좋은 텍스트
+function parseType1Display($type1_raw) {
+    if (!empty($type1_raw) && substr(trim($type1_raw), 0, 1) === '{') {
+        $json_data = json_decode($type1_raw, true);
+        if ($json_data) {
+            if (isset($json_data['formatted_display'])) {
+                return str_replace(["\r\n", "\r", "\n"], ' ', $json_data['formatted_display']);
+            }
+            $parts = [];
+            if (!empty($json_data['spec_material'])) $parts[] = $json_data['spec_material'];
+            if (!empty($json_data['spec_size'])) $parts[] = $json_data['spec_size'];
+            if (!empty($json_data['spec_sides'])) $parts[] = $json_data['spec_sides'];
+            if (!empty($json_data['quantity_display'])) $parts[] = $json_data['quantity_display'];
+            if (!empty($json_data['spec_design'])) $parts[] = $json_data['spec_design'];
+            if (!empty($parts)) return implode(' / ', $parts);
+        }
+    }
+    return $type1_raw;
+}
+
+// Type → 한글 품목명
+function getTypeLabel($type_raw, $type_labels) {
+    $display = trim($type_raw);
+    if (!empty($display) && $display[0] === '{') {
+        $jt = json_decode($display, true);
+        if ($jt && isset($jt['product_type'])) $display = $jt['product_type'];
+    }
+    return isset($type_labels[$display]) ? $type_labels[$display] : $display;
 }
 
 // 액션 처리
@@ -60,74 +130,108 @@ $action = $_REQUEST['action'] ?? '';
 $message = '';
 $error = '';
 
-// 로젠 엑셀 내보내기
+// 로젠 엑셀 내보내기 (HTML 테이블 형식 - export_logen_excel74.php와 동일)
 if ($action === 'export_logen') {
-    $date_from = $_POST['date_from'] ?? date('Y-m-d', strtotime('-7 days'));
-    $date_to = $_POST['date_to'] ?? date('Y-m-d');
-    $status = $_POST['export_status'] ?? 'all'; // all = 전체, pending = 운송장 없는 것만
+    // 선택 항목 모드 vs 전체 모드
+    $selected_nos = $_POST['selected_nos'] ?? '';
+    $custom_box_qty = [];
+    $custom_delivery_fee = [];
+    $custom_fee_type = [];
 
-    // ✅ FIX: logen_tracking_no 컬럼이 존재하지 않음 → waybill_no 사용
-    $query = "SELECT no, Type, Type_1, name, email, zip, zip1, zip2, phone, Hendphone,
-                     cont, date, OrderStyle, waybill_no
-              FROM mlangorder_printauto
-              WHERE date >= ? AND date < DATE_ADD(?, INTERVAL 1 DAY)
-              AND (zip1 IS NOT NULL AND zip1 != '' AND zip1 != '0')";
-
-    if ($status === 'pending') {
-        $query .= " AND (waybill_no IS NULL OR waybill_no = '')";
+    if (!empty($_POST['box_qty_json'])) {
+        $decoded = json_decode($_POST['box_qty_json'], true);
+        if (is_array($decoded)) $custom_box_qty = $decoded;
     }
-    $query .= " ORDER BY no DESC";
+    if (!empty($_POST['delivery_fee_json'])) {
+        $decoded = json_decode($_POST['delivery_fee_json'], true);
+        if (is_array($decoded)) $custom_delivery_fee = $decoded;
+    }
+    if (!empty($_POST['fee_type_json'])) {
+        $decoded = json_decode($_POST['fee_type_json'], true);
+        if (is_array($decoded)) $custom_fee_type = $decoded;
+    }
 
-    $stmt = mysqli_prepare($connect, $query);
-    mysqli_stmt_bind_param($stmt, "ss", $date_from, $date_to);
-    mysqli_stmt_execute($stmt);
-    $result = mysqli_stmt_get_result($stmt);
+    $where_parts = [];
+    if (!empty($selected_nos)) {
+        $nos_array = array_map('intval', explode(',', $selected_nos));
+        $where_parts[] = "no IN (" . implode(',', $nos_array) . ")";
+    } else {
+        $date_from = $_POST['date_from'] ?? date('Y-m-d', strtotime('-7 days'));
+        $date_to = $_POST['date_to'] ?? date('Y-m-d');
+        $export_status = $_POST['export_status'] ?? 'all';
 
-    // 결과 수집
+        $where_parts[] = "date >= '" . mysqli_real_escape_string($connect, $date_from) . "'";
+        $where_parts[] = "date < DATE_ADD('" . mysqli_real_escape_string($connect, $date_to) . "', INTERVAL 1 DAY)";
+        $where_parts[] = "(zip1 IS NOT NULL AND zip1 != '' AND zip1 != '0')";
+        if ($export_status === 'pending') {
+            $where_parts[] = "(waybill_no IS NULL OR waybill_no = '')";
+        }
+    }
+
+    $query = "SELECT * FROM mlangorder_printauto WHERE " . implode(' AND ', $where_parts) . " ORDER BY no DESC";
+    $result = safe_mysqli_query($connect, $query);
+
     $rows = [];
-    while ($row = mysqli_fetch_assoc($result)) {
-        $rows[] = $row;
+    while ($data = mysqli_fetch_assoc($result)) {
+        $no = $data['no'];
+        $ship = calcShipping($data, $shipping_rules);
+        $r = isset($custom_box_qty[$no]) && $custom_box_qty[$no] !== '' ? intval($custom_box_qty[$no]) : $ship['boxes'];
+        $w = isset($custom_delivery_fee[$no]) && $custom_delivery_fee[$no] !== '' ? intval($custom_delivery_fee[$no]) : $ship['fee'];
+        $ft = isset($custom_fee_type[$no]) && $custom_fee_type[$no] !== '' ? $custom_fee_type[$no] : '착불';
+
+        $rows[] = [
+            trim($data['name'] ?? ''),
+            trim($data['zip'] ?? ''),
+            trim(($data['zip1'] ?? '') . ' ' . ($data['zip2'] ?? '')),
+            trim($data['phone'] ?? ''),
+            trim($data['Hendphone'] ?? ''),
+            $r, $w, $ft,
+            getTypeLabel($data['Type'] ?? '', $type_labels),
+            $no,
+            parseType1Display($data['Type_1'] ?? ''),
+        ];
     }
 
-    // 엑셀 헤더
-    header('Content-Type: application/vnd.ms-excel; charset=UTF-8');
-    header('Content-Disposition: attachment; filename="logen_upload_' . date('Ymd_His') . '.xls"');
-    header('Cache-Control: max-age=0');
-
-    // BOM for UTF-8
+    $filename = "logen_" . date('Y-m-d_His') . ".xls";
+    header("Content-Type: application/vnd.ms-excel; charset=utf-8");
+    header("Content-Disposition: attachment; filename=\"{$filename}\"");
+    header("Pragma: no-cache");
+    header("Cache-Control: no-cache");
+    header("Expires: 0");
     echo "\xEF\xBB\xBF";
-
-    // 로젠 엑셀 양식 헤더 (표준 양식)
-    echo "주문번호\t수하인명\t수하인전화\t수하인휴대폰\t우편번호\t수하인주소\t물품명\t박스수량\t운임구분\t택배비\t배송메세지\n";
-
-    foreach ($rows as $row) {
-        $info = getDeliveryInfo($row['Type'], $row['Type_1']);
-
-        // 주소 조합
-        $address = trim($row['zip1'] . ' ' . $row['zip2']);
-
-        // 물품명 (Type_1 사용, 없으면 Type)
-        $product_name = !empty($row['Type_1']) ? $row['Type_1'] : $row['Type'];
-        $product_name = mb_substr($product_name, 0, 50); // 50자 제한
-
-        // 배송메세지
-        $delivery_msg = !empty($row['cont']) ? mb_substr($row['cont'], 0, 100) : '';
-
-        // 탭 구분 출력
-        echo implode("\t", [
-            'dsno' . $row['no'],                 // 주문번호 (dsno 접두사 추가)
-            $row['name'] ?: '고객',              // 수하인명
-            $row['phone'] ?: '',                 // 수하인전화
-            $row['Hendphone'] ?: '',             // 수하인휴대폰
-            $row['zip'] ?: '',                   // 우편번호
-            $address,                            // 수하인주소
-            $product_name,                       // 물품명
-            $info['boxes'],                      // 박스수량
-            '착불',                              // 운임구분
-            $info['fee'],                        // 택배비
-            $delivery_msg                        // 배송메세지
-        ]) . "\n";
-    }
+    ?>
+<html xmlns:x="urn:schemas-microsoft-com:office:excel">
+<head>
+<meta http-equiv="Content-Type" content="application/vnd.ms-excel; charset=utf-8">
+<!--[if gte mso 9]><xml><x:ExcelWorkbook><x:ExcelWorksheets><x:ExcelWorksheet>
+<x:Name>Sheet1</x:Name><x:WorksheetOptions><x:Panes></x:Panes></x:WorksheetOptions>
+</x:ExcelWorksheet></x:ExcelWorksheets></x:ExcelWorkbook></xml><![endif]-->
+</head>
+<body>
+<table border="1">
+<tr style="background-color:#CCCCCC; font-weight:bold;">
+<td>수하인명</td><td>우편번호</td><td>주소</td><td>전화</td><td>핸드폰</td>
+<td>박스수량</td><td>택배비</td><td>운임구분</td><td>Type</td><td>기타</td><td>품목</td>
+</tr>
+<?php foreach ($rows as $row): ?>
+<tr>
+<td><?php echo htmlspecialchars($row[0]); ?></td>
+<td style="mso-number-format:'\@'"><?php echo htmlspecialchars($row[1]); ?></td>
+<td><?php echo htmlspecialchars($row[2]); ?></td>
+<td style="mso-number-format:'\@'"><?php echo htmlspecialchars($row[3]); ?></td>
+<td style="mso-number-format:'\@'"><?php echo htmlspecialchars($row[4]); ?></td>
+<td><?php echo $row[5]; ?></td>
+<td><?php echo $row[6]; ?></td>
+<td><?php echo htmlspecialchars($row[7]); ?></td>
+<td><?php echo htmlspecialchars($row[8]); ?></td>
+<td><?php echo htmlspecialchars($row[9]); ?></td>
+<td><?php echo htmlspecialchars($row[10]); ?></td>
+</tr>
+<?php endforeach; ?>
+</table>
+</body>
+</html>
+    <?php
     exit;
 }
 
@@ -556,25 +660,28 @@ if ($stats_result) {
             <p style="color: #666; margin-bottom: 10px; font-size: 11px;">
                 주문 데이터를 로젠택배 시스템에 업로드할 수 있는 엑셀 형식으로 다운로드합니다.
             </p>
-            <form method="POST" action="">
+            <form method="POST" action="" id="exportForm">
                 <input type="hidden" name="action" value="export_logen">
-                <div class="form-group">
-                    <label>시작일</label>
-                    <input type="date" name="date_from" value="<?php echo date('Y-m-d', strtotime('-7 days')); ?>">
+                <div class="form-row" style="margin-bottom: 8px;">
+                    <div class="form-group" style="margin-bottom:0;">
+                        <label>시작일</label>
+                        <input type="date" name="date_from" value="<?php echo date('Y-m-d', strtotime('-7 days')); ?>">
+                    </div>
+                    <div class="form-group" style="margin-bottom:0;">
+                        <label>종료일</label>
+                        <input type="date" name="date_to" value="<?php echo date('Y-m-d'); ?>">
+                    </div>
+                    <div class="form-group" style="margin-bottom:0;">
+                        <label>상태</label>
+                        <select name="export_status">
+                            <option value="all">전체</option>
+                            <option value="pending">발송 대기</option>
+                        </select>
+                    </div>
                 </div>
-                <div class="form-group">
-                    <label>종료일</label>
-                    <input type="date" name="date_to" value="<?php echo date('Y-m-d'); ?>">
-                </div>
-                <div class="form-group">
-                    <label>상태</label>
-                    <select name="export_status">
-                        <option value="all">전체</option>
-                        <option value="pending">발송 대기 (운송장 미등록)</option>
-                    </select>
-                </div>
-                <div class="form-group">
-                    <button type="submit" class="btn btn-primary" style="width: 100%;">📥 엑셀 다운로드</button>
+                <div style="display: flex; gap: 8px;">
+                    <button type="submit" class="btn btn-primary" style="flex:1;">📥 기간별 다운로드</button>
+                    <button type="button" class="btn btn-logen" style="flex:1;" onclick="exportSelectedToLogenExcel()">📥 선택 항목 다운로드</button>
                 </div>
             </form>
             <div class="links" style="font-size: 11px;">
@@ -604,118 +711,108 @@ if ($stats_result) {
         </div>
     </div>
 
-    <!-- 최근 발송 목록 -->
+    <!-- 최근 발송 목록 (post_list74.php와 동일 구조) -->
     <div class="card">
         <h2>📋 최근 발송 현황</h2>
         <?php
-        // 페이지네이션 설정
+        // 주소 필터 (post_list74.php와 동일)
+        $base_condition = "(delivery != '방문' AND delivery != '방문수령' OR delivery IS NULL)
+            AND (
+              (zip1 LIKE '%구 %' OR zip1 LIKE '%구%동%')
+              OR (zip1 LIKE '%로 %' OR zip1 LIKE '%로%번길%')
+              OR (zip1 LIKE '%길 %')
+              OR (zip1 LIKE '%대로 %' OR zip1 LIKE '%대로%번길%')
+              OR (zip2 LIKE '%-%')
+              OR (zip REGEXP '^[0-9]{5}$')
+            )";
+
         $page = isset($_GET['page']) ? max(1, intval($_GET['page'])) : 1;
         $per_page = 20;
         $offset = ($page - 1) * $per_page;
 
-        // 전체 레코드 수 조회
-        $count_query = "SELECT COUNT(*) as total
-                       FROM mlangorder_printauto
-                       WHERE zip1 IS NOT NULL AND zip1 != '' AND zip1 != '0'";
+        $count_query = "SELECT COUNT(*) as total FROM mlangorder_printauto WHERE $base_condition";
         $count_result = mysqli_query($connect, $count_query);
         $total_records = mysqli_fetch_assoc($count_result)['total'];
         $total_pages = ceil($total_records / $per_page);
         ?>
 
-        <div style="margin-bottom: 10px; color: #666; font-size: 14px;">
+        <div style="margin-bottom: 8px; color: #666; font-size: 12px;">
             전체 <?php echo number_format($total_records); ?>건 |
             <?php echo $page; ?> / <?php echo number_format($total_pages); ?> 페이지
         </div>
 
+        <form id="listForm">
         <table>
-            <thead>
-                <tr>
-                    <th>주문번호</th>
-                    <th>주문일</th>
-                    <th>수하인</th>
-                    <th>제품</th>
-                    <th>주소</th>
-                    <th>운송장번호</th>
-                    <th>상태</th>
-                </tr>
-            </thead>
-            <tbody>
+            <tr style="background: #1E4E79; color: #fff;">
+                <th style="padding:3px;"><input type="checkbox" onclick="toggleAll(this)"></th>
+                <th style="padding:3px;">주문번호</th>
+                <th style="padding:3px;">날짜</th>
+                <th style="padding:3px;">수하인명</th>
+                <th style="padding:3px;">우편번호</th>
+                <th style="padding:3px;">주소</th>
+                <th style="padding:3px;">전화</th>
+                <th style="padding:3px;">핸드폰</th>
+                <th style="padding:3px;">박스수량</th>
+                <th style="padding:3px;">택배비</th>
+                <th style="padding:3px;">운임구분</th>
+                <th style="padding:3px;">Type</th>
+                <th style="padding:3px;">기타</th>
+                <th style="padding:3px;">품목</th>
+            </tr>
             <?php
-            $recent_query = "SELECT no, date, name, Type, Type_1, zip1, logen_tracking_no, waybill_date
-                            FROM mlangorder_printauto
-                            WHERE zip1 IS NOT NULL AND zip1 != '' AND zip1 != '0'
-                            ORDER BY no DESC
-                            LIMIT $per_page OFFSET $offset";
-            $recent_result = mysqli_query($connect, $recent_query);
+            $recent_query = "SELECT * FROM mlangorder_printauto WHERE $base_condition ORDER BY no DESC LIMIT $per_page OFFSET $offset";
+            $recent_result = safe_mysqli_query($connect, $recent_query);
 
-            if (mysqli_num_rows($recent_result) > 0):
-                while ($row = mysqli_fetch_assoc($recent_result)):
+            if ($recent_result && mysqli_num_rows($recent_result) > 0):
+                while ($data = mysqli_fetch_assoc($recent_result)):
+                    $no = $data['no'];
+                    $ship = calcShipping($data, $shipping_rules);
+                    $type1_display = htmlspecialchars(parseType1Display($data['Type_1'] ?? ''));
             ?>
-                <tr>
-                    <td><strong><?php echo $row['no']; ?></strong></td>
-                    <td><?php echo date('m/d H:i', strtotime($row['date'])); ?></td>
-                    <td><?php echo htmlspecialchars($row['name'] ?: '-'); ?></td>
-                    <td><?php echo htmlspecialchars(mb_substr($row['Type_1'] ?: $row['Type'], 0, 20)); ?></td>
-                    <td><?php echo htmlspecialchars(mb_substr($row['zip1'], 0, 30)); ?></td>
-                    <td>
-                        <?php if (!empty($row['logen_tracking_no'])): ?>
-                        <a href="https://www.ilogen.com/web/personal/trace/<?php echo $row['logen_tracking_no']; ?>"
-                           target="_blank" class="waybill-link">
-                            <?php echo $row['logen_tracking_no']; ?>
-                        </a>
-                        <?php else: ?>
-                        -
-                        <?php endif; ?>
-                    </td>
-                    <td>
-                        <?php if (!empty($row['logen_tracking_no'])): ?>
-                        <span class="status-badge shipped">발송완료</span>
-                        <?php else: ?>
-                        <span class="status-badge pending">대기중</span>
-                        <?php endif; ?>
-                    </td>
-                </tr>
+            <tr>
+                <td style="padding:3px;"><input type="checkbox" name="selected_no[]" value="<?php echo $no; ?>"></td>
+                <td style="padding:3px;"><?php echo htmlspecialchars($no); ?></td>
+                <td style="padding:3px;"><?php echo htmlspecialchars($data['date'] ?? ''); ?></td>
+                <td style="padding:3px;"><?php echo htmlspecialchars($data['name'] ?? ''); ?></td>
+                <td style="padding:3px;"><?php echo htmlspecialchars($data['zip'] ?? ''); ?></td>
+                <td style="padding:3px;"><?php echo htmlspecialchars(($data['zip1'] ?? '') . ' ' . ($data['zip2'] ?? '')); ?></td>
+                <td style="padding:3px;"><?php echo htmlspecialchars($data['phone'] ?? ''); ?></td>
+                <td style="padding:3px;" width="120"><?php echo htmlspecialchars($data['Hendphone'] ?? ''); ?></td>
+                <td style="padding:3px;" align="center"><input type="text" id="box_qty_<?php echo $no; ?>" value="<?php echo $ship['boxes']; ?>" size="2" style="text-align:center; font-size:12px;"></td>
+                <td style="padding:3px;"><input type="text" id="delivery_fee_<?php echo $no; ?>" value="<?php echo $ship['fee']; ?>" size="5" style="font-size:12px;"></td>
+                <td style="padding:3px;"><select id="fee_type_<?php echo $no; ?>" style="font-size:11px;">
+                    <option value="착불" selected>착불</option>
+                    <option value="선불">선불</option>
+                </select></td>
+                <td style="padding:3px;"><?php echo htmlspecialchars(getTypeLabel($data['Type'] ?? '', $type_labels)); ?></td>
+                <td style="padding:3px;"><?php echo $no; ?></td>
+                <td style="padding:3px; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; max-width:200px;"><?php echo $type1_display; ?></td>
+            </tr>
             <?php
                 endwhile;
             else:
             ?>
-                <tr>
-                    <td colspan="7" style="text-align: center; padding: 30px; color: #999;">
-                        발송 데이터가 없습니다.
-                    </td>
-                </tr>
+            <tr><td colspan="14" style="text-align:center; padding:30px; color:#999;">발송 데이터가 없습니다.</td></tr>
             <?php endif; ?>
-            </tbody>
         </table>
+        </form>
 
         <!-- 페이지네이션 -->
         <?php if ($total_pages > 1): ?>
         <div class="pagination">
-            <?php
-            // 이전 페이지
-            if ($page > 1):
-            ?>
+            <?php if ($page > 1): ?>
             <a href="?page=1" class="page-btn">&laquo; 처음</a>
             <a href="?page=<?php echo $page - 1; ?>" class="page-btn">&lsaquo; 이전</a>
             <?php endif; ?>
-
             <?php
-            // 페이지 번호 (현재 페이지 기준 앞뒤 5개씩)
             $start_page = max(1, $page - 5);
             $end_page = min($total_pages, $page + 5);
-
             for ($i = $start_page; $i <= $end_page; $i++):
                 $active_class = ($i == $page) ? ' active' : '';
             ?>
-            <a href="?page=<?php echo $i; ?>" class="page-btn<?php echo $active_class; ?>">
-                <?php echo $i; ?>
-            </a>
+            <a href="?page=<?php echo $i; ?>" class="page-btn<?php echo $active_class; ?>"><?php echo $i; ?></a>
             <?php endfor; ?>
-
-            <?php
-            // 다음 페이지
-            if ($page < $total_pages):
-            ?>
+            <?php if ($page < $total_pages): ?>
             <a href="?page=<?php echo $page + 1; ?>" class="page-btn">다음 &rsaquo;</a>
             <a href="?page=<?php echo $total_pages; ?>" class="page-btn">마지막 &raquo;</a>
             <?php endif; ?>
@@ -726,9 +823,67 @@ if ($stats_result) {
 
 <script>
 function updateFileName(input) {
-    const fileName = input.files[0] ? input.files[0].name : '클릭하여 엑셀 파일 선택';
+    var fileName = input.files[0] ? input.files[0].name : '클릭하여 엑셀 파일 선택';
     document.getElementById('file-name').textContent = fileName;
     document.getElementById('uploadBtn').disabled = !input.files[0];
+}
+
+function toggleAll(source) {
+    var checkboxes = document.getElementsByName('selected_no[]');
+    for (var i = 0; i < checkboxes.length; i++) {
+        checkboxes[i].checked = source.checked;
+    }
+}
+
+function exportSelectedToLogenExcel() {
+    var checkboxes = document.getElementsByName('selected_no[]');
+    var selected = [];
+    var boxQty = {};
+    var deliveryFee = {};
+    var feeType = {};
+
+    for (var i = 0; i < checkboxes.length; i++) {
+        if (checkboxes[i].checked) {
+            var no = checkboxes[i].value;
+            selected.push(no);
+            var qtyInput = document.getElementById('box_qty_' + no);
+            var feeInput = document.getElementById('delivery_fee_' + no);
+            var typeSelect = document.getElementById('fee_type_' + no);
+            if (qtyInput) boxQty[no] = qtyInput.value;
+            if (feeInput) deliveryFee[no] = feeInput.value;
+            if (typeSelect) feeType[no] = typeSelect.value;
+        }
+    }
+
+    if (selected.length === 0) {
+        alert('다운로드할 항목을 선택해주세요.');
+        return;
+    }
+
+    var form = document.createElement('form');
+    form.method = 'POST';
+    form.action = '';
+    form.target = '_blank';
+
+    var fields = {
+        'action': 'export_logen',
+        'selected_nos': selected.join(','),
+        'box_qty_json': JSON.stringify(boxQty),
+        'delivery_fee_json': JSON.stringify(deliveryFee),
+        'fee_type_json': JSON.stringify(feeType)
+    };
+
+    for (var key in fields) {
+        var input = document.createElement('input');
+        input.type = 'hidden';
+        input.name = key;
+        input.value = fields[key];
+        form.appendChild(input);
+    }
+
+    document.body.appendChild(form);
+    form.submit();
+    document.body.removeChild(form);
 }
 </script>
 </body>
