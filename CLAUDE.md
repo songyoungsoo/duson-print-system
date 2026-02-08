@@ -41,20 +41,26 @@ curl -T local_file.php \
 ### 환경 정보
 - **OS**: Linux (WSL2 Ubuntu) / Windows XAMPP
 - **Web Server**: Apache 2.4+
-- **PHP**: 7.4+
+- **PHP**: 7.4+ (로컬) / 8.2 (프로덕션)
 - **Database**: MySQL 5.7+ (utf8mb4)
 - **Local Document Root**: `/var/www/html` (개발 환경)
 - **Production Web Root**: `/httpdocs/` (FTP 기준)
 - **Domains**: localhost (dev) / dsp114.co.kr (prod)
 
-### 긴급 접속 정보
-```
-관리자: duson1830 / du1830
-DB: dsp1830 / ds701018
-FTP: dsp1830 / ds701018
-WSL sudo: 3305
-GitHub: songyoungsoo / yeongsu32@gmail.com
-```
+### 접속 정보
+
+| 구분 | 접속 정보 |
+|------|----------|
+| 관리자 (로컬/프로덕션) | duson1830 / du1830 |
+| 로컬 DB | dsp1830 / ds701018 |
+| 프로덕션 DB (dsp114.co.kr) | dsp1830 / t3zn?5R56 |
+| FTP (dsp114.co.kr) | dsp1830 / cH*j@yzj093BeTtc (웹루트: /httpdocs/) |
+| FTP (새 서버 dsp1830.ipdisk.co.kr) | admin / 1830 (웹루트: /HDD2/share/) |
+| FTP (구 서버 dsp114.com) | duson1830 / du1830 (웹루트: /www/) |
+| 구 서버 DB (dsp114.com) | duson1830 / du1830 |
+| 마이그레이션 페이지 | /system/migration/index.php 비번: duson2026!migration |
+| WSL sudo | 3305 |
+| GitHub | songyoungsoo / yeongsu32@gmail.com |
 
 ---
 
