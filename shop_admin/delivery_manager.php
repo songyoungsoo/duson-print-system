@@ -745,19 +745,19 @@ if ($stats_result) {
         <table>
             <colgroup>
                 <col style="width:28px">
-                <col style="width:70px">
-                <col style="width:70px">
-                <col style="width:60px">
-                <col style="width:50px">
-                <col style="width:auto">
-                <col style="width:90px">
+                <col style="width:62px">
                 <col style="width:95px">
-                <col style="width:40px">
+                <col style="width:70px">
+                <col style="width:52px">
+                <col style="width:22%">
+                <col style="width:95px">
+                <col style="width:95px">
+                <col style="width:36px">
+                <col style="width:58px">
+                <col style="width:48px">
+                <col style="width:50px">
                 <col style="width:55px">
-                <col style="width:50px">
-                <col style="width:45px">
-                <col style="width:50px">
-                <col style="width:120px">
+                <col style="width:100px">
             </colgroup>
             <tr style="background: #1E4E79; color: #fff;">
                 <th><input type="checkbox" onclick="toggleAll(this)"></th>
