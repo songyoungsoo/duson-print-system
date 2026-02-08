@@ -33,6 +33,8 @@ if (!$is_authed) {
 require_once __DIR__ . '/../db.php';
 $connect = $db;
 
+
+
 // 발송인 정보 (두손기획인쇄)
 $sender = [
     'name' => '두손기획인쇄',
@@ -282,9 +284,12 @@ if ($action === 'import_waybill' && isset($_FILES['waybill_file'])) {
                     // 데이터 행부터 처리
                     $data_rows = array_slice($rows, $data_row_idx);
 
-                    // 컬럼 인덱스 찾기 (첫 20행 스캔)
-                    $order_col = -1;
+                    // 컬럼 인덱스 찾기 (이름/전화/주소/운송장 자동 감지)
                     $waybill_col = -1;
+                    $name_col = -1;
+                    $phone_col = -1;
+                    $phone2_col = -1;
+                    $addr_col = -1;
 
                     $scan_limit = min(20, count($data_rows));
                     for ($scan_idx = 0; $scan_idx < $scan_limit; $scan_idx++) {
@@ -293,57 +298,182 @@ if ($action === 'import_waybill' && isset($_FILES['waybill_file'])) {
                         foreach ($row as $idx => $value) {
                             $value = trim($value);
 
-                            // 운송장번호: 4로 시작하는 11자리 숫자
-                            if ($waybill_col === -1 && preg_match('/^4[0-9]{10}$/', $value)) {
+                            // 운송장번호: 4로 시작하는 11~12자리 숫자
+                            if ($waybill_col === -1 && preg_match('/^4[0-9]{10,11}$/', $value)) {
                                 $waybill_col = $idx;
                             }
 
-                            // 주문번호: dsno 포함
-                            if ($order_col === -1 && preg_match('/dsno[0-9]+/i', $value)) {
-                                $order_col = $idx;
+                            // 수하인명: 한글 2~10자
+                            if ($name_col === -1 && preg_match('/^[가-힣]{2,10}$/u', $value)) {
+                                $name_col = $idx;
+                            }
+
+                            // 전화번호: 0으로 시작, 하이픈 포함 가능
+                            if (preg_match('/^0[0-9]{1,2}-?[0-9]{3,4}-?[0-9]{4}$/', $value)) {
+                                if ($phone_col === -1) {
+                                    $phone_col = $idx;
+                                } elseif ($phone2_col === -1 && $idx !== $phone_col) {
+                                    $phone2_col = $idx;
+                                }
+                            }
+
+                            // 주소: 시/도로 시작하는 10자 이상 문자열
+                            if ($addr_col === -1 && mb_strlen($value) >= 10 &&
+                                preg_match('/^(서울|부산|대구|인천|광주|대전|울산|세종|경기|강원|충북|충남|전북|전남|경북|경남|제주)/u', $value)) {
+                                $addr_col = $idx;
                             }
                         }
 
-                        if ($order_col !== -1 && $waybill_col !== -1) {
+                        if ($waybill_col !== -1 && $name_col !== -1 && $phone_col !== -1) {
                             break;
                         }
                     }
 
-                    if ($order_col === -1 || $waybill_col === -1) {
-                        $error = "Excel 파일에서 '주문번호(dsno형식)'와 '운송장번호(4로 시작하는 11자리)'를 찾을 수 없습니다.<br><br>" .
-                                 "찾은 위치: 주문번호=" . ($order_col === -1 ? '없음' : "컬럼 " . ($order_col+1)) .
-                                 ", 운송장=" . ($waybill_col === -1 ? '없음' : "컬럼 " . ($waybill_col+1));
+                    if ($waybill_col === -1) {
+                        $debug_cols = [];
+                        if (count($data_rows) > 0) {
+                            foreach ($data_rows[0] as $di => $dv) {
+                                $debug_cols[] = "[" . ($di+1) . "] " . mb_substr(trim($dv), 0, 30);
+                            }
+                        }
+                        $error = "Excel 파일에서 운송장번호를 감지할 수 없습니다.<br><br>" .
+                                 "첫 행 데이터: " . implode(' | ', $debug_cols);
+                    } elseif ($name_col === -1 && $phone_col === -1 && $addr_col === -1) {
+                        $debug_cols = [];
+                        if (count($data_rows) > 0) {
+                            foreach ($data_rows[0] as $di => $dv) {
+                                $debug_cols[] = "[" . ($di+1) . "] " . mb_substr(trim($dv), 0, 30);
+                            }
+                        }
+                        $error = "Excel 파일에서 매칭에 필요한 정보(이름/전화/주소)를 감지할 수 없습니다.<br><br>" .
+                                 "감지 결과: 운송장=컬럼" . ($waybill_col+1) .
+                                 ", 이름=없음, 전화=없음, 주소=없음" .
+                                 "<br><br>첫 행 데이터: " . implode(' | ', $debug_cols);
                     } else {
-                        // DB 업데이트
-                        $stmt = mysqli_prepare($connect,
+                        // 매칭 쿼리 준비: 이름 → 전화앞6자리 → 주소 순서
+                        $match_by_name_stmt = mysqli_prepare($connect,
+                            "SELECT no, name FROM mlangorder_printauto
+                             WHERE name = ?
+                             AND (waybill_no IS NULL OR waybill_no = '')
+                             AND date >= DATE_SUB(NOW(), INTERVAL 7 DAY)
+                             ORDER BY no ASC LIMIT 1");
+
+                        $match_by_phone_stmt = mysqli_prepare($connect,
+                            "SELECT no, name FROM mlangorder_printauto
+                             WHERE (LEFT(REPLACE(phone,'-',''), 6) = ? OR LEFT(REPLACE(Hendphone,'-',''), 6) = ?)
+                             AND (waybill_no IS NULL OR waybill_no = '')
+                             AND date >= DATE_SUB(NOW(), INTERVAL 7 DAY)
+                             ORDER BY no ASC LIMIT 1");
+
+                        $match_by_addr_stmt = mysqli_prepare($connect,
+                            "SELECT no, name FROM mlangorder_printauto
+                             WHERE zip1 LIKE CONCAT('%', ?, '%')
+                             AND (waybill_no IS NULL OR waybill_no = '')
+                             AND date >= DATE_SUB(NOW(), INTERVAL 7 DAY)
+                             ORDER BY no ASC LIMIT 1");
+
+                        $update_stmt = mysqli_prepare($connect,
                             "UPDATE mlangorder_printauto
                              SET waybill_no = ?, waybill_date = NOW(), delivery_company = '로젠'
                              WHERE no = ?");
 
+                        $skipped = 0;
+                        $match_methods = []; // 매칭 방법별 카운트
                         foreach ($data_rows as $row) {
-                            $order_no_raw = isset($row[$order_col]) ? trim($row[$order_col]) : '';
                             $waybill_no = isset($row[$waybill_col]) ? trim($row[$waybill_col]) : '';
+                            $recv_name = ($name_col !== -1 && isset($row[$name_col])) ? trim($row[$name_col]) : '';
+                            $recv_phone = ($phone_col !== -1 && isset($row[$phone_col])) ? trim($row[$phone_col]) : '';
+                            $recv_addr = ($addr_col !== -1 && isset($row[$addr_col])) ? trim($row[$addr_col]) : '';
 
-                            // "dsno" 접두사 제거
-                            $order_no = preg_replace('/^dsno/i', '', $order_no_raw);
+                            if (empty($waybill_no) || !preg_match('/^4[0-9]{10,11}$/', $waybill_no)) {
+                                continue;
+                            }
 
-                            if (!empty($order_no) && !empty($waybill_no) && is_numeric($order_no)) {
-                                mysqli_stmt_bind_param($stmt, "si", $waybill_no, $order_no);
-                                if (mysqli_stmt_execute($stmt) && mysqli_stmt_affected_rows($stmt) > 0) {
+                            $has_name = (mb_strlen($recv_name) >= 2);
+                            $phone_clean = preg_replace('/[^0-9]/', '', $recv_phone);
+                            $phone6 = substr($phone_clean, 0, 6);
+                            $has_phone = (strlen($phone6) >= 6);
+                            // 주소 키워드: 첫 번째 공백 전까지 (시/구/동 등)
+                            $addr_keyword = '';
+                            if (!empty($recv_addr)) {
+                                $addr_parts = preg_split('/\s+/', $recv_addr);
+                                // 시/도 + 구/군 합쳐서 검색 키워드
+                                $addr_keyword = isset($addr_parts[1]) ? $addr_parts[0] . ' ' . $addr_parts[1] : $addr_parts[0];
+                            }
+                            $has_addr = (mb_strlen($addr_keyword) >= 4);
+
+                            if (!$has_name && !$has_phone && !$has_addr) { $skipped++; continue; }
+
+                            // 1순위: 이름
+                            $matched = null;
+                            $method = '';
+                            if ($has_name) {
+                                mysqli_stmt_bind_param($match_by_name_stmt, "s", $recv_name);
+                                mysqli_stmt_execute($match_by_name_stmt);
+                                $match_result = mysqli_stmt_get_result($match_by_name_stmt);
+                                $matched = mysqli_fetch_assoc($match_result);
+                                if ($matched) $method = '이름';
+                            }
+
+                            // 2순위: 전화번호 앞6자리
+                            if (!$matched && $has_phone) {
+                                mysqli_stmt_bind_param($match_by_phone_stmt, "ss", $phone6, $phone6);
+                                mysqli_stmt_execute($match_by_phone_stmt);
+                                $match_result = mysqli_stmt_get_result($match_by_phone_stmt);
+                                $matched = mysqli_fetch_assoc($match_result);
+                                if ($matched) $method = '전화';
+                            }
+
+                            // 3순위: 주소
+                            if (!$matched && $has_addr) {
+                                mysqli_stmt_bind_param($match_by_addr_stmt, "s", $addr_keyword);
+                                mysqli_stmt_execute($match_by_addr_stmt);
+                                $match_result = mysqli_stmt_get_result($match_by_addr_stmt);
+                                $matched = mysqli_fetch_assoc($match_result);
+                                if ($matched) $method = '주소';
+                            }
+
+                            if ($matched) {
+                                $order_no = $matched['no'];
+                                mysqli_stmt_bind_param($update_stmt, "si", $waybill_no, $order_no);
+                                if (mysqli_stmt_execute($update_stmt) && mysqli_stmt_affected_rows($update_stmt) > 0) {
                                     $updated++;
+                                    $match_methods[$method] = ($match_methods[$method] ?? 0) + 1;
                                 } else {
                                     $failed++;
                                     if (count($errors) < 10) {
-                                        $errors[] = "주문번호 {$order_no}: 업데이트 실패";
+                                        $errors[] = "{$recv_name}({$recv_phone}) → 주문#{$order_no}: 업데이트 실패";
                                     }
+                                }
+                            } else {
+                                $failed++;
+                                if (count($errors) < 10) {
+                                    $errors[] = "{$recv_name} / {$recv_phone} / " . mb_substr($recv_addr, 0, 20) . ": 매칭 없음";
                                 }
                             }
                         }
 
-                        $message = "✅ <b>Excel 자동 처리 완료</b><br>" .
-                                   "운송장 등록: {$updated}건 성공, {$failed}건 실패";
+                        mysqli_stmt_close($match_by_name_stmt);
+                        mysqli_stmt_close($match_by_phone_stmt);
+                        mysqli_stmt_close($match_by_addr_stmt);
+                        mysqli_stmt_close($update_stmt);
+
+                        // 결과 메시지
+                        $detect_info = "감지: 운송장=컬럼" . ($waybill_col+1);
+                        if ($name_col !== -1) $detect_info .= " / 이름=컬럼" . ($name_col+1);
+                        if ($phone_col !== -1) $detect_info .= " / 전화=컬럼" . ($phone_col+1);
+                        if ($addr_col !== -1) $detect_info .= " / 주소=컬럼" . ($addr_col+1);
+
+                        $method_info = [];
+                        foreach ($match_methods as $m => $cnt) { $method_info[] = "{$m}:{$cnt}건"; }
+
+                        $message = "✅ <b>Excel 운송장 등록 완료</b><br>" .
+                                   "성공: {$updated}건 / 실패: {$failed}건" .
+                                   ($skipped > 0 ? " / 스킵: {$skipped}건" : "") .
+                                   (!empty($method_info) ? "<br>매칭방법: " . implode(", ", $method_info) : "") .
+                                   "<br><small style='color:#666;'>{$detect_info}</small>";
                         if (count($errors) > 0) {
-                            $message .= "<br><br><small style='color:#d97706;'>오류 내역:<br>" .
+                            $message .= "<br><br><small style='color:#d97706;'>상세:<br>" .
                                        implode("<br>", $errors) . "</small>";
                         }
                     }
@@ -398,11 +528,13 @@ if ($action === 'import_waybill' && isset($_FILES['waybill_file'])) {
             // 데이터 줄부터 시작
             $lines = array_slice($lines, $data_line_idx);
 
-            $order_col = -1;
+            // 컬럼 인덱스 찾기 (이름/전화/주소/운송장 자동 감지)
             $waybill_col = -1;
+            $name_col = -1;
+            $phone_col = -1;
+            $phone2_col = -1;
+            $addr_col = -1;
 
-            // 패턴 기반 컬럼 인식: 여러 데이터 행을 스캔해서 패턴으로 컬럼 찾기
-            // (첫 번째 행에 패턴이 없을 수 있으므로 최대 20개 행 스캔)
             $scan_limit = min(20, count($lines));
             for ($scan_idx = 0; $scan_idx < $scan_limit; $scan_idx++) {
                 $row = str_getcsv($lines[$scan_idx], "\t");
@@ -410,93 +542,160 @@ if ($action === 'import_waybill' && isset($_FILES['waybill_file'])) {
                 foreach ($row as $idx => $value) {
                     $value = trim($value);
 
-                    // 운송장번호: 4로 시작하는 11자리 숫자 (예: 43366261260)
-                    if ($waybill_col === -1 && preg_match('/^4[0-9]{10}$/', $value)) {
+                    if ($waybill_col === -1 && preg_match('/^4[0-9]{10,11}$/', $value)) {
                         $waybill_col = $idx;
                     }
 
-                    // 주문번호: dsno 포함 (예: dsno84285, 또는 더 긴 문자열에 dsno84285 포함)
-                    if ($order_col === -1 && preg_match('/dsno[0-9]+/i', $value)) {
-                        $order_col = $idx;
+                    if ($name_col === -1 && preg_match('/^[가-힣]{2,10}$/u', $value)) {
+                        $name_col = $idx;
+                    }
+
+                    if (preg_match('/^0[0-9]{1,2}-?[0-9]{3,4}-?[0-9]{4}$/', $value)) {
+                        if ($phone_col === -1) {
+                            $phone_col = $idx;
+                        } elseif ($phone2_col === -1 && $idx !== $phone_col) {
+                            $phone2_col = $idx;
+                        }
+                    }
+
+                    if ($addr_col === -1 && mb_strlen($value) >= 10 &&
+                        preg_match('/^(서울|부산|대구|인천|광주|대전|울산|세종|경기|강원|충북|충남|전북|전남|경북|경남|제주)/u', $value)) {
+                        $addr_col = $idx;
                     }
                 }
 
-                // 둘 다 찾았으면 더 이상 스캔 안 함
-                if ($order_col !== -1 && $waybill_col !== -1) {
+                if ($waybill_col !== -1 && $name_col !== -1 && $phone_col !== -1) {
                     break;
                 }
             }
 
-            if ($order_col === -1 || $waybill_col === -1) {
-                // 디버그 정보 - 더 상세하게
-                $total_lines = count($lines);
-                $first_row_display = $total_lines > 0 ? str_getcsv($lines[0], "\t") : array();
-
-                // 첫 5줄의 raw 데이터 표시
-                $raw_lines_preview = array_slice($lines, 0, 5);
-
-                // 전체 컬럼을 스캔해서 패턴 매칭 여부 확인
-                $waybill_matches = [];
-                $order_matches = [];
-                foreach ($first_row_display as $idx => $value) {
-                    $value = trim($value);
-                    if (preg_match('/^4[0-9]{10}$/', $value)) {
-                        $waybill_matches[] = "[$idx] " . $value;
-                    }
-                    if (preg_match('/dsno[0-9]+/i', $value)) {
-                        $order_matches[] = "[$idx] " . $value;
-                    }
+            if ($waybill_col === -1) {
+                $first_row_display = count($lines) > 0 ? str_getcsv($lines[0], "\t") : array();
+                $debug_cols = [];
+                foreach ($first_row_display as $di => $dv) {
+                    $debug_cols[] = "[" . ($di+1) . "] " . mb_substr(trim($dv), 0, 30);
                 }
-
-                $error = "엑셀 파일에서 '주문번호'와 '운송장번호' 컬럼을 찾을 수 없습니다.<br><br>" .
-                         "<b>패턴 인식 정보:</b><br>" .
-                         "운송장번호 패턴: 4로 시작하는 11자리 숫자 (예: 43366261260)<br>" .
-                         "주문번호 패턴: dsno + 숫자 (예: dsno84285)<br><br>" .
-                         "주문번호 위치: " . ($order_col === -1 ? '찾을 수 없음' : "컬럼 " . $order_col) . "<br>" .
-                         "운송장 위치: " . ($waybill_col === -1 ? '찾을 수 없음' : "컬럼 " . $waybill_col) . "<br><br>" .
-                         "<b>전체 컬럼에서 발견된 패턴:</b><br>" .
-                         "운송장 패턴 매칭: " . (count($waybill_matches) > 0 ? implode(", ", $waybill_matches) : "없음") . "<br>" .
-                         "주문번호 패턴 매칭: " . (count($order_matches) > 0 ? implode(", ", $order_matches) : "없음") . "<br><br>" .
-                         "<b>파일 정보:</b><br>" .
-                         "데이터 시작 줄: " . ($data_line_idx + 1) . "번째 줄 (0부터 시작: " . $data_line_idx . ")<br>" .
-                         "총 데이터 라인 수: " . $total_lines . "<br>" .
-                         "첫 번째 데이터 행 컬럼 수: " . count($first_row_display) . "<br><br>" .
-                         "<b>첫 번째 데이터 행 (전체 컬럼):</b><br>" .
-                         "<small>" . implode("<br>", array_map(function($i, $c) {
-                             $len = mb_strlen($c);
-                             return "[" . $i . "] (길이:" . $len . ") " . htmlspecialchars(trim($c));
-                         }, array_keys($first_row_display), $first_row_display)) . "</small>";
+                $error = "파일에서 운송장번호를 감지할 수 없습니다.<br><br>" .
+                         "첫 행 데이터: " . implode(' | ', $debug_cols);
+            } elseif ($name_col === -1 && $phone_col === -1 && $addr_col === -1) {
+                $first_row_display = count($lines) > 0 ? str_getcsv($lines[0], "\t") : array();
+                $debug_cols = [];
+                foreach ($first_row_display as $di => $dv) {
+                    $debug_cols[] = "[" . ($di+1) . "] " . mb_substr(trim($dv), 0, 30);
+                }
+                $error = "파일에서 매칭에 필요한 정보(이름/전화/주소)를 감지할 수 없습니다.<br><br>" .
+                         "감지 결과: 운송장=컬럼" . ($waybill_col+1) .
+                         ", 이름=없음, 전화=없음, 주소=없음" .
+                         "<br><br>첫 행 데이터: " . implode(' | ', $debug_cols);
             } else {
-            $stmt = mysqli_prepare($connect,
+            $match_by_name_stmt = mysqli_prepare($connect,
+                "SELECT no, name FROM mlangorder_printauto
+                 WHERE name = ?
+                 AND (waybill_no IS NULL OR waybill_no = '')
+                 AND date >= DATE_SUB(NOW(), INTERVAL 7 DAY)
+                 ORDER BY no ASC LIMIT 1");
+
+            $match_by_phone_stmt = mysqli_prepare($connect,
+                "SELECT no, name FROM mlangorder_printauto
+                 WHERE (LEFT(REPLACE(phone,'-',''), 6) = ? OR LEFT(REPLACE(Hendphone,'-',''), 6) = ?)
+                 AND (waybill_no IS NULL OR waybill_no = '')
+                 AND date >= DATE_SUB(NOW(), INTERVAL 7 DAY)
+                 ORDER BY no ASC LIMIT 1");
+
+            $match_by_addr_stmt = mysqli_prepare($connect,
+                "SELECT no, name FROM mlangorder_printauto
+                 WHERE zip1 LIKE CONCAT('%', ?, '%')
+                 AND (waybill_no IS NULL OR waybill_no = '')
+                 AND date >= DATE_SUB(NOW(), INTERVAL 7 DAY)
+                 ORDER BY no ASC LIMIT 1");
+
+            $update_stmt = mysqli_prepare($connect,
                 "UPDATE mlangorder_printauto
                  SET waybill_no = ?, waybill_date = NOW(), delivery_company = '로젠'
                  WHERE no = ?");
 
+            $skipped = 0;
+            $match_methods = [];
             foreach ($lines as $line) {
                 $line = trim($line);
                 if (empty($line)) continue;
 
                 $cols = str_getcsv($line, "\t");
-                $order_no_raw = isset($cols[$order_col]) ? trim($cols[$order_col]) : '';
                 $waybill_no = isset($cols[$waybill_col]) ? trim($cols[$waybill_col]) : '';
+                $recv_name = ($name_col !== -1 && isset($cols[$name_col])) ? trim($cols[$name_col]) : '';
+                $recv_phone = ($phone_col !== -1 && isset($cols[$phone_col])) ? trim($cols[$phone_col]) : '';
+                $recv_addr = ($addr_col !== -1 && isset($cols[$addr_col])) ? trim($cols[$addr_col]) : '';
 
-                // "dsno" 접두사 제거 (예: dsno84285 → 84285)
-                $order_no = preg_replace('/^dsno/i', '', $order_no_raw);
+                if (empty($waybill_no) || !preg_match('/^4[0-9]{10,11}$/', $waybill_no)) continue;
 
-                if (!empty($order_no) && !empty($waybill_no) && is_numeric($order_no)) {
-                    mysqli_stmt_bind_param($stmt, "si", $waybill_no, $order_no);
-                    if (mysqli_stmt_execute($stmt) && mysqli_stmt_affected_rows($stmt) > 0) {
+                $has_name = (mb_strlen($recv_name) >= 2);
+                $phone_clean = preg_replace('/[^0-9]/', '', $recv_phone);
+                $phone6 = substr($phone_clean, 0, 6);
+                $has_phone = (strlen($phone6) >= 6);
+                $addr_keyword = '';
+                if (!empty($recv_addr)) {
+                    $addr_parts = preg_split('/\s+/', $recv_addr);
+                    $addr_keyword = isset($addr_parts[1]) ? $addr_parts[0] . ' ' . $addr_parts[1] : $addr_parts[0];
+                }
+                $has_addr = (mb_strlen($addr_keyword) >= 4);
+
+                if (!$has_name && !$has_phone && !$has_addr) { $skipped++; continue; }
+
+                $matched = null;
+                $method = '';
+                if ($has_name) {
+                    mysqli_stmt_bind_param($match_by_name_stmt, "s", $recv_name);
+                    mysqli_stmt_execute($match_by_name_stmt);
+                    $match_result = mysqli_stmt_get_result($match_by_name_stmt);
+                    $matched = mysqli_fetch_assoc($match_result);
+                    if ($matched) $method = '이름';
+                }
+
+                if (!$matched && $has_phone) {
+                    mysqli_stmt_bind_param($match_by_phone_stmt, "ss", $phone6, $phone6);
+                    mysqli_stmt_execute($match_by_phone_stmt);
+                    $match_result = mysqli_stmt_get_result($match_by_phone_stmt);
+                    $matched = mysqli_fetch_assoc($match_result);
+                    if ($matched) $method = '전화';
+                }
+
+                if (!$matched && $has_addr) {
+                    mysqli_stmt_bind_param($match_by_addr_stmt, "s", $addr_keyword);
+                    mysqli_stmt_execute($match_by_addr_stmt);
+                    $match_result = mysqli_stmt_get_result($match_by_addr_stmt);
+                    $matched = mysqli_fetch_assoc($match_result);
+                    if ($matched) $method = '주소';
+                }
+
+                if ($matched) {
+                    $order_no = $matched['no'];
+                    mysqli_stmt_bind_param($update_stmt, "si", $waybill_no, $order_no);
+                    if (mysqli_stmt_execute($update_stmt) && mysqli_stmt_affected_rows($update_stmt) > 0) {
                         $updated++;
+                        $match_methods[$method] = ($match_methods[$method] ?? 0) + 1;
                     } else {
                         $failed++;
-                        $errors[] = "주문번호 {$order_no}: 업데이트 실패";
+                        if (count($errors) < 10) $errors[] = "{$recv_name}({$recv_phone}) → 주문#{$order_no}: 업데이트 실패";
                     }
+                } else {
+                    $failed++;
+                    if (count($errors) < 10) $errors[] = "{$recv_name} / {$recv_phone} / " . mb_substr($recv_addr, 0, 20) . ": 매칭 없음";
                 }
             }
 
-            $message = "운송장 등록 완료: {$updated}건 성공, {$failed}건 실패";
-            if (count($errors) > 0 && count($errors) <= 5) {
-                $message .= "<br><small>" . implode("<br>", $errors) . "</small>";
+            mysqli_stmt_close($match_by_name_stmt);
+            mysqli_stmt_close($match_by_phone_stmt);
+            mysqli_stmt_close($match_by_addr_stmt);
+            mysqli_stmt_close($update_stmt);
+
+            $method_info = [];
+            foreach ($match_methods as $m => $cnt) { $method_info[] = "{$m}:{$cnt}건"; }
+
+            $message = "✅ 운송장 등록 완료: {$updated}건 성공, {$failed}건 실패";
+            if ($skipped > 0) $message .= ", {$skipped}건 스킵";
+            if (!empty($method_info)) $message .= "<br>매칭방법: " . implode(", ", $method_info);
+            if (count($errors) > 0) {
+                $message .= "<br><small style='color:#d97706;'>" . implode("<br>", $errors) . "</small>";
             }
             }
         } // if ($header === null) else 블록 종료
@@ -512,7 +711,7 @@ $stats_query = "SELECT
     SUM(CASE WHEN waybill_no IS NOT NULL AND waybill_no != '' THEN 1 ELSE 0 END) as shipped,
     SUM(CASE WHEN (waybill_no IS NULL OR waybill_no = '') AND zip1 IS NOT NULL AND zip1 != '' THEN 1 ELSE 0 END) as pending
 FROM mlangorder_printauto
-WHERE date >= DATE_SUB(NOW(), INTERVAL 30 DAY)";
+WHERE date >= DATE_SUB(NOW(), INTERVAL 7 DAY)";
 $stats_result = @mysqli_query($connect, $stats_query);
 if ($stats_result) {
     $stats = mysqli_fetch_assoc($stats_result);
@@ -623,7 +822,7 @@ if ($stats_result) {
 <div class="container">
     <h1>
         📦 배송 관리
-        <a href="https://logis.ilogen.com/common/html/main.html" target="_blank" class="btn btn-logen" style="margin-left: auto; font-size: 12px;">
+        <a href="https://logis.ilogen.com/" target="_blank" class="btn btn-logen" style="margin-left: auto; font-size: 12px;">
             🚚 로젠택배 시스템 바로가기
         </a>
     </h1>
@@ -686,7 +885,7 @@ if ($stats_result) {
             </form>
             <div class="links" style="font-size: 11px;">
                 <a href="https://www.ilogen.com/web/enterprise/system" target="_blank">📋 매뉴얼</a>
-                <a href="https://logis.ilogen.com/common/html/main.html" target="_blank">🔑 로그인</a>
+                <a href="https://logis.ilogen.com/" target="_blank">🔑 로그인</a>
             </div>
         </div>
 

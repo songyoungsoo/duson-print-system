@@ -72,7 +72,8 @@ if (isset($_SESSION['user_id'])) {
 // 드롭다운 옵션을 가져오는 함수들 (컴팩트 전용 - 함수명 변경으로 충돌 방지)
 function getLeafletColorOptions($connect, $GGTABLE, $page) {
     $options = [];
-    $query = "SELECT * FROM $GGTABLE WHERE Ttable='$page' AND BigNo='0' ORDER BY no ASC";
+    // 독판인쇄(레거시) no=625 제외 - 합판 전단지만 표시
+    $query = "SELECT * FROM $GGTABLE WHERE Ttable='$page' AND BigNo='0' AND no != 625 ORDER BY no ASC";
     $result = mysqli_query($connect, $query);
     if ($result) {
         while ($row = mysqli_fetch_array($result)) {
@@ -479,32 +480,8 @@ header("Expires: 0");
                 </div>
             </div>
             
-            <!-- 독판 전단지 카드 -->
-            <div class="flyer-card">
-                <!-- 제목 (네모 박스 반전글) -->
-                <div class="dokpan-title">
-                    <h3>독판 전단지</h3>
-                </div>
-                
-                <!-- 헤어라인 -->
-                <div class="flyer-hairline"></div>
-                
-                <!-- 내용 -->
-                <div class="flyer-content">
-                    <p>나만의 인쇄물을 단독으로 인쇄할 수 있는 상품으로 고급 인쇄물 제작을 원할 때 선택하시면 됩니다. 다양한 용지 선택과 후가공 선택이 가능한 상품입니다.</p>
-                    
-                    <div class="flyer-specs">
-                        <h4>⚙️ 상세 정보</h4>
-                        <ul>
-                            <li><strong>작업사이즈:</strong> 재단사이즈에서 사방 1.5mm씩 여분</li>
-                            <li><strong>인쇄유형:</strong> 옵셋인쇄</li>
-                            <li><strong>출고:</strong> 매일 출고</li>
-                            <li><strong>후가공:</strong> 각종 박, 형압, 엠보, 타공, 접지, 코팅, 도무송, 접착, 오시, 미싱, 넘버링</li>
-                            <li><strong>재질:</strong> 아트지, 스노우화이트, 모조지 등</li>
-                        </ul>
-                    </div>
-                </div>
-            </div>
+            <!-- 독판 전단지 카드 (레거시 - 숨김 처리) -->
+            <!-- 독판인쇄는 추후 별도 페이지로 구현 예정 -->
         </div>
     </section>
     <?php endif; ?>

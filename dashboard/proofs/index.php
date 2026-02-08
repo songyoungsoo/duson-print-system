@@ -41,7 +41,7 @@ if (!empty($params)) {
 }
 $total_pages = max(1, ceil($total / $per_page));
 
-$query = "SELECT o.no, o.Type, o.name, o.OrderStyle, o.date, o.uploaded_files,
+$query = "SELECT o.no, o.Type, o.name, o.phone, o.Hendphone, o.OrderStyle, o.date, o.uploaded_files,
           (SELECT COUNT(*) FROM mlangorder_printauto AS sub WHERE sub.no = o.no AND sub.uploaded_files IS NOT NULL AND sub.uploaded_files != '') as has_files
           FROM mlangorder_printauto o
           WHERE {$where}
@@ -134,6 +134,7 @@ include __DIR__ . '/../includes/sidebar.php';
                             <th class="px-3 py-2 text-left text-xs font-medium text-gray-500">주문번호</th>
                             <th class="px-3 py-2 text-left text-xs font-medium text-gray-500">품목</th>
                             <th class="px-3 py-2 text-left text-xs font-medium text-gray-500">주문자</th>
+                            <th class="px-3 py-2 text-left text-xs font-medium text-gray-500">전화번호</th>
                             <th class="px-3 py-2 text-center text-xs font-medium text-gray-500">상태</th>
                             <th class="px-3 py-2 text-center text-xs font-medium text-gray-500">교정파일</th>
                             <th class="px-3 py-2 text-center text-xs font-medium text-gray-500">일시</th>
@@ -142,13 +143,34 @@ include __DIR__ . '/../includes/sidebar.php';
                     </thead>
                     <tbody class="bg-white divide-y divide-gray-200">
                         <?php if (empty($orders)): ?>
-                        <tr><td colspan="7" class="px-3 py-8 text-center text-sm text-gray-400">데이터가 없습니다.</td></tr>
+                        <tr><td colspan="8" class="px-3 py-8 text-center text-sm text-gray-400">데이터가 없습니다.</td></tr>
                         <?php endif; ?>
                         <?php foreach ($orders as $order): ?>
                         <tr class="hover:bg-gray-50" id="row-<?php echo $order['no']; ?>">
                             <td class="px-3 py-2 text-sm font-medium text-gray-900">#<?php echo $order['no']; ?></td>
                             <td class="px-3 py-2 text-sm text-gray-600"><?php echo htmlspecialchars($order['Type']); ?></td>
                             <td class="px-3 py-2 text-sm text-gray-600"><?php echo htmlspecialchars($order['name']); ?></td>
+                            <td class="px-3 py-2 text-sm">
+                                <?php
+                                    $phone = trim($order['phone'] ?? '');
+                                    $hendphone = trim($order['Hendphone'] ?? '');
+                                    $displayPhone = $phone ?: $hendphone;
+                                ?>
+                                <?php if ($displayPhone): ?>
+                                    <span class="text-gray-700" id="phone-display-<?php echo $order['no']; ?>"><?php echo htmlspecialchars($displayPhone); ?></span>
+                                <?php else: ?>
+                                    <div class="flex items-center gap-1" id="phone-edit-<?php echo $order['no']; ?>">
+                                        <input type="text" 
+                                               id="phone-input-<?php echo $order['no']; ?>"
+                                               placeholder="010-0000-0000"
+                                               class="w-28 px-1.5 py-0.5 text-xs border border-orange-300 rounded focus:ring-1 focus:ring-blue-400 focus:border-blue-400 outline-none bg-orange-50"
+                                               maxlength="20"
+                                               onkeydown="if(event.key==='Enter'){savePhone(<?php echo $order['no']; ?>)}">
+                                        <button onclick="savePhone(<?php echo $order['no']; ?>)" 
+                                                class="px-1.5 py-0.5 text-[10px] bg-blue-500 text-white rounded hover:bg-blue-600 flex-shrink-0">저장</button>
+                                    </div>
+                                <?php endif; ?>
+                            </td>
                             <td class="px-3 py-2 text-center">
                                 <?php 
                                     $style = $order['OrderStyle'] ?? '0';
@@ -263,6 +285,18 @@ include __DIR__ . '/../includes/sidebar.php';
         </div>
         <div class="p-4">
             <input type="hidden" id="upload_order_no">
+            <!-- 주문자 정보 (전화번호) -->
+            <div id="uploadPhoneArea" class="mb-3 p-3 bg-gray-50 rounded-lg border border-gray-200">
+                <div class="flex items-center justify-between">
+                    <div class="flex items-center gap-2 text-sm">
+                        <span class="text-gray-500">주문자:</span>
+                        <span id="uploadOrderName" class="font-medium text-gray-800"></span>
+                    </div>
+                    <div class="flex items-center gap-2 text-sm" id="uploadPhoneDisplay">
+                        <!-- JS로 동적 렌더링 -->
+                    </div>
+                </div>
+            </div>
             <div class="border-2 border-dashed border-gray-300 rounded-lg p-5 text-center hover:border-blue-400 transition-colors cursor-pointer" id="dropZone" onclick="document.getElementById('fileInput').click()">
                 <div class="text-3xl mb-1">📁</div>
                 <p class="text-sm text-gray-600">파일을 끌어다 놓거나 클릭하여 선택</p>
@@ -314,6 +348,68 @@ include __DIR__ . '/../includes/sidebar.php';
 </div>
 
 <script>
+// === Order Phone Data (from PHP) ===
+var orderPhoneData = {};
+<?php foreach ($orders as $o): ?>
+orderPhoneData[<?php echo $o['no']; ?>] = {
+    name: <?php echo json_encode($o['name'] ?: '주문자', JSON_UNESCAPED_UNICODE); ?>,
+    phone: <?php echo json_encode(trim($o['phone'] ?? ''), JSON_UNESCAPED_UNICODE); ?>,
+    hendphone: <?php echo json_encode(trim($o['Hendphone'] ?? ''), JSON_UNESCAPED_UNICODE); ?>
+};
+<?php endforeach; ?>
+
+// === Phone Save ===
+function saveModalPhone(orderNo) {
+    var input = document.getElementById('modalPhoneInput');
+    var phone = input.value.trim();
+    if (!phone) { input.focus(); return; }
+
+    fetch('/dashboard/proofs/api.php?action=save_phone', {
+        method: 'POST',
+        headers: {'Content-Type': 'application/x-www-form-urlencoded'},
+        body: 'order_no=' + orderNo + '&phone=' + encodeURIComponent(phone)
+    })
+    .then(function(r) { return r.json(); })
+    .then(function(data) {
+        if (data.success) {
+            var phoneArea = document.getElementById('uploadPhoneDisplay');
+            phoneArea.innerHTML = '<span class="text-gray-500">📞</span><span class="text-gray-800">' + phone.replace(/</g,'&lt;') + '</span>';
+            if (orderPhoneData[orderNo]) orderPhoneData[orderNo].phone = phone;
+            var tableEdit = document.getElementById('phone-edit-' + orderNo);
+            if (tableEdit) {
+                tableEdit.innerHTML = '<span class="text-gray-700">' + phone.replace(/</g,'&lt;') + '</span>';
+            }
+            showToast('전화번호 저장 완료', 'success');
+        } else {
+            showToast(data.message || '저장 실패', 'error');
+        }
+    })
+    .catch(function() { showToast('네트워크 오류', 'error'); });
+}
+
+function savePhone(orderNo) {
+    var input = document.getElementById('phone-input-' + orderNo);
+    var phone = input.value.trim();
+    if (!phone) { input.focus(); return; }
+
+    fetch('/dashboard/proofs/api.php?action=save_phone', {
+        method: 'POST',
+        headers: {'Content-Type': 'application/x-www-form-urlencoded'},
+        body: 'order_no=' + orderNo + '&phone=' + encodeURIComponent(phone)
+    })
+    .then(function(r) { return r.json(); })
+    .then(function(data) {
+        if (data.success) {
+            var editDiv = document.getElementById('phone-edit-' + orderNo);
+            editDiv.innerHTML = '<span class="text-gray-700">' + phone.replace(/</g,'&lt;') + '</span>';
+            showToast('전화번호 저장 완료', 'success');
+        } else {
+            showToast(data.message || '저장 실패', 'error');
+        }
+    })
+    .catch(function() { showToast('네트워크 오류', 'error'); });
+}
+
 var viewerImages = [];  // [{url, name, date}]
 var viewerIndex = 0;
 
@@ -435,6 +531,22 @@ function openUpload(orderNo) {
     document.getElementById('fileInput').value = '';
     document.getElementById('uploadProgress').classList.add('hidden');
     renderFileList();
+
+    var data = orderPhoneData[orderNo] || {};
+    var displayPhone = data.phone || data.hendphone || '';
+    document.getElementById('uploadOrderName').textContent = data.name || '주문자';
+
+    var phoneArea = document.getElementById('uploadPhoneDisplay');
+    if (displayPhone) {
+        phoneArea.innerHTML = '<span class="text-gray-500">📞</span><span class="text-gray-800">' + displayPhone.replace(/</g,'&lt;') + '</span>';
+    } else {
+        phoneArea.innerHTML = '<span class="text-gray-500">📞</span>'
+            + '<input type="text" id="modalPhoneInput" placeholder="010-0000-0000" '
+            + 'class="w-28 px-1.5 py-0.5 text-xs border border-orange-300 rounded focus:ring-1 focus:ring-blue-400 outline-none bg-orange-50" maxlength="20" '
+            + 'onkeydown="if(event.key===\'Enter\'){saveModalPhone(' + orderNo + ')}">'
+            + '<button onclick="saveModalPhone(' + orderNo + ')" class="px-2 py-0.5 text-xs bg-blue-500 text-white rounded hover:bg-blue-600">저장</button>';
+    }
+
     document.getElementById('uploadModal').classList.remove('hidden');
 }
 

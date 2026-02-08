@@ -39,6 +39,32 @@ switch ($action) {
         echo json_encode(['success' => true, 'files' => $files]);
         break;
 
+    case 'save_phone':
+        $order_no = intval($_POST['order_no'] ?? 0);
+        $phone = trim($_POST['phone'] ?? '');
+        if ($order_no <= 0 || $phone === '') {
+            echo json_encode(['success' => false, 'message' => '주문번호와 전화번호를 입력해주세요']);
+            exit;
+        }
+        // phone 컬럼에 저장 (기존 값이 비어있을 때만)
+        $stmt = mysqli_prepare($db, "UPDATE mlangorder_printauto SET phone = ? WHERE no = ? AND (phone IS NULL OR phone = '')");
+        mysqli_stmt_bind_param($stmt, "si", $phone, $order_no);
+        mysqli_stmt_execute($stmt);
+        $affected = mysqli_stmt_affected_rows($stmt);
+        mysqli_stmt_close($stmt);
+
+        if ($affected > 0) {
+            echo json_encode(['success' => true, 'message' => '전화번호 저장 완료']);
+        } else {
+            // 이미 전화번호가 있는 경우에도 Hendphone으로 저장 시도
+            $stmt = mysqli_prepare($db, "UPDATE mlangorder_printauto SET Hendphone = ? WHERE no = ?");
+            mysqli_stmt_bind_param($stmt, "si", $phone, $order_no);
+            mysqli_stmt_execute($stmt);
+            mysqli_stmt_close($stmt);
+            echo json_encode(['success' => true, 'message' => '전화번호 저장 완료']);
+        }
+        break;
+
     case 'upload':
         $order_no = intval($_POST['order_no'] ?? 0);
         if ($order_no <= 0) {

@@ -940,6 +940,8 @@ if ($mode == "OrderView") {
                         if ($total_file_count == 0 && !empty($row['ImgFolder'])) {
                             // ImgFolder 경로 결정
                             $dir_path = '';
+                            $single_file_path = ''; // ImgFolder가 파일 경로인 경우 (스티커 등 레거시)
+                            
                             if (strpos($row['ImgFolder'], '_MlangPrintAuto_') === 0) {
                                 // 새 표준 경로: _MlangPrintAuto_*_index.php/YYYY/MMDD/...
                                 $dir_path = "../../ImgFolder/" . $row['ImgFolder'];
@@ -949,6 +951,11 @@ if ($mode == "OrderView") {
                             } else {
                                 // 상대 경로
                                 $dir_path = "../../" . $row['ImgFolder'];
+                            }
+
+                            // ImgFolder가 파일 경로인 경우 (스티커 등 레거시: ../shop/data/파일명.pdf)
+                            if (!is_dir($dir_path) && is_file($dir_path)) {
+                                $single_file_path = $dir_path;
                             }
 
                             if (is_dir($dir_path)) {
@@ -980,6 +987,34 @@ if ($mode == "OrderView") {
                                         echo "<br>";
                                     }
                                 }
+                            } elseif (!empty($single_file_path)) {
+                                // ImgFolder가 단일 파일 경로인 경우 (스티커 레거시)
+                                $total_file_count++;
+                                $file = basename($single_file_path);
+                                $file_size = filesize($single_file_path);
+                                $file_size_mb = round($file_size / 1024 / 1024, 2);
+
+                                echo "<div style='margin-top: 10px; color: #ff9800; font-weight: bold;'>📁 레거시 파일:</div>";
+
+                                $f_ext = strtolower(pathinfo($file, PATHINFO_EXTENSION));
+                                $f_is_image = in_array($f_ext, ['jpg', 'jpeg', 'png', 'gif']);
+                                // ../shop/data/파일명 → /shop/data/파일명
+                                $web_path = "/" . ltrim(str_replace(['../../', '../'], '', $single_file_path), '/');
+                                $web_path = str_replace($file, urlencode($file), $web_path);
+
+                                $icon = ($file == $row['ThingCate']) ? "📌" : "📄";
+
+                                if ($f_is_image) {
+                                    echo "$icon <a href='$web_path' class='file lightbox-trigger' onclick='openLightbox(\"$web_path\"); return false;'>";
+                                } else {
+                                    echo "$icon <a href='$web_path' target='_blank' class='file'>";
+                                }
+                                echo htmlspecialchars($file) . "</a> ({$file_size_mb}MB)";
+
+                                if ($file == $row['ThingCate']) {
+                                    echo " <span style='color: #28a745; font-weight: bold;'>(대표 파일)</span>";
+                                }
+                                echo "<br>";
                             }
                         }
 

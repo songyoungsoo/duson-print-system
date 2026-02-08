@@ -168,9 +168,15 @@ if ($type_result && ($type_row = mysqli_fetch_assoc($type_result))) {
             box-shadow: 0 4px 12px rgba(99, 102, 241, 0.5);
             background: linear-gradient(135deg, #4f46e5 0%, #7c3aed 100%);
         }
-        /* 모바일에서 버튼 숨김 - 제목 중앙 정렬 */
+        /* 인라인 폼 내 명함재질보기 버튼 */
+        .btn-texture-inline {
+            font-size: 12px;
+            padding: 4px 10px;
+            margin-left: 8px;
+        }
+        /* 모바일에서 제목 옆 버튼만 숨김 */
         @media (max-width: 768px) {
-            .btn-texture-view {
+            .page-title .btn-texture-view {
                 display: none;
             }
         }
@@ -221,7 +227,7 @@ if ($type_result && ($type_row = mysqli_fetch_assoc($type_result))) {
                                 }
                                 ?>
                             </select>
-                            <span class="inline-note">명함 종류를 선택하세요</span>
+                            <a href="#paper-texture-section" class="btn-texture-view btn-texture-inline" title="명함 재질 이미지 보기">📋 명함재질보기</a>
                         </div>
 
                         <div class="inline-form-row">

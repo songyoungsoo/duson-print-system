@@ -83,6 +83,45 @@
             </div>
         </div>
 
+        <!-- 봉투 재질 hover 스타일 -->
+        <style>
+        .envelope-texture-item:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 8px 20px rgba(0,0,0,0.15);
+        }
+        .envelope-texture-item:hover img {
+            transform: scale(1.1);
+        }
+        .envelope-texture-overlay {
+            position: absolute;
+            top: 0; left: 0; right: 0; bottom: 0;
+            background: rgba(0, 0, 0, 0);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: background 0.3s ease;
+        }
+        .envelope-texture-item:hover .envelope-texture-overlay {
+            background: rgba(0, 0, 0, 0.3);
+        }
+        .envelope-zoom-message {
+            font-size: 0.95rem;
+            font-weight: 500;
+            color: white;
+            background: rgba(0, 0, 0, 0.75);
+            padding: 8px 16px;
+            border-radius: 20px;
+            opacity: 0;
+            transform: translateY(10px);
+            transition: all 0.3s ease;
+            white-space: nowrap;
+        }
+        .envelope-texture-item:hover .envelope-zoom-message {
+            opacity: 1;
+            transform: translateY(0);
+        }
+        </style>
+
         <!-- 📜 봉투의 재질 갤러리 섹션 -->
         <div id="envelope-texture-section" style="display: flex; gap: 15px; margin-top: 20px;">
             <div style="background: #007bff; color: white; width: 35px; height: 35px; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-weight: bold; font-size: 1rem; flex-shrink: 0;">📜</div>
@@ -116,16 +155,15 @@
                         $textureName = preg_replace('/\.[^.]+$/', '', $file);
                         $imagePath = $webPath . rawurlencode($file);
                         ?>
-                        <div style="background: white; border-radius: 10px; overflow: hidden; box-shadow: 0 3px 10px rgba(0,0,0,0.1); transition: all 0.3s ease; cursor: pointer;"
-                             onclick="openEnvelopeTextureModal('<?php echo htmlspecialchars($imagePath); ?>', '<?php echo htmlspecialchars($textureName); ?>')"
-                             onmouseover="this.style.transform='translateY(-5px)'; this.style.boxShadow='0 8px 20px rgba(0,0,0,0.15)';"
-                             onmouseout="this.style.transform='translateY(0)'; this.style.boxShadow='0 3px 10px rgba(0,0,0,0.1)';">
-                            <div style="width: 100%; height: 200px; overflow: hidden;">
+                        <div class="envelope-texture-item" style="background: white; border-radius: 10px; overflow: hidden; box-shadow: 0 3px 10px rgba(0,0,0,0.1); transition: all 0.3s ease; cursor: pointer;"
+                             onclick="openEnvelopeTextureModal('<?php echo htmlspecialchars($imagePath); ?>', '<?php echo htmlspecialchars($textureName); ?>')">
+                            <div style="position: relative; width: 100%; height: 200px; overflow: hidden;">
                                 <img src="<?php echo htmlspecialchars($imagePath); ?>"
                                      alt="<?php echo htmlspecialchars($textureName); ?>"
-                                     style="width: 100%; height: 100%; object-fit: cover; transition: transform 0.3s ease;"
-                                     onmouseover="this.style.transform='scale(1.1)';"
-                                     onmouseout="this.style.transform='scale(1)';">
+                                     style="width: 100%; height: 100%; object-fit: cover; transition: transform 0.5s ease;">
+                                <div class="envelope-texture-overlay">
+                                    <span class="envelope-zoom-message">🔍 클릭하면 확대이미지가 보입니다</span>
+                                </div>
                             </div>
                             <div style="padding: 12px; text-align: center;">
                                 <span style="font-weight: 600; color: #333; font-size: 0.95rem;"><?php echo htmlspecialchars($textureName); ?></span>

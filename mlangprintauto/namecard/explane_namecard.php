@@ -44,7 +44,7 @@
                                  alt="<?php echo htmlspecialchars($textureName); ?> 재질"
                                  loading="lazy">
                             <div class="texture-overlay">
-                                <span class="zoom-message">클릭하면 확대되어보입니다</span>
+                                <span class="zoom-message">🔍 클릭하면 확대이미지가 보입니다</span>
                             </div>
                         </div>
                         <div class="texture-name"><?php echo htmlspecialchars($textureName); ?></div>
@@ -583,7 +583,7 @@
 }
 
 .texture-item:hover .texture-overlay {
-    background: rgba(0, 0, 0, 0);
+    background: rgba(0, 0, 0, 0.3);
 }
 
 .zoom-message {

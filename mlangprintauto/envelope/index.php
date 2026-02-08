@@ -177,6 +177,18 @@ if ($type_result && ($type_row = mysqli_fetch_assoc($type_result))) {
             transform: translateY(-2px);
             box-shadow: 0 4px 12px rgba(99, 102, 241, 0.4);
         }
+        /* 인라인 폼 내 봉투재질보기 버튼 */
+        .btn-texture-inline {
+            font-size: 12px;
+            padding: 4px 10px;
+            margin-left: 8px;
+        }
+        /* 모바일에서 제목 옆 버튼만 숨김 */
+        @media (max-width: 768px) {
+            .page-title .btn-texture-view {
+                display: none;
+            }
+        }
     </style>
 
     <div class="product-container">
@@ -220,7 +232,7 @@ if ($type_result && ($type_row = mysqli_fetch_assoc($type_result))) {
                                 }
                                 ?>
                             </select>
-                            <span class="inline-note">봉투 종류를 선택하세요</span>
+                            <a href="#envelope-texture-section" class="btn-texture-view btn-texture-inline" title="봉투 재질 이미지 보기">📋 봉투재질보기</a>
                         </div>
 
                         <div class="inline-form-row">
