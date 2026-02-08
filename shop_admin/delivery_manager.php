@@ -747,11 +747,11 @@ if ($stats_result) {
                 <col style="width:28px">
                 <col style="width:62px">
                 <col style="width:95px">
-                <col style="width:70px">
+                <col style="width:85px">
                 <col style="width:52px">
                 <col style="width:22%">
                 <col style="width:95px">
-                <col style="width:95px">
+                <col style="width:80px">
                 <col style="width:36px">
                 <col style="width:58px">
                 <col style="width:48px">
