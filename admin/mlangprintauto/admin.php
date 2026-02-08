@@ -43,6 +43,7 @@ $bizname = isset($_POST['bizname']) ? $_POST['bizname'] : "기본 회사명";
 $bank = isset($_POST['bank']) ? $_POST['bank'] : "기본 은행";
 $bankname = isset($_POST['bankname']) ? $_POST['bankname'] : "";
 $cont = isset($_POST['cont']) ? $_POST['cont'] : "내용 없음";
+$delivery = isset($_POST['delivery']) ? $_POST['delivery'] : "";
 $date = isset($_POST['date']) ? $_POST['date'] : date("Y-m-d H:i:s");
 $OrderStyle = isset($_POST['OrderStyle']) ? $_POST['OrderStyle'] : "기본 스타일";
 $ThingCate = isset($_POST['ThingCate']) ? $_POST['ThingCate'] : "";
@@ -1535,9 +1536,9 @@ if ($mode == "AdminMlangOrdert") { /////////////////////////////////////////////
             background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
         }
         .form-container {
-            width: 350px;
-            min-width: 350px;
-            max-width: 350px;
+            width: 480px;
+            min-width: 480px;
+            max-width: 480px;
             background: #fff;
             border-radius: 12px;
             box-shadow: 0 15px 40px rgba(0,0,0,0.3);
@@ -1698,7 +1699,91 @@ if ($mode == "AdminMlangOrdert") { /////////////////////////////////////////////
             align-items: center;
             gap: 4px;
         }
-        @media (max-width: 400px) {
+        .section-divider {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            margin: 18px 0 12px;
+            font-size: 12px;
+            font-weight: 600;
+            color: #4b5563;
+        }
+        .section-divider::after {
+            content: '';
+            flex: 1;
+            border-top: 1px solid #e5e7eb;
+        }
+        .address-search-btn {
+            display: inline-flex;
+            align-items: center;
+            gap: 4px;
+            padding: 8px 14px;
+            background: #3b82f6;
+            color: #fff;
+            border: none;
+            border-radius: 6px;
+            font-size: 12px;
+            font-family: 'Noto Sans KR', sans-serif;
+            cursor: pointer;
+            transition: all 0.2s ease;
+        }
+        .address-search-btn:hover {
+            background: #2563eb;
+        }
+        .address-display {
+            padding: 8px 10px;
+            background: #f0f9ff;
+            border: 1px solid #bae6fd;
+            border-radius: 6px;
+            font-size: 12px;
+            color: #0c4a6e;
+            min-height: 36px;
+            margin-top: 6px;
+        }
+        .address-display:empty::before {
+            content: '주소 검색 버튼을 클릭하세요';
+            color: #9ca3af;
+        }
+        .delivery-toggle {
+            display: flex;
+            gap: 8px;
+            margin-bottom: 10px;
+        }
+        .delivery-toggle label {
+            display: flex;
+            align-items: center;
+            gap: 6px;
+            padding: 6px 12px;
+            border: 1px solid #e5e7eb;
+            border-radius: 6px;
+            font-size: 12px;
+            cursor: pointer;
+            transition: all 0.2s ease;
+        }
+        .delivery-toggle input[type="radio"] {
+            accent-color: #3b82f6;
+        }
+        .delivery-toggle input[type="radio"]:checked + span {
+            color: #2563eb;
+            font-weight: 600;
+        }
+        .delivery-section {
+            display: none;
+            animation: slideDown 0.3s ease-out;
+        }
+        .delivery-section.active {
+            display: block;
+        }
+        @keyframes slideDown {
+            from { opacity: 0; transform: translateY(-8px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+        @media (max-width: 520px) {
+            .form-container {
+                width: 100%;
+                min-width: auto;
+                max-width: 100%;
+            }
             .form-row {
                 grid-template-columns: 1fr;
             }
@@ -1740,6 +1825,14 @@ if ($mode == "AdminMlangOrdert") { /////////////////////////////////////////////
                 f.photofile.focus();
                 return false;
             }
+            // 택배 배송 선택 시 주소 필수 검증
+            var deliveryType = document.querySelector('input[name="delivery_type"]:checked');
+            if (deliveryType && deliveryType.value === 'delivery') {
+                if (!document.getElementById('zip1').value) {
+                    alert("택배 배송 시 주소를 입력해주세요.\n우편번호 찾기 버튼을 클릭하세요.");
+                    return false;
+                }
+            }
             // 디자이너 이름 저장 (다음 입력 시 기본값으로 사용)
             localStorage.setItem('lastDesigner', f.Designer.value);
             return true;
@@ -1780,6 +1873,62 @@ if ($mode == "AdminMlangOrdert") { /////////////////////////////////////////////
                 console.log('창 위치 조정 불가: ', e);
             }
         };
+    </script>
+    <script src="//t1.daumcdn.net/mapjsapi/bundle/postcode/prod/postcode.v2.js"></script>
+    <script>
+        function toggleDelivery(value) {
+            var section = document.getElementById('delivery-section');
+            var deliveryInput = document.querySelector('input[name="delivery"]') || createHiddenInput('delivery');
+
+            if (value === 'delivery') {
+                section.classList.add('active');
+                deliveryInput.value = '택배';
+            } else if (value === 'visit') {
+                section.classList.remove('active');
+                deliveryInput.value = '방문수령';
+                // 주소 초기화
+                document.getElementById('zip').value = '';
+                document.getElementById('zip1').value = '';
+                document.getElementById('zip2').value = '';
+                document.getElementById('address-display').textContent = '';
+            } else {
+                section.classList.remove('active');
+                deliveryInput.value = '';
+                document.getElementById('zip').value = '';
+                document.getElementById('zip1').value = '';
+                document.getElementById('zip2').value = '';
+                document.getElementById('address-display').textContent = '';
+            }
+        }
+
+        function createHiddenInput(name) {
+            var input = document.createElement('input');
+            input.type = 'hidden';
+            input.name = name;
+            document.MlangFriendSiteInfo.appendChild(input);
+            return input;
+        }
+
+        function searchAddress() {
+            new daum.Postcode({
+                oncomplete: function(data) {
+                    var addr = data.userSelectedType === 'R' ? data.roadAddress : data.jibunAddress;
+                    var extraAddr = '';
+                    if (data.userSelectedType === 'R') {
+                        if (data.bname && /[동|로|가]$/g.test(data.bname)) extraAddr += data.bname;
+                        if (data.buildingName && data.apartment === 'Y') {
+                            extraAddr += (extraAddr ? ', ' + data.buildingName : data.buildingName);
+                        }
+                        if (extraAddr) addr += ' (' + extraAddr + ')';
+                    }
+
+                    document.getElementById('zip').value = data.zonecode;
+                    document.getElementById('zip1').value = addr;
+                    document.getElementById('address-display').textContent = '[' + data.zonecode + '] ' + addr;
+                    document.getElementById('zip2').focus();
+                }
+            }).open();
+        }
     </script>
     <script src="../js/exchange.js"></script>
 </head>
@@ -1849,7 +1998,43 @@ if ($mode == "AdminMlangOrdert") { /////////////////////////////////////////////
                     <div class="hint">고객 교정확인용 - 뒷자리 4자리로 인증</div>
                 </div>
 
+                <!-- 택배 배송 섹션 -->
+                <div class="section-divider">📦 택배 배송 정보</div>
+
+                <div class="delivery-toggle">
+                    <label>
+                        <input type="radio" name="delivery_type" value="none" checked onchange="toggleDelivery(this.value)">
+                        <span>배송 없음</span>
+                    </label>
+                    <label>
+                        <input type="radio" name="delivery_type" value="delivery" onchange="toggleDelivery(this.value)">
+                        <span>택배 배송</span>
+                    </label>
+                    <label>
+                        <input type="radio" name="delivery_type" value="visit" onchange="toggleDelivery(this.value)">
+                        <span>방문 수령</span>
+                    </label>
+                </div>
+
+                <div id="delivery-section" class="delivery-section">
+                    <div class="form-group">
+                        <label><span class="icon-label">🔍 주소 검색</span></label>
+                        <button type="button" class="address-search-btn" onclick="searchAddress()">
+                            📍 우편번호 찾기
+                        </button>
+                        <input type="hidden" name="zip" id="zip" value="">
+                        <div id="address-display" class="address-display"></div>
+                        <input type="hidden" name="zip1" id="zip1" value="">
+                    </div>
+                    <div class="form-group">
+                        <label><span class="icon-label">🏠 상세주소</span></label>
+                        <input type="text" name="zip2" id="zip2" placeholder="상세주소 입력 (동/호수 등)">
+                    </div>
+                </div>
+
                 <!-- 결과처리/주문날짜 -->
+                <div class="section-divider">📋 주문 정보</div>
+
                 <div class="form-row">
                     <div class="form-group">
                         <label><span class="icon-label">⚙️ 결과 처리 <span class="required">*</span></span></label>
@@ -2031,13 +2216,19 @@ if (!$stmt->execute()) {
     die("❌ SQL Execution Error: " . $stmt->error);
 }
 
-// 성공 메시지 및 주문 목록 페이지로 이동
-$next_url = "orderlist.php";
+// 성공 메시지 - 주문번호 표시, 배송정보 안내
+$delivery_info = '';
+if (!empty($zip1)) {
+    $delivery_info = "<br><span style='font-size:13px;color:#2563eb;'>📦 배송지: [{$zip}] {$zip1} {$zip2}</span>";
+}
+$form_url = htmlspecialchars($_SERVER['PHP_SELF']) . '?mode=AdminMlangOrdert';
+
 echo "<!DOCTYPE html>
 <html>
 <head>
     <meta charset='UTF-8'>
     <title>완료</title>
+    <link href='https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@400;600&display=swap' rel='stylesheet'>
     <style>
         * { margin: 0; padding: 0; box-sizing: border-box; }
         body {
@@ -2055,46 +2246,38 @@ echo "<!DOCTYPE html>
             padding: 30px 20px;
             text-align: center;
             box-shadow: 0 10px 30px rgba(0,0,0,0.2);
-            max-width: 350px;
+            max-width: 420px;
             width: 100%;
         }
-        .alert-icon {
-            font-size: 48px;
-            margin-bottom: 15px;
-        }
-        .alert-msg {
-            font-size: 15px;
-            color: #333;
-            margin-bottom: 20px;
-            line-height: 1.5;
-        }
+        .alert-icon { font-size: 48px; margin-bottom: 15px; }
+        .alert-msg { font-size: 15px; color: #333; margin-bottom: 10px; line-height: 1.6; }
+        .order-no { font-size: 20px; font-weight: 700; color: #4f46e5; margin: 10px 0; }
+        .btn-row { display: flex; gap: 10px; justify-content: center; margin-top: 18px; }
         .alert-btn {
             background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-            color: #fff;
-            border: none;
-            padding: 12px 30px;
-            border-radius: 8px;
-            font-size: 14px;
-            cursor: pointer;
-            font-family: 'Noto Sans KR', sans-serif;
+            color: #fff; border: none; padding: 12px 24px;
+            border-radius: 8px; font-size: 13px; cursor: pointer;
+            font-family: 'Noto Sans KR', sans-serif; font-weight: 600;
         }
-        .alert-btn:hover {
-            opacity: 0.9;
+        .alert-btn:hover { opacity: 0.9; }
+        .alert-btn.secondary {
+            background: #fff; color: #667eea;
+            border: 2px solid #667eea;
         }
+        .alert-btn.secondary:hover { background: #f0f0ff; }
     </style>
 </head>
 <body>
     <div class='alert-box'>
         <div class='alert-icon'>✅</div>
-        <div class='alert-msg'>주문이 정상적으로 등록되었습니다.<br>주문 목록으로 이동합니다.</div>
-        <button class='alert-btn' onclick=\"window.location.href='" . $next_url . "'\">확인</button>
+        <div class='alert-msg'>교정이 정상적으로 등록되었습니다.</div>
+        <div class='order-no'>주문번호 #{$new_no}</div>
+        <div class='alert-msg'>{$delivery_info}</div>
+        <div class='btn-row'>
+            <button class='alert-btn secondary' onclick=\"window.location.href='" . $form_url . "'\">새 교정 등록</button>
+            <button class='alert-btn' onclick=\"window.location.href='orderlist.php'\">주문 목록</button>
+        </div>
     </div>
-    <script>
-        window.resizeTo(390, 630);
-        setTimeout(function() {
-            window.location.href = '" . $next_url . "';
-        }, 1500);
-    </script>
 </body>
 </html>";
 

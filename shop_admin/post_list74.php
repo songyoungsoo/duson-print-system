@@ -6,7 +6,7 @@
 <style>
 td,input,li{font-size:9pt}
 .btn-logen {
-    background-color: #03C75A;
+    background-color: #1E4E79;
     color: white;
     font-weight: bold;
     padding: 8px 15px;
@@ -16,7 +16,7 @@ td,input,li{font-size:9pt}
     margin-left: 5px;
 }
 .btn-logen:hover {
-    background-color: #02a849;
+    background-color: #173d5e;
 }
 </style>
 </head>
@@ -165,7 +165,7 @@ td,input,li{font-size:9pt}
 <form method="get" action="<?php echo $PHP_SELF?>" id="searchForm">
 <table border="1" cellpadding="3" cellspacing="0" style="margin-bottom:10px; border-collapse: collapse;">
   <tr>
-    <td bgcolor="#CCCCCC" style="padding: 5px;"><b>검색</b></td>
+    <td bgcolor="#1E4E79" style="padding: 5px; color:#fff;"><b>검색</b></td>
     <td style="padding: 5px; white-space:nowrap;">
       이름: <input type="text" name="search_name" value="<?php echo htmlspecialchars($search_name)?>" size="6">
       회사: <input type="text" name="search_company" value="<?php echo htmlspecialchars($search_company)?>" size="6">
@@ -176,10 +176,10 @@ td,input,li{font-size:9pt}
     </td>
   </tr>
   <tr>
-    <td bgcolor="#CCCCCC" style="padding: 5px;"><b>내보내기</b></td>
+    <td bgcolor="#1E4E79" style="padding: 5px; color:#fff;"><b>내보내기</b></td>
     <td style="padding: 5px;">
-      <input type="button" value="로젠택배 엑셀 (선택)" onclick="exportSelectedToLogenExcel()" class="btn-logen" style="background-color:#1976D2;">
-      <input type="button" value="로젠택배 엑셀 (전체)" onclick="exportAllToLogenExcel()" class="btn-logen" style="background-color:#1976D2;">
+      <input type="button" value="로젠택배 엑셀 (선택)" onclick="exportSelectedToLogenExcel()" class="btn-logen">
+      <input type="button" value="로젠택배 엑셀 (전체)" onclick="exportAllToLogenExcel()" class="btn-logen">
     </td>
   </tr>
 </table>
@@ -272,7 +272,7 @@ function exportAllToLogenExcel() {
 
 <form id="listForm">
 <table width=100% border="1" cellpadding="3" cellspacing="0" style="border-collapse: collapse;">
-  <tr bgcolor="#99CCFF">
+  <tr bgcolor="#1E4E79" style="color:#fff;">
     <td style="padding: 3px;"><input type="checkbox" onclick="toggleAll(this)"></td>
     <td style="padding: 3px;"> 주문번호</td>
     <td style="padding: 3px;"> 날짜</td>

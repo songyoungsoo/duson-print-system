@@ -24,12 +24,17 @@ switch ($action) {
         $files = [];
         if ($upload_dir && is_dir($upload_dir)) {
             foreach (array_diff(scandir($upload_dir), ['.', '..']) as $fname) {
+                $filepath = $upload_dir . '/' . $fname;
                 $files[] = [
                     'name' => $fname,
                     'url' => '/mlangorder_printauto/upload/' . $order_no . '/' . rawurlencode($fname),
-                    'size' => filesize($upload_dir . '/' . $fname),
+                    'size' => filesize($filepath),
+                    'mtime' => filemtime($filepath),
+                    'date' => date('m/d H:i', filemtime($filepath)),
                 ];
             }
+            // 최신 파일 순 정렬
+            usort($files, function($a, $b) { return $b['mtime'] - $a['mtime']; });
         }
         echo json_encode(['success' => true, 'files' => $files]);
         break;

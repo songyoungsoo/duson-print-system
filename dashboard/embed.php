@@ -8,7 +8,7 @@ if (empty($url)) {
     exit;
 }
 
-$allowed_prefixes = ['/admin/mlangprintauto/'];
+$allowed_prefixes = ['/admin/mlangprintauto/', '/shop_admin/'];
 $is_allowed = false;
 foreach ($allowed_prefixes as $prefix) {
     if (strpos($url, $prefix) === 0) {
@@ -38,6 +38,9 @@ foreach ($DASHBOARD_NAV as $group) {
     }
 }
 
+$embed_token = hash_hmac('sha256', $url . date('Y-m-d'), 'duson_embed_2026_secret');
+$iframe_url = $url . (strpos($url, '?') !== false ? '&' : '?') . '_eauth=' . $embed_token;
+
 include __DIR__ . '/includes/header.php';
 include __DIR__ . '/includes/sidebar.php';
 ?>
@@ -50,7 +53,7 @@ include __DIR__ . '/includes/sidebar.php';
             <svg class="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14"></path></svg>
         </a>
     </div>
-    <iframe src="<?php echo htmlspecialchars($url); ?>" class="flex-1 w-full border-0" style="min-height: calc(100vh - 120px);"></iframe>
+    <iframe src="<?php echo htmlspecialchars($iframe_url); ?>" class="flex-1 w-full border-0" style="min-height: calc(100vh - 120px);"></iframe>
 </main>
 
 <?php include __DIR__ . '/includes/footer.php'; ?>

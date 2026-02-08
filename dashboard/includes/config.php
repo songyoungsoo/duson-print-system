@@ -31,7 +31,10 @@ $DASHBOARD_NAV = [
         'items' => [
             'orders' => ['name' => '주문 관리', 'icon' => '📦', 'path' => '/dashboard/orders/'],
             'proofs' => ['name' => '교정 관리', 'icon' => '🔍', 'path' => '/dashboard/proofs/'],
+            'proof_register' => ['name' => '교정 등록', 'icon' => '🖼️', 'path' => '/dashboard/embed.php?url=' . urlencode('/admin/mlangprintauto/admin.php?mode=AdminMlangOrdert'), 'embed' => true],
             'payments' => ['name' => '결제 현황', 'icon' => '💳', 'path' => '/dashboard/payments/'],
+            'delivery' => ['name' => '택배 관리', 'icon' => '🚚', 'path' => '/dashboard/embed.php?url=' . urlencode('/shop_admin/delivery_manager.php'), 'embed' => true],
+            'post_list' => ['name' => '발송 목록', 'icon' => '📮', 'path' => '/dashboard/embed.php?url=' . urlencode('/shop_admin/post_list74.php'), 'embed' => true],
         ]
     ],
     'comm_group' => [

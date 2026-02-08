@@ -59,10 +59,20 @@ if (!empty($params)) {
 $orders = [];
 while ($row = mysqli_fetch_assoc($result)) {
     $row['files'] = [];
+    $row['latest_date'] = '';
     $upload_dir = realpath(__DIR__ . '/../../mlangorder_printauto/upload/' . $row['no']);
     if ($upload_dir && is_dir($upload_dir)) {
         $files = array_diff(scandir($upload_dir), ['.', '..']);
         $row['files'] = array_values($files);
+        // 최신 파일 날짜 구하기
+        $latest_mtime = 0;
+        foreach ($files as $f) {
+            $mt = filemtime($upload_dir . '/' . $f);
+            if ($mt > $latest_mtime) $latest_mtime = $mt;
+        }
+        if ($latest_mtime > 0) {
+            $row['latest_date'] = date('m/d', $latest_mtime);
+        }
     }
     $orders[] = $row;
 }
@@ -148,17 +158,32 @@ include __DIR__ . '/../includes/sidebar.php';
                                 <span class="inline-block px-2 py-0.5 text-xs font-medium rounded-full <?php echo $color; ?>"><?php echo $label; ?></span>
                             </td>
                             <td class="px-3 py-2 text-center">
-                                <?php if (!empty($order['files'])): ?>
-                                    <span class="text-blue-600 text-xs font-medium"><?php echo count($order['files']); ?>개 파일</span>
-                                <?php else: ?>
+                                <?php
+                                    $file_count = count($order['files']);
+                                    if ($file_count === 0):
+                                ?>
                                     <span class="text-gray-400 text-xs">없음</span>
+                                <?php elseif ($file_count === 1): ?>
+                                    <span class="inline-flex items-center gap-1 px-2 py-0.5 text-xs font-medium rounded-full bg-blue-50 text-blue-600">
+                                        📄 1개
+                                    </span>
+                                <?php else: ?>
+                                    <span class="inline-flex items-center gap-1 px-2 py-0.5 text-xs font-medium rounded-full bg-amber-50 text-amber-700 ring-1 ring-amber-200">
+                                        📑 <?php echo $file_count; ?>개
+                                        <span class="text-[10px] text-amber-500"><?php echo $order['latest_date']; ?></span>
+                                    </span>
                                 <?php endif; ?>
                             </td>
                             <td class="px-3 py-2 text-xs text-gray-400 text-center"><?php echo date('m/d H:i', strtotime($order['date'])); ?></td>
                             <td class="px-3 py-2 text-center">
                                 <div class="flex items-center justify-center gap-1">
                                     <?php if (!empty($order['files'])): ?>
-                                    <button onclick="viewFiles(<?php echo $order['no']; ?>)" class="px-2 py-1 text-xs bg-blue-50 text-blue-600 rounded hover:bg-blue-100" title="교정파일 보기">🔍보기</button>
+                                    <button onclick="viewFiles(<?php echo $order['no']; ?>)" class="relative px-2 py-1 text-xs bg-blue-50 text-blue-600 rounded hover:bg-blue-100" title="교정파일 보기">
+                                        🔍보기
+                                        <?php if (count($order['files']) > 1): ?>
+                                        <span class="absolute -top-1.5 -right-1.5 min-w-[16px] h-4 flex items-center justify-center px-1 text-[10px] font-bold text-white bg-amber-500 rounded-full leading-none"><?php echo count($order['files']); ?></span>
+                                        <?php endif; ?>
+                                    </button>
                                     <?php endif; ?>
                                     <button onclick="openUpload(<?php echo $order['no']; ?>)" class="px-2 py-1 text-xs bg-green-50 text-green-600 rounded hover:bg-green-100" title="파일 올리기">📤올리기</button>
                                 </div>
@@ -277,12 +302,19 @@ include __DIR__ . '/../includes/sidebar.php';
     <div class="min-h-full flex items-start justify-center p-4">
         <img id="overlayImg" src="" class="cursor-pointer" onclick="closeImageViewer()" style="max-width:none;">
     </div>
-    <!-- Counter -->
-    <div id="imgCounter" class="fixed bottom-4 left-1/2 -translate-x-1/2 z-[70] text-white text-sm bg-black bg-opacity-60 px-3 py-1 rounded-full hidden"></div>
+    <!-- Info bar: counter + filename + date + thumbnails -->
+    <div id="imgInfoBar" class="fixed bottom-0 left-0 right-0 z-[70] bg-gradient-to-t from-black/80 to-transparent pt-8 pb-3 px-4 hidden" onclick="event.stopPropagation()">
+        <div class="flex items-center justify-center gap-3 mb-2">
+            <span id="imgCounter" class="text-white text-sm bg-white/20 px-3 py-1 rounded-full"></span>
+            <span id="imgFileName" class="text-white/70 text-xs truncate max-w-[300px]"></span>
+            <span id="imgFileDate" class="text-white/50 text-xs"></span>
+        </div>
+        <div id="imgThumbnails" class="flex items-center justify-center gap-1.5 overflow-x-auto max-w-2xl mx-auto py-1"></div>
+    </div>
 </div>
 
 <script>
-var viewerImages = [];
+var viewerImages = [];  // [{url, name, date}]
 var viewerIndex = 0;
 
 document.addEventListener('keydown', function(e) {
@@ -299,8 +331,13 @@ function viewFiles(orderNo) {
             if (!data.files || data.files.length === 0) return;
             var images = data.files.filter(f => /\.(jpg|jpeg|png|gif)$/i.test(f.name));
             if (images.length > 0) {
-                viewerImages = images.map(f => f.url + '?raw');
+                viewerImages = images.map(f => ({
+                    url: f.url + '?raw',
+                    name: f.name,
+                    date: f.date || ''
+                }));
                 viewerIndex = 0;
+                buildThumbnails();
                 showImage();
                 document.getElementById('imgOverlay').classList.remove('hidden');
             } else {
@@ -309,21 +346,58 @@ function viewFiles(orderNo) {
         });
 }
 
+function buildThumbnails() {
+    var container = document.getElementById('imgThumbnails');
+    container.textContent = '';
+    if (viewerImages.length <= 1) return;
+
+    viewerImages.forEach(function(img, i) {
+        var thumb = document.createElement('img');
+        thumb.src = img.url;
+        thumb.dataset.idx = i;
+        thumb.className = 'thumb-item w-12 h-12 object-cover rounded cursor-pointer border-2 transition-all hover:opacity-100 '
+            + (i === 0 ? 'border-white opacity-100' : 'border-transparent opacity-50');
+        thumb.addEventListener('click', function(e) {
+            e.stopPropagation();
+            viewerIndex = i;
+            showImage();
+        });
+        container.appendChild(thumb);
+    });
+}
+
 function showImage() {
-    document.getElementById('overlayImg').src = viewerImages[viewerIndex];
+    var img = viewerImages[viewerIndex];
+    document.getElementById('overlayImg').src = img.url;
+
     var total = viewerImages.length;
     var prevBtn = document.getElementById('prevBtn');
     var nextBtn = document.getElementById('nextBtn');
+    var infoBar = document.getElementById('imgInfoBar');
     var counter = document.getElementById('imgCounter');
+    var fileName = document.getElementById('imgFileName');
+    var fileDate = document.getElementById('imgFileDate');
+
+    infoBar.classList.remove('hidden');
+    counter.textContent = (viewerIndex + 1) + ' / ' + total;
+    fileName.textContent = img.name;
+    fileDate.textContent = img.date;
+
     if (total > 1) {
         prevBtn.classList.toggle('hidden', viewerIndex === 0);
         nextBtn.classList.toggle('hidden', viewerIndex === total - 1);
-        counter.textContent = (viewerIndex + 1) + ' / ' + total;
-        counter.classList.remove('hidden');
+        document.querySelectorAll('.thumb-item').forEach(function(el, i) {
+            if (i === viewerIndex) {
+                el.classList.add('border-white', 'opacity-100');
+                el.classList.remove('border-transparent', 'opacity-50');
+            } else {
+                el.classList.remove('border-white', 'opacity-100');
+                el.classList.add('border-transparent', 'opacity-50');
+            }
+        });
     } else {
         prevBtn.classList.add('hidden');
         nextBtn.classList.add('hidden');
-        counter.classList.add('hidden');
     }
 }
 
@@ -340,6 +414,7 @@ function onOverlayClick(e) {
 
 function closeImageViewer() {
     document.getElementById('imgOverlay').classList.add('hidden');
+    document.getElementById('imgInfoBar').classList.add('hidden');
     document.getElementById('overlayImg').src = '';
     viewerImages = [];
 }
@@ -529,25 +604,62 @@ function updateRowFileCount(orderNo) {
         .then(function(data) {
             var row = document.getElementById('row-' + orderNo);
             if (!row) return;
-            var cnt = (data.files || []).length;
+            var files = data.files || [];
+            var cnt = files.length;
+            var latestDate = cnt > 0 && files[0].date ? files[0].date.split(' ')[0] : '';
+
             // 교정파일 열 업데이트 (5번째 td)
             var fileTd = row.children[4];
             if (fileTd) {
-                fileTd.innerHTML = cnt > 0
-                    ? '<span class="text-blue-600 text-xs font-medium">' + cnt + '개 파일</span>'
-                    : '<span class="text-gray-400 text-xs">없음</span>';
+                fileTd.textContent = '';
+                var span = document.createElement('span');
+                if (cnt === 0) {
+                    span.className = 'text-gray-400 text-xs';
+                    span.textContent = '없음';
+                } else if (cnt === 1) {
+                    span.className = 'inline-flex items-center gap-1 px-2 py-0.5 text-xs font-medium rounded-full bg-blue-50 text-blue-600';
+                    span.textContent = '📄 1개';
+                } else {
+                    span.className = 'inline-flex items-center gap-1 px-2 py-0.5 text-xs font-medium rounded-full bg-amber-50 text-amber-700 ring-1 ring-amber-200';
+                    span.textContent = '📑 ' + cnt + '개';
+                    if (latestDate) {
+                        var dateSpan = document.createElement('span');
+                        dateSpan.className = 'text-[10px] text-amber-500';
+                        dateSpan.textContent = latestDate;
+                        span.appendChild(dateSpan);
+                    }
+                }
+                fileTd.appendChild(span);
             }
-            // 작업 열에 보기 버튼 추가 (없었으면)
+
+            // 작업 열에 보기 버튼 추가/업데이트
             var actionTd = row.children[6];
-            if (actionTd && cnt > 0 && actionTd.innerHTML.indexOf('viewFiles') === -1) {
+            if (actionTd && cnt > 0) {
                 var btnDiv = actionTd.querySelector('div');
                 if (btnDiv) {
-                    var viewBtn = document.createElement('button');
-                    viewBtn.className = 'px-2 py-1 text-xs bg-blue-50 text-blue-600 rounded hover:bg-blue-100';
-                    viewBtn.title = '교정파일 보기';
-                    viewBtn.textContent = '🔍보기';
-                    viewBtn.onclick = function() { viewFiles(orderNo); };
-                    btnDiv.insertBefore(viewBtn, btnDiv.firstChild);
+                    var existingBtn = btnDiv.querySelector('[data-view-btn]');
+                    if (!existingBtn) {
+                        var viewBtn = document.createElement('button');
+                        viewBtn.className = 'relative px-2 py-1 text-xs bg-blue-50 text-blue-600 rounded hover:bg-blue-100';
+                        viewBtn.title = '교정파일 보기';
+                        viewBtn.textContent = '🔍보기';
+                        viewBtn.setAttribute('data-view-btn', '1');
+                        viewBtn.onclick = function() { viewFiles(orderNo); };
+                        btnDiv.insertBefore(viewBtn, btnDiv.firstChild);
+                        existingBtn = viewBtn;
+                    }
+                    // 뱃지 업데이트
+                    var badge = existingBtn.querySelector('.count-badge');
+                    if (cnt > 1) {
+                        if (!badge) {
+                            badge = document.createElement('span');
+                            badge.className = 'count-badge absolute -top-1.5 -right-1.5 min-w-[16px] h-4 flex items-center justify-center px-1 text-[10px] font-bold text-white bg-amber-500 rounded-full leading-none';
+                            existingBtn.appendChild(badge);
+                        }
+                        badge.textContent = cnt;
+                    } else if (badge) {
+                        badge.remove();
+                    }
                 }
             }
         });

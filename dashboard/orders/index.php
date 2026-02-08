@@ -30,9 +30,16 @@ include __DIR__ . '/../includes/sidebar.php';
                     <label class="block text-sm font-medium text-gray-700 mb-2">상태</label>
                     <select id="statusFilter" class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500">
                         <option value="">전체</option>
-                        <option value="1">접수</option>
-                        <option value="2">진행중</option>
-                        <option value="3">완료</option>
+                        <option value="1">견적접수</option>
+                        <option value="2">주문접수</option>
+                        <option value="3">접수완료</option>
+                        <option value="4">입금대기</option>
+                        <option value="5">시안제작중</option>
+                        <option value="6">시안</option>
+                        <option value="7">교정</option>
+                        <option value="8">작업완료</option>
+                        <option value="9">작업중</option>
+                        <option value="10">교정작업중</option>
                         <option value="deleted">삭제됨</option>
                     </select>
                 </div>
@@ -101,13 +108,23 @@ let currentPage = 1;
 let currentFilters = {};
 
 function getStatusBadge(status) {
-    const badges = {
-        '1': '<span class="px-2 py-1 text-xs font-semibold rounded-full bg-yellow-100 text-yellow-800">접수</span>',
-        '2': '<span class="px-2 py-1 text-xs font-semibold rounded-full bg-blue-100 text-blue-800">진행중</span>',
-        '3': '<span class="px-2 py-1 text-xs font-semibold rounded-full bg-green-100 text-green-800">완료</span>',
-        'deleted': '<span class="px-2 py-1 text-xs font-semibold rounded-full bg-red-100 text-red-800">삭제됨</span>'
+    var s = String(status);
+    var map = {
+        '0':  {label: '미선택',    bg: 'bg-gray-100',   text: 'text-gray-600'},
+        '1':  {label: '견적접수',  bg: 'bg-slate-100',  text: 'text-slate-700'},
+        '2':  {label: '주문접수',  bg: 'bg-yellow-100', text: 'text-yellow-800'},
+        '3':  {label: '접수완료',  bg: 'bg-amber-100',  text: 'text-amber-800'},
+        '4':  {label: '입금대기',  bg: 'bg-orange-100', text: 'text-orange-800'},
+        '5':  {label: '시안제작중', bg: 'bg-indigo-100', text: 'text-indigo-700'},
+        '6':  {label: '시안',      bg: 'bg-violet-100', text: 'text-violet-700'},
+        '7':  {label: '교정',      bg: 'bg-blue-100',   text: 'text-blue-700'},
+        '8':  {label: '작업완료',  bg: 'bg-green-100',  text: 'text-green-800'},
+        '9':  {label: '작업중',    bg: 'bg-purple-100', text: 'text-purple-700'},
+        '10': {label: '교정작업중', bg: 'bg-cyan-100',  text: 'text-cyan-700'},
+        'deleted': {label: '삭제됨', bg: 'bg-red-100',  text: 'text-red-800'}
     };
-    return badges[status] || '<span class="px-2 py-1 text-xs font-semibold rounded-full bg-gray-100 text-gray-800">' + status + '</span>';
+    var info = map[s] || {label: s, bg: 'bg-gray-100', text: 'text-gray-800'};
+    return '<span class="px-2 py-1 text-xs font-semibold rounded-full ' + info.bg + ' ' + info.text + '">' + info.label + '</span>';
 }
 
 async function loadOrders(page = 1) {

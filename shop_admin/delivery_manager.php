@@ -5,16 +5,28 @@
  * - 운송장 번호 일괄 등록
  */
 
-// Basic Auth 인증 (lib.php 방식)
-$admin_id = "duson1830";
-$admin_pw = "du1830";
+// 대시보드 embed 토큰 인증 또는 세션 또는 Basic Auth
+$eauth = $_GET['_eauth'] ?? '';
+$expected_token = hash_hmac('sha256', $_SERVER['PHP_SELF'] . date('Y-m-d'), 'duson_embed_2026_secret');
+$is_dashboard_auth = (!empty($eauth) && hash_equals($expected_token, $eauth));
 
-if (!isset($_SERVER['PHP_AUTH_USER']) || !isset($_SERVER['PHP_AUTH_PW']) ||
-    $_SERVER['PHP_AUTH_USER'] !== $admin_id || $_SERVER['PHP_AUTH_PW'] !== $admin_pw) {
-    header('WWW-Authenticate: Basic realm="관리자모드"');
-    header('HTTP/1.0 401 Unauthorized');
-    echo '<script>alert("관리자만 접근 가능합니다."); history.back();</script>';
-    exit;
+if (!$is_dashboard_auth) {
+    require_once __DIR__ . '/../admin/includes/admin_auth.php';
+    $is_dashboard_auth = isAdminLoggedIn();
+}
+
+if (!$is_dashboard_auth) {
+    // Basic Auth 인증 (lib.php 방식)
+    $admin_id = "duson1830";
+    $admin_pw = "du1830";
+
+    if (!isset($_SERVER['PHP_AUTH_USER']) || !isset($_SERVER['PHP_AUTH_PW']) ||
+        $_SERVER['PHP_AUTH_USER'] !== $admin_id || $_SERVER['PHP_AUTH_PW'] !== $admin_pw) {
+        header('WWW-Authenticate: Basic realm="관리자모드"');
+        header('HTTP/1.0 401 Unauthorized');
+        echo '<script>alert("관리자만 접근 가능합니다."); history.back();</script>';
+        exit;
+    }
 }
 
 // 메인 DB 연결 (주문 데이터가 있는 dsp1830)
@@ -417,13 +429,13 @@ if ($stats_result) {
         h1 { color: #333; margin-bottom: 10px; display: flex; align-items: center; gap: 10px; font-size: 20px; }
         h1 img { height: 24px; }
         .card { background: #fff; border: 1px solid #d0d0d0; padding: 12px; margin-bottom: 10px; }
-        .card h2 { color: #333; margin-bottom: 8px; font-size: 14px; font-weight: bold; border-bottom: 2px solid #217346; padding-bottom: 5px; }
+        .card h2 { color: #333; margin-bottom: 8px; font-size: 14px; font-weight: bold; border-bottom: 2px solid #1E4E79; padding-bottom: 5px; }
 
         /* 통계 박스 - 컴팩트하게 */
         .stats { display: flex; gap: 10px; margin-bottom: 10px; }
-        .stat-box { flex: 1; background: #217346; color: #fff; padding: 12px; text-align: center; border: 1px solid #1a5c38; }
+        .stat-box { flex: 1; background: #1E4E79; color: #fff; padding: 12px; text-align: center; border: 1px solid #173d5e; }
         .stat-box.pending { background: #c5504b; border-color: #9c3f3b; }
-        .stat-box.shipped { background: #4472c4; border-color: #365a99; }
+        .stat-box.shipped { background: #2d6ea7; border-color: #245a8a; }
         .stat-box .number { font-size: 22px; font-weight: bold; }
         .stat-box .label { font-size: 11px; opacity: 0.95; }
 
@@ -434,41 +446,41 @@ if ($stats_result) {
         .form-group label { display: block; margin-bottom: 3px; font-weight: bold; color: #333; font-size: 12px; }
         .form-group input, .form-group select { padding: 6px 8px; border: 1px solid #a6a6a6; width: 100%; max-width: 180px; font-size: 12px; }
         .form-row { display: flex; gap: 10px; flex-wrap: wrap; align-items: flex-end; }
-        .btn { padding: 6px 14px; border: 1px solid #217346; cursor: pointer; font-size: 12px; transition: all 0.2s; font-weight: bold; }
-        .btn-primary { background: #217346; color: #fff; }
-        .btn-primary:hover { background: #1a5c38; }
-        .btn-success { background: #4472c4; color: #fff; border-color: #365a99; }
-        .btn-success:hover { background: #365a99; }
+        .btn { padding: 6px 14px; border: 1px solid #1E4E79; cursor: pointer; font-size: 12px; transition: all 0.2s; font-weight: bold; }
+        .btn-primary { background: #1E4E79; color: #fff; }
+        .btn-primary:hover { background: #173d5e; }
+        .btn-success { background: #2d6ea7; color: #fff; border-color: #245a8a; }
+        .btn-success:hover { background: #245a8a; }
         .btn-logen { background: #c5504b; color: #fff; border-color: #9c3f3b; font-size: 11px; }
         .btn-logen:hover { background: #9c3f3b; }
 
         .message { padding: 10px; margin-bottom: 10px; font-size: 12px; border: 1px solid; }
-        .message.success { background: #d4edda; color: #155724; border-color: #c3e6cb; }
+        .message.success { background: #e8f0f7; color: #1E4E79; border-color: #b8d4ed; }
         .message.error { background: #f8d7da; color: #721c24; border-color: #f5c6cb; }
 
         .file-upload { border: 2px dashed #a6a6a6; padding: 15px; text-align: center; cursor: pointer; transition: all 0.2s; background: #fafafa; }
-        .file-upload:hover { border-color: #217346; background: #f0f0f0; }
+        .file-upload:hover { border-color: #1E4E79; background: #f0f0f0; }
         .file-upload input[type="file"] { display: none; }
         .file-upload .icon { font-size: 24px; color: #666; margin-bottom: 5px; }
         .file-upload p { color: #666; font-size: 12px; }
 
         .links { margin-top: 10px; padding-top: 8px; border-top: 1px solid #d0d0d0; }
-        .links a { color: #217346; text-decoration: none; margin-right: 15px; font-size: 12px; }
+        .links a { color: #1E4E79; text-decoration: none; margin-right: 15px; font-size: 12px; }
         .links a:hover { text-decoration: underline; }
 
         /* 엑셀 스타일 테이블 */
         table { width: 100%; border-collapse: collapse; border: 1px solid #a6a6a6; margin-top: 8px; }
         th, td { padding: 6px 8px; text-align: left; border: 1px solid #d0d0d0; font-size: 12px; }
-        th { background: #217346; color: #fff; font-weight: bold; text-align: center; }
+        th { background: #1E4E79; color: #fff; font-weight: bold; text-align: center; }
         td { background: #fff; }
         tr:nth-child(even) td { background: #f9f9f9; }
-        tr:hover td { background: #e8f5e9; }
+        tr:hover td { background: #e8f0f7; }
 
-        .waybill-link { color: #217346; text-decoration: none; font-weight: bold; }
+        .waybill-link { color: #1E4E79; text-decoration: none; font-weight: bold; }
         .waybill-link:hover { text-decoration: underline; }
         .status-badge { padding: 2px 6px; font-size: 11px; font-weight: bold; border: 1px solid; }
         .status-badge.pending { background: #fff3cd; color: #856404; border-color: #ffc107; }
-        .status-badge.shipped { background: #d4edda; color: #155724; border-color: #28a745; }
+        .status-badge.shipped { background: #e8f0f7; color: #1E4E79; border-color: #2d6ea7; }
 
         /* 페이지네이션 스타일 */
         .pagination {
@@ -492,13 +504,13 @@ if ($stats_result) {
         }
         .page-btn:hover {
             background: #f8f9fa;
-            border-color: #1a73e8;
-            color: #1a73e8;
+            border-color: #1E4E79;
+            color: #1E4E79;
         }
         .page-btn.active {
-            background: #1a73e8;
+            background: #1E4E79;
             color: #fff;
-            border-color: #1a73e8;
+            border-color: #1E4E79;
             font-weight: bold;
         }
     </style>
@@ -576,7 +588,7 @@ if ($stats_result) {
             <h2>📥 운송장 번호 일괄 등록</h2>
             <p style="color: #666; margin-bottom: 10px; font-size: 11px;">
                 <strong>✅ Excel 직접 업로드 지원!</strong> 로젠택배에서 다운로드한 .xlsx/.xls 파일을 <strong>변환 없이 바로 업로드</strong>하세요.<br>
-                <span style="color: #217346; font-weight: 500;">자동으로 주문번호(dsno)와 운송장번호를 찾아서 처리합니다.</span>
+                <span style="color: #1E4E79; font-weight: 500;">자동으로 주문번호(dsno)와 운송장번호를 찾아서 처리합니다.</span>
             </p>
             <form method="POST" action="" enctype="multipart/form-data" id="uploadForm">
                 <input type="hidden" name="action" value="import_waybill">
