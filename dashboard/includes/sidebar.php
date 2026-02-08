@@ -92,7 +92,7 @@ $group_colors = [
                     <span class="block text-[10px] text-gray-400 leading-tight">관리자</span>
                 </div>
             </div>
-            <a href="/admin/mlangprintauto/logout.php"
+            <a href="/auth/logout.php?redirect=/dashboard/"
                class="flex items-center justify-center mx-1 mt-1 px-2 py-1.5 text-[11px] text-red-500 border border-red-200 hover:bg-red-50 hover:border-red-300 rounded-lg transition-colors">
                 <svg class="w-3 h-3 mr-1 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1"></path>

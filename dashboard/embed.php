@@ -8,7 +8,7 @@ if (empty($url)) {
     exit;
 }
 
-$allowed_prefixes = ['/admin/mlangprintauto/', '/shop_admin/'];
+$allowed_prefixes = ['/admin/mlangprintauto/', '/shop_admin/', '/sub/'];
 $is_allowed = false;
 foreach ($allowed_prefixes as $prefix) {
     if (strpos($url, $prefix) === 0) {

@@ -6,20 +6,23 @@ require_once __DIR__ . '/../../db.php';
 $unread_count = 0;
 $recent_rooms = [];
 try {
-    $r = mysqli_query($db, "SELECT COUNT(*) as cnt FROM chatmessages WHERE is_read = 0 AND sender_type = 'customer'");
+    $r = mysqli_query($db, "SELECT COUNT(*) as cnt FROM chatmessages WHERE isread = 0 AND senderid != 'admin'");
     if ($r) $unread_count = intval(mysqli_fetch_assoc($r)['cnt']);
 
     $r = mysqli_query($db, "
-        SELECT cr.id, cr.room_name, cr.created_at,
-               (SELECT COUNT(*) FROM chatmessages cm WHERE cm.room_id = cr.id AND cm.is_read = 0 AND cm.sender_type = 'customer') as unread,
-               (SELECT cm2.message FROM chatmessages cm2 WHERE cm2.room_id = cr.id ORDER BY cm2.id DESC LIMIT 1) as last_message,
-               (SELECT cm3.created_at FROM chatmessages cm3 WHERE cm3.room_id = cr.id ORDER BY cm3.id DESC LIMIT 1) as last_message_at
+        SELECT cr.id, cr.roomname, cr.createdat,
+               (SELECT COUNT(*) FROM chatmessages cm WHERE cm.roomid = cr.id AND cm.isread = 0 AND cm.senderid != 'admin') as unread,
+               (SELECT cm2.message FROM chatmessages cm2 WHERE cm2.roomid = cr.id ORDER BY cm2.id DESC LIMIT 1) as last_message,
+               (SELECT cm3.createdat FROM chatmessages cm3 WHERE cm3.roomid = cr.id ORDER BY cm3.id DESC LIMIT 1) as last_message_at
         FROM chatrooms cr
+        WHERE cr.isactive = 1
         ORDER BY last_message_at DESC
         LIMIT 20
     ");
-    while ($row = mysqli_fetch_assoc($r)) {
-        $recent_rooms[] = $row;
+    if ($r) {
+        while ($row = mysqli_fetch_assoc($r)) {
+            $recent_rooms[] = $row;
+        }
     }
 } catch (Throwable $e) {}
 
@@ -70,7 +73,7 @@ include __DIR__ . '/../includes/sidebar.php';
                     <div class="w-10 h-10 rounded-full bg-purple-100 text-purple-600 flex items-center justify-center text-lg mr-3">💬</div>
                     <div class="flex-1 min-w-0">
                         <div class="flex items-center justify-between">
-                            <span class="text-sm font-medium text-gray-900"><?php echo htmlspecialchars($room['room_name'] ?: '채팅방 #' . $room['id']); ?></span>
+                            <span class="text-sm font-medium text-gray-900"><?php echo htmlspecialchars($room['roomname'] ?: '채팅방 #' . $room['id']); ?></span>
                             <?php if ($room['unread'] > 0): ?>
                             <span class="bg-red-500 text-white text-xs font-bold px-2 py-0.5 rounded-full"><?php echo $room['unread']; ?></span>
                             <?php endif; ?>

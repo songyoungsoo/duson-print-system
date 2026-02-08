@@ -5,28 +5,28 @@
  * - 운송장 번호 일괄 등록
  */
 
-// 대시보드 embed 토큰 인증 또는 세션 또는 Basic Auth
-$eauth = $_GET['_eauth'] ?? '';
-$expected_token = hash_hmac('sha256', $_SERVER['PHP_SELF'] . date('Y-m-d'), 'duson_embed_2026_secret');
-$is_dashboard_auth = (!empty($eauth) && hash_equals($expected_token, $eauth));
+// 관리자 인증 (embed 토큰 또는 세션)
+$is_authed = false;
 
-if (!$is_dashboard_auth) {
-    require_once __DIR__ . '/../admin/includes/admin_auth.php';
-    $is_dashboard_auth = isAdminLoggedIn();
+// 1. 대시보드 embed 토큰 검증
+$eauth = $_GET['_eauth'] ?? '';
+if (!empty($eauth)) {
+    $self_path = '/shop_admin/delivery_manager.php';
+    $expected = hash_hmac('sha256', $self_path . date('Y-m-d'), 'duson_embed_2026_secret');
+    if (hash_equals($expected, $eauth)) {
+        $is_authed = true;
+    }
 }
 
-if (!$is_dashboard_auth) {
-    // Basic Auth 인증 (lib.php 방식)
-    $admin_id = "duson1830";
-    $admin_pw = "du1830";
+// 2. 세션 인증
+if (!$is_authed) {
+    require_once __DIR__ . '/../admin/includes/admin_auth.php';
+    $is_authed = isAdminLoggedIn();
+}
 
-    if (!isset($_SERVER['PHP_AUTH_USER']) || !isset($_SERVER['PHP_AUTH_PW']) ||
-        $_SERVER['PHP_AUTH_USER'] !== $admin_id || $_SERVER['PHP_AUTH_PW'] !== $admin_pw) {
-        header('WWW-Authenticate: Basic realm="관리자모드"');
-        header('HTTP/1.0 401 Unauthorized');
-        echo '<script>alert("관리자만 접근 가능합니다."); history.back();</script>';
-        exit;
-    }
+if (!$is_authed) {
+    header('Location: /admin/mlangprintauto/login.php?redirect=' . urlencode($_SERVER['REQUEST_URI']));
+    exit;
 }
 
 // 메인 DB 연결 (주문 데이터가 있는 dsp1830)
@@ -573,8 +573,8 @@ if ($stats_result) {
         .links a:hover { text-decoration: underline; }
 
         /* 엑셀 스타일 테이블 */
-        table { width: 100%; border-collapse: collapse; border: 1px solid #a6a6a6; margin-top: 8px; }
-        th, td { padding: 6px 8px; text-align: left; border: 1px solid #d0d0d0; font-size: 12px; }
+        table { width: 100%; border-collapse: collapse; border: 1px solid #a6a6a6; margin-top: 8px; table-layout: fixed; }
+        th, td { padding: 6px 8px; text-align: left; border: 1px solid #d0d0d0; font-size: 12px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
         th { background: #1E4E79; color: #fff; font-weight: bold; text-align: center; }
         td { background: #fff; }
         tr:nth-child(even) td { background: #f9f9f9; }
@@ -743,21 +743,37 @@ if ($stats_result) {
 
         <form id="listForm">
         <table>
+            <colgroup>
+                <col style="width:28px">
+                <col style="width:70px">
+                <col style="width:70px">
+                <col style="width:60px">
+                <col style="width:50px">
+                <col style="width:auto">
+                <col style="width:90px">
+                <col style="width:95px">
+                <col style="width:40px">
+                <col style="width:55px">
+                <col style="width:50px">
+                <col style="width:45px">
+                <col style="width:50px">
+                <col style="width:120px">
+            </colgroup>
             <tr style="background: #1E4E79; color: #fff;">
-                <th style="padding:3px;"><input type="checkbox" onclick="toggleAll(this)"></th>
-                <th style="padding:3px;">주문번호</th>
-                <th style="padding:3px;">날짜</th>
-                <th style="padding:3px;">수하인명</th>
-                <th style="padding:3px;">우편번호</th>
-                <th style="padding:3px;">주소</th>
-                <th style="padding:3px;">전화</th>
-                <th style="padding:3px;">핸드폰</th>
-                <th style="padding:3px;">박스수량</th>
-                <th style="padding:3px;">택배비</th>
-                <th style="padding:3px;">운임구분</th>
-                <th style="padding:3px;">Type</th>
-                <th style="padding:3px;">기타</th>
-                <th style="padding:3px;">품목</th>
+                <th><input type="checkbox" onclick="toggleAll(this)"></th>
+                <th>주문번호</th>
+                <th>날짜</th>
+                <th>수하인명</th>
+                <th>우편번호</th>
+                <th>주소</th>
+                <th>전화</th>
+                <th>핸드폰</th>
+                <th>박스</th>
+                <th>택배비</th>
+                <th>운임</th>
+                <th>Type</th>
+                <th>기타</th>
+                <th>품목</th>
             </tr>
             <?php
             $recent_query = "SELECT * FROM mlangorder_printauto WHERE $base_condition ORDER BY no DESC LIMIT $per_page OFFSET $offset";
@@ -770,23 +786,20 @@ if ($stats_result) {
                     $type1_display = htmlspecialchars(parseType1Display($data['Type_1'] ?? ''));
             ?>
             <tr>
-                <td style="padding:3px;"><input type="checkbox" name="selected_no[]" value="<?php echo $no; ?>"></td>
-                <td style="padding:3px;"><?php echo htmlspecialchars($no); ?></td>
-                <td style="padding:3px;"><?php echo htmlspecialchars($data['date'] ?? ''); ?></td>
-                <td style="padding:3px;"><?php echo htmlspecialchars($data['name'] ?? ''); ?></td>
-                <td style="padding:3px;"><?php echo htmlspecialchars($data['zip'] ?? ''); ?></td>
-                <td style="padding:3px;"><?php echo htmlspecialchars(($data['zip1'] ?? '') . ' ' . ($data['zip2'] ?? '')); ?></td>
-                <td style="padding:3px;"><?php echo htmlspecialchars($data['phone'] ?? ''); ?></td>
-                <td style="padding:3px;" width="120"><?php echo htmlspecialchars($data['Hendphone'] ?? ''); ?></td>
-                <td style="padding:3px;" align="center"><input type="text" id="box_qty_<?php echo $no; ?>" value="<?php echo $ship['boxes']; ?>" size="2" style="text-align:center; font-size:12px;"></td>
-                <td style="padding:3px;"><input type="text" id="delivery_fee_<?php echo $no; ?>" value="<?php echo $ship['fee']; ?>" size="5" style="font-size:12px;"></td>
-                <td style="padding:3px;"><select id="fee_type_<?php echo $no; ?>" style="font-size:11px;">
-                    <option value="착불" selected>착불</option>
-                    <option value="선불">선불</option>
-                </select></td>
-                <td style="padding:3px;"><?php echo htmlspecialchars(getTypeLabel($data['Type'] ?? '', $type_labels)); ?></td>
-                <td style="padding:3px;"><?php echo $no; ?></td>
-                <td style="padding:3px; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; max-width:200px;"><?php echo $type1_display; ?></td>
+                <td><input type="checkbox" name="selected_no[]" value="<?php echo $no; ?>"></td>
+                <td><?php echo htmlspecialchars($no); ?></td>
+                <td><?php echo htmlspecialchars($data['date'] ?? ''); ?></td>
+                <td><?php echo htmlspecialchars($data['name'] ?? ''); ?></td>
+                <td><?php echo htmlspecialchars($data['zip'] ?? ''); ?></td>
+                <td title="<?php echo htmlspecialchars(($data['zip1'] ?? '') . ' ' . ($data['zip2'] ?? '')); ?>"><?php echo htmlspecialchars(($data['zip1'] ?? '') . ' ' . ($data['zip2'] ?? '')); ?></td>
+                <td><?php echo htmlspecialchars($data['phone'] ?? ''); ?></td>
+                <td><?php echo htmlspecialchars($data['Hendphone'] ?? ''); ?></td>
+                <td style="text-align:center"><input type="text" id="box_qty_<?php echo $no; ?>" value="<?php echo $ship['boxes']; ?>" size="2" style="text-align:center; font-size:11px; width:100%; box-sizing:border-box; padding:1px;"></td>
+                <td><input type="text" id="delivery_fee_<?php echo $no; ?>" value="<?php echo $ship['fee']; ?>" size="4" style="font-size:11px; width:100%; box-sizing:border-box; padding:1px;"></td>
+                <td><select id="fee_type_<?php echo $no; ?>" style="font-size:10px; width:100%; padding:0;"><option value="착불" selected>착불</option><option value="선불">선불</option></select></td>
+                <td><?php echo htmlspecialchars(getTypeLabel($data['Type'] ?? '', $type_labels)); ?></td>
+                <td><?php echo $no; ?></td>
+                <td title="<?php echo $type1_display; ?>"><?php echo $type1_display; ?></td>
             </tr>
             <?php
                 endwhile;
