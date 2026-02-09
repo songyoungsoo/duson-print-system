@@ -28,6 +28,7 @@ switch ($action) {
                 $files[] = [
                     'name' => $fname,
                     'url' => '/mlangorder_printauto/upload/' . $order_no . '/' . rawurlencode($fname),
+                    'path' => $filepath,
                     'size' => filesize($filepath),
                     'mtime' => filemtime($filepath),
                     'date' => date('m/d H:i', filemtime($filepath)),
@@ -122,6 +123,35 @@ switch ($action) {
         }
 
         echo json_encode(['success' => $uploaded > 0, 'message' => $uploaded . '개 파일 업로드 완료', 'count' => $uploaded]);
+        break;
+
+    case 'delete_file':
+        $order_no = intval($_POST['order_no'] ?? 0);
+        $file_path = trim($_POST['file'] ?? '');
+
+        if ($order_no <= 0 || $file_path === '') {
+            echo json_encode(['success' => false, 'message' => '잘못된 요청']);
+            exit;
+        }
+
+        // 경로 조회 확인 (보안)
+        $upload_base = realpath(__DIR__ . '/../../mlangorder_printauto/upload/' . $order_no);
+        if (!$upload_base || strpos($file_path, $upload_base) !== 0) {
+            echo json_encode(['success' => false, 'message' => '잘못된 파일 경로']);
+            exit;
+        }
+
+        $full_path = realpath($file_path);
+        if (!$full_path || strpos($full_path, $upload_base) !== 0) {
+            echo json_encode(['success' => false, 'message' => '파일을 찾을 수 없습니다']);
+            exit;
+        }
+
+        if (unlink($full_path)) {
+            echo json_encode(['success' => true, 'message' => '파일 삭제 완료']);
+        } else {
+            echo json_encode(['success' => false, 'message' => '삭제 실패']);
+        }
         break;
 
     default:

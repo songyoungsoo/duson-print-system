@@ -138,12 +138,13 @@ include __DIR__ . '/../includes/sidebar.php';
                             <th class="px-3 py-2 text-center text-xs font-medium text-gray-500">상태</th>
                             <th class="px-3 py-2 text-center text-xs font-medium text-gray-500">교정파일</th>
                             <th class="px-3 py-2 text-center text-xs font-medium text-gray-500">일시</th>
-                            <th class="px-3 py-2 text-center text-xs font-medium text-gray-500">작업</th>
+                            <th class="px-3 py-2 text-center text-xs font-medium text-gray-500">보기</th>
+                            <th class="px-3 py-2 text-center text-xs font-medium text-gray-500">올리기</th>
                         </tr>
                     </thead>
                     <tbody class="bg-white divide-y divide-gray-200">
                         <?php if (empty($orders)): ?>
-                        <tr><td colspan="8" class="px-3 py-8 text-center text-sm text-gray-400">데이터가 없습니다.</td></tr>
+                        <tr><td colspan="9" class="px-3 py-8 text-center text-sm text-gray-400">데이터가 없습니다.</td></tr>
                         <?php endif; ?>
                         <?php foreach ($orders as $order): ?>
                         <tr class="hover:bg-gray-50" id="row-<?php echo $order['no']; ?>">
@@ -196,19 +197,21 @@ include __DIR__ . '/../includes/sidebar.php';
                                     </span>
                                 <?php endif; ?>
                             </td>
-                            <td class="px-3 py-2 text-xs text-gray-400 text-center"><?php echo date('m/d H:i', strtotime($order['date'])); ?></td>
+                            <td class="px-3 py-2 text-xs text-gray-400 text-center"><?php echo date('Y/m/d H:i', strtotime($order['date'])); ?></td>
                             <td class="px-3 py-2 text-center">
-                                <div class="flex items-center justify-center gap-1">
-                                    <?php if (!empty($order['files'])): ?>
-                                    <button onclick="viewFiles(<?php echo $order['no']; ?>)" class="relative px-2 py-1 text-xs bg-blue-50 text-blue-600 rounded hover:bg-blue-100" title="교정파일 보기">
-                                        🔍보기
-                                        <?php if (count($order['files']) > 1): ?>
-                                        <span class="absolute -top-1.5 -right-1.5 min-w-[16px] h-4 flex items-center justify-center px-1 text-[10px] font-bold text-white bg-amber-500 rounded-full leading-none"><?php echo count($order['files']); ?></span>
-                                        <?php endif; ?>
-                                    </button>
+                                <?php if (!empty($order['files'])): ?>
+                                <button onclick="viewFiles(<?php echo $order['no']; ?>)" class="relative px-2 py-1 text-xs bg-blue-50 text-blue-600 rounded hover:bg-blue-100" title="교정파일 보기">
+                                    🔍보기
+                                    <?php if (count($order['files']) > 1): ?>
+                                    <span class="absolute -top-1.5 -right-1.5 min-w-[16px] h-4 flex items-center justify-center px-1 text-[10px] font-bold text-white bg-amber-500 rounded-full leading-none"><?php echo count($order['files']); ?></span>
                                     <?php endif; ?>
-                                    <button onclick="openUpload(<?php echo $order['no']; ?>)" class="px-2 py-1 text-xs bg-green-50 text-green-600 rounded hover:bg-green-100" title="파일 올리기">📤올리기</button>
-                                </div>
+                                </button>
+                                <?php else: ?>
+                                <span class="text-gray-300 text-xs">-</span>
+                                <?php endif; ?>
+                            </td>
+                            <td class="px-3 py-2 text-center">
+                                <button onclick="openUpload(<?php echo $order['no']; ?>)" class="px-2 py-1 text-xs bg-green-50 text-green-600 rounded hover:bg-green-100" title="파일 올리기">📤올리기</button>
                             </td>
                         </tr>
                         <?php endforeach; ?>
@@ -328,6 +331,8 @@ include __DIR__ . '/../includes/sidebar.php';
 <div id="imgOverlay" class="fixed inset-0 z-[60] hidden bg-black bg-opacity-90 overflow-auto cursor-pointer" onclick="closeImageViewer()">
     <!-- Close button -->
     <button onclick="closeImageViewer()" class="fixed top-3 right-4 z-[70] text-white bg-black bg-opacity-60 rounded-full w-9 h-9 flex items-center justify-center hover:bg-opacity-90 text-lg">✕</button>
+    <!-- Delete button -->
+    <button id="deleteImgBtn" onclick="event.stopPropagation(); deleteCurrentImage()" class="fixed top-3 right-16 z-[70] text-white bg-red-600 bg-opacity-80 rounded-full w-9 h-9 flex items-center justify-center hover:bg-opacity-100 text-sm" title="이미지 삭제">🗑</button>
     <!-- Prev button -->
     <button id="prevBtn" onclick="event.stopPropagation(); navImage(-1)" class="fixed left-3 top-1/2 -translate-y-1/2 z-[70] text-white bg-black bg-opacity-60 rounded-full w-10 h-10 flex items-center justify-center hover:bg-opacity-90 text-xl hidden">&lsaquo;</button>
     <!-- Next button -->
@@ -410,17 +415,20 @@ function savePhone(orderNo) {
     .catch(function() { showToast('네트워크 오류', 'error'); });
 }
 
-var viewerImages = [];  // [{url, name, date}]
+var viewerImages = [];  // [{url, name, date, orderNo, filePath}]
 var viewerIndex = 0;
+var viewerOrderNo = 0;
 
 document.addEventListener('keydown', function(e) {
     if (document.getElementById('imgOverlay').classList.contains('hidden')) return;
     if (e.key === 'Escape') closeImageViewer();
     if (e.key === 'ArrowLeft') navImage(-1);
     if (e.key === 'ArrowRight') navImage(1);
+    if (e.key === 'Delete' || e.key === 'Backspace') deleteCurrentImage();
 });
 
 function viewFiles(orderNo) {
+    viewerOrderNo = orderNo;
     fetch('/dashboard/proofs/api.php?action=files&order_no=' + orderNo)
         .then(r => r.json())
         .then(data => {
@@ -430,7 +438,9 @@ function viewFiles(orderNo) {
                 viewerImages = images.map(f => ({
                     url: f.url + '?raw',
                     name: f.name,
-                    date: f.date || ''
+                    date: f.date || '',
+                    orderNo: orderNo,
+                    filePath: f.path
                 }));
                 viewerIndex = 0;
                 buildThumbnails();
@@ -513,6 +523,45 @@ function closeImageViewer() {
     document.getElementById('imgInfoBar').classList.add('hidden');
     document.getElementById('overlayImg').src = '';
     viewerImages = [];
+}
+
+function deleteCurrentImage() {
+    if (viewerImages.length === 0) return;
+    var img = viewerImages[viewerIndex];
+    if (!img.filePath) return;
+
+    if (!confirm('정말 이 이미지를 삭제하시겠습니까?\n\n' + img.name)) return;
+
+    fetch('/dashboard/proofs/api.php?action=delete_file', {
+        method: 'POST',
+        headers: {'Content-Type': 'application/x-www-form-urlencoded'},
+        body: 'order_no=' + img.orderNo + '&file=' + encodeURIComponent(img.filePath)
+    })
+    .then(r => r.json())
+    .then(data => {
+        if (data.success) {
+            showToast('삭제 완료', 'success');
+            // 현재 이미지 제거
+            viewerImages.splice(viewerIndex, 0);
+
+            if (viewerImages.length === 0) {
+                // 더 이상 이미지가 없으면 닫기
+                closeImageViewer();
+                // 테이블 행 파일 수 갱신
+                updateRowFileCount(img.orderNo);
+            } else {
+                // 인덱스 조정
+                if (viewerIndex >= viewerImages.length) {
+                    viewerIndex = viewerImages.length - 1;
+                }
+                buildThumbnails();
+                showImage();
+            }
+        } else {
+            showToast(data.message || '삭제 실패', 'error');
+        }
+    })
+    .catch(() => showToast('네트워크 오류', 'error'));
 }
 
 function closeFileModal() { document.getElementById('fileModal').classList.add('hidden'); }
@@ -721,7 +770,7 @@ function updateRowFileCount(orderNo) {
             var latestDate = cnt > 0 && files[0].date ? files[0].date.split(' ')[0] : '';
 
             // 교정파일 열 업데이트 (5번째 td)
-            var fileTd = row.children[4];
+            var fileTd = row.children[5];
             if (fileTd) {
                 fileTd.textContent = '';
                 var span = document.createElement('span');
@@ -744,11 +793,10 @@ function updateRowFileCount(orderNo) {
                 fileTd.appendChild(span);
             }
 
-            // 작업 열에 보기 버튼 추가/업데이트
-            var actionTd = row.children[6];
+            // 보기 열에 보기 버튼 추가/업데이트
+            var actionTd = row.children[7];
             if (actionTd && cnt > 0) {
-                var btnDiv = actionTd.querySelector('div');
-                if (btnDiv) {
+                if (actionTd.querySelector('span')?.textContent === '-') {
                     var existingBtn = btnDiv.querySelector('[data-view-btn]');
                     if (!existingBtn) {
                         var viewBtn = document.createElement('button');

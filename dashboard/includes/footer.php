@@ -1,10 +1,13 @@
     </div> <!-- End Layout Container -->
-    
+
+    <!-- Chart.js Library -->
+    <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.1/dist/chart.umd.min.js"></script>
+
     <!-- Footer -->
     <footer class="bg-white border-t border-gray-200 py-4 px-6 text-center text-sm text-gray-600">
         <p>&copy; <?php echo date('Y'); ?> 두손기획 - 관리자 대시보드</p>
     </footer>
-    
+
     <!-- Common JavaScript -->
     <script>
         // Number formatting helper

@@ -2,12 +2,20 @@
 /**
  * Sticker Price API
  * 스티커 가격 수정 API
+ *
+ * 화면 정수 → DB 소수점 변환 (÷10000)
+ * 예: 화면 18 → DB 0.0018
  */
 
 require_once __DIR__ . '/../includes/auth.php';
 require_once __DIR__ . '/../../db.php';
 
 header('Content-Type: application/json');
+
+// 화면 정수 → DB 소수점 변환
+function getStoragePrice($displayValue) {
+    return $displayValue / 10000;
+}
 
 // POST 요청만 처리
 if ($_SERVER['REQUEST_METHOD'] !== 'POST') {
@@ -37,7 +45,9 @@ foreach ($_POST as $key => $value) {
         $prefix = $typeInfo['prefix'];
         // il0, il1, ... 형식의 필드명 확인
         if (strpos($key, $prefix) === 0) {
-            $updateData[$typeKey][$key] = intval($value);
+            // 화면 정수 → DB 소수점 변환
+            $dbValue = getStoragePrice(floatval($value));
+            $updateData[$typeKey][$key] = $dbValue;
             break;
         }
     }
@@ -55,8 +65,8 @@ try {
         $table = $stickerTypes[$typeKey]['table'];
         $setParts = [];
 
-        foreach ($fields as $fieldName => $value) {
-            $setParts[] = "{$fieldName} = {$value}";
+        foreach ($fields as $fieldName => $dbValue) {
+            $setParts[] = "{$fieldName} = {$dbValue}";
         }
 
         if (!empty($setParts)) {

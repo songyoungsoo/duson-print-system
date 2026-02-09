@@ -127,7 +127,7 @@ $page = isset($_GET['page']) ? max(1, intval($_GET['page'])) : 1;
 $limit = 20; // 한 페이지당 주문 수
 $offset = ($page - 1) * $limit;
 
-// 검색 필터 처리
+// 검색 필터 처리 (비관리자도 검색 가능)
 $search_name = isset($_GET['search_name']) ? trim($_GET['search_name']) : '';
 $search_type = isset($_GET['search_type']) ? trim($_GET['search_type']) : '';
 $search_status = isset($_GET['search_status']) ? trim($_GET['search_status']) : '';
@@ -137,28 +137,26 @@ $where_conditions = [];
 $params = [];
 $param_types = '';
 
-// 기본 조건: 모든 주문 표시 (주소 필터 제거 - 2025-01-02)
+// 기본 조건: 모든 주문 표시
 $where_conditions[] = "1=1";
 
-// 검색 필터는 관리자만 사용 가능
-if ($is_admin) {
-    if (!empty($search_name)) {
-        $where_conditions[] = "name LIKE ?";
-        $params[] = "%{$search_name}%";
-        $param_types .= 's';
-    }
+// 검색 필터 (모든 사용자 가능)
+if (!empty($search_name)) {
+    $where_conditions[] = "name LIKE ?";
+    $params[] = "%{$search_name}%";
+    $param_types .= 's';
+}
 
-    if (!empty($search_type)) {
-        $where_conditions[] = "Type = ?";
-        $params[] = $search_type;
-        $param_types .= 's';
-    }
+if (!empty($search_type)) {
+    $where_conditions[] = "Type = ?";
+    $params[] = $search_type;
+    $param_types .= 's';
+}
 
-    if (!empty($search_status)) {
-        $where_conditions[] = "OrderStyle = ?";
-        $params[] = $search_status;
-        $param_types .= 's';
-    }
+if (!empty($search_status)) {
+    $where_conditions[] = "OrderStyle = ?";
+    $params[] = $search_status;
+    $param_types .= 's';
 }
 
 $where_clause = 'WHERE ' . implode(' AND ', $where_conditions);
@@ -229,8 +227,9 @@ while ($row = mysqli_fetch_array($result)) {
     <div style="text-align:right; padding:10px; color:#2563eb; font-weight:600;">
         👤 관리자 모드 | <a href="?logout=1" style="color:#dc2626;">로그아웃</a>
     </div>
+    <?php endif; ?>
 
-    <!-- 검색 및 필터 섹션 (관리자 전용) -->
+    <!-- 검색 및 필터 섹션 (모든 사용자 가능) -->
     <div class="search-section">
         <form method="GET" class="search-form">
             <div class="search-row">
@@ -285,8 +284,6 @@ while ($row = mysqli_fetch_array($result)) {
         </div>
         -->
     </div>
-    <?php else: ?>
-    <?php endif; ?>
 
     <!-- 주문 내역 섹션 -->
     <?php if (!empty($all_orders)): ?>
