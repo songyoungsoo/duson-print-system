@@ -3,6 +3,17 @@ require_once __DIR__ . '/../includes/auth.php';
 require_once __DIR__ . '/../includes/config.php';
 require_once __DIR__ . '/../../db.php';
 
+// 스티커 요율 포매터 - DB 소수점 ↔ 화면 정수 변환
+// DB에 0.0018로 저장 → 화면에 18로 표시 (×10000)
+function getDisplayPrice($dbValue) {
+    return (int)($dbValue * 10000);
+}
+
+// 화면 18 입력 → DB에 0.0018로 저장 (÷10000)
+function getStoragePrice($displayValue) {
+    return $displayValue / 10000;
+}
+
 // 스티커 요율 데이터 조회
 $stickerTypes = [
     'd1' => ['name' => '일반아트지스티커', 'table' => 'shop_d1', 'prefix' => 'il'],
@@ -70,39 +81,41 @@ include __DIR__ . '/../includes/sidebar.php';
         </div>
 
         <form id="stickerPriceForm">
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
             <?php foreach ($stickerTypes as $key => $type): ?>
-            <div class="bg-white rounded-lg shadow p-4 mb-4">
+            <div class="bg-white rounded-lg shadow p-4">
                 <h3 class="text-base font-semibold text-gray-900 mb-3"><?php echo $type['name']; ?> 금액 수정</h3>
                 <div class="overflow-x-auto">
                     <table class="min-w-full divide-y divide-gray-200">
                         <thead class="bg-gray-50">
                             <tr>
-                                <th class="px-4 py-2 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">수량 구간</th>
-                                <th class="px-4 py-2 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">현재 금액</th>
-                                <th class="px-4 py-2 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">새 금액</th>
+                                <th class="px-3 py-1.5 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">수량 구간</th>
+                                <th class="px-3 py-1.5 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">현재 금액</th>
+                                <th class="px-3 py-1.5 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">새 금액</th>
                             </tr>
                         </thead>
                         <tbody class="bg-white divide-y divide-gray-200">
                             <?php for ($i = 0; $i <= 6; $i++): ?>
                             <?php
                             $fieldName = $type['prefix'] . $i;
-                            $currentValue = $stickerData[$key][$fieldName] ?? 0;
+                            $dbValue = floatval($stickerData[$key][$fieldName] ?? 0);
+                            $displayValue = getDisplayPrice($dbValue);
                             ?>
-                            <tr data-type="<?php echo $key; ?>" data-field="<?php echo $fieldName; ?>" data-original="<?php echo $currentValue; ?>">
-                                <td class="px-4 py-2 whitespace-nowrap text-sm font-medium text-gray-900">
+                            <tr data-type="<?php echo $key; ?>" data-field="<?php echo $fieldName; ?>" data-db-value="<?php echo $dbValue; ?>">
+                                <td class="px-3 py-1.5 whitespace-nowrap text-sm font-medium text-gray-900">
                                     <?php echo $quantityRanges[$i]; ?>
                                 </td>
-                                <td class="px-4 py-2 whitespace-nowrap text-sm text-gray-900 text-right original-price">
-                                    <?php echo number_format($currentValue); ?>원
+                                <td class="px-3 py-1.5 whitespace-nowrap text-sm text-gray-900 text-right original-price">
+                                    <?php echo number_format($displayValue); ?>
                                 </td>
-                                <td class="px-4 py-2 whitespace-nowrap text-sm text-right">
+                                <td class="px-3 py-1.5 whitespace-nowrap text-sm text-right">
                                     <input type="number"
-                                           class="price-input w-32 px-2 py-1 border border-gray-300 rounded text-right text-sm"
+                                           class="price-input w-32 px-2 py-0.5 border border-gray-300 rounded text-right text-sm"
                                            name="<?php echo $fieldName; ?>"
-                                           value="<?php echo $currentValue; ?>"
+                                           value="<?php echo $displayValue; ?>"
                                            data-type="<?php echo $key; ?>"
                                            data-field="<?php echo $fieldName; ?>"
-                                           data-original="<?php echo $currentValue; ?>">
+                                           data-original="<?php echo $displayValue; ?>">
                                 </td>
                             </tr>
                             <?php endfor; ?>
@@ -111,6 +124,7 @@ include __DIR__ . '/../includes/sidebar.php';
                 </div>
             </div>
             <?php endforeach; ?>
+            </div>
 
             <div class="bg-white rounded-lg shadow p-4">
                 <div class="flex justify-end gap-3">
