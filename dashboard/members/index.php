@@ -6,128 +6,200 @@ include __DIR__ . '/../includes/header.php';
 include __DIR__ . '/../includes/sidebar.php';
 ?>
 
-<main class="flex-1 overflow-y-auto bg-gray-50">
-    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-4">
-        <div class="mb-4">
-            <h1 class="text-2xl font-bold text-gray-900">회원 관리</h1>
-            <p class="mt-1 text-sm text-gray-600">회원 목록 조회 및 정보 관리</p>
+<main class="flex-1 bg-gray-50">
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-2">
+        <!-- Header + Filter in one line -->
+        <div class="flex flex-wrap items-center gap-2 mb-2">
+            <h1 class="text-lg font-bold text-gray-900 mr-2">회원 관리</h1>
+            <input type="text" id="searchInput" placeholder="아이디, 이름, 이메일, 전화번호 검색"
+                   class="w-64 px-2 py-1 text-xs border border-gray-300 rounded focus:ring-1 focus:ring-blue-500">
+            <button id="searchBtn" class="px-3 py-1 text-xs bg-blue-600 text-white rounded hover:bg-blue-700">검색</button>
         </div>
 
-        <div class="bg-white rounded-lg shadow p-4 mb-4">
-            <div class="flex gap-4">
-                <input type="text" id="searchInput" placeholder="아이디, 이름, 이메일, 전화번호 검색" 
-                       class="flex-1 px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500">
-                <button id="searchBtn" class="px-6 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors">
-                    검색
-                </button>
-            </div>
-        </div>
-
+        <!-- Members Table -->
         <div class="bg-white rounded-lg shadow overflow-hidden">
             <div class="overflow-x-auto">
                 <table class="min-w-full divide-y divide-gray-200">
                     <thead class="bg-gray-50">
                         <tr>
-                            <th class="px-3 py-2 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">ID</th>
-                            <th class="px-3 py-2 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">아이디</th>
-                            <th class="px-3 py-2 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">이름</th>
-                            <th class="px-3 py-2 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">이메일</th>
-                            <th class="px-3 py-2 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">전화번호</th>
-                            <th class="px-3 py-2 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">가입일</th>
-                            <th class="px-3 py-2 text-center text-xs font-medium text-gray-500 uppercase tracking-wider">관리</th>
+                            <th class="px-2 py-1.5 text-left text-xs font-medium text-gray-500">ID</th>
+                            <th class="px-2 py-1.5 text-left text-xs font-medium text-gray-500">아이디</th>
+                            <th class="px-2 py-1.5 text-left text-xs font-medium text-gray-500">이름</th>
+                            <th class="px-2 py-1.5 text-left text-xs font-medium text-gray-500">이메일</th>
+                            <th class="px-2 py-1.5 text-left text-xs font-medium text-gray-500">전화번호</th>
+                            <th class="px-2 py-1.5 text-left text-xs font-medium text-gray-500">가입일</th>
+                            <th class="px-2 py-1.5 text-center text-xs font-medium text-gray-500">관리</th>
                         </tr>
                     </thead>
                     <tbody id="membersTableBody" class="bg-white divide-y divide-gray-200">
                         <tr>
-                            <td colspan="7" class="px-3 py-3 text-center text-gray-500">로딩 중...</td>
+                            <td colspan="7" class="px-2 py-1 text-center text-gray-500 text-xs">로딩 중...</td>
                         </tr>
                     </tbody>
                 </table>
             </div>
 
-            <div id="pagination" class="px-4 py-3 border-t border-gray-200 flex items-center justify-between">
-                <div class="text-sm text-gray-700">
-                    총 <span id="totalItems">0</span>명
-                </div>
-                <div id="paginationButtons" class="flex gap-2">
-                </div>
+            <!-- Pagination -->
+            <div id="pagination" class="px-3 py-1.5 border-t border-gray-200 flex items-center justify-between text-xs">
+                <span class="text-gray-500">총 <span id="totalItems">0</span>명</span>
+                <div id="paginationButtons" class="flex items-center gap-1"></div>
             </div>
         </div>
     </div>
 </main>
 
 <script>
-let currentPage = 1;
-let currentSearch = '';
+var currentPage = 1;
+var currentSearch = '';
 
-async function loadMembers(page = 1) {
-    currentPage = page;
-    
-    const params = new URLSearchParams({
+async function loadMembers(page) {
+    currentPage = page || 1;
+
+    var params = new URLSearchParams({
         action: 'list',
-        page: page,
+        page: currentPage,
         search: currentSearch
     });
-    
+
     try {
-        const response = await fetch(`/dashboard/api/members.php?${params}`);
-        const result = await response.json();
-        
-        if (!result.success) {
-            throw new Error(result.message);
-        }
-        
-        const tbody = document.getElementById('membersTableBody');
-        const members = result.data.data;
-        
+        var response = await fetch('/dashboard/api/members.php?' + params);
+        var result = await response.json();
+
+        if (!result.success) throw new Error(result.message);
+
+        var tbody = document.getElementById('membersTableBody');
+        var members = result.data.data;
+
+        while (tbody.firstChild) tbody.removeChild(tbody.firstChild);
+
         if (members.length === 0) {
-            tbody.innerHTML = '<tr><td colspan="7" class="px-3 py-3 text-center text-gray-500">회원이 없습니다.</td></tr>';
+            var tr = document.createElement('tr');
+            var td = document.createElement('td');
+            td.colSpan = 7;
+            td.className = 'px-2 py-1 text-center text-gray-500 text-xs';
+            td.textContent = '회원이 없습니다.';
+            tr.appendChild(td);
+            tbody.appendChild(tr);
             return;
         }
-        
-        tbody.innerHTML = members.map(member => `
-            <tr class="hover:bg-gray-50">
-                <td class="px-3 py-2 whitespace-nowrap text-sm font-medium text-gray-900">${member.id}</td>
-                <td class="px-3 py-2 whitespace-nowrap text-sm text-gray-900">${member.username}</td>
-                <td class="px-3 py-2 whitespace-nowrap text-sm text-gray-600">${member.name}</td>
-                <td class="px-3 py-2 whitespace-nowrap text-sm text-gray-600">${member.email || '-'}</td>
-                <td class="px-3 py-2 whitespace-nowrap text-sm text-gray-600">${member.phone || '-'}</td>
-                <td class="px-3 py-2 whitespace-nowrap text-sm text-gray-600">${member.created_at || '-'}</td>
-                <td class="px-3 py-2 whitespace-nowrap text-center text-sm">
-                    <a href="/dashboard/members/view.php?id=${member.id}" class="text-blue-600 hover:text-blue-800">상세</a>
-                </td>
-            </tr>
-        `).join('');
-        
-        document.getElementById('totalItems').textContent = result.data.pagination.total_items;
-        
+
+        members.forEach(function(m) {
+            var tr = document.createElement('tr');
+            tr.className = 'hover:bg-gray-50';
+
+            var td1 = document.createElement('td');
+            td1.className = 'px-2 py-1 whitespace-nowrap text-xs font-medium text-gray-900';
+            td1.textContent = m.id;
+            tr.appendChild(td1);
+
+            var td2 = document.createElement('td');
+            td2.className = 'px-2 py-1 whitespace-nowrap text-xs text-gray-900';
+            td2.textContent = m.username;
+            tr.appendChild(td2);
+
+            var td3 = document.createElement('td');
+            td3.className = 'px-2 py-1 whitespace-nowrap text-xs text-gray-600';
+            td3.textContent = m.name;
+            tr.appendChild(td3);
+
+            var td4 = document.createElement('td');
+            td4.className = 'px-2 py-1 whitespace-nowrap text-xs text-gray-600';
+            td4.textContent = m.email || '-';
+            tr.appendChild(td4);
+
+            var td5 = document.createElement('td');
+            td5.className = 'px-2 py-1 whitespace-nowrap text-xs text-gray-600';
+            td5.textContent = m.phone || '-';
+            tr.appendChild(td5);
+
+            var td6 = document.createElement('td');
+            td6.className = 'px-2 py-1 whitespace-nowrap text-xs text-gray-500';
+            td6.textContent = m.created_at || '-';
+            tr.appendChild(td6);
+
+            var td7 = document.createElement('td');
+            td7.className = 'px-2 py-1 whitespace-nowrap text-center text-xs';
+            var a = document.createElement('a');
+            a.href = '/dashboard/members/view.php?id=' + encodeURIComponent(m.id);
+            a.className = 'text-blue-600 hover:text-blue-800';
+            a.textContent = '상세';
+            td7.appendChild(a);
+            tr.appendChild(td7);
+
+            tbody.appendChild(tr);
+        });
+
+        document.getElementById('totalItems').textContent = Number(result.data.pagination.total_items).toLocaleString();
         renderPagination(result.data.pagination);
-        
+
     } catch (error) {
         console.error('Failed to load members:', error);
-        document.getElementById('membersTableBody').innerHTML = 
-            '<tr><td colspan="7" class="px-3 py-3 text-center text-red-500">회원 목록을 불러오는데 실패했습니다.</td></tr>';
+        var tbody = document.getElementById('membersTableBody');
+        while (tbody.firstChild) tbody.removeChild(tbody.firstChild);
+        var tr = document.createElement('tr');
+        var td = document.createElement('td');
+        td.colSpan = 7;
+        td.className = 'px-2 py-1 text-center text-red-500 text-xs';
+        td.textContent = '회원 목록을 불러오는데 실패했습니다.';
+        tr.appendChild(td);
+        tbody.appendChild(tr);
     }
 }
 
 function renderPagination(pagination) {
-    const container = document.getElementById('paginationButtons');
-    const buttons = [];
-    
-    if (pagination.current_page > 1) {
-        buttons.push(`<button onclick="loadMembers(${pagination.current_page - 1})" class="px-3 py-1 border border-gray-300 rounded hover:bg-gray-50">이전</button>`);
+    var container = document.getElementById('paginationButtons');
+    while (container.firstChild) container.removeChild(container.firstChild);
+
+    var cur = pagination.current_page;
+    var total = pagination.total_pages;
+    if (total <= 1) return;
+
+    var btnBase = 'text-xs rounded border transition-colors ';
+    var btnNavCls = btnBase + 'px-2 py-1 border-gray-300 text-gray-500 hover:bg-gray-50 disabled:opacity-40 disabled:cursor-not-allowed';
+    var btnActiveCls = btnBase + 'px-2.5 py-1 border-blue-600 bg-blue-600 text-white font-medium';
+    var btnNormalCls = btnBase + 'px-2.5 py-1 border-gray-300 text-gray-700 hover:bg-gray-50';
+
+    function makeBtn(label, page, cls, disabled) {
+        var btn = document.createElement('button');
+        btn.className = cls;
+        btn.textContent = label;
+        if (disabled) btn.disabled = true;
+        else btn.addEventListener('click', function() { loadMembers(page); });
+        return btn;
     }
-    
-    for (let i = Math.max(1, pagination.current_page - 2); i <= Math.min(pagination.total_pages, pagination.current_page + 2); i++) {
-        const active = i === pagination.current_page ? 'bg-blue-600 text-white' : 'bg-white text-gray-700 hover:bg-gray-50';
-        buttons.push(`<button onclick="loadMembers(${i})" class="px-3 py-1 border border-gray-300 rounded ${active}">${i}</button>`);
+
+    function makeDots() {
+        var span = document.createElement('span');
+        span.className = 'px-1 text-gray-400';
+        span.textContent = '\u2026';
+        return span;
     }
-    
-    if (pagination.current_page < pagination.total_pages) {
-        buttons.push(`<button onclick="loadMembers(${pagination.current_page + 1})" class="px-3 py-1 border border-gray-300 rounded hover:bg-gray-50">다음</button>`);
+
+    container.appendChild(makeBtn('\u00AB', 1, btnNavCls, cur === 1));
+    container.appendChild(makeBtn('\u2039', cur - 1, btnNavCls, cur === 1));
+
+    var delta = 2;
+    var left = cur - delta, right = cur + delta;
+    var pages = [1];
+    if (left > 3) pages.push('...');
+    else for (var i = 2; i < left; i++) pages.push(i);
+    for (var i = Math.max(2, left); i <= Math.min(total - 1, right); i++) pages.push(i);
+    if (right < total - 2) pages.push('...');
+    else for (var i = right + 1; i < total; i++) pages.push(i);
+    if (total > 1) pages.push(total);
+
+    var seen = {};
+    for (var j = 0; j < pages.length; j++) {
+        var p = pages[j];
+        if (p === '...') { container.appendChild(makeDots()); }
+        else if (!seen[p]) {
+            seen[p] = true;
+            container.appendChild(makeBtn(String(p), p, p === cur ? btnActiveCls : btnNormalCls, false));
+        }
     }
-    
-    container.innerHTML = buttons.join('');
+
+    container.appendChild(makeBtn('\u203A', cur + 1, btnNavCls, cur === total));
+    container.appendChild(makeBtn('\u00BB', total, btnNavCls, cur === total));
 }
 
 document.getElementById('searchBtn').addEventListener('click', function() {
@@ -136,9 +208,7 @@ document.getElementById('searchBtn').addEventListener('click', function() {
 });
 
 document.getElementById('searchInput').addEventListener('keypress', function(e) {
-    if (e.key === 'Enter') {
-        document.getElementById('searchBtn').click();
-    }
+    if (e.key === 'Enter') document.getElementById('searchBtn').click();
 });
 
 loadMembers(1);
