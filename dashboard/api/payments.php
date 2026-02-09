@@ -21,7 +21,7 @@ function handleList() {
     $method = $_GET['method'] ?? 'all';
     $search = $_GET['search'] ?? '';
     
-    $limit = 30;
+    $limit = 18;
     $offset = ($page - 1) * $limit;
     
     $where = [];

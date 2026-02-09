@@ -82,11 +82,8 @@ include __DIR__ . '/../includes/sidebar.php';
                     </button>
                 </div>
             </div>
-            <div id="pagination" class="px-3 py-1.5 border-t border-gray-200 flex items-center justify-between"
-                <div class="text-xs text-gray-600">
-                    총 <span id="totalItems" class="font-semibold text-gray-900">0</span>건
-                    <span id="pageInfo" class="ml-2 text-gray-400"></span>
-                </div>
+            <div id="pagination" class="px-3 py-1.5 border-t border-gray-200 flex items-center justify-between text-xs">
+                <span class="text-gray-500">총 <span id="totalItems">0</span>건</span>
                 <div id="paginationButtons" class="flex items-center gap-1">
                 </div>
             </div>
@@ -242,7 +239,7 @@ async function loadOrders(page = 1) {
 
         updateSelectionUI();
         
-        document.getElementById('totalItems').textContent = result.data.pagination.total_items;
+        document.getElementById('totalItems').textContent = Number(result.data.pagination.total_items).toLocaleString();
         
         renderPagination(result.data.pagination);
         
@@ -264,21 +261,16 @@ function renderPagination(pagination) {
     var container = document.getElementById('paginationButtons');
     var cur = pagination.current_page;
     var total = pagination.total_pages;
-    var pageInfo = document.getElementById('pageInfo');
-
     while (container.firstChild) container.removeChild(container.firstChild);
 
     if (total <= 1) {
-        pageInfo.textContent = '';
         return;
     }
 
-    pageInfo.textContent = '(' + cur + ' / ' + total + ' 페이지)';
-
-    var btnBase = 'min-w-[32px] h-8 text-sm rounded border transition-colors ';
-    var btnNavCls = btnBase + 'px-2 border-gray-300 text-gray-500 hover:bg-gray-100 hover:text-gray-700 disabled:opacity-40 disabled:cursor-not-allowed disabled:hover:bg-white';
-    var btnActiveCls = btnBase + 'px-1 border-blue-600 bg-blue-600 text-white font-semibold';
-    var btnNormalCls = btnBase + 'px-1 border-gray-300 text-gray-700 hover:bg-gray-50';
+    var btnBase = 'text-xs rounded border transition-colors ';
+    var btnNavCls = btnBase + 'px-2 py-1 border-gray-300 text-gray-500 hover:bg-gray-50 disabled:opacity-40 disabled:cursor-not-allowed disabled:hover:bg-white';
+    var btnActiveCls = btnBase + 'px-2.5 py-1 border-blue-600 bg-blue-600 text-white font-medium';
+    var btnNormalCls = btnBase + 'px-2.5 py-1 border-gray-300 text-gray-700 hover:bg-gray-50';
 
     function makeBtn(label, page, cls, disabled) {
         var btn = document.createElement('button');
