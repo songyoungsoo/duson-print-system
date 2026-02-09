@@ -88,37 +88,37 @@ async function loadMembers(page) {
             tr.className = 'hover:bg-gray-50';
 
             var td1 = document.createElement('td');
-            td1.className = 'px-2 py-1 whitespace-nowrap text-xs font-medium text-gray-900';
+            td1.className = 'px-2 py-2 whitespace-nowrap text-xs font-medium text-gray-900';
             td1.textContent = m.id;
             tr.appendChild(td1);
 
             var td2 = document.createElement('td');
-            td2.className = 'px-2 py-1 whitespace-nowrap text-xs text-gray-900';
+            td2.className = 'px-2 py-2 whitespace-nowrap text-xs text-gray-900';
             td2.textContent = m.username;
             tr.appendChild(td2);
 
             var td3 = document.createElement('td');
-            td3.className = 'px-2 py-1 whitespace-nowrap text-xs text-gray-600';
+            td3.className = 'px-2 py-2 whitespace-nowrap text-xs text-gray-600';
             td3.textContent = m.name;
             tr.appendChild(td3);
 
             var td4 = document.createElement('td');
-            td4.className = 'px-2 py-1 whitespace-nowrap text-xs text-gray-600';
+            td4.className = 'px-2 py-2 whitespace-nowrap text-xs text-gray-600';
             td4.textContent = m.email || '-';
             tr.appendChild(td4);
 
             var td5 = document.createElement('td');
-            td5.className = 'px-2 py-1 whitespace-nowrap text-xs text-gray-600';
+            td5.className = 'px-2 py-2 whitespace-nowrap text-xs text-gray-600';
             td5.textContent = m.phone || '-';
             tr.appendChild(td5);
 
             var td6 = document.createElement('td');
-            td6.className = 'px-2 py-1 whitespace-nowrap text-xs text-gray-500';
+            td6.className = 'px-2 py-2 whitespace-nowrap text-xs text-gray-500';
             td6.textContent = m.created_at || '-';
             tr.appendChild(td6);
 
             var td7 = document.createElement('td');
-            td7.className = 'px-2 py-1 whitespace-nowrap text-center text-xs';
+            td7.className = 'px-2 py-2 whitespace-nowrap text-center text-xs';
             var a = document.createElement('a');
             a.href = '/dashboard/members/view.php?id=' + encodeURIComponent(m.id);
             a.className = 'text-blue-600 hover:text-blue-800';
