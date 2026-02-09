@@ -1,0 +1,2 @@
+RewriteEngine On
+RewriteRule ^MlangOrder_PrintAuto/(.*)$ mlangorder_printauto/$1 [L]

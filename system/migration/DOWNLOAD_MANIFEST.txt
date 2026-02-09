@@ -1,0 +1,38 @@
+=== MIGRATION DIRECTORY DOWNLOAD MANIFEST ===
+Downloaded: 2026-02-02 11:48 UTC
+Source: ftp://dsp114.co.kr/httpdocs/system/migration/
+Destination: /var/www/html/system/migration/
+
+FILES DOWNLOADED:
+1. MigrationSync.php (17,781 bytes)
+   - Database migration synchronization class
+   - Handles member/users table sync
+   - File sync for imgfolder and upload directories
+
+2. index.php (18,214 bytes)
+   - Migration UI interface
+   - Password-protected access (duson2026!migration)
+   - Displays sync status and logs
+
+3. logs/sync_2026-02-01.log (445 bytes)
+   - Latest sync log from Feb 1, 2026
+   - Shows member sync: 363 skipped, 0 errors
+   - File sync: 0 downloaded, 0 errors
+
+DIRECTORY STRUCTURE:
+/var/www/html/system/migration/
+├── MigrationSync.php
+├── index.php
+├── logs/
+│   └── sync_2026-02-01.log
+└── DOWNLOAD_MANIFEST.txt (this file)
+
+PERMISSIONS:
+- Directories: 755 (rwxr-xr-x)
+- Files: 644 (rw-r--r--)
+
+VERIFICATION STATUS: ✅ COMPLETE
+- All files downloaded successfully
+- File contents verified (valid PHP)
+- Permissions set correctly
+- Ready for local development/testing
