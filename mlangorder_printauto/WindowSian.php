@@ -69,16 +69,17 @@ if ($row) {
     }
 
     // 이미지 경로 찾기 (폴백 순서: 교정이미지 → ImgFolder → uploaded_files)
+    // 모든 이미지 URL은 view_proof.php 프록시를 통해 서빙 (nginx 이미지 가로채기 우회)
     $found_image_path = '';
     $found_image_url = '';
     $image_source = '';
 
-    // 1. 교정 이미지 경로 확인 (./upload/$no/$ThingCate)
+    // 1. 교정 이미지 경로 확인 (__DIR__ 기반 절대경로)
     if (!empty($ImgFile)) {
-        $proof_image_path = "./upload/$no/$ImgFile";
+        $proof_image_path = __DIR__ . "/upload/$no/$ImgFile";
         if (file_exists($proof_image_path)) {
             $found_image_path = $proof_image_path;
-            $found_image_url = "./upload/$no/$ImgFile";
+            $found_image_url = '/mlangorder_printauto/view_proof.php?no=' . $no . '&file=' . urlencode($ImgFile);
             $image_source = 'proof';
         }
     }
@@ -87,14 +88,13 @@ if ($row) {
     if (empty($found_image_path) && !empty($ImgFolder)) {
         // 2-1. 레거시 경로 처리 (../shop/data/파일명)
         if (strpos($ImgFolder, '../shop/data/') === 0) {
-            // 레거시 경로에서 파일명 추출
             $legacy_filename = basename($ImgFolder);
             $legacy_path = $_SERVER['DOCUMENT_ROOT'] . '/shop/data/' . $legacy_filename;
             if (file_exists($legacy_path)) {
                 $ext = strtolower(pathinfo($legacy_path, PATHINFO_EXTENSION));
                 if (in_array($ext, ['jpg', 'jpeg', 'png', 'gif', 'webp', 'pdf', 'ai', 'psd', 'hwp', 'hwpx'])) {
                     $found_image_path = $legacy_path;
-                    $found_image_url = '/shop/data/' . $legacy_filename;
+                    $found_image_url = '/mlangorder_printauto/view_proof.php?no=' . $no . '&file=' . urlencode($legacy_filename) . '&src=legacy';
                     $image_source = 'legacy';
                 }
             }
@@ -109,19 +109,18 @@ if ($row) {
                         $ext = strtolower(pathinfo($file, PATHINFO_EXTENSION));
                         if (in_array($ext, ['jpg', 'jpeg', 'png', 'gif', 'webp', 'pdf', 'ai', 'psd'])) {
                             $found_image_path = $uploads_folder . '/' . $file;
-                            $found_image_url = '/' . $ImgFolder . '/' . $file;
+                            $found_image_url = '/mlangorder_printauto/view_proof.php?no=' . $no . '&file=' . urlencode($file) . '&src=uploads';
                             $image_source = 'uploads_orders';
                             break;
                         }
                     }
                 }
             }
-            // 폴더에 파일이 없으면 ThingCate에서 파일명으로 검색
             if (empty($found_image_path) && !empty($ImgFile)) {
                 $thingcate_path = $uploads_folder . '/' . $ImgFile;
                 if (file_exists($thingcate_path)) {
                     $found_image_path = $thingcate_path;
-                    $found_image_url = '/' . $ImgFolder . '/' . $ImgFile;
+                    $found_image_url = '/mlangorder_printauto/view_proof.php?no=' . $no . '&file=' . urlencode($ImgFile) . '&src=uploads';
                     $image_source = 'uploads_orders';
                 }
             }
@@ -136,7 +135,7 @@ if ($row) {
                         $ext = strtolower(pathinfo($file, PATHINFO_EXTENSION));
                         if (in_array($ext, ['jpg', 'jpeg', 'png', 'gif', 'webp', 'pdf'])) {
                             $found_image_path = $img_folder_base . '/' . $file;
-                            $found_image_url = '/ImgFolder/' . $ImgFolder . '/' . $file;
+                            $found_image_url = '/mlangorder_printauto/view_proof.php?no=' . $no . '&file=' . urlencode($file) . '&src=imgfolder&folder=' . urlencode($ImgFolder);
                             $image_source = 'imgfolder';
                             break;
                         }
@@ -144,7 +143,7 @@ if ($row) {
                 }
             }
         }
-        // 2-3. 기타 ImgFolder 경로
+        // 2-4. 기타 ImgFolder 경로
         else {
             $img_folder_base = $_SERVER['DOCUMENT_ROOT'] . '/ImgFolder/' . $ImgFolder;
             if (is_dir($img_folder_base)) {
@@ -154,7 +153,7 @@ if ($row) {
                         $ext = strtolower(pathinfo($file, PATHINFO_EXTENSION));
                         if (in_array($ext, ['jpg', 'jpeg', 'png', 'gif', 'webp', 'pdf'])) {
                             $found_image_path = $img_folder_base . '/' . $file;
-                            $found_image_url = '/ImgFolder/' . $ImgFolder . '/' . $file;
+                            $found_image_url = '/mlangorder_printauto/view_proof.php?no=' . $no . '&file=' . urlencode($file) . '&src=imgfolder&folder=' . urlencode($ImgFolder);
                             $image_source = 'imgfolder';
                             break;
                         }
@@ -175,7 +174,7 @@ if ($row) {
                     $ext = strtolower(pathinfo($file_path, PATHINFO_EXTENSION));
                     if (in_array($ext, ['jpg', 'jpeg', 'png', 'gif', 'webp', 'pdf'])) {
                         $found_image_path = $file_path;
-                        $found_image_url = $web_url;
+                        $found_image_url = '/mlangorder_printauto/view_proof.php?no=' . $no . '&file=' . urlencode(basename($file_path)) . '&src=uploaded';
                         $image_source = 'uploaded_files';
                         break;
                     }

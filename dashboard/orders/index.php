@@ -13,60 +13,42 @@ include __DIR__ . '/../includes/sidebar.php';
             <p class="mt-1 text-sm text-gray-600">주문 목록 조회 및 상태 관리</p>
         </div>
 
-        <div class="bg-white rounded-lg shadow p-4 mb-4">
-            <div class="grid grid-cols-1 md:grid-cols-4 gap-4">
-                <div>
-                    <label class="block text-sm font-medium text-gray-700 mb-2">기간</label>
-                    <select id="periodFilter" class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500">
-                        <option value="">전체</option>
-                        <option value="today">오늘</option>
-                        <option value="7days">최근 7일</option>
-                        <option value="30days" selected>최근 30일</option>
-                        <option value="3months">최근 3개월</option>
-                    </select>
+        <div class="bg-white rounded-lg shadow p-3 mb-4">
+            <div class="flex flex-wrap items-center gap-2">
+                <select id="periodFilter" class="px-3 py-1.5 text-sm border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500">
+                    <option value="">기간: 전체</option>
+                    <option value="today">오늘</option>
+                    <option value="7days">최근 7일</option>
+                    <option value="30days" selected>최근 30일</option>
+                    <option value="3months">최근 3개월</option>
+                </select>
+                <select id="statusFilter" class="px-3 py-1.5 text-sm border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500">
+                    <option value="">상태: 전체</option>
+                    <option value="1">견적접수</option>
+                    <option value="2">주문접수</option>
+                    <option value="3">접수완료</option>
+                    <option value="4">입금대기</option>
+                    <option value="5">시안제작중</option>
+                    <option value="6">시안</option>
+                    <option value="7">교정</option>
+                    <option value="8">작업완료</option>
+                    <option value="9">작업중</option>
+                    <option value="10">교정작업중</option>
+                    <option value="deleted">삭제됨</option>
+                </select>
+                <select id="productFilter" class="px-3 py-1.5 text-sm border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500">
+                    <option value="">품목: 전체</option>
+                    <option value="스티커">스티커</option>
+                    <option value="명함">명함</option>
+                    <option value="전단지">전단지</option>
+                    <option value="봉투">봉투</option>
+                    <option value="포스터">포스터</option>
+                </select>
+                <div class="flex-1 min-w-[200px]">
+                    <input type="text" id="searchInput" placeholder="주문번호, 이름, 이메일"
+                           class="w-full px-3 py-1.5 text-sm border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500">
                 </div>
-
-                <div>
-                    <label class="block text-sm font-medium text-gray-700 mb-2">상태</label>
-                    <select id="statusFilter" class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500">
-                        <option value="">전체</option>
-                        <option value="1">견적접수</option>
-                        <option value="2">주문접수</option>
-                        <option value="3">접수완료</option>
-                        <option value="4">입금대기</option>
-                        <option value="5">시안제작중</option>
-                        <option value="6">시안</option>
-                        <option value="7">교정</option>
-                        <option value="8">작업완료</option>
-                        <option value="9">작업중</option>
-                        <option value="10">교정작업중</option>
-                        <option value="deleted">삭제됨</option>
-                    </select>
-                </div>
-
-                <div>
-                    <label class="block text-sm font-medium text-gray-700 mb-2">품목</label>
-                    <select id="productFilter" class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500">
-                        <option value="">전체</option>
-                        <option value="스티커">스티커</option>
-                        <option value="명함">명함</option>
-                        <option value="전단지">전단지</option>
-                        <option value="봉투">봉투</option>
-                        <option value="포스터">포스터</option>
-                    </select>
-                </div>
-
-                <div>
-                    <label class="block text-sm font-medium text-gray-700 mb-2">검색</label>
-                    <input type="text" id="searchInput" placeholder="주문번호, 이름, 이메일" 
-                           class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500">
-                </div>
-            </div>
-
-            <div class="mt-4 flex justify-end">
-                <button id="searchBtn" class="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors">
-                    검색
-                </button>
+                <button id="searchBtn" class="px-4 py-1.5 text-sm bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors">검색</button>
             </div>
         </div>
 

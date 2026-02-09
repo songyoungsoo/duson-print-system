@@ -314,7 +314,10 @@ class ImagePathResolver {
         }
 
         // 4. 폴백: 디렉토리 스캔 (ImgFolder)
-        if (empty($result['files']) && !empty($row['ImgFolder'])) {
+        // 공유 디렉토리(shop/data/)는 여러 주문이 사용하므로 스캔 제외
+        $img_folder_val = trim($row['ImgFolder'] ?? '');
+        $is_shared_dir = preg_match('/^\.\.\/shop\/data\/?$/', $img_folder_val);
+        if (empty($result['files']) && !empty($row['ImgFolder']) && !$is_shared_dir) {
             // 날짜 필터 확인
             $year = self::extractYearFromPath($row['ImgFolder']);
             $year_int = $year ? intval($year) : 0;
@@ -327,7 +330,14 @@ class ImagePathResolver {
             } else {
                 // 디렉토리 스캔
                 $dir = $_SERVER['DOCUMENT_ROOT'] . '/ImgFolder/' . $row['ImgFolder'] . '/';
-                if (is_dir($dir)) {
+                // realpath로 공유 디렉토리 이중 확인 (path traversal 방지)
+                $real_dir = realpath($dir);
+                $shared_dirs = [
+                    realpath($_SERVER['DOCUMENT_ROOT'] . '/shop/data'),
+                    realpath($_SERVER['DOCUMENT_ROOT'] . '/shop'),
+                ];
+                $is_shared = $real_dir && in_array($real_dir, $shared_dirs);
+                if (!$is_shared && is_dir($dir)) {
                     $scanned_files = scandir($dir);
                     foreach ($scanned_files as $file) {
                         if ($file !== '.' && $file !== '..' && is_file($dir . $file)) {
