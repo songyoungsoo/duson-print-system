@@ -611,6 +611,7 @@ include $_SERVER['DOCUMENT_ROOT'] . '/includes/header-ui.php';
                             <th style="width: 100px; text-align: right;">총금액</th>
                             <th style="width: 90px; text-align: center;">주문일자</th>
                             <th style="width: 70px; text-align: center;">상태</th>
+                            <th style="width: 70px; text-align: center;">배송</th>
                         </tr>
                     </thead>
                     <tbody>
@@ -725,6 +726,18 @@ include $_SERVER['DOCUMENT_ROOT'] . '/includes/header-ui.php';
                                 $status = $level_status_map[$status_code] ?? ['text' => '주문접수', 'color' => '#6c757d'];
                                 ?>
                                 <span style="color: <?php echo $status['color']; ?>; font-weight: 500;"><?php echo $status['text']; ?></span>
+                            </td>
+                            <td style="text-align: center;">
+                                <?php
+                                $tracking = $order['waybill_no'] ?? $order['logen_tracking_no'] ?? '';
+                                if (!empty($tracking)):
+                                ?>
+                                <a href="https://www.ilogen.com/web/personal/trace/<?php echo urlencode($tracking); ?>"
+                                   target="_blank"
+                                   style="color: #667eea; text-decoration: none; font-size: 12px; white-space: nowrap;">
+                                   배송조회
+                                </a>
+                                <?php endif; ?>
                             </td>
                         </tr>
                         <?php endforeach; ?>

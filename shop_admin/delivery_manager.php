@@ -284,12 +284,23 @@ if ($action === 'import_waybill' && isset($_FILES['waybill_file'])) {
                     // 데이터 행부터 처리
                     $data_rows = array_slice($rows, $data_row_idx);
 
-                    // 컬럼 인덱스 찾기 (이름/전화/주소/운송장 자동 감지)
+                    // 컬럼 인덱스 찾기 (주문번호/이름/전화/주소/운송장 자동 감지)
                     $waybill_col = -1;
                     $name_col = -1;
                     $phone_col = -1;
                     $phone2_col = -1;
                     $addr_col = -1;
+                    $ordno_col = -1;
+
+                    // 헤더 행에서 "주문번호" 또는 "기타" 컬럼 검색
+                    for ($hi = 0; $hi < $data_row_idx && $hi < count($rows); $hi++) {
+                        foreach ($rows[$hi] as $ci => $cv) {
+                            $cv = trim($cv);
+                            if ($ordno_col === -1 && preg_match('/^(주문번호|기타)$/u', $cv)) {
+                                $ordno_col = $ci;
+                            }
+                        }
+                    }
 
                     $scan_limit = min(20, count($data_rows));
                     for ($scan_idx = 0; $scan_idx < $scan_limit; $scan_idx++) {
@@ -301,6 +312,11 @@ if ($action === 'import_waybill' && isset($_FILES['waybill_file'])) {
                             // 운송장번호: 4로 시작하는 11~12자리 숫자
                             if ($waybill_col === -1 && preg_match('/^4[0-9]{10,11}$/', $value)) {
                                 $waybill_col = $idx;
+                            }
+
+                            // 주문번호: 5자리 숫자 (헤더에서 못 찾았을 때 데이터 패턴으로 감지)
+                            if ($ordno_col === -1 && preg_match('/^[0-9]{5,6}$/', $value) && $idx !== ($waybill_col ?? -1)) {
+                                $ordno_col = $idx;
                             }
 
                             // 수하인명: 한글 2~10자
@@ -350,26 +366,32 @@ if ($action === 'import_waybill' && isset($_FILES['waybill_file'])) {
                                  ", 이름=없음, 전화=없음, 주소=없음" .
                                  "<br><br>첫 행 데이터: " . implode(' | ', $debug_cols);
                     } else {
-                        // 매칭 쿼리 준비: 이름 → 전화앞6자리 → 주소 순서
+                        // 매칭 쿼리 준비: 주문번호 → 이름 → 전화앞5자리 → 주소(동/로/길)
+                        $match_by_ordno_stmt = mysqli_prepare($connect,
+                            "SELECT no, name FROM mlangorder_printauto
+                             WHERE no = ?
+                             AND (waybill_no IS NULL OR waybill_no = '')
+                             ORDER BY no ASC LIMIT 1");
+
                         $match_by_name_stmt = mysqli_prepare($connect,
                             "SELECT no, name FROM mlangorder_printauto
                              WHERE name = ?
                              AND (waybill_no IS NULL OR waybill_no = '')
-                             AND date >= DATE_SUB(NOW(), INTERVAL 7 DAY)
+                             AND date >= DATE_SUB(NOW(), INTERVAL 2 DAY)
                              ORDER BY no ASC LIMIT 1");
 
                         $match_by_phone_stmt = mysqli_prepare($connect,
                             "SELECT no, name FROM mlangorder_printauto
-                             WHERE (LEFT(REPLACE(phone,'-',''), 6) = ? OR LEFT(REPLACE(Hendphone,'-',''), 6) = ?)
+                             WHERE (LEFT(REPLACE(phone,'-',''), 5) = ? OR LEFT(REPLACE(Hendphone,'-',''), 5) = ?)
                              AND (waybill_no IS NULL OR waybill_no = '')
-                             AND date >= DATE_SUB(NOW(), INTERVAL 7 DAY)
+                             AND date >= DATE_SUB(NOW(), INTERVAL 2 DAY)
                              ORDER BY no ASC LIMIT 1");
 
                         $match_by_addr_stmt = mysqli_prepare($connect,
                             "SELECT no, name FROM mlangorder_printauto
                              WHERE zip1 LIKE CONCAT('%', ?, '%')
                              AND (waybill_no IS NULL OR waybill_no = '')
-                             AND date >= DATE_SUB(NOW(), INTERVAL 7 DAY)
+                             AND date >= DATE_SUB(NOW(), INTERVAL 2 DAY)
                              ORDER BY no ASC LIMIT 1");
 
                         $update_stmt = mysqli_prepare($connect,
@@ -384,30 +406,42 @@ if ($action === 'import_waybill' && isset($_FILES['waybill_file'])) {
                             $recv_name = ($name_col !== -1 && isset($row[$name_col])) ? trim($row[$name_col]) : '';
                             $recv_phone = ($phone_col !== -1 && isset($row[$phone_col])) ? trim($row[$phone_col]) : '';
                             $recv_addr = ($addr_col !== -1 && isset($row[$addr_col])) ? trim($row[$addr_col]) : '';
+                            $recv_ordno = ($ordno_col !== -1 && isset($row[$ordno_col])) ? trim($row[$ordno_col]) : '';
 
                             if (empty($waybill_no) || !preg_match('/^4[0-9]{10,11}$/', $waybill_no)) {
                                 continue;
                             }
 
+                            $has_ordno = preg_match('/^[0-9]{5,6}$/', $recv_ordno);
                             $has_name = (mb_strlen($recv_name) >= 2);
                             $phone_clean = preg_replace('/[^0-9]/', '', $recv_phone);
-                            $phone6 = substr($phone_clean, 0, 6);
-                            $has_phone = (strlen($phone6) >= 6);
-                            // 주소 키워드: 첫 번째 공백 전까지 (시/구/동 등)
+                            $phone5 = substr($phone_clean, 0, 5);
+                            $has_phone = (strlen($phone5) >= 5);
+                            // 주소 키워드: 동/로/길 추출
                             $addr_keyword = '';
                             if (!empty($recv_addr)) {
-                                $addr_parts = preg_split('/\s+/', $recv_addr);
-                                // 시/도 + 구/군 합쳐서 검색 키워드
-                                $addr_keyword = isset($addr_parts[1]) ? $addr_parts[0] . ' ' . $addr_parts[1] : $addr_parts[0];
+                                if (preg_match('/([가-힣]+(?:동|로|길))\b/u', $recv_addr, $addr_m)) {
+                                    $addr_keyword = $addr_m[1];
+                                }
                             }
-                            $has_addr = (mb_strlen($addr_keyword) >= 4);
+                            $has_addr = (mb_strlen($addr_keyword) >= 2);
 
-                            if (!$has_name && !$has_phone && !$has_addr) { $skipped++; continue; }
+                            if (!$has_ordno && !$has_name && !$has_phone && !$has_addr) { $skipped++; continue; }
 
-                            // 1순위: 이름
+                            // 1순위: 주문번호
                             $matched = null;
                             $method = '';
-                            if ($has_name) {
+                            if ($has_ordno) {
+                                $ordno_int = intval($recv_ordno);
+                                mysqli_stmt_bind_param($match_by_ordno_stmt, "i", $ordno_int);
+                                mysqli_stmt_execute($match_by_ordno_stmt);
+                                $match_result = mysqli_stmt_get_result($match_by_ordno_stmt);
+                                $matched = mysqli_fetch_assoc($match_result);
+                                if ($matched) $method = '주문번호';
+                            }
+
+                            // 2순위: 이름
+                            if (!$matched && $has_name) {
                                 mysqli_stmt_bind_param($match_by_name_stmt, "s", $recv_name);
                                 mysqli_stmt_execute($match_by_name_stmt);
                                 $match_result = mysqli_stmt_get_result($match_by_name_stmt);
@@ -415,16 +449,16 @@ if ($action === 'import_waybill' && isset($_FILES['waybill_file'])) {
                                 if ($matched) $method = '이름';
                             }
 
-                            // 2순위: 전화번호 앞6자리
+                            // 3순위: 전화번호 앞5자리
                             if (!$matched && $has_phone) {
-                                mysqli_stmt_bind_param($match_by_phone_stmt, "ss", $phone6, $phone6);
+                                mysqli_stmt_bind_param($match_by_phone_stmt, "ss", $phone5, $phone5);
                                 mysqli_stmt_execute($match_by_phone_stmt);
                                 $match_result = mysqli_stmt_get_result($match_by_phone_stmt);
                                 $matched = mysqli_fetch_assoc($match_result);
                                 if ($matched) $method = '전화';
                             }
 
-                            // 3순위: 주소
+                            // 4순위: 주소 (동/로/길)
                             if (!$matched && $has_addr) {
                                 mysqli_stmt_bind_param($match_by_addr_stmt, "s", $addr_keyword);
                                 mysqli_stmt_execute($match_by_addr_stmt);
@@ -453,6 +487,7 @@ if ($action === 'import_waybill' && isset($_FILES['waybill_file'])) {
                             }
                         }
 
+                        mysqli_stmt_close($match_by_ordno_stmt);
                         mysqli_stmt_close($match_by_name_stmt);
                         mysqli_stmt_close($match_by_phone_stmt);
                         mysqli_stmt_close($match_by_addr_stmt);
@@ -460,6 +495,7 @@ if ($action === 'import_waybill' && isset($_FILES['waybill_file'])) {
 
                         // 결과 메시지
                         $detect_info = "감지: 운송장=컬럼" . ($waybill_col+1);
+                        if ($ordno_col !== -1) $detect_info .= " / 주문번호=컬럼" . ($ordno_col+1);
                         if ($name_col !== -1) $detect_info .= " / 이름=컬럼" . ($name_col+1);
                         if ($phone_col !== -1) $detect_info .= " / 전화=컬럼" . ($phone_col+1);
                         if ($addr_col !== -1) $detect_info .= " / 주소=컬럼" . ($addr_col+1);
@@ -525,10 +561,23 @@ if ($action === 'import_waybill' && isset($_FILES['waybill_file'])) {
         if ($data_line_idx === -1) {
             $error = "데이터 줄을 찾을 수 없습니다. 파일 형식을 확인해주세요.";
         } else {
+            // 헤더 행에서 "주문번호" 또는 "기타" 컬럼 검색
+            $ordno_col = -1;
+            $all_lines = $lines; // 헤더 포함 원본 보존
             // 데이터 줄부터 시작
             $lines = array_slice($lines, $data_line_idx);
 
-            // 컬럼 인덱스 찾기 (이름/전화/주소/운송장 자동 감지)
+            for ($hi = 0; $hi < $data_line_idx; $hi++) {
+                $hrow = str_getcsv($all_lines[$hi], "\t");
+                foreach ($hrow as $ci => $cv) {
+                    $cv = trim($cv);
+                    if ($ordno_col === -1 && preg_match('/^(주문번호|기타)$/u', $cv)) {
+                        $ordno_col = $ci;
+                    }
+                }
+            }
+
+            // 컬럼 인덱스 찾기 (주문번호/이름/전화/주소/운송장 자동 감지)
             $waybill_col = -1;
             $name_col = -1;
             $phone_col = -1;
@@ -544,6 +593,11 @@ if ($action === 'import_waybill' && isset($_FILES['waybill_file'])) {
 
                     if ($waybill_col === -1 && preg_match('/^4[0-9]{10,11}$/', $value)) {
                         $waybill_col = $idx;
+                    }
+
+                    // 주문번호: 5자리 숫자 (헤더에서 못 찾았을 때 데이터 패턴으로 감지)
+                    if ($ordno_col === -1 && preg_match('/^[0-9]{5,6}$/', $value) && $idx !== ($waybill_col ?? -1)) {
+                        $ordno_col = $idx;
                     }
 
                     if ($name_col === -1 && preg_match('/^[가-힣]{2,10}$/u', $value)) {
@@ -588,25 +642,32 @@ if ($action === 'import_waybill' && isset($_FILES['waybill_file'])) {
                          ", 이름=없음, 전화=없음, 주소=없음" .
                          "<br><br>첫 행 데이터: " . implode(' | ', $debug_cols);
             } else {
+            // 매칭 쿼리 준비: 주문번호 → 이름 → 전화앞5자리 → 주소(동/로/길)
+            $match_by_ordno_stmt = mysqli_prepare($connect,
+                "SELECT no, name FROM mlangorder_printauto
+                 WHERE no = ?
+                 AND (waybill_no IS NULL OR waybill_no = '')
+                 ORDER BY no ASC LIMIT 1");
+
             $match_by_name_stmt = mysqli_prepare($connect,
                 "SELECT no, name FROM mlangorder_printauto
                  WHERE name = ?
                  AND (waybill_no IS NULL OR waybill_no = '')
-                 AND date >= DATE_SUB(NOW(), INTERVAL 7 DAY)
+                 AND date >= DATE_SUB(NOW(), INTERVAL 2 DAY)
                  ORDER BY no ASC LIMIT 1");
 
             $match_by_phone_stmt = mysqli_prepare($connect,
                 "SELECT no, name FROM mlangorder_printauto
-                 WHERE (LEFT(REPLACE(phone,'-',''), 6) = ? OR LEFT(REPLACE(Hendphone,'-',''), 6) = ?)
+                 WHERE (LEFT(REPLACE(phone,'-',''), 5) = ? OR LEFT(REPLACE(Hendphone,'-',''), 5) = ?)
                  AND (waybill_no IS NULL OR waybill_no = '')
-                 AND date >= DATE_SUB(NOW(), INTERVAL 7 DAY)
+                 AND date >= DATE_SUB(NOW(), INTERVAL 2 DAY)
                  ORDER BY no ASC LIMIT 1");
 
             $match_by_addr_stmt = mysqli_prepare($connect,
                 "SELECT no, name FROM mlangorder_printauto
                  WHERE zip1 LIKE CONCAT('%', ?, '%')
                  AND (waybill_no IS NULL OR waybill_no = '')
-                 AND date >= DATE_SUB(NOW(), INTERVAL 7 DAY)
+                 AND date >= DATE_SUB(NOW(), INTERVAL 2 DAY)
                  ORDER BY no ASC LIMIT 1");
 
             $update_stmt = mysqli_prepare($connect,
@@ -625,25 +686,40 @@ if ($action === 'import_waybill' && isset($_FILES['waybill_file'])) {
                 $recv_name = ($name_col !== -1 && isset($cols[$name_col])) ? trim($cols[$name_col]) : '';
                 $recv_phone = ($phone_col !== -1 && isset($cols[$phone_col])) ? trim($cols[$phone_col]) : '';
                 $recv_addr = ($addr_col !== -1 && isset($cols[$addr_col])) ? trim($cols[$addr_col]) : '';
+                $recv_ordno = ($ordno_col !== -1 && isset($cols[$ordno_col])) ? trim($cols[$ordno_col]) : '';
 
                 if (empty($waybill_no) || !preg_match('/^4[0-9]{10,11}$/', $waybill_no)) continue;
 
+                $has_ordno = preg_match('/^[0-9]{5,6}$/', $recv_ordno);
                 $has_name = (mb_strlen($recv_name) >= 2);
                 $phone_clean = preg_replace('/[^0-9]/', '', $recv_phone);
-                $phone6 = substr($phone_clean, 0, 6);
-                $has_phone = (strlen($phone6) >= 6);
+                $phone5 = substr($phone_clean, 0, 5);
+                $has_phone = (strlen($phone5) >= 5);
+                // 주소 키워드: 동/로/길 추출
                 $addr_keyword = '';
                 if (!empty($recv_addr)) {
-                    $addr_parts = preg_split('/\s+/', $recv_addr);
-                    $addr_keyword = isset($addr_parts[1]) ? $addr_parts[0] . ' ' . $addr_parts[1] : $addr_parts[0];
+                    if (preg_match('/([가-힣]+(?:동|로|길))\b/u', $recv_addr, $addr_m)) {
+                        $addr_keyword = $addr_m[1];
+                    }
                 }
-                $has_addr = (mb_strlen($addr_keyword) >= 4);
+                $has_addr = (mb_strlen($addr_keyword) >= 2);
 
-                if (!$has_name && !$has_phone && !$has_addr) { $skipped++; continue; }
+                if (!$has_ordno && !$has_name && !$has_phone && !$has_addr) { $skipped++; continue; }
 
+                // 1순위: 주문번호
                 $matched = null;
                 $method = '';
-                if ($has_name) {
+                if ($has_ordno) {
+                    $ordno_int = intval($recv_ordno);
+                    mysqli_stmt_bind_param($match_by_ordno_stmt, "i", $ordno_int);
+                    mysqli_stmt_execute($match_by_ordno_stmt);
+                    $match_result = mysqli_stmt_get_result($match_by_ordno_stmt);
+                    $matched = mysqli_fetch_assoc($match_result);
+                    if ($matched) $method = '주문번호';
+                }
+
+                // 2순위: 이름
+                if (!$matched && $has_name) {
                     mysqli_stmt_bind_param($match_by_name_stmt, "s", $recv_name);
                     mysqli_stmt_execute($match_by_name_stmt);
                     $match_result = mysqli_stmt_get_result($match_by_name_stmt);
@@ -651,14 +727,16 @@ if ($action === 'import_waybill' && isset($_FILES['waybill_file'])) {
                     if ($matched) $method = '이름';
                 }
 
+                // 3순위: 전화번호 앞5자리
                 if (!$matched && $has_phone) {
-                    mysqli_stmt_bind_param($match_by_phone_stmt, "ss", $phone6, $phone6);
+                    mysqli_stmt_bind_param($match_by_phone_stmt, "ss", $phone5, $phone5);
                     mysqli_stmt_execute($match_by_phone_stmt);
                     $match_result = mysqli_stmt_get_result($match_by_phone_stmt);
                     $matched = mysqli_fetch_assoc($match_result);
                     if ($matched) $method = '전화';
                 }
 
+                // 4순위: 주소 (동/로/길)
                 if (!$matched && $has_addr) {
                     mysqli_stmt_bind_param($match_by_addr_stmt, "s", $addr_keyword);
                     mysqli_stmt_execute($match_by_addr_stmt);
@@ -683,6 +761,7 @@ if ($action === 'import_waybill' && isset($_FILES['waybill_file'])) {
                 }
             }
 
+            mysqli_stmt_close($match_by_ordno_stmt);
             mysqli_stmt_close($match_by_name_stmt);
             mysqli_stmt_close($match_by_phone_stmt);
             mysqli_stmt_close($match_by_addr_stmt);
@@ -691,9 +770,16 @@ if ($action === 'import_waybill' && isset($_FILES['waybill_file'])) {
             $method_info = [];
             foreach ($match_methods as $m => $cnt) { $method_info[] = "{$m}:{$cnt}건"; }
 
+            $detect_info = "감지: 운송장=컬럼" . ($waybill_col+1);
+            if ($ordno_col !== -1) $detect_info .= " / 주문번호=컬럼" . ($ordno_col+1);
+            if ($name_col !== -1) $detect_info .= " / 이름=컬럼" . ($name_col+1);
+            if ($phone_col !== -1) $detect_info .= " / 전화=컬럼" . ($phone_col+1);
+            if ($addr_col !== -1) $detect_info .= " / 주소=컬럼" . ($addr_col+1);
+
             $message = "✅ 운송장 등록 완료: {$updated}건 성공, {$failed}건 실패";
             if ($skipped > 0) $message .= ", {$skipped}건 스킵";
             if (!empty($method_info)) $message .= "<br>매칭방법: " . implode(", ", $method_info);
+            $message .= "<br><small style='color:#666;'>{$detect_info}</small>";
             if (count($errors) > 0) {
                 $message .= "<br><small style='color:#d97706;'>" . implode("<br>", $errors) . "</small>";
             }
@@ -742,8 +828,8 @@ if ($stats_result) {
         .stat-box .number { font-size: 22px; font-weight: bold; }
         .stat-box .label { font-size: 11px; opacity: 0.95; }
 
-        /* 3열 레이아웃 */
-        .form-grid { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 10px; margin-bottom: 10px; }
+        /* <?php echo in_array($_SERVER['SERVER_NAME'], ['localhost', '127.0.0.1']) ? '3' : '2'; ?>열 레이아웃 */
+        .form-grid { display: grid; grid-template-columns: <?php echo in_array($_SERVER['SERVER_NAME'], ['localhost', '127.0.0.1']) ? '1fr 1fr 1fr' : '1fr 1fr'; ?>; gap: 10px; margin-bottom: 10px; }
 
         /* 로젠 자동등록 터미널 */
         .logen-terminal {
@@ -924,7 +1010,8 @@ if ($stats_result) {
             </form>
         </div>
 
-        <!-- 로젠 자동등록 -->
+        <?php if (in_array($_SERVER['SERVER_NAME'], ['localhost', '127.0.0.1'])): ?>
+        <!-- 로젠 자동등록 (로컬 전용) -->
         <div class="card">
             <h2>🤖 로젠 자동등록 <span id="logenStatus" class="logen-status idle">대기</span></h2>
             <p style="color: #666; margin-bottom: 8px; font-size: 11px;">
@@ -946,6 +1033,7 @@ if ($stats_result) {
             </div>
             <div id="logenTerminal" class="logen-terminal">로젠 자동등록 대기 중...\n버튼을 눌러 시작하세요.</div>
         </div>
+        <?php endif; ?>
     </div>
 
     <!-- 최근 발송 목록 (post_list74.php와 동일 구조) -->
@@ -1136,7 +1224,8 @@ function exportSelectedToLogenExcel() {
     document.body.removeChild(form);
 }
 
-// ── 로젠 자동등록 ──────────────────────────────────
+<?php if (in_array($_SERVER['SERVER_NAME'], ['localhost', '127.0.0.1'])): ?>
+// ── 로젠 자동등록 (로컬 전용) ──────────────────────────────────
 var logenPollingTimer = null;
 
 function setLogenState(state) {
@@ -1279,6 +1368,7 @@ function killLogenAuto() {
     })
     .catch(function() {});
 })();
+<?php endif; ?>
 </script>
 </body>
 </html>

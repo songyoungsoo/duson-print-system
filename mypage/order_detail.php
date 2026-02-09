@@ -10,6 +10,7 @@ require_once __DIR__ . '/auth_required.php';
 
 // ProductSpecFormatter 로드
 require_once __DIR__ . '/../includes/ProductSpecFormatter.php';
+require_once __DIR__ . '/../includes/ImagePathResolver.php';
 $specFormatter = new ProductSpecFormatter();
 
 // 주문번호 파라미터 확인
@@ -74,11 +75,11 @@ $order_statuses = [
     '10' => '교정작업중'
 ];
 
-// 업로드 파일 파싱
-$uploaded_files = [];
-if (!empty($order['uploaded_files'])) {
-    $uploaded_files = json_decode($order['uploaded_files'], true) ?: [];
-}
+// 원고파일 목록 (ImagePathResolver 통합)
+$file_result = ImagePathResolver::getFilesFromRow($order, false);
+$order_files = $file_result['files'] ?? [];
+// 하위호환: uploaded_files 변수도 유지
+$uploaded_files = $order_files;
 
 // 프리미엄 옵션 파싱
 $premium_options = [];
@@ -465,12 +466,16 @@ function formatType1Json($type1_data) {
                 <?php endif; ?>
             </div>
 
-            <?php if (!empty($order['logen_tracking_no'])): ?>
+            <?php
+            $tracking_no = $order['waybill_no'] ?? $order['logen_tracking_no'] ?? '';
+            $delivery_co = $order['delivery_company'] ?? '로젠택배';
+            if (!empty($tracking_no)):
+            ?>
             <div style="margin-top: 15px;">
                 <div class="tracking-info">
-                    <span class="company"><?php echo htmlspecialchars($order['delivery_company'] ?? '로젠택배'); ?></span>
-                    <span class="number"><?php echo htmlspecialchars($order['logen_tracking_no']); ?></span>
-                    <a href="https://www.ilogen.com/web/personal/trace/<?php echo urlencode($order['logen_tracking_no']); ?>"
+                    <span class="company"><?php echo htmlspecialchars($delivery_co); ?></span>
+                    <span class="number"><?php echo htmlspecialchars($tracking_no); ?></span>
+                    <a href="https://www.ilogen.com/web/personal/trace/<?php echo urlencode($tracking_no); ?>"
                        target="_blank"
                        style="color: #667eea; text-decoration: none;">
                        배송조회 →
@@ -554,29 +559,36 @@ function formatType1Json($type1_data) {
         </div>
         <?php endif; ?>
 
-        <!-- 업로드 파일 -->
-        <?php if (!empty($uploaded_files)): ?>
+        <!-- 원고파일 -->
+        <?php if (!empty($order_files)): ?>
         <div class="section">
-            <h2>업로드 파일</h2>
+            <h2>원고파일 (<?php echo count($order_files); ?>개)</h2>
             <ul class="files-list">
-                <?php foreach ($uploaded_files as $file): ?>
-                <li>
-                    <span class="file-icon">📄</span>
-                    <span class="file-name"><?php echo htmlspecialchars($file['original_name'] ?? $file['saved_name'] ?? 'file'); ?></span>
-                    <?php if (!empty($file['size'])): ?>
-                    <span class="file-size"><?php echo number_format($file['size'] / 1024, 1); ?> KB</span>
-                    <?php endif; ?>
+                <?php foreach ($order_files as $f):
+                    $fname = $f['name'] ?? $f['saved_name'] ?? 'file';
+                    $fsize = isset($f['size']) ? number_format($f['size'] / 1024, 1) . ' KB' : '';
+                    $ext = strtolower(pathinfo($fname, PATHINFO_EXTENSION));
+                    $is_image = in_array($ext, ['jpg','jpeg','png','gif','bmp','tif','tiff']);
+                    $dl_url = '/mypage/download.php?downfile=' . urlencode($fname) . '&no=' . $order_no;
+                ?>
+                <li style="display: flex; align-items: center; justify-content: space-between; padding: 8px 0;">
+                    <div style="display: flex; align-items: center; gap: 8px; min-width: 0;">
+                        <span class="file-icon"><?php echo $is_image ? '🖼️' : '📄'; ?></span>
+                        <div style="min-width: 0;">
+                            <span class="file-name" style="display: block; overflow: hidden; text-overflow: ellipsis; white-space: nowrap;"><?php echo htmlspecialchars($fname); ?></span>
+                            <?php if ($fsize): ?>
+                            <span class="file-size" style="color: #999; font-size: 12px;"><?php echo $fsize; ?></span>
+                            <?php endif; ?>
+                        </div>
+                    </div>
+                    <a href="<?php echo htmlspecialchars($dl_url); ?>"
+                       style="flex-shrink: 0; padding: 4px 12px; font-size: 12px; color: #667eea; border: 1px solid #667eea; border-radius: 4px; text-decoration: none; white-space: nowrap;"
+                       title="다운로드">
+                       다운로드
+                    </a>
                 </li>
                 <?php endforeach; ?>
             </ul>
-        </div>
-        <?php elseif (!empty($order['ImgFolder'])): ?>
-        <div class="section">
-            <h2>업로드 파일</h2>
-            <div class="info-item">
-                <div class="label">파일 폴더</div>
-                <div class="value" style="font-family: monospace; font-size: 13px;"><?php echo htmlspecialchars($order['ImgFolder']); ?></div>
-            </div>
         </div>
         <?php endif; ?>
 

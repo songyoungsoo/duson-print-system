@@ -2,6 +2,7 @@
 require_once __DIR__ . '/../includes/auth.php';
 require_once __DIR__ . '/../includes/config.php';
 require_once __DIR__ . '/../../db.php';
+require_once __DIR__ . '/../../includes/ImagePathResolver.php';
 
 $no = intval($_GET['no'] ?? 0);
 
@@ -167,6 +168,10 @@ if (!empty($order['creasing_enabled'])) {
     $has_options = true;
 }
 
+// 원고파일 목록 (ImagePathResolver)
+$file_result = ImagePathResolver::getFilesFromRow($order, false);
+$order_files = $file_result['files'] ?? [];
+
 // 같은 그룹 주문 조회
 $group_orders = [];
 if (!empty($order['order_group_id'])) {
@@ -303,6 +308,53 @@ include __DIR__ . '/../includes/sidebar.php';
                     </div>
                     <?php endif; ?>
                 </div>
+
+                <!-- 원고파일 -->
+                <?php if (!empty($order_files)): ?>
+                <div class="bg-white rounded-lg shadow p-5">
+                    <h3 class="text-base font-semibold text-gray-900 mb-4 flex items-center gap-2">
+                        <span class="w-1.5 h-5 bg-amber-500 rounded-full"></span>
+                        원고파일 <span class="text-xs text-gray-400 font-normal">(<?php echo count($order_files); ?>개)</span>
+                    </h3>
+                    <div class="space-y-2">
+                        <?php foreach ($order_files as $f):
+                            $fname = $f['name'] ?? $f['saved_name'] ?? 'file';
+                            $fsize = isset($f['size']) ? number_format($f['size'] / 1024, 1) . ' KB' : '';
+                            $ext = strtolower(pathinfo($fname, PATHINFO_EXTENSION));
+                            $is_image = in_array($ext, ['jpg','jpeg','png','gif','bmp','tif','tiff']);
+                            $download_path = $f['download_path'] ?? '';
+                            if (empty($download_path)) {
+                                $img_folder = $order['ImgFolder'] ?? '';
+                                if (strpos($img_folder, '_MlangPrintAuto_') !== false) {
+                                    $download_path = 'ImgFolder/' . $img_folder;
+                                } elseif (strpos($img_folder, 'uploads/') === 0) {
+                                    $download_path = $img_folder;
+                                } else {
+                                    $download_path = 'shop/data';
+                                }
+                            }
+                            $dl_url = '/admin/mlangprintauto/download.php?downfile=' . urlencode($fname) . '&path=' . urlencode($download_path) . '&no=' . $no;
+                        ?>
+                        <div class="flex items-center justify-between p-2.5 bg-gray-50 rounded-lg hover:bg-gray-100 transition-colors">
+                            <div class="flex items-center gap-2 min-w-0">
+                                <span class="text-lg flex-shrink-0"><?php echo $is_image ? '🖼️' : '📄'; ?></span>
+                                <div class="min-w-0">
+                                    <div class="text-sm font-medium text-gray-900 truncate"><?php echo htmlspecialchars($fname); ?></div>
+                                    <?php if ($fsize): ?>
+                                    <div class="text-xs text-gray-400"><?php echo $fsize; ?></div>
+                                    <?php endif; ?>
+                                </div>
+                            </div>
+                            <a href="<?php echo htmlspecialchars($dl_url); ?>"
+                               class="flex-shrink-0 px-3 py-1.5 text-xs font-medium text-blue-700 bg-blue-50 rounded-md hover:bg-blue-100 transition-colors"
+                               title="다운로드">
+                                다운로드
+                            </a>
+                        </div>
+                        <?php endforeach; ?>
+                    </div>
+                </div>
+                <?php endif; ?>
 
                 <!-- 금액 정보 -->
                 <div class="bg-white rounded-lg shadow p-5">

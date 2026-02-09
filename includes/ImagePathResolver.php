@@ -294,7 +294,26 @@ class ImagePathResolver {
             }
         }
 
-        // 3. 폴백: 디렉토리 스캔 (ImgFolder)
+        // 3. ../shop/data/파일명 패턴 (ImgFolder에 파일명이 직접 포함)
+        if (empty($result['files']) && !empty($row['ImgFolder'])) {
+            $img_folder = $row['ImgFolder'];
+            if (preg_match('/^\.\.\/shop\/data\/(.+)$/u', $img_folder, $fm) && $fm[1] !== '') {
+                $filename = $fm[1];
+                $file_path = $_SERVER['DOCUMENT_ROOT'] . '/shop/data/' . $filename;
+                if (file_exists($file_path)) {
+                    $result['files'][] = [
+                        'name' => $filename,
+                        'saved_name' => $filename,
+                        'size' => filesize($file_path),
+                        'type' => 'customer',
+                        'path' => $file_path,
+                        'download_path' => 'shop/data',
+                    ];
+                }
+            }
+        }
+
+        // 4. 폴백: 디렉토리 스캔 (ImgFolder)
         if (empty($result['files']) && !empty($row['ImgFolder'])) {
             // 날짜 필터 확인
             $year = self::extractYearFromPath($row['ImgFolder']);
@@ -326,7 +345,7 @@ class ImagePathResolver {
             }
         }
 
-        // 4. 추가 폴백: 레거시 폴더 스캔
+        // 5. 추가 폴백: 레거시 폴더 스캔
         if (empty($result['files'])) {
             $legacy_dirs = [
                 $_SERVER['DOCUMENT_ROOT'] . '/mlangorder_printauto/upload/' . $order_no . '/',
