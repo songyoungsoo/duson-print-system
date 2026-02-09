@@ -1,0 +1,13 @@
+{
+  "name": "logen-auto",
+  "version": "1.0.0",
+  "description": "로젠택배 자동 운송장 등록 스크립트",
+  "main": "logen_auto.js",
+  "scripts": {
+    "start": "node logen_auto.js"
+  },
+  "dependencies": {
+    "playwright": "^1.58.0",
+    "xlsx": "^0.18.5"
+  }
+}

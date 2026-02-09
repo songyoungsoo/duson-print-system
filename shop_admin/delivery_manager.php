@@ -742,8 +742,23 @@ if ($stats_result) {
         .stat-box .number { font-size: 22px; font-weight: bold; }
         .stat-box .label { font-size: 11px; opacity: 0.95; }
 
-        /* 2열 레이아웃 */
-        .form-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-bottom: 10px; }
+        /* 3열 레이아웃 */
+        .form-grid { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 10px; margin-bottom: 10px; }
+
+        /* 로젠 자동등록 터미널 */
+        .logen-terminal {
+            background: #1a1a2e; color: #0f0; font-family: 'Consolas', 'Courier New', monospace;
+            font-size: 11px; padding: 8px; height: 180px; overflow-y: auto; border: 1px solid #333;
+            white-space: pre-wrap; word-break: break-all; line-height: 1.4;
+        }
+        .logen-terminal::-webkit-scrollbar { width: 6px; }
+        .logen-terminal::-webkit-scrollbar-thumb { background: #444; }
+        .logen-status { display: inline-block; padding: 2px 8px; font-size: 11px; font-weight: bold; border: 1px solid; }
+        .logen-status.idle { background: #f0f0f0; color: #666; border-color: #ccc; }
+        .logen-status.running { background: #fff3cd; color: #856404; border-color: #ffc107; animation: pulse 1.5s infinite; }
+        .logen-status.done { background: #d4edda; color: #155724; border-color: #28a745; }
+        .logen-status.error { background: #f8d7da; color: #721c24; border-color: #f5c6cb; }
+        @keyframes pulse { 0%,100% { opacity: 1; } 50% { opacity: 0.6; } }
 
         .form-group { margin-bottom: 8px; }
         .form-group label { display: block; margin-bottom: 3px; font-weight: bold; color: #333; font-size: 12px; }
@@ -907,6 +922,29 @@ if ($stats_result) {
                     <button type="submit" class="btn btn-success" id="uploadBtn" disabled style="width: 100%;">📤 운송장 등록</button>
                 </div>
             </form>
+        </div>
+
+        <!-- 로젠 자동등록 -->
+        <div class="card">
+            <h2>🤖 로젠 자동등록 <span id="logenStatus" class="logen-status idle">대기</span></h2>
+            <p style="color: #666; margin-bottom: 8px; font-size: 11px;">
+                엑셀 내보내기 → 로젠 업로드 → 운송장 발행 → DB 등록을 <strong>자동으로</strong> 처리합니다.
+            </p>
+            <div class="form-row" style="margin-bottom: 8px;">
+                <div class="form-group" style="margin-bottom:0;">
+                    <label>시작일</label>
+                    <input type="date" id="logenDateFrom" value="<?php echo date('Y-m-d', strtotime('-1 day')); ?>">
+                </div>
+                <div class="form-group" style="margin-bottom:0;">
+                    <label>종료일</label>
+                    <input type="date" id="logenDateTo" value="<?php echo date('Y-m-d'); ?>">
+                </div>
+            </div>
+            <div style="display: flex; gap: 8px; margin-bottom: 8px;">
+                <button type="button" class="btn btn-primary" style="flex:1;" id="btnLogenRun" onclick="runLogenAuto()">▶ 실행</button>
+                <button type="button" class="btn btn-logen" style="flex:1;" id="btnLogenKill" onclick="killLogenAuto()" disabled>■ 중지</button>
+            </div>
+            <div id="logenTerminal" class="logen-terminal">로젠 자동등록 대기 중...\n버튼을 눌러 시작하세요.</div>
         </div>
     </div>
 
@@ -1097,6 +1135,150 @@ function exportSelectedToLogenExcel() {
     form.submit();
     document.body.removeChild(form);
 }
+
+// ── 로젠 자동등록 ──────────────────────────────────
+var logenPollingTimer = null;
+
+function setLogenState(state) {
+    var statusEl = document.getElementById('logenStatus');
+    var btnRun = document.getElementById('btnLogenRun');
+    var btnKill = document.getElementById('btnLogenKill');
+
+    statusEl.className = 'logen-status ' + state;
+    if (state === 'running') {
+        statusEl.textContent = '실행 중...';
+        btnRun.disabled = true;
+        btnKill.disabled = false;
+    } else if (state === 'done') {
+        statusEl.textContent = '완료';
+        btnRun.disabled = false;
+        btnKill.disabled = true;
+    } else if (state === 'error') {
+        statusEl.textContent = '오류';
+        btnRun.disabled = false;
+        btnKill.disabled = true;
+    } else {
+        statusEl.textContent = '대기';
+        btnRun.disabled = false;
+        btnKill.disabled = true;
+    }
+}
+
+function appendLog(text) {
+    var term = document.getElementById('logenTerminal');
+    term.textContent = text;
+    term.scrollTop = term.scrollHeight;
+}
+
+function runLogenAuto() {
+    var dateFrom = document.getElementById('logenDateFrom').value;
+    var dateTo = document.getElementById('logenDateTo').value;
+
+    if (!dateFrom || !dateTo) {
+        alert('날짜를 입력해주세요.');
+        return;
+    }
+
+    setLogenState('running');
+    appendLog('로젠 자동등록 시작 중...\n날짜: ' + dateFrom + ' ~ ' + dateTo + '\n');
+
+    var formData = new FormData();
+    formData.append('action', 'run');
+    formData.append('date_from', dateFrom);
+    formData.append('date_to', dateTo);
+
+    fetch('/tools/logen/logen_runner.php?action=run', {
+        method: 'POST',
+        body: formData
+    })
+    .then(function(r) { return r.json(); })
+    .then(function(data) {
+        if (data.error) {
+            setLogenState('error');
+            appendLog('오류: ' + data.error);
+            return;
+        }
+        appendLog('프로세스 시작됨 (PID: ' + data.pid + ')\n로그 수집 중...\n');
+        startPolling();
+    })
+    .catch(function(err) {
+        setLogenState('error');
+        appendLog('요청 실패: ' + err.message);
+    });
+}
+
+function startPolling() {
+    if (logenPollingTimer) clearInterval(logenPollingTimer);
+    logenPollingTimer = setInterval(pollStatus, 2000);
+    // 즉시 1회 실행
+    pollStatus();
+}
+
+function pollStatus() {
+    fetch('/tools/logen/logen_runner.php?action=status')
+    .then(function(r) { return r.json(); })
+    .then(function(data) {
+        if (data.log) {
+            appendLog(data.log);
+        }
+        if (!data.running) {
+            clearInterval(logenPollingTimer);
+            logenPollingTimer = null;
+            // 로그에서 완료/오류 판단
+            var log = data.log || '';
+            if (log.indexOf('완료') !== -1 || log.indexOf('SUCCESS') !== -1 || log.indexOf('import_waybill') !== -1) {
+                setLogenState('done');
+            } else if (log.indexOf('ERROR') !== -1 || log.indexOf('에러') !== -1 || log.indexOf('실패') !== -1) {
+                setLogenState('error');
+            } else if (data.totalLines > 3) {
+                setLogenState('done');
+            } else {
+                setLogenState('idle');
+            }
+        }
+    })
+    .catch(function() {
+        // 네트워크 오류 시 폴링 계속
+    });
+}
+
+function killLogenAuto() {
+    if (!confirm('실행 중인 프로세스를 중지하시겠습니까?')) return;
+
+    var formData = new FormData();
+    formData.append('action', 'kill');
+
+    fetch('/tools/logen/logen_runner.php?action=kill', {
+        method: 'POST',
+        body: formData
+    })
+    .then(function(r) { return r.json(); })
+    .then(function(data) {
+        if (logenPollingTimer) {
+            clearInterval(logenPollingTimer);
+            logenPollingTimer = null;
+        }
+        setLogenState('idle');
+        appendLog((document.getElementById('logenTerminal').textContent || '') + '\n\n── 사용자에 의해 중지됨 ──');
+    })
+    .catch(function(err) {
+        alert('중지 요청 실패: ' + err.message);
+    });
+}
+
+// 페이지 로드 시 이미 실행 중인지 확인
+(function() {
+    fetch('/tools/logen/logen_runner.php?action=status')
+    .then(function(r) { return r.json(); })
+    .then(function(data) {
+        if (data.running) {
+            setLogenState('running');
+            if (data.log) appendLog(data.log);
+            startPolling();
+        }
+    })
+    .catch(function() {});
+})();
 </script>
 </body>
 </html>

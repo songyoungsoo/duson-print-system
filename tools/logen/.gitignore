@@ -1,0 +1,8 @@
+node_modules/
+downloads/*.xls
+downloads/*.xlsx
+downloads/*.csv
+downloads/*.png
+downloads/*.log
+downloads/*.pid
+downloads/*.pid.log
