@@ -6,88 +6,84 @@ include __DIR__ . '/../includes/header.php';
 include __DIR__ . '/../includes/sidebar.php';
 ?>
 
-<main class="flex-1 overflow-y-auto bg-gray-50">
-    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-4">
-        <div class="mb-4">
-            <h1 class="text-2xl font-bold text-gray-900">주문 관리</h1>
-            <p class="mt-1 text-sm text-gray-600">주문 목록 조회 및 상태 관리</p>
-        </div>
-
-        <div class="bg-white rounded-lg shadow p-3 mb-4">
-            <div class="flex flex-wrap items-center gap-2">
-                <select id="periodFilter" class="px-3 py-1.5 text-sm border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500">
-                    <option value="">기간: 전체</option>
-                    <option value="today">오늘</option>
-                    <option value="7days">최근 7일</option>
-                    <option value="30days" selected>최근 30일</option>
-                    <option value="3months">최근 3개월</option>
-                </select>
-                <select id="statusFilter" class="px-3 py-1.5 text-sm border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500">
-                    <option value="">상태: 전체</option>
-                    <option value="1">견적접수</option>
-                    <option value="2">주문접수</option>
-                    <option value="3">접수완료</option>
-                    <option value="4">입금대기</option>
-                    <option value="5">시안제작중</option>
-                    <option value="6">시안</option>
-                    <option value="7">교정</option>
-                    <option value="8">작업완료</option>
-                    <option value="9">작업중</option>
-                    <option value="10">교정작업중</option>
-                    <option value="deleted">삭제됨</option>
-                </select>
-                <select id="productFilter" class="px-3 py-1.5 text-sm border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500">
-                    <option value="">품목: 전체</option>
-                    <option value="스티커">스티커</option>
-                    <option value="명함">명함</option>
-                    <option value="전단지">전단지</option>
-                    <option value="봉투">봉투</option>
-                    <option value="포스터">포스터</option>
-                </select>
-                <div class="flex-1 min-w-[200px]">
-                    <input type="text" id="searchInput" placeholder="주문번호, 이름, 이메일"
-                           class="w-full px-3 py-1.5 text-sm border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500">
-                </div>
-                <button id="searchBtn" class="px-4 py-1.5 text-sm bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors">검색</button>
+<main class="flex-1 bg-gray-50">
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-2">
+        <!-- 헤더 + 필터 한 줄 -->
+        <div class="flex flex-wrap items-center gap-2 mb-2">
+            <h1 class="text-lg font-bold text-gray-900 mr-2">주문 관리</h1>
+            <select id="periodFilter" class="px-2 py-1 text-xs border border-gray-300 rounded focus:ring-1 focus:ring-blue-500 focus:border-blue-500">
+                <option value="">기간: 전체</option>
+                <option value="today">오늘</option>
+                <option value="7days">최근 7일</option>
+                <option value="30days" selected>최근 30일</option>
+                <option value="3months">최근 3개월</option>
+            </select>
+            <select id="statusFilter" class="px-2 py-1 text-xs border border-gray-300 rounded focus:ring-1 focus:ring-blue-500 focus:border-blue-500">
+                <option value="">상태: 전체</option>
+                <option value="1">견적접수</option>
+                <option value="2">주문접수</option>
+                <option value="3">접수완료</option>
+                <option value="4">입금대기</option>
+                <option value="5">시안제작중</option>
+                <option value="6">시안</option>
+                <option value="7">교정</option>
+                <option value="8">작업완료</option>
+                <option value="9">작업중</option>
+                <option value="10">교정작업중</option>
+                <option value="deleted">삭제됨</option>
+            </select>
+            <select id="productFilter" class="px-2 py-1 text-xs border border-gray-300 rounded focus:ring-1 focus:ring-blue-500 focus:border-blue-500">
+                <option value="">품목: 전체</option>
+                <option value="스티커">스티커</option>
+                <option value="명함">명함</option>
+                <option value="전단지">전단지</option>
+                <option value="봉투">봉투</option>
+                <option value="포스터">포스터</option>
+            </select>
+            <div class="flex-1 min-w-[180px]">
+                <input type="text" id="searchInput" placeholder="주문번호, 이름, 이메일"
+                       class="w-full px-2 py-1 text-xs border border-gray-300 rounded focus:ring-1 focus:ring-blue-500 focus:border-blue-500">
             </div>
+            <button id="searchBtn" class="px-3 py-1 text-xs bg-blue-600 text-white rounded hover:bg-blue-700 transition-colors">검색</button>
         </div>
 
+        <!-- 테이블 영역 -->
         <div class="bg-white rounded-lg shadow overflow-hidden">
             <div class="overflow-x-auto">
                 <table class="min-w-full divide-y divide-gray-200">
-                    <thead class="bg-gray-50">
+                    <thead class="bg-gray-50 sticky top-0 z-10">
                         <tr>
-                            <th class="px-2 py-2 text-center w-10"><input type="checkbox" id="selectAll" class="w-4 h-4 rounded border-gray-300 text-blue-600 cursor-pointer"></th>
-                            <th class="px-3 py-2 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">주문번호</th>
-                            <th class="px-3 py-2 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">품목</th>
-                            <th class="px-3 py-2 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">주문자</th>
-                            <th class="px-3 py-2 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">금액</th>
-                            <th class="px-3 py-2 text-center text-xs font-medium text-gray-500 uppercase tracking-wider">상태</th>
-                            <th class="px-3 py-2 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">주문일시</th>
-                            <th class="px-3 py-2 text-center text-xs font-medium text-gray-500 uppercase tracking-wider">관리</th>
+                            <th class="px-2 py-1.5 text-center w-8"><input type="checkbox" id="selectAll" class="w-3.5 h-3.5 rounded border-gray-300 text-blue-600 cursor-pointer"></th>
+                            <th class="px-2 py-1.5 text-left text-xs font-medium text-gray-500 tracking-wider">주문번호</th>
+                            <th class="px-2 py-1.5 text-left text-xs font-medium text-gray-500 tracking-wider">품목</th>
+                            <th class="px-2 py-1.5 text-left text-xs font-medium text-gray-500 tracking-wider">주문자</th>
+                            <th class="px-2 py-1.5 text-right text-xs font-medium text-gray-500 tracking-wider">금액</th>
+                            <th class="px-2 py-1.5 text-center text-xs font-medium text-gray-500 tracking-wider">상태</th>
+                            <th class="px-2 py-1.5 text-left text-xs font-medium text-gray-500 tracking-wider">주문일시</th>
+                            <th class="px-2 py-1.5 text-center text-xs font-medium text-gray-500 tracking-wider">관리</th>
                         </tr>
                     </thead>
                     <tbody id="ordersTableBody" class="bg-white divide-y divide-gray-200">
                         <tr>
-                            <td colspan="8" class="px-3 py-3 text-center text-gray-500">로딩 중...</td>
+                            <td colspan="8" class="px-3 py-2 text-center text-sm text-gray-500">로딩 중...</td>
                         </tr>
                     </tbody>
                 </table>
             </div>
 
-            <div id="bulkActionBar" class="px-4 py-2 border-t border-gray-200 bg-red-50 items-center justify-between hidden">
+            <div id="bulkActionBar" class="px-3 py-1.5 border-t border-gray-200 bg-red-50 items-center justify-between hidden"
                 <div class="flex items-center gap-3">
-                    <span class="text-sm text-red-700"><span id="selectedCount" class="font-bold">0</span>건 선택됨</span>
-                    <button id="bulkDeleteBtn" class="px-3 py-1.5 bg-red-600 text-white text-sm rounded-lg hover:bg-red-700 transition-colors">
+                    <span class="text-xs text-red-700"><span id="selectedCount" class="font-bold">0</span>건 선택됨</span>
+                    <button id="bulkDeleteBtn" class="px-2 py-1 bg-red-600 text-white text-xs rounded hover:bg-red-700 transition-colors">
                         선택 삭제
                     </button>
-                    <button id="clearSelectionBtn" class="px-3 py-1.5 bg-white text-gray-600 text-sm rounded-lg border border-gray-300 hover:bg-gray-50 transition-colors">
+                    <button id="clearSelectionBtn" class="px-2 py-1 bg-white text-gray-600 text-xs rounded border border-gray-300 hover:bg-gray-50 transition-colors">
                         선택 해제
                     </button>
                 </div>
             </div>
-            <div id="pagination" class="px-4 py-3 border-t border-gray-200 flex items-center justify-between">
-                <div class="text-sm text-gray-600">
+            <div id="pagination" class="px-3 py-1.5 border-t border-gray-200 flex items-center justify-between"
+                <div class="text-xs text-gray-600">
                     총 <span id="totalItems" class="font-semibold text-gray-900">0</span>건
                     <span id="pageInfo" class="ml-2 text-gray-400"></span>
                 </div>
@@ -167,10 +163,10 @@ async function loadOrders(page = 1) {
 
             // 체크박스
             var tdCheck = document.createElement('td');
-            tdCheck.className = 'px-2 py-2 text-center';
+            tdCheck.className = 'px-2 py-1 text-center';
             var cb = document.createElement('input');
             cb.type = 'checkbox';
-            cb.className = 'order-checkbox w-4 h-4 rounded border-gray-300 text-blue-600 cursor-pointer';
+            cb.className = 'order-checkbox w-3.5 h-3.5 rounded border-gray-300 text-blue-600 cursor-pointer';
             cb.dataset.no = order.no;
             cb.checked = selectedOrders.has(order.no);
             cb.addEventListener('change', function() {
@@ -188,47 +184,47 @@ async function loadOrders(page = 1) {
 
             // 주문번호
             var tdNo = document.createElement('td');
-            tdNo.className = 'px-3 py-2 whitespace-nowrap text-sm font-medium text-gray-900';
+            tdNo.className = 'px-2 py-1 whitespace-nowrap text-xs font-medium text-gray-900';
             tdNo.textContent = '#' + order.no;
             tr.appendChild(tdNo);
 
             // 품목
             var tdType = document.createElement('td');
-            tdType.className = 'px-3 py-2 whitespace-nowrap text-sm text-gray-600';
+            tdType.className = 'px-2 py-1 whitespace-nowrap text-xs text-gray-600';
             tdType.textContent = order.type || '-';
             tr.appendChild(tdType);
 
             // 주문자
             var tdName = document.createElement('td');
-            tdName.className = 'px-3 py-2 whitespace-nowrap text-sm text-gray-600';
+            tdName.className = 'px-2 py-1 whitespace-nowrap text-xs text-gray-600';
             tdName.textContent = order.name || (order.email ? order.email.split('@')[0] : '-');
             tr.appendChild(tdName);
 
             // 금액
             var tdAmount = document.createElement('td');
-            tdAmount.className = 'px-3 py-2 whitespace-nowrap text-sm text-gray-900 text-right';
+            tdAmount.className = 'px-2 py-1 whitespace-nowrap text-xs text-gray-900 text-right';
             tdAmount.textContent = (order.amount || 0).toLocaleString() + '원';
             tr.appendChild(tdAmount);
 
             // 상태
             var tdStatus = document.createElement('td');
-            tdStatus.className = 'px-3 py-2 whitespace-nowrap text-center';
+            tdStatus.className = 'px-2 py-1 whitespace-nowrap text-center';
             var statusInfo = getStatusInfo(order.status);
             var badge = document.createElement('span');
-            badge.className = 'px-2 py-1 text-xs font-semibold rounded-full ' + statusInfo.bg + ' ' + statusInfo.text;
+            badge.className = 'px-1.5 py-0.5 text-xs font-semibold rounded-full ' + statusInfo.bg + ' ' + statusInfo.text;
             badge.textContent = statusInfo.label;
             tdStatus.appendChild(badge);
             tr.appendChild(tdStatus);
 
             // 주문일시
             var tdDate = document.createElement('td');
-            tdDate.className = 'px-3 py-2 whitespace-nowrap text-sm text-gray-600';
+            tdDate.className = 'px-2 py-1 whitespace-nowrap text-xs text-gray-600';
             tdDate.textContent = order.date || '-';
             tr.appendChild(tdDate);
 
             // 관리
             var tdAction = document.createElement('td');
-            tdAction.className = 'px-3 py-2 whitespace-nowrap text-center text-sm';
+            tdAction.className = 'px-2 py-1 whitespace-nowrap text-center text-xs';
             var link = document.createElement('a');
             link.href = '/dashboard/orders/view.php?no=' + order.no;
             link.className = 'text-blue-600 hover:text-blue-800 mr-3';

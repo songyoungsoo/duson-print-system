@@ -8,7 +8,7 @@
 define('DASHBOARD_TITLE', '두손기획 관리자 대시보드');
 
 // Pagination
-define('ITEMS_PER_PAGE', 30);
+define('ITEMS_PER_PAGE', 23);
 
 // Date Format
 define('DATE_FORMAT', 'Y-m-d H:i:s');

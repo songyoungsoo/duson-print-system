@@ -18,27 +18,27 @@ $current_path = rtrim($current_path, '/') . '/';
 
 /* Brand */
 .sa-brand {
-    padding: 14px 12px;
+    padding: 8px 10px;
     background: linear-gradient(135deg, #0f1a2e 0%, #1a2d4a 100%);
     border-bottom: 1px solid rgba(255,255,255,0.06);
 }
 .sa-brand-logo {
-    width: 34px; height: 34px;
-    border-radius: 8px;
+    width: 28px; height: 28px;
+    border-radius: 6px;
     background: rgba(255,255,255,0.1);
     border: 1px solid rgba(255,255,255,0.12);
     display: flex; align-items: center; justify-content: center;
-    font-size: 15px; flex-shrink: 0;
+    font-size: 13px; flex-shrink: 0;
 }
-.sa-brand h1 { font-size: 14px; font-weight: 700; color: #fff; }
-.sa-brand p { font-size: 10px; color: rgba(255,255,255,0.45); letter-spacing: 0.5px; }
+.sa-brand h1 { font-size: 13px; font-weight: 700; color: #fff; }
+.sa-brand p { font-size: 9px; color: rgba(255,255,255,0.45); letter-spacing: 0.5px; }
 
 /* Menu section card */
 .sa-section {
     background: #fff;
-    border-radius: 8px;
-    margin: 8px 6px;
-    box-shadow: 0 2px 8px rgba(0,0,0,0.2);
+    border-radius: 6px;
+    margin: 4px 5px;
+    box-shadow: 0 1px 4px rgba(0,0,0,0.18);
     overflow: hidden;
 }
 
@@ -46,8 +46,8 @@ $current_path = rtrim($current_path, '/') . '/';
 .sa-header {
     background: #1E4E79;
     color: #fff;
-    padding: 8px 12px;
-    font-size: 11px;
+    padding: 4px 10px;
+    font-size: 10.5px;
     font-weight: 700;
     text-align: center;
     letter-spacing: 1px;
@@ -68,36 +68,36 @@ $current_path = rtrim($current_path, '/') . '/';
 .sa-item {
     display: flex;
     align-items: center;
-    padding: 9px 10px;
+    padding: 5px 8px;
     color: #374151;
     text-decoration: none;
-    font-size: 12.5px;
+    font-size: 12px;
     transition: all 0.15s ease;
 }
 .sa-item:hover {
     background: #e8f0fe;
     color: #1a3a6a;
-    padding-left: 14px;
+    padding-left: 12px;
 }
 .sa-item.active {
     background: #dbeafe;
     color: #1a3a6a;
     font-weight: 600;
     border-left: 3px solid #1E4E79;
-    padding-left: 7px;
+    padding-left: 5px;
 }
 .sa-item .sa-icon {
-    width: 18px;
+    width: 16px;
     text-align: center;
-    margin-right: 6px;
-    font-size: 12px;
+    margin-right: 5px;
+    font-size: 11px;
     flex-shrink: 0;
 }
 .sa-item .sa-arrow {
     color: #1E4E79;
     font-weight: 700;
-    margin-right: 5px;
-    font-size: 11px;
+    margin-right: 4px;
+    font-size: 10px;
     flex-shrink: 0;
     opacity: 0;
     transition: opacity 0.15s;
@@ -114,22 +114,22 @@ $current_path = rtrim($current_path, '/') . '/';
 
 /* User section */
 .sa-user {
-    padding: 10px 8px;
+    padding: 6px 6px;
     border-top: 1px solid rgba(255,255,255,0.06);
     background: rgba(0,0,0,0.15);
 }
 .sa-avatar {
-    width: 30px; height: 30px;
-    border-radius: 6px;
+    width: 24px; height: 24px;
+    border-radius: 5px;
     background: linear-gradient(135deg, #3b5998, #2b4080);
     color: #fff;
     display: flex; align-items: center; justify-content: center;
-    font-size: 11px; font-weight: 700; flex-shrink: 0;
+    font-size: 10px; font-weight: 700; flex-shrink: 0;
 }
 .sa-logout {
     display: flex; align-items: center; justify-content: center;
-    margin-top: 6px; padding: 6px;
-    border-radius: 6px; font-size: 11px;
+    margin-top: 4px; padding: 4px;
+    border-radius: 5px; font-size: 10px;
     color: rgba(255,180,180,0.8);
     border: 1px solid rgba(255,180,180,0.15);
     background: rgba(255,100,100,0.05);
@@ -156,7 +156,7 @@ $current_path = rtrim($current_path, '/') . '/';
             </div>
         </div>
 
-        <nav class="flex-1 overflow-y-auto" style="padding: 2px 0 8px;">
+        <nav class="flex-1 overflow-y-auto" style="padding: 2px 0 2px;">
             <?php foreach ($DASHBOARD_NAV as $group_key => $group): ?>
                 <div class="sa-section">
                     <?php if (!empty($group['label'])): ?>

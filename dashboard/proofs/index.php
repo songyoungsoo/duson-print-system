@@ -93,37 +93,29 @@ include __DIR__ . '/../includes/header.php';
 include __DIR__ . '/../includes/sidebar.php';
 ?>
 
-<main class="flex-1 overflow-y-auto bg-gray-50">
-    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-4">
-        <div class="flex items-center justify-between mb-4">
-            <div>
-                <h1 class="text-2xl font-bold text-gray-900">🔍 교정 관리</h1>
-                <p class="text-sm text-gray-600">교정보기 · 교정파일 올리기 · 진행 상태 확인</p>
+<main class="flex-1 bg-gray-50">
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-2">
+        <!-- 헤더 + 필터 한 줄 -->
+        <form method="GET" class="flex flex-wrap items-center gap-2 mb-2">
+            <h1 class="text-lg font-bold text-gray-900 mr-2">교정 관리</h1>
+            <div class="flex gap-1">
+                <a href="?<?php echo $search ? 'q='.urlencode($search) : ''; ?>"
+                   class="px-2 py-0.5 text-xs rounded-full <?php echo !$status_filter ? 'bg-blue-600 text-white' : 'bg-gray-100 text-gray-700 hover:bg-gray-200'; ?>">전체</a>
+                <a href="?status=proof<?php echo $search ? '&q='.urlencode($search) : ''; ?>"
+                   class="px-2 py-0.5 text-xs rounded-full <?php echo $status_filter === 'proof' ? 'bg-blue-600 text-white' : 'bg-gray-100 text-gray-700 hover:bg-gray-200'; ?>">교정대기</a>
+                <a href="?status=design<?php echo $search ? '&q='.urlencode($search) : ''; ?>"
+                   class="px-2 py-0.5 text-xs rounded-full <?php echo $status_filter === 'design' ? 'bg-yellow-500 text-white' : 'bg-gray-100 text-gray-700 hover:bg-gray-200'; ?>">시안진행</a>
+                <a href="?status=complete<?php echo $search ? '&q='.urlencode($search) : ''; ?>"
+                   class="px-2 py-0.5 text-xs rounded-full <?php echo $status_filter === 'complete' ? 'bg-green-600 text-white' : 'bg-gray-100 text-gray-700 hover:bg-gray-200'; ?>">작업완료</a>
             </div>
-        </div>
-
-        <!-- Filters -->
-        <div class="bg-white rounded-lg shadow p-3 mb-4">
-            <form method="GET" class="flex flex-wrap items-center gap-2">
-                <div class="flex gap-1">
-                    <a href="?<?php echo $search ? 'q='.urlencode($search) : ''; ?>" 
-                       class="px-3 py-1.5 text-xs rounded-full <?php echo !$status_filter ? 'bg-blue-600 text-white' : 'bg-gray-100 text-gray-700 hover:bg-gray-200'; ?>">전체</a>
-                    <a href="?status=proof<?php echo $search ? '&q='.urlencode($search) : ''; ?>" 
-                       class="px-3 py-1.5 text-xs rounded-full <?php echo $status_filter === 'proof' ? 'bg-blue-600 text-white' : 'bg-gray-100 text-gray-700 hover:bg-gray-200'; ?>">교정대기</a>
-                    <a href="?status=design<?php echo $search ? '&q='.urlencode($search) : ''; ?>" 
-                       class="px-3 py-1.5 text-xs rounded-full <?php echo $status_filter === 'design' ? 'bg-yellow-500 text-white' : 'bg-gray-100 text-gray-700 hover:bg-gray-200'; ?>">시안진행</a>
-                    <a href="?status=complete<?php echo $search ? '&q='.urlencode($search) : ''; ?>" 
-                       class="px-3 py-1.5 text-xs rounded-full <?php echo $status_filter === 'complete' ? 'bg-green-600 text-white' : 'bg-gray-100 text-gray-700 hover:bg-gray-200'; ?>">작업완료</a>
-                </div>
-                <div class="flex-1 min-w-[200px]">
-                    <input type="text" name="q" value="<?php echo htmlspecialchars($search); ?>" 
-                           placeholder="주문번호, 이름, 품목 검색..."
-                           class="w-full px-3 py-1.5 text-sm border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500">
-                </div>
-                <?php if ($status_filter): ?><input type="hidden" name="status" value="<?php echo $status_filter; ?>"><?php endif; ?>
-                <button type="submit" class="px-4 py-1.5 text-sm bg-blue-600 text-white rounded-lg hover:bg-blue-700">검색</button>
-            </form>
-        </div>
+            <div class="flex-1 min-w-[180px]">
+                <input type="text" name="q" value="<?php echo htmlspecialchars($search); ?>"
+                       placeholder="주문번호, 이름, 품목 검색..."
+                       class="w-full px-2 py-1 text-xs border border-gray-300 rounded focus:ring-1 focus:ring-blue-500 focus:border-blue-500">
+            </div>
+            <?php if ($status_filter): ?><input type="hidden" name="status" value="<?php echo $status_filter; ?>"><?php endif; ?>
+            <button type="submit" class="px-3 py-1 text-xs bg-blue-600 text-white rounded hover:bg-blue-700">검색</button>
+        </form>
 
         <!-- Order/Proof List -->
         <div class="bg-white rounded-lg shadow overflow-hidden">
@@ -131,27 +123,27 @@ include __DIR__ . '/../includes/sidebar.php';
                 <table class="min-w-full divide-y divide-gray-200">
                     <thead class="bg-gray-50">
                         <tr>
-                            <th class="px-3 py-2 text-left text-xs font-medium text-gray-500">주문번호</th>
-                            <th class="px-3 py-2 text-left text-xs font-medium text-gray-500">품목</th>
-                            <th class="px-3 py-2 text-left text-xs font-medium text-gray-500">주문자</th>
-                            <th class="px-3 py-2 text-left text-xs font-medium text-gray-500">전화번호</th>
-                            <th class="px-3 py-2 text-center text-xs font-medium text-gray-500">상태</th>
-                            <th class="px-3 py-2 text-center text-xs font-medium text-gray-500">교정파일</th>
-                            <th class="px-3 py-2 text-center text-xs font-medium text-gray-500">일시</th>
-                            <th class="px-3 py-2 text-center text-xs font-medium text-gray-500">보기</th>
-                            <th class="px-3 py-2 text-center text-xs font-medium text-gray-500">올리기</th>
+                            <th class="px-2 py-1.5 text-left text-xs font-medium text-gray-500">주문번호</th>
+                            <th class="px-2 py-1.5 text-left text-xs font-medium text-gray-500">품목</th>
+                            <th class="px-2 py-1.5 text-left text-xs font-medium text-gray-500">주문자</th>
+                            <th class="px-2 py-1.5 text-left text-xs font-medium text-gray-500">전화번호</th>
+                            <th class="px-2 py-1.5 text-center text-xs font-medium text-gray-500">상태</th>
+                            <th class="px-2 py-1.5 text-center text-xs font-medium text-gray-500">교정파일</th>
+                            <th class="px-2 py-1.5 text-center text-xs font-medium text-gray-500">일시</th>
+                            <th class="px-2 py-1.5 text-center text-xs font-medium text-gray-500">보기</th>
+                            <th class="px-2 py-1.5 text-center text-xs font-medium text-gray-500">올리기</th>
                         </tr>
                     </thead>
                     <tbody class="bg-white divide-y divide-gray-200">
                         <?php if (empty($orders)): ?>
-                        <tr><td colspan="9" class="px-3 py-8 text-center text-sm text-gray-400">데이터가 없습니다.</td></tr>
+                        <tr><td colspan="9" class="px-2 py-4 text-center text-xs text-gray-400">데이터가 없습니다.</td></tr>
                         <?php endif; ?>
                         <?php foreach ($orders as $order): ?>
                         <tr class="hover:bg-gray-50" id="row-<?php echo $order['no']; ?>">
-                            <td class="px-3 py-2 text-sm font-medium text-gray-900">#<?php echo $order['no']; ?></td>
-                            <td class="px-3 py-2 text-sm text-gray-600"><?php echo htmlspecialchars($order['Type']); ?></td>
-                            <td class="px-3 py-2 text-sm text-gray-600"><?php echo htmlspecialchars($order['name']); ?></td>
-                            <td class="px-3 py-2 text-sm">
+                            <td class="px-2 py-1 text-xs font-medium text-gray-900">#<?php echo $order['no']; ?></td>
+                            <td class="px-2 py-1 text-xs text-gray-600"><?php echo htmlspecialchars($order['Type']); ?></td>
+                            <td class="px-2 py-1 text-xs text-gray-600"><?php echo htmlspecialchars($order['name']); ?></td>
+                            <td class="px-2 py-1 text-xs">
                                 <?php
                                     $phone = trim($order['phone'] ?? '');
                                     $hendphone = trim($order['Hendphone'] ?? '');
@@ -161,57 +153,57 @@ include __DIR__ . '/../includes/sidebar.php';
                                     <span class="text-gray-700" id="phone-display-<?php echo $order['no']; ?>"><?php echo htmlspecialchars($displayPhone); ?></span>
                                 <?php else: ?>
                                     <div class="flex items-center gap-1" id="phone-edit-<?php echo $order['no']; ?>">
-                                        <input type="text" 
+                                        <input type="text"
                                                id="phone-input-<?php echo $order['no']; ?>"
                                                placeholder="010-0000-0000"
-                                               class="w-28 px-1.5 py-0.5 text-xs border border-orange-300 rounded focus:ring-1 focus:ring-blue-400 focus:border-blue-400 outline-none bg-orange-50"
+                                               class="w-24 px-1 py-0.5 text-xs border border-orange-300 rounded focus:ring-1 focus:ring-blue-400 focus:border-blue-400 outline-none bg-orange-50"
                                                maxlength="20"
                                                onkeydown="if(event.key==='Enter'){savePhone(<?php echo $order['no']; ?>)}">
-                                        <button onclick="savePhone(<?php echo $order['no']; ?>)" 
-                                                class="px-1.5 py-0.5 text-[10px] bg-blue-500 text-white rounded hover:bg-blue-600 flex-shrink-0">저장</button>
+                                        <button onclick="savePhone(<?php echo $order['no']; ?>)"
+                                                class="px-1 py-0.5 text-[10px] bg-blue-500 text-white rounded hover:bg-blue-600 flex-shrink-0">저장</button>
                                     </div>
                                 <?php endif; ?>
                             </td>
-                            <td class="px-3 py-2 text-center">
-                                <?php 
+                            <td class="px-2 py-1 text-center">
+                                <?php
                                     $style = $order['OrderStyle'] ?? '0';
                                     $color = $status_colors[$style] ?? 'bg-gray-100 text-gray-700';
                                     $label = $status_labels[$style] ?? '미정';
                                 ?>
-                                <span class="inline-block px-2 py-0.5 text-xs font-medium rounded-full <?php echo $color; ?>"><?php echo $label; ?></span>
+                                <span class="inline-block px-1.5 py-0.5 text-xs font-medium rounded-full <?php echo $color; ?>"><?php echo $label; ?></span>
                             </td>
-                            <td class="px-3 py-2 text-center">
+                            <td class="px-2 py-1 text-center">
                                 <?php
                                     $file_count = count($order['files']);
                                     if ($file_count === 0):
                                 ?>
                                     <span class="text-gray-400 text-xs">없음</span>
                                 <?php elseif ($file_count === 1): ?>
-                                    <span class="inline-flex items-center gap-1 px-2 py-0.5 text-xs font-medium rounded-full bg-blue-50 text-blue-600">
+                                    <span class="inline-flex items-center gap-1 px-1.5 py-0.5 text-xs font-medium rounded-full bg-blue-50 text-blue-600">
                                         📄 1개
                                     </span>
                                 <?php else: ?>
-                                    <span class="inline-flex items-center gap-1 px-2 py-0.5 text-xs font-medium rounded-full bg-amber-50 text-amber-700 ring-1 ring-amber-200">
+                                    <span class="inline-flex items-center gap-1 px-1.5 py-0.5 text-xs font-medium rounded-full bg-amber-50 text-amber-700 ring-1 ring-amber-200">
                                         📑 <?php echo $file_count; ?>개
                                         <span class="text-[10px] text-amber-500"><?php echo $order['latest_date']; ?></span>
                                     </span>
                                 <?php endif; ?>
                             </td>
-                            <td class="px-3 py-2 text-xs text-gray-400 text-center"><?php echo date('Y/m/d H:i', strtotime($order['date'])); ?></td>
-                            <td class="px-3 py-2 text-center">
+                            <td class="px-2 py-1 text-xs text-gray-400 text-center"><?php echo date('Y/m/d H:i', strtotime($order['date'])); ?></td>
+                            <td class="px-2 py-1 text-center">
                                 <?php if (!empty($order['files'])): ?>
-                                <button onclick="viewFiles(<?php echo $order['no']; ?>)" class="relative px-2 py-1 text-xs bg-blue-50 text-blue-600 rounded hover:bg-blue-100" title="교정파일 보기">
+                                <button onclick="viewFiles(<?php echo $order['no']; ?>)" class="relative px-1.5 py-0.5 text-xs bg-blue-50 text-blue-600 rounded hover:bg-blue-100" title="교정파일 보기">
                                     🔍보기
                                     <?php if (count($order['files']) > 1): ?>
-                                    <span class="absolute -top-1.5 -right-1.5 min-w-[16px] h-4 flex items-center justify-center px-1 text-[10px] font-bold text-white bg-amber-500 rounded-full leading-none"><?php echo count($order['files']); ?></span>
+                                    <span class="absolute -top-1.5 -right-1.5 min-w-[14px] h-3.5 flex items-center justify-center px-0.5 text-[9px] font-bold text-white bg-amber-500 rounded-full leading-none"><?php echo count($order['files']); ?></span>
                                     <?php endif; ?>
                                 </button>
                                 <?php else: ?>
                                 <span class="text-gray-300 text-xs">-</span>
                                 <?php endif; ?>
                             </td>
-                            <td class="px-3 py-2 text-center">
-                                <button onclick="openUpload(<?php echo $order['no']; ?>)" class="px-2 py-1 text-xs bg-green-50 text-green-600 rounded hover:bg-green-100" title="파일 올리기">📤올리기</button>
+                            <td class="px-2 py-1 text-center">
+                                <button onclick="openUpload(<?php echo $order['no']; ?>)" class="px-1.5 py-0.5 text-xs bg-green-50 text-green-600 rounded hover:bg-green-100" title="파일 올리기">📤올리기</button>
                             </td>
                         </tr>
                         <?php endforeach; ?>
@@ -225,7 +217,7 @@ include __DIR__ . '/../includes/sidebar.php';
                 $start = max(1, $page - $range);
                 $end = min($total_pages, $page + $range);
             ?>
-            <div class="px-3 py-2 border-t border-gray-200 flex items-center justify-between text-sm">
+            <div class="px-3 py-1.5 border-t border-gray-200 flex items-center justify-between text-xs">
                 <span class="text-gray-500">총 <?php echo number_format($total); ?>건</span>
                 <div class="flex items-center gap-1">
                     <?php if ($page > 1): ?>
