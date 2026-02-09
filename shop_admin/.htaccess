@@ -1,0 +1,2 @@
+# PHP-FPM 환경에서 HTTP Basic Auth 헤더 전달
+SetEnvIf Authorization "(.*)" HTTP_AUTHORIZATION=$1
