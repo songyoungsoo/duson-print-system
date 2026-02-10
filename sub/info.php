@@ -54,7 +54,7 @@ function MM_swapImage() { //v3.0
 
 <body background="/img/bg.gif" leftmargin="0" topmargin="0" marginwidth="0" marginheight="0" onLoad="MM_preloadImages('../img/main_m1a.jpg','../img/main_m2a.jpg','../img/main_m3a.jpg','../img/main_m5a.jpg','../img/main_m6a.jpg','../img/main_m7a.jpg','../img/main_m8a.jpg','../img/main_m10a.jpg','../img/main_m11a.jpg')">
 <table width="990" border="0" align="center" cellpadding="0" cellspacing="0">
-		<tr style="background-image: url('http://dsp1830.shop/img/top231205.gif');
+		<tr style="background-image: url('/img/top231205.gif');
 		background-repeat: no-repeat;
 		background-size: cover;
 		width: 990px;

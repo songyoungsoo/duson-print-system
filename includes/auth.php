@@ -164,7 +164,7 @@ function setRememberMeCookie($token) {
         'expires' => $expires,
         'path' => '/',
         'domain' => '',
-        'secure' => false,  // HTTPS 사용 시 true로 변경
+        'secure' => (!empty($_SERVER['HTTPS']) && $_SERVER['HTTPS'] !== 'off'),
         'httponly' => true,
         'samesite' => 'Lax'
     ]);

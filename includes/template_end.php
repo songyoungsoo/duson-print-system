@@ -110,8 +110,8 @@
                 <!-- 하단 정보 -->
                 <div class="footer-bottom">
                     <div class="footer-copyright">
-                        <p>© 2024 두손기획인쇄. All rights reserved.</p>
-                        <p>고품질 인쇄물을 합리적인 가격으로 제작해드립니다. | 사업자등록번호: 123-45-67890</p>
+                        <p>© 2026 두손기획인쇄. All rights reserved.</p>
+                        <p>고품질 인쇄물을 합리적인 가격으로 제작해드립니다. | 사업자등록번호: 107-06-45106</p>
                     </div>
                 </div>
             </div>

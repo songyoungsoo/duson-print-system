@@ -83,9 +83,10 @@ async function loadMembers(page) {
             return;
         }
 
-        members.forEach(function(m) {
+        members.forEach(function(m, idx) {
             var tr = document.createElement('tr');
-            tr.className = 'hover:bg-gray-50';
+            tr.className = idx % 2 === 1 ? 'hover:bg-gray-100' : 'hover:bg-gray-50';
+            if (idx % 2 === 1) tr.style.backgroundColor = '#e6f7ff';
 
             var td1 = document.createElement('td');
             td1.className = 'px-2 py-2 whitespace-nowrap text-xs font-medium text-gray-900';

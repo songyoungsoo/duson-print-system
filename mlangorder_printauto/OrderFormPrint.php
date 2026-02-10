@@ -705,7 +705,7 @@ function extractUnit($order) {
             <div class="company-logo">두손기획인쇄</div>
             <div class="company-details">
                 서울 영등포구 영등포로36길 9, 송호빌딩 1층<br>
-                TEL: 02-2632-1830 | FAX: 02-2632-1831 | www.dsp1830.shop
+                TEL: 02-2632-1830 | FAX: 02-2632-1831 | www.dsp114.co.kr
             </div>
         </div>
         

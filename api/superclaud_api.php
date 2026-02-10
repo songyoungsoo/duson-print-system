@@ -13,6 +13,15 @@ ini_set('display_errors', 0);
 ini_set('log_errors', 1);
 
 header('Content-Type: application/json');
+
+// 로컬 환경에서만 접근 허용
+$remote_ip = $_SERVER['REMOTE_ADDR'] ?? '';
+if (!in_array($remote_ip, ['127.0.0.1', '::1'])) {
+    http_response_code(403);
+    echo json_encode(['error' => 'Access denied']);
+    exit;
+}
+
 header('Access-Control-Allow-Origin: *');
 header('Access-Control-Allow-Methods: GET, POST, PUT, DELETE, OPTIONS');
 header('Access-Control-Allow-Headers: Content-Type, Authorization, X-Requested-With');

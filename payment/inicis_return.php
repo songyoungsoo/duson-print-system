@@ -95,7 +95,7 @@ if ($authToken && $authUrl) {
     curl_setopt($ch, CURLOPT_POST, true);
     curl_setopt($ch, CURLOPT_POSTFIELDS, http_build_query($authData));
     curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
-    curl_setopt($ch, CURLOPT_SSL_VERIFYPEER, false);
+    curl_setopt($ch, CURLOPT_SSL_VERIFYPEER, true);
     curl_setopt($ch, CURLOPT_TIMEOUT, 30);
     curl_setopt($ch, CURLOPT_HTTPHEADER, ['Content-Type: application/x-www-form-urlencoded']);
     
@@ -200,6 +200,7 @@ if (!validateInicisIP($client_ip)) {
 // 세션 검증
 if (!isset($_SESSION['inicis_oid']) || $_SESSION['inicis_oid'] !== $oid) {
     logInicisTransaction("세션 불일치 - 요청 OID: {$oid}, 세션 OID: " . ($_SESSION['inicis_oid'] ?? 'null'), 'error');
+    die('Session Mismatch');
 }
 
 // 주문번호 추출 (DSP123_20250201... → 123)
@@ -210,19 +211,7 @@ $order_no = intval($matches[1] ?? 0);
 
 if (!$order_no) {
     logInicisTransaction("주문번호 추출 실패 - OID: {$oid}, matches: " . json_encode($matches), 'error');
-    
-    // 디버깅: 화면에 상세 정보 출력
-    echo "<h1>디버깅 정보</h1>";
-    echo "<h2>POST 데이터:</h2>";
-    echo "<pre>" . htmlspecialchars(print_r($_POST, true)) . "</pre>";
-    echo "<h2>추출 시도한 OID:</h2>";
-    echo "<pre>OID: " . htmlspecialchars($oid) . "</pre>";
-    echo "<pre>MOID: " . htmlspecialchars($_POST['MOID'] ?? 'NULL') . "</pre>";
-    echo "<h2>정규표현식 매칭 결과:</h2>";
-    echo "<pre>" . htmlspecialchars(print_r($matches, true)) . "</pre>";
-    echo "<h2>세션 데이터:</h2>";
-    echo "<pre>" . htmlspecialchars(print_r($_SESSION, true)) . "</pre>";
-    die();
+    die('Invalid Order');
 }
 
 // 주문 정보 조회
@@ -236,6 +225,14 @@ mysqli_stmt_close($stmt);
 if (!$order) {
     logInicisTransaction("주문 정보 없음 - 주문번호: {$order_no}", 'error');
     die('Order Not Found');
+}
+
+// 결제 금액 서버 검증: PG 반환 금액 vs DB 주문 금액 비교
+$expected_amount = intval($order['money_1'] ?? 0);
+$paid_amount = intval($price);
+if ($expected_amount > 0 && $paid_amount !== $expected_amount) {
+    logInicisTransaction("결제 금액 불일치! 주문금액: {$expected_amount}, 결제금액: {$paid_amount}, 주문번호: {$order_no}, TID: {$tid}", 'error');
+    die('Amount Mismatch');
 }
 
 // 결제 결과 처리

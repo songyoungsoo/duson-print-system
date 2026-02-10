@@ -15,7 +15,7 @@
         <div style="color: #666; line-height: 1.5; font-family: 'Noto Sans KR', sans-serif; font-size: 13px;">
           <p style="margin: 3px 0;"><strong>주소:</strong><br>서울 영등포구 영등포로 36길 9<br>송호빌딩 1F</p>
           <p style="margin: 3px 0;"><strong>전화:</strong> 02-2632-1830</p>
-          <p style="margin: 3px 0;"><strong>웹사이트:</strong> www.dsp1830.shop</p>
+          <p style="margin: 3px 0;"><strong>웹사이트:</strong> dsp114.co.kr</p>
         </div>
       </div>
 
@@ -56,8 +56,8 @@
     <!-- 하단 정보 -->
     <div style="border-top: 1px solid #dee2e6; margin-top: 25px; padding-top: 20px; text-align: center;">
       <p style="color: #999; font-size: 12px; margin: 0; font-family: 'Noto Sans KR', sans-serif; line-height: 1.6;">
-        © 2024 두손기획인쇄. All rights reserved.<br>
-        고품질 인쇄물을 합리적인 가격으로 제작해드립니다. | 사업자등록번호: 123-45-67890
+        © 2026 두손기획인쇄. All rights reserved.<br>
+        고품질 인쇄물을 합리적인 가격으로 제작해드립니다. | 사업자등록번호: 107-06-45106
       </p>
     </div>
   </div>

@@ -3,6 +3,16 @@
  * 견적서 PDF 생성 API
  */
 
+session_start();
+
+// 로그인 확인 (세션만 허용)
+if (!isset($_SESSION['user_id']) && !isset($_SESSION['id_login_ok'])) {
+    header('Content-Type: application/json; charset=UTF-8');
+    http_response_code(401);
+    echo json_encode(['success' => false, 'error' => '로그인이 필요합니다']);
+    exit;
+}
+
 if (!isset($_GET['download']) || $_GET['download'] != '1') {
     header('Content-Type: application/json; charset=UTF-8');
 }

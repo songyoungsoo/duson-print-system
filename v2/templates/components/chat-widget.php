@@ -33,7 +33,7 @@
             </div>
             
             <div class="space-y-2">
-                <a href="tel:02-1234-5678" 
+                <a href="tel:02-2632-1830" 
                    class="flex items-center justify-center space-x-2 w-full py-3 bg-green-500 text-white rounded-lg hover:bg-green-600 transition-colors">
                     <span>📞</span>
                     <span>전화 상담</span>

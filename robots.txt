@@ -1,0 +1,14 @@
+User-agent: *
+Allow: /
+Disallow: /admin/
+Disallow: /dashboard/
+Disallow: /shop_admin/
+Disallow: /includes/
+Disallow: /api/
+Disallow: /system/
+Disallow: /tools/
+Disallow: /session/
+Disallow: /member/change_password.php
+Disallow: /member/password_reset.php
+
+Sitemap: https://dsp114.co.kr/sitemap.xml

@@ -341,7 +341,7 @@ HTML;
         </div>
         <div class="footer">
             <p>두손기획인쇄 | 전화: 02-2632-1830 | 이메일: dsp1830@naver.com</p>
-            <p>서울시 영등포구 | www.dsp114.com</p>
+            <p>서울시 영등포구 | www.dsp114.co.kr</p>
         </div>
     </div>
 </body>

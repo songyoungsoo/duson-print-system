@@ -267,7 +267,7 @@ class TaxInvoiceTemplate {
                 <div class="section-title">공급자</div>
                 <div class="company-info">
                     <span class="company-label">등록번호</span>
-                    <span class="company-value">123-45-67890</span>
+                    <span class="company-value">107-06-45106</span>
                 </div>
                 <div class="company-info">
                     <span class="company-label">상호 (법인명)</span>
@@ -275,11 +275,11 @@ class TaxInvoiceTemplate {
                 </div>
                 <div class="company-info">
                     <span class="company-label">성명 (대표자)</span>
-                    <span class="company-value">홍길동</span>
+                    <span class="company-value">차경선</span>
                 </div>
                 <div class="company-info">
                     <span class="company-label">사업장 주소</span>
-                    <span class="company-value">서울특별시 강남구 테헤란로 123</span>
+                    <span class="company-value">서울시 영등포구 영등포로 36길 9 송호빌딩 1층</span>
                 </div>
                 <div class="company-info">
                     <span class="company-label">업태</span>
@@ -291,11 +291,11 @@ class TaxInvoiceTemplate {
                 </div>
                 <div class="company-info">
                     <span class="company-label">전화번호</span>
-                    <span class="company-value">02-1234-5678</span>
+                    <span class="company-value">02-2632-1830</span>
                 </div>
                 <div class="company-info">
                     <span class="company-label">이메일</span>
-                    <span class="company-value">info@dsp114.com</span>
+                    <span class="company-value">dsp1830@naver.com</span>
                 </div>
             </div>
 
@@ -414,7 +414,7 @@ class TaxInvoiceTemplate {
         <!-- 하단 정보 -->
         <div class="footer-section">
             <p>본 세금계산서는 전자세금계산서로 발급되었습니다.</p>
-            <p>두손기획인쇄 | www.dsp114.com | TEL: 02-1234-5678</p>
+            <p>두손기획인쇄 | www.dsp114.co.kr | TEL: 02-2632-1830</p>
             <p style="margin-top: 15px; font-size: 10px; color: #999;">
                 본 문서는 <?php echo date('Y-m-d H:i:s'); ?>에 출력되었습니다.
             </p>

@@ -56,11 +56,11 @@ function getAdminCredentials() {
         }
     }
 
-    // 3. 기본값 (로컬/리모트 동일)
+    // 3. 기본값 (로컬/리모트 동일) — 반드시 비밀번호 변경 필요
     return [
         'username' => 'admin',
         'password_hash' => password_hash('admin123', PASSWORD_DEFAULT),
-        'needs_change' => false
+        'needs_change' => true
     ];
 }
 

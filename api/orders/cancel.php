@@ -8,8 +8,8 @@
 session_start();
 include "../../db.php";
 
-// 로그인 체크
-$is_logged_in = isset($_SESSION['user_id']) || isset($_SESSION['id_login_ok']) || isset($_COOKIE['id_login_ok']);
+// 로그인 체크 (세션만 허용, 쿠키 인증 제거)
+$is_logged_in = isset($_SESSION['user_id']) || isset($_SESSION['id_login_ok']);
 
 if (!$is_logged_in) {
     header('Location: /member/login.php');
@@ -21,8 +21,6 @@ if (isset($_SESSION['user_id'])) {
     $user_name = $_SESSION['user_name'] ?? '';
 } elseif (isset($_SESSION['id_login_ok'])) {
     $user_name = $_SESSION['id_login_ok']['id'] ?? '';
-} elseif (isset($_COOKIE['id_login_ok'])) {
-    $user_name = $_COOKIE['id_login_ok'];
 }
 
 // 주문번호 파라미터
