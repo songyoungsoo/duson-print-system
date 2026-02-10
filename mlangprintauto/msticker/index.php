@@ -123,6 +123,7 @@ if ($type_row = mysqli_fetch_assoc($type_result)) {
     <link rel="stylesheet" href="../../css/upload-modal-common.css">
     <!-- 견적서 모달용 공통 스타일 -->
     <link rel="stylesheet" href="../../css/quotation-modal-common.css">
+    <?php include_once $_SERVER['DOCUMENT_ROOT'] . '/includes/product_schema.php'; echo_product_schema('msticker'); ?>
 </head>
 <body class="msticker-page<?php echo ($isQuotationMode || $isAdminQuoteMode) ? ' quotation-modal-mode' : ''; ?>">
     <?php if (!$isQuotationMode && !$isAdminQuoteMode) include "../../includes/header-ui.php"; ?>

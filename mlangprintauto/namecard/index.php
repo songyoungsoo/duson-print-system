@@ -190,6 +190,7 @@ if ($type_result && ($type_row = mysqli_fetch_assoc($type_result))) {
             }
         }
     </style>
+    <?php include_once $_SERVER['DOCUMENT_ROOT'] . '/includes/product_schema.php'; echo_product_schema('namecard'); ?>
 </head>
 <body class="namecard-page<?php echo ($isQuotationMode || $isAdminQuoteMode) ? ' quotation-modal-mode' : ''; ?>" <?php ThemeLoader::renderBodyAttributes(); ?>>
     <?php if (!$isQuotationMode && !$isAdminQuoteMode) include "../../includes/header-ui.php"; ?>

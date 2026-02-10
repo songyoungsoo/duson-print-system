@@ -217,6 +217,7 @@ header("Expires: 0");
             box-shadow: 0 4px 12px rgba(240, 147, 251, 0.4);
         }
     </style>
+    <?php include_once $_SERVER['DOCUMENT_ROOT'] . '/includes/product_schema.php'; echo_product_schema('inserted'); ?>
 </head>
 
 <body class="inserted-page<?php echo ($isQuotationMode || $isAdminQuoteMode) ? ' quotation-modal-mode' : ''; ?>" <?php ThemeLoader::renderBodyAttributes(); ?>>

@@ -131,7 +131,7 @@ if ($type_result && ($type_row = mysqli_fetch_assoc($type_result))) {
     <!-- 테마 시스템 CSS -->
     <?php ThemeLoader::renderCSS(); ?>
 
-
+    <?php include_once $_SERVER['DOCUMENT_ROOT'] . '/includes/product_schema.php'; echo_product_schema('merchandisebond'); ?>
 </head>
 <body class="merchandisebond-page<?php echo ($isQuotationMode || $isAdminQuoteMode) ? ' quotation-modal-mode' : ''; ?>" <?php ThemeLoader::renderBodyAttributes(); ?>>
     <?php if (!$isQuotationMode && !$isAdminQuoteMode) include "../../includes/header-ui.php"; ?>

@@ -141,7 +141,7 @@ $default_values['MY_type'] = '475'; // 양식(100매철)
     <!-- 테마 시스템 CSS -->
     <?php ThemeLoader::renderCSS(); ?>
 
-
+    <?php include_once $_SERVER['DOCUMENT_ROOT'] . '/includes/product_schema.php'; echo_product_schema('ncrflambeau'); ?>
 </head>
 
 <body class="ncrflambeau-page<?php echo ($isQuotationMode || $isAdminQuoteMode) ? ' quotation-modal-mode' : ''; ?>" <?php ThemeLoader::renderBodyAttributes(); ?>>

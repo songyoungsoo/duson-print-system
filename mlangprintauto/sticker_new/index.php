@@ -289,6 +289,7 @@ $default_values = [
             }
         }
     </style>
+    <?php include_once $_SERVER['DOCUMENT_ROOT'] . '/includes/product_schema.php'; echo_product_schema('sticker_new'); ?>
 </head>
 <body class="sticker-page<?php echo $body_class; ?>">
 <?php if (!$is_quotation_mode && !$is_admin_quote_mode): ?>
