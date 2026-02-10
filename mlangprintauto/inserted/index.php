@@ -144,7 +144,16 @@ header("Expires: 0");
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title><?php echo safe_html($page_title); ?></title>
+    <title>전단지 인쇄 | 전단지 제작 - 두손기획인쇄</title>
+    <meta name="description" content="전단지 인쇄 전문 두손기획인쇄. A4, A5, B5 전단지 소량부터 대량까지 빠른 제작. 실시간 견적 확인, 디자인 지원. 서울 영등포구 당일 출고 가능.">
+    <meta name="keywords" content="전단지 인쇄, 전단지 제작, 리플렛 인쇄, 전단지 가격, 홍보 전단지, 광고 전단지, A4 전단지">
+    <link rel="canonical" href="https://dsp114.co.kr/mlangprintauto/inserted/">
+    <meta property="og:type" content="website">
+    <meta property="og:title" content="전단지 인쇄 | 전단지 제작 - 두손기획인쇄">
+    <meta property="og:description" content="전단지 인쇄 전문. A4, A5, B5 전단지 소량부터 대량까지 빠른 제작. 실시간 견적 확인.">
+    <meta property="og:url" content="https://dsp114.co.kr/mlangprintauto/inserted/">
+    <meta property="og:image" content="https://dsp114.co.kr/ImgFolder/dusonlogo1.png">
+    <meta property="og:site_name" content="두손기획인쇄">
 
     <!-- 세션 ID 메타 태그 -->
     <meta name="session-id" content="<?php echo htmlspecialchars($session_id); ?>">

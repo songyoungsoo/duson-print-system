@@ -74,11 +74,17 @@ if ($type_result && ($type_row = mysqli_fetch_assoc($type_result))) {
     <link rel="stylesheet" href="../../css/color-system-unified.css">
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title><?php echo safe_html($page_title); ?></title>
-    
-    
-    
-    
+    <title>상품권 인쇄 | 쿠폰 제작 - 두손기획인쇄</title>
+    <meta name="description" content="상품권·쿠폰 인쇄 전문 두손기획인쇄. 매장 상품권, 할인 쿠폰, 이용권 맞춤 제작. 넘버링 가능. 소량부터 대량까지. 실시간 견적 확인.">
+    <meta name="keywords" content="상품권 인쇄, 쿠폰 제작, 이용권 인쇄, 매장 상품권, 할인쿠폰, 상품권 가격">
+    <link rel="canonical" href="https://dsp114.co.kr/mlangprintauto/merchandisebond/">
+    <meta property="og:type" content="website">
+    <meta property="og:title" content="상품권 인쇄 | 쿠폰 제작 - 두손기획인쇄">
+    <meta property="og:description" content="상품권·쿠폰 인쇄 전문. 매장 상품권, 할인 쿠폰 맞춤 제작. 넘버링 가능.">
+    <meta property="og:url" content="https://dsp114.co.kr/mlangprintauto/merchandisebond/">
+    <meta property="og:image" content="https://dsp114.co.kr/ImgFolder/dusonlogo1.png">
+    <meta property="og:site_name" content="두손기획인쇄">
+
     <!-- 상품권/쿠폰 컴팩트 페이지 전용 CSS -->
     <link rel="stylesheet" href="../../css/product-layout.css?v=<?php echo filemtime(__DIR__ . '/../../css/product-layout.css'); ?>">
     <link rel="stylesheet" href="../../css/unified-gallery.css">

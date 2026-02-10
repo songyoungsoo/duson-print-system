@@ -78,11 +78,17 @@ if ($type_result && ($type_row = mysqli_fetch_assoc($type_result))) {
     <link rel="stylesheet" href="../../css/color-system-unified.css">
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title><?php echo safe_html($page_title); ?></title>
-    
-    
-    
-    
+    <title>봉투 인쇄 | 봉투 제작 - 두손기획인쇄</title>
+    <meta name="description" content="봉투 인쇄 전문 두손기획인쇄. 대봉투, 소봉투, 창봉투 맞춤 제작. 회사 로고·주소 인쇄. 규격·비규격 모두 가능. 실시간 견적 확인.">
+    <meta name="keywords" content="봉투 인쇄, 봉투 제작, 대봉투, 소봉투, 창봉투, 회사봉투, 서류봉투">
+    <link rel="canonical" href="https://dsp114.co.kr/mlangprintauto/envelope/">
+    <meta property="og:type" content="website">
+    <meta property="og:title" content="봉투 인쇄 | 봉투 제작 - 두손기획인쇄">
+    <meta property="og:description" content="봉투 인쇄 전문. 대봉투, 소봉투, 창봉투 맞춤 제작. 회사 로고 인쇄 가능.">
+    <meta property="og:url" content="https://dsp114.co.kr/mlangprintauto/envelope/">
+    <meta property="og:image" content="https://dsp114.co.kr/ImgFolder/dusonlogo1.png">
+    <meta property="og:site_name" content="두손기획인쇄">
+
     <!-- 봉투 컴팩트 페이지 전용 CSS -->
     <link rel="stylesheet" href="../../css/product-layout.css?v=<?php echo filemtime(__DIR__ . '/../../css/product-layout.css'); ?>">
     <!-- 통합 가격 표시 시스템 CSS -->

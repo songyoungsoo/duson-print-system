@@ -106,11 +106,17 @@ $default_values['ordertype'] = 'print'; // 인쇄만
     <link rel="stylesheet" href="../../css/color-system-unified.css">
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title><?php echo safe_html($page_title); ?></title>
-    
-    
-    
-    
+    <title>포스터 인쇄 | 리플렛 제작 - 두손기획인쇄</title>
+    <meta name="description" content="포스터·리플렛 인쇄 전문 두손기획인쇄. A3, B3 포스터, 2단·3단 리플렛 소량부터 대량까지. 고품질 옵셋 인쇄. 실시간 견적 확인, 빠른 배송.">
+    <meta name="keywords" content="포스터 인쇄, 리플렛 인쇄, 리플렛 제작, A3 포스터, 소량 인쇄, 포스터 가격">
+    <link rel="canonical" href="https://dsp114.co.kr/mlangprintauto/littleprint/">
+    <meta property="og:type" content="website">
+    <meta property="og:title" content="포스터 인쇄 | 리플렛 제작 - 두손기획인쇄">
+    <meta property="og:description" content="포스터·리플렛 인쇄 전문. A3, B3 포스터 소량부터 대량까지. 고품질 옵셋 인쇄.">
+    <meta property="og:url" content="https://dsp114.co.kr/mlangprintauto/littleprint/">
+    <meta property="og:image" content="https://dsp114.co.kr/ImgFolder/dusonlogo1.png">
+    <meta property="og:site_name" content="두손기획인쇄">
+
     <!-- 포스터 컴팩트 페이지 전용 CSS -->
     <link rel="stylesheet" href="../../css/product-layout.css?v=<?php echo filemtime(__DIR__ . '/../../css/product-layout.css'); ?>">
     <!-- 공통 버튼 스타일 CSS -->
