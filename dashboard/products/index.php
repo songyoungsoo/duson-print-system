@@ -9,8 +9,8 @@ include __DIR__ . '/../includes/sidebar.php';
 <main class="flex-1 overflow-y-auto bg-gray-50">
     <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-4">
         <div class="mb-4">
-            <h1 class="text-2xl font-bold text-gray-900">제품 관리</h1>
-            <p class="mt-1 text-sm text-gray-600">제품 옵션 및 가격 관리 (9개 제품 유형)</p>
+            <h1 class="text-lg font-bold text-gray-900">제품 관리</h1>
+            <p class="mt-1 text-xs text-gray-600">제품 옵션 및 가격 관리 (9개 제품 유형)</p>
         </div>
 
         <div class="grid grid-cols-2 lg:grid-cols-3 gap-3">

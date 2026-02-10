@@ -48,10 +48,10 @@ include __DIR__ . '/../includes/sidebar.php';
     <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-4">
         <div class="mb-4 flex items-center justify-between">
             <div>
-                <h1 class="text-2xl font-bold text-gray-900">스티커 가격 수정</h1>
-                <p class="mt-1 text-sm text-gray-600">일반아트지, 강접, 특수지, 초강접 스티커 요율 관리</p>
+                <h1 class="text-lg font-bold text-gray-900">스티커 가격 수정</h1>
+                <p class="mt-1 text-xs text-gray-600">일반아트지, 강접, 특수지, 초강접 스티커 요율 관리</p>
             </div>
-            <a href="/dashboard/pricing/" class="px-3 py-1.5 text-sm bg-gray-600 text-white rounded-lg hover:bg-gray-700 transition-colors">
+            <a href="/dashboard/pricing/" class="px-3 py-1 text-xs bg-gray-600 text-white rounded hover:bg-gray-700 transition-colors">
                 가격 관리
             </a>
         </div>
@@ -62,18 +62,18 @@ include __DIR__ . '/../includes/sidebar.php';
                 <div class="flex-1">
                     <label class="block text-xs font-medium text-gray-700 mb-1">조정 비율 (%)</label>
                     <input type="number" id="bulkPercent" step="0.1" placeholder="예: 10 (10% 인상), -5 (5% 인하)"
-                           class="w-full px-3 py-1.5 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500">
+                           class="w-full px-2 py-1 text-xs border border-gray-300 rounded focus:ring-1 focus:ring-blue-500">
                 </div>
                 <div class="w-48">
                     <label class="block text-xs font-medium text-gray-700 mb-1">대상 스티커 타입</label>
-                    <select id="bulkTarget" class="w-full px-3 py-1.5 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500">
+                    <select id="bulkTarget" class="w-full px-2 py-1 text-xs border border-gray-300 rounded focus:ring-1 focus:ring-blue-500">
                         <option value="all">전체</option>
                         <?php foreach ($stickerTypes as $key => $type): ?>
                         <option value="<?php echo $key; ?>"><?php echo $type['name']; ?></option>
                         <?php endforeach; ?>
                     </select>
                 </div>
-                <button id="bulkApplyBtn" class="px-4 py-1.5 text-sm bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors">
+                <button id="bulkApplyBtn" class="px-3 py-1 text-xs bg-blue-600 text-white rounded hover:bg-blue-700 transition-colors">
                     일괄 적용
                 </button>
             </div>
@@ -89,9 +89,9 @@ include __DIR__ . '/../includes/sidebar.php';
                     <table class="min-w-full divide-y divide-gray-200">
                         <thead class="bg-gray-50">
                             <tr>
-                                <th class="px-3 py-1.5 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">수량 구간</th>
-                                <th class="px-3 py-1.5 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">현재 금액</th>
-                                <th class="px-3 py-1.5 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">새 금액</th>
+                                <th class="px-2 py-1.5 text-left text-xs font-medium text-gray-500">수량 구간</th>
+                                <th class="px-2 py-1.5 text-right text-xs font-medium text-gray-500">현재 금액</th>
+                                <th class="px-2 py-1.5 text-right text-xs font-medium text-gray-500">새 금액</th>
                             </tr>
                         </thead>
                         <tbody class="bg-white divide-y divide-gray-200">
@@ -101,16 +101,17 @@ include __DIR__ . '/../includes/sidebar.php';
                             $dbValue = floatval($stickerData[$key][$fieldName] ?? 0);
                             $displayValue = getDisplayPrice($dbValue);
                             ?>
-                            <tr data-type="<?php echo $key; ?>" data-field="<?php echo $fieldName; ?>" data-db-value="<?php echo $dbValue; ?>">
-                                <td class="px-3 py-1.5 whitespace-nowrap text-sm font-medium text-gray-900">
+                            <tr data-type="<?php echo $key; ?>" data-field="<?php echo $fieldName; ?>" data-db-value="<?php echo $dbValue; ?>"
+                                style="<?php echo ($i % 2 === 1) ? 'background-color: #e6f7ff;' : ''; ?>">
+                                <td class="px-2 py-2 whitespace-nowrap text-xs font-medium text-gray-900">
                                     <?php echo $quantityRanges[$i]; ?>
                                 </td>
-                                <td class="px-3 py-1.5 whitespace-nowrap text-sm text-gray-900 text-right original-price">
+                                <td class="px-2 py-2 whitespace-nowrap text-xs text-gray-900 text-right original-price">
                                     <?php echo number_format($displayValue); ?>
                                 </td>
-                                <td class="px-3 py-1.5 whitespace-nowrap text-sm text-right">
+                                <td class="px-2 py-2 whitespace-nowrap text-xs text-right">
                                     <input type="number"
-                                           class="price-input w-32 px-2 py-0.5 border border-gray-300 rounded text-right text-sm"
+                                           class="price-input w-32 px-2 py-0.5 border border-gray-300 rounded text-right text-xs"
                                            name="<?php echo $fieldName; ?>"
                                            value="<?php echo $displayValue; ?>"
                                            data-type="<?php echo $key; ?>"
@@ -128,10 +129,10 @@ include __DIR__ . '/../includes/sidebar.php';
 
             <div class="bg-white rounded-lg shadow p-4">
                 <div class="flex justify-end gap-3">
-                    <button type="button" id="resetBtn" class="px-4 py-1.5 text-sm bg-gray-600 text-white rounded-lg hover:bg-gray-700 transition-colors">
+                    <button type="button" id="resetBtn" class="px-3 py-1 text-xs bg-gray-600 text-white rounded hover:bg-gray-700 transition-colors">
                         초기화
                     </button>
-                    <button type="submit" class="px-4 py-1.5 text-sm bg-green-600 text-white rounded-lg hover:bg-green-700 transition-colors">
+                    <button type="submit" class="px-3 py-1 text-xs bg-green-600 text-white rounded hover:bg-green-700 transition-colors">
                         변경사항 저장
                     </button>
                 </div>

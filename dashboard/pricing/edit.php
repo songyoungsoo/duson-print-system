@@ -24,12 +24,13 @@ $sectionOptions = [];
 $treeOptions = [];
 
 if (!empty($ttable)) {
+    // 1차: Ttable로 카테고리 조회
     $catQuery = "SELECT no, BigNo, title, TreeNo FROM mlangprintauto_transactioncate WHERE Ttable = ?";
     $catStmt = mysqli_prepare($db, $catQuery);
     mysqli_stmt_bind_param($catStmt, "s", $ttable);
     mysqli_stmt_execute($catStmt);
     $catResult = mysqli_stmt_get_result($catStmt);
-    
+
     $allCategories = [];
     while ($catRow = mysqli_fetch_assoc($catResult)) {
         $allCategories[] = $catRow;
@@ -40,7 +41,36 @@ if (!empty($ttable)) {
         ];
     }
     mysqli_stmt_close($catStmt);
-    
+
+    // 2차: 가격 테이블에서 사용된 style/Section 중 누락된 카테고리 보충 조회
+    $usedNos = [];
+    $selectNos = "SELECT DISTINCT style FROM `{$table}` UNION SELECT DISTINCT Section FROM `{$table}`";
+    $nosResult = mysqli_query($db, $selectNos);
+    while ($nosRow = mysqli_fetch_row($nosResult)) {
+        $no = $nosRow[0];
+        if ($no !== '' && $no !== null && !isset($categoryTitles[$no])) {
+            $usedNos[] = intval($no);
+        }
+    }
+    if (!empty($usedNos)) {
+        $placeholders = implode(',', array_fill(0, count($usedNos), '?'));
+        $types = str_repeat('i', count($usedNos));
+        $extraQuery = "SELECT no, BigNo, title, TreeNo FROM mlangprintauto_transactioncate WHERE no IN ({$placeholders})";
+        $extraStmt = mysqli_prepare($db, $extraQuery);
+        mysqli_stmt_bind_param($extraStmt, $types, ...$usedNos);
+        mysqli_stmt_execute($extraStmt);
+        $extraResult = mysqli_stmt_get_result($extraStmt);
+        while ($extraRow = mysqli_fetch_assoc($extraResult)) {
+            $allCategories[] = $extraRow;
+            $categoryTitles[$extraRow['no']] = [
+                'title' => $extraRow['title'],
+                'bigNo' => $extraRow['BigNo'],
+                'treeNo' => $extraRow['TreeNo']
+            ];
+        }
+        mysqli_stmt_close($extraStmt);
+    }
+
     foreach ($allCategories as $cat) {
         $no = $cat['no'];
         $bigNo = $cat['BigNo'];
@@ -48,7 +78,7 @@ if (!empty($ttable)) {
         $title = $cat['title'];
         $bigNoEmpty = ($bigNo === '' || $bigNo === null || $bigNo === '0' || $bigNo === 0);
         $treeNoEmpty = ($treeNo === '' || $treeNo === null);
-        
+
         if ($bigNo === '0' || $bigNo === 0) {
             // Style (최상위 카테고리): BigNo = 0
             $styleOptions[$no] = $title;
@@ -93,10 +123,10 @@ include __DIR__ . '/../includes/sidebar.php';
     <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-4">
         <div class="mb-4 flex items-center justify-between">
             <div>
-                <h1 class="text-2xl font-bold text-gray-900"><?php echo $product_config['name']; ?> 가격 수정</h1>
-                <p class="mt-1 text-sm text-gray-600">일괄 가격 인상/인하 또는 개별 수정</p>
+                <h1 class="text-lg font-bold text-gray-900"><?php echo $product_config['name']; ?> 가격 수정</h1>
+                <p class="mt-1 text-xs text-gray-600">일괄 가격 인상/인하 또는 개별 수정</p>
             </div>
-            <a href="/dashboard/pricing/" class="px-3 py-1.5 text-sm bg-gray-600 text-white rounded-lg hover:bg-gray-700 transition-colors">
+            <a href="/dashboard/pricing/" class="px-3 py-1 text-xs bg-gray-600 text-white rounded hover:bg-gray-700 transition-colors">
                 가격 관리
             </a>
         </div>
@@ -106,10 +136,10 @@ include __DIR__ . '/../includes/sidebar.php';
             <div class="flex gap-3 items-end">
                 <div class="flex-1">
                     <label class="block text-xs font-medium text-gray-700 mb-1">조정 비율 (%)</label>
-                    <input type="number" id="bulkPercent" step="0.1" placeholder="예: 10 (10% 인상), -5 (5% 인하)" 
-                           class="w-full px-3 py-1.5 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500">
+                    <input type="number" id="bulkPercent" step="0.1" placeholder="예: 10 (10% 인상), -5 (5% 인하)"
+                           class="w-full px-2 py-1 text-xs border border-gray-300 rounded focus:ring-1 focus:ring-blue-500">
                 </div>
-                <button id="bulkApplyBtn" class="px-4 py-1.5 text-sm bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors">
+                <button id="bulkApplyBtn" class="px-3 py-1 text-xs bg-blue-600 text-white rounded hover:bg-blue-700 transition-colors">
                     일괄 적용
                 </button>
             </div>
@@ -123,7 +153,7 @@ include __DIR__ . '/../includes/sidebar.php';
             <div class="flex gap-3 items-end flex-wrap">
                 <div class="w-40">
                     <label class="block text-xs font-medium text-gray-700 mb-1">스타일</label>
-                    <select id="filterStyle" class="w-full px-2 py-1.5 text-sm border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500">
+                    <select id="filterStyle" class="w-full px-2 py-1 text-xs border border-gray-300 rounded focus:ring-1 focus:ring-blue-500">
                         <option value="">전체</option>
                         <?php foreach ($styleOptions as $no => $title): ?>
                         <option value="<?php echo $no; ?>"><?php echo htmlspecialchars($title); ?></option>
@@ -132,14 +162,14 @@ include __DIR__ . '/../includes/sidebar.php';
                 </div>
                 <div class="w-40">
                     <label class="block text-xs font-medium text-gray-700 mb-1">섹션</label>
-                    <select id="filterSection" class="w-full px-2 py-1.5 text-sm border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500">
+                    <select id="filterSection" class="w-full px-2 py-1 text-xs border border-gray-300 rounded focus:ring-1 focus:ring-blue-500">
                         <option value="">전체</option>
                     </select>
                 </div>
                 <?php if ($hasTreeSelect): ?>
                 <div class="w-48">
                     <label class="block text-xs font-medium text-gray-700 mb-1">종이</label>
-                    <select id="filterTree" class="w-full px-2 py-1.5 text-sm border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500">
+                    <select id="filterTree" class="w-full px-2 py-1 text-xs border border-gray-300 rounded focus:ring-1 focus:ring-blue-500">
                         <option value="">전체</option>
                         <?php foreach ($treeOptions as $no => $title): ?>
                         <option value="<?php echo $no; ?>"><?php echo htmlspecialchars($title); ?></option>
@@ -150,14 +180,14 @@ include __DIR__ . '/../includes/sidebar.php';
                 <?php if ($hasPOtype): ?>
                 <div class="w-28">
                     <label class="block text-xs font-medium text-gray-700 mb-1">인쇄면</label>
-                    <select id="filterPOtype" class="w-full px-2 py-1.5 text-sm border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500">
+                    <select id="filterPOtype" class="w-full px-2 py-1 text-xs border border-gray-300 rounded focus:ring-1 focus:ring-blue-500">
                         <option value="">전체</option>
                         <option value="1">단면</option>
                         <option value="2">양면</option>
                     </select>
                 </div>
                 <?php endif; ?>
-                <button id="filterResetBtn" class="px-3 py-1.5 text-sm bg-gray-500 text-white rounded-lg hover:bg-gray-600 transition-colors">
+                <button id="filterResetBtn" class="px-3 py-1 text-xs bg-gray-500 text-white rounded hover:bg-gray-600 transition-colors">
                     필터 초기화
                 </button>
             </div>
@@ -169,20 +199,20 @@ include __DIR__ . '/../includes/sidebar.php';
                 <table class="min-w-full divide-y divide-gray-200">
                     <thead class="bg-gray-50">
                         <tr>
-                            <th class="px-3 py-2 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">No</th>
-                            <th class="px-3 py-2 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">스타일</th>
-                            <th class="px-3 py-2 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">섹션</th>
+                            <th class="px-2 py-1.5 text-left text-xs font-medium text-gray-500">No</th>
+                            <th class="px-2 py-1.5 text-left text-xs font-medium text-gray-500">스타일</th>
+                            <th class="px-2 py-1.5 text-left text-xs font-medium text-gray-500">섹션</th>
                             <?php if ($hasTreeSelect): ?>
-                            <th class="px-3 py-2 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">종이</th>
+                            <th class="px-2 py-1.5 text-left text-xs font-medium text-gray-500">종이</th>
                             <?php endif; ?>
                             <?php if ($hasPOtype): ?>
-                            <th class="px-3 py-2 text-center text-xs font-medium text-gray-500 uppercase tracking-wider">인쇄면</th>
+                            <th class="px-2 py-1.5 text-center text-xs font-medium text-gray-500">인쇄면</th>
                             <?php endif; ?>
-                            <th class="px-3 py-2 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">수량</th>
-                            <th class="px-3 py-2 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">인쇄비</th>
-                            <th class="px-3 py-2 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">디자인비</th>
-                            <th class="px-3 py-2 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">새 인쇄비</th>
-                            <th class="px-3 py-2 text-center text-xs font-medium text-gray-500 uppercase tracking-wider">삭제</th>
+                            <th class="px-2 py-1.5 text-right text-xs font-medium text-gray-500">수량</th>
+                            <th class="px-2 py-1.5 text-right text-xs font-medium text-gray-500">인쇄비</th>
+                            <th class="px-2 py-1.5 text-right text-xs font-medium text-gray-500">디자인비</th>
+                            <th class="px-2 py-1.5 text-right text-xs font-medium text-gray-500">새 인쇄비</th>
+                            <th class="px-2 py-1.5 text-center text-xs font-medium text-gray-500">삭제</th>
                         </tr>
                     </thead>
                     <tbody id="priceTableBody" class="bg-white divide-y divide-gray-200">
@@ -190,7 +220,7 @@ include __DIR__ . '/../includes/sidebar.php';
 // 프로덕션 서버 output_buffering 한도 대응: 테이블 출력 전 버퍼 플러시
 if (ob_get_level()) { ob_flush(); } flush(); 
 ?>
-                        <?php foreach ($products as $product): 
+                        <?php foreach ($products as $rowIdx => $product):
                             $styleNo = $product['style'];
                             $sectionNo = $product['Section'];
                             $treeSelectNo = $hasTreeSelect ? ($product['TreeSelect'] ?? '') : '';
@@ -204,48 +234,49 @@ if (ob_get_level()) { ob_flush(); } flush();
                             $treeSelectName = isset($categoryTitles[$treeSelectNo]) ? $categoryTitles[$treeSelectNo]['title'] : ($treeSelectNo ?: '-');
                             $poTypeName = ($poType == '1') ? '단면' : (($poType == '2') ? '양면' : '-');
                         ?>
-                        <tr data-no="<?php echo $product['no']; ?>" data-price="<?php echo $money; ?>" 
+                        <tr data-no="<?php echo $product['no']; ?>" data-price="<?php echo $money; ?>"
                             data-design-money="<?php echo $designMoney; ?>"
-                            data-style="<?php echo $styleNo; ?>" data-section="<?php echo $sectionNo; ?>" 
+                            data-style="<?php echo $styleNo; ?>" data-section="<?php echo $sectionNo; ?>"
                             data-tree="<?php echo $treeSelectNo; ?>" data-potype="<?php echo $poType; ?>"
-                            data-quantity="<?php echo $quantity; ?>" data-group-key="<?php echo $groupKey; ?>">
-                            <td class="px-3 py-2 whitespace-nowrap text-sm font-medium text-gray-900"><?php echo $product['no']; ?></td>
-                            <td class="px-3 py-2 whitespace-nowrap text-sm text-gray-600">
+                            data-quantity="<?php echo $quantity; ?>" data-group-key="<?php echo $groupKey; ?>"
+                            style="<?php echo ($rowIdx % 2 === 1) ? 'background-color: #e6f7ff;' : ''; ?>">
+                            <td class="px-2 py-2 whitespace-nowrap text-xs font-medium text-gray-900"><?php echo $product['no']; ?></td>
+                            <td class="px-2 py-2 whitespace-nowrap text-xs text-gray-600">
                                 <span title="코드: <?php echo $styleNo; ?>"><?php echo htmlspecialchars($styleName ?: '-'); ?></span>
                             </td>
-                            <td class="px-3 py-2 whitespace-nowrap text-sm text-gray-600">
+                            <td class="px-2 py-2 whitespace-nowrap text-xs text-gray-600">
                                 <span title="코드: <?php echo $sectionNo; ?>"><?php echo htmlspecialchars($sectionName ?: '-'); ?></span>
                             </td>
                             <?php if ($hasTreeSelect): ?>
-                            <td class="px-3 py-2 whitespace-nowrap text-sm text-gray-600">
+                            <td class="px-2 py-2 whitespace-nowrap text-xs text-gray-600">
                                 <span title="코드: <?php echo $treeSelectNo; ?>"><?php echo htmlspecialchars($treeSelectName); ?></span>
                             </td>
                             <?php endif; ?>
                             <?php if ($hasPOtype): ?>
-                            <td class="px-3 py-2 whitespace-nowrap text-sm text-center">
+                            <td class="px-2 py-2 whitespace-nowrap text-xs text-center">
                                 <span class="px-2 py-1 rounded text-xs <?php echo ($poType == '1') ? 'bg-blue-100 text-blue-800' : (($poType == '2') ? 'bg-purple-100 text-purple-800' : 'text-gray-500'); ?>">
                                     <?php echo $poTypeName; ?>
                                 </span>
                             </td>
                             <?php endif; ?>
-                            <td class="px-3 py-2 whitespace-nowrap text-sm text-gray-900 text-right">
+                            <td class="px-2 py-2 whitespace-nowrap text-xs text-gray-900 text-right">
                                 <?php echo $product['quantity']; ?>
                                 <?php if ($quantity == 1): ?>
                                 <span class="ml-1 px-1.5 py-0.5 text-xs bg-green-100 text-green-700 rounded" title="이 가격을 변경하면 2~10연이 자동 계산됩니다">기준</span>
                                 <?php endif; ?>
                             </td>
-                            <td class="px-3 py-2 whitespace-nowrap text-sm text-gray-900 text-right original-price">
+                            <td class="px-2 py-2 whitespace-nowrap text-xs text-gray-900 text-right original-price">
                                 <?php echo number_format($money); ?>원
                             </td>
-                            <td class="px-3 py-2 whitespace-nowrap text-sm text-right">
+                            <td class="px-2 py-2 whitespace-nowrap text-xs text-right">
                                 <input type="number" class="new-design-money w-20 px-1.5 py-0.5 border border-gray-300 rounded text-right text-xs" 
                                        value="<?php echo $designMoney; ?>" data-original="<?php echo $designMoney; ?>">
                             </td>
-                            <td class="px-3 py-2 whitespace-nowrap text-sm text-right">
+                            <td class="px-2 py-2 whitespace-nowrap text-xs text-right">
                                 <input type="number" class="new-price w-20 px-1.5 py-0.5 border border-gray-300 rounded text-right text-xs" 
                                        value="<?php echo $money; ?>" data-original="<?php echo $money; ?>">
                             </td>
-                            <td class="px-3 py-2 whitespace-nowrap text-sm text-center">
+                            <td class="px-2 py-2 whitespace-nowrap text-xs text-center">
                                 <button class="delete-btn text-red-600 hover:text-red-800 text-xs"
                                         data-no="<?php echo $product['no']; ?>">삭제</button>
                             </td>
@@ -257,10 +288,10 @@ if (ob_get_level()) { ob_flush(); } flush();
 <?php if (ob_get_level()) { ob_flush(); } flush(); ?>
 
             <div class="px-4 py-3 border-t border-gray-200 flex justify-end gap-3">
-                <button id="resetBtn" class="px-4 py-1.5 text-sm bg-gray-600 text-white rounded-lg hover:bg-gray-700 transition-colors">
+                <button id="resetBtn" class="px-3 py-1 text-xs bg-gray-600 text-white rounded hover:bg-gray-700 transition-colors">
                     초기화
                 </button>
-                <button id="saveBtn" class="px-4 py-1.5 text-sm bg-green-600 text-white rounded-lg hover:bg-green-700 transition-colors">
+                <button id="saveBtn" class="px-3 py-1 text-xs bg-green-600 text-white rounded hover:bg-green-700 transition-colors">
                     변경사항 저장
                 </button>
             </div>
