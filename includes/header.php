@@ -42,6 +42,8 @@ if (isset($_SESSION['user_id'])) {
     <?php endif; ?>
     <!-- 공통 인증 JavaScript -->
     <script src="/js/common-auth.js"></script>
+    <!-- Favicon -->
+    <link rel="icon" type="image/png" href="/ImgFolder/dusonlogo1.png">
 </head>
 <body>
     <div class="page-wrapper">

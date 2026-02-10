@@ -93,6 +93,9 @@ function MM_jumpMenu(targ,selObj,restore){
 }
 </script>
 
+<!-- Favicon -->
+<link rel="icon" type="image/png" href="../ImgFolder/dusonlogo1.png">
+
 </head>
 
 <body LEFTMARGIN='0' TOPMARGIN='0' MARGINWIDTH='0' MARGINHEIGHT='0'>

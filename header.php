@@ -93,6 +93,8 @@ function WEBSILDESIGNWINDOW(theURL, width, height, scrollbars) {
   window.open(theURL, 'WebsilWindow', features);
 }
 </script>
+<!-- Favicon -->
+<link rel="icon" type="image/png" href="/ImgFolder/dusonlogo1.png">
 </head>
 <body background="/img/bg.gif" leftmargin="0" topmargin="0" marginwidth="0" marginheight="0">
 <!-- 상단 내비게이션 -->

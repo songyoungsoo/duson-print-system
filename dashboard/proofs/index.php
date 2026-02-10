@@ -93,7 +93,7 @@ include __DIR__ . '/../includes/header.php';
 include __DIR__ . '/../includes/sidebar.php';
 ?>
 
-<main class="flex-1 bg-gray-50">
+<main class="flex-1 bg-cyan-50">
     <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-2">
         <!-- 헤더 + 필터 한 줄 -->
         <form method="GET" class="flex flex-wrap items-center gap-2 mb-2">
@@ -121,7 +121,7 @@ include __DIR__ . '/../includes/sidebar.php';
         <div class="bg-white rounded-lg shadow overflow-hidden">
             <div class="overflow-x-auto">
                 <table class="min-w-full divide-y divide-gray-200">
-                    <thead class="bg-gray-50">
+                    <thead class="bg-cyan-50">
                         <tr>
                             <th class="px-2 py-1.5 text-left text-xs font-medium text-gray-500">주문번호</th>
                             <th class="px-2 py-1.5 text-left text-xs font-medium text-gray-500">품목</th>
@@ -139,7 +139,7 @@ include __DIR__ . '/../includes/sidebar.php';
                         <tr><td colspan="9" class="px-2 py-4 text-center text-xs text-gray-400">데이터가 없습니다.</td></tr>
                         <?php endif; ?>
                         <?php foreach ($orders as $order): ?>
-                        <tr class="hover:bg-gray-50" id="row-<?php echo $order['no']; ?>">
+                        <tr class="hover:bg-cyan-50" id="row-<?php echo $order['no']; ?>">
                             <td class="px-2 py-1 text-xs font-medium text-gray-900">#<?php echo $order['no']; ?></td>
                             <td class="px-2 py-1 text-xs text-gray-600"><?php echo htmlspecialchars($order['Type']); ?></td>
                             <td class="px-2 py-1 text-xs text-gray-600"><?php echo htmlspecialchars($order['name']); ?></td>
@@ -221,15 +221,15 @@ include __DIR__ . '/../includes/sidebar.php';
                 <span class="text-gray-500">총 <?php echo number_format($total); ?>건</span>
                 <div class="flex items-center gap-1">
                     <?php if ($page > 1): ?>
-                    <a href="?page=1&<?php echo $qs; ?>" class="px-2 py-1 border rounded hover:bg-gray-50 text-gray-500" title="처음">«</a>
-                    <a href="?page=<?php echo $page-1; ?>&<?php echo $qs; ?>" class="px-2 py-1 border rounded hover:bg-gray-50 text-gray-500" title="이전">‹</a>
+                    <a href="?page=1&<?php echo $qs; ?>" class="px-2 py-1 border rounded hover:bg-cyan-50 text-gray-500" title="처음">«</a>
+                    <a href="?page=<?php echo $page-1; ?>&<?php echo $qs; ?>" class="px-2 py-1 border rounded hover:bg-cyan-50 text-gray-500" title="이전">‹</a>
                     <?php else: ?>
                     <span class="px-2 py-1 border rounded text-gray-300">«</span>
                     <span class="px-2 py-1 border rounded text-gray-300">‹</span>
                     <?php endif; ?>
 
                     <?php if ($start > 1): ?>
-                    <a href="?page=1&<?php echo $qs; ?>" class="px-2.5 py-1 border rounded hover:bg-gray-50">1</a>
+                    <a href="?page=1&<?php echo $qs; ?>" class="px-2.5 py-1 border rounded hover:bg-cyan-50">1</a>
                     <?php if ($start > 2): ?><span class="px-1 text-gray-400">…</span><?php endif; ?>
                     <?php endif; ?>
 
@@ -237,18 +237,18 @@ include __DIR__ . '/../includes/sidebar.php';
                     <?php if ($i === $page): ?>
                     <span class="px-2.5 py-1 bg-blue-600 text-white rounded font-medium"><?php echo $i; ?></span>
                     <?php else: ?>
-                    <a href="?page=<?php echo $i; ?>&<?php echo $qs; ?>" class="px-2.5 py-1 border rounded hover:bg-gray-50"><?php echo $i; ?></a>
+                    <a href="?page=<?php echo $i; ?>&<?php echo $qs; ?>" class="px-2.5 py-1 border rounded hover:bg-cyan-50"><?php echo $i; ?></a>
                     <?php endif; ?>
                     <?php endfor; ?>
 
                     <?php if ($end < $total_pages): ?>
                     <?php if ($end < $total_pages - 1): ?><span class="px-1 text-gray-400">…</span><?php endif; ?>
-                    <a href="?page=<?php echo $total_pages; ?>&<?php echo $qs; ?>" class="px-2.5 py-1 border rounded hover:bg-gray-50"><?php echo $total_pages; ?></a>
+                    <a href="?page=<?php echo $total_pages; ?>&<?php echo $qs; ?>" class="px-2.5 py-1 border rounded hover:bg-cyan-50"><?php echo $total_pages; ?></a>
                     <?php endif; ?>
 
                     <?php if ($page < $total_pages): ?>
-                    <a href="?page=<?php echo $page+1; ?>&<?php echo $qs; ?>" class="px-2 py-1 border rounded hover:bg-gray-50 text-gray-500" title="다음">›</a>
-                    <a href="?page=<?php echo $total_pages; ?>&<?php echo $qs; ?>" class="px-2 py-1 border rounded hover:bg-gray-50 text-gray-500" title="마지막">»</a>
+                    <a href="?page=<?php echo $page+1; ?>&<?php echo $qs; ?>" class="px-2 py-1 border rounded hover:bg-cyan-50 text-gray-500" title="다음">›</a>
+                    <a href="?page=<?php echo $total_pages; ?>&<?php echo $qs; ?>" class="px-2 py-1 border rounded hover:bg-cyan-50 text-gray-500" title="마지막">»</a>
                     <?php else: ?>
                     <span class="px-2 py-1 border rounded text-gray-300">›</span>
                     <span class="px-2 py-1 border rounded text-gray-300">»</span>
@@ -281,7 +281,7 @@ include __DIR__ . '/../includes/sidebar.php';
         <div class="p-4">
             <input type="hidden" id="upload_order_no">
             <!-- 주문자 정보 (전화번호) -->
-            <div id="uploadPhoneArea" class="mb-3 p-3 bg-gray-50 rounded-lg border border-gray-200">
+            <div id="uploadPhoneArea" class="mb-3 p-3 bg-cyan-50 rounded-lg border border-gray-200">
                 <div class="flex items-center justify-between">
                     <div class="flex items-center gap-2 text-sm">
                         <span class="text-gray-500">주문자:</span>
@@ -311,7 +311,7 @@ include __DIR__ . '/../includes/sidebar.php';
             <div class="mt-4 flex items-center justify-between">
                 <span id="fileSummary" class="text-xs text-gray-400"></span>
                 <div class="flex gap-2">
-                    <button type="button" onclick="closeUploadModal()" class="px-4 py-2 text-sm border rounded-lg hover:bg-gray-50">취소</button>
+                    <button type="button" onclick="closeUploadModal()" class="px-4 py-2 text-sm border rounded-lg hover:bg-cyan-50">취소</button>
                     <button type="button" id="uploadBtn" onclick="doUpload()" class="px-4 py-2 text-sm bg-blue-600 text-white rounded-lg hover:bg-blue-700 disabled:opacity-50" disabled>업로드</button>
                 </div>
             </div>
@@ -663,7 +663,7 @@ function renderFileList() {
             var icons = {'.pdf':'📄','.ai':'🎨','.psd':'🎨','.zip':'📦'};
             thumb = '<span class="w-10 h-10 flex items-center justify-center bg-gray-100 rounded text-base flex-shrink-0">' + (icons[ext]||'📎') + '</span>';
         }
-        html += '<div class="flex items-center gap-2 p-2 bg-gray-50 rounded text-xs group">'
+        html += '<div class="flex items-center gap-2 p-2 bg-cyan-50 rounded text-xs group">'
             + thumb
             + '<div class="flex-1 min-w-0">'
             +   '<div class="flex items-center gap-1">'
