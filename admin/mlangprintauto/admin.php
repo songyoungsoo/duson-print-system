@@ -1336,8 +1336,11 @@ if ($mode == "SinForm") { //////////////////////////////////////////////////////
 
                 <div class="form-group">
                     <label>📁 이미지 파일 <span style="color:#ef4444;">*</span></label>
-                    <input type="file" name="photofile" accept=".jpg,.jpeg,.png,.gif,.pdf">
-                    <div class="hint">JPG, PNG, GIF, PDF (최대 10MB)</div>
+                    <input type="file" name="photofile[]" accept=".jpg,.jpeg,.png,.gif,.pdf" multiple>
+                    <div class="hint">
+                        💡 <strong>여러 파일 선택:</strong> Ctrl + 클릭 또는 Shift + 클릭<br>
+                        JPG, PNG, GIF, PDF (각 파일 최대 10MB)
+                    </div>
                 </div>
 
                 <div class="form-group">
@@ -1409,37 +1412,59 @@ if ($mode == "SinFormModifyOk") { //////////////////////////////////////////////
         mkdir($dir, 0777, true);
     }
 
-    // 새로운 파일 업로드 처리
-    $photofileNAME = $GF_upfile; // 기존 파일 유지
-    if (!empty($_FILES['photofile']['name'])) {
+    $photofileNAME = $GF_upfile;
+    $existing_files = [];
+    
+    if (!empty($GF_upfile) && $GF_upfile !== '0') {
+        $decoded = json_decode($GF_upfile, true);
+        if (is_array($decoded)) {
+            $existing_files = $decoded;
+        }
+    }
+    
+    if (!empty($_FILES['photofile']['name'][0])) {
         $upload_dir = $dir . "/";
-        $file_name = basename($_FILES['photofile']['name']);
-        $file_tmp_path = $_FILES['photofile']['tmp_name'];
-        $file_ext = strtolower(pathinfo($file_name, PATHINFO_EXTENSION));
         $allowed_extensions = ["jpg", "jpeg", "png", "gif", "pdf"];
-        $max_file_size = 2 * 1024 * 1024; // 2MB 제한
-
-        // 파일 크기 및 확장자 검사
-        if ($_FILES['photofile']['size'] > $max_file_size) {
-            die("<script>alert('파일 크기가 너무 큽니다. (최대: 2MB)'); history.go(-1);</script>");
+        $max_file_size = 10 * 1024 * 1024;
+        
+        $file_count = count($_FILES['photofile']['name']);
+        $uploaded_files = [];
+        
+        for ($i = 0; $i < $file_count; $i++) {
+            if (empty($_FILES['photofile']['name'][$i])) {
+                continue;
+            }
+            
+            $file_name = basename($_FILES['photofile']['name'][$i]);
+            $file_tmp_path = $_FILES['photofile']['tmp_name'][$i];
+            $file_size = $_FILES['photofile']['size'][$i];
+            $file_ext = strtolower(pathinfo($file_name, PATHINFO_EXTENSION));
+            
+            if ($file_size > $max_file_size) {
+                die("<script>alert('파일 \"$file_name\"의 크기가 너무 큽니다. (최대: 10MB)'); history.go(-1);</script>");
+            }
+            
+            if (!in_array($file_ext, $allowed_extensions)) {
+                die("<script>alert('파일 \"$file_name\"은(는) 허용되지 않은 형식입니다.'); history.go(-1);</script>");
+            }
+            
+            $new_file_name = date("YmdHis") . "_" . uniqid() . "." . $file_ext;
+            $target_file = $upload_dir . $new_file_name;
+            
+            if (!move_uploaded_file($file_tmp_path, $target_file)) {
+                die("<script>alert('파일 \"$file_name\" 이동 실패!'); history.go(-1);</script>");
+            }
+            
+            $uploaded_files[] = [
+                'original_name' => $file_name,
+                'saved_name' => $new_file_name,
+                'size' => $file_size,
+                'type' => $file_ext
+            ];
         }
-        if (!in_array($file_ext, $allowed_extensions)) {
-            die("<script>alert('허용되지 않은 파일 형식입니다. (jpg, jpeg, png, gif, pdf 만 가능)'); history.go(-1);</script>");
-        }
-
-        // 새로운 파일명 생성 (중복 방지)
-        $new_file_name = date("YmdHis") . "_" . uniqid() . "." . $file_ext;
-        $target_file = $upload_dir . $new_file_name;
-
-        // 기존 파일 삭제 후 새로운 파일 저장
-        if (!empty($GF_upfile) && file_exists($upload_dir . $GF_upfile)) {
-            unlink($upload_dir . $GF_upfile);
-        }
-        if (!move_uploaded_file($file_tmp_path, $target_file)) {
-            die("<script>alert('파일 이동 실패! 경로: $target_file'); history.go(-1);</script>");
-        }
-
-        $photofileNAME = $new_file_name; // 업로드한 파일명을 DB에 저장할 변수로 설정
+        
+        $all_files = array_merge($existing_files, $uploaded_files);
+        $photofileNAME = json_encode($all_files, JSON_UNESCAPED_UNICODE);
     }
 
     // DB 업데이트 (전화번호 포함)
@@ -2088,8 +2113,13 @@ if ($mode == "AdminMlangOrdert") { /////////////////////////////////////////////
                 <!-- 파일 업로드 -->
                 <div class="form-group">
                     <label><span class="icon-label">📎 이미지 자료 <span class="required">*</span></span></label>
-                    <input type="file" name="photofile" accept=".jpg,.jpeg,.png,.gif,.pdf">
-                    <div class="hint">jpg, jpeg, png, gif, pdf 파일만 업로드 가능</div>
+                    <input type="file" name="photofile[]" accept=".jpg,.jpeg,.png,.gif,.pdf" multiple>
+                    <div class="hint">
+                        💡 <strong>여러 파일 선택 방법:</strong><br>
+                        • Ctrl + 클릭: 개별 파일 선택<br>
+                        • Shift + 클릭: 범위 선택<br>
+                        • jpg, jpeg, png, gif, pdf 파일만 업로드 가능 (각 파일 최대 10MB)
+                    </div>
                 </div>
 
                 <!-- 제출 버튼 -->
@@ -2154,38 +2184,58 @@ if ($mode == "AdminMlangOrdertOk") { ///////////////////////////////////////////
         }
     }
 
-    //파일 업로드 처리
     $photofileNAME = "";
-    if (!empty($_FILES['photofile']['name'])) {
-        $file_name = basename($_FILES['photofile']['name']);
-        $file_tmp_path = $_FILES['photofile']['tmp_name'];
-        $file_ext = strtolower(pathinfo($file_name, PATHINFO_EXTENSION));
+    $uploaded_files = [];
+    
+    if (!empty($_FILES['photofile']['name'][0])) {
         $allowed_extensions = ["jpg", "jpeg", "png", "gif", "pdf"];
-        $max_file_size = 10 * 1024 * 1024; // 10MB로 증가
-
-        if ($_FILES['photofile']['size'] > $max_file_size) {
-            die("<script>alert('파일 크기가 너무 큽니다. (최대: 10MB)'); history.go(-1);</script>");
+        $max_file_size = 10 * 1024 * 1024;
+        
+        $file_count = count($_FILES['photofile']['name']);
+        
+        for ($i = 0; $i < $file_count; $i++) {
+            if (empty($_FILES['photofile']['name'][$i])) {
+                continue;
+            }
+            
+            $file_name = basename($_FILES['photofile']['name'][$i]);
+            $file_tmp_path = $_FILES['photofile']['tmp_name'][$i];
+            $file_size = $_FILES['photofile']['size'][$i];
+            $file_ext = strtolower(pathinfo($file_name, PATHINFO_EXTENSION));
+            
+            if ($file_size > $max_file_size) {
+                die("<script>alert('파일 \"$file_name\"의 크기가 너무 큽니다. (최대: 10MB)'); history.go(-1);</script>");
+            }
+            
+            if (!in_array($file_ext, $allowed_extensions)) {
+                die("<script>alert('파일 \"$file_name\"은(는) 허용되지 않은 형식입니다. (jpg, jpeg, png, gif, pdf 만 가능)'); history.go(-1);</script>");
+            }
+            
+            if (!is_uploaded_file($file_tmp_path)) {
+                die("<script>alert('파일 \"$file_name\" 업로드 실패!'); history.go(-1);</script>");
+            }
+            
+            $new_file_name = date("YmdHis") . "_" . uniqid() . "." . $file_ext;
+            $target_file = $dir . "/" . $new_file_name;
+            
+            if (!move_uploaded_file($file_tmp_path, $target_file)) {
+                $error_msg = "파일 \"$file_name\" 이동 실패! ";
+                $error_msg .= '폴더 쓰기 가능: ' . (is_writable($dir) ? 'Y' : 'N') . ', ';
+                $error_msg .= '폴더 존재: ' . (is_dir($dir) ? 'Y' : 'N');
+                die("<script>alert('" . $error_msg . "'); history.go(-1);</script>");
+            }
+            
+            $uploaded_files[] = [
+                'original_name' => $file_name,
+                'saved_name' => $new_file_name,
+                'size' => $file_size,
+                'type' => $file_ext
+            ];
         }
-        if (!in_array($file_ext, $allowed_extensions)) {
-            die("<script>alert('허용되지 않은 파일 형식입니다. (jpg, jpeg, png, gif, pdf 만 가능)'); history.go(-1);</script>");
+        
+        if (!empty($uploaded_files)) {
+            $photofileNAME = json_encode($uploaded_files, JSON_UNESCAPED_UNICODE);
         }
-
-        $new_file_name = date("YmdHis") . "_" . uniqid() . "." . $file_ext;
-        $target_file = $dir . "/" . $new_file_name;
-
-        // 임시 파일 확인
-        if (!is_uploaded_file($file_tmp_path)) {
-            die("<script>alert('업로드된 파일이 없습니다!'); history.go(-1);</script>");
-        }
-
-        if (!move_uploaded_file($file_tmp_path, $target_file)) {
-            $error_msg = '파일 이동 실패! ';
-            $error_msg .= '폴더 쓰기 가능: ' . (is_writable($dir) ? 'Y' : 'N') . ', ';
-            $error_msg .= '폴더 존재: ' . (is_dir($dir) ? 'Y' : 'N');
-            die("<script>alert('" . $error_msg . "'); history.go(-1);</script>");
-        }
-
-        $photofileNAME = $new_file_name;
     }
 
     // INSERT 데이터 준비

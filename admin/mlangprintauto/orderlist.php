@@ -178,7 +178,7 @@ if ($mode === "sendback_ok") {
 
 $mode = $_GET['mode'] ?? $_POST['mode'] ?? '';
 $no = $_GET['no'] ?? $_POST['no'] ?? '';
-$JK = $_POST['JK'] ?? '';
+$JK = $_GET['JK'] ?? $_POST['JK'] ?? '';  // ✅ GET 우선 (URL 파라미터)
 
 include "../../db.php";
 
@@ -195,6 +195,16 @@ if ($mode === "delete") {
 if ($mode === "OrderStyleModify") {
     $no = intval($no);
     $JK = strval(intval($JK));  // 정수로 변환 후 문자열로 (VARCHAR 컬럼이므로)
+
+    // ✅ JK 값 검증: 0이거나 유효하지 않은 값이면 오류 처리
+    $validOrderStyles = [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11];
+    if (!in_array(intval($JK), $validOrderStyles)) {
+        echo "<script>
+            alert('⚠️ 오류: 유효하지 않은 진행상태 값입니다.\\n\\n전달된 값: $JK\\n\\n페이지를 새로고침하고 다시 시도해주세요.');
+            history.back();
+        </script>";
+        exit;
+    }
 
     // 디버깅: 변경 전 상태 확인
     $check_stmt = $mysqli->prepare("SELECT OrderStyle FROM mlangorder_printauto WHERE no=?");
@@ -219,14 +229,9 @@ if ($mode === "OrderStyleModify") {
     $after = $check_result->fetch_assoc();
     $check_stmt->close();
 
-    $orderStyleNames = [1=>"견적접수", 2=>"주문접수", 3=>"접수완료", 4=>"입금대기", 5=>"시안제작중", 6=>"시안", 7=>"교정", 8=>"작업완료", 9=>"작업중", 10=>"교정작업중", 11=>"카드결제"];
-    $beforeName = $orderStyleNames[$before['OrderStyle']] ?? $before['OrderStyle'];
-    $afterName = $orderStyleNames[$after['OrderStyle']] ?? $after['OrderStyle'];
-
     // 쿼리 파라미터 제거한 깨끗한 URL로 리다이렉트
     $cleanUrl = strtok($PHP_SELF, '?');
     echo "<script>
-        alert('주문번호 $no 번\\n\\n변경 전: $beforeName ({$before['OrderStyle']})\\n변경 후: $afterName ({$after['OrderStyle']})\\n\\n영향받은 행: $affected');
         window.location.href = '$cleanUrl';
     </script>";
     exit;
@@ -553,21 +558,7 @@ foreach ($orderStyles as $key => $label) {
 </select>
 <script>
 function handleStatusChange_<?php echo $row['no']; ?>(select) {
-    console.log('=== 진행상태 변경 디버깅 ===');
-    console.log('주문번호:', <?php echo $row['no']; ?>);
-    console.log('선택한 값:', select.value);
-    console.log('선택한 인덱스:', select.selectedIndex);
-    console.log('원래 인덱스:', select.getAttribute('data-original-index'));
-    console.log('선택한 텍스트:', select.options[select.selectedIndex].text);
-
-    if (confirm('진행상태를 변경하시겠습니까?')) {
-        console.log('✅ 사용자 확인 - 페이지 이동:', select.value);
-        location.href = select.value;
-    } else {
-        console.log('❌ 사용자 취소 - 원래 상태로 복원');
-        // 취소 시 원래 인덱스로 복원
-        select.selectedIndex = parseInt(select.getAttribute('data-original-index')) || 0;
-    }
+    location.href = select.value;
 }
 </script>
 </td>
