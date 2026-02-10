@@ -545,6 +545,68 @@ DELETE FROM shop_temp WHERE regdate < UNIX_TIMESTAMP(NOW() - INTERVAL 7 DAY)
 - 20MB/파일 제한, 허용 형식: jpg, jpeg, png, gif, pdf, ai, psd, zip
 - 업로드 진행률 표시, 완료 후 페이지 새로고침 없이 행 갱신
 
+### 교정 갤러리 (Public Proof Gallery)
+
+**파일**: `popup/proof_gallery.php`
+
+#### 기능 개요
+```
+https://dsp114.co.kr/popup/proof_gallery.php?cate=전단지&page=1
+```
+- 고객 주문 교정 이미지 갤러리
+- 24개/페이지, pagination 지원
+- 2가지 소스 혼합:
+  1. Gallery 샘플: `/ImgFolder/inserted/gallery/` (101개)
+  2. 실제 주문 이미지: `/mlangorder_printauto/upload/{주문번호}/` (1,046개)
+
+#### Multi-File Upload JSON Parsing (2026-02-10 수정)
+
+**문제**: `admin.php`에서 다중 파일 업로드 지원 후, `ThingCate` 컬럼에 JSON 배열 저장
+```php
+// 기존 (단일 파일): "20260208_abc.jpg"
+// 신규 (다중 파일): '[{"original_name":"file.jpg","saved_name":"20260208_abc.jpg","size":1024,"type":"jpg"}]'
+```
+
+**해결**: `proof_gallery.php` (lines 189-210)에 JSON 파싱 로직 추가
+```php
+if (strpos($thing_cate, '[{') === 0 || strpos($thing_cate, '{"') === 0) {
+    $decoded = json_decode($thing_cate, true);
+    if (is_array($decoded)) {
+        foreach ($decoded as $file_info) {
+            if (isset($file_info['saved_name'])) {
+                $files_to_check[] = $file_info['saved_name'];
+            }
+        }
+    }
+} else {
+    $files_to_check[] = $thing_cate;
+}
+```
+
+#### 403 Forbidden 문제 해결 (2026-02-10)
+
+**문제**: 5페이지 이상에서 upload 디렉토리 이미지 403 Forbidden
+
+**원인**: Plesk 권한 설정 미적용 (recursive 권한 변경 미완료)
+
+**해결 방법**:
+1. Plesk File Manager → `/httpdocs/mlangorder_printauto/upload/`
+2. 우클릭 → Change Permissions
+3. 755 설정 + **"Change permissions recursively"** 체크
+4. 18,000+ 하위 디렉토리에 5-10분 소요 (완료 대기 필수)
+
+**Critical Rules**:
+- ❌ `.htaccess` 파일 추가는 불필요 (오히려 방해될 수 있음)
+- ✅ Plesk 755 recursive 권한 설정으로 충분
+- ⚠️ curl 테스트 시 403이어도 브라우저에서는 정상 작동 가능 (User-Agent 체크)
+
+**검증 방법**:
+```
+1. 브라우저: https://dsp114.co.kr/popup/proof_gallery.php?cate=전단지&page=5
+2. 이미지 24개 모두 표시되면 해결 완료
+3. 직접 URL: https://dsp114.co.kr/mlangorder_printauto/upload/75009/16120220705155831.jpg
+```
+
 ## 📋 견적서 시스템 (Admin Quotes)
 
 ### 견적서 상태 흐름 (CRITICAL)

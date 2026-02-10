@@ -177,7 +177,6 @@ if ($db_types === 'LIKE') {
 
 if ($res) {
     while ($row = mysqli_fetch_assoc($res)) {
-        // 행 데이터가 유효한지 확인
         if (!$row || !is_array($row) || !isset($row['No']) || !isset($row['ThingCate'])) {
             continue;
         }
@@ -185,14 +184,32 @@ if ($res) {
         $order_no = $row['No'];
         $thing_cate = $row['ThingCate'];
 
-        // 실제 파일이 존재하는지 확인
-        $file_path = $_SERVER['DOCUMENT_ROOT'] . "/mlangorder_printauto/upload/{$order_no}/{$thing_cate}";
-        if (file_exists($file_path)) {
-            $all_images[] = [
-                'type' => 'order',
-                'order_no' => $order_no,
-                'url' => $UPLOAD_DIR_URL . "/" . $order_no . "/" . rawurlencode($thing_cate)
-            ];
+        $files_to_check = [];
+        
+        if (strpos($thing_cate, '[{') === 0 || strpos($thing_cate, '{"') === 0) {
+            $decoded = json_decode($thing_cate, true);
+            if (is_array($decoded)) {
+                foreach ($decoded as $file_info) {
+                    if (isset($file_info['saved_name'])) {
+                        $files_to_check[] = $file_info['saved_name'];
+                    }
+                }
+            }
+        } else {
+            $files_to_check[] = $thing_cate;
+        }
+
+        foreach ($files_to_check as $filename) {
+            if (empty($filename)) continue;
+            
+            $file_path = $_SERVER['DOCUMENT_ROOT'] . "/mlangorder_printauto/upload/{$order_no}/{$filename}";
+            if (file_exists($file_path)) {
+                $all_images[] = [
+                    'type' => 'order',
+                    'order_no' => $order_no,
+                    'url' => $UPLOAD_DIR_URL . "/" . $order_no . "/" . rawurlencode($filename)
+                ];
+            }
         }
     }
 
@@ -309,32 +326,54 @@ body {
 }
 
 .pager {
-  padding: 10px 14px;
+  padding: 8px 14px;
   display: flex;
-  gap: 6px;
+  gap: 2px;
   justify-content: center;
   align-items: center;
   flex-wrap: wrap;
+  font-size: 12px;
 }
 
 .pager a, .pager span {
-  border: 1px solid #cbd5e1;
-  border-radius: 8px;
-  padding: 6px 10px;
+  min-width: 28px;
+  height: 28px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  border: 1px solid #d1d5db;
+  border-radius: 4px;
+  padding: 0 6px;
   text-decoration: none;
-  color: #334155;
+  color: #374151;
   background: #fff;
-  transition: background 0.2s ease;
+  transition: background 0.15s;
+  line-height: 1;
 }
 
 .pager a:hover {
-  background: #f1f5f9;
+  background: #f3f4f6;
+  border-color: #9ca3af;
 }
 
 .pager .current {
-  background: #334155;
+  background: #374151;
   color: #fff;
-  border-color: #334155;
+  border-color: #374151;
+  font-weight: 600;
+}
+
+.pager .dots {
+  border: none;
+  background: none;
+  color: #9ca3af;
+  min-width: 20px;
+  padding: 0;
+}
+
+.pager .nav-btn {
+  color: #6b7280;
+  font-size: 11px;
 }
 
 .viewer {
@@ -439,23 +478,38 @@ body {
 
     <div class="pager">
       <?php
-      // 페이지네이션 링크 생성
-      $cate_encoded = urlencode($cate);
+      $base = "/popup/proof_gallery.php?cate=" . urlencode($cate) . "&page=";
+      $wing = 2;
 
       if ($page > 1) {
-        echo "<a href=\"/popup/proof_gallery.php?cate={$cate_encoded}&page=" . ($page - 1) . "\">◀ 이전</a>";
+        echo '<a class="nav-btn" href="'.$base.'1" title="처음">«</a>';
+        echo '<a class="nav-btn" href="'.$base.($page-1).'" title="이전">‹</a>';
       }
 
-      for ($p = 1; $p <= $pages; $p++) {
+      $start = max(1, $page - $wing);
+      $end = min($pages, $page + $wing);
+
+      if ($start > 1) {
+        echo '<a href="'.$base.'1">1</a>';
+        if ($start > 2) echo '<span class="dots">…</span>';
+      }
+
+      for ($p = $start; $p <= $end; $p++) {
         if ($p == $page) {
-          echo "<span class=\"current\">{$p}</span>";
+          echo '<span class="current">'.$p.'</span>';
         } else {
-          echo "<a href=\"/popup/proof_gallery.php?cate={$cate_encoded}&page={$p}\">{$p}</a>";
+          echo '<a href="'.$base.$p.'">'.$p.'</a>';
         }
       }
 
+      if ($end < $pages) {
+        if ($end < $pages - 1) echo '<span class="dots">…</span>';
+        echo '<a href="'.$base.$pages.'">'.$pages.'</a>';
+      }
+
       if ($page < $pages) {
-        echo "<a href=\"/popup/proof_gallery.php?cate={$cate_encoded}&page=" . ($page + 1) . "\">다음 ▶</a>";
+        echo '<a class="nav-btn" href="'.$base.($page+1).'" title="다음">›</a>';
+        echo '<a class="nav-btn" href="'.$base.$pages.'" title="마지막">»</a>';
       }
       ?>
     </div>
