@@ -583,28 +583,27 @@ if (strpos($thing_cate, '[{') === 0 || strpos($thing_cate, '{"') === 0) {
 }
 ```
 
-#### 403 Forbidden 문제 해결 (2026-02-10)
+#### upload 디렉토리 이미지 500 에러 해결 (2026-02-10)
 
-**문제**: 5페이지 이상에서 upload 디렉토리 이미지 403 Forbidden
+**문제**: 갤러리 5페이지 이상에서 upload 디렉토리 이미지 500 Internal Server Error
 
-**원인**: Plesk 권한 설정 미적용 (recursive 권한 변경 미완료)
+**원인**: `/httpdocs/mlangorder_printauto/upload/.htaccess` 파일이 Plesk Apache 2.4와 호환되지 않는 구문 포함
+- `Options +Indexes` → Plesk에서 AllowOverride 제한으로 500 에러 유발
+- `Order allow,deny` / `Allow from all` → Apache 2.2 구문 (mod_access_compat 미설치)
+- Apache 2.2 + 2.4 구문 혼합 사용
 
-**해결 방법**:
-1. Plesk File Manager → `/httpdocs/mlangorder_printauto/upload/`
-2. 우클릭 → Change Permissions
-3. 755 설정 + **"Change permissions recursively"** 체크
-4. 18,000+ 하위 디렉토리에 5-10분 소요 (완료 대기 필수)
+**해결**: 해당 `.htaccess` 파일 삭제 (FTP로 프로덕션에서 제거)
 
 **Critical Rules**:
-- ❌ `.htaccess` 파일 추가는 불필요 (오히려 방해될 수 있음)
-- ✅ Plesk 755 recursive 권한 설정으로 충분
-- ⚠️ curl 테스트 시 403이어도 브라우저에서는 정상 작동 가능 (User-Agent 체크)
+- ❌ `/mlangorder_printauto/upload/`에 `.htaccess` 파일 생성 금지 (500 에러 유발)
+- ✅ 해당 디렉토리는 `.htaccess` 없이 이미지 정상 서빙됨
+- ⚠️ curl 기본 UA는 nginx에서 403 차단됨 (브라우저 UA 필요)
 
 **검증 방법**:
-```
-1. 브라우저: https://dsp114.co.kr/popup/proof_gallery.php?cate=전단지&page=5
-2. 이미지 24개 모두 표시되면 해결 완료
-3. 직접 URL: https://dsp114.co.kr/mlangorder_printauto/upload/75009/16120220705155831.jpg
+```bash
+UA="Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36"
+curl -s -o /dev/null -w "%{http_code}" -A "$UA" "https://dsp114.co.kr/mlangorder_printauto/upload/79678/4820231127133915.jpg"
+# 200이면 정상
 ```
 
 ## 📋 견적서 시스템 (Admin Quotes)
