@@ -11,6 +11,10 @@ ini_set('log_errors', 1);
 
 session_start();
 
+// CSRF 검증
+include_once __DIR__ . '/../includes/csrf.php';
+csrf_verify_or_die();
+
 // 보안 상수 정의 후 데이터베이스 연결
 include "../includes/db_constants.php";
 include "../db.php";

@@ -5,6 +5,10 @@ $id_login_ok = isset($_SESSION['id_login_ok']) ? $_SESSION['id_login_ok'] : fals
 include "../db.php";
 
 if ($_SERVER["REQUEST_METHOD"] == "POST") {
+    // CSRF 검증
+    include_once __DIR__ . '/../includes/csrf.php';
+    csrf_verify_or_die();
+
     // Validate form data and check if the user is logged in
     $id = $id_login_ok; // $_SESSION['id_login_ok'] = username string
     $currentPassword = $_POST['current_password'];
@@ -97,6 +101,7 @@ if (isset($success)) {
 ?>
 
 <form action="change_password.php" method="post">
+    <?php include_once __DIR__ . '/../includes/csrf.php'; csrf_field(); ?>
     <label for="current_password">현재 비밀번호:</label>
     <input type="password" name="current_password" required>
 

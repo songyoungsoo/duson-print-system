@@ -1,6 +1,12 @@
 <?php
 session_start();
 
+// CSRF 검증
+include_once __DIR__ . '/../includes/csrf.php';
+if ($_SERVER['REQUEST_METHOD'] === 'POST') {
+    csrf_verify_or_die();
+}
+
 // 에러 로그만 기록 (화면 표시 안함)
 ini_set('display_errors', 0);
 ini_set('log_errors', 1);

@@ -28,6 +28,10 @@ if (session_status() === PHP_SESSION_NONE) {
     session_start();
 }
 
+// CSRF 검증
+include_once __DIR__ . '/../includes/csrf.php';
+csrf_verify_or_die();
+
 // POST 데이터 받기 및 검증
 $id = isset($_POST['id']) ? trim($_POST['id']) : null;
 $pass1 = isset($_POST['pass1']) ? $_POST['pass1'] : null;

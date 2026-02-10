@@ -700,6 +700,7 @@ if (!empty($debug_info) && strpos($_SERVER['HTTP_HOST'], 'localhost') !== false)
 
             <!-- 주문자 정보 입력 폼 -->
             <form method="post" action="ProcessOrder_unified.php" id="orderForm" onsubmit="return prepareBusinessAddress()">
+                <?php include_once $_SERVER['DOCUMENT_ROOT'] . '/includes/csrf.php'; csrf_field(); ?>
                 <!-- 주문 데이터를 hidden으로 전달 -->
                 <input type="hidden" name="total_price" value="<?php echo $total_info['total']; ?>">
                 <input type="hidden" name="total_price_vat" value="<?php echo $total_info['total_vat']; ?>">

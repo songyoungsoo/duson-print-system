@@ -133,6 +133,7 @@ function MemberCheckField() {
 </script>
 
 <form name='FrmUserInfo' method='post' onsubmit='return MemberCheckField();' action='login_unified.php'>
+    <?php include_once __DIR__ . '/../includes/csrf.php'; csrf_field(); ?>
     <input type='hidden' name='mode' value='member_login'>
     <input type='hidden' name='redirect' value='<?php echo htmlspecialchars($_GET['redirect'] ?? '/'); ?>'>
 

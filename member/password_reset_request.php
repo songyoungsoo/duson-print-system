@@ -5,7 +5,9 @@ include "../db.php";
 $message = '';
 $error = '';
 
+include_once __DIR__ . '/../includes/csrf.php';
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
+    csrf_verify_or_die();
     $email = mysqli_real_escape_string($db, $_POST['email'] ?? '');
     $username = mysqli_real_escape_string($db, $_POST['username'] ?? '');
     
@@ -243,6 +245,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             </div>
             
             <form method="POST" action="">
+                <?php include_once __DIR__ . '/../includes/csrf.php'; csrf_field(); ?>
                 <div class="form-group">
                     <label for="username" class="form-label">아이디</label>
                     <input type="text" 
