@@ -225,7 +225,7 @@ while ($row = mysqli_fetch_array($result)) {
     <?php if ($is_admin): ?>
     <!-- 관리자 표시 -->
     <div style="text-align:right; padding:10px; color:#2563eb; font-weight:600;">
-        👤 관리자 모드 | <a href="?logout=1" style="color:#dc2626;">로그아웃</a>
+        👤 관리자 모드 | <a href="/auth/logout.php?redirect=/dashboard/" target="_top" style="color:#dc2626;">로그아웃</a>
     </div>
     <?php endif; ?>
 
