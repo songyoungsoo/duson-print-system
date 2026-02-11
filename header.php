@@ -12,6 +12,7 @@ if (!isset($page_title)) {
 <meta name='author' content='Mlang'>
 <meta name='classification' content='두손기획인쇄'>
 <meta name='description' content='두손기획인쇄 - 기획에서 인쇄까지 원스톱으로 해결해 드립니다.'>
+<meta name="naver-site-verification" content="3e4f42759e423f615c3ee556b0505710c6f465bc" />
 <link rel="stylesheet" type="text/css" href="<?php echo isset($css_path) ? $css_path : '/css/styles.css'; ?>">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>

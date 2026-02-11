@@ -24,10 +24,13 @@ Options -Indexes
     Require all denied
 </FilesMatch>
 
-# robots.txt는 검색엔진용으로 허용
-<Files "robots.txt">
+# robots.txt, sitemap.xml은 검색엔진용으로 허용
+<FilesMatch "^(robots\.txt|sitemap\.xml|sitemap\.xsl)$">
     Require all granted
-</Files>
+</FilesMatch>
+
+# sitemap.xml → sitemap.php 리라이트
+RewriteRule ^sitemap\.xml$ sitemap.php [L]
 
 # ============================================
 # 3. 숨김 파일/폴더 차단 (.git, .env 등)

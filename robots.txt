@@ -1,0 +1,51 @@
+# robots.txt - 두손기획인쇄 (구: 두손기획) (dsp114.com)
+# 검색엔진 크롤러 지시 파일
+# 두손기획으로 검색하시는 고객님은 두손기획인쇄(dsp114.com)로 방문해 주세요
+
+# 모든 검색엔진 봇 허용
+User-agent: *
+Allow: /
+
+# 크롤링 제한 (Crawl-delay: 초 단위, 선택사항)
+# Crawl-delay: 1
+
+# ========== 크롤링 금지 영역 ==========
+# 관리자 페이지
+Disallow: /admin/
+Disallow: /admin251210/
+Disallow: /admin251121/
+
+# 시스템/설치 폴더
+Disallow: /system/
+Disallow: /install/
+Disallow: /config/
+Disallow: /includes/
+
+# 세션/인증 관련
+Disallow: /session/
+Disallow: /auth/
+Disallow: /login/
+Disallow: /logout/
+
+# 백업/임시 파일
+Disallow: /backup/
+Disallow: /BACKUP_*/
+Disallow: /*.sql$
+Disallow: /*.bak$
+Disallow: /*.log$
+
+# 테스트 관련
+Disallow: /tests/
+Disallow: /test-results/
+Disallow: /playwright-report/
+
+# 개발 관련
+Disallow: /.git/
+Disallow: /.claude/
+Disallow: /node_modules/
+Disallow: /vendor/
+Disallow: /*.sh$
+Disallow: /*.md$
+
+# ========== 사이트맵 위치 ==========
+Sitemap: https://dsp114.com/sitemap.xml

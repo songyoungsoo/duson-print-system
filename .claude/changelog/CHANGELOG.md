@@ -4,6 +4,19 @@
 
 ---
 
+## 2026-02-11
+
+| 수정자 | 수정항목 | 관련 파일 |
+|--------|----------|-----------|
+| Claude | **SEO 사이트맵 시스템 구축** - Google Search Console & 네이버 서치 어드바이저 등록용 동적 사이트맵 생성 (sitemap.xml, sitemap.php, sitemap.xsl). 32개 페이지 포함 (9개 품목 카테고리 + 장바구니 + 회원 + 게시판 + 회사소개 + 약관/개인정보). XSL 스타일시트로 브라우저에서 예쁘게 표시 | sitemap.php, sitemap.xml, sitemap.xsl |
+| Claude | **"두손기획" SEO 리디렉션 페이지** - 과거 브랜드명 검색 고객을 위한 리디렉션 페이지. 메타 키워드 최적화, 3초 후 메인 자동 이동, 검색엔진 친화적 구조 | duson-planning.php |
+| Claude | **robots.txt 구축** - 검색엔진 크롤러 지시 파일. 관리자 페이지/시스템 폴더 크롤링 차단. 사이트맵 위치 명시 | robots.txt |
+| Claude | **네이버 서치 어드바이저 메타 태그 추가** - 사이트 소유권 확인용 메타 태그 (content="3e4f42759e423f615c3ee556b0505710c6f465bc") | header.php |
+| Claude | **견적 시스템 비교 문서 작성** - 대시보드 견적관리 vs 관리자 견적 시스템 프로세스 분석, 상태 변화 다이어그램, 기능 비교표 | claudedocs/quote-system-comparison.md |
+| Claude | **다중 서버 배포** - dsp114.com (구 서버, HTTP) + dsp114.co.kr (신 서버, HTTPS) 양 서버에 SEO 파일 배포 완료 | sitemap.xml, robots.txt, duson-planning.php, sitemap.xsl, sitemap.php |
+
+---
+
 ## 2026-02-08
 
 | 수정자 | 수정항목 | 관련 파일 |
