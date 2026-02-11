@@ -104,6 +104,45 @@ function getBadgeClass(type) {
     return 'bg-gray-100 text-gray-700';
 }
 
+function animateNumber(el, target, duration, isCurrency) {
+    var start = 0;
+    var startTime = null;
+    // 통화 축약값이면 원래 숫자로 역산
+    var displayTarget = target;
+    var suffix = '';
+    if (isCurrency && typeof target === 'string') {
+        if (target.indexOf('억') !== -1) {
+            displayTarget = parseFloat(target) * 100000000;
+            suffix = '억';
+        } else if (target.indexOf('만') !== -1) {
+            displayTarget = parseFloat(target) * 10000;
+            suffix = '만';
+        } else {
+            displayTarget = parseInt(target.replace(/,/g, '')) || 0;
+        }
+    } else if (typeof target === 'string') {
+        displayTarget = parseInt(target.replace(/,/g, '')) || 0;
+    }
+    if (displayTarget === 0) { el.textContent = '0'; return; }
+
+    function formatAnimVal(val) {
+        if (suffix === '억') return (val / 100000000).toFixed(1) + '억';
+        if (suffix === '만') return (val / 10000).toFixed(0) + '만';
+        return formatNumber(Math.round(val));
+    }
+
+    function step(timestamp) {
+        if (!startTime) startTime = timestamp;
+        var progress = Math.min((timestamp - startTime) / duration, 1);
+        // easeOutExpo for snappy feel
+        var eased = progress === 1 ? 1 : 1 - Math.pow(2, -10 * progress);
+        var current = eased * displayTarget;
+        el.textContent = formatAnimVal(current);
+        if (progress < 1) requestAnimationFrame(step);
+    }
+    requestAnimationFrame(step);
+}
+
 function buildSummaryCard(label, value, unit, subText) {
     var card = document.createElement('div');
     card.className = 'bg-white rounded-lg shadow p-4';
@@ -114,7 +153,14 @@ function buildSummaryCard(label, value, unit, subText) {
 
     var valueEl = document.createElement('div');
     valueEl.className = 'text-2xl font-bold text-gray-900';
-    valueEl.textContent = value;
+
+    var numSpan = document.createElement('span');
+    numSpan.className = 'animate-num';
+    numSpan.textContent = '0';
+    numSpan.setAttribute('data-target', value);
+    numSpan.setAttribute('data-currency', unit === '원' ? '1' : '0');
+    valueEl.appendChild(numSpan);
+
     var unitSpan = document.createElement('span');
     unitSpan.className = 'text-sm font-normal text-gray-500 ml-1';
     unitSpan.textContent = unit;
@@ -170,6 +216,13 @@ async function loadSummary() {
         var c4 = buildSummaryCard('누적 주문', formatNumber(data.total.orders), '건', '');
         c4.subEl.textContent = '총 매출 ' + formatCurrency(data.total.revenue) + '원';
         container.appendChild(c4.card);
+
+        // 숫자 애니메이션 시작
+        container.querySelectorAll('.animate-num').forEach(function(span) {
+            var target = span.getAttribute('data-target');
+            var isCurrency = span.getAttribute('data-currency') === '1';
+            animateNumber(span, target, 800, isCurrency);
+        });
     } catch (e) { console.error('Summary error:', e); }
 }
 
