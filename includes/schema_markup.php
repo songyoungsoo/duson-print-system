@@ -6,8 +6,8 @@
   "name": "두손기획인쇄",
   "alternateName": "Duson Planning Print",
   "description": "명함인쇄, 스티커제작, 전단지인쇄, 라벨스티커, 봉투인쇄, 카다록제작, 포스터인쇄, 자석스티커, 상품권인쇄, NCR용지 전문 인쇄업체",
-  "url": "https://www.dsp114.com",
-  "logo": "https://www.dsp114.com/images/logo.png",
+  "url": "https://dsp114.co.kr",
+  "logo": "https://dsp114.co.kr/ImgFolder/dusonlogo1.png",
   "telephone": "+82-1688-2384",
   "priceRange": "₩₩",
   "address": {

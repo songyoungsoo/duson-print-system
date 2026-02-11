@@ -193,9 +193,8 @@ function validateInicisIP($ip) {
     // 실제 접근 IP 로그 기록
     logInicisTransaction("IP 검증 요청 - 접근 IP: {$ip}", 'info');
 
-    // 일시적으로 모든 IP 허용 (운영 시에는 아래 주석 해제)
-    // return in_array($ip, INICIS_IP_WHITELIST);
-    return true; // 임시: 모든 IP 허용
+    // IP 화이트리스트 검증
+    return in_array($ip, INICIS_IP_WHITELIST);
 }
 
 /**

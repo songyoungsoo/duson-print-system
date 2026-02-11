@@ -218,6 +218,7 @@ if ($mode == "SubmitOk") {
             </div>
             <div class="order-content">
                 <form name='JoinInfo' method='post' enctype='multipart/form-data' OnSubmit='return JoinCheckField()' action='OnlineOrder.php'>
+                    <?php include_once $_SERVER['DOCUMENT_ROOT'] . '/includes/csrf.php'; csrf_field(); ?>
                     <input type="hidden" name='PageSS' value='OrderOne'>
                     <input type="hidden" name='SubmitMode' value='OrderOne'>
                     <input type="hidden" name='mode' value='SubmitOk'>
@@ -385,7 +386,7 @@ if ($mode == "SubmitOk") {
                         <div style="display: flex; align-items: center; gap: 15px;">
                             <div style="min-width: 150px;">
                                 <strong style="color: #2c3e50;">
-                                    <a href="http://www.dsp1830.shop/sub/pri_info.html" target="_blank" style="color: #3498db; text-decoration: none;">
+                                    <a href="/sub/pri_info.html" target="_blank" style="color: #3498db; text-decoration: none;">
                                         🔒 개인정보처리방침
                                     </a>
                                 </strong>

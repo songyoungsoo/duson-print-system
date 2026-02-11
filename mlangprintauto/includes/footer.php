@@ -27,6 +27,6 @@
     </div>
     
     <div style="border-top: 1px solid rgba(255,255,255,0.1); padding: 2rem 20px; text-align: center; background: rgba(0,0,0,0.2);">
-        <p style="color: #bdc3c7; font-size: 0.95rem;">© 2024 두손기획인쇄. All rights reserved. | 제작: Mlang (010-8946-7038)</p>
+        <p style="color: #bdc3c7; font-size: 0.95rem;">© 2026 두손기획인쇄. All rights reserved.</p>
     </div>
 </footer>

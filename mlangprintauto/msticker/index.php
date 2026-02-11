@@ -71,11 +71,17 @@ if ($type_row = mysqli_fetch_assoc($type_result)) {
     <link rel="stylesheet" href="../../css/color-system-unified.css">
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title><?php echo safe_html($page_title); ?></title>
-    
-    
-    
-    
+    <title>자석스티커 제작 | 마그넷 스티커 인쇄 - 두손기획인쇄</title>
+    <meta name="description" content="자석스티커 인쇄 전문 두손기획인쇄. 냉장고 자석, 차량용 마그넷, 홍보용 자석스티커 맞춤 제작. 소량부터 대량까지. 실시간 견적 확인, 빠른 배송.">
+    <meta name="keywords" content="자석스티커, 마그넷 스티커, 냉장고 자석, 차량 자석, 자석스티커 제작, 자석스티커 인쇄">
+    <link rel="canonical" href="https://dsp114.co.kr/mlangprintauto/msticker/">
+    <meta property="og:type" content="website">
+    <meta property="og:title" content="자석스티커 제작 | 마그넷 스티커 인쇄 - 두손기획인쇄">
+    <meta property="og:description" content="자석스티커 인쇄 전문. 냉장고 자석, 차량용 마그넷, 홍보용 자석스티커 맞춤 제작.">
+    <meta property="og:url" content="https://dsp114.co.kr/mlangprintauto/msticker/">
+    <meta property="og:image" content="https://dsp114.co.kr/ImgFolder/dusonlogo1.png">
+    <meta property="og:site_name" content="두손기획인쇄">
+
     <!-- 자석스티커 컴팩트 페이지 전용 CSS -->
     <link rel="stylesheet" href="../../css/product-layout.css?v=<?php echo filemtime(__DIR__ . '/../../css/product-layout.css'); ?>">
     <link rel="stylesheet" href="../../css/unified-gallery.css">
@@ -117,6 +123,7 @@ if ($type_row = mysqli_fetch_assoc($type_result)) {
     <link rel="stylesheet" href="../../css/upload-modal-common.css">
     <!-- 견적서 모달용 공통 스타일 -->
     <link rel="stylesheet" href="../../css/quotation-modal-common.css">
+    <?php include_once $_SERVER['DOCUMENT_ROOT'] . '/includes/product_schema.php'; echo_product_schema('msticker'); ?>
 </head>
 <body class="msticker-page<?php echo ($isQuotationMode || $isAdminQuoteMode) ? ' quotation-modal-mode' : ''; ?>">
     <?php if (!$isQuotationMode && !$isAdminQuoteMode) include "../../includes/header-ui.php"; ?>

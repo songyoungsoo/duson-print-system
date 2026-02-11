@@ -153,9 +153,10 @@ async function loadOrders(page = 1) {
         }
 
         tbody.textContent = '';
-        orders.forEach(function(order) {
+        orders.forEach(function(order, idx) {
             var tr = document.createElement('tr');
-            tr.className = 'hover:bg-gray-50';
+            tr.className = idx % 2 === 1 ? 'hover:bg-gray-100' : 'hover:bg-gray-50';
+            if (idx % 2 === 1) tr.style.backgroundColor = '#e6f7ff';
             if (selectedOrders.has(order.no)) tr.classList.add('bg-blue-50');
 
             // 체크박스

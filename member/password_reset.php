@@ -51,7 +51,9 @@ if (empty($token)) {
 }
 
 // 비밀번호 재설정 처리
+include_once __DIR__ . '/../includes/csrf.php';
 if ($_SERVER['REQUEST_METHOD'] === 'POST' && $valid_token) {
+    csrf_verify_or_die();
     $new_password = $_POST['password'] ?? '';
     $confirm_password = $_POST['confirm_password'] ?? '';
     
@@ -353,6 +355,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && $valid_token) {
             </div>
             
             <form method="POST" action="" onsubmit="return validateForm()">
+                <?php include_once __DIR__ . '/../includes/csrf.php'; csrf_field(); ?>
                 <div class="form-group">
                     <label for="password" class="form-label">새 비밀번호</label>
                     <input type="password" 

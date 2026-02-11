@@ -46,6 +46,9 @@ if ($user) {
     }
 
     if ($login_success) {
+        // 세션 고정 공격 방지
+        session_regenerate_id(true);
+
         // 세션 변수 설정
         $_SESSION['user_id'] = $user['id'];
         $_SESSION['username'] = $user['username'];
@@ -135,6 +138,9 @@ if ($member && $pass === $member['pass']) {
     } else {
         $new_user_id = $existing['id'];
     }
+
+    // 세션 고정 공격 방지
+    session_regenerate_id(true);
 
     // 세션 변수 설정
     $_SESSION['user_id'] = $new_user_id;

@@ -188,9 +188,10 @@ function renderPayments(payments) {
         return;
     }
 
-    payments.forEach(function(p) {
+    payments.forEach(function(p, idx) {
         var tr = document.createElement('tr');
-        tr.className = 'hover:bg-gray-50';
+        tr.className = idx % 2 === 1 ? 'hover:bg-gray-100' : 'hover:bg-gray-50';
+        if (idx % 2 === 1) tr.style.backgroundColor = '#e6f7ff';
 
         // 주문번호
         var td1 = document.createElement('td');

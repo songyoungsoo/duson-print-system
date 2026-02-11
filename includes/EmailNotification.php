@@ -227,8 +227,8 @@ https://dsp1830.shop/mypage/orders.php
 
 --
 두손기획인쇄
-https://dsp1830.shop
-전화: 02-1234-5678
+https://dsp114.co.kr
+전화: 02-2632-1830
 ";
 
         return $this->send($customer_email, $subject, $message);

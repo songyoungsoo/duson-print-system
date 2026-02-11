@@ -33,7 +33,7 @@ if ($is_logged_in) {
 }
 
 // 로그인 상태가 아닌 경우에만 로그인 화면을 표시
-include __DIR__ . "/db.php";
+include __DIR__ . "/../db.php";
 ?>
 
 <!DOCTYPE html>
@@ -133,6 +133,7 @@ function MemberCheckField() {
 </script>
 
 <form name='FrmUserInfo' method='post' onsubmit='return MemberCheckField();' action='login_unified.php'>
+    <?php include_once __DIR__ . '/../includes/csrf.php'; csrf_field(); ?>
     <input type='hidden' name='mode' value='member_login'>
     <input type='hidden' name='redirect' value='<?php echo htmlspecialchars($_GET['redirect'] ?? '/'); ?>'>
 

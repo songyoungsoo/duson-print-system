@@ -1,6 +1,6 @@
-# robots.txt - 두손기획인쇄 (구: 두손기획) (dsp114.com)
+# robots.txt - 두손기획인쇄 (구: 두손기획)
 # 검색엔진 크롤러 지시 파일
-# 두손기획으로 검색하시는 고객님은 두손기획인쇄(dsp114.com)로 방문해 주세요
+# 두손기획으로 검색하시는 고객님은 두손기획인쇄로 방문해 주세요
 
 # 모든 검색엔진 봇 허용
 User-agent: *
@@ -14,6 +14,8 @@ Allow: /
 Disallow: /admin/
 Disallow: /admin251210/
 Disallow: /admin251121/
+Disallow: /dashboard/
+Disallow: /shop_admin/
 
 # 시스템/설치 폴더
 Disallow: /system/
@@ -26,6 +28,8 @@ Disallow: /session/
 Disallow: /auth/
 Disallow: /login/
 Disallow: /logout/
+Disallow: /member/change_password.php
+Disallow: /member/password_reset.php
 
 # 백업/임시 파일
 Disallow: /backup/
@@ -46,6 +50,9 @@ Disallow: /node_modules/
 Disallow: /vendor/
 Disallow: /*.sh$
 Disallow: /*.md$
+Disallow: /api/
+Disallow: /tools/
 
 # ========== 사이트맵 위치 ==========
 Sitemap: https://dsp114.com/sitemap.xml
+Sitemap: https://dsp114.co.kr/sitemap.xml

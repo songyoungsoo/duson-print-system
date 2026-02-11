@@ -361,6 +361,7 @@ function validateForm() {
     <h2><?= $isEditMode ? '회원 정보 수정' : '두손기획인쇄 회원가입' ?></h2>
 
     <form name="memberForm" method="post" action="<?= htmlspecialchars($action) ?>" onsubmit="return validateForm()" autocomplete="off">
+        <?php include_once __DIR__ . '/../includes/csrf.php'; csrf_field(); ?>
         <input type="hidden" name="no" value="<?= htmlspecialchars($no) ?>">
         <input type="hidden" name="mode" value="modifyok">
 

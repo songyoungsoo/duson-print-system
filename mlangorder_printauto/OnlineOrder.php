@@ -1,9 +1,15 @@
 <?php
 session_start();
 
-// 디버깅을 위한 에러 표시 설정
-ini_set('display_errors', 1);
-ini_set('display_startup_errors', 1);
+// CSRF 검증
+include_once __DIR__ . '/../includes/csrf.php';
+if ($_SERVER['REQUEST_METHOD'] === 'POST') {
+    csrf_verify_or_die();
+}
+
+// 에러 로그만 기록 (화면 표시 안함)
+ini_set('display_errors', 0);
+ini_set('log_errors', 1);
 error_reporting(E_ALL);
 $HomeDir = "..";
 $PageCode = "PrintAuto";

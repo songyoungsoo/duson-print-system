@@ -66,9 +66,9 @@ class NotificationService
                 'smtp_pass' => getenv('SMTP_PASS') ?: ''
             ],
             'company' => [
-                'name' => '두손기획',
-                'phone' => '02-1234-5678',
-                'url' => 'https://dsp1830.shop'
+                'name' => '두손기획인쇄',
+                'phone' => '02-2632-1830',
+                'url' => 'https://dsp114.co.kr'
             ]
         ];
     }

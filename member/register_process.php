@@ -14,8 +14,10 @@ include "../db.php";
 
 // 에러 처리 함수
 function ERROR($msg) {
+    $safe_msg = htmlspecialchars($msg, ENT_QUOTES, 'UTF-8');
+    $safe_msg = str_replace(["\\", "'", "\n", "\r"], ["\\\\", "\\'", "\\n", ""], $safe_msg);
     echo "<script language='javascript'>
-    window.alert('$msg');
+    window.alert('{$safe_msg}');
     history.go(-1);
     </script>";
     exit;
@@ -25,6 +27,10 @@ function ERROR($msg) {
 if (session_status() === PHP_SESSION_NONE) {
     session_start();
 }
+
+// CSRF 검증
+include_once __DIR__ . '/../includes/csrf.php';
+csrf_verify_or_die();
 
 // POST 데이터 받기 및 검증
 $id = isset($_POST['id']) ? trim($_POST['id']) : null;
@@ -240,8 +246,10 @@ mysqli_stmt_close($update_stmt);
 mysqli_close($db);
 
 // 8. 가입 완료 페이지로 이동
+$safe_id = htmlspecialchars($id, ENT_QUOTES, 'UTF-8');
+$safe_name = htmlspecialchars($name, ENT_QUOTES, 'UTF-8');
 echo "<script language='javascript'>
-    window.alert('회원가입이 완료되었습니다!\\n\\n아이디: {$id}\\n이름: {$name}\\n\\n자동 로그인되었습니다.');
+    window.alert('회원가입이 완료되었습니다!\\n\\n아이디: {$safe_id}\\n이름: {$safe_name}\\n\\n자동 로그인되었습니다.');
     location.href='../index.php';
 </script>";
 exit;

@@ -79,7 +79,7 @@ function generateEmailContent($details) {
         <div style='background: #f8f9fa; padding: 15px; border-radius: 8px;'>
             <p><strong>문의:</strong> 1688-2384, 02-2632-1830</p>
             <p><strong>주소:</strong> 서울특별시 영등포구 영등포로36길9 송호빌딩 1층</p>
-            <p><strong>홈페이지:</strong> www.dsp1830.shop</p>
+            <p><strong>홈페이지:</strong> www.dsp114.co.kr</p>
         </div>
     </div>";
 }

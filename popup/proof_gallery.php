@@ -177,6 +177,7 @@ if ($db_types === 'LIKE') {
 
 if ($res) {
     while ($row = mysqli_fetch_assoc($res)) {
+        // 행 데이터가 유효한지 확인
         if (!$row || !is_array($row) || !isset($row['No']) || !isset($row['ThingCate'])) {
             continue;
         }
@@ -184,32 +185,14 @@ if ($res) {
         $order_no = $row['No'];
         $thing_cate = $row['ThingCate'];
 
-        $files_to_check = [];
-        
-        if (strpos($thing_cate, '[{') === 0 || strpos($thing_cate, '{"') === 0) {
-            $decoded = json_decode($thing_cate, true);
-            if (is_array($decoded)) {
-                foreach ($decoded as $file_info) {
-                    if (isset($file_info['saved_name'])) {
-                        $files_to_check[] = $file_info['saved_name'];
-                    }
-                }
-            }
-        } else {
-            $files_to_check[] = $thing_cate;
-        }
-
-        foreach ($files_to_check as $filename) {
-            if (empty($filename)) continue;
-            
-            $file_path = $_SERVER['DOCUMENT_ROOT'] . "/mlangorder_printauto/upload/{$order_no}/{$filename}";
-            if (file_exists($file_path)) {
-                $all_images[] = [
-                    'type' => 'order',
-                    'order_no' => $order_no,
-                    'url' => $UPLOAD_DIR_URL . "/" . $order_no . "/" . rawurlencode($filename)
-                ];
-            }
+        // 실제 파일이 존재하는지 확인
+        $file_path = $_SERVER['DOCUMENT_ROOT'] . "/mlangorder_printauto/upload/{$order_no}/{$thing_cate}";
+        if (file_exists($file_path)) {
+            $all_images[] = [
+                'type' => 'order',
+                'order_no' => $order_no,
+                'url' => $UPLOAD_DIR_URL . "/" . $order_no . "/" . rawurlencode($thing_cate)
+            ];
         }
     }
 
@@ -232,8 +215,8 @@ $offset = ($page - 1) * $per;
 $paged_images = array_slice($all_images, $offset, $per);
 
 if (isset($_GET['debug'])) {
-    echo "<!-- DEBUG: Gallery images = " . count(array_filter($all_images, fn($i) => $i['type'] === 'gallery')) . " -->\n";
-    echo "<!-- DEBUG: Order images = " . count(array_filter($all_images, fn($i) => $i['type'] === 'order')) . " -->\n";
+    echo "<!-- DEBUG: Gallery images = " . count(array_filter($all_images, function($i) { return $i['type'] === 'gallery'; })) . " -->\n";
+    echo "<!-- DEBUG: Order images = " . count(array_filter($all_images, function($i) { return $i['type'] === 'order'; })) . " -->\n";
     echo "<!-- DEBUG: Total = $total, Pages = $pages -->\n";
 }
 
@@ -266,7 +249,7 @@ function get_image_from_thingcate($orderNo, $absBase, $urlBase, $connect){
 <html lang="ko">
 <head>
 <meta charset="utf-8">
-<title>명함 샘플 갤러리</title>
+<title>샘플 갤러리</title>
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <style>
 body {
@@ -326,54 +309,39 @@ body {
 }
 
 .pager {
-  padding: 8px 14px;
+  padding: 10px 14px;
   display: flex;
-  gap: 2px;
+  gap: 6px;
   justify-content: center;
   align-items: center;
   flex-wrap: wrap;
-  font-size: 12px;
 }
 
 .pager a, .pager span {
-  min-width: 28px;
-  height: 28px;
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  border: 1px solid #d1d5db;
-  border-radius: 4px;
-  padding: 0 6px;
+  border: 1px solid #cbd5e1;
+  border-radius: 8px;
+  padding: 6px 10px;
   text-decoration: none;
-  color: #374151;
+  color: #334155;
   background: #fff;
-  transition: background 0.15s;
-  line-height: 1;
+  transition: background 0.2s ease;
 }
 
 .pager a:hover {
-  background: #f3f4f6;
-  border-color: #9ca3af;
+  background: #f1f5f9;
 }
 
 .pager .current {
-  background: #374151;
+  background: #334155;
   color: #fff;
-  border-color: #374151;
-  font-weight: 600;
+  border-color: #334155;
 }
 
 .pager .dots {
   border: none;
   background: none;
-  color: #9ca3af;
-  min-width: 20px;
-  padding: 0;
-}
-
-.pager .nav-btn {
-  color: #6b7280;
-  font-size: 11px;
+  padding: 6px 4px;
+  color: #94a3b8;
 }
 
 .viewer {
@@ -469,7 +437,7 @@ body {
         }
       ?>
         <div class="card" data-img="<?= htmlspecialchars($img_url) ?>">
-          <img src="<?= htmlspecialchars($img_url) ?>" alt="<?= $alt ?>">
+          <img src="<?= htmlspecialchars($img_url) ?>" alt="<?= $alt ?>" loading="lazy" onerror="this.parentElement.style.display='none'">
         </div>
       <?php
       endforeach;
@@ -478,38 +446,42 @@ body {
 
     <div class="pager">
       <?php
-      $base = "/popup/proof_gallery.php?cate=" . urlencode($cate) . "&page=";
-      $wing = 2;
+      $cate_encoded = urlencode($cate);
+      $base = "/popup/proof_gallery.php?cate={$cate_encoded}&page=";
+      $range = 2; // 현재 페이지 좌우 표시 개수
 
+      // « 첫페이지
       if ($page > 1) {
-        echo '<a class="nav-btn" href="'.$base.'1" title="처음">«</a>';
-        echo '<a class="nav-btn" href="'.$base.($page-1).'" title="이전">‹</a>';
+        echo "<a href=\"{$base}1\">«</a>";
+        echo "<a href=\"{$base}" . ($page - 1) . "\">‹</a>";
       }
 
-      $start = max(1, $page - $wing);
-      $end = min($pages, $page + $wing);
+      // 페이지 번호
+      $start = max(1, $page - $range);
+      $end = min($pages, $page + $range);
 
       if ($start > 1) {
-        echo '<a href="'.$base.'1">1</a>';
-        if ($start > 2) echo '<span class="dots">…</span>';
+        echo "<a href=\"{$base}1\">1</a>";
+        if ($start > 2) echo "<span class=\"dots\">…</span>";
       }
 
       for ($p = $start; $p <= $end; $p++) {
         if ($p == $page) {
-          echo '<span class="current">'.$p.'</span>';
+          echo "<span class=\"current\">{$p}</span>";
         } else {
-          echo '<a href="'.$base.$p.'">'.$p.'</a>';
+          echo "<a href=\"{$base}{$p}\">{$p}</a>";
         }
       }
 
       if ($end < $pages) {
-        if ($end < $pages - 1) echo '<span class="dots">…</span>';
-        echo '<a href="'.$base.$pages.'">'.$pages.'</a>';
+        if ($end < $pages - 1) echo "<span class=\"dots\">…</span>";
+        echo "<a href=\"{$base}{$pages}\">{$pages}</a>";
       }
 
+      // › 다음, » 마지막
       if ($page < $pages) {
-        echo '<a class="nav-btn" href="'.$base.($page+1).'" title="다음">›</a>';
-        echo '<a class="nav-btn" href="'.$base.$pages.'" title="마지막">»</a>';
+        echo "<a href=\"{$base}" . ($page + 1) . "\">›</a>";
+        echo "<a href=\"{$base}{$pages}\">»</a>";
       }
       ?>
     </div>

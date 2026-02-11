@@ -1785,7 +1785,7 @@ $additional_css = [
             <h1>두손기획인쇄</h1>
             <div class="company-details">
                 <p>서울 영등포구 영등포로36길 9, 송호빌딩 1층</p>
-                <p>TEL: 02-2632-1830 | FAX: 02-2632-1831 | www.dsp114.com</p>
+                <p>TEL: 02-2632-1830 | FAX: 02-2632-1831 | www.dsp114.co.kr</p>
             </div>
         </div>
         <div class="print-doc-title">

@@ -113,10 +113,12 @@ if ($current_env === 'local') {
     $admin_url = $protocol . $host;
 
     // 쿠키 도메인: 최종 목표 도메인 사용 (dsp1830.shop에서도 작동하도록)
-    if (strpos($host, 'dsp1830.shop') !== false) {
+    if (strpos($host, 'dsp114.co.kr') !== false) {
+        $home_cookie_url = ".dsp114.co.kr";
+    } elseif (strpos($host, 'dsp1830.shop') !== false) {
         $home_cookie_url = ".dsp1830.shop";
     } else {
-        $home_cookie_url = ".dsp1830.shop";
+        $home_cookie_url = "." . $host;
     }
 }
 

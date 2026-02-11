@@ -176,21 +176,37 @@ if (!empty($params)) {
 $total_orders = mysqli_fetch_array($count_result)['total'];
 $total_pages = ceil($total_orders / $limit);
 
-// 주문 목록 조회 (교정확정 정보 포함)
-$query = "SELECT *, IFNULL(proofreading_confirmed, 0) as proofreading_confirmed FROM mlangorder_printauto {$where_clause} ORDER BY no DESC LIMIT ? OFFSET ?";
+// 주문 목록 조회 (교정확정 정보 포함 - 컬럼 없으면 fallback)
+$has_proofcol = false;
+$col_check = mysqli_query($connect, "SHOW COLUMNS FROM mlangorder_printauto LIKE 'proofreading_confirmed'");
+if ($col_check && mysqli_num_rows($col_check) > 0) {
+    $has_proofcol = true;
+}
+
+$select = $has_proofcol
+    ? "SELECT *, IFNULL(proofreading_confirmed, 0) as proofreading_confirmed"
+    : "SELECT *, 0 as proofreading_confirmed";
+
+$query = "{$select} FROM mlangorder_printauto {$where_clause} ORDER BY no DESC LIMIT ? OFFSET ?";
 $final_params = array_merge($params, [$limit, $offset]);
 $final_param_types = $param_types . 'ii';
 
 $stmt = mysqli_prepare($connect, $query);
-if (!empty($final_param_types)) {
-    mysqli_stmt_bind_param($stmt, $final_param_types, ...$final_params);
+if ($stmt) {
+    if (!empty($final_param_types)) {
+        mysqli_stmt_bind_param($stmt, $final_param_types, ...$final_params);
+    }
+    mysqli_stmt_execute($stmt);
+    $result = mysqli_stmt_get_result($stmt);
+} else {
+    $result = false;
 }
-mysqli_stmt_execute($stmt);
-$result = mysqli_stmt_get_result($stmt);
 
 $all_orders = [];
-while ($row = mysqli_fetch_array($result)) {
-    $all_orders[] = $row;
+if ($result) {
+    while ($row = mysqli_fetch_array($result)) {
+        $all_orders[] = $row;
+    }
 }
 
 ?>
@@ -225,7 +241,7 @@ while ($row = mysqli_fetch_array($result)) {
     <?php if ($is_admin): ?>
     <!-- 관리자 표시 -->
     <div style="text-align:right; padding:10px; color:#2563eb; font-weight:600;">
-        👤 관리자 모드 | <a href="/auth/logout.php?redirect=/dashboard/" target="_top" style="color:#dc2626;">로그아웃</a>
+        👤 관리자 모드 | <a href="?logout=1" style="color:#dc2626;">로그아웃</a>
     </div>
     <?php endif; ?>
 
@@ -394,22 +410,14 @@ while ($row = mysqli_fetch_array($result)) {
                                 <?php endif; ?>
                             </div>
 
-                            <div class="col-waybill"
-                                 onclick="event.stopPropagation(); handleWaybillClick(<?php echo $order['no']; ?>, '<?php echo htmlspecialchars($order['waybill_no'] ?? ''); ?>')"
-                                 style="cursor: pointer;">
+                            <div class="col-waybill" onclick="event.stopPropagation();">
                                 <?php if (!empty($order['waybill_no'])): ?>
-                                    <?php if ($is_admin || $order['no'] == $authenticated_order_no): ?>
                                     <a href="https://www.ilogen.com/web/personal/trace/<?php echo htmlspecialchars($order['waybill_no']); ?>"
                                        target="_blank"
                                        class="waybill-link"
                                        title="택배사: <?php echo htmlspecialchars($order['delivery_company'] ?? '로젠'); ?> - 클릭하면 배송조회">
                                         📦 <?php echo htmlspecialchars($order['waybill_no']); ?>
                                     </a>
-                                    <?php else: ?>
-                                    <span class="waybill-link" title="인증 후 배송조회 가능">
-                                        📦 <?php echo htmlspecialchars($order['waybill_no']); ?>
-                                    </span>
-                                    <?php endif; ?>
                                     <?php if (!empty($order['waybill_date'])): ?>
                                         <small style="display:block; color:#666; font-size:0.85em;">
                                             <?php echo date('m/d H:i', strtotime($order['waybill_date'])); ?>
@@ -503,7 +511,6 @@ while ($row = mysqli_fetch_array($result)) {
 
             <div class="modal-hint">
                 전화번호 뒤 4자리를 입력하세요
-                <br><small style="color: #666;">(익일 보셔야 정상입니다!)</small>
             </div>
 
             <input type="text"
@@ -645,34 +652,6 @@ function openProofreadingPopup(orderNo) {
     } else {
         alert('팝업이 차단되었습니다. 팝업 차단을 해제해주세요.');
     }
-}
-
-/**
- * 운송장번호 클릭 처리
- * @param {number} orderNo - 주문 번호
- * @param {string} waybillNo - 운송장번호
- */
-function handleWaybillClick(orderNo, waybillNo) {
-    // 운송장번호가 없으면 무시
-    if (!waybillNo) return;
-
-    // 관리자이거나 이미 인증된 주문이면 배송조회 열기
-    if (isAdmin || authenticatedOrderNo === orderNo) {
-        const trackUrl = 'https://www.ilogen.com/web/personal/trace/' + waybillNo;
-        window.open(trackUrl, 'waybill_track_' + orderNo);
-        return;
-    }
-
-    // 인증되지 않은 경우 - 비밀번호 모달 표시
-    currentOrderNo = orderNo;
-    currentOrderName = '';
-    currentOrderPhone = '';
-
-    document.getElementById('modalOrderNo').textContent = orderNo;
-    document.getElementById('passwordModal').style.display = 'flex';
-    document.getElementById('passwordInput').focus();
-    document.getElementById('passwordError').style.display = 'none';
-    document.getElementById('passwordInput').value = '';
 }
 
 // Enter 키로 확인

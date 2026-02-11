@@ -227,7 +227,7 @@ document.addEventListener('DOMContentLoaded', function() {
           <td width="821" height="5"> </td>
         </tr>
         <tr>
-          <td valign="top"><a href="http://duson.ipdisk.co.kr:5544/piwigo/index.php?/category/1" onMouseOut="MM_swapImgRestore()" onMouseOver="MM_swapImage('subj-02-01','','../img/subjk-02-01.jpg',1)"><img src="../img/subj-02-01.jpg" alt="전단지샘플더보기" name="subj-02-01" width="128" height="60" border="0"></a><a href="http://dsp1830.shop/mlangprintauto/inserted/index.php" onMouseOut="MM_swapImgRestore()" onMouseOver="MM_swapImage('subj-02','','../img/subjk-02.jpg',1)"><img src="../img/subjk-02.jpg" alt="전단지가격" name="subj-02" width="693" height="60" border="0"></a></td>
+          <td valign="top"><a href="http://duson.ipdisk.co.kr:5544/piwigo/index.php?/category/1" onMouseOut="MM_swapImgRestore()" onMouseOver="MM_swapImage('subj-02-01','','../img/subjk-02-01.jpg',1)"><img src="../img/subj-02-01.jpg" alt="전단지샘플더보기" name="subj-02-01" width="128" height="60" border="0"></a><a href="/mlangprintauto/inserted/index.php" onMouseOut="MM_swapImgRestore()" onMouseOver="MM_swapImage('subj-02','','../img/subjk-02.jpg',1)"><img src="../img/subjk-02.jpg" alt="전단지가격" name="subj-02" width="693" height="60" border="0"></a></td>
         </tr>
         <tr> 
           <td height="5" valign="top"></td>
@@ -297,7 +297,7 @@ document.addEventListener('DOMContentLoaded', function() {
                 </TR>
                 <TR>
                   <TD height=15 colspan="2"><font 
-                                color=#333333><a href="http://dsp1830.shop/mlangprintauto/inserted/index.php"><img src="../img/pbt.jpg" alt="가격보기로이동합니다" width="78" height="78" border="0"><img src="../img/obt.jpg" alt="주문하기버튼" width="78" height="78" border="0"></a></font></TD>
+                                color=#333333><a href="/mlangprintauto/inserted/index.php"><img src="../img/pbt.jpg" alt="가격보기로이동합니다" width="78" height="78" border="0"><img src="../img/obt.jpg" alt="주문하기버튼" width="78" height="78" border="0"></a></font></TD>
                 </TR>
                 <TR>
                   <TD height=15 ></TD>
