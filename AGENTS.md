@@ -790,6 +790,30 @@ OnlineOrder_unified.php (폼 입력)
 
 ## 🎨 UI/UX Improvements
 
+### 방문자분석 URL 한글화 (2026-02-12)
+**구현 위치**: `dashboard/visitors/index.php`
+
+URL 경로 → 한글 제품명 매핑 (클릭 가능한 링크):
+- `/mlangprintauto/sticker_new/index.php` → **스티커** (파란색 링크)
+- `/mlangprintauto/inserted/index.php` → **전단지**
+- 9개 제품 + 로그인/회원가입/주문서/장바구니 등 30개 경로 매핑
+
+**매핑 구조**:
+- `PAGE_NAME_MAP`: 정확 경로 매칭 (30개)
+- `PAGE_PATH_PATTERNS`: 부분 경로 매칭 (17개 패턴)
+- `getPageName(url)`: 2단계 매칭 함수
+
+**적용 위치**: 인기 페이지, 진입/이탈 페이지, 실시간 방문자 테이블
+
+### 주문통계 숫자 카운트업 애니메이션 (2026-02-12)
+**구현 위치**: `dashboard/stats/index.php`
+
+요약 카드 4개에 0→목표값 카운트업 애니메이션:
+- `animateNumber(el, target, 800, isCurrency)` 함수
+- easeOutExpo 이징 (`1 - Math.pow(2, -10 * progress)`)
+- 통화 축약값(만/억) 애니메이션 중 포맷 유지
+- `requestAnimationFrame` 기반 부드러운 렌더링
+
 ### 명함 재질 Hover 효과 (2026-01-28)
 **변경 전**:
 - 돋보기 아이콘 🔍 표시

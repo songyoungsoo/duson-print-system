@@ -4,6 +4,23 @@
 
 ---
 
+## 2026-02-12
+
+| 수정자 | 수정항목 | 관련 파일 |
+|--------|----------|-----------|
+| Claude | **방문자분석 페이지 URL 한글화** - 인기 페이지/진입·이탈 페이지/실시간 방문자 테이블에서 URL 경로를 한글 제품명(전단지, 스티커, 명함 등)으로 표시. 클릭 가능한 파란색 링크로 변환. PAGE_NAME_MAP 정확 매칭 + PAGE_PATH_PATTERNS 부분 매칭 2단계 구조 | dashboard/visitors/index.php |
+| Claude | **주문통계 숫자 카운트업 애니메이션** - 요약 카드 4개(오늘 주문, 이번달 주문, 이번달 매출, 누적 주문)에 0→목표값 카운트업 애니메이션 추가. easeOutExpo 이징, 800ms 지속시간. 통화 축약(만/억) 포맷 지원 | dashboard/stats/index.php |
+| Claude | **대시보드 공통 UI 개선** - 헤더/사이드바/푸터/config 공통 컴포넌트 개선 | dashboard/includes/header.php, sidebar.php, footer.php, config.php |
+| Claude | **견적서 UI/UX 개선** - create.php 레이아웃 대폭 개선, 엑셀 스타일 CSS 업데이트, 옵션 가격 연동 개선 | admin/mlangprintauto/quote/create.php, assets/excel-style.css, option_prices.php |
+| Claude | **교정관리 API 개선** - 파일 업로드 API 안정성 개선 | dashboard/proofs/api.php, dashboard/proofs/index.php |
+| Claude | **인증 시스템 보안 강화** - admin_auth.php, auth.php 보안 로직 개선 | admin/includes/admin_auth.php, includes/auth.php |
+| Claude | **주문서 개선** - OnlineOrder_unified.php UI/로직 개선 | mlangorder_printauto/OnlineOrder_unified.php |
+| Claude | **Plesk .htaccess 정리** - ImgFolder, upload 디렉토리의 Apache 2.2 호환 불가 .htaccess 삭제 (500 에러 방지) | ImgFolder/.htaccess, mlangorder_printauto/upload/.htaccess |
+| Claude | **경쟁사 가격 분석 리포트** - mspg.co.kr 전단지 가격 크롤링 분석. 종이비/판비/인쇄비 역산 분석 문서 | COMPETITOR_PRICING_REPORT.md |
+| Claude | **문서 업데이트** - AGENTS.md 교정갤러리/결제/인증 섹션 확장, CLAUDE.md 업데이트 | AGENTS.md, CLAUDE.md |
+
+---
+
 ## 2026-02-11
 
 | 수정자 | 수정항목 | 관련 파일 |
