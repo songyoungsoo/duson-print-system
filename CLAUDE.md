@@ -40,12 +40,37 @@ curl -T local_file.php \
 
 ### 환경 정보
 - **OS**: Linux (WSL2 Ubuntu) / Windows XAMPP
-- **Web Server**: Apache 2.4+
+- **Web Server**: Apache 2.4+ (로컬) / **Plesk: nginx + Apache** (프로덕션)
 - **PHP**: 7.4+ (로컬) / 8.2 (프로덕션)
 - **Database**: MySQL 5.7+ (utf8mb4)
 - **Local Document Root**: `/var/www/html` (개발 환경)
-- **Production Web Root**: `/httpdocs/` (FTP 기준)
+- **Production Web Root**: `/httpdocs/` (FTP 기준, Plesk 표준 경로)
 - **Domains**: localhost (dev) / dsp114.co.kr (prod)
+
+### 🚨 프로덕션 서버 = Plesk (nginx + Apache) — .htaccess 금지!
+
+프로덕션은 **Plesk 호스팅 패널** 환경입니다:
+- **nginx**가 프록시로 앞단에서 정적 파일(이미지, CSS, JS) 직접 서빙
+- **Apache**가 뒷단에서 PHP만 처리
+- **FTP**: ProFTPD (SSH 접근 불가)
+
+```
+⚠️ .htaccess 절대 사용 금지!
+
+이유:
+1. nginx는 .htaccess를 완전히 무시함
+2. php_flag, php_value 등 Apache 모듈 지시자 → 500 에러 유발
+3. 보안 효과 = 0 (nginx가 정적 파일 요청 시 Apache를 거치지 않음)
+
+실제 사고 (2026-02-10):
+- upload/.htaccess의 "php_flag engine off" → 이미지 500 에러 → 교정관리 이미지 깨짐
+- ImgFolder/.htaccess 동일 문제
+
+보안 대안:
+- 업로드 시 확장자 제한 (코드 레벨) ← 이미 적용됨
+- 파일명 난수화 ← 이미 적용됨
+- 경로 검증 (realpath + strpos) ← 이미 적용됨
+```
 
 ### 접속 정보
 

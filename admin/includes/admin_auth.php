@@ -186,6 +186,7 @@ function adminLogin($username, $password) {
 
         $_SESSION['admin_logged_in'] = true;
         $_SESSION['admin_username'] = $username;
+        $_SESSION['admin_id'] = 1; // 단일 관리자 시스템 (향후 DB 기반으로 전환)
         $_SESSION['admin_login_time'] = time();
         $_SESSION['admin_last_activity'] = time();
         $_SESSION['admin_ip'] = $ip;

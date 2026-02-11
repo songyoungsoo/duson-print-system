@@ -20,20 +20,47 @@ switch ($action) {
             echo json_encode(['success' => false, 'message' => 'Invalid order']);
             exit;
         }
-        $upload_dir = realpath(__DIR__ . '/../../mlangorder_printauto/upload/' . $order_no);
+
+        require_once __DIR__ . '/../../includes/ImagePathResolver.php';
+
+        // DB에서 주문 정보 조회 (ImgFolder, ThingCate, uploaded_files 포함)
+        $stmt = mysqli_prepare($db, "SELECT no, date, ImgFolder, ThingCate, uploaded_files FROM mlangorder_printauto WHERE no = ?");
+        mysqli_stmt_bind_param($stmt, "i", $order_no);
+        mysqli_stmt_execute($stmt);
+        $row = mysqli_fetch_assoc(mysqli_stmt_get_result($stmt));
+        mysqli_stmt_close($stmt);
+
         $files = [];
-        if ($upload_dir && is_dir($upload_dir)) {
-            foreach (array_diff(scandir($upload_dir), ['.', '..']) as $fname) {
-                $filepath = $upload_dir . '/' . $fname;
+        if ($row) {
+            // ImagePathResolver로 5가지 저장 패턴 통합 조회
+            $result = ImagePathResolver::getFilesFromRow($row, false);
+            $doc_root = $_SERVER['DOCUMENT_ROOT'];
+
+            foreach ($result['files'] as $f) {
+                $filepath = $f['path'] ?? '';
+                $web_url = $f['web_url'] ?? '';
+
+                // web_url이 없으면 path에서 생성
+                if (empty($web_url) && !empty($filepath) && file_exists($filepath)) {
+                    $web_url = str_replace($doc_root, '', $filepath);
+                }
+
+                if (empty($web_url)) continue;
+
+                $fname = $f['name'] ?? basename($filepath);
+                $fsize = $f['size'] ?? (file_exists($filepath) ? filesize($filepath) : 0);
+                $mtime = file_exists($filepath) ? filemtime($filepath) : 0;
+
                 $files[] = [
                     'name' => $fname,
-                    'url' => '/mlangorder_printauto/upload/' . $order_no . '/' . rawurlencode($fname),
+                    'url' => $web_url,
                     'path' => $filepath,
-                    'size' => filesize($filepath),
-                    'mtime' => filemtime($filepath),
-                    'date' => date('m/d H:i', filemtime($filepath)),
+                    'size' => $fsize,
+                    'mtime' => $mtime,
+                    'date' => $mtime ? date('m/d H:i', $mtime) : '',
                 ];
             }
+
             // 최신 파일 순 정렬
             usort($files, function($a, $b) { return $b['mtime'] - $a['mtime']; });
         }

@@ -428,7 +428,7 @@ function viewFiles(orderNo) {
             var images = data.files.filter(f => /\.(jpg|jpeg|png|gif)$/i.test(f.name));
             if (images.length > 0) {
                 viewerImages = images.map(f => ({
-                    url: f.url + '?raw',
+                    url: f.url + '?t=' + Date.now(),  // 캐싱 방지를 위한 타임스탬프 추가
                     name: f.name,
                     date: f.date || '',
                     orderNo: orderNo,
@@ -466,7 +466,8 @@ function buildThumbnails() {
 
 function showImage() {
     var img = viewerImages[viewerIndex];
-    document.getElementById('overlayImg').src = img.url;
+    var overlayImg = document.getElementById('overlayImg');
+    overlayImg.src = img.url;
 
     var total = viewerImages.length;
     var prevBtn = document.getElementById('prevBtn');
@@ -480,6 +481,17 @@ function showImage() {
     counter.textContent = (viewerIndex + 1) + ' / ' + total;
     fileName.textContent = img.name;
     fileDate.textContent = img.date;
+
+    // 이미지 로드 실패 처리
+    overlayImg.onerror = function() {
+        overlayImg.style.display = 'none';
+        fileName.textContent += ' (이미지 로드 실패)';
+    };
+
+    // 이미지 로드 성공 시 디스플레이 복구
+    overlayImg.onload = function() {
+        overlayImg.style.display = 'block';
+    };
 
     if (total > 1) {
         prevBtn.classList.toggle('hidden', viewerIndex === 0);
@@ -534,7 +546,7 @@ function deleteCurrentImage() {
         if (data.success) {
             showToast('삭제 완료', 'success');
             // 현재 이미지 제거
-            viewerImages.splice(viewerIndex, 0);
+            viewerImages.splice(viewerIndex, 1);
 
             if (viewerImages.length === 0) {
                 // 더 이상 이미지가 없으면 닫기
@@ -789,7 +801,7 @@ function updateRowFileCount(orderNo) {
             var actionTd = row.children[7];
             if (actionTd && cnt > 0) {
                 if (actionTd.querySelector('span')?.textContent === '-') {
-                    var existingBtn = btnDiv.querySelector('[data-view-btn]');
+                    var existingBtn = actionTd.querySelector('[data-view-btn]');
                     if (!existingBtn) {
                         var viewBtn = document.createElement('button');
                         viewBtn.className = 'relative px-2 py-1 text-xs bg-blue-50 text-blue-600 rounded hover:bg-blue-100';
@@ -797,7 +809,7 @@ function updateRowFileCount(orderNo) {
                         viewBtn.textContent = '🔍보기';
                         viewBtn.setAttribute('data-view-btn', '1');
                         viewBtn.onclick = function() { viewFiles(orderNo); };
-                        btnDiv.insertBefore(viewBtn, btnDiv.firstChild);
+                        actionTd.insertBefore(viewBtn, actionTd.firstChild);
                         existingBtn = viewBtn;
                     }
                     // 뱃지 업데이트

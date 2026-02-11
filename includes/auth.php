@@ -540,10 +540,13 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
         // Remember Me 쿠키 삭제
         clearRememberMeCookie();
 
-        // 세션 변수 모두 제거
-        $_SESSION = array();
+        // 세션 변수 선택적 제거 (고객 세션만, 관리자 세션 보존)
+        $customer_keys = ['user_id', 'username', 'user_name', 'auto_login', 'last_activity', 'id_login_ok'];
+        foreach ($customer_keys as $key) {
+            unset($_SESSION[$key]);
+        }
 
-        // 세션 쿠키 삭제
+        // 세션 쿠키만 삭제 (세션 파괴 금지 - 관리자 세션 보존)
         if (ini_get("session.use_cookies")) {
             $params = session_get_cookie_params();
             setcookie(session_name(), '', time() - 42000,
@@ -552,11 +555,8 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
             );
         }
 
-        // 세션 파괴
-        session_destroy();
-
-        // 새 세션 시작
-        session_start();
+        // session_destroy() 제거 - 관리자 세션 보존을 위해
+        // session_start() 제거 - 이미 시작된 세션 사용
 
         // 리다이렉트
         header("Location: " . $_SERVER['PHP_SELF']);

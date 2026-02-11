@@ -15,6 +15,8 @@ FTP 접속 정보 (dsp114.co.kr):
 ├─ Pass: cH*j@yzj093BeTtc
 └─ Protocol: FTP (plain, port 21)
 
+FTP 서버: ProFTPD 사용
+
 FTP 디렉토리 구조:
 / (FTP 루트)
 ├─ httpdocs/          ← ✅ 실제 웹 루트 (https://dsp114.co.kr/)
@@ -37,6 +39,62 @@ FTP 디렉토리 구조:
 - [ ] 업로드 경로가 `/httpdocs/`로 시작하는가?
 - [ ] curl 또는 FTP 클라이언트에서 경로 확인했는가?
 - [ ] 업로드 후 https://dsp114.co.kr/ 에서 동작 확인했는가?
+
+---
+
+## 🏢 Plesk의 특징 및 .htaccess 호환성
+
+**Plesk 배포판 특징:**
+- 웹 UI로 도메인, SSL, DB, FTP 등을 관리
+- nginx + Apache 조합을 기본 구성으로 사용 (이게 .htaccess 충돌 원인)
+- FTP 서버로 ProFTPD 사용
+- 고객용 웹사이트와 관리자용 웹사이트 분리 배포 지원
+
+**.htaccess 호환성 문제 (2026-02-07 발견):**
+
+```apache
+# ❌ Plesk Apache 2.4 호환되지 않는 구문 (500 에러 유발)
+Options +Indexes
+Order allow,deny
+Allow from all
+
+# ✅ Plesk Apache 2.4 호환 구문
+<Directory>
+    Require all granted
+</Directory>
+
+# ✅ Plesk Apache 2.4 + nginx 프록시 사용 시
+<IfModule mod_rewrite.c>
+    RewriteEngine On
+    RewriteRule ^index\.php$ - [L]
+    RewriteCond %{REQUEST_FILENAME} !-f
+    RewriteCond %{REQUEST_FILENAME} !-d
+    RewriteRule . /index.php [L]
+</IfModule>
+```
+
+**기존 .htaccess 삭제 후 이미지 정상 작동 (2026-02-07):**
+- 위치: `/mlangorder_printauto/upload/.htaccess`
+- 원인: Apache 2.2 구문 사용 (mod_access_compat 미설치)
+- 해결: 파일 삭제 후 자동으로 nginx가 처리
+
+**✅ .htaccess 재작성 시 주의사항:**
+
+1. **nginx + Apache 조합 인지**:
+   - nginx는 클라이언트에 직접 응답, Apache로 프록시
+   - .htaccess는 Apache 2.4 구문만 사용
+   - nginx 설정과 충돌 방지
+
+2. **AllowOverride 제한**: Plesk에서 AllowOverride 설정 필요
+   - `/httpdocs`에는 허용
+   - `/admin`, `/sub` 등에는 제한
+
+3. **ProFTPD FTP 서버와 호환성**: SSL, 권한, chroot 설정 확인
+
+**⚠️ 중요 안내:**
+- Plesk 환경에서 .htaccess는 **신중하게 작성** 필요
+- Apache 2.2 구문 사용 시 500 에러 발생 가능
+- 삭제 후 정상 작동 → 신중하게 복구 필요
 
 ```
 NAS 접속 정보 (백업 서버):
@@ -821,6 +879,12 @@ filter_var('http://' . $host, FILTER_VALIDATE_URL)
 
 ### CSS & Frontend
 8. ❌ CSS !important usage without proper diagnosis
+
+### Plesk .htaccess (2026-02-07)
+17. ❌ Apache 2.2 구문 사용 (Order, Allow) → Plesk 500 에러 유발
+18. ❌ `.htaccess`를 잘못 작성하면 이미지/페이지가 500 에러 발생
+19. ❌ Plesk는 nginx + Apache 조합 사용 → .htaccess는 Apache 2.4 호환만 사용
+20. ❌ `/mlangorder_printauto/upload/`에 `.htaccess` 파일 생성 시 500 에러 발생 (삭제 후 정상 작동)
 
 ### Payment System
 9. ❌ Enabling production mode on localhost → real payments triggered
