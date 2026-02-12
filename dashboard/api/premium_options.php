@@ -6,7 +6,16 @@
  */
 require_once __DIR__ . '/base.php';
 
-$action = $_GET['action'] ?? $_POST['action'] ?? '';
+// JSON body를 한 번만 읽어서 글로벌 변수에 저장
+$_JSON_INPUT = null;
+if ($_SERVER['REQUEST_METHOD'] === 'POST') {
+    $_JSON_INPUT = json_decode(file_get_contents('php://input'), true) ?: [];
+}
+
+$action = $_GET['action'] ?? '';
+if (!$action && $_JSON_INPUT) {
+    $action = $_JSON_INPUT['action'] ?? $_POST['action'] ?? '';
+}
 
 switch ($action) {
     case 'list':
@@ -127,7 +136,7 @@ function handleGet() {
  */
 function handleCreateOption() {
     global $db;
-    $input = json_decode(file_get_contents('php://input'), true);
+    global $_JSON_INPUT; $input = $_JSON_INPUT ?: [];
     $product_type = $input['product_type'] ?? '';
     $option_name = trim($input['option_name'] ?? '');
 
@@ -164,7 +173,7 @@ function handleCreateOption() {
  */
 function handleCreateVariant() {
     global $db;
-    $input = json_decode(file_get_contents('php://input'), true);
+    global $_JSON_INPUT; $input = $_JSON_INPUT ?: [];
     $option_id = (int)($input['option_id'] ?? 0);
     $variant_name = trim($input['variant_name'] ?? '');
     $pricing_config = $input['pricing_config'] ?? [];
@@ -210,7 +219,7 @@ function handleCreateVariant() {
  */
 function handleUpdateVariant() {
     global $db;
-    $input = json_decode(file_get_contents('php://input'), true);
+    global $_JSON_INPUT; $input = $_JSON_INPUT ?: [];
     $variant_id = (int)($input['variant_id'] ?? 0);
     if (!$variant_id) jsonResponse(false, 'variant_id가 필요합니다.');
 
@@ -277,7 +286,7 @@ function handleUpdateVariant() {
  */
 function handleDeleteVariant() {
     global $db;
-    $input = json_decode(file_get_contents('php://input'), true);
+    global $_JSON_INPUT; $input = $_JSON_INPUT ?: [];
     $variant_id = (int)($input['variant_id'] ?? 0);
     if (!$variant_id) jsonResponse(false, 'variant_id가 필요합니다.');
 
@@ -308,7 +317,7 @@ function handleDeleteVariant() {
  */
 function handleToggleOption() {
     global $db;
-    $input = json_decode(file_get_contents('php://input'), true);
+    global $_JSON_INPUT; $input = $_JSON_INPUT ?: [];
     $option_id = (int)($input['option_id'] ?? 0);
     if (!$option_id) jsonResponse(false, 'option_id가 필요합니다.');
 
@@ -336,7 +345,7 @@ function handleToggleOption() {
  */
 function handleReorder() {
     global $db;
-    $input = json_decode(file_get_contents('php://input'), true);
+    global $_JSON_INPUT; $input = $_JSON_INPUT ?: [];
     $items = $input['items'] ?? [];
     $type = $input['type'] ?? 'option'; // 'option' or 'variant'
 
@@ -385,7 +394,7 @@ function handleReorder() {
  */
 function handleRecalculateOrders() {
     global $db;
-    $input = json_decode(file_get_contents('php://input'), true);
+    global $_JSON_INPUT; $input = $_JSON_INPUT ?: [];
     $product_type = $input['product_type'] ?? '';
     $execute = !empty($input['execute']);
 
