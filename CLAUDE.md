@@ -275,9 +275,14 @@ curl -T "file.php" -u "dsp1830:ds701018" \
 │   ├── index.php                       # 제품 페이지
 │   ├── add_to_basket.php              # 장바구니 API
 │   └── calculate_price_ajax.php       # 가격 API
-└── mlangorder_printauto/
-    ├── ProcessOrder_unified.php        # 주문 처리
-    └── OrderComplete_universal.php     # 주문 완료
+├── mlangorder_printauto/
+│   ├── ProcessOrder_unified.php        # 주문 처리
+│   └── OrderComplete_universal.php     # 주문 완료
+├── config/
+│   └── gallery_settings.json           # 갤러리 품목별 설정
+└── dashboard/
+    ├── api/gallery.php                 # 갤러리 API (6 액션)
+    └── gallery/index.php               # 갤러리 관리 UI
 ```
 
 ---
@@ -372,6 +377,38 @@ if (empty($productType)) {
 ```
 
 **이유**: 레거시 데이터에서 `product_type`이 비어있는 경우가 많음. 스티커는 "개"가 아닌 "매" 단위 사용
+
+---
+
+## 🖼️ 갤러리 시스템 (Gallery System)
+
+### 이미지 소스 3계층
+```
+1. sample/        → /ImgFolder/sample/{folder}/       제품 페이지 메인 썸네일 (4장)
+2. samplegallery/ → /ImgFolder/samplegallery/{folder}/ 저작권·개인정보 안전한 이미지
+3. 주문 이미지     → DB mlangorder_printauto.ThingCate   실제 주문 (토글 ON/OFF)
+```
+
+### 설정 파일
+- **`/config/gallery_settings.json`** - 품목별 주문이미지 설정
+  - `order_enabled`: 주문 이미지 표시 여부 (true/false)
+  - `order_date_from` / `order_date_to`: 날짜 범위 필터
+
+### 핵심 파일
+```
+/dashboard/api/gallery.php     ← API (6 액션: stats, list, upload, delete, get_settings, save_settings)
+/dashboard/gallery/index.php   ← 관리 UI (4탭: 샘플/안전갤러리/주문/전체)
+/config/gallery_settings.json  ← 품목별 설정 (order_enabled, 날짜)
+```
+
+### API source 파라미터
+- `sample` → `/ImgFolder/sample/{folder}/`
+- `safegallery` → `/ImgFolder/samplegallery/{folder}/`
+- `order` → DB 주문 이미지 (설정 반영)
+- `all` → 3개 소스 합산
+
+### 폴더명 매핑 ($GALLERY_FOLDER_MAP)
+제품키 `sticker` → 폴더 `sticker_new` (나머지는 키=폴더 동일)
 
 ---
 
