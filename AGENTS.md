@@ -97,6 +97,18 @@ Allow from all
 - 삭제 후 정상 작동 → 신중하게 복구 필요
 
 ```
+
+**Plesk 관리 패널 (서버 관리):**
+```
+Plesk 접속 정보:
+├─ URL: https://cmshom.co.kr:8443/login_up.php
+├─ 아이디: 두손기획
+├─ 비밀번호: h%42D9u2m
+├─ 용도: 서버 관리, phpMyAdmin, SSL, 도메인 설정
+└─ phpMyAdmin: Plesk → 데이터베이스 → phpMyAdmin 접속
+```
+
+```
 NAS 접속 정보 (백업 서버):
 ┌──────────────────────────────────────────────────────────────┐
 │  🏠 1차 NAS: dsp1830.ipdisk.co.kr:8000                       │
