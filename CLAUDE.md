@@ -76,7 +76,7 @@ curl -T local_file.php \
 
 | 구분 | 접속 정보 |
 |------|----------|
-| 관리자 (로컬/프로덕션) | duson1830 / du1830 |
+| 관리자 (로컬/프로덕션) | admin / ds701018 |
 | 로컬 DB | dsp1830 / ds701018 |
 | 프로덕션 DB (dsp114.co.kr) | dsp1830 / t3zn?5R56 |
 | FTP (dsp114.co.kr) | dsp1830 / cH*j@yzj093BeTtc (웹루트: /httpdocs/) |

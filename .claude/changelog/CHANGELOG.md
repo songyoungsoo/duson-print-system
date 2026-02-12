@@ -16,6 +16,9 @@
 | Claude | **고객 페이지 JS DB 통합** - 6개 품목 JS 파일에서 페이지 로드 시 DB 가격 데이터 적용. 기존 계산 로직 변경 없음 | namecard-premium-options.js, merchandisebond-premium-options.js, leaflet-premium-options.js, littleprint-premium-options.js, cadarok-premium-options.js, envelope_tape.js |
 | Claude | **대시보드 사이드바 메뉴 추가** - "프리미엄옵션" 메뉴 항목 추가 | dashboard/includes/sidebar.php |
 | Claude | **기존 주문 재계산 UI** - 미리보기(변경 전/후 비교 테이블) + 실행 2단계 안전장치. 로딩 스피너, 요약박스, 변경사항 테이블 | dashboard/premium-options/index.php |
+| Claude | **추가옵션 가격 표시 누락 수정** - 전단지/포스터/카다록의 코팅/접지/오시 가격, 봉투 양면테이프 가격이 주문페이지에서 표시되지 않던 버그 수정 | includes/ProductSpecFormatter.php |
+| Claude | **대시보드 UI 통일 (option_prices 스타일)** - 프리미엄옵션, 옵션가격, 견적관리 3개 페이지를 동일한 스타일로 통일. 행 스트라이프(흰색/#e6f7ff), 33px 행높이, 13px/12px 폰트, #1E4E79 헤더, 980px 전체폭 | dashboard/premium-options/index.php, admin/mlangprintauto/quote/option_prices.php, dashboard/quotes/index.php |
+| Claude | **관리자 계정 정보 수정** - CLAUDE.md 접속정보 관리자 계정을 admin/ds701018로 업데이트 | CLAUDE.md |
 
 ---
 
