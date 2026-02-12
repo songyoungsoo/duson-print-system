@@ -99,6 +99,40 @@ switch ($action) {
         }
         break;
         
+    case 'email_typo_scan':
+        require_once $_SERVER['DOCUMENT_ROOT'] . '/includes/EmailTypoFixer.php';
+        $result = EmailTypoFixer::scanAll($db);
+        jsonResponse(true, 'Scan complete', $result);
+        break;
+
+    case 'email_typo_fix':
+        require_once $_SERVER['DOCUMENT_ROOT'] . '/includes/EmailTypoFixer.php';
+        $userId = intval($_POST['user_id'] ?? 0);
+        $newEmail = trim($_POST['new_email'] ?? '');
+        if ($userId <= 0 || empty($newEmail)) {
+            jsonResponse(false, '잘못된 파라미터');
+        }
+        if (!filter_var($newEmail, FILTER_VALIDATE_EMAIL)) {
+            jsonResponse(false, '유효하지 않은 이메일 형식');
+        }
+        $success = EmailTypoFixer::fix($db, $userId, $newEmail);
+        if ($success) {
+            jsonResponse(true, '이메일이 수정되었습니다');
+        } else {
+            jsonResponse(false, '수정 실패: ' . mysqli_error($db));
+        }
+        break;
+
+    case 'email_typo_fix_all':
+        require_once $_SERVER['DOCUMENT_ROOT'] . '/includes/EmailTypoFixer.php';
+        $scanResult = EmailTypoFixer::scanAll($db);
+        if (empty($scanResult['typos'])) {
+            jsonResponse(true, '수정할 오타가 없습니다', ['fixed' => 0, 'failed' => 0]);
+        }
+        $fixResult = EmailTypoFixer::fixAll($db, $scanResult['typos']);
+        jsonResponse(true, "수정 {$fixResult['fixed']}건, 실패 {$fixResult['failed']}건", $fixResult);
+        break;
+
     default:
         jsonResponse(false, 'Invalid action');
 }

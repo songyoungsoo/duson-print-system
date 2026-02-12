@@ -258,3 +258,19 @@ shop/data/
 docs/.bkit-memory.json
 docs/.pdca-snapshots/
 docs/.pdca-status.json
+
+# ============================================
+# 14. 임시 추출/분석 파일 (2026-02-12)
+# ============================================
+# Temp extraction files
+*.json
+!package.json
+!package-lock.json
+!playwright.config.json
+extract_*.js
+fetch_*.js
+create_*.js
+login_page_snapshot.md
+EXTRACTION_SUMMARY.txt
+httpdsp1830*.txt
+banner_samples_fullpage.png

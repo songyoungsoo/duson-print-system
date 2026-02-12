@@ -1105,14 +1105,129 @@ dsp1830.ipdisk.co.kr  →  PHP 7.3, mysqli_* 함수, UTF-8  ✅ 동일 코드
 - 소스 API(export_api.php)만 PHP 5.2 호환 문법 사용
 - 타겟 서버 2개는 동일한 MigrationSync.php 사용 (설정값만 다름)
 
+## 📧 이메일 캠페인 시스템 (Email Campaign System)
+
+### 시스템 개요
+
+대시보드에서 회원에게 일괄 이메일을 발송하는 시스템.
+
+| 항목 | 값 |
+|------|-----|
+| **대시보드 UI** | `/dashboard/email/index.php` |
+| **API** | `/dashboard/api/email.php` (12개 action) |
+| **이미지 업로드** | `/dashboard/email/uploads/` |
+| **사이드바 메뉴** | 📧 이메일 발송 (소통·견적 그룹) |
+| **SMTP** | 네이버 (`dsp1830@naver.com`) |
+
+### DB 테이블 (3개)
+
+| 테이블 | 용도 |
+|--------|------|
+| `email_campaigns` | 캠페인 (제목, 본문, 상태, 수신자수, 성공/실패 카운트) |
+| `email_send_log` | 개별 발송 로그 (수신자별 상태, 에러 메시지) |
+| `email_templates` | 저장된 템플릿 (이름, 제목, HTML 본문) |
+
+### API 엔드포인트 (`/dashboard/api/email.php`)
+
+| action | Method | 용도 |
+|--------|--------|------|
+| `get_recipients` | GET | 수신자 목록/카운트 (전체/필터/수동) |
+| `send` | POST | 캠페인 생성 + 발송 시작 |
+| `send_batch` | POST | 배치 발송 (100명씩) |
+| `send_test` | POST | dsp1830@naver.com으로 테스트 발송 |
+| `save_draft` | POST | 임시저장 |
+| `campaigns` | GET | 캠페인 목록 (페이지네이션) |
+| `campaign_detail` | GET | 캠페인 상세 + 발송 로그 |
+| `templates` | GET | 템플릿 목록 |
+| `load_template` | GET | 템플릿 불러오기 |
+| `save_template` | POST | 템플릿 저장/수정 |
+| `delete_template` | POST | 템플릿 삭제 |
+| `upload_image` | POST | 이미지 업로드 (5MB, JPG/PNG/GIF/WebP) |
+
+### WYSIWYG 에디터 (2026-02-12)
+
+3가지 편집 모드:
+- **편집기** (기본): `contenteditable` div + 서식 도구모음
+- **HTML편집**: raw textarea (고급 사용자용)
+- **미리보기**: 렌더링된 HTML 확인
+
+도구모음: B, I, U, H1, H2, P, 🔗링크, 📷이미지업로드, •목록, 1.목록, ─구분선, 색상, ✕서식제거
+
+```javascript
+// 모드 전환 시 콘텐츠 자동 동기화
+function getEmailBody() {
+    if (currentEditorMode === 'wysiwyg') {
+        document.getElementById('email-body').value = 
+            document.getElementById('wysiwyg-editor').innerHTML;
+    }
+    return document.getElementById('email-body').value.trim();
+}
+```
+
+### 네이버 SMTP 제한 (Critical Rules)
+
+```
+1회 최대: 100명
+일일 한도: ~500통 (안전 기준)
+배치 간격: 3초 대기 (클라이언트 측)
+Gmail 수신: ⚠️ 스팸 분류 가능성
+앱 비밀번호: 2CP3P5BTS83Y (mailer.lib.php에 설정됨)
+```
+
+### 발송 흐름
+
+```
+1. UI에서 "이메일 발송" 클릭
+2. action=send → email_campaigns INSERT + email_send_log INSERT (수신자별)
+3. action=send_batch → 100명씩 mailer() 호출 → 성공/실패 로그 UPDATE
+4. 3초 대기 → 다음 배치 반복
+5. 전체 완료 → campaign status='completed'
+```
+
+### 수신자 필터
+
+- **전체 회원**: `users` 테이블에서 admin/test/봇 제외 (328명, 2026-02-12 기준)
+- **조건 필터**: 최근 로그인 기간 + 이메일 도메인
+- **직접 입력**: 쉼표 구분 이메일 주소
+
+### `{{name}}` 치환
+
+이메일 본문에서 `{{name}}`은 수신자 이름으로 자동 치환됨. 이름 없으면 '고객'으로 표시.
+
+### 회원 이메일 현황 (2026-02-12 기준)
+
+- 총 328명 (고유 이메일 기준, admin/test 제외)
+- naver.com: 193명, hanmail.net: 37명, gmail.com: 28명, daum.net: 14명
+- ⚠️ 오타 이메일 4건: `nate.ocm`, `naver.vom`, `naver.coml`, `naver.co.kr`
+- 289명 미로그인 (구 사이트에서 마이그레이션된 회원)
+
+### 기본 템플릿 (2개)
+
+1. **설날 인사**: 2026 구정 인사 + 새 홈페이지 안내
+2. **새 홈페이지 오픈**: dsp114.co.kr 오픈 안내 (2월 23일)
+
+### 이메일 푸터 (고정)
+
+```
+두손기획인쇄 | 서울특별시 영등포구 영등포로 36길9 송호빌딩 1층 두손기획인쇄 | Tel. 02-2632-1830
+본 메일은 두손기획인쇄 회원님께 발송됩니다. 수신을 원하지 않으시면 [여기]를 클릭해주세요.
+```
+
+### 미완료 작업
+
+- [ ] 프로덕션 배포 (dsp114.co.kr FTP)
+- [ ] 오타 이메일 4건 수정 (users 테이블)
+- [ ] 실제 회원 발송 (2단계: 2/13 설날 + 2/23 오픈)
+
 ## 📚 Documentation References
 
 - Master Specification: `CLAUDE_DOCS/Duson_System_Master_Spec_v1.0.md`
 - Data Flow: `CLAUDE_DOCS/DATA_LINEAGE.md`
 - CSS Debug Lessons: `CLAUDE_DOCS/CSS_DEBUG_LESSONS.md`
+- Email Campaign Details: `CLAUDE_DOCS/EMAIL_CAMPAIGN_SYSTEM.md`
 - Change History: `.claude/changelog/CHANGELOG.md`
 
 ---
 
-*Last Updated: 2026-02-03 (마이그레이션 계획 정리)*
+*Last Updated: 2026-02-12 (이메일 캠페인 시스템 추가)*
 *Environment: WSL2 Ubuntu + Windows XAMPP + Production Deployment*

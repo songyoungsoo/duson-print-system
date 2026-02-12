@@ -14,6 +14,8 @@ include __DIR__ . '/../includes/sidebar.php';
             <input type="text" id="searchInput" placeholder="아이디, 이름, 이메일, 전화번호 검색"
                    class="w-64 px-2 py-1 text-xs border border-gray-300 rounded focus:ring-1 focus:ring-blue-500">
             <button id="searchBtn" class="px-3 py-1 text-xs bg-blue-600 text-white rounded hover:bg-blue-700">검색</button>
+            <span class="text-gray-300">|</span>
+            <button onclick="scanEmailTypos()" class="px-3 py-1 text-xs bg-amber-500 text-white rounded hover:bg-amber-600">이메일 오타 검사</button>
         </div>
 
         <!-- Members Table -->
@@ -213,6 +215,122 @@ document.getElementById('searchInput').addEventListener('keypress', function(e) 
 });
 
 loadMembers(1);
+
+// ==================== EMAIL TYPO SCAN ====================
+async function scanEmailTypos() {
+    try {
+        var res = await fetch('/dashboard/api/members.php?action=email_typo_scan');
+        var data = await res.json();
+        if (!data.success) { showToast(data.message, 'error'); return; }
+
+        var typos = data.data.typos;
+        var total = data.data.total_checked;
+
+        var modal = document.getElementById('typoModal');
+        var body = document.getElementById('typoModalBody');
+
+        if (typos.length === 0) {
+            body.innerHTML = '<div class="text-center py-8 text-gray-500 text-sm">오타가 없습니다! (' + total + '명 검사 완료)</div>';
+            modal.classList.remove('hidden');
+            return;
+        }
+
+        var html = '<div class="mb-3 flex items-center justify-between">'
+            + '<span class="text-xs text-gray-600">' + total + '명 검사, <span class="font-bold text-amber-600">' + typos.length + '건</span> 오타 감지</span>'
+            + '<button onclick="fixAllTypos()" class="px-3 py-1 text-xs bg-red-500 text-white rounded hover:bg-red-600">전체 수정</button>'
+            + '</div>';
+
+        html += '<table class="min-w-full text-xs"><thead class="bg-gray-50"><tr>'
+            + '<th class="px-2 py-1.5 text-left font-medium text-gray-500">ID</th>'
+            + '<th class="px-2 py-1.5 text-left font-medium text-gray-500">이름</th>'
+            + '<th class="px-2 py-1.5 text-left font-medium text-gray-500">현재 이메일</th>'
+            + '<th class="px-2 py-1.5 text-left font-medium text-gray-500">수정 제안</th>'
+            + '<th class="px-2 py-1.5 text-left font-medium text-gray-500">감지</th>'
+            + '<th class="px-2 py-1.5 text-center font-medium text-gray-500">작업</th>'
+            + '</tr></thead><tbody>';
+
+        typos.forEach(function(t) {
+            html += '<tr id="typo-row-' + t.user_id + '" class="border-t border-gray-100 hover:bg-gray-50">'
+                + '<td class="px-2 py-1.5 text-gray-500">' + t.user_id + '</td>'
+                + '<td class="px-2 py-1.5 text-gray-700">' + escHtml(t.name || t.username) + '</td>'
+                + '<td class="px-2 py-1.5"><span class="text-red-500 line-through">' + escHtml(t.original) + '</span></td>'
+                + '<td class="px-2 py-1.5"><span class="text-green-600 font-medium">' + escHtml(t.suggested) + '</span></td>'
+                + '<td class="px-2 py-1.5 text-gray-400">' + t.method + '</td>'
+                + '<td class="px-2 py-1.5 text-center">'
+                + '<button onclick="fixSingleTypo(' + t.user_id + ',\'' + escAttr(t.suggested) + '\')" class="px-2 py-0.5 text-[10px] bg-blue-500 text-white rounded hover:bg-blue-600">수정</button>'
+                + '</td></tr>';
+        });
+
+        html += '</tbody></table>';
+        body.innerHTML = html;
+        modal.classList.remove('hidden');
+    } catch (e) {
+        showToast('검사 실패: ' + e.message, 'error');
+    }
+}
+
+async function fixSingleTypo(userId, newEmail) {
+    try {
+        var res = await fetch('/dashboard/api/members.php', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
+            body: new URLSearchParams({ action: 'email_typo_fix', user_id: userId, new_email: newEmail })
+        });
+        var data = await res.json();
+        if (!data.success) { showToast(data.message, 'error'); return; }
+
+        var row = document.getElementById('typo-row-' + userId);
+        if (row) {
+            row.style.opacity = '0.4';
+            row.querySelector('td:last-child').innerHTML = '<span class="text-green-600 text-[10px] font-medium">완료</span>';
+        }
+        showToast('수정 완료', 'success');
+    } catch (e) {
+        showToast('수정 실패', 'error');
+    }
+}
+
+async function fixAllTypos() {
+    if (!confirm('감지된 오타를 모두 수정하시겠습니까?')) return;
+
+    try {
+        var res = await fetch('/dashboard/api/members.php', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
+            body: new URLSearchParams({ action: 'email_typo_fix_all' })
+        });
+        var data = await res.json();
+        showToast(data.message, data.success ? 'success' : 'error');
+        if (data.success) {
+            closeTypoModal();
+            loadMembers(currentPage);
+        }
+    } catch (e) {
+        showToast('일괄 수정 실패', 'error');
+    }
+}
+
+function closeTypoModal() { document.getElementById('typoModal').classList.add('hidden'); }
+
+function escHtml(s) {
+    if (!s) return '';
+    var d = document.createElement('div');
+    d.appendChild(document.createTextNode(s));
+    return d.innerHTML;
+}
+function escAttr(s) { return (s || '').replace(/'/g, "\\'").replace(/"/g, '&quot;'); }
 </script>
+
+<!-- Email Typo Modal -->
+<div id="typoModal" class="fixed inset-0 z-50 hidden">
+    <div class="absolute inset-0 bg-black/40" onclick="closeTypoModal()"></div>
+    <div class="absolute inset-4 md:inset-x-auto md:inset-y-8 md:max-w-3xl md:mx-auto bg-white rounded-lg shadow-xl flex flex-col overflow-hidden">
+        <div class="flex items-center justify-between px-4 py-2 border-b border-gray-200">
+            <h3 class="text-sm font-bold text-gray-900">이메일 오타 검사 결과</h3>
+            <button onclick="closeTypoModal()" class="text-gray-400 hover:text-gray-600 text-lg">&times;</button>
+        </div>
+        <div id="typoModalBody" class="flex-1 overflow-y-auto p-4"></div>
+    </div>
+</div>
 
 <?php include __DIR__ . '/../includes/footer.php'; ?>

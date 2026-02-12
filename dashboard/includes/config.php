@@ -40,6 +40,7 @@ $DASHBOARD_NAV = [
     'comm_group' => [
         'label' => '소통·견적',
         'items' => [
+            'email' => ['name' => '이메일 발송', 'icon' => '📧', 'path' => '/dashboard/email/'],
             'chat' => ['name' => '채팅 관리', 'icon' => '💬', 'path' => '/dashboard/chat/'],
             'quotes' => ['name' => '견적 관리', 'icon' => '📋', 'path' => '/dashboard/quotes/'],
             'inquiries' => ['name' => '고객 문의', 'icon' => '✉️', 'path' => '/dashboard/inquiries/'],
