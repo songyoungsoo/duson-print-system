@@ -1,15 +1,12 @@
 <?php
 /**
- * 관리자 견적서 작성 - Excel Style
+ * 관리자 견적서 작성 - Dashboard Tailwind Style
  */
-session_start();
-
-if (!isset($_SESSION['admin_logged_in']) || $_SESSION['admin_logged_in'] !== true) {
-    header("Location: /admin/mlangprintauto/login.php");
-    exit;
-}
+require_once __DIR__ . '/../../../admin/includes/admin_auth.php';
+requireAdminAuth();
 
 require_once __DIR__ . '/../../../db.php';
+require_once __DIR__ . '/../../../dashboard/includes/config.php';
 require_once __DIR__ . '/includes/AdminQuoteManager.php';
 require_once __DIR__ . '/includes/PriceHelper.php';
 
@@ -21,179 +18,285 @@ $adminSessionId = session_id();
 $newQuoteNo = $quoteManager->generateQuoteNo();
 $tempItems = $quoteManager->getTempItems($adminSessionId);
 $unitOptions = ['매', '연', '부', '권', '개', '장', '식'];
+
+// 사이드바 active 표시를 위해 현재 경로 오버라이드
+$_SERVER['REQUEST_URI'] = '/dashboard/quotes/';
+
+include __DIR__ . '/../../../dashboard/includes/header.php';
+include __DIR__ . '/../../../dashboard/includes/sidebar.php';
 ?>
-<!DOCTYPE html>
-<html lang="ko">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>새 견적서 작성</title>
-    <link rel="stylesheet" href="assets/excel-style.css">
-</head>
-<body>
-<div class="container">
-    <div class="page-header">
-        <div>
-            <h1>새 견적서 작성 <span class="quote-no"><?php echo htmlspecialchars($newQuoteNo); ?></span></h1>
-        </div>
-        <div class="action-bar">
-            <a href="index.php" class="back-link">← 취소</a>
-            <button onclick="saveQuote(true)" class="btn">임시저장</button>
-            <button onclick="saveQuote(false)" class="btn btn-primary">저장</button>
-        </div>
-    </div>
 
-    <div class="card">
-        <div class="card-header">고객 정보</div>
-        <div class="card-body">
-            <div class="form-inline-grid">
-                <label class="form-label">회사명</label>
-                <input type="text" id="customer_company" class="form-input" placeholder="회사명">
-                <label class="form-label">담당자명 <span class="required">*</span></label>
-                <input type="text" id="customer_name" class="form-input" placeholder="담당자명" required>
-                <label class="form-label">연락처</label>
-                <input type="tel" id="customer_phone" class="form-input" placeholder="010-0000-0000">
-                <label class="form-label">이메일</label>
-                <input type="email" id="customer_email" class="form-input" placeholder="email@example.com">
-                <div class="full-row">
-                    <label class="form-label">주소</label>
-                    <input type="text" id="customer_address" class="form-input" placeholder="배송 주소">
+<main class="flex-1 bg-gray-50">
+    <div class="max-w-5xl mx-auto px-4 py-2">
+        <!-- 헤더 -->
+        <div class="flex items-center justify-between mb-2">
+            <div class="flex items-center gap-2">
+                <h1 class="text-lg font-bold text-gray-900">새 견적서</h1>
+                <span class="px-2 py-0.5 text-xs bg-blue-100 text-blue-700 rounded-full font-medium"><?php echo htmlspecialchars($newQuoteNo); ?></span>
+            </div>
+            <div class="flex items-center gap-1.5">
+                <a href="index.php" class="px-3 py-1 text-xs text-gray-600 border border-gray-300 rounded hover:bg-gray-100">← 취소</a>
+                <button onclick="saveQuote(true)" class="px-3 py-1 text-xs text-gray-700 bg-white border border-gray-300 rounded hover:bg-gray-50">임시저장</button>
+                <button onclick="saveQuote(false)" class="px-3 py-1 text-xs text-white bg-blue-600 rounded hover:bg-blue-700">저장</button>
+            </div>
+        </div>
+
+        <!-- 고객 정보 카드 -->
+        <div class="bg-white rounded-lg shadow mb-2">
+            <div class="px-3 py-1.5 border-b font-semibold text-xs rounded-t-lg" style="background:#1E4E79;color:#fff;">고객 정보</div>
+            <div class="px-3 py-2">
+                <div class="grid grid-cols-[70px_1fr_70px_1fr] gap-x-2 gap-y-1 items-center">
+                    <label class="text-xs text-gray-500">회사명</label>
+                    <input type="text" id="customer_company" class="w-full px-2 py-1 text-xs border border-gray-300 rounded focus:ring-1 focus:ring-blue-500 focus:border-blue-500" placeholder="회사명">
+                    <label class="text-xs text-gray-500">담당자명 <span class="text-red-500">*</span></label>
+                    <input type="text" id="customer_name" class="w-full px-2 py-1 text-xs border border-gray-300 rounded focus:ring-1 focus:ring-blue-500 focus:border-blue-500" placeholder="담당자명" required>
+                    <label class="text-xs text-gray-500">연락처</label>
+                    <input type="tel" id="customer_phone" class="w-full px-2 py-1 text-xs border border-gray-300 rounded focus:ring-1 focus:ring-blue-500 focus:border-blue-500" placeholder="010-0000-0000">
+                    <label class="text-xs text-gray-500">이메일</label>
+                    <input type="email" id="customer_email" class="w-full px-2 py-1 text-xs border border-gray-300 rounded focus:ring-1 focus:ring-blue-500 focus:border-blue-500" placeholder="email@example.com">
+                </div>
+                <div class="grid grid-cols-[70px_1fr] gap-x-2 gap-y-1 items-center mt-1">
+                    <label class="text-xs text-gray-500">주소</label>
+                    <input type="text" id="customer_address" class="w-full px-2 py-1 text-xs border border-gray-300 rounded focus:ring-1 focus:ring-blue-500 focus:border-blue-500" placeholder="배송 주소">
+                </div>
+            </div>
+        </div>
+
+        <!-- 품목 목록 카드 -->
+        <div class="bg-white rounded-lg shadow mb-2">
+            <div class="px-3 py-1.5 border-b rounded-t-lg flex items-center justify-between" style="background:#1E4E79;">
+                <span class="font-semibold text-xs text-white">품목 목록</span>
+                <div class="flex items-center gap-1.5">
+                    <button onclick="openCalculatorSelect()" class="px-2.5 py-1 text-xs text-white bg-blue-600 rounded hover:bg-blue-700">계산기</button>
+                    <button onclick="openManualModal()" class="px-2.5 py-1 text-xs text-gray-700 bg-white border border-gray-300 rounded hover:bg-gray-50">+ 수동</button>
+                </div>
+            </div>
+            <!-- 컬럼 헤더 -->
+            <div class="grid items-center text-xs font-medium px-1 border-b border-gray-200" style="grid-template-columns:36px 1fr 2fr 70px 80px 90px 28px;background:#f9fafb;color:#6b7280;letter-spacing:0.025em;">
+                <span class="py-1.5 text-center">NO</span>
+                <span class="py-1.5 px-2">품목</span>
+                <span class="py-1.5 px-2">규격/옵션</span>
+                <span class="py-1.5 text-center">수량</span>
+                <span class="py-1.5 text-right pr-2">단가</span>
+                <span class="py-1.5 text-right pr-2">공급가액</span>
+                <span></span>
+            </div>
+            <!-- 품목 리스트 -->
+            <div id="itemsBody"></div>
+            <!-- 택배비 입력 -->
+            <div class="px-3 py-2 border-t border-gray-100">
+                <div class="flex items-center gap-3">
+                    <div class="flex items-center gap-1.5">
+                        <span class="text-xs text-gray-500">🚚</span>
+                        <span class="text-xs font-medium text-gray-700">택배비</span>
+                    </div>
+                    <div class="flex items-center gap-1">
+                        <input type="number" id="shipping_cost" class="w-28 px-2 py-1 text-xs text-right border border-gray-300 rounded focus:ring-1 focus:ring-blue-500 focus:border-blue-500" placeholder="0" min="0" value="0" oninput="updateTotals()">
+                        <span class="text-xs text-gray-400">원</span>
+                    </div>
+                </div>
+            </div>
+            <!-- 합계 -->
+            <div class="px-3 py-2 border-t border-gray-200 bg-gray-50/50 rounded-b-lg">
+                <div class="flex justify-end gap-6 text-xs">
+                    <div class="flex items-center gap-2">
+                        <span class="text-gray-500">공급가액</span>
+                        <span class="font-medium text-gray-700 w-20 text-right" id="supplyTotal">0</span>
+                    </div>
+                    <div class="flex items-center gap-2">
+                        <span class="text-gray-500">부가세</span>
+                        <span class="font-medium text-gray-700 w-20 text-right" id="vatTotal">0</span>
+                    </div>
+                    <div class="flex items-center gap-2">
+                        <span class="text-gray-900 font-semibold">총액</span>
+                        <span class="font-bold text-blue-700 w-24 text-right text-sm" id="grandTotal">0</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- 메모 카드 -->
+        <div class="bg-white rounded-lg shadow mb-2">
+            <div class="px-3 py-1.5 border-b font-semibold text-xs rounded-t-lg" style="background:#1E4E79;color:#fff;">메모</div>
+            <div class="px-3 py-2">
+                <div class="grid grid-cols-2 gap-3">
+                    <div>
+                        <label class="block text-xs text-gray-500 mb-0.5">고객 요청사항</label>
+                        <textarea id="customer_memo" rows="5" class="w-full px-2 py-1.5 text-xs border border-gray-300 rounded focus:ring-1 focus:ring-blue-500 focus:border-blue-500 resize-none" placeholder="고객이 요청한 내용"></textarea>
+                    </div>
+                    <div>
+                        <label class="block text-xs text-gray-500 mb-0.5">관리자 메모</label>
+                        <textarea id="admin_memo" rows="5" class="w-full px-2 py-1.5 text-xs border border-gray-300 rounded focus:ring-1 focus:ring-blue-500 focus:border-blue-500 resize-none" placeholder="내부 메모"></textarea>
+                    </div>
                 </div>
             </div>
         </div>
     </div>
-
-    <div class="card">
-        <div class="card-header">
-            <span>품목 목록</span>
-            <div class="action-bar">
-                <button onclick="openCalculatorSelect()" class="btn btn-primary btn-sm">계산기</button>
-                <button onclick="openManualModal()" class="btn btn-sm">+ 수동</button>
-            </div>
-        </div>
-        <table class="excel-table" id="itemsTable">
-            <thead>
-                <tr>
-                    <th style="width:40px">NO</th>
-                    <th style="width:100px">품목</th>
-                    <th>규격/옵션</th>
-                    <th style="width:80px">수량</th>
-                    <th style="width:80px">단가</th>
-                    <th style="width:100px">공급가액</th>
-                    <th style="width:40px"></th>
-                </tr>
-            </thead>
-            <tbody id="itemsBody"></tbody>
-        </table>
-        <div class="totals-section" style="padding:10px;">
-            <div class="totals-row">
-                <span class="totals-label">공급가액</span>
-                <span class="totals-value" id="supplyTotal">0</span>
-            </div>
-            <div class="totals-row">
-                <span class="totals-label">부가세</span>
-                <span class="totals-value" id="vatTotal">0</span>
-            </div>
-            <div class="totals-row grand">
-                <span class="totals-label">총액</span>
-                <span class="totals-value" id="grandTotal">0</span>
-            </div>
-        </div>
-    </div>
-
-    <div class="card">
-        <div class="card-header">메모</div>
-        <div class="card-body">
-            <div class="form-grid">
-                <div class="form-group">
-                    <label class="form-label">고객 요청사항</label>
-                    <textarea id="customer_memo" class="form-input" placeholder="고객이 요청한 내용"></textarea>
-                </div>
-                <div class="form-group">
-                    <label class="form-label">관리자 메모</label>
-                    <textarea id="admin_memo" class="form-input" placeholder="내부 메모"></textarea>
-                </div>
-            </div>
-        </div>
-    </div>
-</div>
+</main>
 
 <!-- 수동 입력 모달 -->
-<div class="modal" id="manualModal">
-    <div class="modal-content">
-        <div class="modal-header">
-            <h3>수동 품목 추가</h3>
-            <button class="modal-close" onclick="closeManualModal()">&times;</button>
+<div class="fixed inset-0 bg-black/40 z-50 hidden items-center justify-center" id="manualModal">
+    <div class="bg-white rounded-lg shadow-xl w-full max-w-md mx-4">
+        <div class="flex items-center justify-between px-4 py-2 border-b">
+            <h3 class="text-sm font-semibold text-gray-900">수동 품목 추가</h3>
+            <button onclick="closeManualModal()" class="text-gray-400 hover:text-gray-600 text-xl leading-none">&times;</button>
         </div>
-        <div class="modal-body">
-            <div class="form-group">
-                <label class="form-label">품목명 <span class="required">*</span></label>
-                <input type="text" id="manual_product_name" class="form-input" placeholder="예: 스티커, 전단지, 택배비">
+        <div class="px-4 py-3 space-y-2.5">
+            <div>
+                <label class="block text-xs text-gray-500 mb-0.5">품목명 <span class="text-red-500">*</span></label>
+                <input type="text" id="manual_product_name" class="w-full px-2 py-1 text-xs border border-gray-300 rounded focus:ring-1 focus:ring-blue-500 focus:border-blue-500" placeholder="예: 스티커, 전단지, 택배비">
             </div>
-            <div class="form-group" style="margin-top:10px;">
-                <label class="form-label">규격/설명</label>
-                <textarea id="manual_specification" class="form-input" placeholder="예: 아트지유광 / 60x50mm / 사각"></textarea>
+            <div>
+                <label class="block text-xs text-gray-500 mb-0.5">규격/설명</label>
+                <textarea id="manual_specification" rows="2" class="w-full px-2 py-1 text-xs border border-gray-300 rounded focus:ring-1 focus:ring-blue-500 focus:border-blue-500 resize-none" placeholder="예: 아트지유광 / 60x50mm / 사각"></textarea>
             </div>
-            <div style="display:grid; grid-template-columns:1fr 60px; gap:8px; margin-top:10px;">
-                <div class="form-group">
-                    <label class="form-label">수량 <span class="required">*</span></label>
-                    <input type="number" id="manual_quantity" class="form-input" value="1" min="0.1" step="0.1">
+            <div class="grid grid-cols-[1fr_60px] gap-2">
+                <div>
+                    <label class="block text-xs text-gray-500 mb-0.5">수량 <span class="text-red-500">*</span></label>
+                    <input type="number" id="manual_quantity" class="w-full px-2 py-1 text-xs border border-gray-300 rounded focus:ring-1 focus:ring-blue-500 focus:border-blue-500" value="1" min="0.1" step="0.1">
                 </div>
-                <div class="form-group">
-                    <label class="form-label">단위</label>
-                    <select id="manual_unit" class="form-input">
+                <div>
+                    <label class="block text-xs text-gray-500 mb-0.5">단위</label>
+                    <select id="manual_unit" class="w-full px-2 py-1 text-xs border border-gray-300 rounded focus:ring-1 focus:ring-blue-500 focus:border-blue-500">
                         <?php foreach ($unitOptions as $unit): ?>
                         <option value="<?php echo $unit; ?>"><?php echo $unit; ?></option>
                         <?php endforeach; ?>
                     </select>
                 </div>
             </div>
-            <div class="form-group" style="margin-top:10px;">
-                <label class="form-label">공급가액 <span class="required">*</span></label>
-                <input type="number" id="manual_supply_price" class="form-input" placeholder="0" min="0">
+            <div>
+                <label class="block text-xs text-gray-500 mb-0.5">공급가액 <span class="text-red-500">*</span></label>
+                <input type="number" id="manual_supply_price" class="w-full px-2 py-1 text-xs border border-gray-300 rounded focus:ring-1 focus:ring-blue-500 focus:border-blue-500" placeholder="0" min="0">
             </div>
         </div>
-        <div class="modal-footer">
-            <button onclick="closeManualModal()" class="btn">취소</button>
-            <button onclick="addManualItem()" class="btn btn-primary">추가</button>
+        <div class="flex justify-end gap-2 px-4 py-2 border-t bg-gray-50 rounded-b-lg">
+            <button onclick="closeManualModal()" class="px-3 py-1 text-xs text-gray-700 border border-gray-300 rounded hover:bg-gray-100">취소</button>
+            <button onclick="addManualItem()" class="px-3 py-1 text-xs text-white bg-blue-600 rounded hover:bg-blue-700">추가</button>
         </div>
     </div>
 </div>
 
-<!-- 계산기 선택 모달 -->
-<div class="modal" id="calcSelectModal">
-    <div class="modal-content" style="max-width:380px;">
-        <div class="modal-header">
-            <h3>품목 계산기 선택</h3>
-            <button class="modal-close" onclick="closeCalculatorSelect()">&times;</button>
+<!-- 계산기 선택 모달 (대문 카드 축소 스타일) -->
+<style>
+.qc-card{display:flex;flex-direction:column;border-radius:10px;overflow:hidden;box-shadow:0 2px 8px rgba(0,0,0,0.1);cursor:pointer;transition:all .25s ease;background:#fff;border:none;padding:0;text-align:left;}
+.qc-card:hover{transform:translateY(-3px);box-shadow:0 6px 16px rgba(0,0,0,0.15);}
+.qc-head{display:flex;align-items:center;gap:6px;padding:6px 10px;color:#fff;}
+.qc-head .qc-title{font-size:12px;font-weight:700;line-height:1.2;}
+.qc-head .qc-sub{font-size:9px;opacity:0.7;font-weight:500;}
+.qc-body{display:grid;grid-template-columns:1fr 56px;gap:4px;padding:6px 10px 8px;flex:1;align-items:end;}
+.qc-feats{list-style:none;margin:0;padding:0;font-size:10px;color:#4b5563;}
+.qc-feats li::before{content:"✓ ";color:var(--cg);font-weight:700;}
+.qc-feats li{margin-bottom:2px;line-height:1.4;}
+.qc-img{width:56px;height:56px;border-radius:6px;overflow:hidden;box-shadow:0 2px 6px rgba(0,0,0,0.1);}
+.qc-img img{width:100%;height:100%;object-fit:cover;}
+</style>
+<div class="fixed inset-0 bg-black/40 z-50 hidden items-center justify-center" id="calcSelectModal">
+    <div class="bg-white rounded-xl shadow-2xl w-full max-w-2xl mx-4">
+        <div class="flex items-center justify-between px-5 py-3 border-b">
+            <h3 class="text-base font-bold text-gray-900">품목 계산기 선택</h3>
+            <button onclick="closeCalculatorSelect()" class="text-gray-400 hover:text-gray-600 text-2xl leading-none">&times;</button>
         </div>
-        <div class="modal-body">
-            <div class="calc-grid">
-                <button class="calc-btn" onclick="openCalculator('sticker')"><div class="icon">🏷️</div><div class="name">스티커</div></button>
-                <button class="calc-btn" onclick="openCalculator('inserted')"><div class="icon">📄</div><div class="name">전단지</div></button>
-                <button class="calc-btn" onclick="openCalculator('namecard')"><div class="icon">💼</div><div class="name">명함</div></button>
-                <button class="calc-btn" onclick="openCalculator('envelope')"><div class="icon">✉️</div><div class="name">봉투</div></button>
-                <button class="calc-btn" onclick="openCalculator('ncrflambeau')"><div class="icon">📋</div><div class="name">NCR양식</div></button>
-                <button class="calc-btn" onclick="openCalculator('cadarok')"><div class="icon">📚</div><div class="name">카다록</div></button>
-                <button class="calc-btn" onclick="openCalculator('littleprint')"><div class="icon">🖼️</div><div class="name">포스터</div></button>
-                <button class="calc-btn" onclick="openCalculator('msticker')"><div class="icon">🧲</div><div class="name">자석스티커</div></button>
-                <button class="calc-btn" onclick="openCalculator('merchandisebond')"><div class="icon">🎫</div><div class="name">상품권</div></button>
+        <div class="px-4 py-4">
+            <div class="grid grid-cols-3 gap-3">
+                <button class="qc-card" style="--cg:#3b82f6" onclick="openCalculator('sticker')">
+                    <div class="qc-head" style="background:linear-gradient(135deg,#3b82f6,#2563eb)">
+                        <div><div class="qc-title">스티커</div><div class="qc-sub">맞춤형 스티커</div></div>
+                    </div>
+                    <div class="qc-body">
+                        <ul class="qc-feats"><li>방수 소재</li><li>자유 형태</li></ul>
+                        <div class="qc-img"><img src="/ImgFolder/gate_picto/sticker_new_s.png" alt="스티커"></div>
+                    </div>
+                </button>
+                <button class="qc-card" style="--cg:#10b981" onclick="openCalculator('inserted')">
+                    <div class="qc-head" style="background:linear-gradient(135deg,#10b981,#059669)">
+                        <div><div class="qc-title">전단지</div><div class="qc-sub">홍보용 전단지</div></div>
+                    </div>
+                    <div class="qc-body">
+                        <ul class="qc-feats"><li>고해상도</li><li>빠른 제작</li></ul>
+                        <div class="qc-img"><img src="/ImgFolder/gate_picto/inserted_s.png" alt="전단지"></div>
+                    </div>
+                </button>
+                <button class="qc-card" style="--cg:#8b5cf6" onclick="openCalculator('namecard')">
+                    <div class="qc-head" style="background:linear-gradient(135deg,#8b5cf6,#7c3aed)">
+                        <div><div class="qc-title">명함</div><div class="qc-sub">전문 명함</div></div>
+                    </div>
+                    <div class="qc-body">
+                        <ul class="qc-feats"><li>UV 코팅</li><li>당일 제작</li></ul>
+                        <div class="qc-img"><img src="/ImgFolder/gate_picto/namecard_s.png" alt="명함"></div>
+                    </div>
+                </button>
+                <button class="qc-card" style="--cg:#e11d48" onclick="openCalculator('envelope')">
+                    <div class="qc-head" style="background:linear-gradient(135deg,#e11d48,#be123c)">
+                        <div><div class="qc-title">봉투</div><div class="qc-sub">각종 봉투</div></div>
+                    </div>
+                    <div class="qc-body">
+                        <ul class="qc-feats"><li>창봉투</li><li>대량 주문</li></ul>
+                        <div class="qc-img"><img src="/ImgFolder/gate_picto/envelop_s.png" alt="봉투"></div>
+                    </div>
+                </button>
+                <button class="qc-card" style="--cg:#06b6d4" onclick="openCalculator('cadarok')">
+                    <div class="qc-head" style="background:linear-gradient(135deg,#06b6d4,#0891b2)">
+                        <div><div class="qc-title">카다록</div><div class="qc-sub">제품 카탈로그</div></div>
+                    </div>
+                    <div class="qc-body">
+                        <ul class="qc-feats"><li>풀컬러</li><li>전문 편집</li></ul>
+                        <div class="qc-img"><img src="/ImgFolder/gate_picto/catalogue_s.png" alt="카다록"></div>
+                    </div>
+                </button>
+                <button class="qc-card" style="--cg:#f97316" onclick="openCalculator('littleprint')">
+                    <div class="qc-head" style="background:linear-gradient(135deg,#f97316,#ea580c)">
+                        <div><div class="qc-title">포스터</div><div class="qc-sub">대형 포스터</div></div>
+                    </div>
+                    <div class="qc-body">
+                        <ul class="qc-feats"><li>대형 사이즈</li><li>고화질 출력</li></ul>
+                        <div class="qc-img"><img src="/ImgFolder/gate_picto/poster_s.png" alt="포스터"></div>
+                    </div>
+                </button>
+                <button class="qc-card" style="--cg:#84cc16" onclick="openCalculator('ncrflambeau')">
+                    <div class="qc-head" style="background:linear-gradient(135deg,#84cc16,#65a30d)">
+                        <div><div class="qc-title">NCR양식</div><div class="qc-sub">양식지 제작</div></div>
+                    </div>
+                    <div class="qc-body">
+                        <ul class="qc-feats"><li>2~4연</li><li>무탄소 용지</li></ul>
+                        <div class="qc-img"><img src="/ImgFolder/gate_picto/ncr_s.png" alt="NCR양식"></div>
+                    </div>
+                </button>
+                <button class="qc-card" style="--cg:#d946ef" onclick="openCalculator('merchandisebond')">
+                    <div class="qc-head" style="background:linear-gradient(135deg,#d946ef,#c026d3)">
+                        <div><div class="qc-title">상품권</div><div class="qc-sub">쿠폰/상품권</div></div>
+                    </div>
+                    <div class="qc-body">
+                        <ul class="qc-feats"><li>위조 방지</li><li>번호 인쇄</li></ul>
+                        <div class="qc-img"><img src="/ImgFolder/gate_picto/merchandise_s.png" alt="상품권"></div>
+                    </div>
+                </button>
+                <button class="qc-card" style="--cg:#ef4444" onclick="openCalculator('msticker')">
+                    <div class="qc-head" style="background:linear-gradient(135deg,#ef4444,#dc2626)">
+                        <div><div class="qc-title">자석스티커</div><div class="qc-sub">마그네틱 스티커</div></div>
+                    </div>
+                    <div class="qc-body">
+                        <ul class="qc-feats"><li>강력 자석</li><li>차량용 최적</li></ul>
+                        <div class="qc-img"><img src="/ImgFolder/gate_picto/m_sticker_s.png" alt="자석스티커"></div>
+                    </div>
+                </button>
             </div>
         </div>
     </div>
 </div>
 
 <!-- 계산기 iframe 모달 -->
-<div class="calc-modal" id="calcIframeModal">
-    <div class="calc-modal-content">
-        <div class="calc-modal-header">
-            <h3 id="calcModalTitle">계산기</h3>
-            <button class="calc-modal-close" onclick="closeCalculatorIframe()">&times;</button>
+<div class="fixed inset-0 bg-black/40 z-50 hidden items-center justify-center" id="calcIframeModal">
+    <div class="bg-white rounded-lg shadow-xl w-full max-w-3xl mx-4 flex flex-col" style="max-height:90vh;">
+        <div class="flex items-center justify-between px-4 py-2 border-b flex-shrink-0">
+            <h3 id="calcModalTitle" class="text-sm font-semibold text-gray-900">계산기</h3>
+            <button onclick="closeCalculatorIframe()" class="text-gray-400 hover:text-gray-600 text-xl leading-none">&times;</button>
         </div>
-        <div class="calc-modal-body">
-            <iframe id="calcIframe" src="about:blank"></iframe>
+        <div class="flex-1 overflow-hidden">
+            <iframe id="calcIframe" src="about:blank" class="w-full h-full border-0" style="min-height:500px;"></iframe>
         </div>
-        <div class="calc-modal-footer">계산기에서 옵션 선택 후 <strong>견적서에 적용</strong> 버튼 클릭</div>
+        <div class="px-4 py-1.5 border-t bg-gray-50 text-center text-xs text-gray-500 flex-shrink-0 rounded-b-lg">
+            계산기에서 옵션 선택 후 <strong class="text-gray-700">견적서에 적용</strong> 버튼 클릭
+        </div>
     </div>
 </div>
 
@@ -220,30 +323,105 @@ const quoteNo = '<?php echo addslashes($newQuoteNo); ?>';
 document.addEventListener('DOMContentLoaded', renderItems);
 
 function renderItems() {
-    const tbody = document.getElementById('itemsBody');
-    tbody.innerHTML = '';
+    const container = document.getElementById('itemsBody');
+    while (container.firstChild) container.removeChild(container.firstChild);
 
     if (items.length === 0) {
-        tbody.innerHTML = '<tr><td colspan="7" class="text-center" style="padding:30px;color:#888;">품목을 추가해주세요.</td></tr>';
+        const empty = document.createElement('div');
+        empty.className = 'py-6 text-center text-xs text-gray-400';
+        empty.textContent = '품목을 추가해주세요.';
+        container.appendChild(empty);
         updateTotals();
         return;
     }
 
+    const colStyle = '36px 1fr 2fr 70px 80px 90px 28px';
+
     items.forEach((item, i) => {
-        // 저장된 unit_price 사용, 없으면 계산
         const unitPrice = item.unit_price > 0 ? Math.round(item.unit_price) : (item.quantity > 0 ? Math.round(item.supply_price / item.quantity) : 0);
         const qtyDisplay = item.quantity_display || (formatNumber(item.quantity) + item.unit);
-        // 줄바꿈(\n)을 <br>로 변환하여 2줄 표시
-        const specHtml = (item.specification || '').replace(/\n/g, '<br>');
-        tbody.innerHTML += `<tr>
-            <td class="text-center">${i+1}</td>
-            <td>${item.product_name}</td>
-            <td>${specHtml}</td>
-            <td class="text-center">${qtyDisplay}</td>
-            <td class="text-right">${formatNumber(unitPrice)}</td>
-            <td class="text-right">${formatNumber(item.supply_price)}</td>
-            <td class="text-center"><button class="delete-btn" onclick="deleteItem(${item.no})">×</button></td>
-        </tr>`;
+
+        const row = document.createElement('div');
+        row.className = 'grid items-center px-1 border-b border-gray-100 transition-colors';
+        row.style.gridTemplateColumns = colStyle;
+        row.style.height = '33px';
+        row.style.backgroundColor = i % 2 === 1 ? '#e6f7ff' : '#fff';
+        row.onmouseenter = function(){ this.style.backgroundColor='#dbeafe'; };
+        row.onmouseleave = function(){ this.style.backgroundColor = i % 2 === 1 ? '#e6f7ff' : '#fff'; };
+
+        // NO
+        const noEl = document.createElement('span');
+        noEl.className = 'py-1.5 text-center text-xs text-gray-400';
+        noEl.textContent = i + 1;
+        row.appendChild(noEl);
+
+        // 품목
+        const nameEl = document.createElement('span');
+        nameEl.className = 'py-1.5 px-2 text-sm font-medium text-gray-900 truncate';
+        nameEl.textContent = item.product_name;
+        row.appendChild(nameEl);
+
+        // 규격/옵션
+        const specEl = document.createElement('span');
+        specEl.className = 'py-1.5 px-2 text-xs text-gray-500 leading-snug';
+        if (item.specification) {
+            const specParts = item.specification.split('\n');
+            specParts.forEach((part, pi) => {
+                if (pi > 0) specEl.appendChild(document.createElement('br'));
+                specEl.appendChild(document.createTextNode(part));
+            });
+        }
+        row.appendChild(specEl);
+
+        // 수량 (전단지: 연 + 매수 2줄)
+        const qtyEl = document.createElement('span');
+        qtyEl.className = 'py-1.5 text-center text-sm text-gray-700 leading-tight';
+        const parenMatch = qtyDisplay.match(/^(.+?)\s*(\(.+\))$/);
+        if (parenMatch) {
+            qtyEl.appendChild(document.createTextNode(parenMatch[1]));
+            qtyEl.appendChild(document.createElement('br'));
+            const sub = document.createElement('span');
+            sub.className = 'text-xs text-gray-400';
+            sub.textContent = parenMatch[2];
+            qtyEl.appendChild(sub);
+        } else if (item.product_type === 'inserted') {
+            qtyEl.appendChild(document.createTextNode(qtyDisplay));
+            const sheets = item.source_data?.quantityTwo || item.source_data?.quantity_two || item.source_data?.sheets || 0;
+            if (parseInt(sheets) > 0) {
+                qtyEl.appendChild(document.createElement('br'));
+                const sub = document.createElement('span');
+                sub.className = 'text-xs text-gray-400';
+                sub.textContent = '(' + formatNumber(sheets) + '\ub9e4)';
+                qtyEl.appendChild(sub);
+            }
+        } else {
+            qtyEl.textContent = qtyDisplay;
+        }
+        row.appendChild(qtyEl);
+
+        // 단가
+        const upEl = document.createElement('span');
+        upEl.className = 'py-1.5 text-right pr-2 text-sm text-gray-600';
+        upEl.textContent = formatNumber(unitPrice);
+        row.appendChild(upEl);
+
+        // 공급가액
+        const priceEl = document.createElement('span');
+        priceEl.className = 'py-1.5 text-right pr-2 text-sm font-semibold text-gray-900';
+        priceEl.textContent = formatNumber(item.supply_price);
+        row.appendChild(priceEl);
+
+        // 삭제
+        const delWrap = document.createElement('span');
+        delWrap.className = 'py-1.5 text-center';
+        const delBtn = document.createElement('button');
+        delBtn.className = 'text-gray-300 hover:text-red-500 text-sm leading-none transition-colors';
+        delBtn.textContent = '\u00d7';
+        delBtn.addEventListener('click', function() { deleteItem(item.no); });
+        delWrap.appendChild(delBtn);
+        row.appendChild(delWrap);
+
+        container.appendChild(row);
     });
     updateTotals();
 }
@@ -251,15 +429,18 @@ function renderItems() {
 function updateTotals() {
     let supply = 0;
     items.forEach(item => supply += parseInt(item.supply_price) || 0);
+    const shipping = parseInt(document.getElementById('shipping_cost').value) || 0;
+    supply += shipping;
     const vat = Math.round(supply * 0.1);
     document.getElementById('supplyTotal').textContent = formatNumber(supply);
     document.getElementById('vatTotal').textContent = formatNumber(vat);
     document.getElementById('grandTotal').textContent = formatNumber(supply + vat);
 }
 
-function openManualModal() { document.getElementById('manualModal').classList.add('active'); document.getElementById('manual_product_name').focus(); }
+function openManualModal() { document.getElementById('manualModal').classList.remove('hidden'); document.getElementById('manualModal').classList.add('flex'); document.getElementById('manual_product_name').focus(); }
 function closeManualModal() {
-    document.getElementById('manualModal').classList.remove('active');
+    document.getElementById('manualModal').classList.add('hidden');
+    document.getElementById('manualModal').classList.remove('flex');
     document.getElementById('manual_product_name').value = '';
     document.getElementById('manual_specification').value = '';
     document.getElementById('manual_quantity').value = '1';
@@ -311,6 +492,7 @@ function saveQuote(isDraft) {
         customer_address: document.getElementById('customer_address').value.trim(),
         customer_memo: document.getElementById('customer_memo').value.trim(),
         admin_memo: document.getElementById('admin_memo').value.trim(),
+        shipping_cost: parseInt(document.getElementById('shipping_cost').value) || 0,
         is_draft: isDraft,
         items: items.map(x=>({source_type:x.is_manual?'manual':'calculator', product_type:x.product_type||'', product_name:x.product_name, specification:x.specification, quantity:x.quantity, unit:x.unit, quantity_display:x.quantity_display, unit_price:x.unit_price, supply_price:x.supply_price, source_data:x.source_data}))
     };
@@ -337,18 +519,20 @@ const CALC_CFG = {
     'merchandisebond':{name:'상품권',url:'/admin/mlangprintauto/quote/widgets/merchandisebond.php'}
 };
 
-function openCalculatorSelect() { document.getElementById('calcSelectModal').classList.add('active'); }
-function closeCalculatorSelect() { document.getElementById('calcSelectModal').classList.remove('active'); }
+function openCalculatorSelect() { document.getElementById('calcSelectModal').classList.remove('hidden'); document.getElementById('calcSelectModal').classList.add('flex'); }
+function closeCalculatorSelect() { document.getElementById('calcSelectModal').classList.add('hidden'); document.getElementById('calcSelectModal').classList.remove('flex'); }
 function openCalculator(type) {
     const c = CALC_CFG[type]; if(!c){alert('알 수 없는 품목');return;}
     closeCalculatorSelect();
     document.getElementById('calcModalTitle').textContent = c.name+' 계산기';
     document.getElementById('calcIframe').src = c.url;
-    document.getElementById('calcIframeModal').classList.add('active');
+    document.getElementById('calcIframeModal').classList.remove('hidden');
+    document.getElementById('calcIframeModal').classList.add('flex');
     document.body.style.overflow='hidden';
 }
 function closeCalculatorIframe() {
-    document.getElementById('calcIframeModal').classList.remove('active');
+    document.getElementById('calcIframeModal').classList.add('hidden');
+    document.getElementById('calcIframeModal').classList.remove('flex');
     document.getElementById('calcIframe').src='about:blank';
     document.body.style.overflow='';
 }
@@ -362,7 +546,7 @@ window.addEventListener('message', function(e) {
         if (payload.options && typeof payload.options === 'object') {
             Object.keys(payload.options).forEach(k => { if (!(k in payload)) payload[k] = payload.options[k]; });
         }
-        const addBtn = document.querySelector('#calcIframeModal .btn-close, #calcIframeModal button');
+        const addBtn = document.querySelector('#calcIframeModal button');
         if(addBtn) addBtn.disabled = true;
         fetch('api/add_calculator_item.php', {method:'POST', headers:{'Content-Type':'application/json'}, body:JSON.stringify(payload)})
         .then(r=>r.json()).then(d=>{
@@ -382,5 +566,5 @@ window.addEventListener('message', function(e) {
     if(e.data.type==='ADMIN_QUOTE_CLOSE_MODAL') closeCalculatorIframe();
 });
 </script>
-</body>
-</html>
+
+<?php include __DIR__ . '/../../../dashboard/includes/footer.php'; ?>

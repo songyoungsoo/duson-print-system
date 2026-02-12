@@ -143,18 +143,9 @@ $current_path = rtrim($current_path, '/') . '/';
 }
 </style>
 
-<aside id="sidebar" class="fixed md:static inset-y-0 left-0 z-40 w-[200px] transform -translate-x-full md:translate-x-0 transition-transform duration-300 ease-in-out mt-14 md:mt-0">
+<aside id="sidebar" class="fixed md:static inset-y-0 left-0 z-40 w-[200px] transform -translate-x-full md:translate-x-0 transition-transform duration-300 ease-in-out mt-11">
     <div class="flex flex-col h-full">
-        <!-- Brand -->
-        <div class="hidden md:block sa-brand">
-            <div style="display:flex; align-items:center; gap:10px;">
-                <div class="sa-brand-logo">&#x1F5A8;&#xFE0F;</div>
-                <div>
-                    <h1>두손기획</h1>
-                    <p>Print Management</p>
-                </div>
-            </div>
-        </div>
+        <!-- Brand (상단 헤더로 이동됨, 사이드바에서는 숨김) -->
 
         <nav class="flex-1 overflow-y-auto" style="padding: 2px 0 2px;">
             <?php foreach ($DASHBOARD_NAV as $group_key => $group): ?>

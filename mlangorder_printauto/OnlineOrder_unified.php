@@ -702,8 +702,12 @@ if (!empty($debug_info) && strpos($_SERVER['HTTP_HOST'], 'localhost') !== false)
             <form method="post" action="ProcessOrder_unified.php" id="orderForm" onsubmit="return prepareBusinessAddress()">
                 <?php include_once $_SERVER['DOCUMENT_ROOT'] . '/includes/csrf.php'; csrf_field(); ?>
                 <!-- 주문 데이터를 hidden으로 전달 -->
-                <input type="hidden" name="total_price" value="<?php echo $total_info['total']; ?>">
-                <input type="hidden" name="total_price_vat" value="<?php echo $total_info['total_vat']; ?>">
+                <input type="hidden" name="total_price" id="total_price" 
+                       value="<?php echo $total_info['total']; ?>" 
+                       onchange="calculateAmountDisplay()">
+                <input type="hidden" name="total_price_vat" id="total_price_vat" 
+                       value="<?php echo $total_info['total_vat']; ?>" 
+                       onchange="calculateAmountDisplay()">
                 <input type="hidden" name="items_count" value="<?php echo $total_info['count']; ?>">
                 <input type="hidden" name="session_id" value="<?php echo $session_id; ?>">
                 <input type="hidden" name="is_direct_order" value="<?php echo $is_direct_order ? '1' : '0'; ?>">
@@ -1027,6 +1031,31 @@ if (!empty($debug_info) && strpos($_SERVER['HTTP_HOST'], 'localhost') !== false)
                     </div>
                 </div>
                 
+                <!-- 금액 상세 표시 -->
+                <div style="margin-top: 1rem; padding: 1rem; background: #f8f9fa; border-radius: 4px; border: 1px solid #e0e0e0;">
+                    <h3 style="color: #2c3e50; font-weight: 600; margin-bottom: 0.8rem;">💰 주문 금액 상세</h3>
+                    <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 0.8rem;">
+                        <div style="background: white; padding: 0.8rem; border-radius: 4px; border: 1px solid #ddd;">
+                            <div style="font-size: 0.85rem; color: #666; margin-bottom: 0.3rem;">공급가액 (VAT 제외)</div>
+                            <div id="display_price_supply" style="font-size: 1.2rem; font-weight: 600; color: #2c3e50;">
+                                0원
+                            </div>
+                        </div>
+                        <div style="background: white; padding: 0.8rem; border-radius: 4px; border: 1px solid #ddd;">
+                            <div style="font-size: 0.85rem; color: #666; margin-bottom: 0.3rem;">부가세 (10%)</div>
+                            <div id="display_price_vat_amount" style="font-size: 1.2rem; font-weight: 600; color: #e74c3c;">
+                                0원
+                            </div>
+                        </div>
+                        <div style="background: white; padding: 0.8rem; border-radius: 4px; border: 1px solid #ddd;">
+                            <div style="font-size: 0.85rem; color: #666; margin-bottom: 0.3rem;">총 결제 금액 (VAT 포함)</div>
+                            <div id="display_total_price" style="font-size: 1.4rem; font-weight: 700; color: #D9534F;">
+                                0원
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
                 <div style="text-align: center; margin-top: 1.5rem;">
                     <button type="submit"
                             style="background-color: #D9534F; color: white; border: none; padding: 12px 36px; border-radius: 20px; font-weight: bold; cursor: pointer; box-shadow: 0 4px 15px rgba(217, 83, 79, 0.25);">
@@ -1996,6 +2025,27 @@ var memberInfo = null;
 console.log('No member info available');
 <?php endif; ?>
 
+// 금액 계산 및 표시 함수
+function calculateAmountDisplay() {
+    // 공급가액 계산 (부가세 제외 금액)
+    var total_vat = parseFloat(document.getElementById('total_price_vat').value) || 0;
+    var price_supply = total_vat;  // money_4 = money_5 - money_5 * 0.1
+    
+    // 부가세 계산
+    var total_price = parseFloat(document.getElementById('total_price').value) || 0;
+    var price_vat_amount = total_price - price_supply;
+    
+    // 한국어 금액 포맷팅
+    var price_supply_kor = price_supply.toLocaleString('ko-KR');
+    var price_vat_amount_kor = price_vat_amount.toLocaleString('ko-KR');
+    var total_price_kor = total_price.toLocaleString('ko-KR');
+    
+    // 화면에 표시
+    document.getElementById('display_price_supply').textContent = price_supply_kor + '원';
+    document.getElementById('display_price_vat_amount').textContent = price_vat_amount_kor + '원';
+    document.getElementById('display_total_price').textContent = total_price_kor + '원';
+}
+
 // 페이지 로드 시 실행
 document.addEventListener('DOMContentLoaded', function() {
     // 회원 정보 자동 입력 먼저 실행
@@ -2008,6 +2058,9 @@ document.addEventListener('DOMContentLoaded', function() {
     <?php if ($is_logged_in): ?>
         setTimeout(() => toggleAddressInput(), 100); // 약간의 지연 후 실행
     <?php endif; ?>
+    
+    // 페이지 로드 시 금액 계산 및 표시
+    calculateAmountDisplay();
     
     const businessNumberInput = document.querySelector('input[name="business_number"]');
     if (businessNumberInput) {

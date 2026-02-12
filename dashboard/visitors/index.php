@@ -250,6 +250,81 @@ var charts = {};
 var API = '/dashboard/api/visitor_stats.php';
 var COLORS = ['#3b82f6','#ef4444','#f59e0b','#10b981','#f97316','#06b6d4','#8b5cf6','#ec4899'];
 
+// ─── 페이지 URL → 한글 이름 매핑 ───
+var PAGE_NAME_MAP = {
+    '/': '메인페이지',
+    '/index.php': '메인페이지',
+    '/mlangprintauto/inserted/': '전단지',
+    '/mlangprintauto/inserted/index.php': '전단지',
+    '/mlangprintauto/sticker_new/': '스티커',
+    '/mlangprintauto/sticker_new/index.php': '스티커',
+    '/mlangprintauto/msticker/': '자석스티커',
+    '/mlangprintauto/msticker/index.php': '자석스티커',
+    '/mlangprintauto/namecard/': '명함',
+    '/mlangprintauto/namecard/index.php': '명함',
+    '/mlangprintauto/envelope/': '봉투',
+    '/mlangprintauto/envelope/index.php': '봉투',
+    '/mlangprintauto/littleprint/': '포스터',
+    '/mlangprintauto/littleprint/index.php': '포스터',
+    '/mlangprintauto/cadarok/': '카다록',
+    '/mlangprintauto/cadarok/index.php': '카다록',
+    '/mlangprintauto/merchandisebond/': '상품권',
+    '/mlangprintauto/merchandisebond/index.php': '상품권',
+    '/mlangprintauto/ncrflambeau/': 'NCR양식지',
+    '/mlangprintauto/ncrflambeau/index.php': 'NCR양식지',
+    '/member/login.php': '로그인',
+    '/member/login_unified.php': '로그인',
+    '/member/register.php': '회원가입',
+    '/member/register_process.php': '회원가입처리',
+    '/mlangorder_printauto/OnlineOrder_unified.php': '주문서작성',
+    '/mlangorder_printauto/OrderComplete_universal.php': '주문완료',
+    '/mlangprintauto/shop_temp_cartlist.php': '장바구니',
+    '/sub/my_orders.php': '내 주문내역',
+    '/dashboard/': '대시보드',
+    '/dashboard/visitors/': '방문자분석',
+    '/dashboard/proofs/': '교정관리',
+    '/payment/inicis_request.php': '결제요청',
+    '/payment/inicis_return.php': '결제완료',
+    '/popup/proof_gallery.php': '교정갤러리'
+};
+
+// 부분 매칭 패턴 (위 정확 매칭에 없을 때)
+var PAGE_PATH_PATTERNS = [
+    { pattern: '/mlangprintauto/inserted/', name: '전단지' },
+    { pattern: '/mlangprintauto/sticker_new/', name: '스티커' },
+    { pattern: '/mlangprintauto/msticker/', name: '자석스티커' },
+    { pattern: '/mlangprintauto/namecard/', name: '명함' },
+    { pattern: '/mlangprintauto/envelope/', name: '봉투' },
+    { pattern: '/mlangprintauto/littleprint/', name: '포스터' },
+    { pattern: '/mlangprintauto/cadarok/', name: '카다록' },
+    { pattern: '/mlangprintauto/merchandisebond/', name: '상품권' },
+    { pattern: '/mlangprintauto/ncrflambeau/', name: 'NCR양식지' },
+    { pattern: '/mlangorder_printauto/', name: '주문' },
+    { pattern: '/member/', name: '회원' },
+    { pattern: '/admin/', name: '관리자' },
+    { pattern: '/dashboard/', name: '대시보드' },
+    { pattern: '/payment/', name: '결제' },
+    { pattern: '/popup/', name: '팝업' },
+    { pattern: '/sub/', name: '서브페이지' },
+    { pattern: '/bbs/', name: '게시판' }
+];
+
+function getPageName(url) {
+    if (!url) return '(알 수 없음)';
+    // 쿼리스트링 제거 후 정확 매칭
+    var path = url.split('?')[0];
+    if (PAGE_NAME_MAP[path]) return PAGE_NAME_MAP[path];
+    // 부분 매칭
+    for (var i = 0; i < PAGE_PATH_PATTERNS.length; i++) {
+        if (path.indexOf(PAGE_PATH_PATTERNS[i].pattern) === 0) {
+            // 하위 파일명이 있으면 표시
+            var sub = path.replace(PAGE_PATH_PATTERNS[i].pattern, '').replace(/\.php$/, '').replace(/\//g, '');
+            return PAGE_PATH_PATTERNS[i].name + (sub ? ' - ' + sub : '');
+        }
+    }
+    return path; // 매칭 안 되면 경로 그대로
+}
+
 // ─── 유틸 ───
 function makeCard(label, value, sub) {
     var card = document.createElement('div');
@@ -309,7 +384,16 @@ function fillTable(tbodyId, rows, colSpan) {
         var tr = document.createElement('tr'); tr.className = 'hover:bg-gray-50';
         r.forEach(function(cell) {
             var td = document.createElement('td');
-            td.className = cell.cls; td.textContent = cell.text;
+            td.className = cell.cls;
+            if (cell.href) {
+                var a = document.createElement('a');
+                a.href = cell.href; a.target = '_blank';
+                a.textContent = cell.text;
+                a.className = 'text-blue-600 hover:text-blue-800 hover:underline';
+                td.appendChild(a);
+            } else {
+                td.textContent = cell.text;
+            }
             if (cell.title) td.title = cell.title;
             tr.appendChild(td);
         });
@@ -465,9 +549,9 @@ async function loadTopPages() {
         var res = await fetch(API + '?type=pages');
         var data = await res.json();
         fillTable('topPagesBody', data.map(function(p) {
-            var short = p.page.length > 60 ? p.page.substring(0,60) + '...' : p.page;
+            var name = getPageName(p.page);
             return [
-                { cls: 'px-3 py-2 text-sm text-gray-700', text: short, title: p.page },
+                { cls: 'px-3 py-2 text-sm', text: name, href: p.page, title: p.page },
                 { cls: 'px-3 py-2 text-sm text-gray-900 text-right', text: formatNumber(p.views) }
             ];
         }), 2);
@@ -481,16 +565,16 @@ async function loadBehavior() {
         var res = await fetch(API + '?type=entry_exit');
         var data = await res.json();
         fillTable('entryPagesBody', data.entry.map(function(p) {
-            var short = p.page.length > 50 ? p.page.substring(0,50) + '...' : p.page;
+            var name = getPageName(p.page);
             return [
-                { cls: 'px-3 py-2 text-sm text-gray-700', text: short, title: p.page },
+                { cls: 'px-3 py-2 text-sm', text: name, href: p.page, title: p.page },
                 { cls: 'px-3 py-2 text-sm text-gray-900 text-right', text: formatNumber(p.count) }
             ];
         }), 2);
         fillTable('exitPagesBody', data.exit.map(function(p) {
-            var short = p.page.length > 50 ? p.page.substring(0,50) + '...' : p.page;
+            var name = getPageName(p.page);
             return [
-                { cls: 'px-3 py-2 text-sm text-gray-700', text: short, title: p.page },
+                { cls: 'px-3 py-2 text-sm', text: name, href: p.page, title: p.page },
                 { cls: 'px-3 py-2 text-sm text-gray-900 text-right', text: formatNumber(p.count) }
             ];
         }), 2);
@@ -552,10 +636,10 @@ async function loadRealtime() {
         var res = await fetch(API + '?type=realtime');
         var data = await res.json();
         fillTable('realtimeBody', data.map(function(v) {
-            var short = v.page.length > 50 ? v.page.substring(0,50) + '...' : v.page;
+            var name = getPageName(v.page);
             return [
                 {cls:'px-3 py-2 text-sm text-gray-900',text:v.ip},
-                {cls:'px-3 py-2 text-sm text-gray-700',text:short,title:v.page},
+                {cls:'px-3 py-2 text-sm',text:name,href:v.page,title:v.page},
                 {cls:'px-3 py-2 text-sm text-gray-500',text:v.browser},
                 {cls:'px-3 py-2 text-sm text-gray-500',text:v.time.substring(11,19)}
             ];

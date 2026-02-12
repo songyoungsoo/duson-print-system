@@ -31,7 +31,40 @@ include __DIR__ . '/../includes/sidebar.php';
             </a>
             <?php endforeach; ?>
         </div>
+
+        <div class="mt-6 mb-4">
+            <h2 class="text-sm font-bold text-gray-900 mb-2">인쇄 영상</h2>
+            <div class="bg-black rounded-lg overflow-hidden shadow-lg">
+                <video id="printingVideo" controls muted class="w-full" style="max-height: 80vh;"
+                       src="/media/printing.mp4"
+                       preload="metadata">
+                    브라우저가 비디오를 지원하지 않습니다.
+                </video>
+            </div>
+        </div>
     </div>
 </main>
+
+<script>
+(function() {
+    var video = document.getElementById('printingVideo');
+    var scrollContainer = document.querySelector('main.overflow-y-auto') || window;
+
+    var observer = new IntersectionObserver(function(entries) {
+        entries.forEach(function(entry) {
+            if (entry.isIntersecting) {
+                video.play();
+            } else {
+                video.pause();
+            }
+        });
+    }, {
+        root: scrollContainer === window ? null : scrollContainer,
+        threshold: 0.3
+    });
+
+    observer.observe(video);
+})();
+</script>
 
 <?php include __DIR__ . '/../includes/footer.php'; ?>
