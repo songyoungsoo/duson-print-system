@@ -133,7 +133,9 @@ class ProductSpecFormatter {
         if ($productType === 'envelope') {
             if (!empty($item['envelope_tape_enabled']) && $item['envelope_tape_enabled'] == 1) {
                 $tapeQty = intval($item['envelope_tape_quantity'] ?? 0);
-                return $tapeQty > 0 ? "양면테이프: " . number_format($tapeQty) . "개" : "양면테이프";
+                $tapePrice = intval($item['envelope_tape_price'] ?? 0);
+                $label = $tapeQty > 0 ? "양면테이프: " . number_format($tapeQty) . "개" : "양면테이프";
+                return $label . ($tapePrice > 0 ? '(' . number_format($tapePrice) . '원)' : '');
             }
         }
 
@@ -1011,20 +1013,23 @@ class ProductSpecFormatter {
             (!empty($addOpts['coating_enabled']))) {
             $type = $item['coating_type'] ?? $addOpts['coating_type'] ?? '';
             $name = $coatingNames[$type] ?? $type;
-            if ($name) $options[] = '코팅:' . $name;
+            $price = intval($item['coating_price'] ?? $addOpts['coating_price'] ?? 0);
+            if ($name) $options[] = '코팅:' . $name . ($price > 0 ? '(' . number_format($price) . '원)' : '');
         }
 
         if ((!empty($item['folding_enabled']) && $item['folding_enabled'] == 1) ||
             (!empty($addOpts['folding_enabled']))) {
             $type = $item['folding_type'] ?? $addOpts['folding_type'] ?? '';
             $name = $foldingNames[$type] ?? $type;
-            if ($name) $options[] = '접지:' . $name;
+            $price = intval($item['folding_price'] ?? $addOpts['folding_price'] ?? 0);
+            if ($name) $options[] = '접지:' . $name . ($price > 0 ? '(' . number_format($price) . '원)' : '');
         }
 
         if ((!empty($item['creasing_enabled']) && $item['creasing_enabled'] == 1) ||
             (!empty($addOpts['creasing_enabled']))) {
             $lines = $item['creasing_lines'] ?? $addOpts['creasing_lines'] ?? '';
-            if ($lines) $options[] = '오시:' . $lines . '줄';
+            $price = intval($item['creasing_price'] ?? $addOpts['creasing_price'] ?? 0);
+            if ($lines) $options[] = '오시:' . $lines . '줄' . ($price > 0 ? '(' . number_format($price) . '원)' : '');
         }
 
         return implode(' / ', $options);
