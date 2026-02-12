@@ -224,13 +224,46 @@ class LittleprintPremiumOptionsManager {
             additional_options_total: parseInt(document.getElementById('additional_options_total')?.value || 0)
         };
     }
+
+    /**
+     * DB에서 로드한 가격 데이터 적용 (패턴 B: base_price)
+     */
+    applyDBPrices(dbOptions) {
+        const optionMap = { '코팅': 'coating', '접지': 'folding', '오시': 'creasing' };
+        const variantMap = {
+            '단면유광': 'single', '양면유광': 'double',
+            '단면무광': 'single_matte', '양면무광': 'double_matte',
+            '2단': '2fold', '3단': '3fold', '병풍': 'accordion', '대문': 'gate',
+            '1줄': '1', '2줄': '2', '3줄': '3'
+        };
+
+        dbOptions.forEach(opt => {
+            const jsKey = optionMap[opt.option_name];
+            if (!jsKey || !opt.variants || !this.basePrices[jsKey]) return;
+
+            opt.variants.forEach(v => {
+                const vKey = variantMap[v.variant_name];
+                if (vKey && v.pricing_config && v.pricing_config.base_price !== undefined) {
+                    this.basePrices[jsKey][vKey] = v.pricing_config.base_price;
+                }
+            });
+        });
+
+        console.log('✅ DB 가격 데이터 적용 완료 (포스터)');
+        this.calculateAndUpdatePrice();
+    }
 }
 
 // 페이지 로드 시 초기화
-document.addEventListener('DOMContentLoaded', () => {
-    // premiumOptionsSection이 존재하면 초기화
+document.addEventListener('DOMContentLoaded', async () => {
     if (document.getElementById('premiumOptionsSection')) {
         window.littleprintPremiumOptions = new LittleprintPremiumOptionsManager();
-        console.log('포스터 추가 옵션 시스템 준비 완료');
+        if (typeof loadPremiumOptionsFromDB === 'function') {
+            const dbData = await loadPremiumOptionsFromDB('littleprint');
+            if (dbData && window.littleprintPremiumOptions) {
+                window.littleprintPremiumOptions.applyDBPrices(dbData);
+            }
+        }
+        console.log('✅ 포스터 추가 옵션 시스템 준비 완료');
     }
 });

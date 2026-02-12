@@ -116,6 +116,8 @@ if ($type_result && ($type_row = mysqli_fetch_assoc($type_result))) {
     <script src="../NameCard/js/unified-gallery.js"></script>
     <script src="../../js/unified-gallery-popup.js"></script>
     
+    <!-- 프리미엄 옵션 DB 로더 -->
+    <script src="/js/premium-options-loader.js"></script>
     <!-- 봉투 전용 JavaScript -->
     <script src="../../js/envelope.js" defer></script>
     
@@ -503,6 +505,37 @@ if ($type_result && ($type_row = mysqli_fetch_assoc($type_result))) {
             }
         }
 
+        // 양면테이프 가격 설정 (DB에서 덮어쓸 수 있음)
+        var envelopeTapePricing = {
+            tiers: [
+                { max_qty: 500, price: 25000 },
+                { max_qty: 1000, price: 40000 }
+            ],
+            over_1000_per_unit: 40
+        };
+
+        // DB에서 봉투 옵션 가격 로드
+        (async function() {
+            if (typeof loadPremiumOptionsFromDB === 'function') {
+                try {
+                    const dbData = await loadPremiumOptionsFromDB('envelope');
+                    if (dbData) {
+                        dbData.forEach(function(opt) {
+                            if (opt.option_name === '양면테이프' && opt.variants && opt.variants.length > 0) {
+                                var pc = opt.variants[0].pricing_config;
+                                if (pc && pc.tiers) {
+                                    envelopeTapePricing = pc;
+                                    console.log('✅ 봉투 테이프 가격 DB 적용 완료');
+                                }
+                            }
+                        });
+                    }
+                } catch (e) {
+                    console.warn('봉투 DB 가격 로드 실패, 하드코딩 사용');
+                }
+            }
+        })();
+
         // 양면테이프 옵션 관련 함수들
         function calculateTapePrice() {
             const tapeEnabled = document.getElementById('envelope_tape_enabled')?.checked;
@@ -514,10 +547,19 @@ if ($type_result && ($type_row = mysqli_fetch_assoc($type_result))) {
             let tapePrice = 0;
 
             if (tapeEnabled && mainQuantity > 0) {
-                if (mainQuantity === 500) {
-                    tapePrice = 25000; // 500매: 25,000원 고정
-                } else {
-                    tapePrice = mainQuantity * 40; // 기타 수량: 수량 × 40원
+                // DB 가격 기반 계산
+                var matched = false;
+                for (var i = 0; i < envelopeTapePricing.tiers.length; i++) {
+                    var tier = envelopeTapePricing.tiers[i];
+                    if (mainQuantity <= tier.max_qty) {
+                        tapePrice = tier.price;
+                        matched = true;
+                        break;
+                    }
+                }
+                if (!matched) {
+                    // 최대 tier 초과: per_unit 계산
+                    tapePrice = mainQuantity * (envelopeTapePricing.over_1000_per_unit || 40);
                 }
             }
 

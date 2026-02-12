@@ -4,6 +4,21 @@
 
 ---
 
+## 2026-02-13
+
+| 수정자 | 수정항목 | 관련 파일 |
+|--------|----------|-----------|
+| Claude | **프리미엄 옵션 DB화 시스템 구축** - 6개 품목(명함/상품권/전단지/포스터/카다록/봉투)의 프리미엄 옵션 가격을 JS 하드코딩에서 DB 기반으로 전환. 관리자 대시보드에서 CRUD 관리 가능. DB 우선 로드 + 하드코딩 fallback 안전장치 | premium_options, premium_option_variants 테이블 |
+| Claude | **관리자 프리미엄 옵션 대시보드** - 6개 품목 탭, 옵션/variant CRUD, 인라인 가격 편집, 정렬순서 변경, 활성/비활성 토글. Tailwind CSS 기반 UI | dashboard/premium-options/index.php |
+| Claude | **관리자 프리미엄 옵션 API** - list/create/update/delete/toggle/reorder + 기존 주문 재계산 기능. 3가지 가격 패턴별 재계산 (A: base_perunit, B: multiplier, C: tiered) | dashboard/api/premium_options.php |
+| Claude | **고객용 프리미엄 옵션 공개 API** - 인증 불필요, 파일 캐시(5분), 품목별 활성 옵션+가격 데이터 반환 | api/premium_options.php |
+| Claude | **공통 프리미엄 옵션 로더** - fetch API로 DB 가격 로드, 실패 시 기존 하드코딩 값 자동 사용 | js/premium-options-loader.js |
+| Claude | **고객 페이지 JS DB 통합** - 6개 품목 JS 파일에서 페이지 로드 시 DB 가격 데이터 적용. 기존 계산 로직 변경 없음 | namecard-premium-options.js, merchandisebond-premium-options.js, leaflet-premium-options.js, littleprint-premium-options.js, cadarok-premium-options.js, envelope_tape.js |
+| Claude | **대시보드 사이드바 메뉴 추가** - "프리미엄옵션" 메뉴 항목 추가 | dashboard/includes/sidebar.php |
+| Claude | **기존 주문 재계산 UI** - 미리보기(변경 전/후 비교 테이블) + 실행 2단계 안전장치. 로딩 스피너, 요약박스, 변경사항 테이블 | dashboard/premium-options/index.php |
+
+---
+
 ## 2026-02-12
 
 | 수정자 | 수정항목 | 관련 파일 |

@@ -390,6 +390,36 @@ if ($is_post_order) {
     }
 }
 
+// ⚠️ CRITICAL FIX: total과 total_vat의 의미가 반대로 들어오는 경우가 있어 값을 교환하여 정정
+// 문제의 원인: 간혹 price는 VAT 포함, vat_price는 VAT 제외 금액으로 POST 되거나
+//             shop_temp 테이블에 st_price, st_price_vat가 잘못 저장되는 경우가 발견됨.
+//             (예: 공급가액으로 442,200원, 총 결제 금액으로 402,000원이 들어오는 경우)
+// 해결책: `$total_info['total']`이 VAT 제외 공급가액, `$total_info['total_vat']`이 VAT 포함 총 결제 금액으로
+//         일관되게 유지되도록 이 시점에서 값을 검증하고 필요 시 교환 및 재계산한다.
+
+$current_total_exclusive = $total_info['total'];       // 현재 $total_info['total'] (가정: 공급가액)
+$current_total_inclusive = $total_info['total_vat'];    // 현재 $total_info['total_vat'] (가정: 총 결제 금액)
+
+// 1단계: 만약 현재 '총 결제 금액'으로 들어온 값이 '공급가액'으로 들어온 값보다 작으면, 두 값이 바뀐 것으로 판단하고 교환
+// 예: total=442200 (VAT포함), total_vat=402000 (VAT제외) 인 경우
+if ($current_total_inclusive < $current_total_exclusive) {
+    $total_info['total'] = $current_total_inclusive;       // 실제 공급가액
+    $total_info['total_vat'] = $current_total_exclusive;    // 실제 총 결제 금액
+}
+// 2단계: VAT 계산이 맞는지 확인 (10% 오차 범위 허용)
+// 현재 $total_info['total']이 공급가액, $total_info['total_vat']이 총 결제 금액이라고 간주.
+$calculated_vat_inclusive = round($total_info['total'] * 1.1);
+$difference = abs($total_info['total_vat'] - $calculated_vat_inclusive);
+
+// 10원 이상의 오차가 있다면 재계산하여 VAT를 정확히 맞춘다.
+if ($difference > 10) { 
+    $total_info['total_vat'] = $calculated_vat_inclusive;
+}
+
+// 최종적으로 $total_info['total'] = 공급가액 (VAT 제외)
+//           $total_info['total_vat'] = 총 결제 금액 (VAT 포함)
+//          이 되도록 조정되었음.
+
 // 로그인 상태는 이미 auth.php에서 처리됨
 // 회원 정보 가져오기 (로그인되어 있을 때만)
 $user_info = null;
@@ -1031,31 +1061,6 @@ if (!empty($debug_info) && strpos($_SERVER['HTTP_HOST'], 'localhost') !== false)
                     </div>
                 </div>
                 
-                <!-- 금액 상세 표시 -->
-                <div style="margin-top: 1rem; padding: 1rem; background: #f8f9fa; border-radius: 4px; border: 1px solid #e0e0e0;">
-                    <h3 style="color: #2c3e50; font-weight: 600; margin-bottom: 0.8rem;">💰 주문 금액 상세</h3>
-                    <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 0.8rem;">
-                        <div style="background: white; padding: 0.8rem; border-radius: 4px; border: 1px solid #ddd;">
-                            <div style="font-size: 0.85rem; color: #666; margin-bottom: 0.3rem;">공급가액 (VAT 제외)</div>
-                            <div id="display_price_supply" style="font-size: 1.2rem; font-weight: 600; color: #2c3e50;">
-                                0원
-                            </div>
-                        </div>
-                        <div style="background: white; padding: 0.8rem; border-radius: 4px; border: 1px solid #ddd;">
-                            <div style="font-size: 0.85rem; color: #666; margin-bottom: 0.3rem;">부가세 (10%)</div>
-                            <div id="display_price_vat_amount" style="font-size: 1.2rem; font-weight: 600; color: #e74c3c;">
-                                0원
-                            </div>
-                        </div>
-                        <div style="background: white; padding: 0.8rem; border-radius: 4px; border: 1px solid #ddd;">
-                            <div style="font-size: 0.85rem; color: #666; margin-bottom: 0.3rem;">총 결제 금액 (VAT 포함)</div>
-                            <div id="display_total_price" style="font-size: 1.4rem; font-weight: 700; color: #D9534F;">
-                                0원
-                            </div>
-                        </div>
-                    </div>
-                </div>
-
                 <div style="text-align: center; margin-top: 1.5rem;">
                     <button type="submit"
                             style="background-color: #D9534F; color: white; border: none; padding: 12px 36px; border-radius: 20px; font-weight: bold; cursor: pointer; box-shadow: 0 4px 15px rgba(217, 83, 79, 0.25);">

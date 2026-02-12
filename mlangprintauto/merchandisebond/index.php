@@ -104,7 +104,8 @@ if ($type_result && ($type_row = mysqli_fetch_assoc($type_result))) {
     <script src="../../includes/js/GalleryLightbox.js"></script>
     <script src="../../js/merchandisebond.js?v=<?php echo time(); ?>" defer></script>
 
-    <!-- 프리미엄 옵션 시스템 (명함 방식 적용) -->
+    <!-- 프리미엄 옵션 DB 로더 + 시스템 -->
+    <script src="/js/premium-options-loader.js"></script>
     <script src="js/merchandisebond-premium-options.js?v=<?php echo time(); ?>"></script>
 
     <!-- 세션 ID 및 설정값 메타 태그 -->

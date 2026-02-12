@@ -24,9 +24,10 @@
 |------|----------|------|
 | 주문 | 2 | 주문 데이터 저장 |
 | 가격표 | 9 | 품목별 가격 정보 |
+| 프리미엄 옵션 | 2 | 후가공 옵션/가격 (DB 관리) |
 | 카테고리 | 1 | 품목 옵션 트리 구조 |
 | 게시판 | 16 | 포트폴리오, 게시판 등 |
-| **총계** | **28** | |
+| **총계** | **30** | |
 
 ### 1.2 전체 테이블 목록
 
@@ -45,6 +46,10 @@
 ├── mlangprintauto_ncrflambeau    # NCR양식지
 ├── mlangprintauto_littleprint    # 포스터
 └── mlangprintauto_merchandisebond # 상품권
+
+프리미엄 옵션:
+├── premium_options                # 프리미엄 옵션 마스터 (박/코팅/접지 등)
+└── premium_option_variants        # 옵션 상세 (금박무광/유광코팅 등 + pricing_config JSON)
 
 카테고리:
 └── mlangprintauto_transactioncate # 품목 옵션 카테고리
@@ -414,6 +419,109 @@ WHERE style='275' AND Section='276' AND POtype='1';
 
 3. **트리 구조 (Self-Reference)**
    - `transactioncate.BigNo` → `transactioncate.no`
+
+---
+
+## 7. 프리미엄 옵션 테이블 (2026-02-13 추가)
+
+### 7.1 premium_options (옵션 마스터)
+
+> 6개 품목(명함/상품권/전단지/포스터/카다록/봉투)의 후가공 옵션 관리
+
+```sql
+CREATE TABLE premium_options (
+    id INT AUTO_INCREMENT PRIMARY KEY,
+    product_type VARCHAR(50) NOT NULL,     -- 품목 (namecard, inserted 등)
+    option_name VARCHAR(100) NOT NULL,     -- 옵션명 (박, 넘버링, 코팅 등)
+    sort_order INT DEFAULT 0,              -- 정렬 순서
+    is_active TINYINT(1) DEFAULT 1,        -- 활성 여부
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+    INDEX idx_product_type (product_type),
+    INDEX idx_active (is_active)
+);
+```
+
+**현재 데이터 (20개 옵션)**:
+| product_type | option_name | 설명 |
+|-------------|-------------|------|
+| namecard | 박 | 금박/은박 등 |
+| namecard | 넘버링 | 일련번호 |
+| namecard | 귀도리 | 모서리 라운딩 |
+| namecard | 오시 | 접는 선 |
+| namecard | 타공 | 구멍 뚫기 |
+| merchandisebond | 박 | 금박/은박 |
+| merchandisebond | 넘버링 | 일련번호 |
+| merchandisebond | 귀도리 | 모서리 라운딩 |
+| merchandisebond | 타공 | 구멍 뚫기 |
+| inserted | 코팅 | 유광/무광 코팅 |
+| inserted | 접지 | 반접지/3단접지 등 |
+| inserted | 오시 | 접는 선 |
+| littleprint | 코팅 | 유광/무광 코팅 |
+| littleprint | 접지 | 반접지/3단접지 등 |
+| littleprint | 오시 | 접는 선 |
+| cadarok | 코팅 | 유광/무광 코팅 |
+| cadarok | 접지 | 반접지/3단접지 등 |
+| cadarok | 오시 | 접는 선 |
+| envelope | 테이프 | 양면테이프 |
+| envelope | 풀떼기 | 풀떼기 가공 |
+
+### 7.2 premium_option_variants (옵션 상세)
+
+```sql
+CREATE TABLE premium_option_variants (
+    id INT AUTO_INCREMENT PRIMARY KEY,
+    option_id INT NOT NULL,                -- FK → premium_options.id
+    variant_name VARCHAR(100) NOT NULL,    -- 종류명 (금박무광, 유광코팅 등)
+    pricing_config JSON NOT NULL,          -- 가격 설정 (패턴별 JSON)
+    display_order INT DEFAULT 0,           -- 표시 순서
+    is_default TINYINT(1) DEFAULT 0,       -- 기본 선택 여부
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+    FOREIGN KEY (option_id) REFERENCES premium_options(id) ON DELETE CASCADE,
+    INDEX idx_option_id (option_id)
+);
+```
+
+### 7.3 pricing_config JSON 구조 (3가지 패턴)
+
+**패턴 A (명함/상품권)**: base_perunit
+```json
+{
+    "type": "base_perunit",
+    "base_500": 30000,
+    "per_unit_above_500": 30,
+    "additional_fee": 0
+}
+```
+계산: qty ≤ 500 → base_500 / qty > 500 → base_500 + (qty-500) × per_unit + additional
+
+**패턴 B (전단지/포스터/카다록)**: multiplier
+```json
+{
+    "type": "multiplier",
+    "base_price": 15000,
+    "unit_size": 4000
+}
+```
+계산: base_price × max(quantity / unit_size, 1)
+
+**패턴 C (봉투)**: tiered
+```json
+{
+    "type": "tiered",
+    "tiers": {"500": 15000, "1000": 25000},
+    "over_1000_per_unit": 40
+}
+```
+계산: 수량 구간별 고정가 또는 1000초과 시 매당 40원
+
+### 7.4 관련 API
+
+| API | 경로 | 인증 | 용도 |
+|-----|------|------|------|
+| 관리자 CRUD | `dashboard/api/premium_options.php` | 관리자 세션 | 옵션 관리 + 주문 재계산 |
+| 고객용 조회 | `api/premium_options.php` | 불필요 | 가격 데이터 읽기 (5분 캐시) |
 
 ---
 

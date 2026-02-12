@@ -509,7 +509,8 @@ header("Expires: 0");
     <!-- 전단지 전용 스크립트 -->
     <script src="js/leaflet-compact.js?v=<?php echo time(); ?>"></script>
 
-    <!-- 🆕 추가 옵션 시스템 스크립트 (명함 스타일) -->
+    <!-- 추가 옵션 DB 로더 + 시스템 -->
+    <script src="/js/premium-options-loader.js"></script>
     <script src="js/leaflet-premium-options.js?v=<?php echo time(); ?>"></script>
     
     <script>

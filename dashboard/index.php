@@ -125,28 +125,28 @@ include __DIR__ . '/includes/sidebar.php';
             <!-- Today's Orders -->
             <div class="bg-white rounded-lg shadow p-3 hover:shadow-lg transition-shadow">
                 <div class="text-xs font-medium text-gray-600 mb-1">📦 오늘 주문</div>
-                <div class="text-2xl font-bold text-gray-900"><?php echo number_format($today_count); ?>건</div>
-                <div class="text-xs text-gray-500"><?php echo number_format($today_revenue); ?>원</div>
+                <div class="text-2xl font-bold text-gray-900" id="today-order-count"><?php echo number_format($today_count); ?>건</div>
+                <div class="text-xs text-gray-500" id="today-revenue"><?php echo number_format($today_revenue); ?>원</div>
             </div>
 
             <!-- This Month's Orders -->
             <div class="bg-white rounded-lg shadow p-3 hover:shadow-lg transition-shadow">
                 <div class="text-xs font-medium text-gray-600 mb-1">📊 이번달 주문</div>
-                <div class="text-2xl font-bold text-gray-900"><?php echo number_format($month_count); ?>건</div>
-                <div class="text-xs text-gray-500"><?php echo number_format($month_revenue); ?>원</div>
+                <div class="text-2xl font-bold text-gray-900" id="month-order-count"><?php echo number_format($month_count); ?>건</div>
+                <div class="text-xs text-gray-500" id="month-revenue"><?php echo number_format($month_revenue); ?>원</div>
             </div>
 
             <!-- Pending Orders -->
             <div class="bg-white rounded-lg shadow p-3 hover:shadow-lg transition-shadow">
                 <div class="text-xs font-medium text-gray-600 mb-1">⏳ 미처리 주문</div>
-                <div class="text-2xl font-bold text-orange-600"><?php echo number_format($pending_count); ?>건</div>
+                <div class="text-2xl font-bold text-orange-600" id="pending-order-count"><?php echo number_format($pending_count); ?>건</div>
                 <div class="text-xs text-gray-500">처리 필요</div>
             </div>
 
             <!-- Unanswered Inquiries -->
             <div class="bg-white rounded-lg shadow p-3 hover:shadow-lg transition-shadow">
                 <div class="text-xs font-medium text-gray-600 mb-1">💬 미답변 문의</div>
-                <div class="text-2xl font-bold text-red-600"><?php echo number_format($inquiry_count); ?>건</div>
+                <div class="text-2xl font-bold text-red-600" id="inquiry-count"><?php echo number_format($inquiry_count); ?>건</div>
                 <div class="text-xs text-gray-500">답변 필요</div>
             </div>
         </div>
@@ -288,3 +288,42 @@ const dailyChart = new Chart(ctx, {
 </script>
 
 <?php include __DIR__ . '/includes/footer.php'; ?>
+
+<script>
+// Function to animate numbers
+function animateNumber(id, finalValue, duration = 1000, suffix = '') {
+    const obj = document.getElementById(id);
+    if (!obj) return;
+
+    let startTimestamp = null;
+    const startValue = 0;
+    const step = (timestamp) => {
+        if (!startTimestamp) startTimestamp = timestamp;
+        const progress = Math.min((timestamp - startTimestamp) / duration, 1);
+        const currentValue = Math.floor(progress * (finalValue - startValue) + startValue);
+        obj.innerHTML = currentValue.toLocaleString() + suffix;
+        if (progress < 1) {
+            window.requestAnimationFrame(step);
+        } else {
+            obj.innerHTML = finalValue.toLocaleString() + suffix; // Ensure final value is set
+        }
+    };
+    window.requestAnimationFrame(step);
+}
+
+document.addEventListener('DOMContentLoaded', () => {
+    // Animate Today's Orders
+    animateNumber('today-order-count', <?php echo $today_count; ?>, 1000, '건');
+    animateNumber('today-revenue', <?php echo $today_revenue; ?>, 1000, '원');
+
+    // Animate This Month's Orders
+    animateNumber('month-order-count', <?php echo $month_count; ?>, 1000, '건');
+    animateNumber('month-revenue', <?php echo $month_revenue; ?>, 1000, '원');
+
+    // Animate Pending Orders
+    animateNumber('pending-order-count', <?php echo $pending_count; ?>, 1000, '건');
+
+    // Animate Unanswered Inquiries
+    animateNumber('inquiry-count', <?php echo $inquiry_count; ?>, 1000, '건');
+});
+</script>
