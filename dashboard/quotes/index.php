@@ -101,89 +101,147 @@ include __DIR__ . '/../includes/header.php';
 include __DIR__ . '/../includes/sidebar.php';
 ?>
 
+<style>
+.qt-main { font-family: 'Noto Sans KR', -apple-system, sans-serif; font-size: 13px; max-width: 980px; margin: 0 auto; padding: 16px 20px; }
+.qt-page-header { background: #1E4E79; color: #fff; padding: 10px 16px; border-radius: 8px; margin-bottom: 12px; display: flex; align-items: center; justify-content: space-between; }
+.qt-page-header h1 { font-size: 15px; font-weight: 700; margin: 0; color: #fff; }
+.qt-filters { display: flex; align-items: center; gap: 4px; margin-bottom: 12px; flex-wrap: wrap; }
+.qt-filters .filter-btn { padding: 4px 10px; font-size: 12px; border-radius: 4px; text-decoration: none; background: #f3f4f6; color: #374151; transition: all 0.15s; }
+.qt-filters .filter-btn:hover { background: #e5e7eb; }
+.qt-filters .filter-btn.active { background: #1E4E79; color: #fff; }
+.qt-filters .filter-btn .cnt { font-weight: 700; }
+.qt-toolbar { display: flex; align-items: center; justify-content: space-between; margin-bottom: 10px; }
+.qt-toolbar .search-input { width: 200px; padding: 4px 10px; font-size: 12px; border: 1px solid #d1d5db; border-radius: 4px; outline: none; }
+.qt-toolbar .search-input:focus { border-color: #1E4E79; }
+.qt-toolbar .toolbar-btn { padding: 4px 12px; font-size: 12px; border-radius: 4px; text-decoration: none; border: 1px solid #d1d5db; background: #fff; color: #374151; cursor: pointer; }
+.qt-toolbar .toolbar-btn:hover { background: #f9fafb; }
+.qt-toolbar .toolbar-btn-primary { background: #1E4E79; color: #fff; border-color: #1E4E79; }
+.qt-toolbar .toolbar-btn-primary:hover { background: #163d5e; }
+.qt-card { background: #fff; border: 1px solid #e5e7eb; border-radius: 8px; overflow: hidden; }
+.qt-table { width: 100%; border-collapse: collapse; font-size: 13px; }
+.qt-table thead th { background: #f9fafb; font-size: 12px; font-weight: 600; padding: 6px 8px; text-align: center; color: #374151; border-bottom: 1px solid #e5e7eb; }
+.qt-table thead th:first-child { text-align: left; padding-left: 12px; }
+.qt-table thead th:last-child { text-align: center; }
+.qt-table tbody tr { height: 33px; transition: background 0.1s; }
+.qt-table tbody tr:nth-child(odd) { background: #fff; }
+.qt-table tbody tr:nth-child(even) { background: #e6f7ff; }
+.qt-table tbody tr:hover { background: #dbeafe; }
+.qt-table tbody td { padding: 2px 8px; text-align: center; font-size: 13px; vertical-align: middle; white-space: nowrap; }
+.qt-table tbody td:first-child { text-align: left; padding-left: 12px; }
+.qt-table .td-left { text-align: left; }
+.qt-table .td-right { text-align: right; }
+.qt-table .badge { display: inline-block; padding: 1px 8px; font-size: 11px; border-radius: 10px; font-weight: 500; }
+.qt-table .badge-draft { background: #f3f4f6; color: #6b7280; }
+.qt-table .badge-sent { background: #dbeafe; color: #1d4ed8; }
+.qt-table .badge-viewed { background: #fef3c7; color: #b45309; }
+.qt-table .badge-accepted { background: #dcfce7; color: #15803d; }
+.qt-table .badge-rejected { background: #fee2e2; color: #dc2626; }
+.qt-table .badge-expired { background: #f3f4f6; color: #9ca3af; }
+.qt-table .badge-converted { background: #f3e8ff; color: #7c3aed; }
+.qt-table .action-link { font-size: 11px; color: #1E4E79; text-decoration: none; margin: 0 3px; }
+.qt-table .action-link:hover { text-decoration: underline; }
+.qt-table .action-link-preview { color: #2563eb; }
+.qt-table .items-text { font-size: 11px; color: #6b7280; max-width: 160px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; display: inline-block; vertical-align: middle; }
+.qt-pagination { display: flex; align-items: center; justify-content: space-between; margin-top: 10px; font-size: 12px; color: #6b7280; }
+.qt-pagination nav { display: flex; gap: 3px; }
+.qt-pagination .pg-btn { padding: 3px 8px; font-size: 11px; border: 1px solid #d1d5db; border-radius: 3px; text-decoration: none; color: #374151; background: #fff; }
+.qt-pagination .pg-btn:hover { background: #f3f4f6; }
+.qt-pagination .pg-btn.active { background: #1E4E79; color: #fff; border-color: #1E4E79; font-weight: 700; }
+.qt-pagination .pg-btn.disabled { color: #d1d5db; pointer-events: none; }
+.qt-empty { padding: 40px; text-align: center; color: #9ca3af; font-size: 13px; }
+</style>
+
 <main class="flex-1 overflow-y-auto bg-gray-50">
-    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-[18px]">
+    <div class="qt-main">
         <!-- 헤더 -->
-        <div class="flex items-center justify-between mb-3.5">
-            <div class="flex items-center gap-4">
-                <h1 class="text-xl font-bold text-gray-900">견적 관리</h1>
-                <div class="flex items-center gap-1.5">
-                    <?php
-                    $stat_items = [
-                        ['key' => 'total',     'label' => '전체',     'color' => 'text-gray-700', 'filter' => ''],
-                        ['key' => 'draft',     'label' => '임시',     'color' => 'text-gray-500', 'filter' => 'draft'],
-                        ['key' => 'sent',      'label' => '발송',     'color' => 'text-blue-600', 'filter' => 'sent'],
-                        ['key' => 'viewed',    'label' => '열람',     'color' => 'text-yellow-600', 'filter' => 'viewed'],
-                        ['key' => 'accepted',  'label' => '수락',     'color' => 'text-green-600', 'filter' => 'accepted'],
-                        ['key' => 'rejected',  'label' => '거절',     'color' => 'text-red-500', 'filter' => 'rejected'],
-                        ['key' => 'converted', 'label' => '전환',     'color' => 'text-purple-600', 'filter' => 'converted'],
-                    ];
-                    foreach ($stat_items as $si):
-                        $active = ($status_filter === $si['filter']);
-                        $cls = $active ? 'bg-blue-600 text-white' : 'bg-gray-100 hover:bg-gray-200 ' . $si['color'];
-                    ?>
-                    <a href="?status=<?php echo $si['filter']; ?>" class="px-2.5 py-1 text-xs rounded-md <?php echo $cls; ?>">
-                        <?php echo $si['label']; ?> <span class="font-bold"><?php echo $stats[$si['key']]; ?></span>
-                    </a>
-                    <?php endforeach; ?>
-                </div>
+        <div class="qt-page-header">
+            <h1>견적 관리</h1>
+            <div style="display:flex;gap:6px;">
+                <a href="/admin/mlangprintauto/quote/" target="_blank" class="qt-toolbar toolbar-btn" style="color:#fff;border-color:rgba(255,255,255,0.3);background:transparent;font-size:12px;">관리자</a>
+                <a href="/admin/mlangprintauto/quote/create.php" target="_blank" class="qt-toolbar toolbar-btn" style="color:#fff;border-color:rgba(255,255,255,0.5);background:rgba(255,255,255,0.15);font-size:12px;">+ 새 견적</a>
             </div>
-            <div class="flex items-center gap-2">
-                <form method="GET" class="flex items-center gap-1.5">
+        </div>
+
+        <!-- 필터 + 검색 -->
+        <div class="qt-toolbar">
+            <div class="qt-filters" style="margin-bottom:0;">
+                <?php
+                $stat_items = [
+                    ['key' => 'total',     'label' => '전체',     'filter' => ''],
+                    ['key' => 'draft',     'label' => '임시',     'filter' => 'draft'],
+                    ['key' => 'sent',      'label' => '발송',     'filter' => 'sent'],
+                    ['key' => 'viewed',    'label' => '열람',     'filter' => 'viewed'],
+                    ['key' => 'accepted',  'label' => '수락',     'filter' => 'accepted'],
+                    ['key' => 'rejected',  'label' => '거절',     'filter' => 'rejected'],
+                    ['key' => 'converted', 'label' => '전환',     'filter' => 'converted'],
+                ];
+                foreach ($stat_items as $si):
+                    $active = ($status_filter === $si['filter']);
+                ?>
+                <a href="?status=<?php echo $si['filter']; ?>" class="filter-btn <?php echo $active ? 'active' : ''; ?>">
+                    <?php echo $si['label']; ?> <span class="cnt"><?php echo $stats[$si['key']]; ?></span>
+                </a>
+                <?php endforeach; ?>
+            </div>
+            <div style="display:flex;align-items:center;gap:6px;">
+                <form method="GET" style="display:flex;align-items:center;gap:6px;">
                     <?php if ($status_filter): ?><input type="hidden" name="status" value="<?php echo htmlspecialchars($status_filter); ?>"><?php endif; ?>
-                    <input type="text" name="q" value="<?php echo htmlspecialchars($search); ?>" placeholder="고객명, 견적번호 검색..."
-                           class="w-48 px-3 py-1.5 text-sm border border-gray-300 rounded-lg focus:ring-1 focus:ring-blue-500 focus:border-blue-500">
+                    <input type="text" name="q" value="<?php echo htmlspecialchars($search); ?>" placeholder="고객명, 견적번호 검색..." class="search-input">
                     <?php if ($search !== '' || $status_filter): ?>
-                    <a href="?" class="text-xs text-gray-400 hover:text-gray-600">초기화</a>
+                    <a href="?" style="font-size:11px;color:#9ca3af;text-decoration:none;">초기화</a>
                     <?php endif; ?>
                 </form>
-                <a href="/admin/mlangprintauto/quote/" target="_blank" class="px-3 py-1.5 text-xs bg-white border border-gray-300 rounded-lg hover:bg-gray-50">관리자</a>
-                <a href="/admin/mlangprintauto/quote/create.php" target="_blank" class="px-3 py-1.5 text-xs bg-blue-600 text-white rounded-lg hover:bg-blue-700">+ 새 견적</a>
             </div>
         </div>
 
         <?php if (!$has_table): ?>
-        <div class="bg-yellow-50 border border-yellow-200 rounded-lg p-4 text-center text-sm text-yellow-800">견적 시스템 준비 중 (admin_quotes 테이블 없음)</div>
+        <div class="qt-card qt-empty">견적 시스템 준비 중 (admin_quotes 테이블 없음)</div>
         <?php else: ?>
 
         <!-- 견적 목록 -->
         <?php if (empty($quotes)): ?>
-        <div class="bg-white rounded-lg shadow p-8 text-center">
-            <p class="text-gray-400 text-sm"><?php echo ($search !== '' || $status_filter) ? '검색 조건에 맞는 견적서가 없습니다.' : '아직 견적서가 없습니다.'; ?></p>
-        </div>
+        <div class="qt-card qt-empty"><?php echo ($search !== '' || $status_filter) ? '검색 조건에 맞는 견적서가 없습니다.' : '아직 견적서가 없습니다.'; ?></div>
         <?php else: ?>
-        <div class="bg-white rounded-lg shadow overflow-hidden divide-y divide-gray-100">
-            <?php foreach ($quotes as $q):
-                $sc = $status_colors[$q['status']] ?? 'bg-gray-100 text-gray-700';
-                $sl = $status_labels[$q['status']] ?? $q['status'];
-                $is_expired = !empty($q['valid_until']) && $q['valid_until'] < date('Y-m-d') && !in_array($q['status'], ['accepted', 'converted']);
-            ?>
-            <div class="px-5 py-[11px] flex items-center justify-between gap-4 hover:bg-gray-50 transition-colors">
-                <!-- 왼쪽: 견적정보 -->
-                <div class="flex-1 min-w-0 flex items-center gap-3">
-                    <span class="text-sm font-bold text-gray-900 whitespace-nowrap"><?php echo htmlspecialchars($q['quote_no']); ?></span>
-                    <span class="px-2 py-0.5 text-[11px] font-medium rounded-full whitespace-nowrap <?php echo $sc; ?>"><?php echo $sl; ?></span>
-                    <?php if ($is_expired): ?><span class="px-2 py-0.5 text-[11px] rounded-full bg-red-50 text-red-500">만료</span><?php endif; ?>
-                    <span class="text-xs text-gray-400 whitespace-nowrap"><?php echo date('m/d', strtotime($q['created_at'])); ?></span>
-                    <span class="text-sm font-medium text-gray-800 whitespace-nowrap"><?php echo htmlspecialchars($q['customer_name']); ?></span>
-                    <?php if (!empty($q['customer_company'])): ?>
-                    <span class="text-xs text-gray-400 whitespace-nowrap"><?php echo htmlspecialchars($q['customer_company']); ?></span>
-                    <?php endif; ?>
-                    <?php if (!empty($q['item_summary'])): ?>
-                    <span class="text-xs text-gray-400 truncate"><?php echo htmlspecialchars($q['item_summary']); ?><?php if ($q['item_count'] > 1) echo " ({$q['item_count']}건)"; ?></span>
-                    <?php endif; ?>
-                </div>
-                <!-- 오른쪽: 금액 + 버튼 -->
-                <div class="flex items-center gap-5 flex-shrink-0">
-                    <span class="text-sm font-bold text-gray-900 whitespace-nowrap"><?php echo number_format(intval($q['grand_total'])); ?><span class="text-xs font-normal text-gray-400">원</span></span>
-                    <div class="flex items-center gap-2">
-                        <a href="/admin/mlangprintauto/quote/detail.php?id=<?php echo $q['id']; ?>" target="_blank" class="px-3 py-[5px] text-xs text-gray-500 border border-gray-200 rounded hover:bg-gray-100">상세</a>
-                        <a href="/admin/mlangprintauto/quote/edit.php?id=<?php echo $q['id']; ?>" target="_blank" class="px-3 py-[5px] text-xs text-gray-500 border border-gray-200 rounded hover:bg-gray-100">수정</a>
-                        <a href="/admin/mlangprintauto/quote/preview.php?id=<?php echo $q['id']; ?>" target="_blank" class="px-3 py-[5px] text-xs text-blue-600 border border-blue-200 rounded hover:bg-blue-50">미리보기</a>
-                    </div>
-                </div>
-            </div>
-            <?php endforeach; ?>
+        <div class="qt-card">
+            <table class="qt-table">
+                <thead>
+                    <tr>
+                        <th>견적번호</th>
+                        <th>상태</th>
+                        <th>날짜</th>
+                        <th>고객명</th>
+                        <th>업체</th>
+                        <th>품목</th>
+                        <th>금액</th>
+                        <th>액션</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <?php foreach ($quotes as $q):
+                        $badge_cls = 'badge-' . ($q['status'] ?? 'draft');
+                        $sl = $status_labels[$q['status']] ?? $q['status'];
+                        $is_expired = !empty($q['valid_until']) && $q['valid_until'] < date('Y-m-d') && !in_array($q['status'], ['accepted', 'converted']);
+                    ?>
+                    <tr>
+                        <td class="td-left" style="font-weight:600;"><?php echo htmlspecialchars($q['quote_no']); ?></td>
+                        <td>
+                            <span class="badge <?php echo $badge_cls; ?>"><?php echo $sl; ?></span>
+                            <?php if ($is_expired): ?><span class="badge badge-expired">만료</span><?php endif; ?>
+                        </td>
+                        <td><?php echo date('m/d', strtotime($q['created_at'])); ?></td>
+                        <td style="font-weight:500;"><?php echo htmlspecialchars($q['customer_name']); ?></td>
+                        <td style="color:#6b7280;font-size:12px;"><?php echo htmlspecialchars($q['customer_company'] ?? ''); ?></td>
+                        <td><?php if (!empty($q['item_summary'])): ?><span class="items-text"><?php echo htmlspecialchars($q['item_summary']); ?><?php if ($q['item_count'] > 1) echo " ({$q['item_count']}건)"; ?></span><?php endif; ?></td>
+                        <td class="td-right" style="font-weight:600;"><?php echo number_format(intval($q['grand_total'])); ?>원</td>
+                        <td>
+                            <a href="/admin/mlangprintauto/quote/detail.php?id=<?php echo $q['id']; ?>" target="_blank" class="action-link">상세</a>
+                            <a href="/admin/mlangprintauto/quote/edit.php?id=<?php echo $q['id']; ?>" target="_blank" class="action-link">수정</a>
+                            <a href="/admin/mlangprintauto/quote/preview.php?id=<?php echo $q['id']; ?>" target="_blank" class="action-link action-link-preview">미리보기</a>
+                        </td>
+                    </tr>
+                    <?php endforeach; ?>
+                </tbody>
+            </table>
         </div>
 
         <!-- 페이지네이션 -->
@@ -191,44 +249,44 @@ include __DIR__ . '/../includes/sidebar.php';
             $qs = http_build_query(array_filter(['status' => $status_filter, 'q' => $search]));
             $qs_prefix = $qs ? "&{$qs}" : '';
         ?>
-        <div class="mt-3.5 flex items-center justify-between">
-            <span class="text-xs text-gray-500">총 <?php echo number_format($total); ?>건 (<?php echo $page; ?>/<?php echo $total_pages; ?>페이지)</span>
-            <nav class="flex items-center gap-0.5">
+        <div class="qt-pagination">
+            <span>총 <?php echo number_format($total); ?>건 (<?php echo $page; ?>/<?php echo $total_pages; ?>페이지)</span>
+            <nav>
                 <?php if ($page > 1): ?>
-                <a href="?page=1<?php echo $qs_prefix; ?>" class="px-2 py-1 text-xs border border-gray-300 rounded hover:bg-gray-100">&laquo;</a>
-                <a href="?page=<?php echo $page - 1; ?><?php echo $qs_prefix; ?>" class="px-2 py-1 text-xs border border-gray-300 rounded hover:bg-gray-100">&lsaquo;</a>
+                <a href="?page=1<?php echo $qs_prefix; ?>" class="pg-btn">&laquo;</a>
+                <a href="?page=<?php echo $page - 1; ?><?php echo $qs_prefix; ?>" class="pg-btn">&lsaquo;</a>
                 <?php else: ?>
-                <span class="px-2 py-1 text-xs border border-gray-200 rounded text-gray-300">&laquo;</span>
-                <span class="px-2 py-1 text-xs border border-gray-200 rounded text-gray-300">&lsaquo;</span>
+                <span class="pg-btn disabled">&laquo;</span>
+                <span class="pg-btn disabled">&lsaquo;</span>
                 <?php endif; ?>
 
                 <?php
                 $start_p = max(1, $page - 2);
                 $end_p = min($total_pages, $page + 2);
                 if ($start_p > 1): ?>
-                <a href="?page=1<?php echo $qs_prefix; ?>" class="px-2.5 py-1 text-xs border border-gray-300 rounded hover:bg-gray-100">1</a>
-                <?php if ($start_p > 2): ?><span class="px-1 text-xs text-gray-400">...</span><?php endif; ?>
+                <a href="?page=1<?php echo $qs_prefix; ?>" class="pg-btn">1</a>
+                <?php if ($start_p > 2): ?><span style="padding:0 2px;color:#9ca3af;">...</span><?php endif; ?>
                 <?php endif;
 
                 for ($i = $start_p; $i <= $end_p; $i++):
                     if ($i === $page): ?>
-                <span class="px-2.5 py-1 text-xs border border-blue-500 rounded bg-blue-600 text-white font-bold"><?php echo $i; ?></span>
+                <span class="pg-btn active"><?php echo $i; ?></span>
                     <?php else: ?>
-                <a href="?page=<?php echo $i; ?><?php echo $qs_prefix; ?>" class="px-2.5 py-1 text-xs border border-gray-300 rounded hover:bg-gray-100"><?php echo $i; ?></a>
+                <a href="?page=<?php echo $i; ?><?php echo $qs_prefix; ?>" class="pg-btn"><?php echo $i; ?></a>
                     <?php endif;
                 endfor;
 
                 if ($end_p < $total_pages): ?>
-                <?php if ($end_p < $total_pages - 1): ?><span class="px-1 text-xs text-gray-400">...</span><?php endif; ?>
-                <a href="?page=<?php echo $total_pages; ?><?php echo $qs_prefix; ?>" class="px-2.5 py-1 text-xs border border-gray-300 rounded hover:bg-gray-100"><?php echo $total_pages; ?></a>
+                <?php if ($end_p < $total_pages - 1): ?><span style="padding:0 2px;color:#9ca3af;">...</span><?php endif; ?>
+                <a href="?page=<?php echo $total_pages; ?><?php echo $qs_prefix; ?>" class="pg-btn"><?php echo $total_pages; ?></a>
                 <?php endif; ?>
 
                 <?php if ($page < $total_pages): ?>
-                <a href="?page=<?php echo $page + 1; ?><?php echo $qs_prefix; ?>" class="px-2 py-1 text-xs border border-gray-300 rounded hover:bg-gray-100">&rsaquo;</a>
-                <a href="?page=<?php echo $total_pages; ?><?php echo $qs_prefix; ?>" class="px-2 py-1 text-xs border border-gray-300 rounded hover:bg-gray-100">&raquo;</a>
+                <a href="?page=<?php echo $page + 1; ?><?php echo $qs_prefix; ?>" class="pg-btn">&rsaquo;</a>
+                <a href="?page=<?php echo $total_pages; ?><?php echo $qs_prefix; ?>" class="pg-btn">&raquo;</a>
                 <?php else: ?>
-                <span class="px-2 py-1 text-xs border border-gray-200 rounded text-gray-300">&rsaquo;</span>
-                <span class="px-2 py-1 text-xs border border-gray-200 rounded text-gray-300">&raquo;</span>
+                <span class="pg-btn disabled">&rsaquo;</span>
+                <span class="pg-btn disabled">&raquo;</span>
                 <?php endif; ?>
             </nav>
         </div>
