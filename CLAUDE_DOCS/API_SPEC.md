@@ -4,7 +4,7 @@
 
 **Version**: 1.0
 **Last Updated**: 2026-01-17
-**Base URL**: `http://localhost` (dev) / `http://dsp1830.shop` (prod)
+**Base URL**: `http://localhost` (dev) / `https://dsp114.co.kr` (prod)
 
 ---
 
@@ -399,7 +399,90 @@
 
 ---
 
-## 6. 공통 응답 형식
+## 6. 프리미엄 옵션 API (2026-02-13 추가)
+
+### 6.1 고객용 공개 API - 옵션 조회
+
+**Endpoint**: `GET /api/premium_options.php`
+
+**인증**: 불필요
+
+| Parameter | Type | Required | Description |
+|-----------|------|----------|-------------|
+| product_type | string | ✅ | 품목 (namecard, merchandisebond, inserted, littleprint, cadarok, envelope) |
+
+**Response**:
+```json
+{
+    "success": true,
+    "product_type": "namecard",
+    "options": [
+        {
+            "option_id": 1,
+            "option_name": "박",
+            "sort_order": 1,
+            "variants": [
+                {
+                    "variant_id": 1,
+                    "variant_name": "금박무광",
+                    "pricing_config": {"type": "base_perunit", "base_500": 30000, "per_unit_above_500": 30, "additional_fee": 0},
+                    "display_order": 1,
+                    "is_default": true
+                }
+            ]
+        }
+    ],
+    "cached": true,
+    "cache_age": 120
+}
+```
+
+**캐싱**: 파일 기반 5분 TTL (`/cache/premium_options_{product_type}.json`)
+
+### 6.2 관리자 API - 옵션 CRUD
+
+**Endpoint**: `POST /dashboard/api/premium_options.php`
+
+**인증**: 관리자 세션 필수
+
+| Action | Parameters | Description |
+|--------|-----------|-------------|
+| `list` | product_type | 품목별 옵션+variants 전체 조회 |
+| `create_option` | product_type, option_name | 새 옵션 카테고리 추가 |
+| `create_variant` | option_id, variant_name, pricing_config | 옵션에 새 종류 추가 |
+| `update_variant` | variant_id, variant_name?, pricing_config? | 가격/이름 변경 |
+| `delete_variant` | variant_id | variant 삭제 |
+| `toggle_option` | option_id | 옵션 활성/비활성 토글 |
+| `reorder` | option_id, direction(up/down) | 정렬 순서 변경 |
+| `recalculate_orders` | product_type, execute(bool) | 기존 주문 재계산 (미리보기/실행) |
+
+**재계산 Response (execute=false)**:
+```json
+{
+    "success": true,
+    "data": {
+        "product_type": "namecard",
+        "total_orders": 150,
+        "changed_orders": 3,
+        "total_diff": 15000,
+        "changes": [
+            {
+                "order_no": 12345,
+                "quantity": 500,
+                "old_total": 30000,
+                "new_total": 35000,
+                "diff": 5000,
+                "details": "금박무광: 30,000→35,000"
+            }
+        ],
+        "errors": []
+    }
+}
+```
+
+---
+
+## 7. 공통 응답 형식
 
 ### 성공 응답
 ```json
@@ -423,7 +506,7 @@
 
 ---
 
-## 7. 에러 코드
+## 8. 에러 코드
 
 | Code | HTTP Status | Description |
 |------|-------------|-------------|
@@ -436,7 +519,7 @@
 
 ---
 
-## 8. 인증
+## 9. 인증
 
 ### 세션 기반 인증
 - 로그인: `POST /member/login.php`
@@ -452,7 +535,7 @@ $is_logged_in = isset($_SESSION['user_id']) ||
 
 ---
 
-## 9. 파일 업로드 처리
+## 10. 파일 업로드 처리
 
 ### StandardUploadHandler
 
@@ -472,7 +555,7 @@ $is_logged_in = isset($_SESSION['user_id']) ||
 
 ---
 
-## 10. 단위 코드 체계
+## 11. 단위 코드 체계
 
 | Code | 단위 | 적용 제품 |
 |------|------|----------|
@@ -489,7 +572,7 @@ $is_logged_in = isset($_SESSION['user_id']) ||
 
 ---
 
-## 11. API 호출 예시
+## 12. API 호출 예시
 
 ### JavaScript (Fetch)
 ```javascript
@@ -528,6 +611,6 @@ curl -o quotation.pdf "http://localhost/api/generate_quotation_api.php?order_no=
 
 ---
 
-*API Spec Version: 1.0*
-*Last Updated: 2026-01-17*
+*API Spec Version: 1.1*
+*Last Updated: 2026-02-13*
 *Maintained by: Claude AI Assistant*

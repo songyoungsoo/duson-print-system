@@ -262,6 +262,45 @@ body.cart-page .mobile-view .product-nav { display: grid; }
 
 ---
 
+## 🎨 프리미엄 옵션 DB 시스템 (2026-02-13)
+
+6개 품목(명함/상품권/전단지/포스터/카다록/봉투)의 후가공 옵션 가격을 DB로 관리.
+
+### 아키텍처
+```
+[고객 페이지 JS] → fetch(/api/premium_options.php) → DB 가격 로드
+                    ↓ 실패 시
+                   하드코딩 fallback (기존 값 그대로 사용)
+```
+
+### 핵심 파일
+| 파일 | 역할 |
+|------|------|
+| `dashboard/api/premium_options.php` | 관리자 CRUD API + 주문 재계산 |
+| `api/premium_options.php` | 고객용 가격 API (캐시 5분, 인증 불필요) |
+| `dashboard/premium-options/index.php` | 관리자 대시보드 UI |
+| `js/premium-options-loader.js` | 공통 DB 로더 |
+
+### DB 테이블
+- `premium_options` — 옵션 마스터 (product_type, option_name, sort_order, is_active)
+- `premium_option_variants` — 옵션 상세 (variant_name, pricing_config JSON)
+
+### 3가지 가격 패턴
+| 패턴 | 품목 | pricing_config.type |
+|------|------|-------------------|
+| A | 명함, 상품권 | `base_perunit` |
+| B | 전단지, 포스터, 카다록 | `multiplier` |
+| C | 봉투 | `tiered` |
+
+### 제외 품목 (프리미엄 옵션 없음)
+- 스티커(sticker_new), 자석스티커(msticker), NCR양식지(ncrflambeau)
+
+### 견적서 시스템과의 관계
+- **완전 분리**: `PriceCalculationService.php`, `option_prices.php` 변경 없음
+- 프리미엄 옵션은 기본 가격 위에 추가되는 후가공 비용
+
+---
+
 ## 🏗️ 견적서 시스템 (Quote System)
 
 ### QuoteTableRenderer SSOT 원칙

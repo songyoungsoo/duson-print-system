@@ -110,7 +110,8 @@ js/
 ├── common.js                   # 공통 함수
 ├── cart.js                     # 장바구니 로직
 ├── order.js                    # 주문 로직
-└── price-calculator.js         # 가격 계산 (프론트)
+├── price-calculator.js         # 가격 계산 (프론트)
+└── premium-options-loader.js   # 프리미엄 옵션 DB 로더 (공통)
 ```
 
 ---
@@ -251,8 +252,48 @@ mlangorder_printauto/
 ### 5.1 구조
 
 ```
+dashboard/                         # 신규 관리자 대시보드 (Tailwind CSS)
+├── index.php                      # 메인 대시보드
+├── includes/
+│   ├── header.php                 # 공통 헤더
+│   ├── sidebar.php                # 사이드바 메뉴
+│   ├── footer.php                 # 푸터
+│   ├── config.php                 # 대시보드 설정
+│   └── auth.php                   # 인증 가드
+├── api/
+│   ├── base.php                   # API 공통 베이스
+│   ├── premium_options.php        # 프리미엄 옵션 CRUD + 재계산
+│   └── gallery.php                # 갤러리 관리 API
+├── premium-options/
+│   └── index.php                  # 프리미엄 옵션 관리 UI
+├── gallery/
+│   └── index.php                  # 갤러리 관리 UI
+├── orders/
+│   └── view.php                   # 주문 상세 보기
+├── proofs/
+│   ├── index.php                  # 교정 관리
+│   └── api.php                    # 교정 API
+├── stats/
+│   └── index.php                  # 주문 통계
+├── visitors/
+│   └── index.php                  # 방문자 분석
+└── embed.php                      # 레거시 관리 iframe 임베드
+
+api/                               # 고객용 공개 API
+├── premium_options.php            # 프리미엄 옵션 가격 조회 (캐시 5분)
+├── quote/
+│   └── calculate_price.php        # 견적 가격 계산
+├── get_portfolio_gallery.php      # 포트폴리오 갤러리
+├── get_leaflet_samples.php        # 전단지 샘플
+├── get_sticker_gallery.php        # 스티커 갤러리
+├── gallery_items.php              # 갤러리 항목
+├── generate_quotation_api.php     # 견적서 PDF 생성
+└── orders/
+    ├── reorder.php                # 재주문
+    └── cancel.php                 # 주문 취소
+
 mlang_admin/
-├── index.php                   # 관리자 대시보드
+├── index.php                   # 관리자 대시보드 (레거시)
 ├── login.php                   # 관리자 로그인
 ├── logout.php                  # 로그아웃
 │
@@ -355,6 +396,7 @@ CLAUDE_DOCS/
 ├── DIRECTORY_STRUCTURE.md             # 이 문서
 ├── COMPONENT_REFERENCE.md             # 컴포넌트 레퍼런스
 ├── CSS_DEBUG_LESSONS.md               # CSS 디버깅 교훈
+├── EMAIL_CAMPAIGN_SYSTEM.md           # 이메일 캠페인 시스템
 └── 00_Legacy_Archive/                 # 레거시 문서 보관
 ```
 
@@ -387,5 +429,5 @@ grep -r "class QuantityFormatter" /var/www/html/
 
 ---
 
-*Document Version: 1.0*
-*Last Updated: 2026-01-17*
+*Document Version: 1.1*
+*Last Updated: 2026-02-13*
