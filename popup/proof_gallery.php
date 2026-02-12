@@ -34,7 +34,7 @@ if (!$connect) {
 // ============================================
 $gallery_folders = [
     '명함' => ['/ImgFolder/namecard/gallery/'],
-    '스티커' => ['/ImgFolder/sticker/gallery/'],
+    '스티커' => ['/ImgFolder/sticker_new/gallery/'], // ✅ 제품 폴더와 일치 (2026-02-12 정리 완료)
     '봉투' => ['/ImgFolder/envelope/gallery/'],
     '전단지' => ['/ImgFolder/inserted/gallery/'],
     '포스터' => ['/ImgFolder/littleprint/gallery/'],
@@ -60,6 +60,18 @@ if (isset($gallery_folders[$cate])) {
         if (is_dir($gallery_path)) {
             $files = scandir($gallery_path);
 
+            // 🎯 스티커 카테고리: "pro"로 시작하는 파일을 우선 정렬 (2026-02-12)
+            if ($cate === '스티커') {
+                usort($files, function($a, $b) {
+                    $a_is_pro = (stripos($a, 'pro') === 0);
+                    $b_is_pro = (stripos($b, 'pro') === 0);
+                    
+                    if ($a_is_pro && !$b_is_pro) return -1;
+                    if (!$a_is_pro && $b_is_pro) return 1;
+                    return strcasecmp($a, $b); // 같은 그룹 내에서는 알파벳순
+                });
+            }
+
             foreach ($files as $file) {
                 if ($file === '.' || $file === '..' || $file === 'old') continue;
 
@@ -81,7 +93,8 @@ if (isset($gallery_folders[$cate])) {
 // ============================================
 
 // 🔒 개인정보 보호: 명함, 봉투, 양식지는 갤러리 이미지만 사용 (고객 파일 제외)
-$privacy_protected_categories = ['명함', '봉투', '양식지'];
+// 🚧 임시 제한 (2026-02-12): 스티커, 전단지도 DB 쿼리 비활성화 (갤러리 이미지만 사용)
+$privacy_protected_categories = ['명함', '봉투', '양식지', '스티커', '전단지'];
 $skip_db_query = in_array($cate, $privacy_protected_categories);
 
 if ($skip_db_query) {
