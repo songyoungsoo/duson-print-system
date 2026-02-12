@@ -236,182 +236,6 @@ body.cart-page .mobile-view .product-nav { display: grid; }
 
 ---
 
-## 🚀 빠른 시작
-
-### 서버 시작
-```bash
-sudo service apache2 start
-sudo service mysql start
-http://localhost/
-```
-
-### Git 워크플로우 (자동 스테이징)
-```bash
-# Claude가 작업 완료 시 자동 수행
-git add .
-
-# 사용자 확인 후
-git status
-git commit -m "메시지"
-git push origin main
-```
-
-### FTP 배포 (프로덕션)
-```bash
-curl -T "file.php" -u "dsp1830:ds701018" \
-  "ftp://dsp1830.shop/path/file.php"
-```
-
-### 핵심 파일 위치
-```
-/var/www/html/
-├── db.php                              # DB 연결 & 환경 자동 감지
-├── config.env.php                      # 환경 설정
-├── includes/
-│   ├── auth.php                        # 인증 (8시간 세션)
-│   ├── StandardUploadHandler.php      # 파일 업로드 표준
-│   └── ImagePathResolver.php          # 파일 경로 해석
-├── mlangprintauto/[product]/
-│   ├── index.php                       # 제품 페이지
-│   ├── add_to_basket.php              # 장바구니 API
-│   └── calculate_price_ajax.php       # 가격 API
-├── mlangorder_printauto/
-│   ├── ProcessOrder_unified.php        # 주문 처리
-│   └── OrderComplete_universal.php     # 주문 완료
-├── config/
-│   └── gallery_settings.json           # 갤러리 품목별 설정
-└── dashboard/
-    ├── api/gallery.php                 # 갤러리 API (6 액션)
-    └── gallery/index.php               # 갤러리 관리 UI
-```
-
----
-
-## 🎯 SSOT (Single Source of Truth) 체계
-
-### 수량 포맷팅 - 유일한 진입점
-```php
-// ✅ 모든 수량 출력은 반드시 이 함수를 거침
-QuantityFormatter::format($value, $unitCode, $sheets);
-// 예: format(0.5, 'R', 2000) → "0.5연 (2,000매)"
-```
-
-### 단위 코드 체계
-| 코드 | 단위 | 제품 |
-|------|------|------|
-| **R** | 연 | inserted, leaflet (전단지/리플렛) |
-| **S** | 매 | sticker_new, namecard, envelope, littleprint, msticker, merchandisebond |
-| **B** | 부 | cadarok (카다록) |
-| **V** | 권 | ncrflambeau (NCR양식지) |
-
-### 데이터 구조 (신규 스키마)
-```
-qty_value: DECIMAL(10,2) - 수량 값 (0.5, 1000 등)
-qty_unit_code: CHAR(1) - 단위 코드 (R/S/B/V)
-qty_sheets: INT - 매수 (전단지용, DB 조회만)
-```
-
-### 핵심 SSOT 파일
-```
-/var/www/html/
-├── includes/
-│   ├── QuantityFormatter.php      ← 수량/단위 SSOT
-│   └── ProductSpecFormatter.php   ← 제품 사양 포맷터
-├── mlangprintauto/quote/includes/
-│   ├── QuoteManager.php           ← 견적서 데이터 관리
-│   ├── QuoteTableRenderer.php     ← 견적서 테이블 렌더링 SSOT
-│   └── ProductSpecFormatter.php   ← 견적서 사양 포맷터
-└── lib/
-    └── core_print_logic.php       ← 중앙 로직 파사드
-```
-
-### 절대 금지 사항
-```php
-// ❌ 매수 계산 금지 (반드시 DB 조회)
-$sheets = $reams * 4000;
-
-// ❌ 직접 포맷팅 금지
-$display = number_format($amount) . '매';
-
-// ✅ 필수: SSOT 함수 사용
-$display = QuantityFormatter::format($value, $unitCode, $sheets);
-$sheets = PrintCore::lookupInsertedSheets($reams);  // DB 조회만
-```
-
-### 8. getUnitCode vs getProductUnitCode 구분 (필수) 🔴
-```php
-// ❌ NEVER: product_type으로 getUnitCode 호출 (버그 발생!)
-$unitCode = QuantityFormatter::getUnitCode($productType);  // 'sticker' → 'E' (오류)
-
-// ✅ ALWAYS: product_type에는 getProductUnitCode 사용
-$unitCode = QuantityFormatter::getProductUnitCode($productType);  // 'sticker' → 'S' (정확)
-```
-
-**메서드 구분**:
-| 메서드 | 입력 | 출력 | 용도 |
-|--------|------|------|------|
-| `getUnitCode($name)` | 한글 단위명 ("매", "연") | 코드 (S, R) | 한글→코드 변환 |
-| `getProductUnitCode($productType)` | 품목 타입 ("sticker", "inserted") | 코드 (S, R) | 품목→단위 매핑 |
-
-**발생한 버그 (2026-01-17)**:
-- `QuoteManager.php`에서 `getUnitCode('msticker')` 호출
-- 'msticker'가 UNIT_CODES에 없어 기본값 'E' 반환
-- 스티커가 "개" 단위로 잘못 표시됨
-
-### 9. 레거시 스티커 감지 패턴 (필수) 🟡
-```php
-// product_type이 비어있을 때 스티커 감지 방법:
-
-// 방법 1: jong/garo/sero 필드로 감지 (QuoteManager에서)
-if (empty($productType) && !empty($tempItem['jong']) && !empty($tempItem['garo'])) {
-    $productType = 'sticker';
-}
-
-// 방법 2: product_name으로 감지 (QuoteTableRenderer에서)
-if (empty($productType)) {
-    $productName = $item['product_name'] ?? '';
-    if (stripos($productName, '스티커') !== false) {
-        $productType = 'sticker';
-    }
-}
-```
-
-**이유**: 레거시 데이터에서 `product_type`이 비어있는 경우가 많음. 스티커는 "개"가 아닌 "매" 단위 사용
-
----
-
-## 🖼️ 갤러리 시스템 (Gallery System)
-
-### 이미지 소스 3계층
-```
-1. sample/        → /ImgFolder/sample/{folder}/       제품 페이지 메인 썸네일 (4장)
-2. samplegallery/ → /ImgFolder/samplegallery/{folder}/ 저작권·개인정보 안전한 이미지
-3. 주문 이미지     → DB mlangorder_printauto.ThingCate   실제 주문 (토글 ON/OFF)
-```
-
-### 설정 파일
-- **`/config/gallery_settings.json`** - 품목별 주문이미지 설정
-  - `order_enabled`: 주문 이미지 표시 여부 (true/false)
-  - `order_date_from` / `order_date_to`: 날짜 범위 필터
-
-### 핵심 파일
-```
-/dashboard/api/gallery.php     ← API (6 액션: stats, list, upload, delete, get_settings, save_settings)
-/dashboard/gallery/index.php   ← 관리 UI (4탭: 샘플/안전갤러리/주문/전체)
-/config/gallery_settings.json  ← 품목별 설정 (order_enabled, 날짜)
-```
-
-### API source 파라미터
-- `sample` → `/ImgFolder/sample/{folder}/`
-- `safegallery` → `/ImgFolder/samplegallery/{folder}/`
-- `order` → DB 주문 이미지 (설정 반영)
-- `all` → 3개 소스 합산
-
-### 폴더명 매핑 ($GALLERY_FOLDER_MAP)
-제품키 `sticker` → 폴더 `sticker_new` (나머지는 키=폴더 동일)
-
----
-
 ## 📚 문서 참조
 
 | 주제 | 파일 |
@@ -552,6 +376,25 @@ $renderer->formatSupplyPriceCell($item);  // number_format 적용
 - ✅ 스팸 계정 11건 삭제 (로컬+운영 member 테이블)
 - ✅ 회원가입 폼 autocomplete 방지 (form.php → 운영 배포 완료)
 - ✅ 회원가입 페이지 제목: '두손기획인쇄 회원가입'
+
+---
+
+### 📊 Frontend Implementation Notes: Dashboard Number Animation
+
+대시보드 요약 카드(오늘 주문, 이번달 주문, 미처리 주문, 미답변 문의 등)에 숫자가 0부터 최종 값까지 부드럽게 증가하는 애니메이션을 적용했습니다.
+
+*   **구현 기법**: 커스텀 JavaScript 함수 `animateNumber`를 사용하여 구현되었습니다.
+*   **애니메이션 원리**: 브라우저에 최적화된 부드러운 애니메이션을 위해 `window.requestAnimationFrame` API를 활용합니다.
+*   **함수 `animateNumber` 로직**:
+    *   대상 HTML 요소의 ID, 최종 숫자 값, 선택적 애니메이션 지속 시간, 그리고 숫자 뒤에 붙는 접미사('건', '원' 등)를 인자로 받습니다.
+    *   애니메이션 시작 시점을 기록하고, 경과 시간과 총 지속 시간을 기준으로 애니메이션 진행률(`progress`)을 계산합니다.
+    *   `progress`에 따라 현재 표시될 숫자 값을 계산하고, `toLocaleString()`으로 천 단위 구분자를 적용한 후 접미사와 함께 대상 요소의 `innerHTML`을 업데이트합니다.
+    *   `progress`가 100%에 도달할 때까지 `requestAnimationFrame`을 재귀적으로 호출하여 애니메이션을 지속합니다.
+    *   애니메이션 완료 후에는 최종 값이 정확하게 표시되도록 보장합니다.
+*   **통합**: `DOMContentLoaded` 이벤트 리스너 내에서 `animateNumber` 함수를 호출하여 각 대상 요소에 애니메이션을 적용했습니다. 최종 숫자 값은 PHP 변수에서 가져와 JavaScript로 전달됩니다.
+*   **적용 파일**: `/var/www/html/dashboard/index.php`
+    *   애니메이션 대상이 되는 `div` 요소에 고유 ID를 추가 (`id="today-order-count"`, `id="pending-order-count"` 등).
+    *   기존 `<script>` 블록에 `animateNumber` 함수 정의 및 호출 로직 추가.
 
 ---
 

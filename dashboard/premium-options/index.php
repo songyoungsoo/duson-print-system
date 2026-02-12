@@ -67,7 +67,7 @@ $premium_products = [
 </main>
 
 <!-- 새 옵션 추가 모달 -->
-<div id="addOptionModal" class="fixed inset-0 z-50 hidden items-center justify-center bg-black bg-opacity-50">
+<div id="addOptionModal" class="fixed inset-0 z-50 hidden items-center justify-center bg-black bg-opacity-50" onclick="if(event.target===this)closeModal('addOptionModal')">
     <div class="bg-white rounded-xl shadow-2xl w-full max-w-md mx-4 p-6">
         <h3 class="text-base font-bold text-gray-900 mb-4">새 옵션 카테고리 추가</h3>
         <div class="space-y-3">
@@ -84,7 +84,7 @@ $premium_products = [
 </div>
 
 <!-- 새 Variant 추가 모달 -->
-<div id="addVariantModal" class="fixed inset-0 z-50 hidden items-center justify-center bg-black bg-opacity-50">
+<div id="addVariantModal" class="fixed inset-0 z-50 hidden items-center justify-center bg-black bg-opacity-50" onclick="if(event.target===this)closeModal('addVariantModal')">
     <div class="bg-white rounded-xl shadow-2xl w-full max-w-lg mx-4 p-6">
         <h3 class="text-base font-bold text-gray-900 mb-4">새 종류 추가</h3>
         <input type="hidden" id="variantOptionId" value="">
@@ -104,12 +104,12 @@ $premium_products = [
     </div>
 </div>
 
-<!-- 재계산 미리보기 모달 -->
-<div id="recalcModal" class="fixed inset-0 z-50 hidden items-center justify-center bg-black bg-opacity-50">
-    <div class="bg-white rounded-xl shadow-2xl w-full max-w-md mx-4 p-6">
-        <h3 class="text-base font-bold text-gray-900 mb-4">주문 재계산 미리보기</h3>
+<!-- 재계산 모달 -->
+<div id="recalcModal" class="fixed inset-0 z-50 hidden items-center justify-center bg-black bg-opacity-50" onclick="if(event.target===this)closeModal('recalcModal')">
+    <div class="bg-white rounded-xl shadow-2xl w-full max-w-2xl mx-4 p-6 max-h-[80vh] overflow-y-auto">
+        <h3 class="text-base font-bold text-gray-900 mb-4">주문 재계산</h3>
         <div id="recalcContent" class="text-sm text-gray-700"></div>
-        <div class="flex justify-end gap-2 mt-5">
+        <div id="recalcActions" class="flex justify-end gap-2 mt-5">
             <button onclick="closeModal('recalcModal')" class="px-4 py-2 text-sm text-gray-700 bg-gray-100 rounded-lg hover:bg-gray-200">닫기</button>
         </div>
     </div>
@@ -463,7 +463,7 @@ function openAddOptionModal() {
 
 async function createOption() {
     const name = document.getElementById('newOptionName').value.trim();
-    if (!name) { showToast('옵션 이름을 입력하세요', 'error'); return; }
+    if (!name) { closeModal('addOptionModal'); showToast('옵션 이름을 입력하세요', 'error'); return; }
 
     try {
         const res = await fetch(API_ADMIN, {
@@ -472,14 +472,15 @@ async function createOption() {
             body: JSON.stringify({ action: 'create_option', product_type: currentProduct, option_name: name })
         });
         const data = await res.json();
+        closeModal('addOptionModal');
         if (data.success) {
             showToast('옵션 추가 완료');
-            closeModal('addOptionModal');
             loadOptions(currentProduct);
         } else {
             showToast(data.message, 'error');
         }
     } catch (err) {
+        closeModal('addOptionModal');
         showToast('오류: ' + err.message, 'error');
     }
 }
@@ -518,7 +519,7 @@ function openAddVariantModal(optionId, optionName) {
 async function createVariant() {
     const optionId = parseInt(document.getElementById('variantOptionId').value);
     const name = document.getElementById('newVariantName').value.trim();
-    if (!name) { showToast('종류 이름을 입력하세요', 'error'); return; }
+    if (!name) { closeModal('addVariantModal'); showToast('종류 이름을 입력하세요', 'error'); return; }
 
     const pricingConfig = {};
     document.querySelectorAll('#variantPriceFields input[data-price-field]').forEach(input => {
@@ -537,20 +538,35 @@ async function createVariant() {
             })
         });
         const data = await res.json();
+        closeModal('addVariantModal');
         if (data.success) {
             showToast('종류 추가 완료');
-            closeModal('addVariantModal');
             loadOptions(currentProduct);
         } else {
             showToast(data.message, 'error');
         }
     } catch (err) {
+        closeModal('addVariantModal');
         showToast('오류: ' + err.message, 'error');
     }
 }
 
-// ─── 재계산 미리보기 ───
+// ─── 재계산 ───
+let lastRecalcData = null;
+
 async function previewRecalculate() {
+    const el = document.getElementById('recalcContent');
+    const actions = document.getElementById('recalcActions');
+    el.textContent = '';
+    actions.innerHTML = '<button onclick="closeModal(\'recalcModal\')" class="px-4 py-2 text-sm text-gray-700 bg-gray-100 rounded-lg hover:bg-gray-200">닫기</button>';
+
+    // 로딩
+    const loading = document.createElement('div');
+    loading.className = 'text-center py-4';
+    loading.innerHTML = '<div class="inline-block animate-spin rounded-full h-6 w-6 border-b-2 border-blue-600"></div><p class="mt-2 text-xs text-gray-500">미리보기 계산 중...</p>';
+    el.appendChild(loading);
+    openModal('recalcModal');
+
     try {
         const res = await fetch(API_ADMIN, {
             method: 'POST',
@@ -558,27 +574,130 @@ async function previewRecalculate() {
             body: JSON.stringify({ action: 'recalculate_orders', product_type: currentProduct })
         });
         const data = await res.json();
+        el.textContent = '';
+
+        if (!data.success) { showToast(data.message, 'error'); closeModal('recalcModal'); return; }
+
+        const info = data.data;
+        lastRecalcData = info;
+
+        // 요약
+        const summary = document.createElement('div');
+        summary.className = 'mb-4 p-3 rounded-lg ' + (info.affected_orders > 0 ? 'bg-amber-50 border border-amber-200' : 'bg-green-50 border border-green-200');
+        summary.innerHTML = '<p class="font-medium">' + (info.message || '') + '</p>';
+        if (info.affected_orders > 0 && info.total_diff !== undefined) {
+            const diffSign = info.total_diff >= 0 ? '+' : '';
+            summary.innerHTML += '<p class="text-xs mt-1 text-gray-600">총 차이: ' + diffSign + info.total_diff.toLocaleString() + '원</p>';
+        }
+        el.appendChild(summary);
+
+        // 변동 주문 테이블
+        if (info.changes && info.changes.length > 0) {
+            const tableWrap = document.createElement('div');
+            tableWrap.className = 'overflow-x-auto max-h-60 overflow-y-auto border border-gray-200 rounded-lg';
+
+            let html = '<table class="w-full text-xs">';
+            html += '<thead class="bg-gray-50 sticky top-0"><tr>';
+            html += '<th class="px-3 py-2 text-left">주문번호</th>';
+            html += '<th class="px-3 py-2 text-right">수량</th>';
+            html += '<th class="px-3 py-2 text-right">기존 금액</th>';
+            html += '<th class="px-3 py-2 text-right">새 금액</th>';
+            html += '<th class="px-3 py-2 text-right">차이</th>';
+            html += '<th class="px-3 py-2 text-left">상세</th>';
+            html += '</tr></thead><tbody>';
+
+            info.changes.forEach(c => {
+                const diffClass = c.diff > 0 ? 'text-red-600' : c.diff < 0 ? 'text-green-600' : 'text-gray-500';
+                const diffSign = c.diff >= 0 ? '+' : '';
+                const details = (c.details || []).map(d => d.option + '(' + d.variant + '): ' + d.old_price.toLocaleString() + '→' + d.new_price.toLocaleString()).join(', ');
+
+                html += '<tr class="border-t border-gray-100">';
+                html += '<td class="px-3 py-1.5 font-mono">#' + c.no + '</td>';
+                html += '<td class="px-3 py-1.5 text-right">' + c.quantity + '</td>';
+                html += '<td class="px-3 py-1.5 text-right">' + c.old_total.toLocaleString() + '원</td>';
+                html += '<td class="px-3 py-1.5 text-right font-medium">' + c.new_total.toLocaleString() + '원</td>';
+                html += '<td class="px-3 py-1.5 text-right ' + diffClass + '">' + diffSign + c.diff.toLocaleString() + '</td>';
+                html += '<td class="px-3 py-1.5 text-gray-500">' + details + '</td>';
+                html += '</tr>';
+            });
+
+            html += '</tbody></table>';
+            tableWrap.innerHTML = html;
+            el.appendChild(tableWrap);
+
+            if (info.changes.length >= 50) {
+                const note = document.createElement('p');
+                note.className = 'text-xs text-gray-400 mt-1';
+                note.textContent = '최대 50건까지 표시됩니다.';
+                el.appendChild(note);
+            }
+
+            // 실행 버튼 추가
+            actions.innerHTML = '';
+            const closeBtn = document.createElement('button');
+            closeBtn.className = 'px-4 py-2 text-sm text-gray-700 bg-gray-100 rounded-lg hover:bg-gray-200';
+            closeBtn.textContent = '취소';
+            closeBtn.addEventListener('click', () => closeModal('recalcModal'));
+
+            const execBtn = document.createElement('button');
+            execBtn.className = 'px-4 py-2 text-sm text-white bg-red-600 rounded-lg hover:bg-red-700 font-medium';
+            execBtn.textContent = '재계산 실행 (' + info.affected_orders + '건)';
+            execBtn.addEventListener('click', () => executeRecalculate());
+
+            actions.appendChild(closeBtn);
+            actions.appendChild(execBtn);
+        }
+
+    } catch (err) {
+        el.textContent = '';
+        showToast('오류: ' + err.message, 'error');
+        closeModal('recalcModal');
+    }
+}
+
+async function executeRecalculate() {
+    if (!confirm('정말 ' + (lastRecalcData?.affected_orders || 0) + '건의 주문을 재계산하시겠습니까?\n이 작업은 되돌릴 수 없습니다.')) return;
+
+    const el = document.getElementById('recalcContent');
+    const actions = document.getElementById('recalcActions');
+    el.textContent = '';
+    actions.innerHTML = '';
+
+    const loading = document.createElement('div');
+    loading.className = 'text-center py-4';
+    loading.innerHTML = '<div class="inline-block animate-spin rounded-full h-6 w-6 border-b-2 border-red-600"></div><p class="mt-2 text-xs text-gray-500">재계산 실행 중...</p>';
+    el.appendChild(loading);
+
+    try {
+        const res = await fetch(API_ADMIN, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ action: 'recalculate_orders', product_type: currentProduct, execute: true })
+        });
+        const data = await res.json();
+        el.textContent = '';
+
         if (data.success) {
             const info = data.data;
-            const el = document.getElementById('recalcContent');
-            el.textContent = '';
-
-            const p1 = document.createElement('p');
-            p1.className = 'mb-2';
-            p1.textContent = info.message || (info.affected_orders + '건의 주문이 재계산 대상입니다.');
-            el.appendChild(p1);
-
-            const p2 = document.createElement('p');
-            p2.className = 'text-xs text-gray-500';
-            p2.textContent = 'JSON 컬럼: ' + (info.json_column || '-') + ' / 총액 컬럼: ' + (info.total_column || '-');
-            el.appendChild(p2);
-
-            openModal('recalcModal');
+            const result = document.createElement('div');
+            result.className = 'p-4 bg-green-50 border border-green-200 rounded-lg text-center';
+            result.innerHTML = '<div class="text-2xl mb-2">✓</div><p class="font-medium text-green-800">' + (info.message || '재계산 완료') + '</p>';
+            if (info.errors && info.errors.length > 0) {
+                result.innerHTML += '<div class="mt-2 text-xs text-red-600">' + info.errors.join('<br>') + '</div>';
+            }
+            el.appendChild(result);
         } else {
-            showToast(data.message, 'error');
+            const err = document.createElement('div');
+            err.className = 'p-4 bg-red-50 border border-red-200 rounded-lg text-center';
+            err.innerHTML = '<p class="text-red-800">' + (data.message || '실행 실패') + '</p>';
+            el.appendChild(err);
         }
+
+        actions.innerHTML = '<button onclick="closeModal(\'recalcModal\')" class="px-4 py-2 text-sm text-gray-700 bg-gray-100 rounded-lg hover:bg-gray-200">닫기</button>';
     } catch (err) {
-        showToast('오류: ' + err.message, 'error');
+        el.textContent = '';
+        showToast('실행 오류: ' + err.message, 'error');
+        closeModal('recalcModal');
     }
 }
 
@@ -593,6 +712,10 @@ function closeModal(id) {
     el.classList.add('hidden');
     el.classList.remove('flex');
 }
+function closeAllModals() {
+    ['addOptionModal', 'addVariantModal', 'recalcModal'].forEach(closeModal);
+}
+document.addEventListener('keydown', e => { if (e.key === 'Escape') closeAllModals(); });
 
 // ─── 토스트 ───
 function showToast(msg, type) {
