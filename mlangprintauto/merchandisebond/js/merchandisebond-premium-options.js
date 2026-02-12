@@ -349,6 +349,55 @@ class MerchandiseBondPremiumOptionsManager {
     getPremiumOptionsTotal() {
         return parseInt(document.getElementById('premium_options_total')?.value) || 0;
     }
+
+    /**
+     * DB에서 로드한 가격 데이터 적용
+     */
+    applyDBPrices(dbOptions) {
+        const optionMap = {
+            '박': 'foil', '넘버링': 'numbering', '미싱': 'perforation',
+            '귀돌이': 'rounding', '오시': 'creasing'
+        };
+        const variantMap = {
+            '금박무광': 'gold_matte', '금박유광': 'gold_gloss',
+            '은박무광': 'silver_matte', '은박유광': 'silver_gloss',
+            '청박': 'blue_gloss', '적박': 'red_gloss',
+            '녹박': 'green_gloss', '먹박': 'black_gloss',
+            '1개': 'single', '2개': 'double',
+            '전체': null,
+            '1줄': '1line', '2줄': '2line', '3줄': '3line'
+        };
+
+        dbOptions.forEach(opt => {
+            const jsKey = optionMap[opt.option_name];
+            if (!jsKey || !opt.variants) return;
+
+            opt.variants.forEach(v => {
+                const pc = v.pricing_config;
+                if (!pc) return;
+
+                if (jsKey === 'foil') {
+                    this.basePrices.foil.base_500 = pc.base_500 ?? this.basePrices.foil.base_500;
+                    this.basePrices.foil.per_unit = pc.per_unit ?? this.basePrices.foil.per_unit;
+                } else if (jsKey === 'rounding') {
+                    this.basePrices.rounding.base_500 = pc.base_500 ?? this.basePrices.rounding.base_500;
+                    this.basePrices.rounding.per_unit = pc.per_unit ?? this.basePrices.rounding.per_unit;
+                } else {
+                    const vKey = variantMap[v.variant_name];
+                    if (vKey && this.basePrices[jsKey] && this.basePrices[jsKey][vKey]) {
+                        this.basePrices[jsKey][vKey].base_500 = pc.base_500 ?? this.basePrices[jsKey][vKey].base_500;
+                        this.basePrices[jsKey][vKey].per_unit = pc.per_unit ?? this.basePrices[jsKey][vKey].per_unit;
+                        if (pc.additional_fee !== undefined) {
+                            this.basePrices[jsKey][vKey].additional_fee = pc.additional_fee;
+                        }
+                    }
+                }
+            });
+        });
+
+        console.log('✅ DB 가격 데이터 적용 완료 (상품권)');
+        this.calculateAndUpdatePrice();
+    }
 }
 
 // 전역 인스턴스
@@ -397,12 +446,17 @@ function recalculatePremiumOptions() {
  * DOM 로드 완료 시 자동 초기화 (메인 시스템 이후에 실행)
  */
 document.addEventListener('DOMContentLoaded', function() {
-    // 프리미엄 옵션 섹션이 있을 때만 초기화 (약간의 지연으로 메인 시스템 초기화 대기)
     if (document.getElementById('premiumOptionsSection')) {
-        setTimeout(() => {
+        setTimeout(async () => {
             initMerchandiseBondPremiumOptions();
-            console.log('상품권 프리미엄 옵션 시스템 초기화 완료 (메인 시스템 이후)');
-        }, 200); // 200ms 지연으로 초기화 순서 보장
+            if (typeof loadPremiumOptionsFromDB === 'function') {
+                const dbData = await loadPremiumOptionsFromDB('merchandisebond');
+                if (dbData && premiumOptionsManager) {
+                    premiumOptionsManager.applyDBPrices(dbData);
+                }
+            }
+            console.log('✅ 상품권 프리미엄 옵션 시스템 초기화 완료');
+        }, 200);
     }
 });
 

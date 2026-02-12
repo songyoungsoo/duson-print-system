@@ -493,7 +493,8 @@ $default_values['ordertype'] = 'print'; // 인쇄만
         // poster.js에서 전역 변수와 초기화 함수들을 처리 (갤러리는 공통 시스템 사용)
     </script>
 
-    <!-- 포스터 추가 옵션 시스템 -->
+    <!-- 포스터 추가 옵션 DB 로더 + 시스템 -->
+    <script src="/js/premium-options-loader.js"></script>
     <script src="js/littleprint-premium-options.js"></script>
 
     <!-- 견적서 모달 공통 JavaScript -->

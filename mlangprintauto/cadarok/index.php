@@ -601,7 +601,8 @@ if ($type_result && ($type_row = mysqli_fetch_assoc($type_result))) {
         };
     </script>
 
-    <!-- 카다록 추가 옵션 시스템 -->
+    <!-- 카다록 추가 옵션 DB 로더 + 시스템 -->
+    <script src="/js/premium-options-loader.js"></script>
     <script src="js/cadarok-premium-options.js"></script>
 
     <!-- 견적서 모달 공통 JavaScript -->

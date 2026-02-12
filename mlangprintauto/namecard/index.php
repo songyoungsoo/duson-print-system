@@ -412,7 +412,8 @@ if ($type_result && ($type_row = mysqli_fetch_assoc($type_result))) {
     <!-- 명함 전용 스크립트 -->
     <script src="js/namecard-compact.js"></script>
 
-    <!-- 🆕 프리미엄 옵션 JavaScript 추가 -->
+    <!-- 프리미엄 옵션 DB 로더 + JavaScript -->
+    <script src="/js/premium-options-loader.js"></script>
     <script src="js/namecard-premium-options.js"></script>
 
     <?php if (!$isQuotationMode && !$isAdminQuoteMode): ?>

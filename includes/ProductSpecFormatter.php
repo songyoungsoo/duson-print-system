@@ -1054,26 +1054,36 @@ class ProductSpecFormatter {
         if (!empty($premOpts['foil_enabled'])) {
             $type = $premOpts['foil_type'] ?? '';
             $name = $foilNames[$type] ?? $premOpts['foil_type_name'] ?? $type;
-            if ($name) $options[] = '박:' . $name;
+            $price = intval($premOpts['foil_price'] ?? 0);
+            if ($name) {
+                $options[] = '박:' . $name . ($price > 0 ? '(' . number_format($price) . '원)' : '');
+            }
         }
 
         if (!empty($premOpts['numbering_enabled'])) {
             $count = $premOpts['numbering_count'] ?? '';
-            $options[] = $count ? '넘버링:' . $count : '넘버링';
+            $price = intval($premOpts['numbering_price'] ?? 0);
+            $label = $count ? '넘버링:' . $count : '넘버링';
+            $options[] = $label . ($price > 0 ? '(' . number_format($price) . '원)' : '');
         }
 
         if (!empty($premOpts['perforation_enabled'])) {
             $count = $premOpts['perforation_count'] ?? '';
-            $options[] = $count ? '미싱:' . $count : '미싱';
+            $price = intval($premOpts['perforation_price'] ?? 0);
+            $label = $count ? '미싱:' . $count : '미싱';
+            $options[] = $label . ($price > 0 ? '(' . number_format($price) . '원)' : '');
         }
 
         if (!empty($premOpts['rounding_enabled'])) {
-            $options[] = '귀돌이';
+            $price = intval($premOpts['rounding_price'] ?? 0);
+            $options[] = '귀돌이' . ($price > 0 ? '(' . number_format($price) . '원)' : '');
         }
 
         if (!empty($premOpts['creasing_enabled'])) {
             $type = $premOpts['creasing_type'] ?? '';
-            $options[] = $type ? '오시:' . $type : '오시';
+            $price = intval($premOpts['creasing_price'] ?? 0);
+            $label = $type ? '오시:' . $type : '오시';
+            $options[] = $label . ($price > 0 ? '(' . number_format($price) . '원)' : '');
         }
 
         return implode(' / ', $options);
