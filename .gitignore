@@ -267,6 +267,7 @@ docs/.pdca-status.json
 !package.json
 !package-lock.json
 !playwright.config.json
+!config/gallery_settings.json
 extract_*.js
 fetch_*.js
 create_*.js

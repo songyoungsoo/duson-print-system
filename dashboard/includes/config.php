@@ -53,6 +53,7 @@ $DASHBOARD_NAV = [
             'pricing' => ['name' => '가격 관리', 'icon' => '💰', 'path' => '/dashboard/pricing/'],
             'option_prices' => ['name' => '옵션 가격', 'icon' => '⚙️', 'path' => '/dashboard/embed.php?url=' . urlencode('/admin/mlangprintauto/quote/option_prices.php'), 'embed' => true],
             'sticker_prices' => ['name' => '스티커수정', 'icon' => '🏷️', 'path' => '/dashboard/pricing/sticker.php'],
+            'gallery' => ['name' => '갤러리 관리', 'icon' => '🖼️', 'path' => '/dashboard/gallery/'],
         ]
     ],
     'admin_group' => [

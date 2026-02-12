@@ -1,0 +1,47 @@
+{
+    "namecard": {
+        "order_enabled": true,
+        "order_date_from": "2024-01-01",
+        "order_date_to": ""
+    },
+    "sticker": {
+        "order_enabled": true,
+        "order_date_from": "2024-01-01",
+        "order_date_to": ""
+    },
+    "inserted": {
+        "order_enabled": true,
+        "order_date_from": "2024-01-01",
+        "order_date_to": ""
+    },
+    "envelope": {
+        "order_enabled": true,
+        "order_date_from": "2024-01-01",
+        "order_date_to": ""
+    },
+    "littleprint": {
+        "order_enabled": true,
+        "order_date_from": "2024-01-01",
+        "order_date_to": ""
+    },
+    "merchandisebond": {
+        "order_enabled": true,
+        "order_date_from": "2024-01-01",
+        "order_date_to": ""
+    },
+    "cadarok": {
+        "order_enabled": true,
+        "order_date_from": "2024-01-01",
+        "order_date_to": ""
+    },
+    "ncrflambeau": {
+        "order_enabled": true,
+        "order_date_from": "2024-01-01",
+        "order_date_to": ""
+    },
+    "msticker": {
+        "order_enabled": true,
+        "order_date_from": "2024-01-01",
+        "order_date_to": ""
+    }
+}
