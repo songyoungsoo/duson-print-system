@@ -162,6 +162,7 @@ include __DIR__ . '/../includes/sidebar.php';
         if (attrs) {
             Object.keys(attrs).forEach(function(k) {
                 if (k === 'className') node.className = attrs[k];
+                else if (k === 'style') node.style.cssText = attrs[k];
                 else if (k === 'textContent') node.textContent = attrs[k];
                 else if (k.indexOf('on') === 0) node.addEventListener(k.slice(2).toLowerCase(), attrs[k]);
                 else node.setAttribute(k, attrs[k]);
@@ -377,17 +378,18 @@ include __DIR__ . '/../includes/sidebar.php';
                         wrapper.addEventListener('dragover', function(e) {
                             e.preventDefault();
                             e.stopPropagation();
-                            this.classList.add('ring-4', 'ring-blue-500', 'ring-inset');
+                            e.dataTransfer.dropEffect = 'copy';
+                            this.style.cssText = 'box-shadow: 0 0 0 6px rgba(59, 130, 246, 0.8);';
                         });
                         wrapper.addEventListener('dragleave', function(e) {
                             e.preventDefault();
                             e.stopPropagation();
-                            this.classList.remove('ring-4', 'ring-blue-500', 'ring-inset');
+                            this.style.cssText = '';
                         });
                         wrapper.addEventListener('drop', function(e) {
                             e.preventDefault();
                             e.stopPropagation();
-                            this.classList.remove('ring-4', 'ring-blue-500', 'ring-inset');
+                            this.style.cssText = '';
 
                             var files = e.dataTransfer.files;
                             if (files && files.length > 0) {
@@ -431,17 +433,17 @@ include __DIR__ . '/../includes/sidebar.php';
                             e.preventDefault();
                             e.stopPropagation();
                             e.dataTransfer.dropEffect = 'copy';
-                            this.classList.add('ring-4', 'ring-green-500', 'ring-inset', 'bg-green-50');
+                            this.style.cssText = 'box-shadow: 0 0 0 6px rgba(34, 197, 94, 0.8); background-color: rgb(240, 253, 244);';
                         });
                         wrapper.addEventListener('dragleave', function(e) {
                             e.preventDefault();
                             e.stopPropagation();
-                            this.classList.remove('ring-4', 'ring-green-500', 'ring-inset', 'bg-green-50');
+                            this.style.cssText = '';
                         });
                         wrapper.addEventListener('drop', function(e) {
                             e.preventDefault();
                             e.stopPropagation();
-                            this.classList.remove('ring-4', 'ring-green-500', 'ring-inset', 'bg-green-50');
+                            this.style.cssText = '';
 
                             var lightboxSrc = e.dataTransfer.getData('text/plain');
                             if (lightboxSrc) {
@@ -597,7 +599,7 @@ include __DIR__ . '/../includes/sidebar.php';
                 // 진행 표시
                 var wrapper = document.querySelector('[data-idx="' + targetIdx + '"]');
                 if (wrapper) {
-                    wrapper.classList.add('opacity-50', 'ring-4', 'ring-green-500');
+                    wrapper.style.cssText = 'opacity: 0.5; box-shadow: 0 0 0 6px rgba(34, 197, 94, 0.8);';
                 }
 
                 var xhr = new XMLHttpRequest();
@@ -609,7 +611,7 @@ include __DIR__ . '/../includes/sidebar.php';
                 });
                 xhr.onload = function() {
                     if (wrapper) {
-                        wrapper.classList.remove('opacity-50', 'ring-4', 'ring-green-500');
+                        wrapper.style.cssText = '';
                     }
                     try {
                         var res = JSON.parse(xhr.responseText);
@@ -625,7 +627,7 @@ include __DIR__ . '/../includes/sidebar.php';
                 };
                 xhr.onerror = function() {
                     if (wrapper) {
-                        wrapper.classList.remove('opacity-50', 'ring-4', 'ring-green-500');
+                        wrapper.style.cssText = '';
                     }
                     showToast('복사 실패', 'error');
                 };
@@ -653,7 +655,7 @@ include __DIR__ . '/../includes/sidebar.php';
         // 진행 표시
         var wrapper = document.querySelector('[data-idx="' + idx + '"]');
         if (wrapper) {
-            wrapper.classList.add('opacity-50');
+            wrapper.style.cssText = 'opacity: 0.5;';
         }
 
         var xhr = new XMLHttpRequest();
@@ -667,7 +669,7 @@ include __DIR__ . '/../includes/sidebar.php';
             try {
                 var res = JSON.parse(xhr.responseText);
                 if (wrapper) {
-                    wrapper.classList.remove('opacity-50');
+                    wrapper.style.cssText = '';
                 }
                 if (res.success) {
                     showToast('이미지 교체 완료', 'success');
@@ -677,14 +679,14 @@ include __DIR__ . '/../includes/sidebar.php';
                 }
             } catch(e) {
                 if (wrapper) {
-                    wrapper.classList.remove('opacity-50');
+                    wrapper.style.cssText = '';
                 }
                 showToast('응답 처리 오류', 'error');
             }
         };
         xhr.onerror = function() {
             if (wrapper) {
-                wrapper.classList.remove('opacity-50');
+                wrapper.style.cssText = '';
             }
             showToast('교체 실패', 'error');
         };
