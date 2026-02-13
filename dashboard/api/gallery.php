@@ -39,6 +39,9 @@ switch ($action) {
     case 'delete':
         handleDelete();
         break;
+    case 'replace':
+        handleReplace();
+        break;
     case 'get_settings':
         handleGetSettings();
         break;
@@ -459,5 +462,95 @@ function handleDelete() {
         jsonResponse(true, '삭제 완료', ['filename' => $filename]);
     } else {
         jsonResponse(false, '파일 삭제에 실패했습니다.');
+    }
+}
+
+/**
+ * 이미지 교체 (기존 파일 삭제 + 새 파일 업로드)
+ * POST params: product, source (sample|safegallery), old_filename, file
+ */
+function handleReplace() {
+    global $GALLERY_FOLDER_MAP, $SAMPLE_BASE, $SAFEGALLERY_BASE, $ALLOWED_EXTENSIONS, $MAX_FILE_SIZE;
+
+    $product = $_POST['product'] ?? '';
+    $source = $_POST['source'] ?? 'sample';
+    $oldFilename = $_POST['old_filename'] ?? '';
+
+    if (!isset($GALLERY_FOLDER_MAP[$product])) {
+        jsonResponse(false, '유효하지 않은 제품입니다.');
+    }
+    if (!in_array($source, ['sample', 'safegallery'])) {
+        jsonResponse(false, '유효하지 않은 소스입니다.');
+    }
+    if (empty($oldFilename)) {
+        jsonResponse(false, '기존 파일명이 지정되지 않았습니다.');
+    }
+    if (empty($_FILES['file'])) {
+        jsonResponse(false, '파일이 선택되지 않았습니다.');
+    }
+
+    $folder = $GALLERY_FOLDER_MAP[$product];
+    $baseDir = ($source === 'safegallery') ? $SAFEGALLERY_BASE : $SAMPLE_BASE;
+    $targetDir = $baseDir . $folder . '/';
+    $targetPath = $targetDir . $oldFilename;
+
+    // 경로 검증 (directory traversal 방지)
+    $realPath = realpath($targetPath);
+    $realBase = realpath($baseDir);
+    if ($realPath === false || $realBase === false) {
+        jsonResponse(false, '파일을 찾을 수 없습니다.');
+    }
+    if (strpos($realPath, $realBase) !== 0) {
+        jsonResponse(false, '잘못된 파일 경로입니다.');
+    }
+
+    // 업로드 파일 검증
+    $file = $_FILES['file'];
+    if ($file['error'] !== UPLOAD_ERR_OK) {
+        jsonResponse(false, "업로드 에러 (code: {$file['error']})");
+    }
+    if ($file['size'] > $MAX_FILE_SIZE) {
+        jsonResponse(false, '파일 크기 초과 (최대 10MB)');
+    }
+
+    $ext = strtolower(pathinfo($file['name'], PATHINFO_EXTENSION));
+    if (!in_array($ext, $ALLOWED_EXTENSIONS)) {
+        jsonResponse(false, "허용되지 않는 확장자 ({$ext})");
+    }
+
+    $imageInfo = @getimagesize($file['tmp_name']);
+    if ($imageInfo === false) {
+        jsonResponse(false, '유효한 이미지 파일이 아닙니다.');
+    }
+
+    // 기존 파일 삭제
+    if (!unlink($realPath)) {
+        jsonResponse(false, '기존 파일 삭제 실패');
+    }
+
+    // 새 파일명 생성 (안전한 문자만)
+    $safeName = preg_replace('/[^a-zA-Z0-9가-힣ㄱ-ㅎㅏ-ㅣ_\-\.]/u', '_', $file['name']);
+    $newPath = $targetDir . $safeName;
+
+    // 파일명 충돌 시 타임스탬프 추가
+    if (file_exists($newPath)) {
+        $baseName = pathinfo($safeName, PATHINFO_FILENAME);
+        $safeName = $baseName . '_' . date('His') . '.' . $ext;
+        $newPath = $targetDir . $safeName;
+    }
+
+    $urlPrefix = ($source === 'safegallery') ? '/ImgFolder/samplegallery/' : '/ImgFolder/sample/';
+
+    if (move_uploaded_file($file['tmp_name'], $newPath)) {
+        chmod($newPath, 0644);
+        jsonResponse(true, '이미지 교체 완료', [
+            'old_filename' => $oldFilename,
+            'filename' => $safeName,
+            'src' => $urlPrefix . $folder . '/' . rawurlencode($safeName),
+            'size' => $file['size'],
+            'date' => date('Y-m-d H:i')
+        ]);
+    } else {
+        jsonResponse(false, '파일 저장 실패');
     }
 }

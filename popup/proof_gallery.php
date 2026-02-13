@@ -29,19 +29,20 @@ if (!$connect) {
 }
 
 // ============================================
-// 듀얼 소스: 갤러리 폴더 + 2022-2024 고객 주문 이미지
+// 듀얼 소스: 안전갤러리 폴더 + 2022-2024 고객 주문 이미지
 // 🔒 개인정보 보호: 명함, 봉투, 양식지는 갤러리 이미지만 사용
+// ✅ 2026-02-13: 대시보드 안전갤러리(/ImgFolder/samplegallery/)와 경로 통일
 // ============================================
 $gallery_folders = [
-    '명함' => ['/ImgFolder/namecard/gallery/'],
-    '스티커' => ['/ImgFolder/sticker_new/gallery/'], // ✅ 제품 폴더와 일치 (2026-02-12 정리 완료)
-    '봉투' => ['/ImgFolder/envelope/gallery/'],
-    '전단지' => ['/ImgFolder/inserted/gallery/'],
-    '포스터' => ['/ImgFolder/littleprint/gallery/'],
-    '카탈로그' => ['/ImgFolder/cadarok/gallery/', '/ImgFolder/leaflet/gallery/'], // cadarok + leaflet
-    '상품권' => ['/ImgFolder/merchandisebond/gallery/'],
-    '자석스티커' => ['/ImgFolder/msticker/gallery/'],
-    '양식지' => ['/ImgFolder/ncrflambeau/gallery/'],
+    '명함' => ['/ImgFolder/samplegallery/namecard/'],
+    '스티커' => ['/ImgFolder/samplegallery/sticker_new/'],
+    '봉투' => ['/ImgFolder/samplegallery/envelope/'],
+    '전단지' => ['/ImgFolder/samplegallery/inserted/'],
+    '포스터' => ['/ImgFolder/samplegallery/littleprint/'],
+    '카탈로그' => ['/ImgFolder/samplegallery/cadarok/', '/ImgFolder/samplegallery/leaflet/'],
+    '상품권' => ['/ImgFolder/samplegallery/merchandisebond/'],
+    '자석스티커' => ['/ImgFolder/samplegallery/msticker/'],
+    '양식지' => ['/ImgFolder/samplegallery/ncrflambeau/'],
 ];
 
 // 통합 이미지 배열
@@ -522,9 +523,8 @@ document.querySelectorAll('.card').forEach(function(el){
 });
 
 function closeViewer(e){
-  if (e && e.target && (e.target.id === 'viewer' || e.target.classList.contains('close'))) {
-    document.getElementById('viewer').style.display = 'none';
-  }
+  // 배경, X버튼, 이미지, box 클릭 모두 닫기
+  document.getElementById('viewer').style.display = 'none';
 }
 
 // ESC 키로 닫기
