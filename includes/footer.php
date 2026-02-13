@@ -811,5 +811,53 @@
         <?php endforeach; ?>
     <?php endif; ?>
 
+    <div id="pwa-install-banner" style="display:none; position:fixed; bottom:0; left:0; right:0; z-index:99999; background:#fff; box-shadow:0 -2px 12px rgba(0,0,0,0.15); padding:12px 16px; font-family:'Pretendard',sans-serif;">
+        <div style="max-width:600px; margin:0 auto; display:flex; align-items:center; gap:12px;">
+            <img src="/ImgFolder/icon-192x192.png" alt="두손기획인쇄" style="width:44px; height:44px; border-radius:10px; flex-shrink:0;">
+            <div style="flex:1; min-width:0;">
+                <div style="font-weight:600; font-size:14px; color:#222;">두손기획인쇄</div>
+                <div style="font-size:12px; color:#888; margin-top:2px;">홈 화면에 추가하고 빠르게 접속하세요</div>
+            </div>
+            <button id="pwa-install-btn" style="flex-shrink:0; background:#4CAF50; color:#fff; border:none; border-radius:8px; padding:8px 16px; font-size:13px; font-weight:600; cursor:pointer;">설치</button>
+            <button id="pwa-install-close" style="flex-shrink:0; background:none; border:none; color:#aaa; font-size:20px; cursor:pointer; padding:0 4px;">✕</button>
+        </div>
+    </div>
+    <script>
+    (function() {
+        var deferredPrompt = null;
+        var banner = document.getElementById('pwa-install-banner');
+        var installBtn = document.getElementById('pwa-install-btn');
+        var closeBtn = document.getElementById('pwa-install-close');
+
+        if (!banner) return;
+        if (localStorage.getItem('pwa-install-dismissed')) return;
+        if (window.matchMedia('(display-mode: standalone)').matches) return;
+
+        window.addEventListener('beforeinstallprompt', function(e) {
+            e.preventDefault();
+            deferredPrompt = e;
+            banner.style.display = 'block';
+        });
+
+        installBtn.addEventListener('click', function() {
+            if (!deferredPrompt) return;
+            deferredPrompt.prompt();
+            deferredPrompt.userChoice.then(function() {
+                deferredPrompt = null;
+                banner.style.display = 'none';
+            });
+        });
+
+        closeBtn.addEventListener('click', function() {
+            banner.style.display = 'none';
+            localStorage.setItem('pwa-install-dismissed', '1');
+        });
+
+        window.addEventListener('appinstalled', function() {
+            banner.style.display = 'none';
+        });
+    })();
+    </script>
+
 </body>
 </html>

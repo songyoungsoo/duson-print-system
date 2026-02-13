@@ -117,9 +117,18 @@
 
 .contact-text:hover,
 .contact-card button:hover {
-    opacity: 0.8;
+    color: #FFD700;
     background: transparent;
     border: none;
+    text-decoration: none;
+}
+
+.logo-link:hover {
+    text-decoration: none;
+}
+
+.logo-link:hover .company-info h1 {
+    color: #FFD700;
 }
 
 .user-info-header {
