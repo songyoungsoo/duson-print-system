@@ -425,6 +425,31 @@ include __DIR__ . '/../includes/sidebar.php';
                     }
                     wrapper.appendChild(el('span', {className: 'absolute bottom-1 left-1 ' + badgeClass + ' text-white text-[9px] px-1 rounded', textContent: badgeText}));
 
+                    // 라이트박스에서 가져오기: 드래그 가능 (샘플/안전갤러리만)
+                    if (canDelete) {
+                        wrapper.addEventListener('dragover', function(e) {
+                            e.preventDefault();
+                            e.stopPropagation();
+                            e.dataTransfer.dropEffect = 'copy';
+                            this.classList.add('ring-4', 'ring-green-500', 'ring-inset', 'bg-green-50');
+                        });
+                        wrapper.addEventListener('dragleave', function(e) {
+                            e.preventDefault();
+                            e.stopPropagation();
+                            this.classList.remove('ring-4', 'ring-green-500', 'ring-inset', 'bg-green-50');
+                        });
+                        wrapper.addEventListener('drop', function(e) {
+                            e.preventDefault();
+                            e.stopPropagation();
+                            this.classList.remove('ring-4', 'ring-green-500', 'ring-inset', 'bg-green-50');
+
+                            var lightboxSrc = e.dataTransfer.getData('text/plain');
+                            if (lightboxSrc) {
+                                copyImageFromLightbox(idx, lightboxSrc);
+                            }
+                        });
+                    }
+
                     grid.appendChild(wrapper);
                 });
             });
@@ -547,6 +572,71 @@ include __DIR__ . '/../includes/sidebar.php';
         deleteTarget = null;
     };
 
+    // --- 라이트박스에서 갤러리로 복사 ---
+    window.copyImageFromLightbox = function(targetIdx, lightboxSrc) {
+        if (!currentProduct) return;
+        var img = currentImages[lightboxIndex];
+        if (!img || (img.source !== 'sample' && img.source !== 'safegallery')) return;
+
+        // 라이트박스 이미지를 blob으로 다운로드
+        fetch(lightboxSrc)
+            .then(function(r) { return r.blob(); })
+            .then(function(blob) {
+                var ext = blob.type.split('/')[1] || 'jpg';
+                var filename = 'copy_' + Date.now() + '.' + ext;
+
+                var formData = new FormData();
+                formData.append('action', 'upload');
+                formData.append('product', currentProduct);
+                formData.append('target', currentTab);
+
+                // Blob을 File로 변환하여 추가
+                var file = new File([blob], filename, {type: blob.type});
+                formData.append('files[]', file);
+
+                // 진행 표시
+                var wrapper = document.querySelector('[data-idx="' + targetIdx + '"]');
+                if (wrapper) {
+                    wrapper.classList.add('opacity-50', 'ring-4', 'ring-green-500');
+                }
+
+                var xhr = new XMLHttpRequest();
+                xhr.open('POST', API);
+                xhr.upload.addEventListener('progress', function(e) {
+                    if (e.lengthComputable) {
+                        console.log('복사 진행: ' + Math.round(e.loaded / e.total * 100) + '%');
+                    }
+                });
+                xhr.onload = function() {
+                    if (wrapper) {
+                        wrapper.classList.remove('opacity-50', 'ring-4', 'ring-green-500');
+                    }
+                    try {
+                        var res = JSON.parse(xhr.responseText);
+                        if (res.success) {
+                            showToast('이미지 복사 완료', 'success');
+                            loadImages(currentTab);
+                        } else {
+                            showToast(res.message || '복사 실패', 'error');
+                        }
+                    } catch(e) {
+                        showToast('응답 처리 오류', 'error');
+                    }
+                };
+                xhr.onerror = function() {
+                    if (wrapper) {
+                        wrapper.classList.remove('opacity-50', 'ring-4', 'ring-green-500');
+                    }
+                    showToast('복사 실패', 'error');
+                };
+                xhr.send(formData);
+            })
+            .catch(function(err) {
+                showToast('이미지 다운로드 실패', 'error');
+                console.error(err);
+            });
+    };
+
     // --- 이미지 교체 ---
     window.replaceImage = function(idx, file) {
         if (!currentProduct) return;
@@ -642,7 +732,16 @@ include __DIR__ . '/../includes/sidebar.php';
     function updateLightbox() {
         var img = currentImages[lightboxIndex];
         if (!img) return;
-        document.getElementById('lightboxImg').src = img.src;
+        var lightboxImg = document.getElementById('lightboxImg');
+        lightboxImg.src = img.src;
+        // 드래그 가능: 샘플/안전갤러리만
+        if (img.source === 'sample' || img.source === 'safegallery') {
+            lightboxImg.setAttribute('draggable', 'true');
+            lightboxImg.classList.add('cursor-move');
+        } else {
+            lightboxImg.removeAttribute('draggable');
+            lightboxImg.classList.remove('cursor-move');
+        }
         var sourceLabel = img.source === 'sample' ? '샘플' : (img.source === 'safegallery' ? '안전갤러리' : '주문');
         document.getElementById('lightboxInfo').textContent = (lightboxIndex + 1) + ' / ' + currentImages.length + '  |  ' + sourceLabel + '  |  ' + (img.filename || '') + '  |  ' + (img.date || '');
     }
@@ -654,6 +753,15 @@ include __DIR__ . '/../includes/sidebar.php';
 
     document.getElementById('lightbox').addEventListener('click', function(e) {
         if (e.target === this) closeLightbox();
+    });
+
+    // 라이트박스 이미지 드래그 시작: 이미지 데이터 저장
+    document.getElementById('lightboxImg').addEventListener('dragstart', function(e) {
+        var img = currentImages[lightboxIndex];
+        if (img && (img.source === 'sample' || img.source === 'safegallery')) {
+            e.dataTransfer.setData('text/plain', img.src);
+            e.dataTransfer.effectAllowed = 'copy';
+        }
     });
 
     // 초기 로드
