@@ -12,15 +12,15 @@ $current_page = isset($current_page) ? $current_page : '';
 <div class="cart-nav-wrapper">
     <div class="product-nav">
         <a href="/mlangprintauto/sticker_new/index.php" class="nav-btn <?php echo ($current_page == 'sticker') ? 'active' : ''; ?>">
-           🏷️ 스티커
+           <span style="display:inline-block; transform:scaleX(0.95); transform-origin:center;">스티커/라벨</span>
         </a>
 
         <a href="/mlangprintauto/inserted/index.php" class="nav-btn <?php echo ($current_page == 'leaflet') ? 'active' : ''; ?>">
-           📄 전단지
+           <span style="display:inline-block; transform:scaleX(0.95); transform-origin:center;">전단지/리플렛</span>
         </a>
 
         <a href="/mlangprintauto/namecard/index.php" class="nav-btn <?php echo ($current_page == 'namecard') ? 'active' : ''; ?>">
-           📇 명함
+           명함/쿠폰
         </a>
 
         <a href="/mlangprintauto/envelope/index.php" class="nav-btn <?php echo ($current_page == 'envelope') ? 'active' : ''; ?>">

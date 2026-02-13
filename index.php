@@ -15,7 +15,7 @@ $connect = $db;
 include_once $_SERVER['DOCUMENT_ROOT'] . '/includes/visitor_tracker.php';
 
 // 페이지 설정
-$page_title = '두손기획인쇄 - 스티커 인쇄 전문 | 전단지 명함 봉투 카다록 포스터 상품권 양식지';
+$page_title = '두손기획인쇄 - 스티커 라벨 인쇄 전문 | 전단지 리플렛 명함 쿠폰 봉투 카다록 포스터 상품권 양식지';
 $current_page = 'home';
 
 // UTF-8 설정
@@ -59,7 +59,7 @@ header("Expires: 0");
 
     <!-- SEO 메타 태그 -->
     <meta name="description" content="스티커 인쇄 전문 두손기획인쇄. 투명스티커, 유포지스티커, 자석스티커 등 다양한 스티커 제작. 전단지, 명함, 봉투, 카다록, 포스터, 상품권, 양식지까지. 공장직영 신속제작, 온라인 견적">
-    <meta name="keywords" content="스티커인쇄, 투명스티커, 유포지스티커, 자석스티커, 스티커제작, 전단지인쇄, 명함인쇄, 봉투인쇄, 카다록인쇄, 포스터인쇄, 상품권제작, 양식지인쇄, 온라인견적, 인쇄전문, 두손기획">
+    <meta name="keywords" content="스티커인쇄, 라벨인쇄, 투명스티커, 유포지스티커, 자석스티커, 스티커제작, 전단지인쇄, 명함인쇄, 쿠폰인쇄, 봉투인쇄, 카다록인쇄, 포스터인쇄, 상품권제작, 양식지인쇄, 온라인견적, 인쇄전문, 두손기획, 두손기획인쇄">
     <meta name="author" content="두손기획인쇄">
     <meta name="naver-site-verification" content="33529ae09a9a019b325c1c07cffc6f3b8c85c9a0" />
     <link rel="canonical" href="https://dsp114.co.kr/">
@@ -612,7 +612,7 @@ header("Expires: 0");
             <!-- 1. 스티커 (네비 첫 번째) -->
             <div class="product-card" style="--card-gradient: #3b82f6">
                 <div class="product-header">
-                    <h3 class="product-title"><a href="mlangprintauto/sticker_new/" style="color: inherit; text-decoration: none;">🏷️ 스티커</a></h3>
+                    <h3 class="product-title"><a href="mlangprintauto/sticker_new/" style="color: inherit; text-decoration: none;">🏷️ 스티커/라벨</a></h3>
                     <p class="product-subtitle">맞춤형 스티커 제작</p>
                 </div>
                 <div class="product-body">
@@ -656,7 +656,7 @@ header("Expires: 0");
             <!-- 3. 명함 (네비 세 번째) -->
             <div class="product-card" style="--card-gradient: #8b5cf6">
                 <div class="product-header">
-                    <h3 class="product-title"><a href="mlangprintauto/namecard/" style="color: inherit; text-decoration: none;">📇 명함</a></h3>
+                    <h3 class="product-title"><a href="mlangprintauto/namecard/" style="color: inherit; text-decoration: none;">📇 명함/쿠폰</a></h3>
                     <p class="product-subtitle">전문 명함 제작</p>
                 </div>
                 <div class="product-body">
