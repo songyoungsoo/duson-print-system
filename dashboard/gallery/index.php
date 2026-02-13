@@ -366,8 +366,38 @@ include __DIR__ . '/../includes/sidebar.php';
                 currentImages.forEach(function(img, idx) {
                     var canDelete = (img.source === 'sample' || img.source === 'safegallery');
 
-                    var wrapper = el('div', {className: 'group relative cursor-pointer rounded-lg overflow-hidden bg-gray-100 aspect-square'});
+                    var wrapper = el('div', {
+                        className: 'group relative cursor-pointer rounded-lg overflow-hidden bg-gray-100 aspect-square',
+                        'data-idx': idx
+                    });
                     wrapper.addEventListener('click', function() { openLightbox(idx); });
+
+                    // 이미지 위에 파일 드래그하여 교체 (샘플/안전갤러리만)
+                    if (canDelete) {
+                        wrapper.addEventListener('dragover', function(e) {
+                            e.preventDefault();
+                            e.stopPropagation();
+                            this.classList.add('ring-4', 'ring-blue-500', 'ring-inset');
+                        });
+                        wrapper.addEventListener('dragleave', function(e) {
+                            e.preventDefault();
+                            e.stopPropagation();
+                            this.classList.remove('ring-4', 'ring-blue-500', 'ring-inset');
+                        });
+                        wrapper.addEventListener('drop', function(e) {
+                            e.preventDefault();
+                            e.stopPropagation();
+                            this.classList.remove('ring-4', 'ring-blue-500', 'ring-inset');
+
+                            var files = e.dataTransfer.files;
+                            if (files && files.length > 0) {
+                                var file = files[0];
+                                if (file.type.startsWith('image/')) {
+                                    replaceImage(idx, file);
+                                }
+                            }
+                        });
+                    }
 
                     var imgEl = el('img', {className: 'w-full h-full object-cover', loading: 'lazy'});
                     imgEl.src = img.src;
@@ -516,6 +546,61 @@ include __DIR__ . '/../includes/sidebar.php';
         document.getElementById('deleteModal').classList.add('hidden');
         deleteTarget = null;
     };
+
+    // --- 이미지 교체 ---
+    window.replaceImage = function(idx, file) {
+        if (!currentProduct) return;
+        var img = currentImages[idx];
+        if (!img || (img.source !== 'sample' && img.source !== 'safegallery')) return;
+
+        var formData = new FormData();
+        formData.append('action', 'replace');
+        formData.append('product', currentProduct);
+        formData.append('source', img.source);
+        formData.append('old_filename', img.filename);
+        formData.append('file', file);
+
+        // 진행 표시
+        var wrapper = document.querySelector('[data-idx="' + idx + '"]');
+        if (wrapper) {
+            wrapper.classList.add('opacity-50');
+        }
+
+        var xhr = new XMLHttpRequest();
+        xhr.open('POST', API);
+        xhr.upload.addEventListener('progress', function(e) {
+            if (e.lengthComputable) {
+                console.log('교체 진행: ' + Math.round(e.loaded / e.total * 100) + '%');
+            }
+        });
+        xhr.onload = function() {
+            try {
+                var res = JSON.parse(xhr.responseText);
+                if (wrapper) {
+                    wrapper.classList.remove('opacity-50');
+                }
+                if (res.success) {
+                    showToast('이미지 교체 완료', 'success');
+                    loadImages(currentTab);
+                } else {
+                    showToast(res.message || '교체 실패', 'error');
+                }
+            } catch(e) {
+                if (wrapper) {
+                    wrapper.classList.remove('opacity-50');
+                }
+                showToast('응답 처리 오류', 'error');
+            }
+        };
+        xhr.onerror = function() {
+            if (wrapper) {
+                wrapper.classList.remove('opacity-50');
+            }
+            showToast('교체 실패', 'error');
+        };
+        xhr.send(formData);
+    };
+
     window.confirmDelete = function() {
         if (!deleteTarget) return;
         var formData = new FormData();
