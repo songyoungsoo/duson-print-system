@@ -7,6 +7,16 @@
 
 $current_page = isset($current_page) ? $current_page : '';
 
+$nav_default_mode = 'simple';
+if (isset($db) && $db) {
+    $nav_setting_q = mysqli_query($db, "SELECT setting_value FROM site_settings WHERE setting_key='nav_default_mode' LIMIT 1");
+    if ($nav_setting_q && $row = mysqli_fetch_assoc($nav_setting_q)) {
+        $nav_default_mode = $row['setting_value'];
+    }
+}
+$nav_user_mode = isset($_COOKIE['nav_mode']) ? $_COOKIE['nav_mode'] : null;
+$nav_active_mode = $nav_user_mode ? $nav_user_mode : $nav_default_mode;
+
 // 전단지 용지 옵션 (칼라CMYK no=802 하위 용지)
 $nav_leaflet_papers = [];
 if (isset($db) && $db) {
@@ -48,7 +58,14 @@ if (isset($db) && $db) {
 ?>
 <!-- 네비게이션 메뉴 -->
 <div class="cart-nav-wrapper">
-    <div class="product-nav">
+    <div class="nav-mode-bar">
+        <span class="nav-mode-guide" id="navModeGuide"><?php echo $nav_active_mode === 'detailed' ? '📋 재질/옵션을 알고 계시면 서브메뉴에서 바로 선택하세요' : '🔰 버튼을 클릭하면 제품 페이지로 바로 이동합니다'; ?></span>
+        <button type="button" class="nav-mode-toggle" id="navModeToggle" onclick="toggleNavMode()">
+            <span class="toggle-icon" id="navToggleIcon"><?php echo $nav_active_mode === 'detailed' ? '🔰' : '📋'; ?></span>
+            <span id="navToggleLabel"><?php echo $nav_active_mode === 'detailed' ? '심플 메뉴' : '상세 메뉴'; ?></span>
+        </button>
+    </div>
+    <div class="product-nav<?php echo $nav_active_mode === 'detailed' ? ' nav-detailed-mode' : ''; ?>" id="productNav">
         <?php
         $nav_sticker_groups = [
             '일반스티커' => [
@@ -72,7 +89,7 @@ if (isset($db) && $db) {
         ?>
         <div class="nav-btn-dropdown">
             <a href="/mlangprintauto/sticker_new/index.php" class="nav-btn <?php echo ($current_page == 'sticker') ? 'active' : ''; ?>">
-               <span style="display:inline-block; transform:scaleX(0.95); transform-origin:center;">스티커/라벨 ▾</span>
+               <span style="display:inline-block; transform:scaleX(0.95); transform-origin:center;">스티커/라벨 <span class="nav-arrow">▾</span></span>
             </a>
             <div class="nav-dropdown-menu nav-mega-panel">
                 <?php foreach ($nav_sticker_groups as $group_name => $materials): ?>
@@ -94,12 +111,11 @@ if (isset($db) && $db) {
                     </span>
                     <span class="notice-phone">☎ 1688-2384 전화문의</span>
                 </a>
-            </div>
-        </div>
+    </div>
 
         <div class="nav-btn-dropdown">
             <a href="/mlangprintauto/inserted/index.php" class="nav-btn <?php echo ($current_page == 'leaflet') ? 'active' : ''; ?>">
-               <span style="display:inline-block; transform:scaleX(0.95); transform-origin:center;">전단지/리플렛 ▾</span>
+               <span style="display:inline-block; transform:scaleX(0.95); transform-origin:center;">전단지/리플렛 <span class="nav-arrow">▾</span></span>
             </a>
             <?php if (!empty($nav_leaflet_papers)): ?>
             <div class="nav-dropdown-menu nav-mega-panel">
@@ -121,7 +137,7 @@ if (isset($db) && $db) {
 
         <div class="nav-btn-dropdown">
             <a href="/mlangprintauto/namecard/index.php" class="nav-btn <?php echo ($current_page == 'namecard') ? 'active' : ''; ?>">
-               명함/쿠폰 ▾
+               명함/쿠폰 <span class="nav-arrow">▾</span>
             </a>
             <?php
             $nav_nc_types = [];
@@ -158,18 +174,29 @@ if (isset($db) && $db) {
             <?php endif; ?>
         </div>
 
+        <?php
+        // 자석스티커 서브메뉴 커스텀 라벨 (DB 타이틀 → 표시 라벨)
+        $msticker_labels = [
+            '742' => '종이자석스티커',
+            '753' => '전체자석스티커',
+        ];
+        ?>
         <?php foreach ($nav_mega_products as $mega_key => $mega_info): ?>
         <?php $mega_types = isset($nav_mega_data[$mega_key]) ? $nav_mega_data[$mega_key] : []; ?>
         <div class="nav-btn-dropdown">
             <a href="/mlangprintauto/<?php echo $mega_info['folder']; ?>/index.php" class="nav-btn <?php echo ($current_page == $mega_key) ? 'active' : ''; ?>">
-               <?php echo $mega_info['label']; ?> ▾
+               <?php echo $mega_info['label']; ?> <span class="nav-arrow">▾</span>
             </a>
             <?php if (!empty($mega_types)): ?>
             <div class="nav-dropdown-menu nav-mega-panel">
                 <?php foreach ($mega_types as $mtype): ?>
                 <div class="nav-mega-group">
                     <a href="/mlangprintauto/<?php echo $mega_info['folder']; ?>/index.php?type=<?php echo $mtype['no']; ?>" class="nav-mega-heading"><?php
-                        echo htmlspecialchars(trim(preg_replace('/\(.*?\)/', '', $mtype['title'])));
+                        if ($mega_key === 'msticker' && isset($msticker_labels[$mtype['no']])) {
+                            echo htmlspecialchars($msticker_labels[$mtype['no']]);
+                        } else {
+                            echo htmlspecialchars(trim(preg_replace('/\(.*?\)/', '', $mtype['title'])));
+                        }
                     ?></a>
                     <?php if (!empty($mtype['subs'])): ?>
                     <div class="nav-mega-items">
@@ -188,3 +215,26 @@ if (isset($db) && $db) {
         <?php endforeach; ?>
     </div>
 </div>
+<script>
+function toggleNavMode() {
+    var nav = document.getElementById('productNav');
+    var guide = document.getElementById('navModeGuide');
+    var icon = document.getElementById('navToggleIcon');
+    var label = document.getElementById('navToggleLabel');
+    var isDetailed = nav.classList.toggle('nav-detailed-mode');
+
+    if (isDetailed) {
+        guide.textContent = '📋 재질/옵션을 알고 계시면 서브메뉴에서 바로 선택하세요';
+        icon.textContent = '🔰';
+        label.textContent = '심플 메뉴';
+    } else {
+        guide.textContent = '🔰 버튼을 클릭하면 제품 페이지로 바로 이동합니다';
+        icon.textContent = '📋';
+        label.textContent = '상세 메뉴';
+    }
+
+    var d = new Date();
+    d.setTime(d.getTime() + 365 * 24 * 60 * 60 * 1000);
+    document.cookie = 'nav_mode=' + (isDetailed ? 'detailed' : 'simple') + ';expires=' + d.toUTCString() + ';path=/';
+}
+</script>

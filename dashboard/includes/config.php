@@ -63,6 +63,7 @@ $DASHBOARD_NAV = [
             'members' => ['name' => '회원 관리', 'icon' => '👥', 'path' => '/dashboard/members/'],
             'stats' => ['name' => '주문 통계', 'icon' => '📈', 'path' => '/dashboard/stats/'],
             'visitors' => ['name' => '방문자분석', 'icon' => '👁️', 'path' => '/dashboard/visitors/'],
+            'site_settings' => ['name' => '사이트 설정', 'icon' => '⚙️', 'path' => '/dashboard/settings/'],
         ]
     ],
     'legacy_group' => [

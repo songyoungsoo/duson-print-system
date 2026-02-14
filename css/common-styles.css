@@ -514,8 +514,77 @@ input[type="text"].inline-input {
 /* 7. 반응형 디자인 */
 /* =================================================================== */
 
+/* === 네비 모드 토글 바 === */
+.nav-mode-bar {
+    max-width: 1200px;
+    margin: 0 auto;
+    padding: 8px 1rem 0;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 12px;
+}
+
+.nav-mode-guide {
+    font-size: 12px;
+    color: #888;
+    flex: 1;
+}
+
+.nav-mode-toggle {
+    display: inline-flex;
+    align-items: center;
+    gap: 4px;
+    padding: 5px 12px;
+    border: 1.5px solid #ccc;
+    border-radius: 20px;
+    background: #fff;
+    font-size: 12px;
+    font-weight: 600;
+    color: #555;
+    cursor: pointer;
+    transition: all 0.2s ease;
+    white-space: nowrap;
+}
+
+.nav-mode-toggle:hover {
+    border-color: #3366ff;
+    color: #3366ff;
+    background: #f0f4ff;
+}
+
+.toggle-icon {
+    font-size: 13px;
+}
+
+/* === 심플 모드 (기본): 서브메뉴 숨김 === */
+.product-nav .nav-arrow {
+    display: none;
+}
+
+.product-nav .nav-dropdown-menu {
+    display: none;
+    pointer-events: none;
+}
+
+.product-nav .nav-btn-dropdown:hover .nav-dropdown-menu,
+.product-nav .nav-btn-dropdown:hover .nav-mega-panel {
+    display: none;
+}
+
+/* === 상세 모드: 서브메뉴 활성화 === */
+.product-nav.nav-detailed-mode .nav-arrow {
+    display: inline;
+}
+
+.product-nav.nav-detailed-mode .nav-btn-dropdown:hover .nav-dropdown-menu,
+.product-nav.nav-detailed-mode .nav-btn-dropdown:hover .nav-mega-panel {
+    display: block;
+    pointer-events: auto;
+    animation: navDropFadeIn 0.2s ease-out;
+}
+
 /* === 제품 네비게이션 스타일 === */
-/* 네비게이션 래퍼 */
 .cart-nav-wrapper {
     max-width: 1200px;
     margin: 0 auto;
@@ -593,17 +662,19 @@ input[type="text"].inline-input {
     border-radius: 8px;
     box-shadow: 0 8px 25px rgba(0,0,0,0.2);
     z-index: 1000;
-    padding: 6px 0;
-    margin-top: 4px;
+    padding-top: 10px;
+    padding-bottom: 6px;
+    padding-left: 0;
+    padding-right: 0;
 }
 
 .nav-dropdown-menu::before {
     content: '';
     position: absolute;
-    top: -8px;
-    left: 0;
-    right: 0;
-    height: 8px;
+    top: -12px;
+    left: -16px;
+    right: -16px;
+    height: 20px;
     background: transparent;
 }
 
@@ -642,6 +713,14 @@ input[type="text"].inline-input {
     overflow-y: auto;
 }
 
+/* 서브메뉴 내 모든 링크: hover 밑줄 제거 */
+.nav-mega-panel a,
+.nav-mega-panel a:hover,
+.nav-mega-panel a:focus,
+.nav-mega-panel a:visited {
+    text-decoration: none;
+}
+
 .nav-btn-dropdown:hover .nav-mega-panel {
     display: block;
     animation: navDropFadeIn 0.2s ease-out;
@@ -662,12 +741,14 @@ input[type="text"].inline-input {
     font-weight: 700;
     color: #3366ff;
     text-decoration: none;
-    border-bottom: 2px solid #3366ff;
-    margin-bottom: 4px;
+    border-bottom: 1.5px solid #3366ff;
+    padding-bottom: 5px;
+    margin-bottom: 6px;
 }
 
 .nav-mega-heading:hover {
     background: #f0f4ff;
+    text-decoration: none;
 }
 
 .nav-mega-items {
@@ -750,6 +831,7 @@ input[type="text"].inline-input {
 .nav-mega-item:hover {
     background: #e8f0fe;
     color: #1E4E79;
+    text-decoration: none;
 }
 
 /* 레벨 2: 모바일 3x3 그리드 */
