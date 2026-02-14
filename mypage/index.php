@@ -1,6 +1,7 @@
 <?php
 require_once $_SERVER['DOCUMENT_ROOT'] . '/db.php';
 require_once $_SERVER['DOCUMENT_ROOT'] . '/includes/auth.php';
+require_once $_SERVER['DOCUMENT_ROOT'] . '/includes/ProductSpecFormatter.php';
 
 // 세션 만료 vs 미로그인 구분하여 적절한 메시지 표시
 requireLogin('/member/login.php');
@@ -615,86 +616,22 @@ include $_SERVER['DOCUMENT_ROOT'] . '/includes/header-ui.php';
                         </tr>
                     </thead>
                     <tbody>
-                        <?php foreach ($all_orders as $order):
-                            // Type_1 JSON 파싱 - 2줄 슬래시 형식 (라벨 제외)
-                            $type1_raw = $order['Type_1'] ?? '';
-                            $json_data = json_decode($type1_raw, true);
-                            $product_type = strtolower($order['Type'] ?? '');
+                        <?php
+                        // ProductSpecFormatter 인스턴스 생성 (SSOT - 모든 JSON 포맷 처리)
+                        $specFormatter = new ProductSpecFormatter($db);
+                        foreach ($all_orders as $order):
+                            // ProductSpecFormatter 사용 (v1/v2/레거시 모든 포맷 자동 처리)
+                            $spec_result = $specFormatter->format($order);
+                            $display_line1 = $spec_result['line1'] ?? '';
+                            $display_line2 = $spec_result['line2'] ?? '';
 
-                            // 1줄: 규격 정보 (종류 / 용지 / 규격)
-                            // 2줄: 옵션 정보 (인쇄면 / 수량)
-                            $line1_parts = [];
-                            $line2_parts = [];
-
-                            if ($json_data) {
-                                // order_details가 있는 경우 (스티커 등)
-                                if (isset($json_data['order_details'])) {
-                                    $d = $json_data['order_details'];
-
-                                    // 1줄: 종류 / 용지 / 규격
-                                    if (!empty($d['jong'])) $line1_parts[] = $d['jong'];
-                                    if (!empty($d['paper'])) $line1_parts[] = $d['paper'];
-                                    if (!empty($d['garo']) && !empty($d['sero'])) {
-                                        $line1_parts[] = $d['garo'] . '×' . $d['sero'] . 'mm';
-                                    }
-
-                                    // 2줄: 수량 / 모양
-                                    if (!empty($d['mesu'])) {
-                                        $line2_parts[] = number_format(intval($d['mesu'])) . '매';
-                                    }
-                                    if (!empty($d['domusong']) && $d['domusong'] != '00000 사각') {
-                                        $line2_parts[] = $d['domusong'];
-                                    }
+                            // fallback: formatter가 빈 결과를 반환하면 원본 텍스트
+                            if (empty($display_line1) && empty($display_line2)) {
+                                $type1_raw = $order['Type_1'] ?? '';
+                                if (!empty($type1_raw)) {
+                                    $display_line1 = mb_substr($type1_raw, 0, 50);
                                 }
-                                // formatted_display에서 파싱 (전단지, 봉투 등)
-                                elseif (isset($json_data['formatted_display'])) {
-                                    $fd = $json_data['formatted_display'];
-                                    // 줄바꿈으로 분리하고 라벨 제거
-                                    $lines = preg_split('/\\\\n|\n/', $fd);
-                                    $parsed = [];
-                                    foreach ($lines as $line) {
-                                        $line = trim($line);
-                                        if (empty($line)) continue;
-                                        // "라벨: 값" 형식에서 값만 추출
-                                        if (strpos($line, ':') !== false) {
-                                            $parts = explode(':', $line, 2);
-                                            $parsed[trim($parts[0])] = trim($parts[1] ?? '');
-                                        } else {
-                                            $parsed[] = $line;
-                                        }
-                                    }
-
-                                    // 1줄: 용지 / 규격
-                                    if (!empty($parsed['용지'])) $line1_parts[] = $parsed['용지'];
-                                    if (!empty($parsed['규격'])) $line1_parts[] = $parsed['규격'];
-                                    if (!empty($parsed['타입'])) $line1_parts[] = $parsed['타입'];
-                                    if (!empty($parsed['구분'])) $line1_parts[] = $parsed['구분'];
-                                    if (!empty($parsed['재질'])) $line1_parts[] = $parsed['재질'];
-                                    if (!empty($parsed['크기'])) $line1_parts[] = $parsed['크기'];
-
-                                    // 2줄: 인쇄면 / 수량
-                                    if (!empty($parsed['인쇄면'])) $line2_parts[] = $parsed['인쇄면'];
-                                    if (!empty($parsed['인쇄'])) $line2_parts[] = $parsed['인쇄'];
-                                    if (!empty($parsed['수량'])) $line2_parts[] = $parsed['수량'];
-                                }
-                                // MY_type_name, Section_name 등 직접 필드 사용 (양식지 등)
-                                else {
-                                    if (!empty($json_data['MY_type_name'])) $line1_parts[] = $json_data['MY_type_name'];
-                                    if (!empty($json_data['Section_name'])) $line1_parts[] = $json_data['Section_name'];
-                                    if (!empty($json_data['PN_type_name'])) $line2_parts[] = $json_data['PN_type_name'];
-                                    if (!empty($json_data['MY_amount'])) {
-                                        $qty = $json_data['MY_amount'];
-                                        $line2_parts[] = number_format(intval($qty)) . '매';
-                                    }
-                                }
-                            } elseif (!empty($type1_raw)) {
-                                // JSON이 아닌 경우 원본 텍스트 사용
-                                $line1_parts[] = $type1_raw;
                             }
-
-                            // 최종 표시 문자열 생성
-                            $display_line1 = implode(' / ', $line1_parts);
-                            $display_line2 = implode(' / ', $line2_parts);
                         ?>
                         <tr>
                             <td style="text-align: center;">
@@ -711,7 +648,7 @@ include $_SERVER['DOCUMENT_ROOT'] . '/includes/header-ui.php';
                                     <div style="color: #666; font-size: 13px;"><?php echo htmlspecialchars($display_line2); ?></div>
                                 <?php endif; ?>
                             </td>
-                            <td style="text-align: right; padding-right: 12px; font-weight: 500;"><?php echo number_format($order['money_4'] ?? 0); ?>원</td>
+                            <td style="text-align: right; padding-right: 12px; font-weight: 500;"><?php echo number_format($order['money_5'] ?? $order['money_4'] ?? 0); ?>원</td>
                             <td style="text-align: center; color: #666;"><?php echo date('Y-m-d', strtotime($order['date'] ?? '')); ?></td>
                             <td style="text-align: center;">
                                 <?php
