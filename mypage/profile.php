@@ -4,19 +4,9 @@
  * 경로: /mypage/profile.php
  */
 
-// 세션 및 인증 처리 (8시간 유지, 자동 로그인 30일)
-require_once $_SERVER['DOCUMENT_ROOT'] . '/includes/auth.php';
+require_once __DIR__ . '/auth_required.php';
 
-// 로그인 확인
-if (!isset($_SESSION['user_id'])) {
-    echo "<script>alert('세션이 만료되었습니다. 다시 로그인해주세요.'); location.href='/member/login.php';</script>";
-    exit;
-}
-
-// 데이터베이스 연결
-require_once $_SERVER['DOCUMENT_ROOT'] . '/db.php';
-
-$user_id = $_SESSION['user_id'];
+$user_id = $current_user['id'];
 $message = '';
 $error = '';
 

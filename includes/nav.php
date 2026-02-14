@@ -200,6 +200,32 @@ if (isset($db) && $db) {
                         }
                     ?></a>
                     <?php if (!empty($mtype['subs'])): ?>
+                    <?php if ($mega_key === 'envelope' && $mtype['no'] == '282'): ?>
+                    <?php
+                        $env_normal = [];
+                        $env_jacket = [];
+                        foreach ($mtype['subs'] as $msub) {
+                            if (preg_match('/[자쟈]켓/u', $msub['title'])) {
+                                $env_jacket[] = $msub;
+                            } else {
+                                $env_normal[] = $msub;
+                            }
+                        }
+                    ?>
+                    <div class="nav-mega-items">
+                        <?php foreach ($env_normal as $msub): ?>
+                        <a href="/mlangprintauto/envelope/index.php?type=282&section=<?php echo $msub['no']; ?>" class="nav-mega-item"><?php echo htmlspecialchars(trim($msub['title'])); ?></a>
+                        <?php endforeach; ?>
+                    </div>
+                    <?php if (!empty($env_jacket)): ?>
+                    <div class="nav-mega-subheading">자켓봉투</div>
+                    <div class="nav-mega-items">
+                        <?php foreach ($env_jacket as $msub): ?>
+                        <a href="/mlangprintauto/envelope/index.php?type=282&section=<?php echo $msub['no']; ?>" class="nav-mega-item"><?php echo htmlspecialchars(trim($msub['title'])); ?></a>
+                        <?php endforeach; ?>
+                    </div>
+                    <?php endif; ?>
+                    <?php else: ?>
                     <div class="nav-mega-items">
                         <?php foreach ($mtype['subs'] as $msub): ?>
                         <a href="/mlangprintauto/<?php echo $mega_info['folder']; ?>/index.php?type=<?php echo $mtype['no']; ?>&section=<?php echo $msub['no']; ?>" class="nav-mega-item"><?php
@@ -207,6 +233,7 @@ if (isset($db) && $db) {
                         ?></a>
                         <?php endforeach; ?>
                     </div>
+                    <?php endif; ?>
                     <?php endif; ?>
                 </div>
                 <?php endforeach; ?>
