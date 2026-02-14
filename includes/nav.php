@@ -111,7 +111,8 @@ if (isset($db) && $db) {
                     </span>
                     <span class="notice-phone">☎ 1688-2384 전화문의</span>
                 </a>
-    </div>
+            </div>
+        </div>
 
         <div class="nav-btn-dropdown">
             <a href="/mlangprintauto/inserted/index.php" class="nav-btn <?php echo ($current_page == 'leaflet') ? 'active' : ''; ?>">
