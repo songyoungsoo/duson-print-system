@@ -532,7 +532,6 @@ include $_SERVER['DOCUMENT_ROOT'] . '/includes/header-ui.php';
             }).open();
         }
 
-        // 사업장 주소 필드 변경 시 hidden 필드 업데이트
         function updateBusinessAddress() {
             const postcode = document.getElementById('business_postcode').value;
             const address = document.getElementById('business_address_display').value;
@@ -542,35 +541,61 @@ include $_SERVER['DOCUMENT_ROOT'] . '/includes/header-ui.php';
             let fullAddress = '';
             if (postcode) fullAddress += '[' + postcode + '] ';
             if (address) fullAddress += address;
-            if (detailAddress) fullAddress += ' ' + detailAddress;
-            if (extraAddress) fullAddress += ' ' + extraAddress;
+
+            var detailPart = '';
+            if (detailAddress) detailPart += detailAddress;
+            if (extraAddress) detailPart += (detailPart ? ' ' : '') + extraAddress;
+            if (detailPart) fullAddress += '|||' + detailPart;
 
             document.getElementById('business_address_hidden').value = fullAddress.trim();
         }
 
-        // 페이지 로드 시 기존 사업장 주소 분리
         window.addEventListener('DOMContentLoaded', function() {
             const businessAddress = document.getElementById('business_address_hidden').value;
-            if (businessAddress) {
-                // [우편번호] 주소 상세주소 (참고항목) 형식 파싱
-                const postcodeMatch = businessAddress.match(/\[(\d{5})\]/);
-                if (postcodeMatch) {
-                    document.getElementById('business_postcode').value = postcodeMatch[1];
+            if (!businessAddress) return;
 
-                    // 우편번호 제거한 나머지 주소
-                    let remaining = businessAddress.replace(/\[\d{5}\]\s*/, '');
+            var mainAddr = '', detailAddr = '', extraAddr = '';
 
-                    // 참고항목 추출 (괄호로 감싸진 부분)
-                    const extraMatch = remaining.match(/\(([^)]+)\)\s*$/);
+            var postcodeMatch = businessAddress.match(/\[(\d{5})\]/);
+            if (postcodeMatch) {
+                document.getElementById('business_postcode').value = postcodeMatch[1];
+                var remaining = businessAddress.replace(/\[\d{5}\]\s*/, '');
+
+                if (remaining.indexOf('|||') !== -1) {
+                    var parts = remaining.split('|||');
+                    mainAddr = parts[0].trim();
+                    var detailPart = parts[1].trim();
+                    var extraMatch = detailPart.match(/\(([^)]+)\)\s*$/);
                     if (extraMatch) {
-                        document.getElementById('business_extraAddress').value = '(' + extraMatch[1] + ')';
+                        extraAddr = '(' + extraMatch[1] + ')';
+                        detailPart = detailPart.replace(/\s*\([^)]+\)\s*$/, '').trim();
+                    }
+                    detailAddr = detailPart;
+                } else {
+                    var extraMatch = remaining.match(/\(([^)]+)\)\s*$/);
+                    if (extraMatch) {
+                        extraAddr = '(' + extraMatch[1] + ')';
                         remaining = remaining.replace(/\s*\([^)]+\)\s*$/, '');
                     }
-
-                    // 남은 주소를 display에 표시
-                    document.getElementById('business_address_display').value = remaining.trim();
+                    mainAddr = remaining.trim();
                 }
+            } else if (businessAddress.indexOf('|||') !== -1) {
+                var parts = businessAddress.split('|||');
+                mainAddr = parts[0].trim();
+                var detailPart = parts[1].trim();
+                var extraMatch = detailPart.match(/\(([^)]+)\)\s*$/);
+                if (extraMatch) {
+                    extraAddr = '(' + extraMatch[1] + ')';
+                    detailPart = detailPart.replace(/\s*\([^)]+\)\s*$/, '').trim();
+                }
+                detailAddr = detailPart;
+            } else {
+                mainAddr = businessAddress;
             }
+
+            document.getElementById('business_address_display').value = mainAddr;
+            document.getElementById('business_detailAddress').value = detailAddr;
+            document.getElementById('business_extraAddress').value = extraAddr;
         });
 
         // 상세주소/참고항목 입력 시 hidden 필드 업데이트
