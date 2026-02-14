@@ -26,8 +26,24 @@ document.addEventListener('DOMContentLoaded', function() {
     initializeCalculator();
     initializeFileUpload();
 
-    // 기본값이 설정되어 있으면 자동으로 하위 옵션들 로드
+    const urlParams = new URLSearchParams(window.location.search);
+    const urlType = urlParams.get('type');
+    const urlSection = urlParams.get('section');
+    
     const typeSelect = document.getElementById('MY_type');
+    
+    if (urlType && typeSelect) {
+        typeSelect.value = urlType;
+        console.log('🎯 URL 파라미터로 자석스티커 종류 선택:', urlType);
+    }
+    if (urlSection) {
+        const sizeSelect = document.getElementById('Section');
+        if (sizeSelect) {
+            sizeSelect.dataset.defaultValue = urlSection;
+            console.log('🎯 URL 파라미터로 자석스티커 규격 예약:', urlSection);
+        }
+    }
+    
     if (typeSelect && typeSelect.value) {
         loadSizes(typeSelect.value);
     }

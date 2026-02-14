@@ -26,12 +26,26 @@ document.addEventListener('DOMContentLoaded', function() {
     // initializeGallery(); // 제거: 공통 갤러리 시스템 사용
     initializeCalculator();
     initializeFileUpload();
-
-    // 🆕 프리미엄 옵션 이벤트 리스너 초기화
     initializePremiumOptionsListeners();
 
-    // 기본값이 설정되어 있으면 자동으로 하위 옵션들 로드
+    const urlParams = new URLSearchParams(window.location.search);
+    const urlType = urlParams.get('type');
+    const urlSection = urlParams.get('section');
+    
     const typeSelect = document.getElementById('MY_type');
+    
+    if (urlType && typeSelect) {
+        typeSelect.value = urlType;
+        console.log('🎯 URL 파라미터로 상품권 종류 선택:', urlType);
+    }
+    if (urlSection) {
+        const paperSelect = document.getElementById('Section');
+        if (paperSelect) {
+            paperSelect.dataset.defaultValue = urlSection;
+            console.log('🎯 URL 파라미터로 상품권 재질 예약:', urlSection);
+        }
+    }
+    
     if (typeSelect && typeSelect.value) {
         loadPaperTypes(typeSelect.value);
     }

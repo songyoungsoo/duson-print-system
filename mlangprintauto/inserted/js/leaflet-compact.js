@@ -278,20 +278,25 @@ document.addEventListener('DOMContentLoaded', function() {
         loadPaperSizes(colorSelect.value);
     }
     
-    // 페이지 로드 후 기본값으로 수량 자동 로드 및 가격 계산
     setTimeout(() => {
-        console.log('🔄 초기 기본값 설정 및 자동 계산 시작');
-        
-        // 종이종류를 첫 번째 옵션으로 자동 선택
+        const urlType = new URLSearchParams(window.location.search).get('type');
         const paperTypeSelect = document.querySelector('select[name="MY_Fsd"]');
+
         if (paperTypeSelect && paperTypeSelect.options.length > 1) {
-            paperTypeSelect.selectedIndex = 1; // 두 번째 옵션 (첫 번째는 "선택해주세요")
-            console.log('📄 종이종류 자동 선택:', paperTypeSelect.value, paperTypeSelect.options[paperTypeSelect.selectedIndex].text);
+            if (urlType) {
+                for (let i = 0; i < paperTypeSelect.options.length; i++) {
+                    if (paperTypeSelect.options[i].value == urlType) {
+                        paperTypeSelect.selectedIndex = i;
+                        break;
+                    }
+                }
+            } else if (!paperTypeSelect.value) {
+                paperTypeSelect.selectedIndex = 1;
+            }
         }
-        
-        // 수량 및 가격 자동 계산
+
         updateQuantities();
-    }, 1000); // 다른 드롭다운들이 로드된 후 실행
+    }, 1000);
     
     console.log('✅ 페이지 초기화 완료');
 });
@@ -415,6 +420,8 @@ function resetPriceDisplay() {
 function loadPaperTypes(colorNo) {
     console.log('📄 종이종류 옵션 로드 시작:', colorNo);
 
+    const urlType = new URLSearchParams(window.location.search).get('type');
+
     fetch(`get_paper_types.php?CV_no=${colorNo}&page=inserted`)
         .then(response => response.json())
         .then(data => {
@@ -422,21 +429,21 @@ function loadPaperTypes(colorNo) {
 
             const paperTypeSelect = document.querySelector('select[name="MY_Fsd"]');
             if (paperTypeSelect) {
-                // 🔧 첫 번째에 안내문 추가
                 paperTypeSelect.innerHTML = '<option value="">종이종류를 선택해주세요</option>';
 
                 data.forEach((option, index) => {
                     const optionElement = document.createElement('option');
                     optionElement.value = option.no;
                     optionElement.textContent = option.title;
-                    // 🔧 첫 번째 실제 옵션(100g아트지) 자동 선택
-                    if (index === 0) {
+                    if (urlType && option.no == urlType) {
+                        optionElement.selected = true;
+                    } else if (!urlType && index === 0) {
                         optionElement.selected = true;
                     }
                     paperTypeSelect.appendChild(optionElement);
                 });
 
-                console.log('✅ 종이종류 옵션 로드 완료:', data.length, '개, 첫 번째 옵션(100g아트지) 자동 선택');
+                console.log('✅ 종이종류 옵션 로드 완료:', data.length, '개');
             }
         })
         .catch(error => {

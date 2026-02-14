@@ -27,8 +27,25 @@ document.addEventListener('DOMContentLoaded', function() {
     initializeCalculator();
     initializeFileUpload();
     
-    // 기본값이 설정되어 있으면 자동으로 하위 옵션들 로드
+    // URL 파라미터에서 type/section 읽기 (네비 드롭다운에서 진입 시)
+    const urlParams = new URLSearchParams(window.location.search);
+    const urlType = urlParams.get('type');
+    const urlSection = urlParams.get('section');
+    
     const typeSelect = document.getElementById('MY_type');
+    
+    if (urlType && typeSelect) {
+        typeSelect.value = urlType;
+        console.log('🎯 URL 파라미터로 포스터 종류 선택:', urlType);
+    }
+    if (urlSection) {
+        const paperSelect = document.getElementById('Section');
+        if (paperSelect) {
+            paperSelect.dataset.defaultValue = urlSection;
+            console.log('🎯 URL 파라미터로 포스터 재질 예약:', urlSection);
+        }
+    }
+    
     if (typeSelect && typeSelect.value) {
         console.log('🚀 페이지 로드 시 기본값 포스터 종류 감지:', typeSelect.value);
         loadPaperTypes(typeSelect.value);
@@ -358,14 +375,18 @@ function loadPaperTypes(style) {
                 updateSelectWithOptions(paperSelect, data.data, '용지 재질을 선택해주세요');
                 console.log(`✅ 용지 재질 옵션 ${data.data.length}개 로드됨`);
                 
-                // 첫 번째 용지 재질 자동 선택
+                // 용지 재질 자동 선택: data-default-value(URL) 우선, 없으면 첫 번째
                 if (data.data.length > 0) {
-                    const firstOption = data.data[0];
-                    paperSelect.value = firstOption.no;
-                    console.log(`🎯 첫 번째 용지 재질 자동 선택: ${firstOption.title}`);
+                    const defaultSection = paperSelect.dataset.defaultValue;
+                    let selectedOption = data.data[0];
+                    if (defaultSection) {
+                        const found = data.data.find(d => String(d.no) === String(defaultSection));
+                        if (found) selectedOption = found;
+                    }
+                    paperSelect.value = selectedOption.no;
+                    console.log(`🎯 용지 재질 자동 선택: ${selectedOption.title}`, defaultSection ? '(URL)' : '(첫 번째)');
                     
-                    // 규격 로드 (지연 실행으로 안정성 향상)
-                    setTimeout(() => loadPaperSizes(firstOption.no), 100);
+                    setTimeout(() => loadPaperSizes(selectedOption.no), 100);
                 }
             } else {
                 console.error('❌ 용지 재질 로드 실패:', data.message);
@@ -402,11 +423,16 @@ function loadPaperSizes(section) {
                 updateSelectWithOptions(sizeSelect, data.data, '규격을 선택해주세요');
                 console.log(`✅ 규격 옵션 ${data.data.length}개 로드됨`);
                 
-                // 첫 번째 규격 자동 선택
+                // 규격 자동 선택: data-default-value 우선, 없으면 첫 번째
                 if (data.data.length > 0) {
-                    const firstSize = data.data[0];
-                    sizeSelect.value = firstSize.no;
-                    console.log(`🎯 첫 번째 규격 자동 선택: ${firstSize.title}`);
+                    const defaultSize = sizeSelect.dataset.defaultValue;
+                    let selectedSize = data.data[0];
+                    if (defaultSize) {
+                        const found = data.data.find(d => String(d.no) === String(defaultSize));
+                        if (found) selectedSize = found;
+                    }
+                    sizeSelect.value = selectedSize.no;
+                    console.log(`🎯 규격 자동 선택: ${selectedSize.title}`, defaultSize ? '(URL)' : '(첫 번째)');
                     
                     // 인쇄면도 자동 선택 (단면 기본값)
                     const sideSelect = document.getElementById('POtype');

@@ -33,40 +33,46 @@ mysqli_set_charset($db, "utf8");
 $log_info = generateLogInfo();
 $page_title = generate_page_title("명함 견적안내 컴팩트 - 프리미엄 옵션");
 
-// 기본값 설정 (데이터베이스에서 가져오기) - PROJECT_SUCCESS_REPORT.md 스펙
 $default_values = [
     'MY_type' => '',
     'Section' => '',
-    'POtype' => '1', // 기본값: 단면
+    'POtype' => '1',
     'MY_amount' => '',
-    'ordertype' => 'print' // 기본값: 인쇄만
+    'ordertype' => 'print'
 ];
 
-// 첫 번째 명함 종류 가져오기 (일반명함(쿠폰) 우선)
-$type_query = "SELECT no, title FROM mlangprintauto_transactioncate
-               WHERE Ttable='NameCard' AND BigNo='0'
-               ORDER BY CASE WHEN title LIKE '%일반명함%' THEN 1 ELSE 2 END, no ASC
-               LIMIT 1";
-$type_result = mysqli_query($db, $type_query);
-if ($type_result && ($type_row = mysqli_fetch_assoc($type_result))) {
-    $default_values['MY_type'] = $type_row['no'];
+$url_nc_type = isset($_GET['type']) ? intval($_GET['type']) : 0;
+$url_nc_section = isset($_GET['section']) ? intval($_GET['section']) : 0;
 
-    // 해당 명함 종류의 첫 번째 재질 가져오기
-    $section_query = "SELECT no, title FROM mlangprintauto_transactioncate
-                      WHERE Ttable='NameCard' AND BigNo='" . $type_row['no'] . "'
-                      ORDER BY no ASC LIMIT 1";
-    $section_result = mysqli_query($db, $section_query);
-    if ($section_result && ($section_row = mysqli_fetch_assoc($section_result))) {
-        $default_values['Section'] = $section_row['no'];
+if ($url_nc_type) {
+    $default_values['MY_type'] = $url_nc_type;
+    if ($url_nc_section) {
+        $default_values['Section'] = $url_nc_section;
+    }
+} else {
+    $type_query = "SELECT no, title FROM mlangprintauto_transactioncate
+                   WHERE Ttable='NameCard' AND BigNo='0'
+                   ORDER BY CASE WHEN title LIKE '%일반명함%' THEN 1 ELSE 2 END, no ASC
+                   LIMIT 1";
+    $type_result = mysqli_query($db, $type_query);
+    if ($type_result && ($type_row = mysqli_fetch_assoc($type_result))) {
+        $default_values['MY_type'] = $type_row['no'];
 
-        // 해당 조합의 기본 수량 가져오기 (500매 우선)
-        $quantity_query = "SELECT DISTINCT quantity FROM mlangprintauto_namecard
-                          WHERE style='" . $type_row['no'] . "' AND Section='" . $section_row['no'] . "'
-                          ORDER BY CASE WHEN quantity='500' THEN 1 ELSE 2 END, CAST(quantity AS UNSIGNED) ASC
-                          LIMIT 1";
-        $quantity_result = mysqli_query($db, $quantity_query);
-        if ($quantity_result && ($quantity_row = mysqli_fetch_assoc($quantity_result))) {
-            $default_values['MY_amount'] = $quantity_row['quantity'];
+        $section_query = "SELECT no, title FROM mlangprintauto_transactioncate
+                          WHERE Ttable='NameCard' AND BigNo='" . $type_row['no'] . "'
+                          ORDER BY no ASC LIMIT 1";
+        $section_result = mysqli_query($db, $section_query);
+        if ($section_result && ($section_row = mysqli_fetch_assoc($section_result))) {
+            $default_values['Section'] = $section_row['no'];
+
+            $quantity_query = "SELECT DISTINCT quantity FROM mlangprintauto_namecard
+                              WHERE style='" . $type_row['no'] . "' AND Section='" . $section_row['no'] . "'
+                              ORDER BY CASE WHEN quantity='500' THEN 1 ELSE 2 END, CAST(quantity AS UNSIGNED) ASC
+                              LIMIT 1";
+            $quantity_result = mysqli_query($db, $quantity_query);
+            if ($quantity_result && ($quantity_row = mysqli_fetch_assoc($quantity_result))) {
+                $default_values['MY_amount'] = $quantity_row['quantity'];
+            }
         }
     }
 }
@@ -828,16 +834,32 @@ if ($type_result && ($type_row = mysqli_fetch_assoc($type_result))) {
         document.addEventListener('DOMContentLoaded', function() {
             console.log('명함 프리미엄 옵션 페이지 초기화 완료');
 
-            // 첫 번째 종류 옵션 자동 선택
             setTimeout(function() {
+                const urlParams = new URLSearchParams(window.location.search);
+                const urlType = urlParams.get('type');
+                const urlSection = urlParams.get('section');
                 const typeSelect = document.getElementById('MY_type');
+
                 if (typeSelect && typeSelect.options.length > 1) {
-                    // "선택해주세요" 다음의 첫 번째 옵션 선택
-                    typeSelect.selectedIndex = 1;
-                    const firstValue = typeSelect.value;
-                    if (firstValue) {
-                        console.log('첫 번째 종류 자동 선택:', firstValue);
-                        handleTypeChange(firstValue);
+                    if (urlType) {
+                        typeSelect.value = urlType;
+                    } else {
+                        typeSelect.selectedIndex = 1;
+                    }
+                    const selectedValue = typeSelect.value;
+                    if (selectedValue) {
+                        console.log('종류 선택:', selectedValue, urlType ? '(URL)' : '(기본)');
+                        handleTypeChange(selectedValue);
+
+                        if (urlSection) {
+                            setTimeout(function() {
+                                const sectionSelect = document.getElementById('Section');
+                                if (sectionSelect) {
+                                    sectionSelect.value = urlSection;
+                                    handleSectionChange(urlSection);
+                                }
+                            }, 600);
+                        }
                     }
                 }
 

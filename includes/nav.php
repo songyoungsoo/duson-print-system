@@ -5,46 +5,186 @@
  * 스타일: /css/common-styles.css의 .product-nav 섹션
  */
 
-// 현재 페이지 확인을 위한 변수 (각 페이지에서 설정)
 $current_page = isset($current_page) ? $current_page : '';
+
+// 전단지 용지 옵션 (칼라CMYK no=802 하위 용지)
+$nav_leaflet_papers = [];
+if (isset($db) && $db) {
+    $nav_q = mysqli_query($db, "SELECT no, title FROM mlangprintauto_transactioncate WHERE TreeNo='802' ORDER BY no ASC");
+    if ($nav_q) {
+        while ($r = mysqli_fetch_assoc($nav_q)) {
+            $nav_leaflet_papers[] = $r;
+        }
+    }
+}
+
+// 6개 제품 메가 패널 데이터 일괄 조회 (봉투, 카다록, 포스터, 양식지, 상품권, 자석스티커)
+$nav_mega_products = [
+    'envelope'        => ['folder' => 'envelope',        'label' => '✉️ 봉투',  'ttable' => 'envelope'],
+    'cadarok'         => ['folder' => 'cadarok',          'label' => '📖 카다록', 'ttable' => 'cadarok'],
+    'littleprint'     => ['folder' => 'littleprint',      'label' => '🎨 포스터', 'ttable' => 'LittlePrint'],
+    'ncrflambeau'     => ['folder' => 'ncrflambeau',      'label' => '📋 양식지', 'ttable' => 'NcrFlambeau'],
+    'merchandisebond' => ['folder' => 'merchandisebond',  'label' => '🎫 상품권', 'ttable' => 'MerchandiseBond'],
+    'msticker'        => ['folder' => 'msticker',         'label' => '자석스티커', 'ttable' => 'msticker'],
+];
+$nav_mega_data = [];
+if (isset($db) && $db) {
+    foreach ($nav_mega_products as $key => $info) {
+        $ttable = mysqli_real_escape_string($db, $info['ttable']);
+        $types = [];
+        $tq = mysqli_query($db, "SELECT no, title FROM mlangprintauto_transactioncate WHERE Ttable='{$ttable}' AND BigNo='0' AND title != '1' ORDER BY no ASC");
+        if ($tq) {
+            while ($r = mysqli_fetch_assoc($tq)) {
+                $subs = [];
+                $sq = mysqli_query($db, "SELECT no, title FROM mlangprintauto_transactioncate WHERE Ttable='{$ttable}' AND BigNo='{$r['no']}' AND title != '1' ORDER BY no ASC");
+                if ($sq) { while ($s = mysqli_fetch_assoc($sq)) { $subs[] = $s; } }
+                $r['subs'] = $subs;
+                $types[] = $r;
+            }
+        }
+        $nav_mega_data[$key] = $types;
+    }
+}
 ?>
 <!-- 네비게이션 메뉴 -->
 <div class="cart-nav-wrapper">
     <div class="product-nav">
-        <a href="/mlangprintauto/sticker_new/index.php" class="nav-btn <?php echo ($current_page == 'sticker') ? 'active' : ''; ?>">
-           <span style="display:inline-block; transform:scaleX(0.95); transform-origin:center;">스티커/라벨</span>
-        </a>
+        <?php
+        $nav_sticker_groups = [
+            '일반스티커' => [
+                'jil 아트유광코팅' => '아트지유광',
+                'jil 아트무광코팅' => '아트지무광',
+                'jil 아트비코팅' => '아트지비코팅',
+                'jil 모조비코팅' => '모조지비코팅',
+            ],
+            '강접스티커' => [
+                'jka 강접아트유광코팅' => '강접아트유광',
+                'cka 초강접아트코팅' => '초강접아트유광',
+                'cka 초강접아트비코팅' => '초강접아트비코팅',
+            ],
+            '특수재질' => [
+                'jsp 유포지' => '유포지',
+                'jsp 은데드롱' => '은데드롱',
+                'jsp 투명스티커' => '투명스티커',
+                'jsp 크라프트지' => '크라프트스티커',
+            ],
+        ];
+        ?>
+        <div class="nav-btn-dropdown">
+            <a href="/mlangprintauto/sticker_new/index.php" class="nav-btn <?php echo ($current_page == 'sticker') ? 'active' : ''; ?>">
+               <span style="display:inline-block; transform:scaleX(0.95); transform-origin:center;">스티커/라벨 ▾</span>
+            </a>
+            <div class="nav-dropdown-menu nav-mega-panel">
+                <?php foreach ($nav_sticker_groups as $group_name => $materials): ?>
+                <div class="nav-mega-group">
+                    <a href="/mlangprintauto/sticker_new/index.php" class="nav-mega-heading"><?php echo $group_name; ?></a>
+                    <div class="nav-mega-items nav-mega-cols-2">
+                        <?php foreach ($materials as $val => $label): ?>
+                        <a href="/mlangprintauto/sticker_new/index.php?jong=<?php echo urlencode($val); ?>" class="nav-mega-item"><?php echo htmlspecialchars($label); ?></a>
+                        <?php endforeach; ?>
+                    </div>
+                </div>
+                <?php endforeach; ?>
+                <a href="tel:1688-2384" class="nav-mega-notice">
+                    <span class="notice-title">롤스티커</span>
+                    <span class="notice-list">
+                        <span>· 금지스티커</span><span>· 금박스티커</span>
+                        <span>· 홀로그램스티커</span><span>· 보안스티커</span>
+                        <span>· 가맹점스티커</span><span>· 주차스티커</span>
+                    </span>
+                    <span class="notice-phone">☎ 1688-2384 전화문의</span>
+                </a>
+            </div>
+        </div>
 
-        <a href="/mlangprintauto/inserted/index.php" class="nav-btn <?php echo ($current_page == 'leaflet') ? 'active' : ''; ?>">
-           <span style="display:inline-block; transform:scaleX(0.95); transform-origin:center;">전단지/리플렛</span>
-        </a>
+        <div class="nav-btn-dropdown">
+            <a href="/mlangprintauto/inserted/index.php" class="nav-btn <?php echo ($current_page == 'leaflet') ? 'active' : ''; ?>">
+               <span style="display:inline-block; transform:scaleX(0.95); transform-origin:center;">전단지/리플렛 ▾</span>
+            </a>
+            <?php if (!empty($nav_leaflet_papers)): ?>
+            <div class="nav-dropdown-menu nav-mega-panel">
+                <div class="nav-mega-group">
+                    <a href="/mlangprintauto/inserted/index.php" class="nav-mega-heading">칼라(CMYK)</a>
+                    <div class="nav-mega-items nav-mega-cols-2">
+                        <?php foreach ($nav_leaflet_papers as $p):
+                            $is_hapan = ($p['no'] == '626');
+                            $display_title = $is_hapan ? '90g아트지(합판일반전단)' : htmlspecialchars(trim(preg_replace('/\(.*?\)/', '', $p['title'])));
+                            $highlight_class = $is_hapan ? ' nav-mega-item-highlight' : '';
+                        ?>
+                        <a href="/mlangprintauto/inserted/index.php?type=<?php echo $p['no']; ?>" class="nav-mega-item<?php echo $highlight_class; ?>"><?php echo $display_title; ?></a>
+                        <?php endforeach; ?>
+                    </div>
+                </div>
+            </div>
+            <?php endif; ?>
+        </div>
 
-        <a href="/mlangprintauto/namecard/index.php" class="nav-btn <?php echo ($current_page == 'namecard') ? 'active' : ''; ?>">
-           명함/쿠폰
-        </a>
+        <div class="nav-btn-dropdown">
+            <a href="/mlangprintauto/namecard/index.php" class="nav-btn <?php echo ($current_page == 'namecard') ? 'active' : ''; ?>">
+               명함/쿠폰 ▾
+            </a>
+            <?php
+            $nav_nc_types = [];
+            if (isset($db) && $db) {
+                $nq = mysqli_query($db, "SELECT t.no, t.title FROM mlangprintauto_transactioncate t WHERE t.Ttable='NameCard' AND t.BigNo='0' AND t.title != '1' ORDER BY no ASC");
+                if ($nq) { while ($r = mysqli_fetch_assoc($nq)) {
+                    $subs = [];
+                    $sq = mysqli_query($db, "SELECT no, title FROM mlangprintauto_transactioncate WHERE Ttable='NameCard' AND BigNo='{$r['no']}' ORDER BY no ASC");
+                    if ($sq) { while ($s = mysqli_fetch_assoc($sq)) { $subs[] = $s; } }
+                    $r['subs'] = $subs;
+                    $nav_nc_types[] = $r;
+                } }
+            }
+            ?>
+            <?php if (!empty($nav_nc_types)): ?>
+            <div class="nav-dropdown-menu nav-mega-panel">
+                <?php foreach ($nav_nc_types as $nctype): ?>
+                <div class="nav-mega-group">
+                    <a href="/mlangprintauto/namecard/index.php?type=<?php echo $nctype['no']; ?>" class="nav-mega-heading"><?php
+                        echo htmlspecialchars(trim(preg_replace('/\(.*?\)/', '', $nctype['title'])));
+                    ?></a>
+                    <?php if (!empty($nctype['subs'])): ?>
+                    <div class="nav-mega-items">
+                        <?php foreach ($nctype['subs'] as $sub): ?>
+                        <a href="/mlangprintauto/namecard/index.php?type=<?php echo $nctype['no']; ?>&section=<?php echo $sub['no']; ?>" class="nav-mega-item"><?php
+                            echo htmlspecialchars(trim(preg_replace('/\(.*?\)/', '', $sub['title'])));
+                        ?></a>
+                        <?php endforeach; ?>
+                    </div>
+                    <?php endif; ?>
+                </div>
+                <?php endforeach; ?>
+            </div>
+            <?php endif; ?>
+        </div>
 
-        <a href="/mlangprintauto/envelope/index.php" class="nav-btn <?php echo ($current_page == 'envelope') ? 'active' : ''; ?>">
-           ✉️ 봉투
-        </a>
-
-        <a href="/mlangprintauto/cadarok/index.php" class="nav-btn <?php echo ($current_page == 'cadarok') ? 'active' : ''; ?>">
-           📖 카다록
-        </a>
-
-        <a href="/mlangprintauto/littleprint/index.php" class="nav-btn <?php echo ($current_page == 'littleprint') ? 'active' : ''; ?>">
-           🎨 포스터
-        </a>
-
-        <a href="/mlangprintauto/ncrflambeau/index.php" class="nav-btn <?php echo ($current_page == 'ncrflambeau') ? 'active' : ''; ?>">
-           📋 양식지
-        </a>
-
-        <a href="/mlangprintauto/merchandisebond/index.php" class="nav-btn <?php echo ($current_page == 'merchandisebond') ? 'active' : ''; ?>">
-           🎫 상품권
-        </a>
-
-        <a href="/mlangprintauto/msticker/index.php" class="nav-btn <?php echo ($current_page == 'msticker') ? 'active' : ''; ?>">
-           자석스티커
-        </a>
+        <?php foreach ($nav_mega_products as $mega_key => $mega_info): ?>
+        <?php $mega_types = isset($nav_mega_data[$mega_key]) ? $nav_mega_data[$mega_key] : []; ?>
+        <div class="nav-btn-dropdown">
+            <a href="/mlangprintauto/<?php echo $mega_info['folder']; ?>/index.php" class="nav-btn <?php echo ($current_page == $mega_key) ? 'active' : ''; ?>">
+               <?php echo $mega_info['label']; ?> ▾
+            </a>
+            <?php if (!empty($mega_types)): ?>
+            <div class="nav-dropdown-menu nav-mega-panel">
+                <?php foreach ($mega_types as $mtype): ?>
+                <div class="nav-mega-group">
+                    <a href="/mlangprintauto/<?php echo $mega_info['folder']; ?>/index.php?type=<?php echo $mtype['no']; ?>" class="nav-mega-heading"><?php
+                        echo htmlspecialchars(trim(preg_replace('/\(.*?\)/', '', $mtype['title'])));
+                    ?></a>
+                    <?php if (!empty($mtype['subs'])): ?>
+                    <div class="nav-mega-items">
+                        <?php foreach ($mtype['subs'] as $msub): ?>
+                        <a href="/mlangprintauto/<?php echo $mega_info['folder']; ?>/index.php?type=<?php echo $mtype['no']; ?>&section=<?php echo $msub['no']; ?>" class="nav-mega-item"><?php
+                            echo htmlspecialchars(trim(preg_replace('/\(.*?\)/', '', $msub['title'])));
+                        ?></a>
+                        <?php endforeach; ?>
+                    </div>
+                    <?php endif; ?>
+                </div>
+                <?php endforeach; ?>
+            </div>
+            <?php endif; ?>
+        </div>
+        <?php endforeach; ?>
     </div>
 </div>

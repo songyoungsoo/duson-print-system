@@ -28,6 +28,10 @@ mysqli_set_charset($db, "utf8");
 $log_info = generateLogInfo();
 $page_title = generate_page_title("카다록/리플렛 견적안내 컴팩트 - 프리미엄");
 
+// URL 파라미터로 종류/재질 사전 선택 (네비게이션 드롭다운에서 진입 시)
+$url_type = isset($_GET['type']) ? intval($_GET['type']) : 0;
+$url_section = isset($_GET['section']) ? intval($_GET['section']) : 0;
+
 // 기본값 설정 (데이터베이스에서 가져오기) - PROJECT_SUCCESS_REPORT.md 스펙
 $default_values = [
     'MY_type' => '',
@@ -37,32 +41,49 @@ $default_values = [
     'ordertype' => 'print' // 기본값: 인쇄만
 ];
 
-// 첫 번째 카다록 종류 가져오기
-$type_query = "SELECT no, title FROM mlangprintauto_transactioncate 
-               WHERE Ttable='cadarok' AND BigNo='0' 
-               ORDER BY no ASC 
-               LIMIT 1";
-$type_result = mysqli_query($db, $type_query);
-if ($type_result && ($type_row = mysqli_fetch_assoc($type_result))) {
-    $default_values['MY_type'] = $type_row['no'];
-    
-    // 해당 카다록 종류의 첫 번째 재질 가져오기
-    $section_query = "SELECT no, title FROM mlangprintauto_transactioncate 
-                      WHERE Ttable='cadarok' AND BigNo='" . $type_row['no'] . "' 
-                      ORDER BY no ASC LIMIT 1";
-    $section_result = mysqli_query($db, $section_query);
-    if ($section_result && ($section_row = mysqli_fetch_assoc($section_result))) {
-        $default_values['Section'] = $section_row['no'];
-        
-        // 해당 조합의 기본 수량 가져오기 (500매 우선)
-        $quantity_query = "SELECT DISTINCT quantity FROM mlangprintauto_cadarok 
-                          WHERE style='" . $type_row['no'] . "' AND Section='" . $section_row['no'] . "' 
-                          ORDER BY CASE WHEN quantity='500' THEN 1 ELSE 2 END, CAST(quantity AS UNSIGNED) ASC 
-                          LIMIT 1";
-        $quantity_result = mysqli_query($db, $quantity_query);
-        if ($quantity_result && ($quantity_row = mysqli_fetch_assoc($quantity_result))) {
-            $default_values['MY_amount'] = $quantity_row['quantity'];
+if ($url_type) {
+    // URL 파라미터로 진입: 지정된 종류 사용
+    $default_values['MY_type'] = $url_type;
+    if ($url_section) {
+        $default_values['Section'] = $url_section;
+    } else {
+        $sec_q = "SELECT no FROM mlangprintauto_transactioncate 
+                  WHERE Ttable='cadarok' AND BigNo='" . intval($url_type) . "' 
+                  ORDER BY no ASC LIMIT 1";
+        $sec_r = mysqli_query($db, $sec_q);
+        if ($sec_r && ($sec_row = mysqli_fetch_assoc($sec_r))) {
+            $default_values['Section'] = $sec_row['no'];
         }
+    }
+} else {
+    // 기본 진입: 첫 번째 카다록 종류 가져오기
+    $type_query = "SELECT no, title FROM mlangprintauto_transactioncate 
+                   WHERE Ttable='cadarok' AND BigNo='0' 
+                   ORDER BY no ASC 
+                   LIMIT 1";
+    $type_result = mysqli_query($db, $type_query);
+    if ($type_result && ($type_row = mysqli_fetch_assoc($type_result))) {
+        $default_values['MY_type'] = $type_row['no'];
+        
+        $section_query = "SELECT no, title FROM mlangprintauto_transactioncate 
+                          WHERE Ttable='cadarok' AND BigNo='" . $type_row['no'] . "' 
+                          ORDER BY no ASC LIMIT 1";
+        $section_result = mysqli_query($db, $section_query);
+        if ($section_result && ($section_row = mysqli_fetch_assoc($section_result))) {
+            $default_values['Section'] = $section_row['no'];
+        }
+    }
+}
+
+// 수량 기본값
+if ($default_values['MY_type'] && $default_values['Section']) {
+    $quantity_query = "SELECT DISTINCT quantity FROM mlangprintauto_cadarok 
+                      WHERE style='" . intval($default_values['MY_type']) . "' AND Section='" . intval($default_values['Section']) . "' 
+                      ORDER BY CASE WHEN quantity='500' THEN 1 ELSE 2 END, CAST(quantity AS UNSIGNED) ASC 
+                      LIMIT 1";
+    $quantity_result = mysqli_query($db, $quantity_query);
+    if ($quantity_result && ($quantity_row = mysqli_fetch_assoc($quantity_result))) {
+        $default_values['MY_amount'] = $quantity_row['quantity'];
     }
 }
 ?>

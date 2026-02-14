@@ -28,6 +28,10 @@ mysqli_set_charset($db, "utf8");
 $log_info = generateLogInfo();
 $page_title = generate_page_title("포스터/리플렛 견적안내 컴팩트 - 프리미엄");
 
+// URL 파라미터로 종류/규격 사전 선택 (네비게이션 드롭다운에서 진입 시)
+$url_type = isset($_GET['type']) ? intval($_GET['type']) : 0;
+$url_section = isset($_GET['section']) ? intval($_GET['section']) : 0;
+
 // 기본값 설정 (데이터베이스에서 완전히 동적으로 가져오기)
 $default_values = [
     'MY_type' => '',
@@ -38,19 +42,26 @@ $default_values = [
     'ordertype' => ''
 ];
 
-// mlangprintauto_transactioncate에서 첫 번째 포스터 종류 가져오기
-$type_query = "SELECT no, title FROM mlangprintauto_transactioncate 
-               WHERE Ttable='LittlePrint' AND BigNo='0' 
-               ORDER BY no ASC 
-               LIMIT 1";
-$type_result = mysqli_query($db, $type_query);
+// 포스터 종류 결정 (URL 파라미터 또는 첫 번째)
+$poster_type_no = '';
+if ($url_type) {
+    $poster_type_no = $url_type;
+} else {
+    $type_query = "SELECT no FROM mlangprintauto_transactioncate 
+                   WHERE Ttable='LittlePrint' AND BigNo='0' 
+                   ORDER BY no ASC LIMIT 1";
+    $type_result = mysqli_query($db, $type_query);
+    if ($type_result && ($type_row = mysqli_fetch_assoc($type_result))) {
+        $poster_type_no = $type_row['no'];
+    }
+}
 
-if ($type_result && ($type_row = mysqli_fetch_assoc($type_result))) {
-    $default_values['MY_type'] = $type_row['no'];
+if ($poster_type_no) {
+    $default_values['MY_type'] = $poster_type_no;
     
     // mlangprintauto_littleprint에서 해당 스타일의 첫 번째 재질 가져오기
     $material_query = "SELECT DISTINCT TreeSelect FROM mlangprintauto_littleprint 
-                       WHERE style='" . mysqli_real_escape_string($db, $type_row['no']) . "' 
+                       WHERE style='" . mysqli_real_escape_string($db, $poster_type_no) . "' 
                        AND TreeSelect IS NOT NULL 
                        ORDER BY TreeSelect ASC LIMIT 1";
     $material_result = mysqli_query($db, $material_query);
@@ -58,31 +69,35 @@ if ($type_result && ($type_row = mysqli_fetch_assoc($type_result))) {
     if ($material_result && ($material_row = mysqli_fetch_assoc($material_result))) {
         $default_values['Section'] = $material_row['TreeSelect'];
         
-        // 해당 재질의 첫 번째 규격 가져오기
-        $size_query = "SELECT DISTINCT Section FROM mlangprintauto_littleprint 
-                       WHERE TreeSelect='" . mysqli_real_escape_string($db, $material_row['TreeSelect']) . "' 
-                       AND Section IS NOT NULL 
-                       ORDER BY Section ASC LIMIT 1";
-        $size_result = mysqli_query($db, $size_query);
+        // 규격: URL section 파라미터가 있으면 그것 사용, 없으면 첫 번째
+        if ($url_section) {
+            $default_values['PN_type'] = $url_section;
+        } else {
+            $size_query = "SELECT DISTINCT Section FROM mlangprintauto_littleprint 
+                           WHERE TreeSelect='" . mysqli_real_escape_string($db, $material_row['TreeSelect']) . "' 
+                           AND Section IS NOT NULL 
+                           ORDER BY Section ASC LIMIT 1";
+            $size_result = mysqli_query($db, $size_query);
+            if ($size_result && ($size_row = mysqli_fetch_assoc($size_result))) {
+                $default_values['PN_type'] = $size_row['Section'];
+            }
+        }
         
-        if ($size_result && ($size_row = mysqli_fetch_assoc($size_result))) {
-            $default_values['PN_type'] = $size_row['Section'];
-            
-            // 첫 번째 인쇄면 가져오기
+        // 인쇄면, 수량 가져오기
+        if ($default_values['PN_type']) {
             $potype_query = "SELECT DISTINCT POtype FROM mlangprintauto_littleprint 
                             WHERE TreeSelect='" . mysqli_real_escape_string($db, $material_row['TreeSelect']) . "' 
-                            AND Section='" . mysqli_real_escape_string($db, $size_row['Section']) . "'
+                            AND Section='" . mysqli_real_escape_string($db, $default_values['PN_type']) . "'
                             ORDER BY POtype ASC LIMIT 1";
             $potype_result = mysqli_query($db, $potype_query);
             
             if ($potype_result && ($potype_row = mysqli_fetch_assoc($potype_result))) {
                 $default_values['POtype'] = $potype_row['POtype'];
                 
-                // 첫 번째 수량 가져오기
                 $quantity_query = "SELECT DISTINCT quantity FROM mlangprintauto_littleprint 
-                                  WHERE style='" . mysqli_real_escape_string($db, $type_row['no']) . "' 
+                                  WHERE style='" . mysqli_real_escape_string($db, $poster_type_no) . "' 
                                   AND TreeSelect='" . mysqli_real_escape_string($db, $material_row['TreeSelect']) . "'
-                                  AND Section='" . mysqli_real_escape_string($db, $size_row['Section']) . "'
+                                  AND Section='" . mysqli_real_escape_string($db, $default_values['PN_type']) . "'
                                   AND POtype='" . mysqli_real_escape_string($db, $potype_row['POtype']) . "'
                                   ORDER BY CAST(quantity AS UNSIGNED) ASC LIMIT 1";
                 $quantity_result = mysqli_query($db, $quantity_query);
@@ -225,7 +240,7 @@ $default_values['ordertype'] = 'print'; // 인쇄만
 
                         <div class="inline-form-row">
                             <label class="inline-label" for="PN_type">규격</label>
-                            <select class="inline-select" name="PN_type" id="PN_type" required onchange="calculatePrice()">
+                            <select class="inline-select" name="PN_type" id="PN_type" required data-default-value="<?php echo htmlspecialchars($default_values['PN_type']); ?>" onchange="calculatePrice()">
                                 <option value="">먼저 지류를 선택해주세요</option>
                             </select>
                             <span class="inline-note">인쇄 사이즈를 선택하세요</span>

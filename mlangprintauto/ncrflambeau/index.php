@@ -64,6 +64,10 @@ header("Cache-Control: no-cache, no-store, must-revalidate");
 header("Pragma: no-cache");
 header("Expires: 0");
 
+// URL 파라미터로 종류/규격 사전 선택 (네비게이션 드롭다운에서 진입 시)
+$url_type = isset($_GET['type']) ? intval($_GET['type']) : 0;
+$url_section = isset($_GET['section']) ? intval($_GET['section']) : 0;
+
 // 기본값 설정 (명함 패턴 적용)
 $default_values = [
     'MY_type' => '',      // 구분
@@ -73,8 +77,8 @@ $default_values = [
     'ordertype' => 'print' // 편집디자인 (인쇄만 기본)
 ];
 
-// 기본값을 양식(100매철)로 설정 (no: 475)
-$default_values['MY_type'] = '475'; // 양식(100매철)
+// 기본값 설정: URL 파라미터 또는 양식(100매철) 기본
+$default_values['MY_type'] = $url_type ? $url_type : '475';
 
 ?>
 

@@ -34,6 +34,20 @@ function initializeCalculator() {
 
     if (!typeSelect) return;
 
+    // URL 파라미터에서 type/section 읽기 (네비 드롭다운에서 진입 시)
+    const urlParams = new URLSearchParams(window.location.search);
+    const urlType = urlParams.get('type');
+    const urlSection = urlParams.get('section');
+
+    if (urlType) {
+        typeSelect.value = urlType;
+        console.log('🎯 URL 파라미터로 카다록 종류 선택:', urlType);
+    }
+    if (urlSection && paperSelect) {
+        paperSelect.dataset.defaultValue = urlSection;
+        console.log('🎯 URL 파라미터로 카다록 재질 예약:', urlSection);
+    }
+
     typeSelect.addEventListener('change', function() {
         const style = this.value;
         resetSelectWithText(paperSelect, '재질을 선택해주세요');

@@ -122,14 +122,18 @@ $firstColorNo = !empty($colorOptions) ? $colorOptions[0]['no'] : '1';
 $paperTypeOptions = getLeafletPaperTypes($connect, $GGTABLE, $firstColorNo);
 $paperSizeOptions = getLeafletPaperSizes($connect, $GGTABLE, $firstColorNo);
 
-// 기본값 설정
+// URL 파라미터로 용지 종류 사전 선택 (?type=626 → 90g아트지)
+$url_paper_type = isset($_GET['type']) ? intval($_GET['type']) : 0;
+$valid_paper_nos = array_column($paperTypeOptions, 'no');
+$preselected_paper = ($url_paper_type && in_array($url_paper_type, $valid_paper_nos)) ? $url_paper_type : '';
+
 $default_values = [
     'MY_type' => $firstColorNo,
-    'MY_Fsd' => !empty($paperTypeOptions) ? $paperTypeOptions[0]['no'] : '',
+    'MY_Fsd' => $preselected_paper ?: (!empty($paperTypeOptions) ? $paperTypeOptions[0]['no'] : ''),
     'PN_type' => !empty($paperSizeOptions) ? $paperSizeOptions[0]['no'] : '',
-    'POtype' => '1', // 단면 기본
+    'POtype' => '1',
     'MY_amount' => '',
-    'ordertype' => 'print' // 인쇄만 기본
+    'ordertype' => 'print'
 ];
 
 // 캐시 방지 헤더

@@ -27,8 +27,29 @@ document.addEventListener('DOMContentLoaded', function() {
     initializeCalculator();
     initializeFileUpload();
     
-    // 기본값이 설정되어 있으면 자동으로 하위 옵션들 로드
+    // URL 파라미터에서 type/section 읽기 (네비 드롭다운에서 진입 시)
+    const urlParams = new URLSearchParams(window.location.search);
+    const urlType = urlParams.get('type');
+    const urlSection = urlParams.get('section');
+    
     const typeSelect = document.getElementById('MY_type');
+    
+    // URL type 파라미터로 종류 사전 선택
+    if (urlType && typeSelect) {
+        typeSelect.value = urlType;
+        console.log('🎯 URL 파라미터로 봉투 종류 선택:', urlType);
+    }
+    
+    // URL section 파라미터를 data-default-value에 설정 (AJAX 완료 후 자동 선택됨)
+    if (urlSection) {
+        const paperSelect = document.getElementById('Section');
+        if (paperSelect) {
+            paperSelect.dataset.defaultValue = urlSection;
+            console.log('🎯 URL 파라미터로 봉투 재질 예약:', urlSection);
+        }
+    }
+    
+    // 기본값이 설정되어 있으면 자동으로 하위 옵션들 로드
     if (typeSelect && typeSelect.value) {
         loadPaperTypes(typeSelect.value);
     }

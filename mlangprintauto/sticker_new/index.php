@@ -37,13 +37,27 @@ $body_class = $quotationBodyClass;
 
 // 스티커 기본값 설정
 $default_values = [
-    'jong' => 'jil 아트유광', // 기본값: 아트지유광
-    'garo' => '100', // 기본 가로 사이즈
-    'sero' => '100', // 기본 세로 사이즈
-    'mesu' => '1000', // 기본 수량
-    'uhyung' => '0', // 기본값: 인쇄만
-    'domusong' => '00000 사각' // 기본 모양
+    'jong' => 'jil 아트유광코팅',
+    'garo' => '100',
+    'sero' => '100',
+    'mesu' => '1000',
+    'uhyung' => '0',
+    'domusong' => '00000 사각'
 ];
+
+// URL 파라미터로 재질 사전 선택 (네비 드롭다운에서 진입 시)
+if (isset($_GET['jong']) && !empty($_GET['jong'])) {
+    $url_jong = trim($_GET['jong']);
+    $valid_jong = [
+        'jil 아트유광코팅', 'jil 아트무광코팅', 'jil 아트비코팅',
+        'jka 강접아트유광코팅', 'cka 초강접아트코팅', 'cka 초강접아트비코팅',
+        'jsp 유포지', 'jsp 은데드롱', 'jsp 투명스티커', 'jil 모조비코팅',
+        'jsp 크라프트지', 'jsp 금지스티커', 'jsp 금박스티커', 'jsp 롤형스티커'
+    ];
+    if (in_array($url_jong, $valid_jong)) {
+        $default_values['jong'] = $url_jong;
+    }
+}
 
 // 스티커용 기본 설정은 하드코딩으로 처리 (수식 기반 계산이므로 DB 조회 불필요)
 ?>
@@ -364,21 +378,28 @@ $default_values = [
                         <!-- 재질 선택 -->
                         <div class="inline-form-row">
                             <span class="inline-label">재질</span>
+                            <?php
+                            $sticker_materials = [
+                                'jil 아트유광코팅' => '아트지유광',
+                                'jil 아트무광코팅' => '아트지무광',
+                                'jil 아트비코팅' => '아트지비코팅',
+                                'jka 강접아트유광코팅' => '강접아트유광',
+                                'cka 초강접아트코팅' => '초강접아트유광',
+                                'cka 초강접아트비코팅' => '초강접아트비코팅',
+                                'jsp 유포지' => '유포지',
+                                'jsp 은데드롱' => '은데드롱',
+                                'jsp 투명스티커' => '투명스티커',
+                                'jil 모조비코팅' => '모조지비코팅',
+                                'jsp 크라프트지' => '크라프트스티커',
+                                'jsp 금지스티커' => '금지스티커-전화문의',
+                                'jsp 금박스티커' => '금박스티커-전화문의',
+                                'jsp 롤형스티커' => '롤스티커-전화문의',
+                            ];
+                            ?>
                             <select name="jong" id="jong" class="inline-select" onchange="calculatePrice()">
-                                <option value="jil 아트유광코팅" selected>아트지유광</option>
-                                <option value="jil 아트무광코팅">아트지무광</option>
-                                <option value="jil 아트비코팅">아트지비코팅</option>
-                                <option value="jka 강접아트유광코팅">강접아트유광</option>
-                                <option value="cka 초강접아트코팅">초강접아트유광</option>
-                                <option value="cka 초강접아트비코팅">초강접아트비코팅</option>
-                                <option value="jsp 유포지">유포지</option>
-                                <option value="jsp 은데드롱">은데드롱</option>
-                                <option value="jsp 투명스티커">투명스티커</option>
-                                <option value="jil 모조비코팅">모조지비코팅</option>
-                                <option value="jsp 크라프트지">크라프트스티커</option>
-                                <option value="jsp 금지스티커">금지스티커-전화문의</option>
-                                <option value="jsp 금박스티커">금박스티커-전화문의</option>
-                                <option value="jsp 롤형스티커">롤스티커-전화문의</option>
+                                <?php foreach ($sticker_materials as $val => $label): ?>
+                                <option value="<?php echo htmlspecialchars($val); ?>"<?php echo ($default_values['jong'] === $val) ? ' selected' : ''; ?>><?php echo htmlspecialchars($label); ?></option>
+                                <?php endforeach; ?>
                             </select>
                             <button type="button" class="btn-material-guide" onclick="openMaterialGuide()">📋 재질보기</button>
                             <span class="inline-note">금지/금박/롤 전화문의</span>
@@ -699,8 +720,8 @@ $default_values = [
                 console.log(`  ${key}: ${value}`);
             }
 
-            console.log('Fetching: ./calculate_price.php');
-            return fetch('./calculate_price.php', {
+            console.log('Fetching: ./calculate_price_ajax.php');
+            return fetch('./calculate_price_ajax.php', {
                 method: 'POST',
                 body: formData
             })

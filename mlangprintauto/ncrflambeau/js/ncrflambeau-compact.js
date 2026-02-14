@@ -43,13 +43,21 @@ document.addEventListener('DOMContentLoaded', function() {
     // 드롭다운 이벤트 리스너 추가
     initDropdownEvents();
     
-    // 초기 옵션 로드
+    // 초기 옵션 로드 (URL 파라미터 지원)
     const categorySelect = document.querySelector('select[name="MY_type"]');
-    if (categorySelect && categorySelect.value) {
+    const urlParams = new URLSearchParams(window.location.search);
+    const urlType = urlParams.get('type');
+    const urlSection = urlParams.get('section');
+    
+    if (urlType && categorySelect) {
+        categorySelect.value = urlType;
+        console.log('🎯 URL 파라미터로 카테고리 선택:', urlType);
+        window._ncrUrlSection = urlSection;
+        loadSizes(urlType);
+    } else if (categorySelect && categorySelect.value) {
         console.log('🎯 페이지 로드 시 기본 카테고리:', categorySelect.value);
         loadSizes(categorySelect.value);
     } else if (categorySelect) {
-        // 양식(100매철)이 기본 선택되도록 설정
         const defaultOption = categorySelect.querySelector('option[value="475"]');
         if (defaultOption) {
             categorySelect.value = '475';
@@ -184,24 +192,28 @@ function loadSizes(categoryId) {
             if (sizeSelect) {
                 sizeSelect.innerHTML = '<option value="">규격을 선택해주세요</option>';
                 
-                response.data.forEach((option, index) => {
+                response.data.forEach((option) => {
                     const optionElement = document.createElement('option');
                     optionElement.value = option.no || option.value;
                     optionElement.textContent = option.title || option.text;
-                    
-                    // 양식(100매철) 선택 시 첫 번째 옵션 자동 선택
-                    if (categoryId === '475' && index === 0) {
-                        optionElement.selected = true;
-                        console.log('🎯 양식(100매철) 첫 번째 규격 자동 선택:', option.title);
-                        
-                        // 자동 선택 후 후속 옵션도 로드
-                        setTimeout(() => {
-                            loadColors(categoryId, optionElement.value);
-                        }, 100);
-                    }
-                    
                     sizeSelect.appendChild(optionElement);
                 });
+                
+                // URL section 또는 첫 번째 옵션 자동 선택
+                let autoSelectValue = null;
+                if (window._ncrUrlSection) {
+                    autoSelectValue = window._ncrUrlSection;
+                    window._ncrUrlSection = null;
+                } else if (response.data.length > 0) {
+                    autoSelectValue = response.data[0].no || response.data[0].value;
+                }
+                if (autoSelectValue) {
+                    sizeSelect.value = autoSelectValue;
+                    if (sizeSelect.value) {
+                        console.log('🎯 규격 자동 선택:', sizeSelect.value);
+                        setTimeout(() => loadColors(categoryId, sizeSelect.value), 100);
+                    }
+                }
                 
                 console.log('✅ 규격 옵션 로드 완료:', response.data.length, '개');
             }
