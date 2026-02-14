@@ -1,9 +1,10 @@
 <?php
 require_once __DIR__ . '/base.php';
 
-$allowed_keys = ['nav_default_mode'];
+$allowed_keys = ['nav_default_mode', 'quote_widget_enabled', 'quote_widget_right', 'quote_widget_top'];
 $allowed_values = [
     'nav_default_mode' => ['simple', 'detailed'],
+    'quote_widget_enabled' => ['0', '1'],
 ];
 
 $method = $_SERVER['REQUEST_METHOD'];
@@ -48,6 +49,22 @@ if ($method === 'POST') {
 
     if (isset($allowed_values[$key]) && !in_array($value, $allowed_values[$key])) {
         jsonResponse(false, '허용되지 않는 값입니다: ' . $value);
+    }
+
+    // 숫자 범위 검증 (quote_widget_right: 0~500, quote_widget_top: 0~100)
+    if ($key === 'quote_widget_right') {
+        $num = intval($value);
+        if ($num < 0 || $num > 500) {
+            jsonResponse(false, 'right 값은 0~500 범위여야 합니다.');
+        }
+        $value = (string) $num;
+    }
+    if ($key === 'quote_widget_top') {
+        $num = intval($value);
+        if ($num < 0 || $num > 100) {
+            jsonResponse(false, 'top 값은 0~100 범위여야 합니다.');
+        }
+        $value = (string) $num;
     }
 
     $stmt = mysqli_prepare($db, "INSERT INTO site_settings (setting_key, setting_value) VALUES (?, ?) ON DUPLICATE KEY UPDATE setting_value = ?");

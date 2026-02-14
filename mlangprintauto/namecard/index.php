@@ -147,6 +147,7 @@ if ($url_nc_type) {
 
     <!-- 견적서 모달용 공통 스타일 -->
     <link rel="stylesheet" href="../../css/quotation-modal-common.css">
+    <link rel="stylesheet" href="../../css/quote-gauge.css">
 
     <!-- 테마 시스템 CSS -->
     <?php ThemeLoader::renderCSS(); ?>
@@ -1185,8 +1186,12 @@ if ($url_nc_type) {
     <?php if (!$isQuotationMode && !$isAdminQuoteMode) ThemeLoader::renderSwitcher('bottom-right'); ?>
     <?php if (!$isQuotationMode && !$isAdminQuoteMode) ThemeLoader::renderSwitcherJS(); ?>
 
+    <?php if (!$isQuotationMode && !$isAdminQuoteMode): ?>
+    <?php include __DIR__ . '/../../includes/quote_gauge.php'; ?>
+    <script src="/js/quote-gauge.js?v=<?php echo time(); ?>"></script>
+    <?php endif; ?>
+
     <?php
-    // 데이터베이스 연결 종료
     if ($db) {
         mysqli_close($db);
     }

@@ -14,6 +14,9 @@ if ($q) {
     }
 }
 $nav_mode = $settings['nav_default_mode'] ?? 'simple';
+$qw_enabled = ($settings['quote_widget_enabled'] ?? '1') === '1';
+$qw_right = intval($settings['quote_widget_right'] ?? 20);
+$qw_top = intval($settings['quote_widget_top'] ?? 50);
 ?>
 
 <main class="flex-1 bg-gray-50">
@@ -52,11 +55,144 @@ $nav_mode = $settings['nav_default_mode'] ?? 'simple';
                     </div>
                 </div>
             </div>
+
+            <!-- 견적 위젯 설정 -->
+            <div class="p-5">
+                <div class="flex items-center justify-between mb-3">
+                    <div>
+                        <h3 class="text-sm font-semibold text-gray-900">실시간 견적 위젯</h3>
+                        <p class="text-xs text-gray-500 mt-1">제품 페이지 우측에 표시되는 플로팅 견적 위젯의 위치와 표시 여부를 설정합니다.</p>
+                    </div>
+                    <div class="flex items-center gap-3">
+                        <span id="qwEnabledLabel" class="text-xs font-medium <?php echo $qw_enabled ? 'text-blue-600' : 'text-gray-500'; ?>">
+                            <?php echo $qw_enabled ? '표시' : '숨김'; ?>
+                        </span>
+                        <button type="button" id="qwEnabledSwitch" onclick="toggleQuoteWidget()"
+                            class="relative inline-flex h-6 w-11 items-center rounded-full transition-colors duration-200 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 <?php echo $qw_enabled ? 'bg-blue-600' : 'bg-gray-300'; ?>">
+                            <span class="inline-block h-4 w-4 transform rounded-full bg-white shadow transition-transform duration-200 <?php echo $qw_enabled ? 'translate-x-6' : 'translate-x-1'; ?>"></span>
+                        </button>
+                    </div>
+                </div>
+
+                <div id="qwPositionControls" class="<?php echo $qw_enabled ? '' : 'opacity-50 pointer-events-none'; ?>">
+                    <div class="grid grid-cols-2 gap-4 mt-3">
+                        <!-- Right (px) -->
+                        <div>
+                            <label class="block text-xs font-medium text-gray-600 mb-1">우측 여백 (right)</label>
+                            <div class="flex items-center gap-2">
+                                <input type="range" id="qwRight" min="0" max="200" value="<?php echo $qw_right; ?>"
+                                    class="flex-1 h-1.5 bg-gray-200 rounded-lg appearance-none cursor-pointer accent-blue-600"
+                                    oninput="document.getElementById('qwRightVal').textContent=this.value">
+                                <span id="qwRightVal" class="text-xs font-mono text-gray-700 w-8 text-right"><?php echo $qw_right; ?></span>
+                                <span class="text-xs text-gray-400">px</span>
+                            </div>
+                        </div>
+                        <!-- Top (%) -->
+                        <div>
+                            <label class="block text-xs font-medium text-gray-600 mb-1">상단 위치 (top)</label>
+                            <div class="flex items-center gap-2">
+                                <input type="range" id="qwTop" min="10" max="90" value="<?php echo $qw_top; ?>"
+                                    class="flex-1 h-1.5 bg-gray-200 rounded-lg appearance-none cursor-pointer accent-blue-600"
+                                    oninput="document.getElementById('qwTopVal').textContent=this.value">
+                                <span id="qwTopVal" class="text-xs font-mono text-gray-700 w-8 text-right"><?php echo $qw_top; ?></span>
+                                <span class="text-xs text-gray-400">%</span>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="mt-3 flex justify-end">
+                        <button type="button" onclick="saveQuoteWidgetPosition()" class="px-3 py-1.5 bg-blue-600 text-white text-xs font-medium rounded-md hover:bg-blue-700 transition-colors">
+                            위치 저장
+                        </button>
+                    </div>
+                </div>
+
+                <!-- 미리보기 -->
+                <div class="mt-4 p-3 bg-gray-50 rounded-lg border border-gray-200">
+                    <div class="text-xs text-gray-400 mb-2">미리보기</div>
+                    <div class="relative bg-white rounded border border-gray-200 h-40 overflow-hidden">
+                        <div class="absolute inset-0 flex items-center justify-center text-xs text-gray-300">제품 페이지</div>
+                        <div id="qwPreview" class="absolute bg-blue-500 text-white text-[9px] rounded px-1.5 py-3 leading-tight text-center shadow-md"
+                             style="right:<?php echo min($qw_right / 5, 40); ?>px; top:<?php echo $qw_top; ?>%; transform:translateY(-50%);">
+                            실시간<br>견적
+                        </div>
+                    </div>
+                </div>
+            </div>
         </div>
     </div>
 </main>
 
 <script>
+function saveWidgetSetting(key, value, callback) {
+    fetch('/dashboard/api/settings.php', {
+        method: 'POST',
+        headers: {'Content-Type': 'application/json'},
+        body: JSON.stringify({action: 'update', key: key, value: String(value)})
+    })
+    .then(function(r) { return r.json(); })
+    .then(function(data) {
+        if (data.success && callback) callback(data);
+        else if (!data.success) showToast(data.message || '저장 실패', 'error');
+    });
+}
+
+function toggleQuoteWidget() {
+    var sw = document.getElementById('qwEnabledSwitch');
+    var label = document.getElementById('qwEnabledLabel');
+    var controls = document.getElementById('qwPositionControls');
+    var isOn = sw.classList.contains('bg-blue-600');
+    var newVal = isOn ? '0' : '1';
+
+    saveWidgetSetting('quote_widget_enabled', newVal, function() {
+        if (newVal === '1') {
+            sw.classList.remove('bg-gray-300'); sw.classList.add('bg-blue-600');
+            sw.querySelector('span').classList.remove('translate-x-1'); sw.querySelector('span').classList.add('translate-x-6');
+            label.textContent = '표시'; label.classList.remove('text-gray-500'); label.classList.add('text-blue-600');
+            controls.classList.remove('opacity-50', 'pointer-events-none');
+        } else {
+            sw.classList.remove('bg-blue-600'); sw.classList.add('bg-gray-300');
+            sw.querySelector('span').classList.remove('translate-x-6'); sw.querySelector('span').classList.add('translate-x-1');
+            label.textContent = '숨김'; label.classList.remove('text-blue-600'); label.classList.add('text-gray-500');
+            controls.classList.add('opacity-50', 'pointer-events-none');
+        }
+        showToast('견적 위젯 ' + (newVal === '1' ? '표시' : '숨김') + '으로 변경되었습니다.', 'success');
+    });
+}
+
+function saveQuoteWidgetPosition() {
+    var rightVal = document.getElementById('qwRight').value;
+    var topVal = document.getElementById('qwTop').value;
+    var saved = 0;
+    var total = 2;
+
+    function checkDone() {
+        saved++;
+        if (saved >= total) {
+            showToast('위젯 위치가 저장되었습니다. (right: ' + rightVal + 'px, top: ' + topVal + '%)', 'success');
+            updatePreview();
+        }
+    }
+
+    saveWidgetSetting('quote_widget_right', rightVal, checkDone);
+    saveWidgetSetting('quote_widget_top', topVal, checkDone);
+}
+
+function updatePreview() {
+    var preview = document.getElementById('qwPreview');
+    var right = parseInt(document.getElementById('qwRight').value);
+    var top = parseInt(document.getElementById('qwTop').value);
+    preview.style.right = Math.min(right / 5, 40) + 'px';
+    preview.style.top = top + '%';
+}
+
+// 슬라이더 드래그 시 미리보기 실시간 업데이트
+document.addEventListener('DOMContentLoaded', function() {
+    var rightSlider = document.getElementById('qwRight');
+    var topSlider = document.getElementById('qwTop');
+    if (rightSlider) rightSlider.addEventListener('input', updatePreview);
+    if (topSlider) topSlider.addEventListener('input', updatePreview);
+});
+
 function toggleNavSetting() {
     var sw = document.getElementById('navModeSwitch');
     var label = document.getElementById('navModeLabel');

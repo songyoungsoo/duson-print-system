@@ -144,6 +144,7 @@ if ($default_values['MY_type'] && $default_values['Section']) {
     <link rel="stylesheet" href="../../css/upload-modal-common.css">
     <!-- 견적서 모달용 공통 스타일 -->
     <link rel="stylesheet" href="../../css/quotation-modal-common.css">
+    <link rel="stylesheet" href="../../css/quote-gauge.css">
     <?php include_once $_SERVER['DOCUMENT_ROOT'] . '/includes/product_schema.php'; echo_product_schema('msticker'); ?>
 </head>
 <body class="msticker-page<?php echo ($isQuotationMode || $isAdminQuoteMode) ? ' quotation-modal-mode' : ''; ?>">
@@ -815,6 +816,10 @@ if ($db) {
     };
     console.log('✅ [관리자 견적서-자석스티커] applyToQuotation() 정의 완료');
     </script>
+<?php endif; ?>
+<?php if (!$isQuotationMode && !$isAdminQuoteMode): ?>
+<?php include __DIR__ . '/../../includes/quote_gauge.php'; ?>
+<script src="/js/quote-gauge.js?v=<?php echo time(); ?>"></script>
 <?php endif; ?>
 </body>
 </html>

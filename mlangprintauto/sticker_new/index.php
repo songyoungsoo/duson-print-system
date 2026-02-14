@@ -130,6 +130,7 @@ if (isset($_GET['jong']) && !empty($_GET['jong'])) {
 
     <!-- 📱 견적서 모달 모드 공통 CSS (전 제품 공통) -->
     <link rel="stylesheet" href="../../css/quotation-modal-common.css">
+    <link rel="stylesheet" href="../../css/quote-gauge.css">
 
     <!-- 재질보기 버튼 및 모달 스타일 -->
     <style>
@@ -3179,6 +3180,11 @@ if ($db) {
 
 <?php if (!$is_quotation_mode && !$is_admin_quote_mode): ?>
     <?php
+    // 견적 위젯 (모달 모드 제외)
+    if (!$isQuotationMode && !$isAdminQuoteMode) {
+        include __DIR__ . '/../../includes/quote_gauge.php';
+        echo '<script src="/js/quote-gauge.js?v=' . time() . '"></script>';
+    }
     // 공통 푸터 포함
     include "../../includes/footer.php";
     ?>

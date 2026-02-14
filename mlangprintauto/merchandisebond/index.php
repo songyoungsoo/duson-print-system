@@ -143,6 +143,7 @@ if ($default_values['MY_type'] && $default_values['Section']) {
     <link rel="stylesheet" href="../../css/upload-modal-common.css">
     <!-- 견적서 모달용 공통 스타일 -->
     <link rel="stylesheet" href="../../css/quotation-modal-common.css">
+    <link rel="stylesheet" href="../../css/quote-gauge.css">
 
 <!-- Phase 5: 견적 요청 버튼 스타일 -->
 <style>
@@ -587,6 +588,10 @@ if ($default_values['MY_type'] && $default_values['Section']) {
     };
     console.log('✅ [관리자 견적서-상품권] applyToQuotation() 정의 완료');
     </script>
+<?php endif; ?>
+<?php if (!$isQuotationMode && !$isAdminQuoteMode): ?>
+<?php include __DIR__ . '/../../includes/quote_gauge.php'; ?>
+<script src="/js/quote-gauge.js?v=<?php echo time(); ?>"></script>
 <?php endif; ?>
 </body>
 </html>

@@ -97,6 +97,7 @@ function calculatePriceAjax() {
                 additional_options_total: additionalOptionsTotal
             };
             console.log("window.currentPriceData 설정 (추가 옵션 포함):", window.currentPriceData);
+            document.dispatchEvent(new CustomEvent('priceUpdated', {detail: data}));
 
             console.log("가격 정보 업데이트 완료");
           } else {

@@ -166,6 +166,7 @@ if ($default_values['MY_type'] && $default_values['Section']) {
     <link rel="stylesheet" href="../../css/upload-modal-common.css">
     <!-- 견적서 모달용 공통 스타일 -->
     <link rel="stylesheet" href="../../css/quotation-modal-common.css">
+    <link rel="stylesheet" href="../../css/quote-gauge.css">
 
     <!-- Phase 5: 견적 요청 버튼 스타일 -->
     <style>
@@ -804,8 +805,12 @@ if ($default_values['MY_type'] && $default_values['Section']) {
     <!-- 견적서 모달 공통 JavaScript -->
     <script src="../../js/quotation-modal-common.js?v=<?php echo time(); ?>"></script>
 
+    <?php if (!$isQuotationMode && !$isAdminQuoteMode): ?>
+    <?php include __DIR__ . '/../../includes/quote_gauge.php'; ?>
+    <script src="/js/quote-gauge.js?v=<?php echo time(); ?>"></script>
+    <?php endif; ?>
+
     <?php
-    // 데이터베이스 연결 종료
     if ($db) {
         mysqli_close($db);
     }

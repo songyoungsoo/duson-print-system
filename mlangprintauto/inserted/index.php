@@ -180,6 +180,8 @@ header("Expires: 0");
     <!-- 추가 옵션 시스템 전용 CSS -->
     <link rel="stylesheet" href="../../css/additional-options.css">
 
+    <link rel="stylesheet" href="../../css/quote-gauge.css">
+
     <!-- 🆕 Duson 통합 갤러리 시스템 CSS -->
     <link rel="stylesheet" href="../../css/unified-gallery.css">
 
@@ -437,6 +439,10 @@ header("Expires: 0");
         </div>
     </div>
 
+    <?php if (!$isQuotationMode && !$isAdminQuoteMode): ?>
+    <?php include __DIR__ . '/../../includes/quote_gauge.php'; ?>
+    <?php endif; ?>
+
     <?php
     // 전단지 모달 설정
     $modalProductName = '전단지';
@@ -516,6 +522,7 @@ header("Expires: 0");
     <!-- 추가 옵션 DB 로더 + 시스템 -->
     <script src="/js/premium-options-loader.js"></script>
     <script src="js/leaflet-premium-options.js?v=<?php echo time(); ?>"></script>
+    <script src="/js/quote-gauge.js?v=<?php echo time(); ?>"></script>
     
     <script>
     document.addEventListener('DOMContentLoaded', function() {
