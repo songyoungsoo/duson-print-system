@@ -203,7 +203,7 @@ if (isset($db) && $db) {
                     <div class="nav-mega-items">
                         <?php foreach ($mtype['subs'] as $msub): ?>
                         <a href="/mlangprintauto/<?php echo $mega_info['folder']; ?>/index.php?type=<?php echo $mtype['no']; ?>&section=<?php echo $msub['no']; ?>" class="nav-mega-item"><?php
-                            echo htmlspecialchars(trim(preg_replace('/\(.*?\)/', '', $msub['title'])));
+                            echo ($mega_key === 'envelope') ? htmlspecialchars(trim($msub['title'])) : htmlspecialchars(trim(preg_replace('/\(.*?\)/', '', $msub['title'])));
                         ?></a>
                         <?php endforeach; ?>
                     </div>
