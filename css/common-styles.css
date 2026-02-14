@@ -710,6 +710,7 @@ input[type="text"].inline-input {
     padding: 12px;
     display: none;
     max-height: 70vh;
+    overflow-x: hidden;
     overflow-y: auto;
 }
 
