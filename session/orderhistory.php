@@ -219,10 +219,17 @@ $orders = mysqli_stmt_get_result($order_stmt);
                     $json_data = json_decode($type1_display, true);
 
                     if ($json_data && isset($json_data['formatted_display'])) {
-                        // formatted_display가 있으면 사용
                         $type1_display = $json_data['formatted_display'];
+                    } elseif ($json_data && isset($json_data['spec_type'])) {
+                        // v2: spec_* 키 (목록용 한 줄 요약)
+                        $parts = [];
+                        if (!empty($json_data['spec_type'])) $parts[] = $json_data['spec_type'];
+                        if (!empty($json_data['spec_material'])) $parts[] = $json_data['spec_material'];
+                        if (!empty($json_data['spec_size'])) $parts[] = $json_data['spec_size'];
+                        if (!empty($json_data['spec_sides'])) $parts[] = $json_data['spec_sides'];
+                        if (!empty($json_data['quantity_display'])) $parts[] = $json_data['quantity_display'];
+                        $type1_display = implode(' / ', $parts);
                     } elseif ($json_data && isset($json_data['order_details'])) {
-                        // order_details에서 직접 포맷팅
                         $details = $json_data['order_details'];
                         $display_parts = [];
 
@@ -235,7 +242,6 @@ $orders = mysqli_stmt_get_result($order_stmt);
 
                         $type1_display = implode(' / ', $display_parts);
                     }
-                    // JSON이 아니면 원본 텍스트 그대로 사용
                 ?>
                 <tr>
                     <td>

@@ -96,8 +96,58 @@ $type1_display = $order['Type_1'] ?? '';
 $json_data = json_decode($type1_display, true);
 
 if ($json_data && isset($json_data['formatted_display'])) {
+    // v1: formatted_display 키가 있는 경우
     $type1_display = $json_data['formatted_display'];
+} elseif ($json_data && isset($json_data['spec_type'])) {
+    // v2: spec_* 키가 있는 경우 (data_version=2)
+    $display_parts = [];
+    if (!empty($json_data['spec_type'])) $display_parts[] = "종류: " . $json_data['spec_type'];
+    if (!empty($json_data['spec_material'])) $display_parts[] = "재질: " . $json_data['spec_material'];
+    if (!empty($json_data['spec_size'])) $display_parts[] = "규격: " . $json_data['spec_size'];
+    if (!empty($json_data['spec_sides'])) $display_parts[] = "인쇄: " . $json_data['spec_sides'];
+    if (!empty($json_data['quantity_display'])) $display_parts[] = "수량: " . $json_data['quantity_display'];
+    if (!empty($json_data['spec_design'])) $display_parts[] = "디자인: " . $json_data['spec_design'];
+
+    // 추가옵션 파싱 (additional_options 또는 premium_options)
+    $opts_json = $json_data['additional_options'] ?? $json_data['premium_options'] ?? '';
+    if (is_string($opts_json)) {
+        $opts = json_decode($opts_json, true);
+    } else {
+        $opts = $opts_json;
+    }
+    if ($opts && is_array($opts)) {
+        $opt_labels = [];
+        if (!empty($opts['coating_enabled']) && $opts['coating_enabled'] != '0') {
+            $coating_types = ['single' => '단면코팅', 'double' => '양면코팅'];
+            $opt_labels[] = $coating_types[$opts['coating_type'] ?? ''] ?? '코팅';
+        }
+        if (!empty($opts['folding_enabled']) && $opts['folding_enabled'] != '0') {
+            $opt_labels[] = '접지(' . ($opts['folding_type'] ?? '') . ')';
+        }
+        if (!empty($opts['foil_enabled']) && $opts['foil_enabled'] != '0') {
+            $foil_types = ['gold_matte' => '무광금박', 'gold_gloss' => '유광금박', 'silver_matte' => '무광은박', 'silver_gloss' => '유광은박'];
+            $opt_labels[] = $foil_types[$opts['foil_type'] ?? ''] ?? '박가공';
+        }
+        if (!empty($opts['numbering_enabled']) && $opts['numbering_enabled'] != '0') {
+            $opt_labels[] = '넘버링';
+        }
+        if (!empty($opts['perforation_enabled']) && $opts['perforation_enabled'] != '0') {
+            $opt_labels[] = '미싱';
+        }
+        if (!empty($opts['rounding_enabled']) && $opts['rounding_enabled'] != '0') {
+            $opt_labels[] = '귀돌이';
+        }
+        if (!empty($opts['creasing_enabled']) && $opts['creasing_enabled'] != '0') {
+            $opt_labels[] = '오시';
+        }
+        if (!empty($opt_labels)) {
+            $display_parts[] = "추가옵션: " . implode(', ', $opt_labels);
+        }
+    }
+
+    $type1_display = implode("\n", $display_parts);
 } elseif ($json_data && isset($json_data['order_details'])) {
+    // 레거시: order_details 키가 있는 경우
     $details = $json_data['order_details'];
     $display_parts = [];
 
