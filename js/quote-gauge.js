@@ -29,6 +29,21 @@ function getOptionLabel(type, value) {
     accordion: '병풍접지', gate: '대문접지'
   };
   if (type === 'creasing') return value + '줄 오시';
+  // 명함 프리미엄 옵션 라벨
+  if (type === 'foil') {
+    var foilLabels = {
+      gold_matte:'금박무광', gold_gloss:'금박유광', silver_matte:'은박무광', silver_gloss:'은박유광',
+      blue_gloss:'청박', red_gloss:'적박', green_gloss:'녹박', black_gloss:'먹박'
+    };
+    return '박(' + (foilLabels[value] || value) + ')';
+  }
+  if (type === 'numbering') return '넘버링(' + (value === 'double' ? '2개' : '1개') + ')';
+  if (type === 'perforation') return '미싱(' + (value === 'double' ? '2개' : '1개') + ')';
+  if (type === 'rounding') return '귀돌이';
+  if (type === 'creasing_nc') {
+    var lineNum = value.replace('line', '');
+    return '오시(' + lineNum + '줄)';
+  }
   return labels[value] || value;
 }
 
@@ -103,12 +118,54 @@ function updateQfOptions() {
 
   var creasingEnabled = document.getElementById('creasing_enabled');
   var creasingLines = document.getElementById('creasing_lines');
+  var creasingType = document.getElementById('creasing_type');
   var creasingPrice = parseInt(document.getElementById('creasing_price')?.value) || 0;
-  if (creasingEnabled && creasingEnabled.checked && creasingLines && creasingLines.value) {
+  var creasingVal = (creasingLines && creasingLines.value) || (creasingType && creasingType.value) || '';
+  if (creasingEnabled && creasingEnabled.checked && creasingVal) {
+    var cLabel = creasingType ? getOptionLabel('creasing_nc', creasingVal) : getOptionLabel('creasing', creasingVal);
     html += '<div class="qd-opt-item"><span class="qd-opt-name"><span class="qd-opt-dot"></span>' +
-      getOptionLabel('creasing', creasingLines.value) + '</span><span class="qd-opt-val">' +
+      cLabel + '</span><span class="qd-opt-val">' +
       fmtNum(creasingPrice) + '</span></div>';
     optTotal += creasingPrice;
+  }
+
+  var foilEnabled = document.getElementById('foil_enabled');
+  var foilType = document.getElementById('foil_type');
+  var foilPrice = parseInt(document.getElementById('foil_price')?.value) || 0;
+  if (foilEnabled && foilEnabled.checked && foilPrice > 0) {
+    html += '<div class="qd-opt-item"><span class="qd-opt-name"><span class="qd-opt-dot"></span>' +
+      getOptionLabel('foil', (foilType && foilType.value) || 'gold_matte') + '</span><span class="qd-opt-val">' +
+      fmtNum(foilPrice) + '</span></div>';
+    optTotal += foilPrice;
+  }
+
+  var numberingEnabled = document.getElementById('numbering_enabled');
+  var numberingType = document.getElementById('numbering_type');
+  var numberingPrice = parseInt(document.getElementById('numbering_price')?.value) || 0;
+  if (numberingEnabled && numberingEnabled.checked && numberingPrice > 0) {
+    html += '<div class="qd-opt-item"><span class="qd-opt-name"><span class="qd-opt-dot"></span>' +
+      getOptionLabel('numbering', (numberingType && numberingType.value) || 'single') + '</span><span class="qd-opt-val">' +
+      fmtNum(numberingPrice) + '</span></div>';
+    optTotal += numberingPrice;
+  }
+
+  var perforationEnabled = document.getElementById('perforation_enabled');
+  var perforationType = document.getElementById('perforation_type');
+  var perforationPrice = parseInt(document.getElementById('perforation_price')?.value) || 0;
+  if (perforationEnabled && perforationEnabled.checked && perforationPrice > 0) {
+    html += '<div class="qd-opt-item"><span class="qd-opt-name"><span class="qd-opt-dot"></span>' +
+      getOptionLabel('perforation', (perforationType && perforationType.value) || 'single') + '</span><span class="qd-opt-val">' +
+      fmtNum(perforationPrice) + '</span></div>';
+    optTotal += perforationPrice;
+  }
+
+  var roundingEnabled = document.getElementById('rounding_enabled');
+  var roundingPrice = parseInt(document.getElementById('rounding_price')?.value) || 0;
+  if (roundingEnabled && roundingEnabled.checked && roundingPrice > 0) {
+    html += '<div class="qd-opt-item"><span class="qd-opt-name"><span class="qd-opt-dot"></span>' +
+      getOptionLabel('rounding', '') + '</span><span class="qd-opt-val">' +
+      fmtNum(roundingPrice) + '</span></div>';
+    optTotal += roundingPrice;
   }
 
   container.innerHTML = html || '<div class="qd-opt">선택 없음</div>';
@@ -298,11 +355,11 @@ function updateQfPricing() {
     printPrice = parsePrice(pd.base_price);
     designPrice = parsePrice(pd.design_price);
     subtotal = parsePrice(pd.total_supply_price || pd.total_price);
-    vatPrice = parsePrice(pd.vat_price || pd.vat_amount);
     totalWithVat = parsePrice(pd.final_total_with_vat || pd.total_with_vat);
     if (totalWithVat === 0 && subtotal > 0) {
       totalWithVat = subtotal + Math.round(subtotal * 0.1);
     }
+    vatPrice = (totalWithVat > 0 && subtotal > 0) ? (totalWithVat - subtotal) : parsePrice(pd.vat_amount);
     if (vatPrice === 0 && subtotal > 0) {
       vatPrice = Math.round(subtotal * 0.1);
     }
@@ -329,7 +386,9 @@ function updateQfPricing() {
   }
 
   var optionRow = document.getElementById('qf-option-row');
-  var optVal = isSticker ? 0 : (isNewFormat ? parsePrice(pd.additional_options_total) : (parseInt(document.getElementById('additional_options_total')?.value) || 0));
+  var optVal = isSticker ? 0 : (isNewFormat
+    ? (parsePrice(pd.additional_options_total) || parsePrice(pd.premium_options_total) || parsePrice(pd.premium_total))
+    : (parseInt(document.getElementById('additional_options_total')?.value) || parseInt(document.getElementById('premium_options_total')?.value) || 0));
   if (optVal > 0) {
     optionRow.style.display = '';
     document.getElementById('qf-option-price').textContent = fmtNum(optVal);
@@ -362,12 +421,14 @@ document.addEventListener('DOMContentLoaded', function() {
     if (el) el.addEventListener('change', function() { setTimeout(updateQfSpecs, 150); });
   });
 
-  ['coating_enabled','folding_enabled','creasing_enabled'].forEach(function(id) {
+  ['coating_enabled','folding_enabled','creasing_enabled',
+   'foil_enabled','numbering_enabled','perforation_enabled','rounding_enabled'].forEach(function(id) {
     var el = document.getElementById(id);
     if (el) el.addEventListener('change', function() { setTimeout(updateQf, 200); });
   });
 
-  ['coating_type','folding_type','creasing_lines'].forEach(function(id) {
+  ['coating_type','folding_type','creasing_lines',
+   'foil_type','numbering_type','perforation_type','creasing_type'].forEach(function(id) {
     var el = document.getElementById(id);
     if (el) el.addEventListener('change', function() { setTimeout(updateQf, 200); });
   });
@@ -380,7 +441,7 @@ document.addEventListener('DOMContentLoaded', function() {
     pollCount++;
     var pd = window.currentPriceData;
     if (pd) {
-      var hash = (pd.total_with_vat || 0) + '|' + (pd.Total_PriceForm || 0) + '|' + (pd.base_price || 0) + '|' + (pd.total_price || 0) + '|' + (pd.raw_price_vat || 0);
+      var hash = (pd.total_with_vat || 0) + '|' + (pd.Total_PriceForm || 0) + '|' + (pd.base_price || 0) + '|' + (pd.total_price || 0) + '|' + (pd.raw_price_vat || 0) + '|' + (pd.premium_options_total || 0) + '|' + (pd.final_total_with_vat || 0);
       var hasPrice = parsePrice(pd.Order_PriceForm) > 0 || parsePrice(pd.total_price) > 0 || parsePrice(pd.base_price) > 0 || parsePrice(pd.total_with_vat) > 0 || parsePrice(pd.raw_price_vat) > 0;
       if (hasPrice && hash !== _lastPdHash) {
         _lastPdHash = hash;
