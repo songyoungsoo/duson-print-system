@@ -654,6 +654,11 @@ if (isset($_GET['jong']) && !empty($_GET['jong'])) {
                 };
                 console.log('Price and specification data saved:', window.currentPriceData);
                 
+                // ✅ 플로팅 견적서(Quote Gauge) UI 업데이트 트리거
+                if (typeof updateQfPricing === 'function') {
+                    updateQfPricing();
+                }
+                
                 // 견적서 모드일 때 견적서 적용 버튼 표시
                 const applyBtn = document.getElementById('applyBtn');
                 if (applyBtn) {

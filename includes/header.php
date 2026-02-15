@@ -4,27 +4,49 @@
  * 경로: includes/header.php
  */
 
-// 세션이 시작되지 않았다면 시작
+// 세션 수명 8시간 통일
 if (session_status() == PHP_SESSION_NONE) {
+    ini_set('session.gc_maxlifetime', 28800);
+    session_set_cookie_params([
+        'lifetime' => 28800,
+        'path' => '/',
+        'domain' => '',
+        'secure' => isset($_SERVER['HTTPS']) && $_SERVER['HTTPS'] !== 'off',
+        'httponly' => true,
+        'samesite' => 'Lax'
+    ]);
     session_start();
 }
 
-// 통합 로그인 상태 확인 (세션 + 쿠키 호환)
-$is_logged_in = isset($_SESSION['user_id']) || isset($_SESSION['id_login_ok']) || isset($_COOKIE['id_login_ok']);
+// 통합 로그인 상태 확인 (세션 + 자동로그인 토큰 + 쿠키 호환)
+$is_logged_in = isset($_SESSION['user_id']);
+$user_name = '';
 
-if (isset($_SESSION['user_id'])) {
-    // 신규 시스템
+if ($is_logged_in) {
     $user_name = $_SESSION['user_name'] ?? '';
-} elseif (isset($_SESSION['id_login_ok'])) {
-    // 기존 시스템 세션
-    $user_name = $_SESSION['id_login_ok']['id'] ?? '';
-} elseif (isset($_COOKIE['id_login_ok'])) {
-    // 기존 시스템 쿠키 (fallback)
-    $user_name = $_COOKIE['id_login_ok'];
-    $is_logged_in = true;
 } else {
-    $user_name = '';
-    $is_logged_in = false;
+    // 자동 로그인 토큰 체크
+    if (isset($_COOKIE['remember_token']) && !empty($_COOKIE['remember_token'])) {
+        if (!isset($db)) {
+            @include_once dirname(__DIR__) . '/db.php';
+        }
+        if (isset($db) && $db) {
+            include_once __DIR__ . '/auth.php';
+            $is_logged_in = isset($_SESSION['user_id']);
+            $user_name = $_SESSION['user_name'] ?? '';
+        }
+    }
+
+    // 기존 시스템 호환 (fallback)
+    if (!$is_logged_in) {
+        if (isset($_SESSION['id_login_ok'])) {
+            $user_name = $_SESSION['id_login_ok']['id'] ?? '';
+            $is_logged_in = true;
+        } elseif (isset($_COOKIE['id_login_ok'])) {
+            $user_name = $_COOKIE['id_login_ok'];
+            $is_logged_in = true;
+        }
+    }
 }
 ?>
 <!DOCTYPE html>

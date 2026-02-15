@@ -519,12 +519,6 @@ $default_values['ordertype'] = 'print'; // 인쇄만
     <!-- 포스터/리플렛 전용 컴팩트 디자인 적용 (Frontend-Compact-Design-Guide.md 기반) -->
 
 
-    <?php
-    // 데이터베이스 연결 종료
-    if ($db) {
-        mysqli_close($db);
-    }
-    ?>
     <!-- 테마 스위처 -->
     <?php ThemeLoader::renderSwitcher('bottom-right'); ?>
     <?php ThemeLoader::renderSwitcherJS(); ?>
@@ -599,5 +593,6 @@ $default_values['ordertype'] = 'print'; // 인쇄만
 <?php include __DIR__ . '/../../includes/quote_gauge.php'; ?>
 <script src="/js/quote-gauge.js?v=<?php echo time(); ?>"></script>
 <?php endif; ?>
+<?php if (isset($db) && $db) { mysqli_close($db); } ?>
 </body>
 </html>

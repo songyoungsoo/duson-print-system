@@ -77,6 +77,57 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['submit_inquiry'])) {
 
             if (mysqli_stmt_execute($stmt)) {
                 $submit_success = true;
+
+                // 관리자에게 메일 알림 발송
+                $categoryLabelsForMail = [
+                    'quote' => '견적문의', 'production' => '제작관련',
+                    'file' => '파일관련', 'delivery' => '배송관련',
+                    'payment' => '결제관련', 'general' => '기타문의'
+                ];
+                $cat_label = $categoryLabelsForMail[$category] ?? $category;
+
+                $phpmailerPath = $_SERVER['DOCUMENT_ROOT'] . '/mlangorder_printauto/PHPMailer/';
+                if (file_exists($phpmailerPath . 'PHPMailer.php')) {
+                    @require_once $phpmailerPath . 'PHPMailer.php';
+                    @require_once $phpmailerPath . 'SMTP.php';
+                    @require_once $phpmailerPath . 'Exception.php';
+
+                    try {
+                        $mail = new PHPMailer\PHPMailer\PHPMailer(true);
+                        $mail->isSMTP();
+                        $mail->SMTPDebug = 0;
+                        $mail->Host = 'smtp.naver.com';
+                        $mail->Port = 465;
+                        $mail->SMTPSecure = 'ssl';
+                        $mail->SMTPAuth = true;
+                        $mail->Username = 'dsp1830';
+                        $mail->Password = '2CP3P5BTS83Y';
+                        $mail->CharSet = 'UTF-8';
+
+                        $mail->setFrom('dsp1830@naver.com', '두손기획인쇄');
+                        $mail->addAddress('dsp1830@naver.com');
+                        $mail->addReplyTo($email, $name);
+
+                        $mail->isHTML(false);
+                        $mail->Subject = "[고객문의] [{$cat_label}] {$subject}";
+                        $mail->Body = "고객센터 새 문의가 접수되었습니다.\n\n"
+                            . "────────────────────────\n"
+                            . "이름: {$name}\n"
+                            . "이메일: {$email}\n"
+                            . "연락처: " . ($phone ?: '미입력') . "\n"
+                            . "유형: {$cat_label}\n"
+                            . "────────────────────────\n\n"
+                            . "제목: {$subject}\n\n"
+                            . "내용:\n{$message}\n\n"
+                            . "────────────────────────\n"
+                            . "접수시간: " . date('Y-m-d H:i:s') . "\n";
+
+                        $mail->send();
+                    } catch (Exception $e) {
+                        error_log("문의 메일 발송 실패: " . $e->getMessage());
+                    }
+                }
+
                 // 폼 초기화
                 $_POST = [];
             } else {

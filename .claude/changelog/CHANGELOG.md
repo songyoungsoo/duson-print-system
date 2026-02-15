@@ -8,12 +8,15 @@
 
 | 수정자 | 수정항목 | 관련 파일 |
 |--------|----------|-----------|
-| Claude | **견적서 이메일 네이비 격식 테마 통일** - 관리자 견적서(QuoteRenderer)와 플로팅 견적받기(quote_request_api.php) 두 시스템의 이메일 디자인을 네이비 격식 테마로 통일. 컬러 팔레트: 헤더 #1e293b, 테두리 #334155/#cbd5e1, 브랜드블루 #2563eb | QuoteRenderer.php, quote_request_api.php, layout.php |
-| Claude | **QuoteRenderer 4가지 출력 네이비 적용** - renderLegacyHTML(CSS 클래스), renderEmailBody(인라인 스타일), renderLegacyPDF(TCPDF), renderStandardPDF(mPDF CSS) 모두 네이비 격식 컬러 적용 | admin/mlangprintauto/quote/includes/QuoteRenderer.php |
-| Claude | **플로팅 견적받기 고객 이메일 네이비 변환** - $customerBody(line 93~137) 그라데이션 카드 스타일 → 네이비 격식 테이블 레이아웃. 네이비 헤더("견 적 서"), 네이비 라벨 셀, CTA 버튼, 네이비 푸터 | includes/quote_request_api.php |
-| Claude | **견적서 미리보기 CSS 네이비 적용** - layout.php 브라우저 미리보기 페이지 CSS를 네이비 격식 테마로 변환 | mlangprintauto/quote/standard/layout.php |
+| Claude | **플로팅 견적 위젯 프로덕션 PHP 8.2 Fatal Error 수정** - 4개 제품(포스터/상품권/자석스티커/카다록)에서 `mysqli_close($db)`가 `quote_gauge.php` include보다 먼저 호출되어 PHP 8.2에서 "mysqli object is already closed" Fatal Error 발생. `mysqli_close`를 include 뒤로 이동하여 해결. 로컬 PHP 7.4에서는 증상 없어 발견 어려웠음 | mlangprintauto/littleprint/index.php, merchandisebond/index.php, msticker/index.php, cadarok/index.php |
+| Claude | **플로팅 견적 사이드바 옵션 가격 이중 합산 버그 수정** - PriceCalculationService API가 Order_PriceForm에 이미 추가옵션을 포함하여 반환하는데, quote-gauge.js 레거시 경로에서 DOM의 optionTotal을 다시 합산하여 공급가액/합계가 부풀려지던 버그 수정. 스티커/신규포맷 경로는 영향 없음 | js/quote-gauge.js |
+| Claude | **플로팅 견적서 이메일 공급받는자/공급자 정보 추가** - 이메일 상단에 공급받는자(견적일, 상호/성명, 연락처, 이메일)와 공급자(등록번호, 상호, 대표자, 연락처) 테이블 50/50 분할 추가. company_info.php SSOT 활용 | includes/quote_request_api.php |
+| Claude | **견적서 전체 색상 홈페이지 헤더색 통일** - #1e293b(다크네이비) → #1E4E79(홈페이지 헤더색)로 변경. 적용: 플로팅 이메일, 관리자 견적서(HTML/CSS/PDF), 브라우저 미리보기. 보조색: 테두리 #2a6496, 내부선 #3a7ab5, PDF SetFillColor(30,78,121) | QuoteRenderer.php, quote_request_api.php, layout.php |
+| Claude | **견적서 이메일 네이비 격식 테마 통일** - 관리자 견적서(QuoteRenderer)와 플로팅 견적받기(quote_request_api.php) 두 시스템의 이메일 디자인을 격식 테마로 통일 | QuoteRenderer.php, quote_request_api.php, layout.php |
+| Claude | **QuoteRenderer 4가지 출력 테마 적용** - renderLegacyHTML(CSS 클래스), renderEmailBody(인라인 스타일), renderLegacyPDF(TCPDF), renderStandardPDF(mPDF CSS) 모두 #1E4E79 컬러 적용 | admin/mlangprintauto/quote/includes/QuoteRenderer.php |
+| Claude | **플로팅 견적받기 고객 이메일 변환** - $customerBody 그라데이션 카드 스타일 → 격식 테이블 레이아웃. 헤더("견 적 서"), 라벨 셀, CTA 버튼, 푸터 | includes/quote_request_api.php |
+| Claude | **견적서 미리보기 CSS 적용** - layout.php 브라우저 미리보기 페이지 CSS를 #1E4E79 테마로 변환 | mlangprintauto/quote/standard/layout.php |
 | Claude | **계좌번호 표시 개선** - payment_info.php 계좌번호 폰트 크기 15→22px, 굵기 600→700, 자간 추가 | sub/customer/payment_info.php |
-| Claude | **AGENTS.md 문서 업데이트** - 견적서 네이비 격식 테마 섹션 추가 (컬러 팔레트, 디자인 규칙, 출력별 적용 방식) | AGENTS.md |
 
 ---
 

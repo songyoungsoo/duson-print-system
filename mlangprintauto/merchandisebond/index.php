@@ -513,15 +513,12 @@ if ($default_values['MY_type'] && $default_values['Section']) {
         // 독립 갤러리 함수들 제거됨 - 통합 갤러리 시스템에서 모든 기능 처리
     </script>
 
+    <!-- 상품권 메인 로직 (명함 시스템 기반) -->
+    <script src="js/namecard-compact.js?v=<?php echo time(); ?>"></script>
+
     <!-- 견적서 모달 공통 JavaScript -->
     <script src="../../js/quotation-modal-common.js?v=<?php echo time(); ?>"></script>
 
-    <?php
-    // 데이터베이스 연결 종료
-    if ($db) {
-        mysqli_close($db);
-    }
-    ?>
     <!-- 테마 스위처 -->
     <?php ThemeLoader::renderSwitcher('bottom-right'); ?>
     <?php ThemeLoader::renderSwitcherJS(); ?>
@@ -593,5 +590,6 @@ if ($default_values['MY_type'] && $default_values['Section']) {
 <?php include __DIR__ . '/../../includes/quote_gauge.php'; ?>
 <script src="/js/quote-gauge.js?v=<?php echo time(); ?>"></script>
 <?php endif; ?>
+<?php if (isset($db) && $db) { mysqli_close($db); } ?>
 </body>
 </html>

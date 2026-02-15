@@ -4,7 +4,20 @@
  * users 테이블 기반 (기존 member 테이블과 호환)
  */
 
-session_start();
+// 세션 수명 8시간 통일 (auth.php, admin_auth.php와 동일)
+$session_lifetime = 28800;
+if (session_status() == PHP_SESSION_NONE) {
+    ini_set('session.gc_maxlifetime', $session_lifetime);
+    session_set_cookie_params([
+        'lifetime' => $session_lifetime,
+        'path' => '/',
+        'domain' => '',
+        'secure' => isset($_SERVER['HTTPS']) && $_SERVER['HTTPS'] !== 'off',
+        'httponly' => true,
+        'samesite' => 'Lax'
+    ]);
+    session_start();
+}
 
 // CSRF 검증
 include_once __DIR__ . '/../includes/csrf.php';
@@ -16,10 +29,19 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
 
     if ($mode == "member_login") {
         include "../db.php";
-        
+
+        // 자동로그인 함수 로드
+        include_once __DIR__ . '/../includes/auth_functions.php';
+        if (file_exists(__DIR__ . '/../includes/auth.php')) {
+            // auth.php의 함수만 로드 (세션은 이미 시작됨)
+            $connect = $db;
+            include_once __DIR__ . '/../includes/auth.php';
+        }
+
         $id = mysqli_real_escape_string($db, $_POST['id'] ?? '');
         $pass = $_POST['pass'] ?? '';
         $redirect = $_POST['redirect'] ?? $_GET['redirect'] ?? '/';
+        $remember_me = isset($_POST['remember_me']) && $_POST['remember_me'] == '1';
         
         if (empty($id) || empty($pass)) {
             echo "<script>
@@ -104,7 +126,15 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
                 );
 
                 setcookie("id_login_ok", $user['username'], 0, "/");
-                
+
+                // 자동 로그인 처리 (remember_me 체크 시)
+                if ($remember_me && function_exists('createRememberToken')) {
+                    $token = createRememberToken($db, $user['id']);
+                    if ($token) {
+                        setRememberMeCookie($token);
+                    }
+                }
+
                 echo "<script>
                         alert('정상적으로 로그인 되셨습니다.\\n\\n좋은 하루 되시기를 바랍니다.....*^^*');
                         " . (!empty($redirect) ? "location.href = '$redirect';" : "location.href = '../';") . "
@@ -112,7 +142,7 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
                 exit;
             }
         }
-        
+
         // 2. 로그인 실패 시 기존 member 테이블에서 확인 (fallback)
         $member_query = "SELECT * FROM member WHERE id = ?";
         $member_stmt = mysqli_prepare($db, $member_query);
@@ -157,6 +187,12 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
                     $_SESSION['id_login_ok'] = array('id' => $member['id'], 'pass' => $pass);
 
                     setcookie("id_login_ok", $member['id'], 0, "/");
+
+                    // 자동 로그인 처리
+                    if ($remember_me && function_exists('createRememberToken')) {
+                        $token = createRememberToken($db, $existing_user['id']);
+                        if ($token) { setRememberMeCookie($token); }
+                    }
 
                     // member 테이블 업데이트
                     $update_member = "UPDATE member SET Logincount = ?, EndLogin = ? WHERE id = ?";
@@ -209,6 +245,12 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
                         $_SESSION['id_login_ok'] = array('id' => $member['id'], 'pass' => $pass);
 
                         setcookie("id_login_ok", $member['id'], 0, "/");
+
+                        // 자동 로그인 처리
+                        if ($remember_me && function_exists('createRememberToken')) {
+                            $token = createRememberToken($db, mysqli_insert_id($db));
+                            if ($token) { setRememberMeCookie($token); }
+                        }
 
                         // member 테이블 업데이트
                         $update_member = "UPDATE member SET Logincount = ?, EndLogin = ? WHERE id = ?";

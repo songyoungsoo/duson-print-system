@@ -465,6 +465,11 @@ function calculatePrice(isAuto = true) {
             // 가격 표시 업데이트
             updatePriceDisplay(priceData);
 
+            // 플로팅 견적서 UI 업데이트
+            if (typeof updateQfPricing === 'function') {
+                updateQfPricing();
+            }
+
         } else {
             resetPrice();
             if (!isAuto) {

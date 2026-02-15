@@ -7,34 +7,52 @@
  *       완전한 HTML 구조(<html>, <head>, <body>)를 포함하지 않습니다.
  */
 
-// 세션이 시작되지 않았다면 시작
+// 세션 수명 8시간 통일 (auth.php, admin_auth.php, login_unified.php 동일)
+$session_lifetime = 28800;
 if (session_status() == PHP_SESSION_NONE) {
-    // 세션 저장 경로 설정 (권한 문제 해결)
-    $session_path = dirname(__DIR__) . '/sessions';
-    if (!is_dir($session_path)) {
-        mkdir($session_path, 0777, true);
-    }
-    ini_set('session.save_path', $session_path);
-
+    ini_set('session.gc_maxlifetime', $session_lifetime);
+    session_set_cookie_params([
+        'lifetime' => $session_lifetime,
+        'path' => '/',
+        'domain' => '',
+        'secure' => isset($_SERVER['HTTPS']) && $_SERVER['HTTPS'] !== 'off',
+        'httponly' => true,
+        'samesite' => 'Lax'
+    ]);
     session_start();
 }
 
-// 통합 로그인 상태 확인 (세션 + 쿠키 호환)
-$is_logged_in = isset($_SESSION['user_id']) || isset($_SESSION['id_login_ok']) || isset($_COOKIE['id_login_ok']);
+// 통합 로그인 상태 확인 (세션 + 자동로그인 토큰 + 쿠키 호환)
+$is_logged_in = isset($_SESSION['user_id']);
+$user_name = '';
 
-if (isset($_SESSION['user_id'])) {
-    // 신규 시스템
+if ($is_logged_in) {
+    // 신규 시스템 세션
     $user_name = $_SESSION['user_name'] ?? '';
-} elseif (isset($_SESSION['id_login_ok'])) {
-    // 기존 시스템 세션
-    $user_name = $_SESSION['id_login_ok']['id'] ?? '';
-} elseif (isset($_COOKIE['id_login_ok'])) {
-    // 기존 시스템 쿠키 (fallback)
-    $user_name = $_COOKIE['id_login_ok'];
-    $is_logged_in = true;
 } else {
-    $user_name = '';
-    $is_logged_in = false;
+    // 자동 로그인 토큰 체크 (remember_token 쿠키)
+    if (isset($_COOKIE['remember_token']) && !empty($_COOKIE['remember_token'])) {
+        if (!isset($db)) {
+            @include_once dirname(__DIR__) . '/db.php';
+        }
+        if (isset($db) && $db) {
+            include_once __DIR__ . '/auth.php';
+            // auth.php가 자동로그인 처리 후 $is_logged_in, $user_name 설정
+            $is_logged_in = isset($_SESSION['user_id']);
+            $user_name = $_SESSION['user_name'] ?? '';
+        }
+    }
+
+    // 기존 시스템 호환 (fallback)
+    if (!$is_logged_in) {
+        if (isset($_SESSION['id_login_ok'])) {
+            $user_name = $_SESSION['id_login_ok']['id'] ?? '';
+            $is_logged_in = true;
+        } elseif (isset($_COOKIE['id_login_ok'])) {
+            $user_name = $_COOKIE['id_login_ok'];
+            $is_logged_in = true;
+        }
+    }
 }
 ?>
 <!-- 상단 헤더 -->

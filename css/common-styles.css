@@ -817,12 +817,13 @@ input[type="text"].inline-input {
 }
 
 .nav-mega-item.nav-mega-item-highlight {
-    background: #0099ff;
+    background: #1E4E79;
     color: #fff;
+    font-weight: 600;
 }
 
 .nav-mega-item.nav-mega-item-highlight:hover {
-    background: #007acc;
+    background: #163a5c;
     color: #fff;
 }
 

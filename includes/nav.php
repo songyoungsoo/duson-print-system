@@ -30,11 +30,11 @@ if (isset($db) && $db) {
 
 // 6개 제품 메가 패널 데이터 일괄 조회 (봉투, 카다록, 포스터, 양식지, 상품권, 자석스티커)
 $nav_mega_products = [
-    'envelope'        => ['folder' => 'envelope',        'label' => '✉️ 봉투',  'ttable' => 'envelope'],
-    'cadarok'         => ['folder' => 'cadarok',          'label' => '📖 카다록', 'ttable' => 'cadarok'],
-    'littleprint'     => ['folder' => 'littleprint',      'label' => '🎨 포스터', 'ttable' => 'LittlePrint'],
-    'ncrflambeau'     => ['folder' => 'ncrflambeau',      'label' => '📋 양식지', 'ttable' => 'NcrFlambeau'],
-    'merchandisebond' => ['folder' => 'merchandisebond',  'label' => '🎫 상품권', 'ttable' => 'MerchandiseBond'],
+    'envelope'        => ['folder' => 'envelope',        'label' => '봉투',  'ttable' => 'envelope'],
+    'cadarok'         => ['folder' => 'cadarok',          'label' => '카다록', 'ttable' => 'cadarok'],
+    'littleprint'     => ['folder' => 'littleprint',      'label' => '포스터', 'ttable' => 'LittlePrint'],
+    'ncrflambeau'     => ['folder' => 'ncrflambeau',      'label' => '양식지', 'ttable' => 'NcrFlambeau'],
+    'merchandisebond' => ['folder' => 'merchandisebond',  'label' => '상품권', 'ttable' => 'MerchandiseBond'],
     'msticker'        => ['folder' => 'msticker',         'label' => '자석스티커', 'ttable' => 'msticker'],
 ];
 $nav_mega_data = [];
@@ -96,14 +96,19 @@ if (isset($db) && $db) {
                 <div class="nav-mega-group">
                     <a href="/mlangprintauto/sticker_new/index.php" class="nav-mega-heading"><?php echo $group_name; ?></a>
                     <div class="nav-mega-items nav-mega-cols-2">
-                        <?php foreach ($materials as $val => $label): ?>
-                        <a href="/mlangprintauto/sticker_new/index.php?jong=<?php echo urlencode($val); ?>" class="nav-mega-item"><?php echo htmlspecialchars($label); ?></a>
+                        <?php foreach ($materials as $val => $label): 
+                            $is_best = ($val == 'jil 아트유광코팅');
+                            $highlight = $is_best ? ' nav-mega-item-highlight' : '';
+                            $display_label = $is_best ? htmlspecialchars($label) . '<span style="font-size:10px;margin-left:4px;color:#ffeb3b;">★</span>' : htmlspecialchars($label);
+                            $title_attr = $is_best ? ' title="가장 많이 사용하는 품목"' : '';
+                        ?>
+                        <a href="/mlangprintauto/sticker_new/index.php?jong=<?php echo urlencode($val); ?>" class="nav-mega-item<?php echo $highlight; ?>"<?php echo $title_attr; ?>><?php echo $display_label; ?></a>
                         <?php endforeach; ?>
                     </div>
                 </div>
                 <?php endforeach; ?>
                 <a href="tel:1688-2384" class="nav-mega-notice">
-                    <span class="notice-title">롤스티커</span>
+                    <span class="notice-title">롤스티커(전문)/가맹점스티커(최고)</span>
                     <span class="notice-list">
                         <span>· 금지스티커</span><span>· 금박스티커</span>
                         <span>· 홀로그램스티커</span><span>· 보안스티커</span>
@@ -162,10 +167,16 @@ if (isset($db) && $db) {
                     ?></a>
                     <?php if (!empty($nctype['subs'])): ?>
                     <div class="nav-mega-items">
-                        <?php foreach ($nctype['subs'] as $sub): ?>
-                        <a href="/mlangprintauto/namecard/index.php?type=<?php echo $nctype['no']; ?>&section=<?php echo $sub['no']; ?>" class="nav-mega-item"><?php
-                            echo htmlspecialchars(trim(preg_replace('/\(.*?\)/', '', $sub['title'])));
-                        ?></a>
+                        <?php foreach ($nctype['subs'] as $sub): 
+                            $is_best = (strpos($nctype['title'], '일반명함') !== false && strpos($sub['title'], '칼라코팅') !== false) ||
+                                       (strpos($nctype['title'], '수입지') !== false && strpos($sub['title'], '누브지') !== false) ||
+                                       (strpos($nctype['title'], '카드') !== false && (strpos($sub['title'], '화이트') !== false || strpos($sub['title'], '골드') !== false));
+                            $highlight = $is_best ? ' nav-mega-item-highlight' : '';
+                            $display_title = htmlspecialchars(trim(preg_replace('/\(.*?\)/', '', $sub['title'])));
+                            if ($is_best) $display_title .= '<span style="font-size:10px;margin-left:4px;color:#ffeb3b;">★</span>';
+                            $title_attr = $is_best ? ' title="가장 많이 사용하는 품목"' : '';
+                        ?>
+                        <a href="/mlangprintauto/namecard/index.php?type=<?php echo $nctype['no']; ?>&section=<?php echo $sub['no']; ?>" class="nav-mega-item<?php echo $highlight; ?>"<?php echo $title_attr; ?>><?php echo $display_title; ?></a>
                         <?php endforeach; ?>
                     </div>
                     <?php endif; ?>
@@ -213,24 +224,52 @@ if (isset($db) && $db) {
                         }
                     ?>
                     <div class="nav-mega-items">
-                        <?php foreach ($env_normal as $msub): ?>
-                        <a href="/mlangprintauto/envelope/index.php?type=282&section=<?php echo $msub['no']; ?>" class="nav-mega-item"><?php echo htmlspecialchars(trim($msub['title'])); ?></a>
+                        <?php foreach ($env_normal as $msub): 
+                            $is_best = (strpos($msub['title'], '소봉투') !== false && strpos($msub['title'], '220') !== false) || 
+                                       (strpos($msub['title'], '대봉투') !== false && strpos($msub['title'], '330') !== false && strpos($msub['title'], '120g') !== false);
+                            $highlight = $is_best ? ' nav-mega-item-highlight' : '';
+                            $display_title = htmlspecialchars(trim($msub['title']));
+                            if ($is_best) $display_title .= '<span style="font-size:10px;margin-left:4px;color:#ffeb3b;">★</span>';
+                            $title_attr = $is_best ? ' title="가장 많이 사용하는 품목"' : '';
+                        ?>
+                        <a href="/mlangprintauto/envelope/index.php?type=282&section=<?php echo $msub['no']; ?>" class="nav-mega-item<?php echo $highlight; ?>"<?php echo $title_attr; ?>><?php echo $display_title; ?></a>
                         <?php endforeach; ?>
                     </div>
                     <?php if (!empty($env_jacket)): ?>
                     <div class="nav-mega-subheading">자켓봉투</div>
                     <div class="nav-mega-items">
-                        <?php foreach ($env_jacket as $msub): ?>
-                        <a href="/mlangprintauto/envelope/index.php?type=282&section=<?php echo $msub['no']; ?>" class="nav-mega-item"><?php echo htmlspecialchars(trim($msub['title'])); ?></a>
+                        <?php foreach ($env_jacket as $msub): 
+                            $is_best = (strpos($msub['title'], '소봉투') !== false && strpos($msub['title'], '220') !== false);
+                            $highlight = $is_best ? ' nav-mega-item-highlight' : '';
+                            $display_title = htmlspecialchars(trim($msub['title']));
+                            if ($is_best) $display_title .= '<span style="font-size:10px;margin-left:4px;color:#ffeb3b;">★</span>';
+                            $title_attr = $is_best ? ' title="가장 많이 사용하는 품목"' : '';
+                        ?>
+                        <a href="/mlangprintauto/envelope/index.php?type=282&section=<?php echo $msub['no']; ?>" class="nav-mega-item<?php echo $highlight; ?>"<?php echo $title_attr; ?>><?php echo $display_title; ?></a>
                         <?php endforeach; ?>
                     </div>
                     <?php endif; ?>
                     <?php else: ?>
                     <div class="nav-mega-items">
-                        <?php foreach ($mtype['subs'] as $msub): ?>
-                        <a href="/mlangprintauto/<?php echo $mega_info['folder']; ?>/index.php?type=<?php echo $mtype['no']; ?>&section=<?php echo $msub['no']; ?>" class="nav-mega-item"><?php
-                            echo ($mega_key === 'envelope') ? htmlspecialchars(trim($msub['title'])) : htmlspecialchars(trim(preg_replace('/\(.*?\)/', '', $msub['title'])));
-                        ?></a>
+                        <?php foreach ($mtype['subs'] as $msub): 
+                            $is_best = ($mega_key === 'msticker' && (
+                                ($mtype['no'] == '742' && strpos($msub['title'], '90x130') !== false) || 
+                                ($mtype['no'] == '753' && strpos($msub['title'], '33x53') !== false)
+                            )) ||
+                            ($mega_key === 'littleprint' && (strpos($msub['title'], '150아트') !== false || strpos($msub['title'], '150스노우') !== false)) ||
+                            ($mega_key === 'cadarok' && strpos($msub['title'], '8페이지') !== false && strpos($msub['title'], '중철') !== false && strpos($msub['title'], 'A4') !== false) ||
+                            ($mega_key === 'ncrflambeau' && (
+                                strpos($msub['title'], '빌지') !== false || 
+                                strpos($msub['title'], '영수증') !== false || 
+                                (strpos($msub['title'], '거래명세표') !== false && strpos($msub['title'], 'A4') !== false)
+                            )) ||
+                            ($mega_key === 'merchandisebond' && strpos($msub['title'], '인쇄만') !== false);
+                            $highlight = $is_best ? ' nav-mega-item-highlight' : '';
+                            $title_clean = ($mega_key === 'envelope') ? htmlspecialchars(trim($msub['title'])) : htmlspecialchars(trim(preg_replace('/\(.*?\)/', '', $msub['title'])));
+                            if ($is_best) $title_clean .= '<span style="font-size:10px;margin-left:4px;color:#ffeb3b;">★</span>';
+                            $title_attr = $is_best ? ' title="가장 많이 사용하는 품목"' : '';
+                        ?>
+                        <a href="/mlangprintauto/<?php echo $mega_info['folder']; ?>/index.php?type=<?php echo $mtype['no']; ?>&section=<?php echo $msub['no']; ?>" class="nav-mega-item<?php echo $highlight; ?>"<?php echo $title_attr; ?>><?php echo $title_clean; ?></a>
                         <?php endforeach; ?>
                     </div>
                     <?php endif; ?>

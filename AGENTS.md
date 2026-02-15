@@ -702,36 +702,34 @@ $manager->updateStatus($quoteId, 'sent');  // send_email.php
 $status = $isDraft ? 'draft' : 'sent';
 ```
 
-### 견적서 이메일 "네이비 격식" 테마 (2026-02-15)
+### 견적서 테마 — 홈페이지 헤더색 통일 (2026-02-15)
 
-**두 개의 독립적 견적서 이메일 시스템이 동일한 네이비 격식 테마로 통일됨:**
+**두 개의 독립적 견적서 이메일 시스템이 홈페이지 헤더색(`#1E4E79`)으로 통일됨:**
 
 | 시스템 | 파일 | 용도 |
 |--------|------|------|
 | 관리자 견적서 | `QuoteRenderer.php` | 다중 품목, 회사정보, PDF 첨부 (HTML/Email/PDF 3가지 출력) |
-| 플로팅 견적받기 | `quote_request_api.php` | 단일 품목, `$customerBody` 인라인 HTML (고객 이메일) |
+| 플로팅 견적받기 | `quote_request_api.php` | 단일 품목, 공급받는자/공급자 50:50 테이블, `$customerBody` 인라인 HTML |
 
-**네이비 격식 컬러 팔레트:**
+**컬러 팔레트 (홈페이지 헤더 `#1E4E79` 기준):**
 
 | 용도 | 색상 코드 |
 |------|----------|
-| 헤더/라벨 셀 배경 | `#1e293b` |
-| 테이블 외곽선 | `#334155` |
+| 헤더/라벨 셀 배경 | `#1E4E79` (홈페이지 `.top-header` 동일) |
+| 테이블 외곽선 | `#2a6496` |
 | 테이블 내부선 | `#94a3b8` |
-| 헤더 내부선 | `#475569` |
+| 헤더 내부선 | `#3a7ab5` |
 | 품목 테이블 내부선 | `#cbd5e1` |
-| 브랜드 블루 (최종금액) | `#2563eb` |
-| 연한 네이비 배경 (합계행) | `#f1f5f9` |
+| 연한 블루 배경 (합계행/공급자라벨) | `#e8eff7` |
 | 값 셀 배경 | `#f8fafc` |
 | 헤더 글씨 | `#ffffff` |
+| PDF Fill | `SetFillColor(30, 78, 121)` |
+| PDF Draw | `SetDrawColor(42, 100, 150)` |
 
-**디자인 규칙:**
-- 라벨/헤더 셀: 네이비 배경 + 흰 글씨
-- 최종 금액 숫자: 브랜드 블루 (`#2563eb`)
-- "견 적 서" 제목: 네이비 배경 + 레터스페이싱 6px
-- 합계(VAT포함) 행: 연한 네이비 배경 + 블루 금액
-- CTA 버튼: 네이비 배경 (`#1e293b`) + 흰 글씨
-- 푸터: 네이비 배경 + 슬레이트 텍스트
+**플로팅 견적서 이메일 구조:**
+- 공급받는자 (50%): 견적일, 상호/성명, 연락처, 이메일
+- 공급자 (50%): 등록번호, 상호, 대표자, 연락처
+- company_info.php SSOT 활용 (`getCompanyInfo()`)
 
 **QuoteRenderer 출력별 테마 적용:**
 
@@ -745,7 +743,8 @@ $status = $isDraft ? 'draft' : 'sent';
 **관련 파일:**
 - `admin/mlangprintauto/quote/includes/QuoteRenderer.php` — 관리자 견적서 렌더러
 - `mlangprintauto/quote/standard/layout.php` — 브라우저 미리보기 CSS
-- `includes/quote_request_api.php` — 플로팅 견적받기 고객 이메일 (`$customerBody` line 93~137)
+- `includes/quote_request_api.php` — 플로팅 견적받기 고객 이메일
+- `mlangprintauto/includes/company_info.php` — 회사 정보 SSOT
 
 ### 이메일 발송 제한
 - SMTP: 네이버 (`smtp.naver.com:465/ssl`, dsp1830)
@@ -966,6 +965,40 @@ filter_var('http://' . $host, FILTER_VALIDATE_URL)
 18. ❌ `.htaccess`를 잘못 작성하면 이미지/페이지가 500 에러 발생
 19. ❌ Plesk는 nginx + Apache 조합 사용 → .htaccess는 Apache 2.4 호환만 사용
 20. ❌ `/mlangorder_printauto/upload/`에 `.htaccess` 파일 생성 시 500 에러 발생 (삭제 후 정상 작동)
+
+### PHP 8.2 호환성 — mysqli_close 순서 (2026-02-15, CRITICAL)
+
+**⚠️ 이것만 기억해: `mysqli_close($db)` 뒤에서 `$db`를 쓰면 PHP 8.2에서 Fatal Error로 죽는다.**
+
+```
+로컬 PHP 7.4:  mysqli_close($db) → mysqli_query($db, ...) → false 반환 (조용히 넘어감)
+프로덕션 PHP 8.2: mysqli_close($db) → mysqli_query($db, ...) → ❌ Fatal Error: mysqli object is already closed
+```
+
+**실제 사고 (2026-02-15):**
+- `quote_gauge.php`(플로팅 견적 위젯)가 내부에서 `mysqli_query($db, ...)` 사용
+- 4개 제품 페이지(포스터/상품권/자석스티커/카다록)에서 `mysqli_close($db)`를 include 앞에 배치
+- 로컬에서 정상 → 프로덕션에서 위젯 안 보임 (Fatal Error가 display_errors=Off라 숨겨짐)
+- 원인 찾기 어려웠음: 에러 메시지 없이 include 결과물만 사라짐
+
+**반드시 지킬 것:**
+```php
+// ❌ 절대 금지: DB 닫은 뒤에 DB 사용하는 include
+mysqli_close($db);
+include 'quote_gauge.php';  // 내부에서 $db 사용 → PHP 8.2 Fatal Error
+
+// ✅ 올바른 순서: include 먼저, DB 닫기는 맨 마지막
+include 'quote_gauge.php';  // $db 정상 사용
+if (isset($db) && $db) { mysqli_close($db); }  // 페이지 끝에서 정리
+</body>
+```
+
+**진단 팁:**
+- 프로덕션에서만 안 되고 로컬에서 되면 → PHP 버전 차이 의심 (로컬 7.4 vs 프로덕션 8.2)
+- include 결과물이 HTML에 안 나타나면 → include 대상 파일 내부의 Fatal Error 의심
+- `require_once`로 이미 로드된 `db.php`는 재실행 안 됨 → `$db`가 닫힌 상태 그대로 유지
+
+21. ❌ `mysqli_close($db)` 후에 `$db` 사용하는 include → PHP 8.2 Fatal Error (로컬에서 안 잡힘!)
 
 ### Payment System
 9. ❌ Enabling production mode on localhost → real payments triggered

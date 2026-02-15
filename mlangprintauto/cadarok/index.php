@@ -138,6 +138,9 @@ if ($default_values['MY_type'] && $default_values['Section']) {
     <!-- 견적서 모달용 공통 스타일 -->
     <link rel="stylesheet" href="../../css/quotation-modal-common.css">
     <link rel="stylesheet" href="../../css/quote-gauge.css">
+    
+    <!-- 플로팅 견적서 JS 미리 로드 (안전성 확보) -->
+    <script src="/js/quote-gauge.js?v=<?php echo time(); ?>"></script>
 
 <!-- Phase 5: 견적 요청 버튼 스타일 -->
 <style>
@@ -623,6 +626,9 @@ if ($default_values['MY_type'] && $default_values['Section']) {
         };
     </script>
 
+    <!-- 카다록 메인 로직 (계산기, 갤러리) - 캐시 회피용 v2 -->
+    <script src="js/cadarok_v2.js?v=<?php echo time(); ?>"></script>
+
     <!-- 카다록 추가 옵션 DB 로더 + 시스템 -->
     <script src="/js/premium-options-loader.js"></script>
     <script src="js/cadarok-premium-options.js"></script>
@@ -630,12 +636,6 @@ if ($default_values['MY_type'] && $default_values['Section']) {
     <!-- 견적서 모달 공통 JavaScript -->
     <script src="../../js/quotation-modal-common.js?v=<?php echo time(); ?>"></script>
 
-    <?php
-    // 데이터베이스 연결 종료
-    if ($db) {
-        mysqli_close($db);
-    }
-    ?>
     <!-- 테마 스위처 -->
     <?php ThemeLoader::renderSwitcher('bottom-right'); ?>
     <?php ThemeLoader::renderSwitcherJS(); ?>
@@ -703,9 +703,8 @@ if ($default_values['MY_type'] && $default_values['Section']) {
     console.log('✅ [관리자 견적서-카다록] applyToQuotation() 정의 완료');
     </script>
 <?php endif; ?>
-<?php if (!$isQuotationMode && !$isAdminQuoteMode): ?>
+<!-- 플로팅 견적서 (조건문 제거 테스트) -->
 <?php include __DIR__ . '/../../includes/quote_gauge.php'; ?>
-<script src="/js/quote-gauge.js?v=<?php echo time(); ?>"></script>
-<?php endif; ?>
+<?php if (isset($db) && $db) { mysqli_close($db); } ?>
 </body>
 </html>

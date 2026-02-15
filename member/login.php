@@ -3,7 +3,19 @@
 ini_set('display_errors', '0');
 error_reporting(E_ALL & ~E_NOTICE & ~E_DEPRECATED & ~E_STRICT);
 
-session_start();
+// 세션 수명 8시간 통일
+if (session_status() == PHP_SESSION_NONE) {
+    ini_set('session.gc_maxlifetime', 28800);
+    session_set_cookie_params([
+        'lifetime' => 28800,
+        'path' => '/',
+        'domain' => '',
+        'secure' => isset($_SERVER['HTTPS']) && $_SERVER['HTTPS'] !== 'off',
+        'httponly' => true,
+        'samesite' => 'Lax'
+    ]);
+    session_start();
+}
 $session_id = session_id();
 
 // 통합 로그인 상태 확인 (신규 시스템 우선)

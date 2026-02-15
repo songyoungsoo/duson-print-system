@@ -747,13 +747,6 @@ if (!$isQuotationMode && !$isAdminQuoteMode) {
     <!-- 견적서 모달 공통 JavaScript -->
     <script src="../../js/quotation-modal-common.js"></script>
 
-<?php
-// 데이터베이스 연결 종료
-if ($db) {
-    mysqli_close($db);
-}
-?>
-
 <?php if ($isAdminQuoteMode): ?>
     <!-- 관리자 견적서 모드: postMessage로 부모 창에 데이터 전송 -->
     <script>
@@ -821,5 +814,6 @@ if ($db) {
 <?php include __DIR__ . '/../../includes/quote_gauge.php'; ?>
 <script src="/js/quote-gauge.js?v=<?php echo time(); ?>"></script>
 <?php endif; ?>
+<?php if (isset($db) && $db) { mysqli_close($db); } ?>
 </body>
 </html>
