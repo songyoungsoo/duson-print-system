@@ -4,6 +4,7 @@ header('Content-Type: application/json; charset=utf-8');
 
 require_once __DIR__ . '/../db.php';
 require_once __DIR__ . '/../mlangorder_printauto/mailer.lib.php';
+require_once __DIR__ . '/../mlangprintauto/includes/company_info.php';
 ob_start();
 
 function jsonOut($success, $message, $data = []) {
@@ -73,12 +74,12 @@ $emailSent = false;
 $adminNotified = false;
 
 $priceRows = '';
-$priceRows .= '<tr><td style="padding:8px 12px;background:#1e293b;color:#fff;font-weight:600;font-size:13px;border:1px solid #475569;width:120px;">인쇄비</td><td style="padding:8px 12px;background:#f8fafc;text-align:right;font-weight:600;font-size:13px;border:1px solid #cbd5e1;">' . number_format($pricePrint) . '원</td></tr>';
+$priceRows .= '<tr><td style="padding:8px 12px;background:#1E4E79;color:#fff;font-weight:600;font-size:13px;border:1px solid #3a7ab5;width:120px;">인쇄비</td><td style="padding:8px 12px;background:#f8fafc;text-align:right;font-weight:600;font-size:13px;border:1px solid #cbd5e1;">' . number_format($pricePrint) . '원</td></tr>';
 if ($priceDesign > 0) {
-    $priceRows .= '<tr><td style="padding:8px 12px;background:#1e293b;color:#fff;font-weight:600;font-size:13px;border:1px solid #475569;">디자인</td><td style="padding:8px 12px;background:#f8fafc;text-align:right;font-weight:600;font-size:13px;border:1px solid #cbd5e1;">' . number_format($priceDesign) . '원</td></tr>';
+    $priceRows .= '<tr><td style="padding:8px 12px;background:#1E4E79;color:#fff;font-weight:600;font-size:13px;border:1px solid #3a7ab5;">디자인</td><td style="padding:8px 12px;background:#f8fafc;text-align:right;font-weight:600;font-size:13px;border:1px solid #cbd5e1;">' . number_format($priceDesign) . '원</td></tr>';
 }
 if ($priceOption > 0) {
-    $priceRows .= '<tr><td style="padding:8px 12px;background:#1e293b;color:#fff;font-weight:600;font-size:13px;border:1px solid #475569;">인쇄외옵션</td><td style="padding:8px 12px;background:#f8fafc;text-align:right;font-weight:600;font-size:13px;border:1px solid #cbd5e1;">' . number_format($priceOption) . '원</td></tr>';
+    $priceRows .= '<tr><td style="padding:8px 12px;background:#1E4E79;color:#fff;font-weight:600;font-size:13px;border:1px solid #3a7ab5;">인쇄외옵션</td><td style="padding:8px 12px;background:#f8fafc;text-align:right;font-weight:600;font-size:13px;border:1px solid #cbd5e1;">' . number_format($priceOption) . '원</td></tr>';
 }
 
 $optionLines = '';
@@ -86,86 +87,128 @@ if (!empty($optionsDetail)) {
     $opts = explode(',', $optionsDetail);
     foreach ($opts as $opt) {
         $opt = trim($opt);
-        if ($opt) $optionLines .= '<span style="display:inline-block;background:#f1f5f9;color:#1e293b;padding:2px 8px;border:1px solid #cbd5e1;font-size:12px;margin:2px 3px;">' . htmlspecialchars($opt) . '</span>';
+        if ($opt) $optionLines .= '<span style="display:inline-block;background:#e8eff7;color:#1E4E79;padding:2px 8px;border:1px solid #cbd5e1;font-size:12px;margin:2px 3px;">' . htmlspecialchars($opt) . '</span>';
     }
 }
 
+$ci = getCompanyInfo();
+$quoteDate = date('Y-m-d');
+
 $customerBody = '
-<div style="max-width:600px;margin:0 auto;font-family:\'Pretendard\',\'Noto Sans KR\',\'Malgun Gothic\',sans-serif;">
-  <!-- Header -->
+<div style="max-width:640px;margin:0 auto;font-family:\'Pretendard\',\'Noto Sans KR\',\'Malgun Gothic\',sans-serif;">
   <table width="100%" cellpadding="0" cellspacing="0" style="border-collapse:collapse;">
-    <tr><td style="background:#1e293b;padding:28px 24px;text-align:center;">
+    <tr><td style="background:#1E4E79;padding:28px 24px;text-align:center;">
       <h1 style="color:#fff;font-size:22px;font-weight:700;margin:0;letter-spacing:6px;">견 적 서</h1>
-      <p style="color:#94a3b8;font-size:12px;margin:8px 0 0;">QUOTATION</p>
+      <p style="color:#a3c4e0;font-size:12px;margin:8px 0 0;">QUOTATION</p>
     </td></tr>
   </table>
-  <!-- Body -->
-  <div style="background:#fff;border-left:1px solid #334155;border-right:1px solid #334155;padding:24px;">
-    <!-- Quote number + Greeting -->
+  <div style="background:#fff;border-left:1px solid #2a6496;border-right:1px solid #2a6496;padding:24px;">
     <table width="100%" cellpadding="0" cellspacing="0" style="border-collapse:collapse;margin-bottom:16px;">
       <tr>
         <td style="font-size:14px;color:#334155;">' . htmlspecialchars($name) . '님, 요청하신 견적입니다.</td>
-        <td style="text-align:right;font-size:13px;color:#64748b;">견적번호 <strong style="color:#1e293b;">#' . $quoteId . '</strong></td>
+        <td style="text-align:right;font-size:13px;color:#64748b;">견적번호 <strong style="color:#1E4E79;">#' . $quoteId . '</strong></td>
       </tr>
     </table>
-    <!-- Spec Table -->
-    <table width="100%" cellpadding="0" cellspacing="0" style="border-collapse:collapse;border:1px solid #334155;margin-bottom:20px;">
+    <table width="100%" cellpadding="0" cellspacing="0" style="border-collapse:collapse;margin-bottom:20px;">
+      <tr valign="top">
+        <td width="50%" style="padding-right:6px;">
+          <table width="100%" cellpadding="0" cellspacing="0" style="border-collapse:collapse;border:2px solid #2a6496;">
+            <tr><td colspan="2" style="background:#1E4E79;color:#fff;padding:7px 10px;font-size:13px;font-weight:600;text-align:center;letter-spacing:2px;border-bottom:1px solid #3a7ab5;">공급받는자</td></tr>
+            <tr>
+              <td style="background:#1E4E79;color:#fff;padding:6px 8px;font-size:12px;width:60px;text-align:center;border:1px solid #3a7ab5;">견적일</td>
+              <td style="background:#f8fafc;padding:6px 8px;font-size:12px;font-weight:600;border:1px solid #94a3b8;">' . $quoteDate . '</td>
+            </tr>
+            <tr>
+              <td style="background:#1E4E79;color:#fff;padding:6px 8px;font-size:12px;text-align:center;border:1px solid #3a7ab5;">상호/성명</td>
+              <td style="background:#f8fafc;padding:6px 8px;font-size:12px;font-weight:600;border:1px solid #94a3b8;">' . htmlspecialchars($name) . ' 귀하</td>
+            </tr>
+            <tr>
+              <td style="background:#1E4E79;color:#fff;padding:6px 8px;font-size:12px;text-align:center;border:1px solid #3a7ab5;">연락처</td>
+              <td style="background:#f8fafc;padding:6px 8px;font-size:12px;font-weight:600;border:1px solid #94a3b8;">' . htmlspecialchars($phone) . '</td>
+            </tr>
+            <tr>
+              <td style="background:#1E4E79;color:#fff;padding:6px 8px;font-size:12px;text-align:center;border:1px solid #3a7ab5;">이메일</td>
+              <td style="background:#f8fafc;padding:6px 8px;font-size:12px;font-weight:600;border:1px solid #94a3b8;">' . htmlspecialchars($email) . '</td>
+            </tr>
+          </table>
+        </td>
+        <td width="50%" style="padding-left:6px;">
+          <table width="100%" cellpadding="0" cellspacing="0" style="border-collapse:collapse;border:2px solid #2a6496;">
+            <tr><td colspan="2" style="background:#1E4E79;color:#fff;padding:7px 10px;font-size:13px;font-weight:600;text-align:center;letter-spacing:2px;border-bottom:1px solid #3a7ab5;">공 급 자</td></tr>
+            <tr>
+              <td style="background:#e8eff7;padding:6px 8px;font-size:12px;text-align:center;width:60px;border:1px solid #94a3b8;">등록번호</td>
+              <td style="background:#f8fafc;padding:6px 8px;font-size:12px;font-weight:700;border:1px solid #94a3b8;">' . htmlspecialchars($ci['business_number']) . '</td>
+            </tr>
+            <tr>
+              <td style="background:#e8eff7;padding:6px 8px;font-size:12px;text-align:center;border:1px solid #94a3b8;">상 호</td>
+              <td style="background:#f8fafc;padding:6px 8px;font-size:12px;font-weight:700;border:1px solid #94a3b8;">' . htmlspecialchars($ci['name']) . '</td>
+            </tr>
+            <tr>
+              <td style="background:#e8eff7;padding:6px 8px;font-size:12px;text-align:center;border:1px solid #94a3b8;">대표자</td>
+              <td style="background:#f8fafc;padding:6px 8px;font-size:12px;font-weight:600;border:1px solid #94a3b8;">' . htmlspecialchars($ci['owner']) . '</td>
+            </tr>
+            <tr>
+              <td style="background:#e8eff7;padding:6px 8px;font-size:12px;text-align:center;border:1px solid #94a3b8;">연락처</td>
+              <td style="background:#f8fafc;padding:6px 8px;font-size:12px;font-weight:600;border:1px solid #94a3b8;">' . htmlspecialchars($ci['phone']) . '</td>
+            </tr>
+          </table>
+        </td>
+      </tr>
+    </table>
+    <table width="100%" cellpadding="0" cellspacing="0" style="border-collapse:collapse;border:1px solid #2a6496;margin-bottom:20px;">
       <tr>
-        <td colspan="2" style="background:#1e293b;color:#fff;padding:10px 12px;font-size:14px;font-weight:700;letter-spacing:1px;border-bottom:1px solid #475569;">품목 · 사양</td>
+        <td colspan="2" style="background:#1E4E79;color:#fff;padding:10px 12px;font-size:14px;font-weight:700;letter-spacing:1px;border-bottom:1px solid #3a7ab5;">품목 · 사양</td>
       </tr>
       <tr>
-        <td style="background:#1e293b;color:#fff;padding:8px 12px;font-size:13px;font-weight:600;border:1px solid #475569;width:80px;">품목</td>
-        <td style="background:#f8fafc;padding:8px 12px;font-size:14px;font-weight:700;color:#1e293b;border:1px solid #cbd5e1;">' . htmlspecialchars($productName) . '</td>
+        <td style="background:#1E4E79;color:#fff;padding:8px 12px;font-size:13px;font-weight:600;border:1px solid #3a7ab5;width:80px;">품목</td>
+        <td style="background:#f8fafc;padding:8px 12px;font-size:14px;font-weight:700;color:#1E4E79;border:1px solid #cbd5e1;">' . htmlspecialchars($productName) . '</td>
       </tr>
       <tr>
-        <td style="background:#1e293b;color:#fff;padding:8px 12px;font-size:13px;font-weight:600;border:1px solid #475569;">용지</td>
+        <td style="background:#1E4E79;color:#fff;padding:8px 12px;font-size:13px;font-weight:600;border:1px solid #3a7ab5;">용지</td>
         <td style="background:#f8fafc;padding:8px 12px;font-size:13px;color:#334155;border:1px solid #cbd5e1;">' . htmlspecialchars($specPaper) . '</td>
       </tr>
       <tr>
-        <td style="background:#1e293b;color:#fff;padding:8px 12px;font-size:13px;font-weight:600;border:1px solid #475569;">인쇄</td>
+        <td style="background:#1E4E79;color:#fff;padding:8px 12px;font-size:13px;font-weight:600;border:1px solid #3a7ab5;">인쇄</td>
         <td style="background:#f8fafc;padding:8px 12px;font-size:13px;color:#334155;border:1px solid #cbd5e1;">' . htmlspecialchars($specColor) . '</td>
       </tr>
       <tr>
-        <td style="background:#1e293b;color:#fff;padding:8px 12px;font-size:13px;font-weight:600;border:1px solid #475569;">사이즈</td>
+        <td style="background:#1E4E79;color:#fff;padding:8px 12px;font-size:13px;font-weight:600;border:1px solid #3a7ab5;">사이즈</td>
         <td style="background:#f8fafc;padding:8px 12px;font-size:13px;color:#334155;border:1px solid #cbd5e1;">' . htmlspecialchars($specSize) . '</td>
       </tr>
       <tr>
-        <td style="background:#1e293b;color:#fff;padding:8px 12px;font-size:13px;font-weight:600;border:1px solid #475569;">수량</td>
+        <td style="background:#1E4E79;color:#fff;padding:8px 12px;font-size:13px;font-weight:600;border:1px solid #3a7ab5;">수량</td>
         <td style="background:#f8fafc;padding:8px 12px;font-size:13px;color:#334155;border:1px solid #cbd5e1;">' . htmlspecialchars($specQty) . '</td>
       </tr>'
       . ($optionLines ? '
       <tr>
-        <td style="background:#1e293b;color:#fff;padding:8px 12px;font-size:13px;font-weight:600;border:1px solid #475569;vertical-align:top;">옵션</td>
+        <td style="background:#1E4E79;color:#fff;padding:8px 12px;font-size:13px;font-weight:600;border:1px solid #3a7ab5;vertical-align:top;">옵션</td>
         <td style="background:#f8fafc;padding:8px 12px;border:1px solid #cbd5e1;">' . $optionLines . '</td>
       </tr>' : '') . '
     </table>
-    <!-- Price Table -->
-    <table width="100%" cellpadding="0" cellspacing="0" style="border-collapse:collapse;border:1px solid #334155;margin-bottom:20px;">'
+    <table width="100%" cellpadding="0" cellspacing="0" style="border-collapse:collapse;border:1px solid #2a6496;margin-bottom:20px;">'
       . $priceRows .
       '<tr>
-        <td style="padding:8px 12px;background:#1e293b;color:#fff;font-weight:600;font-size:13px;border:1px solid #475569;">공급가액</td>
+        <td style="padding:8px 12px;background:#1E4E79;color:#fff;font-weight:600;font-size:13px;border:1px solid #3a7ab5;">공급가액</td>
         <td style="padding:8px 12px;background:#f8fafc;text-align:right;font-weight:700;font-size:13px;border:1px solid #cbd5e1;">' . number_format($priceSubtotal) . '원</td>
       </tr>
       <tr>
-        <td style="padding:8px 12px;background:#1e293b;color:#fff;font-weight:600;font-size:13px;border:1px solid #475569;">부가세(10%)</td>
+        <td style="padding:8px 12px;background:#1E4E79;color:#fff;font-weight:600;font-size:13px;border:1px solid #3a7ab5;">부가세(10%)</td>
         <td style="padding:8px 12px;background:#f8fafc;text-align:right;font-size:13px;color:#64748b;border:1px solid #cbd5e1;">' . number_format($priceVat) . '원</td>
       </tr>
       <tr>
-        <td style="padding:12px;background:#f1f5f9;font-size:16px;font-weight:700;color:#1e293b;border:1px solid #334155;">합계 (VAT포함)</td>
-        <td style="padding:12px;background:#f1f5f9;text-align:right;font-size:18px;font-weight:700;color:#2563eb;border:1px solid #334155;">' . number_format($priceTotal) . '원</td>
+        <td style="padding:12px;background:#e8eff7;font-size:16px;font-weight:700;color:#1E4E79;border:1px solid #2a6496;">합계 (VAT포함)</td>
+        <td style="padding:12px;background:#e8eff7;text-align:right;font-size:18px;font-weight:700;color:#1E4E79;border:1px solid #2a6496;">' . number_format($priceTotal) . '원</td>
       </tr>
     </table>
-    <!-- CTA Button -->
     <div style="text-align:center;margin-top:24px;">
-      <a href="https://dsp114.co.kr/mlangprintauto/' . htmlspecialchars($productType) . '/" style="display:inline-block;background:#1e293b;color:#fff;padding:12px 36px;text-decoration:none;font-weight:600;font-size:14px;letter-spacing:1px;">주문하러 가기 →</a>
+      <a href="https://dsp114.co.kr/mlangprintauto/' . htmlspecialchars($productType) . '/" style="display:inline-block;background:#1E4E79;color:#fff;padding:12px 36px;text-decoration:none;font-weight:600;font-size:14px;letter-spacing:1px;">주문하러 가기 →</a>
     </div>
   </div>
-  <!-- Footer -->
   <table width="100%" cellpadding="0" cellspacing="0" style="border-collapse:collapse;">
-    <tr><td style="background:#1e293b;padding:16px 24px;text-align:center;font-size:12px;color:#94a3b8;">
-      <p style="margin:0;">두손기획인쇄 | 서울특별시 영등포구 영등포로 36길9 송호빌딩 1층</p>
-      <p style="margin:4px 0 0;">Tel. 02-2632-1830 | Fax. 02-2632-1829</p>
-      <p style="margin:6px 0 0;color:#64748b;font-size:11px;">본 견적은 요청 시점 기준이며, 사양 변경 시 금액이 달라질 수 있습니다.</p>
+    <tr><td style="background:#1E4E79;padding:16px 24px;text-align:center;font-size:12px;color:#a3c4e0;">
+      <p style="margin:0;">' . htmlspecialchars($ci['name']) . ' | ' . htmlspecialchars($ci['address']) . '</p>
+      <p style="margin:4px 0 0;">Tel. ' . htmlspecialchars($ci['phone']) . ' | Fax. ' . htmlspecialchars($ci['fax']) . '</p>
+      <p style="margin:6px 0 0;color:#7ba7cc;font-size:11px;">본 견적은 요청 시점 기준이며, 사양 변경 시 금액이 달라질 수 있습니다.</p>
     </td></tr>
   </table>
 </div>';

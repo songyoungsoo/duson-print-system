@@ -114,7 +114,7 @@ function renderQuoteLayout(array $quote, array $items, array $supplier, string $
     vertical-align: middle;
 }
 .a4-page th {
-    background: #1e293b;
+    background: #1E4E79;
     color: #fff;
     text-align: center;
 }
@@ -123,7 +123,7 @@ function renderQuoteLayout(array $quote, array $items, array $supplier, string $
     font-weight: bold;
     text-align: center;
     border: none;
-    color: #1e293b;
+    color: #1E4E79;
 }
 .a4-page .no-border {
     border: none;
@@ -138,7 +138,7 @@ function renderQuoteLayout(array $quote, array $items, array $supplier, string $
     font-weight: bold;
 }
 .a4-page .table-bordered {
-    border: 2px solid #334155;
+    border: 2px solid #2a6496;
 }
 </style>
 
