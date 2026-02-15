@@ -702,6 +702,51 @@ $manager->updateStatus($quoteId, 'sent');  // send_email.php
 $status = $isDraft ? 'draft' : 'sent';
 ```
 
+### 견적서 이메일 "네이비 격식" 테마 (2026-02-15)
+
+**두 개의 독립적 견적서 이메일 시스템이 동일한 네이비 격식 테마로 통일됨:**
+
+| 시스템 | 파일 | 용도 |
+|--------|------|------|
+| 관리자 견적서 | `QuoteRenderer.php` | 다중 품목, 회사정보, PDF 첨부 (HTML/Email/PDF 3가지 출력) |
+| 플로팅 견적받기 | `quote_request_api.php` | 단일 품목, `$customerBody` 인라인 HTML (고객 이메일) |
+
+**네이비 격식 컬러 팔레트:**
+
+| 용도 | 색상 코드 |
+|------|----------|
+| 헤더/라벨 셀 배경 | `#1e293b` |
+| 테이블 외곽선 | `#334155` |
+| 테이블 내부선 | `#94a3b8` |
+| 헤더 내부선 | `#475569` |
+| 품목 테이블 내부선 | `#cbd5e1` |
+| 브랜드 블루 (최종금액) | `#2563eb` |
+| 연한 네이비 배경 (합계행) | `#f1f5f9` |
+| 값 셀 배경 | `#f8fafc` |
+| 헤더 글씨 | `#ffffff` |
+
+**디자인 규칙:**
+- 라벨/헤더 셀: 네이비 배경 + 흰 글씨
+- 최종 금액 숫자: 브랜드 블루 (`#2563eb`)
+- "견 적 서" 제목: 네이비 배경 + 레터스페이싱 6px
+- 합계(VAT포함) 행: 연한 네이비 배경 + 블루 금액
+- CTA 버튼: 네이비 배경 (`#1e293b`) + 흰 글씨
+- 푸터: 네이비 배경 + 슬레이트 텍스트
+
+**QuoteRenderer 출력별 테마 적용:**
+
+| 출력 형식 | 메서드 | 스타일 방식 |
+|----------|--------|------------|
+| HTML 미리보기 | `renderLegacyHTML()` | CSS 클래스 기반 |
+| 이메일 발송 | `renderEmailBody()` | 인라인 스타일 (이메일 호환) |
+| Legacy PDF | `renderLegacyPDF()` | TCPDF SetFillColor/SetTextColor/SetDrawColor |
+| Standard PDF | `renderStandardPDF()` | mPDF CSS |
+
+**관련 파일:**
+- `admin/mlangprintauto/quote/includes/QuoteRenderer.php` — 관리자 견적서 렌더러
+- `mlangprintauto/quote/standard/layout.php` — 브라우저 미리보기 CSS
+- `includes/quote_request_api.php` — 플로팅 견적받기 고객 이메일 (`$customerBody` line 93~137)
+
 ### 이메일 발송 제한
 - SMTP: 네이버 (`smtp.naver.com:465/ssl`, dsp1830)
 - 네이버→네이버: ✅ 정상
@@ -1241,5 +1286,5 @@ Gmail 수신: ⚠️ 스팸 분류 가능성
 
 ---
 
-*Last Updated: 2026-02-12 (이메일 캠페인 시스템 추가)*
+*Last Updated: 2026-02-15 (견적서 네이비 격식 테마 통일)*
 *Environment: WSL2 Ubuntu + Windows XAMPP + Production Deployment*

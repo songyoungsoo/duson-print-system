@@ -4,6 +4,19 @@
 
 ---
 
+## 2026-02-15
+
+| 수정자 | 수정항목 | 관련 파일 |
+|--------|----------|-----------|
+| Claude | **견적서 이메일 네이비 격식 테마 통일** - 관리자 견적서(QuoteRenderer)와 플로팅 견적받기(quote_request_api.php) 두 시스템의 이메일 디자인을 네이비 격식 테마로 통일. 컬러 팔레트: 헤더 #1e293b, 테두리 #334155/#cbd5e1, 브랜드블루 #2563eb | QuoteRenderer.php, quote_request_api.php, layout.php |
+| Claude | **QuoteRenderer 4가지 출력 네이비 적용** - renderLegacyHTML(CSS 클래스), renderEmailBody(인라인 스타일), renderLegacyPDF(TCPDF), renderStandardPDF(mPDF CSS) 모두 네이비 격식 컬러 적용 | admin/mlangprintauto/quote/includes/QuoteRenderer.php |
+| Claude | **플로팅 견적받기 고객 이메일 네이비 변환** - $customerBody(line 93~137) 그라데이션 카드 스타일 → 네이비 격식 테이블 레이아웃. 네이비 헤더("견 적 서"), 네이비 라벨 셀, CTA 버튼, 네이비 푸터 | includes/quote_request_api.php |
+| Claude | **견적서 미리보기 CSS 네이비 적용** - layout.php 브라우저 미리보기 페이지 CSS를 네이비 격식 테마로 변환 | mlangprintauto/quote/standard/layout.php |
+| Claude | **계좌번호 표시 개선** - payment_info.php 계좌번호 폰트 크기 15→22px, 굵기 600→700, 자간 추가 | sub/customer/payment_info.php |
+| Claude | **AGENTS.md 문서 업데이트** - 견적서 네이비 격식 테마 섹션 추가 (컬러 팔레트, 디자인 규칙, 출력별 적용 방식) | AGENTS.md |
+
+---
+
 ## 2026-02-13
 
 | 수정자 | 수정항목 | 관련 파일 |
