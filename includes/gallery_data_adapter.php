@@ -81,7 +81,6 @@ function load_gallery_items($product, $orderNo = null, $thumbCount = 4, $modalPe
     $productFolder = $product;
     $samplePath = "/ImgFolder/sample/{$productFolder}/";
 
-    // 절대 경로 사용 (DOCUMENT_ROOT 문제 해결)
     $possiblePaths = [
         $_SERVER['DOCUMENT_ROOT'] . $samplePath,
         "C:\\xampp\\htdocs" . $samplePath,
@@ -96,27 +95,23 @@ function load_gallery_items($product, $orderNo = null, $thumbCount = 4, $modalPe
         }
     }
 
-    // sample 이미지 로드 (메인 갤러리용)
     if ($realPath && is_dir($realPath)) {
         $files = glob($realPath . "*.{jpg,jpeg,png,gif,webp}", GLOB_BRACE);
 
         if (!empty($files)) {
-            // 랜덤으로 섞기 (매번 다른 샘플 이미지 표시)
             shuffle($files);
 
             $fileLimit = $modalPerPage;
             foreach (array_slice($files, 0, $fileLimit) as $file) {
                 $filename = basename($file);
                 if (validate_filename($filename)) {
-                    // URL 인코딩으로 안전한 경로 생성
                     $encodedFilename = rawurlencode($filename);
-                    // alt 텍스트는 확장자 제거한 원본 파일명 사용
                     $altText = mb_substr($filename, 0, mb_strrpos($filename, '.'));
 
                     $items[] = [
                         'src' => $samplePath . $encodedFilename,
                         'alt' => $altText,
-                        'type' => 'sample' // 샘플 이미지
+                        'type' => 'sample'
                     ];
                 }
             }
@@ -410,7 +405,7 @@ function load_sticker_gallery_unified($thumbCount = 4, $modalPerPage = 12) {
     global $db;
     $items = [];
 
-    // ⭐ 우선순위 1: 샘플 파일 (ImgFolder/sample/sticker_new/) - 최우선
+    // ⭐ 우선순위 1: 샘플 파일 (ImgFolder/sample/sticker_new/) - 메인 갤러리 전용
     $possiblePaths = [
         $_SERVER['DOCUMENT_ROOT'] . "/ImgFolder/sample/sticker_new/",
         "C:\\xampp\\htdocs\\ImgFolder\\sample\\sticker_new\\",
@@ -437,7 +432,6 @@ function load_sticker_gallery_unified($thumbCount = 4, $modalPerPage = 12) {
         }
         
         if (!empty($sticker_files)) {
-            // 랜덤으로 섞기 (매번 다른 샘플 이미지 표시)
             shuffle($sticker_files);
 
             foreach ($sticker_files as $file) {

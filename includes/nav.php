@@ -58,6 +58,7 @@ if (isset($db) && $db) {
 ?>
 <!-- 네비게이션 메뉴 -->
 <div class="cart-nav-wrapper">
+    <?php if ($current_page !== 'cart'): ?>
     <div class="nav-mode-bar">
         <span class="nav-mode-guide" id="navModeGuide"><?php echo $nav_active_mode === 'detailed' ? '📋 재질/옵션을 알고 계시면 서브메뉴에서 바로 선택하세요' : '🔰 버튼을 클릭하면 제품 페이지로 바로 이동합니다'; ?></span>
         <button type="button" class="nav-mode-toggle" id="navModeToggle" onclick="toggleNavMode()">
@@ -65,6 +66,7 @@ if (isset($db) && $db) {
             <span id="navToggleLabel"><?php echo $nav_active_mode === 'detailed' ? '심플 메뉴' : '상세 메뉴'; ?></span>
         </button>
     </div>
+    <?php endif; ?>
     <div class="product-nav<?php echo $nav_active_mode === 'detailed' ? ' nav-detailed-mode' : ''; ?>" id="productNav">
         <?php
         $nav_sticker_groups = [

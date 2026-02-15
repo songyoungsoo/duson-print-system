@@ -1,6 +1,6 @@
 .qf{position:fixed;right:20px;top:50%;transform:translateY(-50%);z-index:1000;font-family:'Pretendard Variable',Pretendard,-apple-system,BlinkMacSystemFont,system-ui,Roboto,'Helvetica Neue','Segoe UI','Noto Sans KR',sans-serif}
 .qf-box{background:#fff;border:1px solid #e2e8f0;border-radius:12px;box-shadow:0 4px 20px rgba(0,0,0,.08);width:180px;overflow:hidden}
-.qf-head{background:linear-gradient(135deg,#3b82f6,#2563eb);padding:10px 14px;text-align:center}
+.qf-head{background:#1E4E79;padding:10px 14px;text-align:center}
 .qf-head-title{font-size:13px;font-weight:600;color:#fff;letter-spacing:.3px;display:flex;align-items:center;justify-content:center;gap:5px}
 .qf-head-dot{width:5px;height:5px;border-radius:50%;background:#86efac;box-shadow:0 0 6px rgba(134,239,172,.6);animation:qf-pulse 2.5s infinite}
 @keyframes qf-pulse{0%,100%{opacity:1}50%{opacity:.4}}

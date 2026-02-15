@@ -200,7 +200,7 @@ $show_bank = isset($show_bank) ? $show_bank : true;
 }
 
 .sidebar-title {
-    background: #364052;
+    background: #1E4E79;
     color: white;
     text-align: center;
     padding: 6px;

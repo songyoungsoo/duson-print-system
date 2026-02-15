@@ -26,59 +26,58 @@ try {
     $mode = isset($_GET['mode']) ? $_GET['mode'] : 'thumbnail';
     $limit = isset($_GET['limit']) ? (int)$_GET['limit'] : $perPage;
     
-    // ImgFolder 갤러리 경로 (스티커와 동일한 구조)
-    $galleryPath = $_SERVER['DOCUMENT_ROOT'] . '/ImgFolder/sticker/gallery/';
-    $webPath = '/ImgFolder/sticker/gallery/';
+    // sample + samplegallery 합쳐서 filemtime 최신순
+    $sampleDir = $_SERVER['DOCUMENT_ROOT'] . '/ImgFolder/sample/sticker_new/';
+    $safeDir = $_SERVER['DOCUMENT_ROOT'] . '/ImgFolder/samplegallery/sticker_new/';
+    $allowedExts = ['jpg', 'jpeg', 'png', 'gif', 'webp'];
     
-    $images = [];
+    $allFiles = []; // [absPath => webPath]
     
-    // 갤러리 폴더에서 이미지 파일 검색
-    if (is_dir($galleryPath)) {
-        $files = scandir($galleryPath);
-        $imageFiles = [];
-        
-        foreach ($files as $file) {
-            if ($file !== '.' && $file !== '..') {
-                $ext = strtolower(pathinfo($file, PATHINFO_EXTENSION));
-                if (in_array($ext, ['jpg', 'jpeg', 'png', 'gif', 'webp'])) {
-                    $imageFiles[] = $file;
-                }
+    foreach ([$sampleDir => '/ImgFolder/sample/sticker_new/', $safeDir => '/ImgFolder/samplegallery/sticker_new/'] as $dir => $webPrefix) {
+        if (!is_dir($dir)) continue;
+        $found = glob($dir . '*.{jpg,jpeg,png,gif,webp}', GLOB_BRACE);
+        if ($found) {
+            foreach ($found as $f) {
+                $allFiles[$f] = $webPrefix . basename($f);
             }
         }
-        
-        // 파일명 기준 정렬
-        sort($imageFiles);
-        
-        // 페이지네이션 적용
-        $totalCount = count($imageFiles);
-        $totalPages = ceil($totalCount / $perPage);
-        $pagedFiles = array_slice($imageFiles, $offset, $perPage);
-        
-        foreach ($pagedFiles as $index => $file) {
-            $images[] = [
-                'id' => 'gallery_' . ($offset + $index + 1),
-                'title' => pathinfo($file, PATHINFO_FILENAME),
-                'filename' => $file,
-                'path' => $webPath . $file,
-                'image_path' => $webPath . $file,
-                'thumbnail' => $webPath . $file,
-                'thumbnail_path' => $webPath . $file,
-                'thumb_path' => $webPath . $file,
-                'url' => $webPath . $file,
-                'thumb' => $webPath . $file,
-                'category' => '스티커',
-                'type' => '스티커',
-                'type_name' => '스티커',
-                'order_no' => null,
-                'source' => 'gallery',
-                'description' => '스티커 갤러리 이미지',
-                'date' => filemtime($galleryPath . $file) ? date('Y-m-d', filemtime($galleryPath . $file)) : '',
-                'file_exists' => true,
-                'customer_masked' => '',
-                'is_real_work' => true,
-                'work_completed' => true
-            ];
-        }
+    }
+    
+    // filemtime 최신순 정렬
+    uksort($allFiles, function($a, $b) { return filemtime($b) - filemtime($a); });
+    
+    $totalCount = count($allFiles);
+    $totalPages = ceil($totalCount / $perPage);
+    $pagedFiles = array_slice($allFiles, $offset, $perPage, true);
+    
+    $images = [];
+    $idx = $offset;
+    foreach ($pagedFiles as $absPath => $webPath) {
+        $file = basename($absPath);
+        $images[] = [
+            'id' => 'gallery_' . ($idx + 1),
+            'title' => pathinfo($file, PATHINFO_FILENAME),
+            'filename' => $file,
+            'path' => $webPath,
+            'image_path' => $webPath,
+            'thumbnail' => $webPath,
+            'thumbnail_path' => $webPath,
+            'thumb_path' => $webPath,
+            'url' => $webPath,
+            'thumb' => $webPath,
+            'category' => '스티커',
+            'type' => '스티커',
+            'type_name' => '스티커',
+            'order_no' => null,
+            'source' => 'gallery',
+            'description' => '스티커 갤러리 이미지',
+            'date' => date('Y-m-d', filemtime($absPath)),
+            'file_exists' => true,
+            'customer_masked' => '',
+            'is_real_work' => true,
+            'work_completed' => true
+        ];
+        $idx++;
     }
     
     // 이미지가 없으면 기본 샘플 이미지 4개 제공
@@ -102,9 +101,6 @@ try {
                 'is_default' => true
             ];
         }
-    } else {
-        $totalCount = count($imageFiles);
-        $totalPages = ceil($totalCount / $perPage);
     }
     
     $hasNext = $page < $totalPages;

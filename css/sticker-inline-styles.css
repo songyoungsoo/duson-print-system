@@ -820,3 +820,45 @@
 
 /* .btn-upload-order 스타일은 common-styles.css에서 통합 관리 (SSOT) */
 
+/* =================================================================== */
+/* 스티커 가로/세로 입력 mm 툴팁 (sticker.php에서 추출)                  */
+/* z-index: nav dropdown(1000)보다 낮게 설정하여 서브메뉴 가림 방지       */
+/* =================================================================== */
+.tooltip-container {
+    position: relative;
+    display: inline-block;
+}
+
+.tooltip {
+    position: absolute;
+    top: 50%;
+    left: 100%;
+    transform: translateY(-50%);
+    background-color: #ff9500;
+    color: white;
+    padding: 8px 12px;
+    border-radius: 6px;
+    font-size: 11px;
+    white-space: nowrap;
+    z-index: 100;
+    opacity: 0;
+    visibility: hidden;
+    transition: all 0.3s ease;
+    margin-left: 10px;
+}
+
+.tooltip::after {
+    content: '';
+    position: absolute;
+    top: 50%;
+    right: 100%;
+    transform: translateY(-50%);
+    border: 5px solid transparent;
+    border-right-color: #ff9500;
+}
+
+.tooltip.show {
+    opacity: 1;
+    visibility: visible;
+}
+

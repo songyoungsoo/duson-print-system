@@ -254,7 +254,7 @@ function handleList() {
         }
     }
 
-    // 안전 갤러리 이미지
+    // 안전 갤러리 이미지 (수정일 최신순 — 제품 페이지 표시 순서와 동일)
     if ($source === 'safegallery' || $source === 'all') {
         $dir = $SAFEGALLERY_BASE . $folder . '/';
         if (is_dir($dir)) {

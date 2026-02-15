@@ -1,6 +1,7 @@
 <?php
 session_start();
 $session_id = session_id();
+$current_page = 'cart';
 
 // 경로 수정: MlangPrintAuto/shop/에서 루트의 db.php 접근
 include "../../db.php";
@@ -270,9 +271,7 @@ if ($cart_result === false) {
         <!-- 통합 네비게이션 사용 -->
         <?php if (!empty($cart_items)): ?>
             <!-- 장바구니에 상품이 있을 때 -->
-            <div class="cart-nav-wrapper">
-                <?php include "../../includes/nav.php"; ?>
-            </div>
+            <?php include "../../includes/nav.php"; ?>
     </div>
 <?php else: ?>
     <!-- 빈 장바구니일 때 - 더 유용한 정보와 기능 제공 -->
@@ -492,7 +491,7 @@ if ($cart_result === false) {
         </form>
 
         <!-- 도움말 및 정보 섹션 -->
-        <div class="cart-info-section" style="background: #f3f3f3; padding: 15px; border-radius: 4px; margin: 20px 0 15px 0; border: 1px solid #ccc;">
+        <div class="cart-info-section" style="background: #f3f3f3; padding: 15px; border-radius: 4px; margin: 20px auto 15px auto; max-width: 1100px; border: 1px solid #ccc;">
             <h4 style="margin: 0 0 10px 0; font-size: 15px; font-weight: bold; display: flex; align-items: center; justify-content: center;">
                 두손기획인쇄 이용 안내
             </h4>
@@ -533,7 +532,7 @@ if ($cart_result === false) {
         </div>
 
         <!-- 연락처 정보 -->
-        <div class="cart-contact-section" style="background: #f3f3f3; padding: 12px 15px; border-radius: 4px; margin-bottom: 15px; border: 1px solid #ccc;">
+        <div class="cart-contact-section" style="background: #f3f3f3; padding: 12px 15px; border-radius: 4px; margin: 0 auto 15px auto; max-width: 1100px; border: 1px solid #ccc;">
             <h4 style="color: #0066cc; margin: 0 0 8px 0; font-size: 14px; font-weight: bold; display: flex; align-items: center; justify-content: center;">
                 문의사항이 있으시면 언제든 연락하세요
             </h4>
@@ -557,7 +556,7 @@ if ($cart_result === false) {
             <p>원하시는 인쇄물을 선택해서 주문을 시작해보세요!</p>
 
             <!-- 도움말 및 정보 섹션 -->
-            <div class="cart-info-section" style="background: #f3f3f3; padding: 15px; border-radius: 4px; margin-bottom: 15px; border: 1px solid #ccc;">
+            <div class="cart-info-section" style="background: #f3f3f3; padding: 15px; border-radius: 4px; margin: 0 auto 15px auto; max-width: 1100px; border: 1px solid #ccc;">
                 <h4 style="margin: 0 0 10px 0; font-size: 15px; font-weight: bold; display: flex; align-items: center; justify-content: center;">
                     두손기획인쇄 이용 안내
                 </h4>
@@ -598,7 +597,7 @@ if ($cart_result === false) {
             </div>
 
             <!-- 연락처 정보 -->
-            <div class="cart-contact-section" style="background: #f3f3f3; padding: 12px 15px; border-radius: 4px; margin-bottom: 15px; border: 1px solid #ccc;">
+        <div class="cart-contact-section" style="background: #f3f3f3; padding: 12px 15px; border-radius: 4px; margin: 0 auto 15px auto; max-width: 1100px; border: 1px solid #ccc;">
                 <h4 style="color: #0066cc; margin: 0 0 8px 0; font-size: 14px; font-weight: bold; display: flex; align-items: center; justify-content: center;">
                     문의사항이 있으시면 언제든 연락하세요
                 </h4>
