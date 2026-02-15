@@ -307,17 +307,15 @@ function updateQfPricing() {
       vatPrice = Math.round(subtotal * 0.1);
     }
   } else {
+    // 레거시 포맷 (inserted/전단지): PriceCalculationService가 Order_PriceForm에
+    // 이미 추가옵션을 포함하여 반환함 (line 323: orderPrice = base + design + options)
+    // Total_PriceForm도 옵션+VAT 포함. 따라서 별도 optionTotal 합산 불필요.
     printPrice = parsePrice(pd.Price || pd.PriceForm);
     designPrice = parsePrice(pd.DS_Price || pd.DS_PriceForm);
-    var orderPrice = parsePrice(pd.Order_Price || pd.Order_PriceForm);
+    subtotal = parsePrice(pd.Order_Price || pd.Order_PriceForm);
     vatPrice = parsePrice(pd.VAT_PriceForm);
-    var totalPrice = parsePrice(pd.Total_PriceForm);
-    var optionTotal = parseInt(document.getElementById('additional_options_total')?.value) || 0;
-    subtotal = orderPrice + optionTotal;
-    var vatOnOptions = Math.round(optionTotal * 0.1);
-    totalWithVat = totalPrice + optionTotal + vatOnOptions;
-    vatPrice = vatPrice + vatOnOptions;
-    if (totalPrice === 0 && orderPrice === 0) { totalWithVat = 0; subtotal = 0; }
+    totalWithVat = parsePrice(pd.Total_PriceForm);
+    if (totalWithVat === 0 && subtotal === 0) { totalWithVat = 0; subtotal = 0; }
   }
 
   document.getElementById('qf-print-price').textContent = fmtNum(printPrice);
