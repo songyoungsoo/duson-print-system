@@ -65,6 +65,7 @@ function updateQfSpecs() {
 
   var paper = getSelectedText('MY_Fsd');
   if (paper === '-') paper = getSelectedText('jong');
+  if (paper === '-') paper = getSelectedText('Section');
   if (paper.indexOf('선택') > -1 || paper.indexOf('먼저') > -1) paper = '-';
   if (paper === '-' && pd && pd.specData) paper = pd.specData.jong || '-';
   document.getElementById('qf-paper').textContent = shortenPaper(paper);
