@@ -910,6 +910,31 @@ function showCampaignDetail(id) {
             html += '</div>';
         }
 
+        // 실패 건수 체크 → 재시도 버튼 표시
+        var failedCount = 0;
+        var failedGmail = 0;
+        logs.forEach(function(l) {
+            if (l.status === 'failed') {
+                failedCount++;
+                if (l.recipient_email && l.recipient_email.indexOf('@gmail.com') !== -1) failedGmail++;
+            }
+        });
+        if (failedCount > 0) {
+            html += '<div class="bg-red-50 border border-red-300 rounded-lg p-3">';
+            html += '<div class="flex items-center justify-between">';
+            html += '<div><span class="text-red-700 font-semibold text-sm">✕ 실패 ' + failedCount + '건</span>';
+            if (failedGmail > 0) html += '<span class="text-red-500 text-xs ml-2">(Gmail ' + failedGmail + '건 포함)</span>';
+            html += '</div>';
+            html += '<button onclick="retryFailed(' + c.id + ')" class="px-4 py-1.5 bg-red-600 text-white text-xs font-semibold rounded-lg hover:bg-red-700 transition">🔄 실패 재시도</button>';
+            html += '</div>';
+            if (failedGmail > 0) {
+                html += '<label class="flex items-center gap-2 mt-2 text-xs text-gray-600 cursor-pointer">';
+                html += '<input type="checkbox" id="retry-exclude-gmail" checked class="rounded border-gray-300">';
+                html += '<span>Gmail 제외 (네이버 SMTP로는 Gmail 수신 불가)</span></label>';
+            }
+            html += '</div>';
+        }
+
         html += '<div class="border-t border-gray-200 pt-2"><span class="font-semibold">발송 로그</span> (' + logs.length + '건)</div>';
         html += '<table class="min-w-full text-xs"><thead class="bg-gray-50"><tr><th class="px-2 py-1 text-left">이메일</th><th class="px-2 py-1 text-left">이름</th><th class="px-2 py-1 text-center">상태</th><th class="px-2 py-1 text-left">발송시각</th></tr></thead><tbody>';
         logs.forEach(function(l) {
@@ -963,6 +988,54 @@ function resumeCampaign(campaignId, total, sentCount, failCount) {
         }, 10000);
     }).catch(function(e) {
         showToast('재개 실패: ' + e.message, 'error');
+    });
+}
+
+function retryFailed(campaignId) {
+    var excludeDomains = '';
+    var gmailCheckbox = document.getElementById('retry-exclude-gmail');
+    if (gmailCheckbox && gmailCheckbox.checked) {
+        excludeDomains = 'gmail.com';
+    }
+
+    var msg = '실패한 이메일을 재시도하시겠습니까?';
+    if (excludeDomains) msg += '\n(Gmail 수신자는 제외됩니다)';
+    if (!confirm(msg)) return;
+
+    closeDetailModal();
+
+    var params = new URLSearchParams({
+        action: 'retry_failed',
+        campaign_id: campaignId,
+        exclude_domains: excludeDomains
+    });
+
+    fetch(API, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
+        body: params
+    }).then(function(r) { return r.json(); }).then(function(res) {
+        if (!res.success) { showToast(res.message, 'error'); return; }
+
+        currentCampaignId = campaignId;
+        sendCancelled = false;
+
+        switchTab('compose');
+
+        document.getElementById('progress-area').classList.remove('hidden');
+        var offset = res.data.sent_count + res.data.fail_count;
+        updateProgress(res.data.sent_count, res.data.fail_count, offset, res.data.total_recipients);
+
+        var infoMsg = '실패 ' + res.data.retried_count + '건 재시도 시작';
+        if (res.data.excluded_count > 0) infoMsg += ' (' + res.data.excluded_count + '건 제외)';
+        showToast(infoMsg, 'info');
+
+        document.getElementById('progress-text').textContent = '재시도 준비 중... (10초 후 시작)';
+        setTimeout(function() {
+            sendNextBatch(offset, res.data.total_recipients, res.data.sent_count, res.data.fail_count);
+        }, 10000);
+    }).catch(function(e) {
+        showToast('재시도 실패: ' + e.message, 'error');
     });
 }
 

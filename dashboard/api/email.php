@@ -253,6 +253,87 @@ switch ($action) {
         ]);
         break;
 
+    // ==================== RETRY FAILED ====================
+    case 'retry_failed':
+        $campaign_id = intval($_POST['campaign_id'] ?? 0);
+        if ($campaign_id <= 0) jsonResponse(false, '잘못된 캠페인 ID');
+
+        // 제외할 도메인 목록 (e.g. "gmail.com,yahoo.com")
+        $exclude_raw = trim($_POST['exclude_domains'] ?? '');
+        $exclude_domains = [];
+        if (!empty($exclude_raw)) {
+            $exclude_domains = array_filter(array_map('trim', explode(',', $exclude_raw)));
+        }
+
+        // 캠페인 존재 확인
+        $q = "SELECT id, total_recipients, sent_count, fail_count, status FROM email_campaigns WHERE id = ?";
+        $stmt = mysqli_prepare($db, $q);
+        mysqli_stmt_bind_param($stmt, 'i', $campaign_id);
+        mysqli_stmt_execute($stmt);
+        $campaign = mysqli_fetch_assoc(mysqli_stmt_get_result($stmt));
+        if (!$campaign) jsonResponse(false, '캠페인을 찾을 수 없습니다');
+
+        // 실패 건수 확인
+        $fq = "SELECT COUNT(*) as cnt FROM email_send_log WHERE campaign_id = ? AND status = 'failed'";
+        $fs = mysqli_prepare($db, $fq);
+        mysqli_stmt_bind_param($fs, 'i', $campaign_id);
+        mysqli_stmt_execute($fs);
+        $total_failed = intval(mysqli_fetch_assoc(mysqli_stmt_get_result($fs))['cnt']);
+        if ($total_failed == 0) jsonResponse(false, '실패한 발송 건이 없습니다');
+
+        // 제외 도메인 빌드 (WHERE NOT)
+        $exclude_where = '';
+        $bind_types = 'i';
+        $bind_params = [$campaign_id];
+        if (count($exclude_domains) > 0) {
+            $placeholders = implode(',', array_fill(0, count($exclude_domains), '?'));
+            $exclude_where = " AND SUBSTRING_INDEX(recipient_email, '@', -1) NOT IN ({$placeholders})";
+            foreach ($exclude_domains as $d) {
+                $bind_types .= 's';
+                $bind_params[] = $d;
+            }
+        }
+
+        // failed → pending 업데이트
+        $uq = "UPDATE email_send_log SET status = 'pending', error_message = NULL, sent_at = NULL WHERE campaign_id = ? AND status = 'failed'" . $exclude_where;
+        $us = mysqli_prepare($db, $uq);
+        // bind_param 검증: placeholder_count = 1 + count(exclude_domains)
+        $placeholder_count = substr_count($uq, '?');
+        $type_count = strlen($bind_types);
+        $var_count = count($bind_params);
+        // 3단계 검증 통과 확인
+        if ($placeholder_count !== $type_count || $type_count !== $var_count) {
+            jsonResponse(false, 'Internal bind_param mismatch');
+        }
+        mysqli_stmt_bind_param($us, $bind_types, ...$bind_params);
+        mysqli_stmt_execute($us);
+        $retried_count = mysqli_affected_rows($db);
+
+        if ($retried_count == 0) jsonResponse(false, '재시도 가능한 실패 건이 없습니다 (모두 제외 도메인)');
+
+        // 캠페인 fail_count 차감, status → sending
+        $new_fail = intval($campaign['fail_count']) - $retried_count;
+        if ($new_fail < 0) $new_fail = 0;
+        $cq = "UPDATE email_campaigns SET fail_count = ?, status = 'sending', updated_at = NOW() WHERE id = ?";
+        $cs = mysqli_prepare($db, $cq);
+        // 2 placeholders: i, i
+        mysqli_stmt_bind_param($cs, 'ii', $new_fail, $campaign_id);
+        mysqli_stmt_execute($cs);
+
+        // 제외된 건수
+        $excluded_count = $total_failed - $retried_count;
+
+        jsonResponse(true, '실패 ' . $retried_count . '건 재시도 준비 완료', [
+            'campaign_id' => $campaign_id,
+            'total_recipients' => intval($campaign['total_recipients']),
+            'sent_count' => intval($campaign['sent_count']),
+            'fail_count' => $new_fail,
+            'retried_count' => $retried_count,
+            'excluded_count' => $excluded_count,
+            'pending_count' => $retried_count
+        ]);
+        break;
+
     // ==================== SEND TEST ====================
     case 'send_test':
         $subject = $_POST['subject'] ?? '';
