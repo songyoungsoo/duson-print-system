@@ -18,15 +18,16 @@ if (TRUSBILL_TEST_MODE) {
 }
 
 // 공급자(발행자) 정보 - 두손기획인쇄
-define('SUPPLIER_BUSINESS_NUMBER', '2011069847'); // 사업자등록번호 (하이픈 제거)
+// SSOT: /mlangprintauto/includes/company_info.php
+define('SUPPLIER_BUSINESS_NUMBER', '1070645106'); // 사업자등록번호 (하이픈 제거) — company_info.php: 107-06-45106
 define('SUPPLIER_COMPANY_NAME', '두손기획인쇄');
-define('SUPPLIER_CEO_NAME', '차경선'); // TODO: 실제 대표자명 확인 필요
-define('SUPPLIER_ADDRESS', '서울 영등포구 영등포로 36길 9, 송호빌딩 1F');
-define('SUPPLIER_BUSINESS_TYPE', '제조업'); // 업태
-define('SUPPLIER_BUSINESS_ITEM', '인쇄업'); // 종목
+define('SUPPLIER_CEO_NAME', '차경선');
+define('SUPPLIER_ADDRESS', '서울 영등포구 영등포로 36길 9 송호빌딩 1층');
+define('SUPPLIER_BUSINESS_TYPE', '제조·도매'); // 업태 — company_info.php SSOT
+define('SUPPLIER_BUSINESS_ITEM', '인쇄업·광고물'); // 종목 — company_info.php SSOT
 define('SUPPLIER_EMAIL', 'dsp1830@naver.com');
 define('SUPPLIER_PHONE', '02-2632-1830');
-define('SUPPLIER_CONTACT_NAME', '담당자명'); // TODO: 담당자명 입력
+define('SUPPLIER_CONTACT_NAME', '차경선'); // 대표자 겸 담당자
 
 // 로그 설정
 define('TRUSBILL_LOG_ENABLED', true);

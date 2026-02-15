@@ -105,9 +105,10 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST' && isset($_POST['request_invoice'])) {
                     $insert_query = "INSERT INTO tax_invoices
                                     (user_id, order_no, invoice_number, nts_confirm_num, issue_date, supply_amount, tax_amount, total_amount, status, api_response)
                                     VALUES (?, ?, ?, ?, CURDATE(), ?, ?, ?, 'issued', ?)";
+                    // bind_param 3단계 검증: ? = 8개, 타입 = 8자, 변수 = 8개
                     $stmt = mysqli_prepare($db, $insert_query);
                     $api_response_json = json_encode($api_result['data'], JSON_UNESCAPED_UNICODE);
-                    mysqli_stmt_bind_param($stmt, "iissiis", $user_id, $order_no, $invoice_number, $nts_confirm_num, $supply_amount, $tax_amount, $total_price, $api_response_json);
+                    mysqli_stmt_bind_param($stmt, "iissiiis", $user_id, $order_no, $invoice_number, $nts_confirm_num, $supply_amount, $tax_amount, $total_price, $api_response_json);
 
                     if (mysqli_stmt_execute($stmt)) {
                         $success = "전자세금계산서가 발급되었습니다. 국세청 승인번호: " . $nts_confirm_num;
@@ -123,9 +124,10 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST' && isset($_POST['request_invoice'])) {
                     $insert_query = "INSERT INTO tax_invoices
                                     (user_id, order_no, invoice_number, issue_date, supply_amount, tax_amount, total_amount, status, api_response)
                                     VALUES (?, ?, ?, CURDATE(), ?, ?, ?, 'failed', ?)";
+                    // bind_param 3단계 검증: ? = 7개, 타입 = 7자, 변수 = 7개
                     $stmt = mysqli_prepare($db, $insert_query);
                     $api_response_json = json_encode($api_result, JSON_UNESCAPED_UNICODE);
-                    mysqli_stmt_bind_param($stmt, "iisiis", $user_id, $order_no, $invoice_number, $supply_amount, $tax_amount, $total_price, $api_response_json);
+                    mysqli_stmt_bind_param($stmt, "iisiiis", $user_id, $order_no, $invoice_number, $supply_amount, $tax_amount, $total_price, $api_response_json);
                     mysqli_stmt_execute($stmt);
                     mysqli_stmt_close($stmt);
                 }

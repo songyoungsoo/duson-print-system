@@ -45,18 +45,37 @@ $priceVat = intval($input['price_vat'] ?? 0);
 $priceTotal = intval($input['price_total'] ?? 0);
 $optionsDetail = trim($input['options_detail'] ?? '');
 
+// FQ 견적번호 생성 (FQ-YYYYMMDD-NNN)
+$today = date('Ymd');
+$fqPrefix = 'FQ-' . $today . '-';
+$seqQuery = "SELECT quote_no FROM quote_requests WHERE quote_no LIKE ? ORDER BY quote_no DESC LIMIT 1";
+$seqStmt = mysqli_prepare($db, $seqQuery);
+$seqPattern = $fqPrefix . '%';
+mysqli_stmt_bind_param($seqStmt, "s", $seqPattern);
+mysqli_stmt_execute($seqStmt);
+$seqResult = mysqli_stmt_get_result($seqStmt);
+$lastRow = mysqli_fetch_assoc($seqResult);
+if ($lastRow && $lastRow['quote_no']) {
+    $lastSeq = intval(substr($lastRow['quote_no'], -3));
+    $nextSeq = $lastSeq + 1;
+} else {
+    $nextSeq = 1;
+}
+$quoteNo = $fqPrefix . str_pad($nextSeq, 3, '0', STR_PAD_LEFT);
+
 // bind_param 3단계 검증
-$query = "INSERT INTO quote_requests (customer_name, customer_phone, customer_email, user_id, product_type, product_name, spec_paper, spec_color, spec_size, spec_quantity, price_print, price_design, price_option, price_subtotal, price_vat, price_total, options_detail) VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)";
-$placeholderCount = substr_count($query, '?'); // 17
-$typeString = "sssissssssiiiiiis";
-$typeCount = strlen($typeString); // 17
-$varCount = 17;
+$query = "INSERT INTO quote_requests (quote_no, customer_name, customer_phone, customer_email, user_id, product_type, product_name, spec_paper, spec_color, spec_size, spec_quantity, price_print, price_design, price_option, price_subtotal, price_vat, price_total, options_detail) VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)";
+$placeholderCount = substr_count($query, '?'); // 18
+$typeString = "ssssissssssiiiiiis";
+$typeCount = strlen($typeString); // 18
+$varCount = 18;
 if ($placeholderCount !== $typeCount || $typeCount !== $varCount) {
     jsonOut(false, 'bind_param 검증 실패');
 }
 
 $stmt = mysqli_prepare($db, $query);
 mysqli_stmt_bind_param($stmt, $typeString,
+    $quoteNo,
     $name, $phone, $email, $userId,
     $productType, $productName,
     $specPaper, $specColor, $specSize, $specQty,
@@ -106,7 +125,7 @@ $customerBody = '
     <table width="100%" cellpadding="0" cellspacing="0" style="border-collapse:collapse;margin-bottom:16px;">
       <tr>
         <td style="font-size:14px;color:#334155;">' . htmlspecialchars($name) . '님, 요청하신 견적입니다.</td>
-        <td style="text-align:right;font-size:13px;color:#64748b;">견적번호 <strong style="color:#1E4E79;">#' . $quoteId . '</strong></td>
+        <td style="text-align:right;font-size:13px;color:#64748b;">견적번호 <strong style="color:#1E4E79;">' . htmlspecialchars($quoteNo) . '</strong></td>
       </tr>
     </table>
     <table width="100%" cellpadding="0" cellspacing="0" style="border-collapse:collapse;margin-bottom:20px;">
@@ -213,14 +232,14 @@ $customerBody = '
   </table>
 </div>';
 
-$customerSubject = '[두손기획인쇄] ' . $productName . ' 견적서 (#' . $quoteId . ')';
+$customerSubject = '[두손기획인쇄] ' . $productName . ' 견적서 (' . $quoteNo . ')';
 $mailResult = @mailer('두손기획인쇄', 'dsp1830@naver.com', $email, $customerSubject, $customerBody, 1, "");
 $emailSent = ($mailResult === true || $mailResult == 1);
 
 $now = date('Y-m-d H:i:s');
 $adminBody = '
 <div style="max-width:500px;font-family:sans-serif;font-size:14px;color:#333;">
-  <h2 style="color:#2563eb;margin:0 0 12px;">견적 요청 알림 (#' . $quoteId . ')</h2>
+  <h2 style="color:#2563eb;margin:0 0 12px;">견적 요청 알림 (' . htmlspecialchars($quoteNo) . ')</h2>
   <table style="width:100%;border-collapse:collapse;font-size:13px;">
     <tr style="background:#f8fafc;"><td style="padding:8px;font-weight:600;width:80px;">이름/상호</td><td style="padding:8px;">' . htmlspecialchars($name) . '</td></tr>
     <tr><td style="padding:8px;font-weight:600;">전화</td><td style="padding:8px;">' . htmlspecialchars($phone) . '</td></tr>
@@ -246,6 +265,7 @@ mysqli_stmt_execute($updateStmt);
 
 jsonOut(true, '견적서가 발송되었습니다.', [
     'quote_id' => $quoteId,
+    'quote_no' => $quoteNo,
     'email_sent' => $emailSent,
     'admin_notified' => $adminNotified
 ]);

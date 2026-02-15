@@ -301,9 +301,11 @@ if ($action === 'log' && isset($_GET['file'])) {
     exit;
 }
 
-$source_tables = $sync->getSourceTables();
+// 페이지 로드 시 소스서버(dsp114.com) 호출 안 함 — 트래픽 절약
+// getSourceTables(), getFileStats()는 버튼 클릭 시 AJAX로 호출
+$source_tables = array('tables' => array());
 $log_files = $sync->getLogFiles();
-$file_stats = $sync->getFileStats();
+$file_stats = array();
 $last_sync = $sync->getLastSync();
 $sync_targets = $sync->getSyncTargetTables();
 
@@ -430,12 +432,14 @@ input[type=checkbox]{width:16px;height:16px;cursor:pointer}
 <div class="card">
 <div class="card-header">
 <h2>📋 소스 테이블 목록 (dsp114.com)</h2>
-<button class="btn btn-outline btn-sm" onclick="refreshTables()">새로고침</button>
+<button class="btn btn-outline btn-sm" onclick="loadSourceTables()">소스서버 연결</button>
 </div>
 <div class="card-body">
-<?php if ($table_error): ?>
-<div style="color:#c5221f;padding:12px;background:#fce8e6;border-radius:6px"><?php echo htmlspecialchars($table_error)?></div>
-<?php else: ?>
+<div id="tableNotLoaded" style="padding:20px;text-align:center;color:#888;font-size:13px;background:#f8f9fa;border-radius:8px">
+⚡ <strong>"소스서버 연결"</strong> 버튼을 눌러 테이블 목록을 불러오세요.<br>
+<span style="font-size:11px;color:#aaa">(트래픽 절약을 위해 자동 로딩을 제거했습니다)</span>
+</div>
+<div id="tableLoaded" style="display:none">
 <div class="form-row">
 <label>날짜 필터 (이후):</label>
 <input type="date" id="since_date" value="">
@@ -445,18 +449,9 @@ input[type=checkbox]{width:16px;height:16px;cursor:pointer}
 <div class="progress-bar" id="progressBar"><div class="fill" id="progressFill"></div></div>
 <table>
 <thead><tr><th style="width:40px"></th><th>테이블</th><th style="text-align:right">소스 건수</th><th>상태</th></tr></thead>
-<tbody>
-<?php foreach ($tables as $t): ?>
-<tr>
-<td><input type="checkbox" name="sync_table" value="<?php echo htmlspecialchars($t['table'])?>" class="table-cb"></td>
-<td><strong><?php echo htmlspecialchars($t['table'])?></strong></td>
-<td style="text-align:right"><?php echo number_format($t['count'])?></td>
-<td><span class="badge badge-blue"><?php echo number_format($t['count'])?> rows</span></td>
-</tr>
-<?php endforeach; ?>
-</tbody>
+<tbody id="tableListBody"></tbody>
 </table>
-<?php endif; ?>
+</div>
 </div>
 </div>
 
@@ -543,7 +538,44 @@ function toggleSelectAll(el) {
     document.querySelectorAll('.table-cb').forEach(function(cb) { cb.checked = el.checked; });
 }
 
-function refreshTables() { location.reload(); }
+function refreshTables() { loadSourceTables(); }
+
+function loadSourceTables() {
+    var box = document.getElementById('tableNotLoaded');
+    box.innerHTML = '⏳ 소스서버 연결 중...';
+    box.style.display = 'block';
+    document.getElementById('tableLoaded').style.display = 'none';
+
+    fetch(location.pathname + '?action=tables')
+    .then(function(r) { return r.json(); })
+    .then(function(data) {
+        if (data.error) {
+            box.innerHTML = '❌ 연결 실패: ' + data.error + '<br><button class="btn btn-primary btn-sm" style="margin-top:8px" onclick="loadSourceTables()">다시 시도</button>';
+            return;
+        }
+        var tables = data.tables || [];
+        if (tables.length === 0) {
+            box.innerHTML = '⚠️ 소스서버에서 테이블을 찾을 수 없습니다.<br><button class="btn btn-primary btn-sm" style="margin-top:8px" onclick="loadSourceTables()">다시 시도</button>';
+            return;
+        }
+        var tbody = document.getElementById('tableListBody');
+        tbody.innerHTML = '';
+        tables.forEach(function(t) {
+            var tr = document.createElement('tr');
+            var count = Number(t.count || 0);
+            tr.innerHTML = '<td><input type="checkbox" name="sync_table" value="' + t.table + '" class="table-cb"></td>'
+                + '<td><strong>' + t.table + '</strong></td>'
+                + '<td style="text-align:right">' + count.toLocaleString() + '</td>'
+                + '<td><span class="badge badge-blue">' + count.toLocaleString() + ' rows</span></td>';
+            tbody.appendChild(tr);
+        });
+        box.style.display = 'none';
+        document.getElementById('tableLoaded').style.display = 'block';
+    })
+    .catch(function(err) {
+        box.innerHTML = '❌ 연결 실패: ' + err.message + '<br><button class="btn btn-primary btn-sm" style="margin-top:8px" onclick="loadSourceTables()">다시 시도</button>';
+    });
+}
 
 function refreshFileStats() {
     fetch(location.pathname + '?action=file_stats')

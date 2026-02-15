@@ -197,6 +197,7 @@ define('SESSION_EXPIRED_COOKIE', 'session_was_active');
  * @param string $redirect_url 리다이렉트할 URL (기본: /member/login.php)
  * @return bool 로그인 상태면 true, 아니면 경고 후 exit
  */
+if (!function_exists('requireLogin')):
 function requireLogin($redirect_url = '/member/login.php') {
     global $session_lifetime;
     
@@ -234,6 +235,7 @@ function requireLogin($redirect_url = '/member/login.php') {
     echo "<script>alert('{$message}'); location.href='{$redirect_url}';</script>";
     exit;
 }
+endif;
 
 /**
  * 세션 상태 확인 (API용 - JSON 응답)

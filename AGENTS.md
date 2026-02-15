@@ -746,6 +746,24 @@ $status = $isDraft ? 'draft' : 'sent';
 - `includes/quote_request_api.php` — 플로팅 견적받기 고객 이메일
 - `mlangprintauto/includes/company_info.php` — 회사 정보 SSOT
 
+### 견적번호 체계 (2026-02-16)
+
+**3가지 독립적 번호 체계:**
+
+| 시스템 | 접두어 | 형식 | 예시 | 테이블 |
+|--------|--------|------|------|--------|
+| 관리자 견적서 | `AQ` | `AQ-YYYYMMDD-NNNN` | `AQ-20260208-0004` | `admin_quotes.quote_no` |
+| 플로팅 견적받기 | `FQ` | `FQ-YYYYMMDD-NNN` | `FQ-20260216-001` | `quote_requests.quote_no` |
+| 세금계산서 | `TAX` | `TAXYYYYMMDDNNNNNN` | `TAX20241109000001` | `tax_invoices.invoice_number` |
+
+**FQ 번호 생성 로직** (`includes/quote_request_api.php`):
+```php
+// 당일 MAX 순번 조회 → +1
+$fqPrefix = 'FQ-' . date('Ymd') . '-';
+$seqQuery = "SELECT quote_no FROM quote_requests WHERE quote_no LIKE ? ORDER BY quote_no DESC LIMIT 1";
+// → FQ-20260216-001, FQ-20260216-002, ...
+```
+
 ### 이메일 발송 제한
 - SMTP: 네이버 (`smtp.naver.com:465/ssl`, dsp1830)
 - 네이버→네이버: ✅ 정상
@@ -1319,5 +1337,5 @@ Gmail 수신: ⚠️ 스팸 분류 가능성
 
 ---
 
-*Last Updated: 2026-02-15 (견적서 네이비 격식 테마 통일)*
+*Last Updated: 2026-02-16 (FQ 견적번호 체계 도입, 마이그레이션 대시보드 트래픽 절약)*
 *Environment: WSL2 Ubuntu + Windows XAMPP + Production Deployment*
