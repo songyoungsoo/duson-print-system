@@ -109,12 +109,13 @@ function renderQuoteLayout(array $quote, array $items, array $supplier, string $
     border-collapse: collapse;
 }
 .a4-page th, .a4-page td {
-    border: 1px solid #000;
+    border: 1px solid #94a3b8;
     padding: 6px;
     vertical-align: middle;
 }
 .a4-page th {
-    background: #e8e8e8;
+    background: #1e293b;
+    color: #fff;
     text-align: center;
 }
 .a4-page .title {
@@ -122,6 +123,7 @@ function renderQuoteLayout(array $quote, array $items, array $supplier, string $
     font-weight: bold;
     text-align: center;
     border: none;
+    color: #1e293b;
 }
 .a4-page .no-border {
     border: none;
@@ -136,7 +138,7 @@ function renderQuoteLayout(array $quote, array $items, array $supplier, string $
     font-weight: bold;
 }
 .a4-page .table-bordered {
-    border: 2px solid #000;
+    border: 2px solid #334155;
 }
 </style>
 
@@ -220,7 +222,7 @@ function renderQuoteLayout(array $quote, array $items, array $supplier, string $
             일금 <?php echo $koreanAmount; ?>원정<br>
             ( ₩<?php echo $formatMoney($grandTotal); ?> )
         </td>
-        <td colspan="4" class="center bold" style="font-size:20px;">
+        <td colspan="4" class="center bold" style="font-size:20px;color:#2563eb;">
             <?php echo $formatMoney($grandTotal); ?> 원
         </td>
     </tr>
@@ -276,9 +278,9 @@ function renderQuoteLayout(array $quote, array $items, array $supplier, string $
         <td colspan="6" class="right bold">부가세</td>
         <td colspan="2" class="right bold"><?php echo $formatMoney($vatAmount); ?></td>
     </tr>
-    <tr>
+    <tr style="background:#f1f5f9;">
         <th colspan="6" class="right bold">합 계 (VAT포함)</th>
-        <td colspan="2" class="right bold"><?php echo $formatMoney($grandTotal); ?></td>
+        <td colspan="2" class="right bold" style="color:#2563eb;"><?php echo $formatMoney($grandTotal); ?></td>
     </tr>
 </table>
 

@@ -282,10 +282,10 @@ HTML;
             font-weight: 700;
             letter-spacing: 25px;
             padding-bottom: 6px;
-            border-bottom: 2px solid #000;
+            border-bottom: 3px solid #1e293b;
             margin-left: 25px;
             background: none;
-            color: #000;
+            color: #1e293b;
         }
 
         #aq-container table {
@@ -313,19 +313,20 @@ HTML;
 
         /* 공급받는자 테이블 */
         #aq-container .aq-info-table {
-            border: 2px solid #000;
+            border: 2px solid #334155;
         }
 
         #aq-container .aq-info-table th,
         #aq-container .aq-info-table td {
-            border: 1px solid #000;
+            border: 1px solid #94a3b8;
             padding: 6px 10px;
             font-size: 12px;
         }
 
-        /* 라벨 셀 - Regular */
+        /* 라벨 셀 - 네이비 배경 */
         #aq-container .aq-info-table th {
-            background: #f5f5f5;
+            background: #1e293b;
+            color: #fff;
             font-weight: 400;
             text-align: center;
             width: 80px;
@@ -335,32 +336,34 @@ HTML;
         #aq-container .aq-info-table td {
             font-weight: 600;
             text-align: left;
+            background: #f8fafc;
         }
 
         /* 공급자 테이블 */
         #aq-container .aq-supplier-table {
-            border: 2px solid #000;
-            border-left: 1px solid #000;
+            border: 2px solid #334155;
+            border-left: 1px solid #334155;
         }
 
         #aq-container .aq-supplier-table th,
         #aq-container .aq-supplier-table td {
-            border: 1px solid #000;
+            border: 1px solid #94a3b8;
             padding: 5px 8px;
             font-size: 11px;
         }
 
-        /* 공급자 헤더 - 섹션 제목이므로 Regular */
+        /* 공급자 헤더 - 네이비 배경 */
         #aq-container .aq-supplier-table td.aq-header-row {
-            background: #f5f5f5;
+            background: #1e293b;
+            color: #fff;
             font-weight: 400;
             text-align: center;
             font-size: 12px;
         }
 
-        /* 라벨 셀 - Regular */
+        /* 라벨 셀 - 연한 슬레이트 */
         #aq-container .aq-supplier-table td.aq-label {
-            background: #fafafa;
+            background: #f1f5f9;
             text-align: center;
             font-weight: 400;
         }
@@ -377,18 +380,19 @@ HTML;
 
         /* 합계금액 테이블 */
         #aq-container .aq-total-table {
-            border: 2px solid #000;
+            border: 2px solid #334155;
             margin-top: -1px;
         }
 
         #aq-container .aq-total-table td {
-            border: 1px solid #000;
+            border: 1px solid #94a3b8;
             padding: 10px;
         }
 
-        /* 라벨 - Regular */
+        /* 라벨 - 네이비 배경 */
         #aq-container .aq-total-table td.aq-total-label {
-            background: #f5f5f5;
+            background: #1e293b;
+            color: #fff;
             text-align: center;
             width: 150px;
             font-size: 13px;
@@ -401,35 +405,39 @@ HTML;
             font-size: 14px;
             font-weight: 600;
             line-height: 1.6;
+            background: #f8fafc;
         }
 
-        /* 최종 합계 금액 - 가장 강조 Bold */
+        /* 최종 합계 금액 - 브랜드 블루 강조 */
         #aq-container .aq-total-table td.aq-amount {
             text-align: center;
             font-size: 28px;
             font-weight: 700;
             width: 180px;
+            color: #2563eb;
+            background: #f8fafc;
         }
 
         /* 품목 테이블 */
         #aq-container .aq-items-table {
             margin-top: 15px;
-            border: 2px solid #000;
+            border: 2px solid #334155;
         }
 
-        /* 테이블 헤더 - 라벨이지만 구분을 위해 배경색 유지, Regular */
+        /* 테이블 헤더 - 네이비 배경 */
         #aq-container .aq-items-table thead th {
-            border: 1px solid #000;
+            border: 1px solid #475569;
             padding: 8px 4px;
             font-size: 12px;
             font-weight: 400;
-            background: #f5f5f5;
+            background: #1e293b;
+            color: #fff;
             text-align: center;
         }
 
-        /* 본문 값 - Regular (데이터가 많아 가독성 우선) */
+        /* 본문 값 - Regular */
         #aq-container .aq-items-table tbody td {
-            border: 1px solid #000;
+            border: 1px solid #cbd5e1;
             padding: 6px 4px;
             font-size: 11px;
             font-weight: 400;
@@ -448,7 +456,7 @@ HTML;
         /* 합계 행 - tfoot */
         #aq-container .aq-items-table tfoot td {
             background: #fff;
-            border: 1px solid #000;
+            border: 1px solid #cbd5e1;
             padding: 6px 4px;
         }
 
@@ -468,15 +476,21 @@ HTML;
             font-size: 12px;
         }
 
-        /* 최종 합계 행 강조 */
+        /* 최종 합계 행 강조 - 연한 네이비 배경 */
+        #aq-container .aq-items-table tfoot tr.aq-grand-total td {
+            background: #f1f5f9;
+        }
+
         #aq-container .aq-items-table tfoot tr.aq-grand-total td.aq-sum-label {
             font-weight: 600;
             font-size: 12px;
+            color: #1e293b;
         }
 
         #aq-container .aq-items-table tfoot tr.aq-grand-total td.aq-sum-value {
             font-weight: 700;
             font-size: 13px;
+            color: #2563eb;
         }
 
         /* 하단 정보 */
@@ -526,7 +540,7 @@ HTML;
             color: white;
         }
 
-        .aq-print-controls .aq-btn-print { background: #2980b9; }
+        .aq-print-controls .aq-btn-print { background: #1e293b; }
         .aq-print-controls .aq-btn-close { background: #7f8c8d; }
 
         @media print {
@@ -763,19 +777,20 @@ HTML;
             border-collapse: collapse;
         }
         th, td {
-            border: 1px solid #000;
+            border: 1px solid #94a3b8;
             padding: 5px;
             vertical-align: middle;
         }
         th {
-            background: #e8e8e8;
+            background: #1e293b;
+            color: #fff;
             text-align: center;
         }
         .no-border { border: none; }
         .right { text-align: right; }
         .center { text-align: center; }
         .bold { font-weight: bold; }
-        .table-bordered { border: 2px solid #000; }
+        .table-bordered { border: 2px solid #334155; }
         .title {
             font-size: 22px;
             font-weight: bold;
@@ -880,10 +895,11 @@ HTML;
         $pdf->Cell(0, 5, 'No. ' . $quote['quote_no'], 0, 1, 'L');
         $pdf->Ln(2);
 
-        // 제목
+        // 제목 (네이비 테마)
         $pdf->SetFont('cid0kr', 'B', 22);
-        $pdf->SetTextColor(0, 0, 0);
-        $pdf->SetLineWidth(0.5);
+        $pdf->SetTextColor(30, 41, 59);
+        $pdf->SetDrawColor(30, 41, 59);
+        $pdf->SetLineWidth(0.7);
         $titleW = $pdf->GetStringWidth('견  적  서') + 10;
         $titleX = (210 - $titleW) / 2;
         $pdf->SetX($titleX);
@@ -891,8 +907,9 @@ HTML;
         $pdf->Ln(6);
 
         $startY = $pdf->GetY();
-        $pdf->SetDrawColor(0, 0, 0);
-        $pdf->SetFillColor(245, 245, 245);
+        $pdf->SetDrawColor(51, 65, 85);
+        $pdf->SetFillColor(30, 41, 59);
+        $pdf->SetTextColor(255, 255, 255);
 
         // === 왼쪽: 공급받는자 ===
         // 편집 디자인 원칙: 라벨=Regular, 값=Bold
@@ -903,29 +920,37 @@ HTML;
 
         $pdf->SetLineWidth(0.2);
 
-        // 라벨: Regular, 값: Bold
+        // 라벨: 네이비 배경+흰 글씨, 값: 검정 글씨
         $pdf->SetXY(15, $startY);
         $pdf->SetFont('cid0kr', '', 10);
+        $pdf->SetTextColor(255, 255, 255);
         $pdf->Cell($labelW, $rowH, '견적일', 1, 0, 'C', true);
         $pdf->SetFont('cid0kr', 'B', 10);
+        $pdf->SetTextColor(0, 0, 0);
         $pdf->Cell($valueW, $rowH, $createdAt, 1, 1, 'L');
 
         $pdf->SetX(15);
         $pdf->SetFont('cid0kr', '', 10);
+        $pdf->SetTextColor(255, 255, 255);
         $pdf->Cell($labelW, $rowH, '회사명', 1, 0, 'C', true);
         $pdf->SetFont('cid0kr', 'B', 10);
+        $pdf->SetTextColor(0, 0, 0);
         $pdf->Cell($valueW, $rowH, $quote['customer_company'] ?? '', 1, 1, 'L');
 
         $pdf->SetX(15);
         $pdf->SetFont('cid0kr', '', 10);
+        $pdf->SetTextColor(255, 255, 255);
         $pdf->Cell($labelW, $rowH, '담당자', 1, 0, 'C', true);
         $pdf->SetFont('cid0kr', 'B', 10);
+        $pdf->SetTextColor(0, 0, 0);
         $pdf->Cell($valueW, $rowH, $quote['customer_name'] . ' 귀하', 1, 1, 'L');
 
         $pdf->SetX(15);
         $pdf->SetFont('cid0kr', '', 10);
+        $pdf->SetTextColor(255, 255, 255);
         $pdf->Cell($labelW, $rowH, '유효기간', 1, 0, 'C', true);
         $pdf->SetFont('cid0kr', 'B', 10);
+        $pdf->SetTextColor(0, 0, 0);
         $pdf->Cell($valueW, $rowH, $validUntil . '까지', 1, 1, 'L');
 
         // === 오른쪽: 공급자 ===
@@ -936,50 +961,54 @@ HTML;
 
         $pdf->SetLineWidth(0.2);
 
-        // 섹션 제목: Regular
+        // 섹션 제목: 네이비 배경
         $pdf->SetXY($rightX, $startY);
         $pdf->SetFont('cid0kr', '', 10);
+        $pdf->SetTextColor(255, 255, 255);
+        $pdf->SetFillColor(30, 41, 59);
         $pdf->Cell($rightW, $sRowH, '공 급 자', 1, 1, 'C', true);
 
-        // 라벨: Regular, 중요값(사업자번호): Bold, 일반값: Bold
+        // 라벨: 연한 슬레이트 배경, 값: 검정
+        $pdf->SetFillColor(241, 245, 249);
         $pdf->SetX($rightX);
         $pdf->SetFont('cid0kr', '', 9);
-        $pdf->Cell(18, $sRowH, '등록번호', 1, 0, 'C');
+        $pdf->SetTextColor(0, 0, 0);
+        $pdf->Cell(18, $sRowH, '등록번호', 1, 0, 'C', true);
         $pdf->SetFont('cid0kr', 'B', 9);
         $pdf->Cell(30, $sRowH, $company['business_number'], 1, 0, 'C');
         $pdf->SetFont('cid0kr', '', 9);
-        $pdf->Cell(18, $sRowH, '대표자', 1, 0, 'C');
+        $pdf->Cell(18, $sRowH, '대표자', 1, 0, 'C', true);
         $pdf->SetFont('cid0kr', 'B', 9);
         $pdf->Cell(44, $sRowH, $company['owner'] . ' (직인생략)', 1, 1, 'C');
 
         // 상호: 중요값 Bold
         $pdf->SetX($rightX);
         $pdf->SetFont('cid0kr', '', 9);
-        $pdf->Cell(18, $sRowH, '상 호', 1, 0, 'C');
+        $pdf->Cell(18, $sRowH, '상 호', 1, 0, 'C', true);
         $pdf->SetFont('cid0kr', 'B', 10);
         $pdf->Cell(92, $sRowH, $company['name'], 1, 1, 'L');
 
         // 주소, 연락처: 값 Bold
         $pdf->SetX($rightX);
         $pdf->SetFont('cid0kr', '', 9);
-        $pdf->Cell(18, $sRowH, '주 소', 1, 0, 'C');
+        $pdf->Cell(18, $sRowH, '주 소', 1, 0, 'C', true);
         $pdf->SetFont('cid0kr', 'B', 9);
         $pdf->Cell(92, $sRowH, $company['address'], 1, 1, 'L');
 
         $pdf->SetX($rightX);
         $pdf->SetFont('cid0kr', '', 9);
-        $pdf->Cell(18, $sRowH, '연락처', 1, 0, 'C');
+        $pdf->Cell(18, $sRowH, '연락처', 1, 0, 'C', true);
         $pdf->SetFont('cid0kr', 'B', 9);
         $pdf->Cell(92, $sRowH, $company['phone'], 1, 1, 'L');
 
         // 업태, 종목: 값 Bold
         $pdf->SetX($rightX);
         $pdf->SetFont('cid0kr', '', 9);
-        $pdf->Cell(18, $sRowH, '업 태', 1, 0, 'C');
+        $pdf->Cell(18, $sRowH, '업 태', 1, 0, 'C', true);
         $pdf->SetFont('cid0kr', 'B', 9);
         $pdf->Cell(30, $sRowH, $company['business_type'], 1, 0, 'C');
         $pdf->SetFont('cid0kr', '', 9);
-        $pdf->Cell(18, $sRowH, '종 목', 1, 0, 'C');
+        $pdf->Cell(18, $sRowH, '종 목', 1, 0, 'C', true);
         $pdf->SetFont('cid0kr', 'B', 9);
         $pdf->Cell(44, $sRowH, $company['business_item'], 1, 1, 'C');
 
@@ -991,15 +1020,19 @@ HTML;
 
         $pdf->SetLineWidth(0.2);
         $pdf->SetXY(15, $totalY);
-        // 라벨: Regular
+        // 라벨: 네이비 배경 + 흰 글씨
+        $pdf->SetFillColor(30, 41, 59);
+        $pdf->SetTextColor(255, 255, 255);
         $pdf->SetFont('cid0kr', '', 11);
         $pdf->Cell(18, 12, '합계금액', 1, 0, 'R', true);
         $pdf->Cell(32, 12, '(부가세포함)', 1, 0, 'L', true);
-        // 한글금액: Bold
+        // 한글금액: Bold, 검정
+        $pdf->SetTextColor(0, 0, 0);
         $koreanText = '일금 ' . $koreanAmount . '원정  ( ₩' . number_format($grandTotal) . ' )';
         $pdf->SetFont('cid0kr', 'B', 11);
         $pdf->Cell(75, 12, $koreanText, 1, 0, 'C');
-        // 최종합계: 가장 강조 Bold
+        // 최종합계: 브랜드 블루 강조
+        $pdf->SetTextColor(37, 99, 235);
         $pdf->SetFont('cid0kr', 'B', 18);
         $pdf->Cell(55, 12, number_format($grandTotal) . ' 원', 1, 1, 'C');
 
@@ -1018,9 +1051,10 @@ HTML;
         $pdf->Rect(15, $itemsY, $tableW, $tableH, 'D');
 
         $pdf->SetLineWidth(0.2);
-        // 테이블 헤더: 라벨이므로 Regular (배경색으로 구분)
+        // 테이블 헤더: 네이비 배경 + 흰 글씨
         $pdf->SetFont('cid0kr', '', 9);
-        $pdf->SetFillColor(245, 245, 245);
+        $pdf->SetFillColor(30, 41, 59);
+        $pdf->SetTextColor(255, 255, 255);
         $pdf->SetXY(15, $itemsY);
         $pdf->Cell($colW[0], $headerH, 'NO', 1, 0, 'C', true);
         $pdf->Cell($colW[1], $headerH, '품 목', 1, 0, 'C', true);
@@ -1032,6 +1066,7 @@ HTML;
         $pdf->Cell($colW[7], $headerH, '비 고', 1, 1, 'C', true);
 
         $pdf->SetFont('cid0kr', '', 9);
+        $pdf->SetTextColor(0, 0, 0);
         foreach ($items as $index => $item) {
             $no = $index + 1;
             $spec = str_replace(['|', "\n"], ' / ', $item['specification'] ?? '-');
@@ -1078,12 +1113,16 @@ HTML;
         $pdf->SetFont('cid0kr', 'B', 9);
         $pdf->Cell($colW[7], $itemRowH, number_format($vatTotal), 1, 1, 'R');
 
-        // 최종 합계: 라벨=Regular, 값=Bold 강조
+        // 최종 합계: 연한 네이비 배경 + 브랜드 블루 금액
+        $pdf->SetFillColor(241, 245, 249);
         $pdf->SetFont('cid0kr', '', 10);
-        $pdf->Cell($leftColsW, $itemRowH, '', 1, 0, 'C');
-        $pdf->Cell($colW[6], $itemRowH, '합 계 (VAT포함)', 1, 0, 'R');
+        $pdf->SetTextColor(30, 41, 59);
+        $pdf->Cell($leftColsW, $itemRowH, '', 1, 0, 'C', true);
+        $pdf->Cell($colW[6], $itemRowH, '합 계 (VAT포함)', 1, 0, 'R', true);
         $pdf->SetFont('cid0kr', 'B', 10);
-        $pdf->Cell($colW[7], $itemRowH, number_format($grandTotal), 1, 1, 'R');
+        $pdf->SetTextColor(37, 99, 235);
+        $pdf->Cell($colW[7], $itemRowH, number_format($grandTotal), 1, 1, 'R', true);
+        $pdf->SetTextColor(0, 0, 0);
 
         // 하단 정보: 라벨=Regular, 값=Bold
         $pdf->Ln(6);
@@ -1134,10 +1173,10 @@ HTML;
             ? date('Y년 m월 d일', strtotime($quote['created_at']))
             : date('Y년 m월 d일');
 
-        // 인라인 스타일 정의
+        // 인라인 스타일 정의 (네이비 격식 테마)
         $tableStyle = 'width:100%;border-collapse:collapse;font-family:Arial,sans-serif;font-size:13px;';
-        $thStyle = 'background:#e8e8e8;border:1px solid #000;padding:8px;text-align:center;font-weight:normal;';
-        $tdStyle = 'border:1px solid #000;padding:8px;';
+        $thStyle = 'background:#1e293b;color:#fff;border:1px solid #475569;padding:8px;text-align:center;font-weight:normal;';
+        $tdStyle = 'border:1px solid #94a3b8;padding:8px;';
         $boldStyle = 'font-weight:bold;';
         $centerStyle = 'text-align:center;';
         $rightStyle = 'text-align:right;';
@@ -1160,14 +1199,14 @@ HTML;
         <td style="{$noBorderStyle}padding:0 0 5px 0;font-size:12px;color:#666;">No. {$this->escape($quote['quote_no'])}</td>
     </tr>
     <tr>
-        <td style="{$noBorderStyle}padding:15px 0;font-size:26px;font-weight:bold;text-align:center;border-bottom:3px solid #000;">견 적 서</td>
+        <td style="{$noBorderStyle}padding:15px 0;font-size:26px;font-weight:bold;text-align:center;color:#1e293b;border-bottom:3px solid #1e293b;">견 적 서</td>
     </tr>
 </table>
 
 <div style="height:15px;"></div>
 
 <!-- 기본정보 테이블 -->
-<table style="{$tableStyle}border:2px solid #000;">
+<table style="{$tableStyle}border:2px solid #334155;">
     <tr>
         <th style="{$thStyle}width:12%;">견적일</th>
         <td style="{$tdStyle}width:38%;">{$createdAt}</td>
@@ -1206,14 +1245,14 @@ HTML;
 <div style="height:15px;"></div>
 
 <!-- 합계금액 + 품목 테이블 -->
-<table style="{$tableStyle}border:2px solid #000;">
+<table style="{$tableStyle}border:2px solid #334155;">
     <tr>
         <th colspan="2" style="{$thStyle}{$boldStyle}">합계금액(VAT포함)</th>
-        <td colspan="2" style="{$tdStyle}{$centerStyle}{$boldStyle}">
+        <td colspan="2" style="{$tdStyle}{$centerStyle}{$boldStyle}background:#f8fafc;">
             일금 {$koreanAmount}원정<br>
             ( ₩{$this->formatPrice($grandTotal)} )
         </td>
-        <td colspan="4" style="{$tdStyle}{$centerStyle}{$boldStyle}font-size:20px;">
+        <td colspan="4" style="{$tdStyle}{$centerStyle}{$boldStyle}font-size:20px;color:#2563eb;background:#f8fafc;">
             {$this->formatPrice($grandTotal)} 원
         </td>
     </tr>
@@ -1272,7 +1311,7 @@ HTML;
     </tr>
     <tr>
         <th colspan="6" style="{$thStyle}{$rightStyle}{$boldStyle}">합 계 (VAT포함)</th>
-        <td colspan="2" style="{$tdStyle}{$rightStyle}{$boldStyle}font-size:15px;">{$this->formatPrice($grandTotal)}</td>
+        <td colspan="2" style="{$tdStyle}{$rightStyle}{$boldStyle}font-size:15px;color:#2563eb;background:#f1f5f9;">{$this->formatPrice($grandTotal)}</td>
     </tr>
 </table>
 
@@ -1296,7 +1335,7 @@ HTML;
 </table>
 
 <!-- 푸터 -->
-<div style="margin-top:30px;padding-top:20px;border-top:1px solid #ddd;text-align:center;color:#888;font-size:12px;">
+<div style="margin-top:30px;padding-top:20px;border-top:2px solid #1e293b;text-align:center;color:#64748b;font-size:12px;">
     본 견적서는 두손기획인쇄에서 발송되었습니다.<br>
     문의: {$this->escape($company['phone'])} | {$this->escape($company['email'] ?? 'dsp1830@naver.com')}
 </div>

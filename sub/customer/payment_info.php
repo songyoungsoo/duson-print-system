@@ -48,10 +48,11 @@ include_once $_SERVER['DOCUMENT_ROOT'] . '/includes/header-ui.php';
         }
         .account-card-compact .account-num {
             font-family: 'Courier New', monospace;
-            font-weight: 600;
-            font-size: 15px;
+            font-weight: 700;
+            font-size: 22px;
             color: #1466BA;
             margin-bottom: 15px;
+            letter-spacing: 1px;
         }
         .btn-copy-sm {
             padding: 8px 16px;
