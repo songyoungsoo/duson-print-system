@@ -218,6 +218,41 @@ switch ($action) {
         ]);
         break;
 
+    // ==================== RESUME CAMPAIGN ====================
+    case 'resume_campaign':
+        $campaign_id = intval($_POST['campaign_id'] ?? 0);
+        if ($campaign_id <= 0) jsonResponse(false, '잘못된 캠페인 ID');
+
+        $q = "SELECT id, total_recipients, sent_count, fail_count, status FROM email_campaigns WHERE id = ?";
+        $stmt = mysqli_prepare($db, $q);
+        mysqli_stmt_bind_param($stmt, 'i', $campaign_id);
+        mysqli_stmt_execute($stmt);
+        $campaign = mysqli_fetch_assoc(mysqli_stmt_get_result($stmt));
+
+        if (!$campaign) jsonResponse(false, '캠페인을 찾을 수 없습니다');
+
+        $pq = "SELECT COUNT(*) as pending FROM email_send_log WHERE campaign_id = ? AND status = 'pending'";
+        $ps = mysqli_prepare($db, $pq);
+        mysqli_stmt_bind_param($ps, 'i', $campaign_id);
+        mysqli_stmt_execute($ps);
+        $pending = intval(mysqli_fetch_assoc(mysqli_stmt_get_result($ps))['pending']);
+
+        if ($pending == 0) jsonResponse(false, '발송 대기 중인 이메일이 없습니다');
+
+        $uq = "UPDATE email_campaigns SET status = 'sending', updated_at = NOW() WHERE id = ?";
+        $us = mysqli_prepare($db, $uq);
+        mysqli_stmt_bind_param($us, 'i', $campaign_id);
+        mysqli_stmt_execute($us);
+
+        jsonResponse(true, '캠페인 재개 준비 완료', [
+            'campaign_id' => $campaign_id,
+            'total_recipients' => intval($campaign['total_recipients']),
+            'sent_count' => intval($campaign['sent_count']),
+            'fail_count' => intval($campaign['fail_count']),
+            'pending_count' => $pending
+        ]);
+        break;
+
     // ==================== SEND TEST ====================
     case 'send_test':
         $subject = $_POST['subject'] ?? '';

@@ -797,8 +797,8 @@ function sendNextBatch(offset, total, successCount, failCount) {
             showToast('발송 완료! 성공: ' + newSuccess + ', 실패: ' + newFail, 'success');
             resetSendUI();
         } else {
-            document.getElementById('progress-text').textContent = '다음 배치 준비 중... (3초 대기)';
-            setTimeout(function() { sendNextBatch(newOffset, total, newSuccess, newFail); }, 3000);
+            document.getElementById('progress-text').textContent = '다음 배치 준비 중... (10초 대기)';
+            setTimeout(function() { sendNextBatch(newOffset, total, newSuccess, newFail); }, 10000);
         }
     }).catch(function(e) {
         showToast('배치 발송 실패: ' + e.message, 'error');
@@ -899,6 +899,17 @@ function showCampaignDetail(id) {
         html += '<div><span class="text-gray-500">완료:</span> ' + (c.completed_at || '-') + '</div>';
         html += '</div>';
 
+        // 미발송 건수 체크 → 재개 버튼 표시
+        var pendingCount = 0;
+        logs.forEach(function(l) { if (l.status === 'pending') pendingCount++; });
+        if (pendingCount > 0) {
+            html += '<div class="bg-amber-50 border border-amber-300 rounded-lg p-3 flex items-center justify-between">';
+            html += '<div><span class="text-amber-700 font-semibold text-sm">⚠ 미발송 ' + pendingCount + '건</span>';
+            html += '<span class="text-amber-600 text-xs ml-2">발송이 완료되지 않았습니다</span></div>';
+            html += '<button onclick="resumeCampaign(' + c.id + ', ' + c.total_recipients + ', ' + c.sent_count + ', ' + c.fail_count + ')" class="px-4 py-1.5 bg-blue-600 text-white text-xs font-semibold rounded-lg hover:bg-blue-700 transition">▶ 발송 재개</button>';
+            html += '</div>';
+        }
+
         html += '<div class="border-t border-gray-200 pt-2"><span class="font-semibold">발송 로그</span> (' + logs.length + '건)</div>';
         html += '<table class="min-w-full text-xs"><thead class="bg-gray-50"><tr><th class="px-2 py-1 text-left">이메일</th><th class="px-2 py-1 text-left">이름</th><th class="px-2 py-1 text-center">상태</th><th class="px-2 py-1 text-left">발송시각</th></tr></thead><tbody>';
         logs.forEach(function(l) {
@@ -914,6 +925,46 @@ function showCampaignDetail(id) {
 }
 
 function closeDetailModal() { document.getElementById('modal-detail').classList.add('hidden'); }
+
+function resumeCampaign(campaignId, total, sentCount, failCount) {
+    if (!confirm('미발송 ' + (total - sentCount - failCount) + '건을 이어서 발송하시겠습니까?\n이미 발송된 ' + sentCount + '명에게는 중복 발송되지 않습니다.')) return;
+
+    closeDetailModal();
+
+    var params = new URLSearchParams({
+        action: 'resume_campaign',
+        campaign_id: campaignId
+    });
+
+    fetch(API, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
+        body: params
+    }).then(function(r) { return r.json(); }).then(function(res) {
+        if (!res.success) { showToast(res.message, 'error'); return; }
+
+        currentCampaignId = campaignId;
+        sendCancelled = false;
+
+        // compose 탭으로 전환 (switchTab 사용)
+        switchTab('compose');
+
+        // 진행 바 표시
+        document.getElementById('progress-area').classList.remove('hidden');
+        var offset = res.data.sent_count + res.data.fail_count;
+        updateProgress(res.data.sent_count, res.data.fail_count, offset, res.data.total_recipients);
+
+        showToast('캠페인 재개: 미발송 ' + res.data.pending_count + '건 발송 시작', 'info');
+
+        // 10초 후 배치 발송 시작 (SMTP 안정화)
+        document.getElementById('progress-text').textContent = '재개 준비 중... (10초 후 시작)';
+        setTimeout(function() {
+            sendNextBatch(offset, res.data.total_recipients, res.data.sent_count, res.data.fail_count);
+        }, 10000);
+    }).catch(function(e) {
+        showToast('재개 실패: ' + e.message, 'error');
+    });
+}
 
 // ==================== TEMPLATES (Tab 3) ====================
 function loadTemplatesList() {
