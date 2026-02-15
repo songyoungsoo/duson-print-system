@@ -1901,15 +1901,15 @@ $additional_css = [
         <div class="summary-grid">
             <div class="summary-box">
                 <div class="summary-box-label">상품금액</div>
-                <div class="summary-box-value"><?php echo number_format($total_amount); ?>원</div>
+                <div class="summary-box-value"><span class="anim-number" data-target="<?php echo intval($total_amount); ?>">0</span>원</div>
             </div>
             <div class="summary-box">
                 <div class="summary-box-label">부가세</div>
-                <div class="summary-box-value"><?php echo number_format($total_amount_vat - $total_amount); ?>원</div>
+                <div class="summary-box-value"><span class="anim-number" data-target="<?php echo intval($total_amount_vat - $total_amount); ?>">0</span>원</div>
             </div>
             <div class="summary-box total">
                 <div class="summary-box-label">총 결제금액</div>
-                <div class="summary-box-value"><?php echo number_format($total_amount_vat); ?>원</div>
+                <div class="summary-box-value"><span class="anim-number" data-target="<?php echo intval($total_amount_vat); ?>">0</span>원</div>
             </div>
         </div>
         <!-- 버튼 영역 (결제 금액 바로 아래) -->
@@ -2290,6 +2290,25 @@ if (!empty($order_list)) {
     }
 }
 ?>
+</script>
+<script>
+(function() {
+    function animateNum(el, target, dur) {
+        if (!target) { el.textContent = '0'; return; }
+        var start = null;
+        function ease(t) { return t === 1 ? 1 : 1 - Math.pow(2, -10 * t); }
+        function step(ts) {
+            if (!start) start = ts;
+            var p = Math.min((ts - start) / dur, 1);
+            el.textContent = Math.round(ease(p) * target).toLocaleString('ko-KR');
+            if (p < 1) requestAnimationFrame(step);
+        }
+        requestAnimationFrame(step);
+    }
+    document.querySelectorAll('.anim-number').forEach(function(el) {
+        animateNum(el, parseInt(el.dataset.target) || 0, 800);
+    });
+})();
 </script>
 
 <?php

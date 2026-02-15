@@ -542,21 +542,21 @@ include $_SERVER['DOCUMENT_ROOT'] . '/includes/header-ui.php';
                 <div class="stat-card">
                     <div class="stat-label">총 주문 건수</div>
                     <div class="stat-value">
-                        <?php echo number_format($stats['total_orders'] ?? 0); ?>
+                        <span class="stat-number" data-target="<?php echo intval($stats['total_orders'] ?? 0); ?>">0</span>
                         <span class="stat-unit">건</span>
                     </div>
                 </div>
                 <div class="stat-card">
                     <div class="stat-label">총 구매 금액</div>
                     <div class="stat-value">
-                        <?php echo number_format($stats['total_amount'] ?? 0); ?>
+                        <span class="stat-number" data-target="<?php echo intval($stats['total_amount'] ?? 0); ?>" data-currency="true">0</span>
                         <span class="stat-unit">원</span>
                     </div>
                 </div>
                 <div class="stat-card">
                     <div class="stat-label">미결제 주문</div>
                     <div class="stat-value">
-                        <?php echo number_format($unpaid['unpaid_count'] ?? 0); ?>
+                        <span class="stat-number" data-target="<?php echo intval($unpaid['unpaid_count'] ?? 0); ?>">0</span>
                         <span class="stat-unit">건</span>
                     </div>
                 </div>
@@ -752,6 +752,27 @@ include $_SERVER['DOCUMENT_ROOT'] . '/includes/header-ui.php';
     </div>
 
     <?php include $_SERVER['DOCUMENT_ROOT'] . '/includes/footer.php'; ?>
+    <script>
+    (function() {
+        function animateNumber(el, target, duration) {
+            if (!target) { el.textContent = '0'; return; }
+            var isCurrency = el.dataset.currency === 'true';
+            var start = null;
+            function ease(t) { return t === 1 ? 1 : 1 - Math.pow(2, -10 * t); }
+            function step(ts) {
+                if (!start) start = ts;
+                var p = Math.min((ts - start) / duration, 1);
+                var val = Math.round(ease(p) * target);
+                el.textContent = val.toLocaleString('ko-KR');
+                if (p < 1) requestAnimationFrame(step);
+            }
+            requestAnimationFrame(step);
+        }
+        document.querySelectorAll('.stat-number').forEach(function(el) {
+            animateNumber(el, parseInt(el.dataset.target) || 0, 800);
+        });
+    })();
+    </script>
 </body>
 </html>
 <?php
