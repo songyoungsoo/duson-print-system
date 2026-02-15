@@ -74,12 +74,12 @@ $emailSent = false;
 $adminNotified = false;
 
 $priceRows = '';
-$priceRows .= '<tr><td style="padding:8px 12px;background:#1E4E79;color:#fff;font-weight:600;font-size:13px;border:1px solid #3a7ab5;width:120px;">인쇄비</td><td style="padding:8px 12px;background:#f8fafc;text-align:right;font-weight:600;font-size:13px;border:1px solid #cbd5e1;">' . number_format($pricePrint) . '원</td></tr>';
+$priceRows .= '<tr><td style="padding:8px 12px;background:#eef3f9;color:#334155;font-weight:600;font-size:13px;border:1px solid #cbd5e1;width:120px;">인쇄비</td><td style="padding:8px 12px;background:#f8fafc;text-align:right;font-weight:600;font-size:13px;border:1px solid #cbd5e1;">' . number_format($pricePrint) . '원</td></tr>';
 if ($priceDesign > 0) {
-    $priceRows .= '<tr><td style="padding:8px 12px;background:#1E4E79;color:#fff;font-weight:600;font-size:13px;border:1px solid #3a7ab5;">디자인</td><td style="padding:8px 12px;background:#f8fafc;text-align:right;font-weight:600;font-size:13px;border:1px solid #cbd5e1;">' . number_format($priceDesign) . '원</td></tr>';
+    $priceRows .= '<tr><td style="padding:8px 12px;background:#eef3f9;color:#334155;font-weight:600;font-size:13px;border:1px solid #cbd5e1;">디자인</td><td style="padding:8px 12px;background:#f8fafc;text-align:right;font-weight:600;font-size:13px;border:1px solid #cbd5e1;">' . number_format($priceDesign) . '원</td></tr>';
 }
 if ($priceOption > 0) {
-    $priceRows .= '<tr><td style="padding:8px 12px;background:#1E4E79;color:#fff;font-weight:600;font-size:13px;border:1px solid #3a7ab5;">인쇄외옵션</td><td style="padding:8px 12px;background:#f8fafc;text-align:right;font-weight:600;font-size:13px;border:1px solid #cbd5e1;">' . number_format($priceOption) . '원</td></tr>';
+    $priceRows .= '<tr><td style="padding:8px 12px;background:#eef3f9;color:#334155;font-weight:600;font-size:13px;border:1px solid #cbd5e1;">인쇄외옵션</td><td style="padding:8px 12px;background:#f8fafc;text-align:right;font-weight:600;font-size:13px;border:1px solid #cbd5e1;">' . number_format($priceOption) . '원</td></tr>';
 }
 
 $optionLines = '';
@@ -157,42 +157,42 @@ $customerBody = '
     </table>
     <table width="100%" cellpadding="0" cellspacing="0" style="border-collapse:collapse;border:1px solid #2a6496;margin-bottom:20px;">
       <tr>
-        <td colspan="2" style="background:#1E4E79;color:#fff;padding:10px 12px;font-size:14px;font-weight:700;letter-spacing:1px;border-bottom:1px solid #3a7ab5;">품목 · 사양</td>
+        <td colspan="2" style="background:#e8eff7;color:#1E4E79;padding:10px 12px;font-size:14px;font-weight:700;letter-spacing:1px;border-bottom:1px solid #94a3b8;">품목 · 사양</td>
       </tr>
       <tr>
-        <td style="background:#1E4E79;color:#fff;padding:8px 12px;font-size:13px;font-weight:600;border:1px solid #3a7ab5;width:80px;">품목</td>
+        <td style="background:#eef3f9;color:#334155;padding:8px 12px;font-size:13px;font-weight:600;border:1px solid #cbd5e1;width:80px;">품목</td>
         <td style="background:#f8fafc;padding:8px 12px;font-size:14px;font-weight:700;color:#1E4E79;border:1px solid #cbd5e1;">' . htmlspecialchars($productName) . '</td>
       </tr>
       <tr>
-        <td style="background:#1E4E79;color:#fff;padding:8px 12px;font-size:13px;font-weight:600;border:1px solid #3a7ab5;">용지</td>
+        <td style="background:#eef3f9;color:#334155;padding:8px 12px;font-size:13px;font-weight:600;border:1px solid #cbd5e1;">용지</td>
         <td style="background:#f8fafc;padding:8px 12px;font-size:13px;color:#334155;border:1px solid #cbd5e1;">' . htmlspecialchars($specPaper) . '</td>
       </tr>
       <tr>
-        <td style="background:#1E4E79;color:#fff;padding:8px 12px;font-size:13px;font-weight:600;border:1px solid #3a7ab5;">인쇄</td>
+        <td style="background:#eef3f9;color:#334155;padding:8px 12px;font-size:13px;font-weight:600;border:1px solid #cbd5e1;">인쇄</td>
         <td style="background:#f8fafc;padding:8px 12px;font-size:13px;color:#334155;border:1px solid #cbd5e1;">' . htmlspecialchars($specColor) . '</td>
       </tr>
       <tr>
-        <td style="background:#1E4E79;color:#fff;padding:8px 12px;font-size:13px;font-weight:600;border:1px solid #3a7ab5;">사이즈</td>
+        <td style="background:#eef3f9;color:#334155;padding:8px 12px;font-size:13px;font-weight:600;border:1px solid #cbd5e1;">사이즈</td>
         <td style="background:#f8fafc;padding:8px 12px;font-size:13px;color:#334155;border:1px solid #cbd5e1;">' . htmlspecialchars($specSize) . '</td>
       </tr>
       <tr>
-        <td style="background:#1E4E79;color:#fff;padding:8px 12px;font-size:13px;font-weight:600;border:1px solid #3a7ab5;">수량</td>
+        <td style="background:#eef3f9;color:#334155;padding:8px 12px;font-size:13px;font-weight:600;border:1px solid #cbd5e1;">수량</td>
         <td style="background:#f8fafc;padding:8px 12px;font-size:13px;color:#334155;border:1px solid #cbd5e1;">' . htmlspecialchars($specQty) . '</td>
       </tr>'
       . ($optionLines ? '
       <tr>
-        <td style="background:#1E4E79;color:#fff;padding:8px 12px;font-size:13px;font-weight:600;border:1px solid #3a7ab5;vertical-align:top;">옵션</td>
+        <td style="background:#eef3f9;color:#334155;padding:8px 12px;font-size:13px;font-weight:600;border:1px solid #cbd5e1;vertical-align:top;">옵션</td>
         <td style="background:#f8fafc;padding:8px 12px;border:1px solid #cbd5e1;">' . $optionLines . '</td>
       </tr>' : '') . '
     </table>
     <table width="100%" cellpadding="0" cellspacing="0" style="border-collapse:collapse;border:1px solid #2a6496;margin-bottom:20px;">'
       . $priceRows .
       '<tr>
-        <td style="padding:8px 12px;background:#1E4E79;color:#fff;font-weight:600;font-size:13px;border:1px solid #3a7ab5;">공급가액</td>
+        <td style="padding:8px 12px;background:#eef3f9;color:#334155;font-weight:600;font-size:13px;border:1px solid #cbd5e1;">공급가액</td>
         <td style="padding:8px 12px;background:#f8fafc;text-align:right;font-weight:700;font-size:13px;border:1px solid #cbd5e1;">' . number_format($priceSubtotal) . '원</td>
       </tr>
       <tr>
-        <td style="padding:8px 12px;background:#1E4E79;color:#fff;font-weight:600;font-size:13px;border:1px solid #3a7ab5;">부가세(10%)</td>
+        <td style="padding:8px 12px;background:#eef3f9;color:#334155;font-weight:600;font-size:13px;border:1px solid #cbd5e1;">부가세(10%)</td>
         <td style="padding:8px 12px;background:#f8fafc;text-align:right;font-size:13px;color:#64748b;border:1px solid #cbd5e1;">' . number_format($priceVat) . '원</td>
       </tr>
       <tr>
