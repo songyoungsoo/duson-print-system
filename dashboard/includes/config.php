@@ -29,6 +29,7 @@ $DASHBOARD_NAV = [
     'order_group' => [
         'label' => '주문·교정',
         'items' => [
+            'admin_order' => ['name' => '관리자 주문', 'icon' => '📝', 'path' => '/dashboard/admin-order/'],
             'orders' => ['name' => '주문 관리', 'icon' => '📦', 'path' => '/dashboard/orders/'],
             'proofs' => ['name' => '교정 관리', 'icon' => '🔍', 'path' => '/dashboard/proofs/'],
             'proof_register' => ['name' => '교정 등록', 'icon' => '🖼️', 'path' => '/dashboard/embed.php?url=' . urlencode('/admin/mlangprintauto/admin.php?mode=AdminMlangOrdert'), 'embed' => true],
