@@ -156,11 +156,17 @@ switch ($action) {
         }
 
         require_once $_SERVER['DOCUMENT_ROOT'] . '/mlangorder_printauto/mailer.lib.php';
+        require_once $_SERVER['DOCUMENT_ROOT'] . '/config.env.php';
 
         $sent = 0;
         $failed = 0;
         $sender_name = '두손기획인쇄';
         $sender_email = 'dsp1830@naver.com';
+
+        // Gmail SMTP 사용 가능 여부 (한 번만 체크)
+        $gmail_enabled = EnvironmentDetector::isGmailSmtpEnabled();
+        // Gmail SMTP 사용 도메인 목록
+        $gmail_domains = ['gmail.com'];
 
         ob_start();
 
@@ -169,8 +175,19 @@ switch ($action) {
 
             $mail_result = false;
             $error_msg = '';
+
+            // 수신자 도메인 추출
+            $recipient_domain = strtolower(substr(strrchr($entry['recipient_email'], '@'), 1));
+            $use_gmail = $gmail_enabled && in_array($recipient_domain, $gmail_domains);
+
             try {
-                $mail_result = mailer($sender_name, $sender_email, $entry['recipient_email'], $campaign['subject'], $personalized_body, 1, "", "", "");
+                if ($use_gmail) {
+                    // Gmail 수신자 → Gmail SMTP
+                    $mail_result = mailer_gmail($sender_name, $entry['recipient_email'], $campaign['subject'], $personalized_body, 1, "");
+                } else {
+                    // 기타 수신자 → 네이버 SMTP (기존)
+                    $mail_result = mailer($sender_name, $sender_email, $entry['recipient_email'], $campaign['subject'], $personalized_body, 1, "", "", "");
+                }
             } catch (Exception $e) {
                 $error_msg = $e->getMessage();
             }

@@ -75,6 +75,66 @@ function mailer($fname, $fmail, $to, $subject, $content, $type=1, $file, $cc="",
     return $result;
 }
 
+/**
+ * Gmail SMTP를 통한 메일 발송 (Gmail 수신자 전용)
+ * 네이버 SMTP로는 Gmail 수신이 스팸 처리되므로, Gmail→Gmail로 발송
+ *
+ * ⚠️ 사용 전 config.env.php의 getGmailSmtpConfig()에 계정 정보 입력 필요
+ *
+ * @param string $fname 보내는 사람 이름
+ * @param string $to 받는 사람 이메일
+ * @param string $subject 제목
+ * @param string $content 본문 (HTML)
+ * @param int $type 0=text, 1=html
+ * @param mixed $file 첨부파일 배열 또는 ""
+ * @return bool 발송 성공 여부
+ */
+function mailer_gmail($fname, $to, $subject, $content, $type=1, $file="")
+{
+    require_once $_SERVER['DOCUMENT_ROOT'] . '/config.env.php';
+
+    if (!EnvironmentDetector::isGmailSmtpEnabled()) {
+        error_log("Gmail SMTP 미설정 - 네이버 SMTP로 fallback: " . $to);
+        // Gmail SMTP 미설정 시 네이버로 fallback
+        return mailer($fname, 'dsp1830@naver.com', $to, $subject, $content, $type, $file);
+    }
+
+    $gmail = EnvironmentDetector::getGmailSmtpConfig();
+
+    if ($type != 1) $content = nl2br($content);
+
+    $mail = new PHPMailer();
+    $mail->IsSMTP();
+    $mail->SMTPDebug = 0;
+    $mail->SMTPSecure = $gmail['secure'];   // tls
+    $mail->SMTPAuth = true;
+    $mail->Host = $gmail['host'];           // smtp.gmail.com
+    $mail->Port = $gmail['port'];           // 587
+    $mail->Username = $gmail['username'];
+    $mail->Password = $gmail['password'];
+    $mail->CharSet = "UTF-8";
+    $mail->From = $gmail['from_email'];
+    $mail->FromName = $fname;
+    $mail->Subject = $subject;
+    $mail->AltBody = "";
+    $mail->msgHTML($content);
+    $mail->addAddress($to);
+
+    if ($file != "" && is_array($file)) {
+        foreach ($file as $f) {
+            $mail->addAttachment($f['path'], $f['name']);
+        }
+    }
+
+    $result = $mail->send();
+    if (!$result) {
+        error_log("Gmail SMTP 발송 실패: " . $mail->ErrorInfo . " (수신: $to)");
+    } else {
+        error_log("Gmail SMTP 발송 성공 (수신: $to)");
+    }
+    return $result;
+}
+
 // 파일을 첨부함
 function attach_file($filename, $tmp_name)
 {

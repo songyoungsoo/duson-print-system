@@ -150,7 +150,7 @@ class EnvironmentDetector {
     }
 
     /**
-     * SMTP 설정 반환
+     * SMTP 설정 반환 (네이버 - 기본)
      * ✅ 2026-01-17: 보안 강화 - 하드코딩 대신 환경 설정 사용
      */
     public static function getSmtpConfig() {
@@ -163,6 +163,38 @@ class EnvironmentDetector {
             'from_email' => 'dsp1830@naver.com',
             'from_name' => '두손기획인쇄'
         ];
+    }
+
+    /**
+     * Gmail SMTP 설정 반환 (Gmail 수신자 전용)
+     * ✅ 2026-02-16: Gmail 수신자에게 발송 시 사용
+     *
+     * 설정 방법:
+     * 1. Gmail 계정에서 2단계 인증 활성화
+     * 2. 앱 비밀번호 생성 (https://myaccount.google.com/apppasswords)
+     * 3. 아래 username/password에 입력
+     *
+     * ⚠️ TODO: 선임자에게 Gmail 계정/앱 비밀번호 받아서 입력
+     */
+    public static function getGmailSmtpConfig() {
+        return [
+            'host' => 'smtp.gmail.com',
+            'port' => 587,
+            'secure' => 'tls',
+            'username' => getenv('GMAIL_USERNAME') ?: '',    // TODO: Gmail 아이디 (예: dsp1830@gmail.com)
+            'password' => getenv('GMAIL_PASSWORD') ?: '',    // TODO: Gmail 앱 비밀번호 (16자리)
+            'from_email' => getenv('GMAIL_USERNAME') ?: '',  // Gmail 주소와 동일
+            'from_name' => '두손기획인쇄',
+            'enabled' => false  // true로 변경하면 Gmail SMTP 활성화
+        ];
+    }
+
+    /**
+     * Gmail SMTP가 사용 가능한지 확인
+     */
+    public static function isGmailSmtpEnabled() {
+        $config = self::getGmailSmtpConfig();
+        return $config['enabled'] && !empty($config['username']) && !empty($config['password']);
     }
 }
 
