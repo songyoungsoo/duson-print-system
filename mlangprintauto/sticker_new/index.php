@@ -82,7 +82,7 @@ if (isset($_GET['jong']) && !empty($_GET['jong'])) {
 
 
     <!-- 스티커 컴팩트 페이지 전용 CSS -->
-    <link rel="stylesheet" href="../../css/sticker-compact.css">
+    <link rel="stylesheet" href="../../css/sticker-compact.css?v=<?php echo filemtime(__DIR__ . '/../../css/sticker-compact.css'); ?>">
 
     <!-- 🎨 브랜드 디자인 시스템 CSS -->
     <link rel="stylesheet" href="../../css/brand-design-system.css">
@@ -2904,12 +2904,7 @@ if (isset($_GET['jong']) && !empty($_GET['jong'])) {
         </div>
     </div>
 
-<?php
-// 데이터베이스 연결 종료
-if ($db) {
-    mysqli_close($db);
-}
-?>
+<?php /* db close moved after footer */ ?>
 
     <!-- 견적서 모달 공통 JavaScript -->
     <script src="../../js/quotation-modal-common.js"></script>
@@ -3189,7 +3184,7 @@ if ($db) {
     include "../../includes/footer.php";
     ?>
 <?php else: ?>
-    <!-- quotation/admin_quote 모드일 때 직접 closing 태그 제공 -->
     </body>
     </html>
 <?php endif; ?>
+<?php if (isset($db) && $db) { mysqli_close($db); } ?>

@@ -35,7 +35,7 @@ html, body {
 }
 
 .product-container {
-    max-width: 1200px;
+    max-width: 1100px;
     margin: 0 auto;
     padding: 0 var(--spacing-5) var(--spacing-5) var(--spacing-5);
     background: var(--color-white);
@@ -50,9 +50,9 @@ html, body {
 .product-content {
     display: grid;
     grid-template-columns: 1fr 1fr;
-    gap: var(--spacing-8);
+    gap: 5px;
     min-height: 450px;
-    max-width: 1200px;
+    max-width: 1100px;
     margin: 0 auto;
     align-items: start;
 }

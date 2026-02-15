@@ -4,8 +4,10 @@ header('Content-Type: application/json; charset=utf-8');
 
 require_once __DIR__ . '/../db.php';
 require_once __DIR__ . '/../mlangorder_printauto/mailer.lib.php';
+ob_start();
 
 function jsonOut($success, $message, $data = []) {
+    ob_end_clean();
     echo json_encode(['success' => $success, 'message' => $message, 'data' => $data], JSON_UNESCAPED_UNICODE);
     exit;
 }

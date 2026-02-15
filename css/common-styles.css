@@ -516,7 +516,7 @@ input[type="text"].inline-input {
 
 /* === 네비 모드 토글 바 === */
 .nav-mode-bar {
-    max-width: 1200px;
+    max-width: 1100px;
     margin: 0 auto;
     padding: 8px 1rem 0;
     display: flex;
@@ -586,7 +586,7 @@ input[type="text"].inline-input {
 
 /* === 제품 네비게이션 스타일 === */
 .cart-nav-wrapper {
-    max-width: 1200px;
+    max-width: 1100px;
     margin: 0 auto;
     padding: 0 1rem;
 }
@@ -2661,7 +2661,7 @@ body.leaflet-page .thumbnail-strip {
    하단 상세 설명 섹션 스타일
    =================================================================== */
 .inserted-detail-combined {
-    width: 1200px;
+    width: 1100px;
     max-width: 100%;
     margin: 7.5px auto;
     padding: 25px;

@@ -69,7 +69,7 @@ $total_info = calculateCartTotal($connect, $session_id);
     <title>🛒 통합 장바구니</title>
     <link rel="stylesheet" href="../css/style250801.css">
     <style>
-        .container { max-width: 1200px; margin: 0 auto; padding: 20px; }
+        .container { max-width: 1100px; margin: 0 auto; padding: 20px; }
         .cart-header { background: linear-gradient(135deg, #2c3e50 0%, #34495e 100%); color: white; padding: 2rem; text-align: center; border-radius: 15px; margin-bottom: 2rem; }
         .cart-item { border: 1px solid #e9ecef; padding: 1.5rem; margin-bottom: 1rem; border-radius: 10px; background: white; }
         .product-name { font-size: 1.2rem; font-weight: bold; color: #2c3e50; margin-bottom: 1rem; }

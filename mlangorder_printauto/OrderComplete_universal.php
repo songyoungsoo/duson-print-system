@@ -481,7 +481,7 @@ $additional_css = [
 }
 
 .universal-container {
-    max-width: 1200px;
+    max-width: 1100px;
     margin: 10px auto;
     padding: 20px;
     background: white;

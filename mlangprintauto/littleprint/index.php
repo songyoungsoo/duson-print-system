@@ -392,7 +392,7 @@ $default_values['ordertype'] = 'print'; // 인쇄만
 
     <?php if (!$isQuotationMode && !$isAdminQuoteMode): ?>
     <!-- 포스터 상세 설명 섹션 (1200px 폭) - 하단 설명방법 적용 -->
-    <div class="poster-detail-combined" style="width: 1200px; max-width: 100%; margin: 7.5px auto; padding: 25px; background: #f8f9fa; border-radius: 12px; border: 1px solid #e0e0e0;">
+    <div class="poster-detail-combined" style="width: 1100px; max-width: 100%; margin: 7.5px auto; padding: 25px; background: #f8f9fa; border-radius: 12px; border: 1px solid #e0e0e0;">
         <?php include "explane_poster.php"; ?>
     </div>
     <?php endif; ?>
