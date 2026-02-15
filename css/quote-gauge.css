@@ -37,4 +37,28 @@
 .qf-btn-area{padding:10px 14px}
 .qf-btn{display:block;width:100%;padding:9px 0;border:none;border-radius:8px;background:linear-gradient(135deg,#f97316,#ea580c);color:#fff;font-family:inherit;font-size:13px;font-weight:600;cursor:pointer;transition:all .15s;box-shadow:0 2px 8px rgba(249,115,22,.25)}
 .qf-btn:hover{transform:translateY(-1px);box-shadow:0 4px 12px rgba(249,115,22,.35)}
+/* 견적요청 모달 */
+.qfm-overlay{position:fixed;inset:0;z-index:10000;background:rgba(0,0,0,.45);display:flex;align-items:center;justify-content:center;animation:qfm-fadein .2s ease}
+@keyframes qfm-fadein{from{opacity:0}to{opacity:1}}
+.qfm-box{background:#fff;border-radius:14px;width:360px;max-width:92vw;box-shadow:0 20px 60px rgba(0,0,0,.2);overflow:hidden;animation:qfm-slidein .25s ease}
+@keyframes qfm-slidein{from{transform:translateY(20px);opacity:0}to{transform:translateY(0);opacity:1}}
+.qfm-head{display:flex;align-items:center;justify-content:space-between;padding:16px 20px;background:linear-gradient(135deg,#3b82f6,#2563eb)}
+.qfm-title{font-size:16px;font-weight:700;color:#fff}
+.qfm-close{background:none;border:none;color:rgba(255,255,255,.8);font-size:22px;cursor:pointer;padding:0 2px;line-height:1}
+.qfm-close:hover{color:#fff}
+.qfm-body{padding:20px}
+.qfm-desc{font-size:13px;color:#64748b;margin:0 0 16px;line-height:1.5}
+.qfm-field{margin-bottom:12px}
+.qfm-label{display:block;font-size:12px;font-weight:600;color:#334155;margin-bottom:4px}
+.qfm-req{color:#ef4444}
+.qfm-input{width:100%;padding:9px 12px;border:1px solid #e2e8f0;border-radius:8px;font-size:14px;font-family:inherit;color:#1e293b;transition:border-color .15s;box-sizing:border-box}
+.qfm-input:focus{outline:none;border-color:#3b82f6;box-shadow:0 0 0 3px rgba(59,130,246,.1)}
+.qfm-input::placeholder{color:#cbd5e1}
+.qfm-error{background:#fef2f2;border:1px solid #fecaca;border-radius:6px;padding:8px 12px;font-size:12px;color:#dc2626;margin-bottom:12px}
+.qfm-submit{width:100%;padding:11px;border:none;border-radius:8px;background:linear-gradient(135deg,#f97316,#ea580c);color:#fff;font-family:inherit;font-size:14px;font-weight:600;cursor:pointer;transition:all .15s;box-shadow:0 2px 8px rgba(249,115,22,.25);margin-top:4px}
+.qfm-submit:hover{transform:translateY(-1px);box-shadow:0 4px 12px rgba(249,115,22,.35)}
+.qfm-submit:disabled{opacity:.6;cursor:not-allowed;transform:none}
+/* 토스트 */
+.qf-toast{position:fixed;bottom:40px;left:50%;transform:translateX(-50%);background:#1e293b;color:#fff;padding:12px 24px;border-radius:10px;font-size:14px;font-weight:500;font-family:'Pretendard Variable',sans-serif;box-shadow:0 8px 30px rgba(0,0,0,.18);z-index:10001;animation:qf-toast-in .3s ease}
+@keyframes qf-toast-in{from{opacity:0;transform:translateX(-50%) translateY(10px)}to{opacity:1;transform:translateX(-50%) translateY(0)}}
 @media(max-width:768px){.qf{display:none}}
