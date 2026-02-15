@@ -140,12 +140,12 @@ $customerBody = '
               <td style="background:#f8fafc;padding:6px 8px;font-size:12px;font-weight:700;border:1px solid #94a3b8;">' . htmlspecialchars($ci['business_number']) . '</td>
             </tr>
             <tr>
-              <td style="background:#e8eff7;padding:6px 8px;font-size:12px;text-align:center;border:1px solid #94a3b8;">상 호</td>
-              <td style="background:#f8fafc;padding:6px 8px;font-size:12px;font-weight:700;border:1px solid #94a3b8;">' . htmlspecialchars($ci['name']) . '</td>
+              <td style="background:#e8eff7;padding:6px 8px;font-size:12px;text-align:center;border:1px solid #94a3b8;">상호/대표</td>
+              <td style="background:#f8fafc;padding:6px 8px;font-size:12px;font-weight:700;border:1px solid #94a3b8;">' . htmlspecialchars($ci['name']) . ' / ' . htmlspecialchars($ci['owner']) . '</td>
             </tr>
             <tr>
-              <td style="background:#e8eff7;padding:6px 8px;font-size:12px;text-align:center;border:1px solid #94a3b8;">대표자</td>
-              <td style="background:#f8fafc;padding:6px 8px;font-size:12px;font-weight:600;border:1px solid #94a3b8;">' . htmlspecialchars($ci['owner']) . '</td>
+              <td style="background:#e8eff7;padding:6px 8px;font-size:12px;text-align:center;border:1px solid #94a3b8;">업태/종목</td>
+              <td style="background:#f8fafc;padding:6px 8px;font-size:12px;font-weight:600;border:1px solid #94a3b8;">' . htmlspecialchars($ci['business_type']) . ' / ' . htmlspecialchars($ci['business_item']) . '</td>
             </tr>
             <tr>
               <td style="background:#e8eff7;padding:6px 8px;font-size:12px;text-align:center;border:1px solid #94a3b8;">연락처</td>
