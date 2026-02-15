@@ -427,7 +427,7 @@ header("Expires: 0");
     <?php endif; ?>
 
     <!-- 공통 업로드 모달 JavaScript -->
-    <script src="../../includes/upload_modal.js?v=1759243573751415300"></script>
+    <script src="../../includes/upload_modal.js?v=<?php echo time(); ?>"></script>
     <!-- 로그인 체크 건너뛰기 (다른 제품과 동일) -->
     <script>
     window.isLoggedIn = function() { return true; };

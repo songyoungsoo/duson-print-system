@@ -771,27 +771,20 @@ function closeUploadModal() {
     }
 }
 
+// Legacy selectUploadMethod — delegate to upload_modal.js (v2.0)
 function selectUploadMethod(method) {
+    if (typeof window.selectUploadMethod === 'function' && window.selectUploadMethod !== selectUploadMethod) {
+        window.selectUploadMethod(method);
+        return;
+    }
+    // Fallback: basic upload behavior
     selectedUploadMethod = method;
-
-    // 버튼 상태 업데이트
     document.querySelectorAll('.btn-upload-method').forEach(btn => {
         btn.classList.remove('active');
     });
-    const methodBtn = document.querySelector(`[data-method="${method}"]`);
-    if (methodBtn) methodBtn.classList.add('active');
-
-    // 업로드 영역 표시/숨김
-    const uploadArea = document.getElementById('modalUploadArea');
     if (method === 'upload') {
-        uploadArea.style.display = 'block';
-        // 파일업로드 버튼 클릭 시 파일 선택 다이얼로그 열기
         const fileInput = document.getElementById('modalFileInput');
-        if (fileInput) {
-            fileInput.click();
-        }
-    } else {
-        uploadArea.style.display = 'none';
+        if (fileInput) fileInput.click();
     }
 }
 

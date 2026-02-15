@@ -514,7 +514,7 @@ header("Expires: 0");
     ?>
 
     <!-- 공통 업로드 모달 JavaScript -->
-    <script src="../../includes/upload_modal.js?v=1759243573751415300"></script>
+    <script src="../../includes/upload_modal.js?v=<?php echo time(); ?>"></script>
     
     <!-- 전단지 전용 스크립트 -->
     <script src="js/leaflet-compact.js?v=<?php echo time(); ?>"></script>

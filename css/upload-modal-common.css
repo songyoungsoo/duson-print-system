@@ -135,11 +135,271 @@ body .upload-modal .upload-label {
     margin-bottom: 12px;
 }
 
-/* 업로드 버튼 그룹 - 통일된 스타일 */
 body .upload-modal .upload-buttons {
     display: flex;
     gap: 8px;
     margin-bottom: 12px;
+}
+
+/* 6-1. 모드별 안내 가이드 */
+body .upload-modal .upload-mode-guide {
+    background: #f0f7ff;
+    border: 1px solid #d0e3f7;
+    border-radius: 8px;
+    padding: 10px 14px;
+    margin-bottom: 12px;
+}
+
+body .upload-modal .upload-mode-guide .guide-item {
+    font-size: 12.5px;
+    color: #495057;
+    line-height: 1.6;
+}
+
+body .upload-modal .upload-mode-guide .guide-sub {
+    color: #6c757d;
+    padding-left: 20px;
+    font-size: 11.5px;
+}
+
+body .upload-modal .upload-mode-guide .guide-must {
+    color: #c0392b;
+    font-weight: 600;
+}
+
+/* 6-2. 디자인 의뢰 경고 박스 (#1E4E79 네이비 통일) */
+body .upload-modal .notice-warning-box {
+    background: #f0f5fb;
+    border: 1px solid #94a3b8;
+    border-left: 4px solid #1E4E79;
+    border-radius: 8px;
+    padding: 12px 14px;
+}
+
+body .upload-modal .notice-warning-title {
+    font-size: 13px;
+    font-weight: 700;
+    color: #1E4E79;
+    margin-bottom: 8px;
+}
+
+body .upload-modal .notice-warning-item {
+    font-size: 12.5px;
+    color: #495057;
+    line-height: 1.8;
+}
+
+body .upload-modal .notice-warning-item b {
+    color: #1E4E79;
+}
+
+body .upload-modal .notice-warning-highlight {
+    background: #e8eff7;
+    border: 1px solid #2a6496;
+    border-radius: 6px;
+    padding: 8px 10px;
+    margin-top: 4px;
+}
+
+body .upload-modal .notice-warning-example {
+    font-size: 11.5px;
+    color: #6c757d;
+    font-style: italic;
+}
+
+/* 6-3. 디자인 의뢰 드롭존 색상 변경 (#1E4E79 네이비) */
+body .upload-modal .upload-dropzone.dropzone-design {
+    border-color: #1E4E79;
+    background: #f0f5fb;
+}
+
+body .upload-modal .upload-dropzone.dropzone-design:hover {
+    border-color: #2a6496;
+    background: #e8eff7;
+}
+
+body .upload-modal .upload-dropzone.dropzone-design .upload-text {
+    color: #1E4E79;
+}
+
+/* 6-4. 모드 선택 탭 (상단 고정) */
+body .upload-modal .upload-mode-selector {
+    margin-bottom: 16px;
+}
+
+body .upload-modal .upload-mode-selector .upload-buttons {
+    display: flex;
+    gap: 8px;
+    margin-bottom: 0;
+}
+
+/* 6-5. 디자인 의뢰 안내 패널 (Step 1 - #1E4E79 네이비 테마) */
+body .upload-modal .design-intro-panel {
+    padding: 4px 0;
+}
+
+body .upload-modal .design-intro-header {
+    font-size: 16px;
+    font-weight: 700;
+    color: #1E4E79;
+    margin-bottom: 16px;
+    padding-bottom: 10px;
+    border-bottom: 2px solid #1E4E79;
+}
+
+body .upload-modal .design-intro-section {
+    background: #f0f5fb;
+    border: 1px solid #2a6496;
+    border-radius: 8px;
+    padding: 14px 18px;
+    margin-bottom: 16px;
+}
+
+body .upload-modal .design-intro-item {
+    font-size: 13.5px;
+    color: #495057;
+    line-height: 1.8;
+    padding: 2px 0;
+}
+
+body .upload-modal .design-intro-sub {
+    color: #6c757d;
+    padding-left: 24px;
+    font-size: 12.5px;
+}
+
+body .upload-modal .design-intro-must {
+    color: #1E4E79;
+    font-weight: 600;
+}
+
+body .upload-modal .design-intro-must b {
+    color: #1E4E79;
+}
+
+body .upload-modal .design-intro-tip {
+    color: #1E4E79;
+    background: #e8eff7;
+    border: 1px solid #2a6496;
+    border-radius: 6px;
+    padding: 10px 12px;
+    margin-top: 8px;
+    line-height: 1.6;
+    font-size: 13px;
+}
+
+body .upload-modal .design-intro-tip b {
+    color: #1E4E79;
+}
+
+body .upload-modal .design-intro-memo {
+    margin-bottom: 18px;
+}
+
+body .upload-modal .design-intro-memo-label {
+    display: block;
+    font-size: 14px;
+    font-weight: 600;
+    color: #1E4E79;
+    margin-bottom: 4px;
+}
+
+body .upload-modal .design-intro-memo-sub {
+    font-size: 12.5px;
+    color: #64748b;
+    margin-bottom: 8px;
+}
+
+body .upload-modal .design-intro-memo-red {
+    color: #dc2626;
+    font-weight: 600;
+}
+
+body .upload-modal .design-intro-memo-textarea {
+    width: 100%;
+    min-height: 80px;
+    padding: 12px 14px;
+    border: 1.5px solid #94a3b8;
+    border-radius: 8px;
+    font-size: 13.5px;
+    line-height: 1.6;
+    color: #334155;
+    resize: vertical;
+    box-sizing: border-box;
+    transition: border-color 0.2s;
+}
+
+body .upload-modal .design-intro-memo-textarea:focus {
+    outline: none;
+    border-color: #1E4E79;
+    box-shadow: 0 0 0 3px rgba(30, 78, 121, 0.1);
+}
+
+body .upload-modal .design-intro-memo-textarea::placeholder {
+    color: #94a3b8;
+    font-size: 13px;
+}
+
+body .upload-modal .design-intro-warning {
+    background: #f0f5fb;
+    border: 1px solid #94a3b8;
+    border-left: 4px solid #1E4E79;
+    border-radius: 8px;
+    padding: 14px 18px;
+    margin-bottom: 20px;
+}
+
+body .upload-modal .design-intro-warning-title {
+    font-size: 14px;
+    font-weight: 700;
+    color: #1E4E79;
+    margin-bottom: 10px;
+}
+
+body .upload-modal .design-intro-warning-item {
+    font-size: 13.5px;
+    color: #495057;
+    line-height: 1.9;
+    padding: 2px 0;
+}
+
+body .upload-modal .design-intro-warning-item b {
+    color: #1E4E79;
+}
+
+body .upload-modal .design-intro-highlight {
+    background: #e8eff7;
+    border: 1px solid #2a6496;
+    border-radius: 6px;
+    padding: 10px 12px;
+    margin-top: 6px;
+}
+
+body .upload-modal .design-intro-example {
+    font-size: 12px;
+    color: #6c757d;
+    font-style: italic;
+}
+
+body .upload-modal .btn-design-proceed {
+    display: block;
+    width: 100%;
+    padding: 14px 24px;
+    background: linear-gradient(135deg, #1E4E79 0%, #2a6496 100%);
+    color: white;
+    border: none;
+    border-radius: 8px;
+    font-size: 15px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    text-align: center;
+}
+
+body .upload-modal .btn-design-proceed:hover {
+    background: linear-gradient(135deg, #163b5e 0%, #1E4E79 100%);
+    transform: translateY(-1px);
+    box-shadow: 0 4px 12px rgba(30, 78, 121, 0.35);
 }
 
 body .upload-modal .btn-upload-method {
@@ -160,8 +420,8 @@ body .upload-modal .btn-upload-method:hover:not(:disabled) {
 }
 
 body .upload-modal .btn-upload-method.active {
-    background: #1E90FF;
-    border-color: #1E90FF;
+    background: #1E4E79;
+    border-color: #1E4E79;
     color: white;
 }
 
@@ -214,15 +474,27 @@ body .upload-modal .upload-dropzone p {
 }
 
 body .upload-modal .upload-formats {
-    font-size: 13px;
+    font-size: 11.5px;
     color: #6c757d;
+    display: block;
+    margin-top: 6px;
 }
 
-/* 파일 안내 텍스트 - 통일된 폰트 크기 */
+body .upload-modal .upload-info-design {
+    font-size: 13px;
+    color: #2563eb;
+    background: #eff6ff;
+    border: 1px solid #bfdbfe;
+    border-radius: 6px;
+    padding: 10px 12px;
+    margin-top: 12px;
+    line-height: 1.6;
+}
+
 body .upload-modal .upload-info {
     font-size: 13px;
     color: #6c757d;
-    margin-top: 12px;
+    margin-top: 8px;
     line-height: 1.5;
 }
 

@@ -609,21 +609,19 @@ function initializeModalFileUpload() {
     console.log('파일 업로드 모달 초기화 완료');
 }
 
+// Legacy selectUploadMethod — delegate to upload_modal.js (v2.0)
 function selectUploadMethod(method) {
+    if (typeof window.selectUploadMethod === 'function' && window.selectUploadMethod !== selectUploadMethod) {
+        window.selectUploadMethod(method);
+        return;
+    }
+    // Fallback: basic upload behavior
     selectedUploadMethod = method;
     const buttons = document.querySelectorAll('.btn-upload-method');
     buttons.forEach(btn => btn.classList.remove('active'));
-
-    // 클릭된 버튼에 active 클래스 추가
-    const clickedButton = event.target;
-    clickedButton.classList.add('active');
-
-    // 파일업로드 버튼 클릭 시 파일 선택 다이얼로그 열기
     if (method === 'upload') {
         const fileInput = document.getElementById('modalFileInput');
-        if (fileInput) {
-            fileInput.click();
-        }
+        if (fileInput) fileInput.click();
     }
 }
 

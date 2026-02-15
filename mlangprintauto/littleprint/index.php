@@ -163,7 +163,7 @@ $default_values['ordertype'] = 'print'; // 인쇄만
     <link rel="stylesheet" href="css/littleprint-inline-extracted.css">
     <!-- 통합 공통 스타일 CSS (최종 로드로 최우선 적용) -->
     <link rel="stylesheet" href="../../css/common-styles.css?v=1759615861">
-    <link rel="stylesheet" href="../../css/upload-modal-common.css">
+    <link rel="stylesheet" href="../../css/upload-modal-common.css?v=<?php echo time(); ?>">
     <!-- 견적서 모달용 공통 스타일 -->
     <link rel="stylesheet" href="../../css/quotation-modal-common.css">
     <link rel="stylesheet" href="../../css/quote-gauge.css">
@@ -381,7 +381,7 @@ $default_values['ordertype'] = 'print'; // 인쇄만
 
     <!-- 파일 업로드 모달 (통합 컴포넌트) -->
     <?php include "../../includes/upload_modal.php"; ?>
-    <script src="../../includes/upload_modal.js?v=1759244661"></script>
+    <script src="../../includes/upload_modal.js?v=<?php echo time(); ?>"></script>
     <!-- 로그인 체크 건너뛰기 (다른 제품과 동일) -->
     <script>
     window.isLoggedIn = function() { return true; };

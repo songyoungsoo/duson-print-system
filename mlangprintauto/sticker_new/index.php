@@ -115,9 +115,6 @@ if (isset($_GET['jong']) && !empty($_GET['jong'])) {
     <meta name="default-sero" content="<?php echo htmlspecialchars($default_values['sero']); ?>">
     <meta name="default-mesu" content="<?php echo htmlspecialchars($default_values['mesu']); ?>">
 
-    <!-- 인라인 CSS 추출 파일 -->
-    <link rel="stylesheet" href="css/sticker_new-inline-extracted.css">
-
     <!-- 🎯 공통 레이아웃 CSS (product-layout.css가 기본 구조 제공) -->
     <link rel="stylesheet" href="../../css/product-layout.css?v=<?php echo filemtime(__DIR__ . '/../../css/product-layout.css'); ?>">
 
@@ -126,7 +123,7 @@ if (isset($_GET['jong']) && !empty($_GET['jong'])) {
 
     <!-- 🎯 통합 공통 스타일 CSS (최종 로드로 최우선 적용) -->
     <link rel="stylesheet" href="../../css/common-styles.css?v=<?php echo time(); ?>">
-    <link rel="stylesheet" href="../../css/upload-modal-common.css">
+    <link rel="stylesheet" href="../../css/upload-modal-common.css?v=<?php echo time(); ?>">
 
     <!-- 📱 견적서 모달 모드 공통 CSS (전 제품 공통) -->
     <link rel="stylesheet" href="../../css/quotation-modal-common.css">
@@ -500,7 +497,7 @@ if (isset($_GET['jong']) && !empty($_GET['jong'])) {
 
     <!-- 파일 업로드 모달 (통합 컴포넌트) -->
     <?php include "../../includes/upload_modal.php"; ?>
-    <script src="../../includes/upload_modal.js?v=1759243573751415300"></script>
+    <script src="../../includes/upload_modal.js?v=<?php echo time(); ?>"></script>
 
     <?php include "../../includes/login_modal.php"; ?>
 
