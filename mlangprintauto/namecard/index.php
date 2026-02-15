@@ -594,12 +594,30 @@ if ($url_nc_type) {
                             finalTotalWithVat: finalTotalWithVat
                         });
 
+                        // 명함 종류별 사이즈 결정 (카드명함=86×54, 일반/고급수입지=90×50)
+                        const typeSelect = document.getElementById('MY_type');
+                        const typeName = typeSelect.options[typeSelect.selectedIndex]?.text || '';
+                        const isCard = typeName.indexOf('카드') > -1;
+                        const ncGaro = isCard ? '86' : '90';
+                        const ncSero = isCard ? '54' : '50';
+
                         const totalData = {
                             ...data.data,
                             premium_options_total: premiumTotal,
                             total_supply_price: totalSupplyPrice,  // 공급가액 합계
                             final_total_with_vat: finalTotalWithVat  // 부가세 포함 최종 금액
                         };
+
+                        // 스티커와 동일한 패턴으로 specData 설정 (quote-gauge.js 자동 연동)
+                        window.currentPriceData = {
+                            ...totalData,
+                            specData: {
+                                garo: ncGaro,
+                                sero: ncSero
+                            }
+                        };
+                        document.dispatchEvent(new CustomEvent('priceUpdated', {detail: totalData}));
+
                         updatePriceDisplay(totalData);
                         showUploadButton();
                     } else {
