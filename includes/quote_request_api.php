@@ -115,19 +115,19 @@ $customerBody = '
           <table width="100%" cellpadding="0" cellspacing="0" style="border-collapse:collapse;border:2px solid #2a6496;">
             <tr><td colspan="2" style="background:#1E4E79;color:#fff;padding:7px 10px;font-size:13px;font-weight:600;text-align:center;letter-spacing:2px;border-bottom:1px solid #3a7ab5;">공급받는자</td></tr>
             <tr>
-              <td style="background:#1E4E79;color:#fff;padding:6px 8px;font-size:12px;width:60px;text-align:center;border:1px solid #3a7ab5;">견적일</td>
+              <td style="background:#e8eff7;padding:6px 8px;font-size:12px;width:60px;text-align:center;border:1px solid #94a3b8;">견적일</td>
               <td style="background:#f8fafc;padding:6px 8px;font-size:12px;font-weight:600;border:1px solid #94a3b8;">' . $quoteDate . '</td>
             </tr>
             <tr>
-              <td style="background:#1E4E79;color:#fff;padding:6px 8px;font-size:12px;text-align:center;border:1px solid #3a7ab5;">상호/성명</td>
+              <td style="background:#e8eff7;padding:6px 8px;font-size:12px;text-align:center;border:1px solid #94a3b8;">상호/성명</td>
               <td style="background:#f8fafc;padding:6px 8px;font-size:12px;font-weight:600;border:1px solid #94a3b8;">' . htmlspecialchars($name) . ' 귀하</td>
             </tr>
             <tr>
-              <td style="background:#1E4E79;color:#fff;padding:6px 8px;font-size:12px;text-align:center;border:1px solid #3a7ab5;">연락처</td>
+              <td style="background:#e8eff7;padding:6px 8px;font-size:12px;text-align:center;border:1px solid #94a3b8;">연락처</td>
               <td style="background:#f8fafc;padding:6px 8px;font-size:12px;font-weight:600;border:1px solid #94a3b8;">' . htmlspecialchars($phone) . '</td>
             </tr>
             <tr>
-              <td style="background:#1E4E79;color:#fff;padding:6px 8px;font-size:12px;text-align:center;border:1px solid #3a7ab5;">이메일</td>
+              <td style="background:#e8eff7;padding:6px 8px;font-size:12px;text-align:center;border:1px solid #94a3b8;">이메일</td>
               <td style="background:#f8fafc;padding:6px 8px;font-size:12px;font-weight:600;border:1px solid #94a3b8;">' . htmlspecialchars($email) . '</td>
             </tr>
           </table>
