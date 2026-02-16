@@ -997,6 +997,28 @@ URL 경로 → 한글 제품명 매핑 (클릭 가능한 링크):
 
 **구현 위치**: `mlangprintauto/namecard/explane_namecard.php`
 
+### 카톡상담 버튼 SVG 원형 이미지 교체 (2026-02-16)
+**구현 위치**: `includes/sidebar.php`
+
+우측 플로팅 메뉴의 카톡상담 버튼을 TALK.svg 벡터 원형 이미지로 교체:
+
+**변경 전**:
+- CSS 노란 원형 배경 (`#FEE500`) + 50×50 `talk_icon.png` 아이콘 + 별도 "카톡상담" HTML 라벨
+- 3개 요소 (배경/아이콘/텍스트) 조합
+
+**변경 후**:
+- ✅ `TALK.svg` 벡터 이미지가 원형 버튼 전체를 차지 (노란 원형 + 말풍선 TALK + 카톡상담 텍스트 일체형)
+- ✅ SVG 4KB (기존 PNG 대비 5배 작음)
+- ✅ 반응형 전 구간 (100px/70px/52px) 벡터 스케일링으로 깨짐 없음
+- ✅ "TALK" 글자가 path 데이터라 폰트 미설치 환경에서도 정확 렌더링
+
+**관련 파일**:
+- `/TALK.svg` — 카카오톡 원형 벡터 아이콘 (425.2×425.2 viewBox)
+- `/TALK.png` — PNG 래스터 백업 (426×426, 미사용)
+- `/TALK.ai` — Illustrator 원본 (웹 사용 불가)
+
+**CSS 변경**: `.fm-kakao-circle`에서 background/border 제거, `.fm-kakao-full` 클래스 추가 (100% fill)
+
 ## 📧 Email System (주문 완료 이메일)
 
 ### 시스템 구성
