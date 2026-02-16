@@ -29,7 +29,7 @@ $show_bank = isset($show_bank) ? $show_bank : true;
             <span class="fm-label">고객센터</span>
         </button>
         <div class="fm-panel">
-            <div class="fm-panel-title">📞 고객센터</div>
+            <div class="fm-panel-title">📞 고객센터 <span class="fm-pin-hint">📌 클릭=고정</span></div>
             <div class="fm-panel-body">
                 <div class="fm-row">
                     <span class="fm-key">대표전화</span>
@@ -59,7 +59,7 @@ $show_bank = isset($show_bank) ? $show_bank : true;
             <span class="fm-label">파일전송</span>
         </button>
         <div class="fm-panel">
-            <div class="fm-panel-title">📂 파일전송</div>
+            <div class="fm-panel-title">📂 파일전송 <span class="fm-pin-hint">📌 클릭=고정</span></div>
             <div class="fm-panel-body fm-links">
                 <a href="http://www.webhard.co.kr/" target="_blank" class="fm-link">
                     <span>웹하드 바로가기</span>
@@ -76,7 +76,7 @@ $show_bank = isset($show_bank) ? $show_bank : true;
             <span class="fm-label">업무안내</span>
         </button>
         <div class="fm-panel">
-            <div class="fm-panel-title">📋 업무안내</div>
+            <div class="fm-panel-title">📋 업무안내 <span class="fm-pin-hint">📌 클릭=고정</span></div>
             <div class="fm-panel-body fm-links">
                 <a href="/sub/attention.htm" class="fm-link">📝 작업시 유의사항</a>
                 <a href="/sub/expense.htm" class="fm-link">💰 편집디자인비용</a>
@@ -93,7 +93,7 @@ $show_bank = isset($show_bank) ? $show_bank : true;
             <span class="fm-label">입금안내</span>
         </button>
         <div class="fm-panel">
-            <div class="fm-panel-title">🏦 입금안내</div>
+            <div class="fm-panel-title">🏦 입금안내 <span class="fm-pin-hint">📌 클릭=고정</span></div>
             <div class="fm-panel-body">
                 <div class="fm-bank">
                     <span class="fm-bank-name">국민은행</span>
@@ -119,7 +119,7 @@ $show_bank = isset($show_bank) ? $show_bank : true;
             <span class="fm-label">운영시간</span>
         </button>
         <div class="fm-panel">
-            <div class="fm-panel-title">⏰ 운영시간</div>
+            <div class="fm-panel-title">⏰ 운영시간 <span class="fm-pin-hint">📌 클릭=고정</span></div>
             <div class="fm-panel-body">
                 <div class="fm-row">
                     <span class="fm-key">평일</span>
@@ -276,6 +276,19 @@ $show_bank = isset($show_bank) ? $show_bank : true;
     padding: 10px 14px;
     font-size: 13px;
     font-weight: 700;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+
+.floating-menu .fm-pin-hint {
+    font-size: 10px;
+    font-weight: 400;
+    opacity: 0.7;
+}
+
+.floating-menu .fm-item.pinned .fm-pin-hint {
+    display: none;
 }
 
 .floating-menu .fm-panel-body {
@@ -514,32 +527,39 @@ function showCopyToast(num) {
         items.forEach(function(item) {
             var circle = item.querySelector('.fm-circle');
             if (!circle) return;
+            item._hideTimer = null;
 
             // 호버: 패널 스르르 나타남
             item.addEventListener('mouseenter', function() {
+                clearTimeout(item._hideTimer);
                 items.forEach(function(other) {
                     if (other !== item && !other.classList.contains('pinned')) {
+                        clearTimeout(other._hideTimer);
                         other.classList.remove('active');
                     }
                 });
                 item.classList.add('active');
             });
 
-            // 마우스아웃: 고정(pinned)이 아니면 사라짐
+            // 마우스아웃: 300ms 딜레이 후 사라짐 (패널로 이동할 시간 확보)
             item.addEventListener('mouseleave', function() {
                 if (!item.classList.contains('pinned')) {
-                    item.classList.remove('active');
+                    item._hideTimer = setTimeout(function() {
+                        item.classList.remove('active');
+                    }, 300);
                 }
             });
 
             // 클릭: 고정 토글 (클릭→고정, 재클릭→닫기)
             circle.addEventListener('click', function(e) {
                 e.stopPropagation();
+                clearTimeout(item._hideTimer);
                 if (item.classList.contains('pinned')) {
                     item.classList.remove('pinned');
                     item.classList.remove('active');
                 } else {
                     items.forEach(function(other) {
+                        clearTimeout(other._hideTimer);
                         other.classList.remove('active');
                         other.classList.remove('pinned');
                     });
