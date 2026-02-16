@@ -328,4 +328,22 @@ function calculateProductPrice($db, $table, $conditions, $ordertype = 'total') {
     
     return null;
 }
+
+/**
+ * POtype 라벨 반환 (품목별 분기)
+ * 봉투: 1=마스터1도, 2=마스터2도, 3=칼라4도(옵셋)
+ * 기타: 1=단면, 2=양면
+ * @param string $productType 품목 코드 (envelope, namecard 등)
+ * @param string $poType POtype 값 (1, 2, 3)
+ * @param string $potypeName 이미 저장된 POtype_name (있으면 우선 사용)
+ * @return string 라벨명
+ */
+function getPOtypeLabel($productType, $poType, $potypeName = '') {
+    if (!empty($potypeName)) return $potypeName;
+    if ($productType === 'envelope' || $productType === '봉투') {
+        $labels = ['1' => '마스터1도', '2' => '마스터2도', '3' => '칼라4도(옵셋)'];
+        return $labels[$poType] ?? $poType;
+    }
+    return $poType == '1' ? '단면' : '양면';
+}
 ?>

@@ -117,7 +117,7 @@ function getProductSpecs($item, $db) {
     }
     
     if (!empty($item['POtype'])) {
-        $specs[] = '인쇄: ' . ($item['POtype'] == '1' ? '단면' : '양면');
+        $specs[] = '인쇄: ' . getPOtypeLabel($item['product_type'] ?? '', $item['POtype'], $item['POtype_name'] ?? '');
     }
     
     return implode(' / ', $specs);

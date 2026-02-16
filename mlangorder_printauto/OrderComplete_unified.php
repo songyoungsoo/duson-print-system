@@ -188,10 +188,10 @@ include "../includes/nav.php";
                                                 if (isset($json_data['MY_type'])) $display_text .= "• 타입: " . getCategoryName($connect, $json_data['MY_type']) . "\n";
                                                 if (isset($json_data['MY_Fsd'])) $display_text .= "• 용지: " . getCategoryName($connect, $json_data['MY_Fsd']) . "\n";
                                                 if (isset($json_data['MY_amount'])) $display_text .= "• 수량: " . number_format($json_data['MY_amount']) . ($order['unit'] ?? '매') . "\n";
-                                                if (isset($json_data['POtype'])) $display_text .= "• 인쇄면: " . ($json_data['POtype'] == '1' ? '단면' : '양면') . "\n";
+                                                if (isset($json_data['POtype'])) $display_text .= "• 인쇄 색상: " . getPOtypeLabel('envelope', $json_data['POtype'], $json_data['POtype_name'] ?? '') . "\n";
                                                 if (isset($json_data['ordertype'])) $display_text .= "• 주문타입: " . ($json_data['ordertype'] == 'design' ? '디자인+인쇄' : '인쇄만') . "\n";
                                                 break;
-                                                
+
                                             case 'sticker':
                                                 $display_text = "🏷️ 스티커 주문\n";
                                                 if (isset($json_data['jong'])) $display_text .= "• 재질: " . $json_data['jong'] . "\n";

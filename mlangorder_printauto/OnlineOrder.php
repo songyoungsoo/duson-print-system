@@ -82,25 +82,67 @@ if (isset($_GET['SubmitMode']) && $_GET['SubmitMode'] === 'OrderOne') {
             $stmt = mysqli_prepare($db, $insert_query);
             
             // 제품 타입에 따른 정보 구성
-            switch ($item['product_type']) {
+            $pt = $item['product_type'] ?? '';
+            switch ($pt) {
                 case 'inserted':
                     $type = '전단지';
                     $type_1 = "용지: {$item['MY_Fsd']}\n" .
                              "인쇄색상: {$item['MY_type']}\n" .
                              "규격: {$item['PN_type']}\n" .
                              "수량: {$item['MY_amount']}\n" .
-                             ($item['POtype'] == '1' ? '단면' : '양면');
+                             getPOtypeLabel($pt, $item['POtype'] ?? '1', $item['POtype_name'] ?? '');
                     break;
-                    
+
+                case 'envelope':
+                    $type = '봉투';
+                    $type_1 = "종류: {$item['MY_type']}\n" .
+                             "재질: {$item['Section']}\n" .
+                             "수량: {$item['MY_amount']}\n" .
+                             "인쇄: " . getPOtypeLabel($pt, $item['POtype'] ?? '1', $item['POtype_name'] ?? '');
+                    break;
+
+                case 'namecard':
+                    $type = '명함';
+                    $type_1 = "종류: {$item['MY_type']}\n" .
+                             "용지: {$item['PN_type']}\n" .
+                             "수량: {$item['MY_amount']}\n" .
+                             getPOtypeLabel($pt, $item['POtype'] ?? '1', $item['POtype_name'] ?? '');
+                    break;
+
                 case 'cadarok':
                     $type = '카달로그';
                     $type_1 = "종류: {$item['MY_Fsd']}\n" .
                              "옵션: {$item['MY_type']}\n" .
                              "수량: {$item['MY_amount']}";
                     break;
-                    
-                default:
+
+                case 'merchandisebond':
+                    $type = '상품권';
+                    $type_1 = "종류: {$item['MY_type']}\n" .
+                             "규격: {$item['MY_Fsd']}\n" .
+                             "수량: {$item['MY_amount']}\n" .
+                             getPOtypeLabel($pt, $item['POtype'] ?? '1', $item['POtype_name'] ?? '');
+                    break;
+
+                case 'littleprint':
+                    $type = '포스터';
+                    $type_1 = "용지: {$item['MY_Fsd']}\n" .
+                             "규격: {$item['PN_type']}\n" .
+                             "수량: {$item['MY_amount']}\n" .
+                             getPOtypeLabel($pt, $item['POtype'] ?? '1', $item['POtype_name'] ?? '');
+                    break;
+
+                case 'sticker_new':
+                case 'sticker':
                     $type = '스티커';
+                    $type_1 = "용지: {$item['MY_Fsd']}\n" .
+                             "인쇄색상: {$item['MY_type']}\n" .
+                             "규격: {$item['PN_type']}\n" .
+                             "수량: {$item['MY_amount']}";
+                    break;
+
+                default:
+                    $type = $pt ?: '기타';
                     $type_1 = "용지: {$item['MY_Fsd']}\n" .
                              "인쇄색상: {$item['MY_type']}\n" .
                              "규격: {$item['PN_type']}\n" .

@@ -295,7 +295,7 @@ if ($cart_result === false) {
                                 <?php endif; ?>
                                 
                                 <?php if (isset($item['POtype'])): ?>
-                                    <p><strong>인쇄면:</strong> <?php echo $item['POtype'] == '1' ? '단면' : '양면'; ?></p>
+                                    <p><strong>인쇄면:</strong> <?php echo htmlspecialchars(getPOtypeLabel($item['product_type'] ?? '', $item['POtype'], $item['POtype_name'] ?? '')); ?></p>
                                 <?php endif; ?>
                             </div>
 

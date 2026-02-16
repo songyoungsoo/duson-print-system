@@ -82,7 +82,7 @@ try {
         if (!empty($item['MY_type'])) $type_1_parts[] = "색상: " . $item['MY_type'];
         if (!empty($item['MY_Fsd'])) $type_1_parts[] = "용지: " . $item['MY_Fsd'];
         if (!empty($item['PN_type'])) $type_1_parts[] = "규격: " . $item['PN_type'];
-        if (!empty($item['POtype'])) $type_1_parts[] = "인쇄면: " . ($item['POtype'] == '1' ? '단면' : '양면');
+        if (!empty($item['POtype'])) $type_1_parts[] = "인쇄면: " . getPOtypeLabel($product_type, $item['POtype'], $item['POtype_name'] ?? '');
         if (!empty($item['MY_amount'])) $type_1_parts[] = "수량: " . $item['MY_amount'];
         if (!empty($item['ordertype'])) $type_1_parts[] = "주문타입: " . $item['ordertype'];
         

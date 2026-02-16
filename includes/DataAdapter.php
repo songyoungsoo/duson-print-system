@@ -480,7 +480,7 @@ class DataAdapter {
             'spec_type' => $data['MY_type_name'] ?: ($data['MY_type'] ?? ''),
             'spec_material' => $data['Section_name'] ?: ($data['Section'] ?? ''),
             'spec_size' => '',
-            'spec_sides' => $data['POtype_name'] ?: ($data['POtype'] ?? ''),  // 봉투: 인쇄 색상(마스터1도/마스터2도/칼라4도)
+            'spec_sides' => $data['POtype_name'] ?: (function_exists('getPOtypeLabel') ? getPOtypeLabel('envelope', $data['POtype'] ?? '', '') : ($data['POtype'] ?? '')),
             'spec_design' => ($data['ordertype'] ?? '') === 'total' ? '디자인+인쇄' : '인쇄만',
             'quantity_value' => $qty_value,
             'quantity_unit' => '매',
