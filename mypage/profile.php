@@ -577,7 +577,15 @@ include $_SERVER['DOCUMENT_ROOT'] . '/includes/header-ui.php';
                         extraAddr = '(' + extraMatch[1] + ')';
                         remaining = remaining.replace(/\s*\([^)]+\)\s*$/, '');
                     }
-                    mainAddr = remaining.trim();
+                    // 도로명주소 패턴: "시/도 구/군 로/길 번호" 이후를 상세주소로 분리
+                    // 예: "서울 영등포구 영등포로36길 9 1층 두손기획인쇄" → main="서울 영등포구 영등포로36길 9", detail="1층 두손기획인쇄"
+                    var roadMatch = remaining.match(/^(.+(?:로|길|가)\s*\d+(?:-\d+)?)\s+(.+)$/);
+                    if (roadMatch) {
+                        mainAddr = roadMatch[1].trim();
+                        detailAddr = roadMatch[2].trim();
+                    } else {
+                        mainAddr = remaining.trim();
+                    }
                 }
             } else if (businessAddress.indexOf('|||') !== -1) {
                 var parts = businessAddress.split('|||');
@@ -590,12 +598,31 @@ include $_SERVER['DOCUMENT_ROOT'] . '/includes/header-ui.php';
                 }
                 detailAddr = detailPart;
             } else {
-                mainAddr = businessAddress;
+                // 우편번호도 ||| 도 없는 레거시 데이터
+                var extraMatch2 = businessAddress.match(/\(([^)]+)\)\s*$/);
+                if (extraMatch2) {
+                    extraAddr = '(' + extraMatch2[1] + ')';
+                    var cleaned = businessAddress.replace(/\s*\([^)]+\)\s*$/, '');
+                    var roadMatch2 = cleaned.match(/^(.+(?:로|길|가)\s*\d+(?:-\d+)?)\s+(.+)$/);
+                    if (roadMatch2) {
+                        mainAddr = roadMatch2[1].trim();
+                        detailAddr = roadMatch2[2].trim();
+                    } else {
+                        mainAddr = cleaned.trim();
+                    }
+                } else {
+                    mainAddr = businessAddress;
+                }
             }
 
             document.getElementById('business_address_display').value = mainAddr;
             document.getElementById('business_detailAddress').value = detailAddr;
             document.getElementById('business_extraAddress').value = extraAddr;
+
+            // 레거시 데이터(||| 없음)를 정규 형식으로 즉시 정규화
+            if (mainAddr && businessAddress.indexOf('|||') === -1) {
+                updateBusinessAddress();
+            }
         });
 
         // 상세주소/참고항목 입력 시 hidden 필드 업데이트
