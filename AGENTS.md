@@ -1092,6 +1092,23 @@ item.addEventListener('mouseenter', function() {
 
 **상태 변경 경로**: `dashboard/orders/view.php` → 상태 드롭다운 → POST `/dashboard/api/orders.php?action=update` → `UPDATE mlangorder_printauto SET OrderStyle = ?` → 마이페이지에 즉시 반영
 
+### 프로필 사업자 상세주소 레거시 파싱 개선 (2026-02-17)
+
+**구현 위치**: `mypage/profile.php`
+
+**문제**: `business_address`에 `|||` 구분자 없이 저장된 레거시 데이터가 전부 readonly 메인 주소 필드에 들어가서 상세주소 필드가 빈 상태로 남음. 사용자가 상세주소를 수정할 수 없음.
+
+**예시 데이터**: `[07301] 서울 영등포구 영등포로36길 9 1층 두손기획인쇄 (영등포동4가)` (구분자 없음)
+
+**해결**: DOMContentLoaded 파싱 시 도로명주소 패턴(`/^(.+(?:로|길|가)\s*\d+(?:-\d+)?)\s+(.+)$/`)으로 자동 분리:
+- 메인 주소(readonly): `서울 영등포구 영등포로36길 9`
+- 상세주소(editable): `1층 두손기획인쇄`
+- 참고항목(editable): `(영등포동4가)`
+
+**정규화**: 페이지 로드 시 `|||` 없는 레거시 데이터를 즉시 정규 형식으로 변환 (`updateBusinessAddress()` 자동 호출)
+
+**저장 형식**: `[우편번호] 메인주소|||상세주소 (참고항목)` — 이후 페이지 로드 시 `|||` 기반 정상 파싱
+
 ## 📧 Email System (주문 완료 이메일)
 
 ### 시스템 구성
@@ -1592,5 +1609,5 @@ $PRODUCT_NAME_MAP = [
 
 ---
 
-*Last Updated: 2026-02-17 (대시보드 레이아웃 최적화, 마이페이지 OrderStyle 통일, 배송 추정 시스템)*
+*Last Updated: 2026-02-17 (프로필 사업자 상세주소 레거시 파싱 개선, 대시보드 레이아웃 최적화, 마이페이지 OrderStyle 통일)*
 *Environment: WSL2 Ubuntu + Windows XAMPP + Production Deployment*
