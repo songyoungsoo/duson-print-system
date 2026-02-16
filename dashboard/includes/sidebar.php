@@ -143,7 +143,7 @@ $current_path = rtrim($current_path, '/') . '/';
 }
 </style>
 
-<aside id="sidebar" class="fixed md:static inset-y-0 left-0 z-40 w-[200px] transform -translate-x-full md:translate-x-0 transition-transform duration-300 ease-in-out mt-11">
+<aside id="sidebar" class="fixed md:static inset-y-0 left-0 z-40 w-[200px] transform -translate-x-full md:translate-x-0 transition-transform duration-300 ease-in-out mt-11 md:mt-0 overflow-y-auto">
     <div class="flex flex-col h-full">
         <!-- Brand (상단 헤더로 이동됨, 사이드바에서는 숨김) -->
 

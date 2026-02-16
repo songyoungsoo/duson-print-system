@@ -75,4 +75,4 @@ require_once __DIR__ . '/config.php';
     </div>
 
     <!-- Layout Container (top header 44px = h-11) -->
-    <div class="flex min-h-screen pt-11">
+    <div class="flex h-screen pt-11 overflow-hidden">

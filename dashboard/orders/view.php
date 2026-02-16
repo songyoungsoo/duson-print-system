@@ -190,40 +190,36 @@ include __DIR__ . '/../includes/sidebar.php';
 ?>
 
 <main class="flex-1 overflow-y-auto bg-gray-50">
-    <div class="max-w-5xl mx-auto px-4 sm:px-6 lg:px-8 py-6">
+    <div class="max-w-5xl mx-auto px-4 sm:px-6 lg:px-8 py-1">
         <!-- 헤더 -->
-        <div class="mb-5 flex items-center justify-between">
-            <div class="flex items-center gap-3">
-                <a href="/dashboard/orders/" class="p-2 text-gray-400 hover:text-gray-600 hover:bg-gray-200 rounded-lg transition-colors">
-                    <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7"/></svg>
+        <div class="mb-2 flex items-center justify-between">
+            <div class="flex items-center gap-2">
+                <a href="/dashboard/orders/" class="p-1 text-gray-400 hover:text-gray-600 hover:bg-gray-200 rounded transition-colors">
+                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7"/></svg>
                 </a>
-                <div>
-                    <h1 class="text-2xl font-bold text-gray-900">주문 #<?php echo $order['no']; ?></h1>
-                    <p class="text-sm text-gray-500"><?php echo $order['date']; ?></p>
-                </div>
-                <span class="ml-2 px-3 py-1 text-xs font-semibold rounded-full <?php echo $status_info['bg'] . ' ' . $status_info['text']; ?>">
+                <h1 class="text-lg font-bold text-gray-900">주문 #<?php echo $order['no']; ?></h1>
+                <span class="text-xs text-gray-400"><?php echo $order['date']; ?></span>
+                <span class="px-2 py-0.5 text-xs font-semibold rounded-full <?php echo $status_info['bg'] . ' ' . $status_info['text']; ?>">
                     <?php echo $status_info['label']; ?>
                 </span>
             </div>
-            <div class="flex items-center gap-2">
-                <a href="/admin/mlangprintauto/admin.php?mode=OrderView&no=<?php echo $order['no']; ?>" target="_blank"
-                   class="px-3 py-2 text-sm bg-white border border-gray-300 rounded-lg hover:bg-gray-50 transition-colors">
-                    기존 관리자 보기
-                </a>
-            </div>
+            <a href="/admin/mlangprintauto/admin.php?mode=OrderView&no=<?php echo $order['no']; ?>" target="_blank"
+               class="px-2 py-1 text-xs bg-white border border-gray-300 rounded hover:bg-gray-50 transition-colors">
+                기존 관리자
+            </a>
         </div>
 
-        <div class="grid grid-cols-1 lg:grid-cols-3 gap-5">
+        <div class="grid grid-cols-1 lg:grid-cols-3 gap-2">
             <!-- 왼쪽: 주문 정보 -->
-            <div class="lg:col-span-2 space-y-5">
+            <div class="lg:col-span-2 space-y-2">
                 <!-- 제품 규격 -->
-                <div class="bg-white rounded-lg shadow p-5">
-                    <h3 class="text-base font-semibold text-gray-900 mb-4 flex items-center gap-2">
-                        <span class="w-1.5 h-5 bg-blue-600 rounded-full"></span>
+                <div class="bg-white rounded-lg shadow p-3">
+                    <h3 class="text-sm font-semibold text-gray-900 mb-1.5 flex items-center gap-1.5">
+                        <span class="w-1 h-3.5 bg-blue-600 rounded-full"></span>
                         제품 규격
                     </h3>
-                    <div class="bg-gray-50 rounded-lg p-4 mb-4">
-                        <div class="flex items-center gap-2 mb-2">
+                    <div class="bg-gray-50 rounded p-2 mb-2">
+                        <div class="flex items-center gap-2">
                             <span class="text-lg font-bold text-gray-900"><?php echo $type_label; ?></span>
                             <?php if ($product_type): ?>
                             <span class="text-xs text-gray-400">(<?php echo htmlspecialchars($product_type); ?>)</span>
@@ -235,40 +231,40 @@ include __DIR__ . '/../includes/sidebar.php';
                         <div class="text-sm text-blue-700 font-medium"><?php echo htmlspecialchars($order['mesu']); ?>매</div>
                         <?php endif; ?>
                     </div>
-                    <dl class="grid grid-cols-2 md:grid-cols-3 gap-3 text-sm">
+                    <dl class="grid grid-cols-2 md:grid-cols-3 gap-2 text-sm">
                         <?php if ($spec_type): ?>
-                        <div class="bg-white border border-gray-100 rounded p-3">
-                            <dt class="text-xs text-gray-400 mb-1">인쇄유형</dt>
+                        <div class="bg-white border border-gray-100 rounded p-2">
+                            <dt class="text-xs text-gray-400 mb-0.5">인쇄유형</dt>
                             <dd class="font-medium text-gray-900"><?php echo htmlspecialchars($spec_type); ?></dd>
                         </div>
                         <?php endif; ?>
                         <?php if ($spec_material): ?>
-                        <div class="bg-white border border-gray-100 rounded p-3">
-                            <dt class="text-xs text-gray-400 mb-1">용지</dt>
+                        <div class="bg-white border border-gray-100 rounded p-2">
+                            <dt class="text-xs text-gray-400 mb-0.5">용지</dt>
                             <dd class="font-medium text-gray-900"><?php echo htmlspecialchars($spec_material); ?></dd>
                         </div>
                         <?php endif; ?>
                         <?php if ($spec_size): ?>
-                        <div class="bg-white border border-gray-100 rounded p-3">
-                            <dt class="text-xs text-gray-400 mb-1">사이즈</dt>
+                        <div class="bg-white border border-gray-100 rounded p-2">
+                            <dt class="text-xs text-gray-400 mb-0.5">사이즈</dt>
                             <dd class="font-medium text-gray-900"><?php echo htmlspecialchars($spec_size); ?></dd>
                         </div>
                         <?php endif; ?>
                         <?php if ($spec_sides): ?>
-                        <div class="bg-white border border-gray-100 rounded p-3">
-                            <dt class="text-xs text-gray-400 mb-1">인쇄면</dt>
+                        <div class="bg-white border border-gray-100 rounded p-2">
+                            <dt class="text-xs text-gray-400 mb-0.5">인쇄면</dt>
                             <dd class="font-medium text-gray-900"><?php echo htmlspecialchars($spec_sides); ?></dd>
                         </div>
                         <?php endif; ?>
                         <?php if ($spec_design): ?>
-                        <div class="bg-white border border-gray-100 rounded p-3">
-                            <dt class="text-xs text-gray-400 mb-1">디자인</dt>
+                        <div class="bg-white border border-gray-100 rounded p-2">
+                            <dt class="text-xs text-gray-400 mb-0.5">디자인</dt>
                             <dd class="font-medium text-gray-900"><?php echo htmlspecialchars($spec_design); ?></dd>
                         </div>
                         <?php endif; ?>
                         <?php if ($qty_value): ?>
-                        <div class="bg-white border border-gray-100 rounded p-3">
-                            <dt class="text-xs text-gray-400 mb-1">수량</dt>
+                        <div class="bg-white border border-gray-100 rounded p-2">
+                            <dt class="text-xs text-gray-400 mb-0.5">수량</dt>
                             <dd class="font-medium text-gray-900">
                                 <?php echo htmlspecialchars($qty_value . ($qty_unit ? $qty_unit : '')); ?>
                                 <?php if (!empty($order['quantity_sheets'])): ?>
@@ -281,8 +277,8 @@ include __DIR__ . '/../includes/sidebar.php';
                         <?php // 레거시 주문: 정규화 컬럼이 없을 때 Type_1 파싱 결과 표시 ?>
                         <?php if ($use_legacy_specs): ?>
                             <?php foreach ($legacy_specs as $ls): ?>
-                            <div class="bg-white border border-gray-100 rounded p-3">
-                                <dt class="text-xs text-gray-400 mb-1"><?php echo htmlspecialchars($ls['label']); ?></dt>
+                            <div class="bg-white border border-gray-100 rounded p-2">
+                                <dt class="text-xs text-gray-400 mb-0.5"><?php echo htmlspecialchars($ls['label']); ?></dt>
                                 <dd class="font-medium text-gray-900"><?php echo htmlspecialchars($ls['value']); ?></dd>
                             </div>
                             <?php endforeach; ?>
@@ -290,8 +286,8 @@ include __DIR__ . '/../includes/sidebar.php';
                     </dl>
 
                     <?php if ($has_options): ?>
-                    <div class="mt-4 pt-3 border-t border-gray-100">
-                        <h4 class="text-xs font-medium text-gray-400 mb-2">추가 옵션</h4>
+                    <div class="mt-2 pt-2 border-t border-gray-100">
+                        <h4 class="text-xs font-medium text-gray-400 mb-1">추가 옵션</h4>
                         <div class="flex flex-wrap gap-2">
                             <?php foreach ($options as $opt): ?>
                             <span class="inline-flex items-center gap-1 px-2.5 py-1 bg-blue-50 text-blue-700 text-xs rounded-full">
@@ -311,9 +307,9 @@ include __DIR__ . '/../includes/sidebar.php';
 
                 <!-- 원고파일 -->
                 <?php if (!empty($order_files)): ?>
-                <div class="bg-white rounded-lg shadow p-5">
-                    <h3 class="text-base font-semibold text-gray-900 mb-4 flex items-center gap-2">
-                        <span class="w-1.5 h-5 bg-amber-500 rounded-full"></span>
+                <div class="bg-white rounded-lg shadow p-3">
+                    <h3 class="text-sm font-semibold text-gray-900 mb-1.5 flex items-center gap-1.5">
+                        <span class="w-1 h-3.5 bg-amber-500 rounded-full"></span>
                         원고파일 <span class="text-xs text-gray-400 font-normal">(<?php echo count($order_files); ?>개)</span>
                     </h3>
                     <div class="space-y-2">
@@ -357,70 +353,64 @@ include __DIR__ . '/../includes/sidebar.php';
                 <?php endif; ?>
 
                 <!-- 금액 정보 -->
-                <div class="bg-white rounded-lg shadow p-5">
-                    <h3 class="text-base font-semibold text-gray-900 mb-4 flex items-center gap-2">
-                        <span class="w-1.5 h-5 bg-green-600 rounded-full"></span>
+                <div class="bg-white rounded-lg shadow p-3">
+                    <h3 class="text-sm font-semibold text-gray-900 mb-1 flex items-center gap-1.5">
+                        <span class="w-1 h-3.5 bg-green-600 rounded-full"></span>
                         금액 정보
                     </h3>
-                    <div class="space-y-2 text-sm">
-                        <div class="flex justify-between py-1">
+                    <div class="text-sm">
+                        <div class="flex justify-between py-0.5">
                             <span class="text-gray-500">공급가액</span>
                             <span class="text-gray-900"><?php echo number_format($price_supply); ?>원</span>
                         </div>
-                        <div class="flex justify-between py-1">
+                        <div class="flex justify-between py-0.5">
                             <span class="text-gray-500">부가세(VAT)</span>
                             <span class="text-gray-900"><?php echo number_format($price_vat_amount); ?>원</span>
                         </div>
                         <?php if ($has_options && intval($order['additional_options_total']) > 0): ?>
-                        <div class="flex justify-between py-1">
+                        <div class="flex justify-between py-0.5">
                             <span class="text-gray-500">추가옵션</span>
                             <span class="text-gray-900">+<?php echo number_format($order['additional_options_total']); ?>원</span>
                         </div>
                         <?php endif; ?>
-                        <div class="flex justify-between py-2 border-t border-gray-200 mt-1">
+                        <div class="flex justify-between py-0.5 border-t border-gray-200 mt-0.5">
                             <span class="font-semibold text-gray-900">총 결제금액</span>
-                            <span class="text-lg font-bold text-blue-600"><?php echo number_format($price_vat); ?>원</span>
+                            <span class="text-base font-bold text-blue-600"><?php echo number_format($price_vat); ?>원</span>
                         </div>
                     </div>
                 </div>
 
                 <!-- 고객 정보 -->
-                <div class="bg-white rounded-lg shadow p-5">
-                    <h3 class="text-base font-semibold text-gray-900 mb-4 flex items-center gap-2">
-                        <span class="w-1.5 h-5 bg-purple-600 rounded-full"></span>
+                <div class="bg-white rounded-lg shadow p-3">
+                    <h3 class="text-sm font-semibold text-gray-900 mb-1.5 flex items-center gap-1.5">
+                        <span class="w-1 h-3.5 bg-purple-600 rounded-full"></span>
                         고객 정보
                     </h3>
-                    <dl class="grid grid-cols-1 md:grid-cols-2 gap-3 text-sm">
+                    <dl class="grid grid-cols-3 gap-x-3 gap-y-1 text-sm">
                         <div>
-                            <dt class="text-xs text-gray-400 mb-0.5">이름</dt>
+                            <dt class="text-xs text-gray-400">이름</dt>
                             <dd class="text-gray-900 font-medium"><?php echo htmlspecialchars($order['name'] ?: '-'); ?></dd>
                         </div>
                         <div>
-                            <dt class="text-xs text-gray-400 mb-0.5">이메일</dt>
-                            <dd class="text-gray-900"><?php echo htmlspecialchars($order['email'] ?: '-'); ?></dd>
-                        </div>
-                        <div>
-                            <dt class="text-xs text-gray-400 mb-0.5">전화번호</dt>
+                            <dt class="text-xs text-gray-400">전화</dt>
                             <dd class="text-gray-900"><?php echo htmlspecialchars($order['phone'] ?: '-'); ?></dd>
                         </div>
                         <div>
-                            <dt class="text-xs text-gray-400 mb-0.5">휴대폰</dt>
+                            <dt class="text-xs text-gray-400">휴대폰</dt>
                             <dd class="text-gray-900"><?php echo htmlspecialchars($order['Hendphone'] ?: '-'); ?></dd>
                         </div>
-                        <div class="md:col-span-2">
-                            <dt class="text-xs text-gray-400 mb-0.5">배송방법</dt>
+                        <div>
+                            <dt class="text-xs text-gray-400">이메일</dt>
+                            <dd class="text-gray-900"><?php echo htmlspecialchars($order['email'] ?: '-'); ?></dd>
+                        </div>
+                        <div class="col-span-2">
+                            <dt class="text-xs text-gray-400">배송</dt>
                             <dd class="text-gray-900"><?php echo htmlspecialchars($order['delivery'] ?: '-'); ?></dd>
                         </div>
                         <?php if (!empty($order['zip1'])): ?>
-                        <div class="md:col-span-2">
-                            <dt class="text-xs text-gray-400 mb-0.5">배송지</dt>
-                            <dd class="text-gray-900">
-                                <?php if (!empty($order['zip'])): ?>
-                                <span class="text-gray-400">[<?php echo htmlspecialchars($order['zip']); ?>]</span>
-                                <?php endif; ?>
-                                <?php echo htmlspecialchars($order['zip1']); ?>
-                                <?php echo htmlspecialchars($order['zip2']); ?>
-                            </dd>
+                        <div class="col-span-3">
+                            <dt class="text-xs text-gray-400">주소</dt>
+                            <dd class="text-gray-900"><?php if (!empty($order['zip'])): ?><span class="text-gray-400">[<?php echo htmlspecialchars($order['zip']); ?>]</span> <?php endif; ?><?php echo htmlspecialchars($order['zip1']); ?> <?php echo htmlspecialchars($order['zip2']); ?></dd>
                         </div>
                         <?php endif; ?>
                     </dl>
@@ -428,20 +418,20 @@ include __DIR__ . '/../includes/sidebar.php';
 
                 <!-- 요청사항 -->
                 <?php if (!empty($order['cont'])): ?>
-                <div class="bg-white rounded-lg shadow p-5">
-                    <h3 class="text-base font-semibold text-gray-900 mb-3 flex items-center gap-2">
-                        <span class="w-1.5 h-5 bg-yellow-500 rounded-full"></span>
+                <div class="bg-white rounded-lg shadow p-3">
+                    <h3 class="text-sm font-semibold text-gray-900 mb-1 flex items-center gap-1.5">
+                        <span class="w-1 h-3.5 bg-yellow-500 rounded-full"></span>
                         요청사항
                     </h3>
-                    <div class="bg-gray-50 rounded-lg p-3 text-sm text-gray-700 whitespace-pre-wrap"><?php echo htmlspecialchars($order['cont']); ?></div>
+                    <div class="bg-gray-50 rounded p-2 text-xs text-gray-700 whitespace-pre-wrap max-h-32 overflow-y-auto"><?php echo htmlspecialchars($order['cont']); ?></div>
                 </div>
                 <?php endif; ?>
 
                 <!-- 같은 그룹 주문 -->
                 <?php if (!empty($group_orders)): ?>
-                <div class="bg-white rounded-lg shadow p-5">
-                    <h3 class="text-base font-semibold text-gray-900 mb-3 flex items-center gap-2">
-                        <span class="w-1.5 h-5 bg-orange-500 rounded-full"></span>
+                <div class="bg-white rounded-lg shadow p-4">
+                    <h3 class="text-sm font-semibold text-gray-900 mb-2 flex items-center gap-2">
+                        <span class="w-1 h-4 bg-orange-500 rounded-full"></span>
                         함께 주문한 품목
                     </h3>
                     <div class="space-y-2">
@@ -469,14 +459,14 @@ include __DIR__ . '/../includes/sidebar.php';
             </div>
 
             <!-- 오른쪽: 상태/결제/배송 -->
-            <div class="space-y-5">
+            <div class="space-y-2">
                 <!-- 상태 관리 -->
-                <div class="bg-white rounded-lg shadow p-5">
-                    <h3 class="text-base font-semibold text-gray-900 mb-4">상태 관리</h3>
+                <div class="bg-white rounded-lg shadow p-3">
+                    <h3 class="text-sm font-semibold text-gray-900 mb-1.5">상태 관리</h3>
                     <form id="statusForm">
                         <input type="hidden" name="no" value="<?php echo $order['no']; ?>">
-                        <div class="mb-3">
-                            <select name="order_style" class="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm focus:ring-2 focus:ring-blue-500 focus:border-blue-500">
+                        <div class="mb-1.5">
+                            <select name="order_style" class="w-full px-3 py-1.5 border border-gray-300 rounded-lg text-sm focus:ring-2 focus:ring-blue-500 focus:border-blue-500">
                                 <?php foreach ($status_map as $val => $info): ?>
                                 <option value="<?php echo $val; ?>" <?php echo $os === (string)$val ? 'selected' : ''; ?>>
                                     <?php echo $info['label']; ?>
@@ -484,16 +474,16 @@ include __DIR__ . '/../includes/sidebar.php';
                                 <?php endforeach; ?>
                             </select>
                         </div>
-                        <button type="submit" class="w-full px-4 py-2 bg-blue-600 text-white text-sm rounded-lg hover:bg-blue-700 transition-colors">
+                        <button type="submit" class="w-full px-4 py-1.5 bg-blue-600 text-white text-sm rounded-lg hover:bg-blue-700 transition-colors">
                             상태 변경
                         </button>
                     </form>
                 </div>
 
                 <!-- 결제 정보 -->
-                <div class="bg-white rounded-lg shadow p-5">
-                    <h3 class="text-base font-semibold text-gray-900 mb-4">결제 정보</h3>
-                    <dl class="space-y-3 text-sm">
+                <div class="bg-white rounded-lg shadow p-3">
+                    <h3 class="text-sm font-semibold text-gray-900 mb-1.5">결제 정보</h3>
+                    <dl class="space-y-1.5 text-sm">
                         <div class="flex justify-between">
                             <dt class="text-gray-500">결제방법</dt>
                             <dd class="text-gray-900 font-medium"><?php echo htmlspecialchars($order['bank'] ?: '-'); ?></dd>
@@ -513,13 +503,13 @@ include __DIR__ . '/../includes/sidebar.php';
 
                 <!-- 배송 정보 -->
                 <?php if (!empty($order['waybill_no']) || !empty($order['logen_tracking_no'])): ?>
-                <div class="bg-white rounded-lg shadow p-5">
-                    <h3 class="text-base font-semibold text-gray-900 mb-4">배송 추적</h3>
+                <div class="bg-white rounded-lg shadow p-3">
+                    <h3 class="text-sm font-semibold text-gray-900 mb-1.5">배송 추적</h3>
                     <?php
                     $tracking = $order['waybill_no'] ?: $order['logen_tracking_no'];
                     $company = $order['delivery_company'] ?: '로젠택배';
                     ?>
-                    <dl class="space-y-3 text-sm">
+                    <dl class="space-y-1.5 text-sm">
                         <div class="flex justify-between">
                             <dt class="text-gray-500">택배사</dt>
                             <dd class="text-gray-900"><?php echo htmlspecialchars($company); ?></dd>
@@ -543,9 +533,9 @@ include __DIR__ . '/../includes/sidebar.php';
                 <?php endif; ?>
 
                 <!-- 담당자 -->
-                <div class="bg-white rounded-lg shadow p-5">
-                    <h3 class="text-base font-semibold text-gray-900 mb-4">작업 정보</h3>
-                    <dl class="space-y-3 text-sm">
+                <div class="bg-white rounded-lg shadow p-3">
+                    <h3 class="text-sm font-semibold text-gray-900 mb-1.5">작업 정보</h3>
+                    <dl class="space-y-1.5 text-sm">
                         <div class="flex justify-between">
                             <dt class="text-gray-500">담당 디자이너</dt>
                             <dd class="text-gray-900"><?php echo htmlspecialchars($order['Designer'] ?: '미배정'); ?></dd>
