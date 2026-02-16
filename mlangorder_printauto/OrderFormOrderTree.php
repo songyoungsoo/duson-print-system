@@ -143,6 +143,13 @@ $View_OrderStyle = htmlspecialchars($row['OrderStyle']);
 $View_ThingCate = htmlspecialchars($row['ThingCate']);
 $View_Gensu = htmlspecialchars($row['Gensu']);
 
+// ✅ 택배 확정 정보 (logen_* 컬럼)
+$View_logen_box_qty = intval($row['logen_box_qty'] ?? 0);
+$View_logen_delivery_fee = intval($row['logen_delivery_fee'] ?? 0);
+$View_logen_fee_type = htmlspecialchars($row['logen_fee_type'] ?? '');
+$View_logen_tracking_no = htmlspecialchars($row['logen_tracking_no'] ?? '');
+$has_logen_confirmed = ($View_logen_delivery_fee > 0 || !empty($View_logen_tracking_no));
+
 // ✅ 가격 정보 계산 (그룹 주문 시 합산)
 $View_money_1 = 0;
 $View_money_2 = 0;
@@ -541,6 +548,61 @@ function getOrderItemInfo($summary_item, $specFormatter) {
             if (confirm('이 주문을 재주문하시겠습니까?\n동일한 내용으로 새 주문이 생성됩니다.')) {
                 window.location.href = '/admin/mlangprintauto/admin.php?mode=ReOrder&source_no=' + orderNo;
             }
+        }
+
+        // 택배비 확정 / 송장번호 저장
+        function saveLogenInfo() {
+            var orderNo = <?= intval($no) ?>;
+            var boxQty = document.getElementById('logen_box_qty') ? document.getElementById('logen_box_qty').value : '';
+            var deliveryFee = document.getElementById('logen_delivery_fee') ? document.getElementById('logen_delivery_fee').value : '';
+            var feeType = document.getElementById('logen_fee_type') ? document.getElementById('logen_fee_type').value : '';
+            var trackingNo = document.getElementById('logen_tracking_no') ? document.getElementById('logen_tracking_no').value : '';
+
+            var btn = document.getElementById('btn-logen-save');
+            var resultSpan = document.getElementById('logen-save-result');
+            btn.disabled = true;
+            btn.textContent = '저장 중...';
+            resultSpan.style.display = 'none';
+
+            var formData = new FormData();
+            formData.append('action', 'logen_save');
+            formData.append('no', orderNo);
+            formData.append('logen_box_qty', boxQty);
+            formData.append('logen_delivery_fee', deliveryFee);
+            formData.append('logen_fee_type', feeType);
+            formData.append('logen_tracking_no', trackingNo);
+
+            fetch('/includes/shipping_api.php', {
+                method: 'POST',
+                body: formData
+            })
+            .then(function(response) { return response.json(); })
+            .then(function(data) {
+                btn.disabled = false;
+                btn.textContent = '💾 저장';
+                if (data.success) {
+                    resultSpan.textContent = '✅ 저장되었습니다.';
+                    resultSpan.style.color = '#28a745';
+                    resultSpan.style.display = 'inline';
+                    // 확정 스타일로 변경
+                    var section = document.getElementById('logen-confirm-section');
+                    if (section) {
+                        section.style.background = '#f0faf0';
+                        section.style.borderColor = '#a8d5a8';
+                    }
+                } else {
+                    resultSpan.textContent = '❌ 저장 실패: ' + (data.error || '알 수 없는 오류');
+                    resultSpan.style.color = '#dc3545';
+                    resultSpan.style.display = 'inline';
+                }
+            })
+            .catch(function(err) {
+                btn.disabled = false;
+                btn.textContent = '💾 저장';
+                resultSpan.textContent = '❌ 네트워크 오류';
+                resultSpan.style.color = '#dc3545';
+                resultSpan.style.display = 'inline';
+            });
         }
     </script>
     <link href="/mlangprintauto/css/board.css" rel="stylesheet" type="text/css">
@@ -1702,37 +1764,69 @@ function getOrderItemInfo($summary_item, $specFormatter) {
                     }
                 ?>
                 <div style="background: #f0f7ff; border: 1px solid #b8d4f0; border-radius: 8px; padding: 14px 16px; margin-bottom: 15px;">
-                    <div style="display: flex; align-items: center; gap: 6px; margin-bottom: 10px;">
+                    <div style="display: flex; align-items: center; gap: 6px; margin-bottom: 8px;">
                         <span style="font-size: 1.1rem;">📦</span>
-                        <span style="font-weight: 700; color: #1E4E79; font-size: 14px;">택배 배송 추정</span>
+                        <span style="font-weight: 700; color: #1E4E79; font-size: 14px;">배송 정보</span>
                         <span style="background: #e0a800; color: #fff; font-size: 11px; padding: 1px 8px; border-radius: 3px; font-weight: 600;">추정</span>
                     </div>
+                    <div style="font-size: 13px; color: #333; line-height: 1.8;">
+                        <span style="font-weight: 600;">예상 무게:</span>
+                        <span style="font-weight: 700; font-size: 14px; color: #1E4E79;">약 <?= number_format($ship_total_weight_kg, 1) ?>kg</span>
+                        <span style="font-size: 11px; color: #888;">(부자재 포함)</span>
+                        <?php if (count($shipping_items) > 1): ?>
+                        <div style="margin-top: 4px; font-size: 11px; color: #666;">
+                            <?php foreach ($shipping_items as $idx => $si): ?>
+                            <span style="margin-right: 12px;"><?= $idx + 1 ?>번 품목: <?= number_format($si['weight_kg'], 1) ?>kg</span>
+                            <?php endforeach; ?>
+                        </div>
+                        <?php endif; ?>
+                    </div>
+                    <div style="margin-top: 6px; font-size: 11px; color: #888;">
+                        ※ 추정치이며 실제와 다를 수 있습니다.
+                    </div>
+                </div>
+
+                <!-- ===== 📦 택배비 확정 / 송장번호 입력 ===== -->
+                <div id="logen-confirm-section" style="background: <?= $has_logen_confirmed ? '#f0faf0' : '#fff8e8' ?>; border: 1px solid <?= $has_logen_confirmed ? '#a8d5a8' : '#e0c880' ?>; border-radius: 8px; padding: 14px 16px; margin-bottom: 15px;">
+                    <div style="display: flex; align-items: center; gap: 6px; margin-bottom: 10px;">
+                        <span style="font-size: 1.1rem;"><?= $has_logen_confirmed ? '✅' : '📝' ?></span>
+                        <span style="font-weight: 700; color: #1E4E79; font-size: 14px;">택배비 확정 / 송장번호</span>
+                        <?php if ($has_logen_confirmed): ?>
+                            <span style="background: #28a745; color: #fff; font-size: 11px; padding: 1px 8px; border-radius: 3px; font-weight: 600;">확정</span>
+                        <?php else: ?>
+                            <span style="background: #e0a800; color: #fff; font-size: 11px; padding: 1px 8px; border-radius: 3px; font-weight: 600;">미확정</span>
+                        <?php endif; ?>
+                    </div>
                     <table style="width: 100%; border-collapse: collapse; font-size: 12px;">
-                        <tr style="background: #e8eff7;">
-                            <th style="border: 1px solid #b8d4f0; padding: 6px 10px; text-align: center; color: #1E4E79; width: 25%;">추정 무게</th>
-                            <th style="border: 1px solid #b8d4f0; padding: 6px 10px; text-align: center; color: #1E4E79; width: 25%;">추정 박스</th>
-                            <th style="border: 1px solid #b8d4f0; padding: 6px 10px; text-align: center; color: #1E4E79; width: 25%;">추정 택배비</th>
-                            <th style="border: 1px solid #b8d4f0; padding: 6px 10px; text-align: center; color: #1E4E79; width: 25%;">요금 구분</th>
+                        <tr>
+                            <td style="border: 1px solid #ccc; padding: 6px 10px; background: #f5f7fa; font-weight: 600; color: #333; width: 22%; text-align: center;">확정 박스수</td>
+                            <td style="border: 1px solid #ccc; padding: 6px 10px; width: 28%;">
+                                <input type="number" id="logen_box_qty" value="<?= $View_logen_box_qty ?: '' ?>" min="0" placeholder="-" style="width: 80px; border: 1px solid #ccc; padding: 4px 6px; font-size: 12px; text-align: center; border-radius: 3px;">
+                                <span style="font-size: 11px; color: #888; margin-left: 4px;">박스</span>
+                            </td>
+                            <td style="border: 1px solid #ccc; padding: 6px 10px; background: #f5f7fa; font-weight: 600; color: #333; width: 22%; text-align: center;">확정 택배비</td>
+                            <td style="border: 1px solid #ccc; padding: 6px 10px; width: 28%;">
+                                <input type="number" id="logen_delivery_fee" value="<?= $View_logen_delivery_fee ?: '' ?>" min="0" step="500" placeholder="-" style="width: 100px; border: 1px solid #ccc; padding: 4px 6px; font-size: 12px; text-align: right; border-radius: 3px;">
+                                <span style="font-size: 11px; color: #888; margin-left: 4px;">원</span>
+                            </td>
                         </tr>
                         <tr>
-                            <td style="border: 1px solid #b8d4f0; padding: 8px 10px; text-align: center; font-weight: bold; font-size: 13px;">약 <?= number_format($ship_total_weight_kg, 1) ?>kg</td>
-                            <td style="border: 1px solid #b8d4f0; padding: 8px 10px; text-align: center; font-weight: bold; font-size: 13px;"><?= $ship_total_boxes ?>박스</td>
-                            <td style="border: 1px solid #b8d4f0; padding: 8px 10px; text-align: center; font-weight: bold; font-size: 13px; color: #c00;"><?= number_format($ship_total_fee) ?>원</td>
-                            <td style="border: 1px solid #b8d4f0; padding: 8px 10px; text-align: center; font-size: 12px;"><?= htmlspecialchars($shipping_items[0]['fee_type'] ?? '-') ?></td>
+                            <td style="border: 1px solid #ccc; padding: 6px 10px; background: #f5f7fa; font-weight: 600; color: #333; text-align: center;">요금 구분</td>
+                            <td style="border: 1px solid #ccc; padding: 6px 10px;">
+                                <select id="logen_fee_type" style="border: 1px solid #ccc; padding: 4px 6px; font-size: 12px; border-radius: 3px;">
+                                    <option value="선불" <?= $View_logen_fee_type === '선불' ? 'selected' : '' ?>>선불</option>
+                                    <option value="착불" <?= ($View_logen_fee_type === '착불' || empty($View_logen_fee_type)) ? 'selected' : '' ?>>착불</option>
+                                </select>
+                            </td>
+                            <td style="border: 1px solid #ccc; padding: 6px 10px; background: #f5f7fa; font-weight: 600; color: #333; text-align: center;">송장번호</td>
+                            <td style="border: 1px solid #ccc; padding: 6px 10px;">
+                                <input type="text" id="logen_tracking_no" value="<?= $View_logen_tracking_no ?>" placeholder="송장번호 입력" style="width: 160px; border: 1px solid #ccc; padding: 4px 6px; font-size: 12px; border-radius: 3px;">
+                            </td>
                         </tr>
-                        <?php if (count($shipping_items) > 1): ?>
-                        <?php foreach ($shipping_items as $idx => $si): ?>
-                        <tr style="background: #f8fafc; font-size: 11px; color: #666;">
-                            <td style="border: 1px solid #d0e3f5; padding: 4px 10px; text-align: center;"><?= $idx + 1 ?>번 품목: <?= number_format($si['weight_kg'], 1) ?>kg</td>
-                            <td style="border: 1px solid #d0e3f5; padding: 4px 10px; text-align: center;"><?= $si['boxes'] ?>박스</td>
-                            <td style="border: 1px solid #d0e3f5; padding: 4px 10px; text-align: center;"><?= number_format($si['fee']) ?>원</td>
-                            <td style="border: 1px solid #d0e3f5; padding: 4px 10px; text-align: center;"><?= htmlspecialchars($si['fee_type'] ?? '-') ?></td>
-                        </tr>
-                        <?php endforeach; ?>
-                        <?php endif; ?>
                     </table>
-                    <div style="margin-top: 8px; font-size: 11px; color: #888; line-height: 1.5;">
-                        ※ 추정치이며 실제와 다를 수 있습니다. 택배비는 전화 확인 후 확정됩니다.
+                    <div style="margin-top: 10px; display: flex; align-items: center; gap: 10px;">
+                        <button type="button" id="btn-logen-save" onclick="saveLogenInfo()" style="padding: 6px 20px; font-size: 12px; background: linear-gradient(135deg, #1E4E79, #2a6496); color: #fff; border: none; cursor: pointer; font-weight: 600; border-radius: 5px;">💾 저장</button>
+                        <span id="logen-save-result" style="font-size: 12px; color: #28a745; display: none;">✅ 저장되었습니다.</span>
                     </div>
                 </div>
                 <?php endif; // end 택배비 추정 ?>

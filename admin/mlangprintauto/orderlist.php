@@ -380,6 +380,7 @@ function DelGCheckField() {
 <th class="order-table-th">주문인</th>
 <th class="order-table-th">주문날짜</th>
 <th class="order-table-th">추가옵션</th>
+<th class="order-table-th">배송</th>
 <th class="order-table-th">진행상태</th>
 <th class="order-table-th">시안</th>
 <th class="order-table-th order-table-th--actions">주문정보</th>
@@ -540,6 +541,43 @@ if (class_exists('AdditionalOptionsDisplay')) {
 </td>
 <td class="order-table-td">
 <?php
+// 배송 배지 렌더링
+$deliveryValue = trim($row['delivery'] ?? '');
+$logenFeeType = $row['logen_fee_type'] ?? '';
+$logenTrackingNo = $row['logen_tracking_no'] ?? '';
+
+if ($deliveryValue === '택배') {
+    $badgeExtra = '';
+    if ($logenFeeType === '선불') {
+        $badgeExtra = ' 선불';
+    } elseif ($logenFeeType === '착불') {
+        $badgeExtra = ' 착불';
+    }
+    $trackingIcon = !empty($logenTrackingNo) ? ' ✓' : '';
+    echo "<button type='button' class='badge badge--shipping badge--shipping-parcel' onclick='openShippingModal({$row['no']})'>";
+    echo "🚚 택배{$badgeExtra}{$trackingIcon}";
+    echo "</button>";
+} elseif ($deliveryValue === '방문') {
+    echo "<span class='badge badge--shipping badge--shipping-visit'>🏢 방문</span>";
+} elseif ($deliveryValue === '퀵' || $deliveryValue === '오토바이') {
+    echo "<button type='button' class='badge badge--shipping badge--shipping-quick' onclick='openShippingModal({$row['no']})'>";
+    echo "🏍 퀵";
+    echo "</button>";
+} elseif ($deliveryValue === '다마스') {
+    echo "<button type='button' class='badge badge--shipping badge--shipping-quick' onclick='openShippingModal({$row['no']})'>";
+    echo "🚐 다마스";
+    echo "</button>";
+} elseif (empty($deliveryValue)) {
+    echo "<span class='text-muted'>-</span>";
+} else {
+    echo "<button type='button' class='badge badge--shipping badge--shipping-other' onclick='openShippingModal({$row['no']})'>";
+    echo htmlspecialchars($deliveryValue);
+    echo "</button>";
+}
+?>
+</td>
+<td class="order-table-td">
+<?php
 $orderStyles = [
   1 => "견적접수", 2 => "주문접수", 3 => "접수완료", 4 => "입금대기",
   5 => "시안제작중", 6 => "시안", 7 => "교정", 8 => "작업완료",
@@ -587,7 +625,7 @@ $i = $i + 1;
   }
 ?>
 <tr class="order-table-row order-table-row--empty">
-<td colspan="9" class="order-table-td--empty">
+<td colspan="10" class="order-table-td--empty">
     <div class="empty-state">
         <div class="empty-state-icon">📭</div>
         <p class="empty-state-message"><?php echo $emptyMessage ?></p>
@@ -691,6 +729,51 @@ mysqli_close($db);
 
 </div><!-- .order-list-container -->
 
+<!-- 배송정보 모달 -->
+<div id="shippingModal" class="shipping-modal" style="display:none;">
+    <div class="shipping-modal-overlay" onclick="closeShippingModal()"></div>
+    <div class="shipping-modal-content">
+        <div class="shipping-modal-header">
+            <h3>📦 배송 정보 <span id="shippingModalOrderNo"></span></h3>
+            <button type="button" class="shipping-modal-close" onclick="closeShippingModal()">&times;</button>
+        </div>
+        <div class="shipping-modal-body">
+            <div id="shippingEstimateSection">
+                <div class="shipping-info-row">
+                    <label>추정 무게</label>
+                    <span id="shippingEstWeight">-</span>
+                </div>
+                <p class="shipping-estimate-notice">⚠ 추정치이며 실제와 다를 수 있습니다.</p>
+            </div>
+            <hr class="shipping-divider">
+            <div class="shipping-form-group">
+                <label for="shippingFeeType">운임구분</label>
+                <select id="shippingFeeType" class="select">
+                    <option value="">미지정</option>
+                    <option value="착불">착불</option>
+                    <option value="선불">선불</option>
+                </select>
+            </div>
+            <div class="shipping-form-group">
+                <label for="shippingBoxQty">박스 수량</label>
+                <input type="number" id="shippingBoxQty" class="input" min="0" placeholder="박스 수">
+            </div>
+            <div class="shipping-form-group">
+                <label for="shippingDeliveryFee">택배비 (원)</label>
+                <input type="number" id="shippingDeliveryFee" class="input" min="0" step="100" placeholder="택배비 입력">
+            </div>
+            <div class="shipping-form-group">
+                <label for="shippingTrackingNo">송장번호</label>
+                <input type="text" id="shippingTrackingNo" class="input" placeholder="송장번호 입력">
+            </div>
+        </div>
+        <div class="shipping-modal-footer">
+            <button type="button" class="btn btn--outline btn--sm" onclick="closeShippingModal()">취소</button>
+            <button type="button" class="btn btn--primary btn--sm" onclick="saveShippingInfo()">💾 저장</button>
+        </div>
+    </div>
+</div>
+
 <!-- 시안수정 모달 -->
 <div id="sinModal" class="sin-modal" style="display:none;">
     <div class="sin-modal-overlay" onclick="closeSinModal()"></div>
@@ -774,8 +857,83 @@ window.addEventListener('message', function(e) {
 document.addEventListener('keydown', function(e) {
     if (e.key === 'Escape') {
         closeSinModal();
+        closeShippingModal();
     }
 });
+</script>
+
+<script>
+var currentShippingOrderNo = null;
+
+function openShippingModal(orderNo) {
+    currentShippingOrderNo = orderNo;
+    document.getElementById('shippingModalOrderNo').textContent = '#' + orderNo;
+    document.getElementById('shippingEstWeight').textContent = '로딩중...';
+    document.getElementById('shippingFeeType').value = '';
+    document.getElementById('shippingBoxQty').value = '';
+    document.getElementById('shippingDeliveryFee').value = '';
+    document.getElementById('shippingTrackingNo').value = '';
+    document.getElementById('shippingModal').style.display = 'flex';
+    document.body.style.overflow = 'hidden';
+
+    fetch('../../includes/shipping_api.php?action=order_estimate&no=' + orderNo)
+        .then(function(r) { return r.json(); })
+        .then(function(res) {
+            if (res.success) {
+                var d = res.data;
+                var est = d.estimate;
+                if (est.calculable) {
+                    document.getElementById('shippingEstWeight').textContent = '약 ' + est.weight_kg + 'kg';
+                } else {
+                    document.getElementById('shippingEstWeight').textContent = '계산 불가';
+                }
+                if (d.logen_fee_type) document.getElementById('shippingFeeType').value = d.logen_fee_type;
+                if (d.logen_box_qty !== null && d.logen_box_qty !== '') document.getElementById('shippingBoxQty').value = d.logen_box_qty;
+                if (d.logen_delivery_fee !== null && d.logen_delivery_fee !== '') document.getElementById('shippingDeliveryFee').value = d.logen_delivery_fee;
+                if (d.logen_tracking_no) document.getElementById('shippingTrackingNo').value = d.logen_tracking_no;
+            } else {
+                document.getElementById('shippingEstWeight').textContent = '오류';
+            }
+        })
+        .catch(function() {
+            document.getElementById('shippingEstWeight').textContent = '오류';
+        });
+}
+
+function closeShippingModal() {
+    document.getElementById('shippingModal').style.display = 'none';
+    document.body.style.overflow = '';
+    currentShippingOrderNo = null;
+}
+
+function saveShippingInfo() {
+    if (!currentShippingOrderNo) return;
+
+    var formData = new FormData();
+    formData.append('action', 'logen_save');
+    formData.append('no', currentShippingOrderNo);
+    formData.append('logen_fee_type', document.getElementById('shippingFeeType').value);
+    formData.append('logen_box_qty', document.getElementById('shippingBoxQty').value);
+    formData.append('logen_delivery_fee', document.getElementById('shippingDeliveryFee').value);
+    formData.append('logen_tracking_no', document.getElementById('shippingTrackingNo').value);
+
+    fetch('../../includes/shipping_api.php', {
+        method: 'POST',
+        body: formData
+    })
+    .then(function(r) { return r.json(); })
+    .then(function(res) {
+        if (res.success) {
+            closeShippingModal();
+            location.reload();
+        } else {
+            alert('저장 실패: ' + (res.error || '알 수 없는 오류'));
+        }
+    })
+    .catch(function() {
+        alert('네트워크 오류가 발생했습니다.');
+    });
+}
 </script>
 
 <?php
