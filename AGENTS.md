@@ -1019,6 +1019,38 @@ URL 경로 → 한글 제품명 매핑 (클릭 가능한 링크):
 
 **CSS 변경**: `.fm-kakao-circle`에서 background/border 제거, `.fm-kakao-full` 클래스 추가 (100% fill)
 
+### 사이드바 패널 호버 UX 개선 (2026-02-16)
+**구현 위치**: `includes/sidebar.php`
+
+**문제**: 패널이 마우스 호버로 열리지만, 마우스가 버튼→패널 사이 빈 공간을 지날 때 패널이 즉시 사라짐
+
+**해결 (2가지 병행)**:
+1. **300ms mouseleave 딜레이** — 마우스가 버튼을 벗어나도 300ms 유예, 패널 위에 도달하면 타이머 취소
+2. **📌 클릭=고정 힌트** — 전 패널(5개) 헤더에 `<span class="fm-pin-hint">📌 클릭=고정</span>` 표시, 고정(pinned) 상태에서는 자동 숨김
+
+**JS 동작** (line 519~553):
+```javascript
+// mouseleave: 300ms 딜레이 후 닫기
+item.addEventListener('mouseleave', function() {
+    if (this.classList.contains('pinned')) return;
+    this.dataset.closeTimer = setTimeout(() => {
+        this.classList.remove('active');
+    }, 300);
+});
+
+// mouseenter: 타이머 취소 (패널 위에 도달)
+item.addEventListener('mouseenter', function() {
+    clearTimeout(this.dataset.closeTimer);
+});
+```
+
+**CSS**:
+- `.fm-panel-title` → `display: flex; justify-content: space-between;` (제목+힌트 양쪽 정렬)
+- `.fm-pin-hint` → `font-size: 10px; opacity: 0.7;` (작고 은은하게)
+- `.fm-item.pinned .fm-pin-hint` → `display: none;` (고정 시 힌트 숨김)
+
+**적용 패널**: 고객센터, 파일전송, 업무안내, 입금안내, 운영시간 (전체 5개)
+
 ## 📧 Email System (주문 완료 이메일)
 
 ### 시스템 구성
