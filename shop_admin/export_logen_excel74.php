@@ -89,6 +89,7 @@ $query = "SELECT * FROM mlangorder_printauto $where_sql ORDER BY no DESC";
 $result = safe_mysqli_query($connect, $query);
 
 $rows = array();
+$exported_nos = array();
 while ($data = mysqli_fetch_array($result)) {
     $order_no = $data['no'];
     $type1_raw = isset($data['Type_1']) ? $data['Type_1'] : '';
@@ -178,6 +179,13 @@ while ($data = mysqli_fetch_array($result)) {
     }
 
     $rows[] = array($name, $zip, $full_address, $phone, $hendphone, $r, $w, $fee_type, $type, $order_no, $type_1_display);
+    $exported_nos[] = intval($order_no);
+}
+
+// 내보낸 주문들의 export_count 증가
+if (!empty($exported_nos)) {
+    $nos_str = implode(',', $exported_nos);
+    mysqli_query($connect, "UPDATE mlangorder_printauto SET logen_export_count = logen_export_count + 1 WHERE no IN ($nos_str)");
 }
 
 $filename = "logen_" . date('Y-m-d_His') . ".xls";

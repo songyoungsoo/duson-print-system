@@ -271,6 +271,11 @@ function exportAllToLogenExcel() {
 }
 </script>
 
+<div style="margin-bottom:6px; font-size:9pt;">
+  <span style="display:inline-block; width:14px; height:14px; background:#dbeafe; border:1px solid #bbb; vertical-align:middle;"></span> 엑셀 1회
+  <span style="display:inline-block; width:14px; height:14px; background:#fce4ec; border:1px solid #bbb; vertical-align:middle; margin-left:8px;"></span> 엑셀 2회
+  <span style="display:inline-block; width:14px; height:14px; background:#e8f5e9; border:1px solid #bbb; vertical-align:middle; margin-left:8px;"></span> 엑셀 3회+
+</div>
 <form id="listForm">
 <table width=100% border="1" cellpadding="3" cellspacing="0" style="border-collapse: collapse;">
   <tr bgcolor="#1E4E79" style="color:#fff;">
@@ -323,8 +328,13 @@ function exportAllToLogenExcel() {
     $w = $shipping_est['fee'];         // 택배비 (추정)
     $est_weight_kg = $shipping_est['weight_kg']; // 추정 무게 (kg)
     $no = $data['no'];
+    $export_count = isset($data['logen_export_count']) ? intval($data['logen_export_count']) : 0;
+    $row_bg = '';
+    if ($export_count === 1) $row_bg = 'background-color:#dbeafe;'; // 하늘색
+    elseif ($export_count === 2) $row_bg = 'background-color:#fce4ec;'; // 연분홍
+    elseif ($export_count >= 3) $row_bg = 'background-color:#e8f5e9;'; // 연녹색
 ?>
-  <tr>
+  <tr style="<?php echo $row_bg; ?>">
     <td style="padding: 3px;"><input type="checkbox" name="selected_no[]" value="<?php echo $no?>"></td>
     <td style="padding: 3px;"><?php echo htmlspecialchars($no)?></td>
     <td style="padding: 3px;"><?php echo htmlspecialchars(isset($data['date']) ? $data['date'] : '')?></td>
