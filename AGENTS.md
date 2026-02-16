@@ -488,35 +488,35 @@ $mail_result = mailer(
 
 ### 시스템 개요
 
-택배 선불 시 무게/박스수를 추정하여 표시하는 반수동 시스템.
+택배 시 **무게만 추정** 표시하고, 박스수/택배비/송장번호는 **관리자가 직접 입력**하는 반수동 시스템.
 실제 택배비는 관리자가 전화 확인 후 확정 (카드결제: 전화로 카드번호 받아 단말기 수기결제).
 
 | 항목 | 값 |
 |------|-----|
 | **공통 모듈** | `includes/ShippingCalculator.php` |
-| **AJAX API** | `includes/shipping_api.php` (estimate/rates/rates_save) |
+| **AJAX API** | `includes/shipping_api.php` (estimate/rates/rates_save/order_estimate/logen_save) |
 | **주문 페이지** | `mlangorder_printauto/OnlineOrder_unified.php` (고객용) |
-| **관리자** | `shop_admin/post_list74.php` (로젠택배 관리) |
-| **DB 테이블** | `shipping_rates` (요금표 관리) |
+| **관리자 OrderView** | `mlangorder_printauto/OrderFormOrderTree.php` (주문 상세) |
+| **관리자 주문목록** | `admin/mlangprintauto/orderlist.php` (배송 모달) |
+| **관리자 로젠** | `shop_admin/post_list74.php` (로젠택배 관리) |
+| **DB 테이블** | `shipping_rates` (요금표), `mlangorder_printauto` (logen_* 컬럼) |
 
 ### 무게 계산 공식
 
 ```
 용지무게(g) = 평량(gsm) × 절당면적(m²) × 매수
 코팅가산: 유광/무광 ×1.04, 라미네이팅 ×1.12
-1장두께(mm) = 평량/1000 × 벌크계수(1.2)
-박스당매수 = (박스높이mm ÷ 1장두께) × 열수
-박스수 = ceil(총매수 ÷ 박스당매수)
-총무게 = 종이무게 + (박스수 × 박스무게)
+총무게 = 종이무게 + 부자재 가산
 ```
+
+**⚠️ 박스수는 추정하지 않음** — 회사마다 박스 규격이 달라 추정 불가, 관리자가 직접 입력.
 
 ### ShippingCalculator 메서드
 
 | 메서드 | 용도 | 입력 |
 |--------|------|------|
 | `estimateFromCart($cartItems)` | 고객 주문 페이지 (AJAX) | 장바구니 배열 |
-| `estimateFromOrder($orderData)` | 관리자 로젠택배 (post_list74) | DB 주문 row |
-| `estimateFee($size, $boxes, $kg)` | 택배비 추정 (관리자 참고) | 규격/박스/무게 |
+| `estimateFromOrder($orderData)` | 관리자 주문 상세/목록 | DB 주문 row |
 | `loadRates($db)` | DB 요금표 로드 (캐싱) | DB 커넥션 |
 | `getRatesForDisplay($db)` | 요금표 반환 | DB 커넥션 |
 
@@ -537,15 +537,36 @@ CREATE TABLE shipping_rates (
 -- logen_16 (16절 고정 3500원)
 ```
 
+### 관리자 화면 동작 (2026-02-16 통일)
+
+**추정 영역** (자동 계산, 읽기 전용):
+```
+📦 배송 정보 [추정]
+예상 무게: 약 12.7kg (부자재 포함)
+※ 추정치이며 실제와 다를 수 있습니다.
+```
+
+**확정 영역** (관리자 수동 입력):
+```
+운임구분: [착불/선불] 선택
+박스 수량: [ ] 직접 입력
+택배비:   [ ] 직접 입력
+송장번호: [ ] 직접 입력
+💾 저장 → shipping_api.php?action=logen_save
+```
+
+**적용 위치**:
+- `OrderFormOrderTree.php` — 주문 상세 페이지 (추정 무게 + 확정 입력 폼)
+- `orderlist.php` — 주문 목록 배송 모달 (추정 무게 + 확정 입력 폼)
+
 ### 주문 페이지 동작 (고객용)
 
 ```
 배송방법 "택배" 선택 → 운임구분(착불/선불) 라디오 표시
   ├─ 착불: 기본값, 추가 정보 없음
-  └─ 선불: AJAX로 무게/박스 추정 표시
+  └─ 선불: AJAX로 무게 추정 표시
       ├─ "⚠ 추정" 배지 + "실제 무게는 다를 수 있습니다"
       ├─ 추정 무게: 약 X.Xkg
-      ├─ 추정 박스: N박스
       └─ 📞 02-2632-1830 전화 안내
 ```
 
@@ -553,8 +574,10 @@ CREATE TABLE shipping_rates (
 
 1. ❌ **결제금액에 택배비 합산 금지** — 표시만 하고 결제 흐름 수정 안 함
 2. ❌ **품목 계산 코드와 얽히면 안 됨** — PriceCalculationService 수정 금지
-3. ✅ **금액 미표시** — 고객에게는 무게/박스만 표시, 금액은 관리자만 참고
-4. ✅ **"추정"임을 반드시 명시** — 실제 무게와 다를 수 있음
+3. ❌ **박스수/택배비 추정 금지** — 회사마다 달라 추정 불가, 관리자 직접 입력
+4. ✅ **무게만 추정** — 고객/관리자 모두 무게 추정값만 표시
+5. ✅ **"추정"임을 반드시 명시** — 실제 무게와 다를 수 있음
+6. ✅ **확정 정보는 관리자 수동 입력** — 박스수/택배비/송장번호
 
 ## 🔐 Authentication System
 
