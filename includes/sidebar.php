@@ -18,7 +18,7 @@ $show_bank = isset($show_bank) ? $show_bank : true;
     <!-- 카톡상담 -->
     <div class="fm-item">
         <a href="http://pf.kakao.com/_pEGhj/chat" target="_blank" class="fm-circle fm-kakao-circle" title="카톡상담">
-            <span class="fm-icon">💬</span>
+            <img src="/ImgFolder/talk_icon.png" alt="카톡" class="fm-icon-img">
             <span class="fm-label">카톡상담</span>
         </a>
     </div>
@@ -215,9 +215,11 @@ $show_bank = isset($show_bank) ? $show_bank : true;
     color: rgba(0,0,0,0.7);
 }
 
-.floating-menu .fm-kakao-circle .fm-icon {
-    font-size: 29px;
-    filter: none;
+.floating-menu .fm-icon-img {
+    width: 50px;
+    height: 50px;
+    object-fit: contain;
+    border-radius: 0;
 }
 
 .floating-menu .fm-icon {
