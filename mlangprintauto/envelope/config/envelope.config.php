@@ -18,7 +18,7 @@ define('ENVELOPE_PRICE_TABLE', 'mlangprintauto_envelope');
 $envelope_defaults = [
     'MY_type' => '',        // 봉투 종류 (동적으로 설정됨)
     'Section' => '',        // 재질 (동적으로 설정됨)
-    'POtype' => '1',        // 단면 기본
+    'POtype' => '1',        // 마스터1도 기본
     'MY_amount' => '',      // 수량 기본값 (동적으로 설정됨)
     'ordertype' => 'print'  // 인쇄만 기본
 ];

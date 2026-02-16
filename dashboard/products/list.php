@@ -15,6 +15,8 @@ $table = $product_config['table'];
 $ttable = $product_config['ttable'] ?? '';
 $hasTreeSelect = $product_config['hasTreeSelect'] ?? false;
 $hasPOtype = $product_config['hasPOtype'] ?? false;
+$potypeLabels = $product_config['potypeLabels'] ?? ['1' => '단면', '2' => '양면'];
+$potypeColumnLabel = isset($product_config['potypeLabels']) ? '인쇄 색상' : '인쇄면';
 
 // transactioncate에서 스타일/섹션 한글명 조회
 $categoryTitles = [];
@@ -265,11 +267,12 @@ include __DIR__ . '/../includes/sidebar.php';
                 <?php endif; ?>
                 <?php if ($hasPOtype): ?>
                 <div class="w-28">
-                    <label class="block text-xs font-medium text-gray-700 mb-1">인쇄면</label>
+                    <label class="block text-xs font-medium text-gray-700 mb-1"><?php echo $potypeColumnLabel; ?></label>
                     <select id="filterPOtype" class="w-full px-2 py-1 text-xs border border-gray-300 rounded focus:ring-1 focus:ring-blue-500">
                         <option value="">전체</option>
-                        <option value="1">단면</option>
-                        <option value="2">양면</option>
+                        <?php foreach ($potypeLabels as $val => $label): ?>
+                        <option value="<?php echo $val; ?>"><?php echo htmlspecialchars($label); ?></option>
+                        <?php endforeach; ?>
                     </select>
                 </div>
                 <?php endif; ?>
@@ -293,7 +296,7 @@ include __DIR__ . '/../includes/sidebar.php';
                             <th class="px-2 py-1.5 text-left text-xs font-medium text-gray-500">종이</th>
                             <?php endif; ?>
                             <?php if ($hasPOtype): ?>
-                            <th class="px-2 py-1.5 text-center text-xs font-medium text-gray-500">인쇄면</th>
+                            <th class="px-2 py-1.5 text-center text-xs font-medium text-gray-500"><?php echo $potypeColumnLabel; ?></th>
                             <?php endif; ?>
                             <th class="px-2 py-1.5 text-right text-xs font-medium text-gray-500">수량</th>
                             <th class="px-2 py-1.5 text-right text-xs font-medium text-gray-500">인쇄비</th>
@@ -311,7 +314,7 @@ include __DIR__ . '/../includes/sidebar.php';
                             $styleName = isset($categoryTitles[$styleNo]) ? $categoryTitles[$styleNo]['title'] : $styleNo;
                             $sectionName = isset($categoryTitles[$sectionNo]) ? $categoryTitles[$sectionNo]['title'] : $sectionNo;
                             $treeSelectName = isset($categoryTitles[$treeSelectNo]) ? $categoryTitles[$treeSelectNo]['title'] : ($treeSelectNo ?: '-');
-                            $poTypeName = ($poType == '1') ? '단면' : (($poType == '2') ? '양면' : '-');
+                            $poTypeName = isset($potypeLabels[$poType]) ? $potypeLabels[$poType] : '-';
                         ?>
                         <tr data-no="<?php echo $product['no']; ?>"
                             data-style="<?php echo $styleNo; ?>" data-section="<?php echo $sectionNo; ?>"
@@ -331,7 +334,11 @@ include __DIR__ . '/../includes/sidebar.php';
                             <?php endif; ?>
                             <?php if ($hasPOtype): ?>
                             <td class="px-2 py-2 whitespace-nowrap text-xs text-center">
-                                <span class="px-2 py-1 rounded text-xs <?php echo ($poType == '1') ? 'bg-blue-100 text-blue-800' : (($poType == '2') ? 'bg-purple-100 text-purple-800' : 'text-gray-500'); ?>">
+                                <?php
+                                    $badgeColors = ['1' => 'bg-blue-100 text-blue-800', '2' => 'bg-purple-100 text-purple-800', '3' => 'bg-green-100 text-green-800'];
+                                    $badgeClass = isset($badgeColors[$poType]) ? $badgeColors[$poType] : 'text-gray-500';
+                                ?>
+                                <span class="px-2 py-1 rounded text-xs <?php echo $badgeClass; ?>">
                                     <?php echo $poTypeName; ?>
                                 </span>
                             </td>
@@ -450,6 +457,11 @@ include __DIR__ . '/../includes/sidebar.php';
 const productType = '<?php echo $type; ?>';
 const hasTreeSelect = <?php echo $hasTreeSelect ? 'true' : 'false'; ?>;
 const hasPOtype = <?php echo $hasPOtype ? 'true' : 'false'; ?>;
+const potypeLabels = <?php echo json_encode($potypeLabels, JSON_UNESCAPED_UNICODE); ?>;
+const potypeBadgeColors = {'1':'bg-blue-100 text-blue-800','2':'bg-purple-100 text-purple-800','3':'bg-green-100 text-green-800'};
+
+function getPotypeLabel(val) { return potypeLabels[val] || '-'; }
+function getPotypeBadgeClass(val) { return potypeBadgeColors[val] || 'text-gray-500'; }
 const sectionOptions = <?php echo json_encode($sectionOptions, JSON_UNESCAPED_UNICODE); ?>;
 const categoryTitles = <?php echo json_encode(array_map(function($v){ return $v['title']; }, $categoryTitles), JSON_UNESCAPED_UNICODE); ?>;
 
@@ -532,6 +544,127 @@ document.getElementById('filterResetBtn').addEventListener('click', function() {
 // 초기 필터 결과 표시
 applyFilters();
 
+// 테이블 행 정렬 (SQL ORDER BY: style, Section, TreeSelect, POtype, quantity ASC)
+function sortTableRows(tbody) {
+    var rows = Array.from(tbody.querySelectorAll('tr'));
+    var qtyIdx = 3;
+    if (hasTreeSelect) qtyIdx++;
+    if (hasPOtype) qtyIdx++;
+
+    rows.sort(function(a, b) {
+        // style 비교
+        var cmp = (a.dataset.style || '').localeCompare(b.dataset.style || '');
+        if (cmp !== 0) return cmp;
+        // section 비교
+        cmp = (a.dataset.section || '').localeCompare(b.dataset.section || '');
+        if (cmp !== 0) return cmp;
+        // tree 비교
+        if (hasTreeSelect) {
+            cmp = (a.dataset.tree || '').localeCompare(b.dataset.tree || '');
+            if (cmp !== 0) return cmp;
+        }
+        // potype 비교
+        if (hasPOtype) {
+            cmp = (a.dataset.potype || '').localeCompare(b.dataset.potype || '');
+            if (cmp !== 0) return cmp;
+        }
+        // quantity 오름차순
+        var qtyA = parseFloat(a.querySelectorAll('td')[qtyIdx].textContent) || 0;
+        var qtyB = parseFloat(b.querySelectorAll('td')[qtyIdx].textContent) || 0;
+        return qtyA - qtyB;
+    });
+
+    rows.forEach(function(row) { tbody.appendChild(row); });
+}
+
+// 동적 행 생성 함수
+function buildProductRow(no, style, section, tree, potype, qty, money, design, styleName, sectionName, treeName, poTypeName) {
+    var row = document.createElement('tr');
+    row.dataset.no = no;
+    row.dataset.style = style;
+    row.dataset.section = section;
+    row.dataset.tree = tree;
+    row.dataset.potype = potype;
+
+    function addCell(text, classes) {
+        var td = document.createElement('td');
+        td.className = classes;
+        td.textContent = text;
+        return td;
+    }
+
+    function addSpanCell(text, titleText, classes) {
+        var td = document.createElement('td');
+        td.className = classes;
+        var span = document.createElement('span');
+        span.title = titleText;
+        span.textContent = text;
+        td.appendChild(span);
+        return td;
+    }
+
+    // No
+    row.appendChild(addCell(no, 'px-2 py-2 whitespace-nowrap text-xs font-medium text-gray-900'));
+    // 스타일
+    row.appendChild(addSpanCell(styleName, '코드: ' + style, 'px-2 py-2 whitespace-nowrap text-xs text-gray-600'));
+    // 섹션
+    row.appendChild(addSpanCell(sectionName, '코드: ' + section, 'px-2 py-2 whitespace-nowrap text-xs text-gray-600'));
+    // 종이
+    if (hasTreeSelect) {
+        row.appendChild(addSpanCell(treeName, '코드: ' + tree, 'px-2 py-2 whitespace-nowrap text-xs text-gray-600'));
+    }
+    // 인쇄면/인쇄 색상
+    if (hasPOtype) {
+        var td = document.createElement('td');
+        td.className = 'px-2 py-2 whitespace-nowrap text-xs text-center';
+        var badge = document.createElement('span');
+        badge.textContent = poTypeName;
+        badge.className = 'px-2 py-1 rounded text-xs ' +
+            getPotypeBadgeClass(potype);
+        td.appendChild(badge);
+        row.appendChild(td);
+    }
+    // 수량
+    row.appendChild(addCell(qty, 'px-2 py-2 whitespace-nowrap text-xs text-gray-900 text-right'));
+    // 인쇄비
+    row.appendChild(addCell(Number(money).toLocaleString() + '원', 'px-2 py-2 whitespace-nowrap text-xs text-gray-900 text-right'));
+    // 디자인비
+    row.appendChild(addCell(Number(design).toLocaleString() + '원', 'px-2 py-2 whitespace-nowrap text-xs text-gray-900 text-right'));
+    // 관리 버튼
+    var actionTd = document.createElement('td');
+    actionTd.className = 'px-2 py-2 whitespace-nowrap text-xs text-center';
+    var editBtn = document.createElement('button');
+    editBtn.className = 'edit-btn text-blue-600 hover:text-blue-800 mr-2';
+    editBtn.textContent = '수정';
+    editBtn.dataset.no = no;
+    editBtn.dataset.style = style;
+    editBtn.dataset.section = section;
+    editBtn.dataset.tree = tree;
+    editBtn.dataset.potype = potype;
+    editBtn.dataset.quantity = qty;
+    editBtn.dataset.money = money;
+    editBtn.dataset.designMoney = design;
+    var delBtn = document.createElement('button');
+    delBtn.className = 'delete-btn text-red-600 hover:text-red-800';
+    delBtn.textContent = '삭제';
+    delBtn.dataset.no = no;
+    actionTd.appendChild(editBtn);
+    actionTd.appendChild(delBtn);
+    row.appendChild(actionTd);
+
+    return row;
+}
+
+// 행 이벤트 바인딩 (수정/삭제)
+function bindRowEvents(row) {
+    row.querySelectorAll('.edit-btn').forEach(function(btn) {
+        btn.addEventListener('click', handleEditClick);
+    });
+    row.querySelectorAll('.delete-btn').forEach(function(btn) {
+        btn.addEventListener('click', handleDeleteClick);
+    });
+}
+
 // 모달 관련
 const modal = document.getElementById('productModal');
 const modalTitle = document.getElementById('modalTitle');
@@ -564,35 +697,38 @@ document.getElementById('addProductBtn').addEventListener('click', function() {
     modal.classList.add('flex');
 });
 
-// 수정 버튼
-document.querySelectorAll('.edit-btn').forEach(btn => {
-    btn.addEventListener('click', function() {
-        modalTitle.textContent = '제품 수정';
-        document.getElementById('formAction').value = 'update';
-        document.getElementById('formNo').value = this.dataset.no;
-        
-        // 스타일 설정 후 섹션 옵션 로드
-        formStyle.value = this.dataset.style;
-        formStyle.dispatchEvent(new Event('change'));
-        
-        // 약간의 딜레이 후 섹션 값 설정
-        setTimeout(() => {
-            formSection.value = this.dataset.section;
-        }, 50);
-        
-        if (hasTreeSelect && document.getElementById('formTree')) {
-            document.getElementById('formTree').value = this.dataset.tree || '';
-        }
-        if (hasPOtype && document.getElementById('formPOtype')) {
-            document.getElementById('formPOtype').value = this.dataset.potype || '';
-        }
-        document.getElementById('formQuantity').value = this.dataset.quantity;
-        document.getElementById('formMoney').value = this.dataset.money;
-        document.getElementById('formDesignMoney').value = this.dataset.designMoney || '10000';
-        
-        modal.classList.remove('hidden');
-        modal.classList.add('flex');
-    });
+// 수정 버튼 핸들러
+function handleEditClick() {
+    var btn = this;
+    modalTitle.textContent = '제품 수정';
+    document.getElementById('formAction').value = 'update';
+    document.getElementById('formNo').value = btn.dataset.no;
+
+    // 스타일 설정 후 섹션 옵션 로드
+    formStyle.value = btn.dataset.style;
+    formStyle.dispatchEvent(new Event('change'));
+
+    // 약간의 딜레이 후 섹션 값 설정
+    setTimeout(function() {
+        formSection.value = btn.dataset.section;
+    }, 50);
+
+    if (hasTreeSelect && document.getElementById('formTree')) {
+        document.getElementById('formTree').value = btn.dataset.tree || '';
+    }
+    if (hasPOtype && document.getElementById('formPOtype')) {
+        document.getElementById('formPOtype').value = btn.dataset.potype || '';
+    }
+    document.getElementById('formQuantity').value = btn.dataset.quantity;
+    document.getElementById('formMoney').value = btn.dataset.money;
+    document.getElementById('formDesignMoney').value = btn.dataset.designMoney || '10000';
+
+    modal.classList.remove('hidden');
+    modal.classList.add('flex');
+}
+
+document.querySelectorAll('.edit-btn').forEach(function(btn) {
+    btn.addEventListener('click', handleEditClick);
 });
 
 // 모달 취소
@@ -660,7 +796,7 @@ document.getElementById('modalSaveBtn').addEventListener('click', async function
             const styleName = categoryTitles[savedStyle] || savedStyle;
             const sectionName = categoryTitles[savedSection] || savedSection;
             const treeName = categoryTitles[savedTree] || savedTree || '-';
-            const poTypeName = savedPOtype === '1' ? '단면' : (savedPOtype === '2' ? '양면' : '-');
+            const poTypeName = getPotypeLabel(savedPOtype);
             
             if (formAction === 'update') {
                 const rowNo = document.getElementById('formNo').value;
@@ -670,7 +806,7 @@ document.getElementById('modalSaveBtn').addEventListener('click', async function
                     row.dataset.section = savedSection;
                     row.dataset.tree = savedTree;
                     row.dataset.potype = savedPOtype;
-                    
+
                     const cells = row.querySelectorAll('td');
                     let ci = 1;
                     cells[ci++].querySelector('span').textContent = styleName;
@@ -679,13 +815,13 @@ document.getElementById('modalSaveBtn').addEventListener('click', async function
                     if (hasPOtype) {
                         const badge = cells[ci++].querySelector('span');
                         badge.textContent = poTypeName;
-                        badge.className = 'px-2 py-1 rounded text-xs ' + 
-                            (savedPOtype === '1' ? 'bg-blue-100 text-blue-800' : (savedPOtype === '2' ? 'bg-purple-100 text-purple-800' : 'text-gray-500'));
+                        badge.className = 'px-2 py-1 rounded text-xs ' +
+                            getPotypeBadgeClass(savedPOtype);
                     }
                     cells[ci++].textContent = savedQty;
                     cells[ci++].textContent = Number(savedMoney).toLocaleString() + '원';
                     cells[ci++].textContent = Number(savedDesign).toLocaleString() + '원';
-                    
+
                     const editBtn = row.querySelector('.edit-btn');
                     if (editBtn) {
                         editBtn.dataset.style = savedStyle;
@@ -698,9 +834,29 @@ document.getElementById('modalSaveBtn').addEventListener('click', async function
                     }
                 }
             } else {
-                // 새 행 추가 시에는 reload (새 no 값 필요)
-                location.reload();
-                return;
+                // 새 행을 동적으로 추가 (리로드 없이 필터 상태 유지)
+                const newNo = result.data ? result.data.id : '?';
+                const tbody = document.getElementById('productsTableBody');
+                const newRow = buildProductRow(newNo, savedStyle, savedSection, savedTree, savedPOtype, savedQty, savedMoney, savedDesign, styleName, sectionName, treeName, poTypeName);
+
+                // SQL 정렬과 동일하게 삽입: style → section → tree → potype → quantity ASC
+                tbody.appendChild(newRow);
+                sortTableRows(tbody);
+                bindRowEvents(newRow);
+
+                // 필터를 새 제품에 맞춰 설정
+                filterStyle.value = savedStyle;
+                updateSectionOptions(filterSection, savedStyle);
+                filterSection.value = savedSection;
+                if (filterTree && savedTree) filterTree.value = savedTree;
+                if (filterPOtype && savedPOtype) filterPOtype.value = savedPOtype;
+
+                // 하이라이트 효과
+                newRow.style.backgroundColor = '#fef3c7';
+                setTimeout(function() { newRow.style.backgroundColor = ''; }, 3000);
+
+                // 스크롤
+                newRow.scrollIntoView({ behavior: 'smooth', block: 'center' });
             }
             
             modal.classList.add('hidden');
@@ -714,40 +870,42 @@ document.getElementById('modalSaveBtn').addEventListener('click', async function
     }
 });
 
-// 삭제 버튼
-document.querySelectorAll('.delete-btn').forEach(btn => {
-    btn.addEventListener('click', async function() {
-        const no = this.dataset.no;
-        const row = this.closest('tr');
-        
-        if (!confirm(`정말 삭제하시겠습니까?\n\nNo: ${no}`)) {
-            return;
+// 삭제 버튼 핸들러
+async function handleDeleteClick() {
+    const no = this.dataset.no;
+    const row = this.closest('tr');
+
+    if (!confirm('정말 삭제하시겠습니까?\n\nNo: ' + no)) {
+        return;
+    }
+
+    try {
+        const formData = new FormData();
+        formData.append('action', 'delete');
+        formData.append('type', productType);
+        formData.append('id', no);
+
+        const response = await fetch('/dashboard/api/products.php', {
+            method: 'POST',
+            body: formData
+        });
+
+        const result = await response.json();
+
+        if (result.success) {
+            row.remove();
+            applyFilters();
+            alert('삭제되었습니다.');
+        } else {
+            alert('삭제 실패: ' + result.message);
         }
-        
-        try {
-            const formData = new FormData();
-            formData.append('action', 'delete');
-            formData.append('type', productType);
-            formData.append('id', no);
-            
-            const response = await fetch('/dashboard/api/products.php', {
-                method: 'POST',
-                body: formData
-            });
-            
-            const result = await response.json();
-            
-            if (result.success) {
-                row.remove();
-                applyFilters(); // 카운트 업데이트
-                alert('삭제되었습니다.');
-            } else {
-                alert('삭제 실패: ' + result.message);
-            }
-        } catch (error) {
-            alert('삭제 중 오류가 발생했습니다.');
-        }
-    });
+    } catch (error) {
+        alert('삭제 중 오류가 발생했습니다.');
+    }
+}
+
+document.querySelectorAll('.delete-btn').forEach(function(btn) {
+    btn.addEventListener('click', handleDeleteClick);
 });
 
 // ============================================================

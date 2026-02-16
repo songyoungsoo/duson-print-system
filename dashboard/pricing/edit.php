@@ -15,6 +15,8 @@ $table = $product_config['table'];
 $ttable = $product_config['ttable'] ?? '';
 $hasTreeSelect = $product_config['hasTreeSelect'] ?? false;
 $hasPOtype = $product_config['hasPOtype'] ?? false;
+$potypeLabels = $product_config['potypeLabels'] ?? ['1' => '단면', '2' => '양면'];
+$potypeColumnLabel = isset($product_config['potypeLabels']) ? '인쇄 색상' : '인쇄면';
 // 2026-02-06: 모든 제품이 동일한 BigNo/TreeNo 구조 사용 (sectionByTreeNo 플래그 제거됨)
 
 // transactioncate에서 스타일/섹션 한글명 조회
@@ -145,7 +147,7 @@ include __DIR__ . '/../includes/sidebar.php';
             </div>
             <p class="mt-1 text-xs text-gray-500">* 양수는 인상, 음수는 인하입니다. 적용 전 확인 메시지가 표시됩니다.</p>
             <p class="mt-0.5 text-xs text-blue-600">* <span class="px-1 py-0.5 text-xs bg-green-100 text-green-700 rounded">기준</span> 표시된 1연 가격을 변경하면 2~10연이 자동 계산됩니다. (0.5연은 별도 수정)</p>
-            <p class="mt-0.5 text-xs text-green-600">* 디자인비를 변경하면 같은 그룹(스타일/섹션/종이/인쇄면)의 모든 수량에 <span class="px-1 py-0.5 text-xs bg-green-100 text-green-700 rounded">자동 적용</span>됩니다.</p>
+            <p class="mt-0.5 text-xs text-green-600">* 디자인비를 변경하면 같은 그룹(스타일/섹션/종이/<?php echo $potypeColumnLabel; ?>)의 모든 수량에 <span class="px-1 py-0.5 text-xs bg-green-100 text-green-700 rounded">자동 적용</span>됩니다.</p>
         </div>
 
         <div class="bg-white rounded-lg shadow p-4 mb-4">
@@ -179,11 +181,12 @@ include __DIR__ . '/../includes/sidebar.php';
                 <?php endif; ?>
                 <?php if ($hasPOtype): ?>
                 <div class="w-28">
-                    <label class="block text-xs font-medium text-gray-700 mb-1">인쇄면</label>
+                    <label class="block text-xs font-medium text-gray-700 mb-1"><?php echo $potypeColumnLabel; ?></label>
                     <select id="filterPOtype" class="w-full px-2 py-1 text-xs border border-gray-300 rounded focus:ring-1 focus:ring-blue-500">
                         <option value="">전체</option>
-                        <option value="1">단면</option>
-                        <option value="2">양면</option>
+                        <?php foreach ($potypeLabels as $val => $label): ?>
+                        <option value="<?php echo $val; ?>"><?php echo htmlspecialchars($label); ?></option>
+                        <?php endforeach; ?>
                     </select>
                 </div>
                 <?php endif; ?>
@@ -206,7 +209,7 @@ include __DIR__ . '/../includes/sidebar.php';
                             <th class="px-2 py-1.5 text-left text-xs font-medium text-gray-500">종이</th>
                             <?php endif; ?>
                             <?php if ($hasPOtype): ?>
-                            <th class="px-2 py-1.5 text-center text-xs font-medium text-gray-500">인쇄면</th>
+                            <th class="px-2 py-1.5 text-center text-xs font-medium text-gray-500"><?php echo $potypeColumnLabel; ?></th>
                             <?php endif; ?>
                             <th class="px-2 py-1.5 text-right text-xs font-medium text-gray-500">수량</th>
                             <th class="px-2 py-1.5 text-right text-xs font-medium text-gray-500">인쇄비</th>
@@ -232,7 +235,7 @@ if (ob_get_level()) { ob_flush(); } flush();
                             $styleName = isset($categoryTitles[$styleNo]) ? $categoryTitles[$styleNo]['title'] : $styleNo;
                             $sectionName = isset($categoryTitles[$sectionNo]) ? $categoryTitles[$sectionNo]['title'] : $sectionNo;
                             $treeSelectName = isset($categoryTitles[$treeSelectNo]) ? $categoryTitles[$treeSelectNo]['title'] : ($treeSelectNo ?: '-');
-                            $poTypeName = ($poType == '1') ? '단면' : (($poType == '2') ? '양면' : '-');
+                            $poTypeName = isset($potypeLabels[$poType]) ? $potypeLabels[$poType] : '-';
                         ?>
                         <tr data-no="<?php echo $product['no']; ?>" data-price="<?php echo $money; ?>"
                             data-design-money="<?php echo $designMoney; ?>"
@@ -254,7 +257,11 @@ if (ob_get_level()) { ob_flush(); } flush();
                             <?php endif; ?>
                             <?php if ($hasPOtype): ?>
                             <td class="px-2 py-2 whitespace-nowrap text-xs text-center">
-                                <span class="px-2 py-1 rounded text-xs <?php echo ($poType == '1') ? 'bg-blue-100 text-blue-800' : (($poType == '2') ? 'bg-purple-100 text-purple-800' : 'text-gray-500'); ?>">
+                                <?php
+                                    $badgeColors = ['1' => 'bg-blue-100 text-blue-800', '2' => 'bg-purple-100 text-purple-800', '3' => 'bg-green-100 text-green-800'];
+                                    $badgeClass = isset($badgeColors[$poType]) ? $badgeColors[$poType] : 'text-gray-500';
+                                ?>
+                                <span class="px-2 py-1 rounded text-xs <?php echo $badgeClass; ?>">
                                     <?php echo $poTypeName; ?>
                                 </span>
                             </td>

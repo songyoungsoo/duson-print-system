@@ -35,7 +35,7 @@ if (!$connect) {
 // ============================================
 $gallery_folders = [
     '명함' => ['/ImgFolder/samplegallery/namecard/'],
-    '스티커' => ['/ImgFolder/samplegallery/sticker_new/'],
+    '스티커' => ['/ImgFolder/sample/sticker_new/', '/ImgFolder/samplegallery/sticker_new/'],
     '봉투' => ['/ImgFolder/samplegallery/envelope/'],
     '전단지' => ['/ImgFolder/samplegallery/inserted/'],
     '포스터' => ['/ImgFolder/samplegallery/littleprint/'],
@@ -59,31 +59,17 @@ if (isset($gallery_folders[$cate])) {
         $gallery_url = $folder_path;
 
         if (is_dir($gallery_path)) {
-            $files = scandir($gallery_path);
+            // glob() + filemtime desc — 대시보드 갤러리 API와 동일한 방식
+            $files = glob($gallery_path . '*.{jpg,jpeg,png,gif,webp}', GLOB_BRACE);
+            usort($files, function($a, $b) { return filemtime($b) - filemtime($a); });
 
-            // 🎯 스티커 카테고리: "pro"로 시작하는 파일을 우선 정렬 (2026-02-12)
-            if ($cate === '스티커') {
-                usort($files, function($a, $b) {
-                    $a_is_pro = (stripos($a, 'pro') === 0);
-                    $b_is_pro = (stripos($b, 'pro') === 0);
-                    
-                    if ($a_is_pro && !$b_is_pro) return -1;
-                    if (!$a_is_pro && $b_is_pro) return 1;
-                    return strcasecmp($a, $b); // 같은 그룹 내에서는 알파벳순
-                });
-            }
-
-            foreach ($files as $file) {
-                if ($file === '.' || $file === '..' || $file === 'old') continue;
-
-                $ext = strtolower(pathinfo($file, PATHINFO_EXTENSION));
-                if (in_array($ext, $IMAGE_EXTS)) {
-                    $all_images[] = [
-                        'type' => 'gallery',
-                        'url' => $gallery_url . rawurlencode($file),
-                        'filename' => $file
-                    ];
-                }
+            foreach ($files as $filepath) {
+                $file = basename($filepath);
+                $all_images[] = [
+                    'type' => 'gallery',
+                    'url' => $gallery_url . rawurlencode($file),
+                    'filename' => $file
+                ];
             }
         }
     }

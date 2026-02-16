@@ -140,7 +140,7 @@ include __DIR__ . '/../includes/sidebar.php';
     <button onclick="closeLightbox()" class="absolute top-4 right-4 text-white/70 hover:text-white text-2xl z-10">&times;</button>
     <button onclick="lightboxNav(-1)" class="absolute left-3 top-1/2 -translate-y-1/2 text-white/50 hover:text-white text-3xl z-10">&#8249;</button>
     <button onclick="lightboxNav(1)" class="absolute right-3 top-1/2 -translate-y-1/2 text-white/50 hover:text-white text-3xl z-10">&#8250;</button>
-    <img id="lightboxImg" src="" class="max-h-[90vh] max-w-[90vw] object-contain">
+    <img id="lightboxImg" src="" class="max-h-[90vh] max-w-[90vw] object-contain cursor-pointer">
     <div class="absolute bottom-4 left-1/2 -translate-x-1/2 text-white/60 text-xs" id="lightboxInfo"></div>
 </div>
 
@@ -755,6 +755,11 @@ include __DIR__ . '/../includes/sidebar.php';
 
     document.getElementById('lightbox').addEventListener('click', function(e) {
         if (e.target === this) closeLightbox();
+    });
+
+    // 라이트박스 이미지 클릭 시 닫기
+    document.getElementById('lightboxImg').addEventListener('click', function(e) {
+        closeLightbox();
     });
 
     // 라이트박스 이미지 드래그 시작: 이미지 데이터 저장
