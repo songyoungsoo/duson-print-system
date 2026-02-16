@@ -634,7 +634,7 @@ header("Expires: 0");
                             <li>방수 소재 가능</li>
                             <li>자유로운 형태</li>
                         </ul>
-                        <a href="mlangprintauto/sticker_new/" class="btn-product btn-primary">주문하기</a>
+                        <a href="mlangprintauto/sticker_new/" class="btn-product btn-primary">가격 보기</a>
                     </div>
                     <div class="product-content-right">
                         <div class="product-image">
@@ -656,7 +656,7 @@ header("Expires: 0");
                             <li>고해상도 인쇄</li>
                             <li>빠른 제작</li>
                         </ul>
-                        <a href="mlangprintauto/inserted/" class="btn-product btn-primary">주문하기</a>
+                        <a href="mlangprintauto/inserted/" class="btn-product btn-primary">가격 보기</a>
                     </div>
                     <div class="product-content-right">
                         <div class="product-image">
@@ -678,7 +678,7 @@ header("Expires: 0");
                             <li>UV 코팅 가능</li>
                             <li>당일 제작 가능</li>
                         </ul>
-                        <a href="mlangprintauto/namecard/" class="btn-product btn-primary">주문하기</a>
+                        <a href="mlangprintauto/namecard/" class="btn-product btn-primary">가격 보기</a>
                     </div>
                     <div class="product-content-right">
                         <div class="product-image">
@@ -700,7 +700,7 @@ header("Expires: 0");
                             <li>창봉투 가능</li>
                             <li>대량 주문</li>
                         </ul>
-                        <a href="mlangprintauto/envelope/" class="btn-product btn-primary">주문하기</a>
+                        <a href="mlangprintauto/envelope/" class="btn-product btn-primary">가격 보기</a>
                     </div>
                     <div class="product-content-right">
                         <div class="product-image">
@@ -722,7 +722,7 @@ header("Expires: 0");
                             <li>풀컬러 인쇄</li>
                             <li>전문 편집</li>
                         </ul>
-                        <a href="mlangprintauto/cadarok/" class="btn-product btn-primary">주문하기</a>
+                        <a href="mlangprintauto/cadarok/" class="btn-product btn-primary">가격 보기</a>
                     </div>
                     <div class="product-content-right">
                         <div class="product-image">
@@ -744,7 +744,7 @@ header("Expires: 0");
                             <li>대형 사이즈</li>
                             <li>고화질 출력</li>
                         </ul>
-                        <a href="mlangprintauto/littleprint/" class="btn-product btn-primary">주문하기</a>
+                        <a href="mlangprintauto/littleprint/" class="btn-product btn-primary">가격 보기</a>
                     </div>
                     <div class="product-content-right">
                         <div class="product-image">
@@ -766,7 +766,7 @@ header("Expires: 0");
                             <li>2~4연 제작</li>
                             <li>무탄소 용지</li>
                         </ul>
-                        <a href="mlangprintauto/ncrflambeau/" class="btn-product btn-primary">주문하기</a>
+                        <a href="mlangprintauto/ncrflambeau/" class="btn-product btn-primary">가격 보기</a>
                     </div>
                     <div class="product-content-right">
                         <div class="product-image">
@@ -788,7 +788,7 @@ header("Expires: 0");
                             <li>위조 방지</li>
                             <li>번호 인쇄</li>
                         </ul>
-                        <a href="mlangprintauto/merchandisebond/" class="btn-product btn-primary">주문하기</a>
+                        <a href="mlangprintauto/merchandisebond/" class="btn-product btn-primary">가격 보기</a>
                     </div>
                     <div class="product-content-right">
                         <div class="product-image">
@@ -810,7 +810,7 @@ header("Expires: 0");
                             <li>강력한 자석</li>
                             <li>차량용 최적</li>
                         </ul>
-                        <a href="mlangprintauto/msticker/" class="btn-product btn-primary">주문하기</a>
+                        <a href="mlangprintauto/msticker/" class="btn-product btn-primary">가격 보기</a>
                     </div>
                     <div class="product-content-right">
                         <div class="product-image">
