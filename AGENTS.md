@@ -484,6 +484,78 @@ $mail_result = mailer(
 );
 ```
 
+## 📦 배송 추정 시스템 (Shipping Calculator)
+
+### 시스템 개요
+
+택배 선불 시 무게/박스수를 추정하여 표시하는 반수동 시스템.
+실제 택배비는 관리자가 전화 확인 후 확정 (카드결제: 전화로 카드번호 받아 단말기 수기결제).
+
+| 항목 | 값 |
+|------|-----|
+| **공통 모듈** | `includes/ShippingCalculator.php` |
+| **AJAX API** | `includes/shipping_api.php` (estimate/rates/rates_save) |
+| **주문 페이지** | `mlangorder_printauto/OnlineOrder_unified.php` (고객용) |
+| **관리자** | `shop_admin/post_list74.php` (로젠택배 관리) |
+| **DB 테이블** | `shipping_rates` (요금표 관리) |
+
+### 무게 계산 공식
+
+```
+용지무게(g) = 평량(gsm) × 절당면적(m²) × 매수
+코팅가산: 유광/무광 ×1.04, 라미네이팅 ×1.12
+1장두께(mm) = 평량/1000 × 벌크계수(1.2)
+박스당매수 = (박스높이mm ÷ 1장두께) × 열수
+박스수 = ceil(총매수 ÷ 박스당매수)
+총무게 = 종이무게 + (박스수 × 박스무게)
+```
+
+### ShippingCalculator 메서드
+
+| 메서드 | 용도 | 입력 |
+|--------|------|------|
+| `estimateFromCart($cartItems)` | 고객 주문 페이지 (AJAX) | 장바구니 배열 |
+| `estimateFromOrder($orderData)` | 관리자 로젠택배 (post_list74) | DB 주문 row |
+| `estimateFee($size, $boxes, $kg)` | 택배비 추정 (관리자 참고) | 규격/박스/무게 |
+| `loadRates($db)` | DB 요금표 로드 (캐싱) | DB 커넥션 |
+| `getRatesForDisplay($db)` | 요금표 반환 | DB 커넥션 |
+
+### DB 테이블: shipping_rates
+
+```sql
+CREATE TABLE shipping_rates (
+    id INT AUTO_INCREMENT PRIMARY KEY,
+    rate_group VARCHAR(50) NOT NULL,  -- 'logen_weight' 또는 'logen_16'
+    label VARCHAR(100),
+    max_kg DECIMAL(5,1) NOT NULL,
+    fee INT NOT NULL,
+    sort_order INT DEFAULT 0,
+    is_active TINYINT(1) DEFAULT 1,
+    updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP
+);
+-- 초기 데이터: logen_weight (3kg/3000, 10kg/3500, 15kg/4000, 20kg/5000, 23kg/6000)
+-- logen_16 (16절 고정 3500원)
+```
+
+### 주문 페이지 동작 (고객용)
+
+```
+배송방법 "택배" 선택 → 운임구분(착불/선불) 라디오 표시
+  ├─ 착불: 기본값, 추가 정보 없음
+  └─ 선불: AJAX로 무게/박스 추정 표시
+      ├─ "⚠ 추정" 배지 + "실제 무게는 다를 수 있습니다"
+      ├─ 추정 무게: 약 X.Xkg
+      ├─ 추정 박스: N박스
+      └─ 📞 02-2632-1830 전화 안내
+```
+
+### Critical Rules
+
+1. ❌ **결제금액에 택배비 합산 금지** — 표시만 하고 결제 흐름 수정 안 함
+2. ❌ **품목 계산 코드와 얽히면 안 됨** — PriceCalculationService 수정 금지
+3. ✅ **금액 미표시** — 고객에게는 무게/박스만 표시, 금액은 관리자만 참고
+4. ✅ **"추정"임을 반드시 명시** — 실제 무게와 다를 수 있음
+
 ## 🔐 Authentication System
 
 ### System Architecture (4 Independent Layers)
@@ -1402,5 +1474,5 @@ $PRODUCT_NAME_MAP = [
 
 ---
 
-*Last Updated: 2026-02-16 (카테고리 관리 UI, 관리자 주문 등록, 교정시안 한글화)*
+*Last Updated: 2026-02-16 (배송 추정 시스템, 카테고리 관리 UI, 관리자 주문 등록, 교정시안 한글화)*
 *Environment: WSL2 Ubuntu + Windows XAMPP + Production Deployment*

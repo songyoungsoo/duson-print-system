@@ -8,12 +8,15 @@
 
 | 수정자 | 수정항목 | 관련 파일 |
 |--------|----------|-----------|
+| Claude | **배송 무게/박스 추정 시스템** - ShippingCalculator 공통 모듈 신규 생성. 용지 평량×면적×매수 기반 무게 계산, 코팅 가산, 박스 규격별 자동 배치. DB shipping_rates 테이블에서 요금 로드 (fallback 하드코딩). 고객용 estimateFromCart() + 관리자용 estimateFromOrder() | includes/ShippingCalculator.php, includes/shipping_api.php |
+| Claude | **주문 페이지 택배 선불 UI** - 택배 선택 시 운임구분(착불/선불) 라디오 표시, 선불 시 AJAX로 무게/박스 추정 표시 (금액 미표시, "추정" 배지, 전화번호 안내) | mlangorder_printauto/OnlineOrder_unified.php |
+| Claude | **로젠택배 관리 공통 모듈 교체** - post_list74.php의 하드코딩 shipping_rules → ShippingCalculator::estimateFromOrder() 호출로 교체. 추정무게 컬럼 추가 | shop_admin/post_list74.php |
 | Claude | **교정시안 품목명 한글화** - dashboard/proofs/index.php에서 영문 테이블명(sticker_new, inserted 등)을 한글 품목명(스티커, 전단지 등)으로 자동 매핑 표시 | dashboard/proofs/index.php |
 | Claude | **대시보드 카테고리 관리 CRUD** - 카테고리 추가/삭제 API 구현 (category_create, category_delete). 가격 데이터 연쇄 삭제 포함 | dashboard/api/products.php |
 | Claude | **카테고리 관리 UI 개선** - 스타일 필터(대봉투/소봉투 등) 셀렉트 + 테이블 형식 출력 + 수정 모달(category_update API) + 삭제 확인 + 추가 모달. 기존 리스트 방식에서 테이블 방식으로 전환 | dashboard/products/list.php, dashboard/api/products.php |
 | Claude | **FQ 견적번호 체계 도입** - 플로팅 견적받기에 FQ-YYYYMMDD-NNN 형식 자동 번호 생성. AQ(관리자)/FQ(플로팅)/TAX(세금계산서) 3체계 독립 운영 | includes/quote_request_api.php |
 | Claude | **견적서 전체 색상 홈페이지 헤더색(#1E4E79) 통일** - 관리자 견적서(QuoteRenderer HTML/Email/PDF) + 플로팅 견적받기 이메일 + 브라우저 미리보기 CSS 전체 적용 | QuoteRenderer.php, quote_request_api.php, layout.php |
-| Claude | **문서 업데이트** - AGENTS.md에 카테고리 관리, 관리자 주문 등록, 견적번호 체계 섹션 추가 | AGENTS.md, CHANGELOG.md |
+| Claude | **문서 업데이트** - AGENTS.md에 배송 추정 시스템, 카테고리 관리, 관리자 주문 등록, 견적번호 체계 섹션 추가 | AGENTS.md, CHANGELOG.md |
 
 ---
 
