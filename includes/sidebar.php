@@ -202,6 +202,7 @@ $show_bank = isset($show_bank) ? $show_bank : true;
 .floating-menu .fm-kakao-circle {
     background: none;
     border: none;
+    border-radius: 13%;
     box-shadow: 0 3px 14px rgba(0,0,0,0.15);
     padding: 0;
     overflow: hidden;
