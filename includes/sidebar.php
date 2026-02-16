@@ -97,15 +97,15 @@ $show_bank = isset($show_bank) ? $show_bank : true;
             <div class="fm-panel-body">
                 <div class="fm-bank">
                     <span class="fm-bank-name">국민은행</span>
-                    <span class="fm-bank-num">999-1688-2384</span>
+                    <span class="fm-bank-num" onclick="copyAccount(this)" title="클릭하여 복사">999-1688-2384</span>
                 </div>
                 <div class="fm-bank">
                     <span class="fm-bank-name">신한은행</span>
-                    <span class="fm-bank-num">110-342-543507</span>
+                    <span class="fm-bank-num" onclick="copyAccount(this)" title="클릭하여 복사">110-342-543507</span>
                 </div>
                 <div class="fm-bank">
                     <span class="fm-bank-name">농협</span>
-                    <span class="fm-bank-num">301-2632-1830-11</span>
+                    <span class="fm-bank-num" onclick="copyAccount(this)" title="클릭하여 복사">301-2632-1830-11</span>
                 </div>
                 <div class="fm-bank-owner">예금주: 두손기획인쇄 차경선</div>
             </div>
@@ -346,6 +346,36 @@ $show_bank = isset($show_bank) ? $show_bank : true;
     color: #d32f2f;
     font-family: 'Consolas', 'Monaco', monospace;
     letter-spacing: -0.3px;
+    cursor: pointer;
+    transition: color 0.2s;
+}
+
+.floating-menu .fm-bank-num:hover {
+    color: #b71c1c;
+    text-decoration: underline;
+}
+
+.fm-copy-toast {
+    position: fixed;
+    bottom: 30px;
+    left: 50%;
+    transform: translateX(-50%) translateY(20px);
+    background: rgba(0,0,0,0.8);
+    color: #fff;
+    padding: 10px 20px;
+    border-radius: 8px;
+    font-size: 13px;
+    font-weight: 600;
+    z-index: 99999;
+    opacity: 0;
+    transition: opacity 0.3s, transform 0.3s;
+    pointer-events: none;
+    font-family: 'Noto Sans KR', sans-serif;
+}
+
+.fm-copy-toast.show {
+    opacity: 1;
+    transform: translateX(-50%) translateY(0);
 }
 
 .floating-menu .fm-bank-owner {
@@ -446,7 +476,33 @@ $show_bank = isset($show_bank) ? $show_bank : true;
 }
 </style>
 
+<div class="fm-copy-toast" id="fm-copy-toast"></div>
+
 <script>
+function copyAccount(el) {
+    var num = el.textContent.trim();
+    if (navigator.clipboard) {
+        navigator.clipboard.writeText(num).then(function() { showCopyToast(num); });
+    } else {
+        var ta = document.createElement('textarea');
+        ta.value = num;
+        ta.style.position = 'fixed';
+        ta.style.opacity = '0';
+        document.body.appendChild(ta);
+        ta.select();
+        document.execCommand('copy');
+        document.body.removeChild(ta);
+        showCopyToast(num);
+    }
+}
+function showCopyToast(num) {
+    var t = document.getElementById('fm-copy-toast');
+    t.textContent = num + ' 복사되었습니다';
+    t.classList.add('show');
+    clearTimeout(t._tid);
+    t._tid = setTimeout(function() { t.classList.remove('show'); }, 2000);
+}
+
 (function() {
     'use strict';
     document.addEventListener('DOMContentLoaded', function() {
