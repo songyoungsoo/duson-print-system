@@ -52,10 +52,10 @@ $DASHBOARD_NAV = [
         'items' => [
             'products' => ['name' => '제품 관리', 'icon' => '🏷️', 'path' => '/dashboard/products/'],
             'pricing' => ['name' => '가격 관리', 'icon' => '💰', 'path' => '/dashboard/pricing/'],
-            'option_prices' => ['name' => '옵션 가격', 'icon' => '⚙️', 'path' => '/dashboard/embed.php?url=' . urlencode('/admin/mlangprintauto/quote/option_prices.php'), 'embed' => true],
+            'option_prices' => ['name' => '견적옵션', 'icon' => '⚙️', 'path' => '/dashboard/embed.php?url=' . urlencode('/admin/mlangprintauto/quote/option_prices.php'), 'embed' => true],
             'sticker_prices' => ['name' => '스티커수정', 'icon' => '🏷️', 'path' => '/dashboard/pricing/sticker.php'],
             'gallery' => ['name' => '갤러리 관리', 'icon' => '🖼️', 'path' => '/dashboard/gallery/'],
-            'premium_options' => ['name' => '프리미엄옵션', 'icon' => '✨', 'path' => '/dashboard/premium-options/'],
+            'premium_options' => ['name' => '품목옵션', 'icon' => '✨', 'path' => '/dashboard/premium-options/'],
         ]
     ],
     'admin_group' => [

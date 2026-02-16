@@ -34,15 +34,15 @@ if (!$connect) {
 // ✅ 2026-02-13: 대시보드 안전갤러리(/ImgFolder/samplegallery/)와 경로 통일
 // ============================================
 $gallery_folders = [
-    '명함' => ['/ImgFolder/samplegallery/namecard/'],
+    '명함' => ['/ImgFolder/sample/namecard/', '/ImgFolder/samplegallery/namecard/'],
     '스티커' => ['/ImgFolder/sample/sticker_new/', '/ImgFolder/samplegallery/sticker_new/'],
-    '봉투' => ['/ImgFolder/samplegallery/envelope/'],
-    '전단지' => ['/ImgFolder/samplegallery/inserted/'],
-    '포스터' => ['/ImgFolder/samplegallery/littleprint/'],
-    '카탈로그' => ['/ImgFolder/samplegallery/cadarok/', '/ImgFolder/samplegallery/leaflet/'],
-    '상품권' => ['/ImgFolder/samplegallery/merchandisebond/'],
-    '자석스티커' => ['/ImgFolder/samplegallery/msticker/'],
-    '양식지' => ['/ImgFolder/samplegallery/ncrflambeau/'],
+    '봉투' => ['/ImgFolder/sample/envelope/', '/ImgFolder/samplegallery/envelope/'],
+    '전단지' => ['/ImgFolder/sample/inserted/', '/ImgFolder/samplegallery/inserted/'],
+    '포스터' => ['/ImgFolder/sample/littleprint/', '/ImgFolder/samplegallery/littleprint/'],
+    '카탈로그' => ['/ImgFolder/sample/cadarok/', '/ImgFolder/samplegallery/cadarok/'],
+    '상품권' => ['/ImgFolder/sample/merchandisebond/', '/ImgFolder/samplegallery/merchandisebond/'],
+    '자석스티커' => ['/ImgFolder/sample/msticker/', '/ImgFolder/samplegallery/msticker/'],
+    '양식지' => ['/ImgFolder/sample/ncrflambeau/', '/ImgFolder/samplegallery/ncrflambeau/'],
 ];
 
 // 통합 이미지 배열
