@@ -978,14 +978,18 @@ function getOrderItemInfo($summary_item, $specFormatter) {
                                 <td colspan="5" style="border: 0.3pt solid #000; padding: 1.5mm; text-align: center; color: #000;">💰 부가세포함</td>
                                 <td style="border: 0.3pt solid #000; padding: 1.5mm; text-align: right; color: #000; font-size: 9pt;"><?= number_format(round($View_money_5, -1)) ?> 원</td>
                             </tr>
-                            <?php if ($View_logen_delivery_fee > 0 && $View_logen_fee_type === '선불'): ?>
+                            <?php if ($View_logen_delivery_fee > 0 && $View_logen_fee_type === '선불'):
+                                $p_shipping_supply = $View_logen_delivery_fee;
+                                $p_shipping_vat = round($p_shipping_supply * 0.1);
+                                $p_shipping_total = $p_shipping_supply + $p_shipping_vat;
+                            ?>
                             <tr style="font-weight: bold;">
                                 <td colspan="5" style="border: 0.3pt solid #000; padding: 1.5mm; text-align: center; font-size: 7.5pt;">🚚 택배비 (선불)</td>
-                                <td style="border: 0.3pt solid #000; padding: 1.5mm; text-align: right; font-size: 8pt;"><?= number_format($View_logen_delivery_fee) ?> 원</td>
+                                <td style="border: 0.3pt solid #000; padding: 1.5mm; text-align: right; font-size: 8pt;"><?= number_format($p_shipping_supply) ?>+VAT <?= number_format($p_shipping_vat) ?> = <?= number_format($p_shipping_total) ?></td>
                             </tr>
                             <tr style="background-color: #d6e4f0; font-weight: bold;">
                                 <td colspan="5" style="border: 0.3pt solid #000; padding: 1.5mm; text-align: center; color: #000; font-size: 8pt;">📦 총 결제금액</td>
-                                <td style="border: 0.3pt solid #000; padding: 1.5mm; text-align: right; color: #000; font-size: 9pt;"><?= number_format(round($View_money_5, -1) + $View_logen_delivery_fee) ?> 원</td>
+                                <td style="border: 0.3pt solid #000; padding: 1.5mm; text-align: right; color: #000; font-size: 9pt;"><?= number_format(round($View_money_5, -1) + $p_shipping_total) ?> 원</td>
                             </tr>
                             <?php endif; ?>
                         </tbody>
@@ -1246,14 +1250,18 @@ function getOrderItemInfo($summary_item, $specFormatter) {
                                 <td colspan="5" style="border: 0.3pt solid #000; padding: 1.5mm; text-align: center; color: #000;">💰 부가세포함</td>
                                 <td style="border: 0.3pt solid #000; padding: 1.5mm; text-align: right; color: #000; font-size: 9pt;"><?= number_format(round($View_money_5, -1)) ?> 원</td>
                             </tr>
-                            <?php if ($View_logen_delivery_fee > 0 && $View_logen_fee_type === '선불'): ?>
+                            <?php if ($View_logen_delivery_fee > 0 && $View_logen_fee_type === '선불'):
+                                $p_shipping_supply = $View_logen_delivery_fee;
+                                $p_shipping_vat = round($p_shipping_supply * 0.1);
+                                $p_shipping_total = $p_shipping_supply + $p_shipping_vat;
+                            ?>
                             <tr style="font-weight: bold;">
                                 <td colspan="5" style="border: 0.3pt solid #000; padding: 1.5mm; text-align: center; font-size: 7.5pt;">🚚 택배비 (선불)</td>
-                                <td style="border: 0.3pt solid #000; padding: 1.5mm; text-align: right; font-size: 8pt;"><?= number_format($View_logen_delivery_fee) ?> 원</td>
+                                <td style="border: 0.3pt solid #000; padding: 1.5mm; text-align: right; font-size: 8pt;"><?= number_format($p_shipping_supply) ?>+VAT <?= number_format($p_shipping_vat) ?> = <?= number_format($p_shipping_total) ?></td>
                             </tr>
                             <tr style="background-color: #d6e4f0; font-weight: bold;">
                                 <td colspan="5" style="border: 0.3pt solid #000; padding: 1.5mm; text-align: center; color: #000; font-size: 8pt;">📦 총 결제금액</td>
-                                <td style="border: 0.3pt solid #000; padding: 1.5mm; text-align: right; color: #000; font-size: 9pt;"><?= number_format(round($View_money_5, -1) + $View_logen_delivery_fee) ?> 원</td>
+                                <td style="border: 0.3pt solid #000; padding: 1.5mm; text-align: right; color: #000; font-size: 9pt;"><?= number_format(round($View_money_5, -1) + $p_shipping_total) ?> 원</td>
                             </tr>
                             <?php endif; ?>
                         </tbody>
@@ -1644,14 +1652,18 @@ function getOrderItemInfo($summary_item, $specFormatter) {
                         <th style="width: 30%; background: #2c3e50; border: 1px solid #999; padding: 10px; font-size: 13px; text-align: center; color: #fff;">부가세포함금액</th>
                         <td style="width: 70%; border: 1px solid #999; padding: 10px; font-size: 15px; text-align: right; font-weight: bold; color: #C00000;"><?= number_format(round($total_money_5, -1)) ?> 원</td>
                     </tr>
-                    <?php if ($View_logen_delivery_fee > 0 && $View_logen_fee_type === '선불'): ?>
+                    <?php if ($View_logen_delivery_fee > 0 && $View_logen_fee_type === '선불'):
+                        $shipping_supply = $View_logen_delivery_fee; // 공급가액
+                        $shipping_vat = round($shipping_supply * 0.1); // 부가세
+                        $shipping_total = $shipping_supply + $shipping_vat; // 부가세포함
+                    ?>
                     <tr>
                         <th style="width: 30%; background: #E8F0FE; border: 1px solid #999; padding: 8px 10px; font-size: 12px; text-align: center;">🚚 택배비 (선불)</th>
-                        <td style="width: 70%; border: 1px solid #999; padding: 8px 10px; font-size: 13px; text-align: right; font-weight: bold;"><?= number_format($View_logen_delivery_fee) ?> 원</td>
+                        <td style="width: 70%; border: 1px solid #999; padding: 8px 10px; font-size: 13px; text-align: right; font-weight: bold;"><?= number_format($shipping_supply) ?> + VAT <?= number_format($shipping_vat) ?> = <?= number_format($shipping_total) ?> 원</td>
                     </tr>
                     <tr style="background: #DAEAF6;">
                         <th style="width: 30%; background: #1a3a5c; border: 1px solid #999; padding: 10px; font-size: 13px; text-align: center; color: #fff;">총 결제금액</th>
-                        <td style="width: 70%; border: 1px solid #999; padding: 10px; font-size: 16px; text-align: right; font-weight: bold; color: #1a3a5c;"><?= number_format(round($total_money_5, -1) + $View_logen_delivery_fee) ?> 원</td>
+                        <td style="width: 70%; border: 1px solid #999; padding: 10px; font-size: 16px; text-align: right; font-weight: bold; color: #1a3a5c;"><?= number_format(round($total_money_5, -1) + $shipping_total) ?> 원</td>
                     </tr>
                     <?php endif; ?>
                 </table>
