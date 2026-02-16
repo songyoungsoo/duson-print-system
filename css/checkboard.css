@@ -224,7 +224,7 @@
 }
 
 .table-header > div {
-    padding: 6px 3px;
+    padding: 4px 8px;
     text-align: center;
     background: inherit;
     color: white;
@@ -252,13 +252,12 @@
 }
 
 .table-row > div {
-    padding: 6px 3px;
+    padding: 4px 8px;
     text-align: center;
     font-size: 13px;
     display: flex;
     align-items: center;
     justify-content: center;
-    min-height: 28px;
 }
 
 .col-order {
