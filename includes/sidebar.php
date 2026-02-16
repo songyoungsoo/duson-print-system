@@ -449,41 +449,9 @@ $show_bank = isset($show_bank) ? $show_bank : true;
     }
 }
 
-/* 모바일 */
-@media (max-width: 480px) {
+/* 모바일: 플로팅 메뉴 숨김 (하단 상담 버튼은 별도 요소라 유지됨) */
+@media (max-width: 768px) {
     .floating-menu {
-        right: 6px;
-        gap: 6px;
-    }
-
-    .floating-menu .fm-circle {
-        width: 52px;
-        height: 52px;
-    }
-
-    .floating-menu .fm-icon {
-        font-size: 15px;
-    }
-
-    .floating-menu .fm-label {
-        font-size: 9px;
-    }
-
-    .floating-menu .fm-panel {
-        position: fixed;
-        right: 10px;
-        left: 10px;
-        top: auto;
-        bottom: 80px;
-        width: auto;
-        transform: translateY(10px);
-    }
-
-    .floating-menu .fm-item.active .fm-panel {
-        transform: translateY(0);
-    }
-
-    .floating-menu .fm-panel::after {
         display: none;
     }
 }
