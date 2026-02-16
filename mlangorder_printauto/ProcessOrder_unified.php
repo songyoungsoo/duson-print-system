@@ -63,7 +63,8 @@ try {
     $detail_address = $_POST['sample6_detailAddress'] ?? '';
     $extra_address = $_POST['sample6_extraAddress'] ?? '';
     $cont = $_POST['cont'] ?? '';
-    $delivery_method = $_POST['delivery_method'] ?? '택배';  // 물품수령방법 (택배/방문/오토바이/다마스)
+    $delivery_method = $_POST['delivery_method'] ?? '택배';
+    $shipping_fee_type = $_POST['shipping_fee_type'] ?? '';
     $total_price = (float)($_POST['total_price'] ?? 0);
     $total_price_vat = (float)($_POST['total_price_vat'] ?? 0);
     $items_count = (int)($_POST['items_count'] ?? 0);
@@ -340,8 +341,9 @@ try {
             envelope_additional_options_total, unit, quantity,
             spec_type, spec_material, spec_size, spec_sides, spec_design,
             quantity_value, quantity_unit, quantity_sheets, quantity_display,
-            price_supply, price_vat, price_vat_amount, data_version
-        ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)";
+            price_supply, price_vat, price_vat_amount, data_version,
+            logen_fee_type
+        ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)";
 
         $stmt = mysqli_prepare($connect, $insert_query);
         if (!$stmt) {
@@ -544,25 +546,25 @@ try {
         $st_price = strval($item['st_price'] ?? 0);
         $st_price_vat = strval($item['st_price_vat'] ?? 0);
 
-        // ✅ 54개 파라미터 타입 문자열 (3번 검증!)
-        // 1:no(i) 2:Type(s) 3:product_type(s) 4:ImgFolder(s) 5:uploaded_files(s) 6:Type_1(s) 7:money_4(s) 8:money_5(s)
-        // 9:name(s) 10:email(s) 11:zip(s) 12:zip1(s) 13:zip2(s) 14:phone(s) 15:Hendphone(s)
-        // 16:delivery(s) 17:bizname(s) 18:bank(s) 19:bankname(s)
-        // 20:cont(s) 21:date(s) 22:OrderStyle(s) 23:ThingCate(s)
-        // 24:coating_enabled(i) 25:coating_type(s) 26:coating_price(i)
-        // 27:folding_enabled(i) 28:folding_type(s) 29:folding_price(i)
-        // 30:creasing_enabled(i) 31:creasing_lines(i) 32:creasing_price(i)
-        // 33:additional_options_total(i)
-        // 34:premium_options(s) 35:premium_options_total(i)
-        // 36:envelope_tape_enabled(i) 37:envelope_tape_quantity(i) 38:envelope_tape_price(i) 39:envelope_additional_options_total(i)
-        // 40:unit(s) 41:quantity(d)
-        // 42:spec_type(s) 43:spec_material(s) 44:spec_size(s) 45:spec_sides(s) 46:spec_design(s)
-        // 47:quantity_value(d) 48:quantity_unit(s) 49:quantity_sheets(i) 50:quantity_display(s)
-        // 51:price_supply(i) 52:price_vat(i) 53:price_vat_amount(i) 54:data_version(i)
-        $type_string = 'issssssssssssssssssssssisiisiiiiisiiiiisdsssssdsisiiii';
+        // 55개 파라미터 타입 문자열 (3번 검증!)
+        // 1-8: no(i), Type(s), product_type(s), ImgFolder(s), uploaded_files(s), Type_1(s), money_4(s), money_5(s)
+        // 9-15: name(s), email(s), zip(s), zip1(s), zip2(s), phone(s), Hendphone(s)
+        // 16-23: delivery(s), bizname(s), bank(s), bankname(s), cont(s), date(s), OrderStyle(s), ThingCate(s)
+        // 24-26: coating_enabled(i), coating_type(s), coating_price(i)
+        // 27-29: folding_enabled(i), folding_type(s), folding_price(i)
+        // 30-32: creasing_enabled(i), creasing_lines(i), creasing_price(i)
+        // 33: additional_options_total(i)
+        // 34-35: premium_options(s), premium_options_total(i)
+        // 36-39: envelope_tape(i,i,i,i)
+        // 40-41: unit(s), quantity(d)
+        // 42-46: spec_type(s), spec_material(s), spec_size(s), spec_sides(s), spec_design(s)
+        // 47-50: quantity_value(d), quantity_unit(s), quantity_sheets(i), quantity_display(s)
+        // 51-54: price_supply(i), price_vat(i), price_vat_amount(i), data_version(i)
+        // 55: logen_fee_type(s)
+        $type_string = 'issssssssssssssssssssssisiisiiiiisiiiiisdsssssdsisiiiis';
         $placeholder_count = substr_count($insert_query, '?');  // 검증 1
         $type_count = strlen($type_string);                      // 검증 2
-        $var_count = 54;                                         // 검증 3
+        $var_count = 55;                                         // 검증 3
 
         if ($placeholder_count !== $type_count || $type_count !== $var_count) {
             error_log("🔴 bind_param 개수 불일치! placeholder=$placeholder_count, type=$type_count, var=$var_count");
@@ -581,10 +583,10 @@ try {
             $envelope_tape_enabled, $envelope_tape_quantity, $envelope_tape_price,
             $envelope_additional_options_total,
             $unit, $quantity,
-            // ✅ Phase 3: 표준 필드 추가 (12개)
             $spec_type, $spec_material, $spec_size, $spec_sides, $spec_design,
             $quantity_value, $quantity_unit, $quantity_sheets, $quantity_display,
-            $price_supply, $price_vat, $price_vat_amount, $data_version
+            $price_supply, $price_vat, $price_vat_amount, $data_version,
+            $shipping_fee_type
         );
         
         if (mysqli_stmt_execute($stmt)) {

@@ -34,6 +34,77 @@ switch ($action) {
         echo json_encode(['success' => true, 'data' => $rates]);
         break;
 
+    case 'order_estimate':
+        // 관리자용: 주문번호로 배송 추정 + 기존 logen 데이터 반환
+        $orderNo = intval($_GET['no'] ?? $_POST['no'] ?? 0);
+        if (!$orderNo) {
+            echo json_encode(['success' => false, 'error' => 'no required']);
+            exit;
+        }
+
+        $stmt = mysqli_prepare($db, "SELECT * FROM mlangorder_printauto WHERE no = ?");
+        mysqli_stmt_bind_param($stmt, "i", $orderNo);
+        mysqli_stmt_execute($stmt);
+        $orderResult = mysqli_stmt_get_result($stmt);
+        $orderRow = mysqli_fetch_assoc($orderResult);
+        mysqli_stmt_close($stmt);
+
+        if (!$orderRow) {
+            echo json_encode(['success' => false, 'error' => 'order not found']);
+            exit;
+        }
+
+        $estimate = ShippingCalculator::estimateFromOrder($orderRow);
+
+        echo json_encode([
+            'success' => true,
+            'data' => [
+                'estimate' => $estimate,
+                'delivery' => $orderRow['delivery'] ?? '',
+                'logen_box_qty' => $orderRow['logen_box_qty'],
+                'logen_delivery_fee' => $orderRow['logen_delivery_fee'],
+                'logen_fee_type' => $orderRow['logen_fee_type'] ?? '',
+                'logen_tracking_no' => $orderRow['logen_tracking_no'] ?? ''
+            ]
+        ]);
+        break;
+
+    case 'logen_save':
+        // 관리자용: 배송 정보 저장
+        $orderNo = intval($_POST['no'] ?? 0);
+        if (!$orderNo) {
+            echo json_encode(['success' => false, 'error' => 'no required']);
+            exit;
+        }
+
+        $logenBoxQty = isset($_POST['logen_box_qty']) && $_POST['logen_box_qty'] !== '' ? intval($_POST['logen_box_qty']) : null;
+        $logenDeliveryFee = isset($_POST['logen_delivery_fee']) && $_POST['logen_delivery_fee'] !== '' ? intval($_POST['logen_delivery_fee']) : null;
+        $logenFeeType = $_POST['logen_fee_type'] ?? '';
+        $logenTrackingNo = trim($_POST['logen_tracking_no'] ?? '');
+
+        $updateQuery = "UPDATE mlangorder_printauto SET logen_box_qty = ?, logen_delivery_fee = ?, logen_fee_type = ?, logen_tracking_no = ? WHERE no = ?";
+        $stmt = mysqli_prepare($db, $updateQuery);
+        if (!$stmt) {
+            echo json_encode(['success' => false, 'error' => mysqli_error($db)]);
+            exit;
+        }
+
+        // bind_param 검증: 5 placeholders, "iissi", 5 vars
+        $placeholder_count = substr_count($updateQuery, '?');  // 5
+        $type_string_logen = "iissi";
+        $type_count = strlen($type_string_logen);              // 5
+        $var_count = 5;                                        // 5
+
+        mysqli_stmt_bind_param($stmt, $type_string_logen, $logenBoxQty, $logenDeliveryFee, $logenFeeType, $logenTrackingNo, $orderNo);
+
+        if (mysqli_stmt_execute($stmt)) {
+            echo json_encode(['success' => true, 'message' => '배송 정보가 저장되었습니다.']);
+        } else {
+            echo json_encode(['success' => false, 'error' => mysqli_stmt_error($stmt)]);
+        }
+        mysqli_stmt_close($stmt);
+        break;
+
     case 'rates_save':
         session_start();
         if (empty($_SESSION['is_admin'])) {
