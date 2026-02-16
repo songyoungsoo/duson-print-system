@@ -152,7 +152,7 @@ $show_bank = isset($show_bank) ? $show_bank : true;
     z-index: 9990;
     display: flex;
     flex-direction: column;
-    gap: 10px;
+    gap: 12px;
     font-family: 'Noto Sans KR', -apple-system, sans-serif;
 }
 
@@ -164,19 +164,19 @@ $show_bank = isset($show_bank) ? $show_bank : true;
 }
 
 .floating-menu .fm-circle {
-    width: 52px;
-    height: 52px;
+    width: 100px;
+    height: 100px;
     border-radius: 50%;
     background: #1E4E79;
-    border: 2px solid rgba(255,255,255,0.3);
+    border: 3px solid rgba(255,255,255,0.3);
     cursor: pointer;
     display: flex;
     flex-direction: column;
     align-items: center;
     justify-content: center;
-    gap: 1px;
+    gap: 3px;
     transition: all 0.25s ease;
-    box-shadow: 0 2px 10px rgba(30,78,121,0.35);
+    box-shadow: 0 3px 14px rgba(30,78,121,0.35);
     position: relative;
     z-index: 2;
     flex-shrink: 0;
@@ -216,24 +216,24 @@ $show_bank = isset($show_bank) ? $show_bank : true;
 }
 
 .floating-menu .fm-icon {
-    font-size: 18px;
+    font-size: 22px;
     line-height: 1;
 }
 
 .floating-menu .fm-label {
-    font-size: 8px;
+    font-size: 16px;
     color: rgba(255,255,255,0.9);
-    font-weight: 600;
+    font-weight: 700;
     letter-spacing: -0.3px;
-    line-height: 1;
+    line-height: 1.1;
 }
 
 .floating-menu .fm-panel {
     position: absolute;
-    right: 62px;
+    right: 112px;
     top: 50%;
     transform: translateY(-50%) translateX(10px);
-    width: 220px;
+    width: 240px;
     background: #fff;
     border-radius: 12px;
     box-shadow: 0 8px 32px rgba(0,0,0,0.15), 0 2px 8px rgba(0,0,0,0.08);
@@ -382,8 +382,8 @@ $show_bank = isset($show_bank) ? $show_bank : true;
     }
 
     .floating-menu .fm-circle {
-        width: 44px;
-        height: 44px;
+        width: 70px;
+        height: 70px;
     }
 
     .floating-menu .fm-icon {
@@ -391,12 +391,12 @@ $show_bank = isset($show_bank) ? $show_bank : true;
     }
 
     .floating-menu .fm-label {
-        display: none;
+        font-size: 11px;
     }
 
     .floating-menu .fm-panel {
-        right: 54px;
-        width: 200px;
+        right: 80px;
+        width: 220px;
     }
 }
 
@@ -408,12 +408,16 @@ $show_bank = isset($show_bank) ? $show_bank : true;
     }
 
     .floating-menu .fm-circle {
-        width: 40px;
-        height: 40px;
+        width: 52px;
+        height: 52px;
     }
 
     .floating-menu .fm-icon {
         font-size: 15px;
+    }
+
+    .floating-menu .fm-label {
+        font-size: 9px;
     }
 
     .floating-menu .fm-panel {
