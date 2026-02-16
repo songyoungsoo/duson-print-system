@@ -218,7 +218,6 @@ $show_bank = isset($show_bank) ? $show_bank : true;
 .floating-menu .fm-kakao-circle .fm-icon {
     font-size: 29px;
     filter: none;
-    color: #3B1E08;
 }
 
 .floating-menu .fm-icon {
