@@ -206,7 +206,7 @@ include __DIR__ . '/../includes/sidebar.php';
                 </span>
             </div>
             <div class="flex items-center gap-2">
-                <a href="/mlangorder_printauto/admin/post_host.php?no=<?php echo $order['no']; ?>" target="_blank"
+                <a href="/admin/mlangprintauto/admin.php?mode=OrderView&no=<?php echo $order['no']; ?>" target="_blank"
                    class="px-3 py-2 text-sm bg-white border border-gray-300 rounded-lg hover:bg-gray-50 transition-colors">
                     기존 관리자 보기
                 </a>
