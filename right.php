@@ -193,7 +193,7 @@ $show_bank = isset($show_bank) ? $show_bank : true;
     position: absolute;
     right: 112px;
     top: 50%;
-    transform: translateY(-50%) translateX(10px);
+    transform: translateY(-50%) translateX(20px);
     width: 240px;
     background: #fff;
     border-radius: 12px;
@@ -201,7 +201,7 @@ $show_bank = isset($show_bank) ? $show_bank : true;
     opacity: 0;
     visibility: hidden;
     pointer-events: none;
-    transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1);
+    transition: opacity 0.3s ease, transform 0.3s ease, visibility 0.3s ease;
     z-index: 1;
     overflow: hidden;
 }
@@ -413,15 +413,40 @@ $show_bank = isset($show_bank) ? $show_bank : true;
         var menu = document.getElementById('floating-menu');
         if (!menu) return;
 
-        var items = menu.querySelectorAll('.fm-item');
+        var items = menu.querySelectorAll('.fm-item[data-panel]');
 
         items.forEach(function(item) {
             var circle = item.querySelector('.fm-circle');
+            if (!circle) return;
+
+            item.addEventListener('mouseenter', function() {
+                items.forEach(function(other) {
+                    if (other !== item && !other.classList.contains('pinned')) {
+                        other.classList.remove('active');
+                    }
+                });
+                item.classList.add('active');
+            });
+
+            item.addEventListener('mouseleave', function() {
+                if (!item.classList.contains('pinned')) {
+                    item.classList.remove('active');
+                }
+            });
+
             circle.addEventListener('click', function(e) {
                 e.stopPropagation();
-                var wasActive = item.classList.contains('active');
-                items.forEach(function(other) { other.classList.remove('active'); });
-                if (!wasActive) item.classList.add('active');
+                if (item.classList.contains('pinned')) {
+                    item.classList.remove('pinned');
+                    item.classList.remove('active');
+                } else {
+                    items.forEach(function(other) {
+                        other.classList.remove('active');
+                        other.classList.remove('pinned');
+                    });
+                    item.classList.add('active');
+                    item.classList.add('pinned');
+                }
             });
         });
 
@@ -430,12 +455,18 @@ $show_bank = isset($show_bank) ? $show_bank : true;
         });
 
         document.addEventListener('click', function() {
-            items.forEach(function(item) { item.classList.remove('active'); });
+            items.forEach(function(item) {
+                item.classList.remove('active');
+                item.classList.remove('pinned');
+            });
         });
 
         document.addEventListener('keydown', function(e) {
             if (e.key === 'Escape') {
-                items.forEach(function(item) { item.classList.remove('active'); });
+                items.forEach(function(item) {
+                    item.classList.remove('active');
+                    item.classList.remove('pinned');
+                });
             }
         });
     });
