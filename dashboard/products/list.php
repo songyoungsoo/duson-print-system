@@ -142,42 +142,93 @@ include __DIR__ . '/../includes/sidebar.php';
         <!-- 카테고리 관리 패널 -->
         <div id="categoryPanel" class="bg-white rounded-lg shadow mb-4 hidden">
             <div class="px-4 py-3 border-b border-gray-200 flex items-center justify-between">
-                <h3 class="text-sm font-semibold text-gray-900">📂 카테고리 관리 <span class="text-xs font-normal text-gray-500">(mlangprintauto_transactioncate)</span></h3>
+                <h3 class="text-sm font-semibold text-gray-900">📂 카테고리 관리 <span class="text-xs font-normal text-gray-500">(<?php echo $product_config['name']; ?>)</span></h3>
                 <button id="closeCategoryBtn" class="text-gray-400 hover:text-gray-600 text-lg">&times;</button>
             </div>
             <div class="p-4">
-                <div id="categoryTree" class="space-y-2">
-                    <p class="text-xs text-gray-400">불러오는 중...</p>
-                </div>
-                
-                <!-- 카테고리 추가 폼 -->
-                <div class="mt-4 pt-4 border-t border-gray-200">
-                    <h4 class="text-xs font-semibold text-gray-700 mb-2">카테고리 추가</h4>
-                    <div class="flex gap-2 items-end flex-wrap">
-                        <div class="w-28">
-                            <label class="block text-xs text-gray-500 mb-1">유형</label>
-                            <select id="catAddLevel" class="w-full px-2 py-1 text-xs border border-gray-300 rounded focus:ring-1 focus:ring-blue-500">
-                                <option value="style">스타일</option>
-                                <option value="section">섹션(규격)</option>
-                                <?php if ($hasTreeSelect): ?>
-                                <option value="tree">종이</option>
-                                <?php endif; ?>
-                            </select>
-                        </div>
-                        <div id="catParentWrap" class="w-36 hidden">
-                            <label class="block text-xs text-gray-500 mb-1">상위 스타일</label>
-                            <select id="catAddParent" class="w-full px-2 py-1 text-xs border border-gray-300 rounded focus:ring-1 focus:ring-blue-500">
-                                <option value="">선택</option>
-                            </select>
-                        </div>
-                        <div class="flex-1 min-w-[160px]">
-                            <label class="block text-xs text-gray-500 mb-1">카테고리명</label>
-                            <input type="text" id="catAddTitle" placeholder="이름 입력" class="w-full px-2 py-1 text-xs border border-gray-300 rounded focus:ring-1 focus:ring-blue-500">
-                        </div>
-                        <button id="catAddBtn" class="px-3 py-1 text-xs bg-green-600 text-white rounded hover:bg-green-700 transition-colors whitespace-nowrap">
-                            추가
-                        </button>
+                <!-- 필터 + 추가 영역 -->
+                <div class="flex items-end gap-3 flex-wrap mb-3">
+                    <div class="w-40">
+                        <label class="block text-xs font-medium text-gray-700 mb-1">→ 분류 필터</label>
+                        <select id="catFilterStyle" class="w-full px-2 py-1.5 text-xs border border-gray-300 rounded focus:ring-1 focus:ring-blue-500">
+                            <option value="">전체자료</option>
+                        </select>
                     </div>
+                    <div class="flex-1"></div>
+                    <div class="flex gap-1">
+                        <button id="catAddStyleBtn" class="px-2 py-1 text-xs bg-green-600 text-white rounded hover:bg-green-700 transition-colors">+ 구분 입력</button>
+                        <button id="catAddChildBtn" class="px-2 py-1 text-xs bg-blue-600 text-white rounded hover:bg-blue-700 transition-colors">+ 종류 입력</button>
+                    </div>
+                </div>
+
+                <!-- 카테고리 테이블 -->
+                <div class="overflow-x-auto border border-gray-200 rounded">
+                    <table class="min-w-full divide-y divide-gray-200" id="catTable">
+                        <thead class="bg-gray-100">
+                            <tr>
+                                <th class="px-2 py-1.5 text-left text-xs font-medium text-gray-600 w-16">등록NO</th>
+                                <th class="px-2 py-1.5 text-left text-xs font-medium text-gray-600 w-36">상위CATEGORY</th>
+                                <th class="px-2 py-1.5 text-left text-xs font-medium text-gray-600">TITLE</th>
+                                <th class="px-2 py-1.5 text-center text-xs font-medium text-gray-600 w-28">관리기능</th>
+                            </tr>
+                        </thead>
+                        <tbody id="catTableBody" class="bg-white divide-y divide-gray-200">
+                            <tr><td colspan="4" class="px-2 py-3 text-center text-xs text-gray-400">불러오는 중...</td></tr>
+                        </tbody>
+                    </table>
+                </div>
+                <p class="mt-2 text-xs text-gray-500" id="catCountInfo"></p>
+            </div>
+        </div>
+
+        <!-- 카테고리 수정 모달 -->
+        <div id="catEditModal" class="fixed inset-0 bg-black bg-opacity-50 hidden items-center justify-center z-50">
+            <div class="bg-white rounded-lg shadow-xl w-full max-w-sm mx-4">
+                <div class="px-5 py-3 border-b border-gray-200">
+                    <h3 class="text-sm font-semibold text-gray-900" id="catEditModalTitle">카테고리 수정</h3>
+                </div>
+                <div class="px-5 py-4 space-y-3">
+                    <input type="hidden" id="catEditId">
+                    <input type="hidden" id="catEditLevel">
+                    <div>
+                        <label class="block text-xs font-medium text-gray-700 mb-1">상위 카테고리</label>
+                        <select id="catEditParent" class="w-full px-2 py-1.5 text-xs border border-gray-300 rounded focus:ring-1 focus:ring-blue-500">
+                            <option value="0">◆ 최상위 (스타일)</option>
+                        </select>
+                    </div>
+                    <div>
+                        <label class="block text-xs font-medium text-gray-700 mb-1">카테고리명 *</label>
+                        <input type="text" id="catEditTitle" class="w-full px-2 py-1.5 text-xs border border-gray-300 rounded focus:ring-1 focus:ring-blue-500" placeholder="이름 입력">
+                    </div>
+                </div>
+                <div class="px-5 py-3 border-t border-gray-200 flex justify-end gap-2">
+                    <button id="catEditCancelBtn" class="px-3 py-1 text-xs bg-gray-500 text-white rounded hover:bg-gray-600">취소</button>
+                    <button id="catEditSaveBtn" class="px-3 py-1 text-xs bg-blue-600 text-white rounded hover:bg-blue-700">저장</button>
+                </div>
+            </div>
+        </div>
+
+        <!-- 카테고리 추가 모달 -->
+        <div id="catAddModal" class="fixed inset-0 bg-black bg-opacity-50 hidden items-center justify-center z-50">
+            <div class="bg-white rounded-lg shadow-xl w-full max-w-sm mx-4">
+                <div class="px-5 py-3 border-b border-gray-200">
+                    <h3 class="text-sm font-semibold text-gray-900" id="catAddModalTitle">카테고리 추가</h3>
+                </div>
+                <div class="px-5 py-4 space-y-3">
+                    <div id="catAddParentWrap">
+                        <label class="block text-xs font-medium text-gray-700 mb-1">상위 스타일</label>
+                        <select id="catAddParent" class="w-full px-2 py-1.5 text-xs border border-gray-300 rounded focus:ring-1 focus:ring-blue-500">
+                            <option value="">선택</option>
+                        </select>
+                    </div>
+                    <div>
+                        <label class="block text-xs font-medium text-gray-700 mb-1">카테고리명 *</label>
+                        <input type="text" id="catAddTitle" class="w-full px-2 py-1.5 text-xs border border-gray-300 rounded focus:ring-1 focus:ring-blue-500" placeholder="이름 입력">
+                    </div>
+                </div>
+                <div class="px-5 py-3 border-t border-gray-200 flex justify-end gap-2">
+                    <button id="catAddCancelBtn" class="px-3 py-1 text-xs bg-gray-500 text-white rounded hover:bg-gray-600">취소</button>
+                    <button id="catAddSaveBtn" class="px-3 py-1 text-xs bg-green-600 text-white rounded hover:bg-green-700">추가</button>
                 </div>
             </div>
         </div>
@@ -705,11 +756,9 @@ document.querySelectorAll('.delete-btn').forEach(btn => {
 const categoryPanel = document.getElementById('categoryPanel');
 const toggleCategoryBtn = document.getElementById('toggleCategoryBtn');
 const closeCategoryBtn = document.getElementById('closeCategoryBtn');
-const catAddLevel = document.getElementById('catAddLevel');
-const catParentWrap = document.getElementById('catParentWrap');
-const catAddParent = document.getElementById('catAddParent');
-const catAddTitle = document.getElementById('catAddTitle');
-const catAddBtn = document.getElementById('catAddBtn');
+const catFilterStyle = document.getElementById('catFilterStyle');
+const catTableBody = document.getElementById('catTableBody');
+const catCountInfo = document.getElementById('catCountInfo');
 
 let categoryData = [];
 
@@ -724,173 +773,286 @@ closeCategoryBtn.addEventListener('click', () => {
     categoryPanel.classList.add('hidden');
 });
 
-// 유형 변경 시 상위 스타일 드롭다운 표시/숨김
-catAddLevel.addEventListener('change', function() {
-    if (this.value === 'style') {
-        catParentWrap.classList.add('hidden');
-    } else {
-        catParentWrap.classList.remove('hidden');
-        updateParentDropdown();
-    }
-});
-
-function updateParentDropdown() {
-    catAddParent.innerHTML = '<option value="">선택</option>';
-    const styles = categoryData.filter(c => c.BigNo === '0' || c.BigNo === 0);
-    styles.forEach(s => {
-        const opt = document.createElement('option');
-        opt.value = s.no;
-        opt.textContent = s.title;
-        catAddParent.appendChild(opt);
-    });
-}
+// 필터 변경
+catFilterStyle.addEventListener('change', () => renderCategoryTable());
 
 async function loadCategories() {
-    const treeEl = document.getElementById('categoryTree');
-    treeEl.innerHTML = '<p class="text-xs text-gray-400">불러오는 중...</p>';
+    catTableBody.innerHTML = '<tr><td colspan="4" class="px-2 py-3 text-center text-xs text-gray-400">불러오는 중...</td></tr>';
     
     try {
         const res = await fetch(`/dashboard/api/products.php?action=category_list&type=${productType}`);
         const json = await res.json();
         
         if (!json.success) {
-            treeEl.innerHTML = `<p class="text-xs text-red-500">${json.message}</p>`;
+            catTableBody.innerHTML = `<tr><td colspan="4" class="px-2 py-3 text-center text-xs text-red-500">${json.message}</td></tr>`;
             return;
         }
         
         categoryData = json.data;
-        renderCategoryTree(treeEl, categoryData);
+        updateStyleFilter();
+        renderCategoryTable();
     } catch (e) {
-        treeEl.innerHTML = '<p class="text-xs text-red-500">로딩 실패</p>';
+        catTableBody.innerHTML = '<tr><td colspan="4" class="px-2 py-3 text-center text-xs text-red-500">로딩 실패</td></tr>';
     }
 }
 
-function renderCategoryTree(container, categories) {
-    const styles = categories.filter(c => c.BigNo === '0' || c.BigNo === 0);
+function getStyles() {
+    return categoryData.filter(c => c.BigNo === '0' || c.BigNo === 0);
+}
+
+function updateStyleFilter() {
+    const current = catFilterStyle.value;
+    catFilterStyle.innerHTML = '<option value="">전체자료</option>';
+    getStyles().forEach(s => {
+        const opt = document.createElement('option');
+        opt.value = s.no;
+        opt.textContent = s.title;
+        catFilterStyle.appendChild(opt);
+    });
+    catFilterStyle.value = current;
+}
+
+function renderCategoryTable() {
+    const filterVal = catFilterStyle.value;
+    const styles = getStyles();
     
-    if (styles.length === 0) {
-        container.innerHTML = '<p class="text-xs text-gray-400">카테고리가 없습니다.</p>';
+    // 필터링: 선택된 스타일의 하위 항목만 표시
+    let filtered;
+    if (filterVal) {
+        filtered = categoryData.filter(c => {
+            return String(c.no) === filterVal 
+                || String(c.BigNo) === filterVal 
+                || String(c.TreeNo) === filterVal;
+        });
+    } else {
+        filtered = [...categoryData];
+    }
+    
+    if (filtered.length === 0) {
+        catTableBody.innerHTML = '<tr><td colspan="4" class="px-2 py-3 text-center text-xs text-gray-400">데이터가 없습니다.</td></tr>';
+        catCountInfo.textContent = '총 0개';
         return;
     }
     
+    // 정렬: 스타일 먼저 → 섹션 → 종이
+    filtered.sort((a, b) => {
+        const aIsStyle = (a.BigNo === '0' || a.BigNo === 0);
+        const bIsStyle = (b.BigNo === '0' || b.BigNo === 0);
+        if (aIsStyle && !bIsStyle) return -1;
+        if (!aIsStyle && bIsStyle) return 1;
+        return parseInt(b.no) - parseInt(a.no);
+    });
+    
     let html = '';
-    styles.forEach(style => {
-        const sections = categories.filter(c => String(c.BigNo) === String(style.no) && c.BigNo !== '0' && c.BigNo !== 0);
-        const trees = categories.filter(c => String(c.TreeNo) === String(style.no) && c.TreeNo !== '' && c.TreeNo !== null);
-        const childCount = sections.length + trees.length;
+    filtered.forEach((cat, idx) => {
+        const isStyle = (cat.BigNo === '0' || cat.BigNo === 0);
+        const isTree = cat.TreeNo && cat.TreeNo !== '' && cat.TreeNo !== '0';
         
-        html += `<div class="border border-gray-200 rounded">`;
-        html += `<div class="flex items-center justify-between px-3 py-2 bg-gray-50">`;
-        html += `<div class="flex items-center gap-2">`;
-        html += `<span class="text-xs font-semibold text-gray-800">◆ ${escHtml(style.title)}</span>`;
-        html += `<span class="text-xs text-gray-400">no:${style.no}</span>`;
-        if (childCount > 0) html += `<span class="text-xs text-gray-400">(하위 ${childCount}건)</span>`;
-        html += `</div>`;
-        html += `<button class="cat-del-btn text-xs text-red-500 hover:text-red-700" data-id="${style.no}" data-title="${escAttr(style.title)}" data-children="${childCount}">삭제</button>`;
-        html += `</div>`;
-        
-        if (sections.length > 0 || trees.length > 0) {
-            html += `<div class="px-3 py-2 space-y-1">`;
-            sections.forEach(sec => {
-                html += `<div class="flex items-center justify-between pl-4 py-1">`;
-                html += `<div class="flex items-center gap-2">`;
-                html += `<span class="text-xs text-gray-600">├ ${escHtml(sec.title)}</span>`;
-                html += `<span class="text-xs text-gray-400">no:${sec.no}</span>`;
-                html += `</div>`;
-                html += `<button class="cat-del-btn text-xs text-red-500 hover:text-red-700" data-id="${sec.no}" data-title="${escAttr(sec.title)}" data-children="0">삭제</button>`;
-                html += `</div>`;
-            });
-            trees.forEach(tree => {
-                html += `<div class="flex items-center justify-between pl-4 py-1">`;
-                html += `<div class="flex items-center gap-2">`;
-                html += `<span class="text-xs text-blue-600">├ 🌳 ${escHtml(tree.title)}</span>`;
-                html += `<span class="text-xs text-gray-400">no:${tree.no}</span>`;
-                html += `</div>`;
-                html += `<button class="cat-del-btn text-xs text-red-500 hover:text-red-700" data-id="${tree.no}" data-title="${escAttr(tree.title)}" data-children="0">삭제</button>`;
-                html += `</div>`;
-            });
-            html += `</div>`;
+        // 상위 카테고리 이름 찾기
+        let parentName = '';
+        let levelLabel = '';
+        if (isStyle) {
+            parentName = '<span class="text-gray-400 text-xs">—</span>';
+            levelLabel = '';
+        } else if (isTree) {
+            const parent = categoryData.find(c => String(c.no) === String(cat.TreeNo));
+            parentName = parent ? escHtml(parent.title) + ' <span class="text-gray-400">(종이)</span>' : `no:${cat.TreeNo}`;
+            levelLabel = '🌳';
+        } else {
+            const parent = categoryData.find(c => String(c.no) === String(cat.BigNo));
+            parentName = parent ? escHtml(parent.title) + ' <span class="text-gray-400">(종류)</span>' : `no:${cat.BigNo}`;
+            levelLabel = '';
         }
-        html += `</div>`;
+        
+        const rowBg = idx % 2 === 1 ? 'background-color:#f8fafc;' : '';
+        const styleBold = isStyle ? 'font-semibold' : '';
+        
+        html += `<tr style="${rowBg}" data-cat-id="${cat.no}">`;
+        html += `<td class="px-2 py-1.5 text-xs text-gray-500">${cat.no}</td>`;
+        html += `<td class="px-2 py-1.5 text-xs text-gray-600">${parentName}</td>`;
+        html += `<td class="px-2 py-1.5 text-xs ${styleBold} text-gray-900">${levelLabel} ${isStyle ? '◆ ' : ''}${escHtml(cat.title)}</td>`;
+        html += `<td class="px-2 py-1.5 text-xs text-center whitespace-nowrap">`;
+        html += `<button class="cat-edit-btn text-blue-600 hover:text-blue-800 mr-2" data-id="${cat.no}" data-title="${escAttr(cat.title)}" data-bigno="${cat.BigNo}" data-treeno="${cat.TreeNo || ''}">수정</button>`;
+        html += `<button class="cat-del-btn text-red-600 hover:text-red-800" data-id="${cat.no}" data-title="${escAttr(cat.title)}" data-is-style="${isStyle ? '1' : '0'}">삭제</button>`;
+        html += `</td></tr>`;
     });
     
-    // 소속 없는 항목 (orphan)
-    const orphans = categories.filter(c => {
-        if (c.BigNo === '0' || c.BigNo === 0) return false;
-        const hasBigParent = c.BigNo && styles.some(s => String(s.no) === String(c.BigNo));
-        const hasTreeParent = c.TreeNo && styles.some(s => String(s.no) === String(c.TreeNo));
-        return !hasBigParent && !hasTreeParent;
-    });
+    catTableBody.innerHTML = html;
+    catCountInfo.textContent = `총 ${filtered.length}개` + (filterVal ? ` (전체 ${categoryData.length}개 중)` : '');
     
-    if (orphans.length > 0) {
-        html += `<div class="border border-orange-200 rounded mt-2">`;
-        html += `<div class="px-3 py-2 bg-orange-50 text-xs font-semibold text-orange-700">⚠ 소속 없는 항목 (${orphans.length}건)</div>`;
-        html += `<div class="px-3 py-2 space-y-1">`;
-        orphans.forEach(o => {
-            html += `<div class="flex items-center justify-between pl-2 py-1">`;
-            html += `<div class="flex items-center gap-2">`;
-            html += `<span class="text-xs text-orange-600">${escHtml(o.title)}</span>`;
-            html += `<span class="text-xs text-gray-400">no:${o.no} BigNo:${o.BigNo} TreeNo:${o.TreeNo || '-'}</span>`;
-            html += `</div>`;
-            html += `<button class="cat-del-btn text-xs text-red-500 hover:text-red-700" data-id="${o.no}" data-title="${escAttr(o.title)}" data-children="0">삭제</button>`;
-            html += `</div>`;
+    // 수정 버튼 이벤트
+    catTableBody.querySelectorAll('.cat-edit-btn').forEach(btn => {
+        btn.addEventListener('click', function() {
+            openCatEditModal(this.dataset.id, this.dataset.title, this.dataset.bigno, this.dataset.treeno);
         });
-        html += `</div></div>`;
-    }
-    
-    container.innerHTML = html;
+    });
     
     // 삭제 버튼 이벤트
-    container.querySelectorAll('.cat-del-btn').forEach(btn => {
-        btn.addEventListener('click', async function() {
-            const id = this.dataset.id;
-            const title = this.dataset.title;
-            const children = parseInt(this.dataset.children);
-            
-            let msg = `카테고리 "${title}" (no:${id})을 삭제하시겠습니까?`;
-            if (children > 0) {
-                msg += `\n\n⚠ 하위 ${children}건도 함께 삭제됩니다!`;
-            }
-            
-            if (!confirm(msg)) return;
-            
-            try {
-                const fd = new FormData();
-                fd.append('action', 'category_delete');
-                fd.append('type', productType);
-                fd.append('id', id);
-                
-                const res = await fetch('/dashboard/api/products.php', { method: 'POST', body: fd });
-                const json = await res.json();
-                
-                if (json.success) {
-                    alert(json.message);
-                    loadCategories();
-                    // 페이지 새로고침하여 필터 드롭다운도 갱신
-                    location.reload();
-                } else {
-                    alert('삭제 실패: ' + json.message);
-                }
-            } catch (e) {
-                alert('삭제 중 오류 발생');
-            }
+    catTableBody.querySelectorAll('.cat-del-btn').forEach(btn => {
+        btn.addEventListener('click', function() {
+            deleteCat(this.dataset.id, this.dataset.title, this.dataset.isStyle === '1');
         });
     });
 }
 
 function escHtml(str) {
     const div = document.createElement('div');
-    div.textContent = str;
+    div.textContent = str || '';
     return div.innerHTML;
 }
 
 function escAttr(str) {
-    return String(str).replace(/"/g, '&quot;').replace(/'/g, '&#39;');
+    return String(str || '').replace(/"/g, '&quot;').replace(/'/g, '&#39;');
 }
 
-// 카테고리 추가
-catAddBtn.addEventListener('click', async function() {
-    const level = catAddLevel.value;
+// ---- 수정 모달 ----
+const catEditModal = document.getElementById('catEditModal');
+const catEditId = document.getElementById('catEditId');
+const catEditTitle = document.getElementById('catEditTitle');
+const catEditParent = document.getElementById('catEditParent');
+
+function openCatEditModal(id, title, bigNo, treeNo) {
+    catEditId.value = id;
+    catEditTitle.value = title;
+    
+    const isStyle = (bigNo === '0' || bigNo === 0);
+    const isTree = treeNo && treeNo !== '' && treeNo !== '0';
+    
+    // 상위 카테고리 드롭다운
+    catEditParent.innerHTML = '<option value="0">◆ 최상위 (스타일)</option>';
+    getStyles().forEach(s => {
+        if (String(s.no) === String(id)) return; // 자기 자신 제외
+        const opt = document.createElement('option');
+        opt.value = s.no;
+        opt.textContent = s.title + ' (종류)';
+        catEditParent.appendChild(opt);
+        <?php if ($hasTreeSelect): ?>
+        const optTree = document.createElement('option');
+        optTree.value = 'tree_' + s.no;
+        optTree.textContent = s.title + ' (종이)';
+        catEditParent.appendChild(optTree);
+        <?php endif; ?>
+    });
+    
+    // 현재 값 설정
+    if (isStyle) {
+        catEditParent.value = '0';
+    } else if (isTree) {
+        catEditParent.value = 'tree_' + treeNo;
+    } else {
+        catEditParent.value = bigNo;
+    }
+    
+    document.getElementById('catEditModalTitle').textContent = `카테고리 수정 (no: ${id})`;
+    catEditModal.classList.remove('hidden');
+    catEditModal.classList.add('flex');
+    catEditTitle.focus();
+}
+
+document.getElementById('catEditCancelBtn').addEventListener('click', () => {
+    catEditModal.classList.add('hidden');
+    catEditModal.classList.remove('flex');
+});
+
+catEditModal.addEventListener('click', (e) => {
+    if (e.target === catEditModal) {
+        catEditModal.classList.add('hidden');
+        catEditModal.classList.remove('flex');
+    }
+});
+
+document.getElementById('catEditSaveBtn').addEventListener('click', async () => {
+    const id = catEditId.value;
+    const title = catEditTitle.value.trim();
+    const parentVal = catEditParent.value;
+    
+    if (!title) {
+        alert('카테고리명을 입력하세요.');
+        catEditTitle.focus();
+        return;
+    }
+    
+    let bigNo, treeNo;
+    if (parentVal === '0') {
+        bigNo = '0'; treeNo = '';
+    } else if (parentVal.startsWith('tree_')) {
+        bigNo = ''; treeNo = parentVal.replace('tree_', '');
+    } else {
+        bigNo = parentVal; treeNo = '';
+    }
+    
+    try {
+        const fd = new FormData();
+        fd.append('action', 'category_update');
+        fd.append('type', productType);
+        fd.append('id', id);
+        fd.append('title', title);
+        fd.append('BigNo', bigNo);
+        fd.append('TreeNo', treeNo);
+        
+        const res = await fetch('/dashboard/api/products.php', { method: 'POST', body: fd });
+        const json = await res.json();
+        
+        if (json.success) {
+            catEditModal.classList.add('hidden');
+            catEditModal.classList.remove('flex');
+            loadCategories();
+        } else {
+            alert('수정 실패: ' + json.message);
+        }
+    } catch (e) {
+        alert('수정 중 오류 발생');
+    }
+});
+
+// ---- 추가 모달 ----
+const catAddModal = document.getElementById('catAddModal');
+const catAddTitle = document.getElementById('catAddTitle');
+const catAddParent = document.getElementById('catAddParent');
+const catAddParentWrap = document.getElementById('catAddParentWrap');
+let catAddCurrentLevel = 'style';
+
+document.getElementById('catAddStyleBtn').addEventListener('click', () => {
+    catAddCurrentLevel = 'style';
+    document.getElementById('catAddModalTitle').textContent = '구분(스타일) 추가';
+    catAddParentWrap.classList.add('hidden');
+    catAddTitle.value = '';
+    catAddModal.classList.remove('hidden');
+    catAddModal.classList.add('flex');
+    catAddTitle.focus();
+});
+
+document.getElementById('catAddChildBtn').addEventListener('click', () => {
+    catAddCurrentLevel = 'section';
+    document.getElementById('catAddModalTitle').textContent = '종류(섹션) 추가';
+    catAddParentWrap.classList.remove('hidden');
+    
+    catAddParent.innerHTML = '<option value="">상위 스타일 선택</option>';
+    getStyles().forEach(s => {
+        const opt = document.createElement('option');
+        opt.value = s.no;
+        opt.textContent = s.title;
+        catAddParent.appendChild(opt);
+    });
+    
+    catAddTitle.value = '';
+    catAddModal.classList.remove('hidden');
+    catAddModal.classList.add('flex');
+});
+
+document.getElementById('catAddCancelBtn').addEventListener('click', () => {
+    catAddModal.classList.add('hidden');
+    catAddModal.classList.remove('flex');
+});
+
+catAddModal.addEventListener('click', (e) => {
+    if (e.target === catAddModal) {
+        catAddModal.classList.add('hidden');
+        catAddModal.classList.remove('flex');
+    }
+});
+
+document.getElementById('catAddSaveBtn').addEventListener('click', async () => {
     const title = catAddTitle.value.trim();
     const parentNo = catAddParent.value;
     
@@ -900,7 +1062,7 @@ catAddBtn.addEventListener('click', async function() {
         return;
     }
     
-    if (level !== 'style' && !parentNo) {
+    if (catAddCurrentLevel !== 'style' && !parentNo) {
         alert('상위 스타일을 선택하세요.');
         catAddParent.focus();
         return;
@@ -911,18 +1073,16 @@ catAddBtn.addEventListener('click', async function() {
         fd.append('action', 'category_create');
         fd.append('type', productType);
         fd.append('title', title);
-        fd.append('level', level);
-        fd.append('parentNo', level === 'style' ? '0' : parentNo);
+        fd.append('level', catAddCurrentLevel);
+        fd.append('parentNo', catAddCurrentLevel === 'style' ? '0' : parentNo);
         
         const res = await fetch('/dashboard/api/products.php', { method: 'POST', body: fd });
         const json = await res.json();
         
         if (json.success) {
-            alert(json.message);
-            catAddTitle.value = '';
+            catAddModal.classList.add('hidden');
+            catAddModal.classList.remove('flex');
             loadCategories();
-            // 페이지 새로고침하여 필터 드롭다운도 갱신
-            location.reload();
         } else {
             alert('추가 실패: ' + json.message);
         }
@@ -930,6 +1090,38 @@ catAddBtn.addEventListener('click', async function() {
         alert('추가 중 오류 발생');
     }
 });
+
+// ---- 삭제 ----
+async function deleteCat(id, title, isStyle) {
+    let msg = `카테고리 "${title}" (no:${id})을 삭제하시겠습니까?`;
+    if (isStyle) {
+        const children = categoryData.filter(c => String(c.BigNo) === String(id) || String(c.TreeNo) === String(id));
+        if (children.length > 0) {
+            msg += `\n\n⚠ 하위 ${children.length}건도 함께 삭제됩니다!`;
+        }
+    }
+    
+    if (!confirm(msg)) return;
+    
+    try {
+        const fd = new FormData();
+        fd.append('action', 'category_delete');
+        fd.append('type', productType);
+        fd.append('id', id);
+        
+        const res = await fetch('/dashboard/api/products.php', { method: 'POST', body: fd });
+        const json = await res.json();
+        
+        if (json.success) {
+            alert(json.message);
+            loadCategories();
+        } else {
+            alert('삭제 실패: ' + json.message);
+        }
+    } catch (e) {
+        alert('삭제 중 오류 발생');
+    }
+}
 </script>
 
 <?php include __DIR__ . '/../includes/footer.php'; ?>

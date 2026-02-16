@@ -411,6 +411,75 @@ switch ($action) {
         }
         break;
     
+    case 'category_update':
+        global $PRODUCT_TYPES;
+        $type = $_POST['type'] ?? '';
+        $id = intval($_POST['id'] ?? 0);
+        $title = trim($_POST['title'] ?? '');
+        $newBigNo = $_POST['BigNo'] ?? null;
+        $newTreeNo = $_POST['TreeNo'] ?? null;
+        
+        if (!isset($PRODUCT_TYPES[$type]) || $id <= 0) {
+            jsonResponse(false, 'Invalid parameters');
+        }
+        
+        if (empty($title)) {
+            jsonResponse(false, '카테고리명을 입력하세요');
+        }
+        
+        // 현재 카테고리 조회
+        $checkQuery = "SELECT no, BigNo, title, TreeNo, Ttable FROM mlangprintauto_transactioncate WHERE no = ?";
+        $checkStmt = mysqli_prepare($db, $checkQuery);
+        mysqli_stmt_bind_param($checkStmt, "i", $id);
+        mysqli_stmt_execute($checkStmt);
+        $checkResult = mysqli_stmt_get_result($checkStmt);
+        $existing = mysqli_fetch_assoc($checkResult);
+        mysqli_stmt_close($checkStmt);
+        
+        if (!$existing) {
+            jsonResponse(false, '카테고리를 찾을 수 없습니다');
+        }
+        
+        // 업데이트 쿼리 조립
+        $updates = ["title = ?"];
+        $params = [$title];
+        $types = "s";
+        
+        if ($newBigNo !== null) {
+            $updates[] = "BigNo = ?";
+            $params[] = $newBigNo;
+            $types .= "s";
+        }
+        if ($newTreeNo !== null) {
+            $updates[] = "TreeNo = ?";
+            $params[] = $newTreeNo;
+            $types .= "s";
+        }
+        
+        $params[] = $id;
+        $types .= "i";
+        
+        $updateQuery = "UPDATE mlangprintauto_transactioncate SET " . implode(', ', $updates) . " WHERE no = ?";
+        $updateStmt = mysqli_prepare($db, $updateQuery);
+        
+        // bind_param 3단계 검증
+        $placeholder_count = substr_count($updateQuery, '?');
+        $type_count = strlen($types);
+        $var_count = count($params);
+        
+        if ($placeholder_count !== $type_count || $type_count !== $var_count) {
+            jsonResponse(false, 'Internal bind_param mismatch');
+        }
+        
+        mysqli_stmt_bind_param($updateStmt, $types, ...$params);
+        
+        if (mysqli_stmt_execute($updateStmt)) {
+            jsonResponse(true, "카테고리 '{$title}'(으)로 수정되었습니다", ['id' => $id, 'title' => $title]);
+        } else {
+            jsonResponse(false, '수정 실패: ' . mysqli_error($db));
+        }
+        break;
+    
     default:
         jsonResponse(false, 'Invalid action');
 }
