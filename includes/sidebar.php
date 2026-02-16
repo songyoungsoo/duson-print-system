@@ -218,6 +218,7 @@ $show_bank = isset($show_bank) ? $show_bank : true;
 .floating-menu .fm-icon {
     font-size: 22px;
     line-height: 1;
+    filter: grayscale(1) brightness(10);
 }
 
 .floating-menu .fm-label {
