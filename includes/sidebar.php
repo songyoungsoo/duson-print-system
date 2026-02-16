@@ -341,7 +341,7 @@ $show_bank = isset($show_bank) ? $show_bank : true;
 }
 
 .floating-menu .fm-bank-num {
-    font-size: 11px;
+    font-size: 14px;
     font-weight: 700;
     color: #d32f2f;
     font-family: 'Consolas', 'Monaco', monospace;
