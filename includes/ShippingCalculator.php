@@ -382,15 +382,22 @@ class ShippingCalculator
             if ($yeon > 0) return (int)($yeon * 500); // 1연 = 500매
         }
         
-        // MY_amount (일반 수량)
+        // quantity_sheets (정확한 매수 — DB에 이미 계산된 값)
+        if (!empty($item['quantity_sheets'])) {
+            $val = intval($item['quantity_sheets']);
+            if ($val > 0) return $val;
+        }
+
+        // MY_amount (일반 수량 — decimal "500.00" 등)
+        // ⚠️ preg_replace로 비숫자 제거하면 소수점도 삭제되어 "500.00"→"50000" 버그 발생!
         if (!empty($item['MY_amount'])) {
-            $val = intval(preg_replace('/[^0-9]/', '', $item['MY_amount']));
+            $val = intval(floatval($item['MY_amount']));
             if ($val > 0) return $val;
         }
 
         // mesu (매수 직접)
         if (!empty($item['mesu'])) {
-            $val = intval(preg_replace('/[^0-9]/', '', $item['mesu']));
+            $val = intval(floatval($item['mesu']));
             if ($val > 0) return $val;
         }
 

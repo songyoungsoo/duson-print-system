@@ -2118,15 +2118,16 @@ document.addEventListener('DOMContentLoaded', function() {
 // ===== 배송 운임구분 (택배 선불/착불) =====
 var cartItemsForShipping = <?php echo json_encode(array_map(function($item) {
     return [
-        'product_type' => $item['product_type'] ?? '',
-        'MY_Fsd'       => $item['MY_Fsd'] ?? $item['paper_text'] ?? '',
-        'PN_type'      => $item['PN_type'] ?? $item['size_text'] ?? '',
-        'MY_amount'    => $item['MY_amount'] ?? '',
-        'mesu'         => $item['mesu'] ?? '',
-        'flyer_mesu'   => $item['flyer_mesu'] ?? '',
-        'POtype'       => $item['POtype'] ?? '',
-        'spec_material'=> $item['MY_Fsd_name'] ?? '',
-        'spec_size'    => $item['PN_type_name'] ?? '',
+        'product_type'   => $item['product_type'] ?? '',
+        'MY_Fsd'         => $item['MY_Fsd'] ?? $item['paper_text'] ?? '',
+        'PN_type'        => $item['PN_type'] ?? $item['size_text'] ?? '',
+        'MY_amount'      => $item['MY_amount'] ?? '',
+        'mesu'           => $item['mesu'] ?? '',
+        'flyer_mesu'     => $item['flyer_mesu'] ?? '',
+        'POtype'         => $item['POtype'] ?? '',
+        'spec_material'  => $item['MY_Fsd_name'] ?? '',
+        'spec_size'      => $item['PN_type_name'] ?? '',
+        'quantity_sheets'=> $item['quantity_sheets'] ?? '',
     ];
 }, $cart_items)); ?>;
 
