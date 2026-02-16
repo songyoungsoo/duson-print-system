@@ -1,4 +1,4 @@
-opencode<?php
+<?php
 require_once __DIR__ . '/../includes/auth.php';
 require_once __DIR__ . '/../includes/config.php';
 require_once __DIR__ . '/../../db.php';
@@ -141,7 +141,18 @@ include __DIR__ . '/../includes/sidebar.php';
                         <?php $loop_idx = 0; foreach ($orders as $order): ?>
                         <tr class="<?php echo $loop_idx % 2 === 1 ? 'hover:bg-gray-100' : 'hover:bg-gray-50'; ?>" <?php if ($loop_idx % 2 === 1) echo 'style="background-color:#e6f7ff"'; ?> id="row-<?php echo $order['no']; ?>">
                             <td class="px-2 py-1 text-xs font-medium text-gray-900">#<?php echo $order['no']; ?></td>
-                            <td class="px-2 py-1 text-xs text-gray-600"><?php echo htmlspecialchars($order['Type']); ?></td>
+                            <td class="px-2 py-1 text-xs text-gray-600"><?php
+                                $typeMap = [
+                                    'sticker' => '스티커', 'sticker_new' => '스티커',
+                                    'namecard' => '명함', 'inserted' => '전단지',
+                                    'envelope' => '봉투', 'cadarok' => '카다록',
+                                    'littleprint' => '포스터', 'merchandisebond' => '상품권',
+                                    'ncrflambeau' => 'NCR양식지', 'msticker' => '자석스티커'
+                                ];
+                                $rawType = trim($order['Type'] ?? '');
+                                $displayType = $typeMap[strtolower($rawType)] ?? $rawType;
+                                echo htmlspecialchars($displayType);
+                            ?></td>
                             <td class="px-2 py-1 text-xs text-gray-600"><?php echo htmlspecialchars($order['name']); ?></td>
                             <td class="px-2 py-1 text-xs">
                                 <?php
