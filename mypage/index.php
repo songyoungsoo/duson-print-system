@@ -51,15 +51,53 @@ mysqli_stmt_close($stmt);
 $page = isset($_GET['page']) ? intval($_GET['page']) : 1;
 if (!$page) $page = 1;
 
-// 상태 필터
+// 상태 필터 (OrderStyle 기반 고객용 그룹핑)
 $status_filter = isset($_GET['status']) ? $_GET['status'] : '';
-$level_filter_map = [
-    '0' => '주문취소',
-    '1' => '주문접수',
-    '2' => '입금확인',
-    '3' => '작업중',
-    '4' => '배송중'
+$customer_status_filter_map = [
+    'received'   => '주문접수',
+    'confirmed'  => '접수완료',
+    'working'    => '작업중',
+    'completed'  => '작업완료',
+    'shipping'   => '배송중'
 ];
+
+// OrderStyle → 고객용 상태 그룹핑 함수
+function getCustomerStatus($orderStyle, $order = null) {
+    $os = (string)$orderStyle;
+    // 송장번호가 있으면 배송중
+    if ($order) {
+        $tracking = ($order['waybill_no'] ?? '') ?: ($order['logen_tracking_no'] ?? '');
+        if (!empty($tracking)) {
+            return ['text' => '배송중', 'color' => '#28a745', 'group' => 'shipping'];
+        }
+    }
+    switch ($os) {
+        case '0': case '1': case '2':
+            return ['text' => '주문접수', 'color' => '#6c757d', 'group' => 'received'];
+        case '3': case '4':
+            return ['text' => '접수완료', 'color' => '#17a2b8', 'group' => 'confirmed'];
+        case '5': case '6': case '7': case '9': case '10':
+            return ['text' => '작업중', 'color' => '#f59e0b', 'group' => 'working'];
+        case '8':
+            return ['text' => '작업완료', 'color' => '#10b981', 'group' => 'completed'];
+        case 'deleted':
+            return ['text' => '주문취소', 'color' => '#dc3545', 'group' => 'cancelled'];
+        default:
+            return ['text' => '주문접수', 'color' => '#6c757d', 'group' => 'received'];
+    }
+}
+
+// 고객 필터 → OrderStyle WHERE 조건 매핑
+function getStatusFilterCondition($filterGroup) {
+    switch ($filterGroup) {
+        case 'received':  return "OrderStyle IN ('0','1','2')";
+        case 'confirmed': return "OrderStyle IN ('3','4')";
+        case 'working':   return "OrderStyle IN ('5','6','7','9','10')";
+        case 'completed': return "OrderStyle = '8'";
+        case 'shipping':  return "(waybill_no IS NOT NULL AND waybill_no != '' OR logen_tracking_no IS NOT NULL AND logen_tracking_no != '')";
+        default: return '';
+    }
+}
 
 // 사용자 이메일 가져오기
 $email_query = "SELECT email FROM users WHERE id = ?";
@@ -71,16 +109,17 @@ $user_email_data = mysqli_fetch_assoc($email_result);
 $userEmail = $user_email_data['email'] ?? '';
 mysqli_stmt_close($email_stmt);
 
-// 전체 주문 수 (필터 적용)
+// 전체 주문 수 (필터 적용 - OrderStyle 기반)
 $count_query = "SELECT COUNT(*) as total FROM mlangorder_printauto WHERE email = ?";
+$filter_condition = '';
 if ($status_filter !== '') {
-    $count_query .= " AND level = ?";
-    $count_stmt = mysqli_prepare($db, $count_query);
-    mysqli_stmt_bind_param($count_stmt, "si", $userEmail, $status_filter);
-} else {
-    $count_stmt = mysqli_prepare($db, $count_query);
-    mysqli_stmt_bind_param($count_stmt, "s", $userEmail);
+    $filter_condition = getStatusFilterCondition($status_filter);
+    if ($filter_condition) {
+        $count_query .= " AND " . $filter_condition;
+    }
 }
+$count_stmt = mysqli_prepare($db, $count_query);
+mysqli_stmt_bind_param($count_stmt, "s", $userEmail);
 mysqli_stmt_execute($count_stmt);
 $count_result = mysqli_stmt_get_result($count_stmt);
 $count_data = mysqli_fetch_assoc($count_result);
@@ -92,18 +131,14 @@ $pagenum = 10;
 $pages = ceil($total_orders / $pagenum);
 $offset = $pagenum * ($page - 1);
 
-// 전체 주문 내역 조회 (필터 적용)
+// 전체 주문 내역 조회 (필터 적용 - OrderStyle 기반)
 $all_orders_query = "SELECT * FROM mlangorder_printauto WHERE email = ?";
-if ($status_filter !== '') {
-    $all_orders_query .= " AND level = ?";
-    $all_orders_query .= " ORDER BY no DESC LIMIT ?, ?";
-    $all_orders_stmt = mysqli_prepare($db, $all_orders_query);
-    mysqli_stmt_bind_param($all_orders_stmt, "siii", $userEmail, $status_filter, $offset, $pagenum);
-} else {
-    $all_orders_query .= " ORDER BY no DESC LIMIT ?, ?";
-    $all_orders_stmt = mysqli_prepare($db, $all_orders_query);
-    mysqli_stmt_bind_param($all_orders_stmt, "sii", $userEmail, $offset, $pagenum);
+if ($status_filter !== '' && $filter_condition) {
+    $all_orders_query .= " AND " . $filter_condition;
 }
+$all_orders_query .= " ORDER BY no DESC LIMIT ?, ?";
+$all_orders_stmt = mysqli_prepare($db, $all_orders_query);
+mysqli_stmt_bind_param($all_orders_stmt, "sii", $userEmail, $offset, $pagenum);
 mysqli_stmt_execute($all_orders_stmt);
 $all_orders_result = mysqli_stmt_get_result($all_orders_stmt);
 $all_orders = mysqli_fetch_all($all_orders_result, MYSQLI_ASSOC);
@@ -583,7 +618,7 @@ include $_SERVER['DOCUMENT_ROOT'] . '/includes/header-ui.php';
                     <form method="get" action="" style="display: flex; gap: 8px; align-items: center;">
                         <select name="status" onchange="this.form.submit()" style="padding: 6px 10px; border: 1px solid #ddd; border-radius: 4px; font-size: 12px;">
                             <option value="">전체 상태</option>
-                            <?php foreach ($level_filter_map as $code => $text): ?>
+                            <?php foreach ($customer_status_filter_map as $code => $text): ?>
                                 <option value="<?php echo $code; ?>" <?php echo $status_filter === $code ? 'selected' : ''; ?>>
                                     <?php echo $text; ?>
                                 </option>
@@ -597,7 +632,7 @@ include $_SERVER['DOCUMENT_ROOT'] . '/includes/header-ui.php';
 
                 <div class="total-count">
                     <?php if ($status_filter !== ''): ?>
-                        <strong><?php echo $level_filter_map[$status_filter] ?? ''; ?></strong> 상태:
+                        <strong><?php echo $customer_status_filter_map[$status_filter] ?? ''; ?></strong> 상태:
                     <?php endif; ?>
                     총 <strong><?php echo number_format($total_orders); ?></strong>건의 주문
                 </div>
@@ -652,15 +687,7 @@ include $_SERVER['DOCUMENT_ROOT'] . '/includes/header-ui.php';
                             <td style="text-align: center; color: #666;"><?php echo date('Y-m-d', strtotime($order['date'] ?? '')); ?></td>
                             <td style="text-align: center;">
                                 <?php
-                                $status_code = $order['level'] ?? 1;
-                                $level_status_map = [
-                                    0 => ['text' => '주문취소', 'color' => '#dc3545'],
-                                    1 => ['text' => '주문접수', 'color' => '#6c757d'],
-                                    2 => ['text' => '입금확인', 'color' => '#17a2b8'],
-                                    3 => ['text' => '작업중', 'color' => '#ffc107'],
-                                    4 => ['text' => '배송중', 'color' => '#28a745']
-                                ];
-                                $status = $level_status_map[$status_code] ?? ['text' => '주문접수', 'color' => '#6c757d'];
+                                $status = getCustomerStatus($order['OrderStyle'] ?? '0', $order);
                                 ?>
                                 <span style="color: <?php echo $status['color']; ?>; font-weight: 500;"><?php echo $status['text']; ?></span>
                             </td>
