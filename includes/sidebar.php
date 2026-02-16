@@ -18,8 +18,7 @@ $show_bank = isset($show_bank) ? $show_bank : true;
     <!-- 카톡상담 -->
     <div class="fm-item">
         <a href="http://pf.kakao.com/_pEGhj/chat" target="_blank" class="fm-circle fm-kakao-circle" title="카톡상담">
-            <img src="/ImgFolder/talk_icon.png" alt="카톡" class="fm-icon-img">
-            <span class="fm-label">카톡상담</span>
+            <img src="/TALK.svg" alt="카톡상담" class="fm-kakao-full">
         </a>
     </div>
 
@@ -201,25 +200,23 @@ $show_bank = isset($show_bank) ? $show_bank : true;
 }
 
 .floating-menu .fm-kakao-circle {
-    background: #FEE500;
-    border-color: rgba(0,0,0,0.08);
-    box-shadow: 0 2px 10px rgba(254,229,0,0.4);
+    background: none;
+    border: none;
+    box-shadow: 0 3px 14px rgba(0,0,0,0.15);
+    padding: 0;
+    overflow: hidden;
 }
 
 .floating-menu .fm-kakao-circle:hover {
-    background: #FFD700;
-    box-shadow: 0 4px 18px rgba(254,229,0,0.55);
+    background: none;
+    box-shadow: 0 4px 18px rgba(0,0,0,0.25);
 }
 
-.floating-menu .fm-kakao-circle .fm-label {
-    color: rgba(0,0,0,0.7);
-}
-
-.floating-menu .fm-icon-img {
-    width: 50px;
-    height: 50px;
-    object-fit: contain;
-    border-radius: 0;
+.floating-menu .fm-kakao-full {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    display: block;
 }
 
 .floating-menu .fm-icon {
