@@ -4,6 +4,19 @@
 
 ---
 
+## 2026-02-16
+
+| 수정자 | 수정항목 | 관련 파일 |
+|--------|----------|-----------|
+| Claude | **교정시안 품목명 한글화** - dashboard/proofs/index.php에서 영문 테이블명(sticker_new, inserted 등)을 한글 품목명(스티커, 전단지 등)으로 자동 매핑 표시 | dashboard/proofs/index.php |
+| Claude | **대시보드 카테고리 관리 CRUD** - 카테고리 추가/삭제 API 구현 (category_create, category_delete). 가격 데이터 연쇄 삭제 포함 | dashboard/api/products.php |
+| Claude | **카테고리 관리 UI 개선** - 스타일 필터(대봉투/소봉투 등) 셀렉트 + 테이블 형식 출력 + 수정 모달(category_update API) + 삭제 확인 + 추가 모달. 기존 리스트 방식에서 테이블 방식으로 전환 | dashboard/products/list.php, dashboard/api/products.php |
+| Claude | **FQ 견적번호 체계 도입** - 플로팅 견적받기에 FQ-YYYYMMDD-NNN 형식 자동 번호 생성. AQ(관리자)/FQ(플로팅)/TAX(세금계산서) 3체계 독립 운영 | includes/quote_request_api.php |
+| Claude | **견적서 전체 색상 홈페이지 헤더색(#1E4E79) 통일** - 관리자 견적서(QuoteRenderer HTML/Email/PDF) + 플로팅 견적받기 이메일 + 브라우저 미리보기 CSS 전체 적용 | QuoteRenderer.php, quote_request_api.php, layout.php |
+| Claude | **문서 업데이트** - AGENTS.md에 카테고리 관리, 관리자 주문 등록, 견적번호 체계 섹션 추가 | AGENTS.md, CHANGELOG.md |
+
+---
+
 ## 2026-02-15
 
 | 수정자 | 수정항목 | 관련 파일 |

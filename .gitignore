@@ -265,7 +265,6 @@ docs/.pdca-status.json
 # Temp extraction files
 *.json
 !package.json
-!package-lock.json
 !playwright.config.json
 !config/gallery_settings.json
 extract_*.js
@@ -275,3 +274,65 @@ login_page_snapshot.md
 EXTRACTION_SUMMARY.txt
 httpdsp1830*.txt
 banner_samples_fullpage.png
+
+# ============================================
+# 15. 임시 스크립트/분석 파일 (2026-02-16)
+# ============================================
+# Playwright/Puppeteer 자동화 스크립트 (일회용)
+*_phpmyadmin*.mjs
+phpmyadmin_*.mjs
+plesk_*.mjs
+admin_phpmyadmin.mjs
+debug_db_page.mjs
+direct_phpmyadmin.mjs
+email_dashboard_screenshots.js
+sticker_page_initial.md
+
+# 임시 DB/SQL 스크립트
+execute_sql.php
+test_db.php
+admin/db_schema/*.php
+scripts/setup_email_tables.php
+system/migration/cleanup_upload.php
+
+# 로그인/관리자 임시 파일
+admin/login.php
+admin_login.php
+
+# 스냅샷/마크다운 메모 (작업 중 생성)
+*_snapshot.md
+after_save.md
+form_bottom.md
+postcode_popup.md
+step2-*.md
+GAUGE_TEST_REPORT.md
+
+# 프로토타입 HTML
+prototype_*.html
+quote_email_preview.html
+
+# 백업 디렉토리
+backup_before_dropdown/
+
+# 미디어/전단지 샘플 (대용량)
+cutting.mp4
+flyer/
+media/
+tojeong/
+
+# 임시 JS 파일 (품목별)
+mlangprintauto/cadarok/js/cadarok_v2.js
+
+# CLAUDE_DOCS 임시 파일
+CLAUDE_DOCS/QUICK_REFERENCE.txt
+
+# Playwright 테스트 (임시)
+tests/email-dashboard-screenshots.spec.ts
+tests/email-dashboard.spec.js
+tests/plesk-login.spec.ts
+
+# 로젠택배 도구 임시 lock
+tools/logen/package-lock.json
+
+# find_phpmyadmin 관련
+find_phpmyadmin.mjs
