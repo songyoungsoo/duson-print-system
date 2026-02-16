@@ -18,6 +18,10 @@ if (!class_exists('ProductSpecFormatter')) {
 if (!class_exists('QuantityFormatter')) {
     include "$HomeDir/includes/QuantityFormatter.php";
 }
+// ShippingCalculator (배송 추정)
+if (!class_exists('ShippingCalculator')) {
+    include "$HomeDir/includes/ShippingCalculator.php";
+}
 
 /**
  * ✅ 2026-01-13: 전단지 매수를 mlangprintauto_inserted 테이블에서 조회
@@ -1677,6 +1681,61 @@ function getOrderItemInfo($summary_item, $specFormatter) {
                         <td style="border: 1px solid #999; padding: 4px 8px;"><textarea name="cont" rows="2" style="width: 100%; box-sizing: border-box; border: 1px solid #ccc; padding: 4px 6px; font-size: 12px; resize: vertical;"><?= $View_cont ?></textarea></td>
                     </tr>
                 </table>
+
+                <?php
+                // ===== 📦 택배비 추정 섹션 (배송지가 "택배"인 경우만) =====
+                $is_delivery_parcel = (mb_strpos($View_delivery, '택배') !== false);
+                if ($is_delivery_parcel && !empty($order_rows)):
+                    // ShippingCalculator로 각 주문 아이템의 배송 추정
+                    $shipping_items = [];
+                    foreach ($order_rows as $ship_item) {
+                        $shipping_items[] = ShippingCalculator::estimateFromOrder($ship_item);
+                    }
+                    // 합산
+                    $ship_total_boxes = 0;
+                    $ship_total_weight_kg = 0;
+                    $ship_total_fee = 0;
+                    foreach ($shipping_items as $si) {
+                        $ship_total_boxes += $si['boxes'];
+                        $ship_total_weight_kg += $si['weight_kg'];
+                        $ship_total_fee += $si['fee'];
+                    }
+                ?>
+                <div style="background: #f0f7ff; border: 1px solid #b8d4f0; border-radius: 8px; padding: 14px 16px; margin-bottom: 15px;">
+                    <div style="display: flex; align-items: center; gap: 6px; margin-bottom: 10px;">
+                        <span style="font-size: 1.1rem;">📦</span>
+                        <span style="font-weight: 700; color: #1E4E79; font-size: 14px;">택배 배송 추정</span>
+                        <span style="background: #e0a800; color: #fff; font-size: 11px; padding: 1px 8px; border-radius: 3px; font-weight: 600;">추정</span>
+                    </div>
+                    <table style="width: 100%; border-collapse: collapse; font-size: 12px;">
+                        <tr style="background: #e8eff7;">
+                            <th style="border: 1px solid #b8d4f0; padding: 6px 10px; text-align: center; color: #1E4E79; width: 25%;">추정 무게</th>
+                            <th style="border: 1px solid #b8d4f0; padding: 6px 10px; text-align: center; color: #1E4E79; width: 25%;">추정 박스</th>
+                            <th style="border: 1px solid #b8d4f0; padding: 6px 10px; text-align: center; color: #1E4E79; width: 25%;">추정 택배비</th>
+                            <th style="border: 1px solid #b8d4f0; padding: 6px 10px; text-align: center; color: #1E4E79; width: 25%;">요금 구분</th>
+                        </tr>
+                        <tr>
+                            <td style="border: 1px solid #b8d4f0; padding: 8px 10px; text-align: center; font-weight: bold; font-size: 13px;">약 <?= number_format($ship_total_weight_kg, 1) ?>kg</td>
+                            <td style="border: 1px solid #b8d4f0; padding: 8px 10px; text-align: center; font-weight: bold; font-size: 13px;"><?= $ship_total_boxes ?>박스</td>
+                            <td style="border: 1px solid #b8d4f0; padding: 8px 10px; text-align: center; font-weight: bold; font-size: 13px; color: #c00;"><?= number_format($ship_total_fee) ?>원</td>
+                            <td style="border: 1px solid #b8d4f0; padding: 8px 10px; text-align: center; font-size: 12px;"><?= htmlspecialchars($shipping_items[0]['fee_type'] ?? '-') ?></td>
+                        </tr>
+                        <?php if (count($shipping_items) > 1): ?>
+                        <?php foreach ($shipping_items as $idx => $si): ?>
+                        <tr style="background: #f8fafc; font-size: 11px; color: #666;">
+                            <td style="border: 1px solid #d0e3f5; padding: 4px 10px; text-align: center;"><?= $idx + 1 ?>번 품목: <?= number_format($si['weight_kg'], 1) ?>kg</td>
+                            <td style="border: 1px solid #d0e3f5; padding: 4px 10px; text-align: center;"><?= $si['boxes'] ?>박스</td>
+                            <td style="border: 1px solid #d0e3f5; padding: 4px 10px; text-align: center;"><?= number_format($si['fee']) ?>원</td>
+                            <td style="border: 1px solid #d0e3f5; padding: 4px 10px; text-align: center;"><?= htmlspecialchars($si['fee_type'] ?? '-') ?></td>
+                        </tr>
+                        <?php endforeach; ?>
+                        <?php endif; ?>
+                    </table>
+                    <div style="margin-top: 8px; font-size: 11px; color: #888; line-height: 1.5;">
+                        ※ 추정치이며 실제와 다를 수 있습니다. 택배비는 전화 확인 후 확정됩니다.
+                    </div>
+                </div>
+                <?php endif; // end 택배비 추정 ?>
 
                 <!-- ✅ 첨부 파일 섹션 (admin.php에서 전달) -->
                 <?php if (isset($GLOBALS['file_section_html']) && !empty($GLOBALS['file_section_html'])): ?>
