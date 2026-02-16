@@ -93,7 +93,7 @@ class ChatWidget {
                 <div class="chat-input-area">
                     <div class="chat-input-wrapper">
                         <button class="chat-image-btn" id="chat-image-btn" title="파일 첨부">+</button>
-                        <input type="file" id="chat-image-input" accept="image/*,.pdf,.doc,.docx,.xls,.xlsx,.ppt,.pptx,.hwp,.hwpx,.ai,.txt">
+                        <input type="file" id="chat-image-input" accept="image/*,.pdf,.doc,.docx,.xls,.xlsx,.ppt,.pptx,.hwp,.hwpx,.ai,.psd,.zip,.txt">
                         <input type="text" class="chat-input" id="chat-input" placeholder="메시지를 입력하세요...">
                         <button class="chat-send-btn" id="chat-send-btn">
                             <svg width="20" height="20" viewBox="0 0 24 24" fill="white">
@@ -518,7 +518,7 @@ class ChatWidget {
         }
 
         // 허용된 파일 확장자 확인
-        const allowedExtensions = ['jpg', 'jpeg', 'png', 'gif', 'webp', 'pdf', 'doc', 'docx', 'xls', 'xlsx', 'ppt', 'pptx', 'hwp', 'hwpx', 'ai', 'txt'];
+        const allowedExtensions = ['jpg', 'jpeg', 'png', 'gif', 'webp', 'pdf', 'doc', 'docx', 'xls', 'xlsx', 'ppt', 'pptx', 'hwp', 'hwpx', 'ai', 'psd', 'zip', 'txt'];
         const ext = file.name.split('.').pop().toLowerCase();
         if (!allowedExtensions.includes(ext)) {
             alert('허용되지 않는 파일 형식입니다.');
@@ -572,6 +572,8 @@ class ChatWidget {
             'ppt': '📙', 'pptx': '📙',
             'hwp': '📝', 'hwpx': '📝',
             'ai': '🎨',
+            'psd': '🎨',
+            'zip': '📦',
             'txt': '📄'
         };
         return icons[ext] || '📎';

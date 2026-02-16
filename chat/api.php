@@ -206,6 +206,10 @@ function uploadFile() {
         'application/vnd.hancom.hwp',                                           // HWP (alt2)
         'application/postscript',                                               // AI
         'application/illustrator',                                              // AI (alt)
+        'image/vnd.adobe.photoshop',                                            // PSD
+        'image/x-photoshop',                                                    // PSD (alt)
+        'application/zip',                                                      // ZIP
+        'application/x-zip-compressed',                                         // ZIP (alt)
         'text/plain',                                                           // TXT
         'text/x-c',                                                             // TXT (code)
         'text/x-java',                                                          // TXT (java)
@@ -218,7 +222,7 @@ function uploadFile() {
     $allowedTypes = array_merge($imageTypes, $documentTypes);
 
     // 확장자로도 추가 확인 (MIME 타입 감지 실패 대비)
-    $allowedExtensions = ['jpg', 'jpeg', 'png', 'gif', 'webp', 'pdf', 'doc', 'docx', 'xls', 'xlsx', 'ppt', 'pptx', 'hwp', 'hwpx', 'ai', 'txt'];
+    $allowedExtensions = ['jpg', 'jpeg', 'png', 'gif', 'webp', 'pdf', 'doc', 'docx', 'xls', 'xlsx', 'ppt', 'pptx', 'hwp', 'hwpx', 'ai', 'psd', 'zip', 'txt'];
 
     $finfo = finfo_open(FILEINFO_MIME_TYPE);
     $mimeType = finfo_file($finfo, $file['tmp_name']);
@@ -229,7 +233,7 @@ function uploadFile() {
 
     // MIME 타입 또는 확장자로 허용 여부 확인
     if (!in_array($mimeType, $allowedTypes) && !in_array($extension, $allowedExtensions)) {
-        jsonResponse(false, null, '허용되지 않는 파일 형식입니다. (이미지, PDF, 문서, 한글, 엑셀, PPT, AI, TXT 파일만 가능)');
+        jsonResponse(false, null, '허용되지 않는 파일 형식입니다. (이미지, PDF, 문서, 한글, 엑셀, PPT, AI, PSD, ZIP, TXT 파일만 가능)');
     }
 
     // 메시지 타입 결정
