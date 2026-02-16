@@ -110,7 +110,7 @@ include "db.php";
             grid-template-columns: 200px 1fr;
             gap: 2rem;
             padding: 0 2rem;
-            margin-right: 180px;
+            margin-right: 80px; /* 플로팅 원형 메뉴 공간 */
         }
 
         /* 왼쪽 사이드바 */

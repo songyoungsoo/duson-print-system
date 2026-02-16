@@ -2,7 +2,7 @@
 .chat-widget {
     position: fixed;
     bottom: 20px;
-    right: 185px; /* 사이드바(165px) 왼쪽에 위치 */
+    right: 80px; /* 플로팅 원형 메뉴(~65px) 왼쪽에 위치 */
     z-index: 9999;
     font-family: 'Noto Sans KR', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
 }

@@ -1,125 +1,139 @@
 <?php
 /**
- * 우측 사이드바 - 독립 컴포넌트
- * 모든 품목 페이지에서 include로 사용
+ * 우측 플로팅 메뉴 - 원형 아이콘 + 클릭 패널 방식
+ * 2026-02-16 리디자인: 사이드바 → 플로팅 원형 아이콘
  *
  * 사용법: <?php include '../includes/sidebar.php'; ?>
  */
 
-// 사이드바 표시 옵션 (각 페이지에서 설정 가능)
+// 표시 옵션 (각 페이지에서 설정 가능)
 $show_contact = isset($show_contact) ? $show_contact : true;
 $show_menu = isset($show_menu) ? $show_menu : true;
 $show_bank = isset($show_bank) ? $show_bank : true;
 ?>
 
-<!-- 우측 사이드바 시작 -->
-<div class="right-sidebar">
+<!-- 플로팅 원형 메뉴 -->
+<div class="floating-menu" id="floating-menu">
 
-    <!-- 카톡상담 특별 섹션 (최상단) -->
-    <div class="kakao-special-section">
-        <a href="http://pf.kakao.com/_pEGhj/chat" target="_blank" class="kakao-special-link">
-            <img src="/WEBSILDESIGN/images/talk.jpg" alt="카톡상담" class="kakao-image">
+    <!-- 카톡상담 -->
+    <div class="fm-item">
+        <a href="http://pf.kakao.com/_pEGhj/chat" target="_blank" class="fm-circle fm-kakao-circle" title="카톡상담">
+            <span class="fm-icon">💬</span>
+            <span class="fm-label">카톡상담</span>
         </a>
     </div>
 
     <?php if($show_contact): ?>
-    <!-- 고객센터 섹션 -->
-    <div class="sidebar-section">
-        <div class="sidebar-title">📞 고객센터</div>
-        <div class="sidebar-contact-info">
-            <div class="sidebar-contact-item">
-                <div class="sidebar-contact-name">대표</div>
-                <div class="sidebar-contact-number">1688-2384</div>
-            </div>
-            <div class="sidebar-contact-item">
-                <div class="sidebar-contact-name">직통</div>
-                <div class="sidebar-contact-number">02-2632-1830</div>
-            </div>
-            <div class="sidebar-contact-item">
-                <div class="sidebar-contact-name">팩스</div>
-                <div class="sidebar-contact-number">02-2632-1829</div>
-            </div>
-            <div class="sidebar-contact-item">
-                <div class="sidebar-contact-name">야간</div>
-                <div class="sidebar-contact-number">010-3712-1830</div>
+    <div class="fm-item" data-panel="contact">
+        <button class="fm-circle" title="고객센터">
+            <span class="fm-icon">📞</span>
+            <span class="fm-label">고객센터</span>
+        </button>
+        <div class="fm-panel">
+            <div class="fm-panel-title">📞 고객센터</div>
+            <div class="fm-panel-body">
+                <div class="fm-row">
+                    <span class="fm-key">대표전화</span>
+                    <a href="tel:16882384" class="fm-val fm-phone">1688-2384</a>
+                </div>
+                <div class="fm-row">
+                    <span class="fm-key">직통</span>
+                    <a href="tel:0226321830" class="fm-val">02-2632-1830</a>
+                </div>
+                <div class="fm-row">
+                    <span class="fm-key">팩스</span>
+                    <span class="fm-val">02-2632-1829</span>
+                </div>
+                <div class="fm-row">
+                    <span class="fm-key">야간</span>
+                    <a href="tel:01037121830" class="fm-val">010-3712-1830</a>
+                </div>
             </div>
         </div>
     </div>
     <?php endif; ?>
 
     <?php if($show_menu): ?>
-    <!-- 파일전송 섹션 -->
-    <div class="sidebar-section">
-        <div class="sidebar-title">📂 파일전송</div>
-        <div class="file-transfer-section">
-            <!-- 웹하드 -->
-            <div class="file-item">
-                <a href="http://www.webhard.co.kr/" target="_blank" class="file-link">
-                    <div class="file-service">웹하드 바로가기</div>
-                    <div class="file-credentials">ID: duson1830<br>PW: 1830</div>
+    <div class="fm-item" data-panel="file">
+        <button class="fm-circle" title="파일전송">
+            <span class="fm-icon">📂</span>
+            <span class="fm-label">파일전송</span>
+        </button>
+        <div class="fm-panel">
+            <div class="fm-panel-title">📂 파일전송</div>
+            <div class="fm-panel-body fm-links">
+                <a href="http://www.webhard.co.kr/" target="_blank" class="fm-link">
+                    <span>웹하드 바로가기</span>
+                    <span style="font-size:10px;color:#007bff;display:block;">ID: duson1830 / PW: 1830</span>
                 </a>
-            </div>
-            <!-- 이메일 -->
-            <div class="file-item">
-                <a href="mailto:dsp1830@naver.com" class="file-link">
-                    <div class="file-service">📧 이메일 전송</div>
-                    <div class="file-email">dsp1830@naver.com</div>
-                </a>
+                <a href="mailto:dsp1830@naver.com" class="fm-link">📧 dsp1830@naver.com</a>
             </div>
         </div>
     </div>
 
-    <!-- 업무안내 섹션 -->
-    <div class="sidebar-section">
-        <div class="sidebar-title">📋 업무안내</div>
-        <div class="business-menu">
-            <a href="/sub/attention.htm" class="business-link">📝 작업시 유의사항</a>
-            <a href="/sub/expense.htm" class="business-link">💰 편집디자인비용</a>
-            <a href="https://map.kakao.com/link/search/서울시 영등포구 영등포로 36길 9 송호빌딩" target="_blank" class="business-link">🗺️ 오시는길</a>
+    <div class="fm-item" data-panel="guide">
+        <button class="fm-circle" title="업무안내">
+            <span class="fm-icon">📋</span>
+            <span class="fm-label">업무안내</span>
+        </button>
+        <div class="fm-panel">
+            <div class="fm-panel-title">📋 업무안내</div>
+            <div class="fm-panel-body fm-links">
+                <a href="/sub/attention.htm" class="fm-link">📝 작업시 유의사항</a>
+                <a href="/sub/expense.htm" class="fm-link">💰 편집디자인비용</a>
+                <a href="https://map.kakao.com/link/search/서울시 영등포구 영등포로 36길 9 송호빌딩" target="_blank" class="fm-link">🗺️ 오시는길</a>
+            </div>
         </div>
     </div>
     <?php endif; ?>
 
     <?php if($show_bank): ?>
-    <!-- 입금안내 섹션 -->
-    <div class="sidebar-section">
-        <div class="sidebar-title">🏦 입금안내</div>
-        <div class="bank-info">
-            <div class="bank-item">
-                <div class="bank-name">국민</div>
-                <div class="bank-account">999-1688-2384</div>
-            </div>
-            <div class="bank-item">
-                <div class="bank-name">신한</div>
-                <div class="bank-account">110-342-543507</div>
-            </div>
-            <div class="bank-item">
-                <div class="bank-name">농협</div>
-                <div class="bank-account">301-2632-1830-11</div>
-            </div>
-            <div class="bank-owner">
-                <div>예금주: 두손기획인쇄</div>
-                <div>차경선</div>
+    <div class="fm-item" data-panel="bank">
+        <button class="fm-circle" title="입금안내">
+            <span class="fm-icon">🏦</span>
+            <span class="fm-label">입금안내</span>
+        </button>
+        <div class="fm-panel">
+            <div class="fm-panel-title">🏦 입금안내</div>
+            <div class="fm-panel-body">
+                <div class="fm-bank">
+                    <span class="fm-bank-name">국민은행</span>
+                    <span class="fm-bank-num">999-1688-2384</span>
+                </div>
+                <div class="fm-bank">
+                    <span class="fm-bank-name">신한은행</span>
+                    <span class="fm-bank-num">110-342-543507</span>
+                </div>
+                <div class="fm-bank">
+                    <span class="fm-bank-name">농협</span>
+                    <span class="fm-bank-num">301-2632-1830-11</span>
+                </div>
+                <div class="fm-bank-owner">예금주: 두손기획인쇄 차경선</div>
             </div>
         </div>
     </div>
     <?php endif; ?>
 
-    <!-- 운영시간 섹션 -->
-    <div class="sidebar-section">
-        <div class="sidebar-title">⏰ 운영시간</div>
-        <div class="time-info">
-            <div class="time-item">
-                <span class="time-day">평일</span>
-                <span class="time-hours">09:00-18:00</span>
-            </div>
-            <div class="time-item">
-                <span class="time-day">토요일</span>
-                <span class="time-hours">09:00-13:00</span>
-            </div>
-            <div class="time-item holiday">
-                <span class="time-day">일/공휴일</span>
-                <span class="time-hours">휴무</span>
+    <div class="fm-item" data-panel="time">
+        <button class="fm-circle" title="운영시간">
+            <span class="fm-icon">⏰</span>
+            <span class="fm-label">운영시간</span>
+        </button>
+        <div class="fm-panel">
+            <div class="fm-panel-title">⏰ 운영시간</div>
+            <div class="fm-panel-body">
+                <div class="fm-row">
+                    <span class="fm-key">평일</span>
+                    <span class="fm-val">09:00 ~ 18:00</span>
+                </div>
+                <div class="fm-row">
+                    <span class="fm-key">토요일</span>
+                    <span class="fm-val">09:00 ~ 13:00</span>
+                </div>
+                <div class="fm-row fm-holiday">
+                    <span class="fm-key">일/공휴일</span>
+                    <span class="fm-val">휴무</span>
+                </div>
             </div>
         </div>
     </div>
@@ -127,276 +141,334 @@ $show_bank = isset($show_bank) ? $show_bank : true;
 </div>
 
 <style>
-/* Google Fonts - Noto Sans KR */
-@import url('https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@400;500;600;700&display=swap');
-
-/* 우측 사이드바 - 내용에 맞게 높이 조절 */
-.right-sidebar {
+/* =====================================================
+   플로팅 원형 메뉴 스타일
+   ===================================================== */
+.floating-menu {
     position: fixed;
-    top: 0;
-    right: 0;
-    width: 165px;
-    background: #f8f9fa;
-    border-left: 1px solid #e9ecef;
-    padding: 5px;
-    font-size: 13px;
-    max-height: 100vh;
-    z-index: 100;
-    box-shadow: -2px 0 8px rgba(0,0,0,0.1);
-    overflow: hidden;
-    box-sizing: border-box;
-    font-family: 'Noto Sans KR', 'Noto Sans', sans-serif;
+    right: 12px;
+    top: 50%;
+    transform: translateY(-50%);
+    z-index: 9990;
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+    font-family: 'Noto Sans KR', -apple-system, sans-serif;
 }
 
-/* 카톡상담 특별 섹션 */
-.kakao-special-section {
-    margin-bottom: 5px;
-    text-align: center;
-}
-
-.kakao-special-link {
-    display: inline-block;
+.floating-menu .fm-item {
     position: relative;
-    transition: transform 0.2s ease;
-    border-radius: 8px;
-    overflow: hidden;
+    display: flex;
+    align-items: center;
+    justify-content: flex-end;
 }
 
-.kakao-special-link:hover {
-    transform: scale(1.05);
-    box-shadow: 0 4px 8px rgba(0,0,0,0.2);
+.floating-menu .fm-circle {
+    width: 52px;
+    height: 52px;
+    border-radius: 50%;
+    background: #1E4E79;
+    border: 2px solid rgba(255,255,255,0.3);
+    cursor: pointer;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: 1px;
+    transition: all 0.25s ease;
+    box-shadow: 0 2px 10px rgba(30,78,121,0.35);
+    position: relative;
+    z-index: 2;
+    flex-shrink: 0;
+    text-decoration: none;
+    color: inherit;
 }
 
-.kakao-image {
-    width: 95%;
-    height: auto;
-    display: block;
-    border-radius: 8px;
-    margin: 0 auto;
+.floating-menu .fm-circle:hover {
+    transform: scale(1.12);
+    box-shadow: 0 4px 18px rgba(30,78,121,0.5);
+    background: #2a6496;
 }
 
-.kakao-label {
-    position: absolute;
-    top: 18%;
-    left: 50%;
-    transform: translateX(-50%);
-    color: #fff;
-    font-size: 13px;
-    font-weight: 800;
-    letter-spacing: 1px;
-    text-shadow: 1px 1px 3px rgba(0,0,0,0.6);
-    pointer-events: none;
+.floating-menu .fm-circle:active {
+    transform: scale(0.95);
+}
+
+.floating-menu .fm-item.active .fm-circle {
+    background: #0d3a5e;
+    box-shadow: 0 4px 18px rgba(30,78,121,0.55);
+    border-color: rgba(255,255,255,0.5);
+}
+
+.floating-menu .fm-kakao-circle {
+    background: #FEE500;
+    border-color: rgba(0,0,0,0.08);
+    box-shadow: 0 2px 10px rgba(254,229,0,0.4);
+}
+
+.floating-menu .fm-kakao-circle:hover {
+    background: #FFD700;
+    box-shadow: 0 4px 18px rgba(254,229,0,0.55);
+}
+
+.floating-menu .fm-kakao-circle .fm-label {
+    color: rgba(0,0,0,0.7);
+}
+
+.floating-menu .fm-icon {
+    font-size: 18px;
     line-height: 1;
 }
 
-.sidebar-section {
-    margin-bottom: 5px;
-    background: white;
-    border-radius: 8px;
-    padding: 0;
-    box-shadow: 0 2px 8px rgba(0,0,0,0.08);
+.floating-menu .fm-label {
+    font-size: 8px;
+    color: rgba(255,255,255,0.9);
+    font-weight: 600;
+    letter-spacing: -0.3px;
+    line-height: 1;
+}
+
+.floating-menu .fm-panel {
+    position: absolute;
+    right: 62px;
+    top: 50%;
+    transform: translateY(-50%) translateX(10px);
+    width: 220px;
+    background: #fff;
+    border-radius: 12px;
+    box-shadow: 0 8px 32px rgba(0,0,0,0.15), 0 2px 8px rgba(0,0,0,0.08);
+    opacity: 0;
+    visibility: hidden;
+    pointer-events: none;
+    transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1);
+    z-index: 1;
     overflow: hidden;
-    border: 1px solid #e9ecef;
 }
 
-.sidebar-title {
+.floating-menu .fm-panel::after {
+    content: '';
+    position: absolute;
+    right: -6px;
+    top: 50%;
+    transform: translateY(-50%) rotate(45deg);
+    width: 12px;
+    height: 12px;
+    background: #fff;
+    box-shadow: 2px -2px 4px rgba(0,0,0,0.06);
+}
+
+.floating-menu .fm-item.active .fm-panel {
+    opacity: 1;
+    visibility: visible;
+    pointer-events: auto;
+    transform: translateY(-50%) translateX(0);
+}
+
+.floating-menu .fm-panel-title {
     background: #1E4E79;
-    color: white;
-    text-align: center;
-    padding: 6px;
+    color: #fff;
+    padding: 10px 14px;
+    font-size: 13px;
     font-weight: 700;
-    margin: 0;
-    font-size: 12px;
-    text-shadow: 1px 1px 2px rgba(0,0,0,0.3);
-    border-bottom: 1px solid rgba(255,255,255,0.2);
 }
 
-.sidebar-contact-info, .bank-info, .time-info {
-    padding: 5px;
+.floating-menu .fm-panel-body {
+    padding: 12px 14px;
 }
 
-.sidebar-contact-item, .bank-item, .time-item {
+.floating-menu .fm-row {
     display: flex;
     justify-content: space-between;
     align-items: center;
-    padding: 2px 0;
-    border-bottom: 1px dotted #e9ecef;
-    font-size: 11px;
-    line-height: 1.3;
-}
-
-.sidebar-contact-item:last-child, .bank-item:last-child, .time-item:last-child {
-    border-bottom: none;
-}
-
-/* 고객센터 전화번호 스타일 */
-.sidebar-contact-name {
-    font-weight: 600;
-    color: #2d3748;
-    font-size: 11px;
-}
-
-.sidebar-contact-number {
-    color: #e53e3e;
-    font-weight: 700;
-    font-size: 11px;
-    font-family: monospace;
-}
-
-.contact-label, .time-day {
-    font-weight: 500;
-    color: #4a5568;
-    font-size: 11px;
-}
-
-.contact-value, .time-hours {
-    color: #2d3748;
-    font-weight: 600;
-    font-size: 11px;
-}
-
-.bank-name {
-    font-weight: 600;
-    color: #2d3748;
-    font-size: 11px;
-}
-
-.bank-account {
-    color: #e53e3e;
-    font-weight: 700;
-    font-size: 11px;
-    font-family: monospace;
-}
-
-.bank-owner {
-    text-align: center;
-    margin-top: 4px;
-    padding-top: 4px;
-    border-top: 1px solid #e9ecef;
-    font-size: 10px;
-    color: #4a5568;
-    font-weight: 500;
-    line-height: 1.3;
-}
-
-.bank-owner div {
-    margin: 0;
-    padding: 0;
-}
-
-/* 파일전송 섹션 */
-.file-transfer-section {
-    padding: 6px;
-    text-align: center;
-}
-
-.file-item {
-    margin-bottom: 4px;
-    padding: 4px;
+    padding: 6px 0;
     border-bottom: 1px dotted #e9ecef;
 }
 
-.file-item:last-child {
+.floating-menu .fm-row:last-child {
     border-bottom: none;
-    margin-bottom: 0;
 }
 
-.file-link {
-    display: block;
-    text-decoration: none;
-    color: inherit;
-    text-align: center;
-    padding: 4px;
-    border-radius: 4px;
-    transition: all 0.2s ease;
-}
-
-.file-link:hover {
-    background: linear-gradient(135deg, #e6f3ff 0%, #b3d9ff 100%);
-    transform: translateY(-1px);
-    box-shadow: 0 1px 3px rgba(0,0,0,0.1);
-}
-
-.file-service {
-    font-size: 11px;
-    font-weight: 600;
-    color: #2d3748;
-    margin-bottom: 3px;
-    text-align: center;
-}
-
-.file-credentials {
+.floating-menu .fm-key {
     font-size: 12px;
-    color: #007bff;
-    font-family: 'Noto Sans KR', 'Noto Sans', monospace;
-    font-weight: 700;
-    background: #f8f9fa;
-    padding: 3px 6px;
-    border-radius: 3px;
-    display: block;
-    line-height: 1.4;
-    text-align: center;
-    margin: 0 auto;
-    width: fit-content;
-}
-
-.file-email {
-    font-size: 11px;
-    color: #007bff;
+    color: #666;
     font-weight: 500;
-    text-align: center;
-    display: block;
 }
 
-/* 업무안내 섹션 */
-.business-menu {
-    padding: 4px;
-}
-
-.business-link {
-    display: block;
-    padding: 5px 6px;
-    color: #4a5568;
+.floating-menu .fm-val {
+    font-size: 12px;
+    color: #222;
+    font-weight: 600;
     text-decoration: none;
-    border-radius: 4px;
-    transition: all 0.2s ease;
-    margin-bottom: 3px;
+}
+
+.floating-menu a.fm-val:hover {
+    color: #1E4E79;
+    text-decoration: underline;
+}
+
+.floating-menu .fm-phone {
+    color: #d32f2f;
+    font-size: 13px;
+    font-weight: 700;
+}
+
+.floating-menu .fm-holiday .fm-val {
+    color: #d32f2f;
+}
+
+.floating-menu .fm-bank {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 5px 0;
+    border-bottom: 1px dotted #e9ecef;
+}
+
+.floating-menu .fm-bank:last-of-type {
+    border-bottom: none;
+}
+
+.floating-menu .fm-bank-name {
+    font-size: 12px;
+    font-weight: 600;
+    color: #333;
+}
+
+.floating-menu .fm-bank-num {
     font-size: 11px;
+    font-weight: 700;
+    color: #d32f2f;
+    font-family: 'Consolas', 'Monaco', monospace;
+    letter-spacing: -0.3px;
+}
+
+.floating-menu .fm-bank-owner {
+    text-align: center;
+    margin-top: 8px;
+    padding-top: 8px;
+    border-top: 1px solid #e9ecef;
+    font-size: 11px;
+    color: #555;
     font-weight: 500;
-    border: 1px solid transparent;
 }
 
-.business-link:last-child {
-    margin-bottom: 0;
+.floating-menu .fm-links {
+    padding: 8px 10px;
 }
 
-.business-link:hover {
-    background: linear-gradient(135deg, #e6f3ff 0%, #b3d9ff 100%);
-    color: #2d3748;
-    transform: translateX(2px);
-    border-color: #87ceeb;
-    box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+.floating-menu .fm-link {
+    display: block;
+    padding: 7px 10px;
+    margin-bottom: 3px;
+    font-size: 12px;
+    font-weight: 500;
+    color: #444;
+    text-decoration: none;
+    border-radius: 6px;
+    transition: all 0.2s ease;
 }
 
-.time-item.holiday {
-    opacity: 0.7;
+.floating-menu .fm-link:hover {
+    background: #e3f2fd;
+    color: #1565c0;
+    transform: translateX(-2px);
 }
 
-.time-item.holiday .time-hours {
-    color: #e53e3e;
-}
-
-/* 창이 줄어들면 사이드바 숨김 (1124px 이하) */
+/* 태블릿 이하 */
 @media (max-width: 1124px) {
-    .right-sidebar {
+    .floating-menu {
+        right: 8px;
+        gap: 8px;
+    }
+
+    .floating-menu .fm-circle {
+        width: 44px;
+        height: 44px;
+    }
+
+    .floating-menu .fm-icon {
+        font-size: 16px;
+    }
+
+    .floating-menu .fm-label {
+        display: none;
+    }
+
+    .floating-menu .fm-panel {
+        right: 54px;
+        width: 200px;
+    }
+}
+
+/* 모바일 */
+@media (max-width: 480px) {
+    .floating-menu {
+        right: 6px;
+        gap: 6px;
+    }
+
+    .floating-menu .fm-circle {
+        width: 40px;
+        height: 40px;
+    }
+
+    .floating-menu .fm-icon {
+        font-size: 15px;
+    }
+
+    .floating-menu .fm-panel {
+        position: fixed;
+        right: 10px;
+        left: 10px;
+        top: auto;
+        bottom: 80px;
+        width: auto;
+        transform: translateY(10px);
+    }
+
+    .floating-menu .fm-item.active .fm-panel {
+        transform: translateY(0);
+    }
+
+    .floating-menu .fm-panel::after {
         display: none;
     }
 }
-
-/* 큰 화면에서 사이드바 표시 (1125px 이상) */
-@media (min-width: 1125px) {
-    .right-sidebar {
-        display: block;
-    }
-}
 </style>
+
+<script>
+(function() {
+    'use strict';
+    document.addEventListener('DOMContentLoaded', function() {
+        var menu = document.getElementById('floating-menu');
+        if (!menu) return;
+
+        var items = menu.querySelectorAll('.fm-item[data-panel]');
+
+        items.forEach(function(item) {
+            var circle = item.querySelector('.fm-circle');
+            if (!circle) return;
+            circle.addEventListener('click', function(e) {
+                e.stopPropagation();
+                var wasActive = item.classList.contains('active');
+                items.forEach(function(other) { other.classList.remove('active'); });
+                if (!wasActive) item.classList.add('active');
+            });
+        });
+
+        menu.querySelectorAll('.fm-panel').forEach(function(panel) {
+            panel.addEventListener('click', function(e) { e.stopPropagation(); });
+        });
+
+        document.addEventListener('click', function() {
+            items.forEach(function(item) { item.classList.remove('active'); });
+        });
+
+        document.addEventListener('keydown', function(e) {
+            if (e.key === 'Escape') {
+                items.forEach(function(item) { item.classList.remove('active'); });
+            }
+        });
+    });
+})();
+</script>
