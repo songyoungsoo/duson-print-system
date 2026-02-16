@@ -26,6 +26,7 @@ td,input,li{font-size:9pt}
   ini_set('display_errors', 1);
 
   include "../db.php";
+  require_once __DIR__ . "/../includes/ShippingCalculator.php";
   $connect = $db;
   $GGTABLE="mlangprintauto_transactioncate";
   $l[1] = "주문접수";
@@ -282,6 +283,7 @@ function exportAllToLogenExcel() {
     <td style="padding: 3px;"> 전화</td>
     <td style="padding: 3px;"> 핸드폰</td>
     <td style="padding: 3px;"> 박스수량</td>
+    <td style="padding: 3px;"> 추정무게</td>
     <td style="padding: 3px;"> 택배비</td>
     <td style="padding: 3px;"> 운임구분</td>
     <td style="padding: 3px;"> Type</td>
@@ -315,52 +317,11 @@ function exportAllToLogenExcel() {
         }
     }
 
-    // ===== 택배비 자동 계산 (연 단위 룩업 테이블) =====
-    // 규격별 1연당: [박스 수, 택배비(원)]
-    // 특약 기준: 1박스 23kg까지 6,000원, B5 2박스 7,000원
-    $shipping_rules = array(
-        'A6'  => array('boxes' => 1, 'cost' => 4000),   // 소형 - 가벼움
-        'B6'  => array('boxes' => 1, 'cost' => 4000),   // 32절
-        'A5'  => array('boxes' => 1, 'cost' => 6000),   // A5
-        'B5'  => array('boxes' => 2, 'cost' => 7000),   // 16절 특약 2박스=7,000원
-        'A4'  => array('boxes' => 1, 'cost' => 6000),   // A4 1박스=6,000원
-        'B4'  => array('boxes' => 2, 'cost' => 12000),  // 8절
-        'A3'  => array('boxes' => 2, 'cost' => 12000),  // A3
-    );
-
-    // 규격 감지 (Type_1에서 파싱)
-    $detected_size = '';
-    if (preg_match('/16절|B5/i', $type1_raw)) $detected_size = 'B5';
-    elseif (preg_match('/32절|B6/i', $type1_raw)) $detected_size = 'B6';
-    elseif (preg_match('/8절|B4/i', $type1_raw)) $detected_size = 'B4';
-    elseif (preg_match('/A3/i', $type1_raw)) $detected_size = 'A3';
-    elseif (preg_match('/A4/i', $type1_raw)) $detected_size = 'A4';
-    elseif (preg_match('/A5/i', $type1_raw)) $detected_size = 'A5';
-    elseif (preg_match('/A6/i', $type1_raw)) $detected_size = 'A6';
-
-    // 연수 감지: DB quantity_value 우선, 없으면 기본 1연
-    $yeon = 1;
-    if (!empty($data['quantity_value']) && floatval($data['quantity_value']) > 0) {
-        $yeon = floatval($data['quantity_value']);
-    }
-
-    // 택배비 계산
-    $r = 1; $w = 3000; // 기본값 (명함, 스티커 등 소형 제품)
-
-    if (!empty($detected_size) && isset($shipping_rules[$detected_size])) {
-        // 전단지 등 규격 감지된 제품 → 연수 기반 계산
-        $rule = $shipping_rules[$detected_size];
-        $r = (int)ceil($yeon) * $rule['boxes'];
-        $w = (int)ceil($yeon) * $rule['cost'];
-    } elseif (preg_match("/NameCard/i", $data['Type'])) {
-        $r = 1; $w = 3000;
-    } elseif (preg_match("/MerchandiseBond/i", $data['Type'])) {
-        $r = 1; $w = 3000;
-    } elseif (preg_match("/sticker/i", $data['Type'])) {
-        $r = 1; $w = 3000;
-    } elseif (preg_match("/envelop/i", $data['Type'])) {
-        $r = 1; $w = 3000;
-    }
+    // ===== 택배비 자동 계산 (ShippingCalculator 공통 모듈 사용) =====
+    $shipping_est = ShippingCalculator::estimateFromOrder($data);
+    $r = $shipping_est['boxes'];       // 박스수
+    $w = $shipping_est['fee'];         // 택배비 (추정)
+    $est_weight_kg = $shipping_est['weight_kg']; // 추정 무게 (kg)
     $no = $data['no'];
 ?>
   <tr>
@@ -373,6 +334,7 @@ function exportAllToLogenExcel() {
     <td style="padding: 3px;"><?php echo htmlspecialchars(isset($data['phone']) ? $data['phone'] : '')?></td>
     <td style="padding: 3px;" width="120"><?php echo htmlspecialchars(isset($data['Hendphone']) ? $data['Hendphone'] : '')?></td>
     <td style="padding: 3px;" align='center'><input type="text" id="box_qty_<?php echo $no?>" name="box_qty[<?php echo $no?>]" value="<?php echo $r; ?>" size="2" style="text-align:center;"></td>
+    <td style="padding: 3px; text-align:center; color:#666;"><?php echo $est_weight_kg; ?>kg</td>
     <td style="padding: 3px;"><input type="text" id="delivery_fee_<?php echo $no?>" name="delivery_fee[<?php echo $no?>]" value="<?php echo $w; ?>" size="5"></td>
     <td style="padding: 3px;"><select id="fee_type_<?php echo $no?>" name="fee_type[<?php echo $no?>]" style="font-size:9pt;">
       <option value="착불" selected>착불</option>

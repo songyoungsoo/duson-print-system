@@ -916,6 +916,40 @@ if (!empty($debug_info) && strpos($_SERVER['HTTP_HOST'], 'localhost') !== false)
                             </label>
                         </div>
                     </div>
+
+                    <!-- 택배 선택 시: 운임구분 + 배송정보 -->
+                    <div id="shipping_options_area" style="display: none; margin-top: 0.5rem;">
+                        <div style="display: flex; gap: 1.5rem; align-items: center; margin-bottom: 0.7rem;">
+                            <span style="font-weight: 600; color: #555; font-size: 0.9rem;">운임구분:</span>
+                            <label style="display: flex; align-items: center; cursor: pointer; margin: 0;">
+                                <input type="radio" name="shipping_fee_type" value="착불" checked
+                                       style="margin-right: 0.3rem;" onchange="toggleShippingInfo()">
+                                <span style="font-weight: 500; color: #2c3e50;">착불</span>
+                            </label>
+                            <label style="display: flex; align-items: center; cursor: pointer; margin: 0;">
+                                <input type="radio" name="shipping_fee_type" value="선불"
+                                       style="margin-right: 0.3rem;" onchange="toggleShippingInfo()">
+                                <span style="font-weight: 500; color: #2c3e50;">선불</span>
+                            </label>
+                        </div>
+
+                        <div id="shipping_prepaid_info" style="display: none; background: #f0f7ff; border: 1px solid #b8d4f0; border-radius: 8px; padding: 14px 16px; margin-bottom: 0.5rem;">
+                            <div style="display: flex; align-items: center; gap: 6px; margin-bottom: 10px;">
+                                <span style="font-size: 1.1rem;">📦</span>
+                                <span style="font-weight: 700; color: #1E4E79; font-size: 0.95rem;">배송 정보</span>
+                                <span style="background: #e0a800; color: #fff; font-size: 0.7rem; padding: 1px 6px; border-radius: 3px; font-weight: 600;">추정</span>
+                            </div>
+                            <div id="shipping_estimate_content" style="font-size: 0.9rem; color: #333; line-height: 1.7;">
+                                <div>예상 무게: <strong id="est_weight">계산 중...</strong> <span style="color: #888; font-size: 0.8rem;">(부자재 포함)</span></div>
+                                <div>예상 박스: <strong id="est_boxes">계산 중...</strong></div>
+                            </div>
+                            <div style="margin-top: 10px; padding-top: 8px; border-top: 1px solid #d0e3f5; font-size: 0.82rem; color: #666; line-height: 1.5;">
+                                ※ 추정치이며 실제와 다를 수 있습니다<br>
+                                ☎ <strong style="color: #1E4E79;">02-2632-1830</strong> 전화 후 택배비가 확정됩니다
+                            </div>
+                        </div>
+                    </div>
+                    <input type="hidden" name="shipping_fee_type" id="hidden_shipping_fee_type" value="착불">
                 </div>
 
                 <!-- 결제방법 -->
@@ -2080,6 +2114,93 @@ document.addEventListener('DOMContentLoaded', function() {
         });
     }
 });
+
+// ===== 배송 운임구분 (택배 선불/착불) =====
+var cartItemsForShipping = <?php echo json_encode(array_map(function($item) {
+    return [
+        'product_type' => $item['product_type'] ?? '',
+        'MY_Fsd'       => $item['MY_Fsd'] ?? $item['paper_text'] ?? '',
+        'PN_type'      => $item['PN_type'] ?? $item['size_text'] ?? '',
+        'MY_amount'    => $item['MY_amount'] ?? '',
+        'mesu'         => $item['mesu'] ?? '',
+        'flyer_mesu'   => $item['flyer_mesu'] ?? '',
+        'POtype'       => $item['POtype'] ?? '',
+        'spec_material'=> $item['MY_Fsd_name'] ?? '',
+        'spec_size'    => $item['PN_type_name'] ?? '',
+    ];
+}, $cart_items)); ?>;
+
+function toggleDeliveryOptions() {
+    var selected = document.querySelector('input[name="delivery_method"]:checked');
+    var area = document.getElementById('shipping_options_area');
+    var hiddenType = document.getElementById('hidden_shipping_fee_type');
+    if (!area) return;
+    if (selected && selected.value === '택배') {
+        area.style.display = 'block';
+    } else {
+        area.style.display = 'none';
+        if (hiddenType) hiddenType.value = '';
+        var info = document.getElementById('shipping_prepaid_info');
+        if (info) info.style.display = 'none';
+    }
+}
+
+function toggleShippingInfo() {
+    var feeType = document.querySelector('input[name="shipping_fee_type"]:checked');
+    var infoDiv = document.getElementById('shipping_prepaid_info');
+    var hiddenType = document.getElementById('hidden_shipping_fee_type');
+    if (!infoDiv) return;
+    if (feeType && feeType.value === '선불') {
+        infoDiv.style.display = 'block';
+        if (hiddenType) hiddenType.value = '선불';
+        fetchShippingEstimate();
+    } else {
+        infoDiv.style.display = 'none';
+        if (hiddenType) hiddenType.value = '착불';
+    }
+}
+
+function fetchShippingEstimate() {
+    var weightEl = document.getElementById('est_weight');
+    var boxesEl = document.getElementById('est_boxes');
+    if (!weightEl || !boxesEl) return;
+    if (!cartItemsForShipping || cartItemsForShipping.length === 0) {
+        weightEl.textContent = '데이터 없음';
+        boxesEl.textContent = '-';
+        return;
+    }
+    weightEl.textContent = '계산 중...';
+    boxesEl.textContent = '계산 중...';
+    var formData = new FormData();
+    formData.append('action', 'estimate');
+    formData.append('cart_items', JSON.stringify(cartItemsForShipping));
+    fetch('/includes/shipping_api.php', { method: 'POST', body: formData })
+        .then(function(r) { return r.json(); })
+        .then(function(res) {
+            if (res.success && res.data) {
+                weightEl.textContent = '약 ' + res.data.total_weight_kg + 'kg';
+                boxesEl.textContent = res.data.total_boxes + '박스';
+            } else {
+                weightEl.textContent = '계산 불가';
+                boxesEl.textContent = '-';
+            }
+        })
+        .catch(function() {
+            weightEl.textContent = '계산 오류';
+            boxesEl.textContent = '-';
+        });
+}
+
+// 배송방법 라디오 이벤트 바인딩
+document.querySelectorAll('input[name="delivery_method"]').forEach(function(radio) {
+    radio.addEventListener('change', toggleDeliveryOptions);
+});
+// 운임구분 라디오 이벤트 바인딩
+document.querySelectorAll('input[name="shipping_fee_type"]').forEach(function(radio) {
+    radio.addEventListener('change', toggleShippingInfo);
+});
+// 초기 상태 설정
+toggleDeliveryOptions();
 </script>
 
 <?php
