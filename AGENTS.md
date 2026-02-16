@@ -1051,6 +1051,47 @@ item.addEventListener('mouseenter', function() {
 
 **적용 패널**: 고객센터, 파일전송, 업무안내, 입금안내, 운영시간 (전체 5개)
 
+### 대시보드 레이아웃 최적화 (2026-02-17)
+
+**구현 위치**: `dashboard/includes/header.php`, `dashboard/includes/sidebar.php`, `dashboard/includes/footer.php`, `dashboard/orders/view.php`
+
+**변경 전**: 대시보드 페이지 높이가 사이드바 메뉴(982px)에 의해 결정 → 주문 상세 1,350px, 뷰포트(900px) 초과로 스크롤 필요
+
+**변경 후**:
+- ✅ `header.php`: 레이아웃 컨테이너 `min-h-screen` → `h-screen overflow-hidden` (고정 높이)
+- ✅ `sidebar.php`: `overflow-y-auto` 추가 (사이드바 독립 스크롤, 페이지 높이에 영향 안 줌)
+- ✅ `footer.php`: 푸터 HTML 제거 (53px 절약, 관리자 페이지에 불필요)
+- ✅ `view.php`: 모든 카드 `p-4`→`p-3`, 간격/마진 축소, 요청사항 `max-h-32 overflow-y-auto`
+- 결과: **1,350px → 900px** (뷰포트에 스크롤 없이 모든 정보 표시)
+
+**레이아웃 구조**:
+```
+<div class="flex h-screen pt-11 overflow-hidden">  ← 뷰포트 고정
+  <aside overflow-y-auto>  ← 사이드바 독립 스크롤
+  <main overflow-y-auto>   ← 메인 콘텐츠 독립 스크롤
+</div>
+```
+
+**영향 범위**: 대시보드 전체 페이지 (header/sidebar/footer 공통 컴포넌트)
+
+### 마이페이지 주문 상태 OrderStyle 통일 (2026-02-17)
+
+**구현 위치**: `mypage/index.php`
+
+**변경 전**: `level` 컬럼(5단계) 기반 — 대시보드 `OrderStyle` 변경이 반영 안 됨
+
+**변경 후**:
+- ✅ `OrderStyle` 컬럼 기반으로 통일 (SSOT)
+- ✅ `getCustomerStatus()` 함수: OrderStyle 11가지 → 고객용 5단계 그룹핑
+  - 주문접수: OrderStyle 0,1,2
+  - 접수완료: OrderStyle 3,4
+  - 작업중: OrderStyle 5,6,7,9,10
+  - 작업완료: OrderStyle 8
+  - 배송중: 송장번호 존재 시
+- ✅ 필터/쿼리/표시 모두 OrderStyle 기반
+
+**상태 변경 경로**: `dashboard/orders/view.php` → 상태 드롭다운 → POST `/dashboard/api/orders.php?action=update` → `UPDATE mlangorder_printauto SET OrderStyle = ?` → 마이페이지에 즉시 반영
+
 ## 📧 Email System (주문 완료 이메일)
 
 ### 시스템 구성
@@ -1551,5 +1592,5 @@ $PRODUCT_NAME_MAP = [
 
 ---
 
-*Last Updated: 2026-02-16 (배송 추정 시스템, 카테고리 관리 UI, 관리자 주문 등록, 교정시안 한글화)*
+*Last Updated: 2026-02-17 (대시보드 레이아웃 최적화, 마이페이지 OrderStyle 통일, 배송 추정 시스템)*
 *Environment: WSL2 Ubuntu + Windows XAMPP + Production Deployment*
