@@ -65,6 +65,17 @@ $authenticated_order_no = null;
 // 로그아웃 처리
 if (isset($_GET['logout'])) {
     unset($_SESSION['checkboard_order_no']);
+    // 관리자 세션 해제
+    unset($_SESSION['admin_logged_in']);
+    unset($_SESSION['admin_username']);
+    unset($_SESSION['admin_login_time']);
+    unset($_SESSION['admin_last_activity']);
+    unset($_SESSION['admin_ip']);
+    unset($_SESSION['admin_csrf_token']);
+    // auth.php 기반 세션도 해제
+    unset($_SESSION['username']);
+    unset($_SESSION['user_level']);
+    unset($_SESSION['level']);
     header("Location: checkboard.php");
     exit;
 }
