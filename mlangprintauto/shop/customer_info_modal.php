@@ -256,17 +256,80 @@
 
 /* 반응형 디자인 */
 @media (max-width: 768px) {
-    .modal-content {
-        width: 95%;
-        margin: 10% auto;
+    .customer-modal .modal-content {
+        width: 92%;
+        max-width: none;
+        margin: 5% auto;
+    }
+    
+    .customer-modal .modal-header {
+        padding: 12px 16px;
+    }
+    
+    .customer-modal .modal-header .modal-brand {
+        font-size: 1rem;
+    }
+    
+    .customer-modal .modal-header .modal-title {
+        font-size: 0.85rem;
     }
     
     #customerInfoForm {
-        padding: 20px;
+        padding: 16px;
+    }
+    
+    .form-group {
+        margin-bottom: 16px;
+    }
+    
+    .form-group label {
+        font-size: 13px;
+        margin-bottom: 6px;
+    }
+    
+    .form-group input,
+    .form-group textarea {
+        padding: 10px 12px;
+        font-size: 13px;
     }
     
     .modal-buttons {
         flex-direction: column;
+        gap: 10px;
+        margin-top: 20px;
+    }
+    
+    .btn-cancel,
+    .btn-generate {
+        padding: 11px 16px;
+        font-size: 13px;
+    }
+    
+    /* Success modal mobile */
+    #quoteSuccessModal .modal-content {
+        max-width: 90%;
+        margin: 10% auto;
+    }
+}
+
+/* Very small screens */
+@media (max-width: 400px) {
+    .customer-modal .modal-content {
+        width: 95%;
+        margin: 3% auto;
+    }
+    
+    #customerInfoForm {
+        padding: 14px;
+    }
+    
+    .form-group {
+        margin-bottom: 14px;
+    }
+    
+    #quoteSuccessModal .modal-content {
+        max-width: 95%;
+        margin: 5% auto;
     }
 }
 </style>
