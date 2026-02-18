@@ -346,6 +346,25 @@
     line-height: 1.5;
 }
 
+/* 테이블 스크롤 래퍼 */
+.table-scroll-wrapper {
+    overflow-x: auto;
+    -webkit-overflow-scrolling: touch;
+    margin: 20px 0;
+}
+
+.table-scroll-wrapper .detail-info-table,
+.table-scroll-wrapper .delivery-schedule-table {
+    margin: 0;
+    min-width: 600px;
+}
+
+/* 한글 줄바꿈 방지 */
+.inserted-detail-section td,
+.inserted-detail-section th {
+    word-break: keep-all;
+}
+
 /* 반응형 디자인 */
 @media (max-width: 768px) {
     .product-comparison {
@@ -443,6 +462,7 @@
 
     <!-- 상세 정보 -->
     <h2>📋 상세 정보</h2>
+    <div class="table-scroll-wrapper">
     <table class="detail-info-table">
         <thead>
             <tr>
@@ -465,10 +485,12 @@
             </tr>
         </tbody>
     </table>
+    </div>
 
     <!-- 접수 출고안내 -->
     <h2>🚚 접수 출고안내</h2>
     <p style="margin-bottom: 15px; color: #666;">제품별 출고일을 확인해 보세요.</p>
+    <div class="table-scroll-wrapper">
     <table class="delivery-schedule-table">
         <thead>
             <tr>
@@ -499,6 +521,7 @@
             </tr>
         </tbody>
     </table>
+    </div>
 
     <!-- 특징 박스들 -->
     <h2>✨ 주요 특징</h2>

@@ -240,6 +240,24 @@
         flex: 0 0 calc(50% - 10px);
     }
 }
+
+/* 테이블 스크롤 래퍼 */
+.table-scroll-wrapper {
+    overflow-x: auto;
+    -webkit-overflow-scrolling: touch;
+    margin: 20px 0;
+}
+
+.table-scroll-wrapper .product-info-table {
+    margin: 0;
+    min-width: 500px;
+}
+
+/* 한글 줄바꿈 방지 */
+.msticker-detail-section td,
+.msticker-detail-section th {
+    word-break: keep-all;
+}
 </style>
 
 <div class="msticker-detail-section">
@@ -277,6 +295,7 @@
 
     <!-- 제품 정보 -->
     <h2>📋 제품 정보</h2>
+    <div class="table-scroll-wrapper">
     <table class="product-info-table">
         <thead>
             <tr>
@@ -297,10 +316,12 @@
             </tr>
         </tbody>
     </table>
+    </div>
 
     <!-- 출고 안내 -->
     <h2>🚚 접수 출고안내</h2>
     <p style="margin-bottom: 15px; color: #666;">제품별 출고일을 확인해 보세요.</p>
+    <div class="table-scroll-wrapper">
     <table class="product-info-table">
         <thead>
             <tr>
@@ -325,6 +346,7 @@
             </tr>
         </tbody>
     </table>
+    </div>
 
     <!-- 접수 가능 파일 -->
     <h2>📁 접수 가능 파일</h2>

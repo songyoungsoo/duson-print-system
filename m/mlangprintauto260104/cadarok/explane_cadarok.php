@@ -383,6 +383,24 @@
         gap: 10px;
     }
 }
+
+/* 테이블 스크롤 래퍼 */
+.table-scroll-wrapper {
+    overflow-x: auto;
+    -webkit-overflow-scrolling: touch;
+    margin: 20px 0;
+}
+
+.table-scroll-wrapper .fold-info-table {
+    margin: 0;
+    min-width: 550px;
+}
+
+/* 한글 줄바꿈 방지 */
+.cadarok-detail-section td,
+.cadarok-detail-section th {
+    word-break: keep-all;
+}
 </style>
 
 <div class="cadarok-detail-section">
@@ -410,6 +428,7 @@
 
     <!-- 상세 정보 -->
     <h2>📋 상세 정보</h2>
+    <div class="table-scroll-wrapper">
     <table class="fold-info-table">
         <thead>
             <tr>
@@ -430,6 +449,7 @@
             </tr>
         </tbody>
     </table>
+    </div>
 
     <!-- 접지 종류 -->
     <h3>✂️ 접지 종류</h3>
