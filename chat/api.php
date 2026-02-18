@@ -33,6 +33,9 @@ switch ($action) {
     case 'get_staff_rooms':
         getStaffRooms();
         break;
+    case 'get_admin_unread_count':
+        getAdminUnreadCount();
+        break;
     default:
         jsonResponse(false, null, '잘못된 요청입니다.');
 }
@@ -435,5 +438,31 @@ function getStaffRooms() {
     }
 
     jsonResponse(true, $rooms);
+}
+
+// 관리자 전용: 전체 읽지 않은 고객 메시지 수
+function getAdminUnreadCount() {
+    global $db;
+    
+    // 관리자 체크
+    if (session_status() === PHP_SESSION_NONE) {
+        session_start();
+    }
+    
+    if (!isset($_SESSION['admin_logged_in']) || $_SESSION['admin_logged_in'] !== true) {
+        jsonResponse(true, ['count' => 0, 'is_admin' => false]);
+        return;
+    }
+    
+    // 읽지 않은 고객 메시지 수 (staff, system 제외)
+    $query = "SELECT COUNT(*) as count FROM chatmessages 
+              WHERE isread = 0 
+                AND senderid NOT LIKE 'staff%' 
+                AND senderid != 'system'";
+    
+    $result = mysqli_query($db, $query);
+    $row = mysqli_fetch_assoc($result);
+    
+    jsonResponse(true, ['count' => (int)$row['count'], 'is_admin' => true]);
 }
 ?>

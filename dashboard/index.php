@@ -55,7 +55,7 @@ try {
 // Query: Unread chat count
 $chat_unread_count = 0;
 try {
-    $chat_result = mysqli_query($db, "SELECT COUNT(*) as cnt FROM chatmessages WHERE is_read = 0 AND sender_type = 'customer'");
+    $chat_result = mysqli_query($db, "SELECT COUNT(*) as cnt FROM chatmessages WHERE isread = 0 AND senderid NOT LIKE 'staff%' AND senderid != 'system'");
     if ($chat_result) {
         $chat_data = mysqli_fetch_assoc($chat_result);
         $chat_unread_count = intval($chat_data['cnt']);

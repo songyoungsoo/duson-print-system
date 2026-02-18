@@ -1,3 +1,7 @@
+<?php
+require_once __DIR__ . '/../admin/includes/admin_auth.php';
+requireAdminAuth();
+?>
 <!DOCTYPE html>
 <html lang="ko">
 <head>

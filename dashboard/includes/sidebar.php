@@ -164,6 +164,16 @@ $current_path = rtrim($current_path, '/') . '/';
                                 ? ($current_path === '/dashboard/embed.php/' && isset($_GET['url']) && strpos($module['path'], urlencode($_GET['url'])) !== false)
                                 : ($current_path === $item_path);
                             $is_external = !empty($module['external']);
+                            
+                            // 채팅 메뉴 배지 카운트
+                            $badge_count = 0;
+                            if ($key === 'chat') {
+                                $chat_result = mysqli_query($db, "SELECT COUNT(*) as cnt FROM chatmessages WHERE isread = 0 AND senderid NOT LIKE 'staff%' AND senderid != 'system'");
+                                if ($chat_result) {
+                                    $chat_data = mysqli_fetch_assoc($chat_result);
+                                    $badge_count = intval($chat_data['cnt']);
+                                }
+                            }
                         ?>
                         <li>
                             <a href="<?php echo $module['path']; ?>"
@@ -172,6 +182,11 @@ $current_path = rtrim($current_path, '/') . '/';
                                 <span class="sa-arrow">›</span>
                                 <span class="sa-icon"><?php echo $module['icon']; ?></span>
                                 <span style="white-space:nowrap; overflow:hidden; text-overflow:ellipsis;"><?php echo $module['name']; ?></span>
+                                <?php if ($badge_count > 0): ?>
+                                    <span style="margin-left:auto; background:#ef4444; color:#fff; font-size:9px; font-weight:700; padding:1px 5px; border-radius:10px; min-width:16px; text-align:center;">
+                                        <?php echo $badge_count > 99 ? '99+' : $badge_count; ?>
+                                    </span>
+                                <?php endif; ?>
                                 <?php if ($is_external): ?>
                                     <svg class="sa-ext" style="width:10px; height:10px;" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14"></path></svg>
                                 <?php endif; ?>

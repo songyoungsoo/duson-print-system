@@ -6,15 +6,22 @@ class ChatWidget {
         this.isOpen = false;
         this.pollInterval = null;
         this.unreadCount = 0;
+        this.isAdmin = false;
+        this.isDashboard = false;
 
         this.init();
     }
 
     init() {
+        this.checkContext();
         this.createWidget();
         this.attachEvents();
         this.loadChatState();
         this.startBlinkAnimation();
+    }
+
+    checkContext() {
+        this.isDashboard = window.location.pathname.startsWith('/dashboard/');
     }
 
     startBlinkAnimation() {
@@ -135,6 +142,20 @@ class ChatWidget {
             lastTap = now;
             e.preventDefault();
             e.stopPropagation();
+            
+            // 관리자 전용 동작
+            if (this.isAdmin) {
+                if (this.isDashboard) {
+                    // 대시보드 내부: 같은 탭에서 /dashboard/chat/ 이동
+                    window.location.href = '/dashboard/chat/';
+                } else {
+                    // 일반 페이지: 새 탭으로 /chat/admin.php 열기
+                    window.open('/chat/admin.php', '_blank');
+                }
+                return;
+            }
+            
+            // 고객 동작: 기존 채팅창 열기
             this.toggleChat();
         };
 
@@ -601,14 +622,31 @@ class ChatWidget {
     }
 
     async updateUnreadCount() {
-        if (!this.roomId || this.isOpen) return;
+        if (this.isOpen) return;
 
         try {
-            const response = await fetch(`/chat/api.php?action=get_unread_count&room_id=${this.roomId}`);
+            // 관리자 전용: 전체 읽지 않은 메시지 수 조회
+            const response = await fetch('/chat/api.php?action=get_admin_unread_count');
             const data = await response.json();
 
             if (data.success) {
-                this.unreadCount = data.data.count;
+                this.isAdmin = data.data.is_admin || false;
+                
+                if (this.isAdmin) {
+                    this.unreadCount = data.data.count;
+                    this.updateUnreadBadge();
+                    return;
+                }
+            }
+            
+            // 고객: 자기 채팅방만 조회
+            if (!this.roomId) return;
+            
+            const customerResponse = await fetch(`/chat/api.php?action=get_unread_count&room_id=${this.roomId}`);
+            const customerData = await customerResponse.json();
+
+            if (customerData.success) {
+                this.unreadCount = customerData.data.count;
                 this.updateUnreadBadge();
             }
         } catch (error) {
