@@ -50,8 +50,8 @@
     align-items: center;
     justify-content: center;
     transition: all 0.3s ease;
-    position: relative !important;
-    overflow: visible !important;
+    position: relative;
+    overflow: visible;
     /* 모바일 터치 지원 */
     touch-action: manipulation;
     -webkit-tap-highlight-color: rgba(0,0,0,0.1);
@@ -73,6 +73,12 @@
     background: transparent;
     box-shadow: none;
     overflow: hidden;
+}
+
+/* 이미지 버튼에서 라벨이 보이도록 overflow 오버라이드 (명시도 높임) */
+.chat-toggle-btn.chat-toggle-btn-image {
+    overflow: visible;
+    position: relative;
 }
 
 .chat-toggle-btn-image:hover {
@@ -106,7 +112,7 @@
     font-weight: 700 !important;
     letter-spacing: -0.3px !important;
     pointer-events: none !important;
-    z-index: 99999 !important;
+    z-index: 10 !important;
     line-height: 1 !important;
     box-shadow: 0 2px 6px rgba(0, 0, 0, 0.15) !important;
     white-space: nowrap !important;
