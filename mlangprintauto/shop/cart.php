@@ -827,11 +827,11 @@ if ($cart_result === false) {
         <button onclick="printQuotation()" class="btn-quote">
             견적서 인쇄
         </button>
-        <button onclick="openCustomerInfoModal()" style="padding: 12px 30px; background-color: #2563eb; color: white; border: none; border-radius: 6px; font-size: 16px; font-weight: 600; cursor: pointer;">
-            📧 견적서 이메일 발송
+        <button onclick="openCustomerModal()" style="padding: 12px 30px; background-color: #2563eb; color: white; border: none; border-radius: 6px; font-size: 16px; font-weight: 600; cursor: pointer;">
+            📧 이메일 발송
         </button>
         <button onclick="hideQuotation()" style="padding: 12px 30px; background-color: #6c757d; color: white; border: none; border-radius: 6px; font-size: 16px; font-weight: 600; cursor: pointer;">
-            장바구니로 돌아가기
+            ← 돌아가기
         </button>
     </div>
 </div>

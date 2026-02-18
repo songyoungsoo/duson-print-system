@@ -307,3 +307,35 @@ function toggleNavMode() {
     document.cookie = 'nav_mode=' + (isDetailed ? 'detailed' : 'simple') + ';expires=' + d.toUTCString() + ';path=/';
 }
 </script>
+
+<script>
+// Auto-close navigation submenus on mobile scroll
+(function() {
+    if (window.innerWidth > 768) return; // Desktop only - no action needed
+
+    var scrollTimeout;
+    var lastScrollY = window.scrollY;
+
+    function closeAllSubmenus() {
+        var menus = document.querySelectorAll('.nav-dropdown-menu, .nav-mega-panel');
+        menus.forEach(function(menu) {
+            menu.style.display = 'none';
+        });
+        // Reset after 200ms to allow hover to work again
+        setTimeout(function() {
+            menus.forEach(function(menu) {
+                menu.style.display = '';
+            });
+        }, 200);
+    }
+
+    window.addEventListener('scroll', function() {
+        // Only trigger if scrolling down (not up)
+        if (window.scrollY > lastScrollY) {
+            clearTimeout(scrollTimeout);
+            scrollTimeout = setTimeout(closeAllSubmenus, 150); // Debounce 150ms
+        }
+        lastScrollY = window.scrollY;
+    }, { passive: true });
+})();
+</script>
