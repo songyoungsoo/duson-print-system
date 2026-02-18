@@ -265,7 +265,7 @@
     }
     
     .customer-modal .modal-header {
-        padding: 12px 16px;
+        padding: 10px 14px;
     }
     
     .customer-modal .modal-header .modal-brand {
@@ -281,7 +281,7 @@
     }
     
     .form-group {
-        margin-bottom: 16px;
+        margin-bottom: 12px;
     }
     
     .form-group label {
@@ -295,10 +295,14 @@
         font-size: 13px;
     }
     
+    .form-group textarea {
+        min-height: 60px;
+    }
+    
     .modal-buttons {
         flex-direction: column;
-        gap: 10px;
-        margin-top: 20px;
+        gap: 8px;
+        margin-top: 16px;
     }
     
     .btn-cancel,
@@ -328,7 +332,11 @@
     }
     
     .form-group {
-        margin-bottom: 14px;
+        margin-bottom: 10px;
+    }
+    
+    .form-group textarea {
+        min-height: 50px;
     }
     
     #quoteSuccessModal .modal-content {
