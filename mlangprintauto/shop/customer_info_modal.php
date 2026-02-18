@@ -259,6 +259,8 @@
     .customer-modal .modal-content {
         width: 92%;
         max-width: none;
+        max-height: 90vh;
+        overflow-y: auto;
         margin: 5% auto;
     }
     
@@ -316,6 +318,8 @@
 @media (max-width: 400px) {
     .customer-modal .modal-content {
         width: 95%;
+        max-height: 90vh;
+        overflow-y: auto;
         margin: 3% auto;
     }
     
