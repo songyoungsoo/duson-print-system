@@ -17,15 +17,13 @@ $show_bank = isset($show_bank) ? $show_bank : true;
 
     <!-- 카톡상담 -->
     <div class="fm-item fm-kakao-item">
-        <div class="fm-kakao-label">상담연결</div>
         <a href="http://pf.kakao.com/_pEGhj/chat" target="_blank" class="fm-circle fm-kakao-circle" title="카톡상담">
             <img src="/TALK.svg" alt="카톡상담" class="fm-kakao-full">
         </a>
     </div>
 
     <?php if($show_contact): ?>
-    <div class="fm-item fm-contact-item" data-panel="contact">
-        <div class="fm-contact-label">상담연결</div>
+    <div class="fm-item" data-panel="contact">
         <div class="fm-card">
             <div class="fm-card-header">
                 <span class="fm-icon">📞</span>
@@ -365,26 +363,6 @@ $show_bank = isset($show_bank) ? $show_bank : true;
     gap: 6px;
 }
 
-.floating-menu .fm-kakao-label,
-.floating-menu .fm-contact-label {
-    font-size: 13px;
-    font-weight: 700;
-    color: #1E4E79;
-    background: rgba(255, 255, 255, 0.95);
-    padding: 4px 12px;
-    border-radius: 12px;
-    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
-    white-space: nowrap;
-    letter-spacing: -0.3px;
-}
-
-.floating-menu .fm-contact-item {
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    gap: 6px;
-}
-
 .floating-menu .fm-circle {
     width: 88px;
     height: 88px;
@@ -444,11 +422,7 @@ $show_bank = isset($show_bank) ? $show_bank : true;
 
 /* === 반응형 === */
 @media (max-width: 768px) {
-    .floating-menu .fm-kakao-label,
-    .floating-menu .fm-contact-label {
-        font-size: 11px;
-        padding: 3px 10px;
-    }
+    /* 모바일 스타일 */
 }
 
 @media (max-width: 1024px) {
