@@ -1,7 +1,7 @@
 <?php
 /**
- * 우측 플로팅 메뉴 - 원형 아이콘 + 클릭 패널 방식
- * 2026-02-16 리디자인: 사이드바 → 플로팅 원형 아이콘
+ * 우측 플로팅 메뉴 - 원형 → 카드 변형 방식
+ * 2026-02-18 리디자인: hover 시 원형이 제자리에서 카드로 변형
  *
  * 사용법: <?php include '../includes/sidebar.php'; ?>
  */
@@ -24,14 +24,14 @@ $show_bank = isset($show_bank) ? $show_bank : true;
     </div>
 
     <?php if($show_contact): ?>
-    <div class="fm-item" data-panel="contact">
-        <button class="fm-circle" title="고객센터">
-            <span class="fm-icon">📞</span>
-            <span class="fm-label">고객센터</span>
-        </button>
-        <div class="fm-panel">
-            <div class="fm-panel-title">📞 고객센터 <span class="fm-pin-hint">📌 클릭=고정</span></div>
-            <div class="fm-panel-body">
+    <div class="fm-item fm-contact-item" data-panel="contact">
+        <div class="fm-contact-label">상담연결</div>
+        <div class="fm-card">
+            <div class="fm-card-header">
+                <span class="fm-icon">📞</span>
+                <span class="fm-label">고객센터</span>
+            </div>
+            <div class="fm-card-content">
                 <div class="fm-row">
                     <span class="fm-key">대표전화</span>
                     <a href="tel:16882384" class="fm-val fm-phone">1688-2384</a>
@@ -55,13 +55,12 @@ $show_bank = isset($show_bank) ? $show_bank : true;
 
     <?php if($show_menu): ?>
     <div class="fm-item" data-panel="file">
-        <button class="fm-circle" title="파일전송">
-            <span class="fm-icon">📂</span>
-            <span class="fm-label">파일전송</span>
-        </button>
-        <div class="fm-panel">
-            <div class="fm-panel-title">📂 파일전송 <span class="fm-pin-hint">📌 클릭=고정</span></div>
-            <div class="fm-panel-body fm-links">
+        <div class="fm-card">
+            <div class="fm-card-header">
+                <span class="fm-icon">📂</span>
+                <span class="fm-label">파일전송</span>
+            </div>
+            <div class="fm-card-content fm-links">
                 <a href="http://www.webhard.co.kr/" target="_blank" class="fm-link">
                     <span>웹하드 바로가기</span>
                     <span style="font-size:10px;color:#007bff;display:block;">ID: duson1830 / PW: 1830</span>
@@ -72,13 +71,12 @@ $show_bank = isset($show_bank) ? $show_bank : true;
     </div>
 
     <div class="fm-item" data-panel="guide">
-        <button class="fm-circle" title="업무안내">
-            <span class="fm-icon">📋</span>
-            <span class="fm-label">업무안내</span>
-        </button>
-        <div class="fm-panel">
-            <div class="fm-panel-title">📋 업무안내 <span class="fm-pin-hint">📌 클릭=고정</span></div>
-            <div class="fm-panel-body fm-links">
+        <div class="fm-card">
+            <div class="fm-card-header">
+                <span class="fm-icon">📋</span>
+                <span class="fm-label">업무안내</span>
+            </div>
+            <div class="fm-card-content fm-links">
                 <a href="/sub/attention.htm" class="fm-link">📝 작업시 유의사항</a>
                 <a href="/sub/expense.htm" class="fm-link">💰 편집디자인비용</a>
                 <a href="https://map.kakao.com/link/search/서울시 영등포구 영등포로 36길 9 송호빌딩" target="_blank" class="fm-link">🗺️ 오시는길</a>
@@ -89,13 +87,12 @@ $show_bank = isset($show_bank) ? $show_bank : true;
 
     <?php if($show_bank): ?>
     <div class="fm-item" data-panel="bank">
-        <button class="fm-circle" title="입금안내">
-            <span class="fm-icon">🏦</span>
-            <span class="fm-label">입금안내</span>
-        </button>
-        <div class="fm-panel">
-            <div class="fm-panel-title">🏦 입금안내 <span class="fm-pin-hint">📌 클릭=고정</span></div>
-            <div class="fm-panel-body">
+        <div class="fm-card">
+            <div class="fm-card-header">
+                <span class="fm-icon">🏦</span>
+                <span class="fm-label">입금안내</span>
+            </div>
+            <div class="fm-card-content">
                 <div class="fm-bank">
                     <span class="fm-bank-name">국민은행</span>
                     <span class="fm-bank-num" onclick="copyAccount(this)" title="클릭하여 복사">999-1688-2384</span>
@@ -115,13 +112,12 @@ $show_bank = isset($show_bank) ? $show_bank : true;
     <?php endif; ?>
 
     <div class="fm-item" data-panel="time">
-        <button class="fm-circle" title="운영시간">
-            <span class="fm-icon">⏰</span>
-            <span class="fm-label">운영시간</span>
-        </button>
-        <div class="fm-panel">
-            <div class="fm-panel-title">⏰ 운영시간 <span class="fm-pin-hint">📌 클릭=고정</span></div>
-            <div class="fm-panel-body">
+        <div class="fm-card">
+            <div class="fm-card-header">
+                <span class="fm-icon">⏰</span>
+                <span class="fm-label">운영시간</span>
+            </div>
+            <div class="fm-card-content">
                 <div class="fm-row">
                     <span class="fm-key">평일</span>
                     <span class="fm-val">09:00 ~ 18:00</span>
@@ -142,7 +138,7 @@ $show_bank = isset($show_bank) ? $show_bank : true;
 
 <style>
 /* =====================================================
-   플로팅 원형 메뉴 스타일
+   플로팅 메뉴 - 원형 → 카드 변형
    ===================================================== */
 .floating-menu {
     position: fixed;
@@ -152,98 +148,72 @@ $show_bank = isset($show_bank) ? $show_bank : true;
     z-index: 9990;
     display: flex;
     flex-direction: column;
+    align-items: flex-end;
     gap: 8px;
     font-family: 'Noto Sans KR', -apple-system, sans-serif;
 }
 
 .floating-menu .fm-item {
-    position: relative;
     display: flex;
-    align-items: center;
     justify-content: flex-end;
 }
 
-.floating-menu .fm-circle {
+/* === 카드 (원형 ↔ 사각형 변형) === */
+.floating-menu .fm-card {
+    width: 88px;
+    max-height: 88px;
+    border-radius: 44px;
+    background: #1E4E79;
+    overflow: hidden;
+    cursor: pointer;
+    box-shadow: 0 3px 14px rgba(30,78,121,0.35);
+    transition: width 0.3s ease, max-height 0.35s ease, border-radius 0.3s ease, box-shadow 0.3s ease;
+}
+
+.floating-menu .fm-card:hover {
+    box-shadow: 0 4px 18px rgba(30,78,121,0.5);
+}
+
+/* 확장 상태 */
+.floating-menu .fm-item.active .fm-card {
+    width: 210px;
+    max-height: 400px;
+    border-radius: 14px;
+    box-shadow: 0 8px 32px rgba(30,78,121,0.4);
+}
+
+/* === 카드 헤더 (원형일 때 아이콘+라벨) === */
+.floating-menu .fm-card-header {
     width: 88px;
     height: 88px;
-    border-radius: 50%;
-    background: #1E4E79;
-    border: 2px solid rgba(255,255,255,0.3);
-    cursor: pointer;
     display: flex;
     flex-direction: column;
     align-items: center;
     justify-content: center;
     gap: 3px;
-    transition: all 0.25s ease;
-    box-shadow: 0 3px 14px rgba(30,78,121,0.35);
-    position: relative;
-    z-index: 2;
     flex-shrink: 0;
-    text-decoration: none;
-    color: inherit;
+    transition: width 0.3s ease, height 0.3s ease, padding 0.3s ease;
 }
 
-.floating-menu .fm-circle:hover {
-    transform: scale(1.08);
-    box-shadow: 0 4px 18px rgba(30,78,121,0.5);
-    background: #2a6496;
-}
-
-.floating-menu .fm-circle:active {
-    transform: scale(0.95);
-}
-
-.floating-menu .fm-item.active .fm-circle {
-    background: #0d3a5e;
-    box-shadow: 0 4px 18px rgba(30,78,121,0.55);
-    border-color: rgba(255,255,255,0.5);
-}
-
-.floating-menu .fm-kakao-circle {
-    background: none;
-    border: none;
-    border-radius: 13%;
-    box-shadow: 0 3px 14px rgba(0,0,0,0.15);
-    padding: 0;
-    overflow: hidden;
-}
-
-.floating-menu .fm-kakao-circle:hover {
-    background: none;
-    box-shadow: 0 4px 18px rgba(0,0,0,0.25);
-}
-
-.floating-menu .fm-kakao-full {
+.floating-menu .fm-item.active .fm-card-header {
     width: 100%;
-    height: 100%;
-    object-fit: cover;
-    display: block;
-}
-
-.floating-menu .fm-kakao-item {
-    display: flex;
-    flex-direction: column;
-    align-items: center;
+    height: 44px;
+    flex-direction: row;
+    justify-content: flex-start;
     gap: 6px;
-}
-
-.floating-menu .fm-kakao-label {
-    font-size: 13px;
-    font-weight: 700;
-    color: #1E4E79;
-    background: rgba(255, 255, 255, 0.95);
-    padding: 4px 12px;
-    border-radius: 12px;
-    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
-    white-space: nowrap;
-    letter-spacing: -0.3px;
+    padding: 0 14px;
+    border-bottom: 1px solid rgba(255,255,255,0.15);
 }
 
 .floating-menu .fm-icon {
     font-size: 21px;
     line-height: 1;
     filter: grayscale(1) brightness(10);
+    transition: font-size 0.3s ease;
+}
+
+.floating-menu .fm-item.active .fm-icon {
+    font-size: 15px;
 }
 
 .floating-menu .fm-label {
@@ -252,74 +222,36 @@ $show_bank = isset($show_bank) ? $show_bank : true;
     font-weight: 700;
     letter-spacing: -0.3px;
     line-height: 1.1;
+    white-space: nowrap;
+    transition: font-size 0.3s ease;
 }
 
-.floating-menu .fm-panel {
-    position: absolute;
-    right: 98px;
-    top: 50%;
-    transform: translateY(-50%) translateX(20px);
-    width: 200px;
+.floating-menu .fm-item.active .fm-label {
+    font-size: 13px;
+}
+
+/* === 카드 콘텐츠 (확장 시 표시) === */
+.floating-menu .fm-card-content {
     background: #fff;
-    border-radius: 12px;
-    box-shadow: 0 8px 32px rgba(0,0,0,0.15), 0 2px 8px rgba(0,0,0,0.08);
+    padding: 0 12px;
+    max-height: 0;
     opacity: 0;
-    visibility: hidden;
-    pointer-events: none;
-    transition: opacity 0.3s ease, transform 0.3s ease, visibility 0.3s ease;
-    z-index: 1;
+    transition: opacity 0.25s ease 0.1s, padding 0.3s ease, max-height 0.35s ease;
     overflow: hidden;
 }
 
-.floating-menu .fm-panel::after {
-    content: '';
-    position: absolute;
-    right: -6px;
-    top: 50%;
-    transform: translateY(-50%) rotate(45deg);
-    width: 12px;
-    height: 12px;
-    background: #fff;
-    box-shadow: 2px -2px 4px rgba(0,0,0,0.06);
-}
-
-.floating-menu .fm-item.active .fm-panel {
-    opacity: 1;
-    visibility: visible;
-    pointer-events: auto;
-    transform: translateY(-50%) translateX(0);
-}
-
-.floating-menu .fm-panel-title {
-    background: #1E4E79;
-    color: #fff;
-    padding: 8px 12px;
-    font-size: 12px;
-    font-weight: 700;
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-}
-
-.floating-menu .fm-pin-hint {
-    font-size: 10px;
-    font-weight: 400;
-    opacity: 0.7;
-}
-
-.floating-menu .fm-item.pinned .fm-pin-hint {
-    display: none;
-}
-
-.floating-menu .fm-panel-body {
+.floating-menu .fm-item.active .fm-card-content {
     padding: 10px 12px;
+    max-height: 300px;
+    opacity: 1;
 }
 
+/* === 내부 행 스타일 === */
 .floating-menu .fm-row {
     display: flex;
     justify-content: space-between;
     align-items: center;
-    padding: 6px 0;
+    padding: 5px 0;
     border-bottom: 1px dotted #e9ecef;
 }
 
@@ -328,13 +260,13 @@ $show_bank = isset($show_bank) ? $show_bank : true;
 }
 
 .floating-menu .fm-key {
-    font-size: 12px;
+    font-size: 11px;
     color: #666;
     font-weight: 500;
 }
 
 .floating-menu .fm-val {
-    font-size: 12px;
+    font-size: 11px;
     color: #222;
     font-weight: 600;
     text-decoration: none;
@@ -347,7 +279,7 @@ $show_bank = isset($show_bank) ? $show_bank : true;
 
 .floating-menu .fm-phone {
     color: #d32f2f;
-    font-size: 13px;
+    font-size: 12px;
     font-weight: 700;
 }
 
@@ -355,11 +287,12 @@ $show_bank = isset($show_bank) ? $show_bank : true;
     color: #d32f2f;
 }
 
+/* === 은행 정보 === */
 .floating-menu .fm-bank {
     display: flex;
     justify-content: space-between;
     align-items: center;
-    padding: 5px 0;
+    padding: 4px 0;
     border-bottom: 1px dotted #e9ecef;
 }
 
@@ -368,13 +301,13 @@ $show_bank = isset($show_bank) ? $show_bank : true;
 }
 
 .floating-menu .fm-bank-name {
-    font-size: 12px;
+    font-size: 11px;
     font-weight: 600;
     color: #333;
 }
 
 .floating-menu .fm-bank-num {
-    font-size: 12px;
+    font-size: 11px;
     font-weight: 700;
     color: #d32f2f;
     font-family: 'Consolas', 'Monaco', monospace;
@@ -388,6 +321,104 @@ $show_bank = isset($show_bank) ? $show_bank : true;
     text-decoration: underline;
 }
 
+.floating-menu .fm-bank-owner {
+    text-align: center;
+    margin-top: 6px;
+    padding-top: 6px;
+    border-top: 1px solid #e9ecef;
+    font-size: 10px;
+    color: #555;
+    font-weight: 500;
+}
+
+/* === 링크 목록 === */
+.floating-menu .fm-links {
+    padding: 0 8px;
+}
+
+.floating-menu .fm-item.active .fm-links {
+    padding: 8px;
+}
+
+.floating-menu .fm-link {
+    display: block;
+    padding: 6px 8px;
+    margin-bottom: 2px;
+    font-size: 11px;
+    font-weight: 500;
+    color: #444;
+    text-decoration: none;
+    border-radius: 6px;
+    transition: background 0.2s ease, color 0.2s ease;
+}
+
+.floating-menu .fm-link:hover {
+    background: #e3f2fd;
+    color: #1565c0;
+}
+
+/* === 카카오톡 === */
+.floating-menu .fm-kakao-item {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 6px;
+}
+
+.floating-menu .fm-kakao-label,
+.floating-menu .fm-contact-label {
+    font-size: 13px;
+    font-weight: 700;
+    color: #1E4E79;
+    background: rgba(255, 255, 255, 0.95);
+    padding: 4px 12px;
+    border-radius: 12px;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+    white-space: nowrap;
+    letter-spacing: -0.3px;
+}
+
+.floating-menu .fm-contact-item {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 6px;
+}
+
+.floating-menu .fm-circle {
+    width: 88px;
+    height: 88px;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    text-decoration: none;
+    transition: all 0.25s ease;
+    flex-shrink: 0;
+}
+
+.floating-menu .fm-kakao-circle {
+    background: none;
+    border: none;
+    border-radius: 13%;
+    box-shadow: 0 3px 14px rgba(0,0,0,0.15);
+    padding: 0;
+    overflow: hidden;
+}
+
+.floating-menu .fm-kakao-circle:hover {
+    transform: scale(1.08);
+    box-shadow: 0 4px 18px rgba(0,0,0,0.25);
+}
+
+.floating-menu .fm-kakao-full {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    display: block;
+}
+
+/* === 복사 토스트 === */
 .fm-copy-toast {
     position: fixed;
     bottom: 30px;
@@ -411,40 +442,10 @@ $show_bank = isset($show_bank) ? $show_bank : true;
     transform: translateX(-50%) translateY(0);
 }
 
-.floating-menu .fm-bank-owner {
-    text-align: center;
-    margin-top: 8px;
-    padding-top: 8px;
-    border-top: 1px solid #e9ecef;
-    font-size: 11px;
-    color: #555;
-    font-weight: 500;
-}
-
-.floating-menu .fm-links {
-    padding: 8px;
-}
-
-.floating-menu .fm-link {
-    display: block;
-    padding: 7px 10px;
-    margin-bottom: 3px;
-    font-size: 12px;
-    font-weight: 500;
-    color: #444;
-    text-decoration: none;
-    border-radius: 6px;
-    transition: all 0.2s ease;
-}
-
-.floating-menu .fm-link:hover {
-    background: #e3f2fd;
-    color: #1565c0;
-    transform: translateX(-2px);
-}
-
+/* === 반응형 === */
 @media (max-width: 768px) {
-    .floating-menu .fm-kakao-label {
+    .floating-menu .fm-kakao-label,
+    .floating-menu .fm-contact-label {
         font-size: 11px;
         padding: 3px 10px;
     }
@@ -493,11 +494,10 @@ function showCopyToast(num) {
         var items = menu.querySelectorAll('.fm-item[data-panel]');
 
         items.forEach(function(item) {
-            var circle = item.querySelector('.fm-circle');
-            if (!circle) return;
+            var card = item.querySelector('.fm-card');
+            if (!card) return;
             item._hideTimer = null;
 
-            // 호버: 패널 스르르 나타남
             item.addEventListener('mouseenter', function() {
                 clearTimeout(item._hideTimer);
                 items.forEach(function(other) {
@@ -509,7 +509,6 @@ function showCopyToast(num) {
                 item.classList.add('active');
             });
 
-            // 마우스아웃: 300ms 딜레이 후 사라짐 (패널로 이동할 시간 확보)
             item.addEventListener('mouseleave', function() {
                 if (!item.classList.contains('pinned')) {
                     item._hideTimer = setTimeout(function() {
@@ -518,8 +517,7 @@ function showCopyToast(num) {
                 }
             });
 
-            // 클릭: 고정 토글 (클릭→고정, 재클릭→닫기)
-            circle.addEventListener('click', function(e) {
+            card.addEventListener('click', function(e) {
                 e.stopPropagation();
                 clearTimeout(item._hideTimer);
                 if (item.classList.contains('pinned')) {
@@ -537,8 +535,8 @@ function showCopyToast(num) {
             });
         });
 
-        menu.querySelectorAll('.fm-panel').forEach(function(panel) {
-            panel.addEventListener('click', function(e) { e.stopPropagation(); });
+        menu.querySelectorAll('.fm-card-content').forEach(function(content) {
+            content.addEventListener('click', function(e) { e.stopPropagation(); });
         });
 
         document.addEventListener('click', function() {
