@@ -259,62 +259,62 @@
     .customer-modal .modal-content {
         width: 92%;
         max-width: none;
-        max-height: 90vh;
+        max-height: 85vh;
         overflow-y: auto;
-        margin: 5% auto;
+        margin: 3% auto;
     }
     
     .customer-modal .modal-header {
-        padding: 10px 14px;
+        padding: 8px 12px;
     }
     
     .customer-modal .modal-header .modal-brand {
-        font-size: 1rem;
+        font-size: 0.95rem;
     }
     
     .customer-modal .modal-header .modal-title {
-        font-size: 0.85rem;
+        font-size: 0.8rem;
     }
     
     #customerInfoForm {
-        padding: 16px;
+        padding: 12px;
     }
     
     .form-group {
-        margin-bottom: 12px;
+        margin-bottom: 8px;
     }
     
     .form-group label {
-        font-size: 13px;
-        margin-bottom: 6px;
+        font-size: 12px;
+        margin-bottom: 4px;
     }
     
     .form-group input,
     .form-group textarea {
-        padding: 10px 12px;
+        padding: 8px 10px;
         font-size: 13px;
     }
     
     .form-group textarea {
-        min-height: 60px;
+        min-height: 50px;
     }
     
     .modal-buttons {
         flex-direction: column;
-        gap: 8px;
-        margin-top: 16px;
+        gap: 6px;
+        margin-top: 12px;
     }
     
     .btn-cancel,
     .btn-generate {
-        padding: 11px 16px;
+        padding: 10px 14px;
         font-size: 13px;
     }
     
     /* Success modal mobile */
     #quoteSuccessModal .modal-content {
         max-width: 90%;
-        margin: 10% auto;
+        margin: 5% auto;
     }
 }
 
@@ -322,26 +322,48 @@
 @media (max-width: 400px) {
     .customer-modal .modal-content {
         width: 95%;
-        max-height: 90vh;
+        max-height: 85vh;
         overflow-y: auto;
-        margin: 3% auto;
+        margin: 2% auto;
     }
     
     #customerInfoForm {
-        padding: 14px;
+        padding: 10px;
     }
     
     .form-group {
-        margin-bottom: 10px;
+        margin-bottom: 6px;
+    }
+    
+    .form-group label {
+        font-size: 11px;
+        margin-bottom: 3px;
+    }
+    
+    .form-group input,
+    .form-group textarea {
+        padding: 7px 9px;
+        font-size: 12px;
     }
     
     .form-group textarea {
-        min-height: 50px;
+        min-height: 40px;
+    }
+    
+    .modal-buttons {
+        gap: 5px;
+        margin-top: 10px;
+    }
+    
+    .btn-cancel,
+    .btn-generate {
+        padding: 9px 12px;
+        font-size: 12px;
     }
     
     #quoteSuccessModal .modal-content {
         max-width: 95%;
-        margin: 5% auto;
+        margin: 3% auto;
     }
 }
 </style>
