@@ -70,9 +70,19 @@ class ChatWidget {
 
             <div class="chat-window" id="chat-window">
                 <div class="chat-header">
-                    <div>
-                        <div class="chat-header-title">고객 지원</div>
-                        <div class="chat-header-subtitle">두손기획인쇄</div>
+                    <div style="display: flex; align-items: center; gap: 8px;">
+                        <svg class="chat-drag-handle" width="12" height="18" viewBox="0 0 12 18" fill="rgba(255,255,255,0.5)" style="cursor: move; flex-shrink: 0;">
+                            <circle cx="3" cy="3" r="1.5"/>
+                            <circle cx="9" cy="3" r="1.5"/>
+                            <circle cx="3" cy="9" r="1.5"/>
+                            <circle cx="9" cy="9" r="1.5"/>
+                            <circle cx="3" cy="15" r="1.5"/>
+                            <circle cx="9" cy="15" r="1.5"/>
+                        </svg>
+                        <div>
+                            <div class="chat-header-title">고객 지원</div>
+                            <div class="chat-header-subtitle">두손기획인쇄</div>
+                        </div>
                     </div>
                     <div class="chat-header-actions">
                         <button id="chat-export-btn" title="대화 내용 저장">
@@ -80,9 +90,9 @@ class ChatWidget {
                                 <path d="M19 12v7H5v-7H3v7c0 1.1.9 2 2 2h14c1.1 0 2-.9 2-2v-7h-2zm-6 .67l2.59-2.58L17 11.5l-5 5-5-5 1.41-1.41L11 12.67V3h2z"/>
                             </svg>
                         </button>
-                        <button id="chat-minimize-btn" title="최소화">
+                        <button id="chat-minimize-btn" title="닫기">
                             <svg width="18" height="18" viewBox="0 0 24 24" fill="white">
-                                <path d="M19 13H5v-2h14v2z"/>
+                                <path d="M19 6.41L17.59 5 12 10.59 6.41 5 5 6.41 10.59 12 5 17.59 6.41 19 12 13.41 17.59 19 19 17.59 13.41 12z"/>
                             </svg>
                         </button>
                     </div>

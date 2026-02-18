@@ -649,7 +649,8 @@ if ($cart_result === false) {
 
     <?php if (!empty($cart_items)): ?>
         <!-- 견적서 테이블 -->
-        <table class="quote-table">
+        <div style="overflow-x: auto; -webkit-overflow-scrolling: touch;">
+        <table class="quote-table" style="min-width: 480px;">
             <thead>
                 <tr>
                     <th>NO</th>
@@ -768,29 +769,30 @@ if ($cart_result === false) {
                 <?php endforeach; ?>
             </tbody>
         </table>
+        </div>
 
         <!-- 합계 정보 (3박스 그리드) -->
         <?php
         $quote_vat = intval($quote_total * 0.1);
         $quote_grand_total = $quote_total + $quote_vat;
         ?>
-        <div class="cart-summary" style="background: #F8F9FA; padding: 15px; border-radius: 8px; margin-bottom: 30px; border: 1px solid #e0e0e0;">
-            <div class="summary-header" style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 10px;">
-                <div class="summary-title" style="font-weight: 600; font-size: 14px; color: #2d3748;">주문 요약</div>
-                <div class="summary-count" style="color: #718096; font-size: 13px;">총 <?php echo count($cart_items); ?>개 상품</div>
+        <div class="cart-summary" style="margin-bottom: 30px;">
+            <div class="summary-header">
+                <div class="summary-title">주문 요약</div>
+                <div class="summary-count">총 <?php echo count($cart_items); ?>개 상품</div>
             </div>
-            <div class="summary-grid" style="display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 10px;">
-                <div class="summary-box" style="text-align: center; padding: 12px; background: white; border-radius: 6px; border: 1px solid #ccc;">
-                    <div class="summary-box-label" style="color: #718096; font-size: 12px; margin-bottom: 4px;">상품금액</div>
-                    <div class="summary-box-value" style="color: #2d3748; font-weight: 600; font-size: 14px;"><?php echo number_format($quote_total); ?>원</div>
+            <div class="summary-grid">
+                <div class="summary-box">
+                    <div class="summary-box-label">상품금액</div>
+                    <div class="summary-box-value"><?php echo number_format($quote_total); ?>원</div>
                 </div>
-                <div class="summary-box" style="text-align: center; padding: 12px; background: white; border-radius: 6px; border: 1px solid #ccc;">
-                    <div class="summary-box-label" style="color: #718096; font-size: 12px; margin-bottom: 4px;">부가세</div>
-                    <div class="summary-box-value" style="color: #2d3748; font-weight: 600; font-size: 14px;"><?php echo number_format($quote_vat); ?>원</div>
+                <div class="summary-box">
+                    <div class="summary-box-label">부가세</div>
+                    <div class="summary-box-value"><?php echo number_format($quote_vat); ?>원</div>
                 </div>
-                <div class="summary-box total" style="text-align: center; padding: 12px; background: #1E90FF; border-radius: 6px; border: 1px solid #1873CC;">
-                    <div class="summary-box-label" style="color: rgba(255,255,255,0.9); font-size: 12px; margin-bottom: 4px;">총 결제금액</div>
-                    <div class="summary-box-value" style="color: white; font-weight: 700; font-size: 15px;"><?php echo number_format($quote_grand_total); ?>원</div>
+                <div class="summary-box total">
+                    <div class="summary-box-label">총 결제금액</div>
+                    <div class="summary-box-value"><?php echo number_format($quote_grand_total); ?>원</div>
                 </div>
             </div>
         </div>
@@ -823,15 +825,15 @@ if ($cart_result === false) {
     </div>
 
     <!-- 견적서 전용 버튼 -->
-    <div style="text-align: center; margin-top: 30px; display: flex; gap: 15px; justify-content: center;">
+    <div class="button-group" style="margin-top: 30px;">
         <button onclick="printQuotation()" class="btn-quote">
             견적서 인쇄
         </button>
-        <button onclick="openCustomerModal()" style="padding: 12px 20px; background-color: #2563eb; color: white; border: none; border-radius: 6px; font-size: 14px; font-weight: 600; cursor: pointer;">
+        <button onclick="openCustomerModal()" class="btn-quote" style="background-color: #2563eb;">
             이메일 발송
         </button>
-        <button onclick="hideQuotation()" style="padding: 12px 30px; background-color: #6c757d; color: white; border: none; border-radius: 6px; font-size: 16px; font-weight: 600; cursor: pointer;">
-            ← 돌아가기
+        <button onclick="hideQuotation()" class="btn-continue" style="background-color: #6c757d;">
+            돌아가기
         </button>
     </div>
 </div>

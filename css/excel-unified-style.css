@@ -531,6 +531,69 @@
     .btn-order {
         width: 100%;
     }
+
+    /* 장바구니 테이블 모바일 가로 스크롤 */
+    .excel-cart-table-wrapper {
+        overflow-x: auto;
+        -webkit-overflow-scrolling: touch;
+    }
+
+    .excel-cart-table {
+        min-width: 560px;
+    }
+
+    /* 견적서 섹션 모바일 */
+    .quotation-section {
+        max-width: 100%;
+        padding: 12px;
+        margin: 0 8px 1rem 8px;
+        box-shadow: 0 2px 8px rgba(0,0,0,0.08);
+        border-radius: 6px;
+    }
+
+    .quotation-header {
+        padding-bottom: 12px;
+        margin-bottom: 16px;
+    }
+
+    .quotation-header h1 {
+        font-size: 22px;
+    }
+
+    .quotation-header div {
+        font-size: 12px;
+    }
+
+    /* 견적서 테이블 모바일 */
+    .quote-table {
+        font-size: 11px;
+        margin-bottom: 16px;
+    }
+
+    .quote-table th {
+        padding: 6px 4px;
+        font-size: 11px;
+    }
+
+    .quote-table td {
+        padding: 6px 4px;
+        font-size: 11px;
+    }
+
+    .quote-table td.small-text {
+        font-size: 10px;
+    }
+
+    /* 견적서 내부 여백 축소 */
+    #quotationSection div[style*="border-top: 2px"] {
+        padding-top: 12px;
+        font-size: 12px;
+    }
+
+    #quotationSection div[style*="background: #f8f9fa"] {
+        padding: 8px;
+        font-size: 12px;
+    }
 }
 
 /* --- Appended for Cart Refactor & Font-Size Adjustments (2025-12-23) --- */

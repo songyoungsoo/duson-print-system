@@ -127,7 +127,7 @@ $show_bank = isset($show_bank) ? $show_bank : true;
     z-index: 9990;
     display: flex;
     flex-direction: column;
-    gap: 12px;
+    gap: 8px;
     font-family: 'Noto Sans KR', -apple-system, sans-serif;
 }
 
@@ -140,11 +140,11 @@ $show_bank = isset($show_bank) ? $show_bank : true;
 
 /* 원형 버튼 */
 .floating-menu .fm-circle {
-    width: 100px;
-    height: 100px;
+    width: 88px;
+    height: 88px;
     border-radius: 50%;
     background: #1E4E79;
-    border: 3px solid rgba(255,255,255,0.3);
+    border: 2px solid rgba(255,255,255,0.3);
     cursor: pointer;
     display: flex;
     flex-direction: column;
@@ -159,7 +159,7 @@ $show_bank = isset($show_bank) ? $show_bank : true;
 }
 
 .floating-menu .fm-circle:hover {
-    transform: scale(1.12);
+    transform: scale(1.08);
     box-shadow: 0 4px 18px rgba(30,78,121,0.5);
     background: #2a6496;
 }
@@ -175,13 +175,13 @@ $show_bank = isset($show_bank) ? $show_bank : true;
 }
 
 .floating-menu .fm-icon {
-    font-size: 22px;
+    font-size: 21px;
     line-height: 1;
     filter: grayscale(1) brightness(10);
 }
 
 .floating-menu .fm-label {
-    font-size: 16px;
+    font-size: 14px;
     color: rgba(255,255,255,0.9);
     font-weight: 700;
     letter-spacing: -0.3px;
@@ -191,7 +191,7 @@ $show_bank = isset($show_bank) ? $show_bank : true;
 /* 패널 (슬라이드 아웃) */
 .floating-menu .fm-panel {
     position: absolute;
-    right: 112px;
+    right: 98px;
     top: 50%;
     transform: translateY(-50%) translateX(20px);
     width: 240px;
@@ -344,24 +344,24 @@ $show_bank = isset($show_bank) ? $show_bank : true;
 @media (max-width: 1124px) {
     .floating-menu {
         right: 8px;
-        gap: 8px;
+        gap: 5px;
     }
 
     .floating-menu .fm-circle {
-        width: 70px;
-        height: 70px;
+        width: 72px;
+        height: 72px;
     }
 
     .floating-menu .fm-icon {
-        font-size: 16px;
+        font-size: 18px;
     }
 
     .floating-menu .fm-label {
-        font-size: 11px;
+        font-size: 12px;
     }
 
     .floating-menu .fm-panel {
-        right: 80px;
+        right: 82px;
         width: 220px;
     }
 }
@@ -370,12 +370,12 @@ $show_bank = isset($show_bank) ? $show_bank : true;
 @media (max-width: 480px) {
     .floating-menu {
         right: 6px;
-        gap: 6px;
+        gap: 4px;
     }
 
     .floating-menu .fm-circle {
-        width: 52px;
-        height: 52px;
+        width: 58px;
+        height: 58px;
     }
 
     .floating-menu .fm-icon {

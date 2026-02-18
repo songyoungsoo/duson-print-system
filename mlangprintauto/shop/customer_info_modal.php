@@ -59,8 +59,8 @@
             </div>
             
             <div class="form-group">
-                <label for="customer_email">이메일</label>
-                <input type="email" id="customer_email" name="customer_email" 
+                <label for="customer_email">이메일 *</label>
+                <input type="email" id="customer_email" name="customer_email" required
                        placeholder="example@company.com" maxlength="100">
             </div>
             
@@ -104,6 +104,7 @@
     border-radius: 12px;
     width: 90%;
     max-width: 500px;
+    min-width: 0;
     box-shadow: 0 20px 40px rgba(0, 0, 0, 0.2);
     animation: modalSlideIn 0.3s ease-out;
 }
@@ -258,10 +259,9 @@
 @media (max-width: 768px) {
     .customer-modal .modal-content {
         width: 92%;
-        max-width: none;
+        max-width: 380px;
         max-height: 85vh;
         overflow-y: auto;
-        margin: 3% auto;
     }
     
     .customer-modal .modal-header {
@@ -322,9 +322,9 @@
 @media (max-width: 400px) {
     .customer-modal .modal-content {
         width: 95%;
+        max-width: 340px;
         max-height: 85vh;
         overflow-y: auto;
-        margin: 2% auto;
     }
     
     #customerInfoForm {
@@ -371,9 +371,9 @@
 <script>
 // 고객 정보 모달 열기
 function openCustomerModal() {
-    document.getElementById('customerInfoModal').style.display = 'block';
+    document.getElementById('customerInfoModal').style.display = 'flex';
     document.body.style.overflow = 'hidden'; // 배경 스크롤 방지
-    
+
     // 첫 번째 입력 필드에 포커스
     setTimeout(() => {
         document.getElementById('customer_name').focus();
@@ -390,14 +390,16 @@ function closeCustomerModal() {
 document.addEventListener('keydown', function(event) {
     if (event.key === 'Escape') {
         closeCustomerModal();
+        closeQuoteSuccessModal();
     }
 });
 
 // 모달 배경 클릭 시 닫기
 document.getElementById('customerInfoModal').addEventListener('click', function(event) {
-    if (event.target === this) {
-        closeCustomerModal();
-    }
+    if (event.target === this) closeCustomerModal();
+});
+document.getElementById('quoteSuccessModal').addEventListener('click', function(event) {
+    if (event.target === this) closeQuoteSuccessModal();
 });
 
 // 전화번호 자동 포맷팅
