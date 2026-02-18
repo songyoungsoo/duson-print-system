@@ -244,8 +244,9 @@
 .chat-window {
     display: none;
     position: fixed;
-    bottom: 80px;
-    right: 20px;
+    top: calc(50% - 100px);
+    right: 12px;
+    bottom: auto;
     width: 310px;
     height: 420px;
     min-width: 230px;
@@ -257,7 +258,7 @@
     box-shadow: 0 5px 40px rgba(0, 0, 0, 0.16);
     overflow: hidden;
     flex-direction: column;
-    resize: both;
+    resize: none;
     user-select: none;
 }
 
@@ -279,7 +280,7 @@
 
 /* 채팅 헤더 */
 .chat-header {
-    background: #1E4E79;
+    background: #364052;
     color: white;
     padding: 15px 20px;
     display: flex;
@@ -545,22 +546,14 @@
     display: none;
 }
 
-/* 스크롤바 스타일 */
+/* 스크롤바 숨김 (스크롤은 동작) */
 .chat-messages::-webkit-scrollbar {
-    width: 6px;
+    display: none;
 }
 
-.chat-messages::-webkit-scrollbar-track {
-    background: #f1f1f1;
-}
-
-.chat-messages::-webkit-scrollbar-thumb {
-    background: #888;
-    border-radius: 3px;
-}
-
-.chat-messages::-webkit-scrollbar-thumb:hover {
-    background: #555;
+.chat-messages {
+    scrollbar-width: none;
+    -ms-overflow-style: none;
 }
 
 /* 로딩 인디케이터 */

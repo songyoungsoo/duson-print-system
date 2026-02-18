@@ -14,10 +14,25 @@ class ChatWidget {
 
     init() {
         this.checkContext();
+        this.adminCheckPromise = this.checkAdminStatus();
         this.createWidget();
         this.attachEvents();
         this.loadChatState();
         this.startBlinkAnimation();
+    }
+    
+    async checkAdminStatus() {
+        try {
+            const response = await fetch('/chat/api.php?action=get_admin_unread_count');
+            const data = await response.json();
+            
+            if (data.success) {
+                this.isAdmin = data.data.is_admin || false;
+            }
+        } catch (error) {
+            console.error('관리자 상태 확인 오류:', error);
+            this.isAdmin = false;
+        }
     }
 
     checkContext() {
@@ -70,8 +85,8 @@ class ChatWidget {
 
             <div class="chat-window" id="chat-window">
                 <div class="chat-header">
-                    <div style="display: flex; align-items: center; gap: 8px;">
-                        <svg class="chat-drag-handle" width="12" height="18" viewBox="0 0 12 18" fill="rgba(255,255,255,0.5)" style="cursor: move; flex-shrink: 0;">
+                    <div style="display: flex; align-items: center; gap: 10px;">
+                        <svg class="chat-drag-handle" width="18" height="27" viewBox="0 0 12 18" fill="rgba(255,255,255,0.55)" style="cursor: move; flex-shrink: 0;">
                             <circle cx="3" cy="3" r="1.5"/>
                             <circle cx="9" cy="3" r="1.5"/>
                             <circle cx="3" cy="9" r="1.5"/>
@@ -84,7 +99,6 @@ class ChatWidget {
                             <div class="chat-header-subtitle">두손기획인쇄</div>
                         </div>
                     </div>
-                    <div class="chat-drag-hint" id="chat-drag-hint">이동가능</div>
                     <div class="chat-header-actions">
                         <button id="chat-export-btn" title="대화 내용 저장">
                             <svg width="18" height="18" viewBox="0 0 24 24" fill="white">
@@ -147,26 +161,30 @@ class ChatWidget {
         const toggleBtn = document.getElementById('chat-toggle-btn');
         let lastTap = 0;
 
-        const handleToggle = (e) => {
+        const handleToggle = async (e) => {
             const now = Date.now();
-            if (now - lastTap < 500) return; // 중복 방지
+            if (now - lastTap < 500) return;
             lastTap = now;
             e.preventDefault();
             e.stopPropagation();
-            
-            // 관리자 전용 동작
+
+            try {
+                if (this.adminCheckPromise) {
+                    await this.adminCheckPromise;
+                }
+            } catch (err) {
+                // 관리자 체크 실패 시 고객 모드로 진행
+            }
+
             if (this.isAdmin) {
                 if (this.isDashboard) {
-                    // 대시보드 내부: 같은 탭에서 /dashboard/chat/ 이동
                     window.location.href = '/dashboard/chat/';
                 } else {
-                    // 일반 페이지: 새 탭으로 /chat/admin.php 열기
                     window.open('/chat/admin.php', '_blank');
                 }
                 return;
             }
-            
-            // 고객 동작: 기존 채팅창 열기
+
             this.toggleChat();
         };
 
@@ -327,6 +345,10 @@ class ChatWidget {
         const modal = document.getElementById('chat-name-modal');
         if (modal) {
             modal.classList.add('active');
+            // 배경 클릭 시 건너뛰기로 처리
+            modal.onclick = (e) => {
+                if (e.target === modal) this.skipName();
+            };
         }
 
         // 입력창에 포커스
@@ -376,6 +398,18 @@ class ChatWidget {
 
         // 모바일에서 채팅창 열면 토글 버튼 숨김
         document.getElementById('chat-toggle-btn').classList.add('chat-open');
+
+        if (window.innerWidth > 480 && !sessionStorage.getItem('chat_drag_hint_shown')) {
+            sessionStorage.setItem('chat_drag_hint_shown', '1');
+            setTimeout(function() {
+                var toast = document.createElement('div');
+                toast.style.cssText = 'position:fixed;top:14px;right:16px;background:#364052;color:#fff;padding:10px 18px;border-radius:8px;font-size:13px;font-weight:600;z-index:999999;box-shadow:0 4px 16px rgba(0,0,0,0.2);transition:opacity .3s;font-family:"Noto Sans KR",sans-serif;';
+                toast.textContent = '채팅창은 드래그하여 이동 가능합니다';
+                document.body.appendChild(toast);
+                setTimeout(function() { toast.style.opacity = '0'; }, 3000);
+                setTimeout(function() { toast.remove(); }, 3300);
+            }, 500);
+        }
 
         // 채팅방 가져오기 또는 생성
         if (!this.roomId) {
@@ -643,29 +677,23 @@ class ChatWidget {
         if (this.isOpen) return;
 
         try {
-            // 관리자 전용: 전체 읽지 않은 메시지 수 조회
-            const response = await fetch('/chat/api.php?action=get_admin_unread_count');
-            const data = await response.json();
-
-            if (data.success) {
-                this.isAdmin = data.data.is_admin || false;
-                
-                if (this.isAdmin) {
+            if (this.isAdmin) {
+                // 관리자: 전체 읽지 않은 고객 메시지 수
+                const response = await fetch('/chat/api.php?action=get_admin_unread_count');
+                const data = await response.json();
+                if (data.success) {
                     this.unreadCount = data.data.count;
                     this.updateUnreadBadge();
-                    return;
                 }
-            }
-            
-            // 고객: 자기 채팅방만 조회
-            if (!this.roomId) return;
-            
-            const customerResponse = await fetch(`/chat/api.php?action=get_unread_count&room_id=${this.roomId}`);
-            const customerData = await customerResponse.json();
-
-            if (customerData.success) {
-                this.unreadCount = customerData.data.count;
-                this.updateUnreadBadge();
+            } else {
+                // 고객: 자기 채팅방만 조회
+                if (!this.roomId) return;
+                const response = await fetch(`/chat/api.php?action=get_unread_count&room_id=${this.roomId}`);
+                const data = await response.json();
+                if (data.success) {
+                    this.unreadCount = data.data.count;
+                    this.updateUnreadBadge();
+                }
             }
         } catch (error) {
             console.error('읽지 않은 메시지 수 조회 오류:', error);

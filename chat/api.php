@@ -36,6 +36,9 @@ switch ($action) {
     case 'get_admin_unread_count':
         getAdminUnreadCount();
         break;
+    case 'get_unread_rooms':
+        getUnreadRooms();
+        break;
     default:
         jsonResponse(false, null, '잘못된 요청입니다.');
 }
@@ -464,5 +467,54 @@ function getAdminUnreadCount() {
     $row = mysqli_fetch_assoc($result);
     
     jsonResponse(true, ['count' => (int)$row['count'], 'is_admin' => true]);
+}
+
+// 관리자 전용: 미읽은 메시지가 있는 채팅방 목록
+function getUnreadRooms() {
+    global $db;
+
+    if (session_status() === PHP_SESSION_NONE) {
+        session_start();
+    }
+
+    if (!isset($_SESSION['admin_logged_in']) || $_SESSION['admin_logged_in'] !== true) {
+        jsonResponse(true, ['rooms' => [], 'total_unread' => 0]);
+        return;
+    }
+
+    $query = "SELECT
+                r.id as room_id,
+                (SELECT p.username FROM chatparticipants p
+                 WHERE p.roomid = r.id AND p.isadmin = 0 LIMIT 1) as customer_name,
+                COUNT(m.id) as unread_count,
+                (SELECT m2.message FROM chatmessages m2
+                 WHERE m2.roomid = r.id ORDER BY m2.createdat DESC LIMIT 1) as last_message,
+                (SELECT m3.createdat FROM chatmessages m3
+                 WHERE m3.roomid = r.id ORDER BY m3.createdat DESC LIMIT 1) as last_message_time
+              FROM chatrooms r
+              INNER JOIN chatmessages m ON m.roomid = r.id
+                AND m.isread = 0
+                AND m.senderid NOT LIKE 'staff%'
+                AND m.senderid != 'system'
+              WHERE r.isactive = 1
+              GROUP BY r.id
+              ORDER BY last_message_time DESC
+              LIMIT 10";
+
+    $result = mysqli_query($db, $query);
+    if (!$result) {
+        jsonResponse(false, null, 'SQL 오류: ' . mysqli_error($db));
+        return;
+    }
+
+    $rooms = [];
+    $totalUnread = 0;
+    while ($row = mysqli_fetch_assoc($result)) {
+        $row['unread_count'] = (int)$row['unread_count'];
+        $totalUnread += $row['unread_count'];
+        $rooms[] = $row;
+    }
+
+    jsonResponse(true, ['rooms' => $rooms, 'total_unread' => $totalUnread]);
 }
 ?>

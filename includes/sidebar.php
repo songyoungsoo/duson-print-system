@@ -104,6 +104,9 @@ $show_bank = isset($show_bank) ? $show_bank : true;
                     <span class="fm-bank-num" onclick="copyAccount(this)" title="클릭하여 복사">301-2632-1830-11</span>
                 </div>
                 <div class="fm-bank-owner">예금주: 두손기획인쇄 차경선</div>
+                <div class="fm-bank-card">💳 카드결제 가능</div>
+                <div class="fm-bank-notice">⚠ 택배선불 고객은<br>반드시 전화 후 결제</div>
+                <div class="fm-bank-hotline"><a href="tel:16882384">📞 1688-2384</a></div>
             </div>
         </div>
     </div>
@@ -327,6 +330,45 @@ $show_bank = isset($show_bank) ? $show_bank : true;
     font-size: 10px;
     color: #555;
     font-weight: 500;
+}
+
+.floating-menu .fm-bank-card {
+    text-align: center;
+    margin-top: 5px;
+    padding: 4px 0;
+    font-size: 11px;
+    font-weight: 600;
+    color: #1E4E79;
+    border-top: 1px dotted #e9ecef;
+}
+
+.floating-menu .fm-bank-notice {
+    text-align: center;
+    margin-top: 4px;
+    padding: 5px 6px;
+    font-size: 14px;
+    font-weight: 700;
+    color: #d32f2f;
+    background: #fff5f5;
+    border-radius: 4px;
+    line-height: 1.4;
+}
+
+.floating-menu .fm-bank-hotline {
+    text-align: center;
+    margin-top: 4px;
+}
+
+.floating-menu .fm-bank-hotline a {
+    font-size: 12px;
+    font-weight: 700;
+    color: #1E4E79;
+    text-decoration: none;
+    letter-spacing: -0.3px;
+}
+
+.floating-menu .fm-bank-hotline a:hover {
+    text-decoration: underline;
 }
 
 /* === 링크 목록 === */

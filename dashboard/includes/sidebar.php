@@ -182,7 +182,11 @@ $current_path = rtrim($current_path, '/') . '/';
                                 <span class="sa-arrow">›</span>
                                 <span class="sa-icon"><?php echo $module['icon']; ?></span>
                                 <span style="white-space:nowrap; overflow:hidden; text-overflow:ellipsis;"><?php echo $module['name']; ?></span>
-                                <?php if ($badge_count > 0): ?>
+                                <?php if ($key === 'chat'): ?>
+                                    <span id="chat-badge-count" style="margin-left:auto; background:#ef4444; color:#fff; font-size:9px; font-weight:700; padding:1px 5px; border-radius:10px; min-width:16px; text-align:center;<?php echo $badge_count > 0 ? '' : ' display:none;'; ?>">
+                                        <?php echo $badge_count > 0 ? ($badge_count > 99 ? '99+' : $badge_count) : '0'; ?>
+                                    </span>
+                                <?php elseif ($badge_count > 0): ?>
                                     <span style="margin-left:auto; background:#ef4444; color:#fff; font-size:9px; font-weight:700; padding:1px 5px; border-radius:10px; min-width:16px; text-align:center;">
                                         <?php echo $badge_count > 99 ? '99+' : $badge_count; ?>
                                     </span>
