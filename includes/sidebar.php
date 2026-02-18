@@ -16,7 +16,8 @@ $show_bank = isset($show_bank) ? $show_bank : true;
 <div class="floating-menu" id="floating-menu">
 
     <!-- 카톡상담 -->
-    <div class="fm-item">
+    <div class="fm-item fm-kakao-item">
+        <div class="fm-kakao-label">상담연결</div>
         <a href="http://pf.kakao.com/_pEGhj/chat" target="_blank" class="fm-circle fm-kakao-circle" title="카톡상담">
             <img src="/TALK.svg" alt="카톡상담" class="fm-kakao-full">
         </a>
@@ -151,7 +152,7 @@ $show_bank = isset($show_bank) ? $show_bank : true;
     z-index: 9990;
     display: flex;
     flex-direction: column;
-    gap: 12px;
+    gap: 8px;
     font-family: 'Noto Sans KR', -apple-system, sans-serif;
 }
 
@@ -163,11 +164,11 @@ $show_bank = isset($show_bank) ? $show_bank : true;
 }
 
 .floating-menu .fm-circle {
-    width: 100px;
-    height: 100px;
+    width: 88px;
+    height: 88px;
     border-radius: 50%;
     background: #1E4E79;
-    border: 3px solid rgba(255,255,255,0.3);
+    border: 2px solid rgba(255,255,255,0.3);
     cursor: pointer;
     display: flex;
     flex-direction: column;
@@ -184,7 +185,7 @@ $show_bank = isset($show_bank) ? $show_bank : true;
 }
 
 .floating-menu .fm-circle:hover {
-    transform: scale(1.12);
+    transform: scale(1.08);
     box-shadow: 0 4px 18px rgba(30,78,121,0.5);
     background: #2a6496;
 }
@@ -220,14 +221,33 @@ $show_bank = isset($show_bank) ? $show_bank : true;
     display: block;
 }
 
+.floating-menu .fm-kakao-item {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 6px;
+}
+
+.floating-menu .fm-kakao-label {
+    font-size: 13px;
+    font-weight: 700;
+    color: #1E4E79;
+    background: rgba(255, 255, 255, 0.95);
+    padding: 4px 12px;
+    border-radius: 12px;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+    white-space: nowrap;
+    letter-spacing: -0.3px;
+}
+
 .floating-menu .fm-icon {
-    font-size: 22px;
+    font-size: 21px;
     line-height: 1;
     filter: grayscale(1) brightness(10);
 }
 
 .floating-menu .fm-label {
-    font-size: 16px;
+    font-size: 14px;
     color: rgba(255,255,255,0.9);
     font-weight: 700;
     letter-spacing: -0.3px;
@@ -236,10 +256,10 @@ $show_bank = isset($show_bank) ? $show_bank : true;
 
 .floating-menu .fm-panel {
     position: absolute;
-    right: 112px;
+    right: 98px;
     top: 50%;
     transform: translateY(-50%) translateX(20px);
-    width: 240px;
+    width: 200px;
     background: #fff;
     border-radius: 12px;
     box-shadow: 0 8px 32px rgba(0,0,0,0.15), 0 2px 8px rgba(0,0,0,0.08);
@@ -273,8 +293,8 @@ $show_bank = isset($show_bank) ? $show_bank : true;
 .floating-menu .fm-panel-title {
     background: #1E4E79;
     color: #fff;
-    padding: 10px 14px;
-    font-size: 13px;
+    padding: 8px 12px;
+    font-size: 12px;
     font-weight: 700;
     display: flex;
     justify-content: space-between;
@@ -292,7 +312,7 @@ $show_bank = isset($show_bank) ? $show_bank : true;
 }
 
 .floating-menu .fm-panel-body {
-    padding: 12px 14px;
+    padding: 10px 12px;
 }
 
 .floating-menu .fm-row {
@@ -354,11 +374,11 @@ $show_bank = isset($show_bank) ? $show_bank : true;
 }
 
 .floating-menu .fm-bank-num {
-    font-size: 14px;
+    font-size: 12px;
     font-weight: 700;
     color: #d32f2f;
     font-family: 'Consolas', 'Monaco', monospace;
-    letter-spacing: -0.3px;
+    letter-spacing: -0.5px;
     cursor: pointer;
     transition: color 0.2s;
 }
@@ -402,7 +422,7 @@ $show_bank = isset($show_bank) ? $show_bank : true;
 }
 
 .floating-menu .fm-links {
-    padding: 8px 10px;
+    padding: 8px;
 }
 
 .floating-menu .fm-link {
@@ -421,6 +441,13 @@ $show_bank = isset($show_bank) ? $show_bank : true;
     background: #e3f2fd;
     color: #1565c0;
     transform: translateX(-2px);
+}
+
+@media (max-width: 768px) {
+    .floating-menu .fm-kakao-label {
+        font-size: 11px;
+        padding: 3px 10px;
+    }
 }
 
 @media (max-width: 1024px) {
