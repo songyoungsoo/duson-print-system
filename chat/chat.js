@@ -84,6 +84,7 @@ class ChatWidget {
                             <div class="chat-header-subtitle">두손기획인쇄</div>
                         </div>
                     </div>
+                    <div class="chat-drag-hint" id="chat-drag-hint">이동가능</div>
                     <div class="chat-header-actions">
                         <button id="chat-export-btn" title="대화 내용 저장">
                             <svg width="18" height="18" viewBox="0 0 24 24" fill="white">
@@ -252,6 +253,7 @@ class ChatWidget {
     makeDraggable() {
         const chatWindow = document.getElementById('chat-window');
         const header = chatWindow.querySelector('.chat-header');
+        const dragHint = document.getElementById('chat-drag-hint');
         let isDragging = false;
         let currentX;
         let currentY;
@@ -274,6 +276,9 @@ class ChatWidget {
 
             if (e.target === header || header.contains(e.target)) {
                 isDragging = true;
+                if (dragHint) {
+                    dragHint.classList.add('dragging');
+                }
             }
         }
 
@@ -295,6 +300,9 @@ class ChatWidget {
             initialX = currentX;
             initialY = currentY;
             isDragging = false;
+            if (dragHint) {
+                dragHint.classList.remove('dragging');
+            }
         }
 
         function setTranslate(xPos, yPos, el) {

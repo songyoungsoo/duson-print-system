@@ -331,6 +331,20 @@
     fill: rgba(255, 255, 255, 0.8);
 }
 
+.chat-drag-hint {
+    position: absolute;
+    left: 50%;
+    transform: translateX(-50%);
+    font-size: 11px;
+    color: rgba(255, 255, 255, 0.6);
+    pointer-events: none;
+    transition: opacity 0.2s ease;
+}
+
+.chat-drag-hint.dragging {
+    opacity: 0;
+}
+
 /* 채팅 메시지 영역 */
 .chat-messages {
     flex: 1;
