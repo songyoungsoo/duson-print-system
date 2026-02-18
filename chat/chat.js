@@ -56,6 +56,7 @@ class ChatWidget {
             </div>
 
             <button class="chat-toggle-btn chat-toggle-btn-image" id="chat-toggle-btn">
+                <span class="chat-forehead-label">상담연결</span>
                 <img src="/ImgFolder/infolady.png" alt="상담" class="chat-toggle-img">
                 <span class="chat-unread-badge" id="chat-unread-badge" style="display:none;">0</span>
             </button>
