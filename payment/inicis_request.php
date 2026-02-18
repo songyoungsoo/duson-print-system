@@ -510,8 +510,8 @@ $_SESSION['inicis_timestamp'] = $timestamp;
         <input type="hidden" name="mKey" value="<?php echo $mKey; ?>">
         <input type="hidden" name="returnUrl" value="<?php echo INICIS_RETURN_URL; ?>">
         <input type="hidden" name="closeUrl" value="<?php echo INICIS_CLOSE_URL; ?>">
-        <input type="hidden" name="gopaymethod" value="Card">
-        <input type="hidden" name="acceptmethod" value="below1000:HPP(1):cardonly">
+        <input type="hidden" name="gopaymethod" value="Card:DirectBank:HPP">
+        <input type="hidden" name="acceptmethod" value="below1000:HPP(1)">
         <input type="hidden" name="buyername" value="<?php echo htmlspecialchars($buyer_name); ?>">
         <input type="hidden" name="buyertel" value="<?php echo $buyer_tel; ?>">
         <input type="hidden" name="buyeremail" value="<?php echo htmlspecialchars($buyer_email); ?>">

@@ -5,6 +5,31 @@
  */
 ?>
 
+<!-- 견적 발송 성공 모달 -->
+<div id="quoteSuccessModal" class="modal customer-modal" style="display: none;">
+    <div class="modal-content" style="max-width:420px;">
+        <div class="modal-header" style="background:linear-gradient(135deg,#1E4E79 0%,#2a6496 100%);">
+            <h2 class="modal-brand">두손기획인쇄</h2>
+            <span class="close" onclick="closeQuoteSuccessModal()">&times;</span>
+            <h3 class="modal-title">✅ 견적서 발송 완료</h3>
+        </div>
+        <div style="padding:28px 25px;text-align:center;">
+            <div style="font-size:48px;margin-bottom:16px;">📧</div>
+            <p style="font-size:16px;font-weight:700;color:#1E4E79;margin:0 0 8px;">견적서가 이메일로 발송되었습니다!</p>
+            <p id="quoteSuccessNo" style="font-size:13px;color:#64748b;margin:0 0 20px;"></p>
+            <div style="background:#f0f7ff;border:1px solid #bfdbfe;border-radius:8px;padding:14px;margin-bottom:20px;text-align:left;font-size:13px;color:#334155;line-height:1.7;">
+                <div>📋 견적번호: <strong id="quoteNoDisplay" style="color:#1E4E79;"></strong></div>
+                <div>📧 발송 이메일: <strong id="quoteEmailDisplay" style="color:#1E4E79;"></strong></div>
+                <div style="margin-top:8px;font-size:12px;color:#64748b;">스팸함도 확인해 주세요. 문의: 02-2632-1830</div>
+            </div>
+            <div style="display:flex;gap:10px;justify-content:center;">
+                <button onclick="closeQuoteSuccessModal()" style="padding:10px 24px;background:#1E4E79;color:#fff;border:none;border-radius:6px;font-size:14px;font-weight:600;cursor:pointer;">확인</button>
+                <button onclick="closeQuoteSuccessModal();showQuotation();" style="padding:10px 24px;background:#f1f5f9;color:#334155;border:1px solid #cbd5e1;border-radius:6px;font-size:14px;font-weight:600;cursor:pointer;">견적서 보기</button>
+            </div>
+        </div>
+    </div>
+</div>
+
 <!-- 고객 정보 입력 모달 -->
 <div id="customerInfoModal" class="modal customer-modal" style="display: none;">
     <div class="modal-content">
@@ -293,48 +318,54 @@ document.getElementById('customer_phone').addEventListener('input', function(e) 
     e.target.value = value;
 });
 
-// 고객 정보와 함께 견적서 생성
+function closeQuoteSuccessModal() {
+    document.getElementById('quoteSuccessModal').style.display = 'none';
+    document.body.style.overflow = 'auto';
+}
+
 function generateQuoteWithCustomerInfo(event) {
     event.preventDefault();
-    
+
     const form = document.getElementById('customerInfoForm');
-    const formData = new FormData(form);
-    
-    // 버튼 비활성화
     const submitBtn = form.querySelector('.btn-generate');
     const originalText = submitBtn.innerHTML;
-    submitBtn.innerHTML = '⏳ 생성중...';
+    submitBtn.innerHTML = '⏳ 발송중...';
     submitBtn.disabled = true;
-    
-    // 고객 정보를 URL 파라미터로 전달
-    const params = new URLSearchParams();
-    for (let [key, value] of formData.entries()) {
-        if (value.trim()) {
-            params.append(key, value.trim());
-        }
-    }
-    
-    // 견적서 생성 페이지로 이동
-    const quoteWindow = window.open(
-        '/mlangprintauto/shop/generate_quote_pdf.php?' + params.toString(), 
-        '_blank', 
-        'width=800,height=600,scrollbars=yes'
-    );
-    
-    // 버튼 복원 및 모달 닫기
-    setTimeout(() => {
+
+    const payload = {
+        name:    document.getElementById('customer_name').value.trim(),
+        phone:   document.getElementById('customer_phone').value.trim(),
+        email:   document.getElementById('customer_email').value.trim(),
+        company: document.getElementById('customer_company').value.trim(),
+        memo:    document.getElementById('quote_memo').value.trim(),
+    };
+
+    fetch('/mlangprintauto/shop/send_cart_quotation.php', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json; charset=utf-8' },
+        body: JSON.stringify(payload),
+    })
+    .then(res => res.json())
+    .then(data => {
         submitBtn.innerHTML = originalText;
         submitBtn.disabled = false;
         closeCustomerModal();
-        
-        // 폼 초기화 (선택사항)
-        // form.reset();
-    }, 1000);
-    
-    // 새 창이 차단된 경우 처리
-    if (!quoteWindow) {
-        alert('팝업이 차단되었습니다. 팝업 차단을 해제하거나 직접 견적서 페이지로 이동합니다.');
-        window.location.href = '/mlangprintauto/shop/generate_quote_pdf.php?' + params.toString();
-    }
+
+        if (data.success) {
+            document.getElementById('quoteNoDisplay').textContent    = data.data.quote_no || '';
+            document.getElementById('quoteEmailDisplay').textContent = payload.email;
+            document.getElementById('quoteSuccessNo').textContent    = payload.name + '님의 견적서가 발송되었습니다.';
+            document.getElementById('quoteSuccessModal').style.display = 'flex';
+            document.body.style.overflow = 'hidden';
+        } else {
+            alert('견적서 발송 실패: ' + (data.message || '알 수 없는 오류'));
+        }
+    })
+    .catch(err => {
+        submitBtn.innerHTML = originalText;
+        submitBtn.disabled = false;
+        alert('네트워크 오류가 발생했습니다. 다시 시도해주세요.');
+        console.error(err);
+    });
 }
 </script>
