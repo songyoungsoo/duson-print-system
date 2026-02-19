@@ -5,9 +5,6 @@
 date_default_timezone_set('Asia/Seoul');
 require_once __DIR__ . '/base.php';
 
-// MySQL 시간대를 서울로 설정 (HOUR() 함수가 한국 시간 기준으로 작동)
-mysqli_query($db, "SET time_zone = 'Asia/Seoul'");
-
 $type = $_GET['type'] ?? 'summary';
 
 switch ($type) {
@@ -141,10 +138,13 @@ function getVisitorSummary($db) {
 
 function getHourlyStats($db) {
     $today = date('Y-m-d');
+
+    // 방문 시간을 한국 시간(UTC+9)으로 변환하여 집계
+    // MySQL HOUR() 함수는 서버 시간대를 따르므로, DATE_ADD로 9시간 추가 후 시간 추출
     $result = mysqli_query($db,
-        "SELECT HOUR(visit_time) as hour, COUNT(*) as visits, COUNT(DISTINCT ip) as unique_visitors
+        "SELECT HOUR(DATE_ADD(visit_time, INTERVAL 9 HOUR)) as hour, COUNT(*) as visits, COUNT(DISTINCT ip) as unique_visitors
          FROM visitor_logs WHERE DATE(visit_time) = '$today' AND is_bot = 0
-         GROUP BY HOUR(visit_time) ORDER BY hour");
+         GROUP BY HOUR(DATE_ADD(visit_time, INTERVAL 9 HOUR)) ORDER BY hour");
 
     $data = array_fill(0, 24, ['visits' => 0, 'unique' => 0]);
     while ($row = mysqli_fetch_assoc($result)) {
