@@ -811,6 +811,7 @@
         <?php endforeach; ?>
     <?php endif; ?>
 
+    <!-- PWA 설치 배너 (Android Chrome) -->
     <div id="pwa-install-banner" style="display:none; position:fixed; bottom:0; left:0; right:0; z-index:99999; background:#fff; box-shadow:0 -2px 12px rgba(0,0,0,0.15); padding:12px 16px; font-family:'Pretendard',sans-serif;">
         <div style="max-width:600px; margin:0 auto; display:flex; align-items:center; gap:12px;">
             <img src="/ImgFolder/icon-192x192.png" alt="두손기획인쇄" style="width:44px; height:44px; border-radius:10px; flex-shrink:0;">
@@ -822,8 +823,42 @@
             <button id="pwa-install-close" style="flex-shrink:0; background:none; border:none; color:#aaa; font-size:20px; cursor:pointer; padding:0 4px;">✕</button>
         </div>
     </div>
+
+    <!-- PWA 설치 안내 (iOS Safari) -->
+    <div id="ios-install-banner" style="display:none; position:fixed; bottom:0; left:0; right:0; z-index:99999; background:#fff; box-shadow:0 -4px 20px rgba(0,0,0,0.12); font-family:'Pretendard',sans-serif; border-top-left-radius:16px; border-top-right-radius:16px;">
+        <div style="max-width:500px; margin:0 auto; padding:20px 20px 24px;">
+            <!-- 상단 핸들 + 닫기 -->
+            <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:16px;">
+                <div style="width:36px; height:4px; background:#d1d5db; border-radius:2px; margin:0 auto;"></div>
+                <button id="ios-install-close" style="position:absolute; right:16px; top:12px; background:none; border:none; color:#999; font-size:22px; cursor:pointer; padding:4px;">✕</button>
+            </div>
+            <!-- 앱 정보 -->
+            <div style="display:flex; align-items:center; gap:14px; margin-bottom:18px;">
+                <img src="/ImgFolder/icon-192x192.png" alt="두손기획인쇄" style="width:52px; height:52px; border-radius:12px; box-shadow:0 2px 8px rgba(0,0,0,0.1);">
+                <div>
+                    <div style="font-weight:700; font-size:16px; color:#1e293b;">두손기획인쇄</div>
+                    <div style="font-size:13px; color:#64748b; margin-top:2px;">dsp114.co.kr</div>
+                </div>
+            </div>
+            <!-- 설치 단계 안내 -->
+            <div style="background:#f8fafc; border-radius:12px; padding:16px; margin-bottom:16px;">
+                <div style="font-weight:600; font-size:13px; color:#334155; margin-bottom:12px;">홈 화면에 추가하는 방법</div>
+                <div style="display:flex; align-items:flex-start; gap:10px; margin-bottom:10px;">
+                    <div style="flex-shrink:0; width:24px; height:24px; background:#007AFF; color:#fff; border-radius:6px; display:flex; align-items:center; justify-content:center; font-size:12px; font-weight:700;">1</div>
+                    <div style="font-size:13px; color:#475569; line-height:1.5; padding-top:2px;">하단의 <span style="display:inline-flex; align-items:center; gap:3px; background:#e2e8f0; padding:1px 6px; border-radius:4px; font-weight:600;"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#007AFF" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M4 12v8a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2v-8"/><polyline points="16 6 12 2 8 6"/><line x1="12" y1="2" x2="12" y2="15"/></svg> 공유</span> 버튼을 탭하세요</div>
+                </div>
+                <div style="display:flex; align-items:flex-start; gap:10px;">
+                    <div style="flex-shrink:0; width:24px; height:24px; background:#007AFF; color:#fff; border-radius:6px; display:flex; align-items:center; justify-content:center; font-size:12px; font-weight:700;">2</div>
+                    <div style="font-size:13px; color:#475569; line-height:1.5; padding-top:2px;"><span style="display:inline-flex; align-items:center; gap:3px; background:#e2e8f0; padding:1px 6px; border-radius:4px; font-weight:600;"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#333" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="18" height="18" rx="2" ry="2"/><line x1="12" y1="8" x2="12" y2="16"/><line x1="8" y1="12" x2="16" y2="12"/></svg> 홈 화면에 추가</span>를 탭하세요</div>
+                </div>
+            </div>
+            <div style="text-align:center; font-size:11px; color:#94a3b8;">앱처럼 바로 접속할 수 있습니다</div>
+        </div>
+    </div>
+
     <script>
     (function() {
+        // === Android Chrome: beforeinstallprompt ===
         var deferredPrompt = null;
         var banner = document.getElementById('pwa-install-banner');
         var installBtn = document.getElementById('pwa-install-btn');
@@ -832,6 +867,7 @@
         if (!banner) return;
         if (localStorage.getItem('pwa-install-dismissed')) return;
         if (window.matchMedia('(display-mode: standalone)').matches) return;
+        if (navigator.standalone === true) return; // iOS standalone
 
         window.addEventListener('beforeinstallprompt', function(e) {
             e.preventDefault();
@@ -856,8 +892,34 @@
         window.addEventListener('appinstalled', function() {
             banner.style.display = 'none';
         });
+
+        // === iOS Safari: 수동 안내 배너 ===
+        var isIOS = /iPad|iPhone|iPod/.test(navigator.userAgent) || (navigator.platform === 'MacIntel' && navigator.maxTouchPoints > 1);
+        var isSafari = /Safari/.test(navigator.userAgent) && !/CriOS|FxiOS|OPiOS|EdgiOS/.test(navigator.userAgent);
+        var iosBanner = document.getElementById('ios-install-banner');
+        var iosCloseBtn = document.getElementById('ios-install-close');
+
+        if (isIOS && isSafari && iosBanner && !navigator.standalone) {
+            if (!localStorage.getItem('ios-install-dismissed')) {
+                // 3초 후 표시 (페이지 로드 직후가 아닌 자연스러운 타이밍)
+                setTimeout(function() {
+                    iosBanner.style.display = 'block';
+                    iosBanner.style.animation = 'iosSlideUp .35s ease';
+                }, 3000);
+            }
+        }
+
+        if (iosCloseBtn) {
+            iosCloseBtn.addEventListener('click', function() {
+                iosBanner.style.display = 'none';
+                localStorage.setItem('ios-install-dismissed', '1');
+            });
+        }
     })();
     </script>
+    <style>
+    @keyframes iosSlideUp { from { transform: translateY(100%); } to { transform: translateY(0); } }
+    </style>
 
 </body>
 </html>
