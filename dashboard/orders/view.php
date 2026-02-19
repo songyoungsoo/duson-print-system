@@ -152,6 +152,11 @@ if ($price_vat_amount <= 0 && $price_supply > 0 && $price_vat > 0) {
     $price_vat_amount = $price_vat - $price_supply;
 }
 
+// 택배비 선불
+$logen_fee_type = $order['logen_fee_type'] ?? '';
+$logen_delivery_fee = intval($order['logen_delivery_fee'] ?? 0);
+$has_prepaid_shipping = ($logen_fee_type === '선불' && $logen_delivery_fee > 0);
+
 // 추가 옵션
 $has_options = false;
 $options = [];
@@ -377,6 +382,16 @@ include __DIR__ . '/../includes/sidebar.php';
                             <span class="font-semibold text-gray-900">총 결제금액</span>
                             <span class="text-base font-bold text-blue-600"><?php echo number_format($price_vat); ?>원</span>
                         </div>
+                        <?php if ($has_prepaid_shipping): ?>
+                        <div class="flex justify-between py-0.5">
+                            <span class="text-gray-500">🚚 택배비 (선불)</span>
+                            <span class="text-gray-900">+<?php echo number_format($logen_delivery_fee); ?>원</span>
+                        </div>
+                        <div class="flex justify-between py-0.5 border-t border-gray-200 mt-0.5">
+                            <span class="font-semibold text-gray-900">택배비 포함 합계</span>
+                            <span class="text-base font-bold text-red-600"><?php echo number_format($price_vat + $logen_delivery_fee); ?>원</span>
+                        </div>
+                        <?php endif; ?>
                     </div>
                 </div>
 
@@ -498,6 +513,16 @@ include __DIR__ . '/../includes/sidebar.php';
                             <dt class="text-gray-500">총액</dt>
                             <dd class="font-bold text-blue-600"><?php echo number_format($price_vat); ?>원</dd>
                         </div>
+                        <?php if ($has_prepaid_shipping): ?>
+                        <div class="flex justify-between pt-1 border-t border-gray-100 mt-1">
+                            <dt class="text-gray-500">🚚 택배비(선불)</dt>
+                            <dd class="text-gray-900">+<?php echo number_format($logen_delivery_fee); ?>원</dd>
+                        </div>
+                        <div class="flex justify-between">
+                            <dt class="font-semibold text-gray-900">합계</dt>
+                            <dd class="font-bold text-red-600"><?php echo number_format($price_vat + $logen_delivery_fee); ?>원</dd>
+                        </div>
+                        <?php endif; ?>
                     </dl>
                 </div>
 
