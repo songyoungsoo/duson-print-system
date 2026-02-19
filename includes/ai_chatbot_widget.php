@@ -1,11 +1,11 @@
 <div id="ai-chatbot-widget" style="display:none; position:fixed; bottom:20px; right:80px; z-index:99998; font-family:'Pretendard Variable','Noto Sans KR',sans-serif;">
-    <button id="ai-chatbot-toggle" onclick="aiChatToggle()" style="width:60px;height:60px;border-radius:50%;background:linear-gradient(145deg,#6366f1,#4f46e5);border:none;cursor:pointer;box-shadow:0 4px 14px rgba(99,102,241,.45);display:flex;align-items:center;justify-content:center;position:relative;transition:transform .2s;">
-        <span style="color:#fff;font-weight:900;font-size:14px;letter-spacing:-0.5px;line-height:.95;text-align:center;">야간<br>당번</span>
-        <span style="position:absolute;top:-2px;right:-2px;width:14px;height:14px;background:#22c55e;border-radius:50%;border:2px solid #fff;"></span>
+    <button id="ai-chatbot-toggle" onclick="aiChatToggle()" style="width:88px;height:88px;border-radius:50%;background:linear-gradient(145deg,#6366f1,#4f46e5);border:none;cursor:pointer;box-shadow:0 4px 14px rgba(99,102,241,.45);display:flex;align-items:center;justify-content:center;position:relative;transition:transform .2s;">
+        <span style="color:#fff;font-weight:900;font-size:20px;letter-spacing:-0.5px;line-height:.95;text-align:center;">야간<br>당번</span>
+        <span style="position:absolute;top:0;right:0;width:16px;height:16px;background:#22c55e;border-radius:50%;border:2px solid #fff;"></span>
     </button>
-    <span id="ai-chatbot-label" style="position:absolute;top:-22px;left:50%;transform:translateX(-50%);white-space:nowrap;font-size:10px;font-weight:600;color:#fff;background:#6366f1;padding:3px 8px;border-radius:10px;pointer-events:none;">AI 상담</span>
+    <span id="ai-chatbot-label" style="position:absolute;top:-24px;left:50%;transform:translateX(-50%);white-space:nowrap;font-size:11px;font-weight:600;color:#fff;background:#6366f1;padding:3px 10px;border-radius:10px;pointer-events:none;">AI 상담</span>
 
-    <div id="ai-chatbot-window" style="display:none;position:absolute;bottom:70px;right:0;width:370px;height:520px;background:#fff;border-radius:16px;box-shadow:0 8px 40px rgba(0,0,0,.18);overflow:hidden;flex-direction:column;animation:aiChatSlideUp .25s ease;">
+    <div id="ai-chatbot-window" style="display:none;position:absolute;bottom:98px;right:0;width:370px;height:520px;background:#fff;border-radius:16px;box-shadow:0 8px 40px rgba(0,0,0,.18);overflow:hidden;flex-direction:column;animation:aiChatSlideUp .25s ease;">
         <div style="background:linear-gradient(135deg,#6366f1,#4f46e5);padding:14px 16px;display:flex;align-items:center;gap:12px;">
             <div style="width:38px;height:38px;background:rgba(255,255,255,.2);border-radius:50%;display:flex;align-items:center;justify-content:center;">
                 <span style="color:#fff;font-weight:900;font-size:11px;letter-spacing:-0.5px;line-height:.95;text-align:center;">야간<br>당번</span>
@@ -55,7 +55,9 @@
 #ai-chatbot-toggle:hover { transform:scale(1.08); }
 @media(max-width:768px){
     #ai-chatbot-widget { right:10px; bottom:80px; }
-    #ai-chatbot-window { width:calc(100vw - 20px); right:-10px; bottom:65px; height:70vh; }
+    #ai-chatbot-toggle { width:70px; height:70px; }
+    #ai-chatbot-toggle > span:first-child { font-size:16px; }
+    #ai-chatbot-window { width:calc(100vw - 20px); right:-10px; bottom:80px; height:70vh; }
 }
 </style>
 
