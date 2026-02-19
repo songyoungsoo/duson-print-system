@@ -603,7 +603,7 @@ header("Expires: 0");
                         <div class="video-slide-wrapper" id="videoSlideWrapper" onclick="toggleSliderVideo()">
                             <img src="/media/explainer_poster.jpg" alt="두손기획인쇄 소개 영상" class="slider-img" id="videoPoster">
                             <video id="sliderVideo" preload="none" playsinline>
-                                <source src="/media/explainer_30s.mp4" type="video/mp4">
+                                <source src="/media/explainer_90s.mp4" type="video/mp4">
                             </video>
                             <div class="video-play-btn" id="videoPlayBtn">
                                 <svg width="28" height="28" viewBox="0 0 24 24" fill="white"><path d="M8 5v14l11-7z"/></svg>
@@ -654,7 +654,7 @@ header("Expires: 0");
             </div>
             
             <!-- Slider Controls -->
-            <div class="absolute bottom-16 left-1/2 transform -translate-x-1/2 flex gap-3 z-10">
+            <div class="absolute bottom-4 left-1/2 transform -translate-x-1/2 flex gap-3 z-10">
                 <button class="slider-dot w-3 h-3 rounded-full bg-white/60 hover:bg-white transition active" data-slide="0" aria-label="소개 영상"></button>
                 <button class="slider-dot w-3 h-3 rounded-full bg-white/60 hover:bg-white transition" data-slide="1" aria-label="전단지"></button>
                 <button class="slider-dot w-3 h-3 rounded-full bg-white/60 hover:bg-white transition" data-slide="2" aria-label="스티커"></button>
