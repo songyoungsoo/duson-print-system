@@ -1622,6 +1622,20 @@ $PRODUCT_NAME_MAP = [
 - **선불**: 택배비 금액 입력란 표시 → DB `logen_fee_type`, `logen_delivery_fee` 저장
 - 저장된 값은 `OrderFormOrderTree.php`에서 자동 표시 (기존 택배비 표시 로직 연동)
 
+### 택배비 VAT 계산 (2026-02-19)
+
+`dashboard/orders/view.php`에서 택배비 선불 금액을 공급가액으로 처리하여 VAT 10% 합산 표시:
+
+```php
+$shipping_supply = $logen_delivery_fee;           // 공급가액 (DB 저장값)
+$shipping_vat = round($shipping_supply * 0.1);    // VAT 10%
+$shipping_total = $shipping_supply + $shipping_vat; // 합계
+```
+
+**표시 형식**: `5,000+VAT 500 = 5,500원` (OrderFormOrderTree.php 패턴 통일)
+
+**적용 위치**: 금액 정보 카드 + 결제 정보 카드 (2곳)
+
 ## 📚 Documentation References
 
 - Master Specification: `CLAUDE_DOCS/Duson_System_Master_Spec_v1.0.md`
