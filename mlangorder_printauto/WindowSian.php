@@ -163,7 +163,36 @@ if ($row) {
         }
     }
 
-    // 3. uploaded_files JSON에서 이미지 찾기 (폴백)
+    // 3. upload/{no}/ 폴더 직접 스캔 (교정 관리에서 업로드한 파일)
+    if (empty($found_image_path)) {
+        $upload_dir = __DIR__ . '/upload/' . $no;
+        if (is_dir($upload_dir)) {
+            $files = scandir($upload_dir);
+            $image_files = [];
+            foreach ($files as $file) {
+                if ($file !== '.' && $file !== '..') {
+                    $ext = strtolower(pathinfo($file, PATHINFO_EXTENSION));
+                    if (in_array($ext, ['jpg', 'jpeg', 'png', 'gif', 'webp'])) {
+                        $image_files[] = $file;
+                    }
+                }
+            }
+            // 최신 파일 우선 (파일명 날짜 기준 정렬)
+            if (!empty($image_files)) {
+                usort($image_files, function($a, $b) {
+                    $a_time = filemtime(__DIR__ . '/upload/' . $no . '/' . $a);
+                    $b_time = filemtime(__DIR__ . '/upload/' . $no . '/' . $b);
+                    return $b_time - $a_time;
+                });
+                $latest_file = $image_files[0];
+                $found_image_path = $upload_dir . '/' . $latest_file;
+                $found_image_url = '/mlangorder_printauto/view_proof.php?no=' . $no . '&file=' . urlencode($latest_file) . '&src=upload';
+                $image_source = 'upload_folder';
+            }
+        }
+    }
+
+    // 4. uploaded_files JSON에서 이미지 찾기 (폴백)
     if (empty($found_image_path) && !empty($uploaded_files_json) && $uploaded_files_json !== '0') {
         $uploaded_files = json_decode($uploaded_files_json, true);
         if (is_array($uploaded_files) && count($uploaded_files) > 0) {
@@ -428,10 +457,11 @@ body {
     position: relative;
     display: inline-block;
     border-radius: 12px;
-    overflow: hidden;
+    overflow: auto;
     box-shadow: 0 8px 32px rgba(0,0,0,0.12);
     transition: transform 0.3s ease, box-shadow 0.3s ease;
-    max-width: 100%;
+    max-width: 95vw;
+    max-height: 80vh;
 }
 
 .image-container:hover {
@@ -440,10 +470,11 @@ body {
 }
 
 .image-container img {
-    max-width: 100%;
+    max-width: none;
     height: auto;
     display: block;
     border-radius: 12px;
+    min-width: 800px;
 }
 
 .no-image-message {

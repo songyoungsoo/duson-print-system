@@ -273,7 +273,7 @@ include __DIR__ . '/../includes/sidebar.php';
 
 <!-- File Viewer Modal -->
 <div id="fileModal" class="fixed inset-0 bg-black bg-opacity-50 z-50 hidden flex items-center justify-center p-4">
-    <div class="bg-white rounded-lg shadow-xl max-w-2xl w-full max-h-[80vh] overflow-y-auto">
+    <div class="bg-white rounded-lg shadow-xl max-w-7xl w-full max-h-[90vh] overflow-y-auto">
         <div class="flex items-center justify-between px-4 py-3 border-b">
             <h3 id="fileModalTitle" class="font-semibold text-gray-900">교정파일</h3>
             <button onclick="closeFileModal()" class="text-gray-400 hover:text-gray-600 text-xl">&times;</button>
@@ -331,18 +331,18 @@ include __DIR__ . '/../includes/sidebar.php';
 </div>
 
 <!-- Image Viewer Overlay -->
-<div id="imgOverlay" class="fixed inset-0 z-[60] hidden bg-black bg-opacity-90 overflow-auto cursor-pointer" onclick="closeImageViewer()">
+<div id="imgOverlay" class="fixed inset-0 z-[60] hidden bg-black bg-opacity-95 overflow-auto cursor-pointer" onclick="closeImageViewer()">
     <!-- Close button -->
-    <button onclick="closeImageViewer()" class="fixed top-3 right-4 z-[70] text-white bg-black bg-opacity-60 rounded-full w-9 h-9 flex items-center justify-center hover:bg-opacity-90 text-lg">✕</button>
+    <button onclick="closeImageViewer()" class="fixed top-3 right-4 z-[70] text-white bg-black bg-opacity-60 rounded-full w-10 h-10 flex items-center justify-center hover:bg-opacity-90 text-lg border border-white/30">✕</button>
     <!-- Delete button -->
-    <button id="deleteImgBtn" onclick="event.stopPropagation(); deleteCurrentImage()" class="fixed top-3 right-16 z-[70] text-white bg-red-600 bg-opacity-80 rounded-full w-9 h-9 flex items-center justify-center hover:bg-opacity-100 text-sm" title="이미지 삭제">🗑</button>
+    <button id="deleteImgBtn" onclick="event.stopPropagation(); deleteCurrentImage()" class="fixed top-3 right-16 z-[70] text-white bg-red-600 bg-opacity-90 rounded-full w-10 h-10 flex items-center justify-center hover:bg-opacity-100 text-sm border border-white/30" title="이미지 삭제">🗑</button>
     <!-- Prev button -->
-    <button id="prevBtn" onclick="event.stopPropagation(); navImage(-1)" class="fixed left-3 top-1/2 -translate-y-1/2 z-[70] text-white bg-black bg-opacity-60 rounded-full w-10 h-10 flex items-center justify-center hover:bg-opacity-90 text-xl hidden">&lsaquo;</button>
+    <button id="prevBtn" onclick="event.stopPropagation(); navImage(-1)" class="fixed left-3 top-1/2 -translate-y-1/2 z-[70] text-white bg-black bg-opacity-70 rounded-full w-12 h-12 flex items-center justify-center hover:bg-opacity-90 text-xl hidden border border-white/30">&lsaquo;</button>
     <!-- Next button -->
-    <button id="nextBtn" onclick="event.stopPropagation(); navImage(1)" class="fixed right-3 top-1/2 -translate-y-1/2 z-[70] text-white bg-black bg-opacity-60 rounded-full w-10 h-10 flex items-center justify-center hover:bg-opacity-90 text-xl hidden">&rsaquo;</button>
-    <!-- Image (100% original size, scrollable) -->
-    <div class="min-h-full flex items-start justify-center p-4">
-        <img id="overlayImg" src="" class="cursor-pointer" onclick="closeImageViewer()" style="max-width:none;">
+    <button id="nextBtn" onclick="event.stopPropagation(); navImage(1)" class="fixed right-3 top-1/2 -translate-y-1/2 z-[70] text-white bg-black bg-opacity-70 rounded-full w-12 h-12 flex items-center justify-center hover:bg-opacity-90 text-xl hidden border border-white/30">&rsaquo;</button>
+    <!-- Image (100% original size, scrollable, wider container) -->
+    <div class="min-h-screen flex items-start justify-center p-6 py-20">
+        <img id="overlayImg" src="" class="cursor-pointer shadow-2xl" style="max-width: none; min-width: 800px;" onclick="closeImageViewer()">
     </div>
     <!-- Info bar: counter + filename + date + thumbnails -->
     <div id="imgInfoBar" class="fixed bottom-0 left-0 right-0 z-[70] bg-gradient-to-t from-black/80 to-transparent pt-8 pb-3 px-4 hidden" onclick="event.stopPropagation()">
