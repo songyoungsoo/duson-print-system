@@ -229,7 +229,7 @@ class ChatbotService
         foreach ($options as $i => $opt) {
             $lines[] = ($i + 1) . ". " . $opt['title'];
         }
-        $result['message'] = implode("\n", $lines);
+        $result['message'] = implode("\n", $lines) . "\n\n💡 아래 입력창에 번호만 입력하세요";
         
         // 용지 선택 단계면 paper_images 추가
         if ($stepType === 'section' && $product === 'namecard') {
@@ -258,7 +258,7 @@ class ChatbotService
             foreach ($qtyOptions as $i => $q) {
                 $lines[] = ($i + 1) . ". " . $q['display'];
             }
-            return ['success' => true, 'message' => implode("\n", $lines)];
+            return ['success' => true, 'message' => implode("\n", $lines) . "\n\n💡 아래 입력창에 번호만 입력하세요"];
         }
         
         return ['success' => true, 'message' => "{$label}을 입력해주세요:"];
@@ -423,7 +423,7 @@ class ChatbotService
             $side = '단면';
             $sideId = 1;
         } else {
-            return ['success' => true, 'message' => "인쇄면을 선택해주세요:\n1. 단면\n2. 양면"];
+            return ['success' => true, 'message' => "인쇄면을 선택해주세요:\n1. 단면\n2. 양면\n\n💡 아래 입력창에 번호만 입력하세요"];
         }
         
         $state['selections']['side'] = $side;
@@ -447,7 +447,7 @@ class ChatbotService
             $design = '디자인 의뢰';
             $designId = 1;
         } else {
-            return ['success' => true, 'message' => "디자인을 선택해주세요:\n1. 디자인 있음 (추가비용 없음)\n2. 디자인 의뢰"];
+            return ['success' => true, 'message' => "디자인을 선택해주세요:\n1. 디자인 있음 (추가비용 없음)\n2. 디자인 의뢰\n\n💡 아래 입력창에 번호만 입력하세요"];
         }
         
         $state['selections']['design'] = $design;
