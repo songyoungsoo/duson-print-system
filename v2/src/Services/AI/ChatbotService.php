@@ -58,7 +58,7 @@ class ChatbotService
         'ncrflambeau' => [
             'label' => 'NCR양식지',
             'steps' => ['style', 'tree', 'section', 'quantity', 'design'],
-            'stepLabels' => ['매수', '규격', '인쇄도수', '수량', '디자인'],
+            'stepLabels' => ['종류', '인쇄도수', '규격', '수량', '디자인'],
             'delivery' => '시안확정 후 5~7일 출고',
         ],
         'msticker' => [
@@ -225,7 +225,8 @@ class ChatbotService
         }
         
         $result = ['success' => true];
-        $lines = ["{$stepLabel}을 선택해주세요:"];
+        $particle = $this->getParticle($stepLabel, '을', '를');
+        $lines = ["{$stepLabel}{$particle} 선택해주세요:"];
         foreach ($options as $i => $opt) {
             $lines[] = ($i + 1) . ". " . $opt['title'];
         }
@@ -254,14 +255,16 @@ class ChatbotService
             $state['_quantityOptions'] = $qtyOptions;
             $this->setState($state);
             
-            $lines = ["{$label}을 선택해주세요:"];
+            $p = $this->getParticle($label, '을', '를');
+            $lines = ["{$label}{$p} 선택해주세요:"];
             foreach ($qtyOptions as $i => $q) {
                 $lines[] = ($i + 1) . ". " . $q['display'];
             }
             return ['success' => true, 'message' => implode("\n", $lines) . "\n\n💡 아래 입력창에 번호만 입력하세요"];
         }
         
-        return ['success' => true, 'message' => "{$label}을 입력해주세요:"];
+        $p = $this->getParticle($label, '을', '를');
+        return ['success' => true, 'message' => "{$label}{$p} 입력해주세요:"];
     }
     
     /**
@@ -720,6 +723,19 @@ class ChatbotService
             'merchandisebond' => '매', 'ncrflambeau' => '권', 'msticker' => '매',
         ];
         return $units[$product] ?? '매';
+    }
+    
+    /**
+     * 한국어 조사 판별 (받침 유무: 을/를, 이/가, 은/는)
+     */
+    private function getParticle(string $text, string $withBatchim, string $withoutBatchim): string
+    {
+        $lastChar = mb_substr($text, -1);
+        $code = mb_ord($lastChar);
+        if ($code >= 0xAC00 && $code <= 0xD7A3) {
+            return (($code - 0xAC00) % 28 === 0) ? $withoutBatchim : $withBatchim;
+        }
+        return $withBatchim;
     }
     
     /**
