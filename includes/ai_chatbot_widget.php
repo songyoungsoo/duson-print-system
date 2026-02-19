@@ -37,6 +37,8 @@
                 <button onclick="aiChatQuick('카다록')" style="padding:4px 10px;background:#f1f5f9;border:1px solid #e2e8f0;border-radius:14px;font-size:11px;color:#475569;cursor:pointer;">카다록</button>
                 <button onclick="aiChatQuick('포스터')" style="padding:4px 10px;background:#f1f5f9;border:1px solid #e2e8f0;border-radius:14px;font-size:11px;color:#475569;cursor:pointer;">포스터</button>
                 <button onclick="aiChatQuick('상품권')" style="padding:4px 10px;background:#f1f5f9;border:1px solid #e2e8f0;border-radius:14px;font-size:11px;color:#475569;cursor:pointer;">상품권</button>
+                <button onclick="aiChatQuick('자석스티커')" style="padding:4px 10px;background:#f1f5f9;border:1px solid #e2e8f0;border-radius:14px;font-size:11px;color:#475569;cursor:pointer;">자석스티커</button>
+                <button onclick="aiChatQuick('양식지')" style="padding:4px 10px;background:#f1f5f9;border:1px solid #e2e8f0;border-radius:14px;font-size:11px;color:#475569;cursor:pointer;">양식지</button>
             </div>
             <form id="ai-chat-form" onsubmit="aiChatSend(event)" style="display:flex;gap:8px;">
                 <input id="ai-chat-input" type="text" placeholder="궁금한 상품을 입력하세요..." style="flex:1;padding:10px 14px;border:1px solid #d1d5db;border-radius:22px;font-size:13px;font-family:inherit;outline:none;" autocomplete="off">
