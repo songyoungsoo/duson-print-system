@@ -1199,11 +1199,8 @@ function addToCart() {
             btn.innerHTML = '<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M20 6L9 17l-5-5"/></svg> Added!';
             btn.style.background = 'var(--green)';
             setTimeout(function() {
-                alert('Item added to cart successfully!\n\nNote: Cart page is coming soon. Your item has been saved.');
-                btn.innerHTML = '<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="9" cy="21" r="1"/><circle cx="20" cy="21" r="1"/><path d="M1 1h4l2.68 13.39a2 2 0 002 1.61h9.72a2 2 0 002-1.61L23 6H6"/></svg> Add to Cart';
-                btn.style.background = '';
-                btn.disabled = false;
-            }, 1200);
+                window.location.href = '/en/cart.php?added=' + PRODUCT_CONFIG.key;
+            }, 800);
         } else {
             var msg = resp.message || resp.error || 'Failed to add to cart.';
             alert('Error: ' + msg + '\n\nPlease try again or contact us at dsp1830@naver.com');

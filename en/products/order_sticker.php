@@ -984,7 +984,7 @@ $exchangeRate = getExchangeRate();
                 btn.innerHTML = '<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M20 6L9 17l-5-5"/></svg> Added!';
                 btn.style.background = 'var(--green)';
                 setTimeout(function() {
-                    window.location.href = '/en/products/?added=sticker';
+                    window.location.href = '/en/cart.php?added=sticker';
                 }, 900);
             } else {
                 var msg = resp.message || resp.error || 'Failed to add to cart.';
