@@ -1646,5 +1646,5 @@ $shipping_total = $shipping_supply + $shipping_vat; // 합계
 
 ---
 
-*Last Updated: 2026-02-19 (캐로셀 dot 하단 조정, 택배비 VAT 계산, 관리자 주문등록 택배비 선불, 채팅창 팝업 제어, 견적 목록 삭제/일괄삭제)*
+*Last Updated: 2026-02-19 (홈페이지 실시간 견적 라이브 데모 섹션, 캐로셀 dot 하단 조정, 택배비 VAT 계산, 관리자 주문등록 택배비 선불, 채팅창 팝업 제어, 견적 목록 삭제/일괄삭제)*
 *Environment: WSL2 Ubuntu + Windows XAMPP + Production Deployment*
