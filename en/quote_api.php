@@ -133,6 +133,9 @@ $emailSent = false;
 if (file_exists($mailerPath)) {
     require_once $mailerPath;
 
+    // Buffer output — mailer.lib.php echoes debug text ("메일 발송 성공")
+    ob_start();
+
     // Send admin notification
     $adminResult = mailer(
         'Duson Print EN',
@@ -154,6 +157,8 @@ if (file_exists($mailerPath)) {
         1,
         ""
     );
+
+    ob_end_clean(); // Discard mailer debug output
 
     $emailSent = $adminResult;
 } else {
