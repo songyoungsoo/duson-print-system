@@ -93,19 +93,78 @@ $products = [
         'price_api' => '/mlangprintauto/envelope/calculate_price_ajax.php',
         'cart_api' => '/mlangprintauto/envelope/add_to_basket.php',
         'additional_options' => false
+    ],
+    'namecard' => [
+        'name' => 'Business Cards',
+        'name_kr' => '명함',
+        'ttable' => 'namecard',
+        'unit' => 'sheets',
+        'image' => '/ImgFolder/gate_picto/namecard_s.png',
+        'description' => 'Premium business cards with a wide range of paper stocks and finishes. Offset printing for sharp, professional results.',
+        'dropdowns' => [
+            ['id' => 'MY_type', 'label' => 'Type', 'placeholder' => 'Select type'],
+            ['id' => 'Section', 'label' => 'Paper / Material', 'placeholder' => 'Select paper', 'depends_on' => 'MY_type', 'api' => '/mlangprintauto/namecard/get_paper_types.php?style={MY_type}'],
+            ['id' => 'POtype', 'label' => 'Print Side', 'type' => 'static', 'options' => [['value' => '1', 'text' => 'Single-Sided'], ['value' => '2', 'text' => 'Double-Sided']]],
+            ['id' => 'MY_amount', 'label' => 'Quantity', 'placeholder' => 'Select quantity', 'depends_on' => 'Section', 'api' => '/mlangprintauto/namecard/get_quantities.php?style={MY_type}&section={Section}&potype={POtype}'],
+            ['id' => 'ordertype', 'label' => 'Design Service', 'type' => 'static', 'options' => [['value' => '1', 'text' => 'Print Only (I have files)'], ['value' => '2', 'text' => 'Design + Print (+fee)']]]
+        ],
+        'price_api' => '/mlangprintauto/namecard/calculate_price_ajax.php',
+        'cart_api' => '/mlangprintauto/namecard/add_to_basket.php',
+        'additional_options' => false
+    ],
+    'cadarok' => [
+        'name' => 'Catalogs & Booklets',
+        'name_kr' => '카다록',
+        'ttable' => 'cadarok',
+        'unit' => 'copies',
+        'image' => '/ImgFolder/gate_picto/cadarok_s.png',
+        'description' => 'Professional catalogs and booklets with saddle-stitch or perfect binding. Ideal for product catalogs, brochures, and company profiles.',
+        'dropdowns' => [
+            ['id' => 'MY_type', 'label' => 'Type', 'placeholder' => 'Select type'],
+            ['id' => 'Section', 'label' => 'Paper Type', 'placeholder' => 'Select paper', 'depends_on' => 'MY_type', 'api' => '/mlangprintauto/cadarok/get_paper_types.php?style={MY_type}'],
+            ['id' => 'POtype', 'label' => 'Print Side', 'type' => 'static', 'options' => [['value' => '1', 'text' => 'Single-Sided'], ['value' => '2', 'text' => 'Double-Sided']]],
+            ['id' => 'MY_amount', 'label' => 'Quantity', 'placeholder' => 'Select quantity', 'depends_on' => 'Section', 'api' => '/mlangprintauto/cadarok/get_quantities.php?style={MY_type}&section={Section}&potype={POtype}'],
+            ['id' => 'ordertype', 'label' => 'Design Service', 'type' => 'static', 'options' => [['value' => '1', 'text' => 'Print Only'], ['value' => '2', 'text' => 'Design + Print']]]
+        ],
+        'price_api' => '/mlangprintauto/cadarok/calculate_price_ajax.php',
+        'cart_api' => '/mlangprintauto/cadarok/add_to_basket.php',
+        'additional_options' => false
+    ],
+    'ncrflambeau' => [
+        'name' => 'NCR Forms',
+        'name_kr' => 'NCR양식지',
+        'ttable' => 'NcrFlambeau',
+        'unit' => 'booklets',
+        'image' => '/ImgFolder/gate_picto/ncr_s.png',
+        'description' => 'Carbonless copy (NCR) forms — invoices, receipts, delivery slips. Available in 2-part, 3-part, and 4-part sets.',
+        'dropdowns' => [
+            ['id' => 'MY_type', 'label' => 'Type', 'placeholder' => 'Select type'],
+            ['id' => 'MY_Fsd', 'label' => 'Size', 'placeholder' => 'Select size', 'depends_on' => 'MY_type', 'api' => '/mlangprintauto/ncrflambeau/get_sizes.php?style={MY_type}'],
+            ['id' => 'PN_type', 'label' => 'Color / Print Type', 'placeholder' => 'Select color', 'depends_on' => 'MY_type', 'api' => '/mlangprintauto/ncrflambeau/get_colors.php?style={MY_type}'],
+            ['id' => 'MY_amount', 'label' => 'Quantity', 'placeholder' => 'Select quantity', 'depends_on' => 'PN_type', 'api' => '/mlangprintauto/ncrflambeau/get_quantities.php?style={MY_type}&section={MY_Fsd}&treeselect={PN_type}'],
+            ['id' => 'ordertype', 'label' => 'Design Service', 'type' => 'static', 'options' => [['value' => '1', 'text' => 'Print Only'], ['value' => '2', 'text' => 'Design + Print']]]
+        ],
+        'price_api' => '/mlangprintauto/ncrflambeau/calculate_price_ajax.php',
+        'price_method' => 'POST',
+        'cart_api' => '/mlangprintauto/ncrflambeau/add_to_basket.php',
+        'additional_options' => false
     ]
 ];
 
-$coming_soon = ['sticker', 'namecard', 'cadarok', 'ncrflambeau'];
+$coming_soon = ['sticker'];
 $all_known = array_merge(array_keys($products), $coming_soon);
 $coming_soon_names = [
-    'sticker' => 'Stickers & Labels',
-    'namecard' => 'Business Cards',
-    'cadarok' => 'Catalogs & Booklets',
-    'ncrflambeau' => 'NCR Forms'
+    'sticker' => 'Stickers & Labels'
 ];
 
 $type = isset($_GET['type']) ? trim($_GET['type']) : '';
+
+// Redirect sticker to its dedicated page (formula-based pricing, different UI)
+if ($type === 'sticker' || $type === 'sticker_new') {
+    header('Location: /en/products/order_sticker.php');
+    exit;
+}
+
 $is_valid = in_array($type, $all_known);
 $is_coming_soon = in_array($type, $coming_soon);
 $is_supported = isset($products[$type]);
@@ -928,7 +987,29 @@ function onDropdownChange(changedId) {
         fetchOptions(dd);
     });
 
-    // Also check if any other dynamic dropdown now has all its params filled
+    // Re-fetch any already-populated dropdown whose API template references
+    // the changed dropdown but isn't a direct dependent (fan-out cascade support).
+    // Example: NCR's MY_amount API references {MY_Fsd} but depends_on is PN_type.
+    DROPDOWNS.forEach(function(dd) {
+        if (dd.type === 'static' || !dd.api) return;
+        if (dd.depends_on === changedId) return; // Already handled above
+        var el = document.getElementById(dd.id);
+        if (!el) return;
+
+        // Check if this dropdown's API references the changed dropdown
+        if (dd.api.indexOf('{' + changedId + '}') !== -1) {
+            // This dropdown's API depends on the changed value — reset and re-fetch
+            el.value = '';
+            el.innerHTML = '<option value="">' + (dd.placeholder || '— Select —') + '</option>';
+            el.disabled = true;
+            resetDownstream(dd.id);
+            if (apiParamsFilled(dd)) {
+                fetchOptions(dd);
+            }
+        }
+    });
+
+    // Also check if any disabled dynamic dropdown now has all its params filled
     // (handles cases like static POtype enabling MY_amount which depends on PN_type)
     DROPDOWNS.forEach(function(dd) {
         if (dd.type === 'static') return;
@@ -1022,12 +1103,23 @@ function calculatePrice() {
 
     // Additional options total (for inserted)
     if (PRODUCT_CONFIG.additional_options) {
-        params.set('additional_options_total', '0'); // We don't calculate additional option costs on the English page yet
+        params.set('additional_options_total', '0');
     }
 
-    var url = PRODUCT_CONFIG.price_api + '?' + params.toString();
+    // Support POST method for NCR and other products that require it
+    var fetchOpts;
+    if (PRODUCT_CONFIG.price_method === 'POST') {
+        var formData = new FormData();
+        DROPDOWNS.forEach(function(dd) { formData.append(dd.id, getVal(dd.id)); });
+        if (PRODUCT_CONFIG.additional_options) formData.append('additional_options_total', '0');
+        fetchOpts = { method: 'POST', body: formData };
+    } else {
+        fetchOpts = { method: 'GET' };
+    }
 
-    fetch(url)
+    var url = PRODUCT_CONFIG.price_method === 'POST' ? PRODUCT_CONFIG.price_api : PRODUCT_CONFIG.price_api + '?' + params.toString();
+
+    fetch(url, fetchOpts)
         .then(function(r) { return r.json(); })
         .then(function(resp) {
             // Normalize: extract price from various response formats
@@ -1067,6 +1159,7 @@ function calculatePrice() {
             else if (typeof d.vat !== 'undefined') vat = parsePrice(d.vat);
             if (typeof d.Total_PriceForm !== 'undefined') total = parsePrice(d.Total_PriceForm);
             else if (typeof d.total_with_vat !== 'undefined') total = parsePrice(d.total_with_vat);
+            else if (typeof d.vat_price !== 'undefined') total = parsePrice(d.vat_price);
 
             currentPriceData = { supply: supply, vat: vat, total: total, raw: d };
             showPriceResult(supply, vat, total);

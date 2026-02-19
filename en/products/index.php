@@ -319,7 +319,7 @@
             foreach ($products as $i => $p):
                 $delay = 'd' . ($i % 9);
             ?>
-            <a href="/en/products/order.php?type=<?php echo $p['key']; ?>" class="p-card reveal reveal-<?php echo $delay; ?>">
+            <a href="<?php echo $p['key'] === 'sticker' ? '/en/products/order_sticker.php' : '/en/products/order.php?type=' . $p['key']; ?>" class="p-card reveal reveal-<?php echo $delay; ?>">
                 <div class="p-card-img">
                     <img src="/ImgFolder/gate_picto/<?php echo $p['img']; ?>" alt="<?php echo strip_tags($p['name']); ?>">
                 </div>
