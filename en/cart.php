@@ -51,55 +51,10 @@ $exchangeRate = getExchangeRate();
             -webkit-font-smoothing: antialiased;
         }
 
-        /* ===== NAV ===== */
-        .nav {
-            position: fixed; top: 0; left: 0; right: 0; z-index: 100;
-            background: rgba(255,255,255,0.92);
-            backdrop-filter: blur(20px);
-            border-bottom: 1px solid var(--border);
-            transition: box-shadow 0.3s;
-        }
-        .nav.scrolled { box-shadow: 0 2px 20px rgba(0,0,0,0.06); }
-        .nav-inner {
-            max-width: 1200px; margin: 0 auto;
-            display: flex; align-items: center; justify-content: space-between;
-            padding: 0 24px; height: 64px;
-        }
-        .nav-logo { display: flex; align-items: center; gap: 10px; text-decoration: none; }
-        .nav-logo img { height: 36px; width: auto; }
-        .nav-logo span {
-            font-family: var(--font-heading); font-weight: 700; font-size: 18px;
-            color: var(--navy); letter-spacing: -0.5px;
-        }
-        .nav-links { display: flex; align-items: center; gap: 28px; }
-        .nav-links a {
-            font-size: 14px; font-weight: 500; color: var(--text-muted);
-            text-decoration: none; transition: color 0.2s;
-        }
-        .nav-links a:hover, .nav-links a.active { color: var(--navy); }
-        .nav-lang { font-size: 13px; color: var(--text-light); }
-        .nav-lang a { color: var(--text-light); text-decoration: none; }
-        .nav-lang a:hover { color: var(--navy); }
-        .nav-cta {
-            padding: 8px 20px; border-radius: 10px;
-            background: var(--navy); color: var(--white) !important;
-            font-weight: 600; font-size: 13px;
-            transition: background 0.2s;
-        }
-        .nav-cta:hover { background: var(--navy-dark); }
-        .nav-mobile-toggle {
-            display: none; flex-direction: column; gap: 5px;
-            background: none; border: none; cursor: pointer; padding: 4px;
-        }
-        .nav-mobile-toggle span {
-            width: 22px; height: 2px; background: var(--text);
-            border-radius: 2px; transition: 0.3s;
-        }
-
         /* ===== MAIN LAYOUT ===== */
         .cart-page {
             max-width: 1200px; margin: 0 auto;
-            padding: 90px 24px 60px;
+            padding: 130px 24px 60px;
         }
         .cart-header {
             margin-bottom: 32px;
@@ -216,7 +171,7 @@ $exchangeRate = getExchangeRate();
         .summary-card {
             background: var(--white); border-radius: var(--radius-lg);
             border: 1px solid var(--border); padding: 28px;
-            position: sticky; top: 84px;
+            position: sticky; top: 128px;
         }
         .summary-title {
             font-family: var(--font-heading); font-size: 18px;
@@ -291,16 +246,7 @@ $exchangeRate = getExchangeRate();
             .summary-card { position: static; }
         }
         @media (max-width: 640px) {
-            .nav-links { display: none; }
-            .nav-mobile-toggle { display: flex; }
-            .nav-links.open {
-                display: flex; flex-direction: column;
-                position: absolute; top: 64px; left: 0; right: 0;
-                background: var(--white); border-bottom: 1px solid var(--border);
-                padding: 16px 24px; gap: 12px;
-                box-shadow: 0 8px 32px rgba(0,0,0,0.08);
-            }
-            .cart-page { padding: 80px 16px 40px; }
+            .cart-page { padding: 120px 16px 40px; }
             .cart-header h1 { font-size: 24px; }
             .cart-item {
                 grid-template-columns: 1fr;
@@ -320,26 +266,7 @@ $exchangeRate = getExchangeRate();
 </head>
 <body>
 
-<!-- NAV -->
-<nav class="nav" id="nav">
-    <div class="nav-inner">
-        <a href="/en/" class="nav-logo">
-            <img src="/ImgFolder/dusonlogo1.png" alt="Duson Print">
-            <span>DUSON PRINT</span>
-        </a>
-        <div class="nav-links" id="navLinks">
-            <a href="/en/products/">Products</a>
-            <a href="/en/cart.php" class="active">Cart</a>
-            <a href="/en/#why-us">Why Us</a>
-            <a href="/en/#quote">Contact</a>
-            <span class="nav-lang">EN | <a href="/">한국어</a></span>
-            <a href="/en/#quote" class="nav-cta">Get Free Quote</a>
-        </div>
-        <button class="nav-mobile-toggle" id="navToggle" aria-label="Menu">
-            <span></span><span></span><span></span>
-        </button>
-    </div>
-</nav>
+<?php $_en_current_page = 'cart'; include __DIR__ . '/includes/nav.php'; ?>
 
 <!-- MAIN CART -->
 <div class="cart-page">
@@ -677,16 +604,6 @@ $exchangeRate = getExchangeRate();
         div.textContent = str;
         return div.innerHTML;
     }
-
-    // ── Nav scroll effect ──
-    window.addEventListener('scroll', function() {
-        document.getElementById('nav').classList.toggle('scrolled', window.scrollY > 10);
-    });
-
-    // ── Mobile nav toggle ──
-    document.getElementById('navToggle').addEventListener('click', function() {
-        document.getElementById('navLinks').classList.toggle('open');
-    });
 
     // ── Init ──
     loadCart();

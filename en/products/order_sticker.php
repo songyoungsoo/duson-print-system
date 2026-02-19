@@ -52,61 +52,9 @@ $exchangeRate = getExchangeRate();
             -webkit-font-smoothing: antialiased;
         }
 
-        /* ===== NAV ===== */
-        .nav {
-            position: fixed; top: 0; left: 0; right: 0; z-index: 100;
-            background: rgba(255,255,255,0.92);
-            backdrop-filter: blur(20px);
-            border-bottom: 1px solid var(--border);
-            transition: box-shadow 0.3s;
-        }
-        .nav.scrolled { box-shadow: 0 2px 20px rgba(0,0,0,0.06); }
-        .nav-inner {
-            max-width: 1200px; margin: 0 auto;
-            display: flex; align-items: center; justify-content: space-between;
-            padding: 0 24px; height: 64px;
-        }
-        .nav-logo { display: flex; align-items: center; gap: 10px; text-decoration: none; }
-        .nav-logo img { height: 36px; width: auto; }
-        .nav-logo span {
-            font-family: var(--font-heading); font-weight: 700; font-size: 18px;
-            color: var(--navy); letter-spacing: -0.5px;
-        }
-        .nav-links { display: flex; align-items: center; gap: 28px; }
-        .nav-links a {
-            font-size: 14px; font-weight: 500; color: var(--text-muted);
-            text-decoration: none; transition: color 0.2s;
-        }
-        .nav-links a:hover { color: var(--navy); }
-        .nav-links a.active { color: var(--navy); font-weight: 700; }
-        .nav-lang {
-            font-size: 13px; color: var(--text-light);
-            display: flex; align-items: center; gap: 6px;
-        }
-        .nav-lang a { color: var(--navy); font-weight: 600; text-decoration: none; }
-        .nav-cta {
-            display: inline-flex; align-items: center; gap: 6px;
-            padding: 10px 22px; border-radius: 10px;
-            background: var(--navy); color: var(--white);
-            font-size: 14px; font-weight: 600; text-decoration: none;
-            transition: all 0.25s;
-        }
-        .nav-cta:hover { background: var(--navy-dark); transform: translateY(-1px); box-shadow: var(--shadow-md); }
-        .nav-mobile-toggle {
-            display: none; background: none; border: none; cursor: pointer;
-            width: 32px; height: 32px; position: relative;
-        }
-        .nav-mobile-toggle span {
-            display: block; width: 22px; height: 2px; background: var(--text);
-            position: absolute; left: 5px; transition: all 0.3s;
-        }
-        .nav-mobile-toggle span:nth-child(1) { top: 9px; }
-        .nav-mobile-toggle span:nth-child(2) { top: 15px; }
-        .nav-mobile-toggle span:nth-child(3) { top: 21px; }
-
         /* ===== BREADCRUMB ===== */
         .breadcrumb-bar {
-            padding: 80px 24px 0;
+            padding: 120px 24px 0;
             max-width: 1200px; margin: 0 auto;
         }
         .breadcrumb {
@@ -243,7 +191,7 @@ $exchangeRate = getExchangeRate();
         .price-card {
             background: var(--white); border-radius: var(--radius-lg);
             border: 1px solid var(--border); padding: 28px;
-            position: sticky; top: 84px;
+            position: sticky; top: 128px;
         }
         .price-card-title {
             font-family: var(--font-heading); font-size: 16px; font-weight: 700;
@@ -363,15 +311,6 @@ $exchangeRate = getExchangeRate();
             .price-card { position: static; }
         }
         @media (max-width: 768px) {
-            .nav-links { display: none; }
-            .nav-mobile-toggle { display: block; }
-            .nav-links.open {
-                display: flex; flex-direction: column;
-                position: absolute; top: 64px; left: 0; right: 0;
-                background: var(--white); padding: 20px 24px;
-                border-bottom: 1px solid var(--border); box-shadow: var(--shadow-md);
-                gap: 16px;
-            }
             .product-header { flex-direction: column; text-align: center; }
             .product-header-img { width: 80px; height: 80px; }
             .product-header-info h1 { font-size: 24px; }
@@ -387,26 +326,7 @@ $exchangeRate = getExchangeRate();
 </head>
 <body>
 
-<!-- NAV -->
-<nav class="nav" id="nav">
-    <div class="nav-inner">
-        <a href="/en/" class="nav-logo">
-            <img src="/ImgFolder/dusonlogo1.png" alt="Duson Print">
-            <span>DUSON PRINT</span>
-        </a>
-        <div class="nav-links" id="navLinks">
-            <a href="/en/products/" class="active">Products</a>
-            <a href="/en/#why-us">Why Us</a>
-            <a href="/en/#about">About</a>
-            <a href="/en/#quote">Contact</a>
-            <span class="nav-lang">EN | <a href="/">한국어</a></span>
-            <a href="/en/#quote" class="nav-cta">Get Free Quote</a>
-        </div>
-        <button class="nav-mobile-toggle" id="navToggle" aria-label="Menu">
-            <span></span><span></span><span></span>
-        </button>
-    </div>
-</nav>
+<?php $_en_current_page = 'sticker'; include __DIR__ . '/../includes/nav.php'; ?>
 
 <!-- BREADCRUMB -->
 <div class="breadcrumb-bar">
@@ -679,18 +599,6 @@ $exchangeRate = getExchangeRate();
     function getNumVal(id) {
         return parseInt(getVal(id)) || 0;
     }
-
-    // ── Nav scroll & mobile toggle ──
-    var nav = document.getElementById('nav');
-    window.addEventListener('scroll', function() {
-        nav.classList.toggle('scrolled', window.scrollY > 20);
-    });
-    document.getElementById('navToggle').addEventListener('click', function() {
-        document.getElementById('navLinks').classList.toggle('open');
-    });
-    document.querySelectorAll('.nav-links a').forEach(function(a) {
-        a.addEventListener('click', function() { document.getElementById('navLinks').classList.remove('open'); });
-    });
 
     // ── Shape validation helpers ──
     function updateShapeOptions() {

@@ -60,24 +60,8 @@ if (isset($db) && $db) { mysqli_close($db); }
         html { scroll-behavior: smooth; }
         body { font-family: var(--font-body); color: var(--text); background: var(--bg); line-height: 1.6; -webkit-font-smoothing: antialiased; }
 
-        /* NAV */
-        .nav { position: fixed; top: 0; left: 0; right: 0; z-index: 100; background: rgba(255,255,255,0.92); backdrop-filter: blur(20px); border-bottom: 1px solid var(--border); }
-        .nav.scrolled { box-shadow: 0 2px 20px rgba(0,0,0,0.06); }
-        .nav-inner { max-width: 1200px; margin: 0 auto; display: flex; align-items: center; justify-content: space-between; padding: 0 24px; height: 64px; }
-        .nav-logo { display: flex; align-items: center; gap: 10px; text-decoration: none; }
-        .nav-logo img { height: 36px; width: auto; }
-        .nav-logo span { font-family: var(--font-heading); font-weight: 700; font-size: 18px; color: var(--navy); letter-spacing: -0.5px; }
-        .nav-links { display: flex; align-items: center; gap: 28px; }
-        .nav-links a { font-size: 14px; font-weight: 500; color: var(--text-muted); text-decoration: none; transition: color 0.2s; }
-        .nav-links a:hover, .nav-links a.active { color: var(--navy); }
-        .nav-lang { font-size: 13px; color: var(--text-light); }
-        .nav-lang a { color: var(--text-light); text-decoration: none; }
-        .nav-cta { padding: 8px 20px; border-radius: 10px; background: var(--navy); color: var(--white); font-weight: 600; font-size: 13px; }
-        .nav-mobile-toggle { display: none; flex-direction: column; gap: 5px; background: none; border: none; cursor: pointer; padding: 4px; }
-        .nav-mobile-toggle span { width: 22px; height: 2px; background: var(--text); border-radius: 2px; }
-
         /* LAYOUT */
-        .page { max-width: 1200px; margin: 0 auto; padding: 90px 24px 60px; }
+        .page { max-width: 1200px; margin: 0 auto; padding: 130px 24px 60px; }
         .page h1 { font-family: var(--font-heading); font-size: 32px; font-weight: 700; color: var(--text); margin-bottom: 8px; }
         .page-sub { font-size: 15px; color: var(--text-muted); margin-bottom: 32px; }
         .layout { display: grid; grid-template-columns: 1fr 380px; gap: 32px; align-items: start; }
@@ -114,7 +98,7 @@ if (isset($db) && $db) { mysqli_close($db); }
         .info-box.amber { background: #FFF8E1; border: 1px solid #FFF3C4; color: #92400E; }
 
         /* SIDEBAR */
-        .sidebar-card { background: var(--white); border-radius: var(--radius-lg); border: 1px solid var(--border); padding: 24px; position: sticky; top: 84px; }
+        .sidebar-card { background: var(--white); border-radius: var(--radius-lg); border: 1px solid var(--border); padding: 24px; position: sticky; top: 128px; }
         .sidebar-title { font-family: var(--font-heading); font-size: 16px; font-weight: 600; margin-bottom: 16px; }
         .order-item { display: flex; justify-content: space-between; align-items: start; padding: 10px 0; border-bottom: 1px solid #F1F5F9; font-size: 13px; }
         .order-item:last-child { border-bottom: none; }
@@ -144,10 +128,7 @@ if (isset($db) && $db) { mysqli_close($db); }
         /* RESPONSIVE */
         @media (max-width: 900px) { .layout { grid-template-columns: 1fr; } .sidebar-card { position: static; } }
         @media (max-width: 640px) {
-            .nav-links { display: none; }
-            .nav-mobile-toggle { display: flex; }
-            .nav-links.open { display: flex; flex-direction: column; position: absolute; top: 64px; left: 0; right: 0; background: var(--white); border-bottom: 1px solid var(--border); padding: 16px 24px; gap: 12px; box-shadow: 0 8px 32px rgba(0,0,0,0.08); }
-            .page { padding: 80px 16px 40px; }
+            .page { padding: 120px 16px 40px; }
             .page h1 { font-size: 24px; }
             .card { padding: 20px; }
             .field-row { grid-template-columns: 1fr; }
@@ -157,20 +138,7 @@ if (isset($db) && $db) { mysqli_close($db); }
 </head>
 <body>
 
-<nav class="nav" id="nav">
-    <div class="nav-inner">
-        <a href="/en/" class="nav-logo"><img src="/ImgFolder/dusonlogo1.png" alt="Duson Print"><span>DUSON PRINT</span></a>
-        <div class="nav-links" id="navLinks">
-            <a href="/en/products/">Products</a>
-            <a href="/en/cart.php">Cart</a>
-            <a href="/en/#why-us">Why Us</a>
-            <a href="/en/#quote">Contact</a>
-            <span class="nav-lang">EN | <a href="/">한국어</a></span>
-            <a href="/en/#quote" class="nav-cta">Get Free Quote</a>
-        </div>
-        <button class="nav-mobile-toggle" id="navToggle" aria-label="Menu"><span></span><span></span><span></span></button>
-    </div>
-</nav>
+<?php $_en_current_page = ''; include __DIR__ . '/includes/nav.php'; ?>
 
 <div class="page">
     <h1>Checkout</h1>
@@ -353,16 +321,6 @@ if (isset($db) && $db) { mysqli_close($db); }
 <script>
 (function() {
     'use strict';
-    // Nav scroll
-    window.addEventListener('scroll', function() {
-        document.getElementById('nav').classList.toggle('scrolled', window.scrollY > 10);
-    });
-    // Mobile nav
-    var toggle = document.getElementById('navToggle');
-    if (toggle) toggle.addEventListener('click', function() {
-        document.getElementById('navLinks').classList.toggle('open');
-    });
-
     // Payment method toggle
     var radios = document.querySelectorAll('input[name="payment_method"]');
     var bankInfo = document.getElementById('bankInfo');

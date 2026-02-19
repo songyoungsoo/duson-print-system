@@ -62,21 +62,7 @@ if (isset($db) && $db) { mysqli_close($db); }
         }
         body { font-family: var(--font-body); color: var(--text); background: var(--bg); line-height: 1.6; -webkit-font-smoothing: antialiased; }
 
-        .nav { position: fixed; top: 0; left: 0; right: 0; z-index: 100; background: rgba(255,255,255,0.92); backdrop-filter: blur(20px); border-bottom: 1px solid var(--border); }
-        .nav-inner { max-width: 1200px; margin: 0 auto; display: flex; align-items: center; justify-content: space-between; padding: 0 24px; height: 64px; }
-        .nav-logo { display: flex; align-items: center; gap: 10px; text-decoration: none; }
-        .nav-logo img { height: 36px; width: auto; }
-        .nav-logo span { font-family: var(--font-heading); font-weight: 700; font-size: 18px; color: var(--navy); letter-spacing: -0.5px; }
-        .nav-links { display: flex; align-items: center; gap: 28px; }
-        .nav-links a { font-size: 14px; font-weight: 500; color: var(--text-muted); text-decoration: none; }
-        .nav-links a:hover { color: var(--navy); }
-        .nav-lang { font-size: 13px; color: var(--text-light); }
-        .nav-lang a { color: var(--text-light); text-decoration: none; }
-        .nav-cta { padding: 8px 20px; border-radius: 10px; background: var(--navy); color: var(--white); font-weight: 600; font-size: 13px; }
-        .nav-mobile-toggle { display: none; flex-direction: column; gap: 5px; background: none; border: none; cursor: pointer; padding: 4px; }
-        .nav-mobile-toggle span { width: 22px; height: 2px; background: var(--text); border-radius: 2px; }
-
-        .page { max-width: 720px; margin: 0 auto; padding: 100px 24px 60px; text-align: center; }
+        .page { max-width: 720px; margin: 0 auto; padding: 140px 24px 60px; text-align: center; }
 
         .success-icon {
             width: 80px; height: 80px; border-radius: 50%;
@@ -112,9 +98,7 @@ if (isset($db) && $db) { mysqli_close($db); }
         .footer a { color: rgba(255,255,255,0.7); text-decoration: none; }
 
         @media (max-width: 640px) {
-            .nav-links { display: none; }
-            .nav-mobile-toggle { display: flex; }
-            .page { padding: 80px 16px 40px; }
+            .page { padding: 120px 16px 40px; }
             .page h1 { font-size: 24px; }
             .card { padding: 20px; }
             .actions { flex-direction: column; }
@@ -125,20 +109,7 @@ if (isset($db) && $db) { mysqli_close($db); }
 </head>
 <body>
 
-<nav class="nav">
-    <div class="nav-inner">
-        <a href="/en/" class="nav-logo"><img src="/ImgFolder/dusonlogo1.png" alt="Duson Print"><span>DUSON PRINT</span></a>
-        <div class="nav-links" id="navLinks">
-            <a href="/en/products/">Products</a>
-            <a href="/en/cart.php">Cart</a>
-            <a href="/en/#why-us">Why Us</a>
-            <a href="/en/#quote">Contact</a>
-            <span class="nav-lang">EN | <a href="/">한국어</a></span>
-            <a href="/en/#quote" class="nav-cta">Get Free Quote</a>
-        </div>
-        <button class="nav-mobile-toggle" id="navToggle" aria-label="Menu"><span></span><span></span><span></span></button>
-    </div>
-</nav>
+<?php $_en_current_page = ''; include __DIR__ . '/includes/nav.php'; ?>
 
 <div class="page">
     <div class="success-icon">
@@ -204,11 +175,7 @@ if (isset($db) && $db) { mysqli_close($db); }
     </div>
 </footer>
 
-<script>
-document.getElementById('navToggle').addEventListener('click', function() {
-    document.getElementById('navLinks').classList.toggle('open');
-});
-</script>
+
 
 </body>
 </html>

@@ -54,60 +54,11 @@
             -webkit-font-smoothing: antialiased;
         }
 
-        /* ===== NAV ===== */
-        .nav {
-            position: fixed; top: 0; left: 0; right: 0; z-index: 100;
-            background: rgba(255,255,255,0.92);
-            backdrop-filter: blur(20px);
-            border-bottom: 1px solid var(--border);
-            transition: box-shadow 0.3s;
-        }
-        .nav.scrolled { box-shadow: 0 2px 20px rgba(0,0,0,0.06); }
-        .nav-inner {
-            max-width: 1200px; margin: 0 auto;
-            display: flex; align-items: center; justify-content: space-between;
-            padding: 0 24px; height: 64px;
-        }
-        .nav-logo { display: flex; align-items: center; gap: 10px; text-decoration: none; }
-        .nav-logo img { height: 36px; width: auto; }
-        .nav-logo span {
-            font-family: var(--font-heading); font-weight: 700; font-size: 18px;
-            color: var(--navy); letter-spacing: -0.5px;
-        }
-        .nav-links { display: flex; align-items: center; gap: 28px; }
-        .nav-links a {
-            font-size: 14px; font-weight: 500; color: var(--text-muted);
-            text-decoration: none; transition: color 0.2s;
-        }
-        .nav-links a:hover { color: var(--navy); }
-        .nav-lang {
-            font-size: 13px; color: var(--text-light);
-            display: flex; align-items: center; gap: 6px;
-        }
-        .nav-lang a { color: var(--navy); font-weight: 600; text-decoration: none; }
-        .nav-cta {
-            display: inline-flex; align-items: center; gap: 6px;
-            padding: 10px 22px; border-radius: 10px;
-            background: var(--navy); color: var(--white);
-            font-size: 14px; font-weight: 600; text-decoration: none;
-            transition: all 0.25s; border: none; cursor: pointer;
-        }
-        .nav-cta:hover { background: var(--navy-dark); transform: translateY(-1px); box-shadow: var(--shadow-md); }
-        .nav-mobile-toggle {
-            display: none; background: none; border: none; cursor: pointer;
-            width: 32px; height: 32px; position: relative;
-        }
-        .nav-mobile-toggle span {
-            display: block; width: 22px; height: 2px; background: var(--text);
-            position: absolute; left: 5px; transition: all 0.3s;
-        }
-        .nav-mobile-toggle span:nth-child(1) { top: 9px; }
-        .nav-mobile-toggle span:nth-child(2) { top: 15px; }
-        .nav-mobile-toggle span:nth-child(3) { top: 21px; }
+        /* nav styles moved to /en/includes/nav.php */
 
         /* ===== HERO ===== */
         .hero {
-            padding: 140px 24px 80px;
+            padding: 180px 24px 80px;
             background: linear-gradient(165deg, var(--navy-dark) 0%, var(--navy) 40%, var(--navy-light) 100%);
             position: relative; overflow: hidden;
         }
@@ -399,16 +350,7 @@
             .about-grid { grid-template-columns: 1fr; }
         }
         @media (max-width: 768px) {
-            .nav-links { display: none; }
-            .nav-mobile-toggle { display: block; }
-            .nav-links.open {
-                display: flex; flex-direction: column;
-                position: absolute; top: 64px; left: 0; right: 0;
-                background: var(--white); padding: 20px 24px;
-                border-bottom: 1px solid var(--border); box-shadow: var(--shadow-md);
-                gap: 16px;
-            }
-            .hero { padding: 110px 20px 60px; }
+            .hero { padding: 150px 20px 60px; }
             .hero h1 { font-size: 32px; }
             .hero p { font-size: 16px; }
             .hero-stats { flex-direction: row; gap: 20px; }
@@ -425,26 +367,7 @@
 </head>
 <body>
 
-<!-- ===== NAV ===== -->
-<nav class="nav" id="nav">
-    <div class="nav-inner">
-        <a href="/en/" class="nav-logo">
-            <img src="/ImgFolder/dusonlogo1.png" alt="Duson Print">
-            <span>DUSON PRINT</span>
-        </a>
-        <div class="nav-links" id="navLinks">
-            <a href="#products">Products</a>
-            <a href="#why-us">Why Us</a>
-            <a href="#about">About</a>
-            <a href="#quote">Contact</a>
-            <span class="nav-lang">EN | <a href="/">한국어</a></span>
-            <a href="#quote" class="nav-cta">Get Free Quote</a>
-        </div>
-        <button class="nav-mobile-toggle" id="navToggle" aria-label="Menu">
-            <span></span><span></span><span></span>
-        </button>
-    </div>
-</nav>
+<?php $_en_current_page = ''; include __DIR__ . '/includes/nav.php'; ?>
 
 <!-- ===== HERO ===== -->
 <section class="hero">
@@ -774,24 +697,6 @@
 </footer>
 
 <script>
-// Nav scroll effect
-var nav = document.getElementById('nav');
-window.addEventListener('scroll', function() {
-    nav.classList.toggle('scrolled', window.scrollY > 20);
-});
-
-// Mobile nav toggle
-document.getElementById('navToggle').addEventListener('click', function() {
-    document.getElementById('navLinks').classList.toggle('open');
-});
-
-// Close mobile nav on link click
-document.querySelectorAll('.nav-links a').forEach(function(a) {
-    a.addEventListener('click', function() {
-        document.getElementById('navLinks').classList.remove('open');
-    });
-});
-
 // Hero video
 function toggleHeroVideo() {
     var video = document.getElementById('heroVideo');
