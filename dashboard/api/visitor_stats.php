@@ -5,6 +5,9 @@
 date_default_timezone_set('Asia/Seoul');
 require_once __DIR__ . '/base.php';
 
+// MySQL 시간대를 서울로 설정 (HOUR() 함수가 한국 시간 기준으로 작동)
+mysqli_query($db, "SET time_zone = 'Asia/Seoul'");
+
 $type = $_GET['type'] ?? 'summary';
 
 switch ($type) {
