@@ -1,6 +1,6 @@
 <div id="ai-chatbot-widget" style="display:none; position:fixed; bottom:20px; right:80px; z-index:99998; font-family:'Pretendard Variable','Noto Sans KR',sans-serif;">
     <button id="ai-chatbot-toggle" onclick="aiChatToggle()" style="width:60px;height:60px;border-radius:50%;background:linear-gradient(145deg,#6366f1,#4f46e5);border:none;cursor:pointer;box-shadow:0 4px 14px rgba(99,102,241,.45);display:flex;align-items:center;justify-content:center;position:relative;transition:transform .2s;">
-        <span style="color:#fff;font-weight:800;font-size:22px;letter-spacing:-1px;line-height:1;">24</span>
+        <span style="color:#fff;font-weight:900;font-size:14px;letter-spacing:-0.5px;line-height:.95;text-align:center;">야간<br>당번</span>
         <span style="position:absolute;top:-2px;right:-2px;width:14px;height:14px;background:#22c55e;border-radius:50%;border:2px solid #fff;"></span>
     </button>
     <span id="ai-chatbot-label" style="position:absolute;top:-22px;left:50%;transform:translateX(-50%);white-space:nowrap;font-size:10px;font-weight:600;color:#fff;background:#6366f1;padding:3px 8px;border-radius:10px;pointer-events:none;">AI 상담</span>
@@ -8,7 +8,7 @@
     <div id="ai-chatbot-window" style="display:none;position:absolute;bottom:70px;right:0;width:370px;height:520px;background:#fff;border-radius:16px;box-shadow:0 8px 40px rgba(0,0,0,.18);overflow:hidden;flex-direction:column;animation:aiChatSlideUp .25s ease;">
         <div style="background:linear-gradient(135deg,#6366f1,#4f46e5);padding:14px 16px;display:flex;align-items:center;gap:12px;">
             <div style="width:38px;height:38px;background:rgba(255,255,255,.2);border-radius:50%;display:flex;align-items:center;justify-content:center;">
-                <span style="color:#fff;font-weight:800;font-size:15px;letter-spacing:-0.5px;line-height:1;">24</span>
+                <span style="color:#fff;font-weight:900;font-size:11px;letter-spacing:-0.5px;line-height:.95;text-align:center;">야간<br>당번</span>
             </div>
             <div style="flex:1;">
                 <div style="color:#fff;font-weight:700;font-size:15px;">두손 AI 상담봇</div>
@@ -20,7 +20,7 @@
         <div id="ai-chat-messages" style="flex:1;overflow-y:auto;padding:14px;display:flex;flex-direction:column;gap:12px;background:#f8fafc;">
             <div style="display:flex;gap:8px;">
                 <div style="width:30px;height:30px;background:#e0e7ff;border-radius:50%;display:flex;align-items:center;justify-content:center;flex-shrink:0;">
-                    <span style="color:#6366f1;font-weight:800;font-size:11px;letter-spacing:-0.5px;line-height:1;">24</span>
+                    <span style="color:#6366f1;font-weight:900;font-size:8px;letter-spacing:-0.3px;line-height:.95;text-align:center;">야간<br>당번</span>
                 </div>
                 <div style="background:#fff;border:1px solid #e2e8f0;border-radius:14px 14px 14px 4px;padding:10px 14px;max-width:75%;font-size:13px;color:#334155;line-height:1.6;">
                     안녕하세요! 두손기획인쇄 AI 상담봇입니다. 😊<br><br>현재 영업시간 외입니다. 인쇄물 가격이 궁금하시면 편하게 물어봐주세요!
@@ -89,7 +89,7 @@
         if (role === 'user') {
             div.innerHTML = '<div style="background:#6366f1;color:#fff;border-radius:14px 14px 4px 14px;padding:10px 14px;max-width:75%;font-size:13px;line-height:1.6;">' + formatted + '</div>';
         } else {
-            div.innerHTML = '<div style="width:30px;height:30px;background:#e0e7ff;border-radius:50%;display:flex;align-items:center;justify-content:center;flex-shrink:0;"><span style="color:#6366f1;font-weight:800;font-size:11px;letter-spacing:-0.5px;line-height:1;">24</span></div><div style="background:#fff;border:1px solid #e2e8f0;border-radius:14px 14px 14px 4px;padding:10px 14px;max-width:75%;font-size:13px;color:#334155;line-height:1.6;">' + formatted + '</div>';
+            div.innerHTML = '<div style="width:30px;height:30px;background:#e0e7ff;border-radius:50%;display:flex;align-items:center;justify-content:center;flex-shrink:0;"><span style="color:#6366f1;font-weight:900;font-size:8px;letter-spacing:-0.3px;line-height:.95;text-align:center;">야간<br>당번</span></div><div style="background:#fff;border:1px solid #e2e8f0;border-radius:14px 14px 14px 4px;padding:10px 14px;max-width:75%;font-size:13px;color:#334155;line-height:1.6;">' + formatted + '</div>';
         }
         container.appendChild(div);
         container.scrollTop = container.scrollHeight;
@@ -100,7 +100,7 @@
         var div = document.createElement('div');
         div.id = 'ai-chat-typing';
         div.style.cssText = 'display:flex;gap:8px;';
-        div.innerHTML = '<div style="width:30px;height:30px;background:#e0e7ff;border-radius:50%;display:flex;align-items:center;justify-content:center;flex-shrink:0;"><span style="color:#6366f1;font-weight:800;font-size:11px;letter-spacing:-0.5px;line-height:1;">24</span></div><div style="background:#fff;border:1px solid #e2e8f0;border-radius:14px;padding:10px 14px;display:flex;gap:4px;"><span style="width:6px;height:6px;background:#94a3b8;border-radius:50%;animation:aiBounce .6s infinite alternate;"></span><span style="width:6px;height:6px;background:#94a3b8;border-radius:50%;animation:aiBounce .6s .15s infinite alternate;"></span><span style="width:6px;height:6px;background:#94a3b8;border-radius:50%;animation:aiBounce .6s .3s infinite alternate;"></span></div>';
+        div.innerHTML = '<div style="width:30px;height:30px;background:#e0e7ff;border-radius:50%;display:flex;align-items:center;justify-content:center;flex-shrink:0;"><span style="color:#6366f1;font-weight:900;font-size:8px;letter-spacing:-0.3px;line-height:.95;text-align:center;">야간<br>당번</span></div><div style="background:#fff;border:1px solid #e2e8f0;border-radius:14px;padding:10px 14px;display:flex;gap:4px;"><span style="width:6px;height:6px;background:#94a3b8;border-radius:50%;animation:aiBounce .6s infinite alternate;"></span><span style="width:6px;height:6px;background:#94a3b8;border-radius:50%;animation:aiBounce .6s .15s infinite alternate;"></span><span style="width:6px;height:6px;background:#94a3b8;border-radius:50%;animation:aiBounce .6s .3s infinite alternate;"></span></div>';
         container.appendChild(div);
         container.scrollTop = container.scrollHeight;
     }
