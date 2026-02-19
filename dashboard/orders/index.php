@@ -71,7 +71,7 @@ include __DIR__ . '/../includes/sidebar.php';
                 </table>
             </div>
 
-            <div id="bulkActionBar" class="px-3 py-1.5 border-t border-gray-200 bg-red-50 items-center justify-between hidden"
+            <div id="bulkActionBar" class="px-3 py-1.5 border-t border-gray-200 bg-red-50 items-center justify-between hidden">
                 <div class="flex items-center gap-3">
                     <span class="text-xs text-red-700"><span id="selectedCount" class="font-bold">0</span>건 선택됨</span>
                     <button id="bulkDeleteBtn" class="px-2 py-1 bg-red-600 text-white text-xs rounded hover:bg-red-700 transition-colors">

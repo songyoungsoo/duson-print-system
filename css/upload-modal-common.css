@@ -544,6 +544,78 @@ body .upload-modal .file-remove {
     padding: 4px 8px;
     cursor: pointer;
     font-size: 0.8rem;
+    flex-shrink: 0;
+}
+
+body .upload-modal .file-item-image {
+    flex-wrap: wrap;
+    gap: 10px;
+}
+
+body .upload-modal .file-thumb-wrap {
+    flex-shrink: 0;
+}
+
+body .upload-modal .file-thumb {
+    width: 72px;
+    height: 72px;
+    object-fit: cover;
+    border-radius: 6px;
+    border: 1px solid #dee2e6;
+    cursor: pointer;
+    transition: opacity 0.2s;
+}
+
+body .upload-modal .file-thumb:hover {
+    opacity: 0.8;
+}
+
+body .upload-modal .file-item-image .file-info {
+    flex: 1;
+    min-width: 0;
+}
+
+.file-preview-overlay {
+    position: fixed;
+    inset: 0;
+    z-index: 99999;
+    background: rgba(0, 0, 0, 0.85);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+}
+
+.file-preview-container {
+    max-width: 90vw;
+    max-height: 90vh;
+    cursor: default;
+}
+
+.file-preview-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 8px 12px;
+    color: #fff;
+    font-size: 13px;
+}
+
+.file-preview-header button {
+    background: none;
+    border: none;
+    color: #fff;
+    font-size: 20px;
+    cursor: pointer;
+    padding: 0 4px;
+}
+
+.file-preview-container img {
+    display: block;
+    max-width: 90vw;
+    max-height: calc(90vh - 40px);
+    object-fit: contain;
+    border-radius: 4px;
 }
 
 /* 8. 작업메모 textarea - 스크롤 방지 핵심 */

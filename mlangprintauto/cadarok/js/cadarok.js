@@ -6,9 +6,7 @@
 
 // 전역 변수들
 let currentPriceData = null;
-let uploadedFiles = [];
-let selectedUploadMethod = 'upload';
-let modalFileUploadInitialized = false; // 모달 파일 업로드 초기화 상태
+// 파일 업로드 — 공통 upload_modal.js 사용 (window.uploadedFiles, window.selectedUploadMethod)
 
 // 갤러리 관련 변수들
 let currentX = 50;
@@ -519,219 +517,26 @@ function updatePriceDisplay(priceData) {
 // 파일 업로드 모달 시스템 (드래그 앤 드롭 및 강화된 에러 처리)
 // ============================================================================
 
-function initializeFileUpload() {
-    // 페이지 로드 시에는 모달 파일 업로드를 초기화하지 않음
-    // 모달이 처음 열릴 때만 초기화
-}
+function initializeFileUpload() {}
 
+// 카다록 전용 openUploadModal — 가격 검증 후 공통 모달 오픈
 function openUploadModal() {
     if (!currentPriceData) {
         showUserMessage('먼저 가격을 계산해주세요.', 'warning');
         return;
     }
-    
-    const modal = document.getElementById('uploadModal');
-    if (modal) {
-        modal.style.display = 'flex';
-        document.body.style.overflow = 'hidden';
-        
-        // 파일 업로드 한 번만 초기화
-        if (!modalFileUploadInitialized) {
-            initializeModalFileUpload();
-            modalFileUploadInitialized = true;
-        }
+    if (typeof window._commonOpenUploadModal === 'function') {
+        window._commonOpenUploadModal();
     }
 }
 
-function closeUploadModal() {
-    const modal = document.getElementById('uploadModal');
-    if (modal) {
-        modal.style.display = 'none';
-        document.body.style.overflow = 'auto';
-        
-        // 업로드된 파일 초기화
-        uploadedFiles = [];
-        updateModalFileList();
-        
-        // 파일 입력 초기화
-        const fileInput = document.getElementById('modalFileInput');
-        if (fileInput) {
-            fileInput.value = '';
-        }
-        
-        const workMemo = document.getElementById('modalWorkMemo');
-        if (workMemo) {
-            workMemo.value = '';
-        }
-        
-        console.log('모달 닫힘 - 모든 상태 초기화 완료');
-    }
-}
-
-function initializeModalFileUpload() {
-    const dropzone = document.getElementById('modalUploadDropzone');
-    const fileInput = document.getElementById('modalFileInput');
-    
-    if (!dropzone || !fileInput) return;
-    
-    console.log('파일 업로드 모달 초기화 시작');
-    
-    // 드롭존 클릭 이벤트 - 한 번만 등록
-    dropzone.addEventListener('click', function() {
-        console.log('드롭존 클릭됨');
-        fileInput.click();
-    });
-    
-    // 파일 입력 변경 이벤트 - 한 번만 등록
-    fileInput.addEventListener('change', function(e) {
-        console.log('파일 선택됨:', e.target.files.length + '개');
-        handleFileSelect(e);
-    });
-    
-    // 드래그 앤 드롭 이벤트들
-    dropzone.addEventListener('dragover', function(e) {
-        e.preventDefault();
-        dropzone.classList.add('dragover');
-    });
-    
-    dropzone.addEventListener('dragleave', function() {
-        dropzone.classList.remove('dragover');
-    });
-    
-    dropzone.addEventListener('drop', function(e) {
-        e.preventDefault();
-        dropzone.classList.remove('dragover');
-        const files = Array.from(e.dataTransfer.files);
-        console.log('드롭된 파일:', files.length + '개');
-        handleFiles(files);
-    });
-    
-    console.log('파일 업로드 모달 초기화 완료');
-}
-
-// Legacy selectUploadMethod — delegate to upload_modal.js (v2.0)
-function selectUploadMethod(method) {
-    if (typeof window.selectUploadMethod === 'function' && window.selectUploadMethod !== selectUploadMethod) {
-        window.selectUploadMethod(method);
-        return;
-    }
-    // Fallback: basic upload behavior
-    selectedUploadMethod = method;
-    const buttons = document.querySelectorAll('.btn-upload-method');
-    buttons.forEach(btn => btn.classList.remove('active'));
-    if (method === 'upload') {
-        const fileInput = document.getElementById('modalFileInput');
-        if (fileInput) fileInput.click();
-    }
-}
-
-function handleFileSelect(e) {
-    console.log('handleFileSelect 호출됨');
-    const files = Array.from(e.target.files);
-    console.log('선택된 파일 수:', files.length);
-    
-    // 파일 입력값 리셋하여 같은 파일 재선택 가능하게 함
-    e.target.value = '';
-    
-    handleFiles(files);
-}
-
-function handleFiles(files) {
-    const validTypes = ['.jpg', '.jpeg', '.png', '.pdf', '.ai', '.eps', '.psd'];
-    const maxSize = 10 * 1024 * 1024; // 10MB
-    
-    files.forEach(file => {
-        const extension = '.' + file.name.split('.').pop().toLowerCase();
-        
-        if (!validTypes.includes(extension)) {
-            showUserMessage(`지원하지 않는 파일 형식입니다: ${file.name}\n지원 형식: JPG, PNG, PDF, AI, EPS, PSD`, 'error');
-            return;
-        }
-        
-        if (file.size > maxSize) {
-            showUserMessage(`파일 크기가 너무 큽니다: ${file.name}\n최대 10MB까지 업로드 가능합니다.`, 'error');
-            return;
-        }
-        
-        // 업로드된 파일 목록에 추가
-        const fileObj = {
-            id: Date.now() + Math.random(),
-            file: file,
-            name: file.name,
-            size: formatFileSize(file.size),
-            type: extension
-        };
-        
-        uploadedFiles.push(fileObj);
-        updateModalFileList();
-    });
-}
-
-function formatFileSize(bytes) {
-    if (bytes === 0) return '0 Bytes';
-    const k = 1024;
-    const sizes = ['Bytes', 'KB', 'MB', 'GB'];
-    const i = Math.floor(Math.log(bytes) / Math.log(k));
-    return parseFloat((bytes / Math.pow(k, i)).toFixed(2)) + ' ' + sizes[i];
-}
-
-function updateModalFileList() {
-    const uploadedFilesDiv = document.getElementById('modalUploadedFiles');
-    const fileList = document.getElementById('modalFileList');
-    
-    if (!uploadedFilesDiv || !fileList) return;
-    
-    if (uploadedFiles.length === 0) {
-        uploadedFilesDiv.style.display = 'none';
-        return;
-    }
-    
-    uploadedFilesDiv.style.display = 'block';
-    fileList.innerHTML = '';
-    
-    uploadedFiles.forEach(fileObj => {
-        const fileItem = document.createElement('div');
-        fileItem.className = 'file-item';
-        fileItem.innerHTML = `
-            <div class="file-info">
-                <span class="file-icon">${getFileIcon(fileObj.type)}</span>
-                <div class="file-details">
-                    <div class="file-name">${fileObj.name}</div>
-                    <div class="file-size">${fileObj.size}</div>
-                </div>
-            </div>
-            <button class="file-remove" onclick="removeFile('${fileObj.id}')">삭제</button>
-        `;
-        fileList.appendChild(fileItem);
-    });
-}
-
-function getFileIcon(extension) {
-    switch(extension.toLowerCase()) {
-        case '.jpg':
-        case '.jpeg':
-        case '.png': return '🖼️';
-        case '.pdf': return '📄';
-        case '.ai': return '🎨';
-        case '.eps': return '🎨';
-        case '.psd': return '🎨';
-        default: return '📁';
-    }
-}
-
-function removeFile(fileId) {
-    uploadedFiles = uploadedFiles.filter(f => f.id != fileId);
-    updateModalFileList();
-}
-
-// 모달에서 장바구니에 추가 (강화된 에러 처리)
+// 카다록 전용 장바구니 추가 (카다록 add_to_basket.php 사용)
 function addToBasketFromModal() {
     if (!currentPriceData) {
         showUserMessage('먼저 가격을 계산해주세요.', 'warning');
         return;
     }
     
-    // 로딩 상태 표시
     const cartButton = document.querySelector('.btn-cart');
     if (!cartButton) return;
     
@@ -752,76 +557,58 @@ function addToBasketFromModal() {
     
     const formData = new FormData(form);
     
-    // 기본 주문 정보
     formData.set('action', 'add_to_basket');
     formData.set('price', Math.round(currentPriceData.total_price));
     formData.set('vat_price', Math.round(currentPriceData.total_with_vat));
     formData.set('product_type', 'cadarok');
     
-    // 추가 정보
     formData.set('work_memo', workMemo);
-    formData.set('upload_method', selectedUploadMethod);
+    formData.set('upload_method', window.selectedUploadMethod || 'upload');
 
-    // ✅ Phase 3: Capture dropdown text for quantity_display
     const quantitySelect = document.getElementById('MY_amount');
     if (quantitySelect && quantitySelect.selectedIndex >= 0) {
         const selectedOption = quantitySelect.options[quantitySelect.selectedIndex];
         formData.set('quantity_display', selectedOption.text);
     }
 
-    // 업로드된 파일들 추가
-    uploadedFiles.forEach((fileObj, index) => {
-        formData.append(`uploaded_files[${index}]`, fileObj.file);
-    });
-    
-    // 파일 정보 JSON
-    const fileInfoArray = uploadedFiles.map(fileObj => ({
-        name: fileObj.name,
-        size: fileObj.size,
-        type: fileObj.type
-    }));
-    formData.set('uploaded_files_info', JSON.stringify(fileInfoArray));
+    if (window.uploadedFiles && window.uploadedFiles.length > 0) {
+        window.uploadedFiles.forEach((fileObj, index) => {
+            formData.append(`uploaded_files[${index}]`, fileObj.file);
+        });
+        
+        const fileInfoArray = window.uploadedFiles.map(fileObj => ({
+            name: fileObj.name,
+            size: fileObj.size,
+            type: fileObj.type
+        }));
+        formData.set('uploaded_files_info', JSON.stringify(fileInfoArray));
+    }
     
     fetch('/mlangprintauto/cadarok/add_to_basket.php', {
         method: 'POST',
         body: formData
     })
     .then(response => {
-        console.log('Response status:', response.status);
-        
-        if (!response.ok) {
-            throw new Error(`HTTP error! status: ${response.status}`);
-        }
-        
-        return response.text(); // 먼저 text로 받아서 확인
+        if (!response.ok) throw new Error('HTTP error! status: ' + response.status);
+        return response.text();
     })
     .then(text => {
-        console.log('Raw response:', text);
-        
         try {
             const response = JSON.parse(text);
-            console.log('Parsed response:', response);
-            
             if (response.success) {
-                // 모달 닫기
-                closeUploadModal();
-
-                // 바로 장바구니 페이지로 이동 (alert 없이)
+                window.closeUploadModal();
                 window.location.href = '/mlangprintauto/shop/cart.php';
-
             } else {
                 restoreButton(cartButton, originalText);
                 showUserMessage('장바구니 저장 중 오류가 발생했습니다: ' + response.message, 'error');
             }
         } catch (parseError) {
             restoreButton(cartButton, originalText);
-            console.error('JSON Parse Error:', parseError);
             showUserMessage('서버 응답 처리 중 오류가 발생했습니다.', 'error');
         }
     })
     .catch(error => {
         restoreButton(cartButton, originalText);
-        console.error('Fetch Error:', error);
         showUserMessage('장바구니 저장 중 네트워크 오류가 발생했습니다: ' + error.message, 'error');
     });
 }

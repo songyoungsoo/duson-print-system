@@ -731,7 +731,7 @@ requireAdminAuth();
 
             let contentHtml = '';
             if (msg.messagetype === 'text') {
-                contentHtml = `<div class="message-bubble">${escapeHtml(msg.message)}</div>`;
+                contentHtml = `<div class="message-bubble">${linkify(escapeHtml(msg.message))}</div>`;
             } else if (msg.messagetype === 'image') {
                 contentHtml = `
                     <div class="message-bubble">
@@ -910,6 +910,14 @@ requireAdminAuth();
                 "'": '&#039;'
             };
             return text.replace(/[&<>"']/g, m => map[m]);
+        }
+
+        function linkify(text) {
+            const urlPattern = /(https?:\/\/[^\s<>&"']+(?:\.[^\s<>&"']+)+[^\s<>&"'.,;:!?)]*|www\.[^\s<>&"']+(?:\.[^\s<>&"']+)+[^\s<>&"'.,;:!?)]*)/gi;
+            return text.replace(urlPattern, function(url) {
+                const href = url.startsWith('www.') ? 'https://' + url : url;
+                return '<a href="' + href + '" target="_blank" rel="noopener noreferrer" style="color:#4a9eff;text-decoration:underline;word-break:break-all;">' + url + '</a>';
+            });
         }
 
         // 테스트용: 임시 채팅방 생성

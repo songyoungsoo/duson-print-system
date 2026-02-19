@@ -513,7 +513,7 @@ class ChatWidget {
 
         let contentHtml = '';
         if (msg.messagetype === 'text') {
-            contentHtml = `<div class="chat-message-bubble">${this.escapeHtml(msg.message)}</div>`;
+            contentHtml = `<div class="chat-message-bubble">${this.linkify(this.escapeHtml(msg.message))}</div>`;
         } else if (msg.messagetype === 'image') {
             contentHtml = `
                 <div class="chat-message-bubble">
@@ -585,19 +585,19 @@ class ChatWidget {
     async uploadImage(file) {
         if (!file || !this.roomId) return;
 
-        // 파일 크기 체크 (10MB)
         if (file.size > 10 * 1024 * 1024) {
             alert('파일 크기 초과 (최대 10MB)\n\n대용량 파일은 dsp1830@naver.com 으로 보내주세요.');
             return;
         }
 
-        // 허용된 파일 확장자 확인
         const allowedExtensions = ['jpg', 'jpeg', 'png', 'gif', 'webp', 'pdf', 'doc', 'docx', 'xls', 'xlsx', 'ppt', 'pptx', 'hwp', 'hwpx', 'ai', 'psd', 'zip', 'txt'];
         const ext = file.name.split('.').pop().toLowerCase();
         if (!allowedExtensions.includes(ext)) {
             alert('허용되지 않는 파일 형식입니다.');
             return;
         }
+
+        const preview = this.showUploadPreview(file, ext);
 
         try {
             const user = this.getCurrentUser();
@@ -615,6 +615,8 @@ class ChatWidget {
 
             const data = await response.json();
 
+            if (preview) preview.remove();
+
             if (data.success) {
                 await this.loadMessages();
                 document.getElementById('chat-image-input').value = '';
@@ -623,8 +625,52 @@ class ChatWidget {
             }
         } catch (error) {
             console.error('파일 업로드 오류:', error);
+            if (preview) preview.remove();
             alert('파일 업로드 중 오류가 발생했습니다.');
         }
+    }
+
+    showUploadPreview(file, ext) {
+        const messagesContainer = document.getElementById('chat-messages');
+        const previewDiv = document.createElement('div');
+        previewDiv.className = 'chat-message sent';
+
+        const imageExts = ['jpg', 'jpeg', 'png', 'gif', 'webp'];
+        const isImage = imageExts.includes(ext);
+        let bubbleContent = '';
+
+        if (isImage) {
+            const objectUrl = URL.createObjectURL(file);
+            bubbleContent = `
+                <div class="chat-upload-preview">
+                    <img src="${objectUrl}" alt="${this.escapeHtml(file.name)}" class="chat-message-image" onload="URL.revokeObjectURL(this.src)">
+                    <div class="chat-upload-overlay">
+                        <div class="chat-upload-spinner"></div>
+                        <span>전송 중...</span>
+                    </div>
+                </div>`;
+        } else {
+            const fileIcon = this.getFileIcon(file.name);
+            const fileSize = this.formatFileSize(file.size);
+            bubbleContent = `
+                <div class="chat-upload-preview chat-upload-preview-file">
+                    <span class="chat-file-icon">${fileIcon}</span>
+                    <div class="chat-file-info">
+                        <span class="chat-file-name">${this.escapeHtml(file.name)}</span>
+                        <span class="chat-file-size">${fileSize}</span>
+                    </div>
+                    <div class="chat-upload-spinner-small"></div>
+                </div>`;
+        }
+
+        previewDiv.innerHTML = `
+            <div class="chat-message-content">
+                <div class="chat-message-bubble">${bubbleContent}</div>
+            </div>`;
+
+        messagesContainer.appendChild(previewDiv);
+        this.scrollToBottom();
+        return previewDiv;
     }
 
     // 파일 크기 포맷팅
@@ -789,6 +835,15 @@ class ChatWidget {
             "'": '&#039;'
         };
         return text.replace(/[&<>"']/g, m => map[m]);
+    }
+
+    linkify(text) {
+        // Regex: matches http(s)://... and www.... URLs in escaped HTML
+        const urlPattern = /(https?:\/\/[^\s<>&"']+(?:\.[^\s<>&"']+)+[^\s<>&"'.,;:!?)]*|www\.[^\s<>&"']+(?:\.[^\s<>&"']+)+[^\s<>&"'.,;:!?)]*)/gi;
+        return text.replace(urlPattern, function(url) {
+            const href = url.startsWith('www.') ? 'https://' + url : url;
+            return '<a href="' + href + '" target="_blank" rel="noopener noreferrer" style="color:#4a9eff;text-decoration:underline;word-break:break-all;">' + url + '</a>';
+        });
     }
 }
 

@@ -498,6 +498,10 @@ if (isset($_GET['jong']) && !empty($_GET['jong'])) {
     <!-- 파일 업로드 모달 (통합 컴포넌트) -->
     <?php include "../../includes/upload_modal.php"; ?>
     <script src="../../includes/upload_modal.js?v=<?php echo time(); ?>"></script>
+    <script>
+        // 공통 openUploadModal 참조를 별도 script 블록에서 저장 (인라인 function 호이스팅 회피)
+        window._commonOpenUploadModal = window.openUploadModal;
+    </script>
 
     <?php include "../../includes/login_modal.php"; ?>
 
@@ -537,10 +541,9 @@ if (isset($_GET['jong']) && !empty($_GET['jong'])) {
 
         // 명함 방식의 파일 업로드 및 자동 가격 계산 시스템
         
-        // 파일 업로드 관련 전역 변수 (명함 방식)
-        let uploadedFiles = [];
-        let selectedUploadMethod = 'upload';
-        let modalFileUploadInitialized = false;
+        // 파일 업로드 — 공통 upload_modal.js 사용 (window.uploadedFiles, window.selectedUploadMethod)
+        // 스티커 전용: openUploadModal()에서 가로/세로/가격 검증 후 공통 모달 오픈
+        // window._commonOpenUploadModal은 위의 별도 script 블록에서 설정됨
         
         // Debounce 함수 - 연속 이벤트 제어
         let calculationTimeout = null;
@@ -1042,16 +1045,16 @@ if (isset($_GET['jong']) && !empty($_GET['jong'])) {
 
             // 스티커 전용 추가 정보
             formData.set('work_memo', workMemo);
-            formData.set('upload_method', selectedUploadMethod || 'upload');
+            formData.set('upload_method', window.selectedUploadMethod || 'upload');
             
-            // 업로드된 파일들 추가 (명함 방식)
-            if (typeof uploadedFiles !== 'undefined' && uploadedFiles.length > 0) {
-                uploadedFiles.forEach((fileObj, index) => {
+            // 업로드된 파일들 추가 (공통 upload_modal.js의 window.uploadedFiles 사용)
+            if (window.uploadedFiles && window.uploadedFiles.length > 0) {
+                window.uploadedFiles.forEach((fileObj, index) => {
                     formData.append(`uploaded_files[${index}]`, fileObj.file);
                 });
                 
                 // 파일 정보 JSON
-                const fileInfoArray = uploadedFiles.map(fileObj => ({
+                const fileInfoArray = window.uploadedFiles.map(fileObj => ({
                     name: fileObj.name,
                     size: fileObj.size,
                     type: fileObj.type
@@ -1141,9 +1144,8 @@ if (isset($_GET['jong']) && !empty($_GET['jong'])) {
             alert(message); // 향후 토스트 메시지로 교체 예정
         }
         
-        // 파일업로드 모달 관련 함수들 (명함 완성 시스템)
+        // 스티커 전용 openUploadModal — 가로/세로/가격 검증 후 공통 모달 오픈
         function openUploadModal() {
-            // 가로/세로 입력 검증
             const garoInput = document.getElementById('garo');
             const seroInput = document.getElementById('sero');
             const garo = parseInt(garoInput?.value) || 0;
@@ -1156,6 +1158,19 @@ if (isset($_GET['jong']) && !empty($_GET['jong'])) {
                 } else if (sero <= 0 && seroInput) {
                     seroInput.focus();
                 }
+                return;
+            }
+
+            if (!window.currentPriceData) {
+                showUserMessage('먼저 가격을 계산해주세요.', 'warning');
+                return;
+            }
+
+            // 공통 upload_modal.js의 openUploadModal 호출
+            if (typeof window._commonOpenUploadModal === 'function') {
+                window._commonOpenUploadModal();
+            }
+        }
                 return;
             }
 

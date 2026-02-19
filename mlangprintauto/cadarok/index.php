@@ -323,8 +323,8 @@ if ($default_values['MY_type'] && $default_values['Section']) {
     <!-- 파일 업로드 모달 (통합 컴포넌트) -->
     <?php include "../../includes/upload_modal.php"; ?>
     <script src="../../includes/upload_modal.js?v=<?php echo time(); ?>"></script>
-    <!-- 로그인 체크 건너뛰기 (다른 제품과 동일) -->
     <script>
+    window._commonOpenUploadModal = window.openUploadModal;
     window.isLoggedIn = function() { return true; };
     window.checkLoginStatus = function() { return true; };
     </script>

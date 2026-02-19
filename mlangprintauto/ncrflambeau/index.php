@@ -336,7 +336,9 @@ $default_values['MY_type'] = $url_type ? $url_type : '475';
         const modalScript = document.createElement('script');
         modalScript.src = '../../includes/upload_modal.js';
         modalScript.onload = function() {
-            // 로그인 체크 건너뛰기 (다른 제품과 동일)
+            window._commonOpenUploadModal = window.openUploadModal;
+            window.openUploadModal = openUploadModal;
+            window.addToBasketFromModal = addToBasketFromModal;
             window.isLoggedIn = function() { return true; };
             window.checkLoginStatus = function() { return true; };
         };

@@ -235,20 +235,57 @@ window.updateModalFileList = function() {
     container.style.display = 'block';
     fileList.innerHTML = '';
 
+    var imageExts = ['.jpg', '.jpeg', '.png', '.gif', '.webp'];
+
     window.uploadedFiles.forEach(function(fileObj) {
         var item = document.createElement('div');
-        item.className = 'file-item';
-        item.innerHTML =
-            '<div class="file-info">' +
-                '<span class="file-icon">' + getFileIcon(fileObj.type) + '</span>' +
-                '<div class="file-details">' +
-                    '<div class="file-name">' + escapeHtml(fileObj.name) + '</div>' +
-                    '<div class="file-size">' + fileObj.size + '</div>' +
+        var isImage = imageExts.includes(fileObj.type);
+
+        if (isImage) {
+            item.className = 'file-item file-item-image';
+            var thumbUrl = URL.createObjectURL(fileObj.file);
+            item.innerHTML =
+                '<div class="file-thumb-wrap">' +
+                    '<img src="' + thumbUrl + '" alt="' + escapeHtml(fileObj.name) + '" class="file-thumb" ' +
+                        'onclick="window.previewUploadedImage(this.src, \'' + escapeHtml(fileObj.name) + '\')">' +
                 '</div>' +
-            '</div>' +
-            '<button class="file-remove" onclick="removeFile(\'' + fileObj.id + '\')">삭제</button>';
+                '<div class="file-info">' +
+                    '<div class="file-details">' +
+                        '<div class="file-name">' + escapeHtml(fileObj.name) + '</div>' +
+                        '<div class="file-size">' + fileObj.size + '</div>' +
+                    '</div>' +
+                '</div>' +
+                '<button class="file-remove" onclick="removeFile(\'' + fileObj.id + '\')">삭제</button>';
+        } else {
+            item.className = 'file-item';
+            item.innerHTML =
+                '<div class="file-info">' +
+                    '<span class="file-icon">' + getFileIcon(fileObj.type) + '</span>' +
+                    '<div class="file-details">' +
+                        '<div class="file-name">' + escapeHtml(fileObj.name) + '</div>' +
+                        '<div class="file-size">' + fileObj.size + '</div>' +
+                    '</div>' +
+                '</div>' +
+                '<button class="file-remove" onclick="removeFile(\'' + fileObj.id + '\')">삭제</button>';
+        }
+
         fileList.appendChild(item);
     });
+};
+
+window.previewUploadedImage = function(src, name) {
+    var overlay = document.createElement('div');
+    overlay.className = 'file-preview-overlay';
+    overlay.onclick = function() { overlay.remove(); };
+    overlay.innerHTML =
+        '<div class="file-preview-container">' +
+            '<div class="file-preview-header">' +
+                '<span>' + escapeHtml(name) + '</span>' +
+                '<button onclick="this.closest(\'.file-preview-overlay\').remove()">✕</button>' +
+            '</div>' +
+            '<img src="' + src + '" alt="' + escapeHtml(name) + '">' +
+        '</div>';
+    document.body.appendChild(overlay);
 };
 
 window.removeFile = function(fileId) {
