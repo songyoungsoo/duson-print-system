@@ -328,9 +328,7 @@ mlangprintauto/cadarok/js/cadarok_v2.js
 CLAUDE_DOCS/QUICK_REFERENCE.txt
 
 # Playwright 테스트 (임시)
-tests/email-dashboard-screenshots.spec.ts
-tests/email-dashboard.spec.js
-tests/plesk-login.spec.ts
+tests/
 
 # 로젠택배 도구 임시 lock
 tools/logen/package-lock.json
