@@ -883,9 +883,10 @@ try {
         clearCart($connect, $session_id);
     }
     
-    // 주문 완료 페이지로 리다이렉트
     $order_list = implode(',', $order_numbers);
-    header("Location: OrderComplete_unified.php?orders=" . urlencode($order_list) . "&email=" . urlencode($email) . "&name=" . urlencode($username));
+    $lang = $_POST['lang'] ?? '';
+    $redirect_base = ($lang === 'en') ? '/en/order_complete.php' : 'OrderComplete_unified.php';
+    header("Location: " . $redirect_base . "?orders=" . urlencode($order_list) . "&email=" . urlencode($email) . "&name=" . urlencode($username));
     exit;
     
 } catch (Exception $e) {
