@@ -115,7 +115,7 @@ header("Expires: 0");
         .slider-track {
             display: flex;
             flex-wrap: nowrap;
-            width: 900%; /* 9 slides (7 + 2 clones) * 100% */
+            width: 1000%; /* 10 slides (8 + 2 clones) * 100% */
             height: 100%;
             transition: transform 1000ms ease-in-out;
         }
@@ -125,7 +125,7 @@ header("Expires: 0");
         }
 
         .slider-slide {
-            width: 11.1111%; /* 100% / 9 slides */
+            width: 10%; /* 100% / 10 slides */
             height: 100%;
             flex-shrink: 0;
             position: relative;
@@ -142,6 +142,50 @@ header("Expires: 0");
         .slider-dot.active {
             background: white !important;
             transform: scale(1.2);
+        }
+
+        .video-slide-wrapper {
+            position: relative;
+            width: 100%;
+            height: 100%;
+            cursor: pointer;
+        }
+        .video-slide-wrapper video {
+            width: 100%;
+            height: 300px;
+            object-fit: cover;
+            object-position: center;
+            display: none;
+        }
+        .video-play-btn {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            width: 64px;
+            height: 64px;
+            background: rgba(0,0,0,0.55);
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: background 0.2s, transform 0.2s;
+            pointer-events: none;
+        }
+        .video-slide-wrapper:hover .video-play-btn {
+            background: rgba(0,0,0,0.75);
+            transform: translate(-50%, -50%) scale(1.1);
+        }
+        .video-play-btn.hidden { display: none; }
+
+        @media (max-width: 768px) {
+            .video-slide-wrapper video {
+                height: 180px;
+            }
+            .video-play-btn {
+                width: 48px;
+                height: 48px;
+            }
         }
 
         /* 데스크톱 슬라이더 기본 높이 */
@@ -178,7 +222,7 @@ header("Expires: 0");
                 display: flex;
                 flex-direction: row;
                 flex-wrap: nowrap;
-                width: 900vw;
+                width: 1000vw;
                 height: 180px;
             }
 
@@ -554,57 +598,71 @@ header("Expires: 0");
                         <img src="/slide/slide__Sticker_3.gif" alt="스티커 제작 서비스 3" class="slider-img">
                     </div>
 
-                    <!-- Slide 1: 전단지 -->
+                    <!-- Slide 1: 회사소개 영상 -->
                     <div class="slider-slide" data-slide="0">
+                        <div class="video-slide-wrapper" id="videoSlideWrapper" onclick="toggleSliderVideo()">
+                            <img src="/media/explainer_poster.jpg" alt="두손기획인쇄 소개 영상" class="slider-img" id="videoPoster">
+                            <video id="sliderVideo" preload="none" playsinline muted>
+                                <source src="/media/explainer_30s.mp4" type="video/mp4">
+                            </video>
+                            <div class="video-play-btn" id="videoPlayBtn">
+                                <svg width="28" height="28" viewBox="0 0 24 24" fill="white"><path d="M8 5v14l11-7z"/></svg>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Slide 2: 전단지 -->
+                    <div class="slider-slide" data-slide="1">
                         <img src="/slide/slide_inserted.gif" alt="전단지 인쇄 서비스" class="slider-img">
                     </div>
 
-                    <!-- Slide 2: 스티커 -->
-                    <div class="slider-slide" data-slide="1">
+                    <!-- Slide 3: 스티커 -->
+                    <div class="slider-slide" data-slide="2">
                         <img src="/slide/slide__Sticker.gif" alt="스티커 인쇄 서비스" class="slider-img">
                     </div>
 
-                    <!-- Slide 3: 카다록 -->
-                    <div class="slider-slide" data-slide="2">
+                    <!-- Slide 4: 카다록 -->
+                    <div class="slider-slide" data-slide="3">
                         <img src="/slide/slide_cadarok.gif" alt="카다록 인쇄 서비스" class="slider-img">
                     </div>
 
-                    <!-- Slide 4: NCR 양식지 -->
-                    <div class="slider-slide" data-slide="3">
+                    <!-- Slide 5: NCR 양식지 -->
+                    <div class="slider-slide" data-slide="4">
                         <img src="/slide/slide_Ncr.gif" alt="NCR 양식지 인쇄 서비스" class="slider-img">
                     </div>
 
-                    <!-- Slide 5: 포스터 -->
-                    <div class="slider-slide" data-slide="4">
+                    <!-- Slide 6: 포스터 -->
+                    <div class="slider-slide" data-slide="5">
                         <img src="/slide/slide__poster.gif" alt="포스터 인쇄 서비스" class="slider-img">
                     </div>
 
-                    <!-- Slide 6: 스티커 2 -->
-                    <div class="slider-slide" data-slide="5">
+                    <!-- Slide 7: 스티커 2 -->
+                    <div class="slider-slide" data-slide="6">
                         <img src="/slide/slide__Sticker_2.gif" alt="스티커 제작 서비스 2" class="slider-img">
                     </div>
 
-                    <!-- Slide 7: 스티커 3 -->
-                    <div class="slider-slide" data-slide="6">
+                    <!-- Slide 8: 스티커 3 -->
+                    <div class="slider-slide" data-slide="7">
                         <img src="/slide/slide__Sticker_3.gif" alt="스티커 제작 서비스 3" class="slider-img">
                     </div>
 
                     <!-- Clone of first slide (for infinite loop) -->
-                    <div class="slider-slide clone" data-slide="7">
-                        <img src="/slide/slide_inserted.gif" alt="전단지 인쇄 서비스" class="slider-img">
+                    <div class="slider-slide clone" data-slide="8">
+                        <img src="/media/explainer_poster.jpg" alt="두손기획인쇄 소개 영상" class="slider-img">
                     </div>
                 </div>
             </div>
             
             <!-- Slider Controls -->
             <div class="absolute bottom-16 left-1/2 transform -translate-x-1/2 flex gap-3 z-10">
-                <button class="slider-dot w-3 h-3 rounded-full bg-white/60 hover:bg-white transition active" data-slide="0" aria-label="첫 번째 슬라이드로 이동"></button>
-                <button class="slider-dot w-3 h-3 rounded-full bg-white/60 hover:bg-white transition" data-slide="1" aria-label="두 번째 슬라이드로 이동"></button>
-                <button class="slider-dot w-3 h-3 rounded-full bg-white/60 hover:bg-white transition" data-slide="2" aria-label="세 번째 슬라이드로 이동"></button>
-                <button class="slider-dot w-3 h-3 rounded-full bg-white/60 hover:bg-white transition" data-slide="3" aria-label="네 번째 슬라이드로 이동"></button>
-                <button class="slider-dot w-3 h-3 rounded-full bg-white/60 hover:bg-white transition" data-slide="4" aria-label="다섯 번째 슬라이드로 이동"></button>
-                <button class="slider-dot w-3 h-3 rounded-full bg-white/60 hover:bg-white transition" data-slide="5" aria-label="여섯 번째 슬라이드로 이동"></button>
-                <button class="slider-dot w-3 h-3 rounded-full bg-white/60 hover:bg-white transition" data-slide="6" aria-label="일곱 번째 슬라이드로 이동"></button>
+                <button class="slider-dot w-3 h-3 rounded-full bg-white/60 hover:bg-white transition active" data-slide="0" aria-label="소개 영상"></button>
+                <button class="slider-dot w-3 h-3 rounded-full bg-white/60 hover:bg-white transition" data-slide="1" aria-label="전단지"></button>
+                <button class="slider-dot w-3 h-3 rounded-full bg-white/60 hover:bg-white transition" data-slide="2" aria-label="스티커"></button>
+                <button class="slider-dot w-3 h-3 rounded-full bg-white/60 hover:bg-white transition" data-slide="3" aria-label="카다록"></button>
+                <button class="slider-dot w-3 h-3 rounded-full bg-white/60 hover:bg-white transition" data-slide="4" aria-label="NCR양식지"></button>
+                <button class="slider-dot w-3 h-3 rounded-full bg-white/60 hover:bg-white transition" data-slide="5" aria-label="포스터"></button>
+                <button class="slider-dot w-3 h-3 rounded-full bg-white/60 hover:bg-white transition" data-slide="6" aria-label="스티커2"></button>
+                <button class="slider-dot w-3 h-3 rounded-full bg-white/60 hover:bg-white transition" data-slide="7" aria-label="스티커3"></button>
             </div>
             
             <!-- Navigation Arrows -->
@@ -987,13 +1045,15 @@ header("Expires: 0");
     
     <script>
         // Hero Slider functionality - Infinite Loop
-        let currentIndex = 1; // Start at first real slide (index 1, after clone)
+        let currentIndex = 1;
         const sliderTrack = document.getElementById('sliderTrack');
         const slides = document.querySelectorAll('.slider-slide');
         const dots = document.querySelectorAll('.slider-dot');
-        const totalSlides = 7; // Real slides count
-        const totalWithClones = slides.length; // 9 (7 + 2 clones)
+        const totalSlides = 8;
+        const totalWithClones = slides.length; // 10 (8 + 2 clones)
         let isTransitioning = false;
+        let autoPlayTimer = null;
+        let videoPlaying = false;
 
         function moveToSlide(index, withTransition = true) {
             if (!withTransition) {
@@ -1004,74 +1064,114 @@ header("Expires: 0");
 
             const isMobile = window.innerWidth <= 768;
             if (isMobile) {
-                const translateX = -index * 100;
-                sliderTrack.style.transform = `translateX(${translateX}vw)`;
+                sliderTrack.style.transform = `translateX(${-index * 100}vw)`;
             } else {
-                const translateX = -index * (100 / totalWithClones);
-                sliderTrack.style.transform = `translateX(${translateX}%)`;
+                sliderTrack.style.transform = `translateX(${-index * (100 / totalWithClones)}%)`;
             }
 
             currentIndex = index;
 
-            // Update dots (map index to real slide 0-6)
             const realIndex = getRealIndex(index);
             dots.forEach(dot => dot.classList.remove('active'));
             if (realIndex >= 0 && realIndex < totalSlides) {
                 dots[realIndex].classList.add('active');
             }
+
+            // 비디오 슬라이드를 벗어나면 영상 정지 + 포스터 복원
+            if (realIndex !== 0 && videoPlaying) {
+                resetSliderVideo();
+            }
         }
 
         function getRealIndex(index) {
-            // index 0 = clone of last, index 1-7 = real slides, index 8 = clone of first
             if (index === 0) return totalSlides - 1;
             if (index === totalWithClones - 1) return 0;
             return index - 1;
         }
 
         function nextSlide() {
-            if (isTransitioning) return;
+            if (isTransitioning || videoPlaying) return;
             isTransitioning = true;
             moveToSlide(currentIndex + 1);
         }
 
         function prevSlide() {
-            if (isTransitioning) return;
+            if (isTransitioning || videoPlaying) return;
             isTransitioning = true;
             moveToSlide(currentIndex - 1);
         }
 
-        // Handle transition end for infinite loop
         sliderTrack.addEventListener('transitionend', () => {
             isTransitioning = false;
-
-            // If at clone of first slide (index 8), jump to real first (index 1)
             if (currentIndex === totalWithClones - 1) {
                 moveToSlide(1, false);
             }
-            // If at clone of last slide (index 0), jump to real last (index 7)
             if (currentIndex === 0) {
                 moveToSlide(totalSlides, false);
             }
         });
 
-        // Event listeners for slider controls
         document.querySelector('.slider-next').addEventListener('click', nextSlide);
         document.querySelector('.slider-prev').addEventListener('click', prevSlide);
 
-        // Event listeners for dots
         dots.forEach((dot, index) => {
             dot.addEventListener('click', () => {
                 if (isTransitioning) return;
                 isTransitioning = true;
-                moveToSlide(index + 1); // +1 because of leading clone
+                moveToSlide(index + 1);
             });
         });
 
-        // Initialize position (start at first real slide)
         moveToSlide(1, false);
 
-        // Auto-play slider
-        setInterval(nextSlide, 4000);
+        function startAutoPlay() {
+            stopAutoPlay();
+            autoPlayTimer = setInterval(nextSlide, 4000);
+        }
+        function stopAutoPlay() {
+            if (autoPlayTimer) { clearInterval(autoPlayTimer); autoPlayTimer = null; }
+        }
+        startAutoPlay();
+
+        // --- Video slide controls ---
+        const sliderVideo = document.getElementById('sliderVideo');
+        const videoPoster = document.getElementById('videoPoster');
+        const videoPlayBtn = document.getElementById('videoPlayBtn');
+
+        function toggleSliderVideo() {
+            if (!sliderVideo) return;
+            if (sliderVideo.paused) {
+                videoPoster.style.display = 'none';
+                sliderVideo.style.display = 'block';
+                videoPlayBtn.classList.add('hidden');
+                sliderVideo.play();
+                videoPlaying = true;
+                stopAutoPlay();
+            } else {
+                sliderVideo.pause();
+                videoPlayBtn.classList.remove('hidden');
+                videoPlaying = false;
+                startAutoPlay();
+            }
+        }
+
+        function resetSliderVideo() {
+            if (!sliderVideo) return;
+            sliderVideo.pause();
+            sliderVideo.currentTime = 0;
+            sliderVideo.style.display = 'none';
+            videoPoster.style.display = '';
+            videoPlayBtn.classList.remove('hidden');
+            videoPlaying = false;
+            startAutoPlay();
+        }
+
+        if (sliderVideo) {
+            sliderVideo.addEventListener('ended', function() {
+                resetSliderVideo();
+                setTimeout(nextSlide, 500);
+            });
+        }
 
         // 현재 연도 설정
         document.addEventListener('DOMContentLoaded', function() {
