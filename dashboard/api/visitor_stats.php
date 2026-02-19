@@ -2,6 +2,7 @@
 /**
  * 방문자 통계 API (Dashboard)
  */
+date_default_timezone_set('Asia/Seoul');
 require_once __DIR__ . '/base.php';
 
 $type = $_GET['type'] ?? 'summary';
