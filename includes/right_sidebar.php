@@ -169,7 +169,7 @@ $show_bank = isset($show_bank) ? $show_bank : true;
 .bank-account {
     color: #e53e3e;
     font-weight: 700;
-    font-size: 10px;
+    font-size: 11px;
     font-family: monospace;
 }
 
