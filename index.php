@@ -940,6 +940,134 @@ header("Expires: 0");
         </div>
     </section>
 
+    <!-- 실시간 견적 라이브 데모 섹션 -->
+    <section class="quote-demo-section" style="padding:60px 20px;background:linear-gradient(135deg,#0f172a 0%,#1e3a5f 50%,#1E4E79 100%);overflow:hidden;">
+        <div style="max-width:1100px;margin:0 auto;display:flex;align-items:center;gap:60px;flex-wrap:wrap;justify-content:center;">
+            
+            <!-- 왼쪽: 견적 위젯 목업 -->
+            <div class="quote-demo-widget" style="flex-shrink:0;">
+                <div style="background:#fff;border-radius:12px;box-shadow:0 8px 40px rgba(0,0,0,.3);width:220px;overflow:hidden;transform:scale(1);transition:transform .3s;">
+                    <!-- 헤더 -->
+                    <div style="background:#1E4E79;padding:12px 16px;text-align:center;">
+                        <div style="font-size:14px;font-weight:600;color:#fff;display:flex;align-items:center;justify-content:center;gap:6px;font-family:'Pretendard Variable',sans-serif;">
+                            <span style="width:6px;height:6px;border-radius:50%;background:#86efac;box-shadow:0 0 8px rgba(134,239,172,.6);animation:qd-pulse 2.5s infinite;display:inline-block;"></span>
+                            실시간 견적받기
+                        </div>
+                    </div>
+                    <!-- 가격 -->
+                    <div style="padding:16px;text-align:center;border-bottom:1px solid #f1f5f9;">
+                        <div style="font-family:'JetBrains Mono',monospace;font-size:28px;font-weight:700;color:#1e293b;line-height:1.3;">
+                            <span class="quote-demo-price" data-target="165000">0</span><span style="font-size:15px;font-weight:500;color:#64748b;margin-left:2px;">원</span>
+                        </div>
+                        <div style="font-size:11px;color:#94a3b8;margin-top:3px;">VAT 포함</div>
+                    </div>
+                    <!-- 스펙 -->
+                    <div style="padding:10px 16px 6px;">
+                        <div style="font-size:9px;font-weight:600;color:#94a3b8;letter-spacing:1px;text-transform:uppercase;margin-bottom:6px;display:flex;align-items:center;gap:4px;">
+                            <span style="width:2px;height:8px;background:#3b82f6;border-radius:1px;display:inline-block;"></span>SPEC
+                        </div>
+                        <div class="quote-demo-spec" style="opacity:0;transform:translateY(5px);transition:all .4s ease .3s;">
+                            <div style="display:flex;justify-content:space-between;line-height:2;"><span style="font-size:12px;color:#64748b;">용지</span><span style="font-family:'JetBrains Mono',monospace;font-size:11px;color:#1e293b;">아트지 150g</span></div>
+                            <div style="display:flex;justify-content:space-between;line-height:2;"><span style="font-size:12px;color:#64748b;">인쇄</span><span style="font-family:'JetBrains Mono',monospace;font-size:11px;color:#1e293b;">4도/4도</span></div>
+                            <div style="display:flex;justify-content:space-between;line-height:2;"><span style="font-size:12px;color:#64748b;">사이즈</span><span style="font-family:'JetBrains Mono',monospace;font-size:11px;color:#1e293b;">A4</span></div>
+                            <div style="display:flex;justify-content:space-between;line-height:2;"><span style="font-size:12px;color:#64748b;">수량</span><span style="font-family:'JetBrains Mono',monospace;font-size:11px;color:#1e293b;">1,000매</span></div>
+                        </div>
+                        <div style="height:1px;background:#f1f5f9;margin:6px 0;"></div>
+                        <div style="font-size:9px;font-weight:600;color:#94a3b8;letter-spacing:1px;text-transform:uppercase;margin-bottom:6px;display:flex;align-items:center;gap:4px;">
+                            <span style="width:2px;height:8px;background:#3b82f6;border-radius:1px;display:inline-block;"></span>PRICING
+                        </div>
+                        <div class="quote-demo-pricing" style="opacity:0;transform:translateY(5px);transition:all .4s ease .6s;">
+                            <div style="display:flex;justify-content:space-between;line-height:2;"><span style="font-size:12px;color:#64748b;">인쇄비</span><span style="font-family:'JetBrains Mono',monospace;font-size:12px;color:#334155;">135,000</span></div>
+                            <div style="display:flex;justify-content:space-between;line-height:2;"><span style="font-size:12px;color:#64748b;font-weight:600;">합계</span><span style="font-family:'JetBrains Mono',monospace;font-size:12px;font-weight:600;color:#1e293b;">150,000</span></div>
+                            <div style="display:flex;justify-content:space-between;line-height:2;"><span style="font-size:11px;color:#94a3b8;">부가세(10%)</span><span style="font-family:'JetBrains Mono',monospace;font-size:11px;color:#94a3b8;">15,000</span></div>
+                        </div>
+                    </div>
+                    <!-- 버튼 -->
+                    <div style="padding:10px 16px 14px;display:flex;gap:6px;">
+                        <div style="flex:1;padding:8px 0;border-radius:6px;background:linear-gradient(135deg,#3b82f6,#2563eb);color:#fff;font-size:12px;font-weight:600;text-align:center;font-family:'Pretendard Variable',sans-serif;">주문하기</div>
+                        <div style="flex:1;padding:8px 0;border-radius:6px;background:#f1f5f9;color:#64748b;border:1px solid #e2e8f0;font-size:12px;font-weight:600;text-align:center;font-family:'Pretendard Variable',sans-serif;">견적인쇄</div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- 오른쪽: 설명 텍스트 -->
+            <div style="flex:1;min-width:280px;max-width:520px;">
+                <div style="display:inline-block;padding:4px 12px;background:rgba(134,239,172,.15);border:1px solid rgba(134,239,172,.3);border-radius:20px;font-size:12px;font-weight:600;color:#86efac;margin-bottom:16px;font-family:'Pretendard Variable',sans-serif;">
+                    <span style="display:inline-block;width:6px;height:6px;border-radius:50%;background:#86efac;margin-right:6px;animation:qd-pulse 2.5s infinite;"></span>LIVE PRICING
+                </div>
+                <h2 style="font-size:32px;font-weight:800;color:#fff;line-height:1.35;margin:0 0 16px;font-family:'Pretendard Variable',sans-serif;">
+                    옵션 선택만으로<br><span style="color:#60a5fa;">즉시 가격 확인</span>
+                </h2>
+                <p style="font-size:16px;color:#94a3b8;line-height:1.7;margin:0 0 28px;font-family:'Pretendard Variable',sans-serif;">
+                    용지, 사이즈, 수량을 선택하면 <strong style="color:#cbd5e1;">실시간으로 정확한 견적</strong>이 표시됩니다. 
+                    전화 문의 없이도 바로 가격을 비교하고 주문할 수 있습니다.
+                </p>
+                <div style="display:flex;gap:8px 20px;flex-wrap:wrap;margin-bottom:32px;">
+                    <div style="display:flex;align-items:center;gap:8px;font-size:14px;color:#cbd5e1;font-family:'Pretendard Variable',sans-serif;">
+                        <span style="color:#60a5fa;">✓</span> 9개 품목 실시간 견적
+                    </div>
+                    <div style="display:flex;align-items:center;gap:8px;font-size:14px;color:#cbd5e1;font-family:'Pretendard Variable',sans-serif;">
+                        <span style="color:#60a5fa;">✓</span> VAT 포함 정확한 가격
+                    </div>
+                    <div style="display:flex;align-items:center;gap:8px;font-size:14px;color:#cbd5e1;font-family:'Pretendard Variable',sans-serif;">
+                        <span style="color:#60a5fa;">✓</span> 옵션별 추가금 자동 계산
+                    </div>
+                    <div style="display:flex;align-items:center;gap:8px;font-size:14px;color:#cbd5e1;font-family:'Pretendard Variable',sans-serif;">
+                        <span style="color:#60a5fa;">✓</span> 견적서 이메일 발송
+                    </div>
+                </div>
+                <a href="mlangprintauto/inserted/" style="display:inline-flex;align-items:center;gap:8px;padding:14px 32px;background:linear-gradient(135deg,#3b82f6,#2563eb);color:#fff;font-size:15px;font-weight:700;border-radius:10px;text-decoration:none;font-family:'Pretendard Variable',sans-serif;box-shadow:0 4px 15px rgba(59,130,246,.35);transition:all .2s;">
+                    지금 견적 확인하기 <span style="font-size:18px;">→</span>
+                </a>
+            </div>
+        </div>
+
+        <style>
+            @keyframes qd-pulse{0%,100%{opacity:1}50%{opacity:.4}}
+            .quote-demo-section .quote-demo-widget:hover > div { transform: scale(1.03); }
+            @media(max-width:768px){
+                .quote-demo-section > div { flex-direction: column; gap: 36px !important; text-align: center; }
+                .quote-demo-section h2 { font-size: 26px; }
+                .quote-demo-section a { width: 100%; justify-content: center; box-sizing: border-box; }
+            }
+        </style>
+        <script>
+        (function(){
+            var observed = false;
+            var section = document.querySelector('.quote-demo-section');
+            if (!section) return;
+            
+            function animateNumber(el, target, duration) {
+                var start = 0, startTime = null;
+                function step(ts) {
+                    if (!startTime) startTime = ts;
+                    var p = Math.min((ts - startTime) / duration, 1);
+                    var ease = 1 - Math.pow(2, -10 * p);
+                    var val = Math.round(start + (target - start) * ease);
+                    el.textContent = val.toLocaleString();
+                    if (p < 1) requestAnimationFrame(step);
+                }
+                requestAnimationFrame(step);
+            }
+
+            var obs = new IntersectionObserver(function(entries) {
+                entries.forEach(function(entry) {
+                    if (entry.isIntersecting && !observed) {
+                        observed = true;
+                        var priceEl = section.querySelector('.quote-demo-price');
+                        if (priceEl) animateNumber(priceEl, parseInt(priceEl.dataset.target), 1200);
+                        var spec = section.querySelector('.quote-demo-spec');
+                        if (spec) { spec.style.opacity = '1'; spec.style.transform = 'translateY(0)'; }
+                        var pricing = section.querySelector('.quote-demo-pricing');
+                        if (pricing) { pricing.style.opacity = '1'; pricing.style.transform = 'translateY(0)'; }
+                    }
+                });
+            }, { threshold: 0.3 });
+            obs.observe(section);
+        })();
+        </script>
+    </section>
+
     <!-- 강화된 특징 섹션 -->
     <section class="features-section">
         <div class="section-header">
