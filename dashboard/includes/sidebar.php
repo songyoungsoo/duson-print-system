@@ -23,7 +23,7 @@ $current_path = rtrim($current_path, '/') . '/';
 
 /* Brand */
 .sa-brand {
-    padding: 8px 10px;
+    padding: 5px 10px;
     background: linear-gradient(135deg, #0f1a2e 0%, #1a2d4a 100%);
     border-bottom: 1px solid rgba(255,255,255,0.06);
 }
@@ -41,8 +41,8 @@ $current_path = rtrim($current_path, '/') . '/';
 /* Menu section card */
 .sa-section {
     background: #fff;
-    border-radius: 6px;
-    margin: 4px 5px;
+    border-radius: 5px;
+    margin: 2px 5px;
     box-shadow: 0 1px 4px rgba(0,0,0,0.18);
     overflow: hidden;
 }
@@ -51,8 +51,8 @@ $current_path = rtrim($current_path, '/') . '/';
 .sa-header {
     background: #1E4E79;
     color: #fff;
-    padding: 4px 10px;
-    font-size: 10.5px;
+    padding: 2px 10px;
+    font-size: 10px;
     font-weight: 700;
     text-align: center;
     letter-spacing: 1px;
@@ -73,10 +73,10 @@ $current_path = rtrim($current_path, '/') . '/';
 .sa-item {
     display: flex;
     align-items: center;
-    padding: 5px 8px;
+    padding: 3px 8px;
     color: #374151;
     text-decoration: none;
-    font-size: 12px;
+    font-size: 11.5px;
     transition: all 0.15s ease;
 }
 .sa-item:hover {
@@ -119,7 +119,7 @@ $current_path = rtrim($current_path, '/') . '/';
 
 /* User section */
 .sa-user {
-    padding: 6px 6px;
+    padding: 4px 6px;
     border-top: 1px solid rgba(255,255,255,0.06);
     background: rgba(0,0,0,0.15);
 }
@@ -133,7 +133,7 @@ $current_path = rtrim($current_path, '/') . '/';
 }
 .sa-logout {
     display: flex; align-items: center; justify-content: center;
-    margin-top: 4px; padding: 4px;
+    margin-top: 2px; padding: 3px;
     border-radius: 5px; font-size: 10px;
     color: rgba(255,180,180,0.8);
     border: 1px solid rgba(255,180,180,0.15);

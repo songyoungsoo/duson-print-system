@@ -838,10 +838,10 @@ class ChatWidget {
     }
 
     linkify(text) {
-        // Regex: matches http(s)://... and www.... URLs in escaped HTML
-        const urlPattern = /(https?:\/\/[^\s<>&"']+(?:\.[^\s<>&"']+)+[^\s<>&"'.,;:!?)]*|www\.[^\s<>&"']+(?:\.[^\s<>&"']+)+[^\s<>&"'.,;:!?)]*)/gi;
+        // 1) http(s)://... 2) www.... 3) bare 도메인 (예: google.com, dsp114.co.kr)
+        const urlPattern = /(https?:\/\/[^\s<>&"']+(?:\.[^\s<>&"']+)+[^\s<>&"'.,;:!?)]*|www\.[^\s<>&"']+(?:\.[^\s<>&"']+)+[^\s<>&"'.,;:!?)]*|[a-zA-Z0-9](?:[a-zA-Z0-9\-]*[a-zA-Z0-9])?(?:\.[a-zA-Z0-9](?:[a-zA-Z0-9\-]*[a-zA-Z0-9])?)*\.(?:com|net|org|co\.kr|go\.kr|or\.kr|ne\.kr|re\.kr|pe\.kr|kr|io|me|info|biz|shop|xyz|dev|app|site|online|store|tech)(?:\/[^\s<>&"']*)?)/gi;
         return text.replace(urlPattern, function(url) {
-            const href = url.startsWith('www.') ? 'https://' + url : url;
+            const href = /^https?:\/\//i.test(url) ? url : 'https://' + url;
             return '<a href="' + href + '" target="_blank" rel="noopener noreferrer" style="color:#4a9eff;text-decoration:underline;word-break:break-all;">' + url + '</a>';
         });
     }
