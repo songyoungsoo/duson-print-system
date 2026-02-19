@@ -1,8 +1,3 @@
-<?php
-$_aibot_hour = (int)date('H');
-$_aibot_min = (int)date('i');
-$_aibot_is_after_hours = ($_aibot_hour >= 18 && $_aibot_min >= 30) || $_aibot_hour >= 19 || $_aibot_hour < 9;
-?>
 <div id="ai-chatbot-widget" style="display:none; position:fixed; bottom:20px; right:80px; z-index:99998; font-family:'Pretendard Variable','Noto Sans KR',sans-serif;">
     <button id="ai-chatbot-toggle" onclick="aiChatToggle()" style="width:60px;height:60px;border-radius:50%;background:linear-gradient(145deg,#6366f1,#4f46e5);border:none;cursor:pointer;box-shadow:0 4px 14px rgba(99,102,241,.45);display:flex;align-items:center;justify-content:center;position:relative;transition:transform .2s;">
         <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 2a7 7 0 0 1 7 7c0 2.38-1.19 4.47-3 5.74V17a2 2 0 0 1-2 2h-4a2 2 0 0 1-2-2v-2.26C6.19 13.47 5 11.38 5 9a7 7 0 0 1 7-7z"/><line x1="9" y1="22" x2="15" y2="22"/><line x1="10" y1="2" x2="10" y2="7"/><line x1="14" y1="2" x2="14" y2="7"/></svg>
@@ -67,28 +62,8 @@ $_aibot_is_after_hours = ($_aibot_hour >= 18 && $_aibot_min >= 30) || $_aibot_ho
     var widget = document.getElementById('ai-chatbot-widget');
     if (!widget) return;
 
-    var serverAfterHours = <?php echo $_aibot_is_after_hours ? 'true' : 'false'; ?>;
     var messages = [];
     var loading = false;
-
-    function isAfterHours() {
-        var now = new Date();
-        var h = now.getHours(), m = now.getMinutes();
-        return (h >= 18 && m >= 30) || h >= 19 || h < 9;
-    }
-
-    function checkAndShow() {
-        if (isAfterHours() || serverAfterHours) {
-            widget.style.display = 'block';
-        } else {
-            widget.style.display = 'none';
-            var win = document.getElementById('ai-chatbot-window');
-            if (win) win.style.display = 'none';
-        }
-    }
-
-    checkAndShow();
-    setInterval(checkAndShow, 60000);
 
     window.aiChatToggle = function() {
         var win = document.getElementById('ai-chatbot-window');

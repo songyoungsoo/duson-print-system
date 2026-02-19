@@ -798,8 +798,10 @@
     ?>
 
     <?php
-    // 채팅 위젯 포함 (모든 페이지)
+    // 직원 채팅 + AI 챗봇: 시간대별 전환 (겹침 방지)
+    // 09:00~18:30 → 직원 채팅 | 18:30~09:00 → AI 챗봇
     include_once __DIR__ . '/chat_widget.php';
+    include_once __DIR__ . '/ai_chatbot_widget.php';
 
     // 로딩 스피너 포함 (모든 페이지)
     include_once __DIR__ . '/loading-spinner.php';
@@ -811,7 +813,31 @@
         <?php endforeach; ?>
     <?php endif; ?>
 
-    <?php include_once __DIR__ . '/ai_chatbot_widget.php'; ?>
+    <script>
+    (function(){
+        function isBusinessHours() {
+            var now = new Date();
+            var h = now.getHours(), m = now.getMinutes();
+            if (h < 9) return false;
+            if (h > 18) return false;
+            if (h === 18 && m >= 30) return false;
+            return true;
+        }
+        function toggleWidgets() {
+            var biz = isBusinessHours();
+            var staff = document.querySelector('.chat-widget');
+            var ai = document.getElementById('ai-chatbot-widget');
+            if (staff) staff.style.display = biz ? '' : 'none';
+            if (ai) ai.style.display = biz ? 'none' : 'block';
+        }
+        if (document.readyState === 'loading') {
+            document.addEventListener('DOMContentLoaded', toggleWidgets);
+        } else {
+            toggleWidgets();
+        }
+        setInterval(toggleWidgets, 60000);
+    })();
+    </script>
 
     <!-- PWA 설치 배너 (Android Chrome) -->
     <div id="pwa-install-banner" style="display:none; position:fixed; bottom:0; left:0; right:0; z-index:99999; background:#fff; box-shadow:0 -2px 12px rgba(0,0,0,0.15); padding:12px 16px; font-family:'Pretendard',sans-serif;">
