@@ -1171,26 +1171,6 @@ if (isset($_GET['jong']) && !empty($_GET['jong'])) {
                 window._commonOpenUploadModal();
             }
         }
-                return;
-            }
-
-            if (!window.currentPriceData) {
-                showUserMessage('먼저 가격을 계산해주세요.', 'warning');
-                return;
-            }
-            
-            const modal = document.getElementById('uploadModal');
-            if (modal) {
-                modal.style.display = 'flex';
-                document.body.style.overflow = 'hidden';
-                
-                // 파일 업로드 한 번만 초기화
-                if (!modalFileUploadInitialized) {
-                    initializeModalFileUpload();
-                    modalFileUploadInitialized = true;
-                }
-            }
-        }
         
         function initializeModalFileUpload() {
             const dropzone = document.getElementById('modalUploadDropzone');
