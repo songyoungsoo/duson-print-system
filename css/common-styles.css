@@ -145,6 +145,22 @@
     color: #00D4FF;
 }
 
+/* 언어 전환 버튼 */
+.top-header .lang-switch-btn {
+    border: 1px solid rgba(255,255,255,0.35);
+    border-radius: 4px;
+    padding: 2px 8px;
+    font-size: 0.75rem;
+    font-weight: 600;
+    letter-spacing: 0.5px;
+    transition: all 0.2s ease;
+}
+.top-header .lang-switch-btn:hover {
+    background: rgba(255,255,255,0.15);
+    border-color: #FFD700;
+    color: #FFD700;
+}
+
 /* =================================================================== */
 /* 1. 페이지 타이틀 공통 스타일 (명시도: 10) */
 /* =================================================================== */
