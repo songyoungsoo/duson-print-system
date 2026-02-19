@@ -52,7 +52,16 @@
 
 <style>
 @keyframes aiChatSlideUp { from { opacity:0; transform:translateY(20px); } to { opacity:1; transform:translateY(0); } }
+@keyframes aiBounce { to { transform: translateY(-4px); opacity: .5; } }
 #ai-chatbot-toggle:hover { transform:scale(1.08); }
+.ai-opt-btn {
+    text-align:left; padding:8px 12px; background:#f8fafc; border:1px solid #e2e8f0;
+    border-radius:8px; font-size:12.5px; color:#334155; cursor:pointer;
+    transition:all .15s; font-family:inherit; width:100%; line-height:1.4;
+}
+.ai-opt-btn:hover:not(:disabled) { background:#e0e7ff; border-color:#c7d2fe; }
+.ai-opt-btn:disabled { cursor:default; }
+.ai-opt-btn.selected { background:#c7d2fe; border-color:#a5b4fc; font-weight:600; opacity:1; }
 @media(max-width:768px){
     #ai-chatbot-widget { right:10px; bottom:80px; }
     #ai-chatbot-toggle { width:70px; height:70px; }
@@ -68,32 +77,43 @@
 
     var messages = [];
     var loading = false;
+    var avatarHtml = '<div style="width:30px;height:30px;background:#e0e7ff;border-radius:50%;display:flex;align-items:center;justify-content:center;flex-shrink:0;"><span style="color:#6366f1;font-weight:900;font-size:8px;letter-spacing:-0.3px;line-height:.95;text-align:center;">야간<br>당번</span></div>';
 
-    window.aiChatToggle = function() {
-        var win = document.getElementById('ai-chatbot-window');
-        if (!win) return;
-        var isOpen = win.style.display === 'flex';
-        win.style.display = isOpen ? 'none' : 'flex';
-        if (!isOpen) {
-            var input = document.getElementById('ai-chat-input');
-            if (input) input.focus();
+    function escHtml(t) { return t.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;'); }
+
+    function fmtMsg(text) {
+        var s = escHtml(text);
+        s = s.replace(/\*\*(.+?)\*\*/g, '<strong style="color:#6366f1;">$1</strong>');
+        return s.replace(/\n/g, '<br>');
+    }
+
+    function buildOpts(options) {
+        if (!options || !options.length) return '';
+        var h = '<div style="margin-top:8px;display:flex;flex-direction:column;gap:4px;">';
+        for (var i = 0; i < options.length; i++) {
+            var o = options[i];
+            h += '<button class="ai-opt-btn" data-num="' + o.num + '" onclick="aiChatSelectOption(this)">' + o.num + '. ' + escHtml(o.label) + '</button>';
         }
-    };
+        return h + '</div>';
+    }
 
-    function appendMessage(role, content) {
+    function disableOpts() {
+        var btns = document.querySelectorAll('#ai-chat-messages .ai-opt-btn');
+        for (var i = 0; i < btns.length; i++) { btns[i].disabled = true; btns[i].style.opacity = '0.5'; }
+    }
+
+    function appendMessage(role, content, options) {
         var container = document.getElementById('ai-chat-messages');
         if (!container) return;
         var div = document.createElement('div');
         div.style.cssText = 'display:flex;gap:8px;' + (role === 'user' ? 'justify-content:flex-end;' : '');
-
-        var formatted = content.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');
-        formatted = formatted.replace(/\*\*(.+?)\*\*/g, '<strong style="color:#6366f1;">$1</strong>');
-        formatted = formatted.replace(/\n/g, '<br>');
+        var formatted = fmtMsg(content);
 
         if (role === 'user') {
             div.innerHTML = '<div style="background:#6366f1;color:#fff;border-radius:14px 14px 4px 14px;padding:10px 14px;max-width:75%;font-size:13px;line-height:1.6;">' + formatted + '</div>';
         } else {
-            div.innerHTML = '<div style="width:30px;height:30px;background:#e0e7ff;border-radius:50%;display:flex;align-items:center;justify-content:center;flex-shrink:0;"><span style="color:#6366f1;font-weight:900;font-size:8px;letter-spacing:-0.3px;line-height:.95;text-align:center;">야간<br>당번</span></div><div style="background:#fff;border:1px solid #e2e8f0;border-radius:14px 14px 14px 4px;padding:10px 14px;max-width:75%;font-size:13px;color:#334155;line-height:1.6;">' + formatted + '</div>';
+            var optsHtml = buildOpts(options);
+            div.innerHTML = avatarHtml + '<div style="max-width:82%;"><div style="background:#fff;border:1px solid #e2e8f0;border-radius:14px 14px 14px 4px;padding:10px 14px;font-size:13px;color:#334155;line-height:1.6;">' + formatted + '</div>' + optsHtml + '</div>';
         }
         container.appendChild(div);
         container.scrollTop = container.scrollHeight;
@@ -104,7 +124,7 @@
         var div = document.createElement('div');
         div.id = 'ai-chat-typing';
         div.style.cssText = 'display:flex;gap:8px;';
-        div.innerHTML = '<div style="width:30px;height:30px;background:#e0e7ff;border-radius:50%;display:flex;align-items:center;justify-content:center;flex-shrink:0;"><span style="color:#6366f1;font-weight:900;font-size:8px;letter-spacing:-0.3px;line-height:.95;text-align:center;">야간<br>당번</span></div><div style="background:#fff;border:1px solid #e2e8f0;border-radius:14px;padding:10px 14px;display:flex;gap:4px;"><span style="width:6px;height:6px;background:#94a3b8;border-radius:50%;animation:aiBounce .6s infinite alternate;"></span><span style="width:6px;height:6px;background:#94a3b8;border-radius:50%;animation:aiBounce .6s .15s infinite alternate;"></span><span style="width:6px;height:6px;background:#94a3b8;border-radius:50%;animation:aiBounce .6s .3s infinite alternate;"></span></div>';
+        div.innerHTML = avatarHtml + '<div style="background:#fff;border:1px solid #e2e8f0;border-radius:14px;padding:10px 14px;display:flex;gap:4px;"><span style="width:6px;height:6px;background:#94a3b8;border-radius:50%;animation:aiBounce .6s infinite alternate;"></span><span style="width:6px;height:6px;background:#94a3b8;border-radius:50%;animation:aiBounce .6s .15s infinite alternate;"></span><span style="width:6px;height:6px;background:#94a3b8;border-radius:50%;animation:aiBounce .6s .3s infinite alternate;"></span></div>';
         container.appendChild(div);
         container.scrollTop = container.scrollHeight;
     }
@@ -114,21 +134,17 @@
         if (el) el.remove();
     }
 
-    window.aiChatSend = function(e) {
-        if (e) e.preventDefault();
-        var input = document.getElementById('ai-chat-input');
-        var msg = input.value.trim();
-        if (!msg || loading) return;
-
-        input.value = '';
+    function sendToBackend(msgToSend, displayText) {
+        if (loading) return;
         loading = true;
-        messages.push({ role: 'user', content: msg });
-        appendMessage('user', msg);
+        disableOpts();
+        messages.push({ role: 'user', content: msgToSend });
+        appendMessage('user', displayText || msgToSend);
         showTyping();
 
         var fd = new FormData();
         fd.append('action', 'chat');
-        fd.append('message', msg);
+        fd.append('message', msgToSend);
         fd.append('history', JSON.stringify(messages.slice(0, -1)));
 
         fetch('/api/ai_chat.php', { method: 'POST', body: fd })
@@ -139,7 +155,7 @@
                     appendMessage('assistant', '죄송합니다. 오류가 발생했습니다: ' + data.error);
                 } else if (data.message) {
                     messages.push({ role: 'assistant', content: data.message });
-                    appendMessage('assistant', data.message);
+                    appendMessage('assistant', data.message, data.options || null);
                 }
             })
             .catch(function() {
@@ -149,15 +165,39 @@
             .finally(function() {
                 loading = false;
             });
+    }
+
+    window.aiChatToggle = function() {
+        var win = document.getElementById('ai-chatbot-window');
+        if (!win) return;
+        var isOpen = win.style.display === 'flex';
+        win.style.display = isOpen ? 'none' : 'flex';
+        if (!isOpen) { var inp = document.getElementById('ai-chat-input'); if (inp) inp.focus(); }
+    };
+
+    window.aiChatSend = function(e) {
+        if (e) e.preventDefault();
+        var input = document.getElementById('ai-chat-input');
+        var msg = input.value.trim();
+        if (!msg || loading) return;
+        input.value = '';
+        sendToBackend(msg, msg);
     };
 
     window.aiChatQuick = function(text) {
-        var input = document.getElementById('ai-chat-input');
-        input.value = text;
-        aiChatSend();
+        if (loading) return;
+        sendToBackend(text, text);
+    };
+
+    window.aiChatSelectOption = function(btn) {
+        if (loading || btn.disabled) return;
+        var num = btn.getAttribute('data-num');
+        var label = btn.textContent.replace(/^\d+\.\s*/, '');
+
+        // Highlight selected
+        btn.classList.add('selected');
+
+        sendToBackend(num, label);
     };
 })();
 </script>
-<style>
-@keyframes aiBounce { to { transform: translateY(-4px); opacity: .5; } }
-</style>

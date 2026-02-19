@@ -129,7 +129,7 @@ class ChatbotService
         // "다시", "처음", "리셋" → 초기화
         if (preg_match('/다시|처음|리셋|초기화|취소/u', $message)) {
             $this->resetState();
-            return ['success' => true, 'message' => $this->getProductMenu()];
+            return $this->getProductMenuResponse();
         }
         
         // 제품 감지: 이미 제품 선택 진행 중이면 숫자 매칭 비활성화 (옵션 선택과 충돌 방지)
@@ -139,7 +139,7 @@ class ChatbotService
         if (!$inProgress) {
             // 제품 미선택 상태
             if (empty($detectedProduct)) {
-                return ['success' => true, 'message' => $this->getProductMenu()];
+                return $this->getProductMenuResponse();
             }
             $state['product'] = $detectedProduct;
             $state['step'] = 0;
@@ -168,15 +168,15 @@ class ChatbotService
     /**
      * 품목 선택 메뉴
      */
-    private function getProductMenu(): string
+    private function getProductMenuResponse(): array
     {
-        $lines = ["어떤 인쇄물 가격이 궁금하세요?\n"];
+        $options = [];
         $i = 1;
         foreach ($this->productSteps as $key => $info) {
-            $lines[] = "{$i}. {$info['label']}";
+            $options[] = ['num' => $i, 'label' => $info['label']];
             $i++;
         }
-        return implode("\n", $lines);
+        return ['success' => true, 'message' => "어떤 인쇄물 가격이 궁금하세요?", 'options' => $options];
     }
     
     /**
@@ -226,11 +226,12 @@ class ChatbotService
         
         $result = ['success' => true];
         $particle = $this->getParticle($stepLabel, '을', '를');
-        $lines = ["{$stepLabel}{$particle} 선택해주세요:"];
+        $result['message'] = "{$stepLabel}{$particle} 선택해주세요:";
+        $optionList = [];
         foreach ($options as $i => $opt) {
-            $lines[] = ($i + 1) . ". " . $opt['title'];
+            $optionList[] = ['num' => $i + 1, 'label' => $opt['title']];
         }
-        $result['message'] = implode("\n", $lines) . "\n\n💡 아래 입력창에 번호만 입력하세요";
+        $result['options'] = $optionList;
         
         // 용지 선택 단계면 paper_images 추가
         if ($stepType === 'section' && $product === 'namecard') {
@@ -256,11 +257,11 @@ class ChatbotService
             $this->setState($state);
             
             $p = $this->getParticle($label, '을', '를');
-            $lines = ["{$label}{$p} 선택해주세요:"];
+            $optionList = [];
             foreach ($qtyOptions as $i => $q) {
-                $lines[] = ($i + 1) . ". " . $q['display'];
+                $optionList[] = ['num' => $i + 1, 'label' => $q['display']];
             }
-            return ['success' => true, 'message' => implode("\n", $lines) . "\n\n💡 아래 입력창에 번호만 입력하세요"];
+            return ['success' => true, 'message' => "{$label}{$p} 선택해주세요:", 'options' => $optionList];
         }
         
         $p = $this->getParticle($label, '을', '를');
@@ -329,12 +330,11 @@ class ChatbotService
         
         $matched = $this->matchOption($message, $options);
         if ($matched === null) {
-            $stepLabel = $config['stepLabels'][$stepIdx];
-            $lines = ["선택지에서 골라주세요:"];
+            $optionList = [];
             foreach ($options as $i => $opt) {
-                $lines[] = ($i + 1) . ". " . $opt['title'];
+                $optionList[] = ['num' => $i + 1, 'label' => $opt['title']];
             }
-            return ['success' => true, 'message' => implode("\n", $lines)];
+            return ['success' => true, 'message' => "선택지에서 골라주세요:", 'options' => $optionList];
         }
         
         $state['selections'][$stepType] = $matched['title'];
@@ -426,7 +426,10 @@ class ChatbotService
             $side = '단면';
             $sideId = 1;
         } else {
-            return ['success' => true, 'message' => "인쇄면을 선택해주세요:\n1. 단면\n2. 양면\n\n💡 아래 입력창에 번호만 입력하세요"];
+            return ['success' => true, 'message' => "인쇄면을 선택해주세요:", 'options' => [
+                ['num' => 1, 'label' => '단면'],
+                ['num' => 2, 'label' => '양면'],
+            ]];
         }
         
         $state['selections']['side'] = $side;
@@ -450,7 +453,10 @@ class ChatbotService
             $design = '디자인 의뢰';
             $designId = 1;
         } else {
-            return ['success' => true, 'message' => "디자인을 선택해주세요:\n1. 디자인 있음 (추가비용 없음)\n2. 디자인 의뢰\n\n💡 아래 입력창에 번호만 입력하세요"];
+            return ['success' => true, 'message' => "디자인을 선택해주세요:", 'options' => [
+                ['num' => 1, 'label' => '디자인 있음 (추가비용 없음)'],
+                ['num' => 2, 'label' => '디자인 의뢰'],
+            ]];
         }
         
         $state['selections']['design'] = $design;
