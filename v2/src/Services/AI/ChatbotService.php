@@ -57,8 +57,8 @@ class ChatbotService
         ],
         'ncrflambeau' => [
             'label' => 'NCR양식지',
-            'steps' => ['style', 'tree', 'section', 'quantity', 'design'],
-            'stepLabels' => ['종류', '인쇄도수', '규격', '수량', '디자인'],
+            'steps' => ['style', 'section', 'tree', 'quantity', 'design'],
+            'stepLabels' => ['구분', '규격', '색상', '수량', '디자인'],
             'delivery' => '시안확정 후 5~7일 출고',
         ],
         'msticker' => [
