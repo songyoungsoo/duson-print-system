@@ -124,6 +124,27 @@ include __DIR__ . '/../includes/sidebar.php';
                         <input type="text" id="detail_address" class="w-full px-2 py-1 text-xs border border-gray-300 rounded focus:ring-1 focus:ring-blue-500 focus:border-blue-500" placeholder="상세주소 입력">
                     </div>
                 </div>
+                <!-- 운임구분 + 택배비 (택배 선택 시) -->
+                <div id="shippingFeeSection" class="mt-2 p-2 bg-blue-50/60 border border-blue-200 rounded">
+                    <div class="grid grid-cols-[70px_1fr_70px_1fr] gap-x-2 gap-y-1 items-center">
+                        <label class="text-xs text-gray-500">운임구분</label>
+                        <div class="flex items-center gap-3">
+                            <label class="flex items-center gap-1 text-xs cursor-pointer">
+                                <input type="radio" name="logen_fee_type" value="착불" checked class="accent-blue-600" onchange="toggleShippingFeeInput()">
+                                <span>착불</span>
+                            </label>
+                            <label class="flex items-center gap-1 text-xs cursor-pointer">
+                                <input type="radio" name="logen_fee_type" value="선불" class="accent-blue-600" onchange="toggleShippingFeeInput()">
+                                <span class="font-medium text-blue-700">선불</span>
+                            </label>
+                        </div>
+                        <label class="text-xs text-gray-500" id="shippingFeeLabel" style="display:none;">택배비</label>
+                        <div id="shippingFeeInput" style="display:none;" class="flex items-center gap-1">
+                            <input type="number" id="logen_delivery_fee" class="w-28 px-2 py-1 text-xs border border-gray-300 rounded focus:ring-1 focus:ring-blue-500 focus:border-blue-500" placeholder="0" min="0" step="500">
+                            <span class="text-xs text-gray-500">원</span>
+                        </div>
+                    </div>
+                </div>
                 <!-- 입금자명 (계좌이체 시) -->
                 <div id="bankNameSection" class="mt-1">
                     <div class="grid grid-cols-[70px_1fr] gap-x-2 items-center">
@@ -621,7 +642,16 @@ window.addEventListener('message', function(e) {
 // ── 배송/결제 토글 ──
 function toggleAddressSection() {
     const method = document.getElementById('delivery_method').value;
+    const isTakbae = (method === '택배');
     document.getElementById('addressSection').style.display = (method === '방문') ? 'none' : '';
+    document.getElementById('shippingFeeSection').style.display = isTakbae ? '' : 'none';
+}
+function toggleShippingFeeInput() {
+    const feeType = document.querySelector('input[name="logen_fee_type"]:checked');
+    const isPrepaid = feeType && feeType.value === '선불';
+    document.getElementById('shippingFeeLabel').style.display = isPrepaid ? '' : 'none';
+    document.getElementById('shippingFeeInput').style.display = isPrepaid ? '' : 'none';
+    if (!isPrepaid) document.getElementById('logen_delivery_fee').value = '';
 }
 function toggleBankNameSection() {
     const method = document.getElementById('payment_method').value;
@@ -702,6 +732,10 @@ function submitOrder() {
         bizText += '세금계산서 발행 요청';
     }
 
+    const feeTypeRadio = document.querySelector('input[name="logen_fee_type"]:checked');
+    const logenFeeType = (document.getElementById('delivery_method').value === '택배' && feeTypeRadio) ? feeTypeRadio.value : '';
+    const logenDeliveryFee = (logenFeeType === '선불') ? parseInt(document.getElementById('logen_delivery_fee').value) || 0 : 0;
+
     const data = {
         customer_name: name,
         customer_phone: phone,
@@ -713,6 +747,8 @@ function submitOrder() {
         postcode: document.getElementById('postcode').value.trim(),
         address: document.getElementById('address').value.trim(),
         detail_address: document.getElementById('detail_address').value.trim(),
+        logen_fee_type: logenFeeType,
+        logen_delivery_fee: logenDeliveryFee,
         bizname: bizname,
         biz_text: bizText,
         customer_memo: document.getElementById('customer_memo').value.trim(),

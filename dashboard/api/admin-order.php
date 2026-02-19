@@ -39,6 +39,8 @@ $address = trim($data['address'] ?? '');
 $detailAddress = trim($data['detail_address'] ?? '');
 $bizname = trim($data['bizname'] ?? '');
 $bizText = $data['biz_text'] ?? '';
+$logenFeeType = trim($data['logen_fee_type'] ?? '');
+$logenDeliveryFee = intval($data['logen_delivery_fee'] ?? 0);
 $customerMemo = trim($data['customer_memo'] ?? '');
 $adminMemo = trim($data['admin_memo'] ?? '');
 $orderStatus = $data['order_status'] ?? '2';
@@ -173,8 +175,9 @@ try {
             envelope_additional_options_total, unit, quantity,
             spec_type, spec_material, spec_size, spec_sides, spec_design,
             quantity_value, quantity_unit, quantity_sheets, quantity_display,
-            price_supply, price_vat, price_vat_amount, data_version
-        ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)";
+            price_supply, price_vat, price_vat_amount, data_version,
+            logen_fee_type, logen_delivery_fee
+        ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)";
 
         $stmt = mysqli_prepare($db, $insertQuery);
         if (!$stmt) {
@@ -182,10 +185,10 @@ try {
         }
 
         // bind_param 3-step verification (AGENTS.md mandatory rule)
-        $typeString = 'issssssssssssssssssssssisiisiiiiisiiiiisdsssssdsisiiii';
+        $typeString = 'issssssssssssssssssssssisiisiiiiisiiiiisdsssssdsisiiiisi';
         $placeholderCount = substr_count($insertQuery, '?');
         $typeCount = strlen($typeString);
-        $varCount = 54;
+        $varCount = 56;
 
         if ($placeholderCount !== $typeCount || $typeCount !== $varCount) {
             throw new Exception("bind_param 불일치: placeholder=$placeholderCount, type=$typeCount, var=$varCount");
@@ -205,7 +208,8 @@ try {
             $unit, $quantity,
             $specType, $specMaterial, $specSize, $specSides, $specDesign,
             $quantityValue, $quantityUnit, $quantitySheets, $quantityDisplay,
-            $priceSupply, $priceVat, $priceVatAmount, $dataVersion
+            $priceSupply, $priceVat, $priceVatAmount, $dataVersion,
+            $logenFeeType, $logenDeliveryFee
         );
 
         if (!mysqli_stmt_execute($stmt)) {
