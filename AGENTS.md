@@ -1691,12 +1691,13 @@ setInterval(toggleWidgets, 60000);
 
 ### 위젯 UI 구성
 
-- **토글 버튼**: 60×60px 보라색 원형, "AI 상담" 라벨
+- **토글 버튼**: 88×88px 보라색 원형 (사이드바 `.fm-card` 크기 통일), "야간/당번" 라벨
 - **채팅 창**: 370×520px, 16px border-radius
-- **빠른 선택 버튼**: 명함, 전단지, 스티커, 봉투, 카다록, 포스터, 상품권
-- **메시지 버블**: 사용자(보라색 우측) / 봇(회색 좌측, 로봇 아바타)
+- **빠른 선택 버튼**: 명함, 전단지, 스티커, 봉투, 카다록, 포스터, 상품권, 자석스티커, 양식지 (9개 전 품목)
+- **메시지 버블**: 사용자(보라색 우측) / 봇(회색 좌측, "야간당번" 아바타)
 - **타이핑 인디케이터**: 3-dot 애니메이션
 - **모바일 반응형**: ≤768px에서 100% 너비
+- **클릭형 선택지**: 번호 입력 대신 클릭으로 옵션 선택 (`.ai-opt-btn` 버튼), 선택 후 이전 버튼 비활성화
 
 ### 대화 흐름
 
@@ -1724,12 +1725,45 @@ setInterval(toggleWidgets, 60000);
 - AI 챗봇(`#ai-chatbot-widget`)은 정적 HTML → `getElementById`로 탐색
 - 60초 간격 `setInterval`로 영업시간 경계에서 실시간 전환
 
+### 한국어 조사 자동 판별 (ChatbotService.php)
+
+`getParticle()` 헬퍼 — 마지막 글자 받침 유무로 을/를 자동 선택:
+```php
+private function getParticle(string $text, string $withBatchim, string $withoutBatchim): string
+{
+    $lastChar = mb_substr($text, -1);
+    $code = mb_ord($lastChar);
+    if ($code >= 0xAC00 && $code <= 0xD7A3) {
+        return (($code - 0xAC00) % 28 === 0) ? $withoutBatchim : $withBatchim;
+    }
+    return $withBatchim;
+}
+// 사용: "규격을 선택해주세요" vs "수량를→수량을" 자동 처리
+```
+
+### NCR양식지 단계 순서 (CRITICAL)
+
+NCR양식지의 챗봇 대화 단계는 제품 페이지 드롭다운 순서와 반드시 일치해야 함:
+
+```php
+// ChatbotService.php — NCR 단계 설정
+'ncrflambeau' => [
+    'steps' => ['style', 'section', 'tree', 'quantity', 'design'],
+    'stepLabels' => ['구분', '규격', '색상', '수량', '디자인'],
+],
+// style(BigNo=0) → section(BigNo=style) → tree(TreeNo=style) → quantity → design
+```
+
+**⚠️ 과거 오류**: stepLabels가 `['매수', '규격', '인쇄도수', ...]`로 잘못 설정되어 있었음. 실제 NCR 페이지의 드롭다운 cascade 순서와 라벨명이 일치하지 않으면 사용자 혼란 발생.
+
 ### Critical Rules
 
 1. ❌ `.env` 파일 없어도 동작해야 함 — DB 연결만으로 가격 조회 가능
 2. ❌ v2 composer autoloader 의존 금지 — 직접 require_once로 로드
 3. ✅ 에러 발생 시 "전화 문의" 안내로 graceful fallback
 4. ✅ 세션 쿠키로 대화 상태 유지 (페이지 이동해도 대화 계속)
+5. ✅ 선택지는 클릭형 버튼으로 제공 (API `options` 배열 → 프론트 `.ai-opt-btn` 렌더링)
+6. ✅ stepLabels는 제품 페이지 실제 드롭다운 라벨과 일치시킬 것
 
 ## 📚 Documentation References
 
@@ -1741,5 +1775,5 @@ setInterval(toggleWidgets, 60000);
 
 ---
 
-*Last Updated: 2026-02-20 (직원채팅/AI챗봇 배타적 전환, AI 챗봇 위젯, 홈페이지 실시간 견적 라이브 데모, 캐로셀 dot 하단 조정, 택배비 VAT 계산, 관리자 주문등록 택배비 선불, 채팅창 팝업 제어, 견적 목록 삭제/일괄삭제)*
+*Last Updated: 2026-02-20 (AI챗봇 클릭형 선택지·야간당번 브랜딩·9품목·NCR단계수정·조사판별, 직원채팅/AI챗봇 배타적 전환, 홈페이지 실시간 견적 라이브 데모, 캐로셀 dot 하단 조정, 택배비 VAT 계산, 관리자 주문등록 택배비 선불, 채팅창 팝업 제어, 견적 목록 삭제/일괄삭제)*
 *Environment: WSL2 Ubuntu + Windows XAMPP + Production Deployment*
