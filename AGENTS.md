@@ -859,6 +859,21 @@ $seqQuery = "SELECT quote_no FROM quote_requests WHERE quote_no LIKE ? ORDER BY 
 // → FQ-20260216-001, FQ-20260216-002, ...
 ```
 
+### 견적 삭제 기능 (2026-02-19)
+
+**대시보드 견적 목록** (`/dashboard/quotes/index.php`):
+- 개별 삭제: 각 행 액션 컬럼의 빨간 "삭제" 링크
+- 일괄 삭제: 행 앞 체크박스 선택 → 하단 빨간 바에서 "선택 삭제"
+- 전체선택: thead 체크박스로 현재 페이지 전체 선택/해제
+
+**API**: `/dashboard/api/quotes.php`
+| action | 입력 | 동작 |
+|--------|------|------|
+| `delete` | `{ id: N }` | 단일 견적 삭제 (items → quotes 순서) |
+| `bulk_delete` | `{ ids: [N, ...] }` | 일괄 삭제 |
+
+**⚠️ 하드 삭제** — `admin_quotes` + `admin_quote_items` 에서 완전 삭제 (복구 불가)
+
 ### 이메일 발송 제한
 - SMTP: 네이버 (`smtp.naver.com:465/ssl`, dsp1830)
 - 네이버→네이버: ✅ 정상
@@ -1609,5 +1624,5 @@ $PRODUCT_NAME_MAP = [
 
 ---
 
-*Last Updated: 2026-02-17 (프로필 사업자 상세주소 레거시 파싱 개선, 대시보드 레이아웃 최적화, 마이페이지 OrderStyle 통일)*
+*Last Updated: 2026-02-19 (채팅창 팝업 제어, 견적 목록 삭제/일괄삭제 기능)*
 *Environment: WSL2 Ubuntu + Windows XAMPP + Production Deployment*
