@@ -4,6 +4,15 @@
 
 ---
 
+## 2026-02-19
+
+| 수정자 | 수정항목 | 관련 파일 |
+|--------|----------|-----------|
+| Claude | **비회원 주문 가능하도록 로그인 체크 제거** - upload_modal.js의 openUploadModal() 함수에서 isLoggedIn() 체크 제거. 비회원도 파일 업로드 및 주문 가능 | includes/upload_modal.js |
+| Claude | **시간대별 방문자 한국 시간(UTC+9) 표시** - visitor_stats.php의 getHourlyStats()에서 DATE_ADD(visit_time, INTERVAL 9 HOUR) 사용하여 MySQL HOUR() 함수가 한국 시간 기준으로 작동하도록 수정 | dashboard/api/visitor_stats.php |
+
+---
+
 ## 2026-02-16
 
 | 수정자 | 수정항목 | 관련 파일 |
