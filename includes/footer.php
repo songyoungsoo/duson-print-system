@@ -811,6 +811,8 @@
         <?php endforeach; ?>
     <?php endif; ?>
 
+    <?php include_once __DIR__ . '/ai_chatbot_widget.php'; ?>
+
     <!-- PWA 설치 배너 (Android Chrome) -->
     <div id="pwa-install-banner" style="display:none; position:fixed; bottom:0; left:0; right:0; z-index:99999; background:#fff; box-shadow:0 -2px 12px rgba(0,0,0,0.15); padding:12px 16px; font-family:'Pretendard',sans-serif;">
         <div style="max-width:600px; margin:0 auto; display:flex; align-items:center; gap:12px;">
