@@ -1,6 +1,11 @@
 <?php
 global $DASHBOARD_NAV;
 
+// DB 연결 보장 (채팅 배지 카운트 등 sidebar에서 DB 필요)
+if (!isset($db) || !($db instanceof mysqli)) {
+    require_once __DIR__ . '/../../db.php';
+}
+
 $current_path = parse_url($_SERVER['REQUEST_URI'], PHP_URL_PATH);
 $current_path = rtrim($current_path, '/') . '/';
 ?>
