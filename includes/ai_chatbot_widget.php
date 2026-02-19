@@ -23,7 +23,7 @@
                     <span style="color:#6366f1;font-weight:900;font-size:8px;letter-spacing:-0.3px;line-height:.95;text-align:center;">야간<br>당번</span>
                 </div>
                 <div style="background:#fff;border:1px solid #e2e8f0;border-radius:14px 14px 14px 4px;padding:10px 14px;max-width:75%;font-size:13px;color:#334155;line-height:1.6;">
-                    안녕하세요! 두손기획인쇄 AI 상담봇입니다. 😊<br><br>현재 영업시간 외입니다. 인쇄물 가격이 궁금하시면 편하게 물어봐주세요!
+                    안녕하세요! 두손기획인쇄 AI 상담봇입니다. 😊<br><br>현재 영업시간 외입니다. 인쇄물 가격이 궁금하시면 편하게 물어봐주세요!<br>직접 주문하시면 접수가능합니다.
                 </div>
             </div>
         </div>
