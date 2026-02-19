@@ -8,6 +8,7 @@
 
 | 수정자 | 수정항목 | 관련 파일 |
 |--------|----------|-----------|
+| Claude | **교정 관리 이미지 뷰어 Windows 사진 보기 스타일로 개선** - 줌(25%~400% 단계별), 화면 맞춤, 마우스 휠 중심 확대/축소, 드래그 팬, 더블 클릭 토글, 오른쪽 컨트롤 패널, 하단 상태바, 상단 헤더(두손기획인쇄 + RGB/CMYK 안내), 하단 교정확정 버튼, 키보드 단축키(Esc/방향키/+/-/0/F) 추가 | dashboard/proofs/index.php, dashboard/proofs/api.php |
 | Claude | **비회원 주문 가능하도록 로그인 체크 제거** - upload_modal.js의 openUploadModal() 함수에서 isLoggedIn() 체크 제거. 비회원도 파일 업로드 및 주문 가능 | includes/upload_modal.js |
 | Claude | **시간대별 방문자 한국 시간(UTC+9) 표시** - visitor_stats.php의 getHourlyStats()에서 DATE_ADD(visit_time, INTERVAL 9 HOUR) 사용하여 MySQL HOUR() 함수가 한국 시간 기준으로 작동하도록 수정 | dashboard/api/visitor_stats.php |
 
