@@ -1,10 +1,11 @@
 <?php
 require_once __DIR__ . '/base.php';
 
-$allowed_keys = ['nav_default_mode', 'quote_widget_enabled', 'quote_widget_right', 'quote_widget_top'];
+$allowed_keys = ['nav_default_mode', 'quote_widget_enabled', 'quote_widget_right', 'quote_widget_top', 'en_version_enabled'];
 $allowed_values = [
     'nav_default_mode' => ['simple', 'detailed'],
     'quote_widget_enabled' => ['0', '1'],
+    'en_version_enabled' => ['0', '1'],
 ];
 
 $method = $_SERVER['REQUEST_METHOD'];

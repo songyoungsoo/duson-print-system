@@ -17,6 +17,7 @@ $nav_mode = $settings['nav_default_mode'] ?? 'simple';
 $qw_enabled = ($settings['quote_widget_enabled'] ?? '1') === '1';
 $qw_right = intval($settings['quote_widget_right'] ?? 20);
 $qw_top = intval($settings['quote_widget_top'] ?? 50);
+$en_enabled = ($settings['en_version_enabled'] ?? '0') === '1';
 ?>
 
 <main class="flex-1 bg-gray-50">
@@ -52,6 +53,38 @@ $qw_top = intval($settings['quote_widget_top'] ?? 50);
                         <div class="text-lg">📋</div>
                         <div class="text-xs font-medium mt-1">상세</div>
                         <div class="text-[10px] text-gray-400 mt-0.5">hover 시 서브메뉴<br>재질/옵션 바로 선택</div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- 영문 버전 표시 -->
+            <div class="p-5">
+                <div class="flex items-center justify-between">
+                    <div>
+                        <h3 class="text-sm font-semibold text-gray-900">영문 버전 (EN)</h3>
+                        <p class="text-xs text-gray-500 mt-1">홈페이지 상단 헤더에 EN 버튼을 표시하여 영문 페이지로 이동할 수 있게 합니다.</p>
+                        <p class="text-xs text-gray-400 mt-0.5">비활성화 시 EN 버튼이 헤더에서 숨겨집니다.</p>
+                    </div>
+                    <div class="flex items-center gap-3">
+                        <span id="enLabel" class="text-xs font-medium <?php echo $en_enabled ? 'text-blue-600' : 'text-gray-500'; ?>">
+                            <?php echo $en_enabled ? '표시' : '숨김'; ?>
+                        </span>
+                        <button type="button" id="enSwitch" onclick="toggleEnVersion()"
+                            class="relative inline-flex h-6 w-11 items-center rounded-full transition-colors duration-200 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 <?php echo $en_enabled ? 'bg-blue-600' : 'bg-gray-300'; ?>">
+                            <span class="inline-block h-4 w-4 transform rounded-full bg-white shadow transition-transform duration-200 <?php echo $en_enabled ? 'translate-x-6' : 'translate-x-1'; ?>"></span>
+                        </button>
+                    </div>
+                </div>
+                <div class="mt-3 flex gap-2">
+                    <div class="flex-1 rounded-md border p-3 text-center <?php echo !$en_enabled ? 'border-gray-300 bg-gray-50' : 'border-gray-200'; ?>">
+                        <div class="text-lg">🇰🇷</div>
+                        <div class="text-xs font-medium mt-1">한국어만</div>
+                        <div class="text-[10px] text-gray-400 mt-0.5">EN 버튼 숨김<br>국내 고객 전용</div>
+                    </div>
+                    <div class="flex-1 rounded-md border p-3 text-center <?php echo $en_enabled ? 'border-blue-300 bg-blue-50' : 'border-gray-200'; ?>">
+                        <div class="text-lg">🌐</div>
+                        <div class="text-xs font-medium mt-1">한국어 + 영어</div>
+                        <div class="text-[10px] text-gray-400 mt-0.5">EN 버튼 표시<br>해외 고객 접근 가능</div>
                     </div>
                 </div>
             </div>
@@ -192,6 +225,30 @@ document.addEventListener('DOMContentLoaded', function() {
     if (rightSlider) rightSlider.addEventListener('input', updatePreview);
     if (topSlider) topSlider.addEventListener('input', updatePreview);
 });
+
+function toggleEnVersion() {
+    var sw = document.getElementById('enSwitch');
+    var label = document.getElementById('enLabel');
+    var isOn = sw.classList.contains('bg-blue-600');
+    var newVal = isOn ? '0' : '1';
+
+    saveWidgetSetting('en_version_enabled', newVal, function() {
+        if (newVal === '1') {
+            sw.classList.remove('bg-gray-300'); sw.classList.add('bg-blue-600');
+            sw.querySelector('span').classList.remove('translate-x-1'); sw.querySelector('span').classList.add('translate-x-6');
+            label.textContent = '표시'; label.classList.remove('text-gray-500'); label.classList.add('text-blue-600');
+        } else {
+            sw.classList.remove('bg-blue-600'); sw.classList.add('bg-gray-300');
+            sw.querySelector('span').classList.remove('translate-x-6'); sw.querySelector('span').classList.add('translate-x-1');
+            label.textContent = '숨김'; label.classList.remove('text-blue-600'); label.classList.add('text-gray-500');
+        }
+        // 카드 강조 업데이트
+        var enCards = document.getElementById('enSwitch').closest('.p-5').querySelectorAll('.rounded-md.border.p-3');
+        enCards[0].className = 'flex-1 rounded-md border p-3 text-center ' + (newVal === '0' ? 'border-gray-300 bg-gray-50' : 'border-gray-200');
+        enCards[1].className = 'flex-1 rounded-md border p-3 text-center ' + (newVal === '1' ? 'border-blue-300 bg-blue-50' : 'border-gray-200');
+        showToast('영문 버전 ' + (newVal === '1' ? '표시' : '숨김') + '으로 변경되었습니다.', 'success');
+    });
+}
 
 function toggleNavSetting() {
     var sw = document.getElementById('navModeSwitch');
