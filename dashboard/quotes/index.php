@@ -120,14 +120,16 @@ include __DIR__ . '/../includes/sidebar.php';
 .qt-card { background: #fff; border: 1px solid #e5e7eb; border-radius: 8px; overflow: hidden; }
 .qt-table { width: 100%; border-collapse: collapse; font-size: 13px; }
 .qt-table thead th { background: #f9fafb; font-size: 12px; font-weight: 600; padding: 6px 8px; text-align: center; color: #374151; border-bottom: 1px solid #e5e7eb; }
-.qt-table thead th:first-child { text-align: left; padding-left: 12px; }
+.qt-table thead th:first-child { text-align: center; padding-left: 0; width: 32px; }
+.qt-table thead th:nth-child(2) { text-align: left; padding-left: 12px; }
 .qt-table thead th:last-child { text-align: center; }
 .qt-table tbody tr { height: 33px; transition: background 0.1s; }
 .qt-table tbody tr:nth-child(odd) { background: #fff; }
 .qt-table tbody tr:nth-child(even) { background: #e6f7ff; }
 .qt-table tbody tr:hover { background: #dbeafe; }
 .qt-table tbody td { padding: 2px 8px; text-align: center; font-size: 13px; vertical-align: middle; white-space: nowrap; }
-.qt-table tbody td:first-child { text-align: left; padding-left: 12px; }
+.qt-table tbody td:first-child { text-align: center; padding-left: 0; width: 32px; }
+.qt-table tbody td:nth-child(2) { text-align: left; padding-left: 12px; }
 .qt-table .td-left { text-align: left; }
 .qt-table .td-right { text-align: right; }
 .qt-table .badge { display: inline-block; padding: 1px 8px; font-size: 11px; border-radius: 10px; font-weight: 500; }
@@ -141,6 +143,7 @@ include __DIR__ . '/../includes/sidebar.php';
 .qt-table .action-link { font-size: 11px; color: #1E4E79; text-decoration: none; margin: 0 3px; }
 .qt-table .action-link:hover { text-decoration: underline; }
 .qt-table .action-link-preview { color: #2563eb; }
+.qt-table .action-link-delete { color: #dc2626; }
 .qt-table .items-text { font-size: 11px; color: #6b7280; max-width: 160px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; display: inline-block; vertical-align: middle; }
 .qt-pagination { display: flex; align-items: center; justify-content: space-between; margin-top: 10px; font-size: 12px; color: #6b7280; }
 .qt-pagination nav { display: flex; gap: 3px; }
@@ -149,6 +152,13 @@ include __DIR__ . '/../includes/sidebar.php';
 .qt-pagination .pg-btn.active { background: #1E4E79; color: #fff; border-color: #1E4E79; font-weight: 700; }
 .qt-pagination .pg-btn.disabled { color: #d1d5db; pointer-events: none; }
 .qt-empty { padding: 40px; text-align: center; color: #9ca3af; font-size: 13px; }
+.qt-bulk-bar { display: none; align-items: center; gap: 10px; margin-top: 8px; padding: 8px 12px; background: #fef2f2; border: 1px solid #fecaca; border-radius: 6px; font-size: 12px; color: #991b1b; }
+.qt-bulk-bar.active { display: flex; }
+.qt-bulk-bar button { padding: 4px 14px; font-size: 12px; border-radius: 4px; border: none; cursor: pointer; font-weight: 600; }
+.qt-bulk-bar .btn-delete { background: #dc2626; color: #fff; }
+.qt-bulk-bar .btn-delete:hover { background: #b91c1c; }
+.qt-bulk-bar .btn-cancel { background: #fff; color: #374151; border: 1px solid #d1d5db; }
+.qt-bulk-bar .btn-cancel:hover { background: #f3f4f6; }
 </style>
 
 <main class="flex-1 overflow-y-auto bg-gray-50">
@@ -206,6 +216,7 @@ include __DIR__ . '/../includes/sidebar.php';
             <table class="qt-table">
                 <thead>
                     <tr>
+                        <th><input type="checkbox" id="qt-check-all" onchange="toggleAllChecks(this)"></th>
                         <th>견적번호</th>
                         <th>상태</th>
                         <th>날짜</th>
@@ -223,6 +234,7 @@ include __DIR__ . '/../includes/sidebar.php';
                         $is_expired = !empty($q['valid_until']) && $q['valid_until'] < date('Y-m-d') && !in_array($q['status'], ['accepted', 'converted']);
                     ?>
                     <tr>
+                        <td><input type="checkbox" class="qt-row-check" value="<?php echo $q['id']; ?>" onchange="updateBulkBar()"></td>
                         <td class="td-left" style="font-weight:600;"><?php echo htmlspecialchars($q['quote_no']); ?></td>
                         <td>
                             <span class="badge <?php echo $badge_cls; ?>"><?php echo $sl; ?></span>
@@ -237,11 +249,18 @@ include __DIR__ . '/../includes/sidebar.php';
                             <a href="/admin/mlangprintauto/quote/detail.php?id=<?php echo $q['id']; ?>" target="_blank" class="action-link">상세</a>
                             <a href="/admin/mlangprintauto/quote/edit.php?id=<?php echo $q['id']; ?>" target="_blank" class="action-link">수정</a>
                             <a href="/admin/mlangprintauto/quote/preview.php?id=<?php echo $q['id']; ?>" target="_blank" class="action-link action-link-preview">미리보기</a>
+                            <a href="#" onclick="deleteQuote(<?php echo $q['id']; ?>, '<?php echo htmlspecialchars($q['quote_no'], ENT_QUOTES); ?>'); return false;" class="action-link action-link-delete">삭제</a>
                         </td>
                     </tr>
                     <?php endforeach; ?>
                 </tbody>
             </table>
+        </div>
+
+        <div class="qt-bulk-bar" id="qt-bulk-bar">
+            <span id="qt-bulk-count">0</span>건 선택됨
+            <button class="btn-delete" onclick="bulkDeleteQuotes()">선택 삭제</button>
+            <button class="btn-cancel" onclick="clearAllChecks()">선택 해제</button>
         </div>
 
         <!-- 페이지네이션 -->
@@ -295,5 +314,69 @@ include __DIR__ . '/../includes/sidebar.php';
         <?php endif; ?>
     </div>
 </main>
+
+<script>
+function deleteQuote(id, quoteNo) {
+    if (!confirm('견적 [' + quoteNo + '] 을(를) 삭제하시겠습니까?\n삭제 후 복구할 수 없습니다.')) return;
+    fetch('/dashboard/api/quotes.php', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ action: 'delete', id: id })
+    })
+    .then(function(r) { return r.json(); })
+    .then(function(res) {
+        if (res.success) location.reload();
+        else alert('삭제 실패: ' + res.message);
+    })
+    .catch(function() { alert('서버 오류가 발생했습니다.'); });
+}
+
+function getCheckedIds() {
+    return Array.from(document.querySelectorAll('.qt-row-check:checked')).map(function(el) { return parseInt(el.value); });
+}
+
+function toggleAllChecks(master) {
+    document.querySelectorAll('.qt-row-check').forEach(function(cb) { cb.checked = master.checked; });
+    updateBulkBar();
+}
+
+function clearAllChecks() {
+    document.querySelectorAll('.qt-row-check').forEach(function(cb) { cb.checked = false; });
+    var master = document.getElementById('qt-check-all');
+    if (master) master.checked = false;
+    updateBulkBar();
+}
+
+function updateBulkBar() {
+    var ids = getCheckedIds();
+    var bar = document.getElementById('qt-bulk-bar');
+    var cnt = document.getElementById('qt-bulk-count');
+    var checks = document.querySelectorAll('.qt-row-check');
+    var master = document.getElementById('qt-check-all');
+
+    cnt.textContent = ids.length;
+    bar.classList.toggle('active', ids.length > 0);
+
+    if (master) master.checked = checks.length > 0 && ids.length === checks.length;
+}
+
+function bulkDeleteQuotes() {
+    var ids = getCheckedIds();
+    if (ids.length === 0) return;
+    if (!confirm(ids.length + '건의 견적을 삭제하시겠습니까?\n삭제 후 복구할 수 없습니다.')) return;
+
+    fetch('/dashboard/api/quotes.php', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ action: 'bulk_delete', ids: ids })
+    })
+    .then(function(r) { return r.json(); })
+    .then(function(res) {
+        if (res.success) location.reload();
+        else alert('삭제 실패: ' + res.message);
+    })
+    .catch(function() { alert('서버 오류가 발생했습니다.'); });
+}
+</script>
 
 <?php include __DIR__ . '/../includes/footer.php'; ?>

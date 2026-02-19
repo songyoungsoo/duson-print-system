@@ -602,7 +602,7 @@ header("Expires: 0");
                     <div class="slider-slide" data-slide="0">
                         <div class="video-slide-wrapper" id="videoSlideWrapper" onclick="toggleSliderVideo()">
                             <img src="/media/explainer_poster.jpg" alt="두손기획인쇄 소개 영상" class="slider-img" id="videoPoster">
-                            <video id="sliderVideo" preload="none" playsinline muted>
+                            <video id="sliderVideo" preload="none" playsinline>
                                 <source src="/media/explainer_30s.mp4" type="video/mp4">
                             </video>
                             <div class="video-play-btn" id="videoPlayBtn">
