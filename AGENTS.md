@@ -1648,26 +1648,33 @@ $shipping_total = $shipping_supply + $shipping_vat; // 합계
 | **위젯 파일** | `/includes/ai_chatbot_widget.php` |
 | **API 엔드포인트** | `/api/ai_chat.php` |
 | **ChatbotService** | `/v2/src/Services/AI/ChatbotService.php` (직접 require) |
-| **표시 조건** | 18:30 이후 ~ 09:00 이전 (서버 + 클라이언트 이중 체크) |
+| **표시 조건** | 18:30 이후 ~ 09:00 이전 (footer.php 통합 토글) |
 | **include 위치** | `/includes/footer.php` (모든 페이지) |
 | **테마** | 보라색 그라디언트 (#6366f1) — 주황색 직원 채팅과 구분 |
 
-### 시간 체크 로직
+### 시간 체크 로직 (footer.php 통합 토글)
 
-```php
-// 서버 측 (PHP) — 위젯 HTML 렌더링 여부 결정
-$_aibot_hour = (int)date('G');
-$_aibot_min  = (int)date('i');
-$_aibot_is_after_hours = ($_aibot_hour >= 18 && $_aibot_min >= 30) || $_aibot_hour >= 19 || $_aibot_hour < 9;
-```
+위젯 시간 제어는 `footer.php`의 통합 스크립트에서 일괄 관리.
+`ai_chatbot_widget.php`에는 시간 체크 로직 없음 (순수 UI만).
 
 ```javascript
-// 클라이언트 측 (JS) — 60초마다 재체크, 실시간 전환
-function isAfterHours() {
+// footer.php — 통합 toggleWidgets() (60초 간격 실행)
+function isBusinessHours() {
+    var now = new Date();
     var h = now.getHours(), m = now.getMinutes();
-    return (h >= 18 && m >= 30) || h >= 19 || h < 9;
+    if (h < 9) return false;       // 09:00 이전
+    if (h > 18) return false;      // 19:00 이후
+    if (h === 18 && m >= 30) return false; // 18:30 이후
+    return true;
 }
-setInterval(checkTimeAndToggle, 60000);
+function toggleWidgets() {
+    var biz = isBusinessHours();
+    var staff = document.querySelector('.chat-widget');   // chat.js가 동적 생성
+    var ai = document.getElementById('ai-chatbot-widget'); // 정적 HTML
+    if (staff) staff.style.display = biz ? '' : 'none';
+    if (ai) ai.style.display = biz ? 'none' : 'block';
+}
+setInterval(toggleWidgets, 60000);
 ```
 
 ### API 구조 (`/api/ai_chat.php`)
@@ -1703,12 +1710,19 @@ setInterval(checkTimeAndToggle, 60000);
             → ✅ 가격 표시 (VAT 포함)
 ```
 
-### 직원 채팅 vs AI 챗봇 공존
+### 직원 채팅 vs AI 챗봇 배타적 전환
 
 | 시간대 | 위젯 | 위치 |
 |--------|------|------|
 | 09:00~18:30 | 주황색 직원 채팅 (`chat_widget.php`) | bottom-right |
 | 18:30~09:00 | 보라색 AI 챗봇 (`ai_chatbot_widget.php`) | bottom:20px, right:80px |
+
+**배타적 전환 메커니즘**:
+- 두 위젯 모두 `footer.php`에서 include (DOM에 항상 존재)
+- `toggleWidgets()` 함수가 시간대에 따라 `display` 속성으로 한쪽만 표시
+- 직원 채팅(`.chat-widget`)은 `chat.js`가 동적 생성 → `querySelector`로 탐색
+- AI 챗봇(`#ai-chatbot-widget`)은 정적 HTML → `getElementById`로 탐색
+- 60초 간격 `setInterval`로 영업시간 경계에서 실시간 전환
 
 ### Critical Rules
 
@@ -1727,5 +1741,5 @@ setInterval(checkTimeAndToggle, 60000);
 
 ---
 
-*Last Updated: 2026-02-19 (AI 챗봇 위젯, 홈페이지 실시간 견적 라이브 데모, 캐로셀 dot 하단 조정, 택배비 VAT 계산, 관리자 주문등록 택배비 선불, 채팅창 팝업 제어, 견적 목록 삭제/일괄삭제)*
+*Last Updated: 2026-02-20 (직원채팅/AI챗봇 배타적 전환, AI 챗봇 위젯, 홈페이지 실시간 견적 라이브 데모, 캐로셀 dot 하단 조정, 택배비 VAT 계산, 관리자 주문등록 택배비 선불, 채팅창 팝업 제어, 견적 목록 삭제/일괄삭제)*
 *Environment: WSL2 Ubuntu + Windows XAMPP + Production Deployment*
