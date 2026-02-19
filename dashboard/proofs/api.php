@@ -181,6 +181,44 @@ switch ($action) {
         }
         break;
 
+    case 'check_proof_status':
+        $order_no = intval($_GET['order_no'] ?? 0);
+        if ($order_no <= 0) {
+            echo json_encode(['success' => false, 'confirmed' => false]);
+            exit;
+        }
+
+        $stmt = mysqli_prepare($db, "SELECT OrderStyle FROM mlangorder_printauto WHERE no = ?");
+        mysqli_stmt_bind_param($stmt, "i", $order_no);
+        mysqli_stmt_execute($stmt);
+        $row = mysqli_fetch_assoc(mysqli_stmt_get_result($stmt));
+        mysqli_stmt_close($stmt);
+
+        $confirmed = ($row && $row['OrderStyle'] == '8'); // 작업완료 상태 확인
+        echo json_encode(['success' => true, 'confirmed' => $confirmed]);
+        break;
+
+    case 'confirm_proofreading':
+        $order_no = intval($_POST['order_no'] ?? 0);
+        if ($order_no <= 0) {
+            echo json_encode(['success' => false, 'message' => '잘못된 요청']);
+            exit;
+        }
+
+        // 주문 상태를 작업완료(8)로 변경
+        $stmt = mysqli_prepare($db, "UPDATE mlangorder_printauto SET OrderStyle = '8' WHERE no = ?");
+        mysqli_stmt_bind_param($stmt, "i", $order_no);
+        mysqli_stmt_execute($stmt);
+        $affected = mysqli_stmt_affected_rows($stmt);
+        mysqli_stmt_close($stmt);
+
+        if ($affected > 0) {
+            echo json_encode(['success' => true, 'message' => '교정확정 완료']);
+        } else {
+            echo json_encode(['success' => false, 'message' => '처리 실패']);
+        }
+        break;
+
     default:
         echo json_encode(['success' => false, 'message' => 'Invalid action']);
 }

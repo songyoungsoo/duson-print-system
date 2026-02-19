@@ -33,11 +33,6 @@ var UPLOAD_MODES = {
 // === 모달 열기/닫기 ===
 
 window.openUploadModal = function() {
-    if (!isLoggedIn()) {
-        openLoginModal();
-        return;
-    }
-
     var modal = document.getElementById('uploadModal');
     if (!modal) return;
 

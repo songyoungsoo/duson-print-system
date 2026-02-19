@@ -330,30 +330,416 @@ include __DIR__ . '/../includes/sidebar.php';
     </div>
 </div>
 
-<!-- Image Viewer Overlay -->
-<div id="imgOverlay" class="fixed inset-0 z-[60] hidden bg-black bg-opacity-95 overflow-auto cursor-pointer" onclick="closeImageViewer()">
-    <!-- Close button -->
-    <button onclick="closeImageViewer()" class="fixed top-3 right-4 z-[70] text-white bg-black bg-opacity-60 rounded-full w-10 h-10 flex items-center justify-center hover:bg-opacity-90 text-lg border border-white/30">✕</button>
-    <!-- Delete button -->
-    <button id="deleteImgBtn" onclick="event.stopPropagation(); deleteCurrentImage()" class="fixed top-3 right-16 z-[70] text-white bg-red-600 bg-opacity-90 rounded-full w-10 h-10 flex items-center justify-center hover:bg-opacity-100 text-sm border border-white/30" title="이미지 삭제">🗑</button>
-    <!-- Prev button -->
-    <button id="prevBtn" onclick="event.stopPropagation(); navImage(-1)" class="fixed left-3 top-1/2 -translate-y-1/2 z-[70] text-white bg-black bg-opacity-70 rounded-full w-12 h-12 flex items-center justify-center hover:bg-opacity-90 text-xl hidden border border-white/30">&lsaquo;</button>
-    <!-- Next button -->
-    <button id="nextBtn" onclick="event.stopPropagation(); navImage(1)" class="fixed right-3 top-1/2 -translate-y-1/2 z-[70] text-white bg-black bg-opacity-70 rounded-full w-12 h-12 flex items-center justify-center hover:bg-opacity-90 text-xl hidden border border-white/30">&rsaquo;</button>
-    <!-- Image (100% original size, scrollable, wider container) -->
-    <div class="min-h-screen flex items-start justify-center p-6 py-20">
-        <img id="overlayImg" src="" class="cursor-pointer shadow-2xl" style="max-width: none; min-width: 800px;" onclick="closeImageViewer()">
-    </div>
-    <!-- Info bar: counter + filename + date + thumbnails -->
-    <div id="imgInfoBar" class="fixed bottom-0 left-0 right-0 z-[70] bg-gradient-to-t from-black/80 to-transparent pt-8 pb-3 px-4 hidden" onclick="event.stopPropagation()">
-        <div class="flex items-center justify-center gap-3 mb-2">
-            <span id="imgCounter" class="text-white text-sm bg-white/20 px-3 py-1 rounded-full"></span>
-            <span id="imgFileName" class="text-white/70 text-xs truncate max-w-[300px]"></span>
-            <span id="imgFileDate" class="text-white/50 text-xs"></span>
+<!-- Image Viewer Overlay (Windows Photo Viewer Style) -->
+<div id="imgOverlay" class="fixed inset-0 z-[60] hidden bg-black">
+    <!-- Top Header Bar -->
+    <div id="viewerHeader" class="viewer-header">
+        <div class="header-title">두손기획인쇄</div>
+        <div class="header-notice">
+            <span class="notice-item">이미지는 RGB 표시 / 인쇄 시 CMYK 출력으로 색상차이 있음</span>
+            <span class="notice-item">오탈자 및 전체 상태를 확인하여 전반적인 수정사항을 요청하셔야 합니다</span>
+            <span class="notice-item highlight">수정은 2회 가능합니다</span>
         </div>
-        <div id="imgThumbnails" class="flex items-center justify-center gap-1.5 overflow-x-auto max-w-2xl mx-auto py-1"></div>
+    </div>
+
+    <!-- Image Container (Zoom/Pan area) -->
+    <div id="imageContainer" class="image-container">
+        <img id="overlayImg" src="" alt="" class="overlay-image">
+    </div>
+
+    <!-- Right Control Panel -->
+    <div id="controlPanel" class="control-panel">
+        <button id="zoomInBtn" type="button" title="확대 (Ctrl+Roll Up)" class="control-btn">
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <circle cx="11" cy="11" r="8"></circle>
+                <line x1="21" y1="21" x2="16.65" y2="16.65"></line>
+                <line x1="11" y1="8" x2="11" y2="14"></line>
+                <line x1="8" y1="11" x2="14" y2="11"></line>
+            </svg>
+        </button>
+        <button id="zoomOutBtn" type="button" title="축소 (Ctrl+Roll Down)" class="control-btn">
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <circle cx="11" cy="11" r="8"></circle>
+                <line x1="21" y1="21" x2="16.65" y2="16.65"></line>
+                <line x1="8" y1="11" x2="14" y2="11"></line>
+            </svg>
+        </button>
+        <button id="fitBtn" type="button" title="화면 맞춤 (0)" class="control-btn">
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <rect x="3" y="3" width="18" height="18" rx="2"></rect>
+                <path d="M9 3v18M15 3v18M3 9h18M3 15h18"></path>
+            </svg>
+        </button>
+        <div class="control-divider"></div>
+        <button id="fullscreenBtn" type="button" title="전체화면 (F)" class="control-btn">
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <path d="M8 3H5a2 2 0 0 0-2 2v3m18 0V5a2 2 0 0 0-2-2h-3m0 18h3a2 2 0 0 0 2-2v-3M3 16v3a2 2 0 0 0 2 2h3"></path>
+            </svg>
+        </button>
+        <div class="control-divider"></div>
+        <button id="prevBtn" type="button" title="이전 (&larr;)" class="control-btn nav-btn">
+            <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <polyline points="15 18 9 12 15 6"></polyline>
+            </svg>
+        </button>
+        <button id="nextBtn" type="button" title="다음 (&rarr;)" class="control-btn nav-btn">
+            <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <polyline points="9 18 15 12 9 6"></polyline>
+            </svg>
+        </button>
+        <div class="control-divider"></div>
+        <button id="deleteImgBtn" type="button" title="삭제 (Delete)" class="control-btn delete-btn">
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <polyline points="3 6 5 6 21 6"></polyline>
+                <path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"></path>
+            </svg>
+        </button>
+        <button id="closeBtn" type="button" title="닫기 (Esc)" class="control-btn close-btn">
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <line x1="18" y1="6" x2="6" y2="18"></line>
+                <line x1="6" y1="6" x2="18" y2="18"></line>
+            </svg>
+        </button>
+    </div>
+
+    <!-- Bottom Status Bar -->
+    <div id="statusBar" class="status-bar">
+        <div class="status-left">
+            <span id="zoomLevel" class="zoom-level">화면 맞춤</span>
+        </div>
+        <div class="status-center">
+            <span id="imgCounter" class="img-counter"></span>
+            <span id="imgFileName" class="img-filename"></span>
+        </div>
+        <div class="status-right">
+            <span id="imgFileDate" class="img-date"></span>
+        </div>
+    </div>
+
+    <!-- Proof Confirmation Area -->
+    <div id="proofConfirmArea" class="proof-confirm-area">
+        <div id="proofConfirmContent">
+            <button id="proofConfirmBtn" type="button" class="proof-confirm-btn">
+                📝 교정확정
+            </button>
+            <p class="proof-confirm-notice">오탈자 및 전체를 잘 확인 후 클릭해주세요</p>
+        </div>
+        <div id="proofConfirmedMsg" class="proof-confirmed-msg" style="display: none;">
+            ✅ 인쇄진행
+        </div>
+    </div>
+
+    <!-- Thumbnail Bar (below status bar) -->
+    <div id="thumbnailBar" class="thumbnail-bar">
+        <div id="imgThumbnails" class="thumbnails-container"></div>
     </div>
 </div>
+
+<style>
+/* Image Viewer Styles */
+.image-container {
+    position: absolute;
+    top: 62px;  /* 상단 헤더 높이 */
+    left: 0;
+    right: 72px;
+    bottom: 160px;  /* 상태바(48px) + 썸네일바(56px) + 교정확정영역(48px) + 여유(8px) */
+    overflow: hidden;
+    background: #1a1a1a;
+}
+
+.overlay-image {
+    /* transform으로만 위치 제어 */
+    max-width: none;
+    max-height: none;
+    object-fit: contain;
+    transition: transform 0.1s ease-out;
+    cursor: default;
+    user-select: none;
+    -webkit-user-drag: none;
+    /* transform 초기값 명시 */
+    transform: translate(0, 0) scale(1);
+    transform-origin: 0 0;
+    /* flex 정렬 제거 - transform만 사용 */
+}
+
+.overlay-image.dragging {
+    cursor: grabbing;
+}
+
+/* Viewer Header */
+.viewer-header {
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 72px;
+    background: #1e293b;
+    padding: 8px 0;
+    z-index: 85;
+    text-align: center;
+}
+
+.header-title {
+    color: white;
+    font-size: 16px;
+    font-weight: 600;
+}
+
+.header-notice {
+    margin-top: 4px;
+}
+
+.notice-item {
+    color: #cbd5e1;
+    font-size: 10px;
+    display: block;
+    line-height: 1.3;
+}
+
+.notice-item.highlight {
+    color: #fbbf24;
+}
+
+/* Control Panel */
+.control-panel {
+    position: fixed;
+    right: 12px;
+    top: 50%;
+    transform: translateY(-50%);
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+    background: rgba(30, 30, 30, 0.9);
+    padding: 10px 6px;
+    border-radius: 12px;
+    z-index: 80;
+    backdrop-filter: blur(10px);
+}
+
+.control-btn {
+    width: 44px;
+    height: 44px;
+    border: none;
+    background: transparent;
+    color: rgba(255, 255, 255, 0.85);
+    border-radius: 8px;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: all 0.15s ease;
+}
+
+.control-btn:hover {
+    background: rgba(255, 255, 255, 0.15);
+    color: white;
+}
+
+.control-btn:active {
+    background: rgba(255, 255, 255, 0.25);
+}
+
+.control-btn svg {
+    pointer-events: none;
+}
+
+.control-btn.delete-btn:hover {
+    background: rgba(239, 68, 68, 0.8);
+}
+
+.control-btn.close-btn:hover {
+    background: rgba(255, 255, 255, 0.2);
+}
+
+.control-btn.hidden {
+    display: none;
+}
+
+.control-divider {
+    height: 1px;
+    background: rgba(255, 255, 255, 0.15);
+    margin: 4px 0;
+}
+
+/* Status Bar */
+.status-bar {
+    position: fixed;
+    bottom: 0;
+    left: 0;
+    right: 0;
+    height: 48px;
+    background: rgba(0, 0, 0, 0.85);
+    backdrop-filter: blur(10px);
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 0 16px;
+    z-index: 80;
+    border-top: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+.status-left,
+.status-center,
+.status-right {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+}
+
+.status-center {
+    position: absolute;
+    left: 50%;
+    transform: translateX(-50%);
+}
+
+.zoom-level {
+    color: rgba(255, 255, 255, 0.9);
+    font-size: 13px;
+    font-weight: 500;
+    min-width: 80px;
+}
+
+.img-counter {
+    color: rgba(255, 255, 255, 0.7);
+    font-size: 12px;
+    background: rgba(255, 255, 255, 0.1);
+    padding: 2px 8px;
+    border-radius: 10px;
+}
+
+.img-filename {
+    color: rgba(255, 255, 255, 0.8);
+    font-size: 12px;
+    max-width: 300px;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+
+.img-date {
+    color: rgba(255, 255, 255, 0.5);
+    font-size: 11px;
+}
+
+/* Thumbnail Bar */
+.thumbnail-bar {
+    position: fixed;
+    bottom: 48px;
+    left: 0;
+    right: 72px;
+    height: 56px;
+    background: linear-gradient(to top, rgba(0, 0, 0, 0.8), transparent);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 0 16px;
+    z-index: 75;
+    pointer-events: none;
+}
+
+.thumbnail-bar.hidden {
+    display: none;
+}
+
+.thumbnails-container {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    overflow-x: auto;
+    max-width: 100%;
+    padding: 4px;
+    pointer-events: auto;
+    scrollbar-width: thin;
+    scrollbar-color: rgba(255, 255, 255, 0.3) transparent;
+}
+
+.thumbnails-container::-webkit-scrollbar {
+    height: 4px;
+}
+
+.thumbnails-container::-webkit-scrollbar-track {
+    background: transparent;
+}
+
+.thumbnails-container::-webkit-scrollbar-thumb {
+    background: rgba(255, 255, 255, 0.3);
+    border-radius: 2px;
+}
+
+.thumb-item {
+    width: 48px;
+    height: 48px;
+    object-fit: cover;
+    border-radius: 6px;
+    cursor: pointer;
+    border: 2px solid transparent;
+    transition: all 0.15s ease;
+    opacity: 0.5;
+    flex-shrink: 0;
+}
+
+.thumb-item:hover {
+    opacity: 0.8;
+    transform: scale(1.05);
+}
+
+.thumb-item.active {
+    border-color: white;
+    opacity: 1;
+    box-shadow: 0 0 0 2px rgba(255, 255, 255, 0.3);
+}
+
+/* Proof Confirmation Area */
+.proof-confirm-area {
+    position: fixed;
+    bottom: 110px;
+    left: 0;
+    right: 72px;
+    background: rgba(255, 255, 255, 0.95);
+    padding: 12px 16px;
+    z-index: 85;
+    text-align: center;
+    box-shadow: 0 -2px 10px rgba(0, 0, 0, 0.1);
+}
+
+.proof-confirm-btn {
+    background: linear-gradient(135deg, #16a34a 0%, #15803d 100%);
+    color: white;
+    border: none;
+    border-radius: 8px;
+    padding: 10px 24px;
+    font-size: 14px;
+    font-weight: 600;
+    cursor: pointer;
+    box-shadow: 0 2px 10px rgba(22, 163, 74, 0.3);
+    transition: all 0.3s ease;
+}
+
+.proof-confirm-btn:hover {
+    background: linear-gradient(135deg, #15803d 0%, #166534 100%);
+    transform: translateY(-2px);
+    box-shadow: 0 4px 16px rgba(22, 163, 74, 0.4);
+}
+
+.proof-confirm-btn:disabled {
+    background: #9ca3af;
+    cursor: not-allowed;
+    transform: none;
+    box-shadow: none;
+}
+
+.proof-confirm-notice {
+    font-size: 11px;
+    color: #64748b;
+    margin: 6px 0 0 0;
+    line-height: 1.3;
+}
+
+.proof-confirmed-msg {
+    color: #dc2626;
+    font-weight: 600;
+    font-size: 14px;
+}
+</style>
 
 <script>
 // === Order Phone Data (from PHP) ===
@@ -365,6 +751,19 @@ orderPhoneData[<?php echo $o['no']; ?>] = {
     hendphone: <?php echo json_encode(trim($o['Hendphone'] ?? ''), JSON_UNESCAPED_UNICODE); ?>
 };
 <?php endforeach; ?>
+
+// === Image Viewer Zoom State ===
+var zoomState = {
+    level: 'fit',
+    scale: 1,
+    offsetX: 0,
+    offsetY: 0,
+    isDragging: false,
+    startX: 0,
+    startY: 0
+};
+
+var ZOOM_LEVELS = [25, 50, 75, 100, 125, 150, 200, 300, 400];
 
 // === Phone Save ===
 function saveModalPhone(orderNo) {
@@ -424,10 +823,208 @@ var viewerOrderNo = 0;
 
 document.addEventListener('keydown', function(e) {
     if (document.getElementById('imgOverlay').classList.contains('hidden')) return;
-    if (e.key === 'Escape') closeImageViewer();
-    if (e.key === 'ArrowLeft') navImage(-1);
-    if (e.key === 'ArrowRight') navImage(1);
-    if (e.key === 'Delete' || e.key === 'Backspace') deleteCurrentImage();
+    if (e.key === 'Escape') { e.preventDefault(); closeImageViewer(); }
+    if (e.key === 'ArrowLeft') { e.preventDefault(); navImage(-1); }
+    if (e.key === 'ArrowRight') { e.preventDefault(); navImage(1); }
+    if (e.key === 'Delete' || e.key === 'Backspace') { e.preventDefault(); deleteCurrentImage(); }
+    if (e.key === '+' || e.key === '=') { e.preventDefault(); zoomIn(); }
+    if (e.key === '-' || e.key === '_') { e.preventDefault(); zoomOut(); }
+    if (e.key === '0') { e.preventDefault(); setZoom('fit'); }
+    if (e.key === 'f' || e.key === 'F') { e.preventDefault(); toggleFullscreen(); }
+});
+
+// === Zoom Functions ===
+function fitToScreen() {
+    var img = document.getElementById('overlayImg');
+    var container = document.getElementById('imageContainer');
+
+    if (!img.naturalWidth) return;
+
+    var containerWidth = container.clientWidth;
+    var containerHeight = container.clientHeight;
+
+    var imgRatio = img.naturalWidth / img.naturalHeight;
+    var containerRatio = containerWidth / containerHeight;
+
+    var scale;
+    if (imgRatio > containerRatio) {
+        scale = containerWidth / img.naturalWidth;
+    } else {
+        scale = containerHeight / img.naturalHeight;
+    }
+
+    // fit 상태에서도 실제 중앙 offset 계산 (첫 줌을 위해서)
+    var scaledWidth = img.naturalWidth * scale;
+    var scaledHeight = img.naturalHeight * scale;
+
+    zoomState.level = 'fit';
+    zoomState.scale = scale;
+    zoomState.offsetX = (containerWidth - scaledWidth) / 2;
+    zoomState.offsetY = (containerHeight - scaledHeight) / 2;
+
+    // CSS flex 정렬 사용 (transform은 적용하지 않음)
+    applyTransform();
+}
+
+function setZoom(level, centerX, centerY) {
+    var img = document.getElementById('overlayImg');
+    var container = document.getElementById('imageContainer');
+    var oldScale = zoomState.scale;
+
+    if (level === 'fit') {
+        fitToScreen();
+        return;
+    }
+
+    var newScale = level / 100;
+    var containerWidth = container.clientWidth;
+    var containerHeight = container.clientHeight;
+    var imgWidth = img.naturalWidth;
+    var imgHeight = img.naturalHeight;
+
+    // 중심 기준 확대: 현재 이미지 중심이 유지되도록 계산
+    // 현재 이미지 중심 위치 (컨테이너 좌표계)
+    var currentCenterX = zoomState.offsetX + (imgWidth * oldScale) / 2;
+    var currentCenterY = zoomState.offsetY + (imgHeight * oldScale) / 2;
+
+    // 새로운 스케일에서 중심 위치가 같도록 offset 계산
+    zoomState.level = level;
+    zoomState.scale = newScale;
+    zoomState.offsetX = currentCenterX - (imgWidth * newScale) / 2;
+    zoomState.offsetY = currentCenterY - (imgHeight * newScale) / 2;
+
+    applyTransform();
+}
+
+function applyTransform() {
+    var img = document.getElementById('overlayImg');
+
+    // Update zoom level display
+    var zoomText = zoomState.level === 'fit' ? '화면 맞춤' : zoomState.level + '%';
+    document.getElementById('zoomLevel').textContent = zoomText;
+
+    // 항상 transform 사용 (fit 상태에서도 중앙 위치 유지)
+    img.style.transform = 'translate(' + zoomState.offsetX + 'px, ' + zoomState.offsetY + 'px) scale(' + zoomState.scale + ')';
+    img.style.transformOrigin = '0 0';
+    img.style.maxWidth = 'none';
+    img.style.maxHeight = 'none';
+
+    // 커서 설정
+    if (zoomState.level === 'fit') {
+        img.style.cursor = 'default';
+    } else {
+        img.style.cursor = zoomState.isDragging ? 'grabbing' : 'grab';
+    }
+}
+
+function zoomIn() {
+    var currentIndex = ZOOM_LEVELS.indexOf(zoomState.level);
+    if (zoomState.level === 'fit') currentIndex = ZOOM_LEVELS.indexOf(100);
+    var nextIndex = Math.min(currentIndex + 1, ZOOM_LEVELS.length - 1);
+    setZoom(ZOOM_LEVELS[nextIndex]);
+}
+
+function zoomOut() {
+    var currentIndex = ZOOM_LEVELS.indexOf(zoomState.level);
+    if (zoomState.level === 'fit') currentIndex = ZOOM_LEVELS.indexOf(100);
+    if (currentIndex > 0) {
+        setZoom(ZOOM_LEVELS[currentIndex - 1]);
+    } else {
+        setZoom('fit');
+    }
+}
+
+function toggleFullscreen() {
+    var overlay = document.getElementById('imgOverlay');
+    if (!document.fullscreenElement) {
+        overlay.requestFullscreen().catch(function(err) {
+            console.log('Fullscreen error:', err);
+        });
+    } else {
+        document.exitFullscreen();
+    }
+}
+
+// === Mouse Wheel Zoom (Center-based) ===
+document.getElementById('imageContainer').addEventListener('wheel', function(e) {
+    e.preventDefault();
+    var rect = this.getBoundingClientRect();
+    // 화면 중앙을 기준으로 줌
+    var centerX = rect.width / 2;
+    var centerY = rect.height / 2;
+
+    var currentIndex = ZOOM_LEVELS.indexOf(zoomState.level);
+    if (zoomState.level === 'fit') currentIndex = ZOOM_LEVELS.indexOf(100);
+
+    if (e.deltaY < 0) {
+        // Zoom in
+        var nextIndex = Math.min(currentIndex + 1, ZOOM_LEVELS.length - 1);
+        setZoom(ZOOM_LEVELS[nextIndex], centerX, centerY);
+    } else {
+        // Zoom out
+        var prevIndex = Math.max(currentIndex - 1, 0);
+        if (prevIndex === 0 && currentIndex === 0 && zoomState.level !== 'fit') {
+            setZoom('fit');
+        } else {
+            setZoom(ZOOM_LEVELS[prevIndex], centerX, centerY);
+        }
+    }
+}, { passive: false });
+
+// === Drag/Pan ===
+var overlayImg = document.getElementById('overlayImg');
+var imageContainer = document.getElementById('imageContainer');
+
+overlayImg.addEventListener('mousedown', function(e) {
+    if (zoomState.level === 'fit') return;
+    zoomState.isDragging = true;
+    zoomState.startX = e.clientX - zoomState.offsetX;
+    zoomState.startY = e.clientY - zoomState.offsetY;
+    this.classList.add('dragging');
+    e.preventDefault();
+});
+
+document.addEventListener('mousemove', function(e) {
+    if (!zoomState.isDragging) return;
+    zoomState.offsetX = e.clientX - zoomState.startX;
+    zoomState.offsetY = e.clientY - zoomState.startY;
+    applyTransform();
+});
+
+document.addEventListener('mouseup', function() {
+    if (zoomState.isDragging) {
+        zoomState.isDragging = false;
+        var img = document.getElementById('overlayImg');
+        if (img) img.classList.remove('dragging');
+    }
+});
+
+// Double-click toggle (fit ↔ 100%)
+overlayImg.addEventListener('dblclick', function() {
+    if (zoomState.level === 'fit') {
+        setZoom(100);
+    } else {
+        setZoom('fit');
+    }
+});
+
+// === Control Panel Buttons ===
+document.getElementById('zoomInBtn').addEventListener('click', zoomIn);
+document.getElementById('zoomOutBtn').addEventListener('click', zoomOut);
+document.getElementById('fitBtn').addEventListener('click', function() { setZoom('fit'); });
+document.getElementById('fullscreenBtn').addEventListener('click', toggleFullscreen);
+document.getElementById('closeBtn').addEventListener('click', closeImageViewer);
+document.getElementById('prevBtn').addEventListener('click', function(e) { e.stopPropagation(); navImage(-1); });
+document.getElementById('nextBtn').addEventListener('click', function(e) { e.stopPropagation(); navImage(1); });
+document.getElementById('deleteImgBtn').addEventListener('click', function(e) { e.stopPropagation(); deleteCurrentImage(); });
+
+// === Window resize handler ===
+window.addEventListener('resize', function() {
+    if (!document.getElementById('imgOverlay').classList.contains('hidden')) {
+        if (zoomState.level === 'fit') {
+            fitToScreen();
+        }
+    }
 });
 
 function viewFiles(orderNo) {
@@ -438,13 +1035,15 @@ function viewFiles(orderNo) {
             if (!data.files || data.files.length === 0) return;
             var images = data.files.filter(f => /\.(jpg|jpeg|png|gif)$/i.test(f.name));
             if (images.length > 0) {
-                viewerImages = images.map(f => ({
-                    url: f.url + '?t=' + Date.now(),  // 캐싱 방지를 위한 타임스탬프 추가
-                    name: f.name,
-                    date: f.date || '',
-                    orderNo: orderNo,
-                    filePath: f.path
-                }));
+                viewerImages = images.map(function(f) {
+                    return {
+                        url: f.url + '?t=' + Date.now(),
+                        name: f.name,
+                        date: f.date || '',
+                        orderNo: orderNo,
+                        filePath: f.path
+                    };
+                });
                 viewerIndex = 0;
                 buildThumbnails();
                 showImage();
@@ -457,15 +1056,21 @@ function viewFiles(orderNo) {
 
 function buildThumbnails() {
     var container = document.getElementById('imgThumbnails');
+    var thumbnailBar = document.getElementById('thumbnailBar');
     container.textContent = '';
-    if (viewerImages.length <= 1) return;
+
+    if (viewerImages.length <= 1) {
+        thumbnailBar.classList.add('hidden');
+        return;
+    }
+
+    thumbnailBar.classList.remove('hidden');
 
     viewerImages.forEach(function(img, i) {
         var thumb = document.createElement('img');
         thumb.src = img.url;
         thumb.dataset.idx = i;
-        thumb.className = 'thumb-item w-12 h-12 object-cover rounded cursor-pointer border-2 transition-all hover:opacity-100 '
-            + (i === 0 ? 'border-white opacity-100' : 'border-transparent opacity-50');
+        thumb.className = 'thumb-item' + (i === 0 ? ' active' : '');
         thumb.addEventListener('click', function(e) {
             e.stopPropagation();
             viewerIndex = i;
@@ -478,48 +1083,59 @@ function buildThumbnails() {
 function showImage() {
     var img = viewerImages[viewerIndex];
     var overlayImg = document.getElementById('overlayImg');
+    var statusBar = document.getElementById('statusBar');
+
+    // Reset zoom state
+    zoomState.level = 'fit';
+    zoomState.scale = 1;
+    zoomState.offsetX = 0;
+    zoomState.offsetY = 0;
+
     overlayImg.src = img.url;
+    overlayImg.style.transform = '';
+    overlayImg.style.maxWidth = '';
+    overlayImg.style.maxHeight = '';
 
     var total = viewerImages.length;
     var prevBtn = document.getElementById('prevBtn');
     var nextBtn = document.getElementById('nextBtn');
-    var infoBar = document.getElementById('imgInfoBar');
     var counter = document.getElementById('imgCounter');
     var fileName = document.getElementById('imgFileName');
     var fileDate = document.getElementById('imgFileDate');
 
-    infoBar.classList.remove('hidden');
+    statusBar.classList.remove('hidden');
     counter.textContent = (viewerIndex + 1) + ' / ' + total;
     fileName.textContent = img.name;
     fileDate.textContent = img.date;
 
-    // 이미지 로드 실패 처리
+    // Image load handler - fit to screen after load
+    overlayImg.onload = function() {
+        fitToScreen();
+    };
+
+    // Image error handler
     overlayImg.onerror = function() {
-        overlayImg.style.display = 'none';
         fileName.textContent += ' (이미지 로드 실패)';
     };
 
-    // 이미지 로드 성공 시 디스플레이 복구
-    overlayImg.onload = function() {
-        overlayImg.style.display = 'block';
-    };
-
+    // Update navigation buttons
     if (total > 1) {
         prevBtn.classList.toggle('hidden', viewerIndex === 0);
         nextBtn.classList.toggle('hidden', viewerIndex === total - 1);
         document.querySelectorAll('.thumb-item').forEach(function(el, i) {
             if (i === viewerIndex) {
-                el.classList.add('border-white', 'opacity-100');
-                el.classList.remove('border-transparent', 'opacity-50');
+                el.classList.add('active');
             } else {
-                el.classList.remove('border-white', 'opacity-100');
-                el.classList.add('border-transparent', 'opacity-50');
+                el.classList.remove('active');
             }
         });
     } else {
         prevBtn.classList.add('hidden');
         nextBtn.classList.add('hidden');
     }
+
+    // 교정확정 상태 확인
+    checkProofreadingStatus();
 }
 
 function navImage(dir) {
@@ -529,16 +1145,95 @@ function navImage(dir) {
     showImage();
 }
 
-function onOverlayClick(e) {
-    if (e.target === document.getElementById('imgOverlay')) closeImageViewer();
-}
-
 function closeImageViewer() {
     document.getElementById('imgOverlay').classList.add('hidden');
-    document.getElementById('imgInfoBar').classList.add('hidden');
-    document.getElementById('overlayImg').src = '';
+    document.getElementById('statusBar').classList.add('hidden');
+    document.getElementById('thumbnailBar').classList.add('hidden');
+
+    var overlayImg = document.getElementById('overlayImg');
+    overlayImg.src = '';
+    overlayImg.style.transform = '';
+    overlayImg.style.maxWidth = '';
+    overlayImg.style.maxHeight = '';
+
+    // Reset zoom state
+    zoomState = {
+        level: 'fit',
+        scale: 1,
+        offsetX: 0,
+        offsetY: 0,
+        isDragging: false,
+        startX: 0,
+        startY: 0
+    };
+
     viewerImages = [];
 }
+
+// === 교정확정 관련 함수 ===
+function checkProofreadingStatus() {
+    if (!viewerOrderNo) return;
+
+    fetch('/dashboard/proofs/api.php?action=check_proof_status&order_no=' + viewerOrderNo)
+        .then(function(r) { return r.json(); })
+        .then(function(data) {
+            if (data.confirmed) {
+                showProofreadingCompleted();
+            } else {
+                showProofreadingButton();
+            }
+        })
+        .catch(function() {
+            showProofreadingButton();
+        });
+}
+
+function showProofreadingButton() {
+    document.getElementById('proofConfirmContent').style.display = 'block';
+    document.getElementById('proofConfirmedMsg').style.display = 'none';
+}
+
+function showProofreadingCompleted() {
+    document.getElementById('proofConfirmContent').style.display = 'none';
+    document.getElementById('proofConfirmedMsg').style.display = 'block';
+}
+
+function confirmProofreading() {
+    if (!viewerOrderNo) return;
+
+    if (!confirm('오탈자 및 전체를 잘 확인 했습니다.\n인쇄진행해주세요.\n\n인쇄 진행 후에는 더이상 수정할 수 없습니다.\n\n교정확정 하시겠습니까?')) {
+        return;
+    }
+
+    var btn = document.getElementById('proofConfirmBtn');
+    btn.disabled = true;
+    btn.textContent = '처리중...';
+
+    fetch('/dashboard/proofs/api.php?action=confirm_proofreading', {
+        method: 'POST',
+        headers: {'Content-Type': 'application/x-www-form-urlencoded'},
+        body: 'order_no=' + viewerOrderNo
+    })
+    .then(function(r) { return r.json(); })
+    .then(function(data) {
+        if (data.success) {
+            showToast('교정확정이 완료되었습니다.', 'success');
+            showProofreadingCompleted();
+        } else {
+            showToast(data.message || '처리 중 오류가 발생했습니다.', 'error');
+            btn.disabled = false;
+            btn.textContent = '📝 교정확정';
+        }
+    })
+    .catch(function() {
+        showToast('네트워크 오류', 'error');
+        btn.disabled = false;
+        btn.textContent = '📝 교정확정';
+    });
+}
+
+// 교정확정 버튼 이벤트 리스너
+document.getElementById('proofConfirmBtn').addEventListener('click', confirmProofreading);
 
 function deleteCurrentImage() {
     if (viewerImages.length === 0) return;
@@ -552,20 +1247,16 @@ function deleteCurrentImage() {
         headers: {'Content-Type': 'application/x-www-form-urlencoded'},
         body: 'order_no=' + img.orderNo + '&file=' + encodeURIComponent(img.filePath)
     })
-    .then(r => r.json())
-    .then(data => {
+    .then(function(r) { return r.json(); })
+    .then(function(data) {
         if (data.success) {
             showToast('삭제 완료', 'success');
-            // 현재 이미지 제거
             viewerImages.splice(viewerIndex, 1);
 
             if (viewerImages.length === 0) {
-                // 더 이상 이미지가 없으면 닫기
                 closeImageViewer();
-                // 테이블 행 파일 수 갱신
                 updateRowFileCount(img.orderNo);
             } else {
-                // 인덱스 조정
                 if (viewerIndex >= viewerImages.length) {
                     viewerIndex = viewerImages.length - 1;
                 }
@@ -576,7 +1267,7 @@ function deleteCurrentImage() {
             showToast(data.message || '삭제 실패', 'error');
         }
     })
-    .catch(() => showToast('네트워크 오류', 'error'));
+    .catch(function() { showToast('네트워크 오류', 'error'); });
 }
 
 function closeFileModal() { document.getElementById('fileModal').classList.add('hidden'); }

@@ -529,6 +529,8 @@ if (isset($_GET['jong']) && !empty($_GET['jong'])) {
             log_ip: "<?php echo safe_html($log_info['ip']); ?>",
             log_time: "<?php echo safe_html($log_info['time']); ?>",
             page: "Sticker",
+            isLoggedIn: <?php echo isset($is_logged_in) && $is_logged_in ? 'true' : 'false'; ?>,
+            userName: "<?php echo isset($user_name) && $user_name ? addslashes($user_name) : ''; ?>",
             defaultValues: {
                 jong: "<?php echo safe_html($default_values['jong']); ?>",
                 garo: "<?php echo safe_html($default_values['garo']); ?>",
