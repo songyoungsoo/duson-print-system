@@ -24,8 +24,11 @@ switch ($action) {
         $search = $_GET['search'] ?? '';
         
         $where_conditions = ["1=1"];
-        
-        if ($status !== '') {
+
+        // 기본 조회 시 삭제됨 상태 제외 (명시적으로 'deleted' 필터 선택 시만 표시)
+        if ($status === '') {
+            $where_conditions[] = "OrderStyle != 'deleted'";
+        } elseif ($status !== '') {
             $where_conditions[] = "OrderStyle = '" . mysqli_real_escape_string($db, $status) . "'";
         }
         
