@@ -1143,16 +1143,17 @@ class ChatbotService
      */
     private function detectProduct(string $message, array $history, bool $skipNumberMatch = false): string
     {
+        // ⚠️ 순서 중요: 'msticker'를 'sticker'보다 먼저! ("자석스티커"에 "스티커" 부분문자열 포함)
         $keywords = [
             'namecard'        => ['명함'],
             'inserted'        => ['전단지', '전단', '플라이어'],
-            'sticker'         => ['스티커'],
+            'msticker'        => ['자석스티커', '자석'],
+            'sticker'         => ['스티커', '라벨'],
             'envelope'        => ['봉투'],
             'cadarok'         => ['카다록', '카탈로그', '카달로그', '리플렛'],
             'littleprint'     => ['포스터', '소량인쇄', '소량'],
             'merchandisebond' => ['상품권'],
             'ncrflambeau'     => ['NCR', 'ncr', '양식지'],
-            'msticker'        => ['자석스티커', '자석'],
         ];
         
         // 번호 매칭 (1~9) - 제품 선택 진행 중에는 건너뜀
