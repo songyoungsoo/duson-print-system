@@ -24,12 +24,14 @@ class ChatbotService
             'steps' => ['style', 'tree', 'section', 'quantity', 'side', 'design'],
             'stepLabels' => ['인쇄도수', '용지', '규격', '수량', '인쇄면', '디자인'],
             'delivery' => '시안확정 후 2~3일 출고',
+            'skipStyleIds' => [625], // 독판인쇄(레거시) 숨김
         ],
         'sticker' => [
             'label' => '스티커',
-            'steps' => ['material', 'size', 'quantity', 'domusong'],
-            'stepLabels' => ['재질', '크기', '수량', '도무송'],
-            'delivery' => '시안확정 후 3~4일 출고',
+            'steps' => ['material', 'garo', 'sero', 'quantity', 'domusong', 'design'],
+            'stepLabels' => ['재질', '가로(mm)', '세로(mm)', '수량', '도무송(모양)', '디자인'],
+            'delivery' => '시안확정 후 1~2일 출고 (특수지 별도)',
+            'formula' => true,  // DB lookup 대신 수학 공식 계산
         ],
         'envelope' => [
             'label' => '봉투',
@@ -150,8 +152,8 @@ class ChatbotService
             return $this->askCurrentStep($state);
         }
         
-        // 제품 선택 중인데 다른 제품 키워드(텍스트) 입력 → 제품 전환
-        if (!empty($detectedProduct) && $detectedProduct !== $state['product']) {
+        // 제품 키워드 입력 → 해당 제품 처음부터 다시 시작 (같은 제품이든 다른 제품이든)
+        if (!empty($detectedProduct)) {
             $state['product'] = $detectedProduct;
             $state['step'] = 0;
             $state['selections'] = [];
@@ -200,15 +202,34 @@ class ChatbotService
         
         // 선택지가 1개뿐이면 자동 선택하고 다음 단계로
         if (count($options) === 1 && !in_array($stepType, ['side', 'design', 'quantity', 'size', 'domusong'])) {
-            $state['selections'][$stepType] = $options[0]['title'];
+            $autoTitle = $options[0]['title'];
+            $state['selections'][$stepType] = $autoTitle;
             $state['selectionIds'][$stepType] = (int)$options[0]['no'];
             $state['step']++;
+            // 자동선택된 항목명을 다음 단계 메시지에 표시
+            $prev = $state['_autoPrefix'] ?? '';
+            $state['_autoPrefix'] = $prev ? ($prev . ' > ' . $autoTitle) : $autoTitle;
             $this->setState($state);
             return $this->askCurrentStep($state);
         }
         
         if (empty($options) && $stepType === 'quantity') {
             return $this->askQuantityFreeInput($stepLabel, $product, $state);
+        }
+        
+        // 스티커 가로/세로 자유입력
+        if (empty($options) && $stepType === 'garo') {
+            $msg = "가로 사이즈를 mm 단위로 입력해주세요:\n(예: 50, 90, 100 — 최대 590mm)";
+            if (!empty($state['_autoPrefix'])) {
+                $msg = "**{$state['_autoPrefix']}** 선택됨\n\n{$msg}";
+                unset($state['_autoPrefix']);
+                $this->setState($state);
+            }
+            return ['success' => true, 'message' => $msg];
+        }
+        
+        if (empty($options) && $stepType === 'sero') {
+            return ['success' => true, 'message' => "세로 사이즈를 mm 단위로 입력해주세요:\n(예: 50, 55, 100 — 최대 590mm)"];
         }
         
         if (empty($options) && $stepType === 'size') {
@@ -226,7 +247,13 @@ class ChatbotService
         
         $result = ['success' => true];
         $particle = $this->getParticle($stepLabel, '을', '를');
-        $result['message'] = "{$stepLabel}{$particle} 선택해주세요:";
+        $msg = "{$stepLabel}{$particle} 선택해주세요:";
+        if (!empty($state['_autoPrefix'])) {
+            $msg = "**{$state['_autoPrefix']}** 선택됨\n\n{$msg}";
+            unset($state['_autoPrefix']);
+            $this->setState($state);
+        }
+        $result['message'] = $msg;
         $optionList = [];
         foreach ($options as $i => $opt) {
             $optionList[] = ['num' => $i + 1, 'label' => $opt['title']];
@@ -297,10 +324,29 @@ class ChatbotService
         
         // 수량 단계 특수 처리
         if ($stepType === 'quantity') {
+            // 스티커(formula): 클릭 옵션에서 매칭
+            if (!empty($this->productSteps[$product]['formula'])) {
+                return $this->processStickerQuantityStep($state, $message);
+            }
             return $this->processQuantityStep($state, $message, $product);
         }
         
-        // 크기 입력 (스티커)
+        // 스티커 가로 입력
+        if ($stepType === 'garo') {
+            return $this->processStickerSizeStep($state, $message, 'garo', 590);
+        }
+        
+        // 스티커 세로 입력
+        if ($stepType === 'sero') {
+            return $this->processStickerSizeStep($state, $message, 'sero', 590);
+        }
+        
+        // 스티커 도무송 선택
+        if ($stepType === 'domusong') {
+            return $this->processStickerDomusongStep($state, $message);
+        }
+        
+        // 크기 입력 (레거시)
         if ($stepType === 'size') {
             $state['selections']['size'] = trim($message);
             $state['selectionIds']['size'] = 0;
@@ -339,6 +385,25 @@ class ChatbotService
         
         $state['selections'][$stepType] = $matched['title'];
         $state['selectionIds'][$stepType] = (int)$matched['no'];
+        
+        // 스티커 재질 선택 시: jong 코드 저장 (calculate_price_ajax.php 호환)
+        if ($stepType === 'material') {
+            $jongMap = [
+                1 => 'jil 아트유광코팅',
+                2 => 'jil 아트무광코팅',
+                3 => 'jil 아트비코팅',
+                4 => 'jka 강접아트유광코팅',
+                5 => 'cka 초강접아트코팅',
+                6 => 'cka 초강접아트비코팅',
+                7 => 'jsp 유포지',
+                8 => 'jsp 은데드롱',
+                9 => 'jsp 투명스티커',
+                10 => 'jil 모조비코팅',
+                11 => 'jsp 크라프트지',
+            ];
+            $state['selections']['_jong'] = $jongMap[(int)$matched['no']] ?? 'jil 아트유광코팅';
+        }
+        
         $state['step']++;
         $this->setState($state);
         
@@ -467,6 +532,105 @@ class ChatbotService
         return $this->askCurrentStep($state);
     }
     
+    // ===== 스티커 전용 step 처리 메서드 =====
+    
+    /**
+     * 스티커 가로/세로 사이즈 입력 처리
+     */
+    private function processStickerSizeStep(array $state, string $message, string $field, int $max): array
+    {
+        $msg = trim($message);
+        $num = (int)preg_replace('/[^0-9]/', '', $msg);
+        
+        if ($num <= 0) {
+            $label = $field === 'garo' ? '가로' : '세로';
+            return ['success' => true, 'message' => "{$label} 사이즈를 숫자로 입력해주세요 (mm 단위):"];
+        }
+        if ($num > $max) {
+            return ['success' => true, 'message' => "최대 {$max}mm까지 입력 가능합니다. 다시 입력해주세요:"];
+        }
+        
+        $state['selections'][$field] = (string)$num;
+        $state['selectionIds'][$field] = $num;
+        $state['step']++;
+        $this->setState($state);
+        
+        return $this->askCurrentStep($state);
+    }
+    
+    /**
+     * 스티커 수량 선택 처리 (500~10000 고정 옵션)
+     */
+    private function processStickerQuantityStep(array $state, string $message): array
+    {
+        $msg = trim($message);
+        $options = $this->getStepOptions($state['product'], 'quantity', $state);
+        
+        $matched = $this->matchOption($msg, $options);
+        if ($matched === null) {
+            // 숫자 직접 입력 매칭 (예: "1000", "5000")
+            $num = (int)preg_replace('/[^0-9]/', '', $msg);
+            foreach ($options as $opt) {
+                if ((int)$opt['no'] === $num) {
+                    $matched = $opt;
+                    break;
+                }
+            }
+        }
+        
+        if ($matched === null) {
+            $optionList = [];
+            foreach ($options as $i => $opt) {
+                $optionList[] = ['num' => $i + 1, 'label' => $opt['title']];
+            }
+            return ['success' => true, 'message' => "수량을 선택해주세요:", 'options' => $optionList];
+        }
+        
+        $state['selections']['quantity'] = (string)$matched['no'];
+        $state['selectionIds']['quantity'] = (int)$matched['no'];
+        $state['step']++;
+        $this->setState($state);
+        
+        return $this->askCurrentStep($state);
+    }
+    
+    /**
+     * 스티커 도무송(모양) 선택 처리
+     */
+    private function processStickerDomusongStep(array $state, string $message): array
+    {
+        $msg = trim($message);
+        $options = $this->getStepOptions($state['product'], 'domusong', $state);
+        
+        $matched = $this->matchOption($msg, $options);
+        if ($matched === null) {
+            $optionList = [];
+            foreach ($options as $i => $opt) {
+                $optionList[] = ['num' => $i + 1, 'label' => $opt['title']];
+            }
+            return ['success' => true, 'message' => "도무송(모양)을 선택해주세요:", 'options' => $optionList];
+        }
+        
+        // domusong 값을 calculate_price_ajax.php 형식으로 매핑
+        $domusongMap = [
+            1 => '00000 사각',
+            2 => '08000 사각도무송',
+            3 => '08000 귀돌',
+            4 => '08000 원형',
+            5 => '08000 타원',
+            6 => '19000 복잡',
+        ];
+        $domusongValue = $domusongMap[(int)$matched['no']] ?? '00000 사각';
+        
+        $state['selections']['domusong'] = $matched['title'];
+        $state['selections']['_domusongValue'] = $domusongValue;
+        $state['selectionIds']['domusong'] = (int)$matched['no'];
+        $state['step']++;
+        $this->setState($state);
+        
+        return $this->askCurrentStep($state);
+    }
+    
     /**
      * DB에서 현재 단계 옵션 조회
      */
@@ -478,8 +642,30 @@ class ChatbotService
         
         switch ($stepType) {
             case 'style':
+                $options = $this->getLevel1Options($table);
+                $skipIds = $this->productSteps[$product]['skipStyleIds'] ?? [];
+                if (!empty($skipIds)) {
+                    $options = array_values(array_filter($options, function($opt) use ($skipIds) {
+                        return !in_array((int)$opt['no'], $skipIds);
+                    }));
+                }
+                return $options;
+            
             case 'material':
-                return $this->getLevel1Options($table);
+                // 스티커 재질 11종 (하드코딩 — sticker_new 페이지와 동일)
+                return [
+                    ['no' => 1, 'title' => '아트유광코팅'],
+                    ['no' => 2, 'title' => '아트무광코팅'],
+                    ['no' => 3, 'title' => '아트비코팅'],
+                    ['no' => 4, 'title' => '강접아트유광코팅'],
+                    ['no' => 5, 'title' => '초강접아트코팅'],
+                    ['no' => 6, 'title' => '초강접아트비코팅'],
+                    ['no' => 7, 'title' => '유포지'],
+                    ['no' => 8, 'title' => '은데드롱'],
+                    ['no' => 9, 'title' => '투명스티커'],
+                    ['no' => 10, 'title' => '모조비코팅'],
+                    ['no' => 11, 'title' => '크라프트지'],
+                ];
             
             case 'tree':
                 $parentId = $state['selectionIds']['style'] ?? 0;
@@ -502,9 +688,41 @@ class ChatbotService
                 ];
             
             case 'quantity':
-            case 'size':
+                // 스티커: 고정 수량 옵션 (formula 제품)
+                if (!empty($this->productSteps[$product]['formula'])) {
+                    return [
+                        ['no' => 500, 'title' => '500매'],
+                        ['no' => 1000, 'title' => '1,000매'],
+                        ['no' => 2000, 'title' => '2,000매'],
+                        ['no' => 3000, 'title' => '3,000매'],
+                        ['no' => 4000, 'title' => '4,000매'],
+                        ['no' => 5000, 'title' => '5,000매'],
+                        ['no' => 6000, 'title' => '6,000매'],
+                        ['no' => 7000, 'title' => '7,000매'],
+                        ['no' => 8000, 'title' => '8,000매'],
+                        ['no' => 9000, 'title' => '9,000매'],
+                        ['no' => 10000, 'title' => '10,000매'],
+                    ];
+                }
+                return []; // 다른 제품: DB 조회
+            
             case 'domusong':
-                return []; // 자유입력 또는 별도 처리
+                // 스티커 도무송(모양) 6종 (sticker_new 페이지와 동일)
+                return [
+                    ['no' => 1, 'title' => '사각 (도무송없음)'],
+                    ['no' => 2, 'title' => '사각도무송 (+8,000원)'],
+                    ['no' => 3, 'title' => '귀돌이 (+8,000원)'],
+                    ['no' => 4, 'title' => '원형 (+8,000원)'],
+                    ['no' => 5, 'title' => '타원 (+8,000원)'],
+                    ['no' => 6, 'title' => '복잡한모양 (+19,000원)'],
+                ];
+            
+            case 'garo':
+            case 'sero':
+                return []; // 숫자 자유입력
+            
+            case 'size':
+                return []; // 자유입력
             
             default:
                 return [];
@@ -590,36 +808,186 @@ class ChatbotService
             if (isset($sels[$step]) && $sels[$step] !== '-') {
                 $val = $sels[$step];
                 if ($step === 'quantity') {
-                    // 저장된 display 문자열 우선 사용 (예: "0.5(2,000매)연")
                     $qtyDisplay = $sels['_quantityDisplay'] ?? '';
                     $val = !empty($qtyDisplay) ? $qtyDisplay : $val . $this->getUnit($product);
+                }
+                if ($step === 'garo') { $val .= '×'; continue; } // garo×sero 합쳐서 표시
+                if ($step === 'sero') {
+                    $summary[] = ($sels['garo'] ?? '') . '×' . $val . 'mm';
+                    continue;
                 }
                 $summary[] = $val;
             }
         }
         $summaryText = implode(' / ', $summary);
         
-        // DB에서 가격 조회
-        $price = $this->lookupPrice($product, $selIds, $sels);
-        
-        if ($price !== null) {
-            $priceVat = (int)round($price * 1.1);
-            $lines = [
-                "✅ {$config['label']} / {$summaryText}",
-                "💰 총 " . number_format($priceVat) . "원 (VAT포함)",
-                $config['delivery'],
-            ];
+        // ⚡ 스티커: 수학 공식 기반 가격 계산 (DB lookup 아님!)
+        if (!empty($config['formula'])) {
+            $price = $this->calculateStickerPrice($sels);
+            
+            if ($price !== null) {
+                $priceVat = (int)round($price * 1.1);
+                $lines = [
+                    "✅ {$config['label']} / {$summaryText}",
+                    "💰 공급가액 " . number_format($price) . "원",
+                    "💰 총 " . number_format($priceVat) . "원 (VAT포함)",
+                    $config['delivery'],
+                ];
+            } else {
+                $lines = [
+                    "✅ {$config['label']} / {$summaryText}",
+                    "정확한 견적은 전화(02-2632-1830)로 문의해주세요.",
+                ];
+            }
         } else {
-            $lines = [
-                "✅ {$config['label']} / {$summaryText}",
-                "정확한 견적은 전화(02-2632-1830)로 문의해주세요.",
-            ];
+            // 일반 제품: DB 가격표 lookup
+            $price = $this->lookupPrice($product, $selIds, $sels);
+            
+            if ($price !== null) {
+                $priceVat = (int)round($price * 1.1);
+                $lines = [
+                    "✅ {$config['label']} / {$summaryText}",
+                    "💰 총 " . number_format($priceVat) . "원 (VAT포함)",
+                    $config['delivery'],
+                ];
+            } else {
+                $lines = [
+                    "✅ {$config['label']} / {$summaryText}",
+                    "정확한 견적은 전화(02-2632-1830)로 문의해주세요.",
+                ];
+            }
         }
         
         $lines[] = "\n다른 제품도 궁금하시면 말씀해주세요!";
         
-        // 대화 완료 → 상태 유지 (추가 질문 가능)
         return ['success' => true, 'message' => implode("\n", $lines)];
+    }
+    
+    /**
+     * 스티커 가격 수학 공식 계산
+     * SSOT: sticker_new/calculate_price_ajax.php 로직을 그대로 이식
+     * 
+     * ⚠️ 스티커는 DB 가격표(mlangprintauto_sticker)를 조회하지 않음!
+     * 재질별 요율(shop_d1~d4) × 면적 × 수량 + 도무송비 + 특수용지비 = 가격
+     */
+    private function calculateStickerPrice(array $sels): ?int
+    {
+        if (!$this->db) return null;
+        
+        $jong = $sels['_jong'] ?? 'jil 아트유광코팅';
+        $garo = (int)($sels['garo'] ?? 0);
+        $sero = (int)($sels['sero'] ?? 0);
+        $mesu = (int)($sels['quantity'] ?? 0);
+        $domusong = $sels['_domusongValue'] ?? '00000 사각';
+        
+        // 디자인비: 디자인 의뢰(selectionIds design=1) → 10,000원
+        $uhyung = 0;
+        $designId = $sels['design'] ?? '';
+        if ($designId === '디자인 의뢰') {
+            $uhyung = 10000;
+        }
+        
+        if ($garo <= 0 || $sero <= 0 || $mesu <= 0) return null;
+        
+        // 재질 코드 추출 (앞 3글자)
+        $j1 = substr($jong, 0, 3);
+        
+        // 도무송 비용코드 추출 (앞 5글자)
+        $d1 = (int)substr($domusong, 0, 5);
+        
+        // 기본값
+        $yoyo = 0.15;
+        $mg = 7000;
+        $ts = 9;
+        
+        // 재질별 DB 요율 테이블 조회 (shop_d1~d4)
+        $tableMap = [
+            'jil' => 'shop_d1',
+            'jka' => 'shop_d2',
+            'jsp' => 'shop_d3',
+            'cka' => 'shop_d4',
+        ];
+        
+        if (isset($tableMap[$j1])) {
+            $query = "SELECT * FROM {$tableMap[$j1]} LIMIT 1";
+            $result = mysqli_query($this->db, $query);
+            
+            if ($result && mysqli_num_rows($result) > 0) {
+                $data = mysqli_fetch_array($result);
+                
+                if ($mesu <= 1000) {
+                    $yoyo = (float)($data[0] ?? 0.15);
+                    $mg = 7000;
+                } elseif ($mesu <= 4000) {
+                    $yoyo = (float)($data[1] ?? 0.14);
+                    $mg = 6500;
+                } elseif ($mesu <= 5000) {
+                    $yoyo = (float)($data[2] ?? 0.13);
+                    $mg = 6500;
+                } elseif ($mesu <= 9000) {
+                    $yoyo = (float)($data[3] ?? 0.12);
+                    $mg = 6000;
+                } elseif ($mesu <= 10000) {
+                    $yoyo = (float)($data[4] ?? 0.11);
+                    $mg = 5500;
+                } elseif ($mesu <= 50000) {
+                    $yoyo = (float)($data[5] ?? 0.10);
+                    $mg = 5000;
+                } else {
+                    $yoyo = (float)($data[6] ?? 0.09);
+                    $mg = 5000;
+                }
+            }
+        }
+        
+        // 재질별 톰슨비용
+        if (in_array($j1, ['jsp', 'jka', 'cka'])) {
+            $ts = 14;
+        }
+        
+        // 도무송칼 크기
+        $d2 = max($garo, $sero);
+        
+        // 사이즈별 마진비율
+        $gase = ($garo * $sero <= 18000) ? 1 : 1.25;
+        
+        // 도무송 비용 계산
+        $d1_cost = 0;
+        if ($d1 > 0) {
+            if ($mesu == 500) {
+                $d1_cost = (($d1 + ($d2 * 20)) * 900 / 1000) + (900 * $ts);
+            } elseif ($mesu == 1000) {
+                $d1_cost = (($d1 + ($d2 * 20)) * $mesu / 1000) + ($mesu * $ts);
+            } elseif ($mesu > 1000) {
+                $d1_cost = (($d1 + ($d2 * 20)) * $mesu / 1000) + ($mesu * ($ts / 9));
+            }
+        }
+        
+        // 특수용지 비용
+        $jsp = 0;
+        $jka = 0;
+        $cka = 0;
+        
+        if ($j1 === 'jsp') {
+            $jsp = ($mesu == 500) ? (10000 * ($mesu + 400) / 1000) : (10000 * $mesu / 1000);
+        }
+        if ($j1 === 'jka') {
+            $jka = ($mesu == 500) ? (4000 * ($mesu + 400) / 1000) : (10000 * $mesu / 1000);
+        }
+        if ($j1 === 'cka') {
+            $cka = ($mesu == 500) ? (4000 * ($mesu + 400) / 1000) : (10000 * $mesu / 1000);
+        }
+        
+        // 최종 가격 계산
+        if ($mesu == 500) {
+            $s_price = (($garo + 4) * ($sero + 4) * ($mesu + 400)) * $yoyo + $jsp + $jka + $cka + $d1_cost;
+            $st_price = round($s_price * $gase, -3) + $uhyung + ($mg * ($mesu + 400) / 1000);
+        } else {
+            $s_price = (($garo + 4) * ($sero + 4) * $mesu) * $yoyo + $jsp + $jka + $cka + $d1_cost;
+            $st_price = round($s_price * $gase, -3) + $uhyung + ($mg * $mesu / 1000);
+        }
+        
+        return (int)$st_price;
     }
     
     /**

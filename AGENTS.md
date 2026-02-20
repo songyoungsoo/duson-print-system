@@ -375,17 +375,120 @@ body.cart-page .mobile-view .product-nav { display: grid; }
 
 ## 📦 Product Type Mapping (9 Standard Products)
 
-| # | Product Name | Folder Name (FORCED) | ❌ Forbidden Names | Unit |
-|---|-------------|---------------------|------------------|-------|
-| 1 | 전단지 | `inserted` | leaflet | 연 |
-| 2 | 스티커 | `sticker_new` | sticker | 매 |
-| 3 | 자석스티커 | `msticker` | - | 매 |
-| 4 | 명함 | `namecard` | - | 매 |
-| 5 | 봉투 | `envelope` | - | 매 |
-| 6 | 포스터 | `littleprint` | poster | 매 |
-| 7 | 상품권 | `merchandisebond` | giftcard | 매 |
-| 8 | 카다록 | `cadarok` | catalog | 부 |
-| 9 | NCR양식지 | `ncrflambeau` | form, ncr | 권 |
+| # | Product Name | Folder Name (FORCED) | ❌ Forbidden Names | Unit | 가격 방식 |
+|---|-------------|---------------------|------------------|-------|----------|
+| 1 | 전단지 | `inserted` | leaflet | 연 | DB lookup |
+| 2 | **스티커** | **`sticker_new`** | sticker | 매 | **⚠️ 수학공식** |
+| 3 | 자석스티커 | `msticker` | - | 매 | DB lookup |
+| 4 | 명함 | `namecard` | - | 매 | DB lookup |
+| 5 | 봉투 | `envelope` | - | 매 | DB lookup |
+| 6 | 포스터 | `littleprint` | poster | 매 | DB lookup |
+| 7 | 상품권 | `merchandisebond` | giftcard | 매 | DB lookup |
+| 8 | 카다록 | `cadarok` | catalog | 부 | DB lookup |
+| 9 | NCR양식지 | `ncrflambeau` | form, ncr | 권 | DB lookup |
+
+## 🚨🚨🚨 스티커 가격 계산 — 다른 제품과 완전히 다름 (CRITICAL) 🚨🚨🚨
+
+**⚠️ 이것만 기억해: 스티커는 DB 가격표 조회가 아닌 "수학 공식"으로 가격을 계산한다.**
+
+```
+┌───────────────────────────────────────────────────────────────────────┐
+│  8개 제품 (전단지, 명함, 봉투, 포스터, 상품권, 카다록, NCR, 자석스티커) │
+│  → DB 가격표 lookup: mlangprintauto_* 테이블에서                       │
+│    style + Section + quantity → money 조회                            │
+│                                                                       │
+│  ⚡ 스티커 (sticker_new) 만 예외!                                     │
+│  → 수학 공식 계산: 재질(jong) × 가로(garo) × 세로(sero) × 수량(mesu)  │
+│    + 도무송비 + 특수용지비 = 가격                                      │
+│  → DB 가격표 테이블 없음! (mlangprintauto_sticker 존재하지만 별개용도)  │
+│  → 사이즈를 mm 단위로 자유 입력 (드롭다운 선택 아님)                   │
+└───────────────────────────────────────────────────────────────────────┘
+```
+
+### 스티커 가격 계산 공식 (SSOT: `sticker_new/calculate_price_ajax.php`)
+
+**입력 파라미터 6개:**
+
+| 파라미터 | 설명 | 예시 |
+|---------|------|------|
+| `jong` (재질) | 코드 3자 + 이름 (예: `jil 아트유광코팅`) | `jil`, `jka`, `jsp`, `cka` |
+| `garo` (가로) | mm 단위 자유입력, 최대 590mm | `50`, `90`, `100` |
+| `sero` (세로) | mm 단위 자유입력, 최대 590mm | `50`, `55`, `100` |
+| `mesu` (수량) | 500~10,000매 (드롭다운 선택) | `500`, `1000`, `5000` |
+| `domusong` (모양) | 코드 5자리 + 이름 (예: `00000 사각`) | `08000 원형` |
+| `uhyung` (디자인) | 금액 (0/10000/30000) | `0`, `10000` |
+
+**계산 흐름:**
+```
+1. 재질코드(j1) → shop_d1~d4 테이블에서 수량별 요율(yoyo) 조회
+2. 기본가격 = (가로+4) × (세로+4) × 수량 × 요율
+3. + 도무송비용 (칼 크기 × 수량 기반)
+4. + 특수용지비용 (유포지/강접/초강접)
+5. × 사이즈 마진비율 (소형 1.0, 대형 1.25)
+6. + 기본관리비(mg) × 수량/1000
+7. + 디자인비(uhyung)
+8. = 공급가액 → ×1.1 = VAT포함가
+```
+
+**재질별 요율 테이블 (4개 DB 테이블):**
+
+| 코드 | 테이블 | 재질 | 비고 |
+|------|--------|------|------|
+| `jil` | `shop_d1` | 아트유광/무광/비코팅, 모조비코팅 | 기본 재질 |
+| `jka` | `shop_d2` | 강접아트유광코팅 | 강접착 |
+| `jsp` | `shop_d3` | 유포지, 은데드롱, 투명, 크라프트 | 특수용지 (톰슨비 14) |
+| `cka` | `shop_d4` | 초강접아트코팅/비코팅 | 초강접착 (톰슨비 14) |
+
+**재질 11종 (sticker_new/index.php, en/products/order_sticker.php 동일):**
+1. `jil 아트유광코팅` — Art Paper Gloss
+2. `jil 아트무광코팅` — Art Paper Matte
+3. `jil 아트비코팅` — Art Paper Uncoated
+4. `jka 강접아트유광코팅` — Strong Adhesive Gloss
+5. `cka 초강접아트코팅` — Super Strong Gloss
+6. `cka 초강접아트비코팅` — Super Strong Uncoated
+7. `jsp 유포지` — Yupo (Waterproof)
+8. `jsp 은데드롱` — Silver Deadlong
+9. `jsp 투명스티커` — Clear/Transparent
+10. `jil 모조비코팅` — Bond Paper Uncoated
+11. `jsp 크라프트지` — Kraft Paper
+
+**도무송(모양) 6종:**
+1. `00000 사각` — 사각 (도무송 없음, 무료)
+2. `08000 사각도무송` — 사각도무송 (+8,000원)
+3. `08000 귀돌` — 귀돌이 (+8,000원)
+4. `08000 원형` — 원형 (+8,000원)
+5. `08000 타원` — 타원 (+8,000원)
+6. `19000 복잡` — 복잡한 모양 (+19,000원)
+
+### 스티커 관련 파일 매핑 (절대 혼동 금지!)
+
+| 파일/테이블 | 용도 | 스티커 가격 관련? |
+|------------|------|-----------------|
+| `sticker_new/calculate_price_ajax.php` | **스티커 가격 계산 SSOT** | ✅ 핵심 |
+| `sticker_new/index.php` | 스티커 주문 페이지 (한국어) | ✅ UI |
+| `en/products/order_sticker.php` | 스티커 주문 페이지 (영문) | ✅ UI |
+| `shop_d1`, `shop_d2`, `shop_d3`, `shop_d4` | 재질별 요율 테이블 | ✅ 요율 |
+| `v2/src/Services/AI/ChatbotService.php` | AI 챗봇 (formula 분기) | ✅ 챗봇 |
+| `mlangprintauto_sticker` | ❌ **스티커 가격에 사용 안 함!** | ❌ 별개 |
+| `mlangprintauto_transactioncate (Ttable='sticker')` | ❌ **스티커 가격에 사용 안 함!** | ❌ 별개 |
+
+### ❌ 절대 하지 말 것 (스티커 관련)
+
+```php
+// ❌ 절대 금지: 스티커를 다른 제품처럼 DB lookup으로 가격 조회
+$sql = "SELECT money FROM mlangprintauto_sticker WHERE style=? AND Section=? AND quantity=?";
+// → 스티커는 이 방식이 아님! 수학 공식으로 계산해야 함
+
+// ❌ 절대 금지: sticker_new를 sticker로 혼동
+// sticker_new = 실제 사용하는 스티커 폴더
+// sticker = transactioncate에만 존재하는 레거시 키
+
+// ❌ 절대 금지: AI 챗봇에서 스티커를 드롭다운 cascade(style→section→quantity)로 구현
+// → 스티커는 재질→가로입력→세로입력→수량→도무송→디자인 (formula 플로우)
+
+// ✅ 올바른 방법: calculateStickerPrice() 함수로 가격 산출
+$result = calculateStickerPrice($jong, $garo, $sero, $mesu, $uhyung, $domusong, $connect);
+```
 
 ## 🔧 Critical SSOT (Single Source of Truth) Files
 
@@ -1768,9 +1871,11 @@ setInterval(toggleWidgets, 60000);
 
 ### 위젯 UI 구성
 
-- **토글 버튼**: 88×88px 보라색 원형 (사이드바 `.fm-card` 크기 통일), "야간/당번" 라벨
-- **채팅 창**: 370×520px, 16px border-radius
-- **빠른 선택 버튼**: 스티커/라벨, 전단지/리플렛, 명함/쿠폰, 봉투, 카다록, 포스터, 양식지, 상품권, 자석스티커 + "선택하세요" (네비게이션 순서 통일, 2026-02-20)
+- **토글 버튼**: 79×79px 보라색 원형 (10% 축소, 2026-02-21), 모바일 63×63px, "야간/당번" 라벨
+- **채팅 창**: 310×420px, position:fixed, 16px border-radius
+- **드래그 이동**: 헤더 바를 마우스/터치로 드래그하여 채팅창 자유 이동 (뷰포트 경계 제한, × 버튼 드래그 제외)
+- **빠른 선택 버튼**: 스티커/라벨, 전단지/리플렛, 명함/쿠폰, 자석스티커, 봉투 | 카다록, 포스터, 양식지, 상품권 (2줄 배치, 2026-02-21)
+- **입력 플레이스홀더**: "궁금한 상품을 선택 또는 입력하세요"
 - **메시지 버블**: 사용자(보라색 우측) / 봇(회색 좌측, "야간당번" 아바타)
 - **타이핑 인디케이터**: 3-dot 애니메이션
 - **모바일 반응형**: ≤768px에서 100% 너비
@@ -2002,5 +2107,5 @@ NCR양식지의 챗봇 대화 단계는 제품 페이지 드롭다운 순서와 
 
 ---
 
-*Last Updated: 2026-02-20 (EN 디자인비·스티커장바구니·자석스티커 버그수정, AI챗봇 버튼 네비순서 통일, 택배선불 고객화면 A안, 대시보드 주문관리 인라인상태·배송컬럼·스크롤·페이지네이션, 결제현황 스크롤·페이지네이션, 이모지 제거)*
+*Last Updated: 2026-02-21 (AI챗봇 버튼 10%축소·드래그이동·2줄배치·플레이스홀더변경, 스티커 수학공식 챗봇 지원, ChatbotService 자동선택·제품재시작 개선)*
 *Environment: WSL2 Ubuntu + Windows XAMPP + Production Deployment*
