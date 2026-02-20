@@ -605,7 +605,7 @@ include $_SERVER['DOCUMENT_ROOT'] . '/includes/header-ui.php';
                     <p class="alert-title">미결제 주문이 있습니다</p>
                     <p class="alert-text">
                         입금 대기 중인 주문이 <?php echo $unpaid['unpaid_count']; ?>건 있습니다.
-                        입금 후 제작이 시작됩니다.
+                        주문 상세에서 결제하실 수 있습니다.
                     </p>
                 </div>
             </div>

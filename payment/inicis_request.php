@@ -71,6 +71,15 @@ $oid = 'DSP' . $order_no . '_' . $timestamp; // 이니시스 주문번호
 // money_5 = 부가세 포함 결제 금액, money_4 = 부가세 제외 금액
 $price = intval($order['money_5'] ?? $order['money_4'] ?? $order['money_1'] ?? 0);
 
+// 택배비 선불인 경우 택배비(+VAT) 합산
+if (($order['logen_fee_type'] ?? '') === '선불') {
+    $shipping_fee = intval($order['logen_delivery_fee'] ?? 0);
+    if ($shipping_fee > 0) {
+        $shipping_vat = round($shipping_fee * 0.1);
+        $price += $shipping_fee + $shipping_vat;
+    }
+}
+
 // 금액이 0원이면 결제 불가
 if ($price <= 0) {
     die("

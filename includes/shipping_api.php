@@ -203,6 +203,23 @@ switch ($action) {
             </tr>
           </table>
 
+          <!-- 마이페이지 결제 링크 -->
+          <table width="100%" cellpadding="0" cellspacing="0" style="margin-bottom:24px;">
+            <tr>
+              <td style="text-align:center;padding:16px 0;">
+                <a href="https://dsp114.co.kr/mypage/order_detail.php?no=' . $orderNo . '" 
+                   style="display:inline-block;padding:14px 32px;background:#667eea;color:#ffffff;font-size:15px;font-weight:bold;text-decoration:none;border-radius:8px;">
+                  마이페이지에서 결제하기
+                </a>
+              </td>
+            </tr>
+            <tr>
+              <td style="text-align:center;padding:0 0 8px;">
+                <span style="font-size:12px;color:#888;">카드결제 또는 계좌 입금 모두 가능합니다</span>
+              </td>
+            </tr>
+          </table>
+
           <p style="margin:0 0 8px;font-size:13px;color:#555;">문의사항은 아래로 연락해 주세요.</p>
           <p style="margin:0;font-size:14px;font-weight:bold;color:#1E4E79;">📞 02-2632-1830</p>
         </td>

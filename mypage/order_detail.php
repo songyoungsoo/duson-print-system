@@ -676,6 +676,111 @@ function formatType1Json($type1_data) {
         </div>
         <?php endif; ?>
 
+        <!-- 결제 섹션 -->
+        <?php
+        $is_unpaid = in_array($order['OrderStyle'], ['2', '3', '4']);
+        $lf_type_pay = $order['logen_fee_type'] ?? '';
+        $lf_fee_pay = intval($order['logen_delivery_fee'] ?? 0);
+        $is_prepaid_pay = ($lf_type_pay === '선불');
+
+        // 결제 가능: 미결제 + (선불 아님 OR 택배비 확정)
+        $can_pay = $is_unpaid && (!$is_prepaid_pay || $lf_fee_pay > 0);
+
+        $print_amount_pay = intval($order['money_5'] ?? $order['money_4'] ?? 0);
+        $shipping_total_pay = 0;
+        if ($is_prepaid_pay && $lf_fee_pay > 0) {
+            $shipping_total_pay = $lf_fee_pay + round($lf_fee_pay * 0.1);
+        }
+        $total_payment = $print_amount_pay + $shipping_total_pay;
+        ?>
+
+        <?php if ($can_pay): ?>
+        <div class="section" style="border: 2px solid #667eea; background: #f8f9ff;">
+            <h2 style="color: #667eea; border-bottom-color: #667eea;">결제하기</h2>
+
+            <table class="price-table" style="margin-bottom: 20px;">
+                <tr>
+                    <th>인쇄비 (VAT포함)</th>
+                    <td>₩<?php echo number_format($print_amount_pay); ?></td>
+                </tr>
+                <?php if ($is_prepaid_pay && $lf_fee_pay > 0): ?>
+                <tr>
+                    <th>택배비 (VAT포함)</th>
+                    <td>₩<?php echo number_format($shipping_total_pay); ?></td>
+                </tr>
+                <?php endif; ?>
+                <tr class="total">
+                    <th>총 결제금액</th>
+                    <td>₩<?php echo number_format($total_payment); ?>원</td>
+                </tr>
+            </table>
+
+            <div style="display: flex; gap: 12px; flex-wrap: wrap;">
+                <!-- 카드결제 -->
+                <a href="/payment/inicis_request.php?order_no=<?php echo $order['no']; ?>"
+                   style="flex: 1; min-width: 200px; display: flex; align-items: center; gap: 12px;
+                          padding: 16px 20px; background: #667eea; color: #fff; border-radius: 8px;
+                          text-decoration: none; font-weight: 600; font-size: 15px;
+                          transition: background 0.2s;">
+                    <span style="font-size: 24px;">💳</span>
+                    <div>
+                        <div>카드결제 / 실시간이체</div>
+                        <div style="font-size: 12px; font-weight: 400; opacity: 0.85; margin-top: 2px;">신용카드 또는 실시간 계좌이체</div>
+                    </div>
+                </a>
+
+                <!-- 무통장입금 -->
+                <button onclick="document.getElementById('bankInfoSection').style.display = document.getElementById('bankInfoSection').style.display === 'none' ? 'block' : 'none';"
+                        style="flex: 1; min-width: 200px; display: flex; align-items: center; gap: 12px;
+                               padding: 16px 20px; background: #fff; color: #333; border: 2px solid #ddd;
+                               border-radius: 8px; cursor: pointer; font-weight: 600; font-size: 15px;
+                               transition: border-color 0.2s; text-align: left;">
+                    <span style="font-size: 24px;">🏦</span>
+                    <div>
+                        <div>무통장입금</div>
+                        <div style="font-size: 12px; font-weight: 400; color: #888; margin-top: 2px;">계좌번호 확인 후 직접 입금</div>
+                    </div>
+                </button>
+            </div>
+
+            <!-- 무통장입금 계좌 정보 (토글) -->
+            <div id="bankInfoSection" style="display: none; margin-top: 16px; padding: 20px; background: #fff; border: 1px solid #e0e0e0; border-radius: 8px;">
+                <h3 style="margin: 0 0 12px; font-size: 15px; color: #333;">입금 계좌 안내</h3>
+                <table style="width: 100%; border-collapse: collapse; font-size: 14px;">
+                    <tr style="border-bottom: 1px solid #eee;">
+                        <td style="padding: 8px 0; font-weight: 600; width: 90px;">국민은행</td>
+                        <td style="padding: 8px 0; font-family: monospace; font-size: 15px;">999-1688-2384</td>
+                    </tr>
+                    <tr style="border-bottom: 1px solid #eee;">
+                        <td style="padding: 8px 0; font-weight: 600;">신한은행</td>
+                        <td style="padding: 8px 0; font-family: monospace; font-size: 15px;">110-342-543507</td>
+                    </tr>
+                    <tr style="border-bottom: 1px solid #eee;">
+                        <td style="padding: 8px 0; font-weight: 600;">농협</td>
+                        <td style="padding: 8px 0; font-family: monospace; font-size: 15px;">301-2632-1830-11</td>
+                    </tr>
+                </table>
+                <p style="margin: 12px 0 0; font-size: 13px; color: #666;">
+                    <strong>예금주: 두손기획인쇄 차경선</strong><br>
+                    입금자명을 주문자명과 동일하게 해주세요.
+                </p>
+            </div>
+        </div>
+
+        <?php elseif ($is_unpaid && $is_prepaid_pay && $lf_fee_pay === 0): ?>
+        <div class="section" style="border: 2px solid #e67e22; background: #fff8f0;">
+            <h2 style="color: #e67e22; border-bottom-color: #e67e22;">택배비 확정 대기중</h2>
+            <div style="text-align: center; padding: 20px 0;">
+                <div style="font-size: 40px; margin-bottom: 12px;">📦</div>
+                <p style="color: #856404; font-size: 15px; line-height: 1.8; margin: 0;">
+                    택배비가 아직 확정되지 않았습니다.<br>
+                    관리자가 택배비를 확정하면 결제가 가능합니다.<br>
+                    <strong style="font-size: 16px; color: #c0392b;">☎ 02-2632-1830</strong>
+                </p>
+            </div>
+        </div>
+        <?php endif; ?>
+
         <div class="nav-link" style="text-align: center; margin: 30px 0;">
             <a href="orders.php">← 주문 내역으로 돌아가기</a>
         </div>
