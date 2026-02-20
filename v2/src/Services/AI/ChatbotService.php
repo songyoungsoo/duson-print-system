@@ -542,7 +542,7 @@ class ChatbotService
         $msg = trim($message);
         
         // 가로×세로 동시입력 (e.g., "50×30", "50x30", "50*30")
-        if ($field === 'garo' && preg_match('/^(\d+)\s*[×xX*]\s*(\d+)$/', $msg, $m)) {
+        if ($field === 'garo' && preg_match('/^(\d+)\s*[×xX*]\s*(\d+)$/u', $msg, $m)) {
             $garo = (int)$m[1];
             $sero = (int)$m[2];
             
