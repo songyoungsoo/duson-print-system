@@ -141,6 +141,9 @@ class ChatbotService
         if (!$inProgress) {
             // 제품 미선택 상태
             if (empty($detectedProduct)) {
+                if ($this->isKnowledgeQuestion($message)) {
+                    return $this->callAiForFreeQuestion($message);
+                }
                 return $this->getProductMenuResponse();
             }
             $state['product'] = $detectedProduct;
@@ -1219,16 +1222,42 @@ class ChatbotService
         return '';
     }
     
-    /**
-     * 자유 질문 → AI 호출 (최소 프롬프트)
-     */
+    private function isKnowledgeQuestion(string $message): bool
+    {
+        $keywords = [
+            '교정', '수정', '시안', '원고', '납기', '배송', '착불', '선불', '택배',
+            '디자인비', '디자인 비용', '디자인 가격', '작업비',
+            '파일', '해상도', 'dpi', 'CMYK', 'RGB', '일러스트', '포토샵', '윤곽선',
+            '사이즈', '규격', '템플릿', '작업사이즈',
+            '입금', '계좌', '카드결제', '결제',
+            '운영시간', '영업시간', '휴무', '전화', '연락처', '주소', '위치', '찾아가',
+            '웹하드', '이메일', '파일전송',
+            '보관', '원본', '환불', '색상차이', '로스',
+            '유의사항', '주의사항', '가이드', '규약', '안내',
+        ];
+        
+        $msg = mb_strtolower($message, 'UTF-8');
+        foreach ($keywords as $kw) {
+            if (mb_strpos($msg, mb_strtolower($kw, 'UTF-8')) !== false) {
+                return true;
+            }
+        }
+
+        if (mb_strlen($message, 'UTF-8') >= 10 && preg_match('/[?？]|인가요|할까요|어떻게|알려|궁금/u', $message)) {
+            return true;
+        }
+        
+        return false;
+    }
+    
     private function callAiForFreeQuestion(string $message): array
     {
         if (empty($this->apiKey)) {
             return ['success' => true, 'message' => "자세한 문의는 전화(02-2632-1830)로 연락주세요!"];
         }
         
-        $prompt = "두손기획인쇄 상담봇. 짧게 답변. 인쇄 관련 질문만 답변. 가격문의는 품목 선택 안내.";
+        require_once __DIR__ . '/ChatbotKnowledge.php';
+        $prompt = ChatbotKnowledge::getSystemPrompt();
         
         $data = [
             'contents' => [
@@ -1239,7 +1268,7 @@ class ChatbotService
             ],
             'generationConfig' => [
                 'temperature' => 0.3,
-                'maxOutputTokens' => 200,
+                'maxOutputTokens' => 500,
             ]
         ];
         

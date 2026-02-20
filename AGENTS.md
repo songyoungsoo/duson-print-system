@@ -1828,6 +1828,7 @@ $shipping_total = $shipping_supply + $shipping_vat; // 합계
 | **위젯 파일** | `/includes/ai_chatbot_widget.php` |
 | **API 엔드포인트** | `/api/ai_chat.php` |
 | **ChatbotService** | `/v2/src/Services/AI/ChatbotService.php` (직접 require) |
+| **지식 베이스** | `/v2/src/Services/AI/ChatbotKnowledge.php` (시스템 프롬프트 지식) |
 | **표시 조건** | 18:30 이후 ~ 09:00 이전 (footer.php 통합 토글) |
 | **include 위치** | `/includes/footer.php` (모든 페이지) |
 | **테마** | 보라색 그라디언트 (#6366f1) — 주황색 직원 채팅과 구분 |
@@ -1949,6 +1950,31 @@ NCR양식지의 챗봇 대화 단계는 제품 페이지 드롭다운 순서와 
 5. ✅ 선택지는 클릭형 버튼으로 제공 (API `options` 배열 → 프론트 `.ai-opt-btn` 렌더링)
 6. ✅ stepLabels는 제품 페이지 실제 드롭다운 라벨과 일치시킬 것
 7. ⚠️ `detectProduct()` 키워드 순서: `msticker`를 `sticker`보다 **반드시 먼저** 배치 ("자석스티커"에 "스티커" 부분문자열 포함되어 잘못 매칭됨)
+8. ✅ 지식 베이스(`ChatbotKnowledge.php`) 수정 시 Gemini 시스템 프롬프트 토큰 한도 내 유지
+9. ✅ `isKnowledgeQuestion()` 키워드 목록은 지식 베이스 컨텐츠와 동기화 유지
+
+### 지식 기반 Q&A (2026-02-21)
+
+제품 가격 조회 외에 인쇄 가이드/규약/디자인비 등의 질문에도 AI가 답변.
+
+**구조**:
+```
+사용자 메시지 → chat()
+  ├─ 제품 키워드 감지 → 가격 조회 플로우 (DB 기반)
+  ├─ 지식 키워드 감지 (isKnowledgeQuestion) → callAiForFreeQuestion → Gemini API
+  └─ 둘 다 아님 → 품목 선택 메뉴 표시
+```
+
+**지식 베이스 컨텐츠** (`ChatbotKnowledge.php`):
+- 회사 정보 (연락처, 계좌, 운영시간, 주소)
+- 작업 규약 (교정 2회, 납기, 환불, 색상차이, 파일보관 등)
+- 디자인 비용표 (서식/카탈로그/전단지/포스터/명함/봉투/스티커/북디자인)
+- 파일 제출 안내 (포맷, 해상도, CMYK, 일러스트 윤곽선)
+- 인쇄물 규격 사이즈표 (32절~A2, 명함)
+
+**지식 키워드 예시**: 교정, 디자인비, 파일, 해상도, CMYK, 계좌, 운영시간, 배송, 환불, 가이드 등
+
+**Gemini 설정**: temperature 0.3, maxOutputTokens 500
 
 ## 🌐 영문 버전 (English Version)
 
@@ -2110,5 +2136,5 @@ NCR양식지의 챗봇 대화 단계는 제품 페이지 드롭다운 순서와 
 
 ---
 
-*Last Updated: 2026-02-21 (AI챗봇 채팅창 사이드바정렬·hover중단, 버튼 10%축소·드래그이동·2줄배치·플레이스홀더변경, 스티커 수학공식 챗봇 지원, ChatbotService 자동선택·제품재시작 개선, 자석스티커 detectProduct 키워드순서 버그수정, 채팅창 스크롤격리)*
+*Last Updated: 2026-02-21 (AI챗봇 지식기반Q&A 추가(ChatbotKnowledge.php), isKnowledgeQuestion 라우팅, maxOutputTokens 200→500, 채팅창 사이드바정렬·hover중단, 버튼 10%축소·드래그이동·2줄배치·플레이스홀더변경, 스티커 수학공식 챗봇 지원, ChatbotService 자동선택·제품재시작 개선, 자석스티커 detectProduct 키워드순서 버그수정, 채팅창 스크롤격리)*
 *Environment: WSL2 Ubuntu + Windows XAMPP + Production Deployment*
