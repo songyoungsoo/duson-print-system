@@ -134,9 +134,9 @@ class ChatbotService
             return $this->getProductMenuResponse();
         }
         
-        // 지식 질문 우선 체크 (제품 미선택 상태에서만, 제품 감지보다 먼저)
+        // 지식 질문 우선 체크 (제품 진행 중이든 아니든, 제품 감지보다 먼저)
         $inProgress = !empty($state['product']);
-        if (!$inProgress && $this->isKnowledgeQuestion($message)) {
+        if ($this->isKnowledgeQuestion($message)) {
             return $this->callAiForFreeQuestion($message);
         }
         
