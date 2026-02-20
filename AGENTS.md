@@ -1872,8 +1872,9 @@ setInterval(toggleWidgets, 60000);
 ### 위젯 UI 구성
 
 - **토글 버튼**: 79×79px 보라색 원형 (10% 축소, 2026-02-21), 모바일 63×63px, "야간/당번" 라벨
-- **채팅 창**: 310×420px, position:fixed, 16px border-radius
+- **채팅 창**: 310×420px, position:fixed, 16px border-radius, 우측 edge = 사이드바 카드 우측(`right:12px`) 정렬
 - **드래그 이동**: 헤더 바를 마우스/터치로 드래그하여 채팅창 자유 이동 (뷰포트 경계 제한, × 버튼 드래그 제외)
+- **사이드바 hover 중단**: 채팅창 열림 시 `.fm-chat-active` 클래스로 사이드바 카드 아이템 `pointer-events:none` 처리, 닫힘 시 복원
 - **빠른 선택 버튼**: 스티커/라벨, 전단지/리플렛, 명함/쿠폰, 자석스티커, 봉투 | 카다록, 포스터, 양식지, 상품권 (2줄 배치, 2026-02-21)
 - **입력 플레이스홀더**: "궁금한 상품을 선택 또는 입력하세요"
 - **스크롤 격리**: `overscroll-behavior: contain` — 채팅창 스크롤 끝 도달 시 바깥 페이지 스크롤 전파 방지
@@ -1899,7 +1900,7 @@ setInterval(toggleWidgets, 60000);
 | 시간대 | 위젯 | 위치 |
 |--------|------|------|
 | 09:00~18:30 | 주황색 직원 채팅 (`chat_widget.php`) | bottom-right |
-| 18:30~09:00 | 보라색 AI 챗봇 (`ai_chatbot_widget.php`) | bottom:20px, right:80px |
+| 18:30~09:00 | 보라색 AI 챗봇 (`ai_chatbot_widget.php`) | bottom:20px, right:80px (창은 right:12px 정렬) |
 
 **배타적 전환 메커니즘**:
 - 두 위젯 모두 `footer.php`에서 include (DOM에 항상 존재)
@@ -2109,5 +2110,5 @@ NCR양식지의 챗봇 대화 단계는 제품 페이지 드롭다운 순서와 
 
 ---
 
-*Last Updated: 2026-02-21 (AI챗봇 버튼 10%축소·드래그이동·2줄배치·플레이스홀더변경, 스티커 수학공식 챗봇 지원, ChatbotService 자동선택·제품재시작 개선, 자석스티커 detectProduct 키워드순서 버그수정, 채팅창 스크롤격리)*
+*Last Updated: 2026-02-21 (AI챗봇 채팅창 사이드바정렬·hover중단, 버튼 10%축소·드래그이동·2줄배치·플레이스홀더변경, 스티커 수학공식 챗봇 지원, ChatbotService 자동선택·제품재시작 개선, 자석스티커 detectProduct 키워드순서 버그수정, 채팅창 스크롤격리)*
 *Environment: WSL2 Ubuntu + Windows XAMPP + Production Deployment*

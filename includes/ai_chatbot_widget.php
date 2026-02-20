@@ -56,6 +56,7 @@
 #ai-chatbot-toggle:hover { transform:scale(1.08); }
 #ai-chatbot-window { overscroll-behavior: contain; }
 #ai-chat-messages { overscroll-behavior: contain; }
+.floating-menu.fm-chat-active .fm-item[data-panel] { pointer-events: none; }
 .ai-opt-btn {
     text-align:left; padding:8px 12px; background:#f8fafc; border:1px solid #e2e8f0;
     border-radius:8px; font-size:11.5px; color:#334155; cursor:pointer;
@@ -181,14 +182,17 @@
         var win = document.getElementById('ai-chatbot-window');
         if (!win) return;
         var isOpen = win.style.display === 'flex';
+        var fm = document.getElementById('floating-menu');
         if (isOpen) {
             win.style.display = 'none';
+            if (fm) fm.classList.remove('fm-chat-active');
         } else {
-            var toggle = document.getElementById('ai-chatbot-toggle');
-            var tRect = toggle.getBoundingClientRect();
             var winW = 310, winH = 420;
             if (window.innerWidth <= 768) { winW = window.innerWidth - 20; winH = window.innerHeight * 0.7; }
-            var left = tRect.right - winW;
+            // Right edge aligned with floating sidebar cards (right: 12px)
+            var left = window.innerWidth - 12 - winW;
+            var toggle = document.getElementById('ai-chatbot-toggle');
+            var tRect = toggle.getBoundingClientRect();
             var top = tRect.top - winH - 10;
             if (top < 10) top = 10;
             if (left < 10) left = 10;
@@ -197,6 +201,13 @@
             win.style.right = 'auto';
             win.style.bottom = 'auto';
             win.style.display = 'flex';
+            // Pause sidebar card hover while chat window overlaps
+            if (fm) {
+                fm.classList.add('fm-chat-active');
+                fm.querySelectorAll('.fm-item.active, .fm-item.pinned').forEach(function(item) {
+                    item.classList.remove('active', 'pinned');
+                });
+            }
             var inp = document.getElementById('ai-chat-input');
             if (inp) inp.focus();
         }
