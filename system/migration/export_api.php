@@ -55,6 +55,12 @@ if ($table === '_files') {
     header('Content-Type: application/json; charset=utf-8');
     $type = isset($_GET['type']) ? $_GET['type'] : '';
     
+    // 파일 필터 파라미터 읽기 (트래픽 과부하 방지 핵심!)
+    // min_no: 교정파일(upload)에서 이 주문번호 이상만 (dsp114.co.kr: 75000, NAS: 0)
+    // min_year: 원고파일(shop/imgfolder)에서 이 연도 이상만 (dsp114.co.kr: 2026, NAS: 2000)
+    $min_no = isset($_GET['min_no']) ? intval($_GET['min_no']) : 0;
+    $min_year = isset($_GET['min_year']) ? intval($_GET['min_year']) : 0;
+    
     $db = mysql_connect("localhost", "duson1830", "du1830");
     if (!$db) { echo json_encode(array('error' => 'DB failed')); exit; }
     mysql_select_db("duson1830", $db);
@@ -64,9 +70,13 @@ if ($table === '_files') {
         // 교정파일: /www/MlangOrder_PrintAuto/upload/{no}/
         $base_dir = '/home/neo_web2/duson1830/www/MlangOrder_PrintAuto/upload';
         $where = '';
+        // min_no 필터: 주문번호 기준 하한선 (예: 75000 이상만)
+        if ($min_no > 0) {
+            $where .= " AND no >= " . $min_no;
+        }
         if ($since !== '') {
             $since_esc = mysql_real_escape_string($since, $db);
-            $where = " AND date >= '$since_esc'";
+            $where .= " AND date >= '$since_esc'";
         }
         
         $cnt_res = mysql_query("SELECT COUNT(*) FROM MlangOrder_PrintAuto WHERE no > 0" . $where, $db);
@@ -117,6 +127,10 @@ if ($table === '_files') {
     } elseif ($type === 'shop') {
         // 원고파일 (스티커): shop/data/ (DB의 ImgFolder에서 참조)
         $where = " WHERE ImgFolder LIKE '%shop/data/%'";
+        // min_year 필터: 연도 기준 하한선 (예: 2026년 이상만)
+        if ($min_year > 0) {
+            $where .= " AND date >= '" . intval($min_year) . "-01-01'";
+        }
         if ($since !== '') {
             $since_esc = mysql_real_escape_string($since, $db);
             $where .= " AND date >= '$since_esc'";
@@ -170,6 +184,10 @@ if ($table === '_files') {
     } elseif ($type === 'imgfolder') {
         // 원고파일 (전단지,명함,봉투 등): ImgFolder/_MlangPrintAuto_* 경로
         $where = " WHERE ImgFolder LIKE '_MlangPrintAuto_%'";
+        // min_year 필터: 연도 기준 하한선 (예: 2026년 이상만)
+        if ($min_year > 0) {
+            $where .= " AND date >= '" . intval($min_year) . "-01-01'";
+        }
         if ($since !== '') {
             $since_esc = mysql_real_escape_string($since, $db);
             $where .= " AND date >= '$since_esc'";

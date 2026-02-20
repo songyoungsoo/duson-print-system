@@ -15,6 +15,12 @@ if (empty($_SESSION['migration_auth'])) {
 
 include dirname(dirname(__DIR__)) . '/db.php';
 
+// 파일 필터 설정 (서버별로 다르게 설정)
+// dsp114.co.kr: min_no=75000, min_year=2026 (용량 제한)
+// NAS: min_no=0, min_year=2000 (전체 백업)
+define('FILE_FILTER_MIN_NO', 75000);    // 교정파일: 이 번호 이상만
+define('FILE_FILTER_MIN_YEAR', 2026);   // 원고파일: 이 연도 이상만
+
 $action = isset($_GET['action']) ? $_GET['action'] : '';
 $SOURCE_BASE = 'http://dsp114.com';
 
@@ -34,9 +40,10 @@ if ($action === 'run') {
     $error_list = array();
 
     if ($type === 'shop') {
+        $where_year = (FILE_FILTER_MIN_YEAR > 0) ? " AND date >= '" . intval(FILE_FILTER_MIN_YEAR) . "-01-01'" : "";
         $where_since = ($since !== '') ? " AND date >= ?" : "";
         $query = "SELECT no, ImgFolder FROM mlangorder_printauto 
-                  WHERE ImgFolder LIKE '../shop/data/%'" . $where_since . " 
+                  WHERE ImgFolder LIKE '../shop/data/%'" . $where_year . $where_since . " 
                   ORDER BY no ASC LIMIT ?, ?";
         $stmt = mysqli_prepare($db, $query);
         if ($since !== '') {
@@ -83,9 +90,10 @@ if ($action === 'run') {
         mysqli_stmt_close($stmt);
 
     } elseif ($type === 'imgfolder') {
+        $where_year = (FILE_FILTER_MIN_YEAR > 0) ? " AND date >= '" . intval(FILE_FILTER_MIN_YEAR) . "-01-01'" : "";
         $where_since = ($since !== '') ? " AND date >= ?" : "";
         $query = "SELECT no, ImgFolder FROM mlangorder_printauto 
-                  WHERE ImgFolder LIKE '_MlangPrintAuto_%'" . $where_since . " 
+                  WHERE ImgFolder LIKE '_MlangPrintAuto_%'" . $where_year . $where_since . " 
                   ORDER BY no ASC LIMIT ?, ?";
         $stmt = mysqli_prepare($db, $query);
         if ($since !== '') {
@@ -139,8 +147,10 @@ if ($action === 'run') {
         mysqli_stmt_close($stmt);
 
     } elseif ($type === 'upload') {
-        $where_since = ($since !== '') ? " WHERE date >= ?" : "";
-        $query = "SELECT no FROM mlangorder_printauto" . $where_since . " ORDER BY no ASC LIMIT ?, ?";
+        // min_no 필터: 주문번호 기준 하한선 (예: 75000 이상만)
+        $where_min = (FILE_FILTER_MIN_NO > 0) ? " WHERE no >= " . intval(FILE_FILTER_MIN_NO) : " WHERE no > 0";
+        $where_since = ($since !== '') ? " AND date >= ?" : "";
+        $query = "SELECT no FROM mlangorder_printauto" . $where_min . $where_since . " ORDER BY no ASC LIMIT ?, ?";
         $stmt = mysqli_prepare($db, $query);
         if ($since !== '') {
             mysqli_stmt_bind_param($stmt, "sii", $since, $offset, $batch);
@@ -204,21 +214,25 @@ if ($action === 'run') {
 if ($action === 'count') {
     header('Content-Type: application/json; charset=utf-8');
     $counts = array();
-    $res = mysqli_query($db, "SELECT COUNT(*) as c FROM mlangorder_printauto WHERE ImgFolder LIKE '../shop/data/%'");
+    $year_filter = (FILE_FILTER_MIN_YEAR > 0) ? " AND date >= '" . intval(FILE_FILTER_MIN_YEAR) . "-01-01'" : "";
+    $no_filter = (FILE_FILTER_MIN_NO > 0) ? " WHERE no >= " . intval(FILE_FILTER_MIN_NO) : "";
+    $res = mysqli_query($db, "SELECT COUNT(*) as c FROM mlangorder_printauto WHERE ImgFolder LIKE '../shop/data/%'" . $year_filter);
     $counts['shop'] = intval(mysqli_fetch_assoc($res)['c']);
-    $res = mysqli_query($db, "SELECT COUNT(*) as c FROM mlangorder_printauto WHERE ImgFolder LIKE '_MlangPrintAuto_%'");
+    $res = mysqli_query($db, "SELECT COUNT(*) as c FROM mlangorder_printauto WHERE ImgFolder LIKE '_MlangPrintAuto_%'" . $year_filter);
     $counts['imgfolder'] = intval(mysqli_fetch_assoc($res)['c']);
-    $res = mysqli_query($db, "SELECT COUNT(*) as c FROM mlangorder_printauto");
+    $res = mysqli_query($db, "SELECT COUNT(*) as c FROM mlangorder_printauto" . $no_filter);
     $counts['upload'] = intval(mysqli_fetch_assoc($res)['c']);
     echo json_encode($counts);
     exit;
 }
 
-$res = mysqli_query($db, "SELECT COUNT(*) as c FROM mlangorder_printauto WHERE ImgFolder LIKE '../shop/data/%'");
+$year_filter = (FILE_FILTER_MIN_YEAR > 0) ? " AND date >= '" . intval(FILE_FILTER_MIN_YEAR) . "-01-01'" : "";
+$no_filter = (FILE_FILTER_MIN_NO > 0) ? " WHERE no >= " . intval(FILE_FILTER_MIN_NO) : "";
+$res = mysqli_query($db, "SELECT COUNT(*) as c FROM mlangorder_printauto WHERE ImgFolder LIKE '../shop/data/%'" . $year_filter);
 $shop_count = intval(mysqli_fetch_assoc($res)['c']);
-$res = mysqli_query($db, "SELECT COUNT(*) as c FROM mlangorder_printauto WHERE ImgFolder LIKE '_MlangPrintAuto_%'");
+$res = mysqli_query($db, "SELECT COUNT(*) as c FROM mlangorder_printauto WHERE ImgFolder LIKE '_MlangPrintAuto_%'" . $year_filter);
 $img_count = intval(mysqli_fetch_assoc($res)['c']);
-$res = mysqli_query($db, "SELECT COUNT(*) as c FROM mlangorder_printauto");
+$res = mysqli_query($db, "SELECT COUNT(*) as c FROM mlangorder_printauto" . $no_filter);
 $upload_count = intval(mysqli_fetch_assoc($res)['c']);
 
 function euckr_urlencode($str) {
