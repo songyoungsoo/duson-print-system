@@ -1359,6 +1359,29 @@ member.po1-7 → users.business_number/name/owner/type/item/address/tax_invoice_
 2. **dsp114.co.kr 날짜 필터**: `since=2026-01-29` — 이전 데이터는 이미 존재
 3. **NAS 전체 백업**: dsp114.com 폐쇄 대비 모든 데이터 영구 보관
 
+### 🔴 파일 동기화 필터링 버그 수정 (2026-02-20)
+
+**문제**: `MigrationSync.php`가 `min_no`/`min_year` 파라미터를 URL에 포함하여 보냈지만,
+`export_api.php` (소스 서버)가 이 파라미터를 **완전히 무시**하여 전체 주문을 스캔.
+교정파일 동기화 시 8만개+ 주문 디렉토리를 전부 readdir() → dsp114.com 트래픽 과부하 → 서버 다운.
+
+**수정 파일 2개:**
+
+| 파일 | 위치 | 수정 내용 |
+|------|------|----------|
+| `export_api.php` | dsp114.com (소스 서버) | `$_GET['min_no']`/`$_GET['min_year']` 읽기 + 쿼리 적용 |
+| `file_sync_direct.php` | 타겟 서버 | `FILE_FILTER_MIN_NO`/`MIN_YEAR` 상수 + 쿼리 적용 |
+
+**필터 적용 매핑:**
+
+| 파일 타입 | 필터 | 적용 쿼리 |
+|----------|------|----------|
+| upload (교정파일) | `min_no` | `AND no >= 75000` |
+| shop (원고-스티커) | `min_year` | `AND date >= '2026-01-01'` |
+| imgfolder (원고-일반) | `min_year` | `AND date >= '2026-01-01'` |
+
+**⚠️ export_api.php는 dsp114.com에 배포해야 효과 적용** (로컬/타겟 서버가 아님)
+
 ### 🗄️ 3개 서버 상세 사양
 
 #### 소스: dsp114.com (폐쇄 예정)
@@ -1874,5 +1897,5 @@ NCR양식지의 챗봇 대화 단계는 제품 페이지 드롭다운 순서와 
 
 ---
 
-*Last Updated: 2026-02-20 (영문 버전 네비게이션·주문플로우·대시보드 토글, AI챗봇 클릭형 선택지·야간당번 브랜딩·9품목·NCR단계수정·조사판별, 직원채팅/AI챗봇 배타적 전환, 홈페이지 실시간 견적 라이브 데모, 캐로셀 dot 하단 조정, 택배비 VAT 계산, 관리자 주문등록 택배비 선불, 채팅창 팝업 제어, 견적 목록 삭제/일괄삭제)*
+*Last Updated: 2026-02-20 (영문 버전 네비게이션·주문플로우·대시보드 토글, AI챗봇 클릭형 선택지·야간당번 브랜딩·9품목·NCR단계수정·조사판별, 직원채팅/AI챗봇 배타적 전환, 홈페이지 실시간 견적 라이브 데모, 캐로셀 dot 하단 조정, 택배비 VAT 계산, 관리자 주문등록 택배비 선불, 채팅창 팝업 제어, 견적 목록 삭제/일괄삭제, 마이그레이션 파일동기화 min_no/min_year 필터링 버그수정)*
 *Environment: WSL2 Ubuntu + Windows XAMPP + Production Deployment*
