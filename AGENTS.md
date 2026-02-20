@@ -717,22 +717,49 @@ CREATE TABLE shipping_rates (
 5. ✅ **"추정"임을 반드시 명시** — 실제 무게와 다를 수 있음
 6. ✅ **확정 정보는 관리자 수동 입력** — 박스수/택배비/송장번호
 
-### 택배 선불 고객 화면 (A안, 2026-02-20)
+### 택배 선불 고객 화면 (2026-02-21)
 
-관리자가 택배비를 확정하면 고객에게도 자동으로 표시되는 시스템.
-고객이 직접 금액을 입력하지 않음 — 관리자 확정값만 표시.
+관리자가 택배비를 확정하면 고객에게도 자동으로 표시 + 결제 가능한 시스템.
 
-**적용 위치 4곳:**
+**전체 프로세스 흐름:**
+```
+고객: 주문 페이지에서 택배 선불 선택 → 주문완료
+  ↓ OrderComplete: "택배비 확정 대기" + 결제버튼 비활성 + 30초 폴링
+관리자: 대시보드에서 택배비 입력 → logen_save → 고객 이메일 자동 발송
+  ↓ 이메일: 택배비 내역 + "마이페이지에서 결제하기" 버튼 링크
+고객: 마이페이지 → 주문상세 → "결제하기" 버튼 (카드/무통장 선택)
+  ↓ 카드: /payment/inicis_request.php (인쇄비+택배비 합산 결제)
+  ↓ 무통장: 계좌번호 표시 (국민/신한/농협)
+```
+
+**적용 위치 6곳:**
 
 | 위치 | 파일 | 동작 |
 |------|------|------|
-| 마이페이지 주문목록 | `mypage/index.php` | 선불 택배비가 있으면 "+택배 N원" 표시 |
-| 마이페이지 주문상세 | `mypage/order_detail.php` | 배송비 행 추가 (공급가액+VAT=합계), 최종합계에 합산 |
-| 주문완료 페이지 | `OrderComplete_universal.php` | 선불 택배비 안내 배너 표시 |
-| 관리자 택배비 저장 시 이메일 | `includes/shipping_api.php` | `logen_save` 액션에서 고객 이메일 자동 발송 |
+| 주문 페이지 | `OnlineOrder_unified.php` | 선불 선택 시 적색 배지 "☎ 전화 후 택배비 확정" |
+| 주문완료 페이지 | `OrderComplete_universal.php` | 택배비 미확정 시 결제버튼 비활성 + 30초 AJAX 폴링 |
+| 마이페이지 주문목록 | `mypage/index.php` | 미결제 주문 알림 + "+택배 N원" 표시 |
+| 마이페이지 주문상세 | `mypage/order_detail.php` | **결제 섹션** (카드결제/무통장입금) + 택배비 대기 안내 |
+| 이니시스 결제 | `payment/inicis_request.php` | 선불 택배비(+VAT) 자동 합산 결제 |
+| 관리자 택배비 저장 | `includes/shipping_api.php` | 이메일 발송 + **마이페이지 결제 링크** 포함 |
+
+**마이페이지 결제 조건 (order_detail.php):**
+- `OrderStyle IN ('2','3','4')` (미결제)
+- 선불 아닌 경우: 바로 결제 가능
+- 선불인 경우: `logen_delivery_fee > 0` (택배비 확정) 일 때만 결제 가능
+- 택배비 미확정: "택배비 확정 대기중" 안내 표시
+
+**이니시스 결제 금액 (inicis_request.php):**
+```php
+$price = money_5;  // 인쇄비 (VAT포함)
+if (logen_fee_type === '선불' && logen_delivery_fee > 0) {
+    $price += logen_delivery_fee + round(logen_delivery_fee * 0.1);  // +택배비+VAT
+}
+```
 
 **이메일 알림 내용:**
 - 주문번호, 운임구분(선불), 택배비 (VAT 별도)
+- **"마이페이지에서 결제하기" 버튼** → `dsp114.co.kr/mypage/order_detail.php?no={orderNo}`
 - "궁금한 점은 02-2632-1830" 안내
 - `mailer()` 함수 사용 (7번째 파라미터 `""` 필수, `ob_start()`/`ob_end_clean()` 래핑)
 
