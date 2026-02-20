@@ -945,7 +945,7 @@ if (!empty($debug_info) && strpos($_SERVER['HTTP_HOST'], 'localhost') !== false)
                             </div>
                             <div style="margin-top: 10px; padding-top: 8px; border-top: 1px solid #d0e3f5; font-size: 0.82rem; color: #666; line-height: 1.5;">
                                 ※ 추정치이며 실제와 다를 수 있습니다<br>
-                                ☎ <strong style="color: #1E4E79;">02-2632-1830</strong> 전화 후 택배비가 확정됩니다
+                                <span style="display: inline-block; margin-top: 4px; background: #dc3545; color: #fff; font-size: 1rem; font-weight: 700; padding: 6px 12px; border-radius: 5px;">☎ 02-2632-1830 전화 후 택배비가 확정됩니다</span>
                             </div>
                         </div>
                     </div>
