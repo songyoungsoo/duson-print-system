@@ -56,7 +56,7 @@ if ($table === '_files') {
     $type = isset($_GET['type']) ? $_GET['type'] : '';
     
     // 파일 필터 파라미터 읽기 (트래픽 과부하 방지 핵심!)
-    // min_no: 교정파일(upload)에서 이 주문번호 이상만 (dsp114.co.kr: 75000, NAS: 0)
+    // min_no: 교정파일(upload)에서 이 주문번호 이상만 (dsp114.co.kr: 84574, NAS: 0)
     // min_year: 원고파일(shop/imgfolder)에서 이 연도 이상만 (dsp114.co.kr: 2026, NAS: 2000)
     $min_no = isset($_GET['min_no']) ? intval($_GET['min_no']) : 0;
     $min_year = isset($_GET['min_year']) ? intval($_GET['min_year']) : 0;
@@ -70,7 +70,7 @@ if ($table === '_files') {
         // 교정파일: /www/MlangOrder_PrintAuto/upload/{no}/
         $base_dir = '/home/neo_web2/duson1830/www/MlangOrder_PrintAuto/upload';
         $where = '';
-        // min_no 필터: 주문번호 기준 하한선 (예: 75000 이상만)
+        // min_no 필터: 주문번호 기준 하한선 (예: 84574 이상만)
         if ($min_no > 0) {
             $where .= " AND no >= " . $min_no;
         }

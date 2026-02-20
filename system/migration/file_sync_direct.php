@@ -16,9 +16,9 @@ if (empty($_SESSION['migration_auth'])) {
 include dirname(dirname(__DIR__)) . '/db.php';
 
 // 파일 필터 설정 (서버별로 다르게 설정)
-// dsp114.co.kr: min_no=75000, min_year=2026 (용량 제한)
+// dsp114.co.kr: min_no=84574, min_year=2026 (용량 제한)
 // NAS: min_no=0, min_year=2000 (전체 백업)
-define('FILE_FILTER_MIN_NO', 75000);    // 교정파일: 이 번호 이상만
+define('FILE_FILTER_MIN_NO', 84574);    // 교정파일: 이 번호 이상만
 define('FILE_FILTER_MIN_YEAR', 2026);   // 원고파일: 이 연도 이상만
 
 $action = isset($_GET['action']) ? $_GET['action'] : '';
@@ -147,7 +147,7 @@ if ($action === 'run') {
         mysqli_stmt_close($stmt);
 
     } elseif ($type === 'upload') {
-        // min_no 필터: 주문번호 기준 하한선 (예: 75000 이상만)
+        // min_no 필터: 주문번호 기준 하한선 (예: 84574 이상만)
         $where_min = (FILE_FILTER_MIN_NO > 0) ? " WHERE no >= " . intval(FILE_FILTER_MIN_NO) : " WHERE no > 0";
         $where_since = ($since !== '') ? " AND date >= ?" : "";
         $query = "SELECT no FROM mlangorder_printauto" . $where_min . $where_since . " ORDER BY no ASC LIMIT ?, ?";

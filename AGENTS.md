@@ -1347,9 +1347,9 @@ member.po1-7 → users.business_number/name/owner/type/item/address/tax_invoice_
 
 | 설정 | dsp114.co.kr | NAS (dsp1830.ipdisk.co.kr) |
 |------|--------------|----------------------------|
-| `FILE_FILTER_MIN_NO` | **75000** | **0** |
+| `FILE_FILTER_MIN_NO` | **84574** | **0** |
 | `FILE_FILTER_MIN_YEAR` | **2026** | **2000** |
-| 교정파일 범위 | 75000번 이상 | **전체** |
+| 교정파일 범위 | 84574번 이상 | **전체** |
 | 원고파일 범위 | 2026년 이후 | **전체** |
 | 목적 | 운영 (최근 데이터만) | 아카이브 (완전 백업) |
 
@@ -1376,7 +1376,7 @@ member.po1-7 → users.business_number/name/owner/type/item/address/tax_invoice_
 
 | 파일 타입 | 필터 | 적용 쿼리 |
 |----------|------|----------|
-| upload (교정파일) | `min_no` | `AND no >= 75000` |
+| upload (교정파일) | `min_no` | `AND no >= 84574` |
 | shop (원고-스티커) | `min_year` | `AND date >= '2026-01-01'` |
 | imgfolder (원고-일반) | `min_year` | `AND date >= '2026-01-01'` |
 

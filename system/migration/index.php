@@ -31,14 +31,14 @@ require_once __DIR__ . '/MigrationSync.php';
  * ========================================
  * 
  * dsp114.co.kr (임대 서버 - 용량 제한):
- *   FILE_FILTER_MIN_NO = 75000
+ *   FILE_FILTER_MIN_NO = 84574
  *   FILE_FILTER_MIN_YEAR = 2026
  * 
  * dsp1830.ipdisk.co.kr:8000 (NAS - 전체 백업):
  *   FILE_FILTER_MIN_NO = 0
  *   FILE_FILTER_MIN_YEAR = 2000
  */
-define('FILE_FILTER_MIN_NO', 75000);    // 교정파일: 이 번호 이상만
+define('FILE_FILTER_MIN_NO', 84574);    // 교정파일: 이 번호 이상만
 define('FILE_FILTER_MIN_YEAR', 2026);   // 원고파일: 이 연도 이상만
 
 $sync = new MigrationSync($db);
@@ -109,7 +109,7 @@ if ($action === 'cleanup_upload') {
     set_time_limit(0);
     
     $upload_dir = dirname(dirname(__DIR__)) . '/mlangorder_printauto/upload';
-    $threshold = isset($_GET['threshold']) ? intval($_GET['threshold']) : 75000;
+    $threshold = isset($_GET['threshold']) ? intval($_GET['threshold']) : 84574;
     $deleted_count = 0;
     $error_count = 0;
     $freed_bytes = 0;

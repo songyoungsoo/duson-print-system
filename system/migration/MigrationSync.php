@@ -7,9 +7,9 @@ class MigrationSync {
     private $log_file;
     
     // 파일 필터 설정 (서버별로 다르게 설정)
-    // dsp114.co.kr: min_no=75000, min_year=2026 (용량 제한)
+    // dsp114.co.kr: min_no=84574, min_year=2026 (용량 제한)
     // NAS: min_no=0, min_year=2000 (전체 백업)
-    private $file_filter_min_no = 75000;    // 교정파일: 이 번호 이상만
+    private $file_filter_min_no = 84574;    // 교정파일: 이 번호 이상만
     private $file_filter_min_year = 2026;   // 원고파일: 이 연도 이상만
 
     private $table_map = array(
@@ -413,7 +413,7 @@ class MigrationSync {
     /**
      * 파일 필터 설정 (NAS 전체 백업용)
      */
-    public function setFileFilters($min_no = 75000, $min_year = 2026) {
+    public function setFileFilters($min_no = 84574, $min_year = 2026) {
         $this->file_filter_min_no = $min_no;
         $this->file_filter_min_year = $min_year;
     }
