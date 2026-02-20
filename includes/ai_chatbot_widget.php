@@ -130,6 +130,43 @@
         }
     }
 
+    function appendSizeInput(message) {
+        var container = document.getElementById('ai-chat-messages');
+        if (!container) return;
+        var div = document.createElement('div');
+        div.style.cssText = 'display:flex;gap:8px;';
+        div.innerHTML = avatarHtml
+            + '<div style="max-width:82%;">'
+            + '<div style="background:#fff;border:1px solid #e2e8f0;border-radius:14px 14px 14px 4px;padding:10px 14px;font-size:12px;color:#334155;line-height:1.6;">' + fmtMsg(message) + '</div>'
+            + '<div id="ai-size-widget" style="margin-top:8px;background:#f8fafc;border:1px solid #e2e8f0;border-radius:12px;padding:12px;">'
+            + '<div style="display:flex;align-items:center;gap:6px;justify-content:center;">'
+            + '<input type="number" class="ai-size-garo" placeholder="가로" min="1" max="590" style="width:72px;padding:8px;border:2px solid #d1d5db;border-radius:8px;font-size:14px;text-align:center;font-family:inherit;outline:none;transition:border-color .15s;" autocomplete="off">'
+            + '<span style="font-size:16px;color:#64748b;font-weight:700;">×</span>'
+            + '<input type="number" class="ai-size-sero" placeholder="세로" min="1" max="590" style="width:72px;padding:8px;border:2px solid #d1d5db;border-radius:8px;font-size:14px;text-align:center;font-family:inherit;outline:none;transition:border-color .15s;" autocomplete="off">'
+            + '<span style="font-size:11px;color:#94a3b8;margin-left:2px;">mm</span>'
+            + '</div>'
+            + '<button class="ai-size-btn" onclick="aiChatSubmitSize()" style="margin-top:8px;width:100%;padding:8px;background:#6366f1;color:#fff;border:none;border-radius:8px;font-size:13px;font-weight:600;cursor:pointer;font-family:inherit;">확인</button>'
+            + '</div></div>';
+        container.appendChild(div);
+        container.scrollTop = container.scrollHeight;
+        var w = div.querySelector('#ai-size-widget');
+        if (w) {
+            var g = w.querySelector('.ai-size-garo');
+            var s = w.querySelector('.ai-size-sero');
+            if (g) {
+                setTimeout(function() { g.focus(); }, 100);
+                g.addEventListener('keydown', function(e) { if (e.key === 'Enter') { e.preventDefault(); if (s) s.focus(); } });
+                g.addEventListener('focus', function() { this.style.borderColor = '#6366f1'; });
+                g.addEventListener('blur', function() { this.style.borderColor = '#d1d5db'; });
+            }
+            if (s) {
+                s.addEventListener('keydown', function(e) { if (e.key === 'Enter') { e.preventDefault(); aiChatSubmitSize(); } });
+                s.addEventListener('focus', function() { this.style.borderColor = '#6366f1'; });
+                s.addEventListener('blur', function() { this.style.borderColor = '#d1d5db'; });
+            }
+        }
+    }
+
     function showTyping() {
         var container = document.getElementById('ai-chat-messages');
         var div = document.createElement('div');
@@ -166,7 +203,11 @@
                     appendMessage('assistant', '죄송합니다. 오류가 발생했습니다: ' + data.error);
                 } else if (data.message) {
                     messages.push({ role: 'assistant', content: data.message });
-                    appendMessage('assistant', data.message, data.options || null);
+                    if (data.input_type === 'sticker_size') {
+                        appendSizeInput(data.message);
+                    } else {
+                        appendMessage('assistant', data.message, data.options || null);
+                    }
                 }
             })
             .catch(function() {
@@ -236,6 +277,23 @@
         btn.classList.add('selected');
 
         sendToBackend(num, label);
+    };
+
+    window.aiChatSubmitSize = function() {
+        var widget = document.getElementById('ai-size-widget');
+        if (!widget || loading) return;
+        var garo = widget.querySelector('.ai-size-garo');
+        var sero = widget.querySelector('.ai-size-sero');
+        if (!garo || !sero) return;
+        var g = parseInt(garo.value) || 0;
+        var s = parseInt(sero.value) || 0;
+        if (g <= 0 || g > 590) { garo.style.borderColor = '#ef4444'; garo.focus(); return; }
+        if (s <= 0 || s > 590) { sero.style.borderColor = '#ef4444'; sero.focus(); return; }
+        garo.disabled = true; sero.disabled = true;
+        var btn = widget.querySelector('.ai-size-btn');
+        if (btn) { btn.disabled = true; btn.style.opacity = '0.5'; }
+        widget.removeAttribute('id');
+        sendToBackend(g + '\u00d7' + s, g + '\u00d7' + s + 'mm');
     };
 
     // Drag functionality for chat window

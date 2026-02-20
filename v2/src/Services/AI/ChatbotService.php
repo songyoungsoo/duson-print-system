@@ -217,15 +217,15 @@ class ChatbotService
             return $this->askQuantityFreeInput($stepLabel, $product, $state);
         }
         
-        // 스티커 가로/세로 자유입력
+        // 스티커 가로/세로 인라인 위젯 (동시입력)
         if (empty($options) && $stepType === 'garo') {
-            $msg = "가로 사이즈를 mm 단위로 입력해주세요:\n(예: 50, 90, 100 — 최대 590mm)";
+            $msg = "스티커 사이즈를 입력해주세요 (최대 590mm):";
             if (!empty($state['_autoPrefix'])) {
                 $msg = "**{$state['_autoPrefix']}** 선택됨\n\n{$msg}";
                 unset($state['_autoPrefix']);
                 $this->setState($state);
             }
-            return ['success' => true, 'message' => $msg];
+            return ['success' => true, 'message' => $msg, 'input_type' => 'sticker_size'];
         }
         
         if (empty($options) && $stepType === 'sero') {
@@ -540,6 +540,32 @@ class ChatbotService
     private function processStickerSizeStep(array $state, string $message, string $field, int $max): array
     {
         $msg = trim($message);
+        
+        // 가로×세로 동시입력 (e.g., "50×30", "50x30", "50*30")
+        if ($field === 'garo' && preg_match('/^(\d+)\s*[×xX*]\s*(\d+)$/', $msg, $m)) {
+            $garo = (int)$m[1];
+            $sero = (int)$m[2];
+            
+            if ($garo <= 0 || $sero <= 0) {
+                return ['success' => true, 'message' => "가로와 세로를 숫자로 입력해주세요:", 'input_type' => 'sticker_size'];
+            }
+            if ($garo > $max) {
+                return ['success' => true, 'message' => "가로 최대 {$max}mm입니다. 다시 입력해주세요:", 'input_type' => 'sticker_size'];
+            }
+            if ($sero > $max) {
+                return ['success' => true, 'message' => "세로 최대 {$max}mm입니다. 다시 입력해주세요:", 'input_type' => 'sticker_size'];
+            }
+            
+            $state['selections']['garo'] = (string)$garo;
+            $state['selectionIds']['garo'] = $garo;
+            $state['selections']['sero'] = (string)$sero;
+            $state['selectionIds']['sero'] = $sero;
+            $state['step'] += 2; // garo+sero 동시 처리, 수량 스텝으로 이동
+            $this->setState($state);
+            
+            return $this->askCurrentStep($state);
+        }
+        
         $num = (int)preg_replace('/[^0-9]/', '', $msg);
         
         if ($num <= 0) {
