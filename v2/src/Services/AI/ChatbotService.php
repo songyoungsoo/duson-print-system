@@ -134,16 +134,18 @@ class ChatbotService
             return $this->getProductMenuResponse();
         }
         
-        // 제품 감지: 이미 제품 선택 진행 중이면 숫자 매칭 비활성화 (옵션 선택과 충돌 방지)
+        // 지식 질문 우선 체크 (제품 미선택 상태에서만, 제품 감지보다 먼저)
         $inProgress = !empty($state['product']);
+        if (!$inProgress && $this->isKnowledgeQuestion($message)) {
+            return $this->callAiForFreeQuestion($message);
+        }
+        
+        // 제품 감지: 이미 제품 선택 진행 중이면 숫자 매칭 비활성화 (옵션 선택과 충돌 방지)
         $detectedProduct = $this->detectProduct($message, $history, $inProgress);
         
         if (!$inProgress) {
             // 제품 미선택 상태
             if (empty($detectedProduct)) {
-                if ($this->isKnowledgeQuestion($message)) {
-                    return $this->callAiForFreeQuestion($message);
-                }
                 return $this->getProductMenuResponse();
             }
             $state['product'] = $detectedProduct;
