@@ -1,4 +1,8 @@
 <?php
+declare(strict_types=1);
+
+namespace App\Services\AI;
+
 /**
  * ChatbotKnowledge.php — 야간당번 AI 챗봇 지식 베이스
  * 
