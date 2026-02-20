@@ -54,6 +54,8 @@
 @keyframes aiChatSlideUp { from { opacity:0; transform:translateY(20px); } to { opacity:1; transform:translateY(0); } }
 @keyframes aiBounce { to { transform: translateY(-4px); opacity: .5; } }
 #ai-chatbot-toggle:hover { transform:scale(1.08); }
+#ai-chatbot-window { overscroll-behavior: contain; }
+#ai-chat-messages { overscroll-behavior: contain; }
 .ai-opt-btn {
     text-align:left; padding:8px 12px; background:#f8fafc; border:1px solid #e2e8f0;
     border-radius:8px; font-size:11.5px; color:#334155; cursor:pointer;
