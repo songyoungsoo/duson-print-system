@@ -1915,12 +1915,18 @@ $additional_css = [
         <?php
         // 택배 선불 안내 — 택배비는 전화 확인 후 별도 안내
         $oc_fee_type = $first_order['logen_fee_type'] ?? '';
+        $oc_delivery_fee = intval($first_order['logen_delivery_fee'] ?? 0);
+        $oc_prepaid_pending = ($oc_fee_type === '선불' && $oc_delivery_fee <= 0);
         if ($oc_fee_type === '선불'):
         ?>
-        <div style="background: #fff3cd; border: 1px solid #ffc107; border-radius: 6px; padding: 12px 16px; margin-top: 12px; font-size: 14px; color: #856404;">
-            <strong>📦 택배비 안내</strong><br>
-            <span style="font-size: 13px;">택배비(선불)는 전화 확인 후 별도 안내드립니다. 확정 시 이메일로 알려드리며, <a href="/mypage/" style="color: #1E4E79; font-weight: 600;">마이페이지</a>에서도 확인하실 수 있습니다.</span><br>
-            <span style="font-size: 12px; color: #997a00;">📞 문의: 02-2632-1830</span>
+        <div id="prepaidShippingNotice" style="background: <?php echo $oc_prepaid_pending ? '#dc3545' : '#d4edda'; ?>; border: 1px solid <?php echo $oc_prepaid_pending ? '#c82333' : '#28a745'; ?>; border-radius: 6px; padding: 12px 16px; margin-top: 12px; font-size: 14px; color: #fff;">
+            <?php if ($oc_prepaid_pending): ?>
+            <strong>📦 택배비 확정 대기중</strong><br>
+            <span style="font-size: 13px;">선불택배는 전화(<strong>02-2632-1830</strong>) 후 택배비 책정이 필요합니다.<br>택배비 확정 후 결제가 가능합니다.</span>
+            <?php else: ?>
+            <strong style="color: #155724;">📦 택배비 확정완료</strong><br>
+            <span style="font-size: 13px; color: #155724;">택배비: <strong><?php echo number_format($oc_delivery_fee); ?>원</strong> (VAT 별도) — 결제 시 합산됩니다.</span>
+            <?php endif; ?>
         </div>
         <?php endif; ?>
         <!-- 버튼 영역 (결제 금액 바로 아래) -->
@@ -1928,9 +1934,15 @@ $additional_css = [
             <a href="<?php echo getLastOrderProductUrl($order_list); ?>" class="btn-action btn-continue">
                 계속 쇼핑하기
             </a>
+            <?php if ($oc_prepaid_pending): ?>
+            <button id="btnPayDisabled" class="btn-action btn-pay" style="opacity: 0.5; cursor: not-allowed;" onclick="alert('선불택배는 전화(02-2632-1830) 후 택배비 책정 후 결제해주세요.\n\n택배비가 확정되면 이 버튼이 활성화됩니다.');">
+                결제하기 (택배비 확정 대기)
+            </button>
+            <?php else: ?>
             <button onclick="openPaymentModal()" class="btn-action btn-pay">
                 결제하기
             </button>
+            <?php endif; ?>
             <button onclick="openPrintWindow()" class="btn-action btn-print">
                 주문서 인쇄
             </button>
@@ -2224,6 +2236,37 @@ document.addEventListener('DOMContentLoaded', function() {
             }, 200);
         }, 500);
     }
+
+    // 택배 선불 — 택배비 확정 폴링 (30초마다)
+    <?php if (!empty($oc_prepaid_pending)): ?>
+    var shippingCheckOrder = <?php echo json_encode($first_order['no'] ?? ''); ?>;
+    var shippingPollTimer = setInterval(function() {
+        if (!shippingCheckOrder) return;
+        fetch('/includes/shipping_api.php?action=order_estimate&no=' + shippingCheckOrder)
+            .then(function(r) { return r.json(); })
+            .then(function(data) {
+                if (data.success && data.data && parseInt(data.data.logen_delivery_fee) > 0) {
+                    clearInterval(shippingPollTimer);
+                    var fee = parseInt(data.data.logen_delivery_fee);
+                    var notice = document.getElementById('prepaidShippingNotice');
+                    if (notice) {
+                        notice.style.background = '#d4edda';
+                        notice.style.borderColor = '#28a745';
+                        notice.innerHTML = '<strong style="color:#155724;">📦 택배비 확정완료</strong><br>' +
+                            '<span style="font-size:13px;color:#155724;">택배비: <strong>' + fee.toLocaleString() + '원</strong> (VAT 별도) — 결제 시 합산됩니다.</span>';
+                    }
+                    var btn = document.getElementById('btnPayDisabled');
+                    if (btn) {
+                        btn.style.opacity = '1';
+                        btn.style.cursor = 'pointer';
+                        btn.textContent = '결제하기';
+                        btn.onclick = function() { openPaymentModal(); };
+                    }
+                }
+            })
+            .catch(function() {});
+    }, 30000);
+    <?php endif; ?>
 });
 
 // 주문 완료 이메일 자동 발송
