@@ -1912,6 +1912,17 @@ $additional_css = [
                 <div class="summary-box-value"><span class="anim-number" data-target="<?php echo intval($total_amount_vat); ?>">0</span>원</div>
             </div>
         </div>
+        <?php
+        // 택배 선불 안내 — 택배비는 전화 확인 후 별도 안내
+        $oc_fee_type = $first_order['logen_fee_type'] ?? '';
+        if ($oc_fee_type === '선불'):
+        ?>
+        <div style="background: #fff3cd; border: 1px solid #ffc107; border-radius: 6px; padding: 12px 16px; margin-top: 12px; font-size: 14px; color: #856404;">
+            <strong>📦 택배비 안내</strong><br>
+            <span style="font-size: 13px;">택배비(선불)는 전화 확인 후 별도 안내드립니다. 확정 시 이메일로 알려드리며, <a href="/mypage/" style="color: #1E4E79; font-weight: 600;">마이페이지</a>에서도 확인하실 수 있습니다.</span><br>
+            <span style="font-size: 12px; color: #997a00;">📞 문의: 02-2632-1830</span>
+        </div>
+        <?php endif; ?>
         <!-- 버튼 영역 (결제 금액 바로 아래) -->
         <div class="action-buttons" style="margin-top: 16px;">
             <a href="<?php echo getLastOrderProductUrl($order_list); ?>" class="btn-action btn-continue">

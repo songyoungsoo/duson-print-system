@@ -10,7 +10,7 @@ require_once __DIR__ . '/../includes/sidebar.php';
 ?>
 
 <!-- Main Content -->
-<main class="flex-1 bg-gray-50">
+<main class="flex-1 bg-gray-50 overflow-y-auto">
     <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-2">
         <!-- Header + Filters in one line -->
         <div class="flex flex-wrap items-center gap-2 mb-2">
@@ -77,7 +77,7 @@ require_once __DIR__ . '/../includes/sidebar.php';
 
             <!-- Pagination -->
             <div id="pagination" class="px-3 py-1.5 border-t border-gray-200 flex items-center justify-between text-xs">
-                <span class="text-gray-500">총 <span id="totalItems">0</span>건</span>
+                <span class="text-gray-500">총 <span id="totalItems">0</span>건 · <span id="pageInfo"></span></span>
                 <div id="paginationButtons" class="flex items-center gap-1"></div>
             </div>
         </div>
@@ -116,6 +116,8 @@ async function loadPayments(page) {
             renderStats(result.data.stats);
             renderPayments(result.data.data);
             document.getElementById('totalItems').textContent = Number(result.data.pagination.total_items).toLocaleString();
+            var pi = document.getElementById('pageInfo');
+            if (pi) pi.textContent = result.data.pagination.current_page + ' / ' + result.data.pagination.total_pages + ' 페이지';
             renderPagination(result.data.pagination);
         } else {
             showError(result.message || '데이터를 불러오는데 실패했습니다.');

@@ -98,6 +98,137 @@ switch ($action) {
         mysqli_stmt_bind_param($stmt, $type_string_logen, $logenBoxQty, $logenDeliveryFee, $logenFeeType, $logenTrackingNo, $orderNo);
 
         if (mysqli_stmt_execute($stmt)) {
+            // === NEW: 택배비 선불 확정 시 고객 이메일 알림 ===
+            if ($logenFeeType === '선불' && $logenDeliveryFee > 0) {
+                $emailStmt = mysqli_prepare($db, "SELECT email, name, no, money_5 FROM mlangorder_printauto WHERE no = ?");
+                mysqli_stmt_bind_param($emailStmt, "i", $orderNo);
+                mysqli_stmt_execute($emailStmt);
+                $emailResult = mysqli_stmt_get_result($emailStmt);
+                $emailRow = mysqli_fetch_assoc($emailResult);
+                mysqli_stmt_close($emailStmt);
+
+                if ($emailRow && !empty($emailRow['email'])) {
+                    $customerEmail = $emailRow['email'];
+                    $customerName  = $emailRow['name'] ?? '고객';
+                    $printAmount   = intval($emailRow['money_5'] ?? 0);
+
+                    $shippingSupply = $logenDeliveryFee;
+                    $shippingVat    = round($shippingSupply * 0.1);
+                    $shippingTotal  = $shippingSupply + $shippingVat;
+                    $grandTotal     = $printAmount + $shippingTotal;
+
+                    $subject = "[두손기획인쇄] 주문 #{$orderNo} 택배비 안내";
+
+                    $body = '<!DOCTYPE html>
+<html lang="ko">
+<head><meta charset="UTF-8"></head>
+<body style="margin:0;padding:0;background:#f4f6f8;font-family:\'Malgun Gothic\',Arial,sans-serif;">
+<table width="100%" cellpadding="0" cellspacing="0" style="background:#f4f6f8;padding:30px 0;">
+  <tr><td align="center">
+    <table width="600" cellpadding="0" cellspacing="0" style="background:#ffffff;border-radius:8px;overflow:hidden;box-shadow:0 2px 8px rgba(0,0,0,0.08);">
+      <!-- Header -->
+      <tr>
+        <td style="background:#1E4E79;padding:24px 32px;">
+          <p style="margin:0;color:#ffffff;font-size:20px;font-weight:bold;">두손기획인쇄</p>
+          <p style="margin:4px 0 0;color:#a8c4e0;font-size:13px;">택배비 안내</p>
+        </td>
+      </tr>
+      <!-- Body -->
+      <tr>
+        <td style="padding:32px;">
+          <p style="margin:0 0 16px;font-size:15px;color:#333;">' . htmlspecialchars($customerName) . ' 고객님, 안녕하세요.</p>
+          <p style="margin:0 0 24px;font-size:14px;color:#555;line-height:1.6;">
+            주문 <strong>#' . $orderNo . '</strong>의 택배비(선불)가 확정되었습니다.<br>
+            아래 내역을 확인하시고 입금해 주시기 바랍니다.
+          </p>
+
+          <!-- 택배비 내역 -->
+          <table width="100%" cellpadding="0" cellspacing="0" style="border:1px solid #2a6496;border-radius:6px;overflow:hidden;margin-bottom:20px;">
+            <tr style="background:#1E4E79;">
+              <td colspan="2" style="padding:10px 16px;color:#fff;font-size:13px;font-weight:bold;">택배비 내역</td>
+            </tr>
+            <tr style="background:#f8fafc;">
+              <td style="padding:10px 16px;font-size:13px;color:#555;border-bottom:1px solid #cbd5e1;">공급가액</td>
+              <td style="padding:10px 16px;font-size:13px;color:#333;text-align:right;border-bottom:1px solid #cbd5e1;">' . number_format($shippingSupply) . '원</td>
+            </tr>
+            <tr style="background:#f8fafc;">
+              <td style="padding:10px 16px;font-size:13px;color:#555;border-bottom:1px solid #cbd5e1;">부가세 (10%)</td>
+              <td style="padding:10px 16px;font-size:13px;color:#333;text-align:right;border-bottom:1px solid #cbd5e1;">+ ' . number_format($shippingVat) . '원</td>
+            </tr>
+            <tr style="background:#e8eff7;">
+              <td style="padding:10px 16px;font-size:13px;font-weight:bold;color:#1E4E79;">택배비 합계</td>
+              <td style="padding:10px 16px;font-size:13px;font-weight:bold;color:#1E4E79;text-align:right;">' . number_format($shippingTotal) . '원</td>
+            </tr>
+          </table>
+
+          <!-- 입금 합계 -->
+          <table width="100%" cellpadding="0" cellspacing="0" style="border:1px solid #2a6496;border-radius:6px;overflow:hidden;margin-bottom:20px;">
+            <tr style="background:#1E4E79;">
+              <td colspan="2" style="padding:10px 16px;color:#fff;font-size:13px;font-weight:bold;">입금 안내</td>
+            </tr>
+            <tr style="background:#f8fafc;">
+              <td style="padding:10px 16px;font-size:13px;color:#555;border-bottom:1px solid #cbd5e1;">인쇄 주문 금액</td>
+              <td style="padding:10px 16px;font-size:13px;color:#333;text-align:right;border-bottom:1px solid #cbd5e1;">' . number_format($printAmount) . '원</td>
+            </tr>
+            <tr style="background:#f8fafc;">
+              <td style="padding:10px 16px;font-size:13px;color:#555;border-bottom:1px solid #cbd5e1;">택배비 (선불)</td>
+              <td style="padding:10px 16px;font-size:13px;color:#333;text-align:right;border-bottom:1px solid #cbd5e1;">' . number_format($shippingTotal) . '원</td>
+            </tr>
+            <tr style="background:#e8eff7;">
+              <td style="padding:10px 16px;font-size:14px;font-weight:bold;color:#1E4E79;">총 입금액</td>
+              <td style="padding:10px 16px;font-size:14px;font-weight:bold;color:#1E4E79;text-align:right;">' . number_format($grandTotal) . '원</td>
+            </tr>
+          </table>
+
+          <!-- 계좌 정보 -->
+          <table width="100%" cellpadding="0" cellspacing="0" style="border:1px solid #94a3b8;border-radius:6px;overflow:hidden;margin-bottom:24px;">
+            <tr style="background:#1E4E79;">
+              <td colspan="2" style="padding:10px 16px;color:#fff;font-size:13px;font-weight:bold;">입금 계좌 안내</td>
+            </tr>
+            <tr style="background:#f8fafc;">
+              <td style="padding:8px 16px;font-size:13px;color:#555;width:120px;border-bottom:1px solid #cbd5e1;">국민은행</td>
+              <td style="padding:8px 16px;font-size:13px;color:#333;border-bottom:1px solid #cbd5e1;">999-1688-2384</td>
+            </tr>
+            <tr style="background:#f8fafc;">
+              <td style="padding:8px 16px;font-size:13px;color:#555;border-bottom:1px solid #cbd5e1;">신한은행</td>
+              <td style="padding:8px 16px;font-size:13px;color:#333;border-bottom:1px solid #cbd5e1;">110-342-543507</td>
+            </tr>
+            <tr style="background:#f8fafc;">
+              <td style="padding:8px 16px;font-size:13px;color:#555;border-bottom:1px solid #cbd5e1;">농협</td>
+              <td style="padding:8px 16px;font-size:13px;color:#333;border-bottom:1px solid #cbd5e1;">301-2632-1830-11</td>
+            </tr>
+            <tr style="background:#e8eff7;">
+              <td style="padding:8px 16px;font-size:13px;font-weight:bold;color:#1E4E79;">예금주</td>
+              <td style="padding:8px 16px;font-size:13px;font-weight:bold;color:#1E4E79;">두손기획인쇄 차경선</td>
+            </tr>
+          </table>
+
+          <p style="margin:0 0 8px;font-size:13px;color:#555;">문의사항은 아래로 연락해 주세요.</p>
+          <p style="margin:0;font-size:14px;font-weight:bold;color:#1E4E79;">📞 02-2632-1830</p>
+        </td>
+      </tr>
+      <!-- Footer -->
+      <tr>
+        <td style="background:#f4f6f8;padding:16px 32px;border-top:1px solid #e2e8f0;">
+          <p style="margin:0;font-size:12px;color:#888;text-align:center;">
+            두손기획인쇄 | 서울특별시 영등포구 영등포로36길 9 1층
+          </p>
+        </td>
+      </tr>
+    </table>
+  </td></tr>
+</table>
+</body>
+</html>';
+
+                    require_once $_SERVER['DOCUMENT_ROOT'] . '/mlangorder_printauto/mailer.lib.php';
+                    ob_start();
+                    $mail_result = mailer('두손기획인쇄', 'dsp1830@naver.com', $customerEmail, $subject, $body, 1, "");
+                    ob_end_clean();
+                    error_log("택배비 알림 이메일 발송 " . ($mail_result ? "성공" : "실패") . ": 주문#{$orderNo}");
+                }
+            }
+            // === END: 택배비 이메일 알림 ===
             echo json_encode(['success' => true, 'message' => '배송 정보가 저장되었습니다.']);
         } else {
             echo json_encode(['success' => false, 'error' => mysqli_stmt_error($stmt)]);

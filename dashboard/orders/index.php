@@ -6,7 +6,7 @@ include __DIR__ . '/../includes/header.php';
 include __DIR__ . '/../includes/sidebar.php';
 ?>
 
-<main class="flex-1 bg-gray-50">
+<main class="flex-1 bg-gray-50 overflow-y-auto">
     <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-2">
         <!-- 헤더 + 필터 한 줄 -->
         <div class="flex flex-wrap items-center gap-2 mb-2">
@@ -58,6 +58,7 @@ include __DIR__ . '/../includes/sidebar.php';
                             <th class="px-2 py-1.5 text-left text-xs font-medium text-gray-500 tracking-wider">품목</th>
                             <th class="px-2 py-1.5 text-left text-xs font-medium text-gray-500 tracking-wider">주문자</th>
                             <th class="px-2 py-1.5 text-right text-xs font-medium text-gray-500 tracking-wider">금액</th>
+                            <th class="px-2 py-1.5 text-center text-xs font-medium text-gray-500 tracking-wider">배송</th>
                             <th class="px-2 py-1.5 text-center text-xs font-medium text-gray-500 tracking-wider">상태</th>
                             <th class="px-2 py-1.5 text-left text-xs font-medium text-gray-500 tracking-wider">주문일시</th>
                             <th class="px-2 py-1.5 text-center text-xs font-medium text-gray-500 tracking-wider">관리</th>
@@ -65,7 +66,7 @@ include __DIR__ . '/../includes/sidebar.php';
                     </thead>
                     <tbody id="ordersTableBody" class="bg-white divide-y divide-gray-200">
                         <tr>
-                            <td colspan="8" class="px-3 py-2 text-center text-sm text-gray-500">로딩 중...</td>
+                            <td colspan="9" class="px-3 py-2 text-center text-sm text-gray-500">로딩 중...</td>
                         </tr>
                     </tbody>
                 </table>
@@ -82,9 +83,9 @@ include __DIR__ . '/../includes/sidebar.php';
                     </button>
                 </div>
             </div>
-            <div id="pagination" class="px-3 py-1.5 border-t border-gray-200 flex items-center justify-between text-xs">
-                <span class="text-gray-500">총 <span id="totalItems">0</span>건</span>
-                <div id="paginationButtons" class="flex items-center gap-1">
+            <div id="pagination" class="px-3 py-2 border-t border-gray-200 flex items-center justify-between text-xs">
+                <span class="text-gray-500">총 <span id="totalItems">0</span>건 · <span id="pageInfo"></span></span>
+                <div id="paginationButtons" class="flex items-center gap-0.5">
                 </div>
             </div>
         </div>
@@ -143,7 +144,7 @@ async function loadOrders(page = 1) {
             tbody.textContent = '';
             var emptyRow = document.createElement('tr');
             var emptyTd = document.createElement('td');
-            emptyTd.colSpan = 8;
+            emptyTd.colSpan = 9;
             emptyTd.className = 'px-3 py-3 text-center text-gray-500';
             emptyTd.textContent = '주문이 없습니다.';
             emptyRow.appendChild(emptyTd);
@@ -202,16 +203,84 @@ async function loadOrders(page = 1) {
             var tdAmount = document.createElement('td');
             tdAmount.className = 'px-2 py-1 whitespace-nowrap text-xs text-gray-900 text-right';
             tdAmount.textContent = (order.amount || 0).toLocaleString() + '원';
+            if (order.logen_fee_type === '선불') {
+                var shippingDiv = document.createElement('div');
+                shippingDiv.style.marginTop = '1px';
+                if (order.logen_delivery_fee > 0) {
+                    var fee = order.logen_delivery_fee;
+                    var vat = Math.round(fee * 0.1);
+                    shippingDiv.className = 'text-green-700';
+                    shippingDiv.style.fontSize = '10px';
+                    shippingDiv.textContent = '+ 택배 ₩' + (fee + vat).toLocaleString();
+                } else {
+                    shippingDiv.className = 'text-orange-500';
+                    shippingDiv.style.fontSize = '10px';
+                    shippingDiv.textContent = '+ 택배 확인중';
+                }
+                tdAmount.appendChild(shippingDiv);
+            }
             tr.appendChild(tdAmount);
 
-            // 상태
+            // 배송
+            var tdDelivery = document.createElement('td');
+            tdDelivery.className = 'px-2 py-1 whitespace-nowrap text-center text-xs';
+            var dv = (order.delivery || '').trim();
+            var ft = order.logen_fee_type || '';
+            if (dv === '택배') {
+                var label = '택배';
+                var cls = 'bg-blue-100 text-blue-700';
+                if (ft === '선불') { label += ' 선불'; cls = 'bg-green-100 text-green-700'; }
+                else if (ft === '착불') { label += ' 착불'; }
+                var span = document.createElement('span');
+                span.className = 'px-1.5 py-0.5 text-xs font-medium rounded-full ' + cls;
+                span.textContent = label;
+                tdDelivery.appendChild(span);
+            } else if (dv === '방문') {
+                var span = document.createElement('span');
+                span.className = 'px-1.5 py-0.5 text-xs font-medium rounded-full bg-gray-100 text-gray-700';
+                span.textContent = '방문';
+                tdDelivery.appendChild(span);
+            } else if (dv === '퀵' || dv === '오토바이') {
+                var span = document.createElement('span');
+                span.className = 'px-1.5 py-0.5 text-xs font-medium rounded-full bg-orange-100 text-orange-700';
+                span.textContent = '퀵';
+                tdDelivery.appendChild(span);
+            } else if (dv === '다마스') {
+                var span = document.createElement('span');
+                span.className = 'px-1.5 py-0.5 text-xs font-medium rounded-full bg-orange-100 text-orange-700';
+                span.textContent = '다마스';
+                tdDelivery.appendChild(span);
+            } else if (dv) {
+                tdDelivery.textContent = dv;
+            } else {
+                tdDelivery.innerHTML = '<span class="text-gray-300">-</span>';
+            }
+            tr.appendChild(tdDelivery);
+
+            // 상태 (인라인 드롭다운)
             var tdStatus = document.createElement('td');
             tdStatus.className = 'px-2 py-1 whitespace-nowrap text-center';
-            var statusInfo = getStatusInfo(order.status);
-            var badge = document.createElement('span');
-            badge.className = 'px-1.5 py-0.5 text-xs font-semibold rounded-full ' + statusInfo.bg + ' ' + statusInfo.text;
-            badge.textContent = statusInfo.label;
-            tdStatus.appendChild(badge);
+            var statusSelect = document.createElement('select');
+            statusSelect.className = 'text-xs border border-gray-300 rounded px-1 py-0.5 focus:ring-1 focus:ring-blue-500 cursor-pointer';
+            var statusOptions = [
+                {v:'1',l:'견적접수'},{v:'2',l:'주문접수'},{v:'3',l:'접수완료'},{v:'4',l:'입금대기'},
+                {v:'5',l:'시안제작중'},{v:'6',l:'시안'},{v:'7',l:'교정'},{v:'8',l:'작업완료'},
+                {v:'9',l:'작업중'},{v:'10',l:'교정작업중'}
+            ];
+            statusOptions.forEach(function(opt) {
+                var o = document.createElement('option');
+                o.value = opt.v;
+                o.textContent = opt.l;
+                if (String(order.status) === opt.v) o.selected = true;
+                statusSelect.appendChild(o);
+            });
+            var statusColors = {'1':'#64748b','2':'#d97706','3':'#d97706','4':'#ea580c','5':'#4f46e5','6':'#7c3aed','7':'#2563eb','8':'#16a34a','9':'#9333ea','10':'#0891b2'};
+            statusSelect.style.color = statusColors[String(order.status)] || '#333';
+            statusSelect.style.fontWeight = '600';
+            statusSelect.addEventListener('change', function() {
+                changeOrderStatus(order.no, this.value, this);
+            });
+            tdStatus.appendChild(statusSelect);
             tr.appendChild(tdStatus);
 
             // 주문일시
@@ -241,6 +310,8 @@ async function loadOrders(page = 1) {
         updateSelectionUI();
         
         document.getElementById('totalItems').textContent = Number(result.data.pagination.total_items).toLocaleString();
+        var pi = document.getElementById('pageInfo');
+        if (pi) pi.textContent = result.data.pagination.current_page + ' / ' + result.data.pagination.total_pages + ' 페이지';
         
         renderPagination(result.data.pagination);
         
@@ -250,7 +321,7 @@ async function loadOrders(page = 1) {
         tbody.textContent = '';
         var errRow = document.createElement('tr');
         var errTd = document.createElement('td');
-        errTd.colSpan = 8;
+        errTd.colSpan = 9;
         errTd.className = 'px-3 py-3 text-center text-red-500';
         errTd.textContent = '주문 목록을 불러오는데 실패했습니다.';
         errRow.appendChild(errTd);
@@ -343,6 +414,27 @@ function renderPagination(pagination) {
     // 다음 / 끝
     container.appendChild(makeBtn('&rsaquo;', cur + 1, btnNavCls, cur === total));
     container.appendChild(makeBtn('&raquo;', total, btnNavCls, cur === total));
+}
+
+async function changeOrderStatus(no, newStatus, selectEl) {
+    var statusColors = {'1':'#64748b','2':'#d97706','3':'#d97706','4':'#ea580c','5':'#4f46e5','6':'#7c3aed','7':'#2563eb','8':'#16a34a','9':'#9333ea','10':'#0891b2'};
+    try {
+        var formData = new FormData();
+        formData.append('action', 'update');
+        formData.append('no', no);
+        formData.append('order_style', newStatus);
+        var response = await fetch('/dashboard/api/orders.php', { method: 'POST', body: formData });
+        var result = await response.json();
+        if (result.success) {
+            selectEl.style.color = statusColors[newStatus] || '#333';
+        } else {
+            alert('상태 변경 실패: ' + result.message);
+            loadOrders(currentPage);
+        }
+    } catch (error) {
+        alert('상태 변경 중 오류가 발생했습니다.');
+        loadOrders(currentPage);
+    }
 }
 
 async function deleteOrder(no) {

@@ -683,7 +683,21 @@ include $_SERVER['DOCUMENT_ROOT'] . '/includes/header-ui.php';
                                     <div style="color: #666; font-size: 13px;"><?php echo htmlspecialchars($display_line2); ?></div>
                                 <?php endif; ?>
                             </td>
-                            <td style="text-align: right; padding-right: 12px; font-weight: 500;"><?php echo number_format($order['money_5'] ?? $order['money_4'] ?? 0); ?>원</td>
+                            <td style="text-align: right; padding-right: 12px; font-weight: 500;">
+                                <?php echo number_format($order['money_5'] ?? $order['money_4'] ?? 0); ?>원
+                                <?php
+                                $lf_type = $order['logen_fee_type'] ?? '';
+                                $lf_fee = intval($order['logen_delivery_fee'] ?? 0);
+                                if ($lf_type === '선불'):
+                                    if ($lf_fee > 0):
+                                        $lf_vat = round($lf_fee * 0.1);
+                                        $lf_total = $lf_fee + $lf_vat;
+                                ?>
+                                <div style="font-size: 12px; color: #155724; margin-top: 2px;">+ 택배비 ₩<?php echo number_format($lf_total); ?></div>
+                                <?php else: ?>
+                                <div style="font-size: 12px; color: #e67e22; margin-top: 2px;">+ 택배비 확인중</div>
+                                <?php endif; endif; ?>
+                            </td>
                             <td style="text-align: center; color: #666;"><?php echo date('Y-m-d', strtotime($order['date'] ?? '')); ?></td>
                             <td style="text-align: center;">
                                 <?php

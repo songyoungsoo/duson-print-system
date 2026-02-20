@@ -464,6 +464,26 @@ function formatType1Json($type1_data) {
                     <div class="value"><?php echo htmlspecialchars($order['delivery']); ?></div>
                 </div>
                 <?php endif; ?>
+                <?php
+                $logen_fee_type = $order['logen_fee_type'] ?? '';
+                $logen_delivery_fee = intval($order['logen_delivery_fee'] ?? 0);
+                if ($logen_fee_type === '선불'):
+                ?>
+                <div class="info-item">
+                    <div class="label">운임구분</div>
+                    <div class="value">선불</div>
+                </div>
+                <div class="info-item">
+                    <div class="label">택배비</div>
+                    <div class="value">
+                        <?php if ($logen_delivery_fee > 0): ?>
+                            <span style="color: #155724; font-weight: 600;">₩<?php echo number_format($logen_delivery_fee); ?> <span style="font-size: 12px; color: #666;">(+VAT ₩<?php echo number_format(round($logen_delivery_fee * 0.1)); ?>)</span></span>
+                        <?php else: ?>
+                            <span style="color: #856404; font-weight: 500;">확인중 (전화 안내 예정)</span>
+                        <?php endif; ?>
+                    </div>
+                </div>
+                <?php endif; ?>
             </div>
 
             <?php
@@ -512,10 +532,41 @@ function formatType1Json($type1_data) {
                     <td>₩<?php echo number_format($order['envelope_additional_options_total']); ?></td>
                 </tr>
                 <?php endif; ?>
+                <?php
+                $order_total = intval($order['money_2']);
+                $lf_type = $order['logen_fee_type'] ?? '';
+                $lf_fee = intval($order['logen_delivery_fee'] ?? 0);
+                $has_prepaid = ($lf_type === '선불');
+                $shipping_with_vat = $lf_fee + round($lf_fee * 0.1);
+                ?>
+                <?php if ($has_prepaid && $lf_fee > 0): ?>
+                <tr>
+                    <th>인쇄비 소계 (VAT포함)</th>
+                    <td>₩<?php echo number_format($order_total); ?></td>
+                </tr>
+                <tr>
+                    <th>택배비 (VAT포함)</th>
+                    <td>₩<?php echo number_format($shipping_with_vat); ?></td>
+                </tr>
+                <tr class="total">
+                    <th>총 입금액</th>
+                    <td>₩<?php echo number_format($order_total + $shipping_with_vat); ?></td>
+                </tr>
+                <?php elseif ($has_prepaid && $lf_fee === 0): ?>
+                <tr class="total">
+                    <th>인쇄비 (VAT포함)</th>
+                    <td>₩<?php echo number_format($order_total); ?></td>
+                </tr>
+                <tr>
+                    <th>택배비</th>
+                    <td style="color: #856404; font-weight: 500;">확인중 (전화 안내 예정)</td>
+                </tr>
+                <?php else: ?>
                 <tr class="total">
                     <th>총 결제금액 (VAT포함)</th>
-                    <td>₩<?php echo number_format(intval($order['money_2'])); ?></td>
+                    <td>₩<?php echo number_format($order_total); ?></td>
                 </tr>
+                <?php endif; ?>
                 <?php if (!empty($order['bank']) || !empty($order['bankname'])): ?>
                 <tr>
                     <th>입금은행</th>

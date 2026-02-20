@@ -16,7 +16,7 @@ $products = [
             ['id' => 'PN_type', 'label' => 'Size', 'placeholder' => 'Select size', 'depends_on' => 'MY_type', 'api' => '/mlangprintauto/inserted/get_paper_sizes.php?CV_no={MY_type}&page=inserted'],
             ['id' => 'POtype', 'label' => 'Print Side', 'type' => 'static', 'options' => [['value' => '1', 'text' => 'Single-Sided'], ['value' => '2', 'text' => 'Double-Sided']]],
             ['id' => 'MY_amount', 'label' => 'Quantity', 'placeholder' => 'Select quantity', 'depends_on' => 'PN_type', 'api' => '/mlangprintauto/inserted/get_quantities.php?MY_type={MY_type}&PN_type={PN_type}&MY_Fsd={MY_Fsd}&POtype={POtype}'],
-            ['id' => 'ordertype', 'label' => 'Design Service', 'type' => 'static', 'options' => [['value' => '1', 'text' => 'Print Only (I have files)'], ['value' => '2', 'text' => 'Design + Print (+fee)']]]
+            ['id' => 'ordertype', 'label' => 'Design Service', 'type' => 'static', 'options' => [['value' => 'print', 'text' => 'Print Only (I have files)'], ['value' => 'total', 'text' => 'Design + Print (+fee)']]]
         ],
         'price_api' => '/mlangprintauto/inserted/calculate_price_ajax.php',
         'cart_api' => '/mlangprintauto/inserted/add_to_basket.php',
@@ -35,7 +35,7 @@ $products = [
             ['id' => 'PN_type', 'label' => 'Size', 'placeholder' => 'Select size', 'depends_on' => 'Section', 'api' => '/mlangprintauto/littleprint/get_paper_sizes.php?section={Section}'],
             ['id' => 'POtype', 'label' => 'Print Side', 'type' => 'static', 'options' => [['value' => '1', 'text' => 'Single-Sided'], ['value' => '2', 'text' => 'Double-Sided']]],
             ['id' => 'MY_amount', 'label' => 'Quantity', 'placeholder' => 'Select quantity', 'depends_on' => 'PN_type', 'api' => '/mlangprintauto/littleprint/get_quantities.php?style={MY_type}&section={Section}&size={PN_type}&potype={POtype}'],
-            ['id' => 'ordertype', 'label' => 'Design Service', 'type' => 'static', 'options' => [['value' => '1', 'text' => 'Print Only'], ['value' => '2', 'text' => 'Design + Print']]]
+            ['id' => 'ordertype', 'label' => 'Design Service', 'type' => 'static', 'options' => [['value' => 'print', 'text' => 'Print Only'], ['value' => 'total', 'text' => 'Design + Print (+fee)']]]
         ],
         'price_api' => '/mlangprintauto/littleprint/calculate_price_ajax.php',
         'cart_api' => '/mlangprintauto/littleprint/add_to_basket.php',
@@ -53,7 +53,7 @@ $products = [
             ['id' => 'Section', 'label' => 'Paper Type', 'placeholder' => 'Select paper', 'depends_on' => 'MY_type', 'api' => '/mlangprintauto/merchandisebond/get_paper_types.php?style={MY_type}'],
             ['id' => 'POtype', 'label' => 'Print Side', 'type' => 'static', 'options' => [['value' => '1', 'text' => 'Single-Sided'], ['value' => '2', 'text' => 'Double-Sided']]],
             ['id' => 'MY_amount', 'label' => 'Quantity', 'placeholder' => 'Select quantity', 'depends_on' => 'Section', 'api' => '/mlangprintauto/merchandisebond/get_quantities.php?style={MY_type}&section={Section}&potype={POtype}'],
-            ['id' => 'ordertype', 'label' => 'Design Service', 'type' => 'static', 'options' => [['value' => '1', 'text' => 'Print Only'], ['value' => '2', 'text' => 'Design + Print']]]
+            ['id' => 'ordertype', 'label' => 'Design Service', 'type' => 'static', 'options' => [['value' => 'print', 'text' => 'Print Only'], ['value' => 'total', 'text' => 'Design + Print (+fee)']]]
         ],
         'price_api' => '/mlangprintauto/merchandisebond/calculate_price_ajax.php',
         'cart_api' => '/mlangprintauto/merchandisebond/add_to_basket.php',
@@ -69,8 +69,9 @@ $products = [
         'dropdowns' => [
             ['id' => 'MY_type', 'label' => 'Type', 'placeholder' => 'Select type'],
             ['id' => 'Section', 'label' => 'Size', 'placeholder' => 'Select size', 'depends_on' => 'MY_type', 'api' => '/mlangprintauto/msticker/get_paper_types.php?style={MY_type}'],
+            ['id' => 'POtype', 'label' => 'Print Side', 'type' => 'static', 'options' => [['value' => '1', 'text' => 'Single-Sided'], ['value' => '2', 'text' => 'Double-Sided']]],
             ['id' => 'MY_amount', 'label' => 'Quantity', 'placeholder' => 'Select quantity', 'depends_on' => 'Section', 'api' => '/mlangprintauto/msticker/get_quantities.php?style={MY_type}&Section={Section}'],
-            ['id' => 'ordertype', 'label' => 'Design Service', 'type' => 'static', 'options' => [['value' => '1', 'text' => 'Print Only'], ['value' => '2', 'text' => 'Design + Print']]]
+            ['id' => 'ordertype', 'label' => 'Design Service', 'type' => 'static', 'options' => [['value' => 'print', 'text' => 'Print Only'], ['value' => 'total', 'text' => 'Design + Print (+fee)']]]
         ],
         'price_api' => '/mlangprintauto/msticker/calculate_price_ajax.php',
         'cart_api' => '/mlangprintauto/msticker/add_to_basket.php',
@@ -88,7 +89,7 @@ $products = [
             ['id' => 'Section', 'label' => 'Paper Type', 'placeholder' => 'Select paper', 'depends_on' => 'MY_type', 'api' => '/mlangprintauto/envelope/get_paper_types.php?style={MY_type}'],
             ['id' => 'POtype', 'label' => 'Print Side', 'type' => 'static', 'options' => [['value' => '1', 'text' => 'Single-Sided'], ['value' => '2', 'text' => 'Double-Sided']]],
             ['id' => 'MY_amount', 'label' => 'Quantity', 'placeholder' => 'Select quantity', 'depends_on' => 'Section', 'api' => '/mlangprintauto/envelope/get_quantities.php?style={MY_type}&section={Section}&potype={POtype}'],
-            ['id' => 'ordertype', 'label' => 'Design Service', 'type' => 'static', 'options' => [['value' => '1', 'text' => 'Print Only'], ['value' => '2', 'text' => 'Design + Print']]]
+            ['id' => 'ordertype', 'label' => 'Design Service', 'type' => 'static', 'options' => [['value' => 'print', 'text' => 'Print Only'], ['value' => 'total', 'text' => 'Design + Print (+fee)']]]
         ],
         'price_api' => '/mlangprintauto/envelope/calculate_price_ajax.php',
         'cart_api' => '/mlangprintauto/envelope/add_to_basket.php',
@@ -106,7 +107,7 @@ $products = [
             ['id' => 'Section', 'label' => 'Paper / Material', 'placeholder' => 'Select paper', 'depends_on' => 'MY_type', 'api' => '/mlangprintauto/namecard/get_paper_types.php?style={MY_type}'],
             ['id' => 'POtype', 'label' => 'Print Side', 'type' => 'static', 'options' => [['value' => '1', 'text' => 'Single-Sided'], ['value' => '2', 'text' => 'Double-Sided']]],
             ['id' => 'MY_amount', 'label' => 'Quantity', 'placeholder' => 'Select quantity', 'depends_on' => 'Section', 'api' => '/mlangprintauto/namecard/get_quantities.php?style={MY_type}&section={Section}&potype={POtype}'],
-            ['id' => 'ordertype', 'label' => 'Design Service', 'type' => 'static', 'options' => [['value' => '1', 'text' => 'Print Only (I have files)'], ['value' => '2', 'text' => 'Design + Print (+fee)']]]
+            ['id' => 'ordertype', 'label' => 'Design Service', 'type' => 'static', 'options' => [['value' => 'print', 'text' => 'Print Only (I have files)'], ['value' => 'total', 'text' => 'Design + Print (+fee)']]]
         ],
         'price_api' => '/mlangprintauto/namecard/calculate_price_ajax.php',
         'cart_api' => '/mlangprintauto/namecard/add_to_basket.php',
@@ -124,7 +125,7 @@ $products = [
             ['id' => 'Section', 'label' => 'Paper Type', 'placeholder' => 'Select paper', 'depends_on' => 'MY_type', 'api' => '/mlangprintauto/cadarok/get_paper_types.php?style={MY_type}'],
             ['id' => 'POtype', 'label' => 'Print Side', 'type' => 'static', 'options' => [['value' => '1', 'text' => 'Single-Sided'], ['value' => '2', 'text' => 'Double-Sided']]],
             ['id' => 'MY_amount', 'label' => 'Quantity', 'placeholder' => 'Select quantity', 'depends_on' => 'Section', 'api' => '/mlangprintauto/cadarok/get_quantities.php?style={MY_type}&section={Section}&potype={POtype}'],
-            ['id' => 'ordertype', 'label' => 'Design Service', 'type' => 'static', 'options' => [['value' => '1', 'text' => 'Print Only'], ['value' => '2', 'text' => 'Design + Print']]]
+            ['id' => 'ordertype', 'label' => 'Design Service', 'type' => 'static', 'options' => [['value' => 'print', 'text' => 'Print Only'], ['value' => 'total', 'text' => 'Design + Print (+fee)']]]
         ],
         'price_api' => '/mlangprintauto/cadarok/calculate_price_ajax.php',
         'cart_api' => '/mlangprintauto/cadarok/add_to_basket.php',
@@ -142,7 +143,7 @@ $products = [
             ['id' => 'MY_Fsd', 'label' => 'Size', 'placeholder' => 'Select size', 'depends_on' => 'MY_type', 'api' => '/mlangprintauto/ncrflambeau/get_sizes.php?style={MY_type}'],
             ['id' => 'PN_type', 'label' => 'Color / Print Type', 'placeholder' => 'Select color', 'depends_on' => 'MY_type', 'api' => '/mlangprintauto/ncrflambeau/get_colors.php?style={MY_type}'],
             ['id' => 'MY_amount', 'label' => 'Quantity', 'placeholder' => 'Select quantity', 'depends_on' => 'PN_type', 'api' => '/mlangprintauto/ncrflambeau/get_quantities.php?style={MY_type}&section={MY_Fsd}&treeselect={PN_type}'],
-            ['id' => 'ordertype', 'label' => 'Design Service', 'type' => 'static', 'options' => [['value' => '1', 'text' => 'Print Only'], ['value' => '2', 'text' => 'Design + Print']]]
+            ['id' => 'ordertype', 'label' => 'Design Service', 'type' => 'static', 'options' => [['value' => 'print', 'text' => 'Print Only'], ['value' => 'total', 'text' => 'Design + Print (+fee)']]]
         ],
         'price_api' => '/mlangprintauto/ncrflambeau/calculate_price_ajax.php',
         'price_method' => 'POST',
@@ -678,6 +679,14 @@ if ($is_supported) {
 
             <div class="price-breakdown" id="priceBreakdown">
                 <div class="price-row">
+                    <span class="price-row-label">Print Cost</span>
+                    <span class="price-row-value" id="pricePrint">—</span>
+                </div>
+                <div class="price-row" id="priceDesignRow" style="display:none;">
+                    <span class="price-row-label">Design Fee</span>
+                    <span class="price-row-value" id="priceDesign">—</span>
+                </div>
+                <div class="price-row">
                     <span class="price-row-label">Supply Price</span>
                     <span class="price-row-value" id="priceSupply">—</span>
                 </div>
@@ -961,11 +970,34 @@ function showPriceLoading() {
     document.getElementById('btnCart').disabled = true;
 }
 
-function showPriceResult(supply, vat, total) {
+function showPriceResult(supply, vat, total, rawData) {
     document.getElementById('priceEmpty').style.display = 'none';
     document.getElementById('priceLoading').classList.remove('visible');
     document.getElementById('priceBreakdown').classList.add('visible');
     document.getElementById('priceError').classList.remove('visible');
+
+    // Parse print cost and design fee from raw API response
+    var printCost = 0, designCost = 0;
+    if (rawData) {
+        printCost = parsePrice(rawData.PriceForm || rawData.base_price || 0);
+        designCost = parsePrice(rawData.DS_PriceForm || rawData.design_price || 0);
+    }
+
+    // Show print cost
+    var printEl = document.getElementById('pricePrint');
+    if (printEl) printEl.textContent = '₩' + fmtNum(printCost || supply);
+
+    // Show/hide design fee row
+    var designRow = document.getElementById('priceDesignRow');
+    var designEl = document.getElementById('priceDesign');
+    if (designRow && designEl) {
+        if (designCost > 0) {
+            designRow.style.display = '';
+            designEl.textContent = '₩' + fmtNum(designCost);
+        } else {
+            designRow.style.display = 'none';
+        }
+    }
 
     document.getElementById('priceSupply').textContent = '₩' + fmtNum(supply);
     document.getElementById('priceVat').textContent = '₩' + fmtNum(vat);
@@ -998,6 +1030,12 @@ function tryCalculatePrice() {
 
     // Debounce 300ms
     priceTimer = setTimeout(function() { calculatePrice(); }, 300);
+}
+
+// Parse number that may contain commas (e.g. "84,000")
+function parsePrice(v) {
+    if (typeof v === 'number') return v;
+    return parseInt(String(v).replace(/,/g, '')) || 0;
 }
 
 function calculatePrice() {
@@ -1034,12 +1072,6 @@ function calculatePrice() {
             var d = resp;
             if (resp.data) d = resp.data;
 
-            // Parse number that may contain commas (e.g. "84,000")
-            function parsePrice(v) {
-                if (typeof v === 'number') return v;
-                return parseInt(String(v).replace(/,/g, '')) || 0;
-            }
-
             // Try to get supply price (before VAT)
             var supply = 0;
             if (typeof d.Order_PriceForm !== 'undefined') {
@@ -1070,7 +1102,7 @@ function calculatePrice() {
             else if (typeof d.vat_price !== 'undefined') total = parsePrice(d.vat_price);
 
             currentPriceData = { supply: supply, vat: vat, total: total, raw: d };
-            showPriceResult(supply, vat, total);
+            showPriceResult(supply, vat, total, d);
         })
         .catch(function(err) {
             console.error('Price calc error:', err);

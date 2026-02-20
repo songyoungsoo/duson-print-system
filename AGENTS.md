@@ -614,6 +614,25 @@ CREATE TABLE shipping_rates (
 5. ✅ **"추정"임을 반드시 명시** — 실제 무게와 다를 수 있음
 6. ✅ **확정 정보는 관리자 수동 입력** — 박스수/택배비/송장번호
 
+### 택배 선불 고객 화면 (A안, 2026-02-20)
+
+관리자가 택배비를 확정하면 고객에게도 자동으로 표시되는 시스템.
+고객이 직접 금액을 입력하지 않음 — 관리자 확정값만 표시.
+
+**적용 위치 4곳:**
+
+| 위치 | 파일 | 동작 |
+|------|------|------|
+| 마이페이지 주문목록 | `mypage/index.php` | 선불 택배비가 있으면 "+택배 N원" 표시 |
+| 마이페이지 주문상세 | `mypage/order_detail.php` | 배송비 행 추가 (공급가액+VAT=합계), 최종합계에 합산 |
+| 주문완료 페이지 | `OrderComplete_universal.php` | 선불 택배비 안내 배너 표시 |
+| 관리자 택배비 저장 시 이메일 | `includes/shipping_api.php` | `logen_save` 액션에서 고객 이메일 자동 발송 |
+
+**이메일 알림 내용:**
+- 주문번호, 운임구분(선불), 택배비 (VAT 별도)
+- "궁금한 점은 02-2632-1830" 안내
+- `mailer()` 함수 사용 (7번째 파라미터 `""` 필수, `ob_start()`/`ob_end_clean()` 래핑)
+
 ## 🔐 Authentication System
 
 ### System Architecture (4 Independent Layers)
@@ -1751,7 +1770,7 @@ setInterval(toggleWidgets, 60000);
 
 - **토글 버튼**: 88×88px 보라색 원형 (사이드바 `.fm-card` 크기 통일), "야간/당번" 라벨
 - **채팅 창**: 370×520px, 16px border-radius
-- **빠른 선택 버튼**: 명함, 전단지, 스티커, 봉투, 카다록, 포스터, 상품권, 자석스티커, 양식지 (9개 전 품목)
+- **빠른 선택 버튼**: 스티커/라벨, 전단지/리플렛, 명함/쿠폰, 봉투, 카다록, 포스터, 양식지, 상품권, 자석스티커 + "선택하세요" (네비게이션 순서 통일, 2026-02-20)
 - **메시지 버블**: 사용자(보라색 우측) / 봇(회색 좌측, "야간당번" 아바타)
 - **타이핑 인디케이터**: 3-dot 애니메이션
 - **모바일 반응형**: ≤768px에서 100% 너비
@@ -1908,6 +1927,30 @@ NCR양식지의 챗봇 대화 단계는 제품 페이지 드롭다운 순서와 
 5. ❌ 한국어 네비 `/includes/nav.php` 수정 금지 — EN 네비는 별도 파일
 6. ❌ 드롭다운 옵션 번역 없음 — "Option labels are shown in Korean" 안내 표시
 
+### EN 버전 버그 수정 기록 (2026-02-20)
+
+#### 디자인비 구분 오류 수정
+- **문제**: `order.php`의 `ordertype` 값이 `'1'`/`'2'`로 설정 → `PriceCalculationService.php`의 `design_type` 분기에서 `else` 진입 → 디자인 없음 선택 시에도 디자인비 포함
+- **원인**: `LEGACY_PARAM_MAP`이 `ordertype` → `design_type` 매핑. 값은 `'print'`(디자인 없음) 또는 `'total'`(디자인 포함)이어야 함
+- **수정**: 8개 제품의 `ordertype` 값 `'1'`→`'print'`, `'2'`→`'total'`로 변경
+- **파일**: `en/products/order.php`
+
+#### 스티커 장바구니 빈 응답 수정
+- **문제**: 장바구니에 스티커 추가 후 `get_basket_items.php`가 빈 body 반환
+- **원인**: `substr()`로 한글 텍스트(예: `"jil 아트유광코팅"`) 절단 → UTF-8 깨짐 → `json_encode()` 실패 → `false` 반환
+- **수정**: `substr()` → `mb_substr(…, 'UTF-8')`, `JSON_UNESCAPED_UNICODE` 플래그 추가, Fatal Error shutdown handler 추가
+- **파일**: `mlangprintauto/shop/get_basket_items.php`
+
+#### 자석스티커 사이즈 드롭다운 비어있음 수정
+- **문제**: `get_paper_types.php`에서 `'Ttable' => 'NameCard'` (복사 실수)
+- **수정**: `'Ttable' => 'msticker'`
+- **파일**: `mlangprintauto/msticker/get_paper_types.php`
+
+#### 자석스티커 장바구니 안됨 수정
+- **문제**: `add_to_basket.php`가 `POtype` 필수인데 EN `order.php`의 msticker 설정에 `POtype` 드롭다운 누락
+- **수정**: msticker 설정에 `POtype` static 드롭다운 추가 (단면인쇄/양면인쇄)
+- **파일**: `en/products/order.php`
+
 ### 제품 바 버튼 매핑
 
 | 버튼 | key | 링크 |
@@ -1922,6 +1965,33 @@ NCR양식지의 챗봇 대화 단계는 제품 페이지 드롭다운 순서와 
 | Gift Vouchers | merchandisebond | `/en/products/order.php?type=merchandisebond` |
 | Magnetic Stickers | msticker | `/en/products/order.php?type=msticker` |
 
+### 대시보드 주문관리 개선 (2026-02-20)
+
+**구현 위치**: `dashboard/orders/index.php`, `dashboard/api/orders.php`
+
+**인라인 상태 변경**: 주문 목록에서 직접 상태 드롭다운으로 OrderStyle 변경 (기존: view.php 진입 필요)
+```javascript
+// 드롭다운 변경 → fetch('/dashboard/api/orders.php', {action:'update', id, OrderStyle})
+// 성공 시 행 배경색 flash + 원래 색상 복원
+```
+
+**배송 컬럼 추가**: 주문 목록에 배송방법/운임구분/택배비 표시 (택배 선불 시 금액 표시)
+
+**스크롤 + 페이지네이션**: `overflow-y-auto` + 하단 `총 N건 · X/Y 페이지` 네비게이션
+
+### 대시보드 결제현황 개선 (2026-02-20)
+
+**구현 위치**: `dashboard/payments/index.php`
+
+- `main` 요소에 `overflow-y-auto` 추가
+- 하단 페이지네이션 `총 N건 · X/Y 페이지` 형식으로 개선
+
+### 대시보드 이모지 제거 (2026-02-20)
+
+**적용 위치**: `dashboard/orders/index.php`, `dashboard/orders/view.php`, `dashboard/proofs/index.php`
+
+모든 섹션 제목/카드 헤더에서 이모지 제거. 아이콘 대신 텍스트만 사용.
+
 ## 📚 Documentation References
 
 - Master Specification: `CLAUDE_DOCS/Duson_System_Master_Spec_v1.0.md`
@@ -1932,5 +2002,5 @@ NCR양식지의 챗봇 대화 단계는 제품 페이지 드롭다운 순서와 
 
 ---
 
-*Last Updated: 2026-02-20 (영문 버전 네비게이션·주문플로우·대시보드 토글, AI챗봇 클릭형 선택지·야간당번 브랜딩·9품목·NCR단계수정·조사판별, 직원채팅/AI챗봇 배타적 전환, 홈페이지 실시간 견적 라이브 데모, 캐로셀 dot 하단 조정, 택배비 VAT 계산, 관리자 주문등록 택배비 선불, 채팅창 팝업 제어, 견적 목록 삭제/일괄삭제, 마이그레이션 파일동기화 min_no/min_year 필터링 버그수정)*
+*Last Updated: 2026-02-20 (EN 디자인비·스티커장바구니·자석스티커 버그수정, AI챗봇 버튼 네비순서 통일, 택배선불 고객화면 A안, 대시보드 주문관리 인라인상태·배송컬럼·스크롤·페이지네이션, 결제현황 스크롤·페이지네이션, 이모지 제거)*
 *Environment: WSL2 Ubuntu + Windows XAMPP + Production Deployment*

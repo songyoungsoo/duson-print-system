@@ -13,7 +13,7 @@ if (empty($style)) {
 
 // 'style'은 transactioncate 테이블의 'BigNo'에 해당합니다.
 $options = getDropdownOptions($db, "mlangprintauto_transactioncate", [
-    'Ttable' => 'NameCard',
+    'Ttable' => 'msticker',
     'BigNo' => $style
 ], 'no ASC');
 

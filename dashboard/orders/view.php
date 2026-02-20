@@ -387,7 +387,7 @@ include __DIR__ . '/../includes/sidebar.php';
                         </div>
                         <?php if ($has_prepaid_shipping): ?>
                         <div class="flex justify-between py-0.5">
-                            <span class="text-gray-500">🚚 택배비 (선불)</span>
+                            <span class="text-gray-500">택배비 (선불)</span>
                             <span class="text-gray-900"><?php echo number_format($shipping_supply); ?>+VAT <?php echo number_format($shipping_vat); ?> = <?php echo number_format($shipping_total); ?>원</span>
                         </div>
                         <div class="flex justify-between py-0.5 border-t border-gray-200 mt-0.5">
@@ -518,7 +518,7 @@ include __DIR__ . '/../includes/sidebar.php';
                         </div>
                         <?php if ($has_prepaid_shipping): ?>
                         <div class="flex justify-between pt-1 border-t border-gray-100 mt-1">
-                            <dt class="text-gray-500">🚚 택배비(선불)</dt>
+                            <dt class="text-gray-500">택배비(선불)</dt>
                             <dd class="text-gray-900"><?php echo number_format($shipping_supply); ?>+VAT <?php echo number_format($shipping_vat); ?> = <?php echo number_format($shipping_total); ?>원</dd>
                         </div>
                         <div class="flex justify-between">

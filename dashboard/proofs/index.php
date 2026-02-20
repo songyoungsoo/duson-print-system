@@ -191,11 +191,11 @@ include __DIR__ . '/../includes/sidebar.php';
                                     <span class="text-gray-400 text-xs">없음</span>
                                 <?php elseif ($file_count === 1): ?>
                                     <span class="inline-flex items-center gap-1 px-1.5 py-0.5 text-xs font-medium rounded-full bg-blue-50 text-blue-600">
-                                        📄 1개
+                                        1개
                                     </span>
                                 <?php else: ?>
                                     <span class="inline-flex items-center gap-1 px-1.5 py-0.5 text-xs font-medium rounded-full bg-amber-50 text-amber-700 ring-1 ring-amber-200">
-                                        📑 <?php echo $file_count; ?>개
+                                        <?php echo $file_count; ?>개
                                         <span class="text-[10px] text-amber-500"><?php echo $order['latest_date']; ?></span>
                                     </span>
                                 <?php endif; ?>
@@ -204,7 +204,7 @@ include __DIR__ . '/../includes/sidebar.php';
                             <td class="px-2 py-1 text-center">
                                 <?php if (!empty($order['files'])): ?>
                                 <button onclick="viewFiles(<?php echo $order['no']; ?>)" class="relative px-1.5 py-0.5 text-xs bg-blue-50 text-blue-600 rounded hover:bg-blue-100" title="교정파일 보기">
-                                    🔍보기
+                                    보기
                                     <?php if (count($order['files']) > 1): ?>
                                     <span class="absolute -top-1.5 -right-1.5 min-w-[14px] h-3.5 flex items-center justify-center px-0.5 text-[9px] font-bold text-white bg-amber-500 rounded-full leading-none"><?php echo count($order['files']); ?></span>
                                     <?php endif; ?>
@@ -214,7 +214,7 @@ include __DIR__ . '/../includes/sidebar.php';
                                 <?php endif; ?>
                             </td>
                             <td class="px-2 py-1 text-center">
-                                <button onclick="openUpload(<?php echo $order['no']; ?>)" class="px-1.5 py-0.5 text-xs bg-green-50 text-green-600 rounded hover:bg-green-100" title="파일 올리기">📤올리기</button>
+                                <button onclick="openUpload(<?php echo $order['no']; ?>)" class="px-1.5 py-0.5 text-xs bg-green-50 text-green-600 rounded hover:bg-green-100" title="파일 올리기">올리기</button>
                             </td>
                         </tr>
                         <?php $loop_idx++; endforeach; ?>
@@ -420,12 +420,12 @@ include __DIR__ . '/../includes/sidebar.php';
     <div id="proofConfirmArea" class="proof-confirm-area">
         <div id="proofConfirmContent">
             <button id="proofConfirmBtn" type="button" class="proof-confirm-btn">
-                📝 교정확정
+                교정확정
             </button>
             <p class="proof-confirm-notice">오탈자 및 전체를 잘 확인 후 클릭해주세요</p>
         </div>
         <div id="proofConfirmedMsg" class="proof-confirmed-msg" style="display: none;">
-            ✅ 인쇄진행
+            인쇄진행
         </div>
     </div>
 
@@ -1222,13 +1222,13 @@ function confirmProofreading() {
         } else {
             showToast(data.message || '처리 중 오류가 발생했습니다.', 'error');
             btn.disabled = false;
-            btn.textContent = '📝 교정확정';
+            btn.textContent = '교정확정';
         }
     })
     .catch(function() {
         showToast('네트워크 오류', 'error');
         btn.disabled = false;
-        btn.textContent = '📝 교정확정';
+        btn.textContent = '교정확정';
     });
 }
 
@@ -1374,7 +1374,7 @@ function renderFileList() {
         if (isImg) {
             thumb = '<img src="' + URL.createObjectURL(f) + '" class="w-10 h-10 object-cover rounded flex-shrink-0">';
         } else {
-            var icons = {'.pdf':'📄','.ai':'🎨','.psd':'🎨','.zip':'📦'};
+            var icons = {'.pdf':'PDF','.ai':'AI','.psd':'PSD','.zip':'ZIP'};
             thumb = '<span class="w-10 h-10 flex items-center justify-center bg-gray-100 rounded text-base flex-shrink-0">' + (icons[ext]||'📎') + '</span>';
         }
         html += '<div class="flex items-center gap-2 p-2 bg-gray-50 rounded text-xs group">'
@@ -1508,7 +1508,7 @@ function updateRowFileCount(orderNo) {
                         var viewBtn = document.createElement('button');
                         viewBtn.className = 'relative px-2 py-1 text-xs bg-blue-50 text-blue-600 rounded hover:bg-blue-100';
                         viewBtn.title = '교정파일 보기';
-                        viewBtn.textContent = '🔍보기';
+                        viewBtn.textContent = '보기';
                         viewBtn.setAttribute('data-view-btn', '1');
                         viewBtn.onclick = function() { viewFiles(orderNo); };
                         actionTd.insertBefore(viewBtn, actionTd.firstChild);
