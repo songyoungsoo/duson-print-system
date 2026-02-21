@@ -278,6 +278,25 @@ function saveQuote() {
 }
 
 function formatNumber(n) { const v = parseFloat(n); return isNaN(v) ? '0' : v.toLocaleString('ko-KR', {maximumFractionDigits:1}); }
+
+(function() {
+    if (!window.opener) return;
+    function fitWindow() {
+        var body = document.body, html = document.documentElement;
+        var contentH = Math.max(body.scrollHeight, body.offsetHeight, html.scrollHeight);
+        var contentW = Math.max(body.scrollWidth, body.offsetWidth, html.scrollWidth);
+        var chromeH = window.outerHeight - window.innerHeight;
+        var chromeW = window.outerWidth - window.innerWidth;
+        var targetW = Math.min(Math.max(contentW + chromeW + 60, 900), screen.availWidth - 40);
+        var targetH = Math.min(contentH + chromeH + 60, screen.availHeight - 40);
+        window.resizeTo(targetW, targetH);
+        var left = Math.round((screen.availWidth - targetW) / 2);
+        var top = Math.round((screen.availHeight - targetH) / 2);
+        window.moveTo(Math.max(0, left), Math.max(0, top));
+    }
+    if (document.readyState === 'complete') fitWindow();
+    else window.addEventListener('load', fitWindow);
+})();
 </script>
 </body>
 </html>

@@ -167,7 +167,7 @@ include __DIR__ . '/../includes/sidebar.php';
         <div class="qt-page-header">
             <h1>견적 관리</h1>
             <div style="display:flex;gap:6px;">
-                <a href="/admin/mlangprintauto/quote/create.php" target="_blank" class="qt-toolbar toolbar-btn" style="color:#fff;border-color:rgba(255,255,255,0.5);background:rgba(255,255,255,0.15);font-size:12px;">+ 새 견적</a>
+                <a href="#" onclick="openQuotePopup('/admin/mlangprintauto/quote/create.php', 'quote_create'); return false;" class="qt-toolbar toolbar-btn" style="color:#fff;border-color:rgba(255,255,255,0.5);background:rgba(255,255,255,0.15);font-size:12px;">+ 새 견적</a>
             </div>
         </div>
 
@@ -245,9 +245,9 @@ include __DIR__ . '/../includes/sidebar.php';
                         <td><?php if (!empty($q['item_summary'])): ?><span class="items-text"><?php echo htmlspecialchars($q['item_summary']); ?><?php if ($q['item_count'] > 1) echo " ({$q['item_count']}건)"; ?></span><?php endif; ?></td>
                         <td class="td-right" style="font-weight:600;"><?php echo number_format(intval($q['grand_total'])); ?>원</td>
                         <td>
-                            <a href="/admin/mlangprintauto/quote/detail.php?id=<?php echo $q['id']; ?>" target="_blank" class="action-link">상세</a>
-                            <a href="/admin/mlangprintauto/quote/edit.php?id=<?php echo $q['id']; ?>" target="_blank" class="action-link">수정</a>
-                            <a href="/admin/mlangprintauto/quote/preview.php?id=<?php echo $q['id']; ?>" target="_blank" class="action-link action-link-preview">미리보기</a>
+                            <a href="#" onclick="openQuotePopup('/admin/mlangprintauto/quote/detail.php?id=<?php echo $q['id']; ?>', 'quote_detail_<?php echo $q['id']; ?>'); return false;" class="action-link">상세</a>
+                            <a href="#" onclick="openQuotePopup('/admin/mlangprintauto/quote/edit.php?id=<?php echo $q['id']; ?>', 'quote_edit_<?php echo $q['id']; ?>'); return false;" class="action-link">수정</a>
+                            <a href="#" onclick="openQuotePopup('/admin/mlangprintauto/quote/preview.php?id=<?php echo $q['id']; ?>', 'quote_preview_<?php echo $q['id']; ?>'); return false;" class="action-link action-link-preview">미리보기</a>
                             <a href="#" onclick="deleteQuote(<?php echo $q['id']; ?>, '<?php echo htmlspecialchars($q['quote_no'], ENT_QUOTES); ?>'); return false;" class="action-link action-link-delete">삭제</a>
                         </td>
                     </tr>
@@ -315,6 +315,14 @@ include __DIR__ . '/../includes/sidebar.php';
 </main>
 
 <script>
+function openQuotePopup(url, name) {
+    var w = Math.min(960, screen.availWidth - 40);
+    var h = Math.min(screen.availHeight - 40, screen.availHeight * 0.92);
+    var left = Math.round((screen.availWidth - w) / 2);
+    var top = Math.round((screen.availHeight - h) / 2);
+    window.open(url, name, 'width=' + w + ',height=' + h + ',left=' + left + ',top=' + top + ',scrollbars=yes,resizable=yes');
+}
+
 function deleteQuote(id, quoteNo) {
     if (!confirm('견적 [' + quoteNo + '] 을(를) 삭제하시겠습니까?\n삭제 후 복구할 수 없습니다.')) return;
     fetch('/dashboard/api/quotes.php', {

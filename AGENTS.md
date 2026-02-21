@@ -1058,6 +1058,24 @@ $seqQuery = "SELECT quote_no FROM quote_requests WHERE quote_no LIKE ? ORDER BY 
 
 **⚠️ 하드 삭제** — `admin_quotes` + `admin_quote_items` 에서 완전 삭제 (복구 불가)
 
+### 견적서 팝업 창 (2026-02-21)
+
+**대시보드 견적 목록** (`/dashboard/quotes/index.php`)에서 상세/수정/미리보기/새 견적 클릭 시 팝업 창으로 열림.
+
+**동작 방식**:
+- `window.open()` 팝업 (초기 960px × 화면 92%)
+- 각 페이지 로드 후 콘텐츠 높이/너비 측정 → `window.resizeTo()` 자동 조절 + 화면 중앙 재배치
+- `window.opener` 존재 시에만 리사이즈 실행 (직접 URL 접속 시에는 일반 페이지)
+
+**적용 파일 (5개)**:
+| 파일 | 팝업 이름 |
+|------|----------|
+| `dashboard/quotes/index.php` | `openQuotePopup()` 공통 함수 |
+| `admin/mlangprintauto/quote/detail.php` | 견적 상세 |
+| `admin/mlangprintauto/quote/edit.php` | 견적 수정 |
+| `admin/mlangprintauto/quote/preview.php` | 견적 미리보기 |
+| `admin/mlangprintauto/quote/create.php` | 새 견적 작성 |
+
 ### 이메일 발송 제한
 - SMTP: 네이버 (`smtp.naver.com:465/ssl`, dsp1830)
 - 네이버→네이버: ✅ 정상
@@ -2163,5 +2181,5 @@ NCR양식지의 챗봇 대화 단계는 제품 페이지 드롭다운 순서와 
 
 ---
 
-*Last Updated: 2026-02-21 (AI챗봇 지식기반Q&A 추가(ChatbotKnowledge.php), isKnowledgeQuestion 라우팅, maxOutputTokens 200→500, 채팅창 사이드바정렬·hover중단, 버튼 10%축소·드래그이동·2줄배치·플레이스홀더변경, 스티커 수학공식 챗봇 지원, ChatbotService 자동선택·제품재시작 개선, 자석스티커 detectProduct 키워드순서 버그수정, 채팅창 스크롤격리)*
+*Last Updated: 2026-02-21 (견적서 팝업창 5개 페이지 적용(상세/수정/미리보기/새견적/목록), window.open+resizeTo 자동크기조절, AI챗봇 지식기반Q&A 추가(ChatbotKnowledge.php), isKnowledgeQuestion 라우팅, maxOutputTokens 200→500, 채팅창 사이드바정렬·hover중단, 버튼 10%축소·드래그이동·2줄배치·플레이스홀더변경, 스티커 수학공식 챗봇 지원, ChatbotService 자동선택·제품재시작 개선, 자석스티커 detectProduct 키워드순서 버그수정, 채팅창 스크롤격리)*
 *Environment: WSL2 Ubuntu + Windows XAMPP + Production Deployment*

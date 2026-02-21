@@ -58,54 +58,48 @@ try {
         left: 0;
         right: 0;
         background: #1E4E79;
-        padding: 12px 20px;
+        padding: 8px 20px;
         display: flex;
         justify-content: space-between;
         align-items: center;
         box-shadow: 0 2px 10px rgba(0,0,0,0.2);
         z-index: 9999;
     ">
-        <div style="color: white; font-size: 16px; font-weight: 600;">
-            📄 견적서 미리보기 - {$quote['quote_no']}
+        <div style="color: white; font-size: 14px; font-weight: 600;">
+            견적서 미리보기 - {$quote['quote_no']}
         </div>
-        <div style="display: flex; gap: 10px;">
+        <div style="display: flex; gap: 8px;">
             <button onclick="window.print();" style="
-                padding: 10px 24px;
-                font-size: 14px;
+                padding: 6px 16px;
+                font-size: 13px;
                 font-weight: 600;
                 cursor: pointer;
                 border: none;
-                border-radius: 6px;
+                border-radius: 5px;
                 background: #48bb78;
                 color: white;
-                display: flex;
-                align-items: center;
-                gap: 6px;
-            ">🖨️ 인쇄하기</button>
+            ">인쇄</button>
             <a href="api/generate_pdf.php?id={$quoteId}" style="
-                padding: 10px 24px;
-                font-size: 14px;
+                padding: 6px 16px;
+                font-size: 13px;
                 font-weight: 600;
                 cursor: pointer;
                 border: none;
-                border-radius: 6px;
+                border-radius: 5px;
                 background: #e53e3e;
                 color: white;
                 text-decoration: none;
-                display: flex;
-                align-items: center;
-                gap: 6px;
-            ">📥 PDF 저장</a>
+            ">PDF</a>
             <button onclick="window.close();" style="
-                padding: 10px 24px;
-                font-size: 14px;
+                padding: 6px 16px;
+                font-size: 13px;
                 font-weight: 600;
                 cursor: pointer;
                 border: none;
-                border-radius: 6px;
+                border-radius: 5px;
                 background: #718096;
                 color: white;
-            ">✕ 닫기</button>
+            ">닫기</button>
         </div>
     </div>
     <style>
@@ -115,6 +109,29 @@ try {
         }
         body { padding-top: 0 !important; padding-right: 0 !important; padding-bottom: 0 !important; padding-left: 0 !important; }
     </style>
+    <script>
+    (function() {
+        function fitWindow() {
+            if (!window.opener) return;
+            var toolbar = document.querySelector('.preview-toolbar');
+            var toolbarH = toolbar ? toolbar.offsetHeight : 40;
+            var body = document.body;
+            var html = document.documentElement;
+            var contentH = Math.max(body.scrollHeight, body.offsetHeight, html.scrollHeight, html.offsetHeight);
+            var contentW = Math.max(body.scrollWidth, body.offsetWidth, html.scrollWidth);
+            var chromeH = window.outerHeight - window.innerHeight;
+            var chromeW = window.outerWidth - window.innerWidth;
+            var targetW = Math.min(Math.max(contentW + chromeW + 60, 900), screen.availWidth - 40);
+            var targetH = Math.min(contentH + toolbarH + chromeH + 60, screen.availHeight - 40);
+            window.resizeTo(targetW, targetH);
+            var left = Math.round((screen.availWidth - targetW) / 2);
+            var top = Math.round((screen.availHeight - targetH) / 2);
+            window.moveTo(Math.max(0, left), Math.max(0, top));
+        }
+        if (document.readyState === 'complete') { fitWindow(); }
+        else { window.addEventListener('load', fitWindow); }
+    })();
+    </script>
 HTML;
 
     // </body> 태그 앞에 툴바 삽입
