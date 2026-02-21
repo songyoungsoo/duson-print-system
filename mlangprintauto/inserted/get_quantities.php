@@ -89,5 +89,17 @@ if ($result) {
 
 mysqli_close($connect);
 
+// 0.5연을 맨 아래로 이동
+$half = [];
+$rest = [];
+foreach ($quantities as $q) {
+    if (floatval($q['value']) == 0.5) {
+        $half[] = $q;
+    } else {
+        $rest[] = $q;
+    }
+}
+$quantities = array_merge($rest, $half);
+
 echo json_encode($quantities);
 ?>

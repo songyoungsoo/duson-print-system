@@ -9,7 +9,11 @@ mysqli_set_charset($db, 'utf8');
 
 $types = [];
 $r = mysqli_query($db, "SELECT no, title FROM mlangprintauto_transactioncate WHERE Ttable='inserted' AND BigNo='0' ORDER BY TreeNo, no");
-if ($r) { while ($row = mysqli_fetch_assoc($r)) { $types[] = $row; } }
+if ($r) { while ($row = mysqli_fetch_assoc($r)) {
+    // 독판인쇄(레거시) 제외
+    if (strpos($row['title'], '독판') !== false || strpos($row['title'], '레거시') !== false) continue;
+    $types[] = $row;
+} }
 
 // 추가옵션 가격을 DB에서 조회 (additional_options_config)
 $addOpts = ['coating' => [], 'folding' => [], 'creasing' => []];
@@ -206,6 +210,13 @@ function loadQuantities() {
     if (!style || !section || !tree) { qty.innerHTML = '<option value="">상위 항목을 선택</option>'; resetPrice(); return; }
     var url = OPT_URL + '?table=inserted&source=price&field=quantity&filter_style=' + style + '&filter_Section=' + section + '&filter_TreeSelect=' + tree + '&filter_POtype=' + document.getElementById('POtype').value;
     fetch(url, {credentials: 'same-origin'}).then(function(r) { return r.json(); }).then(function(data) {
+        // 0.5연을 맨 아래로 이동
+        var half = [], rest = [];
+        for (var k = 0; k < data.length; k++) {
+            if (parseFloat(data[k].title) === 0.5) half.push(data[k]);
+            else rest.push(data[k]);
+        }
+        data = rest.concat(half);
         qty.innerHTML = '<option value="">선택</option>';
         for (var i = 0; i < data.length; i++) { var o = document.createElement('option'); o.value = data[i].no; var n = parseFloat(data[i].title); o.textContent = n ? n.toLocaleString() + '연' : data[i].title; qty.appendChild(o); }
         if (data.length >= 1) { qty.value = data[0].no; qty.dispatchEvent(new Event('change')); }

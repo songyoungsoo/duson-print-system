@@ -167,7 +167,7 @@ include __DIR__ . '/../includes/sidebar.php';
         <div class="qt-page-header">
             <h1>견적 관리</h1>
             <div style="display:flex;gap:6px;">
-                <a href="#" onclick="openQuotePopup('/admin/mlangprintauto/quote/create.php', 'quote_create'); return false;" class="qt-toolbar toolbar-btn" style="color:#fff;border-color:rgba(255,255,255,0.5);background:rgba(255,255,255,0.15);font-size:12px;">+ 새 견적</a>
+                <a href="#" onclick="openQuotePopup('/admin/mlangprintauto/quote/create.php?popup=1', 'quote_create'); return false;" class="qt-toolbar toolbar-btn" style="color:#fff;border-color:rgba(255,255,255,0.5);background:rgba(255,255,255,0.15);font-size:12px;">+ 새 견적</a>
             </div>
         </div>
 

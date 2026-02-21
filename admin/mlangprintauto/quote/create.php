@@ -19,12 +19,30 @@ $newQuoteNo = $quoteManager->generateQuoteNo();
 $tempItems = $quoteManager->getTempItems($adminSessionId);
 $unitOptions = ['매', '연', '부', '권', '개', '장', '식'];
 
-// 사이드바 active 표시를 위해 현재 경로 오버라이드
-$_SERVER['REQUEST_URI'] = '/dashboard/quotes/';
+// 팝업 모드 감지
+$isPopup = !empty($_GET['popup']);
 
-include __DIR__ . '/../../../dashboard/includes/header.php';
-include __DIR__ . '/../../../dashboard/includes/sidebar.php';
+if (!$isPopup) {
+    // 사이드바 active 표시를 위해 현재 경로 오버라이드
+    $_SERVER['REQUEST_URI'] = '/dashboard/quotes/';
+    include __DIR__ . '/../../../dashboard/includes/header.php';
+    include __DIR__ . '/../../../dashboard/includes/sidebar.php';
+}
 ?>
+
+<?php if ($isPopup): ?>
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>새 견적서 작성</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <style>body { font-family: 'Noto Sans KR', sans-serif; }</style>
+</head>
+<body class="bg-gray-50">
+<?php endif; ?>
 
 <main class="flex-1 bg-gray-50">
     <div class="max-w-5xl mx-auto px-4 py-2">
@@ -72,7 +90,7 @@ include __DIR__ . '/../../../dashboard/includes/sidebar.php';
                 </div>
             </div>
             <!-- 컬럼 헤더 -->
-            <div class="grid items-center text-xs font-medium px-1 border-b border-gray-200" style="grid-template-columns:36px 1fr 2fr 70px 80px 90px 28px;background:#f9fafb;color:#6b7280;letter-spacing:0.025em;">
+            <div class="grid items-center text-xs font-medium px-1 border-b border-gray-200" style="grid-template-columns:36px minmax(0,1fr) minmax(0,2fr) 70px 80px 90px 28px;background:#f9fafb;color:#6b7280;letter-spacing:0.025em;overflow:hidden;">
                 <span class="py-1.5 text-center">NO</span>
                 <span class="py-1.5 px-2">품목</span>
                 <span class="py-1.5 px-2">규격/옵션</span>
@@ -335,7 +353,7 @@ function renderItems() {
         return;
     }
 
-    const colStyle = '36px 1fr 2fr 70px 80px 90px 28px';
+    const colStyle = '36px minmax(0,1fr) minmax(0,2fr) 70px 80px 90px 28px';
 
     items.forEach((item, i) => {
         const unitPrice = item.unit_price > 0 ? Math.round(item.unit_price) : (item.quantity > 0 ? Math.round(item.supply_price / item.quantity) : 0);
@@ -344,7 +362,8 @@ function renderItems() {
         const row = document.createElement('div');
         row.className = 'grid items-center px-1 border-b border-gray-100 transition-colors';
         row.style.gridTemplateColumns = colStyle;
-        row.style.height = '33px';
+        row.style.minHeight = '33px';
+        row.style.overflow = 'hidden';
         row.style.backgroundColor = i % 2 === 1 ? '#e6f7ff' : '#fff';
         row.onmouseenter = function(){ this.style.backgroundColor='#dbeafe'; };
         row.onmouseleave = function(){ this.style.backgroundColor = i % 2 === 1 ? '#e6f7ff' : '#fff'; };
@@ -358,12 +377,17 @@ function renderItems() {
         // 품목
         const nameEl = document.createElement('span');
         nameEl.className = 'py-1.5 px-2 text-sm font-medium text-gray-900 truncate';
+        nameEl.style.minWidth = '0';
+        nameEl.style.overflow = 'hidden';
         nameEl.textContent = item.product_name;
         row.appendChild(nameEl);
 
         // 규격/옵션
         const specEl = document.createElement('span');
         specEl.className = 'py-1.5 px-2 text-xs text-gray-500 leading-snug';
+        specEl.style.minWidth = '0';
+        specEl.style.overflow = 'hidden';
+        specEl.style.wordBreak = 'break-all';
         if (item.specification) {
             const specParts = item.specification.split('\n');
             specParts.forEach((part, pi) => {
@@ -587,4 +611,9 @@ window.addEventListener('message', function(e) {
 })();
 </script>
 
+<?php if ($isPopup): ?>
+</body>
+</html>
+<?php else: ?>
 <?php include __DIR__ . '/../../../dashboard/includes/footer.php'; ?>
+<?php endif; ?>
