@@ -2181,5 +2181,5 @@ NCR양식지의 챗봇 대화 단계는 제품 페이지 드롭다운 순서와 
 
 ---
 
-*Last Updated: 2026-02-21 (견적서 팝업창 5개 페이지 적용(상세/수정/미리보기/새견적/목록), window.open+resizeTo 자동크기조절, AI챗봇 지식기반Q&A 추가(ChatbotKnowledge.php), isKnowledgeQuestion 라우팅, maxOutputTokens 200→500, 채팅창 사이드바정렬·hover중단, 버튼 10%축소·드래그이동·2줄배치·플레이스홀더변경, 스티커 수학공식 챗봇 지원, ChatbotService 자동선택·제품재시작 개선, 자석스티커 detectProduct 키워드순서 버그수정, 채팅창 스크롤격리)*
+*Last Updated: 2026-02-22 (주문페이지 입금자명≠주문자명 경고 모달 2회 표시, 관리자페이지 입금자명 불일치 시 적색배경+흰색글씨 강조(OrderFormOrderTree 3곳+dashboard view), 디자인 의뢰 모달 개편: 요청사항 라벨/서브텍스트 삭제·텍스트에어리어 확대·주의사항 한 박스 통합·중요항목 크게/참고항목 작게)*
 *Environment: WSL2 Ubuntu + Windows XAMPP + Production Deployment*

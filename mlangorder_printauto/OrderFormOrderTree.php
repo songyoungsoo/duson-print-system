@@ -137,6 +137,8 @@ $View_delivery = htmlspecialchars($row['delivery']);
 $View_bizname = htmlspecialchars($row['bizname']);
 $View_bank = htmlspecialchars($row['bank']);
 $View_bankname = htmlspecialchars($row['bankname']);
+// 주문자명 ≠ 입금자명 비교 (적색 경고 표시용)
+$bankname_mismatch = (!empty($row['bankname']) && trim($row['bankname']) !== '' && trim($row['name']) !== trim($row['bankname']));
 $View_cont = htmlspecialchars($row['cont']);
 $View_date = htmlspecialchars($row['date']);
 $View_OrderStyle = htmlspecialchars($row['OrderStyle']);
@@ -1012,7 +1014,7 @@ function getOrderItemInfo($summary_item, $specFormatter) {
                             <th style="border: 0.3pt solid #000; background: #f0f0f0; padding: 1mm 2mm; width: 8%; text-align: center;">결제</th>
                             <td style="border: 0.3pt solid #000; padding: 1mm 2mm; width: 15%;"><?= htmlspecialchars($View_bank) ?></td>
                             <th style="border: 0.3pt solid #000; background: #f0f0f0; padding: 1mm 2mm; width: 8%; text-align: center;">입금자</th>
-                            <td style="border: 0.3pt solid #000; padding: 1mm 2mm;"><?= htmlspecialchars($View_bankname) ?></td>
+                            <td style="border: 0.3pt solid #000; padding: 1mm 2mm;<?php if ($bankname_mismatch): ?> background: #c0392b; color: #fff; font-weight: bold;<?php endif; ?>"><?= htmlspecialchars($View_bankname) ?><?php if ($bankname_mismatch): ?> ⚠<?php endif; ?></td>
                         </tr>
                         <?php if (!empty($View_bizname)) { ?>
                         <tr>
@@ -1284,7 +1286,7 @@ function getOrderItemInfo($summary_item, $specFormatter) {
                             <th style="border: 0.3pt solid #000; background: #f0f0f0; padding: 1mm 2mm; width: 8%; text-align: center;">결제</th>
                             <td style="border: 0.3pt solid #000; padding: 1mm 2mm; width: 15%;"><?= htmlspecialchars($View_bank) ?></td>
                             <th style="border: 0.3pt solid #000; background: #f0f0f0; padding: 1mm 2mm; width: 8%; text-align: center;">입금자</th>
-                            <td style="border: 0.3pt solid #000; padding: 1mm 2mm;"><?= htmlspecialchars($View_bankname) ?></td>
+                            <td style="border: 0.3pt solid #000; padding: 1mm 2mm;<?php if ($bankname_mismatch): ?> background: #c0392b; color: #fff; font-weight: bold;<?php endif; ?>"><?= htmlspecialchars($View_bankname) ?><?php if ($bankname_mismatch): ?> ⚠<?php endif; ?></td>
                         </tr>
                         <?php if (!empty($View_bizname)) { ?>
                         <tr>
@@ -1779,8 +1781,8 @@ function getOrderItemInfo($summary_item, $specFormatter) {
                         <td style="border: 1px solid #999; padding: 4px 8px;"><input name="bank" type="text" style="width: 100%; box-sizing: border-box; border: 1px solid #ccc; padding: 4px 6px; font-size: 12px;" value='<?= $View_bank ?>'></td>
                     </tr>
                     <tr>
-                        <th style="background: #E0E0E0; border: 1px solid #999; padding: 6px 10px; font-size: 11px; text-align: center;">입금자명</th>
-                        <td style="border: 1px solid #999; padding: 4px 8px;"><input name="bankname" type="text" style="width: 100%; box-sizing: border-box; border: 1px solid #ccc; padding: 4px 6px; font-size: 12px;" value='<?= $View_bankname ?>'></td>
+                        <th style="background: <?= $bankname_mismatch ? '#c0392b' : '#E0E0E0' ?>; border: 1px solid #999; padding: 6px 10px; font-size: 11px; text-align: center;<?= $bankname_mismatch ? ' color: #fff; font-weight: bold;' : '' ?>">입금자명<?= $bankname_mismatch ? ' ⚠' : '' ?></th>
+                        <td style="border: 1px solid #999; padding: 4px 8px;<?= $bankname_mismatch ? ' background: #fff0f0;' : '' ?>"><input name="bankname" type="text" style="width: 100%; box-sizing: border-box; border: 1px solid <?= $bankname_mismatch ? '#c0392b' : '#ccc' ?>; padding: 4px 6px; font-size: 12px;<?= $bankname_mismatch ? ' color: #c0392b; font-weight: bold;' : '' ?>" value='<?= $View_bankname ?>'></td>
                         <th style="background: #E0E0E0; border: 1px solid #999; padding: 6px 10px; font-size: 11px; text-align: center;">비고</th>
                         <td style="border: 1px solid #999; padding: 4px 8px;"><textarea name="cont" rows="2" style="width: 100%; box-sizing: border-box; border: 1px solid #ccc; padding: 4px 6px; font-size: 12px; resize: vertical;"><?= $View_cont ?></textarea></td>
                     </tr>

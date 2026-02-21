@@ -507,9 +507,10 @@ include __DIR__ . '/../includes/sidebar.php';
                             <dd class="text-gray-900 font-medium"><?php echo htmlspecialchars($order['bank'] ?: '-'); ?></dd>
                         </div>
                         <?php if (!empty($order['bankname'])): ?>
-                        <div class="flex justify-between">
-                            <dt class="text-gray-500">입금자명</dt>
-                            <dd class="text-gray-900"><?php echo htmlspecialchars($order['bankname']); ?></dd>
+                        <?php $dash_bankname_mismatch = (!empty($order['bankname']) && trim($order['name']) !== trim($order['bankname'])); ?>
+                        <div class="flex justify-between<?php if ($dash_bankname_mismatch): ?> rounded px-1 -mx-1<?php endif; ?>"<?php if ($dash_bankname_mismatch): ?> style="background:#c0392b;"<?php endif; ?>>
+                            <dt class="<?php echo $dash_bankname_mismatch ? 'text-white font-semibold' : 'text-gray-500'; ?>">입금자명<?php if ($dash_bankname_mismatch): ?> ⚠<?php endif; ?></dt>
+                            <dd class="<?php echo $dash_bankname_mismatch ? 'text-white font-bold' : 'text-gray-900'; ?>"><?php echo htmlspecialchars($order['bankname']); ?></dd>
                         </div>
                         <?php endif; ?>
                         <div class="flex justify-between">

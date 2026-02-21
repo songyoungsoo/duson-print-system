@@ -47,35 +47,30 @@ $full_modal_title = $modal_product_icon . " " . $modal_product_name . " " . $mod
             <div class="design-intro-panel" id="designIntroPanel" style="display:none;">
                 <div class="design-intro-header">📋 디자인 의뢰 안내</div>
                 
+                <!-- 안내 섹션: 중요 항목 크게, 참고 항목 작게 -->
                 <div class="design-intro-section">
-                    <div class="design-intro-item">📋 원고파일을 업로드해주세요</div>
+                    <div class="design-intro-item design-intro-primary">📋 반드시 완성된 원고파일을 업로드해 주셔야합니다</div>
                     <div class="design-intro-item design-intro-sub">한글(HWP), 엑셀, PPT, 워드, 이미지, PDF, AI, PSD, 메모장, ZIP 등</div>
-                    <div class="design-intro-item design-intro-must">⚠️ 회사 로고·마크·약도는 <b>반드시</b> 업로드해주세요</div>
-                    <div class="design-intro-item">🎨 참고 디자인이 있으면 이미지나 URL을 함께 첨부해주세요</div>
-                    <div class="design-intro-tip">
-                        💡 원고파일 외에 <b>샘플 이미지</b>나 <b>원하는 참고 이미지</b>를 함께 넣어주시면<br>
-                        편집 디자인 시 효과적인 결과물을 빠른 시간에 받으실 수 있습니다!
-                    </div>
+                    <div class="design-intro-item design-intro-primary design-intro-must">⚠️ 회사 로고·마크·약도는 <b>반드시</b> 업로드해주세요</div>
+                    <div class="design-intro-item design-intro-ref">🎨 참고 디자인이 있으면 이미지나 URL을 함께 첨부해주세요</div>
+                    <div class="design-intro-item design-intro-ref">💡 샘플·참고 이미지를 함께 넣으면 더 빠르고 정확한 결과물을 받을 수 있습니다</div>
                 </div>
 
+                <!-- 디자인 요청사항 입력 (라벨 없이 텍스트에어리어만 크게) -->
                 <div class="design-intro-memo">
-                    <label class="design-intro-memo-label">✏️ 디자인 요청사항을 자세히 적어주세요 — 체계적으로 자세히 적을수록 디자인에 반영됩니다</label>
-                    <div class="design-intro-memo-sub">대충 적으면 대충 나옵니다. <span class="design-intro-memo-red">그럴 바엔 샘플 이미지를 첨부해주세요.</span></div>
-                    <textarea id="designIntroMemo" class="design-intro-memo-textarea" placeholder="예) 전단지 앞면에 신메뉴 3개 넣어주세요. 로고는 첨부파일에 있습니다.&#10;색상은 빨간색 계열로 해주세요."></textarea>
+                    <textarea id="designIntroMemo" class="design-intro-memo-textarea" placeholder="✏️ 디자인 요청사항을 적어주세요&#10;&#10;예) 전단지 앞면에 신메뉴 3개 넣어주세요.&#10;    로고는 첨부파일에 있습니다.&#10;    색상은 빨간색 계열로 해주세요.&#10;    뒷면에는 매장 지도와 영업시간을 넣어주세요."></textarea>
                 </div>
                 
-                <div class="design-intro-warning">
-                    <div class="design-intro-warning-title">📌 디자인 의뢰 시 꼭 확인해주세요</div>
-                    <div class="design-intro-warning-item">✅ <b>완성된 원고</b>(텍스트, 이미지 등)를 넘겨주세요</div>
-                    <div class="design-intro-warning-item">👔 사내 결재 구조(대리→과장→부장 등)가 있는 경우,<br>
-                        &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<b>최종 승인권자의 승인을 받은 원고</b>로 접수해주세요</div>
-                    <div class="design-intro-warning-item">💰 접수 이후 <b>내용 수정</b>은 <b>단계별 수정비용</b>이 청구됩니다</div>
-                    <div class="design-intro-warning-item design-intro-highlight">
-                        🔄 수정 요청은 <b>2회까지 무료</b>입니다. 3회차부터 <b>추가 요금</b>이 발생합니다<br>
-                        &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;교정본을 <b>전체 확인</b> 후 수정사항을 <b>한 번에</b> 요청해주세요<br>
-                        &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="design-intro-example">예) 한 글자 수정 후 또 수정 요청 → 각각 1회로 카운트</span>
-                    </div>
-                    <div class="design-intro-warning-item">💡 디자인비는 작업 난이도에 따라 별도 안내드립니다</div>
+                <!-- 주의사항 한 박스로 통합 -->
+                <div class="design-intro-notice-box">
+                    <div class="design-intro-notice-title">📌 디자인 의뢰 전 확인사항</div>
+                    <ul class="design-intro-notice-list">
+                        <li><b>완성된 원고</b>(텍스트·이미지)를 넘겨주세요</li>
+                        <li>사내 결재 구조가 있는 경우 <b>최종 승인권자 승인 후</b> 접수해주세요</li>
+                        <li>접수 이후 내용 수정은 <b>단계별 수정비용</b>이 청구됩니다</li>
+                        <li class="design-intro-notice-important">수정 <b>2회 무료</b> / 3회차부터 추가 요금 — 교정본 전체 확인 후 <b>한 번에</b> 요청해주세요</li>
+                        <li class="design-intro-notice-small">디자인비는 작업 난이도에 따라 별도 안내드립니다</li>
+                    </ul>
                 </div>
                 
                 <button type="button" class="btn-design-proceed" onclick="proceedToDesignUpload()">

@@ -1727,21 +1727,16 @@ function prepareBusinessAddress() {
             return false;
         }
 
-        // 입금자명이 주문자명과 다르면 경고
+        // 입금자명이 주문자명과 다르면 경고 모달 2회 표시
         const orderName = document.querySelector('input[name="username"]');
         if (orderName && orderName.value.trim() && bankname !== orderName.value.trim()) {
-            const confirmed = confirm(
-                '⚠️ 입금자명이 주문자명과 다릅니다.\n\n' +
-                '• 주문자명: ' + orderName.value.trim() + '\n' +
-                '• 입금자명: ' + bankname + '\n\n' +
-                '입금자명이 다를 경우 반드시 전화(02-2632-1830)로\n' +
-                '알려주셔야 입금 확인이 가능합니다.\n\n' +
-                '이대로 주문하시겠습니까?'
-            );
-            if (!confirmed) {
-                if (banknameInput) banknameInput.focus();
+            // 비동기 모달 처리 — 폼 제출 중단 후 모달 완료 시 재제출
+            if (!window._depositorWarningPassed) {
+                showDepositorWarning(orderName.value.trim(), bankname, banknameInput);
                 return false;
             }
+            // 2회 경고 통과 후 플래그 리셋
+            window._depositorWarningPassed = false;
         }
     }
 
@@ -1861,6 +1856,117 @@ function toggleBusinessInfo() {
             if (el) el.value = '';
         });
     }
+}
+
+// ===== 입금자명 ≠ 주문자명 경고 모달 (2회 표시) =====
+window._depositorWarningPassed = false;
+window._depositorWarningCount = 0;
+
+function showDepositorWarning(orderNameVal, banknameVal, banknameInput) {
+    window._depositorWarningCount = 0;
+    _showDepositorModal(orderNameVal, banknameVal, banknameInput);
+}
+
+function _showDepositorModal(orderNameVal, banknameVal, banknameInput) {
+    window._depositorWarningCount++;
+    var isSecond = (window._depositorWarningCount >= 2);
+
+    // 오버레이
+    var overlay = document.createElement('div');
+    overlay.id = 'depositor-warn-overlay';
+    overlay.style.cssText = 'position:fixed;top:0;left:0;width:100%;height:100%;background:rgba(0,0,0,0.5);z-index:99999;display:flex;align-items:center;justify-content:center;';
+
+    // 모달 박스
+    var modal = document.createElement('div');
+    modal.style.cssText = 'background:#fff;border-radius:12px;padding:28px 24px 20px;max-width:400px;width:90%;box-shadow:0 8px 32px rgba(0,0,0,0.25);text-align:center;';
+
+    // 아이콘
+    var icon = document.createElement('div');
+    icon.style.cssText = 'font-size:48px;margin-bottom:12px;';
+    icon.textContent = isSecond ? '🚨' : '⚠️';
+
+    // 제목
+    var title = document.createElement('div');
+    title.style.cssText = 'font-size:18px;font-weight:700;color:#c0392b;margin-bottom:14px;';
+    title.textContent = isSecond ? '[ 최종 확인 ] 입금자명이 다릅니다!' : '입금자명이 주문자명과 다릅니다!';
+
+    // 비교 박스
+    var infoBox = document.createElement('div');
+    infoBox.style.cssText = 'background:#fff3f3;border:1px solid #e74c3c;border-radius:8px;padding:14px 16px;margin-bottom:14px;text-align:left;';
+    infoBox.innerHTML =
+        '<div style="margin-bottom:6px;"><span style="color:#666;font-size:13px;">주문자명:</span> <strong style="color:#2c3e50;font-size:15px;">' + orderNameVal + '</strong></div>' +
+        '<div><span style="color:#666;font-size:13px;">입금자명:</span> <strong style="color:#c0392b;font-size:15px;">' + banknameVal + '</strong></div>';
+
+    // 안내 문구
+    var msg = document.createElement('div');
+    msg.style.cssText = 'font-size:13px;color:#555;margin-bottom:18px;line-height:1.6;';
+    if (isSecond) {
+        msg.innerHTML = '입금자명이 다르면 <strong style="color:#c0392b;">입금 확인이 불가</strong>할 수 있습니다.<br>반드시 <strong style="color:#c0392b;">☎ 02-2632-1830</strong>으로 연락해주세요.';
+    } else {
+        msg.innerHTML = '입금자명이 다를 경우 반드시<br><strong>☎ 02-2632-1830</strong>으로 알려주셔야<br>입금 확인이 가능합니다.';
+    }
+
+    // 버튼 영역
+    var btnWrap = document.createElement('div');
+    btnWrap.style.cssText = 'display:flex;gap:10px;justify-content:center;';
+
+    // 수정 버튼
+    var btnFix = document.createElement('button');
+    btnFix.type = 'button';
+    btnFix.textContent = '입금자명 수정';
+    btnFix.style.cssText = 'flex:1;padding:10px;border:1px solid #ccc;border-radius:6px;background:#f5f5f5;font-size:14px;font-weight:600;cursor:pointer;color:#333;';
+    btnFix.onclick = function() {
+        overlay.remove();
+        window._depositorWarningCount = 0;
+        if (banknameInput) banknameInput.focus();
+    };
+
+    // 계속 버튼
+    var btnCont = document.createElement('button');
+    btnCont.type = 'button';
+    btnCont.style.cssText = 'flex:1;padding:10px;border:none;border-radius:6px;background:#c0392b;color:#fff;font-size:14px;font-weight:600;cursor:pointer;';
+    if (isSecond) {
+        btnCont.textContent = '이대로 주문하기';
+        btnCont.onclick = function() {
+            overlay.remove();
+            window._depositorWarningPassed = true;
+            // 주문 폼 재제출 (반드시 #orderForm 지정 — 헤더의 로그아웃 폼 오선택 방지)
+            var form = document.getElementById('orderForm');
+            if (form) {
+                if (form.requestSubmit) {
+                    form.requestSubmit();
+                } else {
+                    // requestSubmit 미지원 브라우저 fallback
+                    if (prepareBusinessAddress() !== false) {
+                        form.submit();
+                    }
+                }
+            }
+        };
+    } else {
+        btnCont.textContent = '확인했습니다';
+        btnCont.onclick = function() {
+            overlay.remove();
+            _showDepositorModal(orderNameVal, banknameVal, banknameInput);
+        };
+    }
+
+    btnWrap.appendChild(btnFix);
+    btnWrap.appendChild(btnCont);
+
+    // 카운터 표시 (1/2 또는 2/2)
+    var counter = document.createElement('div');
+    counter.style.cssText = 'margin-top:12px;font-size:11px;color:#999;';
+    counter.textContent = '(' + window._depositorWarningCount + '/2)';
+
+    modal.appendChild(icon);
+    modal.appendChild(title);
+    modal.appendChild(infoBox);
+    modal.appendChild(msg);
+    modal.appendChild(btnWrap);
+    modal.appendChild(counter);
+    overlay.appendChild(modal);
+    document.body.appendChild(overlay);
 }
 
 // 결제방법 변경 시 입금자명 표시/숨김
