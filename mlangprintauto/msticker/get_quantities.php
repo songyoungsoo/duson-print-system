@@ -7,6 +7,7 @@ mysqli_set_charset($db, "utf8");
 
 $style = $_GET['style'] ?? '';
 $Section = $_GET['Section'] ?? '';
+$lang = $_GET['lang'] ?? 'ko';
 
 if (empty($style) || empty($Section)) {
     error_response('필수 파라미터가 누락되었습니다. (style, Section)');
@@ -26,9 +27,10 @@ $quantities = [];
 
 if ($result) {
     while ($row = mysqli_fetch_array($result)) {
+        $unit = ($lang === 'en') ? ' sheets' : '매';
         $quantities[] = [
             'value' => $row['quantity'],
-            'text' => format_number($row['quantity']) . '매'
+            'text' => format_number($row['quantity']) . $unit
         ];
     }
     // 자석스티커는 단순한 구조이므로 fallback 불필요

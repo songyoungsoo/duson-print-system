@@ -8,6 +8,7 @@ check_db_connection($db);
 mysqli_set_charset($db, "utf8");
 
 $style = $_GET['style'] ?? '';
+$lang = $_GET['lang'] ?? 'ko';
 
 if (empty($style)) {
     error_response('필수 파라미터(style)가 누락되었습니다.');
@@ -37,16 +38,17 @@ if (!empty($treeselect_ids)) {
         return mysqli_real_escape_string($db, $id);
     }, $treeselect_ids)) . "'";
     
-    $query2 = "SELECT no, title FROM mlangprintauto_transactioncate 
+    $query2 = "SELECT no, title, title_en FROM mlangprintauto_transactioncate 
                WHERE no IN ($treeselect_ids_str) AND Ttable='LittlePrint'
                ORDER BY no ASC";
     
     $result2 = mysqli_query($db, $query2);
     if ($result2) {
         while ($row = mysqli_fetch_array($result2)) {
+            $title = ($lang === 'en' && !empty($row['title_en'])) ? $row['title_en'] : $row['title'];
             $options[] = [
                 'no' => $row['no'],
-                'title' => $row['title']
+                'title' => $title
             ];
         }
     }

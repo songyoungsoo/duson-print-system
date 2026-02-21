@@ -8,6 +8,7 @@ mysqli_set_charset($db, "utf8");
 $style = $_GET['style'] ?? '';
 $section = $_GET['section'] ?? '';
 $potype = $_GET['potype'] ?? '';
+$lang = $_GET['lang'] ?? 'ko';
 
 if (empty($style) || empty($section) || empty($potype)) {
     error_response('필수 파라미터가 누락되었습니다. (style, section, potype)');
@@ -28,9 +29,10 @@ $quantities = [];
 
 if ($result) {
     while ($row = mysqli_fetch_array($result)) {
+        $unit = ($lang === 'en') ? ' copies' : '부';
         $quantities[] = [
             'value' => $row['quantity'],
-            'text' => format_number($row['quantity']) . '부'
+            'text' => format_number($row['quantity']) . $unit
         ];
     }
     if (empty($quantities)) {
@@ -44,9 +46,10 @@ if ($result) {
         $result_fallback = mysqli_query($db, $query_fallback);
         if($result_fallback) {
             while ($row_fallback = mysqli_fetch_array($result_fallback)) {
+                $unit = ($lang === 'en') ? ' copies' : '부';
                 $quantities[] = [
                     'value' => $row_fallback['quantity'],
-                    'text' => format_number($row_fallback['quantity']) . '부'
+                    'text' => format_number($row_fallback['quantity']) . $unit
                 ];
             }
         }

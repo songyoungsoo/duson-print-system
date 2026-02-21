@@ -6,6 +6,7 @@ check_db_connection($db);
 mysqli_set_charset($db, "utf8");
 
 $style = $_GET['style'] ?? '';
+$lang = $_GET['lang'] ?? 'ko';
 
 if (empty($style)) {
     error_response('필수 파라미터(style)가 누락되었습니다.');
@@ -15,7 +16,7 @@ if (empty($style)) {
 $options = getDropdownOptions($db, "mlangprintauto_transactioncate", [
     'Ttable' => 'MerchandiseBond',
     'BigNo' => $style
-], 'no ASC');
+], 'no ASC', $lang);
 
 mysqli_close($db);
 success_response($options);

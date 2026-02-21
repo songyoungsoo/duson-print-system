@@ -16,6 +16,7 @@ $style = $_GET['style'] ?? '';        // 구분
 $section = $_GET['section'] ?? $_GET['Section'] ?? '';    // 재질 (TreeSelect)
 $pn_type = $_GET['size'] ?? $_GET['pn_type'] ?? $_GET['PN_type'] ?? '';  // 규격 (Section)
 $potype = $_GET['potype'] ?? '';      // 인쇄면
+$lang = $_GET['lang'] ?? 'ko';
 
 error_log("Parsed parameters - style: $style, section: $section, pn_type: $pn_type, potype: $potype");
 
@@ -90,9 +91,10 @@ if ($result) {
     $row_count = 0;
     while ($row = mysqli_fetch_array($result)) {
         $row_count++;
+        $unit = ($lang === 'en') ? ' sheets' : '매';
         $quantities[] = [
             'value' => $row['quantity'],
-            'text' => format_number($row['quantity']) . '매'
+            'text' => format_number($row['quantity']) . $unit
         ];
     }
     error_log("첫 번째 쿼리 결과: $row_count 개의 수량 옵션 발견");
@@ -119,9 +121,10 @@ if ($result) {
             $fallback_count = 0;
             while ($row_fallback = mysqli_fetch_array($result_fallback)) {
                 $fallback_count++;
+                $unit = ($lang === 'en') ? ' sheets' : '매';
                 $quantities[] = [
                     'value' => $row_fallback['quantity'],
-                    'text' => format_number($row_fallback['quantity']) . '매'
+                    'text' => format_number($row_fallback['quantity']) . $unit
                 ];
             }
             error_log("Fallback 쿼리 결과: $fallback_count 개의 수량 옵션 발견");

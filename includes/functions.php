@@ -210,7 +210,7 @@ function format_korean_date($date = null, $format = 'Y년 m월 d일') {
 }
 
 // 드롭다운 옵션 조회 (범용)
-function getDropdownOptions($db, $table, $where_conditions = [], $order_by = 'no ASC') {
+function getDropdownOptions($db, $table, $where_conditions = [], $order_by = 'no ASC', $lang = 'ko') {
     $where_clause = '';
     if (!empty($where_conditions)) {
         $conditions = [];
@@ -226,9 +226,10 @@ function getDropdownOptions($db, $table, $where_conditions = [], $order_by = 'no
     
     if ($result) {
         while ($row = mysqli_fetch_array($result)) {
+            $title = ($lang === 'en' && !empty($row['title_en'])) ? $row['title_en'] : $row['title'];
             $options[] = [
                 'no' => $row['no'],
-                'title' => $row['title']
+                'title' => $title
             ];
         }
     }

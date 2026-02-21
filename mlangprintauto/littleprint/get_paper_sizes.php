@@ -9,6 +9,7 @@ mysqli_set_charset($db, "utf8");
 
 // GET 파라미터 받기
 $section = $_GET['section'] ?? '';  // 용지 재질 ID (TreeSelect)
+$lang = $_GET['lang'] ?? 'ko';
 
 error_log("=== LittlePrint get_paper_sizes.php 호출됨 ===");
 error_log("GET parameters: section=" . $section);
@@ -68,7 +69,7 @@ if (!empty($section_ids)) {
         return mysqli_real_escape_string($db, $id);
     }, $section_ids)) . "'";
     
-    $query2 = "SELECT no, title FROM mlangprintauto_transactioncate 
+    $query2 = "SELECT no, title, title_en FROM mlangprintauto_transactioncate 
                WHERE no IN ($section_ids_str) AND Ttable='LittlePrint'
                ORDER BY no ASC";
     
@@ -77,9 +78,10 @@ if (!empty($section_ids)) {
     $result2 = mysqli_query($db, $query2);
     if ($result2) {
         while ($row = mysqli_fetch_array($result2)) {
+            $title = ($lang === 'en' && !empty($row['title_en'])) ? $row['title_en'] : $row['title'];
             $sizes[] = [
                 'no' => $row['no'],
-                'title' => $row['title']
+                'title' => $title
             ];
         }
         error_log("최종 규격 옵션: " . count($sizes) . "개");

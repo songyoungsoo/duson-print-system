@@ -34,6 +34,7 @@ function safe_json_response($success = true, $data = null, $message = '') {
 $style = $_GET['style'] ?? '';
 $section = $_GET['section'] ?? '';
 $treeselect = $_GET['treeselect'] ?? '';
+$lang = $_GET['lang'] ?? 'ko';
 
 if (empty($style) || empty($section) || empty($treeselect)) {
     safe_json_response(false, null, '모든 옵션을 선택해주세요.');
@@ -54,9 +55,10 @@ try {
 
     if ($result) {
         while ($row = mysqli_fetch_array($result)) {
+            $unit = ($lang === 'en') ? ' booklets' : '권';
             $quantities[] = [
                 'value' => $row['quantity'],
-                'text' => format_number($row['quantity']) . '권'
+                'text' => format_number($row['quantity']) . $unit
             ];
         }
     }

@@ -12,10 +12,10 @@ $products = [
         'description' => 'High-quality offset printed flyers for mass distribution. Gang-run printing for cost-effective production.',
         'dropdowns' => [
             ['id' => 'MY_type', 'label' => 'Print Color', 'placeholder' => 'Select print color'],
-            ['id' => 'MY_Fsd', 'label' => 'Paper Type', 'placeholder' => 'Select paper type', 'depends_on' => 'MY_type', 'api' => '/mlangprintauto/inserted/get_paper_types.php?CV_no={MY_type}&page=inserted'],
-            ['id' => 'PN_type', 'label' => 'Size', 'placeholder' => 'Select size', 'depends_on' => 'MY_type', 'api' => '/mlangprintauto/inserted/get_paper_sizes.php?CV_no={MY_type}&page=inserted'],
+            ['id' => 'MY_Fsd', 'label' => 'Paper Type', 'placeholder' => 'Select paper type', 'depends_on' => 'MY_type', 'api' => '/mlangprintauto/inserted/get_paper_types.php?CV_no={MY_type}&page=inserted&lang=en'],
+            ['id' => 'PN_type', 'label' => 'Size', 'placeholder' => 'Select size', 'depends_on' => 'MY_type', 'api' => '/mlangprintauto/inserted/get_paper_sizes.php?CV_no={MY_type}&page=inserted&lang=en'],
             ['id' => 'POtype', 'label' => 'Print Side', 'type' => 'static', 'options' => [['value' => '1', 'text' => 'Single-Sided'], ['value' => '2', 'text' => 'Double-Sided']]],
-            ['id' => 'MY_amount', 'label' => 'Quantity', 'placeholder' => 'Select quantity', 'depends_on' => 'PN_type', 'api' => '/mlangprintauto/inserted/get_quantities.php?MY_type={MY_type}&PN_type={PN_type}&MY_Fsd={MY_Fsd}&POtype={POtype}'],
+            ['id' => 'MY_amount', 'label' => 'Quantity', 'placeholder' => 'Select quantity', 'depends_on' => 'PN_type', 'api' => '/mlangprintauto/inserted/get_quantities.php?MY_type={MY_type}&PN_type={PN_type}&MY_Fsd={MY_Fsd}&POtype={POtype}&lang=en'],
             ['id' => 'ordertype', 'label' => 'Design Service', 'type' => 'static', 'options' => [['value' => 'print', 'text' => 'Print Only (I have files)'], ['value' => 'total', 'text' => 'Design + Print (+fee)']]]
         ],
         'price_api' => '/mlangprintauto/inserted/calculate_price_ajax.php',
@@ -31,10 +31,10 @@ $products = [
         'description' => 'Large format posters with vivid color reproduction. Available in various sizes.',
         'dropdowns' => [
             ['id' => 'MY_type', 'label' => 'Type', 'placeholder' => 'Select type'],
-            ['id' => 'Section', 'label' => 'Paper Type', 'placeholder' => 'Select paper', 'depends_on' => 'MY_type', 'api' => '/mlangprintauto/littleprint/get_paper_types.php?style={MY_type}'],
-            ['id' => 'PN_type', 'label' => 'Size', 'placeholder' => 'Select size', 'depends_on' => 'Section', 'api' => '/mlangprintauto/littleprint/get_paper_sizes.php?section={Section}'],
+            ['id' => 'Section', 'label' => 'Paper Type', 'placeholder' => 'Select paper', 'depends_on' => 'MY_type', 'api' => '/mlangprintauto/littleprint/get_paper_types.php?style={MY_type}&lang=en'],
+            ['id' => 'PN_type', 'label' => 'Size', 'placeholder' => 'Select size', 'depends_on' => 'Section', 'api' => '/mlangprintauto/littleprint/get_paper_sizes.php?section={Section}&lang=en'],
             ['id' => 'POtype', 'label' => 'Print Side', 'type' => 'static', 'options' => [['value' => '1', 'text' => 'Single-Sided'], ['value' => '2', 'text' => 'Double-Sided']]],
-            ['id' => 'MY_amount', 'label' => 'Quantity', 'placeholder' => 'Select quantity', 'depends_on' => 'PN_type', 'api' => '/mlangprintauto/littleprint/get_quantities.php?style={MY_type}&section={Section}&size={PN_type}&potype={POtype}'],
+            ['id' => 'MY_amount', 'label' => 'Quantity', 'placeholder' => 'Select quantity', 'depends_on' => 'PN_type', 'api' => '/mlangprintauto/littleprint/get_quantities.php?style={MY_type}&section={Section}&size={PN_type}&potype={POtype}&lang=en'],
             ['id' => 'ordertype', 'label' => 'Design Service', 'type' => 'static', 'options' => [['value' => 'print', 'text' => 'Print Only'], ['value' => 'total', 'text' => 'Design + Print (+fee)']]]
         ],
         'price_api' => '/mlangprintauto/littleprint/calculate_price_ajax.php',
@@ -50,9 +50,9 @@ $products = [
         'description' => 'Custom gift vouchers and coupons with professional printing and security features.',
         'dropdowns' => [
             ['id' => 'MY_type', 'label' => 'Type', 'placeholder' => 'Select type'],
-            ['id' => 'Section', 'label' => 'Paper Type', 'placeholder' => 'Select paper', 'depends_on' => 'MY_type', 'api' => '/mlangprintauto/merchandisebond/get_paper_types.php?style={MY_type}'],
+            ['id' => 'Section', 'label' => 'Paper Type', 'placeholder' => 'Select paper', 'depends_on' => 'MY_type', 'api' => '/mlangprintauto/merchandisebond/get_paper_types.php?style={MY_type}&lang=en'],
             ['id' => 'POtype', 'label' => 'Print Side', 'type' => 'static', 'options' => [['value' => '1', 'text' => 'Single-Sided'], ['value' => '2', 'text' => 'Double-Sided']]],
-            ['id' => 'MY_amount', 'label' => 'Quantity', 'placeholder' => 'Select quantity', 'depends_on' => 'Section', 'api' => '/mlangprintauto/merchandisebond/get_quantities.php?style={MY_type}&section={Section}&potype={POtype}'],
+            ['id' => 'MY_amount', 'label' => 'Quantity', 'placeholder' => 'Select quantity', 'depends_on' => 'Section', 'api' => '/mlangprintauto/merchandisebond/get_quantities.php?style={MY_type}&section={Section}&potype={POtype}&lang=en'],
             ['id' => 'ordertype', 'label' => 'Design Service', 'type' => 'static', 'options' => [['value' => 'print', 'text' => 'Print Only'], ['value' => 'total', 'text' => 'Design + Print (+fee)']]]
         ],
         'price_api' => '/mlangprintauto/merchandisebond/calculate_price_ajax.php',
@@ -68,9 +68,9 @@ $products = [
         'description' => 'Durable magnetic stickers for promotional use. Perfect for refrigerator magnets and vehicle signs.',
         'dropdowns' => [
             ['id' => 'MY_type', 'label' => 'Type', 'placeholder' => 'Select type'],
-            ['id' => 'Section', 'label' => 'Size', 'placeholder' => 'Select size', 'depends_on' => 'MY_type', 'api' => '/mlangprintauto/msticker/get_paper_types.php?style={MY_type}'],
+            ['id' => 'Section', 'label' => 'Size', 'placeholder' => 'Select size', 'depends_on' => 'MY_type', 'api' => '/mlangprintauto/msticker/get_paper_types.php?style={MY_type}&lang=en'],
             ['id' => 'POtype', 'label' => 'Print Side', 'type' => 'static', 'options' => [['value' => '1', 'text' => 'Single-Sided'], ['value' => '2', 'text' => 'Double-Sided']]],
-            ['id' => 'MY_amount', 'label' => 'Quantity', 'placeholder' => 'Select quantity', 'depends_on' => 'Section', 'api' => '/mlangprintauto/msticker/get_quantities.php?style={MY_type}&Section={Section}'],
+            ['id' => 'MY_amount', 'label' => 'Quantity', 'placeholder' => 'Select quantity', 'depends_on' => 'Section', 'api' => '/mlangprintauto/msticker/get_quantities.php?style={MY_type}&Section={Section}&lang=en'],
             ['id' => 'ordertype', 'label' => 'Design Service', 'type' => 'static', 'options' => [['value' => 'print', 'text' => 'Print Only'], ['value' => 'total', 'text' => 'Design + Print (+fee)']]]
         ],
         'price_api' => '/mlangprintauto/msticker/calculate_price_ajax.php',
@@ -86,9 +86,9 @@ $products = [
         'description' => 'Professional business envelopes in various sizes. Custom printing for branding.',
         'dropdowns' => [
             ['id' => 'MY_type', 'label' => 'Type', 'placeholder' => 'Select type'],
-            ['id' => 'Section', 'label' => 'Paper Type', 'placeholder' => 'Select paper', 'depends_on' => 'MY_type', 'api' => '/mlangprintauto/envelope/get_paper_types.php?style={MY_type}'],
+            ['id' => 'Section', 'label' => 'Paper Type', 'placeholder' => 'Select paper', 'depends_on' => 'MY_type', 'api' => '/mlangprintauto/envelope/get_paper_types.php?style={MY_type}&lang=en'],
             ['id' => 'POtype', 'label' => 'Print Side', 'type' => 'static', 'options' => [['value' => '1', 'text' => 'Single-Sided'], ['value' => '2', 'text' => 'Double-Sided']]],
-            ['id' => 'MY_amount', 'label' => 'Quantity', 'placeholder' => 'Select quantity', 'depends_on' => 'Section', 'api' => '/mlangprintauto/envelope/get_quantities.php?style={MY_type}&section={Section}&potype={POtype}'],
+            ['id' => 'MY_amount', 'label' => 'Quantity', 'placeholder' => 'Select quantity', 'depends_on' => 'Section', 'api' => '/mlangprintauto/envelope/get_quantities.php?style={MY_type}&section={Section}&potype={POtype}&lang=en'],
             ['id' => 'ordertype', 'label' => 'Design Service', 'type' => 'static', 'options' => [['value' => 'print', 'text' => 'Print Only'], ['value' => 'total', 'text' => 'Design + Print (+fee)']]]
         ],
         'price_api' => '/mlangprintauto/envelope/calculate_price_ajax.php',
@@ -104,9 +104,9 @@ $products = [
         'description' => 'Premium business cards with a wide range of paper stocks and finishes. Offset printing for sharp, professional results.',
         'dropdowns' => [
             ['id' => 'MY_type', 'label' => 'Type', 'placeholder' => 'Select type'],
-            ['id' => 'Section', 'label' => 'Paper / Material', 'placeholder' => 'Select paper', 'depends_on' => 'MY_type', 'api' => '/mlangprintauto/namecard/get_paper_types.php?style={MY_type}'],
+            ['id' => 'Section', 'label' => 'Paper / Material', 'placeholder' => 'Select paper', 'depends_on' => 'MY_type', 'api' => '/mlangprintauto/namecard/get_paper_types.php?style={MY_type}&lang=en'],
             ['id' => 'POtype', 'label' => 'Print Side', 'type' => 'static', 'options' => [['value' => '1', 'text' => 'Single-Sided'], ['value' => '2', 'text' => 'Double-Sided']]],
-            ['id' => 'MY_amount', 'label' => 'Quantity', 'placeholder' => 'Select quantity', 'depends_on' => 'Section', 'api' => '/mlangprintauto/namecard/get_quantities.php?style={MY_type}&section={Section}&potype={POtype}'],
+            ['id' => 'MY_amount', 'label' => 'Quantity', 'placeholder' => 'Select quantity', 'depends_on' => 'Section', 'api' => '/mlangprintauto/namecard/get_quantities.php?style={MY_type}&section={Section}&potype={POtype}&lang=en'],
             ['id' => 'ordertype', 'label' => 'Design Service', 'type' => 'static', 'options' => [['value' => 'print', 'text' => 'Print Only (I have files)'], ['value' => 'total', 'text' => 'Design + Print (+fee)']]]
         ],
         'price_api' => '/mlangprintauto/namecard/calculate_price_ajax.php',
@@ -122,9 +122,9 @@ $products = [
         'description' => 'Professional catalogs and booklets with saddle-stitch or perfect binding. Ideal for product catalogs, brochures, and company profiles.',
         'dropdowns' => [
             ['id' => 'MY_type', 'label' => 'Type', 'placeholder' => 'Select type'],
-            ['id' => 'Section', 'label' => 'Paper Type', 'placeholder' => 'Select paper', 'depends_on' => 'MY_type', 'api' => '/mlangprintauto/cadarok/get_paper_types.php?style={MY_type}'],
+            ['id' => 'Section', 'label' => 'Paper Type', 'placeholder' => 'Select paper', 'depends_on' => 'MY_type', 'api' => '/mlangprintauto/cadarok/get_paper_types.php?style={MY_type}&lang=en'],
             ['id' => 'POtype', 'label' => 'Print Side', 'type' => 'static', 'options' => [['value' => '1', 'text' => 'Single-Sided'], ['value' => '2', 'text' => 'Double-Sided']]],
-            ['id' => 'MY_amount', 'label' => 'Quantity', 'placeholder' => 'Select quantity', 'depends_on' => 'Section', 'api' => '/mlangprintauto/cadarok/get_quantities.php?style={MY_type}&section={Section}&potype={POtype}'],
+            ['id' => 'MY_amount', 'label' => 'Quantity', 'placeholder' => 'Select quantity', 'depends_on' => 'Section', 'api' => '/mlangprintauto/cadarok/get_quantities.php?style={MY_type}&section={Section}&potype={POtype}&lang=en'],
             ['id' => 'ordertype', 'label' => 'Design Service', 'type' => 'static', 'options' => [['value' => 'print', 'text' => 'Print Only'], ['value' => 'total', 'text' => 'Design + Print (+fee)']]]
         ],
         'price_api' => '/mlangprintauto/cadarok/calculate_price_ajax.php',
@@ -140,9 +140,9 @@ $products = [
         'description' => 'Carbonless copy (NCR) forms — invoices, receipts, delivery slips. Available in 2-part, 3-part, and 4-part sets.',
         'dropdowns' => [
             ['id' => 'MY_type', 'label' => 'Type', 'placeholder' => 'Select type'],
-            ['id' => 'MY_Fsd', 'label' => 'Size', 'placeholder' => 'Select size', 'depends_on' => 'MY_type', 'api' => '/mlangprintauto/ncrflambeau/get_sizes.php?style={MY_type}'],
-            ['id' => 'PN_type', 'label' => 'Color / Print Type', 'placeholder' => 'Select color', 'depends_on' => 'MY_type', 'api' => '/mlangprintauto/ncrflambeau/get_colors.php?style={MY_type}'],
-            ['id' => 'MY_amount', 'label' => 'Quantity', 'placeholder' => 'Select quantity', 'depends_on' => 'PN_type', 'api' => '/mlangprintauto/ncrflambeau/get_quantities.php?style={MY_type}&section={MY_Fsd}&treeselect={PN_type}'],
+            ['id' => 'MY_Fsd', 'label' => 'Size', 'placeholder' => 'Select size', 'depends_on' => 'MY_type', 'api' => '/mlangprintauto/ncrflambeau/get_sizes.php?style={MY_type}&lang=en'],
+            ['id' => 'PN_type', 'label' => 'Color / Print Type', 'placeholder' => 'Select color', 'depends_on' => 'MY_type', 'api' => '/mlangprintauto/ncrflambeau/get_colors.php?style={MY_type}&lang=en'],
+            ['id' => 'MY_amount', 'label' => 'Quantity', 'placeholder' => 'Select quantity', 'depends_on' => 'PN_type', 'api' => '/mlangprintauto/ncrflambeau/get_quantities.php?style={MY_type}&section={MY_Fsd}&treeselect={PN_type}&lang=en'],
             ['id' => 'ordertype', 'label' => 'Design Service', 'type' => 'static', 'options' => [['value' => 'print', 'text' => 'Print Only'], ['value' => 'total', 'text' => 'Design + Print (+fee)']]]
         ],
         'price_api' => '/mlangprintauto/ncrflambeau/calculate_price_ajax.php',
@@ -174,13 +174,14 @@ $initial_options = [];
 if ($is_supported) {
     include '../../db.php';
     $ttable = $products[$type]['ttable'];
-    $stmt = mysqli_prepare($db, "SELECT no, title FROM mlangprintauto_transactioncate WHERE Ttable=? AND BigNo='0' ORDER BY no ASC");
+    $stmt = mysqli_prepare($db, "SELECT no, title, title_en FROM mlangprintauto_transactioncate WHERE Ttable=? AND BigNo='0' ORDER BY no ASC");
     if ($stmt) {
         mysqli_stmt_bind_param($stmt, "s", $ttable);
         mysqli_stmt_execute($stmt);
         $result = mysqli_stmt_get_result($stmt);
         while ($row = mysqli_fetch_assoc($result)) {
-            $initial_options[] = ['no' => $row['no'], 'title' => $row['title']];
+            $display_title = !empty($row['title_en']) ? $row['title_en'] : $row['title'];
+            $initial_options[] = ['no' => $row['no'], 'title' => $display_title];
         }
         mysqli_stmt_close($stmt);
     }
@@ -609,12 +610,7 @@ if ($is_supported) {
                             <option value=""><?php echo htmlspecialchars($dd['placeholder'] ?? '— Select —'); ?></option>
                         <?php endif; ?>
                     </select>
-                    <?php if (!$is_static && !$showed_kr_note && !$is_first): $showed_kr_note = true; ?>
-                    <div class="kr-note">
-                        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#B8860B" stroke-width="2"><circle cx="12" cy="12" r="10"/><path d="M12 16v-4M12 8h.01"/></svg>
-                        Option labels are shown in Korean. Contact us for translation assistance.
-                    </div>
-                    <?php endif; ?>
+
                 </div>
                 <?php endforeach; ?>
 

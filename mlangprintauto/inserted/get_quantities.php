@@ -18,6 +18,7 @@ $MY_type = $_GET['MY_type'] ?? '';
 $PN_type = $_GET['PN_type'] ?? '';
 $MY_Fsd = $_GET['MY_Fsd'] ?? '';
 $POtype = $_GET['POtype'] ?? '1'; // 단면/양면 파라미터 추가 (기본값: 단면)
+$lang = $_GET['lang'] ?? 'ko';
 
 $TABLE = "mlangprintauto_inserted";
 
@@ -78,11 +79,19 @@ if ($result) {
             error_log("get_quantities: Fallback sheets for {$reams}연: $final_sheets매 (default A4)");
         }
 
+        $qty_label = rtrim(rtrim(sprintf('%.1f', $reams), '0'), '.');
+        if ($lang === 'en') {
+            $unit_ream = ($reams == 1) ? 'ream' : 'reams';
+            $text = $qty_label . ' ' . $unit_ream . ' (' . number_format($final_sheets) . ' sheets)';
+        } else {
+            $text = $qty_label . '연 (' . number_format($final_sheets) . '매)';
+        }
+
         $quantities[] = [
             'value' => $row['quantity'],
-            'text' => rtrim(rtrim(sprintf('%.1f', $reams), '0'), '.') . '연 (' . number_format($final_sheets) . '매)',
-            'sheets' => $final_sheets,  // ✅ 추가: 프론트엔드에서 활용 가능
-            'spec' => $spec_name ?? 'unknown'  // ✅ 추가: 규격 정보
+            'text' => $text,
+            'sheets' => $final_sheets,
+            'spec' => $spec_name ?? 'unknown'
         ];
     }
 }

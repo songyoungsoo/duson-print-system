@@ -32,6 +32,8 @@ function safe_json_response($success = true, $data = null, $message = '') {
 }
 
 $style = $_GET['style'] ?? '';
+$lang = $_GET['lang'] ?? 'ko';
+
 if (empty($style)) {
     safe_json_response(false, null, '구분을 선택해주세요.');
 }
@@ -40,7 +42,7 @@ try {
     $options = getDropdownOptions($db, "mlangprintauto_transactioncate", [
         'Ttable' => 'NcrFlambeau',
         'BigNo' => $style
-    ], 'no ASC');
+    ], 'no ASC', $lang);
     
     error_log("NcrFlambeau 규격 옵션 조회: style=$style, 결과=" . count($options) . "개");
     
