@@ -72,7 +72,6 @@ $DASHBOARD_NAV = [
         'items' => [
             'admin_legacy' => ['name' => '주문 관리(구)', 'icon' => '🗂️', 'path' => '/dashboard/embed.php?url=' . urlencode('/admin/mlangprintauto/orderlist.php'), 'embed' => true],
             'admin_proof' => ['name' => '교정 관리(구)', 'icon' => '📂', 'path' => '/dashboard/embed.php?url=' . urlencode('/sub/checkboard.php'), 'embed' => true],
-            'admin_quote' => ['name' => '견적서(구)', 'icon' => '📝', 'path' => '/dashboard/embed.php?url=' . urlencode('/admin/mlangprintauto/quote/'), 'embed' => true],
         ]
     ],
 ];
