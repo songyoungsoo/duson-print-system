@@ -684,19 +684,24 @@ include $_SERVER['DOCUMENT_ROOT'] . '/includes/header-ui.php';
                                 <?php endif; ?>
                             </td>
                             <td style="text-align: right; padding-right: 12px; font-weight: 500;">
-                                <?php echo number_format($order['money_5'] ?? $order['money_4'] ?? 0); ?>원
                                 <?php
+                                $base_amount = intval($order['money_5'] ?? $order['money_4'] ?? 0);
                                 $lf_type = $order['logen_fee_type'] ?? '';
                                 $lf_fee = intval($order['logen_delivery_fee'] ?? 0);
-                                if ($lf_type === '선불'):
-                                    if ($lf_fee > 0):
-                                        $lf_vat = round($lf_fee * 0.1);
-                                        $lf_total = $lf_fee + $lf_vat;
-                                ?>
-                                <div style="font-size: 12px; color: #155724; margin-top: 2px;">+ 택배비 ₩<?php echo number_format($lf_total); ?></div>
-                                <?php else: ?>
+                                $lf_total = 0;
+                                if ($lf_type === '선불' && $lf_fee > 0) {
+                                    $lf_vat = round($lf_fee * 0.1);
+                                    $lf_total = $lf_fee + $lf_vat;
+                                }
+                                $grand_total = $base_amount + $lf_total;
+                                echo number_format($grand_total); ?>원
+                                <?php if ($lf_type === '선불'): ?>
+                                    <?php if ($lf_fee > 0): ?>
+                                <div style="font-size: 11px; color: #888; margin-top: 2px;">인쇄 <?php echo number_format($base_amount); ?> + 택배 <?php echo number_format($lf_total); ?></div>
+                                    <?php else: ?>
                                 <div style="font-size: 12px; color: #e67e22; margin-top: 2px;">+ 택배비 확인중</div>
-                                <?php endif; endif; ?>
+                                    <?php endif; ?>
+                                <?php endif; ?>
                             </td>
                             <td style="text-align: center; color: #666;"><?php echo date('Y-m-d', strtotime($order['date'] ?? '')); ?></td>
                             <td style="text-align: center;">
