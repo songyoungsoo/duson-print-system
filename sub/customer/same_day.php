@@ -485,5 +485,6 @@ include_once $_SERVER['DOCUMENT_ROOT'] . '/includes/header-ui.php';
         updateTime();
         setInterval(updateTime, 1000);
     </script>
+<?php include $_SERVER['DOCUMENT_ROOT'] . '/includes/footer.php'; ?>
 </body>
 </html>

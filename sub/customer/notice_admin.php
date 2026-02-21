@@ -302,6 +302,7 @@ $notices = mysqli_fetch_all($result, MYSQLI_ASSOC);
             </div>
         </div>
     </div>
+<?php include $_SERVER['DOCUMENT_ROOT'] . '/includes/footer.php'; ?>
 </body>
 </html>
 <?php

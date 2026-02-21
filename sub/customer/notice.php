@@ -247,6 +247,7 @@ $notices = mysqli_fetch_all($result, MYSQLI_ASSOC);
     </script>
 
     <script src="/js/customer-center.js"></script>
+<?php include $_SERVER['DOCUMENT_ROOT'] . '/includes/footer.php'; ?>
 </body>
 </html>
 <?php
