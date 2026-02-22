@@ -1006,6 +1006,178 @@ const doc = new Document({
         bullet('\uBCF4\uB77C\uC0C9 \uD14C\uB9C8 (#6366f1)'),
         bullet('footer.php\uC5D0\uC11C 60\uCD08 \uAC04\uACA9 toggleWidgets()\uB85C \uC9C1\uC6D0\uCC44\uD305/AI\uCC47\uBD07 \uBC30\uD0C0\uC801 \uC804\uD658'),
 
+        pb(),
+        // ════════════════════════════════════════
+        // Ch8. Knowledge Vault (KB) 시스템
+        // ════════════════════════════════════════
+        h1('Ch8. Knowledge Vault (KB) 시스템'),
+        p('접속: https://dsp114.co.kr/kb/ (비밀번호: duson2026!kb)'),
+        p('AI 대화 결과를 저장하고 검색하는 개인 지식 관리 시스템. localhost에서는 비밀번호 없이 자동 접속.'),
+
+        h2('8.1 시스템 개요'),
+        makeTable(
+          ['항목', '값'],
+          [
+            ['경로', '/kb/'],
+            ['인증', 'localhost 자동 우회, 프로덕션 비밀번호: duson2026!kb'],
+            ['DB 테이블', 'knowledge_base (FULLTEXT INDEX)'],
+            ['테마', '다크 모드 (#0f172a + #6366f1)'],
+            ['마크다운', 'marked.js + highlight.js'],
+          ],
+          [2500, 6860]
+        ),
+
+        h2('8.2 파일 구조'),
+        ...codeBlock([
+          '/kb/',
+          '├── kb_auth.php    ← 인증 모듈 (64줄)',
+          '├── api.php        ← CRUD + FULLTEXT 검색 (141줄)',
+          '├── index.php      ← 메인 검색/목록 (260줄)',
+          '└── article.php    ← 문서 상세/편집 (281줄)',
+        ]),
+
+        h2('8.3 인증 모듈 (kb_auth.php)'),
+        h3('인증 흐름'),
+        flowArrow(['요청 수신', 'localhost?→자동통과', 'POST 비밀번호?→세션저장', '세션 확인', '미인증→로그인폼/401']),
+        ...codeBlock([
+          'define("KB_PASSWORD", "duson2026!kb");',
+          '',
+          'function kb_is_local() {',
+          '    return in_array($_SERVER["REMOTE_ADDR"], ["127.0.0.1", "::1"]);',
+          '}',
+          '',
+          'function kb_check_auth() {',
+          '    if (kb_is_local()) return;              // localhost 자동 우회',
+          '    if (isset($_POST["kb_password"])) {',
+          '        if ($_POST["kb_password"] === KB_PASSWORD) {',
+          '            $_SESSION["kb_auth"] = true;    // 세션 인증 저장',
+          '            header("Location: " . $_SERVER["REQUEST_URI"]);',
+          '            exit;',
+          '        }',
+          '    }',
+          '    if (!empty($_SESSION["kb_auth"])) return;',
+          '    // 미인증: API→401 JSON, 페이지→로그인 폼',
+          '}',
+        ]),
+        h3('보안 특성'),
+        makeTable(
+          ['항목', '방식'],
+          [
+            ['비밀번호 저장', 'PHP 상수 (평문 비교)'],
+            ['세션 유지', '$_SESSION["kb_auth"]'],
+            ['localhost 우회', 'REMOTE_ADDR 체크'],
+            ['API 보호', '401 + JSON 에러'],
+            ['CSRF 보호', '없음 (내부용)'],
+          ],
+          [2500, 6860]
+        ),
+
+        h2('8.4 API (api.php)'),
+        h3('엔드포인트'),
+        makeTable(
+          ['action', '메서드', '파라미터', '설명'],
+          [
+            ['search', 'GET', 'q, category, page', 'FULLTEXT 검색 (Boolean Mode)'],
+            ['get', 'GET', 'id', '단일 문서 조회'],
+            ['create', 'POST', 'title, content, tags, category', '문서 생성'],
+            ['update', 'POST', 'id, title, content, tags, category', '문서 수정'],
+            ['delete', 'POST', 'id', '문서 삭제'],
+            ['categories', 'GET', '-', '카테고리 목록'],
+          ],
+          [2200, 1000, 3200, 2960]
+        ),
+
+        h3('FULLTEXT 검색'),
+        ...codeBlock([
+          '// 검색어 있을 때: Boolean Mode + 와일드카드',
+          'MATCH(title, content, tags) AGAINST("검색어*" IN BOOLEAN MODE)',
+          '',
+          '// 검색어 없을 때: 최신순',
+          'ORDER BY updated_at DESC',
+          '',
+          '// 페이지네이션: 20건/페이지',
+        ]),
+
+        h3('카테고리 7종'),
+        makeTable(
+          ['코드', '이름', '용도'],
+          [
+            ['general', '일반', '분류 미지정'],
+            ['setup', '설치가이드', '환경 설정, 설치'],
+            ['config', '설정', '시스템/앱 설정'],
+            ['troubleshoot', '트러블슈팅', '문제 해결 기록'],
+            ['code', '코드/스니펫', '코드 조각'],
+            ['reference', '참조', '참조 문서, 링크'],
+            ['workflow', '워크플로우', '작업 절차'],
+          ],
+          [2000, 2500, 4860]
+        ),
+
+        pb(),
+        h2('8.5 메인 페이지 (index.php)'),
+        p('파일: kb/index.php (260줄), 다크 테마'),
+        h3('화면 구성'),
+        makeTable(
+          ['영역', '기능'],
+          [
+            ['헤더', '"KB Knowledge Vault" + "새 문서" 버튼'],
+            ['검색바', '실시간 FULLTEXT 검색 (250ms 디바운스)'],
+            ['카테고리 탭', '전체 + 7개 카테고리 필터'],
+            ['문서 목록', '카드형 리스트 (제목, 스니펫, 태그)'],
+            ['페이지네이션', '이전/다음 + 현재 페이지'],
+          ],
+          [2500, 6860]
+        ),
+        h3('[사용법]'),
+        numbered('검색바에 키워드 입력 → 250ms 후 실시간 결과', numNames[12]),
+        numbered('카테고리 버튼 클릭 → 해당 분류만 표시', numNames[12]),
+        numbered('카드 클릭 → article.php 이동', numNames[12]),
+        numbered('"새 문서" 버튼 → 새 문서 생성+편집', numNames[12]),
+
+        h2('8.6 문서 상세/편집 (article.php)'),
+        p('파일: kb/article.php (281줄)'),
+        p('marked.js (마크다운→HTML) + highlight.js (코드 하이라이팅)'),
+        h3('화면 구성'),
+        makeTable(
+          ['영역', '기능'],
+          [
+            ['상단 바', '← 뒤로가기 + 수정/삭제 버튼'],
+            ['제목', '문서 제목 + 태그 + 카테고리 + 날짜'],
+            ['본문', '마크다운 렌더링 + 코드 하이라이팅'],
+          ],
+          [2500, 6860]
+        ),
+        bullet('코드 블록 복사: 우상단 "복사" 버튼 → clipboard API'),
+        bullet('편집 모드: "수정" → textarea로 전환 → "저장" → 뷰 복귀'),
+        bullet('삭제: confirm → action=delete → index.php 이동'),
+
+        h2('8.7 DB 테이블'),
+        ...codeBlock([
+          'CREATE TABLE knowledge_base (',
+          '    id INT AUTO_INCREMENT PRIMARY KEY,',
+          '    title VARCHAR(500) NOT NULL,',
+          '    content LONGTEXT NOT NULL,',
+          '    tags VARCHAR(500) DEFAULT "",',
+          '    category VARCHAR(50) DEFAULT "general",',
+          '    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,',
+          '    updated_at TIMESTAMP ... ON UPDATE CURRENT_TIMESTAMP,',
+          '    FULLTEXT INDEX ft_search (title, content, tags)',
+          ') ENGINE=InnoDB CHARSET=utf8mb4;',
+        ]),
+        makeTable(
+          ['컬럼', '타입', '설명'],
+          [
+            ['id', 'INT (PK)', '자동 증가'],
+            ['title', 'VARCHAR(500)', '문서 제목'],
+            ['content', 'LONGTEXT', '마크다운 본문'],
+            ['tags', 'VARCHAR(500)', '쉼표 구분 태그'],
+            ['category', 'VARCHAR(50)', '카테고리 코드 (7종)'],
+            ['created_at', 'TIMESTAMP', '생성일'],
+            ['updated_at', 'TIMESTAMP', '수정일 (자동 갱신)'],
+          ],
+          [2000, 2500, 4860]
+        ),
+
         spacer(),
         new Paragraph({ alignment: AlignmentType.CENTER, spacing: { before: 400 },
           children: [new TextRun({ text: '\u2014 \uB05D \u2014', size: 22, color: C.gray, font: FONT })] }),

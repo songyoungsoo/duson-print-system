@@ -1582,6 +1582,324 @@ item.addEventListener('click', function() {
 
 ---
 
+## Ch8. Knowledge Vault (KB) 시스템
+
+> **접속**: https://dsp114.co.kr/kb/ (비밀번호: `duson2026!kb`)
+> localhost에서는 비밀번호 없이 자동 접속됩니다.
+>
+> AI 대화 결과를 저장하고 검색하는 개인 지식 관리 시스템입니다.
+> 토큰 소모 없이 기존 정보를 재활용할 수 있습니다.
+
+---
+
+### 8.1 시스템 개요
+
+| 항목 | 값 |
+|------|-----|
+| 경로 | `/kb/` |
+| 인증 | localhost 자동 우회, 프로덕션 비밀번호: `duson2026!kb` |
+| DB 테이블 | `knowledge_base` (FULLTEXT INDEX on title, content, tags) |
+| 테마 | 다크 모드 (#0f172a 배경, #6366f1 포인트) |
+| 마크다운 | marked.js + highlight.js 코드 하이라이팅 |
+
+### 8.2 파일 구조
+
+```
+/kb/
+├── kb_auth.php    ← 인증 모듈 (64줄)
+├── api.php        ← CRUD + FULLTEXT 검색 API (141줄)
+├── index.php      ← 메인 검색/목록 페이지 (260줄)
+└── article.php    ← 문서 상세/편집 페이지 (281줄)
+```
+
+---
+
+### 8.3 인증 모듈 (kb_auth.php)
+
+#### 소스 코드
+
+```php
+<?php
+define('KB_PASSWORD', 'duson2026!kb');
+
+function kb_is_local() {
+    return in_array($_SERVER['REMOTE_ADDR'] ?? '', ['127.0.0.1', '::1']);
+}
+
+function kb_check_auth() {
+    if (kb_is_local()) return;                    // localhost → 자동 우회
+
+    if (isset($_POST['kb_password'])) {           // 비밀번호 POST 처리
+        if ($_POST['kb_password'] === KB_PASSWORD) {
+            $_SESSION['kb_auth'] = true;
+            if (basename($_SERVER['SCRIPT_NAME']) !== 'api.php') {
+                header('Location: ' . $_SERVER['REQUEST_URI']);
+                exit;
+            }
+            return;
+        }
+    }
+
+    if (!empty($_SESSION['kb_auth'])) return;     // 세션 인증 확인
+
+    if (basename($_SERVER['SCRIPT_NAME']) === 'api.php') {
+        http_response_code(401);                  // API → 401 JSON 응답
+        exit(json_encode(['error' => 'auth required']));
+    }
+
+    kb_show_login();                              // 페이지 → 로그인 폼 표시
+    exit;
+}
+```
+
+#### 인증 흐름
+
+```
+요청 수신
+  ├─ localhost (127.0.0.1 / ::1) → 자동 통과 (인증 불필요)
+  │
+  ├─ POST kb_password 존재?
+  │   ├─ 비밀번호 일치 → $_SESSION['kb_auth'] = true → 리다이렉트
+  │   └─ 불일치 → 다음 단계로
+  │
+  ├─ $_SESSION['kb_auth'] 존재? → 통과
+  │
+  └─ 미인증
+      ├─ api.php → HTTP 401 + JSON {"error":"auth required"}
+      └─ 페이지 → 로그인 폼 (kb_show_login())
+```
+
+#### 로그인 폼 UI
+
+- 다크 테마 (`#0f172a` 배경, `#1e293b` 카드)
+- 제목: **KB** Knowledge Vault (KB는 `#6366f1` 보라색)
+- 비밀번호 입력 + 로그인 버튼
+- 중앙 정렬 (flexbox)
+
+#### 보안 특성
+
+| 항목 | 방식 |
+|------|------|
+| 비밀번호 저장 | PHP 상수 (평문 비교) |
+| 세션 유지 | `$_SESSION['kb_auth']` |
+| localhost 우회 | `REMOTE_ADDR` 체크 |
+| API 보호 | 401 + JSON 에러 |
+| CSRF 보호 | 없음 (내부용 시스템) |
+
+---
+
+### 8.4 API (api.php)
+
+#### 기본 구조
+
+```php
+session_start();
+require_once __DIR__ . '/kb_auth.php';
+kb_check_auth();                              // 모든 API 호출 시 인증 필수
+header('Content-Type: application/json; charset=utf-8');
+require_once __DIR__ . '/../db.php';          // DB 연결
+$action = $_GET['action'] ?? $_POST['action'] ?? '';
+```
+
+#### API 엔드포인트
+
+| action | 메서드 | 파라미터 | 응답 | 설명 |
+|--------|--------|---------|------|------|
+| `search` | GET | `q`, `category`, `page` | `{items, total, page, pages, categories}` | FULLTEXT 검색 |
+| `get` | GET | `id` | `{id, title, content, tags, ...}` | 단일 문서 조회 |
+| `create` | POST | `title`, `content`, `tags`, `category` | `{success, id}` | 문서 생성 |
+| `update` | POST | `id`, `title`, `content`, `tags`, `category` | `{success}` | 문서 수정 |
+| `delete` | POST | `id` | `{success}` | 문서 삭제 |
+| `categories` | GET | - | `["general", "code", ...]` | 카테고리 목록 |
+
+#### FULLTEXT 검색 동작
+
+```php
+// 검색어 있을 때: FULLTEXT Boolean Mode
+$where = "MATCH(title, content, tags) AGAINST(? IN BOOLEAN MODE)";
+$params = [$q . '*'];    // 와일드카드 자동 추가 (부분 매칭)
+$order = "MATCH(...) DESC";  // 관련도순 정렬
+
+// 검색어 없을 때: 최신순 전체 목록
+$order = 'updated_at DESC';
+```
+
+- 와일드카드(`*`): 입력한 검색어로 시작하는 모든 단어 매칭
+- Boolean Mode: 한국어+영문 모두 지원
+- 페이지네이션: 20건/페이지
+
+#### 카테고리 7종
+
+| 코드 | 이름 | 용도 |
+|------|------|------|
+| `general` | 일반 | 분류 미지정 |
+| `setup` | 설치가이드 | 환경 설정, 설치 방법 |
+| `config` | 설정 | 시스템/앱 설정 |
+| `troubleshoot` | 트러블슈팅 | 문제 해결 기록 |
+| `code` | 코드/스니펫 | 코드 조각, 레시피 |
+| `reference` | 참조 | 참조 문서, 링크 |
+| `workflow` | 워크플로우 | 작업 절차, 프로세스 |
+
+#### DB 안전 종료
+
+```php
+// api.php 마지막 줄 — PHP 8.2 호환
+if (isset($db) && $db) mysqli_close($db);
+```
+
+---
+
+### 8.5 메인 페이지 (index.php)
+
+#### 기술 구조
+
+- **파일**: `kb/index.php` (260줄)
+- **의존성**: 없음 (순수 JS + CSS)
+- **테마**: 다크 (#0f172a 배경, #6366f1 포인트)
+
+#### 화면 구성
+
+| 영역 | 기능 |
+|------|------|
+| 헤더 | "KB Knowledge Vault" 제목 + "새 문서" 버튼 |
+| 검색바 | 실시간 FULLTEXT 검색 (250ms 디바운스) |
+| 카테고리 탭 | 전체 + 7개 카테고리 필터 버튼 |
+| 문서 목록 | 카드형 리스트 (제목, 스니펫, 태그, 날짜) |
+| 페이지네이션 | 이전/다음 + 현재 페이지 표시 |
+
+#### 실시간 검색 JS
+
+```javascript
+let searchTimer;
+searchInput.addEventListener('input', function() {
+    clearTimeout(searchTimer);
+    searchTimer = setTimeout(() => {
+        currentPage = 1;
+        loadItems();       // → fetch('/kb/api.php?action=search&q=...')
+    }, 250);               // 250ms 디바운스
+});
+```
+
+#### 새 문서 생성
+
+"새 문서" 버튼 클릭 시:
+1. `api.php?action=create` POST (기본 제목 "새 문서")
+2. 응답에서 `id` 수신
+3. `article.php?id={id}` 페이지로 이동 (편집 모드)
+
+#### 사용법
+
+1. **검색**: 상단 검색바에 키워드 입력 → 250ms 후 실시간 결과
+2. **카테고리 필터**: 카테고리 버튼 클릭 → 해당 분류만 표시
+3. **문서 열기**: 카드 클릭 → `article.php?id={id}` 이동
+4. **새 문서**: 우상단 "새 문서" 버튼 클릭
+
+---
+
+### 8.6 문서 상세/편집 (article.php)
+
+#### 기술 구조
+
+- **파일**: `kb/article.php` (281줄)
+- **의존성**: marked.js (마크다운 렌더링), highlight.js (코드 하이라이팅)
+- **CDN**: `cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/`
+
+#### 화면 구성
+
+| 영역 | 기능 |
+|------|------|
+| 상단 바 | ← 뒤로가기 + 수정/삭제 버튼 |
+| 제목 영역 | 문서 제목 (큰 글씨) + 태그 + 카테고리 + 날짜 |
+| 본문 영역 | 마크다운 렌더링 + 코드 하이라이팅 |
+
+#### 마크다운 렌더링
+
+```javascript
+// marked.js로 마크다운 → HTML 변환
+const html = marked.parse(article.content);
+document.querySelector('.content').innerHTML = html;
+
+// highlight.js로 코드 블록 자동 하이라이팅
+document.querySelectorAll('pre code').forEach(block => {
+    hljs.highlightElement(block);
+});
+```
+
+#### 코드 블록 복사 버튼
+
+각 코드 블록(`<pre>`)에 "복사" 버튼 자동 추가:
+```javascript
+document.querySelectorAll('pre').forEach(pre => {
+    const btn = document.createElement('button');
+    btn.textContent = '복사';
+    btn.onclick = () => {
+        navigator.clipboard.writeText(pre.querySelector('code').textContent);
+        btn.textContent = '복사됨!';
+        setTimeout(() => btn.textContent = '복사', 1500);
+    };
+    pre.appendChild(btn);
+});
+```
+
+#### 편집 모드
+
+"수정" 버튼 클릭 시:
+1. 본문 영역 → `<textarea>` (마크다운 원본) 전환
+2. 제목/태그/카테고리 → 편집 가능 `<input>` 전환
+3. "저장" 버튼 → `api.php?action=update` POST
+4. 저장 완료 → 뷰 모드로 복귀 (마크다운 재렌더링)
+
+#### 삭제
+
+```javascript
+function deleteArticle() {
+    if (!confirm('정말 삭제하시겠습니까?')) return;
+    fetch('/kb/api.php', {
+        method: 'POST',
+        body: new URLSearchParams({ action: 'delete', id: articleId })
+    }).then(() => location.href = 'index.php');
+}
+```
+
+#### 사용법
+
+1. **문서 읽기**: 마크다운으로 렌더링된 본문 + 코드 하이라이팅
+2. **코드 복사**: 코드 블록 우상단 "복사" 버튼 클릭
+3. **수정**: "수정" 버튼 → 마크다운 원본 편집 → "저장"
+4. **삭제**: "삭제" 버튼 → 확인 다이얼로그 → 삭제 후 목록으로
+
+---
+
+### 8.7 DB 테이블 구조
+
+```sql
+CREATE TABLE knowledge_base (
+    id INT AUTO_INCREMENT PRIMARY KEY,
+    title VARCHAR(500) NOT NULL,
+    content LONGTEXT NOT NULL,
+    tags VARCHAR(500) DEFAULT '',
+    category VARCHAR(50) DEFAULT 'general',
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+    FULLTEXT INDEX ft_search (title, content, tags)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
+```
+
+| 컬럼 | 타입 | 설명 |
+|------|------|------|
+| `id` | INT (PK) | 자동 증가 |
+| `title` | VARCHAR(500) | 문서 제목 |
+| `content` | LONGTEXT | 마크다운 본문 |
+| `tags` | VARCHAR(500) | 쉼표 구분 태그 |
+| `category` | VARCHAR(50) | 카테고리 코드 (7종) |
+| `created_at` | TIMESTAMP | 생성일 |
+| `updated_at` | TIMESTAMP | 수정일 (자동 갱신) |
+
+- **FULLTEXT INDEX**: `title`, `content`, `tags` 3개 컬럼에 걸쳐 전문 검색 지원
+- **InnoDB**: MySQL 5.7+ 에서 InnoDB FULLTEXT 지원
+
+---
+
 ## 부록. 주요 규칙 및 주의사항
 
 ### PHP 8.2 호환성
