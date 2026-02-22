@@ -406,49 +406,568 @@ const doc = new Document({
         // ════════════════════════════════════════
         // Ch6. 관리자 대시보드
         // ════════════════════════════════════════
-        h1('Ch6. \uAD00\uB9AC\uC790 \uB300\uC2DC\uBCF4\uB4DC'),
+        h1('Ch6. 관리자 대시보드'),
+        p('접속: https://dsp114.co.kr/dashboard/ (ID: admin / PW: admin123)'),
+        p('대시보드는 주문/교정/견적/회원/통계 등 모든 관리 기능을 하나의 인터페이스에서 제공합니다.'),
 
-        h2('6.1 \uAE30\uC220 \uC2A4\uD0DD'),
-        bullet('Tailwind CSS CDN + Chart.js'),
-        bullet('\uBE0C\uB79C\uB4DC \uCEEC\uB7EC: #1E4E79'),
-        bullet('\uC778\uC99D: $_SESSION[\'admin_username\']'),
-        bullet('\uB808\uC774\uC544\uC6C3: h-screen overflow-hidden (\uBDF0\uD3EC\uD2B8 \uACE0\uC815)'),
+        // ── 6.1 기술 스택 ──
+        h2('6.1 기술 스택 및 레이아웃'),
+        h3('프론트엔드 기술'),
+        makeTable(
+          ['기술', 'CDN/버전', '용도'],
+          [
+            ['Tailwind CSS', 'CDN (cdn.tailwindcss.com)', '전체 UI 스타일링'],
+            ['Chart.js', 'CDN (cdn.jsdelivr.net)', '통계 차트 (일별추이, 품목비율, 매출)'],
+            ['Google Fonts', 'Noto Sans KR', '한국어 폰트'],
+          ],
+          [2000, 3800, 3560]
+        ),
+        bullet('브랜드 컬러: #1E4E79 (사이드바 헤더, 카드 상단바, 버튼)'),
+        bullet('아이콘: 이모지 기반 (별도 아이콘 라이브러리 미사용)'),
 
-        h2('6.2 \uD30C\uC77C \uAD6C\uC870'),
+        h3('레이아웃 구조'),
+        ...codeBlock([
+          '<div class="flex h-screen pt-11 overflow-hidden">',
+          '  <aside class="w-56 overflow-y-auto">  <!-- 사이드바: 독립 스크롤 -->',
+          '  <main class="flex-1 overflow-y-auto">  <!-- 메인 콘텐츠: 독립 스크롤 -->',
+          '</div>',
+        ]),
+        bullet('h-screen overflow-hidden: 뷰포트 고정 (전체 페이지 스크롤 없음)'),
+        bullet('사이드바와 메인 콘텐츠가 각각 독립적으로 스크롤'),
+
+        h3('인증 체크 흐름'),
+        flowArrow(['auth.php include', 'SESSION 확인', '미인증→로그인 리다이렉트', '인증→페이지 렌더링']),
+        bullet('세션 키: $_SESSION[\'admin_username\']'),
+        bullet('로그인: /admin/mlangprintauto/login.php'),
+
+        // ── 6.2 파일 구조 ──
+        pb(),
+        h2('6.2 전체 파일 구조 (45개 PHP 파일)'),
         ...codeBlock([
           'dashboard/',
-          '\u251C\u2500\u2500 includes/config.php      \u2014 $DASHBOARD_NAV, $PRODUCT_TYPES',
-          '\u251C\u2500\u2500 includes/header.php      \u2014 Tailwind CDN, \uC778\uC99D \uCCB4\uD06C',
-          '\u251C\u2500\u2500 api/orders.php           \u2014 \uC8FC\uBB38 CRUD',
-          '\u251C\u2500\u2500 api/products.php         \u2014 \uC81C\uD488/\uCE74\uD14C\uACE0\uB9AC \uAD00\uB9AC',
-          '\u251C\u2500\u2500 api/email.php            \u2014 \uC774\uBA54\uC77C \uCEA0\uD398\uC778',
-          '\u251C\u2500\u2500 api/settings.php         \u2014 \uC0AC\uC774\uD2B8 \uC124\uC815',
-          '\u251C\u2500\u2500 orders/index.php         \u2014 \uC8FC\uBB38 \uBAA9\uB85D',
-          '\u251C\u2500\u2500 orders/view.php          \u2014 \uC8FC\uBB38 \uC0C1\uC138',
-          '\u2514\u2500\u2500 proofs/api.php           \u2014 \uAD50\uC815 \uD30C\uC77C API',
+          '├── index.php                    ← 메인 대시보드',
+          '├── embed.php                    ← 레거시 iframe 임베드',
+          '├── includes/',
+          '│   ├── config.php               ← $DASHBOARD_NAV, $PRODUCT_TYPES',
+          '│   ├── auth.php                 ← 인증 체크',
+          '│   ├── header.php               ← Tailwind CDN, Chart.js',
+          '│   ├── sidebar.php              ← 사이드바 네비게이션',
+          '│   └── footer.php               ← 공통 스크립트',
+          '├── api/ (16개 파일)',
+          '│   ├── base.php                 ← jsonResponse() 헬퍼',
+          '│   ├── orders.php               ← 주문 CRUD',
+          '│   ├── products.php             ← 제품/카테고리',
+          '│   ├── email.php                ← 이메일 캠페인',
+          '│   ├── members.php              ← 회원 관리',
+          '│   ├── stats.php                ← 주문 통계',
+          '│   ├── settings.php             ← 사이트 설정',
+          '│   ├── quotes.php               ← 견적 관리',
+          '│   ├── payments.php             ← 결제 현황',
+          '│   ├── admin-order.php           ← 관리자 주문',
+          '│   └── ... (기타 6개)',
+          '├── orders/',
+          '│   ├── index.php                ← 주문 목록',
+          '│   └── view.php                 ← 주문 상세',
+          '├── proofs/',
+          '│   ├── index.php                ← 교정 관리 (1,295줄)',
+          '│   └── api.php                  ← 교정 파일 API',
+          '├── admin-order/index.php        ← 관리자 주문 등록',
+          '├── email/index.php              ← 이메일 발송 (1,347줄)',
+          '├── stats/index.php              ← 주문 통계',
+          '├── visitors/index.php           ← 방문자 분석',
+          '├── settings/index.php           ← 사이트 설정',
+          '└── ... (기타 페이지들)',
         ]),
 
-        h2('6.3 \uC0AC\uC774\uB4DC\uBC14 \uBA54\uB274'),
+        // ── 6.3 사이드바 ──
+        h2('6.3 사이드바 네비게이션'),
+        p('설정: config.php의 $DASHBOARD_NAV 배열 → 6개 그룹'),
         makeTable(
-          ['\uADF8\uB8F9', '\uBA54\uB274 \uD56D\uBAA9'],
+          ['그룹', '메뉴 항목'],
           [
-            ['\uC8FC\uBB38\xB7\uAD50\uC815', '\uAD00\uB9AC\uC790 \uC8FC\uBB38, \uC8FC\uBB38 \uAD00\uB9AC, \uAD50\uC815 \uAD00\uB9AC, \uAD50\uC815 \uB4F1\uB85D, \uACB0\uC81C \uD604\uD669, \uD0DD\uBC30 \uAD00\uB9AC, \uBC1C\uC1A1 \uBAA9\uB85D'],
-            ['\uC18C\uD1B5\xB7\uACAC\uC801', '\uC774\uBA54\uC77C \uBC1C\uC1A1, \uCC44\uD305 \uAD00\uB9AC, \uACAC\uC801 \uAD00\uB9AC, \uACE0\uAC1D \uBB38\uC758'],
-            ['\uC81C\uD488\xB7\uAC00\uACA9', '\uC81C\uD488 \uAD00\uB9AC, \uAC00\uACA9 \uAD00\uB9AC, \uACAC\uC801\uC635\uC158, \uC2A4\uD2F0\uCEE4\uC218\uC815, \uAC24\uB7EC\uB9AC \uAD00\uB9AC, \uD488\uBAA9\uC635\uC158'],
-            ['\uAD00\uB9AC\xB7\uD1B5\uACC4', '\uD68C\uC6D0 \uAD00\uB9AC, \uC8FC\uBB38 \uD1B5\uACC4, \uBC29\uBB38\uC790\uBD84\uC11D, \uC0AC\uC774\uD2B8 \uC124\uC815'],
-            ['\uAE30\uC874 \uAD00\uB9AC\uC790', '\uC8FC\uBB38 \uAD00\uB9AC(\uAD6C), \uAD50\uC815 \uAD00\uB9AC(\uAD6C)'],
+            ['주문·교정', '관리자 주문, 주문 관리, 교정 관리, 교정 등록*, 결제 현황, 택배 관리*, 발송 목록*'],
+            ['소통·견적', '이메일 발송, 채팅 관리, 견적 관리, 고객 문의'],
+            ['제품·가격', '제품 관리, 가격 관리, 견적옵션*, 스티커수정, 갤러리 관리, 품목옵션'],
+            ['관리·통계', '회원 관리, 주문 통계, 방문자분석, 사이트 설정'],
+            ['기존 관리자', '주문 관리(구)*, 교정 관리(구)*'],
+          ],
+          [2000, 7360]
+        ),
+        tip('* 표시 = embed.php를 통한 레거시 iframe 임베드 메뉴'),
+        bullet('채팅 배지: chatmessages WHERE isread=0 카운트 → 빨간 배지'),
+        bullet('활성 메뉴: REQUEST_URI 비교 → bg-blue-50 하이라이트'),
+
+        // ── 6.4 메인 대시보드 ──
+        pb(),
+        h2('6.4 메인 대시보드 (index.php)'),
+        p('파일: dashboard/index.php (329줄)'),
+
+        h3('요약 카드 4개 (상단)'),
+        makeTable(
+          ['카드', 'DB 쿼리', '표시'],
+          [
+            ['오늘 주문', 'COUNT(*) WHERE DATE(regdate)=CURDATE()', '건수'],
+            ['이번달 매출', 'SUM(money_5) WHERE MONTH(regdate)=MONTH(NOW())', '금액(만원)'],
+            ['미확인 주문', 'COUNT(*) WHERE OrderStyle IN (0,1,2)', '건수'],
+            ['전체 회원수', 'COUNT(*) FROM users WHERE is_admin=0', '명'],
+          ],
+          [2000, 4500, 2860]
+        ),
+        bullet('카운트업 애니메이션: animateNumber() + easeOutExpo'),
+
+        h3('일별 주문추이 차트'),
+        bullet('Chart.js 라인 차트 (최근 7일)'),
+        bullet('데이터: PHP에서 DB 집계 → JS 변수로 전달'),
+        bullet('borderColor: #1E4E79 (브랜드 컬러)'),
+
+        h3('퀵 액션 버튼 4개'),
+        makeTable(
+          ['버튼', '링크'],
+          [
+            ['주문 등록', '/dashboard/admin-order/'],
+            ['교정 관리', '/dashboard/proofs/'],
+            ['이메일 발송', '/dashboard/email/'],
+            ['견적 작성', '/admin/mlangprintauto/quote/create.php'],
+          ],
+          [3000, 6360]
+        ),
+
+        h3('최근 주문 5건'),
+        bullet('SELECT no, name, Pname, money_5, OrderStyle, regdate ORDER BY no DESC LIMIT 5'),
+        bullet('행 클릭 → 주문 상세 페이지 이동'),
+
+        h3('[사용법]'),
+        numbered('대시보드 접속 시 자동으로 오늘 현황 표시', numNames[2]),
+        numbered('요약 카드 클릭 → 각 관리 페이지로 이동', numNames[2]),
+        numbered('퀵 액션 버튼으로 자주 쓰는 기능 바로 접근', numNames[2]),
+        numbered('최근 주문 행 클릭 → 주문 상세 페이지', numNames[2]),
+
+        // ── 6.5 주문 관리 목록 ──
+        pb(),
+        h2('6.5 주문 관리 — 목록 (orders/index.php)'),
+        p('파일: dashboard/orders/index.php (574줄)'),
+
+        h3('필터 4종'),
+        makeTable(
+          ['필터', '타입', '파라미터'],
+          [
+            ['기간', 'date range', 'from, to'],
+            ['상태', 'select', 'status (OrderStyle 값)'],
+            ['품목', 'select', 'product (9개 제품)'],
+            ['검색', 'text', 'search (주문번호/이름/연락처)'],
+          ],
+          [2000, 2500, 4860]
+        ),
+
+        h3('인라인 상태 변경'),
+        p('주문 목록에서 직접 상태 드롭다운 변경 → API POST로 즉시 저장'),
+        ...codeBlock([
+          '// 드롭다운 변경 이벤트',
+          'select.addEventListener("change", function() {',
+          '  fetch("/dashboard/api/orders.php", {',
+          '    method: "POST",',
+          '    body: JSON.stringify({ action: "update", id: orderId, OrderStyle: value })',
+          '  });',
+          '  // 성공 시 행 배경색 flash → 복원',
+          '});',
+        ]),
+
+        h3('일괄 삭제'),
+        bullet('체크박스 선택 → "선택 삭제" 버튼 → action=bulk_delete'),
+        bullet('하단 페이지네이션: 총 N건 · X/Y 페이지'),
+
+        h3('[사용법]'),
+        numbered('상단 필터바에서 기간/상태/품목/검색어 조합', numNames[3]),
+        numbered('각 행의 드롭다운에서 직접 상태 선택 (자동 저장)', numNames[3]),
+        numbered('주문번호 클릭 → 주문 상세 페이지', numNames[3]),
+        numbered('행 앞 체크박스 선택 → 하단 "선택 삭제"', numNames[3]),
+
+        // ── 6.6 주문 상세 ──
+        pb(),
+        h2('6.6 주문 관리 — 상세 (orders/view.php)'),
+        p('파일: dashboard/orders/view.php (622줄)'),
+
+        h3('화면 구성 (6개 카드)'),
+        makeTable(
+          ['카드', '내용'],
+          [
+            ['주문 정보', '주문번호, 품목, 주문일시, 상태 드롭다운'],
+            ['제품 규격', 'Type_1 파싱 결과 (종류/재질/수량/인쇄면)'],
+            ['주문자 정보', '이름, 전화, 이메일, 주소'],
+            ['금액 정보', '공급가액, VAT, 합계, 택배비(선불 시)'],
+            ['배송 정보', '배송방법, 운임구분, 택배비, 송장번호'],
+            ['원고 파일', '업로드 파일 목록 + 이미지 미리보기'],
+          ],
+          [2500, 6860]
+        ),
+
+        h3('Type_1 필드 파싱 (3가지 형식)'),
+        p('형식 1: JSON v2 (최신) — {"product_type":"namecard","style":"일반명함",...}'),
+        p('형식 2: 파이프 구분 (레거시) — 일반명함|소프트코팅|양면|500'),
+        p('형식 3: 키:값 줄바꿈 (구형) — 종류: 일반명함, 재질: 소프트코팅, ...'),
+        ...codeBlock([
+          'if (json_decode($type1)) { /* JSON 파싱 */ }',
+          'elseif (strpos($type1, "|") !== false) { /* 파이프 파싱 */ }',
+          'else { /* 키:값 줄바꿈 파싱 */ }',
+        ]),
+
+        h3('품목별 규격 라벨'),
+        makeTable(
+          ['품목', '라벨 순서'],
+          [
+            ['명함', '종류 → 재질 → 인쇄면 → 수량'],
+            ['전단지', '규격 → 용지 → 인쇄도수 → 수량'],
+            ['스티커', '재질 → 가로 → 세로 → 수량 → 모양'],
+            ['봉투', '종류 → 재질 → 인쇄면 → 수량'],
+            ['카다록', '종류 → 용지 → 페이지수 → 수량'],
+            ['NCR양식지', '구분 → 규격 → 색상 → 수량'],
           ],
           [2000, 7360]
         ),
 
-        h2('6.4 API \uD328\uD134'),
+        h3('택배비 VAT 계산'),
         ...codeBlock([
-          'GET  /dashboard/api/orders.php?action=list&page=1',
-          'POST /dashboard/api/orders.php?action=update  {id, OrderStyle}',
-          'POST /dashboard/api/email.php?action=send     {subject, body, recipients}',
-          'GET  /dashboard/api/settings.php?action=get',
-          'POST /dashboard/api/settings.php?action=save  {key, value}',
+          '$shipping_supply = $logen_delivery_fee;           // 공급가액',
+          '$shipping_vat = round($shipping_supply * 0.1);    // VAT 10%',
+          '$shipping_total = $shipping_supply + $shipping_vat; // 합계',
+          '// 표시: "5,000+VAT 500 = 5,500원"',
         ]),
+
+        h3('입금자명 불일치 강조'),
+        p('주문자명 ≠ 입금자명 → 적색 배경 + 흰색 글씨로 강조 표시'),
+
+        h3('[사용법]'),
+        numbered('주문 목록에서 주문번호 클릭 → 상세 페이지', numNames[4]),
+        numbered('상단 드롭다운에서 상태 변경 (자동 저장)', numNames[4]),
+        numbered('Type_1 파싱 결과가 라벨+표로 자동 표시', numNames[4]),
+        numbered('원고 파일: 이미지=썸네일, 비이미지=파일명 (클릭→다운로드)', numNames[4]),
+
+        // ── 6.7 교정 관리 ──
+        pb(),
+        h2('6.7 교정 관리 (proofs/index.php)'),
+        p('파일: dashboard/proofs/index.php (1,295줄 — 대시보드 최대 파일)'),
+        p('교정 파일 경로: /mlangorder_printauto/upload/{주문번호}/'),
+
+        h3('화면 구성'),
+        makeTable(
+          ['영역', '기능'],
+          [
+            ['주문 목록', '주문번호, 품목, 주문자, 교정상태, 파일수'],
+            ['이미지 뷰어', '풀스크린 원본 보기, 줌/팬, 썸네일바'],
+            ['파일 업로드', '드래그앤드롭 + 파일선택, 다중파일'],
+            ['교정 확정', '교정 완료 처리 (OrderStyle 변경)'],
+          ],
+          [2500, 6860]
+        ),
+
+        h3('이미지 뷰어 (줌/팬)'),
+        bullet('풀스크린 오버레이 (z-index: 9999)'),
+        bullet('마우스 휠 줌: 10% ~ 500%'),
+        bullet('마우스 드래그 팬: 이미지 이동'),
+        bullet('← → 방향키: 이전/다음 이미지'),
+        bullet('ESC / 배경 클릭: 닫기'),
+        bullet('하단 썸네일바: 모든 이미지 가로 배치, 클릭 전환'),
+
+        h3('교정 파일 API (proofs/api.php)'),
+        makeTable(
+          ['action', '메서드', '설명'],
+          [
+            ['files', 'GET', '교정파일 목록 (order_no)'],
+            ['upload', 'POST', '교정파일 업로드 (다중)'],
+            ['delete_file', 'POST', '개별 파일 삭제'],
+            ['save_phone', 'POST', '연락처 수정'],
+            ['check_proof_status', 'GET', '교정 상태 확인'],
+            ['confirm_proofreading', 'POST', '교정 확정 (상태 변경)'],
+          ],
+          [2800, 1500, 5060]
+        ),
+
+        h3('[사용법]'),
+        numbered('"보기" 클릭 → 이미지 뷰어 오버레이 열림', numNames[5]),
+        numbered('마우스 휠로 줌, 드래그로 팬, 방향키로 이전/다음', numNames[5]),
+        numbered('드래그앤드롭 또는 파일선택으로 교정파일 업로드', numNames[5]),
+        numbered('"교정확정" 버튼 → 주문 상태 자동 변경', numNames[5]),
+
+        // ── 6.8 관리자 주문 등록 ──
+        pb(),
+        h2('6.8 관리자 주문 등록 (admin-order/index.php)'),
+        p('파일: dashboard/admin-order/index.php (808줄)'),
+        p('용도: 전화/비회원 주문을 관리자가 직접 등록'),
+
+        h3('화면 구성'),
+        makeTable(
+          ['영역', '내용'],
+          [
+            ['품목 선택', '9개 제품 드롭다운 → 카테고리 자동 로드'],
+            ['옵션 입력', '품목별 cascade (종류→재질→수량)'],
+            ['수동 품목', '자유 텍스트로 품목명+가격 직접 입력'],
+            ['주문자 정보', '이름, 전화, 이메일, 주소'],
+            ['가격 입력', '공급가액 → VAT 자동 계산 (×1.1)'],
+            ['배송/결제', '배송방법, 결제방법, 택배 선불 지원'],
+          ],
+          [2500, 6860]
+        ),
+
+        h3('택배비 선불'),
+        bullet('배송방법 "택배" → 운임구분 착불/선불 라디오'),
+        bullet('"선불" → 택배비 금액 입력란 → DB logen_fee_type, logen_delivery_fee 저장'),
+
+        h3('[사용법]'),
+        numbered('드롭다운에서 제품 선택 → cascade 자동 로드', numNames[6]),
+        numbered('"수동 품목 추가" → 품목명/가격 직접 입력', numNames[6]),
+        numbered('공급가액 입력 시 VAT(10%) 자동 계산', numNames[6]),
+        numbered('택배 선불: 택배비 입력 → DB 저장', numNames[6]),
+        numbered('"주문 등록" 클릭 → DB 저장 + 주문 목록 이동', numNames[6]),
+
+        // ── 6.9 이메일 발송 ──
+        pb(),
+        h2('6.9 이메일 발송 (email/index.php)'),
+        p('파일: dashboard/email/index.php (1,347줄)'),
+        p('SMTP: 네이버 (smtp.naver.com:465, dsp1830@naver.com)'),
+
+        h3('3탭 구조'),
+        makeTable(
+          ['탭', '기능'],
+          [
+            ['작성', '수신자 선택, 제목/본문 편집, 테스트/발송'],
+            ['이력', '발송 캠페인 목록, 상태, 성공/실패 카운트'],
+            ['템플릿', '저장된 이메일 템플릿 불러오기/삭제'],
+          ],
+          [2000, 7360]
+        ),
+
+        h3('수신자 필터 3종'),
+        bullet('전체 회원: users 테이블에서 admin/test/봇 제외'),
+        bullet('조건 필터: 최근 로그인 기간 + 이메일 도메인'),
+        bullet('직접 입력: 쉼표 구분 이메일 주소'),
+
+        h3('WYSIWYG 에디터'),
+        bullet('3가지 모드: 편집기(기본), HTML편집, 미리보기'),
+        bullet('서식 도구: B, I, U, H1, H2, 링크, 이미지, 목록, 색상'),
+        bullet('이미지 업로드: /dashboard/email/uploads/ (5MB, JPG/PNG/GIF/WebP)'),
+
+        h3('발송 흐름'),
+        flowArrow(['action=send', 'campaigns INSERT', 'send_batch (100명)', '3초 대기', '반복', 'completed']),
+        bullet('{{name}} 치환: 수신자 이름 자동 삽입 (없으면 "고객")'),
+        warn('네이버 SMTP 일일 한도 약 500통, 배치 간격 3초'),
+
+        h3('[사용법]'),
+        numbered('수신대상 설정 (전체/조건/직접입력)', numNames[7]),
+        numbered('제목/본문 작성 (에디터 도구모음 사용)', numNames[7]),
+        numbered('"테스트" → dsp1830@naver.com으로 미리보기', numNames[7]),
+        numbered('"발송" → 100명씩 배치 발송 시작', numNames[7]),
+        numbered('"이력" 탭에서 발송 상태/성공률 확인', numNames[7]),
+
+        // ── 6.10 회원 관리 ──
+        pb(),
+        h2('6.10 회원 관리 (members/index.php)'),
+        p('파일: dashboard/members/index.php (336줄)'),
+
+        h3('기능'),
+        makeTable(
+          ['기능', '설명'],
+          [
+            ['회원 목록', '이름, 이메일, 전화, 가입일, 최근로그인'],
+            ['검색', '이름/이메일/전화번호 실시간 검색'],
+            ['이메일 오타 검사', 'scan_typos — naver.vom, nate.ocm 등 자동 감지'],
+            ['페이지네이션', '20명/페이지'],
+          ],
+          [2500, 6860]
+        ),
+        h3('[사용법]'),
+        numbered('상단 검색바에 이름/이메일/전화 입력 → 실시간 필터', numNames[8]),
+        numbered('"이메일 오타 검사" 버튼 → 문제 이메일 목록', numNames[8]),
+        numbered('회원 행 클릭 → 회원 상세 (가입정보, 주문내역)', numNames[8]),
+
+        // ── 6.11 견적 관리 ──
+        h2('6.11 견적 관리 (quotes/index.php)'),
+        p('DB: admin_quotes + admin_quote_items'),
+        h3('견적 상태 흐름'),
+        flowArrow(['draft (임시저장)', 'sent (발송)', 'viewed (열람)', 'accepted/rejected']),
+        h3('주요 기능'),
+        bullet('견적 목록: 번호, 고객명, 금액, 상태'),
+        bullet('새 견적/수정/미리보기 → 팝업 창 (window.open)'),
+        bullet('이메일 발송: PDF 첨부 → 상태 sent 변경'),
+        bullet('삭제: 개별 + 일괄 (체크박스)'),
+        bullet('견적번호: AQ-YYYYMMDD-NNNN'),
+
+        h3('[사용법]'),
+        numbered('"새 견적" → 팝업에서 고객정보+품목+금액 입력', numNames[9]),
+        numbered('"발송" → 고객 이메일로 PDF 첨부 발송', numNames[9]),
+        numbered('체크박스 → "선택 삭제"', numNames[9]),
+
+        // ── 6.12 주문 통계 ──
+        pb(),
+        h2('6.12 주문 통계 (stats/index.php)'),
+        p('파일: dashboard/stats/index.php (393줄)'),
+
+        h3('3종 차트 (Chart.js)'),
+        makeTable(
+          ['차트', '유형', '데이터'],
+          [
+            ['일별 주문추이', 'Line', '최근 30일 일별 주문 건수/금액'],
+            ['품목별 비율', 'Doughnut', '9개 제품별 주문 비율 (%)'],
+            ['월별 매출', 'Bar', '최근 12개월 월별 총 매출액'],
+          ],
+          [2500, 1500, 5360]
+        ),
+
+        h3('API 엔드포인트'),
+        ...codeBlock([
+          'GET /dashboard/api/stats.php?action=daily&days=30',
+          '→ { labels: ["2/1",...], orders: [3,5,...], revenue: [150000,...] }',
+          '',
+          'GET /dashboard/api/stats.php?action=products',
+          '→ { labels: ["스티커",...], data: [45,32,...] }',
+          '',
+          'GET /dashboard/api/stats.php?action=monthly&months=12',
+          '→ { labels: ["3월",...], data: [2500000,...] }',
+        ]),
+
+        h3('[사용법]'),
+        numbered('기간 선택 (7일/30일/90일) → 차트 자동 갱신', numNames[10]),
+        numbered('도넛 차트 호버 → 품목별 비율/건수', numNames[10]),
+        numbered('막대 차트에서 월별 매출 비교', numNames[10]),
+
+        // ── 6.13 방문자 분석 ──
+        h2('6.13 방문자 분석 (visitors/index.php)'),
+        h3('기능'),
+        makeTable(
+          ['기능', '설명'],
+          [
+            ['실시간 방문자', '현재 접속중 IP/UA/페이지'],
+            ['인기 페이지', '방문 횟수 상위 (한글명 표시)'],
+            ['진입/이탈', '첫 방문 페이지, 마지막 페이지'],
+            ['시간대별', '0~23시 방문 히스토그램'],
+          ],
+          [2500, 6860]
+        ),
+        h3('URL 한글화'),
+        bullet('30개 정확 매칭: /mlangprintauto/sticker_new/ → 스티커'),
+        bullet('17개 부분 매칭: /member/login → 로그인'),
+        bullet('getPageName(url) 2단계 매칭 함수'),
+
+        // ── 6.14 사이트 설정 ──
+        pb(),
+        h2('6.14 사이트 설정 (settings/index.php)'),
+        p('DB: site_settings 테이블 (key-value)'),
+        h3('3가지 토글'),
+        makeTable(
+          ['설정키', '기본값', '설명'],
+          [
+            ['nav_default_mode', 'simple', '네비: simple(바로이동) / detailed(메가메뉴)'],
+            ['en_version_enabled', '0', '영문 버전: 0=한국어만, 1=한국어+영어'],
+            ['quote_widget_enabled', '1', '견적 위젯: 0=끔, 1=켬'],
+          ],
+          [2800, 1200, 5360]
+        ),
+        h3('API'),
+        ...codeBlock([
+          'GET  /dashboard/api/settings.php?action=get',
+          '→ { nav_default_mode: "simple", en_version_enabled: "1", ... }',
+          '',
+          'POST /dashboard/api/settings.php?action=save',
+          'Body: { key: "en_version_enabled", value: "1" }',
+        ]),
+        h3('[사용법]'),
+        numbered('네비 모드: Simple/Detailed 라디오 → 즉시 저장', numNames[11]),
+        numbered('영문 버전: ON → 홈페이지 헤더 EN 버튼 표시', numNames[11]),
+        numbered('견적 위젯: ON/OFF → 하단 플로팅 견적 위젯', numNames[11]),
+
+        // ── 6.15 결제 현황 ──
+        h2('6.15 결제 현황 (payments/index.php)'),
+        p('DB: payment_inicis (KG이니시스 결제 기록)'),
+        h3('목록 컬럼'),
+        makeTable(
+          ['컬럼', '내용'],
+          [
+            ['주문번호', '연결된 주문 (클릭→주문상세)'],
+            ['거래번호', '이니시스 TID'],
+            ['결제금액', 'VAT 포함'],
+            ['결제수단', '카드/무통장'],
+            ['상태', '성공/실패/취소'],
+          ],
+          [2500, 6860]
+        ),
+
+        // ── 6.16 API 패턴 총정리 ──
+        pb(),
+        h2('6.16 API 패턴 총정리'),
+        h3('공통 구조'),
+        ...codeBlock([
+          '// api/base.php — 모든 API가 공유하는 헬퍼',
+          'function jsonResponse($success, $message, $data = null) {',
+          '    header("Content-Type: application/json");',
+          '    echo json_encode(["success"=>$success, "message"=>$message, "data"=>$data]);',
+          '    exit;',
+          '}',
+        ]),
+        bullet('인증: auth.php 세션 검증'),
+        bullet('분기: $_GET["action"] 또는 $_POST["action"]'),
+
+        h3('주요 API 엔드포인트'),
+        makeTable(
+          ['파일', 'action', '메서드', '설명'],
+          [
+            ['orders.php', 'list', 'GET', '주문 목록 (page, status, product, search)'],
+            ['orders.php', 'view', 'GET', '주문 상세 (id)'],
+            ['orders.php', 'update', 'POST', '상태 변경 (id, OrderStyle)'],
+            ['orders.php', 'delete', 'POST', '주문 삭제'],
+            ['orders.php', 'bulk_delete', 'POST', '일괄 삭제 (ids[])'],
+            ['email.php', 'send', 'POST', '캠페인 발송 시작'],
+            ['email.php', 'send_batch', 'POST', '배치 발송 (100명씩)'],
+            ['email.php', 'send_test', 'POST', '테스트 발송'],
+            ['email.php', 'templates', 'GET', '템플릿 목록'],
+            ['stats.php', 'daily', 'GET', '일별 통계 (days)'],
+            ['stats.php', 'products', 'GET', '품목별 비율'],
+            ['stats.php', 'monthly', 'GET', '월별 매출 (months)'],
+            ['settings.php', 'get', 'GET', '전체 설정 조회'],
+            ['settings.php', 'save', 'POST', '설정 저장 (key, value)'],
+            ['members.php', 'list', 'GET', '회원 목록'],
+            ['members.php', 'scan_typos', 'GET', '이메일 오타검사'],
+            ['proofs/api.php', 'files', 'GET', '교정파일 목록'],
+            ['proofs/api.php', 'upload', 'POST', '교정파일 업로드'],
+            ['proofs/api.php', 'confirm_proofreading', 'POST', '교정 확정'],
+            ['admin-order.php', 'save', 'POST', '관리자 주문 등록'],
+          ],
+          [2200, 2000, 1000, 4160]
+        ),
+
+        // ── 6.17 레거시 임베드 ──
+        h2('6.17 레거시 임베드 (embed.php)'),
+        p('기존 관리자 페이지를 iframe으로 대시보드 안에 임베드'),
+        makeTable(
+          ['사이드바 메뉴', '임베드 URL'],
+          [
+            ['교정 등록', '/admin/mlangprintauto/admin.php?mode=sian'],
+            ['택배 관리', '/shop_admin/post_list74.php'],
+            ['발송 목록', '/shop_admin/post_list.php'],
+            ['견적옵션', '/admin/mlangprintauto/option_prices.php'],
+            ['주문 관리(구)', '/admin/mlangprintauto/admin.php'],
+            ['교정 관리(구)', '/admin/mlangprintauto/admin.php?mode=sian'],
+          ],
+          [2500, 6860]
+        ),
+        bullet('embed.php?url={URL} → iframe class="w-full h-full"'),
+        bullet('사이드바에서 (구) 또는 * 메뉴 클릭 시 iframe 로드'),
+
+        // ── 6.18 가격/품목옵션/갤러리/문의 ──
+        h2('6.18 가격 관리 (pricing/)'),
+        p('3단 구조: 품목 선택 → Section(종류) 목록 → 수량별 가격 그리드'),
+        bullet('스티커: 별도 sticker.php에서 요율 테이블(shop_d1~d4) 관리'),
+        bullet('DB: mlangprintauto_transactioncate + mlangprintauto_{product}'),
+
+        h2('6.19 품목옵션 (premium-options/)'),
+        bullet('프리미엄 옵션: 박, 넘버링, 미싱, 귀돌이, 오시'),
+        bullet('옵션별 가격/설명 수정 + ON/OFF 토글'),
+
+        h2('6.20 갤러리 관리 (gallery/)'),
+        bullet('품목별 샘플 이미지 관리 (업로드/삭제/정렬)'),
+        bullet('이미지 경로: /ImgFolder/sample/{product}/'),
+
+        h2('6.21 고객 문의 (inquiries/)'),
+        bullet('문의 목록 + 상세: 미답변 우선 표시 (빨간 배지)'),
+        bullet('답변 작성 → 고객 이메일 자동 알림'),
 
         pb(),
         // ════════════════════════════════════════

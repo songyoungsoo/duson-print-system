@@ -360,57 +360,1161 @@ if ($placeholder_count === $type_count && $type_count === $var_count) {
 
 ## Ch6. 관리자 대시보드
 
-### 기술 스택
+> **접속**: https://dsp114.co.kr/dashboard/ (ID: admin / PW: admin123)
+>
+> 대시보드는 주문/교정/견적/회원/통계 등 모든 관리 기능을 하나의 인터페이스에서 제공합니다.
+> 이 챕터에서는 각 페이지의 **기술 구조(파일, API, DB)**와 **사용법**을 상세히 설명합니다.
 
-- **프레임워크**: Tailwind CSS CDN + Chart.js
-- **브랜드 컬러**: `#1E4E79`
-- **인증**: `$_SESSION['admin_username']` 체크
-- **레이아웃**: `h-screen overflow-hidden` (뷰포트 고정), 사이드바 독립 스크롤
+---
 
-### 파일 구조
+### 6.1 기술 스택 및 레이아웃
+
+#### 프론트엔드 기술
+
+| 기술 | CDN/버전 | 용도 |
+|------|----------|------|
+| Tailwind CSS | CDN (`cdn.tailwindcss.com`) | 전체 UI 스타일링 |
+| Chart.js | CDN (`cdn.jsdelivr.net`) | 통계 차트 (일별추이, 품목비율, 매출) |
+| Google Fonts | Noto Sans KR | 한국어 폰트 |
+
+- **브랜드 컬러**: `#1E4E79` (사이드바 헤더, 카드 상단바, 버튼 등)
+- **아이콘**: 이모지 기반 (별도 아이콘 라이브러리 미사용)
+
+#### 레이아웃 구조
+
+```
+<div class="flex h-screen pt-11 overflow-hidden">
+  <aside class="w-56 overflow-y-auto">    <!-- 사이드바: 독립 스크롤 -->
+  <main class="flex-1 overflow-y-auto">   <!-- 메인 콘텐츠: 독립 스크롤 -->
+</div>
+```
+
+- `h-screen overflow-hidden`: 뷰포트 고정 (전체 페이지 스크롤 없음)
+- 사이드바와 메인 콘텐츠가 각각 독립적으로 스크롤
+- 상단 헤더바 높이 `pt-11` (44px) 고정
+
+#### 인증 체크 흐름
+
+```
+모든 대시보드 페이지 → includes/auth.php include
+  → $_SESSION['admin_username'] 존재 여부 확인
+  → 미인증 시 → /admin/mlangprintauto/login.php?redirect={현재URL} 리다이렉트
+  → 인증 완료 → 페이지 렌더링 진행
+```
+
+- **세션 키**: `$_SESSION['admin_username']`
+- **로그인 페이지**: `/admin/mlangprintauto/login.php`
+- **리다이렉트**: 로그인 후 원래 요청 페이지로 자동 복귀
+
+---
+
+### 6.2 전체 파일 구조 (45개 PHP 파일)
 
 ```
 dashboard/
+├── index.php                         ← 메인 대시보드 (요약카드 + 차트 + 최근주문)
+├── embed.php                         ← 레거시 관리자 iframe 임베드
+│
 ├── includes/
-│   ├── config.php      — $DASHBOARD_NAV (5그룹 21메뉴), $PRODUCT_TYPES
-│   ├── header.php      — Tailwind CDN, Chart.js, 인증 체크
-│   ├── sidebar.php     — 사이드바 메뉴 렌더링
-│   └── footer.php      — 공통 푸터
-├── api/
-│   ├── orders.php      — 주문 CRUD
-│   ├── products.php    — 제품/카테고리 관리
-│   ├── email.php       — 이메일 캠페인
-│   ├── settings.php    — 사이트 설정
-│   └── quotes.php      — 견적 관리
+│   ├── config.php                    ← $DASHBOARD_NAV (6그룹), $PRODUCT_TYPES (9제품)
+│   ├── auth.php                      ← 인증 체크 ($_SESSION['admin_username'])
+│   ├── header.php                    ← Tailwind CDN, Chart.js CDN, 상단바
+│   ├── sidebar.php                   ← 사이드바 네비게이션 (카드형, 채팅 배지)
+│   └── footer.php                    ← 공통 스크립트, 토스트 알림
+│
+├── api/                              ← 모든 API 엔드포인트 (16개 파일)
+│   ├── base.php                      ← jsonResponse() 헬퍼, DB 연결, 인증
+│   ├── orders.php                    ← 주문 list/view/update/delete/bulk_delete
+│   ├── products.php                  ← 제품/카테고리 CRUD
+│   ├── email.php                     ← 이메일 캠페인 (SMTP)
+│   ├── gallery.php                   ← 갤러리 이미지 CRUD
+│   ├── inquiries.php                 ← 고객 문의 CRUD
+│   ├── members.php                   ← 회원 목록/상세/이메일오타
+│   ├── payments.php                  ← 결제 현황 조회
+│   ├── premium_options.php           ← 품목옵션 관리
+│   ├── quotes.php                    ← 견적 CRUD + 일괄삭제
+│   ├── settings.php                  ← 사이트 설정 get/save
+│   ├── stats.php                     ← 주문 통계 (일별/월별/품목별)
+│   ├── sticker.php                   ← 스티커 가격 관리
+│   ├── admin-order.php               ← 관리자 주문 등록
+│   └── visitor_stats.php             ← 방문자 분석
+│
 ├── orders/
-│   ├── index.php       — 주문 목록 (인라인 상태 변경)
-│   └── view.php        — 주문 상세
-└── proofs/
-    ├── index.php       — 교정 목록
-    └── api.php         — 교정 파일 API
+│   ├── index.php                     ← 주문 목록 (필터, 인라인 상태변경, 페이지네이션)
+│   └── view.php                      ← 주문 상세 (규격파싱, 원고, 금액, 배송)
+│
+├── proofs/
+│   ├── index.php                     ← 교정 관리 (이미지뷰어, 줌/팬, 업로드)
+│   └── api.php                       ← 교정 파일 API (6개 action)
+│
+├── admin-order/index.php             ← 관리자 주문 등록
+├── email/index.php                   ← 이메일 발송 (3탭: 작성/이력/템플릿)
+├── chat/index.php                    ← 채팅 관리
+├── quotes/index.php                  ← 견적 관리
+├── inquiries/
+│   ├── index.php                     ← 문의 목록
+│   └── view.php                      ← 문의 상세/답변
+├── members/
+│   ├── index.php                     ← 회원 목록 (검색, 오타검사)
+│   └── view.php                      ← 회원 상세
+├── payments/index.php                ← 결제 현황
+├── products/
+│   ├── index.php                     ← 제품 관리
+│   └── list.php                      ← 제품 목록
+├── pricing/
+│   ├── index.php                     ← 가격 관리 (3단 구조)
+│   ├── edit.php                      ← 가격 수정
+│   └── sticker.php                   ← 스티커 가격 전용
+├── premium-options/index.php         ← 품목옵션 관리
+├── gallery/index.php                 ← 갤러리 관리
+├── stats/index.php                   ← 주문 통계 (3종 차트)
+├── visitors/index.php                ← 방문자 분석
+└── settings/index.php                ← 사이트 설정 (3가지 토글)
 ```
 
-### 사이드바 메뉴 구조
+---
 
-| 그룹 | 메뉴 항목 |
+### 6.3 사이드바 네비게이션
+
+#### 기술 구조
+
+- **설정 파일**: `dashboard/includes/config.php` (104줄)
+- **렌더링**: `dashboard/includes/sidebar.php` (245줄)
+- **데이터**: `$DASHBOARD_NAV` 배열 → 6개 그룹으로 구성
+
+#### $DASHBOARD_NAV 6개 그룹
+
+| 그룹 ID | 표시명 | 메뉴 항목 (아이콘 포함) |
+|---------|--------|----------------------|
+| `main` | 메인 | 대시보드 |
+| `order_group` | 주문/교정 | 관리자 주문, 주문 관리, 교정 관리, 교정 등록*, 결제 현황, 택배 관리*, 발송 목록* |
+| `comm_group` | 소통/견적 | 이메일 발송, 채팅 관리, 견적 관리, 고객 문의 |
+| `product_group` | 제품/가격 | 제품 관리, 가격 관리, 견적옵션*, 스티커수정, 갤러리 관리, 품목옵션 |
+| `admin_group` | 관리/통계 | 회원 관리, 주문 통계, 방문자분석, 사이트 설정 |
+| `legacy_group` | 기존 관리자 | 주문 관리(구)*, 교정 관리(구)* |
+
+> `*` 표시: `embed.php`를 통한 레거시 iframe 임베드 메뉴
+
+#### 채팅 배지 (실시간 미읽음 카운트)
+
+```php
+// sidebar.php — 채팅 메뉴 옆 빨간 배지
+$unread_query = "SELECT COUNT(*) as cnt FROM chatmessages WHERE isread = 0";
+// → <span class="bg-red-500 text-white rounded-full px-1.5 text-xs">{cnt}</span>
+```
+
+#### 활성 메뉴 하이라이트
+
+```php
+// sidebar.php — 현재 URL 기반 활성 메뉴 판별
+$current_url = $_SERVER['REQUEST_URI'];
+// 각 메뉴의 href와 비교 → 일치 시 bg-blue-50 + text-blue-700 클래스 적용
+```
+
+#### 사용법
+
+1. 좌측 사이드바에서 원하는 그룹 클릭 → 메뉴 항목 펼침
+2. 각 메뉴 클릭 → 해당 관리 페이지로 이동
+3. 채팅 관리 메뉴에 빨간 배지 숫자 = 미읽음 채팅 수
+
+---
+
+### 6.4 메인 대시보드 (index.php)
+
+#### 기술 구조
+
+- **파일**: `dashboard/index.php` (329줄)
+- **의존성**: Chart.js (일별 주문추이 차트)
+- **DB 쿼리**: 요약카드 4종 + 일별 추이 7일 + 최근주문 5건
+
+#### 화면 구성 (4개 영역)
+
+**영역 1: 요약 카드 4개 (상단)**
+
+| 카드 | DB 쿼리 | 표시 |
+|------|---------|------|
+| 오늘 주문 | `SELECT COUNT(*) FROM mlangorder_printauto WHERE DATE(regdate)=CURDATE()` | 건수 |
+| 이번달 매출 | `SELECT SUM(money_5) FROM mlangorder_printauto WHERE MONTH(regdate)=MONTH(NOW())` | 금액 (만원) |
+| 미확인 주문 | `SELECT COUNT(*) FROM mlangorder_printauto WHERE OrderStyle IN ('0','1','2')` | 건수 |
+| 전체 회원수 | `SELECT COUNT(*) FROM users WHERE is_admin=0` | 명 |
+
+- 카운트업 애니메이션: `animateNumber(el, target, 800, isCurrency)` (easeOutExpo)
+
+**영역 2: 일별 주문추이 차트**
+
+```javascript
+// Chart.js 라인 차트 (최근 7일)
+new Chart(ctx, {
+  type: 'line',
+  data: {
+    labels: ['2/15', '2/16', ...],      // PHP에서 생성
+    datasets: [{
+      label: '주문 수',
+      data: [3, 5, 2, ...],             // DB 집계
+      borderColor: '#1E4E79',
+    }]
+  }
+});
+```
+
+**영역 3: 퀵 액션 버튼 4개**
+
+| 버튼 | 링크 |
+|------|------|
+| 주문 등록 | `/dashboard/admin-order/` |
+| 교정 관리 | `/dashboard/proofs/` |
+| 이메일 발송 | `/dashboard/email/` |
+| 견적 작성 | `/admin/mlangprintauto/quote/create.php` |
+
+**영역 4: 최근 주문 5건 테이블**
+
+```sql
+SELECT no, name, Pname, money_5, OrderStyle, regdate
+FROM mlangorder_printauto
+WHERE OrderStyle != 'deleted'
+ORDER BY no DESC LIMIT 5
+```
+
+#### 사용법
+
+1. 대시보드 접속 시 **자동으로 오늘 현황** 표시
+2. 요약 카드 클릭 → 각 관리 페이지로 이동
+3. 퀵 액션 버튼으로 자주 쓰는 기능 바로 접근
+4. 최근 주문 행 클릭 → 주문 상세 페이지로 이동
+
+---
+
+### 6.5 주문 관리 — 목록 (orders/index.php)
+
+#### 기술 구조
+
+- **파일**: `dashboard/orders/index.php` (574줄)
+- **API**: `dashboard/api/orders.php?action=list`
+- **기능**: 필터 4종, 인라인 상태변경, 일괄삭제, 페이지네이션
+
+#### 필터 4종
+
+| 필터 | 타입 | 파라미터 |
+|------|------|---------|
+| 기간 | date range | `from`, `to` |
+| 상태 | select | `status` (OrderStyle 값) |
+| 품목 | select | `product` (9개 제품) |
+| 검색 | text | `search` (주문번호/이름/연락처) |
+
+#### 인라인 상태 변경
+
+```javascript
+// 주문 목록에서 직접 상태 드롭다운 변경
+document.querySelectorAll('.order-status-select').forEach(select => {
+  select.addEventListener('change', function() {
+    const orderId = this.dataset.orderId;
+    const newStatus = this.value;
+    fetch('/dashboard/api/orders.php', {
+      method: 'POST',
+      body: JSON.stringify({ action: 'update', id: orderId, OrderStyle: newStatus })
+    });
+    // 성공 시 행 배경색 flash → 복원
+  });
+});
+```
+
+#### 일괄 삭제
+
+```javascript
+// 체크박스 선택 → "선택 삭제" 버튼
+function bulkDelete() {
+  const ids = [...document.querySelectorAll('.order-checkbox:checked')]
+    .map(cb => cb.value);
+  fetch('/dashboard/api/orders.php', {
+    method: 'POST',
+    body: JSON.stringify({ action: 'bulk_delete', ids })
+  });
+}
+```
+
+#### 배송 컬럼
+
+목록 테이블에 배송방법/운임구분/택배비 표시:
+- 택배 선불 시: `선불 5,000원` 형태
+- 착불/직접수령: 해당 텍스트만 표시
+
+#### API 응답 형식
+
+```
+GET /dashboard/api/orders.php?action=list&page=1&status=3&search=홍길동
+응답: { success: true, data: { orders: [...], total: 45, page: 1, per_page: 20 } }
+```
+
+#### 사용법
+
+1. **필터 설정**: 상단 필터바에서 기간/상태/품목/검색어 조합
+2. **상태 변경**: 각 행의 드롭다운에서 직접 상태 선택 (저장 자동)
+3. **상세 보기**: 주문번호 클릭 → `orders/view.php` 이동
+4. **일괄 삭제**: 행 앞 체크박스 선택 → 하단 "선택 삭제" 클릭
+5. **페이지 이동**: 하단 `총 N건 / X/Y 페이지` 네비게이션
+
+---
+
+### 6.6 주문 관리 — 상세 (orders/view.php)
+
+#### 기술 구조
+
+- **파일**: `dashboard/orders/view.php` (622줄)
+- **API**: `dashboard/api/orders.php?action=view&id={no}`
+
+#### 화면 구성 (6개 카드)
+
+| 카드 | 내용 |
+|------|------|
+| 주문 정보 | 주문번호, 품목, 주문일시, 상태 드롭다운 |
+| 제품 규격 | Type_1 파싱 결과 (종류/재질/수량/인쇄면 등) |
+| 주문자 정보 | 이름, 전화, 이메일, 주소 |
+| 금액 정보 | 공급가액, VAT, 합계, 택배비(선불 시) |
+| 배송 정보 | 배송방법, 운임구분, 택배비, 송장번호 |
+| 원고 파일 | 업로드된 파일 목록 + 이미지 미리보기 |
+
+#### Type_1 필드 파싱 (3가지 형식)
+
+주문의 `Type_1` 컬럼에는 제품 옵션이 저장되며, 3가지 형식이 혼재합니다:
+
+**형식 1: JSON v2** (최신)
+```json
+{"product_type":"namecard","style":"일반명함 86x50","section":"소프트코팅","quantity":"500","potype":"양면인쇄"}
+```
+
+**형식 2: 파이프 구분** (레거시)
+```
+일반명함 86x50|소프트코팅|양면인쇄|500
+```
+
+**형식 3: 키:값 줄바꿈** (구형)
+```
+종류: 일반명함 86x50
+재질: 소프트코팅
+인쇄: 양면인쇄
+수량: 500
+```
+
+```php
+// view.php — Type_1 파싱 로직
+$type1 = $order['Type_1'];
+if (json_decode($type1)) {
+    // JSON v2 파싱
+} elseif (strpos($type1, '|') !== false) {
+    // 파이프 구분 파싱
+} else {
+    // 키:값 줄바꿈 파싱
+}
+```
+
+#### 품목별 규격 라벨 매핑
+
+| 품목 | 라벨 순서 |
 |------|----------|
-| 주문·교정 | 관리자 주문, 주문 관리, 교정 관리, 교정 등록, 결제 현황, 택배 관리, 발송 목록 |
-| 소통·견적 | 이메일 발송, 채팅 관리, 견적 관리, 고객 문의 |
-| 제품·가격 | 제품 관리, 가격 관리, 견적옵션, 스티커수정, 갤러리 관리, 품목옵션 |
-| 관리·통계 | 회원 관리, 주문 통계, 방문자분석, 사이트 설정 |
-| 기존 관리자 | 주문 관리(구), 교정 관리(구) |
+| 명함 | 종류 → 재질 → 인쇄면 → 수량 |
+| 전단지 | 규격 → 용지 → 인쇄도수 → 수량 |
+| 스티커 | 재질 → 가로 → 세로 → 수량 → 모양 |
+| 봉투 | 종류 → 재질 → 인쇄면 → 수량 |
+| 포스터 | 규격 → 용지 → 인쇄도수 → 수량 |
+| 카다록 | 종류 → 용지 → 페이지수 → 수량 |
+| NCR양식지 | 구분 → 규격 → 색상 → 수량 |
 
-### API 패턴
+#### 택배비 VAT 계산
+
+```php
+// 선불 택배비의 공급가액 + VAT 10% 합산 표시
+$shipping_supply = $logen_delivery_fee;              // 공급가액
+$shipping_vat = round($shipping_supply * 0.1);       // VAT
+$shipping_total = $shipping_supply + $shipping_vat;   // 합계
+// 표시: "5,000+VAT 500 = 5,500원"
+```
+
+#### 입금자명 불일치 강조
+
+주문자명과 입금자명이 다를 경우 **적색 배경 + 흰색 글씨**로 강조:
+```php
+if ($order['name'] !== $order['bankname'] && !empty($order['bankname'])) {
+    echo '<span class="bg-red-600 text-white px-2 py-0.5 rounded">'
+       . htmlspecialchars($order['bankname']) . '</span>';
+}
+```
+
+#### 상태 변경 (드롭다운)
+
+```javascript
+// 상태 드롭다운 변경 → API POST
+document.getElementById('orderStatus').addEventListener('change', function() {
+  fetch('/dashboard/api/orders.php', {
+    method: 'POST',
+    body: JSON.stringify({
+      action: 'update',
+      id: orderId,
+      OrderStyle: this.value
+    })
+  }).then(() => showToast('상태가 변경되었습니다.'));
+});
+```
+
+#### 사용법
+
+1. 주문 목록에서 **주문번호 클릭** → 상세 페이지 열림
+2. **상태 변경**: 상단 드롭다운에서 원하는 상태 선택 (자동 저장)
+3. **제품 규격**: Type_1 파싱 결과가 라벨과 함께 표 형태로 표시
+4. **원고 파일**: 이미지는 썸네일로, 비이미지는 파일명으로 표시 (클릭 시 다운로드)
+5. **택배비**: 선불인 경우 공급가액+VAT 계산 자동 표시
+
+---
+
+### 6.7 교정 관리 (proofs/index.php)
+
+#### 기술 구조
+
+- **파일**: `dashboard/proofs/index.php` (1,295줄 — 대시보드 최대 파일)
+- **API**: `dashboard/proofs/api.php` (6개 action)
+- **교정 파일 경로**: `/mlangorder_printauto/upload/{주문번호}/`
+
+#### 화면 구성
+
+| 영역 | 기능 |
+|------|------|
+| 주문 목록 테이블 | 주문번호, 품목, 주문자, 교정상태, 파일수, 액션 |
+| 이미지 뷰어 오버레이 | 풀스크린 이미지 원본 보기, 줌/팬 |
+| 파일 업로드 폼 | 드래그앤드롭 + 파일선택, 다중파일 지원 |
+| 교정 확정 버튼 | 교정 완료 처리 (OrderStyle 변경) |
+
+#### 이미지 뷰어 (Windows Photo Viewer 스타일)
+
+```javascript
+// 풀스크린 오버레이 + 줌/팬
+function openViewer(images, startIndex) {
+  // fixed overlay (z-index: 9999)
+  // 배경 클릭 = 닫기
+  // ESC = 닫기
+  // ← → 방향키 = 이전/다음
+}
+
+// 마우스 휠 줌
+viewer.addEventListener('wheel', function(e) {
+  e.preventDefault();
+  const delta = e.deltaY > 0 ? -0.1 : 0.1;
+  currentZoom = Math.max(0.1, Math.min(5, currentZoom + delta));
+  img.style.transform = `scale(${currentZoom}) translate(${panX}px, ${panY}px)`;
+});
+
+// 마우스 드래그 팬
+viewer.addEventListener('mousedown', startDrag);
+viewer.addEventListener('mousemove', doDrag);
+viewer.addEventListener('mouseup', stopDrag);
+```
+
+- **줌 범위**: 10% ~ 500%
+- **팬**: 마우스 드래그로 이미지 이동
+- **썸네일바**: 하단에 모든 이미지 썸네일 가로 배치, 클릭 시 전환
+- **카운터**: `1 / 5` 형태로 현재 위치 표시
+
+#### 교정 파일 API (proofs/api.php)
+
+| action | 메서드 | 파라미터 | 설명 |
+|--------|--------|---------|------|
+| `files` | GET | `order_no` | 해당 주문의 교정파일 목록 |
+| `upload` | POST | `order_no`, `files[]` | 교정파일 업로드 (다중) |
+| `delete_file` | POST | `order_no`, `filename` | 개별 파일 삭제 |
+| `save_phone` | POST | `order_no`, `phone` | 연락처 수정 |
+| `check_proof_status` | GET | `order_no` | 교정 상태 확인 |
+| `confirm_proofreading` | POST | `order_no` | 교정 확정 (OrderStyle 변경) |
+
+#### 파일 업로드 동작
+
+```javascript
+// 드래그앤드롭 업로드
+const dropzone = document.querySelector('.upload-dropzone');
+dropzone.addEventListener('drop', function(e) {
+  e.preventDefault();
+  const files = e.dataTransfer.files;
+  const formData = new FormData();
+  formData.append('action', 'upload');
+  formData.append('order_no', orderNo);
+  for (let f of files) formData.append('files[]', f);
+
+  fetch('/dashboard/proofs/api.php', { method: 'POST', body: formData })
+    .then(r => r.json())
+    .then(data => {
+      if (data.success) refreshFileList(orderNo);
+    });
+});
+```
+
+- **허용 형식**: jpg, jpeg, png, gif, pdf, ai, psd, zip
+- **최대 크기**: 20MB/파일
+- **파일명**: `{YYYYMMDD}_{랜덤hex}.{확장자}` 자동 생성
+
+#### 교정 확정 처리
+
+```javascript
+function confirmProofreading(orderNo) {
+  if (!confirm('교정을 확정하시겠습니까?')) return;
+  fetch('/dashboard/proofs/api.php', {
+    method: 'POST',
+    body: JSON.stringify({ action: 'confirm_proofreading', order_no: orderNo })
+  });
+  // → OrderStyle 변경 (교정 → 작업중)
+}
+```
+
+#### 사용법
+
+1. **교정 목록**: 주문 목록에서 교정이 필요한 주문 확인 (교정상태 컬럼)
+2. **파일 보기**: "보기" 버튼 클릭 → 이미지 뷰어 오버레이 열림
+3. **이미지 조작**: 마우스 휠로 줌, 드래그로 팬, 방향키로 이전/다음
+4. **파일 업로드**: 드래그앤드롭 또는 파일선택으로 교정파일 추가
+5. **교정 확정**: 교정 완료 시 "교정확정" 버튼 → 주문 상태 자동 변경
+
+---
+
+### 6.8 관리자 주문 등록 (admin-order/index.php)
+
+#### 기술 구조
+
+- **파일**: `dashboard/admin-order/index.php` (808줄)
+- **API**: `dashboard/api/admin-order.php`
+- **용도**: 전화/비회원 주문을 관리자가 직접 등록
+
+#### 화면 구성
+
+| 영역 | 내용 |
+|------|------|
+| 품목 선택 | 9개 제품 드롭다운 → 카테고리 자동 로드 |
+| 옵션 입력 | 품목별 cascade (종류→재질→수량) |
+| 수동 품목 추가 | 자유 텍스트로 품목명+가격 직접 입력 |
+| 주문자 정보 | 이름, 전화, 이메일, 주소 |
+| 가격 입력 | 공급가액 입력 → VAT 자동 계산 (x1.1) |
+| 배송/결제 | 배송방법, 결제방법, 택배 선불 지원 |
+
+#### 품목 추가 JS
+
+```javascript
+// 품목 선택 → 계산기 AJAX 연동
+function loadCategories(productType) {
+  fetch(`/mlangprintauto/${productType}/get_paper_types.php?style=...`)
+    .then(r => r.json())
+    .then(data => populateSelect('category-select', data));
+}
+
+// 수동 품목 추가 (자유 텍스트)
+function addManualItem() {
+  const name = document.getElementById('manual-name').value;
+  const price = document.getElementById('manual-price').value;
+  appendToItemList({ name, price, type: 'manual' });
+}
+```
+
+#### 택배비 선불 입력
+
+```javascript
+// 배송방법 "택배" 선택 시 운임구분 라디오 표시
+document.getElementById('delivery_method').addEventListener('change', function() {
+  if (this.value === '택배') {
+    document.getElementById('fee-type-section').style.display = 'block';
+  }
+});
+
+// "선불" 선택 시 택배비 금액 입력란 표시
+document.querySelector('input[name="fee_type"][value="선불"]').addEventListener('change', function() {
+  document.getElementById('delivery-fee-input').style.display = 'block';
+});
+```
+
+#### DB 저장
 
 ```
-GET  /dashboard/api/orders.php?action=list&page=1
-POST /dashboard/api/orders.php?action=update  {id, OrderStyle}
-POST /dashboard/api/email.php?action=send     {subject, body, recipients}
+POST /dashboard/api/admin-order.php
+Body: { name, phone, email, address, items[], delivery_method, payment_method,
+        fee_type, delivery_fee, memo }
+→ INSERT INTO mlangorder_printauto (관리자 주문으로 표시)
+```
+
+#### 사용법
+
+1. **품목 선택**: 드롭다운에서 제품 선택 → 종류/재질/수량 cascade 자동 로드
+2. **수동 추가**: "수동 품목 추가" 버튼 → 품목명과 가격 직접 입력
+3. **주문자 정보**: 이름/전화/이메일/주소 입력
+4. **가격**: 공급가액 입력 시 VAT(10%) 자동 계산 표시
+5. **배송**: 택배 선택 → 착불/선불 선택 → 선불 시 택배비 입력
+6. **등록**: "주문 등록" 클릭 → DB 저장 + 주문 목록으로 이동
+
+---
+
+### 6.9 이메일 발송 (email/index.php)
+
+#### 기술 구조
+
+- **파일**: `dashboard/email/index.php` (1,347줄)
+- **API**: `dashboard/api/email.php` (12개 action)
+- **SMTP**: 네이버 (`smtp.naver.com:465`, dsp1830@naver.com)
+
+#### 3탭 구조
+
+| 탭 | 기능 |
+|----|------|
+| 작성 | 수신자 선택, 제목/본문 편집, 테스트/발송 |
+| 이력 | 발송 캠페인 목록, 상태(발송중/완료), 성공/실패 카운트 |
+| 템플릿 | 저장된 이메일 템플릿 목록, 불러오기/삭제 |
+
+#### 수신자 필터 3종
+
+| 필터 | 설명 |
+|------|------|
+| 전체 회원 | `users` 테이블에서 admin/test/봇 제외 |
+| 조건 필터 | 최근 로그인 기간 + 이메일 도메인 필터 |
+| 직접 입력 | 쉼표 구분 이메일 주소 직접 입력 |
+
+#### WYSIWYG 에디터
+
+3가지 편집 모드:
+- **편집기** (기본): `contenteditable` div + 서식 도구모음 (B, I, U, H1, H2, 링크, 이미지, 목록, 색상)
+- **HTML편집**: raw textarea (고급 사용자용)
+- **미리보기**: 렌더링된 HTML 확인
+
+```javascript
+// 모드 전환 시 콘텐츠 동기화
+function switchMode(mode) {
+  if (mode === 'html') {
+    document.getElementById('email-body').value =
+      document.getElementById('wysiwyg-editor').innerHTML;
+  } else if (mode === 'wysiwyg') {
+    document.getElementById('wysiwyg-editor').innerHTML =
+      document.getElementById('email-body').value;
+  }
+}
+```
+
+#### 이미지 업로드
+
+```javascript
+// 에디터 내 이미지 삽입
+function uploadImage(file) {
+  const formData = new FormData();
+  formData.append('action', 'upload_image');
+  formData.append('image', file);
+  fetch('/dashboard/api/email.php', { method: 'POST', body: formData })
+    .then(r => r.json())
+    .then(data => {
+      // 업로드된 이미지 URL을 에디터에 삽입
+      document.execCommand('insertImage', false, data.url);
+    });
+}
+// 저장 경로: /dashboard/email/uploads/
+// 제한: 5MB, JPG/PNG/GIF/WebP
+```
+
+#### 발송 흐름
+
+```
+1. "이메일 발송" 클릭
+   → action=send: email_campaigns INSERT + email_send_log INSERT (수신자별)
+2. 배치 발송 시작
+   → action=send_batch: 100명씩 mailer() 호출
+   → 3초 대기 → 다음 배치
+3. 전체 완료
+   → campaign status = 'completed'
+```
+
+#### {{name}} 치환
+
+이메일 본문에서 `{{name}}`은 수신자 이름으로 자동 치환됩니다. 이름이 없으면 "고객"으로 표시.
+
+#### 네이버 SMTP 제한
+
+| 항목 | 제한값 |
+|------|--------|
+| 1회 최대 | 100명 |
+| 일일 한도 | 약 500통 |
+| 배치 간격 | 3초 대기 |
+| Gmail 수신 | 스팸 분류 가능성 있음 |
+
+#### 사용법
+
+1. **수신자 설정**: "전체 회원" 또는 조건 필터 / 직접 입력
+2. **제목 입력**: 이메일 제목 작성
+3. **본문 편집**: 편집기 도구모음 사용 또는 HTML 직접 편집
+4. **이미지 삽입**: 도구모음 이미지 버튼 → 파일 선택 → 자동 업로드+삽입
+5. **테스트 발송**: "테스트" 버튼 → dsp1830@naver.com으로 미리보기 발송
+6. **실제 발송**: "발송" 버튼 → 확인 후 100명씩 배치 발송 시작
+7. **이력 확인**: "이력" 탭에서 발송 상태/성공률 확인
+
+---
+
+### 6.10 회원 관리 (members/index.php)
+
+#### 기술 구조
+
+- **파일**: `dashboard/members/index.php` (336줄)
+- **API**: `dashboard/api/members.php`
+- **DB**: `users` 테이블
+
+#### 기능
+
+| 기능 | 설명 |
+|------|------|
+| 회원 목록 | 이름, 이메일, 전화, 가입일, 최근로그인 |
+| 검색 | 이름/이메일/전화번호로 실시간 검색 |
+| 이메일 오타 검사 | `action=scan_typos` — nate.ocm, naver.vom 등 오타 자동 감지 |
+| 페이지네이션 | 20명/페이지 |
+
+#### 이메일 오타 검사 (scan_typos)
+
+```php
+// api/members.php — 흔한 오타 패턴 검사
+$typo_patterns = [
+    'naver.vom', 'naver.coml', 'naver.co.kr',  // naver.com 오타
+    'nate.ocm', 'nate.co.kr',                   // nate.com 오타
+    'gmail.co', 'gamil.com',                     // gmail.com 오타
+    'hanmail.com',                               // hanmail.net 오타
+];
+```
+
+#### 사용법
+
+1. **회원 목록**: 가입일/최근로그인 순 정렬
+2. **검색**: 상단 검색바에 이름/이메일/전화 입력 → 실시간 필터
+3. **오타 검사**: "이메일 오타 검사" 버튼 → 문제 이메일 목록 표시
+4. **상세 보기**: 회원 행 클릭 → `members/view.php` 이동 (가입정보, 주문내역, 사업자정보)
+
+---
+
+### 6.11 견적 관리 (quotes/index.php)
+
+#### 기술 구조
+
+- **파일**: `dashboard/quotes/index.php`
+- **API**: `dashboard/api/quotes.php`
+- **DB**: `admin_quotes` + `admin_quote_items`
+
+#### 견적서 상태 흐름
+
+```
+draft (임시저장) → sent (발송) → viewed (열람) → accepted/rejected (승인/거절)
+```
+
+#### 주요 기능
+
+| 기능 | 동작 |
+|------|------|
+| 견적 목록 | 번호, 고객명, 금액, 상태, 생성일 |
+| 새 견적 | 팝업 창으로 create.php 열림 |
+| 수정 | 팝업 창으로 edit.php 열림 |
+| 미리보기 | 팝업 창으로 preview.php 열림 (인쇄용) |
+| 이메일 발송 | 견적서 PDF 첨부 이메일 발송 → 상태 `sent` 변경 |
+| 삭제 | 개별 삭제 + 일괄 삭제 (체크박스) |
+
+#### 견적번호 체계
+
+| 접두어 | 형식 | 예시 |
+|--------|------|------|
+| AQ | `AQ-YYYYMMDD-NNNN` | AQ-20260208-0004 |
+
+#### 팝업 창 동작
+
+```javascript
+// 견적 상세/수정/미리보기 → 팝업 창으로 열림
+function openQuotePopup(url) {
+  window.open(url, 'quotePopup', 'width=960,height=' + (screen.height * 0.92));
+}
+// 페이지 로드 후 콘텐츠 높이 측정 → 자동 리사이즈 + 화면 중앙 배치
+```
+
+#### 사용법
+
+1. **견적 목록**: 상태별 필터 (전체/임시/발송/열람/승인/거절)
+2. **새 견적**: "새 견적" 버튼 → 팝업에서 고객정보+품목+금액 입력
+3. **발송**: "발송" 버튼 → 고객 이메일로 견적서 PDF 첨부 발송
+4. **삭제**: 개별 "삭제" 링크 또는 체크박스 → "선택 삭제"
+
+---
+
+### 6.12 주문 통계 (stats/index.php)
+
+#### 기술 구조
+
+- **파일**: `dashboard/stats/index.php` (393줄)
+- **API**: `dashboard/api/stats.php`
+- **차트**: Chart.js (3종 차트)
+
+#### 3종 차트
+
+| 차트 | 유형 | 데이터 |
+|------|------|--------|
+| 일별 주문추이 | Line | 최근 30일 일별 주문 건수/금액 |
+| 품목별 비율 | Doughnut | 9개 제품별 주문 비율 (%) |
+| 월별 매출 | Bar | 최근 12개월 월별 총 매출액 |
+
+#### API 엔드포인트
+
+```
+GET /dashboard/api/stats.php?action=daily&days=30
+→ { labels: ['2/1', '2/2', ...], orders: [3, 5, ...], revenue: [150000, ...] }
+
+GET /dashboard/api/stats.php?action=products
+→ { labels: ['스티커', '전단지', ...], data: [45, 32, ...] }
+
+GET /dashboard/api/stats.php?action=monthly&months=12
+→ { labels: ['3월', '4월', ...], data: [2500000, ...] }
+```
+
+#### 카운트업 애니메이션
+
+```javascript
+function animateNumber(el, target, duration, isCurrency) {
+  const start = performance.now();
+  function update(now) {
+    const progress = Math.min((now - start) / duration, 1);
+    const eased = 1 - Math.pow(2, -10 * progress);  // easeOutExpo
+    const current = Math.round(target * eased);
+    el.textContent = isCurrency ? formatCurrency(current) : current.toLocaleString();
+    if (progress < 1) requestAnimationFrame(update);
+  }
+  requestAnimationFrame(update);
+}
+```
+
+#### 사용법
+
+1. **일별 추이**: 상단 기간 선택 (7일/30일/90일) → 차트 자동 갱신
+2. **품목 비율**: 도넛 차트에서 각 품목 호버 → 비율/건수 표시
+3. **월별 매출**: 막대 차트에서 월별 매출 비교
+
+---
+
+### 6.13 방문자 분석 (visitors/index.php)
+
+#### 기술 구조
+
+- **파일**: `dashboard/visitors/index.php`
+- **API**: `dashboard/api/visitor_stats.php`
+
+#### 주요 기능
+
+| 기능 | 설명 |
+|------|------|
+| 실시간 방문자 | 현재 접속중인 방문자 IP/UA/페이지 |
+| 인기 페이지 | 방문 횟수 상위 페이지 (한글화 표시) |
+| 진입/이탈 페이지 | 첫 방문 페이지, 마지막 페이지 |
+| 시간대별 분포 | 시간대별 방문 건수 |
+
+#### URL 한글화 매핑
+
+```javascript
+// visitors/index.php — 30개 경로 → 한글 매핑
+const PAGE_NAME_MAP = {
+  '/mlangprintauto/sticker_new/index.php': '스티커',
+  '/mlangprintauto/inserted/index.php': '전단지',
+  '/mlangprintauto/namecard/index.php': '명함',
+  // ... 30개 정확 매칭
+};
+const PAGE_PATH_PATTERNS = {
+  '/mlangprintauto/sticker_new/': '스티커',
+  '/member/login': '로그인',
+  // ... 17개 부분 매칭
+};
+function getPageName(url) {
+  return PAGE_NAME_MAP[url] || findPattern(url) || url;
+}
+```
+
+#### 사용법
+
+1. **실시간 탭**: 현재 접속자 목록 (자동 갱신)
+2. **인기 페이지**: 기간 선택 → 방문 TOP 10 페이지 (한글명 + 파란색 링크)
+3. **시간대 분포**: 0~23시 히스토그램 차트
+
+---
+
+### 6.14 사이트 설정 (settings/index.php)
+
+#### 기술 구조
+
+- **파일**: `dashboard/settings/index.php` (296줄)
+- **API**: `dashboard/api/settings.php`
+- **DB**: `site_settings` 테이블 (key-value 구조)
+
+#### 3가지 토글 설정
+
+| 설정키 | 기본값 | 설명 |
+|--------|--------|------|
+| `nav_default_mode` | `simple` | 네비 모드: simple(바로이동) / detailed(메가메뉴) |
+| `en_version_enabled` | `0` | 영문 버전 표시: 0=한국어만, 1=한국어+영어 |
+| `quote_widget_enabled` | `1` | 플로팅 견적 위젯: 0=끔, 1=켬 |
+
+#### API 패턴
+
+```
 GET  /dashboard/api/settings.php?action=get
-POST /dashboard/api/settings.php?action=save  {key, value}
-POST /dashboard/api/quotes.php?action=delete  {id}
-POST /dashboard/api/quotes.php?action=bulk_delete  {ids: [...]}
+→ { success: true, data: { nav_default_mode: 'simple', en_version_enabled: '1', ... } }
+
+POST /dashboard/api/settings.php?action=save
+Body: { key: 'en_version_enabled', value: '1' }
+→ { success: true, message: '설정이 저장되었습니다.' }
 ```
+
+#### 사용법
+
+1. **네비 모드**: Simple/Detailed 라디오 선택 → 즉시 저장 + 홈페이지 반영
+2. **영문 버전**: ON 토글 → 홈페이지 헤더에 EN 버튼 표시
+3. **견적 위젯**: ON/OFF 토글 → 홈페이지 하단 플로팅 견적 위젯 표시/숨김
+
+---
+
+### 6.15 결제 현황 (payments/index.php)
+
+#### 기술 구조
+
+- **파일**: `dashboard/payments/index.php`
+- **API**: `dashboard/api/payments.php`
+- **DB**: `payment_inicis` 테이블 (KG이니시스 결제 기록)
+
+#### 결제 목록 컬럼
+
+| 컬럼 | 내용 |
+|------|------|
+| 주문번호 | 연결된 주문번호 (클릭 시 주문 상세) |
+| 거래번호 | 이니시스 TID |
+| 결제금액 | VAT 포함 금액 |
+| 결제수단 | 카드/무통장 |
+| 결제일시 | 결제 완료 시각 |
+| 상태 | 성공/실패/취소 |
+
+#### 사용법
+
+1. **결제 목록**: 기간 필터 + 상태 필터
+2. **페이지네이션**: 하단 `총 N건 / X/Y 페이지`
+3. **주문 연결**: 주문번호 클릭 → 주문 상세 페이지
+
+---
+
+### 6.16 API 패턴 총정리
+
+#### 공통 구조
+
+모든 대시보드 API는 동일한 패턴을 따릅니다:
+
+```php
+// api/base.php — 공통 헬퍼
+require_once __DIR__ . '/base.php';  // DB 연결 + 인증 + jsonResponse()
+
+function jsonResponse(bool $success, string $message, $data = null) {
+    header('Content-Type: application/json');
+    echo json_encode([
+        'success' => $success,
+        'message' => $message,
+        'data' => $data
+    ], JSON_UNESCAPED_UNICODE);
+    exit;
+}
+```
+
+- **인증**: 모든 API는 `auth.php`를 통해 세션 검증
+- **에러 처리**: `jsonResponse(false, '에러메시지')` 형식
+- **분기**: `$_GET['action']` 또는 `$_POST['action']` 파라미터
+
+#### 전체 API 엔드포인트 목록
+
+| 파일 | action | 메서드 | 파라미터 | 설명 |
+|------|--------|--------|---------|------|
+| orders.php | list | GET | page, status, product, search, from, to | 주문 목록 |
+| orders.php | view | GET | id | 주문 상세 |
+| orders.php | update | POST | id, OrderStyle | 상태 변경 |
+| orders.php | delete | POST | id | 주문 삭제 |
+| orders.php | bulk_delete | POST | ids[] | 일괄 삭제 |
+| products.php | category_list | GET | product, style | 카테고리 목록 |
+| products.php | category_create | POST | code, name, desc | 카테고리 추가 |
+| products.php | category_update | POST | id, name, desc | 카테고리 수정 |
+| products.php | category_delete | POST | id | 카테고리 삭제 |
+| email.php | get_recipients | GET | filter, domain | 수신자 목록 |
+| email.php | send | POST | subject, body, recipients | 발송 시작 |
+| email.php | send_batch | POST | campaign_id | 배치 발송 |
+| email.php | send_test | POST | subject, body | 테스트 발송 |
+| email.php | save_draft | POST | subject, body | 임시저장 |
+| email.php | campaigns | GET | page | 캠페인 이력 |
+| email.php | campaign_detail | GET | id | 캠페인 상세 |
+| email.php | templates | GET | - | 템플릿 목록 |
+| email.php | load_template | GET | id | 템플릿 불러오기 |
+| email.php | save_template | POST | name, subject, body | 템플릿 저장 |
+| email.php | delete_template | POST | id | 템플릿 삭제 |
+| email.php | upload_image | POST | image (file) | 이미지 업로드 |
+| members.php | list | GET | page, search | 회원 목록 |
+| members.php | view | GET | id | 회원 상세 |
+| members.php | scan_typos | GET | - | 이메일 오타검사 |
+| stats.php | daily | GET | days | 일별 통계 |
+| stats.php | products | GET | - | 품목별 비율 |
+| stats.php | monthly | GET | months | 월별 매출 |
+| settings.php | get | GET | - | 전체 설정 조회 |
+| settings.php | save | POST | key, value | 설정 저장 |
+| quotes.php | list | GET | page, status | 견적 목록 |
+| quotes.php | delete | POST | id | 견적 삭제 |
+| quotes.php | bulk_delete | POST | ids[] | 일괄 삭제 |
+| payments.php | list | GET | page, from, to, status | 결제 목록 |
+| admin-order.php | save | POST | (주문 데이터) | 관리자 주문 등록 |
+| visitor_stats.php | realtime | GET | - | 실시간 방문자 |
+| visitor_stats.php | pages | GET | from, to | 인기 페이지 |
+| proofs/api.php | files | GET | order_no | 교정파일 목록 |
+| proofs/api.php | upload | POST | order_no, files[] | 교정파일 업로드 |
+| proofs/api.php | delete_file | POST | order_no, filename | 파일 삭제 |
+| proofs/api.php | save_phone | POST | order_no, phone | 연락처 수정 |
+| proofs/api.php | check_proof_status | GET | order_no | 교정 상태 확인 |
+| proofs/api.php | confirm_proofreading | POST | order_no | 교정 확정 |
+
+---
+
+### 6.17 레거시 임베드 (embed.php)
+
+#### 기술 구조
+
+- **파일**: `dashboard/embed.php`
+- **방식**: `<iframe>` 태그로 기존 관리자 페이지를 대시보드 안에 임베드
+
+#### 임베드 대상 페이지
+
+| 사이드바 메뉴 | 임베드 URL | 원본 위치 |
+|-------------|-----------|----------|
+| 교정 등록 | `embed.php?url=/admin/mlangprintauto/admin.php?mode=sian` | 교정시안 등록 (구) |
+| 택배 관리 | `embed.php?url=/shop_admin/post_list74.php` | 로젠택배 관리 |
+| 발송 목록 | `embed.php?url=/shop_admin/post_list.php` | 발송 목록 |
+| 견적옵션 | `embed.php?url=/admin/mlangprintauto/option_prices.php` | 옵션 가격 관리 |
+| 주문 관리(구) | `embed.php?url=/admin/mlangprintauto/admin.php` | 레거시 주문 관리 |
+| 교정 관리(구) | `embed.php?url=/admin/mlangprintauto/admin.php?mode=sian` | 레거시 교정 관리 |
+
+```php
+// embed.php — iframe 임베드 구조
+$url = $_GET['url'] ?? '';
+// 보안: 허용된 URL 패턴만 임베드
+?>
+<div class="flex-1 overflow-hidden">
+  <iframe src="<?= htmlspecialchars($url) ?>"
+          class="w-full h-full border-0"
+          sandbox="allow-same-origin allow-scripts allow-forms">
+  </iframe>
+</div>
+```
+
+#### 사용법
+
+1. 사이드바에서 `(구)` 또는 `*` 표시된 메뉴 클릭
+2. 대시보드 레이아웃 안에서 기존 관리자 페이지가 iframe으로 로드
+3. iframe 내에서 기존 관리자 기능 그대로 사용 가능
+
+---
+
+### 6.18 가격 관리 (pricing/index.php)
+
+#### 기술 구조
+
+- **파일**: `dashboard/pricing/index.php`, `edit.php`, `sticker.php`
+- **API**: `dashboard/api/products.php`
+- **DB**: `mlangprintauto_transactioncate` + `mlangprintauto_{product}`
+
+#### 3단 구조
+
+```
+1단: 품목 선택 (9개 제품 드롭다운)
+  → 2단: Section(종류) 목록 로드
+    → 3단: 해당 Section의 가격표 (수량별 가격 그리드)
+```
+
+#### 가격표 구조
+
+| 컬럼 | 설명 |
+|------|------|
+| style | 종류 코드 |
+| Section | 재질/규격 코드 |
+| quantity | 수량 |
+| money | 가격 (원) |
+
+#### 스티커 가격 전용 (sticker.php)
+
+스티커는 수학 공식 기반이므로, 별도의 요율 테이블(`shop_d1~d4`)을 관리:
+- 각 재질별 수량 구간 요율 수정
+- 기본관리비(mg), 톰슨비 수정
+- 수정 후 실시간 시뮬레이션 미리보기
+
+#### 사용법
+
+1. **품목 선택**: 드롭다운에서 제품 선택
+2. **종류 확인**: Section 목록에서 종류(재질/규격) 확인
+3. **가격 수정**: 수량별 가격 셀 클릭 → 직접 수정 → 저장
+4. **스티커**: 별도 "스티커수정" 메뉴에서 요율 테이블 관리
+
+---
+
+### 6.19 품목옵션 관리 (premium-options/index.php)
+
+#### 기술 구조
+
+- **파일**: `dashboard/premium-options/index.php`
+- **API**: `dashboard/api/premium_options.php`
+
+#### 프리미엄 옵션 종류
+
+| 옵션 | 설명 | 적용 제품 |
+|------|------|----------|
+| 박 | 금박/은박 가공 | 명함, 상품권 |
+| 넘버링 | 일련번호 인쇄 | 상품권 |
+| 미싱 | 절취선 가공 | 전단지, 상품권 |
+| 귀돌이 | 모서리 라운딩 | 명함 |
+| 오시 | 접는 선 가공 | 전단지, 카다록 |
+
+#### 사용법
+
+1. 품목 선택 → 해당 품목의 프리미엄 옵션 목록 표시
+2. 각 옵션의 가격/설명 수정 → 저장
+3. 옵션 ON/OFF 토글 → 고객 주문 페이지에서 표시/숨김
+
+---
+
+### 6.20 갤러리 관리 (gallery/index.php)
+
+#### 기술 구조
+
+- **파일**: `dashboard/gallery/index.php`
+- **API**: `dashboard/api/gallery.php`
+- **이미지 경로**: `/ImgFolder/sample/{product}/`, `/ImgFolder/samplegallery/{product}/`
+
+#### 기능
+
+| 기능 | 설명 |
+|------|------|
+| 갤러리 이미지 목록 | 품목별 샘플 이미지 표시 |
+| 이미지 업로드 | 갤러리 샘플 이미지 추가 |
+| 이미지 삭제 | 불필요한 이미지 제거 |
+| 정렬 | 드래그앤드롭으로 표시 순서 변경 |
+
+#### 사용법
+
+1. 품목 드롭다운 선택 → 해당 품목 갤러리 이미지 표시
+2. "이미지 추가" → 파일 선택 → 업로드
+3. 이미지에 마우스 호버 → "삭제" 버튼 표시
+
+---
+
+### 6.21 고객 문의 (inquiries/)
+
+#### 기술 구조
+
+- **목록**: `dashboard/inquiries/index.php`
+- **상세**: `dashboard/inquiries/view.php`
+- **API**: `dashboard/api/inquiries.php`
+
+#### 기능
+
+| 기능 | 설명 |
+|------|------|
+| 문의 목록 | 제목, 작성자, 일시, 답변상태 |
+| 문의 상세 | 문의 내용 + 첨부파일 |
+| 답변 작성 | 관리자 답변 입력 + 이메일 알림 |
+
+#### 사용법
+
+1. **문의 목록**: 미답변 문의 우선 표시 (빨간 배지)
+2. **답변 작성**: 문의 상세 페이지 하단 답변 폼 작성 → 저장 시 고객 이메일 자동 알림
 
 ---
 
