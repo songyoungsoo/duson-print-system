@@ -504,8 +504,14 @@ class ShippingCalculator
             return $boxes * $fee16;
         }
 
-        // A4 (A4, A5, A6) → 무게 기반 요금 (특약 요금표 동일)
-        // ※ 16절특약만 고정 3,500원, A4는 무게별 차등 적용
+        // A4 특약: 0.5연(2000매) 이하 = 1박스 3,500원 (로젠 계약)
+        // 90g A4 2000매 ≈ 11.2kg → 특약 적용 기준: 1박스 + 12kg 이하
+        if ($paperSize === 'A4' && $boxes === 1 && $totalWeightKg <= 12) {
+            return self::FALLBACK_A4_FEE;
+        }
+
+        // A4 (A4, A5, A6) 1연 이상 → 무게 기반 요금
+        // ※ A4 0.5연 특약 외에는 무게별 차등 적용
 
         // 대형 (A3, B4, 4절, 국2절) → 무게 기반
         $weightPerBox = ($boxes > 0) ? $totalWeightKg / $boxes : $totalWeightKg;

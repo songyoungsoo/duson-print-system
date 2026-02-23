@@ -89,6 +89,11 @@ function calcShipping($data, $shipping_rules) {
         $rule = $shipping_rules[$detected_size];
         $r = (int)ceil($yeon) * $rule['boxes'];
         $w = (int)ceil($yeon) * $rule['cost'];
+        // A4 특약: 0.5연(2000매) 이하 = 1박스 3,500원 (로젠 계약)
+        if ($detected_size === 'A4' && $yeon <= 0.5) {
+            $r = 1;
+            $w = 3500;
+        }
     } elseif (preg_match("/NameCard/i", $data['Type'])) { $r = 1; $w = 3000; }
     elseif (preg_match("/MerchandiseBond/i", $data['Type'])) { $r = 1; $w = 3000; }
     elseif (preg_match("/sticker/i", $data['Type'])) { $r = 1; $w = 3000; }
