@@ -1,4 +1,5 @@
 <?php
+date_default_timezone_set('Asia/Seoul');
 require_once __DIR__ . '/../includes/auth.php';
 require_once __DIR__ . '/../includes/config.php';
 require_once __DIR__ . '/../../db.php';
