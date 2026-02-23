@@ -29,15 +29,15 @@ class ShippingCalculator
         'B6'    => 16000,  // 500 × 32
     ];
 
-    // ===== 봉투 규격 (mm) =====
-    // 봉투 면적 ≈ 가로×세로×2.3 (앞면+뒷면+날개 포함 계수)
-    const ENVELOPE_AREA_FACTOR = 2.3;
+    // ===== 봉투 펼침면 사이즈 (mm) =====
+    // 봉투 종이 사이즈(펼침면) — 접기 전 원지 크기로 면적 직접 계산
+    // 면적(m²) = 가로mm/1000 × 세로mm/1000 (factor 불필요)
     const ENVELOPE_SPECS = [
-        '대봉투'     => ['width' => 510, 'height' => 387],  // 대봉투 510×387mm
-        'A4자켓'     => ['width' => 262, 'height' => 238],  // A4 자켓봉투 262×238mm
-        'A4소봉투'   => ['width' => 238, 'height' => 260],  // A4 소봉투 238×260mm
-        '소봉투'     => ['width' => 220, 'height' => 105],  // 소봉투 220×105mm
-        '쟈켓소봉투' => ['width' => 220, 'height' => 105],  // 자켓소봉투 220×105mm (소봉투와 동일)
+        '대봉투'     => ['width' => 510, 'height' => 387],  // 대봉투 펼침면 510×387mm
+        'A4자켓'     => ['width' => 262, 'height' => 238],  // 자켓형 펼침면 262×238mm
+        'A4소봉투'   => ['width' => 238, 'height' => 262],  // 소봉투 펼침면 238×262mm
+        '소봉투'     => ['width' => 238, 'height' => 262],  // 소봉투 펼침면 238×262mm
+        '쟈켓소봉투' => ['width' => 262, 'height' => 238],  // 자켓소봉투 = 자켓형과 동일
     ];
 
     // ===== 용지 규격별 1매 면적 (m²) =====
@@ -54,21 +54,21 @@ class ShippingCalculator
     ];
 
     // ===== 규격 → 박스 규격 매핑 =====
-    // A4, A5, A6 → A3 박스 (430×300×160mm)
-    // B5, B6 → 16절 박스 (400×275×160mm)
+    // A4, A5, A6 → A3 박스 (430×300×165mm, 실측)
+    // B5, B6 → 8절 박스 (390×270×165mm, 16절특약: 4,000매/box 고정)
     // B4, A3, 4절, 국2절 → 대형 박스 (별도)
     const BOX_SPECS = [
         'A3_box' => [
             'name'   => 'A3 박스',
-            'width'  => 430, 'depth' => 300, 'height' => 160, // mm
-            'weight' => 1500, // 박스 자체 무게 (g) ≈ 1.5kg
-            'columns' => 2,   // A4 2열 배치 (210×2=420 ≤ 430)
+            'width'  => 430, 'depth' => 300, 'height' => 165,
+            'weight' => 500,
+            'columns' => 2,
             'sizes'  => ['A4', 'A5', 'A6'],
         ],
         '16_box' => [
-            'name'   => '16절 박스',
-            'width'  => 400, 'depth' => 275, 'height' => 160,
-            'weight' => 1200, // 박스 자체 무게 (g) ≈ 1.2kg
+            'name'   => '8절 박스',
+            'width'  => 390, 'depth' => 270, 'height' => 165,
+            'weight' => 500,
             'columns' => 2,
             'sizes'  => ['B5', 'B6'],
         ],
@@ -91,6 +91,7 @@ class ShippingCalculator
     ];
     const FALLBACK_16_FEE = 3500;
     const FALLBACK_A4_FEE = 3500;  // A4특약 (로젠 계약 요금)
+    const FALLBACK_ENVELOPE_FEE = 3500;  // 대봉투특약 (로젠 계약: 500매 1박스 3,500원)
 
     public static $cachedRates = null;
 
@@ -102,9 +103,8 @@ class ShippingCalculator
         'laminating' => 1.12,  // 라미네이팅 +12%
     ];
 
-    // ===== 1장 두께 (mm), 평량 기준 =====
-    // 두께 ≈ 평량(gsm) / 1000 × 1.2 (벌크 계수)
-    const BULK_FACTOR = 1.2;
+    // 실측: 90g 아트지 2,000매 = 165mm → 1장 = 0.0825mm → 벌크계수 = 0.0825/0.09 = 11/12
+    const BULK_FACTOR = 11/12;
 
     /**
      * 장바구니 아이템 배열로부터 전체 배송 추정 계산
@@ -185,11 +185,15 @@ class ShippingCalculator
         // 1장 두께 (mm)
         $sheetThicknessMM = ($gsm / 1000) * self::BULK_FACTOR;
 
-        // 박스당 최대 매수: 박스높이 / 1장두께 × 열수
+        // 박스당 최대 매수
         $maxPerBox = 0;
         if ($sheetThicknessMM > 0) {
             $sheetsPerColumn = floor($boxSpec['height'] / $sheetThicknessMM);
             $maxPerBox = $sheetsPerColumn * $boxSpec['columns'];
+        }
+        // 16절특약: B5/B6 = 4,000매/box 고정 (로젠 계약)
+        if (in_array($paperSize, ['B5', 'B6'])) {
+            $maxPerBox = 4000;
         }
 
         // 필요 박스수
@@ -316,6 +320,10 @@ class ShippingCalculator
         if ($sheetThickness > 0) {
             $maxPerBox = floor($boxSpec['height'] / $sheetThickness) * $boxSpec['columns'];
         }
+        // 16절특약: B5/B6 = 4,000매/box 고정 (로젠 계약)
+        if (in_array($paperSize, ['B5', 'B6'])) {
+            $maxPerBox = 4000;
+        }
         $boxes = ($maxPerBox > 0) ? (int)ceil($quantity / $maxPerBox) : (int)ceil($yeon);
         
         $boxWeightG = $boxes * $boxSpec['weight'];
@@ -333,7 +341,7 @@ class ShippingCalculator
             'gsm'        => $gsm,
             'paper_size' => $paperSize,
             'quantity'   => $quantity,
-            'fee_type'   => ($paperSize === 'B5' || $paperSize === 'B6') ? '16절특약' : 'A4특약',
+            'fee_type'   => ($paperSize === 'B5' || $paperSize === 'B6') ? '16절특약' : '무게기반',
             'calculable' => true,
         ];
     }
@@ -356,7 +364,7 @@ class ShippingCalculator
         elseif (preg_match('/A4\s*소봉투/ui', $type1Raw)) $envelopeType = 'A4소봉투';
 
         // gsm 파싱: "120g모조", "100모조" 등
-        $gsm = 100; // 기본값
+        $gsm = ($envelopeType === '대봉투') ? 120 : 100; // 대봉투 기본 120g, 나머지 100g
         if (preg_match('/(\d+)\s*g/i', $type1Raw, $m)) {
             $gsm = intval($m[1]);
         } elseif (preg_match('/\((\d+)모조/u', $type1Raw, $m)) {
@@ -373,39 +381,31 @@ class ShippingCalculator
             }
         }
 
-        // 봉투 크기 → 면적 계산
+        // 봉투 펼침면 사이즈로 면적 계산 (Type_1의 완성 치수가 아닌 원지 사이즈 사용)
         $spec = self::ENVELOPE_SPECS[$envelopeType] ?? self::ENVELOPE_SPECS['소봉투'];
-
-        // Type_1에서 직접 크기 파싱 시도 (예: "330*243", "220*105")
-        if (preg_match('/(\d{2,4})\s*[\*xX×]\s*(\d{2,4})/', $type1Raw, $m)) {
-            $w = intval($m[1]);
-            $h = intval($m[2]);
-            if ($w > 50 && $h > 50) {
-                $spec = ['width' => $w, 'height' => $h];
-            }
-        }
-
         // 1매 무게 계산 (g)
-        // 봉투 면적 = 가로 × 세로 × 2.3 (앞+뒤+날개)
-        $areaM2 = ($spec['width'] / 1000) * ($spec['height'] / 1000) * self::ENVELOPE_AREA_FACTOR;
+        // 봉투 펼침면 사이즈로 면적 직접 계산 (가로×세로 = 원지 전체 면적)
+        $areaM2 = ($spec['width'] / 1000) * ($spec['height'] / 1000);
         $weightPerPiece = $gsm * $areaM2; // g
 
         // 총 무게
         $paperWeightG = $weightPerPiece * $quantity;
-        $boxWeightG = 1200; // 봉투 박스 약 1.2kg
-        $maxPerBox = 500;   // 봉투 박스당 약 500매 (대봉투는 200매)
+        // 박스 분리: 20kg 초과 시 분리 (500매 고정 아님)
+        $totalWeightKg = round($paperWeightG / 1000, 1);
 
-        if ($envelopeType === '대봉투') {
-            $maxPerBox = 200;
-            $boxWeightG = 1500;
+        // 대봉투 특약: 3,500원/box (로젠 계약)
+        $isEnvelopeSpecial = ($envelopeType === '대봉투');
+        $boxes = max(1, (int)ceil($totalWeightKg / 20));
+        $totalWeightG = (int)round($paperWeightG);  // 부자재(박스) 무게 미포함
+
+        // 택배비: 대봉투는 특약, 나머지는 무게 기반
+        if ($isEnvelopeSpecial) {
+            $rates = self::loadRates();
+            $feePerBox = $rates['logen_envelope'][0]['fee'] ?? self::FALLBACK_ENVELOPE_FEE;
+            $fee = $boxes * $feePerBox;
+        } else {
+            $fee = self::estimateFeeByWeight($boxes, $totalWeightKg);
         }
-
-        $boxes = max(1, (int)ceil($quantity / $maxPerBox));
-        $totalWeightG = (int)round($paperWeightG + ($boxes * $boxWeightG));
-        $totalWeightKg = round($totalWeightG / 1000, 1);
-
-        // 택배비: 무게 기반
-        $fee = self::estimateFeeByWeight($boxes, $totalWeightKg);
 
         return [
             'boxes'      => $boxes,
@@ -415,7 +415,7 @@ class ShippingCalculator
             'gsm'        => $gsm,
             'paper_size' => $envelopeType,
             'quantity'   => $quantity,
-            'fee_type'   => '봉투',
+            'fee_type'   => $isEnvelopeSpecial ? '대봉투특약' : '봉투',
             'calculable' => true,
         ];
     }
@@ -435,16 +435,22 @@ class ShippingCalculator
 
         $spec = self::ENVELOPE_SPECS[$envelopeType] ?? self::ENVELOPE_SPECS['소봉투'];
 
-        // 1매 무게 (g): 가로×세로×2.3(날개포함) × gsm
-        $areaM2 = ($spec['width'] / 1000) * ($spec['height'] / 1000) * self::ENVELOPE_AREA_FACTOR;
+
+        // 대봉투 기본 120g (parseGSM이 100g 기본값을 반환했을 때 보정)
+        if ($envelopeType === '대봉투' && $gsm === 100) {
+            $gsm = 120;
+        }
+
+        // 1매 무게 (g): 펼침면 가로×세로 = 원지 전체 면적
+        $areaM2 = ($spec['width'] / 1000) * ($spec['height'] / 1000);
         $weightPerPiece = $gsm * $areaM2;
 
         $paperWeightG = $weightPerPiece * $quantity;
-        $maxPerBox = ($envelopeType === '대봉투') ? 200 : 500;
-        $boxWeightG = ($envelopeType === '대봉투') ? 1500 : 1200;
+        $maxPerBox = 500;
+        // 봉투 박스당 500매 (대봉투 포함)
 
         $boxes = max(1, (int)ceil($quantity / $maxPerBox));
-        $totalWeightG = (int)round($paperWeightG + ($boxes * $boxWeightG));
+        $totalWeightG = (int)round($paperWeightG);  // 부자재(박스) 무게 미포함
 
         return [
             'product_type'    => 'envelope',
@@ -453,11 +459,11 @@ class ShippingCalculator
             'quantity'         => $quantity,
             'coating'          => 'none',
             'paper_weight_g'   => (int)round($paperWeightG),
-            'box_weight_g'     => $boxes * $boxWeightG,
+            'box_weight_g'     => 0,  // 부자재 무게 미포함
             'total_weight_g'   => $totalWeightG,
             'total_weight_kg'  => round($totalWeightG / 1000, 1),
             'boxes'            => $boxes,
-            'weight_per_box_kg'=> round(($totalWeightG / $boxes) / 1000, 1),
+            'weight_per_box_kg'=> ($boxes > 0) ? round(($paperWeightG / $boxes) / 1000, 1) : round($paperWeightG / 1000, 1),
             'box_type'         => '봉투 박스',
             'max_per_box'      => $maxPerBox,
             'calculable'       => true,
@@ -498,11 +504,8 @@ class ShippingCalculator
             return $boxes * $fee16;
         }
 
-        // A4특약 (A4, A5, A6 — A3 박스 규격)
-        if (in_array($paperSize, ['A4', 'A5', 'A6'])) {
-            $feeA4 = $rates['logen_a4'][0]['fee'] ?? self::FALLBACK_A4_FEE;
-            return $boxes * $feeA4;
-        }
+        // A4 (A4, A5, A6) → 무게 기반 요금 (특약 요금표 동일)
+        // ※ 16절특약만 고정 3,500원, A4는 무게별 차등 적용
 
         // 대형 (A3, B4, 4절, 국2절) → 무게 기반
         $weightPerBox = ($boxes > 0) ? $totalWeightKg / $boxes : $totalWeightKg;
@@ -560,6 +563,7 @@ class ShippingCalculator
         // fallback: 하드코딩 값
         $rates['logen_weight'] = self::FALLBACK_LOGEN_RATES;
         $rates['logen_16'] = [['max_kg' => 99, 'fee' => self::FALLBACK_16_FEE, 'label' => '16절 고정']];
+        $rates['logen_envelope'] = [['max_kg' => 99, 'fee' => self::FALLBACK_ENVELOPE_FEE, 'label' => '대봉투 특약']];
         self::$cachedRates = $rates;
         return $rates;
     }

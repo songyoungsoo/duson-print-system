@@ -5,6 +5,88 @@ include "lib.php";
 require_once __DIR__ . '/../db.php';
 $connect = $db;
 
+// 규격별 택배비 룩업 (delivery_manager.php와 동일)
+$shipping_rules = [
+    'A6'  => ['boxes' => 1, 'cost' => 4000],
+    'B6'  => ['boxes' => 1, 'cost' => 4000],
+    'A5'  => ['boxes' => 1, 'cost' => 6000],
+    'B5'  => ['boxes' => 2, 'cost' => 7000],
+    'A4'  => ['boxes' => 1, 'cost' => 6000],
+    'B4'  => ['boxes' => 2, 'cost' => 12000],
+    'A3'  => ['boxes' => 2, 'cost' => 12000],
+];
+
+// 택배비 자동 계산 (규격+연수 기반, delivery_manager.php calcShipping과 동일)
+function calcShipping52($data, $shipping_rules) {
+    $type1_raw = isset($data['Type_1']) ? $data['Type_1'] : '';
+    $detected_size = '';
+    if (preg_match('/16절|B5/i', $type1_raw)) $detected_size = 'B5';
+    elseif (preg_match('/32절|B6/i', $type1_raw)) $detected_size = 'B6';
+    elseif (preg_match('/8절|B4/i', $type1_raw)) $detected_size = 'B4';
+    elseif (preg_match('/A3/i', $type1_raw)) $detected_size = 'A3';
+    elseif (preg_match('/A4/i', $type1_raw)) $detected_size = 'A4';
+    elseif (preg_match('/A5/i', $type1_raw)) $detected_size = 'A5';
+    elseif (preg_match('/A6/i', $type1_raw)) $detected_size = 'A6';
+
+    $yeon = 1;
+    if (!empty($data['quantity_value']) && floatval($data['quantity_value']) > 0) {
+        $yeon = floatval($data['quantity_value']);
+    }
+
+    $r = 1; $w = 3000;
+    if (!empty($detected_size) && isset($shipping_rules[$detected_size])) {
+        $rule = $shipping_rules[$detected_size];
+        $r = (int)ceil($yeon) * $rule['boxes'];
+        $w = (int)ceil($yeon) * $rule['cost'];
+    } elseif (preg_match('/NameCard/i', $data['Type'])) { $r = 1; $w = 3000; }
+    elseif (preg_match('/MerchandiseBond/i', $data['Type'])) { $r = 1; $w = 3000; }
+    elseif (preg_match('/sticker/i', $data['Type'])) { $r = 1; $w = 3000; }
+    elseif (preg_match('/envelop/i', $data['Type'])) {
+        // 봉투 종류 감지 (Type_1에서 대봉투/소봉투/자켓 구분)
+        $is_big = (mb_strpos($type1_raw, '대봉투') !== false);
+        $is_jacket = (preg_match('/쟈켓|자켓/u', $type1_raw));
+
+        // 수량 파싱 (Type_1에서 숫자만 있는 줄)
+        $qty = 500;
+        $env_lines = preg_split('/\r?\n/', trim($type1_raw));
+        foreach ($env_lines as $el) {
+            $el = trim($el);
+            if (preg_match('/^[\d,]+$/', $el) && intval(str_replace(',', '', $el)) >= 100) {
+                $qty = intval(str_replace(',', '', $el));
+                break;
+            }
+        }
+
+        // 펼침면 크기 기반 무게 계산 (대봉투/소봉투/자켓 공통)
+        if ($is_big) {
+            $env_w = 510; $env_h = 387; $env_gsm = 120; // 대봉투 120g
+        } elseif ($is_jacket) {
+            $env_w = 262; $env_h = 238; $env_gsm = 100;
+        } else {
+            $env_w = 238; $env_h = 262; $env_gsm = 100; // 소봉투
+        }
+        $weight_per_piece = $env_gsm * ($env_w / 1000) * ($env_h / 1000); // g
+        $total_kg = round(($weight_per_piece * $qty) / 1000, 1);
+        // 박스 분리: 20kg 초과 시 분리
+        $r = max(1, (int)ceil($total_kg / 20));
+        $kg_per_box = ($r > 0) ? $total_kg / $r : $total_kg;
+        if ($is_big) {
+            // 대봉투 특약: 3,500원/box (로젠 계약)
+            $w = $r * 3500;
+        } else {
+            // 소봉투/자켓: 무게별 택배비 (로젠 요금표)
+            if ($kg_per_box <= 3) $fee_per_box = 3000;
+            elseif ($kg_per_box <= 10) $fee_per_box = 3500;
+            elseif ($kg_per_box <= 15) $fee_per_box = 4000;
+            elseif ($kg_per_box <= 20) $fee_per_box = 5000;
+            else $fee_per_box = 6000;
+            $w = $r * $fee_per_box;
+        }
+    }
+
+    return ['boxes' => $r, 'fee' => $w];
+}
+
 $DbDir="..";
 $GGTABLE="mlangprintauto_transactionCate";
 $l[1] = "주문접수";
@@ -370,25 +452,10 @@ function exportAllToLogenExcel() {
     }
 ?>
 <?php
-// 박스 하드코딩 계산 (기존유지)
-$r = 1; $w = 3000; // 기본값
-if(preg_match("/16절/i", $type1_raw)){
-    $r=2; $w=3000;
-} elseif(preg_match("/a4/i", $type1_raw)){
-    $r=1; $w=4000;
-} elseif(preg_match("/a5/i", $type1_raw)){
-    $r=1; $w=4000;
-} elseif(preg_match("/NameCard/i", $data['Type'])){
-    $r=1; $w=3000;  // 2500 → 3000 (최저금액 통일)
-} elseif(preg_match("/MerchandiseBond/i", $data['Type'])){
-    $r=1; $w=3000;  // 2500 → 3000 (최저금액 통일)
-} elseif(preg_match("/sticker/i", $data['Type'])){
-    $r=1; $w=3000;  // 2500 → 3000 (최저금액 통일)
-} elseif(preg_match("/스티카/i", $data['Type'])){
-    $r=1; $w=3000;  // 2500 → 3000 (최저금액 통일)
-} elseif(preg_match("/envelop/i", $data['Type'])){
-    $r=1; $w=3000;
-}
+// 택배비 계산 (delivery_manager.php와 동일 규칙)
+$ship = calcShipping52($data, $shipping_rules);
+$r = $ship['boxes'];
+$w = $ship['fee'];
 ?>
   <tr>
     <td style="padding: 3px;"><input type="checkbox" name="selected_no[]" value="<?php echo $data['no']?>"></td>

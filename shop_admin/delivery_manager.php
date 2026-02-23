@@ -92,7 +92,48 @@ function calcShipping($data, $shipping_rules) {
     } elseif (preg_match("/NameCard/i", $data['Type'])) { $r = 1; $w = 3000; }
     elseif (preg_match("/MerchandiseBond/i", $data['Type'])) { $r = 1; $w = 3000; }
     elseif (preg_match("/sticker/i", $data['Type'])) { $r = 1; $w = 3000; }
-    elseif (preg_match("/envelop/i", $data['Type'])) { $r = 1; $w = 3000; }
+    elseif (preg_match('/envelop/i', $data['Type'])) {
+        // 봉투 종류 감지 (Type_1에서 대봉투/소봉투/자켓 구분)
+        $is_big = (mb_strpos($type1_raw, '대봉투') !== false);
+        $is_jacket = (preg_match('/쟈켓|자켓/u', $type1_raw));
+
+        // 수량 파싱 (Type_1에서 숫자만 있는 줄)
+        $qty = 500;
+        $env_lines = preg_split('/\r?\n/', trim($type1_raw));
+        foreach ($env_lines as $el) {
+            $el = trim($el);
+            if (preg_match('/^[\d,]+$/', $el) && intval(str_replace(',', '', $el)) >= 100) {
+                $qty = intval(str_replace(',', '', $el));
+                break;
+            }
+        }
+
+        // 펼침면 크기 기반 무게 계산 (대봉투/소봉투/자켓 공통)
+        if ($is_big) {
+            $env_w = 510; $env_h = 387; $env_gsm = 120; // 대봉투 120g
+        } elseif ($is_jacket) {
+            $env_w = 262; $env_h = 238; $env_gsm = 100;
+        } else {
+            $env_w = 238; $env_h = 262; $env_gsm = 100; // 소봉투
+        }
+        $weight_per_piece = $env_gsm * ($env_w / 1000) * ($env_h / 1000); // g
+        $total_kg = round(($weight_per_piece * $qty) / 1000, 1);
+        // 박스 분리: 20kg 초과 시 분리
+        $r = max(1, (int)ceil($total_kg / 20));
+        $kg_per_box = ($r > 0) ? $total_kg / $r : $total_kg;
+        if ($is_big) {
+            // 대봉투 특약: 3,500원/box (로젠 계약)
+            $w = $r * 3500;
+        } else {
+            // 소봉투/자켓: 무게별 택배비 (로젠 요금표)
+            if ($kg_per_box <= 3) $fee_per_box = 3000;
+            elseif ($kg_per_box <= 10) $fee_per_box = 3500;
+            elseif ($kg_per_box <= 15) $fee_per_box = 4000;
+            elseif ($kg_per_box <= 20) $fee_per_box = 5000;
+            else $fee_per_box = 6000;
+            $w = $r * $fee_per_box;
+        }
+    }
 
     return ['boxes' => $r, 'fee' => $w];
 }
