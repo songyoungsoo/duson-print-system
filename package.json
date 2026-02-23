@@ -24,5 +24,9 @@
   "bugs": {
     "url": "https://github.com/songyoungsoo/duson-print-system/issues"
   },
-  "homepage": "https://github.com/songyoungsoo/duson-print-system#readme"
+  "homepage": "https://github.com/songyoungsoo/duson-print-system#readme",
+  "dependencies": {
+    "docx": "^9.5.3",
+    "mammoth": "^1.11.0"
+  }
 }

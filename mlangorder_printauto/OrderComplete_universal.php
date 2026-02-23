@@ -1919,13 +1919,13 @@ $additional_css = [
         $oc_prepaid_pending = ($oc_fee_type === '선불' && $oc_delivery_fee <= 0);
         if ($oc_fee_type === '선불'):
         ?>
-        <div id="prepaidShippingNotice" style="background: <?php echo $oc_prepaid_pending ? '#dc3545' : '#d4edda'; ?>; border: 1px solid <?php echo $oc_prepaid_pending ? '#c82333' : '#28a745'; ?>; border-radius: 6px; padding: 12px 16px; margin-top: 12px; font-size: 14px; color: #fff;">
+        <div id="prepaidShippingNotice" style="text-align: center; margin-top: 12px; font-size: 13px; color: <?php echo $oc_prepaid_pending ? '#dc3545' : '#155724'; ?>;">
             <?php if ($oc_prepaid_pending): ?>
             <strong>📦 택배비 확정 대기중</strong><br>
-            <span style="font-size: 13px;">선불택배는 전화(<strong>02-2632-1830</strong>) 후 택배비 책정이 필요합니다.<br>택배비 확정 후 결제가 가능합니다.</span>
+            <span style="color: #333;">선불택배는 전화(<strong>02-2632-1830</strong>) 후 택배비 책정이 필요합니다.<br>택배비 확정 후 결제가 가능합니다.</span>
             <?php else: ?>
-            <strong style="color: #155724;">📦 택배비 확정완료</strong><br>
-            <span style="font-size: 13px; color: #155724;">택배비: <strong><?php echo number_format($oc_delivery_fee); ?>원</strong> (VAT 별도) — 결제 시 합산됩니다.</span>
+            <strong>📦 택배비 확정완료</strong><br>
+            택배비: <strong><?php echo number_format($oc_delivery_fee); ?>원</strong> (VAT 별도) — 결제 시 합산됩니다.
             <?php endif; ?>
         </div>
         <?php endif; ?>
@@ -2250,10 +2250,9 @@ document.addEventListener('DOMContentLoaded', function() {
                     var fee = parseInt(data.data.logen_delivery_fee);
                     var notice = document.getElementById('prepaidShippingNotice');
                     if (notice) {
-                        notice.style.background = '#d4edda';
-                        notice.style.borderColor = '#28a745';
-                        notice.innerHTML = '<strong style="color:#155724;">📦 택배비 확정완료</strong><br>' +
-                            '<span style="font-size:13px;color:#155724;">택배비: <strong>' + fee.toLocaleString() + '원</strong> (VAT 별도) — 결제 시 합산됩니다.</span>';
+                        notice.style.color = '#155724';
+                        notice.innerHTML = '<strong>📦 택배비 확정완료</strong><br>' +
+                            '택배비: <strong>' + fee.toLocaleString() + '원</strong> (VAT 별도) — 결제 시 합산됩니다.';
                     }
                     var btn = document.getElementById('btnPayDisabled');
                     if (btn) {

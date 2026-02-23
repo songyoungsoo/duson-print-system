@@ -971,11 +971,13 @@ document.getElementById('imageContainer').addEventListener('wheel', function(e) 
     }
 }, { passive: false });
 
-// === Drag/Pan ===
+// === Drag/Pan + Click-to-Close ===
 var overlayImg = document.getElementById('overlayImg');
 var imageContainer = document.getElementById('imageContainer');
-
+var clickStartPos = { x: 0, y: 0 };
 overlayImg.addEventListener('mousedown', function(e) {
+    clickStartPos.x = e.clientX;
+    clickStartPos.y = e.clientY;
     if (zoomState.level === 'fit') return;
     zoomState.isDragging = true;
     zoomState.startX = e.clientX - zoomState.offsetX;
@@ -983,14 +985,12 @@ overlayImg.addEventListener('mousedown', function(e) {
     this.classList.add('dragging');
     e.preventDefault();
 });
-
 document.addEventListener('mousemove', function(e) {
     if (!zoomState.isDragging) return;
     zoomState.offsetX = e.clientX - zoomState.startX;
     zoomState.offsetY = e.clientY - zoomState.startY;
     applyTransform();
 });
-
 document.addEventListener('mouseup', function() {
     if (zoomState.isDragging) {
         zoomState.isDragging = false;
@@ -999,12 +999,19 @@ document.addEventListener('mouseup', function() {
     }
 });
 
-// Double-click toggle (fit ↔ 100%)
-overlayImg.addEventListener('dblclick', function() {
-    if (zoomState.level === 'fit') {
-        setZoom(100);
-    } else {
-        setZoom('fit');
+// Click on image = close viewer (drag 5px+ moved = ignore)
+overlayImg.addEventListener('click', function(e) {
+    var dx = Math.abs(e.clientX - clickStartPos.x);
+    var dy = Math.abs(e.clientY - clickStartPos.y);
+    if (dx < 5 && dy < 5) {
+        closeImageViewer();
+    }
+});
+
+// Click on background (imageContainer) = close viewer
+imageContainer.addEventListener('click', function(e) {
+    if (e.target === imageContainer) {
+        closeImageViewer();
     }
 });
 
@@ -1202,6 +1209,10 @@ function confirmProofreading() {
     if (!viewerOrderNo) return;
 
     if (!confirm('오탈자 및 전체를 잘 확인 했습니다.\n인쇄진행해주세요.\n\n인쇄 진행 후에는 더이상 수정할 수 없습니다.\n\n교정확정 하시겠습니까?')) {
+        return;
+    }
+
+    if (!confirm('⚠️ 최종 확인\n\n교정확정 후에는 취소할 수 없습니다.\n정말 인쇄를 진행하시겠습니까?')) {
         return;
     }
 
