@@ -12,6 +12,7 @@ require_once __DIR__ . '/inicis_config.php';
 
 // 세션에서 주문 정보 가져오기
 $order_no = $_SESSION['inicis_order_no'] ?? 0;
+$group_orders_session = $_SESSION['inicis_group_orders'] ?? [];
 
 // 로그 기록
 logInicisTransaction("결제창 닫힘 - 주문번호: {$order_no}", 'info');
@@ -21,11 +22,17 @@ unset($_SESSION['inicis_oid']);
 unset($_SESSION['inicis_order_no']);
 unset($_SESSION['inicis_price']);
 unset($_SESSION['inicis_timestamp']);
-
+unset($_SESSION['inicis_group_orders']);
 // 리다이렉트 URL 설정
 $redirect_url = '/';
 if ($order_no > 0) {
-    $redirect_url = '/mlangorder_printauto/OrderComplete_universal.php?orders=' . $order_no . '&payment=cancelled';
+    // 그룹 주문이면 전체 주문번호 전달 (단건이면 단건만)
+    if (!empty($group_orders_session) && count($group_orders_session) > 1) {
+        $orders_param = implode('_', array_map('intval', $group_orders_session));
+    } else {
+        $orders_param = $order_no;
+    }
+    $redirect_url = '/mlangorder_printauto/OrderComplete_universal.php?orders=' . $orders_param . '&payment=cancelled';
 }
 ?>
 <!DOCTYPE html>

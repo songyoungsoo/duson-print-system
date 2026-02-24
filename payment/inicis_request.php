@@ -481,9 +481,9 @@ $_SESSION['inicis_group_orders'] = array_column($group_orders, 'no');
         }
 
         function goToOrderComplete() {
-            var orderNo = '<?php echo $order_no; ?>';
-            // 주문 완료 페이지로 돌아가기 (세션에서 주문 정보 복원)
-            window.location.href = '/mlangorder_printauto/OrderComplete_universal.php?orders=' + orderNo + '&payment=cancelled';
+            // 그룹 주문이면 전체 주문번호 전달 (단건이면 단건만)
+            var ordersParam = '<?php echo implode("_", array_column($group_orders, "no")); ?>';
+            window.location.href = '/mlangorder_printauto/OrderComplete_universal.php?orders=' + ordersParam + '&payment=cancelled';
         }
         
         function proceedPayment() {
