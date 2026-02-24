@@ -2165,8 +2165,14 @@ function closePaymentModal() {
 // 이니시스 결제 (신용카드 / 실시간 계좌이체)
 function payWithInicis() {
     var orderNo = <?php echo json_encode($first_order['no'] ?? ''); ?>;
+    // 🔧 FIX: 다건 주문 시 전체 주문번호 목록 전달 (order_group_id NULL 대응)
+    var allOrders = <?php echo json_encode(implode(',', array_column($order_list, 'no'))); ?>;
     if (orderNo) {
-        window.location.href = '/payment/inicis_request.php?order_no=' + encodeURIComponent(orderNo);
+        var url = '/payment/inicis_request.php?order_no=' + encodeURIComponent(orderNo);
+        if (allOrders && allOrders.indexOf(',') !== -1) {
+            url += '&orders=' + encodeURIComponent(allOrders);
+        }
+        window.location.href = url;
     } else {
         alert('주문 정보를 찾을 수 없습니다.');
     }

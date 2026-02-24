@@ -306,12 +306,27 @@ if ($resultCode === '0000' || $resultCode === '00') {
             mysqli_stmt_close($grp_check);
             
             if (!empty($grp_row['order_group_id'])) {
+                // 1순위: order_group_id로 그룹 업데이트
                 $grp_update = mysqli_prepare($db, "UPDATE mlangorder_printauto SET OrderStyle = '11' WHERE order_group_id = ? AND no != ?");
                 mysqli_stmt_bind_param($grp_update, 'si', $grp_row['order_group_id'], $order_no);
                 $grp_affected = mysqli_stmt_execute($grp_update);
                 $grp_count = mysqli_stmt_affected_rows($grp_update);
                 mysqli_stmt_close($grp_update);
                 logInicisTransaction("그룹 주문 상태 업데이트: group_id={$grp_row['order_group_id']}, 추가 {$grp_count}건", 'info');
+            } elseif (!empty($_SESSION['inicis_group_orders']) && count($_SESSION['inicis_group_orders']) > 1) {
+                // 2순위: 레거시 다건 주문 (세션에 저장된 주문번호 목록)
+                $legacy_orders = array_filter(array_map('intval', $_SESSION['inicis_group_orders']));
+                $legacy_others = array_diff($legacy_orders, [$order_no]);
+                if (!empty($legacy_others)) {
+                    $placeholders = implode(',', array_fill(0, count($legacy_others), '?'));
+                    $types = str_repeat('i', count($legacy_others));
+                    $grp_update = mysqli_prepare($db, "UPDATE mlangorder_printauto SET OrderStyle = '11' WHERE no IN ({$placeholders})");
+                    mysqli_stmt_bind_param($grp_update, $types, ...$legacy_others);
+                    $grp_affected = mysqli_stmt_execute($grp_update);
+                    $grp_count = mysqli_stmt_affected_rows($grp_update);
+                    mysqli_stmt_close($grp_update);
+                    logInicisTransaction("레거시 다건 주문 상태 업데이트: orders=" . implode(',', $legacy_others) . ", 추가 {$grp_count}건", 'info');
+                }
             }
         } catch (Exception $e) {
             logInicisTransaction("그룹 주문 업데이트 스킵: " . $e->getMessage(), 'warning');

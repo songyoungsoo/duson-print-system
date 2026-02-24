@@ -768,7 +768,15 @@ function formatType1Json($type1_data) {
 
             <div style="display: flex; gap: 12px; flex-wrap: wrap;">
                 <!-- 카드결제 -->
-                <a href="/payment/inicis_request.php?order_no=<?php echo $order['no']; ?>"
+                <?php
+                    // 🔧 FIX: 다건 그룹 주문 시 전체 주문번호 전달 (order_group_id NULL 대응)
+                    $pay_url = '/payment/inicis_request.php?order_no=' . $order['no'];
+                    if ($is_group_order && empty($group_id)) {
+                        // 레거시 다건 주문: orders 파라미터 추가
+                        $pay_url .= '&orders=' . urlencode(implode(',', array_column($group_orders, 'no')));
+                    }
+                ?>
+                <a href="<?php echo $pay_url; ?>"
                    style="flex: 1; min-width: 200px; display: flex; align-items: center; gap: 12px;
                           padding: 16px 20px; background: #667eea; color: #fff; border-radius: 8px;
                           text-decoration: none; font-weight: 600; font-size: 15px;

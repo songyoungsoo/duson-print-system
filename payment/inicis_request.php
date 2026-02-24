@@ -69,7 +69,7 @@ $group_orders = [$order]; // 기본: 단건 주문
 $group_id = $order['order_group_id'] ?? null;
 
 if (!empty($group_id)) {
-    // 그룹에 속한 모든 주문 조회
+    // 1순위: order_group_id로 그룹 조회
     $grp_stmt = mysqli_prepare($db, "SELECT * FROM mlangorder_printauto WHERE order_group_id = ? ORDER BY order_group_seq");
     mysqli_stmt_bind_param($grp_stmt, 's', $group_id);
     mysqli_stmt_execute($grp_stmt);
@@ -82,6 +82,27 @@ if (!empty($group_id)) {
     
     if (empty($group_orders)) {
         $group_orders = [$order]; // fallback
+    }
+} elseif (!empty($_GET['orders'])) {
+    // 2순위: order_group_id가 NULL이지만 orders 파라미터가 있는 경우 (레거시 다건 주문)
+    $order_nos = array_filter(array_map('intval', explode(',', $_GET['orders'])));
+    if (count($order_nos) > 1) {
+        $placeholders = implode(',', array_fill(0, count($order_nos), '?'));
+        $types = str_repeat('i', count($order_nos));
+        $grp_stmt = mysqli_prepare($db, "SELECT * FROM mlangorder_printauto WHERE no IN ({$placeholders}) ORDER BY no");
+        mysqli_stmt_bind_param($grp_stmt, $types, ...$order_nos);
+        mysqli_stmt_execute($grp_stmt);
+        $grp_result = mysqli_stmt_get_result($grp_stmt);
+        $group_orders = [];
+        while ($row = mysqli_fetch_assoc($grp_result)) {
+            $group_orders[] = $row;
+        }
+        mysqli_stmt_close($grp_stmt);
+        
+        if (empty($group_orders)) {
+            $group_orders = [$order]; // fallback
+        }
+        logInicisTransaction("레거시 다건 주문 합산: orders=" . implode(',', $order_nos) . ", " . count($group_orders) . "건", 'info');
     }
 }
 
@@ -154,6 +175,8 @@ $_SESSION['inicis_order_no'] = $order_no;
 $_SESSION['inicis_oid'] = $oid;
 $_SESSION['inicis_price'] = $price;
 $_SESSION['inicis_timestamp'] = $timestamp;
+// 🔧 FIX: 그룹 주문번호 목록 세션 저장 (inicis_return에서 사용)
+$_SESSION['inicis_group_orders'] = array_column($group_orders, 'no');
 ?>
 <!DOCTYPE html>
 <html lang="ko">
