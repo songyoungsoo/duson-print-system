@@ -146,6 +146,23 @@ class ShippingCalculator
         '크라프트' => 57,
     ];
 
+    // ===== NCR양식지 용지 gsm =====
+    // NCR지(상지/중지/하지) 공통 60gsm, 일반 양식지는 이름의 숫자가 gsm
+    const NCR_GSM = 60;
+    const NCR_SETS_PER_VOLUME = 50;  // 1권 = 50조
+
+    // NCR 규격명 → 용지 사이즈 매핑
+    // DB transactioncate의 Section title에서 사이즈 추출용
+    const NCR_SIZE_MAP = [
+        'A4'  => 'A4',   // "A4 거래명세서", "계약서(A4)", "80모조A4단면"
+        'A5'  => 'A5',   // "A5"
+        '16절' => 'B5',  // "16절" → B5 상당
+        '32절' => 'B6',  // "32절 거래명세표" → B6 상당
+        '빌지' => 'A6',  // "빌지, 영수증" → 85×190mm ≈ A6 크기
+        '영수증' => 'A6', // "빌지 영수증"
+        '48절' => 'A6',  // "48절 빌지, 영수증"
+    ];
+
     /**
      * 장바구니 아이템 배열로부터 전체 배송 추정 계산
      * 
@@ -221,6 +238,11 @@ class ShippingCalculator
 
         // 수량 파싱 (사이즈 필요: 연→매 변환에 SHEETS_PER_REAM 사용)
         $quantity    = self::parseQuantity($item, $paperSize);
+
+        // NCR양식지: NCR 60g / 일반양식지 모조gsm 기반 무게 계산
+        if ($productType === 'ncrflambeau') {
+            return self::estimateNcrItem($item);
+        }
 
         // 스티커: gsm + 후지(120g) 기반 실제 무게 계산
         if ($productType === 'sticker') {
@@ -319,6 +341,11 @@ class ShippingCalculator
         // 봉투: Type_1에서 크기/gsm 파싱하여 실제 무게 계산
         if (preg_match("/envelop/i", $type)) {
             return self::estimateEnvelopeFromOrder($type1Raw);
+        }
+
+        // NCR양식지: NCR 60g / 일반양식지 모조gsm 기반 무게 계산
+        if (preg_match('/NcrFlambeau|ncrflambeau/i', $type)) {
+            return self::estimateNcrFromOrder($type1Raw, $orderData);
         }
 
         // 스티커: gsm + 후지(120g) 기반 실제 무게 계산
@@ -480,6 +507,104 @@ class ShippingCalculator
             'gsm'        => $gsm,
             'paper_size' => $paperSize,
             'quantity'   => $quantity,
+            'fee_type'   => $feeType,
+            'calculable' => true,
+        ];
+    }
+
+    /**
+     * NCR양식지 주문의 무게/박스 추정 (관리자 경로)
+     * Type_1 형식: "NCR 2매(100매철)\nA4 거래명세서...\n1도\n\n30\n인쇄만"
+     *                "양식(100매철)\n80모조A4단면\n1도\n\n40\n인쇄만"
+     *                "빌지 영수증 (85-190mm)100매철\n...\n2도\n\n20\n디자인+인쇄"
+     */
+    private static function estimateNcrFromOrder(string $type1Raw, array $orderData): array
+    {
+        $lines = preg_split('/\r?\n/', trim($type1Raw));
+        $styleLine = trim($lines[0] ?? '');    // "NCR 2매(100매철)" or "양식(100매철)"
+        $specLine = trim($lines[1] ?? '');      // "A4 거래명세서..." or "80모조A4단면"
+        
+        // 1) NCR vs 일반양식지 판단 → gsm 결정
+        $isNcr = (mb_strpos($styleLine, 'NCR') !== false);
+        $gsm = self::NCR_GSM; // 기본 60g
+        if (!$isNcr) {
+            $combinedText = $styleLine . ' ' . $specLine;
+            if (preg_match('/(\d+)\s*모조/u', $combinedText, $m)) {
+                $gsm = intval($m[1]);
+            } elseif (preg_match('/(\d+)\s*g/i', $combinedText, $m)) {
+                $gsm = intval($m[1]);
+            } else {
+                $gsm = 80; // 양식지 기본값 80g 모조
+            }
+        }
+        
+        // 2) 수량(권수) 파싱: Type_1의 5번째 줄 (숫자만 있는 줄)
+        $volumes = 0;
+        if (!empty($orderData['quantity_value'])) {
+            $volumes = intval($orderData['quantity_value']);
+        }
+        if ($volumes <= 0) {
+            foreach ($lines as $line) {
+                $trimmed = trim($line);
+                if (preg_match('/^[\d,]+$/', $trimmed) && intval(str_replace(',', '', $trimmed)) >= 1) {
+                    $volumes = intval(str_replace(',', '', $trimmed));
+                    break;
+                }
+            }
+        }
+        if ($volumes <= 0) $volumes = 10; // 기본값
+        
+        // 3) 겹수 파싱: NCR 2매/3매/4매 → multiplier, 양식지는 1
+        $multiplier = 1; // 양식지 기본 (매철 내 매수 그대로)
+        if ($isNcr) {
+            if (preg_match('/([2-4])매/u', $styleLine, $m)) {
+                $multiplier = intval($m[1]);
+            } else {
+                $multiplier = 2; // NCR 기본 2매
+            }
+        }
+        
+        // 매철 매수 파싱: "100매철" → 100, "150매철" → 150, "200매철" → 200
+        $sheetsPerVolume = self::NCR_SETS_PER_VOLUME * $multiplier; // 기본 50조 × 겹수
+        if (preg_match('/(\d+)매철/u', $styleLine, $m)) {
+            $sheetsPerVolume = intval($m[1]);
+        } elseif (!$isNcr) {
+            // 양식지/거래명세표 등 매철 표기 없는 경우 기본 100매/권
+            $sheetsPerVolume = 100;
+        }
+        
+        $totalSheets = $volumes * $sheetsPerVolume;
+        if ($totalSheets <= 0) $totalSheets = 500;
+        
+        // 4) 용지 사이즈 파싱
+        $paperSize = 'A4'; // 기본값
+        $combinedSpec = $styleLine . ' ' . $specLine;
+        foreach (self::NCR_SIZE_MAP as $keyword => $size) {
+            if (mb_strpos($combinedSpec, $keyword) !== false) {
+                $paperSize = $size;
+                break;
+            }
+        }
+        
+        // 5) 무게 계산
+        $areaM2 = self::PAPER_AREAS[$paperSize] ?? self::PAPER_AREAS['A4'];
+        $paperWeightG = $gsm * $areaM2 * $totalSheets;
+        
+        // 6) 박스/택배비
+        $boxes = max(1, (int)ceil($paperWeightG / 1000 / 20));
+        $totalWeightKg = round(($paperWeightG + $boxes * 500) / 1000, 1);
+        $fee = self::estimateFeeByWeight($boxes, $totalWeightKg);
+        
+        $feeType = $isNcr ? 'NCR' : 'NCR양식지';
+        
+        return [
+            'boxes'      => $boxes,
+            'fee'        => $fee,
+            'weight_kg'  => $totalWeightKg,
+            'weight_per_box_kg' => ($boxes > 0) ? round($totalWeightKg / $boxes, 1) : $totalWeightKg,
+            'gsm'        => $gsm,
+            'paper_size' => $paperSize,
+            'quantity'   => $totalSheets,
             'fee_type'   => $feeType,
             'calculable' => true,
         ];
@@ -847,6 +972,117 @@ class ShippingCalculator
         
         // 3) 기본값: 스티커 대부분 90gsm
         return 90;
+    }
+
+
+    /**
+     * NCR양식지 무게 추정 (장바구니 경로)
+     * 
+     * NCR지: 상지/중지/하지 공통 60gsm
+     * 일반양식지: 이름의 숫자가 gsm ("80모조"=80g, "100모조"=100g)
+     * 1권 = 50조 × 겹수(2매/3매/4매)
+     * 
+     * @param array $item 장바구니 아이템 (spec_sides, spec_material, quantity_sheets 등)
+     * @return array
+     */
+    private static function estimateNcrItem(array $item): array
+    {
+        // 1) NCR vs 일반양식지 판단 → gsm 결정
+        //    spec_sides = MY_type_name = 스타일명 ("NCR 2매(100매철)", "양식(100매철)", "빌지 영수증...")
+        //    spec_material = MY_Fsd_name = 규격명 ("A4 거래명세서...", "80모조A4단면", "16절")
+        $specSides = $item['spec_sides'] ?? '';
+        $specMaterial = $item['spec_material'] ?? '';
+        $isNcr = (mb_strpos($specSides, 'NCR') !== false);
+        
+        $gsm = self::NCR_GSM; // 기본 60g (NCR)
+        if (!$isNcr) {
+            // 일반양식지: "80모조", "100모조" 등에서 gsm 추출
+            $combinedText = $specSides . ' ' . $specMaterial;
+            if (preg_match('/(\d+)\s*모조/u', $combinedText, $m)) {
+                $gsm = intval($m[1]);
+            } elseif (preg_match('/(\d+)\s*g/i', $combinedText, $m)) {
+                $gsm = intval($m[1]);
+            } else {
+                $gsm = 80; // 양식지 기본값 80g 모조
+            }
+        }
+        
+        // 2) 총 매수 파싱: quantity_sheets가 DataAdapter에서 이미 계산됨
+        $totalSheets = intval($item['quantity_sheets'] ?? 0);
+        $volumes = intval($item['quantity_value'] ?? 0); // 권수
+        
+        if ($totalSheets <= 0 && $volumes > 0) {
+            // fallback: 권수 × 매/권 기준 계산
+            if ($isNcr) {
+                // NCR: 권수 × 50조 × 겹수(2/3/4)
+                $multiplier = 2; // 기본값
+                if (preg_match('/([2-4])매/u', $specSides, $m)) {
+                    $multiplier = intval($m[1]);
+                }
+                // 매철 파싱: "100매철" → 100
+                $sheetsPerVol = self::NCR_SETS_PER_VOLUME * $multiplier;
+                if (preg_match('/(\d+)매철/u', $specSides, $m)) {
+                    $sheetsPerVol = intval($m[1]);
+                }
+                $totalSheets = $volumes * $sheetsPerVol;
+            } else {
+                // 양식지: 매철 파싱, 없으면 100매/권
+                $sheetsPerVol = 100; // 기본 100매철
+                if (preg_match('/(\d+)매철/u', $specSides, $m)) {
+                    $sheetsPerVol = intval($m[1]);
+                }
+                $totalSheets = $volumes * $sheetsPerVol;
+            }
+        }
+        if ($totalSheets <= 0) {
+            $totalSheets = 500; // 최종 fallback
+        }
+        
+        // 3) 용지 사이즈 파싱: spec_material에서 A4/A5/16절/32절/빌지 추출
+        $paperSize = 'A4'; // 기본값
+        $combinedSpec = $specSides . ' ' . $specMaterial;
+        foreach (self::NCR_SIZE_MAP as $keyword => $size) {
+            if (mb_strpos($combinedSpec, $keyword) !== false) {
+                $paperSize = $size;
+                break;
+            }
+        }
+        
+        // 4) 면적 (m²)
+        $areaM2 = self::PAPER_AREAS[$paperSize] ?? self::PAPER_AREAS['A4'];
+        
+        // 5) 무게 계산: 총매수 × gsm × 면적
+        $paperWeightG = $gsm * $areaM2 * $totalSheets;
+        
+        // 6) 박스 계산: 20kg 초과 시 분리
+        $boxes = max(1, (int)ceil($paperWeightG / 1000 / 20));
+        $boxWeightG = $boxes * 500; // 소형 박스
+        $totalWeightG = (int)round($paperWeightG + $boxWeightG);
+        $totalWeightKg = round($totalWeightG / 1000, 1);
+        
+        // 7) 택배비 추정 (무게 기반)
+        $estimatedFee = self::estimateFeeByWeight($boxes, $totalWeightKg);
+        
+        return [
+            'product_type'    => 'ncrflambeau',
+            'paper_size'      => $paperSize,
+            'gsm'             => $gsm,
+            'quantity'         => $totalSheets,
+            'quantity_volumes' => $volumes,
+            'coating'          => 'none',
+            'paper_weight_g'   => (int)round($paperWeightG),
+            'box_weight_g'     => $boxWeightG,
+            'total_weight_g'   => $totalWeightG,
+            'total_weight_kg'  => $totalWeightKg,
+            'boxes'            => $boxes,
+            'weight_per_box_kg'=> round(($totalWeightG / $boxes) / 1000, 1),
+            'box_type'         => '소형 박스',
+            'max_per_box'      => 0,
+            'calculable'       => true,
+            'estimated_fee'    => $estimatedFee,
+            'fee_label'        => 'NCR 무게별 차등',
+            'is_ncr'           => $isNcr,
+        ];
     }
 
     /**
