@@ -1,0 +1,7 @@
+/* DSP Hero MP4 Video Support - Safe Rollback Strategy */
+
+.dsp-hero__video {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+}

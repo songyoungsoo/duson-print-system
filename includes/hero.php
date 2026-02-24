@@ -8,7 +8,7 @@
 $hero_config = [
     'slide_dir' => $_SERVER['DOCUMENT_ROOT'] . '/slide/',
     'slide_url' => '/slide/',
-    'allowed_extensions' => ['jpg', 'jpeg', 'png', 'gif', 'webp'],
+    'allowed_extensions' => ['jpg', 'jpeg', 'png', 'gif', 'webp', 'mp4'],
     'cache_buster' => true, // 캐시 버스터 사용 여부
     'fallback_images' => [ // 기본 이미지가 없을 때 사용할 대체 이미지
         '/images/placeholder.jpg',
@@ -141,7 +141,16 @@ $cache_buster = $hero_config['cache_buster'] ? getCacheBuster() : '';
                          aria-label="슬라이드 <?php echo $index + 1; ?> / <?php echo count($slide_images); ?>"
                          tabindex="<?php echo $index === 0 ? '0' : '-1'; ?>">
                         
-                        <img class="dsp-hero__image" 
+                        <!-- MP4 비디오 지원 -->
+                        <?php if ($image['extension'] === 'mp4'): ?>
+                            <video class="dsp-hero__video" 
+                                   src="<?php echo htmlspecialchars($image['url'] . $cache_buster); ?>" 
+                                   autoplay muted loop playsinline 
+                                   width="1200" height="600">
+                                Your browser does not support the video tag.
+                            </video>
+                        <?php else: ?>
+                            <img class="dsp-hero__image" 
                              src="<?php echo $index === 0 ? htmlspecialchars($image['url'] . $cache_buster) : ''; ?>"
                              <?php if ($index > 0): ?>
                                  data-src="<?php echo htmlspecialchars($image['url'] . $cache_buster); ?>"
@@ -154,6 +163,7 @@ $cache_buster = $hero_config['cache_buster'] ? getCacheBuster() : '';
                              <?php endif; ?>
                              width="1200" 
                              height="600">
+                        <?php endif; ?> <!-- MP4 비디오 지원 끝 -->
                     </div>
                 <?php endforeach; ?>
             </div>
@@ -372,4 +382,8 @@ if (defined('WP_DEBUG') && WP_DEBUG) {
 @media (max-width: 640px) {
     .dsp-hero { height: 40vh; }
 }
+
+
+<!-- MP4 Video CSS (Safe Rollback Strategy) -->
+<link rel="stylesheet" href="<?php echo htmlspecialchars($_SERVER['DOCUMENT_ROOT']) ?>/includes/hero_video.css" type="text/css" media="all">
 </style>
