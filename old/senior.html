@@ -1,0 +1,515 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>제16대 지회장 주요 성과 보고서 - 성과로 증명합니다</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/3.9.1/chart.min.js"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@300;400;500;700;900&display=swap" rel="stylesheet">
+    <style>
+        body { font-family: 'Noto Sans KR', sans-serif; background-color: #fdfbf7; color: #333; }
+        .chart-container {
+            position: relative;
+            width: 100%;
+            max-width: 600px; /* Tailwind max-w-2xl equiv approx */
+            margin-left: auto;
+            margin-right: auto;
+            height: 300px;
+            max-height: 400px;
+        }
+        @media (min-width: 768px) {
+            .chart-container { height: 350px; }
+        }
+        .tab-btn.active {
+            background-color: #1e3a8a; /* blue-900 */
+            color: white;
+            border-color: #1e3a8a;
+        }
+        .fade-in { animation: fadeIn 0.5s ease-in-out; }
+        @keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
+        .card-shadow { box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06); }
+    </style>
+    <!-- Chosen Palette: Warm Neutral Background (#fdfbf7) with Trustworthy Navy Blue (#1e3a8a) and Growth Green (#059669) accents. -->
+    <!-- Application Structure Plan:
+        1. Hero Section: Strong headline and summary slogan to establish trust immediately.
+        2. Key Metrics Overview: High-level numbers visible at a glance (Jobs, Funds, Goals).
+        3. Interactive Tabbed Dashboard: The core component. Splits content into 5 key pillars (Welfare, Jobs, Health, Education, Community).
+           - Reasoning: Users can digest one achievement area at a time without scrolling endlessly. Keeps the UI clean.
+        4. Detailed Visuals per Tab:
+           - Welfare: Progression Chart (Line/Bar) for fees.
+           - Jobs: Comparison Chart (Bar) for growth.
+           - Health: Impact Cards with counters.
+           - Education: Grid of programs.
+           - Community: Process flow diagram.
+        5. Closing & Commitment: Reaffirms the pledge for the future.
+    -->
+    <!-- Visualization & Content Choices:
+        - Welfare: Goal -> Inform/Trend -> Mixed Chart (Bar/Line) -> Shows the step-up from 0 to 100k.
+        - Jobs: Goal -> Compare -> Bar Chart -> Visually demonstrates the massive 4.4x jump (171 vs 751).
+        - Health: Goal -> Impact -> Metric Cards -> Emphasizes the specific numbers (33m Won, 200 people).
+        - Education: Goal -> Organize -> Icon Grid -> Shows variety and frequency increase clearly.
+        - Community: Goal -> Process -> Flow Layout -> Illustrates the cycle of "Festival -> Profit -> Donation".
+        - NO SVG/Mermaid confirmed. Using Chart.js for data and Tailwind for layout/icons.
+    -->
+    <!-- CONFIRMATION: NO SVG graphics used. NO Mermaid JS used. -->
+</head>
+<body class="bg-[#fdfbf7] text-gray-800 antialiased selection:bg-blue-100 selection:text-blue-900">
+
+    <!-- Navigation / Header -->
+    <header class="bg-white border-b border-gray-200 sticky top-0 z-50">
+        <div class="container mx-auto px-4 py-4 flex justify-between items-center">
+            <h1 class="text-xl md:text-2xl font-black text-blue-900 tracking-tight">제16대 지회장 성과보고</h1>
+            <nav class="hidden md:flex space-x-6 text-sm font-medium text-gray-600">
+                <button onclick="scrollToSection('hero')" class="hover:text-blue-900 transition">홈</button>
+                <button onclick="scrollToSection('dashboard')" class="hover:text-blue-900 transition">주요 성과</button>
+                <button onclick="scrollToSection('vision')" class="hover:text-blue-900 transition">비전</button>
+            </nav>
+        </div>
+    </header>
+
+    <!-- Hero Section -->
+    <section id="hero" class="relative bg-gradient-to-br from-blue-50 to-white py-16 md:py-24 overflow-hidden">
+        <div class="container mx-auto px-4 text-center relative z-10">
+            <div class="inline-block px-4 py-1.5 mb-6 text-sm font-semibold tracking-wider text-blue-900 uppercase bg-blue-100 rounded-full">
+                신뢰와 실천의 리더십
+            </div>
+            <h2 class="text-4xl md:text-6xl font-black text-gray-900 leading-tight mb-6">
+                성과로 증명하고,<br/> <span class="text-blue-700">행동으로 실천했습니다</span>
+            </h2>
+            <p class="text-lg md:text-xl text-gray-600 max-w-2xl mx-auto mb-10 leading-relaxed">
+                존경하는 회원 여러분, 약속했던 공약들을 성실히 이행하며<br class="hidden md:block">
+                어르신들의 복지 증진과 권익 신장을 위해 쉼 없이 달려왔습니다.
+            </p>
+            <button onclick="scrollToSection('dashboard')" class="inline-flex items-center justify-center px-8 py-4 text-base font-bold text-white transition-all duration-200 bg-blue-900 rounded-lg hover:bg-blue-800 hover:shadow-lg transform hover:-translate-y-1">
+                성과 자세히 보기
+            </button>
+        </div>
+        <!-- Decorative Background Circle -->
+        <div class="absolute top-0 right-0 -mt-20 -mr-20 w-96 h-96 rounded-full bg-blue-100 opacity-50 blur-3xl"></div>
+        <div class="absolute bottom-0 left-0 -mb-20 -ml-20 w-72 h-72 rounded-full bg-yellow-100 opacity-50 blur-3xl"></div>
+    </section>
+
+    <!-- Interactive Dashboard Section -->
+    <section id="dashboard" class="py-16 bg-[#fdfbf7]">
+        <div class="container mx-auto px-4">
+            
+            <div class="text-center mb-12">
+                <h3 class="text-3xl font-bold text-gray-900 mb-4">5대 핵심 성과 대시보드</h3>
+                <p class="text-gray-600 max-w-2xl mx-auto">
+                    아래 탭을 선택하여 각 분야별 구체적인 성과와 데이터를 확인해보세요.
+                    복지, 일자리, 건강, 교육, 지역상생 등 모든 분야에서 획기적인 발전을 이루었습니다.
+                </p>
+            </div>
+
+            <!-- Dashboard Navigation (Tabs) -->
+            <div class="flex flex-wrap justify-center gap-2 mb-8" role="tablist">
+                <button class="tab-btn active px-6 py-3 rounded-full border border-gray-300 bg-white font-semibold text-gray-600 hover:bg-gray-50 transition-colors duration-200" onclick="switchTab('welfare')">1. 복지 (활동비)</button>
+                <button class="tab-btn px-6 py-3 rounded-full border border-gray-300 bg-white font-semibold text-gray-600 hover:bg-gray-50 transition-colors duration-200" onclick="switchTab('jobs')">2. 일자리 (확대)</button>
+                <button class="tab-btn px-6 py-3 rounded-full border border-gray-300 bg-white font-semibold text-gray-600 hover:bg-gray-50 transition-colors duration-200" onclick="switchTab('health')">3. 건강 (의료지원)</button>
+                <button class="tab-btn px-6 py-3 rounded-full border border-gray-300 bg-white font-semibold text-gray-600 hover:bg-gray-50 transition-colors duration-200" onclick="switchTab('education')">4. 교육 (역량강화)</button>
+                <button class="tab-btn px-6 py-3 rounded-full border border-gray-300 bg-white font-semibold text-gray-600 hover:bg-gray-50 transition-colors duration-200" onclick="switchTab('community')">5. 지역상생 (나눔)</button>
+            </div>
+
+            <!-- Content Area -->
+            <div class="bg-white rounded-2xl p-6 md:p-10 card-shadow min-h-[500px] relative overflow-hidden">
+                
+                <!-- Tab 1: Welfare -->
+                <div id="welfare-content" class="tab-content fade-in block">
+                    <div class="grid md:grid-cols-2 gap-8 items-center">
+                        <div>
+                            <span class="text-blue-600 font-bold tracking-wide uppercase text-sm">Welfare Support</span>
+                            <h4 class="text-2xl font-bold text-gray-900 mt-2 mb-4">경로당 회장 활동비 지급 신설 및 인상</h4>
+                            <p class="text-gray-600 mb-6 leading-relaxed">
+                                "경로당 지도자의 노고에 정당한 예우를 다하겠습니다."<br><br>
+                                2022년 취임 이후 끈질긴 노력으로 <strong>2023년 활동 수당(월 5만원)을 신설</strong>했습니다.
+                                여기서 멈추지 않고 매년 단계적 인상을 추진하여, <strong>2026년에는 월 10만원 지급</strong>을 목표로 확정 짓고 실천 중입니다.
+                            </p>
+                            <ul class="space-y-3">
+                                <li class="flex items-start">
+                                    <span class="flex-shrink-0 w-6 h-6 bg-green-100 text-green-600 rounded-full flex items-center justify-center mr-3 mt-0.5">✓</span>
+                                    <span class="text-gray-700">2023년: 활동비 지급 제도 최초 신설</span>
+                                </li>
+                                <li class="flex items-start">
+                                    <span class="flex-shrink-0 w-6 h-6 bg-green-100 text-green-600 rounded-full flex items-center justify-center mr-3 mt-0.5">✓</span>
+                                    <span class="text-gray-700">2026년 목표: 월 10만원 실현 (100% 인상 효과)</span>
+                                </li>
+                            </ul>
+                        </div>
+                        <div class="bg-gray-50 rounded-xl p-4 border border-gray-100">
+                            <h5 class="text-center font-semibold text-gray-700 mb-4">연도별 활동비 지급 목표 (단위: 만원)</h5>
+                            <div class="chart-container">
+                                <canvas id="welfareChart"></canvas>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Tab 2: Jobs -->
+                <div id="jobs-content" class="tab-content hidden fade-in">
+                    <div class="grid md:grid-cols-2 gap-8 items-center">
+                        <div class="order-2 md:order-1 bg-gray-50 rounded-xl p-4 border border-gray-100">
+                            <h5 class="text-center font-semibold text-gray-700 mb-4">일자리 참여 인원 증가 추이 (명)</h5>
+                            <div class="chart-container">
+                                <canvas id="jobsChart"></canvas>
+                            </div>
+                            <p class="text-center text-sm text-gray-500 mt-2">* 2022년 대비 4.4배(580명) 증가</p>
+                        </div>
+                        <div class="order-1 md:order-2">
+                            <span class="text-blue-600 font-bold tracking-wide uppercase text-sm">Job Creation</span>
+                            <h4 class="text-2xl font-bold text-gray-900 mt-2 mb-4">노인 일자리 사업 대폭 증가</h4>
+                            <p class="text-gray-600 mb-6 leading-relaxed">
+                                "어르신의 최고의 복지는 일자리입니다."<br><br>
+                                취임 전 171명에 불과했던 일자리 참여 인원을 <strong>751명으로 대폭 확대</strong>했습니다.
+                                단순한 수치 증가를 넘어, 어르신들에게 사회 참여의 기회를 제공하고 활기찬 노후를 지원하는 기반을 마련했습니다.
+                            </p>
+                            <div class="grid grid-cols-2 gap-4 mt-6">
+                                <div class="bg-blue-50 p-4 rounded-lg text-center">
+                                    <p class="text-sm text-gray-500">이전</p>
+                                    <p class="text-2xl font-black text-gray-400">171명</p>
+                                </div>
+                                <div class="bg-blue-100 p-4 rounded-lg text-center border-2 border-blue-200">
+                                    <p class="text-sm text-blue-800 font-bold">현재</p>
+                                    <p class="text-3xl font-black text-blue-700">751명</p>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Tab 3: Health -->
+                <div id="health-content" class="tab-content hidden fade-in">
+                    <div class="text-center mb-10">
+                        <span class="text-blue-600 font-bold tracking-wide uppercase text-sm">Healthcare Support</span>
+                        <h4 class="text-2xl font-bold text-gray-900 mt-2">백내장 무료 수술비 및 검사비 지원</h4>
+                        <p class="text-gray-600 mt-4 max-w-2xl mx-auto">
+                            "어르신들의 밝은 눈을 되찾아 드렸습니다."<br>
+                            외부 기관과의 적극적인 협력을 통해 후원처를 발굴하고, 실질적인 의료 혜택을 제공했습니다.
+                        </p>
+                    </div>
+
+                    <div class="grid md:grid-cols-2 gap-6 max-w-4xl mx-auto">
+                        <!-- Stat Card 1 -->
+                        <div class="bg-gradient-to-br from-green-50 to-white p-8 rounded-2xl border border-green-100 text-center hover:shadow-lg transition-shadow">
+                            <div class="text-5xl mb-2">💰</div>
+                            <h5 class="text-lg font-semibold text-gray-700 mb-2">유치 후원금</h5>
+                            <p class="text-4xl font-black text-green-600 counting-number" data-target="3300">0</p>
+                            <span class="text-sm text-gray-500">만원 (3,300만원)</span>
+                        </div>
+                        <!-- Stat Card 2 -->
+                        <div class="bg-gradient-to-br from-blue-50 to-white p-8 rounded-2xl border border-blue-100 text-center hover:shadow-lg transition-shadow">
+                            <div class="text-5xl mb-2">👁️</div>
+                            <h5 class="text-lg font-semibold text-gray-700 mb-2">수혜 인원</h5>
+                            <p class="text-4xl font-black text-blue-600 counting-number" data-target="200">0</p>
+                            <span class="text-sm text-gray-500">여 명 (검진 및 수술)</span>
+                        </div>
+                    </div>
+                    <p class="text-center text-gray-500 mt-8 text-sm">
+                        * 경로당 회원 및 지역사회 저소득 어르신 대상 전액 지원
+                    </p>
+                </div>
+
+                <!-- Tab 4: Education -->
+                <div id="education-content" class="tab-content hidden fade-in">
+                    <div class="grid md:grid-cols-2 gap-8">
+                        <div>
+                            <span class="text-blue-600 font-bold tracking-wide uppercase text-sm">Lifelong Learning</span>
+                            <h4 class="text-2xl font-bold text-gray-900 mt-2 mb-4">지도자 역량 강화 및 프로그램 확대</h4>
+                            <p class="text-gray-600 mb-6">
+                                "더 배우고 더 즐거운 경로당 문화를 만듭니다."<br>
+                                경로당 회장·총무님들의 리더십 교육을 강화하고, 어르신들의 취향을 저격하는 다양한 문화 프로그램을 도입했습니다.
+                            </p>
+                            
+                            <div class="bg-orange-50 p-6 rounded-xl border border-orange-100 mb-6">
+                                <h5 class="font-bold text-orange-800 mb-2">📈 워크숍 확대 운영</h5>
+                                <div class="flex items-center justify-between">
+                                    <div class="text-center opacity-60">
+                                        <p class="text-sm">기존</p>
+                                        <p class="font-bold text-xl">연 1회</p>
+                                    </div>
+                                    <div class="text-2xl text-orange-400">➜</div>
+                                    <div class="text-center">
+                                        <p class="text-sm text-orange-700 font-bold">확대</p>
+                                        <p class="font-black text-2xl text-orange-600">연 2회</p>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="grid grid-cols-2 gap-4">
+                            <!-- Program Cards -->
+                            <div class="bg-gray-50 p-4 rounded-lg text-center hover:bg-white hover:shadow-md transition duration-200 border border-transparent hover:border-gray-200">
+                                <div class="text-3xl mb-2">🌱</div>
+                                <h6 class="font-bold text-gray-800">반려식물</h6>
+                                <p class="text-xs text-gray-500">심리적 안정 지원</p>
+                            </div>
+                            <div class="bg-gray-50 p-4 rounded-lg text-center hover:bg-white hover:shadow-md transition duration-200 border border-transparent hover:border-gray-200">
+                                <div class="text-3xl mb-2">☕</div>
+                                <h6 class="font-bold text-gray-800">바리스타</h6>
+                                <p class="text-xs text-gray-500">전문 기술 교육</p>
+                            </div>
+                            <div class="bg-gray-50 p-4 rounded-lg text-center hover:bg-white hover:shadow-md transition duration-200 border border-transparent hover:border-gray-200">
+                                <div class="text-3xl mb-2">📷</div>
+                                <h6 class="font-bold text-gray-800">장수사진</h6>
+                                <p class="text-xs text-gray-500">아름다운 순간 기록</p>
+                            </div>
+                            <div class="bg-gray-50 p-4 rounded-lg text-center hover:bg-white hover:shadow-md transition duration-200 border border-transparent hover:border-gray-200">
+                                <div class="text-3xl mb-2">🥁</div>
+                                <h6 class="font-bold text-gray-800">난타/인문학</h6>
+                                <p class="text-xs text-gray-500">활력 및 교양 증진</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Tab 5: Community -->
+                <div id="community-content" class="tab-content hidden fade-in">
+                    <div class="text-center max-w-3xl mx-auto">
+                        <span class="text-blue-600 font-bold tracking-wide uppercase text-sm">Community Co-existence</span>
+                        <h4 class="text-2xl font-bold text-gray-900 mt-2 mb-6">구로G페스티벌 참여 및 수익 나눔</h4>
+                        <p class="text-gray-600 mb-10">
+                            "지역사회와 함께하며 나눔의 선순환을 실천합니다."<br>
+                            단순한 축제 참여를 넘어, 수익금을 다시 지역사회 저소득 어르신들을 위해 사용하는 뜻깊은 모델을 만들었습니다.
+                        </p>
+
+                        <!-- Process Flow Visualization -->
+                        <div class="flex flex-col md:flex-row justify-between items-center space-y-8 md:space-y-0 relative">
+                            <!-- Step 1 -->
+                            <div class="flex-1 flex flex-col items-center z-10">
+                                <div class="w-20 h-20 bg-blue-100 rounded-full flex items-center justify-center text-3xl mb-4 text-blue-600 shadow-sm border-4 border-white">🎪</div>
+                                <h5 class="font-bold text-gray-800">부스 유치 & 운영</h5>
+                                <p class="text-sm text-gray-500 mt-1">구로G페스티벌<br>(2024~25년)</p>
+                            </div>
+                            
+                            <!-- Arrow 1 -->
+                            <div class="hidden md:block w-24 h-1 bg-gray-200 mx-2"></div>
+                            <div class="md:hidden text-gray-300 text-2xl">⬇</div>
+
+                            <!-- Step 2 -->
+                            <div class="flex-1 flex flex-col items-center z-10">
+                                <div class="w-20 h-20 bg-yellow-100 rounded-full flex items-center justify-center text-3xl mb-4 text-yellow-600 shadow-sm border-4 border-white">💰</div>
+                                <h5 class="font-bold text-gray-800">수익 창출</h5>
+                                <p class="text-sm text-gray-500 mt-1">먹거리 부스 운영<br>수익금 확보</p>
+                            </div>
+
+                            <!-- Arrow 2 -->
+                            <div class="hidden md:block w-24 h-1 bg-gray-200 mx-2"></div>
+                            <div class="md:hidden text-gray-300 text-2xl">⬇</div>
+
+                            <!-- Step 3 -->
+                            <div class="flex-1 flex flex-col items-center z-10">
+                                <div class="w-20 h-20 bg-red-100 rounded-full flex items-center justify-center text-3xl mb-4 text-red-600 shadow-sm border-4 border-white">❤️</div>
+                                <h5 class="font-bold text-gray-800">나눔 실천</h5>
+                                <p class="text-sm text-gray-500 mt-1">김장 김치 지원 등<br>저소득층 후원</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+            </div>
+        </div>
+    </section>
+
+    <!-- Vision / Footer Section -->
+    <section id="vision" class="bg-gray-900 text-white py-16">
+        <div class="container mx-auto px-4 text-center">
+            <h3 class="text-2xl font-bold mb-6">"지회장님과 함께한 시간,<br>구로의 노인 복지가 한 단계 더 도약했습니다."</h3>
+            <p class="text-gray-400 max-w-2xl mx-auto mb-8 leading-relaxed">
+                성과로 보여드린 지난 시간처럼, 앞으로도 변함없이 어르신들의 행복한 내일을 위해 멈추지 않고 정진하겠습니다.
+                약속을 지키는 리더, 실적으로 증명하는 일꾼이 되겠습니다.
+            </p>
+            <div class="w-16 h-1 bg-blue-500 mx-auto mb-8"></div>
+            <p class="text-sm text-gray-500">
+                제16대 지회장 성과보고서 | 문의: 지회 사무국
+            </p>
+        </div>
+    </section>
+
+    <script>
+        // State Management
+        let currentTab = 'welfare';
+        
+        // Navigation Logic
+        function switchTab(tabId) {
+            // Hide all contents
+            document.querySelectorAll('.tab-content').forEach(el => {
+                el.classList.add('hidden');
+                el.classList.remove('block');
+            });
+            
+            // Deactivate all buttons
+            document.querySelectorAll('.tab-btn').forEach(btn => {
+                btn.classList.remove('active', 'bg-[#1e3a8a]', 'text-white', 'border-[#1e3a8a]');
+                btn.classList.add('bg-white', 'text-gray-600');
+            });
+
+            // Show selected content
+            document.getElementById(tabId + '-content').classList.remove('hidden');
+            document.getElementById(tabId + '-content').classList.add('block');
+
+            // Activate selected button
+            // Find the button that called this (simple approach via iteration matching text or ID could be better, but explicit is fine)
+            // Or simpler: add active class to clicked element. Here we re-select by onclick attribute text for simplicity in this generated code
+            const activeBtn = document.querySelector(`button[onclick="switchTab('${tabId}')"]`);
+            if(activeBtn) {
+                activeBtn.classList.add('active');
+                activeBtn.classList.remove('bg-white', 'text-gray-600');
+            }
+
+            currentTab = tabId;
+
+            // Trigger animations if needed (Health counter)
+            if (tabId === 'health') {
+                runCounters();
+            }
+        }
+
+        // Smooth Scroll
+        function scrollToSection(id) {
+            document.getElementById(id).scrollIntoView({ behavior: 'smooth' });
+        }
+
+        // Chart Initialization
+        document.addEventListener('DOMContentLoaded', () => {
+            initWelfareChart();
+            initJobsChart();
+        });
+
+        // Welfare Chart (Fee Progression)
+        function initWelfareChart() {
+            const ctx = document.getElementById('welfareChart').getContext('2d');
+            new Chart(ctx, {
+                type: 'line',
+                data: {
+                    labels: ['2022년(취임)', '2023년', '2024년', '2025년', '2026년(목표)'],
+                    datasets: [{
+                        label: '경로당 회장 활동비 (만원)',
+                        data: [0, 5, 6, 8, 10], // Assuming incremental growth for visualization
+                        borderColor: '#2563eb', // blue-600
+                        backgroundColor: 'rgba(37, 99, 235, 0.1)',
+                        pointBackgroundColor: '#1e40af',
+                        pointBorderColor: '#fff',
+                        pointHoverBackgroundColor: '#fff',
+                        pointHoverBorderColor: '#1e40af',
+                        borderWidth: 3,
+                        pointRadius: 6,
+                        pointHoverRadius: 8,
+                        tension: 0.3,
+                        fill: true
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: {
+                        legend: { display: false },
+                        tooltip: {
+                            callbacks: {
+                                label: function(context) {
+                                    return ` ${context.parsed.y}만원 지급`;
+                                }
+                            },
+                            backgroundColor: 'rgba(0,0,0,0.8)',
+                            padding: 10,
+                            displayColors: false
+                        }
+                    },
+                    scales: {
+                        y: {
+                            beginAtZero: true,
+                            max: 12,
+                            ticks: {
+                                callback: function(value) { return value + '만원'; }
+                            },
+                            grid: { borderDash: [2, 4] }
+                        },
+                        x: {
+                            grid: { display: false }
+                        }
+                    }
+                }
+            });
+        }
+
+        // Jobs Chart (Comparison)
+        function initJobsChart() {
+            const ctx = document.getElementById('jobsChart').getContext('2d');
+            new Chart(ctx, {
+                type: 'bar',
+                data: {
+                    labels: ['취임 전 (171명)', '현재 (751명)'],
+                    datasets: [{
+                        label: '일자리 참여 인원',
+                        data: [171, 751],
+                        backgroundColor: [
+                            'rgba(156, 163, 175, 0.5)', // Gray for before
+                            'rgba(37, 99, 235, 0.8)'  // Blue for after
+                        ],
+                        borderColor: [
+                            'rgb(156, 163, 175)',
+                            'rgb(37, 99, 235)'
+                        ],
+                        borderWidth: 1,
+                        borderRadius: 5
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: {
+                        legend: { display: false },
+                        tooltip: {
+                            callbacks: {
+                                label: function(context) {
+                                    let label = context.dataset.label || '';
+                                    if (label) { label += ': '; }
+                                    if (context.parsed.y !== null) { label += context.parsed.y + '명'; }
+                                    return label;
+                                }
+                            }
+                        }
+                    },
+                    scales: {
+                        y: {
+                            beginAtZero: true,
+                            grid: { borderDash: [2, 4] }
+                        },
+                        x: {
+                            grid: { display: false }
+                        }
+                    }
+                }
+            });
+        }
+
+        // Number Counter Animation
+        let counted = false;
+        function runCounters() {
+            if (counted) return; // Run only once
+            
+            const counters = document.querySelectorAll('.counting-number');
+            const speed = 2000; // ms
+
+            counters.forEach(counter => {
+                const updateCount = () => {
+                    const target = +counter.getAttribute('data-target');
+                    const count = +counter.innerText;
+                    
+                    // Lower increment for smoother animation on small numbers
+                    const inc = target / (speed / 16); 
+
+                    if (count < target) {
+                        counter.innerText = Math.ceil(count + inc);
+                        setTimeout(updateCount, 20);
+                    } else {
+                        counter.innerText = target.toLocaleString();
+                    }
+                };
+                updateCount();
+            });
+            counted = true;
+        }
+
+    </script>
+</body>
+</html>

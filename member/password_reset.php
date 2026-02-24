@@ -1,5 +1,11 @@
 <?php
-session_start();
+// 에러 표시 설정
+error_reporting(E_ALL & ~E_NOTICE & ~E_DEPRECATED & ~E_STRICT);
+ini_set('display_errors', 0);
+
+if (session_status() === PHP_SESSION_NONE) {
+    session_start();
+}
 include "../db.php";
 
 $token = $_GET['token'] ?? '';

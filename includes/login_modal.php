@@ -35,6 +35,9 @@
                     </label>
                 </div>
                 <button type="submit" class="form-submit">로그인</button>
+                <div class="forgot-password-link">
+                    <a href="/member/password_reset_simple.php">🔐 비밀번호를 잊으셨나요?</a>
+                </div>
             </form>
             
             <form id="registerForm" class="login-form" method="post" action="/member/register_unified.php">
@@ -260,6 +263,25 @@
 .remember-text {
     color: #2c3e50 !important;
     font-weight: 500 !important;
+}
+
+/* 비밀번호 찾기 링크 */
+.forgot-password-link {
+    margin-top: 15px;
+    text-align: center;
+}
+
+.forgot-password-link a {
+    color: #667eea !important;
+    text-decoration: none;
+    font-size: 14px !important;
+    font-weight: 500 !important;
+    transition: all 0.3s;
+}
+
+.forgot-password-link a:hover {
+    color: #764ba2 !important;
+    text-decoration: underline;
 }
 </style>
 

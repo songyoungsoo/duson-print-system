@@ -167,7 +167,7 @@ function MemberCheckField() {
     <label for="remember_me">자동 로그인</label>
 
     <p>
-        <a href='/member/password_reset_request.php' style="color: #667eea; font-weight: bold;">🔐 비밀번호를 잊으셨나요?</a>
+        <a href='/member/password_reset_simple.php' style="color: #667eea; font-weight: bold;">🔐 비밀번호를 잊으셨나요?</a>
     </p>
 </form>
 </body>
