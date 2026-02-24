@@ -364,17 +364,17 @@ $exchangeRate = getExchangeRate();
                 <label class="form-label" for="jong">Material Type</label>
                 <select id="jong" name="jong" class="form-select">
                     <option value="">— Select material —</option>
-                    <option value="jil 아트유광코팅">Art Paper - Gloss Coated (아트유광코팅)</option>
-                    <option value="jil 아트무광코팅">Art Paper - Matte Coated (아트무광코팅)</option>
-                    <option value="jil 아트비코팅">Art Paper - Uncoated (아트비코팅)</option>
-                    <option value="jka 강접아트유광코팅">Strong Adhesive - Gloss (강접아트유광코팅)</option>
-                    <option value="cka 초강접아트코팅">Super Strong Adhesive - Gloss (초강접아트코팅)</option>
-                    <option value="cka 초강접아트비코팅">Super Strong Adhesive - Uncoated (초강접아트비코팅)</option>
-                    <option value="jsp 유포지">Yupo / Waterproof (유포지)</option>
-                    <option value="jsp 은데드롱">Silver Deadlong (은데드롱)</option>
-                    <option value="jsp 투명스티커">Clear / Transparent (투명스티커)</option>
-                    <option value="jil 모조비코팅">Bond Paper - Uncoated (모조비코팅)</option>
-                    <option value="jsp 크라프트지">Kraft Paper (크라프트지)</option>
+                    <option value="jil 아트유광코팅">Art Paper - Gloss Coated 90g (아트유광코팅)</option>
+                    <option value="jil 아트무광코팅">Art Paper - Matte Coated 90g (아트무광코팅)</option>
+                    <option value="jil 아트비코팅">Art Paper - Uncoated 90g (아트비코팅)</option>
+                    <option value="jka 강접아트유광코팅">Strong Adhesive - Gloss 90g (강접아트유광코팅)</option>
+                    <option value="cka 초강접아트코팅">Super Strong Adhesive - Gloss 90g (초강접아트코팅)</option>
+                    <option value="cka 초강접아트비코팅">Super Strong Adhesive - Uncoated 90g (초강접아트비코팅)</option>
+                    <option value="jsp 유포지">Yupo / Waterproof 80g (유포지)</option>
+                    <option value="jsp 은데드롱">Silver Deadlong 25g (은데드롱)</option>
+                    <option value="jsp 투명스티커">Clear / Transparent 25g (투명스티커)</option>
+                    <option value="jil 모조비코팅">Bond Paper - Uncoated 80g (모조비코팅)</option>
+                    <option value="jsp 크라프트지">Kraft Paper 57g (크라프트지)</option>
                 </select>
                 <div class="kr-note">
                     <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#B8860B" stroke-width="2"><circle cx="12" cy="12" r="10"/><path d="M12 16v-4M12 8h.01"/></svg>
