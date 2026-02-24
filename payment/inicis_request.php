@@ -64,14 +64,38 @@ if ($order['OrderStyle'] === 'payment_confirmed' || $order['OrderStyle'] === 'in
     ");
 }
 
+// 🔧 FIX: 다건 주문 그룹 처리 — order_group_id가 있으면 그룹 전체 금액 합산
+$group_orders = [$order]; // 기본: 단건 주문
+$group_id = $order['order_group_id'] ?? null;
+
+if (!empty($group_id)) {
+    // 그룹에 속한 모든 주문 조회
+    $grp_stmt = mysqli_prepare($db, "SELECT * FROM mlangorder_printauto WHERE order_group_id = ? ORDER BY order_group_seq");
+    mysqli_stmt_bind_param($grp_stmt, 's', $group_id);
+    mysqli_stmt_execute($grp_stmt);
+    $grp_result = mysqli_stmt_get_result($grp_stmt);
+    $group_orders = [];
+    while ($row = mysqli_fetch_assoc($grp_result)) {
+        $group_orders[] = $row;
+    }
+    mysqli_stmt_close($grp_stmt);
+    
+    if (empty($group_orders)) {
+        $group_orders = [$order]; // fallback
+    }
+}
+
+// 그룹 전체 금액 합산 (단건이면 1건만 합산)
+$price = 0;
+foreach ($group_orders as $grp_order) {
+    $price += intval($grp_order['money_5'] ?? $grp_order['money_4'] ?? $grp_order['money_1'] ?? 0);
+}
+
 // 결제 정보 준비
 $timestamp = getInicisTimestamp();
 $oid = 'DSP' . $order_no . '_' . $timestamp; // 이니시스 주문번호
 
-// money_5 = 부가세 포함 결제 금액, money_4 = 부가세 제외 금액
-$price = intval($order['money_5'] ?? $order['money_4'] ?? $order['money_1'] ?? 0);
-
-// 택배비 선불인 경우 택배비(+VAT) 합산
+// 택배비 선불인 경우 택배비(+VAT) 합산 (대표 주문 기준)
 if (($order['logen_fee_type'] ?? '') === '선불') {
     $shipping_fee = intval($order['logen_delivery_fee'] ?? 0);
     if ($shipping_fee > 0) {
@@ -82,23 +106,28 @@ if (($order['logen_fee_type'] ?? '') === '선불') {
 
 // 금액이 0원이면 결제 불가
 if ($price <= 0) {
+    $group_info = count($group_orders) > 1 ? ' (' . count($group_orders) . '건 묶음주문)' : '';
     die("
     <!DOCTYPE html>
     <html lang='ko'>
     <head><meta charset='UTF-8'><title>오류</title></head>
     <body style='font-family: sans-serif; padding: 40px; text-align: center;'>
         <h1>결제 금액 오류</h1>
-        <p>주문번호 <strong>{$order_no}</strong>의 결제 금액이 0원입니다.</p>
+        <p>주문번호 <strong>{$order_no}</strong>{$group_info}의 결제 금액이 0원입니다.</p>
         <p>주문 정보를 확인해주세요.</p>
-        <p style='color: #888; font-size: 14px;'>money_5: " . ($order['money_5'] ?? 'NULL') . ", money_4: " . ($order['money_4'] ?? 'NULL') . "</p>
         <a href='/' style='color: #3498db;'>홈으로 돌아가기</a>
     </body>
     </html>
     ");
 }
 
-// 상품명 정리 (Type 필드 사용)
-$goods_name = sanitizeGoodsName($order['Type'] ?? '인쇄물');
+// 상품명 정리 (다건이면 "스티커 외 2건" 형식)
+if (count($group_orders) > 1) {
+    $first_name = sanitizeGoodsName($group_orders[0]['Type'] ?? '인쇄물');
+    $goods_name = $first_name . ' 외 ' . (count($group_orders) - 1) . '건';
+} else {
+    $goods_name = sanitizeGoodsName($order['Type'] ?? '인쇄물');
+}
 
 // 구매자 정보 정리
 $buyer_name = sanitizeBuyerName($order['name']);

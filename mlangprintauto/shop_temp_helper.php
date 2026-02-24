@@ -445,6 +445,9 @@ function formatCartItemForDisplay($connect, $item) {
         'spec_sides' => $item['spec_sides'] ?? '',
         'spec_design' => $item['spec_design'] ?? '',
         'quantity_display' => $item['quantity_display'] ?? '',
+        'quantity_sheets' => $item['quantity_sheets'] ?? '',
+        'quantity_value' => $item['quantity_value'] ?? '',
+        'quantity_unit' => $item['quantity_unit'] ?? '',
         'data_version' => $item['data_version'] ?? 1
     ];
     

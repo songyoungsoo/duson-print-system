@@ -1,59 +1,33 @@
 <?php
-// 에러 표시 설정
-error_reporting(E_ALL & ~E_NOTICE & ~E_DEPRECATED & ~E_STRICT);
-ini_set('display_errors', 0);
-
-if (session_status() === PHP_SESSION_NONE) {
-    session_start();
-}
+session_start();
 include "../db.php";
 
 $token = $_GET['token'] ?? '';
-$legacy = $_GET['legacy'] ?? 0;
 $message = '';
 $error = '';
 $valid_token = false;
 $user_info = null;
 
 if (empty($token)) {
-    $error = '유효하지 않은 토큰입니다.';
+    $error = '유효하지 않은 링크입니다.';
 } else {
-    if (!$legacy) {
-        // users 테이블 토큰 확인
-        $query = "SELECT pr.*, u.username, u.name, u.email 
-                  FROM password_resets pr 
-                  JOIN users u ON pr.user_id = u.id 
-                  WHERE pr.token = ? AND pr.expires_at > NOW() AND pr.used = 0";
-        $stmt = mysqli_prepare($db, $query);
-        mysqli_stmt_bind_param($stmt, "s", $token);
-        mysqli_stmt_execute($stmt);
-        $result = mysqli_stmt_get_result($stmt);
-        
-        if ($reset = mysqli_fetch_assoc($result)) {
-            $valid_token = true;
-            $user_info = $reset;
-        }
-        mysqli_stmt_close($stmt);
-    } else {
-        // member 테이블 토큰 확인
-        $query = "SELECT * FROM member WHERE reset_token = ? AND reset_expires > NOW()";
-        $stmt = mysqli_prepare($db, $query);
-        mysqli_stmt_bind_param($stmt, "s", $token);
-        mysqli_stmt_execute($stmt);
-        $result = mysqli_stmt_get_result($stmt);
-        
-        if ($member = mysqli_fetch_assoc($result)) {
-            $valid_token = true;
-            $user_info = $member;
-            $user_info['username'] = $member['id'];
-            $user_info['is_legacy'] = true;
-        }
-        mysqli_stmt_close($stmt);
-    }
+    // password_resets 테이블에서 토큰 확인
+    $query = "SELECT pr.*, u.username, u.name, u.email 
+              FROM password_resets pr 
+              JOIN users u ON pr.user_id = u.id 
+              WHERE pr.token = ? AND pr.expires_at > NOW() AND pr.used = 0";
+    $stmt = mysqli_prepare($db, $query);
+    mysqli_stmt_bind_param($stmt, "s", $token);
+    mysqli_stmt_execute($stmt);
+    $result = mysqli_stmt_get_result($stmt);
     
-    if (!$valid_token) {
-        $error = '토큰이 만료되었거나 유효하지 않습니다.';
+    if ($reset = mysqli_fetch_assoc($result)) {
+        $valid_token = true;
+        $user_info = $reset;
+    } else {
+        $error = '링크가 만료되었거나 이미 사용된 링크입니다.<br>비밀번호 재설정을 다시 요청해주세요.';
     }
+    mysqli_stmt_close($stmt);
 }
 
 // 비밀번호 재설정 처리
@@ -72,55 +46,34 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && $valid_token) {
     } else {
         $hashed_password = password_hash($new_password, PASSWORD_DEFAULT);
         
-        if (isset($user_info['is_legacy'])) {
-            // member 테이블 업데이트
-            $update_query = "UPDATE member SET pass = ?, reset_token = NULL, reset_expires = NULL WHERE id = ?";
-            $update_stmt = mysqli_prepare($db, $update_query);
-            mysqli_stmt_bind_param($update_stmt, "ss", $hashed_password, $user_info['id']);
-            $success = mysqli_stmt_execute($update_stmt);
-            
-            // users 테이블로 마이그레이션 시도
-            if ($success) {
-                $migrate_query = "INSERT INTO users (username, password, name, email, phone, member_id, login_count, last_login) 
-                                 VALUES (?, ?, ?, ?, ?, ?, ?, ?)
-                                 ON DUPLICATE KEY UPDATE password = ?";
-                $migrate_stmt = mysqli_prepare($db, $migrate_query);
-                $phone = ($user_info['hendphone1'] ?? '') . '-' . ($user_info['hendphone2'] ?? '') . '-' . ($user_info['hendphone3'] ?? '');
-                $login_count = $user_info['Logincount'] ?? 0;
-                $last_login = $user_info['EndLogin'] ?? null;
-                
-                mysqli_stmt_bind_param($migrate_stmt, "ssssssiis", 
-                    $user_info['id'], $hashed_password, $user_info['name'], 
-                    $user_info['email'], $phone, $user_info['id'], 
-                    $login_count, $last_login, $hashed_password
-                );
-                mysqli_stmt_execute($migrate_stmt);
-                mysqli_stmt_close($migrate_stmt);
-            }
-            mysqli_stmt_close($update_stmt);
-        } else {
-            // users 테이블 업데이트
-            $update_query = "UPDATE users SET password = ? WHERE id = ?";
-            $update_stmt = mysqli_prepare($db, $update_query);
-            mysqli_stmt_bind_param($update_stmt, "si", $hashed_password, $user_info['user_id']);
-            $success = mysqli_stmt_execute($update_stmt);
-            mysqli_stmt_close($update_stmt);
-            
-            // 토큰 사용 처리
-            if ($success) {
-                $mark_used = "UPDATE password_resets SET used = 1 WHERE token = ?";
-                $mark_stmt = mysqli_prepare($db, $mark_used);
-                mysqli_stmt_bind_param($mark_stmt, "s", $token);
-                mysqli_stmt_execute($mark_stmt);
-                mysqli_stmt_close($mark_stmt);
-            }
-        }
+        // users 테이블 비밀번호 업데이트
+        $update_query = "UPDATE users SET password = ? WHERE id = ?";
+        $update_stmt = mysqli_prepare($db, $update_query);
+        mysqli_stmt_bind_param($update_stmt, "si", $hashed_password, $user_info['user_id']);
+        $success = mysqli_stmt_execute($update_stmt);
+        mysqli_stmt_close($update_stmt);
         
         if ($success) {
+            // 토큰 사용 처리
+            $mark_used = "UPDATE password_resets SET used = 1 WHERE token = ?";
+            $mark_stmt = mysqli_prepare($db, $mark_used);
+            mysqli_stmt_bind_param($mark_stmt, "s", $token);
+            mysqli_stmt_execute($mark_stmt);
+            mysqli_stmt_close($mark_stmt);
+            
+            // member 테이블에도 동기화 (이중 쓰기)
+            $sync_query = "UPDATE member SET pass = ? WHERE id = ?";
+            $sync_stmt = mysqli_prepare($db, $sync_query);
+            if ($sync_stmt) {
+                mysqli_stmt_bind_param($sync_stmt, "ss", $hashed_password, $user_info['username']);
+                mysqli_stmt_execute($sync_stmt);
+                mysqli_stmt_close($sync_stmt);
+            }
+            
             $message = '비밀번호가 성공적으로 변경되었습니다.';
             $valid_token = false; // 폼 숨기기
         } else {
-            $error = '비밀번호 변경 중 오류가 발생했습니다.';
+            $error = '비밀번호 변경 중 오류가 발생했습니다. 다시 시도해주세요.';
         }
     }
 }
@@ -249,6 +202,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && $valid_token) {
             border-radius: 5px;
             margin-bottom: 20px;
             font-size: 14px;
+            line-height: 1.8;
         }
         
         .message.success {
@@ -332,7 +286,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && $valid_token) {
 <body>
     <div class="container">
         <div class="header">
-            <h1>🔐 새 비밀번호 설정</h1>
+            <h1>새 비밀번호 설정</h1>
             <p>안전한 비밀번호를 설정해주세요</p>
         </div>
         

@@ -949,5 +949,50 @@
     @keyframes iosSlideUp { from { transform: translateY(100%); } to { transform: translateY(0); } }
     </style>
 
+    <!-- 전화번호 자동 포맷팅 (010-1234-5678) -->
+    <script>
+    (function() {
+        function formatKoreanPhone(v) {
+            var d = v.replace(/\D/g, '');
+            if (d.length === 0) return '';
+            // 02 지역번호 (9~10자리)
+            if (d.substring(0, 2) === '02') {
+                if (d.length <= 2) return d;
+                if (d.length <= 5) return d.substring(0,2) + '-' + d.substring(2);
+                if (d.length <= 9) return d.substring(0,2) + '-' + d.substring(2, d.length-4) + '-' + d.substring(d.length-4);
+                return d.substring(0,2) + '-' + d.substring(2,6) + '-' + d.substring(6,10);
+            }
+            // 010/011/016/017/018/019 또는 0XX 지역번호 (10~11자리)
+            if (d.length <= 3) return d;
+            if (d.length <= 7) return d.substring(0,3) + '-' + d.substring(3);
+            if (d.length <= 11) return d.substring(0,3) + '-' + d.substring(3, d.length-4) + '-' + d.substring(d.length-4);
+            return d.substring(0,3) + '-' + d.substring(3,7) + '-' + d.substring(7,11);
+        }
+        function applyPhoneFormat(input) {
+            input.addEventListener('input', function() {
+                var pos = this.selectionStart;
+                var before = this.value;
+                var formatted = formatKoreanPhone(before);
+                if (formatted !== before) {
+                    this.value = formatted;
+                    var diff = formatted.length - before.length;
+                    this.setSelectionRange(pos + diff, pos + diff);
+                }
+            });
+            // 페이지 로드 시 기존 값도 포맷팅
+            if (input.value && /^\d{9,11}$/.test(input.value.replace(/\D/g, ''))) {
+                input.value = formatKoreanPhone(input.value);
+            }
+        }
+        // type="tel" 또는 name이 phone/Hendphone인 input에 자동 적용
+        document.querySelectorAll('input[type="tel"], input[name="phone"], input[name="Hendphone"]').forEach(applyPhoneFormat);
+        // 관리자 주문등록 전화 필드
+        ['customer_phone', 'customer_mobile', 'qfm-phone'].forEach(function(id) {
+            var el = document.getElementById(id);
+            if (el) applyPhoneFormat(el);
+        });
+    })();
+    </script>
+
 </body>
 </html>

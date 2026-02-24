@@ -93,6 +93,28 @@ class ShippingCalculator
     const FALLBACK_A4_FEE = 3500;  // A4특약 (로젠 계약 요금)
     const FALLBACK_ENVELOPE_FEE = 3500;  // 대봉투특약 (로젠 계약: 500매 1박스 3,500원)
 
+    // 전단지 규격별 로젠 특약 택배비
+    const FLYER_FEE_MAP = [
+        'A6' => ['per_box' => 4000, 'half_ream_fee' => 3500],  // 1연=4,000원, 0.5연=3,500원특약(A4박스)
+        'A5' => ['per_box' => 6000],                             // 1연=6,000원/box
+        'A4' => ['per_box' => 6000, 'half_ream_fee' => 3500],   // 1연=6,000원, 0.5연=3,500원특약(A4박스)
+        'B5' => ['per_box' => 3500],                             // 16절특약 3,500원/box
+        'B4' => ['per_box' => 3500],                             // 8절특약 3,500원/box
+        'A3' => ['per_box' => 6000],                             // A3특약 6,000원/box
+        // B6: 특약 없음 → 무게별 차등
+    ];
+
+    // 전단지 규격별 1박스 최대 매수 (실측/영업 기준)
+    const FLYER_MAX_PER_BOX = [
+        'A6' => 16000,  // A3 박스에 16,000매 (1연)
+        'A5' => 8000,   // A3 박스에 8,000매 (1연) — 2×2열
+        'A4' => 4000,   // A3 박스에 4,000매 (1연) — 2×1열
+        'B5' => 4000,   // 8절 박스에 4,000매 (16절특약)
+        'B4' => 2000,   // 박스당 2,000매 → 1연(4,000)=2박스
+        'A3' => 2000,   // A3 박스에 2,000매 (1연)
+        // B6: 없음 → 물리적 계산 유지
+    ];
+
     public static $cachedRates = null;
 
     // ===== 코팅 무게 가산율 =====
@@ -110,19 +132,40 @@ class ShippingCalculator
      * 장바구니 아이템 배열로부터 전체 배송 추정 계산
      * 
      * @param array $cartItems 장바구니 아이템 배열
+     * @param string $packingMode 'bundle'(묶음배송) | 'individual'(개별포장)
      * @return array ['items' => [...], 'total_weight_g' => int, 'total_boxes' => int, 'total_weight_kg' => float]
      */
-    public static function estimateFromCart(array $cartItems): array
+    public static function estimateFromCart(array $cartItems, string $packingMode = 'individual'): array
     {
         $results = [];
         $totalWeightG = 0;
         $totalBoxes = 0;
+        $totalFee = 0;
 
         foreach ($cartItems as $item) {
             $estimate = self::estimateItem($item);
             $results[] = $estimate;
             $totalWeightG += $estimate['total_weight_g'];
             $totalBoxes += $estimate['boxes'];
+            $totalFee += $estimate['estimated_fee'] ?? 0;
+        }
+
+        // 묶음배송: 전체 무게 합산 → 20kg 기준 박스 재분리 + 택배비 재계산
+        if ($packingMode === 'bundle' && count($cartItems) > 1) {
+            $totalWeightKg = $totalWeightG / 1000;
+            $totalBoxes = max(1, (int)ceil($totalWeightKg / 20));
+            // 묶음 시 전체 무게 기준 택배비 재계산 (개별 fee 합산 대신)
+            $totalFee = self::estimateFeeByWeight($totalBoxes, round($totalWeightKg, 1));
+        }
+
+        // 택배비 라벨 생성
+        $feeLabel = '';
+        if ($packingMode === 'bundle' && count($cartItems) > 1) {
+            $feeLabel = '묶음배송 무게별 차등';
+        } elseif (count($results) === 1 && !empty($results[0]['fee_label'])) {
+            $feeLabel = $results[0]['fee_label'];
+        } else {
+            $feeLabel = '개별 합산';
         }
 
         return [
@@ -130,6 +173,9 @@ class ShippingCalculator
             'total_weight_g' => $totalWeightG,
             'total_weight_kg'=> round($totalWeightG / 1000, 1),
             'total_boxes'    => $totalBoxes,
+            'total_fee'      => $totalFee,
+            'fee_label'      => $feeLabel,
+            'packing_mode'   => $packingMode,
             'is_estimate'    => true,
         ];
     }
@@ -143,8 +189,10 @@ class ShippingCalculator
     public static function estimateItem(array $item): array
     {
         $productType = $item['product_type'] ?? '';
-        $paperCode   = $item['MY_Fsd'] ?? $item['spec_material'] ?? '';
-        $sizeCode    = $item['PN_type'] ?? $item['spec_size'] ?? '';
+        // spec_material/spec_size 우선 (텍스트명, 예: "90g아트지", "A4")
+        // MY_Fsd/PN_type은 숫자 코드("626", "821")일 수 있어 파싱 실패
+        $paperCode   = $item['spec_material'] ?? $item['MY_Fsd'] ?? '';
+        $sizeCode    = $item['spec_size'] ?? $item['PN_type'] ?? '';
         $coating     = self::detectCoating($item);
 
         // 평량 파싱 (예: "90g아트지" → 90, "스노우250g" → 250)
@@ -191,8 +239,12 @@ class ShippingCalculator
             $sheetsPerColumn = floor($boxSpec['height'] / $sheetThicknessMM);
             $maxPerBox = $sheetsPerColumn * $boxSpec['columns'];
         }
-        // 16절특약: B5/B6 = 4,000매/box 고정 (로젠 계약)
-        if (in_array($paperSize, ['B5', 'B6'])) {
+        // 전단지: 영업 실측 기준 maxPerBox 오버라이드
+        if ($productType === 'inserted' && isset(self::FLYER_MAX_PER_BOX[$paperSize])) {
+            $maxPerBox = self::FLYER_MAX_PER_BOX[$paperSize];
+        }
+        // B5(16절) 비전단지도 4,000매/box 고정 (로젠 계약)
+        elseif ($paperSize === 'B5') {
             $maxPerBox = 4000;
         }
 
@@ -205,6 +257,10 @@ class ShippingCalculator
 
         // 박스당 무게
         $weightPerBoxG = ($boxes > 0) ? (int)round($totalWeightG / $boxes) : $totalWeightG;
+
+        // ✅ 로젠택배 특약 택배비 추정
+        $estimatedFee = self::estimateFee($paperSize, $boxes, round($totalWeightG / 1000, 1), $productType, $quantity);
+        $feeLabel = self::getFeeLabel($productType, $paperSize, $boxes, round($totalWeightG / 1000, 1), $quantity);
 
         return [
             'product_type'    => $productType,
@@ -220,6 +276,8 @@ class ShippingCalculator
             'weight_per_box_kg'=> round($weightPerBoxG / 1000, 1),
             'box_type'         => $boxSpec['name'],
             'max_per_box'      => $maxPerBox,
+            'estimated_fee'    => $estimatedFee,
+            'fee_label'        => $feeLabel,
             'calculable'       => true,
         ];
     }
@@ -320,9 +378,14 @@ class ShippingCalculator
         if ($sheetThickness > 0) {
             $maxPerBox = floor($boxSpec['height'] / $sheetThickness) * $boxSpec['columns'];
         }
-        // 16절특약: B5/B6 = 4,000매/box 고정 (로젠 계약)
-        if (in_array($paperSize, ['B5', 'B6'])) {
+        // B5(16절) 비전단지: 4,000매/box 고정 (로젠 계약)
+        if ($paperSize === 'B5') {
             $maxPerBox = 4000;
+        }
+        // 전단지: FLYER_MAX_PER_BOX 오버라이드
+        $isFlyer = preg_match('/inserted/i', $type);
+        if ($isFlyer && isset(self::FLYER_MAX_PER_BOX[$paperSize])) {
+            $maxPerBox = self::FLYER_MAX_PER_BOX[$paperSize];
         }
         $boxes = ($maxPerBox > 0) ? (int)ceil($quantity / $maxPerBox) : (int)ceil($yeon);
         
@@ -330,8 +393,17 @@ class ShippingCalculator
         $totalWeightG = (int)round($paperWeightG + $boxWeightG);
         $totalWeightKg = round($totalWeightG / 1000, 1);
 
-        // 택배비 추정
-        $fee = self::estimateFee($paperSize, $boxes, $totalWeightKg);
+        // 택배비 추정 — 전단지는 규격별 특약, 나머지는 무게 기반
+        $productTypeForFee = $isFlyer ? 'inserted' : '';
+        $fee = self::estimateFee($paperSize, $boxes, $totalWeightKg, $productTypeForFee, $quantity);
+
+        // fee_type 라벨
+        $feeType = '무게기반';
+        if ($isFlyer && isset(self::FLYER_FEE_MAP[$paperSize])) {
+            $feeType = $paperSize . '특약';
+        } elseif ($paperSize === 'B5') {
+            $feeType = '16절특약';
+        }
 
         return [
             'boxes'      => $boxes,
@@ -341,7 +413,7 @@ class ShippingCalculator
             'gsm'        => $gsm,
             'paper_size' => $paperSize,
             'quantity'   => $quantity,
-            'fee_type'   => ($paperSize === 'B5' || $paperSize === 'B6') ? '16절특약' : '무게기반',
+            'fee_type'   => $feeType,
             'calculable' => true,
         ];
     }
@@ -435,7 +507,6 @@ class ShippingCalculator
 
         $spec = self::ENVELOPE_SPECS[$envelopeType] ?? self::ENVELOPE_SPECS['소봉투'];
 
-
         // 대봉투 기본 120g (parseGSM이 100g 기본값을 반환했을 때 보정)
         if ($envelopeType === '대봉투' && $gsm === 100) {
             $gsm = 120;
@@ -446,11 +517,16 @@ class ShippingCalculator
         $weightPerPiece = $gsm * $areaM2;
 
         $paperWeightG = $weightPerPiece * $quantity;
-        $maxPerBox = 500;
-        // 봉투 박스당 500매 (대봉투 포함)
-
-        $boxes = max(1, (int)ceil($quantity / $maxPerBox));
         $totalWeightG = (int)round($paperWeightG);  // 부자재(박스) 무게 미포함
+        $totalWeightKg = round($totalWeightG / 1000, 1);
+
+        // 박스 분리: 20kg 초과 시 분리 (AGENTS.md 기준 — 모든 제품 공통)
+        $boxes = max(1, (int)ceil($totalWeightKg / 20));
+
+        // 택배비 추정: 대봉투는 특약, 나머지는 무게 기반
+        $estimatedFee = self::estimateEnvelopeFee($envelopeType, $boxes, $totalWeightKg);
+        $isSpecial = ($envelopeType === '대봉투');
+        $feeLabel = $isSpecial ? '대봉투특약 ' . number_format(self::FALLBACK_ENVELOPE_FEE) . '원/box' : '무게별 차등';
 
         return [
             'product_type'    => 'envelope',
@@ -461,11 +537,13 @@ class ShippingCalculator
             'paper_weight_g'   => (int)round($paperWeightG),
             'box_weight_g'     => 0,  // 부자재 무게 미포함
             'total_weight_g'   => $totalWeightG,
-            'total_weight_kg'  => round($totalWeightG / 1000, 1),
+            'total_weight_kg'  => $totalWeightKg,
             'boxes'            => $boxes,
             'weight_per_box_kg'=> ($boxes > 0) ? round(($paperWeightG / $boxes) / 1000, 1) : round($paperWeightG / 1000, 1),
             'box_type'         => '봉투 박스',
-            'max_per_box'      => $maxPerBox,
+            'max_per_box'      => 0,  // 무게 기준 분리
+            'estimated_fee'    => $estimatedFee,
+            'fee_label'        => $feeLabel,
             'calculable'       => true,
         ];
     }
@@ -494,38 +572,80 @@ class ShippingCalculator
      * 택배비 추정 (관리자 참고용)
      * DB shipping_rates 테이블에서 요금 조회, 실패 시 하드코딩 fallback
      */
-    public static function estimateFee(string $paperSize, int $boxes, float $totalWeightKg): int
+    public static function estimateFee(string $paperSize, int $boxes, float $totalWeightKg, string $productType = '', int $quantity = 0): int
     {
-        $rates = self::loadRates();
+        // 전단지 규격별 특약
+        if ($productType === 'inserted' && isset(self::FLYER_FEE_MAP[$paperSize])) {
+            $feeMap = self::FLYER_FEE_MAP[$paperSize];
+            // 0.5연 특약 (A4, A6)
+            if (isset($feeMap['half_ream_fee']) && $quantity > 0) {
+                $sheetsPerReam = self::SHEETS_PER_REAM[$paperSize] ?? 4000;
+                $reams = $quantity / $sheetsPerReam;
+                if ($reams <= 0.5) {
+                    return $feeMap['half_ream_fee'];
+                }
+            }
+            return $boxes * $feeMap['per_box'];
+        }
 
-        // 16절특약 (B5, B6)
-        if (in_array($paperSize, ['B5', 'B6'])) {
+        // 봉투: 대봉투 특약, 나머지 무게별
+        if ($productType === 'envelope') {
+            if ($paperSize === '대봉투') {
+                $rates = self::loadRates();
+                $feePerBox = $rates['logen_envelope'][0]['fee'] ?? self::FALLBACK_ENVELOPE_FEE;
+                return $boxes * $feePerBox;
+            }
+            return self::estimateFeeByWeight($boxes, $totalWeightKg);
+        }
+
+        // 비전단지 B5: 16절특약
+        if (in_array($paperSize, ['B5'])) {
+            $rates = self::loadRates();
             $fee16 = $rates['logen_16'][0]['fee'] ?? self::FALLBACK_16_FEE;
             return $boxes * $fee16;
         }
 
-        // A4 특약: 0.5연(2000매) 이하 = 1박스 3,500원 (로젠 계약)
-        // 90g A4 2000매 ≈ 11.2kg → 특약 적용 기준: 1박스 + 12kg 이하
-        if ($paperSize === 'A4' && $boxes === 1 && $totalWeightKg <= 12) {
-            return self::FALLBACK_A4_FEE;
+        // 나머지: 무게별 차등
+        return self::estimateFeeByWeight($boxes, $totalWeightKg);
+    }
+
+    /**
+     * 봉투 전용 택배비 추정
+     * 대봉투: 3,500원/box (로젠 특약)
+     * 소봉투/자켓: 무게별 차등 (≤3kg:3000, ≤10kg:3500, ≤15kg:4000, ≤20kg:5000, >20kg:6000)
+     */
+    private static function estimateEnvelopeFee(string $envelopeType, int $boxes, float $totalWeightKg): int
+    {
+        if ($envelopeType === '대봉투') {
+            $rates = self::loadRates();
+            $feePerBox = $rates['logen_envelope'][0]['fee'] ?? self::FALLBACK_ENVELOPE_FEE;
+            return $boxes * $feePerBox;
         }
+        // 소봉투/자켓: 무게별 차등
+        return self::estimateFeeByWeight($boxes, $totalWeightKg);
+    }
 
-        // A4 (A4, A5, A6) 1연 이상 → 무게 기반 요금
-        // ※ A4 0.5연 특약 외에는 무게별 차등 적용
-
-        // 대형 (A3, B4, 4절, 국2절) → 무게 기반
-        $weightPerBox = ($boxes > 0) ? $totalWeightKg / $boxes : $totalWeightKg;
-        $weightRates = $rates['logen_weight'] ?? [];
-
-        $feePerBox = 3000;
-        foreach ($weightRates as $rate) {
-            if ($weightPerBox <= $rate['max_kg']) {
-                $feePerBox = $rate['fee'];
-                break;
+    /**
+     * 택배비 요금 근거 라벨 반환 (프론트 표시용)
+     */
+    private static function getFeeLabel(string $productType, string $paperSize, int $boxes, float $totalWeightKg, int $quantity = 0): string
+    {
+        if ($productType === 'inserted' && isset(self::FLYER_FEE_MAP[$paperSize])) {
+            $feeMap = self::FLYER_FEE_MAP[$paperSize];
+            // 0.5연 특약 체크
+            if (isset($feeMap['half_ream_fee']) && $quantity > 0) {
+                $sheetsPerReam = self::SHEETS_PER_REAM[$paperSize] ?? 4000;
+                if ($quantity / $sheetsPerReam <= 0.5) {
+                    return $paperSize . ' 0.5연특약 ' . number_format($feeMap['half_ream_fee']) . '원';
+                }
             }
+            return $paperSize . '특약 ' . number_format($feeMap['per_box']) . '원/box';
         }
-
-        return $boxes * $feePerBox;
+        if ($productType === 'envelope') {
+            if ($paperSize === '대봉투') return '대봉투특약 ' . number_format(self::FALLBACK_ENVELOPE_FEE) . '원/box';
+            return '무게별 차등';
+        }
+        return '무게별 차등';
     }
 
     /**
@@ -604,20 +724,28 @@ class ShippingCalculator
             if ($val > 0) return $val;
         }
 
-        // MY_amount (일반 수량 — decimal "500.00" 등)
-        // ⚠️ preg_replace로 비숫자 제거하면 소수점도 삭제되어 "500.00"→"50000" 버그 발생!
-        if (!empty($item['MY_amount'])) {
-            $val = intval(floatval($item['MY_amount']));
-            if ($val > 0) return $val;
-        }
-
-        // mesu (매수 직접)
+        // mesu (매수 직접 — 명함/스티커 등에서 사용)
         if (!empty($item['mesu'])) {
             $val = intval(floatval($item['mesu']));
             if ($val > 0) return $val;
         }
 
-        return 500; // 기본 1연(500매)
+        // MY_amount (수량 — decimal "500.00" 등)
+        // ⚠️ 전단지는 MY_amount가 "연" 단위 (0.5, 1, 2, 3 등)이므로 매수 변환 필요!
+        if (!empty($item['MY_amount'])) {
+            $val = floatval($item['MY_amount']);
+            if ($val > 0) {
+                // 전단지(inserted): MY_amount ≤ 20이면 연 단위로 판단 → 매수 변환
+                $productType = $item['product_type'] ?? '';
+                if ($productType === 'inserted' && $val <= 20) {
+                    $sheetsPerReam = self::SHEETS_PER_REAM[$paperSize] ?? 4000;
+                    return (int)($val * $sheetsPerReam);
+                }
+                return intval($val);
+            }
+        }
+
+        return 500; // 기본값
     }
 
     /**

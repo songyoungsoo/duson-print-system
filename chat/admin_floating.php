@@ -269,6 +269,22 @@
             margin-top: 4px;
         }
 
+        /* AI 긴급대응 봇 메시지 스타일 */
+        .admin-message.ai-bot .message-bubble {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+        }
+
+        .message-avatar.ai-bot-avatar {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            font-size: 16px;
+        }
+
+        .admin-message.ai-bot .message-sender {
+            color: #667eea;
+            font-weight: 600;
+        }
+
         .input-area-admin {
             padding: 15px;
             background: white;

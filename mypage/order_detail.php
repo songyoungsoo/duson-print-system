@@ -60,6 +60,30 @@ if (!$order) {
     exit;
 }
 
+// 🔧 그룹 주문 처리: order_group_id가 있으면 그룹 전체 조회
+$group_orders = [$order]; // 기본: 단건
+$group_id = $order['order_group_id'] ?? null;
+
+if (!empty($group_id)) {
+    $grp_stmt = mysqli_prepare($db, "SELECT * FROM mlangorder_printauto WHERE order_group_id = ? ORDER BY order_group_seq");
+    mysqli_stmt_bind_param($grp_stmt, 's', $group_id);
+    mysqli_stmt_execute($grp_stmt);
+    $grp_result = mysqli_stmt_get_result($grp_stmt);
+    $group_orders = [];
+    while ($row = mysqli_fetch_assoc($grp_result)) {
+        $group_orders[] = $row;
+    }
+    mysqli_stmt_close($grp_stmt);
+    if (empty($group_orders)) {
+        $group_orders = [$order]; // fallback
+    }
+}
+$is_group_order = count($group_orders) > 1;
+$group_total_print = 0;
+foreach ($group_orders as $grp_order) {
+    $group_total_print += intval($grp_order['money_5'] ?? $grp_order['money_4'] ?? 0);
+}
+
 // 주문 상태 매핑
 $order_statuses = [
     '0' => '미선택',
@@ -333,6 +357,23 @@ function formatType1Json($type1_data) {
             <h1>주문 상세</h1>
             <p class="order-no">주문번호: <?php echo htmlspecialchars($order['no']); ?></p>
         </div>
+
+        <?php if ($is_group_order): ?>
+        <div class="section" style="border: 2px solid #3498db; background: #eaf4fd; padding: 15px 20px;">
+            <p style="margin: 0; color: #2c3e50; font-size: 14px;">
+                📦 이 주문은 <strong><?php echo count($group_orders); ?>건 묶음주문</strong>의 일부입니다.
+                결제 시 전체 묶음 금액(₩<?php echo number_format($group_total_print); ?>)이 함께 처리됩니다.
+            </p>
+            <ul style="margin: 8px 0 0; padding-left: 20px; font-size: 13px; color: #555;">
+                <?php foreach ($group_orders as $gi => $grp): ?>
+                <li<?php echo ($grp['no'] == $order['no']) ? ' style="font-weight: 600; color: #2c3e50;"' : ''; ?>>
+                    <?php echo htmlspecialchars($grp['Type']); ?> — ₩<?php echo number_format(intval($grp['money_5'] ?? 0)); ?>
+                    <?php echo ($grp['no'] == $order['no']) ? ' (현재 조회중)' : ''; ?>
+                </li>
+                <?php endforeach; ?>
+            </ul>
+        </div>
+        <?php endif; ?>
 
         <!-- 주문 기본 정보 -->
         <div class="section">
@@ -686,7 +727,8 @@ function formatType1Json($type1_data) {
         // 결제 가능: 미결제 + (선불 아님 OR 택배비 확정)
         $can_pay = $is_unpaid && (!$is_prepaid_pay || $lf_fee_pay > 0);
 
-        $print_amount_pay = intval($order['money_5'] ?? $order['money_4'] ?? 0);
+        // 그룹 주문이면 그룹 전체 금액, 아니면 단건 금액 (inicis_request.php와 동일 로직)
+        $print_amount_pay = $is_group_order ? $group_total_print : intval($order['money_5'] ?? $order['money_4'] ?? 0);
         $shipping_total_pay = 0;
         if ($is_prepaid_pay && $lf_fee_pay > 0) {
             $shipping_total_pay = $lf_fee_pay + round($lf_fee_pay * 0.1);
@@ -699,10 +741,19 @@ function formatType1Json($type1_data) {
             <h2 style="color: #667eea; border-bottom-color: #667eea;">결제하기</h2>
 
             <table class="price-table" style="margin-bottom: 20px;">
+                <?php if ($is_group_order): ?>
+                <?php foreach ($group_orders as $grp): ?>
+                <tr>
+                    <th><?php echo htmlspecialchars($grp['Type']); ?> (VAT포함)</th>
+                    <td>₩<?php echo number_format(intval($grp['money_5'] ?? 0)); ?></td>
+                </tr>
+                <?php endforeach; ?>
+                <?php else: ?>
                 <tr>
                     <th>인쇄비 (VAT포함)</th>
                     <td>₩<?php echo number_format($print_amount_pay); ?></td>
                 </tr>
+                <?php endif; ?>
                 <?php if ($is_prepaid_pay && $lf_fee_pay > 0): ?>
                 <tr>
                     <th>택배비 (VAT포함)</th>
@@ -710,7 +761,7 @@ function formatType1Json($type1_data) {
                 </tr>
                 <?php endif; ?>
                 <tr class="total">
-                    <th>총 결제금액</th>
+                    <th>총 결제금액<?php echo $is_group_order ? ' (' . count($group_orders) . '건 합산)' : ''; ?></th>
                     <td>₩<?php echo number_format($total_payment); ?>원</td>
                 </tr>
             </table>

@@ -52,10 +52,11 @@ body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;backgrou
 </style>
 </head>
 <body>
-<form class="login" method="POST">
+<form class="login" method="POST" autocomplete="on">
     <h1><span>KB</span> Knowledge Vault</h1>
     <p>비밀번호를 입력하세요</p>
-    <input type="password" name="kb_password" placeholder="비밀번호" autofocus>
+    <input type="text" name="kb_user" value="kb" autocomplete="username" style="position:absolute;left:-9999px;width:1px;height:1px;overflow:hidden" tabindex="-1" aria-hidden="true">
+    <input type="password" name="kb_password" placeholder="비밀번호" autofocus autocomplete="current-password">
     <button type="submit">로그인</button>
 </form>
 </body>

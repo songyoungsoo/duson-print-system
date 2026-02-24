@@ -296,6 +296,27 @@ if ($resultCode === '0000' || $resultCode === '00') {
         logInicisTransaction("주문 상태 업데이트 성공 - 주문번호: {$order_no}", 'info');
         $success = true;
 
+        // 🔧 FIX: 그룹 주문 시 그룹 내 모든 주문 상태 업데이트
+        try {
+            $grp_check = mysqli_prepare($db, "SELECT order_group_id FROM mlangorder_printauto WHERE no = ?");
+            mysqli_stmt_bind_param($grp_check, 'i', $order_no);
+            mysqli_stmt_execute($grp_check);
+            $grp_res = mysqli_stmt_get_result($grp_check);
+            $grp_row = mysqli_fetch_assoc($grp_res);
+            mysqli_stmt_close($grp_check);
+            
+            if (!empty($grp_row['order_group_id'])) {
+                $grp_update = mysqli_prepare($db, "UPDATE mlangorder_printauto SET OrderStyle = '11' WHERE order_group_id = ? AND no != ?");
+                mysqli_stmt_bind_param($grp_update, 'si', $grp_row['order_group_id'], $order_no);
+                $grp_affected = mysqli_stmt_execute($grp_update);
+                $grp_count = mysqli_stmt_affected_rows($grp_update);
+                mysqli_stmt_close($grp_update);
+                logInicisTransaction("그룹 주문 상태 업데이트: group_id={$grp_row['order_group_id']}, 추가 {$grp_count}건", 'info');
+            }
+        } catch (Exception $e) {
+            logInicisTransaction("그룹 주문 업데이트 스킵: " . $e->getMessage(), 'warning');
+        }
+
         // 주문 상태 히스토리 기록 (선택적)
         try {
             if (class_exists('OrderStatusManager')) {

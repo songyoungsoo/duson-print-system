@@ -36,6 +36,9 @@ if (!$db) {
 // 문자셋 설정
 mysqli_set_charset($db, $db_config['charset']);
 
+// MySQL 세션 타임존을 KST(+09:00)로 설정
+mysqli_query($db, "SET time_zone = '+09:00'");
+
 // 호환성을 위한 별칭 변수
 $conn = $db;
 

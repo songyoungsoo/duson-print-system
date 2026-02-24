@@ -65,6 +65,7 @@ try {
     $cont = $_POST['cont'] ?? '';
     $delivery_method = $_POST['delivery_method'] ?? '택배';
     $shipping_fee_type = $_POST['shipping_fee_type'] ?? '';
+    $shipping_bundle_type = $_POST['shipping_bundle_type'] ?? '';
     $total_price = (float)($_POST['total_price'] ?? 0);
     $total_price_vat = (float)($_POST['total_price_vat'] ?? 0);
     $items_count = (int)($_POST['items_count'] ?? 0);
@@ -221,7 +222,13 @@ try {
     // 💎 FIX: is_member 플래그 설정 (세션에 user_id가 있으면 회원)
     $is_member_flag = (isset($_SESSION['user_id']) && !empty($_SESSION['user_id'])) ? 1 : 0;
     
+    // 🔧 FIX: order_group_id — 다건 주문 시 같은 장바구니 품목들을 하나의 그룹으로 묶음
+    // 결제 시 그룹 전체 금액을 합산하여 처리 (기존 버그: 첫 번째 품목만 결제됨)
+    $order_group_id = 'GRP-' . date('Ymd') . '-' . substr(uniqid(), -8);
+    $order_group_seq_counter = 0;
+
     foreach ($cart_items as $item) {
+        $order_group_seq_counter++;
         // 새 주문 번호 생성
         $max_result = mysqli_query($connect, "SELECT MAX(no) as max_no FROM mlangorder_printauto");
         $max_row = mysqli_fetch_assoc($max_result);
@@ -342,8 +349,9 @@ try {
             spec_type, spec_material, spec_size, spec_sides, spec_design,
             quantity_value, quantity_unit, quantity_sheets, quantity_display,
             price_supply, price_vat, price_vat_amount, data_version,
-            logen_fee_type
-        ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)";
+            logen_fee_type, shipping_bundle_type,
+            order_group_id, order_group_seq
+        ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)";  // 58 placeholders
 
         $stmt = mysqli_prepare($connect, $insert_query);
         if (!$stmt) {
@@ -546,7 +554,7 @@ try {
         $st_price = strval($item['st_price'] ?? 0);
         $st_price_vat = strval($item['st_price_vat'] ?? 0);
 
-        // 55개 파라미터 타입 문자열 (3번 검증!)
+        // 58개 파라미터 타입 문자열 (3번 검증!)
         // 1-8: no(i), Type(s), product_type(s), ImgFolder(s), uploaded_files(s), Type_1(s), money_4(s), money_5(s)
         // 9-15: name(s), email(s), zip(s), zip1(s), zip2(s), phone(s), Hendphone(s)
         // 16-23: delivery(s), bizname(s), bank(s), bankname(s), cont(s), date(s), OrderStyle(s), ThingCate(s)
@@ -561,10 +569,12 @@ try {
         // 47-50: quantity_value(d), quantity_unit(s), quantity_sheets(i), quantity_display(s)
         // 51-54: price_supply(i), price_vat(i), price_vat_amount(i), data_version(i)
         // 55: logen_fee_type(s)
-        $type_string = 'issssssssssssssssssssssisiisiiiiisiiiiisdsssssdsisiiiis';
+        // 56: shipping_bundle_type(s)
+        // 57-58: order_group_id(s), order_group_seq(i)
+        $type_string = 'issssssssssssssssssssssisiisiiiiisiiiiisdsssssdsisiiiisssi';
         $placeholder_count = substr_count($insert_query, '?');  // 검증 1
         $type_count = strlen($type_string);                      // 검증 2
-        $var_count = 55;                                         // 검증 3
+        $var_count = 58;                                         // 검증 3
 
         if ($placeholder_count !== $type_count || $type_count !== $var_count) {
             error_log("🔴 bind_param 개수 불일치! placeholder=$placeholder_count, type=$type_count, var=$var_count");
@@ -586,7 +596,8 @@ try {
             $spec_type, $spec_material, $spec_size, $spec_sides, $spec_design,
             $quantity_value, $quantity_unit, $quantity_sheets, $quantity_display,
             $price_supply, $price_vat, $price_vat_amount, $data_version,
-            $shipping_fee_type
+            $shipping_fee_type, $shipping_bundle_type,
+            $order_group_id, $order_group_seq_counter
         );
         
         if (mysqli_stmt_execute($stmt)) {

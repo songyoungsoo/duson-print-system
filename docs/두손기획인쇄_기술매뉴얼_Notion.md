@@ -1,6 +1,6 @@
 # 두손기획인쇄 기술 매뉴얼
 
-> **문서 기준일**: 2026-02-22 | **버전**: 1.0 | **분류**: 사내용 (비공개)
+> **문서 기준일**: 2026-02-24 | **버전**: 2.0 | **분류**: 사내용 (비공개)
 > 
 > 이 문서는 두손기획인쇄 인쇄 주문 시스템의 **프로그래머 납품용 기술 매뉴얼**입니다.
 > "프로그래머가 제작 후 납품한다는 개념"으로, 코드 중심의 기술적 상세(JS 트리거, AJAX 엔드포인트, DB 테이블, 파일 경로)를 담습니다.
@@ -1900,6 +1900,725 @@ CREATE TABLE knowledge_base (
 
 ---
 
+
+## Ch9. 결제 시스템 (KG이니시스)
+
+### 9.1 시스템 개요
+
+KG이니시스 표준결제(PC 웹) 연동. 카드결제 중심, 팝업 방식.
+
+| 항목 | 값 |
+|------|-----|
+| **PG사** | KG이니시스 |
+| **상점 MID** | `dsp1147479` (운영) / `INIpayTest` (테스트) |
+| **도메인** | `https://dsp114.co.kr` |
+| **결제 방식** | 팝업 (popup) |
+
+### 9.2 설정 파일
+
+| 파일 | 용도 |
+|------|------|
+| `payment/inicis_config.php` | 메인 설정 (환경 자동 감지) |
+| `payment/config.php` | 레거시 설정 (하위 호환) |
+| `payment/README_PAYMENT.md` | 설정 가이드 |
+
+### 9.3 환경 자동 감지
+
+```php
+// inicis_config.php — SERVER_NAME 기반 자동 전환
+if (strpos($_SERVER['SERVER_NAME'], 'dsp114.co.kr') !== false) {
+    define('INICIS_TEST_MODE', false);  // 운영 모드
+    $returnUrl = "https://dsp114.co.kr/payment/inicis_return.php";
+} else {
+    define('INICIS_TEST_MODE', true);   // 테스트 모드
+    $returnUrl = "http://localhost/payment/inicis_return.php";
+}
+```
+
+> ⚠️ localhost에서 운영 모드를 활성화하면 실제 결제가 발생합니다. 절대 금지.
+
+### 9.4 결제 흐름 (팝업 처리)
+
+```
+1. inicis_request.php → 결제 요청 (팝업 열림)
+2. 이니시스 결제창 (카드사 인증)
+3-a. 결제 완료 → inicis_return.php → 팝업 닫기 + 부모창 success.php 이동
+3-b. 결제 취소 → inicis_close.php → 팝업 닫기 + 부모창 OrderComplete 이동
+```
+
+**팝업/iframe 자동 감지 로직** (`inicis_return.php`, `inicis_close.php`):
+
+```javascript
+if (window.opener && !window.opener.closed) {
+    window.opener.location.href = redirectUrl;
+    window.close();
+} else if (window.parent && window.parent !== window) {
+    window.parent.location.href = redirectUrl;
+} else {
+    window.location.href = redirectUrl;
+}
+```
+
+### 9.5 택배비 선불 합산 결제
+
+택배 선불 주문의 경우, 인쇄비에 택배비(+VAT)를 합산하여 결제합니다.
+
+```php
+// inicis_request.php — 결제 금액 산출
+$price = $money_5;  // 인쇄비 (VAT 포함)
+if ($logen_fee_type === '선불' && $logen_delivery_fee > 0) {
+    $price += $logen_delivery_fee + round($logen_delivery_fee * 0.1);  // +택배비+VAT
+}
+```
+
+### 9.6 관리자 알림 이메일
+
+카드결제 완료 시 관리자(`dsp1830@naver.com`)에게 자동 이메일 알림 발송.
+
+**발송 조건**: 결제 성공 (`resultCode = '0000'` 또는 `'00'`) + 주문 상태 업데이트 성공
+
+**이메일 내용**: 주문번호, 결제금액, 결제수단, 거래번호(TID), 주문자명, 연락처, 결제시각, 관리자 페이지 바로가기 링크
+
+```php
+// mailer() 함수 사용
+$mail_result = mailer(
+    '두손기획인쇄',           // 발신자명
+    'dsp1830@naver.com',      // 발신 이메일
+    $admin_email,              // 수신 이메일
+    $admin_subject,            // 제목
+    $admin_body,               // 본문 (HTML)
+    1,                         // 타입: 1=HTML
+    ""                         // 첨부파일: 빈 문자열 필수!
+);
+```
+
+### 9.7 테스트 카드 번호 (테스트 모드 전용)
+
+| 은행 | 카드번호 | 유효기간 | CVC |
+|------|----------|----------|-----|
+| 신한 | 9410-1234-5678-1234 | 임의 미래일 | 123 |
+| 국민 | 9430-1234-5678-1234 | 임의 미래일 | 123 |
+| 삼성 | 9435-1234-5678-1234 | 임의 미래일 | 123 |
+
+### 9.8 운영 배포 체크리스트
+
+- [ ] `INICIS_TEST_MODE = false` 설정 (운영 서버만)
+- [ ] `dsp114.co.kr` 도메인 확인 (`config.env.php`)
+- [ ] 소액 테스트 결제 (100~1,000원)
+- [ ] 로그 확인 (`/payment/logs/`)
+- [ ] DB `payment_inicis` 테이블 업데이트 확인
+
+---
+
+## Ch10. 배송 추정 시스템
+
+### 10.1 시스템 개요
+
+택배 시 **무게 추정 + 박스수/택배비 자동 계산** 시스템. 관리자 페이지(post_list52, delivery_manager)에서는 자동 계산값을 기본 표시하고, 관리자가 수정 가능. 주문 페이지/관리자 OrderView에서는 무게만 추정 표시.
+
+| 항목 | 값 |
+|------|-----|
+| **공통 모듈** | `includes/ShippingCalculator.php` |
+| **AJAX API** | `includes/shipping_api.php` |
+| **주문 페이지** | `mlangorder_printauto/OnlineOrder_unified.php` (고객용) |
+| **관리자 OrderView** | `mlangorder_printauto/OrderFormOrderTree.php` |
+| **관리자 주문목록** | `admin/mlangprintauto/orderlist.php` (배송 모달) |
+| **로젠택배 관리(구)** | `shop_admin/post_list52.php` |
+| **로젠택배 관리(신)** | `shop_admin/delivery_manager.php` |
+| **DB 테이블** | `shipping_rates` (요금표), `mlangorder_printauto` (logen_* 컬럼) |
+
+### 10.2 무게 계산 공식
+
+```
+용지무게(g) = 평량(gsm) × 절당면적(m²) × 매수
+코팅가산: 유광/무광 ×1.04, 라미네이팅 ×1.12
+총무게 = 종이무게 (부자재 제외)
+```
+
+> 부자재 무게는 제외 — 용지 무게만으로 계산 (2026-02-23 확정).
+
+### 10.3 박스 분리 기준
+
+모든 제품 공통: **20kg 초과 시 박스 분리**. 20kg 이하는 무조건 1박스.
+
+```php
+$boxes = max(1, (int)ceil($totalWeightKg / 20));
+```
+
+### 10.4 봉투 택배비 계산 (펼침면 크기 기반)
+
+봉투는 다른 제품과 달리 **펼침면 크기 × gsm**으로 무게 계산 후 택배비 산출.
+
+**봉투별 펼침면 사이즈:**
+
+| 봉투 종류 | 펼침면 (mm) | 기본 평량 | 비고 |
+|----------|------------|----------|------|
+| 대봉투 | 510 × 387 | 120gsm | 로젠 특약 3,500원/box |
+| 소봉투 | 238 × 262 | 100gsm | 무게별 차등 요금 |
+| A4자켓봉투 | 262 × 238 | 100gsm | 무게별 차등 요금 |
+
+**택배비 결정 로직:**
+
+```
+1. 무게 = gsm × (가로mm/1000) × (세로mm/1000) × 수량 ÷ 1000 (kg)
+2. 박스 = ceil(무게 / 20)  ← 20kg 초과 시 분리
+3. 대봉투: 특약 3,500원 × 박스수 (로젠 계약)
+4. 소봉투/자켓: 무게별 차등 × 박스수
+   ≤3kg: 3,000원, ≤10kg: 3,500원, ≤15kg: 4,000원, ≤20kg: 5,000원, >20kg: 6,000원
+```
+
+### 10.5 전단지 규격별 택배비 룩업
+
+전단지는 규격 × 연수로 고정 룩업:
+
+| 규격 | 박스/연 | 택배비/연 | 비고 |
+|------|--------|----------|------|
+| A6/B6 | 1 | 4,000원 | |
+| A5 | 1 | 6,000원 | |
+| A4 | 1 | 6,000원 | 0.5연(2000매) 이하 = 특약 3,500원 |
+| B5(16절) | 2 | 7,000원 | 16절특약 3,500원/box 고정 |
+| B4(8절)/A3 | 2 | 12,000원 | |
+
+### 10.6 ShippingCalculator 메서드
+
+| 메서드 | 용도 | 입력 |
+|--------|------|------|
+| `estimateFromCart($cartItems)` | 고객 주문 페이지 (AJAX) | 장바구니 배열 |
+| `estimateFromOrder($orderData)` | 관리자 주문 상세/목록 | DB 주문 row |
+| `loadRates($db)` | DB 요금표 로드 (캐싱) | DB 커넥션 |
+| `getRatesForDisplay($db)` | 요금표 반환 | DB 커넥션 |
+
+### 10.7 DB 테이블: shipping_rates
+
+```sql
+CREATE TABLE shipping_rates (
+    id INT AUTO_INCREMENT PRIMARY KEY,
+    rate_group VARCHAR(50) NOT NULL,  -- 'logen_weight' 또는 'logen_16'
+    label VARCHAR(100),
+    max_kg DECIMAL(5,1) NOT NULL,
+    fee INT NOT NULL,
+    sort_order INT DEFAULT 0,
+    is_active TINYINT(1) DEFAULT 1,
+    updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP
+);
+```
+
+초기 데이터: `logen_weight` (3kg/3000, 10kg/3500, 15kg/4000, 20kg/5000, 23kg/6000), `logen_16` (16절 고정 3500원)
+
+### 10.8 관리자 화면 동작
+
+**추정 영역** (자동 계산, 읽기 전용):
+
+```
+📦 배송 정보 [추정]
+예상 무게: 약 12.7kg
+※ 추정치이며 실제와 다를 수 있습니다.
+```
+
+**확정 영역** (관리자 수동 입력):
+
+```
+운임구분: [착불/선불] 선택
+박스 수량: [ ] 직접 입력
+택배비:   [ ] 직접 입력
+송장번호: [ ] 직접 입력
+💾 저장 → shipping_api.php?action=logen_save
+```
+
+### 10.9 주문 페이지 동작 (고객용)
+
+```
+배송방법 "택배" 선택 → 운임구분(착불/선불) 라디오 표시
+  ├─ 착불: 기본값, 추가 정보 없음
+  └─ 선불: AJAX로 무게 추정 표시
+      ├─ "⚠ 추정" 배지 + "실제 무게는 다를 수 있습니다"
+      ├─ 추정 무게: 약 X.Xkg
+      └─ 📞 02-2632-1830 전화 안내
+```
+
+### 10.10 택배 선불 고객 프로세스
+
+관리자가 택배비를 확정하면 고객에게 자동 표시 + 결제 가능:
+
+```
+고객: 주문 페이지에서 택배 선불 선택 → 주문완료
+  ↓ OrderComplete: "택배비 확정 대기" + 결제버튼 비활성 + 30초 폴링
+관리자: 대시보드에서 택배비 입력 → logen_save → 고객 이메일 자동 발송
+  ↓ 이메일: 택배비 내역 + "마이페이지에서 결제하기" 버튼 링크
+고객: 마이페이지 → 주문상세 → "결제하기" 버튼 (카드/무통장 선택)
+  ↓ 카드: /payment/inicis_request.php (인쇄비+택배비 합산 결제)
+  ↓ 무통장: 계좌번호 표시 (국민/신한/농협)
+```
+
+**적용 위치 6곳:**
+
+| 위치 | 파일 | 동작 |
+|------|------|------|
+| 주문 페이지 | `OnlineOrder_unified.php` | 선불 선택 시 적색 배지 안내 |
+| 주문완료 페이지 | `OrderComplete_universal.php` | 미확정 시 결제버튼 비활성 + 30초 AJAX 폴링 |
+| 마이페이지 주문목록 | `mypage/index.php` | 미결제 주문 알림 + "+택배 N원" 표시 |
+| 마이페이지 주문상세 | `mypage/order_detail.php` | 결제 섹션 (카드/무통장) + 택배비 대기 안내 |
+| 이니시스 결제 | `payment/inicis_request.php` | 선불 택배비(+VAT) 자동 합산 결제 |
+| 관리자 택배비 저장 | `includes/shipping_api.php` | 이메일 발송 + 마이페이지 결제 링크 포함 |
+
+### 10.11 핵심 규칙
+
+- 택배비(선불) 확정 시 합계금액에 합산 표시 — DB `money_5`는 수정하지 않고 화면 표시만
+- 품목 계산 코드와 얽히면 안 됨 — `PriceCalculationService` 수정 금지
+- 무게만 추정 — 고객/관리자 모두 무게 추정값만 표시
+- "추정"임을 반드시 명시 — 실제 무게와 다를 수 있음
+- 확정 정보는 관리자 수동 입력 — 박스수/택배비/송장번호
+
+---
+
+## Ch11. 회원 인증 시스템
+
+### 11.1 4개 독립 인증 레이어
+
+| # | 레이어 | 파일 | DB 테이블 |
+|---|--------|------|-----------|
+| 1 | 사용자 인증 | `includes/auth.php`, `member/login_unified.php` | `users` (bcrypt), `member` (레거시) |
+| 2 | 관리자 인증 | `admin/includes/admin_auth.php` | `admin_users` |
+| 3 | 주문 관리 인증 | `sub/checkboard_auth.php` | 주문번호 + 비밀번호 |
+| 4 | 고객 주문 조회 | `sub/my_orders_auth.php` | 전화번호 + 비밀번호 |
+
+### 11.2 비밀번호 저장 표준
+
+**Bcrypt (신규)**:
+
+```php
+// 신규 비밀번호는 항상 bcrypt
+$hash = password_hash($password, PASSWORD_DEFAULT);
+// 결과: $2y$10$... (60자)
+```
+
+**Plaintext 지원 + 자동 업그레이드 (레거시)**:
+
+```php
+if (strlen($stored_password) === 60 && strpos($stored_password, '$2y$') === 0) {
+    // Bcrypt 검증
+    $login_success = password_verify($password, $stored_password);
+} else {
+    // Plaintext 검증 + 자동 업그레이드
+    if ($password === $stored_password) {
+        $login_success = true;
+        $new_hash = password_hash($password, PASSWORD_DEFAULT);
+        // UPDATE users SET password = $new_hash WHERE id = ?
+    }
+}
+```
+
+> 모든 로그인 포인트(헤더, 주문 페이지, 마이페이지)에서 동일한 검증 로직을 사용해야 합니다. 불일치 시 같은 사용자가 특정 페이지에서 로그인 불가 현상 발생.
+
+### 11.3 세션 관리
+
+| 항목 | 값 |
+|------|-----|
+| 세션 유효기간 | 8시간 |
+| Remember Token | 30일 (`remember_tokens` 테이블) |
+| 장바구니 세션 보존 | 로그인/회원가입 시 hidden field로 session_id 전달 |
+
+### 11.4 장바구니 (shop_temp) 시스템
+
+```
+1. 제품 페이지 "장바구니 담기" → shop_temp INSERT
+2. 장바구니/주문 페이지 → shop_temp 조회 (session_id로)
+3. "주문완료" 클릭 → mlangorder_printauto INSERT + shop_temp DELETE
+```
+
+**세션 만료 시**: 이전 session_id와 달라서 장바구니 조회 불가. 데이터는 DB에 남아있음 (orphaned).
+
+**자동 정리**: `shop_temp_helper.php`의 `cleanupOldCartItems()` — 장바구니 조회 시 7일 이상 된 데이터 자동 삭제.
+
+### 11.5 member → users 마이그레이션 완료
+
+모든 활성 PHP 코드가 `users` 테이블을 primary로 사용. `member` 테이블은 backward compatibility를 위해 유지 (이중 쓰기).
+
+**의도적으로 member 참조를 유지하는 파일:**
+
+| 파일 | 이유 |
+|------|------|
+| `member/register_process.php` | users INSERT + member 이중 INSERT |
+| `member/change_password.php` | users UPDATE + member sync UPDATE |
+| `member/password_reset.php` | users UPDATE + member sync UPDATE |
+| `admin/AdminConfig.php` | users UPDATE + member sync UPDATE |
+| `bbs/PointChick.php` | member.money (포인트 시스템, users에 컬럼 없음) |
+
+### 11.6 핵심 규칙
+
+- 모든 로그인 포인트에서 bcrypt + plaintext 자동 업그레이드 동일 로직 사용
+- 로그인 시 장바구니 세션 보존 필수 (hidden field로 session_id 전달)
+- bcrypt만 지원하면 레거시 사용자 로그인 불가
+- 자동 업그레이드 누락 시 사용자가 plaintext 상태로 영구 고정
+
+---
+
+## Ch12. 마이페이지
+
+### 12.1 파일 구조
+
+| 파일 | 용도 |
+|------|------|
+| `mypage/index.php` | 주문 목록 (상태 필터, 페이지네이션) |
+| `mypage/order_detail.php` | 주문 상세 + 결제 섹션 |
+| `mypage/profile.php` | 회원 정보 수정 (사업자 정보 포함) |
+
+### 12.2 주문 상태 — OrderStyle 기반 통일
+
+마이페이지는 `OrderStyle` 컬럼 기반으로 상태를 표시합니다 (SSOT). `level` 컬럼은 사용하지 않습니다.
+
+`getCustomerStatus()` 함수가 OrderStyle 11가지를 고객용 5단계로 그룹핑:
+
+| 고객 상태 | OrderStyle 값 |
+|----------|--------------|
+| 주문접수 | 0, 1, 2 |
+| 접수완료 | 3, 4 |
+| 작업중 | 5, 6, 7, 9, 10 |
+| 작업완료 | 8 |
+| 배송중 | 송장번호 존재 시 |
+
+**상태 변경 경로**: `dashboard/orders/view.php` → 상태 드롭다운 → POST `/dashboard/api/orders.php?action=update` → `UPDATE mlangorder_printauto SET OrderStyle = ?` → 마이페이지에 즉시 반영
+
+### 12.3 결제 조건 (order_detail.php)
+
+| 조건 | 동작 |
+|------|------|
+| `OrderStyle IN ('2','3','4')` (미결제) | 결제 섹션 표시 |
+| 선불 아닌 경우 | 바로 결제 가능 |
+| 선불 + `logen_delivery_fee > 0` | 택배비 확정 → 결제 가능 |
+| 선불 + 택배비 미확정 | "택배비 확정 대기중" 안내 표시 |
+
+### 12.4 프로필 사업자 상세주소 레거시 파싱
+
+`business_address`에 `|||` 구분자 없이 저장된 레거시 데이터를 자동 분리:
+
+```
+입력: "[07301] 서울 영등포구 영등포로36길 9 1층 두손기획인쇄 (영등포동4가)"
+
+파싱 결과:
+  메인 주소(readonly): 서울 영등포구 영등포로36길 9
+  상세주소(editable):  1층 두손기획인쇄
+  참고항목(editable):  (영등포동4가)
+```
+
+도로명주소 패턴(`/^(.+(?:로|길|가)\s*\d+(?:-\d+)?)\s+(.+)$/`)으로 자동 분리. 페이지 로드 시 `|||` 없는 레거시 데이터를 즉시 정규 형식으로 변환.
+
+---
+
+## Ch13. 영문 버전 (English Version)
+
+### 13.1 시스템 개요
+
+해외 고객용 영문 주문 사이트. 한국어 사이트와 동일한 DB/백엔드를 공유하며, 프론트엔드만 영문화.
+
+| 항목 | 값 |
+|------|-----|
+| **경로** | `/en/` (로컬: `http://localhost/en/`, 프로덕션: `https://dsp114.co.kr/en/`) |
+| **대시보드 토글** | 설정 → 영문 버전 표시 (ON/OFF) → `site_settings.en_version_enabled` |
+| **환율 API** | `/en/includes/exchange_rate.php` (USD 실시간 환율) |
+
+### 13.2 파일 구조
+
+```
+/en/
+├── includes/
+│   ├── nav.php              ← 공유 네비게이션 (탑 네비 + 9개 제품 바)
+│   └── exchange_rate.php    ← USD 환율 조회
+├── index.php                ← EN 홈페이지
+├── cart.php                 ← 장바구니
+├── checkout.php             ← 주문서 작성
+├── order_complete.php       ← 주문 완료
+└── products/
+    ├── index.php            ← 제품 목록
+    ├── order.php            ← 8개 제품 주문 (type 파라미터)
+    └── order_sticker.php    ← 스티커 전용 (수식 기반 가격)
+```
+
+### 13.3 공유 네비게이션 (en/includes/nav.php)
+
+모든 EN 페이지에서 `include`하는 자체 포함형 컴포넌트 (CSS + HTML + JS 일체):
+
+- **탑 네비**: 로고, Products, Cart, Why Us, Contact, EN|한국어 전환, Get Free Quote CTA
+- **제품 바**: 9개 제품 버튼 + Cart (가로 스크롤, 모바일 반응형)
+- **Active 상태**: `$_en_current_page` 변수로 현재 제품 하이라이트
+- **CSS 클래스 접두어**: `.en-nav-*` (탑 네비), `.en-pbar-*` (제품 바) — 한국어 사이트 CSS와 충돌 방지
+
+```php
+// 사용법 (각 페이지에서)
+<?php $_en_current_page = 'namecard'; include __DIR__ . '/../includes/nav.php'; ?>
+```
+
+### 13.4 주문 플로우
+
+```
+홈페이지 (/en/) → 제품 선택 (제품 바 또는 카드)
+  → 제품 주문 페이지 (order.php?type=namecard)
+    → 옵션 cascade 선택 (Type→Paper→PrintSide→Quantity→Design)
+    → 가격 표시 (₩ KRW + ≈ $ USD)
+    → Add to Cart → 장바구니 (cart.php)
+      → Proceed to Order → 체크아웃 (checkout.php)
+        → 주문자 정보 + 배송주소 + 결제방법 입력
+        → Place Order → 주문 완료 (order_complete.php)
+```
+
+### 13.5 백엔드 공유 (한국어 사이트와 동일)
+
+| 기능 | 공유 API |
+|------|----------|
+| 옵션 로드 | `/mlangprintauto/{product}/get_*.php` |
+| 가격 계산 | `/mlangprintauto/{product}/calculate_price_ajax.php` |
+| 장바구니 | `/mlangprintauto/{product}/add_to_basket.php` |
+| 주문 처리 | `/mlangorder_printauto/ProcessOrder_unified.php` |
+| DB 테이블 | `shop_temp` (장바구니), `mlangorder_printauto` (주문) |
+
+### 13.6 대시보드 EN 토글
+
+| 파일 | 역할 |
+|------|------|
+| `dashboard/settings/index.php` | 토글 UI |
+| `dashboard/api/settings.php` | `en_version_enabled` 키 whitelist |
+| `includes/header.php` | `site_settings` 조회 → EN 버튼 조건부 표시 |
+| `includes/header-ui.php` | 동일 조건부 표시 |
+
+### 13.7 제품 바 버튼 매핑
+
+| 버튼 | key | 링크 |
+|------|-----|------|
+| Stickers | sticker | `/en/products/order_sticker.php` |
+| Flyers | inserted | `/en/products/order.php?type=inserted` |
+| Business Cards | namecard | `/en/products/order.php?type=namecard` |
+| Envelopes | envelope | `/en/products/order.php?type=envelope` |
+| Catalogs | cadarok | `/en/products/order.php?type=cadarok` |
+| Posters | littleprint | `/en/products/order.php?type=littleprint` |
+| NCR Forms | ncrflambeau | `/en/products/order.php?type=ncrflambeau` |
+| Gift Vouchers | merchandisebond | `/en/products/order.php?type=merchandisebond` |
+| Magnetic Stickers | msticker | `/en/products/order.php?type=msticker` |
+
+### 13.8 핵심 규칙
+
+- `formData.append('action', 'add_to_basket')` — EN order.php에서 장바구니 API 호출 시 반드시 포함
+- `$_en_current_page` 변수를 `include nav.php` 앞에 설정
+- CSS 클래스는 `en-nav-*`, `en-pbar-*` 접두어 사용 (한국어 사이트 충돌 방지)
+- sticky sidebar `top: 128px` (64px 네비 + 44px 제품 바 + 20px 간격)
+- 한국어 네비 `/includes/nav.php` 수정 금지 — EN 네비는 별도 파일
+- 드롭다운 옵션 번역 없음 — "Option labels are shown in Korean" 안내 표시
+
+---
+
+## Ch14. 직원 실시간 채팅
+
+### 14.1 시스템 개요
+
+영업시간(09:00~18:30) 중 고객과 직원 간 실시간 채팅 위젯. 주황색 테마.
+
+| 항목 | 값 |
+|------|-----|
+| **위젯 파일** | `includes/chat_widget.php` |
+| **JS 엔진** | `chat/chat.js` (동적 위젯 생성) |
+| **API** | `chat/api.php` |
+| **관리자 페이지** | `chat/admin.php` |
+| **DB 테이블** | `chat_rooms`, `chat_messages`, `chat_admins` |
+| **표시 조건** | 09:00~18:30 (footer.php 통합 토글) |
+| **테마** | 주황색 (#F97316) — 보라색 AI 챗봇과 구분 |
+
+### 14.2 DB 스키마
+
+**chat_rooms** (채팅방):
+
+| 컬럼 | 타입 | 설명 |
+|------|------|------|
+| `id` | INT PK | 채팅방 ID |
+| `room_key` | VARCHAR(64) UNIQUE | 고유 키 (UUID) |
+| `customer_name` | VARCHAR(100) | 고객명 |
+| `customer_email` | VARCHAR(255) | 고객 이메일 |
+| `status` | ENUM('active','closed','archived') | 상태 |
+| `created_at` | TIMESTAMP | 생성일 |
+| `updated_at` | TIMESTAMP | 수정일 |
+| `closed_at` | TIMESTAMP NULL | 종료일 |
+
+**chat_messages** (메시지):
+
+| 컬럼 | 타입 | 설명 |
+|------|------|------|
+| `id` | INT PK | 메시지 ID |
+| `room_id` | INT FK | 채팅방 ID |
+| `sender_type` | ENUM('customer','admin','system') | 발신자 유형 |
+| `sender_name` | VARCHAR(100) | 발신자명 |
+| `message` | TEXT | 메시지 내용 |
+| `is_read` | TINYINT(1) | 읽음 여부 |
+| `created_at` | TIMESTAMP | 발신 시각 |
+
+**chat_admins** (관리자):
+
+| 컬럼 | 타입 | 설명 |
+|------|------|------|
+| `id` | INT PK | 관리자 ID |
+| `username` | VARCHAR(50) UNIQUE | 로그인 ID |
+| `password` | VARCHAR(255) | bcrypt 해시 |
+| `name` | VARCHAR(100) | 표시명 |
+| `is_active` | TINYINT(1) | 활성 여부 |
+| `last_login` | TIMESTAMP NULL | 마지막 로그인 |
+
+### 14.3 API 엔드포인트 (chat/api.php)
+
+| action | Method | 용도 |
+|--------|--------|------|
+| `create_room` | POST | 채팅방 생성 (고객명/이메일) |
+| `send_message` | POST | 메시지 전송 |
+| `get_messages` | GET | 메시지 목록 조회 (room_key, since_id) |
+| `get_rooms` | GET | 채팅방 목록 (관리자용) |
+| `close_room` | POST | 채팅방 종료 |
+| `mark_read` | POST | 메시지 읽음 처리 |
+
+### 14.4 고객 위젯 동작
+
+```
+1. chat.js가 DOM에 위젯 동적 생성 (주황색 원형 버튼)
+2. 클릭 → 이름/이메일 입력 폼
+3. 입력 완료 → create_room API → 채팅 시작
+4. 메시지 입력 → send_message API
+5. 3초 간격 폴링 → get_messages API (since_id로 새 메시지만)
+6. 관리자 응답 → 실시간 표시
+```
+
+### 14.5 관리자 페이지 (chat/admin.php)
+
+```
+좌측: 채팅방 목록 (active/closed 필터, 안 읽은 메시지 배지)
+우측: 선택된 채팅방 메시지 + 답변 입력
+상단: 관리자 로그인/로그아웃
+```
+
+- 5초 간격 자동 새로고침 (새 메시지/새 채팅방 감지)
+- 채팅방 종료 시 고객에게 시스템 메시지 표시
+- 관리자 인증: `chat_admins` 테이블 (bcrypt)
+
+### 14.6 footer.php 통합 토글
+
+직원 채팅과 AI 챗봇은 `footer.php`의 `toggleWidgets()` 함수에서 시간대별 배타적 전환:
+
+```javascript
+function toggleWidgets() {
+    var biz = isBusinessHours();  // 09:00~18:30
+    var staff = document.querySelector('.chat-widget');   // chat.js 동적 생성
+    var ai = document.getElementById('ai-chatbot-widget'); // 정적 HTML
+    if (staff) staff.style.display = biz ? '' : 'none';
+    if (ai) ai.style.display = biz ? 'none' : 'block';
+}
+setInterval(toggleWidgets, 60000);  // 60초 간격
+```
+
+---
+
+## Ch15. AI 챗봇 위젯 (야간/당번)
+
+### 15.1 시스템 개요
+
+영업시간(09:00~18:30) 외 시간에 자동으로 표시되는 AI 챗봇 위젯. 보라색 테마. DB 기반 실시간 가격 조회 제공.
+
+| 항목 | 값 |
+|------|-----|
+| **위젯 파일** | `/includes/ai_chatbot_widget.php` |
+| **API 엔드포인트** | `/api/ai_chat.php` |
+| **ChatbotService** | `/v2/src/Services/AI/ChatbotService.php` (직접 require) |
+| **지식 베이스** | `/v2/src/Services/AI/ChatbotKnowledge.php` |
+| **표시 조건** | 18:30 이후 ~ 09:00 이전 (footer.php 통합 토글) |
+| **테마** | 보라색 그라디언트 (#6366f1) — 주황색 직원 채팅과 구분 |
+
+### 15.2 API 구조 (api/ai_chat.php)
+
+| action | Method | 용도 |
+|--------|--------|------|
+| `chat` | POST | 메시지 전송 → ChatbotService.chat() 호출 |
+| `reset` | POST | 대화 세션 초기화 |
+
+- `V2_ROOT` 상수 정의 후 ChatbotService 직접 require (composer autoloader 불필요)
+- `.env` 파일의 `GEMINI_API_KEY` 로드 (없어도 DB 기반 가격 조회는 정상 동작)
+- Same-origin Referer 체크 (CSRF 대체)
+- 세션 기반 대화 상태 유지 (`$_SESSION['chatbot']`)
+
+### 15.3 대화 흐름
+
+```
+제품 선택 (빠른 버튼 or 텍스트)
+  → 종류 선택 (클릭형 버튼)
+    → 용지 선택
+      → 수량 선택
+        → 인쇄면 선택
+          → 디자인 선택
+            → 가격 표시 (VAT 포함)
+```
+
+### 15.4 위젯 UI 구성
+
+- **토글 버튼**: 79×79px 보라색 원형 (모바일 63×63px), "야간/당번" 라벨
+- **채팅 창**: 310×420px, position:fixed, 16px border-radius
+- **드래그 이동**: 헤더 바를 마우스/터치로 드래그하여 채팅창 자유 이동 (뷰포트 경계 제한)
+- **빠른 선택 버튼**: 스티커/라벨, 전단지/리플렛, 명함/쿠폰, 자석스티커, 봉투 | 카다록, 포스터, 양식지, 상품권 (2줄 배치)
+- **클릭형 선택지**: 번호 입력 대신 클릭으로 옵션 선택 (`.ai-opt-btn` 버튼), 선택 후 이전 버튼 비활성화
+- **스크롤 격리**: `overscroll-behavior: contain` — 채팅창 스크롤 끝 도달 시 바깥 페이지 스크롤 전파 방지
+- **메시지 버블**: 사용자(보라색 우측) / 봇(회색 좌측, "야간당번" 아바타)
+
+### 15.5 한국어 조사 자동 판별
+
+`getParticle()` 헬퍼 — 마지막 글자 받침 유무로 을/를 자동 선택:
+
+```php
+private function getParticle(string $text, string $withBatchim, string $withoutBatchim): string
+{
+    $lastChar = mb_substr($text, -1);
+    $code = mb_ord($lastChar);
+    if ($code >= 0xAC00 && $code <= 0xD7A3) {
+        return (($code - 0xAC00) % 28 === 0) ? $withoutBatchim : $withBatchim;
+    }
+    return $withBatchim;
+}
+// 사용: "규격을 선택해주세요" vs "수량을" 자동 처리
+```
+
+### 15.6 지식 기반 Q&A
+
+제품 가격 조회 외에 인쇄 가이드/규약/디자인비 등의 질문에도 AI가 답변.
+
+```
+사용자 메시지 → chat()
+  ├─ 제품 키워드 감지 → 가격 조회 플로우 (DB 기반)
+  ├─ 지식 키워드 감지 (isKnowledgeQuestion) → callAiForFreeQuestion → Gemini API
+  └─ 둘 다 아님 → 품목 선택 메뉴 표시
+```
+
+**지식 베이스 컨텐츠** (`ChatbotKnowledge.php`):
+
+- 회사 정보 (연락처, 계좌, 운영시간, 주소)
+- 작업 규약 (교정 2회, 납기, 환불, 색상차이, 파일보관 등)
+- 디자인 비용표 (서식/카탈로그/전단지/포스터/명함/봉투/스티커/북디자인)
+- 파일 제출 안내 (포맷, 해상도, CMYK, 일러스트 윤곽선)
+- 인쇄물 규격 사이즈표 (32절~A2, 명함)
+
+### 15.7 NCR양식지 단계 순서
+
+NCR양식지의 챗봇 대화 단계는 제품 페이지 드롭다운 순서와 반드시 일치해야 합니다:
+
+```php
+// ChatbotService.php — NCR 단계 설정
+'ncrflambeau' => [
+    'steps' => ['style', 'section', 'tree', 'quantity', 'design'],
+    'stepLabels' => ['구분', '규격', '색상', '수량', '디자인'],
+],
+```
+
+> stepLabels는 제품 페이지 실제 드롭다운 라벨과 일치시킬 것. 불일치 시 사용자 혼란 발생.
+
+### 15.8 핵심 규칙
+
+- `.env` 파일 없어도 동작해야 함 — DB 연결만으로 가격 조회 가능
+- v2 composer autoloader 의존 금지 — 직접 `require_once`로 로드
+- 에러 발생 시 "전화 문의" 안내로 graceful fallback
+- 세션 쿠키로 대화 상태 유지 (페이지 이동해도 대화 계속)
+- 선택지는 클릭형 버튼으로 제공 (API `options` 배열 → 프론트 `.ai-opt-btn` 렌더링)
+- `detectProduct()` 키워드 순서: `msticker`를 `sticker`보다 반드시 먼저 배치 (부분문자열 매칭 방지)
+- 지식 베이스(`ChatbotKnowledge.php`) 수정 시 Gemini 시스템 프롬프트 토큰 한도 내 유지
+
 ## 부록. 주요 규칙 및 주의사항
 
 ### PHP 8.2 호환성
@@ -1943,4 +2662,4 @@ if (isset($db) && $db) { mysqli_close($db); }  // 페이지 끝에서 정리
 
 ---
 
-*두손기획인쇄 기술 매뉴얼 v1.0 | 2026-02-22*
+*두손기획인쇄 기술 매뉴얼 v2.0 | 2026-02-24*

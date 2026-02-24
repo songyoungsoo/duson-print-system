@@ -1,8 +1,7 @@
 <?php
-// 채팅 API - 메시지 전송, 조회, 이미지 업로드
+// 채팅 API - 메시지 전송, 조회, 이미지 업로드, AI 긴급대응
 error_reporting(E_ALL);
-ini_set('display_errors', 1);
-
+ini_set('display_errors', 0); // 프로덕션 안전
 require_once 'config.php';
 
 $action = $_GET['action'] ?? $_POST['action'] ?? '';
@@ -105,63 +104,67 @@ function getOrCreateRoom() {
     }
 }
 
-// 메시지 조회
+// 메시지 조회 + AI 긴급대응 체크 (고객 폴링에 피기백)
 function getMessages() {
     global $db;
-    $roomId = $_GET['room_id'] ?? 0;
-    $lastId = $_GET['last_id'] ?? 0;
-
+    $roomId = intval($_GET['room_id'] ?? 0);
+    $lastId = intval($_GET['last_id'] ?? 0);
     if (!$roomId) {
         jsonResponse(false, null, '채팅방 ID가 필요합니다.');
     }
-
+    // AI 긴급대응 체크 (메시지 조회 전에 실행)
+    checkAndTriggerAI($roomId);
     $query = "SELECT * FROM chatmessages
               WHERE roomid = ? AND id > ?
               ORDER BY createdat ASC";
-
     $stmt = mysqli_prepare($db, $query);
     mysqli_stmt_bind_param($stmt, 'ii', $roomId, $lastId);
     mysqli_stmt_execute($stmt);
     $result = mysqli_stmt_get_result($stmt);
-
     $messages = [];
     while ($row = mysqli_fetch_assoc($result)) {
         $messages[] = $row;
     }
-
     jsonResponse(true, $messages);
 }
 
-// 메시지 전송
+// 메시지 전송 + 타임스탬프 추적 + AI 퇴장 처리
 function sendMessage() {
     global $db;
     $user = getCurrentUser();
-
-    $roomId = $_POST['room_id'] ?? 0;
+    $roomId = intval($_POST['room_id'] ?? 0);
     $message = $_POST['message'] ?? '';
-    $senderId = $_POST['sender_id'] ?? $user['id']; // 전달된 ID 우선 사용
-    $senderName = $_POST['sender_name'] ?? $user['name']; // 전달된 이름 우선 사용
-
+    $senderId = $_POST['sender_id'] ?? $user['id'];
+    $senderName = $_POST['sender_name'] ?? $user['name'];
     if (!$roomId || !$message) {
         jsonResponse(false, null, '채팅방 ID와 메시지가 필요합니다.');
     }
+    // 관리자(staff) 메시지 시: AI가 활성 상태이면 퇴장 처리
+    $isStaff = (strpos($senderId, 'staff') === 0);
+    $isCustomer = (strpos($senderId, 'guest_') === 0);
+    if ($isStaff) {
+        deactivateAIIfActive($roomId);
+    }
 
+    // 메시지 INSERT
     $query = "INSERT INTO chatmessages (roomid, senderid, sendername, messagetype, message)
               VALUES (?, ?, ?, 'text', ?)";
-
     $stmt = mysqli_prepare($db, $query);
     mysqli_stmt_bind_param($stmt, 'isss', $roomId, $senderId, $senderName, $message);
-
     if (mysqli_stmt_execute($stmt)) {
         $messageId = mysqli_insert_id($db);
-
-        // 채팅방 업데이트 시간 갱신
-        $updateQuery = "UPDATE chatrooms SET updatedat = NOW() WHERE id = ?";
+        // 채팅방 업데이트 시간 갱신 + 발신자별 타임스탬프 업데이트
+        if ($isCustomer) {
+            $updateQuery = "UPDATE chatrooms SET updatedat = NOW(), last_customer_msg_at = NOW() WHERE id = ?";
+        } elseif ($isStaff) {
+            $updateQuery = "UPDATE chatrooms SET updatedat = NOW(), last_staff_msg_at = NOW() WHERE id = ?";
+        } else {
+            $updateQuery = "UPDATE chatrooms SET updatedat = NOW() WHERE id = ?";
+        }
         $updateStmt = mysqli_prepare($db, $updateQuery);
         mysqli_stmt_bind_param($updateStmt, 'i', $roomId);
         mysqli_stmt_execute($updateStmt);
-
-        jsonResponse(true, ['id' => $messageId, 'message' => $message]);
+        jsonResponse(true, ['id' => $messageId]);
     } else {
         jsonResponse(false, null, '메시지 전송 실패');
     }
@@ -517,4 +520,256 @@ function getUnreadRooms() {
 
     jsonResponse(true, ['rooms' => $rooms, 'total_unread' => $totalUnread]);
 }
+// ============================================================
+// AI 긴급대응 함수들
+// ============================================================
+
+/**
+ * 60초 무응답 감지 → AI 자동 응답 트리거
+ * getMessages() 폴링에 피기백으로 실행
+ */
+function checkAndTriggerAI($roomId) {
+    global $db;
+
+    // 1. 채팅방 AI 상태 확인
+    $roomQuery = "SELECT ai_active, last_customer_msg_at, last_staff_msg_at FROM chatrooms WHERE id = ? AND isactive = 1";
+    $roomStmt = mysqli_prepare($db, $roomQuery);
+    mysqli_stmt_bind_param($roomStmt, 'i', $roomId);
+    mysqli_stmt_execute($roomStmt);
+    $roomResult = mysqli_stmt_get_result($roomStmt);
+    $room = mysqli_fetch_assoc($roomResult);
+
+    if (!$room) return;
+
+    // AI가 이미 활성 상태이면 → 고객의 새 메시지에 AI가 응답
+    if ($room['ai_active'] == 1) {
+        handleAIConversation($roomId);
+        return;
+    }
+
+    // 2. 마지막 고객 메시지 시간 확인 (DB에서 직접 조회 — 정확성)
+    $lastCustQuery = "SELECT id, message, createdat FROM chatmessages 
+                      WHERE roomid = ? AND senderid LIKE 'guest_%' 
+                      ORDER BY createdat DESC LIMIT 1";
+    $lastCustStmt = mysqli_prepare($db, $lastCustQuery);
+    mysqli_stmt_bind_param($lastCustStmt, 'i', $roomId);
+    mysqli_stmt_execute($lastCustStmt);
+    $lastCustResult = mysqli_stmt_get_result($lastCustStmt);
+    $lastCustMsg = mysqli_fetch_assoc($lastCustResult);
+
+    if (!$lastCustMsg) return; // 고객 메시지 없으면 종료
+
+    // 3. 마지막 응답 시간 확인 (staff 또는 ai_bot)
+    $lastReplyQuery = "SELECT createdat FROM chatmessages 
+                       WHERE roomid = ? AND (senderid LIKE 'staff%' OR senderid = 'ai_bot') 
+                       ORDER BY createdat DESC LIMIT 1";
+    $lastReplyStmt = mysqli_prepare($db, $lastReplyQuery);
+    mysqli_stmt_bind_param($lastReplyStmt, 'i', $roomId);
+    mysqli_stmt_execute($lastReplyStmt);
+    $lastReplyResult = mysqli_stmt_get_result($lastReplyStmt);
+    $lastReply = mysqli_fetch_assoc($lastReplyResult);
+
+    // 마지막 응답이 고객 메시지 이후이면 → 이미 답변됨, 종료
+    if ($lastReply && strtotime($lastReply['createdat']) >= strtotime($lastCustMsg['createdat'])) {
+        return;
+    }
+
+    // 4. 60초 경과 확인
+    $elapsed = time() - strtotime($lastCustMsg['createdat']);
+    if ($elapsed < 60) return; // 아직 60초 안 됨
+
+    // 5. AI 진입!
+    activateAI($roomId, $lastCustMsg['message']);
+}
+
+/**
+ * AI 활성 상태에서 고객의 새 메시지에 AI가 응답
+ */
+function handleAIConversation($roomId) {
+    global $db;
+
+    // 마지막 AI 메시지 시간 확인
+    $lastAiQuery = "SELECT createdat FROM chatmessages 
+                    WHERE roomid = ? AND senderid = 'ai_bot' 
+                    ORDER BY createdat DESC LIMIT 1";
+    $lastAiStmt = mysqli_prepare($db, $lastAiQuery);
+    mysqli_stmt_bind_param($lastAiStmt, 'i', $roomId);
+    mysqli_stmt_execute($lastAiStmt);
+    $lastAiResult = mysqli_stmt_get_result($lastAiStmt);
+    $lastAiMsg = mysqli_fetch_assoc($lastAiResult);
+
+    if (!$lastAiMsg) return;
+
+    // AI 마지막 응답 이후 고객 메시지가 있는지 확인
+    $newCustQuery = "SELECT id, message FROM chatmessages 
+                     WHERE roomid = ? AND senderid LIKE 'guest_%' AND createdat > ? 
+                     ORDER BY createdat ASC LIMIT 1";
+    $newCustStmt = mysqli_prepare($db, $newCustQuery);
+    $aiTime = $lastAiMsg['createdat'];
+    mysqli_stmt_bind_param($newCustStmt, 'is', $roomId, $aiTime);
+    mysqli_stmt_execute($newCustStmt);
+    $newCustResult = mysqli_stmt_get_result($newCustStmt);
+    $newCustMsg = mysqli_fetch_assoc($newCustResult);
+
+    if (!$newCustMsg) return; // 새 고객 메시지 없음
+
+    // ChatbotService로 AI 응답 생성
+    $aiResponse = callChatbotService($newCustMsg['message']);
+    if ($aiResponse) {
+        insertAIMessage($roomId, $aiResponse);
+    }
+}
+
+/**
+ * AI 긴급대응 진입 — 인사 메시지 + 첫 응답
+ */
+function activateAI($roomId, $customerMessage) {
+    global $db;
+
+    // AI 활성화 플래그 설정
+    $updateQuery = "UPDATE chatrooms SET ai_active = 1 WHERE id = ?";
+    $updateStmt = mysqli_prepare($db, $updateQuery);
+    mysqli_stmt_bind_param($updateStmt, 'i', $roomId);
+    mysqli_stmt_execute($updateStmt);
+
+    // 인사 메시지
+    $greeting = "안녕하세요, 긴급대응입니다. 담당자 연결 전까지 제가 도와드리겠습니다.";
+    insertAIMessage($roomId, $greeting);
+
+    // ChatbotService로 고객 질문에 대한 AI 응답 생성
+    $aiResponse = callChatbotService($customerMessage);
+    if ($aiResponse) {
+        insertAIMessage($roomId, $aiResponse);
+    }
+}
+
+/**
+ * 관리자 응답 시 AI 퇴장
+ */
+function deactivateAIIfActive($roomId) {
+    global $db;
+
+    // AI 활성 상태인지 확인
+    $checkQuery = "SELECT ai_active FROM chatrooms WHERE id = ?";
+    $checkStmt = mysqli_prepare($db, $checkQuery);
+    mysqli_stmt_bind_param($checkStmt, 'i', $roomId);
+    mysqli_stmt_execute($checkStmt);
+    $checkResult = mysqli_stmt_get_result($checkStmt);
+    $room = mysqli_fetch_assoc($checkResult);
+
+    if (!$room || $room['ai_active'] != 1) return;
+
+    // AI 퇴장 메시지
+    $farewell = "담당자가 연결되었습니다. 이어서 상담 도와드릴 거예요. 감사합니다!";
+    insertAIMessage($roomId, $farewell);
+
+    // AI 비활성화
+    $updateQuery = "UPDATE chatrooms SET ai_active = 0 WHERE id = ?";
+    $updateStmt = mysqli_prepare($db, $updateQuery);
+    mysqli_stmt_bind_param($updateStmt, 'i', $roomId);
+    mysqli_stmt_execute($updateStmt);
+}
+
+/**
+ * AI 메시지 INSERT 헬퍼
+ */
+function insertAIMessage($roomId, $message) {
+    global $db;
+
+    $senderid = 'ai_bot';
+    $sendername = '긴급대응';
+    $query = "INSERT INTO chatmessages (roomid, senderid, sendername, messagetype, message)
+              VALUES (?, ?, ?, 'text', ?)";
+    $stmt = mysqli_prepare($db, $query);
+    mysqli_stmt_bind_param($stmt, 'isss', $roomId, $senderid, $sendername, $message);
+    mysqli_stmt_execute($stmt);
+
+    // 채팅방 업데이트 시간 갱신
+    $updateQuery = "UPDATE chatrooms SET updatedat = NOW() WHERE id = ?";
+    $updateStmt = mysqli_prepare($db, $updateQuery);
+    mysqli_stmt_bind_param($updateStmt, 'i', $roomId);
+    mysqli_stmt_execute($updateStmt);
+}
+
+/**
+ * ChatbotService 호출 — 야간당번 챗봇과 동일 엔진
+ * 세션 키를 분리하여 야간당번과 긴급대응이 서로 간섭하지 않도록 함
+ */
+function callChatbotService($message) {
+    // 긴급대응용 세션 키 분리 (야간당번 세션과 충돌 방지)
+    $originalChatbot = $_SESSION['chatbot'] ?? null;
+    if (isset($_SESSION['ai_emergency_chatbot'])) {
+        $_SESSION['chatbot'] = $_SESSION['ai_emergency_chatbot'];
+    } else {
+        unset($_SESSION['chatbot']); // 새 세션 시작
+    }
+
+    try {
+        // V2_ROOT 정의
+        $v2Root = dirname(__DIR__) . '/v2';
+        if (!defined('V2_ROOT')) {
+            define('V2_ROOT', $v2Root);
+        }
+
+        // .env 로드 (Gemini API 키)
+        $envFile = dirname(__DIR__) . '/.env';
+        if (file_exists($envFile)) {
+            $lines = file($envFile, FILE_IGNORE_NEW_LINES | FILE_SKIP_EMPTY_LINES);
+            foreach ($lines as $line) {
+                if (strpos(trim($line), '#') === 0) continue;
+                if (strpos($line, '=') === false) continue;
+                [$key, $value] = explode('=', $line, 2);
+                $_ENV[trim($key)] = trim($value);
+                putenv(trim($key) . '=' . trim($value));
+            }
+        }
+
+        // ChatbotService 로드
+        require_once $v2Root . '/src/Services/AI/ChatbotService.php';
+        $chatbot = new \App\Services\AI\ChatbotService();
+
+        if (!$chatbot->isConfigured()) {
+            return '죄송합니다. 잠시 후 담당자가 연결될 예정입니다. 전화(02-2632-1830)로도 문의 가능합니다.';
+        }
+
+        $result = $chatbot->chat($message);
+
+        // 긴급대응 세션 저장
+        $_SESSION['ai_emergency_chatbot'] = $_SESSION['chatbot'];
+
+        // 원래 야간당번 세션 복원
+        if ($originalChatbot !== null) {
+            $_SESSION['chatbot'] = $originalChatbot;
+        }
+
+        if (!empty($result['success']) && !empty($result['message'])) {
+            $response = $result['message'];
+
+            // 옵션이 있으면 번호 목록으로 추가
+            if (!empty($result['options'])) {
+                $response .= "\n";
+                foreach ($result['options'] as $opt) {
+                    $num = $opt['num'] ?? '';
+                    $label = $opt['label'] ?? '';
+                    $response .= "\n{$num}. {$label}";
+                }
+            }
+
+            return $response;
+        }
+
+        return null;
+
+    } catch (\Throwable $e) {
+        error_log('AI Emergency chatbot error: ' . $e->getMessage());
+
+        // 원래 세션 복원
+        if ($originalChatbot !== null) {
+            $_SESSION['chatbot'] = $originalChatbot;
+        }
+
+        return '죄송합니다. 잠시 후 담당자가 연결될 예정입니다. 전화(02-2632-1830)로도 문의 가능합니다.';
+    }
+}
+
 ?>

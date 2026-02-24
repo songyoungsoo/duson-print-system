@@ -420,6 +420,23 @@
     font-size: 12px;
 }
 
+/* AI 긴급대응 봇 메시지 스타일 */
+.chat-message.ai-bot .chat-message-bubble {
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    color: white;
+    border: none;
+}
+
+.chat-message-avatar.ai-bot-avatar {
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    font-size: 16px;
+}
+
+.chat-message.ai-bot .chat-message-sender {
+    color: #667eea;
+    font-weight: 600;
+}
+
 .chat-message-image {
     max-width: 200px;
     border-radius: 12px;

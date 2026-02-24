@@ -149,8 +149,24 @@ $View_Gensu = htmlspecialchars($row['Gensu']);
 $View_logen_box_qty = intval($row['logen_box_qty'] ?? 0);
 $View_logen_delivery_fee = intval($row['logen_delivery_fee'] ?? 0);
 $View_logen_fee_type = htmlspecialchars($row['logen_fee_type'] ?? '');
+$View_shipping_bundle_type = htmlspecialchars($row['shipping_bundle_type'] ?? '');
 $View_logen_tracking_no = htmlspecialchars($row['logen_tracking_no'] ?? '');
 $has_logen_confirmed = ($View_logen_delivery_fee > 0 || !empty($View_logen_tracking_no));
+
+// ✅ 같은 그룹 주문 조회 (order_group_id 기반)
+$group_orders = [];
+$View_order_group_id = $row['order_group_id'] ?? '';
+if (!empty($View_order_group_id)) {
+    $gq = "SELECT no, Type, product_type, money_5, order_group_seq FROM mlangorder_printauto WHERE order_group_id = ? AND no != ? ORDER BY order_group_seq";
+    $gs = mysqli_prepare($db, $gq);
+    if ($gs) {
+        mysqli_stmt_bind_param($gs, "si", $View_order_group_id, $no);
+        mysqli_stmt_execute($gs);
+        $gr = mysqli_stmt_get_result($gs);
+        while ($grow = mysqli_fetch_assoc($gr)) { $group_orders[] = $grow; }
+        mysqli_stmt_close($gs);
+    }
+}
 
 // ✅ 가격 정보 계산 (그룹 주문 시 합산)
 $View_money_1 = 0;
@@ -583,7 +599,11 @@ function getOrderItemInfo($summary_item, $specFormatter) {
                 btn.disabled = false;
                 btn.textContent = '💾 저장';
                 if (data.success) {
-                    resultSpan.textContent = '✅ 저장되었습니다.';
+                    var msg = '✅ 저장되었습니다.';
+                    if (data.group_count && data.group_count > 0) {
+                        msg = '✅ 그룹 ' + (data.group_count) + '개 품목에 일괄 저장되었습니다.';
+                    }
+                    resultSpan.textContent = msg;
                     resultSpan.style.color = '#28a745';
                     resultSpan.style.display = 'inline';
                     // 확정 스타일로 변경
@@ -1830,6 +1850,44 @@ function getOrderItemInfo($summary_item, $specFormatter) {
                     </div>
                 </div>
 
+                <?php if (!empty($group_orders)): ?>
+                <!-- ===== 그룹 주문 안내 ===== -->
+                <div style="background: #fff5eb; border: 1px solid #f0c878; border-radius: 8px; padding: 14px 16px; margin-bottom: 15px;">
+                    <div style="display: flex; align-items: center; gap: 6px; margin-bottom: 8px;">
+                        <span style="font-size: 1.1rem;">📦</span>
+                        <span style="font-weight: 700; color: #b45309; font-size: 14px;">그룹 주문 (<?= count($group_orders) + 1 ?>개 품목)</span>
+                    </div>
+                    <div style="font-size: 12px; color: #333; line-height: 1.8;">
+                        <?php
+                        $PRODUCT_NAME_MAP = [
+                            'sticker' => '스티커', 'inserted' => '전단지', 'namecard' => '명함',
+                            'envelope' => '봉투', 'littleprint' => '포스터', 'merchandisebond' => '상품권',
+                            'msticker' => '자석스티커', 'cadarok' => '카다록', 'ncrflambeau' => 'NCR양식지'
+                        ];
+                        // 현재 주문 표시
+                        $current_label = $PRODUCT_NAME_MAP[$row['product_type'] ?? ''] ?? htmlspecialchars($row['Type']);
+                        ?>
+                        <div style="margin-bottom: 4px;">
+                            <span style="font-weight: 600; color: #1E4E79;">#<?= $no ?></span>
+                            <span style="font-weight: 600;"><?= $current_label ?></span>
+                            <span style="color: #888;"><?= number_format(intval($row['money_5'] ?? 0)) ?>원</span>
+                            <span style="background: #1E4E79; color: #fff; font-size: 10px; padding: 1px 6px; border-radius: 3px; margin-left: 4px;">현재</span>
+                        </div>
+                        <?php foreach ($group_orders as $go):
+                            $go_label = $PRODUCT_NAME_MAP[$go['product_type'] ?? ''] ?? htmlspecialchars($go['Type']);
+                        ?>
+                        <div>
+                            <span style="font-weight: 600; color: #1E4E79;">#<?= $go['no'] ?></span>
+                            <span><?= $go_label ?></span>
+                            <span style="color: #888;"><?= number_format(intval($go['money_5'] ?? 0)) ?>원</span>
+                        </div>
+                        <?php endforeach; ?>
+                    </div>
+                    <div style="margin-top: 8px; padding: 6px 10px; background: #fef3cd; border-radius: 4px; font-size: 11px; color: #856404;">
+                        ⚠️ 택배비 저장 시 그룹 전체 품목에 일괄 적용됩니다.
+                    </div>
+                </div>
+                <?php endif; ?>
                 <!-- ===== 📦 택배비 확정 / 송장번호 입력 ===== -->
                 <div id="logen-confirm-section" style="background: <?= $has_logen_confirmed ? '#f0faf0' : '#fff8e8' ?>; border: 1px solid <?= $has_logen_confirmed ? '#a8d5a8' : '#e0c880' ?>; border-radius: 8px; padding: 14px 16px; margin-bottom: 15px;">
                     <div style="display: flex; align-items: center; gap: 6px; margin-bottom: 10px;">
@@ -1867,6 +1925,20 @@ function getOrderItemInfo($summary_item, $specFormatter) {
                                 <input type="text" id="logen_tracking_no" value="<?= $View_logen_tracking_no ?>" placeholder="송장번호 입력" style="width: 160px; border: 1px solid #ccc; padding: 4px 6px; font-size: 12px; border-radius: 3px;">
                             </td>
                         </tr>
+                        <?php if (!empty($View_shipping_bundle_type)): ?>
+                        <tr>
+                            <td style="border: 1px solid #ccc; padding: 6px 10px; background: #f5f7fa; font-weight: 600; color: #333; text-align: center;">배송방식</td>
+                            <td colspan="3" style="border: 1px solid #ccc; padding: 6px 10px;">
+                                <?php if ($View_shipping_bundle_type === 'bundle'): ?>
+                                    <span style="background: #1E4E79; color: #fff; font-size: 11px; padding: 2px 8px; border-radius: 3px; font-weight: 600;">묶음배송</span>
+                                    <span style="font-size: 11px; color: #666; margin-left: 6px;">전체 무게 합산 기준 박스 산정</span>
+                                <?php else: ?>
+                                    <span style="background: #6c757d; color: #fff; font-size: 11px; padding: 2px 8px; border-radius: 3px; font-weight: 600;">개별포장</span>
+                                    <span style="font-size: 11px; color: #666; margin-left: 6px;">품목별 각각 포장</span>
+                                <?php endif; ?>
+                            </td>
+                        </tr>
+                        <?php endif; ?>
                     </table>
                     <div style="margin-top: 10px; display: flex; align-items: center; gap: 10px;">
                         <button type="button" id="btn-logen-save" onclick="saveLogenInfo()" style="padding: 6px 20px; font-size: 12px; background: linear-gradient(135deg, #1E4E79, #2a6496); color: #fff; border: none; cursor: pointer; font-weight: 600; border-radius: 5px;">💾 저장</button>

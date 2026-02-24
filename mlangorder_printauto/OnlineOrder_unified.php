@@ -933,6 +933,25 @@ if (!empty($debug_info) && strpos($_SERVER['HTTP_HOST'], 'localhost') !== false)
                             </label>
                         </div>
 
+                        <!-- 묶음배송/개별포장 선택 (2건 이상일 때만 표시) -->
+                        <?php if (count($cart_items) > 1): ?>
+                        <div id="packing_mode_area" style="display: flex; gap: 1.5rem; align-items: center; margin-bottom: 0.7rem;">
+                            <span style="font-weight: 600; color: #555; font-size: 0.9rem;">배송방식:</span>
+                            <label style="display: flex; align-items: center; cursor: pointer; margin: 0;">
+                                <input type="radio" name="shipping_bundle_type" value="bundle" checked
+                                       style="margin-right: 0.3rem;" onchange="onPackingModeChange()">
+                                <span style="font-weight: 500; color: #2c3e50;">묶음배송</span>
+                                <span style="font-size: 0.75rem; color: #888; margin-left: 4px;">(1건으로 합포장)</span>
+                            </label>
+                            <label style="display: flex; align-items: center; cursor: pointer; margin: 0;">
+                                <input type="radio" name="shipping_bundle_type" value="individual"
+                                       style="margin-right: 0.3rem;" onchange="onPackingModeChange()">
+                                <span style="font-weight: 500; color: #2c3e50;">개별포장</span>
+                                <span style="font-size: 0.75rem; color: #888; margin-left: 4px;">(품목별 별도 박스)</span>
+                            </label>
+                        </div>
+                        <?php endif; ?>
+
                         <div id="shipping_prepaid_info" style="display: none; background: #f0f7ff; border: 1px solid #b8d4f0; border-radius: 8px; padding: 14px 16px; margin-bottom: 0.5rem;">
                             <div style="display: flex; align-items: center; gap: 6px; margin-bottom: 10px;">
                                 <span style="font-size: 1.1rem;">📦</span>
@@ -942,6 +961,7 @@ if (!empty($debug_info) && strpos($_SERVER['HTTP_HOST'], 'localhost') !== false)
                             <div id="shipping_estimate_content" style="font-size: 0.9rem; color: #333; line-height: 1.7;">
                                 <div>예상 무게: <strong id="est_weight">계산 중...</strong> <span style="color: #888; font-size: 0.8rem;">(부자재 포함)</span></div>
                                 <div>예상 박스: <strong id="est_boxes">계산 중...</strong></div>
+                                <div>추정 택배비: <strong id="est_fee">계산 중...</strong> <span id="est_fee_label" style="color: #888; font-size: 0.8rem;"></span></div>
                             </div>
                             <div style="margin-top: 10px; padding-top: 8px; border-top: 1px solid #d0e3f5; font-size: 0.82rem; color: #666; line-height: 1.5;">
                                 ※ 추정치이며 실제와 다를 수 있습니다<br>
@@ -950,6 +970,7 @@ if (!empty($debug_info) && strpos($_SERVER['HTTP_HOST'], 'localhost') !== false)
                         </div>
                     </div>
                     <input type="hidden" name="shipping_fee_type" id="hidden_shipping_fee_type" value="착불">
+                    <input type="hidden" name="shipping_bundle_type" id="hidden_shipping_bundle_type" value="<?php echo count($cart_items) > 1 ? 'bundle' : ''; ?>">
                 </div>
 
                 <!-- 결제방법 -->
@@ -2225,15 +2246,17 @@ document.addEventListener('DOMContentLoaded', function() {
 var cartItemsForShipping = <?php echo json_encode(array_map(function($item) {
     return [
         'product_type'   => $item['product_type'] ?? '',
-        'MY_Fsd'         => $item['MY_Fsd'] ?? $item['paper_text'] ?? '',
-        'PN_type'        => $item['PN_type'] ?? $item['size_text'] ?? '',
+        'MY_Fsd'         => $item['MY_Fsd'] ?? '',
+        'PN_type'        => $item['PN_type'] ?? '',
         'MY_amount'      => $item['MY_amount'] ?? '',
         'mesu'           => $item['mesu'] ?? '',
         'flyer_mesu'     => $item['flyer_mesu'] ?? '',
         'POtype'         => $item['POtype'] ?? '',
-        'spec_material'  => $item['MY_Fsd_name'] ?? '',
-        'spec_size'      => $item['PN_type_name'] ?? '',
+        'spec_material'  => $item['spec_material'] ?? $item['MY_Fsd_name'] ?? '',
+        'spec_size'      => $item['spec_size'] ?? $item['PN_type_name'] ?? '',
         'quantity_sheets'=> $item['quantity_sheets'] ?? '',
+        'quantity_value' => $item['quantity_value'] ?? '',
+        'quantity_unit'  => $item['quantity_unit'] ?? '',
     ];
 }, $cart_items)); ?>;
 
@@ -2267,34 +2290,70 @@ function toggleShippingInfo() {
     }
 }
 
+function getPackingMode() {
+    var sel = document.querySelector('input[name="shipping_bundle_type"]:checked');
+    return sel ? sel.value : '';
+}
+
+function onPackingModeChange() {
+    var hidden = document.getElementById('hidden_shipping_bundle_type');
+    if (hidden) hidden.value = getPackingMode();
+    // 선불 상태이면 추정 재계산
+    var feeType = document.querySelector('input[name="shipping_fee_type"]:checked');
+    if (feeType && feeType.value === '선불') {
+        fetchShippingEstimate();
+    }
+}
+
 function fetchShippingEstimate() {
     var weightEl = document.getElementById('est_weight');
     var boxesEl = document.getElementById('est_boxes');
+    var feeEl = document.getElementById('est_fee');
+    var feeLabelEl = document.getElementById('est_fee_label');
     if (!weightEl || !boxesEl) return;
     if (!cartItemsForShipping || cartItemsForShipping.length === 0) {
         weightEl.textContent = '데이터 없음';
         boxesEl.textContent = '-';
+        if (feeEl) feeEl.textContent = '-';
         return;
     }
     weightEl.textContent = '계산 중...';
     boxesEl.textContent = '계산 중...';
+    if (feeEl) feeEl.textContent = '계산 중...';
     var formData = new FormData();
     formData.append('action', 'estimate');
     formData.append('cart_items', JSON.stringify(cartItemsForShipping));
+    var packingMode = getPackingMode();
+    if (packingMode) formData.append('packing_mode', packingMode);
     fetch('/includes/shipping_api.php', { method: 'POST', body: formData })
         .then(function(r) { return r.json(); })
         .then(function(res) {
             if (res.success && res.data) {
                 weightEl.textContent = '약 ' + res.data.total_weight_kg + 'kg';
-                boxesEl.textContent = res.data.total_boxes + '박스';
+                var boxLabel = res.data.total_boxes + '박스';
+                if (res.data.packing_mode === 'bundle') boxLabel += ' (묶음)';
+                boxesEl.textContent = boxLabel;
+                // 택배비 표시
+                if (feeEl && res.data.total_fee !== undefined) {
+                    if (res.data.total_fee > 0) {
+                        feeEl.textContent = '약 ' + Number(res.data.total_fee).toLocaleString() + '원';
+                    } else {
+                        feeEl.textContent = '-';
+                    }
+                }
+                if (feeLabelEl && res.data.fee_label) {
+                    feeLabelEl.textContent = '(' + res.data.fee_label + ')';
+                }
             } else {
                 weightEl.textContent = '계산 불가';
                 boxesEl.textContent = '-';
+                if (feeEl) feeEl.textContent = '-';
             }
         })
         .catch(function() {
             weightEl.textContent = '계산 오류';
             boxesEl.textContent = '-';
+            if (feeEl) feeEl.textContent = '-';
         });
 }
 

@@ -425,6 +425,18 @@ include __DIR__ . '/../includes/sidebar.php';
                             <dt class="text-xs text-gray-400">배송</dt>
                             <dd class="text-gray-900"><?php echo htmlspecialchars($order['delivery'] ?: '-'); ?></dd>
                         </div>
+                        <?php if (!empty($order['shipping_bundle_type'])): ?>
+                        <div class="col-span-2">
+                            <dt class="text-xs text-gray-400">배송방식</dt>
+                            <dd class="text-gray-900">
+                                <?php if ($order['shipping_bundle_type'] === 'bundle'): ?>
+                                    <span class="inline-block px-1.5 py-0.5 text-xs font-semibold bg-blue-100 text-blue-800 rounded">묶음배송</span>
+                                <?php else: ?>
+                                    <span class="inline-block px-1.5 py-0.5 text-xs font-semibold bg-gray-100 text-gray-600 rounded">개별포장</span>
+                                <?php endif; ?>
+                            </dd>
+                        </div>
+                        <?php endif; ?>
                         <?php if (!empty($order['zip1'])): ?>
                         <div class="col-span-3">
                             <dt class="text-xs text-gray-400">주소</dt>

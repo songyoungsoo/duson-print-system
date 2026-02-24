@@ -189,18 +189,18 @@ async function loadMessages() {
 function appendAdminMessage(msg) {
     const messagesArea = document.getElementById('messages-area');
     const isSent = msg.senderid === currentStaffId;
-
+    const isAiBot = msg.senderid === 'ai_bot';
     const messageDiv = document.createElement('div');
-    messageDiv.className = `admin-message ${isSent ? 'sent' : 'received'}`;
-
+    messageDiv.className = `admin-message ${isSent ? 'sent' : 'received'} ${isAiBot ? 'ai-bot' : ''}`.replace(/\s+/g, ' ').trim();
     let avatarHtml = '';
-    if (!isSent) {
+    if (isAiBot) {
+        avatarHtml = `<div class="message-avatar ai-bot-avatar">🤖</div>`;
+    } else if (!isSent) {
         const initial = msg.sendername.charAt(0);
         avatarHtml = `<div class="message-avatar">${initial}</div>`;
     }
 
     const time = new Date(msg.createdat).toLocaleTimeString('ko-KR', { hour: '2-digit', minute: '2-digit' });
-
     messageDiv.innerHTML = `
         ${avatarHtml}
         <div class="message-content">
@@ -209,7 +209,6 @@ function appendAdminMessage(msg) {
             <div class="message-time">${time}</div>
         </div>
     `;
-
     messagesArea.appendChild(messageDiv);
 }
 

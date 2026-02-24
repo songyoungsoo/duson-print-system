@@ -500,13 +500,14 @@ class ChatWidget {
         // 고객 메시지는 오른쪽, 직원/시스템 메시지는 왼쪽
         const isCustomer = msg.senderid && (msg.senderid.startsWith('guest_') || msg.senderid == user.id);
         const isSystem = msg.senderid === 'system';
+        const isAiBot = msg.senderid === 'ai_bot';
         const isSent = isCustomer && !isSystem;
-
         const messageDiv = document.createElement('div');
-        messageDiv.className = `chat-message ${isSent ? 'sent' : 'received'} ${isSystem ? 'system' : ''}`;
-
+        messageDiv.className = `chat-message ${isSent ? 'sent' : 'received'} ${isSystem ? 'system' : ''} ${isAiBot ? 'ai-bot' : ''}`.replace(/\s+/g, ' ').trim();
         let avatarHtml = '';
-        if (!isSent && !isSystem) {
+        if (isAiBot) {
+            avatarHtml = `<div class="chat-message-avatar ai-bot-avatar">🤖</div>`;
+        } else if (!isSent && !isSystem) {
             const initial = msg.sendername.charAt(0);
             avatarHtml = `<div class="chat-message-avatar">${initial}</div>`;
         }

@@ -1,11 +1,5 @@
 <?php
-// 에러 표시 설정
-error_reporting(E_ALL & ~E_NOTICE & ~E_DEPRECATED & ~E_STRICT);
-ini_set('display_errors', 0);
-
-if (session_status() === PHP_SESSION_NONE) {
-    session_start();
-}
+session_start();
 include "../db.php";
 
 $message = '';
@@ -13,33 +7,30 @@ $error = '';
 
 include_once __DIR__ . '/../includes/csrf.php';
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
-    try {
-        csrf_verify_or_die();
-    } catch (Exception $e) {
-        $error = '세션이 만료되었습니다. 페이지를 새로고침 후 다시 시도해주세요.';
-    }
-
-    if (empty($error)) {
-        $email = mysqli_real_escape_string($db, $_POST['email'] ?? '');
-        $username = mysqli_real_escape_string($db, $_POST['username'] ?? '');
+    csrf_verify_or_die();
+    $email = mysqli_real_escape_string($db, $_POST['email'] ?? '');
+    $username = mysqli_real_escape_string($db, $_POST['username'] ?? '');
     
     if (empty($email) || empty($username)) {
         $error = '이메일과 아이디를 모두 입력해주세요.';
     } else {
         // users 테이블에서 확인
-        $query = "SELECT id, username, email, name FROM users WHERE email = ? AND (username = ? OR member_id = ?)";
+        $query = "SELECT id, username, email, name FROM users WHERE email = ? AND username = ?";
         $stmt = mysqli_prepare($db, $query);
-        mysqli_stmt_bind_param($stmt, "sss", $email, $username, $username);
+        mysqli_stmt_bind_param($stmt, "ss", $email, $username);
         mysqli_stmt_execute($stmt);
         $result = mysqli_stmt_get_result($stmt);
         
         if ($user = mysqli_fetch_assoc($result)) {
-            // 토큰 생성 (PHP 7+ random_bytes or OpenSSL fallback)
-            if (function_exists('random_bytes')) {
-                $token = bin2hex(random_bytes(32));
-            } else {
-                $token = bin2hex(openssl_random_pseudo_bytes(32));
-            }
+            // 기존 미사용 토큰 무효화
+            $invalidate = "UPDATE password_resets SET used = 1 WHERE user_id = ? AND used = 0";
+            $inv_stmt = mysqli_prepare($db, $invalidate);
+            mysqli_stmt_bind_param($inv_stmt, "i", $user['id']);
+            mysqli_stmt_execute($inv_stmt);
+            mysqli_stmt_close($inv_stmt);
+            
+            // 토큰 생성
+            $token = bin2hex(random_bytes(32));
             $expires_at = date('Y-m-d H:i:s', strtotime('+1 hour'));
             
             // 토큰 저장
@@ -48,96 +39,77 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             mysqli_stmt_bind_param($insert_stmt, "isss", $user['id'], $email, $token, $expires_at);
             
             if (mysqli_stmt_execute($insert_stmt)) {
-                // 실제 환경에서는 이메일로 발송
-                $protocol = isset($_SERVER['HTTPS']) && $_SERVER['HTTPS'] !== 'off' ? 'https' : 'http';
-                $host = $_SERVER['HTTP_HOST'];
-                $reset_link = "$protocol://$host/member/password_reset.php?token=" . $token;
-
-                // 이메일 발송
-                $to = $email;
-                $subject = "=?UTF-8?B?".base64_encode("두손기획인쇄 비밀번호 재설정")."?=";
-                $email_body = "안녕하세요, 두손기획인쇄입니다.\n\n";
-                $email_body .= "요청하신 비밀번호 재설정 링크입니다:\n\n";
-                $email_body .= $reset_link . "\n\n";
-                $email_body .= "이 링크는 1시간 동안 유효합니다.\n";
-                $email_body .= "만약 비밀번호 재설정을 요청하지 않으셨다면, 이 이메일을 무시하시면 됩니다.\n\n";
-                $email_body .= "감사합니다.\n";
-                $email_body .= "두손기획인쇄";
-
-                $headers = "MIME-Version: 1.0\r\n";
-                $headers .= "Content-Type: text/plain; charset=UTF-8\r\n";
-                $headers .= "From: 두손기획인쇄 <noreply@dsp114.co.kr>\r\n";
-
-                $mail_sent = mail($to, $subject, $email_body, $headers);
-
-                if ($mail_sent) {
-                    $message = "입력하신 이메일로 비밀번호 재설정 링크를 발송했습니다.<br><br>";
-                    $message .= "<strong>이메일을 확인해주세요.</strong><br><br>";
-                    $message .= "📧 " . htmlspecialchars(substr($email, 0, 3)) . "***@" . htmlspecialchars(substr(strstr($email, '@'), 1));
+                // 환경별 URL 자동 감지
+                $is_localhost = (strpos($_SERVER['HTTP_HOST'] ?? '', 'localhost') !== false);
+                $protocol = $is_localhost ? 'http://' : 'https://';
+                $host = $_SERVER['HTTP_HOST'] ?? 'localhost';
+                $reset_link = $protocol . $host . "/member/password_reset.php?token=" . $token;
+                
+                // 이메일 발송 시도
+                $email_sent = false;
+                $mailer_path = __DIR__ . '/../mlangorder_printauto/mailer.lib.php';
+                if (file_exists($mailer_path)) {
+                    include_once $mailer_path;
+                    
+                    $user_name = htmlspecialchars($user['name'] ?: $user['username']);
+                    $mail_subject = "[두손기획인쇄] 비밀번호 재설정 안내";
+                    $mail_body = "
+                    <div style='max-width:600px;margin:0 auto;font-family:\"Noto Sans KR\",sans-serif;'>
+                        <div style='background:#1E4E79;padding:20px;text-align:center;border-radius:8px 8px 0 0;'>
+                            <h2 style='color:#fff;margin:0;font-size:18px;'>두손기획인쇄 비밀번호 재설정</h2>
+                        </div>
+                        <div style='padding:30px;border:1px solid #ddd;border-top:none;border-radius:0 0 8px 8px;'>
+                            <p style='font-size:15px;color:#333;'><strong>{$user_name}</strong>님, 안녕하세요.</p>
+                            <p style='font-size:14px;color:#555;line-height:1.8;'>
+                                비밀번호 재설정을 요청하셨습니다.<br>
+                                아래 버튼을 클릭하여 새 비밀번호를 설정해주세요.
+                            </p>
+                            <div style='text-align:center;margin:30px 0;'>
+                                <a href='{$reset_link}' style='display:inline-block;padding:14px 40px;background:#1E4E79;color:#fff;text-decoration:none;border-radius:5px;font-size:16px;font-weight:500;'>비밀번호 재설정하기</a>
+                            </div>
+                            <p style='font-size:13px;color:#888;line-height:1.6;'>
+                                * 이 링크는 <strong>1시간</strong> 동안만 유효합니다.<br>
+                                * 본인이 요청하지 않은 경우 이 메일을 무시하셔도 됩니다.
+                            </p>
+                            <hr style='border:none;border-top:1px solid #eee;margin:20px 0;'>
+                            <p style='font-size:12px;color:#aaa;text-align:center;'>
+                                두손기획인쇄 | Tel. 02-2632-1830
+                            </p>
+                        </div>
+                    </div>";
+                    
+                    ob_start();
+                    $mail_result = mailer(
+                        '두손기획인쇄',
+                        'dsp1830@naver.com',
+                        $email,
+                        $mail_subject,
+                        $mail_body,
+                        1,
+                        ""
+                    );
+                    ob_end_clean();
+                    
+                    $email_sent = ($mail_result === true || $mail_result == 1);
+                }
+                
+                if ($email_sent) {
+                    $message = "비밀번호 재설정 링크를 <strong>" . htmlspecialchars($email) . "</strong> 으로 발송했습니다.<br><br>";
+                    $message .= "이메일을 확인하시고, 링크를 클릭하여 비밀번호를 재설정하세요.<br>";
+                    $message .= "<span style='color:#888;font-size:13px;'>* 이메일이 오지 않으면 스팸 메일함을 확인해주세요.</span>";
                 } else {
-                    $message = "이메일 발송 중 오류가 발생했습니다.<br>관리자에게 문의해주세요.";
+                    // 이메일 발송 실패 시 링크를 직접 표시
+                    $message = "비밀번호 재설정 링크가 생성되었습니다.<br><br>";
+                    $message .= "다음 링크를 클릭하여 비밀번호를 재설정하세요:<br>";
+                    $message .= "<a href='{$reset_link}' style='color:#667eea;text-decoration:underline;word-break:break-all;'>{$reset_link}</a><br><br>";
+                    $message .= "<span style='color:#888;font-size:13px;'>* 이 링크는 1시간 동안 유효합니다.</span>";
                 }
             }
             mysqli_stmt_close($insert_stmt);
         } else {
-            // member 테이블에서도 확인 (호환성)
-            $member_query = "SELECT id, name, email FROM member WHERE email = ? AND id = ?";
-            $member_stmt = mysqli_prepare($db, $member_query);
-            mysqli_stmt_bind_param($member_stmt, "ss", $email, $username);
-            mysqli_stmt_execute($member_stmt);
-            $member_result = mysqli_stmt_get_result($member_stmt);
-            
-            if ($member = mysqli_fetch_assoc($member_result)) {
-                // 토큰 생성 (PHP 7+ random_bytes or OpenSSL fallback)
-                if (function_exists('random_bytes')) {
-                    $token = bin2hex(random_bytes(32));
-                } else {
-                    $token = bin2hex(openssl_random_pseudo_bytes(32));
-                }
-                $expires_at = date('Y-m-d H:i:s', strtotime('+1 hour'));
-                
-                $update_query = "UPDATE member SET reset_token = ?, reset_expires = ? WHERE id = ?";
-                $update_stmt = mysqli_prepare($db, $update_query);
-                mysqli_stmt_bind_param($update_stmt, "sss", $token, $expires_at, $username);
-                
-                if (mysqli_stmt_execute($update_stmt)) {
-                    // 이메일 발송
-                    $protocol = isset($_SERVER['HTTPS']) && $_SERVER['HTTPS'] !== 'off' ? 'https' : 'http';
-                    $host = $_SERVER['HTTP_HOST'];
-                    $reset_link = "$protocol://$host/member/password_reset.php?token=" . $token . "&legacy=1";
-
-                    $to = $email;
-                    $subject = "=?UTF-8?B?".base64_encode("두손기획인쇄 비밀번호 재설정")."?=";
-                    $email_body = "안녕하세요, 두손기획인쇄입니다.\n\n";
-                    $email_body .= "요청하신 비밀번호 재설정 링크입니다:\n\n";
-                    $email_body .= $reset_link . "\n\n";
-                    $email_body .= "이 링크는 1시간 동안 유효합니다.\n";
-                    $email_body .= "만약 비밀번호 재설정을 요청하지 않으셨다면, 이 이메일을 무시하시면 됩니다.\n\n";
-                    $email_body .= "감사합니다.\n";
-                    $email_body .= "두손기획인쇄";
-
-                    $headers = "MIME-Version: 1.0\r\n";
-                    $headers .= "Content-Type: text/plain; charset=UTF-8\r\n";
-                    $headers .= "From: 두손기획인쇄 <noreply@dsp114.co.kr>\r\n";
-
-                    $mail_sent = mail($to, $subject, $email_body, $headers);
-
-                    if ($mail_sent) {
-                        $message = "입력하신 이메일로 비밀번호 재설정 링크를 발송했습니다.<br><br>";
-                        $message .= "<strong>이메일을 확인해주세요.</strong><br><br>";
-                        $message .= "📧 " . htmlspecialchars(substr($email, 0, 3)) . "***@" . htmlspecialchars(substr(strstr($email, '@'), 1));
-                    } else {
-                        $message = "이메일 발송 중 오류가 발생했습니다.<br>관리자에게 문의해주세요.";
-                    }
-                }
-                mysqli_stmt_close($update_stmt);
-            } else {
-                $error = '입력하신 정보와 일치하는 계정을 찾을 수 없습니다.';
-            }
-            mysqli_stmt_close($member_stmt);
+            $error = '입력하신 정보와 일치하는 계정을 찾을 수 없습니다.';
         }
         mysqli_stmt_close($stmt);
-    }
     }
 }
 ?>
@@ -244,6 +216,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             border-radius: 5px;
             margin-bottom: 20px;
             font-size: 14px;
+            line-height: 1.8;
         }
         
         .message.success {
@@ -288,7 +261,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 <body>
     <div class="container">
         <div class="header">
-            <h1>🔐 비밀번호 재설정</h1>
+            <h1>비밀번호 재설정</h1>
             <p>두손기획인쇄 회원 비밀번호 찾기</p>
         </div>
         
