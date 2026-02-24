@@ -61,23 +61,17 @@ if ($url_type) {
         }
     }
 } else {
-    // 기본 진입: 첫 번째 봉투 종류 가져오기
-    $type_query = "SELECT no, title FROM mlangprintauto_transactioncate 
-                   WHERE Ttable='Envelope' AND BigNo='0' 
-                   ORDER BY no ASC 
-                   LIMIT 1";
-    $type_result = mysqli_query($db, $type_query);
-    if ($type_result && ($type_row = mysqli_fetch_assoc($type_result))) {
-        $default_values['MY_type'] = $type_row['no'];
-        
-        // 해당 봉투 종류의 첫 번째 재질 가져오기
-        $section_query = "SELECT no, title FROM mlangprintauto_transactioncate 
-                          WHERE Ttable='Envelope' AND BigNo='" . $type_row['no'] . "' 
-                          ORDER BY no ASC LIMIT 1";
-        $section_result = mysqli_query($db, $section_query);
-        if ($section_result && ($section_row = mysqli_fetch_assoc($section_result))) {
-            $default_values['Section'] = $section_row['no'];
-        }
+    // 기본 진입: 대봉투를 기본 종류로 설정 (사업자 요청)
+    $default_type_no = 466; // 대봉투
+    $default_values['MY_type'] = $default_type_no;
+    
+    // 해당 봉투 종류의 첫 번째 재질 가져오기
+    $section_query = "SELECT no, title FROM mlangprintauto_transactioncate 
+                      WHERE Ttable='Envelope' AND BigNo='" . intval($default_type_no) . "' 
+                      ORDER BY no ASC LIMIT 1";
+    $section_result = mysqli_query($db, $section_query);
+    if ($section_result && ($section_row = mysqli_fetch_assoc($section_result))) {
+        $default_values['Section'] = $section_row['no'];
     }
 }
 

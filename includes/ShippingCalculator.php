@@ -372,7 +372,7 @@ class ShippingCalculator
                 $areaM2 = ($garo / 1000) * ($sero / 1000);
                 $paperWeightG = $totalGsm * $areaM2 * $quantity;
                 $boxes = max(1, (int)ceil($paperWeightG / 1000 / 20));
-                $totalWeightKg = round(($paperWeightG + $boxes * 500) / 1000, 1);
+                $totalWeightKg = round($paperWeightG / 1000, 1);  // 부자재 무게 미포함
                 $fee = self::estimateFeeByWeight($boxes, $totalWeightKg);
                 return [
                     'boxes'     => $boxes,
@@ -592,7 +592,7 @@ class ShippingCalculator
         
         // 6) 박스/택배비
         $boxes = max(1, (int)ceil($paperWeightG / 1000 / 20));
-        $totalWeightKg = round(($paperWeightG + $boxes * 500) / 1000, 1);
+        $totalWeightKg = round($paperWeightG / 1000, 1);  // 부자재 무게 미포함
         $fee = self::estimateFeeByWeight($boxes, $totalWeightKg);
         
         $feeType = $isNcr ? 'NCR' : 'NCR양식지';
@@ -1056,8 +1056,7 @@ class ShippingCalculator
         
         // 6) 박스 계산: 20kg 초과 시 분리
         $boxes = max(1, (int)ceil($paperWeightG / 1000 / 20));
-        $boxWeightG = $boxes * 500; // 소형 박스
-        $totalWeightG = (int)round($paperWeightG + $boxWeightG);
+        $totalWeightG = (int)round($paperWeightG);  // 부자재(박스) 무게 미포함
         $totalWeightKg = round($totalWeightG / 1000, 1);
         
         // 7) 택배비 추정 (무게 기반)
@@ -1071,7 +1070,7 @@ class ShippingCalculator
             'quantity_volumes' => $volumes,
             'coating'          => 'none',
             'paper_weight_g'   => (int)round($paperWeightG),
-            'box_weight_g'     => $boxWeightG,
+            'box_weight_g'     => 0,  // 부자재 무게 미포함
             'total_weight_g'   => $totalWeightG,
             'total_weight_kg'  => $totalWeightKg,
             'boxes'            => $boxes,
@@ -1140,8 +1139,7 @@ class ShippingCalculator
         
         // 박스 계산: 20kg 초과 시 분리
         $boxes = max(1, (int)ceil($paperWeightG / 1000 / 20));
-        $boxWeightG = $boxes * 500; // 소형 박스
-        $totalWeightG = (int)round($paperWeightG + $boxWeightG);
+        $totalWeightG = (int)round($paperWeightG);  // 부자재(박스) 무게 미포함
         $totalWeightKg = round($totalWeightG / 1000, 1);
         
         // 택배비 추정 (무게 기반)
@@ -1155,7 +1153,7 @@ class ShippingCalculator
             'quantity'         => $quantity,
             'coating'          => 'none',
             'paper_weight_g'   => (int)round($paperWeightG),
-            'box_weight_g'     => $boxWeightG,
+            'box_weight_g'     => 0,  // 부자재 무게 미포함
             'total_weight_g'   => $totalWeightG,
             'total_weight_kg'  => $totalWeightKg,
             'boxes'            => $boxes,
