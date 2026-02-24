@@ -246,9 +246,14 @@ function initializeCalculator() {
     // 드롭다운 변경 이벤트 리스너
     typeSelect.addEventListener('change', function() {
         const style = this.value;
+        console.log('[envelope] 종류 변경:', style);
         resetSelectWithText(paperSelect, '재질을 선택해주세요');
         resetSelectWithText(quantitySelect, '수량을 선택해주세요');
         resetPrice();
+
+        // 종류 변경 시 이전 기본값 클리어 (대봉투↔소봉투 전환 시 자동 선택 대응)
+        if (paperSelect) paperSelect.removeAttribute('data-default-value');
+        if (quantitySelect) quantitySelect.removeAttribute('data-default-value');
 
         if (style) {
             loadPaperTypes(style);
@@ -293,20 +298,27 @@ function resetPrice() {
 function loadPaperTypes(style) {
     if (!style) return;
 
+    console.log('[envelope] 재질 로딩:', style);
     fetch(`get_paper_types.php?style=${style}`)
         .then(response => response.json())
         .then(data => {
+            console.log('[envelope] 재질 응답:', data);
             if (data.success) {
                 const paperSelect = document.getElementById('Section');
                 updateSelectWithOptions(paperSelect, data.data, '재질을 선택해주세요');
                 
-                // 기본값이 있으면 자동 선택
+                // 기본값이 있으면 자동 선택, 없으면 첨 번째 옵션 자동 선택
                 const defaultSection = paperSelect.dataset.defaultValue;
                 if (defaultSection) {
                     paperSelect.value = defaultSection;
-                    if (paperSelect.value) {
-                        loadQuantities();
-                    }
+                }
+                // 기본값 매칭 실패 또는 기본값 없음 → 첨 번째 실제 옵션 자동 선택
+                if (!paperSelect.value && data.data.length > 0) {
+                    paperSelect.value = data.data[0].no;
+                    console.log('[envelope] 첨 번째 재질 자동 선택:', data.data[0].no, data.data[0].title);
+                }
+                if (paperSelect.value) {
+                    loadQuantities();
                 }
             } else {
                 showUserMessage('재질 로드 실패: ' + data.message, 'error');
@@ -335,9 +347,11 @@ function loadQuantities() {
 
     if (!style || !section || !potype) return;
 
+    console.log('[envelope] 수량 로딩:', {style, section, potype});
     fetch(`get_quantities.php?style=${style}&section=${section}&potype=${potype}`)
         .then(response => response.json())
         .then(data => {
+            console.log('[envelope] 수량 응답:', data);
             if (data.success) {
                 updateSelectWithOptions(quantitySelect, data.data, '수량을 선택해주세요');
                 
@@ -345,9 +359,14 @@ function loadQuantities() {
                 const defaultQuantity = quantitySelect.dataset.defaultValue;
                 if (defaultQuantity) {
                     quantitySelect.value = defaultQuantity;
-                    if (quantitySelect.value) {
-                        autoCalculatePrice();
-                    }
+                }
+                // 기본값 매칭 실패 또는 없음 → 첨 번째 실제 옵션 자동 선택
+                if (!quantitySelect.value && data.data.length > 0) {
+                    quantitySelect.value = data.data[0].no;
+                    console.log('[envelope] 첨 번째 수량 자동 선택:', data.data[0].no, data.data[0].title);
+                }
+                if (quantitySelect.value) {
+                    autoCalculatePrice();
                 }
             } else {
                 showUserMessage('수량 로드 실패: ' + data.message, 'error');

@@ -130,13 +130,13 @@ if ($default_values['MY_type'] && $default_values['Section']) {
     <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
     
     <!-- 통합 갤러리 JavaScript 라이브러리 -->
-    <script src="../NameCard/js/unified-gallery.js"></script>
+    <!-- unified-gallery.js는 unified-gallery-popup.js에 통합됨 -->
     <script src="../../js/unified-gallery-popup.js"></script>
     
     <!-- 프리미엄 옵션 DB 로더 -->
     <script src="/js/premium-options-loader.js"></script>
     <!-- 봉투 전용 JavaScript -->
-    <script src="../../js/envelope.js" defer></script>
+    <script src="../../js/envelope.js?v=<?php echo filemtime($_SERVER['DOCUMENT_ROOT'] . '/js/envelope.js') ?: time(); ?>" defer></script>
     
     
     <!-- 세션 ID 및 설정값 메타 태그 -->
@@ -153,8 +153,7 @@ if ($default_values['MY_type'] && $default_values['Section']) {
     <!-- 공통 갤러리 팝업 함수 -->
     <script src="../../js/common-gallery-popup.js"></script>
 
-    <!-- 인라인 CSS 추출 파일 -->
-    <link rel="stylesheet" href="css/envelope-inline-extracted.css">
+    <!-- 인라인 CSS는 index.php에 통합됨 -->
     <!-- 🎯 통합 공통 스타일 CSS (최종 로드로 최우선 적용) -->
     <link rel="stylesheet" href="../../css/common-styles.css?v=1759615861">
     <link rel="stylesheet" href="../../css/upload-modal-common.css?v=<?php echo time(); ?>">
