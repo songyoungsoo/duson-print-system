@@ -85,7 +85,8 @@ if (!empty($group_id)) {
     }
 } elseif (!empty($_GET['orders'])) {
     // 2순위: order_group_id가 NULL이지만 orders 파라미터가 있는 경우 (레거시 다건 주문)
-    $order_nos = array_filter(array_map('intval', explode(',', $_GET['orders'])));
+    $orders_raw = str_replace(',', '_', $_GET['orders']); // 레거시 쉼표 호환
+    $order_nos = array_filter(array_map('intval', explode('_', $orders_raw)));
     if (count($order_nos) > 1) {
         $placeholders = implode(',', array_fill(0, count($order_nos), '?'));
         $types = str_repeat('i', count($order_nos));

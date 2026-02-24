@@ -403,8 +403,9 @@ if (empty($orders)) {
     exit;
 }
 
-// 주문 번호들을 배열로 변환
-$order_numbers = explode(',', $orders);
+// 주문 번호들을 배열로 변환 (_구분자, 레거시 , 호환)
+$orders_normalized = str_replace(',', '_', $orders); // 레거시 쉼표 호환
+$order_numbers = explode('_', $orders_normalized);
 $order_list = [];
 $total_amount = 0;
 $total_amount_vat = 0;
@@ -429,6 +430,16 @@ foreach ($order_numbers as $order_no) {
         }
     }
 }
+
+// 택배 선불 시 택배비(+VAT) 합산 — inicis_request.php와 동일 로직
+$oc_shipping_fee_raw = intval($order_list[0]['logen_delivery_fee'] ?? 0);
+$oc_shipping_vat = 0;
+$oc_shipping_total = 0;
+if (($order_list[0]['logen_fee_type'] ?? '') === '선불' && $oc_shipping_fee_raw > 0) {
+    $oc_shipping_vat = round($oc_shipping_fee_raw * 0.1);
+    $oc_shipping_total = $oc_shipping_fee_raw + $oc_shipping_vat;
+}
+$total_with_shipping = $total_amount_vat + $oc_shipping_total;
 
 if (empty($order_list)) {
     echo "<script>alert('주문 정보를 찾을 수 없습니다.'); location.href='../mlangorder_printauto/shop/cart.php';</script>";
@@ -1907,10 +1918,15 @@ $additional_css = [
                 <div class="summary-box-label">부가세</div>
                 <div class="summary-box-value"><span class="anim-number" data-target="<?php echo intval($total_amount_vat - $total_amount); ?>">0</span>원</div>
             </div>
+            <?php if ($oc_shipping_total > 0): ?>
+            <div class="summary-box">
+                <div class="summary-box-label">택배비 (VAT포함)</div>
+                <div class="summary-box-value"><span class="anim-number" data-target="<?php echo intval($oc_shipping_total); ?>">0</span>원</div>
+            </div>
+            <?php endif; ?>
             <div class="summary-box total">
                 <div class="summary-box-label">총 결제금액</div>
-                <div class="summary-box-value"><span class="anim-number" data-target="<?php echo intval($total_amount_vat); ?>">0</span>원</div>
-            </div>
+                <div class="summary-box-value"><span class="anim-number" data-target="<?php echo intval($total_with_shipping); ?>">0</span>원</div>
         </div>
         <?php
         // 택배 선불 안내 — 택배비는 전화 확인 후 별도 안내
@@ -1925,7 +1941,7 @@ $additional_css = [
             <span style="color: #333;">선불택배는 전화(<strong>02-2632-1830</strong>) 후 택배비 책정이 필요합니다.<br>택배비 확정 후 결제가 가능합니다.</span>
             <?php else: ?>
             <strong>📦 택배비 확정완료</strong><br>
-            택배비: <strong><?php echo number_format($oc_delivery_fee); ?>원</strong> (VAT 별도) — 결제 시 합산됩니다.
+            택배비: <strong><?php echo number_format($oc_shipping_fee_raw); ?>원</strong> + VAT <?php echo number_format($oc_shipping_vat); ?>원 = <strong><?php echo number_format($oc_shipping_total); ?>원</strong>
             <?php endif; ?>
         </div>
         <?php endif; ?>
@@ -2077,7 +2093,10 @@ $additional_css = [
                 <?php endif; ?>
 
                 <div class="payment-amount">
-                    결제금액: <strong><?php echo number_format($total_amount_vat); ?>원</strong>
+                    결제금액: <strong><?php echo number_format($total_with_shipping); ?>원</strong>
+                    <?php if ($oc_shipping_total > 0): ?>
+                    <div style="font-size: 12px; color: #666; margin-top: 4px;">(인쇄비 <?php echo number_format($total_amount_vat); ?>원 + 택배비 <?php echo number_format($oc_shipping_total); ?>원)</div>
+                    <?php endif; ?>
                 </div>
                 <div class="payment-options">
                     <!-- 옵션 1: 무통장입금 -->
@@ -2166,10 +2185,10 @@ function closePaymentModal() {
 function payWithInicis() {
     var orderNo = <?php echo json_encode($first_order['no'] ?? ''); ?>;
     // 🔧 FIX: 다건 주문 시 전체 주문번호 목록 전달 (order_group_id NULL 대응)
-    var allOrders = <?php echo json_encode(implode(',', array_column($order_list, 'no'))); ?>;
+    var allOrders = <?php echo json_encode(implode('_', array_column($order_list, 'no'))); ?>; // _구분자
     if (orderNo) {
         var url = '/payment/inicis_request.php?order_no=' + encodeURIComponent(orderNo);
-        if (allOrders && allOrders.indexOf(',') !== -1) {
+        if (allOrders && allOrders.indexOf('_') !== -1) {
             url += '&orders=' + encodeURIComponent(allOrders);
         }
         window.location.href = url;

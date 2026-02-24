@@ -11,7 +11,7 @@ require_once __DIR__ . '/auth_required.php';
 // ProductSpecFormatter 로드
 require_once __DIR__ . '/../includes/ProductSpecFormatter.php';
 require_once __DIR__ . '/../includes/ImagePathResolver.php';
-$specFormatter = new ProductSpecFormatter();
+$specFormatter = new ProductSpecFormatter($db);
 
 // 주문번호 파라미터 확인
 $order_no = isset($_GET['no']) ? intval($_GET['no']) : 0;
@@ -719,13 +719,17 @@ function formatType1Json($type1_data) {
 
         <!-- 결제 섹션 -->
         <?php
-        $is_unpaid = in_array($order['OrderStyle'], ['2', '3', '4']);
+        // 결제 완료 상태: 8=작업완료(입금확인됨), 11=카드결제완료
+        $payment_completed_styles = ['8', '11'];
+        $current_style = (string)($order['OrderStyle'] ?? '0');
+        $is_paid = in_array($current_style, $payment_completed_styles);
+        $has_amount = intval($order['money_5'] ?? $order['money_4'] ?? 0) > 0;
         $lf_type_pay = $order['logen_fee_type'] ?? '';
         $lf_fee_pay = intval($order['logen_delivery_fee'] ?? 0);
         $is_prepaid_pay = ($lf_type_pay === '선불');
 
-        // 결제 가능: 미결제 + (선불 아님 OR 택배비 확정)
-        $can_pay = $is_unpaid && (!$is_prepaid_pay || $lf_fee_pay > 0);
+        // 결제 가능: 미결제 + 금액있음 + (선불 아님 OR 택배비 확정)
+        $can_pay = !$is_paid && $has_amount && (!$is_prepaid_pay || $lf_fee_pay > 0);
 
         // 그룹 주문이면 그룹 전체 금액, 아니면 단건 금액 (inicis_request.php와 동일 로직)
         $print_amount_pay = $is_group_order ? $group_total_print : intval($order['money_5'] ?? $order['money_4'] ?? 0);
@@ -773,7 +777,7 @@ function formatType1Json($type1_data) {
                     $pay_url = '/payment/inicis_request.php?order_no=' . $order['no'];
                     if ($is_group_order && empty($group_id)) {
                         // 레거시 다건 주문: orders 파라미터 추가
-                        $pay_url .= '&orders=' . urlencode(implode(',', array_column($group_orders, 'no')));
+                        $pay_url .= '&orders=' . urlencode(implode('_', array_column($group_orders, 'no'))); // _구분자 (Plesk %2C 차단)
                     }
                 ?>
                 <a href="<?php echo $pay_url; ?>"

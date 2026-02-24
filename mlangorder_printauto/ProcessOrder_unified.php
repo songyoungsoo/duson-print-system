@@ -894,7 +894,7 @@ try {
         clearCart($connect, $session_id);
     }
     
-    $order_list = implode(',', $order_numbers);
+    $order_list = implode('_', $order_numbers); // _구분자 (Plesk 보안: %2C 쉼표 차단)
     $lang = $_POST['lang'] ?? '';
     $redirect_base = ($lang === 'en') ? '/en/order_complete.php' : 'OrderComplete_unified.php';
     header("Location: " . $redirect_base . "?orders=" . urlencode($order_list) . "&email=" . urlencode($email) . "&name=" . urlencode($username));

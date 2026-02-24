@@ -96,6 +96,61 @@ Allow from all
 - Apache 2.2 구문 사용 시 500 에러 발생 가능
 - 삭제 후 정상 작동 → 신중하게 복구 필요
 
+### 🚨🚨🚨 Plesk URL 보안 — 쉼표(%2C) 차단 (2026-02-25, CRITICAL) 🚨🚨🚨
+
+**⚠️ 이것만 기억해: Plesk 서버에서 URL에 `%2C`(쉼표)가 포함되면 무조건 500 에러가 난다.**
+
+```
+GET /page.php?orders=84664%2C84665   → ❌ 500 Internal Server Error
+GET /page.php?orders=84664,84665     → ❌ 500 (브라우저가 자동 인코딩)
+GET /page.php?orders=84664_84665     → ✅ 200 OK
+GET /page.php?test=a%2Cb              → ❌ 500 (어떤 파라미터든 쉼표면 차단)
+GET /page.php?test=a%3Bb              → ❌ 500 (세미콜론도 차단)
+GET /page.php?test=a%7Cb              → ❌ 500 (파이프도 차단)
+```
+
+**원인**: Plesk의 ModSecurity 또는 nginx 보안 규칙이 URL 인코딩된 특수문자를 SQL Injection/XSS로 판단하여 차단.
+
+**영향받는 기능**: URL GET 파라미터로 여러 값을 전달하는 모든 곳
+- `orders=84664,84665,84666` (다건 주문번호)
+- 기타 쉼표 구분 목록 파라미터
+
+**해결책**: 쉼표(`,`) 대신 언더스코어(`_`)를 구분자로 사용
+
+```php
+// ❌ 절대 금지: URL 파라미터에 쉼표 구분자
+$order_list = implode(',', $order_numbers);
+header("Location: page.php?orders=" . urlencode($order_list));
+// → Plesk에서 500 에러!
+
+// ✅ 올바른 방법: 언더스코어 구분자
+$order_list = implode('_', $order_numbers);
+header("Location: page.php?orders=" . urlencode($order_list));
+// → 정상 동작
+
+// ✅ 수신 측: 언더스코어로 분리 (레거시 쉼표도 호환)
+$orders_normalized = str_replace(',', '_', $_GET['orders']);
+$order_numbers = explode('_', $orders_normalized);
+```
+
+**적용 완료 파일 (2026-02-25):**
+
+| 파일 | 역할 | 구분자 |
+|------|------|--------|
+| `ProcessOrder_unified.php` | 주문 완료 리다이렉트 (orders 파라미터 생성) | `_` |
+| `OrderComplete_universal.php` | 주문 완료 페이지 (orders 파라미터 파싱 + JS 전달) | `_` (레거시 `,` 호환) |
+| `payment/inicis_request.php` | 결제 요청 (orders 파라미터 파싱) | `_` (레거시 `,` 호환) |
+| `mypage/order_detail.php` | 마이페이지 결제 링크 (orders 파라미터 생성) | `_` |
+
+**안전한 URL 구분자 목록:**
+- ✅ `_` (언더스코어) — 추천, 현재 사용 중
+- ✅ `-` (하이픈) — 사용 가능
+- ❌ `,` (쉼표) — 차단됨
+- ❌ `;` (세미콜론) — 차단됨
+- ❌ `|` (파이프) — 차단됨
+- ❌ `.` (점) — 숫자 구분자로 혼동 가능, 비추천
+
+
 ```
 
 **Plesk 관리 패널 (서버 관리):**
