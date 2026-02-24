@@ -207,51 +207,51 @@ function formatType1Json($type1_data) {
     <title>주문 상세 - <?php echo htmlspecialchars($order['no']); ?> - 두손기획인쇄</title>
     <link rel="stylesheet" href="/mlangprintauto/css/common-styles.css">
     <style>
-        body { background: #f5f5f5; padding: 20px; }
+        body { background: #f5f5f5; padding: 10px; }
         .container { max-width: 900px; margin: 0 auto; }
 
         .header {
             background: white;
-            padding: 30px;
+            padding: 20px;
             border-radius: 8px;
             box-shadow: 0 2px 10px rgba(0,0,0,0.1);
-            margin-bottom: 20px;
+            margin-bottom: 12px;
         }
         .header h1 { color: #333; margin: 0; }
         .header .order-no { color: #667eea; font-size: 0.9em; margin-top: 5px; }
 
-        .nav-link { margin: 20px 0; }
+        .nav-link { margin: 10px 0; }
         .nav-link a { color: #667eea; text-decoration: none; }
 
         .section {
             background: white;
-            padding: 25px;
+            padding: 16px;
             border-radius: 8px;
             box-shadow: 0 2px 10px rgba(0,0,0,0.1);
-            margin-bottom: 20px;
+            margin-bottom: 12px;
         }
         .section h2 {
             color: #333;
             font-size: 18px;
-            margin: 0 0 20px 0;
-            padding-bottom: 10px;
+            margin: 0 0 12px 0;
+            padding-bottom: 8px;
             border-bottom: 2px solid #667eea;
         }
 
         .info-grid {
             display: grid;
             grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
-            gap: 15px;
+            gap: 10px;
         }
         .info-item {
-            padding: 10px;
+            padding: 8px;
             background: #f8f9fa;
             border-radius: 4px;
         }
         .info-item .label {
             font-size: 12px;
             color: #666;
-            margin-bottom: 5px;
+            margin-bottom: 3px;
         }
         .info-item .value {
             font-size: 15px;
@@ -276,7 +276,7 @@ function formatType1Json($type1_data) {
             border-collapse: collapse;
         }
         .price-table th, .price-table td {
-            padding: 12px;
+            padding: 8px;
             text-align: left;
             border-bottom: 1px solid #eee;
         }
@@ -291,10 +291,10 @@ function formatType1Json($type1_data) {
             margin: 0;
         }
         .options-list li {
-            padding: 8px 12px;
+            padding: 6px 10px;
             background: #e8f4f8;
             border-radius: 4px;
-            margin-bottom: 8px;
+            margin-bottom: 5px;
             color: #0c5460;
         }
         .no-options {
@@ -308,10 +308,10 @@ function formatType1Json($type1_data) {
             margin: 0;
         }
         .files-list li {
-            padding: 10px 15px;
+            padding: 8px 12px;
             background: #f8f9fa;
             border-radius: 4px;
-            margin-bottom: 8px;
+            margin-bottom: 5px;
             display: flex;
             align-items: center;
             gap: 10px;
@@ -322,7 +322,7 @@ function formatType1Json($type1_data) {
 
         .tracking-info {
             background: #e8f5e9;
-            padding: 15px;
+            padding: 12px;
             border-radius: 4px;
             display: flex;
             align-items: center;
@@ -333,7 +333,7 @@ function formatType1Json($type1_data) {
 
         .memo-box {
             background: #fffde7;
-            padding: 15px;
+            padding: 12px;
             border-radius: 4px;
             border-left: 4px solid #fbc02d;
             white-space: pre-wrap;
@@ -830,7 +830,7 @@ function formatType1Json($type1_data) {
             </div>
         </div>
 
-        <?php elseif ($is_unpaid && $is_prepaid_pay && $lf_fee_pay === 0): ?>
+        <?php elseif (!$is_paid && $is_prepaid_pay && $lf_fee_pay === 0): ?>
         <div class="section" style="border: 2px solid #e67e22; background: #fff8f0;">
             <h2 style="color: #e67e22; border-bottom-color: #e67e22;">택배비 확정 대기중</h2>
             <div style="text-align: center; padding: 20px 0;">
@@ -844,7 +844,7 @@ function formatType1Json($type1_data) {
         </div>
         <?php endif; ?>
 
-        <div class="nav-link" style="text-align: center; margin: 30px 0;">
+        <div class="nav-link" style="text-align: center; margin: 15px 0;">
             <a href="orders.php">← 주문 내역으로 돌아가기</a>
         </div>
     </div>

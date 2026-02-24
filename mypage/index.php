@@ -670,7 +670,7 @@ include $_SERVER['DOCUMENT_ROOT'] . '/includes/header-ui.php';
                         ?>
                         <tr>
                             <td style="text-align: center;">
-                                <a href="/session/order_view_my.php?no=<?php echo $order['no']; ?>" style="color: #1466BA; font-weight: 500;">
+                                <a href="/mypage/order_detail.php?no=<?php echo $order['no']; ?>" style="color: #1466BA; font-weight: 500;">
                                     <?php echo $order['no']; ?>
                                 </a>
                             </td>
@@ -713,12 +713,19 @@ include $_SERVER['DOCUMENT_ROOT'] . '/includes/header-ui.php';
                             <td style="text-align: center;">
                                 <?php
                                 $tracking = $order['waybill_no'] ?? $order['logen_tracking_no'] ?? '';
+                                $os = (string)($order['OrderStyle'] ?? '0');
+                                $is_payment_done = in_array($os, ['8', '11']);
                                 if (!empty($tracking)):
                                 ?>
                                 <a href="https://www.ilogen.com/web/personal/trace/<?php echo urlencode($tracking); ?>"
                                    target="_blank"
                                    style="color: #667eea; text-decoration: none; font-size: 12px; white-space: nowrap;">
                                    배송조회
+                                </a>
+                                <?php elseif (!$is_payment_done && $base_amount > 0): ?>
+                                <a href="/mypage/order_detail.php?no=<?php echo $order['no']; ?>"
+                                   style="color: #e74c3c; text-decoration: none; font-size: 12px; font-weight: 600; white-space: nowrap;">
+                                   결제하기
                                 </a>
                                 <?php endif; ?>
                             </td>
