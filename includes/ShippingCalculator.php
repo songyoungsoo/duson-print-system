@@ -128,6 +128,24 @@ class ShippingCalculator
     // 실측: 90g 아트지 2,000매 = 165mm → 1장 = 0.0825mm → 벌크계수 = 0.0825/0.09 = 11/12
     const BULK_FACTOR = 11/12;
 
+    // ===== 스티커 후지(이형지) 무게 =====
+    // 스티커 = 재질 gsm + 후지 120gsm (점착면 보호 이형지)
+    const STICKER_BACKING_GSM = 120;
+
+    // ===== 스티커 재질별 gsm 매핑 (레거시 데이터 호환) =====
+    // 재질명에 숫자g가 없는 구 데이터용 키워드 → gsm fallback
+    // 순서 중요: '초강접'을 '강접'보다 먼저 매칭해야 함
+    const STICKER_GSM_MAP = [
+        '초강접' => 90,
+        '강접'   => 90,
+        '아트'   => 90,
+        '모조'   => 80,
+        '유포'   => 80,
+        '은데드롱' => 25,
+        '투명'   => 25,
+        '크라프트' => 57,
+    ];
+
     /**
      * 장바구니 아이템 배열로부터 전체 배송 추정 계산
      * 
@@ -204,7 +222,12 @@ class ShippingCalculator
         // 수량 파싱 (사이즈 필요: 연→매 변환에 SHEETS_PER_REAM 사용)
         $quantity    = self::parseQuantity($item, $paperSize);
 
-        // 소형 제품 (명함, 스티커, 상품권): 간이 계산
+        // 스티커: gsm + 후지(120g) 기반 실제 무게 계산
+        if ($productType === 'sticker') {
+            return self::estimateStickerItem($item);
+        }
+
+        // 소형 제품 (명함, 상품권): 간이 계산
         if (self::isSmallProduct($productType)) {
             return self::estimateSmallProduct($productType, $quantity, $item);
         }
@@ -298,8 +321,52 @@ class ShippingCalculator
             return self::estimateEnvelopeFromOrder($type1Raw);
         }
 
-        // 소형 제품 감지 (명함, 스티커, 상품권)
-        if (preg_match("/NameCard|MerchandiseBond|sticker/i", $type)) {
+        // 스티커: gsm + 후지(120g) 기반 실제 무게 계산
+        if (preg_match("/sticker/i", $type)) {
+            $material = $orderData['jong'] ?? $orderData['spec_material'] ?? $type1Raw;
+            $gsm = self::parseStickerGSM($material);
+            $totalGsm = $gsm + self::STICKER_BACKING_GSM;
+            
+            // 사이즈 파싱: garo/sero 직접 또는 Type_1에서 추출
+            $garo = intval($orderData['garo'] ?? 0);
+            $sero = intval($orderData['sero'] ?? 0);
+            if ($garo <= 0 || $sero <= 0) {
+                // Type_1 또는 spec_size에서 "50x50mm" 파싱
+                $sizeStr = $orderData['spec_size'] ?? $type1Raw;
+                if (preg_match('/(\d+)\s*[xX×]\s*(\d+)/', $sizeStr, $m)) {
+                    $garo = intval($m[1]);
+                    $sero = intval($m[2]);
+                }
+            }
+            
+            $quantity = intval($orderData['quantity_sheets'] ?? $orderData['mesu'] ?? $orderData['quantity_value'] ?? 500);
+            
+            if ($garo > 0 && $sero > 0) {
+                $areaM2 = ($garo / 1000) * ($sero / 1000);
+                $paperWeightG = $totalGsm * $areaM2 * $quantity;
+                $boxes = max(1, (int)ceil($paperWeightG / 1000 / 20));
+                $totalWeightKg = round(($paperWeightG + $boxes * 500) / 1000, 1);
+                $fee = self::estimateFeeByWeight($boxes, $totalWeightKg);
+                return [
+                    'boxes'     => $boxes,
+                    'fee'       => $fee,
+                    'weight_kg' => $totalWeightKg,
+                    'fee_type'  => '스티커(후지포함)',
+                    'calculable'=> true,
+                ];
+            }
+            // 사이즈 모를 때 fallback
+            return [
+                'boxes'     => 1,
+                'fee'       => 3000,
+                'weight_kg' => 2.0,
+                'fee_type'  => '스티커(미감지)',
+                'calculable'=> false,
+            ];
+        }
+
+        // 소형 제품 감지 (명함, 상품권)
+        if (preg_match("/NameCard|MerchandiseBond/i", $type)) {
             return [
                 'boxes'     => 1,
                 'fee'       => 3000,
@@ -761,6 +828,111 @@ class ShippingCalculator
     }
 
     /**
+     * 스티커 재질명에서 gsm 파싱 (후지 제외 순수 재질 gsm)
+     * 예: "아트지유광-90g" → 90, "아트유광코팅" → 90 (keyword fallback)
+     */
+    private static function parseStickerGSM(string $material): int
+    {
+        // 1) 재질명에 숫자g가 있으면 그것 사용 (새 포맷: "아트지유광-90g")
+        if (preg_match('/(\d+)\s*g/i', $material, $m)) {
+            return intval($m[1]);
+        }
+        
+        // 2) 레거시 데이터: 키워드로 gsm 추정 (구 데이터에는 gsm 없음)
+        foreach (self::STICKER_GSM_MAP as $keyword => $gsm) {
+            if (mb_strpos($material, $keyword) !== false) {
+                return $gsm;
+            }
+        }
+        
+        // 3) 기본값: 스티커 대부분 90gsm
+        return 90;
+    }
+
+    /**
+     * 스티커 무게 추정 (재질 gsm + 후지 120gsm + 실제 면적 기반)
+     * 
+     * 스티커는 사이즈가 자유 입력(mm)이므로 표준 용지 규격이 아닌
+     * (garo × sero) mm 로 면적을 직접 계산하는 로직.
+     * 
+     * @param array $item 장바구니 아이템 (jong/garo/sero/mesu 또는 spec_material/spec_size)
+     * @return array
+     */
+    private static function estimateStickerItem(array $item): array
+    {
+        // 재질명에서 gsm 파싱
+        $material = $item['spec_material'] ?? $item['jong'] ?? '';
+        $gsm = self::parseStickerGSM($material);
+        
+        // 후지(이형지) 120gsm 가산 → 실제 총 gsm
+        $totalGsm = $gsm + self::STICKER_BACKING_GSM;
+        
+        // 스티커 사이즈 (mm) 파싱
+        $garo = 0;
+        $sero = 0;
+        
+        // 우선: 직접 필드 (jong/garo/sero)
+        if (!empty($item['garo'])) $garo = intval($item['garo']);
+        if (!empty($item['sero'])) $sero = intval($item['sero']);
+        
+        // Fallback: spec_size "단50x50mm" 파싱
+        if ($garo <= 0 || $sero <= 0) {
+            $specSize = $item['spec_size'] ?? '';
+            if (preg_match('/(\d+)\s*[xX×]\s*(\d+)/', $specSize, $m)) {
+                $garo = intval($m[1]);
+                $sero = intval($m[2]);
+            }
+        }
+        
+        // 수량 파싱
+        $quantity = intval($item['quantity_sheets'] ?? $item['mesu'] ?? 0);
+        if ($quantity <= 0) $quantity = intval($item['MY_amount'] ?? 500);
+        
+        // 무게 계산
+        $calculable = false;
+        if ($garo > 0 && $sero > 0) {
+            // 면적 (m²) = (mm/1000) × (mm/1000)
+            $areaM2 = ($garo / 1000) * ($sero / 1000);
+            // 1매 무게(g) = 총 gsm(재질+후지) × 면적(m²)
+            $weightPerPiece = $totalGsm * $areaM2;
+            $paperWeightG = $weightPerPiece * $quantity;
+            $calculable = true;
+        } else {
+            // 사이즈 모를 때 fallback (5g/매 추정)
+            $paperWeightG = 5.0 * $quantity;
+        }
+        
+        // 박스 계산: 20kg 초과 시 분리
+        $boxes = max(1, (int)ceil($paperWeightG / 1000 / 20));
+        $boxWeightG = $boxes * 500; // 소형 박스
+        $totalWeightG = (int)round($paperWeightG + $boxWeightG);
+        $totalWeightKg = round($totalWeightG / 1000, 1);
+        
+        // 택배비 추정 (무게 기반)
+        $estimatedFee = self::estimateFeeByWeight($boxes, $totalWeightKg);
+        
+        return [
+            'product_type'    => 'sticker',
+            'paper_size'      => $garo . 'x' . $sero . 'mm',
+            'gsm'             => $gsm,
+            'gsm_with_backing'=> $totalGsm,
+            'quantity'         => $quantity,
+            'coating'          => 'none',
+            'paper_weight_g'   => (int)round($paperWeightG),
+            'box_weight_g'     => $boxWeightG,
+            'total_weight_g'   => $totalWeightG,
+            'total_weight_kg'  => $totalWeightKg,
+            'boxes'            => $boxes,
+            'weight_per_box_kg'=> round(($totalWeightG / $boxes) / 1000, 1),
+            'box_type'         => '소형 박스',
+            'max_per_box'      => 0,
+            'calculable'       => $calculable,
+            'estimated_fee'    => $estimatedFee,
+            'fee_label'        => '무게별 차등',
+        ];
+    }
+
+    /**
      * 사이즈 파싱: "A4", "16절", "B5" 등
      */
     private static function parsePaperSize(string $sizeCode): string
@@ -795,8 +967,9 @@ class ShippingCalculator
     private static function isSmallProduct(string $productType): bool
     {
         return in_array($productType, [
-            'namecard', 'sticker', 'msticker', 
+            'namecard', 'msticker', 
             'merchandisebond'
+            // ⚠️ sticker 제거 — 스티커는 gsm+후지 기반 실제 계산 사용
             // ⚠️ envelope 제거 — 봉투는 크기/gsm 기반 실제 계산 사용
         ]);
     }
