@@ -206,64 +206,68 @@ function formatType1Json($type1_data) {
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>주문 상세 - <?php echo htmlspecialchars($order['no']); ?> - 두손기획인쇄</title>
     <link rel="stylesheet" href="/mlangprintauto/css/common-styles.css">
+    <link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin><link href="https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@400;500;600;700&display=swap" rel="stylesheet">
     <style>
-        body { background: #f5f5f5; padding: 10px; }
-        .container { max-width: 900px; margin: 0 auto; }
+        * { box-sizing: border-box; margin: 0; padding: 0; }
+        body { background: #f5f5f5; padding: 5px; margin: 0; font-family: 'Noto Sans KR', sans-serif; font-size: 13px; line-height: 1.5; color: #333; }
+        .container { max-width: 800px; margin: 0 auto; }
 
         .header {
             background: white;
-            padding: 20px;
-            border-radius: 8px;
-            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
-            margin-bottom: 12px;
+            padding: 10px 14px;
+            border-radius: 6px;
+            box-shadow: 0 1px 4px rgba(0,0,0,0.08);
+            margin-bottom: 6px;
+            display: flex; align-items: center; justify-content: space-between;
         }
-        .header h1 { color: #333; margin: 0; }
-        .header .order-no { color: #667eea; font-size: 0.9em; margin-top: 5px; }
+        .header h1 { color: #333; margin: 0; font-size: 15px; font-weight: 700; }
+        .header .order-no { color: #667eea; font-size: 13px; margin: 0; font-weight: 500; }
 
-        .nav-link { margin: 10px 0; }
+        .nav-link { margin: 4px 0; font-size: 13px; }
         .nav-link a { color: #667eea; text-decoration: none; }
 
         .section {
             background: white;
-            padding: 16px;
-            border-radius: 8px;
-            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
-            margin-bottom: 12px;
+            padding: 8px 12px;
+            border-radius: 6px;
+            box-shadow: 0 1px 4px rgba(0,0,0,0.08);
+            margin-bottom: 6px;
         }
         .section h2 {
             color: #333;
-            font-size: 18px;
-            margin: 0 0 12px 0;
-            padding-bottom: 8px;
+            font-size: 12px; font-weight: 600;
+            margin: 0 0 6px 0;
+            padding-bottom: 4px;
             border-bottom: 2px solid #667eea;
         }
 
         .info-grid {
             display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
-            gap: 10px;
+            grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+            gap: 4px;
         }
         .info-item {
-            padding: 8px;
+            padding: 4px 6px;
             background: #f8f9fa;
-            border-radius: 4px;
+            border-radius: 3px;
         }
         .info-item .label {
-            font-size: 12px;
-            color: #666;
-            margin-bottom: 3px;
+            font-size: 11px;
+            color: #888;
+            margin-bottom: 1px;
+            font-weight: 400;
         }
         .info-item .value {
-            font-size: 15px;
+            font-size: 13px;
             color: #333;
             font-weight: 500;
         }
 
         .status-badge {
             display: inline-block;
-            padding: 6px 12px;
-            border-radius: 4px;
-            font-size: 14px;
+            padding: 2px 8px;
+            border-radius: 3px;
+            font-size: 13px;
             font-weight: 500;
         }
         .status-0, .status-1 { background: #fff3cd; color: #856404; }
@@ -276,14 +280,16 @@ function formatType1Json($type1_data) {
             border-collapse: collapse;
         }
         .price-table th, .price-table td {
-            padding: 8px;
+            padding: 4px 6px;
             text-align: left;
             border-bottom: 1px solid #eee;
+            font-size: 13px;
+            font-weight: 400;
         }
-        .price-table th { color: #666; font-weight: 500; width: 40%; }
+        .price-table th { color: #666; font-weight: 500; width: 40%; font-size: 13px; }
         .price-table td { color: #333; }
         .price-table tr.total { background: #f8f9fa; font-weight: bold; }
-        .price-table tr.total td { color: #667eea; font-size: 18px; }
+        .price-table tr.total td { color: #667eea; font-size: 14px; font-weight: 700; }
 
         .options-list {
             list-style: none;
@@ -291,15 +297,12 @@ function formatType1Json($type1_data) {
             margin: 0;
         }
         .options-list li {
-            padding: 6px 10px;
+            padding: 3px 8px;
             background: #e8f4f8;
-            border-radius: 4px;
-            margin-bottom: 5px;
+            border-radius: 3px;
+            margin-bottom: 3px;
             color: #0c5460;
-        }
-        .no-options {
-            color: #999;
-            font-style: italic;
+            font-size: 13px;
         }
 
         .files-list {
@@ -308,70 +311,101 @@ function formatType1Json($type1_data) {
             margin: 0;
         }
         .files-list li {
-            padding: 8px 12px;
+            padding: 4px 8px;
             background: #f8f9fa;
-            border-radius: 4px;
-            margin-bottom: 5px;
+            border-radius: 3px;
+            margin-bottom: 3px;
             display: flex;
             align-items: center;
-            gap: 10px;
+            gap: 6px;
+            font-size: 13px;
         }
-        .files-list .file-icon { font-size: 20px; }
-        .files-list .file-name { flex: 1; color: #333; }
-        .files-list .file-size { color: #666; font-size: 13px; }
+        .files-list .file-icon { font-size: 14px; }
+        .files-list .file-name { flex: 1; color: #333; font-size: 13px; }
+        .files-list .file-size { color: #666; font-size: 12px; }
 
         .tracking-info {
             background: #e8f5e9;
-            padding: 12px;
+            padding: 6px 10px;
             border-radius: 4px;
             display: flex;
             align-items: center;
-            gap: 15px;
+            gap: 10px;
+            font-size: 13px;
         }
         .tracking-info .company { font-weight: 500; color: #2e7d32; }
-        .tracking-info .number { font-family: monospace; font-size: 16px; color: #333; }
+        .tracking-info .number { font-family: 'Noto Sans KR', monospace; font-size: 13px; color: #333; font-weight: 600; }
 
         .memo-box {
             background: #fffde7;
-            padding: 12px;
+            padding: 8px 10px;
             border-radius: 4px;
-            border-left: 4px solid #fbc02d;
+            border-left: 3px solid #fbc02d;
             white-space: pre-wrap;
             color: #333;
+            font-size: 13px;
+            max-height: 80px;
+            overflow-y: auto;
+            line-height: 1.5;
+        }
+
+        .btn-back {
+            display: inline-block;
+            padding: 7px 18px;
+            background: #f8f9fa;
+            border: 1px solid #ced4da;
+            border-radius: 5px;
+            color: #495057;
+            font-size: 13px;
+            font-weight: 500;
+            text-decoration: none;
+            cursor: pointer;
+            transition: background 0.15s, border-color 0.15s;
+        }
+        .btn-back:hover {
+            background: #e9ecef;
+            border-color: #adb5bd;
+            color: #212529;
+        }
+        .btn-back-primary {
+            background: #1E4E79;
+            border: 1px solid #1E4E79;
+            color: #fff;
+        }
+        .btn-back-primary:hover {
+            background: #163d60;
+            border-color: #163d60;
+            color: #fff;
         }
 
         @media (max-width: 768px) {
             .info-grid { grid-template-columns: 1fr; }
-            .container { padding: 10px; }
-            .section { padding: 15px; }
+            .container { padding: 5px; }
+            .section { padding: 8px; }
         }
     </style>
 </head>
 <body>
     <div class="container">
-        <div class="nav-link">
-            <a href="orders.php">← 주문 내역으로 돌아가기</a>
+        <div style="margin-bottom: 6px;">
+            <a href="index.php" onclick="if(history.length>1){history.back();return false;}" class="btn-back btn-back-primary">← 돌아가기</a>
         </div>
 
         <div class="header">
             <h1>주문 상세</h1>
-            <p class="order-no">주문번호: <?php echo htmlspecialchars($order['no']); ?></p>
+            <p class="order-no">#<?php echo htmlspecialchars($order['no']); ?></p>
         </div>
 
         <?php if ($is_group_order): ?>
-        <div class="section" style="border: 2px solid #3498db; background: #eaf4fd; padding: 15px 20px;">
-            <p style="margin: 0; color: #2c3e50; font-size: 14px;">
-                📦 이 주문은 <strong><?php echo count($group_orders); ?>건 묶음주문</strong>의 일부입니다.
-                결제 시 전체 묶음 금액(₩<?php echo number_format($group_total_print); ?>)이 함께 처리됩니다.
-            </p>
-            <ul style="margin: 8px 0 0; padding-left: 20px; font-size: 13px; color: #555;">
-                <?php foreach ($group_orders as $gi => $grp): ?>
-                <li<?php echo ($grp['no'] == $order['no']) ? ' style="font-weight: 600; color: #2c3e50;"' : ''; ?>>
-                    <?php echo htmlspecialchars($grp['Type']); ?> — ₩<?php echo number_format(intval($grp['money_5'] ?? 0)); ?>
-                    <?php echo ($grp['no'] == $order['no']) ? ' (현재 조회중)' : ''; ?>
-                </li>
+        <div class="section" style="border-left: 3px solid #3498db; background: #eaf4fd; padding: 6px 10px;">
+            <p style="margin: 0; color: #2c3e50; font-size: 12px;">
+                📦 <strong><?php echo count($group_orders); ?>건 묶음</strong> — 합계 ₩<?php echo number_format($group_total_print); ?>
+                <?php foreach ($group_orders as $grp): ?>
+                <span style="margin-left:6px;<?php echo ($grp['no'] == $order['no']) ? 'font-weight:600;' : 'color:#666;'; ?>">
+                    <?php echo htmlspecialchars($grp['Type']); ?>(₩<?php echo number_format(intval($grp['money_5'] ?? 0)); ?>)<?php echo ($grp['no'] == $order['no']) ? '◀' : ''; ?>
+                </span>
                 <?php endforeach; ?>
-            </ul>
+            </p>
         </div>
         <?php endif; ?>
 
@@ -487,15 +521,9 @@ function formatType1Json($type1_data) {
         <div class="section">
             <h2>배송 정보</h2>
             <div class="info-grid">
-                <?php if (!empty($order['zip'])): ?>
-                <div class="info-item">
-                    <div class="label">우편번호</div>
-                    <div class="value"><?php echo htmlspecialchars($order['zip']); ?></div>
-                </div>
-                <?php endif; ?>
                 <?php if (!empty($order['zip1'])): ?>
                 <div class="info-item" style="grid-column: span 2;">
-                    <div class="label">주소</div>
+                    <div class="label">주소<?php echo !empty($order['zip']) ? ' [' . htmlspecialchars($order['zip']) . ']' : ''; ?></div>
                     <div class="value"><?php echo htmlspecialchars($order['zip1']); ?> <?php echo htmlspecialchars($order['zip2'] ?? ''); ?></div>
                 </div>
                 <?php endif; ?>
@@ -518,7 +546,7 @@ function formatType1Json($type1_data) {
                     <div class="label">택배비</div>
                     <div class="value">
                         <?php if ($logen_delivery_fee > 0): ?>
-                            <span style="color: #155724; font-weight: 600;">₩<?php echo number_format($logen_delivery_fee); ?> <span style="font-size: 12px; color: #666;">(+VAT ₩<?php echo number_format(round($logen_delivery_fee * 0.1)); ?>)</span></span>
+                            <span style="color: #155724; font-weight: 600;">₩<?php echo number_format($logen_delivery_fee); ?> <span style="font-size: 11px; color: #666;">(+VAT ₩<?php echo number_format(round($logen_delivery_fee * 0.1)); ?>)</span></span>
                         <?php else: ?>
                             <span style="color: #856404; font-weight: 500;">확인중 (전화 안내 예정)</span>
                         <?php endif; ?>
@@ -532,15 +560,11 @@ function formatType1Json($type1_data) {
             $delivery_co = $order['delivery_company'] ?? '로젠택배';
             if (!empty($tracking_no)):
             ?>
-            <div style="margin-top: 15px;">
+            <div style="margin-top: 6px;">
                 <div class="tracking-info">
                     <span class="company"><?php echo htmlspecialchars($delivery_co); ?></span>
                     <span class="number"><?php echo htmlspecialchars($tracking_no); ?></span>
-                    <a href="https://www.ilogen.com/web/personal/trace/<?php echo urlencode($tracking_no); ?>"
-                       target="_blank"
-                       style="color: #667eea; text-decoration: none;">
-                       배송조회 →
-                    </a>
+                    <a href="https://www.ilogen.com/web/personal/trace/<?php echo urlencode($tracking_no); ?>" target="_blank" style="color: #667eea; text-decoration: none; font-size: 12px;">배송조회 →</a>
                 </div>
             </div>
             <?php endif; ?>
@@ -688,7 +712,7 @@ function formatType1Json($type1_data) {
         <?php if (!empty($order['cont'])): ?>
         <div class="section">
             <h2>요청사항</h2>
-            <div class="memo-box"><?php echo nl2br(htmlspecialchars($order['cont'])); ?></div>
+            <div class="memo-box"><?php echo htmlspecialchars($order['cont']); ?></div>
         </div>
         <?php endif; ?>
 
@@ -744,7 +768,7 @@ function formatType1Json($type1_data) {
         <div class="section" style="border: 2px solid #667eea; background: #f8f9ff;">
             <h2 style="color: #667eea; border-bottom-color: #667eea;">결제하기</h2>
 
-            <table class="price-table" style="margin-bottom: 20px;">
+            <table class="price-table" style="margin-bottom: 10px;">
                 <?php if ($is_group_order): ?>
                 <?php foreach ($group_orders as $grp): ?>
                 <tr>
@@ -770,82 +794,58 @@ function formatType1Json($type1_data) {
                 </tr>
             </table>
 
-            <div style="display: flex; gap: 12px; flex-wrap: wrap;">
-                <!-- 카드결제 -->
+            <div style="display: flex; gap: 8px; flex-wrap: wrap;">
                 <?php
-                    // 🔧 FIX: 다건 그룹 주문 시 전체 주문번호 전달 (order_group_id NULL 대응)
                     $pay_url = '/payment/inicis_request.php?order_no=' . $order['no'];
                     if ($is_group_order && empty($group_id)) {
-                        // 레거시 다건 주문: orders 파라미터 추가
-                        $pay_url .= '&orders=' . urlencode(implode('_', array_column($group_orders, 'no'))); // _구분자 (Plesk %2C 차단)
+                        $pay_url .= '&orders=' . urlencode(implode('_', array_column($group_orders, 'no')));
                     }
                 ?>
                 <a href="<?php echo $pay_url; ?>"
-                   style="flex: 1; min-width: 200px; display: flex; align-items: center; gap: 12px;
-                          padding: 16px 20px; background: #667eea; color: #fff; border-radius: 8px;
-                          text-decoration: none; font-weight: 600; font-size: 15px;
-                          transition: background 0.2s;">
-                    <span style="font-size: 24px;">💳</span>
+                   style="flex: 1; min-width: 160px; display: flex; align-items: center; gap: 8px;
+                          padding: 10px 14px; background: #667eea; color: #fff; border-radius: 6px;
+                          text-decoration: none; font-weight: 600; font-size: 13px;">
+                    <span style="font-size: 18px;">💳</span>
                     <div>
                         <div>카드결제 / 실시간이체</div>
-                        <div style="font-size: 12px; font-weight: 400; opacity: 0.85; margin-top: 2px;">신용카드 또는 실시간 계좌이체</div>
+                        <div style="font-size: 11px; font-weight: 400; opacity: 0.85;">신용카드 또는 계좌이체</div>
                     </div>
                 </a>
-
-                <!-- 무통장입금 -->
                 <button onclick="document.getElementById('bankInfoSection').style.display = document.getElementById('bankInfoSection').style.display === 'none' ? 'block' : 'none';"
-                        style="flex: 1; min-width: 200px; display: flex; align-items: center; gap: 12px;
-                               padding: 16px 20px; background: #fff; color: #333; border: 2px solid #ddd;
-                               border-radius: 8px; cursor: pointer; font-weight: 600; font-size: 15px;
-                               transition: border-color 0.2s; text-align: left;">
-                    <span style="font-size: 24px;">🏦</span>
+                        style="flex: 1; min-width: 160px; display: flex; align-items: center; gap: 8px;
+                               padding: 10px 14px; background: #fff; color: #333; border: 2px solid #ddd;
+                               border-radius: 6px; cursor: pointer; font-weight: 600; font-size: 13px;
+                               text-align: left;">
+                    <span style="font-size: 18px;">🏦</span>
                     <div>
                         <div>무통장입금</div>
-                        <div style="font-size: 12px; font-weight: 400; color: #888; margin-top: 2px;">계좌번호 확인 후 직접 입금</div>
+                        <div style="font-size: 11px; font-weight: 400; color: #888;">계좌번호 확인</div>
                     </div>
                 </button>
             </div>
 
             <!-- 무통장입금 계좌 정보 (토글) -->
-            <div id="bankInfoSection" style="display: none; margin-top: 16px; padding: 20px; background: #fff; border: 1px solid #e0e0e0; border-radius: 8px;">
-                <h3 style="margin: 0 0 12px; font-size: 15px; color: #333;">입금 계좌 안내</h3>
-                <table style="width: 100%; border-collapse: collapse; font-size: 14px;">
-                    <tr style="border-bottom: 1px solid #eee;">
-                        <td style="padding: 8px 0; font-weight: 600; width: 90px;">국민은행</td>
-                        <td style="padding: 8px 0; font-family: monospace; font-size: 15px;">999-1688-2384</td>
-                    </tr>
-                    <tr style="border-bottom: 1px solid #eee;">
-                        <td style="padding: 8px 0; font-weight: 600;">신한은행</td>
-                        <td style="padding: 8px 0; font-family: monospace; font-size: 15px;">110-342-543507</td>
-                    </tr>
-                    <tr style="border-bottom: 1px solid #eee;">
-                        <td style="padding: 8px 0; font-weight: 600;">농협</td>
-                        <td style="padding: 8px 0; font-family: monospace; font-size: 15px;">301-2632-1830-11</td>
-                    </tr>
+            <div id="bankInfoSection" style="display: none; margin-top: 8px; padding: 10px; background: #fff; border: 1px solid #e0e0e0; border-radius: 6px; font-size: 12px;">
+                <table style="width: 100%; border-collapse: collapse;">
+                    <tr style="border-bottom: 1px solid #eee;"><td style="padding:3px 0;font-weight:600;width:70px;">국민</td><td style="padding:3px 0;font-family:monospace;">999-1688-2384</td></tr>
+                    <tr style="border-bottom: 1px solid #eee;"><td style="padding:3px 0;font-weight:600;">신한</td><td style="padding:3px 0;font-family:monospace;">110-342-543507</td></tr>
+                    <tr style="border-bottom: 1px solid #eee;"><td style="padding:3px 0;font-weight:600;">농협</td><td style="padding:3px 0;font-family:monospace;">301-2632-1830-11</td></tr>
                 </table>
-                <p style="margin: 12px 0 0; font-size: 13px; color: #666;">
-                    <strong>예금주: 두손기획인쇄 차경선</strong><br>
-                    입금자명을 주문자명과 동일하게 해주세요.
-                </p>
+                <p style="margin: 4px 0 0; font-size: 11px; color: #666;"><strong>예금주: 두손기획인쇄 차경선</strong></p>
             </div>
         </div>
 
         <?php elseif (!$is_paid && $is_prepaid_pay && $lf_fee_pay === 0): ?>
-        <div class="section" style="border: 2px solid #e67e22; background: #fff8f0;">
-            <h2 style="color: #e67e22; border-bottom-color: #e67e22;">택배비 확정 대기중</h2>
-            <div style="text-align: center; padding: 20px 0;">
-                <div style="font-size: 40px; margin-bottom: 12px;">📦</div>
-                <p style="color: #856404; font-size: 15px; line-height: 1.8; margin: 0;">
-                    택배비가 아직 확정되지 않았습니다.<br>
-                    관리자가 택배비를 확정하면 결제가 가능합니다.<br>
-                    <strong style="font-size: 16px; color: #c0392b;">☎ 02-2632-1830</strong>
-                </p>
-            </div>
+        <div class="section" style="border-left: 3px solid #e67e22; background: #fff8f0;">
+            <h2 style="color: #e67e22; border-bottom-color: #e67e22; margin-bottom: 4px;">택배비 확정 대기중</h2>
+            <p style="color: #856404; font-size: 12px; line-height: 1.5; margin: 0;">
+                관리자가 택배비를 확정하면 결제가 가능합니다. <strong style="color: #c0392b;">☎ 02-2632-1830</strong>
+            </p>
         </div>
         <?php endif; ?>
 
-        <div class="nav-link" style="text-align: center; margin: 15px 0;">
-            <a href="orders.php">← 주문 내역으로 돌아가기</a>
+        <div style="text-align: center; margin: 10px 0 4px;">
+            <a href="index.php" onclick="if(history.length>1){history.back();return false;}" class="btn-back btn-back-primary" style="display:block; text-align:center; padding: 10px; font-size: 14px;">← 돌아가기</a>
         </div>
     </div>
 </body>
