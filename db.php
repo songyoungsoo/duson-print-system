@@ -110,14 +110,15 @@ if ($current_env === 'local') {
     $admin_url = "http://localhost";
     $home_cookie_url = "localhost"; // 로컬은 점 제거
 } else {
-    // 프로덕션: 현재 접속 도메인 자동 감지
-    $protocol = (!empty($_SERVER['HTTPS']) && $_SERVER['HTTPS'] !== 'off') ? "https://" : "http://";
-    $host = $_SERVER['HTTP_HOST'] ?? 'dsp1830.shop';
-    $admin_url = $protocol . $host;
+    // 프로덕션: SITE_URL 상수 활용 (도메인 자동 감지)
+    $admin_url = defined('SITE_URL') ? SITE_URL : 'https://' . ($_SERVER['HTTP_HOST'] ?? 'dsp114.co.kr');
+    $host = $_SERVER['HTTP_HOST'] ?? 'dsp114.co.kr';
 
-    // 쿠키 도메인: 최종 목표 도메인 사용 (dsp1830.shop에서도 작동하도록)
+    // 쿠키 도메인: 접속 도메인 자동 감지
     if (strpos($host, 'dsp114.co.kr') !== false) {
         $home_cookie_url = ".dsp114.co.kr";
+    } elseif (strpos($host, 'dsp114.com') !== false) {
+        $home_cookie_url = ".dsp114.com";
     } elseif (strpos($host, 'dsp1830.shop') !== false) {
         $home_cookie_url = ".dsp1830.shop";
     } else {

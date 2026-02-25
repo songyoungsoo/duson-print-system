@@ -411,7 +411,7 @@ if ($resultCode === '0000' || $resultCode === '00') {
                         </tr>
                     </table>
                     <div style='margin-top: 20px; text-align: center;'>
-                        <a href='https://dsp114.co.kr/admin.php?mode=OrderView&no={$order_no}' 
+                        <a href=' . SITE_URL . '/admin.php?mode=OrderView&no={$order_no}' 
                            style='display: inline-block; padding: 12px 30px; background: #667eea; color: white; text-decoration: none; border-radius: 5px; font-weight: bold;'>
                             주문 상세 보기
                         </a>
