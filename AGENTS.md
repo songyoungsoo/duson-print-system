@@ -163,6 +163,23 @@ Plesk 접속 정보:
 └─ phpMyAdmin: Plesk → 데이터베이스 → phpMyAdmin 접속
 ```
 
+**프로덕션 DB 접속 정보 (CRITICAL - 2026-02-25 추가):**
+```
+DB 접속 정보 (dsp114.co.kr):
+├─ Host: localhost
+├─ User: dsp1830
+├─ Pass: t3zn?5R56
+├─ Database: dsp1830
+├─ Charset: utf8mb4
+└─ 용도: 프로덕션 웹사이트 DB (MySQL)
+
+⚠️ 주의사항:
+- 로컬 개발 DB와 비밀번호가 다름!
+- 로컬: dsp1830 / ds701018 / dsp1830
+- 프로덕션: dsp1830 / t3zn?5R56 / dsp1830
+- config.env.php에서 환경별 자동 전환
+```
+
 ```
 NAS 접속 정보 (백업 서버):
 ┌──────────────────────────────────────────────────────────────┐
