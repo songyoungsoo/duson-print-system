@@ -462,48 +462,6 @@ header("Expires: 0");
     <div class="inserted-detail-combined">
         <?php include "explane_inserted.php"; ?>
     </div>
-
-
-    <!-- 전단지 안내 섹션 -->
-    <section class="flyer-info-section">
-        <div class="flyer-info-grid">
-            <!-- 합판 전단지 카드 -->
-            <div class="flyer-card">
-                <!-- 제목 (네모 박스 반전글) -->
-                <div class="hapan-title">
-                    <h3>합판 전단지</h3>
-                </div>
-                
-                <!-- 헤어라인 -->
-                <div class="flyer-hairline"></div>
-                
-                <!-- 내용 -->
-                <div class="flyer-content">
-                    <p>일정량의 고객 인쇄물을 한판에 모아서 인쇄 제작하는 상품으로 저렴한 가격과 빠른 제작시간이 특징인 상품입니다. 일반 길거리 대량 배포용 전단지를 제작하실 때 선택하시면 됩니다.</p>
-                    
-                    <div class="flyer-specs">
-                        <h4>📏 제작 가능 사이즈</h4>
-                        <ul>
-                            <li>A2 (420 x 594 mm)</li>
-                            <li>A3 (297 x 420 mm)</li>
-                            <li>A4 (210 x 297 mm)</li>
-                            <li>4절 (367 x 517mm)</li>
-                            <li>8절 (257 x 367 mm)</li>
-                            <li>16절 (182 x 257 mm)</li>
-                        </ul>
-                        <p><strong>작업사이즈:</strong> 재단사이즈에서 사방 1.5mm씩 여분</p>
-                    </div>
-                    
-                    <div class="flyer-tip">
-                        <p>TIP! 작업 템플릿을 다운 받아 사용하시면 더욱 정확하고 편리하게 작업하실 수 있습니다!</p>
-                    </div>
-                </div>
-            </div>
-            
-            <!-- 독판 전단지 카드 (레거시 - 숨김 처리) -->
-            <!-- 독판인쇄는 추후 별도 페이지로 구현 예정 -->
-        </div>
-    </section>
     <?php endif; ?>
 
     <?php

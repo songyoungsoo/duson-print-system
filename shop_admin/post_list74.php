@@ -344,7 +344,7 @@ function exportAllToLogenExcel() {
     <td style="padding: 3px;"><?php echo htmlspecialchars(isset($data['phone']) ? $data['phone'] : '')?></td>
     <td style="padding: 3px;" width="120"><?php echo htmlspecialchars(isset($data['Hendphone']) ? $data['Hendphone'] : '')?></td>
     <td style="padding: 3px;" align='center'><input type="text" id="box_qty_<?php echo $no?>" name="box_qty[<?php echo $no?>]" value="<?php echo $r; ?>" size="2" style="text-align:center;"></td>
-    <td style="padding: 3px; text-align:center; color:#666;"><?php echo $est_weight_kg; ?>kg</td>
+    <td style="padding: 3px; text-align:center; color:#666;"><?php echo ($est_weight_kg <= 3) ? $est_weight_kg . 'kg 이하' : '약 ' . $est_weight_kg . 'kg'; ?></td>
     <td style="padding: 3px;"><input type="text" id="delivery_fee_<?php echo $no?>" name="delivery_fee[<?php echo $no?>]" value="<?php echo $w; ?>" size="5"></td>
     <td style="padding: 3px;"><select id="fee_type_<?php echo $no?>" name="fee_type[<?php echo $no?>]" style="font-size:9pt;">
       <option value="착불" selected>착불</option>

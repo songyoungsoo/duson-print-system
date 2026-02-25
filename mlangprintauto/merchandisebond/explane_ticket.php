@@ -85,6 +85,30 @@
     </div>
 
     <div class="detail-section">
+        <h3>📖 코팅 종류별 특징 안내</h3>
+        <p class="section-desc">상품권의 내구성과 느낌을 결정하는 코팅의 차이를 알아보세요.</p>
+        <div class="coating-guide">
+            <div class="coating-guide-item">
+                <strong>비코팅 (스노우화이트 250g)</strong>
+                <p>코팅 없이 종이 본연의 부드러운 질감을 살립니다. 필기가 가능하여 이름이나 번호를 기입해야 하는 상품권에 적합합니다. 다만 물기에 약하고 찢어질 수 있으므로 취급에 주의가 필요합니다.</p>
+            </div>
+            <div class="coating-guide-item">
+                <strong>유광 코팅</strong>
+                <p>광택 있는 코팅으로 색상이 선명하고 화사하게 보입니다. 사진이나 그래픽이 많은 상품권 디자인에 추천합니다. 구겨짐에 강하고 잘 찢어지지 않습니다.</p>
+            </div>
+            <div class="coating-guide-item">
+                <strong>무광 코팅</strong>
+                <p>빛 반사가 없어 차분하고 고급스러운 느낌입니다. 텍스트 중심 디자인이나 고급 브랜드 상품권에 적합합니다.</p>
+            </div>
+            <div class="coating-guide-item">
+                <strong>고품격 라미네이팅 코팅</strong>
+                <p>무광 라미네이팅 필름을 열압착하여 가장 높은 내구성을 제공합니다. 두께감이 좋고 구겨짐·찢어짐에 매우 강합니다. 고급 상품권, VIP 쿠폰에 추천합니다.</p>
+            </div>
+        </div>
+        <p style="margin-top:10px; font-size:0.85rem; color:#888;">💡 <strong>선택 가이드:</strong> 필기가 필요하면 비코팅, 선명한 색감이 중요하면 유광코팅, 고급감이 중요하면 고품격 라미네이팅을 추천합니다.</p>
+    </div>
+
+    <div class="detail-section">
         <h3>🚚 접수 출고안내</h3>
         <p class="section-desc">제품별 출고일을 확인해 보세요.</p>
 
@@ -118,23 +142,23 @@
         <h3>📁 접수가능 파일</h3>
         <div class="file-types">
             <div class="file-type">
-                <img src="../../images/adobe-ai.png" alt="Adobe Illustrator" class="file-icon">
-                <span>Adobe Illustrator</span>
+                <div style="font-size: 2.5rem; color: #9c27b0;">🎨</div>
+                <span>Adobe<br>Illustrator</span>
             </div>
             <div class="file-type">
-                <img src="../../images/adobe-ps.png" alt="Adobe Photoshop" class="file-icon">
-                <span>Adobe Photoshop</span>
+                <div style="font-size: 2.5rem; color: #9c27b0;">📄</div>
+                <span>Adobe<br>Photoshop</span>
             </div>
             <div class="file-type">
-                <img src="../../images/corel.png" alt="CorelDRAW" class="file-icon">
+                <div style="font-size: 2.5rem; color: #9c27b0;">🖥️</div>
                 <span>CorelDRAW</span>
             </div>
             <div class="file-type">
-                <img src="../../images/photo.png" alt="디지털 사진" class="file-icon">
+                <div style="font-size: 2.5rem; color: #9c27b0;">📷</div>
                 <span>디지털 사진 및<br>디지털 그래픽툴 공용</span>
             </div>
             <div class="file-type">
-                <img src="../../images/graphic.png" alt="그래픽툴" class="file-icon">
+                <div style="font-size: 2.5rem; color: #9c27b0;">🎭</div>
                 <span>디지털 그래픽툴 공용</span>
             </div>
         </div>
@@ -459,6 +483,29 @@
 .notice-item li {
     margin-bottom: 8px;
     line-height: 1.6;
+}
+
+.coating-guide {
+    margin: 15px 0;
+}
+.coating-guide-item {
+    background: white;
+    padding: 15px;
+    margin-bottom: 10px;
+    border: 1px solid #dee2e6;
+    border-left: 4px solid #9c27b0;
+    border-radius: 4px;
+}
+.coating-guide-item strong {
+    color: #9c27b0;
+    display: block;
+    margin-bottom: 5px;
+}
+.coating-guide-item p {
+    margin: 0;
+    font-size: 0.88rem;
+    color: #666;
+    line-height: 1.5;
 }
 
 @media (max-width: 768px) {

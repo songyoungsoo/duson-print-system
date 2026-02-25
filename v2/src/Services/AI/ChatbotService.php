@@ -6,7 +6,7 @@ namespace App\Services\AI;
 class ChatbotService
 {
     private string $apiKey;
-    private string $model = 'gemini-2.0-flash';
+    private string $model = 'gemini-2.5-flash';
     private string $baseUrl = 'https://generativelanguage.googleapis.com/v1beta/models/';
     private $db = null;
     private array $products;
@@ -1227,15 +1227,40 @@ class ChatbotService
     private function isKnowledgeQuestion(string $message): bool
     {
         $keywords = [
-            '교정', '수정', '시안', '원고', '납기', '배송', '착불', '선불', '택배',
+            '교정', '수정', '시안', '원고', '납기', '배송', '착불', '선불', '택배', '택배비', '배송비',
             '디자인비', '디자인 비용', '디자인 가격', '작업비',
             '파일', '해상도', 'dpi', 'CMYK', 'RGB', '일러스트', '포토샵', '윤곽선',
             '사이즈', '규격', '템플릿', '작업사이즈',
-            '입금', '계좌', '카드결제', '결제',
+            '입금', '계좌', '카드결제', '결제', '마이페이지', '주문확인', '주문조회', '주문상태',
             '운영시간', '영업시간', '휴무', '전화', '연락처', '주소', '위치', '찾아가',
             '웹하드', '이메일', '파일전송',
             '보관', '원본', '환불', '색상차이', '로스',
             '유의사항', '주의사항', '가이드', '규약', '안내',
+            // FAQ 항목 키워드 (당일판, 세금계산서, 취소, 배송기간 등)
+            '당일', '당일판', '급행', '오전판', '빠른',
+            '세금계산서', '계산서', '세금',
+            '취소', '변경', '주문취소', '주문변경',
+            'hwp', '워드', 'ppt', '캔바', '파워포인트',
+            '직접수령', '방문수령', '직접 받으러',
+            '대량', '할인', '대량할인',
+            '샘플', '견본',
+            '교환', '불량', '재작업',
+            '제작기간', '소요기간', '며칠',
+            // 인쇄 상식 키워드 (용지, 코팅, 후가공, 평량 등)
+            '아트지', '스노우지', '모조지', '유포지', '크라프트', '은데드롱', '투명지',
+            '평량', 'gsm', '두께', '몇g', '몇그램',
+            '유광', '무광', '코팅', '라미네이팅', '비코팅',
+            '도무송', '톰슨', '오시', '누름선', '접지', '미싱', '타공', '귀돌이', '라운딩',
+            '박', '금박', '은박', '형압', '엠보싱', '디보싱',
+            '합판', '독판', '인쇄도수', '1도', '4도', '풀컬러', 'cmyk',
+            '용지', '종이', '재질', '지질', '후가공',
+            // 소량 주문 / 최소 수량 키워드
+            '소량', '최소수량', '최소주문', '최소', '몇매부터', '몇장부터', '몇부부터', '몇권부터',
+            '적은 수량', '적은수량', '조금만', '조금', '적은데',
+            // 카카오톡 채널 키워드
+            '카톡', '카카오톡', '카카오', '채널', '톡상담', '카톡상담',
+            // 상담위젯 / 상담원 연결 키워드
+            '상담위젯', '상담원', '상담사', '직원', '채팅상담', '실시간상담', '문의하고', '얘기하고', '상담하고', '연결해',
         ];
         
         $msg = mb_strtolower($message, 'UTF-8');
@@ -1258,6 +1283,14 @@ class ChatbotService
             return ['success' => true, 'message' => "자세한 문의는 전화(02-2632-1830)로 연락주세요!"];
         }
         
+        // Rate limit 체크 (전체 300회/일, IP당 20회/일)
+        require_once dirname(__DIR__, 4) . '/includes/ai_rate_limiter.php';
+        $limiter = new \AIRateLimiter();
+        $rateCheck = $limiter->checkAndIncrement();
+        if (!$rateCheck['allowed']) {
+            return ['success' => true, 'message' => getAIRateLimitMessage($rateCheck['reason'])];
+        }
+        
         require_once __DIR__ . '/ChatbotKnowledge.php';
         $prompt = ChatbotKnowledge::getSystemPrompt();
         
@@ -1270,7 +1303,7 @@ class ChatbotService
             ],
             'generationConfig' => [
                 'temperature' => 0.3,
-                'maxOutputTokens' => 500,
+                'maxOutputTokens' => 1500,
             ]
         ];
         

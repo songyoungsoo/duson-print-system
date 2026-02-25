@@ -195,23 +195,23 @@
         <h3>📁 접수가능 파일</h3>
         <div class="file-types">
             <div class="file-type">
-                <img src="../../images/adobe-ai.png" alt="Adobe Illustrator" class="file-icon">
-                <span>Adobe Illustrator</span>
+                <div style="font-size: 2.5rem; color: #ff5722;">🎨</div>
+                <span>Adobe<br>Illustrator</span>
             </div>
             <div class="file-type">
-                <img src="../../images/adobe-ps.png" alt="Adobe Photoshop" class="file-icon">
-                <span>Adobe Photoshop</span>
+                <div style="font-size: 2.5rem; color: #ff5722;">📄</div>
+                <span>Adobe<br>Photoshop</span>
             </div>
             <div class="file-type">
-                <img src="../../images/corel.png" alt="CorelDRAW" class="file-icon">
+                <div style="font-size: 2.5rem; color: #ff5722;">🖥️</div>
                 <span>CorelDRAW</span>
             </div>
             <div class="file-type">
-                <img src="../../images/photo.png" alt="디지털 사진" class="file-icon">
+                <div style="font-size: 2.5rem; color: #ff5722;">📷</div>
                 <span>디지털 사진 및<br>디지털 그래픽툴 공용</span>
             </div>
             <div class="file-type">
-                <img src="../../images/graphic.png" alt="그래픽툴" class="file-icon">
+                <div style="font-size: 2.5rem; color: #ff5722;">🎭</div>
                 <span>디지털 그래픽툴 공용</span>
             </div>
         </div>

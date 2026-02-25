@@ -777,7 +777,7 @@ $boxes = max(1, (int)ceil($totalWeightKg / 20));
 
 | 규격 | 1연=매수 | 1box=매수 | 박스/연 | 택배비/연 | 0.5연 특약 | 비고 |
 |------|---------|----------|--------|----------|-----------|------|
-| A6 | 16,000 | 16,000 | 1 | 4,000원 | 3,500원 | 0.5연=A4박스 담김 |
+| A6 | 16,000 | 16,000 | 1 | 6,000원 | 3,500원 | 0.5연=A4박스 담김, A4 1연 동일무게 |
 | A5 | 8,000 | 8,000 | 1 | 6,000원 | - | |
 | A4 | 4,000 | 4,000 | 1 | 6,000원 | 3,500원 | 0.5연=A4박스 2열 |
 | B5(16절) | 8,000 | 4,000 | 2 | 7,000원 | - | 16절특약 3,500원/box |
@@ -2071,7 +2071,9 @@ $shipping_total = $shipping_supply + $shipping_vat; // 합계
 | **위젯 파일** | `/includes/ai_chatbot_widget.php` |
 | **API 엔드포인트** | `/api/ai_chat.php` |
 | **ChatbotService** | `/v2/src/Services/AI/ChatbotService.php` (직접 require) |
-| **지식 베이스** | `/v2/src/Services/AI/ChatbotKnowledge.php` (시스템 프롬프트 지식) |
+| **지식 베이스** | `/v2/src/Services/AI/ChatbotKnowledge.php` (시스템 프롬프트 지식, 10개 섹션) |
+| **Rate Limiter** | `/includes/ai_rate_limiter.php` (파일 기반, 전체 300회/일 + IP당 20회/일) |
+| **Gemini 모델** | `gemini-2.5-flash` (유료 Tier 1, 프로젝트 936644337362) |
 | **표시 조건** | 18:30 이후 ~ 09:00 이전 (footer.php 통합 토글) |
 | **include 위치** | `/includes/footer.php` (모든 페이지) |
 | **테마** | 보라색 그라디언트 (#6366f1) — 주황색 직원 채팅과 구분 |
@@ -2109,7 +2111,7 @@ setInterval(toggleWidgets, 60000);
 | `reset` | POST | 대화 세션 초기화 |
 
 - `V2_ROOT` 상수 정의 후 ChatbotService 직접 require (composer autoloader 불필요)
-- `.env` 파일의 `GEMINI_API_KEY` 로드 (없어도 DB 기반 가격 조회는 정상 동작)
+- `.env` 파일의 `GEMINI_API_KEY` 로드 (유료 Tier 1 키, 프로젝트 936644337362)
 - Same-origin Referer 체크 (CSRF 대체)
 - 세션 기반 대화 상태 유지 (`$_SESSION['chatbot']`)
 
@@ -2193,8 +2195,10 @@ NCR양식지의 챗봇 대화 단계는 제품 페이지 드롭다운 순서와 
 5. ✅ 선택지는 클릭형 버튼으로 제공 (API `options` 배열 → 프론트 `.ai-opt-btn` 렌더링)
 6. ✅ stepLabels는 제품 페이지 실제 드롭다운 라벨과 일치시킬 것
 7. ⚠️ `detectProduct()` 키워드 순서: `msticker`를 `sticker`보다 **반드시 먼저** 배치 ("자석스티커"에 "스티커" 부분문자열 포함되어 잘못 매칭됨)
-8. ✅ 지식 베이스(`ChatbotKnowledge.php`) 수정 시 Gemini 시스템 프롬프트 토큰 한도 내 유지
+8. ✅ 지식 베이스(`ChatbotKnowledge.php`) 수정 시 Gemini 시스템 프롬프트에 포함됨 (유료 Tier 1M 컨텍스트)
 9. ✅ `isKnowledgeQuestion()` 키워드 목록은 지식 베이스 컨텐츠와 동기화 유지
+10. ✅ Rate limiter: 전체 300회/일 + IP당 20회/일 (`/includes/ai_rate_limiter.php`), PST 기준 리셋
+11. ✅ 상담 안내 우선순위: 상담위젯(실시간 채팅) > 전화(02-2632-1830) > 카톡(`pf.kakao.com/_pEGhj/chat`)
 
 ### 지식 기반 Q&A (2026-02-21)
 
@@ -2208,16 +2212,21 @@ NCR양식지의 챗봇 대화 단계는 제품 페이지 드롭다운 순서와 
   └─ 둘 다 아님 → 품목 선택 메뉴 표시
 ```
 
-**지식 베이스 컨텐츠** (`ChatbotKnowledge.php`):
+**지식 베이스 컨텐츠** (`ChatbotKnowledge.php`, 10개 섹션):
 - 회사 정보 (연락처, 계좌, 운영시간, 주소)
 - 작업 규약 (교정 2회, 납기, 환불, 색상차이, 파일보관 등)
 - 디자인 비용표 (서식/카탈로그/전단지/포스터/명함/봉투/스티커/북디자인)
 - 파일 제출 안내 (포맷, 해상도, CMYK, 일러스트 윤곽선)
-- 인쇄물 규격 사이즈표 (32절~A2, 명함)
+- 인쇄물 규격 사이즈표 (32절~A2, 명함, 포스터는 국전2절/4X6만 취급)
+- 마이페이지/결제 안내 (주문확인, 결제방법, 택배비 선불 등)
+- 택배비/배송비 안내 (무게 기반 추정, 규격별 택배비, 착불/선불 등)
+- 고객 FAQ 15항목 (당일판, 대량할인, 시안확인, 색상차이 등)
+- 인쇄 기본 상식 (CMYK, 별색, 코팅, 후가공, 합판/독판 등)
+- 소량 주문 최소 수량 안내 (품목별 최하위 + 전화주문 유도)
 
 **지식 키워드 예시**: 교정, 디자인비, 파일, 해상도, CMYK, 계좌, 운영시간, 배송, 환불, 가이드 등
 
-**Gemini 설정**: temperature 0.3, maxOutputTokens 500
+**Gemini 설정**: model `gemini-2.5-flash`, temperature 0.3, maxOutputTokens 1500 (2026-02-25 증가, 답변 잘림 방지)
 
 ## 🚨 AI 긴급대응 시스템 (Emergency AI Response in Chat)
 
@@ -2564,5 +2573,5 @@ SET t.phone = b.phone, t.Hendphone = b.Hendphone;
 
 ---
 
-*Last Updated: 2026-02-25 (NCR양식지 무게 계산 구현 — NCR 60g + 일반양식지 모조gsm, 50조=1권)*
+*Last Updated: 2026-02-26 (AI 챗봇 Gemini 유료 전환 + rate limiter + 지식 확장 10개 섹션 + 제품 설명 7페이지 인쇄지식 추가)*
 *Environment: WSL2 Ubuntu + Windows XAMPP + Production Deployment*

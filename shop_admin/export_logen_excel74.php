@@ -96,7 +96,7 @@ while ($data = mysqli_fetch_array($result)) {
 
     // ===== 택배비 자동 계산 (연 단위 룩업 테이블) =====
     $shipping_rules = array(
-        'A6'  => array('boxes' => 1, 'cost' => 4000),
+        'A6'  => array('boxes' => 1, 'cost' => 6000),
         'B6'  => array('boxes' => 1, 'cost' => 4000),
         'A5'  => array('boxes' => 1, 'cost' => 6000),
         'B5'  => array('boxes' => 2, 'cost' => 7000),   // 16절 특약

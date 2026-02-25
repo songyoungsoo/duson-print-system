@@ -42,11 +42,81 @@
     </div>
 
     <div class="detail-section">
+        <h3>📖 용지별 특징 안내</h3>
+        <p class="section-desc">스티커 용도에 맞는 최적의 용지를 선택하세요.</p>
+        <div class="paper-list">
+            <div class="paper-item">
+                <strong>코팅 스티커 (아트지 90g)</strong>
+                <p>표면에 유광 코팅이 되어 색상이 선명하게 표현됩니다. 상품 라벨, 홍보 스티커 등 가장 널리 사용되는 기본 재질입니다.</p>
+            </div>
+            <div class="paper-item">
+                <strong>비코팅 스티커 (아트지 90g)</strong>
+                <p>코팅 없는 자연스러운 질감으로 필기나 도장 날인이 가능합니다. 쿠폰, 스탬프 스티커에 적합합니다.</p>
+            </div>
+            <div class="paper-item">
+                <strong>무광코팅 스티커 (아트지 90g)</strong>
+                <p>차분한 무광 처리로 고급스러운 느낌을 연출합니다. 화장품, 브랜드 라벨 등 고급 제품에 인기 있는 재질입니다.</p>
+            </div>
+            <div class="paper-item">
+                <strong>강접 코팅 스티커 (아트지 90g)</strong>
+                <p>일반 코팅지보다 접착력이 강합니다. 쉽게 떨어지면 안 되는 제품 라벨, 봉인 스티커에 적합합니다.</p>
+            </div>
+            <div class="paper-item">
+                <strong>초강접 유광코팅 스티커 (아트지 90g)</strong>
+                <p>최고 접착력의 유광 코팅 재질입니다. 야외 부착, 차량 스티커, 기계 라벨 등 강력한 접착이 필요한 곳에 사용됩니다.</p>
+            </div>
+            <div class="paper-item">
+                <strong>초강접 비코팅 스티커 (아트지 90g)</strong>
+                <p>최고 접착력에 필기가 가능한 비코팅 재질입니다. 야외 부착용이면서 필기가 필요한 경우에 선택하세요.</p>
+            </div>
+            <div class="paper-item">
+                <strong>은데드롱 스티커 (25g)</strong>
+                <p>은색 금속 느낌의 재질로 고급스러운 메탈릭 효과를 연출합니다. 전자제품 라벨, 고급 브랜드 스티커에 많이 사용됩니다.</p>
+            </div>
+            <div class="paper-item">
+                <strong>투명 스티커 (투명데드롱 25g)</strong>
+                <p>투명 재질로 바탕이 비쳐 보여 깔끔한 라벨을 연출합니다. 음료, 화장품 용기 등에 제품 자체와 어우러지는 라벨 제작에 적합합니다.</p>
+            </div>
+            <div class="paper-item">
+                <strong>유포지 스티커 (80g)</strong>
+                <p>합성수지(PP) 재질로 물에 강합니다. 냉장·냉동 보관 식품, 야외 사용 스티커 등 방수가 필요한 곳에 필수적인 재질입니다.</p>
+            </div>
+            <div class="paper-item">
+                <strong>모조지 스티커 (80g)</strong>
+                <p>일반 종이 느낌으로 필기가 가능하며 가격이 경제적입니다. 임시 라벨, 메모 스티커, 사무용에 적합합니다.</p>
+            </div>
+            <div class="paper-item">
+                <strong>크라프트 스티커 (57g)</strong>
+                <p>갈색 자연 질감의 친환경적인 느낌입니다. 핸드메이드 제품, 수제 식품, 친환경 브랜드 라벨에 잘 어울립니다.</p>
+            </div>
+        </div>
+    </div>
+
+    <div class="detail-section">
         <h3>✨ 코팅종류 안내</h3>
         <div class="coating-list">
             <div class="coating-item">무광 코팅</div>
             <div class="coating-item">유광 코팅</div>
             <div class="coating-item">심플레인보우 코팅</div>
+        </div>
+    </div>
+
+    <div class="detail-section">
+        <h3>📖 코팅별 특징 안내</h3>
+        <p class="section-desc">코팅 종류에 따라 스티커의 느낌과 내구성이 달라집니다.</p>
+        <div class="coating-list">
+            <div class="coating-item">
+                <strong>유광 코팅</strong>
+                <p>광택이 있어 색상이 더욱 선명하고 화사하게 보입니다. 사진이나 그래픽이 많은 디자인에 추천합니다.</p>
+            </div>
+            <div class="coating-item">
+                <strong>무광 코팅</strong>
+                <p>광택을 억제하여 차분하고 고급스러운 분위기를 연출합니다. 텍스트 위주 디자인이나 고급 브랜드 라벨에 적합합니다.</p>
+            </div>
+            <div class="coating-item">
+                <strong>심플레인보우 코팅</strong>
+                <p>빛의 각도에 따라 은은한 무지개빛이 감도는 특수 코팅입니다. 눈길을 끄는 홍보용 스티커에 효과적입니다.</p>
+            </div>
         </div>
     </div>
 
@@ -94,8 +164,45 @@
 
     <div class="detail-section">
         <h3>📁 접수가능 파일</h3>
-        <p>Adobe Illustrator, Adobe Photoshop, 디지털 사진 및 디지털 그래픽툴 공용, pdf, 엑셀, 파워포인트, 워드, 한글<br>
-        기타는 전화문의</p>
+        <div class="file-types">
+            <div class="file-type">
+                <div style="font-size: 2.5rem;">🎨</div>
+                <span>Adobe<br>Illustrator</span>
+            </div>
+            <div class="file-type">
+                <div style="font-size: 2.5rem;">🖼️</div>
+                <span>Adobe<br>Photoshop</span>
+            </div>
+            <div class="file-type">
+                <div style="font-size: 2.5rem;">🖥️</div>
+                <span>CorelDRAW</span>
+            </div>
+            <div class="file-type">
+                <div style="font-size: 2.5rem;">📷</div>
+                <span>디지털 사진 및<br>그래픽툴 공용</span>
+            </div>
+            <div class="file-type">
+                <div style="font-size: 2.5rem;">📑</div>
+                <span>PDF</span>
+            </div>
+            <div class="file-type">
+                <div style="font-size: 2.5rem;">📊</div>
+                <span>엑셀</span>
+            </div>
+            <div class="file-type">
+                <div style="font-size: 2.5rem;">📋</div>
+                <span>파워포인트</span>
+            </div>
+            <div class="file-type">
+                <div style="font-size: 2.5rem;">📝</div>
+                <span>워드</span>
+            </div>
+            <div class="file-type">
+                <div style="font-size: 2.5rem;">📄</div>
+                <span>한글</span>
+            </div>
+        </div>
+        <p style="margin-top: 10px; color: #856404; background: #fff3cd; padding: 10px; border-radius: 4px; border: 1px solid #ffeaa7;">❗ 기타 파일 형식은 <strong>전화문의</strong> (02-2632-1830) 부탁드립니다.</p>
     </div>
 
     <div class="detail-section important">
@@ -373,6 +480,26 @@
 .notice-item li {
     margin-bottom: 8px;
     line-height: 1.6;
+}
+
+.paper-item p {
+    margin: 5px 0 0 0;
+    font-size: 0.88rem;
+    color: #666;
+    font-weight: 400;
+}
+
+.coating-item p {
+    margin: 5px 0 0 0;
+    font-size: 0.88rem;
+    color: #666;
+    font-weight: 400;
+}
+
+.section-desc {
+    color: #666;
+    font-size: 0.95rem;
+    margin-bottom: 15px;
 }
 
 @media (max-width: 768px) {

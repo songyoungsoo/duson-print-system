@@ -59,6 +59,29 @@
     </div>
 
     <div class="detail-section">
+        <h3>📖 용지 선택 가이드</h3>
+        <p class="section-desc">명함 용지는 크게 일반지, 수입지, 특수지로 나뉩니다. 용도와 예산에 맞게 선택하세요.</p>
+        <div class="paper-guide">
+            <div class="paper-guide-item">
+                <strong>스노우화이트 (일반지)</strong>
+                <p>가장 보편적인 명함 용지입니다. 순백색에 매끄러운 표면으로 어떤 디자인에도 잘 어울립니다. 비코팅(250g)은 부드러운 질감, 코팅(216g/250g)은 선명한 색감, 고품격 코팅(300g/400g)은 탄탄한 두께감이 특징입니다.</p>
+            </div>
+            <div class="paper-guide-item">
+                <strong>아트지 vs 스노우지 차이</strong>
+                <p>아트지는 표면에 광택 코팅이 되어 사진이나 이미지가 선명하게 표현됩니다. 스노우지(스노우화이트)는 무광 처리되어 빛 반사 없이 차분한 느낌을 줍니다. 명함에는 주로 스노우화이트가 사용되며, 컬러풀한 디자인에는 코팅 명함, 격식 있는 느낌에는 비코팅 명함을 추천합니다.</p>
+            </div>
+            <div class="paper-guide-item">
+                <strong>수입지 · 특수지</strong>
+                <p>위 재질 갤러리에서 다양한 수입지와 특수지의 질감을 확인하실 수 있습니다. 린넨(천 질감), 펄(은은한 반짝임), 크라프트(갈색 자연 느낌) 등 개성 있는 명함 제작이 가능합니다.</p>
+            </div>
+            <div class="paper-guide-item">
+                <strong>평량(두께) 안내</strong>
+                <p>g 단위는 종이 두께(평량)를 뜻합니다. 숫자가 클수록 두꺼운 종이입니다. 명함은 보통 216g~400g을 사용하며, 일반 명함은 250g, 고급 명함은 300g~400g을 추천합니다.</p>
+            </div>
+        </div>
+    </div>
+
+    <div class="detail-section">
         <h3>📏 제작 가능 사이즈</h3>
         <div class="size-info">
             <div class="size-item">
@@ -504,6 +527,31 @@
 .notice-item li {
     margin-bottom: 8px;
     line-height: 1.6;
+}
+
+.paper-guide {
+    display: grid;
+    grid-template-columns: 1fr;
+    gap: 12px;
+    margin: 15px 0;
+}
+.paper-guide-item {
+    background: white;
+    padding: 15px;
+    border: 1px solid #dee2e6;
+    border-left: 4px solid #2c5aa0;
+    border-radius: 4px;
+}
+.paper-guide-item strong {
+    color: #2c5aa0;
+    display: block;
+    margin-bottom: 5px;
+}
+.paper-guide-item p {
+    margin: 0;
+    font-size: 0.88rem;
+    color: #666;
+    line-height: 1.5;
 }
 
 @media (max-width: 768px) {

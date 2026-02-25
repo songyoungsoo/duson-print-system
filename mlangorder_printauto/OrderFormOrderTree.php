@@ -1835,12 +1835,12 @@ function getOrderItemInfo($summary_item, $specFormatter) {
                     </div>
                     <div style="font-size: 13px; color: #333; line-height: 1.8;">
                         <span style="font-weight: 600;">예상 무게:</span>
-                        <span style="font-weight: 700; font-size: 14px; color: #1E4E79;">약 <?= number_format($ship_total_weight_kg, 1) ?>kg</span>
+                        <span style="font-weight: 700; font-size: 14px; color: #1E4E79;"><?php if ($ship_total_weight_kg <= 3): ?><?= number_format($ship_total_weight_kg, 1) ?>kg 이하<?php else: ?>약 <?= number_format($ship_total_weight_kg, 1) ?>kg<?php endif; ?></span>
                         <span style="font-size: 11px; color: #888;">(부자재 포함)</span>
                         <?php if (count($shipping_items) > 1): ?>
                         <div style="margin-top: 4px; font-size: 11px; color: #666;">
                             <?php foreach ($shipping_items as $idx => $si): ?>
-                            <span style="margin-right: 12px;"><?= $idx + 1 ?>번 품목: <?= number_format($si['weight_kg'], 1) ?>kg</span>
+                            <span style="margin-right: 12px;"><?= $idx + 1 ?>번 품목: <?php if ($si['weight_kg'] <= 3): ?><?= number_format($si['weight_kg'], 1) ?>kg 이하<?php else: ?>약 <?= number_format($si['weight_kg'], 1) ?>kg<?php endif; ?></span>
                             <?php endforeach; ?>
                         </div>
                         <?php endif; ?>
