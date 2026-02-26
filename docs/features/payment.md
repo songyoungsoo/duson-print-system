@@ -7,40 +7,44 @@
 
 ### Production Settings
 - **Merchant ID**: `dsp1147479`
-- **Domain**: `https://dsp114.co.kr`
+- **Domain**: `https://dsp114.com` (주) / `https://dsp114.co.kr` (보조) — SITE_URL 자동 감지
+- **Sign Key**: `cEdnbCtISFZ1QUNpNm5hbG1JY1RlQT09` (두 도메인 공용, 이니시스 확인 완료)
 - **Test Mode**: Controlled via `INICIS_TEST_MODE` constant
-- **Environment Detection**: Automatic localhost/production URL switching
+- **Environment Detection**: `config.env.php` SITE_URL 기반 자동 전환 (듀얼 도메인 대응)
 
 ### Critical Rules
 
 #### 1. Test Mode vs Production Mode
 ```php
 // ⚠️ NEVER enable production mode on localhost
-define('INICIS_TEST_MODE', false);  // Only on dsp114.co.kr
+define('INICIS_TEST_MODE', false);  // Only on production (dsp114.com / dsp114.co.kr)
 
 // ✅ ALWAYS use test mode locally
 define('INICIS_TEST_MODE', true);   // localhost default
 ```
 
-#### 2. Environment URL Auto-Detection
+#### 2. Environment URL Auto-Detection (듀얼 도메인 대응)
 ```php
-// ✅ CORRECT: Auto-detection based on SERVER_NAME
-if (strpos($_SERVER['SERVER_NAME'], 'dsp114.co.kr') !== false) {
-    $returnUrl = "https://dsp114.co.kr/payment/inicis_return.php";
+// ✅ CORRECT: SITE_URL 기반 자동 전환 (dsp114.com, dsp114.co.kr 모두 대응)
+if (EnvironmentDetector::isProduction()) {
+    $returnUrl = SITE_URL . "/payment/inicis_return.php";
+    // dsp114.com 접속 → https://dsp114.com/payment/inicis_return.php
+    // dsp114.co.kr 접속 → https://dsp114.co.kr/payment/inicis_return.php
 } else {
     $returnUrl = "http://localhost/payment/inicis_return.php";
 }
 
-// ❌ NEVER: Hardcode production URLs in localhost
-$returnUrl = "https://dsp114.co.kr/payment/inicis_return.php";  // WRONG!
+// ❌ NEVER: Hardcode production URLs
+$returnUrl = "https://dsp114.com/payment/inicis_return.php";  // WRONG!
 ```
 
 #### 3. Production Deployment Checklist
 - [ ] Set `INICIS_TEST_MODE = false` on production only
-- [ ] Verify `dsp114.co.kr` domain in `config.env.php`
-- [ ] Test with small amount (100-1,000원) first
+- [ ] Verify `config.env.php` domain detection (dsp114.com + dsp114.co.kr)
+- [ ] Test with small amount (100-1,000원) — **두 도메인 모두에서 테스트**
 - [ ] Check logs in `/var/www/html/payment/logs/`
 - [ ] Verify database `payment_inicis` table updates
+- [ ] Verify returnUrl matches the access domain
 
 ### Test Card Numbers (Test Mode Only)
 | Bank | Card Number | Expiry | CVC |

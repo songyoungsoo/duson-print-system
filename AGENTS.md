@@ -1,5 +1,23 @@
 # Duson Planning Print System - AI 개발 가이드
 
+## 🔑 접속 정보 총정리
+
+| 구분 | 접속 주소 | 아이디 | 비밀번호 | 비고 |
+|------|----------|--------|---------|------|
+| 홈페이지 (주) | https://dsp114.com | - | - | 주 도메인 |
+| 홈페이지 (보조) | https://dsp114.co.kr | - | - | 보조 (동일 서버) |
+| 관리자 대시보드 | https://dsp114.com/dashboard/ | `admin` | `admin123` | 두 도메인 모두 가능 |
+| DB (프로덕션) | localhost:3306 | `dsp1830` | `t3zn?5R56` | DB명: `dsp1830` (로컬 비번: `ds701018`) |
+| FTP (운영서버) | ftp://dsp114.co.kr | `dsp1830` | `cH*j@yzj093BeTtc` | 웹루트: `/httpdocs/` |
+| Plesk 관리패널 | https://cmshom.co.kr:8443 | `두손기획` | `h%42D9u2m` | 서버/SSL/도메인 관리 |
+| GitHub | github.com/songyoungsoo | `songyoungsoo` | `yeongsu32@gmail.com` | |
+| KB 지식관리 | https://dsp114.com/kb/ | - | `duson2026!kb` | localhost는 비밀번호 없음 |
+| NAS 1차 | dsp1830.ipdisk.co.kr:8000 | `admin` | `1830` | 백업 서버 |
+| NAS 2차 | sknas205.ipdisk.co.kr | `sknas205` | `sknas205204203` | 추가 백업 |
+| 고객센터 | 02-2632-1830 | - | - | |
+
+---
+
 ## 📋 프로젝트 개요
 @./README.md
 
@@ -85,21 +103,21 @@ Plesk 접속 정보:
 └─ phpMyAdmin: Plesk → 데이터베이스 → phpMyAdmin 접속
 ```
 
-**프로덕션 DB 접속 정보 (CRITICAL - 2026-02-25 추가):**
+**프로덕션 DB 접속 정보 (CRITICAL):**
 ```
-DB 접속 정보 (dsp114.co.kr):
+DB 접속 정보 (dsp114.com / dsp114.co.kr 공용):
 ├─ Host: localhost
 ├─ User: dsp1830
 ├─ Pass: t3zn?5R56
 ├─ Database: dsp1830
 ├─ Charset: utf8mb4
-└─ 용도: 프로덕션 웹사이트 DB (MySQL)
+└─ 용도: 프로덕션 웹사이트 DB (MySQL) — 두 도메인 동일 DB 사용
 
 ⚠️ 주의사항:
 - 로컬 개발 DB와 비밀번호가 다름!
 - 로컬: dsp1830 / ds701018 / dsp1830
 - 프로덕션: dsp1830 / t3zn?5R56 / dsp1830
-- config.env.php에서 환경별 자동 전환
+- config.env.php에서 환경별 자동 전환 (dsp114.com, dsp114.co.kr 모두 production 인식)
 ```
 
 ```
@@ -383,9 +401,14 @@ if (isset($db) && $db) { mysqli_close($db); }  // 페이지 끝에서 정리
 
 ### Payment System
 9. ❌ Enabling production mode on localhost → real payments triggered
-10. ❌ Hardcoding production URLs → closeUrl domain mismatch error
+10. ❌ Hardcoding production URLs → closeUrl domain mismatch error (SITE_URL 상수 사용 필수!)
 11. ❌ Forgetting to test with small amounts → accidental large payments
 12. ❌ Not checking logs after deployment → silent payment failures
+
+### 듀얼 도메인 (2026-02-26)
+22. ❌ URL 하드코딩 (`https://dsp114.com/...`) → 반드시 `SITE_URL . "/..."` 사용
+23. ❌ 이메일 본문에 도메인 하드코딩 → 접속 도메인과 불일치
+24. ❌ KB에스크로 mHValue를 도메인 확인 없이 변경 → 인증마크 오류
 
 ### Authentication
 13. ❌ Inconsistent password verification → same user can't login everywhere
@@ -426,12 +449,40 @@ if (isset($db) && $db) { mysqli_close($db); }  // 페이지 끝에서 정리
 | `CLAUDE_DOCS/COMPONENT_REFERENCE.md` | 컴포넌트 참조 |
 | `CLAUDE_DOCS/REBUILD_GUIDE.md` | 리빌드 가이드 |
 | `CLAUDE_DOCS/인쇄원가계산시스템.md` | 인쇄원가 계산 체계 |
+| `docs/두손기획인쇄_기술매뉴얼_Notion.md` | **기술 매뉴얼 V2** (듀얼 도메인 하이브리드 체계) |
+| `docs/두손기획인쇄_기술매뉴얼_V2.docx` | 기술 매뉴얼 V2 (Word 버전) |
+| `docs/두손기획인쇄_관리자매뉴얼_Notion.md` | 관리자 매뉴얼 |
 
-## 🌐 도메인 전환 현황 (dsp114.co.kr → dsp114.com)
+## 🌐 듀얼 도메인 하이브리드 운영 체계
 
-**목표**: 현재 dsp114.co.kr에서 운영 중인 신규 사이트를 dsp114.com 도메인으로 전환
+> **dsp114.com(주) + dsp114.co.kr(보조) — 같은 서버, 같은 코드, 같은 DB**
 
-**현재 상태 (2026-02-26):**
+### 아키텍처 개요
+
+```
+dsp114.com (주 도메인) ──┐
+                          ├──▶ 175.119.156.249 (Plesk + nginx + PHP 8.2)
+dsp114.co.kr (보조) ─────┘    └── /httpdocs/ → config.env.php → SITE_URL 자동 감지
+
+localhost (개발) ─────────▶ Apache + PHP 7.4 → /var/www/html/
+```
+
+### 도메인 자동 감지 (config.env.php)
+
+```php
+// 접속 도메인에 따라 자동 전환
+define('SITE_DOMAIN', get_site_domain());  // dsp114.com 또는 dsp114.co.kr
+define('SITE_URL', get_site_url());        // https://dsp114.com 또는 https://dsp114.co.kr
+```
+
+**⚠️ 새 파일 작성 시 반드시 `SITE_URL` 상수 사용 — URL 하드코딩 절대 금지!**
+
+```php
+// ❌ $url = "https://dsp114.com/payment/...";
+// ✅ $url = SITE_URL . "/payment/...";
+```
+
+### 구현 상태 (2026-02-26)
 
 | 항목 | 상태 | 비고 |
 |------|------|------|
@@ -439,39 +490,65 @@ if (isset($db) && $db) { mysqli_close($db); }  // 페이지 끝에서 정리
 | 코드 — 하드코딩 도메인 제거 | ✅ 완료 | 11개 파일에서 SITE_URL/SITE_DOMAIN으로 교체 |
 | 코드 — KG이니시스 returnUrl/closeUrl | ✅ 완료 | SITE_URL 동적 감지, 같은 사인키 사용 가능 (이니시스 확인) |
 | KB에스크로 mHValue | ✅ 완료 | dsp114.com용 `eb30fbb0...` 적용 (롤백값 주석 보존) |
-| DNS — A 레코드 변경 | ⏳ 대기 | `175.119.156.230` → `175.119.156.249` 변경 필요 |
-| Plesk — 도메인 별칭 추가 | ⏳ 대기 | dsp114.com을 Plesk에 alias로 추가 + SSL |
 | 프로덕션 배포 | ✅ 완료 | 30개 파일 FTP 업로드 (2026-02-26) |
+| 기술 매뉴얼 V2 | ✅ 완료 | `docs/두손기획인쇄_기술매뉴얼_Notion.md` + DOCX |
+| DNS — A 레코드 변경 | ⏳ 대기 | dsp114.com: `175.119.156.230` → `175.119.156.249` 변경 필요 |
+| Plesk — 도메인 별칭 추가 | ⏳ 대기 | dsp114.com을 Plesk에 alias로 추가 + SSL |
+| dsp114.com 접속 테스트 | ⏳ 대기 | DNS 전파 후 결제/에스크로/회원가입 테스트 |
 
-**도메인별 서버 현황:**
-```
-dsp114.com   → 175.119.156.230 (구 서버, Apache 2.2 + PHP 5.2)
-dsp114.co.kr → 175.119.156.249 (신 서버, nginx + Plesk + PHP 8.2)
-```
+### 하드코딩 → SITE_URL 변환 완료 파일 (11개)
 
-**KB에스크로 비교:**
+| # | 파일 | 변경 내용 |
+|---|------|----------|
+| 1 | `config.env.php` | SITE_URL/SITE_DOMAIN 동적 감지 함수 추가 |
+| 2 | `db.php` | 환경 감지에 dsp114.com 추가 |
+| 3 | `payment/inicis_config.production.php` | returnUrl/closeUrl에 SITE_URL 사용 |
+| 4 | `payment/request.php` | returnUrl에 SITE_URL 사용 |
+| 5 | `dashboard/api/email.php` | 이메일 링크에 SITE_URL 사용 |
+| 6 | `en/index.php` | 영문 사이트 baseUrl에 SITE_URL 사용 |
+| 7 | `includes/quote_request_api.php` | 견적 링크에 SITE_URL 사용 |
+| 8 | `includes/shipping_api.php` | 배송 알림 링크에 SITE_URL 사용 |
+| 9 | `member/password_reset_simple_fixed.php` | 비밀번호 재설정 링크에 SITE_URL 사용 |
+| 10 | `mlangorder_printauto/OrderComplete_universal.php` | 주문완료 URL에 SITE_URL 사용 |
+| 11 | `mlangprintauto/shop/send_cart_quotation.php` | 장바구니 견적 링크에 SITE_URL 사용 |
 
-| | dsp114.com (구) | dsp114.co.kr (신) |
-|--|----------------|-------------------|
-| mHValue | `eb30fbb0bc1da7fdcaf800c0bceebbff201111241043905` | `ef04cec95f1a7298f1f686bfe3159ade` |
-| 등록일 | 2011.11.24 | 2026.02.06 |
-| 등록 도메인 | www.dsp114.com | www.dsp114.co.kr |
-| 현재 적용 | ✅ right.htm, footer.php에 적용 중 | 롤백 시 사용 (주석에 보존) |
+### KG이니시스 (듀얼 도메인 대응)
 
-**KG이니시스:**
 - MID: `dsp1147479` (사업자번호 귀속, 도메인 무관)
-- Sign Key: 동일 사용 가능 (이니시스 기술지원 확인 완료)
-- returnUrl/closeUrl: SITE_URL 동적 감지로 자동 대응
+- Sign Key: `cEdnbCtISFZ1QUNpNm5hbG1JY1RlQT09` (두 도메인 공용)
+- returnUrl/closeUrl: `SITE_URL` 동적 감지로 자동 대응
+- 이니시스 기술지원 확인 완료: 같은 MID + Sign Key로 여러 도메인 결제 가능
 
-**롤백 방법 (KB에스크로):**
+### KB에스크로 (도메인별 mHValue)
+
+| 도메인 | mHValue | 등록일 | 적용 상태 |
+|--------|---------|--------|----------|
+| dsp114.com (주) | `eb30fbb0bc1da7fdcaf800c0bceebbff201111241043905` | 2011.11.24 | ✅ **현재 적용** |
+| dsp114.co.kr (보조) | `ef04cec95f1a7298f1f686bfe3159ade` | 2026.02.06 | 주석에 보존 |
+
+- 가맹점 코드(cc): `b034066:b035526` (양쪽 동일)
+- 적용 파일: `right.htm` (라인 111), `includes/footer.php` (라인 85)
+
+### 롤백 방법
+
 ```bash
-# mHValue를 dsp114.co.kr용으로 되돌리기
+# KB에스크로 mHValue를 dsp114.co.kr용으로 되돌리기
+git checkout e6554898 -- right.htm includes/footer.php
+
+# 또는 수동으로:
 # right.htm, includes/footer.php에서:
 #   현재: eb30fbb0bc1da7fdcaf800c0bceebbff201111241043905 (dsp114.com)
 #   롤백: ef04cec95f1a7298f1f686bfe3159ade (dsp114.co.kr)
-# 또는 git으로 원복:
-git checkout e6554898 -- right.htm includes/footer.php
 ```
+
+### DNS 전환 후 체크리스트
+
+- [ ] dsp114.com 접속 확인 (HTTPS)
+- [ ] dsp114.com에서 KB에스크로 인증마크 팝업 정상 확인
+- [ ] dsp114.com에서 카드결제 테스트 (소액)
+- [ ] dsp114.com에서 회원가입/로그인 테스트
+- [ ] dsp114.com에서 이메일 발송 링크 확인
+- [ ] dsp114.co.kr에서도 동일 기능 정상 확인
 
 ---
 마지막 업데이트: 2026-02-26

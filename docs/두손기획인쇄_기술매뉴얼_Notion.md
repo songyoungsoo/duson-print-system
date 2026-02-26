@@ -1,9 +1,13 @@
-# 두손기획인쇄 기술 매뉴얼
+# 두손기획인쇄 기술 매뉴얼 V2 — 듀얼 도메인 하이브리드 운영 체계
 
-> **문서 기준일**: 2026-02-24 | **버전**: 2.0 | **분류**: 사내용 (비공개)
+> **문서 기준일**: 2026-02-26 | **버전**: 2.1 | **분류**: 사내용 (비공개)
+> **주 도메인**: dsp114.com | **보조 도메인**: dsp114.co.kr | **서버**: 175.119.156.249
 > 
 > 이 문서는 두손기획인쇄 인쇄 주문 시스템의 **프로그래머 납품용 기술 매뉴얼**입니다.
 > "프로그래머가 제작 후 납품한다는 개념"으로, 코드 중심의 기술적 상세(JS 트리거, AJAX 엔드포인트, DB 테이블, 파일 경로)를 담습니다.
+> 
+> **V2 변경사항**: dsp114.com을 주 도메인으로, dsp114.co.kr을 보조 도메인으로 운영하는
+> 듀얼 도메인 하이브리드 체계를 반영. 모든 URL은 `SITE_URL` 상수를 통해 접속 도메인에 따라 자동 전환됩니다.
 
 ---
 
@@ -11,22 +15,27 @@
 
 ### 시스템 접속 정보
 
-| 구분 | 접속 주소 | 아이디 | 비밀번호 |
-|------|----------|--------|---------|
-| 홈페이지 | https://dsp114.co.kr | - | - |
-| 관리자 대시보드 | https://dsp114.co.kr/dashboard/ | admin | admin123 |
-| 데이터베이스 (MySQL) | localhost:3306 | dsp1830 | ds701018 |
-| FTP (운영서버) | ftp://dsp114.co.kr | dsp1830 | cH*j@yzj093BeTtc |
-| GitHub | github.com/songyoungsoo | songyoungsoo | yeongsu32@gmail.com |
-| 고객센터 전화 | 02-2632-1830 | - | - |
+| 구분 | 접속 주소 | 아이디 | 비밀번호 | 비고 |
+|------|----------|--------|---------|------|
+| 홈페이지 (주) | https://dsp114.com | - | - | **주 도메인** |
+| 홈페이지 (보조) | https://dsp114.co.kr | - | - | 보조 도메인 (동일 서버) |
+| 관리자 대시보드 | https://dsp114.com/dashboard/ | admin | admin123 | 두 도메인 모두 접속 가능 |
+| 데이터베이스 (MySQL) | localhost:3306 | dsp1830 | ds701018 (로컬) / t3zn?5R56 (프로덕션) | 환경별 자동 전환 |
+| FTP (운영서버) | ftp://dsp114.co.kr | dsp1830 | cH*j@yzj093BeTtc | 서버 호스트명 |
+| GitHub | github.com/songyoungsoo | songyoungsoo | yeongsu32@gmail.com | |
+| 고객센터 전화 | 02-2632-1830 | - | - | |
+| Plesk 관리 패널 | https://cmshom.co.kr:8443 | 두손기획 | h%42D9u2m | 서버/도메인/SSL 관리 |
 
 ### 서버 환경
 
+- **주 도메인**: `dsp114.com` (2026-02-26 전환)
+- **보조 도메인**: `dsp114.co.kr` (동일 서버, 동일 코드, 동일 DB)
+- **서버 IP**: `175.119.156.249` (Plesk + nginx + PHP 8.2)
 - **PHP**: 7.4+ (로컬) / 8.2 (프로덕션)
 - **MySQL**: 5.7+
 - **로컬 Document Root**: `/var/www/html`
 - **프로덕션 FTP 웹 루트**: `/httpdocs/` ⚠️ 반드시 이 경로 사용!
-- **환경 자동 감지**: `config.env.php` — `SERVER_NAME` 기반으로 localhost/production URL 자동 전환
+- **도메인 자동 감지**: `config.env.php`의 `SITE_URL`/`SITE_DOMAIN` 상수 — 접속 도메인에 따라 자동 전환
 
 ### FTP 배포 예시
 
@@ -35,6 +44,171 @@ curl -T 로컬파일.php \
   ftp://dsp114.co.kr/httpdocs/경로/파일.php \
   --user "dsp1830:cH*j@yzj093BeTtc"
 ```
+
+---
+
+## Ch0.5 듀얼 도메인 하이브리드 시스템 (V2 신규)
+
+> ⚡ **이 챕터는 V2에서 새로 추가된 핵심 내용입니다.**
+> dsp114.com(주)과 dsp114.co.kr(보조), 두 도메인이 하나의 서버에서 동시에 운영되는 구조를 설명합니다.
+
+### 0.5.1 아키텍처 개요
+
+```
+┌────────────────────────────────────────────────────────────┐
+│  고객 접속                                                  │
+│                                                            │
+│  dsp114.com (주 도메인) ──┐                                │
+│                            ├──▶ 175.119.156.249 (Plesk)   │
+│  dsp114.co.kr (보조) ─────┘    nginx + PHP 8.2            │
+│                                 └── /httpdocs/ (웹루트)    │
+│                                     └── config.env.php     │
+│                                         ├ SITE_DOMAIN 감지 │
+│                                         └ SITE_URL 생성    │
+│                                                            │
+│  localhost (개발) ──────────▶ Apache + PHP 7.4             │
+│                                └── /var/www/html/          │
+└────────────────────────────────────────────────────────────┘
+```
+
+**핵심 원리**: 두 도메인 모두 **같은 서버, 같은 코드, 같은 DB**를 바라봅니다.
+`config.env.php`가 접속 도메인을 자동 감지하여 `SITE_URL`, `SITE_DOMAIN` 상수를 설정하고,
+모든 파일에서 하드코딩 URL 대신 이 상수를 사용합니다.
+
+### 0.5.2 도메인 자동 감지 메커니즘
+
+**파일**: `config.env.php` (라인 227~245)
+
+```php
+// 접속 도메인 자동 감지
+function get_site_domain() {
+    $host = $_SERVER['HTTP_HOST'] ?? $_SERVER['SERVER_NAME'] ?? 'localhost';
+    return strtolower(preg_replace('/:\d+$/', '', $host));
+}
+
+function get_site_url() {
+    $protocol = (!empty($_SERVER['HTTPS']) && $_SERVER['HTTPS'] !== 'off') ? 'https' : 'http';
+    return $protocol . '://' . get_site_domain();
+}
+
+// 전역 상수 — 모든 파일에서 사용 가능
+define('SITE_DOMAIN', get_site_domain());
+define('SITE_URL', get_site_url());
+```
+
+**동작 예시:**
+
+| 접속 도메인 | SITE_DOMAIN | SITE_URL |
+|------------|-------------|----------|
+| dsp114.com | `dsp114.com` | `https://dsp114.com` |
+| dsp114.co.kr | `dsp114.co.kr` | `https://dsp114.co.kr` |
+| localhost | `localhost` | `http://localhost` |
+
+### 0.5.3 환경 감지 (로컬 vs 프로덕션)
+
+`config.env.php`의 `EnvironmentDetector` 클래스가 접속 환경을 자동 판별합니다:
+
+```php
+// 운영 환경으로 인식되는 도메인들
+if (
+    strpos($host, 'dsp114.co.kr') !== false ||
+    strpos($host, 'dsp114.com') !== false ||
+    strpos($host, 'dsp1830.shop') !== false
+) {
+    self::$environment = 'production';
+}
+```
+
+- **로컬 환경**: `localhost`, `127.0.0.1`, XAMPP/WAMP 경로 감지 → DB: `ds701018`
+- **프로덕션**: `dsp114.com`, `dsp114.co.kr` 등 → DB: `t3zn?5R56`
+
+### 0.5.4 KG이니시스 결제 — 듀얼 도메인 대응
+
+| 항목 | 값 | 비고 |
+|------|-----|------|
+| MID | `dsp1147479` | 사업자번호 귀속, 도메인 무관 |
+| Sign Key | `cEdnbCtISFZ1QUNpNm5hbG1JY1RlQT09` | 두 도메인 공용 |
+| returnUrl | `SITE_URL . "/payment/inicis_return.php"` | 접속 도메인 자동 감지 |
+| closeUrl | `SITE_URL . "/payment/inicis_close.php"` | 접속 도메인 자동 감지 |
+
+```
+dsp114.com에서 결제 요청
+  → returnUrl = https://dsp114.com/payment/inicis_return.php ✅
+
+dsp114.co.kr에서 결제 요청
+  → returnUrl = https://dsp114.co.kr/payment/inicis_return.php ✅
+
+localhost에서 결제 요청 (테스트 모드)
+  → returnUrl = http://localhost/payment/inicis_return.php ✅
+```
+
+> 이니시스 기술지원팀 확인: 같은 MID + Sign Key로 여러 도메인에서 결제 가능 (사업자번호 기준)
+
+### 0.5.5 KB에스크로 — 도메인별 mHValue
+
+KB에스크로는 **도메인별로 별도의 mHValue**가 등록되어 있습니다:
+
+| 도메인 | mHValue | 등록일 | 적용 상태 |
+|--------|---------|--------|----------|
+| dsp114.com (주) | `eb30fbb0bc1da7fdcaf800c0bceebbff201111241043905` | 2011.11.24 | ✅ **현재 적용** |
+| dsp114.co.kr (보조) | `ef04cec95f1a7298f1f686bfe3159ade` | 2026.02.06 | 주석에 보존 |
+
+- **가맹점 코드(cc)**: `b034066:b035526` (양쪽 동일)
+- **적용 파일**: `right.htm` (라인 111), `includes/footer.php` (라인 85)
+
+**롤백 방법** (dsp114.co.kr 전용으로 되돌릴 때):
+```bash
+git checkout e6554898 -- right.htm includes/footer.php
+```
+
+> ⚠️ 도메인 전환 시 KB에스크로 mHValue도 반드시 교체해야 합니다. 인증마크 팝업이 도메인과 일치하지 않으면 정상 표시되지 않습니다.
+
+### 0.5.6 하드코딩 → 동적 감지 변환 완료 파일 (11개)
+
+| # | 파일 | 변경 내용 |
+|---|------|----------|
+| 1 | `config.env.php` | `SITE_URL`/`SITE_DOMAIN` 동적 감지 함수 추가 |
+| 2 | `db.php` | 환경 감지 조건에 `dsp114.com` 추가 |
+| 3 | `payment/inicis_config.production.php` | returnUrl/closeUrl에 `SITE_URL` 사용 |
+| 4 | `payment/request.php` | returnUrl에 `SITE_URL` 사용 |
+| 5 | `dashboard/api/email.php` | 이메일 본문 링크에 `SITE_URL` 사용 |
+| 6 | `en/index.php` | 영문 사이트 baseUrl에 `SITE_URL` 사용 |
+| 7 | `includes/quote_request_api.php` | 견적 링크에 `SITE_URL` 사용 |
+| 8 | `includes/shipping_api.php` | 배송 알림 링크에 `SITE_URL` 사용 |
+| 9 | `member/password_reset_simple_fixed.php` | 비밀번호 재설정 링크에 `SITE_URL` 사용 |
+| 10 | `mlangorder_printauto/OrderComplete_universal.php` | 주문완료 URL에 `SITE_URL` 사용 |
+| 11 | `mlangprintauto/shop/send_cart_quotation.php` | 장바구니 견적 링크에 `SITE_URL` 사용 |
+
+### 0.5.7 새 파일 작성 시 규칙
+
+```php
+// ❌ 절대 금지: URL 하드코딩
+$url = "https://dsp114.com/payment/inicis_return.php";
+$link = "https://dsp114.co.kr/mypage/order_detail.php?no=" . $orderNo;
+
+// ✅ 올바른 방법: SITE_URL 상수 사용
+require_once __DIR__ . '/config.env.php';  // 또는 db.php (내부에서 config.env.php 로드)
+$url = SITE_URL . "/payment/inicis_return.php";
+$link = SITE_URL . "/mypage/order_detail.php?no=" . $orderNo;
+```
+
+```html
+<!-- ❌ 절대 금지: HTML에 도메인 하드코딩 -->
+<a href="https://dsp114.com/dashboard/">관리자</a>
+
+<!-- ✅ 올바른 방법: PHP로 SITE_URL 삽입 -->
+<a href="<?= SITE_URL ?>/dashboard/">관리자</a>
+```
+
+### 0.5.8 듀얼 도메인 체크리스트 (새 기능 추가 시)
+
+| # | 확인 항목 | 방법 |
+|---|----------|------|
+| 1 | URL에 도메인 하드코딩 없는지? | `SITE_URL` 상수 사용 여부 확인 |
+| 2 | 이메일 본문 링크가 동적인지? | 접속 도메인 기준으로 링크 생성 확인 |
+| 3 | dsp114.com에서 정상 동작? | 브라우저에서 직접 테스트 |
+| 4 | dsp114.co.kr에서도 동작? | 보조 도메인에서도 테스트 |
+| 5 | localhost에서 개발 가능? | 로컬 환경 감지 정상 확인 |
 
 ---
 
@@ -360,7 +534,8 @@ if ($placeholder_count === $type_count && $type_count === $var_count) {
 
 ## Ch6. 관리자 대시보드
 
-> **접속**: https://dsp114.co.kr/dashboard/ (ID: admin / PW: admin123)
+> **접속**: https://dsp114.com/dashboard/ (ID: admin / PW: admin123)
+> dsp114.co.kr/dashboard/ 로도 동일하게 접속 가능 (듀얼 도메인)
 >
 > 대시보드는 주문/교정/견적/회원/통계 등 모든 관리 기능을 하나의 인터페이스에서 제공합니다.
 > 이 챕터에서는 각 페이지의 **기술 구조(파일, API, DB)**와 **사용법**을 상세히 설명합니다.
@@ -1584,7 +1759,8 @@ item.addEventListener('click', function() {
 
 ## Ch8. Knowledge Vault (KB) 시스템
 
-> **접속**: https://dsp114.co.kr/kb/ (비밀번호: `duson2026!kb`)
+> **접속**: https://dsp114.com/kb/ (비밀번호: `duson2026!kb`)
+> dsp114.co.kr/kb/ 로도 동일하게 접속 가능 (듀얼 도메인)
 > localhost에서는 비밀번호 없이 자동 접속됩니다.
 >
 > AI 대화 결과를 저장하고 검색하는 개인 지식 관리 시스템입니다.
@@ -1911,8 +2087,9 @@ KG이니시스 표준결제(PC 웹) 연동. 카드결제 중심, 팝업 방식.
 |------|-----|
 | **PG사** | KG이니시스 |
 | **상점 MID** | `dsp1147479` (운영) / `INIpayTest` (테스트) |
-| **도메인** | `https://dsp114.co.kr` |
+| **도메인** | `https://dsp114.com` (주) / `https://dsp114.co.kr` (보조) — SITE_URL 자동 감지 |
 | **결제 방식** | 팝업 (popup) |
+| **Sign Key** | 두 도메인 공용 (이니시스 기술지원 확인 완료) |
 
 ### 9.2 설정 파일
 
@@ -1922,13 +2099,16 @@ KG이니시스 표준결제(PC 웹) 연동. 카드결제 중심, 팝업 방식.
 | `payment/config.php` | 레거시 설정 (하위 호환) |
 | `payment/README_PAYMENT.md` | 설정 가이드 |
 
-### 9.3 환경 자동 감지
+### 9.3 환경 자동 감지 (듀얼 도메인 대응)
 
 ```php
-// inicis_config.php — SERVER_NAME 기반 자동 전환
-if (strpos($_SERVER['SERVER_NAME'], 'dsp114.co.kr') !== false) {
+// inicis_config.php — SITE_URL 기반 자동 전환 (듀얼 도메인 대응)
+// dsp114.com, dsp114.co.kr 모두 production으로 인식
+if (EnvironmentDetector::isProduction()) {
     define('INICIS_TEST_MODE', false);  // 운영 모드
-    $returnUrl = "https://dsp114.co.kr/payment/inicis_return.php";
+    $returnUrl = SITE_URL . "/payment/inicis_return.php";
+    // dsp114.com 접속 → https://dsp114.com/payment/inicis_return.php
+    // dsp114.co.kr 접속 → https://dsp114.co.kr/payment/inicis_return.php
 } else {
     define('INICIS_TEST_MODE', true);   // 테스트 모드
     $returnUrl = "http://localhost/payment/inicis_return.php";
@@ -1936,6 +2116,7 @@ if (strpos($_SERVER['SERVER_NAME'], 'dsp114.co.kr') !== false) {
 ```
 
 > ⚠️ localhost에서 운영 모드를 활성화하면 실제 결제가 발생합니다. 절대 금지.
+> ✅ 두 도메인 모두 같은 MID + Sign Key 사용 가능 (이니시스 기술지원 확인 완료)
 
 ### 9.4 결제 흐름 (팝업 처리)
 
@@ -2003,10 +2184,11 @@ $mail_result = mailer(
 ### 9.8 운영 배포 체크리스트
 
 - [ ] `INICIS_TEST_MODE = false` 설정 (운영 서버만)
-- [ ] `dsp114.co.kr` 도메인 확인 (`config.env.php`)
-- [ ] 소액 테스트 결제 (100~1,000원)
+- [ ] `config.env.php` 도메인 감지 정상 확인 (dsp114.com + dsp114.co.kr 모두)
+- [ ] 소액 테스트 결제 (100~1,000원) — **두 도메인 모두에서 테스트**
 - [ ] 로그 확인 (`/payment/logs/`)
 - [ ] DB `payment_inicis` 테이블 업데이트 확인
+- [ ] returnUrl이 접속 도메인과 일치하는지 확인
 
 ---
 
@@ -2313,7 +2495,7 @@ if (strlen($stored_password) === 60 && strpos($stored_password, '$2y$') === 0) {
 
 | 항목 | 값 |
 |------|-----|
-| **경로** | `/en/` (로컬: `http://localhost/en/`, 프로덕션: `https://dsp114.co.kr/en/`) |
+| **경로** | `/en/` (로컬: `http://localhost/en/`, 프로덕션: `https://dsp114.com/en/` 또는 `https://dsp114.co.kr/en/`) |
 | **대시보드 토글** | 설정 → 영문 버전 표시 (ON/OFF) → `site_settings.en_version_enabled` |
 | **환율 API** | `/en/includes/exchange_rate.php` (USD 실시간 환율) |
 
@@ -2660,6 +2842,30 @@ if (isset($db) && $db) { mysqli_close($db); }  // 페이지 끝에서 정리
 ✅ 올바름: calculateStickerPrice() 수학 공식 사용
 ```
 
+### 듀얼 도메인 규칙 (V2 신규)
+
+```php
+// ❌ 절대 금지: URL 하드코딩
+$url = "https://dsp114.com/payment/inicis_return.php";
+$link = "https://dsp114.co.kr/mypage/...";
+
+// ✅ 올바른 방법: SITE_URL 상수 사용
+$url = SITE_URL . "/payment/inicis_return.php";
+$link = SITE_URL . "/mypage/...";
+```
+
+```
+⚠️ KB에스크로 mHValue: 도메인 전환 시 반드시 교체 필요
+   dsp114.com용:   eb30fbb0bc1da7fdcaf800c0bceebbff201111241043905
+   dsp114.co.kr용: ef04cec95f1a7298f1f686bfe3159ade
+   롤백: git checkout e6554898 -- right.htm includes/footer.php
+
+⚠️ 새 파일에서 URL 생성 시: 반드시 SITE_URL 상수 사용 (Ch0.5.7 참조)
+⚠️ 이메일 본문 링크: SITE_URL 사용 (접속 도메인 기준 자동 감지)
+⚠️ KG이니시스: returnUrl/closeUrl에 SITE_URL 사용 (두 도메인 자동 대응)
+```
+
 ---
 
-*두손기획인쇄 기술 매뉴얼 v2.0 | 2026-02-24*
+*두손기획인쇄 기술 매뉴얼 V2.1 | 2026-02-26*
+*듀얼 도메인(dsp114.com + dsp114.co.kr) 하이브리드 운영 체계 반영*
