@@ -145,9 +145,6 @@ if ($url_nc_type) {
     <link rel="stylesheet" href="../../css/common-styles.css?v=<?php echo time(); ?>">
     <link rel="stylesheet" href="../../css/upload-modal-common.css?v=<?php echo time(); ?>">
 
-    <!-- 견적서 모달용 공통 스타일 -->
-    <link rel="stylesheet" href="../../css/quotation-modal-common.css">
-    <link rel="stylesheet" href="../../css/quote-gauge.css">
 
     <!-- 테마 시스템 CSS -->
     <?php ThemeLoader::renderCSS(); ?>
@@ -608,7 +605,7 @@ if ($url_nc_type) {
                             final_total_with_vat: finalTotalWithVat  // 부가세 포함 최종 금액
                         };
 
-                        // 스티커와 동일한 패턴으로 specData 설정 (quote-gauge.js 자동 연동)
+                        // specData 설정 (가격 표시 연동)
                         window.currentPriceData = {
                             ...totalData,
                             specData: {
@@ -1204,10 +1201,6 @@ if ($url_nc_type) {
     <?php if (!$isQuotationMode && !$isAdminQuoteMode) ThemeLoader::renderSwitcher('bottom-right'); ?>
     <?php if (!$isQuotationMode && !$isAdminQuoteMode) ThemeLoader::renderSwitcherJS(); ?>
 
-    <?php if (!$isQuotationMode && !$isAdminQuoteMode): ?>
-    <?php include __DIR__ . '/../../includes/quote_gauge.php'; ?>
-    <script src="/js/quote-gauge.js?v=<?php echo time(); ?>"></script>
-    <?php endif; ?>
 
     <?php
     if ($db) {

@@ -361,4 +361,32 @@ if (isset($db) && $db) { mysqli_close($db); }  // 페이지 끝에서 정리
 | `CLAUDE_DOCS/인쇄원가계산시스템.md` | 인쇄원가 계산 체계 |
 
 ---
+
+## 🔄 문서 관리 (Curator)
+
+### 건강검진 실행
+```bash
+php scripts/curator.php              # 기본 리포트 (경고/오류만 표시)
+php scripts/curator.php --verbose    # 상세 출력 (모든 항목)
+php scripts/curator.php --summary    # 요약만 출력
+php scripts/curator.php --json       # JSON 출력
+```
+
+### 검진 항목 5가지
+1. **참조 검증** — AGENTS.md의 `@./` 링크와 테이블 파일 경로가 실제 존재하는지
+2. **고아 문서** — `docs/`에 있지만 AGENTS.md에서 참조되지 않는 파일
+3. **크기 모니터링** — AGENTS.md < 400줄, 개별 문서 < 300줄
+4. **신선도** — 코드가 변경됐는데 대응 문서가 갱신 안 된 경우 (30일 경고, 90일 오류)
+5. **CLAUDE_DOCS 감사** — 90일 이상 미갱신 참조 문서
+
+### 문서 관리 규칙
+- AGENTS.md에 내용 추가 시 **400줄 한도** 엄수 → 초과 시 하위 문서로 분리
+- 코드 변경 시 `docs/curator-config.json`의 매핑 확인 → 대응 문서 갱신
+- 새 기능 추가 시 → `docs/features/` 또는 `docs/operations/`에 문서 생성 + AGENTS.md 허브에 링크 추가
+- 완료된 작업 → `docs/archive/`로 이동
+
+### 설정 파일
+- `docs/curator-config.json` — 코드↔문서 매핑, 크기/신선도 임계값, 무시 경로
+
+---
 마지막 업데이트: 2026-02-26
