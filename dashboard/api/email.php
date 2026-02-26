@@ -585,8 +585,7 @@ switch ($action) {
             jsonResponse(false, '파일 저장에 실패했습니다');
         }
 
-        $is_production = (strpos($_SERVER['HTTP_HOST'] ?? '', 'dsp114.co.kr') !== false);
-        $base_url = $is_production ? 'https://dsp114.co.kr' : 'http://localhost';
+        $base_url = defined('SITE_URL') ? SITE_URL : 'http://localhost';
         $url = $base_url . '/dashboard/email/uploads/' . $filename;
 
         jsonResponse(true, '이미지가 업로드되었습니다', ['url' => $url, 'filename' => $filename]);

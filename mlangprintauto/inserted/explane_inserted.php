@@ -365,8 +365,36 @@
     word-break: keep-all;
 }
 
+.knowledge-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+    gap: 15px;
+    margin: 20px 0;
+}
+.knowledge-item {
+    background: white;
+    border: 2px solid #2196f3;
+    border-radius: 12px;
+    padding: 15px;
+}
+.knowledge-item strong {
+    color: #1565c0;
+    display: block;
+    margin-bottom: 5px;
+    font-size: 1rem;
+}
+.knowledge-item p {
+    margin: 0;
+    font-size: 0.9rem;
+    color: #555;
+    line-height: 1.5;
+}
+
 /* 반응형 디자인 */
 @media (max-width: 768px) {
+    .knowledge-grid {
+        grid-template-columns: 1fr;
+    }
     .product-comparison {
         grid-template-columns: 1fr;
     }
@@ -485,6 +513,30 @@
             </tr>
         </tbody>
     </table>
+    </div>
+
+    <!-- 용지별 특징 안내 -->
+    <h2>📖 용지별 특징 안내</h2>
+    <p style="margin-bottom: 15px; color: #666;">전단지 용지에 따라 인쇄 품질과 느낌이 달라집니다.</p>
+    <div class="knowledge-grid">
+        <div class="knowledge-item">
+            <strong>아트지 (90g)</strong>
+            <p>표면에 광택 코팅이 되어 색상이 선명합니다. 전단지, 홍보물에 가장 많이 사용되는 대표적인 용지입니다.</p>
+        </div>
+        <div class="knowledge-item">
+            <strong>모조지 (80g)</strong>
+            <p>코팅 없는 자연스러운 종이 질감입니다. 필기가 가능하고 가격이 경제적이나, 아트지에 비해 색감이 다소 연합니다.</p>
+        </div>
+        <div class="knowledge-item">
+            <strong>스노우화이트</strong>
+            <p>무광 코팅지로 아트지보다 차분하고 고급스러운 느낌입니다. 독판 인쇄 시 선택 가능합니다.</p>
+        </div>
+    </div>
+
+    <div class="tip-box">
+        <h4>합판인쇄 vs 독판인쇄</h4>
+        <p><strong>합판인쇄:</strong> 여러 고객의 인쇄물을 한 판에 모아 인쇄합니다. 비용을 나누므로 <strong>가격이 저렴</strong>하고 소량 인쇄에 적합합니다.<br>
+        <strong>독판인쇄:</strong> 한 고객의 인쇄물만 단독으로 인쇄합니다. <strong>색상 정밀도가 높고</strong> 다양한 용지·후가공 선택이 가능하지만 비용이 높습니다.</p>
     </div>
 
     <!-- 접수 출고안내 -->

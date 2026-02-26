@@ -57,7 +57,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                 
                 $headers = "MIME-Version: 1.0\r\n";
                 $headers .= "Content-Type: text/plain; charset=UTF-8\r\n";
-                $headers .= "From: =?UTF-8?B?" . base64_encode("두손기획인쇄") . "?= <noreply@dsp114.co.kr>\r\n";
+                $headers .= "From: =?UTF-8?B?" . base64_encode("두손기획인쇄") . "?= <noreply@" . SITE_DOMAIN . ">\r\n";
                 
                 if ($insert_success && @mail($email, $subject, $body, $headers)) {
                     $msg = '<p style="color:green; padding:15px; background:#d4edda; border-radius:5px">';

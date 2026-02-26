@@ -106,7 +106,7 @@ $oid = "DSP{$orderId}_{$timestamp}";
 $goodsName = sanitize_goods_name($order['Type'] ?? '인쇄물');
 $buyerName = sanitize_buyer_name($order['name'] ?? '');
 $buyerTel = sanitize_phone($order['Hendphone'] ?? $order['phone'] ?? '');
-$buyerEmail = $order['email'] ?? 'guest@dsp114.co.kr';
+$buyerEmail = $order['email'] ?? 'guest@' . SITE_DOMAIN;
 
 // Signature 생성
 $params1 = array(

@@ -50,8 +50,8 @@ if (INICIS_TEST_MODE) {
     define('INICIS_CLOSE_URL', $baseUrl . '/payment/inicis_close.php'); // 환경별 자동 감지
 } else {
     define('INICIS_STD_URL', 'https://stdpay.inicis.com/stdjs/INIStdPay.js'); // 표준결제 운영 URL
-    define('INICIS_RETURN_URL', 'https://dsp114.co.kr/payment/inicis_return.php'); // 운영 도메인
-    define('INICIS_CLOSE_URL', 'https://dsp114.co.kr/payment/inicis_close.php'); // 운영 도메인
+    define('INICIS_RETURN_URL', SITE_URL . '/payment/inicis_return.php'); // 운영 도메인
+    define('INICIS_CLOSE_URL', SITE_URL . '/payment/inicis_close.php'); // 운영 도메인
 }
 
 // ================================

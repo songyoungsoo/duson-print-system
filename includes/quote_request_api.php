@@ -220,7 +220,7 @@ $customerBody = '
       </tr>
     </table>
     <div style="text-align:center;margin-top:24px;">
-      <a href="https://dsp114.co.kr/mlangprintauto/' . htmlspecialchars($productType) . '/" style="display:inline-block;background:#1E4E79;color:#fff;padding:12px 36px;text-decoration:none;font-weight:600;font-size:14px;letter-spacing:1px;">주문하러 가기 →</a>
+      <a href="' . SITE_URL . '/mlangprintauto/' . htmlspecialchars($productType) . '/" style="display:inline-block;background:#1E4E79;color:#fff;padding:12px 36px;text-decoration:none;font-weight:600;font-size:14px;letter-spacing:1px;">주문하러 가기 →</a>
     </div>
   </div>
   <table width="100%" cellpadding="0" cellspacing="0" style="border-collapse:collapse;">

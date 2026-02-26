@@ -219,6 +219,31 @@ function get_current_environment() {
     return EnvironmentDetector::detectEnvironment();
 }
 
+/**
+ * 사이트 도메인/URL 자동 감지 (도메인 전환 대비)
+ * - dsp114.co.kr 또는 dsp114.com 어디로 접속해도 자동 감지
+ * - localhost에서는 http://localhost 사용
+ */
+function get_site_domain() {
+    $host = $_SERVER['HTTP_HOST'] ?? $_SERVER['SERVER_NAME'] ?? 'localhost';
+    // 포트 번호 제거 (localhost:8080 등)
+    $host = strtolower(preg_replace('/:\d+$/', '', $host));
+    return $host;
+}
+
+function get_site_url() {
+    $protocol = (!empty($_SERVER['HTTPS']) && $_SERVER['HTTPS'] !== 'off') ? 'https' : 'http';
+    return $protocol . '://' . get_site_domain();
+}
+
+// 전역 상수 (모든 파일에서 사용 가능)
+if (!defined('SITE_DOMAIN')) {
+    define('SITE_DOMAIN', get_site_domain());
+}
+if (!defined('SITE_URL')) {
+    define('SITE_URL', get_site_url());
+}
+
 // 환경별 에러 리포팅 설정
 $config = EnvironmentDetector::getDatabaseConfig();
 if ($config['debug']) {

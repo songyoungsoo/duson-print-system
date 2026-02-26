@@ -219,6 +219,31 @@
     margin: 10px 0;
 }
 
+.knowledge-grid {
+    display: grid;
+    grid-template-columns: 1fr;
+    gap: 12px;
+    margin: 20px 0;
+}
+.knowledge-item {
+    background: white;
+    border: 2px solid #ff9800;
+    border-radius: 12px;
+    padding: 15px;
+}
+.knowledge-item strong {
+    color: #e65100;
+    display: block;
+    margin-bottom: 5px;
+    font-size: 1rem;
+}
+.knowledge-item p {
+    margin: 0;
+    font-size: 0.9rem;
+    color: #555;
+    line-height: 1.5;
+}
+
 /* 반응형 디자인 */
 @media (max-width: 768px) {
     .work-type-section {
@@ -316,6 +341,28 @@
             </tr>
         </tbody>
     </table>
+    </div>
+
+    <!-- 자석스티커 재질 안내 -->
+    <h2>📖 자석스티커 재질 안내</h2>
+    <p style="margin-bottom: 15px; color: #666;">자석스티커의 구조와 특성을 알아보세요.</p>
+    <div class="knowledge-grid">
+        <div class="knowledge-item">
+            <strong>인쇄면: 스노우화이트 250g + CR코팅</strong>
+            <p>앞면은 스노우화이트 250g 용지에 CR코팅을 적용하여 색상이 선명하고 내구성이 뛰어납니다. 일반 명함·상품권과 동일한 고품질 인쇄가 가능합니다.</p>
+        </div>
+        <div class="knowledge-item">
+            <strong>후면: 조각자석 (합지)</strong>
+            <p>뒷면에 자석 시트를 합지하여 냉장고, 철제 가구 등 금속면에 붙일 수 있습니다. 일회성이 아닌 반영구적 홍보물로 활용할 수 있어 광고 효과가 오래 지속됩니다.</p>
+        </div>
+        <div class="knowledge-item">
+            <strong>도무송 (모양 재단)</strong>
+            <p>기본 사각형 외에 원형, 타원, 캐릭터 모양 등 원하는 형태로 재단이 가능합니다. 도무송 적용 시 별도 문의가 필요하며 목형(칼틀) 비용이 추가됩니다.</p>
+        </div>
+        <div class="knowledge-item">
+            <strong>활용 예시</strong>
+            <p>배달 음식점 냉장고 부착 광고, 부동산 홍보물, 학원·병원 연락처 부착물, 차량 정비 안내 등 고객이 일상에서 자연스럽게 노출되는 홍보에 효과적입니다.</p>
+        </div>
     </div>
 
     <!-- 출고 안내 -->

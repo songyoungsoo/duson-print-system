@@ -883,7 +883,7 @@ function openShippingModal(orderNo) {
                 var d = res.data;
                 var est = d.estimate;
                 if (est.calculable) {
-                    document.getElementById('shippingEstWeight').textContent = '약 ' + est.weight_kg + 'kg';
+                    var w = parseFloat(est.weight_kg); document.getElementById('shippingEstWeight').textContent = w <= 3 ? est.weight_kg + 'kg 이하' : '약 ' + est.weight_kg + 'kg';
                 } else {
                     document.getElementById('shippingEstWeight').textContent = '계산 불가';
                 }

@@ -6,12 +6,12 @@
     <title>Duson Print — Premium Printing Services from Seoul, Korea</title>
     <meta name="description" content="Premium offset & digital printing from Seoul. Stickers, flyers, business cards, catalogs, posters & more. Factory-direct pricing with worldwide shipping.">
     <meta name="keywords" content="printing service korea, sticker printing, business card printing, flyer printing, catalog printing, poster printing, Seoul printer, international printing">
-    <link rel="canonical" href="https://dsp114.co.kr/en/">
+    <link rel="canonical" href="<?= SITE_URL ?>/en/">
     <meta property="og:type" content="website">
     <meta property="og:title" content="Duson Print — Premium Printing from Seoul">
     <meta property="og:description" content="Factory-direct printing services. Stickers, flyers, business cards, catalogs & more. Worldwide shipping.">
-    <meta property="og:image" content="https://dsp114.co.kr/ImgFolder/dusonlogo1.png">
-    <meta property="og:url" content="https://dsp114.co.kr/en/">
+    <meta property="og:image" content="<?= SITE_URL ?>/ImgFolder/dusonlogo1.png">
+    <meta property="og:url" content="<?= SITE_URL ?>/en/">
     <link rel="icon" type="image/png" href="/ImgFolder/dusonlogo1.png">
 
     <!-- Fonts: DM Sans (body) + Sora (headings) -->

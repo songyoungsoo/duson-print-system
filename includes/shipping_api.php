@@ -293,7 +293,7 @@ switch ($action) {
           <table width="100%" cellpadding="0" cellspacing="0" style="margin-bottom:24px;">
             <tr>
               <td style="text-align:center;padding:16px 0;">
-                <a href="https://dsp114.co.kr/mypage/order_detail.php?no=' . $firstOrderNo . '" 
+                <a href="' . SITE_URL . '/mypage/order_detail.php?no=' . $firstOrderNo . '" 
                    style="display:inline-block;padding:14px 32px;background:#667eea;color:#ffffff;font-size:15px;font-weight:bold;text-decoration:none;border-radius:8px;">
                   마이페이지에서 결제하기
                 </a>
@@ -443,7 +443,7 @@ switch ($action) {
           <table width="100%" cellpadding="0" cellspacing="0" style="margin-bottom:24px;">
             <tr>
               <td style="text-align:center;padding:16px 0;">
-                <a href="https://dsp114.co.kr/mypage/order_detail.php?no=' . $orderNo . '" 
+                <a href="' . SITE_URL . '/mypage/order_detail.php?no=' . $orderNo . '" 
                    style="display:inline-block;padding:14px 32px;background:#667eea;color:#ffffff;font-size:15px;font-weight:bold;text-decoration:none;border-radius:8px;">
                   마이페이지에서 결제하기
                 </a>

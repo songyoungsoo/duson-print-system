@@ -50,6 +50,73 @@
     </div>
 
     <div class="detail-section">
+        <h3>📖 용지별 특징 안내</h3>
+        <p class="section-desc">포스터 용도에 맞는 용지를 선택하세요.</p>
+        <div class="paper-guide">
+            <div class="paper-guide-item">
+                <strong>아트지</strong>
+                <p>표면에 광택 코팅이 되어 있어 사진과 이미지가 선명하게 표현됩니다. 컬러풀한 홍보용 포스터에 가장 많이 사용되는 용지입니다.</p>
+            </div>
+            <div class="paper-guide-item">
+                <strong>스노우지 (스노우화이트)</strong>
+                <p>무광 코팅지로 빛 반사가 적어 차분하고 고급스러운 느낌을 줍니다. 전시회, 갤러리, 브랜드 포스터에 적합합니다.</p>
+            </div>
+            <div class="paper-guide-item">
+                <strong>모조지</strong>
+                <p>코팅 없는 자연스러운 종이 질감으로 필기가 가능합니다. 안내문, 게시용 포스터 등 경제적인 인쇄에 적합합니다.</p>
+            </div>
+        </div>
+        <p style="margin-top:10px; font-size:0.85rem; color:#888;">💡 <strong>아트지 vs 스노우지:</strong> 아트지는 광택이 있어 색감이 화사하고, 스노우지는 무광이라 눈부심 없이 차분합니다. 사진 중심은 아트지, 텍스트 중심은 스노우지를 추천합니다.</p>
+    </div>
+
+    <div class="detail-section">
+        <h3>📖 후가공 용어 안내</h3>
+        <p class="section-desc">포스터에 적용 가능한 후가공의 종류와 의미를 확인하세요.</p>
+        <div class="paper-guide">
+            <div class="paper-guide-item">
+                <strong>오시</strong>
+                <p>접는 위치에 홈을 내는 작업입니다. 두꺼운 종이(180g 이상)는 오시 없이 접으면 터질 수 있어 필수입니다.</p>
+            </div>
+            <div class="paper-guide-item">
+                <strong>미싱</strong>
+                <p>점선 형태의 칼집을 넣어 손으로 쉽게 뜯을 수 있게 합니다. 쿠폰, 티켓 분리 부분에 사용됩니다.</p>
+            </div>
+            <div class="paper-guide-item">
+                <strong>코팅 (유광/무광)</strong>
+                <p>인쇄면에 필름을 입히는 작업입니다. 유광은 광택과 선명함, 무광은 차분한 고급감을 더합니다.</p>
+            </div>
+            <div class="paper-guide-item">
+                <strong>도무송 (톰슨)</strong>
+                <p>원하는 모양대로 재단하는 작업입니다. 목형(칼틀) 제작이 필요하며 초회 비용이 별도 발생합니다.</p>
+            </div>
+            <div class="paper-guide-item">
+                <strong>박 (금박/은박)</strong>
+                <p>금속 필름을 열과 압력으로 눌러 붙이는 작업입니다. 로고나 텍스트에 고급스러운 포인트를 줍니다.</p>
+            </div>
+            <div class="paper-guide-item">
+                <strong>형압 (엠보싱/디보싱)</strong>
+                <p>볼록(엠보싱) 또는 오목(디보싱)하게 눌러 입체감을 주는 작업입니다.</p>
+            </div>
+            <div class="paper-guide-item">
+                <strong>타공</strong>
+                <p>구멍을 뚫는 작업입니다. 바인더에 끼우거나 걸이용으로 사용할 때 필요합니다.</p>
+            </div>
+            <div class="paper-guide-item">
+                <strong>접지</strong>
+                <p>인쇄물을 2단, 3단 등으로 접는 작업입니다. 리플렛, 안내문 제작에 활용됩니다.</p>
+            </div>
+            <div class="paper-guide-item">
+                <strong>접착</strong>
+                <p>인쇄물에 접착면을 추가하는 가공입니다.</p>
+            </div>
+            <div class="paper-guide-item">
+                <strong>귀도리 (라운딩)</strong>
+                <p>모서리를 둥글게 재단하는 작업입니다. 부드러운 느낌을 주며 명함, 카드류에 많이 사용됩니다.</p>
+            </div>
+        </div>
+    </div>
+
+    <div class="detail-section">
         <h3>🚚 접수 출고안내</h3>
         <p class="section-desc">제품별 출고일을 확인해 보세요.</p>
 
@@ -76,23 +143,23 @@
         <h3>📁 접수가능 파일</h3>
         <div class="file-types">
             <div class="file-type">
-                <img src="../../images/adobe-ai.png" alt="Adobe Illustrator" class="file-icon">
-                <span>Adobe Illustrator</span>
+                <div style="font-size: 2.5rem; color: #e91e63;">🎨</div>
+                <span>Adobe<br>Illustrator</span>
             </div>
             <div class="file-type">
-                <img src="../../images/adobe-ps.png" alt="Adobe Photoshop" class="file-icon">
-                <span>Adobe Photoshop</span>
+                <div style="font-size: 2.5rem; color: #e91e63;">📄</div>
+                <span>Adobe<br>Photoshop</span>
             </div>
             <div class="file-type">
-                <img src="../../images/corel.png" alt="CorelDRAW" class="file-icon">
+                <div style="font-size: 2.5rem; color: #e91e63;">🖥️</div>
                 <span>CorelDRAW</span>
             </div>
             <div class="file-type">
-                <img src="../../images/photo.png" alt="디지털 사진" class="file-icon">
+                <div style="font-size: 2.5rem; color: #e91e63;">📷</div>
                 <span>디지털 사진 및<br>디지털 그래픽툴 공용</span>
             </div>
             <div class="file-type">
-                <img src="../../images/graphic.png" alt="그래픽툴" class="file-icon">
+                <div style="font-size: 2.5rem; color: #e91e63;">🎭</div>
                 <span>디지털 그래픽툴 공용</span>
             </div>
         </div>
@@ -380,6 +447,33 @@
     font-weight: 500;
 }
 
+.paper-guide {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+    gap: 15px;
+    margin: 15px 0;
+}
+
+.paper-guide-item {
+    background: white;
+    padding: 15px;
+    border: 1px solid #dee2e6;
+    border-radius: 6px;
+}
+
+.paper-guide-item strong {
+    color: #e91e63;
+    display: block;
+    margin-bottom: 5px;
+}
+
+.paper-guide-item p {
+    margin: 0;
+    font-size: 0.88rem;
+    color: #666;
+    line-height: 1.5;
+}
+
 @media (max-width: 768px) {
     .table-header, .table-row {
         grid-template-columns: 1fr;
@@ -408,6 +502,10 @@
     }
 
     .file-types {
+        grid-template-columns: 1fr;
+    }
+
+    .paper-guide {
         grid-template-columns: 1fr;
     }
 }
