@@ -281,89 +281,9 @@ if ($url_nc_type) {
                         </div>
                     </div>
 
-                    <!-- 🆕 명함 프리미엄 옵션 섹션 -->
-                    <div class="namecard-premium-options-section" id="premiumOptionsSection" style="margin-top: 15px;">
-                        <!-- 한 줄 체크박스 헤더 -->
-                        <div class="option-headers-row">
-                            <div class="option-checkbox-group">
-                                <input type="checkbox" id="foil_enabled" name="foil_enabled" class="option-toggle" value="1">
-                                <label for="foil_enabled" class="toggle-label">박</label>
-                            </div>
-                            <div class="option-checkbox-group">
-                                <input type="checkbox" id="numbering_enabled" name="numbering_enabled" class="option-toggle" value="1">
-                                <label for="numbering_enabled" class="toggle-label">넘버링</label>
-                            </div>
-                            <div class="option-checkbox-group">
-                                <input type="checkbox" id="perforation_enabled" name="perforation_enabled" class="option-toggle" value="1">
-                                <label for="perforation_enabled" class="toggle-label">미싱</label>
-                            </div>
-                            <div class="option-checkbox-group">
-                                <input type="checkbox" id="rounding_enabled" name="rounding_enabled" class="option-toggle" value="1">
-                                <label for="rounding_enabled" class="toggle-label">귀돌이</label>
-                            </div>
-                            <div class="option-checkbox-group">
-                                <input type="checkbox" id="creasing_enabled" name="creasing_enabled" class="option-toggle" value="1">
-                                <label for="creasing_enabled" class="toggle-label">오시</label>
-                            </div>
-                            <div class="option-price-display">
-                                <span class="option-price-total" id="premiumPriceTotal">(+0원)</span>
-                            </div>
-                        </div>
-
-                        <!-- 박 옵션 상세 -->
-                        <div class="option-details" id="foil_options" style="display: none;">
-                            <select name="foil_type" id="foil_type" class="option-select">
-                                <option value="">선택하세요</option>
-                                <option value="gold_matte">금박무광 (500매 이하 30,000원, 초과시 매수×60원)</option>
-                                <option value="gold_gloss">금박유광 (500매 이하 30,000원, 초과시 매수×60원)</option>
-                                <option value="silver_matte">은박무광 (500매 이하 30,000원, 초과시 매수×60원)</option>
-                                <option value="silver_gloss">은박유광 (500매 이하 30,000원, 초과시 매수×60원)</option>
-                                <option value="blue_gloss">청박유광 (500매 이하 30,000원, 초과시 매수×60원)</option>
-                                <option value="red_gloss">적박유광 (500매 이하 30,000원, 초과시 매수×60원)</option>
-                                <option value="green_gloss">녹박유광 (500매 이하 30,000원, 초과시 매수×60원)</option>
-                                <option value="black_gloss">먹박유광 (500매 이하 30,000원, 초과시 매수×60원)</option>
-                            </select>
-                            <div class="option-note" style="font-size: 11px; color: #666; margin-top: 4px;">* 박(20mm×20mm 이하)</div>
-                        </div>
-
-                        <!-- 넘버링 옵션 상세 -->
-                        <div class="option-details" id="numbering_options" style="display: none;">
-                            <select name="numbering_type" id="numbering_type" class="option-select">
-                                <option value="">선택하세요</option>
-                                <option value="single">1개 (500매 이하 60,000원, 초과시 매수×120원)</option>
-                                <option value="double">2개 (500매 이하 60,000원 + 1000매당 15,000원, 초과시 매수×120원)</option>
-                            </select>
-                        </div>
-
-                        <!-- 미싱(절취선) 옵션 상세 -->
-                        <div class="option-details" id="perforation_options" style="display: none;">
-                            <select name="perforation_type" id="perforation_type" class="option-select">
-                                <option value="">선택하세요</option>
-                                <option value="single">1개 (500매 이하 20,000원, 초과시 매수×25원)</option>
-                                <option value="double">2개 (500매 이하 20,000원 + 1000매당 15,000원, 초과시 매수×25원)</option>
-                            </select>
-                        </div>
-
-                        <!-- 귀돌이는 단일 옵션이므로 셀렉트 없음 -->
-
-                        <!-- 오시 옵션 상세 -->
-                        <div class="option-details" id="creasing_options" style="display: none;">
-                            <select name="creasing_type" id="creasing_type" class="option-select">
-                                <option value="">선택하세요</option>
-                                <option value="1line">1줄 (500매 이하 20,000원, 초과시 매수×25원)</option>
-                                <option value="2line">2줄 (500매 이하 20,000원, 초과시 매수×25원)</option>
-                                <option value="3line">3줄 (500매 이하 20,000원 + 1000매당 15,000원, 초과시 매수×25원)</option>
-                            </select>
-                        </div>
-
-                        <!-- 숨겨진 필드들 -->
-                        <input type="hidden" name="foil_price" id="foil_price" value="0">
-                        <input type="hidden" name="numbering_price" id="numbering_price" value="0">
-                        <input type="hidden" name="perforation_price" id="perforation_price" value="0">
-                        <input type="hidden" name="rounding_price" id="rounding_price" value="0">
-                        <input type="hidden" name="creasing_price" id="creasing_price" value="0">
-                        <input type="hidden" name="premium_options_total" id="premium_options_total" value="0">
-                    </div>
+                    <!-- 프리미엄 옵션 섹션 (PremiumOptionsGeneric이 동적 생성) -->
+                    <div id="premiumOptionsSection" style="margin-top: 15px; display: none;"></div>
+                    <input type="hidden" name="premium_options_total" id="premium_options_total" value="0">
 
                     <!-- 기본 가격 표시 -->
                     <div class="price-display" id="priceDisplay">
@@ -418,7 +338,7 @@ if ($url_nc_type) {
 
     <!-- 프리미엄 옵션 DB 로더 + JavaScript -->
     <script src="/js/premium-options-loader.js"></script>
-    <script src="js/namecard-premium-options.js"></script>
+    <!-- namecard-premium-options.js 제거됨 — PremiumOptionsGeneric으로 대체 -->
 
     <?php if (!$isQuotationMode && !$isAdminQuoteMode): ?>
     <!-- 공통 업로드 모달 JavaScript (일반 모드에서만 로드) -->
@@ -627,124 +547,11 @@ if ($url_nc_type) {
                 });
         }
 
-        // 🆕 프리미엄 옵션 가격 계산
+        // 프리미엄 옵션 가격 계산 (PremiumOptionsGeneric에서 hidden field 읽기)
         function calculatePremiumOptions() {
-            const quantity = parseInt(document.getElementById('MY_amount').value) || 500;
-            let total = 0;
-
-            console.log('🔧 프리미엄 옵션 계산 시작, 수량:', quantity);
-
-            // 박 옵션 (500매 이하 30,000원, 초과시 매수×60원)
-            const foilEnabled = document.getElementById('foil_enabled')?.checked;
-            if (foilEnabled) {
-                const price = calculateIndividualPrice('foil', quantity, 30000, 60);
-                document.getElementById('foil_price').value = price;
-                total += price;
-                console.log('✨ 박 옵션 선택됨:', price + '원');
-            } else {
-                document.getElementById('foil_price').value = 0;
-                console.log('❌ 박 옵션 선택 안됨');
-            }
-
-            // 넘버링 옵션 (500매 이하 60,000원, 2개는 1000매당 15,000원 추가, 초과시 매수×120원)
-            const numberingEnabled = document.getElementById('numbering_enabled')?.checked;
-            if (numberingEnabled) {
-                const type = document.getElementById('numbering_type')?.value || 'single';
-                let basePrice = 60000;
-
-                if (type === 'double') {
-                    // 2개인 경우: 기본 60,000원 + 1000매당 15,000원 추가
-                    const thousandUnits = Math.ceil(quantity / 1000);
-                    basePrice = 60000 + (thousandUnits * 15000);
-                }
-
-                const price = calculateIndividualPrice('numbering', quantity, basePrice, 120);
-                document.getElementById('numbering_price').value = price;
-                total += price;
-                console.log('🔢 넘버링 옵션 선택됨:', price + '원');
-            } else {
-                document.getElementById('numbering_price').value = 0;
-                console.log('❌ 넘버링 옵션 선택 안됨');
-            }
-
-            // 미싱 옵션 (500매 이하 20,000원, 2개는 1000매당 15,000원 추가, 초과시 매수×25원)
-            if (document.getElementById('perforation_enabled')?.checked) {
-                const type = document.getElementById('perforation_type')?.value || 'single';
-                let basePrice = 20000;
-
-                if (type === 'double') {
-                    // 2개인 경우: 기본 20,000원 + 1000매당 15,000원 추가
-                    const thousandUnits = Math.ceil(quantity / 1000);
-                    basePrice = 20000 + (thousandUnits * 15000);
-                }
-
-                const price = calculateIndividualPrice('perforation', quantity, basePrice, 25);
-                document.getElementById('perforation_price').value = price;
-                total += price;
-            } else {
-                document.getElementById('perforation_price').value = 0;
-            }
-
-            // 귀돌이 옵션 (500매 이하 10,000원, 초과시 매수×24원)
-            if (document.getElementById('rounding_enabled')?.checked) {
-                const price = calculateIndividualPrice('rounding', quantity, 10000, 24);
-                document.getElementById('rounding_price').value = price;
-                total += price;
-            } else {
-                document.getElementById('rounding_price').value = 0;
-            }
-
-            // 오시 옵션 (500매 이하 20,000원, 3줄은 1000매당 15,000원 추가, 초과시 매수×25원)
-            if (document.getElementById('creasing_enabled')?.checked) {
-                const type = document.getElementById('creasing_type')?.value || '1line';
-                let basePrice = 20000;
-
-                if (type === '3line') {
-                    // 3줄인 경우: 기본 20,000원 + 1000매당 15,000원 추가
-                    const thousandUnits = Math.ceil(quantity / 1000);
-                    basePrice = 20000 + (thousandUnits * 15000);
-                }
-
-                const price = calculateIndividualPrice('creasing', quantity, basePrice, 25);
-                document.getElementById('creasing_price').value = price;
-                total += price;
-            } else {
-                document.getElementById('creasing_price').value = 0;
-            }
-
-            // 총 프리미엄 옵션 가격 저장
-            document.getElementById('premium_options_total').value = total;
-
-            console.log('🎯 프리미엄 옵션 총액:', total + '원');
-
-            // UI 업데이트
-            updatePremiumPriceDisplay(total);
-
-            return total;
-        }
-
-        // 🆕 개별 옵션 가격 계산 헬퍼
-        function calculateIndividualPrice(optionType, quantity, basePrice500, pricePerUnit) {
-            if (quantity <= 500) {
-                return basePrice500;
-            } else {
-                const additionalUnits = quantity - 500;
-                return basePrice500 + (additionalUnits * pricePerUnit);
-            }
-        }
-
-        // 🆕 프리미엄 옵션 가격 표시 업데이트
-        function updatePremiumPriceDisplay(total) {
-            const premiumPriceElement = document.getElementById('premiumPriceTotal');
-            if (premiumPriceElement) {
-                if (total > 0) {
-                    premiumPriceElement.textContent = `(+${total.toLocaleString()}원)`;
-                    premiumPriceElement.style.color = '#d4af37';
-                } else {
-                    premiumPriceElement.textContent = '(+0원)';
-                    premiumPriceElement.style.color = '#718096';
-                }
-            }
+            // PremiumOptionsGeneric이 premium_options_total hidden field를 자동 업데이트함
+            var ptField = document.getElementById('premium_options_total');
+            return ptField ? parseInt(ptField.value) || 0 : 0;
         }
 
         // 🆕 확장된 가격 표시 업데이트 (프리미엄 옵션 포함)
@@ -823,8 +630,8 @@ if ($url_nc_type) {
             if (uploadButton) uploadButton.style.display = 'none';
 
             // 프리미엄 옵션 가격 초기화
-            if (typeof updatePremiumPriceDisplay === 'function') {
-                updatePremiumPriceDisplay(0);
+            if (window.premiumOptionsManager && typeof window.premiumOptionsManager.reset === 'function') {
+                window.premiumOptionsManager.reset();
             }
 
             window.currentPriceData = null;
@@ -885,47 +692,8 @@ if ($url_nc_type) {
                     console.log('명함: 첫 화면 자동 계산 실행');
                 }
 
-                // 🆕 프리미엄 옵션 이벤트 리스너 초기화
-                initializePremiumOptionsListeners();
-            }, 500); // namecard.js 로드 대기
-        });
-
-        // 🆕 프리미엄 옵션 이벤트 리스너 초기화
-        function initializePremiumOptionsListeners() {
-            console.log('프리미엄 옵션 이벤트 리스너 초기화');
-
-            // 체크박스 토글 이벤트
-            const toggles = document.querySelectorAll('.option-toggle');
-            toggles.forEach(toggle => {
-                toggle.addEventListener('change', function(e) {
-                    const optionType = e.target.id.replace('_enabled', '');
-                    const detailsDiv = document.getElementById(`${optionType}_options`);
-
-                    if (e.target.checked) {
-                        detailsDiv.style.display = 'block';
-                        console.log(`✅ ${optionType} 옵션 활성화`);
-                    } else {
-                        detailsDiv.style.display = 'none';
-                        // 가격 필드 초기화
-                        const priceField = document.getElementById(`${optionType}_price`);
-                        if (priceField) priceField.value = '0';
-                        console.log(`❌ ${optionType} 옵션 비활성화`);
-                    }
-
-                    // 가격 재계산
-                    calculatePrice();
-                });
-            });
-
-            // 옵션 선택 변경 이벤트
-            const selects = document.querySelectorAll('.option-details select');
-            selects.forEach(select => {
-                select.addEventListener('change', function() {
-                    console.log('프리미엄 옵션 선택 변경:', select.name, select.value);
-                    calculatePrice();
-                });
-            });
-        }
+                // 프리미엄 옵션은 PremiumOptionsGeneric이 자체 이벤트 리스너를 관리함
+                console.log('프리미엄 옵션: PremiumOptionsGeneric으로 위임됨');
 
         // 🆕 공통 업로드 모달에서 사용할 장바구니 추가 함수
         window.handleModalBasketAdd = function(uploadedFiles, onSuccess, onError) {
@@ -962,27 +730,14 @@ if ($url_nc_type) {
                 formData.append('vat_price', finalTotalWithVat);
             }
 
-            // 🆕 프리미엄 옵션 데이터 추가
-            formData.append('foil_enabled', document.getElementById('foil_enabled')?.checked ? 1 : 0);
-            formData.append('foil_type', document.getElementById('foil_type')?.value || '');
-            formData.append('foil_price', document.getElementById('foil_price')?.value || 0);
-
-            formData.append('numbering_enabled', document.getElementById('numbering_enabled')?.checked ? 1 : 0);
-            formData.append('numbering_type', document.getElementById('numbering_type')?.value || '');
-            formData.append('numbering_price', document.getElementById('numbering_price')?.value || 0);
-
-            formData.append('perforation_enabled', document.getElementById('perforation_enabled')?.checked ? 1 : 0);
-            formData.append('perforation_type', document.getElementById('perforation_type')?.value || '');
-            formData.append('perforation_price', document.getElementById('perforation_price')?.value || 0);
-
-            formData.append('rounding_enabled', document.getElementById('rounding_enabled')?.checked ? 1 : 0);
-            formData.append('rounding_price', document.getElementById('rounding_price')?.value || 0);
-
-            formData.append('creasing_enabled', document.getElementById('creasing_enabled')?.checked ? 1 : 0);
-            formData.append('creasing_type', document.getElementById('creasing_type')?.value || '');
-            formData.append('creasing_price', document.getElementById('creasing_price')?.value || 0);
-
-            formData.append('premium_options_total', document.getElementById('premium_options_total')?.value || 0);
+            // 프리미엄 옵션 데이터 추가 (PremiumOptionsGeneric에서)
+            if (window.premiumOptionsManager) {
+                var selectedOpts = window.premiumOptionsManager.getSelectedOptions();
+                formData.append('premium_options_data', JSON.stringify(selectedOpts));
+                formData.append('premium_options_total', selectedOpts.premium_options_total || '0');
+            } else {
+                formData.append('premium_options_total', document.getElementById('premium_options_total')?.value || '0');
+            }
 
             // 작업메모 추가 (모달에서)
             const workMemo = document.getElementById('modalWorkMemo');
@@ -1055,7 +810,7 @@ if ($url_nc_type) {
             }
 
             // 프리미엄 옵션 재계산
-            const premiumTotal = calculatePremiumOptions();
+            var premiumTotal = calculatePremiumOptions();
             console.log('💰 프리미엄 옵션 총액:', premiumTotal);
 
             // 폼 데이터 수집
@@ -1069,19 +824,14 @@ if ($url_nc_type) {
             formData.append('price', Math.round(window.currentPriceData.total_price));
             formData.append('vat_price', Math.round(window.currentPriceData.vat_price));
 
-            // 프리미엄 옵션 추가
-            ['foil', 'numbering', 'perforation', 'rounding', 'creasing'].forEach(option => {
-                const checkbox = document.getElementById(option + '_enabled');
-                if (checkbox && checkbox.checked) {
-                    formData.append(option + '_enabled', '1');
-                    const typeSelect = document.getElementById(option + '_type');
-                    if (typeSelect) {
-                        formData.append(option + '_type', typeSelect.value);
-                    }
-                    formData.append(option + '_price', document.getElementById(option + '_price').value || '0');
-                }
-            });
-            formData.append('premium_options_total', premiumTotal);
+            // 프리미엄 옵션 추가 (PremiumOptionsGeneric에서)
+            if (window.premiumOptionsManager) {
+                var selectedOpts = window.premiumOptionsManager.getSelectedOptions();
+                formData.append('premium_options_data', JSON.stringify(selectedOpts));
+                formData.append('premium_options_total', premiumTotal);
+            } else {
+                formData.append('premium_options_total', premiumTotal);
+            }
 
             // AJAX 전송
             fetch('../quote/add_to_quotation_temp.php', {
@@ -1200,6 +950,20 @@ if ($url_nc_type) {
     <!-- 테마 스위처 -->
     <?php if (!$isQuotationMode && !$isAdminQuoteMode) ThemeLoader::renderSwitcher('bottom-right'); ?>
     <?php if (!$isQuotationMode && !$isAdminQuoteMode) ThemeLoader::renderSwitcherJS(); ?>
+
+    <!-- PremiumOptionsGeneric 초기화 (동적 옵션 로딩) -->
+    <script>
+    document.addEventListener('DOMContentLoaded', function() {
+        if (document.getElementById('premiumOptionsSection') && typeof PremiumOptionsGeneric !== 'undefined') {
+            setTimeout(function() {
+                var poManager = new PremiumOptionsGeneric('namecard', 'premiumOptionsSection', 'MY_amount');
+                poManager.init();
+                window.premiumOptionsManager = poManager;
+                console.log('✅ 명함 PremiumOptionsGeneric 초기화 완료');
+            }, 200);
+        }
+    });
+    </script>
 
 
     <?php
