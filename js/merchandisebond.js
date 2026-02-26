@@ -606,8 +606,18 @@ function updatePriceDisplayWithPremium(priceData) {
     }
 }
 
-// 🆕 프리미엄 옵션 가격 계산 (명함 방식)
+// 🆕 프리미엄 옵션 가격 계산
 function calculatePremiumOptions() {
+    // PremiumOptionsGeneric이 활성화된 경우 (동적 DB 옵션 사용 시)
+    // → Generic 시스템이 자체적으로 가격을 계산하므로 hidden field 값만 읽어서 반환
+    if (window.premiumOptionsManager) {
+        const ptField = document.getElementById('premium_options_total');
+        const total = ptField ? parseInt(ptField.value) || 0 : 0;
+        console.log('🎯 프리미엄 옵션 총액 (Generic):', total + '원');
+        return total;
+    }
+
+    // 하드코딩된 프리미엄 옵션 (namecard 스타일 HTML이 있는 경우)
     const quantity = parseInt(document.getElementById('MY_amount')?.value) || 500;
     let total = 0;
 
@@ -1132,6 +1142,13 @@ function directOrder() {
 
 // 프리미엄 옵션 가격 계산
 function calculatePremiumOptions() {
+    // PremiumOptionsGeneric이 활성화된 경우 → hidden field 값만 읽어서 반환
+    if (window.premiumOptionsManager) {
+        const ptField = document.getElementById('premium_options_total');
+        const total = ptField ? parseInt(ptField.value) || 0 : 0;
+        console.log('🎯 프리미엄 옵션 총액 (Generic):', total + '원');
+        return total;
+    }
     const quantityElement = document.getElementById('MY_amount');
     if (!quantityElement || !quantityElement.value) {
         console.log('⚠️ 수량이 선택되지 않음 - 프리미엄 옵션 계산 중단');
@@ -1268,6 +1285,27 @@ function updatePremiumPriceDisplay(total) {
 // 모든 프리미엄 옵션 리셋 함수
 function resetAllPremiumOptions() {
     console.log('🔄 모든 프리미엄 옵션 리셋');
+
+    // PremiumOptionsGeneric 사용 시: 동적 ID 기반 리셋
+    if (window.premiumOptionsManager) {
+        const container = document.getElementById('premiumOptionsSection');
+        if (container) {
+            container.querySelectorAll('input[type="checkbox"]').forEach(cb => { cb.checked = false; });
+            container.querySelectorAll('.variant-select-wrapper').forEach(el => { el.style.display = 'none'; });
+            container.querySelectorAll('select').forEach(sel => { sel.selectedIndex = 0; });
+            container.querySelectorAll('input[type="hidden"]').forEach(hf => { hf.value = '0'; });
+        }
+        const ptField = document.getElementById('premium_options_total');
+        const atField = document.getElementById('additional_options_total');
+        if (ptField) ptField.value = '0';
+        if (atField) atField.value = '0';
+        const premiumPriceElement = document.getElementById('premiumPriceTotal');
+        if (premiumPriceElement) {
+            premiumPriceElement.textContent = '(+0\uc6d0)';
+            premiumPriceElement.style.color = '#718096';
+        }
+        return;
+    }
 
     // 모든 체크박스 해제
     const checkboxes = ['foil_enabled', 'numbering_enabled', 'perforation_enabled', 'rounding_enabled', 'creasing_enabled'];

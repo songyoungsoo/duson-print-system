@@ -127,7 +127,7 @@ if ($default_values['MY_type'] && $default_values['Section']) {
 
     <!-- 프리미엄 옵션 DB 로더 + 시스템 -->
     <script src="/js/premium-options-loader.js"></script>
-    <script src="js/merchandisebond-premium-options.js?v=<?php echo time(); ?>"></script>
+    <!-- 프리미엄 옵션은 premium-options-loader.js의 PremiumOptionsGeneric 클래스가 동적 처리 -->
 
     <!-- 세션 ID 및 설정값 메타 태그 -->
     <meta name="session-id" content="<?php echo htmlspecialchars(session_id()); ?>">
@@ -141,9 +141,6 @@ if ($default_values['MY_type'] && $default_values['Section']) {
     <!-- 통합 공통 스타일 CSS (최종 로드로 최우선 적용) -->
     <link rel="stylesheet" href="../../css/common-styles.css?v=1759615861">
     <link rel="stylesheet" href="../../css/upload-modal-common.css?v=<?php echo time(); ?>">
-    <!-- 견적서 모달용 공통 스타일 -->
-    <link rel="stylesheet" href="../../css/quotation-modal-common.css">
-    <link rel="stylesheet" href="../../css/quote-gauge.css">
 
 <!-- Phase 5: 견적 요청 버튼 스타일 -->
 <style>
@@ -245,98 +242,7 @@ if ($default_values['MY_type'] && $default_values['Section']) {
                     </div>
 
                     <!-- 상품권 프리미엄 옵션 섹션 (명함 구조 적용) -->
-                    <div class="namecard-premium-options-section" id="premiumOptionsSection" style="margin-top: 15px;">
-                        <!-- 한 줄 체크박스 헤더 -->
-                        <div class="option-headers-row">
-                            <div class="option-checkbox-group">
-                                <input type="checkbox" id="foil_enabled" name="foil_enabled" class="option-toggle" value="1">
-                                <label for="foil_enabled" class="toggle-label">박</label>
-                            </div>
-                            <div class="option-checkbox-group">
-                                <input type="checkbox" id="numbering_enabled" name="numbering_enabled" class="option-toggle" value="1">
-                                <label for="numbering_enabled" class="toggle-label">넘버링</label>
-                            </div>
-                            <div class="option-checkbox-group">
-                                <input type="checkbox" id="perforation_enabled" name="perforation_enabled" class="option-toggle" value="1">
-                                <label for="perforation_enabled" class="toggle-label">미싱</label>
-                            </div>
-                            <div class="option-checkbox-group">
-                                <input type="checkbox" id="rounding_enabled" name="rounding_enabled" class="option-toggle" value="1">
-                                <label for="rounding_enabled" class="toggle-label">귀돌이</label>
-                            </div>
-                            <div class="option-checkbox-group">
-                                <input type="checkbox" id="creasing_enabled" name="creasing_enabled" class="option-toggle" value="1">
-                                <label for="creasing_enabled" class="toggle-label">오시</label>
-                            </div>
-                            <div class="option-price-display">
-                                <span class="option-price-total" id="premiumPriceTotal">(+0원)</label>
-                            </div>
-                        </div>
-                        <!-- 박 옵션 상세 -->
-                        <div class="option-details" id="foil_options" style="display: none;">
-                            <select name="foil_type" id="foil_type" class="option-select">
-                                <option value="">선택하세요</option>
-                                <option value="gold_matte">금박무광 (500매 이하 30,000원, 초과시 매수×60원)</option>
-                                <option value="gold_gloss">금박유광 (500매 이하 30,000원, 초과시 매수×60원)</option>
-                                <option value="silver_matte">은박무광 (500매 이하 30,000원, 초과시 매수×60원)</option>
-                                <option value="silver_gloss">은박유광 (500매 이하 30,000원, 초과시 매수×60원)</option>
-                                <option value="blue_gloss">청박유광 (500매 이하 30,000원, 초과시 매수×60원)</option>
-                                <option value="red_gloss">적박유광 (500매 이하 30,000원, 초과시 매수×60원)</option>
-                                <option value="green_gloss">녹박유광 (500매 이하 30,000원, 초과시 매수×60원)</option>
-                                <option value="black_gloss">먹박유광 (500매 이하 30,000원, 초과시 매수×60원)</option>
-                            </select>
-                            <div class="option-note" style="font-size: 11px; color: #666; margin-top: 4px;">* 박(20mm×20mm 이하)</div>
-                        </div>
-
-                        <!-- 넘버링 옵션 상세 -->
-                        <div class="option-details" id="numbering_options" style="display: none;">
-                            <select name="numbering_type" id="numbering_type" class="option-select">
-                                <option value="">선택하세요</option>
-                                <option value="single">1개 (500매 이하 60,000원, 초과시 매수×120원)</option>
-                                <option value="double">2개 (500매 이하 60,000원 + 1000매당 15,000원, 초과시 매수×120원)</option>
-                            </select>
-                            <div class="option-note" style="font-size: 11px; color: #666; margin-top: 4px;">* 넘버링(1~9999)</div>
-                        </div>
-
-                        <!-- 미싱 옵션 상세 -->
-                        <div class="option-details" id="perforation_options" style="display: none;">
-                            <select name="perforation_type" id="perforation_type" class="option-select">
-                                <option value="">선택하세요</option>
-                                <option value="horizontal">가로미싱 (500매 이하 20,000원, 초과시 매수×40원)</option>
-                                <option value="vertical">세로미싱 (500매 이하 20,000원, 초과시 매수×40원)</option>
-                                <option value="cross">십자미싱 (500매 이하 30,000원, 초과시 매수×60원)</option>
-                            </select>
-                            <div class="option-note" style="font-size: 11px; color: #666; margin-top: 4px;">* 미싱선 1줄 기준</div>
-                        </div>
-
-                        <!-- 귀돌이 옵션 상세 -->
-                        <div class="option-details" id="rounding_options" style="display: none;">
-                            <select name="rounding_type" id="rounding_type" class="option-select">
-                                <option value="">선택하세요</option>
-                                <option value="4corners">네귀돌이 (500매 이하 15,000원, 초과시 매수×30원)</option>
-                                <option value="2corners">두귀돌이 (500매 이하 12,000원, 초과시 매수×25원)</option>
-                            </select>
-                            <div class="option-note" style="font-size: 11px; color: #666; margin-top: 4px;">* R값 3mm 기준</div>
-                        </div>
-
-                        <!-- 오시 옵션 상세 -->
-                        <div class="option-details" id="creasing_options" style="display: none;">
-                            <select name="creasing_type" id="creasing_type" class="option-select">
-                                <option value="">선택하세요</option>
-                                <option value="single_crease">1줄 오시 (500매 이하 18,000원, 초과시 매수×35원)</option>
-                                <option value="double_crease">2줄 오시 (500매 이하 25,000원, 초과시 매수×50원)</option>
-                            </select>
-                            <div class="option-note" style="font-size: 11px; color: #666; margin-top: 4px;">* 접는 선 가공</div>
-                        </div>
-
-                        <!-- 숨겨진 가격 필드들 -->
-                        <input type="hidden" name="foil_price" id="foil_price" value="0">
-                        <input type="hidden" name="numbering_price" id="numbering_price" value="0">
-                        <input type="hidden" name="perforation_price" id="perforation_price" value="0">
-                        <input type="hidden" name="rounding_price" id="rounding_price" value="0">
-                        <input type="hidden" name="creasing_price" id="creasing_price" value="0">
-                        <input type="hidden" name="premium_options_total" id="premium_options_total" value="0">
-                    </div>
+                    <div id="premiumOptionsSection" style="margin-top: 15px; display: none;"></div>
 
                     <!-- 통일된 가격 표시 시스템 -->
                     <div class="price-display" id="priceDisplay">
@@ -586,10 +492,17 @@ if ($default_values['MY_type'] && $default_values['Section']) {
     console.log('✅ [관리자 견적서-상품권] applyToQuotation() 정의 완료');
     </script>
 <?php endif; ?>
-<?php if (!$isQuotationMode && !$isAdminQuoteMode): ?>
-<?php include __DIR__ . '/../../includes/quote_gauge.php'; ?>
-<script src="/js/quote-gauge.js?v=<?php echo time(); ?>"></script>
-<?php endif; ?>
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    if (document.getElementById('premiumOptionsSection') && typeof PremiumOptionsGeneric !== 'undefined') {
+        setTimeout(function() {
+            var poManager = new PremiumOptionsGeneric('merchandisebond', 'premiumOptionsSection', 'MY_amount');
+            poManager.init();
+            window.premiumOptionsManager = poManager;
+        }, 200);
+    }
+});
+</script>
 <?php if (isset($db) && $db) { mysqli_close($db); } ?>
 </body>
 </html>

@@ -22,7 +22,7 @@ mysqli_set_charset($db, "utf8");
 $params = $_GET;
 
 // 추가 옵션 총액 처리
-$additional_options_total = intval($params['additional_options_total'] ?? 0);
+$additional_options_total = intval($params['premium_options_total'] ?? $params['additional_options_total'] ?? 0);
 if ($additional_options_total > 0) {
     $params['additional_options_total'] = $additional_options_total;
 }

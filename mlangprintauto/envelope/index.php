@@ -309,8 +309,12 @@ if ($default_values['MY_type'] && $default_values['Section']) {
                         </div>
 
                         <input type="hidden" name="envelope_tape_price" id="envelope_tape_price" value="0">
-                        <input type="hidden" name="envelope_additional_options_total" id="envelope_additional_options_total" value="0">
+                        <input type="hidden" name="additional_options_total" id="envelope_additional_options_total" value="0">
                     </div>
+
+
+                    <!-- 프리미엄 옵션 동적 섹션 -->
+                    <!-- 프리미엄 옵션: 봉투는 자체 양면테이프 시스템 사용, PremiumOptionsGeneric 비활성화 -->
 
                     <!-- 스티커 방식의 실시간 가격 표시 -->
                     <div class="price-display" id="priceDisplay">
@@ -794,6 +798,19 @@ if ($default_values['MY_type'] && $default_values['Section']) {
     };
     </script>
     <?php endif; ?>
+
+    <script>
+    document.addEventListener('DOMContentLoaded', function() {
+        // 봉투는 자체 양면테이프 시스템(envelope_tape.js)을 사용하므로
+        // PremiumOptionsGeneric을 초기화하지 않음 (중복 방지)
+        // if (document.getElementById('premiumOptionsSection') && typeof PremiumOptionsGeneric !== 'undefined') {
+        //     setTimeout(function() {
+        //         var poManager = new PremiumOptionsGeneric('envelope', 'premiumOptionsSection', 'MY_amount');
+        //         poManager.init();
+        //         window.premiumOptionsManager = poManager;
+        //     }, 200);
+        // }
+    </script>
 
     <!-- 견적서 모달 공통 JavaScript -->
     <script src="../../js/quotation-modal-common.js?v=<?php echo time(); ?>"></script>

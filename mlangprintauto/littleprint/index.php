@@ -164,9 +164,6 @@ $default_values['ordertype'] = 'print'; // 인쇄만
     <!-- 통합 공통 스타일 CSS (최종 로드로 최우선 적용) -->
     <link rel="stylesheet" href="../../css/common-styles.css?v=1759615861">
     <link rel="stylesheet" href="../../css/upload-modal-common.css?v=<?php echo time(); ?>">
-    <!-- 견적서 모달용 공통 스타일 -->
-    <link rel="stylesheet" href="../../css/quotation-modal-common.css">
-    <link rel="stylesheet" href="../../css/quote-gauge.css">
 
 <!-- Phase 5: 견적 요청 버튼 스타일 -->
 <style>
@@ -298,64 +295,7 @@ $default_values['ordertype'] = 'print'; // 인쇄만
                     </div>
 
                     <!-- 추가 옵션 섹션 (전단지 스타일) -->
-                    <div class="leaflet-premium-options-section" id="premiumOptionsSection" style="margin-top: 15px;">
-                        <!-- 한 줄 체크박스 헤더 -->
-                        <div class="option-headers-row">
-                            <div class="option-checkbox-group">
-                                <input type="checkbox" id="coating_enabled" name="coating_enabled" class="option-toggle" value="1">
-                                <label for="coating_enabled" class="toggle-label">코팅</label>
-                            </div>
-                            <div class="option-checkbox-group">
-                                <input type="checkbox" id="folding_enabled" name="folding_enabled" class="option-toggle" value="1">
-                                <label for="folding_enabled" class="toggle-label">접지</label>
-                            </div>
-                            <div class="option-checkbox-group">
-                                <input type="checkbox" id="creasing_enabled" name="creasing_enabled" class="option-toggle" value="1">
-                                <label for="creasing_enabled" class="toggle-label">오시</label>
-                            </div>
-                            <div class="option-price-display">
-                                <span class="option-price-total" id="premiumPriceTotal">(+0원)</span>
-                            </div>
-                        </div>
-
-                        <!-- 코팅 옵션 상세 -->
-                        <div class="option-details" id="coating_options" style="display: none;">
-                            <select name="coating_type" id="coating_type" class="option-select">
-                                <option value="">선택하세요</option>
-                                <option value="single">단면유광코팅</option>
-                                <option value="double">양면유광코팅</option>
-                                <option value="single_matte">단면무광코팅</option>
-                                <option value="double_matte">양면무광코팅</option>
-                            </select>
-                        </div>
-
-                        <!-- 접지 옵션 상세 -->
-                        <div class="option-details" id="folding_options" style="display: none;">
-                            <select name="folding_type" id="folding_type" class="option-select">
-                                <option value="">선택하세요</option>
-                                <option value="2fold">2단접지</option>
-                                <option value="3fold">3단접지</option>
-                                <option value="accordion">병풍접지</option>
-                                <option value="gate">대문접지</option>
-                            </select>
-                        </div>
-
-                        <!-- 오시 옵션 상세 -->
-                        <div class="option-details" id="creasing_options" style="display: none;">
-                            <select name="creasing_lines" id="creasing_lines" class="option-select">
-                                <option value="">선택하세요</option>
-                                <option value="1">1줄</option>
-                                <option value="2">2줄</option>
-                                <option value="3">3줄</option>
-                            </select>
-                        </div>
-
-                        <!-- 숨겨진 필드들 -->
-                        <input type="hidden" name="coating_price" id="coating_price" value="0">
-                        <input type="hidden" name="folding_price" id="folding_price" value="0">
-                        <input type="hidden" name="creasing_price" id="creasing_price" value="0">
-                        <input type="hidden" name="additional_options_total" id="additional_options_total" value="0">
-                    </div>
+                    <div id="premiumOptionsSection" style="margin-top: 15px; display: none;"></div>
 
                     <!-- 통일된 가격 표시 시스템 -->
                     <div class="price-display" id="priceDisplay">
@@ -511,7 +451,18 @@ $default_values['ordertype'] = 'print'; // 인쇄만
 
     <!-- 포스터 추가 옵션 DB 로더 + 시스템 -->
     <script src="/js/premium-options-loader.js"></script>
-    <script src="js/littleprint-premium-options.js"></script>
+    <!-- 프리미엄 옵션은 premium-options-loader.js의 PremiumOptionsGeneric 클래스가 동적 처리 -->
+    <script>
+    document.addEventListener('DOMContentLoaded', function() {
+        if (document.getElementById('premiumOptionsSection') && typeof PremiumOptionsGeneric !== 'undefined') {
+            setTimeout(function() {
+                var poManager = new PremiumOptionsGeneric('littleprint', 'premiumOptionsSection', 'MY_amount');
+                poManager.init();
+                window.premiumOptionsManager = poManager;
+            }, 200);
+        }
+    });
+    </script>
 
     <!-- 견적서 모달 공통 JavaScript -->
     <script src="../../js/quotation-modal-common.js?v=<?php echo time(); ?>"></script>
@@ -588,10 +539,6 @@ $default_values['ordertype'] = 'print'; // 인쇄만
     };
     console.log('✅ [관리자 견적서-포스터] applyToQuotation() 정의 완료');
     </script>
-<?php endif; ?>
-<?php if (!$isQuotationMode && !$isAdminQuoteMode): ?>
-<?php include __DIR__ . '/../../includes/quote_gauge.php'; ?>
-<script src="/js/quote-gauge.js?v=<?php echo time(); ?>"></script>
 <?php endif; ?>
 <?php if (isset($db) && $db) { mysqli_close($db); } ?>
 </body>

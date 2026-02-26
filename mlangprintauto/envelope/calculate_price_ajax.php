@@ -21,6 +21,12 @@ mysqli_set_charset($db, "utf8");
 // 파라미터 수집 (GET 방식)
 $params = $_GET;
 
+// 추가 옵션 총액 처리 (premium_options_total 우선, additional_options_total fallback)
+$additional_options_total = intval($params['premium_options_total'] ?? $params['additional_options_total'] ?? 0);
+if ($additional_options_total > 0) {
+    $params['additional_options_total'] = $additional_options_total;
+}
+
 // 중앙 서비스로 가격 계산
 $service = new PriceCalculationService($db);
 $result = $service->calculate('envelope', $params);

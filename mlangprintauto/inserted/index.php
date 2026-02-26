@@ -331,64 +331,7 @@ header("Expires: 0");
                     
                     <!-- 추가 옵션 섹션 -->
                     <!-- 🆕 전단지 추가 옵션 섹션 (명함 스타일) -->
-                    <div class="leaflet-premium-options-section" id="premiumOptionsSection" style="margin-top: 15px;">
-                        <!-- 한 줄 체크박스 헤더 -->
-                        <div class="option-headers-row">
-                            <div class="option-checkbox-group">
-                                <input type="checkbox" id="coating_enabled" name="coating_enabled" class="option-toggle" value="1">
-                                <label for="coating_enabled" class="toggle-label">코팅</label>
-                            </div>
-                            <div class="option-checkbox-group">
-                                <input type="checkbox" id="folding_enabled" name="folding_enabled" class="option-toggle" value="1">
-                                <label for="folding_enabled" class="toggle-label">접지</label>
-                            </div>
-                            <div class="option-checkbox-group">
-                                <input type="checkbox" id="creasing_enabled" name="creasing_enabled" class="option-toggle" value="1">
-                                <label for="creasing_enabled" class="toggle-label">오시</label>
-                            </div>
-                            <div class="option-price-display">
-                                <span class="option-price-total" id="premiumPriceTotal">(+0원)</span>
-                            </div>
-                        </div>
-
-                        <!-- 코팅 옵션 상세 -->
-                        <div class="option-details" id="coating_options" style="display: none;">
-                            <select name="coating_type" id="coating_type" class="option-select">
-                                <option value="">선택하세요</option>
-                                <option value="single">단면유광코팅</option>
-                                <option value="double">양면유광코팅</option>
-                                <option value="single_matte">단면무광코팅</option>
-                                <option value="double_matte">양면무광코팅</option>
-                            </select>
-                        </div>
-
-                        <!-- 접지 옵션 상세 -->
-                        <div class="option-details" id="folding_options" style="display: none;">
-                            <select name="folding_type" id="folding_type" class="option-select">
-                                <option value="">선택하세요</option>
-                                <option value="2fold">2단접지</option>
-                                <option value="3fold">3단접지</option>
-                                <option value="accordion">병풍접지</option>
-                                <option value="gate">대문접지</option>
-                            </select>
-                        </div>
-
-                        <!-- 오시 옵션 상세 -->
-                        <div class="option-details" id="creasing_options" style="display: none;">
-                            <select name="creasing_lines" id="creasing_lines" class="option-select">
-                                <option value="">선택하세요</option>
-                                <option value="1">1줄</option>
-                                <option value="2">2줄</option>
-                                <option value="3">3줄</option>
-                            </select>
-                        </div>
-
-                        <!-- 숨겨진 필드들 -->
-                        <input type="hidden" name="coating_price" id="coating_price" value="0">
-                        <input type="hidden" name="folding_price" id="folding_price" value="0">
-                        <input type="hidden" name="creasing_price" id="creasing_price" value="0">
-                        <input type="hidden" name="additional_options_total" id="additional_options_total" value="0">
-                    </div>
+                    <div id="premiumOptionsSection" style="margin-top: 15px; display: none;"></div>
                     
                     <!-- 실시간 가격 표시 -->
                     <div class="price-display" id="priceDisplay">
@@ -479,15 +422,21 @@ header("Expires: 0");
 
     <!-- 추가 옵션 DB 로더 + 시스템 -->
     <script src="/js/premium-options-loader.js"></script>
-    <script src="js/leaflet-premium-options.js?v=<?php echo time(); ?>"></script>
+    <!-- 프리미엄 옵션은 premium-options-loader.js의 PremiumOptionsGeneric 클래스가 동적 처리 -->
     <script src="/js/quote-gauge.js?v=<?php echo time(); ?>"></script>
     
     <script>
     document.addEventListener('DOMContentLoaded', function() {
         console.log('전단지 페이지 초기화 완료 - 통합 갤러리 시스템');
 
-        // ✅ 추가 옵션은 additional-options.js에서 관리
-        // (중복 이벤트 리스너 제거 - additional-options.js가 자동으로 처리)
+        // 프리미엄 옵션 동적 초기화
+        if (document.getElementById('premiumOptionsSection') && typeof PremiumOptionsGeneric !== 'undefined') {
+            setTimeout(function() {
+                var poManager = new PremiumOptionsGeneric('inserted', 'premiumOptionsSection', 'MY_amount');
+                poManager.init();
+                window.premiumOptionsManager = poManager;
+            }, 200);
+        }
 
         // 로그인 메시지가 있으면 모달 자동 표시
         <?php if (!empty($login_message)): ?>
