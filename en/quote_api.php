@@ -71,7 +71,7 @@ $adminBody = <<<HTML
 <body style="font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif; color: #1a1a2e; max-width: 600px; margin: 0 auto; padding: 20px;">
     <div style="background: #1E4E79; color: white; padding: 20px 24px; border-radius: 12px 12px 0 0;">
         <h2 style="margin: 0; font-size: 18px;">🌐 New International Quote Request</h2>
-        <p style="margin: 6px 0 0; font-size: 13px; opacity: 0.8;">From English landing page (dsp114.co.kr/en/)</p>
+        <p style="margin: 6px 0 0; font-size: 13px; opacity: 0.8;">From English landing page (dsp114.com/en/)</p>
     </div>
     <div style="background: #ffffff; border: 1px solid #e2e8f0; border-top: none; padding: 24px; border-radius: 0 0 12px 12px;">
         <table style="width: 100%; border-collapse: collapse;">

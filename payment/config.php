@@ -33,8 +33,8 @@ if (INICIS_TEST_MODE) {
 // ================================
 $server_name = $_SERVER['SERVER_NAME'] ?? 'localhost';
 
-if (strpos($server_name, 'dsp114.co.kr') !== false) {
-    define('SITE_DOMAIN', 'https://dsp114.co.kr');
+if (strpos($server_name, 'dsp114.co.kr') !== false || strpos($server_name, 'dsp114.com') !== false) {
+    define('SITE_DOMAIN', 'https://' . $server_name);
 } elseif (strpos($server_name, 'dsp1830.shop') !== false) {
     define('SITE_DOMAIN', 'https://dsp1830.shop');
 } else {

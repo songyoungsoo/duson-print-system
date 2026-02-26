@@ -694,6 +694,9 @@ if ($url_nc_type) {
 
                 // 프리미엄 옵션은 PremiumOptionsGeneric이 자체 이벤트 리스너를 관리함
                 console.log('프리미엄 옵션: PremiumOptionsGeneric으로 위임됨');
+            }, 500);
+        });
+
 
         // 🆕 공통 업로드 모달에서 사용할 장바구니 추가 함수
         window.handleModalBasketAdd = function(uploadedFiles, onSuccess, onError) {
@@ -765,16 +768,7 @@ if ($url_nc_type) {
                     ordertype: formData.get('ordertype')
                 },
                 premium: {
-                    foil_enabled: formData.get('foil_enabled'),
-                    foil_price: formData.get('foil_price'),
-                    numbering_enabled: formData.get('numbering_enabled'),
-                    numbering_price: formData.get('numbering_price'),
-                    perforation_enabled: formData.get('perforation_enabled'),
-                    perforation_price: formData.get('perforation_price'),
-                    rounding_enabled: formData.get('rounding_enabled'),
-                    rounding_price: formData.get('rounding_price'),
-                    creasing_enabled: formData.get('creasing_enabled'),
-                    creasing_price: formData.get('creasing_price'),
+                    premium_options_data: formData.get('premium_options_data'),
                     premium_total: formData.get('premium_options_total')
                 }
             });
