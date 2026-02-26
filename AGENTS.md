@@ -427,5 +427,51 @@ if (isset($db) && $db) { mysqli_close($db); }  // 페이지 끝에서 정리
 | `CLAUDE_DOCS/REBUILD_GUIDE.md` | 리빌드 가이드 |
 | `CLAUDE_DOCS/인쇄원가계산시스템.md` | 인쇄원가 계산 체계 |
 
+## 🌐 도메인 전환 현황 (dsp114.co.kr → dsp114.com)
+
+**목표**: 현재 dsp114.co.kr에서 운영 중인 신규 사이트를 dsp114.com 도메인으로 전환
+
+**현재 상태 (2026-02-26):**
+
+| 항목 | 상태 | 비고 |
+|------|------|------|
+| 코드 — SITE_URL 동적 감지 | ✅ 완료 | `config.env.php`에서 접속 도메인 자동 감지 |
+| 코드 — 하드코딩 도메인 제거 | ✅ 완료 | 11개 파일에서 SITE_URL/SITE_DOMAIN으로 교체 |
+| 코드 — KG이니시스 returnUrl/closeUrl | ✅ 완료 | SITE_URL 동적 감지, 같은 사인키 사용 가능 (이니시스 확인) |
+| KB에스크로 mHValue | ✅ 완료 | dsp114.com용 `eb30fbb0...` 적용 (롤백값 주석 보존) |
+| DNS — A 레코드 변경 | ⏳ 대기 | `175.119.156.230` → `175.119.156.249` 변경 필요 |
+| Plesk — 도메인 별칭 추가 | ⏳ 대기 | dsp114.com을 Plesk에 alias로 추가 + SSL |
+| 프로덕션 배포 | ✅ 완료 | 30개 파일 FTP 업로드 (2026-02-26) |
+
+**도메인별 서버 현황:**
+```
+dsp114.com   → 175.119.156.230 (구 서버, Apache 2.2 + PHP 5.2)
+dsp114.co.kr → 175.119.156.249 (신 서버, nginx + Plesk + PHP 8.2)
+```
+
+**KB에스크로 비교:**
+
+| | dsp114.com (구) | dsp114.co.kr (신) |
+|--|----------------|-------------------|
+| mHValue | `eb30fbb0bc1da7fdcaf800c0bceebbff201111241043905` | `ef04cec95f1a7298f1f686bfe3159ade` |
+| 등록일 | 2011.11.24 | 2026.02.06 |
+| 등록 도메인 | www.dsp114.com | www.dsp114.co.kr |
+| 현재 적용 | ✅ right.htm, footer.php에 적용 중 | 롤백 시 사용 (주석에 보존) |
+
+**KG이니시스:**
+- MID: `dsp1147479` (사업자번호 귀속, 도메인 무관)
+- Sign Key: 동일 사용 가능 (이니시스 기술지원 확인 완료)
+- returnUrl/closeUrl: SITE_URL 동적 감지로 자동 대응
+
+**롤백 방법 (KB에스크로):**
+```bash
+# mHValue를 dsp114.co.kr용으로 되돌리기
+# right.htm, includes/footer.php에서:
+#   현재: eb30fbb0bc1da7fdcaf800c0bceebbff201111241043905 (dsp114.com)
+#   롤백: ef04cec95f1a7298f1f686bfe3159ade (dsp114.co.kr)
+# 또는 git으로 원복:
+git checkout e6554898 -- right.htm includes/footer.php
+```
+
 ---
 마지막 업데이트: 2026-02-26
