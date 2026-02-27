@@ -38,6 +38,12 @@ switch ($action) {
     case 'get_unread_rooms':
         getUnreadRooms();
         break;
+    case 'get_chat_config':
+        getChatConfig();
+        break;
+    case 'update_chat_config':
+        updateChatConfig();
+        break;
     // === 관리자 채팅 관리 액션 ===
     case 'admin_mark_all_read':
         adminMarkAllRead();
@@ -554,6 +560,24 @@ function checkAndTriggerAI($roomId) {
 
     if (!$room) return;
 
+    // DB 설정 로드
+    $cfg = loadChatConfig($db);
+    $aiEnabled = $cfg['ai_enabled'] ?? true;
+    $aiWaitSec = $cfg['ai_wait_seconds'] ?? 60;
+    $aiHourStart = $cfg['ai_hour_start'] ?? '00:00';
+    $aiHourEnd = $cfg['ai_hour_end'] ?? '23:59';
+
+    // AI 비활성화 체크
+    if (!$aiEnabled) return;
+
+    // AI 운영 시간대 체크
+    $now = date('H:i');
+    if ($aiHourStart <= $aiHourEnd) {
+        if ($now < $aiHourStart || $now > $aiHourEnd) return;
+    } else {
+        if ($now < $aiHourStart && $now > $aiHourEnd) return;
+    }
+
     // AI가 이미 활성 상태이면 → 고객의 새 메시지에 AI가 응답
     if ($room['ai_active'] == 1) {
         handleAIConversation($roomId);
@@ -570,7 +594,7 @@ function checkAndTriggerAI($roomId) {
     $lastCustResult = mysqli_stmt_get_result($lastCustStmt);
     $lastCustMsg = mysqli_fetch_assoc($lastCustResult);
 
-    if (!$lastCustMsg) return; // 고객 메시지 없으면 종료
+    if (!$lastCustMsg) return;
 
     // 3. 마지막 응답 시간 확인 (staff 또는 ai_bot)
     $lastReplyQuery = "SELECT createdat FROM chatmessages 
@@ -582,14 +606,13 @@ function checkAndTriggerAI($roomId) {
     $lastReplyResult = mysqli_stmt_get_result($lastReplyStmt);
     $lastReply = mysqli_fetch_assoc($lastReplyResult);
 
-    // 마지막 응답이 고객 메시지 이후이면 → 이미 답변됨, 종료
     if ($lastReply && strtotime($lastReply['createdat']) >= strtotime($lastCustMsg['createdat'])) {
         return;
     }
 
-    // 4. 60초 경과 확인
+    // 4. N초 경과 확인 (DB 설정)
     $elapsed = time() - strtotime($lastCustMsg['createdat']);
-    if ($elapsed < 60) return; // 아직 60초 안 됨
+    if ($elapsed < $aiWaitSec) return;
 
     // 5. AI 진입!
     activateAI($roomId, $lastCustMsg['message']);
@@ -639,14 +662,16 @@ function handleAIConversation($roomId) {
 function activateAI($roomId, $customerMessage) {
     global $db;
 
+    $cfg = loadChatConfig($db);
+
     // AI 활성화 플래그 설정
     $updateQuery = "UPDATE chatrooms SET ai_active = 1 WHERE id = ?";
     $updateStmt = mysqli_prepare($db, $updateQuery);
     mysqli_stmt_bind_param($updateStmt, 'i', $roomId);
     mysqli_stmt_execute($updateStmt);
 
-    // 인사 메시지
-    $greeting = "안녕하세요, 긴급대응입니다. 담당자 연결 전까지 제가 도와드리겠습니다.";
+    // 인사 메시지 (DB 설정)
+    $greeting = $cfg['ai_greeting_msg'] ?? '안녕하세요, 긴급대응입니다. 담당자 연결 전까지 제가 도와드리겠습니다.';
     insertAIMessage($roomId, $greeting);
 
     // ChatbotService로 고객 질문에 대한 AI 응답 생성
@@ -672,8 +697,8 @@ function deactivateAIIfActive($roomId) {
 
     if (!$room || $room['ai_active'] != 1) return;
 
-    // AI 퇴장 메시지
-    $farewell = "담당자가 연결되었습니다. 이어서 상담 도와드릴 거예요. 감사합니다!";
+    $cfg = loadChatConfig($db);
+    $farewell = $cfg['ai_farewell_msg'] ?? '담당자가 연결되었습니다. 이어서 상담 도와드릴 거예요. 감사합니다!';
     insertAIMessage($roomId, $farewell);
 
     // AI 비활성화
@@ -689,8 +714,9 @@ function deactivateAIIfActive($roomId) {
 function insertAIMessage($roomId, $message) {
     global $db;
 
+    $cfg = loadChatConfig($db);
     $senderid = 'ai_bot';
-    $sendername = '긴급대응';
+    $sendername = $cfg['ai_display_name'] ?? '긴급대응';
     $query = "INSERT INTO chatmessages (roomid, senderid, sendername, messagetype, message)
               VALUES (?, ?, ?, 'text', ?)";
     $stmt = mysqli_prepare($db, $query);
@@ -783,6 +809,124 @@ function callChatbotService($message) {
 
         return '죄송합니다. 잠시 후 담당자가 연결될 예정입니다. 전화(02-2632-1830)로도 문의 가능합니다.';
     }
+}
+
+// ============================================================
+// 채팅 설정 관리
+// ============================================================
+
+function getChatConfig() {
+    global $db;
+
+    $group = $_GET['group'] ?? '';
+    $where = '';
+    $params = [];
+    $types = '';
+
+    if ($group && in_array($group, ['widget', 'ai', 'extra'])) {
+        $where = 'WHERE config_group = ?';
+        $params[] = $group;
+        $types = 's';
+    }
+
+    $query = "SELECT config_key, config_value, config_type, config_group, description FROM chat_config $where ORDER BY config_group, config_key";
+
+    if ($types) {
+        $stmt = mysqli_prepare($db, $query);
+        mysqli_stmt_bind_param($stmt, $types, ...$params);
+        mysqli_stmt_execute($stmt);
+        $result = mysqli_stmt_get_result($stmt);
+    } else {
+        $result = mysqli_query($db, $query);
+    }
+
+    if (!$result) {
+        jsonResponse(false, null, 'DB 오류: ' . mysqli_error($db));
+        return;
+    }
+
+    $config = [];
+    while ($row = mysqli_fetch_assoc($result)) {
+        $val = $row['config_value'];
+        if ($row['config_type'] === 'boolean') $val = ($val === '1' || $val === 'true');
+        elseif ($row['config_type'] === 'number') $val = is_numeric($val) ? (strpos($val, '.') !== false ? floatval($val) : intval($val)) : $val;
+
+        $config[$row['config_key']] = [
+            'value' => $val,
+            'type' => $row['config_type'],
+            'group' => $row['config_group'],
+            'description' => $row['description']
+        ];
+    }
+
+    jsonResponse(true, $config);
+}
+
+function updateChatConfig() {
+    global $db;
+    requireAdmin();
+
+    $input = json_decode(file_get_contents('php://input'), true);
+    if (!$input || !is_array($input)) {
+        $input = $_POST;
+    }
+
+    if (empty($input) || !is_array($input)) {
+        jsonResponse(false, null, '설정 데이터가 필요합니다.');
+        return;
+    }
+
+    $allowedKeys = [
+        'widget_enabled', 'widget_position', 'widget_hour_start', 'widget_hour_end',
+        'widget_button_label', 'widget_welcome_msg', 'widget_poll_interval',
+        'ai_enabled', 'ai_wait_seconds', 'ai_greeting_msg', 'ai_farewell_msg',
+        'ai_hour_start', 'ai_hour_end', 'ai_display_name',
+        'offline_message', 'notice_message', 'upload_max_mb'
+    ];
+
+    $updated = 0;
+    $errors = [];
+
+    foreach ($input as $key => $value) {
+        if ($key === 'action') continue;
+        if (!in_array($key, $allowedKeys)) {
+            $errors[] = "허용되지 않는 키: $key";
+            continue;
+        }
+
+        if (is_bool($value)) $value = $value ? '1' : '0';
+        $value = (string)$value;
+
+        $query = "UPDATE chat_config SET config_value = ? WHERE config_key = ?";
+        $stmt = mysqli_prepare($db, $query);
+        mysqli_stmt_bind_param($stmt, 'ss', $value, $key);
+
+        if (mysqli_stmt_execute($stmt)) {
+            $updated++;
+        } else {
+            $errors[] = "$key: " . mysqli_stmt_error($stmt);
+        }
+    }
+
+    jsonResponse(true, [
+        'updated' => $updated,
+        'errors' => $errors,
+        'message' => $updated . '개 설정 저장 완료'
+    ]);
+}
+
+function loadChatConfig($db) {
+    $result = mysqli_query($db, "SELECT config_key, config_value, config_type FROM chat_config");
+    $config = [];
+    if ($result) {
+        while ($row = mysqli_fetch_assoc($result)) {
+            $val = $row['config_value'];
+            if ($row['config_type'] === 'boolean') $val = ($val === '1');
+            elseif ($row['config_type'] === 'number') $val = intval($val);
+            $config[$row['config_key']] = $val;
+        }
+    }
+    return $config;
 }
 
 // ============================================================

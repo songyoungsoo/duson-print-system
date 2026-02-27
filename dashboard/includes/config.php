@@ -43,6 +43,7 @@ $DASHBOARD_NAV = [
         'items' => [
             'email' => ['name' => '이메일 발송', 'icon' => '📧', 'path' => '/dashboard/email/'],
             'chat' => ['name' => '채팅 관리', 'icon' => '💬', 'path' => '/dashboard/chat/'],
+            'chat_settings' => ['name' => '채팅 설정', 'icon' => '⚙️', 'path' => '/dashboard/chat/settings.php'],
             'quotes' => ['name' => '견적 관리', 'icon' => '📋', 'path' => '/dashboard/quotes/'],
             'inquiries' => ['name' => '고객 문의', 'icon' => '✉️', 'path' => '/dashboard/inquiries/'],
         ]

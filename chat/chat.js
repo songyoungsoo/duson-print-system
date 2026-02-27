@@ -8,17 +8,90 @@ class ChatWidget {
         this.unreadCount = 0;
         this.isAdmin = false;
         this.isDashboard = false;
+        this.config = {};
 
         this.init();
     }
 
-    init() {
+    async init() {
         this.checkContext();
+        await this.loadConfig();
+
+        if (!this.configVal('widget_enabled', true)) {
+            return;
+        }
+        if (!this.isWithinSchedule(this.configVal('widget_hour_start', '00:00'), this.configVal('widget_hour_end', '23:59'))) {
+            this._outsideHours = true;
+        }
+
         this.adminCheckPromise = this.checkAdminStatus();
         this.createWidget();
+        this.applyConfigToWidget();
         this.attachEvents();
         this.loadChatState();
         this.startBlinkAnimation();
+    }
+
+    async loadConfig() {
+        try {
+            var r = await fetch('/chat/api.php?action=get_chat_config&group=widget');
+            var res = await r.json();
+            if (res.success && res.data) {
+                var cfg = {};
+                for (var k in res.data) { cfg[k] = res.data[k].value; }
+                this.config = cfg;
+            }
+        } catch (e) { /* fallback to defaults */ }
+    }
+
+    configVal(key, fallback) {
+        var v = this.config[key];
+        if (v === undefined || v === null) return fallback;
+        return v;
+    }
+
+    isWithinSchedule(start, end) {
+        if (!start || !end) return true;
+        var now = new Date();
+        var hh = String(now.getHours()).padStart(2, '0');
+        var mm = String(now.getMinutes()).padStart(2, '0');
+        var cur = hh + ':' + mm;
+        if (start <= end) {
+            return cur >= start && cur <= end;
+        } else {
+            return cur >= start || cur <= end;
+        }
+    }
+
+    applyConfigToWidget() {
+        var pos = this.configVal('widget_position', 'right');
+        var widget = document.querySelector('.chat-widget');
+        if (widget && pos === 'left') {
+            widget.style.right = 'auto';
+            widget.style.left = '80px';
+        }
+
+        var label = document.querySelector('.chat-forehead-label');
+        var btnLabel = this.configVal('widget_button_label', '');
+        if (label && btnLabel) {
+            label.textContent = btnLabel;
+        }
+
+        var welcomeMsg = this.configVal('widget_welcome_msg', '');
+        if (welcomeMsg) {
+            var welcomeEl = document.getElementById('chat-welcome-msg');
+            if (welcomeEl) welcomeEl.innerHTML = welcomeMsg.replace(/\n/g, '<br>');
+        }
+
+        var notice = this.configVal('notice_message', '');
+        if (notice) {
+            var bar = document.createElement('div');
+            bar.className = 'chat-notice-bar';
+            bar.style.cssText = 'padding:6px 12px;background:#fef3c7;color:#92400e;font-size:12px;text-align:center;border-bottom:1px solid #fde68a;';
+            bar.textContent = notice;
+            var msgContainer = document.getElementById('chat-messages');
+            if (msgContainer) msgContainer.parentNode.insertBefore(bar, msgContainer);
+        }
     }
     
     async checkAdminStatus() {
@@ -64,7 +137,7 @@ class ChatWidget {
                     <div class="chat-name-modal-header">
                         <div class="chat-name-modal-icon">👋</div>
                         <div class="chat-name-modal-title">안녕하세요!</div>
-                        <div class="chat-name-modal-subtitle">더 나은 상담을 위해<br>상호명이나 성함을 알려주세요</div>
+                        <div class="chat-name-modal-subtitle" id="chat-welcome-msg">더 나은 상담을 위해<br>상호명이나 성함을 알려주세요</div>
                     </div>
                     <div class="chat-name-modal-body">
                         <label class="chat-name-modal-label">상호명 또는 성함 (선택사항)</label>
@@ -332,7 +405,11 @@ class ChatWidget {
         if (this.isOpen) {
             this.closeChat();
         } else {
-            // 이름이 설정되지 않았으면 모달 표시
+            if (this._outsideHours) {
+                var offlineMsg = this.configVal('offline_message', '현재 업무시간 외입니다.');
+                alert(offlineMsg);
+                return;
+            }
             if (!sessionStorage.getItem('user_name_set')) {
                 this.showNameModal();
             } else {
@@ -759,9 +836,10 @@ class ChatWidget {
 
     startPolling() {
         this.stopPolling();
+        var interval = parseInt(this.configVal('widget_poll_interval', 2000)) || 2000;
         this.pollInterval = setInterval(() => {
             this.loadMessages();
-        }, 2000); // 2초마다 새 메시지 확인
+        }, interval);
     }
 
     stopPolling() {
