@@ -7,7 +7,7 @@ include __DIR__ . '/../includes/sidebar.php';
 ?>
 
 <main class="flex-1 bg-gray-50 overflow-y-auto">
-    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-2">
+    <div class="max-w-7xl mx-auto px-2 sm:px-4 lg:px-6 py-1">
         <!-- 헤더 + 필터 한 줄 -->
         <div class="flex flex-wrap items-center gap-2 mb-2">
             <h1 class="text-lg font-bold text-gray-900 mr-2">주문 관리</h1>
@@ -51,17 +51,17 @@ include __DIR__ . '/../includes/sidebar.php';
         <div class="bg-white rounded-lg shadow overflow-hidden">
             <div class="overflow-x-auto">
                 <table class="min-w-full divide-y divide-gray-200">
-                    <thead class="bg-gray-50 sticky top-0 z-10">
+                    <thead class="sticky top-0 z-10" style="background: linear-gradient(135deg, #4a5568 0%, #2d3748 100%);">
                         <tr>
                             <th class="px-2 py-1.5 text-center w-8"><input type="checkbox" id="selectAll" class="w-3.5 h-3.5 rounded border-gray-300 text-blue-600 cursor-pointer"></th>
-                            <th class="px-2 py-1.5 text-left text-xs font-medium text-gray-500 tracking-wider">주문번호</th>
-                            <th class="px-2 py-1.5 text-left text-xs font-medium text-gray-500 tracking-wider">품목</th>
-                            <th class="px-2 py-1.5 text-left text-xs font-medium text-gray-500 tracking-wider">주문자</th>
-                            <th class="px-2 py-1.5 text-right text-xs font-medium text-gray-500 tracking-wider">금액</th>
-                            <th class="px-2 py-1.5 text-center text-xs font-medium text-gray-500 tracking-wider">배송</th>
-                            <th class="px-2 py-1.5 text-center text-xs font-medium text-gray-500 tracking-wider">상태</th>
-                            <th class="px-2 py-1.5 text-left text-xs font-medium text-gray-500 tracking-wider">주문일시</th>
-                            <th class="px-2 py-1.5 text-center text-xs font-medium text-gray-500 tracking-wider">관리</th>
+                            <th class="px-2 py-1.5 text-left text-xs font-semibold text-white tracking-wider">주문번호</th>
+                            <th class="px-2 py-1.5 text-left text-xs font-semibold text-white tracking-wider">품목</th>
+                            <th class="px-2 py-1.5 text-left text-xs font-semibold text-white tracking-wider">주문자</th>
+                            <th class="px-2 py-1.5 text-right text-xs font-semibold text-white tracking-wider">금액</th>
+                            <th class="px-2 py-1.5 text-center text-xs font-semibold text-white tracking-wider">배송</th>
+                            <th class="px-2 py-1.5 text-center text-xs font-semibold text-white tracking-wider">상태</th>
+                            <th class="px-2 py-1.5 text-left text-xs font-semibold text-white tracking-wider">주문일시</th>
+                            <th class="px-2 py-1.5 text-center text-xs font-semibold text-white tracking-wider">관리</th>
                         </tr>
                     </thead>
                     <tbody id="ordersTableBody" class="bg-white divide-y divide-gray-200">
@@ -162,7 +162,7 @@ async function loadOrders(page = 1) {
 
             // 체크박스
             var tdCheck = document.createElement('td');
-            tdCheck.className = 'px-2 py-1 text-center';
+            tdCheck.className = 'px-1.5 py-0.5 text-center';
             var cb = document.createElement('input');
             cb.type = 'checkbox';
             cb.className = 'order-checkbox w-3.5 h-3.5 rounded border-gray-300 text-blue-600 cursor-pointer';
@@ -183,25 +183,25 @@ async function loadOrders(page = 1) {
 
             // 주문번호
             var tdNo = document.createElement('td');
-            tdNo.className = 'px-2 py-1 whitespace-nowrap text-xs font-medium text-gray-900';
+            tdNo.className = 'px-1.5 py-0.5 whitespace-nowrap text-xs font-medium text-gray-900';
             tdNo.textContent = '#' + order.no;
             tr.appendChild(tdNo);
 
             // 품목
             var tdType = document.createElement('td');
-            tdType.className = 'px-2 py-1 whitespace-nowrap text-xs text-gray-600';
+            tdType.className = 'px-1.5 py-0.5 whitespace-nowrap text-xs text-gray-600';
             tdType.textContent = order.type || '-';
             tr.appendChild(tdType);
 
             // 주문자
             var tdName = document.createElement('td');
-            tdName.className = 'px-2 py-1 whitespace-nowrap text-xs text-gray-600';
+            tdName.className = 'px-1.5 py-0.5 whitespace-nowrap text-xs text-gray-600';
             tdName.textContent = order.name || (order.email ? order.email.split('@')[0] : '-');
             tr.appendChild(tdName);
 
             // 금액
             var tdAmount = document.createElement('td');
-            tdAmount.className = 'px-2 py-1 whitespace-nowrap text-xs text-gray-900 text-right';
+            tdAmount.className = 'px-1.5 py-0.5 whitespace-nowrap text-xs text-gray-900 text-right';
             tdAmount.textContent = (order.amount || 0).toLocaleString() + '원';
             if (order.logen_fee_type === '선불') {
                 var shippingDiv = document.createElement('div');
@@ -223,7 +223,7 @@ async function loadOrders(page = 1) {
 
             // 배송
             var tdDelivery = document.createElement('td');
-            tdDelivery.className = 'px-2 py-1 whitespace-nowrap text-center text-xs';
+            tdDelivery.className = 'px-1.5 py-0.5 whitespace-nowrap text-center text-xs';
             var dv = (order.delivery || '').trim();
             var ft = order.logen_fee_type || '';
             if (dv === '택배') {
@@ -259,7 +259,7 @@ async function loadOrders(page = 1) {
 
             // 상태 (인라인 드롭다운)
             var tdStatus = document.createElement('td');
-            tdStatus.className = 'px-2 py-1 whitespace-nowrap text-center';
+            tdStatus.className = 'px-1.5 py-0.5 whitespace-nowrap text-center';
             var statusSelect = document.createElement('select');
             statusSelect.className = 'text-xs border border-gray-300 rounded px-1 py-0.5 focus:ring-1 focus:ring-blue-500 cursor-pointer';
             var statusOptions = [
@@ -285,13 +285,13 @@ async function loadOrders(page = 1) {
 
             // 주문일시
             var tdDate = document.createElement('td');
-            tdDate.className = 'px-2 py-1 whitespace-nowrap text-xs text-gray-600';
+            tdDate.className = 'px-1.5 py-0.5 whitespace-nowrap text-xs text-gray-600';
             tdDate.textContent = order.date || '-';
             tr.appendChild(tdDate);
 
             // 관리
             var tdAction = document.createElement('td');
-            tdAction.className = 'px-2 py-1 whitespace-nowrap text-center text-xs';
+            tdAction.className = 'px-1.5 py-0.5 whitespace-nowrap text-center text-xs';
             var link = document.createElement('a');
             link.href = '/dashboard/orders/view.php?no=' + order.no;
             link.className = 'text-blue-600 hover:text-blue-800 mr-3';

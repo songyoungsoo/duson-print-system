@@ -7,7 +7,7 @@ require_once __DIR__ . '/../../db.php';
 $page = max(1, intval($_GET['page'] ?? 1));
 $status_filter = $_GET['status'] ?? '';
 $search = trim($_GET['q'] ?? '');
-$per_page = ITEMS_PER_PAGE;
+$per_page = 24;
 $offset = ($page - 1) * $per_page;
 
 $where = "1=1";
@@ -43,6 +43,7 @@ if (!empty($params)) {
 $total_pages = max(1, ceil($total / $per_page));
 
 $query = "SELECT o.no, o.Type, o.name, o.phone, o.Hendphone, o.OrderStyle, o.date, o.uploaded_files,
+          o.Designer, o.proofreading_confirmed, o.proofreading_date,
           (SELECT COUNT(*) FROM mlangorder_printauto AS sub WHERE sub.no = o.no AND sub.uploaded_files IS NOT NULL AND sub.uploaded_files != '') as has_files
           FROM mlangorder_printauto o
           WHERE {$where}
@@ -95,7 +96,7 @@ include __DIR__ . '/../includes/sidebar.php';
 ?>
 
 <main class="flex-1 bg-gray-50">
-    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-2">
+    <div class="max-w-7xl mx-auto px-2 sm:px-4 lg:px-6 py-1">
         <!-- 헤더 + 필터 한 줄 -->
         <form method="GET" class="flex flex-wrap items-center gap-2 mb-2">
             <h1 class="text-lg font-bold text-gray-900 mr-2">교정 관리</h1>
@@ -122,27 +123,30 @@ include __DIR__ . '/../includes/sidebar.php';
         <div class="bg-white rounded-lg shadow overflow-hidden">
             <div class="overflow-x-auto">
                 <table class="min-w-full divide-y divide-gray-200">
-                    <thead class="bg-gray-50">
+                    <thead style="background: linear-gradient(135deg, #4a5568 0%, #2d3748 100%);">
                         <tr>
-                            <th class="px-2 py-1.5 text-left text-xs font-medium text-gray-500">주문번호</th>
-                            <th class="px-2 py-1.5 text-left text-xs font-medium text-gray-500">품목</th>
-                            <th class="px-2 py-1.5 text-left text-xs font-medium text-gray-500">주문자</th>
-                            <th class="px-2 py-1.5 text-left text-xs font-medium text-gray-500">전화번호</th>
-                            <th class="px-2 py-1.5 text-center text-xs font-medium text-gray-500">상태</th>
-                            <th class="px-2 py-1.5 text-center text-xs font-medium text-gray-500">교정파일</th>
-                            <th class="px-2 py-1.5 text-center text-xs font-medium text-gray-500">일시</th>
-                            <th class="px-2 py-1.5 text-center text-xs font-medium text-gray-500">보기</th>
-                            <th class="px-2 py-1.5 text-center text-xs font-medium text-gray-500">올리기</th>
+                            <th class="px-2 py-1.5 text-left text-xs font-semibold text-white">주문번호</th>
+                            <th class="px-2 py-1.5 text-left text-xs font-semibold text-white">품목</th>
+                            <th class="px-2 py-1.5 text-left text-xs font-semibold text-white">주문자</th>
+                            <th class="px-2 py-1.5 text-left text-xs font-semibold text-white">전화번호</th>
+                            <th class="px-2 py-1.5 text-center text-xs font-semibold text-white">상태</th>
+                            <th class="px-2 py-1.5 text-center text-xs font-semibold text-white">담당자</th>
+                            <th class="px-2 py-1.5 text-center text-xs font-semibold text-white">교정확정</th>
+                            <th class="px-2 py-1.5 text-center text-xs font-semibold text-white">운송장번호</th>
+                            <th class="px-2 py-1.5 text-center text-xs font-semibold text-white">교정파일</th>
+                            <th class="px-2 py-1.5 text-center text-xs font-semibold text-white">일시</th>
+                            <th class="px-2 py-1.5 text-center text-xs font-semibold text-white">보기</th>
+                            <th class="px-2 py-1.5 text-center text-xs font-semibold text-white">올리기</th>
                         </tr>
                     </thead>
                     <tbody class="bg-white divide-y divide-gray-200">
                         <?php if (empty($orders)): ?>
-                        <tr><td colspan="9" class="px-2 py-4 text-center text-xs text-gray-400">데이터가 없습니다.</td></tr>
+                        <tr><td colspan="12" class="px-2 py-4 text-center text-xs text-gray-400">데이터가 없습니다.</td></tr>
                         <?php endif; ?>
                         <?php $loop_idx = 0; foreach ($orders as $order): ?>
                         <tr class="<?php echo $loop_idx % 2 === 1 ? 'hover:bg-gray-100' : 'hover:bg-gray-50'; ?>" <?php if ($loop_idx % 2 === 1) echo 'style="background-color:#e6f7ff"'; ?> id="row-<?php echo $order['no']; ?>">
-                            <td class="px-2 py-1 text-xs font-medium text-gray-900">#<?php echo $order['no']; ?></td>
-                            <td class="px-2 py-1 text-xs text-gray-600"><?php
+                            <td class="px-1.5 py-0.5 text-xs font-medium text-gray-900">#<?php echo $order['no']; ?></td>
+                            <td class="px-1.5 py-0.5 text-xs text-gray-600"><?php
                                 $typeMap = [
                                     'sticker' => '스티커', 'sticker_new' => '스티커',
                                     'namecard' => '명함', 'inserted' => '전단지',
@@ -154,8 +158,8 @@ include __DIR__ . '/../includes/sidebar.php';
                                 $displayType = $typeMap[strtolower($rawType)] ?? $rawType;
                                 echo htmlspecialchars($displayType);
                             ?></td>
-                            <td class="px-2 py-1 text-xs text-gray-600"><?php echo htmlspecialchars($order['name']); ?></td>
-                            <td class="px-2 py-1 text-xs">
+                            <td class="px-1.5 py-0.5 text-xs text-gray-600"><?php echo htmlspecialchars($order['name']); ?></td>
+                            <td class="px-1.5 py-0.5 text-xs">
                                 <?php
                                     $phone = trim($order['phone'] ?? '');
                                     $hendphone = trim($order['Hendphone'] ?? '');
@@ -165,7 +169,7 @@ include __DIR__ . '/../includes/sidebar.php';
                                     <span class="text-gray-700" id="phone-display-<?php echo $order['no']; ?>"><?php echo htmlspecialchars($displayPhone); ?></span>
                                 <?php else: ?>
                                     <div class="flex items-center gap-1" id="phone-edit-<?php echo $order['no']; ?>">
-                                        <input type="text"
+                                        <input type="tel"
                                                id="phone-input-<?php echo $order['no']; ?>"
                                                placeholder="010-0000-0000"
                                                class="w-24 px-1 py-0.5 text-xs border border-orange-300 rounded focus:ring-1 focus:ring-blue-400 focus:border-blue-400 outline-none bg-orange-50"
@@ -176,15 +180,32 @@ include __DIR__ . '/../includes/sidebar.php';
                                     </div>
                                 <?php endif; ?>
                             </td>
-                            <td class="px-2 py-1 text-center">
-                                <?php
-                                    $style = $order['OrderStyle'] ?? '0';
-                                    $color = $status_colors[$style] ?? 'bg-gray-100 text-gray-700';
-                                    $label = $status_labels[$style] ?? '미정';
-                                ?>
-                                <span class="inline-block px-1.5 py-0.5 text-xs font-medium rounded-full <?php echo $color; ?>"><?php echo $label; ?></span>
+                            <td class="px-1.5 py-0.5 text-center whitespace-nowrap">
+                                <?php $curStyle = $order['OrderStyle'] ?? '0'; ?>
+                                <select onchange="changeOrderStatus(<?php echo $order['no']; ?>, this.value, this)"
+                                        class="text-xs border border-gray-300 rounded px-1 py-0.5 focus:ring-1 focus:ring-blue-500 cursor-pointer"
+                                        style="color: <?php
+                                            $sc = ['1'=>'#64748b','2'=>'#d97706','3'=>'#d97706','4'=>'#ea580c','5'=>'#4f46e5','6'=>'#7c3aed','7'=>'#2563eb','8'=>'#16a34a','9'=>'#9333ea','10'=>'#0891b2'];
+                                            echo $sc[$curStyle] ?? '#333';
+                                        ?>; font-weight: 600;">
+                                    <?php foreach ($status_labels as $k => $v): if ($k === '0') continue; ?>
+                                    <option value="<?php echo $k; ?>" <?php echo $curStyle === $k ? 'selected' : ''; ?>><?php echo $v; ?></option>
+                                    <?php endforeach; ?>
+                                </select>
                             </td>
-                            <td class="px-2 py-1 text-center">
+                            <td class="px-1.5 py-0.5 text-center text-xs text-gray-600"><?php echo htmlspecialchars($order['Designer'] ?: '-'); ?></td>
+                            <td class="px-1.5 py-0.5 text-center">
+                                <?php if (!empty($order['proofreading_confirmed']) && $order['proofreading_confirmed'] == 1): ?>
+                                    <span class="inline-block px-1.5 py-0.5 text-xs font-medium rounded-full bg-green-100 text-green-700">인쇄진행</span>
+                                    <?php if (!empty($order['proofreading_date'])): ?>
+                                    <small class="block text-[10px] text-gray-400"><?php echo date('m/d H:i', strtotime($order['proofreading_date'])); ?></small>
+                                    <?php endif; ?>
+                                <?php else: ?>
+                                    <span class="text-gray-300 text-xs">-</span>
+                                <?php endif; ?>
+                            </td>
+                            <td class="px-1.5 py-0.5 text-center text-xs text-gray-400">-</td>
+                            <td class="px-1.5 py-0.5 text-center">
                                 <?php
                                     $file_count = count($order['files']);
                                     if ($file_count === 0):
@@ -201,8 +222,8 @@ include __DIR__ . '/../includes/sidebar.php';
                                     </span>
                                 <?php endif; ?>
                             </td>
-                            <td class="px-2 py-1 text-xs text-gray-400 text-center"><?php echo date('Y/m/d H:i', strtotime($order['date'])); ?></td>
-                            <td class="px-2 py-1 text-center">
+                            <td class="px-1.5 py-0.5 text-xs text-gray-400 text-center"><?php echo date('m/d H:i', strtotime($order['date'])); ?></td>
+                            <td class="px-1.5 py-0.5 text-center">
                                 <?php if (!empty($order['files'])): ?>
                                 <button onclick="viewFiles(<?php echo $order['no']; ?>)" class="relative px-1.5 py-0.5 text-xs bg-blue-50 text-blue-600 rounded hover:bg-blue-100" title="교정파일 보기">
                                     보기
@@ -214,7 +235,7 @@ include __DIR__ . '/../includes/sidebar.php';
                                 <span class="text-gray-300 text-xs">-</span>
                                 <?php endif; ?>
                             </td>
-                            <td class="px-2 py-1 text-center">
+                            <td class="px-1.5 py-0.5 text-center">
                                 <button onclick="openUpload(<?php echo $order['no']; ?>)" class="px-1.5 py-0.5 text-xs bg-green-50 text-green-600 rounded hover:bg-green-100" title="파일 올리기">올리기</button>
                             </td>
                         </tr>
@@ -743,6 +764,28 @@ include __DIR__ . '/../includes/sidebar.php';
 </style>
 
 <script>
+// === 상태 변경 ===
+var statusColors = {'1':'#64748b','2':'#d97706','3':'#d97706','4':'#ea580c','5':'#4f46e5','6':'#7c3aed','7':'#2563eb','8':'#16a34a','9':'#9333ea','10':'#0891b2'};
+async function changeOrderStatus(no, newStatus, selectEl) {
+    try {
+        var formData = new FormData();
+        formData.append('action', 'update');
+        formData.append('no', no);
+        formData.append('order_style', newStatus);
+        var response = await fetch('/dashboard/api/orders.php', { method: 'POST', body: formData });
+        var result = await response.json();
+        if (result.success) {
+            selectEl.style.color = statusColors[newStatus] || '#333';
+        } else {
+            alert('상태 변경 실패: ' + result.message);
+            location.reload();
+        }
+    } catch (error) {
+        alert('상태 변경 중 오류가 발생했습니다.');
+        location.reload();
+    }
+}
+
 // === Order Phone Data (from PHP) ===
 var orderPhoneData = {};
 <?php foreach ($orders as $o): ?>
@@ -1308,10 +1351,12 @@ function openUpload(orderNo) {
         phoneArea.innerHTML = '<span class="text-gray-500">📞</span><span class="text-gray-800">' + displayPhone.replace(/</g,'&lt;') + '</span>';
     } else {
         phoneArea.innerHTML = '<span class="text-gray-500">📞</span>'
-            + '<input type="text" id="modalPhoneInput" placeholder="010-0000-0000" '
+            + '<input type="tel" id="modalPhoneInput" placeholder="010-0000-0000" '
             + 'class="w-28 px-1.5 py-0.5 text-xs border border-orange-300 rounded focus:ring-1 focus:ring-blue-400 outline-none bg-orange-50" maxlength="20" '
             + 'onkeydown="if(event.key===\'Enter\'){saveModalPhone(' + orderNo + ')}">'
             + '<button onclick="saveModalPhone(' + orderNo + ')" class="px-2 py-0.5 text-xs bg-blue-500 text-white rounded hover:bg-blue-600">저장</button>';
+        var modalInput = document.getElementById('modalPhoneInput');
+        if (modalInput && window.applyPhoneFormat) window.applyPhoneFormat(modalInput);
     }
 
     document.getElementById('uploadModal').classList.remove('hidden');

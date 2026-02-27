@@ -15,7 +15,7 @@ if (empty($action)) $action = 'list';
 switch ($action) {
     case 'list':
         $page = intval($_GET['page'] ?? 1);
-        $limit = ITEMS_PER_PAGE;
+        $limit = 24;
         $offset = ($page - 1) * $limit;
         
         $status = $_GET['status'] ?? '';
