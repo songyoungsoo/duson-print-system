@@ -517,8 +517,9 @@ class AdminQuoteManager
                        st_price, st_price_vat, Section, spec_type, spec_material, spec_size,
                        spec_sides, spec_design, quantity_display, coating_enabled, coating_type,
                        coating_price, folding_enabled, folding_type, folding_price,
-                       creasing_enabled, creasing_lines, creasing_price, additional_options_total)
-                      VALUES (?, 0, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)";
+                       creasing_enabled, creasing_lines, creasing_price, additional_options_total,
+                       premium_options)
+                      VALUES (?, 0, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)";
 
             $stmt = mysqli_prepare($this->db, $query);
 
@@ -556,8 +557,9 @@ class AdminQuoteManager
             $creasingLines = intval($calcItem['creasing_lines'] ?? 0);
             $creasingPrice = intval($calcItem['creasing_price'] ?? 0);
             $additionalOptionsTotal = intval($calcItem['additional_options_total'] ?? 0);
+            $premiumOptions = $calcItem['premium_options'] ?? null;
 
-            // 3번 검증: 35 placeholders = 35 types = 35 variables
+            // 3번 검증: 36 placeholders = 36 types = 36 variables
             // 1-2: ss (session, productType)
             // 3-4: sd (specification, unitPrice)
             // 5-9: sssss (jong~domusong)
@@ -566,9 +568,10 @@ class AdminQuoteManager
             // 17-18: dd (stPrice, stPriceVat)
             // 19-25: sssssss (section~quantityDisplay)
             // 26-35: isiisiiiii (coatingEnabled~additionalOptionsTotal)
+            // 36: s (premiumOptions)
             mysqli_stmt_bind_param(
                 $stmt,
-                "sssdsssssissssssddsssssssisiisiiiii",
+                "sssdsssssissssssddsssssssisiisiiiiis",
                 $sessionId,
                 $productType,
                 $specification,
@@ -603,7 +606,8 @@ class AdminQuoteManager
                 $creasingEnabled,
                 $creasingLines,
                 $creasingPrice,
-                $additionalOptionsTotal
+                $additionalOptionsTotal,
+                $premiumOptions
             );
         }
 

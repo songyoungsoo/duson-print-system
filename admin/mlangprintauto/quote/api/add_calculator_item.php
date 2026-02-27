@@ -87,7 +87,8 @@ try {
         'creasing_enabled' => intval($input['creasing_enabled'] ?? 0),
         'creasing_lines' => intval($input['creasing_lines'] ?? 0),
         'creasing_price' => intval($input['creasing_price'] ?? 0),
-        'additional_options_total' => intval($input['additional_options_total'] ?? 0)
+        'additional_options_total' => intval($input['additional_options_total'] ?? 0),
+        'premium_options' => $input['premium_options'] ?? null,
     ];
 
     $itemNo = $manager->addTempItem($adminSessionId, $calcItem);
