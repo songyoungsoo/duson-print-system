@@ -1,109 +1,136 @@
-# 📱 채팅 시스템 - 두손기획인쇄
+# 채팅 시스템 - 두손기획인쇄
 
 고객과 직원이 실시간으로 소통할 수 있는 채팅 시스템입니다.
 
-## ✨ 주요 기능
+## 주요 기능
 
-### 🎯 채팅 위젯 + AI 야간당번 (2026-02-27)
-- ✅ **채팅 위젯 (상담연결)** — 업무시간(09:00~18:30) 직원 실시간 채팅
-- ✅ **AI 야간당번 (긴급대응)** — 야간시간(18:30~09:00) AI 자동응답
-- ✅ 각각 독립 버튼으로 화면 표시
-- ✅ 대시보드에서 X/Y % 좌표로 자유 위치 설정 (비주얼 피커)
-- ✅ AI 버튼 라벨/색상 커스터마이징
+### 채팅 위젯 + AI 야간당번 (2026-02-27)
+- **채팅 위젯 (상담연결)** -- 업무시간(09:00~18:30) 직원 실시간 채팅
+- **AI 야간당번 (긴급대응)** -- 야간시간(18:30~09:00) AI 자동응답 (가격조회/지식Q&A)
+- 시간대별 배타적 표시 (footer.php `toggleWidgets()`)
+- 두 시스템은 완전히 독립 (코드, API, 백엔드 모두 별개)
 
-### 🎯 고객용 기능
-- ✅ 실시간 메시지 전송/수신 (2초마다 자동 업데이트)
-- ✅ 이미지 첨부 및 전송 (최대 10MB, 설정 가능)
-- ✅ 읽지 않은 메시지 알림 배지
-- ✅ 채팅창 열기/닫기 (상태 localStorage 유지)
-- ✅ 대화 내용 텍스트 파일로 저장
-- ✅ 반응형 디자인 (PC/모바일 지원)
+### 고객용 기능 (채팅 위젯)
+- 실시간 메시지 전송/수신 (2초마다 자동 업데이트)
+- 이미지 첨부 및 전송 (최대 10MB, 설정 가능)
+- 읽지 않은 메시지 알림 배지
+- 채팅창 열기/닫기 (상태 localStorage 유지)
+- 대화 내용 텍스트 파일로 저장
+- 반응형 디자인 (PC/모바일 지원)
 
-### 👥 직원용 기능
-- ✅ 3명의 직원이 동시에 같은 채팅방 참여
-- ✅ 모든 고객 채팅 확인 및 응답
-- ✅ 이미지 전송
-- ✅ 실시간 메시지 수신
+### 직원용 기능 (채팅 위젯)
+- 3명의 직원이 동시에 같은 채팅방 참여
+- 모든 고객 채팅 확인 및 응답
+- 이미지 전송
+- 실시간 메시지 수신
 
-## 🏗️ 아키텍처
+### AI 야간당번 기능
+- 9개 인쇄 제품 빠른선택 버튼
+- 클릭형 선택지 (재질, 사이즈, 수량 등)
+- 스티커 사이즈 직접입력 위젯
+- AI 가격 계산 (ChatbotService + Gemini API)
+- 지식베이스 Q&A
+- 드래그로 위치 이동
+
+## 아키텍처
+
+**두 시스템은 완전히 독립적으로 운영됩니다.**
 
 ```
-┌──────────────────────────────────────────────────────────┐
-│  includes/chat_widget.php                                 │
-│  ├── new ChatWidget({ mode: 'chat' })  → 채팅 위젯       │
-│  └── new ChatWidget({ mode: 'ai' })    → AI 야간당번      │
-└──────────────────────────────────────────────────────────┘
-         │                        │
-         ▼                        ▼
-┌──────────────────┐   ┌──────────────────┐
-│  chat-toggle-btn │   │  ai-toggle-btn   │
-│  채팅 위젯        │   │  AI 야간당번       │
-│  infolady 이미지  │   │  🤖 블루그라디언트  │
-│  09:00 ~ 18:30   │   │  18:30 ~ 09:00   │
-│  이름 모달 표시   │   │  이름 모달 건너뛰기 │
-│  chat_room_id    │   │  ai_room_id      │
-└──────────────────┘   └──────────────────┘
-         │                        │
-         ▼                        ▼
-┌──────────────────────────────────────┐
-│  chat/api.php                        │
-│  ├── ?action=get_or_create_room      │
-│  │   └── ai_mode=1 → ai_active=1    │
-│  ├── ?action=send_message            │
-│  ├── ?action=get_messages            │
-│  └── ?action=save_config (설정 저장)  │
-└──────────────────────────────────────┘
-```
+footer.php toggleWidgets() -- 시간대별 배타적 전환
+├── 09:00~18:30 (업무시간): 채팅 위젯만 표시
+└── 18:30~09:00 (야간시간): 야간당번만 표시
 
-### ChatWidget 클래스 (chat.js)
+=== 채팅 위젯 (상담연결) ===
 
-```javascript
-class ChatWidget {
-    constructor(options) {
-        this.mode = options.mode || 'chat';  // 'chat' | 'ai'
-        this.pfx = this.mode === 'ai' ? 'ai' : 'chat';  // DOM ID prefix
-    }
-    // 모든 DOM ID → ${pfx}-toggle-btn, ${pfx}-window, ${pfx}-messages ...
-    // localStorage → ${pfx}_room_id, ${pfx}_is_open ...
-    // mode='ai' → skipName, ?ai_mode=1, ai_hour 시간대, 🤖 버튼
-}
+includes/chat_widget.php
+  └── new ChatWidget({ mode: 'chat' })
+        └── chat/chat.js (ChatWidget 클래스)
+              └── chat/api.php (채팅방 시스템)
+                    └── DB: chatrooms / chatmessages
+
+=== 야간당번 (긴급대응) ===
+
+includes/ai_chatbot_widget.php (자체 내장 JS/CSS, 344줄)
+  └── api/ai_chat.php (POST)
+        └── v2/src/Services/AI/ChatbotService.php
+              ├── DB 가격표 조회 (8개 제품)
+              ├── 스티커 수학공식 계산
+              └── ChatbotKnowledge.php (Gemini API)
 ```
 
 ### 채팅 위젯 vs AI 야간당번
 
 | 항목 | 채팅 위젯 (상담연결) | AI 야간당번 (긴급대응) |
 |------|----------------|-----------------|
-| 버튼 | infolady 이미지 70×70px | 🤖 이모지 60×60px, 블루 그라디언트 |
-| 시간대 | `widget_hour_start` ~ `widget_hour_end` | `ai_hour_start` ~ `ai_hour_end` |
-| 이름 모달 | 표시 (상호명/성함 입력) | 건너뛰기 (skipName 자동) |
-| 채팅방 생성 | `ai_active=0` | `ai_active=1`, `?ai_mode=1` |
-| 헤더 색상 | 보라색 그라디언트 | 블루 그라디언트 (#667eea) |
-| localStorage | `chat_room_id`, `chat_is_open` | `ai_room_id`, `ai_is_open` |
+| 파일 | `chat_widget.php` -> `chat.js` | `ai_chatbot_widget.php` (자체 내장) |
+| API | `chat/api.php` (채팅방 CRUD) | `api/ai_chat.php` (ChatbotService 직접) |
+| 백엔드 | DB chatrooms/chatmessages | ChatbotService + Gemini API |
+| 세션 | 채팅방 room_id | `$_SESSION['chatbot']` (제품 step 상태) |
+| 응답 | 직원이 응답 | AI 즉시 응답 (클릭형 선택지, 가격 계산) |
+| 버튼 | infolady 이미지 70x70px | "야간당번" 텍스트, 보라 그라디언트 79x79px |
+| 시간대 | 09:00~18:30 | 18:30~09:00 |
+| 이름 입력 | 모달 표시 (상호명/성함) | 없음 (즉시 사용) |
+| 위치 | CSS 고정 `bottom:24px; right:24px` | 인라인 `bottom:20px; right:80px` |
 
-## 📁 파일 구조
+## 시간대 전환 로직
+
+`includes/footer.php`에서 JS로 제어:
+
+```javascript
+// footer.php (line 818~841)
+function isBusinessHours() {
+    var h = now.getHours(), m = now.getMinutes();
+    if (h < 9) return false;
+    if (h > 18) return false;
+    if (h === 18 && m >= 30) return false;
+    return true;
+}
+function toggleWidgets() {
+    var biz = isBusinessHours();
+    var staff = document.querySelector('.chat-widget');   // chat.js가 동적 생성
+    var ai = document.getElementById('ai-chatbot-widget'); // PHP가 직접 렌더
+    // .chat-widget은 chat.js가 동적 생성하므로 retry 로직 포함 (최대 2초)
+    if (!staff && retryCount < 20) { retryCount++; setTimeout(toggleWidgets, 100); return; }
+    if (staff) staff.style.display = biz ? '' : 'none';
+    if (ai) ai.style.display = biz ? 'none' : 'block';
+}
+// DOMContentLoaded + setInterval(60초)
+```
+
+**주의**: `.chat-widget`은 `chat.js`가 동적으로 DOM을 생성하므로, `toggleWidgets()`에 retry 로직이 있음 (100ms x 최대 20회). 이 retry가 없으면 야간에 채팅 위젯이 숨겨지지 않는 race condition 발생.
+
+## 파일 구조
 
 ```
 chat/
 ├── config.php          # 데이터베이스 연결 및 설정
 ├── api.php             # 채팅 API (메시지 송수신, 이미지 업로드, 설정 관리)
-├── chat.css            # 위젯 스타일 (채팅 위젯 + AI 야간당번)
-├── chat.js             # ChatWidget 클래스 (채팅 위젯 / AI 야간당번 모드)
+├── chat.css            # 채팅 위젯 스타일
+├── chat.js             # ChatWidget 클래스 (mode='chat' 전용)
 ├── admin.php           # 직원용 채팅 관리 페이지
-├── chat.js.bak         # 리팩토링 전 백업
 ├── demo.php            # 데모 페이지
 ├── setup_staff.sql     # 직원 정보 테이블
 └── README.md           # 이 파일
 
 includes/
-├── chat_widget.php     # 위젯 초기화 (채팅 위젯 + AI 야간당번)
-└── ai_chatbot_widget.php  # (레거시, 미사용 — 어디서도 include 안 됨)
+├── chat_widget.php         # 채팅 위젯 초기화 (mode='chat'만)
+├── ai_chatbot_widget.php   # 야간당번 위젯 (자체 내장 JS/CSS, 독립 시스템)
+└── footer.php              # toggleWidgets() 시간대 전환 로직
+
+api/
+└── ai_chat.php             # 야간당번 API (ChatbotService 직접 호출)
+
+v2/src/Services/AI/
+├── ChatbotService.php      # 가격조회 엔진 (685줄)
+└── ChatbotKnowledge.php    # Gemini 지식베이스 (252줄)
 
 dashboard/chat/
-├── index.php           # 채팅 관리 목록
-└── settings.php        # 채팅 설정 (위치 피커, AI 버튼, 시간대 등)
+├── index.php               # 채팅 관리 목록
+└── settings.php            # 채팅 설정 (위치 피커, 시간대 등)
 ```
 
-## 🗄️ 데이터베이스 테이블
+## 데이터베이스 테이블
 
 ### `chatrooms` - 채팅방 정보
 - `id`: 채팅방 ID
@@ -113,7 +140,7 @@ dashboard/chat/
 - `createdat`: 생성일시
 - `updatedat`: 마지막 업데이트 일시
 - `isactive`: 활성 상태
-- `ai_active`: AI 모드 채팅방 여부 (0=일반, 1=AI)
+- `ai_active`: AI 모드 채팅방 여부 (0=일반, 1=AI) -- 레거시, 현재 야간당번은 채팅방 미사용
 
 ### `chatparticipants` - 채팅방 참여자
 - `id`: 참여자 ID
@@ -157,44 +184,51 @@ dashboard/chat/
 | `widget_poll_interval` | `2000` | 메시지 폴링 간격 (ms) |
 | `widget_pos_x` | `92` | 채팅 위젯 X 위치 (%) |
 | `widget_pos_y` | `85` | 채팅 위젯 Y 위치 (%) |
-| `ai_enabled` | `1` | AI 자동응답 활성화 |
+| `ai_enabled` | `1` | AI 야간당번 활성화 |
 | `ai_wait_seconds` | `60` | AI 진입 대기 시간 (초) |
-| `ai_hour_start` | `18:30` | AI 운영 시작 시간 |
-| `ai_hour_end` | `09:00` | AI 운영 종료 시간 |
-| `ai_display_name` | `긴급대응` | AI 표시 이름 |
-| `ai_greeting_msg` | `안녕하세요...` | AI 인사 메시지 |
-| `ai_farewell_msg` | `담당자가...` | AI 퇴장 메시지 |
-| `ai_pos_x` | `92` | AI 위젯 X 위치 (%) |
-| `ai_pos_y` | `60` | AI 위젯 Y 위치 (%) |
-| `ai_button_label` | `AI 상담` | AI 버튼 라벨 |
-| `ai_button_color` | `#667eea` | AI 버튼 그라디언트 색상 |
+| `ai_hour_start` | `18:30` | 야간당번 시작 시간 |
+| `ai_hour_end` | `09:00` | 야간당번 종료 시간 |
+| `ai_display_name` | `긴급대응` | 야간당번 표시 이름 |
+| `ai_greeting_msg` | `안녕하세요...` | 야간당번 인사 메시지 |
+| `ai_farewell_msg` | `담당자가...` | 야간당번 퇴장 메시지 |
+| `ai_pos_x` | `92` | 야간당번 X 위치 (%) |
+| `ai_pos_y` | `60` | 야간당번 Y 위치 (%) |
+| `ai_button_label` | `AI 상담` | 야간당번 버튼 라벨 |
+| `ai_button_color` | `#667eea` | 야간당번 버튼 색상 |
 | `offline_message` | `현재 업무시간...` | 업무외 안내 메시지 |
 | `notice_message` | (빈 값) | 채팅창 상단 공지 |
 | `upload_max_mb` | `10` | 파일 업로드 최대 MB |
 
-## 🔧 API 엔드포인트
+## API 엔드포인트
 
-### GET /chat/api.php
+### 채팅 위젯 API (chat/api.php)
 
-- `?action=get_or_create_room` — 채팅방 가져오기 또는 생성
-  - `&ai_mode=1` — AI 모드 채팅방 생성 (ai_active=1)
-- `?action=get_messages&room_id={id}&last_id={id}` — 메시지 조회
-- `?action=get_unread_count&room_id={id}` — 읽지 않은 메시지 수
-- `?action=get_config` — 전체 설정 조회 (JSON)
-- `?action=export_chat&room_id={id}` — 대화 내용 내보내기
+**GET:**
+- `?action=get_or_create_room` -- 채팅방 가져오기 또는 생성
+- `?action=get_messages&room_id={id}&last_id={id}` -- 메시지 조회
+- `?action=get_unread_count&room_id={id}` -- 읽지 않은 메시지 수
+- `?action=get_config` -- 전체 설정 조회 (JSON)
+- `?action=export_chat&room_id={id}` -- 대화 내용 내보내기
 
-### POST /chat/api.php
+**POST:**
+- `action=send_message` -- 메시지 전송
+- `action=upload_image` -- 이미지 업로드 (최대 10MB)
+- `action=mark_as_read` -- 읽음 처리
+- `action=save_config` -- 설정 저장 (대시보드용)
 
-- `action=send_message` — 메시지 전송
-- `action=upload_image` — 이미지 업로드 (최대 10MB)
-- `action=mark_as_read` — 읽음 처리
-- `action=save_config` — 설정 저장 (대시보드용)
+### 야간당번 API (api/ai_chat.php)
 
-## ⚙️ 대시보드 설정 (/dashboard/chat/settings.php)
+**POST:**
+- `message` -- 사용자 메시지 또는 선택값
+- 응답: JSON `{ response, options[], sizeInput, product_type, ... }`
+- 내부적으로 `ChatbotService::processMessage()` 호출
+- 세션 기반 상태 관리 (`$_SESSION['chatbot']`)
+
+## 대시보드 설정 (/dashboard/chat/settings.php)
 
 ### 위치 피커
-- 16:9 비율 프리뷰 영역에 W(채팅)와 A(AI) 점 표시
-- 점 클릭 → 드래그 이동 또는 빈 영역 클릭으로 이동
+- 16:9 비율 프리뷰 영역에 W(채팅)와 A(야간당번) 점 표시
+- 점 클릭 -> 드래그 이동 또는 빈 영역 클릭으로 이동
 - X/Y % 좌표 실시간 표시 + "기본값 복원" 버튼
 
 ### 프로덕션 자동 마이그레이션
@@ -202,52 +236,59 @@ settings.php 접속 시 자동으로:
 1. `chat_config`에 6개 신규 키 INSERT (widget_pos_x/y, ai_pos_x/y, ai_button_label, ai_button_color)
 2. `chatrooms` 테이블에 `ai_active` 컬럼 ADD (없을 경우)
 
-## 📊 동작 원리
+## 동작 원리
 
 ### 1. 위젯 초기화
 ```php
-// includes/chat_widget.php
+// includes/chat_widget.php -- 채팅 위젯만
 window.chatWidget = new ChatWidget({ mode: 'chat' });
-window.aiChatWidget = new ChatWidget({ mode: 'ai' });
+
+// includes/ai_chatbot_widget.php -- 야간당번 (자체 내장, ChatWidget 미사용)
+// PHP가 직접 HTML 렌더, 자체 JS 함수 (aiChatToggle, aiChatSend 등)
 ```
 
-### 2. 시간대별 표시
-- 각 위젯이 `loadConfig()`로 설정 로드
-- 현재 시간이 해당 위젯 시간대 범위 내 → 버튼 표시
-- 범위 외 → 버튼 숨김 (클릭 시 offline_message alert)
+### 2. 시간대별 전환
+- `footer.php`의 `toggleWidgets()`가 DOMContentLoaded + 60초 간격으로 실행
+- 업무시간 -> `.chat-widget` 표시, `#ai-chatbot-widget` 숨김
+- 야간시간 -> `.chat-widget` 숨김, `#ai-chatbot-widget` 표시
+- 두 위젯은 동시에 표시되지 않음 (배타적)
 
-### 3. 위치 적용
-- `applyPosition()`에서 X/Y % 좌표를 CSS로 변환
-- `left: X%; top: Y%; transform: translate(-50%, -50%)`
+### 3. 위치
+- 채팅 위젯: CSS 고정 (`bottom:24px; right:24px`)
+- 야간당번: 인라인 스타일 (`bottom:20px; right:80px`) + 드래그 이동 지원
 
-### 4. 채팅방 분리
-- chat 모드: `localStorage.chat_room_id` → 일반 채팅방
-- ai 모드: `localStorage.ai_room_id` → AI 채팅방 (`ai_active=1`)
+## 보안 고려사항
 
-## 🔒 보안 고려사항
+- 파일 타입 검증 (이미지만 허용)
+- 파일 크기 제한 (설정 가능, 기본 10MB)
+- SQL Injection 방지 (Prepared Statement 사용)
+- XSS 방지 (HTML Escape)
+- 설정 저장 시 allowedKeys 화이트리스트 검증
 
-- ✅ 파일 타입 검증 (이미지만 허용)
-- ✅ 파일 크기 제한 (설정 가능, 기본 10MB)
-- ✅ SQL Injection 방지 (Prepared Statement 사용)
-- ✅ XSS 방지 (HTML Escape)
-- ✅ 설정 저장 시 allowedKeys 화이트리스트 검증
-
-## 🐛 문제 해결
+## 문제 해결
 
 ### 위젯이 안 보임
-- 시간대 설정 확인 (대시보드 → 채팅 설정)
+- 시간대 확인 (업무시간=채팅, 야간=야간당번)
 - `chat_config` 테이블 존재 확인
 - 브라우저 콘솔(F12)에서 JS 에러 확인
+- footer.php의 `toggleWidgets()` 실행 여부 확인
+
+### 야간에 채팅 위젯이 안 숨겨짐
+- footer.php `toggleWidgets()` retry 로직 확인
+- `.chat-widget`은 chat.js가 동적 생성하므로 타이밍 이슈 가능
+- retry가 최대 20회(2초) 대기 후 적용
 
 ### 채팅방 생성 실패
 - `chatrooms` 테이블에 `ai_active` 컬럼 존재 확인
 - 대시보드 설정 페이지 한 번 접속하면 자동 마이그레이션
 
-### 위치가 안 바뀜
-- 대시보드에서 저장 후 사이트 새로고침 (캐시: `?v=20260227`)
-- `chat_config`에 `widget_pos_x/y`, `ai_pos_x/y` 키 확인
+### 야간당번 응답 없음
+- `api/ai_chat.php` 파일 존재 확인
+- `v2/src/Services/AI/ChatbotService.php` 로드 확인
+- PHP 세션 정상 작동 확인
+- Gemini API 키 설정 확인
 
-## 📝 향후 개선 사항
+## 향후 개선 사항
 
 - [ ] WebSocket을 이용한 진정한 실시간 통신
 - [ ] 파일 첨부 기능 (PDF, 문서 등)
@@ -255,16 +296,8 @@ window.aiChatWidget = new ChatWidget({ mode: 'ai' });
 - [ ] 직원 온라인/오프라인 상태 표시
 - [ ] 채팅 기록 검색 기능
 - [ ] 채팅 통계 대시보드
-- [ ] AI 위젯에서 v2 ChatbotService 연동 (자동 가격 조회)
-
-## 📞 문의
-
-두손기획인쇄
-- 전화: 02-2632-1830
-- 팩스: 02-2632-1829
-- 이메일: dsp1830@naver.com
 
 ---
 
-**버전**: 2.0.0
+**버전**: 3.0.0
 **최종 수정일**: 2026-02-27
