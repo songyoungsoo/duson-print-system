@@ -4,8 +4,58 @@ require_once __DIR__ . '/../includes/config.php';
 require_once __DIR__ . '/../../db.php';
 
 $config = [];
-$r = mysqli_query($db, "SELECT config_key, config_value, config_type, config_group, description FROM chat_config ORDER BY config_group, config_key");
+$r = @mysqli_query($db, "SELECT config_key, config_value, config_type, config_group, description FROM chat_config ORDER BY config_group, config_key");
+
+if (!$r) {
+    mysqli_query($db, "CREATE TABLE IF NOT EXISTS chat_config (
+        config_key VARCHAR(50) PRIMARY KEY,
+        config_value TEXT NOT NULL,
+        config_type ENUM('boolean','number','string','time') NOT NULL DEFAULT 'string',
+        config_group ENUM('widget','ai','extra') NOT NULL DEFAULT 'widget',
+        description VARCHAR(200) DEFAULT '',
+        updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP
+    ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4");
+
+    mysqli_query($db, "INSERT IGNORE INTO chat_config (config_key, config_value, config_type, config_group, description) VALUES
+        ('widget_enabled','1','boolean','widget','채팅 위젯 표시 여부'),
+        ('widget_position','right','string','widget','위젯 위치 (right/left)'),
+        ('widget_hour_start','09:00','time','widget','위젯 표시 시작 시간'),
+        ('widget_hour_end','18:30','time','widget','위젯 표시 종료 시간'),
+        ('widget_button_label','상담연결','string','widget','위젯 버튼 라벨 텍스트'),
+        ('widget_welcome_msg','안녕하세요!\\n더 나은 상담을 위해\\n상호명이나 성함을 알려주세요','string','widget','환영 메시지'),
+        ('widget_poll_interval','2000','number','widget','메시지 폴링 간격 (ms)'),
+        ('ai_enabled','1','boolean','ai','AI 자동응답 활성화'),
+        ('ai_wait_seconds','60','number','ai','무응답 대기 시간 (초)'),
+        ('ai_greeting_msg','안녕하세요, 긴급대응입니다. 담당자 연결 전까지 제가 도와드리겠습니다.','string','ai','AI 인사 메시지'),
+        ('ai_farewell_msg','담당자가 연결되었습니다. 이어서 상담 도와드릴 거예요. 감사합니다!','string','ai','AI 퇴장 메시지'),
+        ('ai_hour_start','18:30','time','ai','AI 운영 시작 시간'),
+        ('ai_hour_end','09:00','time','ai','AI 운영 종료 시간'),
+        ('ai_display_name','긴급대응','string','ai','AI 표시 이름'),
+        ('offline_message','현재 업무시간 외입니다. 전화(02-2632-1830) 또는 이메일(dsp1830@naver.com)로 문의해 주세요.','string','extra','업무외 시간 안내 메시지'),
+        ('notice_message','','string','extra','채팅창 상단 공지사항 (빈 값이면 미표시)'),
+        ('upload_max_mb','10','number','extra','파일 업로드 최대 용량 (MB)')
+    ");
+
+    $r = mysqli_query($db, "SELECT config_key, config_value, config_type, config_group, description FROM chat_config ORDER BY config_group, config_key");
+}
+
 if ($r) { while ($row = mysqli_fetch_assoc($r)) { $config[$row['config_key']] = $row; } }
+
+// One-time migration: 기본 시간대 업데이트 (위젯 09:00~18:30, AI 18:30~09:00)
+if (isset($config['widget_hour_start']) && $config['widget_hour_start']['config_value'] === '00:00'
+    && isset($config['ai_hour_start']) && $config['ai_hour_start']['config_value'] === '00:00') {
+    $time_defaults = [
+        'widget_hour_start' => '09:00', 'widget_hour_end' => '18:30',
+        'ai_hour_start' => '18:30', 'ai_hour_end' => '09:00'
+    ];
+    foreach ($time_defaults as $k => $v) {
+        $stmt = mysqli_prepare($db, "UPDATE chat_config SET config_value=? WHERE config_key=? AND config_value IN ('00:00','23:59')");
+        if ($stmt) { mysqli_stmt_bind_param($stmt, "ss", $v, $k); mysqli_stmt_execute($stmt); mysqli_stmt_close($stmt); }
+    }
+    $config = [];
+    $r = mysqli_query($db, "SELECT config_key, config_value, config_type, config_group, description FROM chat_config ORDER BY config_group, config_key");
+    if ($r) { while ($row = mysqli_fetch_assoc($r)) { $config[$row['config_key']] = $row; } }
+}
 
 function cfgVal($config, $key, $default = '') {
     return htmlspecialchars($config[$key]['config_value'] ?? $default, ENT_QUOTES);

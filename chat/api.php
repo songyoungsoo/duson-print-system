@@ -4,7 +4,12 @@ error_reporting(E_ALL);
 ini_set('display_errors', 0); // 프로덕션 안전
 require_once 'config.php';
 
+// 액션 읽기: GET, POST, JSON body 순서로 확인
 $action = $_GET['action'] ?? $_POST['action'] ?? '';
+if (!$action && $_SERVER['REQUEST_METHOD'] === 'POST' && $_SERVER['CONTENT_TYPE'] === 'application/json') {
+    $json = json_decode(file_get_contents('php://input'), true);
+    $action = $json['action'] ?? '';
+}
 
 switch ($action) {
     case 'get_or_create_room':
