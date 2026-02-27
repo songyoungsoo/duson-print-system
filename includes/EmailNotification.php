@@ -3,11 +3,14 @@
  * EmailNotification - 이메일 알림 헬퍼 클래스
  * 
  * 교정 확인 워크플로우에 대한 이메일 알림 전송
+ * mailer.lib.php (네이버 SMTP)를 통해 발송
  *
  * @author Claude Sonnet 4.5
  * @date 2025-12-25
  */
 
+// 네이버 SMTP 발송 함수 로드
+require_once __DIR__ . '/../mlangorder_printauto/mailer.lib.php';
 class EmailNotification {
     private $from_email;
     private $from_name;
@@ -16,7 +19,7 @@ class EmailNotification {
     public function __construct() {
         $this->from_email = 'noreply@dsp114.com';
         $this->from_name = '두손기획인쇄';
-        $this->admin_email = 'admin@dsp114.com'; // 실제 관리자 이메일로 변경 필요
+        $this->admin_email = 'dsp1830@naver.com';
     }
     
     /**
@@ -243,25 +246,39 @@ https://dsp114.com
      * @return bool
      */
     private function send($to, $subject, $message) {
-        // UTF-8 헤더 설정
-        $headers = "From: {$this->from_name} <{$this->from_email}>\r\n";
-        $headers .= "Reply-To: {$this->from_email}\r\n";
-        $headers .= "Content-Type: text/plain; charset=UTF-8\r\n";
-        $headers .= "X-Mailer: PHP/" . phpversion();
-        
-        // 제목 인코딩
-        $encoded_subject = "=?UTF-8?B?" . base64_encode($subject) . "?=";
-        
-        // 이메일 전송
-        $result = @mail($to, $encoded_subject, $message, $headers);
-        
-        if ($result) {
-            error_log("이메일 전송 성공: to={$to}, subject={$subject}");
-        } else {
-            error_log("이메일 전송 실패: to={$to}, subject={$subject}");
+        try {
+            // mailer.lib.php의 mailer() 함수 사용 (네이버 SMTP)
+            // mailer($fname, $fmail, $to, $subject, $content, $type, $file, $cc, $bcc)
+            // type=1: HTML, type=0: text
+            // 본문을 HTML로 변환 (줄바꿈 → <br>)
+            $htmlMessage = nl2br(htmlspecialchars($message, ENT_QUOTES, 'UTF-8'));
+            
+            // 출력 버퍼링 — mailer()가 내부에서 echo로 디버그 메시지를 출력함
+            ob_start();
+            $result = @mailer(
+                $this->from_name,
+                'dsp1830@naver.com',
+                $to,
+                $subject,
+                $htmlMessage,
+                1,    // HTML 형식
+                '',   // 첨부파일 없음
+                '',   // CC 없음
+                ''    // BCC 없음
+            );
+            ob_end_clean();
+            
+            if ($result) {
+                error_log("EmailNotification: 이메일 전송 성공 (SMTP): to={$to}, subject={$subject}");
+            } else {
+                error_log("EmailNotification: 이메일 전송 실패 (SMTP): to={$to}, subject={$subject}");
+            }
+            
+            return (bool)$result;
+        } catch (Exception $e) {
+            error_log("EmailNotification: 이메일 전송 예외: " . $e->getMessage());
+            return false;
         }
-        
-        return $result;
     }
 }
 ?>

@@ -34,20 +34,19 @@ class OrderNotificationManager {
     private function initializeMailer() {
         $this->mailer = new PHPMailer(true);
 
-        // SMTP 설정 (운영 환경에 맞게 수정 필요)
+        // SMTP 설정 (네이버 SMTP - mailer.lib.php와 동일)
         $this->mailer->isSMTP();
-        $this->mailer->Host = 'smtp.example.com'; // SMTP 서버 주소
+        $this->mailer->Host = 'smtp.naver.com';
         $this->mailer->SMTPAuth = true;
-        $this->mailer->Username = 'your-email@example.com'; // SMTP 사용자명
-        $this->mailer->Password = 'your-password'; // SMTP 비밀번호
-        $this->mailer->SMTPSecure = PHPMailer::ENCRYPTION_STARTTLS;
-        $this->mailer->Port = 587;
+        $this->mailer->Username = 'dsp1830';
+        $this->mailer->Password = '2CP3P5BTS83Y';
+        $this->mailer->SMTPSecure = 'ssl';
+        $this->mailer->Port = 465;
         $this->mailer->CharSet = 'UTF-8';
 
         // 발신자 정보
-        $this->mailer->setFrom('noreply@dsp114.com', '두손기획인쇄');
+        $this->mailer->setFrom('dsp1830@naver.com', '두손기획인쇄');
     }
-
     /**
      * 대기 중인 이메일 발송
      *
