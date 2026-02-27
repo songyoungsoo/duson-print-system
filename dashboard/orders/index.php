@@ -19,6 +19,9 @@ include __DIR__ . '/../includes/sidebar.php';
                 <option value="30days" selected>최근 30일</option>
                 <option value="3months">최근 3개월</option>
             </select>
+            <input type="date" id="dateFrom" class="px-2 py-1 text-xs border border-gray-300 rounded focus:ring-1 focus:ring-blue-500 focus:border-blue-500" title="시작일">
+            <span class="text-xs text-gray-400">~</span>
+            <input type="date" id="dateTo" class="px-2 py-1 text-xs border border-gray-300 rounded focus:ring-1 focus:ring-blue-500 focus:border-blue-500" title="종료일">
             <select id="statusFilter" class="px-2 py-1 text-xs border border-gray-300 rounded focus:ring-1 focus:ring-blue-500 focus:border-blue-500">
                 <option value="">상태: 전체</option>
                 <option value="1">견적접수</option>
@@ -529,12 +532,27 @@ document.getElementById('bulkDeleteBtn').addEventListener('click', async functio
     }
 });
 
+document.getElementById('periodFilter').addEventListener('change', function() {
+    if (this.value) {
+        document.getElementById('dateFrom').value = '';
+        document.getElementById('dateTo').value = '';
+    }
+});
+document.getElementById('dateFrom').addEventListener('change', function() {
+    if (this.value) document.getElementById('periodFilter').value = '';
+});
+document.getElementById('dateTo').addEventListener('change', function() {
+    if (this.value) document.getElementById('periodFilter').value = '';
+});
+
 document.getElementById('searchBtn').addEventListener('click', function() {
     currentFilters = {
         period: document.getElementById('periodFilter').value,
         status: document.getElementById('statusFilter').value,
         product_type: document.getElementById('productFilter').value,
-        search: document.getElementById('searchInput').value
+        search: document.getElementById('searchInput').value,
+        date_from: document.getElementById('dateFrom').value,
+        date_to: document.getElementById('dateTo').value
     };
     selectedOrders.clear();
     loadOrders(1);

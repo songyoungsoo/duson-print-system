@@ -38,6 +38,19 @@ switch ($action) {
     case 'get_unread_rooms':
         getUnreadRooms();
         break;
+    // === 관리자 채팅 관리 액션 ===
+    case 'admin_mark_all_read':
+        adminMarkAllRead();
+        break;
+    case 'admin_close_room':
+        adminCloseRoom();
+        break;
+    case 'admin_cleanup_empty':
+        adminCleanupEmpty();
+        break;
+    case 'admin_auto_expire':
+        adminAutoExpire();
+        break;
     default:
         jsonResponse(false, null, '잘못된 요청입니다.');
 }
@@ -460,11 +473,11 @@ function getAdminUnreadCount() {
         return;
     }
     
-    // 읽지 않은 고객 메시지 수 (staff, system 제외)
-    $query = "SELECT COUNT(*) as count FROM chatmessages 
-              WHERE isread = 0 
-                AND senderid NOT LIKE 'staff%' 
-                AND senderid != 'system'";
+    $query = "SELECT COUNT(*) as count FROM chatmessages cm
+              INNER JOIN chatrooms cr ON cr.id = cm.roomid AND cr.isactive = 1
+              WHERE cm.isread = 0 
+                AND cm.senderid NOT LIKE 'staff%' 
+                AND cm.senderid != 'system'";
     
     $result = mysqli_query($db, $query);
     $row = mysqli_fetch_assoc($result);
@@ -769,6 +782,144 @@ function callChatbotService($message) {
         }
 
         return '죄송합니다. 잠시 후 담당자가 연결될 예정입니다. 전화(02-2632-1830)로도 문의 가능합니다.';
+    }
+}
+
+// ============================================================
+// 관리자 채팅 관리 함수들
+// ============================================================
+
+/**
+ * 관리자 인증 체크 헬퍼
+ */
+function requireAdmin() {
+    if (session_status() === PHP_SESSION_NONE) {
+        session_start();
+    }
+    if (!isset($_SESSION['admin_logged_in']) || $_SESSION['admin_logged_in'] !== true) {
+        jsonResponse(false, null, '관리자 권한이 필요합니다.');
+        exit;
+    }
+}
+
+/**
+ * 모두 읽음 처리 — 미읽은 고객 메시지 전체를 읽음으로 변경
+ * POST: action=admin_mark_all_read
+ */
+function adminMarkAllRead() {
+    global $db;
+    requireAdmin();
+
+    $query = "UPDATE chatmessages SET isread = 1 
+              WHERE isread = 0 
+                AND senderid NOT LIKE 'staff%' 
+                AND senderid != 'system' 
+                AND senderid != 'ai_bot'";
+
+    if (mysqli_query($db, $query)) {
+        $affected = mysqli_affected_rows($db);
+        jsonResponse(true, ['affected_rows' => $affected, 'message' => $affected . '건 읽음 처리 완료']);
+    } else {
+        jsonResponse(false, null, '읽음 처리 실패: ' . mysqli_error($db));
+    }
+}
+
+/**
+ * 채팅방 닫기(비활성화) — isactive = 0으로 변경
+ * POST: action=admin_close_room, room_id={id}
+ */
+function adminCloseRoom() {
+    global $db;
+    requireAdmin();
+
+    $roomId = intval($_POST['room_id'] ?? 0);
+    if (!$roomId) {
+        jsonResponse(false, null, '채팅방 ID가 필요합니다.');
+        return;
+    }
+
+    // 해당 방의 미읽은 메시지도 읽음 처리
+    $markQuery = "UPDATE chatmessages SET isread = 1 WHERE roomid = ? AND isread = 0";
+    $markStmt = mysqli_prepare($db, $markQuery);
+    mysqli_stmt_bind_param($markStmt, 'i', $roomId);
+    mysqli_stmt_execute($markStmt);
+
+    // 채팅방 비활성화
+    $query = "UPDATE chatrooms SET isactive = 0 WHERE id = ?";
+    $stmt = mysqli_prepare($db, $query);
+    mysqli_stmt_bind_param($stmt, 'i', $roomId);
+
+    if (mysqli_stmt_execute($stmt)) {
+        jsonResponse(true, ['message' => '채팅방 #' . $roomId . ' 닫기 완료']);
+    } else {
+        jsonResponse(false, null, '채팅방 닫기 실패: ' . mysqli_stmt_error($stmt));
+    }
+}
+
+/**
+ * 빈 채팅방 정리 — 메시지 0건인 채팅방 삭제
+ * POST: action=admin_cleanup_empty
+ */
+function adminCleanupEmpty() {
+    global $db;
+    requireAdmin();
+
+    // 메시지가 없는 채팅방 찾기
+    $findQuery = "SELECT r.id FROM chatrooms r 
+                  LEFT JOIN chatmessages m ON m.roomid = r.id 
+                  WHERE m.id IS NULL AND r.isactive = 1";
+    $findResult = mysqli_query($db, $findQuery);
+
+    if (!$findResult) {
+        jsonResponse(false, null, '조회 실패: ' . mysqli_error($db));
+        return;
+    }
+
+    $emptyIds = [];
+    while ($row = mysqli_fetch_assoc($findResult)) {
+        $emptyIds[] = intval($row['id']);
+    }
+
+    if (empty($emptyIds)) {
+        jsonResponse(true, ['deleted_count' => 0, 'message' => '정리할 빈 채팅방이 없습니다.']);
+        return;
+    }
+
+    // 참여자 먼저 삭제 → 채팅방 삭제
+    $idList = implode(',', $emptyIds);
+    mysqli_query($db, "DELETE FROM chatparticipants WHERE roomid IN ($idList)");
+    $deleteResult = mysqli_query($db, "DELETE FROM chatrooms WHERE id IN ($idList)");
+
+    if ($deleteResult) {
+        $deleted = mysqli_affected_rows($db);
+        jsonResponse(true, ['deleted_count' => $deleted, 'deleted_ids' => $emptyIds, 'message' => $deleted . '개 빈 채팅방 삭제 완료']);
+    } else {
+        jsonResponse(false, null, '삭제 실패: ' . mysqli_error($db));
+    }
+}
+
+/**
+ * N일 경과 자동 읽음 처리 — 오래된 미읽은 메시지 일괄 읽음
+ * POST: action=admin_auto_expire, days={30}
+ */
+function adminAutoExpire() {
+    global $db;
+    requireAdmin();
+
+    $days = intval($_POST['days'] ?? 30);
+    if ($days < 1) $days = 30;
+
+    $query = "UPDATE chatmessages SET isread = 1 
+              WHERE isread = 0 
+                AND createdat < DATE_SUB(NOW(), INTERVAL ? DAY)";
+    $stmt = mysqli_prepare($db, $query);
+    mysqli_stmt_bind_param($stmt, 'i', $days);
+
+    if (mysqli_stmt_execute($stmt)) {
+        $affected = mysqli_affected_rows($db);
+        jsonResponse(true, ['affected_rows' => $affected, 'days' => $days, 'message' => $days . '일 이상 경과된 ' . $affected . '건 읽음 처리 완료']);
+    } else {
+        jsonResponse(false, null, '자동 읽음 처리 실패: ' . mysqli_stmt_error($stmt));
     }
 }
 

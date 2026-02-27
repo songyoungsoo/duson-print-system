@@ -22,10 +22,11 @@ switch ($action) {
         $product_type = $_GET['product_type'] ?? '';
         $period = $_GET['period'] ?? '';
         $search = $_GET['search'] ?? '';
+        $date_from = $_GET['date_from'] ?? '';
+        $date_to = $_GET['date_to'] ?? '';
         
         $where_conditions = ["1=1"];
 
-        // 기본 조회 시 삭제됨 상태 제외 (명시적으로 'deleted' 필터 선택 시만 표시)
         if ($status === '') {
             $where_conditions[] = "OrderStyle != 'deleted'";
         } elseif ($status !== '') {
@@ -36,7 +37,14 @@ switch ($action) {
             $where_conditions[] = "Type LIKE '%" . mysqli_real_escape_string($db, $product_type) . "%'";
         }
         
-        if ($period !== '') {
+        if ($date_from !== '' || $date_to !== '') {
+            if ($date_from !== '' && preg_match('/^\d{4}-\d{2}-\d{2}$/', $date_from)) {
+                $where_conditions[] = "date >= '" . mysqli_real_escape_string($db, $date_from) . " 00:00:00'";
+            }
+            if ($date_to !== '' && preg_match('/^\d{4}-\d{2}-\d{2}$/', $date_to)) {
+                $where_conditions[] = "date <= '" . mysqli_real_escape_string($db, $date_to) . " 23:59:59'";
+            }
+        } elseif ($period !== '') {
             switch ($period) {
                 case 'today':
                     $where_conditions[] = "DATE(date) = CURDATE()";

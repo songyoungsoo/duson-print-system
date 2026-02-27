@@ -173,7 +173,7 @@ $current_path = rtrim($current_path, '/') . '/';
                             // 채팅 메뉴 배지 카운트
                             $badge_count = 0;
                             if ($key === 'chat') {
-                                $chat_result = mysqli_query($db, "SELECT COUNT(*) as cnt FROM chatmessages WHERE isread = 0 AND senderid NOT LIKE 'staff%' AND senderid != 'system'");
+                                $chat_result = mysqli_query($db, "SELECT COUNT(*) as cnt FROM chatmessages cm INNER JOIN chatrooms cr ON cr.id = cm.roomid AND cr.isactive = 1 WHERE cm.isread = 0 AND cm.senderid NOT LIKE 'staff%' AND cm.senderid != 'system'");
                                 if ($chat_result) {
                                     $chat_data = mysqli_fetch_assoc($chat_result);
                                     $badge_count = intval($chat_data['cnt']);

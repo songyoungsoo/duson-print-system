@@ -7,6 +7,8 @@ require_once __DIR__ . '/../../db.php';
 $page = max(1, intval($_GET['page'] ?? 1));
 $status_filter = $_GET['status'] ?? '';
 $search = trim($_GET['q'] ?? '');
+$date_from = $_GET['date_from'] ?? '';
+$date_to = $_GET['date_to'] ?? '';
 $per_page = 24;
 $offset = ($page - 1) * $per_page;
 
@@ -20,6 +22,13 @@ if ($status_filter === 'proof') {
     $where .= " AND o.OrderStyle IN ('5', '6')";
 } elseif ($status_filter === 'complete') {
     $where .= " AND o.OrderStyle = '8'";
+}
+
+if ($date_from !== '' && preg_match('/^\d{4}-\d{2}-\d{2}$/', $date_from)) {
+    $where .= " AND o.date >= '" . mysqli_real_escape_string($db, $date_from) . " 00:00:00'";
+}
+if ($date_to !== '' && preg_match('/^\d{4}-\d{2}-\d{2}$/', $date_to)) {
+    $where .= " AND o.date <= '" . mysqli_real_escape_string($db, $date_to) . " 23:59:59'";
 }
 
 if ($search !== '') {
@@ -88,21 +97,29 @@ include __DIR__ . '/../includes/header.php';
 include __DIR__ . '/../includes/sidebar.php';
 ?>
 
-<main class="flex-1 bg-gray-50">
+<main class="flex-1 bg-gray-50 overflow-y-auto">
     <div class="max-w-7xl mx-auto px-2 sm:px-4 lg:px-6 py-1">
         <!-- 헤더 + 필터 한 줄 -->
         <form method="GET" class="flex flex-wrap items-center gap-2 mb-2">
             <h1 class="text-lg font-bold text-gray-900 mr-2">교정 관리</h1>
+            <?php
+                $date_qs = ($date_from ? '&date_from=' . urlencode($date_from) : '') . ($date_to ? '&date_to=' . urlencode($date_to) : '');
+            ?>
             <div class="flex gap-1">
-                <a href="?<?php echo $search ? 'q='.urlencode($search) : ''; ?>"
+                <a href="?<?php echo $search ? 'q='.urlencode($search) . $date_qs : ltrim($date_qs, '&'); ?>"
                    class="px-2 py-0.5 text-xs rounded-full <?php echo !$status_filter ? 'bg-blue-600 text-white' : 'bg-gray-100 text-gray-700 hover:bg-gray-200'; ?>">전체</a>
-                <a href="?status=proof<?php echo $search ? '&q='.urlencode($search) : ''; ?>"
+                <a href="?status=proof<?php echo ($search ? '&q='.urlencode($search) : '') . $date_qs; ?>"
                    class="px-2 py-0.5 text-xs rounded-full <?php echo $status_filter === 'proof' ? 'bg-blue-600 text-white' : 'bg-gray-100 text-gray-700 hover:bg-gray-200'; ?>">교정대기</a>
-                <a href="?status=design<?php echo $search ? '&q='.urlencode($search) : ''; ?>"
+                <a href="?status=design<?php echo ($search ? '&q='.urlencode($search) : '') . $date_qs; ?>"
                    class="px-2 py-0.5 text-xs rounded-full <?php echo $status_filter === 'design' ? 'bg-yellow-500 text-white' : 'bg-gray-100 text-gray-700 hover:bg-gray-200'; ?>">시안진행</a>
-                <a href="?status=complete<?php echo $search ? '&q='.urlencode($search) : ''; ?>"
+                <a href="?status=complete<?php echo ($search ? '&q='.urlencode($search) : '') . $date_qs; ?>"
                    class="px-2 py-0.5 text-xs rounded-full <?php echo $status_filter === 'complete' ? 'bg-green-600 text-white' : 'bg-gray-100 text-gray-700 hover:bg-gray-200'; ?>">작업완료</a>
             </div>
+            <input type="date" name="date_from" value="<?php echo htmlspecialchars($date_from); ?>"
+                   class="px-2 py-1 text-xs border border-gray-300 rounded focus:ring-1 focus:ring-blue-500 focus:border-blue-500" title="시작일">
+            <span class="text-xs text-gray-400">~</span>
+            <input type="date" name="date_to" value="<?php echo htmlspecialchars($date_to); ?>"
+                   class="px-2 py-1 text-xs border border-gray-300 rounded focus:ring-1 focus:ring-blue-500 focus:border-blue-500" title="종료일">
             <div class="flex-1 min-w-[180px]">
                 <input type="text" name="q" value="<?php echo htmlspecialchars($search); ?>"
                        placeholder="주문번호, 이름, 품목 검색..."
@@ -199,7 +216,9 @@ include __DIR__ . '/../includes/sidebar.php';
                                     $tracking = ($order['waybill_no'] ?? '') ?: ($order['logen_tracking_no'] ?? '');
                                     if ($tracking):
                                 ?>
-                                    <span class="text-blue-600 font-medium"><?php echo htmlspecialchars($tracking); ?></span>
+                                    <a href="https://www.ilogen.com/web/personal/trace/<?php echo urlencode($tracking); ?>"
+                                       target="_blank"
+                                       class="text-blue-600 font-medium hover:text-blue-800 hover:underline"><?php echo htmlspecialchars($tracking); ?></a>
                                 <?php else: ?>
                                     <span class="text-gray-300">-</span>
                                 <?php endif; ?>
@@ -244,7 +263,7 @@ include __DIR__ . '/../includes/sidebar.php';
             </div>
 
             <?php if ($total_pages > 1): 
-                $qs = 'status=' . urlencode($status_filter) . '&q=' . urlencode($search);
+                $qs = 'status=' . urlencode($status_filter) . '&q=' . urlencode($search) . '&date_from=' . urlencode($date_from) . '&date_to=' . urlencode($date_to);
                 $range = 2;
                 $start = max(1, $page - $range);
                 $end = min($total_pages, $page + $range);
