@@ -365,6 +365,10 @@ function calculatePrice() {
             p.specification = line1 + '\n' + line2;
 
             currentPayload = p;
+            // Include premium_options detail for DB storage
+            if (Object.keys(optionDetails).length > 0) {
+                currentPayload.premium_options = JSON.stringify(optionDetails);
+            }
         } else {
             showError(data.message || '가격 계산 실패');
         }
