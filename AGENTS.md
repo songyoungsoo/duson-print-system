@@ -26,7 +26,7 @@
 - 배송 추정: @./docs/features/shipping.md
 - 이메일 시스템: @./docs/features/email.md
 - AI 상담봇 (가격조회/지식베이스): @./docs/features/ai-chatbot.md
-- 채팅 시스템 (듀얼 위젯): @./docs/features/chat-system.md
+- 채팅 시스템 (채팅위젯/야간당번): @./docs/features/chat-system.md
 - 인증 시스템: @./docs/features/auth.md
 
 ## 🛠️ 개발 가이드

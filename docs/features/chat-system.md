@@ -1,9 +1,13 @@
-## 💬 채팅 시스템 — 듀얼 위젯 (Dual Chat Widget System)
+## 💬 채팅 시스템 — 채팅 위젯 + AI 야간당번
 
 ### 시스템 개요
 
-상담연결(직원 실시간 채팅)과 AI 야간당번을 **2개의 독립 위젯**으로 동시 운영하는 채팅 시스템.
-각 위젯의 화면 위치를 대시보드 비주얼 피커(X/Y % 좌표)로 자유 배치 가능.
+두 가지 독립적인 고객 소통 채널을 운영:
+
+1. **채팅 위젯 (상담연결)** — 업무시간 중 직원과 실시간 채팅
+2. **AI 야간당번 (긴급대응)** — 업무시간 외 AI 자동응답
+
+각각의 화면 위치를 대시보드 비주얼 피커(X/Y % 좌표)로 자유 배치 가능.
 
 > **이전 시스템**: `ai_chatbot_widget.php` (레거시, 미사용) → @./ai-chatbot.md
 
@@ -18,7 +22,7 @@
 
 ---
 
-### 듀얼 위젯 구조
+### 위젯 구조
 
 ```
 includes/chat_widget.php
@@ -96,7 +100,7 @@ includes/chat_widget.php
 #### chatrooms 테이블
 
 ```sql
--- 듀얼 위젯 추가 컬럼 (2026-02-27)
+-- AI 야간당번 추가 컬럼 (2026-02-27)
 ALTER TABLE chatrooms ADD COLUMN ai_active TINYINT(1) NOT NULL DEFAULT 0 AFTER isactive;
 ```
 
@@ -123,7 +127,7 @@ if (!isset($config['widget_pos_x'])) {
 
 | 파일 | 역할 |
 |------|------|
-| `includes/chat_widget.php` | 듀얼 위젯 초기화 (CSS/JS 로드 + ChatWidget 인스턴스 2개 생성) |
+| `includes/chat_widget.php` | 위젯 초기화 (CSS/JS 로드 + 채팅위젯/AI야간당번 인스턴스 생성) |
 | `chat/chat.js` | ChatWidget 클래스 (mode='chat'\|'ai', pfx별 DOM 고유화) |
 | `chat/chat.css` | 상담연결 + AI 위젯 스타일 (모바일 반응형 포함) |
 | `chat/api.php` | 채팅 API (방 생성, 메시지 송수신, 설정 CRUD, AI 모드 분기) |
@@ -137,7 +141,7 @@ if (!isset($config['widget_pos_x'])) {
 ### ❌ 절대 하지 말 것
 
 ```php
-// ❌ ai_chatbot_widget.php를 다시 include하지 말 것 (레거시, 듀얼 위젯으로 대체됨)
+// ❌ ai_chatbot_widget.php를 다시 include하지 말 것 (레거시, 채팅 시스템으로 대체됨)
 include 'includes/ai_chatbot_widget.php';
 
 // ❌ chat.js에서 mode 없이 ChatWidget 생성하지 말 것
