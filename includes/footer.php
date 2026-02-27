@@ -824,10 +824,17 @@
             if (h === 18 && m >= 30) return false;
             return true;
         }
+        var retryCount = 0;
         function toggleWidgets() {
             var biz = isBusinessHours();
             var staff = document.querySelector('.chat-widget');
             var ai = document.getElementById('ai-chatbot-widget');
+            // chat.js가 .chat-widget을 동적 생성하므로, 아직 없으면 재시도 (최대 20회 = 2초)
+            if (!staff && retryCount < 20) {
+                retryCount++;
+                setTimeout(toggleWidgets, 100);
+                return;
+            }
             if (staff) staff.style.display = biz ? '' : 'none';
             if (ai) ai.style.display = biz ? 'none' : 'block';
         }

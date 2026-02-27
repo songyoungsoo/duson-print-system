@@ -1,4 +1,3 @@
-// 채팅 위젯 JavaScript — 듀얼 인스턴스 지원 (chat + ai)
 class ChatWidget {
     constructor(options) {
         options = options || {};
@@ -12,6 +11,8 @@ class ChatWidget {
         this.isAdmin = false;
         this.isDashboard = false;
         this.config = {};
+        this.aiMessages = [];
+        this.aiLoading = false;
         this.init();
     }
 
@@ -29,13 +30,14 @@ class ChatWidget {
             hEnd = this.configVal('widget_hour_end', '23:59');
         }
         if (!this.isWithinSchedule(hStart, hEnd)) this._outsideHours = true;
-        this.adminCheckPromise = this.checkAdminStatus();
+        if (this.mode === 'chat') this.adminCheckPromise = this.checkAdminStatus();
         this.createWidget();
-        this.applyPosition();
         this.applyConfigToWidget();
         this.attachEvents();
-        this.loadChatState();
-        if (this.mode === 'chat') this.startBlinkAnimation();
+        if (this.mode === 'chat') {
+            this.loadChatState();
+            this.startBlinkAnimation();
+        }
     }
 
     async loadConfig() {
@@ -64,14 +66,6 @@ class ChatWidget {
         return cur >= start || cur <= end;
     }
 
-    applyPosition() {
-        var widget = document.getElementById(this.pfx + '-widget');
-        if (!widget) return;
-        var posX = parseFloat(this.mode === 'ai' ? this.configVal('ai_pos_x', 92) : this.configVal('widget_pos_x', 92));
-        var posY = parseFloat(this.mode === 'ai' ? this.configVal('ai_pos_y', 60) : this.configVal('widget_pos_y', 85));
-        widget.style.cssText = 'position:fixed;z-index:9999;left:' + posX + '%;top:' + posY + '%;transform:translate(-50%,-50%);bottom:auto;right:auto;font-family:"Noto Sans KR",-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif;';
-    }
-
     applyConfigToWidget() {
         var p = this.pfx;
         if (this.mode === 'chat') {
@@ -83,14 +77,6 @@ class ChatWidget {
                 var el = document.getElementById(p + '-welcome-msg');
                 if (el) el.innerHTML = welcomeMsg.replace(/\n/g, '<br>');
             }
-        } else {
-            var label = document.getElementById(p + '-forehead-label');
-            if (label) label.textContent = this.configVal('ai_button_label', 'AI 상담');
-            var btn = document.getElementById(p + '-toggle-btn');
-            var color = this.configVal('ai_button_color', '#667eea');
-            if (btn) btn.style.background = 'linear-gradient(135deg, ' + color + ' 0%, #764ba2 100%)';
-        }
-        if (this.mode === 'chat') {
             var notice = this.configVal('notice_message', '');
             if (notice) {
                 var bar = document.createElement('div');
@@ -99,6 +85,12 @@ class ChatWidget {
                 var mc = document.getElementById(p + '-messages');
                 if (mc) mc.parentNode.insertBefore(bar, mc);
             }
+        } else {
+            var label = document.getElementById(p + '-forehead-label');
+            if (label) label.textContent = this.configVal('ai_button_label', 'AI 상담');
+            var btn = document.getElementById(p + '-toggle-btn');
+            var color = this.configVal('ai_button_color', '#667eea');
+            if (btn) btn.style.background = 'linear-gradient(135deg, ' + color + ' 0%, #764ba2 100%)';
         }
     }
 
@@ -117,60 +109,150 @@ class ChatWidget {
         var w = document.createElement('div');
         w.id = p + '-widget';
         w.className = 'chat-widget' + (this.mode === 'ai' ? ' ai-widget' : '');
-        var btnHtml, hTitle, hSub;
+        var btnHtml, hTitle, hSub, inputAreaHtml;
+
         if (this.mode === 'ai') {
-            btnHtml = '<button class="chat-toggle-btn ai-toggle-btn" id="' + p + '-toggle-btn"><span class="chat-forehead-label ai-forehead-label" id="' + p + '-forehead-label">AI 상담</span><span class="ai-toggle-icon">🤖</span><span class="chat-unread-badge" id="' + p + '-unread-badge" style="display:none;">0</span></button>';
-            hTitle = 'AI 상담'; hSub = '자동 응답 시스템';
+            btnHtml = '<button class="chat-toggle-btn ai-toggle-btn" id="' + p + '-toggle-btn">'
+                + '<span class="chat-forehead-label ai-forehead-label" id="' + p + '-forehead-label">AI 상담</span>'
+                + '<span class="ai-toggle-icon">AI</span>'
+                + '<span class="chat-unread-badge" id="' + p + '-unread-badge" style="display:none;">0</span></button>';
+            hTitle = '두손 AI 상담봇';
+            hSub = '영업시간 외 AI가 안내해드립니다';
+            inputAreaHtml = '<div class="chat-input-area" id="' + p + '-input-area">'
+                + '<div id="' + p + '-quickbtns" class="ai-quickbtns">'
+                + '<button class="ai-quick-btn" data-q="스티커">스티커/라벨</button>'
+                + '<button class="ai-quick-btn" data-q="전단지">전단지/리플렛</button>'
+                + '<button class="ai-quick-btn" data-q="명함">명함/쿠폰</button>'
+                + '<button class="ai-quick-btn" data-q="자석스티커">자석스티커</button>'
+                + '<button class="ai-quick-btn" data-q="봉투">봉투</button>'
+                + '<button class="ai-quick-btn" data-q="카다록">카다록</button>'
+                + '<button class="ai-quick-btn" data-q="포스터">포스터</button>'
+                + '<button class="ai-quick-btn" data-q="양식지">양식지</button>'
+                + '<button class="ai-quick-btn" data-q="상품권">상품권</button>'
+                + '</div>'
+                + '<div class="chat-input-wrapper">'
+                + '<input type="text" class="chat-input" id="' + p + '-input" placeholder="궁금한 상품을 선택 또는 입력하세요" autocomplete="off">'
+                + '<button class="chat-send-btn" id="' + p + '-send-btn"><svg viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><line x1="22" y1="2" x2="11" y2="13"/><polygon points="22 2 15 22 11 13 2 9 22 2"/></svg></button>'
+                + '</div></div>';
         } else {
-            btnHtml = '<button class="chat-toggle-btn chat-toggle-btn-image" id="' + p + '-toggle-btn"><span class="chat-forehead-label" id="' + p + '-forehead-label">상담연결</span><img src="/ImgFolder/infolady.png" alt="상담" class="chat-toggle-img" id="' + p + '-toggle-img"><span class="chat-unread-badge" id="' + p + '-unread-badge" style="display:none;">0</span></button>';
-            hTitle = '고객 지원'; hSub = '두손기획인쇄';
+            btnHtml = '<button class="chat-toggle-btn chat-toggle-btn-image" id="' + p + '-toggle-btn">'
+                + '<span class="chat-forehead-label" id="' + p + '-forehead-label">상담연결</span>'
+                + '<img src="/ImgFolder/infolady.png" alt="상담" class="chat-toggle-img" id="' + p + '-toggle-img">'
+                + '<span class="chat-unread-badge" id="' + p + '-unread-badge" style="display:none;">0</span></button>';
+            hTitle = '고객 지원';
+            hSub = '두손기획인쇄';
+            inputAreaHtml = '<div class="chat-input-area">'
+                + '<div class="chat-input-wrapper">'
+                + '<button class="chat-image-btn" id="' + p + '-image-btn" title="파일 첨부">📎</button>'
+                + '<input type="file" id="' + p + '-image-input" accept="image/*,.pdf,.doc,.docx,.xls,.xlsx,.ppt,.pptx,.hwp,.hwpx,.ai,.psd,.zip,.txt" style="display:none;">'
+                + '<input type="text" class="chat-input" id="' + p + '-input" placeholder="메시지를 입력하세요..." autocomplete="off">'
+                + '<button class="chat-send-btn" id="' + p + '-send-btn"><svg viewBox="0 0 24 24" fill="white"><path d="M2.01 21L23 12 2.01 3 2 10l15 2-15 2z"/></svg></button>'
+                + '</div></div>';
         }
-        w.innerHTML = '<div class="chat-name-modal" id="' + p + '-name-modal"><div class="chat-name-modal-content"><div class="chat-name-modal-header"><div class="chat-name-modal-icon">👋</div><div class="chat-name-modal-title">안녕하세요!</div><div class="chat-name-modal-subtitle" id="' + p + '-welcome-msg">더 나은 상담을 위해<br>상호명이나 성함을 알려주세요</div></div><div class="chat-name-modal-body"><label class="chat-name-modal-label">상호명 또는 성함 (선택사항)</label><input type="text" class="chat-name-modal-input" id="' + p + '-name-input" placeholder="예: 홍길동 or 두손기획" maxlength="30"></div><div class="chat-name-modal-footer"><button class="chat-name-modal-btn chat-name-modal-btn-secondary" id="' + p + '-name-skip-btn">건너뛰기</button><button class="chat-name-modal-btn chat-name-modal-btn-primary" id="' + p + '-name-submit-btn">채팅 시작</button></div></div></div>' + btnHtml + '<div class="chat-window' + (this.mode === 'ai' ? ' ai-chat-window' : '') + '" id="' + p + '-window"><div class="chat-header' + (this.mode === 'ai' ? ' ai-chat-header' : '') + '"><div style="display:flex;align-items:center;gap:10px;"><svg class="chat-drag-handle" width="18" height="27" viewBox="0 0 12 18" fill="rgba(255,255,255,0.55)" style="cursor:move;flex-shrink:0;"><circle cx="3" cy="3" r="1.5"/><circle cx="9" cy="3" r="1.5"/><circle cx="3" cy="9" r="1.5"/><circle cx="9" cy="9" r="1.5"/><circle cx="3" cy="15" r="1.5"/><circle cx="9" cy="15" r="1.5"/></svg><div><div class="chat-header-title">' + hTitle + '</div><div class="chat-header-subtitle">' + hSub + '</div></div></div><div class="chat-header-actions"><button id="' + p + '-export-btn" title="대화 내용 저장"><svg width="18" height="18" viewBox="0 0 24 24" fill="white"><path d="M19 12v7H5v-7H3v7c0 1.1.9 2 2 2h14c1.1 0 2-.9 2-2v-7h-2zm-6 .67l2.59-2.58L17 11.5l-5 5-5-5 1.41-1.41L11 12.67V3h2z"/></svg></button><button id="' + p + '-minimize-btn" title="닫기"><svg width="18" height="18" viewBox="0 0 24 24" fill="white"><path d="M19 6.41L17.59 5 12 10.59 6.41 5 5 6.41 10.59 12 5 17.59 6.41 19 12 13.41 17.59 19 19 17.59 13.41 12z"/></svg></button></div></div><div class="chat-messages" id="' + p + '-messages"><div class="chat-loading"><div class="chat-loading-dots"><span></span><span></span><span></span></div></div></div><div class="chat-input-area"><div class="chat-input-wrapper"><button class="chat-image-btn" id="' + p + '-image-btn" title="파일 첨부">+</button><input type="file" id="' + p + '-image-input" accept="image/*,.pdf,.doc,.docx,.xls,.xlsx,.ppt,.pptx,.hwp,.hwpx,.ai,.psd,.zip,.txt"><input type="text" class="chat-input" id="' + p + '-input" placeholder="메시지를 입력하세요..."><button class="chat-send-btn" id="' + p + '-send-btn"><svg width="20" height="20" viewBox="0 0 24 24" fill="white"><path d="M2.01 21L23 12 2.01 3 2 10l15 2-15 2z"/></svg></button></div></div></div>';
+
+        var nameModalHtml = '';
+        if (this.mode === 'chat') {
+            nameModalHtml = '<div class="chat-name-modal" id="' + p + '-name-modal">'
+                + '<div class="chat-name-modal-content"><div class="chat-name-modal-header">'
+                + '<div class="chat-name-modal-icon">👋</div>'
+                + '<div class="chat-name-modal-title">안녕하세요!</div>'
+                + '<div class="chat-name-modal-subtitle" id="' + p + '-welcome-msg">더 나은 상담을 위해<br>상호명이나 성함을 알려주세요</div>'
+                + '</div><div class="chat-name-modal-body">'
+                + '<label class="chat-name-modal-label">상호명 또는 성함 (선택사항)</label>'
+                + '<input type="text" class="chat-name-modal-input" id="' + p + '-name-input" placeholder="예: 홍길동 or 두손기획" maxlength="30">'
+                + '</div><div class="chat-name-modal-footer">'
+                + '<button class="chat-name-modal-btn chat-name-modal-btn-secondary" id="' + p + '-name-skip-btn">건너뛰기</button>'
+                + '<button class="chat-name-modal-btn chat-name-modal-btn-primary" id="' + p + '-name-submit-btn">채팅 시작</button>'
+                + '</div></div></div>';
+        }
+
+        var headerClass = 'chat-header' + (this.mode === 'ai' ? ' ai-chat-header' : '');
+        var windowClass = 'chat-window' + (this.mode === 'ai' ? ' ai-chat-window' : '');
+
+        w.innerHTML = nameModalHtml + btnHtml
+            + '<div class="' + windowClass + '" id="' + p + '-window">'
+            + '<div class="' + headerClass + '">'
+            + '<div style="display:flex;align-items:center;gap:10px;">'
+            + '<svg class="chat-drag-handle" width="18" height="27" viewBox="0 0 12 18" fill="rgba(255,255,255,0.55)" style="cursor:move;flex-shrink:0;"><circle cx="3" cy="3" r="1.5"/><circle cx="9" cy="3" r="1.5"/><circle cx="3" cy="9" r="1.5"/><circle cx="9" cy="9" r="1.5"/><circle cx="3" cy="15" r="1.5"/><circle cx="9" cy="15" r="1.5"/></svg>'
+            + '<div><div class="chat-header-title">' + hTitle + '</div><div class="chat-header-subtitle">' + hSub + '</div></div>'
+            + '</div>'
+            + '<div class="chat-header-actions">'
+            + (this.mode === 'chat' ? '<button id="' + p + '-export-btn" title="대화 내용 저장"><svg width="18" height="18" viewBox="0 0 24 24" fill="white"><path d="M19 12v7H5v-7H3v7c0 1.1.9 2 2 2h14c1.1 0 2-.9 2-2v-7h-2zm-6 .67l2.59-2.58L17 11.5l-5 5-5-5 1.41-1.41L11 12.67V3h2z"/></svg></button>' : '')
+            + '<button id="' + p + '-minimize-btn" title="닫기"><svg width="18" height="18" viewBox="0 0 24 24" fill="white"><path d="M19 6.41L17.59 5 12 10.59 6.41 5 5 6.41 10.59 12 5 17.59 6.41 19 12 13.41 17.59 19 19 17.59 13.41 12z"/></svg></button>'
+            + '</div></div>'
+            + '<div class="chat-messages" id="' + p + '-messages">'
+            + '<div class="chat-loading"><div class="chat-loading-dots"><span></span><span></span><span></span></div></div>'
+            + '</div>'
+            + inputAreaHtml
+            + '</div>';
+
         document.body.appendChild(w);
     }
 
     attachEvents() {
         var self = this, p = this.pfx;
-        document.getElementById(p + '-name-submit-btn').addEventListener('click', function() { self.submitName(); });
-        document.getElementById(p + '-name-skip-btn').addEventListener('click', function() { self.skipName(); });
-        document.getElementById(p + '-name-input').addEventListener('keypress', function(e) { if (e.key === 'Enter') self.submitName(); });
+
+        if (this.mode === 'chat') {
+            document.getElementById(p + '-name-submit-btn').addEventListener('click', function() { self.submitName(); });
+            document.getElementById(p + '-name-skip-btn').addEventListener('click', function() { self.skipName(); });
+            document.getElementById(p + '-name-input').addEventListener('keypress', function(e) { if (e.key === 'Enter') self.submitName(); });
+        }
+
         var toggleBtn = document.getElementById(p + '-toggle-btn');
         var lastTap = 0;
         var handleToggle = async function(e) {
             var now = Date.now();
             if (now - lastTap < 500) return;
             lastTap = now; e.preventDefault(); e.stopPropagation();
-            try { if (self.adminCheckPromise) await self.adminCheckPromise; } catch (err) {}
-            if (self.isAdmin) {
-                if (self.isDashboard) window.location.href = '/dashboard/chat/';
-                else window.open('/chat/admin.php', '_blank');
-                return;
+            if (self.mode === 'chat') {
+                try { if (self.adminCheckPromise) await self.adminCheckPromise; } catch (err) {}
+                if (self.isAdmin) {
+                    if (self.isDashboard) window.location.href = '/dashboard/chat/';
+                    else window.open('/chat/admin.php', '_blank');
+                    return;
+                }
             }
             self.toggleChat();
         };
         toggleBtn.addEventListener('click', handleToggle, { passive: false });
         toggleBtn.addEventListener('touchend', handleToggle, { passive: false });
+
         var minBtn = document.getElementById(p + '-minimize-btn');
         minBtn.addEventListener('click', function(e) { e.preventDefault(); self.closeChat(); });
         minBtn.addEventListener('touchstart', function(e) { e.preventDefault(); self.closeChat(); }, { passive: false });
+
         document.getElementById(p + '-send-btn').addEventListener('click', function() { self.sendMessage(); });
         document.getElementById(p + '-input').addEventListener('keypress', function(e) { if (e.key === 'Enter') self.sendMessage(); });
-        var chatInput = document.getElementById(p + '-input');
-        var chatWindow = document.getElementById(p + '-window');
-        if (window.visualViewport && window.innerWidth <= 480) {
-            var initH = window.innerHeight;
-            window.visualViewport.addEventListener('resize', function() {
-                if (chatWindow.classList.contains('active')) {
-                    var curH = window.visualViewport.height;
-                    if (initH - curH > 100) { chatWindow.style.height = curH + 'px'; chatWindow.style.bottom = 'auto'; }
-                    else { chatWindow.style.height = '100%'; chatWindow.style.bottom = '0'; }
-                }
+
+        if (this.mode === 'ai') {
+            var quickBtns = document.querySelectorAll('#' + p + '-quickbtns .ai-quick-btn');
+            quickBtns.forEach(function(btn) {
+                btn.addEventListener('click', function() {
+                    var q = btn.getAttribute('data-q');
+                    if (q && !self.aiLoading) self.aiSendToBackend(q, q);
+                });
             });
         }
-        chatInput.addEventListener('focus', function() { setTimeout(function() { chatInput.scrollIntoView({ behavior: 'smooth', block: 'end' }); }, 350); });
-        document.getElementById(p + '-image-btn').addEventListener('click', function() { document.getElementById(p + '-image-input').click(); });
-        document.getElementById(p + '-image-input').addEventListener('change', function(e) { self.uploadImage(e.target.files[0]); });
-        document.getElementById(p + '-export-btn').addEventListener('click', function() { self.exportChat(); });
+
+        if (this.mode === 'chat') {
+            var chatInput = document.getElementById(p + '-input');
+            var chatWindow = document.getElementById(p + '-window');
+            if (window.visualViewport && window.innerWidth <= 480) {
+                var initH = window.innerHeight;
+                window.visualViewport.addEventListener('resize', function() {
+                    if (chatWindow.classList.contains('active')) {
+                        var curH = window.visualViewport.height;
+                        if (initH - curH > 100) { chatWindow.style.height = curH + 'px'; chatWindow.style.bottom = 'auto'; }
+                        else { chatWindow.style.height = '100%'; chatWindow.style.bottom = '0'; }
+                    }
+                });
+            }
+            chatInput.addEventListener('focus', function() { setTimeout(function() { chatInput.scrollIntoView({ behavior: 'smooth', block: 'end' }); }, 350); });
+            document.getElementById(p + '-image-btn').addEventListener('click', function() { document.getElementById(p + '-image-input').click(); });
+            document.getElementById(p + '-image-input').addEventListener('change', function(e) { self.uploadImage(e.target.files[0]); });
+            document.getElementById(p + '-export-btn').addEventListener('click', function() { self.exportChat(); });
+        }
+
         this.makeDraggable();
     }
 
@@ -200,8 +282,7 @@ class ChatWidget {
         if (this.isOpen) { this.closeChat(); return; }
         if (this._outsideHours) { alert(this.configVal('offline_message', '현재 업무시간 외입니다.')); return; }
         if (this.mode === 'ai') {
-            if (!sessionStorage.getItem('user_name_set')) { this.skipName(); return; }
-            this.openChat();
+            this.openAiChat();
         } else {
             if (!sessionStorage.getItem('user_name_set')) this.showNameModal();
             else this.openChat();
@@ -252,14 +333,13 @@ class ChatWidget {
         var cw = document.getElementById(p + '-window');
         cw.classList.remove('active'); cw.style.height = ''; cw.style.bottom = ''; cw.style.top = '';
         document.getElementById(p + '-toggle-btn').classList.remove('chat-open');
-        this.stopPolling(); this.saveChatState();
+        if (this.mode === 'chat') this.stopPolling();
+        this.saveChatState();
     }
 
     async getOrCreateRoom() {
         try {
-            var url = '/chat/api.php?action=get_or_create_room';
-            if (this.mode === 'ai') url += '&ai_mode=1';
-            var r = await fetch(url), d = await r.json();
+            var r = await fetch('/chat/api.php?action=get_or_create_room'), d = await r.json();
             if (d.success) { this.roomId = d.data.id; localStorage.setItem(this.pfx + '_room_id', this.roomId); }
         } catch (e) { console.error('채팅방 생성 실패:', e); }
     }
@@ -286,7 +366,7 @@ class ChatWidget {
         var div = document.createElement('div');
         div.className = ('chat-message ' + (isSent ? 'sent' : 'received') + (isSys ? ' system' : '') + (isAi ? ' ai-bot' : '')).replace(/\s+/g, ' ').trim();
         var avatar = '';
-        if (isAi) avatar = '<div class="chat-message-avatar ai-bot-avatar">🤖</div>';
+        if (isAi) avatar = '<div class="chat-message-avatar ai-bot-avatar">AI</div>';
         else if (!isSent && !isSys) avatar = '<div class="chat-message-avatar">' + msg.sendername.charAt(0) + '</div>';
         var content = '';
         if (msg.messagetype === 'text') content = '<div class="chat-message-bubble">' + this.linkify(this.escapeHtml(msg.message)) + '</div>';
@@ -298,6 +378,7 @@ class ChatWidget {
     }
 
     async sendMessage() {
+        if (this.mode === 'ai') { this.aiSendFromInput(); return; }
         var inp = document.getElementById(this.pfx + '-input'), msg = inp.value.trim();
         if (!msg || !this.roomId) return;
         try {
@@ -346,7 +427,7 @@ class ChatWidget {
     }
 
     async updateUnreadCount() {
-        if (this.isOpen) return;
+        if (this.isOpen || this.mode === 'ai') return;
         try {
             if (this.isAdmin) { var r = await fetch('/chat/api.php?action=get_admin_unread_count'), d = await r.json(); if (d.success) { this.unreadCount = d.data.count; this.updateUnreadBadge(); } }
             else { if (!this.roomId) return; var r = await fetch('/chat/api.php?action=get_unread_count&room_id=' + this.roomId), d = await r.json(); if (d.success) { this.unreadCount = d.data.count; this.updateUnreadBadge(); } }
@@ -369,6 +450,193 @@ class ChatWidget {
         var self = this; setInterval(function() { self.updateUnreadCount(); }, 5000);
     }
 
+    openAiChat() {
+        var p = this.pfx; this.isOpen = true;
+        document.getElementById(p + '-window').classList.add('active');
+        document.getElementById(p + '-toggle-btn').classList.add('chat-open');
+        var mc = document.getElementById(p + '-messages');
+        var ld = mc.querySelector('.chat-loading'); if (ld) ld.remove();
+        if (this.aiMessages.length === 0) {
+            this.aiAppendBotMessage('안녕하세요! 두손기획인쇄 AI 상담봇입니다. 😊\n\n현재 영업시간 외입니다. 인쇄물 가격이 궁금하시면 편하게 물어봐주세요!\n직접 주문하시면 접수가능합니다.', null);
+        }
+        var inp = document.getElementById(p + '-input');
+        if (inp) setTimeout(function() { inp.focus(); }, 300);
+    }
+
+    aiSendFromInput() {
+        var inp = document.getElementById(this.pfx + '-input');
+        var msg = inp.value.trim();
+        if (!msg || this.aiLoading) return;
+        inp.value = '';
+        this.aiSendToBackend(msg, msg);
+    }
+
+    aiSendToBackend(msgToSend, displayText) {
+        if (this.aiLoading) return;
+        this.aiLoading = true;
+        this.aiDisableOpts();
+        this.aiMessages.push({ role: 'user', content: msgToSend });
+        this.aiAppendUserMessage(displayText || msgToSend);
+        this.aiShowTyping();
+        var self = this;
+        var fd = new FormData();
+        fd.append('action', 'chat');
+        fd.append('message', msgToSend);
+        fd.append('history', JSON.stringify(this.aiMessages.slice(0, -1)));
+        fetch('/api/ai_chat.php', { method: 'POST', body: fd })
+            .then(function(r) { return r.json(); })
+            .then(function(data) {
+                self.aiRemoveTyping();
+                if (data.error) {
+                    self.aiAppendBotMessage('죄송합니다. 오류가 발생했습니다: ' + data.error, null);
+                } else if (data.message) {
+                    self.aiMessages.push({ role: 'assistant', content: data.message });
+                    if (data.input_type === 'sticker_size') {
+                        self.aiAppendSizeInput(data.message);
+                    } else {
+                        self.aiAppendBotMessage(data.message, data.options || null);
+                    }
+                }
+            })
+            .catch(function() {
+                self.aiRemoveTyping();
+                self.aiAppendBotMessage('네트워크 오류가 발생했습니다. 잠시 후 다시 시도해주세요.', null);
+            })
+            .finally(function() { self.aiLoading = false; });
+    }
+
+    aiAppendUserMessage(text) {
+        var mc = document.getElementById(this.pfx + '-messages');
+        if (!mc) return;
+        var div = document.createElement('div');
+        div.className = 'chat-message sent';
+        div.innerHTML = '<div class="chat-message-content"><div class="chat-message-bubble">' + this.escapeHtml(text) + '</div></div>';
+        mc.appendChild(div);
+        mc.scrollTop = mc.scrollHeight;
+    }
+
+    aiAppendBotMessage(text, options) {
+        var mc = document.getElementById(this.pfx + '-messages');
+        if (!mc) return;
+        var div = document.createElement('div');
+        div.className = 'chat-message received ai-bot';
+        var formatted = this.aiFmtMsg(text);
+        var optsHtml = this.aiBuildOpts(options);
+        div.innerHTML = '<div class="chat-message-avatar ai-bot-avatar">AI</div>'
+            + '<div class="chat-message-content"><div class="chat-message-sender" style="color:#667eea;font-weight:600;">AI 상담봇</div>'
+            + '<div class="chat-message-bubble">' + formatted + '</div>'
+            + optsHtml + '</div>';
+        mc.appendChild(div);
+        if (options && options.length) {
+            setTimeout(function() {
+                var userMsg = div.previousElementSibling;
+                (userMsg || div).scrollIntoView({ behavior: 'smooth', block: 'start' });
+            }, 50);
+        } else {
+            mc.scrollTop = mc.scrollHeight;
+        }
+    }
+
+    aiAppendSizeInput(message) {
+        var mc = document.getElementById(this.pfx + '-messages');
+        if (!mc) return;
+        var self = this;
+        var div = document.createElement('div');
+        div.className = 'chat-message received ai-bot';
+        div.innerHTML = '<div class="chat-message-avatar ai-bot-avatar">AI</div>'
+            + '<div class="chat-message-content"><div class="chat-message-sender" style="color:#667eea;font-weight:600;">AI 상담봇</div>'
+            + '<div class="chat-message-bubble">' + this.aiFmtMsg(message) + '</div>'
+            + '<div class="ai-size-widget" style="margin-top:8px;background:#f8fafc;border:1px solid #e2e8f0;border-radius:12px;padding:12px;">'
+            + '<div style="display:flex;align-items:center;gap:6px;justify-content:center;">'
+            + '<input type="number" class="ai-size-garo" placeholder="가로" min="1" max="590" style="width:72px;padding:8px;border:2px solid #d1d5db;border-radius:8px;font-size:14px;text-align:center;font-family:inherit;outline:none;" autocomplete="off">'
+            + '<span style="font-size:16px;color:#64748b;font-weight:700;">\u00d7</span>'
+            + '<input type="number" class="ai-size-sero" placeholder="세로" min="1" max="590" style="width:72px;padding:8px;border:2px solid #d1d5db;border-radius:8px;font-size:14px;text-align:center;font-family:inherit;outline:none;" autocomplete="off">'
+            + '<span style="font-size:11px;color:#94a3b8;margin-left:2px;">mm</span></div>'
+            + '<button class="ai-size-confirm" style="margin-top:8px;width:100%;padding:8px;background:#667eea;color:#fff;border:none;border-radius:8px;font-size:13px;font-weight:600;cursor:pointer;font-family:inherit;">확인</button>'
+            + '</div></div>';
+        mc.appendChild(div);
+        mc.scrollTop = mc.scrollHeight;
+        var widget = div.querySelector('.ai-size-widget');
+        var garo = widget.querySelector('.ai-size-garo');
+        var sero = widget.querySelector('.ai-size-sero');
+        var confirmBtn = widget.querySelector('.ai-size-confirm');
+        if (garo) {
+            setTimeout(function() { garo.focus(); }, 100);
+            garo.addEventListener('keydown', function(e) { if (e.key === 'Enter') { e.preventDefault(); if (sero) sero.focus(); } });
+            garo.addEventListener('focus', function() { this.style.borderColor = '#667eea'; });
+            garo.addEventListener('blur', function() { this.style.borderColor = '#d1d5db'; });
+        }
+        if (sero) {
+            sero.addEventListener('keydown', function(e) { if (e.key === 'Enter') { e.preventDefault(); doSubmit(); } });
+            sero.addEventListener('focus', function() { this.style.borderColor = '#667eea'; });
+            sero.addEventListener('blur', function() { this.style.borderColor = '#d1d5db'; });
+        }
+        if (confirmBtn) confirmBtn.addEventListener('click', doSubmit);
+        function doSubmit() {
+            if (self.aiLoading) return;
+            var g = parseInt(garo.value) || 0, s = parseInt(sero.value) || 0;
+            if (g <= 0 || g > 590) { garo.style.borderColor = '#ef4444'; garo.focus(); return; }
+            if (s <= 0 || s > 590) { sero.style.borderColor = '#ef4444'; sero.focus(); return; }
+            garo.disabled = true; sero.disabled = true;
+            if (confirmBtn) { confirmBtn.disabled = true; confirmBtn.style.opacity = '0.5'; }
+            self.aiSendToBackend(g + '\u00d7' + s, g + '\u00d7' + s + 'mm');
+        }
+    }
+
+    aiShowTyping() {
+        var mc = document.getElementById(this.pfx + '-messages');
+        var div = document.createElement('div');
+        div.id = this.pfx + '-typing';
+        div.className = 'chat-message received ai-bot';
+        div.innerHTML = '<div class="chat-message-avatar ai-bot-avatar">AI</div>'
+            + '<div class="chat-message-content"><div class="chat-message-bubble" style="padding:10px 14px;display:flex;gap:4px;">'
+            + '<span style="width:6px;height:6px;background:#94a3b8;border-radius:50%;animation:aiBounce .6s infinite alternate;"></span>'
+            + '<span style="width:6px;height:6px;background:#94a3b8;border-radius:50%;animation:aiBounce .6s .15s infinite alternate;"></span>'
+            + '<span style="width:6px;height:6px;background:#94a3b8;border-radius:50%;animation:aiBounce .6s .3s infinite alternate;"></span>'
+            + '</div></div>';
+        mc.appendChild(div);
+        mc.scrollTop = mc.scrollHeight;
+    }
+
+    aiRemoveTyping() {
+        var el = document.getElementById(this.pfx + '-typing');
+        if (el) el.remove();
+    }
+
+    aiDisableOpts() {
+        var mc = document.getElementById(this.pfx + '-messages');
+        var btns = mc.querySelectorAll('.ai-opt-btn');
+        for (var i = 0; i < btns.length; i++) { btns[i].disabled = true; btns[i].style.opacity = '0.5'; }
+    }
+
+    aiBuildOpts(options) {
+        if (!options || !options.length) return '';
+        var self = this;
+        var h = '<div class="ai-opts-container" style="margin-top:8px;display:flex;flex-direction:column;gap:4px;">';
+        for (var i = 0; i < options.length; i++) {
+            h += '<button class="ai-opt-btn" data-num="' + options[i].num + '">' + options[i].num + '. ' + this.escapeHtml(options[i].label) + '</button>';
+        }
+        h += '</div>';
+        setTimeout(function() {
+            var mc = document.getElementById(self.pfx + '-messages');
+            mc.querySelectorAll('.ai-opt-btn:not([data-bound])').forEach(function(btn) {
+                btn.setAttribute('data-bound', '1');
+                btn.addEventListener('click', function() {
+                    if (self.aiLoading || btn.disabled) return;
+                    btn.classList.add('selected');
+                    self.aiSendToBackend(btn.getAttribute('data-num'), btn.textContent.replace(/^\d+\.\s*/, ''));
+                });
+            });
+        }, 50);
+        return h;
+    }
+
+    aiFmtMsg(text) {
+        var s = this.escapeHtml(text);
+        s = s.replace(/\*\*(.+?)\*\*/g, '<strong style="color:#667eea;">$1</strong>');
+        return s.replace(/\n/g, '<br>');
+    }
+
     getCurrentUser() {
         var uid = localStorage.getItem('chat_user_id'), un = sessionStorage.getItem('user_name') || localStorage.getItem('chat_user_name');
         if (!uid) { uid = 'guest_' + Date.now(); localStorage.setItem('chat_user_id', uid); }
@@ -382,4 +650,3 @@ class ChatWidget {
         return t.replace(p, function(u) { var h = /^https?:\/\//i.test(u) ? u : 'https://' + u; return '<a href="' + h + '" target="_blank" rel="noopener noreferrer" style="color:#4a9eff;text-decoration:underline;word-break:break-all;">' + u + '</a>'; });
     }
 }
-// 초기화는 chat_widget.php에서 처리 (중복 방지 로직 포함)
