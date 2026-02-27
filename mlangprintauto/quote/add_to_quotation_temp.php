@@ -64,8 +64,8 @@ $Section = $_POST['Section'] ?? '';
 $TreeSelect = $_POST['TreeSelect'] ?? null;
 
 // === 4. 가격 필드 ===
-$st_price = intval($_POST['calculated_price'] ?? $_POST['st_price'] ?? 0);
-$st_price_vat = intval($_POST['calculated_vat_price'] ?? $_POST['st_price_vat'] ?? 0);
+$st_price = intval($_POST['calculated_price'] ?? $_POST['price'] ?? $_POST['st_price'] ?? 0);
+$st_price_vat = intval($_POST['calculated_vat_price'] ?? $_POST['vat_price'] ?? $_POST['st_price_vat'] ?? 0);
 
 // === 5. 메모/코멘트 ===
 $MY_comment = $_POST['MY_comment'] ?? null;
@@ -128,7 +128,7 @@ $additional_options_json = json_encode($additional_options, JSON_UNESCAPED_UNICO
 $selected_options = $_POST['selected_options'] ?? null;
 
 // === 9. 프리미엄 옵션 ===
-$premium_options = $_POST['premium_options'] ?? null;
+$premium_options = $_POST['premium_options_data'] ?? $_POST['premium_options'] ?? null;
 $premium_options_total = intval($_POST['premium_options_total'] ?? 0);
 
 // === 10. 봉투 전용 옵션 ===
