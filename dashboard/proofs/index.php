@@ -44,6 +44,7 @@ $total_pages = max(1, ceil($total / $per_page));
 
 $query = "SELECT o.no, o.Type, o.name, o.phone, o.Hendphone, o.OrderStyle, o.date, o.uploaded_files,
           o.Designer, o.proofreading_confirmed, o.proofreading_date,
+          o.waybill_no, o.logen_tracking_no,
           (SELECT COUNT(*) FROM mlangorder_printauto AS sub WHERE sub.no = o.no AND sub.uploaded_files IS NOT NULL AND sub.uploaded_files != '') as has_files
           FROM mlangorder_printauto o
           WHERE {$where}
@@ -79,17 +80,9 @@ while ($row = mysqli_fetch_assoc($result)) {
     $orders[] = $row;
 }
 
-$status_labels = [
-    '0' => '미선택', '1' => '견적접수', '2' => '주문접수', '3' => '접수완료',
-    '4' => '입금대기', '5' => '시안제작중', '6' => '시안', '7' => '교정',
-    '8' => '작업완료', '9' => '작업중', '10' => '교정작업중'
-];
-
-$status_colors = [
-    '7' => 'bg-blue-100 text-blue-700', '10' => 'bg-blue-100 text-blue-700',
-    '5' => 'bg-yellow-100 text-yellow-700', '6' => 'bg-yellow-100 text-yellow-700',
-    '8' => 'bg-green-100 text-green-700', '9' => 'bg-purple-100 text-purple-700',
-];
+require_once __DIR__ . '/../../includes/order_status_config.php';
+$status_labels = getAdminStatusLabels();
+$admin_status_colors = getAdminStatusColors();
 
 include __DIR__ . '/../includes/header.php';
 include __DIR__ . '/../includes/sidebar.php';
@@ -184,12 +177,9 @@ include __DIR__ . '/../includes/sidebar.php';
                                 <?php $curStyle = $order['OrderStyle'] ?? '0'; ?>
                                 <select onchange="changeOrderStatus(<?php echo $order['no']; ?>, this.value, this)"
                                         class="text-xs border border-gray-300 rounded px-1 py-0.5 focus:ring-1 focus:ring-blue-500 cursor-pointer"
-                                        style="color: <?php
-                                            $sc = ['1'=>'#64748b','2'=>'#d97706','3'=>'#d97706','4'=>'#ea580c','5'=>'#4f46e5','6'=>'#7c3aed','7'=>'#2563eb','8'=>'#16a34a','9'=>'#9333ea','10'=>'#0891b2'];
-                                            echo $sc[$curStyle] ?? '#333';
-                                        ?>; font-weight: 600;">
-                                    <?php foreach ($status_labels as $k => $v): if ($k === '0') continue; ?>
-                                    <option value="<?php echo $k; ?>" <?php echo $curStyle === $k ? 'selected' : ''; ?>><?php echo $v; ?></option>
+                                        style="color: <?php echo $admin_status_colors[$curStyle] ?? '#333'; ?>; font-weight: 600;">
+                                    <?php foreach ($status_labels as $k => $v): if ((string)$k === '0') continue; ?>
+                                    <option value="<?php echo $k; ?>" <?php echo (string)$curStyle === (string)$k ? 'selected' : ''; ?>><?php echo $v; ?></option>
                                     <?php endforeach; ?>
                                 </select>
                             </td>
@@ -204,7 +194,16 @@ include __DIR__ . '/../includes/sidebar.php';
                                     <span class="text-gray-300 text-xs">-</span>
                                 <?php endif; ?>
                             </td>
-                            <td class="px-1.5 py-0.5 text-center text-xs text-gray-400">-</td>
+                            <td class="px-1.5 py-0.5 text-center text-xs">
+                                <?php
+                                    $tracking = ($order['waybill_no'] ?? '') ?: ($order['logen_tracking_no'] ?? '');
+                                    if ($tracking):
+                                ?>
+                                    <span class="text-blue-600 font-medium"><?php echo htmlspecialchars($tracking); ?></span>
+                                <?php else: ?>
+                                    <span class="text-gray-300">-</span>
+                                <?php endif; ?>
+                            </td>
                             <td class="px-1.5 py-0.5 text-center">
                                 <?php
                                     $file_count = count($order['files']);

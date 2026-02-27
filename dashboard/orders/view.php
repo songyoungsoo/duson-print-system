@@ -3,6 +3,7 @@ require_once __DIR__ . '/../includes/auth.php';
 require_once __DIR__ . '/../includes/config.php';
 require_once __DIR__ . '/../../db.php';
 require_once __DIR__ . '/../../includes/ImagePathResolver.php';
+require_once __DIR__ . '/../../includes/order_status_config.php';
 
 $no = intval($_GET['no'] ?? 0);
 
@@ -36,22 +37,7 @@ $type_labels = [
     'ncrflambeau' => 'NCR양식지', 'NcrFlambeau' => 'NCR양식지',
 ];
 
-// 상태 매핑
-$status_map = [
-    '0'  => ['label' => '미선택',     'bg' => 'bg-gray-100',   'text' => 'text-gray-600'],
-    '1'  => ['label' => '견적접수',   'bg' => 'bg-slate-100',  'text' => 'text-slate-700'],
-    '2'  => ['label' => '주문접수',   'bg' => 'bg-yellow-100', 'text' => 'text-yellow-800'],
-    '3'  => ['label' => '접수완료',   'bg' => 'bg-amber-100',  'text' => 'text-amber-800'],
-    '4'  => ['label' => '입금대기',   'bg' => 'bg-orange-100', 'text' => 'text-orange-800'],
-    '5'  => ['label' => '시안제작중', 'bg' => 'bg-indigo-100', 'text' => 'text-indigo-700'],
-    '6'  => ['label' => '시안',       'bg' => 'bg-violet-100', 'text' => 'text-violet-700'],
-    '7'  => ['label' => '교정',       'bg' => 'bg-blue-100',   'text' => 'text-blue-700'],
-    '8'  => ['label' => '작업완료',   'bg' => 'bg-green-100',  'text' => 'text-green-800'],
-    '9'  => ['label' => '작업중',     'bg' => 'bg-purple-100', 'text' => 'text-purple-700'],
-    '10' => ['label' => '교정작업중', 'bg' => 'bg-cyan-100',   'text' => 'text-cyan-700'],
-    'deleted' => ['label' => '삭제됨', 'bg' => 'bg-red-100',   'text' => 'text-red-800'],
-];
-
+$status_map = getAdminStatusMap();
 $os = (string)$order['OrderStyle'];
 $status_info = $status_map[$os] ?? ['label' => $os, 'bg' => 'bg-gray-100', 'text' => 'text-gray-800'];
 

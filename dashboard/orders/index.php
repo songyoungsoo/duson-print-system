@@ -1,6 +1,7 @@
 <?php
 require_once __DIR__ . '/../includes/auth.php';
 require_once __DIR__ . '/../includes/config.php';
+require_once __DIR__ . '/../../includes/order_status_config.php';
 
 include __DIR__ . '/../includes/header.php';
 include __DIR__ . '/../includes/sidebar.php';
@@ -96,25 +97,6 @@ include __DIR__ . '/../includes/sidebar.php';
 let currentPage = 1;
 let currentFilters = {};
 let selectedOrders = new Set();
-
-function getStatusInfo(status) {
-    var s = String(status);
-    var map = {
-        '0':  {label: '미선택',    bg: 'bg-gray-100',   text: 'text-gray-600'},
-        '1':  {label: '견적접수',  bg: 'bg-slate-100',  text: 'text-slate-700'},
-        '2':  {label: '주문접수',  bg: 'bg-yellow-100', text: 'text-yellow-800'},
-        '3':  {label: '접수완료',  bg: 'bg-amber-100',  text: 'text-amber-800'},
-        '4':  {label: '입금대기',  bg: 'bg-orange-100', text: 'text-orange-800'},
-        '5':  {label: '시안제작중', bg: 'bg-indigo-100', text: 'text-indigo-700'},
-        '6':  {label: '시안',      bg: 'bg-violet-100', text: 'text-violet-700'},
-        '7':  {label: '교정',      bg: 'bg-blue-100',   text: 'text-blue-700'},
-        '8':  {label: '작업완료',  bg: 'bg-green-100',  text: 'text-green-800'},
-        '9':  {label: '작업중',    bg: 'bg-purple-100', text: 'text-purple-700'},
-        '10': {label: '교정작업중', bg: 'bg-cyan-100',  text: 'text-cyan-700'},
-        'deleted': {label: '삭제됨', bg: 'bg-red-100',  text: 'text-red-800'}
-    };
-    return map[s] || {label: s, bg: 'bg-gray-100', text: 'text-gray-800'};
-}
 
 async function loadOrders(page = 1) {
     currentPage = page;
@@ -262,11 +244,7 @@ async function loadOrders(page = 1) {
             tdStatus.className = 'px-1.5 py-0.5 whitespace-nowrap text-center';
             var statusSelect = document.createElement('select');
             statusSelect.className = 'text-xs border border-gray-300 rounded px-1 py-0.5 focus:ring-1 focus:ring-blue-500 cursor-pointer';
-            var statusOptions = [
-                {v:'1',l:'견적접수'},{v:'2',l:'주문접수'},{v:'3',l:'접수완료'},{v:'4',l:'입금대기'},
-                {v:'5',l:'시안제작중'},{v:'6',l:'시안'},{v:'7',l:'교정'},{v:'8',l:'작업완료'},
-                {v:'9',l:'작업중'},{v:'10',l:'교정작업중'}
-            ];
+            var statusOptions = <?php echo getAdminStatusOptionsAsJson(); ?>;
             statusOptions.forEach(function(opt) {
                 var o = document.createElement('option');
                 o.value = opt.v;
@@ -274,7 +252,7 @@ async function loadOrders(page = 1) {
                 if (String(order.status) === opt.v) o.selected = true;
                 statusSelect.appendChild(o);
             });
-            var statusColors = {'1':'#64748b','2':'#d97706','3':'#d97706','4':'#ea580c','5':'#4f46e5','6':'#7c3aed','7':'#2563eb','8':'#16a34a','9':'#9333ea','10':'#0891b2'};
+            var statusColors = <?php echo getAdminStatusColorsAsJson(); ?>;
             statusSelect.style.color = statusColors[String(order.status)] || '#333';
             statusSelect.style.fontWeight = '600';
             statusSelect.addEventListener('change', function() {

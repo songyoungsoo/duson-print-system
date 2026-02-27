@@ -46,6 +46,7 @@ function ensure_order_table_columns($db, $table = 'mlangorder_printauto') {
         'logen_delivery_fee' => 'INT DEFAULT NULL',
         'logen_fee_type' => 'VARCHAR(10) DEFAULT NULL',
         'logen_tracking_no' => 'VARCHAR(50) DEFAULT NULL',
+        'waybill_no' => 'VARCHAR(50) DEFAULT NULL',
         'waybill_date' => 'DATETIME DEFAULT NULL',
         'delivery_company' => "VARCHAR(20) DEFAULT '로젠택배'",
         'spec_type' => 'VARCHAR(50) DEFAULT NULL',
