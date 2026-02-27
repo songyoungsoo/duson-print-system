@@ -25,7 +25,8 @@
 - 결제 시스템: @./docs/features/payment.md
 - 배송 추정: @./docs/features/shipping.md
 - 이메일 시스템: @./docs/features/email.md
-- AI 챗봇: @./docs/features/ai-chatbot.md
+- AI 상담봇 (가격조회/지식베이스): @./docs/features/ai-chatbot.md
+- 채팅 시스템 (듀얼 위젯): @./docs/features/chat-system.md
 - 인증 시스템: @./docs/features/auth.md
 
 ## 🛠️ 개발 가이드
@@ -551,4 +552,4 @@ git checkout e6554898 -- right.htm includes/footer.php
 - [ ] dsp114.co.kr에서도 동일 기능 정상 확인
 
 ---
-마지막 업데이트: 2026-02-26
+마지막 업데이트: 2026-02-27

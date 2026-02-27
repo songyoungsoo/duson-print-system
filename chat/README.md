@@ -1,14 +1,21 @@
 # 📱 채팅 시스템 - 두손기획인쇄
 
-고객과 직원이 실시간으로 소통할 수 있는 채팅 시스템입니다.
+고객과 직원이 실시간으로 소통할 수 있는 **듀얼 위젯** 채팅 시스템입니다.
 
 ## ✨ 주요 기능
 
+### 🎯 듀얼 위젯 시스템 (2026-02-27)
+- ✅ **상담연결 위젯** — 업무시간(09:00~18:30) 직원 실시간 채팅
+- ✅ **AI 야간당번 위젯** — 야간시간(18:30~09:00) AI 자동응답
+- ✅ 두 위젯 동시 화면 표시 (각각 독립 버튼)
+- ✅ 대시보드에서 X/Y % 좌표로 자유 위치 설정 (비주얼 피커)
+- ✅ AI 버튼 라벨/색상 커스터마이징
+
 ### 🎯 고객용 기능
 - ✅ 실시간 메시지 전송/수신 (2초마다 자동 업데이트)
-- ✅ 이미지 첨부 및 전송 (최대 5MB)
-- ✅ 읽지 않은 메시지 알림
-- ✅ 채팅창 열기/닫기
+- ✅ 이미지 첨부 및 전송 (최대 10MB, 설정 가능)
+- ✅ 읽지 않은 메시지 알림 배지
+- ✅ 채팅창 열기/닫기 (상태 localStorage 유지)
 - ✅ 대화 내용 텍스트 파일로 저장
 - ✅ 반응형 디자인 (PC/모바일 지원)
 
@@ -18,18 +25,81 @@
 - ✅ 이미지 전송
 - ✅ 실시간 메시지 수신
 
+## 🏗️ 듀얼 위젯 아키텍처
+
+```
+┌─────────────────────────────────────────────────────┐
+│  includes/chat_widget.php                            │
+│  ├── new ChatWidget({ mode: 'chat' })  → 상담연결    │
+│  └── new ChatWidget({ mode: 'ai' })    → AI 야간당번  │
+└─────────────────────────────────────────────────────┘
+         │                        │
+         ▼                        ▼
+┌──────────────────┐   ┌──────────────────┐
+│  chat-toggle-btn │   │  ai-toggle-btn   │
+│  infolady 이미지  │   │  🤖 블루그라디언트  │
+│  09:00 ~ 18:30   │   │  18:30 ~ 09:00   │
+│  이름 모달 표시   │   │  이름 모달 건너뛰기 │
+│  chat_room_id    │   │  ai_room_id      │
+└──────────────────┘   └──────────────────┘
+         │                        │
+         ▼                        ▼
+┌──────────────────────────────────────┐
+│  chat/api.php                        │
+│  ├── ?action=get_or_create_room      │
+│  │   └── ai_mode=1 → ai_active=1    │
+│  ├── ?action=send_message            │
+│  ├── ?action=get_messages            │
+│  └── ?action=save_config (설정 저장)  │
+└──────────────────────────────────────┘
+```
+
+### ChatWidget 클래스 (chat.js)
+
+```javascript
+class ChatWidget {
+    constructor(options) {
+        this.mode = options.mode || 'chat';  // 'chat' | 'ai'
+        this.pfx = this.mode === 'ai' ? 'ai' : 'chat';  // DOM ID prefix
+    }
+    // 모든 DOM ID → ${pfx}-toggle-btn, ${pfx}-window, ${pfx}-messages ...
+    // localStorage → ${pfx}_room_id, ${pfx}_is_open ...
+    // mode='ai' → skipName, ?ai_mode=1, ai_hour 시간대, 🤖 버튼
+}
+```
+
+### 모드별 차이
+
+| 항목 | chat (상담연결) | ai (AI 야간당번) |
+|------|----------------|-----------------|
+| 버튼 | infolady 이미지 70×70px | 🤖 이모지 60×60px, 블루 그라디언트 |
+| 시간대 | `widget_hour_start` ~ `widget_hour_end` | `ai_hour_start` ~ `ai_hour_end` |
+| 이름 모달 | 표시 (상호명/성함 입력) | 건너뛰기 (skipName 자동) |
+| 채팅방 생성 | `ai_active=0` | `ai_active=1`, `?ai_mode=1` |
+| 헤더 색상 | 보라색 그라디언트 | 블루 그라디언트 (#667eea) |
+| localStorage | `chat_room_id`, `chat_is_open` | `ai_room_id`, `ai_is_open` |
+
 ## 📁 파일 구조
 
 ```
 chat/
 ├── config.php          # 데이터베이스 연결 및 설정
-├── api.php             # 채팅 API (메시지 송수신, 이미지 업로드)
-├── chat.css            # 고객용 채팅 위젯 스타일
-├── chat.js             # 고객용 채팅 위젯 JavaScript
+├── api.php             # 채팅 API (메시지 송수신, 이미지 업로드, 설정 관리)
+├── chat.css            # 위젯 스타일 (상담연결 + AI 위젯)
+├── chat.js             # ChatWidget 클래스 (듀얼 위젯 지원)
 ├── admin.php           # 직원용 채팅 관리 페이지
+├── chat.js.bak         # 리팩토링 전 백업
 ├── demo.php            # 데모 페이지
 ├── setup_staff.sql     # 직원 정보 테이블
 └── README.md           # 이 파일
+
+includes/
+├── chat_widget.php     # 듀얼 위젯 초기화 (chatWidget + aiChatWidget)
+└── ai_chatbot_widget.php  # (레거시, 미사용 — 어디서도 include 안 됨)
+
+dashboard/chat/
+├── index.php           # 채팅 관리 목록
+└── settings.php        # 채팅 설정 (위치 피커, AI 버튼, 시간대 등)
 ```
 
 ## 🗄️ 데이터베이스 테이블
@@ -42,6 +112,7 @@ chat/
 - `createdat`: 생성일시
 - `updatedat`: 마지막 업데이트 일시
 - `isactive`: 활성 상태
+- `ai_active`: AI 모드 채팅방 여부 (0=일반, 1=AI)
 
 ### `chatparticipants` - 채팅방 참여자
 - `id`: 참여자 ID
@@ -73,160 +144,107 @@ chat/
 - `isonline`: 온라인 상태
 - `lastseen`: 마지막 접속 시간
 
-### `chatsettings` - 채팅 설정
-- `id`: 설정 ID
-- `userid`: 사용자 ID
-- `isminimized`: 최소화 상태
-- `notificationenabled`: 알림 활성화
-- `soundenabled`: 소리 활성화
+### `chat_config` - 채팅 설정 (대시보드 관리)
 
-## 🚀 설치 방법
-
-### 1. 데이터베이스 설정
-
-```bash
-# 채팅 시스템 테이블 생성
-mysql -u dsp1830 -pds701018 dsp1830 < create_chat_system.sql
-
-# 직원 정보 추가
-mysql -u dsp1830 -pds701018 dsp1830 < setup_staff.sql
-```
-
-### 2. 파일 업로드 디렉토리 생성
-
-`chat_uploads/` 폴더가 자동으로 생성되지만, 권한을 확인하세요:
-
-```bash
-chmod 755 chat_uploads/
-```
-
-### 3. 사이트에 적용
-
-기존 웹사이트의 모든 페이지 `</body>` 태그 직전에 추가:
-
-```html
-<!-- 채팅 시스템 -->
-<link rel="stylesheet" href="/chat/chat.css">
-<script src="/chat/chat.js"></script>
-```
-
-## 📖 사용 방법
-
-### 고객용
-
-1. 웹사이트 방문
-2. 우측 하단의 보라색 채팅 버튼 클릭
-3. 메시지 입력 또는 이미지 첨부
-4. 직원의 응답 대기
-
-### 직원용
-
-1. `/chat/admin.php` 접속
-2. 상단에서 직원 선택 (직원1, 직원2, 직원3)
-3. 고객 채팅방 목록 확인
-4. 채팅방 선택 후 응답
-
-**현재 직원 계정:**
-- 직원1 (ID: staff1)
-- 직원2 (ID: staff2)
-- 직원3 (ID: staff3)
-
-## 🎨 커스터마이징
-
-### 색상 변경 (`chat.css`)
-
-```css
-/* 메인 색상 (보라색 그라데이션) */
-background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-
-/* 원하는 색상으로 변경 예시 (파란색) */
-background: linear-gradient(135deg, #4facfe 0%, #00f2fe 100%);
-```
-
-### 위치 변경
-
-```css
-.chat-widget {
-    bottom: 20px;  /* 하단 여백 */
-    right: 20px;   /* 우측 여백 */
-}
-```
-
-### 크기 변경
-
-```css
-.chat-window {
-    width: 380px;   /* 너비 */
-    height: 550px;  /* 높이 */
-}
-```
+| config_key | 기본값 | 설명 |
+|-----------|--------|------|
+| `widget_enabled` | `1` | 채팅 위젯 표시 여부 |
+| `widget_hour_start` | `09:00` | 채팅 위젯 시작 시간 |
+| `widget_hour_end` | `18:30` | 채팅 위젯 종료 시간 |
+| `widget_button_label` | `상담연결` | 채팅 버튼 라벨 |
+| `widget_welcome_msg` | `안녕하세요!...` | 이름 입력 모달 메시지 |
+| `widget_poll_interval` | `2000` | 메시지 폴링 간격 (ms) |
+| `widget_pos_x` | `92` | 채팅 위젯 X 위치 (%) |
+| `widget_pos_y` | `85` | 채팅 위젯 Y 위치 (%) |
+| `ai_enabled` | `1` | AI 자동응답 활성화 |
+| `ai_wait_seconds` | `60` | AI 진입 대기 시간 (초) |
+| `ai_hour_start` | `18:30` | AI 운영 시작 시간 |
+| `ai_hour_end` | `09:00` | AI 운영 종료 시간 |
+| `ai_display_name` | `긴급대응` | AI 표시 이름 |
+| `ai_greeting_msg` | `안녕하세요...` | AI 인사 메시지 |
+| `ai_farewell_msg` | `담당자가...` | AI 퇴장 메시지 |
+| `ai_pos_x` | `92` | AI 위젯 X 위치 (%) |
+| `ai_pos_y` | `60` | AI 위젯 Y 위치 (%) |
+| `ai_button_label` | `AI 상담` | AI 버튼 라벨 |
+| `ai_button_color` | `#667eea` | AI 버튼 그라디언트 색상 |
+| `offline_message` | `현재 업무시간...` | 업무외 안내 메시지 |
+| `notice_message` | (빈 값) | 채팅창 상단 공지 |
+| `upload_max_mb` | `10` | 파일 업로드 최대 MB |
 
 ## 🔧 API 엔드포인트
 
 ### GET /chat/api.php
 
-- `?action=get_or_create_room` - 채팅방 가져오기 또는 생성
-- `?action=get_messages&room_id={id}&last_id={id}` - 메시지 조회
-- `?action=get_unread_count&room_id={id}` - 읽지 않은 메시지 수
-- `?action=export_chat&room_id={id}` - 대화 내용 내보내기
+- `?action=get_or_create_room` — 채팅방 가져오기 또는 생성
+  - `&ai_mode=1` — AI 모드 채팅방 생성 (ai_active=1)
+- `?action=get_messages&room_id={id}&last_id={id}` — 메시지 조회
+- `?action=get_unread_count&room_id={id}` — 읽지 않은 메시지 수
+- `?action=get_config` — 전체 설정 조회 (JSON)
+- `?action=export_chat&room_id={id}` — 대화 내용 내보내기
 
 ### POST /chat/api.php
 
-- `action=send_message` - 메시지 전송
-  - `room_id`: 채팅방 ID
-  - `message`: 메시지 내용
+- `action=send_message` — 메시지 전송
+- `action=upload_image` — 이미지 업로드 (최대 10MB)
+- `action=mark_as_read` — 읽음 처리
+- `action=save_config` — 설정 저장 (대시보드용)
 
-- `action=upload_image` - 이미지 업로드
-  - `room_id`: 채팅방 ID
-  - `image`: 이미지 파일 (최대 5MB)
+## ⚙️ 대시보드 설정 (/dashboard/chat/settings.php)
 
-- `action=mark_as_read` - 읽음 처리
-  - `room_id`: 채팅방 ID
+### 위치 피커
+- 16:9 비율 프리뷰 영역에 W(채팅)와 A(AI) 점 표시
+- 점 클릭 → 드래그 이동 또는 빈 영역 클릭으로 이동
+- X/Y % 좌표 실시간 표시 + "기본값 복원" 버튼
+
+### 프로덕션 자동 마이그레이션
+settings.php 접속 시 자동으로:
+1. `chat_config`에 6개 신규 키 INSERT (widget_pos_x/y, ai_pos_x/y, ai_button_label, ai_button_color)
+2. `chatrooms` 테이블에 `ai_active` 컬럼 ADD (없을 경우)
 
 ## 📊 동작 원리
 
-### 1. 고객이 채팅 시작
-- 채팅 버튼 클릭
-- 자동으로 채팅방 생성
-- 모든 온라인 직원이 자동으로 참여
+### 1. 듀얼 위젯 초기화
+```php
+// includes/chat_widget.php
+window.chatWidget = new ChatWidget({ mode: 'chat' });
+window.aiChatWidget = new ChatWidget({ mode: 'ai' });
+```
 
-### 2. 실시간 메시지
-- JavaScript가 2초마다 서버에 새 메시지 확인
-- 새 메시지 있으면 자동으로 표시
-- 직원도 동일한 방식으로 실시간 수신
+### 2. 시간대별 표시
+- 각 위젯이 `loadConfig()`로 설정 로드
+- 현재 시간이 해당 위젯 시간대 범위 내 → 버튼 표시
+- 범위 외 → 버튼 숨김 (클릭 시 offline_message alert)
 
-### 3. 이미지 전송
-- 파일 선택 시 서버로 업로드
-- `chat_uploads/` 폴더에 저장
-- 메시지로 이미지 경로 저장
+### 3. 위치 적용
+- `applyPosition()`에서 X/Y % 좌표를 CSS로 변환
+- `left: X%; top: Y%; transform: translate(-50%, -50%)`
+
+### 4. 채팅방 분리
+- chat 모드: `localStorage.chat_room_id` → 일반 채팅방
+- ai 모드: `localStorage.ai_room_id` → AI 채팅방 (`ai_active=1`)
 
 ## 🔒 보안 고려사항
 
 - ✅ 파일 타입 검증 (이미지만 허용)
-- ✅ 파일 크기 제한 (5MB)
+- ✅ 파일 크기 제한 (설정 가능, 기본 10MB)
 - ✅ SQL Injection 방지 (Prepared Statement 사용)
 - ✅ XSS 방지 (HTML Escape)
-- ⚠️ 추가 권장사항:
-  - HTTPS 사용
-  - 직원 로그인 인증 강화
-  - 파일명 암호화
+- ✅ 설정 저장 시 allowedKeys 화이트리스트 검증
 
 ## 🐛 문제 해결
 
-### 채팅이 열리지 않음
-- 브라우저 콘솔(F12) 확인
-- `/chat/api.php` 경로 확인
-- 데이터베이스 연결 확인
+### 위젯이 안 보임
+- 시간대 설정 확인 (대시보드 → 채팅 설정)
+- `chat_config` 테이블 존재 확인
+- 브라우저 콘솔(F12)에서 JS 에러 확인
 
-### 이미지 업로드 안됨
-- `chat_uploads/` 폴더 권한 확인 (755)
-- PHP `upload_max_filesize` 설정 확인
-- 파일 형식 확인 (jpg, png, gif, webp)
+### 채팅방 생성 실패
+- `chatrooms` 테이블에 `ai_active` 컬럼 존재 확인
+- 대시보드 설정 페이지 한 번 접속하면 자동 마이그레이션
 
-### 메시지가 전송되지 않음
-- 네트워크 탭에서 API 응답 확인
-- 데이터베이스 테이블 존재 확인
-- PHP 에러 로그 확인
+### 위치가 안 바뀜
+- 대시보드에서 저장 후 사이트 새로고침 (캐시: `?v=20260227`)
+- `chat_config`에 `widget_pos_x/y`, `ai_pos_x/y` 키 확인
 
 ## 📝 향후 개선 사항
 
@@ -236,6 +254,7 @@ background: linear-gradient(135deg, #4facfe 0%, #00f2fe 100%);
 - [ ] 직원 온라인/오프라인 상태 표시
 - [ ] 채팅 기록 검색 기능
 - [ ] 채팅 통계 대시보드
+- [ ] AI 위젯에서 v2 ChatbotService 연동 (자동 가격 조회)
 
 ## 📞 문의
 
@@ -246,5 +265,5 @@ background: linear-gradient(135deg, #4facfe 0%, #00f2fe 100%);
 
 ---
 
-**버전**: 1.0.0
-**최종 수정일**: 2025-11-25
+**버전**: 2.0.0
+**최종 수정일**: 2026-02-27
