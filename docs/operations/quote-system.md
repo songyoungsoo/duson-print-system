@@ -1,4 +1,36 @@
-## 📋 견적서 시스템 (Admin Quotes)
+## 📋 견적서 시스템
+
+### 시스템 아키텍처 (2026-02-27)
+
+**3개의 독립적 견적서 경로:**
+
+| 경로 | 임시 테이블 | 최종 테이블 | 가격 계산 |
+|------|-----------|-----------|----------|
+| 고객 견적 | `quotation_temp` (68컬럼) | `quotes` + `quote_items` | 프론트 계산기 → POST 전달 (dumb storage) |
+| 관리자 견적 | `admin_quotation_temp` | `admin_quotes` + `admin_quote_items` | Adapter → 품목 계산기 API 호출 |
+| 플로팅 견적받기 | — | `quote_requests` | 프론트 계산기 → POST 전달 |
+
+**데이터 흐름 (고객 경로):**
+```
+품목 index.php → JS 계산기 → addToQuotation()
+  → POST to quote/add_to_quotation_temp.php
+    → quotation_temp 저장 (가격 그대로, 재계산 안 함)
+      → create.php에서 합산 → quotes+quote_items 저장
+```
+
+**핵심 원칙**: 견적서는 가격을 자체 계산하지 않음. 품목 계산기가 계산한 값을 POST로 받아 저장만 함.
+
+**필드명 계약 (add_to_quotation_temp.php):**
+- `calculated_price` / `price` / `st_price` → 공급가액 (우선순위 순)
+- `calculated_vat_price` / `vat_price` / `st_price_vat` → VAT포함가
+- `premium_options_data` / `premium_options` → 프리미엄옵션 JSON
+- `premium_options_total` → 옵션 합계
+
+**⚠️ 고객 견적 경로는 참조용** — 관리자 이메일 알림으로 누가 뭘 받아갔는지 확인용. 실제 주문은 별도 진행.
+
+---
+
+### 견적서 상태 흐름 (Admin Quotes)
 
 ### 견적서 상태 흐름 (CRITICAL)
 

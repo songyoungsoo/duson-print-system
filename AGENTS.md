@@ -278,6 +278,11 @@ OnlineOrder_unified.php (폼 입력)
 ### CSS & Frontend
 8. ❌ CSS !important usage without proper diagnosis
 
+### Quotation System (2026-02-27)
+22. ❌ 견적서 프론트 `price`/`vat_price` vs 백엔드 `calculated_price`/`calculated_vat_price` → 가격 0원 저장
+23. ❌ 프론트 `premium_options_data` vs 백엔드 `premium_options` → 옵션 null 저장
+24. ❌ 견적서(quotation_temp)는 가격을 자체 계산 안 함 — 프론트가 POST로 보낸 값을 그대로 저장 (dumb storage)
+
 ### Plesk .htaccess (2026-02-07)
 17. ❌ Apache 2.2 구문 사용 (Order, Allow) → Plesk 500 에러 유발
 18. ❌ `.htaccess`를 잘못 작성하면 이미지/페이지가 500 에러 발생
@@ -389,4 +394,4 @@ php scripts/curator.php --json       # JSON 출력
 - `docs/curator-config.json` — 코드↔문서 매핑, 크기/신선도 임계값, 무시 경로
 
 ---
-마지막 업데이트: 2026-02-26
+마지막 업데이트: 2026-02-27
