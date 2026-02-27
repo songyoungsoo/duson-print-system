@@ -37,24 +37,70 @@ $work_memo = $_POST['work_memo'] ?? '';
 $upload_method = $_POST['upload_method'] ?? 'upload';
 $uploaded_files_info = $_POST['uploaded_files_info'] ?? '';
 
-// 🆕 프리미엄 옵션 데이터 받기
-$premium_options = [
-    'foil_enabled' => $_POST['foil_enabled'] ?? 0,
-    'foil_type' => $_POST['foil_type'] ?? '',
-    'foil_price' => intval($_POST['foil_price'] ?? 0),
-    'numbering_enabled' => $_POST['numbering_enabled'] ?? 0,
-    'numbering_type' => $_POST['numbering_type'] ?? '',
-    'numbering_price' => intval($_POST['numbering_price'] ?? 0),
-    'perforation_enabled' => $_POST['perforation_enabled'] ?? 0,
-    'perforation_type' => $_POST['perforation_type'] ?? '',
-    'perforation_price' => intval($_POST['perforation_price'] ?? 0),
-    'rounding_enabled' => $_POST['rounding_enabled'] ?? 0,
-    'rounding_price' => intval($_POST['rounding_price'] ?? 0),
-    'creasing_enabled' => $_POST['creasing_enabled'] ?? 0,
-    'creasing_type' => $_POST['creasing_type'] ?? '',
-    'creasing_price' => intval($_POST['creasing_price'] ?? 0),
-    'premium_options_total' => intval($_POST['premium_options_total'] ?? 0)
-];
+// 프리미엄 옵션 데이터 받기 — PremiumOptionsGeneric(NEW) 또는 개별 필드(OLD) 지원
+$premium_options_data_raw = $_POST['premium_options_data'] ?? '';
+
+if (!empty($premium_options_data_raw)) {
+    // NEW: PremiumOptionsGeneric -> JSON 수신 -> OLD 형식으로 변환
+    // getSelectedOptions() 반환: {"박":{enabled:true,variant_id:"1",price:30000}, premium_options_total:"90000"}
+    $generic_data = json_decode($premium_options_data_raw, true);
+    $premium_options = [];
+
+    if (is_array($generic_data)) {
+        // 한글 옵션명 -> 영문 키 매핑 (관리자 페이지 OrderFormOrderTree/OrderComplete 호환)
+        $name_to_key = [
+            '박' => 'foil', '넘버링' => 'numbering', '미싱' => 'perforation',
+            '귀돌이' => 'rounding', '오시' => 'creasing'
+        ];
+
+        // variant_id -> variant_name 조회 (캐시 활용)
+        $variant_map = [];
+        $cache_file = __DIR__ . '/../../cache/premium_options_namecard.json';
+        if (file_exists($cache_file)) {
+            $cache = json_decode(file_get_contents($cache_file), true);
+            if (!empty($cache['options'])) {
+                foreach ($cache['options'] as $opt) {
+                    if (!empty($opt['variants'])) {
+                        foreach ($opt['variants'] as $v) {
+                            $variant_map[$v['variant_id']] = $v['variant_name'];
+                        }
+                    }
+                }
+            }
+        }
+
+        foreach ($generic_data as $name => $info) {
+            if ($name === 'premium_options_total' || !is_array($info)) continue;
+            $key = $name_to_key[$name] ?? null;
+            if (!$key) continue;
+
+            $premium_options[$key . '_enabled'] = 1;
+            $vid = $info['variant_id'] ?? '';
+            $premium_options[$key . '_type'] = $variant_map[$vid] ?? $vid;
+            $premium_options[$key . '_price'] = intval($info['price'] ?? 0);
+        }
+    }
+    $premium_options['premium_options_total'] = intval($_POST['premium_options_total'] ?? 0);
+} else {
+    // OLD: 개별 $_POST 필드 (하드코딩 프론트엔드 호환용 fallback)
+    $premium_options = [
+        'foil_enabled' => $_POST['foil_enabled'] ?? 0,
+        'foil_type' => $_POST['foil_type'] ?? '',
+        'foil_price' => intval($_POST['foil_price'] ?? 0),
+        'numbering_enabled' => $_POST['numbering_enabled'] ?? 0,
+        'numbering_type' => $_POST['numbering_type'] ?? '',
+        'numbering_price' => intval($_POST['numbering_price'] ?? 0),
+        'perforation_enabled' => $_POST['perforation_enabled'] ?? 0,
+        'perforation_type' => $_POST['perforation_type'] ?? '',
+        'perforation_price' => intval($_POST['perforation_price'] ?? 0),
+        'rounding_enabled' => $_POST['rounding_enabled'] ?? 0,
+        'rounding_price' => intval($_POST['rounding_price'] ?? 0),
+        'creasing_enabled' => $_POST['creasing_enabled'] ?? 0,
+        'creasing_type' => $_POST['creasing_type'] ?? '',
+        'creasing_price' => intval($_POST['creasing_price'] ?? 0),
+        'premium_options_total' => intval($_POST['premium_options_total'] ?? 0)
+    ];
+}
 $premium_options_json = json_encode($premium_options, JSON_UNESCAPED_UNICODE);
 $premium_total = intval($premium_options['premium_options_total']);
 

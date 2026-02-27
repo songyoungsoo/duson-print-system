@@ -36,6 +36,7 @@ argument-hint: "[선택사항: 특정 스킬 이름 또는 집중할 영역]"
 | `verify-bind-param` | bind_param 3요소(플레이스홀더/타입문자/변수) 카운트 불일치 탐지 | `**/*.php` |
 | `verify-css-important` | CSS/PHP에서 새 !important 사용 탐지 (명시도 전쟁 방지) | `**/*.css`, `**/*.php` |
 | `verify-folder-names` | 제품 폴더명 혼동(sticker↔sticker_new, poster↔littleprint, leaflet↔inserted) 탐지 | `**/*.php`, `**/*.js` |
+| `verify-form-data-contract` | JS formData.append와 PHP $_POST 필드 일치 검증 (데이터 계약 불일치 탐지) | `mlangprintauto/**/*.php` |
 
 ## 워크플로우
 
