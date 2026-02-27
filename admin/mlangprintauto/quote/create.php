@@ -13,6 +13,12 @@ require_once __DIR__ . '/includes/PriceHelper.php';
 if (!$db) { die('DB 연결 실패'); }
 mysqli_set_charset($db, 'utf8mb4');
 
+// Auto-migration: ensure premium_options column exists (safe idempotent check)
+$colCheck = mysqli_query($db, "SHOW COLUMNS FROM admin_quotation_temp LIKE 'premium_options'");
+if ($colCheck && mysqli_num_rows($colCheck) === 0) {
+    mysqli_query($db, "ALTER TABLE admin_quotation_temp ADD COLUMN premium_options TEXT AFTER additional_options");
+}
+
 $quoteManager = new AdminQuoteManager($db);
 $adminSessionId = session_id();
 $newQuoteNo = $quoteManager->generateQuoteNo();
