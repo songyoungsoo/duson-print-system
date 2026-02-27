@@ -1,7 +1,7 @@
 <?php
 /**
  * KG이니시스 결제 설정 파일
- * 두손기획인쇄 - dsp114.co.kr
+ * 두손기획인쇄 - dsp114.com
  *
  * 가맹점코드: dsp1147479
  */
@@ -36,7 +36,7 @@ $server_name = $_SERVER['SERVER_NAME'] ?? 'localhost';
 if (strpos($server_name, 'dsp114.co.kr') !== false || strpos($server_name, 'dsp114.com') !== false) {
     define('SITE_DOMAIN', 'https://' . $server_name);
 } elseif (strpos($server_name, 'dsp1830.shop') !== false) {
-    define('SITE_DOMAIN', 'https://dsp1830.shop');
+    define('SITE_DOMAIN', 'https://dsp114.com');
 } else {
     define('SITE_DOMAIN', 'http://localhost');
 }

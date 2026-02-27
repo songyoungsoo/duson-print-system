@@ -58,7 +58,7 @@ class NotificationService
                 'api_url' => 'https://api.coolsms.co.kr/messages/v4/send-many'
             ],
             'email' => [
-                'from' => getenv('EMAIL_FROM') ?: 'noreply@dsp1830.shop',
+                'from' => getenv('EMAIL_FROM') ?: 'noreply@dsp114.com',
                 'from_name' => '두손기획 인쇄',
                 'smtp_host' => getenv('SMTP_HOST') ?: '',
                 'smtp_port' => getenv('SMTP_PORT') ?: 587,
@@ -68,7 +68,7 @@ class NotificationService
             'company' => [
                 'name' => '두손기획인쇄',
                 'phone' => '02-2632-1830',
-                'url' => 'https://dsp114.co.kr'
+                'url' => 'https://dsp114.com'
             ]
         ];
     }

@@ -66,7 +66,7 @@ function generateUploadPath($product_type) {
     // 레거시 형식: _MlangPrintAuto_{품목}_index.php/YYYY/MMDD/IP/HHMMSS
     $img_folder = "{$legacy_prefix}/{$log_info['y']}/{$log_info['md']}/{$log_info['ip']}/{$log_info['time']}";
 
-    // 실제 파일 시스템 경로 (dsp1830.shop 서버 기준)
+    // 실제 파일 시스템 경로 (dsp114.com 서버 기준)
     $document_root = getDocumentRoot();
     $physical_path = $document_root . "/ImgFolder/{$img_folder}/";
 

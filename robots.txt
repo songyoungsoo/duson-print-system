@@ -55,4 +55,3 @@ Disallow: /tools/
 
 # ========== 사이트맵 위치 ==========
 Sitemap: https://dsp114.com/sitemap.xml
-Sitemap: https://dsp114.co.kr/sitemap.xml

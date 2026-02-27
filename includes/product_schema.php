@@ -64,7 +64,7 @@ function echo_product_schema($product_key) {
 
     if (!isset($products[$product_key])) return;
     $p = $products[$product_key];
-    $base = 'https://dsp114.co.kr';
+    $base = 'https://dsp114.com';
 
     $schema = [
         '@context' => 'https://schema.org',

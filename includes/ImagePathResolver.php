@@ -2,7 +2,7 @@
 /**
  * ImagePathResolver - 레거시/신규 이미지 경로 통합 해석 클래스
  *
- * dsp114.com → dsp1830.shop 마이그레이션 지원
+ * dsp114.com → dsp114.com 마이그레이션 지원
  * 날짜 기반 필터링 포함 (2025-12-06)
  *
  * 필터링 규칙:
@@ -51,7 +51,7 @@ class ImagePathResolver {
             $paths_to_try[] = $_SERVER['DOCUMENT_ROOT'] . '/ImgFolder/' . $row['ImgFolder'] . '/' . $filename;
         }
 
-        // 3순위: 레거시 경로 (소문자 - 현재 dsp1830.shop)
+        // 3순위: 레거시 경로 (소문자 - 현재 dsp114.com)
         $paths_to_try[] = $_SERVER['DOCUMENT_ROOT'] . '/mlangorder_printauto/upload/' . $order_no . '/' . $filename;
 
         // 4순위: 레거시 경로 (대문자 - 과거 dsp114.com)

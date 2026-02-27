@@ -82,12 +82,12 @@ body {
     <div class="menu-section">
         <div class="menu-header">주문정보</div>
         <ul class="menu-list">
-            <li><a href="http://dsp1830.shop/admin/mlangprintauto/orderlist.php" target="main">자동주문접수</a></li>
+            <li><a href="https://dsp114.com/admin/mlangprintauto/orderlist.php" target="main">자동주문접수</a></li>
             <li><a href="http://mail.naver.com/" target="main">네이버메일</a></li>
-            <li><a href="http://dsp1830.shop/" target="_blank">dsp1830.shop</a></li>
-            <li><a href="http://dsp1830.shop/mlangprintauto/quote/index.php" target="_blank">견적서관리</a></li>
-            <li><a href="http://dsp1830.shop/chat/admin.php" onclick="window.open(this.href, 'chatAdmin', 'width=630,height=460,left=0,top=0,scrollbars=yes,resizable=yes'); return false;">채팅창관리</a></li>
-            <li><a href="http://dsp1830.shop/tools/excel_converter_01.php" target="main">엑셀변환</a></li>
+            <li><a href="https://dsp114.com/" target="_blank">dsp114.com</a></li>
+            <li><a href="https://dsp114.com/mlangprintauto/quote/index.php" target="_blank">견적서관리</a></li>
+            <li><a href="https://dsp114.com/chat/admin.php" onclick="window.open(this.href, 'chatAdmin', 'width=630,height=460,left=0,top=0,scrollbars=yes,resizable=yes'); return false;">채팅창관리</a></li>
+            <li><a href="https://dsp114.com/tools/excel_converter_01.php" target="main">엑셀변환</a></li>
             <li><a href="https://logis.ilogen.com/" target="_blank">로젠택배</a></li>
         </ul>
     </div>
@@ -95,17 +95,17 @@ body {
     <div class="menu-section">
         <div class="menu-header">견적정보</div>
         <ul class="menu-list">
-            <li><a href="http://dsp1830.shop/mlangprintauto/inserted/index.php" target="main">전단지</a></li>
-        <li><a href="http://dsp1830.shop/mlangprintauto/sticker_new/index.php" target="main">스티커</a></li>
-            <li><a href="http://dsp1830.shop/mlangprintauto/msticker/index.php" target="main">종이자석</a></li>
+            <li><a href="https://dsp114.com/mlangprintauto/inserted/index.php" target="main">전단지</a></li>
+        <li><a href="https://dsp114.com/mlangprintauto/sticker_new/index.php" target="main">스티커</a></li>
+            <li><a href="https://dsp114.com/mlangprintauto/msticker/index.php" target="main">종이자석</a></li>
         </ul>
     </div>
 
     <div class="menu-section">
         <div class="menu-header">교정파일관리</div>
         <ul class="menu-list">
-            <li><a href="http://dsp1830.shop/admin/mlangprintauto/admin.php?mode=AdminMlangOrdert" onclick="window.open(this.href, 'fileUpload', 'width=390,height=700,scrollbars=yes,resizable=yes'); return false;">파일올리기</a></li>
-            <li><a href="http://www.dsp1830.shop/sub/checkboard.htm" target="main">교정보기</a></li>
+            <li><a href="https://dsp114.com/admin/mlangprintauto/admin.php?mode=AdminMlangOrdert" onclick="window.open(this.href, 'fileUpload', 'width=390,height=700,scrollbars=yes,resizable=yes'); return false;">파일올리기</a></li>
+            <li><a href="https://www.dsp114.com/sub/checkboard.htm" target="main">교정보기</a></li>
             <li><a href="http://www.webhard.co.kr/webII/page/sms/main_sms.php" target="main">웹하드SNS</a></li>
         </ul>
     </div>

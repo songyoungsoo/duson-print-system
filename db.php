@@ -111,8 +111,8 @@ if ($current_env === 'local') {
     $home_cookie_url = "localhost"; // 로컬은 점 제거
 } else {
     // 프로덕션: SITE_URL 상수 활용 (도메인 자동 감지)
-    $admin_url = defined('SITE_URL') ? SITE_URL : 'https://' . ($_SERVER['HTTP_HOST'] ?? 'dsp114.co.kr');
-    $host = $_SERVER['HTTP_HOST'] ?? 'dsp114.co.kr';
+    $admin_url = defined('SITE_URL') ? SITE_URL : 'https://' . ($_SERVER['HTTP_HOST'] ?? 'dsp114.com');
+    $host = $_SERVER['HTTP_HOST'] ?? 'dsp114.com';
 
     // 쿠키 도메인: 접속 도메인 자동 감지
     if (strpos($host, 'dsp114.co.kr') !== false) {

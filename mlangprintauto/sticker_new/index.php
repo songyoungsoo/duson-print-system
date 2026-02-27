@@ -72,12 +72,12 @@ if (isset($_GET['jong']) && !empty($_GET['jong'])) {
     <title>스티커 제작 | 스티커 인쇄 - 두손기획인쇄</title>
     <meta name="description" content="스티커 인쇄 전문 두손기획인쇄. 라벨 스티커, 원형·사각·모양 스티커 맞춤 제작. 소량 100매부터 대량까지. 실시간 견적 확인, 빠른 배송.">
     <meta name="keywords" content="스티커 인쇄, 스티커 제작, 라벨 스티커, 원형 스티커, 맞춤 스티커, 스티커 가격">
-    <link rel="canonical" href="https://dsp114.co.kr/mlangprintauto/sticker_new/">
+    <link rel="canonical" href="https://dsp114.com/mlangprintauto/sticker_new/">
     <meta property="og:type" content="website">
     <meta property="og:title" content="스티커 제작 | 스티커 인쇄 - 두손기획인쇄">
     <meta property="og:description" content="스티커 인쇄 전문. 라벨, 원형, 사각, 모양 스티커 맞춤 제작. 소량 100매부터.">
-    <meta property="og:url" content="https://dsp114.co.kr/mlangprintauto/sticker_new/">
-    <meta property="og:image" content="https://dsp114.co.kr/ImgFolder/dusonlogo1.png">
+    <meta property="og:url" content="https://dsp114.com/mlangprintauto/sticker_new/">
+    <meta property="og:image" content="https://dsp114.com/ImgFolder/dusonlogo1.png">
     <meta property="og:site_name" content="두손기획인쇄">
 
 

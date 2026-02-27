@@ -14,9 +14,9 @@ class EmailNotification {
     private $admin_email;
     
     public function __construct() {
-        $this->from_email = 'noreply@dsp1830.shop';
+        $this->from_email = 'noreply@dsp114.com';
         $this->from_name = '두손기획인쇄';
-        $this->admin_email = 'admin@dsp1830.shop'; // 실제 관리자 이메일로 변경 필요
+        $this->admin_email = 'admin@dsp114.com'; // 실제 관리자 이메일로 변경 필요
     }
     
     /**
@@ -51,13 +51,13 @@ class EmailNotification {
 파일 검토가 완료되면 교정 승인 또는 수정 요청 안내를 드리겠습니다.
 
 마이페이지에서 교정 상태를 확인하실 수 있습니다:
-https://dsp1830.shop/mypage/proof.php
+https://dsp114.com/mypage/proof.php
 
 감사합니다.
 
 --
 두손기획인쇄
-https://dsp1830.shop
+https://dsp114.com
 ";
         
         return $this->send($customer_email, $subject, $message);
@@ -93,13 +93,13 @@ https://dsp1830.shop
 곧 인쇄 작업에 들어가며, 완료 후 배송해 드리겠습니다.
 
 진행 상황은 마이페이지에서 확인하실 수 있습니다:
-https://dsp1830.shop/mypage/orders.php
+https://dsp114.com/mypage/orders.php
 
 감사합니다.
 
 --
 두손기획인쇄
-https://dsp1830.shop
+https://dsp114.com
 ";
         
         return $this->send($customer_email, $subject, $message);
@@ -131,7 +131,7 @@ https://dsp1830.shop
 {$admin_comment}
 
 마이페이지에서 수정본을 업로드해 주시기 바랍니다:
-https://dsp1830.shop/mypage/proof.php
+https://dsp114.com/mypage/proof.php
 
 수정본 업로드 후 다시 검토해 드리겠습니다.
 
@@ -139,7 +139,7 @@ https://dsp1830.shop/mypage/proof.php
 
 --
 두손기획인쇄
-https://dsp1830.shop
+https://dsp114.com
 ";
         
         return $this->send($customer_email, $subject, $message);
@@ -165,7 +165,7 @@ https://dsp1830.shop
 - 제품: {$product_type}
 
 교정 관리 페이지에서 확인하세요:
-https://dsp1830.shop/admin/mlangprintauto/proof_manager.php
+https://dsp114.com/admin/mlangprintauto/proof_manager.php
 
 --
 두손기획인쇄 시스템
@@ -216,7 +216,7 @@ https://dsp1830.shop/admin/mlangprintauto/proof_manager.php
 
 {$order_list}
 주문 상세 내역은 마이페이지에서 확인하실 수 있습니다:
-https://dsp1830.shop/mypage/orders.php
+https://dsp114.com/mypage/orders.php
 
 곧 담당자가 주문을 확인하고 인쇄 작업을 시작하겠습니다.
 파일 교정이 필요한 경우 별도로 안내드리겠습니다.
@@ -227,7 +227,7 @@ https://dsp1830.shop/mypage/orders.php
 
 --
 두손기획인쇄
-https://dsp114.co.kr
+https://dsp114.com
 전화: 02-2632-1830
 ";
 

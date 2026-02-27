@@ -233,7 +233,7 @@ function processFile($source_file, $target_file, $exclude_patterns) {
             $content = preg_replace('/C:\\\\xampp\\\\htdocs\\\\/', '', $content);
             
             // localhost 참조 정리
-            $content = str_replace('http://localhost/', 'http://dsp1830.shop/', $content);
+            $content = str_replace('http://localhost/', 'https://dsp114.com/', $content);
         }
         
         file_put_contents($target_file, $content);
@@ -521,7 +521,7 @@ function createDeploymentGuide($file_path, $package_name) {
 ✅ 배포 후 필수 테스트 (10분 체크리스트)
 ════════════════════════════════════════
 
-□ 기본 페이지 접속 (http://dsp1830.shop/)
+□ 기본 페이지 접속 (https://dsp114.com/)
 □ 견적 계산 기능 테스트
   - 명함: /mlangprintauto/namecard/  
   - 스티커: /mlangprintauto/msticker/

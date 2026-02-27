@@ -95,12 +95,12 @@ if ($default_values['MY_type'] && $default_values['Section']) {
     <title>자석스티커 제작 | 마그넷 스티커 인쇄 - 두손기획인쇄</title>
     <meta name="description" content="자석스티커 인쇄 전문 두손기획인쇄. 냉장고 자석, 차량용 마그넷, 홍보용 자석스티커 맞춤 제작. 소량부터 대량까지. 실시간 견적 확인, 빠른 배송.">
     <meta name="keywords" content="자석스티커, 마그넷 스티커, 냉장고 자석, 차량 자석, 자석스티커 제작, 자석스티커 인쇄">
-    <link rel="canonical" href="https://dsp114.co.kr/mlangprintauto/msticker/">
+    <link rel="canonical" href="https://dsp114.com/mlangprintauto/msticker/">
     <meta property="og:type" content="website">
     <meta property="og:title" content="자석스티커 제작 | 마그넷 스티커 인쇄 - 두손기획인쇄">
     <meta property="og:description" content="자석스티커 인쇄 전문. 냉장고 자석, 차량용 마그넷, 홍보용 자석스티커 맞춤 제작.">
-    <meta property="og:url" content="https://dsp114.co.kr/mlangprintauto/msticker/">
-    <meta property="og:image" content="https://dsp114.co.kr/ImgFolder/dusonlogo1.png">
+    <meta property="og:url" content="https://dsp114.com/mlangprintauto/msticker/">
+    <meta property="og:image" content="https://dsp114.com/ImgFolder/dusonlogo1.png">
     <meta property="og:site_name" content="두손기획인쇄">
 
     <!-- 자석스티커 컴팩트 페이지 전용 CSS -->

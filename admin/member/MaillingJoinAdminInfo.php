@@ -12,5 +12,5 @@ $page = $_GET['page'] ?? $_POST['page'] ?? '';
 
 $admin_name = "두손기획인쇄";
 $admin_email = "dsp1830@naver.com";
-$admin_url = "http://www.dsp1830.shop";
+$admin_url = "https://www.dsp114.com";
 ?>

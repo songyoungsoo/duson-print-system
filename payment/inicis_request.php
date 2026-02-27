@@ -165,7 +165,7 @@ if (empty($buyer_tel)) {
     $buyer_tel = '01000000000';
 }
 if (empty($buyer_email)) {
-    $buyer_email = 'guest@dsp114.co.kr';
+    $buyer_email = 'guest@dsp114.com';
 }
 
 // 로그 기록

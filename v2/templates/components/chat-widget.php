@@ -45,7 +45,7 @@
                     <span>카카오톡 상담</span>
                 </a>
                 
-                <a href="mailto:info@dsp1830.shop"
+                <a href="mailto:info@dsp114.com"
                    class="flex items-center justify-center space-x-2 w-full py-3 bg-gray-100 text-gray-700 rounded-lg hover:bg-gray-200 transition-colors">
                     <span>✉️</span>
                     <span>이메일 문의</span>

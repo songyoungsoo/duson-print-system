@@ -101,7 +101,7 @@ $email_body = "
 <tr><td style='padding:8px;border:1px solid #ddd;'>응답일시</td><td style='padding:8px;border:1px solid #ddd;'>" . date('Y-m-d H:i:s') . "</td></tr>
 " . ($notes ? "<tr><td style='padding:8px;border:1px solid #ddd;'>고객 메모</td><td style='padding:8px;border:1px solid #ddd;'>{$notes}</td></tr>" : "") . "
 </table>
-<p style='margin-top:20px;'><a href='http://dsp1830.shop/admin/mlangprintauto/quotation_list.php'>관리자 페이지에서 확인하기</a></p>
+<p style='margin-top:20px;'><a href='http://dsp114.com/admin/mlangprintauto/quotation_list.php'>관리자 페이지에서 확인하기</a></p>
 </body>
 </html>
 ";

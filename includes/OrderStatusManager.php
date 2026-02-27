@@ -209,7 +209,7 @@ class OrderStatusManager {
 
             case 'proof_ready':
                 // 교정본 준비 완료 알림
-                $proofUrl = 'https://dsp1830.shop/proof/view.php?order=' . $this->order_no;
+                $proofUrl = 'https://dsp114.com/proof/view.php?order=' . $this->order_no;
                 $this->sendProofRequestNotification($order, $proofUrl);
                 break;
 

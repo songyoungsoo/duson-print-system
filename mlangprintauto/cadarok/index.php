@@ -98,12 +98,12 @@ if ($default_values['MY_type'] && $default_values['Section']) {
     <title>카탈로그 제작 | 카다록 인쇄 - 두손기획인쇄</title>
     <meta name="description" content="카탈로그·브로슈어 인쇄 전문 두손기획인쇄. 중철·무선 제본 카다록 맞춤 제작. 소량부터 대량까지. 실시간 견적 확인. 서울 영등포구.">
     <meta name="keywords" content="카탈로그 인쇄, 카다록 제작, 브로슈어 인쇄, 제품 카탈로그, 중철 제본, 카다록 가격">
-    <link rel="canonical" href="https://dsp114.co.kr/mlangprintauto/cadarok/">
+    <link rel="canonical" href="https://dsp114.com/mlangprintauto/cadarok/">
     <meta property="og:type" content="website">
     <meta property="og:title" content="카탈로그 제작 | 카다록 인쇄 - 두손기획인쇄">
     <meta property="og:description" content="카탈로그·브로슈어 인쇄 전문. 중철·무선 제본 맞춤 제작. 소량부터 대량까지.">
-    <meta property="og:url" content="https://dsp114.co.kr/mlangprintauto/cadarok/">
-    <meta property="og:image" content="https://dsp114.co.kr/ImgFolder/dusonlogo1.png">
+    <meta property="og:url" content="https://dsp114.com/mlangprintauto/cadarok/">
+    <meta property="og:image" content="https://dsp114.com/ImgFolder/dusonlogo1.png">
     <meta property="og:site_name" content="두손기획인쇄">
 
     <!-- 카다록 컴팩트 페이지 전용 CSS (PROJECT_SUCCESS_REPORT.md 스펙) -->

@@ -2,7 +2,7 @@ const { test, expect } = require('@playwright/test');
 
 test('전단지 추가옵션 가격 업데이트 확인 (프로덕션)', async ({ page }) => {
   // 1. 전단지 페이지 접속
-  await page.goto('https://dsp114.co.kr/mlangprintauto/inserted/');
+  await page.goto('https://dsp114.com/mlangprintauto/inserted/');
   await page.waitForLoadState('networkidle');
   
   // 2. 기본 옵션 선택 (옵션이 활성화될 수 있도록)

@@ -865,7 +865,7 @@
                 <img src="/ImgFolder/icon-192x192.png" alt="두손기획인쇄" style="width:52px; height:52px; border-radius:12px; box-shadow:0 2px 8px rgba(0,0,0,0.1);">
                 <div>
                     <div style="font-weight:700; font-size:16px; color:#1e293b;">두손기획인쇄</div>
-                    <div style="font-size:13px; color:#64748b; margin-top:2px;">dsp114.co.kr</div>
+                    <div style="font-size:13px; color:#64748b; margin-top:2px;">dsp114.com</div>
                 </div>
             </div>
             <!-- 설치 단계 안내 -->

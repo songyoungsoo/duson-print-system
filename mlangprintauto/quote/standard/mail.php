@@ -39,7 +39,7 @@ $supplier = $data['supplier'];
 // === 기본 URL (이미지 절대경로 - 이메일 필수) ===
 // 실제 운영 시 도메인으로 변경
 $protocol = (!empty($_SERVER['HTTPS']) && $_SERVER['HTTPS'] !== 'off') ? 'https' : 'http';
-$baseUrl = $protocol . '://' . ($_SERVER['HTTP_HOST'] ?? 'dsp1830.shop');
+$baseUrl = $protocol . '://' . ($_SERVER['HTTP_HOST'] ?? 'dsp114.com');
 
 // === 이메일용 래퍼 HTML ===
 $quoteHtml = renderQuoteLayout($quote, $items, $supplier, $baseUrl);
@@ -170,7 +170,7 @@ HTML;
  */
 function sendQuoteEmail(string $to, array $quote, string $htmlBody, array $supplier): array {
     $subject = '[견적서] ' . ($quote['quote_no'] ?? '') . ' - ' . ($supplier['company_name'] ?? '');
-    $fromEmail = $supplier['email'] ?? 'noreply@dsp1830.shop';
+    $fromEmail = $supplier['email'] ?? 'noreply@dsp114.com';
     $fromName = $supplier['company_name'] ?? '두손기획인쇄';
 
     // === PHPMailer 사용 (권장) ===

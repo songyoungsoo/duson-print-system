@@ -98,12 +98,12 @@ if ($default_values['MY_type'] && $default_values['Section']) {
     <title>봉투 인쇄 | 봉투 제작 - 두손기획인쇄</title>
     <meta name="description" content="봉투 인쇄 전문 두손기획인쇄. 대봉투, 소봉투, 창봉투 맞춤 제작. 회사 로고·주소 인쇄. 규격·비규격 모두 가능. 실시간 견적 확인.">
     <meta name="keywords" content="봉투 인쇄, 봉투 제작, 대봉투, 소봉투, 창봉투, 회사봉투, 서류봉투">
-    <link rel="canonical" href="https://dsp114.co.kr/mlangprintauto/envelope/">
+    <link rel="canonical" href="https://dsp114.com/mlangprintauto/envelope/">
     <meta property="og:type" content="website">
     <meta property="og:title" content="봉투 인쇄 | 봉투 제작 - 두손기획인쇄">
     <meta property="og:description" content="봉투 인쇄 전문. 대봉투, 소봉투, 창봉투 맞춤 제작. 회사 로고 인쇄 가능.">
-    <meta property="og:url" content="https://dsp114.co.kr/mlangprintauto/envelope/">
-    <meta property="og:image" content="https://dsp114.co.kr/ImgFolder/dusonlogo1.png">
+    <meta property="og:url" content="https://dsp114.com/mlangprintauto/envelope/">
+    <meta property="og:image" content="https://dsp114.com/ImgFolder/dusonlogo1.png">
     <meta property="og:site_name" content="두손기획인쇄">
 
     <!-- 봉투 컴팩트 페이지 전용 CSS -->

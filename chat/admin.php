@@ -913,7 +913,7 @@ requireAdminAuth();
         }
 
         function linkify(text) {
-            // 1) http(s)://... 2) www.... 3) bare 도메인 (예: google.com, dsp114.co.kr)
+            // 1) http(s)://... 2) www.... 3) bare 도메인 (예: google.com, dsp114.com)
             const urlPattern = /(https?:\/\/[^\s<>&"']+(?:\.[^\s<>&"']+)+[^\s<>&"'.,;:!?)]*|www\.[^\s<>&"']+(?:\.[^\s<>&"']+)+[^\s<>&"'.,;:!?)]*|[a-zA-Z0-9](?:[a-zA-Z0-9\-]*[a-zA-Z0-9])?(?:\.[a-zA-Z0-9](?:[a-zA-Z0-9\-]*[a-zA-Z0-9])?)*\.(?:com|net|org|co\.kr|go\.kr|or\.kr|ne\.kr|re\.kr|pe\.kr|kr|io|me|info|biz|shop|xyz|dev|app|site|online|store|tech)(?:\/[^\s<>&"']*)?)/gi;
             return text.replace(urlPattern, function(url) {
                 const href = /^https?:\/\//i.test(url) ? url : 'https://' + url;

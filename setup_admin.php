@@ -18,7 +18,7 @@ mysqli_set_charset($db, 'utf8mb4');
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     $username = $_POST['username'] ?? 'admin';
     $password = $_POST['password'] ?? 'admin1234';
-    $email = $_POST['email'] ?? 'admin@dsp1830.shop';
+    $email = $_POST['email'] ?? 'admin@dsp114.com';
     $phone = $_POST['phone'] ?? '02-1234-5678';
     $name = $_POST['name'] ?? '관리자';
 
@@ -210,7 +210,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 
             <div class="form-group">
                 <label for="email">이메일</label>
-                <input type="email" id="email" name="email" value="admin@dsp1830.shop" required>
+                <input type="email" id="email" name="email" value="admin@dsp114.com" required>
             </div>
 
             <div class="form-group">

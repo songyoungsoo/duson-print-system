@@ -182,7 +182,7 @@ echo '<?xml version="1.0" encoding="UTF-8"?>' . "\n";
   </text>
 
   <text x="<?php echo $centerX; ?>" y="<?php echo $startY + $lineHeight * 7; ?>" class="label-small">
-    두손기획인쇄 1688-2384 | www.dsp1830.shop
+    두손기획인쇄 1688-2384 | www.dsp114.com
   </text>
 
 </svg>

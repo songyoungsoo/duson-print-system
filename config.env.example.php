@@ -50,7 +50,7 @@ putenv('SMARTTAEKBAE_API_KEY=your_api_key');
 // =====================================================
 // 이메일 설정 (SMTP)
 // =====================================================
-putenv('EMAIL_FROM=noreply@dsp1830.shop');
+putenv('EMAIL_FROM=noreply@dsp114.com');
 putenv('SMTP_HOST=smtp.gmail.com');
 putenv('SMTP_PORT=587');
 putenv('SMTP_USER=your_email@gmail.com');

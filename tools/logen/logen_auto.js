@@ -26,7 +26,7 @@ const crypto = require('crypto');
 const CONFIG = {
   // 관리자 사이트
   adminBase: 'http://localhost',
-  prodBase: 'https://dsp114.co.kr',
+  prodBase: 'https://dsp114.com',
   deliveryManagerPath: '/shop_admin/delivery_manager.php',
   importWaybillPath: '/tools/logen/import_waybill.php',
   embedSecret: 'duson_embed_2026_secret',

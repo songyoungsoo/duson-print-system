@@ -98,12 +98,12 @@ if ($default_values['MY_type'] && $default_values['Section']) {
     <title>상품권 인쇄 | 쿠폰 제작 - 두손기획인쇄</title>
     <meta name="description" content="상품권·쿠폰 인쇄 전문 두손기획인쇄. 매장 상품권, 할인 쿠폰, 이용권 맞춤 제작. 넘버링 가능. 소량부터 대량까지. 실시간 견적 확인.">
     <meta name="keywords" content="상품권 인쇄, 쿠폰 제작, 이용권 인쇄, 매장 상품권, 할인쿠폰, 상품권 가격">
-    <link rel="canonical" href="https://dsp114.co.kr/mlangprintauto/merchandisebond/">
+    <link rel="canonical" href="https://dsp114.com/mlangprintauto/merchandisebond/">
     <meta property="og:type" content="website">
     <meta property="og:title" content="상품권 인쇄 | 쿠폰 제작 - 두손기획인쇄">
     <meta property="og:description" content="상품권·쿠폰 인쇄 전문. 매장 상품권, 할인 쿠폰 맞춤 제작. 넘버링 가능.">
-    <meta property="og:url" content="https://dsp114.co.kr/mlangprintauto/merchandisebond/">
-    <meta property="og:image" content="https://dsp114.co.kr/ImgFolder/dusonlogo1.png">
+    <meta property="og:url" content="https://dsp114.com/mlangprintauto/merchandisebond/">
+    <meta property="og:image" content="https://dsp114.com/ImgFolder/dusonlogo1.png">
     <meta property="og:site_name" content="두손기획인쇄">
 
     <!-- 상품권/쿠폰 컴팩트 페이지 전용 CSS -->

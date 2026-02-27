@@ -188,10 +188,10 @@ const doc = new Document({
         makeTable(
           ['\uAD6C\uBD84', '\uC811\uC18D \uC8FC\uC18C', '\uC544\uC774\uB514', '\uBE44\uBC00\uBC88\uD638'],
           [
-            ['\uD648\uD398\uC774\uC9C0', 'https://dsp114.co.kr', '-', '-'],
-            ['\uAD00\uB9AC\uC790 \uB300\uC2DC\uBCF4\uB4DC', 'https://dsp114.co.kr/dashboard/', 'admin', 'admin123'],
+            ['\uD648\uD398\uC774\uC9C0', 'https://dsp114.com', '-', '-'],
+            ['\uAD00\uB9AC\uC790 \uB300\uC2DC\uBCF4\uB4DC', 'https://dsp114.com/dashboard/', 'admin', 'admin123'],
             ['\uB370\uC774\uD130\uBCA0\uC774\uC2A4 (MySQL)', 'localhost:3306', 'dsp1830', 'ds701018'],
-            ['FTP (\uC6B4\uC601\uC11C\uBC84)', 'ftp://dsp114.co.kr', 'dsp1830', 'cH*j@yzj093BeTtc'],
+            ['FTP (\uC6B4\uC601\uC11C\uBC84)', 'ftp://dsp114.com', 'dsp1830', 'cH*j@yzj093BeTtc'],
             ['GitHub', 'github.com/songyoungsoo', 'songyoungsoo', 'yeongsu32@gmail.com'],
             ['\uACE0\uAC1D\uC13C\uD130 \uC804\uD654', '02-2632-1830', '-', '-'],
           ],
@@ -407,7 +407,7 @@ const doc = new Document({
         // Ch6. 관리자 대시보드
         // ════════════════════════════════════════
         h1('Ch6. 관리자 대시보드'),
-        p('접속: https://dsp114.co.kr/dashboard/ (ID: admin / PW: admin123)'),
+        p('접속: https://dsp114.com/dashboard/ (ID: admin / PW: admin123)'),
         p('대시보드는 주문/교정/견적/회원/통계 등 모든 관리 기능을 하나의 인터페이스에서 제공합니다.'),
 
         // ── 6.1 기술 스택 ──
@@ -1011,7 +1011,7 @@ const doc = new Document({
         // Ch8. Knowledge Vault (KB) 시스템
         // ════════════════════════════════════════
         h1('Ch8. Knowledge Vault (KB) 시스템'),
-        p('접속: https://dsp114.co.kr/kb/ (비밀번호: duson2026!kb)'),
+        p('접속: https://dsp114.com/kb/ (비밀번호: duson2026!kb)'),
         p('AI 대화 결과를 저장하고 검색하는 개인 지식 관리 시스템. localhost에서는 비밀번호 없이 자동 접속.'),
 
         h2('8.1 시스템 개요'),

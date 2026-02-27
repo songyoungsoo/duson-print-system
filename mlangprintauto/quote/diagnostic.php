@@ -3,7 +3,7 @@
  * 견적서 시스템 진단 도구
  * 데이터베이스 상태를 확인하고 필요한 조치를 안내합니다.
  *
- * 실행: http://dsp1830.shop/mlangprintauto/quote/diagnostic.php
+ * 실행: http://dsp114.com/mlangprintauto/quote/diagnostic.php
  */
 
 session_start();

@@ -323,7 +323,7 @@ class OrderController
         $body .= "주문 상세:\n";
         $body .= $orderData['Type_1'];
         
-        $headers = "From: noreply@dsp1830.shop\r\n";
+        $headers = "From: noreply@dsp114.com\r\n";
         $headers .= "Content-Type: text/plain; charset=UTF-8\r\n";
         
         @mail($adminEmail, $subject, $body, $headers);

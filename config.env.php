@@ -44,7 +44,7 @@ class EnvironmentDetector {
         ) {
             self::$environment = 'local';
         }
-        // 운영 환경 감지 (dsp114.co.kr 및 dsp1830.shop)
+        // 운영 환경 감지 (dsp114.com, dsp114.co.kr, dsp1830.shop)
         else if (
             strpos($host, 'dsp114.co.kr') !== false ||
             strpos($host, 'www.dsp114.co.kr') !== false ||

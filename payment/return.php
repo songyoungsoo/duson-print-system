@@ -1,7 +1,7 @@
 <?php
 /**
  * KG이니시스 결제 결과 처리 페이지
- * 두손기획인쇄 - dsp114.co.kr
+ * 두손기획인쇄 - dsp114.com
  */
 require_once __DIR__ . '/config.php';
 require_once __DIR__ . '/libs/INIStdPayUtil.php';

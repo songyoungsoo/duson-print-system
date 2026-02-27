@@ -92,12 +92,12 @@ $default_values['MY_type'] = $url_type ? $url_type : '475';
     <title>NCR양식지 인쇄 | 복사양식지 제작 - 두손기획인쇄</title>
     <meta name="description" content="NCR양식지 인쇄 전문 두손기획인쇄. 2매·3매·4매 복사양식지 맞춤 제작. 견적서, 주문서, 계약서 양식. 무카본지 전문. 실시간 견적 확인.">
     <meta name="keywords" content="NCR양식지, 복사양식지, 양식지 인쇄, 견적서 양식, 무카본지, NCR 인쇄">
-    <link rel="canonical" href="https://dsp114.co.kr/mlangprintauto/ncrflambeau/">
+    <link rel="canonical" href="https://dsp114.com/mlangprintauto/ncrflambeau/">
     <meta property="og:type" content="website">
     <meta property="og:title" content="NCR양식지 인쇄 | 복사양식지 제작 - 두손기획인쇄">
     <meta property="og:description" content="NCR양식지 인쇄 전문. 2매·3매·4매 복사양식지 맞춤 제작. 견적서, 주문서 양식.">
-    <meta property="og:url" content="https://dsp114.co.kr/mlangprintauto/ncrflambeau/">
-    <meta property="og:image" content="https://dsp114.co.kr/ImgFolder/dusonlogo1.png">
+    <meta property="og:url" content="https://dsp114.com/mlangprintauto/ncrflambeau/">
+    <meta property="og:image" content="https://dsp114.com/ImgFolder/dusonlogo1.png">
     <meta property="og:site_name" content="두손기획인쇄">
 
     <!-- 세션 ID 메타 태그 -->

@@ -133,7 +133,7 @@ const doc = new Document({
           children: [new TextRun({ text: '\uAD00\uB9AC\uC790 \uB300\uC2DC\uBCF4\uB4DC \uC6B4\uC601 \uB9E4\uB274\uC5BC', size: 40, color: C.dark, font: FONT })] }),
         spacer(),
         new Paragraph({ alignment: AlignmentType.CENTER, spacing: { after: 100 },
-          children: [new TextRun({ text: 'https://dsp114.co.kr/dashboard/', size: 22, color: C.gray, font: FONT })] }),
+          children: [new TextRun({ text: 'https://dsp114.com/dashboard/', size: 22, color: C.gray, font: FONT })] }),
         new Paragraph({ alignment: AlignmentType.CENTER, spacing: { after: 100 },
           children: [new TextRun({ text: '\uBC84\uC804 1.0 | 2026\uB144 2\uC6D4', size: 22, color: C.gray, font: FONT })] }),
         new Paragraph({ alignment: AlignmentType.CENTER,
@@ -162,7 +162,7 @@ const doc = new Document({
 
         h2('1.1 \uB300\uC2DC\uBCF4\uB4DC \uC811\uC18D'),
         p('\uC6F9 \uBE0C\uB77C\uC6B0\uC800\uC5D0\uC11C \uB2E4\uC74C \uC8FC\uC18C\uB85C \uC811\uC18D\uD569\uB2C8\uB2E4:'),
-        p('https://dsp114.co.kr/dashboard/', { bold: true }),
+        p('https://dsp114.com/dashboard/', { bold: true }),
         p('\uAD00\uB9AC\uC790 \uACC4\uC815\uC73C\uB85C \uB85C\uADF8\uC778\uD558\uBA74 \uB300\uC2DC\uBCF4\uB4DC \uBA54\uC778 \uD654\uBA74\uC774 \uD45C\uC2DC\uB429\uB2C8\uB2E4.'),
         tip('\uAD8C\uC7A5 \uBE0C\uB77C\uC6B0\uC800: Chrome, Edge (\uCD5C\uC2E0 \uBC84\uC804)'),
 
@@ -415,7 +415,7 @@ const doc = new Document({
 
         h2('7.2 \uACB0\uC81C \uAD00\uB828'),
         bullet('\uCE74\uB4DC\uACB0\uC81C \uD14C\uC2A4\uD2B8: \uB85C\uCEEC\uD638\uC2A4\uD2B8\uC5D0\uC11C\uB294 \uBC18\uB4DC\uC2DC \uD14C\uC2A4\uD2B8 \uBAA8\uB4DC\uB85C \uC0AC\uC6A9'),
-        bullet('\uC6B4\uC601 \uC11C\uBC84(dsp114.co.kr)\uC5D0\uC11C\uB9CC \uC2E4\uC81C \uACB0\uC81C \uCC98\uB9AC'),
+        bullet('\uC6B4\uC601 \uC11C\uBC84(dsp114.com)\uC5D0\uC11C\uB9CC \uC2E4\uC81C \uACB0\uC81C \uCC98\uB9AC'),
         bullet('\uACB0\uC81C \uC2E4\uD328 \uC2DC payment/logs/ \uD3F4\uB354 \uD655\uC778'),
         warn('\uD14C\uC2A4\uD2B8 \uC2DC \uC18C\uC561(100~1,000\uC6D0)\uC73C\uB85C \uBA3C\uC800 \uD14C\uC2A4\uD2B8\uD558\uC138\uC694.'),
 

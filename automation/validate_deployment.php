@@ -227,7 +227,7 @@ if ($is_web) {
 
 function getBaseUrl() {
     if (php_sapi_name() === 'cli') {
-        return 'http://dsp1830.shop'; // CLI에서는 기본값
+        return 'https://dsp114.com'; // CLI에서는 기본값
     }
     
     $protocol = isset($_SERVER['HTTPS']) && $_SERVER['HTTPS'] === 'on' ? 'https' : 'http';

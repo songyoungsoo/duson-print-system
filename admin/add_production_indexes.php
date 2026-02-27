@@ -3,7 +3,7 @@
  * 프로덕션 DB 인덱스 추가 스크립트
  * Quick Wins - 성능 최적화
  *
- * 실행 방법: http://dsp1830.shop/admin/add_production_indexes.php
+ * 실행 방법: https://dsp114.com/admin/add_production_indexes.php
  * 주의: 한 번만 실행하세요!
  */
 
