@@ -33,7 +33,13 @@ if (!$r) {
         ('ai_display_name','긴급대응','string','ai','AI 표시 이름'),
         ('offline_message','현재 업무시간 외입니다. 전화(02-2632-1830) 또는 이메일(dsp1830@naver.com)로 문의해 주세요.','string','extra','업무외 시간 안내 메시지'),
         ('notice_message','','string','extra','채팅창 상단 공지사항 (빈 값이면 미표시)'),
-        ('upload_max_mb','10','number','extra','파일 업로드 최대 용량 (MB)')
+        ('upload_max_mb','10','number','extra','파일 업로드 최대 용량 (MB)'),
+        ('widget_pos_x','92','number','widget','위젯 X 위치 (%)'),
+        ('widget_pos_y','85','number','widget','위젯 Y 위치 (%)'),
+        ('ai_pos_x','92','number','ai','AI 챗봇 X 위치 (%)'),
+        ('ai_pos_y','60','number','ai','AI 챗봇 Y 위치 (%)'),
+        ('ai_button_label','AI 상담','string','ai','AI 챗봇 버튼 라벨'),
+        ('ai_button_color','#667eea','string','ai','AI 챗봇 버튼 색상')
     ");
 
     $r = mysqli_query($db, "SELECT config_key, config_value, config_type, config_group, description FROM chat_config ORDER BY config_group, config_key");
@@ -52,6 +58,27 @@ if (isset($config['widget_hour_start']) && $config['widget_hour_start']['config_
         $stmt = mysqli_prepare($db, "UPDATE chat_config SET config_value=? WHERE config_key=? AND config_value IN ('00:00','23:59')");
         if ($stmt) { mysqli_stmt_bind_param($stmt, "ss", $v, $k); mysqli_stmt_execute($stmt); mysqli_stmt_close($stmt); }
     }
+    $config = [];
+    $r = mysqli_query($db, "SELECT config_key, config_value, config_type, config_group, description FROM chat_config ORDER BY config_group, config_key");
+    if ($r) { while ($row = mysqli_fetch_assoc($r)) { $config[$row['config_key']] = $row; } }
+}
+
+// One-time migration: 듀얼 위젯 신규 config 키 + chatrooms.ai_active 컬럼 추가
+if (!isset($config['widget_pos_x'])) {
+    mysqli_query($db, "INSERT IGNORE INTO chat_config (config_key, config_value, config_type, config_group, description) VALUES
+        ('widget_pos_x','92','number','widget','위젯 X 위치 (%)'),
+        ('widget_pos_y','85','number','widget','위젯 Y 위치 (%)'),
+        ('ai_pos_x','92','number','ai','AI 챗봇 X 위치 (%)'),
+        ('ai_pos_y','60','number','ai','AI 챗봇 Y 위치 (%)'),
+        ('ai_button_label','AI 상담','string','ai','AI 챗봇 버튼 라벨'),
+        ('ai_button_color','#667eea','string','ai','AI 챗봇 버튼 색상')
+    ");
+    // chatrooms 테이블에 ai_active 컬럼 추가
+    $colCheck = mysqli_query($db, "SHOW COLUMNS FROM chatrooms LIKE 'ai_active'");
+    if ($colCheck && mysqli_num_rows($colCheck) === 0) {
+        mysqli_query($db, "ALTER TABLE chatrooms ADD COLUMN ai_active TINYINT(1) NOT NULL DEFAULT 0 AFTER isactive");
+    }
+    // config 리로드
     $config = [];
     $r = mysqli_query($db, "SELECT config_key, config_value, config_type, config_group, description FROM chat_config ORDER BY config_group, config_key");
     if ($r) { while ($row = mysqli_fetch_assoc($r)) { $config[$row['config_key']] = $row; } }
@@ -91,6 +118,15 @@ include __DIR__ . '/../includes/sidebar.php';
 .cfg-suffix { display:flex; align-items:center; gap:0.5rem; }
 .cfg-suffix .cfg-input { width:120px; }
 .cfg-suffix span { color:#6b7280; font-size:0.875rem; white-space:nowrap; }
+.pos-preview { position:relative; aspect-ratio:16/9; background:#f3f4f6; border:2px dashed #d1d5db; border-radius:8px; cursor:crosshair; overflow:hidden; user-select:none; }
+.pos-dot { position:absolute; width:32px; height:32px; border-radius:50%; transform:translate(-50%,-50%); cursor:grab; display:flex; align-items:center; justify-content:center; font-size:14px; color:#fff; font-weight:700; box-shadow:0 2px 8px rgba(0,0,0,0.25); transition:box-shadow 0.2s; z-index:2; }
+.pos-dot:active { cursor:grabbing; }
+.pos-dot.active { box-shadow:0 0 0 4px rgba(139,92,246,0.3),0 2px 8px rgba(0,0,0,0.25); }
+.pos-dot-widget { background:#8b5cf6; }
+.pos-dot-ai { background:#667eea; }
+.pos-info { display:flex; gap:1.5rem; margin-top:0.5rem; font-size:0.8rem; color:#6b7280; }
+.pos-info span { display:inline-flex; align-items:center; gap:4px; }
+.pos-info .dot-sm { width:10px; height:10px; border-radius:50%; display:inline-block; }
 </style>
 
 <main class="flex-1 overflow-y-auto bg-gray-50">
@@ -112,6 +148,29 @@ include __DIR__ . '/../includes/sidebar.php';
         <div id="save-alert" style="display:none;" class="mb-4 px-4 py-3 rounded-lg text-sm font-medium"></div>
 
         <form id="config-form">
+            <!-- 위젯 위치 설정 -->
+            <div class="cfg-card">
+                <div class="cfg-card-header">
+                    <h3 class="text-sm font-semibold text-gray-900">위젯 위치 설정</h3>
+                </div>
+                <div class="cfg-card-body">
+                    <div class="pos-preview" id="pos-preview">
+                        <div class="pos-dot pos-dot-widget active" id="pos-dot-widget" style="left:<?php echo cfgVal($config, 'widget_pos_x', '92'); ?>%;top:<?php echo cfgVal($config, 'widget_pos_y', '85'); ?>%;">W</div>
+                        <div class="pos-dot pos-dot-ai" id="pos-dot-ai" style="left:<?php echo cfgVal($config, 'ai_pos_x', '92'); ?>%;top:<?php echo cfgVal($config, 'ai_pos_y', '60'); ?>%;">A</div>
+                    </div>
+                    <div class="pos-info">
+                        <span><span class="dot-sm" style="background:#8b5cf6;"></span> 채팅 위젯: X <b id="pos-wx-text"><?php echo cfgVal($config, 'widget_pos_x', '92'); ?></b>%, Y <b id="pos-wy-text"><?php echo cfgVal($config, 'widget_pos_y', '85'); ?></b>%</span>
+                        <span><span class="dot-sm" style="background:#667eea;"></span> AI 챗봇: X <b id="pos-ax-text"><?php echo cfgVal($config, 'ai_pos_x', '92'); ?></b>%, Y <b id="pos-ay-text"><?php echo cfgVal($config, 'ai_pos_y', '60'); ?></b>%</span>
+                        <button type="button" onclick="resetPositions()" class="text-xs text-gray-400 hover:text-purple-600 ml-auto">기본값 복원</button>
+                    </div>
+                    <input type="hidden" id="widget_pos_x" name="widget_pos_x" value="<?php echo cfgVal($config, 'widget_pos_x', '92'); ?>">
+                    <input type="hidden" id="widget_pos_y" name="widget_pos_y" value="<?php echo cfgVal($config, 'widget_pos_y', '85'); ?>">
+                    <input type="hidden" id="ai_pos_x" name="ai_pos_x" value="<?php echo cfgVal($config, 'ai_pos_x', '92'); ?>">
+                    <input type="hidden" id="ai_pos_y" name="ai_pos_y" value="<?php echo cfgVal($config, 'ai_pos_y', '60'); ?>">
+                    <div class="cfg-hint" style="margin-top:4px;">점을 클릭 후 드래그하거나, 빈 영역 클릭으로 선택된 점을 이동합니다</div>
+                </div>
+            </div>
+
             <!-- 채팅 위젯 설정 -->
             <div class="cfg-card">
                 <div class="cfg-card-header">
@@ -126,22 +185,6 @@ include __DIR__ . '/../includes/sidebar.php';
                                 <span class="toggle-slider"></span>
                             </label>
                             <div class="cfg-hint">OFF 시 고객에게 채팅 버튼이 보이지 않습니다</div>
-                        </div>
-                    </div>
-                    <div class="cfg-row">
-                        <div class="cfg-label"><label class="text-sm font-medium text-gray-700">위치</label></div>
-                        <div class="cfg-field">
-                            <div class="flex gap-4">
-                                <label class="flex items-center gap-2 text-sm text-gray-700 cursor-pointer">
-                                    <input type="radio" name="widget_position" value="right" <?php echo cfgVal($config, 'widget_position', 'right') === 'right' ? 'checked' : ''; ?> class="text-purple-600">
-                                    우하단
-                                </label>
-                                <label class="flex items-center gap-2 text-sm text-gray-700 cursor-pointer">
-                                    <input type="radio" name="widget_position" value="left" <?php echo cfgVal($config, 'widget_position') === 'left' ? 'checked' : ''; ?> class="text-purple-600">
-                                    좌하단
-                                </label>
-                            </div>
-                            <div class="cfg-hint">채팅 버튼이 표시되는 화면 위치</div>
                         </div>
                     </div>
                     <div class="cfg-row">
@@ -240,6 +283,23 @@ include __DIR__ . '/../includes/sidebar.php';
                             <div class="cfg-hint">직원이 응답하여 AI가 퇴장할 때 보내는 메시지</div>
                         </div>
                     </div>
+                    <div class="cfg-row">
+                        <div class="cfg-label"><label class="text-sm font-medium text-gray-700">버튼 라벨</label></div>
+                        <div class="cfg-field">
+                            <input type="text" name="ai_button_label" value="<?php echo cfgVal($config, 'ai_button_label', 'AI 상담'); ?>" class="cfg-input" maxlength="20" style="width:200px;">
+                            <div class="cfg-hint">AI 챗봇 버튼 위에 표시되는 텍스트</div>
+                        </div>
+                    </div>
+                    <div class="cfg-row">
+                        <div class="cfg-label"><label class="text-sm font-medium text-gray-700">버튼 색상</label></div>
+                        <div class="cfg-field">
+                            <div style="display:flex;align-items:center;gap:8px;">
+                                <input type="color" id="ai_color_picker" name="ai_button_color" value="<?php echo cfgVal($config, 'ai_button_color', '#667eea'); ?>" style="width:40px;height:32px;border:1px solid #d1d5db;border-radius:4px;cursor:pointer;">
+                                <input type="text" id="ai_color_text" value="<?php echo cfgVal($config, 'ai_button_color', '#667eea'); ?>" class="cfg-input" style="width:100px;" maxlength="7">
+                            </div>
+                            <div class="cfg-hint">AI 챗봇 버튼 그라디언트 시작 색상</div>
+                        </div>
+                    </div>
                 </div>
             </div>
 
@@ -287,19 +347,86 @@ include __DIR__ . '/../includes/sidebar.php';
 </main>
 
 <script>
+// 위치 피커 로직
+(function() {
+    var preview = document.getElementById('pos-preview');
+    var dotW = document.getElementById('pos-dot-widget');
+    var dotA = document.getElementById('pos-dot-ai');
+    var active = 'widget';
+    dotW.classList.add('active');
+
+    function selectDot(which) {
+        active = which;
+        dotW.classList.toggle('active', which === 'widget');
+        dotA.classList.toggle('active', which === 'ai');
+    }
+
+    function moveDot(dot, x, y) {
+        x = Math.max(2, Math.min(98, x));
+        y = Math.max(2, Math.min(98, y));
+        dot.style.left = x + '%';
+        dot.style.top = y + '%';
+        var pfx = dot === dotW ? 'widget' : 'ai';
+        var rx = Math.round(x), ry = Math.round(y);
+        document.getElementById(pfx + '_pos_x').value = rx;
+        document.getElementById(pfx + '_pos_y').value = ry;
+        document.getElementById('pos-' + (pfx === 'widget' ? 'w' : 'a') + 'x-text').textContent = rx;
+        document.getElementById('pos-' + (pfx === 'widget' ? 'w' : 'a') + 'y-text').textContent = ry;
+    }
+
+    function getPct(e) {
+        var r = preview.getBoundingClientRect();
+        return { x: ((e.clientX - r.left) / r.width) * 100, y: ((e.clientY - r.top) / r.height) * 100 };
+    }
+
+    dotW.addEventListener('mousedown', function(e) { e.stopPropagation(); selectDot('widget'); startDrag(dotW, e); });
+    dotA.addEventListener('mousedown', function(e) { e.stopPropagation(); selectDot('ai'); startDrag(dotA, e); });
+
+    preview.addEventListener('click', function(e) {
+        if (e.target.classList.contains('pos-dot')) return;
+        var p = getPct(e);
+        var dot = active === 'widget' ? dotW : dotA;
+        moveDot(dot, p.x, p.y);
+    });
+
+    var dragDot = null;
+    function startDrag(dot, e) {
+        dragDot = dot;
+        e.preventDefault();
+    }
+    document.addEventListener('mousemove', function(e) {
+        if (!dragDot) return;
+        var p = getPct(e);
+        moveDot(dragDot, p.x, p.y);
+    });
+    document.addEventListener('mouseup', function() { dragDot = null; });
+
+    // 컬러 피커 동기화
+    var cp = document.getElementById('ai_color_picker');
+    var ct = document.getElementById('ai_color_text');
+    if (cp && ct) {
+        cp.addEventListener('input', function() { ct.value = cp.value; });
+        ct.addEventListener('input', function() { if (/^#[0-9a-fA-F]{6}$/.test(ct.value)) cp.value = ct.value; });
+    }
+
+    window.resetPositions = function() {
+        moveDot(dotW, 92, 85);
+        moveDot(dotA, 92, 60);
+    };
+})();
+
 function saveConfig() {
     var form = document.getElementById('config-form');
     var data = {};
 
-    form.querySelectorAll('input[type="text"], input[type="number"], input[type="time"], textarea').forEach(function(el) {
-        data[el.name] = el.value;
+    form.querySelectorAll('input[type="text"], input[type="number"], input[type="time"], input[type="hidden"], input[type="color"], textarea').forEach(function(el) {
+        if (el.name) data[el.name] = el.value;
     });
 
     form.querySelectorAll('input[type="radio"]:checked').forEach(function(el) {
         data[el.name] = el.value;
     });
 
-    // boolean toggles
     ['widget_enabled', 'ai_enabled'].forEach(function(key) {
         var cb = form.querySelector('input[name="' + key + '"]');
         data[key] = cb && cb.checked ? '1' : '0';

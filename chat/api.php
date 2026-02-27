@@ -86,11 +86,15 @@ function getOrCreateRoom() {
         jsonResponse(true, $row);
     }
 
+    // AI 모드 체크
+    $aiMode = intval($_GET['ai_mode'] ?? 0);
+
     // 새 채팅방 생성
-    $roomName = '고객 지원 채팅 - ' . $user['name'];
-    $query = "INSERT INTO chatrooms (roomname, roomtype, createdby) VALUES (?, 'group', ?)";
+    $roomName = $aiMode ? 'AI 상담 - ' . $user['name'] : '고객 지원 채팅 - ' . $user['name'];
+    $query = "INSERT INTO chatrooms (roomname, roomtype, createdby, ai_active) VALUES (?, 'group', ?, ?)";
     $stmt = mysqli_prepare($db, $query);
-    mysqli_stmt_bind_param($stmt, 'ss', $roomName, $user['id']);
+    $aiActive = $aiMode ? 1 : 0;
+    mysqli_stmt_bind_param($stmt, 'ssi', $roomName, $user['id'], $aiActive);
 
     if (mysqli_stmt_execute($stmt)) {
         $roomId = mysqli_insert_id($db);
@@ -114,13 +118,20 @@ function getOrCreateRoom() {
             mysqli_stmt_execute($staffStmt);
         }
 
-        // 시스템 메시지 추가
-        $systemMsg = "채팅방이 시작되었습니다. 직원이 곧 응답할 예정입니다.";
+        // 시스템 메시지
+        $systemMsg = $aiMode ? "AI 상담이 시작되었습니다." : "채팅방이 시작되었습니다. 직원이 곧 응답할 예정입니다.";
         $systemQuery = "INSERT INTO chatmessages (roomid, senderid, sendername, messagetype, message)
                        VALUES (?, 'system', '시스템', 'text', ?)";
         $systemStmt = mysqli_prepare($db, $systemQuery);
         mysqli_stmt_bind_param($systemStmt, 'is', $roomId, $systemMsg);
         mysqli_stmt_execute($systemStmt);
+
+        // AI 모드: 즉시 AI 인사 메시지
+        if ($aiMode) {
+            $cfg = loadChatConfig($db);
+            $greeting = $cfg['ai_greeting_msg'] ?? '안녕하세요, AI 상담입니다. 무엇을 도와드릴까요?';
+            insertAIMessage($roomId, $greeting);
+        }
 
         jsonResponse(true, ['id' => $roomId, 'roomname' => $roomName]);
     } else {
@@ -884,8 +895,10 @@ function updateChatConfig() {
     $allowedKeys = [
         'widget_enabled', 'widget_position', 'widget_hour_start', 'widget_hour_end',
         'widget_button_label', 'widget_welcome_msg', 'widget_poll_interval',
+        'widget_pos_x', 'widget_pos_y',
         'ai_enabled', 'ai_wait_seconds', 'ai_greeting_msg', 'ai_farewell_msg',
         'ai_hour_start', 'ai_hour_end', 'ai_display_name',
+        'ai_pos_x', 'ai_pos_y', 'ai_button_label', 'ai_button_color',
         'offline_message', 'notice_message', 'upload_max_mb'
     ];
 

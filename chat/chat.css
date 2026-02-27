@@ -800,6 +800,75 @@
     background: #e8e8e8;
 }
 
+/* ============================================================ */
+/* AI 챗봇 위젯 스타일                                          */
+/* ============================================================ */
+
+.ai-widget .chat-toggle-btn.ai-toggle-btn {
+    width: 60px;
+    height: 60px;
+    border-radius: 50%;
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    border: none;
+    cursor: pointer;
+    box-shadow: 0 4px 14px rgba(102, 126, 234, 0.45);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: all 0.3s ease;
+    position: relative;
+    overflow: visible;
+    touch-action: manipulation;
+    -webkit-tap-highlight-color: rgba(0,0,0,0.1);
+    user-select: none;
+    -webkit-user-select: none;
+}
+
+.ai-widget .chat-toggle-btn.ai-toggle-btn:hover {
+    transform: scale(1.1);
+    box-shadow: 0 6px 20px rgba(102, 126, 234, 0.55);
+}
+
+.ai-toggle-icon {
+    font-size: 32px;
+    line-height: 1;
+}
+
+.ai-forehead-label {
+    background: #667eea;
+}
+
+.ai-chat-header {
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+}
+
+.ai-widget .chat-message.sent .chat-message-bubble {
+    background: #667eea;
+    color: white;
+}
+
+/* AI 위젯 모바일 */
+@media (max-width: 1124px) {
+    body .ai-widget {
+        z-index: 999998;
+    }
+    body .ai-widget .chat-toggle-btn {
+        width: 50px;
+        height: 50px;
+    }
+    body .ai-widget .ai-toggle-icon {
+        font-size: 26px;
+    }
+    body .ai-widget .chat-forehead-label {
+        top: -18px;
+        font-size: 9px;
+        padding: 3px 8px;
+    }
+    body .ai-widget .chat-toggle-btn.chat-open {
+        display: none;
+    }
+}
+
 /* 모바일 반응형 */
 @media (max-width: 480px) {
     /* 모바일 전체화면 채팅창 - 카톡 스타일 */
