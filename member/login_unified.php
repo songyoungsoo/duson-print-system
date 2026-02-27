@@ -23,7 +23,7 @@ if (session_status() == PHP_SESSION_NONE) {
 include_once __DIR__ . '/../includes/csrf.php';
 
 if ($_SERVER["REQUEST_METHOD"] == "POST") {
-    csrf_verify_or_die();
+    csrf_verify_or_alert('login.php');
 
     $mode = $_POST['mode'] ?? '';
 
