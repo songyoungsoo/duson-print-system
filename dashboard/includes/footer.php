@@ -227,6 +227,8 @@
             var el = document.getElementById(id);
             if (el) applyPhoneFormat(el);
         });
+        window.formatKoreanPhone = formatKoreanPhone;
+        window.applyPhoneFormat = applyPhoneFormat;
     })();
     </script>
 

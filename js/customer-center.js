@@ -314,17 +314,23 @@ function isValidEmail(email) {
  * 전화번호 형식 자동 변환
  */
 function formatPhoneNumber(input) {
-    const numbers = input.value.replace(/[^\d]/g, '');
-    let formatted = '';
+    var d = input.value.replace(/\D/g, '');
+    var formatted = '';
 
-    if (numbers.length <= 3) {
-        formatted = numbers;
-    } else if (numbers.length <= 7) {
-        formatted = numbers.slice(0, 3) + '-' + numbers.slice(3);
-    } else if (numbers.length <= 11) {
-        formatted = numbers.slice(0, 3) + '-' + numbers.slice(3, 7) + '-' + numbers.slice(7);
+    if (d.length === 0) {
+        formatted = '';
+    } else if (d.substring(0, 2) === '02') {
+        // 02 지역번호 (9~10자리)
+        if (d.length <= 2) formatted = d;
+        else if (d.length <= 5) formatted = d.substring(0,2) + '-' + d.substring(2);
+        else if (d.length <= 9) formatted = d.substring(0,2) + '-' + d.substring(2, d.length-4) + '-' + d.substring(d.length-4);
+        else formatted = d.substring(0,2) + '-' + d.substring(2,6) + '-' + d.substring(6,10);
     } else {
-        formatted = numbers.slice(0, 3) + '-' + numbers.slice(3, 7) + '-' + numbers.slice(7, 11);
+        // 010/0XX 번호 (10~11자리)
+        if (d.length <= 3) formatted = d;
+        else if (d.length <= 7) formatted = d.substring(0,3) + '-' + d.substring(3);
+        else if (d.length <= 11) formatted = d.substring(0,3) + '-' + d.substring(3, d.length-4) + '-' + d.substring(d.length-4);
+        else formatted = d.substring(0,3) + '-' + d.substring(3,7) + '-' + d.substring(7,11);
     }
 
     input.value = formatted;
