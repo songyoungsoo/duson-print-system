@@ -346,6 +346,7 @@ if (isset($db) && $db) { mysqli_close($db); }  // 페이지 끝에서 정리
 | 영문 버전 | `docs/operations/en-version.md` | 해외 고객용 영문 사이트 |
 | KB 시스템 | `docs/operations/kb-system.md` | Knowledge Vault 저장/검색 |
 | 전화번호 포맷팅 | `docs/operations/phone-formatting.md` | 전화번호 자동 하이픈 포맷팅 |
+| 팝업 관리 | `docs/operations/popup-management.md` | 레이어 팝업 등록/표시/안보기 |
 
 ## 📦 아카이브 (완료된 작업)
 
@@ -394,4 +395,4 @@ php scripts/curator.php --json       # JSON 출력
 - `docs/curator-config.json` — 코드↔문서 매핑, 크기/신선도 임계값, 무시 경로
 
 ---
-마지막 업데이트: 2026-02-27
+마지막 업데이트: 2026-03-01

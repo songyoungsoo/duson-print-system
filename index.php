@@ -1385,6 +1385,8 @@ header("Expires: 0");
     }
     </script>
 
+<?php include 'includes/popup_layer.php'; ?>
+
 <?php
 // 공통 푸터 포함
 include 'includes/footer.php';
