@@ -405,6 +405,9 @@ if (isset($db) && $db) { mysqli_close($db); }  // 페이지 끝에서 정리
 10. ❌ Hardcoding production URLs → closeUrl domain mismatch error (SITE_URL 상수 사용 필수!)
 11. ❌ Forgetting to test with small amounts → accidental large payments
 12. ❌ Not checking logs after deployment → silent payment failures
+25. ❌ 결제 성공 리다이렉트를 존재하지 않는 파일로 설정 → 404 (2026-02-28 수정 완료: success.php → OrderComplete_universal.php)
+26. ❌ 이니시스 IP 화이트리스트 누락 → "Access Denied" 에러 (inicis_config.production.php에서 관리)
+27. ❌ 사인키 변경 시 3개 파일 중 일부만 수정 → 결제 실패 (config.php, inicis_config.php, inicis_config.production.php 동기화 필수)
 
 ### 듀얼 도메인 (2026-02-26)
 22. ❌ URL 하드코딩 (`https://dsp114.com/...`) → 반드시 `SITE_URL . "/..."` 사용
@@ -516,8 +519,9 @@ define('SITE_URL', get_site_url());        // https://dsp114.com 또는 https://
 ### KG이니시스 (듀얼 도메인 대응)
 
 - MID: `dsp1147479` (사업자번호 귀속, 도메인 무관)
-- Sign Key: `cEdnbCtISFZ1QUNpNm5hbG1JY1RlQT09` (두 도메인 공용)
+- Sign Key: `YXgxUnVtVlNvZndWUWg4RWVFUGZwUT09` (2026-02-28 변경, 두 도메인 공용)
 - returnUrl/closeUrl: `SITE_URL` 동적 감지로 자동 대응
+- IP Whitelist: `211.219.96.165`, `118.129.210.25`, `222.108.84.120` (inicis_config.production.php)
 - 이니시스 기술지원 확인 완료: 같은 MID + Sign Key로 여러 도메인 결제 가능
 
 ### KB에스크로 (도메인별 mHValue)
@@ -552,4 +556,4 @@ git checkout e6554898 -- right.htm includes/footer.php
 - [ ] dsp114.co.kr에서도 동일 기능 정상 확인
 
 ---
-마지막 업데이트: 2026-02-27
+마지막 업데이트: 2026-02-28

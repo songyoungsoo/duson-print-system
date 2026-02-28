@@ -2,13 +2,14 @@
 
 ### Configuration Files
 - `payment/inicis_config.php` - Main configuration (environment auto-detection)
+- `payment/inicis_config.production.php` - Production overrides (IP whitelist, Sign Key)
 - `payment/config.php` - Legacy configuration (backwards compatibility)
 - `payment/README_PAYMENT.md` - Complete setup guide
 
 ### Production Settings
 - **Merchant ID**: `dsp1147479`
 - **Domain**: `https://dsp114.com` (주) / `https://dsp114.co.kr` (보조) — SITE_URL 자동 감지
-- **Sign Key**: `cEdnbCtISFZ1QUNpNm5hbG1JY1RlQT09` (두 도메인 공용, 이니시스 확인 완료)
+- **Sign Key**: `YXgxUnVtVlNvZndWUWg4RWVFUGZwUT09` (2026-02-28 변경, 두 도메인 공용)
 - **Test Mode**: Controlled via `INICIS_TEST_MODE` constant
 - **Environment Detection**: `config.env.php` SITE_URL 기반 자동 전환 (듀얼 도메인 대응)
 
@@ -62,9 +63,24 @@ $returnUrl = "https://dsp114.com/payment/inicis_return.php";  // WRONG!
 ```
 1. inicis_request.php → 결제 요청
 2. 이니시스 결제창 (팝업)
-3-a. 결제 완료 → inicis_return.php → 팝업 닫기 + 부모창 success.php로 이동
-3-b. 결제 취소 → inicis_close.php → 팝업 닫기 + 부모창 OrderComplete로 이동
+3-a. 결제 완료 → inicis_return.php → 팝업 닫기 + 부모창 OrderComplete_universal.php로 이동
+3-b. 결제 취소 → inicis_close.php → 팝업 닫기 + 부모창 OrderComplete_universal.php로 이동 (payment=cancelled)
 ```
+
+### IP Whitelist (inicis_config.production.php)
+이니시스 서버에서 `inicis_return.php`로 콜백할 때 IP 검증을 수행합니다.
+
+```php
+// 허용된 이니시스 서버 IP
+define('INICIS_IP_WHITELIST', [
+    '127.0.0.1', 'localhost',
+    '211.219.96.165',   // 이니시스 표준
+    '118.129.210.25',   // 이니시스 표준
+    '222.108.84.120',   // 이니시스 표준결제 콜백 (2026-02-28 추가)
+]);
+```
+
+**⚠️ 결제 후 "Access Denied" 에러 발생 시**: `inicis_return.php` 195행의 `validateInicisIP()` 확인 → 로그에서 차단된 IP 확인 → 화이트리스트에 추가
 
 #### Popup Close Logic (inicis_return.php, inicis_close.php)
 ```javascript
