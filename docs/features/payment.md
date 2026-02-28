@@ -7,7 +7,7 @@
 
 ### Production Settings
 - **Merchant ID**: `dsp1147479`
-- **Domain**: `https://dsp114.co.kr`
+- **Domain**: `https://dsp114.com`
 - **Test Mode**: Controlled via `INICIS_TEST_MODE` constant
 - **Environment Detection**: Automatic localhost/production URL switching
 
@@ -16,7 +16,7 @@
 #### 1. Test Mode vs Production Mode
 ```php
 // ⚠️ NEVER enable production mode on localhost
-define('INICIS_TEST_MODE', false);  // Only on dsp114.co.kr
+define('INICIS_TEST_MODE', false);  // Only on dsp114.com
 
 // ✅ ALWAYS use test mode locally
 define('INICIS_TEST_MODE', true);   // localhost default
@@ -25,22 +25,22 @@ define('INICIS_TEST_MODE', true);   // localhost default
 #### 2. Environment URL Auto-Detection
 ```php
 // ✅ CORRECT: Auto-detection based on SERVER_NAME
-if (strpos($_SERVER['SERVER_NAME'], 'dsp114.co.kr') !== false) {
-    $returnUrl = "https://dsp114.co.kr/payment/inicis_return.php";
+if (strpos($_SERVER['SERVER_NAME'], 'dsp114.com') !== false) {
+    $returnUrl = "https://dsp114.com/payment/inicis_return.php";
 } else {
     $returnUrl = "http://localhost/payment/inicis_return.php";
 }
 
 // ❌ NEVER: Hardcode production URLs in localhost
-$returnUrl = "https://dsp114.co.kr/payment/inicis_return.php";  // WRONG!
+$returnUrl = "https://dsp114.com/payment/inicis_return.php";  // WRONG!
 ```
 
 #### 3. Production Deployment Checklist
 - [ ] Set `INICIS_TEST_MODE = false` on production only
-- [ ] Verify `dsp114.co.kr` domain in `config.env.php`
+- [ ] Verify `dsp114.com` domain in `config.env.php`
 - [ ] Test with small amount (100-1,000원) first
 - [ ] Check logs in `/var/www/html/payment/logs/`
-- [ ] Verify database `payment_inicis` table updates
+- [ ] Verify database `order_payment_log` table updates
 
 ### Test Card Numbers (Test Mode Only)
 | Bank | Card Number | Expiry | CVC |
@@ -58,7 +58,7 @@ $returnUrl = "https://dsp114.co.kr/payment/inicis_return.php";  // WRONG!
 ```
 1. inicis_request.php → 결제 요청
 2. 이니시스 결제창 (팝업)
-3-a. 결제 완료 → inicis_return.php → 팝업 닫기 + 부모창 success.php로 이동
+3-a. 결제 완료 → inicis_return.php → 팝업 닫기 + 부모창 OrderComplete로 이동
 3-b. 결제 취소 → inicis_close.php → 팝업 닫기 + 부모창 OrderComplete로 이동
 ```
 

@@ -451,14 +451,20 @@ if ($resultCode === '0000' || $resultCode === '00') {
     $error_message = $resultMsg ?: getInicisErrorMessage($resultCode);
 }
 
+// 그룹 주문번호 저장 (세션 정리 전에 미리 캡처)
+$group_orders_for_redirect = $_SESSION['inicis_group_orders'] ?? [$order_no];
+
 // 세션 정리
 unset($_SESSION['inicis_oid']);
 unset($_SESSION['inicis_order_no']);
 unset($_SESSION['inicis_price']);
 unset($_SESSION['inicis_timestamp']);
+unset($_SESSION['inicis_group_orders']);
 
+// 리다이렉트 URL — 결제 성공 시 OrderComplete로 이동
+$orders_param = implode('_', array_map('intval', $group_orders_for_redirect));
 $redirect_url = $success 
-    ? '/payment/success.php?order_no=' . $order_no
+    ? '/mlangorder_printauto/OrderComplete_universal.php?orders=' . $orders_param . '&payment=success'
     : '/payment/inicis_request.php?order_no=' . $order_no . '&error=' . urlencode($error_message);
 ?>
 <!DOCTYPE html>
