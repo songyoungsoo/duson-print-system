@@ -5,12 +5,13 @@
 ### ⚠️ 서버 변경 내역
 ```
 ❌ 구 서버: dsp1830.shop (더 이상 사용 안 함)
-✅ 현재 운영: dsp114.co.kr (2026년 1월 현재)
+❌ 구 도메인: dsp114.co.kr (dsp114.com으로 변경됨)
+✅ 현재 운영: dsp114.com
 ```
 
-### FTP 접속 정보 (dsp114.co.kr)
+### FTP 접속 정보 (dsp114.com)
 ```
-Host: dsp114.co.kr
+Host: dsp114.com
 User: dsp1830
 Pass: cH*j@yzj093BeTtc
 Port: 21 (FTP)
@@ -20,7 +21,7 @@ Protocol: FTP (plain)
 ### 웹 루트 구조
 ```
 FTP 루트 (/)
-├─ httpdocs/          ← ✅ 실제 웹 루트 (https://dsp114.co.kr/)
+├─ httpdocs/          ← ✅ 실제 웹 루트 (https://dsp114.com/)
 │  ├─ index.php
 │  ├─ payment/
 │  ├─ mlangprintauto/
@@ -59,24 +60,24 @@ FTP 루트 (/)
 ```bash
 # 기본 형식
 curl -T /로컬/경로/파일.php \
-  ftp://dsp114.co.kr/httpdocs/원격/경로/파일.php \
+  ftp://dsp114.com/httpdocs/원격/경로/파일.php \
   --user "dsp1830:cH*j@yzj093BeTtc"
 
 # 예시: 결제 파일 업로드
 curl -T /var/www/html/payment/inicis_return.php \
-  ftp://dsp114.co.kr/httpdocs/payment/inicis_return.php \
+  ftp://dsp114.com/httpdocs/payment/inicis_return.php \
   --user "dsp1830:cH*j@yzj093BeTtc"
 
 # 예시: 명함 페이지 업로드
 curl -T /var/www/html/mlangprintauto/namecard/index.php \
-  ftp://dsp114.co.kr/httpdocs/mlangprintauto/namecard/index.php \
+  ftp://dsp114.com/httpdocs/mlangprintauto/namecard/index.php \
   --user "dsp1830:cH*j@yzj093BeTtc"
 ```
 
 ### 방법 2: FTP 클라이언트 (FileZilla 등)
 
 **접속 정보:**
-- 호스트: dsp114.co.kr
+- 호스트: dsp114.com
 - 사용자명: dsp1830
 - 비밀번호: cH*j@yzj093BeTtc
 - 포트: 21
@@ -113,7 +114,7 @@ curl -T /var/www/html/mlangprintauto/namecard/index.php \
 - [ ] 파일 크기 일치 확인 (로컬 vs 원격)
 
 ### 배포 후
-- [ ] https://dsp114.co.kr 에서 기능 동작 확인
+- [ ] https://dsp114.com 에서 기능 동작 확인
 - [ ] 브라우저 캐시 제거 (Ctrl+Shift+R)
 - [ ] 에러 로그 확인 (`/httpdocs/logs/`)
 - [ ] 결제 시스템 테스트 (소액 결제)
@@ -139,7 +140,7 @@ curl -T /var/www/html/mlangprintauto/namecard/index.php \
 ### 1. 백업 파일 확인
 ```bash
 # FTP 루트의 백업 디렉토리 확인
-curl -s --list-only ftp://dsp114.co.kr/backups/ \
+curl -s --list-only ftp://dsp114.com/backups/ \
   --user "dsp1830:cH*j@yzj093BeTtc"
 ```
 
@@ -147,7 +148,7 @@ curl -s --list-only ftp://dsp114.co.kr/backups/ \
 ```bash
 # 백업 파일을 웹 루트로 복사
 curl -T backup_file.php \
-  ftp://dsp114.co.kr/httpdocs/path/file.php \
+  ftp://dsp114.com/httpdocs/path/file.php \
   --user "dsp1830:cH*j@yzj093BeTtc"
 ```
 
@@ -158,7 +159,7 @@ git checkout HEAD~1 -- path/to/file.php
 
 # 다시 업로드
 curl -T path/to/file.php \
-  ftp://dsp114.co.kr/httpdocs/path/to/file.php \
+  ftp://dsp114.com/httpdocs/path/to/file.php \
   --user "dsp1830:cH*j@yzj093BeTtc"
 ```
 
@@ -169,11 +170,11 @@ curl -T path/to/file.php \
 ### 업로드 실패
 ```bash
 # FTP 연결 테스트
-curl -v ftp://dsp114.co.kr/ \
+curl -v ftp://dsp114.com/ \
   --user "dsp1830:cH*j@yzj093BeTtc"
 
 # 디렉토리 구조 확인
-curl --list-only ftp://dsp114.co.kr/httpdocs/ \
+curl --list-only ftp://dsp114.com/httpdocs/ \
   --user "dsp1830:cH*j@yzj093BeTtc"
 ```
 
@@ -194,15 +195,15 @@ curl --list-only ftp://dsp114.co.kr/httpdocs/ \
 ### 운영 서버 로그 다운로드
 ```bash
 # 에러 로그
-curl ftp://dsp114.co.kr/logs/error_log \
+curl ftp://dsp114.com/logs/error_log \
   --user "dsp1830:cH*j@yzj093BeTtc" > error_log
 
 # 결제 로그
-curl ftp://dsp114.co.kr/httpdocs/payment/logs/inicis_$(date +%Y-%m-%d).log \
+curl ftp://dsp114.com/httpdocs/payment/logs/inicis_$(date +%Y-%m-%d).log \
   --user "dsp1830:cH*j@yzj093BeTtc"
 ```
 
 ---
 
-**마지막 업데이트:** 2026-01-30  
+**마지막 업데이트:** 2026-03-01  
 **작성자:** System Documentation

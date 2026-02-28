@@ -9,12 +9,13 @@ PHP 7.4 기반 인쇄 주문 관리 시스템
 ### ⚠️ 서버 변경 안내
 ```
 ❌ 구 서버: dsp1830.shop (더 이상 사용 안 함)
-✅ 현재 운영: dsp114.co.kr
+❌ 구 도메인: dsp114.co.kr (dsp114.com으로 변경됨)
+✅ 현재 운영: dsp114.com
 ```
 
-### 운영 서버 FTP 정보 (dsp114.co.kr)
+### 운영 서버 FTP 정보 (dsp114.com)
 ```
-Host: dsp114.co.kr
+Host: dsp114.com
 User: dsp1830
 Pass: cH*j@yzj093BeTtc
 Port: 21 (FTP)
@@ -24,7 +25,7 @@ Port: 21 (FTP)
 
 ```
 FTP 루트 (/)
-└─ httpdocs/  ← ✅ 실제 웹 루트 (https://dsp114.co.kr/)
+└─ httpdocs/  ← ✅ 실제 웹 루트 (https://dsp114.com/)
 
 ❌ 잘못된 경로: /payment/inicis_return.php
 ✅ 올바른 경로: /httpdocs/payment/inicis_return.php
@@ -33,7 +34,7 @@ FTP 루트 (/)
 ### 파일 업로드 예시 (curl)
 ```bash
 curl -T /var/www/html/payment/inicis_return.php \
-  ftp://dsp114.co.kr/httpdocs/payment/inicis_return.php \
+  ftp://dsp114.com/httpdocs/payment/inicis_return.php \
   --user "dsp1830:cH*j@yzj093BeTtc"
 ```
 
@@ -87,7 +88,7 @@ npx playwright test --project="group-a-readonly"
 ```bash
 # 단일 파일 업로드
 curl -T 로컬파일.php \
-  ftp://dsp114.co.kr/httpdocs/경로/파일.php \
+  ftp://dsp114.com/httpdocs/경로/파일.php \
   --user "dsp1830:cH*j@yzj093BeTtc"
 
 # 배포 스크립트 (개발 중)
@@ -116,7 +117,7 @@ curl -T 로컬파일.php \
 
 **KG이니시스 표준결제 연동**
 - 테스트 모드: `INICIS_TEST_MODE = true` (localhost)
-- 운영 모드: `INICIS_TEST_MODE = false` (dsp114.co.kr)
+- 운영 모드: `INICIS_TEST_MODE = false` (dsp114.com)
 - MID: `dsp1147479` (운영)
 
 **설정 파일:** `payment/inicis_config.php`
@@ -183,5 +184,5 @@ GitHub: songyoungsoo / yeongsu32@gmail.com
 
 ---
 
-**운영 도메인:** https://dsp114.co.kr  
-**마지막 업데이트:** 2026-01-30
+**운영 도메인:** https://dsp114.com  
+**마지막 업데이트:** 2026-03-01

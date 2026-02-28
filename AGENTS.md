@@ -340,7 +340,7 @@ if (isset($db) && $db) { mysqli_close($db); }  // 페이지 끝에서 정리
 | NAS 백업 | `docs/operations/nas-backup.md` | NAS FTP 동기화, 백업 스크립트 |
 | 교정 관리 | `docs/operations/proof-management.md` | 교정파일 업로드, 이미지 뷰어, 교정확정 2단계 |
 | 견적서 시스템 | `docs/operations/quote-system.md` | 견적서 상태 흐름, PDF 생성, 이메일 발송 |
-| 데이터 마이그레이션 | `docs/operations/data-migration.md` | dsp114.com→NAS/dsp114.co.kr 데이터 이전 |
+| 데이터 마이그레이션 | `docs/operations/data-migration.md` | dsp114.com→NAS 데이터 이전 |
 | 대시보드 카테고리 | `docs/operations/dashboard-categories.md` | 대시보드 카테고리 관리 기능 |
 | 관리자 주문 등록 | `docs/operations/admin-orders.md` | 관리자 수동 주문 등록 |
 | 영문 버전 | `docs/operations/en-version.md` | 해외 고객용 영문 사이트 |
