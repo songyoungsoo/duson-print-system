@@ -29,31 +29,145 @@ include __DIR__ . '/../includes/sidebar.php';
             <div class="p-4">
                 <input type="hidden" id="editId" value="">
 
-                <!-- Image Upload -->
+                <!-- === Content Type Toggle === -->
                 <div class="mb-4">
-                    <label class="block text-xs font-medium text-gray-600 mb-1.5">팝업 이미지 <span class="text-red-400">*</span></label>
-                    <div id="dropZone"
-                         class="border-2 border-dashed border-gray-300 rounded-lg p-6 text-center cursor-pointer hover:border-blue-400 hover:bg-blue-50 transition-colors"
-                         onclick="document.getElementById('imageInput').click()">
-                        <div id="dropZoneContent">
-                            <p class="text-gray-400 text-sm mb-1">클릭하거나 이미지를 드래그하여 업로드</p>
-                            <p class="text-gray-300 text-[10px]">JPG, PNG, GIF, WEBP · 최대 5MB</p>
-                        </div>
-                        <div id="imagePreviewWrap" class="hidden">
-                            <img id="imagePreview" src="" alt="미리보기" class="max-h-48 mx-auto rounded-md">
-                            <p class="text-xs text-gray-400 mt-2">클릭하여 이미지 변경</p>
-                        </div>
+                    <div class="flex rounded-lg border border-gray-200 overflow-hidden" style="width:fit-content">
+                        <button type="button" id="tabImage" onclick="switchContentType('image')"
+                                class="px-4 py-2 text-sm font-medium bg-blue-600 text-white transition-colors">
+                            🖼️ 이미지 업로드
+                        </button>
+                        <button type="button" id="tabTemplate" onclick="switchContentType('template')"
+                                class="px-4 py-2 text-sm font-medium bg-white text-gray-600 hover:bg-gray-50 transition-colors">
+                            📝 템플릿 선택
+                        </button>
                     </div>
-                    <input type="file" id="imageInput" accept="image/jpeg,image/png,image/gif,image/webp" class="hidden" onchange="previewImage(this)">
                 </div>
 
-                <!-- Title + Link -->
+                <!-- === Image Upload Section === -->
+                <div id="imageSection">
+                    <div class="mb-4">
+                        <label class="block text-xs font-medium text-gray-600 mb-1.5">팝업 이미지 <span class="text-red-400">*</span></label>
+                        <div id="dropZone"
+                             class="border-2 border-dashed border-gray-300 rounded-lg p-6 text-center cursor-pointer hover:border-blue-400 hover:bg-blue-50 transition-colors"
+                             onclick="document.getElementById('imageInput').click()">
+                            <div id="dropZoneContent">
+                                <p class="text-gray-400 text-sm mb-1">클릭하거나 이미지를 드래그하여 업로드</p>
+                                <p class="text-gray-300 text-[10px]">JPG, PNG, GIF, WEBP · 최대 5MB</p>
+                            </div>
+                            <div id="imagePreviewWrap" class="hidden">
+                                <img id="imagePreview" src="" alt="미리보기" class="max-h-48 mx-auto rounded-md">
+                                <p class="text-xs text-gray-400 mt-2">클릭하여 이미지 변경</p>
+                            </div>
+                        </div>
+                        <input type="file" id="imageInput" accept="image/jpeg,image/png,image/gif,image/webp" class="hidden" onchange="previewImage(this)">
+                    </div>
+                </div>
+
+                <!-- === Template Section === -->
+                <div id="templateSection" class="hidden">
+                    <!-- Template Grid -->
+                    <div class="mb-4">
+                        <label class="block text-xs font-medium text-gray-600 mb-2">템플릿 선택 <span class="text-red-400">*</span></label>
+                        <div class="grid grid-cols-2 sm:grid-cols-3 gap-2" id="templateGrid">
+                            <button type="button" onclick="selectTemplate('new_year')" data-tpl="new_year"
+                                    class="tpl-card p-3 border-2 border-gray-200 rounded-lg text-center hover:border-blue-300 hover:bg-blue-50 transition-colors">
+                                <div class="text-2xl mb-1">🎍</div>
+                                <div class="text-xs font-semibold text-gray-800">신년 인사</div>
+                                <div class="text-[10px] text-gray-400 mt-0.5">양력 새해 인사</div>
+                            </button>
+                            <button type="button" onclick="selectTemplate('lunar_new_year')" data-tpl="lunar_new_year"
+                                    class="tpl-card p-3 border-2 border-gray-200 rounded-lg text-center hover:border-blue-300 hover:bg-blue-50 transition-colors">
+                                <div class="text-2xl mb-1">🧧</div>
+                                <div class="text-xs font-semibold text-gray-800">설날 인사</div>
+                                <div class="text-[10px] text-gray-400 mt-0.5">음력 설날 + 휴무</div>
+                            </button>
+                            <button type="button" onclick="selectTemplate('chuseok')" data-tpl="chuseok"
+                                    class="tpl-card p-3 border-2 border-gray-200 rounded-lg text-center hover:border-blue-300 hover:bg-blue-50 transition-colors">
+                                <div class="text-2xl mb-1">🌕</div>
+                                <div class="text-xs font-semibold text-gray-800">추석 인사</div>
+                                <div class="text-[10px] text-gray-400 mt-0.5">한가위 + 휴무</div>
+                            </button>
+                            <button type="button" onclick="selectTemplate('summer_vacation')" data-tpl="summer_vacation"
+                                    class="tpl-card p-3 border-2 border-gray-200 rounded-lg text-center hover:border-blue-300 hover:bg-blue-50 transition-colors">
+                                <div class="text-2xl mb-1">🏖️</div>
+                                <div class="text-xs font-semibold text-gray-800">여름휴가</div>
+                                <div class="text-[10px] text-gray-400 mt-0.5">하계 휴무 안내</div>
+                            </button>
+                            <button type="button" onclick="selectTemplate('year_end')" data-tpl="year_end"
+                                    class="tpl-card p-3 border-2 border-gray-200 rounded-lg text-center hover:border-blue-300 hover:bg-blue-50 transition-colors">
+                                <div class="text-2xl mb-1">🎄</div>
+                                <div class="text-xs font-semibold text-gray-800">연말 인사</div>
+                                <div class="text-[10px] text-gray-400 mt-0.5">한 해 감사 인사</div>
+                            </button>
+                            <button type="button" onclick="selectTemplate('general_notice')" data-tpl="general_notice"
+                                    class="tpl-card p-3 border-2 border-gray-200 rounded-lg text-center hover:border-blue-300 hover:bg-blue-50 transition-colors">
+                                <div class="text-2xl mb-1">📢</div>
+                                <div class="text-xs font-semibold text-gray-800">일반 휴무</div>
+                                <div class="text-[10px] text-gray-400 mt-0.5">자유 입력 공지</div>
+                            </button>
+                        </div>
+                    </div>
+
+                    <!-- Template Form Fields -->
+                    <div id="tplFields" class="hidden">
+                        <div class="grid grid-cols-1 sm:grid-cols-2 gap-3 mb-3">
+                            <div>
+                                <label class="block text-xs font-medium text-gray-600 mb-1">연도</label>
+                                <div class="flex items-center gap-2">
+                                    <input type="number" id="tplYear" min="2020" max="2099" class="w-24 px-3 py-1.5 text-sm border border-gray-300 rounded-md focus:ring-blue-500 focus:border-blue-500" onchange="onTplFieldChange()" oninput="updateGanjiDisplay()">
+                                    <span id="ganjiDisplay" class="text-sm text-gray-600 font-medium"></span>
+                                </div>
+                            </div>
+                            <div>
+                                <label class="block text-xs font-medium text-gray-600 mb-1">회사명</label>
+                                <input type="text" id="tplCompany" value="두손기획인쇄" class="w-full px-3 py-1.5 text-sm border border-gray-300 rounded-md focus:ring-blue-500 focus:border-blue-500" onchange="onTplFieldChange()">
+                            </div>
+                        </div>
+                        <div class="mb-3">
+                            <label class="block text-xs font-medium text-gray-600 mb-1">인사말 <span class="text-gray-400">(비우면 기본 문구 사용)</span></label>
+                            <textarea id="tplGreeting" rows="2" placeholder="기본 인사말이 자동으로 사용됩니다" class="w-full px-3 py-1.5 text-sm border border-gray-300 rounded-md focus:ring-blue-500 focus:border-blue-500 resize-none" onchange="onTplFieldChange()"></textarea>
+                        </div>
+                        <!-- Period fields (shown for has_period templates) -->
+                        <div id="tplPeriodFields" class="hidden">
+                            <div class="grid grid-cols-1 sm:grid-cols-3 gap-3 mb-3">
+                                <div>
+                                    <label class="block text-xs font-medium text-gray-600 mb-1">휴무 시작일</label>
+                                    <input type="date" id="tplPeriodStart" class="w-full px-3 py-1.5 text-sm border border-gray-300 rounded-md focus:ring-blue-500 focus:border-blue-500" onchange="onTplFieldChange()">
+                                </div>
+                                <div>
+                                    <label class="block text-xs font-medium text-gray-600 mb-1">휴무 종료일</label>
+                                    <input type="date" id="tplPeriodEnd" class="w-full px-3 py-1.5 text-sm border border-gray-300 rounded-md focus:ring-blue-500 focus:border-blue-500" onchange="onTplFieldChange()">
+                                </div>
+                                <div>
+                                    <label class="block text-xs font-medium text-gray-600 mb-1">정상영업일</label>
+                                    <input type="date" id="tplResumeDate" class="w-full px-3 py-1.5 text-sm border border-gray-300 rounded-md focus:ring-blue-500 focus:border-blue-500" onchange="onTplFieldChange()">
+                                </div>
+                            </div>
+                        </div>
+                        <div class="mb-3">
+                            <label class="block text-xs font-medium text-gray-600 mb-1">연락처</label>
+                            <input type="text" id="tplPhone" value="02-2632-1830" class="w-48 px-3 py-1.5 text-sm border border-gray-300 rounded-md focus:ring-blue-500 focus:border-blue-500" onchange="onTplFieldChange()">
+                        </div>
+
+                        <!-- Preview -->
+                        <div class="mb-3">
+                            <label class="block text-xs font-medium text-gray-600 mb-2">미리보기</label>
+                            <div class="flex justify-center bg-gray-100 rounded-lg p-4">
+                                <div id="tplPreview" class="bg-white rounded-xl shadow-lg overflow-hidden" style="max-width:480px;width:100%;">
+                                    <div class="p-8 text-center text-sm text-gray-300">템플릿을 선택하면 미리보기가 표시됩니다</div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Title + Link (shared) -->
                 <div class="grid grid-cols-1 sm:grid-cols-2 gap-3 mb-4">
                     <div>
-                        <label class="block text-xs font-medium text-gray-600 mb-1">제목</label>
-                        <input type="text" id="popupTitle" placeholder="팝업 제목 (선택)" class="w-full px-3 py-1.5 text-sm border border-gray-300 rounded-md focus:ring-blue-500 focus:border-blue-500">
+                        <label class="block text-xs font-medium text-gray-600 mb-1">제목 <span class="text-gray-400" id="titleHint">(선택)</span></label>
+                        <input type="text" id="popupTitle" placeholder="팝업 제목" class="w-full px-3 py-1.5 text-sm border border-gray-300 rounded-md focus:ring-blue-500 focus:border-blue-500">
                     </div>
-                    <div>
+                    <div id="linkUrlWrap">
                         <label class="block text-xs font-medium text-gray-600 mb-1">클릭 시 이동 URL</label>
                         <input type="text" id="linkUrl" placeholder="https://..." class="w-full px-3 py-1.5 text-sm border border-gray-300 rounded-md focus:ring-blue-500 focus:border-blue-500 font-mono">
                     </div>
@@ -62,11 +176,11 @@ include __DIR__ . '/../includes/sidebar.php';
                 <!-- Dates + Options -->
                 <div class="grid grid-cols-2 sm:grid-cols-4 gap-3 mb-4">
                     <div>
-                        <label class="block text-xs font-medium text-gray-600 mb-1">시작일 <span class="text-red-400">*</span></label>
+                        <label class="block text-xs font-medium text-gray-600 mb-1">표시 시작일 <span class="text-red-400">*</span></label>
                         <input type="date" id="startDate" class="w-full px-3 py-1.5 text-sm border border-gray-300 rounded-md focus:ring-blue-500 focus:border-blue-500">
                     </div>
                     <div>
-                        <label class="block text-xs font-medium text-gray-600 mb-1">종료일 <span class="text-red-400">*</span></label>
+                        <label class="block text-xs font-medium text-gray-600 mb-1">표시 종료일 <span class="text-red-400">*</span></label>
                         <input type="date" id="endDate" class="w-full px-3 py-1.5 text-sm border border-gray-300 rounded-md focus:ring-blue-500 focus:border-blue-500">
                     </div>
                     <div>
@@ -83,8 +197,8 @@ include __DIR__ . '/../includes/sidebar.php';
                     </div>
                 </div>
 
-                <!-- Link Target -->
-                <div class="mb-4">
+                <!-- Link Target (image only) -->
+                <div class="mb-4" id="linkTargetWrap">
                     <label class="block text-xs font-medium text-gray-600 mb-1">링크 열기 방식</label>
                     <div class="flex items-center gap-4">
                         <label class="flex items-center gap-1.5 text-sm text-gray-700 cursor-pointer">
@@ -128,12 +242,45 @@ include __DIR__ . '/../includes/sidebar.php';
 var popups = [];
 var isEditing = false;
 var existingImagePath = '';
+var currentContentType = 'image';
+var selectedTemplate = '';
+var previewTimer = null;
+
+// Template metadata (has_period flag)
+var tplMeta = {
+    'new_year':         { hasPeriod: false },
+    'lunar_new_year':   { hasPeriod: true },
+    'chuseok':          { hasPeriod: true },
+    'summer_vacation':  { hasPeriod: true },
+    'year_end':         { hasPeriod: false },
+    'general_notice':   { hasPeriod: true }
+};
+
+// === 간지 계산 ===
+function getGanjiJS(year) {
+    var stems    = ['갑','을','병','정','무','기','경','신','임','계'];
+    var branches = ['자','축','인','묘','진','사','오','미','신','유','술','해'];
+    var animals  = ['쥐','소','호랑이','토끼','용','뱀','말','양','원숭이','닭','개','돼지'];
+    var emojis   = ['🐀','🐂','🐅','🐇','🐉','🐍','🐴','🐏','🐒','🐓','🐕','🐷'];
+    var idx = year - 4;
+    var si = ((idx % 10) + 10) % 10;
+    var bi = ((idx % 12) + 12) % 12;
+    return { name: stems[si] + branches[bi], animal: animals[bi], emoji: emojis[bi] };
+}
+
+function updateGanjiDisplay() {
+    var year = parseInt(document.getElementById('tplYear').value) || new Date().getFullYear();
+    var g = getGanjiJS(year);
+    document.getElementById('ganjiDisplay').textContent = g.name + '년 ' + g.emoji + ' ' + g.animal + '띠';
+}
 
 // === Init ===
 document.addEventListener('DOMContentLoaded', function() {
     loadPopups();
     initDragDrop();
     setDefaultDates();
+    document.getElementById('tplYear').value = new Date().getFullYear();
+    updateGanjiDisplay();
 });
 
 function setDefaultDates() {
@@ -149,6 +296,101 @@ function formatDate(d) {
     var m = ('0' + (d.getMonth() + 1)).slice(-2);
     var day = ('0' + d.getDate()).slice(-2);
     return y + '-' + m + '-' + day;
+}
+
+// === Content Type Toggle ===
+function switchContentType(type) {
+    currentContentType = type;
+    var tabImg = document.getElementById('tabImage');
+    var tabTpl = document.getElementById('tabTemplate');
+    var secImg = document.getElementById('imageSection');
+    var secTpl = document.getElementById('templateSection');
+    var linkWrap = document.getElementById('linkUrlWrap');
+    var linkTargetWrap = document.getElementById('linkTargetWrap');
+    var titleHint = document.getElementById('titleHint');
+
+    if (type === 'image') {
+        tabImg.className = 'px-4 py-2 text-sm font-medium bg-blue-600 text-white transition-colors';
+        tabTpl.className = 'px-4 py-2 text-sm font-medium bg-white text-gray-600 hover:bg-gray-50 transition-colors';
+        secImg.classList.remove('hidden');
+        secTpl.classList.add('hidden');
+        linkWrap.classList.remove('hidden');
+        linkTargetWrap.classList.remove('hidden');
+        titleHint.textContent = '(선택)';
+    } else {
+        tabTpl.className = 'px-4 py-2 text-sm font-medium bg-blue-600 text-white transition-colors';
+        tabImg.className = 'px-4 py-2 text-sm font-medium bg-white text-gray-600 hover:bg-gray-50 transition-colors';
+        secTpl.classList.remove('hidden');
+        secImg.classList.add('hidden');
+        linkWrap.classList.add('hidden');
+        linkTargetWrap.classList.add('hidden');
+        titleHint.textContent = '(비우면 자동 생성)';
+    }
+}
+
+// === Template Selection ===
+function selectTemplate(type) {
+    selectedTemplate = type;
+
+    // Highlight selected card
+    var cards = document.querySelectorAll('.tpl-card');
+    for (var i = 0; i < cards.length; i++) {
+        var card = cards[i];
+        if (card.getAttribute('data-tpl') === type) {
+            card.className = 'tpl-card p-3 border-2 border-blue-500 rounded-lg text-center bg-blue-50 transition-colors ring-2 ring-blue-200';
+        } else {
+            card.className = 'tpl-card p-3 border-2 border-gray-200 rounded-lg text-center hover:border-blue-300 hover:bg-blue-50 transition-colors';
+        }
+    }
+
+    // Show form fields
+    document.getElementById('tplFields').classList.remove('hidden');
+
+    // Show/hide period fields based on template type
+    var meta = tplMeta[type];
+    if (meta && meta.hasPeriod) {
+        document.getElementById('tplPeriodFields').classList.remove('hidden');
+    } else {
+        document.getElementById('tplPeriodFields').classList.add('hidden');
+    }
+
+    // Trigger preview
+    loadTemplatePreview();
+}
+
+// === Template Preview (AJAX) ===
+function onTplFieldChange() {
+    if (previewTimer) clearTimeout(previewTimer);
+    previewTimer = setTimeout(function() {
+        loadTemplatePreview();
+    }, 400);
+}
+
+function loadTemplatePreview() {
+    if (!selectedTemplate) return;
+
+    var fd = new FormData();
+    fd.append('action', 'preview');
+    fd.append('template_type', selectedTemplate);
+    fd.append('year', document.getElementById('tplYear').value);
+    fd.append('greeting', document.getElementById('tplGreeting').value);
+    fd.append('company', document.getElementById('tplCompany').value);
+    fd.append('phone', document.getElementById('tplPhone').value);
+
+    var meta = tplMeta[selectedTemplate];
+    if (meta && meta.hasPeriod) {
+        fd.append('start_date', document.getElementById('tplPeriodStart').value || '');
+        fd.append('end_date', document.getElementById('tplPeriodEnd').value || '');
+        fd.append('resume_date', document.getElementById('tplResumeDate').value || '');
+    }
+
+    apiCall(fd).then(function(data) {
+        if (data.success && data.html) {
+            document.getElementById('tplPreview').innerHTML = data.html;
+        }
+    }).catch(function() {
+        // Silent fail for preview
+    });
 }
 
 // === API Call ===
@@ -192,14 +434,27 @@ function renderPopupList() {
     emptyState.classList.add('hidden');
     var html = '';
 
+    var tplIcons = {
+        'new_year': '🎍', 'lunar_new_year': '🧧', 'chuseok': '🌕',
+        'summer_vacation': '🏖️', 'year_end': '🎄', 'general_notice': '📢'
+    };
+    var tplNames = {
+        'new_year': '신년', 'lunar_new_year': '설날', 'chuseok': '추석',
+        'summer_vacation': '여름휴가', 'year_end': '연말', 'general_notice': '공지'
+    };
+
     popups.forEach(function(p) {
         var statusBadge = getStatusBadge(p);
         var hideLabel = { 'today': '하루', 'week': '7일', 'month': '30일' }[p.hide_option] || p.hide_option;
+        var isTemplate = (p.content_type === 'template');
 
         html += '<div class="flex items-center gap-4 p-4 hover:bg-gray-50 transition-colors" data-id="' + p.id + '">';
 
         // Thumbnail
-        if (p.image_path) {
+        if (isTemplate && p.template_type) {
+            var icon = tplIcons[p.template_type] || '📝';
+            html += '<div class="flex-shrink-0 w-16 h-10 rounded bg-gradient-to-br from-blue-50 to-indigo-100 border border-blue-200 flex items-center justify-center text-xl">' + icon + '</div>';
+        } else if (p.image_path) {
             html += '<div class="flex-shrink-0 w-16 h-10 rounded overflow-hidden bg-gray-100 border border-gray-200">';
             html += '<img src="' + escapeHtml(p.image_path) + '" alt="" class="w-full h-full object-cover" onerror="this.parentElement.innerHTML=\'<div class=\\\'flex items-center justify-center w-full h-full text-gray-300 text-xs\\\'>X</div>\'">';
             html += '</div>';
@@ -211,13 +466,17 @@ function renderPopupList() {
         html += '<div class="flex-1 min-w-0">';
         html += '<div class="flex items-center gap-2 mb-0.5">';
         html += '<span class="text-sm font-medium text-gray-900 truncate">' + escapeHtml(p.title || '(제목 없음)') + '</span>';
+        if (isTemplate) {
+            var tplName = tplNames[p.template_type] || '템플릿';
+            html += '<span class="inline-flex items-center px-1.5 py-0.5 rounded text-[10px] font-medium bg-indigo-100 text-indigo-600">📝 ' + tplName + '</span>';
+        }
         html += statusBadge;
         html += '</div>';
         html += '<div class="text-xs text-gray-400">';
         html += p.start_date + ' ~ ' + p.end_date;
         html += ' · 안보기: ' + hideLabel;
         html += ' · 순서: ' + p.sort_order;
-        if (p.link_url) {
+        if (!isTemplate && p.link_url) {
             html += ' · <a href="' + escapeHtml(p.link_url) + '" target="_blank" class="text-blue-400 hover:underline">링크↗</a>';
         }
         html += '</div>';
@@ -313,11 +572,32 @@ function resetForm() {
     document.getElementById('saveBtn').textContent = '저장';
     existingImagePath = '';
     isEditing = false;
+    selectedTemplate = '';
 
-    // Reset preview
+    // Reset image preview
     document.getElementById('imagePreviewWrap').classList.add('hidden');
     document.getElementById('dropZoneContent').classList.remove('hidden');
 
+    // Reset template fields
+    document.getElementById('tplYear').value = new Date().getFullYear();
+    document.getElementById('tplGreeting').value = '';
+    document.getElementById('tplCompany').value = '두손기획인쇄';
+    document.getElementById('tplPhone').value = '02-2632-1830';
+    document.getElementById('tplPeriodStart').value = '';
+    document.getElementById('tplPeriodEnd').value = '';
+    document.getElementById('tplResumeDate').value = '';
+    document.getElementById('tplFields').classList.add('hidden');
+    document.getElementById('tplPreview').innerHTML = '<div class="p-8 text-center text-sm text-gray-300">템플릿을 선택하면 미리보기가 표시됩니다</div>';
+
+    // Reset template card highlights
+    var cards = document.querySelectorAll('.tpl-card');
+    for (var i = 0; i < cards.length; i++) {
+        cards[i].className = 'tpl-card p-3 border-2 border-gray-200 rounded-lg text-center hover:border-blue-300 hover:bg-blue-50 transition-colors';
+    }
+
+    // Reset to image mode
+    switchContentType('image');
+    updateGanjiDisplay();
     setDefaultDates();
 }
 
@@ -377,13 +657,20 @@ function savePopup() {
     var endDate = document.getElementById('endDate').value;
 
     // Validation
-    if (!imageInput.files.length && !editId && !existingImagePath) {
-        showToast('이미지를 업로드하세요.', 'error');
-        return;
+    if (currentContentType === 'image') {
+        if (!imageInput.files.length && !editId && !existingImagePath) {
+            showToast('이미지를 업로드하세요.', 'error');
+            return;
+        }
+    } else {
+        if (!selectedTemplate) {
+            showToast('템플릿을 선택하세요.', 'error');
+            return;
+        }
     }
 
     if (!startDate || !endDate) {
-        showToast('시작일과 종료일을 선택하세요.', 'error');
+        showToast('표시 시작일과 종료일을 선택하세요.', 'error');
         return;
     }
 
@@ -395,16 +682,26 @@ function savePopup() {
     var fd = new FormData();
     fd.append('action', editId ? 'update' : 'create');
     if (editId) fd.append('id', editId);
+    fd.append('content_type', currentContentType);
     fd.append('title', title);
-    fd.append('link_url', document.getElementById('linkUrl').value.trim());
-    fd.append('link_target', document.querySelector('input[name="linkTarget"]:checked').value);
     fd.append('start_date', startDate);
     fd.append('end_date', endDate);
     fd.append('hide_option', document.getElementById('hideOption').value);
     fd.append('sort_order', document.getElementById('sortOrder').value);
 
-    if (imageInput.files.length > 0) {
-        fd.append('image', imageInput.files[0]);
+    if (currentContentType === 'image') {
+        fd.append('link_url', document.getElementById('linkUrl').value.trim());
+        fd.append('link_target', document.querySelector('input[name="linkTarget"]:checked').value);
+        if (imageInput.files.length > 0) {
+            fd.append('image', imageInput.files[0]);
+        }
+    } else {
+        fd.append('template_type', selectedTemplate);
+        fd.append('year', document.getElementById('tplYear').value);
+        fd.append('greeting', document.getElementById('tplGreeting').value);
+        fd.append('company', document.getElementById('tplCompany').value);
+        fd.append('phone', document.getElementById('tplPhone').value);
+        fd.append('resume_date', document.getElementById('tplResumeDate').value || '');
     }
 
     var saveBtn = document.getElementById('saveBtn');
@@ -437,7 +734,6 @@ function editPopup(id) {
 
     document.getElementById('editId').value = p.id;
     document.getElementById('popupTitle').value = p.title || '';
-    document.getElementById('linkUrl').value = p.link_url || '';
     document.getElementById('startDate').value = p.start_date;
     document.getElementById('endDate').value = p.end_date;
     document.getElementById('hideOption').value = p.hide_option || 'today';
@@ -445,19 +741,41 @@ function editPopup(id) {
     document.getElementById('formTitle').textContent = '팝업 수정';
     document.getElementById('saveBtn').textContent = '수정';
 
-    // Link target
-    var target = p.link_target || '_blank';
-    var radio = document.querySelector('input[name="linkTarget"][value="' + target + '"]');
-    if (radio) radio.checked = true;
+    if (p.content_type === 'template' && p.template_type) {
+        // Template mode
+        switchContentType('template');
 
-    // Image preview
-    if (p.image_path) {
-        document.getElementById('imagePreview').src = p.image_path;
-        document.getElementById('imagePreviewWrap').classList.remove('hidden');
-        document.getElementById('dropZoneContent').classList.add('hidden');
+        // Parse template data
+        var tplData = {};
+        try { tplData = JSON.parse(p.template_data || '{}'); } catch(e) {}
+
+        document.getElementById('tplYear').value = tplData.year || new Date().getFullYear();
+        document.getElementById('tplGreeting').value = tplData.greeting || '';
+        document.getElementById('tplCompany').value = tplData.company || '두손기획인쇄';
+        document.getElementById('tplPhone').value = tplData.phone || '02-2632-1830';
+        document.getElementById('tplPeriodStart').value = tplData.start_date || '';
+        document.getElementById('tplPeriodEnd').value = tplData.end_date || '';
+        document.getElementById('tplResumeDate').value = tplData.resume_date || '';
+
+        updateGanjiDisplay();
+        selectTemplate(p.template_type);
     } else {
-        document.getElementById('imagePreviewWrap').classList.add('hidden');
-        document.getElementById('dropZoneContent').classList.remove('hidden');
+        // Image mode
+        switchContentType('image');
+        document.getElementById('linkUrl').value = p.link_url || '';
+
+        var target = p.link_target || '_blank';
+        var radio = document.querySelector('input[name="linkTarget"][value="' + target + '"]');
+        if (radio) radio.checked = true;
+
+        if (p.image_path) {
+            document.getElementById('imagePreview').src = p.image_path;
+            document.getElementById('imagePreviewWrap').classList.remove('hidden');
+            document.getElementById('dropZoneContent').classList.add('hidden');
+        } else {
+            document.getElementById('imagePreviewWrap').classList.add('hidden');
+            document.getElementById('dropZoneContent').classList.remove('hidden');
+        }
     }
 
     // Clear file input
@@ -496,7 +814,7 @@ function deletePopup(id) {
     var p = popups.find(function(item) { return item.id == id; });
     var name = p ? (p.title || '(제목 없음)') : '#' + id;
 
-    if (!confirm('"' + name + '" 팝업을 삭제하시겠습니까?\n이미지 파일도 함께 삭제됩니다.')) return;
+    if (!confirm('"' + name + '" 팝업을 삭제하시겠습니까?')) return;
 
     var fd = new FormData();
     fd.append('action', 'delete');

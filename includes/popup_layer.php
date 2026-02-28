@@ -21,7 +21,7 @@ if (!$tableCheck || mysqli_num_rows($tableCheck) === 0) {
 
 // 활성 팝업 조회 (현재 날짜 기준)
 $today = date('Y-m-d');
-$sql = "SELECT id, title, image_path, link_url, link_target, hide_option
+$sql = "SELECT id, title, content_type, html_content, image_path, link_url, link_target, hide_option
         FROM site_popups
         WHERE is_active = 1
           AND start_date <= '$today'
@@ -173,7 +173,17 @@ $popupCount = count($popupsToShow);
          style="z-index:<?php echo $zIndex; ?>; transform: translate(<?php echo $offsetX; ?>px, <?php echo $offsetY; ?>px);">
         <button type="button" class="site-popup-close" onclick="closeSitePopup(<?php echo $popupId; ?>, 0)" title="닫기">&times;</button>
 
-        <?php if ($imagePath): ?>
+        <?php
+        $contentType = $popup['content_type'] ?? 'image';
+        $htmlContent = $popup['html_content'] ?? '';
+        ?>
+        <?php if ($contentType === 'template' && !empty($htmlContent)): ?>
+            <!-- 템플릿 기반 팝업 -->
+            <div class="site-popup-template-content">
+                <?php echo $htmlContent; ?>
+            </div>
+        <?php elseif ($imagePath): ?>
+            <!-- 이미지 기반 팝업 -->
             <?php if ($linkUrl): ?>
                 <a href="<?php echo $linkUrl; ?>" target="<?php echo $linkTarget; ?>" class="site-popup-image-link">
                     <img src="<?php echo $imagePath; ?>" alt="<?php echo $title; ?>" class="site-popup-image">
