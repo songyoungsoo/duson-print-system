@@ -4,6 +4,65 @@
 RewriteEngine On
 RewriteRule ^MlangOrder_PrintAuto/(.*)$ mlangorder_printauto/$1 [L]
 
+# 구 URL 대소문자 호환 (구글/네이버 색인 대응)
+# 리눅스는 대소문자 구분 → PHP로 소문자 변환 후 301 리다이렉트
+RewriteRule ^MlangPrintAuto/(.*)$ /error/redirect_lowercase.php?path=$1 [L,QSA]
+
+# 구 URL → 현재 페이지 301 리다이렉트
+RewriteRule ^mlangprintauto/sticker/(.*)$ /mlangprintauto/sticker_new/$1 [R=301,L]
+RewriteRule ^sub/catalog(.*)$ /mlangprintauto/cadarok/index.php [R=301,L]
+RewriteRule ^sub/checkboard\.htm$ /mypage/proof.php [R=301,L]
+RewriteRule ^shop/order\.php$ / [R=301,L]
+
+# 구 .htm 페이지 → 현재 페이지 301 리다이렉트 (SEO 정리)
+# 전단지 (inserted)
+RewriteRule ^sub/leaflet\.htm$ /mlangprintauto/inserted/ [R=301,L]
+RewriteRule ^sub/leaflet210120\.htm$ /mlangprintauto/inserted/ [R=301,L]
+# 스티커 (sticker_new)
+RewriteRule ^sub/sticker\.htm$ /mlangprintauto/sticker_new/ [R=301,L]
+# 명함 (namecard)
+RewriteRule ^sub/namecard\.htm$ /mlangprintauto/namecard/ [R=301,L]
+RewriteRule ^sub/namecard1022\.htm$ /mlangprintauto/namecard/ [R=301,L]
+# 봉투 (envelope)
+RewriteRule ^sub/envelope\.htm$ /mlangprintauto/envelope/ [R=301,L]
+RewriteRule ^sub/envelope_bookdesign\.htm$ /mlangprintauto/envelope/ [R=301,L]
+# 포스터 (littleprint)
+RewriteRule ^sub/poster\.htm$ /mlangprintauto/littleprint/ [R=301,L]
+# 카다록/브로셔/박스 (cadarok) — catalog.htm은 기존 규칙에서 처리
+RewriteRule ^sub/brochure\.htm$ /mlangprintauto/cadarok/ [R=301,L]
+RewriteRule ^sub/bookdesign\.htm$ /mlangprintauto/cadarok/ [R=301,L]
+RewriteRule ^sub/boxdesign\.htm$ /mlangprintauto/cadarok/ [R=301,L]
+# 상품권 (merchandisebond)
+RewriteRule ^sub/coupon\.htm$ /mlangprintauto/merchandisebond/ [R=301,L]
+# 교정확인 (checkboard 변형)
+RewriteRule ^sub/checkboard230228\.htm$ /mypage/proof.php [R=301,L]
+RewriteRule ^sub/checkboard231204\.htm$ /mypage/proof.php [R=301,L]
+RewriteRule ^sub/check\.htm$ /mypage/proof.php [R=301,L]
+RewriteRule ^sub/check_Iframe\.htm$ /mypage/proof.php [R=301,L]
+# 견적서
+RewriteRule ^sub/estimate_auto\.htm$ / [R=301,L]
+RewriteRule ^sub/estimate_hand\.htm$ / [R=301,L]
+# 회사 정보
+RewriteRule ^sub/info\.htm$ /sub/company.php [R=301,L]
+RewriteRule ^sub/info01\.htm$ /sub/company.php [R=301,L]
+RewriteRule ^sub/map\.htm$ /sub/location.php [R=301,L]
+# QnA
+RewriteRule ^sub/qna\.htm$ /bbs/board.php?bo_table=qna [R=301,L]
+RewriteRule ^sub/qna0215\.htm$ /bbs/board.php?bo_table=qna [R=301,L]
+# 기타 구 페이지 → 홈으로
+RewriteRule ^sub/symbol\.htm$ / [R=301,L]
+RewriteRule ^sub/symbol01\.htm$ / [R=301,L]
+RewriteRule ^sub/symbol02\.htm$ / [R=301,L]
+RewriteRule ^sub/open\.htm$ / [R=301,L]
+RewriteRule ^sub/attention\.htm$ / [R=301,L]
+RewriteRule ^sub/expense\.htm$ / [R=301,L]
+RewriteRule ^sub/popup_day\.htm$ / [R=301,L]
+RewriteRule ^sub/popup_summer\.htm$ / [R=301,L]
+# 구 프레임 잔재 → 홈으로
+RewriteRule ^top\.htm$ / [R=301,L]
+RewriteRule ^bottom\.htm$ / [R=301,L]
+RewriteRule ^left\.htm$ / [R=301,L]
+RewriteRule ^right\.htm$ / [R=301,L]
 # ============================================
 # 1. 디렉토리 목록 노출 차단
 # ============================================

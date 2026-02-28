@@ -8,12 +8,12 @@
  * 참고: 관리자 페이지, 로그인 필수 페이지 제외
  */
 
-// 도메인 설정 (구 dsp114.com은 HTTP)
+// 도메인 설정 — 항상 https://dsp114.com (프로덕션 정규 URL)
 $host = $_SERVER['HTTP_HOST'] ?? 'dsp114.com';
 
-// 구 사이트는 HTTP 강제
 if (in_array($host, ['dsp114.com', 'www.dsp114.com'])) {
-    $baseUrl = 'http://' . $host;
+    // 프로덕션: 항상 https + 정규 도메인
+    $baseUrl = 'https://dsp114.com';
 } else {
     // 로컬 개발 환경은 자동 감지
     $protocol = (!empty($_SERVER['HTTPS']) && $_SERVER['HTTPS'] !== 'off') ? 'https' : 'http';

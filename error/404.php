@@ -26,7 +26,7 @@
     <div class="container">
         <div class="code">404</div>
         <p class="message">페이지를 찾을 수 없습니다</p>
-        <p class="sub">요청하신 페이지가 삭제되었거나 주소가 변경되었을 수 있습니다.</p>
+        <p class="sub">요청하신 페이지가 삭제되었거나 주소가 변경되었을 수 있습니다.<br>아래 <strong>메인으로 이동</strong>을 눌러주세요.</p>
         <div class="links">
             <a href="/" class="btn-home">메인으로 이동</a>
             <a href="/mlangprintauto/inserted/" class="btn-products">견적 바로가기</a>

@@ -421,7 +421,7 @@
             <p class="section-sub">From everyday business essentials to specialty items &mdash; all produced in our own factory with premium materials and precise craftsmanship.</p>
         </div>
         <div class="products-grid">
-            <div class="p-card reveal">
+            <a href="/en/products/order_sticker.php" class="p-card reveal" style="text-decoration:none;color:inherit">
                 <div class="p-card-img"><img src="/ImgFolder/gate_picto/sticker_new_s.png" alt="Stickers"></div>
                 <div class="p-card-body">
                     <div class="p-card-name">Stickers &amp; Labels</div>
@@ -432,8 +432,8 @@
                         <span class="p-card-feat">Custom Shape</span>
                     </div>
                 </div>
-            </div>
-            <div class="p-card reveal reveal-delay-1">
+            </a>
+            <a href="/en/products/order.php?type=inserted" class="p-card reveal reveal-delay-1" style="text-decoration:none;color:inherit">
                 <div class="p-card-img"><img src="/ImgFolder/gate_picto/inserted_s.png" alt="Flyers"></div>
                 <div class="p-card-body">
                     <div class="p-card-name">Flyers &amp; Leaflets</div>
@@ -444,8 +444,8 @@
                         <span class="p-card-feat">Bulk Ready</span>
                     </div>
                 </div>
-            </div>
-            <div class="p-card reveal reveal-delay-2">
+            </a>
+            <a href="/en/products/order.php?type=namecard" class="p-card reveal reveal-delay-2" style="text-decoration:none;color:inherit">
                 <div class="p-card-img"><img src="/ImgFolder/gate_picto/namecard_s.png" alt="Business Cards"></div>
                 <div class="p-card-body">
                     <div class="p-card-name">Business Cards</div>
@@ -456,8 +456,8 @@
                         <span class="p-card-feat">Same-Day</span>
                     </div>
                 </div>
-            </div>
-            <div class="p-card reveal">
+            </a>
+            <a href="/en/products/order.php?type=envelope" class="p-card reveal" style="text-decoration:none;color:inherit">
                 <div class="p-card-img"><img src="/ImgFolder/gate_picto/envelop_s.png" alt="Envelopes"></div>
                 <div class="p-card-body">
                     <div class="p-card-name">Envelopes</div>
@@ -468,8 +468,8 @@
                         <span class="p-card-feat">Bulk</span>
                     </div>
                 </div>
-            </div>
-            <div class="p-card reveal reveal-delay-1">
+            </a>
+            <a href="/en/products/order.php?type=cadarok" class="p-card reveal reveal-delay-1" style="text-decoration:none;color:inherit">
                 <div class="p-card-img"><img src="/ImgFolder/gate_picto/catalogue_s.png" alt="Catalogs"></div>
                 <div class="p-card-body">
                     <div class="p-card-name">Catalogs &amp; Booklets</div>
@@ -480,8 +480,8 @@
                         <span class="p-card-feat">Custom Size</span>
                     </div>
                 </div>
-            </div>
-            <div class="p-card reveal reveal-delay-2">
+            </a>
+            <a href="/en/products/order.php?type=littleprint" class="p-card reveal reveal-delay-2" style="text-decoration:none;color:inherit">
                 <div class="p-card-img"><img src="/ImgFolder/gate_picto/poster_s.png" alt="Posters"></div>
                 <div class="p-card-body">
                     <div class="p-card-name">Posters</div>
@@ -492,8 +492,8 @@
                         <span class="p-card-feat">Lamination</span>
                     </div>
                 </div>
-            </div>
-            <div class="p-card reveal">
+            </a>
+            <a href="/en/products/order.php?type=ncrflambeau" class="p-card reveal" style="text-decoration:none;color:inherit">
                 <div class="p-card-img"><img src="/ImgFolder/gate_picto/ncr_s.png" alt="NCR Forms"></div>
                 <div class="p-card-body">
                     <div class="p-card-name">NCR Forms</div>
@@ -504,8 +504,8 @@
                         <span class="p-card-feat">Numbered</span>
                     </div>
                 </div>
-            </div>
-            <div class="p-card reveal reveal-delay-1">
+            </a>
+            <a href="/en/products/order.php?type=merchandisebond" class="p-card reveal reveal-delay-1" style="text-decoration:none;color:inherit">
                 <div class="p-card-img"><img src="/ImgFolder/gate_picto/merchandise_s.png" alt="Gift Vouchers"></div>
                 <div class="p-card-body">
                     <div class="p-card-name">Gift Vouchers</div>
@@ -515,8 +515,8 @@
                         <span class="p-card-feat">Serial No.</span>
                     </div>
                 </div>
-            </div>
-            <div class="p-card reveal reveal-delay-2">
+            </a>
+            <a href="/en/products/order.php?type=msticker" class="p-card reveal reveal-delay-2" style="text-decoration:none;color:inherit">
                 <div class="p-card-img"><img src="/ImgFolder/gate_picto/m_sticker_s.png" alt="Magnetic Stickers"></div>
                 <div class="p-card-body">
                     <div class="p-card-name">Magnetic Stickers</div>
@@ -526,7 +526,7 @@
                         <span class="p-card-feat">Strong Magnet</span>
                     </div>
                 </div>
-            </div>
+            </a>
         </div>
     </div>
 </section>
