@@ -11,7 +11,7 @@ include __DIR__ . '/../includes/sidebar.php';
         <div class="flex items-center justify-between mb-4">
             <div>
                 <h1 class="text-lg font-bold text-gray-900">NAS 동기화</h1>
-                <p class="text-xs text-gray-500 mt-0.5" id="nasTargetLabel">sknas205.ipdisk.co.kr → /HDD1/duson260118</p>
+                <p class="text-xs text-gray-500 mt-0.5" id="nasTargetLabel">dsp1830.ipdisk.co.kr → /HDD1/duson260118</p>
             </div>
             <div class="flex items-center gap-2">
                 <span id="connectionStatus" class="inline-flex items-center gap-1 px-2 py-1 rounded-full text-[10px] font-medium bg-gray-100 text-gray-500">
@@ -27,7 +27,7 @@ include __DIR__ . '/../includes/sidebar.php';
                 <div class="flex items-center gap-2">
                     <span class="text-sm">🔌</span>
                     <h3 class="text-sm font-semibold text-gray-900">NAS 접속 설정</h3>
-                    <span id="activeProfileBadge" class="inline-flex items-center px-2 py-0.5 rounded-full text-[10px] font-medium bg-blue-100 text-blue-700">기본 NAS (sknas205)</span>
+                    <span id="activeProfileBadge" class="inline-flex items-center px-2 py-0.5 rounded-full text-[10px] font-medium bg-blue-100 text-blue-700">기본 NAS (dsp1830)</span>
                 </div>
                 <svg id="connPanelArrow" class="w-4 h-4 text-gray-400 transition-transform duration-200" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"></path>
@@ -40,7 +40,8 @@ include __DIR__ . '/../includes/sidebar.php';
                         <label class="block text-xs font-medium text-gray-600 mb-1.5">저장된 프로필</label>
                         <div class="flex items-center gap-2">
                             <select id="profileSelect" onchange="loadProfile(this.value)" class="flex-1 px-3 py-1.5 text-sm border border-gray-300 rounded-md focus:ring-blue-500 focus:border-blue-500">
-                                <option value="default">기본 NAS (sknas205)</option>
+                                <option value="default">기본 NAS (dsp1830)</option>
+                                <option value="sknas205">2차 NAS (sknas205)</option>
                             </select>
                             <button type="button" onclick="saveProfile()" class="px-3 py-1.5 bg-gray-100 text-gray-700 text-xs font-medium rounded-md hover:bg-gray-200 transition-colors" title="현재 입력값을 새 프로필로 저장">
                                 💾 저장
@@ -54,7 +55,7 @@ include __DIR__ . '/../includes/sidebar.php';
                     <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
                         <div>
                             <label class="block text-xs font-medium text-gray-600 mb-1">호스트 (도메인/IP)</label>
-                            <input type="text" id="nasHost" value="sknas205.ipdisk.co.kr" placeholder="nas.example.com"
+                            <input type="text" id="nasHost" value="dsp1830.ipdisk.co.kr" placeholder="nas.example.com"
                                    class="w-full px-3 py-1.5 text-sm border border-gray-300 rounded-md focus:ring-blue-500 focus:border-blue-500 font-mono"
                                    oninput="updateTargetLabel()">
                         </div>
@@ -66,13 +67,13 @@ include __DIR__ . '/../includes/sidebar.php';
                         </div>
                         <div>
                             <label class="block text-xs font-medium text-gray-600 mb-1">사용자명</label>
-                            <input type="text" id="nasUser" value="sknas205" placeholder="admin"
+                            <input type="text" id="nasUser" value="admin" placeholder="admin"
                                    class="w-full px-3 py-1.5 text-sm border border-gray-300 rounded-md focus:ring-blue-500 focus:border-blue-500">
                         </div>
                         <div>
                             <label class="block text-xs font-medium text-gray-600 mb-1">비밀번호</label>
                             <div class="relative">
-                                <input type="password" id="nasPass" value="sknas205204203" placeholder="••••••••"
+                                <input type="password" id="nasPass" value="1830" placeholder="••••••••"
                                        class="w-full px-3 py-1.5 pr-8 text-sm border border-gray-300 rounded-md focus:ring-blue-500 focus:border-blue-500">
                                 <button type="button" onclick="togglePasswordVisibility()" class="absolute right-2 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-600 text-xs">
                                     <span id="pwToggleIcon">👁️</span>
@@ -279,19 +280,29 @@ function renderProfileSelect() {
     if (currentVal) select.value = currentVal;
 
     // 삭제 버튼 표시 여부
-    document.getElementById('deleteProfileBtn').style.display = select.value === 'default' ? 'none' : '';
+    document.getElementById('deleteProfileBtn').style.display = (select.value === 'default' || select.value === 'sknas205') ? 'none' : '';
 }
 
 function loadProfile(name) {
-    document.getElementById('deleteProfileBtn').style.display = name === 'default' ? 'none' : '';
+    document.getElementById('deleteProfileBtn').style.display = (name === 'default' || name === 'sknas205') ? 'none' : '';
 
     if (name === 'default') {
+        document.getElementById('nasHost').value = 'dsp1830.ipdisk.co.kr';
+        document.getElementById('nasUser').value = 'admin';
+        document.getElementById('nasPass').value = '1830';
+        document.getElementById('nasRoot').value = '/HDD1/duson260118';
+        updateTargetLabel();
+        updateProfileBadge('기본 NAS (dsp1830)');
+        return;
+    }
+
+    if (name === 'sknas205') {
         document.getElementById('nasHost').value = 'sknas205.ipdisk.co.kr';
         document.getElementById('nasUser').value = 'sknas205';
         document.getElementById('nasPass').value = 'sknas205204203';
         document.getElementById('nasRoot').value = '/HDD1/duson260118';
         updateTargetLabel();
-        updateProfileBadge('기본 NAS (sknas205)');
+        updateProfileBadge('2차 NAS (sknas205)');
         return;
     }
 
@@ -340,7 +351,7 @@ function saveProfile() {
 function deleteProfile() {
     var select = document.getElementById('profileSelect');
     var name = select.value;
-    if (name === 'default') return;
+    if (name === 'default' || name === 'sknas205') return;
 
     if (!confirm('프로필 "' + name + '"을(를) 삭제하시겠습니까?')) return;
 
