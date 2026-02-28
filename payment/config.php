@@ -25,7 +25,7 @@ if (INICIS_TEST_MODE) {
 } else {
     // 운영용 - KG이니시스 실제 가맹점 정보
     define('INICIS_MID', 'dsp1147479');
-    define('INICIS_SIGNKEY', 'cEdnbCtISFZ1QUNpNm5hbG1JY1RlQT09'); // KG이니시스 웹결제 Sign Key
+    define('INICIS_SIGNKEY', 'YXgxUnVtVlNvZndWUWg4RWVFUGZwUT09'); // KG이니시스 웹결제 Sign Key
 }
 
 // ================================
