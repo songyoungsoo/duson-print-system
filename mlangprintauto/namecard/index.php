@@ -321,7 +321,9 @@ if ($url_nc_type) {
     <?php include "../../includes/login_modal.php"; ?>
 
     <?php if (!$isQuotationMode && !$isAdminQuoteMode): ?>
-    <!-- 명함 상세 설명 섹션 (1200px 폭) - 하단 설명방법 적용 -->
+    <!-- AI 생성 상세페이지 (기존 설명 위에 표시) -->
+    <?php $detail_page_product = 'namecard'; include __DIR__ . "/../../_detail_page/detail_page_loader.php"; ?>
+    <!-- 명함 상세 설명 섹션 (1100px 폭) - 하단 설명방법 적용 -->
     <div class="namecard-detail-combined" style="width: 1100px; max-width: 100%; margin: 7.5px auto; padding: 25px; background: #f8f9fa; border-radius: 12px; border: 1px solid #e0e0e0;">
         <?php include "explane_namecard.php"; ?>
     </div>

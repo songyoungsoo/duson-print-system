@@ -401,6 +401,8 @@ header("Expires: 0");
     ?>
 
     <?php if (!$isQuotationMode && !$isAdminQuoteMode): ?>
+    <!-- AI 생성 상세페이지 (기존 설명 위에 표시) -->
+    <?php $detail_page_product = 'inserted'; include __DIR__ . "/../../_detail_page/detail_page_loader.php"; ?>
     <!-- 합판 전단지 상세 설명 섹션 (하단 설명방법) -->
     <div class="inserted-detail-combined">
         <?php include "explane_inserted.php"; ?>

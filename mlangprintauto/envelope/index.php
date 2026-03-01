@@ -350,7 +350,9 @@ if ($default_values['MY_type'] && $default_values['Section']) {
     <?php include "../../includes/login_modal.php"; ?>
 
     <?php if (!$isQuotationMode && !$isAdminQuoteMode): ?>
-    <!-- 옵셋봉투 및 작업 시 유의사항 통합 섹션 (1200px 폭) -->
+    <!-- AI 생성 상세페이지 (기존 설명 위에 표시) -->
+    <?php $detail_page_product = 'envelope'; include __DIR__ . "/../../_detail_page/detail_page_loader.php"; ?>
+    <!-- 옵셋봉투 및 작업 시 유의사항 통합 섹션 (1100px 폭) -->
     <div class="envelope-detail-combined" style="width: 1100px; max-width: 100%; margin: 30px auto; padding: 25px; background: #f8f9fa; border-radius: 12px; border: 1px solid #e0e0e0;">
         <?php include "explane05.php"; ?>
     </div>

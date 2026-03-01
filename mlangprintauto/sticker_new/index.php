@@ -506,6 +506,8 @@ if (isset($_GET['jong']) && !empty($_GET['jong'])) {
     <?php include "../../includes/login_modal.php"; ?>
 
 <?php if (!$is_quotation_mode && !$is_admin_quote_mode): ?>
+    <!-- AI 생성 상세페이지 (기존 설명 위에 표시) -->
+    <?php $detail_page_product = 'sticker_new'; include __DIR__ . "/../../_detail_page/detail_page_loader.php"; ?>
     <!-- 스티커 상세 설명 섹션 -->
     <div class="sticker-detail-combined">
         <?php include "explane_sticker.php"; ?>
