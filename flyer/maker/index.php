@@ -188,7 +188,7 @@ a{color:inherit;text-decoration:none}
 
         <div class="form-group">
             <label>상호명 <span class="req">*</span></label>
-            <input type="text" name="business_name" id="businessName" placeholder="예: 맛나분식" required>
+            <input type="text" name="business_name" id="businessName" placeholder="예: 맛나분식">
         </div>
 
         <div class="form-group">
@@ -201,7 +201,7 @@ a{color:inherit;text-decoration:none}
             <div class="col">
                 <div class="form-group">
                     <label>전화번호 <span class="req">*</span></label>
-                    <input type="tel" name="phone" id="phone" placeholder="02-1234-5678" required>
+                    <input type="tel" name="phone" id="phone" placeholder="02-1234-5678">
                 </div>
             </div>
             <div class="col">
@@ -214,7 +214,7 @@ a{color:inherit;text-decoration:none}
 
         <div class="form-group">
             <label>주소 <span class="req">*</span></label>
-            <input type="text" name="address" id="address" placeholder="서울시 영등포구 당산로 123" required>
+            <input type="text" name="address" id="address" placeholder="서울시 영등포구 당산로 123">
         </div>
 
         <div class="form-group">
