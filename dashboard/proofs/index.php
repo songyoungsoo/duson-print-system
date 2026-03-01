@@ -335,7 +335,7 @@ include __DIR__ . '/../includes/sidebar.php';
 <div id="imgOverlay" class="fixed inset-0 z-[60] hidden bg-black">
     <!-- Top Header Bar -->
     <div id="viewerHeader" class="viewer-header">
-        <div class="header-title">두손기획인쇄</div>
+        <div class="header-title">두손기획인쇄 교정 페이지</div>
         <div class="header-notice">
             <span class="notice-item">이미지는 RGB 표시 / 인쇄 시 CMYK 출력으로 색상차이 있음</span>
             <span class="notice-item">오탈자 및 전체 상태를 확인하여 전반적인 수정사항을 요청하셔야 합니다</span>
@@ -419,7 +419,7 @@ include __DIR__ . '/../includes/sidebar.php';
 
     <!-- Proof Confirmation Area -->
     <div id="proofConfirmArea" class="proof-confirm-area">
-        <div id="proofConfirmContent">
+        <div id="proofConfirmContent" style="display:flex;align-items:center;justify-content:center;gap:12px;">
             <button id="proofConfirmBtn" type="button" class="proof-confirm-btn">
                 교정확정
             </button>
@@ -440,10 +440,10 @@ include __DIR__ . '/../includes/sidebar.php';
 /* Image Viewer Styles */
 .image-container {
     position: absolute;
-    top: 62px;  /* 상단 헤더 높이 */
+    top: 95px;  /* 상단 헤더 높이 (제목 17px + 안내문 12px×3줄 + 패딩) */
     left: 0;
     right: 72px;
-    bottom: 160px;  /* 상태바(48px) + 썸네일바(56px) + 교정확정영역(48px) + 여유(8px) */
+    bottom: 110px;  /* 상태바(48px) + 교정확정(58px) + 여유(4px) */
     overflow: hidden;
     background: #1a1a1a;
 }
@@ -481,7 +481,7 @@ include __DIR__ . '/../includes/sidebar.php';
 
 .header-title {
     color: white;
-    font-size: 16px;
+    font-size: 17px;
     font-weight: 600;
 }
 
@@ -491,7 +491,7 @@ include __DIR__ . '/../includes/sidebar.php';
 
 .notice-item {
     color: #cbd5e1;
-    font-size: 10px;
+    font-size: 12px;
     display: block;
     line-height: 1.3;
 }
@@ -624,51 +624,48 @@ include __DIR__ . '/../includes/sidebar.php';
 /* Thumbnail Bar */
 .thumbnail-bar {
     position: fixed;
-    bottom: 48px;
+    top: 95px;
     left: 0;
-    right: 72px;
-    height: 56px;
-    background: linear-gradient(to top, rgba(0, 0, 0, 0.8), transparent);
+    bottom: 48px;
+    width: 72px;
+    background: rgba(0, 0, 0, 0.6);
     display: flex;
+    flex-direction: column;
     align-items: center;
-    justify-content: center;
-    padding: 0 16px;
+    padding: 8px 4px;
     z-index: 75;
-    pointer-events: none;
+    overflow-y: auto;
+    overflow-x: hidden;
+    scrollbar-width: thin;
+    scrollbar-color: rgba(255,255,255,0.3) transparent;
 }
 
 .thumbnail-bar.hidden {
     display: none;
 }
 
-.thumbnails-container {
-    display: flex;
-    align-items: center;
-    gap: 8px;
-    overflow-x: auto;
-    max-width: 100%;
-    padding: 4px;
-    pointer-events: auto;
-    scrollbar-width: thin;
-    scrollbar-color: rgba(255, 255, 255, 0.3) transparent;
+.thumbnail-bar::-webkit-scrollbar {
+    width: 4px;
 }
-
-.thumbnails-container::-webkit-scrollbar {
-    height: 4px;
-}
-
-.thumbnails-container::-webkit-scrollbar-track {
+.thumbnail-bar::-webkit-scrollbar-track {
     background: transparent;
 }
-
-.thumbnails-container::-webkit-scrollbar-thumb {
-    background: rgba(255, 255, 255, 0.3);
+.thumbnail-bar::-webkit-scrollbar-thumb {
+    background: rgba(255,255,255,0.3);
     border-radius: 2px;
 }
 
+.thumbnails-container {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 8px;
+    padding: 4px;
+}
+
 .thumb-item {
-    width: 48px;
-    height: 48px;
+    width: 56px;
+    height: 56px;
     object-fit: cover;
     border-radius: 6px;
     cursor: pointer;
@@ -686,16 +683,16 @@ include __DIR__ . '/../includes/sidebar.php';
 .thumb-item.active {
     border-color: white;
     opacity: 1;
-    box-shadow: 0 0 0 2px rgba(255, 255, 255, 0.3);
+    box-shadow: 0 0 0 2px rgba(255,255,255,0.3);
 }
 
 /* Proof Confirmation Area */
 .proof-confirm-area {
     position: fixed;
-    bottom: 110px;
+    bottom: 48px;
     left: 0;
     right: 72px;
-    background: rgba(255, 255, 255, 0.95);
+    background: #1e293b;
     padding: 12px 16px;
     z-index: 85;
     text-align: center;
@@ -730,9 +727,10 @@ include __DIR__ . '/../includes/sidebar.php';
 
 .proof-confirm-notice {
     font-size: 11px;
-    color: #64748b;
-    margin: 6px 0 0 0;
+    color: #fbbf24;
+    margin: 0;
     line-height: 1.3;
+    white-space: nowrap;
 }
 
 .proof-confirmed-msg {
@@ -1067,12 +1065,17 @@ function buildThumbnails() {
     var thumbnailBar = document.getElementById('thumbnailBar');
     container.textContent = '';
 
+    var ic = document.getElementById('imageContainer');
     if (viewerImages.length <= 1) {
         thumbnailBar.classList.add('hidden');
+        ic.style.left = '0';
+        ic.style.bottom = '110px';
         return;
     }
 
     thumbnailBar.classList.remove('hidden');
+    ic.style.left = '72px';
+    ic.style.bottom = '110px';
 
     viewerImages.forEach(function(img, i) {
         var thumb = document.createElement('img');
@@ -1197,8 +1200,11 @@ function checkProofreadingStatus() {
 }
 
 function showProofreadingButton() {
-    document.getElementById('proofConfirmContent').style.display = 'block';
+    document.getElementById('proofConfirmContent').style.display = 'flex';
     document.getElementById('proofConfirmedMsg').style.display = 'none';
+    var btn = document.getElementById('proofConfirmBtn');
+    btn.disabled = false;
+    btn.textContent = '교정확정';
 }
 
 function showProofreadingCompleted() {
@@ -1209,14 +1215,18 @@ function showProofreadingCompleted() {
 function confirmProofreading() {
     if (!viewerOrderNo) return;
 
-    if (!confirm('오탈자 및 전체를 잘 확인 했습니다.\n인쇄진행해주세요.\n\n인쇄 진행 후에는 더이상 수정할 수 없습니다.\n\n교정확정 하시겠습니까?')) {
-        return;
-    }
+    showStyledConfirm(
+        '오탈자 및 전체를 잘 확인 했습니다.<br>인쇄진행해주세요.<br><br>인쇄 진행 후에는 더이상 수정할 수 없습니다.<br><br><span style="color:#e53e3e;font-weight:bold;font-size:15px;">교정확정 하시겠습니까?</span>',
+        function() {
+            showStyledConfirm(
+                '⚠️ 최종 확인<br><br>교정확정 후에는 취소할 수 없습니다.<br><span style="color:#e53e3e;font-weight:bold;font-size:15px;">정말 인쇄를 진행하시겠습니까?</span>',
+                function() { doConfirmProofreading(); }
+            );
+        }
+    );
+}
 
-    if (!confirm('⚠️ 최종 확인\n\n교정확정 후에는 취소할 수 없습니다.\n정말 인쇄를 진행하시겠습니까?')) {
-        return;
-    }
-
+function doConfirmProofreading() {
     var btn = document.getElementById('proofConfirmBtn');
     btn.disabled = true;
     btn.textContent = '처리중...';
@@ -1242,6 +1252,23 @@ function confirmProofreading() {
         btn.disabled = false;
         btn.textContent = '교정확정';
     });
+}
+
+function showStyledConfirm(htmlMessage, onConfirm) {
+    var overlay = document.createElement('div');
+    overlay.style.cssText = 'position:fixed;top:0;left:0;width:100%;height:100%;background:rgba(0,0,0,0.5);z-index:99999;display:flex;align-items:center;justify-content:center;';
+    var box = document.createElement('div');
+    box.style.cssText = 'background:#fff;border-radius:12px;padding:28px 32px 20px;max-width:400px;width:90%;box-shadow:0 20px 60px rgba(0,0,0,0.3);text-align:center;';
+    box.innerHTML = '<div style="font-size:14px;line-height:1.7;margin-bottom:24px;color:#333;">' + htmlMessage + '</div>'
+        + '<div style="display:flex;gap:12px;justify-content:center;">'
+        + '<button id="scCancel" style="padding:8px 24px;border:1px solid #d1d5db;border-radius:8px;background:#fff;color:#374151;cursor:pointer;font-size:14px;">취소</button>'
+        + '<button id="scConfirm" style="padding:8px 24px;border:none;border-radius:8px;background:#e53e3e;color:#fff;cursor:pointer;font-size:14px;font-weight:600;">확인</button>'
+        + '</div>';
+    overlay.appendChild(box);
+    document.body.appendChild(overlay);
+    box.querySelector('#scCancel').onclick = function() { document.body.removeChild(overlay); };
+    box.querySelector('#scConfirm').onclick = function() { document.body.removeChild(overlay); onConfirm(); };
+    overlay.addEventListener('click', function(e) { if (e.target === overlay) document.body.removeChild(overlay); });
 }
 
 // 교정확정 버튼 이벤트 리스너

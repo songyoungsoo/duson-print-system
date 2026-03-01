@@ -6,7 +6,7 @@ require_once __DIR__ . '/../../db.php';
 $page = max(1, intval($_GET['page'] ?? 1));
 $status_filter = $_GET['status'] ?? '';
 $search = trim($_GET['q'] ?? '');
-$per_page = 15;
+$per_page = 20;
 $offset = ($page - 1) * $per_page;
 
 $has_table = false;

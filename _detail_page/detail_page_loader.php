@@ -46,9 +46,18 @@ if (empty($imageFiles)) {
 <!-- AI 생성 상세페이지 (두손기획인쇄 · _detail_page) -->
 <div class="ai-detail-page-sections" style="width: 1100px; max-width: 100%; margin: 20px auto 0; padding: 0; line-height: 0;">
 <?php foreach ($imageFiles as $file): ?>
-    <img src="<?= htmlspecialchars($sectionsWebPath . '/' . $file) ?>" 
-         alt="<?= htmlspecialchars($detail_page_product) ?> 상세 설명" 
+<?php if ($file === 'section_13.png'): ?>
+    <a href="#" onclick="window.scrollTo({top:0,behavior:'smooth'});return false;" style="display:block;margin:0;padding:0;line-height:0;cursor:pointer;">
+        <img src="<?= htmlspecialchars($sectionsWebPath . '/' . $file) ?>"
+             alt="<?= htmlspecialchars($detail_page_product) ?> 주문하기"
+             style="width: 100%; display: block; margin: 0; padding: 0;"
+             loading="lazy">
+    </a>
+<?php else: ?>
+    <img src="<?= htmlspecialchars($sectionsWebPath . '/' . $file) ?>"
+         alt="<?= htmlspecialchars($detail_page_product) ?> 상세 설명"
          style="width: 100%; display: block; margin: 0; padding: 0;"
          loading="lazy">
+<?php endif; ?>
 <?php endforeach; ?>
 </div>

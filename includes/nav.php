@@ -59,8 +59,8 @@ if (isset($db) && $db) {
 <!-- 네비게이션 메뉴 -->
 <div class="cart-nav-wrapper">
     <?php if ($current_page !== 'cart'): ?>
-    <div class="nav-mode-bar">
-        <span class="nav-mode-guide" id="navModeGuide"><?php echo $nav_active_mode === 'detailed' ? '📋 재질/옵션을 알고 계시면 서브메뉴에서 바로 선택하세요' : '🔰 버튼을 클릭하면 제품 페이지로 바로 이동합니다'; ?></span>
+    <div class="nav-mode-bar" id="navModeBar"<?php echo $nav_active_mode === 'detailed' ? ' style="display:none"' : ''; ?>>
+        <span class="nav-mode-guide" id="navModeGuide"<?php echo $nav_active_mode === 'detailed' ? ' style="display:none"' : ''; ?>><?php echo $nav_active_mode === 'detailed' ? '' : '🔰 버튼을 클릭하면 제품 페이지로 바로 이동합니다'; ?></span>
         <button type="button" class="nav-mode-toggle" id="navModeToggle" onclick="toggleNavMode()">
             <span class="toggle-icon" id="navToggleIcon"><?php echo $nav_active_mode === 'detailed' ? '🔰' : '📋'; ?></span>
             <span id="navToggleLabel"><?php echo $nav_active_mode === 'detailed' ? '심플 메뉴' : '상세 메뉴'; ?></span>
@@ -290,13 +290,14 @@ function toggleNavMode() {
     var guide = document.getElementById('navModeGuide');
     var icon = document.getElementById('navToggleIcon');
     var label = document.getElementById('navToggleLabel');
+    var bar = document.getElementById('navModeBar');
     var isDetailed = nav.classList.toggle('nav-detailed-mode');
 
     if (isDetailed) {
-        guide.textContent = '📋 재질/옵션을 알고 계시면 서브메뉴에서 바로 선택하세요';
-        icon.textContent = '🔰';
-        label.textContent = '심플 메뉴';
+        bar.style.display = 'none';
     } else {
+        bar.style.display = '';
+        guide.style.display = '';
         guide.textContent = '🔰 버튼을 클릭하면 제품 페이지로 바로 이동합니다';
         icon.textContent = '📋';
         label.textContent = '상세 메뉴';
