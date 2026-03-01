@@ -13,6 +13,9 @@
 
 set -e
 
+# Git safe.directory (www-data에서 실행 시 필요)
+# LOCAL_ROOT가 설정된 후에 적용 (아래 참조)
+
 # ============================================
 # NAS FTP 설정
 # ============================================
@@ -22,8 +25,13 @@ NAS_PASS="${NAS_PASS:-sknas205204203}"
 NAS_ROOT="${NAS_ROOT:-/HDD1/duson260118}"
 NAS_PORT="${NAS_PORT:-21}"
 
-# 로컬 Git 저장소 루트
-LOCAL_ROOT="/var/www/html"
+# 로컬 웹루트 (환경변수로 오버라이드 가능)
+LOCAL_ROOT="${LOCAL_ROOT:-/var/www/html}"
+
+# Git safe.directory 동적 설정
+export GIT_CONFIG_COUNT=1
+export GIT_CONFIG_KEY_0=safe.directory
+export GIT_CONFIG_VALUE_0="$LOCAL_ROOT"
 
 # 제외할 파일/디렉토리
 EXCLUDE_PATTERNS=(
@@ -151,7 +159,11 @@ sync_changed() {
     local changes
     if [ -z "$since" ]; then
         changes=$(git diff-tree --no-commit-id --name-status -r HEAD)
+    elif [[ "$since" =~ ^[0-9]{4}-[0-9]{2}-[0-9]{2}$ ]]; then
+        # 날짜 형식(YYYY-MM-DD)이면 --since 사용
+        changes=$(git log --since="$since" --name-status --pretty=format: HEAD | grep -v '^$' | sort -t$'\t' -k2 -u)
     else
+        # 커밋 참조(HEAD~3, SHA 등)이면 기존 방식
         changes=$(git diff --name-status "$since" HEAD)
     fi
 

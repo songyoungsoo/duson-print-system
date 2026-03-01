@@ -17,18 +17,20 @@ if ($_SERVER['REQUEST_METHOD'] !== 'POST') {
 }
 
 $action = $_POST['action'] ?? '';
-$scriptPath = '/var/www/html/scripts/sync_to_sknas.sh';
 
-if (!file_exists($scriptPath)) {
-    echo json_encode(['success' => false, 'error' => '동기화 스크립트를 찾을 수 없습니다.']);
-    exit;
-}
+// 웹루트 자동 감지 (로컬: /var/www/html, 프로덕션: /var/www/vhosts/.../httpdocs 등)
+$webRoot = realpath(__DIR__ . '/../../');
+$scriptPath = $webRoot . '/scripts/sync_to_sknas.sh';
+$hasGit = is_dir($webRoot . '/.git');
+
+// 스크립트 필요 여부는 액션별로 체크 (test, status, env_info, git_status는 불필요)
+$hasScript = file_exists($scriptPath);
 
 // NAS 접속정보 (POST로 받거나 기본값)
 $nasHost = trim($_POST['nas_host'] ?? 'sknas205.ipdisk.co.kr');
 $nasUser = trim($_POST['nas_user'] ?? 'sknas205');
 $nasPass = trim($_POST['nas_pass'] ?? 'sknas205204203');
-$nasRoot = trim($_POST['nas_root'] ?? '/HDD1/duson260118');
+$nasRoot = trim($_POST['nas_root'] ?? '/HDD2/share');
 
 // 보안: 접속정보 기본 검증
 if (empty($nasHost) || empty($nasUser)) {
@@ -38,11 +40,12 @@ if (empty($nasHost) || empty($nasUser)) {
 
 // 환경변수 prefix (스크립트에 전달)
 $envPrefix = sprintf(
-    'NAS_HOST=%s NAS_USER=%s NAS_PASS=%s NAS_ROOT=%s',
+    'NAS_HOST=%s NAS_USER=%s NAS_PASS=%s NAS_ROOT=%s LOCAL_ROOT=%s',
     escapeshellarg($nasHost),
     escapeshellarg($nasUser),
     escapeshellarg($nasPass),
-    escapeshellarg($nasRoot)
+    escapeshellarg($nasRoot),
+    escapeshellarg($webRoot)
 );
 
 $command = '';
@@ -56,11 +59,17 @@ switch ($action) {
         break;
 
     case 'mirror':
+        if (!$hasScript) { echo json_encode(['success' => false, 'error' => '동기화 스크립트를 찾을 수 없습니다: ' . $scriptPath]); exit; }
         $dryRun = !empty($_POST['dry_run']) ? ' --dry-run' : '';
         $command = "{$envPrefix} bash {$scriptPath}{$dryRun} 2>&1";
         break;
 
     case 'changed':
+        if (!$hasScript) { echo json_encode(['success' => false, 'error' => '동기화 스크립트를 찾을 수 없습니다: ' . $scriptPath]); exit; }
+        if (!$hasGit) {
+            echo json_encode(['success' => false, 'error' => '이 서버에 Git이 설치되어 있지 않습니다. "변경분만" 모드는 Git 저장소에서만 사용 가능합니다.']);
+            exit;
+        }
         $since = $_POST['since'] ?? '';
         $dryRun = !empty($_POST['dry_run']) ? ' --dry-run' : '';
         $sinceArg = $since ? " {$since}" : '';
@@ -68,6 +77,7 @@ switch ($action) {
         break;
 
     case 'file':
+        if (!$hasScript) { echo json_encode(['success' => false, 'error' => '동기화 스크립트를 찾을 수 없습니다: ' . $scriptPath]); exit; }
         $filePath = $_POST['file_path'] ?? '';
         if (empty($filePath)) {
             echo json_encode(['success' => false, 'error' => '파일 경로를 입력하세요.']);
@@ -90,9 +100,23 @@ switch ($action) {
         break;
 
     case 'git_status':
-        // 마지막 커밋 변경사항 확인 (NAS 무관)
-        $command = "cd /var/www/html && git log --oneline -5 2>&1 && echo '---' && git diff-tree --no-commit-id --name-status -r HEAD 2>&1";
+        if (!$hasGit) {
+            // Git 없는 환경: 최근 수정 파일 목록으로 대체
+            $command = "find " . escapeshellarg($webRoot) . " -maxdepth 3 -type f -newer " . escapeshellarg($webRoot . "/index.php") . " -not -path '*/.*' -not -path '*/node_modules/*' 2>/dev/null | head -20 && echo '---' && echo '(Git 미설치 - 최근 수정 파일 표시)'";
+        } else {
+            $command = "cd " . escapeshellarg($webRoot) . " && git -c safe.directory=" . escapeshellarg($webRoot) . " log --oneline -5 2>&1 && echo '---' && git -c safe.directory=" . escapeshellarg($webRoot) . " diff-tree --no-commit-id --name-status -r HEAD 2>&1";
+        }
         break;
+
+    case 'env_info':
+        echo json_encode([
+            'success' => true,
+            'has_git' => $hasGit,
+            'has_script' => $hasScript,
+            'web_root' => $webRoot,
+            'server' => $_SERVER['SERVER_NAME'] ?? 'unknown',
+        ], JSON_UNESCAPED_UNICODE);
+        exit;
 
     default:
         echo json_encode(['success' => false, 'error' => '알 수 없는 액션: ' . $action]);

@@ -11,7 +11,7 @@ include __DIR__ . '/../includes/sidebar.php';
         <div class="flex items-center justify-between mb-4">
             <div>
                 <h1 class="text-lg font-bold text-gray-900">NAS 동기화</h1>
-                <p class="text-xs text-gray-500 mt-0.5" id="nasTargetLabel">dsp1830.ipdisk.co.kr → /HDD1/duson260118</p>
+                <p class="text-xs text-gray-500 mt-0.5" id="nasTargetLabel">dsp1830.ipdisk.co.kr → /HDD2/share</p>
             </div>
             <div class="flex items-center gap-2">
                 <span id="connectionStatus" class="inline-flex items-center gap-1 px-2 py-1 rounded-full text-[10px] font-medium bg-gray-100 text-gray-500">
@@ -61,7 +61,7 @@ include __DIR__ . '/../includes/sidebar.php';
                         </div>
                         <div>
                             <label class="block text-xs font-medium text-gray-600 mb-1">원격 경로</label>
-                            <input type="text" id="nasRoot" value="/HDD1/duson260118" placeholder="/volume1/web"
+                            <input type="text" id="nasRoot" value="/HDD2/share" placeholder="/volume1/web"
                                    class="w-full px-3 py-1.5 text-sm border border-gray-300 rounded-md focus:ring-blue-500 focus:border-blue-500 font-mono"
                                    oninput="updateTargetLabel()">
                         </div>
@@ -234,6 +234,7 @@ include __DIR__ . '/../includes/sidebar.php';
 // === State ===
 var currentMode = 'mirror';
 var isRunning = false;
+var hasGit = true;  // 환경 정보로 업데이트됨
 var STORAGE_KEY = 'nas_sync_profiles';
 
 // === NAS 접속정보 가져오기 ===
@@ -261,9 +262,9 @@ function renderProfileSelect() {
     var profiles = getProfiles();
     var currentVal = select.value;
 
-    // 기존 옵션 제거 (기본 제외)
-    while (select.options.length > 1) {
-        select.remove(1);
+    // 기존 옵션 제거 (기본 2개 프로필 유지: default, sknas205)
+    while (select.options.length > 2) {
+        select.remove(2);
     }
 
     // 저장된 프로필 추가
@@ -290,7 +291,7 @@ function loadProfile(name) {
         document.getElementById('nasHost').value = 'dsp1830.ipdisk.co.kr';
         document.getElementById('nasUser').value = 'admin';
         document.getElementById('nasPass').value = '1830';
-        document.getElementById('nasRoot').value = '/HDD1/duson260118';
+        document.getElementById('nasRoot').value = '/HDD2/share';
         updateTargetLabel();
         updateProfileBadge('기본 NAS (dsp1830)');
         return;
@@ -559,6 +560,9 @@ document.addEventListener('DOMContentLoaded', function() {
     selectMode(document.querySelector('input[name="sync_mode"]:checked'));
     renderProfileSelect();
 
+    // 환경 정보 조회 (git 가용 여부)
+    checkEnvironment();
+
     // 마지막 사용 프로필 복원
     var lastProfile = localStorage.getItem('nas_sync_last_profile');
     if (lastProfile) {
@@ -583,6 +587,33 @@ document.addEventListener('DOMContentLoaded', function() {
         localStorage.setItem('nas_sync_last_profile', this.value);
     });
 });
+
+// === 환경 정보 조회 ===
+function checkEnvironment() {
+    var formData = new FormData();
+    formData.append('action', 'env_info');
+    fetch('/dashboard/api/nas-sync.php', { method: 'POST', body: formData })
+    .then(function(r) { return r.json(); })
+    .then(function(data) {
+        if (data.success) {
+            hasGit = data.has_git;
+            if (!hasGit) {
+                // "변경분만" 모드 비활성화
+                var changedCard = document.getElementById('card-changed');
+                var changedRadio = changedCard.querySelector('input[type="radio"]');
+                changedRadio.disabled = true;
+                changedCard.classList.add('opacity-50');
+                changedCard.style.cursor = 'not-allowed';
+                changedCard.querySelector('p').textContent = 'Git이 없는 환경입니다. 로컬 서버에서만 사용 가능합니다.';
+
+                // "Git 상태" 버튼 레이블 변경
+                var gitBtn = document.querySelector('[onclick="runAction(\'git_status\')"]');
+                if (gitBtn) gitBtn.textContent = '파일 상태';
+            }
+        }
+    })
+    .catch(function() { /* 실패 시 무시 - 기본값 사용 */ });
+}
 </script>
 
 <?php include __DIR__ . '/../includes/footer.php'; ?>

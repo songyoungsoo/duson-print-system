@@ -44,6 +44,12 @@ class EnvironmentDetector {
         ) {
             self::$environment = 'local';
         }
+        // NAS 환경 감지 (ipdisk NAS 서버 - 로컬 DB 자격증명 사용)
+        else if (
+            strpos($host, 'ipdisk.co.kr') !== false
+        ) {
+            self::$environment = 'nas';
+        }
         // 운영 환경 감지 (dsp114.com, dsp114.co.kr, dsp1830.shop)
         else if (
             strpos($host, 'dsp114.co.kr') !== false ||
@@ -84,6 +90,19 @@ class EnvironmentDetector {
                     'charset' => 'utf8mb4',
                     'environment' => 'local',
                     'debug' => true
+                ];
+                break;
+
+            case 'nas':
+                // NAS 환경 설정 (ipdisk NAS 서버 - 로컬과 동일한 DB 자격증명)
+                self::$config = [
+                    'host' => 'localhost',
+                    'user' => 'dsp1830',
+                    'password' => 'ds701018',
+                    'database' => 'dsp1830',
+                    'charset' => 'utf8mb4',
+                    'environment' => 'nas',
+                    'debug' => false
                 ];
                 break;
 
