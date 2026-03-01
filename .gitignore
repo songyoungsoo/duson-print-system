@@ -317,7 +317,9 @@ backup_before_dropdown/
 
 # 미디어/전단지 샘플 (대용량)
 cutting.mp4
-flyer/
+flyer/*
+!flyer/maker/
+flyer/maker/uploads/
 media/
 tojeong/
 
