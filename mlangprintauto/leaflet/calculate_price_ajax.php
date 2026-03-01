@@ -70,23 +70,33 @@ if ($row) {
         }
     }
 
-    // Step 3: 코팅 추가 금액 조회 (전단지와 동일)
+    // Step 3: 코팅 추가 금액 조회 (premium_options SSOT)
     $coating_additional_price = 0;
     if (!empty($coating_type)) {
-        $coating_query = "SELECT base_price FROM additional_options_config WHERE option_type='$coating_type' AND option_category='coating' AND is_active=1";
-        $coating_result = mysqli_query($connect, $coating_query);
-        if ($coating_result && $coating_row = mysqli_fetch_array($coating_result)) {
-            $coating_additional_price = intval($coating_row['base_price']);
+        $coating_map = ['단면유광'=>'single', '양면유광'=>'double', '단면무광'=>'single_matte', '양면무광'=>'double_matte'];
+        $coating_name = array_search($coating_type, $coating_map);
+        if ($coating_name !== false) {
+            $coating_query = "SELECT v.pricing_config FROM premium_options o JOIN premium_option_variants v ON o.id=v.option_id WHERE o.product_type='inserted' AND o.option_name='코팅' AND v.variant_name='" . mysqli_real_escape_string($connect, $coating_name) . "' AND o.is_active=1 AND v.is_active=1";
+            $coating_result = mysqli_query($connect, $coating_query);
+            if ($coating_result && $coating_row = mysqli_fetch_array($coating_result)) {
+                $pc = json_decode($coating_row['pricing_config'], true);
+                $coating_additional_price = intval($pc['base_price'] ?? 0);
+            }
         }
     }
 
-    // Step 4: 오시 추가 금액 조회 (전단지와 동일)
+    // Step 4: 오시 추가 금액 조회 (premium_options SSOT)
     $creasing_additional_price = 0;
     if (!empty($creasing_type)) {
-        $creasing_query = "SELECT base_price FROM additional_options_config WHERE option_type='$creasing_type' AND option_category='creasing' AND is_active=1";
-        $creasing_result = mysqli_query($connect, $creasing_query);
-        if ($creasing_result && $creasing_row = mysqli_fetch_array($creasing_result)) {
-            $creasing_additional_price = intval($creasing_row['base_price']);
+        $creasing_map = ['1줄'=>'1line', '2줄'=>'2line', '3줄'=>'3line'];
+        $creasing_name = array_search($creasing_type, $creasing_map);
+        if ($creasing_name !== false) {
+            $creasing_query = "SELECT v.pricing_config FROM premium_options o JOIN premium_option_variants v ON o.id=v.option_id WHERE o.product_type='inserted' AND o.option_name='오시' AND v.variant_name='" . mysqli_real_escape_string($connect, $creasing_name) . "' AND o.is_active=1 AND v.is_active=1";
+            $creasing_result = mysqli_query($connect, $creasing_query);
+            if ($creasing_result && $creasing_row = mysqli_fetch_array($creasing_result)) {
+                $pc = json_decode($creasing_row['pricing_config'], true);
+                $creasing_additional_price = intval($pc['base_price'] ?? 0);
+            }
         }
     }
 

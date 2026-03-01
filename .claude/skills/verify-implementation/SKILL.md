@@ -36,6 +36,7 @@ argument-hint: "[선택사항: 특정 verify 스킬 이름]"
 | 5 | `verify-css-important` | CSS/PHP에서 새 !important 사용 탐지 (명시도 전쟁 방지) |
 | 6 | `verify-folder-names` | 제품 폴더명 혼동(sticker↔sticker_new, poster↔littleprint, leaflet↔inserted) 탐지 |
 | 7 | `verify-form-data-contract` | JS formData.append와 PHP $_POST 필드 일치 검증 (데이터 계약 불일치 탐지) |
+| 8 | `verify-option-pricing` | 옵션 가격 시스템 SSOT 위반/파이프라인 단절/가격 불일치 탐지 |
 
 ## 워크플로우
 

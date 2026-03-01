@@ -15,10 +15,37 @@ if ($r) { while ($row = mysqli_fetch_assoc($r)) {
     $types[] = $row;
 } }
 
-// 추가옵션 가격을 DB에서 조회 (additional_options_config)
+// 추가옵션 가격을 DB에서 조회 (premium_options SSOT)
 $addOpts = ['coating' => [], 'folding' => [], 'creasing' => []];
-$r = mysqli_query($db, "SELECT option_category, option_type, option_name, base_price FROM additional_options_config WHERE is_active = 1 AND option_category IN ('coating','folding','creasing') ORDER BY option_category, sort_order");
-if ($r) { while ($row = mysqli_fetch_assoc($r)) { $addOpts[$row['option_category']][] = $row; } }
+$product_type_for_opts = 'inserted';
+$r = mysqli_query($db, "
+    SELECT o.option_name, v.variant_name, v.pricing_config
+    FROM premium_options o
+    JOIN premium_option_variants v ON o.id = v.option_id
+    WHERE o.product_type = '{$product_type_for_opts}' AND o.is_active = 1 AND v.is_active = 1
+    ORDER BY o.sort_order, v.display_order
+");
+if ($r) {
+    $catMap = ['코팅'=>'coating', '접지'=>'folding', '오시'=>'creasing'];
+    $typeMap = [
+        '단면유광'=>'single', '양면유광'=>'double', '단면무광'=>'single_matte', '양면무광'=>'double_matte',
+        '2단접지'=>'2fold', '3단접지'=>'3fold', '병풍접지'=>'accordion', '대문접지'=>'gate', '2단'=>'2fold', '3단'=>'3fold', '병풍'=>'accordion', '대문'=>'gate',
+        '1줄'=>'1line', '2줄'=>'2line', '3줄'=>'3line'
+    ];
+    while ($row = mysqli_fetch_assoc($r)) {
+        $pc = json_decode($row['pricing_config'], true);
+        $cat = $catMap[$row['option_name']] ?? null;
+        $optType = $typeMap[$row['variant_name']] ?? $row['variant_name'];
+        if ($cat) {
+            $addOpts[$cat][] = [
+                'option_category' => $cat,
+                'option_type' => $optType,
+                'option_name' => $row['variant_name'],
+                'base_price' => (int)($pc['base_price'] ?? 0)
+            ];
+        }
+    }
+}
 ?>
 <!DOCTYPE html>
 <html lang="ko">
@@ -135,7 +162,7 @@ var API_URL = '/api/quote/calculate_price.php';
 var OPT_URL = '/admin/mlangprintauto/quote/widgets/api/get_options.php';
 var currentPayload = null;
 
-// 추가옵션 base_price (DB: additional_options_config 자동 로드)
+// 추가옵션 base_price (DB: premium_options SSOT)
 var OPTION_PRICES = <?php
     $optPrices = [];
     foreach ($addOpts as $cat => $items) {
@@ -249,7 +276,7 @@ function calculatePrice() {
         return;
     }
 
-    // Calculate additional options price (OPTION_PRICES: DB additional_options_config 자동 로드)
+    // Calculate additional options price (OPTION_PRICES: DB premium_options SSOT)
     var additionalTotal = 0;
     var optionDetails = {};
     var qtyMultiplier = Math.max(parseFloat(quantity), 1);

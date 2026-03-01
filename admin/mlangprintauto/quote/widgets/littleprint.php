@@ -11,10 +11,37 @@ $types = [];
 $r = mysqli_query($db, "SELECT no, title FROM mlangprintauto_transactioncate WHERE Ttable='LittlePrint' AND BigNo='0' ORDER BY TreeNo, no");
 if ($r) { while ($row = mysqli_fetch_assoc($r)) { $types[] = $row; } }
 
-// 추가옵션 가격을 DB에서 조회 (additional_options_config)
+// 추가옵션 가격을 DB에서 조회 (premium_options SSOT)
 $addOpts = ['coating' => [], 'folding' => [], 'creasing' => []];
-$r = mysqli_query($db, "SELECT option_category, option_type, option_name, base_price FROM additional_options_config WHERE is_active = 1 AND option_category IN ('coating','folding','creasing') ORDER BY option_category, sort_order");
-if ($r) { while ($row = mysqli_fetch_assoc($r)) { $addOpts[$row['option_category']][] = $row; } }
+$product_type_for_opts = 'littleprint';
+$r = mysqli_query($db, "
+    SELECT o.option_name, v.variant_name, v.pricing_config
+    FROM premium_options o
+    JOIN premium_option_variants v ON o.id = v.option_id
+    WHERE o.product_type = '{$product_type_for_opts}' AND o.is_active = 1 AND v.is_active = 1
+    ORDER BY o.sort_order, v.display_order
+");
+if ($r) {
+    $catMap = ['코팅'=>'coating', '접지'=>'folding', '오시'=>'creasing'];
+    $typeMap = [
+        '단면유광'=>'single', '양면유광'=>'double', '단면무광'=>'single_matte', '양면무광'=>'double_matte',
+        '2단접지'=>'2fold', '3단접지'=>'3fold', '병풍접지'=>'accordion', '대문접지'=>'gate', '2단'=>'2fold', '3단'=>'3fold', '병풍'=>'accordion', '대문'=>'gate',
+        '1줄'=>'1line', '2줄'=>'2line', '3줄'=>'3line'
+    ];
+    while ($row = mysqli_fetch_assoc($r)) {
+        $pc = json_decode($row['pricing_config'], true);
+        $cat = $catMap[$row['option_name']] ?? null;
+        $optType = $typeMap[$row['variant_name']] ?? $row['variant_name'];
+        if ($cat) {
+            $addOpts[$cat][] = [
+                'option_category' => $cat,
+                'option_type' => $optType,
+                'option_name' => $row['variant_name'],
+                'base_price' => (int)($pc['base_price'] ?? 0)
+            ];
+        }
+    }
+}
 ?>
 <!DOCTYPE html>
 <html lang="ko">
@@ -131,7 +158,23 @@ var API_URL = '/api/quote/calculate_price.php';
 var OPT_URL = '/admin/mlangprintauto/quote/widgets/api/get_options.php';
 var currentPayload = null;
 
-// 추가옵션 base_price (DB: additional_options_config 자동 로드)
+// Paper IDs (TreeSelect in price table) — used to detect Section/TreeSelect swap
+// DB: Section=sizes(610,611,612,613,723), TreeSelect=papers(604-609,679,680,958)
+// The cascade may load them in either order depending on DB BigNo/TreeNo assignment
+var PAPER_IDS = {'604':true,'605':true,'606':true,'607':true,'608':true,'609':true,'679':true,'680':true,'958':true};
+
+// Resolve Section/TreeSelect from dropdown values (auto-detect swap)
+function resolveFields() {
+    var sectionVal = document.getElementById('Section').value;
+    var pnTypeVal = document.getElementById('PN_type').value;
+    // If Section dropdown contains a paper ID, values are swapped
+    if (PAPER_IDS[sectionVal]) {
+        return { dbSection: pnTypeVal, dbTreeSelect: sectionVal };
+    }
+    return { dbSection: sectionVal, dbTreeSelect: pnTypeVal };
+}
+
+// 추가옵션 base_price (DB: premium_options SSOT)
 var OPTION_PRICES = <?php
     $optPrices = [];
     foreach ($addOpts as $cat => $items) {
@@ -201,7 +244,8 @@ function loadQuantities() {
     var qty = document.getElementById('quantity');
     qty.innerHTML = '<option value="">로딩중...</option>';
     if (!style || !section || !pnType) { qty.innerHTML = '<option value="">상위 항목을 선택</option>'; resetPrice(); return; }
-    var url = OPT_URL + '?table=littleprint&source=price&field=quantity&filter_style=' + style + '&filter_Section=' + section + '&filter_TreeSelect=' + pnType;
+    var resolved = resolveFields();
+    var url = OPT_URL + '?table=littleprint&source=price&field=quantity&filter_style=' + style + '&filter_Section=' + resolved.dbSection + '&filter_TreeSelect=' + resolved.dbTreeSelect;
     fetch(url, {credentials: 'same-origin'}).then(function(r) { return r.json(); }).then(function(data) {
         qty.innerHTML = '<option value="">선택</option>';
         for (var i = 0; i < data.length; i++) { var o = document.createElement('option'); o.value = data[i].no; var n = parseInt(data[i].title); o.textContent = n ? n.toLocaleString() + '매' : data[i].title; qty.appendChild(o); }
@@ -230,7 +274,7 @@ function calculatePrice() {
         return;
     }
 
-    // Calculate additional options price (OPTION_PRICES: DB additional_options_config 자동 로드)
+    // Calculate additional options price (OPTION_PRICES: DB premium_options SSOT)
     var additionalTotal = 0;
     var optionDetails = {};
     var qtyMultiplier = Math.max(parseFloat(quantity), 1);
@@ -256,10 +300,11 @@ function calculatePrice() {
         optionDetails.creasing = {lines: parseInt(creasingLines), price: creasingPrice};
     }
 
+    var resolved = resolveFields();
     var params = {
         style: style,
-        Section: pnType,
-        TreeSelect: section,
+        Section: resolved.dbSection,
+        TreeSelect: resolved.dbTreeSelect,
         quantity: quantity,
         POtype: document.getElementById('POtype').value,
         ordertype: document.getElementById('ordertype').value,

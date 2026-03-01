@@ -443,6 +443,20 @@ $renderer->formatSupplyPriceCell($item);  // number_format 적용
 
 ---
 
+## ✅ 검증 스킬 (Verify Skills)
+
+| 스킬 | 설명 |
+|------|------|
+| `verify-url-safety` | URL에 쉼표 사용 탐지 (Plesk 500 에러 방지) |
+| `verify-sticker-logic` | 스티커 가격 DB lookup 방지 (formula 강제) |
+| `verify-product-units` | 제품별 수량 단위 규정 검증 (QuantityFormatter SSOT 강제) |
+| `verify-bind-param` | bind_param 3요소 카운트 불일치 탐지 |
+| `verify-css-important` | CSS/PHP에서 새 !important 사용 탐지 |
+| `verify-folder-names` | 제품 폴더명 혼동 탐지 |
+| `verify-form-data-contract` | JS formData.append와 PHP $_POST 필드 일치 검증 |
+| `verify-option-pricing` | 옵션 가격 시스템 SSOT 위반/파이프라인 단절/가격 불일치 탐지 |
+
+
 *Core Version - Last Updated: 2026-02-02*
 *Environment: WSL2 Ubuntu + Windows XAMPP*
 *SSOT Docs: CLAUDE_DOCS/Duson_System_Master_Spec_v1.0.md*

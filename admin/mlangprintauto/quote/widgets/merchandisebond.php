@@ -11,10 +11,31 @@ $types = [];
 $r = mysqli_query($db, "SELECT no, title FROM mlangprintauto_transactioncate WHERE Ttable='MerchandiseBond' AND BigNo='0' ORDER BY TreeNo, no");
 if ($r) { while ($row = mysqli_fetch_assoc($r)) { $types[] = $row; } }
 
-// 프리미엄 옵션 가격을 DB에서 조회 (additional_options_config)
+// 프리미엄 옵션 가격을 DB에서 조회 (premium_options SSOT)
 $premOpts = [];
-$r = mysqli_query($db, "SELECT option_type, option_name, base_price, per_qty FROM additional_options_config WHERE is_active = 1 AND option_category = 'premium' ORDER BY sort_order");
-if ($r) { while ($row = mysqli_fetch_assoc($r)) { $premOpts[] = $row; } }
+$product_type_for_opts = 'merchandisebond';
+$r = mysqli_query($db, "
+    SELECT o.option_name, v.variant_name, v.pricing_config
+    FROM premium_options o
+    JOIN premium_option_variants v ON o.id = v.option_id
+    WHERE o.product_type = '{$product_type_for_opts}' AND o.is_active = 1 AND v.is_active = 1
+    ORDER BY o.sort_order, v.display_order
+");
+if ($r) {
+    $typeMap = ['박'=>'foil', '넘버링'=>'numbering', '미싱'=>'perforation', '귀돌이'=>'rounding', '오시'=>'creasing'];
+    while ($row = mysqli_fetch_assoc($r)) {
+        $pc = json_decode($row['pricing_config'], true);
+        $optKey = $typeMap[$row['option_name']] ?? null;
+        if ($optKey) {
+            $premOpts[] = [
+                'option_type' => $optKey,
+                'option_name' => $row['variant_name'],
+                'base_price' => (int)($pc['base_500'] ?? 0),
+                'per_qty' => (int)($pc['per_unit'] ?? 0)
+            ];
+        }
+    }
+}
 ?>
 <!DOCTYPE html>
 <html lang="ko">
@@ -110,8 +131,8 @@ var API_URL = '/api/quote/calculate_price.php';
 var OPT_URL = '/admin/mlangprintauto/quote/widgets/api/get_options.php';
 var currentPayload = null;
 
-// 프리미엄 옵션 base_price (DB: additional_options_config 자동 로드)
-// 프리미엄 옵션 가격 (DB: additional_options_config 자동 로드)
+// 프리미엄 옵션 base_price (DB: premium_options SSOT)
+// 프리미엄 옵션 가격 (DB: premium_options SSOT)
 // per_qty=0: 고정가격, per_qty>0: ceil(수량/per_qty) × price
 var OPTION_PRICES = <?php
     $optPrices = [];
@@ -200,7 +221,7 @@ function calculatePrice() {
         return;
     }
 
-    // Calculate premium options price (OPTION_PRICES: DB additional_options_config 자동 로드)
+    // Calculate premium options price (OPTION_PRICES: DB premium_options SSOT)
     var premiumOptions = {};
     var premiumTotal = 0;
     var actualQty = parseInt(getSelectedText('quantity').replace(/[^0-9]/g, '')) || 0;

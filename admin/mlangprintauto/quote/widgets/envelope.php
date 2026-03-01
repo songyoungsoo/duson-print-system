@@ -11,10 +11,36 @@ $types = [];
 $r = mysqli_query($db, "SELECT no, title FROM mlangprintauto_transactioncate WHERE Ttable='Envelope' AND BigNo='0' ORDER BY TreeNo, no");
 if ($r) { while ($row = mysqli_fetch_assoc($r)) { $types[] = $row; } }
 
-// 풀띠(봉투테이프) 옵션 가격을 DB에서 조회 (additional_options_config)
+// 풀띠(봉투테이프) 옵션 가격을 DB에서 조회 (premium_options SSOT)
 $tapeOpts = [];
-$r = mysqli_query($db, "SELECT option_type, option_name, base_price FROM additional_options_config WHERE is_active = 1 AND option_category = 'envelope_tape' ORDER BY sort_order");
-if ($r) { while ($row = mysqli_fetch_assoc($r)) { $tapeOpts[] = $row; } }
+$r = mysqli_query($db, "
+    SELECT v.variant_name, v.pricing_config
+    FROM premium_options o
+    JOIN premium_option_variants v ON o.id = v.option_id
+    WHERE o.product_type = 'envelope' AND o.option_name = '양면테이프' AND o.is_active = 1 AND v.is_active = 1
+    ORDER BY v.display_order
+");
+if ($r) {
+    while ($row = mysqli_fetch_assoc($r)) {
+        $pc = json_decode($row['pricing_config'], true);
+        if (!empty($pc['tiers'])) {
+            foreach ($pc['tiers'] as $tier) {
+                $tapeOpts[] = [
+                    'option_type' => (string)$tier['max_qty'],
+                    'option_name' => number_format($tier['max_qty']) . '매',
+                    'base_price' => (int)$tier['price']
+                ];
+            }
+        }
+        if (!empty($pc['over_1000_per_unit'])) {
+            $tapeOpts[] = [
+                'option_type' => 'custom',
+                'option_name' => '1000매 초과 단가',
+                'base_price' => (int)$pc['over_1000_per_unit']
+            ];
+        }
+    }
+}
 ?>
 <!DOCTYPE html>
 <html lang="ko">
@@ -99,7 +125,7 @@ var API_URL = '/api/quote/calculate_price.php';
 var OPT_URL = '/admin/mlangprintauto/quote/widgets/api/get_options.php';
 var currentPayload = null;
 
-// 풀띠 옵션 가격 (DB: additional_options_config 자동 로드)
+// 풀띠 옵션 가격 (DB: premium_options SSOT)
 // {500: 25000, 1000: 40000, custom: 40}
 var TAPE_PRICES = <?php
     $tapePrices = [];
@@ -185,7 +211,7 @@ function calculatePrice() {
         return;
     }
 
-    // Calculate tape option price (TAPE_PRICES: DB additional_options_config 자동 로드)
+    // Calculate tape option price (TAPE_PRICES: DB premium_options SSOT)
     var additionalTotal = 0;
     if (document.getElementById('envelope_tape_enabled').checked) {
         var qtyText = getSelectedText('quantity');
