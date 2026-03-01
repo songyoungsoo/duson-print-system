@@ -39,6 +39,10 @@ include __DIR__ . '/../includes/sidebar.php';
                 <option value="전단지">전단지</option>
                 <option value="봉투">봉투</option>
                 <option value="포스터">포스터</option>
+                <option value="카다록">카다록</option>
+                <option value="상품권">상품권</option>
+                <option value="NCR양식지">NCR양식지</option>
+                <option value="자석스티커">자석스티커</option>
             </select>
             <div class="flex-1 min-w-[180px]">
                 <input type="text" id="searchInput" placeholder="주문번호, 이름, 이메일"
