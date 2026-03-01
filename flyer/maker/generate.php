@@ -211,7 +211,7 @@ try {
         'margin_bottom'  => 8,
         'default_font'   => 'nanumgothic',
         'tempDir'        => sys_get_temp_dir() . '/mpdf',
-        'fontDir'        => array_merge($fontDirs, ['/usr/share/fonts/truetype/nanum']),
+        'fontDir'        => $fontDirs,
         'fontdata'       => $fontData + [
             'nanumgothic' => [
                 'R' => 'NanumGothic.ttf',
