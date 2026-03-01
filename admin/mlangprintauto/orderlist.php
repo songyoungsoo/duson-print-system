@@ -283,6 +283,24 @@ function DelGCheckField() {
         document.MemoPlusecheckForm.submit();
     }
 }
+
+function TDsearchCheckField() {
+    var f = document.TDsearch;
+    var y1 = f.YearOne.value.trim();
+    var y2 = f.YearTwo.value.trim();
+    // 날짜 하나만 입력된 경우 경고
+    if (y1 && !y2) {
+        alert('날짜 검색을 하시려면 종료일도 입력해 주세요.');
+        f.YearTwo.focus();
+        return false;
+    }
+    if (!y1 && y2) {
+        alert('날짜 검색을 하시려면 시작일도 입력해 주세요.');
+        f.YearOne.focus();
+        return false;
+    }
+    return true;
+}
 </script>
 <script src='../js/exchange.js'></script>
 <!-- /head 태그 제거: top.php에 이미 포함되어 있음 -->
@@ -425,8 +443,8 @@ if ($Type) {
 
   if ($YearOne || $YearTwo) {
     $YearOneOk = $YearOne . " 00:00:00";
-    $YearTwoOk = $YearTwo . " 00:00:00";
-    $Mlang_query = "select * from $table where date > '$YearOneOk' and date < '$YearTwoOk' $TypeOk and $searchCondition";
+    $YearTwoOk = $YearTwo . " 23:59:59";
+    $Mlang_query = "select * from $table where date >= '$YearOneOk' and date <= '$YearTwoOk' $TypeOk and $searchCondition";
   } else {
     $Mlang_query = "select * from $table where $searchCondition $TypeOk";
   }
@@ -664,13 +682,16 @@ $OrderCate = isset($_POST['OrderCate']) ? $_POST['OrderCate'] : '';
 $OrderStyleYU9OK = isset($_POST['OrderStyleYU9OK']) ? $_POST['OrderStyleYU9OK'] : '';
 if($rows){
 
-if($TDsearchValue){
-$mlang_pagego="Cate=$Cate&TDsearchValue=$TDsearchValue";
-}else if($OrderStyleYU9OK){
-$mlang_pagego="OrderStyleYU9OK=$OrderStyleYU9OK";
-}else if($OrderCate){
-$mlang_pagego="OrderCate=$OrderCate";
-}else{}
+// 검색 파라미터 보존 (페이지네이션 시 유지)
+$mlang_pagego_parts = [];
+if ($Type) $mlang_pagego_parts[] = "Type=" . urlencode($Type);
+if ($Cate) $mlang_pagego_parts[] = "Cate=" . urlencode($Cate);
+if ($TDsearchValue) $mlang_pagego_parts[] = "TDsearchValue=" . urlencode($TDsearchValue);
+if ($YearOne) $mlang_pagego_parts[] = "YearOne=" . urlencode($YearOne);
+if ($YearTwo) $mlang_pagego_parts[] = "YearTwo=" . urlencode($YearTwo);
+if ($OrderStyleYU9OK) $mlang_pagego_parts[] = "OrderStyleYU9OK=" . urlencode($OrderStyleYU9OK);
+if ($OrderCate) $mlang_pagego_parts[] = "OrderCate=" . urlencode($OrderCate);
+$mlang_pagego = implode('&', $mlang_pagego_parts);
 
 $pagecut= 7;
 $one_bbs= $listcut*$pagecut;
