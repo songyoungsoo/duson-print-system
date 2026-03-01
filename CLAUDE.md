@@ -458,6 +458,7 @@ $renderer->formatSupplyPriceCell($item);  // number_format 적용
 | `verify-folder-names` | 제품 폴더명 혼동 탐지 |
 | `verify-form-data-contract` | JS formData.append와 PHP $_POST 필드 일치 검증 |
 | `verify-option-pricing` | 옵션 가격 시스템 SSOT 위반/파이프라인 단절/가격 불일치 탐지 |
+| `verify-quote-widget` | 실시간 견적받기 위젯 9개 제품 페이지 존재/CSS/JS/순서 검증 |
 
 
 *Core Version - Last Updated: 2026-02-02*

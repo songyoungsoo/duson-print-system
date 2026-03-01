@@ -37,6 +37,7 @@ argument-hint: "[선택사항: 특정 verify 스킬 이름]"
 | 6 | `verify-folder-names` | 제품 폴더명 혼동(sticker↔sticker_new, poster↔littleprint, leaflet↔inserted) 탐지 |
 | 7 | `verify-form-data-contract` | JS formData.append와 PHP $_POST 필드 일치 검증 (데이터 계약 불일치 탐지) |
 | 8 | `verify-option-pricing` | 옵션 가격 시스템 SSOT 위반/파이프라인 단절/가격 불일치 탐지 |
+| 9 | `verify-quote-widget` | 실시간 견적받기 위젯(quote_gauge.php) 전체 9개 제품 페이지 존재/CSS/JS/순서 검증 |
 
 ## 워크플로우
 
