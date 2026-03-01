@@ -265,6 +265,9 @@ body.cart-page .mobile-view .product-nav { display: grid; }
 7. ❌ `getUnitCode($productType)` 호출 → 스티커 "개" 단위 버그 (2026-01-17)
 8. ❌ product_type 없이 단위 결정 → 레거시 데이터 감지 로직 필수
 9. ❌ unit_price=0일 때 그대로 표시 → supply_price/quantity로 계산 필요
+10. ❌ 날짜 검색 SQL에서 종료일 `00:00:00` + `<` 사용 → 종료일 당일 전체 제외 (2026-03-01)
+11. ❌ `onsubmit` JS 함수가 미정의 → 콘솔 에러 (폼은 제출되나 불안정)
+12. ❌ 페이지네이션 링크에 검색 파라미터(날짜/타입) 미포함 → 2페이지 이동 시 검색 조건 소실
 
 ---
 
