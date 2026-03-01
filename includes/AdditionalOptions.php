@@ -3,11 +3,11 @@
  * 추가 옵션 시스템 - 재사용 가능한 모듈형 클래스
  * 
  * 목적: 코팅, 접지, 오시 등 추가 옵션의 통합 관리
- * 특징: 다른 제품 페이지에서도 재사용 가능한 모듈형 구조
+ * 가격 소스: premium_options + premium_option_variants 테이블 (SSOT)
+ * 폴백: DB 로드 실패 시 하드코딩 기본값 사용
  * 
- * @version 1.0
- * @date 2025-01-08
- * @author SuperClaude Architecture System
+ * @version 2.0
+ * @date 2026-03-01
  */
 
 // db.php 포함하여 safe_mysqli_query 함수 사용
@@ -16,26 +16,58 @@ require_once dirname(__FILE__) . '/../db.php';
 class AdditionalOptions {
     private $db;
     private $options_config = [];
+    private $loaded_names = [];  // DB에서 로드된 옵션 한글 이름
+    private $db_loaded = false;  // DB 로드 성공 여부
     
-    // 기본 옵션 가격 (1연 기준)
+    // 기본 옵션 가격 — DB 로드 실패 시 폴백 (premium_options DB가 SSOT)
+    // ⚠️ 이 값은 DB 로드 성공 시 덮어쓰기됨
     private $BASE_PRICES = [
         'coating' => [
             'single' => 80000,        // 단면유광코팅
             'double' => 160000,       // 양면유광코팅
-            'single_matte' => 90000,  // 단면무광코팅 (80,000 → 90,000)
-            'double_matte' => 180000  // 양면무광코팅 (160,000 → 180,000)
+            'single_matte' => 90000,  // 단면무광코팅
+            'double_matte' => 180000  // 양면무광코팅
         ],
         'folding' => [
             '2fold' => 40000,     // 2단접지
             '3fold' => 40000,     // 3단접지
-            'accordion' => 60000, // 병풍접지
+            'accordion' => 70000, // 병풍접지
             'gate' => 100000      // 대문접지
         ],
         'creasing' => [
-            '1line' => 40000,  // 1줄 (32,000 → 40,000)
-            '2line' => 40000,  // 2줄 (32,000 → 40,000)
-            '3line' => 45000   // 3줄 (40,000 → 45,000)
+            '1line' => 30000,  // 1줄 오시
+            '2line' => 30000,  // 2줄 오시
+            '3line' => 45000   // 3줄 오시
         ]
+    ];
+
+    // 카테고리 매핑: premium_options.option_name → 내부 카테고리 코드
+    private static $CATEGORY_MAP = [
+        '코팅' => 'coating',
+        '접지' => 'folding',
+        '오시' => 'creasing',
+    ];
+
+    // 변형 매핑: premium_option_variants.variant_name → 내부 타입 코드
+    private static $VARIANT_MAP = [
+        'coating' => [
+            '단면유광' => 'single', '양면유광' => 'double',
+            '단면무광' => 'single_matte', '양면무광' => 'double_matte'
+        ],
+        'folding' => [
+            '2단' => '2fold', '3단' => '3fold', '병풍' => 'accordion', '대문' => 'gate',
+            '2단접지' => '2fold', '3단접지' => '3fold', '병풍접지' => 'accordion', '대문접지' => 'gate'
+        ],
+        'creasing' => [
+            '1줄' => '1line', '2줄' => '2line', '3줄' => '3line'
+        ],
+    ];
+
+    // 이름 접미어 매핑
+    private static $NAME_SUFFIXES = [
+        'coating' => '코팅',
+        'folding' => '접지',
+        'creasing' => ' 오시',
     ];
     
     public function __construct($database_connection) {
@@ -44,20 +76,57 @@ class AdditionalOptions {
     }
     
     /**
-     * 데이터베이스에서 옵션 설정 로드
+     * premium_options DB에서 옵션 가격/이름 로드
+     * 성공 시 BASE_PRICES 교체, 실패 시 하드코딩 폴백 유지
      */
     private function loadOptionsConfig() {
         try {
-            $query = "SELECT * FROM additional_options_config WHERE is_active = 1 ORDER BY option_category, sort_order";
+            // inserted 제품 기준으로 코팅/접지/오시 가격 조회 (Pattern B: base_price)
+            $query = "SELECT o.option_name, v.variant_name, v.pricing_config, v.display_order
+                      FROM premium_options o 
+                      JOIN premium_option_variants v ON o.id = v.option_id 
+                      WHERE o.is_active = 1 AND v.is_active = 1 
+                      AND o.product_type = 'inserted'
+                      AND o.option_name IN ('코팅', '접지', '오시')
+                      ORDER BY o.option_name, v.display_order ASC";
+            
             $result = safe_mysqli_query($this->db, $query);
             
-            if ($result) {
+            if ($result && mysqli_num_rows($result) > 0) {
+                $dbPrices = [];
+                $dbNames = [];
+                
                 while ($row = mysqli_fetch_assoc($result)) {
-                    $this->options_config[$row['option_category']][] = $row;
+                    $category = self::$CATEGORY_MAP[$row['option_name']] ?? null;
+                    if (!$category) continue;
+                    
+                    $type = self::$VARIANT_MAP[$category][$row['variant_name']] ?? null;
+                    if (!$type) continue;
+                    
+                    $pc = json_decode($row['pricing_config'], true);
+                    $price = (int)($pc['base_price'] ?? 0);
+                    
+                    if (!isset($dbPrices[$category])) {
+                        $dbPrices[$category] = [];
+                        $dbNames[$category] = [];
+                    }
+                    
+                    $dbPrices[$category][$type] = $price;
+                    $dbNames[$category][$type] = $row['variant_name'];
+                }
+                
+                // DB 로드 성공 → BASE_PRICES 교체
+                if (!empty($dbPrices)) {
+                    foreach ($dbPrices as $cat => $prices) {
+                        $this->BASE_PRICES[$cat] = $prices;
+                    }
+                    $this->loaded_names = $dbNames;
+                    $this->db_loaded = true;
                 }
             }
         } catch (Exception $e) {
-            error_log("AdditionalOptions 설정 로드 오류: " . $e->getMessage());
+            error_log("AdditionalOptions premium_options 로드 오류: " . $e->getMessage());
+            // 실패 시 하드코딩 BASE_PRICES 유지 (fallback)
         }
     }
     
@@ -158,9 +227,16 @@ class AdditionalOptions {
     }
     
     /**
-     * 옵션 이름 가져오기
+     * 옵션 이름 가져오기 (DB 로드 우선, 폴백: 하드코딩)
      */
     private function getOptionName($category, $type) {
+        // DB에서 로드된 이름 우선
+        if (isset($this->loaded_names[$category][$type])) {
+            $suffix = self::$NAME_SUFFIXES[$category] ?? '';
+            return $this->loaded_names[$category][$type] . $suffix;
+        }
+        
+        // 폴백: 하드코딩 이름
         $names = [
             'coating' => [
                 'single' => '단면유광코팅',
@@ -190,6 +266,15 @@ class AdditionalOptions {
      * @return string HTML 코드
      */
     public function generateEnvelopeOptionsHtml() {
+        // 코팅 옵션을 DB 가격으로 동적 생성
+        $coating_options = '';
+        if (isset($this->BASE_PRICES['coating'])) {
+            foreach ($this->BASE_PRICES['coating'] as $type => $price) {
+                $name = $this->getOptionName('coating', $type);
+                $coating_options .= '                    <option value="' . $type . '">' . $name . ' - ' . number_format($price) . '원</option>' . "\n";
+            }
+        }
+
         $html = '
         <div class="additional-options-section envelope-specific" id="additionalOptionsSection">
             <!-- 봉투 전용 옵션 헤더 -->
@@ -210,11 +295,7 @@ class AdditionalOptions {
             <!-- 코팅 옵션 상세 -->
             <div class="option-details" id="coating_options" style="display: none;">
                 <select name="coating_type" id="coating_type" class="option-select">
-                    <option value="single">단면유광코팅 - 80,000원</option>
-                    <option value="double">양면유광코팅 - 160,000원</option>
-                    <option value="single_matte">단면무광코팅 - 90,000원</option>
-                    <option value="double_matte">양면무광코팅 - 180,000원</option>
-                </select>
+' . $coating_options . '                </select>
             </div>
             
             <!-- 인쇄 옵션 상세 -->
@@ -236,12 +317,40 @@ class AdditionalOptions {
     }
 
     /**
-     * HTML 폼 생성
+     * HTML 폼 생성 (코팅/접지/오시 — DB 가격 기반 동적 생성)
      * 
      * @param string $product_type 제품 타입 (inserted, namecard 등)
      * @return string HTML 코드
      */
     public function generateOptionsHtml($product_type = 'inserted') {
+        // 코팅 옵션 동적 생성
+        $coating_options = '';
+        if (isset($this->BASE_PRICES['coating'])) {
+            foreach ($this->BASE_PRICES['coating'] as $type => $price) {
+                $name = $this->getOptionName('coating', $type);
+                $coating_options .= '                    <option value="' . $type . '">' . $name . ' - ' . number_format($price) . '원</option>' . "\n";
+            }
+        }
+
+        // 접지 옵션 동적 생성
+        $folding_options = '';
+        if (isset($this->BASE_PRICES['folding'])) {
+            foreach ($this->BASE_PRICES['folding'] as $type => $price) {
+                $name = $this->getOptionName('folding', $type);
+                $folding_options .= '                    <option value="' . $type . '">' . $name . ' - ' . number_format($price) . '원</option>' . "\n";
+            }
+        }
+
+        // 오시 옵션 동적 생성 (value = 줄 수만)
+        $creasing_options = '';
+        if (isset($this->BASE_PRICES['creasing'])) {
+            foreach ($this->BASE_PRICES['creasing'] as $type => $price) {
+                $lines = str_replace('line', '', $type); // '1line' → '1'
+                $name = $this->getOptionName('creasing', $type);
+                $creasing_options .= '                    <option value="' . $lines . '">' . $name . ' - ' . number_format($price) . '원</option>' . "\n";
+            }
+        }
+
         $html = '
         <div class="additional-options-section" id="additionalOptionsSection">
             <!-- 한 줄 체크박스 헤더 -->
@@ -266,30 +375,19 @@ class AdditionalOptions {
             <!-- 코팅 옵션 상세 -->
             <div class="option-details" id="coating_options" style="display: none;">
                 <select name="coating_type" id="coating_type" class="option-select">
-                    <option value="single">단면유광코팅 - 80,000원</option>
-                    <option value="double">양면유광코팅 - 160,000원</option>
-                    <option value="single_matte">단면무광코팅 - 90,000원</option>
-                    <option value="double_matte">양면무광코팅 - 180,000원</option>
-                </select>
+' . $coating_options . '                </select>
             </div>
             
             <!-- 접지 옵션 상세 -->
             <div class="option-details" id="folding_options" style="display: none;">
                 <select name="folding_type" id="folding_type" class="option-select">
-                    <option value="2fold">2단접지 - 40,000원</option>
-                    <option value="3fold">3단접지 - 40,000원</option>
-                    <option value="accordion">병풍접지 - 60,000원</option>
-                    <option value="gate">대문접지 - 100,000원</option>
-                </select>
+' . $folding_options . '                </select>
             </div>
             
             <!-- 오시 옵션 상세 -->
             <div class="option-details" id="creasing_options" style="display: none;">
                 <select name="creasing_lines" id="creasing_lines" class="option-select">
-                    <option value="1">1줄 - 40,000원</option>
-                    <option value="2">2줄 - 40,000원</option>
-                    <option value="3">3줄 - 45,000원</option>
-                </select>
+' . $creasing_options . '                </select>
             </div>
             
             <!-- 숨겨진 필드들 -->
@@ -308,6 +406,7 @@ class AdditionalOptions {
     public function getOptionsForAjax() {
         return [
             'base_prices' => $this->BASE_PRICES,
+            'source' => $this->db_loaded ? 'premium_options' : 'fallback',
             'config' => $this->options_config
         ];
     }
@@ -325,7 +424,7 @@ class AdditionalOptions {
 
         $quantity = intval($quantity);
 
-        // 양면테이프 가격 구조 (수정된 로직)
+        // 양면테이프 가격 구조
         if ($quantity == 500) {
             return 25000; // 500매일 때만: 25,000원 고정
         } else {
