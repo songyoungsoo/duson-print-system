@@ -318,6 +318,11 @@ $default_values['MY_type'] = $url_type ? $url_type : '475';
     }
     ?>
 
+    <?php if (!$isQuotationMode && !$isAdminQuoteMode): ?>
+    <?php include __DIR__ . '/../../includes/quote_gauge.php'; ?>
+    <script src="/js/quote-gauge.js?v=<?php echo time(); ?>"></script>
+    <?php endif; ?>
+
 
     <!-- 공통 가격 표시 시스템 -->
     <script src="../../js/common-price-display.js" defer></script>

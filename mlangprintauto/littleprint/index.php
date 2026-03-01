@@ -341,6 +341,11 @@ $default_values['ordertype'] = 'print'; // 인쇄만
 
     <?php if (!$isQuotationMode && !$isAdminQuoteMode) include "../../includes/footer.php"; ?>
 
+    <?php if (!$isQuotationMode && !$isAdminQuoteMode): ?>
+    <?php include __DIR__ . '/../../includes/quote_gauge.php'; ?>
+    <script src="/js/quote-gauge.js?v=<?php echo time(); ?>"></script>
+    <?php endif; ?>
+
     <script>
         // PHP 변수를 JavaScript로 전달 (PROJECT_SUCCESS_REPORT.md 스펙)
         window.phpVars = {

@@ -309,6 +309,11 @@ if ($default_values['MY_type'] && $default_values['Section']) {
     }
     ?>
 
+    <?php if (!$isQuotationMode && !$isAdminQuoteMode): ?>
+    <?php include __DIR__ . '/../../includes/quote_gauge.php'; ?>
+    <script src="/js/quote-gauge.js?v=<?php echo time(); ?>"></script>
+    <?php endif; ?>
+
     <!-- 상품권/쿠폰 전용 컴팩트 디자인 적용 (Frontend-Compact-Design-Guide.md 기반) -->
     
 

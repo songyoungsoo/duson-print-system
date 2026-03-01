@@ -962,6 +962,11 @@ if ($url_nc_type) {
     </script>
 
 
+    <?php if (!$isQuotationMode && !$isAdminQuoteMode): ?>
+    <?php include __DIR__ . '/../../includes/quote_gauge.php'; ?>
+    <script src="/js/quote-gauge.js?v=<?php echo time(); ?>"></script>
+    <?php endif; ?>
+
     <?php
     if ($db) {
         mysqli_close($db);
