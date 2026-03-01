@@ -26,7 +26,7 @@ if (!is_dir($sectionsDir)) {
 }
 
 // 숨길 섹션 (section_01: 할인배너, section_08: AI가격표)
-$hiddenSections = ['section_01.png', 'section_08.png'];
+$hiddenSections = ['section_01.png', 'section_08.png', 'section_11.png'];
 
 // PNG 이미지 파일 수집 (정렬, 숨김 섹션 제외)
 $imageFiles = [];
