@@ -143,6 +143,7 @@ if ($default_values['MY_type'] && $default_values['Section']) {
     <link rel="stylesheet" href="../../css/common-styles.css?v=1759615861">
     <link rel="stylesheet" href="../../css/upload-modal-common.css?v=<?php echo time(); ?>">
     <?php include_once $_SERVER['DOCUMENT_ROOT'] . '/includes/product_schema.php'; echo_product_schema('msticker'); ?>
+    <link rel="stylesheet" href="../../css/quote-gauge.css">
 </head>
 <body class="msticker-page<?php echo ($isQuotationMode || $isAdminQuoteMode) ? ' quotation-modal-mode' : ''; ?>">
     <?php if (!$isQuotationMode && !$isAdminQuoteMode) include "../../includes/header-ui.php"; ?>

@@ -175,6 +175,7 @@ $default_values['ordertype'] = 'print'; // 인쇄만
     <?php ThemeLoader::renderCSS(); ?>
 
     <?php include_once $_SERVER['DOCUMENT_ROOT'] . '/includes/product_schema.php'; echo_product_schema('littleprint'); ?>
+    <link rel="stylesheet" href="../../css/quote-gauge.css">
 </head>
 <body class="littleprint-page<?php echo ($isQuotationMode || $isAdminQuoteMode) ? ' quotation-modal-mode' : ''; ?>" <?php ThemeLoader::renderBodyAttributes(); ?>>
     <?php if (!$isQuotationMode && !$isAdminQuoteMode) include "../../includes/header-ui.php"; ?>

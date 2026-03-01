@@ -144,6 +144,7 @@ $default_values['MY_type'] = $url_type ? $url_type : '475';
     <?php ThemeLoader::renderCSS(); ?>
 
     <?php include_once $_SERVER['DOCUMENT_ROOT'] . '/includes/product_schema.php'; echo_product_schema('ncrflambeau'); ?>
+    <link rel="stylesheet" href="../../css/quote-gauge.css">
 </head>
 
 <body class="ncrflambeau-page<?php echo ($isQuotationMode || $isAdminQuoteMode) ? ' quotation-modal-mode' : ''; ?>" <?php ThemeLoader::renderBodyAttributes(); ?>>
