@@ -3,6 +3,15 @@ declare(strict_types=1);
 
 namespace App\Services\AI;
 
+/**
+ * Claude 카피라이터 서비스 — 헤드카피/서브카피 생성
+ * 
+ * @deprecated 2026-03-02 현재 미사용. GeminiService.php로 대체됨.
+ *   Gemini API 장애 시 fallback으로 활용 가능.
+ *   사용하려면 .env에 CLAUDE_API_KEY 설정 필요.
+ * 
+ * @since 2026-01
+ */
 class ClaudeService
 {
     private string $apiKey;

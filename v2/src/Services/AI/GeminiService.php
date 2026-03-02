@@ -3,10 +3,19 @@ declare(strict_types=1);
 
 namespace App\Services\AI;
 
+/**
+ * 카피라이터 AI 서비스 — 헤드카피/서브카피 5세트 생성
+ * 
+ * 모델: Gemini 2.5 Flash (gemini-2.0-flash에서 2026-03-02 업그레이드)
+ * 컨트롤러: CopywriterController.php
+ * 
+ * @since 2026-01
+ * @updated 2026-03-02 모델 업그레이드 gemini-2.0-flash → gemini-2.5-flash
+ */
 class GeminiService
 {
     private string $apiKey;
-    private string $model = 'gemini-2.0-flash';
+    private string $model = 'gemini-2.5-flash';
     private string $baseUrl = 'https://generativelanguage.googleapis.com/v1beta/models/';
     
     public function __construct(?string $apiKey = null)
