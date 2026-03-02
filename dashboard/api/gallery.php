@@ -16,12 +16,14 @@ $GALLERY_FOLDER_MAP = [
     'cadarok'         => 'cadarok',
     'ncrflambeau'     => 'ncrflambeau',
     'msticker'        => 'msticker',
+    'leaflet'         => 'leaflet',
 ];
 
 $ALLOWED_EXTENSIONS = ['jpg', 'jpeg', 'png', 'gif', 'webp'];
 $MAX_FILE_SIZE = 10 * 1024 * 1024; // 10MB
 $SAMPLE_BASE = $_SERVER['DOCUMENT_ROOT'] . '/ImgFolder/sample/';
 $SAFEGALLERY_BASE = $_SERVER['DOCUMENT_ROOT'] . '/ImgFolder/samplegallery/';
+$LEAFLET_BASE = $_SERVER['DOCUMENT_ROOT'] . '/ImgFolder/leaflet/gallery/';
 $SETTINGS_FILE = $_SERVER['DOCUMENT_ROOT'] . '/config/gallery_settings.json';
 
 $action = $_GET['action'] ?? $_POST['action'] ?? '';
@@ -325,7 +327,7 @@ function handleList() {
  * POST params: product, target (sample|safegallery), files[]
  */
 function handleUpload() {
-    global $GALLERY_FOLDER_MAP, $SAMPLE_BASE, $SAFEGALLERY_BASE, $ALLOWED_EXTENSIONS, $MAX_FILE_SIZE;
+    global $GALLERY_FOLDER_MAP, $SAMPLE_BASE, $SAFEGALLERY_BASE, $LEAFLET_BASE, $ALLOWED_EXTENSIONS, $MAX_FILE_SIZE;
 
     $product = $_POST['product'] ?? '';
     $target  = $_POST['target'] ?? 'sample';
@@ -333,7 +335,7 @@ function handleUpload() {
     if (!isset($GALLERY_FOLDER_MAP[$product])) {
         jsonResponse(false, '유효하지 않은 제품입니다.');
     }
-    if (!in_array($target, ['sample', 'safegallery'])) {
+    if (!in_array($target, ['sample', 'safegallery', 'leafletgallery'])) {
         jsonResponse(false, '유효하지 않은 업로드 대상입니다.');
     }
 
@@ -342,9 +344,15 @@ function handleUpload() {
     }
 
     $folder = $GALLERY_FOLDER_MAP[$product];
-    $baseDir = ($target === 'safegallery') ? $SAFEGALLERY_BASE : $SAMPLE_BASE;
-    $urlPrefix = ($target === 'safegallery') ? '/ImgFolder/samplegallery/' : '/ImgFolder/sample/';
-    $targetDir = $baseDir . $folder . '/';
+    if ($target === 'leafletgallery') {
+        $baseDir = $LEAFLET_BASE;
+        $urlPrefix = '/ImgFolder/leaflet/gallery/';
+        $targetDir = $baseDir;
+    } else {
+        $baseDir = ($target === 'safegallery') ? $SAFEGALLERY_BASE : $SAMPLE_BASE;
+        $urlPrefix = ($target === 'safegallery') ? '/ImgFolder/samplegallery/' : '/ImgFolder/sample/';
+        $targetDir = $baseDir . $folder . '/';
+    }
 
     if (!is_dir($targetDir)) {
         mkdir($targetDir, 0755, true);
@@ -400,7 +408,7 @@ function handleUpload() {
         if (move_uploaded_file($tmpName, $targetPath)) {
             $uploaded[] = [
                 'filename' => $safeName,
-                'src'      => $urlPrefix . $folder . '/' . rawurlencode($safeName),
+                'src'      => ($target === 'leafletgallery') ? ($urlPrefix . rawurlencode($safeName)) : ($urlPrefix . $folder . '/' . rawurlencode($safeName)),
                 'size'     => $size,
             ];
         } else {
@@ -424,7 +432,7 @@ function handleUpload() {
  * POST params: product, filename, source (sample|safegallery)
  */
 function handleDelete() {
-    global $GALLERY_FOLDER_MAP, $SAMPLE_BASE, $SAFEGALLERY_BASE;
+    global $GALLERY_FOLDER_MAP, $SAMPLE_BASE, $SAFEGALLERY_BASE, $LEAFLET_BASE;
 
     $product  = $_POST['product'] ?? '';
     $filename = $_POST['filename'] ?? '';
@@ -436,13 +444,18 @@ function handleDelete() {
     if (empty($filename)) {
         jsonResponse(false, '파일명이 지정되지 않았습니다.');
     }
-    if (!in_array($source, ['sample', 'safegallery'])) {
+    if (!in_array($source, ['sample', 'safegallery', 'leafletgallery'])) {
         jsonResponse(false, '유효하지 않은 소스입니다.');
     }
 
     $folder = $GALLERY_FOLDER_MAP[$product];
-    $baseDir = ($source === 'safegallery') ? $SAFEGALLERY_BASE : $SAMPLE_BASE;
-    $targetPath = $baseDir . $folder . '/' . $filename;
+    if ($source === 'leafletgallery') {
+        $baseDir = $LEAFLET_BASE;
+        $targetPath = $baseDir . $filename;
+    } else {
+        $baseDir = ($source === 'safegallery') ? $SAFEGALLERY_BASE : $SAMPLE_BASE;
+        $targetPath = $baseDir . $folder . '/' . $filename;
+    }
 
     $realPath = realpath($targetPath);
     $realBase = realpath($baseDir);
@@ -470,7 +483,7 @@ function handleDelete() {
  * POST params: product, source (sample|safegallery), old_filename, file
  */
 function handleReplace() {
-    global $GALLERY_FOLDER_MAP, $SAMPLE_BASE, $SAFEGALLERY_BASE, $ALLOWED_EXTENSIONS, $MAX_FILE_SIZE;
+    global $GALLERY_FOLDER_MAP, $SAMPLE_BASE, $SAFEGALLERY_BASE, $LEAFLET_BASE, $ALLOWED_EXTENSIONS, $MAX_FILE_SIZE;
 
     $product = $_POST['product'] ?? '';
     $source = $_POST['source'] ?? 'sample';
@@ -479,7 +492,7 @@ function handleReplace() {
     if (!isset($GALLERY_FOLDER_MAP[$product])) {
         jsonResponse(false, '유효하지 않은 제품입니다.');
     }
-    if (!in_array($source, ['sample', 'safegallery'])) {
+    if (!in_array($source, ['sample', 'safegallery', 'leafletgallery'])) {
         jsonResponse(false, '유효하지 않은 소스입니다.');
     }
     if (empty($oldFilename)) {
@@ -490,9 +503,15 @@ function handleReplace() {
     }
 
     $folder = $GALLERY_FOLDER_MAP[$product];
-    $baseDir = ($source === 'safegallery') ? $SAFEGALLERY_BASE : $SAMPLE_BASE;
-    $targetDir = $baseDir . $folder . '/';
-    $targetPath = $targetDir . $oldFilename;
+    if ($source === 'leafletgallery') {
+        $baseDir = $LEAFLET_BASE;
+        $targetDir = $baseDir;
+        $targetPath = $targetDir . $oldFilename;
+    } else {
+        $baseDir = ($source === 'safegallery') ? $SAFEGALLERY_BASE : $SAMPLE_BASE;
+        $targetDir = $baseDir . $folder . '/';
+        $targetPath = $targetDir . $oldFilename;
+    }
 
     // 경로 검증 (directory traversal 방지)
     $realPath = realpath($targetPath);
@@ -539,14 +558,18 @@ function handleReplace() {
         $newPath = $targetDir . $safeName;
     }
 
-    $urlPrefix = ($source === 'safegallery') ? '/ImgFolder/samplegallery/' : '/ImgFolder/sample/';
+    if ($source === 'leafletgallery') {
+        $urlPrefix = '/ImgFolder/leaflet/gallery/';
+    } else {
+        $urlPrefix = ($source === 'safegallery') ? '/ImgFolder/samplegallery/' : '/ImgFolder/sample/';
+    }
 
     if (move_uploaded_file($file['tmp_name'], $newPath)) {
         chmod($newPath, 0644);
         jsonResponse(true, '이미지 교체 완료', [
             'old_filename' => $oldFilename,
             'filename' => $safeName,
-            'src' => $urlPrefix . $folder . '/' . rawurlencode($safeName),
+            'src' => ($source === 'leafletgallery') ? ($urlPrefix . rawurlencode($safeName)) : ($urlPrefix . $folder . '/' . rawurlencode($safeName)),
             'size' => $file['size'],
             'date' => date('Y-m-d H:i')
         ]);

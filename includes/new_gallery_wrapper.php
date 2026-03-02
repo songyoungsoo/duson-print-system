@@ -13,6 +13,29 @@
  * - 0.5초 부드러운 전환
  */
 
+// Admin detection for inline gallery editing
+function _gallery_is_admin() {
+    static $checked = null;
+    if ($checked !== null) return $checked;
+    $authFile = $_SERVER['DOCUMENT_ROOT'] . '/admin/includes/admin_auth.php';
+    if (!function_exists('isAdminLoggedIn') && file_exists($authFile)) {
+        require_once $authFile;
+    }
+    $checked = function_exists('isAdminLoggedIn') && isAdminLoggedIn();
+    return $checked;
+}
+
+function _gallery_image_info($src) {
+    $filename = rawurldecode(basename($src));
+    if (strpos($src, '/samplegallery/') !== false) {
+        return ['filename' => $filename, 'source' => 'safegallery'];
+    } elseif (strpos($src, '/ImgFolder/leaflet/gallery/') !== false) {
+        return ['filename' => $filename, 'source' => 'leafletgallery'];
+    } elseif (strpos($src, '/sample/') !== false) {
+        return ['filename' => $filename, 'source' => 'sample'];
+    }
+    return ['filename' => $filename, 'source' => 'order'];
+}
 /**
  * 새 갤러리 렌더링 (기존 데이터 사용)
  */
@@ -24,6 +47,7 @@ function render_new_gallery_with_existing_data($product) {
 
     // 기존 방식으로 이미지 로드
     $items = load_gallery_items($product, null, 4, 12);
+    // $isAdmin 제거: 제품 페이지에서는 더 이상 관리자 오버레이를 표시하지 않음
 
     if (empty($items)) {
         return '<p>샘플 이미지가 없습니다.</p>';
@@ -176,7 +200,7 @@ function render_new_gallery_with_existing_data($product) {
     </style>
 
     <!-- 새 갤러리 래퍼 -->
-    <div class="new-gallery-wrapper" id="<?php echo $galleryId; ?>">
+    <div class="new-gallery-wrapper" id="<?php echo $galleryId; ?>" data-product="<?php echo htmlspecialchars($product); ?>">
         <!-- 메인 이미지 컨테이너 (500×400 고정) -->
         <div class="new-main-container" data-zoom="false">
             <img
@@ -226,6 +250,7 @@ function render_new_gallery_with_existing_data($product) {
         // 이미지 변경
         mainImg.src = fullImageUrl;
         mainImg.alt = thumbnail.alt;
+
 
         // 활성 썸네일 표시
         const allThumbs = thumbnail.closest('.new-thumbnails').querySelectorAll('.new-thumbnail');

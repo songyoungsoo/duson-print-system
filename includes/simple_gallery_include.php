@@ -48,4 +48,12 @@ if (!defined('GALLERY_MODAL_INCLUDED')) {
     echo render_gallery_modal();
     define('GALLERY_MODAL_INCLUDED', true);
 }
+
+// 관리자 인라인 편집 오버레이 (관리자 로그인 시에만 로드)
+if (!defined('GALLERY_ADMIN_INLINE_INCLUDED')) {
+    if (function_exists('_gallery_is_admin') && _gallery_is_admin()) {
+        include_once __DIR__ . '/gallery_admin_inline.php';
+        define('GALLERY_ADMIN_INLINE_INCLUDED', true);
+    }
+}
 ?>

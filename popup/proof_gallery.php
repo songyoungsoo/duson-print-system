@@ -6,9 +6,24 @@
  * - 썸네일 클릭 시 상단 라이트박스 뷰어
  */
 header("Content-Type: text/html; charset=utf-8");
+header("Cache-Control: no-cache, no-store, must-revalidate");
+header("Pragma: no-cache");
+header("Expires: 0");
 
 $HomeDir = $_SERVER['DOCUMENT_ROOT'] . "/";
 require_once $HomeDir . "db.php";
+
+// 관리자 인라인 편집 지원
+$authFile = $_SERVER['DOCUMENT_ROOT'] . '/admin/includes/admin_auth.php';
+if (file_exists($authFile)) { require_once $authFile; }
+$isAdmin = function_exists('isAdminLoggedIn') && isAdminLoggedIn();
+
+// 카테고리 → 제품코드 매핑 (관리자 API용)
+$categoryToProduct = [
+    '명함' => 'namecard', '스티커' => 'sticker', '봉투' => 'envelope',
+    '전단지' => 'inserted', '포스터' => 'littleprint', '카탈로그' => 'cadarok',
+    '상품권' => 'merchandisebond', '자석스티커' => 'msticker', '양식지' => 'ncrflambeau',
+];
 
 // 데이터베이스 연결 변수 확인 및 설정
 if (!isset($connect) && isset($db)) {
@@ -409,12 +424,43 @@ body {
   font-size: 24px;
   margin-bottom: 10px;
 }
+
+/* 관리자 인라인 편집 스타일 */
+.admin-editable { position: relative; }
+.admin-card-overlay {
+  position: absolute; inset: 0;
+  background: rgba(0,0,0,0.5);
+  display: flex; align-items: center; justify-content: center; gap: 6px;
+  opacity: 0; transition: opacity .25s ease;
+  border-radius: 12px;
+}
+.admin-editable:hover .admin-card-overlay { opacity: 1; }
+.admin-card-btn {
+  padding: 6px 14px; border: none; border-radius: 6px;
+  font-size: 12px; font-weight: 600; cursor: pointer;
+  transition: transform .15s ease, filter .15s ease;
+  white-space: nowrap;
+}
+.admin-card-btn:hover { transform: scale(1.08); filter: brightness(1.1); }
+.admin-card-replace { background: #2563eb; color: #fff; }
+.admin-card-delete { background: #dc2626; color: #fff; }
+.admin-order-badge {
+  position: absolute; top: 4px; right: 4px;
+  background: rgba(0,0,0,0.5); color: #fff;
+  font-size: 10px; padding: 2px 6px; border-radius: 4px;
+  pointer-events: none;
+}
 </style>
 </head>
 <body>
   <div class="header">
-    <div>📁 <?= htmlspecialchars($cate) ?> 샘플 갤러리</div>
-    <div style="opacity:.9;font-weight:500"><?= number_format($total) ?>건</div>
+    <div>📁 <?= htmlspecialchars($cate) ?> 샘플 갤러리<?php if ($isAdmin): ?> <span style="background:rgba(255,255,255,0.25);padding:2px 8px;border-radius:4px;font-size:12px;margin-left:8px">🔧 관리자</span><?php endif; ?></div>
+    <div style="display:flex;align-items:center;gap:10px">
+      <?php if ($isAdmin): ?>
+      <button onclick="adminUpload()" style="background:rgba(255,255,255,0.2);border:1px solid rgba(255,255,255,0.4);color:#fff;padding:5px 12px;border-radius:6px;cursor:pointer;font-size:13px;font-weight:600;transition:background .2s" onmouseover="this.style.background='rgba(255,255,255,0.35)'" onmouseout="this.style.background='rgba(255,255,255,0.2)'">+ 이미지 추가</button>
+      <?php endif; ?>
+      <span style="opacity:.9;font-weight:500"><?= number_format($total) ?>건</span>
+    </div>
   </div>
 
   <?php if (empty($paged_images)): ?>
@@ -428,16 +474,33 @@ body {
       // 통합 이미지 배열 렌더링 (갤러리 + 주문 이미지)
       foreach ($paged_images as $idx => $imgData):
         $img_url = $imgData['url'];
+        $isGallery = ($imgData['type'] === 'gallery');
 
         // Alt 텍스트 생성
-        if ($imgData['type'] === 'gallery') {
+        if ($isGallery) {
           $alt = htmlspecialchars($imgData['filename'] ?? 'gallery_' . $idx);
         } else {
           $alt = 'order_' . htmlspecialchars($imgData['order_no'] ?? $idx);
         }
+
+        // 관리자용 data 속성
+        $adminAttrs = '';
+        if ($isAdmin && $isGallery) {
+          $fn = htmlspecialchars($imgData['filename'] ?? '');
+          $src = (strpos($img_url, '/samplegallery/') !== false) ? 'safegallery' : 'sample';
+          $adminAttrs = ' data-editable="true" data-filename="' . $fn . '" data-source="' . $src . '"';
+        }
       ?>
-        <div class="card" data-img="<?= htmlspecialchars($img_url) ?>">
+        <div class="card<?php echo ($isAdmin && $isGallery) ? ' admin-editable' : ''; ?>" data-img="<?= htmlspecialchars($img_url) ?>"<?= $adminAttrs ?>>
           <img src="<?= htmlspecialchars($img_url) ?>" alt="<?= $alt ?>" loading="lazy" onerror="this.parentElement.style.display='none'">
+          <?php if ($isAdmin && $isGallery): ?>
+          <div class="admin-card-overlay">
+            <button class="admin-card-btn admin-card-replace" title="이미지 교체" onclick="event.stopPropagation(); adminReplace(this.closest('.card'))">✏️ 교체</button>
+            <button class="admin-card-btn admin-card-delete" title="이미지 삭제" onclick="event.stopPropagation(); adminDelete(this.closest('.card'))">✕ 삭제</button>
+          </div>
+          <?php elseif ($isAdmin && !$isGallery): ?>
+          <div class="admin-order-badge">🔒 주문</div>
+          <?php endif; ?>
         </div>
       <?php
       endforeach;
@@ -520,5 +583,87 @@ document.addEventListener('keydown', function(e) {
   }
 });
 </script>
+
+<?php if ($isAdmin): ?>
+<script>
+// 관리자 갤러리 편집 기능
+var GALLERY_API = '/dashboard/api/gallery.php';
+var ADMIN_PRODUCT = <?= json_encode($categoryToProduct[$cate] ?? '') ?>;
+
+function adminReplace(card) {
+  var filename = card.dataset.filename;
+  var source = card.dataset.source;
+  if (!filename || !source) return;
+  var input = document.createElement('input');
+  input.type = 'file';
+  input.accept = 'image/jpeg,image/png,image/gif,image/webp';
+  input.style.display = 'none';
+  document.body.appendChild(input);
+  input.addEventListener('change', function() {
+    if (!input.files || !input.files[0]) { document.body.removeChild(input); return; }
+    var fd = new FormData();
+    fd.append('action', 'replace');
+    fd.append('product', ADMIN_PRODUCT);
+    fd.append('source', source);
+    fd.append('old_filename', filename);
+    fd.append('file', input.files[0]);
+    fetch(GALLERY_API, { method: 'POST', body: fd })
+      .then(function(r) { return r.json(); })
+      .then(function(res) {
+        if (res.success) { alert('교체 완료'); window.location.reload(); }
+        else { alert(res.message || '교체 실패'); }
+      })
+      .catch(function() { alert('서버 오류'); });
+    document.body.removeChild(input);
+  });
+  input.click();
+}
+
+function adminDelete(card) {
+  var filename = card.dataset.filename;
+  var source = card.dataset.source;
+  if (!filename || !source) return;
+  if (!confirm('이 이미지를 삭제하시겠습니까?\n\n파일명: ' + filename + '\n\n⚠️ 삭제하면 복구할 수 없습니다.')) return;
+  var fd = new FormData();
+  fd.append('action', 'delete');
+  fd.append('product', ADMIN_PRODUCT);
+  fd.append('filename', filename);
+  fd.append('source', source);
+  fetch(GALLERY_API, { method: 'POST', body: fd })
+    .then(function(r) { return r.json(); })
+    .then(function(res) {
+      if (res.success) { alert('삭제 완료'); window.location.reload(); }
+      else { alert(res.message || '삭제 실패'); }
+    })
+    .catch(function() { alert('서버 오류'); });
+}
+
+function adminUpload() {
+  var input = document.createElement('input');
+  input.type = 'file';
+  input.accept = 'image/jpeg,image/png,image/gif,image/webp';
+  input.multiple = true;
+  input.style.display = 'none';
+  document.body.appendChild(input);
+  input.addEventListener('change', function() {
+    if (!input.files || input.files.length === 0) { document.body.removeChild(input); return; }
+    var fd = new FormData();
+    fd.append('action', 'upload');
+    fd.append('product', ADMIN_PRODUCT);
+    fd.append('target', 'sample');
+    for (var i = 0; i < input.files.length; i++) { fd.append('files[]', input.files[i]); }
+    fetch(GALLERY_API, { method: 'POST', body: fd })
+      .then(function(r) { return r.json(); })
+      .then(function(res) {
+        if (res.success) { alert(res.message || '업로드 완료'); window.location.reload(); }
+        else { alert(res.message || '업로드 실패'); }
+      })
+      .catch(function() { alert('서버 오류'); });
+    document.body.removeChild(input);
+  });
+  input.click();
+}
+</script>
+<?php endif; ?>
 </body>
 </html>
