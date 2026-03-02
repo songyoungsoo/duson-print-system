@@ -10,15 +10,15 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 **⚠️ 서버 마이그레이션 완료:**
 - ❌ 구 서버: dsp1830.shop (사용 중단)
-- ✅ 현재 운영: dsp114.co.kr
+- ✅ 현재 운영: dsp114.com
 
 **⚠️ 운영 서버는 FTP 루트 ≠ 웹 루트입니다!**
 
 ```
-FTP: dsp114.co.kr (dsp1830 / cH*j@yzj093BeTtc)
+FTP: dsp114.com (dsp1830 / cH*j@yzj093BeTtc)
 
 / (FTP 루트)
-└─ httpdocs/ ← ✅ 실제 웹 루트 (https://dsp114.co.kr/)
+└─ httpdocs/ ← ✅ 실제 웹 루트 (https://dsp114.com/)
 
 🎯 배포 경로:
 ✅ /httpdocs/payment/inicis_return.php
@@ -28,7 +28,7 @@ FTP: dsp114.co.kr (dsp1830 / cH*j@yzj093BeTtc)
 **curl 업로드 예시:**
 ```bash
 curl -T local_file.php \
-  ftp://dsp114.co.kr/httpdocs/payment/file.php \
+  ftp://dsp114.com/httpdocs/payment/file.php \
   --user "dsp1830:cH*j@yzj093BeTtc"
 ```
 
@@ -45,7 +45,7 @@ curl -T local_file.php \
 - **Database**: MySQL 5.7+ (utf8mb4)
 - **Local Document Root**: `/var/www/html` (개발 환경)
 - **Production Web Root**: `/httpdocs/` (FTP 기준, Plesk 표준 경로)
-- **Domains**: localhost (dev) / dsp114.co.kr (prod)
+- **Domains**: localhost (dev) / dsp114.com (prod)
 
 ### 🚨 프로덕션 서버 = Plesk (nginx + Apache) — .htaccess 금지!
 
@@ -78,11 +78,11 @@ curl -T local_file.php \
 |------|----------|
 | 관리자 (로컬/프로덕션) | admin / ds701018 |
 | 로컬 DB | dsp1830 / ds701018 |
-| 프로덕션 DB (dsp114.co.kr) | dsp1830 / t3zn?5R56 |
-| FTP (dsp114.co.kr) | dsp1830 / cH*j@yzj093BeTtc (웹루트: /httpdocs/) |
+| 프로덕션 DB (dsp114.com) | dsp1830 / t3zn?5R56 |
+| FTP (dsp114.com) | dsp1830 / cH*j@yzj093BeTtc (웹루트: /httpdocs/) |
 | FTP (새 서버 dsp1830.ipdisk.co.kr) | admin / 1830 (웹루트: /HDD2/share/) |
-| FTP (구 서버 dsp114.com) | duson1830 / du1830 (웹루트: /www/) |
-| 구 서버 DB (dsp114.com) | duson1830 / du1830 |
+| FTP (구 서버 dsp114.co.kr) | duson1830 / du1830 (웹루트: /www/) |
+| 구 서버 DB (dsp114.co.kr) | duson1830 / du1830 |
 | 마이그레이션 페이지 | /system/migration/index.php 비번: duson2026!migration |
 | WSL sudo | 3305 |
 | GitHub | songyoungsoo / yeongsu32@gmail.com |
@@ -460,7 +460,61 @@ $renderer->formatSupplyPriceCell($item);  // number_format 적용
 | `verify-option-pricing` | 옵션 가격 시스템 SSOT 위반/파이프라인 단절/가격 불일치 탐지 |
 | `verify-quote-widget` | 실시간 견적받기 위젯 9개 제품 페이지 존재/CSS/JS/순서 검증 |
 
+---
 
-*Core Version - Last Updated: 2026-02-02*
+## 🤖 AI 서비스 아키텍처 (AI Agent Team)
+
+### 서비스 매핑
+
+| 서비스 | 파일 | 모델 | 용도 | 상태 |
+|--------|------|------|------|------|
+| **전단지 AI** | `flyer/maker/includes/FlyerAIService.php` | `gemini-3-pro-preview` (텍스트) + `gemini-3-pro-image-preview` (이미지) | 전단지 카피+이미지 자동 생성 | ✅ 활성 |
+| **AI 챗봇** | `v2/src/Services/AI/ChatbotService.php` | `gemini-2.5-flash` + TTS(`gemini-2.5-flash-preview-tts`) | 야간당번 상담봇 (가격 안내+지식 응답) | ✅ 활성 |
+| **카피라이터** | `v2/src/Services/AI/GeminiService.php` | `gemini-2.5-flash` | 헤드카피/서브카피 5세트 생성 | ✅ 활성 |
+| **Claude 카피** | `v2/src/Services/AI/ClaudeService.php` | `claude-sonnet-4-20250514` | 카피라이터 대안 | ⚠️ 미사용 (deprecated) |
+| **챗봇 지식** | `v2/src/Services/AI/ChatbotKnowledge.php` | - | 시스템 프롬프트 도메인 지식 | ✅ 활성 |
+
+### AI 서비스 개발 규칙
+
+```
+1. API 키: .env의 GEMINI_API_KEY 사용 (includes/ai_rate_limiter.php로 제한)
+2. Rate Limit: 전체 300회/일, IP당 20회/일
+3. 타임아웃: 텍스트 120초 (Gemini 3 Pro thinking 포함), 이미지 120초, 챗봇 15초, TTS 30초
+4. JSON 응답: responseMimeType='application/json' 강제 + ```json 래핑 제거 로직 필수
+5. 이미지 저장: uploads/ai/ 디렉토리 + 24시간 자동 정리
+6. 에러 처리: curl 에러 → 네트워크 오류 메시지, HTTP 에러 → API 오류 메시지
+7. 모델 변경 시: ChatbotService/FlyerAIService는 각각 독립적 — 하나 변경이 다른 것에 영향 없음
+```
+
+### ⚠️ AI 코드 수정 시 주의사항
+
+```
+❌ 절대 금지:
+- ChatbotService의 상태머신 로직(세션/DB 쿼리) 리팩토링 — 1,562줄의 복잡한 상태 관리
+- BaseAIService 추상 클래스 생성 — 오토로더 없이 require_once 체인은 위험
+- FlyerAIService에 namespace 추가 — 독립 모듈로 유지
+- 스티커 가격 계산(calculateStickerPrice) 로직 이동 — ChatbotService 내부 SSOT
+
+✅ 허용:
+- 모델 버전 업그레이드 (개별 서비스 내에서)
+- 프롬프트 개선 (각 서비스의 buildPrompt/buildTextPrompt)
+- 새 AI 서비스 추가 (독립 파일로)
+- ChatbotKnowledge 지식 업데이트
+```
+
+### Gemini 모델 선택 기준
+
+| 용도 | 권장 모델 | 이유 |
+|------|----------|------|
+| 긴 텍스트 생성 (카피) | `gemini-2.5-flash` | 빠르고 저렴, 한글 품질 양호 |
+| 고품질 카피 | `gemini-3-pro-preview` | thinking 모델, 최고 한글 품질. ⚠️ Discontinuing |
+| 이미지 생성 | `gemini-3-pro-image-preview` | 300DPI 인쇄 품질 |
+| 챗봇 (빠른 응답) | `gemini-2.5-flash` | 15초 타임아웃에 적합 |
+| TTS | `gemini-2.5-flash-preview-tts` | 한국어 Kore 음성 |
+
+### 상세 문서
+- AI 서비스 상세: `docs/features/ai-services.md`
+
+*Core Version - Last Updated: 2026-03-02*
 *Environment: WSL2 Ubuntu + Windows XAMPP*
 *SSOT Docs: CLAUDE_DOCS/Duson_System_Master_Spec_v1.0.md*

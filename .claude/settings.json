@@ -9,6 +9,30 @@
     "security-guidance@claude-plugins-official": true,
     "bkit@bkit-marketplace": true
   },
+  "hooks": {
+    "PreToolUse": [
+      {
+        "matcher": "Write|Edit",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "bash /var/www/html/.claude/hooks/protect-v1-output.sh"
+          }
+        ]
+      }
+    ],
+    "PostToolUse": [
+      {
+        "matcher": "Bash",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "bash /var/www/html/.claude/hooks/validate-section.sh"
+          }
+        ]
+      }
+    ]
+  },
   "permissions": {
     "allow": [
       "Bash(git status)",

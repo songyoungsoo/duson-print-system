@@ -9,6 +9,7 @@
 - 이메일 시스템: @./docs/features/email.md
 - AI 챗봇: @./docs/features/ai-chatbot.md
 - 인증 시스템: @./docs/features/auth.md
+- AI 서비스 팀: @./docs/features/ai-services.md
 
 ## 🛠️ 개발 가이드
 - 코딩 표준: @./CLAUDE.md
@@ -395,4 +396,4 @@ php scripts/curator.php --json       # JSON 출력
 - `docs/curator-config.json` — 코드↔문서 매핑, 크기/신선도 임계값, 무시 경로
 
 ---
-마지막 업데이트: 2026-03-01
+마지막 업데이트: 2026-03-02
