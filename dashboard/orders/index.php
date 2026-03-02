@@ -6,7 +6,7 @@ include __DIR__ . '/../includes/header.php';
 include __DIR__ . '/../includes/sidebar.php';
 ?>
 
-<main class="flex-1 bg-gray-50 overflow-y-auto">
+<main class="flex-1 min-h-0 bg-gray-50 overflow-y-auto">
     <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-2">
         <!-- 헤더 + 필터 한 줄 -->
         <div class="flex flex-wrap items-center gap-2 mb-2">

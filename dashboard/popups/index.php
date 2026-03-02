@@ -6,7 +6,7 @@ include __DIR__ . '/../includes/header.php';
 include __DIR__ . '/../includes/sidebar.php';
 ?>
 
-<main class="flex-1 bg-gray-50 overflow-y-auto">
+<main class="flex-1 min-h-0 bg-gray-50 overflow-y-auto">
     <div class="max-w-5xl mx-auto px-4 sm:px-6 lg:px-8 py-4">
         <!-- Header -->
         <div class="flex items-center justify-between mb-4">

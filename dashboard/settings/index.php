@@ -20,7 +20,7 @@ $qw_top = intval($settings['quote_widget_top'] ?? 50);
 $en_enabled = ($settings['en_version_enabled'] ?? '0') === '1';
 ?>
 
-<main class="flex-1 bg-gray-50 overflow-y-auto">
+<main class="flex-1 min-h-0 bg-gray-50 overflow-y-auto">
     <div class="max-w-3xl mx-auto px-4 sm:px-6 lg:px-8 py-4">
         <h1 class="text-lg font-bold text-gray-900 mb-4">사이트 설정</h1>
 
