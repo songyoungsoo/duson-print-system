@@ -71,6 +71,11 @@
     #ai-chatbot-toggle > span:first-child { font-size:16px; }
     #ai-chatbot-window { width:calc(100vw - 20px); height:70vh; }
 }
+@media(max-width:480px){
+    #ai-chatbot-window.ai-fullscreen #ai-chat-messages { min-height:0; flex:1; }
+    #ai-chatbot-window.ai-fullscreen #ai-chat-input { font-size:16px; }
+    #ai-chatbot-window.ai-fullscreen [data-drag-handle] { cursor:default; }
+}
 </style>
 
 <script>
@@ -224,25 +229,61 @@
         if (!win) return;
         var isOpen = win.style.display === 'flex';
         var fm = document.getElementById('floating-menu');
+        var isMobile = window.innerWidth <= 480;
+
         if (isOpen) {
             win.style.display = 'none';
+            if (isMobile) {
+                win.classList.remove('ai-fullscreen');
+                win.style.width = '310px';
+                win.style.height = '420px';
+                win.style.top = '';
+                win.style.left = '';
+                win.style.right = '';
+                win.style.bottom = '';
+                win.style.borderRadius = '16px';
+                win.style.transform = '';
+                win.style.removeProperty('--vvh');
+                var toggle = document.getElementById('ai-chatbot-toggle');
+                var label = document.getElementById('ai-chatbot-label');
+                if (toggle) toggle.style.display = '';
+                if (label) label.style.display = '';
+            }
             if (fm) fm.classList.remove('fm-chat-active');
         } else {
-            var winW = 310, winH = 420;
-            if (window.innerWidth <= 768) { winW = window.innerWidth - 20; winH = window.innerHeight * 0.7; }
-            // Right edge aligned with floating sidebar cards (right: 12px)
-            var left = window.innerWidth - 12 - winW;
-            var toggle = document.getElementById('ai-chatbot-toggle');
-            var tRect = toggle.getBoundingClientRect();
-            var top = tRect.top - winH - 10;
-            if (top < 10) top = 10;
-            if (left < 10) left = 10;
-            win.style.left = left + 'px';
-            win.style.top = top + 'px';
-            win.style.right = 'auto';
-            win.style.bottom = 'auto';
+            if (isMobile) {
+                // 모바일 전체화면
+                win.style.position = 'fixed';
+                win.style.top = '0';
+                win.style.left = '0';
+                win.style.right = '0';
+                win.style.bottom = 'auto';
+                win.style.width = '100%';
+                win.style.height = '100%';
+                win.style.borderRadius = '0';
+                win.classList.add('ai-fullscreen');
+                var toggle = document.getElementById('ai-chatbot-toggle');
+                var label = document.getElementById('ai-chatbot-label');
+                if (toggle) toggle.style.display = 'none';
+                if (label) label.style.display = 'none';
+            } else {
+                // 데스크톱/태블릿 기존 로직
+                var winW = 310, winH = 420;
+                if (window.innerWidth <= 768) { winW = window.innerWidth - 20; winH = window.innerHeight * 0.7; }
+                var left = window.innerWidth - 12 - winW;
+                var toggle = document.getElementById('ai-chatbot-toggle');
+                var tRect = toggle.getBoundingClientRect();
+                var top = tRect.top - winH - 10;
+                if (top < 10) top = 10;
+                if (left < 10) left = 10;
+                win.style.left = left + 'px';
+                win.style.top = top + 'px';
+                win.style.right = 'auto';
+                win.style.bottom = 'auto';
+                win.style.width = winW + 'px';
+                win.style.height = winH + 'px';
+            }
             win.style.display = 'flex';
-            // Pause sidebar card hover while chat window overlaps
             if (fm) {
                 fm.classList.add('fm-chat-active');
                 fm.querySelectorAll('.fm-item.active, .fm-item.pinned').forEach(function(item) {
@@ -340,5 +381,45 @@
         }, { passive: false });
         document.addEventListener('touchend', onEnd);
     })();
+
+    // 모바일 키보드 대응 - visualViewport API
+    if (window.visualViewport) {
+        var aiPending = null;
+        var aiViewportUpdate = function() {
+            aiPending = null;
+            var win = document.getElementById('ai-chatbot-window');
+            if (!win || !win.classList.contains('ai-fullscreen')) return;
+            var vv = window.visualViewport;
+            var vh = vv.height;
+            win.style.height = vh + 'px';
+            if (vv.offsetTop > 0) {
+                win.style.transform = 'translateY(' + vv.offsetTop + 'px)';
+            } else {
+                win.style.transform = 'none';
+            }
+            var keyboardOpen = window.innerHeight - vh > 100;
+            if (keyboardOpen) {
+                var msgs = document.getElementById('ai-chat-messages');
+                if (msgs) msgs.scrollTop = msgs.scrollHeight;
+            }
+        };
+        var aiSchedule = function() {
+            if (!aiPending) aiPending = requestAnimationFrame(aiViewportUpdate);
+        };
+        window.visualViewport.addEventListener('resize', aiSchedule);
+        window.visualViewport.addEventListener('scroll', aiSchedule);
+    }
+
+    // 모바일 입력 포커스 시 스크롤
+    var aiInput = document.getElementById('ai-chat-input');
+    if (aiInput) {
+        aiInput.addEventListener('focus', function() {
+            if (window.innerWidth > 480) return;
+            setTimeout(function() {
+                var msgs = document.getElementById('ai-chat-messages');
+                if (msgs) msgs.scrollTop = msgs.scrollHeight;
+            }, 350);
+        });
+    }
 })();
 </script>

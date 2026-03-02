@@ -415,7 +415,10 @@
         prevTotalUnread: -1,
         staffId: 'staff1',
         staffName: '관리자',
-        msgPollTimer: null
+        msgPollTimer: null,
+        prevRoomUnreads: {},
+        originalTitle: document.title,
+        titleFlashInterval: null
     };
 
     // ─── DOM refs ───
@@ -455,6 +458,58 @@
             osc.start(audioCtx.currentTime);
             osc.stop(audioCtx.currentTime + 0.3);
         } catch(e) {}
+    }
+
+    // ─── Browser Notification ───
+    function requestNotifPermission() {
+        if (!('Notification' in window)) return;
+        if (Notification.permission === 'default') {
+            Notification.requestPermission();
+        }
+    }
+
+    function showBrowserNotif(name, message, roomId) {
+        if (!('Notification' in window)) return;
+        if (Notification.permission !== 'granted') return;
+        // 패널 열려있고 해당 방을 보고 있으면 알림 불필요
+        if (!document.hidden && state.open && state.currentRoomId == roomId) return;
+
+        var body = name + ': ' + (message.length > 50 ? message.substring(0, 50) + '...' : message);
+        try {
+            var notif = new Notification('\uD83D\uDCAC 두손기획 채팅', {
+                body: body,
+                icon: '/ImgFolder/infolady.png',
+                tag: 'chat-room-' + roomId,
+                requireInteraction: false
+            });
+            notif.onclick = function() {
+                window.focus();
+                if (!state.open) togglePanel();
+                if (roomId) selectRoom(roomId);
+                notif.close();
+            };
+            setTimeout(function() { notif.close(); }, 8000);
+        } catch(e) {}
+    }
+
+    // ─── Title Flash ───
+    function startTitleFlash(count) {
+        stopTitleFlash();
+        var original = state.originalTitle;
+        var alertTitle = '(' + count + ') \uD83D\uDCAC \uC0C8 \uBA54\uC2DC\uC9C0!';
+        var flip = false;
+        state.titleFlashInterval = setInterval(function() {
+            document.title = flip ? original : alertTitle;
+            flip = !flip;
+        }, 1000);
+    }
+
+    function stopTitleFlash() {
+        if (state.titleFlashInterval) {
+            clearInterval(state.titleFlashInterval);
+            state.titleFlashInterval = null;
+        }
+        document.title = state.originalTitle;
     }
 
     // ─── Helpers ───
@@ -521,21 +576,41 @@
                 if (!res.success) return;
                 state.rooms = res.data || [];
                 var totalUnread = 0;
+                var newRoomUnreads = {};
                 state.rooms.forEach(function(r) {
-                    totalUnread += parseInt(r.unread_count) || 0;
+                    var unread = parseInt(r.unread_count) || 0;
+                    totalUnread += unread;
+                    newRoomUnreads[r.id] = unread;
                 });
 
                 updateBadge(totalUnread);
 
-                // New message detected → sound
+                // New message detected → sound + browser notification
                 if (state.prevTotalUnread >= 0 && totalUnread > state.prevTotalUnread) {
                     playSound();
                     // If panel is closed, pulse the FAB
                     if (!state.open) {
                         fab.classList.add('has-unread');
                     }
+                    // Per-room browser notifications
+                    state.rooms.forEach(function(r) {
+                        var prev = state.prevRoomUnreads[r.id] || 0;
+                        var cur = parseInt(r.unread_count) || 0;
+                        if (cur > prev) {
+                            showBrowserNotif(
+                                r.customer_name || '손님',
+                                r.last_message || '새 메시지가 도착했습니다',
+                                r.id
+                            );
+                        }
+                    });
+                    // Title flash when tab is hidden
+                    if (document.hidden) {
+                        startTitleFlash(totalUnread);
+                    }
                 }
                 state.prevTotalUnread = totalUnread;
+                state.prevRoomUnreads = newRoomUnreads;
 
                 if (state.view === 'rooms') renderRooms();
             })
@@ -747,6 +822,8 @@
         if (state.open) {
             panel.classList.add('open');
             fab.classList.remove('has-unread');
+            stopTitleFlash();
+            requestNotifPermission();
             fetchRooms();
         } else {
             panel.classList.remove('open');
@@ -771,6 +848,11 @@
     // Room list polling (every 5s)
     fetchRooms();
     setInterval(fetchRooms, 5000);
+
+    // ─── Visibility: stop title flash when tab regains focus ───
+    document.addEventListener('visibilitychange', function() {
+        if (!document.hidden) stopTitleFlash();
+    });
 
     // ─── Expose for footer.php integration ───
     window._miniChat = {

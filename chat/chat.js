@@ -220,33 +220,49 @@ class ChatWidget {
         const chatInput = document.getElementById('chat-input');
         const chatWindow = document.getElementById('chat-window');
 
-        // 모바일 키보드 대응 - visualViewport API
+        // 모바일 키보드 대응 - visualViewport API (개선)
         if (window.visualViewport && window.innerWidth <= 480) {
-            let initialHeight = window.innerHeight;
+            let pendingUpdate = null;
 
-            const adjustForKeyboard = () => {
-                if (chatWindow.classList.contains('active')) {
-                    const currentHeight = window.visualViewport.height;
-                    const keyboardOpen = initialHeight - currentHeight > 100;
+            const updateViewport = () => {
+                pendingUpdate = null;
+                if (!chatWindow.classList.contains('active')) return;
 
-                    if (keyboardOpen) {
-                        // 키보드 열림 - 뷰포트 크기로 조정
-                        chatWindow.style.height = currentHeight + 'px';
-                        chatWindow.style.bottom = 'auto';
-                    } else {
-                        // 키보드 닫힘 - 전체화면 복귀
-                        chatWindow.style.height = '100%';
-                        chatWindow.style.bottom = '0';
-                    }
+                const vv = window.visualViewport;
+                const vh = vv.height;
+
+                // CSS 변수로 높이 전달 → 채팅창이 키보드 위에 맞춰짐
+                chatWindow.style.setProperty('--vvh', vh + 'px');
+
+                // iOS Safari: offsetTop 보정 (주소바 숨김/키보드로 스크롤 발생 시)
+                if (vv.offsetTop > 0) {
+                    chatWindow.style.transform = 'translateY(' + vv.offsetTop + 'px)';
+                } else {
+                    chatWindow.style.transform = 'none';
+                }
+
+                // 키보드 열림 감지 → 메시지 영역 스크롤 다운
+                var keyboardOpen = window.innerHeight - vh > 100;
+                if (keyboardOpen) {
+                    var msgs = document.getElementById('chat-messages');
+                    if (msgs) msgs.scrollTop = msgs.scrollHeight;
                 }
             };
 
-            window.visualViewport.addEventListener('resize', adjustForKeyboard);
+            var scheduleUpdate = function() {
+                if (!pendingUpdate) {
+                    pendingUpdate = requestAnimationFrame(updateViewport);
+                }
+            };
+
+            window.visualViewport.addEventListener('resize', scheduleUpdate);
+            window.visualViewport.addEventListener('scroll', scheduleUpdate);
         }
 
         chatInput.addEventListener('focus', () => {
             setTimeout(() => {
-                chatInput.scrollIntoView({ behavior: 'smooth', block: 'end' });
+                var msgs = document.getElementById('chat-messages');
+                if (msgs) msgs.scrollTop = msgs.scrollHeight;
             }, 350);
         });
 
@@ -438,6 +454,8 @@ class ChatWidget {
         chatWindow.style.height = '';
         chatWindow.style.bottom = '';
         chatWindow.style.top = '';
+        chatWindow.style.transform = '';
+        chatWindow.style.removeProperty('--vvh');
 
         // 모바일에서 채팅창 닫으면 토글 버튼 다시 표시
         document.getElementById('chat-toggle-btn').classList.remove('chat-open');
