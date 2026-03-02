@@ -97,7 +97,7 @@ $default_values['MY_type'] = $url_type ? $url_type : '475';
     <meta property="og:title" content="NCR양식지 인쇄 | 복사양식지 제작 - 두손기획인쇄">
     <meta property="og:description" content="NCR양식지 인쇄 전문. 2매·3매·4매 복사양식지 맞춤 제작. 견적서, 주문서 양식.">
     <meta property="og:url" content="https://dsp114.com/mlangprintauto/ncrflambeau/">
-    <meta property="og:image" content="https://dsp114.com/ImgFolder/dusonlogo1.png">
+    <meta property="og:image" content="https://dsp114.com/ImgFolder/og-image.png">
     <meta property="og:site_name" content="두손기획인쇄">
 
     <!-- 세션 ID 메타 태그 -->

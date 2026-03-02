@@ -67,7 +67,7 @@ header("Expires: 0");
     <meta property="og:type" content="website">
     <meta property="og:title" content="두손기획인쇄 - 스티커 전단지 명함 봉투 카다록 포스터 상품권 양식지 자석스티커 인쇄 전문">
     <meta property="og:description" content="기획에서 인쇄까지 원스톱 서비스. 스티커, 전단지, 명함 등 모든 인쇄물 온라인 견적">
-    <meta property="og:image" content="https://www.dsp1830.shop/ImgFolder/dusonlogo1.png">
+    <meta property="og:image" content="https://dsp114.com/ImgFolder/og-image.png">
     <meta property="og:url" content="https://www.dsp1830.shop/">
     <meta property="og:site_name" content="두손기획인쇄">
     <meta property="og:locale" content="ko_KR">

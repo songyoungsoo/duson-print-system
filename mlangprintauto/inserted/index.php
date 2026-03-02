@@ -156,7 +156,7 @@ header("Expires: 0");
     <meta property="og:title" content="전단지 인쇄 | 전단지 제작 - 두손기획인쇄">
     <meta property="og:description" content="전단지 인쇄 전문. A4, A5, B5 전단지 소량부터 대량까지 빠른 제작. 실시간 견적 확인.">
     <meta property="og:url" content="https://dsp114.com/mlangprintauto/inserted/">
-    <meta property="og:image" content="https://dsp114.com/ImgFolder/dusonlogo1.png">
+    <meta property="og:image" content="https://dsp114.com/ImgFolder/og-image.png">
     <meta property="og:site_name" content="두손기획인쇄">
 
     <!-- 세션 ID 메타 태그 -->

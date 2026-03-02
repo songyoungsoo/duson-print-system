@@ -103,7 +103,7 @@ if ($default_values['MY_type'] && $default_values['Section']) {
     <meta property="og:title" content="카탈로그 제작 | 카다록 인쇄 - 두손기획인쇄">
     <meta property="og:description" content="카탈로그·브로슈어 인쇄 전문. 중철·무선 제본 맞춤 제작. 소량부터 대량까지.">
     <meta property="og:url" content="https://dsp114.com/mlangprintauto/cadarok/">
-    <meta property="og:image" content="https://dsp114.com/ImgFolder/dusonlogo1.png">
+    <meta property="og:image" content="https://dsp114.com/ImgFolder/og-image.png">
     <meta property="og:site_name" content="두손기획인쇄">
 
     <!-- 카다록 컴팩트 페이지 전용 CSS (PROJECT_SUCCESS_REPORT.md 스펙) -->

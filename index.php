@@ -68,7 +68,7 @@ header("Expires: 0");
     <meta property="og:type" content="website">
     <meta property="og:title" content="두손기획인쇄 - 스티커 인쇄 전문 | 전단지 명함 봉투 카다록 포스터">
     <meta property="og:description" content="스티커 인쇄 전문. 투명스티커, 유포지스티커, 자석스티커 등 다양한 스티커 제작. 전단지, 명함 등 모든 인쇄물 온라인 견적">
-    <meta property="og:image" content="https://dsp114.com/ImgFolder/dusonlogo1.png">
+    <meta property="og:image" content="https://dsp114.com/ImgFolder/og-image.png">
     <meta property="og:url" content="https://dsp114.com/">
     <meta property="og:site_name" content="두손기획인쇄">
     <meta property="og:locale" content="ko_KR">
@@ -77,7 +77,7 @@ header("Expires: 0");
     <meta name="twitter:card" content="summary_large_image">
     <meta name="twitter:title" content="두손기획인쇄 - 스티커 전단지 명함 인쇄 전문">
     <meta name="twitter:description" content="기획에서 인쇄까지 원스톱 서비스. 10가지 인쇄물 온라인 견적">
-    <meta name="twitter:image" content="https://dsp114.com/ImgFolder/dusonlogo1.png">
+    <meta name="twitter:image" content="https://dsp114.com/ImgFolder/og-image.png">
 
     <!-- 세션 ID 메타 태그 -->
     <meta name="session-id" content="<?php echo htmlspecialchars($session_id); ?>">

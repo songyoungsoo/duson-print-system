@@ -91,7 +91,7 @@ if ($url_nc_type) {
     <meta property="og:title" content="명함 인쇄 | 명함 제작 - 두손기획인쇄">
     <meta property="og:description" content="명함 인쇄 전문. 고급 명함, 양면 컬러, 다양한 용지. 100매부터 빠른 제작.">
     <meta property="og:url" content="https://dsp114.com/mlangprintauto/namecard/">
-    <meta property="og:image" content="https://dsp114.com/ImgFolder/dusonlogo1.png">
+    <meta property="og:image" content="https://dsp114.com/ImgFolder/og-image.png">
     <meta property="og:site_name" content="두손기획인쇄">
 
     <!-- 🏆 Competition Edition: 테이블 디자인 시스템 (최우선 로드) -->

@@ -129,7 +129,7 @@ $default_values['ordertype'] = 'print'; // 인쇄만
     <meta property="og:title" content="포스터 인쇄 | 리플렛 제작 - 두손기획인쇄">
     <meta property="og:description" content="포스터·리플렛 인쇄 전문. A3, B3 포스터 소량부터 대량까지. 고품질 옵셋 인쇄.">
     <meta property="og:url" content="https://dsp114.com/mlangprintauto/littleprint/">
-    <meta property="og:image" content="https://dsp114.com/ImgFolder/dusonlogo1.png">
+    <meta property="og:image" content="https://dsp114.com/ImgFolder/og-image.png">
     <meta property="og:site_name" content="두손기획인쇄">
 
     <!-- 포스터 컴팩트 페이지 전용 CSS -->
