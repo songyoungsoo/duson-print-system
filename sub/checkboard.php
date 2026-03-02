@@ -611,12 +611,12 @@ function verifyPassword() {
             document.getElementById('passwordModal').style.display = 'none';
             if (data.redirect_url) {
                 // 팝업 열기
-                const width = 1000;
-                const height = 600;
-                const left = (screen.width - width) / 2;
-                const top = (screen.height - height) / 2;
+                const width = screen.availWidth;
+                const height = screen.availHeight;
+                const left = 0;
+                const top = 0;
                 const features = `width=${width},height=${height},left=${left},top=${top},` +
-                                 `resizable=yes,scrollbars=yes,status=yes,toolbar=no,menubar=no,location=no`;
+                                 `resizable=yes,scrollbars=yes,status=no,toolbar=no,menubar=no,location=no`;
                 const popup = window.open(data.redirect_url, 'ProofreadingDetail_' + currentOrderNo, features);
                 if (popup && !popup.closed) {
                     popup.focus();
@@ -646,13 +646,13 @@ function openProofreadingPopup(orderNo) {
     const url = '/mlangorder_printauto/WindowSian.php?mode=OrderView&no=' + orderNo;
 
     // 팝업 창 크기 및 위치 계산
-    const width = 1000;
-    const height = 600;
-    const left = (screen.width - width) / 2;
-    const top = (screen.height - height) / 2;
+    const width = screen.availWidth;
+    const height = screen.availHeight;
+    const left = 0;
+    const top = 0;
 
     const features = `width=${width},height=${height},left=${left},top=${top},` +
-                     `resizable=yes,scrollbars=yes,status=yes,toolbar=no,menubar=no,location=no`;
+                     `resizable=yes,scrollbars=yes,status=no,toolbar=no,menubar=no,location=no`;
 
     // 팝업 창 열기
     const popup = window.open(url, 'ProofreadingDetail_' + orderNo, features);
