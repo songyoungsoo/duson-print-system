@@ -113,6 +113,74 @@ a{color:inherit;text-decoration:none}
 .btn-submit{background:#20c997;color:#fff;font-size:16px;padding:14px 40px}
 .btn-submit:hover{background:#12b886}
 
+/* === Generation Options === */
+.generation-options{margin:24px 0;text-align:center}
+.generation-options p{font-size:14px;color:#666;margin-bottom:15px}
+.generation-options .gen-buttons{display:flex;gap:14px;justify-content:center;flex-wrap:wrap}
+.btn-generate-quick,.btn-generate-premium{padding:16px 28px;border-radius:14px;font-size:15px;font-weight:700;border:none;cursor:pointer;font-family:inherit;transition:all .3s;min-width:200px}
+.btn-generate-quick{background:#20c997;color:#fff;box-shadow:0 4px 14px rgba(32,201,151,.3)}
+.btn-generate-quick:hover{background:#12b886;transform:translateY(-1px);box-shadow:0 6px 20px rgba(32,201,151,.4)}
+.btn-generate-premium{background:linear-gradient(135deg,#6c5ce7 0%,#a855f7 100%);color:#fff;box-shadow:0 4px 14px rgba(168,85,247,.3)}
+.btn-generate-premium:hover{transform:translateY(-1px);box-shadow:0 6px 20px rgba(168,85,247,.4)}
+.btn-generate-quick:disabled,.btn-generate-premium:disabled{opacity:.6;cursor:not-allowed;transform:none;box-shadow:none}
+.btn-generate-quick .sub,.btn-generate-premium .sub{display:block;font-size:12px;font-weight:400;opacity:.85;margin-top:4px}
+
+/* === Premium Progress Overlay === */
+.premium-progress-overlay{display:none;position:fixed;inset:0;background:rgba(0,0,0,.7);z-index:9999;align-items:center;justify-content:center}
+.premium-progress-overlay.visible{display:flex}
+.premium-progress-card{background:#fff;border-radius:20px;padding:40px 36px;max-width:420px;width:90%;text-align:center;box-shadow:0 20px 60px rgba(0,0,0,.3);animation:slideUp .4s ease}
+@keyframes slideUp{from{opacity:0;transform:translateY(30px)}to{opacity:1;transform:translateY(0)}}
+.premium-progress-card .progress-icon{font-size:48px;margin-bottom:12px;animation:pulse 2s ease-in-out infinite}
+@keyframes pulse{0%,100%{transform:scale(1)}50%{transform:scale(1.1)}}
+.premium-progress-card h3{font-size:18px;font-weight:700;color:#002B5B;margin-bottom:8px}
+.premium-progress-card .progress-msg{font-size:14px;color:#666;margin-bottom:20px;min-height:20px}
+.progress-bar-container{width:100%;height:8px;background:#e9ecef;border-radius:4px;overflow:hidden;margin-bottom:8px}
+.progress-bar-container .progress-bar-fill{height:100%;background:linear-gradient(90deg,#6c5ce7,#a855f7);border-radius:4px;transition:width .5s ease;width:0}
+.premium-progress-card .progress-pct{font-size:13px;font-weight:600;color:#6c5ce7}
+.premium-progress-card .progress-hint{font-size:12px;color:#999;margin-top:15px}
+.premium-progress-card .btn-cancel-premium{margin-top:16px;padding:8px 20px;border:1.5px solid #dee2e6;border-radius:8px;background:none;color:#868e96;font-size:13px;cursor:pointer;font-family:inherit}
+.premium-progress-card .btn-cancel-premium:hover{border-color:#e03131;color:#e03131}
+
+/* === Premium Result === */
+.premium-result{display:none;margin:24px 0;text-align:center}
+.premium-result.visible{display:block}
+.premium-result-card{background:linear-gradient(135deg,#f0f0ff 0%,#f8f0ff 100%);border:1.5px solid #d4c5f9;border-radius:16px;padding:28px;text-align:center}
+.premium-result-card .result-icon{font-size:48px;margin-bottom:8px}
+.premium-result-card h3{font-size:18px;font-weight:700;color:#002B5B;margin-bottom:8px}
+.premium-result-card p{font-size:14px;color:#666;margin-bottom:16px}
+.premium-result-card .result-actions{display:flex;gap:12px;justify-content:center;flex-wrap:wrap}
+.btn-download{display:inline-flex;align-items:center;gap:8px;padding:14px 32px;border-radius:12px;font-size:15px;font-weight:700;border:none;cursor:pointer;font-family:inherit;background:linear-gradient(135deg,#6c5ce7 0%,#a855f7 100%);color:#fff;box-shadow:0 4px 14px rgba(168,85,247,.3);text-decoration:none;transition:all .3s}
+.btn-download:hover{transform:translateY(-1px);box-shadow:0 6px 20px rgba(168,85,247,.4)}
+.btn-retry{display:inline-flex;align-items:center;gap:6px;padding:12px 24px;border-radius:12px;font-size:14px;font-weight:600;border:1.5px solid #dee2e6;background:#fff;color:#495057;cursor:pointer;font-family:inherit;transition:all .2s}
+.btn-retry:hover{border-color:#002B5B;color:#002B5B}
+
+@media(max-width:600px){
+  .generation-options .gen-buttons{flex-direction:column;align-items:center}
+  .btn-generate-quick,.btn-generate-premium{min-width:0;width:100%;max-width:280px}
+  .premium-progress-card{padding:28px 20px}
+  .premium-result-card .result-actions{flex-direction:column;align-items:center}
+}
+
+/* === AI 버튼 === */
+.ai-section{background:linear-gradient(135deg,#f0f4ff 0%,#e8f0fe 100%);border:1.5px solid #c8d6e5;border-radius:14px;padding:20px;margin-bottom:20px;text-align:center}
+.ai-section h3{font-size:15px;font-weight:700;color:#002B5B;margin-bottom:4px}
+.ai-section p{font-size:12px;color:#868e96;margin-bottom:14px}
+.ai-btn{display:inline-flex;align-items:center;gap:8px;padding:12px 28px;border-radius:12px;font-size:14px;font-weight:700;border:none;cursor:pointer;font-family:inherit;transition:all .3s;background:linear-gradient(135deg,#002B5B 0%,#1a4a7a 100%);color:#fff;box-shadow:0 4px 14px rgba(0,43,91,.3)}
+.ai-btn:hover{transform:translateY(-1px);box-shadow:0 6px 20px rgba(0,43,91,.4)}
+.ai-btn:disabled{opacity:.6;cursor:not-allowed;transform:none;box-shadow:none}
+.ai-btn .spinner{display:none;width:16px;height:16px;border:2px solid rgba(255,255,255,.3);border-top-color:#fff;border-radius:50%;animation:spin .6s linear infinite}
+.ai-btn.loading .spinner{display:inline-block}
+.ai-btn.loading .btn-text{display:none}
+@keyframes spin{to{transform:rotate(360deg)}}
+.ai-notice{margin-top:10px;padding:10px 14px;border-radius:8px;font-size:12px;display:none}
+.ai-notice.success{display:block;background:#d3f9d8;color:#2b8a3e;border:1px solid #b2f2bb}
+.ai-notice.error{display:block;background:#ffe0e0;color:#c92a2a;border:1px solid #ffa8a8}
+.ai-image-wrap{margin-top:12px;display:none}
+.ai-image-wrap img{max-width:100%;max-height:300px;border-radius:12px;border:2px solid #dee2e6;object-fit:cover}
+.ai-image-wrap .ai-img-actions{margin-top:8px;display:flex;gap:8px;justify-content:center}
+.ai-image-wrap .ai-img-actions button{padding:8px 16px;border-radius:8px;font-size:12px;font-weight:600;cursor:pointer;border:1px solid #dee2e6;background:#fff;color:#495057;font-family:inherit}
+.ai-image-wrap .ai-img-actions button:hover{border-color:#002B5B;color:#002B5B}
+
 /* Responsive */
 @media(max-width:600px){
   .container{padding:0 10px;margin:16px auto}
@@ -152,6 +220,8 @@ a{color:inherit;text-decoration:none}
         <h2>업종을 선택하세요</h2>
         <p class="subtitle">업종에 맞는 색상과 레이아웃이 자동 적용됩니다</p>
         <input type="hidden" name="industry_key" id="industryKey" value="">
+        <input type="hidden" name="subtitle" id="subtitle" value="">
+        <input type="hidden" name="industry_label" id="industryLabel" value="">
 
         <div class="cat-tabs" id="catTabs">
             <?php $first = true; foreach ($grouped as $cat => $items): ?>
@@ -166,7 +236,8 @@ a{color:inherit;text-decoration:none}
                 <div class="industry-card" data-key="<?php echo htmlspecialchars($key); ?>"
                      data-tagline="<?php echo htmlspecialchars($preset['defaultTagline']); ?>"
                      data-hints="<?php echo htmlspecialchars(implode('|', $preset['featureHints'])); ?>"
-                     data-menu-label="<?php echo htmlspecialchars($preset['menuLabel']); ?>">
+                     data-menu-label="<?php echo htmlspecialchars($preset['menuLabel']); ?>"
+                     data-label="<?php echo htmlspecialchars($preset['label']); ?>">
                     <div class="icon"><?php echo $preset['icon']; ?></div>
                     <div class="name"><?php echo htmlspecialchars($preset['label']); ?></div>
                 </div>
@@ -189,6 +260,17 @@ a{color:inherit;text-decoration:none}
         <div class="form-group">
             <label>상호명 <span class="req">*</span></label>
             <input type="text" name="business_name" id="businessName" placeholder="예: 맛나분식">
+        </div>
+
+        <!-- AI 카피라이터 -->
+        <div class="ai-section" id="aiCopySection">
+            <h3>✨ AI 카피라이터</h3>
+            <p>상호명만 입력하면 AI가 전단지 문구를 자동 생성합니다 (캐치프레이즈, 특장점, 메뉴, 프로모션, 영업시간)</p>
+            <button type="button" class="ai-btn" id="aiCopyBtn" onclick="generateAIContent()">
+                <span class="btn-text">✨ AI로 전단지 문구 자동 생성</span>
+                <span class="spinner"></span>
+            </button>
+            <div class="ai-notice" id="aiCopyNotice"></div>
         </div>
 
         <div class="form-group">
@@ -274,6 +356,25 @@ a{color:inherit;text-decoration:none}
         <h2>이미지 업로드</h2>
         <p class="subtitle">로고나 사진이 있으면 전단지가 더 풍성해집니다 (선택사항)</p>
 
+        <!-- AI 이미지 생성 -->
+        <div class="ai-section" id="aiImageSection">
+            <h3>🎨 AI 이미지 생성</h3>
+            <p>업종에 맞는 홍보용 이미지를 AI가 자동 생성합니다 (Nano Banana Pro)</p>
+            <button type="button" class="ai-btn" id="aiImageBtn" onclick="generateAIImage()">
+                <span class="btn-text">🎨 AI 이미지 생성하기</span>
+                <span class="spinner"></span>
+            </button>
+            <div class="ai-notice" id="aiImageNotice"></div>
+            <div class="ai-image-wrap" id="aiImageWrap">
+                <img id="aiImagePreview" src="" alt="AI 생성 이미지">
+                <input type="hidden" name="ai_image" id="aiImagePath" value="">
+                <div class="ai-img-actions">
+                    <button type="button" onclick="generateAIImage()">🔄 다시 생성</button>
+                    <button type="button" onclick="removeAIImage()">❌ 제거</button>
+                </div>
+            </div>
+        </div>
+
         <!-- 로고 -->
         <div class="form-group">
             <label>로고 이미지</label>
@@ -309,10 +410,56 @@ a{color:inherit;text-decoration:none}
             <div class="hint">네이버/카카오맵 캡처 또는 직접 그린 약도</div>
         </div>
 
-        <div class="btn-row">
+        <div class="btn-row" style="margin-bottom:0">
             <button type="button" class="btn btn-prev" onclick="goStep(3)">← 이전</button>
-            <button type="submit" class="btn btn-submit">전단지 만들기 (PDF 다운로드)</button>
+            <div></div>
         </div>
+
+        <!-- Generation Options -->
+        <div class="generation-options" id="generationOptions">
+            <p>생성 방식을 선택하세요</p>
+            <!-- 단면/양면 선택 -->
+            <div id="sidesOptionWrap" style="text-align:center; margin-bottom:15px; display:none;">
+                <label style="display:inline-block; margin:0 10px; cursor:pointer; padding:8px 16px; border:2px solid #4A90D9; border-radius:8px; background-color:#f0f7ff;">
+                    <input type="radio" name="page_sides" value="single" checked
+                           onchange="updateSidesOption(this.value)"
+                           style="margin-right:5px;">
+                    단면 (앞면만)
+                    <span style="display:block; font-size:11px; color:#888;">빠른 생성 ~1분</span>
+                </label>
+                <label style="display:inline-block; margin:0 10px; cursor:pointer; padding:8px 16px; border:2px solid #ddd; border-radius:8px;">
+                    <input type="radio" name="page_sides" value="double"
+                           onchange="updateSidesOption(this.value)"
+                           style="margin-right:5px;">
+                    양면 (앞+뒤)
+                    <span style="display:block; font-size:11px; color:#888;">~2분 소요</span>
+                </label>
+            </div>
+            <div class="gen-buttons">
+                <button type="button" id="btn-generate-quick" class="btn-generate-quick" onclick="generateFlyer('quick')">
+                    ⚡ 빠른 생성
+                    <span class="sub">텍스트 위주 (~30초)</span>
+                </button>
+                <button type="button" id="btn-generate-premium" class="btn-generate-premium" onclick="generateFlyer('premium')">
+                    🎨 프리미엄 생성
+                    <span class="sub" id="premium-time-hint">AI 이미지 포함 (~1분)</span>
+                </button>
+            </div>
+        </div>
+
+        <!-- Premium Result (hidden) -->
+        <div class="premium-result" id="premiumResult">
+            <div class="premium-result-card">
+                <div class="result-icon">✅</div>
+                <h3>프리미엄 전단지 완성!</h3>
+                <p>AI가 생성한 이미지가 포함된 고품질 전단지입니다</p>
+                <div class="result-actions">
+                    <a href="#" id="premiumDownloadLink" class="btn-download" target="_blank">📥 PDF 다운로드</a>
+                    <button type="button" class="btn-retry" onclick="resetPremiumResult()">🔄 다시 만들기</button>
+                </div>
+            </div>
+        </div>
+
     </div>
 
     </form>
@@ -337,6 +484,8 @@ function goStep(n) {
     });
 
     currentStep = n;
+    // Show sides option on step 4 (generation)
+    if (n === 4) showSidesOption();
     window.scrollTo({ top: 0, behavior: 'smooth' });
 }
 
@@ -396,6 +545,7 @@ document.querySelectorAll('.industry-card').forEach(card => {
         document.querySelectorAll('.industry-card').forEach(c => c.classList.remove('selected'));
         this.classList.add('selected');
         document.getElementById('industryKey').value = this.dataset.key;
+        document.getElementById('industryLabel').value = this.dataset.label || '';
 
         // Pre-fill tagline
         const tl = document.getElementById('tagline');
@@ -479,6 +629,494 @@ const urlParams = new URLSearchParams(window.location.search);
 if (urlParams.get('error')) {
     alert('오류: ' + decodeURIComponent(urlParams.get('error')));
 }
+
+// ═══════════════════════════════════════════════
+//  AI 카피라이터 — 텍스트 생성
+// ═══════════════════════════════════════════════
+function generateAIContent() {
+    const industryKey = document.getElementById('industryKey').value;
+    const industryLabel = document.getElementById('industryLabel').value;
+    const businessName = document.getElementById('businessName').value.trim();
+    const btn = document.getElementById('aiCopyBtn');
+    const notice = document.getElementById('aiCopyNotice');
+
+    if (!industryKey) { alert('업종을 먼저 선택해주세요 (1단계).'); return; }
+    if (!businessName) { alert('상호명을 입력해주세요.'); document.getElementById('businessName').focus(); return; }
+
+    btn.classList.add('loading');
+    btn.disabled = true;
+    notice.className = 'ai-notice';
+    notice.style.display = 'none';
+
+    const formData = new FormData();
+    formData.append('industry_key', industryKey);
+    formData.append('industry_label', industryLabel);
+    formData.append('business_name', businessName);
+
+    fetch('api/generate_content.php', { method: 'POST', body: formData })
+        .then(res => res.json())
+        .then(data => {
+            btn.classList.remove('loading');
+            btn.disabled = false;
+
+            if (data.error) {
+                notice.className = 'ai-notice error';
+                notice.textContent = '❌ ' + data.error;
+                return;
+            }
+
+            if (data.success && data.data) {
+                applyAIContent(data.data);
+                notice.className = 'ai-notice success';
+                notice.textContent = '✅ AI가 전단지 문구를 생성했습니다! 다음 단계에서 확인하세요.';
+            }
+        })
+        .catch(err => {
+            btn.classList.remove('loading');
+            btn.disabled = false;
+            notice.className = 'ai-notice error';
+            notice.textContent = '❌ 네트워크 오류가 발생했습니다. 다시 시도해주세요.';
+        });
+}
+
+function applyAIContent(data) {
+    // 캐치프레이즈
+    if (data.tagline) {
+        document.getElementById('tagline').value = data.tagline;
+    }
+
+    // 부제목/소개 문구
+    if (data.subtitle) {
+        document.getElementById('subtitle').value = data.subtitle;
+    }
+
+    // 영업시간
+    if (data.hours) {
+        const hoursInput = document.querySelector('input[name="hours"]');
+        if (hoursInput) hoursInput.value = data.hours;
+    }
+
+    // 특장점
+    if (data.features && Array.isArray(data.features)) {
+        for (let i = 0; i < Math.min(data.features.length, 3); i++) {
+            const el = document.getElementById('feat' + (i + 1));
+            if (el) el.value = data.features[i];
+        }
+    }
+
+    // 메뉴
+    if (data.menu && Array.isArray(data.menu)) {
+        const menuList = document.getElementById('menuList');
+        menuList.innerHTML = '';
+        data.menu.forEach(item => {
+            const row = document.createElement('div');
+            row.className = 'menu-row';
+            row.innerHTML = '<input type="text" name="menu_name[]" value="' + escapeHtml(item.name || '') + '" placeholder="항목 이름">' +
+                '<input type="text" name="menu_price[]" class="price-input" value="' + escapeHtml(item.price || '') + '" placeholder="가격">' +
+                '<span class="unit">원</span>' +
+                '<button type="button" class="btn-del" onclick="removeMenu(this)" title="삭제">&times;</button>';
+            menuList.appendChild(row);
+        });
+    }
+
+    // 프로모션
+    if (data.promotion) {
+        const promoEl = document.querySelector('textarea[name="promotion"]');
+        if (promoEl) promoEl.value = data.promotion;
+    }
+}
+
+function escapeHtml(text) {
+    const div = document.createElement('div');
+    div.textContent = text;
+    return div.innerHTML;
+}
+
+// ═══════════════════════════════════════════════
+//  AI 이미지 생성
+// ═══════════════════════════════════════════════
+function generateAIImage() {
+    const industryKey = document.getElementById('industryKey').value;
+    const industryLabel = document.getElementById('industryLabel').value;
+    const businessName = document.getElementById('businessName').value.trim();
+    const btn = document.getElementById('aiImageBtn');
+    const notice = document.getElementById('aiImageNotice');
+    const wrap = document.getElementById('aiImageWrap');
+
+    if (!industryKey) { alert('업종을 먼저 선택해주세요 (1단계).'); return; }
+    if (!businessName) { alert('상호명을 먼저 입력해주세요 (2단계).'); return; }
+
+    btn.classList.add('loading');
+    btn.disabled = true;
+    notice.className = 'ai-notice';
+    notice.style.display = 'none';
+
+    const formData = new FormData();
+    formData.append('industry_key', industryKey);
+    formData.append('industry_label', industryLabel);
+    formData.append('business_name', businessName);
+    formData.append('image_type', 'hero');
+
+    fetch('api/generate_image.php', { method: 'POST', body: formData })
+        .then(res => res.json())
+        .then(data => {
+            btn.classList.remove('loading');
+            btn.disabled = false;
+
+            if (data.error) {
+                notice.className = 'ai-notice error';
+                notice.textContent = '❌ ' + data.error;
+                return;
+            }
+
+            if (data.success && data.url) {
+                document.getElementById('aiImagePreview').src = data.url;
+                document.getElementById('aiImagePath').value = data.filename;
+                wrap.style.display = 'block';
+                notice.className = 'ai-notice success';
+                notice.textContent = '✅ AI 이미지가 생성되었습니다!';
+            }
+        })
+        .catch(err => {
+            btn.classList.remove('loading');
+            btn.disabled = false;
+            notice.className = 'ai-notice error';
+            notice.textContent = '❌ 네트워크 오류가 발생했습니다. 다시 시도해주세요.';
+        });
+}
+
+function removeAIImage() {
+    document.getElementById('aiImageWrap').style.display = 'none';
+    document.getElementById('aiImagePreview').src = '';
+    document.getElementById('aiImagePath').value = '';
+    document.getElementById('aiImageNotice').className = 'ai-notice';
+    document.getElementById('aiImageNotice').style.display = 'none';
+}
+
+// ═══════════════════════════════════════════════
+//  Premium Progress Overlay (injected after form)
+// ═══════════════════════════════════════════════
+(function() {
+    var overlay = document.createElement('div');
+    overlay.id = 'premium-progress-overlay';
+    overlay.className = 'premium-progress-overlay';
+    overlay.innerHTML =
+        '<div class="premium-progress-card">' +
+            '<div class="progress-icon" id="progress-icon">🎨</div>' +
+            '<h3 id="progress-title">프리미엄 전단지 생성 중</h3>' +
+            '<p class="progress-msg" id="progress-message">준비 중...</p>' +
+            '<div class="progress-bar-container">' +
+                '<div class="progress-bar-fill" id="progress-bar"></div>' +
+            '</div>' +
+            '<p class="progress-pct" id="progress-percent">0%</p>' +
+            '<p class="progress-hint" id="progress-hint">AI가 이미지를 생성하고 있습니다. 잠시만 기다려주세요.</p>' +
+            '<button type="button" class="btn-cancel-premium" id="btn-cancel-premium" onclick="cancelPremiumGeneration()">취소</button>' +
+        '</div>';
+    document.body.appendChild(overlay);
+})();
+
+var premiumAbortController = null;
+
+// ═══════════════════════════════════════════════
+//  Sides Option (단면/양면)
+// ═══════════════════════════════════════════════
+function updateSidesOption(value) {
+    var radios = document.querySelectorAll('input[name="page_sides"]');
+    for (var i = 0; i < radios.length; i++) {
+        var parentLabel = radios[i].closest('label');
+        if (radios[i].value === value) {
+            parentLabel.style.borderColor = '#4A90D9';
+            parentLabel.style.backgroundColor = '#f0f7ff';
+        } else {
+            parentLabel.style.borderColor = '#ddd';
+            parentLabel.style.backgroundColor = '';
+        }
+    }
+    // Update premium button time hint
+    var hintEl = document.getElementById('premium-time-hint');
+    if (hintEl) {
+        hintEl.textContent = value === 'double' ? 'AI 이미지 포함 (~2분)' : 'AI 이미지 포함 (~1분)';
+    }
+}
+
+function showSidesOption() {
+    var wrap = document.getElementById('sidesOptionWrap');
+    if (wrap) wrap.style.display = '';
+}
+function hideSidesOption() {
+    var wrap = document.getElementById('sidesOptionWrap');
+    if (wrap) wrap.style.display = 'none';
+}
+
+
+// ═══════════════════════════════════════════════
+//  Generation Router
+// ═══════════════════════════════════════════════
+function generateFlyer(mode) {
+    if (mode === 'quick') {
+        hideSidesOption();
+        generateFlyerQuick();
+        return;
+    }
+    generateFlyerPremium();
+}
+
+// ═══════════════════════════════════════════════
+//  Quick Generation (existing form submit)
+// ═══════════════════════════════════════════════
+function generateFlyerQuick() {
+    // Validate all steps
+    if (!validateStep(1) || !validateStep(2) || !validateStep(3)) {
+        return;
+    }
+    // Submit the form as before
+    document.getElementById('flyerForm').submit();
+}
+
+// ═══════════════════════════════════════════════
+//  Premium Generation (SSE via fetch)
+// ═══════════════════════════════════════════════
+function generateFlyerPremium() {
+    // Validate all steps
+    if (!validateStep(1) || !validateStep(2) || !validateStep(3)) {
+        return;
+    }
+
+    var formData = collectFormData();
+    showPremiumProgress();
+
+    premiumAbortController = new AbortController();
+
+    fetch('api/generate_premium.php', {
+        method: 'POST',
+        headers: {'Content-Type': 'application/json'},
+        body: JSON.stringify(formData),
+        signal: premiumAbortController.signal
+    }).then(function(response) {
+        if (!response.ok) {
+            throw new Error('서버 오류 (HTTP ' + response.status + ')');
+        }
+        var reader = response.body.getReader();
+        var decoder = new TextDecoder();
+        var buffer = '';
+
+        function read() {
+            return reader.read().then(function(result) {
+                if (result.done) {
+                    // Process any remaining buffer
+                    if (buffer.trim()) {
+                        processSSEBuffer(buffer);
+                    }
+                    return;
+                }
+                buffer += decoder.decode(result.value, {stream: true});
+
+                // Process complete SSE events (separated by double newline)
+                var parts = buffer.split('\n\n');
+                // Keep the last incomplete part in buffer
+                buffer = parts.pop() || '';
+
+                for (var i = 0; i < parts.length; i++) {
+                    processSSEBuffer(parts[i]);
+                }
+
+                return read();
+            });
+        }
+        return read();
+    }).catch(function(error) {
+        if (error.name === 'AbortError') {
+            // User cancelled
+            hidePremiumProgress();
+            return;
+        }
+        hidePremiumProgress();
+        alert('생성 중 오류가 발생했습니다: ' + error.message);
+    });
+}
+
+function processSSEBuffer(text) {
+    var lines = text.split('\n');
+    for (var i = 0; i < lines.length; i++) {
+        var line = lines[i].trim();
+        if (line.indexOf('data: ') === 0) {
+            try {
+                var data = JSON.parse(line.substring(6));
+                handleSSEEvent(data);
+            } catch (e) {
+                // Skip invalid JSON
+            }
+        }
+    }
+}
+
+function handleSSEEvent(data) {
+    if (data.type === 'progress') {
+        updateProgress(data.message, data.progress, data.stage);
+    } else if (data.type === 'complete') {
+        hidePremiumProgress();
+        if (data.success && data.pdf_url) {
+            showPremiumResult(data.pdf_url, data.preview_images);
+        } else {
+            alert(data.error || '생성에 실패했습니다.');
+        }
+    } else if (data.type === 'error') {
+        hidePremiumProgress();
+        alert(data.message || '생성 중 오류가 발생했습니다.');
+    }
+}
+
+// ═══════════════════════════════════════════════
+//  Progress UI
+// ═══════════════════════════════════════════════
+function showPremiumProgress() {
+    var overlay = document.getElementById('premium-progress-overlay');
+    overlay.classList.add('visible');
+    // Update hint based on sides selection
+    var sidesEl = document.querySelector('input[name="page_sides"]:checked');
+    var isDouble = sidesEl && sidesEl.value === 'double';
+    var hintEl = document.getElementById('progress-hint');
+    if (hintEl) {
+        hintEl.textContent = isDouble
+            ? 'AI가 앞면+뒷면 이미지를 생성합니다. 약 2분 소요됩니다.'
+            : 'AI가 앞면 이미지를 생성합니다. 약 1분 소요됩니다.';
+    }
+    updateProgress('준비 중...', 0, 'init');
+    // Disable buttons
+    var btnQ = document.getElementById('btn-generate-quick');
+    var btnP = document.getElementById('btn-generate-premium');
+    if (btnQ) btnQ.disabled = true;
+    if (btnP) btnP.disabled = true;
+}
+
+function hidePremiumProgress() {
+    var overlay = document.getElementById('premium-progress-overlay');
+    overlay.classList.remove('visible');
+    // Re-enable buttons
+    var btnQ = document.getElementById('btn-generate-quick');
+    var btnP = document.getElementById('btn-generate-premium');
+    if (btnQ) btnQ.disabled = false;
+    if (btnP) btnP.disabled = false;
+}
+
+function updateProgress(message, percent, stage) {
+    var msgEl = document.getElementById('progress-message');
+    var barEl = document.getElementById('progress-bar');
+    var pctEl = document.getElementById('progress-percent');
+    var iconEl = document.getElementById('progress-icon');
+
+    if (msgEl) msgEl.textContent = message;
+    if (barEl) barEl.style.width = Math.min(100, Math.max(0, percent)) + '%';
+    if (pctEl) pctEl.textContent = Math.round(percent) + '%';
+
+    var icons = {
+        'init': '🚀',
+        'collector': '📋',
+        'copywriter': '✍️',
+        'designer': '🎨',
+        'prompter': '🖼️',
+        'image_generation': '🖼️',
+        'assembler': '📄',
+        'complete': '✅'
+    };
+    if (iconEl && icons[stage]) {
+        iconEl.textContent = icons[stage];
+    }
+}
+
+function cancelPremiumGeneration() {
+    if (premiumAbortController) {
+        premiumAbortController.abort();
+        premiumAbortController = null;
+    }
+    hidePremiumProgress();
+}
+
+// ═══════════════════════════════════════════════
+//  Premium Result
+// ═══════════════════════════════════════════════
+function showPremiumResult(pdfUrl, previewImages) {
+    // Hide generation options
+    var genOpts = document.getElementById('generationOptions');
+    if (genOpts) genOpts.style.display = 'none';
+
+    // Show result card
+    var resultDiv = document.getElementById('premiumResult');
+    resultDiv.classList.add('visible');
+
+    var downloadLink = document.getElementById('premiumDownloadLink');
+    downloadLink.href = pdfUrl;
+}
+
+function resetPremiumResult() {
+    // Show generation options
+    var genOpts = document.getElementById('generationOptions');
+    if (genOpts) genOpts.style.display = '';
+
+    // Hide result card
+    var resultDiv = document.getElementById('premiumResult');
+    resultDiv.classList.remove('visible');
+}
+
+// ═══════════════════════════════════════════════
+//  Collect Form Data for Premium API
+// ═══════════════════════════════════════════════
+function collectFormData() {
+    // Basic info
+    var data = {
+        business_name: (document.getElementById('businessName') || {}).value || '',
+        industry_key: (document.getElementById('industryKey') || {}).value || '',
+        industry_label: (document.getElementById('industryLabel') || {}).value || '',
+        tagline: (document.getElementById('tagline') || {}).value || '',
+        subtitle: (document.getElementById('subtitle') || {}).value || '',
+        phone: (document.getElementById('phone') || {}).value || '',
+        address: (document.getElementById('address') || {}).value || '',
+        hours: '',
+        website_url: '',
+        promotion: '',
+        features: [],
+        menu_items: [],
+        ai_image: (document.getElementById('aiImagePath') || {}).value || ''
+    };
+
+    // Single/double-sided option
+    var sidesEl = document.querySelector('input[name="page_sides"]:checked');
+    data.double_sided = sidesEl ? (sidesEl.value === 'double') : false;
+
+    // Hours
+    var hoursEl = document.querySelector('input[name="hours"]');
+    if (hoursEl) data.hours = hoursEl.value || '';
+
+    // Website
+    var webEl = document.querySelector('input[name="website_url"]');
+    if (webEl) data.website_url = webEl.value || '';
+
+    // Promotion
+    var promoEl = document.querySelector('textarea[name="promotion"]');
+    if (promoEl) data.promotion = promoEl.value || '';
+
+    // Features (up to 3)
+    var featEls = document.querySelectorAll('input[name="features[]"]');
+    for (var i = 0; i < featEls.length; i++) {
+        var v = featEls[i].value.trim();
+        if (v) data.features.push(v);
+    }
+
+    // Menu items
+    var nameEls = document.querySelectorAll('input[name="menu_name[]"]');
+    var priceEls = document.querySelectorAll('input[name="menu_price[]"]');
+    for (var j = 0; j < nameEls.length; j++) {
+        var mName = nameEls[j].value.trim();
+        var mPrice = (priceEls[j] || {}).value || '';
+        if (mName) {
+            data.menu_items.push({name: mName, price: mPrice.trim()});
+        }
+    }
+
+    return data;
+}
+
+
 </script>
 </body>
 </html>

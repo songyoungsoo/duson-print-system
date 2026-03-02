@@ -53,6 +53,7 @@ $tagline      = trim($_POST['tagline'] ?? '');
 $hours        = trim($_POST['hours'] ?? '');
 $websiteUrl   = trim($_POST['website_url'] ?? '');
 $promotion    = trim($_POST['promotion'] ?? '');
+$subtitle     = trim($_POST['subtitle'] ?? '');
 
 // Features: filter empty, limit to 3
 $features = array_slice(
@@ -93,6 +94,16 @@ if (!$preset) {
 $uploadDir = __DIR__ . '/uploads/';
 if (!is_dir($uploadDir)) {
     mkdir($uploadDir, 0755, true);
+}
+
+// AI 생성 이미지 처리
+$aiImagePath = null;
+$aiImageFilename = trim($_POST['ai_image'] ?? '');
+if ($aiImageFilename !== '') {
+    $aiFullPath = __DIR__ . '/uploads/ai/' . basename($aiImageFilename);
+    if (file_exists($aiFullPath)) {
+        $aiImagePath = $aiFullPath;
+    }
 }
 
 // Logo

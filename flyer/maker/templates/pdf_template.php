@@ -21,6 +21,7 @@
  *   $mapImagePath     — 약도 이미지 절대경로 (null 가능)
  *   $qrCodePath       — QR 코드 이미지 절대경로 (null 가능)
  *   $websiteUrl       — 웹사이트 URL 문자열
+ *   $aiImagePath      — AI 생성 이미지 절대경로 (null 가능)
  *   $needsPage2       — 2페이지 필요 여부
  *   $overflowMenuItems — 12개 초과 메뉴 항목 배열
  */
@@ -178,6 +179,13 @@ body {
 <!-- Top accent bar -->
 <div class="accent-top"></div>
 
+<!-- AI 생성 히어로 이미지 -->
+<?php if (!empty($aiImagePath)): ?>
+<div style="text-align: center; margin-bottom: 3mm;">
+    <img src="<?= htmlspecialchars($aiImagePath) ?>" style="width: 100%; max-height: 75mm; object-fit: cover; border-radius: 2mm;" />
+</div>
+<?php endif; ?>
+
 <!-- Header: Logo + Business Name + Phone -->
 <table width="100%" cellpadding="0" cellspacing="0" style="margin-top: 4mm;">
 <tr>
@@ -190,6 +198,9 @@ body {
         <div class="header-name"><?= htmlspecialchars($businessName) ?></div>
 <?php if (!empty($tagline)): ?>
         <div class="header-tagline"><?= htmlspecialchars($tagline) ?></div>
+<?php endif; ?>
+<?php if (!empty($subtitle)): ?>
+        <div style="font-size: 9pt; color: <?= $cSecondary ?>; margin-top: 1mm;"><?= htmlspecialchars($subtitle) ?></div>
 <?php endif; ?>
     </td>
     <td width="35%" valign="middle" style="text-align: right;">
