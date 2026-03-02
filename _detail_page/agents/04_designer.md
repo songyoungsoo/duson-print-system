@@ -26,7 +26,7 @@
 
 ### 이미지 규격
 - 너비: **1100px** (우리사이트 설명란 폭 1100px에 맞춤)
-- 높이: **1100px** (섹션당, 고정)
+- 높이: **900px** (섹션당, 고정)
 - 해상도: 72dpi (웹용)
 - 포맷: PNG
 
@@ -112,7 +112,7 @@
 
 ### 필수 포함 요소
 ```
-1. 이미지 크기: "Create a 1100x1100 pixel image"
+1. 이미지 크기: "Create a 1100x900 pixel image"
 2. 스타일: "modern Korean e-commerce detail page section"
 3. 텍스트 언어: "with Korean text (한국어)"
 4. 배경: 구체적 색상 코드 또는 그라데이션
@@ -122,7 +122,7 @@
 
 ### 프롬프트 템플릿
 ```
-Create a 1100x1100 pixel image for a Korean printing e-commerce product detail page.
+Create a 1100x900 pixel image for a Korean printing e-commerce product detail page.
 Section: [섹션명]
 Style: [modern/clean/warm/bold]
 Background: [색상/그라데이션]
@@ -144,13 +144,13 @@ Product: [제품 실물 이미지 설명]
     "brand_color": "#2C5F8A",
     "accent_color": "#FF6B35",
     "font_style": "Modern Korean Gothic",
-    "image_size": "1100x1100"
+    "image_size": "1100x900"
   },
   "sections": [
     {
       "id": 1,
       "name": "urgency_header",
-      "prompt": "Create a 1100x1100 pixel image...",
+      "prompt": "Create a 1100x900 pixel image...",
       "style_notes": "Dark blue background, white bold text",
       "text_content": ["이번 주 주문 시 10% 할인", "3월 7일까지"],
       "mood": "urgent, action-driven"

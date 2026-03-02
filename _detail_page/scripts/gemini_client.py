@@ -179,7 +179,7 @@ Style requirements:
 - No cartoon, anime, or illustrated style
 - No watermarks or stock photo marks
 - High contrast, vibrant but professional colors
-- 1024x1024 pixels, PNG format
+- 1100x900 pixels, PNG format
 """
         full_prompt = f"{prompt}\n\n{quality_suffix}"
 
@@ -190,6 +190,7 @@ Style requirements:
                     contents=full_prompt,
                     config=types.GenerateContentConfig(
                         response_modalities=["IMAGE", "TEXT"],
+                        image_config=types.ImageConfig(aspect_ratio="5:4"),
                     ),
                 )
 
@@ -202,6 +203,17 @@ Style requirements:
                             Path(output_path).parent.mkdir(parents=True, exist_ok=True)
                             with open(output_path, "wb") as f:
                                 f.write(image_data)
+
+                            # Post-resize to exact 1100x900
+                            try:
+                                from PIL import Image as PILImage
+                                img = PILImage.open(output_path)
+                                if img.size != (1100, 900):
+                                    img = img.resize((1100, 900), PILImage.Resampling.LANCZOS)
+                                    img.save(output_path, "PNG")
+                                    logger.info(f"  📐 리사이즈: {img.size} → 1100x900")
+                            except Exception as resize_err:
+                                logger.warning(f"리사이즈 실패 (원본 유지): {resize_err}")
 
                             self.total_images_generated += 1
                             file_size = os.path.getsize(output_path)

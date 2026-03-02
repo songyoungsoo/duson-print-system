@@ -50,6 +50,39 @@ logger = logging.getLogger(__name__)
 class DetailPageOrchestrator:
     """상세페이지 생성 파이프라인 오케스트레이터"""
 
+    # V2 디자인 제약 — 내용 영역 900px, 폰트 소형화
+    V2_DESIGN_CONSTRAINTS = """
+## ⚠️ V2 디자인 제약 (반드시 준수)
+
+### 캔버스 / 내용 영역
+- 캔버스 전체: 1100x900px (배경색이 꽉 채움)
+- 내용은 좌우에 충분한 여백을 두고 중앙에 배치 (여백은 시각적으로만 적용)
+- 프롬프트에 항상 명시: "content centered with generous left and right margins, clean visual breathing room on both sides"
+
+### 절대 금지 — 치수/수치 표시
+- 이미지 안에 "px", "100px", "900px" 같은 픽셀 수치 절대 표시 금지
+- 눈금자, 가이드라인, 치수선, 측정 표시 절대 금지
+- 레이아웃 가이드 선, 격자선 절대 금지
+- 이것은 내부 레이아웃 지시사항이며 이미지에 표시하지 않음
+
+### 폰트 크기 (압도적으로 큰 폰트 절대 금지)
+- 헤드라인: 적당히 크고 읽기 편한 크기
+- 서브헤딩: 헤드라인보다 작게
+- 본문: 충분히 작고 여유롭게
+- 텍스트 전용 섹션(FAQ/스펙/가격): 특히 작고 여유롭게, 화면 가득 채우지 말 것
+
+### 여백 / 레이아웃
+- 상하 여백 충분히
+- 좌우 여백을 넉넉하게 두어 내용이 중앙에 모이는 느낌
+- 텍스트 줄간격 여유롭게
+- 한 섹션에 텍스트가 많으면 폰트 더 줄이고 여백 더 늘릴 것
+
+### 분위기
+- 세련되고 편안한 느낌 (압박감 없음)
+- 여유로운 화이트스페이스
+- 텍스트가 숨 쉬는 레이아웃
+"""
+
     def __init__(self):
         self.client = GeminiClient()
         self.config = self._load_config()
@@ -77,8 +110,13 @@ class DetailPageOrchestrator:
         with open(agent_path, "r", encoding="utf-8") as f:
             return f.read()
 
-    def generate(self, product_type: str):
-        """단일 제품 상세페이지 생성"""
+    def generate(self, product_type: str, version: int = 1):
+        """단일 제품 상세페이지 생성
+
+        Args:
+            product_type: 제품 코드 (namecard, inserted, ...)
+            version: 1=기존 v1, 2=여백/폰트 개선 v2
+        """
         if product_type not in self.products:
             logger.error(f"❌ 알 수 없는 제품: {product_type}")
             logger.info(f"사용 가능: {list(self.products.keys())}")
@@ -87,12 +125,16 @@ class DetailPageOrchestrator:
         product = self.products[product_type]
         start_time = time.time()
 
+        version_tag = f" [V{version}]" if version > 1 else ""
         logger.info(f"{'=' * 60}")
-        logger.info(f"🚀 상세페이지 생성 시작: {product['name_ko']} ({product_type})")
+        logger.info(f"🚀 상세페이지 생성 시작: {product['name_ko']} ({product_type}){version_tag}")
         logger.info(f"{'=' * 60}")
 
-        # 출력 디렉토리 생성
-        output_dir = PROJECT_ROOT / "output" / product_type
+        # 출력 디렉토리 생성 — v2는 하위 폴더로 분리
+        if version == 2:
+            output_dir = PROJECT_ROOT / "output" / product_type / "v2"
+        else:
+            output_dir = PROJECT_ROOT / "output" / product_type
         sections_dir = output_dir / "sections"
         sections_dir.mkdir(parents=True, exist_ok=True)
 
@@ -114,7 +156,7 @@ class DetailPageOrchestrator:
 
             # ─── Phase 3B: 디자인 ───
             logger.info("\n🎨 Phase 4: 디자인 에이전트")
-            design_data = self._phase4_design(product_brief, research_brief, copy_data)
+            design_data = self._phase4_design(product_brief, research_brief, copy_data, version=version)
             self._save_json(output_dir / "design.json", design_data)
 
             # ─── Phase 4: 이미지 생성 ───
@@ -131,6 +173,7 @@ class DetailPageOrchestrator:
             metadata = {
                 "product_type": product_type,
                 "product_name": product["name_ko"],
+                "version": version,
                 "generated_at": datetime.now().isoformat(),
                 "elapsed_seconds": round(elapsed, 1),
                 "cost": self.client.get_cost_estimate(),
@@ -228,17 +271,21 @@ class DetailPageOrchestrator:
         return self.client.generate_text_json(prompt)
 
     def _phase4_design(
-        self, product_brief: dict, research_brief: dict, copy_data: dict
+        self, product_brief: dict, research_brief: dict, copy_data: dict, version: int = 1
     ) -> dict:
         """Phase 4: 디자인 — 13개 이미지 프롬프트 생성"""
         product = product_brief["product"]
         agent_prompt = self._load_agent_prompt("04_designer")
         brand = product_brief["brand"]
 
+        # v2 전용 제약 삽입
+        v2_block = self.V2_DESIGN_CONSTRAINTS if version == 2 else ""
+
         prompt = f"""
 당신은 한국 e-commerce 상세페이지 전문 디자이너입니다.
 
 {agent_prompt}
+{v2_block}
 
 ## 제품 정보
 {json.dumps(product, ensure_ascii=False, indent=2)}
@@ -251,13 +298,15 @@ class DetailPageOrchestrator:
 - Accent: {brand["accent_color"]}
 
 ## 이미지 규격
-- 크기: 1100x1100px
+- 캔버스 크기: 1100x900px
+- 내용 영역: {"중앙 집중 배치, 좌우 여백 넉넉히" if version == 2 else "전체 폭 사용"}
 - 포맷: PNG
-- 스타일: 포토리얼리스틱, 모던 한국 e-commerce
+- 스타일: 포토리얼리스틱, 모던 한국 e-commerce{"" if version == 1 else ", 여유로운 여백, 작은 폰트"}
 
 위 정보를 바탕으로 13개 섹션의 Gemini 이미지 생성 프롬프트를 design.json 형식으로 생성하세요.
 각 섹션에 id, name, prompt (영문 이미지 생성 프롬프트) 를 포함하세요.
 프롬프트는 반드시 영어로 작성하고, 한국어 텍스트 내용은 그대로 포함하세요.
+{"모든 프롬프트에 다음을 포함하세요: 'content centered with generous margins on both sides, NO pixel labels, NO dimension indicators, NO ruler marks, NO guidelines visible in image'" if version == 2 else ""}
 """
         return self.client.generate_text_json(prompt)
 
@@ -306,22 +355,29 @@ def main():
         required=True,
         help='제품 코드 (namecard, sticker_new, inserted, ...) 또는 "all"',
     )
+    parser.add_argument(
+        "--version",
+        type=int,
+        default=1,
+        choices=[1, 2],
+        help="버전 선택 (1=기존, 2=900px 내용폭+작은폰트 개선버전). 기본값: 1",
+    )
     args = parser.parse_args()
 
     orchestrator = DetailPageOrchestrator()
 
     if args.product == "all":
-        logger.info("🚀 전체 9개 제품 상세페이지 생성 시작")
+        logger.info(f"🚀 전체 9개 제품 상세페이지 생성 시작 [V{args.version}]")
         results = {}
         for product_type in orchestrator.products:
-            success = orchestrator.generate(product_type)
+            success = orchestrator.generate(product_type, version=args.version)
             results[product_type] = "✅ 성공" if success else "❌ 실패"
 
         logger.info("\n📊 전체 결과:")
         for pt, result in results.items():
             logger.info(f"  {result} — {pt}")
     else:
-        orchestrator.generate(args.product)
+        orchestrator.generate(args.product, version=args.version)
 
 
 if __name__ == "__main__":

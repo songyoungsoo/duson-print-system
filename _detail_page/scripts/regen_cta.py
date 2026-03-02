@@ -27,7 +27,7 @@ PRODUCTS = {
     "msticker": "자석스티커",
 }
 
-PROMPT_TEMPLATE = """Create a 1100x1100px product detail page CTA (Call-to-Action) section image.
+PROMPT_TEMPLATE = """Create a 1100x900px product detail page CTA (Call-to-Action) section image.
 
 DESIGN REQUIREMENTS:
 - Background: Solid vivid orange (#FF6B00)

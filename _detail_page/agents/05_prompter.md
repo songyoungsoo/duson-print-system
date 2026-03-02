@@ -32,14 +32,14 @@
 - 재시도 간 5초 대기
 
 ### Step 3: 품질 검증
-- 생성된 이미지 크기가 1100x1100인지 확인
+- 생성된 이미지 크기가 1100x900인지 확인
 - 비정상 이미지 (너무 어둡거나 빈 이미지) 감지
 - 실패한 섹션만 재생성
 
 ### Step 4: 이미지 합치기
 - `image_stitcher.py` 호출
 - 13장을 세로로 합쳐 `final_detail_page.png` 생성
-- 최종 크기: 1100 x 14300px (1100 × 13)
+- 최종 크기: 1100 x 11700px (900 × 13)
 
 ## API 호출 사양
 
@@ -93,7 +93,7 @@ Style requirements:
 - No cartoon, anime, or illustrated style
 - No watermarks or stock photo marks
 - High contrast, vibrant but professional colors
-- 1100x1100 pixels, 72dpi, PNG format
+- 1100x900 pixels, 72dpi, PNG format
 ```
 
 ### 제품별 이미지 강조점
@@ -121,7 +121,7 @@ Style requirements:
   "total_cost_usd": 0.87,
   "model": "gemini-3.1-flash-image-preview",
   "final_image": "final_detail_page.png",
-  "final_size": "1100x14300",
+    "final_size": "1100x11700",
   "sections": [
     {
       "id": 1,
