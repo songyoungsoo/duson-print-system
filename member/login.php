@@ -46,6 +46,8 @@ if ($is_logged_in) {
 
 // 로그인 상태가 아닌 경우에만 로그인 화면을 표시
 include __DIR__ . "/../db.php";
+include_once __DIR__ . '/../includes/csrf.php';
+csrf_token();
 ?>
 
 <!DOCTYPE html>

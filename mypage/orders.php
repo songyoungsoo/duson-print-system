@@ -8,6 +8,7 @@
  */
 
 require_once __DIR__ . '/auth_required.php';
+require_once $_SERVER['DOCUMENT_ROOT'] . '/includes/order_status_config.php';
 require_once $_SERVER['DOCUMENT_ROOT'] . '/includes/ProductSpecFormatter.php';
 
 $user_id = $current_user['id'];
@@ -113,21 +114,7 @@ if ($stmt) {
     mysqli_stmt_close($stmt);
 }
 
-// 주문 상태 매핑
-$order_statuses = [
-    '0' => '미선택',
-    '1' => '견적접수',
-    '2' => '주문접수',
-    '3' => '접수완료',
-    '4' => '입금대기',
-    '5' => '시안제작중',
-    '6' => '시안',
-    '7' => '교정',
-    '8' => '작업완료',
-    '9' => '작업중',
-    '10' => '교정작업중',
-    '11' => '카드결제'
-];
+$order_statuses = getAdminStatusLabels();
 ?>
 <!DOCTYPE html>
 <html lang="ko">

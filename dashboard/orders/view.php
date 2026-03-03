@@ -3,6 +3,7 @@ require_once __DIR__ . '/../includes/auth.php';
 require_once __DIR__ . '/../includes/config.php';
 require_once __DIR__ . '/../../db.php';
 require_once __DIR__ . '/../../includes/ImagePathResolver.php';
+require_once __DIR__ . '/../../includes/order_status_config.php';
 
 $no = intval($_GET['no'] ?? 0);
 
@@ -36,22 +37,7 @@ $type_labels = [
     'ncrflambeau' => 'NCR양식지', 'NcrFlambeau' => 'NCR양식지',
 ];
 
-// 상태 매핑
-$status_map = [
-    '0'  => ['label' => '미선택',     'bg' => 'bg-gray-100',   'text' => 'text-gray-600'],
-    '1'  => ['label' => '견적접수',   'bg' => 'bg-slate-100',  'text' => 'text-slate-700'],
-    '2'  => ['label' => '주문접수',   'bg' => 'bg-yellow-100', 'text' => 'text-yellow-800'],
-    '3'  => ['label' => '접수완료',   'bg' => 'bg-amber-100',  'text' => 'text-amber-800'],
-    '4'  => ['label' => '입금대기',   'bg' => 'bg-orange-100', 'text' => 'text-orange-800'],
-    '5'  => ['label' => '시안제작중', 'bg' => 'bg-indigo-100', 'text' => 'text-indigo-700'],
-    '6'  => ['label' => '시안',       'bg' => 'bg-violet-100', 'text' => 'text-violet-700'],
-    '7'  => ['label' => '교정',       'bg' => 'bg-blue-100',   'text' => 'text-blue-700'],
-    '8'  => ['label' => '작업완료',   'bg' => 'bg-green-100',  'text' => 'text-green-800'],
-    '9'  => ['label' => '작업중',     'bg' => 'bg-purple-100', 'text' => 'text-purple-700'],
-    '10' => ['label' => '교정작업중', 'bg' => 'bg-cyan-100',   'text' => 'text-cyan-700'],
-    'deleted' => ['label' => '삭제됨', 'bg' => 'bg-red-100',   'text' => 'text-red-800'],
-];
-
+$status_map = getAdminStatusMap();
 $os = (string)$order['OrderStyle'];
 $status_info = $status_map[$os] ?? ['label' => $os, 'bg' => 'bg-gray-100', 'text' => 'text-gray-800'];
 
@@ -313,15 +299,20 @@ include __DIR__ . '/../includes/sidebar.php';
                     <?php endif; ?>
                 </div>
 
-                <!-- 원고파일 -->
-                <?php if (!empty($order_files)): ?>
+                <!-- 파일 (고객원고 + 교정파일 통합) -->
+                <?php
+                    $customer_files = array_filter($order_files, function($f) { return ($f['type'] ?? '') === 'customer'; });
+                    $proof_files = array_filter($order_files, function($f) { return ($f['type'] ?? '') === 'proof'; });
+                    $other_files = array_filter($order_files, function($f) { return !in_array($f['type'] ?? '', ['customer', 'proof']); });
+                ?>
+                <?php if (!empty($customer_files)): ?>
                 <div class="bg-white rounded-lg shadow p-3">
                     <h3 class="text-sm font-semibold text-gray-900 mb-1.5 flex items-center gap-1.5">
                         <span class="w-1 h-3.5 bg-amber-500 rounded-full"></span>
-                        원고파일 <span class="text-xs text-gray-400 font-normal">(<?php echo count($order_files); ?>개)</span>
+                        고객 원고파일 <span class="text-xs text-gray-400 font-normal">(<?php echo count($customer_files); ?>개)</span>
                     </h3>
                     <div class="space-y-2">
-                        <?php foreach ($order_files as $f):
+                        <?php foreach ($customer_files as $f):
                             $fname = $f['name'] ?? $f['saved_name'] ?? 'file';
                             $fsize = isset($f['size']) ? number_format($f['size'] / 1024, 1) . ' KB' : '';
                             $ext = strtolower(pathinfo($fname, PATHINFO_EXTENSION));
@@ -336,6 +327,80 @@ include __DIR__ . '/../includes/sidebar.php';
                                 } else {
                                     $download_path = 'shop/data';
                                 }
+                            }
+                            $dl_url = '/admin/mlangprintauto/download.php?downfile=' . urlencode($fname) . '&path=' . urlencode($download_path) . '&no=' . $no;
+                        ?>
+                        <div class="flex items-center justify-between p-2.5 bg-gray-50 rounded-lg hover:bg-gray-100 transition-colors">
+                            <div class="flex items-center gap-2 min-w-0">
+                                <span class="text-lg flex-shrink-0"><?php echo $is_image ? '🖼️' : '📄'; ?></span>
+                                <div class="min-w-0">
+                                    <div class="text-sm font-medium text-gray-900 truncate"><?php echo htmlspecialchars($fname); ?></div>
+                                    <?php if ($fsize): ?>
+                                    <div class="text-xs text-gray-400"><?php echo $fsize; ?></div>
+                                    <?php endif; ?>
+                                </div>
+                            </div>
+                            <a href="<?php echo htmlspecialchars($dl_url); ?>"
+                               class="flex-shrink-0 px-3 py-1.5 text-xs font-medium text-blue-700 bg-blue-50 rounded-md hover:bg-blue-100 transition-colors"
+                               title="다운로드">
+                                다운로드
+                            </a>
+                        </div>
+                        <?php endforeach; ?>
+                    </div>
+                </div>
+                <?php endif; ?>
+
+                <?php if (!empty($proof_files)): ?>
+                <div class="bg-white rounded-lg shadow p-3">
+                    <h3 class="text-sm font-semibold text-gray-900 mb-1.5 flex items-center gap-1.5">
+                        <span class="w-1 h-3.5 bg-blue-500 rounded-full"></span>
+                        교정파일 <span class="text-xs text-gray-400 font-normal">(<?php echo count($proof_files); ?>개)</span>
+                    </h3>
+                    <div class="space-y-2">
+                        <?php foreach ($proof_files as $f):
+                            $fname = $f['name'] ?? $f['saved_name'] ?? 'file';
+                            $fsize = isset($f['size']) ? number_format($f['size'] / 1024, 1) . ' KB' : '';
+                            $ext = strtolower(pathinfo($fname, PATHINFO_EXTENSION));
+                            $is_image = in_array($ext, ['jpg','jpeg','png','gif','bmp','tif','tiff']);
+                            $dl_url = '/admin/mlangprintauto/download.php?downfile=' . urlencode($fname) . '&path=' . urlencode('mlangorder_printauto/upload/' . $no) . '&no=' . $no;
+                        ?>
+                        <div class="flex items-center justify-between p-2.5 bg-blue-50 rounded-lg hover:bg-blue-100 transition-colors">
+                            <div class="flex items-center gap-2 min-w-0">
+                                <span class="text-lg flex-shrink-0"><?php echo $is_image ? '🖼️' : '📄'; ?></span>
+                                <div class="min-w-0">
+                                    <div class="text-sm font-medium text-gray-900 truncate"><?php echo htmlspecialchars($fname); ?></div>
+                                    <?php if ($fsize): ?>
+                                    <div class="text-xs text-gray-400"><?php echo $fsize; ?></div>
+                                    <?php endif; ?>
+                                </div>
+                            </div>
+                            <a href="<?php echo htmlspecialchars($dl_url); ?>"
+                               class="flex-shrink-0 px-3 py-1.5 text-xs font-medium text-blue-700 bg-blue-50 rounded-md hover:bg-blue-100 transition-colors"
+                               title="다운로드">
+                                다운로드
+                            </a>
+                        </div>
+                        <?php endforeach; ?>
+                    </div>
+                </div>
+                <?php endif; ?>
+
+                <?php if (!empty($other_files)): ?>
+                <div class="bg-white rounded-lg shadow p-3">
+                    <h3 class="text-sm font-semibold text-gray-900 mb-1.5 flex items-center gap-1.5">
+                        <span class="w-1 h-3.5 bg-gray-400 rounded-full"></span>
+                        기타파일 <span class="text-xs text-gray-400 font-normal">(<?php echo count($other_files); ?>개)</span>
+                    </h3>
+                    <div class="space-y-2">
+                        <?php foreach ($other_files as $f):
+                            $fname = $f['name'] ?? $f['saved_name'] ?? 'file';
+                            $fsize = isset($f['size']) ? number_format($f['size'] / 1024, 1) . ' KB' : '';
+                            $ext = strtolower(pathinfo($fname, PATHINFO_EXTENSION));
+                            $is_image = in_array($ext, ['jpg','jpeg','png','gif','bmp','tif','tiff']);
+                            $download_path = $f['download_path'] ?? '';
+                            if (empty($download_path)) {
+                                $download_path = 'mlangorder_printauto/upload/' . $no;
                             }
                             $dl_url = '/admin/mlangprintauto/download.php?downfile=' . urlencode($fname) . '&path=' . urlencode($download_path) . '&no=' . $no;
                         ?>

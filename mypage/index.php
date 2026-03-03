@@ -2,6 +2,7 @@
 require_once $_SERVER['DOCUMENT_ROOT'] . '/db.php';
 require_once $_SERVER['DOCUMENT_ROOT'] . '/includes/auth.php';
 require_once $_SERVER['DOCUMENT_ROOT'] . '/includes/ProductSpecFormatter.php';
+require_once $_SERVER['DOCUMENT_ROOT'] . '/includes/order_status_config.php';
 
 // 세션 만료 vs 미로그인 구분하여 적절한 메시지 표시
 requireLogin('/member/login.php');
@@ -60,44 +61,6 @@ $customer_status_filter_map = [
     'completed'  => '작업완료',
     'shipping'   => '배송중'
 ];
-
-// OrderStyle → 고객용 상태 그룹핑 함수
-function getCustomerStatus($orderStyle, $order = null) {
-    $os = (string)$orderStyle;
-    // 송장번호가 있으면 배송중
-    if ($order) {
-        $tracking = ($order['waybill_no'] ?? '') ?: ($order['logen_tracking_no'] ?? '');
-        if (!empty($tracking)) {
-            return ['text' => '배송중', 'color' => '#28a745', 'group' => 'shipping'];
-        }
-    }
-    switch ($os) {
-        case '0': case '1': case '2':
-            return ['text' => '주문접수', 'color' => '#6c757d', 'group' => 'received'];
-        case '3': case '4':
-            return ['text' => '접수완료', 'color' => '#17a2b8', 'group' => 'confirmed'];
-        case '5': case '6': case '7': case '9': case '10':
-            return ['text' => '작업중', 'color' => '#f59e0b', 'group' => 'working'];
-        case '8':
-            return ['text' => '작업완료', 'color' => '#10b981', 'group' => 'completed'];
-        case 'deleted':
-            return ['text' => '주문취소', 'color' => '#dc3545', 'group' => 'cancelled'];
-        default:
-            return ['text' => '주문접수', 'color' => '#6c757d', 'group' => 'received'];
-    }
-}
-
-// 고객 필터 → OrderStyle WHERE 조건 매핑
-function getStatusFilterCondition($filterGroup) {
-    switch ($filterGroup) {
-        case 'received':  return "OrderStyle IN ('0','1','2')";
-        case 'confirmed': return "OrderStyle IN ('3','4')";
-        case 'working':   return "OrderStyle IN ('5','6','7','9','10')";
-        case 'completed': return "OrderStyle = '8'";
-        case 'shipping':  return "(waybill_no IS NOT NULL AND waybill_no != '' OR logen_tracking_no IS NOT NULL AND logen_tracking_no != '')";
-        default: return '';
-    }
-}
 
 // 사용자 이메일 가져오기
 $email_query = "SELECT email FROM users WHERE id = ?";

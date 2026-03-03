@@ -82,7 +82,8 @@
                 <form name="KB_AUTHMARK_FORM" method="get" style="display:none;">
                     <input type="hidden" name="page" value="C021590"/>
                     <input type="hidden" name="cc" value="b034066:b035526"/>
-                    <input type="hidden" name="mHValue" value="ef04cec95f1a7298f1f686bfe3159ade"/>
+                    <!-- 롤백용 백업: mHValue(dsp114.co.kr) = ef04cec95f1a7298f1f686bfe3159ade -->
+                    <input type="hidden" name="mHValue" value="eb30fbb0bc1da7fdcaf800c0bceebbff201111241043905"/>
                 </form>
 
                 <!-- 이용약관 모달 -->
@@ -823,10 +824,17 @@
             if (h === 18 && m >= 30) return false;
             return true;
         }
+        var retryCount = 0;
         function toggleWidgets() {
             var biz = isBusinessHours();
             var staff = document.querySelector('.chat-widget');
             var ai = document.getElementById('ai-chatbot-widget');
+            // chat.js가 .chat-widget을 동적 생성하므로, 아직 없으면 재시도 (최대 20회 = 2초)
+            if (!staff && retryCount < 20) {
+                retryCount++;
+                setTimeout(toggleWidgets, 100);
+                return;
+            }
             if (staff) staff.style.display = biz ? '' : 'none';
             if (ai) ai.style.display = biz ? 'none' : 'block';
         }

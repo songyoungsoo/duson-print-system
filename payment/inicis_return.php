@@ -451,21 +451,39 @@ if ($resultCode === '0000' || $resultCode === '00') {
     $error_message = $resultMsg ?: getInicisErrorMessage($resultCode);
 }
 
-// 그룹 주문번호 저장 (세션 정리 전에 미리 캡처)
-$group_orders_for_redirect = $_SESSION['inicis_group_orders'] ?? [$order_no];
-
 // 세션 정리
 unset($_SESSION['inicis_oid']);
 unset($_SESSION['inicis_order_no']);
 unset($_SESSION['inicis_price']);
 unset($_SESSION['inicis_timestamp']);
-unset($_SESSION['inicis_group_orders']);
 
-// 리다이렉트 URL — 결제 성공 시 OrderComplete로 이동
-$orders_param = implode('_', array_map('intval', $group_orders_for_redirect));
-$redirect_url = $success 
-    ? '/mlangorder_printauto/OrderComplete_universal.php?orders=' . $orders_param . '&payment=success'
-    : '/payment/inicis_request.php?order_no=' . $order_no . '&error=' . urlencode($error_message);
+if ($success) {
+    // 그룹 주문 전체 번호 수집 (단건이면 main order만)
+    $all_order_nos = [$order_no];
+    try {
+        if (!empty($grp_row['order_group_id'])) {
+            $grp_all = mysqli_prepare($db, "SELECT no FROM mlangorder_printauto WHERE order_group_id = ? ORDER BY no ASC");
+            mysqli_stmt_bind_param($grp_all, 's', $grp_row['order_group_id']);
+            mysqli_stmt_execute($grp_all);
+            $grp_all_res = mysqli_stmt_get_result($grp_all);
+            $all_order_nos = [];
+            while ($row = mysqli_fetch_assoc($grp_all_res)) {
+                $all_order_nos[] = intval($row['no']);
+            }
+            mysqli_stmt_close($grp_all);
+        }
+    } catch (Exception $e) {
+        // 그룹 조회 실패 시 메인 주문번호만 사용
+        $all_order_nos = [$order_no];
+    }
+    // 언더스코어 구분자 사용 (Plesk URL 보안: 쉼표 차단)
+    $orders_param = implode('_', $all_order_nos);
+    $customer_email = urlencode($order['email'] ?? '');
+    $customer_name = urlencode($order['name'] ?? '');
+    $redirect_url = "/mlangorder_printauto/OrderComplete_universal.php?orders={$orders_param}&email={$customer_email}&name={$customer_name}";
+} else {
+    $redirect_url = '/payment/inicis_request.php?order_no=' . $order_no . '&error=' . urlencode($error_message);
+}
 ?>
 <!DOCTYPE html>
 <html lang="ko">

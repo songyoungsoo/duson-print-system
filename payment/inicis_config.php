@@ -40,7 +40,7 @@ if (INICIS_TEST_MODE) {
 if (INICIS_TEST_MODE) {
     define('INICIS_SIGNKEY', 'SU5JTElURV9UUklQTEVERVNfS0VZU1RS'); // 테스트용 Signkey
 } else {
-    define('INICIS_SIGNKEY', 'cEdnbCtISFZ1QUNpNm5hbG1JY1RlQT09'); // KG이니시스 웹결제 Sign Key
+    define('INICIS_SIGNKEY', 'YXgxUnVtVlNvZndWUWg4RWVFUGZwUT09'); // KG이니시스 웹결제 Sign Key
 }
 
 // API URL 설정

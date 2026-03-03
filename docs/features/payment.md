@@ -2,45 +2,50 @@
 
 ### Configuration Files
 - `payment/inicis_config.php` - Main configuration (environment auto-detection)
+- `payment/inicis_config.production.php` - Production overrides (IP whitelist, Sign Key)
 - `payment/config.php` - Legacy configuration (backwards compatibility)
 - `payment/README_PAYMENT.md` - Complete setup guide
 
 ### Production Settings
 - **Merchant ID**: `dsp1147479`
-- **Domain**: `https://dsp114.com`
+- **Domain**: `https://dsp114.com` (주) / `https://dsp114.co.kr` (보조) — SITE_URL 자동 감지
+- **Sign Key**: `YXgxUnVtVlNvZndWUWg4RWVFUGZwUT09` (2026-02-28 변경, 두 도메인 공용)
 - **Test Mode**: Controlled via `INICIS_TEST_MODE` constant
-- **Environment Detection**: Automatic localhost/production URL switching
+- **Environment Detection**: `config.env.php` SITE_URL 기반 자동 전환 (듀얼 도메인 대응)
 
 ### Critical Rules
 
 #### 1. Test Mode vs Production Mode
 ```php
 // ⚠️ NEVER enable production mode on localhost
-define('INICIS_TEST_MODE', false);  // Only on dsp114.com
+define('INICIS_TEST_MODE', false);  // Only on production (dsp114.com / dsp114.co.kr)
 
 // ✅ ALWAYS use test mode locally
 define('INICIS_TEST_MODE', true);   // localhost default
 ```
 
-#### 2. Environment URL Auto-Detection
+#### 2. Environment URL Auto-Detection (듀얼 도메인 대응)
 ```php
-// ✅ CORRECT: Auto-detection based on SERVER_NAME
-if (strpos($_SERVER['SERVER_NAME'], 'dsp114.com') !== false) {
-    $returnUrl = "https://dsp114.com/payment/inicis_return.php";
+// ✅ CORRECT: SITE_URL 기반 자동 전환 (dsp114.com, dsp114.co.kr 모두 대응)
+if (EnvironmentDetector::isProduction()) {
+    $returnUrl = SITE_URL . "/payment/inicis_return.php";
+    // dsp114.com 접속 → https://dsp114.com/payment/inicis_return.php
+    // dsp114.co.kr 접속 → https://dsp114.co.kr/payment/inicis_return.php
 } else {
     $returnUrl = "http://localhost/payment/inicis_return.php";
 }
 
-// ❌ NEVER: Hardcode production URLs in localhost
+// ❌ NEVER: Hardcode production URLs
 $returnUrl = "https://dsp114.com/payment/inicis_return.php";  // WRONG!
 ```
 
 #### 3. Production Deployment Checklist
 - [ ] Set `INICIS_TEST_MODE = false` on production only
-- [ ] Verify `dsp114.com` domain in `config.env.php`
-- [ ] Test with small amount (100-1,000원) first
+- [ ] Verify `config.env.php` domain detection (dsp114.com + dsp114.co.kr)
+- [ ] Test with small amount (100-1,000원) — **두 도메인 모두에서 테스트**
 - [ ] Check logs in `/var/www/html/payment/logs/`
-- [ ] Verify database `order_payment_log` table updates
+- [ ] Verify database `payment_inicis` table updates
+- [ ] Verify returnUrl matches the access domain
 
 ### Test Card Numbers (Test Mode Only)
 | Bank | Card Number | Expiry | CVC |
@@ -58,9 +63,24 @@ $returnUrl = "https://dsp114.com/payment/inicis_return.php";  // WRONG!
 ```
 1. inicis_request.php → 결제 요청
 2. 이니시스 결제창 (팝업)
-3-a. 결제 완료 → inicis_return.php → 팝업 닫기 + 부모창 OrderComplete로 이동
-3-b. 결제 취소 → inicis_close.php → 팝업 닫기 + 부모창 OrderComplete로 이동
+3-a. 결제 완료 → inicis_return.php → 팝업 닫기 + 부모창 OrderComplete_universal.php로 이동
+3-b. 결제 취소 → inicis_close.php → 팝업 닫기 + 부모창 OrderComplete_universal.php로 이동 (payment=cancelled)
 ```
+
+### IP Whitelist (inicis_config.production.php)
+이니시스 서버에서 `inicis_return.php`로 콜백할 때 IP 검증을 수행합니다.
+
+```php
+// 허용된 이니시스 서버 IP
+define('INICIS_IP_WHITELIST', [
+    '127.0.0.1', 'localhost',
+    '211.219.96.165',   // 이니시스 표준
+    '118.129.210.25',   // 이니시스 표준
+    '222.108.84.120',   // 이니시스 표준결제 콜백 (2026-02-28 추가)
+]);
+```
+
+**⚠️ 결제 후 "Access Denied" 에러 발생 시**: `inicis_return.php` 195행의 `validateInicisIP()` 확인 → 로그에서 차단된 IP 확인 → 화이트리스트에 추가
 
 #### Popup Close Logic (inicis_return.php, inicis_close.php)
 ```javascript

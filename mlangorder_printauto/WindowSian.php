@@ -27,11 +27,16 @@ header("Pragma: no-cache"); // HTTP/1.0
 header("Cache-control: private"); // <= it's magical!!
 
 include "../db.php";
+require_once __DIR__ . '/../includes/ImagePathResolver.php';
 
-$no = $_GET['no'] ?? '';
+$no = intval($_GET['no'] ?? 0);
 
-$result = $db->query("SELECT * FROM mlangorder_printauto WHERE no='$no'");
+$stmt = $db->prepare("SELECT * FROM mlangorder_printauto WHERE no = ?");
+$stmt->bind_param("i", $no);
+$stmt->execute();
+$result = $stmt->get_result();
 $row = $result->fetch_assoc();
+$stmt->close();
 
 if ($row) {
     $ImgFile = $row['ThingCate'] ?? '';
@@ -68,137 +73,50 @@ if ($row) {
         }
     }
 
-    // ============================================================
-    // 이미지 수집 — 모든 소스에서 ALL 이미지를 배열로 수집
-    // ============================================================
-    $all_images = []; // [{url, name, source}]
+    // ImagePathResolver로 파일 수집 (누적 방식: 교정 + 고객원고 모두)
+    $file_result = ImagePathResolver::getFilesFromRow($row, false);
+    $raw_files = $file_result['files'] ?? [];
+    $all_images = [];
     $viewable_extensions = ['jpg', 'jpeg', 'png', 'gif', 'webp'];
 
-    // 1. upload/{no}/ 폴더 — 교정 관리에서 업로드한 모든 파일 (최우선)
-    $upload_dir = __DIR__ . '/upload/' . $no;
-    if (is_dir($upload_dir)) {
-        $files = scandir($upload_dir);
-        $upload_files = [];
-        foreach ($files as $file) {
-            if ($file !== '.' && $file !== '..') {
-                $ext = strtolower(pathinfo($file, PATHINFO_EXTENSION));
-                if (in_array($ext, $viewable_extensions)) {
-                    $upload_files[] = [
-                        'file' => $file,
-                        'mtime' => filemtime($upload_dir . '/' . $file)
-                    ];
-                }
-            }
+    foreach ($raw_files as $f) {
+        $fname = $f['name'] ?? $f['saved_name'] ?? basename($f['path'] ?? '');
+        $fpath = $f['path'] ?? '';
+        $ftype = $f['type'] ?? 'unknown';
+        if (empty($fname) || empty($fpath) || !file_exists($fpath)) continue;
+        $ext = strtolower(pathinfo($fname, PATHINFO_EXTENSION));
+        if (!in_array($ext, $viewable_extensions)) continue;
+
+        $src_param = '';
+        if (strpos($fpath, '/shop/data/') !== false) {
+            $src_param = '&src=legacy';
+        } elseif (strpos($fpath, '/uploads/orders/') !== false) {
+            $src_param = '&src=uploads';
+        } elseif (strpos($fpath, '/ImgFolder/') !== false) {
+            $folder_name = '';
+            if (preg_match('#/ImgFolder/(.+)/[^/]+$#', $fpath, $m)) $folder_name = $m[1];
+            $src_param = '&src=imgfolder&folder=' . urlencode($folder_name);
+        } elseif (strpos($fpath, '/upload/') !== false) {
+            $src_param = '&src=upload';
         }
-        // 최신 파일 우선 정렬
-        usort($upload_files, function($a, $b) {
-            return $b['mtime'] - $a['mtime'];
-        });
-        foreach ($upload_files as $uf) {
-            $all_images[] = [
-                'url' => '/mlangorder_printauto/view_proof.php?no=' . $no . '&file=' . urlencode($uf['file']) . '&src=upload',
-                'name' => $uf['file'],
-                'date' => date('Y-m-d H:i', $uf['mtime']),
-                'source' => 'upload'
-            ];
-        }
+
+        $all_images[] = [
+            'url' => '/mlangorder_printauto/view_proof.php?no=' . $no . '&file=' . urlencode($fname) . $src_param,
+            'name' => $fname,
+            'date' => date('Y-m-d H:i', filemtime($fpath)),
+            'source' => $ftype,
+        ];
     }
 
-    // 2. ImgFolder 경로들
-    if (!empty($ImgFolder)) {
-        $imgfolder_images = [];
+    // 교정파일(proof)을 먼저, 최신순 정렬
+    usort($all_images, function($a, $b) {
+        $type_order = ['proof' => 0, 'unknown' => 1, 'customer' => 2];
+        $ta = $type_order[$a['source']] ?? 1;
+        $tb = $type_order[$b['source']] ?? 1;
+        if ($ta !== $tb) return $ta - $tb;
+        return strcmp($b['date'], $a['date']);
+    });
 
-        // 2-1. 레거시 경로 처리 (../shop/data/파일명)
-        if (strpos($ImgFolder, '../shop/data/') === 0) {
-            $legacy_filename = basename($ImgFolder);
-            $legacy_path = $_SERVER['DOCUMENT_ROOT'] . '/shop/data/' . $legacy_filename;
-            if (file_exists($legacy_path)) {
-                $ext = strtolower(pathinfo($legacy_path, PATHINFO_EXTENSION));
-                if (in_array($ext, $viewable_extensions)) {
-                    $imgfolder_images[] = [
-                        'url' => '/mlangorder_printauto/view_proof.php?no=' . $no . '&file=' . urlencode($legacy_filename) . '&src=legacy',
-                        'name' => $legacy_filename,
-                        'date' => date('Y-m-d H:i', filemtime($legacy_path)),
-                        'source' => 'legacy'
-                    ];
-                }
-            }
-        }
-        // 2-2. uploads/orders/ 경로
-        elseif (strpos($ImgFolder, 'uploads/orders/') === 0) {
-            $uploads_folder = $_SERVER['DOCUMENT_ROOT'] . '/' . $ImgFolder;
-            if (is_dir($uploads_folder)) {
-                $files = scandir($uploads_folder);
-                foreach ($files as $file) {
-                    if ($file !== '.' && $file !== '..') {
-                        $ext = strtolower(pathinfo($file, PATHINFO_EXTENSION));
-                        if (in_array($ext, $viewable_extensions)) {
-                            $imgfolder_images[] = [
-                                'url' => '/mlangorder_printauto/view_proof.php?no=' . $no . '&file=' . urlencode($file) . '&src=uploads',
-                                'name' => $file,
-                                'date' => date('Y-m-d H:i', filemtime($uploads_folder . '/' . $file)),
-                                'source' => 'uploads_orders'
-                            ];
-                        }
-                    }
-                }
-            }
-        }
-        // 2-3. _MlangPrintAuto_ 경로 또는 기타 ImgFolder 경로
-        else {
-            $img_folder_base = $_SERVER['DOCUMENT_ROOT'] . '/ImgFolder/' . $ImgFolder;
-            if (is_dir($img_folder_base)) {
-                $files = scandir($img_folder_base);
-                foreach ($files as $file) {
-                    if ($file !== '.' && $file !== '..') {
-                        $ext = strtolower(pathinfo($file, PATHINFO_EXTENSION));
-                        if (in_array($ext, $viewable_extensions)) {
-                            $imgfolder_images[] = [
-                                'url' => '/mlangorder_printauto/view_proof.php?no=' . $no . '&file=' . urlencode($file) . '&src=imgfolder&folder=' . urlencode($ImgFolder),
-                                'name' => $file,
-                                'date' => date('Y-m-d H:i', filemtime($img_folder_base . '/' . $file)),
-                                'source' => 'imgfolder'
-                            ];
-                        }
-                    }
-                }
-            }
-        }
-
-        // ImgFolder 이미지 중 upload에 이미 있는 파일명은 제외 (중복 방지)
-        $existing_names = array_column($all_images, 'name');
-        foreach ($imgfolder_images as $img) {
-            if (!in_array($img['name'], $existing_names)) {
-                $all_images[] = $img;
-            }
-        }
-    }
-
-    // 3. uploaded_files JSON에서 이미지 찾기
-    if (!empty($uploaded_files_json) && $uploaded_files_json !== '0') {
-        $uploaded_files = json_decode($uploaded_files_json, true);
-        if (is_array($uploaded_files)) {
-            $existing_names = array_column($all_images, 'name');
-            foreach ($uploaded_files as $file_info) {
-                $file_path = $file_info['path'] ?? '';
-                if (!empty($file_path) && file_exists($file_path)) {
-                    $fname = basename($file_path);
-                    $ext = strtolower(pathinfo($file_path, PATHINFO_EXTENSION));
-                    if (in_array($ext, $viewable_extensions) && !in_array($fname, $existing_names)) {
-                        $all_images[] = [
-                            'url' => '/mlangorder_printauto/view_proof.php?no=' . $no . '&file=' . urlencode($fname) . '&src=uploaded',
-                            'name' => $fname,
-                            'date' => date('Y-m-d H:i', filemtime($file_path)),
-                            'source' => 'uploaded_files'
-                        ];
-                    }
-                }
-            }
-        }
-    }
-
-    // 하위 호환: 기존 변수들 유지 (auth 섹션에서 사용)
-    $found_image_path = !empty($all_images) ? 'exists' : '';
     $found_image_url = !empty($all_images) ? $all_images[0]['url'] : '';
     $image_source = !empty($all_images) ? $all_images[0]['source'] : '';
 
@@ -214,9 +132,9 @@ if ($row) {
     exit;
 }
 
-$db->close();
-
 include "../admin/mlangprintauto/int/info.php";
+
+if (isset($db) && $db) { $db->close(); }
 ?>
 
 <!DOCTYPE html>
@@ -633,6 +551,20 @@ body {
     border-color: white;
     opacity: 1;
     box-shadow: 0 0 0 2px rgba(255,255,255,0.3);
+}
+
+.thumb-item.is-customer {
+    border-color: #fbbf24;
+    opacity: 0.6;
+}
+.thumb-item.is-customer.active {
+    border-color: #fbbf24;
+    opacity: 1;
+    box-shadow: 0 0 0 2px rgba(251,191,36,0.4);
+}
+.thumb-label {
+    font-size: 9px; color: rgba(255,255,255,0.5); text-align: center;
+    margin-top: -4px; margin-bottom: 4px;
 }
 
 /* Proof Confirmation Area */
@@ -1205,7 +1137,7 @@ function buildThumbnails() {
         var thumb = document.createElement('img');
         thumb.src = img.url;
         thumb.dataset.idx = i;
-        thumb.className = 'thumb-item' + (i === 0 ? ' active' : '');
+        thumb.className = 'thumb-item' + (i === 0 ? ' active' : '') + (img.source === 'customer' ? ' is-customer' : '');
         thumb.addEventListener('click', function(e) {
             e.stopPropagation();
             viewerIndex = i;
@@ -1233,7 +1165,8 @@ function showImage() {
 
     var total = viewerImages.length;
     document.getElementById('imgCounter').textContent = (viewerIndex + 1) + ' / ' + total;
-    document.getElementById('imgFileName').textContent = img.name;
+    var typeLabel = img.source === 'customer' ? '[원고] ' : img.source === 'proof' ? '[교정] ' : '';
+    document.getElementById('imgFileName').textContent = typeLabel + img.name;
     document.getElementById('imgFileDate').textContent = img.date || '';
 
     // Image load handler

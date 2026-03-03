@@ -2,9 +2,9 @@
 session_start(); 
 $session_id = session_id();
 
-// 데이터베이스 연결
 include "../db.php";
 $connect = $db;
+require_once __DIR__ . '/../includes/order_status_config.php';
 
 // 페이지 설정
 $page_title = '🔍 두손기획인쇄 - 교정사항 확인';
@@ -389,18 +389,8 @@ if ($result) {
                             <div class="col-status">
                                 <span class="status-badge status-<?php echo $order['OrderStyle']; ?>">
                                     <?php
-                                    $status_map = [
-                                        '2' => '접수중',
-                                        '3' => '접수완료',
-                                        '4' => '입금대기',
-                                        '5' => '시안제작중',
-                                        '6' => '시안완료',
-                                        '7' => '교정중',
-                                        '8' => '작업완료',
-                                        '9' => '작업중',
-                                        '10' => '교정작업중'
-                                    ];
-                                    echo isset($status_map[$order['OrderStyle']]) ? $status_map[$order['OrderStyle']] : '상태미정';
+                                    $public_statuses = getPublicStatusMap();
+                                    echo $public_statuses[$order['OrderStyle']] ?? '상태미정';
                                     ?>
                                 </span>
                             </div>

@@ -254,6 +254,22 @@ body.cart-page .mobile-view .product-nav { display: grid; }
 
 ---
 
+## 🛡️ 검증 스킬 (Verify Skills)
+
+코드 수정 후 자동 검증을 위한 스킬 목록입니다. `/verify-implementation`으로 전체 실행 가능.
+
+| 스킬 | 설명 | 트리거 |
+|------|------|--------|
+| `verify-bind-param` | bind_param 3요소 카운트 불일치 탐지 | PHP 파일 수정 후 |
+| `verify-folder-names` | 제품 폴더명 혼동 탐지 (sticker↔sticker_new 등) | PHP 파일 수정 후 |
+| `verify-sticker-logic` | 스티커 DB lookup 대신 수학공식 검증 | 스티커 관련 PHP 수정 후 |
+| `verify-url-safety` | URL 쉼표 사용 탐지 (Plesk 500 에러 방지) | PHP 파일 수정 후 |
+| `verify-css-important` | CSS !important 사용 탐지 | CSS/인라인 스타일 수정 후 |
+| `verify-product-units` | 제품별 수량 단위 규정 검증 | 수량 표시 관련 PHP 수정 후 |
+| `verify-proof-viewer` | 교정/원고 파일 관리 + 이미지 뷰어 디자인 통일 | 교정/원고 관련 PHP 수정 후 |
+
+---
+
 ## ⚠️ Common Pitfalls (자주 하는 실수)
 
 1. ❌ bind_param 개수 불일치 → 주문자 이름 '0' 저장

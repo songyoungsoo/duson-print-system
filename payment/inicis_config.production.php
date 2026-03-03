@@ -40,7 +40,7 @@ if (INICIS_TEST_MODE) {
 if (INICIS_TEST_MODE) {
     define('INICIS_SIGNKEY', 'SU5JTElURV9UUklQTEVERVNfS0VZU1RS'); // 테스트용 Signkey
 } else {
-    define('INICIS_SIGNKEY', 'cEdnbCtISFZ1QUNpNm5hbG1JY1RlQT09'); // KG이니시스 웹결제 Sign Key
+    define('INICIS_SIGNKEY', 'YXgxUnVtVlNvZndWUWg4RWVFUGZwUT09'); // KG이니시스 웹결제 Sign Key
 }
 
 // API URL 설정 (환경별 자동 감지)
@@ -78,9 +78,10 @@ define('INICIS_PAYMENT_POPUP', 1); // 0: 페이지 이동, 1: 팝업
 define('INICIS_IP_WHITELIST', [
     '127.0.0.1',
     'localhost',
-    // KG이니시스 서버 IP 추가
+    // KG이니시스 서버 IP (표준결제 콜백)
     '211.219.96.165',
-    '118.129.210.25'
+    '118.129.210.25',
+    '222.108.84.120',
 ]);
 
 // 해시 알고리즘

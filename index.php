@@ -96,6 +96,57 @@ header("Expires: 0");
     <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap" rel="stylesheet">
     <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@300;400;500;700&display=swap" rel="stylesheet">
 
+    <!-- JSON-LD 구조화 데이터 (Google 검색 결과 향상) -->
+    <script type="application/ld+json">
+    {
+        "@context": "https://schema.org",
+        "@type": "LocalBusiness",
+        "name": "두손기획인쇄",
+        "alternateName": "Duson Planning Print",
+        "description": "스티커 인쇄 전문. 투명스티커, 유포지스티커, 자석스티커, 전단지, 명함, 봉투, 카다록, 포스터, 상품권, NCR양식지 제작. 공장직영 신속제작.",
+        "url": "https://dsp114.com",
+        "logo": "https://dsp114.com/ImgFolder/dusonlogo1.png",
+        "image": "https://dsp114.com/ImgFolder/dusonlogo1.png",
+        "telephone": "+82-2-2632-1830",
+        "faxNumber": "+82-2-2632-1831",
+        "address": {
+            "@type": "PostalAddress",
+            "addressLocality": "서울특별시",
+            "addressRegion": "영등포구",
+            "addressCountry": "KR"
+        },
+        "geo": {
+            "@type": "GeoCoordinates",
+            "latitude": 37.5165,
+            "longitude": 126.9074
+        },
+        "openingHoursSpecification": {
+            "@type": "OpeningHoursSpecification",
+            "dayOfWeek": ["Monday", "Tuesday", "Wednesday", "Thursday", "Friday"],
+            "opens": "09:00",
+            "closes": "18:00"
+        },
+        "priceRange": "₩₩",
+        "areaServed": "KR",
+        "hasOfferCatalog": {
+            "@type": "OfferCatalog",
+            "name": "인쇄 서비스",
+            "itemListElement": [
+                {"@type": "Offer", "itemOffered": {"@type": "Service", "name": "스티커 인쇄"}},
+                {"@type": "Offer", "itemOffered": {"@type": "Service", "name": "전단지 인쇄"}},
+                {"@type": "Offer", "itemOffered": {"@type": "Service", "name": "명함 인쇄"}},
+                {"@type": "Offer", "itemOffered": {"@type": "Service", "name": "봉투 인쇄"}},
+                {"@type": "Offer", "itemOffered": {"@type": "Service", "name": "포스터 인쇄"}},
+                {"@type": "Offer", "itemOffered": {"@type": "Service", "name": "카다록 인쇄"}},
+                {"@type": "Offer", "itemOffered": {"@type": "Service", "name": "상품권 제작"}},
+                {"@type": "Offer", "itemOffered": {"@type": "Service", "name": "NCR양식지 인쇄"}},
+                {"@type": "Offer", "itemOffered": {"@type": "Service", "name": "자석스티커 인쇄"}}
+            ]
+        },
+        "sameAs": []
+    }
+    </script>
+
     <!-- Tailwind CSS -->
     <script src="https://cdn.tailwindcss.com"></script>
 
