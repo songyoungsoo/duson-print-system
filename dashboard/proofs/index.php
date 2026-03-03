@@ -458,14 +458,14 @@ include __DIR__ . '/../includes/sidebar.php';
 
     <!-- Proof Confirmation Area -->
     <div id="proofConfirmArea" class="proof-confirm-area">
-        <div id="proofConfirmContent">
+        <div id="proofConfirmContent" style="display:flex;align-items:center;justify-content:center;gap:12px;">
             <button id="proofConfirmBtn" type="button" class="proof-confirm-btn">
-                교정확정
+                📝 교정확정
             </button>
             <p class="proof-confirm-notice">오탈자 및 전체를 잘 확인 후 클릭해주세요</p>
         </div>
         <div id="proofConfirmedMsg" class="proof-confirmed-msg" style="display: none;">
-            인쇄진행
+            ✅ 인쇄진행
         </div>
     </div>
 
@@ -479,10 +479,10 @@ include __DIR__ . '/../includes/sidebar.php';
 /* Image Viewer Styles */
 .image-container {
     position: absolute;
-    top: 62px;  /* 상단 헤더 높이 */
+    top: 88px;  /* 상단 헤더 높이 (WindowSian.php와 동일) */
     left: 0;
     right: 72px;
-    bottom: 160px;  /* 상태바(48px) + 썸네일바(56px) + 교정확정영역(48px) + 여유(8px) */
+    bottom: 104px;  /* 상태바(44px) + 교정확정영역(~56px) + 여유 */
     overflow: hidden;
     background: #1a1a1a;
 }
@@ -513,14 +513,14 @@ include __DIR__ . '/../includes/sidebar.php';
     left: 0;
     right: 72px;
     background: #1e293b;
-    padding: 8px 0;
+    padding: 6px 0;
     z-index: 85;
     text-align: center;
 }
 
 .header-title {
     color: white;
-    font-size: 16px;
+    font-size: 15px;
     font-weight: 600;
 }
 
@@ -606,7 +606,7 @@ include __DIR__ . '/../includes/sidebar.php';
     bottom: 0;
     left: 0;
     right: 0;
-    height: 48px;
+    height: 44px;
     background: rgba(0, 0, 0, 0.85);
     backdrop-filter: blur(10px);
     display: flex;
@@ -660,20 +660,36 @@ include __DIR__ . '/../includes/sidebar.php';
     font-size: 11px;
 }
 
-/* Thumbnail Bar */
+/* Thumbnail Bar — 왼쪽 세로 (WindowSian.php와 동일) */
 .thumbnail-bar {
     position: fixed;
-    bottom: 48px;
+    top: 88px;
     left: 0;
-    right: 72px;
-    height: 56px;
-    background: linear-gradient(to top, rgba(0, 0, 0, 0.8), transparent);
+    bottom: 44px;
+    width: 72px;
+    background: rgba(0, 0, 0, 0.6);
     display: flex;
+    flex-direction: column;
     align-items: center;
-    justify-content: center;
-    padding: 0 16px;
+    padding: 8px 4px;
     z-index: 75;
-    pointer-events: none;
+    overflow-y: auto;
+    overflow-x: hidden;
+    scrollbar-width: thin;
+    scrollbar-color: rgba(255, 255, 255, 0.3) transparent;
+}
+
+.thumbnail-bar::-webkit-scrollbar {
+    width: 4px;
+}
+
+.thumbnail-bar::-webkit-scrollbar-track {
+    background: transparent;
+}
+
+.thumbnail-bar::-webkit-scrollbar-thumb {
+    background: rgba(255, 255, 255, 0.3);
+    border-radius: 2px;
 }
 
 .thumbnail-bar.hidden {
@@ -682,18 +698,16 @@ include __DIR__ . '/../includes/sidebar.php';
 
 .thumbnails-container {
     display: flex;
+    flex-direction: column;
     align-items: center;
     gap: 8px;
-    overflow-x: auto;
-    max-width: 100%;
     padding: 4px;
-    pointer-events: auto;
     scrollbar-width: thin;
     scrollbar-color: rgba(255, 255, 255, 0.3) transparent;
 }
 
 .thumbnails-container::-webkit-scrollbar {
-    height: 4px;
+    width: 4px;
 }
 
 .thumbnails-container::-webkit-scrollbar-track {
@@ -706,8 +720,8 @@ include __DIR__ . '/../includes/sidebar.php';
 }
 
 .thumb-item {
-    width: 48px;
-    height: 48px;
+    width: 56px;
+    height: 56px;
     object-fit: cover;
     border-radius: 6px;
     cursor: pointer;
@@ -728,14 +742,33 @@ include __DIR__ . '/../includes/sidebar.php';
     box-shadow: 0 0 0 2px rgba(255, 255, 255, 0.3);
 }
 
+.thumb-item.is-customer {
+    border-color: #fbbf24;
+    opacity: 0.6;
+}
+
+.thumb-item.is-customer.active {
+    border-color: #fbbf24;
+    opacity: 1;
+    box-shadow: 0 0 0 2px rgba(251, 191, 36, 0.4);
+}
+
+.thumb-label {
+    font-size: 9px;
+    color: rgba(255, 255, 255, 0.5);
+    text-align: center;
+    margin-top: -4px;
+    margin-bottom: 4px;
+}
+
 /* Proof Confirmation Area */
 .proof-confirm-area {
     position: fixed;
-    bottom: 110px;
+    bottom: 44px;
     left: 0;
     right: 72px;
-    background: rgba(255, 255, 255, 0.95);
-    padding: 12px 16px;
+    background: #1e293b;
+    padding: 10px 16px;
     z-index: 85;
     text-align: center;
     box-shadow: 0 -2px 10px rgba(0, 0, 0, 0.1);
@@ -769,15 +802,33 @@ include __DIR__ . '/../includes/sidebar.php';
 
 .proof-confirm-notice {
     font-size: 11px;
-    color: #64748b;
-    margin: 6px 0 0 0;
+    color: #fbbf24;
+    margin: 0;
     line-height: 1.3;
+    white-space: nowrap;
 }
 
 .proof-confirmed-msg {
     color: #dc2626;
     font-weight: 600;
     font-size: 14px;
+}
+
+/* Loading spinner */
+.loading {
+    display: inline-block;
+    width: 16px;
+    height: 16px;
+    border: 2px solid #f3f3f3;
+    border-top: 2px solid #3498db;
+    border-radius: 50%;
+    animation: spin 1s linear infinite;
+    vertical-align: middle;
+}
+
+@keyframes spin {
+    0% { transform: rotate(0deg); }
+    100% { transform: rotate(360deg); }
 }
 </style>
 
@@ -1104,13 +1155,22 @@ function viewFiles(orderNo) {
             if (!data.files || data.files.length === 0) return;
             var images = data.files.filter(f => /\.(jpg|jpeg|png|gif)$/i.test(f.name));
             if (images.length > 0) {
+                // 교정파일 먼저, 고객원고 다음 순서로 정렬
+                var typeOrder = {proof: 0, unknown: 1, customer: 2};
+                images.sort(function(a, b) {
+                    var ta = typeOrder[a.type] !== undefined ? typeOrder[a.type] : 1;
+                    var tb = typeOrder[b.type] !== undefined ? typeOrder[b.type] : 1;
+                    if (ta !== tb) return ta - tb;
+                    return (b.mtime || 0) - (a.mtime || 0);
+                });
                 viewerImages = images.map(function(f) {
                     return {
                         url: f.url + '?t=' + Date.now(),
                         name: f.name,
                         date: f.date || '',
                         orderNo: orderNo,
-                        filePath: f.path
+                        filePath: f.path,
+                        type: f.type || 'unknown'
                     };
                 });
                 viewerIndex = 0;
@@ -1125,21 +1185,31 @@ function viewFiles(orderNo) {
 
 function buildThumbnails() {
     var container = document.getElementById('imgThumbnails');
-    var thumbnailBar = document.getElementById('thumbnailBar');
+    var bar = document.getElementById('thumbnailBar');
+    var ic = document.querySelector('.image-container');
     container.textContent = '';
 
     if (viewerImages.length <= 1) {
-        thumbnailBar.classList.add('hidden');
+        bar.classList.add('hidden');
+        if (ic) ic.style.left = '0';
         return;
     }
 
-    thumbnailBar.classList.remove('hidden');
+    bar.classList.remove('hidden');
+    if (ic) ic.style.left = '72px';
 
     viewerImages.forEach(function(img, i) {
+        // 고객원고 그룹 첫 항목 앞에 라벨 추가
+        if (img.type === 'customer' && (i === 0 || viewerImages[i - 1].type !== 'customer')) {
+            var label = document.createElement('div');
+            label.className = 'thumb-label';
+            label.textContent = '원고';
+            container.appendChild(label);
+        }
         var thumb = document.createElement('img');
         thumb.src = img.url;
         thumb.dataset.idx = i;
-        thumb.className = 'thumb-item' + (i === 0 ? ' active' : '');
+        thumb.className = 'thumb-item' + (i === 0 ? ' active' : '') + (img.type === 'customer' ? ' is-customer' : '');
         thumb.addEventListener('click', function(e) {
             e.stopPropagation();
             viewerIndex = i;
@@ -1174,7 +1244,9 @@ function showImage() {
 
     statusBar.classList.remove('hidden');
     counter.textContent = (viewerIndex + 1) + ' / ' + total;
-    fileName.textContent = img.name;
+    // 타입 배지 + 파일명
+    var typeLabel = img.type === 'customer' ? '📎원고 ' : img.type === 'proof' ? '🖼️교정 ' : '';
+    fileName.textContent = typeLabel + img.name;
     fileDate.textContent = img.date;
 
     // Image load handler - fit to screen after load
@@ -1219,6 +1291,10 @@ function closeImageViewer() {
     document.getElementById('statusBar').classList.add('hidden');
     document.getElementById('thumbnailBar').classList.add('hidden');
 
+    // 왼쪽 썸네일바 공간 리셋
+    var ic = document.querySelector('.image-container');
+    if (ic) ic.style.left = '0';
+
     var overlayImg = document.getElementById('overlayImg');
     overlayImg.src = '';
     overlayImg.style.transform = '';
@@ -1258,8 +1334,11 @@ function checkProofreadingStatus() {
 }
 
 function showProofreadingButton() {
-    document.getElementById('proofConfirmContent').style.display = 'block';
+    document.getElementById('proofConfirmContent').style.display = 'flex';
     document.getElementById('proofConfirmedMsg').style.display = 'none';
+    var btn = document.getElementById('proofConfirmBtn');
+    btn.disabled = false;
+    btn.innerHTML = '📝 교정확정';
 }
 
 function showProofreadingCompleted() {
@@ -1280,7 +1359,7 @@ function confirmProofreading() {
 
     var btn = document.getElementById('proofConfirmBtn');
     btn.disabled = true;
-    btn.textContent = '처리중...';
+    btn.innerHTML = '<span class="loading"></span> 처리중...';
 
     fetch('/dashboard/proofs/api.php?action=confirm_proofreading', {
         method: 'POST',
@@ -1295,13 +1374,13 @@ function confirmProofreading() {
         } else {
             showToast(data.message || '처리 중 오류가 발생했습니다.', 'error');
             btn.disabled = false;
-            btn.textContent = '교정확정';
+            btn.innerHTML = '📝 교정확정';
         }
     })
     .catch(function() {
         showToast('네트워크 오류', 'error');
         btn.disabled = false;
-        btn.textContent = '교정확정';
+        btn.innerHTML = '📝 교정확정';
     });
 }
 
@@ -1312,6 +1391,12 @@ function deleteCurrentImage() {
     if (viewerImages.length === 0) return;
     var img = viewerImages[viewerIndex];
     if (!img.filePath) return;
+
+    // 고객 원고파일은 삭제 불가
+    if (img.type === 'customer') {
+        showToast('고객 원고파일은 삭제할 수 없습니다', 'error');
+        return;
+    }
 
     if (!confirm('정말 이 이미지를 삭제하시겠습니까?\n\n' + img.name)) return;
 

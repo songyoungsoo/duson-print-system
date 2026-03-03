@@ -6,7 +6,9 @@
 $no = isset($_GET['no']) ? intval($_GET['no']) : 0;
 $file = isset($_GET['file']) ? basename($_GET['file']) : '';
 $src = isset($_GET['src']) ? $_GET['src'] : '';
-$folder = isset($_GET['folder']) ? basename($_GET['folder']) : '';
+// ImgFolder는 다단계 경로 (예: _MlangPrintAuto_.../2024/1119/abc)
+// basename() 대신 디렉토리 트래버설만 제거
+$folder = isset($_GET['folder']) ? str_replace(['..', "\0"], '', $_GET['folder']) : '';
 
 if ($no <= 0 || empty($file)) {
     http_response_code(400);
@@ -71,6 +73,10 @@ $mime_map = [
     'gif' => 'image/gif',
     'webp' => 'image/webp',
     'pdf' => 'application/pdf',
+    'ai' => 'application/postscript',
+    'psd' => 'application/octet-stream',
+    'hwp' => 'application/x-hwp',
+    'hwpx' => 'application/x-hwpx',
 ];
 
 $mime = $mime_map[$ext] ?? 'application/octet-stream';

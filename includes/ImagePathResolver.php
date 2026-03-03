@@ -237,10 +237,16 @@ class ImagePathResolver {
     }
 
     /**
-     * DB 레코드에서 파일 목록 가져오기 (필터링 적용)
+     * DB 레코드에서 파일 목록 가져오기 (누적 수집 방식)
+     *
+     * [2026-03-03 리팩토링] 폴백(OR) → 누적(AND) 방식으로 변경
+     * - 고객 원고파일(customer)과 교정파일(proof)이 공존하도록 모든 소스에서 누적 수집
+     * - realpath 기준 중복 제거
+     * - 타입 분류: customer(고객원고), proof(교정파일), unknown(레거시)
+     *
      * @param array $row DB 레코드
      * @param bool $apply_date_filter 날짜 필터 적용 여부
-     * @return array 파일 정보 배열 ['files' => [], 'proof_filtered' => bool, 'customer_filtered' => bool]
+     * @return array 파일 정보 배열 ['files' => [], 'proof_excluded' => bool, 'customer_excluded' => bool]
      */
     public static function getFilesFromRow($row, $apply_date_filter = true) {
         $result = [
@@ -253,27 +259,23 @@ class ImagePathResolver {
 
         $order_no = $row['no'] ?? 0;
         $order_date = $row['date'] ?? null;
+        $seen_paths = [];  // realpath 기준 중복 제거
 
-        // 1. 교정용 이미지 (ThingCate)
-        if (!empty($row['ThingCate'])) {
-            if (!$apply_date_filter || self::shouldDisplay('proof', $order_date)) {
-                $path = self::resolve($order_no, $row['ThingCate'], $row);
-                if ($path && file_exists($path)) {
-                    $result['files'][] = [
-                        'name' => $row['ThingCate'],
-                        'saved_name' => $row['ThingCate'],
-                        'size' => filesize($path),
-                        'type' => 'proof',  // 교정용 이미지
-                        'path' => $path
-                    ];
-                }
-            } else {
-                $result['proof_excluded'] = true;
-                $result['proof_excluded_count']++;
+        // Helper: 중복 체크 후 파일 추가
+        $addFile = function($file_info) use (&$result, &$seen_paths) {
+            $path = $file_info['path'] ?? '';
+            if (!empty($path)) {
+                $real = realpath($path);
+                $key = $real ?: $path;
+                if (isset($seen_paths[$key])) return;
+                $seen_paths[$key] = true;
             }
-        }
+            $result['files'][] = $file_info;
+        };
 
-        // 2. 고객 원고 파일 (uploaded_files JSON)
+        // ── A. 고객 원고파일 수집 (type: 'customer') ──────────────────
+
+        // A-1. uploaded_files JSON (modern system)
         if (!empty($row['uploaded_files']) && $row['uploaded_files'] !== '0') {
             $files = json_decode($row['uploaded_files'], true);
             if (is_array($files)) {
@@ -288,49 +290,44 @@ class ImagePathResolver {
                 }
 
                 foreach ($files as $file) {
-                    $file['type'] = 'customer';  // 고객 원고
-                    $result['files'][] = $file;
+                    $file['type'] = 'customer';
+                    $addFile($file);
                 }
             }
         }
 
-        // 3. ../shop/data/파일명 패턴 (ImgFolder에 파일명이 직접 포함)
-        if (empty($result['files']) && !empty($row['ImgFolder'])) {
+        // A-2. ../shop/data/파일명 패턴 (ImgFolder에 파일명이 직접 포함)
+        if (!empty($row['ImgFolder'])) {
             $img_folder = $row['ImgFolder'];
             if (preg_match('/^\.\.\/shop\/data\/(.+)$/u', $img_folder, $fm) && $fm[1] !== '') {
                 $filename = $fm[1];
                 $file_path = $_SERVER['DOCUMENT_ROOT'] . '/shop/data/' . $filename;
                 if (file_exists($file_path)) {
-                    $result['files'][] = [
+                    $addFile([
                         'name' => $filename,
                         'saved_name' => $filename,
                         'size' => filesize($file_path),
                         'type' => 'customer',
                         'path' => $file_path,
                         'download_path' => 'shop/data',
-                    ];
+                    ]);
                 }
             }
         }
 
-        // 4. 폴백: 디렉토리 스캔 (ImgFolder)
-        // 공유 디렉토리(shop/data/)는 여러 주문이 사용하므로 스캔 제외
+        // A-3. ImgFolder 디렉토리 스캔 (항상 실행 — empty() 가드 제거)
         $img_folder_val = trim($row['ImgFolder'] ?? '');
         $is_shared_dir = preg_match('/^\.\.\/shop\/data\/?$/', $img_folder_val);
-        if (empty($result['files']) && !empty($row['ImgFolder']) && !$is_shared_dir) {
-            // 날짜 필터 확인
+        if (!empty($row['ImgFolder']) && !$is_shared_dir) {
+            $is_customer_folder = strpos($row['ImgFolder'], '_MlangPrintAuto_') !== false;
             $year = self::extractYearFromPath($row['ImgFolder']);
             $year_int = $year ? intval($year) : 0;
 
-            // 고객 원고 폴더면 2024년 기준 적용
-            $is_customer_folder = strpos($row['ImgFolder'], '_MlangPrintAuto_') !== false;
             if ($apply_date_filter && $is_customer_folder && $year_int > 0 && $year_int < 2024) {
                 $result['customer_excluded'] = true;
                 $result['customer_excluded_count']++;
             } else {
-                // 디렉토리 스캔
                 $dir = $_SERVER['DOCUMENT_ROOT'] . '/ImgFolder/' . $row['ImgFolder'] . '/';
-                // realpath로 공유 디렉토리 이중 확인 (path traversal 방지)
                 $real_dir = realpath($dir);
                 $shared_dirs = [
                     realpath($_SERVER['DOCUMENT_ROOT'] . '/shop/data'),
@@ -341,43 +338,69 @@ class ImagePathResolver {
                     $scanned_files = scandir($dir);
                     foreach ($scanned_files as $file) {
                         if ($file !== '.' && $file !== '..' && is_file($dir . $file)) {
-                            $result['files'][] = [
+                            $addFile([
                                 'name' => $file,
                                 'saved_name' => $file,
                                 'size' => filesize($dir . $file),
                                 'type' => $is_customer_folder ? 'customer' : 'unknown',
                                 'path' => $dir . $file,
                                 'web_url' => '/ImgFolder/' . $row['ImgFolder'] . '/' . $file
-                            ];
+                            ]);
                         }
                     }
                 }
             }
         }
 
-        // 5. 추가 폴백: 레거시 폴더 스캔
-        if (empty($result['files'])) {
-            $legacy_dirs = [
+        // ── B. 교정파일 수집 (type: 'proof') ──────────────────────────
+        // 항상 실행 — empty() 가드 제거. upload/{no}/ = 관리자 교정파일 저장소
+        if ($order_no > 0) {
+            $proof_dirs = [
                 $_SERVER['DOCUMENT_ROOT'] . '/mlangorder_printauto/upload/' . $order_no . '/',
                 $_SERVER['DOCUMENT_ROOT'] . '/MlangOrder_PrintAuto/upload/' . $order_no . '/'
             ];
 
-            foreach ($legacy_dirs as $dir) {
+            foreach ($proof_dirs as $dir) {
                 if (is_dir($dir)) {
-                    $scanned_files = scandir($dir);
-                    foreach ($scanned_files as $file) {
-                        if ($file !== '.' && $file !== '..' && is_file($dir . $file)) {
-                            $result['files'][] = [
-                                'name' => $file,
-                                'saved_name' => $file,
-                                'size' => filesize($dir . $file),
-                                'type' => 'legacy',
-                                'path' => $dir . $file
-                            ];
+                    if (!$apply_date_filter || self::shouldDisplay('proof', $order_date)) {
+                        $scanned_files = scandir($dir);
+                        foreach ($scanned_files as $file) {
+                            if ($file !== '.' && $file !== '..' && is_file($dir . $file)) {
+                                $addFile([
+                                    'name' => $file,
+                                    'saved_name' => $file,
+                                    'size' => filesize($dir . $file),
+                                    'type' => 'proof',
+                                    'path' => $dir . $file
+                                ]);
+                            }
                         }
+                    } else {
+                        $result['proof_excluded'] = true;
+                        $result['proof_excluded_count']++;
                     }
                     break; // 첫 번째 존재하는 디렉토리에서만 스캔
                 }
+            }
+        }
+
+        // ── C. ThingCate 폴백 (A+B에서 아무것도 못 찾은 경우만) ────────
+        // 매우 오래된 주문에서 디렉토리 없이 ThingCate만 남은 경우 대비
+        if (empty($result['files']) && !empty($row['ThingCate'])) {
+            if (!$apply_date_filter || self::shouldDisplay('proof', $order_date)) {
+                $path = self::resolve($order_no, $row['ThingCate'], $row);
+                if ($path && file_exists($path)) {
+                    $addFile([
+                        'name' => $row['ThingCate'],
+                        'saved_name' => $row['ThingCate'],
+                        'size' => filesize($path),
+                        'type' => 'unknown',  // 출처 불명 — 레거시 데이터
+                        'path' => $path
+                    ]);
+                }
+            } else {
+                $result['proof_excluded'] = true;
+                $result['proof_excluded_count']++;
             }
         }
 

@@ -58,6 +58,7 @@ switch ($action) {
                     'size' => $fsize,
                     'mtime' => $mtime,
                     'date' => $mtime ? date('m/d H:i', $mtime) : '',
+                    'type' => $f['type'] ?? 'unknown',
                 ];
             }
 
