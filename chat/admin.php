@@ -97,7 +97,7 @@ requireAdminAuth();
         }
 
         .room-item {
-            padding: 15px 20px;
+            padding: 8px 14px;
             border-bottom: 1px solid #f0f0f0;
             cursor: pointer;
             transition: background 0.2s;
@@ -114,20 +114,20 @@ requireAdminAuth();
 
         .room-item-name {
             font-weight: bold;
-            margin-bottom: 5px;
+            margin-bottom: 2px;
             color: #333;
-            font-size: 15px;
+            font-size: 13px;
         }
 
         .room-item-header {
             font-weight: bold;
-            margin-bottom: 5px;
+            margin-bottom: 2px;
             color: #333;
-            font-size: 15px;
+            font-size: 13px;
         }
 
         .room-item-preview {
-            font-size: 14px;
+            font-size: 12px;
             color: #666;
             white-space: nowrap;
             overflow: hidden;
@@ -135,7 +135,7 @@ requireAdminAuth();
         }
 
         .room-item-message {
-            font-size: 14px;
+            font-size: 12px;
             color: #666;
             white-space: nowrap;
             overflow: hidden;
@@ -143,18 +143,53 @@ requireAdminAuth();
         }
 
         .room-item-time {
-            font-size: 11px;
+            font-size: 10px;
             color: #999;
-            margin-top: 5px;
+            margin-top: 2px;
         }
 
         .room-item-unread {
             background: #ff4757;
             color: white;
-            padding: 2px 8px;
+            padding: 1px 6px;
             border-radius: 10px;
-            font-size: 11px;
+            font-size: 10px;
             float: right;
+        }
+
+        /* 페이지네이션 */
+        .pagination-bar {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            gap: 2px;
+            padding: 6px 8px;
+            border-top: 1px solid #e0e0e0;
+            background: #fafafa;
+            flex-shrink: 0;
+        }
+        .pagination-bar button {
+            min-width: 28px;
+            height: 26px;
+            border: 1px solid #ddd;
+            background: white;
+            color: #555;
+            font-size: 11px;
+            border-radius: 3px;
+            cursor: pointer;
+            padding: 0 4px;
+        }
+        .pagination-bar button:hover {
+            background: #e3f2fd;
+        }
+        .pagination-bar button.active {
+            background: #2196f3;
+            color: white;
+            border-color: #2196f3;
+        }
+        .pagination-bar button:disabled {
+            opacity: 0.4;
+            cursor: default;
         }
 
         /* 메인 채팅 영역 */
@@ -434,7 +469,10 @@ requireAdminAuth();
         <!-- 사이드바 - 채팅방 목록 -->
         <div class="sidebar">
             <div class="sidebar-header">
-                <h1>채팅 관리</h1>
+                <div style="display:flex; justify-content:space-between; align-items:center;">
+                    <h1>채팅 관리</h1>
+                    <a href="/dashboard/chat/" style="font-size:11px; color:rgba(255,255,255,0.8); text-decoration:none; background:rgba(255,255,255,0.15); padding:3px 8px; border-radius:4px; transition:background 0.2s;" onmouseover="this.style.background='rgba(255,255,255,0.3)'" onmouseout="this.style.background='rgba(255,255,255,0.15)'">대시보드 ↗</a>
+                </div>
                 <p>두손기획인쇄 - 고객 지원</p>
             </div>
 
@@ -456,6 +494,7 @@ requireAdminAuth();
                     <p>로그인 후 채팅방 목록이 표시됩니다.</p>
                 </div>
             </div>
+            <div class="pagination-bar" id="pagination-bar" style="display:none;"></div>
         </div>
 
         <!-- 메인 채팅 영역 -->
@@ -498,6 +537,9 @@ requireAdminAuth();
         let lastMessageId = 0;
         let pollInterval = null;
         let allRooms = []; // 전체 채팅방 목록 저장
+        let currentPage = 1;
+        const ROOMS_PER_PAGE = 15;
+        let currentDisplayRooms = []; // 현재 표시 대상 방 목록 (필터링 후)
 
         // 직원 로그인
         function staffLogin() {
@@ -520,6 +562,7 @@ requireAdminAuth();
         // 채팅방 필터링 (검색)
         function filterRooms(searchText) {
             searchText = searchText.toLowerCase().trim();
+            currentPage = 1; // 검색 시 페이지 리셋
 
             if (!searchText) {
                 displayRoomList(allRooms);
@@ -529,7 +572,6 @@ requireAdminAuth();
             const filtered = allRooms.filter(room => {
                 const customerName = (room.customer_name || '').toLowerCase();
                 const lastMessage = (room.last_message || '').toLowerCase();
-
                 return customerName.includes(searchText) || lastMessage.includes(searchText);
             });
 
@@ -569,15 +611,23 @@ requireAdminAuth();
 
         // 채팅방 목록 표시
         function displayRoomList(rooms) {
+            currentDisplayRooms = rooms;
             const roomList = document.getElementById('room-list');
+            const paginationBar = document.getElementById('pagination-bar');
 
             if (rooms.length === 0) {
-                roomList.innerHTML = '<div style="padding: 20px; text-align: center; color: #999;">채팅방이 생성되면 여기에 표시됩니다.</div>';
+                roomList.innerHTML = '<div style="padding: 14px; text-align: center; color: #999; font-size: 12px;">채팅방이 생성되면 여기에 표시됩니다.</div>';
+                paginationBar.style.display = 'none';
                 return;
             }
 
+            const totalPages = Math.ceil(rooms.length / ROOMS_PER_PAGE);
+            if (currentPage > totalPages) currentPage = totalPages;
+            const startIdx = (currentPage - 1) * ROOMS_PER_PAGE;
+            const pageRooms = rooms.slice(startIdx, startIdx + ROOMS_PER_PAGE);
+
             roomList.innerHTML = '';
-            rooms.forEach(room => {
+            pageRooms.forEach(room => {
                 const roomDiv = document.createElement('div');
                 roomDiv.className = 'room-item' + (room.id === currentRoomId ? ' active' : '');
                 roomDiv.onclick = () => selectRoom(room.id);
@@ -598,19 +648,12 @@ requireAdminAuth();
                 if (room.last_message_time) {
                     const messageTime = new Date(room.last_message_time);
                     const now = new Date();
-                    const diff = Math.floor((now - messageTime) / 1000); // seconds
-
-                    if (diff < 60) {
-                        timeText = '방금';
-                    } else if (diff < 3600) {
-                        timeText = Math.floor(diff / 60) + '분 전';
-                    } else if (diff < 86400) {
-                        timeText = Math.floor(diff / 3600) + '시간 전';
-                    } else if (diff < 604800) {
-                        timeText = Math.floor(diff / 86400) + '일 전';
-                    } else {
-                        timeText = messageTime.toLocaleDateString('ko-KR', { month: 'short', day: 'numeric' });
-                    }
+                    const diff = Math.floor((now - messageTime) / 1000);
+                    if (diff < 60) { timeText = '방금'; }
+                    else if (diff < 3600) { timeText = Math.floor(diff / 60) + '분 전'; }
+                    else if (diff < 86400) { timeText = Math.floor(diff / 3600) + '시간 전'; }
+                    else if (diff < 604800) { timeText = Math.floor(diff / 86400) + '일 전'; }
+                    else { timeText = messageTime.toLocaleDateString('ko-KR', { month: 'short', day: 'numeric' }); }
                 }
 
                 const customerName = room.customer_name || '손님';
@@ -626,9 +669,45 @@ requireAdminAuth();
                     <div class="room-item-message">${escapeHtml(lastMessageText)}</div>
                     <div class="room-item-time">${timeText}</div>
                 `;
-
                 roomList.appendChild(roomDiv);
             });
+
+            // 페이지네이션 렌더링
+            renderPagination(totalPages);
+        }
+
+        function renderPagination(totalPages) {
+            const bar = document.getElementById('pagination-bar');
+            if (totalPages <= 1) { bar.style.display = 'none'; return; }
+            bar.style.display = 'flex';
+            bar.innerHTML = '';
+
+            // 이전 버튼
+            const prevBtn = document.createElement('button');
+            prevBtn.textContent = '\u25C0';
+            prevBtn.disabled = (currentPage === 1);
+            prevBtn.onclick = () => { currentPage--; displayRoomList(currentDisplayRooms); };
+            bar.appendChild(prevBtn);
+
+            // 페이지 번호 (최대 5개 표시)
+            let startP = Math.max(1, currentPage - 2);
+            let endP = Math.min(totalPages, startP + 4);
+            if (endP - startP < 4) startP = Math.max(1, endP - 4);
+
+            for (let p = startP; p <= endP; p++) {
+                const btn = document.createElement('button');
+                btn.textContent = p;
+                if (p === currentPage) btn.className = 'active';
+                btn.onclick = () => { currentPage = p; displayRoomList(currentDisplayRooms); };
+                bar.appendChild(btn);
+            }
+
+            // 다음 버튼
+            const nextBtn = document.createElement('button');
+            nextBtn.textContent = '\u25B6';
+            nextBtn.disabled = (currentPage === totalPages);
+            nextBtn.onclick = () => { currentPage++; displayRoomList(currentDisplayRooms); };
+            bar.appendChild(nextBtn);
         }
 
         // 채팅방 선택

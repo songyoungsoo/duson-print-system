@@ -411,6 +411,20 @@ function exportChat() {
 // 직원용 채팅방 목록 (모든 채팅방 + 마지막 메시지 + 읽지 않은 수)
 function getStaffRooms() {
     global $db;
+
+    // === 48시간 비활성 채팅방 자동 정리 (piggyback) ===
+    // 마지막 메시지가 48시간 이상 경과된 활성 채팅방을 자동으로 닫음
+    $cleanupQuery = "UPDATE chatrooms r
+                      LEFT JOIN (
+                          SELECT roomid, MAX(createdat) as last_msg_time
+                          FROM chatmessages
+                          GROUP BY roomid
+                      ) lm ON r.id = lm.roomid
+                      SET r.isactive = 0
+                      WHERE r.isactive = 1
+                        AND (lm.last_msg_time IS NULL OR lm.last_msg_time < DATE_SUB(NOW(), INTERVAL 48 HOUR))";
+    mysqli_query($db, $cleanupQuery);
+    // === 자동 정리 끝 ===
     $staffId = $_GET['staff_id'] ?? '';
 
     if (!$staffId) {
