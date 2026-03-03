@@ -189,14 +189,19 @@ switch ($action) {
             exit;
         }
 
-        $stmt = mysqli_prepare($db, "SELECT OrderStyle FROM mlangorder_printauto WHERE no = ?");
+        $stmt = mysqli_prepare($db, "SELECT proofreading_confirmed, proofreading_date, proofreading_by FROM mlangorder_printauto WHERE no = ?");
         mysqli_stmt_bind_param($stmt, "i", $order_no);
         mysqli_stmt_execute($stmt);
         $row = mysqli_fetch_assoc(mysqli_stmt_get_result($stmt));
         mysqli_stmt_close($stmt);
 
-        $confirmed = ($row && $row['OrderStyle'] == '8'); // 작업완료 상태 확인
-        echo json_encode(['success' => true, 'confirmed' => $confirmed]);
+        $confirmed = ($row && $row['proofreading_confirmed'] == 1);
+        $result = ['success' => true, 'confirmed' => $confirmed];
+        if ($confirmed) {
+            $result['date'] = $row['proofreading_date'] ?? '';
+            $result['by'] = $row['proofreading_by'] ?? '';
+        }
+        echo json_encode($result);
         break;
 
     case 'confirm_proofreading':
@@ -206,14 +211,38 @@ switch ($action) {
             exit;
         }
 
-        // 주문 상태를 작업완료(8)로 변경
-        $stmt = mysqli_prepare($db, "UPDATE mlangorder_printauto SET OrderStyle = '8' WHERE no = ?");
-        mysqli_stmt_bind_param($stmt, "i", $order_no);
+        // 이미 확정되었는지 확인
+        $check = mysqli_prepare($db, "SELECT proofreading_confirmed FROM mlangorder_printauto WHERE no = ?");
+        mysqli_stmt_bind_param($check, "i", $order_no);
+        mysqli_stmt_execute($check);
+        $check_row = mysqli_fetch_assoc(mysqli_stmt_get_result($check));
+        mysqli_stmt_close($check);
+
+        if ($check_row && $check_row['proofreading_confirmed'] == 1) {
+            echo json_encode(['success' => false, 'message' => '이미 교정확정된 주문입니다.']);
+            break;
+        }
+
+        // 교정확정: proofreading_confirmed + date + by (WindowSian.php와 동일)
+        $confirmed_by = 'admin';
+        if (isset($_SESSION['admin_username'])) {
+            $confirmed_by = $_SESSION['admin_username'];
+        }
+
+        // bind_param 3단계 검증: ? = 3개, type = "ssi", var = 3개 ✓
+        $stmt = mysqli_prepare($db,
+            "UPDATE mlangorder_printauto
+             SET proofreading_confirmed = 1,
+                 proofreading_date = NOW(),
+                 proofreading_by = ?
+             WHERE no = ?");
+        mysqli_stmt_bind_param($stmt, "si", $confirmed_by, $order_no);
         mysqli_stmt_execute($stmt);
         $affected = mysqli_stmt_affected_rows($stmt);
         mysqli_stmt_close($stmt);
 
         if ($affected > 0) {
+            error_log("교정확정 완료 (dashboard) - 주문번호: $order_no, 확정자: $confirmed_by, IP: " . $_SERVER['REMOTE_ADDR']);
             echo json_encode(['success' => true, 'message' => '교정확정 완료']);
         } else {
             echo json_encode(['success' => false, 'message' => '처리 실패']);

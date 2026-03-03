@@ -24,12 +24,31 @@
   └─ 비이미지 파일: 새 탭으로 열기
 ```
 
+### 교정확정 DB 정합성 (2026-03-03 수정)
+
+두 경로(고객용 WindowSian.php / 관리자용 dashboard/proofs)가 **동일한 DB 컬럼**을 사용:
+
+| 항목 | WindowSian.php (고객) | dashboard/proofs (관리자) |
+|------|------|------|
+| 상태 확인 | `check_proofreading_status.php` | `api.php?action=check_proof_status` |
+| 확정 처리 | `confirm_proofreading.php` | `api.php?action=confirm_proofreading` |
+| DB 컬럼 | `proofreading_confirmed=1, proofreading_date=NOW(), proofreading_by=?` | 동일 |
+
+```sql
+-- mlangorder_printauto 교정확정 컬럼
+proofreading_confirmed  -- 0 또는 1
+proofreading_date       -- DATETIME (확정 시각)
+proofreading_by         -- VARCHAR ('customer', 'admin', 관리자명)
+```
+
+**⚠️ 과거 문제 (수정 완료):** dashboard/proofs/api.php가 `OrderStyle='8'`로 교정확정을 판단/저장하여 WindowSian.php와 불일치 → `proofreading_confirmed` 컬럼으로 통일됨.
+
 ### 교정확정 2단계 확인 (2026-02-23)
 ```
 "교정확정" 클릭
   → 1차 confirm: "오탈자 및 전체를 잘 확인 했습니다... 교정확정 하시겠습니까?"
   → 2차 confirm: "⚠️ 최종 확인 — 교정확정 후에는 취소할 수 없습니다. 정말 인쇄를 진행하시겠습니까?"
-  → 둘 다 확인 시 → AJAX POST api.php?action=confirm_proofread
+  → 둘 다 확인 시 → AJAX POST api.php?action=confirm_proofreading
   → 하나라도 취소 → 중단
 ```
 
