@@ -36,6 +36,7 @@ $product_type = $_POST['product_type'] ?? 'namecard';
 $work_memo = $_POST['work_memo'] ?? '';
 $upload_method = $_POST['upload_method'] ?? 'upload';
 $uploaded_files_info = $_POST['uploaded_files_info'] ?? '';
+$order_count = max(1, min(10, intval($_POST['order_count'] ?? 1)));
 
 // 프리미엄 옵션 데이터 받기 — PremiumOptionsGeneric(NEW) 또는 개별 필드(OLD) 지원
 $premium_options_data_raw = $_POST['premium_options_data'] ?? '';
@@ -243,6 +244,12 @@ $data_version = 2;  // Phase 2 신규 데이터
 
 error_log("Phase 2: 표준 데이터 생성 완료 - spec_type: $spec_type, price_supply: $price_supply");
 
+// ✅ 건수 곱하기: item_group_id 생성 (2건 이상일 때만)
+$item_group_id = null;
+if ($order_count > 1) {
+    $item_group_id = 'IG-' . date('Ymd') . '-' . substr(uniqid(), -8);
+}
+
 // ✅ 장바구니에 추가 - 레거시 + 표준 필드 모두 저장 (Dual-Write)
 $insert_query = "INSERT INTO shop_temp (
     session_id, product_type, MY_type, Section, POtype, MY_amount, ordertype,
@@ -252,60 +259,81 @@ $insert_query = "INSERT INTO shop_temp (
     spec_type, spec_material, spec_size, spec_sides, spec_design,
     quantity_value, quantity_unit, quantity_sheets, quantity_display,
     price_supply, price_vat, price_vat_amount,
-    product_data_json, data_version
-) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)";
-
-error_log("SQL 쿼리: " . $insert_query);
-$stmt = mysqli_prepare($db, $insert_query);
-
-if (!$stmt) {
-    error_log("명함 장바구니 prepare 실패: " . mysqli_error($db));
-    safe_json_response(false, null, 'SQL 준비 실패: ' . mysqli_error($db));
-}
+    product_data_json, data_version,
+    item_group_id, item_group_seq
+) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)";
 
 // 디버그 로깅
 error_log("=== 명함 장바구니 저장 디버그 ===");
 error_log("Session: $session_id, Product: $product_type, ImgFolder: $img_folder, ThingCate: $thing_cate");
-error_log("premium_options_total: $premium_total");
+error_log("premium_options_total: $premium_total, order_count: $order_count");
 error_log("Uploaded files JSON: " . $uploaded_files_json);
 
-// Phase 2: 33개 파라미터 (레거시 19개 + 표준 14개)
+// Phase 2+건수: 35개 파라미터 (레거시 19개 + 표준 14개 + item_group 2개)
 // 타입 순서: session_id(s), product_type(s), MY_type(s), Section(s), POtype(s), MY_amount(s), ordertype(s),
 //            st_price(d), st_price_vat(d), premium_options(s), premium_options_total(i),
 //            MY_type_name(s), Section_name(s), POtype_name(s), work_memo(s), upload_method(s), uploaded_files(s), ThingCate(s), ImgFolder(s),
 //            spec_type(s), spec_material(s), spec_size(s), spec_sides(s), spec_design(s),
 //            quantity_value(d), quantity_unit(s), quantity_sheets(i), quantity_display(s),
-//            price_supply(i), price_vat(i), price_vat_amount(i), product_data_json(s), data_version(i)
-mysqli_stmt_bind_param($stmt, "sssssssddsisssssssssssssdsisiiisi",
-    // 레거시 필드 (19개)
-    $session_id, $product_type, $MY_type, $Section, $POtype, $MY_amount, $ordertype,
-    $price, $vat_price, $premium_options_json, $premium_total,
-    $MY_type_name, $Section_name, $POtype_name,
-    $work_memo, $upload_method, $uploaded_files_json, $thing_cate, $img_folder,
-    // 표준 필드 (14개)
-    $spec_type, $spec_material, $spec_size, $spec_sides, $spec_design,
-    $quantity_value, $quantity_unit, $quantity_sheets, $quantity_display,
-    $price_supply, $price_vat, $price_vat_amount,
-    $product_data_json, $data_version
-);
+//            price_supply(i), price_vat(i), price_vat_amount(i), product_data_json(s), data_version(i),
+//            item_group_id(s), item_group_seq(i)
+// bind_param 3단계 검증: placeholder=35, 타입문자열=35, 변수=35 ✅
 
-if (mysqli_stmt_execute($stmt)) {
-    $basket_id = mysqli_insert_id($db);
-    mysqli_stmt_close($stmt);
+$basket_ids = [];
+for ($seq = 1; $seq <= $order_count; $seq++) {
+    // 첫 건에만 파일 첨부, 나머지는 빈 파일
+    $files_for_seq = ($seq === 1) ? $uploaded_files_json : '[]';
+    $img_folder_for_seq = ($seq === 1) ? $img_folder : '';
+    $thing_cate_for_seq = ($seq === 1) ? $thing_cate : '';
 
-    error_log("명함 장바구니 성공 - ID: $basket_id");
+    $stmt = mysqli_prepare($db, $insert_query);
+    if (!$stmt) {
+        error_log("명함 장바구니 prepare 실패: " . mysqli_error($db));
+        safe_json_response(false, null, 'SQL 준비 실패: ' . mysqli_error($db));
+    }
 
+    mysqli_stmt_bind_param($stmt, "sssssssddsisssssssssssssdsisiiisisi",
+        // 레거시 필드 (19개)
+        $session_id, $product_type, $MY_type, $Section, $POtype, $MY_amount, $ordertype,
+        $price, $vat_price, $premium_options_json, $premium_total,
+        $MY_type_name, $Section_name, $POtype_name,
+        $work_memo, $upload_method, $files_for_seq, $thing_cate_for_seq, $img_folder_for_seq,
+        // 표준 필드 (14개)
+        $spec_type, $spec_material, $spec_size, $spec_sides, $spec_design,
+        $quantity_value, $quantity_unit, $quantity_sheets, $quantity_display,
+        $price_supply, $price_vat, $price_vat_amount,
+        $product_data_json, $data_version,
+        // 건수 곱하기 필드 (2개)
+        $item_group_id, $seq
+    );
+
+    if (mysqli_stmt_execute($stmt)) {
+        $basket_ids[] = mysqli_insert_id($db);
+        mysqli_stmt_close($stmt);
+        error_log("명함 장바구니 성공 - seq: $seq/" . $order_count . ", ID: " . end($basket_ids));
+    } else {
+        $error_msg = mysqli_stmt_error($stmt);
+        error_log("명함 장바구니 저장 실패 (seq $seq): " . $error_msg);
+        mysqli_stmt_close($stmt);
+        safe_json_response(false, null, '장바구니 추가 실패: ' . $error_msg);
+    }
+}
+
+// 응답
+if ($order_count > 1) {
     safe_json_response(true, [
-        'basket_id' => $basket_id,
+        'basket_ids' => $basket_ids,
+        'item_group_id' => $item_group_id,
+        'order_count' => $order_count,
+        'uploaded_files_count' => count($uploaded_files),
+        'upload_path' => $img_folder
+    ], "장바구니에 {$order_count}건 추가되었습니다.");
+} else {
+    safe_json_response(true, [
+        'basket_id' => $basket_ids[0],
         'uploaded_files_count' => count($uploaded_files),
         'upload_path' => $img_folder
     ], '장바구니에 추가되었습니다.');
-
-} else {
-    $error_msg = mysqli_stmt_error($stmt);
-    error_log("명함 장바구니 저장 실패: " . $error_msg);
-    mysqli_stmt_close($stmt);
-    safe_json_response(false, null, '장바구니 추가 실패: ' . $error_msg);
 }
 
 mysqli_close($db);

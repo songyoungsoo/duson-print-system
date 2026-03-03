@@ -333,6 +333,26 @@ try {
             
             $final_cont .= $business_info_text;
         }
+
+        // 건수 곱하기 정보 추가 (item_group_id가 있으면 같은 스펙 N건 중 M번째)
+        if (!empty($item['item_group_id'])) {
+            $item_seq = intval($item['item_group_seq'] ?? 0);
+            // 같은 item_group_id를 가진 행 수 세기
+            $group_count_query = "SELECT COUNT(*) as cnt FROM shop_temp WHERE item_group_id = ?";
+            $gc_stmt = mysqli_prepare($connect, $group_count_query);
+            $group_total = 0;
+            if ($gc_stmt) {
+                mysqli_stmt_bind_param($gc_stmt, 's', $item['item_group_id']);
+                mysqli_stmt_execute($gc_stmt);
+                $gc_result = mysqli_stmt_get_result($gc_stmt);
+                $gc_row = mysqli_fetch_assoc($gc_result);
+                $group_total = intval($gc_row['cnt'] ?? 0);
+                mysqli_stmt_close($gc_stmt);
+            }
+            if ($group_total > 1) {
+                $final_cont .= "\n[같은 스펙 {$group_total}건 중 {$item_seq}번째]";
+            }
+        }
         
         // mlangorder_printauto 테이블에 삽입 (ImgFolder 필드 포함)
         // ✅ Phase 3: 표준 필드 추가 (spec_*, quantity_*, price_*, data_version)

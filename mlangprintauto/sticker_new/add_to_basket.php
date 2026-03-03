@@ -51,6 +51,7 @@ $customer_name = $_POST['customerName'] ?? '';
 $customer_phone = $_POST['customerPhone'] ?? '';
 $upload_method = $_POST['upload_method'] ?? 'upload';
 $uploaded_files_info = $_POST['uploaded_files_info'] ?? '';
+$order_count = max(1, min(10, intval($_POST['order_count'] ?? 1)));
 
 // 공통 필드 (다른 상품용)
 $MY_type = $_POST['MY_type'] ?? '';
@@ -181,80 +182,119 @@ if ($product_type === 'sticker') {
     error_log("add_to_basket DEBUG: quantity_display before DB save = {$quantity_display}");
     error_log("add_to_basket DEBUG: target_table = {$target_table}, mode = {$target_mode}");
 
+    // ✅ 건수 곱하기: item_group_id 생성 (2건 이상일 때만)
+    $item_group_id = null;
+    if ($order_count > 1) {
+        $item_group_id = 'IG-' . date('Ymd') . '-' . substr(uniqid(), -8);
+    }
+    error_log("스티커 건수 곱하기: order_count=$order_count, item_group_id=" . ($item_group_id ?? 'null'));
+
     // ✅ quotation_temp는 product_data_json 필드가 없으므로 분기 처리
     if ($target_table === 'quotation_temp') {
-        // quotation_temp: product_data_json 제외 (30개 필드)
+        // quotation_temp: product_data_json 제외 (30개 + item_group 2개 = 32개 필드)
         $insert_query = "INSERT INTO {$target_table} (
             session_id, product_type, jong, garo, sero, mesu, uhyung, domusong, st_price, st_price_vat,
             customer_name, customer_phone, work_memo, upload_method, uploaded_files, ThingCate, ImgFolder,
             spec_type, spec_material, spec_size, spec_sides, spec_design,
             quantity_value, quantity_unit, quantity_sheets, quantity_display,
-            price_supply, price_vat, price_vat_amount, data_version
-        ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)";
-
-        $stmt = mysqli_prepare($connect, $insert_query);
-        if ($stmt) {
-            // 30개 파라미터 (product_data_json 제외)
-            mysqli_stmt_bind_param($stmt, "sssssssddissssssssssssdsiiiiii",
-                $session_id, $product_type, $jong, $garo, $sero, $mesu, $uhyung, $domusong, $st_price, $st_price_vat,
-                $customer_name, $customer_phone, $work_memo, $upload_method, $uploaded_files_json, $thing_cate, $img_folder,
-                $spec_type, $spec_material, $spec_size, $spec_sides, $spec_design,
-                $quantity_value, $quantity_unit, $quantity_sheets, $quantity_display,
-                $price_supply, $price_vat, $price_vat_amount, $data_version);
-        }
+            price_supply, price_vat, price_vat_amount, data_version,
+            item_group_id, item_group_seq
+        ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)";
+        $bind_type = 'ssssssssdissssssssssssdsisiiiisi';
+        // bind_param 3단계 검증: placeholder=32, 타입문자열=32, 변수=32 ✅
+        // 타입 순서: session_id(s), product_type(s), jong(s), garo(s), sero(s), mesu(s), uhyung(s), domusong(s),
+        //   st_price(d), st_price_vat(i), customer_name~ImgFolder(sssssss), spec_type~spec_design(sssss),
+        //   quantity_value(d), quantity_unit(s), quantity_sheets(i), quantity_display(s),
+        //   price_supply(i), price_vat(i), price_vat_amount(i), data_version(i), item_group_id(s), item_group_seq(i)
     } else {
-        // shop_temp: product_data_json 포함 (31개 필드)
+        // shop_temp: product_data_json 포함 (31개 + item_group 2개 = 33개 필드)
         $insert_query = "INSERT INTO {$target_table} (
             session_id, product_type, jong, garo, sero, mesu, uhyung, domusong, st_price, st_price_vat,
             customer_name, customer_phone, work_memo, upload_method, uploaded_files, ThingCate, ImgFolder,
             spec_type, spec_material, spec_size, spec_sides, spec_design,
             quantity_value, quantity_unit, quantity_sheets, quantity_display,
-            price_supply, price_vat, price_vat_amount, product_data_json, data_version
-        ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)";
-
-        $stmt = mysqli_prepare($connect, $insert_query);
-        if ($stmt) {
-            // 31개 파라미터 (product_data_json 포함)
-            mysqli_stmt_bind_param($stmt, "sssssssddissssssssssssdsiiiiisi",
-                $session_id, $product_type, $jong, $garo, $sero, $mesu, $uhyung, $domusong, $st_price, $st_price_vat,
-                $customer_name, $customer_phone, $work_memo, $upload_method, $uploaded_files_json, $thing_cate, $img_folder,
-                $spec_type, $spec_material, $spec_size, $spec_sides, $spec_design,
-                $quantity_value, $quantity_unit, $quantity_sheets, $quantity_display,
-                $price_supply, $price_vat, $price_vat_amount, $product_data_json, $data_version);
-        }
+            price_supply, price_vat, price_vat_amount, product_data_json, data_version,
+            item_group_id, item_group_seq
+        ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)";
+        $bind_type = 'ssssssssdissssssssssssdsisiiisisi';
+        // bind_param 3단계 검증: placeholder=33, 타입문자열=33, 변수=33 ✅
+        // 타입 순서: session_id(s), product_type(s), jong(s), garo(s), sero(s), mesu(s), uhyung(s), domusong(s),
+        //   st_price(d), st_price_vat(i), customer_name~ImgFolder(sssssss), spec_type~spec_design(sssss),
+        //   quantity_value(d), quantity_unit(s), quantity_sheets(i), quantity_display(s),
+        //   price_supply(i), price_vat(i), price_vat_amount(i), product_data_json(s), data_version(i),
+        //   item_group_id(s), item_group_seq(i)
     }
 
-    if ($stmt) {
-        
-        if (mysqli_stmt_execute($stmt)) {
-            $basket_id = mysqli_insert_id($connect);
-            mysqli_stmt_close($stmt);
+    $basket_ids = [];
+    for ($seq = 1; $seq <= $order_count; $seq++) {
+        // 첫 건에만 파일 첨부, 나머지는 빈 파일
+        $files_for_seq = ($seq === 1) ? $uploaded_files_json : '[]';
+        $img_folder_for_seq = ($seq === 1) ? $img_folder : '';
+        $thing_cate_for_seq = ($seq === 1) ? $thing_cate : '';
 
-            $response_data = [
-                'basket_id' => $basket_id,
-                'uploaded_files_count' => count($uploaded_files),
-                'img_folder' => $img_folder,
-                'thing_cate' => $thing_cate,
-                'customer_name' => $customer_name,
-                'customer_phone' => $customer_phone,
-                'product_info' => [
-                    'jong' => $jong,
-                    'size' => $garo . 'x' . $sero . 'mm',
-                    'quantity' => $mesu . '매',
-                    'price' => number_format($st_price) . '원'
-                ]
-            ];
+        $stmt = mysqli_prepare($connect, $insert_query);
+        if (!$stmt) {
+            error_log("스티커 장바구니 prepare 실패: " . mysqli_error($connect));
+            safe_json_response(false, null, 'SQL 준비 실패: ' . mysqli_error($connect));
+        }
 
-            $success_msg = ($target_mode === 'quotation') ? '견적서에 추가되었습니다.' : '장바구니에 추가되었습니다.';
-            safe_json_response(true, $response_data, $success_msg);
-            
+        if ($target_table === 'quotation_temp') {
+            mysqli_stmt_bind_param($stmt, $bind_type,
+                $session_id, $product_type, $jong, $garo, $sero, $mesu, $uhyung, $domusong, $st_price, $st_price_vat,
+                $customer_name, $customer_phone, $work_memo, $upload_method, $files_for_seq, $thing_cate_for_seq, $img_folder_for_seq,
+                $spec_type, $spec_material, $spec_size, $spec_sides, $spec_design,
+                $quantity_value, $quantity_unit, $quantity_sheets, $quantity_display,
+                $price_supply, $price_vat, $price_vat_amount, $data_version,
+                $item_group_id, $seq);
         } else {
-            mysqli_stmt_close($stmt);
-            safe_json_response(false, null, '장바구니 추가 중 오류가 발생했습니다: ' . mysqli_stmt_error($stmt));
+            mysqli_stmt_bind_param($stmt, $bind_type,
+                $session_id, $product_type, $jong, $garo, $sero, $mesu, $uhyung, $domusong, $st_price, $st_price_vat,
+                $customer_name, $customer_phone, $work_memo, $upload_method, $files_for_seq, $thing_cate_for_seq, $img_folder_for_seq,
+                $spec_type, $spec_material, $spec_size, $spec_sides, $spec_design,
+                $quantity_value, $quantity_unit, $quantity_sheets, $quantity_display,
+                $price_supply, $price_vat, $price_vat_amount, $product_data_json, $data_version,
+                $item_group_id, $seq);
         }
-    } else {
-        safe_json_response(false, null, '데이터베이스 오류가 발생했습니다: ' . mysqli_error($connect));
+
+        if (mysqli_stmt_execute($stmt)) {
+            $basket_ids[] = mysqli_insert_id($connect);
+            mysqli_stmt_close($stmt);
+            error_log("스티커 장바구니 성공 - seq: $seq/$order_count, ID: " . end($basket_ids));
+        } else {
+            $error_msg = mysqli_stmt_error($stmt);
+            error_log("스티커 장바구니 저장 실패 (seq $seq): " . $error_msg);
+            mysqli_stmt_close($stmt);
+            safe_json_response(false, null, '장바구니 추가 실패: ' . $error_msg);
+        }
     }
+
+    // 응답
+    $response_data = [
+        'uploaded_files_count' => count($uploaded_files),
+        'img_folder' => $img_folder,
+        'thing_cate' => $thing_cate,
+        'customer_name' => $customer_name,
+        'customer_phone' => $customer_phone,
+        'product_info' => [
+            'jong' => $jong,
+            'size' => $garo . 'x' . $sero . 'mm',
+            'quantity' => $mesu . '매',
+            'price' => number_format($st_price) . '원'
+        ]
+    ];
+
+    if ($order_count > 1) {
+        $response_data['basket_ids'] = $basket_ids;
+        $response_data['item_group_id'] = $item_group_id;
+        $response_data['order_count'] = $order_count;
+        $success_msg = ($target_mode === 'quotation')
+            ? "견적서에 {$order_count}건 추가되었습니다."
+            : "장바구니에 {$order_count}건 추가되었습니다.";
+    } else {
+        $response_data['basket_id'] = $basket_ids[0];
+        $success_msg = ($target_mode === 'quotation') ? '견적서에 추가되었습니다.' : '장바구니에 추가되었습니다.';
+    }
+    safe_json_response(true, $response_data, $success_msg);
 } else {
     // 카다록 등 다른 상품
     $insert_query = "INSERT INTO {$target_table} (session_id, product_type, MY_type, MY_Fsd, PN_type, MY_amount, ordertype, MY_comment, st_price, st_price_vat, work_memo, upload_method, uploaded_files, ThingCate, ImgFolder)

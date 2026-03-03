@@ -303,7 +303,7 @@ function cleanupOldCartItems($connect) {
 function getCartItems($connect, $session_id) {
     cleanupOldCartItems($connect);
     
-    $query = "SELECT * FROM shop_temp WHERE session_id = ? ORDER BY no DESC";
+    $query = "SELECT * FROM shop_temp WHERE session_id = ? ORDER BY COALESCE(item_group_id, CONCAT('z_', no)) ASC, item_group_seq ASC, no DESC";
     $stmt = mysqli_prepare($connect, $query);
     if (!$stmt) {
         return false;
@@ -331,6 +331,20 @@ function removeCartItem($connect, $session_id, $item_no) {
     $result = mysqli_stmt_execute($stmt);
     mysqli_stmt_close($stmt);
     
+    return $result;
+}
+
+/**
+ * 그룹 장바구니 아이템 일괄 삭제 (item_group_id로 묶인 건수 곱하기 그룹)
+ */
+function removeCartGroup($connect, $session_id, $item_group_id) {
+    if (empty($item_group_id)) return false;
+    $query = "DELETE FROM shop_temp WHERE session_id = ? AND item_group_id = ?";
+    $stmt = mysqli_prepare($connect, $query);
+    if (!$stmt) return false;
+    mysqli_stmt_bind_param($stmt, 'ss', $session_id, $item_group_id);
+    $result = mysqli_stmt_execute($stmt);
+    mysqli_stmt_close($stmt);
     return $result;
 }
 
@@ -448,7 +462,13 @@ function formatCartItemForDisplay($connect, $item) {
         'quantity_sheets' => $item['quantity_sheets'] ?? '',
         'quantity_value' => $item['quantity_value'] ?? '',
         'quantity_unit' => $item['quantity_unit'] ?? '',
-        'data_version' => $item['data_version'] ?? 1
+        'data_version' => $item['data_version'] ?? 1,
+        // 건수 곱하기 그룹 필드 (cart.php 그룹 표시용)
+        'item_group_id' => $item['item_group_id'] ?? null,
+        'item_group_seq' => $item['item_group_seq'] ?? 0,
+        // 파일 업로드 및 메모 (장바구니 그룹 표시용)
+        'uploaded_files' => $item['uploaded_files'] ?? '[]',
+        'work_memo' => $item['work_memo'] ?? ''
     ];
     
     switch ($item['product_type']) {

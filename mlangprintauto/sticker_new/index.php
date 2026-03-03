@@ -471,6 +471,24 @@ if (isset($_GET['jong']) && !empty($_GET['jong'])) {
                             </select>
                             <span class="inline-note">도무송 시 좌우상하밀림 현상 있습니다 (오차 1mm 이상)</span>
                         </div>
+
+                        <!-- 주문건수 -->
+                        <div class="inline-form-row">
+                            <span class="inline-label">주문건수</span>
+                            <select name="order_count" id="order_count" class="inline-select" onchange="updateOrderCountDisplay()">
+                                <option value="1" selected>1건 (기본)</option>
+                                <option value="2">2건</option>
+                                <option value="3">3건</option>
+                                <option value="4">4건</option>
+                                <option value="5">5건</option>
+                                <option value="6">6건</option>
+                                <option value="7">7건</option>
+                                <option value="8">8건</option>
+                                <option value="9">9건</option>
+                                <option value="10">10건</option>
+                            </select>
+                            <span class="inline-note">같은 스펙으로 여러 건 주문 (건별 디자인 가능)</span>
+                        </div>
                     </div>
                     
                     <!-- 명함 방식의 실시간 가격 표시 -->
@@ -618,7 +636,8 @@ if (isset($_GET['jong']) && !empty($_GET['jong'])) {
                 console.log('Large display price (Supply price without VAT):', priceData.price + '원');
                 
                 // 상세 내역 표시 - 한 행으로 표시, VAT는 적색과 큰 글씨, 중앙정렬
-                priceDetails.innerHTML = `
+                const orderCount = parseInt(document.getElementById('order_count')?.value) || 1;
+                let priceHtml = `
                     <div style="font-size: 0.8rem; margin-top: 6px; line-height: 1.4; color: #6c757d; display: flex; gap: 15px; align-items: center; flex-wrap: wrap; justify-content: center;">
                         <span>인쇄비: ${new Intl.NumberFormat('ko-KR').format(printPrice)}원</span>
                         ${editFee > 0 ? `<span>편집비: ${new Intl.NumberFormat('ko-KR').format(editFee)}원</span>` : ''}
@@ -626,6 +645,20 @@ if (isset($_GET['jong']) && !empty($_GET['jong'])) {
                         <span>부가세 포함: <span style="color: #dc3545; font-size: 1rem;">${priceData.price_vat}원</span></span>
                     </div>
                 `;
+                if (orderCount > 1) {
+                    const vatPriceNum = parseInt(priceData.price_vat.replace(/,/g, ''));
+                    const totalWithCount = vatPriceNum * orderCount;
+                    priceHtml += `
+                    <div style="margin-top: 8px; padding-top: 8px; border-top: 2px solid #e0e0e0; display: flex; gap: 15px; align-items: center; flex-wrap: wrap; justify-content: center;">
+                        <span style="font-weight: 700; color: #1E4E79;">📋 주문건수: ${orderCount}건</span>
+                        <span style="font-weight: 700; color: #d63384; font-size: 1.1rem;">💰 총 예상금액: ${new Intl.NumberFormat('ko-KR').format(totalWithCount)}원</span>
+                    </div>
+                    <div style="font-size: 11px; color: #6c757d; margin-top: 4px; text-align: center;">
+                        (같은 스펙 ${orderCount}건, 건당 ${priceData.price_vat}원)
+                    </div>
+                    `;
+                }
+                priceDetails.innerHTML = priceHtml;
                 
                 // 가격 표시 영역을 calculated 상태로 변경
                 priceDisplay.classList.add('calculated');
@@ -677,6 +710,13 @@ if (isset($_GET['jong']) && !empty($_GET['jong'])) {
                 priceDisplay.classList.remove('calculated');
                 uploadButton.style.display = 'none';
                 window.currentPriceData = null;
+            }
+        }
+
+        // 주문건수 변경 시 총액 표시 업데이트
+        function updateOrderCountDisplay() {
+            if (window.currentPriceData) {
+                updatePriceDisplay(window.currentPriceData);
             }
         }
 
@@ -1896,6 +1936,7 @@ if (isset($_GET['jong']) && !empty($_GET['jong'])) {
             formData.append("POtype", document.getElementById("POtype").value);
             formData.append("MY_amount", document.getElementById("MY_amount").value);
             formData.append("ordertype", document.getElementById("ordertype").value);
+            formData.append("order_count", document.getElementById("order_count")?.value || "1");
             formData.append("price", Math.round(window.currentPriceData.total_price));
             formData.append("vat_price", Math.round(window.currentPriceData.vat_price));
 

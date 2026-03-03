@@ -271,6 +271,7 @@ if ($url_nc_type) {
                             <span class="inline-note">원하시는 수량을 선택하세요</span>
                         </div>
 
+
                         <div class="inline-form-row">
                             <label class="inline-label" for="ordertype">편집비</label>
                             <select name="ordertype" id="ordertype" class="inline-select" required onchange="calculatePrice()">
@@ -285,6 +286,28 @@ if ($url_nc_type) {
                     <!-- 프리미엄 옵션 섹션 (PremiumOptionsGeneric이 동적 생성) -->
                     <div id="premiumOptionsSection" style="margin-top: 15px; display: none;"></div>
                     <input type="hidden" name="premium_options_total" id="premium_options_total" value="0">
+
+                    <!-- 주문건수 선택 (모든 옵션 선택 후 건수 곱하기) -->
+                    <div class="inline-form-row" style="margin-top: 12px; padding: 10px 12px; background: #f0f7ff; border: 1px solid #c5d9f0; border-radius: 8px;">
+                        <label class="inline-label" for="order_count" style="color: #1565C0; font-weight: 600;">주문건수</label>
+                        <select name="order_count" id="order_count" class="inline-select" onchange="updateOrderCountDisplay()">
+                            <option value="1" selected>1건 (기본)</option>
+                            <option value="2">2건</option>
+                            <option value="3">3건</option>
+                            <option value="4">4건</option>
+                            <option value="5">5건</option>
+                            <option value="6">6건</option>
+                            <option value="7">7건</option>
+                            <option value="8">8건</option>
+                            <option value="9">9건</option>
+                            <option value="10">10건</option>
+                        </select>
+                        <span class="inline-note">같은 스펙으로 여러 건 주문 (건별 디자인 가능)</span>
+                    </div>
+
+                    <!-- 건수 곱하기 요약 (건수 > 1일 때만 표시) -->
+                    <div id="orderCountSummary" style="display: none; margin-top: 8px; padding: 10px 14px; background: #fff8e1; border: 1px solid #ffe082; border-radius: 8px; text-align: center;">
+                    </div>
 
                     <!-- 기본 가격 표시 -->
                     <div class="price-display" id="priceDisplay">
@@ -605,19 +628,59 @@ if ($url_nc_type) {
                 `;
             }
 
+            // 부가세 포함 금액 (항상 동일 형식)
             detailsHtml += `
                     <div class="price-item final">
                         <span class="price-item-label">부가세 포함:</span>
                         <span class="price-item-value" style="color: #28a745; font-size: 0.98rem; font-weight: 700;">${finalTotal.toLocaleString()}원</span>
                     </div>
                 </div>
-            `;
+                `;
+
+            // 주문건수 요약 영역 업데이트 (별도 영역)
+            const orderCount = parseInt(document.getElementById('order_count')?.value) || 1;
+            const summaryEl = document.getElementById('orderCountSummary');
+            if (summaryEl) {
+                if (orderCount > 1) {
+                    const totalWithCount = finalTotal * orderCount;
+                    summaryEl.style.display = 'block';
+                    summaryEl.innerHTML = `
+                        <div style="font-size: 13px; color: #555; margin-bottom: 6px;">
+                            건당 <strong>${finalTotal.toLocaleString()}원</strong> × <strong style="color: #1565C0;">${orderCount}건</strong>
+                        </div>
+                        <div style="font-size: 18px; font-weight: 700; color: #d63384;">
+                            합계 ${totalWithCount.toLocaleString()}원
+                        </div>
+                        <div style="font-size: 11px; color: #888; margin-top: 4px;">
+                            같은 스펙 ${orderCount}건, 건별 디자인 가능
+                        </div>
+                    `;
+                } else {
+                    summaryEl.style.display = 'none';
+                    summaryEl.innerHTML = '';
+                }
+            }
 
             priceDetails.innerHTML = detailsHtml;
             priceDisplay.classList.add('calculated');
 
+            // priceAmount에 대표 금액 표시 (건수 포함 여부)
+            const displayOrderCount = parseInt(document.getElementById('order_count')?.value) || 1;
+            if (displayOrderCount > 1) {
+                priceAmount.textContent = (finalTotal * displayOrderCount).toLocaleString() + '원';
+            } else {
+                priceAmount.textContent = priceData.total_supply_price.toLocaleString() + '원';
+            }
+
             // 현재 가격 데이터 저장
             window.currentPriceData = priceData;
+        }
+
+        // 주문건수 변경 시 총액 표시 업데이트
+        function updateOrderCountDisplay() {
+            if (window.currentPriceData) {
+                updatePriceDisplay(window.currentPriceData);
+            }
         }
 
         // 가격 표시 초기화
@@ -631,6 +694,10 @@ if ($url_nc_type) {
             if (priceDetails) priceDetails.textContent = '모든 옵션을 선택하면 자동으로 계산됩니다';
             if (priceDisplay) priceDisplay.classList.remove('calculated');
             if (uploadButton) uploadButton.style.display = 'none';
+
+            // 건수 요약 영역 초기화
+            const summaryEl = document.getElementById('orderCountSummary');
+            if (summaryEl) { summaryEl.style.display = 'none'; summaryEl.innerHTML = ''; }
 
             // 프리미엄 옵션 가격 초기화
             if (window.premiumOptionsManager && typeof window.premiumOptionsManager.reset === 'function') {
@@ -718,6 +785,7 @@ if ($url_nc_type) {
             formData.append('POtype', document.getElementById('POtype').value);
             formData.append('MY_amount', document.getElementById('MY_amount').value);
             formData.append('ordertype', document.getElementById('ordertype').value);
+            formData.append('order_count', document.getElementById('order_count')?.value || '1');
 
             // 가격 정보 추가 (프리미엄 옵션 포함) - 신구 형식 모두 지원
             if (window.currentPriceData) {
@@ -818,6 +886,7 @@ if ($url_nc_type) {
             formData.append('POtype', document.getElementById('POtype').value);
             formData.append('MY_amount', document.getElementById('MY_amount').value);
             formData.append('ordertype', document.getElementById('ordertype').value);
+            formData.append('order_count', document.getElementById('order_count')?.value || '1');
             formData.append('price', Math.round(window.currentPriceData.total_price));
             formData.append('vat_price', Math.round(window.currentPriceData.vat_price));
 

@@ -73,6 +73,9 @@ function ensure_shop_temp_columns($db, $table = 'shop_temp') {
         'price_vat_amount' => 'INT NOT NULL DEFAULT 0',
         'product_data_json' => 'TEXT',
         'data_version' => 'TINYINT DEFAULT 1',
+        // 건수 곱하기 그룹 필드 (같은 스펙 N건 주문 시)
+        'item_group_id' => 'VARCHAR(30) DEFAULT NULL',
+        'item_group_seq' => 'INT DEFAULT 0',
     ];
     
     // 현재 테이블의 컬럼 목록을 한번에 가져옴
