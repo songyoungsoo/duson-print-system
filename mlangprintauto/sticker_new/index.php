@@ -119,7 +119,7 @@ if (isset($_GET['jong']) && !empty($_GET['jong'])) {
     <link rel="stylesheet" href="../../css/product-layout.css?v=<?php echo filemtime(__DIR__ . '/../../css/product-layout.css'); ?>">
 
     <!-- 스티커 전용 스타일 (공통 스타일을 덮어쓰지 않음) -->
-    <link rel="stylesheet" href="../../css/sticker-inline-styles.css">
+    <link rel="stylesheet" href="../../css/sticker-inline-styles.css?v=20260303">
 
     <!-- 🎯 통합 공통 스타일 CSS (최종 로드로 최우선 적용) -->
     <link rel="stylesheet" href="../../css/common-styles.css?v=<?php echo time(); ?>">
@@ -474,7 +474,7 @@ if (isset($_GET['jong']) && !empty($_GET['jong'])) {
 
                         <!-- 주문건수 -->
                         <div class="inline-form-row">
-                            <span class="inline-label">주문건수</span>
+                            <span class="inline-label label-compact">주문건수</span>
                             <select name="order_count" id="order_count" class="inline-select" onchange="updateOrderCountDisplay()">
                                 <option value="1" selected>1건 (기본)</option>
                                 <option value="2">2건</option>

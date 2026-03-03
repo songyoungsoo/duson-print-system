@@ -44,6 +44,7 @@ $priceSubtotal = intval($input['price_subtotal'] ?? 0);
 $priceVat = intval($input['price_vat'] ?? 0);
 $priceTotal = intval($input['price_total'] ?? 0);
 $optionsDetail = trim($input['options_detail'] ?? '');
+$orderCount = max(1, intval($input['order_count'] ?? 1));
 
 // FQ 견적번호 생성 (FQ-YYYYMMDD-NNN)
 $today = date('Ymd');
@@ -64,11 +65,11 @@ if ($lastRow && $lastRow['quote_no']) {
 $quoteNo = $fqPrefix . str_pad($nextSeq, 3, '0', STR_PAD_LEFT);
 
 // bind_param 3단계 검증
-$query = "INSERT INTO quote_requests (quote_no, customer_name, customer_phone, customer_email, user_id, product_type, product_name, spec_paper, spec_color, spec_size, spec_quantity, price_print, price_design, price_option, price_subtotal, price_vat, price_total, options_detail) VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)";
-$placeholderCount = substr_count($query, '?'); // 18
-$typeString = "ssssissssssiiiiiis";
-$typeCount = strlen($typeString); // 18
-$varCount = 18;
+$query = "INSERT INTO quote_requests (quote_no, customer_name, customer_phone, customer_email, user_id, product_type, product_name, spec_paper, spec_color, spec_size, spec_quantity, order_count, price_print, price_design, price_option, price_subtotal, price_vat, price_total, options_detail) VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)";
+$placeholderCount = substr_count($query, '?'); // 19
+$typeString = "ssssissssssiiiiiiis";
+$typeCount = strlen($typeString); // 19
+$varCount = 19;
 if ($placeholderCount !== $typeCount || $typeCount !== $varCount) {
     jsonOut(false, 'bind_param 검증 실패');
 }
@@ -78,7 +79,7 @@ mysqli_stmt_bind_param($stmt, $typeString,
     $quoteNo,
     $name, $phone, $email, $userId,
     $productType, $productName,
-    $specPaper, $specColor, $specSize, $specQty,
+    $specPaper, $specColor, $specSize, $specQty, $orderCount,
     $pricePrint, $priceDesign, $priceOption, $priceSubtotal, $priceVat, $priceTotal,
     $optionsDetail
 );
@@ -198,7 +199,12 @@ $customerBody = '
         <td style="background:#eef3f9;color:#334155;padding:8px 12px;font-size:13px;font-weight:600;border:1px solid #cbd5e1;">수량</td>
         <td style="background:#f8fafc;padding:8px 12px;font-size:13px;color:#334155;border:1px solid #cbd5e1;">' . htmlspecialchars($specQty) . '</td>
       </tr>'
-      . ($optionLines ? '
+      . ($orderCount > 1 ? '
+      <tr>
+        <td style="background:#eef3f9;color:#1E4E79;padding:8px 12px;font-size:13px;font-weight:700;border:1px solid #cbd5e1;">건수</td>
+        <td style="background:#f8fafc;padding:8px 12px;font-size:14px;font-weight:700;color:#d63384;border:1px solid #cbd5e1;">' . $orderCount . '건 (동일사양)</td>
+      </tr>' : '') .
+      ($optionLines ? '
       <tr>
         <td style="background:#eef3f9;color:#334155;padding:8px 12px;font-size:13px;font-weight:600;border:1px solid #cbd5e1;vertical-align:top;">옵션</td>
         <td style="background:#f8fafc;padding:8px 12px;border:1px solid #cbd5e1;">' . $optionLines . '</td>
@@ -245,14 +251,14 @@ $adminBody = '
     <tr><td style="padding:8px;font-weight:600;">전화</td><td style="padding:8px;">' . htmlspecialchars($phone) . '</td></tr>
     <tr style="background:#f8fafc;"><td style="padding:8px;font-weight:600;">이메일</td><td style="padding:8px;">' . htmlspecialchars($email) . '</td></tr>
     <tr><td style="padding:8px;font-weight:600;">품목</td><td style="padding:8px;">' . htmlspecialchars($productName) . '</td></tr>
-    <tr style="background:#f8fafc;"><td style="padding:8px;font-weight:600;">사양</td><td style="padding:8px;">' . htmlspecialchars($specPaper) . ' / ' . htmlspecialchars($specColor) . ' / ' . htmlspecialchars($specSize) . ' / ' . htmlspecialchars($specQty) . '</td></tr>
+    <tr style="background:#f8fafc;"><td style="padding:8px;font-weight:600;">사양</td><td style="padding:8px;">' . htmlspecialchars($specPaper) . ' / ' . htmlspecialchars($specColor) . ' / ' . htmlspecialchars($specSize) . ' / ' . htmlspecialchars($specQty) . ($orderCount > 1 ? ' / <strong style="color:#d63384;">' . $orderCount . '건</strong>' : '') . '</td></tr>
     <tr><td style="padding:8px;font-weight:600;">총액</td><td style="padding:8px;font-size:16px;font-weight:700;color:#2563eb;">' . number_format($priceTotal) . '원</td></tr>
     <tr style="background:#f8fafc;"><td style="padding:8px;font-weight:600;">요청시각</td><td style="padding:8px;">' . $now . '</td></tr>
     <tr><td style="padding:8px;font-weight:600;">회원여부</td><td style="padding:8px;">' . ($userId ? '회원 (ID: ' . $userId . ')' : '비회원') . '</td></tr>
   </table>
 </div>';
 
-$adminSubject = '[견적요청] ' . $productName . ' / ' . $name . ' / ' . number_format($priceTotal) . '원';
+$adminSubject = '[견적요청] ' . $productName . ($orderCount > 1 ? ' ' . $orderCount . '건' : '') . ' / ' . $name . ' / ' . number_format($priceTotal) . '원';
 $adminResult = @mailer('두손기획인쇄', 'dsp1830@naver.com', 'dsp1830@naver.com', $adminSubject, $adminBody, 1, "");
 $adminNotified = ($adminResult === true || $adminResult == 1);
 

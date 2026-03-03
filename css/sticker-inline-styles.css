@@ -761,6 +761,11 @@
     margin-right: 10px;
     font-size: 0.85rem;
 }
+.inline-label.label-compact {
+    transform: scaleX(0.75);
+    transform-origin: right center;
+    white-space: nowrap;
+}
 
 /* 셀렉트박스와 인풋 공통 스타일 - 컴팩트 */
 .inline-select, .inline-input {
@@ -834,7 +839,7 @@
     top: 50%;
     left: 100%;
     transform: translateY(-50%);
-    background-color: #ff9500;
+    background-color: #000;
     color: white;
     padding: 8px 12px;
     border-radius: 6px;
@@ -854,7 +859,7 @@
     right: 100%;
     transform: translateY(-50%);
     border: 5px solid transparent;
-    border-right-color: #ff9500;
+    border-right-color: #000;
 }
 
 .tooltip.show {

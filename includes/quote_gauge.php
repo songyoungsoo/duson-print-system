@@ -45,6 +45,7 @@ if (!empty($_SESSION['user_id'])) {
         <div class="qd-row"><span class="qd-k">인쇄</span><span class="qd-v" id="qf-color">-</span></div>
         <div class="qd-row"><span class="qd-k">사이즈</span><span class="qd-v" id="qf-size">-</span></div>
         <div class="qd-row"><span class="qd-k">수량</span><span class="qd-v" id="qf-qty">-</span></div>
+        <div class="qd-row" id="qf-count-row" style="display:none"><span class="qd-k">건수</span><span class="qd-v" id="qf-count">-</span></div>
         <div class="qd-div"></div>
         <div class="qd-tag">인쇄외옵션</div>
         <div id="qf-options-list"><div class="qd-opt">선택 없음</div></div>

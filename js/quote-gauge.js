@@ -90,6 +90,20 @@ function updateQfSpecs() {
   var qtyText = getSelectedText('MY_amount');
   if (qtyText === '-') qtyText = getSelectedText('mesu') || getSelectedText('quantity') || '-';
   document.getElementById('qf-qty').textContent = qtyText === '' || qtyText === '-' || qtyText.indexOf('선택') > -1 ? '-' : shortenQty(qtyText);
+
+  // 건수 표시 (order_count > 1일 때만)
+  var orderCountEl = document.getElementById('order_count');
+  var orderCount = orderCountEl ? (parseInt(orderCountEl.value) || 1) : 1;
+  var countRow = document.getElementById('qf-count-row');
+  var countEl = document.getElementById('qf-count');
+  if (countRow && countEl) {
+    if (orderCount > 1) {
+      countRow.style.display = '';
+      countEl.textContent = orderCount + '건';
+    } else {
+      countRow.style.display = 'none';
+    }
+  }
 }
 
 function updateQfOptions() {
@@ -253,7 +267,8 @@ function qfCollectSpecData() {
     paper: (document.getElementById('qf-paper') || {}).textContent || '-',
     color: (document.getElementById('qf-color') || {}).textContent || '-',
     size: (document.getElementById('qf-size') || {}).textContent || '-',
-    qty: (document.getElementById('qf-qty') || {}).textContent || '-'
+    qty: (document.getElementById('qf-qty') || {}).textContent || '-',
+    order_count: parseInt((document.getElementById('order_count') || {}).value) || 1
   };
 }
 
@@ -306,7 +321,8 @@ function qfSendQuote(name, phone, email) {
     price_print: price.print, price_design: price.design,
     price_option: price.option, price_subtotal: price.subtotal,
     price_vat: price.vat, price_total: price.total,
-    options_detail: opts
+    options_detail: opts,
+    order_count: spec.order_count || 1
   };
 
   fetch('/includes/quote_request_api.php', {
@@ -376,6 +392,17 @@ function updateQfPricing() {
     if (totalWithVat === 0 && subtotal === 0) { totalWithVat = 0; subtotal = 0; }
   }
 
+  // 건수 곡하기: order_count > 1이면 모든 가격을 건수만큼 곡함
+  var orderCountEl = document.getElementById('order_count');
+  var orderCount = orderCountEl ? (parseInt(orderCountEl.value) || 1) : 1;
+  if (orderCount > 1) {
+    printPrice = printPrice * orderCount;
+    designPrice = designPrice * orderCount;
+    subtotal = subtotal * orderCount;
+    vatPrice = vatPrice * orderCount;
+    totalWithVat = totalWithVat * orderCount;
+  }
+
   document.getElementById('qf-print-price').textContent = fmtNum(printPrice);
 
   var designRow = document.getElementById('qf-design-row');
@@ -434,6 +461,10 @@ document.addEventListener('DOMContentLoaded', function() {
     if (el) el.addEventListener('change', function() { setTimeout(updateQf, 200); });
   });
 
+  // 건수(order_count) 변경 시 전체 위젯 업데이트
+  var orderCountEl = document.getElementById('order_count');
+  if (orderCountEl) orderCountEl.addEventListener('change', function() { setTimeout(updateQf, 200); });
+
   updateQfSpecs();
 
   var _lastPdHash = '';
@@ -442,7 +473,8 @@ document.addEventListener('DOMContentLoaded', function() {
     pollCount++;
     var pd = window.currentPriceData;
     if (pd) {
-      var hash = (pd.total_with_vat || 0) + '|' + (pd.Total_PriceForm || 0) + '|' + (pd.base_price || 0) + '|' + (pd.total_price || 0) + '|' + (pd.raw_price_vat || 0) + '|' + (pd.premium_options_total || 0) + '|' + (pd.final_total_with_vat || 0);
+      var oc = parseInt((document.getElementById('order_count') || {}).value) || 1;
+      var hash = (pd.total_with_vat || 0) + '|' + (pd.Total_PriceForm || 0) + '|' + (pd.base_price || 0) + '|' + (pd.total_price || 0) + '|' + (pd.raw_price_vat || 0) + '|' + (pd.premium_options_total || 0) + '|' + (pd.final_total_with_vat || 0) + '|' + oc;
       var hasPrice = parsePrice(pd.Order_PriceForm) > 0 || parsePrice(pd.total_price) > 0 || parsePrice(pd.base_price) > 0 || parsePrice(pd.total_with_vat) > 0 || parsePrice(pd.raw_price_vat) > 0;
       if (hasPrice && hash !== _lastPdHash) {
         _lastPdHash = hash;
