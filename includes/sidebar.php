@@ -56,7 +56,7 @@ $show_bank = isset($show_bank) ? $show_bank : true;
         <div class="fm-card">
             <div class="fm-card-header">
                 <span class="fm-icon">📂</span>
-                <span class="fm-label">파일전송</span>
+                <span class="fm-label">이메일</span>
             </div>
             <div class="fm-card-content fm-links">
                 <a href="http://www.webhard.co.kr/" target="_blank" class="fm-link">

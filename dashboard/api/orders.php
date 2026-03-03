@@ -73,7 +73,7 @@ switch ($action) {
         $total_items = mysqli_fetch_assoc($count_result)['total'];
         $total_pages = ceil($total_items / $limit);
         
-        $query = "SELECT no, Type, name, email, money_5, date, OrderStyle, logen_fee_type, logen_delivery_fee, delivery
+        $query = "SELECT no, Type, name, email, money_5, date, OrderStyle, logen_fee_type, logen_delivery_fee, delivery, order_group_id, order_group_seq
                   FROM mlangorder_printauto 
                   {$where_clause}
                   ORDER BY no DESC 
@@ -93,7 +93,9 @@ switch ($action) {
                 'status' => $row['OrderStyle'],
                 'logen_fee_type' => $row['logen_fee_type'] ?? '',
                 'logen_delivery_fee' => intval($row['logen_delivery_fee'] ?? 0),
-                'delivery' => $row['delivery'] ?? ''
+                'delivery' => $row['delivery'] ?? '',
+                'order_group_id' => $row['order_group_id'] ?? '',
+                'order_group_seq' => intval($row['order_group_seq'] ?? 0)
             ];
         }
         

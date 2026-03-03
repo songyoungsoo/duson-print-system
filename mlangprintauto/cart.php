@@ -115,7 +115,7 @@ $total_info = calculateCartTotal($connect, $session_id);
 
         <!-- 장바구니 내용 -->
         <?php if (!empty($cart_items)): ?>
-            <form method="post" action="../mlangorder_printauto/OnlineOrder.php">
+            <form method="post" action="../mlangorder_printauto/OnlineOrder_unified.php">
                 <input type="hidden" name="SubmitMode" value="OrderOne">
                 
                 <?php
@@ -136,6 +136,13 @@ $total_info = calculateCartTotal($connect, $session_id);
                     $group_count = count($group_items);
                     $first = $group_items[0];
                     $group_total_vat = array_sum(array_column($group_items, 'st_price_vat'));
+                    // 파일 업로드 상태 집계
+                    $files_uploaded = 0;
+                    foreach ($group_items as $_gi) {
+                        if (!empty($_gi['uploaded_files']) && $_gi['uploaded_files'] !== '[]') {
+                            $files_uploaded++;
+                        }
+                    }
                 ?>
                     <div style="border: 2px solid #1E4E79; border-radius: 12px; margin-bottom: 1.5rem; overflow: hidden;">
                         <!-- 그룹 헤더 -->
@@ -152,47 +159,64 @@ $total_info = calculateCartTotal($connect, $session_id);
                                 🗑️ 그룹 전체 삭제
                             </a>
                         </div>
-                        <!-- 그룹 내 개별 아이템 -->
-                        <?php foreach ($group_items as $idx => $item): ?>
-                        <div class="cart-item" style="margin: 0; border-radius: 0; border-bottom: 1px solid #e9ecef;">
+                        <!-- 대표 카드 1개 (축약 표시) -->
+                        <div class="cart-item" style="margin: 0; border-radius: 0;">
                             <div style="display: flex; justify-content: space-between; align-items: flex-start;">
                                 <div style="flex: 1;">
                                     <div class="product-name" style="font-size: 1rem;">
-                                        <span style="background: #1E4E79; color: white; font-size: 0.75rem; padding: 2px 8px; border-radius: 10px; margin-right: 8px;">
-                                            건 <?php echo ($item['item_group_seq'] ?? ($idx + 1)); ?>/<?php echo $group_count; ?>
+                                        <?php echo htmlspecialchars($first['name']); ?>
+                                        <?php if ($group_count > 1): ?>
+                                        <span style="background: #e74c3c; color: white; font-size: 0.75rem; padding: 2px 10px; border-radius: 10px; margin-left: 8px; font-weight: bold;">
+                                            ×<?php echo $group_count; ?>건
                                         </span>
-                                        <?php echo htmlspecialchars($item['name']); ?>
-                                        <?php if (!empty($item['uploaded_files']) && $item['uploaded_files'] !== '[]'): ?>
-                                            <span style="color: #28a745;">✅ 파일있음</span>
-                                        <?php else: ?>
-                                            <span style="color: #dc3545; font-size: 0.8rem;">❌ 파일 미등록</span>
                                         <?php endif; ?>
                                     </div>
                                     <div class="product-details">
-                                        <?php if (!empty($item['spec_line1'])): ?>
-                                            <p><strong>규격:</strong> <?php echo htmlspecialchars($item['spec_line1']); ?></p>
+                                        <?php if (!empty($first['spec_line1'])): ?>
+                                            <p><strong>규격:</strong> <?php echo htmlspecialchars($first['spec_line1']); ?></p>
                                         <?php endif; ?>
-                                        <p><strong>수량:</strong> <?php echo htmlspecialchars($item['quantity_display']); ?></p>
+                                        <p><strong>수량:</strong> <?php echo htmlspecialchars($first['quantity_display']); ?></p>
                                     </div>
-                                    <?php if (!empty($item['work_memo'])): ?>
+                                    <?php if (!empty($first['work_memo'])): ?>
                                         <div style="background: #f8f9fa; padding: 6px 10px; border-radius: 4px; margin-top: 0.5rem; font-size: 0.85rem;">
-                                            <strong>메모:</strong> <?php echo htmlspecialchars($item['work_memo']); ?>
+                                            <strong>메모:</strong> <?php echo htmlspecialchars($first['work_memo']); ?>
                                         </div>
+                                    <?php endif; ?>
+                                    <!-- 파일 업로드 상태 요약 -->
+                                    <?php if ($group_count > 1): ?>
+                                    <div style="margin-top: 0.5rem; font-size: 0.85rem; color: #6c757d;">
+                                        <?php if ($files_uploaded === $group_count): ?>
+                                            <span style="color: #28a745;">✅ <?php echo $group_count; ?>건 모두 파일 등록됨</span>
+                                        <?php elseif ($files_uploaded > 0): ?>
+                                            <span style="color: #ffc107;">⚠️ <?php echo $group_count; ?>건 중 <?php echo $files_uploaded; ?>건 파일 등록</span>
+                                        <?php else: ?>
+                                            <span style="color: #dc3545;">❌ <?php echo $group_count; ?>건 모두 파일 미등록</span>
+                                        <?php endif; ?>
+                                    </div>
+                                    <?php else: ?>
+                                        <?php if (!empty($first['uploaded_files']) && $first['uploaded_files'] !== '[]'): ?>
+                                            <div style="margin-top: 0.5rem; font-size: 0.85rem;"><span style="color: #28a745;">✅ 파일있음</span></div>
+                                        <?php else: ?>
+                                            <div style="margin-top: 0.5rem; font-size: 0.85rem;"><span style="color: #dc3545;">❌ 파일 미등록</span></div>
+                                        <?php endif; ?>
                                     <?php endif; ?>
                                 </div>
                                 <div style="text-align: right;">
                                     <div class="price-info">
-                                        <?php echo number_format($item['st_price_vat']); ?>원
+                                        <?php if ($group_count > 1): ?>
+                                            ₩<?php echo number_format($first['st_price_vat']); ?> × <?php echo $group_count; ?>건
+                                            <div style="font-size: 1.1rem; margin-top: 4px; color: #2c3e50; font-weight: bold;">
+                                                = ₩<?php echo number_format($group_total_vat); ?>
+                                            </div>
+                                        <?php else: ?>
+                                            <?php echo number_format($first['st_price_vat']); ?>원
+                                        <?php endif; ?>
                                     </div>
-                                    <a href="?delete=<?php echo $item['no']; ?>"
-                                       onclick="return confirm('이 건만 삭제하시겠습니까?')"
-                                       class="btn btn-danger" style="margin-top: 6px; font-size: 0.8rem; padding: 4px 10px;">
-                                        ❌
-                                    </a>
                                 </div>
                             </div>
                         </div>
-                        <!-- hidden 필드 -->
+                        <!-- hidden 필드: 모든 N개 아이템 유지 (form 제출 정합성) -->
+                        <?php foreach ($group_items as $item): ?>
                         <input type="hidden" name="product_type[]" value="<?php echo htmlspecialchars($item['product_type']); ?>">
                         <input type="hidden" name="price[]" value="<?php echo htmlspecialchars($item['st_price']); ?>">
                         <input type="hidden" name="price_vat[]" value="<?php echo htmlspecialchars($item['st_price_vat']); ?>">

@@ -467,50 +467,122 @@ if ($CountWW) {
 
 $rows = mysqli_num_rows($result);
 if ($rows) {
-  while ($row = mysqli_fetch_array($result)) {
-    // 제품 타입 라벨
-    $productTypeLabels = [
-        "inserted" => "전단지",
-        "sticker" => "스티카",
-        "namecard" => "명함",
-        "merchandisebond" => "상품권",
-        "envelope" => "봉투",
-        "ncrflambeau" => "양식지",
-        "cadarok" => "리플렛",
-        "cadarokTwo" => "카다로그",
-        "littleprint" => "소량인쇄"
-    ];
-    $productLabel = $productTypeLabels[$row["Type"]] ?? $row["Type"];
+  // 건수/그룹 전처리: 모든 행을 배열로 수집
+  $all_orders = [];
+  while ($r = mysqli_fetch_array($result)) {
+    $all_orders[] = $r;
+  }
 
-    // 진행 상태 배지 클래스
-    $statusBadgeClass = [
-        "1" => "badge--info", "2" => "badge--warning", "3" => "badge--success",
-        "4" => "badge--warning", "5" => "badge--primary", "6" => "badge--info",
-        "7" => "badge--warning", "8" => "badge--success", "9" => "badge--primary",
-        "10" => "badge--warning", "11" => "badge--danger"
+  // order_group_id별 그룹 맵 구성
+  $group_map = []; // order_group_id => [rows]
+  foreach ($all_orders as $o) {
+    $gid = $o['order_group_id'] ?? null;
+    if (!empty($gid)) {
+      $group_map[$gid][] = $o;
+    }
+  }
+
+  // 각 그룹 내 건수 정보 계산 (specKey = Type|money_5)
+  $group_info = []; // order_group_id => ['total' => N, 'spec_counts' => [specKey => count], 'is_multi_spec' => bool]
+  foreach ($group_map as $gid => $gorders) {
+    $spec_counts = [];
+    foreach ($gorders as $go) {
+      $specKey = ($go['Type'] ?? '') . '|' . ($go['money_5'] ?? '');
+      $spec_counts[$specKey] = ($spec_counts[$specKey] ?? 0) + 1;
+    }
+    $group_info[$gid] = [
+      'total' => count($gorders),
+      'spec_counts' => $spec_counts,
+      'is_multi_spec' => count($spec_counts) > 1,
     ];
-    $badgeClass = $statusBadgeClass[$row["OrderStyle"]] ?? "badge--secondary";
+  }
+
+  // 각 행의 그룹 내 순서 계산
+  $group_seq_counter = []; // order_group_id => current_seq
+
+  $productTypeLabels = [
+    "inserted" => "전단지", "sticker" => "스티카", "namecard" => "명함",
+    "merchandisebond" => "상품권", "envelope" => "봉투", "ncrflambeau" => "양식지",
+    "cadarok" => "리플렛", "cadarokTwo" => "카다로그", "littleprint" => "소량인쇄"
+  ];
+
+  $statusBadgeClass = [
+    "1" => "badge--info", "2" => "badge--warning", "3" => "badge--success",
+    "4" => "badge--warning", "5" => "badge--primary", "6" => "badge--info",
+    "7" => "badge--warning", "8" => "badge--success", "9" => "badge--primary",
+    "10" => "badge--warning", "11" => "badge--danger"
+  ];
+
+  $prev_group_id = null;
+
+  foreach ($all_orders as $row) {
+    $gid = $row['order_group_id'] ?? null;
+    $productLabel = $productTypeLabels[$row['Type']] ?? $row['Type'];
+    $badgeClass = $statusBadgeClass[$row['OrderStyle']] ?? 'badge--secondary';
+
+    // 그룹 정보 계산
+    $has_group = !empty($gid) && isset($group_info[$gid]) && $group_info[$gid]['total'] > 1;
+    $group_total = $has_group ? $group_info[$gid]['total'] : 0;
+    $specKey = ($row['Type'] ?? '') . '|' . ($row['money_5'] ?? '');
+    $spec_count = $has_group ? ($group_info[$gid]['spec_counts'][$specKey] ?? 1) : 1;
+    $is_multi_spec = $has_group ? $group_info[$gid]['is_multi_spec'] : false;
+
+    // 그룹 내 순서 계산
+    if ($has_group) {
+      $group_seq_counter[$gid] = ($group_seq_counter[$gid] ?? 0) + 1;
+      $my_seq = $group_seq_counter[$gid];
+    } else {
+      $my_seq = 0;
+    }
+
+    // 그룹 구분선 (새 그룹 시작 시)
+    $is_new_group = $has_group && ($prev_group_id !== $gid);
+    $prev_group_id = $gid;
+
+    // 행 CSS 클래스
+    $row_classes = ['order-table-row'];
+    if ($has_group) {
+      $row_classes[] = 'order-table-row--grouped';
+      if ($is_new_group) $row_classes[] = 'order-table-row--group-first';
+      if ($my_seq === $group_total) $row_classes[] = 'order-table-row--group-last';
+    }
 ?>
-<tr class="order-table-row">
+<?php if ($is_new_group && $group_total > 1): ?>
+<tr class="order-table-row order-table-row--group-header">
+  <td colspan="10" style="padding: 4px 12px; background: #eef2f7; border-left: 4px solid #1E4E79; font-size: 0.85rem; color: #1E4E79;">
+    <strong>📋 그룹 ×<?php echo $group_total; ?>건</strong>
+    <?php if (!$is_multi_spec): ?>
+      <span style="margin-left: 8px; color: #6c757d;">같은 사양 <?php echo $spec_count; ?>건</span>
+    <?php else: ?>
+      <span style="margin-left: 8px; color: #6c757d;">다른 사양 <?php echo count($group_info[$gid]['spec_counts']); ?>종</span>
+    <?php endif; ?>
+  </td>
+</tr>
+<?php endif; ?>
+<tr class="<?php echo implode(' ', $row_classes); ?>">
 <td class="order-table-td order-table-td--checkbox">
-<?php if ($row["OrderStyle"] != "5") { ?>
-<input type="checkbox" name="check[]" value="<?php echo $row["no"] ?>" class="checkbox">
+<?php if ($row['OrderStyle'] != '5') { ?>
+<input type="checkbox" name="check[]" value="<?php echo $row['no'] ?>" class="checkbox">
 <?php } ?>
 </td>
 <td class="order-table-td order-table-td--number">
-    <strong><?php echo $row["no"] ?></strong>
+    <strong><?php echo $row['no'] ?></strong>
+    <?php if ($has_group && $spec_count > 1): ?>
+    <span class="badge badge--count">×<?php echo $spec_count ?>건</span>
+    <?php endif; ?>
+    <?php if ($has_group): ?>
+    <span style="display:block; font-size:0.7rem; color:#1E4E79; margin-top:2px;">건 <?php echo $my_seq ?>/<?php echo $group_total ?></span>
+    <?php endif; ?>
 </td>
 <td class="order-table-td">
     <span class="badge badge--outline"><?php echo $productLabel ?></span>
 </td>
 <td class="order-table-td">
     <?php
-    // 주문인 이름 표시 (0이나 빈값이면 이메일에서 추출하거나 기본값 표시)
-    $display_name = $row["name"];
+    $display_name = $row['name'];
     if (empty($display_name) || $display_name === '0') {
-        // 이메일에서 @ 앞부분 추출 시도
-        if (!empty($row["email"])) {
-            $email_parts = explode('@', $row["email"]);
+        if (!empty($row['email'])) {
+            $email_parts = explode('@', $row['email']);
             $display_name = $email_parts[0];
         } else {
             $display_name = '주문자';
@@ -520,11 +592,10 @@ if ($rows) {
     ?>
 </td>
 <td class="order-table-td order-table-td--date">
-    <?php echo htmlspecialchars($row["date"]) ?>
+    <?php echo htmlspecialchars($row['date']) ?>
 </td>
 <td class="order-table-td">
 <?php
-// 추가 옵션 표시
 if (class_exists('AdditionalOptionsDisplay')) {
     $optionsDisplay = new AdditionalOptionsDisplay($db);
     $optionData = [
@@ -540,7 +611,6 @@ if (class_exists('AdditionalOptionsDisplay')) {
         'additional_options_total' => $row['additional_options_total'] ?? 0,
         'premium_options' => $row['premium_options'] ?? '',
         'premium_options_total' => $row['premium_options_total'] ?? 0,
-        // 🔧 봉투 양면테이프 옵션 추가
         'envelope_tape_enabled' => $row['envelope_tape_enabled'] ?? 0,
         'envelope_tape_quantity' => $row['envelope_tape_quantity'] ?? 0,
         'envelope_tape_price' => $row['envelope_tape_price'] ?? 0,
@@ -559,18 +629,14 @@ if (class_exists('AdditionalOptionsDisplay')) {
 </td>
 <td class="order-table-td">
 <?php
-// 배송 배지 렌더링
 $deliveryValue = trim($row['delivery'] ?? '');
 $logenFeeType = $row['logen_fee_type'] ?? '';
 $logenTrackingNo = $row['logen_tracking_no'] ?? '';
 
 if ($deliveryValue === '택배') {
     $badgeExtra = '';
-    if ($logenFeeType === '선불') {
-        $badgeExtra = ' 선불';
-    } elseif ($logenFeeType === '착불') {
-        $badgeExtra = ' 착불';
-    }
+    if ($logenFeeType === '선불') $badgeExtra = ' 선불';
+    elseif ($logenFeeType === '착불') $badgeExtra = ' 착불';
     $trackingIcon = !empty($logenTrackingNo) ? ' ✓' : '';
     echo "<button type='button' class='badge badge--shipping badge--shipping-parcel' onclick='openShippingModal({$row['no']})'>";
     echo "🚚 택배{$badgeExtra}{$trackingIcon}";
@@ -601,13 +667,12 @@ $orderStyles = [
   5 => "시안제작중", 6 => "시안", 7 => "교정", 8 => "작업완료",
   9 => "작업중", 10 => "교정작업중", 11 => "카드결제"
 ];
-// 현재 OrderStyle 값 (빈 문자열이나 NULL이면 1로 기본값 설정, 0은 유효한 값으로 처리)
-$currentStatus = ($row["OrderStyle"] === '' || $row["OrderStyle"] === null) ? 1 : intval($row["OrderStyle"]);
+$currentStatus = ($row['OrderStyle'] === '' || $row['OrderStyle'] === null) ? 1 : intval($row['OrderStyle']);
 ?>
 <select onchange="handleStatusChange_<?php echo $row['no']; ?>(this)" class="select select--status" id="status_<?php echo $row['no']; ?>" data-original-index="<?php echo array_search($currentStatus, array_keys($orderStyles)); ?>">
 <?php
 foreach ($orderStyles as $key => $label) {
-  $selected = ($currentStatus == $key) ? "selected" : "";
+  $selected = ($currentStatus == $key) ? 'selected' : '';
   echo "<option value='$PHP_SELF?mode=OrderStyleModify&JK=$key&no={$row['no']}' $selected>$label</option>";
 }
 ?>
@@ -630,8 +695,6 @@ function handleStatusChange_<?php echo $row['no']; ?>(select) {
 </td>
 </tr>
 <?php
-$i = 0;
-$i = $i + 1;
   }
 } else {
   // 검색 결과 없음 메시지

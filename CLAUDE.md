@@ -267,6 +267,7 @@ body.cart-page .mobile-view .product-nav { display: grid; }
 | `verify-css-important` | CSS !important 사용 탐지 | CSS/인라인 스타일 수정 후 |
 | `verify-product-units` | 제품별 수량 단위 규정 검증 | 수량 표시 관련 PHP 수정 후 |
 | `verify-proof-viewer` | 교정/원고 파일 관리 + 이미지 뷰어 디자인 통일 | 교정/원고 관련 PHP 수정 후 |
+| `verify-order-grouping` | 건수/그룹 파이프라인 정합성 (order_count/order_group_id) | 건수/그룹 관련 PHP/JS 수정 후 |
 
 ---
 

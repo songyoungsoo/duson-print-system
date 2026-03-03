@@ -598,36 +598,47 @@ if (!empty($debug_info) && strpos($_SERVER['HTTP_HOST'], 'localhost') !== false)
                         'poster' => ['name' => '포스터', 'icon' => '', 'color' => '#e8eaf6'],
                         'ncrflambeau' => ['name' => '양식지', 'icon' => '', 'color' => '#e8eaf6']
                     ];
-                    foreach ($cart_items as $index => $item):
+
+                    // 건수 그룹 전처리: item_group_id별로 그룹화 (cart.php와 동일 로직)
+                    $order_groups = [];
+                    $order_ungrouped = [];
+                    foreach ($cart_items as $ci) {
+                        $gid = $ci['item_group_id'] ?? null;
+                        if (!empty($gid)) {
+                            $order_groups[$gid][] = $ci;
+                        } else {
+                            $order_ungrouped[] = $ci;
+                        }
+                    }
+
+                    // 그룹 아이템 렌더링 (축약: 1행 + ×N건 배지)
+                    foreach ($order_groups as $gid => $group_items):
+                        $group_count = count($group_items);
+                        $first_item = $group_items[0];
+                        $group_total_price = array_sum(array_column($group_items, 'st_price'));
+                        $item = $first_item; // 대표 아이템으로 규격/수량 표시
+
                         $product = $product_info_map[$item['product_type']] ?? ['name' => '상품', 'icon' => '', 'color' => '#f5f5f5'];
 
-                        // 수량/단위 계산 (cart.php와 동일한 로직)
+                        // 수량/단위 계산 (기존 로직 유지)
                         $is_flyer = in_array($item['product_type'], ['inserted', 'leaflet']);
-                        $show_sheet_count = ($is_flyer && !empty($item['flyer_mesu']));
-
                         $main_amount_val = 1;
                         $main_amount_display = '1';
-                        $unit = '매'; // Default unit
+                        $unit = '매';
                         $sub_amount = null;
 
                         if ($is_direct_order) {
-                            // 직접 주문인 경우
                             $main_amount_val = !empty($item['MY_amount']) ? floatval($item['MY_amount']) : 1;
-
                             if ($is_flyer) {
                                 $unit = '연';
                                 $main_amount_display = formatQuantityValue($main_amount_val, 'inserted');
-                                // 직접 주문 시 매수 정보가 있으면 표시
-                                if (!empty($item['mesu'])) {
-                                    $sub_amount = intval($item['mesu']);
-                                }
+                                if (!empty($item['mesu'])) $sub_amount = intval($item['mesu']);
                             } else {
                                 $main_amount_display = formatQuantityValue($main_amount_val, $item['product_type']);
                                 if ($item['product_type'] == 'ncrflambeau') $unit = '권';
                                 elseif ($item['product_type'] == 'cadarok') $unit = '부';
                             }
                         } else {
-                            // 장바구니에서 온 주문
                             if ($is_flyer) {
                                 $unit = '연';
                                 $main_amount_val = !empty($item['MY_amount']) ? floatval($item['MY_amount']) : 1;
@@ -636,24 +647,110 @@ if (!empty($debug_info) && strpos($_SERVER['HTTP_HOST'], 'localhost') !== false)
                             } else {
                                 $main_amount_val = !empty($item['mesu']) ? intval($item['mesu']) : (!empty($item['MY_amount']) ? intval($item['MY_amount']) : 1);
                                 $main_amount_display = formatQuantityValue($main_amount_val, $item['product_type']);
+                                if ($item['product_type'] == 'ncrflambeau') $unit = '권';
+                                elseif ($item['product_type'] == 'cadarok') $unit = '부';
+                            }
+                        }
+                    ?>
+                    <tr<?php if ($group_count > 1): ?> style="background: #f8fafc;"<?php endif; ?>>
+                        <td style="border: 1px solid #ccc; padding: 10px; vertical-align: middle; text-align: center;">
+                            <div class="product-name" style="font-weight: 600; color: #2d3748; font-size: 15px;">
+                                <?php echo $product['name']; ?>
+                                <?php if ($group_count > 1): ?>
+                                <span style="display: inline-block; background: #e74c3c; color: white; font-size: 11px; padding: 1px 8px; border-radius: 10px; margin-left: 4px; font-weight: bold;">×<?php echo $group_count; ?>건</span>
+                                <?php endif; ?>
+                            </div>
+                        </td>
+                        <td style="border: 1px solid #ccc; padding: 10px; vertical-align: top;">
+                            <div class="specs-cell" style="line-height: 1.6;">
+                                <?php $specs = $specFormatter->format($item); ?>
+                                <?php if (!empty($specs['line1'])): ?>
+                                    <div class="spec-line" style="color: #2d3748; margin-bottom: 2px;"><?php echo htmlspecialchars($specs['line1']); ?></div>
+                                <?php endif; ?>
+                                <?php if (!empty($specs['line2'])): ?>
+                                    <div class="spec-line" style="color: #4a5568;"><?php echo htmlspecialchars($specs['line2']); ?></div>
+                                <?php endif; ?>
+                                <?php if (!empty($specs['additional'])): ?>
+                                    <div style="margin-top: 8px; padding-top: 8px; border-top: 1px solid #e2e8f0;">
+                                        <div style="color: #e53e3e; font-weight: 600; font-size: 12px; margin-bottom: 4px;">추가옵션</div>
+                                        <div style="color: #2d3748; font-size: 11px;"><?php echo htmlspecialchars($specs['additional']); ?></div>
+                                    </div>
+                                <?php endif; ?>
+                        </td>
+                        <td class="amount-cell <?php echo $is_flyer ? 'leaflet' : ''; ?>" style="border: 1px solid #ccc; padding: 10px; vertical-align: middle; text-align: center;">
+                            <span class="amount-value" style="font-weight: 600; font-size: 15px;"><?php echo $main_amount_display; ?></span>
+                            <?php if ($is_flyer && $sub_amount): ?>
+                                <br><span class="amount-sub" style="font-size: 12px; color: #1e88ff;">(<?php echo number_format($sub_amount); ?>매)</span>
+                            <?php endif; ?>
+                        </td>
+                        <td class="unit-cell" style="border: 1px solid #ccc; padding: 10px; vertical-align: middle; text-align: center;">
+                            <span class="amount-unit" style="font-size: 14px; color: #2d3748;"><?php echo $unit; ?></span>
+                        </td>
+                        <td class="td-right" style="border: 1px solid #ccc; padding: 10px; vertical-align: middle; text-align: right;">
+                            <div class="price-label" style="font-size: 11px; color: #718096; margin-bottom: 2px;">부가세 별도</div>
+                            <?php if ($group_count > 1): ?>
+                            <div style="font-size: 12px; color: #718096; margin-bottom: 2px;">
+                                <?php echo number_format($is_direct_order ? $first_item['price'] : $first_item['st_price']); ?>원 × <?php echo $group_count; ?>건
+                            </div>
+                            <div class="price-total" style="font-weight: 600; font-size: 15px; color: #2d3748;">
+                                = <?php echo number_format($group_total_price); ?>원
+                            </div>
+                            <?php else: ?>
+                            <div class="price-total" style="font-weight: 600; font-size: 15px; color: #2d3748;">
+                                <?php echo number_format($is_direct_order ? $first_item['price'] : $first_item['st_price']); ?>원
+                            </div>
+                            <?php endif; ?>
+                        </td>
+                    </tr>
+                    <?php endforeach; ?>
 
+                    <?php
+                    // 비그룹 아이템 렌더링 (기존 로직 유지)
+                    foreach ($order_ungrouped as $index => $item):
+                        $product = $product_info_map[$item['product_type']] ?? ['name' => '상품', 'icon' => '', 'color' => '#f5f5f5'];
+
+                        $is_flyer = in_array($item['product_type'], ['inserted', 'leaflet']);
+                        $show_sheet_count = ($is_flyer && !empty($item['flyer_mesu']));
+
+                        $main_amount_val = 1;
+                        $main_amount_display = '1';
+                        $unit = '매';
+                        $sub_amount = null;
+
+                        if ($is_direct_order) {
+                            $main_amount_val = !empty($item['MY_amount']) ? floatval($item['MY_amount']) : 1;
+                            if ($is_flyer) {
+                                $unit = '연';
+                                $main_amount_display = formatQuantityValue($main_amount_val, 'inserted');
+                                if (!empty($item['mesu'])) $sub_amount = intval($item['mesu']);
+                            } else {
+                                $main_amount_display = formatQuantityValue($main_amount_val, $item['product_type']);
+                                if ($item['product_type'] == 'ncrflambeau') $unit = '권';
+                                elseif ($item['product_type'] == 'cadarok') $unit = '부';
+                            }
+                        } else {
+                            if ($is_flyer) {
+                                $unit = '연';
+                                $main_amount_val = !empty($item['MY_amount']) ? floatval($item['MY_amount']) : 1;
+                                $main_amount_display = formatQuantityValue($main_amount_val, 'inserted');
+                                $sub_amount = $item['mesu'] ?? $item['flyer_mesu'] ?? null;
+                            } else {
+                                $main_amount_val = !empty($item['mesu']) ? intval($item['mesu']) : (!empty($item['MY_amount']) ? intval($item['MY_amount']) : 1);
+                                $main_amount_display = formatQuantityValue($main_amount_val, $item['product_type']);
                                 if ($item['product_type'] == 'ncrflambeau') $unit = '권';
                                 elseif ($item['product_type'] == 'cadarok') $unit = '부';
                             }
                         }
                     ?>
                     <tr>
-                        <!-- 상품정보 -->
                         <td style="border: 1px solid #ccc; padding: 10px; vertical-align: middle; text-align: center;">
                             <div class="product-name" style="font-weight: 600; color: #2d3748; font-size: 15px;">
                                 <?php echo $product['name']; ?>
                             </div>
                         </td>
-                        <!-- 규격/옵션 (2줄 방식: 규격 1줄 + 옵션 1줄) -->
                         <td style="border: 1px solid #ccc; padding: 10px; vertical-align: top;">
                             <div class="specs-cell" style="line-height: 1.6;">
                                 <?php
-                                // ✅ Phase 3-1: 모든 주문에 ProductSpecFormatter 통일 사용 (direct/cart 구분 제거)
                                 $specs = $specFormatter->format($item);
                                 ?>
                                 <?php if (!empty($specs['line1'])): ?>
@@ -669,7 +766,6 @@ if (!empty($debug_info) && strpos($_SERVER['HTTP_HOST'], 'localhost') !== false)
                                     </div>
                                 <?php endif; ?>
                                 <?php
-                                // 요청사항 필드 (명함은 NC_comment, 나머지는 MY_comment)
                                 $comment_field = ($item['product_type'] === 'namecard' && !empty($item['NC_comment']))
                                     ? $item['NC_comment']
                                     : ($item['MY_comment'] ?? '');
@@ -680,18 +776,15 @@ if (!empty($debug_info) && strpos($_SERVER['HTTP_HOST'], 'localhost') !== false)
                                     </div>
                                 <?php endif; ?>
                         </td>
-                        <!-- 수량 (통합) - 모든 품목 동일 구조 -->
                         <td class="amount-cell <?php echo $is_flyer ? 'leaflet' : ''; ?>" style="border: 1px solid #ccc; padding: 10px; vertical-align: middle; text-align: center;">
                             <span class="amount-value" style="font-weight: 600; font-size: 15px;"><?php echo $main_amount_display; ?></span>
                             <?php if ($is_flyer && $sub_amount): ?>
                                 <br><span class="amount-sub" style="font-size: 12px; color: #1e88ff;">(<?php echo number_format($sub_amount); ?>매)</span>
                             <?php endif; ?>
                         </td>
-                        <!-- 단위 (통합) - 모든 품목 동일하게 단위 표시 -->
                         <td class="unit-cell" style="border: 1px solid #ccc; padding: 10px; vertical-align: middle; text-align: center;">
                             <span class="amount-unit" style="font-size: 14px; color: #2d3748;"><?php echo $unit; ?></span>
                         </td>
-                        <!-- 공급가액 -->
                         <td class="td-right" style="border: 1px solid #ccc; padding: 10px; vertical-align: middle; text-align: right;">
                             <div class="price-label" style="font-size: 11px; color: #718096; margin-bottom: 2px;">부가세 별도</div>
                             <div class="price-total" style="font-weight: 600; font-size: 15px; color: #2d3748;">

@@ -157,12 +157,110 @@ async function loadOrders(page = 1) {
             return;
         }
 
+        // === 건수/그룹 전처리 ===
+        // 같은 order_group_id + type + amount = 같은 사양 → ×N건 축약
+        // 같은 order_group_id + 다른 type/amount = 다른 사양 → 그룹 바 묶음
+        var groupMap = {};  // order_group_id → [{order, specKey}]
+        orders.forEach(function(order) {
+            var gid = order.order_group_id || '';
+            if (!gid) return;  // 그룹 없는 단건은 개별 표시
+            if (!groupMap[gid]) groupMap[gid] = [];
+            groupMap[gid].push({
+                order: order,
+                specKey: (order.type || '') + '|' + (order.amount || 0)
+            });
+        });
+
+        // displayItems: [{order, countBadge, groupBarColor, isFirstInGroup, isLastInGroup, hiddenNos}]
+        var displayItems = [];
+        var processedNos = new Set();
+
+        orders.forEach(function(order) {
+            if (processedNos.has(order.no)) return;
+
+            var gid = order.order_group_id || '';
+            if (!gid || !groupMap[gid] || groupMap[gid].length <= 1) {
+                // 단건 (그룹 없음 또는 그룹에 1건만)
+                displayItems.push({order: order, countBadge: 0, groupBarColor: '', isFirstInGroup: false, isLastInGroup: false, hiddenNos: []});
+                processedNos.add(order.no);
+                return;
+            }
+
+            // 그룹 내 같은 사양 찾기
+            var groupItems = groupMap[gid];
+            var mySpecKey = (order.type || '') + '|' + (order.amount || 0);
+            var sameSpec = groupItems.filter(function(gi) { return gi.specKey === mySpecKey && !processedNos.has(gi.order.no); });
+
+            if (sameSpec.length > 1) {
+                // 같은 사양 N건 → 1행 축약, ×N건 배지
+                var hiddenNos = [];
+                sameSpec.forEach(function(gi) {
+                    processedNos.add(gi.order.no);
+                    if (gi.order.no !== order.no) hiddenNos.push(gi.order.no);
+                });
+                // 같은 그룹 내 다른 사양이 있는지 체크 (그룹 바 표시 여부)
+                var hasOtherSpec = groupItems.some(function(gi) { return gi.specKey !== mySpecKey; });
+                displayItems.push({
+                    order: order,
+                    countBadge: sameSpec.length,
+                    groupBarColor: hasOtherSpec ? '#3b82f6' : '',
+                    isFirstInGroup: false,
+                    isLastInGroup: false,
+                    hiddenNos: hiddenNos
+                });
+            } else {
+                // 같은 그룹이지만 사양 다른 개별 행
+                processedNos.add(order.no);
+                displayItems.push({
+                    order: order,
+                    countBadge: 0,
+                    groupBarColor: '#3b82f6',
+                    isFirstInGroup: false,
+                    isLastInGroup: false,
+                    hiddenNos: []
+                });
+            }
+        });
+
+        // 그룹 바 isFirst/isLast 마킹
+        var lastGroupId = '';
+        for (var di = 0; di < displayItems.length; di++) {
+            var item = displayItems[di];
+            var gid = item.order.order_group_id || '';
+            if (item.groupBarColor && gid) {
+                if (gid !== lastGroupId) {
+                    item.isFirstInGroup = true;
+                }
+                // look ahead to see if next item is same group
+                var nextGid = (di + 1 < displayItems.length) ? (displayItems[di+1].order.order_group_id || '') : '';
+                var nextHasBar = (di + 1 < displayItems.length) ? !!displayItems[di+1].groupBarColor : false;
+                if (!nextHasBar || nextGid !== gid) {
+                    item.isLastInGroup = true;
+                }
+                lastGroupId = gid;
+            } else {
+                lastGroupId = '';
+            }
+        }
+
         tbody.textContent = '';
-        orders.forEach(function(order, idx) {
+        displayItems.forEach(function(item, idx) {
+            var order = item.order;
             var tr = document.createElement('tr');
             tr.className = idx % 2 === 1 ? 'hover:bg-gray-100' : 'hover:bg-gray-50';
             if (idx % 2 === 1) tr.style.backgroundColor = '#e6f7ff';
             if (selectedOrders.has(order.no)) tr.classList.add('bg-blue-50');
+
+            // 그룹 바 표시 (왼쪽 파란 보더)
+            if (item.groupBarColor) {
+                tr.style.borderLeft = '3px solid ' + item.groupBarColor;
+                if (item.isFirstInGroup) {
+                    tr.style.borderTop = '1px solid ' + item.groupBarColor;
+                }
+                if (item.isLastInGroup) {
+                    tr.style.borderBottom = '1px solid ' + item.groupBarColor;
+                }
+            }
 
             // 체크박스
             var tdCheck = document.createElement('td');
@@ -185,10 +283,17 @@ async function loadOrders(page = 1) {
             tdCheck.appendChild(cb);
             tr.appendChild(tdCheck);
 
-            // 주문번호
+            // 주문번호 + 건수 배지
             var tdNo = document.createElement('td');
             tdNo.className = 'px-2 py-1 whitespace-nowrap text-xs font-medium text-gray-900';
             tdNo.textContent = '#' + order.no;
+            if (item.countBadge > 1) {
+                var badge = document.createElement('span');
+                badge.style.cssText = 'display:inline-block;margin-left:4px;padding:1px 6px;font-size:10px;font-weight:700;color:#fff;background:#3b82f6;border-radius:9px;vertical-align:middle;';
+                badge.textContent = '×' + item.countBadge + '건';
+                badge.title = '같은 사양 ' + item.countBadge + '건 (주문번호: #' + order.no + (item.hiddenNos.length > 0 ? ', #' + item.hiddenNos.join(', #') : '') + ')';
+                tdNo.appendChild(badge);
+            }
             tr.appendChild(tdNo);
 
             // 품목
@@ -203,10 +308,20 @@ async function loadOrders(page = 1) {
             tdName.textContent = order.name || (order.email ? order.email.split('@')[0] : '-');
             tr.appendChild(tdName);
 
-            // 금액
+            // 금액 (건수 축약 시 합산 표시)
             var tdAmount = document.createElement('td');
             tdAmount.className = 'px-2 py-1 whitespace-nowrap text-xs text-gray-900 text-right';
-            tdAmount.textContent = (order.amount || 0).toLocaleString() + '원';
+            var displayAmount = order.amount || 0;
+            if (item.countBadge > 1) {
+                var totalAmount = displayAmount * item.countBadge;
+                tdAmount.textContent = totalAmount.toLocaleString() + '원';
+                var perUnit = document.createElement('div');
+                perUnit.style.cssText = 'font-size:10px;color:#6b7280;margin-top:1px;';
+                perUnit.textContent = '(' + displayAmount.toLocaleString() + '원 ×' + item.countBadge + ')';
+                tdAmount.appendChild(perUnit);
+            } else {
+                tdAmount.textContent = displayAmount.toLocaleString() + '원';
+            }
             if (order.logen_fee_type === '선불') {
                 var shippingDiv = document.createElement('div');
                 shippingDiv.style.marginTop = '1px';

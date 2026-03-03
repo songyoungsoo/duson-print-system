@@ -288,11 +288,22 @@ if ($cart_result === false) {
             <input type="hidden" name="SubmitMode" value="OrderOne">
             <input type="hidden" name="cart_session_id" value="<?php echo $session_id; ?>">
             <?php
+            // 건수 그룹 전처리: item_group_id별로 그룹화
+            $order_groups = [];
+            $order_ungrouped = [];
+            foreach ($cart_items as $ci) {
+                $gid = $ci['item_group_id'] ?? null;
+                if (!empty($gid)) {
+                    $order_groups[$gid][] = $ci;
+                } else {
+                    $order_ungrouped[] = $ci;
+                }
+            }
+
             $total_price = 0;
             $total_vat = 0;
             $items_data = array();
             ?>
-
             <!-- Excel 스타일 표 형식 장바구니 (5컬럼 + 관리) -->
             <div class="excel-cart-table-wrapper">
                 <table class="excel-cart-table" style="width: 100%; border-collapse: collapse; table-layout: fixed;">
@@ -315,7 +326,147 @@ if ($cart_result === false) {
                         </tr>
                     </thead>
                     <tbody>
-                        <?php foreach ($cart_items as $index => $item):
+                        <?php
+                        // 그룹 아이템 렌더링 (축약: 1행 + ×N건 배지)
+                        foreach ($order_groups as $gid => $group_items):
+                            $group_count = count($group_items);
+                            $first_item = $group_items[0];
+                            $item = $first_item; // 대표 아이템으로 규격/수량 표시
+
+                            // 그룹 내 모든 아이템의 가격 합산
+                            $group_total_price = 0;
+                            $group_total_vat = 0;
+                            foreach ($group_items as $gi) {
+                                $base_price = intval($gi['st_price']);
+                                $price_with_options = $optionsDisplay->calculateTotalWithOptions($base_price, $gi);
+                                $group_total_price += $price_with_options['total_price'];
+                                $group_total_vat += $price_with_options['total_vat'];
+                                $items_data[] = $gi;
+                            }
+
+                            $total_price += $group_total_price;
+                            $total_vat += $group_total_vat;
+
+                            // 상품명 매핑
+                            $product_info = [
+                                'cadarok' => ['name' => '카다록', 'icon' => ''],
+                                'sticker' => ['name' => '스티커', 'icon' => ''],
+                                'msticker' => ['name' => '자석스티커', 'icon' => ''],
+                                'leaflet' => ['name' => '전단지', 'icon' => ''],
+                                'inserted' => ['name' => '전단지', 'icon' => ''],
+                                'namecard' => ['name' => '명함', 'icon' => ''],
+                                'envelope' => ['name' => '봉투', 'icon' => ''],
+                                'merchandisebond' => ['name' => '상품권', 'icon' => ''],
+                                'littleprint' => ['name' => '포스터', 'icon' => ''],
+                                'poster' => ['name' => '포스터', 'icon' => ''],
+                                'ncrflambeau' => ['name' => '양식지', 'icon' => '']
+                            ];
+
+                            $product = $product_info[$item['product_type']] ?? ['name' => '상품', 'icon' => ''];
+
+                            // SpecDisplayService 통합 출력 사용
+                            $displayData = $specDisplayService->getDisplayData($item);
+                            $is_flyer = in_array($item['product_type'], ['inserted', 'leaflet']);
+                            $show_sheet_count = ($is_flyer && $LEAFLET_DISPLAY_STYLE === 'Y');
+
+                            $quantity_display = $displayData['quantity_display'];
+                            $unit = $displayData['unit'];
+                            $main_amount_val = $displayData['quantity_value'];
+                            $main_amount_display = $quantity_display;
+                            $sub_amount = $item['mesu'] ?? $item['quantity_sheets'] ?? null;
+                        ?>
+                            <tr>
+                                <!-- 상품정보 + ×N건 배지 -->
+                                <td style="text-align: center; vertical-align: middle;">
+                                    <div class="product-name">
+                                        <?php echo $product['name']; ?>
+                                        <span style="display:inline-block;background:#e74c3c;color:white;font-size:11px;padding:1px 8px;border-radius:10px;margin-left:4px;font-weight:bold;">×<?php echo $group_count; ?>건</span>
+                                    </div>
+                                    <div class="product-number">#<?php echo $item['no']; ?></div>
+                                </td>
+
+                                <!-- 규격/옵션 (첫 번째 아이템 기준) -->
+                                <td>
+                                    <div class="specs-cell">
+                                        <?php
+                                        $specFormatter = new ProductSpecFormatter($connect);
+                                        $specs = $specFormatter->format($item);
+                                        ?>
+                                        <?php if (!empty($specs['line1'])): ?>
+                                            <div class="spec-line" style="color: #2d3748; margin-bottom: 2px;"><?php echo htmlspecialchars($specs['line1']); ?></div>
+                                        <?php endif; ?>
+                                        <?php if (!empty($specs['line2'])): ?>
+                                            <div class="spec-line" style="color: #4a5568;"><?php echo htmlspecialchars($specs['line2']); ?></div>
+                                        <?php endif; ?>
+                                        <?php if (!empty($specs['additional'])): ?>
+                                            <div class="spec-line" style="color: #666; font-size: 12px;"><?php echo htmlspecialchars($specs['additional']); ?></div>
+                                        <?php endif; ?>
+
+                                        <!-- 추가 옵션 정보 표시 -->
+                                        <?php
+                                        $options_details = $optionsDisplay->getOrderDetails($item);
+                                        if (!empty($options_details['options'])):
+                                        ?>
+                                            <div class="options-section">
+                                                <div class="options-title">추가옵션</div>
+                                                <?php foreach ($options_details['options'] as $option): ?>
+                                                    <div class="option-item">
+                                                        <span class="option-category"><?php echo $option['category']; ?>:</span>
+                                                        <?php echo $option['name']; ?>
+                                                        <span class="option-price">(+<?php echo $option['formatted_price']; ?>)</span>
+                                                    </div>
+                                                <?php endforeach; ?>
+                                            </div>
+                                        <?php endif; ?>
+                                    </div>
+                                </td>
+
+                                <!-- 수량 (첫 번째 아이템 기준) -->
+                                <td class="amount-cell <?php echo $is_flyer ? 'leaflet' : ''; ?>">
+                                    <?php
+                                    $qty_val = $displayData['quantity_value'] ?? 0;
+                                    $qty_sheets = $displayData['quantity_sheets'] ?? null;
+                                    $formatted_qty = function_exists('formatQuantityNum')
+                                        ? formatQuantityNum($qty_val)
+                                        : number_format(floatval($qty_val));
+                                    ?>
+                                    <span class="amount-value"><?php echo $formatted_qty; ?></span>
+                                    <?php if ($is_flyer && $qty_sheets): ?>
+                                        <br><span class="amount-sub">(<?php echo number_format($qty_sheets); ?>매)</span>
+                                    <?php endif; ?>
+                                </td>
+
+                                <!-- 단위 -->
+                                <td class="unit-cell">
+                                    <span class="amount-unit"><?php echo htmlspecialchars($unit); ?></span>
+                                </td>
+
+                                <!-- 공급가액 (그룹 합계) -->
+                                <td class="td-right">
+                                    <?php if ($group_count > 1): ?>
+                                        <div class="price-total">
+                                            <?php echo number_format(intval($first_item['st_price'])); ?>원 × <?php echo $group_count; ?>건 = <?php echo number_format($group_total_price); ?>원
+                                            <br><span style="font-size: 9px; font-weight: 400; color: #888;">(부가세별도)</span>
+                                        </div>
+                                    <?php else: ?>
+                                        <div class="price-total"><?php echo number_format($group_total_price); ?>원 <span style="font-size: 9px; font-weight: 400; color: #888;">(부가세별도)</span></div>
+                                    <?php endif; ?>
+                                </td>
+
+                                <!-- 관리 (첫 번째 아이템만) -->
+                                <td class="td-center">
+                                    <a href="?delete=<?php echo $item['no']; ?>"
+                                        onclick="return confirm('이 상품을 삭제하시겠습니까?')"
+                                        class="delete-btn">
+                                        ✕
+                                    </a>
+                                </td>
+                            </tr>
+                        <?php endforeach; ?>
+
+                        <?php
+                        // 그룹화되지 않은 아이템 렌더링 (기존 로직)
+                        foreach ($order_ungrouped as $index => $item):
                             // 추가 옵션 가격 계산
                             $base_price = intval($item['st_price']);
                             $price_with_options = $optionsDisplay->calculateTotalWithOptions($base_price, $item);
