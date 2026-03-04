@@ -1808,8 +1808,8 @@ aside.calculator-section.leaflet-style {
     background: white;
     border: 1px solid #e0e0e0;
     border-radius: 12px;
-    padding: 8px;
-    margin: 5px 0;
+    padding: 5px;
+    margin: 3px 0;
     text-align: center;
     transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
     transform: translateZ(0);
@@ -1821,8 +1821,8 @@ aside.calculator-section.leaflet-style {
     background: white;
     transform: scale(1);
     box-shadow: none;
-    padding: 8px;
-    margin: 5px 0;
+    padding: 5px;
+    margin: 3px 0;
     min-height: 60px;
 }
 
@@ -1872,14 +1872,14 @@ aside.calculator-section.leaflet-style {
 .action-buttons {
     display: flex;
     gap: 10px;
-    margin-top: 20px;
+    margin-top: 8px;
     padding: 0;
 }
 
 /* 액션 버튼 내 업로드 버튼 크기 통일 */
 .action-buttons .btn-upload-order {
     flex: 1;
-    padding: 15px 20px;
+    padding: 10px 16px;
     font-size: 16px;
 }
 

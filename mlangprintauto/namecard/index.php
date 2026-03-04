@@ -284,11 +284,11 @@ if ($url_nc_type) {
                     </div>
 
                     <!-- 프리미엄 옵션 섹션 (PremiumOptionsGeneric이 동적 생성) -->
-                    <div id="premiumOptionsSection" style="margin-top: 15px; display: none;"></div>
+                    <div id="premiumOptionsSection" style="margin-top: 6px; display: none;"></div>
                     <input type="hidden" name="premium_options_total" id="premium_options_total" value="0">
 
                     <!-- 주문건수 선택 (모든 옵션 선택 후 건수 곱하기) -->
-                    <div class="inline-form-row" style="margin-top: 12px; padding: 10px 12px; background: #f0f7ff; border: 1px solid #c5d9f0; border-radius: 8px;">
+                    <div class="inline-form-row" style="margin-top: 6px; padding: 6px 12px; background: #f0f7ff; border: 1px solid #c5d9f0; border-radius: 8px;">
                         <label class="inline-label" for="order_count" style="color: #1565C0; font-weight: 600;">주문건수</label>
                         <select name="order_count" id="order_count" class="inline-select" onchange="updateOrderCountDisplay()">
                             <option value="1" selected>1건 (기본)</option>
@@ -306,7 +306,7 @@ if ($url_nc_type) {
                     </div>
 
                     <!-- 건수 곱하기 요약 (건수 > 1일 때만 표시) -->
-                    <div id="orderCountSummary" style="display: none; margin-top: 8px; padding: 10px 14px; background: #fff8e1; border: 1px solid #ffe082; border-radius: 8px; text-align: center;">
+                    <div id="orderCountSummary" style="display: none; margin-top: 4px; padding: 6px 14px; background: #fff8e1; border: 1px solid #ffe082; border-radius: 8px; text-align: center;">
                     </div>
 
                     <!-- 기본 가격 표시 -->

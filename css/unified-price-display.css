@@ -4,8 +4,8 @@
 /* =================================================================== */
 
 .price-display {
-    margin-bottom: 5px;
-    padding: 8px 5px;
+    margin-bottom: 3px;
+    padding: 5px 5px;
     border-radius: 8px;
     background: #f8f9fa;
     border: 1px solid #d0d0d0;
@@ -33,7 +33,7 @@
     font-size: 0.98rem;
     font-weight: 700;
     color: #1E4E79;
-    margin: 10px 0;
+    margin: 4px 0;
     line-height: 1.2;
     text-shadow: 0 2px 4px rgba(30, 78, 121, 0.3);
     letter-spacing: -0.5px;
@@ -44,7 +44,7 @@
     font-size: 0.8rem;
     color: #6c757d;
     line-height: 1.4;
-    margin-top: 8px;
+    margin-top: 2px;
     
     /* 한 줄 표시 강제 */
     display: flex;
