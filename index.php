@@ -61,15 +61,15 @@ header("Expires: 0");
     <meta name="description" content="스티커 인쇄 전문 두손기획인쇄. 투명스티커, 유포지스티커, 자석스티커 등 다양한 스티커 제작. 전단지, 명함, 봉투, 카다록, 포스터, 상품권, 양식지까지. 공장직영 신속제작, 온라인 견적">
     <meta name="keywords" content="스티커인쇄, 라벨인쇄, 투명스티커, 유포지스티커, 자석스티커, 스티커제작, 전단지인쇄, 명함인쇄, 쿠폰인쇄, 봉투인쇄, 카다록인쇄, 포스터인쇄, 상품권제작, 양식지인쇄, 온라인견적, 인쇄전문, 두손기획, 두손기획인쇄">
     <meta name="author" content="두손기획인쇄">
-    <meta name="naver-site-verification" content="3e4f42759e423f615c3ee556b0505710c6f465bc" />
-    <link rel="canonical" href="<?= SITE_URL ?>/">
+    <meta name="naver-site-verification" content="33529ae09a9a019b325c1c07cffc6f3b8c85c9a0" />
+    <link rel="canonical" href="https://dsp114.com/">
 
     <!-- Open Graph (카카오톡, 페이스북 공유용) -->
     <meta property="og:type" content="website">
     <meta property="og:title" content="두손기획인쇄 - 스티커 인쇄 전문 | 전단지 명함 봉투 카다록 포스터">
     <meta property="og:description" content="스티커 인쇄 전문. 투명스티커, 유포지스티커, 자석스티커 등 다양한 스티커 제작. 전단지, 명함 등 모든 인쇄물 온라인 견적">
-    <meta property="og:image" content="<?= SITE_URL ?>/ImgFolder/dusonlogo1.png">
-    <meta property="og:url" content="<?= SITE_URL ?>/">
+    <meta property="og:image" content="https://dsp114.com/ImgFolder/og-image.png">
+    <meta property="og:url" content="https://dsp114.com/">
     <meta property="og:site_name" content="두손기획인쇄">
     <meta property="og:locale" content="ko_KR">
 
@@ -77,7 +77,7 @@ header("Expires: 0");
     <meta name="twitter:card" content="summary_large_image">
     <meta name="twitter:title" content="두손기획인쇄 - 스티커 전단지 명함 인쇄 전문">
     <meta name="twitter:description" content="기획에서 인쇄까지 원스톱 서비스. 10가지 인쇄물 온라인 견적">
-    <meta name="twitter:image" content="<?= SITE_URL ?>/ImgFolder/dusonlogo1.png">
+    <meta name="twitter:image" content="https://dsp114.com/ImgFolder/og-image.png">
 
     <!-- 세션 ID 메타 태그 -->
     <meta name="session-id" content="<?php echo htmlspecialchars($session_id); ?>">
@@ -1370,10 +1370,10 @@ header("Expires: 0");
         "@context": "https://schema.org",
         "@type": "LocalBusiness",
         "name": "두손기획인쇄",
-        "image": "https://dsp114.co.kr/ImgFolder/dusonlogo1.png",
+        "image": "https://dsp114.com/ImgFolder/dusonlogo1.png",
         "description": "스티커, 전단지, 명함, 봉투, 카다록, 포스터, 상품권, 양식지, 자석스티커 인쇄 전문. 공장직영 신속제작",
-        "@id": "https://dsp114.co.kr",
-        "url": "https://dsp114.co.kr",
+        "@id": "https://dsp114.com",
+        "url": "https://dsp114.com",
         "telephone": "",
         "priceRange": "₩₩",
         "address": {
@@ -1384,7 +1384,7 @@ header("Expires: 0");
             "@type": "GeoCoordinates"
         },
         "sameAs": [
-            "https://dsp114.co.kr"
+            "https://dsp114.com"
         ],
         "offers": [
             {
@@ -1435,6 +1435,8 @@ header("Expires: 0");
         ]
     }
     </script>
+
+<?php include 'includes/popup_layer.php'; ?>
 
 <?php
 // 공통 푸터 포함

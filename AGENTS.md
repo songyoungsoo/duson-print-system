@@ -1,23 +1,5 @@
 # Duson Planning Print System - AI 개발 가이드
 
-## 🔑 접속 정보 총정리
-
-| 구분 | 접속 주소 | 아이디 | 비밀번호 | 비고 |
-|------|----------|--------|---------|------|
-| 홈페이지 (주) | https://dsp114.com | - | - | 주 도메인 |
-| 홈페이지 (보조) | https://dsp114.co.kr | - | - | 보조 (동일 서버) |
-| 관리자 대시보드 | https://dsp114.com/dashboard/ | `admin` | `admin123` | 두 도메인 모두 가능 |
-| DB (프로덕션) | localhost:3306 | `dsp1830` | `t3zn?5R56` | DB명: `dsp1830` (로컬 비번: `ds701018`) |
-| FTP (운영서버) | ftp://dsp114.co.kr | `dsp1830` | `cH*j@yzj093BeTtc` | 웹루트: `/httpdocs/` |
-| Plesk 관리패널 | https://cmshom.co.kr:8443 | `두손기획` | `h%42D9u2m` | 서버/SSL/도메인 관리 |
-| GitHub | github.com/songyoungsoo | `songyoungsoo` | `yeongsu32@gmail.com` | |
-| KB 지식관리 | https://dsp114.com/kb/ | - | `duson2026!kb` | localhost는 비밀번호 없음 |
-| NAS 1차 | dsp1830.ipdisk.co.kr:8000 | `admin` | `1830` | 백업 서버 |
-| NAS 2차 | sknas205.ipdisk.co.kr | `sknas205` | `sknas205204203` | 추가 백업 |
-| 고객센터 | 02-2632-1830 | - | - | |
-
----
-
 ## 📋 프로젝트 개요
 @./README.md
 
@@ -25,9 +7,9 @@
 - 결제 시스템: @./docs/features/payment.md
 - 배송 추정: @./docs/features/shipping.md
 - 이메일 시스템: @./docs/features/email.md
-- AI 상담봇 (가격조회/지식베이스): @./docs/features/ai-chatbot.md
-- 채팅 시스템 (채팅위젯/야간당번): @./docs/features/chat-system.md
+- AI 챗봇: @./docs/features/ai-chatbot.md
 - 인증 시스템: @./docs/features/auth.md
+- AI 서비스 팀: @./docs/features/ai-services.md
 
 ## 🛠️ 개발 가이드
 - 코딩 표준: @./CLAUDE.md
@@ -65,75 +47,8 @@ GET /page.php?test=a%7Cb              → ❌ 500 (파이프도 차단)
 $url = "orderlist.php?orders=" . implode(',', $orderNos);
 
 // ✅ 올바른 방법: 언더스코어 구분자
-$order_list = implode('_', $order_numbers);
-header("Location: page.php?orders=" . urlencode($order_list));
-// → 정상 동작
-
-// ✅ 수신 측: 언더스코어로 분리 (레거시 쉼표도 호환)
-$orders_normalized = str_replace(',', '_', $_GET['orders']);
-$order_numbers = explode('_', $orders_normalized);
-```
-
-**적용 완료 파일 (2026-02-25):**
-
-| 파일 | 역할 | 구분자 |
-|------|------|--------|
-| `ProcessOrder_unified.php` | 주문 완료 리다이렉트 (orders 파라미터 생성) | `_` |
-| `OrderComplete_universal.php` | 주문 완료 페이지 (orders 파라미터 파싱 + JS 전달) | `_` (레거시 `,` 호환) |
-| `payment/inicis_request.php` | 결제 요청 (orders 파라미터 파싱) | `_` (레거시 `,` 호환) |
-| `mypage/order_detail.php` | 마이페이지 결제 링크 (orders 파라미터 생성) | `_` |
-
-**안전한 URL 구분자 목록:**
-- ✅ `_` (언더스코어) — 추천, 현재 사용 중
-- ✅ `-` (하이픈) — 사용 가능
-- ❌ `,` (쉼표) — 차단됨
-- ❌ `;` (세미콜론) — 차단됨
-- ❌ `|` (파이프) — 차단됨
-- ❌ `.` (점) — 숫자 구분자로 혼동 가능, 비추천
-
-
-```
-
-**Plesk 관리 패널 (서버 관리):**
-```
-Plesk 접속 정보:
-├─ URL: https://cmshom.co.kr:8443/login_up.php
-├─ 아이디: 두손기획
-├─ 비밀번호: h%42D9u2m
-├─ 용도: 서버 관리, phpMyAdmin, SSL, 도메인 설정
-└─ phpMyAdmin: Plesk → 데이터베이스 → phpMyAdmin 접속
-```
-
-**프로덕션 DB 접속 정보 (CRITICAL):**
-```
-DB 접속 정보 (dsp114.com / dsp114.co.kr 공용):
-├─ Host: localhost
-├─ User: dsp1830
-├─ Pass: t3zn?5R56
-├─ Database: dsp1830
-├─ Charset: utf8mb4
-└─ 용도: 프로덕션 웹사이트 DB (MySQL) — 두 도메인 동일 DB 사용
-
-⚠️ 주의사항:
-- 로컬 개발 DB와 비밀번호가 다름!
-- 로컬: dsp1830 / ds701018 / dsp1830
-- 프로덕션: dsp1830 / t3zn?5R56 / dsp1830
-- config.env.php에서 환경별 자동 전환 (dsp114.com, dsp114.co.kr 모두 production 인식)
-```
-
-```
-NAS 접속 정보 (백업 서버):
-┌──────────────────────────────────────────────────────────────┐
-│  🏠 1차 NAS: dsp1830.ipdisk.co.kr:8000                       │
-│     ├─ User: admin                                           │
-│     ├─ Pass: 1830                                            │
-│     └─ 용도: 전체 데이터 백업 (마이그레이션)                   │
-├──────────────────────────────────────────────────────────────┤
-│  🏠 2차 NAS: sknas205.ipdisk.co.kr                           │
-│     ├─ User: sknas205                                        │
-│     ├─ Pass: sknas205204203                                  │
-│     └─ 용도: 추가 백업                                        │
-└──────────────────────────────────────────────────────────────┘
+$url = "orderlist.php?orders=" . implode('_', $orderNos);
+$orderNos = explode('_', $_GET['orders']);
 ```
 
 ---
@@ -364,6 +279,11 @@ OnlineOrder_unified.php (폼 입력)
 ### CSS & Frontend
 8. ❌ CSS !important usage without proper diagnosis
 
+### Quotation System (2026-02-27)
+22. ❌ 견적서 프론트 `price`/`vat_price` vs 백엔드 `calculated_price`/`calculated_vat_price` → 가격 0원 저장
+23. ❌ 프론트 `premium_options_data` vs 백엔드 `premium_options` → 옵션 null 저장
+24. ❌ 견적서(quotation_temp)는 가격을 자체 계산 안 함 — 프론트가 POST로 보낸 값을 그대로 저장 (dumb storage)
+
 ### Plesk .htaccess (2026-02-07)
 17. ❌ Apache 2.2 구문 사용 (Order, Allow) → Plesk 500 에러 유발
 18. ❌ `.htaccess`를 잘못 작성하면 이미지/페이지가 500 에러 발생
@@ -402,17 +322,9 @@ if (isset($db) && $db) { mysqli_close($db); }  // 페이지 끝에서 정리
 
 ### Payment System
 9. ❌ Enabling production mode on localhost → real payments triggered
-10. ❌ Hardcoding production URLs → closeUrl domain mismatch error (SITE_URL 상수 사용 필수!)
+10. ❌ Hardcoding production URLs → closeUrl domain mismatch error
 11. ❌ Forgetting to test with small amounts → accidental large payments
 12. ❌ Not checking logs after deployment → silent payment failures
-25. ❌ 결제 성공 리다이렉트를 존재하지 않는 파일로 설정 → 404 (2026-02-28 수정 완료: success.php → OrderComplete_universal.php)
-26. ❌ 이니시스 IP 화이트리스트 누락 → "Access Denied" 에러 (inicis_config.production.php에서 관리)
-27. ❌ 사인키 변경 시 3개 파일 중 일부만 수정 → 결제 실패 (config.php, inicis_config.php, inicis_config.production.php 동기화 필수)
-
-### 듀얼 도메인 (2026-02-26)
-22. ❌ URL 하드코딩 (`https://dsp114.com/...`) → 반드시 `SITE_URL . "/..."` 사용
-23. ❌ 이메일 본문에 도메인 하드코딩 → 접속 도메인과 불일치
-24. ❌ KB에스크로 mHValue를 도메인 확인 없이 변경 → 인증마크 오류
 
 ### Authentication
 13. ❌ Inconsistent password verification → same user can't login everywhere
@@ -429,12 +341,13 @@ if (isset($db) && $db) { mysqli_close($db); }  // 페이지 끝에서 정리
 | NAS 백업 | `docs/operations/nas-backup.md` | NAS FTP 동기화, 백업 스크립트 |
 | 교정 관리 | `docs/operations/proof-management.md` | 교정파일 업로드, 이미지 뷰어, 교정확정 2단계 |
 | 견적서 시스템 | `docs/operations/quote-system.md` | 견적서 상태 흐름, PDF 생성, 이메일 발송 |
-| 데이터 마이그레이션 | `docs/operations/data-migration.md` | dsp114.com→NAS/dsp114.co.kr 데이터 이전 |
+| 데이터 마이그레이션 | `docs/operations/data-migration.md` | dsp114.com→NAS 데이터 이전 |
 | 대시보드 카테고리 | `docs/operations/dashboard-categories.md` | 대시보드 카테고리 관리 기능 |
 | 관리자 주문 등록 | `docs/operations/admin-orders.md` | 관리자 수동 주문 등록 |
 | 영문 버전 | `docs/operations/en-version.md` | 해외 고객용 영문 사이트 |
 | KB 시스템 | `docs/operations/kb-system.md` | Knowledge Vault 저장/검색 |
 | 전화번호 포맷팅 | `docs/operations/phone-formatting.md` | 전화번호 자동 하이픈 포맷팅 |
+| 팝업 관리 | `docs/operations/popup-management.md` | 레이어 팝업 등록/표시/안보기 |
 
 ## 📦 아카이브 (완료된 작업)
 
@@ -453,107 +366,34 @@ if (isset($db) && $db) { mysqli_close($db); }  // 페이지 끝에서 정리
 | `CLAUDE_DOCS/COMPONENT_REFERENCE.md` | 컴포넌트 참조 |
 | `CLAUDE_DOCS/REBUILD_GUIDE.md` | 리빌드 가이드 |
 | `CLAUDE_DOCS/인쇄원가계산시스템.md` | 인쇄원가 계산 체계 |
-| `docs/두손기획인쇄_기술매뉴얼_Notion.md` | **기술 매뉴얼 V2** (듀얼 도메인 하이브리드 체계) |
-| `docs/두손기획인쇄_기술매뉴얼_V2.docx` | 기술 매뉴얼 V2 (Word 버전) |
-| `docs/두손기획인쇄_관리자매뉴얼_Notion.md` | 관리자 매뉴얼 |
-
-## 🌐 듀얼 도메인 하이브리드 운영 체계
-
-> **dsp114.com(주) + dsp114.co.kr(보조) — 같은 서버, 같은 코드, 같은 DB**
-
-### 아키텍처 개요
-
-```
-dsp114.com (주 도메인) ──┐
-                          ├──▶ 175.119.156.249 (Plesk + nginx + PHP 8.2)
-dsp114.co.kr (보조) ─────┘    └── /httpdocs/ → config.env.php → SITE_URL 자동 감지
-
-localhost (개발) ─────────▶ Apache + PHP 7.4 → /var/www/html/
-```
-
-### 도메인 자동 감지 (config.env.php)
-
-```php
-// 접속 도메인에 따라 자동 전환
-define('SITE_DOMAIN', get_site_domain());  // dsp114.com 또는 dsp114.co.kr
-define('SITE_URL', get_site_url());        // https://dsp114.com 또는 https://dsp114.co.kr
-```
-
-**⚠️ 새 파일 작성 시 반드시 `SITE_URL` 상수 사용 — URL 하드코딩 절대 금지!**
-
-```php
-// ❌ $url = "https://dsp114.com/payment/...";
-// ✅ $url = SITE_URL . "/payment/...";
-```
-
-### 구현 상태 (2026-02-26)
-
-| 항목 | 상태 | 비고 |
-|------|------|------|
-| 코드 — SITE_URL 동적 감지 | ✅ 완료 | `config.env.php`에서 접속 도메인 자동 감지 |
-| 코드 — 하드코딩 도메인 제거 | ✅ 완료 | 11개 파일에서 SITE_URL/SITE_DOMAIN으로 교체 |
-| 코드 — KG이니시스 returnUrl/closeUrl | ✅ 완료 | SITE_URL 동적 감지, 같은 사인키 사용 가능 (이니시스 확인) |
-| KB에스크로 mHValue | ✅ 완료 | dsp114.com용 `eb30fbb0...` 적용 (롤백값 주석 보존) |
-| 프로덕션 배포 | ✅ 완료 | 30개 파일 FTP 업로드 (2026-02-26) |
-| 기술 매뉴얼 V2 | ✅ 완료 | `docs/두손기획인쇄_기술매뉴얼_Notion.md` + DOCX |
-| DNS — A 레코드 변경 | ⏳ 대기 | dsp114.com: `175.119.156.230` → `175.119.156.249` 변경 필요 |
-| Plesk — 도메인 별칭 추가 | ⏳ 대기 | dsp114.com을 Plesk에 alias로 추가 + SSL |
-| dsp114.com 접속 테스트 | ⏳ 대기 | DNS 전파 후 결제/에스크로/회원가입 테스트 |
-
-### 하드코딩 → SITE_URL 변환 완료 파일 (11개)
-
-| # | 파일 | 변경 내용 |
-|---|------|----------|
-| 1 | `config.env.php` | SITE_URL/SITE_DOMAIN 동적 감지 함수 추가 |
-| 2 | `db.php` | 환경 감지에 dsp114.com 추가 |
-| 3 | `payment/inicis_config.production.php` | returnUrl/closeUrl에 SITE_URL 사용 |
-| 4 | `payment/request.php` | returnUrl에 SITE_URL 사용 |
-| 5 | `dashboard/api/email.php` | 이메일 링크에 SITE_URL 사용 |
-| 6 | `en/index.php` | 영문 사이트 baseUrl에 SITE_URL 사용 |
-| 7 | `includes/quote_request_api.php` | 견적 링크에 SITE_URL 사용 |
-| 8 | `includes/shipping_api.php` | 배송 알림 링크에 SITE_URL 사용 |
-| 9 | `member/password_reset_simple_fixed.php` | 비밀번호 재설정 링크에 SITE_URL 사용 |
-| 10 | `mlangorder_printauto/OrderComplete_universal.php` | 주문완료 URL에 SITE_URL 사용 |
-| 11 | `mlangprintauto/shop/send_cart_quotation.php` | 장바구니 견적 링크에 SITE_URL 사용 |
-
-### KG이니시스 (듀얼 도메인 대응)
-
-- MID: `dsp1147479` (사업자번호 귀속, 도메인 무관)
-- Sign Key: `YXgxUnVtVlNvZndWUWg4RWVFUGZwUT09` (2026-02-28 변경, 두 도메인 공용)
-- returnUrl/closeUrl: `SITE_URL` 동적 감지로 자동 대응
-- IP Whitelist: `211.219.96.165`, `118.129.210.25`, `222.108.84.120` (inicis_config.production.php)
-- 이니시스 기술지원 확인 완료: 같은 MID + Sign Key로 여러 도메인 결제 가능
-
-### KB에스크로 (도메인별 mHValue)
-
-| 도메인 | mHValue | 등록일 | 적용 상태 |
-|--------|---------|--------|----------|
-| dsp114.com (주) | `eb30fbb0bc1da7fdcaf800c0bceebbff201111241043905` | 2011.11.24 | ✅ **현재 적용** |
-| dsp114.co.kr (보조) | `ef04cec95f1a7298f1f686bfe3159ade` | 2026.02.06 | 주석에 보존 |
-
-- 가맹점 코드(cc): `b034066:b035526` (양쪽 동일)
-- 적용 파일: `right.htm` (라인 111), `includes/footer.php` (라인 85)
-
-### 롤백 방법
-
-```bash
-# KB에스크로 mHValue를 dsp114.co.kr용으로 되돌리기
-git checkout e6554898 -- right.htm includes/footer.php
-
-# 또는 수동으로:
-# right.htm, includes/footer.php에서:
-#   현재: eb30fbb0bc1da7fdcaf800c0bceebbff201111241043905 (dsp114.com)
-#   롤백: ef04cec95f1a7298f1f686bfe3159ade (dsp114.co.kr)
-```
-
-### DNS 전환 후 체크리스트
-
-- [ ] dsp114.com 접속 확인 (HTTPS)
-- [ ] dsp114.com에서 KB에스크로 인증마크 팝업 정상 확인
-- [ ] dsp114.com에서 카드결제 테스트 (소액)
-- [ ] dsp114.com에서 회원가입/로그인 테스트
-- [ ] dsp114.com에서 이메일 발송 링크 확인
-- [ ] dsp114.co.kr에서도 동일 기능 정상 확인
 
 ---
-마지막 업데이트: 2026-02-28
+
+## 🔄 문서 관리 (Curator)
+
+### 건강검진 실행
+```bash
+php scripts/curator.php              # 기본 리포트 (경고/오류만 표시)
+php scripts/curator.php --verbose    # 상세 출력 (모든 항목)
+php scripts/curator.php --summary    # 요약만 출력
+php scripts/curator.php --json       # JSON 출력
+```
+
+### 검진 항목 5가지
+1. **참조 검증** — AGENTS.md의 `@./` 링크와 테이블 파일 경로가 실제 존재하는지
+2. **고아 문서** — `docs/`에 있지만 AGENTS.md에서 참조되지 않는 파일
+3. **크기 모니터링** — AGENTS.md < 400줄, 개별 문서 < 300줄
+4. **신선도** — 코드가 변경됐는데 대응 문서가 갱신 안 된 경우 (30일 경고, 90일 오류)
+5. **CLAUDE_DOCS 감사** — 90일 이상 미갱신 참조 문서
+
+### 문서 관리 규칙
+- AGENTS.md에 내용 추가 시 **400줄 한도** 엄수 → 초과 시 하위 문서로 분리
+- 코드 변경 시 `docs/curator-config.json`의 매핑 확인 → 대응 문서 갱신
+- 새 기능 추가 시 → `docs/features/` 또는 `docs/operations/`에 문서 생성 + AGENTS.md 허브에 링크 추가
+- 완료된 작업 → `docs/archive/`로 이동
+
+### 설정 파일
+- `docs/curator-config.json` — 코드↔문서 매핑, 크기/신선도 임계값, 무시 경로
+
+---
+마지막 업데이트: 2026-03-04

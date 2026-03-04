@@ -66,6 +66,7 @@ $DASHBOARD_NAV = [
             'stats' => ['name' => '주문 통계', 'icon' => '📈', 'path' => '/dashboard/stats/'],
             'visitors' => ['name' => '방문자분석', 'icon' => '👁️', 'path' => '/dashboard/visitors/'],
             'site_settings' => ['name' => '사이트 설정', 'icon' => '⚙️', 'path' => '/dashboard/settings/'],
+            'popups' => ['name' => '팝업 관리', 'icon' => '🖼️', 'path' => '/dashboard/popups/'],
         ]
     ],
     'legacy_group' => [
@@ -73,6 +74,12 @@ $DASHBOARD_NAV = [
         'items' => [
             'admin_legacy' => ['name' => '주문 관리(구)', 'icon' => '🗂️', 'path' => '/dashboard/embed.php?url=' . urlencode('/admin/mlangprintauto/orderlist.php'), 'embed' => true],
             'admin_proof' => ['name' => '교정 관리(구)', 'icon' => '📂', 'path' => '/dashboard/embed.php?url=' . urlencode('/sub/checkboard.php'), 'embed' => true],
+        ]
+    ],
+    'system_group' => [
+        'label' => '시스템',
+        'items' => [
+            'nas_sync' => ['name' => 'NAS 동기화', 'icon' => '🔄', 'path' => '/dashboard/nas-sync/'],
         ]
     ],
 ];
