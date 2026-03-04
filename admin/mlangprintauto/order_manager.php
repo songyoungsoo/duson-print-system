@@ -482,6 +482,14 @@ $order_statuses = [
         mysqli_stmt_bind_param($stmt, $types, ...$params);
         mysqli_stmt_execute($stmt);
         $result = mysqli_stmt_get_result($stmt);
+
+        // 건수/그룹 표시용: pre-fetch + 헬퍼
+        $all_orders = [];
+        while ($row = mysqli_fetch_assoc($result)) {
+            $all_orders[] = $row;
+        }
+        require_once __DIR__ . '/../../includes/OrderGroupHelper.php';
+        $page_group_info = OrderGroupHelper::getPageGroupInfo($all_orders);
         ?>
 
         <p>전체 <strong><?= number_format($total) ?></strong>개</p>
@@ -500,7 +508,7 @@ $order_statuses = [
                 </tr>
             </thead>
             <tbody>
-                <?php while ($row = mysqli_fetch_assoc($result)): ?>
+                <?php foreach ($all_orders as $row): ?>
                     <?php
                     $product_name = $row['Type'];
                     $status_label = $order_statuses[$row['OrderStyle']] ?? $row['OrderStyle'];
@@ -509,7 +517,7 @@ $order_statuses = [
                     <tr>
                         <td class="order-no">#<?= $row['no'] ?></td>
                         <td><?= date('Y-m-d', strtotime($row['date'])) ?></td>
-                        <td class="product-type"><?= htmlspecialchars($product_name) ?></td>
+                        <td class="product-type"><?= htmlspecialchars($product_name) ?><?php $og_info = $page_group_info[$row['no']] ?? null; if ($og_info && $og_info['is_first']) echo OrderGroupHelper::countBadge($og_info['group_total'], 'small'); ?></td>
                         <td><?= htmlspecialchars($row['name']) ?></td>
                         <td><?= htmlspecialchars($row['Hendphone']) ?></td>
                         <td><?= number_format($price) ?>원</td>
@@ -519,7 +527,7 @@ $order_statuses = [
                             <a href="order_manager.php?mode=delete&no=<?= $row['no'] ?>" class="btn btn-danger" onclick="return confirm('정말 삭제하시겠습니까?')">삭제</a>
                         </td>
                     </tr>
-                <?php endwhile; ?>
+                <?php endforeach; ?>
             </tbody>
         </table>
 

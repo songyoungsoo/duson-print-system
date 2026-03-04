@@ -140,6 +140,21 @@ $View_bankname = htmlspecialchars($row['bankname']);
 // 주문자명 ≠ 입금자명 비교 (적색 경고 표시용)
 $bankname_mismatch = (!empty($row['bankname']) && trim($row['bankname']) !== '' && trim($row['name']) !== trim($row['bankname']));
 $View_cont = htmlspecialchars($row['cont']);
+// 비고 축약본 (인쇄용): 사업자정보는 상호+번호 한줄, 메모 없으면 '내용없음'
+$_raw_cont = $row['cont'] ?? '';
+$_biz_name = ''; $_biz_num = ''; $_memo = [];
+foreach (explode("\n", $_raw_cont) as $_cl) {
+    $_cl = trim($_cl);
+    if ($_cl === '' || $_cl === '=== 사업자 정보 ===' || preg_match('/^\[같은 스펙/', $_cl)) continue;
+    if (preg_match('/^상호\(회사명\):\s*(.+)/', $_cl, $_m)) { $_biz_name = $_m[1]; continue; }
+    if (preg_match('/^사업자등록번호:\s*(.+)/', $_cl, $_m)) { $_biz_num = $_m[1]; continue; }
+    if (preg_match('/^(대표자명|사업장주소|세금계산서|업태|종목)/', $_cl)) continue;
+    $_memo[] = $_cl;
+}
+$_parts = [];
+if (!empty($_memo)) $_parts[] = implode(' / ', $_memo);
+if (!empty($_biz_name)) $_parts[] = '사업자: ' . $_biz_name . (!empty($_biz_num) ? ' (' . $_biz_num . ')' : '');
+$View_cont_compact = !empty($_parts) ? htmlspecialchars(implode(' | ', $_parts)) : '내용없음';
 $View_date = htmlspecialchars($row['date']);
 $View_OrderStyle = htmlspecialchars($row['OrderStyle']);
 $View_ThingCate = htmlspecialchars($row['ThingCate']);
@@ -196,6 +211,14 @@ foreach ($order_rows as $order_item) {
 
 // ✅ ProductSpecFormatter 초기화
 $specFormatter = new ProductSpecFormatter($db);
+
+// 같은 스펙(Type+money_5) 건수 카운트 — 테이블 축약용
+$_spec_counts = [];
+foreach ($order_rows as $_o) {
+    $_sk = ($_o['Type'] ?? '') . '|' . ($_o['money_5'] ?? '');
+    $_spec_counts[$_sk] = ($_spec_counts[$_sk] ?? 0) + 1;
+}
+$_spec_seen = [];
 
 /**
  * 수량 숫자 포맷팅 (불필요한 소수점 제거)
@@ -824,7 +847,13 @@ function getOrderItemInfo($summary_item, $specFormatter) {
                         <tbody>
                             <?php
                             $row_num = 1;
+                            $_spec_seen = []; // 테이블마다 리셋
                             foreach ($order_rows as $summary_item):
+                                // 같은 스펙 중복 스킵 (철 항목만 표시, 건수는 가격에 반영)
+                                $_sk = ($summary_item['Type'] ?? '') . '|' . ($summary_item['money_5'] ?? '');
+                                if (isset($_spec_seen[$_sk])) continue;
+                                $_spec_seen[$_sk] = true;
+                                $_n = $_spec_counts[$_sk] ?? 1;
                                 // ✅ ProductSpecFormatter로 규격/수량/단위 정보 추출 (중복 코드 제거)
                                 $info = getOrderItemInfo($summary_item, $specFormatter);
                                 $full_spec = $info['full_spec'];
@@ -941,7 +970,7 @@ function getOrderItemInfo($summary_item, $specFormatter) {
                             ?>
                             <tr>
                                 <td style="border: 0.3pt solid #000; padding: 1.5mm; text-align: center;"><?= $row_num++ ?></td>
-                                <td style="border: 0.3pt solid #000; padding: 1.5mm; text-align: center;"><?= $item_type_display ?></td>
+                                <td style="border: 0.3pt solid #000; padding: 1.5mm; text-align: center;"><?= $item_type_display ?><?php if ($_n > 1) echo ' <span style="color:#e74c3c;font-weight:bold;">&times;' . $_n . '건</span>'; ?></td>
                                 <td style="border: 0.3pt solid #000; padding: 1.5mm; font-size: 10pt; line-height: 1.4; vertical-align: top;">
                                     <?php
                                     // 🔧 규격/옵션 2줄+2줄 형식으로 표시 (duson-print-rules 준수)
@@ -986,7 +1015,8 @@ function getOrderItemInfo($summary_item, $specFormatter) {
                                     <?php
                                     // Phase 3 표준 필드 우선 사용
                                     $supply = !empty($summary_item['price_supply']) ? $summary_item['price_supply'] : $summary_item['money_4'];
-                                    echo number_format(intval($supply));
+                                    echo number_format(intval($supply) * $_n);
+                                    if ($_n > 1) echo ' <span style="font-size:8pt;color:#888;">(' . number_format(intval($supply)) . '&times;' . $_n . ')</span>';
                                     ?>
                             </tr>
                             <?php endforeach; ?>
@@ -1042,12 +1072,10 @@ function getOrderItemInfo($summary_item, $specFormatter) {
                             <td style="border: 0.3pt solid #000; padding: 1mm 2mm;" colspan="5"><?= htmlspecialchars($View_bizname) ?></td>
                         </tr>
                         <?php } ?>
-                        <?php if (!empty($View_cont) && trim($View_cont) != '') { ?>
                         <tr>
                             <th style="border: 0.3pt solid #000; background: #f0f0f0; padding: 1mm 2mm; text-align: center;">비고</th>
-                            <td style="border: 0.3pt solid #000; padding: 1mm 2mm; font-size: 7pt; line-height: 1.2;" colspan="5"><?= nl2br(htmlspecialchars($View_cont)) ?></td>
+                            <td style="border: 0.3pt solid #000; padding: 1mm 2mm; font-size: 7pt; line-height: 1.2;" colspan="5"><?= $View_cont_compact ?></td>
                         </tr>
-                        <?php } ?>
                     </table>
                 </div>
 
@@ -1099,7 +1127,12 @@ function getOrderItemInfo($summary_item, $specFormatter) {
                         <tbody>
                             <?php
                             $row_num = 1;
+                            $_spec_seen = [];
                             foreach ($order_rows as $summary_item):
+                                $_sk = ($summary_item['Type'] ?? '') . '|' . ($summary_item['money_5'] ?? '');
+                                if (isset($_spec_seen[$_sk])) continue;
+                                $_spec_seen[$_sk] = true;
+                                $_n = $_spec_counts[$_sk] ?? 1;
                                 // ✅ ProductSpecFormatter로 규격/수량/단위 정보 추출 (중복 코드 제거)
                                 $info = getOrderItemInfo($summary_item, $specFormatter);
                                 $full_spec = $info['full_spec'];
@@ -1215,7 +1248,7 @@ function getOrderItemInfo($summary_item, $specFormatter) {
                             ?>
                             <tr>
                                 <td style="border: 0.3pt solid #000; padding: 1.5mm; text-align: center;"><?= $row_num++ ?></td>
-                                <td style="border: 0.3pt solid #000; padding: 1.5mm; text-align: center;"><?= $item_type_display ?></td>
+                                <td style="border: 0.3pt solid #000; padding: 1.5mm; text-align: center;"><?= $item_type_display ?><?php if ($_n > 1) echo ' <span style="color:#e74c3c;font-weight:bold;">&times;' . $_n . '건</span>'; ?></td>
                                 <td style="border: 0.3pt solid #000; padding: 1.5mm; font-size: 10pt; line-height: 1.4; vertical-align: top;">
                                     <?php
                                     // 🔧 규격/옵션 2줄+2줄 형식으로 표시 (duson-print-rules 준수)
@@ -1257,7 +1290,8 @@ function getOrderItemInfo($summary_item, $specFormatter) {
                                     <?php
                                     // Phase 3 표준 필드 우선 사용
                                     $supply = !empty($summary_item['price_supply']) ? $summary_item['price_supply'] : $summary_item['money_4'];
-                                    echo number_format(intval($supply));
+                                    echo number_format(intval($supply) * $_n);
+                                    if ($_n > 1) echo ' <span style="font-size:8pt;color:#888;">(' . number_format(intval($supply)) . '&times;' . $_n . ')</span>';
                                     ?>
                                 </td>
                             </tr>
@@ -1314,12 +1348,10 @@ function getOrderItemInfo($summary_item, $specFormatter) {
                             <td style="border: 0.3pt solid #000; padding: 1mm 2mm;" colspan="5"><?= htmlspecialchars($View_bizname) ?></td>
                         </tr>
                         <?php } ?>
-                        <?php if (!empty($View_cont) && trim($View_cont) != '') { ?>
                         <tr>
                             <th style="border: 0.3pt solid #000; background: #f0f0f0; padding: 1mm 2mm; text-align: center;">비고</th>
-                            <td style="border: 0.3pt solid #000; padding: 1mm 2mm; font-size: 7pt; line-height: 1.2;" colspan="5"><?= nl2br(htmlspecialchars($View_cont)) ?></td>
+                            <td style="border: 0.3pt solid #000; padding: 1mm 2mm; font-size: 7pt; line-height: 1.2;" colspan="5"><?= $View_cont_compact ?></td>
                         </tr>
-                        <?php } ?>
                     </table>
                 </div>
 
@@ -1409,7 +1441,12 @@ function getOrderItemInfo($summary_item, $specFormatter) {
                     <?php
                                         // 각 주문 아이템을 표의 행으로 표시
                                         $row_num = 1;
+                                        $_spec_seen = [];
                                         foreach ($order_rows as $summary_item):
+                                            $_sk = ($summary_item['Type'] ?? '') . '|' . ($summary_item['money_5'] ?? '');
+                                            if (isset($_spec_seen[$_sk])) continue;
+                                            $_spec_seen[$_sk] = true;
+                                            $_n = $_spec_counts[$_sk] ?? 1;
                                             // ✅ ProductSpecFormatter로 규격/수량/단위 정보 추출 (중복 코드 제거)
                                             $info = getOrderItemInfo($summary_item, $specFormatter);
                                             $full_spec = $info['full_spec'];
@@ -1532,7 +1569,7 @@ function getOrderItemInfo($summary_item, $specFormatter) {
                                             ?>
                     <tr>
                         <td style="border: 1px solid #999; padding: 6px; text-align: center; font-size: 11px;"><?= $row_num++ ?></td>
-                        <td style="border: 1px solid #999; padding: 6px; text-align: center; font-size: 12px; font-weight: bold; color: #2F5496;"><?= htmlspecialchars($product_type_kr) ?></td>
+                        <td style="border: 1px solid #999; padding: 6px; text-align: center; font-size: 12px; font-weight: bold; color: #2F5496;"><?= htmlspecialchars($product_type_kr) ?><?php if ($_n > 1) echo ' <span style="color:#e74c3c;font-weight:bold;">&times;' . $_n . '건</span>'; ?></td>
                         <td style="border: 1px solid #999; padding: 6px; font-size: 11px; line-height: 1.5;">
                             <?php
                             // 규격/옵션 표시
@@ -1550,7 +1587,7 @@ function getOrderItemInfo($summary_item, $specFormatter) {
                         </td>
                         <td style="border: 1px solid #999; padding: 6px; text-align: right; font-size: 11px;"><?= $quantity_display ?></td>
                         <td style="border: 1px solid #999; padding: 6px; text-align: center; font-size: 11px;"><?= $unit_display ?></td>
-                        <td style="border: 1px solid #999; padding: 6px; text-align: right; font-size: 11px; font-weight: bold;"><?= number_format($supply_price) ?></td>
+                        <td style="border: 1px solid #999; padding: 6px; text-align: right; font-size: 11px; font-weight: bold;"><?= number_format($supply_price * $_n) ?><?php if ($_n > 1) echo ' <span style="font-size:10px;color:#888;">(' . number_format($supply_price) . '&times;' . $_n . ')</span>'; ?></td>
                     </tr>
                     <?php
                     endforeach;

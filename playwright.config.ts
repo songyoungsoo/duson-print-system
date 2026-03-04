@@ -25,7 +25,7 @@ export default defineConfig({
   ],
 
   use: {
-    baseURL: 'http://dsp1830.shop',
+    baseURL: 'http://localhost',
     trace: 'on-first-retry',
     screenshot: 'only-on-failure',
     video: 'retain-on-failure',
@@ -156,8 +156,8 @@ export default defineConfig({
   ],
 
   webServer: {
-    command: 'echo "Using external server at http://dsp1830.shop"',
-    url: 'http://dsp1830.shop',
+    command: 'echo "Using local Apache server at http://localhost"',
+    url: 'http://localhost',
     reuseExistingServer: true,
     timeout: 5 * 1000,
   },

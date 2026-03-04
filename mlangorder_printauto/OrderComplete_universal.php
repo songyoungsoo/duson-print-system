@@ -33,6 +33,7 @@ include "../includes/AdditionalOptionsDisplay.php";
 include "../includes/quantity_formatter.php";
 include "../includes/ProductSpecFormatter.php";
 include "../includes/SpecDisplayService.php";
+include "../includes/OrderGroupHelper.php";
 $optionsDisplay = new AdditionalOptionsDisplay($connect);
 $specFormatter = new ProductSpecFormatter($connect);
 $specDisplayService = new SpecDisplayService($connect);
@@ -1841,22 +1842,34 @@ $additional_css = [
             </tr>
         </thead>
         <tbody>
-            <?php foreach ($order_list as $index => $order):
-            // ✅ Phase 2 통합: SpecDisplayService로 통합 출력 데이터 생성
-            $displayData = $specDisplayService->getDisplayData($order);
-            $product_details_html = displayProductDetails($connect, $order);
-            // 전단지/리플렛 체크 (수량에 단위가 이미 포함됨)
-            $is_flyer = in_array($order['product_type'] ?? '', ['inserted', 'leaflet']);
+            <?php
+            // 🔧 건수/그룹 표시: 같은 사양(Type+money_5) 주문은 축약
+            $collapsed = OrderGroupHelper::collapseIdentical($order_list);
+            $collapse_index = 0;
+            foreach ($collapsed as $group):
+                $order = $group['representative'];
+                $grp_count = $group['count'];
+                $grp_nos = $group['order_nos'];
+                $displayData = $specDisplayService->getDisplayData($order);
+                $product_details_html = displayProductDetails($connect, $order);
+                $is_flyer = in_array($order['product_type'] ?? '', ['inserted', 'leaflet']);
             ?>
-            <tr class="order-row" style="animation-delay: <?php echo $index * 0.1; ?>s">
+            <tr class="order-row" style="animation-delay: <?php echo $collapse_index * 0.1; ?>s">
                 <!-- 주문번호 -->
                 <td class="col-order-no">
-                    #<?php echo htmlspecialchars($order['no']); ?>
+                    <?php if ($grp_count > 1): ?>
+                        #<?php echo htmlspecialchars($grp_nos[0]); ?>
+                        <?php echo OrderGroupHelper::countBadge($grp_count); ?>
+                        <br><span style="font-size:10px;color:#888;"><?php echo implode(', ', array_map(function($n) { return '#' . $n; }, $grp_nos)); ?></span>
+                    <?php else: ?>
+                        #<?php echo htmlspecialchars($order['no']); ?>
+                    <?php endif; ?>
                 </td>
 
                 <!-- 품목 -->
                 <td class="col-product">
                     <?php echo htmlspecialchars($order['Type']); ?>
+                    <?php if ($grp_count > 1) echo OrderGroupHelper::countBadge($grp_count, 'small'); ?>
                 </td>
 
                 <!-- 규격/옵션 -->
@@ -1864,34 +1877,34 @@ $additional_css = [
                     <?php echo $product_details_html; ?>
                 </td>
 
-                <!-- 수량 (통합) - 모든 품목 동일 구조 -->
+                <!-- 수량 (통합) -->
                 <td class="col-quantity">
                     <?php
                     $qty_val = $displayData['quantity_value'] ?? 0;
                     $qty_sheets = $displayData['quantity_sheets'] ?? 0;
-                    $productType = $order['product_type'] ?? '';
-
-                    // 수량 포맷팅
                     $formatted_qty = function_exists('formatQuantityNum')
                         ? formatQuantityNum($qty_val)
                         : number_format(floatval($qty_val));
                     echo $formatted_qty;
-
-                    // ✅ 2026-01-16: 연/권 단위에 매수 표시 (전단지, NCR양식지)
+                    if ($grp_count > 1) echo ' <span style="color:#e74c3c;font-weight:600;">&times;' . $grp_count . '</span>';
                     $unit = $displayData['unit'] ?? '';
                     if ($qty_sheets > 0 && in_array($unit, ['연', '권'])): ?>
                         <br><span style="font-size: 11px; color: #1e88ff;">(<?php echo number_format($qty_sheets); ?>매)</span>
                     <?php endif; ?>
                 </td>
 
-                <!-- 단위 (통합) - 모든 품목 동일하게 단위 표시 -->
+                <!-- 단위 -->
                 <td class="col-unit">
                     <?php echo htmlspecialchars($displayData['unit'] ?? '매'); ?>
                 </td>
 
                 <!-- 공급가액 -->
                 <td class="col-price">
-                    <?php echo number_format($displayData['price_supply']); ?>원
+                    <?php if ($grp_count > 1): ?>
+                        <?php echo OrderGroupHelper::sumPriceHtml(intval($displayData['price_supply']), $grp_count); ?>
+                    <?php else: ?>
+                        <?php echo number_format($displayData['price_supply']); ?>원
+                    <?php endif; ?>
                 </td>
 
                 <!-- 상태 -->
@@ -1899,7 +1912,7 @@ $additional_css = [
                     <span class="status-badge status-pending">입금대기</span>
                 </td>
             </tr>
-            <?php endforeach; ?>
+            <?php $collapse_index++; endforeach; ?>
         </tbody>
     </table>
 

@@ -92,7 +92,7 @@ mysqli_stmt_close($stmt);
 
 // 주문 목록 조회
 $query = "
-    SELECT no, Type, Type_1, name, Hendphone, phone, date, OrderStyle, money_1, money_2, money_4
+    SELECT no, Type, Type_1, name, Hendphone, phone, date, OrderStyle, money_1, money_2, money_4, money_5, order_group_id, order_group_seq
     FROM mlangorder_printauto
     WHERE {$where_clause}
     ORDER BY date DESC
@@ -106,13 +106,22 @@ $select_params[] = $per_page;
 $select_params[] = $offset;
 $select_types = $types . "ii";
 
-$orders = false;
+$all_orders = [];
+$orders_count = 0;
 if ($stmt) {
     mysqli_stmt_bind_param($stmt, $select_types, ...$select_params);
     mysqli_stmt_execute($stmt);
-    $orders = mysqli_stmt_get_result($stmt);
+    $orders_result = mysqli_stmt_get_result($stmt);
+    while ($row = mysqli_fetch_assoc($orders_result)) {
+        $all_orders[] = $row;
+    }
+    $orders_count = count($all_orders);
     mysqli_stmt_close($stmt);
 }
+
+// 건수/그룹 표시용 헬퍼
+require_once $_SERVER['DOCUMENT_ROOT'] . '/includes/OrderGroupHelper.php';
+$page_group_info = OrderGroupHelper::getPageGroupInfo($all_orders);
 
 $order_statuses = getAdminStatusLabels();
 ?>
@@ -232,7 +241,7 @@ $order_statuses = getAdminStatusLabels();
         </div>
         
         <div class="orders-table">
-            <?php if (mysqli_num_rows($orders) > 0): ?>
+            <?php if ($orders_count > 0): ?>
                 <table>
                     <thead>
                         <tr>
@@ -246,7 +255,7 @@ $order_statuses = getAdminStatusLabels();
                         </tr>
                     </thead>
                     <tbody>
-                        <?php while ($order = mysqli_fetch_assoc($orders)):
+                        <?php foreach ($all_orders as $order):
                             // ✅ ProductSpecFormatter 사용 (2줄 슬래시 형식 표준화)
                             $spec_result = $specFormatter->format($order);
                             $order_content = '';
@@ -272,10 +281,13 @@ $order_statuses = getAdminStatusLabels();
                                 '9' => '#fd7e14', '10' => '#e83e8c', '11' => '#dc3545'
                             ];
                             $status_color = $status_colors[$status_code] ?? '#6c757d';
+
+                            // 건수/그룹 정보
+                            $og_info = $page_group_info[$order['no']] ?? null;
                         ?>
                             <tr style="cursor: pointer;" onclick="location.href='order_detail.php?no=<?php echo $order['no']; ?>'">
                                 <td><a href="order_detail.php?no=<?php echo $order['no']; ?>" style="color: #667eea; text-decoration: none; font-weight: 500;"><?php echo htmlspecialchars($order['no']); ?></a></td>
-                                <td><?php echo htmlspecialchars($order['Type']); ?></td>
+                                <td><?php echo htmlspecialchars($order['Type']); ?><?php if ($og_info && $og_info['is_first']) echo OrderGroupHelper::countBadge($og_info['group_total'], 'small'); ?></td>
                                 <td style="text-align: left; font-size: 13px;"><?php echo $order_content; ?></td>
                                 <td><?php echo htmlspecialchars($order['name']); ?></td>
                                 <td style="text-align: right;">₩<?php echo number_format($order['money_2']); ?></td>
@@ -286,7 +298,7 @@ $order_statuses = getAdminStatusLabels();
                                     </span>
                                 </td>
                             </tr>
-                        <?php endwhile; ?>
+                        <?php endforeach; ?>
                     </tbody>
                 </table>
                 
