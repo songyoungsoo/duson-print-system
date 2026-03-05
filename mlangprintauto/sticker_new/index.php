@@ -651,7 +651,7 @@ if (isset($_GET['jong']) && !empty($_GET['jong'])) {
                     priceHtml += `
                     <div style="margin-top: 8px; padding-top: 8px; border-top: 2px solid #e0e0e0; display: flex; gap: 15px; align-items: center; flex-wrap: wrap; justify-content: center;">
                         <span style="font-weight: 700; color: #1E4E79;">📋 주문건수: ${orderCount}건</span>
-                        <span style="font-weight: 700; color: #d63384; font-size: 1.1rem;">💰 총 예상금액: ${new Intl.NumberFormat('ko-KR').format(totalWithCount)}원</span>
+                        <span style="font-weight: 700; color: #d63384; font-size: 1.1rem;">💰 합계: ${new Intl.NumberFormat('ko-KR').format(totalWithCount)}원</span>
                     </div>
                     <div style="font-size: 11px; color: #6c757d; margin-top: 4px; text-align: center;">
                         (같은 스펙 ${orderCount}건, 건당 ${priceData.price_vat}원)
