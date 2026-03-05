@@ -816,44 +816,51 @@ if ($cart_result === false) {
                 <?php
                 $quote_total = 0;
                 $quote_total_vat = 0;
-                foreach ($cart_items as $index => $item):
-                    // 가격 계산 (장바구니와 동일한 로직)
-                    $base_price = intval($item['st_price']);
-                    $has_additional_options = isset($item['coating_price']) || isset($item['folding_price']) || isset($item['creasing_price']);
+                $quote_row_no = 0;
 
-                    if ($has_additional_options) {
-                        $price_with_options = $optionsDisplay->calculateTotalWithOptions($base_price, $item);
-                        $final_price = $price_with_options['total_price'];
-                        $final_price_vat = $price_with_options['total_vat'];
+                $quote_product_info = [
+                    'cadarok' => '카다록', 'sticker' => '스티커', 'msticker' => '자석스티커',
+                    'leaflet' => '전단지', 'namecard' => '명함', 'envelope' => '봉투',
+                    'merchandisebond' => '상품권', 'littleprint' => '포스터', 'poster' => '포스터',
+                    'ncrflambeau' => '양식지', 'inserted' => '전단지'
+                ];
+
+                // === 그룹 아이템 렌더링 (×N건 축약) ===
+                foreach ($order_groups as $gid => $group_items):
+                    $group_count = count($group_items);
+                    $item = $group_items[0]; // 대표 아이템
+                    $quote_row_no++;
+
+                    // 대표 아이템 단가 계산
+                    $unit_base = intval($item['st_price']);
+                    $has_opts = isset($item['coating_price']) || isset($item['folding_price']) || isset($item['creasing_price']);
+                    if ($has_opts) {
+                        $pw = $optionsDisplay->calculateTotalWithOptions($unit_base, $item);
+                        $unit_price = $pw['total_price'];
+                        $unit_vat = $pw['total_vat'];
                     } else {
-                        $final_price = $base_price;
-                        $final_price_vat = intval($item['st_price_vat']);
+                        $unit_price = $unit_base;
+                        $unit_vat = intval($item['st_price_vat']);
                     }
 
-                    $quote_total += $final_price;
-                    $quote_total_vat += $final_price_vat;
+                    // 그룹 합계 = 단가 × 건수
+                    $group_total_price = $unit_price * $group_count;
+                    $group_total_vat = $unit_vat * $group_count;
+                    $quote_total += $group_total_price;
+                    $quote_total_vat += $group_total_vat;
 
-                    $product_info = [
-                        'cadarok' => '카다록',
-                        'sticker' => '스티커',
-                        'msticker' => '자석스티커',
-                        'leaflet' => '전단지',
-                        'namecard' => '명함',
-                        'envelope' => '봉투',
-                        'merchandisebond' => '상품권',
-                        'littleprint' => '포스터',
-                        'poster' => '포스터',
-                        'ncrflambeau' => '양식지',
-                        'inserted' => '전단지'
-                    ];
-                    $product_name = $product_info[$item['product_type']] ?? '인쇄상품';
+                    $product_name = $quote_product_info[$item['product_type']] ?? '인쇄상품';
                 ?>
                     <tr>
-                        <td><?php echo $index + 1; ?></td>
-                        <td><?php echo $product_name; ?></td>
+                        <td><?php echo $quote_row_no; ?></td>
+                        <td>
+                            <?php echo $product_name; ?>
+                            <?php if ($group_count > 1): ?>
+                                <span style="display:inline-block;background:#e74c3c;color:white;font-size:10px;padding:1px 6px;border-radius:8px;margin-left:3px;font-weight:bold;">×<?php echo $group_count; ?>건</span>
+                            <?php endif; ?>
+                        </td>
                         <td class="text-left small-text">
                             <?php
-                                // ProductSpecFormatter로 2줄 형식 생성 (견적서용)
                                 $specFormatter = new ProductSpecFormatter($connect);
                                 $specs = $specFormatter->format($item);
                             ?>
@@ -867,7 +874,6 @@ if ($cart_result === false) {
                                 <div class="spec-line" style="color: #777; font-size: 11px;"><?php echo htmlspecialchars($specs['additional']); ?></div>
                             <?php endif; ?>
 
-                            <!-- 추가 옵션 정보 표시 (모든 제품 공통) -->
                             <?php
                             $options_details_quote = $optionsDisplay->getOrderDetails($item);
                             if (!empty($options_details_quote['options'])):
@@ -886,13 +892,8 @@ if ($cart_result === false) {
                         </td>
                         <td>
                             <?php
-                            // 전단지(inserted/leaflet)는 "연" 단위로 소수점 허용
-                            // 양식지(ncrflambeau)는 "권" 단위
-                            // 그 외는 정수 "매" 단위
                             $is_flyer = in_array($item['product_type'], ['inserted', 'leaflet']);
-
                             if ($is_flyer) {
-                                // 전단지: 연 단위 표시 (0.5연, 1연 등)
                                 $yeon = floatval($item['yeon'] ?? $item['MY_amount'] ?? 1);
                                 if ($yeon == intval($yeon)) {
                                     echo number_format($yeon) . '연';
@@ -900,11 +901,95 @@ if ($cart_result === false) {
                                     echo rtrim(rtrim(number_format($yeon, 1), '0'), '.') . '연';
                                 }
                             } elseif ($item['product_type'] == 'ncrflambeau') {
-                                // 양식지: 권 단위 (정수)
                                 $qty = intval($item['MY_amount'] ?? 1);
                                 echo number_format($qty) . '권';
                             } else {
-                                // 그 외: 매 단위 (정수)
+                                $qty = intval($item['mesu'] ?? $item['MY_amount'] ?? 1);
+                                echo number_format($qty) . '매';
+                            }
+                            ?>
+                        </td>
+                        <td class="text-right">
+                            <strong><?php echo number_format($unit_price); ?>원</strong>
+                            <?php if ($group_count > 1): ?>
+                                <br><span style="font-size: 10px; color: #888;">×<?php echo $group_count; ?>건</span>
+                            <?php endif; ?>
+                        </td>
+                        <td class="text-right">
+                            <strong><?php echo number_format($group_total_vat); ?>원</strong>
+                        </td>
+                    </tr>
+                <?php endforeach; ?>
+
+                <?php
+                // === 비그룹 아이템 렌더링 (개별 행) ===
+                foreach ($order_ungrouped as $item):
+                    $quote_row_no++;
+                    $base_price = intval($item['st_price']);
+                    $has_additional_options = isset($item['coating_price']) || isset($item['folding_price']) || isset($item['creasing_price']);
+
+                    if ($has_additional_options) {
+                        $price_with_options = $optionsDisplay->calculateTotalWithOptions($base_price, $item);
+                        $final_price = $price_with_options['total_price'];
+                        $final_price_vat = $price_with_options['total_vat'];
+                    } else {
+                        $final_price = $base_price;
+                        $final_price_vat = intval($item['st_price_vat']);
+                    }
+
+                    $quote_total += $final_price;
+                    $quote_total_vat += $final_price_vat;
+
+                    $product_name = $quote_product_info[$item['product_type']] ?? '인쇄상품';
+                ?>
+                    <tr>
+                        <td><?php echo $quote_row_no; ?></td>
+                        <td><?php echo $product_name; ?></td>
+                        <td class="text-left small-text">
+                            <?php
+                                $specFormatter = new ProductSpecFormatter($connect);
+                                $specs = $specFormatter->format($item);
+                            ?>
+                            <?php if (!empty($specs['line1'])): ?>
+                                <div class="spec-line"><?php echo htmlspecialchars($specs['line1']); ?></div>
+                            <?php endif; ?>
+                            <?php if (!empty($specs['line2'])): ?>
+                                <div class="spec-line" style="color: #555;"><?php echo htmlspecialchars($specs['line2']); ?></div>
+                            <?php endif; ?>
+                            <?php if (!empty($specs['additional'])): ?>
+                                <div class="spec-line" style="color: #777; font-size: 11px;"><?php echo htmlspecialchars($specs['additional']); ?></div>
+                            <?php endif; ?>
+
+                            <?php
+                            $options_details_quote = $optionsDisplay->getOrderDetails($item);
+                            if (!empty($options_details_quote['options'])):
+                            ?>
+                                <div style="margin-top: 8px; padding-top: 8px; border-top: 1px solid #e2e8f0;">
+                                    <strong style="color: #e53e3e;">추가옵션:</strong><br>
+                                    <?php
+                                    $option_strings = [];
+                                    foreach ($options_details_quote['options'] as $option) {
+                                        $option_strings[] = htmlspecialchars($option['category'] . ': ' . $option['name'] . ' (' . $option['formatted_price'] . ')');
+                                    }
+                                    echo implode('<br>', $option_strings);
+                                    ?>
+                                </div>
+                            <?php endif; ?>
+                        </td>
+                        <td>
+                            <?php
+                            $is_flyer = in_array($item['product_type'], ['inserted', 'leaflet']);
+                            if ($is_flyer) {
+                                $yeon = floatval($item['yeon'] ?? $item['MY_amount'] ?? 1);
+                                if ($yeon == intval($yeon)) {
+                                    echo number_format($yeon) . '연';
+                                } else {
+                                    echo rtrim(rtrim(number_format($yeon, 1), '0'), '.') . '연';
+                                }
+                            } elseif ($item['product_type'] == 'ncrflambeau') {
+                                $qty = intval($item['MY_amount'] ?? 1);
+                                echo number_format($qty) . '권';
+                            } else {
                                 $qty = intval($item['mesu'] ?? $item['MY_amount'] ?? 1);
                                 echo number_format($qty) . '매';
                             }
@@ -930,7 +1015,7 @@ if ($cart_result === false) {
         <div class="cart-summary" style="margin-bottom: 30px;">
             <div class="summary-header">
                 <div class="summary-title">주문 요약</div>
-                <div class="summary-count">총 <?php echo count($cart_items); ?>개 상품</div>
+                <div class="summary-count">총 <?php echo $quote_row_no; ?>건 (전체 <?php echo count($cart_items); ?>개 상품)</div>
             </div>
             <div class="summary-grid">
                 <div class="summary-box">

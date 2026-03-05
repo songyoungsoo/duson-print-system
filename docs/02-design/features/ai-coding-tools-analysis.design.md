@@ -30,7 +30,8 @@
 
 ### 2.1 Cursor
 - **유형**: AI-Native IDE (VS Code 포크)
-- **특징**: 전체 코드베이스 이해, 다중 AI 모델 지원
+- **특징**: 전체 코드베이스 이해, 다중 AI 
+ 지원
 - **가격**: Free / Pro $20 / Pro+ $60 / Ultra $200 / Teams $40
 
 ### 2.2 Augment
