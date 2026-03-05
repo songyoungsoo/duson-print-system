@@ -96,35 +96,97 @@ build_exclude_opts() {
     echo "$opts"
 }
 
-# lftp mirror로 전체 동기화
+# curl로 전체 미러링 (lftp 없이)
 sync_mirror() {
     local dry_run="$1"
-    local exclude_opts=$(build_exclude_opts)
     local dry_flag=""
 
     if [ "$dry_run" = "true" ]; then
-        dry_flag="--dry-run"
+        dry_flag="[DRY-RUN] "
         print_warning "DRY-RUN 모드: 실제 업로드 없이 미리보기만 합니다"
         echo ""
     fi
 
-    print_info "lftp mirror 동기화 시작..."
+    print_info "curl 기반 전체 동기화 시작..."
+    print_info "제외 항목: .git, node_modules, bbs, *.tar 등"
     echo ""
 
-    lftp -c "
-        set ftp:charset UTF-8
-        set file:charset UTF-8
-        set net:timeout 10
-        set net:max-retries 3
-        set net:reconnect-interval-base 5
-        open -u ${NAS_USER},${NAS_PASS} ftp://${NAS_HOST}
-        mirror --reverse --verbose --only-newer --no-perms \
-            ${dry_flag} \
-            ${exclude_opts} \
-            ${LOCAL_ROOT}/ ${NAS_ROOT}/
-    "
+    local total=0 uploaded=0 skipped=0 failed=0
 
-    return $?
+    # LOCAL_ROOT에서 파일 찾기 (최대 depth 3)
+    while IFS= read -r -d '' file; do
+        # 절대 경로를 상대 경로로 변환
+        rel_path="${file#$LOCAL_ROOT/}"
+
+        # 제외 패턴 체크
+        local skip=false
+        for pattern in "${EXCLUDE_PATTERNS[@]}"; do
+            if [[ "$rel_path" =~ ^${pattern} ]] || [[ "$rel_path" =~ ${pattern}$ ]]; then
+                skip=true
+                break
+            fi
+        done
+
+        # 추가 제외: bbs/ 폴더
+        if [[ "$rel_path" == bbs/* ]]; then
+            skip=true
+        fi
+
+        # ImgFolder 날짜 필터 (2026-02-10 이후만)
+        if [[ "$rel_path" == ImgFolder/* ]]; then
+            file_date=$(stat -c %Y "$file" 2>/dev/null || echo "0")
+            cutoff_date=$(date -d "2026-02-10" +%s 2>/dev/null || echo "0")
+            if [ "$file_date" -lt "$cutoff_date" ]; then
+                skip=true
+            fi
+        fi
+
+        # upload 폴더 날짜 필터 (2026년 이후만)
+        if [[ "$rel_path" == mlangorder_printauto/upload/* ]]; then
+            file_year=$(stat -c %Y "$file" 2>/dev/null | xargs -I{} date -d @{} +%Y 2>/dev/null || echo "0")
+            if [ "$file_year" -lt "2026" ]; then
+                skip=true
+            fi
+        fi
+
+        if [ "$skip" = "true" ]; then
+            skipped=$((skipped + 1))
+            continue
+        fi
+
+        total=$((total + 1))
+
+        # dry-run이면 출력만
+        if [ "$dry_run" = "true" ]; then
+            echo "  ${dry_flag}${rel_path}"
+            uploaded=$((uploaded + 1))
+            continue
+        fi
+
+        # curl로 업로드
+        remote_path="${NAS_ROOT}/${rel_path}"
+        if curl -s -T "$file" "ftp://${NAS_HOST}${remote_path}" \
+            --user "${NAS_USER}:${NAS_PASS}" --ftp-create-dirs 2>/dev/null; then
+            echo "  ✓ ${rel_path}"
+            uploaded=$((uploaded + 1))
+        else
+            echo "  ✗ ${rel_path} (실패)"
+            failed=$((failed + 1))
+        fi
+
+        # 진행률 표시 (100개마다)
+        if [ $((total % 100)) -eq 0 ]; then
+            echo "  ... 진행중: 총 ${total}개 (성공 ${uploaded}, 실패 ${failed})"
+        fi
+
+    done < <(find "$LOCAL_ROOT" -maxdepth 3 -type f -print0 2>/dev/null | sort -z)
+
+    echo ""
+    echo "============================================"
+    echo "  총 파일: $total | 업로드: $uploaded | 건너뜀: $skipped | 실패: $failed"
+    echo "============================================"
+
+    return $failed
 }
 
 # curl로 단일 파일 업로드

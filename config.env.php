@@ -44,6 +44,13 @@ class EnvironmentDetector {
         ) {
             self::$environment = 'local';
         }
+        // 새 서버 환경 감지 (dsp1830.ipdisk.co.kr)
+        else if (
+            strpos($host, 'dsp1830.ipdisk.co.kr') !== false ||
+            strpos($host, 'ipdisk.co.kr') !== false
+        ) {
+            self::$environment = 'new_server';
+        }
         // 운영 환경 감지 (dsp114.co.kr 및 dsp1830.shop)
         else if (
             strpos($host, 'dsp114.co.kr') !== false ||
@@ -84,6 +91,19 @@ class EnvironmentDetector {
                     'charset' => 'utf8mb4',
                     'environment' => 'local',
                     'debug' => true
+                ];
+                break;
+
+            case 'new_server':
+                // 새 서버 환경 설정 (dsp1830.ipdisk.co.kr)
+                self::$config = [
+                    'host' => 'localhost',
+                    'user' => 'admin',
+                    'password' => '1830',
+                    'database' => 'dsp1830',
+                    'charset' => 'utf8mb4',
+                    'environment' => 'new_server',
+                    'debug' => false
                 ];
                 break;
 

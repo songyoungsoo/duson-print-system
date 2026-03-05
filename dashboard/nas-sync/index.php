@@ -290,7 +290,7 @@ function loadProfile(name) {
     if (name === 'default') {
         document.getElementById('nasHost').value = 'dsp1830.ipdisk.co.kr';
         document.getElementById('nasUser').value = 'admin';
-        document.getElementById('nasPass').value = '1830';
+        document.getElementById('nasPass').value = 'ds701018';
         document.getElementById('nasRoot').value = '/HDD2/share';
         updateTargetLabel();
         updateProfileBadge('기본 NAS (dsp1830)');
@@ -299,8 +299,8 @@ function loadProfile(name) {
 
     if (name === 'sknas205') {
         document.getElementById('nasHost').value = 'sknas205.ipdisk.co.kr';
-        document.getElementById('nasUser').value = 'sknas205';
-        document.getElementById('nasPass').value = 'sknas205204203';
+        document.getElementById('nasUser').value = 'sknas';
+        document.getElementById('nasPass').value = '205204203';
         document.getElementById('nasRoot').value = '/HDD1/duson260118';
         updateTargetLabel();
         updateProfileBadge('2차 NAS (sknas205)');
