@@ -212,13 +212,40 @@ body.cart-page .mobile-view .product-nav { display: grid; }
 - **임시 코드 = 기술 부채**: 나중에 반드시 문제 발생
 - **전체 그림 먼저**: 부분 최적화보다 전체 일관성 우선
 
-### 7. 환경 자동 감지
+### 7. 환경 자동 감지 (config.env.php)
 ```php
-// db.php가 자동 감지
-- localhost → $admin_url = "http://localhost"
-- dsp1830.shop → $admin_url = "http://dsp1830.shop"
-- dsp1830.shop → $admin_url = "http://dsp1830.shop"
+// EnvironmentDetector::detectEnvironment()
+- localhost → 로컬 개발 (dsp1830/ds701018)
+- dsp1830.ipdisk.co.kr → NAS 서버 (admin/1830)
+- dsp114.co.kr, dsp1830.shop → 운영 서버 (dsp1830/t3zn?5R56)
 ```
+
+### 8. NAS 동기화 시스템 (2026-03-05)
+
+운영 서버/로컬에서 NAS(dsp1830.ipdisk.co.kr)으로 파일 동기화.
+
+#### 구성 요소
+| 파일 | 역할 |
+|------|------|
+| `/dashboard/nas-sync/index.php` | 웹 대시보드 UI |
+| `/dashboard/api/nas-sync.php` | PHP API |
+| `/scripts/sync_to_sknas.sh` | curl 기반 동기화 스크립트 |
+
+#### 동기화 모드
+- 🔄 **전체 미러링**: 서버 전체를 NAS에 복사 (curl 기반, lftp 불필요)
+- 📝 **변경분만**: Git 변경된 파일만 업로드
+- 📄 **특정 파일**: 지정한 파일만 업로드
+
+#### 사용 방법
+```
+https://dsp114.com/dashboard/nas-sync/
+http://localhost/dashboard/nas-sync/
+```
+
+#### 제외 항목
+- `.git/`, `node_modules/`, `bbs/`
+- `ImgFolder/` (2026-02-10 이후만)
+- `upload/` (2026년 이후만)
 
 ---
 
