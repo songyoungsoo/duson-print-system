@@ -10,6 +10,8 @@
  * @author SuperClaude Architecture System
  */
 
+require_once __DIR__ . '/PremiumOptionsConfig.php';
+
 class AdditionalOptionsDisplay {
     private $additionalOptions;
     
@@ -59,48 +61,13 @@ class AdditionalOptionsDisplay {
             $options_text[] = "양면테이프({$tape_quantity}개){$tape_price}원";
         }
 
-        // 🆕 프리미엄 옵션 (명함)
         if (!empty($cart_data['premium_options'])) {
-            $premium_options = is_string($cart_data['premium_options'])
-                ? json_decode($cart_data['premium_options'], true)
-                : $cart_data['premium_options'];
-
-            if ($premium_options && is_array($premium_options)) {
-                $premium_option_names = [
-                    'foil' => ['name' => '박', 'types' => [
-                        'gold_matte' => '금박무광',
-                        'gold_gloss' => '금박유광',
-                        'silver_matte' => '은박무광',
-                        'silver_gloss' => '은박유광',
-                        'blue_gloss' => '청박유광',
-                        'red_gloss' => '적박유광',
-                        'green_gloss' => '녹박유광',
-                        'black_gloss' => '먹박유광'
-                    ]],
-                    'numbering' => ['name' => '넘버링', 'types' => ['single' => '1개', 'double' => '2개']],
-                    'perforation' => ['name' => '미싱', 'types' => ['horizontal' => '가로미싱', 'vertical' => '세로미싱', 'cross' => '십자미싱']],
-                    'rounding' => ['name' => '귀돌이', 'types' => ['4corners' => '네귀돌이', '2corners' => '두귀돌이']],
-                    'creasing' => ['name' => '오시', 'types' => ['single_crease' => '1줄오시', 'double_crease' => '2줄오시']]
-                ];
-
-                foreach ($premium_option_names as $option_key => $option_info) {
-                    if (!empty($premium_options[$option_key . '_enabled']) && $premium_options[$option_key . '_enabled'] == 1) {
-                        $price = intval($premium_options[$option_key . '_price'] ?? 0);
-                        if ($price > 0) {
-                            $display_text = $option_info['name'];
-                            $option_type = $premium_options[$option_key . '_type'] ?? '';
-                            if (!empty($option_type) && isset($option_info['types'][$option_type])) {
-                                $display_text .= '(' . $option_info['types'][$option_type] . ')';
-                            } elseif (empty($option_type)) {
-                                $display_text .= '(타입미선택)';
-                            }
-                            $options_text[] = $display_text . number_format($price) . '원';
-                        }
-                    }
-                }
+            $productType = $cart_data['product_type'] ?? 'namecard';
+            $parsed = PremiumOptionsConfig::parseSelectedOptions($cart_data['premium_options'], $productType);
+            foreach ($parsed as $popt) {
+                $options_text[] = $popt['display'] . number_format($popt['price']) . '원';
             }
         } elseif (!empty($cart_data['premium_options_total']) && $cart_data['premium_options_total'] > 0) {
-            // premium_options가 없지만 총액만 있는 경우
             $options_text[] = "프리미엄옵션 " . number_format($cart_data['premium_options_total']) . '원';
         }
 
@@ -181,59 +148,20 @@ class AdditionalOptionsDisplay {
             $details['has_options'] = true;
         }
 
-        // 🆕 명함 프리미엄 옵션 (JSON)
         if (!empty($cart_data['premium_options'])) {
-            $premium_options = is_string($cart_data['premium_options'])
-                ? json_decode($cart_data['premium_options'], true)
-                : $cart_data['premium_options'];
-
-            if ($premium_options && is_array($premium_options)) {
-                $premium_option_names = [
-                    'foil' => ['name' => '박', 'types' => [
-                        'gold_matte' => '금박무광',
-                        'gold_gloss' => '금박유광',
-                        'silver_matte' => '은박무광',
-                        'silver_gloss' => '은박유광',
-                        'blue_gloss' => '청박유광',
-                        'red_gloss' => '적박유광',
-                        'green_gloss' => '녹박유광',
-                        'black_gloss' => '먹박유광'
-                    ]],
-                    'numbering' => ['name' => '넘버링', 'types' => ['single' => '1개', 'double' => '2개']],
-                    'perforation' => ['name' => '미싱', 'types' => ['horizontal' => '가로미싱', 'vertical' => '세로미싱', 'cross' => '십자미싱']],
-                    'rounding' => ['name' => '귀돌이', 'types' => ['4corners' => '네귀돌이', '2corners' => '두귀돌이']],
-                    'creasing' => ['name' => '오시', 'types' => ['single_crease' => '1줄오시', 'double_crease' => '2줄오시']]
+            $productType = $cart_data['product_type'] ?? 'namecard';
+            $parsed = PremiumOptionsConfig::parseSelectedOptions($cart_data['premium_options'], $productType);
+            foreach ($parsed as $popt) {
+                $details['options'][] = [
+                    'category' => $popt['name'],
+                    'name' => !empty($popt['type_name']) ? $popt['type_name'] : $popt['name'],
+                    'price' => $popt['price'],
+                    'formatted_price' => number_format($popt['price']) . '원'
                 ];
-
-                foreach ($premium_option_names as $option_key => $option_info) {
-                    if (!empty($premium_options[$option_key . '_enabled']) && $premium_options[$option_key . '_enabled'] == 1) {
-                        $price = intval($premium_options[$option_key . '_price'] ?? 0);
-                        if ($price > 0) {
-                            $option_type = $premium_options[$option_key . '_type'] ?? '';
-
-                            // 타입이 비어있으면 "타입미선택" 표시
-                            if (empty($option_type)) {
-                                $display_name = '타입미선택';
-                            } elseif (isset($option_info['types'][$option_type])) {
-                                $display_name = $option_info['types'][$option_type];
-                            } else {
-                                $display_name = $option_type;
-                            }
-
-                            $details['options'][] = [
-                                'category' => $option_info['name'],
-                                'name' => $display_name,
-                                'price' => $price,
-                                'formatted_price' => number_format($price) . '원'
-                            ];
-                            $details['total_price'] += $price;
-                            $details['has_options'] = true;
-                        }
-                    }
-                }
+                $details['total_price'] += $popt['price'];
+                $details['has_options'] = true;
             }
         } elseif (!empty($cart_data['premium_options_total']) && $cart_data['premium_options_total'] > 0) {
-            // premium_options JSON이 없지만 총액만 있는 경우
             $details['options'][] = [
                 'category' => '프리미엄옵션',
                 'name' => '상세정보 없음',

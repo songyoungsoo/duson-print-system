@@ -166,62 +166,39 @@ if (!empty($order['rounding_enabled'])) {
     $has_options = true;
 }
 
-// 프리미엄 옵션 (premium_options JSON 파싱)
+require_once __DIR__ . '/../includes/PremiumOptionsConfig.php';
 $premium_options_json = $order['premium_options'] ?? '';
 $premium_parsed = false;
 
-if (!empty($premium_options_json) && $premium_options_json[0] === '{') {
-    $premium_data = json_decode($premium_options_json, true);
-    if (!empty($premium_data) && is_array($premium_data)) {
-        foreach ($premium_data as $opt_name => $opt_value) {
-            if (!empty($opt_value) && is_array($opt_value)) {
-                $variant = $opt_value['variant'] ?? '';
-                $price = intval($opt_value['price'] ?? 0);
-                if (!empty($variant) || $price > 0) {
-                    $options[] = [
-                        'name' => $opt_name,
-                        'detail' => $variant,
-                        'price' => $price
-                    ];
-                    $has_options = true;
-                    $premium_parsed = true;
-                }
-            }
-        }
+if (!empty($premium_options_json)) {
+    $productType = $order['product_type'] ?? 'namecard';
+    $parsed_opts = PremiumOptionsConfig::parseSelectedOptions($premium_options_json, $productType);
+    foreach ($parsed_opts as $popt) {
+        $options[] = [
+            'name' => $popt['name'],
+            'detail' => $popt['type_name'],
+            'price' => $popt['price']
+        ];
+        $has_options = true;
+        $premium_parsed = true;
     }
 }
 
-// Type_1에서 프리미엄 옵션 파싱 (레거시 주문인 경우)
 if (!$premium_parsed && !empty($type1_raw)) {
-    // Type_1에서 옵션 관련 항목 찾기
-    $type1_lower = mb_strtolower($type1_raw, 'UTF-8');
-    
-    // 프리미엄 키워드 매핑
-    $premium_map = [
-        '박' => '박',
-        'foil' => '박',
-        '넘버링' => '추가옵션-넘버링',
-        'numbering' => '추가옵션-넘버링', 
-        '미싱' => '미싱',
-        'perforation' => '미싱',
-        '귀돌이' => '귀돌이',
-        'rounding' => '귀돌이',
-        '오시' => '오시',
-        'creasing' => '오시',
-        '약도' => '약도',
-        '마크로고' => '마크로고',
-        '고급特殊' => '고급옵션'
-    ];
-    
-    $found_options = [];
-    foreach ($premium_map as $kw => $display_name) {
-        if (stripos($type1_raw, $kw) !== false || stripos($type1_lower, $kw) !== false) {
-            if (!in_array($display_name, array_column($options, 'name'))) {
-                $options[] = [
-                    'name' => $display_name,
-                    'detail' => '',
-                    'price' => 0
-                ];
+    $configOptions = PremiumOptionsConfig::getOptions($order['product_type'] ?? 'namecard');
+    $kwMap = [];
+    foreach ($configOptions as $k => $v) {
+        $kwMap[$v['name']] = $v['name'];
+    }
+    $kwMap['foil'] = '박';
+    $kwMap['numbering'] = '넘버링';
+    $kwMap['perforation'] = '미싱';
+    $kwMap['rounding'] = '귀돌이';
+    $kwMap['creasing'] = '오시';
+    foreach ($kwMap as $kw => $displayName) {
+        if (stripos($type1_raw, $kw) !== false) {
+            if (!in_array($displayName, array_column($options, 'name'))) {
+                $options[] = ['name' => $displayName, 'detail' => '', 'price' => 0];
                 $has_options = true;
             }
         }

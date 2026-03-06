@@ -363,8 +363,7 @@ if ($url_nc_type) {
     <script src="js/namecard-compact.js"></script>
 
     <!-- 프리미엄 옵션 DB 로더 + JavaScript -->
-    <script src="/js/premium-options-loader.js"></script>
-    <!-- namecard-premium-options.js 제거됨 — PremiumOptionsGeneric으로 대체 -->
+    <script src="/js/premium-options-generic.js"></script>
 
     <?php if (!$isQuotationMode && !$isAdminQuoteMode): ?>
     <!-- 공통 업로드 모달 JavaScript (일반 모드에서만 로드) -->
@@ -1017,15 +1016,15 @@ if ($url_nc_type) {
     <?php if (!$isQuotationMode && !$isAdminQuoteMode) ThemeLoader::renderSwitcher('bottom-right'); ?>
     <?php if (!$isQuotationMode && !$isAdminQuoteMode) ThemeLoader::renderSwitcherJS(); ?>
 
-    <!-- PremiumOptionsGeneric 초기화 (동적 옵션 로딩) -->
+    <?php require_once __DIR__ . '/../../includes/PremiumOptionsConfig.php'; ?>
     <script>
     document.addEventListener('DOMContentLoaded', function() {
         if (document.getElementById('premiumOptionsSection') && typeof PremiumOptionsGeneric !== 'undefined') {
             setTimeout(function() {
-                var poManager = new PremiumOptionsGeneric('namecard', 'premiumOptionsSection', 'MY_amount');
+                var config = <?php echo PremiumOptionsConfig::toJson('namecard'); ?>;
+                var poManager = new PremiumOptionsGeneric('namecard', 'premiumOptionsSection', 'MY_amount', config);
                 poManager.init();
                 window.premiumOptionsManager = poManager;
-                console.log('✅ 명함 PremiumOptionsGeneric 초기화 완료');
             }, 200);
         }
     });

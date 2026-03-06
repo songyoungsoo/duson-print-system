@@ -37,26 +37,32 @@ $work_memo = $_POST['work_memo'] ?? '';
 $upload_method = $_POST['upload_method'] ?? 'upload';
 $uploaded_files_info = $_POST['uploaded_files_info'] ?? '';
 
-// 🆕 프리미엄 옵션 데이터 받기
-$premium_options = [
-    'foil_enabled' => $_POST['foil_enabled'] ?? 0,
-    'foil_type' => $_POST['foil_type'] ?? '',
-    'foil_price' => intval($_POST['foil_price'] ?? 0),
-    'numbering_enabled' => $_POST['numbering_enabled'] ?? 0,
-    'numbering_type' => $_POST['numbering_type'] ?? '',
-    'numbering_price' => intval($_POST['numbering_price'] ?? 0),
-    'perforation_enabled' => $_POST['perforation_enabled'] ?? 0,
-    'perforation_type' => $_POST['perforation_type'] ?? '',
-    'perforation_price' => intval($_POST['perforation_price'] ?? 0),
-    'rounding_enabled' => $_POST['rounding_enabled'] ?? 0,
-    'rounding_price' => intval($_POST['rounding_price'] ?? 0),
-    'creasing_enabled' => $_POST['creasing_enabled'] ?? 0,
-    'creasing_type' => $_POST['creasing_type'] ?? '',
-    'creasing_price' => intval($_POST['creasing_price'] ?? 0),
-    'premium_options_total' => intval($_POST['premium_options_total'] ?? 0)
-];
+// 🆕 프리미엄 옵션 데이터 받기 (Config 기반 — 옵션 추가 시 자동 반영)
+// JS(PremiumOptionsGeneric)는 premium_options_data에 JSON으로 전송
+$premium_options_raw = $_POST['premium_options_data'] ?? '';
+if (!empty($premium_options_raw)) {
+    $premium_options = json_decode($premium_options_raw, true);
+    if (!$premium_options || !is_array($premium_options)) {
+        $premium_options = [];
+    }
+} else {
+    // fallback: 개별 POST 필드에서 조합 (구 방식 호환)
+    $premium_options = [];
+    require_once __DIR__ . '/../../includes/PremiumOptionsConfig.php';
+    $configKeys = array_keys(PremiumOptionsConfig::getOptions($product_type));
+    foreach ($configKeys as $key) {
+        if (!empty($_POST[$key . '_enabled'])) {
+            $premium_options[$key . '_enabled'] = 1;
+            if (isset($_POST[$key . '_type'])) {
+                $premium_options[$key . '_type'] = $_POST[$key . '_type'];
+            }
+            $premium_options[$key . '_price'] = intval($_POST[$key . '_price'] ?? 0);
+        }
+    }
+    $premium_options['premium_options_total'] = intval($_POST['premium_options_total'] ?? 0);
+}
 $premium_options_json = json_encode($premium_options, JSON_UNESCAPED_UNICODE);
-$premium_total = intval($premium_options['premium_options_total']);
+$premium_total = intval($premium_options['premium_options_total'] ?? 0);
 
 // 입력값 검증
 if (!in_array($action, ['add_to_basket', 'add_to_basket_and_order'])) {

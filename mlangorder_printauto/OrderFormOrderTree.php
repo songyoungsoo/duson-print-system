@@ -4,6 +4,7 @@ ini_set('display_errors', '0');
 // 절대 경로로 설정 (admin.php에서 include할 때도 정상 작동)
 $HomeDir = $_SERVER['DOCUMENT_ROOT'];
 $PageCode = "PrintAuto";
+require_once $HomeDir . '/includes/PremiumOptionsConfig.php';
 
 // 이미 db.php가 include되어 $db가 설정되어 있으면 건너뛰기
 if (!isset($db) || !$db) {
@@ -904,36 +905,10 @@ function getOrderItemInfo($summary_item, $specFormatter) {
                                                 }
                                             }
                                         } else {
-                                            // Business cards/merchandise bond premium options
-                                            $opt_config = [
-                                                'foil' => ['name' => '박', 'types' => [
-                                                    'gold_matte' => '금박무광',
-                                                    'gold_gloss' => '금박유광',
-                                                    'silver_matte' => '은박무광',
-                                                    'silver_gloss' => '은박유광',
-                                                    'blue_gloss' => '청박유광',
-                                                    'red_gloss' => '적박유광',
-                                                    'green_gloss' => '녹박유광',
-                                                    'black_gloss' => '먹박유광'
-                                                ]],
-                                                'numbering' => ['name' => '넘버링', 'types' => ['single' => '1개', 'double' => '2개']],
-                                                'perforation' => ['name' => '미싱', 'types' => ['horizontal' => '가로미싱', 'vertical' => '세로미싱', 'cross' => '십자미싱']],
-                                                'rounding' => ['name' => '귀돌이', 'types' => ['4corners' => '네귀돌이', '2corners' => '두귀돌이']],
-                                                'creasing' => ['name' => '오시', 'types' => ['single_crease' => '1줄오시', 'double_crease' => '2줄오시']]
-                                            ];
-
-                                            foreach ($opt_config as $key => $config) {
-                                                if (!empty($premium_opts[$key . '_enabled']) && $premium_opts[$key . '_enabled'] == 1) {
-                                                    $price = intval($premium_opts[$key . '_price'] ?? 0);
-                                                    if ($price > 0) {
-                                                        $opt_type = $premium_opts[$key . '_type'] ?? '';
-                                                        $type_name = '';
-                                                        if (!empty($opt_type) && isset($config['types'][$opt_type])) {
-                                                            $type_name = '(' . $config['types'][$opt_type] . ')';
-                                                        }
-                                                        $item_options[] = $config['name'] . $type_name . ' ' . number_format($price) . '원';
-                                                    }
-                                                }
+                                            $pt = $summary_item['product_type'] ?? 'namecard';
+                                            $parsed_premium = PremiumOptionsConfig::parseSelectedOptions($summary_item['premium_options'], $pt);
+                                            foreach ($parsed_premium as $popt) {
+                                                $item_options[] = $popt['display'] . ' ' . number_format($popt['price']) . '원';
                                             }
                                         }
                                     }
@@ -1178,36 +1153,10 @@ function getOrderItemInfo($summary_item, $specFormatter) {
                                                 }
                                             }
                                         } else {
-                                            // Business cards/merchandise bond premium options
-                                            $opt_config = [
-                                                'foil' => ['name' => '박', 'types' => [
-                                                    'gold_matte' => '금박무광',
-                                                    'gold_gloss' => '금박유광',
-                                                    'silver_matte' => '은박무광',
-                                                    'silver_gloss' => '은박유광',
-                                                    'blue_gloss' => '청박유광',
-                                                    'red_gloss' => '적박유광',
-                                                    'green_gloss' => '녹박유광',
-                                                    'black_gloss' => '먹박유광'
-                                                ]],
-                                                'numbering' => ['name' => '넘버링', 'types' => ['single' => '1개', 'double' => '2개']],
-                                                'perforation' => ['name' => '미싱', 'types' => ['horizontal' => '가로미싱', 'vertical' => '세로미싱', 'cross' => '십자미싱']],
-                                                'rounding' => ['name' => '귀돌이', 'types' => ['4corners' => '네귀돌이', '2corners' => '두귀돌이']],
-                                                'creasing' => ['name' => '오시', 'types' => ['single_crease' => '1줄오시', 'double_crease' => '2줄오시']]
-                                            ];
-
-                                            foreach ($opt_config as $key => $config) {
-                                                if (!empty($premium_opts[$key . '_enabled']) && $premium_opts[$key . '_enabled'] == 1) {
-                                                    $price = intval($premium_opts[$key . '_price'] ?? 0);
-                                                    if ($price > 0) {
-                                                        $opt_type = $premium_opts[$key . '_type'] ?? '';
-                                                        $type_name = '';
-                                                        if (!empty($opt_type) && isset($config['types'][$opt_type])) {
-                                                            $type_name = '(' . $config['types'][$opt_type] . ')';
-                                                        }
-                                                        $item_options[] = $config['name'] . $type_name . ' ' . number_format($price) . '원';
-                                                    }
-                                                }
+                                            $pt = $summary_item['product_type'] ?? 'namecard';
+                                            $parsed_premium = PremiumOptionsConfig::parseSelectedOptions($summary_item['premium_options'], $pt);
+                                            foreach ($parsed_premium as $popt) {
+                                                $item_options[] = $popt['display'] . ' ' . number_format($popt['price']) . '원';
                                             }
                                         }
                                     }
@@ -1467,50 +1416,12 @@ function getOrderItemInfo($summary_item, $specFormatter) {
                                                 }
                                             }
 
-                                            // 5. Premium options (명함 박, 넘버링, 미싱, 귀돌이 등)
+                                            // 5. Premium options (Config 기반 — 옵션 추가 시 자동 반영)
                                             if (!empty($summary_item['premium_options'])) {
-                                                $premium_options = json_decode($summary_item['premium_options'], true);
-                                                if ($premium_options && is_array($premium_options)) {
-                                                    // 박 옵션
-                                                    if (!empty($premium_options['foil_enabled'])) {
-                                                        $foil_type = $premium_options['foil_type'] ?? '';
-                                                        $foil_types = ['gold_matte' => '금박무광', 'gold_gloss' => '금박유광', 'silver_matte' => '은박무광', 'silver_gloss' => '은박유광'];
-                                                        $foil_name = $foil_types[$foil_type] ?? '박';
-                                                        $foil_price = intval($premium_options['foil_price'] ?? 0);
-                                                        if ($foil_price > 0) {
-                                                            $item_options[] = '박(' . $foil_name . ') ' . number_format($foil_price) . '원';
-                                                        }
-                                                    }
-
-                                                    // 넘버링
-                                                    if (!empty($premium_options['numbering_enabled'])) {
-                                                        $numbering_price = intval($premium_options['numbering_price'] ?? 0);
-                                                        if ($numbering_price > 0) {
-                                                            $item_options[] = '넘버링 ' . number_format($numbering_price) . '원';
-                                                        }
-                                                    }
-
-                                                    // 미싱
-                                                    if (!empty($premium_options['perforation_enabled'])) {
-                                                        $perforation_type = $premium_options['perforation_type'] ?? '';
-                                                        $perforation_types = ['horizontal' => '가로미싱', 'vertical' => '세로미싱', 'cross' => '십자미싱'];
-                                                        $perforation_name = $perforation_types[$perforation_type] ?? '미싱';
-                                                        $perforation_price = intval($premium_options['perforation_price'] ?? 0);
-                                                        if ($perforation_price > 0) {
-                                                            $item_options[] = '미싱(' . $perforation_name . ') ' . number_format($perforation_price) . '원';
-                                                        }
-                                                    }
-
-                                                    // 귀돌이
-                                                    if (!empty($premium_options['rounding_enabled'])) {
-                                                        $rounding_type = $premium_options['rounding_type'] ?? '';
-                                                        $rounding_types = ['4corners' => '네귀돌이', '2corners' => '두귀돌이'];
-                                                        $rounding_name = $rounding_types[$rounding_type] ?? '귀돌이';
-                                                        $rounding_price = intval($premium_options['rounding_price'] ?? 0);
-                                                        if ($rounding_price > 0) {
-                                                            $item_options[] = '귀돌이(' . $rounding_name . ') ' . number_format($rounding_price) . '원';
-                                                        }
-                                                    }
+                                                $pt = $summary_item['product_type'] ?? 'namecard';
+                                                $parsed_premium_opts = PremiumOptionsConfig::parseSelectedOptions($summary_item['premium_options'], $pt);
+                                                foreach ($parsed_premium_opts as $popt) {
+                                                    $item_options[] = htmlspecialchars($popt['display']) . ' ' . number_format($popt['price']) . '원';
                                                 }
                                             }
 
