@@ -319,6 +319,11 @@ $default_values['MY_type'] = $url_type ? $url_type : '475';
     }
     ?>
 
+    <!-- 고객 리뷰 섹션 -->
+    <?php if (!$isQuotationMode && !$isAdminQuoteMode): ?>
+    <?php $product_type = 'ncrflambeau'; include __DIR__ . '/../../includes/review_widget.php'; ?>
+    <?php endif; ?>
+
     <?php if (!$isQuotationMode && !$isAdminQuoteMode): ?>
     <?php include __DIR__ . '/../../includes/quote_gauge.php'; ?>
     <script src="/js/quote-gauge.js?v=<?php echo time(); ?>"></script>

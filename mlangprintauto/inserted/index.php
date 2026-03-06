@@ -382,6 +382,11 @@ header("Expires: 0");
         </div>
     </div>
 
+    <!-- 고객 리뷰 섹션 -->
+    <?php if (!$isQuotationMode && !$isAdminQuoteMode): ?>
+    <?php $product_type = 'inserted'; include __DIR__ . '/../../includes/review_widget.php'; ?>
+    <?php endif; ?>
+
     <?php if (!$isQuotationMode && !$isAdminQuoteMode): ?>
     <?php include __DIR__ . '/../../includes/quote_gauge.php'; ?>
     <?php endif; ?>
