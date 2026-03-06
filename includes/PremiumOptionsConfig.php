@@ -3,7 +3,7 @@
  * PremiumOptionsConfig - 프리미엄 옵션 중앙 설정 (SSOT)
  *
  * ┌──────────────────────────────────────────────────────────────┐
- * │  새 옵션 추가 시 이 파일의 $options 배열에만 추가하면         │
+ * │  DB(premium_options + premium_option_variants)에서 읽어와    │
  * │  아래 모든 곳에 자동 반영됩니다:                              │
  * │                                                              │
  * │  ✅ 주문 페이지 UI  (PremiumOptionsGeneric JS)               │
@@ -14,184 +14,233 @@
  * │  ✅ API            (api/premium_options_config.php)          │
  * └──────────────────────────────────────────────────────────────┘
  *
- * @version 1.0
+ * DB 스키마:
+ *   premium_options: option_key (영문), option_name (한글)
+ *   premium_option_variants: variant_key (영문), variant_name (한글), pricing_config (JSON)
+ *
+ * @version 2.0 - DB 기반 전환
  * @date 2026-03-06
  */
 
 class PremiumOptionsConfig
 {
+    private static $memoryCache = [];
+    private static $cacheTTL = 300;
+    private static $cacheDir = null;
+
+    private static function getDb()
+    {
+        global $db;
+        if ($db && !mysqli_connect_errno()) {
+            return $db;
+        }
+        $dbFile = __DIR__ . '/../db.php';
+        if (file_exists($dbFile)) {
+            require_once $dbFile;
+            global $db;
+            return $db;
+        }
+        return null;
+    }
+
+    private static function getCacheDir(): string
+    {
+        if (self::$cacheDir === null) {
+            self::$cacheDir = __DIR__ . '/../cache';
+        }
+        return self::$cacheDir;
+    }
+
+    private static function readCache(string $productType): ?array
+    {
+        $cacheFile = self::getCacheDir() . '/premium_config_' . $productType . '.json';
+        if (!file_exists($cacheFile)) {
+            return null;
+        }
+        if ((time() - filemtime($cacheFile)) >= self::$cacheTTL) {
+            @unlink($cacheFile);
+            return null;
+        }
+        $data = @file_get_contents($cacheFile);
+        if ($data === false) {
+            return null;
+        }
+        $decoded = json_decode($data, true);
+        return is_array($decoded) ? $decoded : null;
+    }
+
+    private static function writeCache(string $productType, array $options): void
+    {
+        $dir = self::getCacheDir();
+        if (!is_dir($dir)) {
+            @mkdir($dir, 0755, true);
+        }
+        $cacheFile = $dir . '/premium_config_' . $productType . '.json';
+        @file_put_contents($cacheFile, json_encode($options, JSON_UNESCAPED_UNICODE));
+    }
+
+    public static function clearCache(string $productType = ''): void
+    {
+        $dir = self::getCacheDir();
+        if ($productType) {
+            @unlink($dir . '/premium_config_' . $productType . '.json');
+            unset(self::$memoryCache[$productType]);
+        } else {
+            $files = glob($dir . '/premium_config_*.json');
+            if ($files) {
+                foreach ($files as $f) {
+                    @unlink($f);
+                }
+            }
+            self::$memoryCache = [];
+        }
+    }
+
     /**
-     * 제품별 프리미엄 옵션 정의
+     * DB에서 옵션을 읽어 JS 소비 가능한 형태로 변환
      *
-     * 구조:
+     * 반환 포맷 (JS PremiumOptionsGeneric과 호환):
      *   'option_key' => [
      *       'name'       => '한글명',
      *       'type'       => 'select' | 'checkbox',
-     *       'base_qty'   => 500,          // 기준 수량
-     *       'base_price' => 30000,        // 기준 수량 이하 가격
-     *       'per_unit'   => 12,           // 기준 초과 시 매당 추가금 (0이면 정액)
-     *       'note'       => '참고 문구',   // (선택) UI 노트
-     *       'variants'   => [             // (select일 때만)
-     *           'key' => '표시명',
-     *           'key' => ['label' => '표시명', 'additional_fee' => 15000],
+     *       'base_qty'   => 500,
+     *       'base_price' => 30000,
+     *       'per_unit'   => 12,
+     *       'variants'   => [
+     *           'variant_key' => '표시명',
+     *           'variant_key' => ['label' => '표시명', 'additional_fee' => 15000],
      *       ],
      *   ]
-     *
-     * DB 저장 포맷 (premium_options JSON):
-     *   {option_key}_enabled  : 1
-     *   {option_key}_type     : variant key (select일 때)
-     *   {option_key}_price    : 계산된 가격
      */
-    private static $options = [
+    private static function loadFromDb(string $productType): array
+    {
+        $dbConn = self::getDb();
+        if (!$dbConn) {
+            return [];
+        }
 
-        // ───────────────────────────────────────────
-        // 명함 (namecard)
-        // ───────────────────────────────────────────
-        'namecard' => [
-            'foil' => [
-                'name'       => '박',
-                'type'       => 'select',
-                'base_qty'   => 500,
-                'base_price' => 30000,
-                'per_unit'   => 12,
-                'note'       => '박(20mm×20mm 이하)',
-                'variants'   => [
-                    'gold_matte'   => '금박무광',
-                    'gold_gloss'   => '금박유광',
-                    'silver_matte' => '은박무광',
-                    'silver_gloss' => '은박유광',
-                    'blue_gloss'   => '청박유광',
-                    'red_gloss'    => '적박유광',
-                    'green_gloss'  => '녹박유광',
-                    'black_gloss'  => '먹박유광',
-                ],
-            ],
-            'numbering' => [
-                'name'       => '넘버링',
-                'type'       => 'select',
-                'base_qty'   => 500,
-                'base_price' => 60000,
-                'per_unit'   => 12,
-                'variants'   => [
-                    'single' => '1개',
-                    'double' => ['label' => '2개', 'additional_fee' => 15000],
-                ],
-            ],
-            'perforation' => [
-                'name'       => '미싱',
-                'type'       => 'select',
-                'base_qty'   => 500,
-                'base_price' => 20000,
-                'per_unit'   => 25,
-                'variants'   => [
-                    'single' => '1개',
-                    'double' => ['label' => '2개', 'additional_fee' => 15000],
-                ],
-            ],
-            'rounding' => [
-                'name'       => '귀돌이',
-                'type'       => 'checkbox',
-                'base_qty'   => 500,
-                'base_price' => 6000,
-                'per_unit'   => 12,
-            ],
-            'creasing' => [
-                'name'       => '오시',
-                'type'       => 'select',
-                'base_qty'   => 500,
-                'base_price' => 20000,
-                'per_unit'   => 25,
-                'variants'   => [
-                    '1line' => '1줄',
-                    '2line' => '2줄',
-                    '3line' => ['label' => '3줄', 'additional_fee' => 15000],
-                ],
-            ],
-            'map' => [
-                'name'       => '약도',
-                'type'       => 'checkbox',
-                'base_qty'   => 0,
-                'base_price' => 30000,
-                'per_unit'   => 0,
-                'note'       => '약도 제작 (정액)',
-            ],
-            'logo' => [
-                'name'       => '마크로고',
-                'type'       => 'checkbox',
-                'base_qty'   => 0,
-                'base_price' => 10000,
-                'per_unit'   => 0,
-                'note'       => '로고/마크 디자인 (정액)',
-            ],
-        ],
+        $stmt = mysqli_prepare($dbConn, "
+            SELECT o.option_key, o.option_name, o.sort_order,
+                   v.variant_key, v.variant_name, v.pricing_config, v.is_default, v.display_order
+            FROM premium_options o
+            JOIN premium_option_variants v ON v.option_id = o.id
+            WHERE o.product_type = ? AND o.is_active = 1 AND v.is_active = 1
+              AND o.option_key IS NOT NULL AND v.variant_key IS NOT NULL
+            ORDER BY o.sort_order, v.display_order
+        ");
+        if (!$stmt) {
+            return [];
+        }
 
-        // ───────────────────────────────────────────
-        // 상품권 (merchandisebond)
-        // ───────────────────────────────────────────
-        'merchandisebond' => [
-            'foil' => [
-                'name'       => '박',
-                'type'       => 'select',
-                'base_qty'   => 500,
-                'base_price' => 30000,
-                'per_unit'   => 12,
-                'variants'   => [
-                    'gold_matte'   => '금박무광',
-                    'gold_gloss'   => '금박유광',
-                    'silver_matte' => '은박무광',
-                    'silver_gloss' => '은박유광',
-                    'blue_gloss'   => '청박유광',
-                    'red_gloss'    => '적박유광',
-                    'green_gloss'  => '녹박유광',
-                    'black_gloss'  => '먹박유광',
-                ],
-            ],
-            'numbering' => [
-                'name'       => '넘버링',
-                'type'       => 'select',
-                'base_qty'   => 500,
-                'base_price' => 60000,
-                'per_unit'   => 12,
-                'variants'   => [
-                    'single' => '1개',
-                    'double' => ['label' => '2개', 'additional_fee' => 15000],
-                ],
-            ],
-            'perforation' => [
-                'name'       => '미싱',
-                'type'       => 'select',
-                'base_qty'   => 500,
-                'base_price' => 20000,
-                'per_unit'   => 25,
-                'variants'   => [
-                    'horizontal' => '가로미싱',
-                    'vertical'   => '세로미싱',
-                    'cross'      => '십자미싱',
-                ],
-            ],
-            'rounding' => [
-                'name'       => '귀돌이',
-                'type'       => 'checkbox',
-                'base_qty'   => 500,
-                'base_price' => 6000,
-                'per_unit'   => 12,
-            ],
-        ],
-    ];
+        mysqli_stmt_bind_param($stmt, "s", $productType);
+        mysqli_stmt_execute($stmt);
+        $result = mysqli_stmt_get_result($stmt);
+
+        $rawOptions = [];
+        while ($row = mysqli_fetch_assoc($result)) {
+            $optKey = $row['option_key'];
+            if (!isset($rawOptions[$optKey])) {
+                $rawOptions[$optKey] = [
+                    'option_name' => $row['option_name'],
+                    'sort_order'  => (int)$row['sort_order'],
+                    'variants'    => [],
+                ];
+            }
+            $pricing = json_decode($row['pricing_config'], true) ?: [];
+            $rawOptions[$optKey]['variants'][] = [
+                'variant_key'  => $row['variant_key'],
+                'variant_name' => $row['variant_name'],
+                'pricing'      => $pricing,
+                'is_default'   => (bool)$row['is_default'],
+            ];
+        }
+        mysqli_stmt_close($stmt);
+
+        $options = [];
+        foreach ($rawOptions as $optKey => $raw) {
+            $variantCount = count($raw['variants']);
+            $firstVariant = $raw['variants'][0] ?? null;
+            if (!$firstVariant) continue;
+
+            $firstPricing = $firstVariant['pricing'];
+
+            $baseQty   = isset($firstPricing['base_500']) ? 500 : 0;
+            $basePrice = $firstPricing['base_500'] ?? $firstPricing['base_price'] ?? 0;
+            $perUnit   = $firstPricing['per_unit'] ?? 0;
+
+            $type = ($variantCount <= 1) ? 'checkbox' : 'select';
+
+            $opt = [
+                'name'       => $raw['option_name'],
+                'type'       => $type,
+                'base_qty'   => $baseQty,
+                'base_price' => (int)$basePrice,
+                'per_unit'   => (int)$perUnit,
+            ];
+
+            if ($type === 'select') {
+                $variants = [];
+                $referenceBase = (int)$basePrice;
+
+                foreach ($raw['variants'] as $v) {
+                    $vKey  = $v['variant_key'];
+                    $vName = $v['variant_name'];
+                    $vPricing = $v['pricing'];
+
+                    $explicitFee = (int)($vPricing['additional_fee'] ?? 0);
+
+                    if ($explicitFee > 0) {
+                        $totalAdditional = $explicitFee;
+                    } else {
+                        $variantBase = (int)($vPricing['base_500'] ?? $vPricing['base_price'] ?? 0);
+                        $totalAdditional = max(0, $variantBase - $referenceBase);
+                    }
+
+                    if ($totalAdditional > 0) {
+                        $variants[$vKey] = [
+                            'label'          => $vName,
+                            'additional_fee' => $totalAdditional,
+                        ];
+                    } else {
+                        $variants[$vKey] = $vName;
+                    }
+                }
+                $opt['variants'] = $variants;
+            }
+
+            $options[$optKey] = $opt;
+        }
+
+        return $options;
+    }
 
     public static function getOptions(string $productType): array
     {
-        return self::$options[$productType] ?? [];
+        if (isset(self::$memoryCache[$productType])) {
+            return self::$memoryCache[$productType];
+        }
+
+        $cached = self::readCache($productType);
+        if ($cached !== null) {
+            self::$memoryCache[$productType] = $cached;
+            return $cached;
+        }
+
+        $options = self::loadFromDb($productType);
+        self::$memoryCache[$productType] = $options;
+        self::writeCache($productType, $options);
+
+        return $options;
     }
 
     public static function getSupportedProducts(): array
     {
-        return array_keys(self::$options);
+        return ['namecard', 'merchandisebond', 'inserted', 'littleprint', 'cadarok', 'envelope'];
     }
 
     public static function hasOptions(string $productType): bool
     {
-        return !empty(self::$options[$productType]);
+        return !empty(self::getOptions($productType));
     }
 
     /**
@@ -263,7 +312,14 @@ class PremiumOptionsConfig
 
     public static function allToJson(): string
     {
-        return json_encode(self::$options, JSON_UNESCAPED_UNICODE);
+        $all = [];
+        foreach (self::getSupportedProducts() as $pt) {
+            $opts = self::getOptions($pt);
+            if (!empty($opts)) {
+                $all[$pt] = $opts;
+            }
+        }
+        return json_encode($all, JSON_UNESCAPED_UNICODE);
     }
 
     public static function getOptionName(string $productType, string $optionKey): string

@@ -117,7 +117,7 @@ if ($default_values['MY_type'] && $default_values['Section']) {
     <!-- 통합 인라인 폼 스타일 시스템 -->
     <link rel="stylesheet" href="../../css/unified-inline-form.css?v=<?php echo filemtime(__DIR__ . '/../../css/unified-inline-form.css'); ?>">
     <!-- 추가 옵션 시스템 CSS -->
-    <link rel="stylesheet" href="../../css/additional-options.css">
+    <link rel="stylesheet" href="../../css/additional-options.css?v=<?php echo filemtime(__DIR__ . '/../../css/additional-options.css'); ?>">
 
     <!-- 고급 JavaScript 라이브러리 (적응형 이미지 분석 및 실시간 계산) -->
     <script src="../../includes/js/GalleryLightbox.js"></script>
@@ -133,7 +133,7 @@ if ($default_values['MY_type'] && $default_values['Section']) {
     <!-- 인라인 CSS 추출 파일 -->
     <link rel="stylesheet" href="css/cadarok-inline-extracted.css">
     <!-- 🎯 통합 공통 스타일 CSS (최종 로드로 최우선 적용) -->
-    <link rel="stylesheet" href="../../css/common-styles.css?v=1759615861">
+    <link rel="stylesheet" href="../../css/common-styles.css?v=<?php echo filemtime(__DIR__ . '/../../css/common-styles.css'); ?>">
     <link rel="stylesheet" href="../../css/upload-modal-common.css?v=<?php echo time(); ?>">
     <!-- 견적서 모달용 공통 스타일 -->
     <link rel="stylesheet" href="../../css/quotation-modal-common.css">

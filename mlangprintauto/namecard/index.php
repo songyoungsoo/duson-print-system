@@ -363,7 +363,7 @@ if ($url_nc_type) {
     <script src="js/namecard-compact.js"></script>
 
     <!-- 프리미엄 옵션 DB 로더 + JavaScript -->
-    <script src="/js/premium-options-generic.js"></script>
+    <script src="/js/premium-options-generic.js?v=<?php echo time(); ?>"></script>
 
     <?php if (!$isQuotationMode && !$isAdminQuoteMode): ?>
     <!-- 공통 업로드 모달 JavaScript (일반 모드에서만 로드) -->

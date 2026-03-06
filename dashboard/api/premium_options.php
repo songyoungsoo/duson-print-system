@@ -139,18 +139,25 @@ function handleCreateOption() {
     global $_JSON_INPUT; $input = $_JSON_INPUT ?: [];
     $product_type = $input['product_type'] ?? '';
     $option_name = trim($input['option_name'] ?? '');
+    $option_key = trim($input['option_key'] ?? '');
 
     $allowed = ['namecard', 'merchandisebond', 'inserted', 'littleprint', 'cadarok', 'envelope'];
     if (!in_array($product_type, $allowed)) jsonResponse(false, '유효하지 않은 제품 유형입니다.');
     if (empty($option_name)) jsonResponse(false, '옵션 이름이 필요합니다.');
 
-    // 최대 sort_order 조회
+    if (empty($option_key)) {
+        $option_key = strtolower(preg_replace('/[^a-zA-Z0-9_]/', '', $option_name));
+        if (empty($option_key)) {
+            $option_key = 'opt_' . time();
+        }
+    }
+
     $r = mysqli_query($db, "SELECT MAX(sort_order) AS max_sort FROM premium_options WHERE product_type='" . mysqli_real_escape_string($db, $product_type) . "'");
     $max_sort = (int)mysqli_fetch_assoc($r)['max_sort'];
 
-    $stmt = mysqli_prepare($db, "INSERT INTO premium_options (product_type, option_name, sort_order) VALUES (?, ?, ?)");
+    $stmt = mysqli_prepare($db, "INSERT INTO premium_options (product_type, option_name, option_key, sort_order) VALUES (?, ?, ?, ?)");
     $sort = $max_sort + 1;
-    mysqli_stmt_bind_param($stmt, "ssi", $product_type, $option_name, $sort);
+    mysqli_stmt_bind_param($stmt, "sssi", $product_type, $option_name, $option_key, $sort);
 
     if (mysqli_stmt_execute($stmt)) {
         $new_id = mysqli_insert_id($db);
@@ -176,13 +183,13 @@ function handleCreateVariant() {
     global $_JSON_INPUT; $input = $_JSON_INPUT ?: [];
     $option_id = (int)($input['option_id'] ?? 0);
     $variant_name = trim($input['variant_name'] ?? '');
+    $variant_key = trim($input['variant_key'] ?? '');
     $pricing_config = $input['pricing_config'] ?? [];
 
     if (!$option_id) jsonResponse(false, 'option_id가 필요합니다.');
     if (empty($variant_name)) jsonResponse(false, 'variant 이름이 필요합니다.');
     if (empty($pricing_config)) jsonResponse(false, '가격 설정이 필요합니다.');
 
-    // option 존재 확인 + product_type 조회
     $stmt = mysqli_prepare($db, "SELECT product_type FROM premium_options WHERE id = ?");
     mysqli_stmt_bind_param($stmt, "i", $option_id);
     mysqli_stmt_execute($stmt);
@@ -192,14 +199,20 @@ function handleCreateVariant() {
 
     if (!$opt) jsonResponse(false, '옵션을 찾을 수 없습니다.');
 
-    // 최대 display_order
+    if (empty($variant_key)) {
+        $variant_key = strtolower(preg_replace('/[^a-zA-Z0-9_]/', '', $variant_name));
+        if (empty($variant_key)) {
+            $variant_key = 'var_' . time();
+        }
+    }
+
     $r2 = mysqli_query($db, "SELECT MAX(display_order) AS max_order FROM premium_option_variants WHERE option_id={$option_id}");
     $max_order = (int)mysqli_fetch_assoc($r2)['max_order'];
 
     $json = json_encode($pricing_config, JSON_UNESCAPED_UNICODE);
     $display_order = $max_order + 1;
-    $stmt = mysqli_prepare($db, "INSERT INTO premium_option_variants (option_id, variant_name, pricing_config, display_order) VALUES (?, ?, ?, ?)");
-    mysqli_stmt_bind_param($stmt, "issi", $option_id, $variant_name, $json, $display_order);
+    $stmt = mysqli_prepare($db, "INSERT INTO premium_option_variants (option_id, variant_name, variant_key, pricing_config, display_order) VALUES (?, ?, ?, ?, ?)");
+    mysqli_stmt_bind_param($stmt, "isssi", $option_id, $variant_name, $variant_key, $json, $display_order);
 
     if (mysqli_stmt_execute($stmt)) {
         $new_id = mysqli_insert_id($db);
@@ -247,6 +260,11 @@ function handleUpdateVariant() {
     if (isset($input['variant_name'])) {
         $updates[] = "variant_name = ?";
         $params[] = trim($input['variant_name']);
+        $types .= 's';
+    }
+    if (isset($input['variant_key'])) {
+        $updates[] = "variant_key = ?";
+        $params[] = trim($input['variant_key']);
         $types .= 's';
     }
     if (isset($input['is_default'])) {
@@ -859,4 +877,6 @@ function invalidateCache($product_type) {
     if (file_exists($cache_file)) {
         @unlink($cache_file);
     }
+    require_once $_SERVER['DOCUMENT_ROOT'] . '/includes/PremiumOptionsConfig.php';
+    PremiumOptionsConfig::clearCache($product_type);
 }

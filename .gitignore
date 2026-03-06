@@ -335,3 +335,14 @@ tools/logen/package-lock.json
 
 # find_phpmyadmin 관련
 find_phpmyadmin.mjs
+
+# ============================================
+# 16. 임시 분석/보고서 파일 (2026-03-06)
+# ============================================
+PREMIUM_OPTIONS_*.md
+README_PREMIUM_OPTIONS.md
+SCREENSHOT_REPORT_*.md
+TEST_REPORT_*.md
+02-premium-options-section.md
+member/session_diag.php
+test_order_view.php

@@ -24,51 +24,46 @@ class PremiumOptionsGeneric {
     }
 
     render() {
-        var html = '<div class="premium-options-wrapper" style="border:1px solid #e0e0e0; border-radius:8px; padding:10px; background:#fafafa;">';
-        html += '<div style="font-weight:600; font-size:13px; margin-bottom:8px; color:#333;">✨ 품목옵션 <span id="premiumPriceTotal" style="color:#718096; font-weight:400;">(+0원)</span></div>';
-
         var keys = Object.keys(this.config);
+
+        var html = '<div class="premium-options-wrapper" style="margin-top:15px;">';
+
+        html += '<div style="display:flex; flex-wrap:wrap; align-items:center; gap:8px; padding:8px 12px; background:#f8f9fa; border-radius:8px; border:1px solid #e0e0e0;">';
         for (var i = 0; i < keys.length; i++) {
             var key = keys[i];
             var opt = this.config[key];
-            html += this._renderOption(key, opt);
+            html += '<div style="display:flex; align-items:center; gap:4px;">';
+            html += '<input type="checkbox" id="' + key + '_enabled" class="option-toggle" data-key="' + key + '" style="width:16px; height:16px; cursor:pointer;">';
+            html += '<label for="' + key + '_enabled" style="font-size:12px; font-weight:500; color:#495057; cursor:pointer; white-space:nowrap;">' + this._esc(opt.name) + '</label>';
+            html += '</div>';
         }
+        html += '<div style="margin-left:auto;">';
+        html += '<span id="premiumPriceTotal" style="font-weight:bold; color:#718096; font-size:12px;">(+0원)</span>';
         html += '</div>';
-        this.container.innerHTML = html;
-        this._bindEvents();
-    }
+        html += '</div>';
 
-    _renderOption(key, opt) {
-        var html = '<div class="premium-opt-row" style="display:flex; align-items:center; gap:8px; padding:5px 0; border-bottom:1px solid #f0f0f0;">';
-
-        html += '<label style="display:flex; align-items:center; gap:5px; cursor:pointer; min-width:90px;">';
-        html += '<input type="checkbox" id="' + key + '_enabled" class="option-toggle" data-key="' + key + '" style="width:16px; height:16px;">';
-        html += '<span style="font-size:13px; font-weight:500;">' + this._esc(opt.name) + '</span>';
-        html += '</label>';
-
-        if (opt.type === 'select' && opt.variants) {
-            html += '<div id="' + key + '_options" style="display:none; flex:1;">';
-            html += '<select id="' + key + '_type" data-key="' + key + '" style="font-size:12px; padding:3px 6px; border:1px solid #ccc; border-radius:4px;">';
-            var vKeys = Object.keys(opt.variants);
-            for (var j = 0; j < vKeys.length; j++) {
-                var vk = vKeys[j];
-                var vv = opt.variants[vk];
-                var label = typeof vv === 'object' ? vv.label : vv;
-                html += '<option value="' + this._esc(vk) + '">' + this._esc(label) + '</option>';
+        for (var i = 0; i < keys.length; i++) {
+            var key = keys[i];
+            var opt = this.config[key];
+            html += '<div id="' + key + '_options" style="display:none; padding:8px 12px; background:#fff; border:1px solid #e0e0e0; border-top:none; border-radius:0 0 8px 8px;">';
+            if (opt.type === 'select' && opt.variants) {
+                html += '<select id="' + key + '_type" data-key="' + key + '" style="width:100%; padding:6px 10px; border:1px solid #ced4da; border-radius:4px; font-size:13px; color:#495057;">';
+                var vKeys = Object.keys(opt.variants);
+                for (var j = 0; j < vKeys.length; j++) {
+                    var vk = vKeys[j];
+                    var vv = opt.variants[vk];
+                    var label = typeof vv === 'object' ? vv.label : vv;
+                    html += '<option value="' + this._esc(vk) + '">' + this._esc(label) + '</option>';
+                }
+                html += '</select>';
             }
-            html += '</select>';
+            html += '<input type="hidden" id="' + key + '_price" value="0">';
             html += '</div>';
         }
 
-        html += '<span id="' + key + '_price_display" style="font-size:12px; color:#888; min-width:70px; text-align:right;"></span>';
-        html += '<input type="hidden" id="' + key + '_price" value="0">';
-
-        if (opt.note) {
-            html += '<span style="font-size:11px; color:#aaa;">' + this._esc(opt.note) + '</span>';
-        }
-
         html += '</div>';
-        return html;
+        this.container.innerHTML = html;
+        this._bindEvents();
     }
 
     _bindEvents() {
@@ -105,11 +100,13 @@ class PremiumOptionsGeneric {
         var detailsDiv = document.getElementById(key + '_options');
 
         if (toggle.checked) {
-            if (detailsDiv) detailsDiv.style.display = '';
+            if (detailsDiv) detailsDiv.style.display = 'block';
         } else {
             if (detailsDiv) detailsDiv.style.display = 'none';
             var priceField = document.getElementById(key + '_price');
             if (priceField) priceField.value = '0';
+            var selectEl = document.getElementById(key + '_type');
+            if (selectEl) selectEl.selectedIndex = 0;
         }
         this.calculateAndUpdate();
     }
@@ -159,16 +156,13 @@ class PremiumOptionsGeneric {
             var key = keys[i];
             var enabledEl = document.getElementById(key + '_enabled');
             var priceField = document.getElementById(key + '_price');
-            var priceDisplay = document.getElementById(key + '_price_display');
 
             if (enabledEl && enabledEl.checked) {
                 var price = this._calcPrice(key);
                 total += price;
                 if (priceField) priceField.value = price;
-                if (priceDisplay) priceDisplay.textContent = '+' + price.toLocaleString() + '원';
             } else {
                 if (priceField) priceField.value = '0';
-                if (priceDisplay) priceDisplay.textContent = '';
             }
         }
 
