@@ -168,6 +168,8 @@ if (!empty($order['rounding_enabled'])) {
 
 // 프리미엄 옵션 (premium_options JSON 파싱)
 $premium_options_json = $order['premium_options'] ?? '';
+$premium_parsed = false;
+
 if (!empty($premium_options_json) && $premium_options_json[0] === '{') {
     $premium_data = json_decode($premium_options_json, true);
     if (!empty($premium_data) && is_array($premium_data)) {
@@ -182,7 +184,45 @@ if (!empty($premium_options_json) && $premium_options_json[0] === '{') {
                         'price' => $price
                     ];
                     $has_options = true;
+                    $premium_parsed = true;
                 }
+            }
+        }
+    }
+}
+
+// Type_1에서 프리미엄 옵션 파싱 (레거시 주문인 경우)
+if (!$premium_parsed && !empty($type1_raw)) {
+    // Type_1에서 옵션 관련 항목 찾기
+    $type1_lower = mb_strtolower($type1_raw, 'UTF-8');
+    
+    // 프리미엄 키워드 매핑
+    $premium_map = [
+        '박' => '박',
+        'foil' => '박',
+        '넘버링' => '추가옵션-넘버링',
+        'numbering' => '추가옵션-넘버링', 
+        '미싱' => '미싱',
+        'perforation' => '미싱',
+        '귀돌이' => '귀돌이',
+        'rounding' => '귀돌이',
+        '오시' => '오시',
+        'creasing' => '오시',
+        '약도' => '약도',
+        '마크로고' => '마크로고',
+        '고급特殊' => '고급옵션'
+    ];
+    
+    $found_options = [];
+    foreach ($premium_map as $kw => $display_name) {
+        if (stripos($type1_raw, $kw) !== false || stripos($type1_lower, $kw) !== false) {
+            if (!in_array($display_name, array_column($options, 'name'))) {
+                $options[] = [
+                    'name' => $display_name,
+                    'detail' => '',
+                    'price' => 0
+                ];
+                $has_options = true;
             }
         }
     }
