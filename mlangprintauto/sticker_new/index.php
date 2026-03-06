@@ -72,12 +72,12 @@ if (isset($_GET['jong']) && !empty($_GET['jong'])) {
     <title>스티커 제작 | 스티커 인쇄 - 두손기획인쇄</title>
     <meta name="description" content="스티커 인쇄 전문 두손기획인쇄. 라벨 스티커, 원형·사각·모양 스티커 맞춤 제작. 소량 100매부터 대량까지. 실시간 견적 확인, 빠른 배송.">
     <meta name="keywords" content="스티커 인쇄, 스티커 제작, 라벨 스티커, 원형 스티커, 맞춤 스티커, 스티커 가격">
-    <link rel="canonical" href="https://dsp114.co.kr/mlangprintauto/sticker_new/">
+    <link rel="canonical" href="https://dsp114.com/mlangprintauto/sticker_new/">
     <meta property="og:type" content="website">
     <meta property="og:title" content="스티커 제작 | 스티커 인쇄 - 두손기획인쇄">
     <meta property="og:description" content="스티커 인쇄 전문. 라벨, 원형, 사각, 모양 스티커 맞춤 제작. 소량 100매부터.">
-    <meta property="og:url" content="https://dsp114.co.kr/mlangprintauto/sticker_new/">
-    <meta property="og:image" content="https://dsp114.co.kr/ImgFolder/dusonlogo1.png">
+    <meta property="og:url" content="https://dsp114.com/mlangprintauto/sticker_new/">
+    <meta property="og:image" content="https://dsp114.com/ImgFolder/og-image.png">
     <meta property="og:site_name" content="두손기획인쇄">
 
 
@@ -119,7 +119,7 @@ if (isset($_GET['jong']) && !empty($_GET['jong'])) {
     <link rel="stylesheet" href="../../css/product-layout.css?v=<?php echo filemtime(__DIR__ . '/../../css/product-layout.css'); ?>">
 
     <!-- 스티커 전용 스타일 (공통 스타일을 덮어쓰지 않음) -->
-    <link rel="stylesheet" href="../../css/sticker-inline-styles.css">
+    <link rel="stylesheet" href="../../css/sticker-inline-styles.css?v=20260303">
 
     <!-- 🎯 통합 공통 스타일 CSS (최종 로드로 최우선 적용) -->
     <link rel="stylesheet" href="../../css/common-styles.css?v=<?php echo time(); ?>">
@@ -471,6 +471,24 @@ if (isset($_GET['jong']) && !empty($_GET['jong'])) {
                             </select>
                             <span class="inline-note">도무송 시 좌우상하밀림 현상 있습니다 (오차 1mm 이상)</span>
                         </div>
+
+                        <!-- 주문건수 -->
+                        <div class="inline-form-row">
+                            <span class="inline-label label-compact">주문건수</span>
+                            <select name="order_count" id="order_count" class="inline-select" onchange="updateOrderCountDisplay()">
+                                <option value="1" selected>1건 (기본)</option>
+                                <option value="2">2건</option>
+                                <option value="3">3건</option>
+                                <option value="4">4건</option>
+                                <option value="5">5건</option>
+                                <option value="6">6건</option>
+                                <option value="7">7건</option>
+                                <option value="8">8건</option>
+                                <option value="9">9건</option>
+                                <option value="10">10건</option>
+                            </select>
+                            <span class="inline-note">같은 스펙으로 여러 건 주문 (건별 디자인 가능)</span>
+                        </div>
                     </div>
                     
                     <!-- 명함 방식의 실시간 가격 표시 -->
@@ -506,6 +524,8 @@ if (isset($_GET['jong']) && !empty($_GET['jong'])) {
     <?php include "../../includes/login_modal.php"; ?>
 
 <?php if (!$is_quotation_mode && !$is_admin_quote_mode): ?>
+    <!-- AI 생성 상세페이지 (기존 설명 위에 표시) -->
+    <?php $detail_page_product = 'sticker_new'; include __DIR__ . "/../../_detail_page/detail_page_loader.php"; ?>
     <!-- 스티커 상세 설명 섹션 -->
     <div class="sticker-detail-combined">
         <?php include "explane_sticker.php"; ?>
@@ -616,7 +636,8 @@ if (isset($_GET['jong']) && !empty($_GET['jong'])) {
                 console.log('Large display price (Supply price without VAT):', priceData.price + '원');
                 
                 // 상세 내역 표시 - 한 행으로 표시, VAT는 적색과 큰 글씨, 중앙정렬
-                priceDetails.innerHTML = `
+                const orderCount = parseInt(document.getElementById('order_count')?.value) || 1;
+                let priceHtml = `
                     <div style="font-size: 0.8rem; margin-top: 6px; line-height: 1.4; color: #6c757d; display: flex; gap: 15px; align-items: center; flex-wrap: wrap; justify-content: center;">
                         <span>인쇄비: ${new Intl.NumberFormat('ko-KR').format(printPrice)}원</span>
                         ${editFee > 0 ? `<span>편집비: ${new Intl.NumberFormat('ko-KR').format(editFee)}원</span>` : ''}
@@ -624,6 +645,20 @@ if (isset($_GET['jong']) && !empty($_GET['jong'])) {
                         <span>부가세 포함: <span style="color: #dc3545; font-size: 1rem;">${priceData.price_vat}원</span></span>
                     </div>
                 `;
+                if (orderCount > 1) {
+                    const vatPriceNum = parseInt(priceData.price_vat.replace(/,/g, ''));
+                    const totalWithCount = vatPriceNum * orderCount;
+                    priceHtml += `
+                    <div style="margin-top: 8px; padding-top: 8px; border-top: 2px solid #e0e0e0; display: flex; gap: 15px; align-items: center; flex-wrap: wrap; justify-content: center;">
+                        <span style="font-weight: 700; color: #1E4E79;">📋 주문건수: ${orderCount}건</span>
+                        <span style="font-weight: 700; color: #d63384; font-size: 1.1rem;">💰 합계: ${new Intl.NumberFormat('ko-KR').format(totalWithCount)}원</span>
+                    </div>
+                    <div style="font-size: 11px; color: #6c757d; margin-top: 4px; text-align: center;">
+                        (같은 스펙 ${orderCount}건, 건당 ${priceData.price_vat}원)
+                    </div>
+                    `;
+                }
+                priceDetails.innerHTML = priceHtml;
                 
                 // 가격 표시 영역을 calculated 상태로 변경
                 priceDisplay.classList.add('calculated');
@@ -675,6 +710,13 @@ if (isset($_GET['jong']) && !empty($_GET['jong'])) {
                 priceDisplay.classList.remove('calculated');
                 uploadButton.style.display = 'none';
                 window.currentPriceData = null;
+            }
+        }
+
+        // 주문건수 변경 시 총액 표시 업데이트
+        function updateOrderCountDisplay() {
+            if (window.currentPriceData) {
+                updatePriceDisplay(window.currentPriceData);
             }
         }
 
@@ -1894,6 +1936,7 @@ if (isset($_GET['jong']) && !empty($_GET['jong'])) {
             formData.append("POtype", document.getElementById("POtype").value);
             formData.append("MY_amount", document.getElementById("MY_amount").value);
             formData.append("ordertype", document.getElementById("ordertype").value);
+            formData.append("order_count", document.getElementById("order_count")?.value || "1");
             formData.append("price", Math.round(window.currentPriceData.total_price));
             formData.append("vat_price", Math.round(window.currentPriceData.vat_price));
 
