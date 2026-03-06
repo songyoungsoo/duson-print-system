@@ -202,7 +202,9 @@ async function loadOptions(productType) {
     bottom.classList.add('hidden');
 
     try {
-        const res = await fetch(API_ADMIN + '?action=list&product_type=' + productType);
+        const res = await fetch(API_ADMIN + '?action=list&product_type=' + productType, {
+            credentials: 'include'
+        });
         const data = await res.json();
 
         if (!data.success) throw new Error(data.message);
@@ -418,6 +420,7 @@ async function saveVariant(variantId, pricingConfig) {
         const res = await fetch(API_ADMIN, {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
+            credentials: 'include',
             body: JSON.stringify({
                 action: 'update_variant',
                 variant_id: variantId,
@@ -440,6 +443,7 @@ async function toggleOption(optionId) {
         const res = await fetch(API_ADMIN, {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
+            credentials: 'include',
             body: JSON.stringify({ action: 'toggle_option', option_id: optionId })
         });
         const data = await res.json();
@@ -461,6 +465,7 @@ async function deleteVariant(variantId, variantName) {
         const res = await fetch(API_ADMIN, {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
+            credentials: 'include',
             body: JSON.stringify({ action: 'delete_variant', variant_id: variantId })
         });
         const data = await res.json();
@@ -489,6 +494,7 @@ async function createOption() {
         const res = await fetch(API_ADMIN, {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
+            credentials: 'include',
             body: JSON.stringify({ action: 'create_option', product_type: currentProduct, option_name: name })
         });
         const data = await res.json();
@@ -550,6 +556,7 @@ async function createVariant() {
         const res = await fetch(API_ADMIN, {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
+            credentials: 'include',
             body: JSON.stringify({
                 action: 'create_variant',
                 option_id: optionId,
@@ -591,6 +598,7 @@ async function previewRecalculate() {
         const res = await fetch(API_ADMIN, {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
+            credentials: 'include',
             body: JSON.stringify({ action: 'recalculate_orders', product_type: currentProduct })
         });
         const data = await res.json();
@@ -692,6 +700,7 @@ async function executeRecalculate() {
         const res = await fetch(API_ADMIN, {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
+            credentials: 'include',
             body: JSON.stringify({ action: 'recalculate_orders', product_type: currentProduct, execute: true })
         });
         const data = await res.json();

@@ -1,0 +1,172 @@
+    /* btn-primary 스타일은 공통 CSS (../../css/btn-primary.css)에서 로드됨 */
+    
+    /* =================================================================== */
+    /* 1단계: Page-title 컴팩트화 (1/2 높이 축소) */
+    /* =================================================================== */
+
+    /* =================================================================== */
+    /* 2단계: Calculator-header 컴팩트화 (gallery-title과 완전히 동일한 디자인) */
+    /* =================================================================== */
+    .calculator-header {
+        background: linear-gradient(135deg, #9c27b0 0%, #673ab7 100%);
+        color: white;
+        padding: 15px 20px;       /* gallery-title과 동일 */
+        margin: 0px -25px 20px -25px; /* 좌우 -25px로 섹션 너비에 맞춤 */
+        border-radius: 15px 15px 0 0;  /* gallery-title과 동일한 라운딩 */
+        font-size: 1.1rem;        /* gallery-title과 동일 */
+        font-weight: 600;
+        text-align: center;
+        box-shadow: 0 2px 10px rgba(156, 39, 176, 0.3);
+        line-height: 1.2;
+    }
+
+    /* calculator-section에 갤러리와 동일한 배경 적용 */
+    .calculator-section {
+        background: linear-gradient(135deg, #f8f9fa 0%, #e9ecef 100%);
+        border-radius: 15px;
+        padding: 25px;
+        box-shadow: 0 10px 35px rgba(0, 0, 0, 0.12), 0 4px 15px rgba(0, 0, 0, 0.08);
+        border: 1px solid rgba(255, 255, 255, 0.9);
+        position: relative; /* 헤더 오버플로우를 위한 설정 */
+        height: 450px;
+        min-height: 450px;
+        overflow: auto;
+    }
+
+    .calculator-header h3 {
+        font-size: 1.2rem;        /* 14% 축소 */
+        line-height: 1.2;
+        margin: 0;
+        color: white;
+        font-weight: 600;
+    }
+
+    .calculator-subtitle {
+        font-size: 0.85rem;
+        margin: 0;
+        opacity: 0.9;
+    }
+
+    /* =================================================================== */
+    /* 가격 표시는 공통 CSS (../../css/unified-price-display.css) 사용 */
+    /* =================================================================== */
+
+    /* =================================================================== */
+    /* 4단계: Form 요소 컴팩트화 (패딩 1/2 축소) */
+    /* =================================================================== */
+    .option-select {
+        padding: 6px 15px;        /* 상하 패딩 1/2 */
+    }
+
+    /* =================================================================== */
+    /* 5단계: 기타 요소들 컴팩트화 */
+    /* =================================================================== */
+    .calculator-section {
+        padding: 0px 25px;        /* 더 타이트하게 */
+        min-height: 400px;
+    }
+
+    .options-grid {
+        gap: 12px;                /* 25% 축소 */
+    }
+
+    .option-group {
+        margin-bottom: 8px;       /* 33% 축소 */
+    }
+
+    .upload-order-button {
+        margin-top: 8px;          /* 20% 축소 */
+    }
+
+    /* =================================================================== */
+    /* 6단계: 갤러리 섹션 스타일 (포스터 브랜드 컬러 - 퍼플-바이올렛) */
+    /* =================================================================== */
+    .gallery-section {
+        background: linear-gradient(135deg, #f8f9fa 0%, #e9ecef 100%);
+        border-radius: 15px;
+        padding: 25px;
+        box-shadow: 0 10px 35px rgba(0, 0, 0, 0.12), 0 4px 15px rgba(0, 0, 0, 0.08);
+        border: 1px solid rgba(255, 255, 255, 0.9);
+        height: 450px;
+        min-height: 450px;
+        overflow: auto;
+    }
+    
+    .gallery-title {
+        background: linear-gradient(135deg, #9c27b0 0%, #673ab7 100%);
+        color: white;
+        padding: 15px 20px;
+        margin: -25px -25px 20px -25px;
+        border-radius: 15px 15px 0 0;
+        font-size: 1.1rem;
+        font-weight: 600;
+        text-align: center;
+        box-shadow: 0 2px 10px rgba(156, 39, 176, 0.3);
+    }
+    
+    /* 공통 갤러리와의 호환을 위한 갤러리 컨테이너 스타일 조정 */
+    .gallery-section .gallery-container {
+        background: transparent;
+        box-shadow: none;
+        padding: 0;
+        border-radius: 0;
+    }
+
+    /* =================================================================== */
+    /* 7단계: 반응형 최적화 */
+    /* =================================================================== */
+    @media (max-width: 768px) {
+        /* 모바일에서는 축소 정도 완화 */
+        
+        
+        .calculator-header { 
+            padding: 15px 20px;    /* 터치 친화적 */
+        }
+        
+        .price-display .price-amount {
+            font-size: 0.98rem;     /* 모바일도 동일 크기 */
+        }
+        
+        .option-select {
+            padding: 10px 15px;    /* 터치 영역 확보 */
+        }
+
+        .gallery-section {
+            padding: 20px;
+            margin: 0 -10px;
+            border-radius: 10px;
+        }
+        
+        .gallery-title {
+            margin: -20px -20px 15px -20px;
+            padding: 12px 15px;
+            font-size: 1rem;
+        }
+    }
+    
+    /* 포스터 페이지 전용 - 한 줄 레이아웃 강제 */
+    #priceDisplay .price-details,
+    .price-display .price-details {
+        /* 한 줄 표시 강제 - 최고 우선순위 */
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        gap: 15px;
+        flex-wrap: nowrap;
+        white-space: nowrap;
+        overflow-x: auto;
+        flex-direction: row;
+    }
+    
+    /* 부가세 포함 금액을 견적 금액과 완전히 동일하게 - 포스터 전용 */
+    #priceDisplay .price-details .vat-amount,
+    .price-display .price-details .vat-amount {
+        color: #dc3545;  /* 빨간색 */
+        font-size: 0.98rem;  /* 견적 금액과 동일한 크기 */
+        font-weight: 700;  /* 견적 금액과 동일한 굵기 */
+        font-style: normal;
+        text-decoration: none;
+        line-height: 1.2;  /* 견적 금액과 동일한 라인 높이 */
+        letter-spacing: -0.5px;  /* 견적 금액과 동일한 글자 간격 */
+        font-family: inherit;
+    }

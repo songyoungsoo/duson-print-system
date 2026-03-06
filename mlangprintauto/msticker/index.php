@@ -114,7 +114,7 @@ if ($default_values['MY_type'] && $default_values['Section']) {
     <!-- 통일 인라인 폼 스타일 시스템 -->
     <link rel="stylesheet" href="../../css/unified-inline-form.css?v=<?php echo filemtime(__DIR__ . '/../../css/unified-inline-form.css'); ?>">
     <!-- 추가 옵션 시스템 CSS -->
-    <link rel="stylesheet" href="../../css/additional-options.css">
+    <link rel="stylesheet" href="../../css/additional-options.css?v=<?php echo filemtime(__DIR__ . '/../../css/additional-options.css'); ?>">
 
     <!-- 통일된 갤러리 팝업 CSS -->
     
@@ -140,7 +140,7 @@ if ($default_values['MY_type'] && $default_values['Section']) {
     <script src="../../js/common-gallery-popup.js"></script>
 
     <!-- 🎯 통합 공통 스타일 CSS (최종 로드로 최우선 적용) -->
-    <link rel="stylesheet" href="../../css/common-styles.css?v=1759615861">
+    <link rel="stylesheet" href="../../css/common-styles.css?v=<?php echo filemtime(__DIR__ . '/../../css/common-styles.css'); ?>">
     <link rel="stylesheet" href="../../css/upload-modal-common.css?v=<?php echo time(); ?>">
     <?php include_once $_SERVER['DOCUMENT_ROOT'] . '/includes/product_schema.php'; echo_product_schema('msticker'); ?>
     <link rel="stylesheet" href="../../css/quote-gauge.css">

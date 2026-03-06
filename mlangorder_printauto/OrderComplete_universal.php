@@ -12,6 +12,7 @@
  */
 
 session_start();
+require_once __DIR__ . '/../includes/PremiumOptionsConfig.php';
 
 // FIX: HTTP 헤더에서 UTF-8 명시 (브라우저 인코딩 깨짐 방지)
 header('Content-Type: text/html; charset=UTF-8');
@@ -328,49 +329,17 @@ function displayProductDetails($connect, $order) {
 
     // 🆕 프리미엄 옵션 표시 (명함용)
     if (!empty($order['premium_options']) && !empty($order['premium_options_total'])) {
-        $premium_options = json_decode($order['premium_options'], true);
-        if ($premium_options && $order['premium_options_total'] > 0) {
+        $productType = $order['product_type'] ?? 'namecard';
+        $parsed = PremiumOptionsConfig::parseSelectedOptions($order['premium_options'], $productType);
+        if (!empty($parsed) && $order['premium_options_total'] > 0) {
             $html .= '<div style="margin-top: 8px; padding: 10px 10px 5px 10px; background: #e8f5e9; border-radius: 4px; border-left: 3px solid #4caf50; max-width: 100%; overflow: hidden; word-wrap: break-word;">';
             $html .= '<strong style="color: #2e7d32;">✨ 프리미엄 옵션:</strong> ';
-
-            $premium_option_names = [
-                'foil' => ['name' => '박', 'types' => [
-                    'gold_matte' => '금박무광',
-                    'gold_gloss' => '금박유광',
-                    'silver_matte' => '은박무광',
-                    'silver_gloss' => '은박유광',
-                    'blue_gloss' => '청박유광',
-                    'red_gloss' => '적박유광',
-                    'green_gloss' => '녹박유광',
-                    'black_gloss' => '먹박유광'
-                ]],
-                'numbering' => ['name' => '넘버링', 'types' => ['single' => '1개', 'double' => '2개']],
-                'perforation' => ['name' => '미싱', 'types' => ['horizontal' => '가로미싱', 'vertical' => '세로미싱', 'cross' => '십자미싱']],
-                'rounding' => ['name' => '귀돌이', 'types' => ['4corners' => '네귀돌이', '2corners' => '두귀돌이']],
-                'creasing' => ['name' => '오시', 'types' => ['single_crease' => '1줄오시', 'double_crease' => '2줄오시']]
-            ];
-
-            foreach ($premium_option_names as $option_key => $option_info) {
-                if (!empty($premium_options[$option_key . '_enabled']) && $premium_options[$option_key . '_enabled'] == 1) {
-                    $price = intval($premium_options[$option_key . '_price'] ?? 0);
-                    if ($price > 0) {
-                        $html .= '<span class="option-item" style="background-color: #c8e6c9; color: #1b5e20; margin: 0 5px;">';
-                        $html .= $option_info['name'];
-
-                        // 타입 표시
-                        $option_type = $premium_options[$option_key . '_type'] ?? '';
-                        if (!empty($option_type) && isset($option_info['types'][$option_type])) {
-                            $html .= '(' . $option_info['types'][$option_type] . ')';
-                        } elseif (empty($option_type)) {
-                            $html .= '(타입미선택)';
-                        }
-
-                        $html .= ' <strong>' . number_format($price) . '원</strong>';
-                        $html .= '</span>';
-                    }
-                }
+            foreach ($parsed as $popt) {
+                $html .= '<span class="option-item" style="background-color: #c8e6c9; color: #1b5e20; margin: 0 5px;">';
+                $html .= htmlspecialchars($popt['display']);
+                $html .= ' <strong>' . number_format($popt['price']) . '원</strong>';
+                $html .= '</span>';
             }
-
             $html .= '<div style="margin-top: 2.5px; font-size: 0.85rem; color: #2e7d32;">';
             $html .= '프리미엄 옵션 소계: <strong>' . number_format($order['premium_options_total']) . '원</strong>';
             $html .= '</div>';

@@ -161,6 +161,49 @@ if (!empty($order['creasing_enabled'])) {
     $options[] = ['name' => '오시', 'detail' => $order['creasing_lines'] . '줄', 'price' => intval($order['creasing_price'])];
     $has_options = true;
 }
+if (!empty($order['rounding_enabled'])) {
+    $options[] = ['name' => '귀돌이', 'detail' => $order['rounding_type'] ?? '귀돌이', 'price' => intval($order['rounding_price'] ?? 0)];
+    $has_options = true;
+}
+
+require_once __DIR__ . '/../includes/PremiumOptionsConfig.php';
+$premium_options_json = $order['premium_options'] ?? '';
+$premium_parsed = false;
+
+if (!empty($premium_options_json)) {
+    $productType = $order['product_type'] ?? 'namecard';
+    $parsed_opts = PremiumOptionsConfig::parseSelectedOptions($premium_options_json, $productType);
+    foreach ($parsed_opts as $popt) {
+        $options[] = [
+            'name' => $popt['name'],
+            'detail' => $popt['type_name'],
+            'price' => $popt['price']
+        ];
+        $has_options = true;
+        $premium_parsed = true;
+    }
+}
+
+if (!$premium_parsed && !empty($type1_raw)) {
+    $configOptions = PremiumOptionsConfig::getOptions($order['product_type'] ?? 'namecard');
+    $kwMap = [];
+    foreach ($configOptions as $k => $v) {
+        $kwMap[$v['name']] = $v['name'];
+    }
+    $kwMap['foil'] = '박';
+    $kwMap['numbering'] = '넘버링';
+    $kwMap['perforation'] = '미싱';
+    $kwMap['rounding'] = '귀돌이';
+    $kwMap['creasing'] = '오시';
+    foreach ($kwMap as $kw => $displayName) {
+        if (stripos($type1_raw, $kw) !== false) {
+            if (!in_array($displayName, array_column($options, 'name'))) {
+                $options[] = ['name' => $displayName, 'detail' => '', 'price' => 0];
+                $has_options = true;
+            }
+        }
+    }
+}
 
 // 원고파일 목록 (ImagePathResolver)
 $file_result = ImagePathResolver::getFilesFromRow($order, false);
@@ -168,6 +211,7 @@ $order_files = $file_result['files'] ?? [];
 
 // 같은 그룹 주문 조회
 $group_orders = [];
+$group_orders_total = 0;
 if (!empty($order['order_group_id'])) {
     $gq = "SELECT no, Type, product_type, quantity_display, price_vat, OrderStyle FROM mlangorder_printauto WHERE order_group_id = ? AND no != ? ORDER BY order_group_seq";
     $gs = mysqli_prepare($db, $gq);
@@ -176,8 +220,12 @@ if (!empty($order['order_group_id'])) {
     $gr = mysqli_stmt_get_result($gs);
     while ($grow = mysqli_fetch_assoc($gr)) {
         $group_orders[] = $grow;
+        $group_orders_total += intval($grow['price_vat']);
     }
 }
+
+// 총 결제금액: 본품 + 그룹주문 합계
+$total_payment = $price_vat + $group_orders_total;
 
 include __DIR__ . '/../includes/header.php';
 include __DIR__ . '/../includes/sidebar.php';
@@ -440,15 +488,23 @@ include __DIR__ . '/../includes/sidebar.php';
                             <span class="text-gray-500">부가세(VAT)</span>
                             <span class="text-gray-900"><?php echo number_format($price_vat_amount); ?>원</span>
                         </div>
-                        <?php if ($has_options && intval($order['additional_options_total']) > 0): ?>
+                        <?php 
+                        // 추가옵션 총액 계산 (coating, folding, creasing, rounding)
+                        $options_total = 0;
+                        if (!empty($order['coating_price'])) $options_total += intval($order['coating_price']);
+                        if (!empty($order['folding_price'])) $options_total += intval($order['folding_price']);
+                        if (!empty($order['creasing_price'])) $options_total += intval($order['creasing_price']);
+                        if (!empty($order['rounding_price'])) $options_total += intval($order['rounding_price']);
+                        ?>
+                        <?php if ($has_options && $options_total > 0): ?>
                         <div class="flex justify-between py-0.5">
                             <span class="text-gray-500">추가옵션</span>
-                            <span class="text-gray-900">+<?php echo number_format($order['additional_options_total']); ?>원</span>
+                            <span class="text-gray-900">+<?php echo number_format($options_total); ?>원</span>
                         </div>
                         <?php endif; ?>
                         <div class="flex justify-between py-0.5 border-t border-gray-200 mt-0.5">
-                            <span class="font-semibold text-gray-900">총 결제금액</span>
-                            <span class="text-base font-bold text-blue-600"><?php echo number_format($price_vat); ?>원</span>
+                            <span class="font-semibold text-gray-900">총 결제금액<?php if (!empty($group_orders)): ?><span class="text-xs text-gray-400 ml-1">(묶음주문 <?php echo count($group_orders) + 1; ?>건)</span><?php endif; ?></span>
+                            <span class="text-base font-bold text-blue-600"><?php echo number_format($total_payment); ?>원</span>
                         </div>
                         <?php if ($has_prepaid_shipping): ?>
                         <div class="flex justify-between py-0.5">
@@ -457,7 +513,7 @@ include __DIR__ . '/../includes/sidebar.php';
                         </div>
                         <div class="flex justify-between py-0.5 border-t border-gray-200 mt-0.5">
                             <span class="font-semibold text-gray-900">택배비 포함 합계</span>
-                            <span class="text-base font-bold text-red-600"><?php echo number_format($price_vat + $shipping_total); ?>원</span>
+                            <span class="text-base font-bold text-red-600"><?php echo number_format($total_payment + $shipping_total); ?>원</span>
                         </div>
                         <?php endif; ?>
                     </div>
@@ -591,8 +647,8 @@ include __DIR__ . '/../includes/sidebar.php';
                         </div>
                         <?php endif; ?>
                         <div class="flex justify-between">
-                            <dt class="text-gray-500">총액</dt>
-                            <dd class="font-bold text-blue-600"><?php echo number_format($price_vat); ?>원</dd>
+                            <dt class="text-gray-500">총액<?php if (!empty($group_orders)): ?><span class="text-xs text-gray-400 ml-1">(묵음주문)</span><?php endif; ?></dt>
+                            <dd class="font-bold text-blue-600"><?php echo number_format($total_payment); ?>원</dd>
                         </div>
                         <?php if ($has_prepaid_shipping): ?>
                         <div class="flex justify-between pt-1 border-t border-gray-100 mt-1">
@@ -601,7 +657,7 @@ include __DIR__ . '/../includes/sidebar.php';
                         </div>
                         <div class="flex justify-between">
                             <dt class="font-semibold text-gray-900">합계</dt>
-                            <dd class="font-bold text-red-600"><?php echo number_format($price_vat + $shipping_total); ?>원</dd>
+                            <dd class="font-bold text-red-600"><?php echo number_format($total_payment + $shipping_total); ?>원</dd>
                         </div>
                         <?php endif; ?>
                     </dl>

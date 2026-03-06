@@ -122,7 +122,7 @@ $default_values['MY_type'] = $url_type ? $url_type : '475';
     <!-- 통일 인라인 폼 스타일 시스템 -->
     <link rel="stylesheet" href="../../css/unified-inline-form.css?v=<?php echo filemtime(__DIR__ . '/../../css/unified-inline-form.css'); ?>">
     <!-- 추가 옵션 시스템 CSS (전단지와 동일) -->
-    <link rel="stylesheet" href="../../css/additional-options.css">
+    <link rel="stylesheet" href="../../css/additional-options.css?v=<?php echo filemtime(__DIR__ . '/../../css/additional-options.css'); ?>">
 
     <!-- 통합 공통 스타일 CSS (최종 로딩으로 최우선권 확보) -->
 
@@ -131,7 +131,7 @@ $default_values['MY_type'] = $url_type ? $url_type : '475';
     <!-- 파일 업로드 컴포넌트 JavaScript -->
     <script src="../../includes/js/UniversalFileUpload.js"></script>
     <!-- 통합 공통 스타일 CSS (최종 로드로 최우선 적용) -->
-    <link rel="stylesheet" href="../../css/common-styles.css?v=1759615861">
+    <link rel="stylesheet" href="../../css/common-styles.css?v=<?php echo filemtime(__DIR__ . '/../../css/common-styles.css'); ?>">
     <link rel="stylesheet" href="../../css/upload-modal-common.css?v=<?php echo time(); ?>">
 
 <!-- Phase 5: 견적 요청 버튼 스타일 -->
