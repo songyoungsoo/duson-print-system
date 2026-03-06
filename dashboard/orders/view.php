@@ -166,6 +166,28 @@ if (!empty($order['rounding_enabled'])) {
     $has_options = true;
 }
 
+// 프리미엄 옵션 (premium_options JSON 파싱)
+$premium_options_json = $order['premium_options'] ?? '';
+if (!empty($premium_options_json) && $premium_options_json[0] === '{') {
+    $premium_data = json_decode($premium_options_json, true);
+    if (!empty($premium_data) && is_array($premium_data)) {
+        foreach ($premium_data as $opt_name => $opt_value) {
+            if (!empty($opt_value) && is_array($opt_value)) {
+                $variant = $opt_value['variant'] ?? '';
+                $price = intval($opt_value['price'] ?? 0);
+                if (!empty($variant) || $price > 0) {
+                    $options[] = [
+                        'name' => $opt_name,
+                        'detail' => $variant,
+                        'price' => $price
+                    ];
+                    $has_options = true;
+                }
+            }
+        }
+    }
+}
+
 // 원고파일 목록 (ImagePathResolver)
 $file_result = ImagePathResolver::getFilesFromRow($order, false);
 $order_files = $file_result['files'] ?? [];
