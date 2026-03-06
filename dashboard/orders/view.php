@@ -161,6 +161,10 @@ if (!empty($order['creasing_enabled'])) {
     $options[] = ['name' => '오시', 'detail' => $order['creasing_lines'] . '줄', 'price' => intval($order['creasing_price'])];
     $has_options = true;
 }
+if (!empty($order['rounding_enabled'])) {
+    $options[] = ['name' => '귀돌이', 'detail' => $order['rounding_type'] ?? '귀돌이', 'price' => intval($order['rounding_price'] ?? 0)];
+    $has_options = true;
+}
 
 // 원고파일 목록 (ImagePathResolver)
 $file_result = ImagePathResolver::getFilesFromRow($order, false);
@@ -445,10 +449,18 @@ include __DIR__ . '/../includes/sidebar.php';
                             <span class="text-gray-500">부가세(VAT)</span>
                             <span class="text-gray-900"><?php echo number_format($price_vat_amount); ?>원</span>
                         </div>
-                        <?php if ($has_options && intval($order['additional_options_total']) > 0): ?>
+                        <?php 
+                        // 추가옵션 총액 계산 (coating, folding, creasing, rounding)
+                        $options_total = 0;
+                        if (!empty($order['coating_price'])) $options_total += intval($order['coating_price']);
+                        if (!empty($order['folding_price'])) $options_total += intval($order['folding_price']);
+                        if (!empty($order['creasing_price'])) $options_total += intval($order['creasing_price']);
+                        if (!empty($order['rounding_price'])) $options_total += intval($order['rounding_price']);
+                        ?>
+                        <?php if ($has_options && $options_total > 0): ?>
                         <div class="flex justify-between py-0.5">
                             <span class="text-gray-500">추가옵션</span>
-                            <span class="text-gray-900">+<?php echo number_format($order['additional_options_total']); ?>원</span>
+                            <span class="text-gray-900">+<?php echo number_format($options_total); ?>원</span>
                         </div>
                         <?php endif; ?>
                         <div class="flex justify-between py-0.5 border-t border-gray-200 mt-0.5">
