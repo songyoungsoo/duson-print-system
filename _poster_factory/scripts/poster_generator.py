@@ -178,7 +178,7 @@ class PosterGenerator:
         # 1. 히어로 이미지
         logger.info("🖼️  히어로 이미지 생성 중...")
         hero_ok = self.client.generate_image(
-            hero_cfg.get("prompt", ""),
+            self._enrich_hero_prompt(hero_cfg),
             str(self.images_dir / "hero.png"),
             aspect_ratio=self._get_hero_aspect_ratio(design),
             resize_to=None,
@@ -196,7 +196,7 @@ class PosterGenerator:
             time.sleep(rate_delay)
             logger.info(f"🖼️  품목 {i + 1}/{len(items_cfg)}: {item.get('name', '?')}")
             ok = self.client.generate_image(
-                item.get("prompt", ""),
+                self._enrich_item_prompt(item, i),
                 str(self.images_dir / f"item_{i + 1:02d}.png"),
                 aspect_ratio=item.get("aspect_ratio", "1:1"),
                 resize_to=None,
@@ -268,7 +268,7 @@ class PosterGenerator:
         hero = design.get("hero", {})
         logger.info("🖼️  히어로 이미지 재생성 중...")
         ok = self.client.generate_image(
-            hero.get("prompt", ""),
+            self._enrich_hero_prompt(hero),
             str(self.images_dir / "hero.png"),
             aspect_ratio=self._get_hero_aspect_ratio(design),
             resize_to=None,
@@ -297,7 +297,7 @@ class PosterGenerator:
         item = items[idx - 1]
         logger.info(f"🖼️  {item.get('name', '?')} 이미지 재생성 중...")
         ok = self.client.generate_image(
-            item.get("prompt", ""),
+            self._enrich_item_prompt(item, idx - 1),
             str(self.images_dir / f"item_{idx:02d}.png"),
             aspect_ratio=item.get("aspect_ratio", "1:1"),
             resize_to=None,
@@ -536,6 +536,82 @@ Generate complete layout_spec.json with all required fields: layout_id, zones, t
             if hero_dir.get("aspect_ratio"):
                 return hero_dir["aspect_ratio"]
         return design.get("hero", {}).get("aspect_ratio", "5:4")
+
+    def _enrich_hero_prompt(self, hero_cfg: dict) -> str:
+        """layout_spec.image_directives.hero 제약조건을 hero prompt에 자동 주입.
+
+        design.json의 원본 prompt는 수정하지 않고, 메모리에서만 enrichment.
+        이미 [LAYOUT CONSTRAINTS] 태그가 있으면 중복 주입 방지.
+        """
+        prompt = hero_cfg.get("prompt", "")
+        if not self.layout_spec:
+            return prompt
+
+        directives = self.layout_spec.get("image_directives", {}).get("hero", {})
+        if not directives:
+            return prompt
+
+        # 중복 방지
+        if "[LAYOUT CONSTRAINTS]" in prompt:
+            return prompt
+
+        parts = []
+
+        # fill_mode
+        fill_mode = directives.get("fill_mode")
+        if fill_mode == "full_bleed":
+            parts.append("Fill the ENTIRE frame edge to edge — no white space, no margins, no borders.")
+
+        # content_focus → COMPOSITION
+        content_focus = directives.get("content_focus")
+        if content_focus:
+            parts.append(f"COMPOSITION: {content_focus}")
+
+        # tone_constraint → TONE
+        tone = directives.get("tone_constraint")
+        if tone:
+            parts.append(f"TONE: {tone}")
+
+        # text_safe_areas
+        safe_areas = directives.get("text_safe_areas", [])
+        if safe_areas:
+            areas_desc = [f"{a.get('position', '')} ({a.get('purpose', '')})" for a in safe_areas]
+            parts.append(f"TEXT SAFE AREAS (keep visually clean/dark for text overlay): {', '.join(areas_desc)}")
+
+        # forbidden
+        forbidden = directives.get("forbidden", [])
+        if forbidden:
+            parts.append(f"FORBIDDEN: absolutely no {', '.join(forbidden)}")
+
+        if parts:
+            prompt = prompt.rstrip() + " [LAYOUT CONSTRAINTS] " + " ".join(parts)
+            logger.info(f"  📐 히어로 프롬프트 enrichment 적용 ({len(parts)}개 제약조건)")
+
+        return prompt
+
+    def _enrich_item_prompt(self, item_cfg: dict, idx: int) -> str:
+        """layout_spec.image_directives.items의 style_constraint를 item prompt에 자동 주입.
+
+        idx: 0-based index into items array.
+        """
+        prompt = item_cfg.get("prompt", "")
+        if not self.layout_spec:
+            return prompt
+
+        items_directives = self.layout_spec.get("image_directives", {}).get("items", [])
+        if idx >= len(items_directives):
+            return prompt
+
+        # 중복 방지
+        if "[STYLE CONSTRAINT]" in prompt:
+            return prompt
+
+        style = items_directives[idx].get("style_constraint", "")
+        if style:
+            prompt = prompt.rstrip() + f" [STYLE CONSTRAINT] {style}. No text, no labels, no overlays."
+            logger.info(f"  📐 품목 {idx + 1} 프롬프트 enrichment 적용")
+
+        return prompt
 
     def _get_typo(self, key: str, defaults: dict) -> dict:
         """layout_spec.json에서 typography assignment를 읽거나 기본값으로 폴백.
