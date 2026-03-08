@@ -167,10 +167,23 @@ class GeminiClient:
                 else:
                     raise
 
-    def generate_image(self, prompt: str, output_path: str) -> bool:
-        """이미지 생성 — gemini-3.1-flash-image-preview (한글 정확 렌더링)"""
-        # 품질 보강 접미사
-        quality_suffix = """
+    def generate_image(
+        self,
+        prompt: str,
+        output_path: str,
+        aspect_ratio: str = "5:4",
+        resize_to: tuple = (1100, 900),
+        quality_suffix: str = None,
+    ) -> bool:
+        """이미지 생성 — gemini-3.1-flash-image-preview
+
+        Args:
+            aspect_ratio: Gemini 비율 ("1:1","3:4","4:3","4:5","5:4","9:16","16:9")
+            resize_to: 출력 크기 tuple (None이면 원본 유지)
+            quality_suffix: 프롬프트 접미사 (None이면 기본값, ""이면 접미사 없음)
+        """
+        if quality_suffix is None:
+            quality_suffix = """
 Style requirements:
 - Photorealistic product photography style
 - Professional Korean e-commerce aesthetic
@@ -179,9 +192,8 @@ Style requirements:
 - No cartoon, anime, or illustrated style
 - No watermarks or stock photo marks
 - High contrast, vibrant but professional colors
-- 1100x900 pixels, PNG format
 """
-        full_prompt = f"{prompt}\n\n{quality_suffix}"
+        full_prompt = f"{prompt}\n\n{quality_suffix}" if quality_suffix else prompt
 
         for attempt in range(self.max_retries):
             try:
@@ -190,7 +202,7 @@ Style requirements:
                     contents=full_prompt,
                     config=types.GenerateContentConfig(
                         response_modalities=["IMAGE", "TEXT"],
-                        image_config=types.ImageConfig(aspect_ratio="5:4"),
+                        image_config=types.ImageConfig(aspect_ratio=aspect_ratio),
                     ),
                 )
 
@@ -204,16 +216,17 @@ Style requirements:
                             with open(output_path, "wb") as f:
                                 f.write(image_data)
 
-                            # Post-resize to exact 1100x900
-                            try:
-                                from PIL import Image as PILImage
-                                img = PILImage.open(output_path)
-                                if img.size != (1100, 900):
-                                    img = img.resize((1100, 900), PILImage.Resampling.LANCZOS)
-                                    img.save(output_path, "PNG")
-                                    logger.info(f"  📐 리사이즈: {img.size} → 1100x900")
-                            except Exception as resize_err:
-                                logger.warning(f"리사이즈 실패 (원본 유지): {resize_err}")
+                            # Post-resize (선택)
+                            if resize_to:
+                                try:
+                                    from PIL import Image as PILImage
+                                    img = PILImage.open(output_path)
+                                    if img.size != resize_to:
+                                        img = img.resize(resize_to, PILImage.Resampling.LANCZOS)
+                                        img.save(output_path, "PNG")
+                                        logger.info(f"  📐 리사이즈: {img.size} → {resize_to[0]}x{resize_to[1]}")
+                                except Exception as resize_err:
+                                    logger.warning(f"리사이즈 실패 (원본 유지): {resize_err}")
 
                             self.total_images_generated += 1
                             file_size = os.path.getsize(output_path)
