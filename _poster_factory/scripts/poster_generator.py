@@ -1238,6 +1238,13 @@ Generate complete layout_spec.json with all required fields: layout_id, zones, t
         # Typography from layout_spec or hardcoded defaults
         t_section_title = self._get_typo("section_title", {"size_px": 44, "weight": "700", "color": accent})
         t_section_item = self._get_typo("section_item", {"size_px": 30, "weight": "400", "color": text_c})
+        t_item_name = self._get_typo("item_name", {"size_px": 36, "weight": "700", "color": text_c})
+        t_item_desc = self._get_typo("item_description", {"size_px": 24, "weight": "400", "color": text_c})
+        t_item_price = self._get_typo("item_price", {"size_px": 40, "weight": "800", "color": accent})
+
+        img_size = 200  # item thumbnail size
+        text_x = margin + img_size + 40  # text starts after image + gap
+        global_item_idx = 0  # tracks original items[] index for image filenames
 
         # Split items into 2 groups
         if sections and len(sections) >= 2:
@@ -1292,20 +1299,43 @@ Generate complete layout_spec.json with all required fields: layout_id, zones, t
   <line x1="{margin}" y1="{section_a_y + 80}" x2="{CANVAS_W - margin}" y2="{section_a_y + 80}"
         stroke="{accent}" stroke-width="2" opacity="0.3"/>"""
         )
-        line_y = section_a_y + 130
+        item_y = section_a_y + 100
+        row_h = max(230, (section_h_a - 100) // max(len(sec_a_items), 1))
         for item in sec_a_items:
             name = item.get("name", "")
             desc = item.get("description", "")
-            bullet_text = f"\u2022  {name}"
-            if desc:
-                bullet_text += f" \u2014 {desc}"
-            parts.append(
-                f"""  <text x="{margin + 30}" y="{line_y}"
+            price = item.get("price", "")
+            item_ref = self._img_ref(f"item_{global_item_idx + 1:02d}.png")
+
+            if item_ref:
+                parts.append(f"""  <image href="{item_ref}" xlink:href="{item_ref}"
+           x="{margin}" y="{item_y}" width="{img_size}" height="{img_size}"
+           preserveAspectRatio="xMidYMid meet"/>""")
+                parts.append(f"""  <text x="{text_x}" y="{item_y + 55}"
+        class="title" font-size="{t_item_name['size_px']}" font-weight="{t_item_name['weight']}" fill="{t_item_name['color']}">
+    {name}
+  </text>""")
+                if desc:
+                    parts.append(f"""  <text x="{text_x}" y="{item_y + 100}"
+        class="body" font-size="{t_item_desc['size_px']}" font-weight="{t_item_desc['weight']}" fill="{t_item_desc['color']}" opacity="0.65">
+    {desc}
+  </text>""")
+                if price:
+                    parts.append(f"""  <text x="{CANVAS_W - margin}" y="{item_y + 55}"
+        text-anchor="end" class="title" font-size="{t_item_price['size_px']}" font-weight="{t_item_price['weight']}" fill="{t_item_price['color']}">
+    {price}
+  </text>""")
+            else:
+                bullet_text = f"\u2022  {name}"
+                if desc:
+                    bullet_text += f" \u2014 {desc}"
+                parts.append(f"""  <text x="{margin + 30}" y="{item_y + 30}"
         class="body" font-size="{t_section_item['size_px']}" font-weight="{t_section_item['weight']}" fill="{t_section_item['color']}">
     {bullet_text}
-  </text>"""
-            )
-            line_y += 55
+  </text>""")
+
+            item_y += row_h
+            global_item_idx += 1
 
 
         # --- Transition: section_a → section_b ---
@@ -1326,20 +1356,43 @@ Generate complete layout_spec.json with all required fields: layout_id, zones, t
   <line x1="{margin}" y1="{section_b_y + 80}" x2="{CANVAS_W - margin}" y2="{section_b_y + 80}"
         stroke="{accent}" stroke-width="2" opacity="0.3"/>"""
         )
-        line_y = section_b_y + 130
+        item_y = section_b_y + 130
+        row_h = max(230, (section_h_b - 100) // max(len(sec_b_items), 1))
         for item in sec_b_items:
             name = item.get("name", "")
             desc = item.get("description", "")
-            bullet_text = f"\u2022  {name}"
-            if desc:
-                bullet_text += f" \u2014 {desc}"
-            parts.append(
-                f"""  <text x="{margin + 30}" y="{line_y}"
+            price = item.get("price", "")
+            item_ref = self._img_ref(f"item_{global_item_idx + 1:02d}.png")
+
+            if item_ref:
+                parts.append(f"""  <image href="{item_ref}" xlink:href="{item_ref}"
+           x="{margin}" y="{item_y}" width="{img_size}" height="{img_size}"
+           preserveAspectRatio="xMidYMid meet"/>""")
+                parts.append(f"""  <text x="{text_x}" y="{item_y + 55}"
+        class="title" font-size="{t_item_name['size_px']}" font-weight="{t_item_name['weight']}" fill="{t_item_name['color']}">
+    {name}
+  </text>""")
+                if desc:
+                    parts.append(f"""  <text x="{text_x}" y="{item_y + 100}"
+        class="body" font-size="{t_item_desc['size_px']}" font-weight="{t_item_desc['weight']}" fill="{t_item_desc['color']}" opacity="0.65">
+    {desc}
+  </text>""")
+                if price:
+                    parts.append(f"""  <text x="{CANVAS_W - margin}" y="{item_y + 55}"
+        text-anchor="end" class="title" font-size="{t_item_price['size_px']}" font-weight="{t_item_price['weight']}" fill="{t_item_price['color']}">
+    {price}
+  </text>""")
+            else:
+                bullet_text = f"\u2022  {name}"
+                if desc:
+                    bullet_text += f" \u2014 {desc}"
+                parts.append(f"""  <text x="{margin + 30}" y="{item_y + 30}"
         class="body" font-size="{t_section_item['size_px']}" font-weight="{t_section_item['weight']}" fill="{t_section_item['color']}">
     {bullet_text}
-  </text>"""
-            )
-            line_y += 55
+  </text>""")
+
+            item_y += row_h
+            global_item_idx += 1
 
         # --- Promo (6%) ---
         if promo:
