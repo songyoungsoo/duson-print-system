@@ -383,11 +383,6 @@ header("Expires: 0");
     </div>
 
 
-    <!-- 고객 리뷰 섹션 -->
-    <?php if (!$isQuotationMode && !$isAdminQuoteMode): ?>
-    <?php $product_type = 'inserted'; include __DIR__ . '/../../includes/review_widget.php'; ?>
-    <?php endif; ?>
-
     <?php if (!$isQuotationMode && !$isAdminQuoteMode): ?>
     <?php include __DIR__ . '/../../includes/quote_gauge.php'; ?>
     <?php endif; ?>
@@ -396,7 +391,7 @@ header("Expires: 0");
     // 전단지 모달 설정
     $modalProductName = '전단지';
     $modalProductIcon = '📎';
-    
+
     // 공통 업로드 모달 포함
     include "../../includes/upload_modal.php";
     ?>
@@ -413,6 +408,8 @@ header("Expires: 0");
     <div class="inserted-detail-combined">
         <?php include "explane_inserted.php"; ?>
     </div>
+    <!-- 고객 리뷰 섹션 -->
+    <?php $product_type = 'inserted'; include __DIR__ . '/../../includes/review_widget.php'; ?>
     <?php endif; ?>
 
     <?php
