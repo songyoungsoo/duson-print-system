@@ -1,6 +1,11 @@
 <?php
 /**
- * AI 생성 상세페이지 로더 v3 (SEO 텍스트 포함)
+ * AI 생성 상세페이지 로더 v4 (루트 경로 통합 + JPG 폴백)
+ * 
+ * v4 변경사항 (2026-03-08):
+ *   - sections/ 하위폴더 대신 제품 루트에서 직접 이미지 로드
+ *   - A/B 로테이션 시스템과 경로 통합 (copyVersionFiles 호환)
+ *   - PNG 우선, JPG 폴백 지원 (Fast 엔진 JPG 전용 출력 대응)
  * 
  * v3 변경사항 (2026-03-08):
  *   - 신규 copy.json 포맷 ('section' + 'copy.headline') 지원 추가
@@ -9,7 +14,7 @@
  *   - copy_guide → highlight fallback 체인 추가
  * 
  * 각 제품 index.php에서 include하여 사용.
- * ImgFolder/detail_page/{product}/sections/ 폴더에 이미지가 있으면 자동 표시.
+ * ImgFolder/detail_page/{product}/ 폴더에 section_XX.png (또는 .jpg) 이미지가 있으면 자동 표시.
  * copy.json이 있으면 각 섹션 이미지 아래에 SEO 텍스트를 HTML로 출력.
  * 이미지가 없으면 아무것도 출력하지 않음.
  * 
@@ -23,27 +28,51 @@ if (empty($detail_page_product)) {
     return;
 }
 
-// 섹션 이미지 디렉토리 경로 (ImgFolder = 웹 접근 가능 경로)
-$sectionsDir = $_SERVER['DOCUMENT_ROOT'] . '/ImgFolder/detail_page/' . $detail_page_product . '/sections';
-$sectionsWebPath = '/ImgFolder/detail_page/' . $detail_page_product . '/sections';
+// 섹션 이미지 디렉토리 경로 — 제품 루트에서 직접 로드 (v4: sections/ 제거)
+$sectionsDir = $_SERVER['DOCUMENT_ROOT'] . '/ImgFolder/detail_page/' . $detail_page_product;
+$sectionsWebPath = '/ImgFolder/detail_page/' . $detail_page_product;
 
-// 디렉토리가 없거나 비어있으면 아무것도 출력하지 않음
+// 디렉토리가 없으면 아무것도 출력하지 않음
 if (!is_dir($sectionsDir)) {
     return;
 }
 
-// 숨길 섹션 (section_01: 할인배너, section_08: AI가격표)
-$hiddenSections = ['section_01.png', 'section_08.png', 'section_11.png'];
+// 숨길 섹션 (section_01: 할인배너, section_08: AI가격표, section_11: FAQ)
+$hiddenSectionNums = [1, 8, 11];
 
-// PNG 이미지 파일 수집 (정렬, 숨김 섹션 제외)
+// PNG + JPG 이미지 파일 수집 (PNG 우선, JPG 폴백)
 $imageFiles = [];
+$seenSections = [];
 $files = scandir($sectionsDir);
+
+// 1차: PNG 수집
 foreach ($files as $file) {
-    if (preg_match('/^section_\d{2}\.png$/i', $file) && !in_array($file, $hiddenSections)) {
-        $imageFiles[] = $file;
+    if (preg_match('/^section_(\d{2})\.png$/i', $file, $m)) {
+        $num = (int)$m[1];
+        if (!in_array($num, $hiddenSectionNums)) {
+            $imageFiles[] = $file;
+            $seenSections[] = $num;
+        }
     }
 }
-sort($imageFiles);
+
+// 2차: PNG가 없는 섹션만 JPG 폴백
+foreach ($files as $file) {
+    if (preg_match('/^section_(\d{2})\.jpg$/i', $file, $m)) {
+        $num = (int)$m[1];
+        if (!in_array($num, $hiddenSectionNums) && !in_array($num, $seenSections)) {
+            $imageFiles[] = $file;
+            $seenSections[] = $num;
+        }
+    }
+}
+
+// 섹션 번호 기준 정렬
+usort($imageFiles, function($a, $b) {
+    preg_match('/section_(\d{2})/', $a, $ma);
+    preg_match('/section_(\d{2})/', $b, $mb);
+    return ((int)($ma[1] ?? 0)) - ((int)($mb[1] ?? 0));
+});
 
 // 이미지가 없으면 중단
 if (empty($imageFiles)) {
@@ -156,7 +185,11 @@ $productNameKo = $productNameMap[$detail_page_product] ?? $detail_page_product;
     $altText = $productNameKo . ' ' . ($copyText['headline'] ?? $sectionCopy['theme'] ?? '상세 설명');
     $altText = str_replace("\n", ' ', $altText);
 ?>
-<?php if ($file === 'section_13.png'): ?>
+<?php
+    // section_13은 PNG 또는 JPG 모두 가능
+    $isCta = preg_match('/section_13\.(png|jpg)/i', $file);
+?>
+<?php if ($isCta): ?>
     <a href="#" onclick="window.scrollTo({top:0,behavior:'smooth'});return false;" style="display:block;margin:0;padding:0;line-height:0;cursor:pointer;">
         <img src="<?= htmlspecialchars($sectionsWebPath . '/' . $file) ?>"
              alt="<?= htmlspecialchars($productNameKo) ?> 주문하기"

@@ -502,25 +502,17 @@ function handleGenerate(): void {
     if (!isset($PRODUCTS[$product])) jsonError('Unknown product');
     if (!in_array($engine, ['fast', 'quality'])) jsonError('engine must be fast or quality');
     
-    $envExport = $GEMINI_KEY ? sprintf('export GEMINI_API_KEY=%s && export PYTHONPATH=/home/ysung/.local/lib/python3.12/site-packages:$PYTHONPATH && ', escapeshellarg($GEMINI_KEY)) : 'export PYTHONPATH=/home/ysung/.local/lib/python3.12/site-packages:$PYTHONPATH && ';
+    // Gemini API 키 인자 준비
+    $keyArg = $GEMINI_KEY ? ' ' . escapeshellarg($GEMINI_KEY) : '';
     
-    // 엔진별 백그라운드 실행
-    if ($engine === 'quality') {
-        $cmd = sprintf(
-            '%scd %s && python3 scripts/orchestrator.py --product %s > /tmp/detail_gen_%s.log 2>&1 &',
-            $envExport,
-            escapeshellarg(ORCHESTRATOR_DIR),
-            escapeshellarg($product),
-            $product
-        );
-    } else {
-        $cmd = sprintf(
-            '%scd /var/www/html && python3 scripts/ai_detail_page.py generate-builtin %s > /tmp/detail_gen_%s.log 2>&1 &',
-            $envExport,
-            escapeshellarg($product),
-            $product
-        );
-    }
+    // 안전 생성 래퍼 사용: 백업 → 생성 → Staging 복사
+    $cmd = sprintf(
+        'bash /var/www/html/scripts/generate_detail_safe.sh %s %s%s > /tmp/detail_gen_%s.log 2>&1 &',
+        escapeshellarg($engine),
+        escapeshellarg($product),
+        $keyArg,
+        $product
+    );
     exec($cmd);
     
     $engineLabel = $engine === 'quality' ? '고품질' : '빠른';
@@ -908,7 +900,7 @@ function handleDeployOutput(): void {
         $count++;
     }
     
-    $labelMap = ['staging' => 'Staging', 'v_a' => 'VER A', 'v_b' => 'VER B', 'live' => 'Live'];
+    $labelMap = ['staging' => 'Staging', 'v_a' => 'A 조쉬빌더', 'v_b' => 'B Fast', 'live' => 'Live'];
     $targetLabel = $labelMap[$target] ?? $target;
     
     $config = loadJson(CONFIG_FILE);

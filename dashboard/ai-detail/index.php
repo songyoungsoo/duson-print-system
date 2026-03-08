@@ -115,11 +115,11 @@ include __DIR__ . '/../includes/sidebar.php';
         </div>
         <div class="flex-1 flex">
             <div class="flex-1 flex flex-col border-r">
-                <div class="px-3 py-1.5 bg-blue-50 text-xs font-bold text-blue-800 text-center">VER A</div>
+                <div class="px-3 py-1.5 bg-blue-50 text-xs font-bold text-blue-800 text-center">A 조쉬빌더</div>
                 <iframe id="compare-iframe-a" class="flex-1 w-full border-none" src="about:blank"></iframe>
             </div>
             <div class="flex-1 flex flex-col">
-                <div class="px-3 py-1.5 bg-emerald-50 text-xs font-bold text-emerald-800 text-center">VER B</div>
+                <div class="px-3 py-1.5 bg-emerald-50 text-xs font-bold text-emerald-800 text-center">B Fast</div>
                 <iframe id="compare-iframe-b" class="flex-1 w-full border-none" src="about:blank"></iframe>
             </div>
         </div>
@@ -141,8 +141,8 @@ include __DIR__ . '/../includes/sidebar.php';
             <div class="flex items-center gap-2">
                 <select id="deploy-target" class="text-xs border rounded px-2 py-1">
                     <option value="staging">Staging</option>
-                    <option value="v_a">VER A</option>
-                    <option value="v_b">VER B</option>
+                <option value="v_a">A 조쉬빌더</option>
+                <option value="v_b">B Fast</option>
                 </select>
                 <button onclick="deployOutput()" class="text-xs bg-green-600 text-white px-3 py-1.5 rounded font-semibold hover:bg-green-700 transition-colors">🚀 배포</button>
                 <button onclick="closeModal('section-modal')" class="p-1 rounded hover:bg-gray-200 transition-colors">
@@ -165,6 +165,9 @@ include __DIR__ . '/../includes/sidebar.php';
 const API = '/dashboard/api/detail-page.php';
 let STATE = {};
 const DAY_NAMES = ['일', '월', '화', '수', '목', '금', '토'];
+
+// Version label helper
+function verLabel(v) { return v === 'A' ? 'A 조쉬빌더' : v === 'B' ? 'B Fast' : v; }
 
 // ─── API Calls ───
 
@@ -198,7 +201,7 @@ function renderHeader(data) {
     const verEl = document.getElementById('active-ver');
     const switchEl = document.getElementById('last-switch');
     
-    verEl.textContent = 'VER ' + data.active_version;
+    verEl.textContent = data.active_version === 'A' ? 'A 조쉬빌더' : 'B Fast';
     
     if (data.active_version === 'B') {
         badge.className = 'inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full text-xs font-bold bg-emerald-100 text-emerald-800';
@@ -208,7 +211,7 @@ function renderHeader(data) {
     
     const btnAll = document.getElementById('btn-switch-all');
     const next = data.active_version === 'A' ? 'B' : 'A';
-    btnAll.textContent = `🔀 전체 ${data.active_version}→${next} 전환`;
+    btnAll.textContent = `🔀 전체 ${verLabel(data.active_version)}→${verLabel(next)} 전환`;
     
     switchEl.textContent = data.last_switch ? `마지막 전환: ${data.last_switch}` : '';
 }
@@ -280,16 +283,16 @@ function createProductCard(code, p, activeVer) {
             </div>
             <select onchange="handlePinChange('${code}', this.value)" class="text-[11px] border border-gray-200 rounded px-1.5 py-1 focus:ring-1 focus:ring-brand text-gray-600">
                 <option value="auto" ${pinVal === 'auto' ? 'selected' : ''}>자동</option>
-                <option value="A" ${pinVal === 'A' ? 'selected' : ''}>A 고정</option>
-                <option value="B" ${pinVal === 'B' ? 'selected' : ''}>B 고정</option>
+                <option value="A" ${pinVal === 'A' ? 'selected' : ''}>A 조쉬빌더 고정</option>
+                <option value="B" ${pinVal === 'B' ? 'selected' : ''}>B Fast 고정</option>
             </select>
         </div>
         
         <!-- Version Columns -->
         <div class="flex gap-1 mb-3 py-2 px-1 bg-gray-50 rounded-lg">
-            ${verCol('VER A', p.versions.A, 'text-blue-600')}
+            ${verCol('A 조쉬빌더', p.versions.A, 'text-blue-600')}
             <div class="w-px bg-gray-200"></div>
-            ${verCol('VER B', p.versions.B, 'text-emerald-600')}
+            ${verCol('B Fast', p.versions.B, 'text-emerald-600')}
             <div class="w-px bg-gray-200"></div>
             ${verCol('Staging', p.versions.staging, 'text-amber-600')}
         </div>
@@ -298,7 +301,7 @@ function createProductCard(code, p, activeVer) {
         <div class="flex items-center justify-between mb-3">
             <div class="flex items-center gap-1.5">
                 <span class="w-2 h-2 rounded-full ${effectiveVer === 'B' ? 'bg-emerald-500' : 'bg-blue-500'}"></span>
-                <span class="text-[11px] font-semibold text-gray-600">적용 중: VER ${effectiveVer}</span>
+                <span class="text-[11px] font-semibold text-gray-600">적용 중: ${effectiveVer === 'A' ? 'A 조쉬빌더' : 'B Fast'}</span>
             </div>
         </div>
         
@@ -306,6 +309,7 @@ function createProductCard(code, p, activeVer) {
         <div class="flex gap-1.5 mb-2">
             <button onclick="openPreview('${code}', 'v_a', '${p.label}')" class="flex-1 text-[11px] px-2 py-1.5 rounded border border-blue-200 text-blue-700 hover:bg-blue-50 font-medium transition-colors ${p.versions.A.has_html ? '' : 'opacity-40 cursor-not-allowed'}" ${p.versions.A.has_html ? '' : 'disabled'}>미리보기 A</button>
             <button onclick="openPreview('${code}', 'v_b', '${p.label}')" class="flex-1 text-[11px] px-2 py-1.5 rounded border border-emerald-200 text-emerald-700 hover:bg-emerald-50 font-medium transition-colors ${p.versions.B.has_html ? '' : 'opacity-40 cursor-not-allowed'}" ${p.versions.B.has_html ? '' : 'disabled'}>미리보기 B</button>
+            <button onclick="openPreview('${code}', 'staging', '${p.label}')" class="flex-1 text-[11px] px-2 py-1.5 rounded border border-amber-200 text-amber-700 hover:bg-amber-50 font-medium transition-colors ${p.versions.staging.has_html ? '' : 'opacity-40 cursor-not-allowed'}" ${p.versions.staging.has_html ? '' : 'disabled'}>미리보기 S</button>
             <button onclick="openCompare('${code}', '${p.label}')" class="flex-1 text-[11px] px-2 py-1.5 rounded border border-gray-200 text-gray-700 hover:bg-gray-50 font-medium transition-colors ${p.versions.A.has_html && p.versions.B.has_html ? '' : 'opacity-40 cursor-not-allowed'}" ${p.versions.A.has_html && p.versions.B.has_html ? '' : 'disabled'}>🔍 비교</button>
         </div>
         
@@ -356,11 +360,11 @@ async function saveSchedule() {
 async function switchAll() {
     const cur = STATE.active_version || 'A';
     const next = cur === 'A' ? 'B' : 'A';
-    if (!confirm(`전체 버전을 ${cur} → ${next}로 전환하시겠습니까?\n(고정된 품목은 제외됩니다)`)) return;
+    if (!confirm(`전체 버전을 ${verLabel(cur)} → ${verLabel(next)}로 전환하시겠습니까?\n(고정된 품목은 제외됩니다)`)) return;
     
     const res = await apiPost('switch_version', {});
     if (res.success) {
-        showToast(`VER ${res.from} → ${res.to} 전환 완료 (${res.switched.length}개 품목)`, 'success');
+        showToast(`${verLabel(res.from)} → ${verLabel(res.to)} 전환 완료 (${res.switched.length}개 품목)`, 'success');
         refreshStatus();
     } else {
         showToast(res.error || '실패', 'error');
@@ -371,7 +375,7 @@ async function handlePinChange(code, value) {
     if (value === 'auto') {
         const res = await apiPost('unpin', { product: code });
         if (res.success) {
-            showToast(`${STATE.products[code]?.label || code} 고정 해제 → VER ${res.restored_to}`, 'success');
+            showToast(`${STATE.products[code]?.label || code} 고정 해제 → ${verLabel(res.restored_to)}`, 'success');
             refreshStatus();
         } else {
             showToast(res.error || '실패', 'error');
@@ -379,7 +383,7 @@ async function handlePinChange(code, value) {
     } else {
         const res = await apiPost('pin', { product: code, version: value });
         if (res.success) {
-            showToast(`${STATE.products[code]?.label || code} → VER ${value} 고정`, 'success');
+            showToast(`${STATE.products[code]?.label || code} → ${verLabel(value)} 고정`, 'success');
             refreshStatus();
         } else {
             showToast(res.error || '실패', 'error');
@@ -407,11 +411,11 @@ async function generateProduct(code, label, engine) {
 }
 
 async function promoteProduct(code, target, label) {
-    if (!confirm(`${label}의 Staging을 VER ${target}로 승격하시겠습니까?`)) return;
+    if (!confirm(`${label}의 Staging을 ${target === 'A' ? 'A 조쉬빌더' : 'B Fast'}로 승격하시겠습니까?`)) return;
     
     const res = await apiPost('promote', { product: code, target: target });
     if (res.success) {
-        showToast(`${label} → VER ${target} 승격 완료 (${res.files_copied}개 파일)`, 'success');
+        showToast(`${label} → ${target === 'A' ? 'A 조쉬빌더' : 'B Fast'} 승격 완료 (${res.files_copied}개 파일)`, 'success');
         refreshStatus();
     } else {
         showToast(res.error || '실패', 'error');
@@ -421,8 +425,11 @@ async function promoteProduct(code, target, label) {
 // ─── Preview / Compare ───
 
 function openPreview(code, ver, label) {
-    const url = `/ImgFolder/detail_page_${ver}/${code}/detail.html`;
-    document.getElementById('preview-title').textContent = `${label} — ${ver.replace('v_', 'VER ').toUpperCase()}`;
+    const dirMap = { v_a: 'detail_page_v_a', v_b: 'detail_page_v_b', staging: 'detail_page_staging' };
+    const dir = dirMap[ver] || `detail_page_${ver}`;
+    const url = `/ImgFolder/${dir}/${code}/detail.html`;
+    const nameMap = { v_a: 'A 조쉬빌더', v_b: 'B Fast', staging: 'Staging' };
+    document.getElementById('preview-title').textContent = `${label} — ${nameMap[ver] || ver}`;
     document.getElementById('preview-iframe').src = url;
     document.getElementById('preview-modal').classList.remove('hidden');
 }
@@ -492,10 +499,10 @@ async function loadHistory() {
         const details = [];
         if (h.from && h.to) details.push(`${h.from} → ${h.to}`);
         if (h.product) details.push(h.product);
-        if (h.switched_to) details.push(`→ VER ${h.switched_to}`);
+        if (h.switched_to) details.push(`→ ${h.switched_to === 'A' ? 'A 조쉬빌더' : 'B Fast'}`);
         if (h.switched && typeof h.switched === 'number') details.push(`${h.switched}개 교체`);
         if (h.enabled !== undefined) details.push(h.enabled ? '활성화' : '비활성화');
-        if (h.version) details.push(`VER ${h.version}`);
+        if (h.version) details.push(h.version === 'A' ? 'A 조쉬빌더' : h.version === 'B' ? 'B Fast' : h.version);
         if (h.section_id) details.push(`섹션 ${h.section_id}`);
         if (h.target) details.push(`→ ${h.target}`);
         if (h.files) details.push(`${h.files}개 파일`);
@@ -716,7 +723,7 @@ async function regenSec(id) {
 
 async function deployOutput() {
     const target = document.getElementById('deploy-target').value;
-    const label = { staging: 'Staging', v_a: 'VER A', v_b: 'VER B' }[target] || target;
+    const label = { staging: 'Staging', v_a: 'A 조쉬빌더', v_b: 'B Fast' }[target] || target;
     const prodLabel = STATE.products?.[SEC.product]?.label || SEC.product;
     
     if (!confirm(`${prodLabel}의 편집 결과를 ${label}에 배포하시겠습니까?\n(기존 파일이 덮어씌워집니다)`)) return;
