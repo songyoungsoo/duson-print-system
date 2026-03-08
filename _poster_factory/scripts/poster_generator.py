@@ -213,6 +213,7 @@ class PosterGenerator:
         svg = self._build_svg(design, copy_data)
         svg_path = self.workdir / "poster.svg"
         svg_path.write_text(svg, encoding="utf-8")
+        self._generate_preview()
 
         # 4. 메타데이터
         elapsed = time.time() - start
@@ -252,6 +253,7 @@ class PosterGenerator:
         svg = self._build_svg(design, copy_data)
         svg_path = self.workdir / "poster.svg"
         svg_path.write_text(svg, encoding="utf-8")
+        self._generate_preview()
         logger.info(f"✅ SVG 재조립 완료: {svg_path}")
         return True
 
@@ -307,6 +309,148 @@ class PosterGenerator:
 
         logger.info(f"  ✅ {item.get('name')} 완료")
         return self.rebuild_svg()
+
+    def art_direct(self) -> bool:
+        """Phase 3: 아트디렉팅 — brief+copy 기반으로 layout_spec.json 자동 생성"""
+        try:
+            brief = self._load("brief.json")
+            copy_data = self._load("copy.json")
+        except FileNotFoundError as e:
+            logger.error(f"❌ {e}")
+            return False
+
+        # Load reference configs
+        config_dir = Path(__file__).parent.parent / "config"
+        schema = self._load_config(config_dir / "layout_spec_schema.json")
+        typo_scale = self._load_config(config_dir / "typography_scale.json")
+
+        # Build prompt
+        system_prompt = self._build_art_director_system_prompt(schema, typo_scale)
+        user_prompt = self._build_art_director_user_prompt(brief, copy_data)
+
+        logger.info("🎨 아트디렉팅 중... (layout_spec.json 생성)")
+
+        try:
+            result = self.client.generate_text_json(user_prompt, system_prompt)
+        except Exception as e:
+            logger.error(f"❌ 아트디렉팅 실패: {e}")
+            return False
+
+        # Validate essential fields
+        required = ["layout_id", "zones", "typography", "image_directives"]
+        missing = [k for k in required if k not in result]
+        if missing:
+            logger.error(f"❌ layout_spec에 필수 필드 누락: {missing}")
+            return False
+
+        # Save
+        self._save("layout_spec.json", result)
+
+        # Reload
+        self.layout_spec = result
+        logger.info(f"✅ 아트디렉팅 완료 — layout: {result.get('layout_id', '?')}")
+        return True
+
+    def _load_config(self, path: Path) -> dict:
+        """config 디렉토리에서 JSON 파일 로드"""
+        if path.exists():
+            return json.loads(path.read_text(encoding="utf-8"))
+        return {}
+
+    def _build_art_director_system_prompt(self, schema: dict, typo_scale: dict) -> str:
+        """아트디렉터 시스템 프롬프트 구성"""
+        # Extract layout options from self.layout_patterns
+        layout_options = []
+        for lid, ldata in self.layout_patterns.get("layouts", {}).items():
+            zones_pct = ldata.get("zones", {})
+            best_for = ldata.get("best_for", [])
+            layout_options.append(f"  - {lid}: {ldata.get('name', lid)} — zones: {json.dumps(zones_pct)} — best_for: {best_for}")
+        layouts_str = "\n".join(layout_options) if layout_options else "  (layout_patterns not loaded)"
+
+        # Extract scale options from typo_scale
+        scales = typo_scale.get("scales", {})
+        scales_str = "\n".join([f"  - {name}: ratio {s.get('ratio')}, feel: {s.get('feel')}, best_for: {s.get('best_for')}" for name, s in scales.items() if isinstance(s, dict) and 'ratio' in s])
+
+        # Extract schema (only the schema part, not the examples)
+        schema_def = json.dumps(schema.get("schema", schema), ensure_ascii=False, indent=2)
+
+        return f"""You are a professional Art Director for print poster design (전단지/포스터).
+
+Your job: Given a business brief and copy text, create a complete layout_spec.json that defines the entire poster composition BEFORE any images are generated.
+
+## KEY PRINCIPLE
+히어로 이미지는 전체의 일부 — "따로 놀면 안 돼." Every element must serve the whole composition.
+
+## OUTPUT FORMAT (JSON Schema)
+{schema_def}
+
+## AVAILABLE LAYOUTS
+{layouts_str}
+
+## AVAILABLE TYPOGRAPHY SCALES
+{scales_str}
+
+## LAYOUT OVERRIDES (per layout)
+{json.dumps(typo_scale.get('layout_overrides', {}), ensure_ascii=False, indent=2)}
+
+## 기승전결 NARRATIVE STRUCTURE
+Map the poster to 4-act narrative:
+- 기(起/Intro): 25-35% — First impression, brand recognition
+- 승(承/Development): 35-45% — Core info, menu/services
+- 전(轉/Climax): 10-15% — Action trigger (promo/discount)
+- 결(結/Conclusion): 12-18% — Contact info, CTA
+
+## RULES
+1. Canvas is always 2130×3000px with 15px bleed and 65px safety margin
+2. Zone y_px values must be non-overlapping and sum to ≤3000
+3. Typography size_px must respect the hierarchy: L1 > L2 > L4 > L3 > L5
+4. Hero image_directives MUST include forbidden: ["자체 텍스트", "테두리", "프레임", "로고"] — the hero is PURE photography
+5. All colors must be valid hex codes
+6. Choose layout based on: item count, industry, visual emphasis needed
+7. zone_transitions must cover all adjacent zone pairs"""
+
+    def _build_art_director_user_prompt(self, brief: dict, copy_data: dict) -> str:
+        """아트디렉터 사용자 프롬프트 구성"""
+        biz_name = brief.get("business_name", "")
+        industry = brief.get("industry", "")
+        category = brief.get("category", "")
+        features = brief.get("features", [])
+
+        items = copy_data.get("items", [])
+        n_items = len(items)
+        hero_copy = copy_data.get("hero", {})
+        subtitle = copy_data.get("subtitle", "")
+        promo = copy_data.get("promo", {})
+        cta = copy_data.get("cta", {})
+
+        items_summary = "\n".join([f"  {i+1}. {item.get('name', '?')} — {item.get('description', '')} [{item.get('price', '')}]" for i, item in enumerate(items)])
+
+        return f"""Create layout_spec.json for this poster:
+
+## BUSINESS
+- Name: {biz_name}
+- Industry: {industry}
+- Category: {category}
+- Features: {', '.join(features) if features else 'N/A'}
+
+## COPY CONTENT
+- Hero headline: {hero_copy.get('headline', '')}
+- Hero badge: {hero_copy.get('badge', '')}
+- Subtitle: {subtitle}
+- Items ({n_items}):
+{items_summary}
+- Promo: {promo.get('title', '')} — {promo.get('detail', '')}
+- CTA headline: {cta.get('headline', '')}
+- CTA phone: {cta.get('phone', '')}
+- CTA address: {cta.get('address', '')}
+- CTA hours: {cta.get('hours', '')}
+
+## DECISION FACTORS
+- Item count: {n_items} (affects grid layout choice)
+- Has promo: {'Yes' if promo else 'No'}
+- Industry suggests: Consider warm/cool tones, visual weight, energy level
+
+Generate complete layout_spec.json with all required fields: layout_id, zones, typography.assignments, image_directives.hero, color_plan."""
 
     # ─── SVG Dispatch ───
 
@@ -1482,6 +1626,26 @@ class PosterGenerator:
         )
         logger.info(f"  💾 저장: {name}")
 
+    def _generate_preview(self):
+        """poster.svg를 감싸는 preview.html 생성 (브라우저 확인용)"""
+        preview_path = self.workdir / "preview.html"
+        html = f"""<!DOCTYPE html>
+<html lang="ko"><head><meta charset="utf-8">
+<title>포스터 프리뷰</title>
+<style>
+* {{ margin:0; padding:0; box-sizing:border-box; }}
+body {{ background:#2d2d2d; display:flex; justify-content:center; align-items:flex-start; padding:20px; min-height:100vh; }}
+.poster-wrap {{ width:710px; max-width:100%; box-shadow:0 8px 40px rgba(0,0,0,0.5); }}
+.poster-wrap object {{ width:100%; height:auto; display:block; }}
+</style></head>
+<body>
+<div class="poster-wrap">
+  <object data="poster.svg" type="image/svg+xml" width="710" height="{int(710 * CANVAS_H / CANVAS_W)}"></object>
+</div>
+</body></html>"""
+        preview_path.write_text(html, encoding="utf-8")
+        logger.info(f"  🌐 프리뷰: {preview_path}")
+
 
 def main():
     parser = argparse.ArgumentParser(description="SVG 포스터 생성기 V2")
@@ -1516,13 +1680,29 @@ def main():
         choices=LAYOUT_IDS,
         help="Force specific layout template",
     )
+    parser.add_argument(
+        "--art-direct",
+        action="store_true",
+        help="Phase 3: layout_spec.json 자동 생성 (brief+copy → 아트디렉팅)",
+    )
+    parser.add_argument(
+        "--full",
+        action="store_true",
+        help="전체 파이프라인: 아트디렉팅 → 이미지 생성 → SVG 조립",
+    )
     args = parser.parse_args()
 
     gen = PosterGenerator(args.workdir, embed=args.embed)
     if args.layout:
         gen.cli_layout = args.layout
 
-    if args.rebuild_svg:
+    if args.full:
+        ok = gen.art_direct()
+        if ok:
+            ok = gen.generate_all()
+    elif args.art_direct:
+        ok = gen.art_direct()
+    elif args.rebuild_svg:
         ok = gen.rebuild_svg()
     elif args.regen_hero:
         ok = gen.regen_hero()
