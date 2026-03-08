@@ -1,0 +1,103 @@
+name: Deploy to NAS (FTP)
+
+# main 브랜치 push 시 자동 실행
+on:
+  push:
+    branches: [main]
+    paths-ignore:
+      - '**.md'
+      - 'docs/**'
+      - '.claude/**'
+      - '_detail_page/**'
+      - '_poster_factory/**'
+      - 'tests/**'
+
+  # 수동 실행 (Actions 탭에서)
+  workflow_dispatch:
+    inputs:
+      sync_all:
+        description: '전체 파일 동기화 (변경분만 아닌 전체)'
+        required: false
+        default: 'false'
+        type: boolean
+
+jobs:
+  deploy-nas:
+    name: FTP → NAS (dsp1830.ipdisk.co.kr)
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 2  # 변경 파일 비교용
+
+      - name: Get changed files
+        id: changed
+        run: |
+          if [ "${{ github.event.inputs.sync_all }}" = "true" ]; then
+            echo "mode=all" >> $GITHUB_OUTPUT
+            git ls-files > /tmp/changed_files.txt
+            echo "count=$(wc -l < /tmp/changed_files.txt)" >> $GITHUB_OUTPUT
+          else
+            git diff --name-only --diff-filter=ACMR HEAD~1 HEAD > /tmp/changed_files.txt 2>/dev/null || true
+            echo "mode=changed" >> $GITHUB_OUTPUT
+            echo "count=$(wc -l < /tmp/changed_files.txt)" >> $GITHUB_OUTPUT
+          fi
+          echo "--- Changed files ---"
+          cat /tmp/changed_files.txt
+
+      - name: Skip if no files
+        if: steps.changed.outputs.count == '0'
+        run: echo "No files to sync. Skipping."
+
+      - name: Upload to NAS via FTP
+        if: steps.changed.outputs.count != '0'
+        run: |
+          UPLOADED=0
+          FAILED=0
+          SKIPPED=0
+
+          while IFS= read -r file; do
+            # 존재하지 않는 파일 스킵 (삭제된 파일)
+            if [ ! -f "$file" ]; then
+              echo "⏭ SKIP (deleted): $file"
+              SKIPPED=$((SKIPPED + 1))
+              continue
+            fi
+
+            # 불필요한 파일 스킵
+            case "$file" in
+              .github/*|.claude/*|tests/*|_detail_page/*|_poster_factory/*|*.md|.gitignore|.git/*)
+                echo "⏭ SKIP (excluded): $file"
+                SKIPPED=$((SKIPPED + 1))
+                continue
+                ;;
+            esac
+
+            REMOTE_PATH="${{ secrets.NAS_ROOT }}/${file}"
+
+            if curl -s --connect-timeout 10 --max-time 30 \
+              -T "$file" \
+              "ftp://${{ secrets.NAS_HOST }}${REMOTE_PATH}" \
+              --user "${{ secrets.NAS_USER }}:${{ secrets.NAS_PASS }}" \
+              --ftp-create-dirs 2>/dev/null; then
+              echo "✅ $file"
+              UPLOADED=$((UPLOADED + 1))
+            else
+              echo "❌ FAILED: $file"
+              FAILED=$((FAILED + 1))
+            fi
+          done < /tmp/changed_files.txt
+
+          echo ""
+          echo "=== NAS 동기화 결과 ==="
+          echo "  업로드: $UPLOADED"
+          echo "  스킵: $SKIPPED"
+          echo "  실패: $FAILED"
+
+          if [ $FAILED -gt 0 ]; then
+            echo "::warning::$FAILED 파일 업로드 실패"
+            exit 1
+          fi
