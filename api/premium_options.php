@@ -37,8 +37,8 @@ if (file_exists($cache_file) && (time() - filemtime($cache_file)) < $cache_ttl) 
 
 // DB에서 조회
 $stmt = mysqli_prepare($db, "
-    SELECT o.id AS option_id, o.option_name, o.option_key, o.sort_order,
-           v.id AS variant_id, v.variant_name, v.variant_key, v.pricing_config, v.is_default, v.display_order
+    SELECT o.id AS option_id, o.option_name, o.sort_order,
+           v.id AS variant_id, v.variant_name, v.pricing_config, v.is_default, v.display_order
     FROM premium_options o
     JOIN premium_option_variants v ON v.option_id = o.id
     WHERE o.product_type = ? AND o.is_active = 1 AND v.is_active = 1
@@ -55,7 +55,7 @@ while ($row = mysqli_fetch_assoc($result)) {
         $options[$option_name] = [
             'option_id' => (int)$row['option_id'],
             'option_name' => $option_name,
-            'option_key' => $row['option_key'],
+            'sort_order' => (int)$row['sort_order'],
             'sort_order' => (int)$row['sort_order'],
             'variants' => []
         ];
@@ -63,7 +63,7 @@ while ($row = mysqli_fetch_assoc($result)) {
     $options[$option_name]['variants'][] = [
         'variant_id' => (int)$row['variant_id'],
         'variant_name' => $row['variant_name'],
-        'variant_key' => $row['variant_key'],
+        'pricing_config' => json_decode($row['pricing_config'], true),
         'pricing_config' => json_decode($row['pricing_config'], true),
         'is_default' => (bool)$row['is_default'],
         'display_order' => (int)$row['display_order']

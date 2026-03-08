@@ -816,17 +816,22 @@
 
     <script>
     (function(){
-        function isBusinessHours() {
+        // 설정값 기반 시간 체크 (하드코딩 제거)
+        function isInTimeRange(startStr, endStr) {
             var now = new Date();
-            var h = now.getHours(), m = now.getMinutes();
-            if (h < 9) return false;
-            if (h > 18) return false;
-            if (h === 18 && m >= 30) return false;
-            return true;
+            var cur = ('0'+now.getHours()).slice(-2) + ':' + ('0'+now.getMinutes()).slice(-2);
+            if (!startStr || !endStr) return true;
+            if (startStr <= endStr) return cur >= startStr && cur <= endStr;
+            return cur >= startStr || cur <= endStr; // 야간 구간 (예: 18:30~09:00)
+        }
+        function getConfigVal(key, fallback) {
+            if (window.chatWidget && window.chatWidget.config && window.chatWidget.config[key] !== undefined) {
+                return window.chatWidget.config[key];
+            }
+            return fallback;
         }
         var retryCount = 0;
         function toggleWidgets() {
-            var biz = isBusinessHours();
             var staff = document.querySelector('.chat-widget');
             var ai = document.getElementById('ai-chatbot-widget');
             // chat.js가 .chat-widget을 동적 생성하므로, 아직 없으면 재시도 (최대 20회 = 2초)
@@ -835,8 +840,22 @@
                 setTimeout(toggleWidgets, 100);
                 return;
             }
-            if (staff) staff.style.display = biz ? '' : 'none';
-            if (ai) ai.style.display = biz ? 'none' : 'block';
+            // 채팅 설정에서 시간 가져오기 (DB chat_config)
+            var chatStart = getConfigVal('widget_hour_start', '09:00');
+            var chatEnd = getConfigVal('widget_hour_end', '18:30');
+            var aiStart = getConfigVal('ai_hour_start', '18:30');
+            var aiEnd = getConfigVal('ai_hour_end', '09:00');
+            var chatBiz = isInTimeRange(chatStart, chatEnd);
+            var aiBiz = isInTimeRange(aiStart, aiEnd);
+            if (staff) {
+                // 채팅 중이면 숨기지 않음 (고객이 대화 중에 사라지는 것 방지)
+                if (window.chatWidget && window.chatWidget.isOpen) {
+                    staff.style.display = '';
+                } else {
+                    staff.style.display = chatBiz ? '' : 'none';
+                }
+            }
+            if (ai) ai.style.display = aiBiz ? 'block' : 'none';
         }
         if (document.readyState === 'loading') {
             document.addEventListener('DOMContentLoaded', toggleWidgets);

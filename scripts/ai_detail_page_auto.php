@@ -12,16 +12,92 @@
 
 declare(strict_types=1);
 
-define('API_KEY', 'AIzaSyAfv-I9Vpbq8JZzWkeI6DmYrM91bFw2iZQ');
+define('API_KEY', getenv('GEMINI_API_KEY') ?: 'AIzaSyAEBMlGYm0cvBsBHMqaCmJRObFKEXN8jXs');
 define('OUTPUT_BASE', '/var/www/html/ImgFolder/detail_page');
 define('STAGING_BASE', '/var/www/html/ImgFolder/detail_page_staging');
-define('GEMINI_MODEL', 'gemini-2.5-flash');
-define('IMAGE_MODEL', 'nano-banana-pro-preview');
+define('GEMINI_MODEL', 'gemini-3-pro-preview');
+define('IMAGE_MODEL', 'gemini-3-pro-image-preview');
 
 $PRODUCTS = [
     'sticker_new' => '스티커', 'namecard' => '명함', 'inserted' => '전단지',
     'envelope' => '봉투', 'littleprint' => '포스터', 'merchandisebond' => '상품권',
     'cadarok' => '카다록', 'ncrflambeau' => 'NCR양식지', 'msticker' => '자석스티커'
+];
+
+// 제품별 상세 정보 (카피 참조용 - 실제 설명 페이지 기반 2026-03-06)
+$PRODUCT_INFO = [
+    'sticker_new' => [
+        'desc' => '사각형 맞춤 컬러 스티커 인쇄. 10mm~600mm 자유 규격, 11종 용지로 나만의 스티커 제작',
+        'features' => '코팅/비코팅/무광/강접/초강접 선택, 원터치(배경없음)/투터치(배경있음), 유광/무광/심플레인보우 코팅, 당일 출고(아트지 유광/강접/비코팅), 97% 당일 출고',
+        'materials' => '아트지유광 90g, 아트지비코팅 90g, 아트지무광 90g, 강접코팅 90g, 초강접유광 90g, 초강접비코팅 90g, 은데드롱 25g(메탈릭), 투명데드롱 25g(투명라벨), 유포지 80g(방수), 모조지 80g, 크라프트지 57g(친환경)',
+        'sizes' => '10mm~600mm 사각형 맞춤, 원터치/투터치(사방 3mm 여분)',
+        'delivery' => '아트지 유광/강접/비코팅: 매일 당일출고 / 무광·은데드롱·기타: 요일별 출고',
+        'usecases' => '상품 라벨, 홍보 스티커, 봉인 스티커, 냉장 식품 라벨(유포지), 화장품 라벨(무광), 친환경 브랜드(크라프트)',
+    ],
+    'namecard' => [
+        'desc' => '일반지부터 최고급 수입지까지 30가지 용지로 제작하는 명함 인쇄. 비코팅/코팅/고품격코팅 선택',
+        'features' => '비코팅(부드러운질감/은은한광택), 코팅216g/250g(구겨짐적음/찢어지지않음), 고품격코팅300g/400g(탄탄한두께), 당일판(11시마감→18시출고), 옵셋/디지털/당일판인쇄, 97% 다음날 출고',
+        'materials' => '스노우화이트 비코팅 250g, 코팅 216g/250g, 고품격코팅 300g/400g, 유광코팅 300g, 린넨(천질감), 펄(은은한반짝임), 크라프트(갈색자연), 수입특수지',
+        'sizes' => '90x50mm(표준), 86x52mm, 맞춤 50~500mm',
+        'delivery' => '매일 출고, 당일판 오전 11시 마감 → 18시 전후 출고(97% 예상)',
+        'usecases' => '개인 명함, 기업 명함, 고급 수입지 명함, 당일 급행 명함',
+    ],
+    'inserted' => [
+        'desc' => '합판전단지(저렴/빠름)와 독판전단지(고급/다양한후가공) 선택. 대량 배포에 최적화',
+        'features' => '합판: A2/A3/A4/4절/8절/16절, 당일판(아트지 11시마감→18시출고), 독판: A1~16절/2절/4절 다양한사이즈, 오시/미싱/코팅/도무송/박/형압/타공/접지/접착/귀도리/넘버링 후가공',
+        'materials' => '아트지 90g(광택/선명), 모조지 80g(무광/경제적), 스노우화이트(무광고급, 독판만)',
+        'sizes' => '합판: A2·A3·A4·4절·8절·16절 / 독판: A1~16절, 맞춤',
+        'delivery' => '합판 아트지: 당일 출고(11시마감) / 모조지/독판: 익일 출고',
+        'usecases' => '길거리 배포 전단지(합판), 고급 브로슈어(독판), 이벤트 안내지, 식당/가게 홍보물',
+    ],
+    'envelope' => [
+        'desc' => '30가지 용지로 제작하는 옵셋 봉투. 각대/소/창봉투 등 9가지 규격 선택',
+        'features' => '각대봉투/자켓소봉투/일반소봉투/티켓봉투/6절/8절/9절봉투/A3봉투/창봉투, 양면테이프, 로고인쇄, 레쟈크/크라프트/탄트 등 특수지 선택',
+        'materials' => '레쟈크체크백색 110g, 레쟈크줄백색 100g, 모조지 120g/150g, 화일지 120g, 스타펄 120g, 크라프트 98g, 레이드지 120g, 탄트지 120g, 밍크지 120g, 창봉투 모조지 100g',
+        'sizes' => '각대봉투 510x387mm, 소봉투 238x262mm, 티켓봉투 225x193mm, 창봉투, A3봉투 등',
+        'delivery' => '접수 후 2~3일',
+        'usecases' => '기업 서류봉투, 청첩장봉투, 급여봉투, 상품권봉투, 로고인쇄봉투',
+    ],
+    'littleprint' => [
+        'desc' => '벽면/게시판 부착용 포스터 인쇄. 국2절/4x6 2절/4x6 4절, 단독 독판인쇄로 고품질',
+        'features' => '단독 독판인쇄(색상정밀), 오시/미싱/코팅(유광/무광)/도무송/박(금박/은박)/형압(엠보싱/디보싱)/타공/접지/접착/귀도리 후가공, 매일 출고',
+        'materials' => '아트지(광택/화사, 사진중심), 스노우지무광(차분/고급, 전시/브랜드), 모조지(필기가능/경제적)',
+        'sizes' => '국전2절(420x594mm), 4x6 2절, 4x6 4절, 작업사이즈 사방1.5mm여분',
+        'delivery' => '매일 출고',
+        'usecases' => '행사홍보포스터, 매장홍보물, 전시회포스터(스노우지), 공지게시물(모조지), 금박로고포스터',
+    ],
+    'merchandisebond' => [
+        'desc' => '비코팅/코팅/고품격코팅 상품권 및 티켓 인쇄. 당일판 가능, 넘버링 옵션',
+        'features' => '비코팅(필기가능/은은한광택), 코팅216g/250g(내구성), 고품격코팅300g/400g(탄탄), 당일판(11시30분마감→17시출고), 넘버링, 옵셋/디지털/당일판인쇄',
+        'materials' => '스노우화이트 비코팅 250g, 코팅 216g/250g, 고품격코팅 300g/400g, 유광코팅 300g',
+        'sizes' => '158x72mm, 168x72mm, 172x72mm, 148x68mm(신권), 160x73mm(구권), 맞춤 50~500mm',
+        'delivery' => '매일 출고, 당일판 11시30분 마감 → 17시 전후 출고',
+        'usecases' => '상품권, 이벤트티켓, 입장권, 쿠폰, 식권, 기프트카드',
+    ],
+    'cadarok' => [
+        'desc' => '리플렛/팜플렛/카다록 인쇄. 중철제본·무선제본, 다양한 용지와 후가공',
+        'features' => '중철제본(중간철심), 무선제본(풀붙임), 오시/미싱/코팅/도무송/박/형압/타공/접지 후가공, 접지형 리플렛(2단/3단/4단접지)',
+        'materials' => '아트지(광택/선명), 스노우화이트(무광/고급), 모조지(필기가능/경제적), 컬러지',
+        'sizes' => 'A4, A5, 3단접지, 맞춤규격',
+        'delivery' => '접수 후 2~3일',
+        'usecases' => '기업 카탈로그, 제품설명서, 행사 팜플렛, 학원·병원 리플렛, 브랜드 룩북',
+    ],
+    'ncrflambeau' => [
+        'desc' => '무카본 NCR 복사지 및 마스터 양식지 인쇄. 2~4매 세트, 세금계산서/전표/영수증',
+        'features' => 'NCR 복사지(압력으로 복사, 무탄소), 마스터 양식지(70~80g 모조지 1~2도인쇄), 백색/황색/적색/청색/녹색 선택, 2~4매 1세트, A4~64절 다양한 사이즈',
+        'materials' => 'NCR용지(무카본복사지), 모조지 70g/80g',
+        'sizes' => '64절 95x130mm, 48절 85x190mm, 32절 130x190mm, 16절 190x260mm, A5, A4(1/4), A4(1/3), A4',
+        'delivery' => '접수 후 2~3일',
+        'usecases' => '세금계산서, 거래명세서, 간이영수증, 오더지, 메모지, 입금전표',
+    ],
+    'msticker' => [
+        'desc' => '냉장고·차량 등에 부착하는 종이자석스티커 인쇄. 강력 자력, 맞춤 디자인',
+        'features' => '자석지(냉장고/화이트보드/금속부착), 인쇄 후 자석접착, 맞춤규격, 단면인쇄',
+        'materials' => '종이자석지(자력있는 고무자석 코팅), 인쇄면 유광/무광',
+        'sizes' => '맞춤 규격',
+        'delivery' => '접수 후 2~3일',
+        'usecases' => '냉장고 광고스티커, 차량 자석스티커, 화이트보드 마킹, 이름표 자석, 업체 홍보용 자석',
+    ],
 ];
 
 // 섹션별 이미지 프롬프트
@@ -62,7 +138,7 @@ function genImage($pk, $s, $dir): array {
     $prompt = getImgPrompt($pk, $s);
     $file = $dir . '/section_' . str_pad((string)$s, 2, '0', STR_PAD_LEFT) . '.png';
     $url = 'https://generativelanguage.googleapis.com/v1beta/models/' . IMAGE_MODEL . ':generateContent?key=' . API_KEY;
-    $data = ['contents'=>[['parts'=>[['text'=>$prompt]]], 'generationConfig'=>['temperature'=>0.9,'maxOutputTokens'=>32768]];
+    $data = ['contents'=>[['parts'=>[['text'=>$prompt]]]], 'generationConfig'=>['temperature'=>0.9,'maxOutputTokens'=>32768]];
     $ch = curl_init($url);
     curl_setopt_array($ch, [CURLOPT_RETURNTRANSFER=>true,CURLOPT_POST=>true,CURLOPT_POSTFIELDS=>json_encode($data),CURLOPT_HTTPHEADER=>['Content-Type: application/json'],CURLOPT_TIMEOUT=>180]);
     $r = curl_exec($ch); $hc = curl_getinfo($ch, CURLINFO_HTTP_CODE); curl_close($ch);
@@ -76,38 +152,57 @@ function genImage($pk, $s, $dir): array {
 }
 
 /**
- * 카피 생성 - 네이버 광고 검수 가이드라인 적용
+ * 카피 생성 - 네이버 광고 검수 가이드라인 적용 + 제품 정보 참조
  */
 function genCopy($pk, $pn, $s, $imgPrompt): array {
-    global $SECTION_GUIDES;
+    global $SECTION_GUIDES, $PRODUCT_INFO;
     $ctx = $SECTION_GUIDES[$s] ?? $SECTION_GUIDES[1];
+    $prod = $PRODUCT_INFO[$pk] ?? $PRODUCT_INFO['sticker_new'];
     
-    // [중요] 네이버 광고 검수 가이드라인
-    $prompt = <<<'PROMPT'
-당신은 마케팅 카피라이터입니다.
+    // 제품별 특징
+    $prodDesc = $prod['desc'] ?? '';
+    $prodFeatures = $prod['features'] ?? '';
+    $prodMaterials = $prod['materials'] ?? '';
+    $prodSizes = $prod['sizes'] ?? '';
+    $prodDelivery = $prod['delivery'] ?? '';
+    $prodUsecases = $prod['usecases'] ?? '';
+
+    // 네이버 광고 검수 가이드라인
+    $prompt = <<<PROMPT
+당신은 두손기획인쇄의 마케팅 카피라이터입니다.
+두손기획인쇄는 서울 영등포구 문래동에 위치한 인쇄 전문 업체입니다.
 
 [중요] 아래 네이버 광고 검수 가이드라인을 반드시 준수하세요:
 
 ❌ 금지 표현:
 - 과대광고: "세계제일", "최고급", "최우수", "업계 최초", "무조건", "반드시"
-- 타업체 비교/ 폄하: "타사 대비", "경쟁사보다", "기타 제품보다", "기존"
+- 타업체 비교/폄하: "타사 대비", "경쟁사보다", "기타 제품보다"
 - 허위과장: "100%", "절대", "무한"
 
 ✅ 허용 표현:
-- 구체적 사실: "10년 경험", "고객 만족 99%"
-- 제품 특성 설명: "고품질", "친환경", "사용자 편의"
+- 구체적 사실: "30가지 용지", "97% 당일 출고", "11종 재질"
+- 제품 특성: "당일 출고", "방수 재질", "무카본 복사"
 
-[제품] {$pn}
+[제품명] {$pn}
+[제품설명] {$prodDesc}
+[주요특징] {$prodFeatures}
+[재질옵션] {$prodMaterials}
+[제작사이즈] {$prodSizes}
+[출고안내] {$prodDelivery}
+[활용용도] {$prodUsecases}
 [섹션] {$ctx['topic']}
-[이미지] {$imgPrompt}
-[가이드] {$ctx['guide']}
+[이미지설명] {$imgPrompt}
+[섹션가이드] {$ctx['guide']}
+
+위 제품 정보를 바탕으로 해당 섹션에 맞는 카피를 작성하세요.
+헤드카피는 핵심 메시지, 서브카피는 구체적 특징, 상세설명은 고객 혜택 중심으로 작성하세요.
 
 요청: 헤드카피(10-20자), 서브카피(20-30자), 상세설명(50-80자)
 JSON으로만 출력: {"headline":"","subheadline":"","description":""}
 PROMPT;
     
     $url = 'https://generativelanguage.googleapis.com/v1beta/models/' . GEMINI_MODEL . ':generateContent?key=' . API_KEY;
-    $data = ['contents'=>[['parts'=>[['text'=>$prompt]]]], 'generationConfig'=>['temperature'=>0.7,'maxOutputTokens'=>512]];
+    $data = ['contents'=>[['parts'=>[['text'=>$prompt]]]], 'generationConfig'=>['temperature'=>0.7,'maxOutputTokens'=>2048,'responseMimeType'=>'application/json']];
     $ch = curl_init($url);
     curl_setopt_array($ch, [CURLOPT_RETURNTRANSFER=>true,CURLOPT_POST=>true,CURLOPT_POSTFIELDS=>json_encode($data),CURLOPT_HTTPHEADER=>['Content-Type: application/json'],CURLOPT_TIMEOUT=>60]);
     $r = curl_exec($ch); $hc = curl_getinfo($ch, CURLINFO_HTTP_CODE); curl_close($ch);
@@ -174,7 +269,7 @@ function generateAll($product) {
     } else { echo "📷 [1/3] 이미지: 기존 {$existing}개 사용 ✅\n"; }
     
     // 2. Copy
-    echo "\n✍️ [2/3] 카피 생성 (네이버 광고 검수 적용)...\n";
+    echo "\n✍️ [2/3] 카피 생성 (네이버 광고 검수 + 제품정보 적용)...\n";
     $copies = [];
     for ($i = 1; $i <= 13; $i++) {
         echo "   섹션 $i... ";

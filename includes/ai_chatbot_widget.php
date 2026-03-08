@@ -1,4 +1,4 @@
-<div id="ai-chatbot-widget" style="display:none; position:fixed; bottom:20px; right:80px; z-index:99998; font-family:'Pretendard Variable','Noto Sans KR',sans-serif;">
+<div id="ai-chatbot-widget" style="display:none; position:fixed; bottom:20px; left:24px; z-index:99998; font-family:'Pretendard Variable','Noto Sans KR',sans-serif;">
     <button id="ai-chatbot-toggle" onclick="aiChatToggle()" style="width:79px;height:79px;border-radius:50%;background:linear-gradient(145deg,#6366f1,#4f46e5);border:none;cursor:pointer;box-shadow:0 4px 14px rgba(99,102,241,.45);display:flex;align-items:center;justify-content:center;position:relative;transition:transform .2s;">
         <span style="color:#fff;font-weight:900;font-size:20px;letter-spacing:-0.5px;line-height:.95;text-align:center;">야간<br>당번</span>
         <span style="position:absolute;top:0;right:0;width:16px;height:16px;background:#22c55e;border-radius:50%;border:2px solid #fff;"></span>
@@ -270,7 +270,7 @@
                 // 데스크톱/태블릿 기존 로직
                 var winW = 310, winH = 420;
                 if (window.innerWidth <= 768) { winW = window.innerWidth - 20; winH = window.innerHeight * 0.7; }
-                var left = window.innerWidth - 12 - winW;
+                var left = 24;
                 var toggle = document.getElementById('ai-chatbot-toggle');
                 var tRect = toggle.getBoundingClientRect();
                 var top = tRect.top - winH - 10;

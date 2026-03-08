@@ -47,7 +47,7 @@ $current_path = rtrim($current_path, '/') . '/';
     overflow: hidden;
 }
 
-/* Section header - brand navy (#1E4E79 from top-header) */
+/* Section header - clickable accordion */
 .sa-header {
     background: #1E4E79;
     color: #fff;
@@ -56,14 +56,40 @@ $current_path = rtrim($current_path, '/') . '/';
     font-weight: 700;
     text-align: center;
     letter-spacing: 1px;
+    cursor: pointer;
+    user-select: none;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 4px;
+    transition: background 0.15s;
+}
+.sa-header:hover {
+    background: #255d94;
+}
+.sa-header .sa-chevron {
+    font-size: 8px;
+    transition: transform 0.25s ease;
+    margin-left: 4px;
+}
+.sa-header.collapsed .sa-chevron {
+    transform: rotate(-90deg);
 }
 
-/* Menu items */
+/* Collapsible menu list */
 .sa-list {
     list-style: none;
     margin: 0;
     padding: 0;
+    max-height: 500px;
+    overflow: hidden;
+    transition: max-height 0.3s ease;
 }
+.sa-list.collapsed {
+    max-height: 0;
+}
+
+/* Menu items */
 .sa-list li {
     border-bottom: 1px solid #f0f0f0;
 }
@@ -156,9 +182,9 @@ $current_path = rtrim($current_path, '/') . '/';
             <?php foreach ($DASHBOARD_NAV as $group_key => $group): ?>
                 <div class="sa-section">
                     <?php if (!empty($group['label'])): ?>
-                        <div class="sa-header"><?php echo $group['label']; ?></div>
+                        <div class="sa-header" data-group="<?php echo $group_key; ?>"><?php echo $group['label']; ?><span class="sa-chevron">▼</span></div>
                     <?php else: ?>
-                        <div class="sa-header">대시보드</div>
+                        <div class="sa-header" data-group="<?php echo $group_key; ?>">대시보드<span class="sa-chevron">▼</span></div>
                     <?php endif; ?>
 
                     <ul class="sa-list">
@@ -242,4 +268,81 @@ $current_path = rtrim($current_path, '/') . '/';
 
     if (mobileMenuToggle) mobileMenuToggle.addEventListener('click', toggleSidebar);
     if (sidebarOverlay) sidebarOverlay.addEventListener('click', toggleSidebar);
+
+    // === Accordion sidebar ===
+    (function() {
+        const STORAGE_KEY = 'dashboard_sidebar_state';
+        const ALWAYS_OPEN = ['main'];
+        
+        // Load saved state
+        function getSavedState() {
+            try {
+                return JSON.parse(localStorage.getItem(STORAGE_KEY)) || {};
+            } catch(e) { return {}; }
+        }
+        
+        function saveState(state) {
+            localStorage.setItem(STORAGE_KEY, JSON.stringify(state));
+        }
+        
+        // Toggle a group
+        function toggleGroup(header) {
+            const groupKey = header.dataset.group;
+            if (ALWAYS_OPEN.includes(groupKey)) return;
+            
+            const list = header.nextElementSibling;
+            if (!list || !list.classList.contains('sa-list')) return;
+            
+            const isCollapsed = list.classList.toggle('collapsed');
+            header.classList.toggle('collapsed', isCollapsed);
+            
+            const state = getSavedState();
+            state[groupKey] = !isCollapsed;
+            saveState(state);
+        }
+        
+        // Init: apply saved state
+        const headers = document.querySelectorAll('.sa-header[data-group]');
+        const saved = getSavedState();
+        const hasActiveItem = {};
+        
+        // Find which group has the active item
+        document.querySelectorAll('.sa-item.active').forEach(function(item) {
+            const section = item.closest('.sa-section');
+            if (section) {
+                const h = section.querySelector('.sa-header[data-group]');
+                if (h) hasActiveItem[h.dataset.group] = true;
+            }
+        });
+        
+        headers.forEach(function(header) {
+            const groupKey = header.dataset.group;
+            const list = header.nextElementSibling;
+            if (!list || !list.classList.contains('sa-list')) return;
+            
+            // Always keep 'main' open
+            if (ALWAYS_OPEN.includes(groupKey)) return;
+            
+            // Determine initial state:
+            // - Group with active item → open
+            // - Saved state exists → use it
+            // - No saved state → collapsed by default
+            let shouldOpen = false;
+            if (hasActiveItem[groupKey]) {
+                shouldOpen = true;
+            } else if (saved.hasOwnProperty(groupKey)) {
+                shouldOpen = saved[groupKey];
+            }
+            
+            if (!shouldOpen) {
+                list.classList.add('collapsed');
+                header.classList.add('collapsed');
+            }
+            
+            // Click handler
+            header.addEventListener('click', function() {
+                toggleGroup(header);
+            });
+        });
+    })();
 </script>

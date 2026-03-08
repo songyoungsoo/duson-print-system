@@ -37,14 +37,39 @@ if ($is_logged_in) {
         }
     }
 
-    // 기존 시스템 호환 (fallback)
+    // 기존 시스템 호환 (fallback) — username이 아닌 DB에서 표시이름 조회
     if (!$is_logged_in) {
+        $legacy_username = null;
         if (isset($_SESSION['id_login_ok'])) {
-            $user_name = $_SESSION['id_login_ok']['id'] ?? '';
-            $is_logged_in = true;
+            $legacy_username = $_SESSION['id_login_ok']['id'] ?? '';
         } elseif (isset($_COOKIE['id_login_ok'])) {
-            $user_name = $_COOKIE['id_login_ok'];
-            $is_logged_in = true;
+            $legacy_username = $_COOKIE['id_login_ok'];
+        }
+
+        if ($legacy_username) {
+            if (!isset($db) || !$db) {
+                @include_once dirname(__DIR__) . '/db.php';
+            }
+            if (isset($db) && $db) {
+                $name_stmt = mysqli_prepare($db, "SELECT id, name FROM users WHERE username = ?");
+                if ($name_stmt) {
+                    mysqli_stmt_bind_param($name_stmt, "s", $legacy_username);
+                    mysqli_stmt_execute($name_stmt);
+                    $name_result = mysqli_stmt_get_result($name_stmt);
+                    $name_row = mysqli_fetch_assoc($name_result);
+                    mysqli_stmt_close($name_stmt);
+
+                    if ($name_row) {
+                        // 신규 시스템 세션 복구
+                        $_SESSION['user_id'] = $name_row['id'];
+                        $_SESSION['username'] = $legacy_username;
+                        $_SESSION['user_name'] = $name_row['name'];
+
+                        $user_name = $name_row['name'];
+                        $is_logged_in = true;
+                    }
+                }
+            }
         }
     }
 }

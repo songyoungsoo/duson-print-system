@@ -909,7 +909,7 @@ function updateChatConfig() {
     $allowedKeys = [
         'widget_enabled', 'widget_position', 'widget_hour_start', 'widget_hour_end',
         'widget_button_label', 'widget_welcome_msg', 'widget_poll_interval',
-        'widget_pos_x', 'widget_pos_y',
+        'widget_pos_x', 'widget_pos_y', 'widget_header_color',
         'ai_enabled', 'ai_wait_seconds', 'ai_greeting_msg', 'ai_farewell_msg',
         'ai_hour_start', 'ai_hour_end', 'ai_display_name',
         'ai_pos_x', 'ai_pos_y', 'ai_button_label', 'ai_button_color',

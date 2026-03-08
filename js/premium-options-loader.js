@@ -86,30 +86,30 @@ class PremiumOptionsGeneric {
         const style = document.createElement('style');
         style.id = 'premium-options-generic-style';
         style.textContent = `
-            .premium-generic-section { margin-top: 15px; }
+            .premium-generic-section { margin-top: 6px; }
             .premium-generic-section .option-headers-row {
-                display: flex; flex-wrap: wrap; align-items: center; gap: 8px;
-                padding: 8px 12px; background: #f8f9fa; border-radius: 8px;
+                display: flex; flex-wrap: wrap; align-items: center; gap: 6px;
+                padding: 4px 8px; background: #f8f9fa; border-radius: 6px;
                 border: 1px solid #e0e0e0; margin-bottom: 0;
             }
             .premium-generic-section .option-checkbox-group {
-                display: flex; align-items: center; gap: 4px;
+                display: flex; align-items: center; gap: 3px;
             }
-            .premium-generic-section .option-toggle { width: 16px; height: 16px; cursor: pointer; }
+            .premium-generic-section .option-toggle { width: 12px; height: 12px; cursor: pointer; }
             .premium-generic-section .toggle-label {
-                font-size: 0.85rem; font-weight: 500; color: #495057; cursor: pointer; white-space: nowrap;
+                font-size: 12px; font-weight: 500; color: #495057; cursor: pointer; white-space: nowrap;
             }
             .premium-generic-section .option-price-display { margin-left: auto; }
             .premium-generic-section .option-price-total {
-                font-weight: bold; color: #718096; font-size: 0.85rem;
+                font-weight: bold; color: #718096; font-size: 12px;
             }
             .premium-generic-section .option-details {
-                padding: 8px 12px; background: #fff; border: 1px solid #e0e0e0;
-                border-top: none; border-radius: 0 0 8px 8px;
+                padding: 3px 8px; background: #fff; border: 1px solid #e0e0e0;
+                border-top: none; border-radius: 0 0 6px 6px;
             }
             .premium-generic-section .option-select {
-                width: 100%; padding: 6px 10px; border: 1px solid #ced4da;
-                border-radius: 4px; font-size: 0.85rem; color: #495057;
+                width: 100%; padding: 3px 6px; border: 1px solid #ced4da;
+                border-radius: 3px; font-size: 13px; color: #495057;
             }
             .premium-generic-section .option-note {
                 font-size: 11px; color: #666; margin-top: 4px;
@@ -320,11 +320,12 @@ class PremiumOptionsGeneric {
             totalDisplay.style.color = total > 0 ? '#d4af37' : '#718096';
         }
 
-        // 메인 가격 계산 함수 호출
-        if (typeof calculatePrice === 'function') {
-            calculatePrice();
+        // 메인 가격 계산 함수 호출 (자동모드로 alert 방지)
+        if (typeof autoCalculatePrice === 'function') {
+            autoCalculatePrice();
+        } else if (typeof calculatePrice === 'function') {
+            calculatePrice(true);
         }
-    }
 
     /**
      * 수량 변경 시 재계산

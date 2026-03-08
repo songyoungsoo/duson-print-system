@@ -1032,6 +1032,7 @@ if ($url_nc_type) {
     </script>
 
 
+
     <!-- 고객 리뷰 섹션 -->
     <?php if (!$isQuotationMode && !$isAdminQuoteMode): ?>
     <?php $product_type = 'namecard'; include __DIR__ . '/../../includes/review_widget.php'; ?>

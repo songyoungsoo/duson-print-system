@@ -1,4 +1,4 @@
-<?php
+claude<?php
 /**
  * 리뷰 관리 페이지
  * 경로: admin/mlangprintauto/review_manager.php

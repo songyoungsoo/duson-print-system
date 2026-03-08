@@ -84,6 +84,16 @@ if (!isset($config['widget_pos_x'])) {
     if ($r) { while ($row = mysqli_fetch_assoc($r)) { $config[$row['config_key']] = $row; } }
 }
 
+// One-time migration: 미니 위젯 헤더 색상 설정 추가
+if (!isset($config['widget_header_color'])) {
+    mysqli_query($db, "INSERT IGNORE INTO chat_config (config_key, config_value, config_type, config_group, description) VALUES
+        ('widget_header_color','#1E4E79','string','widget','미니 위젯 헤더 배경색')
+    ");
+    $config = [];
+    $r = mysqli_query($db, "SELECT config_key, config_value, config_type, config_group, description FROM chat_config ORDER BY config_group, config_key");
+    if ($r) { while ($row = mysqli_fetch_assoc($r)) { $config[$row['config_key']] = $row; } }
+}
+
 function cfgVal($config, $key, $default = '') {
     return htmlspecialchars($config[$key]['config_value'] ?? $default, ENT_QUOTES);
 }
@@ -115,6 +125,9 @@ include __DIR__ . '/../includes/sidebar.php';
 .cfg-textarea { resize:vertical; min-height:60px; }
 .cfg-time-row { display:flex; align-items:center; gap:0.5rem; }
 .cfg-time-row span { color:#6b7280; font-size:0.875rem; }
+/* 24시간 형식 강제 */
+input[type="time"] { font-variant-numeric: tabular-nums; }
+input[type="time"]::-webkit-datetime-edit-ampm-field { display:none; }
 .cfg-suffix { display:flex; align-items:center; gap:0.5rem; }
 .cfg-suffix .cfg-input { width:120px; }
 .cfg-suffix span { color:#6b7280; font-size:0.875rem; white-space:nowrap; }
@@ -191,25 +204,45 @@ include __DIR__ . '/../includes/sidebar.php';
                         <div class="cfg-label"><label class="text-sm font-medium text-gray-700">표시 시간대</label></div>
                         <div class="cfg-field">
                             <div class="cfg-time-row">
-                                <input type="time" name="widget_hour_start" value="<?php echo cfgVal($config, 'widget_hour_start', '00:00'); ?>" class="cfg-input" style="width:130px;">
+                                <input type="time" name="widget_hour_start" value="<?php echo cfgVal($config, 'widget_hour_start', '00:00'); ?>" class="cfg-input" style="width:130px;" step="60" lang="ko">
                                 <span>~</span>
-                                <input type="time" name="widget_hour_end" value="<?php echo cfgVal($config, 'widget_hour_end', '23:59'); ?>" class="cfg-input" style="width:130px;">
+                                <input type="time" name="widget_hour_end" value="<?php echo cfgVal($config, 'widget_hour_end', '23:59'); ?>" class="cfg-input" style="width:130px;" step="60" lang="ko">
                             </div>
                             <div class="cfg-hint">이 시간대에만 채팅 위젯이 표시됩니다 (00:00~23:59 = 24시간)</div>
                         </div>
                     </div>
                     <div class="cfg-row">
-                        <div class="cfg-label"><label class="text-sm font-medium text-gray-700">버튼 라벨</label></div>
+                        <div class="cfg-label"><label class="text-sm font-medium text-gray-700">위젯 헤더 텍스트</label></div>
                         <div class="cfg-field">
                             <input type="text" name="widget_button_label" value="<?php echo cfgVal($config, 'widget_button_label', '상담연결'); ?>" class="cfg-input" maxlength="20" style="width:200px;">
-                            <div class="cfg-hint">채팅 버튼 위에 표시되는 텍스트</div>
+                            <div class="cfg-hint">미니 채팅 위젯 헤더에 표시되는 텍스트</div>
                         </div>
                     </div>
                     <div class="cfg-row">
-                        <div class="cfg-label"><label class="text-sm font-medium text-gray-700">환영 메시지</label></div>
+                        <div class="cfg-label"><label class="text-sm font-medium text-gray-700">인사말 메시지</label></div>
                         <div class="cfg-field">
                             <textarea name="widget_welcome_msg" class="cfg-input cfg-textarea" rows="3"><?php echo cfgVal($config, 'widget_welcome_msg'); ?></textarea>
-                            <div class="cfg-hint">채팅 시작 시 이름 입력 모달에 표시되는 문구</div>
+                            <div class="cfg-hint">미니 채팅 위젯의 인사말 텍스트</div>
+                        </div>
+                    </div>
+                    <div class="cfg-row">
+                        <div class="cfg-label"><label class="text-sm font-medium text-gray-700">헤더 색상</label></div>
+                        <div class="cfg-field">
+                            <div style="display:flex;align-items:center;gap:8px;">
+                                <input type="color" name="widget_header_color" value="<?php echo cfgVal($config, 'widget_header_color', '#1E4E79'); ?>" style="width:40px;height:32px;border:1px solid #d1d5db;border-radius:6px;cursor:pointer;padding:2px;">
+                                <input type="text" id="header-color-hex" value="<?php echo cfgVal($config, 'widget_header_color', '#1E4E79'); ?>" class="cfg-input" style="width:100px;font-family:monospace;" maxlength="7" pattern="#[0-9a-fA-F]{6}">
+                            </div>
+                            <div class="cfg-hint">미니 위젯 헤더 바 배경색</div>
+                            <script>
+                            (function(){
+                                var cp=document.querySelector('input[name="widget_header_color"]');
+                                var tx=document.getElementById('header-color-hex');
+                                if(cp&&tx){
+                                    cp.addEventListener('input',function(){tx.value=cp.value;});
+                                    tx.addEventListener('input',function(){if(/^#[0-9a-fA-F]{6}$/.test(tx.value))cp.value=tx.value;});
+                                }
+                            })();
+                            </script>
                         </div>
                     </div>
                     <div class="cfg-row">
@@ -255,9 +288,9 @@ include __DIR__ . '/../includes/sidebar.php';
                         <div class="cfg-label"><label class="text-sm font-medium text-gray-700">운영 시간대</label></div>
                         <div class="cfg-field">
                             <div class="cfg-time-row">
-                                <input type="time" name="ai_hour_start" value="<?php echo cfgVal($config, 'ai_hour_start', '00:00'); ?>" class="cfg-input" style="width:130px;">
+                                <input type="time" name="ai_hour_start" value="<?php echo cfgVal($config, 'ai_hour_start', '00:00'); ?>" class="cfg-input" style="width:130px;" step="60" lang="ko">
                                 <span>~</span>
-                                <input type="time" name="ai_hour_end" value="<?php echo cfgVal($config, 'ai_hour_end', '23:59'); ?>" class="cfg-input" style="width:130px;">
+                                <input type="time" name="ai_hour_end" value="<?php echo cfgVal($config, 'ai_hour_end', '23:59'); ?>" class="cfg-input" style="width:130px;" step="60" lang="ko">
                             </div>
                             <div class="cfg-hint">예: 18:00~09:00 = 야간만 운영 (00:00~23:59 = 24시간)</div>
                         </div>

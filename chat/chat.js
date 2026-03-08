@@ -13,6 +13,7 @@ class ChatWidget {
         this.config = {};
         this.aiMessages = [];
         this.aiLoading = false;
+        this.widgetState = 'mini'; // 3-state: 'mini' or 'full'
         this.init();
     }
 
@@ -30,13 +31,18 @@ class ChatWidget {
             hEnd = this.configVal('widget_hour_end', '23:59');
         }
         if (!this.isWithinSchedule(hStart, hEnd)) this._outsideHours = true;
-        if (this.mode === 'chat') this.adminCheckPromise = this.checkAdminStatus();
+        // Admin check removed: widget always works as customer-facing
         this.createWidget();
         this.applyConfigToWidget();
         this.attachEvents();
         if (this.mode === 'chat') {
             this.loadChatState();
-            this.startBlinkAnimation();
+            // First visit bounce animation
+            if (!sessionStorage.getItem(this.pfx + '_visited')) {
+                sessionStorage.setItem(this.pfx + '_visited', '1');
+                var mini = document.getElementById(this.pfx + '-mini-widget');
+                if (mini) mini.classList.add('chat-mini-bounce');
+            }
         }
     }
 
@@ -69,13 +75,23 @@ class ChatWidget {
     applyConfigToWidget() {
         var p = this.pfx;
         if (this.mode === 'chat') {
-            var label = document.getElementById(p + '-forehead-label');
+            // Update mini widget titlebar text with button label
             var btnLabel = this.configVal('widget_button_label', '');
-            if (label && btnLabel) label.textContent = btnLabel;
+            if (btnLabel) {
+                var titleText = document.getElementById(p + '-mini-titlebar-text');
+                if (titleText) titleText.textContent = btnLabel;
+            }
+            // Update mini widget titlebar color
+            var headerColor = this.configVal('widget_header_color', '');
+            if (headerColor) {
+                var titlebar = document.getElementById(p + '-mini-titlebar');
+                if (titlebar) titlebar.style.background = headerColor;
+            }
+            // Update mini widget greeting with welcome message
             var welcomeMsg = this.configVal('widget_welcome_msg', '');
             if (welcomeMsg) {
-                var el = document.getElementById(p + '-welcome-msg');
-                if (el) el.innerHTML = welcomeMsg.replace(/\n/g, '<br>');
+                var greet = document.getElementById(p + '-mini-greeting');
+                if (greet) greet.textContent = welcomeMsg;
             }
             var notice = this.configVal('notice_message', '');
             if (notice) {
@@ -94,13 +110,7 @@ class ChatWidget {
         }
     }
 
-    async checkAdminStatus() {
-        try {
-            var r = await fetch('/chat/api.php?action=get_admin_unread_count');
-            var d = await r.json();
-            if (d.success) this.isAdmin = d.data.is_admin || false;
-        } catch (e) { this.isAdmin = false; }
-    }
+    // checkAdminStatus removed: widget always operates in customer mode
 
     checkContext() { this.isDashboard = window.location.pathname.startsWith('/dashboard/'); }
 
@@ -135,41 +145,42 @@ class ChatWidget {
                 + '<button class="chat-send-btn" id="' + p + '-send-btn"><svg viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><line x1="22" y1="2" x2="11" y2="13"/><polygon points="22 2 15 22 11 13 2 9 22 2"/></svg></button>'
                 + '</div></div>';
         } else {
-            btnHtml = '<button class="chat-toggle-btn chat-toggle-btn-image" id="' + p + '-toggle-btn">'
-                + '<span class="chat-forehead-label" id="' + p + '-forehead-label">상담연결</span>'
-                + '<img src="/ImgFolder/infolady.png" alt="상담" class="chat-toggle-img" id="' + p + '-toggle-img">'
-                + '<span class="chat-unread-badge" id="' + p + '-unread-badge" style="display:none;">0</span></button>';
+            // 3-State Mini Chat Widget (replaces infolady toggle button)
+            btnHtml = '<div class="chat-mini-widget" id="' + p + '-mini-widget">'
+                + '<div class="chat-mini-titlebar" id="' + p + '-mini-titlebar">'
+                + '<span class="chat-mini-titlebar-icon">💬</span>'
+                + '<span class="chat-mini-titlebar-text" id="' + p + '-mini-titlebar-text">상담연결</span>'
+                + '</div>'
+                + '<div class="chat-mini-body">'
+                + '<div class="chat-mini-greeting" id="' + p + '-mini-greeting">궁금하신 점 있으신가요?</div>'
+                + '<div class="chat-mini-input-row">'
+                + '<input type="text" class="chat-mini-input" id="' + p + '-mini-input" placeholder="메시지를 입력하세요..." autocomplete="off">'
+                + '<button class="chat-mini-send" id="' + p + '-mini-send"><svg viewBox="0 0 24 24" fill="white" width="14" height="14"><path d="M2.01 21L23 12 2.01 3 2 10l15 2-15 2z"/></svg></button>'
+                + '</div>'
+                + '</div>'
+                + '<span class="chat-unread-badge" id="' + p + '-unread-badge" style="display:none;">0</span>'
+                + '</div>';
             hTitle = '고객 지원';
             hSub = '두손기획인쇄';
             inputAreaHtml = '<div class="chat-input-area">'
                 + '<div class="chat-input-wrapper">'
-                + '<button class="chat-image-btn" id="' + p + '-image-btn" title="파일 첨부">📎</button>'
+                + '<button class="chat-image-btn" id="' + p + '-image-btn" title="파일 첨부">+</button>'
                 + '<input type="file" id="' + p + '-image-input" accept="image/*,.pdf,.doc,.docx,.xls,.xlsx,.ppt,.pptx,.hwp,.hwpx,.ai,.psd,.zip,.txt" style="display:none;">'
                 + '<input type="text" class="chat-input" id="' + p + '-input" placeholder="메시지를 입력하세요..." autocomplete="off">'
                 + '<button class="chat-send-btn" id="' + p + '-send-btn"><svg viewBox="0 0 24 24" fill="white"><path d="M2.01 21L23 12 2.01 3 2 10l15 2-15 2z"/></svg></button>'
                 + '</div></div>';
         }
 
-        var nameModalHtml = '';
-        if (this.mode === 'chat') {
-            nameModalHtml = '<div class="chat-name-modal" id="' + p + '-name-modal">'
-                + '<div class="chat-name-modal-content"><div class="chat-name-modal-header">'
-                + '<div class="chat-name-modal-icon">👋</div>'
-                + '<div class="chat-name-modal-title">안녕하세요!</div>'
-                + '<div class="chat-name-modal-subtitle" id="' + p + '-welcome-msg">더 나은 상담을 위해<br>상호명이나 성함을 알려주세요</div>'
-                + '</div><div class="chat-name-modal-body">'
-                + '<label class="chat-name-modal-label">상호명 또는 성함 (선택사항)</label>'
-                + '<input type="text" class="chat-name-modal-input" id="' + p + '-name-input" placeholder="예: 홍길동 or 두손기획" maxlength="30">'
-                + '</div><div class="chat-name-modal-footer">'
-                + '<button class="chat-name-modal-btn chat-name-modal-btn-secondary" id="' + p + '-name-skip-btn">건너뛰기</button>'
-                + '<button class="chat-name-modal-btn chat-name-modal-btn-primary" id="' + p + '-name-submit-btn">채팅 시작</button>'
-                + '</div></div></div>';
-        }
-
         var headerClass = 'chat-header' + (this.mode === 'ai' ? ' ai-chat-header' : '');
         var windowClass = 'chat-window' + (this.mode === 'ai' ? ' ai-chat-window' : '');
 
-        w.innerHTML = nameModalHtml + btnHtml
+        // Minimize button: chevron-down for chat mode, X for AI mode
+        var minimizeSvg = this.mode === 'chat'
+            ? '<svg width="18" height="18" viewBox="0 0 24 24" fill="white"><path d="M7.41 8.59L12 13.17l4.59-4.58L18 10l-6 6-6-6z"/></svg>'
+            : '<svg width="18" height="18" viewBox="0 0 24 24" fill="white"><path d="M19 6.41L17.59 5 12 10.59 6.41 5 5 6.41 10.59 12 5 17.59 6.41 19 12 13.41 17.59 19 19 17.59 13.41 12z"/></svg>';
+        var minimizeTitle = this.mode === 'chat' ? '최소화' : '닫기';
+
+        w.innerHTML = btnHtml
             + '<div class="' + windowClass + '" id="' + p + '-window">'
             + '<div class="' + headerClass + '">'
             + '<div style="display:flex;align-items:center;gap:10px;">'
@@ -178,7 +189,7 @@ class ChatWidget {
             + '</div>'
             + '<div class="chat-header-actions">'
             + (this.mode === 'chat' ? '<button id="' + p + '-export-btn" title="대화 내용 저장"><svg width="18" height="18" viewBox="0 0 24 24" fill="white"><path d="M19 12v7H5v-7H3v7c0 1.1.9 2 2 2h14c1.1 0 2-.9 2-2v-7h-2zm-6 .67l2.59-2.58L17 11.5l-5 5-5-5 1.41-1.41L11 12.67V3h2z"/></svg></button>' : '')
-            + '<button id="' + p + '-minimize-btn" title="닫기"><svg width="18" height="18" viewBox="0 0 24 24" fill="white"><path d="M19 6.41L17.59 5 12 10.59 6.41 5 5 6.41 10.59 12 5 17.59 6.41 19 12 13.41 17.59 19 19 17.59 13.41 12z"/></svg></button>'
+            + '<button id="' + p + '-minimize-btn" title="' + minimizeTitle + '">' + minimizeSvg + '</button>'
             + '</div></div>'
             + '<div class="chat-messages" id="' + p + '-messages">'
             + '<div class="chat-loading"><div class="chat-loading-dots"><span></span><span></span><span></span></div></div>'
@@ -193,33 +204,41 @@ class ChatWidget {
         var self = this, p = this.pfx;
 
         if (this.mode === 'chat') {
-            document.getElementById(p + '-name-submit-btn').addEventListener('click', function() { self.submitName(); });
-            document.getElementById(p + '-name-skip-btn').addEventListener('click', function() { self.skipName(); });
-            document.getElementById(p + '-name-input').addEventListener('keypress', function(e) { if (e.key === 'Enter') self.submitName(); });
+            // Mini widget events
+            var miniInput = document.getElementById(p + '-mini-input');
+            var miniSend = document.getElementById(p + '-mini-send');
+
+            if (miniInput) {
+                miniInput.addEventListener('focus', function() {
+                    self.expandToFull();
+                });
+            }
+
+            if (miniSend) {
+                miniSend.addEventListener('click', function(e) {
+                    e.preventDefault();
+                    self.expandToFull();
+                });
+            }
         }
 
-        var toggleBtn = document.getElementById(p + '-toggle-btn');
-        var lastTap = 0;
-        var handleToggle = async function(e) {
-            var now = Date.now();
-            if (now - lastTap < 500) return;
-            lastTap = now; e.preventDefault(); e.stopPropagation();
-            if (self.mode === 'chat') {
-                try { if (self.adminCheckPromise) await self.adminCheckPromise; } catch (err) {}
-                if (self.isAdmin) {
-                    if (self.isDashboard) window.location.href = '/dashboard/chat/';
-                    else window.open('/chat/admin.php', '_blank');
-                    return;
-                }
-            }
-            self.toggleChat();
-        };
-        toggleBtn.addEventListener('click', handleToggle, { passive: false });
-        toggleBtn.addEventListener('touchend', handleToggle, { passive: false });
+        if (this.mode === 'ai') {
+            // AI mode still uses toggle button
+            var toggleBtn = document.getElementById(p + '-toggle-btn');
+            var lastTap = 0;
+            var handleToggle = async function(e) {
+                var now = Date.now();
+                if (now - lastTap < 500) return;
+                lastTap = now; e.preventDefault(); e.stopPropagation();
+                self.toggleChat();
+            };
+            toggleBtn.addEventListener('click', handleToggle, { passive: false });
+            toggleBtn.addEventListener('touchend', handleToggle, { passive: false });
+        }
 
         var minBtn = document.getElementById(p + '-minimize-btn');
-        minBtn.addEventListener('click', function(e) { e.preventDefault(); self.closeChat(); });
-        minBtn.addEventListener('touchstart', function(e) { e.preventDefault(); self.closeChat(); }, { passive: false });
+        minBtn.addEventListener('click', function(e) { e.preventDefault(); self.mode === 'chat' ? self.minimizeToMini() : self.closeChat(); });
+        minBtn.addEventListener('touchstart', function(e) { e.preventDefault(); self.mode === 'chat' ? self.minimizeToMini() : self.closeChat(); }, { passive: false });
 
         document.getElementById(p + '-send-btn').addEventListener('click', function() { self.sendMessage(); });
         document.getElementById(p + '-input').addEventListener('keypress', function(e) { if (e.key === 'Enter') self.sendMessage(); });
@@ -256,12 +275,6 @@ class ChatWidget {
         this.makeDraggable();
     }
 
-    startBlinkAnimation() {
-        var img = document.getElementById(this.pfx + '-toggle-img');
-        if (!img) return;
-        setInterval(function() { img.src = '/ImgFolder/infolady2.png'; setTimeout(function() { img.src = '/ImgFolder/infolady.png'; }, 150); }, 2000);
-    }
-
     makeDraggable() {
         var cw = document.getElementById(this.pfx + '-window');
         var hdr = cw.querySelector('.chat-header');
@@ -279,40 +292,76 @@ class ChatWidget {
     }
 
     async toggleChat() {
-        if (this.isOpen) { this.closeChat(); return; }
+        if (this.isOpen) { this.mode === 'chat' ? this.minimizeToMini() : this.closeChat(); return; }
         if (this._outsideHours) { alert(this.configVal('offline_message', '현재 업무시간 외입니다.')); return; }
         if (this.mode === 'ai') {
             this.openAiChat();
         } else {
-            if (!sessionStorage.getItem('user_name_set')) this.showNameModal();
-            else this.openChat();
+            this.expandToFull();
         }
     }
 
-    showNameModal() {
-        var modal = document.getElementById(this.pfx + '-name-modal'), self = this;
-        if (modal) { modal.classList.add('active'); modal.onclick = function(e) { if (e.target === modal) self.skipName(); }; }
-        var inp = document.getElementById(this.pfx + '-name-input');
-        setTimeout(function() { if (inp) inp.focus(); }, 300);
-    }
-    hideNameModal() { var m = document.getElementById(this.pfx + '-name-modal'); if (m) m.classList.remove('active'); }
+    async expandToFull() {
+        if (this._outsideHours) { alert(this.configVal('offline_message', '현재 업무시간 외입니다.')); return; }
+        if (this.widgetState === 'full' && this.isOpen) return;
 
-    submitName() {
-        var inp = document.getElementById(this.pfx + '-name-input'), name = inp.value.trim();
-        if (name) { sessionStorage.setItem('user_name', name); sessionStorage.setItem('user_name_set', 'true'); }
-        else { this.skipName(); return; }
-        this.hideNameModal(); this.openChat();
+        var p = this.pfx;
+        // Transfer text from mini input to full input
+        var miniInput = document.getElementById(p + '-mini-input');
+        var fullInput = document.getElementById(p + '-input');
+        if (miniInput && fullInput && miniInput.value.trim()) {
+            fullInput.value = miniInput.value;
+            miniInput.value = '';
+        }
+
+        this.widgetState = 'full';
+        var miniWidget = document.getElementById(p + '-mini-widget');
+        if (miniWidget) miniWidget.classList.add('chat-mini-hidden');
+
+        // Set username automatically if not set
+        if (!sessionStorage.getItem('user_name_set')) {
+            var autoName = window._chatUserName || '손님';
+            sessionStorage.setItem('user_name', autoName);
+            sessionStorage.setItem('user_name_set', 'true');
+        }
+
+        await this.openChat();
+        if (fullInput) setTimeout(function() { fullInput.focus(); }, 300);
     }
-    skipName() {
-        sessionStorage.setItem('user_name', '손님_' + Math.random().toString(36).substring(2, 6).toUpperCase());
-        sessionStorage.setItem('user_name_set', 'true');
-        this.hideNameModal(); this.openChat();
+
+    minimizeToMini() {
+        this.widgetState = 'mini';
+        this.isOpen = false;
+        var p = this.pfx;
+        var cw = document.getElementById(p + '-window');
+        cw.classList.remove('active');
+        cw.style.height = ''; cw.style.bottom = ''; cw.style.top = '';
+
+        var miniWidget = document.getElementById(p + '-mini-widget');
+        if (miniWidget) miniWidget.classList.remove('chat-mini-hidden');
+
+        if (this.mode === 'chat') this.stopPolling();
+        this.saveChatState();
+
+        // Update mini greeting with last message preview
+        this.updateMiniPreview();
+    }
+
+    updateMiniPreview() {
+        var mc = document.getElementById(this.pfx + '-messages');
+        var greeting = document.getElementById(this.pfx + '-mini-greeting');
+        if (!mc || !greeting) return;
+        var msgs = mc.querySelectorAll('.chat-message.received .chat-message-bubble');
+        if (msgs.length > 0) {
+            var last = msgs[msgs.length - 1].textContent.trim();
+            if (last.length > 30) last = last.substring(0, 30) + '...';
+            greeting.textContent = last;
+        }
     }
 
     async openChat() {
         var p = this.pfx; this.isOpen = true;
         document.getElementById(p + '-window').classList.add('active');
-        document.getElementById(p + '-toggle-btn').classList.add('chat-open');
         if (window.innerWidth > 480 && !sessionStorage.getItem(p + '_drag_hint_shown')) {
             sessionStorage.setItem(p + '_drag_hint_shown', '1');
             setTimeout(function() {
@@ -332,7 +381,9 @@ class ChatWidget {
         var p = this.pfx; this.isOpen = false;
         var cw = document.getElementById(p + '-window');
         cw.classList.remove('active'); cw.style.height = ''; cw.style.bottom = ''; cw.style.top = '';
-        document.getElementById(p + '-toggle-btn').classList.remove('chat-open');
+        if (this.mode === 'ai') {
+            document.getElementById(p + '-toggle-btn').classList.remove('chat-open');
+        }
         if (this.mode === 'chat') this.stopPolling();
         this.saveChatState();
     }
@@ -355,6 +406,8 @@ class ChatWidget {
                 var self = this;
                 d.data.forEach(function(msg) { self.appendMessage(msg); self.lastMessageId = Math.max(self.lastMessageId, msg.id); });
                 this.scrollToBottom();
+                // Update mini preview if in mini state
+                if (this.widgetState === 'mini') this.updateMiniPreview();
             }
         } catch (e) {}
     }
@@ -429,24 +482,34 @@ class ChatWidget {
     async updateUnreadCount() {
         if (this.isOpen || this.mode === 'ai') return;
         try {
-            if (this.isAdmin) { var r = await fetch('/chat/api.php?action=get_admin_unread_count'), d = await r.json(); if (d.success) { this.unreadCount = d.data.count; this.updateUnreadBadge(); } }
-            else { if (!this.roomId) return; var r = await fetch('/chat/api.php?action=get_unread_count&room_id=' + this.roomId), d = await r.json(); if (d.success) { this.unreadCount = d.data.count; this.updateUnreadBadge(); } }
+            if (!this.roomId) return; var r = await fetch('/chat/api.php?action=get_unread_count&room_id=' + this.roomId), d = await r.json(); if (d.success) { this.unreadCount = d.data.count; this.updateUnreadBadge(); }
         } catch (e) {}
     }
 
     updateUnreadBadge() {
         var b = document.getElementById(this.pfx + '-unread-badge'); if (!b) return;
         if (this.unreadCount > 0) { b.textContent = this.unreadCount > 99 ? '99+' : this.unreadCount; b.style.display = 'block'; } else b.style.display = 'none';
+        // Mini widget notification glow
+        var mini = document.getElementById(this.pfx + '-mini-widget');
+        if (mini) {
+            if (this.unreadCount > 0) mini.classList.add('chat-mini-has-unread');
+            else mini.classList.remove('chat-mini-has-unread');
+        }
     }
 
     startPolling() { this.stopPolling(); var iv = parseInt(this.configVal('widget_poll_interval', 2000)) || 2000, self = this; this.pollInterval = setInterval(function() { self.loadMessages(); }, iv); }
     stopPolling() { if (this.pollInterval) { clearInterval(this.pollInterval); this.pollInterval = null; } }
     scrollToBottom() { var mc = document.getElementById(this.pfx + '-messages'); if (mc) mc.scrollTop = mc.scrollHeight; }
     exportChat() { if (this.roomId) window.open('/chat/api.php?action=export_chat&room_id=' + this.roomId, '_blank'); }
-    saveChatState() { localStorage.setItem(this.pfx + '_is_open', this.isOpen); }
+
+    saveChatState() {
+        localStorage.setItem(this.pfx + '_is_open', this.isOpen);
+        localStorage.setItem(this.pfx + '_widget_state', this.widgetState);
+    }
+
     loadChatState() {
         var rid = localStorage.getItem(this.pfx + '_room_id'); if (rid) this.roomId = parseInt(rid);
-        if (localStorage.getItem(this.pfx + '_is_open') === 'true' && this.roomId) this.openChat();
+        // Always start in mini state — don't auto-open full chat on page load
         var self = this; setInterval(function() { self.updateUnreadCount(); }, 5000);
     }
 
@@ -638,7 +701,8 @@ class ChatWidget {
     }
 
     getCurrentUser() {
-        var uid = localStorage.getItem('chat_user_id'), un = sessionStorage.getItem('user_name') || localStorage.getItem('chat_user_name');
+        var uid = localStorage.getItem('chat_user_id');
+        var un = window._chatUserName || sessionStorage.getItem('user_name') || localStorage.getItem('chat_user_name');
         if (!uid) { uid = 'guest_' + Date.now(); localStorage.setItem('chat_user_id', uid); }
         if (!un) un = '손님'; else localStorage.setItem('chat_user_name', un);
         return { id: uid, name: un };

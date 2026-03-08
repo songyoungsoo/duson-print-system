@@ -46,6 +46,7 @@ $DASHBOARD_NAV = [
             'chat_settings' => ['name' => '채팅 설정', 'icon' => '⚙️', 'path' => '/dashboard/chat/settings.php'],
             'quotes' => ['name' => '견적 관리', 'icon' => '📋', 'path' => '/dashboard/quotes/'],
             'inquiries' => ['name' => '고객 문의', 'icon' => '✉️', 'path' => '/dashboard/inquiries/'],
+            'reviews' => ['name' => '고객리뷰 관리', 'icon' => '⭐', 'path' => '/dashboard/embed.php?url=' . urlencode('/admin/mlangprintauto/review_manager.php'), 'embed' => true],
             // 'poster' => ['name' => 'AI 포스터', 'icon' => '🎨', 'path' => '/dashboard/poster/'],  // 임시 숨김
         ]
     ],
@@ -58,6 +59,7 @@ $DASHBOARD_NAV = [
             'sticker_prices' => ['name' => '스티커수정', 'icon' => '🏷️', 'path' => '/dashboard/pricing/sticker.php'],
             'gallery' => ['name' => '갤러리 관리', 'icon' => '🖼️', 'path' => '/dashboard/gallery/'],
             'option_prices' => ['name' => '견적옵션', 'icon' => '⚙️', 'path' => '/dashboard/embed.php?url=' . urlencode('/admin/mlangprintauto/quote/option_prices.php'), 'embed' => true],
+            'ai_detail' => ['name' => 'AI 상세페이지', 'icon' => '🎨', 'path' => '/dashboard/ai-detail/'],
         ]
     ],
     'admin_group' => [

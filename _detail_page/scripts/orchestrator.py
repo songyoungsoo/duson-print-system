@@ -1,11 +1,19 @@
 """
-상세페이지 자동 생성 오케스트레이터
+상세페이지 자동 생성 오케스트레이터 v3
 빌더 조쉬 방식: 5개 에이전트 순차 실행 → 이미지 13장 생성 → 합치기
+
+v3 변경사항 (2026-03-08):
+  - --section N 옵션 추가: copy.json 수정 후 해당 섹션 1장만 재생성 (~30초/$0.07)
+  - regen_section() 메서드 추가
 
 사용법:
     python orchestrator.py --product namecard
     python orchestrator.py --product sticker_new
     python orchestrator.py --product all
+
+    # 단일 섹션 재생성 (오타 수정 후):
+    python orchestrator.py --product namecard --section 3
+    python orchestrator.py --product namecard --section 6 --version 2
 """
 
 import os
@@ -347,6 +355,152 @@ class DetailPageOrchestrator:
             json.dump(data, f, ensure_ascii=False, indent=2)
         logger.info(f"  💾 저장: {path.name}")
 
+    def regen_section(self, product_type: str, section_id: int, version: int = 1):
+        """단일 섹션 재생성 — copy.json 수정 후 해당 섹션만 다시 생성
+
+        프로세스:
+            1. 기존 copy.json, design.json, product_brief.json 로드
+            2. 해당 섹션의 디자인 프롬프트만 재생성 (copy.json 텍스트 반영)
+            3. 해당 섹션 이미지만 재생성
+            4. 전체 13장 다시 합치기
+
+        Args:
+            product_type: 제품 코드 (namecard, inserted, ...)
+            section_id: 섹션 번호 (1~13)
+            version: 1=기존 v1, 2=여백/폰트 개선 v2
+        """
+        if product_type not in self.products:
+            logger.error(f"❌ 알 수 없는 제품: {product_type}")
+            return False
+
+        if not 1 <= section_id <= 13:
+            logger.error(f"❌ 섹션 번호는 1~13 사이여야 합니다: {section_id}")
+            return False
+
+        product = self.products[product_type]
+        start_time = time.time()
+
+        # 출력 디렉토리
+        if version == 2:
+            output_dir = PROJECT_ROOT / "output" / product_type / "v2"
+        else:
+            output_dir = PROJECT_ROOT / "output" / product_type
+        sections_dir = output_dir / "sections"
+
+        logger.info(f"{'=' * 60}")
+        logger.info(f"🔄 섹션 {section_id} 재생성: {product['name_ko']} ({product_type})")
+        logger.info(f"{'=' * 60}")
+
+        # ─── Step 1: 기존 데이터 로드 ───
+        required_files = {
+            'copy.json': output_dir / 'copy.json',
+            'product_brief.json': output_dir / 'product_brief.json',
+            'design.json': output_dir / 'design.json',
+        }
+        for name, path in required_files.items():
+            if not path.exists():
+                logger.error(f"❌ 필수 파일 없음: {name} ({path})")
+                logger.info("전체 생성을 먼저 실행하세요: python orchestrator.py --product {}".format(product_type))
+                return False
+
+        with open(required_files['copy.json'], 'r', encoding='utf-8') as f:
+            copy_data = json.load(f)
+        with open(required_files['product_brief.json'], 'r', encoding='utf-8') as f:
+            product_brief = json.load(f)
+        with open(required_files['design.json'], 'r', encoding='utf-8') as f:
+            design_data = json.load(f)
+
+        logger.info(f"  📂 기존 데이터 로드 완료")
+
+        # ─── Step 2: 해당 섹션 디자인 프롬프트 재생성 ───
+        logger.info(f"\n🎨 섹션 {section_id} 디자인 프롬프트 재생성")
+
+        # copy.json에서 해당 섹션 텍스트 추출
+        section_copy = None
+        for s in copy_data.get('sections', []):
+            if s.get('id') == section_id:
+                section_copy = s
+                break
+
+        if not section_copy:
+            logger.error(f"❌ copy.json에서 섹션 {section_id}을 찾을 수 없습니다")
+            return False
+
+        brand = product_brief.get('brand', self.config['brand'])
+        agent_prompt = self._load_agent_prompt('04_designer')
+        v2_block = self.V2_DESIGN_CONSTRAINTS if version == 2 else ''
+
+        regen_prompt = f"""당신은 한국 e-commerce 상세페이지 전문 디자이너입니다.
+
+{agent_prompt}
+{v2_block}
+
+## 제품 정보
+{json.dumps(product_brief.get('product', product), ensure_ascii=False, indent=2)}
+
+## 재생성할 섹션의 카피 (수정됨)
+{json.dumps(section_copy, ensure_ascii=False, indent=2)}
+
+## 브랜드 컬러
+- Primary: {brand.get('brand_color', '#2C5F8A')}
+- Accent: {brand.get('accent_color', '#FF6B35')}
+
+## 이미지 규격
+- 캔버스 크기: 1100x900px
+- 포맷: PNG
+- 스타일: 포토리얼리스틱, 모던 한국 e-commerce
+
+위 섹션 1개의 Gemini 이미지 생성 프롬프트를 JSON으로 생성하세요.
+형식: {{"id": {section_id}, "name": "{section_copy.get('name', '')}", "prompt": "영문 프롬프트"}}
+프롬프트는 반드시 영어로 작성하고, 한국어 텍스트 내용은 그대로 포함하세요."""
+
+        try:
+            new_section_design = self.client.generate_text_json(regen_prompt)
+        except Exception as e:
+            logger.error(f"❌ 디자인 프롬프트 재생성 실패: {e}")
+            return False
+
+        # design.json 업데이트
+        new_prompt = new_section_design.get('prompt', '')
+        if not new_prompt:
+            logger.error("❌ 재생성된 프롬프트가 비어있습니다")
+            return False
+
+        for i, s in enumerate(design_data.get('sections', [])):
+            if s.get('id') == section_id:
+                design_data['sections'][i]['prompt'] = new_prompt
+                if 'text_content' in new_section_design:
+                    design_data['sections'][i]['text_content'] = new_section_design['text_content']
+                break
+
+        self._save_json(output_dir / 'design.json', design_data)
+        logger.info(f"  ✅ 섹션 {section_id} 프롬프트 업데이트 완료")
+
+        # ─── Step 3: 해당 섹션 이미지 재생성 ───
+        logger.info(f"\n💻 섹션 {section_id} 이미지 재생성")
+        output_path = str(sections_dir / f"section_{section_id:02d}.png")
+        success = self.client.generate_image(new_prompt, output_path)
+
+        if not success:
+            logger.error(f"❌ 섹션 {section_id} 이미지 생성 실패")
+            return False
+        logger.info(f"  ✅ 섹션 {section_id} 이미지 생성 완료")
+
+        # ─── Step 4: 전체 이미지 합치기 ───
+        logger.info(f"\n🔧 전체 13장 합치기")
+        final_path = str(output_dir / "final_detail_page.png")
+        stitch_images(str(sections_dir), final_path)
+
+        elapsed = time.time() - start_time
+        logger.info(f"\n{'=' * 60}")
+        logger.info(f"✅ 섹션 {section_id} 재생성 완료!")
+        logger.info(f"   제품: {product['name_ko']}")
+        logger.info(f"   소요시간: {elapsed:.0f}초")
+        logger.info(f"   비용: ~$0.07 (섹션 1개)")
+        logger.info(f"   결과: {output_path}")
+        logger.info(f"{'=' * 60}")
+        return True
+
 
 def main():
     parser = argparse.ArgumentParser(description="상세페이지 자동 생성")
@@ -362,11 +516,24 @@ def main():
         choices=[1, 2],
         help="버전 선택 (1=기존, 2=900px 내용폭+작은폰트 개선버전). 기본값: 1",
     )
+    parser.add_argument(
+        "--section",
+        type=int,
+        choices=range(1, 14),
+        metavar="N",
+        help="단일 섹션 재생성 (1~13). copy.json 수정 후 사용. 예: --section 6",
+    )
     args = parser.parse_args()
 
     orchestrator = DetailPageOrchestrator()
 
-    if args.product == "all":
+    # --section 모드: 단일 섹션 재생성
+    if args.section:
+        if args.product == "all":
+            logger.error("❌ --section은 개별 제품에만 사용 가능합니다 (all 불가)")
+            sys.exit(1)
+        orchestrator.regen_section(args.product, args.section, version=args.version)
+    elif args.product == "all":
         logger.info(f"🚀 전체 9개 제품 상세페이지 생성 시작 [V{args.version}]")
         results = {}
         for product_type in orchestrator.products:

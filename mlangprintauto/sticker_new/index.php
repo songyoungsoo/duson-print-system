@@ -3215,6 +3215,7 @@ if (isset($_GET['jong']) && !empty($_GET['jong'])) {
     </script>
 <?php endif; ?>
 
+
 <!-- 고객 리뷰 섹션 -->
 <?php if (!$is_quotation_mode && !$is_admin_quote_mode): ?>
 <?php $product_type = 'sticker_new'; include __DIR__ . '/../../includes/review_widget.php'; ?>

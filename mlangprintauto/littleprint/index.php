@@ -342,6 +342,7 @@ $default_values['ordertype'] = 'print'; // 인쇄만
 
     <?php if (!$isQuotationMode && !$isAdminQuoteMode) include "../../includes/footer.php"; ?>
 
+
     <!-- 고객 리뷰 섹션 -->
     <?php if (!$isQuotationMode && !$isAdminQuoteMode): ?>
     <?php $product_type = 'littleprint'; include __DIR__ . '/../../includes/review_widget.php'; ?>

@@ -13,6 +13,7 @@ Usage:
   # 두손기획인쇄 내장 품목
   python3 ai_detail_page.py generate-builtin namecard
   python3 ai_detail_page.py generate-all-builtin
+  python3 ai_detail_page.py regen-section-builtin namecard 3
 
   # 공통
   python3 ai_detail_page.py copy-only "카페" "시그니처 라떼"
@@ -36,7 +37,7 @@ from datetime import datetime
 # ─────────────────────────────────────────
 # CONFIG
 # ─────────────────────────────────────────
-API_KEY      = os.environ.get('GEMINI_API_KEY', 'AIzaSyAEBMlGYm0cvBsBHMqaCmJRObFKEXN8jXs')
+API_KEY      = os.environ.get('GEMINI_API_KEY', 'AIzaSyABPyQ-A9-RGLxnpZRK9GKi5dynpHzj2Wk')
 COPY_MODEL   = 'gemini-3-pro-preview'
 IMAGE_MODEL  = 'gemini-3-pro-image-preview'
 BASE_URL     = 'https://generativelanguage.googleapis.com/v1beta/models'
@@ -677,6 +678,43 @@ async def cmd_generate_all_builtin(mode: str = 'both'):
     log(f'전체 {len(BUILTIN_CONFIG)}개 품목 완료!')
 
 
+async def cmd_regen_section_builtin(product_code: str, section_id: int):
+    """내장 품목 단일 섹션 이미지 재생성 (copy.json 기반)"""
+    if product_code not in BUILTIN_CONFIG:
+        log(f'❌ 알 수 없는 내장 품목: {product_code}'); return
+    cfg = BUILTIN_CONFIG[product_code]
+    staging_dir = STAGING_DIR / product_code
+    copy_path = staging_dir / 'copy.json'
+    if not copy_path.exists():
+        log(f'❌ copy.json 없음. 전체 생성을 먼저 실행하세요: generate-builtin {product_code}'); return
+
+    copy_data = json.loads(copy_path.read_text())
+    target = None
+    for s in copy_data.get('sections', []):
+        if s.get('section') == section_id:
+            target = s; break
+    if not target:
+        log(f'❌ 섹션 {section_id}을 copy.json에서 찾을 수 없습니다'); return
+
+    log(f'🔄 섹션 {section_id} 재생성 시작: {cfg["name"]}')
+    t0 = time.time()
+
+    async with aiohttp.ClientSession() as session:
+        sem = asyncio.Semaphore(1)
+        result = await gen_image(session, target, staging_dir, sem)
+
+    if result.get('status') == 'ok':
+        # HTML도 재생성
+        style = cfg.get('palette', 'default')
+        html = build_html(copy_data, style, cfg.get('order_url', '#'),
+                         deadline=cfg.get('deadline'), deadline_label=cfg.get('deadline_label', ''),
+                         product_code=product_code)
+        (staging_dir / 'detail.html').write_text(html)
+        log(f'✅ 섹션 {section_id} 재생성 완료! ({time.time()-t0:.0f}초)')
+    else:
+        log(f'❌ 섹션 {section_id} 재생성 실패: {result.get("error", "unknown")}')
+
+
 async def cmd_swap(industry: str, product: str):
     folder = get_folder_name(industry, product)
     s_dir  = STAGING_DIR / folder
@@ -1026,6 +1064,12 @@ def main():
 
     elif cmd == 'ab-status':
         asyncio.run(cmd_ab_status())
+
+    elif cmd == 'regen-section-builtin':
+        # regen-section-builtin <product_code> <section_id>
+        if len(args) < 3:
+            print('Usage: regen-section-builtin <product_code> <section_id>'); sys.exit(1)
+        asyncio.run(cmd_regen_section_builtin(args[1], int(args[2])))
 
     else:
         print(f'알 수 없는 명령: {cmd}')

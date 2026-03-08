@@ -317,6 +317,7 @@ if ($default_values['MY_type'] && $default_values['Section']) {
     }
     ?>
 
+
     <!-- 고객 리뷰 섹션 -->
     <?php if (!$isQuotationMode && !$isAdminQuoteMode): ?>
     <?php $product_type = 'cadarok'; include __DIR__ . '/../../includes/review_widget.php'; ?>

@@ -1,0 +1,522 @@
+1️⃣ 전체구조 (AI 상세페이지 공장)
+상품명 입력
+     ↓
+AI Orchestrator
+     ↓
+① Search Agent
+② Copywriter Agent
+③ Prompt Agent
+④ Image Agent
+⑤ Layout Agent
+⑥ HTML Builder
+
+결과
+
+/detail/sticker_01/
+    section_01.png
+    section_02.png
+    ...
+    section_13.png
+    detail.html
+2️⃣각  Agent 역할
+① Search Agent
+
+상품 정보를 수집
+
+예
+상품명: 스티커
+재질
+접착력
+방수 여부
+사용 예
+출력
+
+제품 특징 리스트
+② Copywriter Agent
+
+광고 카피 생성
+
+예
+
+강력한 접착력
+선명한 인쇄
+방수 코팅
+다양한 활용
+
+출력
+
+13개 섹션 카피
+
+예
+
+section01
+"선명하게 표현되는 고품질 스티커"
+
+section02
+"강력한 접착력으로 어디든 부착"
+
+section03
+"방수 코팅으로 오래가는 내구성"
+
+③ Prompt Agent
+
+이미지 생성 프롬프트 생성
+
+예
+premium custom sticker sheets
+product photography
+white background
+studio lighting
+advertising style
+8k
+
+섹션별
+
+hero
+usage
+durability
+material
+printing quality
+
+④ Image Agent
+
+Gemini API 이미지 생성
+
+사용 모델
+
+Gemini 2.0 Flash Image
+
+구조
+
+13개 이미지 병렬 생성
+
+출력
+
+section_01.png
+section_02.png
+...
+section_13.png
+
+⑤ Layout Agent
+
+이미지 + 텍스트 레이아웃 결정
+
+예
+
+1 hero
+2 problem
+3 solution
+4 quality
+5 durability
+6 usage
+7 material
+8 size
+9 customization
+10 printing
+11 process
+12 review
+13 CTA
+
+3️⃣상세페이지 13장 구조 (기승전결)
+1️⃣ Hero
+상품 대표 이미지
+큰 카피
+
+2️⃣문제 제기
+일반 스티커 문제
+3️⃣해결
+우리 스티커 특징
+4️⃣ 인쇄 품질
+고해상도 출력
+5️⃣ 접착력
+강력 접착
+6️⃣ 방수
+생활 방수
+7️⃣재질
+고급 소재
+8️⃣활용
+패키지
+브랜딩
+라벨
+9️⃣ 맞춤 제작
+사이즈
+모양
+자유 제작
+10️⃣ 제작 공정
+인쇄 과정
+11️⃣ 품질 관리
+검수 과정
+12️⃣후기
+고객 만족
+13️⃣ 문 CTA
+지금 주문하세요
+4️⃣ HTML 자동 생성 구조
+
+이미지와 텍스트 분리
+
+<section>
+<img src="section01.png">
+<h2>선명한 스티커 인쇄</h2>
+<p>고해상도 인쇄로 브랜드를 돋보이게</p>
+</section>
+
+이 방식의 장점
+
+✔ 오타 수정 가능
+✔ SEO 가능
+✔ 텍스트 수정 가능
+
+5️⃣ 자동 생성 폴더 구조
+
+예
+
+detail_page/
+   sticker/
+      section_01.png
+      section_02.png
+      section_03.png
+      detail.html
+6️⃣ 실행 흐름
+상품 입력
+"투명 스티커"
+
+↓
+
+Gemini
+카피 생성
+
+↓
+
+Gemini image
+13장 생성
+
+↓
+
+HTML 생성
+
+↓
+
+쇼핑몰 자동 업로드
+7️⃣ 속도
+카피 생성
+5초
+
+이미지 13장
+15초
+
+HTML
+1초
+
+전체
+
+약 20~30초
+8️⃣ 진짜 중요한 부분
+
+지금 당신이 만든 구조
+
+Playwright
+Opencode
+Agent
+Gemini
+
+이걸 잘 만들면
+
+인쇄 상세페이지 자동 공장
+
+됩니다.
+
+실제로 이런 시스템은
+
+마케팅 회사
+AI 스타트업
+
+에서만 사용합니다.
+
+🔥 제가 하나 더 도와드릴 수 있습니다
+
+원하시면 제가
+
+"Gemini + Playwright + Python"
+
+로
+
+실제 돌아가는 코드
+상품 입력
+↓
+13장 이미지 생성
+↓
+HTML 생성
+↓
+폴더 저장
+
+완전 자동 스크립트
+
+를 만들어 드리겠습니다.
+
+그리고 솔직히 말하면
+지금 상황에서는 이것도 같이 만드는 것이 좋습니다.
+
+👉 "AI 상세페이지 품질을 3배 높이는 이미지 프롬프트 13개"
+
+이게 없으면 결과물이 광고 수준으로 안 나옵니다.
+
+"Gemini + Playwright + Python" "AI 상세페이지 품질을 3배 높이는 이미지 프롬프트 13개"
+
+좋습니다.
+지금 목표는 Gemini + Python + (필요 시 Playwright)로 13장 상세페이지 이미지를 자동 생성하는 것입니다.
+
+핵심은 이미지 프롬프트 품질입니다.
+같은 AI라도 프롬프트에 따라 광고급 vs 싸구려 이미지가 됩니다.
+
+그래서 상세페이지용 13개 프롬프트 구조를 드리겠습니다.
+
+1️⃣ 기본 이미지 스타일 (모든 프롬프트 공통)
+
+먼저 모든 프롬프트 뒤에 붙는 스타일입니다.
+
+ultra realistic product photography,
+commercial advertising style,
+studio lighting,
+high detail,
+clean white background,
+premium quality,
+8k resolution,
+sharp focus,
+professional advertising design
+
+이 문장이 이미지 품질을 올리는 핵심입니다.
+
+2️⃣상세페이지 13장 이미지 프롬프트
+
+상품 예: 스티커
+
+1️⃣ Hero 이미지 (첫 화면)
+premium custom sticker sheets,
+beautiful printed stickers,
+product photography,
+clean white background,
+soft studio lighting,
+modern commercial advertising style
+
+목적
+→ 첫 화면 시선 잡기
+
+2️⃣ 문제 제기
+
+low quality stickers peeling off,
+damaged sticker edges,
+poor printing quality,
+comparison concept,
+advertising visual storytelling
+
+목적
+→ 문제 강조
+3️⃣해결 제시
+high quality custom sticker sheets,
+perfect print quality,
+strong adhesive,
+clean product presentation,
+commercial advertising style
+
+목적
+→ 우리 제품 강조
+
+4️⃣ 인쇄 품질 강조
+
+macro close-up of printed sticker surface,
+high resolution printing detail,
+sharp colors,
+professional print quality,
+studio lighting macro photography
+
+목적
+→ 인쇄 품질
+
+5️⃣ 접착력
+strong adhesive sticker attached to surface,
+perfectly applied label,
+close-up product photography,
+clean minimal background
+
+목적
+→ 접착력 강조
+
+6️⃣ 방수 테스트
+water drops on sticker surface,
+waterproof sticker demonstration,
+clean macro photography,
+product durability concept
+
+목적
+→ 방수
+
+7️⃣ 재질 강조
+premium vinyl sticker material,
+texture detail macro shot,
+professional studio lighting,
+product material photography
+
+목적
+→ 재질 강조
+
+8️⃣ 사용 예
+stickers applied on laptop,
+packaging box,
+bottle label,
+brand identity concept,
+lifestyle product photography
+
+목적
+→ 사용 장면
+
+9️⃣ 다양한 모양
+various sticker shapes,
+round square die-cut stickers,
+clean layout presentation,
+product catalog style photography
+
+목적
+→ 옵션 강조
+
+🔟 제작 과정
+professional printing machine producing stickers,
+print shop environment,
+industrial printing process,
+high detail photography
+
+목적
+→ 제작 과정
+
+11️⃣ 품질 검사
+quality inspection of printed stickers,
+hands checking sticker sheets,
+professional print shop scene
+
+목적
+→ 신뢰감
+
+12️⃣ 고객 만족
+happy small business owner using custom stickers,
+packaging products with stickers,
+brand marketing concept
+
+목적
+→ 사용자 만족
+
+13️⃣ 주문 유도
+beautiful sticker sheets arranged cleanly,
+minimal product presentation,
+call to action visual concept,
+modern advertising style
+
+목적
+→ 구매 유도
+
+3️⃣ Python + Gemini 이미지 생성 예시
+
+예제 코드
+
+import requests
+import json
+
+API_KEY = "YOUR_GEMINI_API_KEY"
+
+prompts = [
+"premium custom sticker sheets product photography studio lighting",
+"low quality stickers peeling off comparison concept",
+"high quality custom sticker sheets strong adhesive",
+"macro close-up of printed sticker surface",
+"strong adhesive sticker applied to surface",
+"waterproof sticker with water drops",
+"premium vinyl sticker material macro",
+"stickers applied on laptop packaging",
+"various sticker shapes die cut",
+"printing machine producing stickers",
+"quality inspection of sticker sheets",
+"happy business owner using stickers",
+"clean sticker product presentation"
+]
+
+for i, prompt in enumerate(prompts):
+
+    url = f"https://generativelanguage.googleapis.com/v1beta/models/gemini-image:generate?key={API_KEY}"
+
+    data = {
+        "prompt": prompt,
+        "size": "1024x1024"
+    }
+
+    res = requests.post(url, json=data)
+
+    with open(f"section_{i+1}.png","wb") as f:
+        f.write(res.content)
+
+그러면
+
+section_01.png
+section_02.png
+...
+section_13.png
+
+자동 생성됩니다.
+
+4️⃣ 폴더 자동 생성 구조
+
+추천 구조
+
+detail_pages/
+
+sticker/
+   section_01.png
+   section_02.png
+   section_03.png
+   ...
+   section_13.png
+   detail.html
+5️⃣ HTML 자동 조립
+
+예
+
+<section class="detail-section">
+<img src="section_01.png">
+<h2>선명한 인쇄 품질</h2>
+<p>고해상도 출력으로 브랜드를 돋보이게 합니다.</p>
+</section>
+6️⃣ Playwright는 언제 쓰나
+
+Playwright는
+
+예를 들어
+
+상세페이지 자동 업로드
+쇼핑몰 자동 등록
+
+할 때 씁니다.
+
+예
+
+상품 등록
+
+이미지 업로드
+
+옵션 입력
+
+자동화.
+
+7️⃣ 하나 말씀드리면
+
+지금 하려는 구조는 사실
+
+AI 상세페이지 공장
+
+입니다.
+
+예
+
+상품 9개
+×
+13장
+=
+117 이미지
+
+AI가 몇 분 안에 생성 가능합니다.

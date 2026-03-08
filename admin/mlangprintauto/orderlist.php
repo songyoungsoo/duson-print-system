@@ -549,7 +549,7 @@ if ($rows) {
 ?>
 <?php if ($is_new_group && $group_total > 1): ?>
 <tr class="order-table-row order-table-row--group-header">
-  <td colspan="10" style="padding: 4px 12px; background: #eef2f7; border-left: 4px solid #1E4E79; font-size: 0.85rem; color: #1E4E79;">
+  <td colspan="10" style="padding: 4px 12px; background: #e0f0ff; border-left: 5px solid #3B82F6; font-size: 0.85rem; color: #1d4ed8;">
     <strong>📋 그룹 ×<?php echo $group_total; ?>건</strong>
     <?php if (!$is_multi_spec): ?>
       <span style="margin-left: 8px; color: #6c757d;">같은 사양 <?php echo $spec_count; ?>건</span>

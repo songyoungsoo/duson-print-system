@@ -211,6 +211,7 @@ oCMenu.makeMenu('top4','','인쇄업무프로그램')
 	oCMenu.makeMenu('sub4_3','top4','<?=$MenuSubIcon?>인쇄관련 업무')
 	     oCMenu.makeMenu('sub4_3_1','sub4_3','<?=$MenuSubIcon?>주문자 접수일보','/admin/mlangprintauto/memberorderofficelist.php')
 
+	oCMenu.makeMenu('sub4_4','top4','<?=$MenuSubIcon?>고객리뷰 관리','/admin/mlangprintauto/review_manager.php')
 /////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
 

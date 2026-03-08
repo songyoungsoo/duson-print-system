@@ -817,6 +817,7 @@ if ($default_values['MY_type'] && $default_values['Section']) {
     <!-- 견적서 모달 공통 JavaScript -->
     <script src="../../js/quotation-modal-common.js?v=<?php echo time(); ?>"></script>
 
+
     <!-- 고객 리뷰 섹션 -->
     <?php if (!$isQuotationMode && !$isAdminQuoteMode): ?>
     <?php $product_type = 'envelope'; include __DIR__ . '/../../includes/review_widget.php'; ?>

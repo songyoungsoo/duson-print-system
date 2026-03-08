@@ -166,7 +166,7 @@ header("Expires: 0");
         .slider-track {
             display: flex;
             flex-wrap: nowrap;
-            width: 1000%; /* 10 slides (8 + 2 clones) * 100% */
+            width: 1300%; /* 13 slides (11 + 2 clones) * 100% */
             height: 100%;
             transition: transform 1000ms ease-in-out;
         }
@@ -176,7 +176,7 @@ header("Expires: 0");
         }
 
         .slider-slide {
-            width: 10%; /* 100% / 10 slides */
+            width: calc(100% / 13); /* 100% / 13 slides */
             height: 100%;
             flex-shrink: 0;
             position: relative;
@@ -185,7 +185,7 @@ header("Expires: 0");
         .slider-slide img,
         .slider-slide .slider-img {
             width: 100%;
-            height: 300px;
+            height: 360px;
             object-fit: cover;
             object-position: center center;
         }
@@ -203,7 +203,7 @@ header("Expires: 0");
         }
         .video-slide-wrapper video {
             width: 100%;
-            height: 300px;
+            height: 360px;
             object-fit: cover;
             object-position: center;
             display: none;
@@ -241,7 +241,7 @@ header("Expires: 0");
 
         /* 데스크톱 슬라이더 기본 높이 */
         #hero-slider {
-            height: 300px;
+            height: 360px;
         }
 
         @media (max-width: 768px) {
@@ -273,7 +273,7 @@ header("Expires: 0");
                 display: flex;
                 flex-direction: row;
                 flex-wrap: nowrap;
-                width: 1000vw;
+                width: 1300vw;
                 height: 180px;
             }
 
@@ -649,8 +649,23 @@ header("Expires: 0");
                         <img src="/slide/slide__Sticker_3.gif" alt="스티커 제작 서비스 3" class="slider-img">
                     </div>
 
-                    <!-- Slide 1: 회사소개 영상 -->
+                    <!-- Slide 1: 두손애니 1 -->
                     <div class="slider-slide" data-slide="0">
+                        <img src="/slide/dusonAni2-1-1.png" alt="두손기획인쇄 소개 1" class="slider-img">
+                    </div>
+
+                    <!-- Slide 2: 두손애니 2 -->
+                    <div class="slider-slide" data-slide="1">
+                        <img src="/slide/dusonAni2-2-2.png" alt="두손기획인쇄 소개 2" class="slider-img">
+                    </div>
+
+                    <!-- Slide 3: 두손애니 3 -->
+                    <div class="slider-slide" data-slide="2">
+                        <img src="/slide/dusonAni2-3-3.png" alt="두손기획인쇄 소개 3" class="slider-img">
+                    </div>
+
+                    <!-- Slide 4: 회사소개 영상 -->
+                    <div class="slider-slide" data-slide="3">
                         <div class="video-slide-wrapper" id="videoSlideWrapper" onclick="toggleSliderVideo()">
                             <img src="/media/explainer_poster.jpg" alt="두손기획인쇄 소개 영상" class="slider-img" id="videoPoster">
                             <video id="sliderVideo" preload="none" playsinline>
@@ -662,58 +677,60 @@ header("Expires: 0");
                         </div>
                     </div>
 
-                    <!-- Slide 2: 전단지 -->
-                    <div class="slider-slide" data-slide="1">
+                    <!-- Slide 5: 전단지 -->
+                    <div class="slider-slide" data-slide="4">
                         <img src="/slide/slide_inserted.gif" alt="전단지 인쇄 서비스" class="slider-img">
                     </div>
 
-                    <!-- Slide 3: 스티커 -->
-                    <div class="slider-slide" data-slide="2">
+                    <!-- Slide 6: 스티커 -->
+                    <div class="slider-slide" data-slide="5">
                         <img src="/slide/slide__Sticker.gif" alt="스티커 인쇄 서비스" class="slider-img">
                     </div>
 
-                    <!-- Slide 4: 카다록 -->
-                    <div class="slider-slide" data-slide="3">
+                    <!-- Slide 7: 카다록 -->
+                    <div class="slider-slide" data-slide="6">
                         <img src="/slide/slide_cadarok.gif" alt="카다록 인쇄 서비스" class="slider-img">
                     </div>
 
-                    <!-- Slide 5: NCR 양식지 -->
-                    <div class="slider-slide" data-slide="4">
+                    <!-- Slide 8: NCR 양식지 -->
+                    <div class="slider-slide" data-slide="7">
                         <img src="/slide/slide_Ncr.gif" alt="NCR 양식지 인쇄 서비스" class="slider-img">
                     </div>
 
-                    <!-- Slide 6: 포스터 -->
-                    <div class="slider-slide" data-slide="5">
+                    <!-- Slide 9: 포스터 -->
+                    <div class="slider-slide" data-slide="8">
                         <img src="/slide/slide__poster.gif" alt="포스터 인쇄 서비스" class="slider-img">
                     </div>
 
-                    <!-- Slide 7: 스티커 2 -->
-                    <div class="slider-slide" data-slide="6">
+                    <!-- Slide 10: 스티커 2 -->
+                    <div class="slider-slide" data-slide="9">
                         <img src="/slide/slide__Sticker_2.gif" alt="스티커 제작 서비스 2" class="slider-img">
                     </div>
 
-                    <!-- Slide 8: 스티커 3 -->
-                    <div class="slider-slide" data-slide="7">
+                    <!-- Slide 11: 스티커 3 -->
+                    <div class="slider-slide" data-slide="10">
                         <img src="/slide/slide__Sticker_3.gif" alt="스티커 제작 서비스 3" class="slider-img">
                     </div>
 
                     <!-- Clone of first slide (for infinite loop) -->
-                    <div class="slider-slide clone" data-slide="8">
-                        <img src="/media/explainer_poster.jpg" alt="두손기획인쇄 소개 영상" class="slider-img">
-                    </div>
+                    <div class="slider-slide clone" data-slide="11">
+                        <img src="/slide/dusonAni2-1-1.png" alt="두손기획인쇄 소개 1" class="slider-img">
                 </div>
             </div>
             
             <!-- Slider Controls -->
             <div class="absolute bottom-4 left-1/2 transform -translate-x-1/2 flex gap-3 z-10">
-                <button class="slider-dot w-3 h-3 rounded-full bg-white/60 hover:bg-white transition active" data-slide="0" aria-label="소개 영상"></button>
-                <button class="slider-dot w-3 h-3 rounded-full bg-white/60 hover:bg-white transition" data-slide="1" aria-label="전단지"></button>
-                <button class="slider-dot w-3 h-3 rounded-full bg-white/60 hover:bg-white transition" data-slide="2" aria-label="스티커"></button>
-                <button class="slider-dot w-3 h-3 rounded-full bg-white/60 hover:bg-white transition" data-slide="3" aria-label="카다록"></button>
-                <button class="slider-dot w-3 h-3 rounded-full bg-white/60 hover:bg-white transition" data-slide="4" aria-label="NCR양식지"></button>
-                <button class="slider-dot w-3 h-3 rounded-full bg-white/60 hover:bg-white transition" data-slide="5" aria-label="포스터"></button>
-                <button class="slider-dot w-3 h-3 rounded-full bg-white/60 hover:bg-white transition" data-slide="6" aria-label="스티커2"></button>
-                <button class="slider-dot w-3 h-3 rounded-full bg-white/60 hover:bg-white transition" data-slide="7" aria-label="스티커3"></button>
+                <button class="slider-dot w-3 h-3 rounded-full bg-white/60 hover:bg-white transition active" data-slide="0" aria-label="두손애니1"></button>
+                <button class="slider-dot w-3 h-3 rounded-full bg-white/60 hover:bg-white transition" data-slide="1" aria-label="두손애니2"></button>
+                <button class="slider-dot w-3 h-3 rounded-full bg-white/60 hover:bg-white transition" data-slide="2" aria-label="두손애니3"></button>
+                <button class="slider-dot w-3 h-3 rounded-full bg-white/60 hover:bg-white transition" data-slide="3" aria-label="소개영상"></button>
+                <button class="slider-dot w-3 h-3 rounded-full bg-white/60 hover:bg-white transition" data-slide="4" aria-label="전단지"></button>
+                <button class="slider-dot w-3 h-3 rounded-full bg-white/60 hover:bg-white transition" data-slide="5" aria-label="스티커"></button>
+                <button class="slider-dot w-3 h-3 rounded-full bg-white/60 hover:bg-white transition" data-slide="6" aria-label="카다록"></button>
+                <button class="slider-dot w-3 h-3 rounded-full bg-white/60 hover:bg-white transition" data-slide="7" aria-label="NCR양식지"></button>
+                <button class="slider-dot w-3 h-3 rounded-full bg-white/60 hover:bg-white transition" data-slide="8" aria-label="포스터"></button>
+                <button class="slider-dot w-3 h-3 rounded-full bg-white/60 hover:bg-white transition" data-slide="9" aria-label="스티커2"></button>
+                <button class="slider-dot w-3 h-3 rounded-full bg-white/60 hover:bg-white transition" data-slide="10" aria-label="스티커3"></button>
             </div>
             
             <!-- Navigation Arrows -->
@@ -1228,8 +1245,8 @@ header("Expires: 0");
         const sliderTrack = document.getElementById('sliderTrack');
         const slides = document.querySelectorAll('.slider-slide');
         const dots = document.querySelectorAll('.slider-dot');
-        const totalSlides = 8;
-        const totalWithClones = slides.length; // 10 (8 + 2 clones)
+        const totalSlides = 11;
+        const totalWithClones = slides.length; // 13 (11 + 2 clones)
         let isTransitioning = false;
         let autoPlayTimer = null;
         let videoPlaying = false;
@@ -1257,7 +1274,7 @@ header("Expires: 0");
             }
 
             // 비디오 슬라이드를 벗어나면 영상 정지 + 포스터 복원
-            if (realIndex !== 0 && videoPlaying) {
+            if (realIndex !== 3 && videoPlaying) {
                 resetSliderVideo();
             }
         }

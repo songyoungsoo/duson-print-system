@@ -44,6 +44,10 @@
     body .chat-widget .chat-toggle-btn.chat-open {
         display: none;
     }
+
+    body .chat-widget .chat-mini-widget {
+        width: 200px;
+    }
 }
 
 /* 채팅 버튼 */
@@ -273,17 +277,17 @@
 
 .chat-window.active {
     display: flex;
-    animation: slideUp 0.3s ease;
+    animation: chatExpand 0.3s cubic-bezier(0.4, 0, 0.2, 1);
 }
 
-@keyframes slideUp {
+@keyframes chatExpand {
     from {
         opacity: 0;
-        transform: translateY(20px);
+        transform: scale(0.95) translateY(10px);
     }
     to {
         opacity: 1;
-        transform: translateY(0);
+        transform: scale(1) translateY(0);
     }
 }
 
@@ -411,6 +415,10 @@
     box-shadow: 0 1px 2px rgba(0, 0, 0, 0.1);
 }
 
+.chat-message-bubble {
+    font-size: 13px;
+}
+
 .chat-message.sent .chat-message-bubble {
     background: #1E4E79;
     color: white;
@@ -426,7 +434,7 @@
     background: #e3f2fd;
     color: #1976d2;
     text-align: center;
-    font-size: 12px;
+    font-size: 13px;
 }
 
 /* AI 긴급대응 봇 메시지 스타일 */
@@ -576,13 +584,17 @@
     padding: 5px 8px;
     border: 1px solid #e0e0e0;
     border-radius: 12px;
-    font-size: 11px;
+    font-size: 13px;
     outline: none;
     transition: border-color 0.2s;
 }
 
 .chat-input:focus {
     border-color: #F5872C;
+}
+
+.chat-input::placeholder {
+    font-size: 13px;
 }
 
 .chat-image-btn,
@@ -610,13 +622,14 @@
 }
 
 .chat-image-btn {
-    background: #e8f0f7;
-    color: #1E4E79;
-    font-size: 17px;
+    background: #222222;
+    color: #ffffff;
+    font-size: 16px;
+    line-height: 1;
 }
 
 .chat-image-btn:hover {
-    background: #d0e0ed;
+    background: #444444;
 }
 
 .chat-send-btn svg {
@@ -1047,4 +1060,156 @@
     .chat-widget .chat-image-btn {
         font-size: 22px;
     }
+
+    .chat-mini-widget {
+        width: calc(100vw - 48px);
+        max-width: 220px;
+    }
+
+    .chat-widget .chat-mini-widget.chat-mini-hidden {
+        display: none;
+    }
+}
+
+/* ============================================================ */
+/* 3-State Mini Chat Widget                                      */
+/* ============================================================ */
+
+.chat-mini-widget {
+    width: 220px;
+    background: #ffffff;
+    border-radius: 12px;
+    box-shadow: 0 4px 20px rgba(0, 0, 0, 0.12), 0 1px 4px rgba(0, 0, 0, 0.06);
+    overflow: hidden;
+    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    cursor: default;
+    position: relative;
+}
+
+.chat-mini-widget.chat-mini-hidden {
+    opacity: 0;
+    transform: scale(0.8) translateY(10px);
+    pointer-events: none;
+}
+
+/* Titlebar — compact colored header */
+.chat-mini-titlebar {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    padding: 6px 10px;
+    background: #1E4E79;
+    color: #ffffff;
+    border-radius: 12px 12px 0 0;
+}
+
+.chat-mini-titlebar-icon {
+    font-size: 13px;
+    flex-shrink: 0;
+    line-height: 1;
+}
+
+.chat-mini-titlebar-text {
+    font-size: 11px;
+    font-weight: 600;
+    letter-spacing: 0.3px;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    flex: 1;
+}
+
+/* Body — greeting + input */
+.chat-mini-body {
+    padding: 8px 10px 8px;
+}
+
+.chat-mini-greeting {
+    font-size: 12px;
+    color: #4b5563;
+    font-weight: 500;
+    line-height: 1.3;
+    margin-bottom: 6px;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+
+.chat-mini-input-row {
+    display: flex;
+    align-items: center;
+    gap: 5px;
+}
+
+.chat-mini-input {
+    flex: 1;
+    padding: 6px 10px;
+    border: 1.5px solid #e5e7eb;
+    border-radius: 16px;
+    font-size: 12px;
+    outline: none;
+    transition: border-color 0.2s;
+    font-family: inherit;
+    color: #374151;
+    background: #f9fafb;
+    min-width: 0;
+}
+
+.chat-mini-input:focus {
+    border-color: #F5872C;
+    background: #ffffff;
+}
+
+.chat-mini-input::placeholder {
+    color: #9ca3af;
+    font-size: 11px;
+}
+
+.chat-mini-send {
+    width: 26px;
+    height: 26px;
+    border-radius: 50%;
+    background: #1E4E79;
+    border: none;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex-shrink: 0;
+    transition: background 0.2s;
+    padding: 0;
+}
+
+.chat-mini-send:hover {
+    background: #2a6090;
+}
+
+.chat-mini-send svg {
+    width: 12px;
+    height: 12px;
+}
+
+/* Unread notification glow on mini widget */
+.chat-mini-widget.chat-mini-has-unread {
+    box-shadow: 0 4px 20px rgba(245, 135, 44, 0.25), 0 0 0 2px rgba(245, 135, 44, 0.3);
+}
+
+/* Unread badge on mini widget */
+.chat-mini-widget .chat-unread-badge {
+    position: absolute;
+    top: -5px;
+    right: -5px;
+}
+
+/* First visit bounce animation */
+@keyframes miniBounce {
+    0%, 100% { transform: translateY(0); }
+    20% { transform: translateY(-6px); }
+    40% { transform: translateY(0); }
+    60% { transform: translateY(-3px); }
+    80% { transform: translateY(0); }
+}
+
+.chat-mini-bounce {
+    animation: miniBounce 1s ease-in-out 1s 1;
 }
