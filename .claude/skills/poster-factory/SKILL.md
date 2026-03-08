@@ -150,6 +150,20 @@ Phase 7: 결과 확인 + 후속 (Claude ↔ 사용자)
 > **핵심**: 이미지 생성 전에 전체 구도를 확정한다.
 > 히어로는 전체의 일부 — "따로 놀면 안 돼."
 
+### 자동화 (CLI)
+
+```bash
+# Phase 3만 실행 — brief.json + copy.json → layout_spec.json 자동 생성
+python3 _poster_factory/scripts/poster_generator.py \
+  --workdir "{workdir}" --art-direct
+```
+
+- `art_direct()` 메서드가 Gemini `generate_text_json()`을 호출
+- `config/layout_spec_schema.json` 스키마 + `config/typography_scale.json` + `config/layout_patterns.json`을 시스템 프롬프트에 포함
+- brief.json + copy.json을 읽어 유저 프롬프트 구성
+- 검증: `layout_id`, `zones`, `typography`, `image_directives` 필수 키 체크
+- 출력: `{workdir}/layout_spec.json`
+
 ### 입력
 - `brief.json` + `copy.json`
 - `config/typography_scale.json` (타이포 스케일)
@@ -173,7 +187,6 @@ Phase 7: 결과 확인 + 후속 (Claude ↔ 사용자)
 스키마: `config/layout_spec_schema.json` 참조 (예시 포함)
 
 저장 경로: `{workdir}/layout_spec.json`
-
 ---
 
 ## Phase 4: 이미지 프롬프트 (layout_spec 기반)
@@ -244,10 +257,18 @@ Phase 7: 결과 확인 + 후속 (Claude ↔ 사용자)
 ### 실행 방법
 
 ```bash
-# 전체 생성 (히어로 + 품목 이미지 → SVG 조립)
+# ⭐ 전체 파이프라인 (Phase 3 아트디렉팅 → 이미지 생성 → SVG 조립)
 source /var/www/html/.env 2>/dev/null
 export GEMINI_API_KEY
 export PYTHONPATH=/home/ysung/.local/lib/python3.12/site-packages:$PYTHONPATH
+python3 _poster_factory/scripts/poster_generator.py \
+  --workdir "_poster_factory/output/{job_dir}" --full
+
+# Phase 3만 실행 (layout_spec.json 자동 생성)
+python3 _poster_factory/scripts/poster_generator.py \
+  --workdir "{workdir}" --art-direct
+
+# 전체 생성 (히어로 + 품목 이미지 → SVG 조립, layout_spec 이미 있을 때)
 python3 _poster_factory/scripts/poster_generator.py \
   --workdir "_poster_factory/output/{job_dir}"
 
