@@ -528,14 +528,40 @@ Generate complete layout_spec.json with all required fields: layout_id, zones, t
                 }
         return defaults
 
+    # Valid Gemini aspect ratios
+    VALID_ASPECT_RATIOS = {'1:1', '1:4', '1:8', '2:3', '3:2', '3:4', '4:1', '4:3', '4:5', '5:4', '8:1', '9:16', '16:9', '21:9'}
+
     def _get_hero_aspect_ratio(self, design: dict) -> str:
-        """layout_spec에서 히어로 aspect_ratio를 읽거나 design.json에서 폴백."""
+        """layout_spec에서 히어로 aspect_ratio를 읽거나 design.json에서 폴백.
+        Gemini에서 지원하지 않는 비율이면 가장 가까운 유효 비율로 변환."""
+        raw_ratio = None
         if self.layout_spec:
             directives = self.layout_spec.get("image_directives", {})
             hero_dir = directives.get("hero", {})
             if hero_dir.get("aspect_ratio"):
-                return hero_dir["aspect_ratio"]
-        return design.get("hero", {}).get("aspect_ratio", "5:4")
+                raw_ratio = hero_dir["aspect_ratio"]
+        if not raw_ratio:
+            raw_ratio = design.get("hero", {}).get("aspect_ratio", "16:9")
+        # Validate against Gemini's allowed ratios
+        if raw_ratio in self.VALID_ASPECT_RATIOS:
+            return raw_ratio
+        # Convert to float and find nearest valid ratio
+        try:
+            parts = raw_ratio.split(':')
+            target = float(parts[0]) / float(parts[1])
+        except (ValueError, IndexError, ZeroDivisionError):
+            return '16:9'
+        best = '16:9'
+        best_diff = float('inf')
+        for valid in self.VALID_ASPECT_RATIOS:
+            vp = valid.split(':')
+            vr = float(vp[0]) / float(vp[1])
+            diff = abs(vr - target)
+            if diff < best_diff:
+                best_diff = diff
+                best = valid
+        logger.info(f'  ⚠️ 비율 변환: {raw_ratio} → {best} (Gemini 호환)')
+        return best
 
     def _enrich_hero_prompt(self, hero_cfg: dict) -> str:
         """layout_spec.image_directives.hero 제약조건을 hero prompt에 자동 주입.
@@ -1495,7 +1521,9 @@ Generate complete layout_spec.json with all required fields: layout_id, zones, t
         class="title" font-size="72" fill="{brand}" opacity="0.25">HERO IMAGE</text>"""
             )
 
-        # --- Price List (20%) ---
+        # --- Price List (20%) — image cards or text-only fallback ---
+        img_size = 200  # item thumbnail size
+        card_text_x = margin + img_size + 40  # text starts after image + gap
         parts.append(
             f"""
   <!-- ===== PRICE LIST ===== -->
@@ -1504,33 +1532,73 @@ Generate complete layout_spec.json with all required fields: layout_id, zones, t
         )
         if items:
             n_items = len(items)
-            row_h = min(80, (pricelist_h - 60) // max(n_items, 1))
-            start_y = pricelist_y + 50
-            for idx, item in enumerate(items):
-                name = item.get("name", "")
-                price = item.get("price", "")
-                iy = start_y + idx * row_h
-                # Item name (left)
-                parts.append(
-                    f"""  <text x="{margin + 20}" y="{iy}"
+            # Check if ANY item has an image — determines card vs text mode
+            has_any_image = any(self._img_ref(f"item_{i+1:02d}.png") for i in range(n_items))
+            if has_any_image:
+                # Image card mode (like magazine_split)
+                row_h = max(230, (pricelist_h - 60) // max(n_items, 1))
+                start_y = pricelist_y + 40
+                for idx, item in enumerate(items):
+                    name = item.get("name", "")
+                    price = item.get("price", "")
+                    desc = item.get("description", "")
+                    iy = start_y + idx * row_h
+                    item_ref = self._img_ref(f"item_{idx + 1:02d}.png")
+                    if item_ref:
+                        parts.append(f"""  <image href="{item_ref}" xlink:href="{item_ref}"
+           x="{margin}" y="{iy}" width="{img_size}" height="{img_size}"
+           preserveAspectRatio="xMidYMid meet"/>""")
+                        parts.append(f"""  <text x="{card_text_x}" y="{iy + 55}"
+        class="title" font-size="{t_item_name['size_px']}" font-weight="{t_item_name['weight']}" fill="{t_item_name['color']}">
+    {name}
+  </text>""")
+                        if desc:
+                            parts.append(f"""  <text x="{card_text_x}" y="{iy + 100}"
+        class="body" font-size="24" font-weight="400" fill="{text_c}" opacity="0.65">
+    {desc}
+  </text>""")
+                        if price:
+                            parts.append(f"""  <text x="{CANVAS_W - margin}" y="{iy + 55}"
+        text-anchor="end" class="title" font-size="{t_item_price['size_px']}" font-weight="{t_item_price['weight']}" fill="{t_item_price['color']}">
+    {price}
+  </text>""")
+                    else:
+                        # Fallback: text-only row for this specific item
+                        parts.append(f"""  <text x="{margin + 20}" y="{iy + 30}"
+        class="title" font-size="{t_item_name['size_px']}" font-weight="{t_item_name['weight']}" fill="{t_item_name['color']}">
+    {name}
+  </text>""")
+                        if price:
+                            parts.append(f"""  <text x="{CANVAS_W - margin - 20}" y="{iy + 30}"
+        text-anchor="end" class="title" font-size="{t_item_price['size_px']}" font-weight="{t_item_price['weight']}" fill="{t_item_price['color']}">
+    {price}
+  </text>""")
+            else:
+                # Text-only mode (no images at all) — original flat list
+                row_h = min(80, (pricelist_h - 60) // max(n_items, 1))
+                start_y = pricelist_y + 50
+                for idx, item in enumerate(items):
+                    name = item.get("name", "")
+                    price = item.get("price", "")
+                    iy = start_y + idx * row_h
+                    parts.append(
+                        f"""  <text x="{margin + 20}" y="{iy}"
         class="title" font-size="{t_item_name['size_px']}" font-weight="{t_item_name['weight']}" fill="{t_item_name['color']}">
     {name}
   </text>"""
-                )
-                # Price (right)
-                if price:
-                    parts.append(
-                        f"""  <text x="{CANVAS_W - margin - 20}" y="{iy}"
+                    )
+                    if price:
+                        parts.append(
+                            f"""  <text x="{CANVAS_W - margin - 20}" y="{iy}"
         text-anchor="end" class="title" font-size="{t_item_price['size_px']}" font-weight="{t_item_price['weight']}" fill="{t_item_price['color']}">
     {price}
   </text>"""
-                    )
-                # Separator line
-                if idx < n_items - 1:
-                    parts.append(
-                        f"""  <line x1="{margin}" y1="{iy + 20}" x2="{CANVAS_W - margin}" y2="{iy + 20}"
+                        )
+                    if idx < n_items - 1:
+                        parts.append(
+                            f"""  <line x1="{margin}" y1="{iy + 20}" x2="{CANVAS_W - margin}" y2="{iy + 20}"
         stroke="{text_c}" stroke-width="1" opacity="0.15"/>"""
-                    )
+                        )
 
         # --- Transition: price_list → promo ---
         trans_svg = self._svg_transition("price_list", "promo", pricelist_y + pricelist_h, accent, margin)
@@ -1651,39 +1719,81 @@ Generate complete layout_spec.json with all required fields: layout_id, zones, t
         )
         ry += 40
 
-        # Items as vertical price list
+        # Items — image cards (with thumbnail) or text-only fallback
+        img_size_side = 150  # smaller thumbnails for half-width panel
+        card_text_x_side = rx + img_size_side + 30  # text starts after image + gap
         if items:
-            parts.append(f"\n  <!-- ===== ITEMS (가격 리스트) ===== -->")
-            for idx, item in enumerate(items):
-                name = item.get("name", "")
-                price = item.get("price", "")
-                desc = item.get("description", "")
-
-                # Name + price on same line
-                parts.append(
-                    f"""  <text x="{rx}" y="{ry}"
+            n_items = len(items)
+            has_any_image = any(self._img_ref(f"item_{i+1:02d}.png") for i in range(n_items))
+            parts.append(f"\n  <!-- ===== ITEMS ({'\uc774\ubbf8\uc9c0 \uce74\ub4dc' if has_any_image else '\uac00\uaca9 \ub9ac\uc2a4\ud2b8'}) ====="
+                         f" -->")
+            if has_any_image:
+                # Image card mode
+                row_h = max(180, 190)  # fixed row height for cards
+                for idx, item in enumerate(items):
+                    name = item.get("name", "")
+                    price = item.get("price", "")
+                    desc = item.get("description", "")
+                    item_ref = self._img_ref(f"item_{idx + 1:02d}.png")
+                    if item_ref:
+                        parts.append(f"""  <image href="{item_ref}" xlink:href="{item_ref}"
+           x="{rx}" y="{ry}" width="{img_size_side}" height="{img_size_side}"
+           preserveAspectRatio="xMidYMid meet"/>""")
+                        parts.append(f"""  <text x="{card_text_x_side}" y="{ry + 45}"
+        class="title" font-size="{t_item_name['size_px']}" font-weight="{t_item_name['weight']}" fill="{t_item_name['color']}">
+    {name}
+  </text>""")
+                        if desc:
+                            parts.append(f"""  <text x="{card_text_x_side}" y="{ry + 85}"
+        class="body" font-size="{t_item_desc['size_px']}" font-weight="{t_item_desc['weight']}" fill="{t_item_desc['color']}" opacity="0.6">
+    {desc}
+  </text>""")
+                        if price:
+                            parts.append(f"""  <text x="{rx + rw}" y="{ry + 45}"
+        text-anchor="end" class="title" font-size="{t_item_price['size_px']}" font-weight="{t_item_price['weight']}" fill="{t_item_price['color']}">
+    {price}
+  </text>""")
+                    else:
+                        # Fallback text-only row for missing image
+                        parts.append(f"""  <text x="{rx}" y="{ry + 30}"
+        class="title" font-size="{t_item_name['size_px']}" font-weight="{t_item_name['weight']}" fill="{t_item_name['color']}">
+    {name}
+  </text>""")
+                        if price:
+                            parts.append(f"""  <text x="{rx + rw}" y="{ry + 30}"
+        text-anchor="end" class="title" font-size="{t_item_price['size_px']}" font-weight="{t_item_price['weight']}" fill="{t_item_price['color']}">
+    {price}
+  </text>""")
+                    ry += row_h
+            else:
+                # Text-only mode (original flat list)
+                for idx, item in enumerate(items):
+                    name = item.get("name", "")
+                    price = item.get("price", "")
+                    desc = item.get("description", "")
+                    parts.append(
+                        f"""  <text x="{rx}" y="{ry}"
         class="title" font-size="{t_item_name['size_px']}" font-weight="{t_item_name['weight']}" fill="{t_item_name['color']}">
     {name}
   </text>"""
-                )
-                if price:
-                    parts.append(
-                        f"""  <text x="{rx + rw}" y="{ry}"
+                    )
+                    if price:
+                        parts.append(
+                            f"""  <text x="{rx + rw}" y="{ry}"
         text-anchor="end" class="title" font-size="{t_item_price['size_px']}" font-weight="{t_item_price['weight']}" fill="{t_item_price['color']}">
     {price}
   </text>"""
-                    )
-                ry += 34
-                # Description below
-                if desc:
-                    parts.append(
-                        f"""  <text x="{rx}" y="{ry}"
+                        )
+                    ry += 34
+                    if desc:
+                        parts.append(
+                            f"""  <text x="{rx}" y="{ry}"
         class="light" font-size="{t_item_desc['size_px']}" font-weight="{t_item_desc['weight']}" fill="{t_item_desc['color']}" opacity="0.6">
     {desc}
   </text>"""
-                    )
-                    ry += 30
-                ry += 26  # 60px total gap between items
+                        )
+                        ry += 30
+                    ry += 26
 
         # Features at bottom of right section
         if features:
