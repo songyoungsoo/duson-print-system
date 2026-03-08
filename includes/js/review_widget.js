@@ -19,6 +19,63 @@
         lightboxPhotos: [],      // current lightbox photo list [{src, alt}]
         lightboxIndex: 0,
 
+        // ─── 품목별 리뷰 유도 메시지 ───
+        productMessages: {
+            'namecard': {
+                icon: '💼',
+                title: '명함 인쇄, 어떠셨나요?',
+                body: '비즈니스의 첫인상을 만드는 명함 — 직접 받아보신 소감을 들려주세요.\n고객님의 솔직한 리뷰 한 줄이 저희에게 큰 힘이 됩니다.',
+                cta: '✍️ 첫 리뷰의 주인공이 되어주세요'
+            },
+            'inserted': {
+                icon: '📄',
+                title: '전단지 인쇄, 만족하셨나요?',
+                body: '선명한 색감, 확실한 전달력! 받아보신 전단지 품질은 어떠셨나요?\n후기를 남겨주시면 더 좋은 인쇄물로 보답하겠습니다.',
+                cta: '✍️ 전단지 후기 남기기'
+            },
+            'sticker_new': {
+                icon: '⭐',
+                title: '스티커, 마음에 드셨나요?',
+                body: '내 맘대로 사이즈, 내 맘대로 모양! 재질감과 접착력은 어떠셨나요?\n고객님의 생생한 후기가 다른 분들께도 큰 도움이 됩니다.',
+                cta: '✍️ 스티커 후기 남기기'
+            },
+            'msticker': {
+                icon: '🧲',
+                title: '자석스티커, 잘 붙나요?',
+                body: '냉장고에 딱 붙이셨나요? 접착력과 인쇄 품질은 어떠셨나요?\n고객님의 리뷰가 저희를 더 성장시킵니다.',
+                cta: '✍️ 자석스티커 후기 남기기'
+            },
+            'envelope': {
+                icon: '✉️',
+                title: '봉투 인쇄, 어떠셨나요?',
+                body: '고급스러운 봉투 한 장이 브랜드의 첫인상을 만듭니다.\n인쇄 품질에 대한 솔직한 후기를 남겨주시면 더 정성을 다하겠습니다.',
+                cta: '✍️ 봉투 후기 남기기'
+            },
+            'littleprint': {
+                icon: '🎨',
+                title: '포스터 색감, 만족스러우셨나요?',
+                body: '색감 재현력에 자신 있습니다! 직접 받아보신 소감을 들려주세요.\n고객님의 리뷰 한 줄이 저희에게 열정을 불어넣습니다.',
+                cta: '✍️ 포스터 후기 남기기'
+            },
+            'merchandisebond': {
+                icon: '🎫',
+                title: '상품권 인쇄, 기대에 부응했나요?',
+                body: '특별한 이벤트를 위한 상품권, 마음에 드셨나요?\n디자인과 용지 품질에 대한 후기를 남겨주시면 더 완벽하게 만들겠습니다.',
+                cta: '✍️ 상품권 후기 남기기'
+            },
+            'cadarok': {
+                icon: '📖',
+                title: '카다록 인쇄 품질은 어떠셨나요?',
+                body: '한 권의 카다록이 비즈니스를 바꿉니다.\n제본, 색감, 용지 질감까지 — 솔직한 후기가 더 나은 인쇄물을 만드는 밑거름이 됩니다.',
+                cta: '✍️ 카다록 후기 남기기'
+            },
+            'ncrflambeau': {
+                icon: '📋',
+                title: 'NCR양식지, 복사 품질은 어떠셨나요?',
+                body: '선명한 복사, 정확한 절취선 — 실제 사용 후기를 들려주세요.\n고객님의 소중한 한마디가 저희 작업의 기준이 됩니다.',
+                cta: '✍️ NCR양식지 후기 남기기'
+            }
+        },
         // ─── 초기화 ───
         init: function() {
             this.productType = window.__reviewProductType || '';
@@ -273,12 +330,31 @@
             var listEl = document.getElementById('reviewList');
             if (!listEl) return;
 
+            var msg = this.productMessages[this.productType] || {
+                icon: '📝',
+                title: '인쇄 품질은 어떠셨나요?',
+                body: '고객님의 솔직한 리뷰가 저희에게 큰 힘이 됩니다.\n후기를 남겨주시면 더욱 정성을 다해 인쇄하겠습니다.',
+                cta: '✍️ 첫 리뷰 남기기'
+            };
+
             listEl.innerHTML =
-                '<div class="review-list-empty">' +
-                    '<div class="review-list-empty-icon">📝</div>' +
-                    '<div class="review-list-empty-text">아직 리뷰가 없습니다</div>' +
-                    '<div class="review-list-empty-sub">첫 번째 리뷰를 작성해보세요!</div>' +
+                '<div class="review-promo-banner">' +
+                    '<div class="review-promo-icon">' + msg.icon + '</div>' +
+                    '<div class="review-promo-body">' +
+                        '<div class="review-promo-title">' + msg.title + '</div>' +
+                        '<div class="review-promo-text">' + msg.body.replace(/\n/g, '<br>') + '</div>' +
+                        '<button type="button" class="review-promo-cta" id="reviewPromoCta">' + msg.cta + '</button>' +
+                    '</div>' +
                 '</div>';
+
+            // CTA 클릭 → 리뷰 쓰기 폼 열기
+            var self = this;
+            var ctaBtn = document.getElementById('reviewPromoCta');
+            if (ctaBtn) {
+                ctaBtn.addEventListener('click', function() {
+                    self.toggleWriteForm();
+                });
+            }
 
             var paginationEl = document.getElementById('reviewPagination');
             if (paginationEl) paginationEl.innerHTML = '';

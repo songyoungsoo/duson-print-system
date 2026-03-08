@@ -460,6 +460,66 @@
     margin-top: 4px;
 }
 
+/* 리뷰 유도 프로모 배너 */
+.review-widget .review-promo-banner {
+    display: flex;
+    align-items: flex-start;
+    gap: 20px;
+    padding: 28px 24px;
+    background: linear-gradient(135deg, #fef9f0 0%, #fdf3e7 50%, #fef6ee 100%);
+    border: 1px solid #f0dfc8;
+    border-radius: 12px;
+    margin-bottom: 12px;
+}
+
+.review-widget .review-promo-icon {
+    font-size: 40px;
+    line-height: 1;
+    flex-shrink: 0;
+    margin-top: 2px;
+}
+
+.review-widget .review-promo-body {
+    flex: 1;
+}
+
+.review-widget .review-promo-title {
+    font-size: 17px;
+    font-weight: 700;
+    color: #5a3e1b;
+    margin-bottom: 8px;
+}
+
+.review-widget .review-promo-text {
+    font-size: 14px;
+    color: #7a6247;
+    line-height: 1.7;
+    margin-bottom: 16px;
+}
+
+.review-widget .review-promo-cta {
+    display: inline-block;
+    padding: 10px 22px;
+    background: #e8943a;
+    color: #fff;
+    border: none;
+    border-radius: 6px;
+    font-size: 14px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: background 0.2s, transform 0.15s;
+    font-family: inherit;
+}
+
+.review-widget .review-promo-cta:hover {
+    background: #d4822e;
+    transform: translateY(-1px);
+}
+
+.review-widget .review-promo-cta:active {
+    transform: translateY(0);
+}
+
 /* 리뷰 카드 */
 .review-widget .review-card {
     padding: 20px;
@@ -860,4 +920,24 @@
         max-width: 100%;
         max-height: 80vh;
     }
+
+    .review-widget .review-promo-banner {
+        flex-direction: column;
+        align-items: center;
+        text-align: center;
+        gap: 12px;
+        padding: 24px 16px;
+    }
+
+    .review-widget .review-promo-icon {
+        font-size: 36px;
+    }
+
+    .review-widget .review-promo-title {
+        font-size: 16px;
+    }
+
+    .review-widget .review-promo-cta {
+        width: 100%;
+        text-align: center;
 }
