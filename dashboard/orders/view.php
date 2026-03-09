@@ -241,6 +241,9 @@ include __DIR__ . '/../includes/sidebar.php';
                 </a>
                 <h1 class="text-lg font-bold text-gray-900">주문 #<?php echo $order['no']; ?></h1>
                 <span class="text-xs text-gray-400"><?php echo $order['date']; ?></span>
+                <?php if (!empty($group_orders)): ?>
+                <span class="px-2 py-0.5 text-xs font-semibold rounded-full bg-orange-100 text-orange-700 ml-2"><?php echo count($group_orders) + 1; ?>건</span>
+                <?php endif; ?>
                 <span class="px-2 py-0.5 text-xs font-semibold rounded-full <?php echo $status_info['bg'] . ' ' . $status_info['text']; ?>">
                     <?php echo $status_info['label']; ?>
                 </span>
@@ -503,7 +506,7 @@ include __DIR__ . '/../includes/sidebar.php';
                         </div>
                         <?php endif; ?>
                         <div class="flex justify-between py-0.5 border-t border-gray-200 mt-0.5">
-                            <span class="font-semibold text-gray-900">총 결제금액<?php if (!empty($group_orders)): ?><span class="text-xs text-gray-400 ml-1">(묶음주문 <?php echo count($group_orders) + 1; ?>건)</span><?php endif; ?></span>
+                            <span class="font-semibold text-gray-900">총 결제금액<?php if (!empty($group_orders)): ?><span class="text-xs font-medium text-orange-600 ml-2"><?php echo count($group_orders) + 1; ?>건</span><?php endif; ?></span>
                             <span class="text-base font-bold text-blue-600"><?php echo number_format($total_payment); ?>원</span>
                         </div>
                         <?php if ($has_prepaid_shipping): ?>
