@@ -5,7 +5,9 @@ require_once __DIR__ . '/../../db.php';
 require_once __DIR__ . '/../../includes/ImagePathResolver.php';
 require_once __DIR__ . '/../../includes/order_status_config.php';
 
-$no = intval($_GET['no'] ?? 0);
+// PHP 8.2 호환성: 예외 처리로 에러 추적
+try {
+    $no = intval($_GET['no'] ?? 0);
 
 if ($no <= 0) {
     header('Location: /dashboard/orders/');
@@ -52,6 +54,10 @@ $type1_raw = trim($order['Type_1'] ?? '');
 
 if (!empty($type1_raw) && $type1_raw[0] === '{') {
     $type1_data = json_decode($type1_raw, true);
+    // PHP 8.2 호환성: JSON 파싱 실패 시 빈 배열로 초기화
+    if ($type1_data === null) {
+        $type1_data = [];
+    }
 } elseif (!empty($type1_raw)) {
     $cleaned = str_replace("\n", '', $type1_raw);
     if (!empty(trim($cleaned))) {
@@ -755,4 +761,18 @@ document.getElementById('statusForm').addEventListener('submit', async function(
 });
 </script>
 
-<?php include __DIR__ . '/../includes/footer.php'; ?>
+<?php
+include __DIR__ . '/../includes/footer.php';
+
+// PHP 8.2 호환성: 예외 처리
+} catch (Throwable $e) {
+    echo '<!DOCTYPE html><html><head><meta charset="UTF-8"><title>에러</title></head><body>';
+    echo '<h1>주문 조회 오류</h1>';
+    echo '<p><strong>에러 메시지:</strong> ' . htmlspecialchars($e->getMessage()) . '</p>';
+    echo '<p><strong>파일:</strong> ' . htmlspecialchars($e->getFile()) . ':' . $e->getLine() . '</p>';
+    echo '<pre>' . htmlspecialchars($e->getTraceAsString()) . '</pre>';
+    echo '<p><a href="/dashboard/orders/">주문 목록으로 돌아가기</a></p>';
+    echo '</body></html>';
+    exit;
+}
+?>

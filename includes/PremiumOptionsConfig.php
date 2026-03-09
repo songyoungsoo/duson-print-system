@@ -119,6 +119,21 @@ class PremiumOptionsConfig
             return [];
         }
 
+        // 테이블 존재 확인 (PHP 8.2+ 호환성)
+        $tableCheck = mysqli_query($dbConn, "SHOW TABLES LIKE 'premium_options'");
+        if (!$tableCheck || mysqli_num_rows($tableCheck) == 0) {
+            // 테이블이 없으면 빈 배열 반환 (레거시 시스템)
+            return [];
+        }
+
+        // 컬럼 존재 확인 (테이블이 있어도 구조가 다를 수 있음)
+        $columnCheck = mysqli_query($dbConn, "SHOW COLUMNS FROM premium_options LIKE 'option_key'");
+        if (!$columnCheck || mysqli_num_rows($columnCheck) == 0) {
+            // 컬럼이 없으면 빈 배열 반환 (구버전 테이블)
+            return [];
+        }
+
+        // 쿼리 실행
         $stmt = mysqli_prepare($dbConn, "
             SELECT o.option_key, o.option_name, o.sort_order,
                    v.variant_key, v.variant_name, v.pricing_config, v.is_default, v.display_order
