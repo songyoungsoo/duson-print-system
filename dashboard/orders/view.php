@@ -166,7 +166,7 @@ if (!empty($order['rounding_enabled'])) {
     $has_options = true;
 }
 
-require_once __DIR__ . '/../includes/PremiumOptionsConfig.php';
+require_once __DIR__ . '/../../includes/PremiumOptionsConfig.php';
 $premium_options_json = $order['premium_options'] ?? '';
 $premium_parsed = false;
 
