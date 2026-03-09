@@ -1,0 +1,279 @@
+{
+  "_description": "레이아웃 패턴 DB — 시장 검증 + 디자인 원칙 기반 (2026-03 갱신)",
+  "_last_updated": "2026-03-09",
+  "_source_references": [
+    "두손기획인쇄 레퍼런스 전단지 9장 분석",
+    "크몽 업종별 전단지 디자인 분석 (kmong.com/article/1665)",
+    "미리캔버스/망고보드/캔바 인기 템플릿 패턴",
+    "Canva Ultimate Guide to Flyer Design",
+    "Flyer Canada Design Guide — 색상 심리 + CTA 배치",
+    "A4 그리드 시스템 + 타이포그래피 국제 표준"
+  ],
+
+  "_design_principles": {
+    "eye_flow_patterns": {
+      "z_pattern": {
+        "description": "Z자 시선 흐름 — 이미지/CTA 중심 전단지에 최적",
+        "flow": "좌상(로고/상호) → 우상(배지/태그) → 대각선↘ → 좌하(특징) → 우하(CTA/연락처)",
+        "best_for": ["classic_grid", "hero_dominant", "bold_typo"],
+        "rule": "CTA/연락처는 반드시 우하(Z의 끝점)에 배치"
+      },
+      "f_pattern": {
+        "description": "F자 시선 흐름 — 텍스트/리스트 중심 전단지에 최적",
+        "flow": "상단 가로 스캔 → 세로 스캔(좌측) → 짧은 가로 스캔 반복",
+        "best_for": ["magazine_split", "side_by_side"],
+        "rule": "제목/핵심문장을 좌측에, 중요 키워드를 상단에 배치"
+      },
+      "gutenberg_diagram": {
+        "description": "구텐베르크 4분면 — 시선 주목도 영역 분석",
+        "zones": {
+          "top_left": "1차 광학 영역 (가장 먼저 주목) → 상호명/로고 배치",
+          "top_right": "강한 휴경지 (2차 주목) → 배지/뱃지/이벤트 태그",
+          "bottom_left": "약한 휴경지 (주목도 낮음) → 부가 정보/특징",
+          "bottom_right": "터미널 영역 (최종 행동 유도) → CTA/전화번호/주소"
+        }
+      }
+    },
+    "visual_hierarchy": {
+      "priority_order": ["크기(Size)", "색상(Color)", "대비(Contrast)", "근접성(Proximity)", "여백(Whitespace)"],
+      "rules": [
+        "하나의 핵심 메시지만 전달 — 전단지 1장에 1개 핵심 메시지",
+        "3단계 정보 위계 — 헤드라인(보자마자) > 서브카피(흥미) > 디테일(행동)",
+        "중요한 요소 주변에 넉넉한 여백 → 주목도 증가",
+        "관련 요소는 가까이, 무관한 요소는 떨어뜨려 그룹핑"
+      ]
+    },
+    "grid_system": {
+      "_note": "2130×3000px 캔버스 기준 (A4 비율 + 블리드 15px)",
+      "canvas": { "width": 2130, "height": 3000 },
+      "bleed": 15,
+      "trim": { "width": 2100, "height": 2970 },
+      "safety_margin": 65,
+      "column_systems": {
+        "2_column": { "cols": 2, "col_width": 970, "gap": 30, "description": "좌우 분할 레이아웃" },
+        "3_column": { "cols": 3, "col_width": 630, "gap": 30, "description": "품목 그리드(3개)" },
+        "4_column": { "cols": 4, "col_width": 462, "gap": 30, "description": "품목 그리드(4개)" }
+      },
+      "vertical_zones": {
+        "header": "상단 20-25% — 히어로/상호명 (가장 먼저 보는 영역)",
+        "body": "중간 50-60% — 핵심 콘텐츠/품목/서비스",
+        "footer": "하단 12-18% — CTA/연락처 (Z패턴 종착점)"
+      }
+    },
+    "cta_placement": {
+      "rule": "CTA는 Z패턴 종점(우하)에 배치 — 반응률 최고",
+      "minimum_margin": "CTA 주변 최소 여백 40px (10mm 환산)",
+      "phone_typography": "전화번호는 자간 넓히고(2-3px), 굵은 폰트(700), 크기 42-48px",
+      "components": ["CTA 헤드라인(행동 유도 문구)", "전화번호(가장 크게)", "주소(간결하게)", "영업시간", "SNS(선택)"]
+    }
+  },
+
+  "layouts": {
+    "classic_grid": {
+      "id": "classic_grid",
+      "name": "클래식 그리드",
+      "description": "히어로 상단 + 슬로건 + 품목 그리드 + 프로모 + CTA. 가장 범용적인 기본 레이아웃.",
+      "best_for": ["카페", "음식점", "분식", "일반 상점"],
+      "item_count_range": [3, 6],
+      "eye_flow": "Z패턴 — 히어로에서 시선 시작 → 슬로건으로 수평 이동 → 대각선으로 품목 그리드 → CTA 도달",
+      "zones": {
+        "hero":    { "y_pct": 0, "h_pct": 49, "description": "히어로 이미지 (상호+카피+비주얼)" },
+        "slogan":  { "y_pct": 49, "h_pct": 4, "description": "슬로건 텍스트 밴드" },
+        "features":{ "y_pct": 53, "h_pct": 3, "description": "특징 스트립 (불릿)" },
+        "items":   { "y_pct": 56, "h_pct": 25, "description": "품목 그리드 (2~4열)" },
+        "promo":   { "y_pct": 83, "h_pct": 5, "description": "프로모션 배너" },
+        "cta":     { "y_pct": 88, "h_pct": 12, "description": "CTA/연락처" }
+      },
+      "grid_rules": {
+        "cols_by_items": { "1-2": 2, "3-4": 4, "5-6": 3 },
+        "item_image_ratio": 0.85
+      },
+      "market_validation": "미리캔버스/캔바 — 음식점/카페 기본 구조와 일치. 히어로+품목그리드가 가장 보편적 패턴",
+      "must_have_by_industry": {
+        "음식점": ["먹음직스러운 음식사진(히어로)", "메뉴+가격(품목)", "위치/약도(CTA)", "이벤트(프로모)"],
+        "카페": ["분위기 사진(히어로)", "시그니처 메뉴+가격", "SNS/인스타(CTA)", "영업시간"]
+      },
+      "reference": "다음카페, 김떡배 — 현재 V2 기본 레이아웃"
+    },
+
+    "hero_dominant": {
+      "id": "hero_dominant",
+      "name": "히어로 도미넌트",
+      "description": "히어로가 화면 65%+ 차지. 품목은 하단 가로 리스트. 강렬한 비주얼 임팩트.",
+      "best_for": ["헬스장", "뷰티/에스테틱", "피부과", "성형외과"],
+      "item_count_range": [2, 4],
+      "eye_flow": "Z패턴 변형 — 대형 히어로가 시선 고정 → 슬로건 → 품목 수평 스캔 → CTA",
+      "zones": {
+        "hero":    { "y_pct": 0, "h_pct": 62, "description": "대형 히어로 (인물/시설 중심)" },
+        "slogan":  { "y_pct": 62, "h_pct": 5, "description": "큰 타이포 슬로건" },
+        "items":   { "y_pct": 67, "h_pct": 14, "description": "품목 가로 리스트 (아이콘+텍스트)" },
+        "promo":   { "y_pct": 81, "h_pct": 7, "description": "프로모션/가격 강조 배너" },
+        "cta":     { "y_pct": 88, "h_pct": 12, "description": "CTA/연락처" }
+      },
+      "grid_rules": {
+        "cols_by_items": { "2": 2, "3": 3, "4": 4 },
+        "item_image_ratio": 0.65
+      },
+      "market_validation": "크몽 — 헬스장='강함 부각, 블랙+레드', 뷰티='Before/After'. 이미지 퀄리티가 전단지 성패를 결정하는 업종에 최적",
+      "must_have_by_industry": {
+        "헬스장": ["운동/시설 사진(히어로)", "회원권 가격(품목)", "무료체험 이벤트(프로모)", "전화번호(CTA)"],
+        "뷰티": ["시술 결과 사진(히어로)", "서비스 카테고리(품목)", "할인/이벤트(프로모)", "예약 연락처(CTA)"]
+      },
+      "reference": "루나에스테틱, 에스짐 — 큰 인물사진이 주인공, 서비스는 하단 리스트"
+    },
+
+    "magazine_split": {
+      "id": "magazine_split",
+      "name": "매거진 분할",
+      "description": "화면을 2~3개 색띠 섹션으로 분할. 각 섹션에 다른 배경색. 정보량 많은 업종에 적합.",
+      "best_for": ["학원", "교육", "병원", "다업종 서비스"],
+      "item_count_range": [4, 8],
+      "eye_flow": "F패턴 — 히어로 수평 스캔 → 섹션A 좌측부터 읽기 → 섹션B 좌측부터 읽기 → CTA",
+      "zones": {
+        "hero":     { "y_pct": 0, "h_pct": 35, "description": "히어로 (학원: 인물+과목 텍스트)" },
+        "section_a":{ "y_pct": 35, "h_pct": 22, "description": "서비스 카테고리 A (색띠 배경)" },
+        "section_b":{ "y_pct": 57, "h_pct": 22, "description": "서비스 카테고리 B (다른 색)" },
+        "promo":    { "y_pct": 79, "h_pct": 6, "description": "프로모션" },
+        "cta":      { "y_pct": 85, "h_pct": 15, "description": "CTA + 약도/지도" }
+      },
+      "section_rules": {
+        "items_per_section": [2, 4],
+        "use_bullet_list": true,
+        "alternate_bg": true
+      },
+      "market_validation": "크몽 — 학원='신뢰감 핵심, 1등/성적향상 강조'. 미리캔버스 — 파랑+모던 교육 모집 패턴 압도적 1위. 정보량 많을 때 색띠 구분이 가독성 극대화",
+      "must_have_by_industry": {
+        "학원": ["인물+과목 텍스트(히어로)", "커리큘럼(섹션A)", "성적향상 사례(섹션B)", "등록혜택(프로모)", "전화/위치(CTA)"],
+        "병원": ["의료진/시설(히어로)", "진료과목(섹션A)", "특화 서비스(섹션B)", "검진 이벤트(프로모)", "예약/위치(CTA)"]
+      },
+      "reference": "Level-Up 학원, 독서논술, 윤미애 음악학원 — 색띠로 영역 구분, 불릿 리스트"
+    },
+
+    "bold_typo": {
+      "id": "bold_typo",
+      "name": "볼드 타이포",
+      "description": "상호명/가격이 화면 30~40% 차지하는 타이포그래피 중심 레이아웃. 글자 자체가 비주얼.",
+      "best_for": ["음식점", "분식", "배달", "프랜차이즈", "이벤트"],
+      "item_count_range": [2, 6],
+      "eye_flow": "Z패턴 강화 — 초대형 상호명으로 시선 고정 → 음식사진 → 가격표(좌→우 스캔) → CTA",
+      "zones": {
+        "header":  { "y_pct": 0, "h_pct": 25, "description": "초대형 상호명 (120~160px)" },
+        "hero":    { "y_pct": 25, "h_pct": 30, "description": "히어로 이미지 (음식/제품 중심)" },
+        "price_list": { "y_pct": 55, "h_pct": 20, "description": "가격표 리스트 (큰 가격 + 품목명)" },
+        "promo":   { "y_pct": 75, "h_pct": 10, "description": "이벤트/프로모션 대형 배너" },
+        "cta":     { "y_pct": 85, "h_pct": 15, "description": "CTA/연락처/약도" }
+      },
+      "typo_rules": {
+        "business_name_size": 140,
+        "price_size": 56,
+        "item_name_size": 40,
+        "use_decorative_bg": true
+      },
+      "market_validation": "크몽 — 음식점 '색감이 핵심, 먹음직스러운 사진, 메뉴+가격+약도 필수 3요소'. 미리캔버스 — '사진강조 깔끔한 음식점' 인기. 상호명이 크면 인지도/기억력 증가",
+      "must_have_by_industry": {
+        "음식점": ["초대형 상호명(헤더)", "대표메뉴 누끼사진(히어로)", "메뉴+가격표(가격리스트)", "오픈이벤트(프로모)", "전화+약도(CTA)"],
+        "분식": ["상호명+태그라인(헤더)", "세트메뉴 사진(히어로)", "세트 구성+가격(가격리스트)", "특가(프로모)", "전화+위치(CTA)"]
+      },
+      "reference": "등갈비달인, 김떡배 — 초대형 상호, 가격 강조, 음식 누끼 배치"
+    },
+
+    "side_by_side": {
+      "id": "side_by_side",
+      "name": "좌우 분할",
+      "description": "화면을 좌(이미지)/우(텍스트) 또는 좌(텍스트)/우(이미지)로 분할. 인물+서비스 리스트에 적합.",
+      "best_for": ["미용실", "네일샵", "1인 전문가", "컨설팅"],
+      "item_count_range": [3, 6],
+      "eye_flow": "F패턴 변형 — 좌측 인물사진 → 우측 상호명 → 우측 서비스 리스트(위→아래) → 하단 CTA",
+      "zones": {
+        "hero_left":  { "x_pct": 0, "w_pct": 50, "y_pct": 0, "h_pct": 70, "description": "대형 인물/시설 이미지" },
+        "info_right": { "x_pct": 50, "w_pct": 50, "y_pct": 0, "h_pct": 70, "description": "상호명 + 서비스 가격 리스트" },
+        "promo":      { "y_pct": 70, "h_pct": 12, "description": "프로모션 풀폭 배너" },
+        "cta":        { "y_pct": 82, "h_pct": 18, "description": "CTA/연락처" }
+      },
+      "split_rules": {
+        "image_side": "left",
+        "list_style": "price_table",
+        "accent_divider": true
+      },
+      "market_validation": "크몽 — 미용실='분위기 핵심, Before/After'. 망고보드 — 베이지+핑크 미용실 세로배너 인기. 좌우분할은 인물+가격리스트 조합에 최적",
+      "must_have_by_industry": {
+        "미용실": ["스타일리스트/시술사진(좌)", "컷/펌/염색 가격표(우)", "할인쿠폰(프로모)", "예약전화(CTA)"],
+        "네일샵": ["네일아트 작품사진(좌)", "서비스+가격(우)", "시즌 이벤트(프로모)", "예약/위치(CTA)"]
+      },
+      "reference": "바바헤어 — 좌측 인물 누끼, 우측 가격 리스트"
+    },
+
+    "block_grid": {
+      "id": "block_grid",
+      "name": "블록 그리드 (레고/퍼즐)",
+      "description": "히어로+품목+이벤트+CTA를 블록/레고처럼 한 페이지에 빈틈없이 배치. 각 블록=이미지+카피 한 덩어리. 4열 그리드, 가변 블록 크기.",
+      "best_for": ["음식점", "분식", "카페", "배달", "프랜차이즈", "다품목 서비스"],
+      "item_count_range": [3, 8],
+      "eye_flow": "Z패턴 → 히어로(상단 풀폭) → 대형 품목(2열) → 소형 품목(1열) → 이벤트+CTA(하단)",
+      "zones": {
+        "hero":  { "row": 0, "cols": 4, "description": "히어로 블록 (풀폭, 이미지+오버레이 카피)" },
+        "items": { "rows": "1-2", "cols": "1-4", "description": "품목 블록 (가변 크기: 2col=대, 1col=소)" },
+        "event": { "row": "last", "cols": 3, "description": "이벤트 배너 블록 (이미지+프로모 텍스트)" },
+        "cta":   { "row": "last", "cols": 1, "description": "CTA 블록 (전화/주소/시간)" }
+      },
+      "grid_rules": {
+        "cols": 4,
+        "margin": 30,
+        "gap": 12,
+        "col_width": 509,
+        "patterns_config": "block_grid_patterns.json"
+      },
+      "market_validation": "매거진/쿠팡이츠/배민 앱 스타일 — 품목 이미지+카피가 한 카드로 묶여 퍼즐처럼 배치. 다품목 업종에서 시각적 풍성함 극대화",
+      "must_have_by_industry": {
+        "음식점": ["히어로 음식사진(상단)", "메뉴별 이미지+가격+설명(품목블록)", "이벤트/할인(이벤트블록)", "전화+위치(CTA블록)"],
+        "카페": ["분위기 사진(히어로)", "음료/디저트 이미지+가격(품목블록)", "시즌 이벤트(이벤트블록)", "SNS/위치(CTA블록)"]
+      },
+      "reference": "레고/퍼즐 컨셉 — 이미지+카피가 한 덩어리로 빈틈없이 타일링"
+    }
+  },
+
+  "layout_selection_rules": {
+    "description": "업종과 품목 수에 따른 레이아웃 자동 선택 가이드 — Z/F패턴 기반 의사결정",
+    "decision_tree": [
+      "1. 사용자 지정 레이아웃 → 그대로 사용",
+      "2. 업종 매칭 (by_industry) → 첫 번째 추천 레이아웃",
+      "3. 품목 수 기반 (by_item_count) → 적합한 레이아웃",
+      "4. 최종 fallback: classic_grid"
+    ],
+    "by_industry": {
+      "카페": ["classic_grid", "hero_dominant"],
+      "베이커리": ["classic_grid"],
+      "음식점": ["block_grid", "classic_grid", "bold_typo"],
+      "한식": ["bold_typo", "block_grid", "classic_grid"],
+      "분식": ["block_grid", "bold_typo", "classic_grid"],
+      "배달": ["block_grid", "bold_typo"],
+      "헬스장": ["hero_dominant"],
+      "피트니스": ["hero_dominant"],
+      "요가": ["hero_dominant", "side_by_side"],
+      "뷰티": ["hero_dominant", "side_by_side"],
+      "에스테틱": ["hero_dominant", "side_by_side"],
+      "피부과": ["hero_dominant", "magazine_split"],
+      "미용실": ["side_by_side", "hero_dominant"],
+      "네일샵": ["side_by_side", "classic_grid"],
+      "학원": ["magazine_split", "classic_grid"],
+      "교육": ["magazine_split"],
+      "음악학원": ["magazine_split", "classic_grid"],
+      "미술학원": ["magazine_split", "classic_grid"],
+      "병원": ["magazine_split", "hero_dominant"],
+      "치과": ["magazine_split", "hero_dominant"],
+      "한의원": ["magazine_split"],
+      "골프": ["hero_dominant"],
+      "프랜차이즈": ["block_grid", "bold_typo", "classic_grid"],
+      "이벤트": ["bold_typo"],
+      "플라워샵": ["hero_dominant", "side_by_side"],
+      "default": ["classic_grid"]
+    },
+    "by_item_count": {
+      "1-2": ["hero_dominant", "bold_typo", "side_by_side"],
+      "3-4": ["block_grid", "classic_grid", "hero_dominant", "side_by_side"],
+      "5-6": ["block_grid", "classic_grid", "magazine_split"],
+      "7-8": ["block_grid", "magazine_split"],
+      "9+":  ["magazine_split"]
+    }
+  }
+}

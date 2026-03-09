@@ -268,6 +268,7 @@ docs/.pdca-status.json
 !package.json
 !playwright.config.json
 !config/gallery_settings.json
+!_poster_factory/config/*.json
 extract_*.js
 fetch_*.js
 create_*.js

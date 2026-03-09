@@ -1,0 +1,221 @@
+{
+  "_description": "업종별 색상 팔레트 DB — 시장 검증 데이터 기반 (2026-03 갱신)",
+  "_last_updated": "2026-03-09",
+  "_market_sources": [
+    "크몽 업종별 전단지 분석 (kmong.com/article/1665)",
+    "미리캔버스 인기 전단지 템플릿 (miricanvas.com)",
+    "Canva 전단지 디자인 가이드 (canva.com/learn)",
+    "2026 디자인 트렌드 블로그 분석 (camjjs100.com)",
+    "Flyer Canada 색상 심리 가이드 (flyercanada.ca)",
+    "Freepik 한국 음식/카페 인기 템플릿",
+    "두손기획인쇄 레퍼런스 전단지 9장 분석"
+  ],
+  "_color_psychology": {
+    "red_orange": "흥분, 식욕 자극, 긴급성 유도 — 음식점/분식/배달에 최적",
+    "blue_navy": "신뢰, 안정, 전문성 — 학원/교육/병원에 최적",
+    "beige_brown": "따뜻함, 고급스러움, 감성 — 카페/디저트에 최적",
+    "pink_purple": "여성적, 세련, 창의적 — 뷰티/네일/에스테틱에 최적",
+    "black_dark": "강렬함, 파워, 역동성 — 헬스장/PT에 최적",
+    "green_teal": "건강, 청결, 자연 — 병원/한의원/약국에 최적",
+    "yellow_gold": "주목, 낙관, 에너지 — 이벤트/프로모에 포인트로 사용",
+    "2026_trend": "저채도, 자연색, 감성 회복 — Soft Brown, Misty Blue, Warm Gray, Sage Green"
+  },
+
+  "palettes": {
+    "cafe_warm": {
+      "name": "카페 웜",
+      "industries": ["카페", "베이커리", "디저트"],
+      "brand_color": "#2D3436",
+      "accent_color": "#D4A373",
+      "bg_color": "#FAFAF8",
+      "text_color": "#2D3436",
+      "section_bg_alt": "#F5EDE3",
+      "mood": "따뜻한, 고급스러운, 모던",
+      "market_validation": "크몽/미리캔버스/망고보드 공통 — 카페는 베이지+브라운이 압도적 인기. 감성카페=깊은갈색+크림, 모던카페=블랙+화이트+그레이",
+      "psychology": "갈색/베이지는 편안함과 따뜻함을 전달. 카페 체류시간 증가 효과",
+      "must_have_elements": ["분위기 사진(인테리어)", "시그니처 메뉴+가격", "SNS/인스타 계정", "영업시간"]
+    },
+    "cafe_vintage": {
+      "name": "카페 빈티지",
+      "industries": ["카페", "로스터리", "핸드드립"],
+      "brand_color": "#3E2723",
+      "accent_color": "#8D6E63",
+      "bg_color": "#EFEBE9",
+      "text_color": "#3E2723",
+      "section_bg_alt": "#D7CCC8",
+      "mood": "복고, 클래식, 깊은",
+      "market_validation": "망고보드 인기 — 갈색+남색 복고풍 카페 디자인 상위 랭크. 로스터리/핸드드립 전문점에 최적",
+      "psychology": "진갈색은 전문성과 깊이를 전달. 커피 원두 색상과 연상",
+      "must_have_elements": ["원두/로스팅 사진", "원산지 정보", "드립 과정 사진", "테이스팅 노트"]
+    },
+    "food_vibrant": {
+      "name": "음식점 비비드",
+      "industries": ["음식점", "분식", "배달", "치킨", "피자"],
+      "brand_color": "#D32F2F",
+      "accent_color": "#FFC107",
+      "bg_color": "#FFF8E1",
+      "text_color": "#212121",
+      "section_bg_alt": "#FFECB3",
+      "mood": "활기찬, 식욕자극, 따뜻한",
+      "market_validation": "크몽 — '색감이 핵심, 먹음직스러운 사진'. 미리캔버스 — 음식점 카테고리 압도적 1위. 빨강+노랑 조합이 가장 보편적",
+      "psychology": "빨강/주황은 식욕 자극 효과 검증됨(색상 심리학). 노랑은 주목성 극대화",
+      "must_have_elements": ["먹음직스러운 음식사진", "메뉴+가격(필수 3요소)", "위치/약도(필수 3요소)", "이벤트/할인(필수 3요소)"]
+    },
+    "food_korean": {
+      "name": "한식 전통",
+      "industries": ["한식", "고기집", "갈비", "삼겹살", "횟집"],
+      "brand_color": "#3E2723",
+      "accent_color": "#FF6F00",
+      "bg_color": "#FFF3E0",
+      "text_color": "#3E2723",
+      "section_bg_alt": "#EFEBE9",
+      "mood": "전통, 정갈한, 따뜻한",
+      "market_validation": "Freepik/Pikbest — 한국 전통 요소+현대적 디자인 결합이 인기. 진갈색+주황이 한식 전단지의 정석",
+      "psychology": "진갈색은 전통과 깊은 맛을 연상. 주황은 따뜻하고 건강한 느낌",
+      "must_have_elements": ["대표 메뉴 누끼사진", "세트/코스 가격", "주차 가능 여부", "예약 전화번호"]
+    },
+    "beauty_luxury": {
+      "name": "뷰티 럭셔리",
+      "industries": ["미용실", "네일샵", "에스테틱", "피부과", "성형외과"],
+      "brand_color": "#1A1A2E",
+      "accent_color": "#E8B4B8",
+      "bg_color": "#FDF6F7",
+      "text_color": "#1A1A2E",
+      "section_bg_alt": "#F8E8EA",
+      "mood": "고급스러운, 세련된, 여성적",
+      "market_validation": "크몽 — '아름다움 연상, Before/After, 베이지/핑크'. 망고보드 — 베이지+핑크 조합 미용실 배너 인기. 미리캔버스 — 뷰티 카테고리 핑크/퍼플 압도적",
+      "psychology": "핑크는 여성성+부드러움, 네이비는 고급감+신뢰. 로즈골드는 프리미엄 인상",
+      "must_have_elements": ["Before/After 사진", "시술 가격표(카테고리별)", "디자이너/원장 소개", "예약 연락처"]
+    },
+    "beauty_modern": {
+      "name": "뷰티 모던",
+      "industries": ["미용실", "네일샵", "에스테틱"],
+      "brand_color": "#263238",
+      "accent_color": "#80CBC4",
+      "bg_color": "#ECEFF1",
+      "text_color": "#263238",
+      "section_bg_alt": "#CFD8DC",
+      "mood": "모던, 깔끔, 유니섹스",
+      "market_validation": "2026 트렌드 — 유니섹스 뷰티살롱 증가. 민트+그레이 조합 클린 이미지. 남성 고객 포함 시 이 팔레트",
+      "psychology": "민트/틸은 청결함+신선함. 다크그레이는 전문성. 성별 무관한 세련됨",
+      "must_have_elements": ["시술 포트폴리오", "가격표", "매장 인테리어 사진", "온라인 예약 안내"]
+    },
+    "nail_feminine": {
+      "name": "네일샵 페미닌",
+      "industries": ["네일샵", "네일아트", "속눈썹"],
+      "brand_color": "#6A1B9A",
+      "accent_color": "#F48FB1",
+      "bg_color": "#FCE4EC",
+      "text_color": "#4A148C",
+      "section_bg_alt": "#F3E5F5",
+      "mood": "페미닌, 트렌디, 섬세한",
+      "market_validation": "캔바 한국 — 네일샵 분홍보라 조합 인기. 미리캔버스 — 네일 카테고리 핑크+퍼플+민트. 금색+검정 고급형도 인기",
+      "psychology": "퍼플은 창의성+고급감. 핑크는 여성적 매력. 네일아트의 섬세함과 일치",
+      "must_have_elements": ["네일아트 작품사진", "시즌 트렌드 디자인", "가격표", "예약/전화"]
+    },
+    "fitness_energy": {
+      "name": "피트니스 에너지",
+      "industries": ["헬스장", "PT", "크로스핏", "요가", "필라테스"],
+      "brand_color": "#1B1B1B",
+      "accent_color": "#FF5722",
+      "bg_color": "#FAFAFA",
+      "text_color": "#212121",
+      "section_bg_alt": "#F5F5F5",
+      "mood": "강렬한, 에너지, 역동적",
+      "market_validation": "크몽 — '블랙 배경+레드/그린 포인트, 강함 부각'. 미리캔버스 — 검정+빨강 피트니스 템플릿 인기. 캔바 — 빨강/검정/주황 대비색",
+      "psychology": "블랙은 강인함+결단력. 레드/오렌지는 에너지+열정. 강렬한 대비가 동기부여 효과",
+      "must_have_elements": ["시설/운동 사진", "회원권 가격표", "무료체험 이벤트 CTA", "Before/After(선택)"]
+    },
+    "education_trust": {
+      "name": "교육 신뢰",
+      "industries": ["학원", "교육", "과외", "입시", "어학원"],
+      "brand_color": "#1565C0",
+      "accent_color": "#FF8F00",
+      "bg_color": "#F5F8FF",
+      "text_color": "#1A237E",
+      "section_bg_alt": "#E3F2FD",
+      "mood": "신뢰, 전문적, 밝은",
+      "market_validation": "크몽 — '신뢰감 핵심, 남색/녹색, 단단한 고딕체'. 미리캔버스 — '파랑 모던 교육생 모집' 압도적 인기. 캔바 — 파랑+흰색 깔끔 전문 디자인",
+      "psychology": "파랑은 신뢰+안정감 (색상 심리학 1위). 주황 액센트는 행동 유도. 학부모 대상 가장 효과적",
+      "must_have_elements": ["커리큘럼/과목 리스트", "성적향상 사례(구체적 수치)", "강사진 소개", "등록 혜택/개강일"]
+    },
+    "education_creative": {
+      "name": "교육 크리에이티브",
+      "industries": ["음악학원", "미술학원", "댄스", "예체능"],
+      "brand_color": "#4A148C",
+      "accent_color": "#FFD54F",
+      "bg_color": "#FFF8E1",
+      "text_color": "#311B92",
+      "section_bg_alt": "#F3E5F5",
+      "mood": "창의적, 밝은, 활기찬",
+      "market_validation": "레퍼런스(윤미애 음악학원) — 일러스트 배경+불릿 리스트+프로필 박스 패턴. 퍼플+골드 조합이 예체능 분야 차별화",
+      "psychology": "퍼플은 창의성+독창성. 골드/옐로는 밝음+에너지. 예술 감각 전달",
+      "must_have_elements": ["수업 프로그램 불릿 리스트", "강사 프로필+경력", "수강료/시간표", "수강생 작품/성과"]
+    },
+    "medical_clean": {
+      "name": "의료 클린",
+      "industries": ["병원", "치과", "한의원", "약국"],
+      "brand_color": "#00695C",
+      "accent_color": "#4DB6AC",
+      "bg_color": "#F1F8F6",
+      "text_color": "#004D40",
+      "section_bg_alt": "#E0F2F1",
+      "mood": "청결, 신뢰, 전문적",
+      "market_validation": "캔바 — 파랑+흰색 깔끔 전문 의료 디자인. 한국 병원 전단지 — 화이트+블루/틸 기본. 과도한 장식 회피가 핵심",
+      "psychology": "틸/블루그린은 건강+청결+자연. 흰색 배경은 위생적 인상. 정보 전달 정확성이 시각효과보다 중요",
+      "must_have_elements": ["진료과목/전문분야", "의료진 소개(사진+약력)", "진료시간/예약방법", "의보 적용 여부/주차"]
+    },
+    "leisure_fun": {
+      "name": "레저 펀",
+      "industries": ["골프", "스크린골프", "볼링", "노래방", "PC방"],
+      "brand_color": "#1B5E20",
+      "accent_color": "#FFD600",
+      "bg_color": "#F1F8E9",
+      "text_color": "#1B5E20",
+      "section_bg_alt": "#DCEDC8",
+      "mood": "활기찬, 재미, 에너지",
+      "market_validation": "레퍼런스(스크린골프) — 그린+골드 조합. 레저업종은 밝고 활기찬 컬러가 기본",
+      "psychology": "그린은 자연+여가. 골드/옐로는 즐거움+에너지. 스트레스 해소 연상",
+      "must_have_elements": ["시설/활동 사진", "이용요금", "이벤트/프로모션", "위치/주차"]
+    },
+    "trend_2026_natural": {
+      "name": "2026 감성 자연",
+      "industries": ["감성카페", "플라워샵", "요가", "명상", "웰니스"],
+      "brand_color": "#5D4037",
+      "accent_color": "#8D9E86",
+      "bg_color": "#F5F0EB",
+      "text_color": "#3E2723",
+      "section_bg_alt": "#E8E0D8",
+      "mood": "저채도, 자연, 감성회복, 미니멀",
+      "market_validation": "2026 트렌드 핵심 — '감성 회복'. 소프트 브라운+세이지 그린+웜 그레이. 미리캔버스 2026 신년 템플릿 — 연보라+베이지 자연지향 인기",
+      "psychology": "저채도 자연색은 시각적 피로 감소+체류시간 증가 효과. 디지털 안정감(Digital Calm) 트렌드",
+      "must_have_elements": ["분위기/공간 사진", "핵심 서비스 1-2개만 강조", "넉넉한 여백", "감성적 카피"]
+    },
+    "general_modern": {
+      "name": "범용 모던",
+      "industries": ["default"],
+      "brand_color": "#37474F",
+      "accent_color": "#FF7043",
+      "bg_color": "#FAFAFA",
+      "text_color": "#263238",
+      "section_bg_alt": "#ECEFF1",
+      "mood": "모던, 깔끔, 전문적",
+      "market_validation": "모든 플랫폼 공통 — 업종 불문 가장 안전한 조합. 다크그레이+오렌지 액센트는 가독성+주목성 모두 확보",
+      "psychology": "다크그레이는 전문성+현대성. 오렌지는 친근함+행동유도. 가장 범용적인 안전 조합",
+      "must_have_elements": ["명확한 헤드라인", "핵심 서비스 리스트", "연락처/CTA", "위치 정보"]
+    }
+  },
+
+  "selection_priority": [
+    "1. 사용자 지정 색상(brief.json style 객체)이 있으면 최우선 사용",
+    "2. 업종 키워드로 palettes 매칭 (industries 배열 부분 문자열 검색)",
+    "3. 2026 감성/웰니스 업종이면 trend_2026_natural 고려",
+    "4. 최종 fallback: general_modern"
+  ],
+
+  "_print_notes": {
+    "cmyk_warning": "이 팔레트는 RGB 기준. 인쇄 시 CMYK 변환하면 5-10% 어두워질 수 있음",
+    "contrast_minimum": "텍스트-배경 대비 4.5:1 이상 유지 (WCAG AA 기준)",
+    "accent_usage": "액센트 컬러는 CTA/가격/프로모에만 제한적 사용. 전체 면적의 10-15% 이내"
+  }
+}

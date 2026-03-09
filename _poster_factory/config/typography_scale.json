@@ -1,0 +1,172 @@
+{
+  "_description": "타이포그래피 스케일 시스템 — 모듈러 비율 기반 5단계 위계 (2026-03)",
+  "_sources": [
+    "Material Design 3 Type Scale (Google)",
+    "IBM Carbon Design System — Expressive Set",
+    "Modular Scale Theory (Tim Brown / typecast)",
+    "한국어 타이포그래피 실무 가이드라인"
+  ],
+
+  "scales": {
+    "_description": "하나의 비율만 선택하면 모든 단계가 수학적으로 결정됨",
+    "major_third":      { "ratio": 1.250, "feel": "compact",   "best_for": ["정보량 많은 전단지", "학원", "병원"] },
+    "perfect_fourth":   { "ratio": 1.333, "feel": "balanced",  "best_for": ["범용 전단지/포스터", "카페", "음식점", "미용실"] },
+    "augmented_fourth": { "ratio": 1.414, "feel": "dramatic",  "best_for": ["이벤트 포스터", "오픈 홍보", "프랜차이즈"] },
+    "golden_ratio":     { "ratio": 1.618, "feel": "extreme",   "best_for": ["예술 포스터", "갤러리", "특수 이벤트"] }
+  },
+
+  "default_scale": "perfect_fourth",
+
+  "hierarchy": {
+    "_description": "5단계 콘텐츠 위계 — 각 레벨은 base × ratio^n 으로 계산",
+    "_formula": "size = base_size × scale_ratio ^ power",
+
+    "L1_hero": {
+      "name": "상호명 / 헤드라인",
+      "power": 4,
+      "weight": "700-900",
+      "line_height": "1.05-1.15",
+      "letter_spacing": "-0.5px ~ 0px",
+      "role": "즉시 눈에 들어옴. 3초 안에 읽힘.",
+      "examples": ["김떡배", "GRAND OPEN", "50% OFF"],
+      "constraints": {
+        "max_chars": 8,
+        "max_lines": 2,
+        "min_size_px": 36,
+        "max_size_px": 160
+      }
+    },
+
+    "L2_subhead": {
+      "name": "서브 헤드라인 / 슬로건",
+      "power": 3,
+      "weight": "500-600",
+      "line_height": "1.15-1.30",
+      "letter_spacing": "-0.3px ~ 0px",
+      "role": "흥미 유발. 헤드라인을 보충.",
+      "examples": ["스페셜 떡볶이 전문점", "논현역 1번 출구 30초"],
+      "constraints": {
+        "max_chars": 25,
+        "max_lines": 2,
+        "min_size_px": 24,
+        "max_size_px": 56
+      }
+    },
+
+    "L3_body": {
+      "name": "본문 / 메뉴명 / 설명",
+      "power": 1,
+      "weight": "400-500",
+      "line_height": "1.4-1.6",
+      "letter_spacing": "0px ~ 0.16px",
+      "role": "상세 정보 전달. 읽히는 텍스트.",
+      "examples": ["파삼겹세트", "삼겹살 300g + 파채 + 떡볶이", "매일 오전 11시 ~ 오후 11시"],
+      "constraints": {
+        "min_size_px": 14,
+        "max_size_px": 22
+      }
+    },
+
+    "L4_accent": {
+      "name": "강조 / 가격 / 뱃지",
+      "power": 2,
+      "weight": "700-800",
+      "line_height": "1.1-1.3",
+      "letter_spacing": "0px ~ 0.5px",
+      "role": "시선 끌기. 숫자/가격에 적합.",
+      "examples": ["15,900원", "NEW", "인기", "BEST"],
+      "constraints": {
+        "min_size_px": 16,
+        "max_size_px": 48
+      }
+    },
+
+    "L5_caption": {
+      "name": "캡션 / 부가정보 / CTA 상세",
+      "power": 0,
+      "weight": "400",
+      "line_height": "1.3-1.5",
+      "letter_spacing": "0.16px ~ 0.32px",
+      "role": "보조 정보. 주소, 영업시간, 약관.",
+      "examples": ["논현역점 (가맹문의 1666-1302)", "떡+오뎅+야채+소세지+치즈+계란+쿨피스"],
+      "constraints": {
+        "min_size_px": 10,
+        "max_size_px": 16
+      }
+    }
+  },
+
+  "computed_examples": {
+    "_description": "base=16px 일 때 각 스케일별 계산 결과",
+    "perfect_fourth_1.333": {
+      "L1_hero":    { "size": 50, "calc": "16 × 1.333^4 = 50.5" },
+      "L2_subhead": { "size": 38, "calc": "16 × 1.333^3 = 37.9" },
+      "L4_accent":  { "size": 28, "calc": "16 × 1.333^2 = 28.4" },
+      "L3_body":    { "size": 21, "calc": "16 × 1.333^1 = 21.3" },
+      "L5_caption": { "size": 16, "calc": "16 × 1.333^0 = 16.0" }
+    },
+    "augmented_fourth_1.414": {
+      "L1_hero":    { "size": 64, "calc": "16 × 1.414^4 = 63.9" },
+      "L2_subhead": { "size": 45, "calc": "16 × 1.414^3 = 45.2" },
+      "L4_accent":  { "size": 32, "calc": "16 × 1.414^2 = 32.0" },
+      "L3_body":    { "size": 23, "calc": "16 × 1.414^1 = 22.6" },
+      "L5_caption": { "size": 16, "calc": "16 × 1.414^0 = 16.0" }
+    }
+  },
+
+  "spacing": {
+    "_description": "요소 간 간격도 같은 비율 기반으로 계산",
+    "base_unit": 8,
+    "scale": {
+      "xs":  { "multiplier": 0.5, "px": 4,  "use": "인접 요소 내부 간격" },
+      "sm":  { "multiplier": 1,   "px": 8,  "use": "같은 그룹 내 요소 간격" },
+      "md":  { "multiplier": 2,   "px": 16, "use": "섹션 내 블록 간격" },
+      "lg":  { "multiplier": 3,   "px": 24, "use": "섹션 간 구분 간격" },
+      "xl":  { "multiplier": 4,   "px": 32, "use": "주요 존(zone) 간 간격" },
+      "xxl": { "multiplier": 6,   "px": 48, "use": "히어로 ↔ 콘텐츠 전환 간격" }
+    }
+  },
+
+  "korean_adjustments": {
+    "_description": "한국어는 글자 밀도가 높아서 라틴 기준보다 조정 필요",
+    "base_size_minimum": 14,
+    "line_height_multiplier": 1.1,
+    "letter_spacing_offset": -0.3,
+    "word_spacing": "4-8px (한영 혼용 시)",
+    "recommended_fonts": {
+      "display":  ["Pretendard ExtraBold", "Noto Sans KR Black"],
+      "headline": ["Pretendard Bold", "Noto Sans KR Bold"],
+      "body":     ["Pretendard Regular", "Noto Sans KR Regular"],
+      "caption":  ["Pretendard Light", "Noto Sans KR Light"]
+    }
+  },
+
+  "layout_overrides": {
+    "_description": "레이아웃별로 스케일/베이스를 오버라이드",
+    "classic_grid": {
+      "base_size": 16,
+      "scale": "perfect_fourth",
+      "notes": "범용. 히어로 49%에 상호명 큰 타이포"
+    },
+    "hero_dominant": {
+      "base_size": 14,
+      "scale": "major_third",
+      "notes": "이미지가 주인공. 텍스트는 콤팩트하게"
+    },
+    "bold_typo": {
+      "base_size": 18,
+      "scale": "augmented_fourth",
+      "notes": "글자 자체가 비주얼. 상호명 120-160px"
+    },
+    "magazine_split": {
+      "base_size": 14,
+      "scale": "major_third",
+      "notes": "정보 밀도 높음. 컴팩트 스케일"
+    },
+    "side_by_side": {
+      "base_size": 15,
+      "scale": "perfect_fourth",
+      "notes": "좌우 분할. 우측 텍스트 영역에 맞춤"
+    }
+  }
+}

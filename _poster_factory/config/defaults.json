@@ -1,0 +1,29 @@
+{
+  "poster": {
+    "canvas_width": 2130,
+    "canvas_height": 3000,
+    "bleed": 15,
+    "format": "SVG"
+  },
+  "generation": {
+    "max_retries": 3,
+    "retry_delay_seconds": 10,
+    "rate_limit_delay_seconds": 10,
+    "daily_budget_usd": 10.0
+  },
+  "hero": {
+    "default_aspect_ratio": "5:4",
+    "description": "메인 히어로 — 상호명+슬로건+메인 비주얼 (Gemini가 텍스트 포함 생성)"
+  },
+  "items": {
+    "default_aspect_ratio": "1:1",
+    "description": "품목별 제품/서비스 사진 (텍스트 없이, SVG text로 별도 추가)"
+  },
+  "quality_rules": {
+    "no_cartoon": true,
+    "no_anime": true,
+    "no_clipart": true,
+    "photorealistic": true,
+    "korean_text_in_hero": true
+  }
+}

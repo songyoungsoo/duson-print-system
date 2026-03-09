@@ -1,0 +1,419 @@
+{
+  "_description": "아트디렉터 출력 스키마 — 이미지 생성 전 전체 구도를 확정하는 계약서 (2026-03)",
+  "_purpose": "Claude(아트디렉터)가 brief→copy 이후, 이미지 생성 전에 이 스키마에 맞는 layout_spec.json을 생성. poster_generator.py가 이 파일을 읽어 SVG를 조립.",
+  "_pipeline_position": "Phase 3.5 (copy.json 이후, design.json의 프롬프트 작성 전)",
+  "_key_principle": "히어로는 전체의 일부 — 따로 놀면 안 돼. 크기, 비율, 톤, 여백 모두 여기서 결정.",
+
+  "schema": {
+    "type": "object",
+    "required": ["layout_id", "canvas", "narrative", "zones", "typography", "color_plan", "image_directives"],
+
+    "properties": {
+
+      "layout_id": {
+        "type": "string",
+        "enum": ["classic_grid", "hero_dominant", "bold_typo", "magazine_split", "side_by_side"],
+        "description": "layout_patterns.json에서 선택한 레이아웃 ID"
+      },
+
+      "layout_rationale": {
+        "type": "string",
+        "description": "이 레이아웃을 선택한 이유 (업종, 품목수, 분위기 근거)"
+      },
+
+      "canvas": {
+        "type": "object",
+        "description": "캔버스 기본 정보",
+        "properties": {
+          "width":  { "type": "integer", "const": 2130 },
+          "height": { "type": "integer", "const": 3000 },
+          "bleed":  { "type": "integer", "const": 15 },
+          "safety_margin": { "type": "integer", "default": 65 }
+        }
+      },
+
+      "narrative": {
+        "type": "object",
+        "description": "기승전결(起承轉結) 매핑 — 포스터의 서사 구조",
+        "properties": {
+          "gi": {
+            "type": "object",
+            "description": "기(起) = 도입 — 시선을 사로잡는 첫 인상",
+            "properties": {
+              "zone_ids": { "type": "array", "items": { "type": "string" }, "description": "이 서사 단계에 해당하는 zone ID들" },
+              "goal": { "type": "string", "description": "이 단계의 목표 (예: '상호명+분위기로 3초 안에 업종 인식')" },
+              "h_pct": { "type": "number", "description": "캔버스 높이 중 차지 비율 (25-35%)" }
+            }
+          },
+          "seung": {
+            "type": "object",
+            "description": "승(承) = 전개 — 핵심 정보 전달, 흥미 유지",
+            "properties": {
+              "zone_ids": { "type": "array", "items": { "type": "string" } },
+              "goal": { "type": "string" },
+              "h_pct": { "type": "number", "description": "35-45%" }
+            }
+          },
+          "jeon": {
+            "type": "object",
+            "description": "전(轉) = 전환 — 행동 유발 트리거 (이벤트, 할인, 강조)",
+            "properties": {
+              "zone_ids": { "type": "array", "items": { "type": "string" } },
+              "goal": { "type": "string" },
+              "h_pct": { "type": "number", "description": "10-15%" }
+            }
+          },
+          "gyeol": {
+            "type": "object",
+            "description": "결(結) = 결론 — 행동(전화, 방문) 유도",
+            "properties": {
+              "zone_ids": { "type": "array", "items": { "type": "string" } },
+              "goal": { "type": "string" },
+              "h_pct": { "type": "number", "description": "12-18%" }
+            }
+          }
+        }
+      },
+
+      "zones": {
+        "type": "object",
+        "description": "존(zone) 배치 — 각 영역의 위치와 역할을 확정. key는 zone ID.",
+        "additionalProperties": {
+          "type": "object",
+          "required": ["y_px", "h_px", "role"],
+          "properties": {
+            "y_px":     { "type": "integer", "description": "캔버스 상단 기준 Y 좌표 (px)" },
+            "h_px":     { "type": "integer", "description": "영역 높이 (px)" },
+            "x_px":     { "type": "integer", "description": "X 좌표 (기본 0, side_by_side 등에서 사용)" },
+            "w_px":     { "type": "integer", "description": "폭 (기본 2130, side_by_side에서 1065)" },
+            "role":     { "type": "string",  "description": "역할 설명 (예: '대형 음식 배경 — 좌우 풀폭, 어두운 톤, 텍스트 공간 확보')" },
+            "bg_color": { "type": "string",  "description": "배경색 (#hex)" },
+            "bg_opacity": { "type": "number", "description": "배경 불투명도 (0-1)" },
+            "content_type": {
+              "type": "string",
+              "enum": ["hero_image", "item_grid", "item_list", "text_band", "promo_banner", "cta_block", "section_list", "price_list"],
+              "description": "영역에 들어가는 콘텐츠 유형"
+            }
+          }
+        }
+      },
+
+      "typography": {
+        "type": "object",
+        "description": "타이포그래피 확정 — typography_scale.json 기반으로 실제 px 값 결정",
+        "properties": {
+          "scale_name":  { "type": "string",  "description": "사용 스케일 (예: 'perfect_fourth')" },
+          "scale_ratio": { "type": "number",  "description": "비율 (예: 1.333)" },
+          "base_size":   { "type": "integer", "description": "기준 폰트 크기 (px)" },
+
+          "assignments": {
+            "type": "object",
+            "description": "각 텍스트 요소에 위계(L1-L5) 배정 + 실제 px 결정",
+            "additionalProperties": {
+              "type": "object",
+              "required": ["level", "size_px"],
+              "properties": {
+                "level":     { "type": "string",  "enum": ["L1_hero", "L2_subhead", "L3_body", "L4_accent", "L5_caption"] },
+                "size_px":   { "type": "integer", "description": "실제 렌더링 폰트 크기 (px)" },
+                "weight":    { "type": "string",  "description": "폰트 두께 (예: '700')" },
+                "color":     { "type": "string",  "description": "텍스트 색상 (#hex)" },
+                "zone_id":   { "type": "string",  "description": "이 텍스트가 위치할 zone" },
+                "max_chars": { "type": "integer", "description": "최대 글자 수 (줄바꿈 기준)" },
+                "alignment": { "type": "string", "enum": ["left", "center", "right"] }
+              }
+            }
+          }
+        }
+      },
+
+      "color_plan": {
+        "type": "object",
+        "description": "색상 계획 — 존 간 색상 흐름 확정",
+        "properties": {
+          "brand_color":   { "type": "string", "description": "주 브랜드 색상 (#hex)" },
+          "accent_color":  { "type": "string", "description": "강조 색상 (#hex)" },
+          "bg_color":      { "type": "string", "description": "기본 배경 (#hex)" },
+          "text_color":    { "type": "string", "description": "기본 텍스트 (#hex)" },
+          "hero_dominant_tone": {
+            "type": "string",
+            "enum": ["dark", "light", "warm", "cool", "vibrant", "muted"],
+            "description": "히어로 이미지의 전체 톤 — 상하 영역과의 연결에 핵심"
+          },
+          "zone_transitions": {
+            "type": "array",
+            "description": "존 간 색상 전환 흐름",
+            "items": {
+              "type": "object",
+              "properties": {
+                "from_zone": { "type": "string" },
+                "to_zone":   { "type": "string" },
+                "transition": {
+                  "type": "string",
+                  "enum": ["seamless", "gradient", "hard_cut", "accent_line"],
+                  "description": "전환 방식"
+                },
+                "notes": { "type": "string" }
+              }
+            }
+          }
+        }
+      },
+
+      "image_directives": {
+        "type": "object",
+        "description": "이미지 생성 지시사항 — 이미지 프롬프트 작성 전에 확정해야 할 제약",
+        "properties": {
+
+          "hero": {
+            "type": "object",
+            "description": "히어로 이미지 제약 — '전체의 일부'가 되기 위한 규칙",
+            "properties": {
+              "aspect_ratio": { "type": "string", "description": "생성 비율 (예: '16:9', '5:4', '21:9')" },
+              "target_zone":  { "type": "string", "description": "이 이미지가 들어갈 zone ID" },
+              "fill_mode":    {
+                "type": "string",
+                "enum": ["full_bleed", "padded", "contained"],
+                "description": "full_bleed: 좌우 꽉 채움(기본), padded: 양쪽 margin, contained: 영역 안에 fit"
+              },
+              "content_focus": {
+                "type": "string",
+                "description": "피사체 위치/구도 지시 (예: 'center-bottom에 음식 배치, 상단 30%는 어두운 여백으로 헤드라인 공간 확보')"
+              },
+              "tone_constraint": {
+                "type": "string",
+                "description": "톤/분위기 제약 (예: '어두운 톤, 상단 header의 brand_color와 자연스럽게 연결')"
+              },
+              "text_safe_areas": {
+                "type": "array",
+                "description": "이미지 위에 텍스트가 올라갈 영역 (프롬프트에 '이 영역은 비워둬' 지시용)",
+                "items": {
+                  "type": "object",
+                  "properties": {
+                    "position": { "type": "string", "description": "예: 'top-center', 'bottom-left'" },
+                    "purpose":  { "type": "string", "description": "예: '상호명 오버레이', '뱃지'" },
+                    "w_pct":    { "type": "number", "description": "전체 이미지 폭 대비 %" },
+                    "h_pct":    { "type": "number", "description": "전체 이미지 높이 대비 %" }
+                  }
+                }
+              },
+              "forbidden": {
+                "type": "array",
+                "items": { "type": "string" },
+                "description": "이미지에 포함하면 안 되는 것 (예: ['자체 텍스트', '테두리', '프레임', '배경 그라데이션'])"
+              }
+            }
+          },
+
+          "items": {
+            "type": "array",
+            "description": "품목별 이미지 제약",
+            "items": {
+              "type": "object",
+              "properties": {
+                "name":          { "type": "string" },
+                "aspect_ratio":  { "type": "string", "description": "기본 '1:1'" },
+                "target_zone":   { "type": "string", "description": "이 이미지가 들어갈 zone ID" },
+                "render_size": {
+                  "type": "object",
+                  "description": "SVG에서 실제 렌더링될 크기 (프롬프트 참고용)",
+                  "properties": {
+                    "w_px": { "type": "integer" },
+                    "h_px": { "type": "integer" }
+                  }
+                },
+                "style_constraint": {
+                  "type": "string",
+                  "description": "스타일 통일 지시 (예: '히어로와 같은 조명, 같은 배경톤')"
+                }
+              }
+            }
+          }
+        }
+      },
+
+      "spacing": {
+        "type": "object",
+        "description": "존 간 간격 확정 (typography_scale.json의 spacing 기반)",
+        "additionalProperties": {
+          "type": "object",
+          "properties": {
+            "gap_px":  { "type": "integer", "description": "간격 크기 (px)" },
+            "type":    { "type": "string",  "enum": ["none", "line", "gradient", "color_change", "whitespace"], "description": "간격 시각화 방식" }
+          }
+        }
+      }
+    }
+  },
+
+  "examples": {
+    "_description": "김떡배 (분식점, classic_grid) 예시 — 실제 layout_spec.json 형태",
+
+    "kimtteokbae": {
+      "layout_id": "classic_grid",
+      "layout_rationale": "분식점(4품목) + bold_typo도 후보였으나, 히어로 비주얼 + 품목 그리드가 균형잡힌 classic_grid 선택. 품목 수(4개)가 4열 그리드에 딱 맞음.",
+
+      "canvas": { "width": 2130, "height": 3000, "bleed": 15, "safety_margin": 65 },
+
+      "narrative": {
+        "gi": {
+          "zone_ids": ["hero"],
+          "goal": "떡볶이 전문점임을 즉시 인식 — 붉은 톤의 음식 비주얼 + 상호명",
+          "h_pct": 49
+        },
+        "seung": {
+          "zone_ids": ["slogan", "features", "items"],
+          "goal": "메뉴 구성과 가격 전달 — 4가지 세트 메뉴를 시각적으로 보여줌",
+          "h_pct": 36
+        },
+        "jeon": {
+          "zone_ids": ["promo"],
+          "goal": "행동 유발 — 오픈 이벤트 할인으로 즉시 방문 동기 부여",
+          "h_pct": 3
+        },
+        "gyeol": {
+          "zone_ids": ["cta"],
+          "goal": "전화/위치로 즉시 행동 — '지금 주문하세요'",
+          "h_pct": 12
+        }
+      },
+
+      "zones": {
+        "hero": {
+          "y_px": 20, "h_px": 1480,
+          "role": "대형 음식 배경 — 좌우 2130px 풀폭, 따뜻한 붉은 톤, 상단에 상호명 텍스트 공간",
+          "content_type": "hero_image"
+        },
+        "slogan": {
+          "y_px": 1530, "h_px": 120,
+          "role": "슬로건 텍스트 밴드 — 특징 요약",
+          "bg_color": "#2D3436", "bg_opacity": 0.04,
+          "content_type": "text_band"
+        },
+        "features": {
+          "y_px": 1650, "h_px": 90,
+          "role": "특징 불릿 스트립",
+          "bg_color": "#2D3436", "bg_opacity": 0.08,
+          "content_type": "text_band"
+        },
+        "items": {
+          "y_px": 1770, "h_px": 750,
+          "role": "4열 품목 그리드 — 정사각 이미지 + 메뉴명 + 설명 + 가격",
+          "content_type": "item_grid"
+        },
+        "promo": {
+          "y_px": 2540, "h_px": 100,
+          "role": "이벤트 배너 — 오픈 할인 강조",
+          "bg_color": "#E74C3C",
+          "content_type": "promo_banner"
+        },
+        "cta": {
+          "y_px": 2640, "h_px": 360,
+          "role": "연락처/주소/영업시간 — Z패턴 종착점",
+          "bg_color": "#2D3436",
+          "content_type": "cta_block"
+        }
+      },
+
+      "typography": {
+        "scale_name": "perfect_fourth",
+        "scale_ratio": 1.333,
+        "base_size": 16,
+
+        "assignments": {
+          "business_name": {
+            "level": "L1_hero", "size_px": 72, "weight": "800",
+            "color": "#FFFFFF", "zone_id": "hero", "max_chars": 4, "alignment": "center"
+          },
+          "hero_subtext": {
+            "level": "L2_subhead", "size_px": 32, "weight": "500",
+            "color": "#FFFFFF", "zone_id": "hero", "max_chars": 25, "alignment": "center"
+          },
+          "hero_badge": {
+            "level": "L5_caption", "size_px": 18, "weight": "600",
+            "color": "#E74C3C", "zone_id": "hero", "alignment": "center"
+          },
+          "slogan": {
+            "level": "L2_subhead", "size_px": 52, "weight": "700",
+            "color": "#2D3436", "zone_id": "slogan", "alignment": "center"
+          },
+          "features": {
+            "level": "L3_body", "size_px": 30, "weight": "500",
+            "color": "#2D3436", "zone_id": "features", "alignment": "center"
+          },
+          "item_name": {
+            "level": "L3_body", "size_px": 40, "weight": "700",
+            "color": "#2D3436", "zone_id": "items", "alignment": "center"
+          },
+          "item_description": {
+            "level": "L5_caption", "size_px": 28, "weight": "400",
+            "color": "#2D3436", "zone_id": "items", "alignment": "center"
+          },
+          "item_price": {
+            "level": "L4_accent", "size_px": 36, "weight": "700",
+            "color": "#E74C3C", "zone_id": "items", "alignment": "center"
+          },
+          "promo_title": {
+            "level": "L4_accent", "size_px": 38, "weight": "700",
+            "color": "#FFFFFF", "zone_id": "promo", "alignment": "center"
+          },
+          "cta_headline": {
+            "level": "L2_subhead", "size_px": 56, "weight": "700",
+            "color": "#E74C3C", "zone_id": "cta", "alignment": "center"
+          },
+          "cta_phone": {
+            "level": "L4_accent", "size_px": 46, "weight": "700",
+            "color": "#FFFFFF", "zone_id": "cta", "alignment": "center"
+          },
+          "cta_address": {
+            "level": "L5_caption", "size_px": 30, "weight": "400",
+            "color": "#FFFFFF", "zone_id": "cta", "alignment": "center"
+          }
+        }
+      },
+
+      "color_plan": {
+        "brand_color": "#2D3436",
+        "accent_color": "#E74C3C",
+        "bg_color": "#FFF8F0",
+        "text_color": "#2D3436",
+        "hero_dominant_tone": "warm",
+        "zone_transitions": [
+          { "from_zone": "hero",     "to_zone": "slogan",   "transition": "hard_cut",   "notes": "히어로 하단 경계에서 밝은 배경으로 전환" },
+          { "from_zone": "slogan",   "to_zone": "features", "transition": "seamless",   "notes": "같은 밝은 톤, opacity만 변화" },
+          { "from_zone": "features", "to_zone": "items",    "transition": "accent_line","notes": "얇은 구분선으로 콘텐츠 영역 진입 표시" },
+          { "from_zone": "items",    "to_zone": "promo",    "transition": "hard_cut",   "notes": "빨간 배너로 시선 전환" },
+          { "from_zone": "promo",    "to_zone": "cta",      "transition": "hard_cut",   "notes": "어두운 CTA 블록으로 마무리" }
+        ]
+      },
+
+      "image_directives": {
+        "hero": {
+          "aspect_ratio": "16:9",
+          "target_zone": "hero",
+          "fill_mode": "full_bleed",
+          "content_focus": "center에 떡볶이/분식 음식 배치. 상단 25%는 약간 어두운 그라데이션으로 상호명 텍스트 가독성 확보. 하단 경계는 자연스럽게 페이드.",
+          "tone_constraint": "따뜻한 붉은/오렌지 톤. 조명은 위에서 아래로. 아래 slogan 영역의 밝은 배경과 대비되지만 자연스럽게 연결.",
+          "text_safe_areas": [
+            { "position": "top-center", "purpose": "상호명(김떡배) 오버레이", "w_pct": 60, "h_pct": 25 },
+            { "position": "top-right",  "purpose": "뱃지(SINCE 2024)",        "w_pct": 20, "h_pct": 10 }
+          ],
+          "forbidden": ["자체 텍스트", "테두리", "프레임", "로고", "기존 포스터 스타일", "흰색 여백"]
+        },
+        "items": [
+          { "name": "파삼겹세트",   "aspect_ratio": "1:1", "target_zone": "items", "render_size": { "w_px": 462, "h_px": 393 }, "style_constraint": "히어로와 같은 따뜻한 조명. 나무 접시 위 음식. 배경은 약간 어두운 단색." },
+          { "name": "대왕김밥세트", "aspect_ratio": "1:1", "target_zone": "items", "render_size": { "w_px": 462, "h_px": 393 }, "style_constraint": "히어로와 같은 따뜻한 조명. 나무 접시 위 음식. 배경은 약간 어두운 단색." },
+          { "name": "떡볶이세트",   "aspect_ratio": "1:1", "target_zone": "items", "render_size": { "w_px": 462, "h_px": 393 }, "style_constraint": "히어로와 같은 따뜻한 조명. 나무 접시 위 음식. 배경은 약간 어두운 단색." },
+          { "name": "주먹밥세트",   "aspect_ratio": "1:1", "target_zone": "items", "render_size": { "w_px": 462, "h_px": 393 }, "style_constraint": "히어로와 같은 따뜻한 조명. 나무 접시 위 음식. 배경은 약간 어두운 단색." }
+        ]
+      },
+
+      "spacing": {
+        "hero_to_slogan":    { "gap_px": 30, "type": "whitespace" },
+        "slogan_to_features":{ "gap_px": 0,  "type": "none" },
+        "features_to_items": { "gap_px": 30, "type": "line" },
+        "items_to_promo":    { "gap_px": 20, "type": "whitespace" },
+        "promo_to_cta":      { "gap_px": 0,  "type": "color_change" }
+      }
+    }
+  }
+}

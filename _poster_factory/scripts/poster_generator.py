@@ -90,6 +90,7 @@ LAYOUT_IDS = [
     "magazine_split",
     "bold_typo",
     "side_by_side",
+    "block_grid",
 ]
 
 # 포스터용 이미지 프롬프트 접미사 (상세페이지와 다름)
@@ -207,6 +208,23 @@ class PosterGenerator:
                 logger.info(f"  ✅ {item.get('name')} 완료")
             else:
                 logger.error(f"  ❌ {item.get('name')} 실패")
+
+        # 3. 이벤트 배너 이미지 (block_grid용)
+        event_prompt = design.get("event", {}).get("prompt", "")
+        if event_prompt:
+            time.sleep(rate_delay)
+            logger.info("🖼️  이벤트 배너 이미지 생성 중...")
+            event_ok = self.client.generate_image(
+                event_prompt,
+                str(self.images_dir / "event.png"),
+                aspect_ratio=design.get("event", {}).get("aspect_ratio", "16:9"),
+                resize_to=None,
+                quality_suffix=POSTER_QUALITY_SUFFIX,
+            )
+            if event_ok:
+                logger.info("  ✅ 이벤트 배너 완료")
+            else:
+                logger.warning("  ⚠️ 이벤트 배너 실패 (계속 진행)")
 
         # 3. SVG 조립
         logger.info("\n📐 SVG 조립 중...")
@@ -399,27 +417,51 @@ Return a JSON object with this EXACT structure:
 6. cta.phone/address/hours는 brief에 있으면 그대로, 없으면 빈 문자열"""
 
         items_from_brief = brief.get("items", brief.get("menu", []))
+        # Support menu_items as comma-separated string
+        if not items_from_brief and brief.get("menu_items"):
+            menu_str = brief["menu_items"]
+            if isinstance(menu_str, str):
+                items_from_brief = [{"name": m.strip()} for m in menu_str.split(",") if m.strip()]
         features_from_brief = brief.get("features", [])
         promo_from_brief = brief.get("promo", brief.get("promotion", {}))
+        # Support promo as a simple string
+        if isinstance(promo_from_brief, str) and promo_from_brief:
+            promo_from_brief = {"title": promo_from_brief, "detail": ""}
+        # Support contact as nested dict OR top-level phone/address fields
         contact = brief.get("contact", {})
+        if not contact:
+            top_phone = brief.get("phone", "")
+            top_addr = brief.get("address", "")
+            top_hours = brief.get("hours", "")
+            if top_phone or top_addr or top_hours:
+                contact = {"phone": top_phone, "address": top_addr, "hours": top_hours}
+
+        # Flexible business name extraction
+        biz_name = brief.get("business_name", "") or brief.get("store_name", "") or brief.get("name", "")
 
         user_prompt = f"""Create copy.json for this business:
 
 ## BUSINESS
-- 상호: {brief.get('business_name', '')}
+- 상호: {biz_name}
 - 업종: {brief.get('industry', '')}
 - 카테고리: {brief.get('category', '')}
 - 특징: {', '.join(features_from_brief) if features_from_brief else 'N/A'}
 - 타겟: {brief.get('target_audience', '')}
 - 톤: {brief.get('tone', '')}
+- 분위기: {brief.get('mood', '')}
 - 목적: {brief.get('purpose', '')}"""
 
         if items_from_brief:
-            items_str = '\n'.join([f"  - {it.get('name','?')}: {it.get('description','')} [{it.get('price','')}]" for it in items_from_brief])
+            if isinstance(items_from_brief[0], dict):
+                items_str = '\n'.join([f"  - {it.get('name','?')}: {it.get('description','')} [{it.get('price','')}]" for it in items_from_brief])
+            else:
+                items_str = '\n'.join([f"  - {it}" for it in items_from_brief])
             user_prompt += f"\n\n## 메뉴/품목 (사장님 제공)\n{items_str}"
 
         if isinstance(promo_from_brief, dict) and promo_from_brief:
             user_prompt += f"\n\n## 프로모션\n- 제목: {promo_from_brief.get('title','')}\n- 내용: {promo_from_brief.get('detail','')}"
+        elif isinstance(promo_from_brief, str) and promo_from_brief:
+            user_prompt += f"\n\n## 프로모션\n{promo_from_brief}"
 
         if contact:
             user_prompt += f"\n\n## 연락처\n- 전화: {contact.get('phone','')}\n- 주소: {contact.get('address','')}\n- 영업시간: {contact.get('hours','')}"
@@ -434,6 +476,17 @@ Return a JSON object with this EXACT structure:
         if not result.get('hero') or not result.get('items'):
             logger.error("❌ copy.json에 필수 필드(hero, items) 누락")
             return False
+
+        # Post-fixup: inject contact info from brief into CTA if Gemini left it empty
+        if contact:
+            cta = result.get('cta', {})
+            if not cta.get('phone') and contact.get('phone'):
+                cta['phone'] = contact['phone']
+            if not cta.get('address') and contact.get('address'):
+                cta['address'] = contact['address']
+            if not cta.get('hours') and contact.get('hours'):
+                cta['hours'] = contact['hours']
+            result['cta'] = cta
 
         self._save("copy.json", result)
         logger.info(f"✅ 카피 생성 완료 — {len(result.get('items',[]))}개 품목")
@@ -482,7 +535,11 @@ Return a JSON object with this EXACT structure:
   "items": [
     {{"name": "품목명", "prompt": "영문 이미지 프롬프트", "aspect_ratio": "1:1"}},
     ...
-  ]
+  ],
+  "event": {{
+    "prompt": "영문 이벤트/프로모션 배너 이미지 프롬프트 (optional, only if promo exists)",
+    "aspect_ratio": "16:9"
+  }}
 }}
 
 ## RULES
@@ -492,7 +549,8 @@ Return a JSON object with this EXACT structure:
 4. items는 copy.json의 items와 1:1 대응 (같은 수, 같은 순서)
 5. 각 item prompt는 해당 품목의 식재료/상품을 매력적으로 촬영한 푸드/상품 사진
 6. style 색상은 업종 이미지에 맞게 선택 (음식점=따뜻/빨강, 카페=브라운/베이지, 학원=파랑/노랑 등)
-7. prompt는 전부 영문으로 작성 (Gemini 이미지 생성용){palette_info}"""
+7. prompt는 전부 영문으로 작성 (Gemini 이미지 생성용)
+8. If the business has a promo/event, generate an event image prompt. The event image should be an eye-catching promotional banner photo. End with 'no text, no labels, no borders'{palette_info}"""
 
         items = copy_data.get('items', [])
         items_str = '\n'.join([f"  {i+1}. {it.get('name','?')}: {it.get('description','')}" for i, it in enumerate(items)])
@@ -668,6 +726,7 @@ Generate complete layout_spec.json with all required fields: layout_id, zones, t
             "magazine_split": self._build_magazine_split,
             "bold_typo": self._build_bold_typo,
             "side_by_side": self._build_side_by_side,
+            "block_grid": self._build_block_grid,
         }
         builder = dispatch.get(layout_id, self._build_classic_grid)
         logger.info(f"  📐 레이아웃: {layout_id}")
@@ -1043,6 +1102,334 @@ Generate complete layout_spec.json with all required fields: layout_id, zones, t
     def _svg_footer(self) -> str:
         """SVG 닫기"""
         return "\n</svg>"
+
+    # ─── Layout 6: Block Grid (퍼즐/레고 조합) ───
+
+    def _grid_to_px(self, block: dict, row_heights: list) -> tuple:
+        """그리드 좌표를 픽셀 (x, y, w, h)로 변환.
+
+        Config values:
+        - margin=30, gap=12, cols=4
+        - col_w = (CANVAS_W - 2*margin - (cols-1)*gap) / cols
+
+        Returns: (x, y, w, h) in pixels
+        """
+        margin = 30
+        gap = 12
+        num_cols = 4
+        col_w = (CANVAS_W - 2 * margin - (num_cols - 1) * gap) / num_cols
+
+        col = block["col"]
+        row = block["row"]
+        colspan = block["colspan"]
+        rowspan = block.get("rowspan", 1)
+
+        x = margin + col * (col_w + gap)
+        y = margin + sum(row_heights[:row]) + row * gap
+        w = colspan * col_w + (colspan - 1) * gap
+        h = sum(row_heights[row:row + rowspan]) + (rowspan - 1) * gap
+
+        return (int(x), int(y), int(w), int(h))
+
+    def _render_hero_block(self, x: int, y: int, w: int, h: int,
+                           style: dict, copy_data: dict) -> str:
+        """블록 그리드용 히어로 블록 렌더링 — 이미지 + 그라데이션 + 텍스트"""
+        brand = style.get("brand_color", "#333333")
+        accent = style.get("accent_color", "#FF6B35")
+        hero_copy = copy_data.get("hero", {})
+        headline = hero_copy.get("headline", "")
+        badge = hero_copy.get("badge", "")
+        subtext = hero_copy.get("subtext", copy_data.get("subtitle", ""))
+
+        # Clip path for rounded corners
+        clip_id = f"hero-clip-{x}-{y}"
+        hero_ref = self._img_ref("hero.png")
+
+        parts = [f"""
+  <!-- ===== BLOCK: HERO ===== -->
+  <defs>
+    <clipPath id="{clip_id}">
+      <rect x="{x}" y="{y}" width="{w}" height="{h}" rx="8"/>
+    </clipPath>
+    <linearGradient id="hero-grad-{x}" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="70%" stop-color="#000" stop-opacity="0"/>
+      <stop offset="100%" stop-color="#000" stop-opacity="0.65"/>
+    </linearGradient>
+  </defs>
+  <g clip-path="url(#{clip_id})">
+"""]
+
+        if hero_ref:
+            parts.append(f"""    <image href="{hero_ref}" xlink:href="{hero_ref}"
+           x="{x}" y="{y}" width="{w}" height="{h}"
+           preserveAspectRatio="xMidYMid slice"/>""")
+        else:
+            parts.append(f"""    <rect x="{x}" y="{y}" width="{w}" height="{h}" fill="{brand}" opacity="0.15"/>""")
+
+        # Dark gradient overlay for text readability
+        parts.append(f"""    <rect x="{x}" y="{y}" width="{w}" height="{h}"
+          fill="url(#hero-grad-{x})"/>""")
+
+        # Text overlay
+        cx = x + w // 2
+        if badge:
+            badge_y = y + int(h * 0.35)
+            parts.append(f"""    <text x="{cx}" y="{badge_y}"
+          text-anchor="middle" class="body" font-size="26" font-weight="500"
+          fill="{accent}" letter-spacing="4" opacity="0.9">{badge}</text>""")
+
+        hl_y = y + int(h * 0.50)
+        parts.append(f"""    <text x="{cx}" y="{hl_y}"
+          text-anchor="middle" class="title" font-size="68" font-weight="700"
+          fill="#FFFFFF" letter-spacing="2">{headline}</text>""")
+
+        if subtext:
+            sub_y = y + int(h * 0.60)
+            parts.append(f"""    <text x="{cx}" y="{sub_y}"
+          text-anchor="middle" class="body" font-size="30" font-weight="400"
+          fill="#FFFFFF" opacity="0.85">{subtext}</text>""")
+
+        parts.append("  </g>")
+        return "\n".join(parts)
+
+    def _render_item_block(self, x: int, y: int, w: int, h: int,
+                           style: dict, item: dict, idx: int) -> str:
+        """블록 그리드용 품목 블록 렌더링 — 이미지 상단 60% + 텍스트 하단 40%"""
+        brand = style.get("brand_color", "#333333")
+        accent = style.get("accent_color", "#FF6B35")
+        text_c = style.get("text_color", "#333333")
+        bg = style.get("bg_color", "#FAFAF8")
+
+        name = item.get("name", "")
+        desc = item.get("description", "")
+        price = item.get("price", "")
+
+        img_h = int(h * 0.60)
+        text_h = h - img_h
+        text_y = y + img_h
+        cx = x + w // 2
+
+        clip_id = f"item-clip-{x}-{y}"
+        item_ref = self._img_ref(f"item_{idx + 1:02d}.png")
+
+        # Typography
+        t_name = self._get_typo("item_name", {"size_px": 34, "weight": "700", "color": text_c})
+        t_desc = self._get_typo("item_description", {"size_px": 24, "weight": "400", "color": text_c})
+        t_price = self._get_typo("item_price", {"size_px": 30, "weight": "700", "color": accent})
+
+        # Scale font sizes for narrow blocks (1-col ~509px)
+        scale = min(1.0, w / 800)
+        name_size = max(22, int(t_name["size_px"] * scale))
+        desc_size = max(16, int(t_desc["size_px"] * scale))
+        price_size = max(20, int(t_price["size_px"] * scale))
+
+        parts = [f"""
+  <!-- ===== BLOCK: ITEM {idx + 1} ({name}) ===== -->
+  <defs>
+    <clipPath id="{clip_id}">
+      <rect x="{x}" y="{y}" width="{w}" height="{img_h}" rx="8"/>
+    </clipPath>
+  </defs>
+  <g>
+    <!-- Border/card effect -->
+    <rect x="{x}" y="{y}" width="{w}" height="{h}" rx="8"
+          fill="{bg}" stroke="{brand}" stroke-width="1" stroke-opacity="0.1"/>"""]
+
+        # Image area (top 60%)
+        if item_ref:
+            parts.append(f"""    <g clip-path="url(#{clip_id})">
+      <image href="{item_ref}" xlink:href="{item_ref}"
+             x="{x}" y="{y}" width="{w}" height="{img_h}"
+             preserveAspectRatio="xMidYMid slice"/>
+    </g>""")
+        else:
+            parts.append(f"""    <rect x="{x}" y="{y}" width="{w}" height="{img_h}" rx="8"
+          fill="{brand}" opacity="0.06"/>
+    <text x="{cx}" y="{y + img_h // 2 + 8}"
+          text-anchor="middle" class="body" font-size="28" fill="{brand}" opacity="0.2">{name}</text>""")
+
+        # Text area (bottom 40%)
+        name_y = text_y + int(text_h * 0.30)
+        desc_y = text_y + int(text_h * 0.55)
+        price_y = text_y + int(text_h * 0.82)
+
+        parts.append(f"""    <text x="{cx}" y="{name_y}"
+          text-anchor="middle" class="title" font-size="{name_size}" font-weight="{t_name['weight']}" fill="{t_name['color']}">
+      {name}
+    </text>""")
+
+        if desc:
+            parts.append(f"""    <text x="{cx}" y="{desc_y}"
+          text-anchor="middle" class="body" font-size="{desc_size}" font-weight="{t_desc['weight']}" fill="{t_desc['color']}" opacity="0.65">
+      {desc}
+    </text>""")
+
+        if price:
+            parts.append(f"""    <text x="{cx}" y="{price_y}"
+          text-anchor="middle" class="title" font-size="{price_size}" font-weight="{t_price['weight']}" fill="{t_price['color']}">
+      {price}
+    </text>""")
+
+        parts.append("  </g>")
+        return "\n".join(parts)
+
+    def _render_event_block(self, x: int, y: int, w: int, h: int,
+                            style: dict, promo: dict) -> str:
+        """블록 그리드용 이벤트/프로모션 블록 렌더링 — 이미지 좌측 50% + 텍스트 우측 50%"""
+        accent = style.get("accent_color", "#FF6B35")
+        ptitle = promo.get("title", "")
+        pdetail = promo.get("detail", "")
+
+        if not promo:
+            return ""
+
+        event_ref = self._img_ref("event.png")
+        clip_id = f"event-clip-{x}-{y}"
+
+        parts = [f"""
+  <!-- ===== BLOCK: EVENT/PROMO ===== -->
+  <defs>
+    <clipPath id="{clip_id}">
+      <rect x="{x}" y="{y}" width="{w}" height="{h}" rx="8"/>
+    </clipPath>
+  </defs>"""]
+
+        if event_ref:
+            # Image fills left 50%, accent bg fills right 50%
+            img_w = w // 2
+            text_x = x + img_w
+            text_w = w - img_w
+            text_cx = text_x + text_w // 2
+
+            img_clip_id = f"event-img-clip-{x}-{y}"
+            parts.append(f"""  <defs>
+    <clipPath id="{img_clip_id}">
+      <rect x="{x}" y="{y}" width="{img_w}" height="{h}" rx="8"/>
+    </clipPath>
+  </defs>
+  <g clip-path="url(#{clip_id})">
+    <rect x="{x}" y="{y}" width="{w}" height="{h}" rx="8" fill="{accent}"/>
+    <g clip-path="url(#{img_clip_id})">
+      <image href="{event_ref}" xlink:href="{event_ref}"
+             x="{x}" y="{y}" width="{img_w}" height="{h}"
+             preserveAspectRatio="xMidYMid slice"/>
+    </g>
+    <text x="{text_cx}" y="{y + int(h * 0.40)}"
+          text-anchor="middle" class="title" font-size="34" font-weight="700"
+          fill="#FFFFFF" letter-spacing="3">\u2605  {ptitle}  \u2605</text>
+    <text x="{text_cx}" y="{y + int(h * 0.65)}"
+          text-anchor="middle" class="title" font-size="28" font-weight="700"
+          fill="#FFFFFF">{pdetail}</text>
+  </g>""")
+        else:
+            # No event image: full accent background with centered text
+            cx = x + w // 2
+            parts.append(f"""  <g clip-path="url(#{clip_id})">
+    <rect x="{x}" y="{y}" width="{w}" height="{h}" rx="8" fill="{accent}"/>
+    <text x="{cx}" y="{y + int(h * 0.40)}"
+          text-anchor="middle" class="title" font-size="34" font-weight="700"
+          fill="#FFFFFF" letter-spacing="3">\u2605  {ptitle}  \u2605</text>
+    <text x="{cx}" y="{y + int(h * 0.65)}"
+          text-anchor="middle" class="title" font-size="28" font-weight="700"
+          fill="#FFFFFF">{pdetail}</text>
+  </g>""")
+
+        return "\n".join(parts)
+
+    def _render_cta_block(self, x: int, y: int, w: int, h: int,
+                          style: dict, cta: dict) -> str:
+        """블록 그리드용 CTA 블록 렌더링 — 좁은 블록에 맞춤 (CANVAS_W 대신 블록 너비 사용)"""
+        if not cta:
+            return ""
+
+        brand = style.get("brand_color", "#333333")
+        accent = style.get("accent_color", "#FF6B35")
+        hl = cta.get("headline", "")
+        phone = cta.get("phone", "")
+        addr = cta.get("address", "")
+        hours = cta.get("hours", "")
+
+        cx = x + w // 2
+        clip_id = f"cta-clip-{x}-{y}"
+
+        # Scale font sizes for narrow block (~509px for 1-col)
+        scale = min(1.0, w / 800)
+        hl_size = max(24, int(48 * scale))
+        ph_size = max(22, int(40 * scale))
+        addr_size = max(16, int(26 * scale))
+
+        # Proportional vertical offsets
+        hl_y = y + int(h * 0.22)
+        ph_y = y + int(h * 0.42)
+        ad_y = y + int(h * 0.60)
+        hr_y = y + int(h * 0.78)
+
+        return f"""
+  <!-- ===== BLOCK: CTA ===== -->
+  <defs>
+    <clipPath id="{clip_id}">
+      <rect x="{x}" y="{y}" width="{w}" height="{h}" rx="8"/>
+    </clipPath>
+  </defs>
+  <g clip-path="url(#{clip_id})">
+    <rect x="{x}" y="{y}" width="{w}" height="{h}" rx="8" fill="{brand}"/>
+    <line x1="{cx - min(60, w // 4)}" y1="{y + 12}" x2="{cx + min(60, w // 4)}" y2="{y + 12}"
+          stroke="{accent}" stroke-width="2" opacity="0.5"/>
+    <text x="{cx}" y="{hl_y}"
+          text-anchor="middle" class="title" font-size="{hl_size}" font-weight="700" fill="{accent}">{hl}</text>
+    <text x="{cx}" y="{ph_y}"
+          text-anchor="middle" class="title" font-size="{ph_size}" font-weight="700" fill="#FFFFFF">{phone}</text>
+    <text x="{cx}" y="{ad_y}"
+          text-anchor="middle" class="body" font-size="{addr_size}" font-weight="400" fill="#FFFFFF" opacity="0.85">{addr}</text>
+    <text x="{cx}" y="{hr_y}"
+          text-anchor="middle" class="body" font-size="{addr_size}" font-weight="400" fill="#FFFFFF" opacity="0.85">{hours}</text>
+  </g>"""
+
+    def _build_block_grid(self, style: dict, copy_data: dict) -> str:
+        """블록 그리드 — 퍼즐/레고 조합 레이아웃 (6번째 레이아웃)"""
+        # 1. Load grid patterns config
+        config_dir = Path(__file__).parent.parent / "config"
+        patterns = self._load_config(config_dir / "block_grid_patterns.json")
+
+        # 2. Get item count, clamp to 1-8
+        items = copy_data.get("items", [])
+        n_items = max(1, min(8, len(items)))
+
+        # 3. Look up pattern
+        pattern = patterns.get("patterns", {}).get(str(n_items))
+        if not pattern:
+            logger.warning(f"  ⚠️ block_grid: {n_items}개 품목 패턴 없음 → classic_grid 폴백")
+            return self._build_classic_grid(style, copy_data)
+
+        row_heights = pattern["row_heights"]
+        blocks = pattern["blocks"]
+
+        # 4. Extract style/copy
+        bg = style.get("bg_color", "#FAFAF8")
+        promo = copy_data.get("promo", {})
+        cta = copy_data.get("cta", {})
+
+        # 5. Build SVG
+        parts = [self._svg_header(bg)]
+
+        for block in blocks:
+            x, y, w, h = self._grid_to_px(block, row_heights)
+            btype = block["type"]
+
+            if btype == "hero":
+                parts.append(self._render_hero_block(x, y, w, h, style, copy_data))
+            elif btype == "item":
+                idx = block["item_idx"]
+                if idx < len(items):
+                    parts.append(self._render_item_block(x, y, w, h, style, items[idx], idx))
+            elif btype == "event":
+                parts.append(self._render_event_block(x, y, w, h, style, promo))
+            elif btype == "cta":
+                parts.append(self._render_cta_block(x, y, w, h, style, cta))
+
+        parts.append(self._svg_trim_marks())
+        parts.append(self._svg_footer())
+        return "\n".join(parts)
 
     # ─── Layout 1: Classic Grid (현재 V2 — 동작 변경 없음) ───
 

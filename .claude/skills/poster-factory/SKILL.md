@@ -19,26 +19,38 @@
 4. **JSON 계약**: Claude → JSON → Python (중간에 사람이 수정 가능)
 5. **이미지 보존**: 덮어쓰지 않음, 마음에 들면 수정하는 방식
 
-## 포스터 구조 (2130×3000px)
+## 레이아웃 6종 (2130×3000px)
+
+| ID | 이름 | 특징 | 적합 업종 |
+|---|---|---|---|
+| `classic_grid` | 클래식 그리드 | 히어로+슬로건+품목그리드+CTA | 카페, 음식점, 일반 |
+| `hero_dominant` | 히어로 도미넌트 | 히어로 65%+ 차지 | 헬스장, 븤티, 피부과 |
+| `magazine_split` | 매거진 분할 | 색띄 섹션 분할 | 학원, 병원, 교육 |
+| `bold_typo` | 볼드 타이포 | 초대형 상호명+가격 | 음식점, 분식, 배달 |
+| `side_by_side` | 좌우 분할 | 좌(이미지)/우(텍스트) | 미용실, 네일샵 |
+| `block_grid` | **블록 그리드 (레고)** | **이미지+카피 블록을 퍼즐처럼 배치** | **다품목 음식점, 카페, 배달** |
+
+### block_grid 레이아웃 (⭐ NEW)
 
 ```
-┌──────────────────────────────────────┐ 0px
-│         HERO IMAGE                   │
-│    (메인 이미지 + 상호명 + 카피)      │  ← Gemini가 텍스트 포함 생성
-│    aspect_ratio: "5:4"               │
-│    ~55% of poster height             │
-├──────────────────────────────────────┤ ~1650px
-│ ✦ 특징1  ·  특징2  ·  특징3          │  ← SVG 텍스트 (편집 가능)
-├──────────────────────────────────────┤
-│  ┌────┐  ┌────┐  ┌────┐  ┌────┐    │
-│  │img1│  │img2│  │img3│  │img4│    │  ← 품목별 이미지 (Gemini, 1:1)
-│  └────┘  └────┘  └────┘  └────┘    │
-│  품목1   품목2   품목3   품목4       │  ← SVG 텍스트 (편집 가능)
-│  설명     설명    설명    설명       │
-├──────────────────────────────────────┤ ~2700px
-│  CTA: 상호명, 전화번호, 주소, 시간   │  ← SVG 텍스트 (편집 가능)
-└──────────────────────────────────────┘ 3000px
+┌──────────────────────────────────────┐
+│     HERO (풀폭, 그라디언트+헤드라인)      │ ← 4col
+├─────────────────┬────────────────────┤
+│  품목1 (대)      │  품목2 (대)           │ ← 2col + 2col
+│  이미지+카피     │  이미지+카피          │
+├───────┬────────┬────────────────────┤
+│ 품목3  │ 품목4   │  품목5 (중)           │ ← 1col+1col + 2col
+│ (소)   │ (소)    │  이미지+카피          │
+├───────┴────────────┬───────┤
+│ 이벤트 배너 (프로모)   │  CTA  │ ← 3col + 1col
+└─────────────────────┴───────┘
 ```
+
+- **4열 그리드**: margin=30, gap=12, col_w=509px
+- **각 블록 = 이미지 + 카피** 한 덩어리 (중간에 빈틈 없음)
+- **가변 블록 크기**: 2col(대), 1col(소) 조합으로 퍼즐/레고 느낌
+- **패턴 JSON**: `config/block_grid_patterns.json` (1-8개 아이템 패턴)
+- **AI가 픽셀 계산 안 함**: Gemini가 코피/스타일 결정, Python이 좌표 배치
 
 ## 파이프라인 (7단계)
 
@@ -289,6 +301,14 @@ python3 _poster_factory/scripts/poster_generator.py \
   --workdir "{workdir}" --rebuild-svg --embed
 ```
 
+# ⭐ 전자동 파이프라인 (brief.json만 있으면 끝)
+python3 _poster_factory/scripts/poster_generator.py \
+  --workdir "_poster_factory/output/{job_dir}" --auto
+
+# 전자동 + 레이아웃 지정
+python3 _poster_factory/scripts/poster_generator.py \
+  --workdir "_poster_factory/output/{job_dir}" --layout block_grid --auto
+
 ---
 
 ## Phase 7: 결과 확인
@@ -323,10 +343,11 @@ _poster_factory/
 │   └── poster_generator.py      # SVG 포스터 생성 엔진 V2
 ├── config/
 │   ├── defaults.json             # 기본 설정 (캔버스, 생성 파라미터)
-│   ├── layout_patterns.json      # 5가지 레이아웃 + 업종별 선택 규칙
+│   ├── layout_patterns.json      # 6가지 레이아웃 + 업종별 선택 규칙
 │   ├── typography_scale.json     # ⭐ 모듈러 스케일 5단계 타이포 위계
 │   ├── layout_spec_schema.json   # ⭐ 아트디렉터 출력 스키마 (예시 포함)
 │   └── color_palettes.json       # 14개 업종별 색상 팔레트
+│   ├── block_grid_patterns.json   # ⭐ 블록/레고 그리드 패턴 (1-8 아이템)
 ├── output/
 │   └── {business}_{timestamp}/   # 작업 디렉토리
 │       ├── brief.json            # Phase 1: 업종 정보
