@@ -351,6 +351,210 @@ class PosterGenerator:
         logger.info(f"✅ 아트디렉팅 완료 — layout: {result.get('layout_id', '?')}")
         return True
 
+    def auto_copy(self) -> bool:
+        """Phase 1: brief.json → copy.json 자동 생성 (Gemini)"""
+        try:
+            brief = self._load("brief.json")
+        except FileNotFoundError as e:
+            logger.error(f"❌ {e}")
+            return False
+
+        logger.info("✍️  카피 생성 중... (copy.json)")
+
+        system_prompt = """You are a professional Korean marketing copywriter for print posters (전단지/포스터).
+Your job: Given a business brief, write compelling marketing copy that will be used on a printed poster.
+
+## OUTPUT FORMAT (JSON)
+Return a JSON object with this EXACT structure:
+{
+  "hero": {
+    "headline": "대표 헤드라인 (가게명 또는 캐치프레이즈, 2-8글자)",
+    "subtext": "부제 (위치·특징·컨셉, 20자 이내)",
+    "badge": "뱃지 텍스트 (GRAND OPEN, NEW, SPECIAL 등)"
+  },
+  "subtitle": "서브헤드라인 (핵심 셋링포인트, 15-30자)",
+  "items": [
+    {"name": "품목명", "description": "한줄 설명", "price": "\uc22ddddd\uc6d0"},
+    ...
+  ],
+  "features": ["특징1", "특징2", "특징3"],
+  "promo": {
+    "title": "이벤트 제목",
+    "detail": "이벤트 세부내용"
+  },
+  "cta": {
+    "headline": "CTA 헤드라인 (예: 지금 바로, OOO점)",
+    "phone": "전화번호",
+    "address": "주소/위치",
+    "hours": "영업시간"
+  }
+}
+
+## RULES
+1. items는 4-6개. brief에 메뉴가 있으면 그대로, 없으면 업종에 맞는 대표 메뉴 창작
+2. 가격은 brief에 있으면 그대로, 없으면 업종 평균 가격대로 합리적으로 설정
+3. hero.headline은 짧고 강렬하게, 가게명 또는 캐치프레이즈
+4. 한국어 자연스러운 구어체 사용, 불필요한 영어 지양
+5. promo가 brief에 없으면 오픈기념/신규/시즌 프로모션 창작
+6. cta.phone/address/hours는 brief에 있으면 그대로, 없으면 빈 문자열"""
+
+        items_from_brief = brief.get("items", brief.get("menu", []))
+        features_from_brief = brief.get("features", [])
+        promo_from_brief = brief.get("promo", brief.get("promotion", {}))
+        contact = brief.get("contact", {})
+
+        user_prompt = f"""Create copy.json for this business:
+
+## BUSINESS
+- 상호: {brief.get('business_name', '')}
+- 업종: {brief.get('industry', '')}
+- 카테고리: {brief.get('category', '')}
+- 특징: {', '.join(features_from_brief) if features_from_brief else 'N/A'}
+- 타겟: {brief.get('target_audience', '')}
+- 톤: {brief.get('tone', '')}
+- 목적: {brief.get('purpose', '')}"""
+
+        if items_from_brief:
+            items_str = '\n'.join([f"  - {it.get('name','?')}: {it.get('description','')} [{it.get('price','')}]" for it in items_from_brief])
+            user_prompt += f"\n\n## 메뉴/품목 (사장님 제공)\n{items_str}"
+
+        if isinstance(promo_from_brief, dict) and promo_from_brief:
+            user_prompt += f"\n\n## 프로모션\n- 제목: {promo_from_brief.get('title','')}\n- 내용: {promo_from_brief.get('detail','')}"
+
+        if contact:
+            user_prompt += f"\n\n## 연락처\n- 전화: {contact.get('phone','')}\n- 주소: {contact.get('address','')}\n- 영업시간: {contact.get('hours','')}"
+
+        try:
+            result = self.client.generate_text_json(user_prompt, system_prompt)
+        except Exception as e:
+            logger.error(f"❌ 카피 생성 실패: {e}")
+            return False
+
+        # Validate essential fields
+        if not result.get('hero') or not result.get('items'):
+            logger.error("❌ copy.json에 필수 필드(hero, items) 누락")
+            return False
+
+        self._save("copy.json", result)
+        logger.info(f"✅ 카피 생성 완료 — {len(result.get('items',[]))}개 품목")
+        return True
+
+    def auto_design(self) -> bool:
+        """Phase 2: brief+copy → design.json 자동 생성 (Gemini)"""
+        try:
+            brief = self._load("brief.json")
+            copy_data = self._load("copy.json")
+        except FileNotFoundError as e:
+            logger.error(f"❌ {e}")
+            return False
+
+        logger.info("🎨 디자인 생성 중... (design.json)")
+
+        # Load color palettes for reference
+        config_dir = Path(__file__).parent.parent / "config"
+        palettes = self._load_config(config_dir / "color_palettes.json")
+        palette_info = ""
+        if palettes:
+            industry = brief.get('industry', brief.get('category', ''))
+            palette_data = palettes.get('palettes', palettes)  # support nested or flat
+            for pid, pdata in palette_data.items():
+                if not isinstance(pdata, dict):
+                    continue
+                industries = pdata.get('industries', [])
+                if any(t in industry for t in industries):
+                    palette_info += f"\nRecommended palette '{pid}': brand={pdata.get('brand_color','')}, accent={pdata.get('accent_color','')}, bg={pdata.get('bg_color','')}, mood={pdata.get('mood','')}"
+
+        system_prompt = f"""You are a professional Art Director creating image generation prompts for a print poster.
+
+## OUTPUT FORMAT (JSON)
+Return a JSON object with this EXACT structure:
+{{
+  "style": {{
+    "brand_color": "#hex (업종 이미지에 맞는 메인 색상)",
+    "accent_color": "#hex (강조 색상, 가격/CTA용)",
+    "bg_color": "#hex (배경, 밝고 따뜻한 톤)",
+    "text_color": "#hex (본문 텍스트 색상)"
+  }},
+  "hero": {{
+    "prompt": "영문 이미지 생성 프롬프트 (food/product photography, MUST include 'no text, no labels, no borders')",
+    "aspect_ratio": "16:9"
+  }},
+  "items": [
+    {{"name": "품목명", "prompt": "영문 이미지 프롬프트", "aspect_ratio": "1:1"}},
+    ...
+  ]
+}}
+
+## RULES
+1. hero.prompt는 포스터 배경용 사진 — 텍스트 오버레이 될 예정이므로 사진에 텍스트 절대 금지
+2. hero.prompt MUST end with: 'no text, no labels, no borders, no frames, no logos'
+3. hero.aspect_ratio는 반드시 Gemini 지원 비율: 1:1, 2:3, 3:2, 3:4, 4:3, 4:5, 5:4, 9:16, 16:9, 21:9
+4. items는 copy.json의 items와 1:1 대응 (같은 수, 같은 순서)
+5. 각 item prompt는 해당 품목의 식재료/상품을 매력적으로 촬영한 푸드/상품 사진
+6. style 색상은 업종 이미지에 맞게 선택 (음식점=따뜻/빨강, 카페=브라운/베이지, 학원=파랑/노랑 등)
+7. prompt는 전부 영문으로 작성 (Gemini 이미지 생성용){palette_info}"""
+
+        items = copy_data.get('items', [])
+        items_str = '\n'.join([f"  {i+1}. {it.get('name','?')}: {it.get('description','')}" for i, it in enumerate(items)])
+
+        user_prompt = f"""Create design.json for this poster:
+
+## BUSINESS
+- 상호: {brief.get('business_name', '')}
+- 업종: {brief.get('industry', '')}
+- 톤: {brief.get('tone', '따뜻하고 전문적인')}
+
+## COPY CONTENT
+- 헤드라인: {copy_data.get('hero',{}).get('headline','')}
+- 서브: {copy_data.get('subtitle','')}
+- 품목 ({len(items)}개):
+{items_str}
+
+Produce the hero prompt and {len(items)} item prompts. Remember: hero is a BACKGROUND photo, items are individual product close-ups."""
+
+        try:
+            result = self.client.generate_text_json(user_prompt, system_prompt)
+        except Exception as e:
+            logger.error(f"❌ 디자인 생성 실패: {e}")
+            return False
+
+        # Validate
+        if not result.get('style') or not result.get('hero'):
+            logger.error("❌ design.json에 필수 필드(style, hero) 누락")
+            return False
+
+        self._save("design.json", result)
+        logger.info(f"✅ 디자인 생성 완료 — hero + {len(result.get('items',[]))}개 품목 프롬프트")
+        return True
+
+    def auto_all(self) -> bool:
+        """brief.json만으로 전체 파이프라인 자동 실행.
+        brief → copy → design → art_direct → images → SVG"""
+        logger.info("\n" + "═" * 55)
+        logger.info("🚀 전자동 파이프라인 시작")
+        logger.info("═" * 55)
+
+        # Phase 1: Copy
+        if not (self.workdir / "copy.json").exists():
+            if not self.auto_copy():
+                return False
+        else:
+            logger.info("ℹ️  copy.json 이미 존재 — 생략")
+
+        # Phase 2: Design
+        if not (self.workdir / "design.json").exists():
+            if not self.auto_design():
+                return False
+        else:
+            logger.info("ℹ️  design.json 이미 존재 — 생략")
+
+        # Phase 3: Art Direct
+        if not self.art_direct():
+            return False
+
+        # Phase 4-6: Images + SVG
+        return self.generate_all()
+
     def _load_config(self, path: Path) -> dict:
         """config 디렉토리에서 JSON 파일 로드"""
         if path.exists():
@@ -1929,13 +2133,20 @@ def main():
         action="store_true",
         help="전체 파이프라인: 아트디렉팅 → 이미지 생성 → SVG 조립",
     )
+    parser.add_argument(
+        "--auto",
+        action="store_true",
+        help="전자동: brief.json만으로 copy→design→art_direct→이미지→SVG 전체 실행",
+    )
     args = parser.parse_args()
 
     gen = PosterGenerator(args.workdir, embed=args.embed)
     if args.layout:
         gen.cli_layout = args.layout
 
-    if args.full:
+    if args.auto:
+        ok = gen.auto_all()
+    elif args.full:
         ok = gen.art_direct()
         if ok:
             ok = gen.generate_all()
