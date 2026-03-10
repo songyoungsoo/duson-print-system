@@ -35,6 +35,30 @@ switch ($action) {
         echo json_encode(['success' => true, 'data' => $result]);
         break;
 
+    case 'prepaid_classify':
+        // 선불 택배비 자동 분류: auto / call_required / cod_only
+        // + 무게 추정 (고지표용)
+        $cartJson = $_POST['cart_items'] ?? '';
+        $cartItems = json_decode($cartJson, true);
+        $packingMode = $_POST['packing_mode'] ?? 'individual';
+
+        if (!$cartItems || !is_array($cartItems)) {
+            echo json_encode(['success' => false, 'error' => 'cart_items required']);
+            exit;
+        }
+
+        $classification = ShippingCalculator::classifyPrepaid($cartItems);
+
+        // 무게 추정치도 함께 반환 (고지표용, ±2kg 범위 표시)
+        $estimate = ShippingCalculator::estimateFromCart($cartItems, $packingMode);
+        $weightKg = round($estimate['total_weight_kg'] ?? 0, 1);
+        $classification['weight_kg'] = $weightKg;
+        $classification['weight_min_kg'] = max(1, round($weightKg - 2, 1));
+        $classification['weight_max_kg'] = round($weightKg + 2, 1);
+
+        echo json_encode(['success' => true, 'data' => $classification]);
+        break;
+
     case 'rates':
         $rates = ShippingCalculator::getRatesForDisplay($connect ?? null);
         echo json_encode(['success' => true, 'data' => $rates]);

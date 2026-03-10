@@ -66,6 +66,7 @@ try {
     $delivery_method = $_POST['delivery_method'] ?? '택배';
     $shipping_fee_type = $_POST['shipping_fee_type'] ?? '';
     $shipping_bundle_type = $_POST['shipping_bundle_type'] ?? '';
+    $prepaid_shipping_fee = (int)($_POST['prepaid_shipping_fee'] ?? 0);
     $total_price = (float)($_POST['total_price'] ?? 0);
     $total_price_vat = (float)($_POST['total_price_vat'] ?? 0);
     $items_count = (int)($_POST['items_count'] ?? 0);
@@ -369,9 +370,10 @@ try {
             spec_type, spec_material, spec_size, spec_sides, spec_design,
             quantity_value, quantity_unit, quantity_sheets, quantity_display,
             price_supply, price_vat, price_vat_amount, data_version,
-            logen_fee_type, shipping_bundle_type,
+            logen_fee_type, shipping_bundle_type, logen_delivery_fee,
             order_group_id, order_group_seq
-        ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)";  // 58 placeholders
+) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)";
+// 59 placeholders
 
         $stmt = mysqli_prepare($connect, $insert_query);
         if (!$stmt) {
@@ -590,11 +592,12 @@ try {
         // 51-54: price_supply(i), price_vat(i), price_vat_amount(i), data_version(i)
         // 55: logen_fee_type(s)
         // 56: shipping_bundle_type(s)
-        // 57-58: order_group_id(s), order_group_seq(i)
-        $type_string = 'issssssssssssssssssssssisiisiiiiisiiiiisdsssssdsisiiiisssi';
+        // 57: logen_delivery_fee(i)
+        // 58-59: order_group_id(s), order_group_seq(i)
+        $type_string = 'issssssssssssssssssssssisiisiiiiisiiiiisdsssssdsisiiiissisi';
         $placeholder_count = substr_count($insert_query, '?');  // 검증 1
         $type_count = strlen($type_string);                      // 검증 2
-        $var_count = 58;                                         // 검증 3
+        $var_count = 59;                                         // 검증 3
 
         if ($placeholder_count !== $type_count || $type_count !== $var_count) {
             error_log("🔴 bind_param 개수 불일치! placeholder=$placeholder_count, type=$type_count, var=$var_count");
@@ -616,7 +619,7 @@ try {
             $spec_type, $spec_material, $spec_size, $spec_sides, $spec_design,
             $quantity_value, $quantity_unit, $quantity_sheets, $quantity_display,
             $price_supply, $price_vat, $price_vat_amount, $data_version,
-            $shipping_fee_type, $shipping_bundle_type,
+            $shipping_fee_type, $shipping_bundle_type, $prepaid_shipping_fee,
             $order_group_id, $order_group_seq_counter
         );
         

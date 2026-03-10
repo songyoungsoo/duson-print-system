@@ -163,6 +163,20 @@ class ShippingCalculator
         '48절' => 'A6',  // "48절 빌지, 영수증"
     ];
 
+    // ===== 박스 그룹핑 규칙 (2026-03-09) =====
+    // 소량 합포장 가능 그룹 — 이 제품들은 1박스에 혼합 가능 (총 20kg까지)
+    // 예: 명함 3kg + 스티커 3kg + 상품권 3kg = 1박스
+    const MIXABLE_PRODUCTS = ['namecard', 'sticker', 'merchandisebond'];
+
+    // 별도 박스 필수 — 다른 제품과 절대 혼합 불가 (각각 독립 박스)
+    const SEPARATE_BOX_PRODUCTS = ['envelope', 'inserted', 'ncrflambeau', 'littleprint', 'cadarok', 'msticker'];
+
+    // 무조건 착불 — 선불 불가, 택배사에서 수취인에게 직접 청구
+    const ALWAYS_COD_PRODUCTS = ['msticker'];
+
+    // 박스 최대 중량 (kg) — 모든 그룹 공통
+    const MAX_BOX_WEIGHT_KG = 20;
+
     /**
      * 장바구니 아이템 배열로부터 전체 배송 추정 계산
      * 
@@ -185,18 +199,68 @@ class ShippingCalculator
             $totalFee += $estimate['estimated_fee'] ?? 0;
         }
 
-        // 묶음배송: 전체 무게 합산 → 20kg 기준 박스 재분리 + 택배비 재계산
+        // 묶음배송: 박스 그룹핑 규칙 적용 (2026-03-09)
+        // - 합포장 가능(명함+스티커+상품권): 1박스에 혼합, 20kg 초과 시 분리
+        // - 별도 박스(봉투/전단지/양식지/포스터/카다록/자석스티커): 각각 독립 박스
+        // - 자석스티커: 무조건 착불 (택배비 0)
+        $boxGroups = [];
+        $hasCodItems = false;
+
         if ($packingMode === 'bundle' && count($cartItems) > 1) {
-            $totalWeightKg = $totalWeightG / 1000;
-            $totalBoxes = max(1, (int)ceil($totalWeightKg / 20));
-            // 묶음 시 전체 무게 기준 택배비 재계산 (개별 fee 합산 대신)
-            $totalFee = self::estimateFeeByWeight($totalBoxes, round($totalWeightKg, 1));
+            // 1) 아이템을 박스 그룹으로 분류
+            foreach ($results as $estimate) {
+                $group = self::getBoxGroup($estimate['product_type']);
+                if (!isset($boxGroups[$group])) {
+                    $boxGroups[$group] = ['weight_g' => 0, 'items' => [], 'has_cod' => false];
+                }
+                $boxGroups[$group]['weight_g'] += $estimate['total_weight_g'];
+                $boxGroups[$group]['items'][] = $estimate;
+                if (self::isAlwaysCOD($estimate['product_type'])) {
+                    $boxGroups[$group]['has_cod'] = true;
+                    $hasCodItems = true;
+                }
+            }
+
+            // 2) 그룹별 박스수/택배비 재계산
+            $totalBoxes = 0;
+            $totalFee = 0;
+            $groupDetails = [];
+
+            foreach ($boxGroups as $groupKey => $groupData) {
+                $groupWeightKg = round($groupData['weight_g'] / 1000, 1);
+                $groupBoxes = max(1, (int)ceil($groupWeightKg / self::MAX_BOX_WEIGHT_KG));
+
+                if ($groupData['has_cod']) {
+                    // 착불 제품: 택배비 0 (수취인 부담)
+                    $groupFee = 0;
+                } else {
+                    $groupFee = self::estimateFeeByWeight($groupBoxes, $groupWeightKg);
+                }
+
+                $totalBoxes += $groupBoxes;
+                $totalFee += $groupFee;
+
+                $groupDetails[] = [
+                    'group'     => $groupKey,
+                    'label'     => self::getGroupLabel($groupKey),
+                    'weight_kg' => $groupWeightKg,
+                    'boxes'     => $groupBoxes,
+                    'fee'       => $groupFee,
+                    'is_cod'    => $groupData['has_cod'],
+                    'item_count'=> count($groupData['items']),
+                ];
+            }
         }
 
         // 택배비 라벨 생성
         $feeLabel = '';
         if ($packingMode === 'bundle' && count($cartItems) > 1) {
-            $feeLabel = '묶음배송 무게별 차등';
+            $groupCount = count($boxGroups);
+            if ($groupCount === 1) {
+                $feeLabel = '묶음배송 무게별 차등';
+            } else {
+                $feeLabel = '묶음배송 ' . $groupCount . '그룹 (' . ($hasCodItems ? '착불 포함' : '무게별 차등') . ')';
+            }
         } elseif (count($results) === 1 && !empty($results[0]['fee_label'])) {
             $feeLabel = $results[0]['fee_label'];
         } else {
@@ -211,6 +275,8 @@ class ShippingCalculator
             'total_fee'      => $totalFee,
             'fee_label'      => $feeLabel,
             'packing_mode'   => $packingMode,
+            'box_groups'     => $boxGroups ? array_values($groupDetails ?? []) : [],
+            'has_cod_items'  => $hasCodItems,
             'is_estimate'    => true,
         ];
     }
@@ -689,17 +755,31 @@ class ShippingCalculator
      */
     private static function estimateEnvelopeItem(array $item, int $gsm, int $quantity): array
     {
-        // 봉투 종류 감지
-        $sizeCode = $item['PN_type'] ?? $item['spec_size'] ?? '';
+        // 봉투 종류 감지 (spec_size/PN_type 텍스트 → MY_type/Section 코드 fallback)
+        $sizeCode = $item['spec_size'] ?? $item['PN_type'] ?? '';
         $envelopeType = '소봉투';
-        if (preg_match('/대봉투/u', $sizeCode)) $envelopeType = '대봉투';
-        elseif (preg_match('/쟈켓소봉투|자켓소봉투/u', $sizeCode)) $envelopeType = '쟈켓소봉투';
-        elseif (preg_match('/A4\s*자켓/ui', $sizeCode)) $envelopeType = 'A4자켓';
-        elseif (preg_match('/A4\s*소봉투/ui', $sizeCode)) $envelopeType = 'A4소봉투';
+        if (preg_match('/대봉투/u', $sizeCode)) {
+            $envelopeType = '대봉투';
+        } elseif (preg_match('/䆏켓소봉투|자켓소봉투/u', $sizeCode)) {
+            $envelopeType = '䆏켓소봉투';
+        } elseif (preg_match('/A4\s*자켓/ui', $sizeCode)) {
+            $envelopeType = 'A4자켓';
+        } elseif (preg_match('/A4\s*소봉투/ui', $sizeCode)) {
+            $envelopeType = 'A4소봉투';
+        }
+        // MY_type/Section 코드로 대봉투 감지 (getDeliveryConfigKey와 동일 로직)
+        if ($envelopeType === '소봉투') {
+            $myType = $item['MY_type'] ?? '';
+            $section = $item['Section'] ?? '';
+            $largeSections = ['473','474','741','935','936','985','994'];
+            if ($myType === '466' || in_array($section, $largeSections)) {
+                $envelopeType = '대봉투';
+            }
+        }
 
         $spec = self::ENVELOPE_SPECS[$envelopeType] ?? self::ENVELOPE_SPECS['소봉투'];
 
-        // 대봉투 기본 120g (parseGSM이 100g 기본값을 반환했을 때 보정)
+        // 대봉투: parseGSM이 기본값(100g) 반환 시 → 120g로 보정 (주문 시 120g/150g 선택에 따라 실제 gsm 적용)
         if ($envelopeType === '대봉투' && $gsm === 100) {
             $gsm = 120;
         }
@@ -910,6 +990,12 @@ class ShippingCalculator
             if ($yeon > 0) return (int)($yeon * $sheetsPerReam);
         }
         
+        // quantity (프론트엔드 장바구니에서 직접 전달하는 수량)
+        if (!empty($item['quantity'])) {
+            $val = intval($item['quantity']);
+            if ($val > 0) return $val;
+        }
+
         // quantity_sheets (정확한 매수 — DB에 이미 계산된 값)
         if (!empty($item['quantity_sheets'])) {
             $val = intval($item['quantity_sheets']);
@@ -1209,12 +1295,60 @@ class ShippingCalculator
     }
 
     /**
+     * 제품 타입으로 박스 그룹 결정
+     * 
+     * 합포장 가능 제품(명함/스티커/상품권)은 'mixable' 그룹으로 묶여 1박스에 혼합 가능.
+     * 별도 박스 제품(봉투/전단지/양식지/포스터/카다록/자석스티커)은 각 product_type이 그룹키.
+     * 같은 종류 그룹주문(예: 스티커 여러 건)은 자동으로 같은 그룹에 합산됨.
+     * 
+     * @param string $productType 제품 타입 코드
+     * @return string 박스 그룹 키 ('mixable' 또는 제품 타입명)
+     */
+    public static function getBoxGroup(string $productType): string
+    {
+        if (in_array($productType, self::MIXABLE_PRODUCTS)) {
+            return 'mixable';  // 합포장 그룹
+        }
+        // 별도 박스 제품은 제품 타입 자체가 그룹
+        return $productType;
+    }
+
+    /**
+     * 제품이 무조건 착불인지 확인
+     * 자석스티커는 무조건 착불 (무게/부피 때문에 택배사에서 직접 청구)
+     * 
+     * @param string $productType 제품 타입 코드
+     * @return bool
+     */
+    public static function isAlwaysCOD(string $productType): bool
+    {
+        return in_array($productType, self::ALWAYS_COD_PRODUCTS);
+    }
+
+    /**
+     * 박스 그룹 라벨 반환 (UI 표시용)
+     */
+    private static function getGroupLabel(string $groupKey): string
+    {
+        $labels = [
+            'mixable'        => '합포장 (명함+스티커+상품권)',
+            'envelope'       => '봉투 (별도박스)',
+            'inserted'       => '전단지 (별도박스)',
+            'ncrflambeau'    => '양식지 (별도박스)',
+            'littleprint'    => '포스터 (별도박스)',
+            'cadarok'        => '카다록 (별도박스)',
+            'msticker'       => '자석스티커 (별도박스, 착불)',
+        ];
+        return $labels[$groupKey] ?? $groupKey . ' (별도박스)';
+    }
+
+    /**
      * 소형 제품 간이 추정 (명함, 스티커, 상품권, 봉투)
      */
     private static function estimateSmallProduct(string $productType, int $quantity, array $item): array
     {
         $defaultWeights = [
-            'namecard'        => ['per_unit_g' => 3,   'box_g' => 500,  'max_per_box' => 5000],
+            'namecard'        => ['per_unit_g' => 2,   'box_g' => 500,  'max_per_box' => 5000],  // 실측: 90×50mm 250~350gsm+코팅 ≈ 1.1~1.6g → 안전마진 2g
             'sticker'         => ['per_unit_g' => 5,   'box_g' => 500,  'max_per_box' => 3000],
             'msticker'        => ['per_unit_g' => 15,  'box_g' => 500,  'max_per_box' => 1000],
             'envelope'        => ['per_unit_g' => 10,  'box_g' => 800,  'max_per_box' => 500],
@@ -1257,5 +1391,410 @@ class ShippingCalculator
             }
         }
         return self::BOX_SPECS['A3_box']; // 기본값
+    }
+
+    // ====================================================================
+    // 선불 택배비 자동 분류 시스템 (2026-03-09)
+    // delivery_rules_config.php 기반 고정 요금 체계
+    // ====================================================================
+
+    /**
+     * 장바구니 아이템들의 선불 택배비 분류 및 요금 계산
+     * delivery_rules_config.php의 고정 요금 사용 (무게 계산 아님)
+     *
+     * @param array $cartItems 장바구니 아이템 배열 (OnlineOrder에서 전달)
+     * @return array [
+     *   'type'     => 'auto' | 'call_required' | 'cod_only' | 'mixed',
+     *   'items'    => [...per-item classification],
+     *   'total_fee'  => int (자동선불 합계, VAT 미포함),
+     *   'total_boxes' => int,
+     *   'has_cod'  => bool,
+     *   'has_call_required' => bool,
+     *   'call_required_products' => string[] (전화요망 제품명 목록),
+     *   'notice'   => string (고객에게 보여줄 안내 메시지)
+     * ]
+     */
+    public static function classifyPrepaid(array $cartItems): array
+    {
+        $configPath = dirname(__DIR__) . '/shop_admin/delivery_rules_config.php';
+        $config = file_exists($configPath) ? include($configPath) : [];
+
+        $result = [
+            'type'       => 'auto',
+            'items'      => [],
+            'total_fee'  => 0,
+            'total_boxes' => 0,
+            'has_cod'    => false,
+            'has_call_required' => false,
+            'call_required_products' => [],
+            'notice'     => '',
+        ];
+
+        foreach ($cartItems as $item) {
+            $classification = self::classifyItemPrepaid($item, $config);
+            $result['items'][] = $classification;
+
+            if ($classification['prepaid_type'] === 'cod_only') {
+                $result['has_cod'] = true;
+            } elseif ($classification['prepaid_type'] === 'call_required') {
+                $result['has_call_required'] = true;
+                $result['call_required_products'][] = $classification['product_label'];
+            } else {
+                $result['total_fee'] += $classification['fee'];
+                $result['total_boxes'] += $classification['boxes'];
+            }
+        }
+
+        // 합포장 그룹(스티커+명함+상품권) 합산 무게 10kg 초과 → 전화요망
+        $mixableWeight = 0;
+        foreach ($cartItems as $item) {
+            $pt = $item['product_type'] ?? '';
+            if (in_array($pt, self::MIXABLE_PRODUCTS) || $pt === 'sticker_new') {
+                $est = self::estimateFromCart([$item], 'individual');
+                $mixableWeight += ($est['total_weight_kg'] ?? 0);
+            }
+        }
+        if ($mixableWeight > 10 && !$result['has_call_required'] && !$result['has_cod']) {
+            $result['type'] = 'call_required';
+            $result['has_call_required'] = true;
+            $result['total_fee'] = 0;
+            $result['notice'] = '묶음배송 합산 약 ' . round($mixableWeight, 1) . 'kg — 택배비는 전화 문의 후 확정됩니다. (☎ 02-2632-1830)';
+            return $result;
+        }
+
+        // 최종 분류 결정
+        if ($result['has_cod'] && count($cartItems) === 1) {
+            $result['type'] = 'cod_only';
+            $result['notice'] = '자석스티커는 착불만 가능합니다.';
+        } elseif ($result['has_call_required']) {
+            $result['type'] = 'call_required';
+            $products = implode(', ', $result['call_required_products']);
+            $result['notice'] = $products . ' — 택배비는 전화 문의 후 확정됩니다. (☎ 02-2632-1830)';
+        } elseif ($result['has_cod']) {
+            $result['type'] = 'mixed';
+            $result['notice'] = '자석스티커는 착불 별도 배송됩니다. 나머지 선불 택배비: ' . number_format($result['total_fee']) . '원';
+        }
+
+        return $result;
+    }
+
+    /**
+     * 개별 아이템의 선불 분류
+     */
+    private static function classifyItemPrepaid(array $item, array $config): array
+    {
+        $productType = $item['product_type'] ?? '';
+        $configKey = self::getDeliveryConfigKey($productType, $item);
+        $entry = $config[$configKey] ?? $config['default'] ?? [];
+
+        $prepaidType = $entry['prepaid_type'] ?? 'call_required';
+        $label = $entry['label'] ?? $productType;
+
+        // 착불/전화요망은 바로 반환
+        if ($prepaidType !== 'auto') {
+            return [
+                'product_type'  => $productType,
+                'config_key'    => $configKey,
+                'product_label' => $label,
+                'prepaid_type'  => $prepaidType,
+                'fee'           => 0,
+                'boxes'         => 0,
+                'rule_label'    => '',
+            ];
+        }
+
+        // 스티커: 사이즈 자유입력이라 무게 기반 판단
+        if ($productType === 'sticker_new' || $configKey === 'sticker') {
+            $estimate = self::estimateStickerItem($item);
+            $weightKg = $estimate['total_weight_kg'] ?? 0;
+
+            // 10kg 초과 → 전화요망 (관리자 개입)
+            if ($weightKg > 10) {
+                return [
+                    'product_type'  => $productType,
+                    'config_key'    => $configKey,
+                    'product_label' => $label,
+                    'prepaid_type'  => 'call_required',
+                    'fee'           => 0,
+                    'boxes'         => 0,
+                    'rule_label'    => '약 ' . round($weightKg, 1) . 'kg (전화요망)',
+                ];
+            }
+
+            // 10kg 이하 → 자동선불 3,000원 1박스
+            return [
+                'product_type'  => $productType,
+                'config_key'    => $configKey,
+                'product_label' => $label,
+                'prepaid_type'  => 'auto',
+                'fee'           => 3000,
+                'boxes'         => 1,
+                'rule_label'    => '1박스 (약 ' . round($weightKg, 1) . 'kg)',
+            ];
+        }
+
+        // 수량 추출 → 규칙 매칭
+        $quantity = self::getQuantityForConfig($productType, $item);
+        $rules = $entry['rules'] ?? [];
+        $matched = self::findMatchingRule($rules, $quantity);
+
+        return [
+            'product_type'  => $productType,
+            'config_key'    => $configKey,
+            'product_label' => $label,
+            'prepaid_type'  => 'auto',
+            'fee'           => $matched['price'] ?? 0,
+            'boxes'         => $matched['box'] ?? 1,
+            'rule_label'    => $matched['label'] ?? '',
+        ];
+    }
+
+    /**
+     * 제품 타입 + 스펙 → delivery_rules_config key 매핑
+     *
+     * 대부분 product_type 그대로 사용.
+     * 전단지: 사이즈 + 평량으로 세분화 (inserted_a4, inserted_b5 등)
+     * 봉투: 소봉투/대봉투 구분
+     */
+    public static function getDeliveryConfigKey(string $productType, array $item = []): string
+    {
+        // 전단지: 사이즈 + 평량 기반 분류
+        if ($productType === 'inserted') {
+            return self::classifyInsertedConfigKey($item);
+        }
+
+        // 봉투: 소봉투 vs 대봉투
+        if ($productType === 'envelope') {
+            $size = $item['spec_size'] ?? '';
+            // spec_size에 '대봉투' 포함 여부 먼저 체크
+            if (!empty($size) && mb_strpos($size, '대봉투') !== false) {
+                return 'envelope_large';
+            }
+            // MY_Fsd 코드로 판단 (Section = 대봉투 하위 규격)
+            $myFsd = $item['MY_Fsd'] ?? '';
+            if (!empty($myFsd)) {
+                $fsdType = self::envelopeFsdCodeToType($myFsd);
+                if ($fsdType === '대봉투') return 'envelope_large';
+            }
+            // Section 코드로 판단 (Section = 대봉투 하위 규격 no)
+            $section = $item['Section'] ?? '';
+            if (!empty($section)) {
+                $largeSections = ['473','474','741','935','936','985','994'];  // 대봉투 하위 규격 no
+                if (in_array($section, $largeSections)) return 'envelope_large';
+            }
+            // MY_type 코드로 판단 (대봉투 카테고리 no=466)
+            $myType = $item['MY_type'] ?? '';
+            if ($myType === '466') return 'envelope_large';
+            return 'envelope_small';  // 소봉투, A4자켓 등 → 모두 소봉투
+        }
+
+        // 스티커: sticker_new → sticker
+        if ($productType === 'sticker_new') {
+            return 'sticker';
+        }
+
+        // 나머지: product_type 그대로
+        return $productType;
+    }
+
+    /**
+     * 전단지 config key 결정
+     * 표준 사이즈(A4, A5, B5, B6) + 합판인쇄(100g 이하) → 자동선불
+     * 대형(B4, A3, 4절, 국2절) 또는 고평량(120g+) → 전화 요망
+     */
+    private static function classifyInsertedConfigKey(array $item): string
+    {
+        // spec_size → PN_type 코드 fallback
+        $size = $item['spec_size'] ?? '';
+        if (empty($size)) {
+            $size = self::pnTypeCodeToSize($item['PN_type'] ?? '');
+        }
+        $size = self::normalizePaperSize($size);
+
+        // spec_material → MY_Fsd 코드 fallback
+        $material = $item['spec_material'] ?? '';
+        if (empty($material)) {
+            $material = self::myFsdCodeToMaterial($item['MY_Fsd'] ?? '');
+        }
+        $gsm = self::extractGsmFromSpec($material);
+
+        // 고평량 (120g 초과) → 전화 요망
+        if ($gsm > 120) {
+            return 'inserted_large';
+        }
+
+        // 사이즈 매핑 (합판 90g 기준)
+        $sizeMap = [
+            'A3' => 'inserted_a3',
+            'A4' => 'inserted_a4',
+            'A5' => 'inserted_a5',
+            'B4' => 'inserted_b4',
+            'B5' => 'inserted_b5',
+            'B6' => 'inserted_b6',
+        ];
+
+        return $sizeMap[$size] ?? 'inserted_large';
+    }
+
+    /**
+     * 용지 사이즈 정규화
+     * 'A4 (210x297)' → 'A4', 'B5(16절)182x257' → 'B5', '16절' → 'B5' 등
+     */
+    private static function normalizePaperSize(string $size): string
+    {
+        // 절수 변환
+        $map = ['16절' => 'B5', '32절' => 'B6', '8절' => 'B4', '4절' => '4절', '국2절' => '국2절'];
+        if (isset($map[$size])) return $map[$size];
+
+        // 'A4 (210x297)', 'B5(16절)182x257' 등에서 앞부분 추출
+        if (preg_match('/^(A[3-5]|B[4-6])/', $size, $m)) {
+            return $m[1];
+        }
+
+        // 절수가 문자열 안에 있는 경우: 'B5(16절)' 등
+        if (preg_match('/(\d+)절/', $size, $m)) {
+            $jolMap = ['16' => 'B5', '32' => 'B6', '8' => 'B4', '4' => '4절', '2' => '국2절'];
+            return $jolMap[$m[1]] ?? $size;
+        }
+
+        return $size;
+    }
+
+    /**
+     * spec_material에서 gsm 추출
+     * 예: '100g 아트지' → 100, '80g 모조' → 80, '250g 아트지' → 250
+     */
+    private static function extractGsmFromSpec(string $material): int
+    {
+        if (preg_match('/(\d+)g/', $material, $m)) {
+            return (int)$m[1];
+        }
+        // gsm 불명 — 합판인쇄 기본(100g)으로 간주 (자동선불 허용)
+        return 100;
+    }
+
+    /**
+     * PN_type DB 코드(no) → 사이즈 문자열 변환
+     * mlangprintauto_transactioncate: no=821 → 'A4', no=818 → 'B5' 등
+     */
+    private static function pnTypeCodeToSize(string $code): string
+    {
+        $map = [
+            '818' => 'B5',   // B5(16절)182x257
+            '820' => 'B6',   // B6(32절)127x182
+            '821' => 'A4',   // A4 (210x297)
+            '822' => 'A5',   // A5(147x210)
+            '823' => 'B4',   // B4(8절) 257x367
+            '824' => 'A3',   // A3 (297x423)
+            '825' => '4절',  // 4절(367x517)
+            '826' => '국2절', // 국2절 423x597
+        ];
+        return $map[$code] ?? '';
+    }
+
+    /**
+     * MY_Fsd DB 코드(no) → 재질명 변환 (GSM 추출용)
+     * mlangprintauto_transactioncate: no=626 → '90g아트지' 등
+     */
+    private static function myFsdCodeToMaterial(string $code): string
+    {
+        $map = [
+            '626' => '90g아트지',       // 합판전단
+            '807' => '80g모조',         // 복사용지
+            '808' => '100g모조',
+            '809' => '120g모조',
+            '943' => '150g모조',
+            '714' => '120g아트지',      // 독판인쇄
+            '715' => '150g아트지',
+            '716' => '180g아트지',
+            '717' => '200g아트지',
+            '806' => '250g아트지',
+            '924' => '300g아트지',
+        ];
+        return $map[$code] ?? '';
+    }
+
+    /**
+     * 봉투 MY_Fsd DB 코드(no) → 소봉투/대봉투 타입 변환
+     */
+    private static function envelopeFsdCodeToType(string $code): string
+    {
+        $large = ['473','474','935','936','985','994'];  // 대봉투 코드들
+        if (in_array($code, $large)) {
+            return '대봉투';
+        }
+        return '소봉투';  // 나머지는 모두 소봉투
+    }
+
+    /**
+     * 아이템에서 config 매칭용 수량 추출
+     *
+     * - NCR양식지: quantity_value (권수)
+     * - 전단지: quantity_sheets (매수) — 연수×sheets_per_ream은 프론트에서 변환
+     * - 기타: quantity_sheets → mesu → MY_amount 순 fallback
+     */
+    private static function getQuantityForConfig(string $productType, array $item): int
+    {
+        // NCR: 권수 사용
+        if ($productType === 'ncrflambeau') {
+            return (int)($item['quantity_value'] ?? $item['MY_amount'] ?? 0);
+        }
+
+        // 매수 우선
+        $sheets = (int)($item['quantity_sheets'] ?? 0);
+        if ($sheets > 0) return $sheets;
+
+        // fallback: mesu (스티커)
+        $mesu = (int)($item['mesu'] ?? 0);
+        if ($mesu > 0) return $mesu;
+
+        // 전단지: MY_amount는 연수 → 매수로 변환 필요
+        $amount = (float)($item['MY_amount'] ?? 0);
+        if ($productType === 'inserted' && $amount > 0) {
+            $sheetsPerReam = self::getSheetsPerReam($item);
+            return (int)($amount * $sheetsPerReam);
+        }
+
+        // fallback: quantity 필드 (명함, 봉투, 포스터 등 매수 단위 제품)
+        $qty = (int)($item['quantity'] ?? 0);
+        if ($qty > 0) return $qty;
+
+        return (int)$amount;
+    }
+    /**
+     * 전단지 1연당 매수 (PN_type 사이즈 기준)
+     * A4: 4,000매, A5: 8,000매, B5(16절): 8,000매, B6(32절): 16,000매
+     */
+    private static function getSheetsPerReam(array $item): int
+    {
+        $size = $item['spec_size'] ?? '';
+        if (empty($size)) {
+            $size = self::pnTypeCodeToSize($item['PN_type'] ?? '');
+        }
+        $size = self::normalizePaperSize($size);
+
+        $map = [
+            'A4' => 4000,
+            'A5' => 8000,
+            'B5' => 8000,
+            'B6' => 16000,
+            'B4' => 4000,   // 8절: 1연=4,000매
+            'A3' => 2000,
+        ];
+        return $map[$size] ?? 4000;  // 기본 A4 기준
+    }
+
+    /**
+     * 수량에 맞는 규칙 찾기
+     */
+    private static function findMatchingRule(array $rules, int $quantity): array
+    {
+        foreach ($rules as $rule) {
+            if ($quantity >= $rule['min'] && $quantity <= $rule['max']) {
+                return $rule;
+            }
+        }
+        // 매칭 안 되면 마지막 규칙 (최대 구간)
+        return !empty($rules) ? end($rules) : ['price' => 0, 'box' => 0, 'label' => ''];
     }
 }

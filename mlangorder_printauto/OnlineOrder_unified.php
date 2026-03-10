@@ -1045,25 +1045,49 @@ if (!empty($debug_info) && strpos($_SERVER['HTTP_HOST'], 'localhost') !== false)
                         </div>
                         <?php endif; ?>
 
-                        <div id="shipping_prepaid_info" style="display: none; background: #f0f7ff; border: 1px solid #b8d4f0; border-radius: 8px; padding: 14px 16px; margin-bottom: 0.5rem;">
-                            <div style="display: flex; align-items: center; gap: 6px; margin-bottom: 10px;">
-                                <span style="font-size: 1.1rem;">📦</span>
-                                <span style="font-weight: 700; color: #1E4E79; font-size: 0.95rem;">배송 정보</span>
-                                <span style="background: #e0a800; color: #fff; font-size: 0.7rem; padding: 1px 6px; border-radius: 3px; font-weight: 600;">추정</span>
+                        <!-- 선불 배송 정보: 자동선불 / 전화요망 / 착불전용 -->
+                        <div id="shipping_prepaid_info" style="display: none;">
+                            <!-- ✅ 자동선불: 배송비 확정 -->
+                            <div id="shipping_auto_info" style="display: none; background: #f0f7ff; border: 1px solid #b8d4f0; border-radius: 6px; padding: 10px 14px; margin-bottom: 0.5rem; font-size: 0.85rem;">
+                                <div style="display: flex; align-items: center; justify-content: space-between; gap: 8px; flex-wrap: wrap;">
+                                    <div style="display: flex; align-items: center; gap: 5px;">
+                                        <span style="font-size: 0.95rem;">📦</span>
+                                        <span style="font-weight: 600; color: #1E4E79;">선불 택배비:</span>
+                                        <strong id="prepaid_fee_display" style="color: #1E4E79; font-size: 0.95rem;"></strong>
+                                        <span style="color: #28a745; font-size: 0.8rem; margin-left: 4px;">✅ 결제 포함</span>
+                                    </div>
+                                    <div id="weight_notice" style="font-size: 0.78rem; color: #888;">
+                                        예상 <strong id="weight_range_display" style="color: #555;"></strong> <span style="color: #aaa;">(부자재 포함, ±2kg 차이 가능)</span>
+                                    </div>
+                                </div>
+                                <div id="prepaid_items_detail" style="margin-top: 6px; font-size: 0.8rem; color: #555; line-height: 1.5;"></div>
                             </div>
-                            <div id="shipping_estimate_content" style="font-size: 0.9rem; color: #333; line-height: 1.7;">
-                                <div>예상 무게: <strong id="est_weight">계산 중...</strong> <span style="color: #888; font-size: 0.8rem;">(부자재 포함)</span></div>
-                                <div>예상 박스: <strong id="est_boxes">계산 중...</strong></div>
-                                <div>추정 택배비: <strong id="est_fee">계산 중...</strong> <span id="est_fee_label" style="color: #888; font-size: 0.8rem;"></span></div>
+
+                            <!-- 📞 전화 요망: 배송비 별도 확인 -->
+                            <div id="shipping_call_info" style="display: none; background: #fff8e1; border: 1px solid #f0c040; border-radius: 8px; padding: 14px 16px; margin-bottom: 0.5rem;">
+                                <div style="display: flex; align-items: center; gap: 6px; margin-bottom: 10px;">
+                                    <span style="font-size: 1.1rem;">📞</span>
+                                    <span style="font-weight: 700; color: #856404; font-size: 0.95rem;">배송비 별도 확인</span>
+                                </div>
+                                <div id="call_required_message" style="font-size: 0.9rem; color: #856404; line-height: 1.7;"></div>
+                                <div style="margin-top: 10px;">
+                                    <span style="display: inline-block; background: #dc3545; color: #fff; font-size: 1rem; font-weight: 700; padding: 6px 12px; border-radius: 5px;">☎ 02-2632-1830</span>
+                                    <span style="display: block; margin-top: 6px; font-size: 0.82rem; color: #888;">전화 협의 후 택배비가 확정되면 결제 안내를 드립니다</span>
+                                </div>
                             </div>
-                            <div style="margin-top: 10px; padding-top: 8px; border-top: 1px solid #d0e3f5; font-size: 0.82rem; color: #666; line-height: 1.5;">
-                                ※ 추정치이며 실제와 다를 수 있습니다<br>
-                                <span style="display: inline-block; margin-top: 4px; background: #dc3545; color: #fff; font-size: 1rem; font-weight: 700; padding: 6px 12px; border-radius: 5px;">☎ 02-2632-1830 전화 후 택배비가 확정됩니다</span>
+
+                            <!-- 🚚 착불만 가능 -->
+                            <div id="shipping_cod_info" style="display: none; background: #f8d7da; border: 1px solid #f5c6cb; border-radius: 8px; padding: 14px 16px; margin-bottom: 0.5rem;">
+                                <div style="display: flex; align-items: center; gap: 6px;">
+                                    <span style="font-size: 1.1rem;">🚚</span>
+                                    <span style="font-weight: 700; color: #721c24; font-size: 0.95rem;">착불만 가능한 제품입니다</span>
+                                </div>
+                                <div style="font-size: 0.85rem; color: #721c24; margin-top: 6px;">택배 수령 시 택배비를 직접 결제하시면 됩니다.</div>
                             </div>
-                        </div>
                     </div>
                     <input type="hidden" name="shipping_fee_type" id="hidden_shipping_fee_type" value="착불">
                     <input type="hidden" name="shipping_bundle_type" id="hidden_shipping_bundle_type" value="<?php echo count($cart_items) > 1 ? 'bundle' : ''; ?>">
+                    <input type="hidden" name="prepaid_shipping_fee" id="hidden_prepaid_shipping_fee" value="0">
                 </div>
 
                 <!-- 결제방법 -->
@@ -2339,7 +2363,9 @@ document.addEventListener('DOMContentLoaded', function() {
 var cartItemsForShipping = <?php echo json_encode(array_map(function($item) {
     return [
         'product_type'   => $item['product_type'] ?? '',
+        'MY_type'        => $item['MY_type'] ?? '',
         'MY_Fsd'         => $item['MY_Fsd'] ?? '',
+        'Section'        => $item['Section'] ?? '',
         'PN_type'        => $item['PN_type'] ?? '',
         'MY_amount'      => $item['MY_amount'] ?? '',
         'mesu'           => $item['mesu'] ?? '',
@@ -2347,6 +2373,7 @@ var cartItemsForShipping = <?php echo json_encode(array_map(function($item) {
         'POtype'         => $item['POtype'] ?? '',
         'spec_material'  => $item['spec_material'] ?? $item['MY_Fsd_name'] ?? '',
         'spec_size'      => $item['spec_size'] ?? $item['PN_type_name'] ?? '',
+        'quantity'       => $item['quantity'] ?? $item['MY_amount'] ?? '',
         'quantity_sheets'=> $item['quantity_sheets'] ?? '',
         'quantity_value' => $item['quantity_value'] ?? '',
         'quantity_unit'  => $item['quantity_unit'] ?? '',
@@ -2372,81 +2399,113 @@ function toggleShippingInfo() {
     var feeType = document.querySelector('input[name="shipping_fee_type"]:checked');
     var infoDiv = document.getElementById('shipping_prepaid_info');
     var hiddenType = document.getElementById('hidden_shipping_fee_type');
+    var hiddenFee = document.getElementById('hidden_prepaid_shipping_fee');
     if (!infoDiv) return;
+
     if (feeType && feeType.value === '선불') {
         infoDiv.style.display = 'block';
         if (hiddenType) hiddenType.value = '선불';
-        fetchShippingEstimate();
+        fetchPrepaidClassification();
     } else {
         infoDiv.style.display = 'none';
         if (hiddenType) hiddenType.value = '착불';
+        if (hiddenFee) hiddenFee.value = '0';
+        hideAllShippingPanels();
     }
+}
+
+function hideAllShippingPanels() {
+    ['shipping_auto_info', 'shipping_call_info', 'shipping_cod_info'].forEach(function(id) {
+        var el = document.getElementById(id);
+        if (el) el.style.display = 'none';
+    });
 }
 
 function getPackingMode() {
-    var sel = document.querySelector('input[name="shipping_bundle_type"]:checked');
-    return sel ? sel.value : '';
+    var checked = document.querySelector('input[name="shipping_bundle_type"]:checked');
+    return checked ? checked.value : 'bundle';
 }
 
 function onPackingModeChange() {
-    var hidden = document.getElementById('hidden_shipping_bundle_type');
-    if (hidden) hidden.value = getPackingMode();
-    // 선불 상태이면 추정 재계산
+    var hiddenBundle = document.getElementById('hidden_shipping_bundle_type');
+    if (hiddenBundle) hiddenBundle.value = getPackingMode();
+    // 선불 선택 상태면 재분류
     var feeType = document.querySelector('input[name="shipping_fee_type"]:checked');
     if (feeType && feeType.value === '선불') {
-        fetchShippingEstimate();
+        fetchPrepaidClassification();
     }
 }
 
-function fetchShippingEstimate() {
-    var weightEl = document.getElementById('est_weight');
-    var boxesEl = document.getElementById('est_boxes');
-    var feeEl = document.getElementById('est_fee');
-    var feeLabelEl = document.getElementById('est_fee_label');
-    if (!weightEl || !boxesEl) return;
-    if (!cartItemsForShipping || cartItemsForShipping.length === 0) {
-        weightEl.textContent = '데이터 없음';
-        boxesEl.textContent = '-';
-        if (feeEl) feeEl.textContent = '-';
-        return;
-    }
-    weightEl.textContent = '계산 중...';
-    boxesEl.textContent = '계산 중...';
-    if (feeEl) feeEl.textContent = '계산 중...';
+function fetchPrepaidClassification() {
+    hideAllShippingPanels();
+    if (!cartItemsForShipping || cartItemsForShipping.length === 0) return;
+
     var formData = new FormData();
-    formData.append('action', 'estimate');
+    formData.append('action', 'prepaid_classify');
     formData.append('cart_items', JSON.stringify(cartItemsForShipping));
     var packingMode = getPackingMode();
     if (packingMode) formData.append('packing_mode', packingMode);
+
     fetch('/includes/shipping_api.php', { method: 'POST', body: formData })
         .then(function(r) { return r.json(); })
         .then(function(res) {
-            if (res.success && res.data) {
-                weightEl.textContent = '약 ' + res.data.total_weight_kg + 'kg';
-                var boxLabel = res.data.total_boxes + '박스';
-                if (res.data.packing_mode === 'bundle') boxLabel += ' (묶음)';
-                boxesEl.textContent = boxLabel;
-                // 택배비 표시
-                if (feeEl && res.data.total_fee !== undefined) {
-                    if (res.data.total_fee > 0) {
-                        feeEl.textContent = '약 ' + Number(res.data.total_fee).toLocaleString() + '원';
-                    } else {
-                        feeEl.textContent = '-';
+            if (!res.success || !res.data) return;
+            var d = res.data;
+            var hiddenFee = document.getElementById('hidden_prepaid_shipping_fee');
+
+            if (d.type === 'auto' || d.type === 'mixed') {
+                // ✅ 자동선불 가능
+                var panel = document.getElementById('shipping_auto_info');
+                var feeEl = document.getElementById('prepaid_fee_display');
+                var detailEl = document.getElementById('prepaid_items_detail');
+                var weightEl = document.getElementById('weight_range_display');
+
+                if (panel) panel.style.display = 'block';
+                if (feeEl) feeEl.textContent = Number(d.total_fee).toLocaleString() + '원';
+                if (hiddenFee) hiddenFee.value = d.total_fee;
+
+                // 품목별 내역
+                if (detailEl && d.items) {
+                    var html = '';
+                    d.items.forEach(function(item) {
+                        if (item.prepaid_type === 'auto') {
+                            html += '<div>• ' + item.product_label + ': ' + Number(item.fee).toLocaleString() + '원 <span style="color:#888">(' + item.rule_label + ')</span></div>';
+                        }
+                    });
+                    if (d.type === 'mixed' && d.notice) {
+                        html += '<div style="color: #dc3545; margin-top: 4px;">※ ' + d.notice + '</div>';
                     }
+                    detailEl.innerHTML = html;
                 }
-                if (feeLabelEl && res.data.fee_label) {
-                    feeLabelEl.textContent = '(' + res.data.fee_label + ')';
+
+                // 무게 고지표 (±2kg 범위)
+                if (weightEl && d.weight_min_kg !== undefined) {
+                    weightEl.textContent = '약 ' + d.weight_min_kg + '~' + d.weight_max_kg + 'kg';
                 }
-            } else {
-                weightEl.textContent = '계산 불가';
-                boxesEl.textContent = '-';
-                if (feeEl) feeEl.textContent = '-';
+
+            } else if (d.type === 'call_required') {
+                // 📞 전화 요망
+                var panel = document.getElementById('shipping_call_info');
+                var msgEl = document.getElementById('call_required_message');
+                if (panel) panel.style.display = 'block';
+                if (msgEl) msgEl.textContent = d.notice || '택배비는 전화 문의 후 확정됩니다.';
+                if (hiddenFee) hiddenFee.value = '0';
+
+            } else if (d.type === 'cod_only') {
+                // 🚚 착불만 가능 — 자동으로 착불로 변경
+                var panel = document.getElementById('shipping_cod_info');
+                if (panel) panel.style.display = 'block';
+                if (hiddenFee) hiddenFee.value = '0';
+                var codRadio = document.querySelector('input[name="shipping_fee_type"][value="착불"]');
+                if (codRadio) {
+                    codRadio.checked = true;
+                    var hiddenType = document.getElementById('hidden_shipping_fee_type');
+                    if (hiddenType) hiddenType.value = '착불';
+                }
             }
         })
-        .catch(function() {
-            weightEl.textContent = '계산 오류';
-            boxesEl.textContent = '-';
-            if (feeEl) feeEl.textContent = '-';
+        .catch(function(err) {
+            console.error('Prepaid classification error:', err);
         });
 }
 
