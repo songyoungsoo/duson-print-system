@@ -728,11 +728,11 @@ function getOrderItemInfo($summary_item, $specFormatter) {
             }
 
             .print-order:first-child {
-                height: 130mm;
+                height: 124mm; /* 용지 상단 130mm = page margin 6mm + 124mm */
             }
 
             .print-order.employee-copy {
-                height: calc(285mm - 130mm - 6mm);
+                height: calc(285mm - 124mm - 6mm); /* 나머지 공간 (직원용) */
             }
 
             .print-divider.hidden {

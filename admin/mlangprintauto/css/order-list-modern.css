@@ -677,6 +677,15 @@ button {
   background-color: rgba(59, 130, 246, 0.2);
 }
 
+.badge--shipping-prepaid {
+  background-color: rgba(16, 185, 129, 0.1);
+  color: #047857;
+}
+
+.badge--shipping-prepaid:hover {
+  background-color: rgba(16, 185, 129, 0.2);
+}
+
 .badge--shipping-visit {
   background-color: rgba(16, 185, 129, 0.1);
   color: #047857;
@@ -1264,28 +1273,28 @@ button {
    주문 그룹/건수 표시 (Order Grouping & Count Display)
    ============================================================================ */
 
-/* 그룹에 속한 행 — 좌측 파란 보더 */
+/* 그룹에 속한 행 — 좌측 오렌지 보더 */
 .order-table-row--grouped {
-  border-left: 4px solid #1E4E79;
+  border-left: 4px solid #F97316;
 }
 
 /* 그룹 첫 행 — 상단 구분선 */
 .order-table-row--group-first {
-  border-top: 2px solid #1E4E79;
+  border-top: 2px solid #F97316;
 }
 
 /* 그룹 마지막 행 — 하단 구분선 */
 .order-table-row--group-last {
-  border-bottom: 2px solid #1E4E79;
+  border-bottom: 2px solid #F97316;
 }
 
 /* 그룹 헤더 행 */
 .order-table-row--group-header td {
   padding: 4px 12px;
   background: #eef2f7;
-  border-left: 4px solid #1E4E79;
+  border-left: 4px solid #3B82F6;
   font-size: 0.85rem;
-  color: #1E4E79;
+  color: #1d4ed8;
 }
 
 /* 건수 배지 (빨간색) */
@@ -1300,4 +1309,184 @@ button {
   display: inline-block;
   line-height: 1.3;
   vertical-align: middle;
+}
+
+/* ============================================================================
+   페이지 헤더 (주문 관리 타이틀 + 안내문 + 버튼)
+   ============================================================================ */
+
+.order-header {
+  margin-bottom: 4px;
+}
+
+.order-header-content {
+  display: flex;
+  align-items: center;
+  gap: var(--spacing-3);
+  flex-wrap: wrap;
+}
+
+.order-title {
+  font-size: var(--font-size-xl);
+  font-weight: 700;
+  color: var(--color-gray-800);
+  margin: 0;
+  white-space: nowrap;
+}
+
+.order-notices-inline {
+  font-size: var(--font-size-xs);
+  color: #ffffff;
+  flex: 1;
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.order-header-content .btn--primary {
+  margin-left: auto;
+  white-space: nowrap;
+}
+
+/* ============================================================================
+   필터 영역 (컴팩트 한 줄 레이아웃)
+   ============================================================================ */
+
+.order-filters {
+  margin-bottom: 4px;
+}
+
+.order-filters .filters-form {
+  margin: 0;
+}
+
+.order-table-wrapper {
+  margin-top: 0;
+  padding-top: 0;
+}
+
+.filter-row-compact {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  flex-wrap: nowrap;
+}
+
+.select--compact {
+  padding: 4px 6px;
+  font-size: 11px;
+  border: 1px solid var(--color-gray-300);
+  border-radius: var(--border-radius-sm);
+  background: #fff;
+  height: 28px;
+  max-width: 90px;
+  flex-shrink: 0;
+}
+
+.input--date-compact {
+  padding: 4px 8px;
+  font-size: var(--font-size-xs);
+  border: 1px solid var(--color-gray-300);
+  border-radius: var(--border-radius-sm);
+  width: 90px;
+  height: 30px;
+}
+
+.date-sep {
+  font-size: var(--font-size-xs);
+  color: var(--color-gray-400);
+}
+
+.input--search-compact {
+  padding: 4px 10px;
+  font-size: var(--font-size-sm);
+  border: 1px solid var(--color-gray-300);
+  border-radius: var(--border-radius-sm);
+  flex: 1;
+  min-width: 150px;
+  height: 30px;
+}
+
+.btn--compact {
+  padding: 4px 10px;
+  font-size: var(--font-size-xs);
+  height: 30px;
+  line-height: 1;
+}
+
+/* 체크박스 크기 축소 */
+.order-table .checkbox,
+.order-table input[type="checkbox"] {
+  width: 13px;
+  height: 13px;
+  margin: 0;
+  vertical-align: middle;
+  cursor: pointer;
+}
+
+/* 컨테이너 폭 (교정관리와 동일) */
+.order-list-container {
+  max-width: 1400px;
+  margin: 0 auto;
+}
+
+/* ============================================================================
+   테이블 하단 바 (액션 버튼 + 페이지네이션 한 줄)
+   ============================================================================ */
+
+.table-bottom-bar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 6px 0;
+  margin-top: 4px;
+  border-top: 1px solid var(--color-gray-200);
+}
+
+.table-bottom-left {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+}
+
+.table-bottom-right {
+  display: flex;
+  align-items: center;
+  gap: 2px;
+}
+
+/* 페이지네이션 링크 */
+.pg-link {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-width: 26px;
+  height: 26px;
+  padding: 0 6px;
+  font-size: 11px;
+  color: var(--color-gray-600);
+  text-decoration: none;
+  border: 1px solid var(--color-gray-200);
+  border-radius: var(--border-radius-sm);
+  background: #fff;
+}
+
+.pg-link:hover {
+  background: var(--color-gray-100);
+  color: var(--color-primary);
+}
+
+.pg-link--active {
+  background: var(--color-primary);
+  color: #fff;
+  border-color: var(--color-primary);
+  font-weight: 600;
+}
+
+.pg-info {
+  font-size: 11px;
+  color: var(--color-gray-400);
+  margin-left: 8px;
+  white-space: nowrap;
 }

@@ -397,4 +397,4 @@ php scripts/curator.php --json       # JSON 출력
 - `docs/curator-config.json` — 코드↔문서 매핑, 크기/신선도 임계값, 무시 경로
 
 ---
-마지막 업데이트: 2026-03-07
+마지막 업데이트: 2026-03-11

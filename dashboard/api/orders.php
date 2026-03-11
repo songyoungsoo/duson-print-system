@@ -15,7 +15,7 @@ if (empty($action)) $action = 'list';
 switch ($action) {
     case 'list':
         $page = intval($_GET['page'] ?? 1);
-        $limit = 24;
+        $limit = 20;
         $offset = ($page - 1) * $limit;
         
         $status = $_GET['status'] ?? '';
@@ -63,7 +63,7 @@ switch ($action) {
         
         if ($search !== '') {
             $search_escaped = mysqli_real_escape_string($db, $search);
-            $where_conditions[] = "(no LIKE '%$search_escaped%' OR name LIKE '%$search_escaped%' OR email LIKE '%$search_escaped%')";
+            $where_conditions[] = "(no LIKE '%$search_escaped%' OR name LIKE '%$search_escaped%' OR email LIKE '%$search_escaped%' OR bizname LIKE '%$search_escaped%' OR Type LIKE '%$search_escaped%' OR phone LIKE '%$search_escaped%' OR Hendphone LIKE '%$search_escaped%' OR cont LIKE '%$search_escaped%')";
         }
         
         $where_clause = "WHERE " . implode(" AND ", $where_conditions);

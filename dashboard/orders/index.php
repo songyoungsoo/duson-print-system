@@ -45,7 +45,7 @@ include __DIR__ . '/../includes/sidebar.php';
                 <option value="자석스티커">자석스티커</option>
             </select>
             <div class="flex-1 min-w-[180px]">
-                <input type="text" id="searchInput" placeholder="주문번호, 이름, 이메일"
+                <input type="text" id="searchInput" placeholder="주문번호, 이름, 업체명, 전화번호, 품목, 메모"
                        class="w-full px-2 py-1 text-xs border border-gray-300 rounded focus:ring-1 focus:ring-blue-500 focus:border-blue-500">
             </div>
             <button id="searchBtn" class="px-3 py-1 text-xs bg-blue-600 text-white rounded hover:bg-blue-700 transition-colors">검색</button>
@@ -671,11 +671,16 @@ document.getElementById('bulkDeleteBtn').addEventListener('click', async functio
 });
 
 document.getElementById('searchBtn').addEventListener('click', function() {
+    var searchVal = document.getElementById('searchInput').value.trim();
+    // 검색어가 있으면 기간 필터를 '전체'로 자동 변경 (오래된 주문도 검색 가능)
+    if (searchVal !== '') {
+        document.getElementById('periodFilter').value = '';
+    }
     currentFilters = {
         period: document.getElementById('periodFilter').value,
         status: document.getElementById('statusFilter').value,
         product_type: document.getElementById('productFilter').value,
-        search: document.getElementById('searchInput').value
+        search: searchVal
     };
     selectedOrders.clear();
     loadOrders(1);

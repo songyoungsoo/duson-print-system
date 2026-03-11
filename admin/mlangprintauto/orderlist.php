@@ -310,69 +310,48 @@ function TDsearchCheckField() {
 <div class="order-header">
     <div class="order-header-content">
         <h1 class="order-title">📋 주문 관리</h1>
+        <span class="order-notices-inline">
+            💡 주문정보를 보시면 자동으로 접수완료 처리 &nbsp;|&nbsp; 시안제출 버튼으로 시안 자료 업로드 가능 &nbsp;|&nbsp; 날짜검색 시 - 포함 (예: 2005-03-03 ~ 2006-11-21)
+        </span>
         <button class="btn btn--primary" onClick="window.open('admin.php?mode=OrderView', 'MViertWSubmitr','width=650,height=600,top=0,left=0,menubar=no,resizable=no,statusbar=no,scrollbars=yes,toolbar=no');">
             ➕ 신규 주문 입력
         </button>
     </div>
-    <div class="order-notices">
-        <p class="notice-item">💡 주문정보를 보시면 자동으로 접수완료로 처리 됩니다.</p>
-        <p class="notice-item">💡 시안제출 을 누르시면 시안 자료를 직접 올리실수 있습니다.</p>
-        <p class="notice-item">💡 날짜로 검색시 - 을 넣어주셔야 합니다. ( 예: 2005-03-03 ~ 2006-11-21 )</p>
-    </div>
 </div>
 
-<!-- 필터 영역 -->
+<!-- 필터 영역 (한 줄 컴팩트) -->
 <div class="order-filters">
     <form method='post' name='TDsearch' onsubmit='return TDsearchCheckField()' action='<?php echo  $PHP_SELF ?>' class="filters-form">
-        <div class="filter-row">
-            <div class="filter-group">
-                <label class="filter-label">제품 분류</label>
-                <select name='Type' class="select">
-                    <option value='total'>전체</option>
-                    <option value='inserted' <?php echo $Type == "inserted" ? "selected" : "" ?>>전단지</option>
-                    <option value='sticker' <?php echo $Type == "sticker" ? "selected" : "" ?>>스티카</option>
-                    <option value='namecard' <?php echo $Type == "namecard" ? "selected" : "" ?>>명함</option>
-                    <option value='merchandisebond' <?php echo $Type == "merchandisebond" ? "selected" : "" ?>>상품권</option>
-                    <option value='envelope' <?php echo $Type == "envelope" ? "selected" : "" ?>>봉투</option>
-                    <option value='ncrflambeau' <?php echo $Type == "ncrflambeau" ? "selected" : "" ?>>양식지</option>
-                    <option value='cadarok' <?php echo $Type == "cadarok" ? "selected" : "" ?>>리플렛</option>
-                    <option value='cadarokTwo' <?php echo $Type == "cadarokTwo" ? "selected" : "" ?>>카다로그</option>
-                    <option value='littleprint' <?php echo $Type == "littleprint" ? "selected" : "" ?>>소량인쇄</option>
-                </select>
-            </div>
-
-            <div class="filter-group">
-                <label class="filter-label">검색 필드</label>
-                <select name='Cate' class="select">
-                    <option value='no' <?php echo $Cate == "no" ? "selected" : "" ?>>번호</option>
-                    <option value='name' <?php echo $Cate == "name" ? "selected" : "" ?>>상호/성명</option>
-                    <option value='phone' <?php echo $Cate == "phone" ? "selected" : "" ?>>전화번호</option>
-                    <option value='Hendphone' <?php echo $Cate == "Hendphone" ? "selected" : "" ?>>휴대폰</option>
-                    <option value='bizname' <?php echo $Cate == "bizname" ? "selected" : "" ?>>인쇄내용</option>
-                    <option value='OrderStyle' <?php echo $Cate == "OrderStyle" ? "selected" : "" ?>>진행상태</option>
-                </select>
-            </div>
-
-            <div class="filter-group filter-group--date">
-                <label class="filter-label">날짜 검색</label>
-                <div class="date-range-inputs">
-                    <input type='text' name='YearOne' class="input input--date" placeholder="시작일 (YYYY-MM-DD)" onclick="Calendar(this);">
-                    <span class="date-separator">~</span>
-                    <input type='text' name='YearTwo' class="input input--date" placeholder="종료일 (YYYY-MM-DD)" onclick="Calendar(this);">
-                </div>
-            </div>
-
-            <div class="filter-group filter-group--search">
-                <label class="filter-label">검색어</label>
-                <input type='text' name='TDsearchValue' class="input input--search" placeholder="검색어를 입력하세요">
-            </div>
-
-            <div class="filter-actions">
-                <button type='submit' class="btn btn--primary">🔍 검색</button>
-                <?php if ($Type) { ?>
-                <button type='button' onClick="window.location='<?php echo $PHP_SELF ?>';" class="btn btn--secondary">🔄 초기화</button>
-                <?php } ?>
-            </div>
+        <div class="filter-row-compact">
+            <select name='Type' class="select select--compact" title="제품 분류">
+                <option value='total'>전체</option>
+                <option value='inserted' <?php echo $Type == "inserted" ? "selected" : "" ?>>전단지</option>
+                <option value='sticker' <?php echo $Type == "sticker" ? "selected" : "" ?>>스티카</option>
+                <option value='namecard' <?php echo $Type == "namecard" ? "selected" : "" ?>>명함</option>
+                <option value='merchandisebond' <?php echo $Type == "merchandisebond" ? "selected" : "" ?>>상품권</option>
+                <option value='envelope' <?php echo $Type == "envelope" ? "selected" : "" ?>>봉투</option>
+                <option value='ncrflambeau' <?php echo $Type == "ncrflambeau" ? "selected" : "" ?>>양식지</option>
+                <option value='cadarok' <?php echo $Type == "cadarok" ? "selected" : "" ?>>리플렛</option>
+                <option value='cadarokTwo' <?php echo $Type == "cadarokTwo" ? "selected" : "" ?>>카다로그</option>
+                <option value='littleprint' <?php echo $Type == "littleprint" ? "selected" : "" ?>>소량인쇄</option>
+            </select>
+            <select name='Cate' class="select select--compact" title="검색 필드">
+                <option value='all' <?php echo ($Cate == "all" || $Cate == "") ? "selected" : "" ?>>통합검색</option>
+                <option value='no' <?php echo $Cate == "no" ? "selected" : "" ?>>번호</option>
+                <option value='name' <?php echo $Cate == "name" ? "selected" : "" ?>>상호/성명</option>
+                <option value='phone' <?php echo $Cate == "phone" ? "selected" : "" ?>>전화번호</option>
+                <option value='Hendphone' <?php echo $Cate == "Hendphone" ? "selected" : "" ?>>휴대폰</option>
+                <option value='bizname' <?php echo $Cate == "bizname" ? "selected" : "" ?>>인쇄내용</option>
+                <option value='OrderStyle' <?php echo $Cate == "OrderStyle" ? "selected" : "" ?>>진행상태</option>
+            </select>
+            <input type='text' name='YearOne' class="input input--date-compact" placeholder="시작일" onclick="Calendar(this);">
+            <span class="date-sep">~</span>
+            <input type='text' name='YearTwo' class="input input--date-compact" placeholder="종료일" onclick="Calendar(this);">
+            <input type='text' name='TDsearchValue' class="input input--search-compact" placeholder="검색어">
+            <button type='submit' class="btn btn--primary btn--compact">🔍 검색</button>
+            <?php if ($Type) { ?>
+            <button type='button' onClick="window.location='<?php echo $PHP_SELF ?>';" class="btn btn--secondary btn--compact">🔄</button>
+            <?php } ?>
         </div>
     </form>
 </div>
@@ -432,13 +411,21 @@ if ($Type) {
 
   $TypeOk = ($Type == "total") ? "" : "and Type='$Type'";
 
-  // 번호(no) 검색은 정확히 일치, 나머지는 LIKE 검색
-  if ($Cate === 'no' && $TDsearchValue !== '') {
+  // 통합검색: 여러 필드를 동시에 LIKE 검색, 번호(no)는 정확히 일치, 나머지는 LIKE 검색
+  if ($Cate === 'all' || $Cate === '') {
+    if ($TDsearchValue !== '') {
+      $sv = mysqli_real_escape_string($db, $TDsearchValue);
+      $searchCondition = "(no LIKE '%$sv%' OR name LIKE '%$sv%' OR email LIKE '%$sv%' OR bizname LIKE '%$sv%' OR Type LIKE '%$sv%' OR phone LIKE '%$sv%' OR Hendphone LIKE '%$sv%' OR cont LIKE '%$sv%')";
+    } else {
+      $searchCondition = "1=1";
+    }
+  } elseif ($Cate === 'no' && $TDsearchValue !== '') {
     $searchCondition = "no = " . intval($TDsearchValue);
   } elseif ($Cate === 'no' && $TDsearchValue === '') {
     $searchCondition = "1=1"; // 검색어 없으면 전체
   } else {
-    $searchCondition = "$Cate like '%$TDsearchValue%'";
+    $sv = mysqli_real_escape_string($db, $TDsearchValue);
+    $searchCondition = "$Cate like '%$sv%'";
   }
 
   if ($YearOne || $YearTwo) {
@@ -547,19 +534,7 @@ if ($rows) {
       if ($my_seq === $group_total) $row_classes[] = 'order-table-row--group-last';
     }
 ?>
-<?php if ($is_new_group && $group_total > 1): ?>
-<tr class="order-table-row order-table-row--group-header">
-  <td colspan="10" style="padding: 4px 12px; background: #e0f0ff; border-left: 5px solid #3B82F6; font-size: 0.85rem; color: #1d4ed8;">
-    <strong>📋 그룹 ×<?php echo $group_total; ?>건</strong>
-    <?php if (!$is_multi_spec): ?>
-      <span style="margin-left: 8px; color: #6c757d;">같은 사양 <?php echo $spec_count; ?>건</span>
-    <?php else: ?>
-      <span style="margin-left: 8px; color: #6c757d;">다른 사양 <?php echo count($group_info[$gid]['spec_counts']); ?>종</span>
-    <?php endif; ?>
-  </td>
-</tr>
-<?php endif; ?>
-<tr class="<?php echo implode(' ', $row_classes); ?>">
+<tr class="<?php echo implode(' ', $row_classes); ?>"<?php if ($has_group): ?> style="border-left: 3px solid #3b82f6;<?php if ($is_new_group): ?> border-top: 1px solid #3b82f6;<?php endif; ?><?php if ($my_seq === $group_total): ?> border-bottom: 1px solid #3b82f6;<?php endif; ?>"<?php endif; ?>>
 <td class="order-table-td order-table-td--checkbox">
 <?php if ($row['OrderStyle'] != '5') { ?>
 <input type="checkbox" name="check[]" value="<?php echo $row['no'] ?>" class="checkbox">
@@ -569,9 +544,6 @@ if ($rows) {
     <strong><?php echo $row['no'] ?></strong>
     <?php if ($has_group && $spec_count > 1): ?>
     <span class="badge badge--count">×<?php echo $spec_count ?>건</span>
-    <?php endif; ?>
-    <?php if ($has_group): ?>
-    <span style="display:block; font-size:0.7rem; color:#1E4E79; margin-top:2px;">건 <?php echo $my_seq ?>/<?php echo $group_total ?></span>
     <?php endif; ?>
 </td>
 <td class="order-table-td">
@@ -633,12 +605,13 @@ $deliveryValue = trim($row['delivery'] ?? '');
 $logenFeeType = $row['logen_fee_type'] ?? '';
 $logenTrackingNo = $row['logen_tracking_no'] ?? '';
 
-if ($deliveryValue === '택배') {
+if (strpos($deliveryValue, '택배') !== false) {
     $badgeExtra = '';
-    if ($logenFeeType === '선불') $badgeExtra = ' 선불';
+    $badgeClass = 'badge--shipping-parcel';
+    if ($logenFeeType === '선불') { $badgeExtra = ' 선불'; $badgeClass = 'badge--shipping-prepaid'; }
     elseif ($logenFeeType === '착불') $badgeExtra = ' 착불';
     $trackingIcon = !empty($logenTrackingNo) ? ' ✓' : '';
-    echo "<button type='button' class='badge badge--shipping badge--shipping-parcel' onclick='openShippingModal({$row['no']})'>";
+    echo "<button type='button' class='badge badge--shipping {$badgeClass}' onclick='openShippingModal({$row['no']})'>";
     echo "🚚 택배{$badgeExtra}{$trackingIcon}";
     echo "</button>";
 } elseif ($deliveryValue === '방문') {
@@ -720,25 +693,25 @@ function handleStatusChange_<?php echo $row['no']; ?>(select) {
 </tbody>
 </table>
 
-<!-- 테이블 하단 액션 버튼 -->
-<div class="table-actions">
-    <div class="table-actions-left">
-        <button type='button' class="btn btn--outline" onClick="javascript:allcheck(MemoPlusecheckForm);">
+<!-- 테이블 하단 액션 버튼 + 페이지네이션 한 줄 -->
+<div class="table-bottom-bar">
+    <div class="table-bottom-left">
+        <button type='button' class="btn btn--outline btn--compact" onClick="javascript:allcheck(MemoPlusecheckForm);">
             ☑️ 전체 선택
         </button>
-        <button type='button' class="btn btn--outline" onClick="javascript:uncheck(MemoPlusecheckForm);">
+        <button type='button' class="btn btn--outline btn--compact" onClick="javascript:uncheck(MemoPlusecheckForm);">
             ☐ 선택 해제
         </button>
-        <button type='button' class="btn btn--danger" onClick="javascript:DelGCheckField();">
-            🗑️ 선택 항목 삭제
+        <button type='button' class="btn btn--danger btn--compact" onClick="javascript:DelGCheckField();">
+            🗑️ 삭제
         </button>
     </div>
+    <div class="table-bottom-right" id="paginationArea"></div>
 </div>
-
 </form>
 </div>
 
-<!-- 페이지네이션 -->
+<!-- 페이지네이션 (테이블 하단 바 오른쪽에 렌더링) -->
 <?php
 $mlang_pagego = isset($_POST['mlang_pagego']) ? $_POST['mlang_pagego'] : '';
 $OrderCate = isset($_POST['OrderCate']) ? $_POST['OrderCate'] : '';
@@ -763,49 +736,36 @@ $end_offset= intval($recordsu/$one_bbs)*$one_bbs;
 $start_page= intval($start_offset/$listcut)+1;
 $end_page= ($recordsu%$listcut>0)? intval($recordsu/$listcut)+1: intval($recordsu/$listcut);
 ?>
-
-<div class="pagination-wrapper">
-    <div class="pagination">
-        <?php if($start_offset!= 0) {
-            $apoffset= $start_offset- $one_bbs;
-        ?>
-        <a href='<?php echo $PHP_SELF ?>?offset=<?php echo $apoffset ?>&<?php echo $mlang_pagego ?>' class="pagination-link pagination-link--prev">
-            ‹ 이전
-        </a>
-        <?php } ?>
-
-        <?php
-        for($i= $start_page; $i< $start_page+$pagecut; $i++) {
-            $newoffset= ($i-1)*$listcut;
-            if($offset!= $newoffset){
-        ?>
-        <a href='<?php echo $PHP_SELF ?>?offset=<?php echo $newoffset ?>&<?php echo $mlang_pagego ?>' class="pagination-link">
-            <?php echo $i ?>
-        </a>
-        <?php
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    var area = document.getElementById('paginationArea');
+    if (area) {
+        area.innerHTML = ''
+<?php if($start_offset != 0) { $apoffset = $start_offset - $one_bbs; ?>
+            + '<a href="<?php echo $PHP_SELF ?>?offset=<?php echo $apoffset ?>&<?php echo $mlang_pagego ?>" class="pg-link">&lsaquo; 이전</a>'
+<?php } ?>
+<?php
+        for($i = $start_page; $i < $start_page + $pagecut; $i++) {
+            $newoffset = ($i-1) * $listcut;
+            if($offset != $newoffset) {
+?>
+            + '<a href="<?php echo $PHP_SELF ?>?offset=<?php echo $newoffset ?>&<?php echo $mlang_pagego ?>" class="pg-link"><?php echo $i ?></a>'
+<?php
             } else {
-        ?>
-        <span class="pagination-link pagination-link--active"><?php echo $i ?></span>
-        <?php
+?>
+            + '<span class="pg-link pg-link--active"><?php echo $i ?></span>'
+<?php
             }
-            if($i==$end_page) break;
+            if($i == $end_page) break;
         }
-        ?>
-
-        <?php if($start_offset!= $end_offset) {
-            $nextoffset= $start_offset+ $one_bbs;
-        ?>
-        <a href='<?php echo $PHP_SELF ?>?offset=<?php echo $nextoffset ?>&<?php echo $mlang_pagego ?>' class="pagination-link pagination-link--next">
-            다음 ›
-        </a>
-        <?php } ?>
-    </div>
-
-    <div class="pagination-info">
-        총 <strong><?php echo $end_page ?></strong>개의 주문
-    </div>
-</div>
-
+?>
+<?php if($start_offset != $end_offset) { $nextoffset = $start_offset + $one_bbs; ?>
+            + '<a href="<?php echo $PHP_SELF ?>?offset=<?php echo $nextoffset ?>&<?php echo $mlang_pagego ?>" class="pg-link">다음 &rsaquo;</a>'
+<?php } ?>
+            + '<span class="pg-info">총 <?php echo $end_page ?>페이지</span>';
+    }
+});
+</script>
 <?php
 }
 mysqli_close($db);
