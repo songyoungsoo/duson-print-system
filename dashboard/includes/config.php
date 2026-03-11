@@ -45,6 +45,8 @@ $DASHBOARD_NAV = [
             'chat' => ['name' => '채팅 관리', 'icon' => '💬', 'path' => '/dashboard/chat/'],
             'chat_settings' => ['name' => '채팅 설정', 'icon' => '⚙️', 'path' => '/dashboard/chat/settings.php'],
             'quotes' => ['name' => '견적 관리', 'icon' => '📋', 'path' => '/dashboard/quotes/'],
+            'quote_engine' => ['name' => '견적서 엔진', 'icon' => '📄', 'path' => '/dashboard/quote-engine/'],
+            'quote_customers' => ['name' => '거래처 관리', 'icon' => '🏢', 'path' => '/dashboard/quote-engine/customers.php'],
             'inquiries' => ['name' => '고객 문의', 'icon' => '✉️', 'path' => '/dashboard/inquiries/'],
             'reviews' => ['name' => '고객리뷰 관리', 'icon' => '⭐', 'path' => '/dashboard/embed.php?url=' . urlencode('/admin/mlangprintauto/review_manager.php'), 'embed' => true],
             // 'poster' => ['name' => 'AI 포스터', 'icon' => '🎨', 'path' => '/dashboard/poster/'],  // 임시 숨김
