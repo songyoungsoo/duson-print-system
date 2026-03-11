@@ -12,7 +12,7 @@ return [
     'port'     => 587,
     'secure'   => 'tls',  // tls or ssl
     'username' => 'dsp1830@naver.com',  // 네이버 이메일
-    'password' => '2CP3P5BTS83Y',
+    'password' => 'VC9FU2HG5J8D',
     'from_email' => 'dsp1830@naver.com',
     'from_name'  => '두손기획인쇄',
 ];

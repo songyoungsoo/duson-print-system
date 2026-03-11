@@ -108,7 +108,7 @@ try {
         $mail->SMTPSecure = 'ssl';  // PHPMailer::ENCRYPTION_SMTPS 대신 문자열 사용 (구버전 호환)
         $mail->SMTPAuth = true;
         $mail->Username = 'dsp1830';
-        $mail->Password = '2CP3P5BTS83Y';
+        $mail->Password = 'VC9FU2HG5J8D';
         $mail->CharSet = 'UTF-8';
 
         // 발신자/수신자 설정

@@ -39,7 +39,7 @@ class OrderNotificationManager {
         $this->mailer->Host = 'smtp.naver.com';
         $this->mailer->SMTPAuth = true;
         $this->mailer->Username = 'dsp1830';
-        $this->mailer->Password = '2CP3P5BTS83Y';
+        $this->mailer->Password = 'VC9FU2HG5J8D';
         $this->mailer->SMTPSecure = 'ssl';
         $this->mailer->Port = 465;
         $this->mailer->CharSet = 'UTF-8';

@@ -182,7 +182,7 @@ class EnvironmentDetector {
             'port' => 465,
             'secure' => 'ssl',
             'username' => getenv('SMTP_USERNAME') ?: 'dsp1830',
-            'password' => getenv('SMTP_PASSWORD') ?: '2CP3P5BTS83Y',
+            'password' => getenv('SMTP_PASSWORD') ?: 'VC9FU2HG5J8D',
             'from_email' => 'dsp1830@naver.com',
             'from_name' => '두손기획인쇄'
         ];

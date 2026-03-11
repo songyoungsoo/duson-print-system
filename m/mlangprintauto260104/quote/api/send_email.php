@@ -238,7 +238,7 @@ HTML;
         $mail->SMTPAuth = true;
         $mail->SMTPSecure = 'ssl';
         $mail->Username = 'dsp1830';
-        $mail->Password = '2CP3P5BTS83Y';
+        $mail->Password = 'VC9FU2HG5J8D';
         $mail->CharSet = 'UTF-8';
 
         $mail->setFrom('dsp1830@naver.com', '두손기획인쇄');
