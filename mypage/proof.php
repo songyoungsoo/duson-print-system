@@ -1,9 +1,10 @@
 <?php
 require_once __DIR__ . '/auth_required.php';
 require_once __DIR__ . '/../admin/mlangprintauto/includes/ProofWorkflow.php';
-require_once __DIR__ . '/../includes/EmailNotification.php';
+// EmailNotification은 POST 핸들러에서만 로드 (PHPMailer 6.0.5 → PHP 8.2 호환 문제 방지)
 
-$user_id = $current_user['id'];
+$user_email = $current_user['email'];
+$user_name = $current_user['name'];
 $message = '';
 $error = '';
 
@@ -24,24 +25,27 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['upload_revision'])) {
 
                 // 관리자에게 알림 이메일 전송
                 try {
+                    require_once __DIR__ . '/../includes/EmailNotification.php';
                     $proof_query = "
                         SELECT ps.order_no, ps.product_type
                         FROM proof_status ps
                         WHERE ps.id = ?
                     ";
                     $stmt = mysqli_prepare($db, $proof_query);
-                    mysqli_stmt_bind_param($stmt, "i", $proof_id);
-                    mysqli_stmt_execute($stmt);
-                    $proof_data = mysqli_fetch_assoc(mysqli_stmt_get_result($stmt));
-                    mysqli_stmt_close($stmt);
+                    if ($stmt) {
+                        mysqli_stmt_bind_param($stmt, "i", $proof_id);
+                        mysqli_stmt_execute($stmt);
+                        $proof_data = mysqli_fetch_assoc(mysqli_stmt_get_result($stmt));
+                        mysqli_stmt_close($stmt);
 
-                    if ($proof_data) {
-                        $emailNotification = new EmailNotification();
-                        $emailNotification->sendRevisionSubmittedNotification(
-                            $current_user['name'],
-                            $proof_data['order_no'],
-                            $proof_data['product_type']
-                        );
+                        if ($proof_data) {
+                            $emailNotification = new EmailNotification();
+                            $emailNotification->sendRevisionSubmittedNotification(
+                                $current_user['name'],
+                                $proof_data['order_no'],
+                                $proof_data['product_type']
+                            );
+                        }
                     }
                 } catch (Exception $e) {
                     error_log("수정본 제출 알림 이메일 전송 실패: " . $e->getMessage());
@@ -58,6 +62,18 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['upload_revision'])) {
 }
 
 // Get user's orders with proof status
+// mlangorder_printauto는 user_id 없음 — email 또는 name으로 매칭 (orders.php 패턴)
+if (!empty($user_email)) {
+    $where_field = 'o.email';
+    $where_value = $user_email;
+} elseif (!empty($user_name)) {
+    $where_field = 'o.name';
+    $where_value = $user_name;
+} else {
+    $where_field = '1';
+    $where_value = '0'; // 빈 결과 반환 (보안상 전체 조회 방지)
+}
+
 $query = "
     SELECT 
         o.no,
@@ -73,16 +89,21 @@ $query = "
         ps.created_at as proof_created_at
     FROM mlangorder_printauto o
     LEFT JOIN proof_status ps ON o.no = ps.order_no
-    WHERE o.user_id = ?
+    WHERE {$where_field} = ?
     ORDER BY o.date DESC
     LIMIT 50
 ";
 
 $stmt = mysqli_prepare($db, $query);
-mysqli_stmt_bind_param($stmt, "i", $user_id);
-mysqli_stmt_execute($stmt);
-$orders = mysqli_stmt_get_result($stmt);
-mysqli_stmt_close($stmt);
+if (!$stmt) {
+    error_log('proof.php 쿼리 준비 실패: ' . mysqli_error($db));
+    $orders = false;
+} else {
+    mysqli_stmt_bind_param($stmt, "s", $where_value);
+    mysqli_stmt_execute($stmt);
+    $orders = mysqli_stmt_get_result($stmt);
+    mysqli_stmt_close($stmt);
+}
 ?>
 <!DOCTYPE html>
 <html lang="ko">
@@ -276,7 +297,7 @@ mysqli_stmt_close($stmt);
         <?php endif; ?>
         
         <div class="proof-list">
-            <?php if (mysqli_num_rows($orders) === 0): ?>
+            <?php if (!$orders || mysqli_num_rows($orders) === 0): ?>
                 <div class="no-proof">
                     <p>주문 내역이 없습니다.</p>
                 </div>

@@ -109,6 +109,65 @@ include __DIR__ . '/../includes/sidebar.php';
             </div>
         </div>
 
+        <!-- 자동 동기화 현황 (DB + 교정이미지) -->
+        <div class="bg-white rounded-lg shadow mb-3" id="syncStatusCard">
+            <div class="p-4">
+                <div class="flex items-center justify-between mb-3">
+                    <h3 class="text-sm font-semibold text-gray-900">자동 동기화 현황</h3>
+                    <button type="button" onclick="loadSyncStatus()" class="text-[10px] text-gray-400 hover:text-gray-600" title="새로고'쳨">
+                        ↻ 새로고침
+                    </button>
+                </div>
+                <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                    <!-- DB 동기화 상태 -->
+                    <div class="border border-gray-200 rounded-lg p-3">
+                        <div class="flex items-center justify-between mb-2">
+                            <div class="flex items-center gap-1.5">
+                                <span class="text-sm">🗄️</span>
+                                <span class="text-xs font-semibold text-gray-800">DB 동기화</span>
+                            </div>
+                            <span id="dbSyncBadge" class="px-1.5 py-0.5 rounded text-[10px] font-medium bg-gray-100 text-gray-500">대기</span>
+                        </div>
+                        <div id="dbSyncInfo" class="text-[11px] text-gray-500 space-y-0.5">
+                            <p>마지막 실행: <span id="dbLastRun">-</span></p>
+                            <p>덤프: <span id="dbDumpSize">-</span> | INSERT: <span id="dbInsertCount">-</span></p>
+                        </div>
+                        <div class="mt-2 flex gap-1.5">
+                            <button type="button" onclick="triggerSync('db')" id="dbTriggerBtn"
+                                    class="px-2.5 py-1 bg-indigo-50 text-indigo-700 text-[10px] font-medium rounded hover:bg-indigo-100 transition-colors disabled:opacity-50">
+                                ▶ 즉시 실행
+                            </button>
+                        </div>
+                    </div>
+                    <!-- 교정이미지 동기화 상태 -->
+                    <div class="border border-gray-200 rounded-lg p-3">
+                        <div class="flex items-center justify-between mb-2">
+                            <div class="flex items-center gap-1.5">
+                                <span class="text-sm">🖼️</span>
+                                <span class="text-xs font-semibold text-gray-800">교정이미지 동기화</span>
+                            </div>
+                            <span id="uploadSyncBadge" class="px-1.5 py-0.5 rounded text-[10px] font-medium bg-gray-100 text-gray-500">대기</span>
+                        </div>
+                        <div id="uploadSyncInfo" class="text-[11px] text-gray-500 space-y-0.5">
+                            <p>마지막 실행: <span id="uploadLastRun">-</span></p>
+                            <p>파일: <span id="uploadTotalFiles">-</span> | 크기: <span id="uploadTotalSize">-</span></p>
+                        </div>
+                        <div class="mt-2 flex gap-1.5">
+                            <button type="button" onclick="triggerSync('upload')" id="uploadTriggerBtn"
+                                    class="px-2.5 py-1 bg-indigo-50 text-indigo-700 text-[10px] font-medium rounded hover:bg-indigo-100 transition-colors disabled:opacity-50">
+                                ▶ 즉시 실행
+                            </button>
+                            <button type="button" onclick="triggerSync('upload_nas')" id="uploadNasTriggerBtn"
+                                    class="px-2.5 py-1 bg-gray-50 text-gray-600 text-[10px] font-medium rounded hover:bg-gray-100 transition-colors disabled:opacity-50"
+                                    title="프로덕션 다운로드 건너뛰고 로컬→NAS만">
+                                NAS만
+                            </button>
+                        </div>
+                    </div>
+                </div>
+                <p class="text-[10px] text-gray-400 mt-2">cron: DB 05:00 | 이미지 05:30 (매일 새벽 자동 실행)</p>
+            </div>
+        </div>
         <!-- 동기화 모드 선택 -->
         <div class="bg-white rounded-lg shadow mb-3">
             <div class="p-4">
@@ -560,6 +619,8 @@ document.addEventListener('DOMContentLoaded', function() {
     selectMode(document.querySelector('input[name="sync_mode"]:checked'));
     renderProfileSelect();
 
+    // 동기화 현황 로드
+    loadSyncStatus();
     // 환경 정보 조회 (git 가용 여부)
     checkEnvironment();
 
@@ -597,22 +658,191 @@ function checkEnvironment() {
     .then(function(data) {
         if (data.success) {
             hasGit = data.has_git;
+            var isNas = data.is_nas || false;
+            var hasBash = data.has_bash || false;
+
             if (!hasGit) {
-                // "변경분만" 모드 비활성화
+                // "변경분만" 모드: 날짜 기반으로 변경 (Git 없어도 동작)
                 var changedCard = document.getElementById('card-changed');
-                var changedRadio = changedCard.querySelector('input[type="radio"]');
-                changedRadio.disabled = true;
-                changedCard.classList.add('opacity-50');
-                changedCard.style.cursor = 'not-allowed';
-                changedCard.querySelector('p').textContent = 'Git이 없는 환경입니다. 로컬 서버에서만 사용 가능합니다.';
+                if (changedCard) {
+                    changedCard.querySelector('p').textContent = '특정 날짜 이후 변경된 파일만 동기화합니다. (PHP 기반)';
+                }
 
                 // "Git 상태" 버튼 레이블 변경
                 var gitBtn = document.querySelector('[onclick="runAction(\'git_status\')"]');
                 if (gitBtn) gitBtn.textContent = '파일 상태';
             }
+
+            // NAS 환경에서만 동기화 비활성화 (NAS→NAS 의미 없음)
+            if (isNas) {
+                disableShellFeatures(isNas);
+            }
         }
     })
     .catch(function() { /* 실패 시 무시 - 기본값 사용 */ });
+}
+
+// === NAS 환경 쉘 기능 비활성화 ===
+function disableShellFeatures(isNas) {
+    // 1. 동기화 모드 카드 3개 비활성화 (mirror, changed, file)
+    ['mirror', 'changed', 'file'].forEach(function(mode) {
+        var card = document.getElementById('card-' + mode);
+        if (!card) return;
+        var radio = card.querySelector('input[type="radio"]');
+        if (radio) radio.disabled = true;
+        card.classList.add('opacity-50');
+        card.style.cursor = 'not-allowed';
+    });
+
+    // 2. 동기화 실행 버튼 비활성화
+    var syncBtn = document.getElementById('syncBtn');
+    if (syncBtn) {
+        syncBtn.disabled = true;
+        syncBtn.title = 'NAS 서버에서는 사용할 수 없습니다';
+    }
+
+    // 3. 즉시 실행 버튼 비활성화 (DB, 교정이미지)
+    ['dbTriggerBtn', 'uploadTriggerBtn', 'uploadNasTriggerBtn'].forEach(function(id) {
+        var btn = document.getElementById(id);
+        if (btn) {
+            btn.disabled = true;
+            btn.title = 'NAS 서버에서는 사용할 수 없습니다';
+        }
+    });
+
+    // 4. NAS 안내 배너 삽입
+    var banner = document.createElement('div');
+    banner.className = 'bg-amber-50 border border-amber-200 rounded-lg p-3 mb-3';
+    banner.innerHTML = '<div class="flex items-start gap-2">' +
+        '<span class="text-sm mt-0.5">⚠️</span>' +
+        '<div>' +
+        '<p class="text-xs font-semibold text-amber-800">NAS 서버 환경</p>' +
+        '<p class="text-[11px] text-amber-700 mt-0.5">이 서버에서는 동기화 실행이 불가합니다. 동기화는 로컬 서버의 cron이 매일 새벽 자동으로 실행합니다.</p>' +
+        '<p class="text-[10px] text-amber-600 mt-1">사용 가능: FTP 연결 테스트, NAS 목록, 파일 상태 조회</p>' +
+        '</div></div>';
+
+    // syncStatusCard 앞에 배너 삽입
+    var syncCard = document.getElementById('syncStatusCard');
+    if (syncCard) {
+        syncCard.parentNode.insertBefore(banner, syncCard);
+    }
+}
+
+// === 자동 동기화 현황 ===
+var syncStatusPollTimer = null;
+
+function loadSyncStatus() {
+    var formData = new FormData();
+    formData.append('action', 'sync_status');
+    fetch('/dashboard/api/nas-sync.php', { method: 'POST', body: formData })
+    .then(function(r) { return r.json(); })
+    .then(function(data) {
+        if (!data.success) return;
+        renderSyncStatus('db', data.db_sync, data.db_running);
+        renderSyncStatus('upload', data.upload_sync, data.upload_running);
+
+        // 실행 중이면 5초마다 폴링
+        if (data.db_running || data.upload_running) {
+            if (!syncStatusPollTimer) {
+                syncStatusPollTimer = setInterval(loadSyncStatus, 5000);
+            }
+        } else {
+            if (syncStatusPollTimer) {
+                clearInterval(syncStatusPollTimer);
+                syncStatusPollTimer = null;
+            }
+        }
+    })
+    .catch(function() {});
+}
+
+function renderSyncStatus(type, status, isRunning) {
+    var badge = document.getElementById(type + 'SyncBadge');
+    var triggerBtn = document.getElementById(type + 'TriggerBtn');
+
+    if (isRunning) {
+        badge.className = 'px-1.5 py-0.5 rounded text-[10px] font-medium bg-blue-100 text-blue-700 animate-pulse';
+        badge.textContent = '⏳ 실행 중';
+        if (triggerBtn) triggerBtn.disabled = true;
+        return;
+    }
+
+    if (!status) {
+        badge.className = 'px-1.5 py-0.5 rounded text-[10px] font-medium bg-gray-100 text-gray-500';
+        badge.textContent = '미실행';
+        return;
+    }
+
+    if (status.success === true || status.success === 'true') {
+        badge.className = 'px-1.5 py-0.5 rounded text-[10px] font-medium bg-green-100 text-green-700';
+        badge.textContent = '✓ 성공';
+    } else {
+        badge.className = 'px-1.5 py-0.5 rounded text-[10px] font-medium bg-red-100 text-red-700';
+        badge.textContent = '✗ 실패';
+    }
+
+    if (triggerBtn) triggerBtn.disabled = false;
+
+    // 시간 표시
+    if (status.last_run) {
+        var d = new Date(status.last_run);
+        var timeStr = d.getFullYear() + '/' + String(d.getMonth()+1).padStart(2,'0') + '/' +
+                     String(d.getDate()).padStart(2,'0') + ' ' +
+                     String(d.getHours()).padStart(2,'0') + ':' + String(d.getMinutes()).padStart(2,'0');
+        document.getElementById(type + 'LastRun').textContent = timeStr;
+    }
+
+    // 타입별 세부정보
+    if (type === 'db') {
+        document.getElementById('dbDumpSize').textContent = status.dump_size || '-';
+        document.getElementById('dbInsertCount').textContent = status.insert_count || '-';
+    } else if (type === 'upload') {
+        document.getElementById('uploadTotalFiles').textContent = status.local_total_files || '-';
+        document.getElementById('uploadTotalSize').textContent = status.local_total_size || '-';
+    }
+}
+
+function triggerSync(type) {
+    var action, msg, btnId;
+    if (type === 'db') {
+        action = 'trigger_db_sync';
+        msg = 'DB 동기화(nas_order_sync.sh)를 실행합니다.\n새벽 3시 덤프를 사용합니다. 계속?';
+        btnId = 'dbTriggerBtn';
+    } else if (type === 'upload') {
+        action = 'trigger_upload_sync';
+        msg = '교정이미지 동기화(sync_upload_to_nas.sh)를 실행합니다.\n프로덕션→로컬→NAS 전체. 계속?';
+        btnId = 'uploadTriggerBtn';
+    } else if (type === 'upload_nas') {
+        action = 'trigger_upload_sync';
+        msg = '로컬→NAS만 동기화합니다 (프로덕션 건너뛰). 계속?';
+        btnId = 'uploadNasTriggerBtn';
+    }
+
+    if (!confirm(msg)) return;
+
+    var btn = document.getElementById(btnId);
+    if (btn) btn.disabled = true;
+
+    var formData = new FormData();
+    formData.append('action', action);
+    if (type === 'upload_nas') formData.append('nas_only', '1');
+
+    fetch('/dashboard/api/nas-sync.php', { method: 'POST', body: formData })
+    .then(function(r) { return r.json(); })
+    .then(function(data) {
+        if (data.success) {
+            showToast(data.message, 'success');
+            // 폴링 시작
+            setTimeout(loadSyncStatus, 1000);
+        } else {
+            showToast(data.error || '실행 실패', 'error');
+            if (btn) btn.disabled = false;
+        }
+    })
+    .catch(function(err) {
+        showToast('네트워크 오류: ' + err.message, 'error');
+        if (btn) btn.disabled = false;
+    });
 }
 </script>
 

@@ -55,3 +55,11 @@ putenv('SMTP_HOST=smtp.gmail.com');
 putenv('SMTP_PORT=587');
 putenv('SMTP_USER=your_email@gmail.com');
 putenv('SMTP_PASS=your_app_password');
+
+
+// =====================================================
+// 네이버 로그인 API 설정
+// https://developers.naver.com 에서 발급
+// =====================================================
+// EnvironmentDetector::getNaverLoginConfig() 에서 관리
+// config.env.php 의 getNaverLoginConfig() 메서드에 직접 입력

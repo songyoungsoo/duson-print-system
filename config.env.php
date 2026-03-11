@@ -219,6 +219,19 @@ class EnvironmentDetector {
         $config = self::getGmailSmtpConfig();
         return $config['enabled'] && !empty($config['username']) && !empty($config['password']);
     }
+
+    /**
+     * 네이버 로그인 API 설정
+     * https://developers.naver.com 에서 발급
+     * @since 2026-03-10
+     */
+    public static function getNaverLoginConfig() {
+        return [
+            'client_id' => 'TUHSoS20Bp876PnAgs8O',
+            'client_secret' => '88BX5lLxIW',
+            'callback_url' => get_site_url() . '/member/naver_callback.php'
+        ];
+    }
 }
 
 // 편의 함수들
