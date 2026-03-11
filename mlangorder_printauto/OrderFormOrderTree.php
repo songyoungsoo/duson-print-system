@@ -1035,7 +1035,7 @@ function getOrderItemInfo($summary_item, $specFormatter) {
                         </tr>
                         <tr>
                             <th style="border: 0.3pt solid #000; background: #f0f0f0; padding: 1mm 2mm; text-align: center;">배송</th>
-                            <td style="border: 0.3pt solid #000; padding: 1mm 2mm; width: 15%;"><?= htmlspecialchars($View_delivery) ?></td>
+                            <td style="border: 0.3pt solid #000; padding: 1mm 2mm; width: 15%;"><?= htmlspecialchars($View_delivery) ?><?php if ($View_logen_fee_type === '선불'): ?> (<b>선불</b>)<?php else: ?> (착불)<?php endif; ?></td>
                             <th style="border: 0.3pt solid #000; background: #f0f0f0; padding: 1mm 2mm; width: 8%; text-align: center;">결제</th>
                             <td style="border: 0.3pt solid #000; padding: 1mm 2mm; width: 15%;"><?= htmlspecialchars($View_bank) ?></td>
                             <th style="border: 0.3pt solid #000; background: #f0f0f0; padding: 1mm 2mm; width: 8%; text-align: center;">입금자</th>
@@ -1285,7 +1285,7 @@ function getOrderItemInfo($summary_item, $specFormatter) {
                         </tr>
                         <tr>
                             <th style="border: 0.3pt solid #000; background: #f0f0f0; padding: 1mm 2mm; text-align: center;">배송</th>
-                            <td style="border: 0.3pt solid #000; padding: 1mm 2mm; width: 15%;"><?= htmlspecialchars($View_delivery) ?></td>
+                            <td style="border: 0.3pt solid #000; padding: 1mm 2mm; width: 15%;"><?= htmlspecialchars($View_delivery) ?><?php if ($View_logen_fee_type === '선불'): ?> (<b>선불</b>)<?php else: ?> (착불)<?php endif; ?></td>
                             <th style="border: 0.3pt solid #000; background: #f0f0f0; padding: 1mm 2mm; width: 8%; text-align: center;">결제</th>
                             <td style="border: 0.3pt solid #000; padding: 1mm 2mm; width: 15%;"><?= htmlspecialchars($View_bank) ?></td>
                             <th style="border: 0.3pt solid #000; background: #f0f0f0; padding: 1mm 2mm; width: 8%; text-align: center;">입금자</th>
