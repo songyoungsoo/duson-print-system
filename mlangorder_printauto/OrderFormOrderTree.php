@@ -663,7 +663,7 @@ function getOrderItemInfo($summary_item, $specFormatter) {
         /* 절취선 스타일 */
         .print-divider {
             position: relative;
-            margin: 2mm 0;
+            margin: 0 0 2mm 0;  /* 상단 마진 제거하여 정확히 130mm 지점에 위치 */
             border: none;
             border-top: 2px dashed #666;
             height: 0;
