@@ -42,7 +42,7 @@ try {
         exit;
     }
 
-    $action = trim($_GET['action'] ?? '');
+    $action = trim($_GET['action'] ?? $input['action'] ?? '');
     $engine = new QE_QuoteEngine($db);
 
     // ════════════════════════════════════════════════════
