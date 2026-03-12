@@ -17,7 +17,7 @@ namespace App\Services\AI;
 
 class ChatbotKnowledge
 {
-    public static function getSystemPrompt(): string
+    public static function getSystemPrompt($db = null): string
     {
         $companyInfo = self::getCompanyInfo();
         $workGuidelines = self::getWorkGuidelines();
@@ -29,6 +29,8 @@ class ChatbotKnowledge
         $customerFAQ = self::getCustomerFAQ();
         $printingKnowledge = self::getPrintingKnowledge();
         $minOrderGuide = self::getMinOrderGuide();
+        $productDescriptions = self::getProductDescriptions();
+        $dynamicKnowledge = self::getDynamicKnowledge($db);
 
         return <<<PROMPT
 당신은 "두손기획인쇄"의 야간 AI 상담봇 "야간당번"입니다.
@@ -47,6 +49,8 @@ class ChatbotKnowledge
 
 {$companyInfo}
 
+{$productDescriptions}
+
 {$workGuidelines}
 
 {$designPrices}
@@ -64,8 +68,72 @@ class ChatbotKnowledge
 {$printingKnowledge}
 
 {$minOrderGuide}
+
+{$dynamicKnowledge}
 PROMPT;
     }
+
+    private static function getDynamicKnowledge($db): string
+    {
+        if (!$db) return '';
+        
+        $sql = "SELECT title, content FROM knowledge_base WHERE category = '챗봇지식' ORDER BY id ASC";
+        $result = mysqli_query($db, $sql);
+        
+        if (!$result || mysqli_num_rows($result) === 0) {
+            return '';
+        }
+
+        $knowledge = "[추가 실시간 지식 (데이터베이스 기반)]\n";
+        while ($row = mysqli_fetch_assoc($result)) {
+            $knowledge .= "● " . $row['title'] . "\n" . $row['content'] . "\n\n";
+        }
+        return trim($knowledge);
+    }
+
+    private static function getProductDescriptions(): string
+    {
+        return <<<PRODUCTS
+[주요 품목 상세 안내]
+
+● 1. 스티커 (컬러스티커)
+- 제작 사이즈: 최소 10mm ~ 최대 600mm. 사각형, 도무송, 원형 등 다양한 모양.
+- 터치(배경) 여부: 원터치(배경 없음 - 재단/편집사이즈 동일), 투터치(배경 있음 - 재단사이즈 사방 3mm 여분 필요)
+- 용지별 특징:
+  * 코팅/비코팅/무광코팅 스티커 (아트지 90g): 가장 대중적. 비코팅은 필기/도장 가능. 무광은 차분하고 고급스러움.
+  * 강접 코팅 스티커 (아트지 90g): 일반 코팅지보다 접착력이 강해 제품 라벨, 봉인용으로 적합.
+  * 초강접 유광/비코팅 (아트지 90g): 최고 접착력. 야외/차량/기계 등 강력 접착용. (비코팅은 필기 가능)
+  * 은데드롱 스티커 (25g): 은색 메탈릭 느낌. 전자제품/고급브랜드 용. (얇아서 후면 반칼 없음)
+  * 투명 스티커 (투명데드롱 25g): 바탕이 비치는 깔끔한 라벨. 음료/화장품 용. (얇아서 후면 반칼 없음)
+  * 유포지 스티커 (80g): 찢어지지 않고 물에 강한 방수(PP) 재질. 냉장/냉동/야외용 필수.
+  * 모조지 스티커 (80g): 일반 종이 느낌, 필기용, 임시 라벨로 경제적임.
+  * 크라프트 스티커 (57g): 갈색 자연 질감, 수제/친환경 제품에 어울림.
+- 코팅 종류: 유광(색상 선명), 무광(차분·고급), 심플레인보우(빛 각도에 따라 무지개빛).
+- 출고 일정 (오후 6시 접수마감. 당일판은 오전 11시 마감 시 18시 97% 출고):
+  * 당일판 가능: 유광, 강접, 비코팅, 투명, 유포지, 모조지
+  * 특정일 출고: 무광(월,수), 은데드롱(수,금), 크라프트지(화,목)
+- 작업 유의사항: 
+  * 글씨/배경 먹색은 K100 필수 (CMYK 섞이면 더블톤 발생).
+  * 모든 글꼴 아웃라인(곡선화), 이미지 CMYK 300dpi 포함(Embed). 돔보선 삭제(선색 없음).
+  * 재단 특성상 밀림 발생 가능 (사방 3~4mm 여유 작업 요망). 100mm 미만은 대각선 재단될 수 있어 도무송 추천.
+  * 후면 반칼은 50mm 간격 (가로세로 방향 지정 불가). 50mm 사이즈나 은/투명데드롱은 반칼 없음.
+
+● 2. 전단지: A4, 16절 등 다양한 규격과 수량(연 단위)으로 가장 많이 쓰이는 대중적 홍보 인쇄물.
+● 3. 명함: 
+- 기본 코팅/비코팅부터 수입지(스노우지, 고급지), 카드명함 등 다양하며 귀돌이, 금박/은박 후가공이 가능합니다.
+- 수량 및 포장 단위 주의사항: 
+  * 과거처럼 '1갑(100장) 단위'로는 제작하지 않습니다.
+  * 수입지/카드명함: 기본 인쇄 매수가 200매입니다. 플라스틱 케이스에 100장씩 1갑으로 담겨 총 2갑(200매) 단위로 제공됩니다.
+  * 일반명함: 기본 인쇄 매수가 500매입니다. 종이 상자에 500매가 한 번에 담겨서 출고됩니다. (두손기획인쇄 고유 방식)
+● 4. 봉투: 서류 발송용 대봉투, 소봉투, 자켓봉투 등 회사 규격에 맞춘 흑백/컬러 봉투 제작.
+● 5. 포스터: 행사 홍보, 벽면 부착용으로 4절, 2절 등 큰 사이즈에 고해상도 인쇄.
+● 6. 자석스티커: 음식점 배달, 배포용. 뒷면 전체 고무 자석 부착.
+● 7. NCR양식지: 영수증, 계약서 등 앞장에 쓰면 뒷장에 복사되는 기능성 용지.
+● 8. 상품권: 쿠폰/상품권. 고급 지류 사용 및 절취선(미싱) 가공.
+● 9. 카탈로그/브로슈어: 회사 소개서 등 중철/무선 제본 책자.
+PRODUCTS;
+    }
+
 
     private static function getCompanyInfo(): string
     {

@@ -148,16 +148,33 @@ if ($layout !== 'auto' && in_array($layout, $validLayouts)) {
     $layoutFlag = ' --layout ' . escapeshellarg($layout);
 }
 
-$pythonCmd = sprintf(
-    'source /var/www/html/.env 2>/dev/null; export GEMINI_API_KEY; export PYTHONPATH=/home/ysung/.local/lib/python3.12/site-packages:$PYTHONPATH; python3 %s --workdir %s --auto%s > %s 2>&1 &',
-    escapeshellarg($scriptPath),
-    escapeshellarg($jobDir),
-    $layoutFlag,
-    escapeshellarg($logPath)
-);
+// .env 파일에서 API 키 직접 읽기
+$apiKey = '';
+if (file_exists('/var/www/html/.env')) {
+    $lines = file('/var/www/html/.env', FILE_IGNORE_NEW_LINES | FILE_SKIP_EMPTY_LINES);
+    foreach ($lines as $line) {
+        if (strpos(trim($line), 'GEMINI_API_KEY=') === 0) {
+            $apiKey = substr(trim($line), 15);
+            $apiKey = trim($apiKey, '"\'');
+            break;
+        }
+    }
+}
 
-$cmd = 'bash -c ' . escapeshellarg($pythonCmd);
-exec($cmd);
+// 확실하게 백그라운드로 분리되도록 실행하는 쉘 래퍼 스크립트를 임시로 생성하여 실행합니다.
+$wrapperPath = $jobDir . '/run.sh';
+$pythonPath = '/home/ysung/.local/lib/python3.12/site-packages';
+
+$shContent = "#!/bin/bash\n";
+$shContent .= "export GEMINI_API_KEY='" . $apiKey . "'\n";
+$shContent .= "export PYTHONPATH='" . $pythonPath . ":\$PYTHONPATH'\n";
+$shContent .= "nohup python3 '" . $scriptPath . "' --workdir '" . $jobDir . "' --auto" . $layoutFlag . " > '" . $logPath . "' 2>&1 &\n";
+
+file_put_contents($wrapperPath, $shContent);
+chmod($wrapperPath, 0777);
+
+// 쉘 래퍼 실행 (완벽하게 백그라운드로 떨어져나감)
+exec($wrapperPath . ' > /dev/null 2>&1');
 
 // ── 11. Return success ──
 echo json_encode([

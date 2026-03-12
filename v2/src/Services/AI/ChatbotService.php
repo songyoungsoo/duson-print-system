@@ -1293,10 +1293,9 @@ class ChatbotService
         }
         
         require_once __DIR__ . '/ChatbotKnowledge.php';
-        $prompt = ChatbotKnowledge::getSystemPrompt();
-        
-        $data = [
-            'contents' => [
+        $prompt = ChatbotKnowledge::getSystemPrompt($this->db);
+
+        $data = [            'contents' => [
                 ['role' => 'user', 'parts' => [['text' => $message]]]
             ],
             'systemInstruction' => [

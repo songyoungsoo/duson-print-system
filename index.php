@@ -1233,13 +1233,38 @@ header("Expires: 0");
         // Hero Slider functionality - Infinite Loop
         let currentIndex = 1;
         const sliderTrack = document.getElementById('sliderTrack');
-        const slides = document.querySelectorAll('.slider-slide');
+        const slides = document.querySelectorAll('.slider-slide:not(.clone)');
         const dots = document.querySelectorAll('.slider-dot');
-        const totalSlides = 11;
-        const totalWithClones = slides.length; // 13 (11 + 2 clones)
+        const totalSlides = slides.length; // 8
+        const totalWithClones = document.querySelectorAll('.slider-slide').length; // 10
         let isTransitioning = false;
         let autoPlayTimer = null;
         let videoPlaying = false;
+
+        // 슬라이드와 점의 개수가 맞지 않으면 점을 슬라이드 개수에 맞춰 다시 그림
+        if (dots.length !== totalSlides) {
+            const dotsContainer = document.querySelector('.slider-dots-container'); // 부모 컨테이너 선택
+            if (dotsContainer) {
+                dotsContainer.innerHTML = ''; // 기존 점들 삭제
+                for (let i = 0; i < totalSlides; i++) {
+                    const button = document.createElement('button');
+                    button.classList.add('slider-dot', 'w-3', 'h-3', 'rounded-full', 'bg-white/60', 'hover:bg-white', 'transition');
+                    if (i === 0) button.classList.add('active');
+                    button.dataset.slide = i;
+                    button.setAttribute('aria-label', `슬라이드 ${i + 1}`);
+                    dotsContainer.appendChild(button);
+                }
+                // 새로운 점들에 이벤트 리스너 다시 할당
+                document.querySelectorAll('.slider-dot').forEach((dot, index) => {
+                    dot.addEventListener('click', () => {
+                        if (isTransitioning) return;
+                        isTransitioning = true;
+                        moveToSlide(index + 1);
+                    });
+                });
+            }
+        }
+
 
         function moveToSlide(index, withTransition = true) {
             if (!withTransition) {

@@ -773,6 +773,27 @@ textarea {
 <main class="container">
 <form id="posterForm" autocomplete="off">
 
+  <!-- 자동 완성 영역 (Magic Form) -->
+  <div class="section-card" style="background: rgba(212,163,115,0.05); border: 2px dashed rgba(212,163,115,0.4); margin-bottom: 2rem;">
+    <div class="section-title" style="margin-bottom: 0.5rem; color: var(--accent);">
+      <span class="icon" style="background: var(--accent); color: white;">✨</span>
+      매직 폼: 자료(사진/텍스트) 기반 자동 완성
+    </div>
+    <p style="font-size: 0.85rem; color: var(--text-muted); margin-bottom: 1rem;">기존 포스터/메뉴판 사진을 올리거나 아래에 메모를 붙여넣으시면 AI가 분석하여 폼을 자동으로 채워줍니다.</p>
+
+    <div style="display: flex; flex-direction: column; gap: 0.75rem;">
+      <textarea id="magicTextInput" placeholder="여기에 행사 내용이나 메뉴판 텍스트를 자유롭게 복사해서 붙여넣으세요..." style="min-height: 80px;"></textarea>
+
+      <div style="display: flex; gap: 0.75rem; align-items: center; flex-wrap: wrap;">
+        <input type="file" id="ocrInput" accept="image/*,.txt,.hwp,.docx,.pdf" style="max-width: 300px; background: white; padding: 0.4rem;">
+        <button type="button" id="btnOcr" style="background: var(--accent); color: white; border: none; padding: 0.6rem 1.2rem; border-radius: var(--radius-sm); font-weight: 600; font-size: 0.85rem; cursor: pointer; transition: all 0.2s;">
+          AI 자동 채우기 실행 🪄
+        </button>
+        <span id="ocrStatus" style="font-size: 0.85rem; color: var(--accent); font-weight: 600; display: none;">AI가 자료를 분석하고 있습니다... ⏳</span>
+      </div>
+    </div>
+  </div>
+
   <!-- Section 1: 업종 & 가게 -->
   <div class="section-card">
     <div class="section-title">
@@ -1064,6 +1085,134 @@ textarea {
 <script>
 (function() {
   'use strict';
+
+  // ── 매직 폼 (OCR 자동완성) ──
+  var btnOcr = document.getElementById('btnOcr');
+  if (btnOcr) {
+    btnOcr.addEventListener('click', function() {
+      var fileInput = document.getElementById('ocrInput');
+      var textInput = document.getElementById('magicTextInput').value.trim();
+
+      if (!fileInput.files[0] && textInput === '') {
+        alert("포스터 사진, 문서 파일을 선택하거나 텍스트를 입력해주세요.");
+        return;
+      }
+
+      var status = document.getElementById('ocrStatus');
+      status.style.display = 'inline-block';
+      this.disabled = true;
+      this.style.opacity = '0.7';
+
+      var formData = new FormData();
+      if (fileInput.files[0]) {
+          formData.append('ocr_image', fileInput.files[0]);
+      }
+      if (textInput !== '') {
+          formData.append('magic_text', textInput);
+      }
+
+      // leaflet 모듈의 ocr_extract.php 재사용
+      fetch('../leaflet/ocr_extract.php', {
+        method: 'POST',
+        body: formData
+      })
+      .then(function(res) { return res.json(); })
+      .then(function(data) {
+        status.style.display = 'none';
+        btnOcr.disabled = false;
+        btnOcr.style.opacity = '1';
+
+        if (data.error) {
+          alert("분석 실패: " + data.error);
+          return;
+        }
+
+        // 폼 필드 채우기
+        if (data.business_name) document.getElementById('businessName').value = data.business_name;
+        if (data.category) {
+          var catSelect = document.getElementById('category');
+          var found = false;
+          for (var i = 0; i < catSelect.options.length; i++) {
+            if (catSelect.options[i].value === data.category) {
+              catSelect.selectedIndex = i;
+              found = true;
+              break;
+            }
+          }
+          if (!found) {
+            catSelect.value = '기타';
+            var customCatWrap = document.getElementById('customCategoryWrap');
+            var customCat = document.getElementById('customCategory');
+            if (customCatWrap && customCat) {
+                customCatWrap.style.display = '';
+                customCat.value = data.category;
+            }
+          }
+        }
+        if (data.phone) {
+          var phoneEl = document.getElementById('phone');
+          if (phoneEl) phoneEl.value = data.phone;
+        }
+        if (data.hours) {
+          var hoursEl = document.getElementById('hours');
+          if (hoursEl) hoursEl.value = data.hours;
+        }
+        if (data.address) {
+          var addressEl = document.getElementById('address');
+          if (addressEl) addressEl.value = data.address;
+        }
+        
+        // 특징/강점
+        if (data.features) {
+          var featuresArray = data.features.split(',').map(function(s) { return s.trim(); });
+          var f1 = document.querySelector('input[name="feature1"]');
+          var f2 = document.querySelector('input[name="feature2"]');
+          var f3 = document.querySelector('input[name="feature3"]');
+          if (f1 && featuresArray[0]) f1.value = featuresArray[0];
+          if (f2 && featuresArray[1]) f2.value = featuresArray[1];
+          if (f3 && featuresArray[2]) f3.value = featuresArray[2];
+        }
+
+        // 메뉴 채우기
+        if (data.items && data.items.length > 0) {
+          var menuWrap = document.getElementById('menuItems');
+          if (menuWrap) {
+            menuWrap.innerHTML = ''; // 기존 메뉴 초기화
+            data.items.forEach(function(item, index) {
+              var idx = index + 1;
+              var row = document.createElement('div');
+              row.className = 'menu-row';
+              row.setAttribute('data-idx', idx);
+              row.innerHTML = 
+                '<input type="text" name="item_name[]" value="' + (item.name || '') + '" placeholder="메뉴명">' +
+                '<input type="text" name="item_desc[]" value="' + (item.description || '') + '" placeholder="설명">' +
+                '<input type="text" name="item_price[]" value="' + (item.price || '') + '" placeholder="가격">' +
+                '<button type="button" class="btn-remove-row" onclick="removeMenuRow(this)" title="삭제">×</button>';
+              menuWrap.appendChild(row);
+            });
+          }
+          var btnAdd = document.getElementById('btnAddMenu');
+          if (btnAdd) {
+             if (data.items.length >= 8) btnAdd.style.display = 'none';
+             else btnAdd.style.display = '';
+          }
+        }
+
+        // 필드 에러 표시 초기화
+        document.querySelectorAll('.field-error').forEach(function(el) { el.classList.remove('field-error'); });
+        document.querySelectorAll('.error-msg').forEach(function(el) { el.classList.remove('show'); });
+
+        alert("✅ AI가 자료에서 정보를 성공적으로 추출하여 폼을 채웠습니다!");
+      })
+      .catch(function(err) {
+        status.style.display = 'none';
+        btnOcr.disabled = false;
+        btnOcr.style.opacity = '1';
+        alert("요청 중 오류가 발생했습니다.");
+        console.error(err);
+      });
+    });
+  }
 
   // ── Menu Rows ──
   var menuWrap = document.getElementById('menuItems');
