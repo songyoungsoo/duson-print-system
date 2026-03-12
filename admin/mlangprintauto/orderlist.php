@@ -562,6 +562,9 @@ if ($rows) {
     }
     echo htmlspecialchars($display_name);
     ?>
+    <?php if (!empty($row['bank']) && $row['bank'] !== '기본 은행'): ?>
+        <br><span style="font-size: 11px; color: #0066cc; font-weight: 500;">[<?php echo htmlspecialchars($row['bank']); ?>]</span>
+    <?php endif; ?>
 </td>
 <td class="order-table-td order-table-td--date">
     <?php echo htmlspecialchars($row['date']) ?>
@@ -638,11 +641,12 @@ if (strpos($deliveryValue, '택배') !== false) {
 $orderStyles = [
   1 => "견적접수", 2 => "주문접수", 3 => "접수완료", 4 => "입금대기",
   5 => "시안제작중", 6 => "시안", 7 => "교정", 8 => "작업완료",
-  9 => "작업중", 10 => "교정작업중", 11 => "카드결제"
+  9 => "작업중", 10 => "교정작업중", 11 => "💳결제완료(카드)"
 ];
 $currentStatus = ($row['OrderStyle'] === '' || $row['OrderStyle'] === null) ? 1 : intval($row['OrderStyle']);
+$selectStyle = ($currentStatus == 11) ? 'background-color: #ffebee; color: #dc3545; font-weight: bold; border-color: #dc3545;' : '';
 ?>
-<select onchange="handleStatusChange_<?php echo $row['no']; ?>(this)" class="select select--status" id="status_<?php echo $row['no']; ?>" data-original-index="<?php echo array_search($currentStatus, array_keys($orderStyles)); ?>">
+<select onchange="handleStatusChange_<?php echo $row['no']; ?>(this)" class="select select--status" id="status_<?php echo $row['no']; ?>" data-original-index="<?php echo array_search($currentStatus, array_keys($orderStyles)); ?>" style="<?php echo $selectStyle; ?>">
 <?php
 foreach ($orderStyles as $key => $label) {
   $selected = ($currentStatus == $key) ? 'selected' : '';

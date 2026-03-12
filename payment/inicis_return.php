@@ -409,7 +409,7 @@ if ($resultCode === '0000' || $resultCode === '00') {
                     </div>
 
                     <div style='text-align: center; margin-bottom: 25px;'>
-                        <a href='" . SITE_URL . "/mypage/orders.php'
+                        <a href='https://dsp114.com/mypage/orders.php'
                            style='display: inline-block; padding: 14px 35px; background: #667eea; color: white; text-decoration: none; border-radius: 50px; font-weight: bold; font-size: 16px; box-shadow: 0 4px 15px rgba(102, 126, 234, 0.3);'>
                             주문 내역 확인
                         </a>
@@ -500,7 +500,7 @@ if ($resultCode === '0000' || $resultCode === '00') {
                         </tr>
                     </table>
                     <div style='margin-top: 20px; text-align: center;'>
-                        <a href=' . SITE_URL . '/admin.php?mode=OrderView&no={$order_no}' 
+                        <a href='https://dsp114.com/admin.php?mode=OrderView&no={$order_no}' 
                            style='display: inline-block; padding: 12px 30px; background: #667eea; color: white; text-decoration: none; border-radius: 5px; font-weight: bold;'>
                             주문 상세 보기
                         </a>
@@ -569,7 +569,7 @@ if ($success) {
     $orders_param = implode('_', $all_order_nos);
     $customer_email = urlencode($order['email'] ?? '');
     $customer_name = urlencode($order['name'] ?? '');
-    $redirect_url = "/mlangorder_printauto/OrderComplete_universal.php?orders={$orders_param}&email={$customer_email}&name={$customer_name}";
+    $redirect_url = "/mlangorder_printauto/OrderComplete_universal.php?orders={$orders_param}&email={$customer_email}&name={$customer_name}&payment=success";
 } else {
     $redirect_url = '/payment/inicis_request.php?order_no=' . $order_no . '&error=' . urlencode($error_message);
 }
@@ -585,6 +585,12 @@ if ($success) {
         var redirectUrl = '<?php echo $redirect_url; ?>';
         var success = <?php echo $success ? 'true' : 'false'; ?>;
         
+        if (success) {
+            alert("✅ 결제가 정상적으로 승인되었습니다!\n\n확인을 누르시면 주문 완료 페이지로 이동합니다.");
+        } else {
+            alert("❌ 결제에 실패하였습니다.\n\n오류: <?php echo addslashes($error_message); ?>");
+        }
+
         if (window.opener && !window.opener.closed) {
             window.opener.location.href = redirectUrl;
             window.close();

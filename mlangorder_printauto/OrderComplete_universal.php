@@ -2163,8 +2163,21 @@ function closePaymentModal() {
     document.body.style.overflow = ''; // 스크롤 복원
 }
 
+// 결제 의도 저장 (관리자 페이지 표시용)
+function savePaymentIntent(method) {
+    var allOrders = <?php echo json_encode(implode('_', array_column($order_list, 'no'))); ?>;
+    fetch('save_payment_intent.php', {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json'
+        },
+        body: JSON.stringify({ orders: allOrders, method: method })
+    }).catch(e => console.error('결제수단 저장 실패:', e));
+}
+
 // 이니시스 결제 (신용카드 / 실시간 계좌이체)
 function payWithInicis() {
+    savePaymentIntent('card');
     var orderNo = <?php echo json_encode($first_order['no'] ?? ''); ?>;
     // 🔧 FIX: 다건 주문 시 전체 주문번호 목록 전달 (order_group_id NULL 대응)
     var allOrders = <?php echo json_encode(implode('_', array_column($order_list, 'no'))); ?>; // _구분자
@@ -2181,6 +2194,7 @@ function payWithInicis() {
 
 // 무통장입금 정보 표시
 function showBankTransfer() {
+    savePaymentIntent('bank');
     closePaymentModal();
     var bankSection = document.getElementById('bankTransferSection');
     bankSection.style.display = 'block';
@@ -2213,6 +2227,17 @@ document.addEventListener('DOMContentLoaded', function() {
         }, 500);
 
         // URL에서 payment 파라미터 제거 (새로고침 시 메시지 다시 표시 방지)
+        if (window.history.replaceState) {
+            var newUrl = window.location.pathname + window.location.search.replace(/[?&]payment=[^&]*/, '').replace(/^&/, '?');
+            window.history.replaceState({}, document.title, newUrl);
+        }
+    } else if (paymentStatus === 'success') {
+        // 결제 성공 시 명확한 알림창 띄우기 (이중 주문 방지용)
+        setTimeout(function() {
+            alert("✅ 고객님의 주문 및 결제가 정상적으로 접수되었습니다!\n\n빠르게 확인 후 진행 도와드리겠습니다.\n(상세 주문 내역은 이메일로도 발송됩니다.)");
+        }, 300);
+
+        // URL에서 payment 파라미터 제거 (새로고침 시 알림창 반복 표시 방지)
         if (window.history.replaceState) {
             var newUrl = window.location.pathname + window.location.search.replace(/[?&]payment=[^&]*/, '').replace(/^&/, '?');
             window.history.replaceState({}, document.title, newUrl);
