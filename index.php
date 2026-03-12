@@ -692,23 +692,8 @@ header("Expires: 0");
                         <img src="/slide/slide__Sticker_3.gif" alt="스티커 제작 서비스 3" class="slider-img">
                     </div>
 
-                    <!-- Slide 8: 두손애니 1 -->
+                    <!-- Slide 8: 회사소개 영상 -->
                     <div class="slider-slide" data-slide="7">
-                        <img src="/slide/dusonAni2-1-1.png" alt="두손기획인쇄 소개 1" class="slider-img">
-                    </div>
-
-                    <!-- Slide 9: 두손애니 2 -->
-                    <div class="slider-slide" data-slide="8">
-                        <img src="/slide/dusonAni2-2-2.png" alt="두손기획인쇄 소개 2" class="slider-img">
-                    </div>
-
-                    <!-- Slide 10: 두손애니 3 -->
-                    <div class="slider-slide" data-slide="9">
-                        <img src="/slide/dusonAni2-3-3.png" alt="두손기획인쇄 소개 3" class="slider-img">
-                    </div>
-
-                    <!-- Slide 11: 회사소개 영상 -->
-                    <div class="slider-slide" data-slide="10">
                         <div class="video-slide-wrapper" id="videoSlideWrapper" onclick="toggleSliderVideo()">
                             <img src="/media/explainer_poster.jpg" alt="두손기획인쇄 소개 영상" class="slider-img" id="videoPoster">
                             <video id="sliderVideo" preload="none" playsinline>
@@ -721,7 +706,7 @@ header("Expires: 0");
                     </div>
 
                     <!-- Clone of first slide (for infinite loop) -->
-                    <div class="slider-slide clone" data-slide="11">
+                    <div class="slider-slide clone" data-slide="8">
                         <img src="/slide/slide_inserted.gif" alt="전단지 인쇄 서비스" class="slider-img">
                 </div>
             </div>
@@ -735,10 +720,7 @@ header("Expires: 0");
                 <button class="slider-dot w-3 h-3 rounded-full bg-white/60 hover:bg-white transition" data-slide="4" aria-label="포스터"></button>
                 <button class="slider-dot w-3 h-3 rounded-full bg-white/60 hover:bg-white transition" data-slide="5" aria-label="스티커2"></button>
                 <button class="slider-dot w-3 h-3 rounded-full bg-white/60 hover:bg-white transition" data-slide="6" aria-label="스티커3"></button>
-                <button class="slider-dot w-3 h-3 rounded-full bg-white/60 hover:bg-white transition" data-slide="7" aria-label="두손애니1"></button>
-                <button class="slider-dot w-3 h-3 rounded-full bg-white/60 hover:bg-white transition" data-slide="8" aria-label="두손애니2"></button>
-                <button class="slider-dot w-3 h-3 rounded-full bg-white/60 hover:bg-white transition" data-slide="9" aria-label="두손애니3"></button>
-                <button class="slider-dot w-3 h-3 rounded-full bg-white/60 hover:bg-white transition" data-slide="10" aria-label="소개영상"></button>
+                <button class="slider-dot w-3 h-3 rounded-full bg-white/60 hover:bg-white transition" data-slide="7" aria-label="소개영상"></button>
             </div>
             
             <!-- Navigation Arrows -->
