@@ -1,8 +1,0 @@
-{
-  "recommendations": [
-    "bmewburn.vscode-intelephense-client",
-    "xdebug.php-debug",
-    "ms-playwright.playwright",
-    "esbenp.prettier-vscode"
-  ]
-}
