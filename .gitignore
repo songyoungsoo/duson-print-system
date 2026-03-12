@@ -163,6 +163,10 @@ logs/
 error_log
 php_errors.log
 
+# AI 팩토리 임시 출력 폴더
+_poster_factory/output/
+_leaflet_factory/output/
+
 # Cart.php backups
 *_backup_*.php
 *.backup
@@ -269,6 +273,7 @@ docs/.pdca-status.json
 !playwright.config.json
 !config/gallery_settings.json
 !_poster_factory/config/*.json
+!_leaflet_factory/config/*.json
 extract_*.js
 fetch_*.js
 create_*.js
