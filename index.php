@@ -185,7 +185,7 @@ header("Expires: 0");
         .slider-slide img,
         .slider-slide .slider-img {
             width: 100%;
-            height: 360px;
+            height: 260px;
             object-fit: cover;
             object-position: center center;
         }
@@ -203,7 +203,7 @@ header("Expires: 0");
         }
         .video-slide-wrapper video {
             width: 100%;
-            height: 360px;
+            height: 260px;
             object-fit: cover;
             object-position: center;
             display: none;
@@ -241,7 +241,7 @@ header("Expires: 0");
 
         /* 데스크톱 슬라이더 기본 높이 */
         #hero-slider {
-            height: 360px;
+            height: 260px;
         }
 
         @media (max-width: 768px) {
