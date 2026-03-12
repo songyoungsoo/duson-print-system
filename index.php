@@ -1233,13 +1233,21 @@ header("Expires: 0");
         // Hero Slider functionality - Infinite Loop
         let currentIndex = 1;
         const sliderTrack = document.getElementById('sliderTrack');
+        const allSlides = document.querySelectorAll('.slider-slide');
         const slides = document.querySelectorAll('.slider-slide:not(.clone)');
         const dots = document.querySelectorAll('.slider-dot');
-        const totalSlides = slides.length; // 8
-        const totalWithClones = document.querySelectorAll('.slider-slide').length; // 10
+        
+        const totalSlides = slides.length;
+        const totalWithClones = allSlides.length;
         let isTransitioning = false;
         let autoPlayTimer = null;
         let videoPlaying = false;
+
+        // [FIX] 동적으로 트랙과 슬라이드 너비 설정 (CSS 하드코딩 무시)
+        sliderTrack.style.width = `${totalWithClones * 100}%`;
+        allSlides.forEach(slide => {
+            slide.style.width = `${100 / totalWithClones}%`;
+        });
 
         // 슬라이드와 점의 개수가 맞지 않으면 점을 슬라이드 개수에 맞춰 다시 그림
         if (dots.length !== totalSlides) {
@@ -1265,7 +1273,6 @@ header("Expires: 0");
             }
         }
 
-
         function moveToSlide(index, withTransition = true) {
             if (!withTransition) {
                 sliderTrack.classList.add('no-transition');
@@ -1283,13 +1290,14 @@ header("Expires: 0");
             currentIndex = index;
 
             const realIndex = getRealIndex(index);
-            dots.forEach(dot => dot.classList.remove('active'));
+            document.querySelectorAll('.slider-dot').forEach(dot => dot.classList.remove('active'));
             if (realIndex >= 0 && realIndex < totalSlides) {
-                dots[realIndex].classList.add('active');
+                const activeDot = document.querySelector(`.slider-dot[data-slide="${realIndex}"]`);
+                if(activeDot) activeDot.classList.add('active');
             }
 
             // 비디오 슬라이드를 벗어나면 영상 정지 + 포스터 복원
-            if (realIndex !== 3 && videoPlaying) {
+            if (realIndex !== (totalSlides - 1) && videoPlaying) { // 비디오가 마지막 슬라이드
                 resetSliderVideo();
             }
         }
@@ -1325,7 +1333,7 @@ header("Expires: 0");
         document.querySelector('.slider-next').addEventListener('click', nextSlide);
         document.querySelector('.slider-prev').addEventListener('click', prevSlide);
 
-        dots.forEach((dot, index) => {
+        document.querySelectorAll('.slider-dot').forEach((dot, index) => {
             dot.addEventListener('click', () => {
                 if (isTransitioning) return;
                 isTransitioning = true;
