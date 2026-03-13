@@ -728,11 +728,11 @@ function getOrderItemInfo($summary_item, $specFormatter) {
             }
 
             .print-order:first-child {
-                height: 120mm;
+                height: 124mm;
             }
 
             .print-order.employee-copy {
-                height: calc(285mm - 120mm - 6mm);
+                height: calc(285mm - 124mm - 6mm);
             }
 
             .print-order.employee-copy {
