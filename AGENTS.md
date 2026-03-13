@@ -268,18 +268,18 @@ OnlineOrder_unified.php (폼 입력)
 
 **파일**: `mlangorder_printauto/OrderFormOrderTree.php`
 
-**A4 용지 레이아웃 (절취선 120mm)**:
+**A4 용지 레이아웃 (절취선 124mm)**:
 ```
 ┌─────────────────────────────────┐
 │  (상단 마진 6mm)                  │
 ├─────────────────────────────────┤
-│  📋 주문서 (관리자용) - 120mm     │
+│  📋 주문서 (관리자용) - 124mm     │
 │  주문번호 | 일시 | 주문자 |        │
 │  T.일반전화 | H.핸드폰             │
 ├─────────────────────────────────┤
-│  ✂ 절 취 선 (2mm)                │  ← 120mm 지점
+│  ✂ 절 취 선 (2mm)                │  ← 124mm 지점
 ├─────────────────────────────────┤
-│  📋 주문서 (직원용) - 159mm       │
+│  📋 주문서 (직원용) - 155mm       │
 │  주문번호 | 일시 | 주문자 |        │
 │  T.일반전화 | H.핸드폰             │
 ├─────────────────────────────────┤
@@ -296,8 +296,8 @@ OnlineOrder_unified.php (폼 입력)
 
 **CSS 설정**:
 ```css
-.print-order:first-child { height: 120mm; }
-.print-order.employee-copy { height: calc(285mm - 120mm - 6mm); }
+.print-order:first-child { height: 124mm; }
+.print-order.employee-copy { height: calc(285mm - 124mm - 6mm); }
 
 /* 헤더 필드 고정 너비 */
 div[style*="14ch"] { width: 14ch; flex-shrink: 0; }  /* 주문번호 */
