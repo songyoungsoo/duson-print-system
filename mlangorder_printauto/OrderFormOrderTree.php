@@ -821,7 +821,7 @@ function getOrderItemInfo($summary_item, $specFormatter) {
                             <span style="color: #000;">주문번호: <?= $View_No ?></span>
                         </div>
                         <div style="width: 18ch; flex-shrink: 0;">
-                            <span style="color: #000;">일시: <?= htmlspecialchars($View_date) ?></span>
+                            <span style="color: #000;"><?= htmlspecialchars($View_date) ?></span>
                         </div>
                         <div style="width: 16ch; flex-shrink: 0;">
                             <span style="color: #000;">T.<?= htmlspecialchars($View_phone) ?></span>
@@ -1078,7 +1078,7 @@ function getOrderItemInfo($summary_item, $specFormatter) {
                             <span style="color: #000;">주문번호: <?= $View_No ?></span>
                         </div>
                         <div style="width: 18ch; flex-shrink: 0;">
-                            <span style="color: #000;">일시: <?= htmlspecialchars($View_date) ?></span>
+                            <span style="color: #000;"><?= htmlspecialchars($View_date) ?></span>
                         </div>
                         <div style="width: 16ch; flex-shrink: 0;">
                             <span style="color: #000;">T.<?= htmlspecialchars($View_phone) ?></span>
