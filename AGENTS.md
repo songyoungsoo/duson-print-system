@@ -287,14 +287,22 @@ OnlineOrder_unified.php (폼 입력)
 └─────────────────────────────────┘
 ```
 
-**전화번호 표시 형식**:
-- 일반전화: `T.02-2632-1830`
-- 핸드폰: `H.010-1234-5678`
+**헤더 필드 구성 (고정 너비 레이아웃)**:
+- 주문번호: 14자 고정 (`width: 14ch`)
+- 일시: 18자 고정 (`width: 18ch`)
+- T.일반전화: 16자 고정 (`width: 16ch`) - 예: `T.02-2632-1830`
+- H.핸드폰: 16자 고정 (`width: 16ch`) - 예: `H.010-1234-5678`
+- 주문자: 나머지 공간 (`flex: 1`)
 
 **CSS 설정**:
 ```css
 .print-order:first-child { height: 120mm; }
 .print-order.employee-copy { height: calc(285mm - 120mm - 6mm); }
+
+/* 헤더 필드 고정 너비 */
+div[style*="14ch"] { width: 14ch; flex-shrink: 0; }  /* 주문번호 */
+div[style*="18ch"] { width: 18ch; flex-shrink: 0; }  /* 일시 */
+div[style*="16ch"] { width: 16ch; flex-shrink: 0; }  /* 전화/핸드폰 */
 ```
 
 ---
