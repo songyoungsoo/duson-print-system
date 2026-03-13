@@ -817,20 +817,20 @@ function getOrderItemInfo($summary_item, $specFormatter) {
                 <!-- 주요 정보 (compact) -->
                 <div style="margin-bottom: 2mm; padding: 1.5mm; border: 0.3pt solid #666;">
                     <div style="display: flex; gap: 2mm; align-items: center; font-size: 11pt; font-weight: bold; line-height: 1.2;">
-                        <div style="flex: 1.2;">
+                        <div style="width: 14ch; flex-shrink: 0;">
                             <span style="color: #000;">주문번호: <?= $View_No ?></span>
                         </div>
-                        <div style="flex: 1;">
+                        <div style="width: 18ch; flex-shrink: 0;">
                             <span style="color: #000;">일시: <?= htmlspecialchars($View_date) ?></span>
                         </div>
-                        <div style="flex: 1;">
-                            <span style="color: #000;">주문자: <?= htmlspecialchars($View_name) ?></span>
-                        </div>
-                        <div style="flex: 1.2;">
+                        <div style="width: 16ch; flex-shrink: 0;">
                             <span style="color: #000;">T.<?= htmlspecialchars($View_phone) ?></span>
                         </div>
-                        <div style="flex: 1.2;">
+                        <div style="width: 16ch; flex-shrink: 0;">
                             <span style="color: #000;">H.<?= htmlspecialchars($View_Hendphone) ?></span>
+                        </div>
+                        <div style="flex: 1; min-width: 0;">
+                            <span style="color: #000;">주문자: <?= htmlspecialchars($View_name) ?></span>
                         </div>
                     </div>
                 </div>
@@ -1074,20 +1074,20 @@ function getOrderItemInfo($summary_item, $specFormatter) {
                 <!-- 주요 정보 (compact) -->
                 <div style="margin-bottom: 2mm; padding: 1.5mm; border: 0.3pt solid #666;">
                     <div style="display: flex; gap: 2mm; align-items: center; font-size: 11pt; font-weight: bold; line-height: 1.2;">
-                        <div style="flex: 1.2;">
+                        <div style="width: 14ch; flex-shrink: 0;">
                             <span style="color: #000;">주문번호: <?= $View_No ?></span>
                         </div>
-                        <div style="flex: 1;">
+                        <div style="width: 18ch; flex-shrink: 0;">
                             <span style="color: #000;">일시: <?= htmlspecialchars($View_date) ?></span>
                         </div>
-                        <div style="flex: 1;">
-                            <span style="color: #000;">주문자: <?= htmlspecialchars($View_name) ?></span>
-                        </div>
-                        <div style="flex: 1.2;">
+                        <div style="width: 16ch; flex-shrink: 0;">
                             <span style="color: #000;">T.<?= htmlspecialchars($View_phone) ?></span>
                         </div>
-                        <div style="flex: 1.2;">
+                        <div style="width: 16ch; flex-shrink: 0;">
                             <span style="color: #000;">H.<?= htmlspecialchars($View_Hendphone) ?></span>
+                        </div>
+                        <div style="flex: 1; min-width: 0;">
+                            <span style="color: #000;">주문자: <?= htmlspecialchars($View_name) ?></span>
                         </div>
                     </div>
                 </div>
