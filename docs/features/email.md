@@ -5,8 +5,9 @@
 | 파일 | 용도 |
 |------|------|
 | `mlangorder_printauto/mailer.lib.php` | PHPMailer 래퍼 (SMTP 설정) |
-| `mlangorder_printauto/send_order_email.php` | 이메일 발송 API |
-| `mlangorder_printauto/OrderComplete_universal.php` | 주문 완료 시 자동 발송 호출 |
+| `mlangorder_printauto/send_order_email.php` | 이메일 발송 API (주문 완료 이메일, 일시 포함) |
+| `mlangorder_printauto/OrderComplete_universal.php` | 주문 완료 시 자동 발송 호출 + 카드결제 알림창 |
+| `payment/inicis_return.php` | 카드결제 완료 시 고객/관리자 이메일 발송 |
 | `mlangorder_printauto/PHPMailer/` | PHPMailer 라이브러리 |
 
 ### SMTP 설정 (네이버)
@@ -21,12 +22,22 @@ $mail->Password = "2CP3P5BTS83Y";
 
 ### 이메일 발송 흐름
 
+**일반 주문 (계좌이체/현금):**
 ```
 1. 주문 완료 → OrderComplete_universal.php 로드
 2. JavaScript에서 send_order_email.php로 POST 요청
-3. send_order_email.php에서 HTML 템플릿 생성
+3. send_order_email.php에서 HTML 템플릿 생성 (주문건수, 금액, 일시 포함)
 4. mailer() 함수로 네이버 SMTP 통해 발송
 5. 고객 이메일로 주문 확인 메일 수신
+```
+
+**카드결제:**
+```
+1. 결제 완료 → inicis_return.php 콜백
+2. 고객 이메일 발송 (결제일시, 거래번호, 금액 포함)
+3. 관리자 이메일 알림 발송 (dsp1830@naver.com)
+4. OrderComplete_universal.php로 리다이렉트 (payment=card)
+5. 알림창 표시: "✅ 카드 결제가 완료되었습니다!"
 ```
 
 ### 자동 발송 조건
@@ -57,8 +68,28 @@ filter_var('http://' . $host, FILTER_VALIDATE_URL)
 ### Critical Rules
 
 1. ❌ `mailer()` 호출 시 `$file` 파라미터 생략 금지 → 빈 문자열 `""` 필수
+   - ⚠️ 빈 배열 `[]` 사용 시 오류 가능성 (2026-03-13 수정)
 2. ❌ 복잡한 HTML 템플릿에서 정의되지 않은 변수 사용 금지
 3. ✅ 운영 서버 PHP 버전 확인 필수 (현재 8.2.30)
+
+### 이메일 템플릿 구성 (2026-03-13 업데이트)
+
+**주문 완료 이메일** (`send_order_email.php`):
+- 주문 건수
+- 결제 금액 (VAT포함)
+- **주문 일시** (NEW: `date('Y.m.d H:i')`)
+- 주문 목록 (상품명, 상세, 금액)
+- 고객 정보
+- 입금 안내
+
+**카드결제 완료 이메일** (`inicis_return.php`):
+- 주문번호
+- 결제금액
+- 결제수단
+- **결제일시** (`date('Y.m.d H:i')`)
+- 거래번호 (TID)
+- 제작 진행 안내
+- 주문 내역 확인 링크
 
 
 ---

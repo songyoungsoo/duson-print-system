@@ -2219,6 +2219,18 @@ document.addEventListener('keydown', function(e) {
 
 // 페이지 로드 애니메이션
 document.addEventListener('DOMContentLoaded', function() {
+    // 카드결제 완료 시 알림창 표시
+    var urlParams = new URLSearchParams(window.location.search);
+    if (urlParams.get('payment') === 'card') {
+        alert('✅ 카드 결제가 완료되었습니다!\n\n주문해주셔서 감사합니다.\n확인 이메일이 발송되었습니다.');
+        
+        // URL에서 payment 파라미터 제거 (새로고침 시 알림 다시 표시 방지)
+        if (window.history.replaceState) {
+            var newUrl = window.location.pathname + window.location.search.replace(/[?&]payment=[^&]*/, '').replace(/^&/, '?');
+            window.history.replaceState({}, document.title, newUrl);
+        }
+    }
+
     // 결제 취소/실패 시 자동으로 결제 모달 열기
     var paymentStatus = <?php echo json_encode($payment_status); ?>;
     if (paymentStatus === 'cancelled' || paymentStatus === 'failed') {

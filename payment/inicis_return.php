@@ -434,7 +434,7 @@ if ($resultCode === '0000' || $resultCode === '00') {
                 $customer_subject,         // 제목
                 $customer_body,            // 본문 (HTML)
                 1,                         // 타입: 1=HTML
-                []                         // 첨부파일: 없음 (빈 배열)
+                ""                         // 첨부파일: 없음 (빈 문자열 필수!)
             );
 
             if ($customer_mail_result) {
@@ -516,7 +516,7 @@ if ($resultCode === '0000' || $resultCode === '00') {
                 $admin_subject,            // 제목
                 $admin_body,               // 본문 (HTML)
                 1,                         // 타입: 1=HTML
-                []                         // 첨부파일: 없음 (빈 배열)
+                ""                         // 첨부파일: 없음 (빈 문자열 필수!)
             );
             
             if ($mail_result) {
@@ -569,7 +569,7 @@ if ($success) {
     $orders_param = implode('_', $all_order_nos);
     $customer_email = urlencode($order['email'] ?? '');
     $customer_name = urlencode($order['name'] ?? '');
-    $redirect_url = "/mlangorder_printauto/OrderComplete_universal.php?orders={$orders_param}&email={$customer_email}&name={$customer_name}&payment=success";
+    $redirect_url = "/mlangorder_printauto/OrderComplete_universal.php?orders={$orders_param}&email={$customer_email}&name={$customer_name}&payment=card";
 } else {
     $redirect_url = '/payment/inicis_request.php?order_no=' . $order_no . '&error=' . urlencode($error_message);
 }

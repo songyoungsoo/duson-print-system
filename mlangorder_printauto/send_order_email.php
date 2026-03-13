@@ -67,6 +67,10 @@ try {
                 <strong style="font-size:24px;color:#e74c3c;">' . number_format($totalAmountVat) . '원</strong><br>
                 <span style="font-size:14px;color:#566a7e;">결제 금액 (VAT포함)</span>
             </span>
+            <span style="display:inline-block;margin:0 20px;">
+                <strong style="font-size:16px;color:#566a7e;">' . date('Y.m.d H:i') . '</strong><br>
+                <span style="font-size:14px;color:#566a7e;">주문 일시</span>
+            </span>
         </div>
         
         <!-- 주문 목록 -->
