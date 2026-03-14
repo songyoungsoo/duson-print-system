@@ -87,6 +87,8 @@ if ($promoTitle !== '' || $promoDetail !== '') {
 }
 
 // ── 7. Construct brief.json ──
+$posterStyle = trim($_POST['poster_style'] ?? '');
+
 $brief = [
     'business_name'   => $businessName,
     'industry'        => $industry,
@@ -98,6 +100,10 @@ $brief = [
     'items'           => $items,
     'contact'         => $contact,
 ];
+
+if ($posterStyle !== '') {
+    $brief['poster_style'] = $posterStyle;
+}
 
 if (!empty($promo)) {
     $brief['promo'] = $promo;
@@ -143,7 +149,7 @@ $logPath    = $jobDir . '/process.log';
 
 // Build command
 $layoutFlag = '';
-$validLayouts = ['classic_grid', 'hero_dominant', 'magazine_split', 'bold_typo', 'side_by_side'];
+$validLayouts = ['classic_grid', 'hero_dominant', 'magazine_split', 'bold_typo', 'side_by_side', 'block_grid'];
 if ($layout !== 'auto' && in_array($layout, $validLayouts)) {
     $layoutFlag = ' --layout ' . escapeshellarg($layout);
 }

@@ -1,0 +1,181 @@
+{
+  "_description": "포스터 이미지 스타일 프리셋 6종 — 업종/분위기별 사진 톤·카피 가이드",
+  "_last_updated": "2026-03-14",
+
+  "presets": {
+    "warm_cozy": {
+      "id": "warm_cozy",
+      "name": "따뜻한 감성",
+      "name_en": "Warm & Cozy",
+      "description": "골든아워 조명, 따뜻한 톤, 아늑한 분위기. 카페·베이커리·브런치에 최적.",
+      "best_for": ["카페", "베이커리", "브런치", "디저트", "빵집", "한식", "음식점"],
+      "hero_suffix": "Style: Warm golden hour photography. Soft amber-toned natural light streaming through a window. Rich warm color temperature (3200K). Shallow depth of field with creamy bokeh. Cozy, inviting atmosphere. Rustic wood and natural textures visible. No harsh shadows. Photorealistic, magazine-quality food/lifestyle photography.",
+      "item_suffix": "Style: Warm-toned food photography with golden ambient light. Shallow depth of field, soft bokeh background. Rustic wooden surface or linen napkin as base. Steam or warmth visible where appropriate. Single subject, appetizing presentation. No text, no labels, no overlays.",
+      "color_mood": "warm amber, burnt sienna, cream, soft terracotta",
+      "copy_tone": {
+        "voice": "다정하고 포근한 이웃집 언니/오빠 톤",
+        "keywords": ["정성껏", "갓 구운", "향긋한", "한 입에", "소확행"],
+        "avoid": ["최고급", "압도적", "혁신적", "파격"],
+        "headline_style": "감성적 단어 + 가게명 조합. 예: '오늘도, 따뜻하게'",
+        "example_headlines": ["오늘도, 따뜻하게", "작은 행복 한 조각", "여기, 잠시 쉬어가요"]
+      }
+    },
+
+    "clean_modern": {
+      "id": "clean_modern",
+      "name": "깔끔 모던",
+      "name_en": "Clean Modern",
+      "description": "미니멀 화이트 배경, 선명한 색감, 정돈된 구도. 클리닉·병원·학원·사무 서비스에 최적.",
+      "best_for": ["병원", "치과", "한의원", "피부과", "학원", "교육", "컨설팅", "사무"],
+      "hero_suffix": "Style: Clean modern commercial photography. Pure white or light grey background. Crisp, even studio lighting with soft shadows. High key exposure. Precise, centered composition. Clinical cleanliness and professionalism. Sharp focus throughout. Color-accurate, no color cast. Professional advertising quality.",
+      "item_suffix": "Style: Clean studio product shot on pure white background. Even, diffused lighting. Sharp focus, no blur. Geometric precision in composition. Professional catalog photography quality. No text, no labels, no overlays.",
+      "color_mood": "white, light grey, one accent color, clean blue or teal",
+      "copy_tone": {
+        "voice": "신뢰감 있는 전문가 톤, 군더더기 없이 핵심만",
+        "keywords": ["전문", "체계적", "검증된", "맞춤", "1:1"],
+        "avoid": ["대박", "완전", "미친", "레전드"],
+        "headline_style": "핵심 가치 한 줄. 예: '정확한 진단, 확실한 결과'",
+        "example_headlines": ["정확한 진단, 확실한 결과", "체계가 다르면 결과가 다릅니다", "첫 상담, 꼼꼼하게"]
+      }
+    },
+
+    "dramatic_dark": {
+      "id": "dramatic_dark",
+      "name": "다크 드라마틱",
+      "name_en": "Dramatic Dark",
+      "description": "어두운 배경, 스팟 조명, 강렬한 명암 대비. 고기집·바·헬스장·프리미엄 서비스에 최적.",
+      "best_for": ["고기집", "바", "술집", "헬스장", "피트니스", "요가", "뷰티", "에스테틱", "프리미엄"],
+      "hero_suffix": "Style: Dramatic dark-mood photography. Deep black background with single directional spotlight. Extreme chiaroscuro lighting — bright highlights against deep shadows. Moody, cinematic atmosphere. Rich, saturated colors popping against darkness. Low-key studio lighting. Smoke or steam effects where appropriate. Premium, luxurious feel. Magazine editorial quality.",
+      "item_suffix": "Style: Dark moody product photography on black slate or dark marble surface. Single spotlight from above creating dramatic shadows. Rich color saturation against dark background. Cinematic food/product styling. No text, no labels, no overlays.",
+      "color_mood": "charcoal, deep black, gold accent, rich burgundy",
+      "copy_tone": {
+        "voice": "자신감 넘치는 프리미엄 톤, 짧고 강렬하게",
+        "keywords": ["진짜", "본질", "제대로", "극한", "프리미엄"],
+        "avoid": ["저렴한", "가성비", "착한가격", "무료"],
+        "headline_style": "짧고 임팩트 있는 선언문. 예: '고기는, 불이다'",
+        "example_headlines": ["고기는, 불이다", "한계를 넘어서", "진짜를 만나다"]
+      }
+    },
+
+    "vibrant_pop": {
+      "id": "vibrant_pop",
+      "name": "비비드 팝",
+      "name_en": "Vibrant Pop",
+      "description": "높은 채도, 컬러풀, 에너지 넘치는. 분식·배달·프랜차이즈·이벤트에 최적.",
+      "best_for": ["분식", "배달", "프랜차이즈", "이벤트", "행사", "놀이", "키즈", "패스트푸드"],
+      "hero_suffix": "Style: Vibrant pop-art inspired food photography. Highly saturated, punchy colors. Bright, even lighting with minimal shadows. Bold complementary color background (red, yellow, or orange). Dynamic angle — slightly tilted or bird's-eye view. Energetic, fun composition with props. Fast-food advertising quality. Eye-catching and appetizing.",
+      "item_suffix": "Style: Bright, colorful product photography with vivid saturated background. Pop art inspired. Overhead or 45-degree angle. Bold, punchy colors. Fun, energetic composition. No text, no labels, no overlays.",
+      "color_mood": "bold red, sunny yellow, electric orange, hot pink",
+      "copy_tone": {
+        "voice": "활기차고 친근한 동네 친구 톤, 말풍선처럼 튀는 문체",
+        "keywords": ["맛있다!", "이거야!", "득템", "꿀조합", "JMT"],
+        "avoid": ["고급", "프리미엄", "세련된", "격조"],
+        "headline_style": "감탄사 + 메뉴명. 예: '이 맛, 실화?!'",
+        "example_headlines": ["이 맛, 실화?!", "먹다가 멈출 수 없는", "오늘은 치팅데이!"]
+      }
+    },
+
+    "vintage_film": {
+      "id": "vintage_film",
+      "name": "빈티지 필름",
+      "name_en": "Vintage Film",
+      "description": "필름 카메라 감성, 약간 바랜 색감, 그레인. 미용실·네일·플라워·독립 카페에 최적.",
+      "best_for": ["미용실", "네일샵", "플라워샵", "독립카페", "갤러리", "공방", "핸드메이드"],
+      "hero_suffix": "Style: Vintage film photography aesthetic. Kodak Portra 400 color palette — slightly desaturated, warm skin tones, muted greens. Visible film grain texture. Soft, diffused natural daylight. Slightly overexposed highlights. Nostalgic, analog camera feel. Gentle lens flare optional. Medium format film portrait quality.",
+      "item_suffix": "Style: Vintage analog film product photography. Soft pastel color palette with slight color fade. Gentle film grain. Natural window light with soft shadows. Linen or aged wood surface. Nostalgic, handcrafted feel. No text, no labels, no overlays.",
+      "color_mood": "muted sage, dusty rose, faded terracotta, antique cream",
+      "copy_tone": {
+        "voice": "감성적이고 서정적인 톤, 시적 표현",
+        "keywords": ["하루", "천천히", "손끝에서", "당신만의", "이야기"],
+        "avoid": ["빠른", "즉시", "대량", "자동"],
+        "headline_style": "시적 한 줄. 예: '당신의 하루에, 꽃 한 송이'",
+        "example_headlines": ["당신의 하루에, 꽃 한 송이", "손끝에서 피어나는", "오래된 것들의 아름다움"]
+      }
+    },
+
+    "minimal_zen": {
+      "id": "minimal_zen",
+      "name": "미니멀 젠",
+      "name_en": "Minimal Zen",
+      "description": "극도의 여백, 정적인 구도, 자연 소재. 요가·명상·한방·프리미엄 한식에 최적.",
+      "best_for": ["요가", "명상", "한방", "한의원", "전통", "한식", "다도", "프리미엄한식"],
+      "hero_suffix": "Style: Minimal zen photography with extreme negative space. Muted, desaturated earth tones. Single subject placed using rule-of-thirds with vast empty space. Soft, directional natural light from one side. Japanese wabi-sabi aesthetic. Stone, wood, ceramic textures. Ultra-clean, contemplative composition. Fine art still life quality.",
+      "item_suffix": "Style: Minimalist zen food/product photography. Single item on stone or ceramic surface. Extreme negative space (60%+ empty). Muted natural colors. Soft side lighting. Meditative, calm composition. No text, no labels, no overlays.",
+      "color_mood": "stone grey, warm beige, moss green, charcoal",
+      "copy_tone": {
+        "voice": "절제된 선(禪) 톤, 한 문장의 여백이 말하는",
+        "keywords": ["고요", "본연", "한 그릇", "정갈한", "깊이"],
+        "avoid": ["화려한", "폭발적", "가득", "넘치는"],
+        "headline_style": "단어 하나 + 여백. 예: '한 그릇의 정성'",
+        "example_headlines": ["한 그릇의 정성", "고요한 맛", "본연 그대로"]
+      }
+    }
+  },
+
+  "auto_select_rules": {
+    "_description": "brief.industry가 매칭되면 해당 프리셋 사용, 없으면 톤에서 추론, 최종 fallback은 warm_cozy",
+    "by_industry": {
+      "카페": "warm_cozy",
+      "베이커리": "warm_cozy",
+      "브런치": "warm_cozy",
+      "빵집": "warm_cozy",
+      "디저트": "warm_cozy",
+      "병원": "clean_modern",
+      "치과": "clean_modern",
+      "한의원": "minimal_zen",
+      "피부과": "clean_modern",
+      "학원": "clean_modern",
+      "교육": "clean_modern",
+      "음악학원": "clean_modern",
+      "미술학원": "vintage_film",
+      "컨설팅": "clean_modern",
+      "고기집": "dramatic_dark",
+      "바": "dramatic_dark",
+      "술집": "dramatic_dark",
+      "헬스장": "dramatic_dark",
+      "피트니스": "dramatic_dark",
+      "뷰티": "dramatic_dark",
+      "에스테틱": "dramatic_dark",
+      "분식": "vibrant_pop",
+      "배달": "vibrant_pop",
+      "프랜차이즈": "vibrant_pop",
+      "패스트푸드": "vibrant_pop",
+      "이벤트": "vibrant_pop",
+      "미용실": "vintage_film",
+      "네일샵": "vintage_film",
+      "플라워샵": "vintage_film",
+      "공방": "vintage_film",
+      "요가": "minimal_zen",
+      "명상": "minimal_zen",
+      "한식": "warm_cozy",
+      "음식점": "warm_cozy",
+      "일식": "minimal_zen",
+      "중식": "vibrant_pop",
+      "양식": "warm_cozy",
+      "골프": "clean_modern"
+    },
+    "by_tone_keywords": {
+      "따뜻": "warm_cozy",
+      "포근": "warm_cozy",
+      "아늑": "warm_cozy",
+      "깔끔": "clean_modern",
+      "모던": "clean_modern",
+      "전문": "clean_modern",
+      "고급": "dramatic_dark",
+      "프리미엄": "dramatic_dark",
+      "럭셔리": "dramatic_dark",
+      "강렬": "dramatic_dark",
+      "활기": "vibrant_pop",
+      "재미": "vibrant_pop",
+      "신나": "vibrant_pop",
+      "빈티지": "vintage_film",
+      "레트로": "vintage_film",
+      "감성": "vintage_film",
+      "미니멀": "minimal_zen",
+      "심플": "minimal_zen",
+      "정갈": "minimal_zen",
+      "고요": "minimal_zen"
+    },
+    "fallback": "warm_cozy"
+  }
+}

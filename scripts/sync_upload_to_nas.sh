@@ -1,10 +1,11 @@
 #!/bin/bash
-# 교정이미지(upload/) 동기화: 프로덕션 → 로컬 → NAS
+# 교정이미지(upload/) 동기화: 프로덕션 → 로컬 → NAS(dsp1830) → NAS(sknas205)
 # cron: 30 5 * * * /var/www/html/scripts/sync_upload_to_nas.sh
 #
 # 흐름:
 #   1) 프로덕션(dsp114.com) FTP에서 새 교정파일 다운로드 → 로컬
 #   2) 로컬에서 NAS(dsp1830) FTP로 업로드
+#   3) 로컬에서 NAS(sknas205) FTP로 업로드
 #   모두 --only-newer 로 변경분만 처리 (첫 실행만 전체 전송)
 #
 # 사용법:
@@ -31,6 +32,12 @@ NAS_USER="admin"
 NAS_PASS="1830"
 NAS_UPLOAD="/HDD2/share/mlangorder_printauto/upload"
 
+# 2차 NAS FTP (sknas205)
+NAS2_HOST="sknas205.ipdisk.co.kr"
+NAS2_USER="sknas205"
+NAS2_PASS="sknas205204203"
+NAS2_UPLOAD="/HDD1/duson260118/mlangorder_printauto/upload"
+
 # 로컬 경로
 LOCAL_UPLOAD="/var/www/html/mlangorder_printauto/upload"
 
@@ -54,6 +61,7 @@ save_status() {
     "elapsed_seconds": ${elapsed},
     "prod_files_transferred": ${PROD_TRANSFERRED},
     "nas_files_transferred": ${NAS_TRANSFERRED},
+    "nas2_files_transferred": ${NAS2_TRANSFERRED},
     "local_total_files": ${local_files},
     "local_total_size": "${local_size}",
     "dry_run": $([ -n "$DRY_RUN" ] && echo true || echo false),
@@ -82,6 +90,7 @@ done
 START_TIME=$(date +%s)
 PROD_TRANSFERRED=0
 NAS_TRANSFERRED=0
+NAS2_TRANSFERRED=0
 
 log "===== 교정이미지 동기화 시작 ====="
 [ -n "$DRY_RUN" ] && log "  DRY-RUN 모드 (실제 전송 없음)"
@@ -89,7 +98,7 @@ log "===== 교정이미지 동기화 시작 ====="
 
 # ─── 1단계: 프로덕션 → 로컬 ───
 if [ "$NAS_ONLY" = false ]; then
-    log "📥 [1/2] 프로덕션(dsp114.com) → 로컬 다운로드..."
+    log "📥 [1/3] 프로덕션(dsp114.com) → 로컬 다운로드..."
 
     > "$LFTP_LOG"
     lftp -c "
@@ -112,11 +121,11 @@ if [ "$NAS_ONLY" = false ]; then
     fi
     log "  프로덕션 → 로컬: ${PROD_TRANSFERRED}개 파일 전송"
 else
-    log "📥 [1/2] 프로덕션 다운로드 건너뜀 (--nas-only)"
+    log "📥 [1/3] 프로덕션 다운로드 건너뛰 (--nas-only)"
 fi
 
-# ─── 2단계: 로컬 → NAS ───
-log "📤 [2/2] 로컬 → NAS(dsp1830) 업로드..."
+# ─── 2단계: 로컬 → NAS(dsp1830) ───
+log "📤 [2/3] 로컬 → NAS(dsp1830) 업로드..."
 
 > "$LFTP_LOG"
 lftp -c "
@@ -145,11 +154,39 @@ if [ $NAS_RESULT -ne 0 ]; then
     exit 1
 fi
 
+# ─── 3단계: 로컬 → NAS(sknas205) ───
+log "📤 [3/3] 로컬 → NAS(sknas205) 업로드..."
+
+> "$LFTP_LOG"
+lftp -c "
+    set ftp:charset UTF-8
+    set file:charset UTF-8
+    set net:timeout 30
+    set net:max-retries 3
+    set net:reconnect-interval-base 5
+    open -u ${NAS2_USER},${NAS2_PASS} ftp://${NAS2_HOST}
+    mirror --reverse --only-newer --no-perms --parallel=3 \
+        --log=${LFTP_LOG} \
+        ${DRY_RUN} \
+        ${LOCAL_UPLOAD}/ ${NAS2_UPLOAD}/
+" 2>&1 | tail -3 | while IFS= read -r line; do log "  $line"; done
+
+NAS2_RESULT=$?
+
+if [ -f "$LFTP_LOG" ]; then
+    NAS2_TRANSFERRED=$(grep -c "^put " "$LFTP_LOG" 2>/dev/null || echo 0)
+fi
+log "  로컬 → sknas205: ${NAS2_TRANSFERRED}개 파일 전송"
+
+if [ $NAS2_RESULT -ne 0 ]; then
+    log "⚠️  sknas205 업로드 실패 (exit: $NAS2_RESULT) — 1차 NAS는 성공"
+fi
+
 # ─── 완료 ───
 END_TIME=$(date +%s)
 ELAPSED=$((END_TIME - START_TIME))
 save_status true
-log "✅ 교정이미지 동기화 완료 (${ELAPSED}초, 프로덕션:${PROD_TRANSFERRED} NAS:${NAS_TRANSFERRED})"
+log "✅ 교정이미지 동기화 완료 (${ELAPSED}초, 프로덕션:${PROD_TRANSFERRED} dsp1830:${NAS_TRANSFERRED} sknas205:${NAS2_TRANSFERRED})"
 log "===== 교정이미지 동기화 끝 ====="
 
 rm -f "$LFTP_LOG"

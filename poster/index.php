@@ -1018,6 +1018,68 @@ textarea {
             사이드 바이
           </label>
         </div>
+        <div class="layout-option">
+          <input type="radio" id="layout_block" name="layout" value="block_grid">
+          <label for="layout_block">
+            <span class="layout-icon">⊞</span>
+            블록 그리드
+          </label>
+        </div>
+      </div>
+    </div>
+
+    <div class="form-group" style="margin-top: 1.25rem;">
+      <label>사진 스타일 <span class="optional">선택</span></label>
+      <div class="layout-grid" style="grid-template-columns: repeat(3, 1fr);">
+        <div class="layout-option">
+          <input type="radio" id="style_auto" name="poster_style" value="" checked>
+          <label for="style_auto">
+            <span class="layout-icon">⭐</span>
+            자동(추천)
+          </label>
+        </div>
+        <div class="layout-option">
+          <input type="radio" id="style_warm" name="poster_style" value="warm_cozy">
+          <label for="style_warm">
+            <span class="layout-icon">🌅</span>
+            따뜻한/아늑
+          </label>
+        </div>
+        <div class="layout-option">
+          <input type="radio" id="style_clean" name="poster_style" value="clean_modern">
+          <label for="style_clean">
+            <span class="layout-icon">🏢</span>
+            클린 모던
+          </label>
+        </div>
+        <div class="layout-option">
+          <input type="radio" id="style_dramatic" name="poster_style" value="dramatic_dark">
+          <label for="style_dramatic">
+            <span class="layout-icon">🌑</span>
+            드라마틱 다크
+          </label>
+        </div>
+        <div class="layout-option">
+          <input type="radio" id="style_vibrant" name="poster_style" value="vibrant_pop">
+          <label for="style_vibrant">
+            <span class="layout-icon">🎨</span>
+            비비드 팝
+          </label>
+        </div>
+        <div class="layout-option">
+          <input type="radio" id="style_vintage" name="poster_style" value="vintage_film">
+          <label for="style_vintage">
+            <span class="layout-icon">📷</span>
+            빈티지 필름
+          </label>
+        </div>
+        <div class="layout-option">
+          <input type="radio" id="style_minimal" name="poster_style" value="minimal_zen">
+          <label for="style_minimal">
+            <span class="layout-icon">🪷</span>
+            미니멀 젠
+          </label>
+        </div>
       </div>
     </div>
   </div>
@@ -1028,7 +1090,7 @@ textarea {
       <span class="btn-text">🚀 AI 포스터 생성하기</span>
       <span class="spinner"></span>
     </button>
-    <p class="submit-note">생성에는 약 2~3분 소요됩니다. Gemini AI로 이미지를 생성합니다.</p>
+    <p class="submit-note">생성에는 약 2~3분 소요됩니다. Imagen 4 AI로 고품질 이미지를 생성합니다.</p>
   </div>
 
 </form>
@@ -1079,7 +1141,7 @@ textarea {
 
 <!-- ── Footer ── -->
 <footer class="footer">
-  <a href="/">두손기획인쇄</a> &middot; 포스터 팩토리 &middot; Powered by Gemini AI
+  <a href="/">두손기획인쇄</a> &middot; 포스터 팩토리 &middot; Powered by Imagen 4 &amp; Gemini AI
 </footer>
 
 <script>

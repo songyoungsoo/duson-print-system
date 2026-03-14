@@ -1,4 +1,4 @@
-name: Deploy to NAS (FTP)
+name: Deploy to NAS (FTP Dual)
 
 # main 브랜치 push 시 자동 실행
 on:
@@ -93,6 +93,84 @@ jobs:
 
           echo ""
           echo "=== NAS 동기화 결과 ==="
+          echo "  업로드: $UPLOADED"
+          echo "  스킵: $SKIPPED"
+          echo "  실패: $FAILED"
+
+          if [ $FAILED -gt 0 ]; then
+            echo "::warning::$FAILED 파일 업로드 실패"
+            exit 1
+          fi
+
+  deploy-sknas:
+    name: FTP → NAS (sknas205.ipdisk.co.kr)
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 2
+
+      - name: Get changed files
+        id: changed
+        run: |
+          if [ "${{ github.event.inputs.sync_all }}" = "true" ]; then
+            echo "mode=all" >> $GITHUB_OUTPUT
+            git ls-files > /tmp/changed_files.txt
+            echo "count=$(wc -l < /tmp/changed_files.txt)" >> $GITHUB_OUTPUT
+          else
+            git diff --name-only --diff-filter=ACMR HEAD~1 HEAD > /tmp/changed_files.txt 2>/dev/null || true
+            echo "mode=changed" >> $GITHUB_OUTPUT
+            echo "count=$(wc -l < /tmp/changed_files.txt)" >> $GITHUB_OUTPUT
+          fi
+          echo "--- Changed files ---"
+          cat /tmp/changed_files.txt
+
+      - name: Skip if no files
+        if: steps.changed.outputs.count == '0'
+        run: echo "No files to sync. Skipping."
+
+      - name: Upload to sknas205 via FTP
+        if: steps.changed.outputs.count != '0'
+        run: |
+          UPLOADED=0
+          FAILED=0
+          SKIPPED=0
+
+          while IFS= read -r file; do
+            if [ ! -f "$file" ]; then
+              echo "⏭ SKIP (deleted): $file"
+              SKIPPED=$((SKIPPED + 1))
+              continue
+            fi
+
+            case "$file" in
+              .github/*|.claude/*|tests/*|_detail_page/*|_poster_factory/*|*.md|.gitignore|.git/*)
+                echo "⏭ SKIP (excluded): $file"
+                SKIPPED=$((SKIPPED + 1))
+                continue
+                ;;
+            esac
+
+            REMOTE_PATH="${{ secrets.SKNAS_ROOT }}/${file}"
+
+            if curl -s --connect-timeout 10 --max-time 30 \
+              -T "$file" \
+              "ftp://${{ secrets.SKNAS_HOST }}${REMOTE_PATH}" \
+              --user "${{ secrets.SKNAS_USER }}:${{ secrets.SKNAS_PASS }}" \
+              --ftp-create-dirs 2>/dev/null; then
+              echo "✅ $file"
+              UPLOADED=$((UPLOADED + 1))
+            else
+              echo "❌ FAILED: $file"
+              FAILED=$((FAILED + 1))
+            fi
+          done < /tmp/changed_files.txt
+
+          echo ""
+          echo "=== sknas205 동기화 결과 ==="
           echo "  업로드: $UPLOADED"
           echo "  스킵: $SKIPPED"
           echo "  실패: $FAILED"

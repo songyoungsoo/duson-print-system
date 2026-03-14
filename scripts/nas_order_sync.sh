@@ -9,6 +9,11 @@ DELTA_FILE="/tmp/delta_orders.sql"
 NAS_FTP="ftp://dsp1830.ipdisk.co.kr/HDD2/share/db_backups/delta_orders.sql"
 NAS_USER="admin:1830"
 IMPORT_URL="http://dsp1830.ipdisk.co.kr:8000/db_import.php?key=duson_nas_2026"
+
+# 2차 NAS (sknas205)
+NAS2_FTP="ftp://sknas205.ipdisk.co.kr/HDD1/duson260118/db_backups/delta_orders.sql"
+NAS2_USER="sknas205:sknas205204203"
+IMPORT2_URL="http://sknas205.ipdisk.co.kr:8000/db_import.php?key=duson_nas_2026"
 LOG="/var/www/html/scripts/db_backup.log"
 
 log() { echo "[$(date '+%Y-%m-%d %H:%M:%S')] $1" | tee -a "$LOG"; }
@@ -92,6 +97,25 @@ else
     rm -f "$DELTA_FILE"
     save_status false "NAS import error: $RESULT"
     exit 1
+fi
+
+# 5. sknas205 NAS에도 delta 파일 업로드 + import 트리거
+log "sknas205 NAS FTP 업로드 중..."
+curl -s -T "$DELTA_FILE" "$NAS2_FTP" \
+    --user "$NAS2_USER" --ftp-create-dirs
+
+if [ $? -eq 0 ]; then
+    log "sknas205 FTP 업로드 완료 ($SIZE)"
+    
+    # sknas205 PHP import 트리거
+    RESULT2=$(curl -s --max-time 180 "$IMPORT2_URL")
+    if echo "$RESULT2" | grep -q "^OK"; then
+        log "✅ sknas205 import 완료: $RESULT2"
+    else
+        log "⚠️  sknas205 import 오류: $RESULT2 (1차 NAS는 성공)"
+    fi
+else
+    log "⚠️  sknas205 FTP 업로드 실패 (1차 NAS는 성공)"
 fi
 
 rm -f "$DELTA_FILE"

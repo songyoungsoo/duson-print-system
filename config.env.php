@@ -44,7 +44,13 @@ class EnvironmentDetector {
         ) {
             self::$environment = 'local';
         }
-        // NAS 환경 감지 (ipdisk NAS 서버 - 로컬 DB 자격증명 사용)
+        // 2차 NAS 환경 감지 (sknas205)
+        else if (
+            strpos($host, 'sknas205.ipdisk.co.kr') !== false
+        ) {
+            self::$environment = 'nas_sknas205';
+        }
+        // 1차 NAS 환경 감지 (dsp1830)
         else if (
             strpos($host, 'ipdisk.co.kr') !== false
         ) {
@@ -102,6 +108,19 @@ class EnvironmentDetector {
                     'database' => 'dsp1830',
                     'charset' => 'utf8mb4',
                     'environment' => 'nas',
+                    'debug' => false
+                ];
+                break;
+
+            case 'nas_sknas205':
+                // 2차 NAS 환경 설정 (sknas205.ipdisk.co.kr)
+                self::$config = [
+                    'host' => 'localhost',
+                    'user' => 'dsp1830',
+                    'password' => 'ds701018',
+                    'database' => 'dsp1830',
+                    'charset' => 'utf8mb4',
+                    'environment' => 'nas_sknas205',
                     'debug' => false
                 ];
                 break;

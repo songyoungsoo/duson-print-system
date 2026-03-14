@@ -1,7 +1,10 @@
 """
-Gemini API Client V2 — 텍스트 생성 + 이미지 생성
-캔버스: 1100×800px, 내용 영역: 800×800px (좌우 150px 여백)
-google.genai SDK 사용
+Gemini API Client — 텍스트 생성 + 이미지 생성
+google.genai SDK 사용 (2026-03 마이그레이션)
+
+이미지 모델:
+  - imagen-4.0-generate-001 (기본값, 고품질 사진)
+  - gemini-3.1-flash-image-preview (폴백, 한글 텍스트 렌더링 필요 시)
 """
 
 import os
@@ -19,11 +22,20 @@ except ImportError:
     print("   pip install google-genai")
     exit(1)
 
+# 로깅 설정
+logging.basicConfig(
+    level=logging.INFO,
+    format="%(asctime)s [%(levelname)s] %(message)s",
+    handlers=[
+        logging.StreamHandler(),
+        logging.FileHandler("logs/gemini_client.log", encoding="utf-8"),
+    ],
+)
 logger = logging.getLogger(__name__)
 
 
 class GeminiClient:
-    """Gemini API 래퍼 — google.genai SDK 기반 (V2: 1100x800)"""
+    """Gemini API 래퍼 — google.genai SDK 기반"""
 
     def __init__(self, api_key: Optional[str] = None):
         self.api_key = api_key or os.getenv("GEMINI_API_KEY")
@@ -39,32 +51,27 @@ class GeminiClient:
         self.image_model_name = os.getenv(
             "GEMINI_IMAGE_MODEL", "gemini-3.1-flash-image-preview"
         )
+        self.imagen_model_name = os.getenv("IMAGEN_MODEL", "imagen-4.0-generate-001")
+        self.use_imagen = os.getenv("USE_IMAGEN", "true").lower() == "true"
 
         # 설정
         self.max_retries = int(os.getenv("MAX_RETRIES", "3"))
         self.retry_delay = int(os.getenv("RETRY_DELAY", "5"))
         self.rate_limit_delay = int(os.getenv("RATE_LIMIT_DELAY", "2"))
 
-        # V2 이미지 규격
-        self.canvas_width = int(os.getenv("IMAGE_WIDTH", "1100"))
-        self.canvas_height = int(os.getenv("IMAGE_HEIGHT", "800"))
-        self.content_width = int(os.getenv("CONTENT_WIDTH", "800"))
-
         # 비용 추적
         self.total_text_tokens = 0
         self.total_images_generated = 0
 
+        img_model = self.imagen_model_name if self.use_imagen else self.image_model_name
         logger.info(
-            f"GeminiClient V2 초기화 — 텍스트: {self.text_model_name}, "
-            f"이미지: {self.image_model_name}, "
-            f"캔버스: {self.canvas_width}x{self.canvas_height}, "
-            f"내용폭: {self.content_width}px"
+            f"GeminiClient 초기화 완료 — 텍스트: {self.text_model_name}, 이미지: {img_model}"
         )
 
     def generate_text(
         self, prompt: str, system_prompt: str = "", temperature: float = 0.7
     ) -> str:
-        """텍스트 생성"""
+        """텍스트 생성 (리서치/카피라이팅/디자인 에이전트용)"""
         full_prompt = f"{system_prompt}\n\n{prompt}" if system_prompt else prompt
 
         for attempt in range(self.max_retries):
@@ -104,7 +111,7 @@ class GeminiClient:
         if start < 0 or end <= start:
             raise json.JSONDecodeError("No JSON object found", raw, 0)
         raw = raw[start:end]
-        # 일반적 LLM JSON 오류 수정
+        # 일반적 LLM JSON 오류 수정: 문자열 내 이스케이프 안 된 줄바꿈
         raw = re.sub(r'(?<=["])\n(?=[^}\]]*["])', "\\n", raw)
         # trailing comma 제거
         raw = re.sub(r",\s*([}\]])", r"\1", raw)
@@ -119,11 +126,7 @@ class GeminiClient:
 
     def generate_text_json(self, prompt: str, system_prompt: str = "") -> dict:
         """JSON 형식 텍스트 생성"""
-        json_prompt = (
-            f"{prompt}\n\nIMPORTANT: Respond with valid JSON only. "
-            "No markdown code blocks. Keep all string values on a single line "
-            "(use \\n for newlines inside strings). Ensure all strings are properly terminated."
-        )
+        json_prompt = f"{prompt}\n\nIMPORTANT: Respond with valid JSON only. No markdown code blocks. Keep all string values on a single line (use \\n for newlines inside strings). Ensure all strings are properly terminated."
         full_prompt = (
             f"{system_prompt}\n\n{json_prompt}" if system_prompt else json_prompt
         )
@@ -147,6 +150,7 @@ class GeminiClient:
 
             except json.JSONDecodeError as e:
                 logger.warning(f"JSON 파싱 실패 (시도 {attempt + 1}): {e}")
+                # JSON 복구 시도
                 try:
                     result = self._repair_json(response.text)
                     logger.info(
@@ -169,24 +173,108 @@ class GeminiClient:
                 else:
                     raise
 
-    def generate_image(self, prompt: str, output_path: str) -> bool:
-        """이미지 생성 — V2: 1100x800 캔버스, 800px 내용 영역"""
-        # V2 품질 보강 접미사
-        quality_suffix = f"""
-Style requirements:
-- Photorealistic product photography style
-- Professional e-commerce aesthetic
-- Clean, modern layout with generous white space
-- Text must be clearly legible and accurately rendered
-- No cartoon, anime, or illustrated style
-- No watermarks or stock photo marks
-- High contrast, vibrant but professional colors
-- {self.canvas_width}x{self.canvas_height} pixels, PNG format
-- Main content centered within {self.content_width}px wide area
-- 150px side margins on each side filled with the section background color
-- NO pixel measurements, rulers, guidelines, or dimension labels visible
-"""
-        full_prompt = f"{prompt}\n\n{quality_suffix}"
+    def generate_image(
+        self,
+        prompt: str,
+        output_path: str,
+        aspect_ratio: str = "5:4",
+        resize_to: tuple = (1100, 900),
+        quality_suffix: str = None,
+    ) -> bool:
+        if self.use_imagen:
+            ok = self._generate_image_imagen(
+                prompt, output_path, aspect_ratio, resize_to, quality_suffix
+            )
+            if ok:
+                return True
+            logger.warning("Imagen 실패 → Gemini Flash 폴백")
+        return self._generate_image_gemini(
+            prompt, output_path, aspect_ratio, resize_to, quality_suffix
+        )
+
+    def _generate_image_imagen(
+        self,
+        prompt: str,
+        output_path: str,
+        aspect_ratio: str = "5:4",
+        resize_to: tuple = None,
+        quality_suffix: str = None,
+    ) -> bool:
+        if quality_suffix is None:
+            quality_suffix = (
+                "Photorealistic professional photography. "
+                "High contrast, vibrant but professional colors. "
+                "No cartoon, anime, illustrated style, watermarks, or stock photo marks."
+            )
+        full_prompt = f"{prompt}\n\n{quality_suffix}" if quality_suffix else prompt
+
+        imagen_ratios = {"1:1", "3:4", "4:3", "9:16", "16:9"}
+        if aspect_ratio not in imagen_ratios:
+            aspect_ratio = self._closest_imagen_ratio(aspect_ratio)
+
+        for attempt in range(self.max_retries):
+            try:
+                response = self.client.models.generate_images(
+                    model=self.imagen_model_name,
+                    prompt=full_prompt,
+                    config=types.GenerateImagesConfig(
+                        number_of_images=1,
+                        aspect_ratio=aspect_ratio,
+                        person_generation="ALLOW_ADULT",
+                    ),
+                )
+
+                if response.generated_images:
+                    image_bytes = response.generated_images[0].image.image_bytes
+                    Path(output_path).parent.mkdir(parents=True, exist_ok=True)
+                    with open(output_path, "wb") as f:
+                        f.write(image_bytes)
+
+                    if resize_to:
+                        self._resize_image(output_path, resize_to)
+
+                    self.total_images_generated += 1
+                    file_size = os.path.getsize(output_path)
+                    logger.info(
+                        f"Imagen 이미지 생성 완료 — {output_path} ({file_size:,} bytes)"
+                    )
+                    return True
+
+                logger.warning(f"Imagen 이미지 데이터 없음 (시도 {attempt + 1})")
+                if attempt < self.max_retries - 1:
+                    time.sleep(self.retry_delay)
+
+            except Exception as e:
+                logger.warning(
+                    f"Imagen 시도 {attempt + 1}/{self.max_retries} 실패: {e}"
+                )
+                if attempt < self.max_retries - 1:
+                    time.sleep(self.retry_delay)
+                else:
+                    logger.error(f"Imagen 최종 실패: {output_path} — {e}")
+                    return False
+
+        return False
+
+    def _generate_image_gemini(
+        self,
+        prompt: str,
+        output_path: str,
+        aspect_ratio: str = "5:4",
+        resize_to: tuple = (1100, 900),
+        quality_suffix: str = None,
+    ) -> bool:
+        if quality_suffix is None:
+            quality_suffix = (
+                "Photorealistic product photography style. "
+                "Professional Korean e-commerce aesthetic. "
+                "Clean, modern layout with generous white space. "
+                "Korean text must be clearly legible and accurately rendered. "
+                "No cartoon, anime, or illustrated style. "
+                "No watermarks or stock photo marks. "
+                "High contrast, vibrant but professional colors."
+            )
+        full_prompt = f"{prompt}\n\n{quality_suffix}" if quality_suffix else prompt
 
         for attempt in range(self.max_retries):
             try:
@@ -195,11 +283,10 @@ Style requirements:
                     contents=full_prompt,
                     config=types.GenerateContentConfig(
                         response_modalities=["IMAGE", "TEXT"],
-                        image_config=types.ImageConfig(aspect_ratio="4:3"),
+                        image_config=types.ImageConfig(aspect_ratio=aspect_ratio),
                     ),
                 )
 
-                # 이미지 데이터 추출
                 if response.candidates and response.candidates[0].content.parts:
                     for part in response.candidates[0].content.parts:
                         if part.inline_data:
@@ -208,54 +295,80 @@ Style requirements:
                             with open(output_path, "wb") as f:
                                 f.write(image_data)
 
-                            # 정확한 1100x800으로 리사이즈
-                            try:
-                                from PIL import Image as PILImage
-
-                                img = PILImage.open(output_path)
-                                if img.size != (self.canvas_width, self.canvas_height):
-                                    img = img.resize(
-                                        (self.canvas_width, self.canvas_height),
-                                        PILImage.Resampling.LANCZOS,
-                                    )
-                                    img.save(output_path, "PNG")
-                                    logger.info(
-                                        f"  📐 리사이즈: {img.size} → "
-                                        f"{self.canvas_width}x{self.canvas_height}"
-                                    )
-                            except Exception as resize_err:
-                                logger.warning(
-                                    f"리사이즈 실패 (원본 유지): {resize_err}"
-                                )
+                            if resize_to:
+                                self._resize_image(output_path, resize_to)
 
                             self.total_images_generated += 1
                             file_size = os.path.getsize(output_path)
                             logger.info(
-                                f"이미지 생성 완료 — {output_path} ({file_size:,} bytes)"
+                                f"Gemini 이미지 생성 완료 — {output_path} ({file_size:,} bytes)"
                             )
                             return True
 
-                logger.warning(f"이미지 데이터 없음 (시도 {attempt + 1})")
+                logger.warning(f"Gemini 이미지 데이터 없음 (시도 {attempt + 1})")
                 if attempt < self.max_retries - 1:
                     time.sleep(self.retry_delay)
 
             except Exception as e:
                 logger.warning(
-                    f"이미지 생성 시도 {attempt + 1}/{self.max_retries} 실패: {e}"
+                    f"Gemini 이미지 시도 {attempt + 1}/{self.max_retries} 실패: {e}"
                 )
                 if attempt < self.max_retries - 1:
                     time.sleep(self.retry_delay)
                 else:
-                    logger.error(f"이미지 생성 최종 실패: {output_path} — {e}")
+                    logger.error(f"Gemini 이미지 최종 실패: {output_path} — {e}")
                     return False
 
         return False
 
+    @staticmethod
+    def _resize_image(output_path: str, resize_to: tuple):
+        try:
+            from PIL import Image as PILImage
+
+            img = PILImage.open(output_path)
+            if img.size != resize_to:
+                img = img.resize(resize_to, PILImage.Resampling.LANCZOS)
+                img.save(output_path, "PNG")
+                logger.info(
+                    f"  📐 리사이즈: {img.size} → {resize_to[0]}x{resize_to[1]}"
+                )
+        except Exception as resize_err:
+            logger.warning(f"리사이즈 실패 (원본 유지): {resize_err}")
+
+    @staticmethod
+    def _closest_imagen_ratio(raw: str) -> str:
+        imagen_ratios = {
+            "1:1": 1.0,
+            "3:4": 0.75,
+            "4:3": 1.333,
+            "9:16": 0.5625,
+            "16:9": 1.778,
+        }
+        try:
+            parts = raw.split(":")
+            target = float(parts[0]) / float(parts[1])
+        except (ValueError, IndexError, ZeroDivisionError):
+            return "1:1"
+        best, best_diff = "1:1", float("inf")
+        for ratio_str, ratio_val in imagen_ratios.items():
+            diff = abs(ratio_val - target)
+            if diff < best_diff:
+                best_diff = diff
+                best = ratio_str
+        logger.info(f"  ⚠️ Imagen 비율 변환: {raw} → {best}")
+        return best
+
+        return False
+
     def get_cost_estimate(self) -> dict:
-        """현재까지의 예상 비용"""
-        image_cost = self.total_images_generated * 0.067
+        cost_per_image = 0.04 if self.use_imagen else 0.067
+        image_cost = self.total_images_generated * cost_per_image
         return {
             "images_generated": self.total_images_generated,
+            "model": self.imagen_model_name
+            if self.use_imagen
+            else self.image_model_name,
             "estimated_image_cost_usd": round(image_cost, 3),
             "estimated_total_usd": round(image_cost + 0.18, 3),
         }

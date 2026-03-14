@@ -93,26 +93,21 @@ LAYOUT_IDS = [
     "block_grid",
 ]
 
-# 포스터용 이미지 프롬프트 접미사 (상세페이지와 다름)
-POSTER_QUALITY_SUFFIX = """
-Style requirements:
-- Photorealistic professional photography
-- Clean, modern composition with generous white space
-- High contrast, vibrant but professional colors
-- No watermarks, stock photo marks, or pixel labels
-- No cartoon, anime, or illustrated style
-- No ruler marks, guidelines, or dimension indicators
-"""
+POSTER_QUALITY_SUFFIX_FALLBACK = (
+    "Photorealistic professional photography. "
+    "Clean, modern composition with generous white space. "
+    "High contrast, vibrant but professional colors. "
+    "No watermarks, stock photo marks, pixel labels, cartoon, anime, or illustrated style. "
+    "No ruler marks, guidelines, or dimension indicators."
+)
 
-ITEM_QUALITY_SUFFIX = """
-Style requirements:
-- Photorealistic product/food photography
-- Clean composition, single subject focus
-- Warm natural lighting, shallow depth of field
-- No text, no labels, no overlays
-- No cartoon, anime, or illustrated style
-- No watermarks or stock photo marks
-"""
+ITEM_QUALITY_SUFFIX_FALLBACK = (
+    "Photorealistic product/food photography. "
+    "Clean composition, single subject focus. "
+    "Warm natural lighting, shallow depth of field. "
+    "No text, no labels, no overlays. "
+    "No cartoon, anime, or illustrated style. No watermarks or stock photo marks."
+)
 
 
 class PosterGenerator:
@@ -145,10 +140,71 @@ class PosterGenerator:
         else:
             self.layout_patterns = {}
 
+        # Style presets
+        style_path = Path(__file__).parent.parent / "config" / "style_presets.json"
+        if style_path.exists():
+            self.style_presets = json.loads(style_path.read_text(encoding="utf-8"))
+        else:
+            self.style_presets = {}
+        self.active_style = None
+
         # Layout spec (Art Director output — Phase 3)
         self.layout_spec = self._load_safe("layout_spec.json")
         if self.layout_spec:
-            logger.info(f"  \u2b50 layout_spec.json \ub85c\ub4dc\ub428 (layout: {self.layout_spec.get('layout_id', '?')})")
+            logger.info(
+                f"  \u2b50 layout_spec.json \ub85c\ub4dc\ub428 (layout: {self.layout_spec.get('layout_id', '?')})"
+            )
+
+    # ─── Style Preset Resolution ───
+
+    def _resolve_style(self, brief: dict) -> dict:
+        """brief.json의 poster_style / industry / tone으로 스타일 프리셋 결정"""
+        import random
+
+        presets = self.style_presets.get("presets", {})
+        rules = self.style_presets.get("auto_select_rules", {})
+        if not presets:
+            return {}
+
+        # 1. brief에 명시적 poster_style 지정
+        explicit = brief.get("poster_style", "")
+        if explicit and explicit in presets:
+            logger.info(f"  \U0001f3a8 스타일 프리셋: {explicit} (명시적 선택)")
+            return presets[explicit]
+
+        # 2. 업종 매칭
+        industry = brief.get("industry", brief.get("category", ""))
+        by_industry = rules.get("by_industry", {})
+        for keyword, preset_id in by_industry.items():
+            if keyword in industry or industry in keyword:
+                if preset_id in presets:
+                    logger.info(
+                        f"  \U0001f3a8 스타일 프리셋: {preset_id} (업종 '{industry}' 매칭)"
+                    )
+                    return presets[preset_id]
+
+        # 3. 톤 키워드 매칭
+        tone = brief.get("tone", "")
+        by_tone = rules.get("by_tone_keywords", {})
+        for keyword, preset_id in by_tone.items():
+            if keyword in tone:
+                if preset_id in presets:
+                    logger.info(
+                        f"  \U0001f3a8 스타일 프리셋: {preset_id} (톤 '{keyword}' 매칭)"
+                    )
+                    return presets[preset_id]
+
+        # 4. 랜덤 fallback (다양성 확보)
+        fallback_id = rules.get("fallback", "warm_cozy")
+        all_ids = list(presets.keys())
+        if len(all_ids) > 1:
+            fallback_id = random.choice(all_ids)
+            logger.info(
+                f"  \U0001f3a8 스타일 프리셋: {fallback_id} (랜덤 선택 — 매칭 없음)"
+            )
+        else:
+            logger.info(f"  \U0001f3a8 스타일 프리셋: {fallback_id} (기본값)")
+        return presets.get(fallback_id, {})
 
     # ─── Public API ───
 
@@ -171,6 +227,12 @@ class PosterGenerator:
             "rate_limit_delay_seconds", 10
         )
 
+        self.active_style = self._resolve_style(brief)
+        hero_suffix = self.active_style.get(
+            "hero_suffix", POSTER_QUALITY_SUFFIX_FALLBACK
+        )
+        item_suffix = self.active_style.get("item_suffix", ITEM_QUALITY_SUFFIX_FALLBACK)
+
         logger.info(f"{'=' * 55}")
         logger.info(f"🚀 포스터 생성 시작: {biz_name}")
         logger.info(f"   히어로 1장 + 품목 {len(items_cfg)}장")
@@ -183,7 +245,7 @@ class PosterGenerator:
             str(self.images_dir / "hero.png"),
             aspect_ratio=self._get_hero_aspect_ratio(design),
             resize_to=None,
-            quality_suffix=POSTER_QUALITY_SUFFIX,
+            quality_suffix=hero_suffix,
         )
         if hero_ok:
             logger.info("  ✅ 히어로 완료")
@@ -201,7 +263,7 @@ class PosterGenerator:
                 str(self.images_dir / f"item_{i + 1:02d}.png"),
                 aspect_ratio=item.get("aspect_ratio", "1:1"),
                 resize_to=None,
-                quality_suffix=ITEM_QUALITY_SUFFIX,
+                quality_suffix=item_suffix,
             )
             if ok:
                 item_ok += 1
@@ -219,7 +281,7 @@ class PosterGenerator:
                 str(self.images_dir / "event.png"),
                 aspect_ratio=design.get("event", {}).get("aspect_ratio", "16:9"),
                 resize_to=None,
-                quality_suffix=POSTER_QUALITY_SUFFIX,
+                quality_suffix=hero_suffix,
             )
             if event_ok:
                 logger.info("  ✅ 이벤트 배너 완료")
@@ -283,6 +345,12 @@ class PosterGenerator:
             logger.error(f"❌ {e}")
             return False
 
+        brief = self._load_safe("brief.json") or {}
+        self.active_style = self._resolve_style(brief)
+        hero_suffix = self.active_style.get(
+            "hero_suffix", POSTER_QUALITY_SUFFIX_FALLBACK
+        )
+
         hero = design.get("hero", {})
         logger.info("🖼️  히어로 이미지 재생성 중...")
         ok = self.client.generate_image(
@@ -290,7 +358,7 @@ class PosterGenerator:
             str(self.images_dir / "hero.png"),
             aspect_ratio=self._get_hero_aspect_ratio(design),
             resize_to=None,
-            quality_suffix=POSTER_QUALITY_SUFFIX,
+            quality_suffix=hero_suffix,
         )
         if not ok:
             logger.error("❌ 히어로 재생성 실패")
@@ -312,6 +380,10 @@ class PosterGenerator:
             logger.error(f"❌ 품목 번호는 1~{len(items)} 사이여야 합니다: {idx}")
             return False
 
+        brief = self._load_safe("brief.json") or {}
+        self.active_style = self._resolve_style(brief)
+        item_suffix = self.active_style.get("item_suffix", ITEM_QUALITY_SUFFIX_FALLBACK)
+
         item = items[idx - 1]
         logger.info(f"🖼️  {item.get('name', '?')} 이미지 재생성 중...")
         ok = self.client.generate_image(
@@ -319,7 +391,7 @@ class PosterGenerator:
             str(self.images_dir / f"item_{idx:02d}.png"),
             aspect_ratio=item.get("aspect_ratio", "1:1"),
             resize_to=None,
-            quality_suffix=ITEM_QUALITY_SUFFIX,
+            quality_suffix=item_suffix,
         )
         if not ok:
             logger.error(f"❌ {item.get('name')} 재생성 실패")
@@ -379,49 +451,76 @@ class PosterGenerator:
 
         logger.info("✍️  카피 생성 중... (copy.json)")
 
-        system_prompt = """You are a professional Korean marketing copywriter for print posters (전단지/포스터).
-Your job: Given a business brief, write compelling marketing copy that will be used on a printed poster.
+        self.active_style = self._resolve_style(brief)
+        copy_tone = self.active_style.get("copy_tone", {})
+        style_name = self.active_style.get("name", "")
 
+        tone_guide = ""
+        if copy_tone:
+            tone_guide = f"""
+## VOICE & TONE GUIDE (스타일: {style_name})
+- 목소리: {copy_tone.get("voice", "")}
+- 자주 쓸 표현: {", ".join(copy_tone.get("keywords", []))}
+- 피할 표현: {", ".join(copy_tone.get("avoid", []))}
+- 헤드라인 스타일: {copy_tone.get("headline_style", "")}
+- 헤드라인 예시 (참고만, 그대로 복사 금지): {", ".join(copy_tone.get("example_headlines", []))}
+"""
+
+        system_prompt = f"""You are a top-tier Korean advertising copywriter — think 제일기획, 이노션 수준.
+당신은 단어 하나하나가 매출로 직결되는 인쇄 포스터 카피를 작성합니다.
+판에 박힌 '최고의', '특별한', '프리미엄'은 절대 쓰지 마세요. 실제 카피라이터처럼 생각하세요.
+
+## CREATIVE PRINCIPLES
+1. 헤드라인은 고객의 발걸음을 멈추게 하는 한마디 — 짧을수록 강하다 (2-8글자)
+2. 서브카피는 "왜 여기?" 질문에 한 문장으로 답한다
+3. 품목 설명은 맛/경험을 자극하는 감각적 표현 (시각+미각+촉각)
+4. 이벤트 문구는 긴급성+혜택을 동시에 전달
+5. CTA는 행동을 유도하는 완성된 문장
+6. 업종별 톤을 철저히 지킨다 — 고기집에 '소확행', 병원에 '맛있다!'는 금지
+{tone_guide}
 ## OUTPUT FORMAT (JSON)
 Return a JSON object with this EXACT structure:
-{
-  "hero": {
+{{
+  "hero": {{
     "headline": "대표 헤드라인 (가게명 또는 캐치프레이즈, 2-8글자)",
     "subtext": "부제 (위치·특징·컨셉, 20자 이내)",
     "badge": "뱃지 텍스트 (GRAND OPEN, NEW, SPECIAL 등)"
-  },
+  }},
   "subtitle": "서브헤드라인 (핵심 셋링포인트, 15-30자)",
   "items": [
-    {"name": "품목명", "description": "한줄 설명", "price": "\uc22ddddd\uc6d0"},
+    {{"name": "품목명", "description": "감각적 한줄 설명", "price": "₩가격"}},
     ...
   ],
   "features": ["특징1", "특징2", "특징3"],
-  "promo": {
-    "title": "이벤트 제목",
-    "detail": "이벤트 세부내용"
-  },
-  "cta": {
-    "headline": "CTA 헤드라인 (예: 지금 바로, OOO점)",
+  "promo": {{
+    "title": "이벤트 제목 (긴급성 포함)",
+    "detail": "이벤트 세부내용 (구체적 혜택)"
+  }},
+  "cta": {{
+    "headline": "CTA 헤드라인 (행동 유도 문장)",
     "phone": "전화번호",
     "address": "주소/위치",
     "hours": "영업시간"
-  }
-}
+  }}
+}}
 
 ## RULES
-1. items는 4-6개. brief에 메뉴가 있으면 그대로, 없으면 업종에 맞는 대표 메뉴 창작
+1. items는 4-6개. brief에 메뉴가 있으면 그대로 사용, 없으면 업종에 맞는 대표 메뉴 창작
 2. 가격은 brief에 있으면 그대로, 없으면 업종 평균 가격대로 합리적으로 설정
-3. hero.headline은 짧고 강렬하게, 가게명 또는 캐치프레이즈
-4. 한국어 자연스러운 구어체 사용, 불필요한 영어 지양
-5. promo가 brief에 없으면 오픈기념/신규/시즌 프로모션 창작
-6. cta.phone/address/hours는 brief에 있으면 그대로, 없으면 빈 문자열"""
+3. hero.headline은 짧고 강렬하게 — '정성을 담은 한 그릇', '불 위의 예술' 같은 감각적 표현
+4. 한국어 자연스러운 구어체. 영어는 badge에만 허용 (GRAND OPEN, NEW 등)
+5. promo가 brief에 없으면 업종+시즌에 맞는 자연스러운 프로모션 창작
+6. cta.phone/address/hours는 brief에 있으면 그대로, 없으면 빈 문자열
+7. description은 '~입니다' 체 금지. 명사형 종결 또는 감각 묘사 ('직화의 풍미 그대로', '매일 굽는 수제 크로와상')"""
 
         items_from_brief = brief.get("items", brief.get("menu", []))
         # Support menu_items as comma-separated string
         if not items_from_brief and brief.get("menu_items"):
             menu_str = brief["menu_items"]
             if isinstance(menu_str, str):
-                items_from_brief = [{"name": m.strip()} for m in menu_str.split(",") if m.strip()]
+                items_from_brief = [
+                    {"name": m.strip()} for m in menu_str.split(",") if m.strip()
+                ]
         features_from_brief = brief.get("features", [])
         promo_from_brief = brief.get("promo", brief.get("promotion", {}))
         # Support promo as a simple string
@@ -437,34 +536,43 @@ Return a JSON object with this EXACT structure:
                 contact = {"phone": top_phone, "address": top_addr, "hours": top_hours}
 
         # Flexible business name extraction
-        biz_name = brief.get("business_name", "") or brief.get("store_name", "") or brief.get("name", "")
+        biz_name = (
+            brief.get("business_name", "")
+            or brief.get("store_name", "")
+            or brief.get("name", "")
+        )
 
         user_prompt = f"""Create copy.json for this business:
 
 ## BUSINESS
 - 상호: {biz_name}
-- 업종: {brief.get('industry', '')}
-- 카테고리: {brief.get('category', '')}
-- 특징: {', '.join(features_from_brief) if features_from_brief else 'N/A'}
-- 타겟: {brief.get('target_audience', '')}
-- 톤: {brief.get('tone', '')}
-- 분위기: {brief.get('mood', '')}
-- 목적: {brief.get('purpose', '')}"""
+- 업종: {brief.get("industry", "")}
+- 카테고리: {brief.get("category", "")}
+- 특징: {", ".join(features_from_brief) if features_from_brief else "N/A"}
+- 타겟: {brief.get("target_audience", "")}
+- 톤: {brief.get("tone", "")}
+- 분위기: {brief.get("mood", "")}
+- 목적: {brief.get("purpose", "")}"""
 
         if items_from_brief:
             if isinstance(items_from_brief[0], dict):
-                items_str = '\n'.join([f"  - {it.get('name','?')}: {it.get('description','')} [{it.get('price','')}]" for it in items_from_brief])
+                items_str = "\n".join(
+                    [
+                        f"  - {it.get('name', '?')}: {it.get('description', '')} [{it.get('price', '')}]"
+                        for it in items_from_brief
+                    ]
+                )
             else:
-                items_str = '\n'.join([f"  - {it}" for it in items_from_brief])
+                items_str = "\n".join([f"  - {it}" for it in items_from_brief])
             user_prompt += f"\n\n## 메뉴/품목 (사장님 제공)\n{items_str}"
 
         if isinstance(promo_from_brief, dict) and promo_from_brief:
-            user_prompt += f"\n\n## 프로모션\n- 제목: {promo_from_brief.get('title','')}\n- 내용: {promo_from_brief.get('detail','')}"
+            user_prompt += f"\n\n## 프로모션\n- 제목: {promo_from_brief.get('title', '')}\n- 내용: {promo_from_brief.get('detail', '')}"
         elif isinstance(promo_from_brief, str) and promo_from_brief:
             user_prompt += f"\n\n## 프로모션\n{promo_from_brief}"
 
         if contact:
-            user_prompt += f"\n\n## 연락처\n- 전화: {contact.get('phone','')}\n- 주소: {contact.get('address','')}\n- 영업시간: {contact.get('hours','')}"
+            user_prompt += f"\n\n## 연락처\n- 전화: {contact.get('phone', '')}\n- 주소: {contact.get('address', '')}\n- 영업시간: {contact.get('hours', '')}"
 
         try:
             result = self.client.generate_text_json(user_prompt, system_prompt)
@@ -473,23 +581,23 @@ Return a JSON object with this EXACT structure:
             return False
 
         # Validate essential fields
-        if not result.get('hero') or not result.get('items'):
+        if not result.get("hero") or not result.get("items"):
             logger.error("❌ copy.json에 필수 필드(hero, items) 누락")
             return False
 
         # Post-fixup: inject contact info from brief into CTA if Gemini left it empty
         if contact:
-            cta = result.get('cta', {})
-            if not cta.get('phone') and contact.get('phone'):
-                cta['phone'] = contact['phone']
-            if not cta.get('address') and contact.get('address'):
-                cta['address'] = contact['address']
-            if not cta.get('hours') and contact.get('hours'):
-                cta['hours'] = contact['hours']
-            result['cta'] = cta
+            cta = result.get("cta", {})
+            if not cta.get("phone") and contact.get("phone"):
+                cta["phone"] = contact["phone"]
+            if not cta.get("address") and contact.get("address"):
+                cta["address"] = contact["address"]
+            if not cta.get("hours") and contact.get("hours"):
+                cta["hours"] = contact["hours"]
+            result["cta"] = cta
 
         self._save("copy.json", result)
-        logger.info(f"✅ 카피 생성 완료 — {len(result.get('items',[]))}개 품목")
+        logger.info(f"✅ 카피 생성 완료 — {len(result.get('items', []))}개 품목")
         return True
 
     def auto_design(self) -> bool:
@@ -503,19 +611,32 @@ Return a JSON object with this EXACT structure:
 
         logger.info("🎨 디자인 생성 중... (design.json)")
 
+        if not self.active_style:
+            self.active_style = self._resolve_style(brief)
+
         # Load color palettes for reference
         config_dir = Path(__file__).parent.parent / "config"
         palettes = self._load_config(config_dir / "color_palettes.json")
         palette_info = ""
         if palettes:
-            industry = brief.get('industry', brief.get('category', ''))
-            palette_data = palettes.get('palettes', palettes)  # support nested or flat
+            industry = brief.get("industry", brief.get("category", ""))
+            palette_data = palettes.get("palettes", palettes)
             for pid, pdata in palette_data.items():
                 if not isinstance(pdata, dict):
                     continue
-                industries = pdata.get('industries', [])
+                industries = pdata.get("industries", [])
                 if any(t in industry for t in industries):
-                    palette_info += f"\nRecommended palette '{pid}': brand={pdata.get('brand_color','')}, accent={pdata.get('accent_color','')}, bg={pdata.get('bg_color','')}, mood={pdata.get('mood','')}"
+                    palette_info += f"\nRecommended palette '{pid}': brand={pdata.get('brand_color', '')}, accent={pdata.get('accent_color', '')}, bg={pdata.get('bg_color', '')}, mood={pdata.get('mood', '')}"
+
+        style_direction = ""
+        if self.active_style:
+            style_direction = f"""
+## PHOTOGRAPHY STYLE DIRECTION (MANDATORY)
+Style: {self.active_style.get("name_en", "")} ({self.active_style.get("name", "")})
+Color mood: {self.active_style.get("color_mood", "")}
+Hero photo direction: {self.active_style.get("hero_suffix", "")[:200]}
+Item photo direction: {self.active_style.get("item_suffix", "")[:200]}
+ALL image prompts MUST follow this style direction. Do NOT deviate."""
 
         system_prompt = f"""You are a professional Art Director creating image generation prompts for a print poster.
 
@@ -550,21 +671,26 @@ Return a JSON object with this EXACT structure:
 5. 각 item prompt는 해당 품목의 식재료/상품을 매력적으로 촬영한 푸드/상품 사진
 6. style 색상은 업종 이미지에 맞게 선택 (음식점=따뜻/빨강, 카페=브라운/베이지, 학원=파랑/노랑 등)
 7. prompt는 전부 영문으로 작성 (Gemini 이미지 생성용)
-8. If the business has a promo/event, generate an event image prompt. The event image should be an eye-catching promotional banner photo. End with 'no text, no labels, no borders'{palette_info}"""
+8. If the business has a promo/event, generate an event image prompt. The event image should be an eye-catching promotional banner photo. End with 'no text, no labels, no borders'{palette_info}{style_direction}"""
 
-        items = copy_data.get('items', [])
-        items_str = '\n'.join([f"  {i+1}. {it.get('name','?')}: {it.get('description','')}" for i, it in enumerate(items)])
+        items = copy_data.get("items", [])
+        items_str = "\n".join(
+            [
+                f"  {i + 1}. {it.get('name', '?')}: {it.get('description', '')}"
+                for i, it in enumerate(items)
+            ]
+        )
 
         user_prompt = f"""Create design.json for this poster:
 
 ## BUSINESS
-- 상호: {brief.get('business_name', '')}
-- 업종: {brief.get('industry', '')}
-- 톤: {brief.get('tone', '따뜻하고 전문적인')}
+- 상호: {brief.get("business_name", "")}
+- 업종: {brief.get("industry", "")}
+- 톤: {brief.get("tone", "따뜻하고 전문적인")}
 
 ## COPY CONTENT
-- 헤드라인: {copy_data.get('hero',{}).get('headline','')}
-- 서브: {copy_data.get('subtitle','')}
+- 헤드라인: {copy_data.get("hero", {}).get("headline", "")}
+- 서브: {copy_data.get("subtitle", "")}
 - 품목 ({len(items)}개):
 {items_str}
 
@@ -577,12 +703,14 @@ Produce the hero prompt and {len(items)} item prompts. Remember: hero is a BACKG
             return False
 
         # Validate
-        if not result.get('style') or not result.get('hero'):
+        if not result.get("style") or not result.get("hero"):
             logger.error("❌ design.json에 필수 필드(style, hero) 누락")
             return False
 
         self._save("design.json", result)
-        logger.info(f"✅ 디자인 생성 완료 — hero + {len(result.get('items',[]))}개 품목 프롬프트")
+        logger.info(
+            f"✅ 디자인 생성 완료 — hero + {len(result.get('items', []))}개 품목 프롬프트"
+        )
         return True
 
     def auto_all(self) -> bool:
@@ -626,15 +754,29 @@ Produce the hero prompt and {len(items)} item prompts. Remember: hero is a BACKG
         for lid, ldata in self.layout_patterns.get("layouts", {}).items():
             zones_pct = ldata.get("zones", {})
             best_for = ldata.get("best_for", [])
-            layout_options.append(f"  - {lid}: {ldata.get('name', lid)} — zones: {json.dumps(zones_pct)} — best_for: {best_for}")
-        layouts_str = "\n".join(layout_options) if layout_options else "  (layout_patterns not loaded)"
+            layout_options.append(
+                f"  - {lid}: {ldata.get('name', lid)} — zones: {json.dumps(zones_pct)} — best_for: {best_for}"
+            )
+        layouts_str = (
+            "\n".join(layout_options)
+            if layout_options
+            else "  (layout_patterns not loaded)"
+        )
 
         # Extract scale options from typo_scale
         scales = typo_scale.get("scales", {})
-        scales_str = "\n".join([f"  - {name}: ratio {s.get('ratio')}, feel: {s.get('feel')}, best_for: {s.get('best_for')}" for name, s in scales.items() if isinstance(s, dict) and 'ratio' in s])
+        scales_str = "\n".join(
+            [
+                f"  - {name}: ratio {s.get('ratio')}, feel: {s.get('feel')}, best_for: {s.get('best_for')}"
+                for name, s in scales.items()
+                if isinstance(s, dict) and "ratio" in s
+            ]
+        )
 
         # Extract schema (only the schema part, not the examples)
-        schema_def = json.dumps(schema.get("schema", schema), ensure_ascii=False, indent=2)
+        schema_def = json.dumps(
+            schema.get("schema", schema), ensure_ascii=False, indent=2
+        )
 
         return f"""You are a professional Art Director for print poster design (전단지/포스터).
 
@@ -653,7 +795,7 @@ Your job: Given a business brief and copy text, create a complete layout_spec.js
 {scales_str}
 
 ## LAYOUT OVERRIDES (per layout)
-{json.dumps(typo_scale.get('layout_overrides', {}), ensure_ascii=False, indent=2)}
+{json.dumps(typo_scale.get("layout_overrides", {}), ensure_ascii=False, indent=2)}
 
 ## 기승전결 NARRATIVE STRUCTURE
 Map the poster to 4-act narrative:
@@ -685,7 +827,12 @@ Map the poster to 4-act narrative:
         promo = copy_data.get("promo", {})
         cta = copy_data.get("cta", {})
 
-        items_summary = "\n".join([f"  {i+1}. {item.get('name', '?')} — {item.get('description', '')} [{item.get('price', '')}]" for i, item in enumerate(items)])
+        items_summary = "\n".join(
+            [
+                f"  {i + 1}. {item.get('name', '?')} — {item.get('description', '')} [{item.get('price', '')}]"
+                for i, item in enumerate(items)
+            ]
+        )
 
         return f"""Create layout_spec.json for this poster:
 
@@ -693,23 +840,23 @@ Map the poster to 4-act narrative:
 - Name: {biz_name}
 - Industry: {industry}
 - Category: {category}
-- Features: {', '.join(features) if features else 'N/A'}
+- Features: {", ".join(features) if features else "N/A"}
 
 ## COPY CONTENT
-- Hero headline: {hero_copy.get('headline', '')}
-- Hero badge: {hero_copy.get('badge', '')}
+- Hero headline: {hero_copy.get("headline", "")}
+- Hero badge: {hero_copy.get("badge", "")}
 - Subtitle: {subtitle}
 - Items ({n_items}):
 {items_summary}
-- Promo: {promo.get('title', '')} — {promo.get('detail', '')}
-- CTA headline: {cta.get('headline', '')}
-- CTA phone: {cta.get('phone', '')}
-- CTA address: {cta.get('address', '')}
-- CTA hours: {cta.get('hours', '')}
+- Promo: {promo.get("title", "")} — {promo.get("detail", "")}
+- CTA headline: {cta.get("headline", "")}
+- CTA phone: {cta.get("phone", "")}
+- CTA address: {cta.get("address", "")}
+- CTA hours: {cta.get("hours", "")}
 
 ## DECISION FACTORS
 - Item count: {n_items} (affects grid layout choice)
-- Has promo: {'Yes' if promo else 'No'}
+- Has promo: {"Yes" if promo else "No"}
 - Industry suggests: Consider warm/cool tones, visual weight, energy level
 
 Generate complete layout_spec.json with all required fields: layout_id, zones, typography.assignments, image_directives.hero, color_plan."""
@@ -733,7 +880,8 @@ Generate complete layout_spec.json with all required fields: layout_id, zones, t
         return builder(style, copy_data)
 
     def _select_layout(self, design: dict, copy_data: dict) -> str:
-        """레이아웃 자동 선택 (CLI → layout_spec → design.json → layout_patterns.json)"""
+        import random
+
         # 1. CLI override
         if self.cli_layout:
             return self.cli_layout
@@ -743,19 +891,25 @@ Generate complete layout_spec.json with all required fields: layout_id, zones, t
         # 3. Explicit in design.json
         if design.get("layout"):
             return design["layout"]
-        # 3. Auto from layout_patterns.json
+        # 4. Auto from layout_patterns.json (weighted random from top candidates)
         brief = self._load_safe("brief.json")
         industry = brief.get("industry", "").lower() if brief else ""
         n_items = len(copy_data.get("items", []))
-        # Check industry mapping
         rules = self.layout_patterns.get("layout_selection_rules", {})
         by_industry = rules.get("by_industry", {})
         for key, layouts in by_industry.items():
             if key == "default":
                 continue
             if key.lower() in industry or industry in key.lower():
+                if len(layouts) >= 2:
+                    pick = random.choices(
+                        layouts[:3], weights=[50, 30, 20][: len(layouts[:3])]
+                    )[0]
+                    logger.info(
+                        f"  🎲 레이아웃 랜덤 선택: {pick} (후보: {layouts[:3]})"
+                    )
+                    return pick
                 return layouts[0]
-        # Check item count
         by_count = rules.get("by_item_count", {})
         if n_items <= 2:
             candidates = by_count.get("1-2", ["hero_dominant"])
@@ -771,11 +925,11 @@ Generate complete layout_spec.json with all required fields: layout_id, zones, t
 
     def _get_zone(self, zone_id: str, defaults: dict) -> dict:
         """layout_spec.json에서 zone 값을 읽거나 하드코딩 기본값으로 폴백.
-        
+
         Args:
             zone_id: zone ID (예: 'hero', 'slogan', 'items', 'cta')
             defaults: 폴백 기본값 dict (예: {'y_px': 20, 'h_px': 1480})
-        
+
         Returns:
             dict with y_px, h_px (and optionally x_px, w_px)
         """
@@ -792,7 +946,22 @@ Generate complete layout_spec.json with all required fields: layout_id, zones, t
         return defaults
 
     # Valid Gemini aspect ratios
-    VALID_ASPECT_RATIOS = {'1:1', '1:4', '1:8', '2:3', '3:2', '3:4', '4:1', '4:3', '4:5', '5:4', '8:1', '9:16', '16:9', '21:9'}
+    VALID_ASPECT_RATIOS = {
+        "1:1",
+        "1:4",
+        "1:8",
+        "2:3",
+        "3:2",
+        "3:4",
+        "4:1",
+        "4:3",
+        "4:5",
+        "5:4",
+        "8:1",
+        "9:16",
+        "16:9",
+        "21:9",
+    }
 
     def _get_hero_aspect_ratio(self, design: dict) -> str:
         """layout_spec에서 히어로 aspect_ratio를 읽거나 design.json에서 폴백.
@@ -810,20 +979,20 @@ Generate complete layout_spec.json with all required fields: layout_id, zones, t
             return raw_ratio
         # Convert to float and find nearest valid ratio
         try:
-            parts = raw_ratio.split(':')
+            parts = raw_ratio.split(":")
             target = float(parts[0]) / float(parts[1])
         except (ValueError, IndexError, ZeroDivisionError):
-            return '16:9'
-        best = '16:9'
-        best_diff = float('inf')
+            return "16:9"
+        best = "16:9"
+        best_diff = float("inf")
         for valid in self.VALID_ASPECT_RATIOS:
-            vp = valid.split(':')
+            vp = valid.split(":")
             vr = float(vp[0]) / float(vp[1])
             diff = abs(vr - target)
             if diff < best_diff:
                 best_diff = diff
                 best = valid
-        logger.info(f'  ⚠️ 비율 변환: {raw_ratio} → {best} (Gemini 호환)')
+        logger.info(f"  ⚠️ 비율 변환: {raw_ratio} → {best} (Gemini 호환)")
         return best
 
     def _enrich_hero_prompt(self, hero_cfg: dict) -> str:
@@ -849,7 +1018,9 @@ Generate complete layout_spec.json with all required fields: layout_id, zones, t
         # fill_mode
         fill_mode = directives.get("fill_mode")
         if fill_mode == "full_bleed":
-            parts.append("Fill the ENTIRE frame edge to edge — no white space, no margins, no borders.")
+            parts.append(
+                "Fill the ENTIRE frame edge to edge — no white space, no margins, no borders."
+            )
 
         # content_focus → COMPOSITION
         content_focus = directives.get("content_focus")
@@ -864,8 +1035,12 @@ Generate complete layout_spec.json with all required fields: layout_id, zones, t
         # text_safe_areas
         safe_areas = directives.get("text_safe_areas", [])
         if safe_areas:
-            areas_desc = [f"{a.get('position', '')} ({a.get('purpose', '')})" for a in safe_areas]
-            parts.append(f"TEXT SAFE AREAS (keep visually clean/dark for text overlay): {', '.join(areas_desc)}")
+            areas_desc = [
+                f"{a.get('position', '')} ({a.get('purpose', '')})" for a in safe_areas
+            ]
+            parts.append(
+                f"TEXT SAFE AREAS (keep visually clean/dark for text overlay): {', '.join(areas_desc)}"
+            )
 
         # forbidden
         forbidden = directives.get("forbidden", [])
@@ -874,7 +1049,9 @@ Generate complete layout_spec.json with all required fields: layout_id, zones, t
 
         if parts:
             prompt = prompt.rstrip() + " [LAYOUT CONSTRAINTS] " + " ".join(parts)
-            logger.info(f"  📐 히어로 프롬프트 enrichment 적용 ({len(parts)}개 제약조건)")
+            logger.info(
+                f"  📐 히어로 프롬프트 enrichment 적용 ({len(parts)}개 제약조건)"
+            )
 
         return prompt
 
@@ -897,47 +1074,92 @@ Generate complete layout_spec.json with all required fields: layout_id, zones, t
 
         style = items_directives[idx].get("style_constraint", "")
         if style:
-            prompt = prompt.rstrip() + f" [STYLE CONSTRAINT] {style}. No text, no labels, no overlays."
+            prompt = (
+                prompt.rstrip()
+                + f" [STYLE CONSTRAINT] {style}. No text, no labels, no overlays."
+            )
             logger.info(f"  📐 품목 {idx + 1} 프롬프트 enrichment 적용")
 
         return prompt
 
+    # Minimum font sizes for 2130×3000 canvas (prevents microscopic text from layout_spec)
+    _TYPO_MINIMUMS = {
+        "business_name": 80,
+        "hero_headline": 80,
+        "hero_badge": 24,
+        "hero_subtext": 28,
+        "slogan": 36,
+        "subtitle": 36,
+        "features": 24,
+        "features_text": 24,
+        "item_name": 32,
+        "item_description": 20,
+        "item_sub_description": 18,
+        "item_price": 28,
+        "section_title": 36,
+        "section_item": 26,
+        "promo_title": 36,
+        "promo_headline": 36,
+        "promo_detail": 26,
+        "promo_body": 26,
+        "cta_headline": 36,
+        "cta_phone": 48,
+        "cta_address": 24,
+        "cta_hours": 24,
+        "cta_sns": 22,
+    }
+
     def _get_typo(self, key: str, defaults: dict) -> dict:
         """layout_spec.json에서 typography assignment를 읽거나 기본값으로 폴백.
-        
+
         Args:
             key: assignment key (예: 'business_name', 'slogan', 'item_name')
             defaults: 폴백 기본값 dict (예: {'size_px': 52, 'weight': '700', 'color': '#333'})
-        
+
         Returns:
             dict with size_px, weight, color, alignment
         """
+        result = defaults
         if self.layout_spec:
             assignments = self.layout_spec.get("typography", {}).get("assignments", {})
             if key in assignments:
                 a = assignments[key]
-                return {
+                result = {
                     "size_px": a.get("size_px", defaults.get("size_px", 32)),
                     "weight": a.get("weight", defaults.get("weight", "400")),
                     "color": a.get("color", defaults.get("color", "#333333")),
-                    "alignment": a.get("alignment", defaults.get("alignment", "center")),
+                    "alignment": a.get(
+                        "alignment", defaults.get("alignment", "center")
+                    ),
                 }
-        return defaults
+        # Enforce minimum sizes for readability on 2130×3000 canvas
+        min_size = self._TYPO_MINIMUMS.get(key, 16)
+        if result.get("size_px", 32) < min_size:
+            result["size_px"] = min_size
+        return result
 
     def _get_transitions(self) -> dict:
         """layout_spec.json에서 zone_transitions를 읽어 {(from, to): type} dict 반환."""
         result = {}
         if self.layout_spec:
-            transitions = self.layout_spec.get("color_plan", {}).get("zone_transitions", [])
+            transitions = self.layout_spec.get("color_plan", {}).get(
+                "zone_transitions", []
+            )
             for t in transitions:
                 key = (t.get("from_zone", ""), t.get("to_zone", ""))
                 result[key] = t.get("transition", "hard_cut")
         return result
 
-    def _svg_transition(self, from_id: str, to_id: str, y_boundary: int,
-                         accent: str = "#FF6B35", margin: int = 65) -> str:
+    def _svg_transition(
+        self,
+        from_id: str,
+        to_id: str,
+        y_boundary: int,
+        accent: str = "#FF6B35",
+        margin: int = 65,
+    ) -> str:
         """zone 경계에 transition SVG 요소를 생성.
-        
+
         Args:
             from_id: 위쪽 zone ID
             to_id: 아래쪽 zone ID
@@ -949,17 +1171,20 @@ Generate complete layout_spec.json with all required fields: layout_id, zones, t
         """
         transitions = self._get_transitions()
         trans_type = transitions.get((from_id, to_id), "hard_cut")
-        
+
         if trans_type == "hard_cut" or trans_type == "seamless":
             return ""
-        
+
         if trans_type == "gradient":
             # Get to_zone's bg color for gradient target
             to_bg = "#FAFAF8"  # default
             if self.layout_spec:
                 to_zone = self.layout_spec.get("zones", {}).get(to_id, {})
-                to_bg = to_zone.get("bg_color", self.layout_spec.get("color_plan", {}).get("bg_color", "#FAFAF8"))
-            
+                to_bg = to_zone.get(
+                    "bg_color",
+                    self.layout_spec.get("color_plan", {}).get("bg_color", "#FAFAF8"),
+                )
+
             grad_h = 80  # gradient overlay height
             grad_id = f"grad-{from_id}-{to_id}"
             return f"""
@@ -972,19 +1197,19 @@ Generate complete layout_spec.json with all required fields: layout_id, zones, t
   </defs>
   <rect x="0" y="{y_boundary - grad_h}" width="{CANVAS_W}" height="{grad_h}"
         fill="url(#{grad_id})"/>"""
-        
+
         if trans_type == "accent_line":
             return f"""
   <!-- Transition: {from_id} \u2192 {to_id} (accent_line) -->
   <line x1="{margin}" y1="{y_boundary}" x2="{CANVAS_W - margin}" y2="{y_boundary}"
         stroke="{accent}" stroke-width="2" opacity="0.35"/>"""
-        
+
         return ""
 
     # ─── SVG Common Helpers ───
 
     def _svg_header(self, bg: str) -> str:
-        """XML 선언 + SVG 열기 + defs/style + 배경"""
+        """XML 선언 + SVG 열기 + 전문 defs(필터/그라디언트/스타일) + 배경"""
         return f"""<?xml version="1.0" encoding="UTF-8"?>
 <svg xmlns="http://www.w3.org/2000/svg"
      xmlns:xlink="http://www.w3.org/1999/xlink"
@@ -995,14 +1220,69 @@ Generate complete layout_spec.json with all required fields: layout_id, zones, t
       .title {{ font-family: {FONT_FAMILY}; font-weight: 700; }}
       .body {{ font-family: {FONT_FAMILY}; font-weight: 400; }}
       .light {{ font-family: {FONT_FAMILY}; font-weight: 300; }}
+      .heavy {{ font-family: {FONT_FAMILY}; font-weight: 900; }}
     </style>
+
+    <!-- ── Card drop shadow ── -->
+    <filter id="card-shadow" x="-5%" y="-3%" width="110%" height="115%">
+      <feDropShadow dx="0" dy="6" stdDeviation="12" flood-color="#000000" flood-opacity="0.12"/>
+    </filter>
+
+    <!-- ── Elevated element shadow (stronger) ── -->
+    <filter id="elevated-shadow" x="-5%" y="-5%" width="110%" height="120%">
+      <feDropShadow dx="0" dy="10" stdDeviation="20" flood-color="#000000" flood-opacity="0.18"/>
+    </filter>
+
+    <!-- ── Text shadow for readability on images ── -->
+    <filter id="text-shadow" x="-10%" y="-10%" width="120%" height="120%">
+      <feDropShadow dx="0" dy="3" stdDeviation="6" flood-color="#000000" flood-opacity="0.6"/>
+    </filter>
+
+    <!-- ── Light text glow (softer, for subtitles on images) ── -->
+    <filter id="text-glow" x="-15%" y="-15%" width="130%" height="130%">
+      <feGaussianBlur in="SourceAlpha" stdDeviation="4" result="blur"/>
+      <feFlood flood-color="#000000" flood-opacity="0.35" result="color"/>
+      <feComposite in="color" in2="blur" operator="in" result="shadow"/>
+      <feMerge>
+        <feMergeNode in="shadow"/>
+        <feMergeNode in="SourceGraphic"/>
+      </feMerge>
+    </filter>
+
+    <!-- ── Hero gradient overlay (bottom fade to dark) ── -->
+    <linearGradient id="hero-fade" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0%" stop-color="#000000" stop-opacity="0"/>
+      <stop offset="45%" stop-color="#000000" stop-opacity="0"/>
+      <stop offset="80%" stop-color="#000000" stop-opacity="0.5"/>
+      <stop offset="100%" stop-color="#000000" stop-opacity="0.75"/>
+    </linearGradient>
+
+    <!-- ── Hero top vignette (subtle for badge readability) ── -->
+    <linearGradient id="hero-top-fade" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0%" stop-color="#000000" stop-opacity="0.35"/>
+      <stop offset="25%" stop-color="#000000" stop-opacity="0.1"/>
+      <stop offset="100%" stop-color="#000000" stop-opacity="0"/>
+    </linearGradient>
+
+    <!-- ── Full hero scrim (combined top + bottom fade for text readability) ── -->
+    <linearGradient id="hero-scrim" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0%" stop-color="#000000" stop-opacity="0.15"/>
+      <stop offset="35%" stop-color="#000000" stop-opacity="0.05"/>
+      <stop offset="65%" stop-color="#000000" stop-opacity="0.15"/>
+      <stop offset="100%" stop-color="#000000" stop-opacity="0.65"/>
+    </linearGradient>
+
+    <!-- ── Promo banner subtle depth gradient ── -->
+    <linearGradient id="promo-depth" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0%" stop-color="#FFFFFF" stop-opacity="0.1"/>
+      <stop offset="100%" stop-color="#000000" stop-opacity="0.15"/>
+    </linearGradient>
   </defs>
 
   <!-- ===== BACKGROUND ===== -->
   <rect width="{CANVAS_W}" height="{CANVAS_H}" fill="{bg}"/>"""
 
     def _svg_cta(self, cta: dict, style: dict, y: int, h: int) -> str:
-        """CTA/연락처 섹션"""
         if not cta:
             return ""
         brand = style.get("brand_color", "#333333")
@@ -1012,76 +1292,111 @@ Generate complete layout_spec.json with all required fields: layout_id, zones, t
         addr = cta.get("address", "")
         hours = cta.get("hours", "")
         sns = cta.get("sns", "")
-        # Proportional offsets (calibrated for h=360: 75,140,195,240,290)
-        hl_y = y + round(h * 75 / 360)
-        ph_y = y + round(h * 140 / 360)
-        ad_y = y + round(h * 195 / 360)
-        hr_y = y + round(h * 240 / 360)
-        sn_y = y + round(h * 290 / 360)
+        cx = CANVAS_W // 2
 
-        # Typography from layout_spec or hardcoded defaults
-        t_hl = self._get_typo("cta_headline", {"size_px": 56, "weight": "700", "color": accent})
-        t_ph = self._get_typo("cta_phone", {"size_px": 46, "weight": "700", "color": "#FFFFFF"})
-        t_addr = self._get_typo("cta_address", {"size_px": 30, "weight": "400", "color": "#FFFFFF"})
-        t_sns = self._get_typo("cta_sns", {"size_px": 28, "weight": "400", "color": accent})
+        t_hl = self._get_typo(
+            "cta_headline", {"size_px": 48, "weight": "700", "color": accent}
+        )
+        t_ph = self._get_typo(
+            "cta_phone", {"size_px": 64, "weight": "900", "color": "#FFFFFF"}
+        )
+        t_addr = self._get_typo(
+            "cta_address", {"size_px": 28, "weight": "400", "color": "#FFFFFF"}
+        )
+        t_sns = self._get_typo(
+            "cta_sns", {"size_px": 26, "weight": "400", "color": accent}
+        )
+
+        # Vertical rhythm with proportional spacing
+        slots = []
+        if hl:
+            slots.append(("hl", t_hl))
+        if phone:
+            slots.append(("phone", t_ph))
+        if addr:
+            slots.append(("addr", t_addr))
+        if hours:
+            slots.append(("hours", t_addr))
+        if sns:
+            slots.append(("sns", t_sns))
+        n_slots = max(len(slots), 1)
+        pad_top = max(40, int(h * 0.08))
+        pad_bot = max(30, int(h * 0.06))
+        usable = h - pad_top - pad_bot
+        spacing = usable // (n_slots + 1)
 
         result = f"""
-  <!-- ===== CTA / 연락처 ===== -->
+  <!-- ===== CTA FOOTER ===== -->
   <rect x="0" y="{y}" width="{CANVAS_W}" height="{h}" fill="{brand}"/>
-  <line x1="{CANVAS_W // 2 - 150}" y1="{y + 20}" x2="{CANVAS_W // 2 + 150}" y2="{y + 20}"
-        stroke="{accent}" stroke-width="2" opacity="0.5"/>
-  <text x="{CANVAS_W // 2}" y="{hl_y}"
-        text-anchor="middle" class="title" font-size="{t_hl['size_px']}" font-weight="{t_hl['weight']}" fill="{t_hl['color']}">
-    {hl}
-  </text>
-  <text x="{CANVAS_W // 2}" y="{ph_y}"
-        text-anchor="middle" class="title" font-size="{t_ph['size_px']}" font-weight="{t_ph['weight']}" fill="{t_ph['color']}">
-    {phone}
-  </text>
-  <text x="{CANVAS_W // 2}" y="{ad_y}"
-        text-anchor="middle" class="body" font-size="{t_addr['size_px']}" font-weight="{t_addr['weight']}" fill="{t_addr['color']}" opacity="0.85">
-    {addr}
-  </text>
-  <text x="{CANVAS_W // 2}" y="{hr_y}"
-        text-anchor="middle" class="body" font-size="{t_addr['size_px']}" font-weight="{t_addr['weight']}" fill="{t_addr['color']}" opacity="0.85">
-    {hours}
-  </text>"""
-        if sns:
-            result += f"""
-  <text x="{CANVAS_W // 2}" y="{sn_y}"
-        text-anchor="middle" class="body" font-size="{t_sns['size_px']}" font-weight="{t_sns['weight']}" fill="{t_sns['color']}" opacity="0.9">
-    {sns}
-  </text>"""
+  <rect x="0" y="{y}" width="{CANVAS_W}" height="3" fill="{accent}" opacity="0.8"/>"""
+
+        cur_y = y + pad_top + spacing
+        for slot_id, t in slots:
+            if slot_id == "hl":
+                result += f"""
+  <text x="{cx}" y="{cur_y}"
+        text-anchor="middle" class="title" font-size="{t["size_px"]}" font-weight="{t["weight"]}" fill="{t["color"]}"
+        letter-spacing="2">{hl}</text>"""
+            elif slot_id == "phone":
+                result += f"""
+  <text x="{cx}" y="{cur_y}"
+        text-anchor="middle" class="heavy" font-size="{t["size_px"]}" font-weight="{t["weight"]}" fill="{t["color"]}"
+        letter-spacing="3">{phone}</text>"""
+            elif slot_id == "addr":
+                if phone and addr:
+                    sep_y = cur_y - spacing // 2
+                    result += f"""
+  <line x1="{cx - 120}" y1="{sep_y}" x2="{cx + 120}" y2="{sep_y}"
+        stroke="{accent}" stroke-width="1.5" opacity="0.35"/>"""
+                result += f"""
+  <text x="{cx}" y="{cur_y}"
+        text-anchor="middle" class="body" font-size="{t["size_px"]}" font-weight="{t["weight"]}" fill="{t["color"]}" opacity="0.8">{addr}</text>"""
+            elif slot_id == "hours":
+                result += f"""
+  <text x="{cx}" y="{cur_y}"
+        text-anchor="middle" class="body" font-size="{t["size_px"]}" font-weight="{t["weight"]}" fill="{t["color"]}" opacity="0.8">{hours}</text>"""
+            elif slot_id == "sns":
+                result += f"""
+  <text x="{cx}" y="{cur_y}"
+        text-anchor="middle" class="body" font-size="{t["size_px"]}" font-weight="{t["weight"]}" fill="{t["color"]}" opacity="0.9">{sns}</text>"""
+            cur_y += spacing
         return result
 
     def _svg_promo(
         self, promo: dict, style: dict, y: int, h: int, margin: int = 65
     ) -> str:
-        """프로모션 배너"""
         if not promo:
             return ""
         accent = style.get("accent_color", "#FF6B35")
         ptitle = promo.get("title", "")
         pdetail = promo.get("detail", "")
-        x = margin - 10
-        w = CANVAS_W - 2 * x
-        title_y = y + round(h * 42 / 100)
-        detail_y = y + round(h * 80 / 100)
-        # Typography from layout_spec or hardcoded defaults
-        t_pt = self._get_typo("promo_title", {"size_px": 38, "weight": "700", "color": "#FFFFFF"})
-        t_pd = self._get_typo("promo_detail", {"size_px": 36, "weight": "700", "color": "#FFFFFF"})
-        return f"""
-  <!-- ===== PROMO ===== -->
-  <rect x="{x}" y="{y}" width="{w}" height="{h}"
-        rx="12" fill="{accent}"/>
-  <text x="{CANVAS_W // 2}" y="{title_y}"
-        text-anchor="middle" class="title" font-size="{t_pt['size_px']}" font-weight="{t_pt['weight']}" fill="{t_pt['color']}" letter-spacing="5">
-    \u2605  {ptitle}  \u2605
-  </text>
-  <text x="{CANVAS_W // 2}" y="{detail_y}"
-        text-anchor="middle" class="title" font-size="{t_pd['size_px']}" font-weight="{t_pd['weight']}" fill="{t_pd['color']}">
-    {pdetail}
-  </text>"""
+        cx = CANVAS_W // 2
+
+        t_pt = self._get_typo(
+            "promo_title", {"size_px": 42, "weight": "700", "color": "#FFFFFF"}
+        )
+        t_pd = self._get_typo(
+            "promo_detail", {"size_px": 30, "weight": "500", "color": "#FFFFFF"}
+        )
+
+        title_y = y + int(h * 0.42)
+        detail_y = y + int(h * 0.76)
+
+        result = f"""
+  <!-- ===== PROMO BANNER ===== -->
+  <rect x="0" y="{y}" width="{CANVAS_W}" height="{h}" fill="{accent}"/>
+  <rect x="0" y="{y}" width="{CANVAS_W}" height="{h}" fill="url(#promo-depth)" opacity="0.4"/>"""
+        if ptitle:
+            result += f"""
+  <text x="{cx}" y="{title_y}"
+        text-anchor="middle" class="title" font-size="{t_pt["size_px"]}" font-weight="{t_pt["weight"]}" fill="{t_pt["color"]}"
+        letter-spacing="4">\u2605  {ptitle}  \u2605</text>"""
+        if pdetail:
+            result += f"""
+  <text x="{cx}" y="{detail_y}"
+        text-anchor="middle" class="body" font-size="{t_pd["size_px"]}" font-weight="{t_pd["weight"]}" fill="{t_pd["color"]}"
+        opacity="0.95">{pdetail}</text>"""
+        return result
 
     def _svg_trim_marks(self) -> str:
         """재단선 (블리드 15px)"""
@@ -1127,12 +1442,13 @@ Generate complete layout_spec.json with all required fields: layout_id, zones, t
         x = margin + col * (col_w + gap)
         y = margin + sum(row_heights[:row]) + row * gap
         w = colspan * col_w + (colspan - 1) * gap
-        h = sum(row_heights[row:row + rowspan]) + (rowspan - 1) * gap
+        h = sum(row_heights[row : row + rowspan]) + (rowspan - 1) * gap
 
         return (int(x), int(y), int(w), int(h))
 
-    def _render_hero_block(self, x: int, y: int, w: int, h: int,
-                           style: dict, copy_data: dict) -> str:
+    def _render_hero_block(
+        self, x: int, y: int, w: int, h: int, style: dict, copy_data: dict
+    ) -> str:
         """블록 그리드용 히어로 블록 렌더링 — 이미지 + 그라데이션 + 텍스트"""
         brand = style.get("brand_color", "#333333")
         accent = style.get("accent_color", "#FF6B35")
@@ -1145,7 +1461,8 @@ Generate complete layout_spec.json with all required fields: layout_id, zones, t
         clip_id = f"hero-clip-{x}-{y}"
         hero_ref = self._img_ref("hero.png")
 
-        parts = [f"""
+        parts = [
+            f"""
   <!-- ===== BLOCK: HERO ===== -->
   <defs>
     <clipPath id="{clip_id}">
@@ -1157,14 +1474,17 @@ Generate complete layout_spec.json with all required fields: layout_id, zones, t
     </linearGradient>
   </defs>
   <g clip-path="url(#{clip_id})">
-"""]
+"""
+        ]
 
         if hero_ref:
             parts.append(f"""    <image href="{hero_ref}" xlink:href="{hero_ref}"
            x="{x}" y="{y}" width="{w}" height="{h}"
            preserveAspectRatio="xMidYMid slice"/>""")
         else:
-            parts.append(f"""    <rect x="{x}" y="{y}" width="{w}" height="{h}" fill="{brand}" opacity="0.15"/>""")
+            parts.append(
+                f"""    <rect x="{x}" y="{y}" width="{w}" height="{h}" fill="{brand}" opacity="0.15"/>"""
+            )
 
         # Dark gradient overlay for text readability
         parts.append(f"""    <rect x="{x}" y="{y}" width="{w}" height="{h}"
@@ -1192,8 +1512,9 @@ Generate complete layout_spec.json with all required fields: layout_id, zones, t
         parts.append("  </g>")
         return "\n".join(parts)
 
-    def _render_item_block(self, x: int, y: int, w: int, h: int,
-                           style: dict, item: dict, idx: int) -> str:
+    def _render_item_block(
+        self, x: int, y: int, w: int, h: int, style: dict, item: dict, idx: int
+    ) -> str:
         """블록 그리드용 품목 블록 렌더링 — 이미지 상단 60% + 텍스트 하단 40%"""
         brand = style.get("brand_color", "#333333")
         accent = style.get("accent_color", "#FF6B35")
@@ -1213,9 +1534,15 @@ Generate complete layout_spec.json with all required fields: layout_id, zones, t
         item_ref = self._img_ref(f"item_{idx + 1:02d}.png")
 
         # Typography
-        t_name = self._get_typo("item_name", {"size_px": 34, "weight": "700", "color": text_c})
-        t_desc = self._get_typo("item_description", {"size_px": 24, "weight": "400", "color": text_c})
-        t_price = self._get_typo("item_price", {"size_px": 30, "weight": "700", "color": accent})
+        t_name = self._get_typo(
+            "item_name", {"size_px": 34, "weight": "700", "color": text_c}
+        )
+        t_desc = self._get_typo(
+            "item_description", {"size_px": 24, "weight": "400", "color": text_c}
+        )
+        t_price = self._get_typo(
+            "item_price", {"size_px": 30, "weight": "700", "color": accent}
+        )
 
         # Scale font sizes for narrow blocks (1-col ~509px)
         scale = min(1.0, w / 800)
@@ -1223,7 +1550,8 @@ Generate complete layout_spec.json with all required fields: layout_id, zones, t
         desc_size = max(16, int(t_desc["size_px"] * scale))
         price_size = max(20, int(t_price["size_px"] * scale))
 
-        parts = [f"""
+        parts = [
+            f"""
   <!-- ===== BLOCK: ITEM {idx + 1} ({name}) ===== -->
   <defs>
     <clipPath id="{clip_id}">
@@ -1233,7 +1561,8 @@ Generate complete layout_spec.json with all required fields: layout_id, zones, t
   <g>
     <!-- Border/card effect -->
     <rect x="{x}" y="{y}" width="{w}" height="{h}" rx="8"
-          fill="{bg}" stroke="{brand}" stroke-width="1" stroke-opacity="0.1"/>"""]
+          fill="{bg}" stroke="{brand}" stroke-width="1" stroke-opacity="0.1"/>"""
+        ]
 
         # Image area (top 60%)
         if item_ref:
@@ -1254,27 +1583,28 @@ Generate complete layout_spec.json with all required fields: layout_id, zones, t
         price_y = text_y + int(text_h * 0.82)
 
         parts.append(f"""    <text x="{cx}" y="{name_y}"
-          text-anchor="middle" class="title" font-size="{name_size}" font-weight="{t_name['weight']}" fill="{t_name['color']}">
+          text-anchor="middle" class="title" font-size="{name_size}" font-weight="{t_name["weight"]}" fill="{t_name["color"]}">
       {name}
     </text>""")
 
         if desc:
             parts.append(f"""    <text x="{cx}" y="{desc_y}"
-          text-anchor="middle" class="body" font-size="{desc_size}" font-weight="{t_desc['weight']}" fill="{t_desc['color']}" opacity="0.65">
+          text-anchor="middle" class="body" font-size="{desc_size}" font-weight="{t_desc["weight"]}" fill="{t_desc["color"]}" opacity="0.65">
       {desc}
     </text>""")
 
         if price:
             parts.append(f"""    <text x="{cx}" y="{price_y}"
-          text-anchor="middle" class="title" font-size="{price_size}" font-weight="{t_price['weight']}" fill="{t_price['color']}">
+          text-anchor="middle" class="title" font-size="{price_size}" font-weight="{t_price["weight"]}" fill="{t_price["color"]}">
       {price}
     </text>""")
 
         parts.append("  </g>")
         return "\n".join(parts)
 
-    def _render_event_block(self, x: int, y: int, w: int, h: int,
-                            style: dict, promo: dict) -> str:
+    def _render_event_block(
+        self, x: int, y: int, w: int, h: int, style: dict, promo: dict
+    ) -> str:
         """블록 그리드용 이벤트/프로모션 블록 렌더링 — 이미지 좌측 50% + 텍스트 우측 50%"""
         accent = style.get("accent_color", "#FF6B35")
         ptitle = promo.get("title", "")
@@ -1286,13 +1616,15 @@ Generate complete layout_spec.json with all required fields: layout_id, zones, t
         event_ref = self._img_ref("event.png")
         clip_id = f"event-clip-{x}-{y}"
 
-        parts = [f"""
+        parts = [
+            f"""
   <!-- ===== BLOCK: EVENT/PROMO ===== -->
   <defs>
     <clipPath id="{clip_id}">
       <rect x="{x}" y="{y}" width="{w}" height="{h}" rx="8"/>
     </clipPath>
-  </defs>"""]
+  </defs>"""
+        ]
 
         if event_ref:
             # Image fills left 50%, accent bg fills right 50%
@@ -1336,8 +1668,9 @@ Generate complete layout_spec.json with all required fields: layout_id, zones, t
 
         return "\n".join(parts)
 
-    def _render_cta_block(self, x: int, y: int, w: int, h: int,
-                          style: dict, cta: dict) -> str:
+    def _render_cta_block(
+        self, x: int, y: int, w: int, h: int, style: dict, cta: dict
+    ) -> str:
         """블록 그리드용 CTA 블록 렌더링 — 좁은 블록에 맞춤 (CANVAS_W 대신 블록 너비 사용)"""
         if not cta:
             return ""
@@ -1398,7 +1731,9 @@ Generate complete layout_spec.json with all required fields: layout_id, zones, t
         # 3. Look up pattern
         pattern = patterns.get("patterns", {}).get(str(n_items))
         if not pattern:
-            logger.warning(f"  ⚠️ block_grid: {n_items}개 품목 패턴 없음 → classic_grid 폴백")
+            logger.warning(
+                f"  ⚠️ block_grid: {n_items}개 품목 패턴 없음 → classic_grid 폴백"
+            )
             return self._build_classic_grid(style, copy_data)
 
         row_heights = pattern["row_heights"]
@@ -1421,7 +1756,9 @@ Generate complete layout_spec.json with all required fields: layout_id, zones, t
             elif btype == "item":
                 idx = block["item_idx"]
                 if idx < len(items):
-                    parts.append(self._render_item_block(x, y, w, h, style, items[idx], idx))
+                    parts.append(
+                        self._render_item_block(x, y, w, h, style, items[idx], idx)
+                    )
             elif btype == "event":
                 parts.append(self._render_event_block(x, y, w, h, style, promo))
             elif btype == "cta":
@@ -1434,7 +1771,6 @@ Generate complete layout_spec.json with all required fields: layout_id, zones, t
     # ─── Layout 1: Classic Grid (현재 V2 — 동작 변경 없음) ───
 
     def _build_classic_grid(self, style: dict, copy_data: dict) -> str:
-        """클래식 그리드 — 히어로 49% → 슬로건 4% → 특징 3% → 품목 25% → 프로모 5% → CTA 12%"""
         brand = style.get("brand_color", "#333333")
         accent = style.get("accent_color", "#FF6B35")
         bg = style.get("bg_color", "#FAFAF8")
@@ -1445,231 +1781,255 @@ Generate complete layout_spec.json with all required fields: layout_id, zones, t
         cta = copy_data.get("cta", {})
         subtitle = copy_data.get("subtitle", "")
         promo = copy_data.get("promo", {})
+        hero_data = copy_data.get("hero", {})
+        headline = hero_data.get("headline", "")
+        badge = hero_data.get("badge", "")
+        subtext = hero_data.get("subtext", "")
         n_items = len(items)
 
-        # ─── 레이아웃 계산 (layout_spec 우선, 없으면 하드코딩 폴백) ───
-        margin = 65
-        top_pad = 20
-        item_text_h = 180
+        M = 100
+        CARD_R = 16
+        CARD_GAP = 30
+        CARD_PAD = 16
 
-        # Zone positions from layout_spec or hardcoded defaults
-        hero_zone = self._get_zone("hero", {"y_px": top_pad, "h_px": 1480})
+        hero_zone = self._get_zone("hero", {"y_px": 0, "h_px": 1350})
         hero_top = hero_zone["y_px"]
         hero_h = hero_zone["h_px"]
 
-        hero_gap = 30
-        slogan_zone = self._get_zone("slogan", {"y_px": hero_top + hero_h + hero_gap, "h_px": 120 if subtitle else 0})
-        slogan_top = slogan_zone["y_px"]
-        slogan_h = slogan_zone["h_px"] if subtitle else 0
+        has_tagline = bool(subtitle or features)
+        tagline_h_val = 120 if has_tagline else 0
+        tagline_zone = self._get_zone(
+            "slogan", {"y_px": hero_top + hero_h, "h_px": tagline_h_val}
+        )
+        tagline_top = tagline_zone["y_px"]
+        tagline_h = tagline_zone["h_px"] if has_tagline else 0
 
-        feat_zone = self._get_zone("features", {"y_px": slogan_top + slogan_h, "h_px": 90 if features else 0})
-        feat_top = feat_zone["y_px"]
-        feat_h = feat_zone["h_px"] if features else 0
+        feat_below_tagline = 0
+        if subtitle and features:
+            feat_below_tagline = 70
 
-        promo_h = 100 if promo else 0
-        cta_zone = self._get_zone("cta", {"y_px": CANVAS_H - 360, "h_px": 360})
+        promo_h = 130 if promo else 0
+        cta_zone = self._get_zone("cta", {"y_px": CANVAS_H - 380, "h_px": 380})
         cta_h = cta_zone["h_px"]
 
-        items_zone = self._get_zone("items", {"y_px": feat_top + feat_h + 30, "h_px": 0})
+        items_start = tagline_top + tagline_h + feat_below_tagline + 40
+        items_zone = self._get_zone("items", {"y_px": items_start, "h_px": 0})
         items_top = items_zone["y_px"]
-        items_avail = CANVAS_H - items_top - promo_h - cta_h - 40
+        items_avail = CANVAS_H - items_top - promo_h - cta_h - 60
 
-        # 그리드 열수
         if n_items <= 2:
             cols = 2
+        elif n_items <= 3:
+            cols = 3
         elif n_items <= 4:
-            cols = n_items
+            cols = min(n_items, 4)
         elif n_items <= 6:
             cols = 3
         else:
             cols = 4
         rows = (n_items + cols - 1) // cols
 
-        gap = 30
-        col_w = (CANVAS_W - 2 * margin - (cols - 1) * gap) // cols
-        img_h = min(int(col_w * 0.85), (items_avail - rows * item_text_h) // rows)
-        cell_h = img_h + item_text_h
+        col_w = (CANVAS_W - 2 * M - (cols - 1) * CARD_GAP) // cols
+        card_h = min(int(items_avail / rows) - CARD_GAP, int(col_w * 1.35))
+        img_h = int(card_h * 0.62)
 
-        # Typography from layout_spec or hardcoded defaults
-        t_slogan = self._get_typo("slogan", {"size_px": 52, "weight": "700", "color": text_c})
-        t_features = self._get_typo("features", {"size_px": 30, "weight": "500", "color": text_c})
-        t_item_name = self._get_typo("item_name", {"size_px": 40, "weight": "700", "color": text_c})
-        t_item_desc = self._get_typo("item_description", {"size_px": 28, "weight": "400", "color": text_c})
-        t_item_sub = self._get_typo("item_sub_description", {"size_px": 24, "weight": "300", "color": text_c})
-        t_item_price = self._get_typo("item_price", {"size_px": 36, "weight": "700", "color": accent})
+        t_headline = self._get_typo(
+            "business_name", {"size_px": 100, "weight": "900", "color": "#FFFFFF"}
+        )
+        t_badge = self._get_typo(
+            "hero_badge", {"size_px": 30, "weight": "600", "color": "#FFFFFF"}
+        )
+        t_subtext = self._get_typo(
+            "hero_subtext", {"size_px": 36, "weight": "400", "color": "#FFFFFF"}
+        )
+        t_slogan = self._get_typo(
+            "slogan", {"size_px": 40, "weight": "700", "color": "#FFFFFF"}
+        )
+        t_features = self._get_typo(
+            "features", {"size_px": 28, "weight": "500", "color": text_c}
+        )
+        t_item_name = self._get_typo(
+            "item_name", {"size_px": 38, "weight": "700", "color": text_c}
+        )
+        t_item_desc = self._get_typo(
+            "item_description", {"size_px": 24, "weight": "400", "color": text_c}
+        )
+        t_item_sub = self._get_typo(
+            "item_sub_description", {"size_px": 22, "weight": "300", "color": text_c}
+        )
+        t_item_price = self._get_typo(
+            "item_price", {"size_px": 36, "weight": "700", "color": accent}
+        )
 
-        # ─── SVG 조립 ───
         parts = []
-
-        # --- Header ---
         parts.append(self._svg_header(bg))
 
-        # --- Hero ---
         hero_ref = self._img_ref("hero.png")
+        parts.append(f"""
+  <!-- ===== HERO ===== -->
+  <defs>
+    <clipPath id="hero-main-clip">
+      <rect x="0" y="{hero_top}" width="{CANVAS_W}" height="{hero_h}"/>
+    </clipPath>
+  </defs>
+  <g clip-path="url(#hero-main-clip)">""")
+
         if hero_ref:
-            parts.append(
-                f"""
-  <!-- ===== HERO (메인 이미지 + 텍스트) ===== -->
-  <image href="{hero_ref}" xlink:href="{hero_ref}"
-         x="0" y="{hero_top}" width="{CANVAS_W}" height="{hero_h}"
-         preserveAspectRatio="xMidYMid meet"/>"""
-            )
+            parts.append(f"""    <image href="{hero_ref}" xlink:href="{hero_ref}"
+           x="0" y="{hero_top}" width="{CANVAS_W}" height="{hero_h}"
+           preserveAspectRatio="xMidYMid slice"/>""")
         else:
             parts.append(
-                f"""
-  <!-- HERO placeholder -->
-  <rect x="0" y="{hero_top}" width="{CANVAS_W}" height="{hero_h}" fill="{brand}" opacity="0.1"/>
-  <text x="{CANVAS_W // 2}" y="{hero_top + hero_h // 2}" text-anchor="middle"
-        class="title" font-size="72" fill="{brand}" opacity="0.25">HERO IMAGE</text>"""
+                f"""    <rect x="0" y="{hero_top}" width="{CANVAS_W}" height="{hero_h}" fill="{brand}" opacity="0.15"/>"""
             )
 
-        # --- Transition: hero → slogan ---
-        trans_svg = self._svg_transition("hero", "slogan", hero_top + hero_h, accent, margin)
+        parts.append(
+            f"""    <rect x="0" y="{hero_top}" width="{CANVAS_W}" height="{hero_h}" fill="url(#hero-scrim)"/>"""
+        )
+
+        hero_cx = CANVAS_W // 2
+        if badge:
+            badge_y = hero_top + int(hero_h * 0.15)
+            parts.append(f"""    <text x="{hero_cx}" y="{badge_y}"
+          text-anchor="middle" class="body" font-size="{t_badge["size_px"]}" font-weight="{t_badge["weight"]}"
+          fill="{t_badge["color"]}" letter-spacing="6" opacity="0.9"
+          filter="url(#text-glow)">{badge}</text>""")
+
+        if headline:
+            hl_y = hero_top + int(hero_h * 0.72)
+            parts.append(f"""    <text x="{hero_cx}" y="{hl_y}"
+          text-anchor="middle" class="heavy" font-size="{t_headline["size_px"]}" font-weight="{t_headline["weight"]}"
+          fill="{t_headline["color"]}" letter-spacing="4"
+          filter="url(#text-shadow)">{headline}</text>""")
+
+        if subtext:
+            sub_y = hero_top + int(hero_h * 0.72) + int(t_headline["size_px"] * 0.6)
+            parts.append(f"""    <text x="{hero_cx}" y="{sub_y}"
+          text-anchor="middle" class="body" font-size="{t_subtext["size_px"]}" font-weight="{t_subtext["weight"]}"
+          fill="{t_subtext["color"]}" opacity="0.9"
+          filter="url(#text-glow)">{subtext}</text>""")
+
+        parts.append("  </g>")
+
+        trans_svg = self._svg_transition("hero", "slogan", hero_top + hero_h, accent, M)
         if trans_svg:
             parts.append(trans_svg)
 
-        # --- Slogan (슬로건 — 크고 굵게, 독립 섹션) ---
-        if subtitle:
-            # 상단 장식선
-            parts.append(
-                f"""
-  <!-- ===== SLOGAN ===== -->
-  <rect x="0" y="{slogan_top}" width="{CANVAS_W}" height="{slogan_h}" fill="{brand}" opacity="0.04"/>
-  <line x1="{margin + 100}" y1="{slogan_top + 15}" x2="{CANVAS_W - margin - 100}" y2="{slogan_top + 15}"
-        stroke="{accent}" stroke-width="2" opacity="0.4"/>
-  <text x="{CANVAS_W // 2}" y="{slogan_top + slogan_h // 2 + 16}"
-        text-anchor="middle" class="title" font-size="{t_slogan['size_px']}" font-weight="{t_slogan['weight']}" fill="{t_slogan['color']}"
-        letter-spacing="3">
-    {subtitle}
-  </text>
-  <line x1="{margin + 100}" y1="{slogan_top + slogan_h - 15}" x2="{CANVAS_W - margin - 100}" y2="{slogan_top + slogan_h - 15}"
-        stroke="{accent}" stroke-width="2" opacity="0.4"/>"""
-            )
+        if has_tagline:
+            band_text = subtitle if subtitle else "  \u00b7  ".join(features)
+            parts.append(f"""
+  <!-- ===== TAGLINE BAND ===== -->
+  <rect x="0" y="{tagline_top}" width="{CANVAS_W}" height="{tagline_h}" fill="{brand}"/>
+  <text x="{CANVAS_W // 2}" y="{tagline_top + tagline_h // 2 + int(t_slogan["size_px"] * 0.35)}"
+        text-anchor="middle" class="title" font-size="{t_slogan["size_px"]}" font-weight="{t_slogan["weight"]}" fill="{t_slogan["color"]}"
+        letter-spacing="3">{band_text}</text>""")
 
-        # --- Features strip ---
-        if features:
-            feat_text = "  \u2022  ".join(features)  # bullet separator
-            parts.append(
-                f"""
-  <!-- ===== FEATURES ===== -->
-  <rect x="0" y="{feat_top}" width="{CANVAS_W}" height="{feat_h}" fill="{brand}" opacity="0.08"/>
-  <line x1="{margin}" y1="{feat_top}" x2="{CANVAS_W - margin}" y2="{feat_top}"
-        stroke="{brand}" stroke-width="1" opacity="0.15"/>
-  <text x="{CANVAS_W // 2}" y="{feat_top + feat_h // 2 + 10}"
-        text-anchor="middle" class="title" font-size="{t_features['size_px']}" font-weight="{t_features['weight']}" fill="{t_features['color']}" letter-spacing="2">
-    {feat_text}
-  </text>"""
-            )
-            # Bottom line: use transition system if layout_spec, else fallback hardcoded line
-            trans_svg = self._svg_transition("features", "items", feat_top + feat_h, accent, margin)
-            if trans_svg:
-                parts.append(trans_svg)
-            else:
-                parts.append(
-                    f"""  <line x1="{margin}" y1="{feat_top + feat_h}" x2="{CANVAS_W - margin}" y2="{feat_top + feat_h}"
-        stroke="{brand}" stroke-width="1" opacity="0.15"/>"""
-                )
+            if subtitle and features:
+                feat_text = "  \u00b7  ".join(features)
+                feat_y = tagline_top + tagline_h
+                parts.append(f"""
+  <rect x="0" y="{feat_y}" width="{CANVAS_W}" height="{feat_below_tagline}" fill="{bg}"/>
+  <text x="{CANVAS_W // 2}" y="{feat_y + feat_below_tagline // 2 + 10}"
+        text-anchor="middle" class="body" font-size="{t_features["size_px"]}" font-weight="{t_features["weight"]}" fill="{t_features["color"]}"
+        opacity="0.7" letter-spacing="2">{feat_text}</text>""")
 
-        # --- Items grid ---
         if items:
-            parts.append(f"\n  <!-- ===== ITEMS ({n_items}개 품목) ===== -->")
+            parts.append(f"\n  <!-- ===== ITEMS ({n_items}) ===== -->")
             for idx, item in enumerate(items):
                 col = idx % cols
-                row = idx // cols
-                x = margin + col * (col_w + gap)
-                y = items_top + row * (cell_h + gap)
+                row_idx = idx // cols
+                card_x = M + col * (col_w + CARD_GAP)
+                card_y = items_top + row_idx * (card_h + CARD_GAP)
 
                 item_ref = self._img_ref(f"item_{idx + 1:02d}.png")
                 name = item.get("name", "")
                 desc = item.get("description", "")
                 sub_desc = item.get("sub_description", "")
                 price = item.get("price", "")
+                cx = card_x + col_w // 2
+                clip_id = f"item-img-clip-{idx}"
 
-                cx = x + col_w // 2  # center x
+                parts.append(f"""  <g id="item-card-{idx + 1}" filter="url(#card-shadow)">
+    <rect x="{card_x}" y="{card_y}" width="{col_w}" height="{card_h}"
+          rx="{CARD_R}" fill="#FFFFFF"/>
+    <defs>
+      <clipPath id="{clip_id}">
+        <rect x="{card_x}" y="{card_y}" width="{col_w}" height="{img_h}" rx="{CARD_R}"/>
+      </clipPath>
+    </defs>""")
 
                 if item_ref:
-                    parts.append(
-                        f"""  <g id="item-{idx + 1}">
-    <!-- {name} -->
-    <image href="{item_ref}" xlink:href="{item_ref}"
-           x="{x}" y="{y}" width="{col_w}" height="{img_h}"
-           preserveAspectRatio="xMidYMid meet"/>
-    <text x="{cx}" y="{y + img_h + 44}"
-          text-anchor="middle" class="title" font-size="{t_item_name['size_px']}" font-weight="{t_item_name['weight']}" fill="{t_item_name['color']}">
-      {name}
-    </text>
-    <text x="{cx}" y="{y + img_h + 80}"
-          text-anchor="middle" class="body" font-size="{t_item_desc['size_px']}" font-weight="{t_item_desc['weight']}" fill="{t_item_desc['color']}" opacity="0.65">
-      {desc}
-    </text>"""
-                    )
-                    if sub_desc:
-                        parts.append(
-                            f"""    <text x="{cx}" y="{y + img_h + 110}"
-          text-anchor="middle" class="light" font-size="{t_item_sub['size_px']}" font-weight="{t_item_sub['weight']}" fill="{t_item_sub['color']}" opacity="0.5">
-      {sub_desc}
-    </text>"""
-                        )
-                    if price:
-                        parts.append(
-                            f"""    <text x="{cx}" y="{y + img_h + 150}"
-          text-anchor="middle" class="title" font-size="{t_item_price['size_px']}" font-weight="{t_item_price['weight']}" fill="{t_item_price['color']}">
-      {price}
-    </text>"""
-                        )
-                    parts.append("  </g>")
+                    parts.append(f"""    <g clip-path="url(#{clip_id})">
+      <image href="{item_ref}" xlink:href="{item_ref}"
+             x="{card_x}" y="{card_y}" width="{col_w}" height="{img_h}"
+             preserveAspectRatio="xMidYMid slice"/>
+    </g>""")
                 else:
-                    parts.append(
-                        f"""  <g id="item-{idx + 1}">
-    <!-- {name} (placeholder) -->
-    <rect x="{x}" y="{y}" width="{col_w}" height="{img_h}" rx="12"
-          fill="{brand}" opacity="0.06"/>
-    <text x="{cx}" y="{y + img_h // 2 + 8}"
-          text-anchor="middle" class="body" font-size="32" fill="{brand}" opacity="0.2">
-      {name}
-    </text>
-    <text x="{cx}" y="{y + img_h + 44}"
-          text-anchor="middle" class="title" font-size="{t_item_name['size_px']}" font-weight="{t_item_name['weight']}" fill="{t_item_name['color']}">
-      {name}
-    </text>
-    <text x="{cx}" y="{y + img_h + 80}"
-          text-anchor="middle" class="body" font-size="{t_item_desc['size_px']}" font-weight="{t_item_desc['weight']}" fill="{t_item_desc['color']}" opacity="0.65">
-      {desc}
-    </text>
-  </g>"""
-                    )
+                    parts.append(f"""    <rect x="{card_x}" y="{card_y}" width="{col_w}" height="{img_h}"
+          rx="{CARD_R}" fill="{brand}" opacity="0.06"/>
+    <text x="{cx}" y="{card_y + img_h // 2 + 10}"
+          text-anchor="middle" class="body" font-size="32" fill="{brand}" opacity="0.2">{name}</text>""")
 
-        # --- Transition: items → promo ---
-        items_end = items_top + rows * (cell_h + gap) if items else feat_top + feat_h
-        trans_svg = self._svg_transition("items", "promo", items_end, accent, margin)
+                name_y = card_y + img_h + CARD_PAD + 32
+                parts.append(f"""    <text x="{cx}" y="{name_y}"
+          text-anchor="middle" class="title" font-size="{t_item_name["size_px"]}" font-weight="{t_item_name["weight"]}" fill="{t_item_name["color"]}">
+      {name}
+    </text>""")
+
+                if desc:
+                    desc_y = name_y + int(t_item_name["size_px"] * 1.1)
+                    parts.append(f"""    <text x="{cx}" y="{desc_y}"
+          text-anchor="middle" class="body" font-size="{t_item_desc["size_px"]}" font-weight="{t_item_desc["weight"]}" fill="{t_item_desc["color"]}" opacity="0.6">
+      {desc}
+    </text>""")
+
+                if sub_desc:
+                    sub_y = (
+                        name_y
+                        + int(t_item_name["size_px"] * 1.1)
+                        + int(t_item_desc["size_px"] * 1.3)
+                    )
+                    parts.append(f"""    <text x="{cx}" y="{sub_y}"
+          text-anchor="middle" class="light" font-size="{t_item_sub["size_px"]}" font-weight="{t_item_sub["weight"]}" fill="{t_item_sub["color"]}" opacity="0.5">
+      {sub_desc}
+    </text>""")
+
+                if price:
+                    price_y = card_y + card_h - CARD_PAD - 8
+                    parts.append(f"""    <text x="{cx}" y="{price_y}"
+          text-anchor="middle" class="title" font-size="{t_item_price["size_px"]}" font-weight="{t_item_price["weight"]}" fill="{t_item_price["color"]}">
+      {price}
+    </text>""")
+
+                parts.append("  </g>")
+
+        items_end = (
+            items_top + rows * (card_h + CARD_GAP) if items else tagline_top + tagline_h
+        )
+        trans_svg = self._svg_transition("items", "promo", items_end, accent, M)
         if trans_svg:
             parts.append(trans_svg)
 
-        # --- Promo banner ---
         if promo:
             promo_y = items_end + 20
-            parts.append(self._svg_promo(promo, style, promo_y, promo_h, margin))
-
-            # --- Transition: promo → cta ---
-            trans_svg = self._svg_transition("promo", "cta", promo_y + promo_h, accent, margin)
+            parts.append(self._svg_promo(promo, style, promo_y, promo_h, M))
+            trans_svg = self._svg_transition(
+                "promo", "cta", promo_y + promo_h, accent, M
+            )
             if trans_svg:
                 parts.append(trans_svg)
 
-        # --- CTA ---
         cta_y = CANVAS_H - cta_h
         if cta:
             parts.append(self._svg_cta(cta, style, cta_y, cta_h))
 
-        # --- Trim marks ---
         parts.append(self._svg_trim_marks())
-
         parts.append(self._svg_footer())
         return "\n".join(parts)
 
     # ─── Layout 2: Hero Dominant ───
 
     def _build_hero_dominant(self, style: dict, copy_data: dict) -> str:
-        """히어로 도미넌트 — 히어로 62% → 슬로건 5% → 품목 가로 14% → 프로모 7% → CTA 12%"""
         brand = style.get("brand_color", "#333333")
         accent = style.get("accent_color", "#FF6B35")
         bg = style.get("bg_color", "#FAFAF8")
@@ -1679,136 +2039,168 @@ Generate complete layout_spec.json with all required fields: layout_id, zones, t
         cta = copy_data.get("cta", {})
         subtitle = copy_data.get("subtitle", "")
         promo = copy_data.get("promo", {})
-        n_items = min(len(items), 4)  # max 4 items in this layout
+        hero_data = copy_data.get("hero", {})
+        headline = hero_data.get("headline", "")
+        badge = hero_data.get("badge", "")
+        subtext = hero_data.get("subtext", "")
+        n_items = min(len(items), 4)
 
-        margin = 65
+        M = 100
+        CARD_R = 16
+        CARD_GAP = 24
 
-        # Zone positions from layout_spec or hardcoded defaults
         hero_zone = self._get_zone("hero", {"y_px": 0, "h_px": 1860})
         hero_h = hero_zone["h_px"]
 
-        slogan_zone = self._get_zone("slogan", {"y_px": hero_h, "h_px": 150})
+        slogan_zone = self._get_zone("slogan", {"y_px": hero_h, "h_px": 130})
         slogan_y = slogan_zone["y_px"]
         slogan_h = slogan_zone["h_px"]
 
-        items_zone = self._get_zone("items", {"y_px": slogan_y + slogan_h, "h_px": 420})
+        items_zone = self._get_zone("items", {"y_px": slogan_y + slogan_h, "h_px": 440})
         items_y = items_zone["y_px"]
         items_h = items_zone["h_px"]
 
-        promo_h = 210 if promo else 0
+        promo_h = 150 if promo else 0
         promo_y = items_y + items_h
 
-        cta_zone = self._get_zone("cta", {"y_px": CANVAS_H - 360, "h_px": 360})
+        cta_zone = self._get_zone("cta", {"y_px": CANVAS_H - 380, "h_px": 380})
         cta_y = cta_zone["y_px"]
         cta_h = cta_zone["h_px"]
 
-        # Typography from layout_spec or hardcoded defaults
-        t_slogan = self._get_typo("slogan", {"size_px": 56, "weight": "700", "color": text_c})
-        t_item_name = self._get_typo("item_name", {"size_px": 36, "weight": "700", "color": text_c})
-        t_item_desc = self._get_typo("item_description", {"size_px": 26, "weight": "400", "color": text_c})
+        t_headline = self._get_typo(
+            "business_name", {"size_px": 110, "weight": "900", "color": "#FFFFFF"}
+        )
+        t_badge = self._get_typo(
+            "hero_badge", {"size_px": 28, "weight": "600", "color": "#FFFFFF"}
+        )
+        t_subtext = self._get_typo(
+            "hero_subtext", {"size_px": 34, "weight": "400", "color": "#FFFFFF"}
+        )
+        t_slogan = self._get_typo(
+            "slogan", {"size_px": 42, "weight": "700", "color": "#FFFFFF"}
+        )
+        t_item_name = self._get_typo(
+            "item_name", {"size_px": 34, "weight": "700", "color": text_c}
+        )
+        t_item_desc = self._get_typo(
+            "item_description", {"size_px": 22, "weight": "400", "color": text_c}
+        )
 
         parts = []
         parts.append(self._svg_header(bg))
 
-        # --- Hero (62%) ---
         hero_ref = self._img_ref("hero.png")
-        if hero_ref:
-            parts.append(
-                f"""
+        hero_cx = CANVAS_W // 2
+
+        parts.append(f"""
   <!-- ===== HERO (62%) ===== -->
-  <image href="{hero_ref}" xlink:href="{hero_ref}"
-         x="0" y="0" width="{CANVAS_W}" height="{hero_h}"
-         preserveAspectRatio="xMidYMid meet"/>"""
-            )
+  <defs>
+    <clipPath id="hd-hero-clip">
+      <rect x="0" y="0" width="{CANVAS_W}" height="{hero_h}"/>
+    </clipPath>
+  </defs>
+  <g clip-path="url(#hd-hero-clip)">""")
+
+        if hero_ref:
+            parts.append(f"""    <image href="{hero_ref}" xlink:href="{hero_ref}"
+           x="0" y="0" width="{CANVAS_W}" height="{hero_h}"
+           preserveAspectRatio="xMidYMid slice"/>""")
         else:
             parts.append(
-                f"""
-  <!-- HERO placeholder -->
-  <rect x="0" y="0" width="{CANVAS_W}" height="{hero_h}" fill="{brand}" opacity="0.1"/>
-  <text x="{CANVAS_W // 2}" y="{hero_h // 2}" text-anchor="middle"
-        class="title" font-size="72" fill="{brand}" opacity="0.25">HERO IMAGE</text>"""
+                f"""    <rect x="0" y="0" width="{CANVAS_W}" height="{hero_h}" fill="{brand}" opacity="0.15"/>"""
             )
 
-        # --- Transition: hero → slogan ---
-        trans_svg = self._svg_transition("hero", "slogan", hero_h, accent, margin)
+        parts.append(
+            f"""    <rect x="0" y="0" width="{CANVAS_W}" height="{hero_h}" fill="url(#hero-scrim)"/>"""
+        )
+
+        if badge:
+            parts.append(f"""    <text x="{hero_cx}" y="{int(hero_h * 0.35)}"
+          text-anchor="middle" class="body" font-size="{t_badge["size_px"]}" font-weight="{t_badge["weight"]}"
+          fill="{t_badge["color"]}" letter-spacing="6" opacity="0.9"
+          filter="url(#text-glow)">{badge}</text>""")
+
+        if headline:
+            parts.append(f"""    <text x="{hero_cx}" y="{int(hero_h * 0.48)}"
+          text-anchor="middle" class="heavy" font-size="{t_headline["size_px"]}" font-weight="{t_headline["weight"]}"
+          fill="{t_headline["color"]}" letter-spacing="4"
+          filter="url(#text-shadow)">{headline}</text>""")
+
+        if subtext:
+            parts.append(f"""    <text x="{hero_cx}" y="{int(hero_h * 0.56)}"
+          text-anchor="middle" class="body" font-size="{t_subtext["size_px"]}" font-weight="{t_subtext["weight"]}"
+          fill="{t_subtext["color"]}" opacity="0.9"
+          filter="url(#text-glow)">{subtext}</text>""")
+
+        parts.append("  </g>")
+
+        trans_svg = self._svg_transition("hero", "slogan", hero_h, accent, M)
         if trans_svg:
             parts.append(trans_svg)
 
-        # --- Slogan (5%) ---
         if subtitle:
-            parts.append(
-                f"""
-  <!-- ===== SLOGAN ===== -->
-  <rect x="0" y="{slogan_y}" width="{CANVAS_W}" height="{slogan_h}" fill="{brand}" opacity="0.05"/>
-  <text x="{CANVAS_W // 2}" y="{slogan_y + slogan_h // 2 + 20}"
-        text-anchor="middle" class="title" font-size="{t_slogan['size_px']}" font-weight="{t_slogan['weight']}" fill="{t_slogan['color']}"
-        letter-spacing="3">
-    {subtitle}
-  </text>"""
-            )
+            parts.append(f"""
+  <!-- ===== SLOGAN BAND ===== -->
+  <rect x="0" y="{slogan_y}" width="{CANVAS_W}" height="{slogan_h}" fill="{brand}"/>
+  <text x="{CANVAS_W // 2}" y="{slogan_y + slogan_h // 2 + int(t_slogan["size_px"] * 0.35)}"
+        text-anchor="middle" class="title" font-size="{t_slogan["size_px"]}" font-weight="{t_slogan["weight"]}" fill="{t_slogan["color"]}"
+        letter-spacing="3">{subtitle}</text>""")
 
-        # --- Items horizontal row (14%) ---
         if items:
-            parts.append(
-                f"\n  <!-- ===== ITEMS ({n_items}개 품목, 가로 리스트) ===== -->"
-            )
             cols = max(n_items, 2)
-            col_w = (CANVAS_W - 2 * margin - (cols - 1) * 30) // cols
-            img_size = min(150, col_w - 20)
+            col_w = (CANVAS_W - 2 * M - (cols - 1) * CARD_GAP) // cols
+            card_img_h = min(220, items_h - 140)
 
             for idx in range(n_items):
                 item = items[idx]
-                x = margin + idx * (col_w + 30)
-                cx = x + col_w // 2
-                img_x = cx - img_size // 2
-                img_y = items_y + 30
+                card_x = M + idx * (col_w + CARD_GAP)
+                card_y = items_y + 20
+                card_total_h = items_h - 40
+                cx = card_x + col_w // 2
+                clip_id = f"hd-item-clip-{idx}"
 
                 item_ref = self._img_ref(f"item_{idx + 1:02d}.png")
                 name = item.get("name", "")
                 desc = item.get("description", "")
 
-                if item_ref:
-                    parts.append(
-                        f"""  <g id="item-{idx + 1}">
-    <image href="{item_ref}" xlink:href="{item_ref}"
-           x="{img_x}" y="{img_y}" width="{img_size}" height="{img_size}"
-           preserveAspectRatio="xMidYMid meet"/>
-    <text x="{cx}" y="{img_y + img_size + 40}"
-          text-anchor="middle" class="title" font-size="{t_item_name['size_px']}" font-weight="{t_item_name['weight']}" fill="{t_item_name['color']}">
-      {name}
-    </text>
-    <text x="{cx}" y="{img_y + img_size + 72}"
-          text-anchor="middle" class="body" font-size="{t_item_desc['size_px']}" font-weight="{t_item_desc['weight']}" fill="{t_item_desc['color']}" opacity="0.6">
-      {desc}
-    </text>
-  </g>"""
-                    )
-                else:
-                    parts.append(
-                        f"""  <g id="item-{idx + 1}">
-    <rect x="{img_x}" y="{img_y}" width="{img_size}" height="{img_size}" rx="8"
-          fill="{brand}" opacity="0.06"/>
-    <text x="{cx}" y="{img_y + img_size + 40}"
-          text-anchor="middle" class="title" font-size="{t_item_name['size_px']}" font-weight="{t_item_name['weight']}" fill="{t_item_name['color']}">
-      {name}
-    </text>
-    <text x="{cx}" y="{img_y + img_size + 72}"
-          text-anchor="middle" class="body" font-size="{t_item_desc['size_px']}" font-weight="{t_item_desc['weight']}" fill="{t_item_desc['color']}" opacity="0.6">
-      {desc}
-    </text>
-  </g>"""
-                    )
+                parts.append(f"""  <g id="item-{idx + 1}" filter="url(#card-shadow)">
+    <rect x="{card_x}" y="{card_y}" width="{col_w}" height="{card_total_h}"
+          rx="{CARD_R}" fill="#FFFFFF"/>
+    <defs>
+      <clipPath id="{clip_id}">
+        <rect x="{card_x}" y="{card_y}" width="{col_w}" height="{card_img_h}" rx="{CARD_R}"/>
+      </clipPath>
+    </defs>""")
 
-        # --- Transition: items → promo ---
-        trans_svg = self._svg_transition("items", "promo", items_y + items_h, accent, margin)
+                if item_ref:
+                    parts.append(f"""    <g clip-path="url(#{clip_id})">
+      <image href="{item_ref}" xlink:href="{item_ref}"
+             x="{card_x}" y="{card_y}" width="{col_w}" height="{card_img_h}"
+             preserveAspectRatio="xMidYMid slice"/>
+    </g>""")
+                else:
+                    parts.append(f"""    <rect x="{card_x}" y="{card_y}" width="{col_w}" height="{card_img_h}"
+          rx="{CARD_R}" fill="{brand}" opacity="0.06"/>""")
+
+                name_y = card_y + card_img_h + 40
+                parts.append(f"""    <text x="{cx}" y="{name_y}"
+          text-anchor="middle" class="title" font-size="{t_item_name["size_px"]}" font-weight="{t_item_name["weight"]}" fill="{t_item_name["color"]}">
+      {name}
+    </text>""")
+                if desc:
+                    parts.append(f"""    <text x="{cx}" y="{name_y + 34}"
+          text-anchor="middle" class="body" font-size="{t_item_desc["size_px"]}" font-weight="{t_item_desc["weight"]}" fill="{t_item_desc["color"]}" opacity="0.6">
+      {desc}
+    </text>""")
+                parts.append("  </g>")
+
+        trans_svg = self._svg_transition("items", "promo", items_y + items_h, accent, M)
         if trans_svg:
             parts.append(trans_svg)
 
-        # --- Promo (7%) ---
         if promo:
-            parts.append(self._svg_promo(promo, style, promo_y, promo_h, margin))
+            parts.append(self._svg_promo(promo, style, promo_y, promo_h, M))
 
-        # --- CTA (12%) ---
         if cta:
             parts.append(self._svg_cta(cta, style, cta_y, cta_h))
 
@@ -1819,21 +2211,25 @@ Generate complete layout_spec.json with all required fields: layout_id, zones, t
     # ─── Layout 3: Magazine Split ───
 
     def _build_magazine_split(self, style: dict, copy_data: dict) -> str:
-        """매거진 분할 — 히어로 35% → 섹션A 22% → 섹션B 22% → 프로모 6% → CTA 15%"""
         brand = style.get("brand_color", "#333333")
         accent = style.get("accent_color", "#FF6B35")
         bg = style.get("bg_color", "#FAFAF8")
         text_c = style.get("text_color", "#333333")
-        section_bg_alt = style.get("section_bg_alt", "#F0F0F0")
 
         items = copy_data.get("items", [])
         cta = copy_data.get("cta", {})
         promo = copy_data.get("promo", {})
         sections = copy_data.get("sections", [])
+        hero_data = copy_data.get("hero", {})
+        headline = hero_data.get("headline", "")
+        badge = hero_data.get("badge", "")
 
-        margin = 65
+        M = 100
+        CARD_R = 12
+        img_size = 200
+        text_x = M + img_size + 40
+        global_item_idx = 0
 
-        # Zone positions from layout_spec or hardcoded defaults
         hero_zone = self._get_zone("hero", {"y_px": 0, "h_px": 1050})
         hero_h = hero_zone["h_px"]
 
@@ -1841,181 +2237,158 @@ Generate complete layout_spec.json with all required fields: layout_id, zones, t
         section_a_y = section_a_zone["y_px"]
         section_h_a = section_a_zone["h_px"]
 
-        section_b_zone = self._get_zone("section_b", {"y_px": section_a_y + section_h_a, "h_px": 660})
+        section_b_zone = self._get_zone(
+            "section_b", {"y_px": section_a_y + section_h_a, "h_px": 660}
+        )
         section_b_y = section_b_zone["y_px"]
         section_h_b = section_b_zone["h_px"]
 
-        promo_h = 180 if promo else 0
+        promo_h = 140 if promo else 0
         promo_y = section_b_y + section_h_b
 
-        cta_zone = self._get_zone("cta", {"y_px": CANVAS_H - 450, "h_px": 450})
+        cta_zone = self._get_zone("cta", {"y_px": CANVAS_H - 400, "h_px": 400})
         cta_y = cta_zone["y_px"]
         cta_h = cta_zone["h_px"]
 
-        # Typography from layout_spec or hardcoded defaults
-        t_section_title = self._get_typo("section_title", {"size_px": 44, "weight": "700", "color": accent})
-        t_section_item = self._get_typo("section_item", {"size_px": 30, "weight": "400", "color": text_c})
-        t_item_name = self._get_typo("item_name", {"size_px": 36, "weight": "700", "color": text_c})
-        t_item_desc = self._get_typo("item_description", {"size_px": 24, "weight": "400", "color": text_c})
-        t_item_price = self._get_typo("item_price", {"size_px": 40, "weight": "800", "color": accent})
+        t_section_title = self._get_typo(
+            "section_title", {"size_px": 44, "weight": "700", "color": accent}
+        )
+        t_item_name = self._get_typo(
+            "item_name", {"size_px": 36, "weight": "700", "color": text_c}
+        )
+        t_item_desc = self._get_typo(
+            "item_description", {"size_px": 24, "weight": "400", "color": text_c}
+        )
+        t_item_price = self._get_typo(
+            "item_price", {"size_px": 40, "weight": "800", "color": accent}
+        )
+        t_section_item = self._get_typo(
+            "section_item", {"size_px": 30, "weight": "400", "color": text_c}
+        )
 
-        img_size = 200  # item thumbnail size
-        text_x = margin + img_size + 40  # text starts after image + gap
-        global_item_idx = 0  # tracks original items[] index for image filenames
-
-        # Split items into 2 groups
         if sections and len(sections) >= 2:
-            sec_a_title = sections[0].get("title", "서비스 A")
+            sec_a_title = sections[0].get("title", "\uc8fc\uc694 \uc11c\ube44\uc2a4")
             sec_a_items = sections[0].get("items", [])
-            sec_b_title = sections[1].get("title", "서비스 B")
+            sec_b_title = sections[1].get("title", "\ucd94\uac00 \uc11c\ube44\uc2a4")
             sec_b_items = sections[1].get("items", [])
         else:
             mid = (len(items) + 1) // 2
-            sec_a_title = "주요 서비스"
+            sec_a_title = "\uc8fc\uc694 \uc11c\ube44\uc2a4"
             sec_a_items = items[:mid]
-            sec_b_title = "추가 서비스"
+            sec_b_title = "\ucd94\uac00 \uc11c\ube44\uc2a4"
             sec_b_items = items[mid:]
 
         parts = []
         parts.append(self._svg_header(bg))
 
-        # --- Hero (35%) ---
         hero_ref = self._img_ref("hero.png")
-        if hero_ref:
-            parts.append(
-                f"""
+        hero_cx = CANVAS_W // 2
+
+        parts.append(f"""
   <!-- ===== HERO (35%) ===== -->
-  <image href="{hero_ref}" xlink:href="{hero_ref}"
-         x="0" y="0" width="{CANVAS_W}" height="{hero_h}"
-         preserveAspectRatio="xMidYMid meet"/>"""
-            )
+  <defs>
+    <clipPath id="ms-hero-clip">
+      <rect x="0" y="0" width="{CANVAS_W}" height="{hero_h}"/>
+    </clipPath>
+  </defs>
+  <g clip-path="url(#ms-hero-clip)">""")
+
+        if hero_ref:
+            parts.append(f"""    <image href="{hero_ref}" xlink:href="{hero_ref}"
+           x="0" y="0" width="{CANVAS_W}" height="{hero_h}"
+           preserveAspectRatio="xMidYMid slice"/>""")
         else:
             parts.append(
-                f"""
-  <!-- HERO placeholder -->
-  <rect x="0" y="0" width="{CANVAS_W}" height="{hero_h}" fill="{brand}" opacity="0.1"/>
-  <text x="{CANVAS_W // 2}" y="{hero_h // 2}" text-anchor="middle"
-        class="title" font-size="72" fill="{brand}" opacity="0.25">HERO IMAGE</text>"""
+                f"""    <rect x="0" y="0" width="{CANVAS_W}" height="{hero_h}" fill="{brand}" opacity="0.15"/>"""
             )
 
-        # --- Transition: hero → section_a ---
-        trans_svg = self._svg_transition("hero", "section_a", hero_h, accent, margin)
+        parts.append(
+            f"""    <rect x="0" y="0" width="{CANVAS_W}" height="{hero_h}" fill="url(#hero-scrim)"/>"""
+        )
+
+        if badge:
+            parts.append(f"""    <text x="{hero_cx}" y="{int(hero_h * 0.25)}"
+          text-anchor="middle" class="body" font-size="28" font-weight="600"
+          fill="#FFFFFF" letter-spacing="6" opacity="0.9"
+          filter="url(#text-glow)">{badge}</text>""")
+        if headline:
+            parts.append(f"""    <text x="{hero_cx}" y="{int(hero_h * 0.55)}"
+          text-anchor="middle" class="heavy" font-size="90" font-weight="900"
+          fill="#FFFFFF" letter-spacing="4"
+          filter="url(#text-shadow)">{headline}</text>""")
+
+        parts.append("  </g>")
+
+        trans_svg = self._svg_transition("hero", "section_a", hero_h, accent, M)
         if trans_svg:
             parts.append(trans_svg)
 
-        # --- Section A (22%) ---
-        parts.append(
-            f"""
-  <!-- ===== SECTION A ===== -->
-  <rect x="0" y="{section_a_y}" width="{CANVAS_W}" height="{section_h_a}"
-        fill="{brand}" opacity="0.05"/>
-  <text x="{margin}" y="{section_a_y + 60}"
-        class="title" font-size="{t_section_title['size_px']}" font-weight="{t_section_title['weight']}" fill="{t_section_title['color']}">
-    {sec_a_title}
+        def _render_section(sec_y, sec_h, sec_title, sec_items, sec_bg_opacity):
+            nonlocal global_item_idx
+            sec_parts = []
+            sec_parts.append(f"""
+  <rect x="0" y="{sec_y}" width="{CANVAS_W}" height="{sec_h}" fill="{brand}" opacity="{sec_bg_opacity}"/>
+  <text x="{M}" y="{sec_y + 60}"
+        class="title" font-size="{t_section_title["size_px"]}" font-weight="{t_section_title["weight"]}" fill="{t_section_title["color"]}">
+    {sec_title}
   </text>
-  <line x1="{margin}" y1="{section_a_y + 80}" x2="{CANVAS_W - margin}" y2="{section_a_y + 80}"
-        stroke="{accent}" stroke-width="2" opacity="0.3"/>"""
+  <line x1="{M}" y1="{sec_y + 80}" x2="{CANVAS_W - M}" y2="{sec_y + 80}"
+        stroke="{accent}" stroke-width="2" opacity="0.3"/>""")
+            iy = sec_y + 110
+            row_h = max(230, (sec_h - 110) // max(len(sec_items), 1))
+            for item in sec_items:
+                name = item.get("name", "")
+                desc = item.get("description", "")
+                price = item.get("price", "")
+                item_ref = self._img_ref(f"item_{global_item_idx + 1:02d}.png")
+                clip_id = f"ms-item-clip-{global_item_idx}"
+
+                if item_ref:
+                    sec_parts.append(f"""  <defs>
+    <clipPath id="{clip_id}">
+      <rect x="{M}" y="{iy}" width="{img_size}" height="{img_size}" rx="{CARD_R}"/>
+    </clipPath>
+  </defs>
+  <g clip-path="url(#{clip_id})">
+    <image href="{item_ref}" xlink:href="{item_ref}"
+           x="{M}" y="{iy}" width="{img_size}" height="{img_size}"
+           preserveAspectRatio="xMidYMid slice"/>
+  </g>""")
+                    sec_parts.append(f"""  <text x="{text_x}" y="{iy + 55}"
+        class="title" font-size="{t_item_name["size_px"]}" font-weight="{t_item_name["weight"]}" fill="{t_item_name["color"]}">{name}</text>""")
+                    if desc:
+                        sec_parts.append(f"""  <text x="{text_x}" y="{iy + 100}"
+        class="body" font-size="{t_item_desc["size_px"]}" font-weight="{t_item_desc["weight"]}" fill="{t_item_desc["color"]}" opacity="0.65">{desc}</text>""")
+                    if price:
+                        sec_parts.append(f"""  <text x="{CANVAS_W - M}" y="{iy + 55}"
+        text-anchor="end" class="title" font-size="{t_item_price["size_px"]}" font-weight="{t_item_price["weight"]}" fill="{t_item_price["color"]}">{price}</text>""")
+                else:
+                    bullet_text = f"\u2022  {name}"
+                    if desc:
+                        bullet_text += f" \u2014 {desc}"
+                    sec_parts.append(f"""  <text x="{M + 30}" y="{iy + 30}"
+        class="body" font-size="{t_section_item["size_px"]}" font-weight="{t_section_item["weight"]}" fill="{t_section_item["color"]}">{bullet_text}</text>""")
+
+                iy += row_h
+                global_item_idx += 1
+            return "\n".join(sec_parts)
+
+        parts.append(
+            _render_section(section_a_y, section_h_a, sec_a_title, sec_a_items, "0.04")
         )
-        item_y = section_a_y + 100
-        row_h = max(230, (section_h_a - 100) // max(len(sec_a_items), 1))
-        for item in sec_a_items:
-            name = item.get("name", "")
-            desc = item.get("description", "")
-            price = item.get("price", "")
-            item_ref = self._img_ref(f"item_{global_item_idx + 1:02d}.png")
 
-            if item_ref:
-                parts.append(f"""  <image href="{item_ref}" xlink:href="{item_ref}"
-           x="{margin}" y="{item_y}" width="{img_size}" height="{img_size}"
-           preserveAspectRatio="xMidYMid meet"/>""")
-                parts.append(f"""  <text x="{text_x}" y="{item_y + 55}"
-        class="title" font-size="{t_item_name['size_px']}" font-weight="{t_item_name['weight']}" fill="{t_item_name['color']}">
-    {name}
-  </text>""")
-                if desc:
-                    parts.append(f"""  <text x="{text_x}" y="{item_y + 100}"
-        class="body" font-size="{t_item_desc['size_px']}" font-weight="{t_item_desc['weight']}" fill="{t_item_desc['color']}" opacity="0.65">
-    {desc}
-  </text>""")
-                if price:
-                    parts.append(f"""  <text x="{CANVAS_W - margin}" y="{item_y + 55}"
-        text-anchor="end" class="title" font-size="{t_item_price['size_px']}" font-weight="{t_item_price['weight']}" fill="{t_item_price['color']}">
-    {price}
-  </text>""")
-            else:
-                bullet_text = f"\u2022  {name}"
-                if desc:
-                    bullet_text += f" \u2014 {desc}"
-                parts.append(f"""  <text x="{margin + 30}" y="{item_y + 30}"
-        class="body" font-size="{t_section_item['size_px']}" font-weight="{t_section_item['weight']}" fill="{t_section_item['color']}">
-    {bullet_text}
-  </text>""")
-
-            item_y += row_h
-            global_item_idx += 1
-
-
-        # --- Transition: section_a → section_b ---
-        trans_svg = self._svg_transition("section_a", "section_b", section_a_y + section_h_a, accent, margin)
+        trans_svg = self._svg_transition(
+            "section_a", "section_b", section_a_y + section_h_a, accent, M
+        )
         if trans_svg:
             parts.append(trans_svg)
 
-        # --- Section B (22%) ---
         parts.append(
-            f"""
-  <!-- ===== SECTION B ===== -->
-  <rect x="0" y="{section_b_y}" width="{CANVAS_W}" height="{section_h_b}"
-        fill="{section_bg_alt}" opacity="0.4"/>
-  <text x="{margin}" y="{section_b_y + 60}"
-        class="title" font-size="{t_section_title['size_px']}" font-weight="{t_section_title['weight']}" fill="{t_section_title['color']}">
-    {sec_b_title}
-  </text>
-  <line x1="{margin}" y1="{section_b_y + 80}" x2="{CANVAS_W - margin}" y2="{section_b_y + 80}"
-        stroke="{accent}" stroke-width="2" opacity="0.3"/>"""
+            _render_section(section_b_y, section_h_b, sec_b_title, sec_b_items, "0.08")
         )
-        item_y = section_b_y + 130
-        row_h = max(230, (section_h_b - 100) // max(len(sec_b_items), 1))
-        for item in sec_b_items:
-            name = item.get("name", "")
-            desc = item.get("description", "")
-            price = item.get("price", "")
-            item_ref = self._img_ref(f"item_{global_item_idx + 1:02d}.png")
 
-            if item_ref:
-                parts.append(f"""  <image href="{item_ref}" xlink:href="{item_ref}"
-           x="{margin}" y="{item_y}" width="{img_size}" height="{img_size}"
-           preserveAspectRatio="xMidYMid meet"/>""")
-                parts.append(f"""  <text x="{text_x}" y="{item_y + 55}"
-        class="title" font-size="{t_item_name['size_px']}" font-weight="{t_item_name['weight']}" fill="{t_item_name['color']}">
-    {name}
-  </text>""")
-                if desc:
-                    parts.append(f"""  <text x="{text_x}" y="{item_y + 100}"
-        class="body" font-size="{t_item_desc['size_px']}" font-weight="{t_item_desc['weight']}" fill="{t_item_desc['color']}" opacity="0.65">
-    {desc}
-  </text>""")
-                if price:
-                    parts.append(f"""  <text x="{CANVAS_W - margin}" y="{item_y + 55}"
-        text-anchor="end" class="title" font-size="{t_item_price['size_px']}" font-weight="{t_item_price['weight']}" fill="{t_item_price['color']}">
-    {price}
-  </text>""")
-            else:
-                bullet_text = f"\u2022  {name}"
-                if desc:
-                    bullet_text += f" \u2014 {desc}"
-                parts.append(f"""  <text x="{margin + 30}" y="{item_y + 30}"
-        class="body" font-size="{t_section_item['size_px']}" font-weight="{t_section_item['weight']}" fill="{t_section_item['color']}">
-    {bullet_text}
-  </text>""")
-
-            item_y += row_h
-            global_item_idx += 1
-
-        # --- Promo (6%) ---
         if promo:
-            parts.append(self._svg_promo(promo, style, promo_y, promo_h, margin))
-
-        # --- CTA (15%) ---
+            parts.append(self._svg_promo(promo, style, promo_y, promo_h, M))
         if cta:
             parts.append(self._svg_cta(cta, style, cta_y, cta_h))
 
@@ -2026,7 +2399,7 @@ Generate complete layout_spec.json with all required fields: layout_id, zones, t
     # ─── Layout 4: Bold Typo ───
 
     def _build_bold_typo(self, style: dict, copy_data: dict) -> str:
-        """볼드 타이포 — 헤더 25% → 히어로 30% → 가격표 20% → 프로모 10% → CTA 15%"""
+        """볼드 타이포 — 브랜드 헤더 25% → 히어로+스크림 30% → 카드형 가격표 20% → 프로모 10% → CTA 15%"""
         brand = style.get("brand_color", "#333333")
         accent = style.get("accent_color", "#FF6B35")
         bg = style.get("bg_color", "#FAFAF8")
@@ -2038,10 +2411,13 @@ Generate complete layout_spec.json with all required fields: layout_id, zones, t
         hero_data = copy_data.get("hero", {})
         biz_name = hero_data.get("headline", "")
         badge = hero_data.get("badge", "")
+        subtext = hero_data.get("subtext", "")
 
-        margin = 65
+        M = 100
+        CARD_R = 16
+        CARD_GAP = 24
 
-        # Zone positions from layout_spec or hardcoded defaults
+        # Zone positions
         header_zone = self._get_zone("header", {"y_px": 0, "h_px": 750})
         header_h = header_zone["h_px"]
 
@@ -2049,7 +2425,9 @@ Generate complete layout_spec.json with all required fields: layout_id, zones, t
         hero_y = hero_zone["y_px"]
         hero_h = hero_zone["h_px"]
 
-        pricelist_zone = self._get_zone("price_list", {"y_px": hero_y + hero_h, "h_px": 600})
+        pricelist_zone = self._get_zone(
+            "price_list", {"y_px": hero_y + hero_h, "h_px": 600}
+        )
         pricelist_y = pricelist_zone["y_px"]
         pricelist_h = pricelist_zone["h_px"]
 
@@ -2060,147 +2438,155 @@ Generate complete layout_spec.json with all required fields: layout_id, zones, t
         cta_y = cta_zone["y_px"]
         cta_h = cta_zone["h_px"]
 
+        # Typography
+        text_on_brand = accent if accent != brand else "#FFFFFF"
+        t_biz_name = self._get_typo(
+            "business_name", {"size_px": 140, "weight": "900", "color": text_on_brand}
+        )
+        t_badge = self._get_typo(
+            "hero_badge", {"size_px": 32, "weight": "600", "color": text_on_brand}
+        )
+        t_item_name = self._get_typo(
+            "item_name", {"size_px": 38, "weight": "700", "color": text_c}
+        )
+        t_item_desc = self._get_typo(
+            "item_description", {"size_px": 24, "weight": "400", "color": text_c}
+        )
+        t_item_price = self._get_typo(
+            "item_price", {"size_px": 42, "weight": "700", "color": accent}
+        )
+
         parts = []
         parts.append(self._svg_header(bg))
 
-        # --- Header (25%) — MASSIVE business name ---
-        # Determine text color for contrast on brand bg
-        text_on_brand = accent if accent != brand else "#FFFFFF"
-        # Typography from layout_spec or hardcoded defaults
-        t_biz_name = self._get_typo("business_name", {"size_px": 140, "weight": "900", "color": text_on_brand})
-        t_badge = self._get_typo("hero_badge", {"size_px": 32, "weight": "400", "color": text_on_brand})
-        t_item_name = self._get_typo("item_name", {"size_px": 40, "weight": "700", "color": text_c})
-        t_item_price = self._get_typo("item_price", {"size_px": 48, "weight": "700", "color": accent})
-        parts.append(
-            f"""
+        # ── HEADER (25%) — brand bg + massive typography ──
+        parts.append(f"""
   <!-- ===== HEADER (볼드 타이포) ===== -->
   <rect x="0" y="0" width="{CANVAS_W}" height="{header_h}" fill="{brand}"/>
-  <text x="{CANVAS_W // 2}" y="{header_h // 2 + 40}"
-        text-anchor="middle" class="title" font-size="{t_biz_name['size_px']}" font-weight="{t_biz_name['weight']}" fill="{t_biz_name['color']}">
-    {biz_name}
-  </text>"""
-        )
-        if badge:
-            parts.append(
-                f"""  <text x="{CANVAS_W // 2}" y="{header_h // 2 + 100}"
-        text-anchor="middle" class="body" font-size="{t_badge['size_px']}" font-weight="{t_badge['weight']}" fill="{t_badge['color']}" opacity="0.7">
-    {badge}
-  </text>"""
-            )
+  <line x1="{CANVAS_W // 2 - 120}" y1="{header_h // 2 - 90}" x2="{CANVAS_W // 2 + 120}" y2="{header_h // 2 - 90}"
+        stroke="{accent}" stroke-width="3" opacity="0.6"/>""")
 
-        # --- Transition: header → hero ---
-        trans_svg = self._svg_transition("header", "hero", header_h, accent, margin)
+        if badge:
+            parts.append(f"""  <text x="{CANVAS_W // 2}" y="{header_h // 2 - 50}"
+        text-anchor="middle" class="body" font-size="{t_badge["size_px"]}" font-weight="{t_badge["weight"]}"
+        fill="{t_badge["color"]}" letter-spacing="6" opacity="0.8">{badge}</text>""")
+
+        parts.append(f"""  <text x="{CANVAS_W // 2}" y="{header_h // 2 + 50}"
+        text-anchor="middle" class="heavy" font-size="{t_biz_name["size_px"]}" font-weight="{t_biz_name["weight"]}"
+        fill="{t_biz_name["color"]}" letter-spacing="6">{biz_name}</text>""")
+
+        if subtext:
+            parts.append(f"""  <text x="{CANVAS_W // 2}" y="{header_h // 2 + 120}"
+        text-anchor="middle" class="body" font-size="34" font-weight="400"
+        fill="{text_on_brand}" opacity="0.7">{subtext}</text>""")
+
+        parts.append(f"""  <line x1="{CANVAS_W // 2 - 120}" y1="{header_h - 60}" x2="{CANVAS_W // 2 + 120}" y2="{header_h - 60}"
+        stroke="{accent}" stroke-width="3" opacity="0.6"/>""")
+
+        # ── Transition: header → hero ──
+        trans_svg = self._svg_transition("header", "hero", header_h, accent, M)
         if trans_svg:
             parts.append(trans_svg)
 
-        # --- Hero (30%) ---
+        # ── HERO (30%) — image with scrim overlay ──
         hero_ref = self._img_ref("hero.png")
-        if hero_ref:
-            parts.append(
-                f"""
+        parts.append(f"""
   <!-- ===== HERO (30%) ===== -->
-  <image href="{hero_ref}" xlink:href="{hero_ref}"
-         x="0" y="{hero_y}" width="{CANVAS_W}" height="{hero_h}"
-         preserveAspectRatio="xMidYMid meet"/>"""
-            )
+  <defs>
+    <clipPath id="bt-hero-clip">
+      <rect x="0" y="{hero_y}" width="{CANVAS_W}" height="{hero_h}"/>
+    </clipPath>
+  </defs>
+  <g clip-path="url(#bt-hero-clip)">""")
+
+        if hero_ref:
+            parts.append(f"""    <image href="{hero_ref}" xlink:href="{hero_ref}"
+           x="0" y="{hero_y}" width="{CANVAS_W}" height="{hero_h}"
+           preserveAspectRatio="xMidYMid slice"/>""")
         else:
             parts.append(
-                f"""
-  <!-- HERO placeholder -->
-  <rect x="0" y="{hero_y}" width="{CANVAS_W}" height="{hero_h}" fill="{brand}" opacity="0.1"/>
-  <text x="{CANVAS_W // 2}" y="{hero_y + hero_h // 2}" text-anchor="middle"
-        class="title" font-size="72" fill="{brand}" opacity="0.25">HERO IMAGE</text>"""
+                f"""    <rect x="0" y="{hero_y}" width="{CANVAS_W}" height="{hero_h}" fill="{brand}" opacity="0.15"/>"""
             )
 
-        # --- Price List (20%) — image cards or text-only fallback ---
-        img_size = 200  # item thumbnail size
-        card_text_x = margin + img_size + 40  # text starts after image + gap
         parts.append(
-            f"""
-  <!-- ===== PRICE LIST ===== -->
-  <rect x="0" y="{pricelist_y}" width="{CANVAS_W}" height="{pricelist_h}"
-        fill="{brand}" opacity="0.03"/>"""
+            f"""    <rect x="0" y="{hero_y}" width="{CANVAS_W}" height="{hero_h}" fill="url(#hero-scrim)"/>"""
         )
-        if items:
-            n_items = len(items)
-            # Check if ANY item has an image — determines card vs text mode
-            has_any_image = any(self._img_ref(f"item_{i+1:02d}.png") for i in range(n_items))
-            if has_any_image:
-                # Image card mode (like magazine_split)
-                row_h = max(230, (pricelist_h - 60) // max(n_items, 1))
-                start_y = pricelist_y + 40
-                for idx, item in enumerate(items):
-                    name = item.get("name", "")
-                    price = item.get("price", "")
-                    desc = item.get("description", "")
-                    iy = start_y + idx * row_h
-                    item_ref = self._img_ref(f"item_{idx + 1:02d}.png")
-                    if item_ref:
-                        parts.append(f"""  <image href="{item_ref}" xlink:href="{item_ref}"
-           x="{margin}" y="{iy}" width="{img_size}" height="{img_size}"
-           preserveAspectRatio="xMidYMid meet"/>""")
-                        parts.append(f"""  <text x="{card_text_x}" y="{iy + 55}"
-        class="title" font-size="{t_item_name['size_px']}" font-weight="{t_item_name['weight']}" fill="{t_item_name['color']}">
-    {name}
-  </text>""")
-                        if desc:
-                            parts.append(f"""  <text x="{card_text_x}" y="{iy + 100}"
-        class="body" font-size="24" font-weight="400" fill="{text_c}" opacity="0.65">
-    {desc}
-  </text>""")
-                        if price:
-                            parts.append(f"""  <text x="{CANVAS_W - margin}" y="{iy + 55}"
-        text-anchor="end" class="title" font-size="{t_item_price['size_px']}" font-weight="{t_item_price['weight']}" fill="{t_item_price['color']}">
-    {price}
-  </text>""")
-                    else:
-                        # Fallback: text-only row for this specific item
-                        parts.append(f"""  <text x="{margin + 20}" y="{iy + 30}"
-        class="title" font-size="{t_item_name['size_px']}" font-weight="{t_item_name['weight']}" fill="{t_item_name['color']}">
-    {name}
-  </text>""")
-                        if price:
-                            parts.append(f"""  <text x="{CANVAS_W - margin - 20}" y="{iy + 30}"
-        text-anchor="end" class="title" font-size="{t_item_price['size_px']}" font-weight="{t_item_price['weight']}" fill="{t_item_price['color']}">
-    {price}
-  </text>""")
-            else:
-                # Text-only mode (no images at all) — original flat list
-                row_h = min(80, (pricelist_h - 60) // max(n_items, 1))
-                start_y = pricelist_y + 50
-                for idx, item in enumerate(items):
-                    name = item.get("name", "")
-                    price = item.get("price", "")
-                    iy = start_y + idx * row_h
-                    parts.append(
-                        f"""  <text x="{margin + 20}" y="{iy}"
-        class="title" font-size="{t_item_name['size_px']}" font-weight="{t_item_name['weight']}" fill="{t_item_name['color']}">
-    {name}
-  </text>"""
-                    )
-                    if price:
-                        parts.append(
-                            f"""  <text x="{CANVAS_W - margin - 20}" y="{iy}"
-        text-anchor="end" class="title" font-size="{t_item_price['size_px']}" font-weight="{t_item_price['weight']}" fill="{t_item_price['color']}">
-    {price}
-  </text>"""
-                        )
-                    if idx < n_items - 1:
-                        parts.append(
-                            f"""  <line x1="{margin}" y1="{iy + 20}" x2="{CANVAS_W - margin}" y2="{iy + 20}"
-        stroke="{text_c}" stroke-width="1" opacity="0.15"/>"""
-                        )
+        parts.append("  </g>")
 
-        # --- Transition: price_list → promo ---
-        trans_svg = self._svg_transition("price_list", "promo", pricelist_y + pricelist_h, accent, margin)
+        # ── PRICE LIST (20%) — card rows with images ──
+        n_items = len(items) if items else 0
+        img_size = 180
+        parts.append(f"""
+  <!-- ===== PRICE LIST ===== -->
+  <rect x="0" y="{pricelist_y}" width="{CANVAS_W}" height="{pricelist_h}" fill="{bg}"/>""")
+
+        if items:
+            has_any_image = any(
+                self._img_ref(f"item_{i + 1:02d}.png") for i in range(n_items)
+            )
+            row_h = max(200, (pricelist_h - 60) // max(n_items, 1))
+            start_y = pricelist_y + 30
+
+            for idx, item in enumerate(items):
+                name = item.get("name", "")
+                price = item.get("price", "")
+                desc = item.get("description", "")
+                iy = start_y + idx * row_h
+                item_ref = self._img_ref(f"item_{idx + 1:02d}.png")
+                card_y = iy
+                card_h = row_h - CARD_GAP
+                clip_id = f"bt-item-clip-{idx}"
+
+                if has_any_image and item_ref:
+                    # Card row: white card bg + clipped image + text
+                    parts.append(f"""
+  <g filter="url(#card-shadow)">
+    <rect x="{M}" y="{card_y}" width="{CANVAS_W - 2 * M}" height="{card_h}"
+          rx="{CARD_R}" fill="#FFFFFF"/>
+  </g>
+  <defs>
+    <clipPath id="{clip_id}">
+      <rect x="{M + 12}" y="{card_y + 12}" width="{img_size}" height="{card_h - 24}" rx="12"/>
+    </clipPath>
+  </defs>
+  <g clip-path="url(#{clip_id})">
+    <image href="{item_ref}" xlink:href="{item_ref}"
+           x="{M + 12}" y="{card_y + 12}" width="{img_size}" height="{card_h - 24}"
+           preserveAspectRatio="xMidYMid slice"/>
+  </g>""")
+                    text_x = M + img_size + 40
+                    parts.append(f"""  <text x="{text_x}" y="{card_y + card_h // 2 - 10}"
+        class="title" font-size="{t_item_name["size_px"]}" font-weight="{t_item_name["weight"]}" fill="{t_item_name["color"]}">{name}</text>""")
+                    if desc:
+                        parts.append(f"""  <text x="{text_x}" y="{card_y + card_h // 2 + 28}"
+        class="body" font-size="{t_item_desc["size_px"]}" font-weight="{t_item_desc["weight"]}" fill="{t_item_desc["color"]}" opacity="0.6">{desc}</text>""")
+                    if price:
+                        parts.append(f"""  <text x="{CANVAS_W - M - 24}" y="{card_y + card_h // 2 + 8}"
+        text-anchor="end" class="title" font-size="{t_item_price["size_px"]}" font-weight="{t_item_price["weight"]}" fill="{t_item_price["color"]}">{price}</text>""")
+                else:
+                    # Text-only row with subtle separator
+                    parts.append(f"""  <text x="{M + 24}" y="{card_y + card_h // 2 + 8}"
+        class="title" font-size="{t_item_name["size_px"]}" font-weight="{t_item_name["weight"]}" fill="{t_item_name["color"]}">{name}</text>""")
+                    if price:
+                        parts.append(f"""  <text x="{CANVAS_W - M - 24}" y="{card_y + card_h // 2 + 8}"
+        text-anchor="end" class="title" font-size="{t_item_price["size_px"]}" font-weight="{t_item_price["weight"]}" fill="{t_item_price["color"]}">{price}</text>""")
+                    if idx < n_items - 1:
+                        sep_y = card_y + card_h
+                        parts.append(f"""  <line x1="{M + 24}" y1="{sep_y}" x2="{CANVAS_W - M - 24}" y2="{sep_y}"
+        stroke="{text_c}" stroke-width="1" opacity="0.1"/>""")
+
+        # ── Transition: price_list → promo ──
+        trans_svg = self._svg_transition(
+            "price_list", "promo", pricelist_y + pricelist_h, accent, M
+        )
         if trans_svg:
             parts.append(trans_svg)
 
-        # --- Promo (10%) ---
+        # ── Promo (10%) ──
         if promo:
-            parts.append(self._svg_promo(promo, style, promo_y, promo_h, margin))
+            parts.append(self._svg_promo(promo, style, promo_y, promo_h, M))
 
-        # --- CTA (15%) ---
+        # ── CTA (15%) ──
         if cta:
             parts.append(self._svg_cta(cta, style, cta_y, cta_h))
 
@@ -2211,7 +2597,7 @@ Generate complete layout_spec.json with all required fields: layout_id, zones, t
     # ─── Layout 5: Side by Side ───
 
     def _build_side_by_side(self, style: dict, copy_data: dict) -> str:
-        """좌우 분할 — 좌(히어로 50%) + 우(텍스트 50%) 70% → 프로모 12% → CTA 18%"""
+        """좌우 분할 — 좌(히어로+스크림 50%) + 우(카드형 텍스트 50%) 70% → 프로모 12% → CTA 18%"""
         brand = style.get("brand_color", "#333333")
         accent = style.get("accent_color", "#FF6B35")
         bg = style.get("bg_color", "#FAFAF8")
@@ -2224,12 +2610,16 @@ Generate complete layout_spec.json with all required fields: layout_id, zones, t
         hero_data = copy_data.get("hero", {})
         subtitle = copy_data.get("subtitle", "")
         biz_name = hero_data.get("headline", "")
+        badge = hero_data.get("badge", "")
 
-        margin = 65
-        half_w = CANVAS_W // 2  # 1065
+        M = 60
+        CARD_R = 16
+        CARD_GAP = 20
+        half_w = CANVAS_W // 2
 
-        # Zone positions from layout_spec or hardcoded defaults
-        hero_left_zone = self._get_zone("hero_left", {"x_px": 0, "w_px": half_w, "y_px": 0, "h_px": 2100})
+        hero_left_zone = self._get_zone(
+            "hero_left", {"x_px": 0, "w_px": half_w, "y_px": 0, "h_px": 2100}
+        )
         top_h = hero_left_zone["h_px"]
 
         promo_h = 360 if promo else 0
@@ -2239,181 +2629,171 @@ Generate complete layout_spec.json with all required fields: layout_id, zones, t
         cta_y = cta_zone["y_px"]
         cta_h = cta_zone["h_px"]
 
-        # Typography from layout_spec or hardcoded defaults
-        t_biz_name = self._get_typo("business_name", {"size_px": 48, "weight": "700", "color": text_c})
-        t_subtitle = self._get_typo("hero_subtext", {"size_px": 32, "weight": "500", "color": text_c})
-        t_item_name = self._get_typo("item_name", {"size_px": 36, "weight": "700", "color": text_c})
-        t_item_price = self._get_typo("item_price", {"size_px": 36, "weight": "700", "color": accent})
-        t_item_desc = self._get_typo("item_description", {"size_px": 24, "weight": "300", "color": text_c})
-        t_features = self._get_typo("features", {"size_px": 24, "weight": "400", "color": text_c})
+        t_biz_name = self._get_typo(
+            "business_name", {"size_px": 60, "weight": "900", "color": text_c}
+        )
+        t_subtitle = self._get_typo(
+            "hero_subtext", {"size_px": 30, "weight": "400", "color": text_c}
+        )
+        t_item_name = self._get_typo(
+            "item_name", {"size_px": 34, "weight": "700", "color": text_c}
+        )
+        t_item_price = self._get_typo(
+            "item_price", {"size_px": 34, "weight": "700", "color": accent}
+        )
+        t_item_desc = self._get_typo(
+            "item_description", {"size_px": 22, "weight": "400", "color": text_c}
+        )
+        t_features = self._get_typo(
+            "features", {"size_px": 24, "weight": "400", "color": text_c}
+        )
 
         parts = []
         parts.append(self._svg_header(bg))
 
-        # --- LEFT: Hero image (50% width, 70% height) ---
+        # ── LEFT: Hero with scrim + overlay text ──
         hero_ref = self._img_ref("hero.png")
-        if hero_ref:
-            parts.append(
-                f"""
+        parts.append(f"""
   <!-- ===== LEFT: HERO ===== -->
-  <image href="{hero_ref}" xlink:href="{hero_ref}"
-         x="0" y="0" width="{half_w}" height="{top_h}"
-         preserveAspectRatio="xMidYMid meet"/>"""
-            )
+  <defs>
+    <clipPath id="sbs-hero-clip">
+      <rect x="0" y="0" width="{half_w}" height="{top_h}"/>
+    </clipPath>
+    <linearGradient id="sbs-hero-grad" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0" stop-color="#000000" stop-opacity="0.15"/>
+      <stop offset="0.6" stop-color="#000000" stop-opacity="0.05"/>
+      <stop offset="1" stop-color="#000000" stop-opacity="0.55"/>
+    </linearGradient>
+  </defs>
+  <g clip-path="url(#sbs-hero-clip)">""")
+
+        if hero_ref:
+            parts.append(f"""    <image href="{hero_ref}" xlink:href="{hero_ref}"
+           x="0" y="0" width="{half_w}" height="{top_h}"
+           preserveAspectRatio="xMidYMid slice"/>""")
         else:
             parts.append(
-                f"""
-  <!-- LEFT: HERO placeholder -->
-  <rect x="0" y="0" width="{half_w}" height="{top_h}" fill="{brand}" opacity="0.1"/>
-  <text x="{half_w // 2}" y="{top_h // 2}" text-anchor="middle"
-        class="title" font-size="56" fill="{brand}" opacity="0.25">HERO</text>"""
+                f"""    <rect x="0" y="0" width="{half_w}" height="{top_h}" fill="{brand}" opacity="0.15"/>"""
             )
 
-        # --- Vertical divider ---
-        divider_y1 = int(top_h * 0.05)
-        divider_y2 = int(top_h * 0.95)
         parts.append(
-            f"""
-  <!-- ===== DIVIDER ===== -->
-  <line x1="{half_w}" y1="{divider_y1}" x2="{half_w}" y2="{divider_y2}"
-        stroke="{accent}" stroke-width="2" opacity="0.4"/>"""
+            f"""    <rect x="0" y="0" width="{half_w}" height="{top_h}" fill="url(#sbs-hero-grad)"/>"""
         )
 
-        # --- RIGHT: Text content ---
-        rx = half_w + margin  # right content x start
-        rw = half_w - 2 * margin  # right content width
-        ry = 80  # start y
+        hero_cx = half_w // 2
+        if badge:
+            parts.append(f"""    <text x="{hero_cx}" y="{top_h - 180}"
+          text-anchor="middle" class="body" font-size="28" font-weight="600"
+          fill="#FFFFFF" letter-spacing="5" opacity="0.85"
+          filter="url(#text-glow)">{badge}</text>""")
 
-        parts.append(
-            f"""
+        parts.append(f"""    <text x="{hero_cx}" y="{top_h - 100}"
+          text-anchor="middle" class="heavy" font-size="72" font-weight="900"
+          fill="#FFFFFF" letter-spacing="3"
+          filter="url(#text-shadow)">{biz_name}</text>""")
+        parts.append("  </g>")
+
+        # ── Accent strip between left and right ──
+        parts.append(f"""
+  <rect x="{half_w}" y="0" width="6" height="{top_h}" fill="{accent}"/>""")
+
+        # ── RIGHT: Text content panel ──
+        rx = half_w + 6 + M
+        rw = half_w - 6 - 2 * M
+        ry = 100
+
+        parts.append(f"""
   <!-- ===== RIGHT: TEXT CONTENT ===== -->
-  <text x="{rx}" y="{ry}"
-        class="title" font-size="{t_biz_name['size_px']}" font-weight="{t_biz_name['weight']}" fill="{t_biz_name['color']}">
-    {biz_name}
-  </text>"""
-        )
-        ry += 50
+  <line x1="{rx}" y1="{ry - 20}" x2="{rx + 80}" y2="{ry - 20}"
+        stroke="{accent}" stroke-width="3"/>
+  <text x="{rx}" y="{ry + 40}"
+        class="heavy" font-size="{t_biz_name["size_px"]}" font-weight="{t_biz_name["weight"]}" fill="{t_biz_name["color"]}">{biz_name}</text>""")
+        ry += 80
 
         if subtitle:
-            parts.append(
-                f"""  <text x="{rx}" y="{ry}"
-        class="body" font-size="{t_subtitle['size_px']}" font-weight="{t_subtitle['weight']}" fill="{t_subtitle['color']}" opacity="0.7">
-    {subtitle}
-  </text>"""
-            )
-            ry += 60
+            parts.append(f"""  <text x="{rx}" y="{ry}"
+        class="body" font-size="{t_subtitle["size_px"]}" font-weight="{t_subtitle["weight"]}" fill="{t_subtitle["color"]}" opacity="0.65">{subtitle}</text>""")
+            ry += 50
 
-        # Accent line under title
-        parts.append(
-            f"""  <line x1="{rx}" y1="{ry}" x2="{rx + rw}" y2="{ry}"
-        stroke="{accent}" stroke-width="2" opacity="0.4"/>"""
-        )
-        ry += 40
+        ry += 30
 
-        # Items — image cards (with thumbnail) or text-only fallback
-        img_size_side = 150  # smaller thumbnails for half-width panel
-        card_text_x_side = rx + img_size_side + 30  # text starts after image + gap
+        # ── Items as mini-cards ──
         if items:
             n_items = len(items)
-            has_any_image = any(self._img_ref(f"item_{i+1:02d}.png") for i in range(n_items))
-            parts.append(f"\n  <!-- ===== ITEMS ({'\uc774\ubbf8\uc9c0 \uce74\ub4dc' if has_any_image else '\uac00\uaca9 \ub9ac\uc2a4\ud2b8'}) ====="
-                         f" -->")
-            if has_any_image:
-                # Image card mode
-                row_h = max(180, 190)  # fixed row height for cards
-                for idx, item in enumerate(items):
-                    name = item.get("name", "")
-                    price = item.get("price", "")
-                    desc = item.get("description", "")
-                    item_ref = self._img_ref(f"item_{idx + 1:02d}.png")
-                    if item_ref:
-                        parts.append(f"""  <image href="{item_ref}" xlink:href="{item_ref}"
-           x="{rx}" y="{ry}" width="{img_size_side}" height="{img_size_side}"
-           preserveAspectRatio="xMidYMid meet"/>""")
-                        parts.append(f"""  <text x="{card_text_x_side}" y="{ry + 45}"
-        class="title" font-size="{t_item_name['size_px']}" font-weight="{t_item_name['weight']}" fill="{t_item_name['color']}">
-    {name}
-  </text>""")
-                        if desc:
-                            parts.append(f"""  <text x="{card_text_x_side}" y="{ry + 85}"
-        class="body" font-size="{t_item_desc['size_px']}" font-weight="{t_item_desc['weight']}" fill="{t_item_desc['color']}" opacity="0.6">
-    {desc}
-  </text>""")
-                        if price:
-                            parts.append(f"""  <text x="{rx + rw}" y="{ry + 45}"
-        text-anchor="end" class="title" font-size="{t_item_price['size_px']}" font-weight="{t_item_price['weight']}" fill="{t_item_price['color']}">
-    {price}
-  </text>""")
-                    else:
-                        # Fallback text-only row for missing image
-                        parts.append(f"""  <text x="{rx}" y="{ry + 30}"
-        class="title" font-size="{t_item_name['size_px']}" font-weight="{t_item_name['weight']}" fill="{t_item_name['color']}">
-    {name}
-  </text>""")
-                        if price:
-                            parts.append(f"""  <text x="{rx + rw}" y="{ry + 30}"
-        text-anchor="end" class="title" font-size="{t_item_price['size_px']}" font-weight="{t_item_price['weight']}" fill="{t_item_price['color']}">
-    {price}
-  </text>""")
-                    ry += row_h
-            else:
-                # Text-only mode (original flat list)
-                for idx, item in enumerate(items):
-                    name = item.get("name", "")
-                    price = item.get("price", "")
-                    desc = item.get("description", "")
-                    parts.append(
-                        f"""  <text x="{rx}" y="{ry}"
-        class="title" font-size="{t_item_name['size_px']}" font-weight="{t_item_name['weight']}" fill="{t_item_name['color']}">
-    {name}
-  </text>"""
-                    )
-                    if price:
-                        parts.append(
-                            f"""  <text x="{rx + rw}" y="{ry}"
-        text-anchor="end" class="title" font-size="{t_item_price['size_px']}" font-weight="{t_item_price['weight']}" fill="{t_item_price['color']}">
-    {price}
-  </text>"""
-                        )
-                    ry += 34
-                    if desc:
-                        parts.append(
-                            f"""  <text x="{rx}" y="{ry}"
-        class="light" font-size="{t_item_desc['size_px']}" font-weight="{t_item_desc['weight']}" fill="{t_item_desc['color']}" opacity="0.6">
-    {desc}
-  </text>"""
-                        )
-                        ry += 30
-                    ry += 26
-
-        # Features at bottom of right section
-        if features:
-            feat_y = max(ry + 40, top_h - 200)
-            parts.append(
-                f"""
-  <!-- ===== FEATURES (우측 하단) ===== -->
-  <line x1="{rx}" y1="{feat_y - 20}" x2="{rx + rw}" y2="{feat_y - 20}"
-        stroke="{brand}" stroke-width="1" opacity="0.15"/>"""
+            has_any_image = any(
+                self._img_ref(f"item_{i + 1:02d}.png") for i in range(n_items)
             )
-            for feat in features:
-                parts.append(
-                    f"""  <text x="{rx}" y="{feat_y}"
-        class="body" font-size="{t_features['size_px']}" font-weight="{t_features['weight']}" fill="{t_features['color']}" opacity="0.6">
-    \u2022  {feat}
-  </text>"""
-                )
-                feat_y += 36
+            img_sz = 130
+            card_inner_h = max(img_sz + 16, 160)
 
-        # --- Transition: hero_left → promo ---
-        trans_svg = self._svg_transition("hero_left", "promo", top_h, accent, margin)
+            for idx, item in enumerate(items):
+                name = item.get("name", "")
+                price = item.get("price", "")
+                desc = item.get("description", "")
+                item_ref = self._img_ref(f"item_{idx + 1:02d}.png")
+                clip_id = f"sbs-item-clip-{idx}"
+
+                if has_any_image and item_ref:
+                    parts.append(f"""
+  <g filter="url(#card-shadow)">
+    <rect x="{rx - 8}" y="{ry}" width="{rw + 16}" height="{card_inner_h}"
+          rx="{CARD_R}" fill="#FFFFFF"/>
+  </g>
+  <defs>
+    <clipPath id="{clip_id}">
+      <rect x="{rx}" y="{ry + 8}" width="{img_sz}" height="{img_sz}" rx="10"/>
+    </clipPath>
+  </defs>
+  <g clip-path="url(#{clip_id})">
+    <image href="{item_ref}" xlink:href="{item_ref}"
+           x="{rx}" y="{ry + 8}" width="{img_sz}" height="{img_sz}"
+           preserveAspectRatio="xMidYMid slice"/>
+  </g>""")
+                    text_x = rx + img_sz + 20
+                    parts.append(f"""  <text x="{text_x}" y="{ry + card_inner_h // 2 - 12}"
+        class="title" font-size="{t_item_name["size_px"]}" font-weight="{t_item_name["weight"]}" fill="{t_item_name["color"]}">{name}</text>""")
+                    if desc:
+                        parts.append(f"""  <text x="{text_x}" y="{ry + card_inner_h // 2 + 20}"
+        class="body" font-size="{t_item_desc["size_px"]}" font-weight="{t_item_desc["weight"]}" fill="{t_item_desc["color"]}" opacity="0.6">{desc}</text>""")
+                    if price:
+                        parts.append(f"""  <text x="{rx + rw + 8}" y="{ry + card_inner_h // 2 + 6}"
+        text-anchor="end" class="title" font-size="{t_item_price["size_px"]}" font-weight="{t_item_price["weight"]}" fill="{t_item_price["color"]}">{price}</text>""")
+                    ry += card_inner_h + CARD_GAP
+                else:
+                    parts.append(f"""  <text x="{rx}" y="{ry + 28}"
+        class="title" font-size="{t_item_name["size_px"]}" font-weight="{t_item_name["weight"]}" fill="{t_item_name["color"]}">{name}</text>""")
+                    if desc:
+                        parts.append(f"""  <text x="{rx}" y="{ry + 58}"
+        class="body" font-size="{t_item_desc["size_px"]}" font-weight="{t_item_desc["weight"]}" fill="{t_item_desc["color"]}" opacity="0.6">{desc}</text>""")
+                    if price:
+                        parts.append(f"""  <text x="{rx + rw}" y="{ry + 28}"
+        text-anchor="end" class="title" font-size="{t_item_price["size_px"]}" font-weight="{t_item_price["weight"]}" fill="{t_item_price["color"]}">{price}</text>""")
+                    ry += 90
+                    if idx < n_items - 1:
+                        parts.append(f"""  <line x1="{rx}" y1="{ry - 10}" x2="{rx + rw}" y2="{ry - 10}"
+        stroke="{text_c}" stroke-width="1" opacity="0.1"/>""")
+
+        # ── Features at bottom of right panel ──
+        if features:
+            feat_y = max(ry + 50, top_h - 260)
+            parts.append(f"""
+  <line x1="{rx}" y1="{feat_y - 30}" x2="{rx + rw}" y2="{feat_y - 30}"
+        stroke="{brand}" stroke-width="1" opacity="0.12"/>""")
+            for feat in features:
+                parts.append(f"""  <text x="{rx + 20}" y="{feat_y}"
+        class="body" font-size="{t_features["size_px"]}" font-weight="{t_features["weight"]}" fill="{t_features["color"]}" opacity="0.55">\u2022  {feat}</text>""")
+                feat_y += 38
+
+        # ── Transition ──
+        trans_svg = self._svg_transition("hero_left", "promo", top_h, accent, M)
         if trans_svg:
             parts.append(trans_svg)
 
-        # --- Promo (12%, full-width) ---
+        # ── Promo (12%) ──
         if promo:
-            parts.append(self._svg_promo(promo, style, promo_y, promo_h, margin))
+            parts.append(self._svg_promo(promo, style, promo_y, promo_h, M))
 
-        # --- CTA (18%, full-width) ---
+        # ── CTA (18%) ──
         if cta:
             parts.append(self._svg_cta(cta, style, cta_y, cta_h))
 

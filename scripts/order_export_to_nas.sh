@@ -8,6 +8,10 @@ TODAY=$(date +%Y-%m-%d)
 TMP_FILE="/tmp/orders_${DATE}.csv"
 NAS_DIR="ftp://dsp1830.ipdisk.co.kr/HDD2/share/order_exports"
 NAS_USER="admin:1830"
+
+# 2차 NAS (sknas205)
+NAS2_DIR="ftp://sknas205.ipdisk.co.kr/HDD1/duson260118/order_exports"
+NAS2_USER="sknas205:sknas205204203"
 LOG="/var/www/html/scripts/db_backup.log"
 
 log() { echo "[$(date '+%Y-%m-%d %H:%M:%S')] $1" | tee -a "$LOG"; }
@@ -94,6 +98,17 @@ curl -s -T "$TMP_FILE" "${NAS_DIR}/daily/orders_${DATE}.csv" \
 curl -s -T "$MONTHLY_FILE" "${NAS_DIR}/monthly/orders_${MONTH}.csv" \
   --user "$NAS_USER" --ftp-create-dirs && log "✅ 월별: orders_${MONTH}.csv ($((MONTHLY_ROWS-1))건)"
 
+# sknas205 NAS 업로드
+log "sknas205 NAS 업로드 중..."
+
+# 일별 파일
+curl -s -T "$TMP_FILE" "${NAS2_DIR}/daily/orders_${DATE}.csv" \
+  --user "$NAS2_USER" --ftp-create-dirs && log "✅ sknas205 일별: orders_${DATE}.csv ($((ROWS-1))건)"
+
+# 월별 누적 파일 (덮어쓰기)
+curl -s -T "$MONTHLY_FILE" "${NAS2_DIR}/monthly/orders_${MONTH}.csv" \
+  --user "$NAS2_USER" --ftp-create-dirs && log "✅ sknas205 월별: orders_${MONTH}.csv ($((MONTHLY_ROWS-1))건)"
+
 rm -f "$TMP_FILE" "$MONTHLY_FILE"
 
 # 90일 이전 일별 파일 삭제
@@ -104,6 +119,16 @@ curl -s "${NAS_DIR}/daily/" --user "$NAS_USER" -l 2>/dev/null | while read fname
         curl -s -Q "DELE /HDD2/share/order_exports/daily/$fname" \
           "ftp://dsp1830.ipdisk.co.kr" --user "$NAS_USER" > /dev/null
         log "  🗑️ 삭제: $fname"
+    fi
+done
+
+# sknas205 90일 이전 일별 파일 삭제
+curl -s "${NAS2_DIR}/daily/" --user "$NAS2_USER" -l 2>/dev/null | while read fname; do
+    fdate=$(echo "$fname" | grep -oP '\d{8}')
+    if [ -n "$fdate" ] && [ "$fdate" -lt "$OLD_DATE" ]; then
+        curl -s -Q "DELE /HDD1/duson260118/order_exports/daily/$fname" \
+          "ftp://sknas205.ipdisk.co.kr" --user "$NAS2_USER" > /dev/null
+        log "  🗑️ sknas205 삭제: $fname"
     fi
 done
 

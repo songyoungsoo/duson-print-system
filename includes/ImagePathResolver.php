@@ -4,10 +4,16 @@
  *
  * dsp114.com → dsp114.com 마이그레이션 지원
  * 날짜 기반 필터링 포함 (2025-12-06)
+ * NAS 아카이브 fallback 추가 (2026-03-13)
  *
  * 필터링 규칙:
  * - 교정용 이미지 (ThingCate): 2018년 이후만 표시
  * - 고객 원고 파일 (uploaded_files): 2024년 이후만 표시
+require_once __DIR__ . '/NasImageProxy.php';
+ *
+ * NAS fallback:
+ * - 로컬에 교정파일이 없으면 NAS archive_upload/{order_no}/ 에서 검색
+ * - 구서버(old.dsp114.com) 교정이미지가 NAS에 아카이브되어 있음
  */
 class ImagePathResolver {
     // 레거시/신규 구분 기준 주문번호
@@ -354,6 +360,7 @@ class ImagePathResolver {
 
         // ── B. 교정파일 수집 (type: 'proof') ──────────────────────────
         // 항상 실행 — empty() 가드 제거. upload/{no}/ = 관리자 교정파일 저장소
+        $found_local_proof = false;
         if ($order_no > 0) {
             $proof_dirs = [
                 $_SERVER['DOCUMENT_ROOT'] . '/mlangorder_printauto/upload/' . $order_no . '/',
@@ -373,6 +380,7 @@ class ImagePathResolver {
                                     'type' => 'proof',
                                     'path' => $dir . $file
                                 ]);
+                                $found_local_proof = true;
                             }
                         }
                     } else {
@@ -380,6 +388,24 @@ class ImagePathResolver {
                         $result['proof_excluded_count']++;
                     }
                     break; // 첫 번째 존재하는 디렉토리에서만 스캔
+                }
+            }
+
+            // ── B-2. NAS fallback: 로컬에 교정파일 없으면 NAS 아카이브 검색 ──
+            if (!$found_local_proof && !$result['proof_excluded']) {
+                $nasResult = NasImageProxy::listFiles($order_no);
+                if (!empty($nasResult['files'])) {
+                    foreach ($nasResult['files'] as $nasFile) {
+                        $addFile([
+                            'name' => $nasFile,
+                            'saved_name' => $nasFile,
+                            'size' => 0,  // NAS에서 크기 조회 비용 절약
+                            'type' => 'proof',
+                            'path' => '',  // 로컬 경로 없음
+                            'nas_source' => true,
+                            'nas_label' => $nasResult['nas_label'] ?? '',
+                        ]);
+                    }
                 }
             }
         }

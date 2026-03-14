@@ -83,12 +83,23 @@ if ($row) {
         $fname = $f['name'] ?? $f['saved_name'] ?? basename($f['path'] ?? '');
         $fpath = $f['path'] ?? '';
         $ftype = $f['type'] ?? 'unknown';
-        if (empty($fname) || empty($fpath) || !file_exists($fpath)) continue;
+        $is_nas = !empty($f['nas_source']);
+
+        // NAS 파일: 로컬 경로 없음, file_exists 검사 불필요
+        if (!$is_nas) {
+            if (empty($fname) || empty($fpath) || !file_exists($fpath)) continue;
+        } else {
+            if (empty($fname)) continue;
+        }
+
         $ext = strtolower(pathinfo($fname, PATHINFO_EXTENSION));
         if (!in_array($ext, $viewable_extensions)) continue;
 
         $src_param = '';
-        if (strpos($fpath, '/shop/data/') !== false) {
+        if ($is_nas) {
+            // NAS 아카이브 프록시
+            $src_param = '&src=nas';
+        } elseif (strpos($fpath, '/shop/data/') !== false) {
             $src_param = '&src=legacy';
         } elseif (strpos($fpath, '/uploads/orders/') !== false) {
             $src_param = '&src=uploads';
@@ -100,10 +111,18 @@ if ($row) {
             $src_param = '&src=upload';
         }
 
+        $file_date = '';
+        if ($is_nas) {
+            // NAS 파일: 날짜 정보 없음 (NAS 아카이브)
+            $file_date = '구서버 아카이브';
+        } elseif (!empty($fpath) && file_exists($fpath)) {
+            $file_date = date('Y-m-d H:i', filemtime($fpath));
+        }
+
         $all_images[] = [
             'url' => '/mlangorder_printauto/view_proof.php?no=' . $no . '&file=' . urlencode($fname) . $src_param,
             'name' => $fname,
-            'date' => date('Y-m-d H:i', filemtime($fpath)),
+            'date' => $file_date,
             'source' => $ftype,
         ];
     }
